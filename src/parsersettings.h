@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <boost/filesystem.hpp>
 
 namespace fs = boost::filesystem;
@@ -17,3 +18,5 @@ fs::path find_valid_path(const fs::path &sourcepath,
                          const fs::path &localpath,
                          const std::vector<std::string> *openfilenames = nullptr);
 fs::path get_library_for_path(const fs::path &localpath);
+
+const std::vector<std::string>& get_library_path();

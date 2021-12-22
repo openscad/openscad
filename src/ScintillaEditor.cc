@@ -168,7 +168,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 
     QShortcut *shortcutAutocomplete;
     shortcutAutocomplete = new QShortcut(modifier | Qt::Key_Space, this);
-    connect(shortcutAutocomplete, &QShortcut::activated, [=]() { qsci->autoCompleteFromAll(); });
+	connect(shortcutAutocomplete, &QShortcut::activated, [=]() { qsci->autoCompleteFromAPIs(); });
 
     scintillaLayout->setContentsMargins(0, 0, 0, 0);
     scintillaLayout->addWidget(qsci);
@@ -413,7 +413,7 @@ void ScintillaEditor::setLexer(ScadLexer *newLexer)
 {
     delete this->api;
     this->qsci->setLexer(newLexer);
-    this->api = new ScadApi(this->qsci, newLexer);
+	this->api = new ScadApi(this, newLexer);
     delete this->lexer;
     this->lexer = newLexer;
 }

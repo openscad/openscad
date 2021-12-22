@@ -65,3 +65,12 @@ const char *ScadLexer::keywords(int set) const
 	}
 	return keywordSet[set - 1].c_str();
 }
+
+QStringList ScadLexer::autoCompletionWordSeparators() const
+{
+	QStringList wl;
+	wl << "."; // dot notation, not used yet, but preparation for object support
+	wl << "<"; // for include/use auto complete
+	wl << "/"; // for include/use directory auto complete
+	return wl;
+}

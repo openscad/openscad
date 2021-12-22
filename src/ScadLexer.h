@@ -18,4 +18,5 @@ private:
         std::string keywordSet[4];
 	ScadLexer(const ScadLexer &);
 	ScadLexer &operator=(const ScadLexer &);
+	QStringList autoCompletionWordSeparators() const override;
 };
