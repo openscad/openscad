@@ -917,7 +917,7 @@ namespace lexertl
             {
                 const std::size_t size_ = _statemap.size();
 
-                for (id_type i_ = 0; i_ < size_; ++i_)
+                for (id_type i_ = 0; i_ < (id_type)size_; ++i_)
                 {
                     next_dfas_.push_back(i_);
                 }

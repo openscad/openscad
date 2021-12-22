@@ -45,7 +45,7 @@ namespace lexertl
             internals_._eoi = rules_.eoi();
             internals_.add_states(size_);
 
-            for (id_type index_ = 0; index_ < size_; ++index_)
+            for (id_type index_ = 0; index_ < (id_type)size_; ++index_)
             {
                 if (rules_.regexes()[index_].empty())
                 {
