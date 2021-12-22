@@ -114,15 +114,15 @@ void Lex::default_rules()
 	rules_.push_state("COMMENT");
 
 	std::string keywords( "module function use echo include import projection render "
-                          "return if else let for each intersection_for undef assert" );
+                          "return if else let for each assert" );
 	defineRules(keywords, ekeyword);
 
-	std::string transformations( "translate rotate child scale linear_extrude "
+	std::string transformations( "translate rotate scale linear_extrude "
                                 "rotate_extrude resize mirror multmatrix color "
                                 "offset hull minkowski children" );
 	defineRules(transformations, etransformation);
 
-    std::string booleans( "group union difference intersection true false" );
+	std::string booleans( "union difference intersection intersection_for" );
 	defineRules(booleans, eboolean);
     
 	std::string functions( "abs sign rands min max sin cos asin acos tan atan atan2 round "
@@ -132,24 +132,26 @@ void Lex::default_rules()
                             "is_function is_object" );
 	defineRules(functions, efunction);
     
-	std::string models( "sphere cube cylinder polyhedron square polygon text circle surface" );
+	std::string models( "sphere cube cylinder polyhedron square polygon text circle surface roof" );
 	defineRules(models, emodel);
 
-	std::string operators( "<= >= == != && =" );
+	// Operators and Modifier Characters
+	std::string operators( "\\+ - \\* \\/ % \\^ < <= >= == != >= > && \\|\\| ! = #" );
 	defineRules(operators, eoperator);
 
+	rules_.push("[\"](([\\\\][\"])|[^\"])*[\"]", eQuotedString);
 
-    rules_.push("[\"](([\\\\][\"])|[^\"])*[\"]", eQuotedString);
-
+	std::string values( "true false undef PI" );
+	defineRules(values, enumber);
 	rules_.push("([-+]?((([0-9]+[.]?|([0-9]*[.][0-9]+))([eE][-+]?[0-9]+)?)))", enumber);
     
-    // comments and variables come later, after any custom keywords are added
+	// comments and variables come later, after any custom keywords are added
 }
 
 void Lex::defineRules(const std::string &keyword_list, int id)
 {
 	std::string trimmedKeywords(keyword_list);
-    boost::algorithm::trim(trimmedKeywords);
+	boost::algorithm::trim(trimmedKeywords);
 	if (trimmedKeywords.empty())
 		return;
 
@@ -157,7 +159,7 @@ void Lex::defineRules(const std::string &keyword_list, int id)
 	boost::split(words, trimmedKeywords, boost::is_any_of(" "));
 	for (const auto& keyword : words) {
 		rules_.push(keyword, id);
-    }
+	}
 }
 
 // default and custom rules must be set before this
