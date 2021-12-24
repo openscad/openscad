@@ -28,9 +28,7 @@ std::string offscreen_context_getinfo(OffscreenContext *)
 
   SInt32 majorVersion,minorVersion,bugFixVersion;
   
-  Gestalt(gestaltSystemVersionMajor, &majorVersion);
-  Gestalt(gestaltSystemVersionMinor, &minorVersion);
-  Gestalt(gestaltSystemVersionBugFix, &bugFixVersion);
+  std::string osVersion = [[[NSProcessInfo processInfo] operatingSystemVersionString] UTF8String];
 
   const char *arch = "unknown";
   if (sizeof(int*) == 4) arch = "32-bit";
@@ -39,7 +37,7 @@ std::string offscreen_context_getinfo(OffscreenContext *)
   std::ostringstream out;
   out << "GL context creator: Cocoa / CGL\n"
       << "PNG generator: Core Foundation\n"
-      << "OS info: Mac OS X " << majorVersion << "." << minorVersion << "." << bugFixVersion << " (" << name.machine << " kernel)\n"
+      << "OS info: Mac OS X " << osVersion << " (" << name.machine << " kernel)\n"
       << "Machine: " << arch << "\n";
   return out.str();
 }
@@ -72,6 +70,8 @@ OffscreenContext *create_offscreen_context(int w, int h)
   ctx->openGLContext = [[NSOpenGLContext alloc] initWithFormat:pixFormat shareContext:nil];
   if (!ctx->openGLContext) {
     std::cerr << "Unable to create NSOpenGLContext\n";
+    [ctx->pool release];
+    delete ctx;
     return nullptr;
   }
 
@@ -81,12 +81,18 @@ OffscreenContext *create_offscreen_context(int w, int h)
   GLenum err = glewInit();
   if (GLEW_OK != err) {
     std::cerr << "Unable to init GLEW: " << glewGetErrorString(err) << std::endl;
+    [ctx->openGLContext release];
+    [ctx->pool release];
+    delete ctx;
     return nullptr;
   }
   glew_dump();
 
   ctx->fbo = fbo_new();
   if (!fbo_init(ctx->fbo, w, h)) {
+    [ctx->openGLContext release];
+    [ctx->pool release];
+    delete ctx;
     return nullptr;
   }
 

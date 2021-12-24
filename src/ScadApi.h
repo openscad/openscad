@@ -61,19 +61,25 @@ public:
 	}
 };
 
+class ScintillaEditor;
+
 class ScadApi : public QsciAbstractAPIs
 {
 	Q_OBJECT
 
 private:
-	QsciScintilla *qsci;
+	ScintillaEditor *editor;
 	QList<ApiFunc> funcs;
 
+protected:
+	void autoCompleteFolder(const QStringList& context, const QString& text, const int col, QStringList& list);
+	void autoCompleteFunctions(const QStringList& context, QStringList& list);
+
 public:
-	ScadApi(QsciScintilla *qsci, QsciLexer *lexer);
+	ScadApi(ScintillaEditor *editor, QsciLexer *lexer);
 	virtual ~ScadApi();
 
-	void updateAutoCompletionList(const QStringList &context, QStringList &list) override;
-	void autoCompletionSelected(const QString &selection) override;
-	QStringList callTips(const QStringList &context, int commas, QsciScintilla::CallTipsStyle style, QList< int > &shifts) override;
+	void updateAutoCompletionList(const QStringList& context, QStringList& list) override;
+	void autoCompletionSelected(const QString& selection) override;
+	QStringList callTips(const QStringList& context, int commas, QsciScintilla::CallTipsStyle style, QList<int>& shifts) override;
 };
