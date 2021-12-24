@@ -15,6 +15,7 @@
 #include "PlatformUtils.h"
 #include "Settings.h"
 #include "QSettingsCached.h"
+#include "ScadLexer.h"
 
 #include <QWheelEvent>
 #include<QPoint>
@@ -168,7 +169,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 
     QShortcut *shortcutAutocomplete;
     shortcutAutocomplete = new QShortcut(modifier | Qt::Key_Space, this);
-    connect(shortcutAutocomplete, &QShortcut::activated, [=]() { qsci->autoCompleteFromAll(); });
+	connect(shortcutAutocomplete, &QShortcut::activated, [=]() { qsci->autoCompleteFromAPIs(); });
 
     scintillaLayout->setContentsMargins(0, 0, 0, 0);
     scintillaLayout->addWidget(qsci);
@@ -191,7 +192,14 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
     qsci->setMarginWidth(symbolMargin, 0);
     qsci->setMarginMarkerMask(symbolMargin, 1 << errMarkerNumber | 1 << bmMarkerNumber);
 
+#if ENABLE_LEXERTL
+    auto newLexer = new ScadLexer2(this);
+    newLexer->finalizeLexer();
+    setLexer(newLexer);
+#else
     setLexer(new ScadLexer(this));
+#endif
+
     initMargin();
 
     connect(qsci, SIGNAL(textChanged()), this, SIGNAL(contentsChanged()));
@@ -409,24 +417,91 @@ int ScintillaEditor::readInt(const boost::property_tree::ptree &pt, const std::s
     }
 }
 
+#if ENABLE_LEXERTL
+void ScintillaEditor::setLexer(ScadLexer2 *newLexer)
+{
+    delete this->api;
+    this->qsci->setLexer(newLexer);
+    this->api = new ScadApi(this, newLexer);
+    delete this->lexer;
+    this->lexer = newLexer;
+}
+#else
 void ScintillaEditor::setLexer(ScadLexer *newLexer)
 {
     delete this->api;
     this->qsci->setLexer(newLexer);
-    this->api = new ScadApi(this->qsci, newLexer);
+	this->api = new ScadApi(this, newLexer);
     delete this->lexer;
     this->lexer = newLexer;
 }
+#endif
 
 void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 {
     const auto & pt = colorScheme->propertyTree();
 
     try {
-          auto font = this->lexer->font(this->lexer->defaultStyle());
+        auto font = this->lexer->font(this->lexer->defaultStyle());
         const QColor textColor(pt.get<std::string>("text").c_str());
         const QColor paperColor(pt.get<std::string>("paper").c_str());
 
+#if ENABLE_LEXERTL
+
+/// See original attempt at https://github.com/openscad/openscad/tree/lexertl/src
+
+        auto *newLexer = new ScadLexer2(this);
+
+        // Custom keywords must be set before the lexer is constructed/finalized
+        boost::optional<const boost::property_tree::ptree&> keywords = pt.get_child_optional("keywords");
+        if (keywords.is_initialized()) {
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom1", ""), ScadLexer2::Custom1 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom2", ""), ScadLexer2::Custom2 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom3", ""), ScadLexer2::Custom3 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom4", ""), ScadLexer2::Custom4 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom5", ""), ScadLexer2::Custom5 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom6", ""), ScadLexer2::Custom6 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom7", ""), ScadLexer2::Custom7 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom8", ""), ScadLexer2::Custom8 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom9", ""), ScadLexer2::Custom9 );
+            newLexer->addKeywords( readString(keywords.get(), "keyword-custom10", ""), ScadLexer2::Custom10 );
+        }
+
+        newLexer->finalizeLexer();
+        setLexer(newLexer);
+
+		// All other properties must be set after attaching to QSCintilla so
+		// the editor gets the change events and updates itself to match
+		newLexer->setFont(font);
+		newLexer->setColor(textColor);
+		newLexer->setPaper(paperColor);
+
+        const auto& colors = pt.get_child("colors");
+
+		newLexer->setColor(readColor(colors, "operator", textColor), ScadLexer2::Operator);
+		newLexer->setColor(readColor(colors, "comment", textColor), ScadLexer2::Comment);
+		newLexer->setColor(readColor(colors, "number", textColor), ScadLexer2::Number);
+		newLexer->setColor(readColor(colors, "string", textColor), ScadLexer2::String);
+		newLexer->setColor(readColor(colors, "variables", textColor), ScadLexer2::Variable);
+		newLexer->setColor(readColor(colors, "keywords", textColor), ScadLexer2::Keyword);  // formerly keyword1
+		newLexer->setColor(readColor(colors, "transformations", textColor), ScadLexer2::Transformation);  // formerly keyword3
+		newLexer->setColor(readColor(colors, "booleans", textColor), ScadLexer2::Boolean);  // formerly keyword3
+		newLexer->setColor(readColor(colors, "functions", textColor), ScadLexer2::Function);  // formerly keyword2
+		newLexer->setColor(readColor(colors, "models", textColor), ScadLexer2::Model);  // formerly keyword3
+		newLexer->setColor(readColor(colors, "special-variables", textColor), ScadLexer2::SpecialVariable);  // formerly keyword1
+
+		newLexer->setColor(readColor(colors, "keyword-custom1", textColor), ScadLexer2::Custom1);
+		newLexer->setColor(readColor(colors, "keyword-custom2", textColor), ScadLexer2::Custom2);
+		newLexer->setColor(readColor(colors, "keyword-custom3", textColor), ScadLexer2::Custom3);
+		newLexer->setColor(readColor(colors, "keyword-custom4", textColor), ScadLexer2::Custom4);
+		newLexer->setColor(readColor(colors, "keyword-custom5", textColor), ScadLexer2::Custom5);
+		newLexer->setColor(readColor(colors, "keyword-custom6", textColor), ScadLexer2::Custom6);
+		newLexer->setColor(readColor(colors, "keyword-custom7", textColor), ScadLexer2::Custom7);
+		newLexer->setColor(readColor(colors, "keyword-custom8", textColor), ScadLexer2::Custom8);
+		newLexer->setColor(readColor(colors, "keyword-custom9", textColor), ScadLexer2::Custom9);
+		newLexer->setColor(readColor(colors, "keyword-custom10", textColor), ScadLexer2::Custom10);
+
+#else
         auto *newLexer = new ScadLexer(this);
 
         // Keywords must be set before the lexer is attached to QScintilla
@@ -449,15 +524,12 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
         newLexer->setFont(font);
         newLexer->setColor(textColor);
         newLexer->setPaper(paperColor);
-                // Somehow, the margin font got lost when we deleted the old lexer
-                qsci->setMarginsFont(font);
 
         const auto& colors = pt.get_child("colors");
         newLexer->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
         newLexer->setColor(readColor(colors, "keyword2", textColor), QsciLexerCPP::KeywordSet2);
         newLexer->setColor(readColor(colors, "keyword3", textColor), QsciLexerCPP::GlobalClass);
         newLexer->setColor(readColor(colors, "number", textColor), QsciLexerCPP::Number);
-        //newLexer->setColor(readColor(colors, "string", textColor), QsciLexerCPP::SingleQuotedString); //currently, we do not support SingleQuotedStrings
         newLexer->setColor(readColor(colors, "string", textColor), QsciLexerCPP::DoubleQuotedString);
         newLexer->setColor(readColor(colors, "operator", textColor), QsciLexerCPP::Operator);
         newLexer->setColor(readColor(colors, "comment", textColor), QsciLexerCPP::Comment);
@@ -465,6 +537,11 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
         newLexer->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentDoc);
         newLexer->setColor(readColor(colors, "commentdoc", textColor), QsciLexerCPP::CommentLineDoc);
         newLexer->setColor(readColor(colors, "commentdockeyword", textColor), QsciLexerCPP::CommentDocKeyword);
+
+#endif  // ENABLE_LEXERTL
+        
+        // Somehow, the margin font got lost when we deleted the old lexer
+        qsci->setMarginsFont(font);
 
         const auto& caret = pt.get_child("caret");
         qsci->setCaretWidth(readInt(caret, "width", 1));
