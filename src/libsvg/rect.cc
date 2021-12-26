@@ -93,9 +93,9 @@ rect::~rect()
  * 9) perform an absolute elliptical arc operation to coordinate (x+rx,y)
  */
 void
-rect::set_attrs(attr_map_t& attrs)
+rect::set_attrs(attr_map_t& attrs, void *context)
 {
-	shape::set_attrs(attrs);
+	shape::set_attrs(attrs, context);
 	this->x = parse_double(attrs["x"]);
 	this->y = parse_double(attrs["y"]);
 	this->width = parse_double(attrs["width"]);
@@ -141,7 +141,7 @@ rect::set_attrs(attr_map_t& attrs)
 		% rx % ry % (x + rx) % y
 			);
 		attrs["d"] = path;
-		path::set_attrs(attrs);
+		path::set_attrs(attrs, context);
 	} else {
 		path_t path;
 		path.push_back(Eigen::Vector3d(get_x(), get_y(), 0));

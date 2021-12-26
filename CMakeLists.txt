@@ -554,6 +554,7 @@ endif()
 
 include_directories("src/ext/libtess2/Include")
 include_directories("src/ext/json")
+include_directories("src/ext/lexertl/include")
 
 # NOTE: To keep HEADLESS builds working, do NOT add Qt-dependent sources here,
 #       see GUI_SOURCES list below for that.
@@ -604,6 +605,7 @@ set(CORE_SOURCES
   src/import_stl.cc
   src/import_off.cc
   src/import_svg.cc
+  src/import_json.cc
   src/linalg.cc
   src/linearextrude.cc
   src/localscope.cc

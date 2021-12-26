@@ -1,0 +1,46 @@
+{
+    "name" : "High Contrast Dark",
+    "index" : 1800,
+    "paper" : "#000000",
+    "text" : "#ffffff",
+    "caret" : {
+        "width" : 2,
+        "foreground" : "#ffff00",
+        "line-background" : "#303030"
+    },
+    "colors" : {
+        "keyword1" : "#ff7aaf",
+        "keyword2" : "#ff7aaf",
+        "keyword3" : "#ff9745",
+        "commentline" : "#82b75c",
+        "commentdoc" : "#82b75c",
+        "commentdockeyword" : "#82b75c",
+
+        "comment" : "#82b75c",
+        "number" : "#fe7e6e",
+        "string" : "#e6db74",
+        "operator" : "#e8b609",
+        "variables" : "#61dbff",
+
+        "keywords" : "#ff7aaf",
+        "transformations" : "#ff7aaf",
+        "booleans" : "#ff7aaf",
+        "functions" : "#ff9745",
+        "models" : "#e4ad80",
+        "special-variables" : "#a8f9e8",
+
+        "whitespace-foreground" : "#e0e0e0",
+        "selection-foreground" : "#ffffff",
+        "selection-background" : "#4a90d9",
+        "margin-background" : "#272822",
+        "margin-foreground" : "Gray",
+        "matched-brace-background" : "#505050",
+        "matched-brace-foreground" : "#ffffff",
+        "unmatched-brace-background" : "#dc322f",
+        "unmatched-brace-foreground" : "#fdf6e3",
+        "error-marker" : "#ff0000",
+        "error-indicator" : "#60ff0000",
+        "error-indicator-outline" : "#ff000000",
+        "edge" : "#ffffff"
+    }
+}

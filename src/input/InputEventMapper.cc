@@ -87,6 +87,11 @@ int InputEventMapper::getMaxAxis(){
     return max_axis;
 }
 
+/*
+    -1 -> 0.196
+    0 -> 0
+    1 ->  10.72
+*/
 double InputEventMapper::scale(double val)
 {
     double x = 4 * val;
@@ -96,7 +101,13 @@ double InputEventMapper::scale(double val)
 
 double InputEventMapper::getAxisValue(int config)
 {
+    if (config == 0)        // avoid indexing by -1 when using default settings (and causing bizzare behavior)
+        return scale(0);
+    
     int idx = abs(config) - 1;
+    if (idx > 8)            // avoid reading over end of arrays (and causing segfaults)
+        return scale(0);
+    
     bool neg = config < 0;
     double trimmedVal = axisRawValue[idx] + axisTrimValue[idx];
     double val = neg ? -trimmedVal : trimmedVal;

@@ -186,6 +186,8 @@ public:
 	static SettingsEntryString octoPrintSlicerProfileDesc;
 
 	static SettingsEntryBool   exportUseAsciiSTL;
+	static SettingsEntryEnum   toolbarExport3D;
+	static SettingsEntryEnum   toolbarExport2D;
 
 	static SettingsEntryBool   summaryCamera;
 	static SettingsEntryBool   summaryArea;
