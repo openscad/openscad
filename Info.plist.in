@@ -38,6 +38,8 @@
 			<string>OpenSCAD Design</string>
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
+			<key>CFBundleTypeIconSystemGenerated</key>
+			<integer>1</integer>
 			<key>CFBundleTypeIconFile</key>
 			<string>SCAD.icns</string>
 			<key>LSIsAppleDefaultForType</key>
