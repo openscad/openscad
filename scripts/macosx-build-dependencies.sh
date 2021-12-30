@@ -569,7 +569,7 @@ build_glib2()
   tar xJf "glib-$version.tar.xz"
   cd "glib-$version"
 
-  CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib -L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN" meson setup --prefix $PWD/../../install --force-fallback-for libpcre -Dgtk_doc=false -Dman=false -Ddtrace=false build
+  CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib -L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN" meson setup --prefix $PWD/../../install --force-fallback-for libpcre -Dgtk_doc=false -Dman=false -Ddtrace=false -Dtests=false build
   meson compile -C build
   meson install -C build
 #  ./configure --disable-gtk-doc --disable-man --without-pcre --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib -L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
