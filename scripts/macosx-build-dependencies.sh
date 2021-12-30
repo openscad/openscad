@@ -197,8 +197,8 @@ build_qscintilla()
   version=$1
   echo "Building QScintilla" $version "..."
   cd $BASEDIR/src
+  rm -rf QScintilla_src-$version
   QSCINTILLA_FILENAME="QScintilla_src-$version.tar.gz"
-  rm -rf "${QSCINTILLA_FILENAME}"
   if [ ! -f "${QSCINTILLA_FILENAME}" ]; then
       curl -LO https://www.riverbankcomputing.com/static/Downloads/QScintilla/$version/"${QSCINTILLA_FILENAME}"
   fi
