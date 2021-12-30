@@ -11,7 +11,7 @@
 #  -f   Force build even if package is installed
 #  -v   Verbose
 #
-# Prerequisites: automake, libtool, cmake, pkg-config, wget
+# Prerequisites: automake, libtool, cmake, pkg-config, wget, meson
 #
 
 set -e
@@ -46,7 +46,7 @@ PACKAGES=(
     "fontconfig 2.13.1"
     "hidapi 0.11.0"
     "lib3mf 1.8.1"
-    "glib2 2.56.3"
+    "glib2 2.70.2"
     "pixman 0.40.0"
     "cairo 1.16.0"
     "cgal 5.3"
@@ -569,9 +569,12 @@ build_glib2()
   tar xJf "glib-$version.tar.xz"
   cd "glib-$version"
 
-  ./configure --disable-gtk-doc --disable-man --without-pcre --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib -L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
-  make -j$NUMCPU
-  make install
+  CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib -L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN" meson setup --prefix $PWD/../../install --force-fallback-for libpcre -Dgtk_doc=false -Dman=false -Ddtrace=false build
+  meson compile -C build
+  meson install -C build
+#  ./configure --disable-gtk-doc --disable-man --without-pcre --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib -L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
+#  make -j$NUMCPU
+#  make install
   install_name_tool -id @rpath/libglib-2.0.dylib $DEPLOYDIR/lib/libglib-2.0.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/glib2.version
 }
