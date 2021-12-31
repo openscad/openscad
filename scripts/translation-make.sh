@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Script for use from qmake to generate the translation
+# Script for use from the build system to generate the translation
 # related files.
 #
 
