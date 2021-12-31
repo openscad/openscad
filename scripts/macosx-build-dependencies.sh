@@ -385,6 +385,8 @@ build_sparkle()
 {
 # Binary install:
   version=$1
+
+  echo "Installing sparkle" $version "..."
   cd $BASEDIR/src
   rm -rf Sparkle-$version
   if [ ! -f Sparkle-$version.tar.xz ]; then
