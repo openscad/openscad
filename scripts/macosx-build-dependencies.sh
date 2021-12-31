@@ -40,7 +40,7 @@ PACKAGES=(
     "ragel 6.10"
     "harfbuzz 2.3.1"
     "libzip 1.8.0"
-    "libxml2 2.9.9"
+    "libxml2 REMOVE"
     "libuuid 1.6.2"
     "fontconfig 2.13.1"
     "hidapi 0.11.0"
@@ -112,7 +112,6 @@ check_version_file()
 is_installed()
 {
     if check_version_file $1 $2; then
-	echo "$1 $2 already installed - not building"
 	return 0
     else
 	return 1
@@ -125,16 +124,34 @@ build()
     local package=$1
     local version=$2
 
-    local should_install=$(( $OPTION_FORCE == 1 ))
-    if [[ $should_install == 0 ]]; then
-        if ! is_installed $package $version; then
-            should_install=1
+    if [[ $version == "REMOVE" ]]; then
+	local should_remove=$(( $OPTION_FORCE == 1 ))
+	if [[ $should_remove == 0 ]]; then
+            if is_installed $package; then
+		should_remove=1
+	    else
+   		echo "$package not installed - not removing"
+	    fi
 	fi
-    fi
-    if [[ $should_install == 1 ]]; then
-        set -e
-        build_$package $version
-        set +e
+	if [[ $should_remove == 1 ]]; then
+            set -e
+            remove_$package
+            set +e
+	fi
+    else
+	local should_install=$(( $OPTION_FORCE == 1 ))
+	if [[ $should_install == 0 ]]; then
+            if ! is_installed $package $version; then
+		should_install=1
+	    else
+   		echo "$package $version already installed - not building"
+	    fi
+	fi
+	if [[ $should_install == 1 ]]; then
+            set -e
+            build_$package $version
+            set +e
+	fi
     fi
 }
 
@@ -452,23 +469,10 @@ build_libzip()
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libzip.version
 }
 
-build_libxml2()
+remove_libxml2()
 {
-  version="$1"
-
-  echo "Building libxml2 $version..."
-  cd "$BASEDIR"/src
-  rm -rf "libxml2-$version"
-  if [ ! -f "libxml2-$version.tar.gz" ]; then
-    curl --insecure -LO "ftp://xmlsoft.org/libxml2/libxml2-$version.tar.gz"
-  fi
-  tar xzf "libxml2-$version.tar.gz"
-  cd "libxml2-$version"
-  ./configure --prefix="$DEPLOYDIR" --with-zlib=/usr --without-lzma --without-ftp --without-http --without-python CFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN LDFLAGS=-mmacosx-version-min=$MAC_OSX_VERSION_MIN
-  make -j$NUMCPU
-  make install
-  install_name_tool -id @rpath/libxml2.dylib $DEPLOYDIR/lib/libxml2.dylib
-  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libxml2.version
+  echo "Removing libxml2..."
+  find $DEPLOYDIR -name "*libxml*" -exec rm -rf {} \;
 }
 
 build_libuuid()
