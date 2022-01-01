@@ -35,7 +35,7 @@ PACKAGES=(
     "mpfr 4.0.2"
     "glew 2.1.0"
     "gettext 0.21"
-    "libffi 3.4.2"
+    "libffi REMOVE"
     "freetype 2.9.1"
     "ragel 6.10"
     "harfbuzz 2.3.1"
@@ -100,8 +100,11 @@ check_version_file()
 {
     versionfile="$DEPLOYDIR/share/macosx-build-dependencies/$1.version"
     if [ -f $versionfile ]; then
-	[[ $(cat $versionfile) == $2 ]]
-	return $?
+	if [ -z "$2" ]; then
+	    return 0
+	elif [[ $(cat $versionfile) == $2 ]]; then
+	    return $?
+	fi
     else
 	return 1
     fi
@@ -517,23 +520,10 @@ build_fontconfig()
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/fontconfig.version
 }
 
-build_libffi()
+remove_libffi()
 {
-  version="$1"
-
-  echo "Building libffi $version..."
-  cd "$BASEDIR"/src
-  rm -rf "libffi-$version"
-  if [ ! -f "libffi-$version.tar.gz" ]; then
-    curl --insecure -LO "https://github.com/libffi/libffi/releases/download/v$version/libffi-$version.tar.gz"
-  fi
-  tar xzf "libffi-$version.tar.gz"
-  cd "libffi-$version"
-  ./configure --prefix="$DEPLOYDIR"
-  make -j$NUMCPU
-  make install
-  install_name_tool -id @rpath/libffi.dylib $DEPLOYDIR/lib/libffi.dylib
-  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libffi.version
+  echo "Removing libffi..."
+  find $DEPLOYDIR -type f -name "ffi*" -o -name "libffi*" -exec rm -f {} \;
 }
 
 build_gettext()
