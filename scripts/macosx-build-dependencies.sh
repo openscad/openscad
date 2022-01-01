@@ -477,7 +477,7 @@ build_libzip()
 remove_libxml2()
 {
   echo "Removing libxml2..."
-  find $DEPLOYDIR -name "*libxml*" -exec rm -rf {} \;
+  find $DEPLOYDIR -name "*libxml*" -prune -exec rm -rf {} \;
 }
 
 build_libuuid()
