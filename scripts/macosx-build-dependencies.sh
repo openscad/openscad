@@ -244,7 +244,7 @@ build_gmp()
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
   # Note: We're building against the core2 CPU profile as that's the minimum required hardware for running OS X 10.9
-  ./configure --prefix=$DEPLOYDIR CFLAGS="--target=$ARCH-apple-macos13.0" LDFLAGS="-arch $ARCH" --enable-cxx --build=$ARCH-apple-darwin --host=$ARCH-apple-darwin17.0.0
+  ./configure --prefix=$DEPLOYDIR CFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN" --enable-cxx --build=$ARCH-apple-darwin --host=$ARCH-apple-darwin17.0.0
   make -j"$NUMCPU" install
 
   install_name_tool -id @rpath/libgmp.dylib $DEPLOYDIR/lib/libgmp.dylib
@@ -266,7 +266,7 @@ build_mpfr()
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
 
-  ./configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="--target=$ARCH-apple-macos13.0" LDFLAGS="-arch $ARCH"
+  ./configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN"
   make -j"$NUMCPU" install
 
   install_name_tool -id @rpath/libmpfr.dylib $DEPLOYDIR/lib/libmpfr.dylib
