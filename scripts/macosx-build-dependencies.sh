@@ -507,9 +507,28 @@ build_freetype()
 
   export FREETYPE_CFLAGS="-I$DEPLOYDIR/include -I$DEPLOYDIR/include/freetype2"
   export FREETYPE_LIBS="-L$DEPLOYDIR/lib -lfreetype"
-  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./configure CC="cc -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" --prefix="$DEPLOYDIR" --without-png --without-harfbuzz
-  make -j"$NUMCPU"
-  make install
+
+  # Build each arch separately
+  for arch in ${ARCHS[*]}; do
+    mkdir build-$arch
+    cd build-$arch
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --without-png --without-harfbuzz
+    make -j"$NUMCPU" install DESTDIR=$PWD/install/
+    cd ..
+  done
+
+  # Install the first arch
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    LIBS=()
+    for arch in ${ARCHS[*]}; do
+      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libfreetype.dylib)
+    done
+    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libfreetype.dylib
+  fi
+
   install_name_tool -id @rpath/libfreetype.dylib $DEPLOYDIR/lib/libfreetype.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/freetype.version
 }
