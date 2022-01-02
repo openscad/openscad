@@ -254,31 +254,25 @@ build_gmp()
   for arch in ${ARCHS[*]}; do
     mkdir build-$arch
     cd build-$arch
-    ../configure --prefix=$DEPLOYDIR/$arch CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --enable-cxx --build=$LOCAL_ARCH-apple-darwin --host=$arch-apple-darwin17.0.0
-    make -j"$NUMCPU" install
+    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --enable-cxx --build=$LOCAL_ARCH-apple-darwin --host=$arch-apple-darwin17.0.0
+    make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
 
   # Install the first arch
-  cp -R $DEPLOYDIR/${ARCHS[0]}/* $DEPLOYDIR
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
 
   # If we're building for multiple archs, create fat binaries
   if (( ${#ARCHS[@]} > 1 )); then
-    cd $DEPLOYDIR
     GMPLIBS=()
     GMPXXLIBS=()
     for arch in ${ARCHS[*]}; do
-      GMPLIBS+=($arch/lib/libgmp.dylib)
-      GMPXXLIBS+=($arch/lib/libgmpxx.dylib)
+      GMPLIBS+=(build-$arch/install/$DEPLOYDIR/lib/libgmp.dylib)
+      GMPXXLIBS+=(build-$arch/install/$DEPLOYDIR/lib/libgmpxx.dylib)
     done
-    lipo -create ${GMPLIBS[@]} -output lib/libgmp.dylib
-    lipo -create ${GMPXXLIBS[@]} -output lib/libgmpxx.dylib
+    lipo -create ${GMPLIBS[@]} -output $DEPLOYDIR/lib/libgmp.dylib
+    lipo -create ${GMPXXLIBS[@]} -output $DEPLOYDIR/lib/libgmpxx.dylib
   fi
-
-  # Remove temporary folders
-  for arch in ${ARCHS[*]}; do
-    rm -rf $DEPLOYDIR/$arch
-  done
 
   install_name_tool -id @rpath/libgmp.dylib $DEPLOYDIR/lib/libgmp.dylib
   install_name_tool -id @rpath/libgmpxx.dylib $DEPLOYDIR/lib/libgmpxx.dylib
