@@ -37,7 +37,7 @@ PACKAGES=(
     "gettext 0.21"
     "libffi REMOVE"
     "freetype 2.9.1"
-    "ragel 6.10"
+    "ragel REMOVE"
     "harfbuzz 2.3.1"
     "libzip 1.8.0"
     "libxml2 REMOVE"
@@ -576,22 +576,10 @@ build_glib2()
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/glib2.version
 }
 
-build_ragel()
+remove_ragel()
 {
-  version=$1
-
-  echo "Building ragel $version..."
-  cd "$BASEDIR"/src
-  rm -rf "ragel-$version"
-  if [ ! -f "ragel-$version.tar.gz" ]; then
-    curl --insecure -LO "http://www.colm.net/files/ragel/ragel-$version.tar.gz"
-  fi
-  tar xzf "ragel-$version.tar.gz"
-  cd "ragel-$version"
-  ./configure --prefix="$DEPLOYDIR"
-  make -j$NUMCPU
-  make install
-  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/ragel.version
+  echo "Removing ragel..."
+  find $DEPLOYDIR -type f -name "ragel*" -exec rm -f {} \;
 }
 
 build_harfbuzz()
