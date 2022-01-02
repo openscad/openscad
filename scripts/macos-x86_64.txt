@@ -1,0 +1,23 @@
+[host_machine]
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+system = 'darwin'
+endian = 'little'
+
+[properties]
+needs_exe_wrapper = false
+
+[binaries]
+c = 'cc'
+cpp = 'c++'
+objc = 'cc'
+strip = 'strip'
+pkgconfig = 'pkg-config'
+
+[built-in options]
+c_args = ['-arch', 'x86_64', '-mmacosx-version-min=10.13', '-I/Users/kintel/code/OpenSCAD/arm-cross/openscad/../libraries/install/include']
+cpp_args = ['-arch', 'x86_64', '-mmacosx-version-min=10.13', '-I/Users/kintel/code/OpenSCAD/arm-cross/openscad/../libraries/install/include']
+objc_args = ['-arch', 'x86_64', '-mmacosx-version-min=10.13', '-I/Users/kintel/code/OpenSCAD/arm-cross/openscad/../libraries/install/include']
+c_link_args = ['-arch', 'x86_64', '-mmacosx-version-min=10.13', '-L/Users/kintel/code/OpenSCAD/arm-cross/openscad/../libraries/install/lib']
+cpp_link_args = ['-arch', 'x86_64', '-mmacosx-version-min=10.13', '-L/Users/kintel/code/OpenSCAD/arm-cross/openscad/../libraries/install/lib']
+objc_link_args = ['-arch', 'x86_64', '-mmacosx-version-min=10.13', '-L/Users/kintel/code/OpenSCAD/arm-cross/openscad/../libraries/install/lib']

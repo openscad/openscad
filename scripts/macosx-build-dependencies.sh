@@ -249,8 +249,36 @@ build_gmp()
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
-  ./configure --prefix=$DEPLOYDIR CFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN" --enable-cxx --build=$ARCH-apple-darwin --host=$ARCH-apple-darwin17.0.0
-  make -j"$NUMCPU" install
+
+  # Build each arch separately
+  for arch in ${ARCHS[*]}; do
+    mkdir build-$arch
+    cd build-$arch
+    ../configure --prefix=$DEPLOYDIR/$arch CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --enable-cxx --build=$LOCAL_ARCH-apple-darwin --host=$arch-apple-darwin17.0.0
+    make -j"$NUMCPU" install
+    cd ..
+  done
+
+  # Install the local arch
+  cp -R $DEPLOYDIR/$LOCAL_ARCH/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    cd $DEPLOYDIR
+    GMPLIBS=()
+    GMPXXLIBS=()
+    for arch in ${ARCHS[*]}; do
+      GMPLIBS+=($arch/lib/libgmp.dylib)
+      GMPXXLIBS+=($arch/lib/libgmpxx.dylib)
+    done
+    lipo -create ${GMPLIBS[@]} -output lib/libgmp.dylib
+    lipo -create ${GMPXXLIBS[@]} -output lib/libgmpxx.dylib
+  fi
+
+  # Remove temporary folders
+  for arch in ${ARCHS[*]}; do
+    rm -rf $DEPLOYDIR/$arch
+  done
 
   install_name_tool -id @rpath/libgmp.dylib $DEPLOYDIR/lib/libgmp.dylib
   install_name_tool -id @rpath/libgmpxx.dylib $DEPLOYDIR/lib/libgmpxx.dylib
@@ -271,8 +299,33 @@ build_mpfr()
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
 
-  ./configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN" --build=$ARCH-apple-darwin --host=aarch64-apple-darwin17.0.0
-  make -j"$NUMCPU" install
+  # Build each arch separately
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
+    mkdir build-$arch
+    cd build-$arch
+    ../configure --prefix=$DEPLOYDIR/$arch --with-gmp=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --build=$LOCAL_ARCH-apple-darwin --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
+    make -j"$NUMCPU" install
+    cd ..
+  done
+
+  # Install the local arch
+  cp -R $DEPLOYDIR/$LOCAL_ARCH/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    cd $DEPLOYDIR
+    MPFRLIBS=()
+    for arch in ${ARCHS[*]}; do
+      MPFRLIBS+=($arch/lib/libmpfr.dylib)
+    done
+    lipo -create ${MPFRLIBS[@]} -output lib/libmpfr.dylib
+  fi
+
+  # Remove temporary folders
+  for arch in ${ARCHS[*]}; do
+    rm -rf $DEPLOYDIR/$arch
+  done
 
   install_name_tool -id @rpath/libmpfr.dylib $DEPLOYDIR/lib/libmpfr.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/mpfr.version
@@ -450,7 +503,7 @@ build_freetype()
 
   export FREETYPE_CFLAGS="-I$DEPLOYDIR/include -I$DEPLOYDIR/include/freetype2"
   export FREETYPE_LIBS="-L$DEPLOYDIR/lib -lfreetype"
-  PKG_CONFIG_LIBDIR="$DEPLOYDOR/lib/pkgconfig" ./configure CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix="$DEPLOYDIR" --without-png --without-harfbuzz
+  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./configure CC="cc -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" --prefix="$DEPLOYDIR" --without-png --without-harfbuzz
   make -j"$NUMCPU"
   make install
   install_name_tool -id @rpath/libfreetype.dylib $DEPLOYDIR/lib/libfreetype.dylib
@@ -495,7 +548,7 @@ build_libuuid()
   tar xzf uuid-$version.tar.gz
   cd uuid-$version
   patch -p1 < $OPENSCADDIR/patches/uuid-1.6.2.patch
-  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix $DEPLOYDIR --without-perl --without-php --without-pgsql
+  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" --prefix $DEPLOYDIR --without-perl --without-php --without-pgsql
   make -j"$NUMCPU"
   make install
   install_name_tool -id @rpath/libuuid.dylib $DEPLOYDIR/lib/libuuid.dylib
@@ -517,7 +570,7 @@ build_fontconfig()
   patch -p1 < $OPENSCADDIR/patches/fontconfig-arm64.patch
   # FIXME: The "ac_cv_func_mkostemp=no" is a workaround for fontconfig's autotools config not respecting any passed
   # -no_weak_imports linker flag. This may be improved in future versions of fontconfig
-  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix="$DEPLOYDIR" --enable-libxml2 LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib" ac_cv_func_mkostemp=no
+  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" --prefix="$DEPLOYDIR" --enable-libxml2 LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib" ac_cv_func_mkostemp=no
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libfontconfig.dylib $DEPLOYDIR/lib/libfontconfig.dylib
@@ -542,17 +595,13 @@ build_gettext()
   fi
   tar xzf "gettext-$version.tar.gz"
   cd "gettext-$version"
-  ./configure CXX="c++ -target $ARCHS_COMBINED-apple-macos13.0" CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix="$DEPLOYDIR" --with-included-glib --disable-java --disable-csharp LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib"
+  ./configure CXX="c++ -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" CC="cc -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" --prefix="$DEPLOYDIR" --disable-shared --with-included-glib --disable-java --disable-csharp LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib"
   make -j$NUMCPU
   make install
-  install_name_tool -id @rpath/libintl.dylib $DEPLOYDIR/lib/libintl.dylib
   install_name_tool -id @rpath/libgettextlib.dylib $DEPLOYDIR/lib/libgettextlib-$version.dylib
-
-  install_name_tool -change $DEPLOYDIR/lib/libintl.9.dylib @rpath/libintl.dylib $DEPLOYDIR/lib/libgettextlib-$version.dylib
 
   install_name_tool -change $DEPLOYDIR/lib/libgettextsrc-$version.dylib @rpath/libgettextsrc.dylib $DEPLOYDIR/bin/msgfmt
   install_name_tool -change $DEPLOYDIR/lib/libgettextlib-$version.dylib @rpath/libgettextlib.dylib $DEPLOYDIR/bin/msgfmt
-  install_name_tool -change $DEPLOYDIR/lib/libintl.9.dylib @rpath/libintl.dylib $DEPLOYDIR/bin/msgfmt
 
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/gettext.version
 }
@@ -572,9 +621,18 @@ build_glib2()
   tar xJf "glib-$version.tar.xz"
   cd "glib-$version"
 
-  CFLAGS="-I$DEPLOYDIR/include -mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib -L$DEPLOYDIR/lib -mmacosx-version-min=$MAC_OSX_VERSION_MIN" meson setup --prefix $DEPLOYDIR --force-fallback-for libpcre -Dgtk_doc=false -Dman=false -Ddtrace=false -Dtests=false build
+  # meson doesn't handle universal builds very well, so we'll build two separate binaries and lipo them together
+  meson setup --prefix $DEPLOYDIR --cross-file $OPENSCADDIR/scripts/macos-x86_64.txt --force-fallback-for libpcre -Dgtk_doc=false -Dman=false -Ddtrace=false -Dtests=false build
   meson compile -C build
   meson install -C build
+
+  meson setup --prefix $DEPLOYDIR/arm64 --cross-file $OPENSCADDIR/scripts/macos-arm64.txt --force-fallback-for libpcre -Dgtk_doc=false -Dman=false -Ddtrace=false -Dtests=false build-arm64
+  meson compile -C build-arm64
+  meson install -C build-arm64
+
+  lipo -create $DEPLOYDIR/lib/libglib-2.0.0.dylib $DEPLOYDIR/arm64/lib/libglib-2.0.0.dylib -output $DEPLOYDIR/lib/libglib-2.0.0.dylib
+  rm -rf $DEPLOYDIR/arm64
+
   install_name_tool -id @rpath/libglib-2.0.dylib $DEPLOYDIR/lib/libglib-2.0.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/glib2.version
 }
@@ -597,7 +655,7 @@ build_harfbuzz()
   fi
   tar xzf "harfbuzz-$version.tar.bz2"
   cd "harfbuzz-$version"
-  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./configure CXX="c++ -target $ARCHS_COMBINED-apple-macos13.0" CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no --with-coretext=auto --with-glib=no --disable-gtk-doc-html
+  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./configure CXX="c++ -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" CC="cc -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no --with-coretext=auto --with-glib=no --disable-gtk-doc-html
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libharfbuzz.dylib $DEPLOYDIR/lib/libharfbuzz.dylib
@@ -617,7 +675,7 @@ build_hidapi()
   unzip "hidapi-$version.zip"
   cd "hidapi-hidapi-$version"
   ./bootstrap # Needed when building from github sources
-  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix=$DEPLOYDIR
+  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" --prefix=$DEPLOYDIR
   make -j"$NUMCPU" install
   install_name_tool -id @rpath/libhidapi.dylib $DEPLOYDIR/lib/libhidapi.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/hidapi.version
@@ -657,7 +715,7 @@ build_pixman()
   tar xzf "${PIXMAN_FILENAME}"
   cd "$PIXMAN_DIR"
   # libpng is only used for tests, disabling to kill linker warnings since we don't build libpng ourselves
-  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix=$DEPLOYDIR --disable-libpng
+  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" --prefix=$DEPLOYDIR --disable-libpng
   make -j"$NUMCPU" install
   otool -L $DEPLOYDIR/lib/"libpixman-1.dylib"
   install_name_tool -id @rpath/libpixman-1.dylib $DEPLOYDIR/lib/"libpixman-1.dylib"
@@ -679,7 +737,7 @@ build_cairo()
   fi
   tar xzf "${CAIRO_FILENAME}"
   cd "$CAIRO_DIR"
-  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos13.0" --prefix=$DEPLOYDIR \
+  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" --prefix=$DEPLOYDIR \
         --enable-xlib=no --enable-xlib-xrender=no --enable-xcb=no \
         --enable-xlib-xcb=no --enable-xcb-shm=no --enable-win32=no \
         --enable-win32-font=no --enable-png=no --enable-ps=no \
@@ -743,12 +801,16 @@ fi
 
 LOCAL_ARCH=`uname -m`
 ARCHS=()
+# Some older autotools doesn't recognize arm64
+GNU_ARCHS=()
 if $OPTION_ARM64 || $OPTION_X86_64; then
     if $OPTION_ARM64; then
 	ARCHS+=(arm64)
+	GNU_ARCHS+=(aarch64)
     fi
     if $OPTION_X86_64; then
 	ARCHS+=(x86_64)
+	GNU_ARCHS+=(x86_64)
     fi
 else
     ARCHS+=($LOCAL_ARCH)
