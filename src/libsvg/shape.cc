@@ -117,7 +117,9 @@ shape::get_style(std::string name) const
 		if (values.size() != 2) {
 			continue;
 		}
+		boost::trim(values[0]);
 		if (name == values[0]) {
+			boost::trim(values[1]);
 			return values[1];
 		}
 	}
