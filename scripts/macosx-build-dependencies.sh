@@ -259,8 +259,8 @@ build_gmp()
     cd ..
   done
 
-  # Install the local arch
-  cp -R $DEPLOYDIR/$LOCAL_ARCH/* $DEPLOYDIR
+  # Install the first arch
+  cp -R $DEPLOYDIR/${ARCHS[0]}/* $DEPLOYDIR
 
   # If we're building for multiple archs, create fat binaries
   if (( ${#ARCHS[@]} > 1 )); then
@@ -309,8 +309,8 @@ build_mpfr()
     cd ..
   done
 
-  # Install the local arch
-  cp -R $DEPLOYDIR/$LOCAL_ARCH/* $DEPLOYDIR
+  # Install the first arch
+  cp -R $DEPLOYDIR/${ARCHS[0]}/* $DEPLOYDIR
 
   # If we're building for multiple archs, create fat binaries
   if (( ${#ARCHS[@]} > 1 )); then
@@ -609,8 +609,8 @@ build_gettext()
     cd ..
   done
 
-  # Install the local arch
-  cp -R $DEPLOYDIR/$LOCAL_ARCH/* $DEPLOYDIR
+  # Install the first arch
+  cp -R $DEPLOYDIR/${ARCHS[0]}/* $DEPLOYDIR
 
   # If we're building for multiple archs, create fat binaries
   if (( ${#ARCHS[@]} > 1 )); then
