@@ -599,13 +599,33 @@ build_gettext()
   fi
   tar xzf "gettext-$version.tar.gz"
   cd "gettext-$version"
-  ./configure CXX="c++ -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" CC="cc -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" --prefix="$DEPLOYDIR" --disable-shared --with-included-glib --disable-java --disable-csharp LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib"
-  make -j$NUMCPU
-  make install
-  install_name_tool -id @rpath/libgettextlib.dylib $DEPLOYDIR/lib/libgettextlib-$version.dylib
 
-  install_name_tool -change $DEPLOYDIR/lib/libgettextsrc-$version.dylib @rpath/libgettextsrc.dylib $DEPLOYDIR/bin/msgfmt
-  install_name_tool -change $DEPLOYDIR/lib/libgettextlib-$version.dylib @rpath/libgettextlib.dylib $DEPLOYDIR/bin/msgfmt
+  # Build each arch separately
+  for arch in ${ARCHS[*]}; do
+    mkdir build-$arch
+    cd build-$arch
+    ../configure --prefix=$DEPLOYDIR/$arch CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" CXXFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib" --disable-shared --with-included-glib --disable-java --disable-csharp
+    make -j"$NUMCPU" install
+    cd ..
+  done
+
+  # Install the local arch
+  cp -R $DEPLOYDIR/$LOCAL_ARCH/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    cd $DEPLOYDIR
+    INTLLIBS=()
+    for arch in ${ARCHS[*]}; do
+      INTLLIBS+=($arch/lib/libintl.a)
+    done
+    lipo -create ${INTLLIBS[@]} -output lib/libintl.a
+  fi
+
+  # Remove temporary folders
+  for arch in ${ARCHS[*]}; do
+    rm -rf $DEPLOYDIR/$arch
+  done
 
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/gettext.version
 }
