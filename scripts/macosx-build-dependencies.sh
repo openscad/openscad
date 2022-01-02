@@ -698,9 +698,34 @@ build_harfbuzz()
   fi
   tar xzf "harfbuzz-$version.tar.bz2"
   cd "harfbuzz-$version"
-  PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ./configure CXX="c++ -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" CC="cc -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no --with-coretext=auto --with-glib=no --disable-gtk-doc-html
-  make -j$NUMCPU
-  make install
+
+  # Build each arch separately
+  for arch in ${ARCHS[*]}; do
+    mkdir build-$arch
+    cd build-$arch
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ../configure --prefix=$DEPLOYDIR/$arch CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no --with-coretext=auto --with-glib=no --disable-gtk-doc-html
+    make -j"$NUMCPU" install
+    cd ..
+  done
+
+  # Install the first arch
+  cp -R $DEPLOYDIR/${ARCHS[0]}/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    cd $DEPLOYDIR
+    LIBS=()
+    for arch in ${ARCHS[*]}; do
+      LIBS+=($arch/lib/libharfbuzz.dylib)
+    done
+    lipo -create ${LIBS[@]} -output lib/libharfbuzz.dylib
+  fi
+
+  # Remove temporary folders
+  for arch in ${ARCHS[*]}; do
+    rm -rf $DEPLOYDIR/$arch
+  done
+
   install_name_tool -id @rpath/libharfbuzz.dylib $DEPLOYDIR/lib/libharfbuzz.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/harfbuzz.version
 }
