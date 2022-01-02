@@ -591,11 +591,36 @@ build_fontconfig()
   tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
   patch -p1 < $OPENSCADDIR/patches/fontconfig-arm64.patch
-  # FIXME: The "ac_cv_func_mkostemp=no" is a workaround for fontconfig's autotools config not respecting any passed
-  # -no_weak_imports linker flag. This may be improved in future versions of fontconfig
-  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" --prefix="$DEPLOYDIR" --enable-libxml2 LDFLAGS="-Wl,-rpath,$DEPLOYDIR/lib" ac_cv_func_mkostemp=no
-  make -j$NUMCPU
-  make install
+
+  # Build each arch separately
+  for arch in ${ARCHS[*]}; do
+    mkdir build-$arch
+    cd build-$arch
+    # FIXME: The "ac_cv_func_mkostemp=no" is a workaround for fontconfig's autotools config not respecting any passed
+    # -no_weak_imports linker flag. This may be improved in future versions of fontconfig
+    ../configure --prefix=$DEPLOYDIR/$arch CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib" --enable-libxml2 ac_cv_func_mkostemp=no
+    make -j"$NUMCPU" install
+    cd ..
+  done
+
+  # Install the first arch
+  cp -R $DEPLOYDIR/${ARCHS[0]}/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    cd $DEPLOYDIR
+    LIBS=()
+    for arch in ${ARCHS[*]}; do
+      LIBS+=($arch/lib/libfontconfig.dylib)
+    done
+    lipo -create ${LIBS[@]} -output lib/libfontconfig.dylib
+  fi
+
+  # Remove temporary folders
+  for arch in ${ARCHS[*]}; do
+    rm -rf $DEPLOYDIR/$arch
+  done
+
   install_name_tool -id @rpath/libfontconfig.dylib $DEPLOYDIR/lib/libfontconfig.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/fontconfig.version
 }
