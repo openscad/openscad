@@ -298,28 +298,22 @@ build_mpfr()
     arch=${ARCHS[$i]}
     mkdir build-$arch
     cd build-$arch
-    ../configure --prefix=$DEPLOYDIR/$arch --with-gmp=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --build=$LOCAL_ARCH-apple-darwin --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
-    make -j"$NUMCPU" install
+    ../configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --build=$LOCAL_ARCH-apple-darwin --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
+    make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
 
   # Install the first arch
-  cp -R $DEPLOYDIR/${ARCHS[0]}/* $DEPLOYDIR
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
 
   # If we're building for multiple archs, create fat binaries
   if (( ${#ARCHS[@]} > 1 )); then
-    cd $DEPLOYDIR
-    MPFRLIBS=()
+    LIBS=()
     for arch in ${ARCHS[*]}; do
-      MPFRLIBS+=($arch/lib/libmpfr.dylib)
+      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libmpfr.dylib)
     done
-    lipo -create ${MPFRLIBS[@]} -output lib/libmpfr.dylib
+    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libmpfr.dylib
   fi
-
-  # Remove temporary folders
-  for arch in ${ARCHS[*]}; do
-    rm -rf $DEPLOYDIR/$arch
-  done
 
   install_name_tool -id @rpath/libmpfr.dylib $DEPLOYDIR/lib/libmpfr.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/mpfr.version
