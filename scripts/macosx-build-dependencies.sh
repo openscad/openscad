@@ -559,9 +559,29 @@ build_libuuid()
   tar xzf uuid-$version.tar.gz
   cd uuid-$version
   patch -p1 < $OPENSCADDIR/patches/uuid-1.6.2.patch
-  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" --prefix $DEPLOYDIR --without-perl --without-php --without-pgsql
-  make -j"$NUMCPU"
-  make install
+
+  # Build each arch separately
+  for arch in ${ARCHS[*]}; do
+    mkdir build-$arch
+    cd build-$arch
+    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --without-perl --without-php --without-pgsql
+    make -j"$NUMCPU"
+    make install DESTDIR=$PWD/install/
+    cd ..
+  done
+
+  # Install the first arch
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    LIBS=()
+    for arch in ${ARCHS[*]}; do
+      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libuuid.dylib)
+    done
+    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libuuid.dylib
+  fi
+
   install_name_tool -id @rpath/libuuid.dylib $DEPLOYDIR/lib/libuuid.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libuuid.version
 }
