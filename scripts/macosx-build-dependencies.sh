@@ -991,6 +991,7 @@ if $OPTION_ARM64 || $OPTION_X86_64; then
     fi
 else
     ARCHS+=($LOCAL_ARCH)
+    GNU_ARCHS+=($LOCAL_ARCH)
 fi
 ARCHS_COMBINED=$(IFS=\; ; echo "${ARCHS[*]}")
 echo "Building on $LOCAL_ARCH for $ARCHS_COMBINED"
