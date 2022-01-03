@@ -236,6 +236,11 @@ build_qt5()
 	done
 	lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/$framework.framework/Versions/Current/$framework
     done
+    # We also need to merge plugins into universal binaries
+    for plugin in $(find $DEPLOYDIR/plugins -name "*.dylib"); do
+	libname=$(basename $plugin)
+	lipo -create $(find build-*/install -name $libname) -output $plugin
+    done
   fi
 
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/qt5.version
