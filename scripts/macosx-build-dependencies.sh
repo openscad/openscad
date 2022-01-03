@@ -606,28 +606,22 @@ build_fontconfig()
     cd build-$arch
     # FIXME: The "ac_cv_func_mkostemp=no" is a workaround for fontconfig's autotools config not respecting any passed
     # -no_weak_imports linker flag. This may be improved in future versions of fontconfig
-    ../configure --prefix=$DEPLOYDIR/$arch CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib" --enable-libxml2 ac_cv_func_mkostemp=no
-    make -j"$NUMCPU" install
+    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib" --enable-libxml2 ac_cv_func_mkostemp=no
+    make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
 
   # Install the first arch
-  cp -R $DEPLOYDIR/${ARCHS[0]}/* $DEPLOYDIR
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
 
   # If we're building for multiple archs, create fat binaries
   if (( ${#ARCHS[@]} > 1 )); then
-    cd $DEPLOYDIR
     LIBS=()
     for arch in ${ARCHS[*]}; do
-      LIBS+=($arch/lib/libfontconfig.dylib)
+      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libfontconfig.dylib)
     done
-    lipo -create ${LIBS[@]} -output lib/libfontconfig.dylib
+    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libfontconfig.dylib
   fi
-
-  # Remove temporary folders
-  for arch in ${ARCHS[*]}; do
-    rm -rf $DEPLOYDIR/$arch
-  done
 
   install_name_tool -id @rpath/libfontconfig.dylib $DEPLOYDIR/lib/libfontconfig.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/fontconfig.version
