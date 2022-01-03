@@ -720,17 +720,25 @@ build_glib2()
   tar xJf "glib-$version.tar.xz"
   cd "glib-$version"
 
-  # meson doesn't handle universal builds very well, so we'll build two separate binaries and lipo them together
-  meson setup --prefix $DEPLOYDIR --cross-file $OPENSCADDIR/scripts/macos-x86_64.txt --force-fallback-for libpcre -Dgtk_doc=false -Dman=false -Ddtrace=false -Dtests=false build
-  meson compile -C build
-  meson install -C build
+  # Build each arch separately
+  for arch in ${ARCHS[*]}; do
+    sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
+    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt --force-fallback-for libpcre -Dgtk_doc=false -Dman=false -Ddtrace=false -Dtests=false build-$arch
+    meson compile -C build-$arch
+    DESTDIR=install/ meson install -C build-$arch
+  done
 
-  meson setup --prefix $DEPLOYDIR/arm64 --cross-file $OPENSCADDIR/scripts/macos-arm64.txt --force-fallback-for libpcre -Dgtk_doc=false -Dman=false -Ddtrace=false -Dtests=false build-arm64
-  meson compile -C build-arm64
-  meson install -C build-arm64
+  # Install the first arch
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
 
-  lipo -create $DEPLOYDIR/lib/libglib-2.0.0.dylib $DEPLOYDIR/arm64/lib/libglib-2.0.0.dylib -output $DEPLOYDIR/lib/libglib-2.0.0.dylib
-  rm -rf $DEPLOYDIR/arm64
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    LIBS=()
+    for arch in ${ARCHS[*]}; do
+      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libglib-2.0.dylib)
+    done
+    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libglib-2.0.dylib
+  fi
 
   install_name_tool -id @rpath/libglib-2.0.dylib $DEPLOYDIR/lib/libglib-2.0.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/glib2.version
