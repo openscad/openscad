@@ -356,15 +356,13 @@ build_boost()
   tar xjf boost_$bversion.tar.bz2
   cd boost_$bversion
 
-  ARCH_CFLAGS=()
-  ARCH_LINKFLAGS=()
+  ARCH_FLAGS=()
   for arch in ${ARCHS[*]}; do
-    ARCH_CFLAGS+=(cflags=-arch=$arch)
-    ARCH_LINKFLAGS+=(linkflags=-arch=$arch)
+    ARCH_FLAGS+=(-arch $arch)
   done
 
   ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,chrono,system,regex,date_time,atomic
-  ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags=-mmacosx-version-min=$MAC_OSX_VERSION_MIN ${ARCH_CFLAGS[@]} linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN  -headerpad_max_install_names" ${ARCH_LINKFLAGS[@]} install
+  ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN ${ARCH_FLAGS[*]}" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN ${ARCH_FLAGS[*]} -headerpad_max_install_names" install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/boost.version
 }
 
