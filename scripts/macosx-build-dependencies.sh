@@ -764,8 +764,28 @@ build_hidapi()
   unzip "hidapi-$version.zip"
   cd "hidapi-hidapi-$version"
   ./bootstrap # Needed when building from github sources
-  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" --prefix=$DEPLOYDIR
-  make -j"$NUMCPU" install
+
+  # Build each arch separately
+  for arch in ${ARCHS[*]}; do
+    mkdir build-$arch
+    cd build-$arch
+    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN"
+    make -j"$NUMCPU" install DESTDIR=$PWD/install/
+    cd ..
+  done
+
+  # Install the first arch
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    LIBS=()
+    for arch in ${ARCHS[*]}; do
+      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libhidapi.dylib)
+    done
+    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libhidapi.dylib
+  fi
+
   install_name_tool -id @rpath/libhidapi.dylib $DEPLOYDIR/lib/libhidapi.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/hidapi.version
 }
