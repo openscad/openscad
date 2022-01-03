@@ -198,7 +198,12 @@ build_qt5()
   patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15.2-macos-tabbar.patch
   patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-macos-CGColorSpace.patch
   patch -d qtbase -p1 < $OPENSCADDIR/patches/qt5/qt-split-arch.patch
-  ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
+
+  # Build each arch separately
+  for arch in ${ARCHS[*]}; do
+    mkdir build-$arch
+    cd build-$arch
+    ../configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-cups \
 		-skip qt3d -skip qtactiveqt -skip qtandroidextras -skip qtcharts -skip qtconnectivity -skip qtdatavis3d \
@@ -212,9 +217,27 @@ build_qt5()
 		-no-feature-linguist -no-feature-makeqpf -no-feature-qev -no-feature-qtattributionsscanner \
 		-no-feature-qtdiag -no-feature-qtpaths -no-feature-qtplugininfo \
 		-no-feature-openal -no-feature-avfoundation -no-feature-gstreamer \
-		-device-option QMAKE_APPLE_DEVICE_ARCHS=$ARCHS_COMBINED
-  make -j"$NUMCPU" 
-  make install
+		-device-option QMAKE_APPLE_DEVICE_ARCHS=$arch
+    make -j"$NUMCPU"
+    make -j"$NUMCPU" install INSTALL_ROOT=$PWD/install/
+    cd ..
+  done
+
+  # Install the first arch
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    frameworks="QtConcurrent QtCore QtDBus QtGamepad QtGui QtMacExtras QtMultimedia QtMultimediaWidgets QtNetwork QtOpenGL QtPrintSupport QtSql QtSvg QtTest QtWidgets QtXml"
+    for framework in $frameworks; do
+	LIBS=()
+	for arch in ${ARCHS[*]}; do
+	    LIBS+=(build-$arch/install/$DEPLOYDIR/lib/$framework.framework/Versions/Current/$framework)
+	done
+	lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/$framework.framework/Versions/Current/$framework
+    done
+  fi
+
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/qt5.version
 }
 
@@ -983,6 +1006,9 @@ fi
 
 echo "Using basedir:" $BASEDIR
 mkdir -p $SRCDIR $DEPLOYDIR $DEPLOYDIR/share/macosx-build-dependencies
+# Convert DEPLOYDIR to canonical path as "make install" doesn't always like ..s in folder names
+DEPLOYDIR=$(cd "$DEPLOYDIR" ; pwd -P)
+echo "Using deploydir:" $DEPLOYDIR
 
 # Only build deploy packages in deploy mode
 if $OPTION_DEPLOY; then
