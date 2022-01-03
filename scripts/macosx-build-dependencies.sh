@@ -30,7 +30,8 @@ OPTION_FORCE=0
 
 PACKAGES=(
     "double_conversion 3.1.5"
-    "eigen 3.3.7"
+    "boost 1.74.0"
+    "eigen 3.4.0"
     "gmp 6.2.1"
     "mpfr 4.0.2"
     "glew 2.1.0"
@@ -46,7 +47,6 @@ PACKAGES=(
     "hidapi 0.11.0"
     "lib3mf 1.8.1"
     "glib2 2.56.3"
-    "boost 1.74.0"
     "pixman 0.40.0"
     "cairo 1.16.0"
     "cgal 5.3"
