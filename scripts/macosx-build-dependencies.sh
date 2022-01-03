@@ -823,10 +823,29 @@ build_pixman()
   fi
   tar xzf "${PIXMAN_FILENAME}"
   cd "$PIXMAN_DIR"
-  # libpng is only used for tests, disabling to kill linker warnings since we don't build libpng ourselves
-  ./configure CC="cc -target $ARCHS_COMBINED-apple-macos$MAC_OSX_VERSION_MIN" --prefix=$DEPLOYDIR --disable-libpng
-  make -j"$NUMCPU" install
-  otool -L $DEPLOYDIR/lib/"libpixman-1.dylib"
+
+  # Build each arch separately
+  for arch in ${ARCHS[*]}; do
+    mkdir build-$arch
+    cd build-$arch
+    # libpng is only used for tests, disabling to kill linker warnings since we don't build libpng ourselves
+    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --disable-libpng
+    make -j"$NUMCPU" install DESTDIR=$PWD/install/
+    cd ..
+  done
+
+  # Install the first arch
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
+
+  # If we're building for multiple archs, create fat binaries
+  if (( ${#ARCHS[@]} > 1 )); then
+    LIBS=()
+    for arch in ${ARCHS[*]}; do
+      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libpixman-1.dylib)
+    done
+    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libpixman-1.dylib
+  fi
+
   install_name_tool -id @rpath/libpixman-1.dylib $DEPLOYDIR/lib/"libpixman-1.dylib"
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/pixman.version
 }
