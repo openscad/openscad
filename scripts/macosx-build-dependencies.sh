@@ -326,7 +326,7 @@ build_mpfr()
     arch=${ARCHS[$i]}
     mkdir build-$arch
     cd build-$arch
-    ../configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --build=$LOCAL_ARCH-apple-darwin --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
+    ../configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --build=$LOCAL_GNU_ARCH-apple-darwin --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
     make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
@@ -988,6 +988,12 @@ else
 fi
 
 LOCAL_ARCH=`uname -m`
+if [[ $LOCAL_ARCH == "arm64" ]]; then
+    LOCAL_GNU_ARCH=aarch64
+else
+    LOCAL_GNU_ARCH=$LOCAL_ARCH
+fi
+
 ARCHS=()
 # Some older autotools doesn't recognize arm64
 GNU_ARCHS=()
@@ -1002,7 +1008,7 @@ if $OPTION_ARM64 || $OPTION_X86_64; then
     fi
 else
     ARCHS+=($LOCAL_ARCH)
-    GNU_ARCHS+=($LOCAL_ARCH)
+    GNU_ARCHS+=($LOCAL_GNU_ARCH)
 fi
 ARCHS_COMBINED=$(IFS=\; ; echo "${ARCHS[*]}")
 echo "Building on $LOCAL_ARCH for $ARCHS_COMBINED"
