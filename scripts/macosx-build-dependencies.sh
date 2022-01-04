@@ -258,8 +258,7 @@ build_qscintilla()
   fi
   tar xzf "${QSCINTILLA_FILENAME}"
   cd QScintilla*/src
-  #patch -p2 < $OPENSCADDIR/patches/QScintilla-2.9.3-xcode8.patch
-  qmake qscintilla.pro QMAKE_APPLE_DEVICE_ARCHS="arm64 x86_64"
+  qmake qscintilla.pro QMAKE_APPLE_DEVICE_ARCHS="${ARCHS[*]}"
   make -j"$NUMCPU" install
   install_name_tool -id @rpath/libqscintilla2_qt5.dylib $DEPLOYDIR/lib/libqscintilla2_qt5.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/qscintilla.version
@@ -433,7 +432,7 @@ build_opencsg()
   tar xzf OpenCSG-$version.tar.gz
   cd OpenCSG-$version
   patch -p1 < $OPENSCADDIR/patches/OpenCSG-$version-MacOSX-port.patch
-  qmake -r INSTALLDIR=$DEPLOYDIR QMAKE_APPLE_DEVICE_ARCHS="arm64 x86_64"
+  qmake -r INSTALLDIR=$DEPLOYDIR QMAKE_APPLE_DEVICE_ARCHS="${ARCHS[*]}"
   make install
   install_name_tool -id @rpath/libopencsg.dylib $DEPLOYDIR/lib/libopencsg.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/opencsg.version
