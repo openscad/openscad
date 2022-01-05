@@ -685,7 +685,7 @@ build_cairo()
         --enable-xlib=no --enable-xlib-xrender=no --enable-xcb=no \
         --enable-xlib-xcb=no --enable-xcb-shm=no --enable-win32=no \
         --enable-win32-font=no --enable-png=no --enable-ps=no \
-        --enable-svg=no
+        --enable-svg=no --enable-gobject=no
   make -j"$NUMCPU" install
   otool -L $DEPLOYDIR/lib/libcairo.dylib
   install_name_tool -id @rpath/libcairo.dylib $DEPLOYDIR/lib/libcairo.dylib
