@@ -65,7 +65,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"file", "layer", "convexity", "origin", "scale"},
-                                            {"width", "height", "filename", "layername", "center", "dpi"}
+                                            {"width", "height", "filename", "layername", "center", "dpi", "id"}
                                             );
 
   const auto& v = parameters["file"];
@@ -111,6 +111,12 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     } else {
       node->layername = "";
     }
+  }
+  const auto& idval = parameters["id"];
+  if (idval.isDefined()) {
+    node->id = idval.toString();
+  } else {
+    node->id = "";
   }
   node->convexity = (int)parameters["convexity"].toDouble();
 
@@ -191,7 +197,7 @@ const Geometry *ImportNode::createGeometry() const
     break;
   }
   case ImportType::SVG: {
-    g = import_svg(this->fn, this->fs, this->fa, this->filename, this->dpi, this->center, loc);
+    g = import_svg(this->fn, this->fs, this->fa, this->filename, this->dpi, this->center, this->id, loc);
     break;
   }
   case ImportType::DXF: {
@@ -221,8 +227,11 @@ std::string ImportNode::toString() const
 
   stream << this->name();
   stream << "(file = " << this->filename
-         << ", layer = " << QuotedString(this->layername)
-         << ", origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "]";
+         << ", layer = " << QuotedString(this->layername);
+  if (!this->id.empty()) {
+    stream << ", id = " << QuotedString(this->id);
+  }
+  stream << ", origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "]";
   if (this->type == ImportType::SVG) {
     stream << ", center = " << (this->center ? "true" : "false")
            << ", dpi = " << this->dpi;

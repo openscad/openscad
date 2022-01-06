@@ -107,10 +107,10 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list, 
       auto s = shared_ptr<shape>(shape::create_from_name(name));
       if (s) {
         attr_map_t attrs = read_attributes(reader);
-        s->set_attrs(attrs, context);
         if (!stack.empty()) {
           stack.back()->add_child(s.get());
         }
+        s->set_attrs(attrs, context);
         if (s->is_container()) {
           stack.push_back(s);
         }
@@ -166,14 +166,14 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list, 
     attr_map_t attrs;
     attrs["text"] = reinterpret_cast<const char *>(value);
     auto s = shared_ptr<shape>(shape::create_from_name("data"));
+    if (!stack.empty()) {
+      stack.back()->add_child(s.get());
+    }
     s->set_attrs(attrs, context);
     if (!in_defs) {
       shape_list->push_back(s);
     } else {
       temp_defs_storage->push_back(s);
-    }
-    if (!stack.empty()) {
-      stack.back()->add_child(s.get());
     }
   }
   break;
