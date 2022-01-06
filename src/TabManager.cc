@@ -7,6 +7,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QClipboard>
+#include <QDesktopServices>
 #include <Qsci/qscicommand.h>
 #include <Qsci/qscicommandset.h>
 
@@ -361,6 +362,16 @@ void TabManager::copyFilePath()
 	});
 }
 
+void TabManager::openFolder()
+{
+	applyAction(QObject::sender(), [](int, EditorInterface *edt){
+		auto dir = QFileInfo(edt->filepath).dir();
+		if (dir.exists()) {
+			QDesktopServices::openUrl(QUrl::fromLocalFile(dir.absolutePath()));
+		}
+	});
+}
+
 void TabManager::closeTab()
 {
 	applyAction(QObject::sender(), [this](int idx, EditorInterface *){
@@ -404,6 +415,12 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
 	copyFilePathAction->setText(_("Copy full path"));
 	connect(copyFilePathAction, SIGNAL(triggered()), SLOT(copyFilePath()));
 
+	QAction *openFolderAction = new QAction(tabWidget);
+	openFolderAction->setData(idx);
+	openFolderAction->setEnabled(!edt->filepath.isEmpty());
+	openFolderAction->setText(_("Open folder"));
+	connect(openFolderAction, SIGNAL(triggered()), SLOT(openFolder()));
+
 	QAction *closeAction = new QAction(tabWidget);
 	closeAction->setData(idx);
 	closeAction->setText(_("Close Tab"));
@@ -412,6 +429,9 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
 	QMenu menu;
 	menu.addAction(copyFileNameAction);
 	menu.addAction(copyFilePathAction);
+	menu.addSeparator();
+	menu.addAction(openFolderAction);
+	menu.addSeparator();
 	menu.addAction(closeAction);
 
 	int x1, y1, x2, y2;
