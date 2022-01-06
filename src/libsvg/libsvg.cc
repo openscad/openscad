@@ -145,7 +145,7 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t* defs_lookup_list, 
 			in_defs = false;
 		}
 
-		if (std::string("g") == name) {
+		if (std::string("g") == name || std::string("svg") == name) {
 			stack.pop_back();
 		} else if (std::string("tspan") == name) {
 			stack.pop_back();

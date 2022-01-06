@@ -161,6 +161,7 @@ Polygon2d *import_svg(double fn, double fs, double fa,
 			}
 			polygons.push_back(poly);
 		}
+		libsvg_free(shapes);
 		return ClipperUtils::apply(polygons, ClipperLib::ctUnion);
 	} catch (const std::exception& e) {
 		LOG(message_group::Error,Location::NONE,"","%1$s, import() at line %2$d",e.what(),loc.firstLine());
