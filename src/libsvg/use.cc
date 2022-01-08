@@ -68,7 +68,7 @@ use::set_attrs(attr_map_t& attrs, void *context)
 
 	//apply the x/y coordinates to all the children by using a transform
 	std::stringstream s;
-	s << "translate(" << this->x << "," << this->y << ")";
+	s << this->transform << " translate(" << this->x << "," << this->y << ")";
 	this->transform = s.str();
 }
 
