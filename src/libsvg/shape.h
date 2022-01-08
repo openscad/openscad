@@ -72,6 +72,7 @@ protected:
     std::string stroke_linecap;
     std::string stroke_linejoin;
     std::string style;
+    bool excluded;
 
     double get_stroke_width() const;
     ClipperLib::EndType get_stroke_linecap() const;
@@ -96,6 +97,7 @@ public:
 
     virtual const path_list_t& get_path_list() const { return path_list; }
 
+    virtual bool is_excluded() const;
     virtual bool is_container() const { return false; }
 
     virtual void apply_transform();
