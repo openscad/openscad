@@ -12,7 +12,7 @@
 namespace PolysetUtils {
 
 	// Project all polygons (also back-facing) into a Polygon2d instance.
-  // It's important to select all faces, since filtering by normal vector here
+	// It is important to select all faces, since filtering by normal vector here
 	// will trigger floating point incertainties and cause problems later.
 	Polygon2d *project(const PolySet &ps) {
 		auto poly = new Polygon2d;
@@ -40,7 +40,6 @@ namespace PolysetUtils {
 	 are perfectly coplanar (triangles, for example), we can get CGAL to accept
 	 the polyhedron() input.
 */
-	
 /* Given a 3D PolySet with near planar polygonal faces, tessellate the
 	 faces. As of writing, our only tessellation method is triangulation
 	 using CGAL's Constrained Delaunay algorithm. This code assumes the input
@@ -55,6 +54,12 @@ namespace PolysetUtils {
 		Reindexer<Vector3f> allVertices;
 		std::vector<std::vector<IndexedFace>> polygons;
 
+        // best estimate without iterating all polygons, to reduce reallocations
+        polygons.reserve( inps.polygons.size() );
+
+        // minimum estimate without iterating all polygons, to reduce reallocation and rehashing
+        allVertices.reserve( 3 * inps.polygons.size() );
+
 		for (const auto &pgon : inps.polygons) {
 			if (pgon.size() < 3) {
 				degeneratePolygons++;
@@ -67,6 +72,7 @@ namespace PolysetUtils {
 			auto &currface = faces.back();
 			for (const auto &v : pgon) {
 				// Create vertex indices and remove consecutive duplicate vertices
+                // NOTE: a lot of time is spent here (cast+hash+lookup+insert+rehash)
 				auto idx = allVertices.lookup(v.cast<float>());
 				if (currface.empty() || idx != currface.back()) currface.push_back(idx);
 			}
@@ -79,25 +85,38 @@ namespace PolysetUtils {
 
 		// Tessellate indexed mesh
 		const auto& verts = allVertices.getArray();
-		std::vector<IndexedTriangle> allTriangles;
+        
+        // we will reuse this memory instead of reallocating for each polygon
+        std::vector<IndexedTriangle> triangles;
+        
+        // Estimate how many polygons we will need and preallocate.
+        // This is usually an undercount, but still prevents a lot of reallocations.
+        outps.polygons.reserve( polygons.size() );
+
 		for (const auto &faces : polygons) {
-			std::vector<IndexedTriangle> triangles;
-			auto err = false;
 			if (faces[0].size() == 3) {
-				triangles.emplace_back(faces[0][0], faces[0][1], faces[0][2]);
+                // trivial case - triangles cannot be concave or have holes
+                outps.append_poly();
+                outps.append_vertex(verts[faces[0][0]]);
+                outps.append_vertex(verts[faces[0][1]]);
+                outps.append_vertex(verts[faces[0][2]]);
 			}
+            // Quads seem trivial, but can be concave, and can have degenerate cases.
+            // So everything more complex than triangles goes into the general case.
 			else {
-				err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
-			}
-			if (!err) {
-				for (const auto &t : triangles) {
-					outps.append_poly();
-					outps.append_vertex(verts[t[0]]);
-					outps.append_vertex(verts[t[1]]);
-					outps.append_vertex(verts[t[2]]);
-				}
+                triangles.clear();
+				auto err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
+                if (!err) {
+                    for (const auto &t : triangles) {
+                        outps.append_poly();
+                        outps.append_vertex(verts[t[0]]);
+                        outps.append_vertex(verts[t[1]]);
+                        outps.append_vertex(verts[t[2]]);
+                    }
+                }
 			}
 		}
+        
 		if (degeneratePolygons > 0) {
 			LOG(message_group::Warning,Location::NONE,"","PolySet has degenerate polygons");
 		}

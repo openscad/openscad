@@ -9,12 +9,12 @@
         "line-background" : "#f8f8f8"
     },
     "colors" : {
-        "keyword1" : "Green",
-        "keyword2" : "Green",
-        "keyword3" : "DarkBlue",
-        "commentline" : "DarkCyan",
-        "commentdoc" : "DarkCyan",
-        "commentdockeyword" : "DarkCyan",
+        "keyword1" : "#002dff",
+        "keyword2" : "#002dff",
+        "keyword3" : "#002dff",
+        "commentline" : "#057100",
+        "commentdoc" : "#057100",
+        "commentdockeyword" : "#057100",
 
         "comment" : "#057100",
         "number" : "#5d2883",
