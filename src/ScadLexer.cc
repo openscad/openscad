@@ -303,12 +303,12 @@ void ScadLexer2::highlighting(int start, const std::string& input, lexertl::smat
 	int style = results.id;
 
 #if DEBUG_LEXERTL
-    std::cout << "highlighting ( " << style << " ):" << token << std::endl;
+	QString glyphs = QString::fromStdString(token);
+    std::cout << "highlighting ( " << style << " ):" << token << " [ " << token.length() << " bytes, " << glyphs.length() << " glyphs ]" << std::endl;
 #endif
 
-	QString word = QString::fromStdString(token);
 	startStyling(start + std::distance(input.begin(), results.first));
-	setStyling(word.length(), style);
+	setStyling(token.length(), style);
 }
 
 QColor ScadLexer2::defaultColor(int style) const
