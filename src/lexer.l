@@ -173,7 +173,7 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); }
 \\r						{ stringcontents += '\r'; }
 \\\\					{ stringcontents += '\\'; }
 \\\"					{ stringcontents += '"'; }
-{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; stringcontents += lexertext; }
+{UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ stringcontents += lexertext; }
 \\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
 \\u{H}{4}|\\U{H}{6}     { char buf[8]; to_utf8(lexertext + 2, buf); stringcontents += buf; }
 [^\\\n\"]				{ stringcontents += lexertext; }
@@ -188,14 +188,14 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); }
 \/\/					{ BEGIN(cond_lcomment); }
 <cond_lcomment>{
 \n                      { BEGIN(INITIAL); LOCATION_ADD_LINES(parserlloc, yyleng); }
-{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
+{UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ }
 [^\n]
 }
 
 "/*" BEGIN(cond_comment);
 <cond_comment>{
 "*/"                    { BEGIN(INITIAL); }
-{UNICODE}               { parser_error_pos -= strlen(lexertext) - 1; }
+{UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ }
 .
 [\n]                    { LOCATION_ADD_LINES(parserlloc, yyleng); }
 <<EOF>>                 { parsererror("Unterminated comment"); return TOK_ERROR; }
