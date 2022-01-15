@@ -179,7 +179,11 @@ if (USE_MIMALLOC)
 
   set(MI_DEBUG_FULL        OFF CACHE BOOL "" FORCE) # Use full internal heap invariant checking in DEBUG mode (expensive)
   set(MI_PADDING           ON  CACHE BOOL "" FORCE) # Enable padding to detect heap block overflow (used only in DEBUG mode)
-  set(MI_OVERRIDE          ON  CACHE BOOL "" FORCE) # Override the standard malloc interface (e.g. define entry points for malloc() etc)
+  if (APPLE)
+    set(MI_OVERRIDE        OFF CACHE BOOL "" FORCE) # Override the standard malloc interface (e.g. define entry points for malloc() etc)
+  else()
+    set(MI_OVERRIDE        ON  CACHE BOOL "" FORCE)
+  endif()
   set(MI_XMALLOC           OFF CACHE BOOL "" FORCE) # Enable abort() call on memory allocation failure by default
   set(MI_SHOW_ERRORS       OFF CACHE BOOL "" FORCE) # Show error and warning messages by default (only enabled by default in DEBUG mode)
   set(MI_USE_CXX           OFF CACHE BOOL "" FORCE) # Use the C++ compiler to compile the library (instead of the C compiler)
