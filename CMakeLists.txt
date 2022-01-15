@@ -203,12 +203,12 @@ if (USE_MIMALLOC)
   endif()
 
   if (MI_BUILD_STATIC)
-    # put before all other libraries by using PREPEND
-    list(PREPEND COMMON_LIBRARIES mimalloc-static)
+    # put before all other libraries
+    list(INSERT COMMON_LIBRARIES 0 mimalloc-static)
   elseif(MI_BUILD_OBJECT) # (for Unix-like systems only?)
     # put mimalloc-obj before everything else in Sources
-    #list(PREPEND Sources $<TARGET_OBJECTS:mimalloc-obj>)
-    list(PREPEND COMMON_LIBRARIES $<TARGET_OBJECTS:mimalloc-obj>)
+    #list(INSERT Sources 0 $<TARGET_OBJECTS:mimalloc-obj>)
+    list(INSERT COMMON_LIBRARIES 0 $<TARGET_OBJECTS:mimalloc-obj>)
     list(APPEND COMMON_LIBRARIES pthread)
   endif()
 endif()
