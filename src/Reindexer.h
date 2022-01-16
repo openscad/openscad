@@ -37,7 +37,14 @@ public:
   }
 
   /*!
-    Return the new element array.
+    Reserve the requested size for the new element map
+  */
+  void reserve(std::size_t __n) {
+    return this->map.reserve( __n );
+  }
+
+  /*!
+    Return a copy of the new element array
   */
   const std::vector<T>& getArray() {
     this->vec.resize(this->map.size());
