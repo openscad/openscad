@@ -157,8 +157,11 @@ if (MSVC)
   if(VS_DEBUGGING)
     set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/..")
   endif()
-  message(STATUS "Running the Visual Studio 'Build|install ${PROJECT_NAME}' menu command will copy resources to '${CMAKE_INSTALL_PREFIX}'.
-    Change this behaviour by editing CMakeSettings.json and modifying the '-DVS_DEBUGGING=...' BOOLEAN setting in the \"cmakeCommandArgs\" field.")
+
+  message(STATUS "Running the Visual Studio 'Build|install ${PROJECT_NAME}' menu command will copy dependencies and resources to '${CMAKE_INSTALL_PREFIX}'.
+    You may change this behaviour by editing CMakeSettings.json to:
+      (a) modify the '-DVS_DEBUGGING=...' BOOLEAN setting in the \"cmakeCommandArgs\" field; and/or
+      (b) modify the X_VCPKG_APPLOCAL_DEPS_INSTALL flag in the \"variables\" section (see https://github.com/Microsoft/vcpkg/issues/1653).")
 endif()
 
 macro(find_graphics)
