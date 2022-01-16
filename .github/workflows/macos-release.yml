@@ -21,7 +21,7 @@ jobs:
     - name: Install Homebrew packages
       run: |
         brew update
-        brew install automake
+        brew install automake meson
     - name: Cache Libraries
       id: cache-libraries
       uses: actions/cache@v2

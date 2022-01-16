@@ -120,7 +120,7 @@ jobs:
           name: Install Homebrew packages
           command: |
             brew update
-            brew install automake libtool cmake pkg-config wget
+            brew install automake libtool cmake pkg-config wget meson
       - restore_cache:
           keys:
             # CircleCI library caching. If we ever need invalidate the cache (e.g. to remove any old files 
