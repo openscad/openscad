@@ -39,7 +39,7 @@ STL and OFF file formats.
     - [Building OpenSCAD](#building-openscad)
         - [Prerequisites](#prerequisites)
         - [Getting the source code](#getting-the-source-code)
-        - [Building for macOS](#building-for-mac-os-x)
+        - [Building for macOS](#building-for-macos)
         - [Building for Linux/BSD](#building-for-linuxbsd)
         - [Building for Linux/BSD on systems with older or missing dependencies](#building-for-linuxbsd-on-systems-with-older-or-missing-dependencies)
         - [Building for Windows](#building-for-windows)

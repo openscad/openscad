@@ -52,7 +52,7 @@
 
 namespace libsvg {
 
-shape::shape() : parent(nullptr), x(0), y(0)
+shape::shape() : parent(nullptr), x(0), y(0), excluded(false)
 {
 }
 
@@ -103,6 +103,17 @@ shape::set_attrs(attr_map_t& attrs, void *context)
 	this->stroke_linecap = attrs["stroke-linecap"];
 	this->stroke_linejoin = attrs["stroke-linejoin"];
 	this->style = attrs["style"];
+
+	std::string display = get_style("display");
+	if (display.empty()) {
+		attr_map_t::const_iterator it = attrs.find("display");
+		if (it != attrs.end()) {
+			display = it->second;
+		}
+	}
+	if (display == "none") {
+		excluded = true;
+	}
 }
 
 const std::string
@@ -117,7 +128,9 @@ shape::get_style(std::string name) const
 		if (values.size() != 2) {
 			continue;
 		}
+		boost::trim(values[0]);
 		if (name == values[0]) {
+			boost::trim(values[1]);
 			return values[1];
 		}
 	}
@@ -240,6 +253,15 @@ shape::collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape 
 		matrices.insert(matrices.begin(), m.rbegin(), m.rend());
 		delete t;
 	}
+}
+
+bool
+shape::is_excluded() const
+{
+	for (const shape* s = this; s != nullptr; s = s->get_parent()) {
+		if (s->excluded) return true;
+	}
+	return false;
 }
 
 void

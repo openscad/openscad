@@ -145,7 +145,7 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t* defs_lookup_list, 
 			in_defs = false;
 		}
 
-		if (std::string("g") == name) {
+		if (std::string("g") == name || std::string("svg") == name) {
 			stack.pop_back();
 		} else if (std::string("tspan") == name) {
 			stack.pop_back();
@@ -167,7 +167,11 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t* defs_lookup_list, 
 		attrs["text"] = reinterpret_cast<const char *>(value);
 		auto s = shared_ptr<shape>(shape::create_from_name("data"));
 		s->set_attrs(attrs, context);
-		shape_list->push_back(s);
+		if (!in_defs) {
+			shape_list->push_back(s);
+		} else {
+			temp_defs_storage->push_back(s);
+		}
 		if (!stack.empty()) {
 			stack.back()->add_child(s.get());
 		}

@@ -379,7 +379,7 @@ void ScintillaEditor::highlightError(int error_pos)
 
 void ScintillaEditor::unhighlightLastError()
 {
-    auto totalLength = qsci->text().length();
+    auto totalLength = qsci->length();
     int line, index;
     qsci->lineIndexFromPosition(totalLength, &line, &index);
     qsci->clearIndicatorRange(0, 0, line, index, errorIndicatorNumber);
@@ -1345,7 +1345,7 @@ void ScintillaEditor::onCharacterThresholdChanged(int val)
 void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorData)
 {
     qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
-    qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->text().length());
+    qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->length());
     this->indicatorData = indicatorData;
 
     int idx = 0;
