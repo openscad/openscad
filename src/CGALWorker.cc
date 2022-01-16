@@ -29,6 +29,7 @@ void CGALWorker::start(const Tree &tree)
 
 void CGALWorker::work()
 {
+    // this is a worker thread: we don't want any exceptions escaping and crashing the app.
 	shared_ptr<const Geometry> root_geom;
 	try {
 		GeometryEvaluator evaluator(*this->tree);
@@ -40,6 +41,12 @@ void CGALWorker::work()
 	catch (const HardWarningException &e) {
 		LOG(message_group::None,Location::NONE,"","Rendering cancelled on first warning.");
 	}
+    catch (const std::exception &e) {
+		LOG(message_group::Error,Location::NONE,"","Rendering cancelled by exception %1$s", e.what());
+    }
+    catch (...) {
+		LOG(message_group::Error,Location::NONE,"","Rendering cancelled by unknown exception.");
+    }
 
 	emit done(root_geom);
 	thread->quit();
