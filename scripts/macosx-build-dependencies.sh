@@ -30,14 +30,15 @@ OPTION_FORCE=0
 
 PACKAGES=(
     "double_conversion 3.1.5"
-    "eigen 3.3.7"
+    "boost 1.74.0"
+    "eigen 3.4.0"
     "gmp 6.2.1"
     "mpfr 4.0.2"
     "glew 2.1.0"
     "gettext 0.21"
-    "libffi 3.4.2"
+    "libffi REMOVE"
     "freetype 2.9.1"
-    "ragel 6.10"
+    "ragel REMOVE"
     "harfbuzz 2.3.1"
     "libzip 1.8.0"
     "libxml2 REMOVE"
@@ -46,7 +47,6 @@ PACKAGES=(
     "hidapi 0.11.0"
     "lib3mf 1.8.1"
     "glib2 2.56.3"
-    "boost 1.74.0"
     "pixman 0.40.0"
     "cairo 1.16.0"
     "cgal 5.3"
@@ -100,8 +100,11 @@ check_version_file()
 {
     versionfile="$DEPLOYDIR/share/macosx-build-dependencies/$1.version"
     if [ -f $versionfile ]; then
-	[[ $(cat $versionfile) == $2 ]]
-	return $?
+	if [ -z "$2" ]; then
+	    return 0
+	elif [[ $(cat $versionfile) == $2 ]]; then
+	    return $?
+	fi
     else
 	return 1
     fi
@@ -241,7 +244,7 @@ build_gmp()
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
   # Note: We're building against the core2 CPU profile as that's the minimum required hardware for running OS X 10.9
-  ./configure --prefix=$DEPLOYDIR CFLAGS="--target=$ARCH-apple-macos13.0" LDFLAGS="-arch $ARCH" --enable-cxx --build=$ARCH-apple-darwin --host=$ARCH-apple-darwin17.0.0
+  ./configure --prefix=$DEPLOYDIR CFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN" --enable-cxx --build=$ARCH-apple-darwin --host=$ARCH-apple-darwin17.0.0
   make -j"$NUMCPU" install
 
   install_name_tool -id @rpath/libgmp.dylib $DEPLOYDIR/lib/libgmp.dylib
@@ -263,7 +266,7 @@ build_mpfr()
   tar xjf mpfr-$version.tar.bz2
   cd mpfr-$version
 
-  ./configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="--target=$ARCH-apple-macos13.0" LDFLAGS="-arch $ARCH"
+  ./configure --prefix=$DEPLOYDIR --with-gmp=$DEPLOYDIR CFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $ARCH -mmacos-version-min=$MAC_OSX_VERSION_MIN"
   make -j"$NUMCPU" install
 
   install_name_tool -id @rpath/libmpfr.dylib $DEPLOYDIR/lib/libmpfr.dylib
@@ -331,7 +334,7 @@ build_glew()
   tar xzf glew-$version.tgz
   cd glew-$version
   mkdir -p $DEPLOYDIR/lib/pkgconfig
-  make GLEW_DEST=$DEPLOYDIR CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCH" LDFLAGS.EXTRA="-install_name @rpath/libGLEW.dylib -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCH" POPT="-Os" STRIP= install
+  make GLEW_PREFIX=$DEPLOYDIR GLEW_DEST=$DEPLOYDIR CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCH" LDFLAGS.EXTRA="-install_name @rpath/libGLEW.dylib -mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCH" POPT="-Os" STRIP= install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/glew.version
 }
 
@@ -474,7 +477,7 @@ build_libzip()
 remove_libxml2()
 {
   echo "Removing libxml2..."
-  find $DEPLOYDIR -name "*libxml*" -exec rm -rf {} \;
+  find $DEPLOYDIR -name "*libxml*" -prune -exec rm -rf {} \;
 }
 
 build_libuuid()
@@ -517,23 +520,10 @@ build_fontconfig()
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/fontconfig.version
 }
 
-build_libffi()
+remove_libffi()
 {
-  version="$1"
-
-  echo "Building libffi $version..."
-  cd "$BASEDIR"/src
-  rm -rf "libffi-$version"
-  if [ ! -f "libffi-$version.tar.gz" ]; then
-    curl --insecure -LO "https://github.com/libffi/libffi/releases/download/v$version/libffi-$version.tar.gz"
-  fi
-  tar xzf "libffi-$version.tar.gz"
-  cd "libffi-$version"
-  ./configure --prefix="$DEPLOYDIR"
-  make -j$NUMCPU
-  make install
-  install_name_tool -id @rpath/libffi.dylib $DEPLOYDIR/lib/libffi.dylib
-  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libffi.version
+  echo "Removing libffi..."
+  find $DEPLOYDIR -type f -name "ffi*" -o -name "libffi*" -exec rm -f {} \;
 }
 
 build_gettext()
@@ -586,22 +576,10 @@ build_glib2()
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/glib2.version
 }
 
-build_ragel()
+remove_ragel()
 {
-  version=$1
-
-  echo "Building ragel $version..."
-  cd "$BASEDIR"/src
-  rm -rf "ragel-$version"
-  if [ ! -f "ragel-$version.tar.gz" ]; then
-    curl --insecure -LO "http://www.colm.net/files/ragel/ragel-$version.tar.gz"
-  fi
-  tar xzf "ragel-$version.tar.gz"
-  cd "ragel-$version"
-  ./configure --prefix="$DEPLOYDIR"
-  make -j$NUMCPU
-  make install
-  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/ragel.version
+  echo "Removing ragel..."
+  find $DEPLOYDIR -type f -name "ragel*" -exec rm -f {} \;
 }
 
 build_harfbuzz()
@@ -707,7 +685,7 @@ build_cairo()
         --enable-xlib=no --enable-xlib-xrender=no --enable-xcb=no \
         --enable-xlib-xcb=no --enable-xcb-shm=no --enable-win32=no \
         --enable-win32-font=no --enable-png=no --enable-ps=no \
-        --enable-svg=no
+        --enable-svg=no --enable-gobject=no
   make -j"$NUMCPU" install
   otool -L $DEPLOYDIR/lib/libcairo.dylib
   install_name_tool -id @rpath/libcairo.dylib $DEPLOYDIR/lib/libcairo.dylib
