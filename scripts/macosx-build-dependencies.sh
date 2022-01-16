@@ -102,7 +102,8 @@ check_version_file()
     if [ -f $versionfile ]; then
 	if [ -z "$2" ]; then
 	    return 0
-	elif [[ $(cat $versionfile) == $2 ]]; then
+	else
+	    [[ $(cat $versionfile) == $2 ]]
 	    return $?
 	fi
     else
