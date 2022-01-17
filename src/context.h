@@ -91,9 +91,13 @@ public:
 	const std::shared_ptr<const Context> &getParent() const { return this->parent; }
 	// This modifies the semantics of the context in an error-prone way. Use with caution.
 	void setParent(const std::shared_ptr<const Context>& parent) { this->parent = parent; }
+ 
+    void setAccountingAdded() { accountingAdded = true; }
 
 protected:
 	std::shared_ptr<const Context> parent;
+ 
+    bool accountingAdded = false; // avoiding bad accounting when exception threw in constructor  issue #3871
 
 public:
 #ifdef DEBUG
