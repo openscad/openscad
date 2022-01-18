@@ -126,9 +126,9 @@ jobs:
             # CircleCI library caching. If we ever need invalidate the cache (e.g. to remove any old files 
             # from a library cache), the safest, change the MACOS_CACHE_VERSION variable to a random value at
             # https://app.circleci.com/settings/project/github/openscad/openscad/environment-variables.
-            - macos-libraries-PR-x86_64-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
+            - macos-libraries-PR2-x86_64-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
             # Fetch the most recently saved cache
-            - macos-libraries-PR-x86_64-{{ .Environment.MACOS_CACHE_VERSION }}-
+            - macos-libraries-PR2-x86_64-{{ .Environment.MACOS_CACHE_VERSION }}-
       - run:
           name: Build Dependencies
           command: |
@@ -145,7 +145,7 @@ jobs:
       - save_cache:
           # Make sure to create a new cache entry, needed for incremental library builds and also
           # preventing full cache drop after 15 days.
-          key: macos-libraries-PR-x86_64-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}-{{ .BuildNum }}
+          key: macos-libraries-PR2-x86_64-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}-{{ .BuildNum }}
           paths:
             - /Users/distiller/libraries/install
       - run:
