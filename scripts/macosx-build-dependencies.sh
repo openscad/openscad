@@ -528,10 +528,11 @@ build_freetype()
   export FREETYPE_LIBS="-L$DEPLOYDIR/lib -lfreetype"
 
   # Build each arch separately
-  for arch in ${ARCHS[*]}; do
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
     mkdir build-$arch
     cd build-$arch
-    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --without-png --without-harfbuzz
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --without-png --without-harfbuzz --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
     make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
@@ -590,12 +591,17 @@ build_libuuid()
   tar xzf uuid-$version.tar.gz
   cd uuid-$version
   patch -p1 < $OPENSCADDIR/patches/uuid-1.6.2.patch
+  # Update old config.sub to get aarch64 support
+  cp $OPENSCADDIR/patches/uuid-config.sub .
 
   # Build each arch separately
-  for arch in ${ARCHS[*]}; do
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
     mkdir build-$arch
     cd build-$arch
-    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --without-perl --without-php --without-pgsql
+    # ac_cv_va_copy=yes is a workaround for a bug uuid's build system causing the va_copy() check
+    # to not work while cross compiling
+    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --without-perl --without-php --without-pgsql --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0 ac_cv_va_copy=yes
     make -j"$NUMCPU"
     make install DESTDIR=$PWD/install/
     cd ..
@@ -632,12 +638,13 @@ build_fontconfig()
   patch -p1 < $OPENSCADDIR/patches/fontconfig-arm64.patch
 
   # Build each arch separately
-  for arch in ${ARCHS[*]}; do
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
     mkdir build-$arch
     cd build-$arch
     # FIXME: The "ac_cv_func_mkostemp=no" is a workaround for fontconfig's autotools config not respecting any passed
     # -no_weak_imports linker flag. This may be improved in future versions of fontconfig
-    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib" --enable-libxml2 ac_cv_func_mkostemp=no
+    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib" --enable-libxml2  --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0 ac_cv_func_mkostemp=no
     make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
@@ -678,31 +685,27 @@ build_gettext()
   cd "gettext-$version"
 
   # Build each arch separately
-  for arch in ${ARCHS[*]}; do
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
     mkdir build-$arch
     cd build-$arch
-    ../configure --prefix=$DEPLOYDIR/$arch CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" CXXFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib" --disable-shared --with-included-glib --disable-java --disable-csharp
-    make -j"$NUMCPU" install
+    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" CXXFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib" --disable-shared --with-included-glib --disable-java --disable-csharp --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
+    make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
 
   # Install the first arch
-  cp -R $DEPLOYDIR/${ARCHS[0]}/* $DEPLOYDIR
+  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
 
   # If we're building for multiple archs, create fat binaries
   if (( ${#ARCHS[@]} > 1 )); then
     cd $DEPLOYDIR
-    INTLLIBS=()
+    LIBS=()
     for arch in ${ARCHS[*]}; do
-      INTLLIBS+=($arch/lib/libintl.a)
+      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libintl.a)
     done
-    lipo -create ${INTLLIBS[@]} -output lib/libintl.a
+    lipo -create ${LIBS[@]} -output lib/libintl.a
   fi
-
-  # Remove temporary folders
-  for arch in ${ARCHS[*]}; do
-    rm -rf $DEPLOYDIR/$arch
-  done
 
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/gettext.version
 }
@@ -766,10 +769,11 @@ build_harfbuzz()
   cd "harfbuzz-$version"
 
   # Build each arch separately
-  for arch in ${ARCHS[*]}; do
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
     mkdir build-$arch
     cd build-$arch
-    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" CXXFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no --with-coretext=auto --with-glib=no --disable-gtk-doc-html
+    PKG_CONFIG_LIBDIR="$DEPLOYDIR/lib/pkgconfig" ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" CXXFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no --with-coretext=auto --with-glib=no --disable-gtk-doc-html --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
     make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
@@ -805,10 +809,11 @@ build_hidapi()
   ./bootstrap # Needed when building from github sources
 
   # Build each arch separately
-  for arch in ${ARCHS[*]}; do
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
     mkdir build-$arch
     cd build-$arch
-    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN"
+    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
     make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
@@ -864,11 +869,12 @@ build_pixman()
   cd "$PIXMAN_DIR"
 
   # Build each arch separately
-  for arch in ${ARCHS[*]}; do
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
     mkdir build-$arch
     cd build-$arch
     # libpng is only used for tests, disabling to kill linker warnings since we don't build libpng ourselves
-    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --disable-libpng
+    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --disable-libpng --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
     make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
@@ -906,7 +912,8 @@ build_cairo()
   cd "$CAIRO_DIR"
 
   # Build each arch separately
-  for arch in ${ARCHS[*]}; do
+  for i in ${!ARCHS[@]}; do
+    arch=${ARCHS[$i]}
     mkdir build-$arch
     cd build-$arch
     ../configure --prefix=$DEPLOYDIR \
@@ -914,7 +921,8 @@ build_cairo()
         --enable-xlib=no --enable-xlib-xrender=no --enable-xcb=no \
         --enable-xlib-xcb=no --enable-xcb-shm=no --enable-win32=no \
         --enable-win32-font=no --enable-png=no --enable-ps=no \
-        --enable-svg=no --enable-gobject=no
+        --enable-svg=no --enable-gobject=no \
+        --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
     make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
