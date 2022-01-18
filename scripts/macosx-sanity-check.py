@@ -30,9 +30,7 @@ DEBUG = False
 
 cxxlib = None
 
-# FIXME: Until we have fat binary support, we cannot check for 10.13 as pure arm64 binaries don't support that
-#macos_version_min = '10.13'
-macos_version_min = '11.0'
+macos_version_min = '10.13'
 
 def usage():
     print("Usage: " + sys.argv[0] + " <executable>", sys.stderr)
@@ -127,14 +125,14 @@ def validate_lib(lib):
         return None
 
     # Check that both x86_64 and arm64 architectures exist
-#    p  = subprocess.Popen(["lipo", lib, "-verify_arch", "x86_64"], stdout=subprocess.PIPE, universal_newlines=True)
-#    output = p.communicate()[0]
-#    if p.returncode != 0:
-#        print("Error: x86_64 architecture not found in " + lib)
-#        return False
+    p = subprocess.Popen(["lipo", lib, "-verify_arch", "x86_64"], stdout=subprocess.PIPE, universal_newlines=True)
+    p.communicate()[0]
+    if p.returncode != 0:
+        print("Error: x86_64 architecture not found in " + lib)
+        return False
 
     p  = subprocess.Popen(["lipo", lib, "-verify_arch", "arm64"], stdout=subprocess.PIPE, universal_newlines=True)
-    output = p.communicate()[0]
+    p.communicate()[0]
     if p.returncode != 0:
         print("Error: arm64 architecture not found in " + lib)
         return False
