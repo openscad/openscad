@@ -188,10 +188,7 @@ ArrayLookup::ArrayLookup(Expression *array, Expression *index, const Location &l
 }
 
 Value ArrayLookup::evaluate(const std::shared_ptr<const Context>& context) const {
-    auto result = this->array->evaluate(context)[this->index->evaluate(context)];
-    if (result.isUndefined())
-        LOG(message_group::Warning,loc,context->documentRoot(),"vector %1$s: %2$s ", *array, result.toUndefString());
-    return result;
+    return this->array->evaluate(context)[this->index->evaluate(context)];;
 }
 
 void ArrayLookup::print(std::ostream &stream, const std::string &) const
