@@ -583,6 +583,8 @@ remove_libxml2()
 build_libuuid()
 {
   version=$1
+
+  echo "Building libuuid $version..."
   cd $BASEDIR/src
   rm -rf uuid-$version
   if [ ! -f uuid-$version.tar.gz ]; then
@@ -592,7 +594,7 @@ build_libuuid()
   cd uuid-$version
   patch -p1 < $OPENSCADDIR/patches/uuid-1.6.2.patch
   # Update old config.sub to get aarch64 support
-  cp $OPENSCADDIR/patches/uuid-config.sub .
+  cp $OPENSCADDIR/patches/uuid-config.sub ./config.sub
 
   # Build each arch separately
   for i in ${!ARCHS[@]}; do
