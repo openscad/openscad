@@ -699,12 +699,11 @@ build_gettext()
 
   # If we're building for multiple archs, create fat binaries
   if (( ${#ARCHS[@]} > 1 )); then
-    cd $DEPLOYDIR
     LIBS=()
     for arch in ${ARCHS[*]}; do
       LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libintl.a)
     done
-    lipo -create ${LIBS[@]} -output lib/libintl.a
+    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libintl.a
   fi
 
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/gettext.version
