@@ -188,7 +188,7 @@ ArrayLookup::ArrayLookup(Expression *array, Expression *index, const Location &l
 }
 
 Value ArrayLookup::evaluate(const std::shared_ptr<const Context>& context) const {
-	return this->array->evaluate(context)[this->index->evaluate(context)];
+    return this->array->evaluate(context)[this->index->evaluate(context)];
 }
 
 void ArrayLookup::print(std::ostream &stream, const std::string &) const
