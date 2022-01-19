@@ -126,16 +126,16 @@ jobs:
             # CircleCI library caching. If we ever need invalidate the cache (e.g. to remove any old files 
             # from a library cache), the safest, change the MACOS_CACHE_VERSION variable to a random value at
             # https://app.circleci.com/settings/project/github/openscad/openscad/environment-variables.
-            - macos-libraries-PR2-x86_64-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
+            - macos-libraries-PR3-x86_64-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}
             # Fetch the most recently saved cache
-            - macos-libraries-PR2-x86_64-{{ .Environment.MACOS_CACHE_VERSION }}-
+            - macos-libraries-PR3-x86_64-{{ .Environment.MACOS_CACHE_VERSION }}-
       - run:
           name: Build Dependencies
           command: |
             # Pick up our own Qt
             export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
             # Limit to 30 minutes
-            ./scripts/macosx-build-dependencies.sh -l 30 -d double_conversion eigen gmp mpfr glew gettext libffi freetype ragel harfbuzz libzip libxml2 libuuid fontconfig hidapi lib3mf pixman cairo glib2 boost cgal qt5 opencsg qscintilla sparkle
+            ./scripts/macosx-build-dependencies.sh -l 30 -a -x -d double_conversion eigen gmp mpfr glew gettext libffi freetype ragel harfbuzz libzip libxml2 libuuid fontconfig hidapi lib3mf pixman cairo glib2 boost cgal qt5 opencsg qscintilla sparkle
       - run:
           name: Package Dependencies as an artifact
           command: |
@@ -145,7 +145,7 @@ jobs:
       - save_cache:
           # Make sure to create a new cache entry, needed for incremental library builds and also
           # preventing full cache drop after 15 days.
-          key: macos-libraries-PR2-x86_64-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}-{{ .BuildNum }}
+          key: macos-libraries-PR3-x86_64-{{ .Environment.MACOS_CACHE_VERSION }}-{{ checksum "scripts/macosx-build-dependencies.sh" }}-{{ checksum ".circleci/config.yml" }}-{{ .BuildNum }}
           paths:
             - /Users/distiller/libraries/install
       - run:
