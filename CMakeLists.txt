@@ -75,11 +75,6 @@ if(PROFILE)
   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
   SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
-  # Make sure to override default optimization for Release type
-  string(REPLACE "-O3" "-O0" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
-else()
-  # Use same optimization as qmake build for Release
-  #string(REPLACE "-O3" "-O2" CMAKE_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
 endif()
 
 if (NULLGL)
@@ -108,7 +103,6 @@ if (MXECROSS OR WIN32)
 endif()
 
 set(OPENSCAD_LIB_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/objects")
-set_property(TARGET OpenSCAD PROPERTY LIBRARY_OUTPUT_DIRECTORY ${OPENSCAD_LIB_OUTPUT_DIR})
 file(MAKE_DIRECTORY ${OPENSCAD_LIB_OUTPUT_DIR})
 
 # Default to Release build
@@ -211,8 +205,7 @@ if (USE_MIMALLOC)
     list(INSERT COMMON_LIBRARIES 0 mimalloc-static)
   elseif(MI_BUILD_OBJECT) # (for Unix-like systems only?)
     # put mimalloc-obj before everything else in Sources
-    #list(INSERT Sources 0 $<TARGET_OBJECTS:mimalloc-obj>)
-    list(INSERT COMMON_LIBRARIES 0 $<TARGET_OBJECTS:mimalloc-obj>)
+    list(INSERT Sources 0 $<TARGET_OBJECTS:mimalloc-obj>)
     list(APPEND COMMON_LIBRARIES pthread)
   endif()
 endif()
@@ -854,16 +847,17 @@ elseif(MSVC)
 endif()
 
 if(ENABLE_SPNAV)
-  target_link_libraries(OpenSCAD PRIVATE spnav)
+  list(APPEND COMMON_LIBRARIES spnav)
+endif()
+
+if(NOT HEADLESS)
+  list(APPEND COMMON_LIBRARIES Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network Qt5::Svg ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES})
+endif()
+if(MXECROSS)
+  list(APPEND COMMON_LIBRARIES Qt5::QSvgPlugin)
 endif()
 
 target_link_libraries(OpenSCAD PRIVATE ${COMMON_LIBRARIES} ${PLATFORM_LIBS})
-if(NOT HEADLESS)
-  target_link_libraries(OpenSCAD PRIVATE Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network Qt5::Svg ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES})
-endif()
-if(MXECROSS)
-  target_link_libraries(OpenSCAD PRIVATE Qt5::QSvgPlugin)
-endif()
 
 if(NOT APPLE OR APPLE_UNIX)
 set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
