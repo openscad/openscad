@@ -194,7 +194,7 @@ if (USE_MIMALLOC)
   set(MI_INSTALL_TOPLEVEL  OFF CACHE BOOL "" FORCE) # Install directly into $CMAKE_INSTALL_PREFIX instead of PREFIX/lib/mimalloc-version
 
   target_include_directories(OpenSCAD SYSTEM PRIVATE submodules/mimalloc/include)
-  add_subdirectory(submodules/mimalloc)
+  add_subdirectory(submodules/mimalloc EXCLUDE_FROM_ALL)
 
   if (MI_OVERRIDE)
     target_compile_definitions(OpenSCAD PRIVATE MI_OVERRIDE) # For preprocessor checks in our source.
