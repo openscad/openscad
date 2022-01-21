@@ -2377,7 +2377,7 @@ void MainWindow::UnknownExceptionCleanup(){
     LOG(message_group::Error,Location::NONE,"","Parsing aborted by unknown exception");
     LOG(message_group::None,Location::NONE,""," ");
     GuiLocker::unlock();
-    if (designActionAutoReload->isChecked()) autoReloadTimer->start();      // should we stop timers on unknown errors?
+    if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
 void MainWindow::actionDisplayAST()
