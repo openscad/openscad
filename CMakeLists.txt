@@ -197,15 +197,17 @@ if (USE_MIMALLOC)
   add_subdirectory(submodules/mimalloc)
 
   if (MI_OVERRIDE)
-    target_compile_definitions(OpenSCAD PRIVATE MI_OVERRIDE)
+    target_compile_definitions(OpenSCAD PRIVATE MI_OVERRIDE) # For preprocessor checks in our source.
   endif()
 
   if (MI_BUILD_STATIC)
-    # put before all other libraries
-    list(INSERT COMMON_LIBRARIES 0 mimalloc-static)
-  elseif(MI_BUILD_OBJECT) # (for Unix-like systems only?)
-    # put mimalloc-obj before everything else in Sources
-    list(INSERT Sources 0 $<TARGET_OBJECTS:mimalloc-obj>)
+    list(INSERT COMMON_LIBRARIES 0 mimalloc-static) # put before all other libraries
+  elseif(MI_BUILD_OBJECT) # (for Unix-like systems only, according to mimalloc docs)
+    # MI_BUILD_OBJECT not currently used in any builds, but build setup kept for reference.
+    # mimalloc recommends to link as the first object to ensure the standard malloc interface resolves to mimalloc.
+    # However its not clear how to control order of linking via cmake, as the order of Sources list
+    # does not seem to be respected.  Regardless, it still built and ran fine when tested on Linux.
+    list(INSERT Sources 0 $<TARGET_OBJECTS:mimalloc-obj>) # Put mimalloc-obj before everything else in Sources.
     list(APPEND COMMON_LIBRARIES pthread)
   endif()
 endif()
