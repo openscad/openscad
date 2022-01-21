@@ -117,6 +117,7 @@ public:
 	bool fileChangedOnDisk();
 	void parseTopLevelDocument();
 	void exceptionCleanup();
+	void UnknownExceptionCleanup();
 
 private:
 	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);

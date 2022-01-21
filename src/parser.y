@@ -759,10 +759,17 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 
 bool parse(SourceFile *&file, const std::string& text, const std::string &filename, const std::string &mainFile, int debug)
 {
-  fs::path filepath = fs::absolute(fs::path(filename));
-  mainFilePath = fs::absolute(fs::path(mainFile));
-  parsingMainFile = mainFilePath == filepath;
+  fs::path filepath;
+  try {
+    filepath = fs::absolute(fs::path(filename));
+    mainFilePath = fs::absolute(fs::path(mainFile));
+  } catch (...) {
+    // yyerror tries to print the file path, which throws again, and we can't do that
+	LOG(message_group::Error, Location::NONE, "", "Parser error: file access denied");
+    return false;
+  }
 
+  parsingMainFile = mainFilePath == filepath;
   fs::path parser_sourcefile = fs::path(filepath).generic_string();
   lexer_set_parser_sourcefile(parser_sourcefile);
 
