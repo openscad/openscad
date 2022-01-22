@@ -67,21 +67,22 @@ void write_vector(std::ostream &output, const Vector3f& v) {
     }
 }
 
-	
 size_t append_stl(const PolySet &ps, std::ostream &output, bool binary)
 {
     size_t triangle_count = 0;
     PolySet triangulated(3);
     PolysetUtils::tessellate_faces(ps, triangulated);
 
-	for(const auto &p : triangulated.polygons) {
-		assert(p.size() == 3); // STL only allows triangles
+    Export::ExportMesh exportMesh{triangulated};
+
+    auto vertexFunc = [&](const std::array<double, 3>& p) -> bool {
+        assert(p.size() == 3); // STL only allows triangles
         triangle_count++;
 
         if (binary) {
-            Vector3f p0 = p[0].cast<float>();
-            Vector3f p1 = p[1].cast<float>();
-            Vector3f p2 = p[2].cast<float>();
+            Vector3f p0 = (float)p[0];
+            Vector3f p1 = (float)p[1];
+            Vector3f p2 = (float)p[2];
 
             // Ensure 3 distinct vertices.
             if ((p0 != p1) && (p0 != p2) && (p1 != p2)) {
@@ -101,6 +102,7 @@ size_t append_stl(const PolySet &ps, std::ostream &output, bool binary)
         }
         else { // ascii
             std::array<std::string, 3> vertexStrings;
+            // TODO work out what this is doing.
             std::transform(p.cbegin(), p.cend(), vertexStrings.begin(),
                 toString);
 
@@ -123,7 +125,7 @@ size_t append_stl(const PolySet &ps, std::ostream &output, bool binary)
                 normal.normalize();
                 if (is_finite(normal) && !is_nan(normal)) {
                     output << normal[0] << " " << normal[1] << " " << normal[2]
-                      << "\n";
+                    << "\n";
                 }
                 else {
                     output << "0 0 0\n";
@@ -137,6 +139,12 @@ size_t append_stl(const PolySet &ps, std::ostream &output, bool binary)
                 output << "  endfacet\n";
             }
         }
+        return true;
+    };
+
+    if (!exportMesh.foreach_vertex(vertexFunc)) {
+        LOG(message_group::Export_Error,Location::NONE,"","Dang.");
+        return 0;
     }
 
     return triangle_count;
