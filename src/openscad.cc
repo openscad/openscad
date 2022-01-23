@@ -50,11 +50,13 @@
 #include "boost-utils.h"
 #include"parameter/parameterobject.h"
 #include"parameter/parameterset.h"
+#include "openscad_mimalloc.h"
 #include <string>
 #include <vector>
 #include <fstream>
 
 #ifdef ENABLE_CGAL
+
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
 #endif
@@ -933,9 +935,14 @@ bool flagConvert(std::string str){
 	return false;
 }
 
-// openSCAD
+// OpenSCAD
 int main(int argc, char **argv)
 {
+#if defined(ENABLE_CGAL) && defined(USE_MIMALLOC)
+	// call init_mimalloc before any GMP variables are initialized. (defined in src/openscad_mimalloc.h)
+	init_mimalloc();
+#endif
+
 	int rc = 0;
 	StackCheck::inst();
 
@@ -947,7 +954,7 @@ int main(int argc, char **argv)
 #else
 	PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
 #endif
-	
+
 #ifdef Q_OS_MAC
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
 	auto nslog = [](const Message &msg, void *userdata) { CocoaUtils::nslog(msg.msg, userdata); };

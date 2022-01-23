@@ -5,8 +5,8 @@
 #include "boost-utils.h"
 
 #ifdef ENABLE_CGAL
-#include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
+#include "CGAL_Nef_polyhedron.h"
 #include <CGAL/IO/Nef_polyhedron_iostream_3.h>
 
 CGAL_Nef_polyhedron *import_nef3(const std::string &filename, const Location &loc)

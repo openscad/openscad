@@ -109,13 +109,13 @@
 
 #ifdef ENABLE_CGAL
 
+#include "cgal.h"
+#include "cgalutils.h"
 #include "CGALCache.h"
 #include "GeometryEvaluator.h"
 #include "CGALRenderer.h"
 #include "CGAL_Nef_polyhedron.h"
-#include "cgal.h"
 #include "CGALWorker.h"
-#include "cgalutils.h"
 
 #endif // ENABLE_CGAL
 
@@ -1059,9 +1059,8 @@ void MainWindow::compile(bool reload, bool forcedone)
 		if (reload) {
 			// Refresh files if it has changed on disk
 			if (fileChangedOnDisk() && checkEditorModified()) {
-				shouldcompiletoplevel = true;
-				tabManager->refreshDocument();
-				if (Preferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
+				shouldcompiletoplevel = tabManager->refreshDocument();  // don't compile if we couldn't open the file
+				if (shouldcompiletoplevel && Preferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
 					// reloading the 'same' document brings the 'old' one to front.
 					this->raise();
 				}
@@ -1127,9 +1126,11 @@ void MainWindow::compile(bool reload, bool forcedone)
 		}
 
 		compileDone(didcompile | forcedone);
-	}catch(const HardWarningException&){
+	} catch(const HardWarningException&) {
 		exceptionCleanup();
-	}
+	} catch (...) {
+        UnknownExceptionCleanup();
+    }
 }
 
 void MainWindow::waitAfterReload()
@@ -1565,7 +1566,7 @@ void MainWindow::actionReload()
 {
 	if (checkEditorModified()) {
 		fileChangedOnDisk(); // force cached autoReloadId to update
-		tabManager->refreshDocument();
+		(void)tabManager->refreshDocument();    // ignore errors opening the file
 	}
 }
 
@@ -1824,7 +1825,9 @@ void MainWindow::parseTopLevelDocument()
 	auto fnameba = activeEditor->filepath.toLocal8Bit();
 	const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
 	delete this->parsed_file;
-	this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
+    this->parsed_file = nullptr;    // because the parse() call can throw and we don't want a stale pointer!
+    this->root_file = nullptr;      // ditto
+    this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
 
 	if (this->root_file!=nullptr) {
 		//add parameters as annotation in AST
@@ -2367,6 +2370,14 @@ void MainWindow::exceptionCleanup(){
 	LOG(message_group::None,Location::NONE,""," ");
 	GuiLocker::unlock();
 	if (designActionAutoReload->isChecked()) autoReloadTimer->start();
+}
+
+void MainWindow::UnknownExceptionCleanup(){
+    setCurrentOutput();     // we need to show this error
+    LOG(message_group::Error,Location::NONE,"","Parsing aborted by unknown exception");
+    LOG(message_group::None,Location::NONE,""," ");
+    GuiLocker::unlock();
+    if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
 void MainWindow::actionDisplayAST()
