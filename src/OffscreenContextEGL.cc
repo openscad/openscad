@@ -97,8 +97,7 @@ static bool create_egl_dummy_context(OffscreenContext &ctx)
         EGL_GREEN_SIZE, 8,
         EGL_RED_SIZE, 8,
         EGL_ALPHA_SIZE, 8,
-        EGL_DEPTH_SIZE, 8,
-        EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
+        EGL_DEPTH_SIZE, 24,
         EGL_CONFORMANT, EGL_OPENGL_BIT,
         EGL_NONE
     };
@@ -157,7 +156,7 @@ static bool create_egl_dummy_context(OffscreenContext &ctx)
         return false;
     }
     if (!eglBindAPI(EGL_OPENGL_API)) {
-        std::cerr << "Bind EGL_OPENGL_API failed ,crying!" << std::endl;
+        std::cerr << "Bind EGL_OPENGL_API failed!" << std::endl;
         return false;
     }
     EGLSurface surface = eglCreatePbufferSurface(display, config, pbufferAttribs);
@@ -168,7 +167,7 @@ static bool create_egl_dummy_context(OffscreenContext &ctx)
 
     EGLint ctxattr[] = {
         EGL_CONTEXT_MAJOR_VERSION, 3,
-        EGL_CONTEXT_MINOR_VERSION, 3,
+        EGL_CONTEXT_MINOR_VERSION, 1,
         EGL_CONTEXT_OPENGL_PROFILE_MASK, EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT,
         EGL_NONE
     };
