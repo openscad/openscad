@@ -2,9 +2,9 @@ import urllib.request
 import shutil,os
 import socket
 
-url = 'http://files.openscad.org/documentation/'
-url_zip = 'http://files.openscad.org/documentation/manual.zip'
-url_pdf = ['http://files.openscad.org/documentation/manual/OpenSCAD_User_Manual.pdf','http://files.openscad.org/documentation/manual/The_OpenSCAD_Language.pdf']
+url = 'https://files.openscad.org/documentation/'
+url_zip = 'https://files.openscad.org/documentation/manual.zip'
+url_pdf = ['https://files.openscad.org/documentation/manual/OpenSCAD_User_Manual.pdf', 'https://files.openscad.org/documentation/manual/The_OpenSCAD_Language.pdf']
 
 docs_dir = os.path.join( os.getcwd(), 'openscad_docs')
 pdfs_dir = os.path.join( os.getcwd(), 'openscad_docs_pdf')
@@ -25,7 +25,7 @@ def is_connected(hostname):
     return False
 
 # The following downloads the documentation from
-# http://files.openscad.org/documentation/ 
+# https://files.openscad.org/documentation/
 # if is_connected() returns True
 if (is_connected(dns_server)):
     if not os.path.exists(pdfs_dir): os.makedirs(pdfs_dir)
