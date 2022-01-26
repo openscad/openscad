@@ -26,7 +26,11 @@ endif()
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version")
 
 include("cmake/Modules/openscad_version.cmake")
-project(openscad LANGUAGES C CXX)
+project(OpenSCAD
+  VERSION ${PROJECT_VERSION}
+  DESCRIPTION "The Programmer's Solid 3D CAD Modeler"
+  LANGUAGES C CXX
+)
 
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
@@ -899,6 +903,8 @@ configure_file(${RESOURCE_DIR}/icons/openscad.desktop.in ${RESOURCE_DIR}/icons/o
 configure_file(${RESOURCE_DIR}/common.qrc.in ${RESOURCE_DIR}/common.qrc)
 configure_file(${RESOURCE_DIR}/mac.qrc.in ${RESOURCE_DIR}/mac.qrc)
 
+set(OPENSCAD_INSTALL_RESOURCEDIR ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
+
 if(NOT APPLE OR APPLE_UNIX)
 set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
 install(TARGETS OpenSCAD RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -921,7 +927,7 @@ install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/templates DESTINATION ${CMAKE_INSTAL
 endif()
 
 if(INFO)
-  include(info)
+  include("cmake/Modules/info.cmake")
 endif()
 
 if(ENABLE_TESTS)
