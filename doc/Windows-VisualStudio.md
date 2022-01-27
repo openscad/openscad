@@ -13,9 +13,8 @@
 This section contains a summary of the steps to build OpenSCAD for Windows 10 using Visual Studio. Please be prepared for this to take some time (several hours is not unlikely). OpenSCAD is a substantial application  but, hopefully, the following instructions will get you to the point where you can build and debug it from within Visual Studio without too much pain and effort!
 
 1. Your Visual Studio installation must include support for ATL and MFC.
-1. You will need to have a working version of `bison` and `flex` available on the PATH. Installing the versions that come with the _mingw-developer-tools_ package of [MinGW on SourceForge](https://sourceforge.net/projects/mingw/files/latest/download) is one option (remember to update the PATH to include `C:\MinGW\msys\1.0\bin`).
+1. You will need to have a working version of `bison` and `flex` available on the PATH. See the section [Install flex and bison](##Install-flex-and-bison) below for some possible ways to install these.
 1. You will need to have a copy of [vcpkg](https://vcpkg.io/en/index.html), which is the Microsoft Package Manager for Windows.
-1. Microsoft MPI ([mpiexec](https://www.microsoft.com/en-us/download/details.aspx?id=57467)) must be available on the PATH.
 1. Ensure that an environment variable called `VCPKG_ROOT` points to the root folder of your `vcpkg` installation.
 1. Ensure that `vcpkg` will use the correct target-triplet for your needs, e.g. by setting an environment variable:
 ```
@@ -90,31 +89,6 @@ C:\> setx VCPKG_ROOT C:\vcpkg
 
 This variable will be used by `CMake` when you open the `openscad` folder in `Visual Studio` to parse the project files. Note that you will need to close and reopen any applications that may need to see this new variable, in the usual way for `Windows`.
 
-## Install Microsoft MPI
-
-The build requires that you have an up-to-date version of the [Microsoft MPI](https://www.microsoft.com/en-us/download/details.aspx?id=57467) on your PATH. If you are unsure whether you have this installed, open a ```Command Prompt``` and run the following command:
-
-```
-C:\> mpiexec
-
-Microsoft MPI Startup Program [Version 10.1.12498.18]
-
-Launches an application on multiple hosts.
-
-Usage:
-
-    mpiexec [options] executable [args] [ : [options] exe [args] : ... ]
-    mpiexec -configfile <file name>
-
-Common options:
-
-[...]
-```
-
-If that program is not available on your PATH by the time that you get to installing the packages (see below), `vcpkg` will report an error. Fortunately, a copy of the MPI installation program will have been downloaded for you, and you should be able to find it in the ```vcpkg\downloads``` folder, e.g. ```C:\vcpkg\downloads\msmpisetup-10.1.12498.exe```.
-    
-Once MPI is installed and on the PATH, restart the `vcpkg` installation command.
-
 ## Install flex and bison
 
 You need to have two GNU utilties called `bison` and `flex`. Here are two suggested sources for installing this:
@@ -152,9 +126,9 @@ Now it is time to use `vcpkg` to build all of the dependencies for OpenSCAD. Thi
 vcpkg install boost cairo cgal qscintilla opencsg eigen3 mpfr libxml2 libzip glib
 ```
 
-If the command fails to complete, look for any advice in the error messages that were output. Sometimes it may be that you have missed out one of the steps described above. Especially the ones that talk about installing ```Microsoft MPI``` or some of the optional modules (ATL, MFC etc) for Visual Studio.
+If the command fails to complete, look for any advice in the error messages that were output. Sometimes it may be that you have missed out one of the steps described above, or that you need to install some of the optional modules (ATL, MFC etc) for Visual Studio.
 
-If that is the case, fix the problem(s) and rerun the above command; `vcpkg` will skip any packages that have already been installed, and resume building the remainder.
+If that is the case, fix the problem(s) and rerun the above command; `vcpkg` is idempotent - it will skip any packages that have already been installed, and resume building the remainder.
 
 ## Build OpenSCAD using Visual Studio
 
