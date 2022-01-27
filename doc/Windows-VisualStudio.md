@@ -16,7 +16,6 @@ This section contains a summary of the steps to build OpenSCAD for Windows 10 us
 1. You will need to have a working version of `bison` and `flex` available on the PATH. Installing the versions that come with the _mingw-developer-tools_ package of [MinGW on SourceForge](https://sourceforge.net/projects/mingw/files/latest/download) is one option (remember to update the PATH to include `C:\MinGW\msys\1.0\bin`).
 1. You will need to have a copy of [vcpkg](https://vcpkg.io/en/index.html), which is the Microsoft Package Manager for Windows.
 1. OpenSCAD uses MCAD and that requires that you have a copy of [Python](https://www.python.org/) available on the PATH. You can use the one supplied with `vcpkg`, if you wish. You will find it in a folder called `C:\vcpkg\installed\x64-windows\tools\python3`.
-1. A [Windows version](https://stackoverflow.com/questions/1710922/how-to-install-pkg-config-in-windows) of `pkg-config` must be available on the PATH.
 1. Microsoft MPI ([mpiexec](https://www.microsoft.com/en-us/download/details.aspx?id=57467)) must be available on the PATH.
 1. Ensure that an environment variable called `VCPKG_ROOT` points to the root folder of your `vcpkg` installation.
 1. Ensure that `vcpkg` will use the correct target-triplet for your needs, e.g. by setting an environment variable:
@@ -121,24 +120,6 @@ If that program is not available on your PATH by the time that you get to instal
     
 Once MPI is installed and on the PATH, restart the `vcpkg` installation command.
 
-## Install pkg-config
-
-This program is required by the OpenSCAD CMake scripts and it must be available on the PATH. Instructions for installing it are given on [Stack Overflow](https://stackoverflow.com/questions/1710922/how-to-install-pkg-config-in-windows) by "E_net4 the curator".
-
-A summary of those instructions is to download and unzip the following three files into an empty folder, e.g. ```C:\pkg-config```. Note that the zip files all have a compatible internal folder structure inside them, so it is correct to unzip them all into the same folder.
-
-1. [pkg-config_0.26-1_win32.zip](http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/pkg-config_0.26-1_win32.zip)
-1. [glib_2.28.8-1_win32.zip](http://ftp.gnome.org/pub/gnome/binaries/win32/glib/2.28/glib_2.28.8-1_win32.zip)
-1. [gettext-runtime_0.18.1.1-2_win32.zip](http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/gettext-runtime_0.18.1.1-2_win32.zip)
-
-When you have unzipped them all, add the full name of the ```bin``` folder, e.g. ```C:\pkg-config\bin```, to your PATH, so that you can type the following command in a ```Command Prompt``` and get a response from it:
-```
-C:\> pkg-config
-Must specify package names on the command line
-
-C:\>
-```
-
 ## Install flex and bison
 
 You need to have two GNU utilties called `bison` and `flex`. These can be downloaded from various places on the internet, such as the version supplied with [MinGW on SourceForge](https://sourceforge.net/projects/mingw/files/latest/download).
@@ -178,7 +159,7 @@ Now it is time to use `vcpkg` to build all of the dependencies for OpenSCAD. Thi
 vcpkg install boost cairo cgal qscintilla opencsg eigen3 mpfr libxml2 libzip glib
 ```
 
-If the command fails to complete, look for any advice in the error messages that were output. Sometimes it may be that you have missed out one of the steps described above. Especially the ones that talk about installing ```Microsoft MPI```, `pkg-config` or some of the optional modules (ATL, MFC etc) for Visual Studio.
+If the command fails to complete, look for any advice in the error messages that were output. Sometimes it may be that you have missed out one of the steps described above. Especially the ones that talk about installing ```Microsoft MPI``` or some of the optional modules (ATL, MFC etc) for Visual Studio.
 
 If that is the case, fix the problem(s) and rerun the above command; `vcpkg` will skip any packages that have already been installed, and resume building the remainder.
 

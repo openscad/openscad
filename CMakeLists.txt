@@ -130,6 +130,7 @@ endif()
 
 set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system regex program_options)
 
+find_program(PKG_CONFIG_EXECUTABLE NAMES pkgconf.exe pkg-config.exe)
 find_package(PkgConfig)
 
 # Note: Saving CMAKE_MODULE_PATH as CGAL will overwrite it.
@@ -150,17 +151,6 @@ if (MSVC)
   add_definitions(/wd4267)  # '': conversion from '' to '', possible loss of data
   add_definitions(/wd4305)  # '': truncation from '' to ''
   add_definitions(/wd4996)  # '': This function or variable may be unsafe. Consider using [...]
-
-  # pkg-config is required to build OpenSCAD, but is not installed by default as a part of Windows.
-  # Installation instructions are available online e.g. as a comment posted by "E_net4 the curator":
-  #   https://stackoverflow.com/questions/1710922/how-to-install-pkg-config-in-windows
-  #
-  find_path(PKGCONFIG_EXE pkg-config.exe)
-  if (NOT PKGCONFIG_EXE)
-    message(FATAL_ERROR "pkg-config was not found; installation instructions may be found here: https://stackoverflow.com/questions/1710922/how-to-install-pkg-config-in-windows")
-  else()
-    message(STATUS "Found pkg-config in '${PKGCONFIG_EXE}'")
-  endif()
 
   # Override the location of the installation to cause "Build|install <project-name>" to copy the resource
   # files to the build\x64-Debug folder, which is required to debug the program from within the IDE.
