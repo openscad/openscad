@@ -188,6 +188,8 @@ void GLView::enable_opencsg_shaders()
     }
   }
 
+#ifndef GLEW_EGL
+
   // If OpenGL < 2, check for extensions
   else {
     if (GLEW_ARB_framebuffer_object) this->is_opencsg_capable = true;
@@ -197,9 +199,12 @@ void GLView::enable_opencsg_shaders()
 #ifdef _WIN32
     else if (WGLEW_ARB_pbuffer && WGLEW_ARB_pixel_format) this->is_opencsg_capable = true;
 #elif !defined(__APPLE__)
+    // not supported by GLEW when built with EGL
     else if (GLXEW_SGIX_pbuffer && GLXEW_SGIX_fbconfig) this->is_opencsg_capable = true;
 #endif
   }
+
+#endif
 
   if (!GLEW_VERSION_2_0 || !this->is_opencsg_capable) {
     display_opencsg_warning();
