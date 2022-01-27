@@ -226,10 +226,8 @@ endfunction()
 if(MSVC)
   # 'vcpkg'' does not appear to work with FindPythonInterp.cmake, so we use the version-specific
   # FindPython3.cmake instead.
-  find_package(Python3 REQUIRED COMPONENTS Interpreter)
-  if(Python3_VERSION_MINOR LESS 4)
-    message(FATAL_ERROR "Python interpreter: ${Python3_EXECUTABLE} has version ${Python3_VERSION}, OpenSCAD requires 3.4")
-  endif()
+  message(STATUS "searching VCPKG for a compatible version of python (this make take a minute or two, depending on your installation; please be patient!)")
+  find_package(Python3 3.4 REQUIRED COMPONENTS Interpreter)
   message(STATUS "Python interpreter: ${Python3_EXECUTABLE}, version ${Python3_VERSION}")
 
   # Set the PYTHON_EXECUTABLE variable to match, to avoid having to customize the rest of this file.
