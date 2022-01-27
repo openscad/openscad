@@ -24,7 +24,7 @@ This section contains a summary of the steps to build OpenSCAD for Windows 10 us
 ```
 5. Install the dependencies using `vcpkg`. ___This step can take a considerable amount of time; possibly several hours, depending on the power of your machine and the speed of your network.___
 ```
-    vcpkg install boost cairo cgal qscintilla opencsg eigen3 glib libxml2 libzip mpfr
+    vcpkg install boost cairo cgal opencsg eigen3 glib libxml2 libzip mpfr pkgconf qscintilla
 ```
 6. Download the OpenSCAD source code:
 ```
