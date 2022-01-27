@@ -122,13 +122,11 @@ Once MPI is installed and on the PATH, restart the `vcpkg` installation command.
 
 ## Install flex and bison
 
-You need to have two GNU utilties called `bison` and `flex`. These can be downloaded from various places on the internet, such as the version supplied with [MinGW on SourceForge](https://sourceforge.net/projects/mingw/files/latest/download).
+You need to have two GNU utilties called `bison` and `flex`. Here are two suggested sources for installing this:
 
-If you do choose to use `MinGW`, you will first need to download and run an downloader program for it. That program prompts you to supply a target folder to hold the MinGW programs and then asks you to select the packages that you wish to download.
+1. If you have installed [Chocolatey](https://chocolatey.org/install), one of the simplest techniques is to open an `Administrative Command Prompt` and install the `winflexbison` package by running the command: `choco install winflexbison`.
 
-You only need to choose to install the _mingw-developer-tools_ package, though it is harmless to add more, if you want. Cleick the check box next to the package name, `Mark for Installation`, then select the `Installation|Apply Changes` menu option. The program will download and copy several files to your target folder (`C:\MinGW` or whatever you specified).
-
-The next step is to update your `PATH` to point to the folder that contains `bison` and `flex`, so that Windows can find them. If you installed everything to `C:\MinGW`, you will find these and other utilities in a subdirectory called `C:\MinGW\msys\1.0\bin`, so add that to your `PATH`.
+1. If you prefer to download and install it manually, a release may be found [here](https://github.com/lexxmark/winflexbison/releases). This technique requires you to update your `PATH` to point to the folder that contains `bison` and `flex`, so that Windows can find them.
 
 ## Configure vcpkg
 
