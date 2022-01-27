@@ -15,7 +15,6 @@ This section contains a summary of the steps to build OpenSCAD for Windows 10 us
 1. Your Visual Studio installation must include support for ATL and MFC.
 1. You will need to have a working version of `bison` and `flex` available on the PATH. Installing the versions that come with the _mingw-developer-tools_ package of [MinGW on SourceForge](https://sourceforge.net/projects/mingw/files/latest/download) is one option (remember to update the PATH to include `C:\MinGW\msys\1.0\bin`).
 1. You will need to have a copy of [vcpkg](https://vcpkg.io/en/index.html), which is the Microsoft Package Manager for Windows.
-1. OpenSCAD uses MCAD and that requires that you have a copy of [Python](https://www.python.org/) available on the PATH. You can use the one supplied with `vcpkg`, if you wish. You will find it in a folder called `C:\vcpkg\installed\x64-windows\tools\python3`.
 1. Microsoft MPI ([mpiexec](https://www.microsoft.com/en-us/download/details.aspx?id=57467)) must be available on the PATH.
 1. Ensure that an environment variable called `VCPKG_ROOT` points to the root folder of your `vcpkg` installation.
 1. Ensure that `vcpkg` will use the correct target-triplet for your needs, e.g. by setting an environment variable:
@@ -90,10 +89,6 @@ C:\> setx VCPKG_ROOT C:\vcpkg
 ```
 
 This variable will be used by `CMake` when you open the `openscad` folder in `Visual Studio` to parse the project files. Note that you will need to close and reopen any applications that may need to see this new variable, in the usual way for `Windows`.
-
-## Install Python
-
-OpenSCAD uses MCAD and building that requires that you have a copy of [Python](https://www.python.org/) available on the PATH. The version that comes with `vcpkg` appears to work, so you can add that folder (`C:\vcpkg\installed\x64-windows\tools\python3`) to your PATH, rather than go to the trouble of installing a separate standalone-copy of it. Note that the folder may not exist at this point, but it is safe to add it to the PATH because it will be created as part of the package installation, described below.
 
 ## Install Microsoft MPI
 
