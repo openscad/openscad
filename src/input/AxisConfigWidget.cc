@@ -145,13 +145,13 @@ void AxisConfigWidget::init() {
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i ){
 		std::string s = std::to_string(i);
 
-		auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
-		if(spin){
-			initUpdateDoubleSpinBox(spin,Settings::Settings::axisTrim(i));
+		auto spinTrim = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
+		if(spinTrim){
+			initUpdateDoubleSpinBox(spinTrim,Settings::Settings::axisTrim(i));
 		}
-		spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone%1").arg(i));
-		if(spin){
-			initUpdateDoubleSpinBox(spin,Settings::Settings::axisDeadzone(i));
+		auto spinDeadZone = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone%1").arg(i));
+		if(spinDeadZone){
+			initUpdateDoubleSpinBox(spinDeadZone,Settings::Settings::axisDeadzone(i));
 		}
 	}
 
@@ -515,13 +515,15 @@ void AxisConfigWidget::updateStates(){
 	int cnt = InputDriverManager::instance()->getAxisCount();
 	for (int i=0; i<InputEventMapper::getMaxAxis(); ++i) {
 		auto progressbar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(i));
-		if( cnt <= i){
-			progressbar->setEnabled(false);
-			progressbar->setMinimum(0);
-		}else{
-			progressbar->setEnabled(true);
-			progressbar->setMinimum(-100);
-		}
+        if (progressbar) {
+            if( cnt <= i){
+                progressbar->setEnabled(false);
+                progressbar->setMinimum(0);
+            }else{
+                progressbar->setEnabled(true);
+                progressbar->setMinimum(-100);
+            }
+        }
 	}
 
 	auto manager = InputDriverManager::instance();
