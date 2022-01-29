@@ -117,7 +117,7 @@ case $OS in
         ZIP="zip"
         ZIPARGS="-r -q"
         echo Mingw-cross build using ARCH=$ARCH MXELIBTYPE=$MXELIBTYPE
-        CMAKE_CONFIG="$CMAKE_CONFIG -DMXECROSS=ON -DALLOW_BUNDLED_HIDAPI=ON -DPACKAGE_ARCH=x86-$ARCH"
+        CMAKE_CONFIG="$CMAKE_CONFIG -GNinja -DMXECROSS=ON -DALLOW_BUNDLED_HIDAPI=ON -DPACKAGE_ARCH=x86-$ARCH"
     ;;
 esac
 
@@ -200,7 +200,7 @@ echo -e "\nRUNNING CMAKE FROM ${DEPLOYDIR}\n${CMAKE} .. ${CMAKE_CONFIG}\n"
 "${CMAKE}" .. ${CMAKE_CONFIG}
 cd $OPENSCADDIR
 
-echo "Building GUI binary..."
+echo "Building Project..."
 
 case $OS in
     UNIX_CROSS_WIN)
@@ -209,9 +209,7 @@ case $OS in
         if [ $FAKEMAKE ]; then
             echo "notexe. debugging build process" > openscad.exe
         else
-            make -j$NUMCPU VERBOSE=1
-            echo "Installing to relative path..."
-            ${CMAKE} --install ./ --prefix ./scad_test
+            ${CMAKE} --build ./ -j$NUMCPU
             echo "Creating packages with CPack..."
             ${MXE_TARGETS}-cpack
             echo "Packaging Complete!"
