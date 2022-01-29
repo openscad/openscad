@@ -25,6 +25,8 @@
 # .exe files
 #
 
+set -e # exit when any command fails
+
 # convert end-of-line in given file from unix \n to dos/windows(TM) \r\n
 # see https://kb.iu.edu/data/acux.html
 lf2crlf()
@@ -115,13 +117,16 @@ case $OS in
         ZIP="zip"
         ZIPARGS="-r -q"
         echo Mingw-cross build using ARCH=$ARCH MXELIBTYPE=$MXELIBTYPE
-        CMAKE_CONFIG="$CMAKE_CONFIG -DMXECROSS=ON -DALLOW_BUNDLED_HIDAPI=ON"
+        CMAKE_CONFIG="$CMAKE_CONFIG -DMXECROSS=ON -DALLOW_BUNDLED_HIDAPI=ON -DPACKAGE_ARCH=x86-$ARCH"
     ;;
 esac
 
 if [ "`echo $* | grep snapshot`" ]; then
   CMAKE_CONFIG="$CMAKE_CONFIG -DSNAPSHOT=ON -DEXPERIMENTAL=ON"
+  BUILD_TYPE="RelWithDebInfo"
   OPENSCAD_COMMIT=`git log -1 --pretty=format:"%h"`
+else
+  BUILD_TYPE="Release"
 fi
 
 BUILD_TESTS=
@@ -153,34 +158,16 @@ else
   FAKEMAKE=
 fi
 
-echo "Checking pre-requisites..."
-
 case $OS in
-    UNIX_CROSS_WIN)
-        MAKENSIS=
-        if [ "`command -v makensis`" ]; then
-            MAKENSIS=makensis
-        elif [ "`command -v i686-pc-mingw32-makensis`" ]; then
-            # we can't find systems nsis so look for the MXE's version.
-            # MXE has its own makensis, but its only available under
-            # 32-bit MXE. note that the cross-version in theory works
-            # the same as the linux version so we can use them, in
-            # theory, interchangeably. its not really a 'cross' nsis
-            # todo - when doing 64 bit mingw build, see if we can call
-            # 32bit nsis here.
-            MAKENSIS=i686-pc-mingw32-makensis
-        else
-            echo "makensis not found. please install nsis on your system."
-            echo "(for example, on debian linux, try apt-get install nsis)"
-            exit 1
-        fi
-        echo NSIS makensis found: $MAKENSIS
-        CMAKE=$MXE_TARGETS-cmake
-        ;;
-    *)
-        CMAKE=cmake
-        ;;
+  UNIX_CROSS_WIN)
+    CMAKE=$MXE_TARGETS-cmake
+    ;;
+  *)
+    CMAKE=cmake
+    ;;
 esac
+
+echo "Checking pre-requisites..."
 
 if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
   echo "Downloading MCAD"
@@ -204,10 +191,13 @@ fi
 echo "NUMCPU: " $NUMCPU
 
 cd $DEPLOYDIR
-"${CMAKE}" .. $CMAKE_CONFIG \
-        -DCMAKE_BUILD_TYPE="Release" \
-        -DOPENSCAD_VERSION="$VERSION" \
-        -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT"
+CMAKE_CONFIG="${CMAKE_CONFIG}\
+ -DCMAKE_BUILD_TYPE=${BUILD_TYPE}\
+ -DOPENSCAD_VERSION=${VERSION}\
+ -DOPENSCAD_COMMIT=${OPENSCAD_COMMIT}"
+
+echo -e "\nRUNNING CMAKE FROM ${DEPLOYDIR}\n${CMAKE} .. ${CMAKE_CONFIG}\n"
+"${CMAKE}" .. ${CMAKE_CONFIG}
 cd $OPENSCADDIR
 
 echo "Building GUI binary..."
@@ -220,6 +210,12 @@ case $OS in
             echo "notexe. debugging build process" > openscad.exe
         else
             make -j$NUMCPU VERBOSE=1
+            echo "Installing to relative path..."
+            ${CMAKE} --install ./ --prefix ./scad_test
+            echo "Creating packages with CPack..."
+            ${MXE_TARGETS}-cpack
+            echo "Packaging Complete!"
+            exit
         fi
         if [ ! -e openscad.exe ]; then
             echo "can't find openscad.exe. build failed. stopping."
@@ -229,7 +225,6 @@ case $OS in
             echo "can't find openscad.com. build failed. stopping."
             exit
         fi
-	mv -v winconsole/openscad.com openscad.com
         cd $OPENSCADDIR
     ;;
     LINUX)
@@ -256,38 +251,28 @@ echo "Creating directory structure..."
 case $OS in
     MACOSX)
         cd $OPENSCADDIR
-        EXAMPLESDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/examples
-        LIBRARYDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/libraries
-        FONTDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/fonts
-        TRANSLATIONDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/locale
-        COLORSCHEMESDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/color-schemes
-        SHADERSDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/shaders
-        TEMPLATESDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources/templates
+        RESOURCEDIR=$DEPLOYDIR/OpenSCAD.app/Contents/Resources
     ;;
     UNIX_CROSS_WIN)
         cd $OPENSCADDIR
-        EXAMPLESDIR=$DEPLOYDIR/openscad-$VERSION/examples/
-        LIBRARYDIR=$DEPLOYDIR/openscad-$VERSION/libraries/
-        FONTDIR=$DEPLOYDIR/openscad-$VERSION/fonts/
-        TRANSLATIONDIR=$DEPLOYDIR/openscad-$VERSION/locale/
-        COLORSCHEMESDIR=$DEPLOYDIR/openscad-$VERSION/color-schemes/
-        SHADERSDIR=$DEPLOYDIR/openscad-$VERSION/shaders/
-        TEMPLATESDIR=$DEPLOYDIR/openscad-$VERSION/templates/
-        rm -rf $DEPLOYDIR/openscad-$VERSION
-        mkdir $DEPLOYDIR/openscad-$VERSION
+        RESOURCEDIR=$DEPLOYDIR/openscad-$VERSION
+        rm -rf $RESOURCEDIR
+        mkdir $RESOURCEDIR
     ;;
     *)
-        EXAMPLESDIR=openscad-$VERSION/examples/
-        LIBRARYDIR=openscad-$VERSION/libraries/
-        FONTDIR=openscad-$VERSION/fonts/
-        TRANSLATIONDIR=openscad-$VERSION/locale/
-        COLORSCHEMESDIR=openscad-$VERSION/color-schemes/
-        SHADERSDIR=openscad-$VERSION/shaders/
-        TEMPLATESDIR=openscad-$VERSION/templates/
-        rm -rf openscad-$VERSION
-        mkdir openscad-$VERSION
+        RESOURCEDIR=openscad-$VERSION
+        rm -rf $RESOURCEDIR
+        mkdir $RESOURCEDIR
     ;;
 esac
+
+EXAMPLESDIR=$RESOURCEDIR/examples
+FONTDIR=$RESOURCEDIR/fonts
+COLORSCHEMESDIR=$RESOURCEDIR/color-schemes
+SHADERSDIR=$RESOURCEDIR/shaders
+TEMPLATESDIR=$RESOURCEDIR/templates
+LIBRARYDIR=$RESOURCEDIR/libraries
+TRANSLATIONDIR=$RESOURCEDIR/locale
 
 if [ -n $EXAMPLESDIR ]; then
     echo $EXAMPLESDIR
@@ -376,7 +361,7 @@ case $OS in
         INSTFILE=$DEPLOYDIR/OpenSCAD-$VERSION-x86-$ARCH-Installer.exe
 
         #package
-	fl=
+        fl=
         if [ "`echo $* | grep shared`" ]; then
           flprefix=$DEPLOYDIR/mingw-cross-env/bin
           echo Copying dlls for shared library build
