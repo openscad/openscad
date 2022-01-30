@@ -235,6 +235,14 @@ public:
 	static SettingsEntryString inputButton13;
 	static SettingsEntryString inputButton14;
 	static SettingsEntryString inputButton15;
+	static SettingsEntryString inputButton16;
+	static SettingsEntryString inputButton17;
+	static SettingsEntryString inputButton18;
+	static SettingsEntryString inputButton19;
+	static SettingsEntryString inputButton20;
+	static SettingsEntryString inputButton21;
+	static SettingsEntryString inputButton22;
+	static SettingsEntryString inputButton23;
 	static SettingsEntryDouble axisTrim0;
 	static SettingsEntryDouble axisTrim1;
 	static SettingsEntryDouble axisTrim2;
@@ -244,7 +252,6 @@ public:
 	static SettingsEntryDouble axisTrim6;
 	static SettingsEntryDouble axisTrim7;
 	static SettingsEntryDouble axisTrim8;
-	static SettingsEntryDouble axisTrim9;
 	static SettingsEntryDouble axisDeadzone0;
 	static SettingsEntryDouble axisDeadzone1;
 	static SettingsEntryDouble axisDeadzone2;
@@ -254,7 +261,6 @@ public:
 	static SettingsEntryDouble axisDeadzone6;
 	static SettingsEntryDouble axisDeadzone7;
 	static SettingsEntryDouble axisDeadzone8;
-	static SettingsEntryDouble axisDeadzone9;
 	static SettingsEntryInt    joystickNr;
 
 	static SettingsEntryString& inputButton(int id);
