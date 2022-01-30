@@ -35,14 +35,11 @@ class InputEventMapper : public QObject, public InputEventHandler
     Q_OBJECT
 
 private:
-    const static int max_axis = 9;
-    const static int max_buttons = 16;
-
     QTimer *timer;
-    double axisRawValue[max_axis];
-    double axisTrimValue[max_axis];
-    double axisDeadzone[max_axis];
-    QString actions[max_buttons];
+    double axisRawValue[InputDriver::max_axis];
+    double axisTrimValue[InputDriver::max_axis];
+    double axisDeadzone[InputDriver::max_axis];
+    QString actions[InputDriver::max_buttons];
     int translate[6];
     int rotate[6];
     int zoom;
@@ -54,8 +51,8 @@ private:
     int parseSettingValue(const std::string val);
     bool generateDeferredEvents();
     void considerGeneratingDeferredEvents();
-    bool button_state[max_buttons];
-    bool button_state_last[max_buttons];
+    bool button_state[InputDriver::max_buttons];
+    bool button_state_last[InputDriver::max_buttons];
     
     static InputEventMapper *self;
 
