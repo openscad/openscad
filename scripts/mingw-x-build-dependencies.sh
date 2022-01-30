@@ -89,8 +89,8 @@ PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-q
 else
 PACKAGES='qtbase qtmultimedia qscintilla2 mpfr eigen opencsg cgal ninja nsis glib libxml2 freetype fontconfig harfbuzz libzip lib3mf double-conversion zip'
 fi
-echo make MXE_PLUGIN_DIRS=plugins/gcc7 $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
-make MXE_PLUGIN_DIRS=plugins/gcc7 $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
+echo make MXE_PLUGIN_DIRS=plugins/gcc11 $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
+make MXE_PLUGIN_DIRS=plugins/gcc11 $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
 
 echo "leaving" $MXEDIR
 
