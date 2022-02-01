@@ -214,7 +214,7 @@ SettingsEntryString& Settings::inputButton(int id)
 		&inputButton16, &inputButton17, &inputButton18, &inputButton19,
 		&inputButton20, &inputButton21, &inputButton22, &inputButton23
 	};
-	assert(id >= 0 && id < sizeof(entries) / sizeof(*entries));
+	assert(id >= 0 && id < entries.size());
 	return *entries[id];
 }
 
@@ -225,7 +225,7 @@ SettingsEntryDouble& Settings::axisTrim(int id)
 		&axisTrim3, &axisTrim4, &axisTrim5,
 		&axisTrim6, &axisTrim7, &axisTrim8
 	};
-	assert(id >= 0 && id < sizeof(entries) / sizeof(*entries));
+	assert(id >= 0 && id < entries.size());
 	return *entries[id];
 }
 
@@ -236,7 +236,7 @@ SettingsEntryDouble& Settings::axisDeadzone(int id)
 		&axisDeadzone3, &axisDeadzone4, &axisDeadzone5,
 		&axisDeadzone6, &axisDeadzone7, &axisDeadzone8
 	};
-	assert(id >= 0 && id < sizeof(entries) / sizeof(*entries));
+	assert(id >= 0 && id < entries.size());
 	return *entries[id];
 }
 
