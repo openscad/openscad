@@ -1,5 +1,4 @@
 [![GitHub (master)](https://img.shields.io/github/checks-status/openscad/openscad/master.svg?logo=github&label=build&logoColor=black&colorA=f9d72c&style=plastic)](https://github.com/openscad/openscad/actions)
-[![Travis (master)](https://img.shields.io/travis/openscad/openscad/master.svg?logo=travis&logoColor=black&colorA=f9d72c&style=plastic)](https://travis-ci.org/openscad/openscad/)
 [![CircleCI (master)](https://img.shields.io/circleci/project/github/openscad/openscad/master.svg?logo=circleci&logoColor=black&colorA=f9d72c&style=plastic)](https://circleci.com/gh/openscad/openscad/tree/master)
 [![Coverity Scan](https://img.shields.io/coverity/scan/2510.svg?colorA=f9d72c&logoColor=black&style=plastic)](https://scan.coverity.com/projects/2510)
 
