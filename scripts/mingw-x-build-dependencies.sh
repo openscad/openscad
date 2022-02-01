@@ -79,11 +79,6 @@ if [ "`git config --get remote.origin.url | grep github.com.openscad`" ]; then
  echo 'checkout openscad-snapshot-build branch'
  git checkout openscad-snapshot-build
 fi
-if [ "`echo $* | grep 64`" ]; then
- MXE_TARGETS='x86_64-w64-mingw32.static.posix'
-else
- MXE_TARGETS='i686-w64-mingw32.static.posix'
-fi
 if [ "`echo $* | grep download`" ]; then
 PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-qtmultimedia download-ninja download-nsis download-glib download-libxml2 download-freetype download-fontconfig download-harfbuzz download-libzip download-lib3mf download-double-conversion download-zip'
 else
