@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg version="1.1" width="180mm" height="150mm" viewBox="0 0 180 150" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<defs>
+		<rect id="hiddenrect" x="162.5" y="10" width="10" height="15" style="display:none"/>
+		<g id="tworects">
+			<rect x="155" y="10" width="10" height="15" style="display: none"/>
+			<rect x="170" y="10" width="10" height="15"/>
+		</g>
+	</defs>
+	<g>
+		<rect x="10" y="10" width="10" height="10"/>
+		<rect x="30" y="10" width="10" height="10" style="display: inline"/>
+		<rect x="50" y="10" width="10" height="10" style="display: none"/>
+		<rect x="70" y="10" width="10" height="10" display="inline"/>
+		<rect x="90" y="10" width="10" height="10" display="none"/>
+		<rect x="110" y="10" width="10" height="10" display="inline" style="display: none"/>
+		<rect x="130" y="10" width="10" height="10" display="none" style="display: inline"/>
+	</g>
+	<g style="display: inline">
+		<rect x="10" y="30" width="10" height="10"/>
+		<rect x="30" y="30" width="10" height="10" style="display: inline"/>
+		<rect x="50" y="30" width="10" height="10" style="display: none"/>
+		<rect x="70" y="30" width="10" height="10" display="inline"/>
+		<rect x="90" y="30" width="10" height="10" display="none"/>
+		<rect x="110" y="30" width="10" height="10" display="inline" style="display: none"/>
+		<rect x="130" y="30" width="10" height="10" display="none" style="display: inline"/>
+	</g>
+	<g style="display: none">
+		<rect x="10" y="50" width="10" height="10"/>
+		<rect x="30" y="50" width="10" height="10" style="display: inline"/>
+		<rect x="50" y="50" width="10" height="10" style="display: none"/>
+		<rect x="70" y="50" width="10" height="10" display="inline"/>
+		<rect x="90" y="50" width="10" height="10" display="none"/>
+		<rect x="110" y="50" width="10" height="10" display="inline" style="display: none"/>
+		<rect x="130" y="50" width="10" height="10" display="none" style="display: inline"/>
+	</g>
+	<g display="inline">
+		<rect x="10" y="70" width="10" height="10"/>
+		<rect x="30" y="70" width="10" height="10" style="display: inline"/>
+		<rect x="50" y="70" width="10" height="10" style="display: none"/>
+		<rect x="70" y="70" width="10" height="10" display="inline"/>
+		<rect x="90" y="70" width="10" height="10" display="none"/>
+		<rect x="110" y="70" width="10" height="10" display="inline" style="display: none"/>
+		<rect x="130" y="70" width="10" height="10" display="none" style="display: inline"/>
+	</g>
+	<g display="none">
+		<rect x="10" y="90" width="10" height="10"/>
+		<rect x="30" y="90" width="10" height="10" style="display: inline"/>
+		<rect x="50" y="90" width="10" height="10" style="display: none"/>
+		<rect x="70" y="90" width="10" height="10" display="inline"/>
+		<rect x="90" y="90" width="10" height="10" display="none"/>
+		<rect x="110" y="90" width="10" height="10" display="inline" style="display: none"/>
+		<rect x="130" y="90" width="10" height="10" display="none" style="display: inline"/>
+	</g>
+	<g display="inline" style="display: none">
+		<rect x="10" y="110" width="10" height="10"/>
+		<rect x="30" y="110" width="10" height="10" style="display: inline"/>
+		<rect x="50" y="110" width="10" height="10" style="display: none"/>
+		<rect x="70" y="110" width="10" height="10" display="inline"/>
+		<rect x="90" y="110" width="10" height="10" display="none"/>
+		<rect x="110" y="110" width="10" height="10" display="inline" style="display: none"/>
+		<rect x="130" y="110" width="10" height="10" display="none" style="display: inline"/>
+	</g>
+	<g display="none" style="display: inline">
+		<rect x="10" y="130" width="10" height="10"/>
+		<rect x="30" y="130" width="10" height="10" style="display: inline"/>
+		<rect x="50" y="130" width="10" height="10" style="display: none"/>
+		<rect x="70" y="130" width="10" height="10" display="inline"/>
+		<rect x="90" y="130" width="10" height="10" display="none"/>
+		<rect x="110" y="130" width="10" height="10" display="inline" style="display: none"/>
+		<rect x="130" y="130" width="10" height="10" display="none" style="display: inline"/>
+	</g>
+	<use xlink:href="#hiddenrect"/>
+	<use xlink:href="#tworects" transform="translate(0, 20)" style="display: none;"/>
+	<use xlink:href="#tworects" transform="translate(0, 40)"/>
+</svg>

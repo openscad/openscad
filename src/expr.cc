@@ -42,6 +42,7 @@
 #include "printutils.h"
 #include <boost/bind.hpp>
 #include "boost-utils.h"
+#include <boost/regex.hpp>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -187,7 +188,7 @@ ArrayLookup::ArrayLookup(Expression *array, Expression *index, const Location &l
 }
 
 Value ArrayLookup::evaluate(const std::shared_ptr<const Context>& context) const {
-	return this->array->evaluate(context)[this->index->evaluate(context)];
+    return this->array->evaluate(context)[this->index->evaluate(context)];
 }
 
 void ArrayLookup::print(std::ostream &stream, const std::string &) const
@@ -371,12 +372,31 @@ MemberLookup::MemberLookup(Expression *expr, const std::string &member, const Lo
 Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) const
 {
     const Value &v = this->expr->evaluate(context);
+    static const boost::regex re_swizzle_validation("^([xyzw]{1,4}|[rgba]{1,4})$");
 
     switch(v.type()) {
     case Value::Type::VECTOR:
+        if (this->member.length() > 1 && boost::regex_match(this->member, re_swizzle_validation))
+        {
+          VectorType ret(context->session());
+          for(const char& ch : this->member)
+            switch(ch)
+            {
+              case 'r': case 'x': ret.emplace_back(v[0]); break;
+              case 'g': case 'y': ret.emplace_back(v[1]); break;
+              case 'b': case 'z': ret.emplace_back(v[2]); break;
+              case 'a': case 'w': ret.emplace_back(v[3]); break;
+            }
+          return Value(std::move(ret));
+        }
         if (this->member == "x") return v[0];
         if (this->member == "y") return v[1];
         if (this->member == "z") return v[2];
+        if (this->member == "w") return v[3];
+        if (this->member == "r") return v[0];
+        if (this->member == "g") return v[1];
+        if (this->member == "b") return v[2];
+        if (this->member == "a") return v[3];
         break;
     case Value::Type::RANGE:
         if (this->member == "begin") return v[0];

@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 #include <stdio.h>
+#include <math.h>
 #include <string>
 #include <vector>
 
@@ -47,10 +48,11 @@
 
 #include "transformation.h"
 #include "degree_trig.h"
+#include "calc.h"
 
 namespace libsvg {
 
-shape::shape() : parent(nullptr), x(0), y(0)
+shape::shape() : parent(nullptr), x(0), y(0), excluded(false)
 {
 }
 
@@ -93,7 +95,7 @@ shape::create_from_name(const char *name)
 }
 
 void
-shape::set_attrs(attr_map_t& attrs)
+shape::set_attrs(attr_map_t& attrs, void *context)
 {
 	this->id = attrs["id"];
 	this->transform = attrs["transform"];
@@ -101,6 +103,17 @@ shape::set_attrs(attr_map_t& attrs)
 	this->stroke_linecap = attrs["stroke-linecap"];
 	this->stroke_linejoin = attrs["stroke-linejoin"];
 	this->style = attrs["style"];
+
+	std::string display = get_style("display");
+	if (display.empty()) {
+		attr_map_t::const_iterator it = attrs.find("display");
+		if (it != attrs.end()) {
+			display = it->second;
+		}
+	}
+	if (display == "none") {
+		excluded = true;
+	}
 }
 
 const std::string
@@ -115,7 +128,9 @@ shape::get_style(std::string name) const
 		if (values.size() != 2) {
 			continue;
 		}
+		boost::trim(values[0]);
 		if (name == values[0]) {
+			boost::trim(values[1]);
 			return values[1];
 		}
 	}
@@ -240,6 +255,15 @@ shape::collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape 
 	}
 }
 
+bool
+shape::is_excluded() const
+{
+	for (const shape* s = this; s != nullptr; s = s->get_parent()) {
+		if (s->excluded) return true;
+	}
+	return false;
+}
+
 void
 shape::apply_transform()
 {
@@ -285,8 +309,11 @@ shape::offset_path(path_list_t& path_list, path_t& path, double stroke_width, Cl
 }
 
 void
-shape::draw_ellipse(path_t& path, double x, double y, double rx, double ry) {
-	unsigned long fn = 40;
+shape::draw_ellipse(path_t& path, double x, double y, double rx, double ry, void *context) {
+	const fnContext *fValues = reinterpret_cast<const fnContext *> (context);
+    double rmax = fmax( rx, ry );
+	unsigned long fn = Calc::get_fragments_from_r(rmax, fValues->fn, fValues->fs, fValues->fa);
+    if (fn < 40) fn = 40;       // preserve the old minimum value
 	for (unsigned long idx = 1; idx <= fn; ++idx) {
 		const double a = idx * 360.0 / fn;
 		const double xx = rx * sin_degrees(a) + x;

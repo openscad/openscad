@@ -48,8 +48,9 @@ foreach(GLIB2_LIB ${GLIB2_LIBRARY_NAMES})
                PATHS ${GLIB2_LIBRARY_DIRS}
                PATHS ${GLIB2_LIBDIR}
                NO_DEFAULT_PATH)
-#  message(STATUS "TMP: ${TMP}")
-  list(APPEND GLIB2_LIBRARIES "${TMP}")
+  if(TMP)
+    list(APPEND GLIB2_LIBRARIES "${TMP}")
+  endif()
 endforeach()
 message(STATUS "GLIB2_LIBRARIES:")
 foreach(glib2libdir ${GLIB2_LIBRARIES})

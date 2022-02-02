@@ -58,11 +58,14 @@ void ButtonConfigWidget::init() {
 		}
 	}
 
-	auto wheelIgnorer = new WheelIgnorer(this);
 	auto comboBoxes = this->findChildren<QComboBox *>();
-	for (auto comboBox : comboBoxes) {
-		comboBox->installEventFilter(wheelIgnorer);
-	}
+    if (comboBoxes.size() > 0) {      // only allocate if there are comboboxes to use the function
+        auto wheelIgnorer = new WheelIgnorer(this);
+        for (auto comboBox : comboBoxes) {
+            comboBox->installEventFilter(wheelIgnorer); // this takes ownership of the wheelIgnorer object
+        }
+    }
+    // clang generates a bogus warning that wheelIgnorer may be leaked
 
 	initialized = true;
 }
@@ -163,6 +166,54 @@ void ButtonConfigWidget::on_comboBoxButton15_activated(int val)
         emit inputMappingChanged();
 }
 
+void ButtonConfigWidget::on_comboBoxButton16_activated(int val)
+{
+	applyComboBox(comboBoxButton16, val, Settings::Settings::inputButton16);
+        emit inputMappingChanged();
+}
+
+void ButtonConfigWidget::on_comboBoxButton17_activated(int val)
+{
+	applyComboBox(comboBoxButton17, val, Settings::Settings::inputButton17);
+        emit inputMappingChanged();
+}
+
+void ButtonConfigWidget::on_comboBoxButton18_activated(int val)
+{
+	applyComboBox(comboBoxButton18, val, Settings::Settings::inputButton18);
+        emit inputMappingChanged();
+}
+
+void ButtonConfigWidget::on_comboBoxButton19_activated(int val)
+{
+	applyComboBox(comboBoxButton19, val, Settings::Settings::inputButton19);
+        emit inputMappingChanged();
+}
+
+void ButtonConfigWidget::on_comboBoxButton20_activated(int val)
+{
+	applyComboBox(comboBoxButton20, val, Settings::Settings::inputButton20);
+        emit inputMappingChanged();
+}
+
+void ButtonConfigWidget::on_comboBoxButton21_activated(int val)
+{
+	applyComboBox(comboBoxButton21, val, Settings::Settings::inputButton21);
+        emit inputMappingChanged();
+}
+
+void ButtonConfigWidget::on_comboBoxButton22_activated(int val)
+{
+	applyComboBox(comboBoxButton22, val, Settings::Settings::inputButton22);
+        emit inputMappingChanged();
+}
+
+void ButtonConfigWidget::on_comboBoxButton23_activated(int val)
+{
+	applyComboBox(comboBoxButton23, val, Settings::Settings::inputButton23);
+        emit inputMappingChanged();
+}
+
 void ButtonConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryString& entry)
 {
 	entry.setValue(comboBox->itemData(val).toString().toStdString());
@@ -214,7 +265,9 @@ void ButtonConfigWidget::updateStates(){
 	int cnt = InputDriverManager::instance()->getButtonCount();
 	for (int i=0; i<InputEventMapper::getMaxButtons(); ++i) {
 		auto label = this->findChild<QLabel *>(QString("labelInputButton%1").arg(i));
-		QString style =(cnt <= i) ? ButtonConfigWidget::DisabledStyleString : ButtonConfigWidget::EmptyString;
-		label->setStyleSheet(style);
+        if (label) {
+            QString style =(cnt <= i) ? ButtonConfigWidget::DisabledStyleString : ButtonConfigWidget::EmptyString;
+            label->setStyleSheet(style);
+        }
 	}
 }

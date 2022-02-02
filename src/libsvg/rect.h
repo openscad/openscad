@@ -45,7 +45,7 @@ public:
     double get_rx() const { return rx; }
     double get_ry() const { return ry; }
     
-    void set_attrs(attr_map_t& attrs) override;
+    void set_attrs(attr_map_t& attrs, void *context) override;
     const std::string dump() const override;
     const std::string& get_name() const override { return rect::name; };
     

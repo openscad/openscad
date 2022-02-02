@@ -1,12 +1,12 @@
 #ifdef ENABLE_CGAL
 
+#include "cgal.h"
 #include "cgalutils.h"
 #include "polyset.h"
 #include "printutils.h"
 #include "polyset-utils.h"
 #include "grid.h"
 
-#include "cgal.h"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
 #include <boost/range/adaptor/reversed.hpp>

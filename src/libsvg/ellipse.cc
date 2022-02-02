@@ -40,16 +40,16 @@ ellipse::~ellipse()
 }
 
 void
-ellipse::set_attrs(attr_map_t& attrs)
+ellipse::set_attrs(attr_map_t& attrs, void *context)
 {
-	shape::set_attrs(attrs);
+	shape::set_attrs(attrs,context);
 	this->x = parse_double(attrs["cx"]);
 	this->y = parse_double(attrs["cy"]);
 	this->rx = parse_double(attrs["rx"]);
 	this->ry = parse_double(attrs["ry"]);
 
 	path_t path;
-	draw_ellipse(path, get_x(), get_y(), get_radius_x(), get_radius_y());
+	draw_ellipse(path, get_x(), get_y(), get_radius_x(), get_radius_y(), context);
 	path_list.push_back(path);
 }
 

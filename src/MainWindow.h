@@ -117,6 +117,7 @@ public:
 	bool fileChangedOnDisk();
 	void parseTopLevelDocument();
 	void exceptionCleanup();
+	void UnknownExceptionCleanup();
 
 private:
 	void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
@@ -143,6 +144,7 @@ private:
   class FontListDialog *font_list_dialog;
 
 public slots:
+	void updateExportActions();
 	void updateRecentFiles(EditorInterface *edt);
 	void updateRecentFileActions();
 	void handleFileDrop(const QUrl& url);

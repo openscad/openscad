@@ -1,0 +1,46 @@
+{
+    "name" : "XCode",
+    "index" : 1900,
+    "paper" : "#ffffff",
+    "text" : "Black",
+    "caret" : {
+        "width" : 2,
+        "foreground" : "#000000",
+        "line-background" : "#f8f8f8"
+    },
+    "colors" : {
+        "keyword1" : "#002dff",
+        "keyword2" : "#002dff",
+        "keyword3" : "#002dff",
+        "commentline" : "#057100",
+        "commentdoc" : "#057100",
+        "commentdockeyword" : "#057100",
+
+        "comment" : "#057100",
+        "number" : "#5d2883",
+        "string" : "#ad281f",
+        "operator" : "#002dff",
+        "variables" : "#2e8aa6",
+
+        "keywords" : "#002dff",
+        "transformations" : "#002dff",
+        "booleans" : "#002dff",
+        "functions" : "#002dff",
+        "models" : "#002dff",
+        "special-variables" : "#045881",
+
+        "whitespace-foreground" : "#272822",
+        "selection-foreground" : "#ffffff",
+        "selection-background" : "#4a90d9",
+        "margin-background" : "#f8f8f8",
+        "margin-foreground" : "Gray",
+        "matched-brace-background" : "#c7f6cb",
+        "matched-brace-foreground" : "Blue",
+        "unmatched-brace-background" : "#ffcdcc",
+        "unmatched-brace-foreground" : "Blue",
+        "error-marker" : "#ff0000",
+        "error-indicator" : "#60ff0000",
+        "error-indicator-outline" : "#ff000000",
+        "edge" : "#ffffff"
+    }
+}

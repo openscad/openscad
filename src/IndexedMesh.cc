@@ -33,9 +33,9 @@
 
 #ifdef ENABLE_CGAL
 
-#include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
+#include "CGAL_Nef_polyhedron.h"
 
 #include "grid.h"
 
