@@ -208,7 +208,7 @@ build_qt5()
 		-no-feature-qtdiag -no-feature-qtpaths -no-feature-qtplugininfo \
 		-no-feature-openal -no-feature-avfoundation -no-feature-gstreamer \
 		-device-option QMAKE_APPLE_DEVICE_ARCHS=$ARCH
-  make -j"$NUMCPU"
+  make -j"$NUMCPU" 
   make install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/qt5.version
 }
@@ -289,7 +289,7 @@ build_boost()
   cd boost_$bversion
   ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,chrono,system,regex,date_time,atomic
   BOOST_TOOLSET="toolset=clang"
-  echo "using clang ;" >> tools/build/user-config.jam
+  echo "using clang ;" >> tools/build/user-config.jam 
   ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCH" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch $ARCH -headerpad_max_install_names" install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/boost.version
 }
@@ -425,7 +425,7 @@ build_sparkle()
 #  xcodebuild clean
 #  xcodebuild -arch x86_64
 #  rm -rf $DEPLOYDIR/lib/Sparkle.framework
-#  cp -Rf build/Release/Sparkle.framework $DEPLOYDIR/lib/
+#  cp -Rf build/Release/Sparkle.framework $DEPLOYDIR/lib/ 
 #  Install_name_tool -id $DEPLOYDIR/lib/Sparkle.framework/Versions/A/Sparkle $DEPLOYDIR/lib/Sparkle.framework/Sparkle
 
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/sparkle.version
