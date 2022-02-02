@@ -37,15 +37,15 @@ circle::~circle()
 }
 
 void
-circle::set_attrs(attr_map_t& attrs)
+circle::set_attrs(attr_map_t& attrs, void *context)
 {
-	shape::set_attrs(attrs);
+	shape::set_attrs(attrs,context);
 	this->x = parse_double(attrs["cx"]);
 	this->y = parse_double(attrs["cy"]);
 	this->r = parse_double(attrs["r"]);
 	
 	path_t path;
-	draw_ellipse(path, get_x(), get_y(), get_radius(), get_radius());
+	draw_ellipse(path, get_x(), get_y(), get_radius(), get_radius(), context);
 	path_list.push_back(path);
 }
 

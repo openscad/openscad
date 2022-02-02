@@ -80,10 +80,14 @@ double calc_alignment(const libsvg::align_t alignment, double page_mm, double sc
 
 }
 
-Polygon2d *import_svg(const std::string &filename, const double dpi, const bool center, const Location &loc)
+
+Polygon2d *import_svg(double fn, double fs, double fa,
+                    const std::string &filename, const double dpi, const bool center, const Location &loc)
 {
 	try {
-		const auto shapes = libsvg::libsvg_read_file(filename.c_str());
+        fnContext scadContext(fn, fs, fa);
+        
+		const auto shapes = libsvg::libsvg_read_file(filename.c_str(), (void *) &scadContext );
 
 		double width_mm = 0.0;
 		double height_mm = 0.0;
@@ -131,10 +135,12 @@ Polygon2d *import_svg(const std::string &filename, const double dpi, const bool 
 				}
 			}
 
-			const auto& s = *shape_ptr;
-			for (const auto& p : s.get_path_list()) {
-				for (const auto& v : p) {
-					bbox.extend(Eigen::Vector2d{scale.x() * v.x(), scale.y() * v.y()});
+			if (!shape_ptr->is_excluded()) {
+				const auto& s = *shape_ptr;
+				for (const auto& p : s.get_path_list()) {
+					for (const auto& v : p) {
+						bbox.extend(Eigen::Vector2d{scale.x() * v.x(), scale.y() * v.y()});
+					}
 				}
 			}
 		}
@@ -143,20 +149,23 @@ Polygon2d *import_svg(const std::string &filename, const double dpi, const bool 
 
 		std::vector<const Polygon2d*> polygons;
 		for (const auto& shape_ptr : *shapes) {
-			Polygon2d *poly = new Polygon2d();
-			const auto& s = *shape_ptr;
-			for (const auto& p : s.get_path_list()) {
-				Outline2d outline;
-				for (const auto& v : p) {
-					double x = scale.x() * (-viewbox.x() + v.x()) - cx;
-					double y = scale.y() * (-viewbox.y() - v.y()) + cy;
-					outline.vertices.push_back(Vector2d(x, y));
-					outline.positive = true;
+			if (!shape_ptr->is_excluded()) {
+				Polygon2d *poly = new Polygon2d();
+				const auto& s = *shape_ptr;
+				for (const auto& p : s.get_path_list()) {
+					Outline2d outline;
+					for (const auto& v : p) {
+						double x = scale.x() * (-viewbox.x() + v.x()) - cx;
+						double y = scale.y() * (-viewbox.y() - v.y()) + cy;
+						outline.vertices.push_back(Vector2d(x, y));
+						outline.positive = true;
+					}
+					poly->addOutline(outline);
 				}
-				poly->addOutline(outline);
+				polygons.push_back(poly);
 			}
-			polygons.push_back(poly);
 		}
+		libsvg_free(shapes);
 		return ClipperUtils::apply(polygons, ClipperLib::ctUnion);
 	} catch (const std::exception& e) {
 		LOG(message_group::Error,Location::NONE,"","%1$s, import() at line %2$d",e.what(),loc.firstLine());

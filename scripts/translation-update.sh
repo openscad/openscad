@@ -116,8 +116,8 @@ updatemo()
   echo "using suffix '$SUFFIX'"
  fi
  cp -f ./icons/openscad.desktop.in ./icons/openscad.desktop
- sed -i -e "s,@@openscad@@,openscad${SUFFIX}," ./icons/openscad.desktop
- sed -i -e "s,</id>,${SUFFIX}\\0,; s/openscad.desktop/openscad${SUFFIX}.desktop/; s/openscad.png/openscad${SUFFIX}.png/" ./openscad.appdata.xml
+ sed -i.bak -e "s,@@openscad@@,openscad${SUFFIX}," ./icons/openscad.desktop
+ sed -i.bak -e "s,</id>,${SUFFIX}\\0,; s/openscad.desktop/openscad${SUFFIX}.desktop/; s/openscad.png/openscad${SUFFIX}.png/" ./openscad.appdata.xml
 }
 
 GETTEXT_PATH=""
@@ -135,6 +135,7 @@ if [ "x$1" = xupdatemo ]; then
  updatemo "$2"
 else
  echo "Generating POTFILES..."
- ./scripts/generate-potfiles.sh "$CURDIR" > locale/POTFILES
+ BUILDDIR=$(find "$CURDIR" -name ui_MainWindow.h | grep OpenSCAD_autogen/include/ui_MainWindow.h | sed -e 's,/*OpenSCAD_autogen/include/ui_MainWindow.h,,')
+ ./scripts/generate-potfiles.sh "$BUILDDIR" > locale/POTFILES
  updatepot && updatepo && updatemo ""
 fi

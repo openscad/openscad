@@ -133,22 +133,25 @@ void AxisConfigWidget::init() {
 	initUpdateCheckBox(this->checkBoxQGamepad, Settings::Settings::inputEnableDriverQGAMEPAD);
 	initUpdateCheckBox(this->checkBoxDBus,     Settings::Settings::inputEnableDriverDBUS);
 
-	auto *wheelIgnorer = new WheelIgnorer(this);
 	auto comboBoxes = this->findChildren<QComboBox *>();
-	for (auto comboBox : comboBoxes) {
-		comboBox->installEventFilter(wheelIgnorer);
-	}
+    if (comboBoxes.size() > 0) {     // only allocate if there are comboboxes to use the function
+        auto *wheelIgnorer = new WheelIgnorer(this);
+        for (auto comboBox : comboBoxes) {
+            comboBox->installEventFilter(wheelIgnorer); // this takes ownership of the wheelIgnorer object
+        }
+    }
+    // clang generates a bogus warning that wheelIgnorer may be leaked
 
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i ){
 		std::string s = std::to_string(i);
 
-		auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
-		if(spin){
-			initUpdateDoubleSpinBox(spin,Settings::Settings::axisTrim(i));
+		auto spinTrim = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
+		if(spinTrim){
+			initUpdateDoubleSpinBox(spinTrim,Settings::Settings::axisTrim(i));
 		}
-		spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone%1").arg(i));
-		if(spin){
-			initUpdateDoubleSpinBox(spin,Settings::Settings::axisDeadzone(i));
+		auto spinDeadZone = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone%1").arg(i));
+		if(spinDeadZone){
+			initUpdateDoubleSpinBox(spinDeadZone,Settings::Settings::axisDeadzone(i));
 		}
 	}
 
@@ -512,13 +515,15 @@ void AxisConfigWidget::updateStates(){
 	int cnt = InputDriverManager::instance()->getAxisCount();
 	for (int i=0; i<InputEventMapper::getMaxAxis(); ++i) {
 		auto progressbar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(i));
-		if( cnt <= i){
-			progressbar->setEnabled(false);
-			progressbar->setMinimum(0);
-		}else{
-			progressbar->setEnabled(true);
-			progressbar->setMinimum(-100);
-		}
+        if (progressbar) {
+            if( cnt <= i){
+                progressbar->setEnabled(false);
+                progressbar->setMinimum(0);
+            }else{
+                progressbar->setEnabled(true);
+                progressbar->setMinimum(-100);
+            }
+        }
 	}
 
 	auto manager = InputDriverManager::instance();

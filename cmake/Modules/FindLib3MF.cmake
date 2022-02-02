@@ -15,10 +15,17 @@
 # not finding the version.
 find_package(PkgConfig REQUIRED QUIET)
 pkg_check_modules(PC_LIB3MF lib3MF)
+
+# Check for 2.0 version pc file if 1.0 was not found.
+if (NOT PC_LIB3MF_FOUND)
+  pkg_check_modules(PC_LIB3MF lib3mf)
+endif()
+
 set(LIB3MF_VERSION ${PC_LIB3MF_VERSION})
+set(LIB3MF_FOUND ${PC_LIB3MF_FOUND})
 
 find_path(LIB3MF_INCLUDE_DIRS
-    NAMES Model/COM/NMR_DLLInterfaces.h
+    NAMES Model/COM/NMR_DLLInterfaces.h lib3mf_implicit.hpp
     HINTS $ENV{LIB3MF_INCLUDEDIR}
           ${PC_LIB3MF_INCLUDEDIR}
           ${PC_LIB3MF_INCLUDE_DIRS}
@@ -41,7 +48,7 @@ set(LIB3MF_LIB "3MF")
 set(LIB3MF_API "API 1.x")
 
 # some distribution packages are missing version information for 2.0
-if (LIB3MF_VERSION STREQUAL "" AND LIB3MF_FOUND)
+if ("${LIB3MF_VERSION}" STREQUAL "" AND LIB3MF_FOUND)
   if (EXISTS "/usr/include/lib3mf" AND EXISTS "/usr/include/lib3mf/lib3mf_implicit.hpp")
     set(LIB3MF_VERSION "2.0.0")
   endif()

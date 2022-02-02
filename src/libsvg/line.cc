@@ -37,9 +37,9 @@ line::~line()
 }
 
 void
-line::set_attrs(attr_map_t& attrs)
+line::set_attrs(attr_map_t& attrs, void *context)
 {
-	shape::set_attrs(attrs);
+	shape::set_attrs(attrs,context);
 	this->x = parse_double(attrs["x1"]);
 	this->y = parse_double(attrs["y1"]);
 	this->x2 = parse_double(attrs["x2"]);

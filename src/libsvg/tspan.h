@@ -50,7 +50,7 @@ public:
     const std::string& get_font_family() const { return font_family; }
     int get_font_size() const { return font_size; }
 
-    void set_attrs(attr_map_t& attrs) override;
+    void set_attrs(attr_map_t& attrs, void *context) override;
     const std::string dump() const override;
     const std::string& get_name() const override { return tspan::name; };
     

@@ -3,6 +3,7 @@
 
 #ifdef ENABLE_CGAL
 
+#include "cgal.h"
 #include "cgalutils.h"
 #include "polyset.h"
 #include "printutils.h"
@@ -12,7 +13,6 @@
 #include "node.h"
 #include "degree_trig.h"
 
-#include "cgal.h"
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 
@@ -160,7 +160,7 @@ namespace CGALUtils {
 
   /*!
 		Check if all faces of a polyset is within 0.1 degree of being convex.
-		
+
 		NB! This function can give false positives if the polyset contains
 		non-planar faces. To be on the safe side, consider passing a tessellated polyset.
 		See issue #1061.
@@ -262,10 +262,10 @@ namespace CGALUtils {
 	}
 
 /*
-	Create a PolySet from a Nef Polyhedron 3. return false on success, 
-	true on failure. The trick to this is that Nef Polyhedron3 faces have 
-	'holes' in them. . . while PolySet (and many other 3d polyhedron 
-	formats) do not allow for holes in their faces. The function documents 
+	Create a PolySet from a Nef Polyhedron 3. return false on success,
+	true on failure. The trick to this is that Nef Polyhedron3 faces have
+	'holes' in them. . . while PolySet (and many other 3d polyhedron
+	formats) do not allow for holes in their faces. The function documents
 	the method used to deal with this
 */
 	template <typename K>
@@ -347,7 +347,7 @@ namespace CGALUtils {
 		std::cerr.precision(20);
 		for (size_t i=0; i<allVertices.size(); ++i) {
 			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
-		}		
+		}
 #endif // debug
 
 			/* at this stage, we have a sequence of polygons. the first
@@ -396,7 +396,7 @@ namespace CGALUtils {
 		std::cerr.precision(20);
 		for (size_t i=0; i<allVertices.size(); ++i) {
 			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
-		}		
+		}
 #endif // debug
 
 		return err;

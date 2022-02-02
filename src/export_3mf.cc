@@ -52,9 +52,9 @@ using namespace NMR;
 
 #ifdef ENABLE_CGAL
 
-#include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
+#include "CGAL_Nef_polyhedron.h"
 
 static void export_3mf_error(const std::string msg, PLib3MFModel *&model)
 {
@@ -213,9 +213,9 @@ void export_3mf(const shared_ptr<const Geometry> &geom, std::ostream &output)
 
 #ifdef ENABLE_CGAL
 
-#include "CGAL_Nef_polyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
+#include "CGAL_Nef_polyhedron.h"
 
 static void export_3mf_error(const std::string msg)
 {

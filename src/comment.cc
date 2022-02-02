@@ -92,7 +92,7 @@ static std::string getComment(const std::string &fulltext, int line)
 	}
 
 	int end = start + 1;
-	while (fulltext[end] != '\n') end++;
+	while (end < fulltext.size() && fulltext[end] != '\n') end++;
 
 	std::string comment = fulltext.substr(start, end - start);
 
@@ -281,12 +281,14 @@ void CommentParser::collectParameters(const std::string& fulltext, SourceFile *r
 		AnnotationList *annotationList = new AnnotationList();
 
 		// Extracting the parameter comment
-		std::string comment = getComment(fulltext, firstLine);
-		// getting the node for parameter annotation
-		shared_ptr<Expression> params = CommentParser::parser(comment.c_str());
-		if (!params) {
-			params = EmptyStringLiteral;
-		}
+        shared_ptr<Expression> params;
+        std::string comment = getComment(fulltext, firstLine);
+        if (comment.length() > 0) {     // don't parse what doesn't exist, so we don't get bogus errors from the parser
+            // getting the node for parameter annotation
+            params = CommentParser::parser(comment.c_str());
+        }
+        if (!params)
+            params = EmptyStringLiteral;
 
 		// adding parameter to the list
 		annotationList->push_back(Annotation("Parameter", params));

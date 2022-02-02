@@ -109,13 +109,13 @@
 
 #ifdef ENABLE_CGAL
 
+#include "cgal.h"
+#include "cgalutils.h"
 #include "CGALCache.h"
 #include "GeometryEvaluator.h"
 #include "CGALRenderer.h"
 #include "CGAL_Nef_polyhedron.h"
-#include "cgal.h"
 #include "CGALWorker.h"
-#include "cgalutils.h"
 
 #endif // ENABLE_CGAL
 
@@ -134,7 +134,7 @@ static const int autoReloadPollingPeriodMS = 200;
 unsigned int GuiLocker::gui_locked = 0;
 
 static char copyrighttext[] =
-	"<p>Copyright (C) 2009-2021 The OpenSCAD Developers</p>"
+	"<p>Copyright (C) 2009-2022 The OpenSCAD Developers</p>"
 	"<p>This program is free software; you can redistribute it and/or modify "
 	"it under the terms of the GNU General Public License as published by "
 	"the Free Software Foundation; either version 2 of the License, or "
@@ -165,16 +165,60 @@ QAction *findAction(const QList<QAction *> &actions, const std::string &name)
    return nullptr;
 }
 
-const QString htmlEscape(const QString& str) {
-	return str.toHtmlEscaped();
-}
-
-const QString htmlEscape(const std::string& str) {
-	return htmlEscape(QString::fromStdString(str));
-}
-
 void fileExportedMessage(const char *format, const QString &filename) {
 	LOG(message_group::None,Location::NONE,"","%1$s export finished: %2$s",format,filename.toUtf8().constData());
+}
+
+QAction * getExport3DAction(const MainWindow *mainWindow) {
+	const QString format = QString::fromStdString(Settings::Settings::toolbarExport3D.value());
+	if (format == "STL") {
+		return mainWindow->fileActionExportSTL;
+	} else if (format == "OFF") {
+		return mainWindow->fileActionExportOFF;
+	} else if (format == "WRL") {
+		return mainWindow->fileActionExportWRL;
+	} else if (format == "AMF") {
+		return mainWindow->fileActionExportAMF;
+	} else if (format == "3MF") {
+		return mainWindow->fileActionExport3MF;
+	} else {
+		return nullptr;
+	}
+}
+
+QAction * getExport2DAction(const MainWindow *mainWindow) {
+	const QString format = QString::fromStdString(Settings::Settings::toolbarExport2D.value());
+	if (format == "DXF") {
+		return mainWindow->fileActionExportDXF;
+	} else if (format == "SVG") {
+		return mainWindow->fileActionExportSVG;
+	} else if (format == "PDF") {
+		return mainWindow->fileActionExportPDF;
+	} else {
+		return nullptr;
+	}
+}
+
+void removeExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *action) {
+	int idx = toolbar->actions().indexOf(action);
+	while (idx > 0) {
+		QAction *a = toolbar->actions().at(idx - 1);
+		if (a->objectName().isEmpty()) // separator
+			break;
+		toolbar->removeAction(a);
+		idx--;
+	}
+}
+
+void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *action) {
+	QAction *export3D = getExport3DAction(mainWindow);
+	if (export3D) {
+		toolbar->insertAction(action, export3D);
+	}
+	QAction *export2D = getExport2DAction(mainWindow);
+	if (export2D) {
+		toolbar->insertAction(action, export2D);
+	}
 }
 
 } // namespace
@@ -211,6 +255,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 
 	const QString importStatement = "import(\"%1\");\n";
 	const QString surfaceStatement = "surface(\"%1\");\n";
+	const QString importFunction = "data = import(\"%1\");\n";
 	knownFileExtensions["stl"] = importStatement;
 	knownFileExtensions["3mf"] = importStatement;
 	knownFileExtensions["off"] = importStatement;
@@ -219,6 +264,7 @@ MainWindow::MainWindow(const QStringList &filenames)
 	knownFileExtensions["amf"] = importStatement;
 	knownFileExtensions["dat"] = surfaceStatement;
 	knownFileExtensions["png"] = surfaceStatement;
+	knownFileExtensions["json"] = importFunction;
 	knownFileExtensions["scad"] = "";
 	knownFileExtensions["csg"] = "";
 
@@ -490,10 +536,9 @@ MainWindow::MainWindow(const QStringList &filenames)
 	connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
 	connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
 	connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
-	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()),
-					this, SLOT(openCSGSettingsChanged()));
-	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)),
-					this, SLOT(setColorScheme(const QString&)));
+	connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()), this, SLOT(openCSGSettingsChanged()));
+	connect(Preferences::inst(), SIGNAL(colorSchemeChanged(const QString&)), this, SLOT(setColorScheme(const QString&)));
+	connect(Preferences::inst(), SIGNAL(toolbarExportChanged()), this, SLOT(updateExportActions()));
 
 	Preferences::inst()->apply_win(); // not sure if to be commented, checked must not be commented(done some changes in apply())
 
@@ -643,14 +688,21 @@ MainWindow::MainWindow(const QStringList &filenames)
 	for(int i = 1; i < filenames.size(); ++i)
 		tabManager->createTab(filenames[i]);
 
-	//handle the hide/show of exportSTL action in view toolbar according to the visibility of editor dock
-	if (!editorDock->isVisible()) {
-		QAction *beforeAction = viewerToolBar->actions().at(2); //a separator, not a part of the class
-		viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
-	}
+	updateExportActions();
 
 	this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
 	activeEditor->setFocus();
+}
+
+void MainWindow::updateExportActions() {
+	removeExportActions(this, editortoolbar, this->designAction3DPrint);
+	addExportActions(this, editortoolbar, this->designAction3DPrint);
+
+	//handle the hide/show of export action in view toolbar according to the visibility of editor dock
+	removeExportActions(this, viewerToolBar, this->viewActionViewAll);
+	if (!editorDock->isVisible()) {
+		addExportActions(this, viewerToolBar, this->viewActionViewAll);
+	}
 }
 
 void MainWindow::openFileFromPath(QString path,int line)
@@ -1007,9 +1059,8 @@ void MainWindow::compile(bool reload, bool forcedone)
 		if (reload) {
 			// Refresh files if it has changed on disk
 			if (fileChangedOnDisk() && checkEditorModified()) {
-				shouldcompiletoplevel = true;
-				tabManager->refreshDocument();
-				if (Preferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
+				shouldcompiletoplevel = tabManager->refreshDocument();  // don't compile if we couldn't open the file
+				if (shouldcompiletoplevel && Preferences::inst()->getValue("advanced/autoReloadRaise").toBool()) {
 					// reloading the 'same' document brings the 'old' one to front.
 					this->raise();
 				}
@@ -1075,9 +1126,11 @@ void MainWindow::compile(bool reload, bool forcedone)
 		}
 
 		compileDone(didcompile | forcedone);
-	}catch(const HardWarningException&){
+	} catch(const HardWarningException&) {
 		exceptionCleanup();
-	}
+	} catch (...) {
+        UnknownExceptionCleanup();
+    }
 }
 
 void MainWindow::waitAfterReload()
@@ -1513,7 +1566,7 @@ void MainWindow::actionReload()
 {
 	if (checkEditorModified()) {
 		fileChangedOnDisk(); // force cached autoReloadId to update
-		tabManager->refreshDocument();
+		(void)tabManager->refreshDocument();    // ignore errors opening the file
 	}
 }
 
@@ -1772,7 +1825,9 @@ void MainWindow::parseTopLevelDocument()
 	auto fnameba = activeEditor->filepath.toLocal8Bit();
 	const char* fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
 	delete this->parsed_file;
-	this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
+    this->parsed_file = nullptr;    // because the parse() call can throw and we don't want a stale pointer!
+    this->root_file = nullptr;      // ditto
+    this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
 
 	if (this->root_file!=nullptr) {
 		//add parameters as annotation in AST
@@ -2317,6 +2372,14 @@ void MainWindow::exceptionCleanup(){
 	if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
+void MainWindow::UnknownExceptionCleanup(){
+    setCurrentOutput();     // we need to show this error
+    LOG(message_group::Error,Location::NONE,"","Parsing aborted by unknown exception");
+    LOG(message_group::None,Location::NONE,""," ");
+    GuiLocker::unlock();
+    if (designActionAutoReload->isChecked()) autoReloadTimer->start();
+}
+
 void MainWindow::actionDisplayAST()
 {
 	setCurrentOutput();
@@ -2839,13 +2902,7 @@ void MainWindow::on_editorDock_visibilityChanged(bool)
 {
 	changedTopLevelEditor(editorDock->isFloating());
 	tabToolBar->setVisible((tabCount > 1) && editorDock->isVisible());
-
-	if (editorDock->isVisible()) viewerToolBar->removeAction(this->fileActionExportSTL);
-	else{
-		 QAction *beforeAction = viewerToolBar->actions().at(2);
-		 viewerToolBar->insertAction(beforeAction, this->fileActionExportSTL);
-	 }
-
+	updateExportActions();
 }
 
 void MainWindow::on_consoleDock_visibilityChanged(bool)
