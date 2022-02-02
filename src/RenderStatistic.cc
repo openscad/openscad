@@ -171,10 +171,10 @@ void RenderStatistic::printRenderingTime()
 
 void RenderStatistic::printAll(const shared_ptr<const Geometry> geom, const Camera& camera, const std::vector<std::string>& options, const std::string& filename)
 {
-	bool is_log = false;
+	//bool is_log = false;
 	std::unique_ptr<StatisticVisitor> visitor;
 	if (filename.empty()) {
-		is_log = true;
+		//is_log = true;
 		visitor = std::make_unique<LogVisitor>(options);
 	} else if (filename == "-") {
 		visitor = std::make_unique<StreamVisitor>(options, std::cout);

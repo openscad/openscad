@@ -367,7 +367,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         endif()
       else()
         # add global experimental options here
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=roof" "--enable=lazy-union" "--enable=textmetrics")
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=roof" "--enable=lazy-union" "--enable=textmetrics" "--enable=import-function")
       endif()
 
       # 2D tests should be viewed from the top, not an angle.
@@ -502,8 +502,10 @@ file(GLOB SCAD_DXF_FILES      ${TEST_SCAD_DIR}/dxf/*.scad)
 file(GLOB SCAD_PDF_FILES      ${TEST_SCAD_DIR}/pdf/*.scad)
 file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/box-w-holes-2d.scad
+  ${TEST_SCAD_DIR}/svg/display.scad
   ${TEST_SCAD_DIR}/svg/line-cap-line-join.scad
-  ${TEST_SCAD_DIR}/svg/simple-center-2d.scad)
+  ${TEST_SCAD_DIR}/svg/simple-center-2d.scad
+  ${TEST_SCAD_DIR}/svg/use-transform.scad)
 file(GLOB SCAD_AMF_FILES           ${TEST_SCAD_DIR}/amf/*.scad)
 file(GLOB SCAD_NEF3_FILES          ${TEST_SCAD_DIR}/nef3/*.scad)
 file(GLOB FUNCTION_FILES           ${TEST_SCAD_DIR}/functions/*.scad)
@@ -626,6 +628,8 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/root-modifier-for.scad
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
   ${TEST_SCAD_DIR}/misc/text-metrics-test.scad
+  ${TEST_SCAD_DIR}/json/import-json.scad
+  ${TEST_SCAD_DIR}/misc/vector-swizzling.scad
 )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -837,6 +841,7 @@ experimental_tests(csgpngtest_text-metrics)
 experimental_tests(throwntogethertest_text-metrics)
 experimental_tests(dxfpngtest_text-metrics)
 experimental_tests(svgpngtest_text-metrics)
+experimental_tests(echotest_import-json)
 
 # Test config handling
 

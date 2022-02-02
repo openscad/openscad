@@ -24,6 +24,7 @@ public:
 	static const Feature ExperimentalVxORenderersDirect;
 	static const Feature ExperimentalVxORenderersPrealloc;
 	static const Feature ExperimentalTextMetricsFunctions;
+	static const Feature ExperimentalImportFunction;
 
 	const std::string& get_name() const;
 	const std::string& get_description() const;

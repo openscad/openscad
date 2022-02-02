@@ -44,10 +44,10 @@ public:
     std::string get_info() const override;
 
     int getButtonCount() const override{
-        return 16;
+        return InputDriver::max_buttons;
     }
     int getAxisCount() const override{
-        return 6;
+        return InputDriver::max_axis;
     }
 
 private:

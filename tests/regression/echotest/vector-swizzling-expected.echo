@@ -1,0 +1,18 @@
+ECHO: 10
+ECHO: 20
+ECHO: 30
+ECHO: 40
+ECHO: [40, 20]
+ECHO: [30, 40, 20]
+ECHO: [10, 20, 30, 40]
+ECHO: [10, 20, 10, 20]
+ECHO: 10
+ECHO: 20
+ECHO: 30
+ECHO: 40
+ECHO: [40, 20]
+ECHO: [30, 40, 20]
+ECHO: [10, 20, 30, 40]
+ECHO: [10, 20, 10, 20]
+ECHO: undef
+ECHO: undef

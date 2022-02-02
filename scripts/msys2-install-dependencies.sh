@@ -22,6 +22,8 @@ for pkg in \
     mingw-w64-x86_64-cairo \
     mingw-w64-x86_64-ghostscript \
     mingw-w64-x86_64-imagemagick \
+    mingw-w64-x86_64-qt5-svg \
+    mingw-w64-x86_64-qt5-multimedia \
     make \
     cmake \
     bison \

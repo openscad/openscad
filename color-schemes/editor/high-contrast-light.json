@@ -1,0 +1,46 @@
+{
+    "name" : "High Contrast Light",
+    "index" : 1700,
+    "paper" : "#ffffff",
+    "text" : "Black",
+    "caret" : {
+        "width" : 2,
+        "foreground" : "#000000",
+        "line-background" : "#f8f8f8"
+    },
+    "colors" : {
+        "keyword1" : "#2f5356",
+        "keyword2" : "#2f5356",
+        "keyword3" : "#2f5356",
+        "commentline" : "#1d5900",
+        "commentdoc" : "#1d5900",
+        "commentdockeyword" : "#1d5900",
+
+        "comment" : "#1d5900",
+        "number" : "#2226d3",
+        "string" : "#a31706",
+        "operator" : "#2f5356",
+        "variables" : "#6d4025",
+
+        "keywords" : "#2f5356",
+        "transformations" : "#2f5356",
+        "booleans" : "#2f5356",
+        "functions" : "#004e97",
+        "models" : "#004e97",
+        "special-variables" : "#634a00",
+
+        "whitespace-foreground" : "#272822",
+        "selection-foreground" : "#ffffff",
+        "selection-background" : "#4a90d9",
+        "margin-background" : "#f8f8f8",
+        "margin-foreground" : "Gray",
+        "matched-brace-background" : "#c7f6cb",
+        "matched-brace-foreground" : "Blue",
+        "unmatched-brace-background" : "#ffcdcc",
+        "unmatched-brace-foreground" : "Blue",
+        "error-marker" : "#ff0000",
+        "error-indicator" : "#60ff0000",
+        "error-indicator-outline" : "#ff000000",
+        "edge" : "#ffffff"
+    }
+}

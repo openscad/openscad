@@ -40,9 +40,9 @@ use::~use()
 }
 
 void
-use::set_attrs(attr_map_t& attrs)
+use::set_attrs(attr_map_t& attrs, void *context)
 {
-	shape::set_attrs(attrs);
+	shape::set_attrs(attrs, context);
 	this->x = parse_double(attrs["x"]);
 	this->y = parse_double(attrs["y"]);
 
@@ -68,7 +68,7 @@ use::set_attrs(attr_map_t& attrs)
 
 	//apply the x/y coordinates to all the children by using a transform
 	std::stringstream s;
-	s << "translate(" << this->x << "," << this->y << ")";
+	s << this->transform << " translate(" << this->x << "," << this->y << ")";
 	this->transform = s.str();
 }
 

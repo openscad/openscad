@@ -12,13 +12,27 @@
         "keyword1" : "blue",
         "keyword2" : "blue",
         "keyword3" : "#2B91AF",
-        "comment" : "DarkGreen",
         "commentline" : "DarkGreen",
-        "commentdoc" : "#DarkGreen",
-        "commentdockeyword" : "#DarkGreen",
+        "commentdoc" : "DarkGreen",
+        "commentdockeyword" : "DarkGreen",
+
+        "comment" : "DarkGreen",
         "number" : "DarkRed",
         "string" : "#A31515",
         "operator" : "Blue",
+        "variables" : "DarkSlateGray",
+
+        "keywords" : "blue",
+        "transformations" : "#2B91AF",
+        "booleans" : "#2B91AF",
+        "functions" : "blue",
+        "models" : "blue",
+        "special-variables" : "Teal",
+
+        "keyword-custom1" : "DarkMagenta",
+        "keyword-custom2" : "OliveDrab",
+        "keyword-custom3" : "Indigo",
+
         "whitespace-foreground" : "#101010",
         "selection-foreground" : "black",
         "selection-background" : "lightblue",
@@ -34,8 +48,8 @@
         "edge" : "#ffffff"
     },
     "keywords" : {
-        "keyword-set1" : "if else let for module function true false undef include use",
-        "keyword-set2" : "abs sign rands min max sin cos asin acos tan atan atan2 round ceil floor pow sqrt exp len log ln str chr ord concat is_undef is_list is_num is_bool is_string lookup search version version_num norm cross parent_module dxf_dim dxf_cross",
-        "keyword-set3" : "cube sphere cylinder polyhedron square circle polygon text minkowski hull resize child echo union difference intersection linear_extrude rotate_extrude import group projection render surface scale rotate mirror translate multmatrix color offset children assert"
+        "keyword-custom1" : "bolt thread nut plate star fillet chamfer bevel",
+        "keyword-custom2" : "radius diameter center",
+        "keyword-custom3" : "class struct enum"
     }
 }

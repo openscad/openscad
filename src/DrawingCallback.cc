@@ -102,6 +102,7 @@ void DrawingCallback::line_to(const Vector2d &to)
 // Quadric Bezier curve
 void DrawingCallback::curve_to(const Vector2d &c1, const Vector2d &to)
 {
+    // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa (lot of work, little gain)
 	for (unsigned long idx = 1; idx <= fn; ++idx) {
 		const double a = idx * (1.0 / (double)fn);
 		add_vertex(pen * pow(1-a, 2) + 
@@ -114,6 +115,7 @@ void DrawingCallback::curve_to(const Vector2d &c1, const Vector2d &to)
 // Cubic Bezier curve
 void DrawingCallback::curve_to(const Vector2d &c1, const Vector2d &c2, const Vector2d &to)
 {
+    // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa (lot of work, little gain)
 	for (unsigned long idx = 1; idx <= fn; ++idx) {
 		const double a = idx * (1.0 / (double)fn);
 		add_vertex(pen * pow(1-a, 3) + 

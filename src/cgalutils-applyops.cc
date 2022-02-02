@@ -3,6 +3,7 @@
 
 #ifdef ENABLE_CGAL
 
+#include "cgal.h"
 #include "cgalutils.h"
 #include "polyset.h"
 #include "printutils.h"
@@ -13,7 +14,6 @@
 #include "CGALHybridPolyhedron.h"
 #include "node.h"
 
-#include "cgal.h"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
@@ -75,7 +75,10 @@ namespace CGALUtils {
 
 				// Intersecting something with nothing results in nothing
 				if (!chN || chN->isEmpty()) {
-					if (op == OpenSCADOperator::INTERSECTION) N = nullptr;
+					if (op == OpenSCADOperator::INTERSECTION) {
+                        if (N != nullptr) delete N;     // safety!
+                        N = nullptr;
+                    }
 					continue;
 				}
 
