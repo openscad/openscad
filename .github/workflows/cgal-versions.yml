@@ -16,10 +16,6 @@ jobs:
         include:
           - os: ubuntu-18.04
             cgal-version: 5.2
-          - os: ubuntu-18.04
-            cgal-version: 4.6
-          - os: ubuntu-18.04
-            cgal-version: 4.4
 
     runs-on: ${{ matrix.os }}
 
