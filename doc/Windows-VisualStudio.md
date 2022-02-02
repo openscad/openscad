@@ -123,7 +123,7 @@ This will configure Visual Studio so that the build process can automatically lo
 Now it is time to use `vcpkg` to build all of the dependencies for OpenSCAD. This step is likely to take several hours, unless you already have most of the dependencies installed.
 
 ```
-vcpkg install boost cairo cgal qscintilla opencsg eigen3 mpfr libxml2 libzip glib
+vcpkg install boost cairo cgal eigen3 glib libxml2 libzip mimalloc mpfr opencsg qscintilla
 ```
 
 If the command fails to complete, look for any advice in the error messages that were output. Sometimes it may be that you have missed out one of the steps described above, or that you need to install some of the optional modules (ATL, MFC etc) for Visual Studio.
