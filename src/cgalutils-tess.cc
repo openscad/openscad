@@ -4,7 +4,13 @@
 //#include "tess.h"
 
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
+#if CGAL_VERSION_NR < 1050401000
 #include <CGAL/Triangulation_2_projection_traits_3.h>
+typedef CGAL::Triangulation_2_filtered_projection_traits_3<K> Projection;
+#else
+#include <CGAL/Projection_traits_3.h>
+typedef CGAL::Filtered_projection_traits_3<K> Projection;
+#endif
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 
 struct FaceInfo {
@@ -12,7 +18,6 @@ struct FaceInfo {
   bool in_domain() { return nesting_level%2 == 1; }
 };
 
-typedef CGAL::Triangulation_2_filtered_projection_traits_3<K> Projection;
 typedef CGAL::Triangulation_face_base_with_info_2<FaceInfo, K> Fbb;
 typedef CGAL::Triangulation_data_structure_2<
 	CGAL::Triangulation_vertex_base_2<Projection>,

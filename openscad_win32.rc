@@ -28,7 +28,7 @@ VS_VERSION_INFO VERSIONINFO
 				VALUE "CompanyName", "\0"
 				VALUE "FileDescription", "OpenSCAD Executable\0"
 				VALUE "FileVersion", "development build\0"
-				VALUE "LegalCopyright", "Copyright (C) 2009-2020 The OpenSCAD Developers\0"
+				VALUE "LegalCopyright", "Copyright (C) 2009-2022 The OpenSCAD Developers\0"
 				VALUE "OriginalFilename", "openscad.exe\0"
 				VALUE "ProductName", "OpenSCAD\0"
 			END
