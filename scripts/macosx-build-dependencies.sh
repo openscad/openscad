@@ -1,8 +1,9 @@
 #!/bin/bash
 #
 # This script builds all library dependencies of OpenSCAD for Mac OS X.
-# The libraries will be build in 64-bit mode and backwards compatible with 10.8 "Mountain Lion".
-# 
+# The libraries will be build in 64-bit mode and backwards compatible
+# with 10.13 "High Sierra".
+#
 # This script must be run from the OpenSCAD source root directory
 #
 # Usage: macosx-build-dependencies.sh [-16lcdfv] [<package>]
@@ -24,37 +25,36 @@ BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
-MAC_OSX_VERSION_MIN=10.9
+MAC_OSX_VERSION_MIN=10.13
 OPTION_DEPLOY=false
 OPTION_FORCE=0
 
 PACKAGES=(
     "double_conversion 3.1.5"
     "eigen 3.3.7"
-    "gmp 6.1.2"
+    "gmp 6.2.1"
     "mpfr 4.0.2"
     "glew 2.1.0"
     "gettext 0.21"
-    "libffi 3.2.1"
+    "libffi 3.4.2"
     "freetype 2.9.1"
     "ragel 6.10"
     "harfbuzz 2.3.1"
     "libz 1.2.11"
     "libzip 1.5.1"
     "libxml2 2.9.9"
+    "libuuid 1.6.2"
     "fontconfig 2.13.1"
     "hidapi 0.11.0"
-    "libuuid 1.6.2"
     "lib3mf 1.8.1"
     "glib2 2.56.3"
     "boost 1.74.0"
-    "poppler 21.01.0"
     "pixman 0.40.0"
     "cairo 1.16.0"
     "cgal 5.3"
-    "qt5 5.9.9"
+    "qt5 5.15.2"
     "opencsg 1.4.2"
-    "qscintilla 2.11.6"
+    "qscintilla 2.13.1"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.21.3"
@@ -165,24 +165,17 @@ build_qt5()
   echo "Building Qt" $version "..."
   cd $BASEDIR/src
   v=(${version//./ }) # Split into array
-  rm -rf qt-everywhere-opensource-src-$version
-  if [ ! -f qt-everywhere-opensource-src-$version.tar.xz ]; then
-    curl -LO http://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.xz
+  rm -rf qt-everywhere-src-$version
+  if [ ! -f qt-everywhere-src-$version.tar.xz ]; then
+    curl -LO --insecure https://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-src-$version.tar.xz
   fi
-  set +e
-  tar xzf qt-everywhere-opensource-src-$version.tar.xz
-  if [ $? != 0 ]; then
-    rm -f qt-everywhere-opensource-src-$version.tar.xz
-    curl -LO http://download.qt.io/archive/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.xz
-  fi
-  set -e
-  tar xzf qt-everywhere-opensource-src-$version.tar.xz
-  cd qt-everywhere-opensource-src-$version
-  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.9.7-macos.patch
+  tar xzf qt-everywhere-src-$version.tar.xz
+  cd qt-everywhere-src-$version
+  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15.2-macos-tabbar.patch
   ./configure -prefix $DEPLOYDIR -release -opensource -confirm-license \
 		-nomake examples -nomake tests \
 		-no-xcb -no-glib -no-harfbuzz -no-sql-db2 -no-sql-ibase -no-sql-mysql -no-sql-oci -no-sql-odbc \
-		-no-sql-psql -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-cups -no-assimp -no-qml-debug \
+		-no-sql-psql -no-sql-sqlite -no-sql-sqlite2 -no-sql-tds -no-cups -no-assimp \
                 -skip qtx11extras -skip qtandroidextras -skip qtserialport -skip qtserialbus \
                 -skip qtactiveqt -skip qtxmlpatterns -skip qtdeclarative -skip qtscxml \
                 -skip qtpurchasing -skip qtcanvas3d -skip qtwayland \
@@ -192,7 +185,7 @@ build_qt5()
                 -skip qtvirtualkeyboard -skip qtlocation -skip qtwebengine -skip qtwebview \
                 -skip qtscript -skip qttranslations -skip qtdoc \
                 -no-feature-openal -no-feature-avfoundation
-  make -j"$NUMCPU" 
+  make -j"$NUMCPU"
   make install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/qt5.version
 }
@@ -202,13 +195,13 @@ build_qscintilla()
   version=$1
   echo "Building QScintilla" $version "..."
   cd $BASEDIR/src
-  QSCINTILLA_FILENAME="QScintilla-$version.tar.gz"
+  QSCINTILLA_FILENAME="QScintilla_src-$version.tar.gz"
   rm -rf "${QSCINTILLA_FILENAME}"
   if [ ! -f "${QSCINTILLA_FILENAME}" ]; then
       curl -LO https://www.riverbankcomputing.com/static/Downloads/QScintilla/$version/"${QSCINTILLA_FILENAME}"
   fi
   tar xzf "${QSCINTILLA_FILENAME}"
-  cd QScintilla*/Qt4Qt5
+  cd QScintilla*/src
   #patch -p2 < $OPENSCADDIR/patches/QScintilla-2.9.3-xcode8.patch
   qmake qscintilla.pro
   make -j"$NUMCPU" install
@@ -273,7 +266,7 @@ build_boost()
   cd boost_$bversion
   ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,chrono,system,regex,date_time,atomic
   BOOST_TOOLSET="toolset=clang"
-  echo "using clang ;" >> tools/build/user-config.jam 
+  echo "using clang ;" >> tools/build/user-config.jam
   ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN -arch x86_64 -headerpad_max_install_names" install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/boost.version
 }
@@ -294,6 +287,7 @@ build_cgal()
   fi
   tar xzf CGAL-$version.tar.xz
   cd CGAL-$version
+  patch -p1 < $OPENSCADDIR/patches/CGAL-remove-demo-install.patch
   cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="x86_64" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install
@@ -380,7 +374,7 @@ build_sparkle()
   mkdir Sparkle-$version
   cd Sparkle-$version
   tar xjf ../Sparkle-$version.tar.bz2
-  cp -Rf Sparkle.framework $DEPLOYDIR/lib/ 
+  cp -Rf Sparkle.framework $DEPLOYDIR/lib/
 
 # Build from source:
 #  v=$1
@@ -404,7 +398,7 @@ build_sparkle()
 #  xcodebuild clean
 #  xcodebuild -arch x86_64
 #  rm -rf $DEPLOYDIR/lib/Sparkle.framework
-#  cp -Rf build/Release/Sparkle.framework $DEPLOYDIR/lib/ 
+#  cp -Rf build/Release/Sparkle.framework $DEPLOYDIR/lib/
 #  Install_name_tool -id $DEPLOYDIR/lib/Sparkle.framework/Versions/A/Sparkle $DEPLOYDIR/lib/Sparkle.framework/Sparkle
 
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/sparkle.version
@@ -432,7 +426,10 @@ build_freetype()
   install_name_tool -id @rpath/libfreetype.dylib $DEPLOYDIR/lib/libfreetype.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/freetype.version
 }
- 
+
+# Note: libz come with macOS, so it's not necessary to build it ourselves. This build is a workaround for a weakness
+# in MacPorts' CMake, which will always prefer MacPorts libraries over our own configuration.
+# Future fix is to remove MacPorts' CMake everywhere.
 build_libz()
 {
   version="$1"
@@ -490,6 +487,24 @@ build_libxml2()
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libxml2.version
 }
 
+build_libuuid()
+{
+  version=$1
+  cd $BASEDIR/src
+  rm -rf uuid-$version
+  if [ ! -f uuid-$version.tar.gz ]; then
+    curl -L https://mirrors.ocf.berkeley.edu/debian/pool/main/o/ossp-uuid/ossp-uuid_$version.orig.tar.gz -o uuid-$version.tar.gz
+  fi
+  tar xzf uuid-$version.tar.gz
+  cd uuid-$version
+  patch -p1 < $OPENSCADDIR/patches/uuid-1.6.2.patch
+  ./configure -prefix $DEPLOYDIR CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" --without-perl --without-php --without-pgsql
+  make -j"$NUMCPU"
+  make install
+  install_name_tool -id @rpath/libuuid.dylib $DEPLOYDIR/lib/libuuid.dylib
+  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libuuid.version
+}
+
 build_fontconfig()
 {
   version=$1
@@ -519,7 +534,7 @@ build_libffi()
   cd "$BASEDIR"/src
   rm -rf "libffi-$version"
   if [ ! -f "libffi-$version.tar.gz" ]; then
-    curl --insecure -LO "ftp://sourceware.org/pub/libffi/libffi-$version.tar.gz"
+    curl --insecure -LO "https://github.com/libffi/libffi/releases/download/v$version/libffi-$version.tar.gz"
   fi
   tar xzf "libffi-$version.tar.gz"
   cd "libffi-$version"
@@ -638,24 +653,6 @@ build_hidapi()
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/hidapi.version
 }
 
-build_libuuid()
-{
-  version=$1
-  cd $BASEDIR/src
-  rm -rf uuid-$version
-  if [ ! -f uuid-$version.tar.gz ]; then
-    curl -L https://mirrors.ocf.berkeley.edu/debian/pool/main/o/ossp-uuid/ossp-uuid_$version.orig.tar.gz -o uuid-$version.tar.gz
-  fi
-  tar xzf uuid-$version.tar.gz
-  cd uuid-$version
-  patch -p1 < $OPENSCADDIR/patches/uuid-1.6.2.patch
-  ./configure -prefix $DEPLOYDIR CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" --without-perl --without-php --without-pgsql
-  make -j"$NUMCPU"
-  make install
-  install_name_tool -id @rpath/libuuid.dylib $DEPLOYDIR/lib/libuuid.dylib
-  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/libuuid.version
-}
-
 build_lib3mf()
 {
   version=$1
@@ -674,37 +671,6 @@ build_lib3mf()
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/lib3mf.version
 }
 
-build_poppler()
-{
-  version=$1
-  POPPLER_DIR="poppler-${version}"
-  POPPLER_FILENAME="${POPPLER_DIR}.tar.xz"
-
-  echo "Building poppler" $version "..."
-
-  cd $BASEDIR/src
-  rm -rf "$POPPLER_DIR"
-  if [ ! -f "${POPPLER_FILENAME}" ]; then
-    curl -LO https://poppler.freedesktop.org/"${POPPLER_FILENAME}"
-  fi
-  tar xzf "${POPPLER_FILENAME}"
-  cd "$POPPLER_DIR"
-  mkdir build
-  cd build
-  cmake .. \
-        -DCMAKE_INSTALL_PREFIX="$DEPLOYDIR" \
-        -DCMAKE_OSX_ARCHITECTURES="x86_64" \
-        -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" \
-        -DBUILD_GTK_TESTS=OFF -DBUILD_QT5_TESTS=OFF -DBUILD_QT6_TESTS=OFF \
-        -DBUILD_CPP_TESTS=OFF -DENABLE_GTK_DOC=OFF -DENABLE_QT5=OFF \
-        -DENABLE_QT6=OFF -DENABLE_LIBOPENJPEG=none -DENABLE_DCTDECODER=none \
-        -DENABLE_UTILS=OFF
-  make -j"$NUMCPU" install
-  otool -L $DEPLOYDIR/lib/"libpoppler.dylib"
-  install_name_tool -id @rpath/libpoppler.dylib $DEPLOYDIR/lib/"libpoppler.dylib"
-  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/poppler.version
-}
-
 build_pixman()
 {
   version=$1
@@ -720,7 +686,8 @@ build_pixman()
   fi
   tar xzf "${PIXMAN_FILENAME}"
   cd "$PIXMAN_DIR"
-  ./configure --prefix=$DEPLOYDIR CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
+  # libpng is only used for tests, disabling to kill linker warnings since we don't build libpng ourselves
+  ./configure --disable-libpng --prefix=$DEPLOYDIR CXXFLAGS="$CXXSTDFLAGS" CFLAGS="-mmacosx-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="$LDSTDFLAGS -mmacosx-version-min=$MAC_OSX_VERSION_MIN"
   make -j"$NUMCPU" install
   otool -L $DEPLOYDIR/lib/"libpixman-1.dylib"
   install_name_tool -id @rpath/libpixman-1.dylib $DEPLOYDIR/lib/"libpixman-1.dylib"
@@ -802,7 +769,7 @@ fi
 echo "Building for $MAC_OSX_VERSION_MIN or later"
 
 if [ ! $NUMCPU ]; then
-  NUMCPU=$(sysctl -n hw.ncpu)
+  NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
   echo "Setting number of CPUs to $NUMCPU"
 fi
 
