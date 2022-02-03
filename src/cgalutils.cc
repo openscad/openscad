@@ -16,6 +16,7 @@
 #include <CGAL/Aff_transformation_3.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
+#include <CGAL/Surface_mesh.h>
 
 #include <CGAL/config.h>
 #include <CGAL/version.h>
@@ -431,6 +432,20 @@ namespace CGALUtils {
 
 	template void transform(CGAL_Nef_polyhedron3 &N, const Transform3d &matrix);
 	template void transform(CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &N, const Transform3d &matrix);
+
+	template <typename K>
+	void transform(CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, const Transform3d &matrix)
+	{
+		assert(matrix.matrix().determinant() != 0);
+		auto t = createAffineTransformFromMatrix<K>(matrix);
+
+		for (auto v : mesh.vertices())
+		{
+			auto &pt = mesh.point(v);
+			pt = t(pt);
+		}
+	}
+	template void transform(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &mesh, const Transform3d &matrix);
 
 	template <typename K>
 	Transform3d computeResizeTransform(

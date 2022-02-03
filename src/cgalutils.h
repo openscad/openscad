@@ -11,6 +11,11 @@ typedef CGAL::Point_3<K> Vertex3K;
 typedef std::vector<Vertex3K> PolygonK;
 typedef std::vector<PolygonK> PolyholeK;
 
+namespace CGAL {
+	template <typename P>
+	class Surface_mesh;
+}
+
 namespace /* anonymous */ {
         template<typename Result, typename V>
         Result vector_convert(V const& v) {
@@ -30,6 +35,8 @@ namespace CGALUtils {
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
 	template <typename K>
 	CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K> &N);
+	template <typename K>
+	CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh);
 	CGAL_Iso_cuboid_3 boundingBox(const Geometry&geom);
 	CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox &bbox);
 	bool is_approximately_convex(const PolySet &ps);
@@ -41,6 +48,14 @@ namespace CGALUtils {
 	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p);
 
 	template <typename K>
+	bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, PolySet &ps);
+	template <class InputKernel, class OutputKernel>
+	void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>> &input,
+							CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>> &output);
+	template <typename K>
+	bool createMeshFromPolySet(const PolySet &ps, CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh);
+
+	template <typename K>
 	bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K> &N, PolySet &ps);
 	shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromGeometry(const class Geometry &geom);
 	shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>&);
@@ -50,6 +65,8 @@ namespace CGALUtils {
 	CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d &matrix);
 	template <typename K>
 	void transform(CGAL::Nef_polyhedron_3<K> &N, const Transform3d &matrix);
+	template <typename K>
+	void transform(CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, const Transform3d &matrix);
 	template <typename K>
 	Transform3d computeResizeTransform(
 		const CGAL::Iso_cuboid_3<K>& bb, int dimension, const Vector3d &newsize,
@@ -77,6 +94,27 @@ namespace CGALUtils {
 		return CGAL::Cartesian_converter<
 			FromKernel, ToKernel, KernelConverter<FromKernel, ToKernel>>();
 	}
+	template <typename Polyhedron>
+	void triangulateFaces(Polyhedron &polyhedron);
+	template <typename Polyhedron>
+	bool isClosed(const Polyhedron &polyhedron);
+	template <typename Polyhedron>
+	void orientToBoundAVolume(Polyhedron &polyhedron);
 	template <typename K>
 	void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<K> &nef, CGAL::Polyhedron_3<K> &polyhedron);
+	template <typename K>
+	bool corefineAndComputeUnion(CGAL::Polyhedron_3<K> &lhs, CGAL::Polyhedron_3<K> &rhs, CGAL::Polyhedron_3<K> &out);
+	template <typename K>
+	bool corefineAndComputeIntersection(CGAL::Polyhedron_3<K> &lhs, CGAL::Polyhedron_3<K> &rhs, CGAL::Polyhedron_3<K> &out);
+	template <typename K>
+	bool corefineAndComputeDifference(CGAL::Polyhedron_3<K> &lhs, CGAL::Polyhedron_3<K> &rhs, CGAL::Polyhedron_3<K> &out);
+	template <typename K>
+	bool corefineAndComputeUnion(CGAL::Surface_mesh<CGAL::Point_3<K>> &lhs, CGAL::Surface_mesh<CGAL::Point_3<K>> &rhs, CGAL::Surface_mesh<CGAL::Point_3<K>> &out);
+	template <typename K>
+	bool corefineAndComputeIntersection(CGAL::Surface_mesh<CGAL::Point_3<K>> &lhs, CGAL::Surface_mesh<CGAL::Point_3<K>> &rhs, CGAL::Surface_mesh<CGAL::Point_3<K>> &out);
+	template <typename K>
+	bool corefineAndComputeDifference(CGAL::Surface_mesh<CGAL::Point_3<K>> &lhs, CGAL::Surface_mesh<CGAL::Point_3<K>> &rhs, CGAL::Surface_mesh<CGAL::Point_3<K>> &out);
+
+	template <typename K>
+	void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh);
 };
