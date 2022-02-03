@@ -89,11 +89,12 @@ bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, Pol
 template bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &mesh, PolySet &ps);
 
 template <class InputKernel, class OutputKernel>
-void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>> &input,
-							CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>> &output)
+void copyMesh(
+	const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>> &input,
+	CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>> &output)
 {
-  typedef CGAL::Surface_mesh<CGAL::Point_3<InputKernel>> InputMesh;
-  typedef CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>> OutputMesh;
+	typedef CGAL::Surface_mesh<CGAL::Point_3<InputKernel>> InputMesh;
+	typedef CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>> OutputMesh;
 
 	auto converter = getCartesianConverter<InputKernel, OutputKernel>();
 	output.reserve(output.number_of_vertices() + input.number_of_vertices(),
@@ -101,7 +102,7 @@ void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>> &input,
 								 output.number_of_faces() + input.number_of_faces());
 
 	std::vector<typename CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>>::Vertex_index> polygon;
-  std::unordered_map<typename InputMesh::Vertex_index, typename OutputMesh::Vertex_index> reindexer;
+	std::unordered_map<typename InputMesh::Vertex_index, typename OutputMesh::Vertex_index> reindexer;
 	for (auto face : input.faces()) {
 		polygon.clear();
 
@@ -109,25 +110,28 @@ void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>> &input,
 				vbegin, vend;
 		for (boost::tie(vbegin, vend) = vertices_around_face(input.halfedge(face), input);
 				 vbegin != vend; ++vbegin) {
-      auto input_vertex = *vbegin;
-      auto size_before = reindexer.size();
-      auto &output_vertex = reindexer[input_vertex];
-      if (size_before != reindexer.size()) {
-        output_vertex = output.add_vertex(converter(input.point(input_vertex)));
-      }
+			auto input_vertex = *vbegin;
+			auto size_before = reindexer.size();
+			auto &output_vertex = reindexer[input_vertex];
+			if (size_before != reindexer.size()) {
+				output_vertex = output.add_vertex(converter(input.point(input_vertex)));
+			}
 			polygon.push_back(output_vertex);
 		}
 		output.add_face(polygon);
 	}
 }
 
-template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &input,
-											 CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &output);
+template void copyMesh(
+	const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &input,
+	CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &output);
 #if !FAST_CSG_SAME_KERNEL
-template void copyMesh(const CGAL::Surface_mesh<CGAL_Point_3> &input,
-											 CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &output);
-template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &input,
-											 CGAL::Surface_mesh<CGAL_Point_3> &output);
+template void copyMesh(
+	const CGAL::Surface_mesh<CGAL_Point_3> &input,
+	CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &output);
+template void copyMesh(
+	const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &input,
+	CGAL::Surface_mesh<CGAL_Point_3> &output);
 #endif // FAST_CSG_SAME_KERNEL
 
 template <typename K>

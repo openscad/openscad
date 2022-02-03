@@ -51,7 +51,6 @@ private:
 	Polygon2d polygon;
 	unsigned int dim;
 	mutable boost::tribool convex;
-	mutable boost::tribool manifold;
 	mutable BoundingBox bbox;
 	mutable bool dirty;
 };

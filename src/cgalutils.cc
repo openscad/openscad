@@ -141,11 +141,6 @@ namespace CGALUtils {
 		}
 	}
 
-	CGAL_Point_3 center(const CGAL_Iso_cuboid_3 &cuboid) {
-		CGAL_Vector_3 d(cuboid.min(), cuboid.max());
-		return cuboid.min() + d * NT3(0.5);
-	}
-
 	CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox &bbox)
 	{
 		return CGAL_Iso_cuboid_3(

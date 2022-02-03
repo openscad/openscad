@@ -29,10 +29,10 @@ namespace CGAL {
 }
 
 namespace /* anonymous */ {
-	template<typename Result, typename V>
-	Result vector_convert(V const& v) {
-		return Result(CGAL::to_double(v[0]),CGAL::to_double(v[1]),CGAL::to_double(v[2]));
-	}
+        template<typename Result, typename V>
+        Result vector_convert(V const& v) {
+                return Result(CGAL::to_double(v[0]),CGAL::to_double(v[1]),CGAL::to_double(v[2]));
+       	}
 }
 
 namespace CGALUtils {
@@ -52,21 +52,16 @@ namespace CGALUtils {
 	template <typename K>
 	CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K> &N);
 	template <typename K>
-	CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Polyhedron_3<K> &poly);
-	template <typename K>
 	CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh);
 	CGAL_Iso_cuboid_3 boundingBox(const Geometry&geom);
-	CGAL_Point_3 center(const CGAL_Iso_cuboid_3 &cuboid);
 	CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox &bbox);
-	template <typename K>
-	CGAL::Point_3<K> vector3dToPoint3(const Eigen::Vector3d& v);
 	bool is_approximately_convex(const PolySet &ps);
 	shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries &children);
 
 	template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
-	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p);
 	template <class InputKernel, class OutputKernel>
 	void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel> &poly_a, CGAL::Polyhedron_3<OutputKernel> &poly_b);
+	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p);
 
 	template <typename K>
 	bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, PolySet &ps);
@@ -76,19 +71,17 @@ namespace CGALUtils {
 	template <typename K>
 	bool createMeshFromPolySet(const PolySet &ps, CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, bool use_grid);
 
+	template <typename K>
+	bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K> &N, PolySet &ps);
 	shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromGeometry(const class Geometry &geom);
 
 	shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>&);
 	shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>&);
 
 	template <typename K>
-	bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K> &N, PolySet &ps);
-	template <typename K>
 	CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d &matrix);
 	template <typename K>
 	void transform(CGAL::Nef_polyhedron_3<K> &N, const Transform3d &matrix);
-	template <typename K>
-	void transform(CGAL::Polyhedron_3<K> &N, const Transform3d &matrix);
 	template <typename K>
 	void transform(CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, const Transform3d &matrix);
 	template <typename K>
