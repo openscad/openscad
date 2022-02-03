@@ -4,6 +4,7 @@
 #include "Assignment.h"
 #include "feature.h"
 #include "value.h"
+#include "node.h"
 
 #include <functional>
 #include <string>
@@ -23,6 +24,7 @@ private:
 public:
 	BuiltinFunction(Value (*f)(const std::shared_ptr<const Context>&, const FunctionCall*), const Feature* feature = nullptr);
 	BuiltinFunction(Value (*f)(Arguments, const Location&), const Feature* feature = nullptr);
+	BuiltinFunction(Value (*f)(Arguments, const Location&, AbstractNode*), const Feature* feature = nullptr);
 
 	bool is_experimental() const { return feature != nullptr; }
 	bool is_enabled() const { return (feature == nullptr) || feature->is_enabled(); }

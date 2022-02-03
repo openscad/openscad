@@ -462,8 +462,8 @@ static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<
 	LOG(message_group::Trace,val->location(),context->documentRoot(),"called by '%1$s'",val->get_name());
 }
 
-FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const Location &loc)
-	: Expression(loc), expr(expr), arguments(args)
+FunctionCall::FunctionCall(Expression *expr, const AssignmentList &args, const Location &loc, shared_ptr<ModuleInstantiation> targetedModule)
+	: Expression(loc), expr(expr), arguments(args), targetedModule(targetedModule)
 {
 	if (typeid(*expr) == typeid(Lookup)) {
 		isLookup = true;
@@ -526,11 +526,11 @@ static SimplificationResult simplify_function_body(const Expression* expression,
 	}
 	else if (typeid(*expression) == typeid(FunctionCall)) {
 		const FunctionCall* call = static_cast<const FunctionCall*>(expression);
-		
+
 		const Expression* function_body;
 		const AssignmentList* required_parameters;
 		std::shared_ptr<const Context> defining_context;
-		
+
 		auto f = call->evaluate_function_expression(context);
 		if (!f) {
 			return Value::undefined.clone();
@@ -554,13 +554,13 @@ static SimplificationResult simplify_function_body(const Expression* expression,
 			required_parameters = function.getParameters().get();
 			defining_context = function.getContext();
 		}
-		
+
 		ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
 		body_context->apply_config_variables(*context);
 		Arguments arguments{call->arguments, context};
 		Parameters parameters = Parameters::parse(std::move(arguments), call->location(), *required_parameters, defining_context);
 		body_context->apply_variables(std::move(parameters).to_context_frame());
-		
+
 		return SimplifiedExpression{function_body, std::move(body_context), call};
 	}
 	else {
@@ -575,14 +575,14 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
 		print_err(name.c_str(), loc, context);
 		throw RecursionException::create("function", name, this->loc);
 	}
-	
+
 	// Repeatedly simplify expr until it reduces to either a tail call,
 	// or an expression that cannot be simplified in-place. If the latter,
 	// recurse. If the former, substitute the function body for expr,
 	// thereby implementing tail recursion optimization.
 	unsigned int recursion_depth = 0;
 	const FunctionCall* current_call = this;
-	
+
 	ContextHandle<Context> expression_context{Context::create<Context>(context)};
 	const Expression* expression = this;
 	while (true) {
@@ -591,10 +591,10 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
 			if (Value* value = boost::get<Value>(&result)) {
 				return std::move(*value);
 			}
-			
+
 			SimplifiedExpression* simplified_expression = boost::get<SimplifiedExpression>(&result);
 			assert(simplified_expression);
-			
+
 			expression = simplified_expression->expression;
 			if (simplified_expression->new_context) {
 				expression_context = std::move(*simplified_expression->new_context);
@@ -651,7 +651,7 @@ void Assert::performAssert(const AssignmentList& arguments, const Location& loca
 			break;
 		}
 	}
-	
+
 	if (!parameters["condition"].toBool()) {
 		std::string conditionString = conditionExpression ? STR(" '" << *conditionExpression << "'") : "";
 		std::string messageString = parameters.contains("message") ? (": " + parameters["message"].toEchoString()) : "";
@@ -917,19 +917,19 @@ LcForC::LcForC(const AssignmentList &args, const AssignmentList &incrargs, Expre
 Value LcForC::evaluate(const std::shared_ptr<const Context>& context) const
 {
 	EmbeddedVectorType output(context->session());
-	
+
 	ContextHandle<Context> initialContext{Let::sequentialAssignmentContext(this->arguments, this->location(), context)};
 	ContextHandle<Context> currentContext{Context::create<Context>(*initialContext)};
-	
+
 	unsigned int counter = 0;
 	while (this->cond->evaluate(*currentContext).toBool()) {
 		output.emplace_back(this->expr->evaluate(*currentContext));
-		
+
 		if (counter++ == 1000000) {
 			LOG(message_group::Error,loc,context->documentRoot(),"For loop counter exceeded limit");
 			throw LoopCntException::create("for", loc);
 		}
-		
+
 		/*
 		 * The next context should be evaluated in the current context,
 		 * and replace the current context; but there is no reason for

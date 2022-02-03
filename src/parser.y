@@ -134,6 +134,7 @@ bool fileEnded=false;
 %nonassoc TOK_ELSE
 
 %type <expr> expr
+%type <inst> targeted_module
 %type <expr> call
 %type <expr> logic_or
 %type <expr> logic_and
@@ -357,6 +358,7 @@ expr
             }
         ;
 
+
 logic_or
         : logic_and
         | logic_or OR logic_and
@@ -467,9 +469,13 @@ exponent
 
 call
         : primary
-        | call '(' arguments ')'
+        | call '(' arguments ')' targeted_module
             {
-              $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$));
+              shared_ptr<ModuleInstantiation> ptr = nullptr;
+              if($5)
+                ptr = shared_ptr<ModuleInstantiation>($5);
+
+              $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$), ptr);
               delete $3;
             }
         | call '[' expr ']'
@@ -482,6 +488,29 @@ call
               free($3);
             }
 		;
+
+targeted_module
+        :
+          {
+            $$ = nullptr;
+          }
+        | '{' child_statements '}'
+          {
+            $$ = nullptr;
+            if(!scope_stack.empty())
+            {
+              $$ = new ModuleInstantiation("union", AssignmentList(), LOCD("modulecall", @$));
+              for(const auto& moduleInstantiation :  scope_stack.top()->moduleInstantiations ) {
+                $$->scope.addModuleInst(moduleInstantiation);
+              }
+              scope_stack.top()->moduleInstantiations.clear();
+            }
+          }
+        | single_module_instantiation
+          {
+            $$ = $1;
+          }
+        ;
 
 primary
         : TOK_TRUE

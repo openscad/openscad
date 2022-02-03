@@ -42,6 +42,17 @@ BuiltinFunction::BuiltinFunction(Value (*f)(Arguments, const Location&), const F
 	};
 }
 
+BuiltinFunction::BuiltinFunction(Value (*f)(Arguments, const Location&, AbstractNode*), const Feature* feature):
+	feature(feature)
+{
+	evaluate = [f] (const std::shared_ptr<const Context>& context, const FunctionCall* call) {
+		AbstractNode* node = nullptr;
+		if(call->targetedModule)
+			node = call->targetedModule->evaluate(context);
+		return f(Arguments(call->arguments, context), call->location(), node);
+	};
+}
+
 UserFunction::UserFunction(const char *name, AssignmentList &parameters, shared_ptr<Expression> expr, const Location &loc)
 	: ASTNode(loc), name(name), parameters(parameters), expr(expr)
 {
