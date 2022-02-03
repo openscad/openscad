@@ -166,7 +166,6 @@ size_t append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output,
   return triangle_count;
 }
 
-#ifdef FAST_CSG_AVAILABLE
 /*!
 	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
 	The file must be open.
@@ -189,7 +188,6 @@ size_t append_stl(const CGALHybridPolyhedron &hybrid, std::ostream &output,
 
   return triangle_count;
 }
-#endif
 
 size_t append_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
     bool binary)
@@ -206,11 +204,9 @@ size_t append_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
 	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		triangle_count += append_stl(*ps, output, binary);
 	}
-#ifdef FAST_CSG_AVAILABLE
 	else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
 		triangle_count += append_stl(*hybrid, output, binary);
 	}
-#endif
 	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
 		assert(false && "Unsupported file format");
 	} else {

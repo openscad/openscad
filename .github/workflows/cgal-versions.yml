@@ -12,30 +12,22 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-18.04 ]
-        cgal-version: [5.3]
-        fast-csg-available: [true]
+        cgal-version: [5.4]
         fast-csg-use-same-kernel: [false]
         include:
           - os: ubuntu-18.04
             cgal-version: 5.3
-            fast-csg-available: true
-            fast-csg-use-same-kernel: true
+            fast-csg-use-same-kernel: false
           - os: ubuntu-18.04
-            cgal-version: 5.2
-            fast-csg-available: true
+            cgal-version: 5.3
             fast-csg-use-same-kernel: false
           - os: ubuntu-18.04
             cgal-version: 4.6
-            fast-csg-available: true
-            fast-csg-use-same-kernel: false
-          - os: ubuntu-18.04
-            cgal-version: 4.4
-            fast-csg-available: false
             fast-csg-use-same-kernel: false
 
     runs-on: ${{ matrix.os }}
 
-    name: "CGAL ${{ matrix.cgal-version }} (fast-csg: ${{ matrix.fast-csg-available }}; same-kernel: ${{ matrix.fast-csg-use-same-kernel }})"
+    name: "CGAL ${{ matrix.cgal-version }} (same-kernel: ${{ matrix.fast-csg-use-same-kernel }})"
 
     steps:
     - name: Checkout
@@ -47,11 +39,11 @@ jobs:
     - name: Dependency fixup
       run: sudo apt-get install qt5-default gettext gcovr
     - name: Build and test
-      run: FAST_CSG_AVAILABLE=${{ matrix.fast-csg-available }} FAST_CSG_USE_SAME_KERNEL=${{ matrix.fast-csg-use-same-kernel }} ./scripts/github-ci.sh build test coverage
+      run: FAST_CSG_USE_SAME_KERNEL=${{ matrix.fast-csg-use-same-kernel }} ./scripts/github-ci.sh build test coverage
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v2
       if: ${{ always() }}
       with:
-        name: Test Result Report - CGAL ${{ matrix.cgal-version }} - fast-csg=${{ matrix.fast-csg-available }}
+        name: Test Result Report - CGAL ${{ matrix.cgal-version }} - same-kernel=${{ matrix.fast-csg-use-same-kernel }}
         path: b/tests/Testing/Temporary/*_report.html
 

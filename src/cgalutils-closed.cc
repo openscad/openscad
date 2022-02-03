@@ -3,7 +3,6 @@
 #include "cgalutils.h"
 #include "CGALHybridPolyhedron.h"
 
-#ifdef FAST_CSG_AVAILABLE
 
 #include <CGAL/boost/graph/helpers.h>
 #include <CGAL/Surface_mesh.h>
@@ -23,4 +22,3 @@ template bool isClosed(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3
 
 } // namespace CGALUtils
 
-#endif // FAST_CSG_AVAILABLE

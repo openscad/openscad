@@ -9,7 +9,7 @@
 #include "feature.h"
 #include "printutils.h"
 #ifdef ENABLE_CGAL
-#include "cgal.h" // For FAST_CSG_AVAILABLE and FAST_CSG_KERNEL_IS_LAZY
+#include "cgal.h" // For FAST_CSG_KERNEL_IS_LAZY
 #endif
 
 /**
@@ -29,12 +29,10 @@ Feature::list_t Feature::feature_list;  // Double-listed values. --^
  * (well-defined) order of object construction, matching the order of the
  * const Features listed below.
  */
-#ifdef FAST_CSG_AVAILABLE
 const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG operations with corefinement instead of nef when possible.");
 #ifdef FAST_CSG_KERNEL_IS_LAZY
 const Feature Feature::ExperimentalFastCsgExactCallback("fast-csg-exact-callbacks", "Force lazy numbers to exact during corefinement using callbacks rather than at the end of each operation. Only works with fast-csg-mesh for now.");
 #endif // FAST_CSG_KERNEL_IS_LAZY
-#endif
 const Feature Feature::ExperimentalRoof("roof", "Enable <code>roof</code>");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");

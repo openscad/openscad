@@ -3,8 +3,6 @@
 
 #include "cgal.h"
 
-#ifdef FAST_CSG_AVAILABLE
-
 #include <boost/variant.hpp>
 #include "Geometry.h"
 
@@ -128,5 +126,3 @@ private:
 	// does not like shared edges, but tells us so politely).
 	boost::variant<std::shared_ptr<mesh_t>, std::shared_ptr<nef_polyhedron_t>> data;
 };
-
-#endif // FAST_CSG_AVAILABLE

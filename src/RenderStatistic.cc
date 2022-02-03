@@ -254,7 +254,6 @@ void LogVisitor::visit(const CGAL_Nef_polyhedron& nef)
 }
 void LogVisitor::visit(const CGALHybridPolyhedron& poly)
 {
-#ifdef FAST_CSG_AVAILABLE
   bool simple = poly.isManifold();
   LOG(message_group::None,Location::NONE,"","   Top level object is a 3D object (fast-csg):");
   LOG(message_group::None,Location::NONE,"","   Simple:     %6s",(simple ? "yes" : "no"));
@@ -264,9 +263,6 @@ void LogVisitor::visit(const CGALHybridPolyhedron& poly)
     LOG(message_group::UI_Warning,Location::NONE,"","Object may not be a valid 2-manifold and may need repair!");
   }
   printBoundingBox3(poly.getBoundingBox());
-#else
-  assert(false);
-#endif
 }
 #endif // ENABLE_CGAL
 
@@ -356,7 +352,6 @@ void StreamVisitor::visit(const CGAL_Nef_polyhedron& nef)
 }
 void StreamVisitor::visit(const CGALHybridPolyhedron& poly)
 {
-#ifdef FAST_CSG_AVAILABLE
 	if (is_enabled(RenderStatistic::GEOMETRY)) {
 		nlohmann::json geometryJson;
 		geometryJson["dimensions"] = 3;
@@ -368,9 +363,6 @@ void StreamVisitor::visit(const CGALHybridPolyhedron& poly)
 		}
 		json["geometry"] = geometryJson;
 	}
-#else
-  assert(false);
-#endif
 }
 #endif // ENABLE_CGAL
 

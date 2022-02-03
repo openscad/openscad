@@ -19,7 +19,7 @@ CGAL::Gmpq KernelConverter<CGAL::Epick, CGAL::Cartesian<CGAL::Gmpq>>::operator()
 	return n;
 }
 
-#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+#ifdef FAST_CSG_DIFFERENT_KERNEL
 
 template <>
 CGAL_HybridKernel3::FT KernelConverter<CGAL::Epick, CGAL_HybridKernel3>::operator()(
@@ -50,6 +50,6 @@ CGAL::Gmpq KernelConverter<CGAL_HybridKernel3, CGAL_Kernel3>::operator()(
 	return CGAL::Gmpq(CGAL::Gmpz(e.get_num().get_mpz_t()), CGAL::Gmpz(e.get_den().get_mpz_t()));
 }
 
-#endif // FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+#endif // FAST_CSG_DIFFERENT_KERNEL
 
 } // namespace CGALUtils

@@ -1,8 +1,6 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #include "CGALHybridPolyhedron.h"
 
-#ifdef FAST_CSG_AVAILABLE
-
 #include "cgalutils.h"
 #include "hash.h"
 #include "scoped_timer.h"
@@ -12,7 +10,7 @@
 #ifdef FAST_CSG_DEBUG_SERIALIZE_COREFINEMENT_OPERANDS
 #include <sstream>
 #include <fstream>
-#endif
+#endif // FAST_CSG_DEBUG_SERIALIZE_COREFINEMENT_OPERANDS
 
 /**
  * Will force lazy coordinates to be exact to avoid subsequent performance issues
@@ -330,7 +328,7 @@ bool CGALHybridPolyhedron::polyBinOp(
 		auto opNumber = opCount[opName]++;
 		std::ofstream(opName + "_lhs.off") << lhs;
 		std::ofstream(opName + "_rhs.off") << rhs;
-#endif
+#endif // FAST_CSG_DEBUG_SERIALIZE_COREFINEMENT_OPERANDS
 
 		if ((success = operation(lhs, rhs, lhs))) {
 			cleanupMesh(lhs, /* is_corefinement_result */ true);
@@ -413,5 +411,3 @@ bool CGALHybridPolyhedron::sharesAnyVertexWith(const CGALHybridPolyhedron &other
 
 	return foundCollision;
 }
-
-#endif // FAST_CSG_AVAILABLE

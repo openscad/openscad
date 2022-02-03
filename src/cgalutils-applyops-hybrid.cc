@@ -4,9 +4,6 @@
 #ifdef ENABLE_CGAL
 
 #include "cgal.h"
-
-#ifdef FAST_CSG_AVAILABLE
-
 #include "cgalutils.h"
 #include "CGALHybridPolyhedron.h"
 #include "polyset.h"
@@ -171,7 +168,5 @@ namespace CGALUtils {
 	}
 
 }; // namespace CGALUtils
-
-#endif // FAST_CSG_AVAILABLE
 
 #endif // ENABLE_CGAL

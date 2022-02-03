@@ -2,7 +2,6 @@
 #include "cgalutils.h"
 #include "CGALHybridPolyhedron.h"
 
-#ifdef FAST_CSG_AVAILABLE
 
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
 #include <CGAL/Surface_mesh.h>
@@ -19,4 +18,3 @@ template void triangulateFaces(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKerne
 
 } // namespace CGALUtils
 
-#endif // FAST_CSG_AVAILABLE

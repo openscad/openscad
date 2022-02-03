@@ -21,14 +21,12 @@ namespace CGAL {
 	class Surface_mesh;
 }
 
-#ifdef FAST_CSG_AVAILABLE
 namespace CGAL {
 	inline std::size_t hash_value(const CGAL_HybridKernel3::FT &x) {
 		std::hash<double> dh;
 		return dh(CGAL::to_double(x));
 	}
 }
-#endif // FAST_CSG_AVAILABLE
 
 namespace /* anonymous */ {
 	template<typename Result, typename V>

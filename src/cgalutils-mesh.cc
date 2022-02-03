@@ -1,6 +1,5 @@
 #include "cgalutils.h"
 
-#ifdef FAST_CSG_AVAILABLE
 
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
@@ -124,12 +123,12 @@ void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>> &input,
 
 template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &input,
 											 CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &output);
-#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+#ifdef FAST_CSG_DIFFERENT_KERNEL
 template void copyMesh(const CGAL::Surface_mesh<CGAL_Point_3> &input,
 											 CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &output);
 template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &input,
 											 CGAL::Surface_mesh<CGAL_Point_3> &output);
-#endif
+#endif // FAST_CSG_DIFFERENT_KERNEL
 
 template <typename K>
 void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh)
@@ -138,10 +137,9 @@ void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CG
 }
 
 template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CGAL_Kernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>> &mesh);
-#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+#ifdef FAST_CSG_DIFFERENT_KERNEL
 template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &mesh);
-#endif
+#endif // FAST_CSG_DIFFERENT_KERNEL
 
 } // namespace CGALUtils
 
-#endif // FAST_CSG_AVAILABLE

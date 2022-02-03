@@ -270,11 +270,9 @@ namespace CGALUtils {
 		if (auto ps = dynamic_cast<const PolySet*>(&geom)) {
 			return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolySet(*ps));
 		}
-#ifdef FAST_CSG_AVAILABLE
 		else if (auto poly = dynamic_cast<const CGALHybridPolyhedron*>(&geom)) {
 			return createNefPolyhedronFromHybrid(*poly);
 		}
-#endif
 		else if (auto poly2d = dynamic_cast<const Polygon2d*>(&geom)) {
 			return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolygon2d(*poly2d));
 		}
@@ -424,9 +422,9 @@ namespace CGALUtils {
 	}
 
 	template bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
-#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+#ifdef FAST_CSG_DIFFERENT_KERNEL
 	template bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &N, PolySet &ps);
-#endif
+#endif // FAST_CSG_DIFFERENT_KERNEL
 
 	template <typename K>
 	CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d &matrix) {
@@ -435,9 +433,7 @@ namespace CGALUtils {
 			matrix(1,0), matrix(1,1), matrix(1,2), matrix(1,3),
 			matrix(2,0), matrix(2,1), matrix(2,2), matrix(2,3), matrix(3,3));
 	}
-#ifdef FAST_CSG_AVAILABLE
 	template CGAL::Aff_transformation_3<CGAL_HybridKernel3> createAffineTransformFromMatrix(const Transform3d &matrix);
-#endif
 
 	template <typename K>
 	void transform(CGAL::Nef_polyhedron_3<K> &N, const Transform3d &matrix)
@@ -447,9 +443,9 @@ namespace CGALUtils {
 	}
 
 	template void transform(CGAL_Nef_polyhedron3 &N, const Transform3d &matrix);
-#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+#ifdef FAST_CSG_DIFFERENT_KERNEL
 	template void transform(CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &N, const Transform3d &matrix);
-#endif
+#endif // FAST_CSG_DIFFERENT_KERNEL
 
 	template <typename K>
 	void transform(CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, const Transform3d &matrix)
@@ -463,9 +459,7 @@ namespace CGALUtils {
 			pt = t(pt);
 		}
 	}
-#ifdef FAST_CSG_AVAILABLE
 	template void transform(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &mesh, const Transform3d &matrix);
-#endif
 
 	// Copied from CGAL_Nef_Polyhedron verbatim. Should put in common.
 	template <typename K>
@@ -517,11 +511,11 @@ namespace CGALUtils {
 	template Transform3d computeResizeTransform(
 		const CGAL_Iso_cuboid_3& bb, int dimension, const Vector3d &newsize,
 		const Eigen::Matrix<bool,3,1> &autosize);
-#ifdef FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+#ifdef FAST_CSG_DIFFERENT_KERNEL
 	template Transform3d computeResizeTransform(
 		const CGAL::Iso_cuboid_3<CGAL_HybridKernel3>& bb, int dimension, const Vector3d &newsize,
 		const Eigen::Matrix<bool,3,1> &autosize);
-#endif
+#endif // FAST_CSG_DIFFERENT_KERNEL
 
 	shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>& geom)
 	{
@@ -539,11 +533,9 @@ namespace CGALUtils {
 			}
 			return ps;
 		}
-#ifdef FAST_CSG_AVAILABLE
 		if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
 			return hybrid->toPolySet();
 		}
-#endif
 		return nullptr;
 	}
 

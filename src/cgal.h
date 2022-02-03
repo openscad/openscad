@@ -69,9 +69,9 @@ typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
 typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2e;
 typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e;
 
-#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(4, 6, 0)
-
-#define FAST_CSG_AVAILABLE
+#if CGAL_VERSION_NR <= CGAL_VERSION_NUMBER(4, 6, 0)
+#pragma error("CGAL 4.6.0 or above is required.")
+#endif
 
 // CGAL::Epeck is faster than CGAL::Cartesian<CGAL::Gmpq> (because of filtering)...
 // except in some pathological cases. It can also use a lot or memory (because
@@ -86,10 +86,10 @@ typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e
 // Ideally we'll want to use a filtered but non-lazy kernel for all our code.
 #ifdef FAST_CSG_USE_SAME_KERNEL
 
-#if CGAL_VERSION_NR <= CGAL_VERSION_NUMBER(5, 2, 0)
+#if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 2, 0)
 #pragma error("Cannot use the same kernel for corefinement before CGAL 5.2.1 "
               "(see https://github.com/CGAL/cgal/issues/5322)")
-#endif
+#endif // FAST_CSG_USE_SAME_KERNEL
 
 #pragma message("[fast-csg] Using same kernel for CGAL_Kernel3 and CGAL_HybridKernel3.")
 
@@ -97,14 +97,10 @@ typedef CGAL_Kernel3 CGAL_HybridKernel3;
 
 #else // not FAST_CSG_USE_SAME_KERNEL
 
-#define FAST_CSG_AVAILABLE_WITH_DIFFERENT_KERNEL
+#define FAST_CSG_DIFFERENT_KERNEL
 #define FAST_CSG_KERNEL_IS_LAZY
 typedef CGAL::Epeck CGAL_HybridKernel3;
 
 #endif // FAST_CSG_USE_SAME_KERNEL
-
-#else // not FAST_CSG_AVAILABLE
-#pragma message("[fast-csg] No support for fast-csg with this version of CGAL.")
-#endif // FAST_CSG_AVAILABLE
 
 #endif /* ENABLE_CGAL */

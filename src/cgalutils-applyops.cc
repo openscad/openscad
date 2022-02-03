@@ -41,11 +41,9 @@ namespace CGALUtils {
 */
 	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
-#ifdef FAST_CSG_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
 			return applyOperator3DHybrid(children, op);
 		}
-#endif // FAST_CSG_AVAILABLE
 
 		CGAL_Nef_polyhedron *N = nullptr;
 		// CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
@@ -113,11 +111,9 @@ namespace CGALUtils {
 	shared_ptr<const Geometry> applyUnion3D(
 		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
 	{
-#ifdef FAST_CSG_AVAILABLE
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
 			return applyUnion3DHybrid(chbegin, chend);
 		}
-#endif // FAST_CSG_AVAILABLE
 
 		typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
 		struct QueueItemGreater {
@@ -191,14 +187,12 @@ namespace CGALUtils {
 					}
 				}
 			}
-#ifdef FAST_CSG_AVAILABLE
 			else if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(chgeom)) {
 				hybrid->foreachVertexUntilTrue([&](auto &p) {
 					points.push_back(vector_convert<K::Point_3>(p));
 					return false;
 				});
 			}
-#endif
 			else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
 				if (ps) {
@@ -257,11 +251,9 @@ namespace CGALUtils {
 
 					auto ps = dynamic_pointer_cast<const PolySet>(operands[i]);
 					auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(operands[i]);
-#ifdef FAST_CSG_AVAILABLE
 					if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(operands[i])) {
 						nef = CGALUtils::createNefPolyhedronFromHybrid(*hybrid);
 					}
-#endif
 
 					if (ps) CGALUtils::createPolyhedronFromPolySet(*ps, poly);
 					else if (nef && nef->p3->is_simple()) CGALUtils::convertNefToPolyhedron(*nef->p3, poly);

@@ -5,7 +5,6 @@
 
 namespace CGALUtils {
 
-#ifdef FAST_CSG_AVAILABLE
 
 template <typename K>
 void inPlaceNefMinkowski(CGAL::Nef_polyhedron_3<K> &lhs,
@@ -17,6 +16,5 @@ void inPlaceNefMinkowski(CGAL::Nef_polyhedron_3<K> &lhs,
 template void inPlaceNefMinkowski(CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &lhs,
 												 CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &rhs);
 
-#endif // FAST_CSG_AVAILABLE
 
 } // namespace CGALUtils

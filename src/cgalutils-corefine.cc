@@ -2,7 +2,6 @@
 #include "cgalutils.h"
 #include "CGALHybridPolyhedron.h"
 
-#ifdef FAST_CSG_AVAILABLE
 
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
 #include <CGAL/Polygon_mesh_processing/internal/Corefinement/face_graph_utils.h>
@@ -60,7 +59,7 @@ bool corefineAndComputeUnion(CGAL::Surface_mesh<CGAL::Point_3<K>> &lhs,
 						ExactNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()));
 	}
 	else
-#endif
+#endif// FAST_CSG_KERNEL_IS_LAZY
 	{
 		return CGAL::Polygon_mesh_processing::corefine_and_compute_union(lhs, rhs, out);
 	}
@@ -81,7 +80,7 @@ bool corefineAndComputeIntersection(CGAL::Surface_mesh<CGAL::Point_3<K>> &lhs,
 						ExactNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()));
 	}
 	else
-#endif
+#endif // FAST_CSG_KERNEL_IS_LAZY
 	{
 		return CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(lhs, rhs, out);
 	}
@@ -102,7 +101,7 @@ bool corefineAndComputeDifference(CGAL::Surface_mesh<CGAL::Point_3<K>> &lhs,
 						ExactNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()));
 	}
 	else
-#endif
+#endif // FAST_CSG_KERNEL_IS_LAZY
 	{
 		return CGAL::Polygon_mesh_processing::corefine_and_compute_difference(lhs, rhs, out);
 	}
@@ -117,4 +116,3 @@ template bool corefineAndComputeDifference(CGAL_HybridSurfaceMesh &lhs, CGAL_Hyb
 
 } // namespace CGALUtils
 
-#endif // FAST_CSG_AVAILABLE
