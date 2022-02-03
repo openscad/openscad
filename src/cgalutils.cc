@@ -13,7 +13,6 @@
 #include "node.h"
 #include "degree_trig.h"
 
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 
@@ -114,6 +113,19 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolygon2d(const Polygon2d &po
 
 namespace CGALUtils {
 
+	template <typename K>
+	CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K> &N)
+	{
+		CGAL::Iso_cuboid_3<K> result(0,0,0,0,0,0);
+		typename CGAL::Nef_polyhedron_3<K>::Vertex_const_iterator vi;
+		std::vector<typename CGAL::Point_3<K>> points;
+		// can be optimized by rewriting bounding_box to accept vertices
+		CGAL_forall_vertices(vi, N) points.push_back(vi->point());
+		if (points.size()) result = CGAL::bounding_box(points.begin(), points.end());
+		return result;
+	}
+	template CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
+
 	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N)
 	{
 		CGAL_Iso_cuboid_3 result(0,0,0,0,0,0);
@@ -148,7 +160,7 @@ namespace CGALUtils {
 
   /*!
 		Check if all faces of a polyset is within 0.1 degree of being convex.
-		
+
 		NB! This function can give false positives if the polyset contains
 		non-planar faces. To be on the safe side, consider passing a tessellated polyset.
 		See issue #1061.
@@ -237,26 +249,27 @@ namespace CGALUtils {
 	}
 
 
-	CGAL_Nef_polyhedron *createNefPolyhedronFromGeometry(const Geometry &geom)
+	shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromGeometry(const Geometry &geom)
 	{
 		if (auto ps = dynamic_cast<const PolySet*>(&geom)) {
-			return createNefPolyhedronFromPolySet(*ps);
+			return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolySet(*ps));
 		}
 		else if (auto poly2d = dynamic_cast<const Polygon2d*>(&geom)) {
-			return createNefPolyhedronFromPolygon2d(*poly2d);
+			return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolygon2d(*poly2d));
 		}
 		assert(false && "createNefPolyhedronFromGeometry(): Unsupported geometry type");
 		return nullptr;
 	}
 
 /*
-	Create a PolySet from a Nef Polyhedron 3. return false on success, 
-	true on failure. The trick to this is that Nef Polyhedron3 faces have 
-	'holes' in them. . . while PolySet (and many other 3d polyhedron 
-	formats) do not allow for holes in their faces. The function documents 
+	Create a PolySet from a Nef Polyhedron 3. return false on success,
+	true on failure. The trick to this is that Nef Polyhedron3 faces have
+	'holes' in them. . . while PolySet (and many other 3d polyhedron
+	formats) do not allow for holes in their faces. The function documents
 	the method used to deal with this
 */
-	bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps)
+	template <typename K>
+	bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K> &N, PolySet &ps)
 	{
 		// 1. Build Indexed PolyMesh
 		// 2. Validate mesh (manifoldness)
@@ -265,15 +278,17 @@ namespace CGALUtils {
 		// 4. Validate mesh (manifoldness)
 		// 5. Create PolySet
 
+		typedef CGAL::Nef_polyhedron_3<K> Nef;
+
 		bool err = false;
 
 		// 1. Build Indexed PolyMesh
 		Reindexer<Vector3f> allVertices;
 		std::vector<std::vector<IndexedFace>> polygons;
 
-		CGAL_Nef_polyhedron3::Halffacet_const_iterator hfaceti;
+		typename Nef::Halffacet_const_iterator hfaceti;
 		CGAL_forall_halffacets(hfaceti, N) {
-			CGAL::Plane_3<CGAL_Kernel3> plane(hfaceti->plane());
+			CGAL::Plane_3<K> plane(hfaceti->plane());
 			// Since we're downscaling to float, vertices might merge during this conversion.
 			// To avoid passing equal vertices to the tessellator, we remove consecutively identical
 			// vertices.
@@ -281,14 +296,14 @@ namespace CGALUtils {
 			auto &faces = polygons.back();
 			// the 0-mark-volume is the 'empty' volume of space. skip it.
 			if (!hfaceti->incident_volume()->mark()) {
-				CGAL_Nef_polyhedron3::Halffacet_cycle_const_iterator cyclei;
+				typename Nef::Halffacet_cycle_const_iterator cyclei;
 				CGAL_forall_facet_cycles_of(cyclei, hfaceti) {
-					CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c1(cyclei);
-					CGAL_Nef_polyhedron3::SHalfedge_around_facet_const_circulator c2(c1);
+					typename Nef::SHalfedge_around_facet_const_circulator c1(cyclei);
+					typename Nef::SHalfedge_around_facet_const_circulator c2(c1);
 					faces.push_back(IndexedFace());
 					auto &currface = faces.back();
 					CGAL_For_all(c1, c2) {
-						CGAL_Point_3 p = c1->source()->center_vertex()->point();
+						auto p = c1->source()->center_vertex()->point();
 						// Create vertex indices and remove consecutive duplicate vertices
 						auto idx = allVertices.lookup(vector_convert<Vector3f>(p));
 						if (currface.empty() || idx != currface.back()) currface.push_back(idx);
@@ -332,7 +347,7 @@ namespace CGALUtils {
 		std::cerr.precision(20);
 		for (size_t i=0; i<allVertices.size(); ++i) {
 			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
-		}		
+		}
 #endif // debug
 
 			/* at this stage, we have a sequence of polygons. the first
@@ -381,10 +396,39 @@ namespace CGALUtils {
 		std::cerr.precision(20);
 		for (size_t i=0; i<allVertices.size(); ++i) {
 			std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
-		}		
+		}
 #endif // debug
 
 		return err;
+	}
+
+	template bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
+
+	shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>& geom)
+	{
+		if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+			return ps;
+		}
+		if (auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+			auto ps = make_shared<PolySet>(3);
+			ps->setConvexity(N->getConvexity());
+			if (!N->isEmpty()) {
+				bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
+				if (err) {
+					LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed.");
+				}
+			}
+			return ps;
+		}
+		return nullptr;
+	}
+
+	shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>& geom)
+	{
+		if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+			return nef;
+		}
+		return geom ? shared_ptr<const CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromGeometry(*geom)) : nullptr;
 	}
 }; // namespace CGALUtils
 

@@ -57,7 +57,7 @@ static void append_amf(const CGAL_Nef_polyhedron &root_N, std::ostream &output)
 	}
 	try {
 		CGAL_Polyhedron P;
-		root_N.p3->convert_to_polyhedron(P);
+		CGALUtils::convertNefToPolyhedron(*root_N.p3, P);
 
 		typedef CGAL_Polyhedron::Vertex Vertex;
 		typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
@@ -158,9 +158,8 @@ static void append_amf(const shared_ptr<const Geometry> &geom, std::ostream &out
 	}
 	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
 		// FIXME: Implement this without creating a Nef polyhedron
-		CGAL_Nef_polyhedron *N = CGALUtils::createNefPolyhedronFromGeometry(*ps);
+		auto N = CGALUtils::createNefPolyhedronFromGeometry(*ps);
 		if (!N->isEmpty()) append_amf(*N, output);
-		delete N;
 	}
 	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
 		assert(false && "Unsupported file format");
