@@ -11,9 +11,18 @@ typedef CGAL::Point_3<K> Vertex3K;
 typedef std::vector<Vertex3K> PolygonK;
 typedef std::vector<PolygonK> PolyholeK;
 
+class CGALHybridPolyhedron;
+
 namespace CGAL {
 	template <typename P>
 	class Surface_mesh;
+}
+
+namespace CGAL {
+	inline std::size_t hash_value(const CGAL_HybridKernel3::FT &x) {
+		std::hash<double> dh;
+		return dh(CGAL::to_double(x));
+	}
 }
 
 namespace /* anonymous */ {
@@ -94,6 +103,8 @@ namespace CGALUtils {
 		return CGAL::Cartesian_converter<
 			FromKernel, ToKernel, KernelConverter<FromKernel, ToKernel>>();
 	}
+	shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron &hybrid);
+	std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const Geometry &geom);
 	template <typename Polyhedron>
 	void triangulateFaces(Polyhedron &polyhedron);
 	template <typename Polyhedron>

@@ -699,6 +699,7 @@ set(CGAL_SOURCES
   src/cgalutils-convex.cc
   src/cgalutils-corefine.cc
   src/cgalutils-kernel.cc
+  src/cgalutils-hybrid.cc
   src/cgalutils-mesh.cc
   src/cgalutils-minkowski.cc
   src/cgalutils-nef.cc
@@ -708,6 +709,7 @@ set(CGAL_SOURCES
   src/cgalutils-tess.cc
   src/cgalutils-triangulate.cc
   src/export_nef.cc
+  src/CGALHybridPolyhedron.cc
   src/import_nef.cc
   src/CGAL_Nef_polyhedron.cc
   src/CGALCache.cc
