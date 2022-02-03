@@ -11,6 +11,7 @@
 #include "Polygon2d.h"
 #include "polyset-utils.h"
 #include "grid.h"
+#include "CGALHybridPolyhedron.h"
 #include "node.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -39,6 +40,10 @@ namespace CGALUtils {
 */
 	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
+		if (Feature::ExperimentalFastCsg.is_enabled()) {
+			return applyOperator3DHybrid(children, op);
+		}
+
 		CGAL_Nef_polyhedron *N = nullptr;
 
 		assert(op != OpenSCADOperator::UNION && "use applyUnion3D() instead of applyOperator3D()");
@@ -104,6 +109,10 @@ namespace CGALUtils {
 	shared_ptr<const Geometry> applyUnion3D(
 		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
 	{
+		if (Feature::ExperimentalFastCsg.is_enabled()) {
+			return applyUnion3DHybrid(chbegin, chend);
+		}
+
 		typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
 		struct QueueItemGreater {
 			// stable sort for priority_queue by facets, then progress mark
@@ -174,7 +183,14 @@ namespace CGALUtils {
 						points.push_back(vector_convert<K::Point_3>(i->point()));
 					}
 				}
-			} else {
+			}
+			else if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(chgeom)) {
+				hybrid->foreachVertexUntilTrue([&](auto &p) {
+					points.push_back(vector_convert<K::Point_3>(p));
+					return false;
+				});
+			}
+			else {
 				const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
 				if (ps) {
 					for(const auto &p : ps->polygons) {
@@ -232,6 +248,9 @@ namespace CGALUtils {
 
 					auto ps = dynamic_pointer_cast<const PolySet>(operands[i]);
 					auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(operands[i]);
+					if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(operands[i])) {
+						nef = CGALUtils::createNefPolyhedronFromHybrid(*hybrid);
+					}
 
 					if (ps) CGALUtils::createPolyhedronFromPolySet(*ps, poly);
 					else if (nef && nef->p3->is_simple()) CGALUtils::convertNefToPolyhedron(*nef->p3, poly);

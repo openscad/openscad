@@ -27,6 +27,7 @@
 #include "Reindexer.h"
 #include "hash.h"
 #include "GeometryUtils.h"
+#include "CGALHybridPolyhedron.h"
 
 #include <map>
 #include <queue>
@@ -262,6 +263,9 @@ namespace CGALUtils {
 	{
 		if (auto ps = dynamic_cast<const PolySet*>(&geom)) {
 			return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolySet(*ps));
+		}
+		else if (auto poly = dynamic_cast<const CGALHybridPolyhedron*>(&geom)) {
+			return createNefPolyhedronFromHybrid(*poly);
 		}
 		else if (auto poly2d = dynamic_cast<const Polygon2d*>(&geom)) {
 			return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolygon2d(*poly2d));
@@ -515,6 +519,9 @@ namespace CGALUtils {
 				}
 			}
 			return ps;
+		}
+		if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+			return hybrid->toPolySet();
 		}
 		return nullptr;
 	}

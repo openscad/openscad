@@ -18,6 +18,7 @@
 #include "projectionnode.h"
 #include "csgops.h"
 #include "textnode.h"
+#include "CGALHybridPolyhedron.h"
 #include "cgalutils.h"
 #include "rendernode.h"
 #include "clipper-utils.h"
@@ -62,6 +63,9 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 			this->traverse(node);
 		}
 
+		if (dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root)) {
+			this->root = CGALUtils::getGeometryAsPolySet(this->root);
+		}
 
 		if (!allownef) {
 			// We cannot render concave polygons, so tessellate any 3D PolySets

@@ -39,6 +39,10 @@ namespace CGALUtils {
 	bool is_weakly_convex(const CGAL::Polyhedron_3<K> & p);
 	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op);
 	shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
+	shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries &children, OpenSCADOperator op);
+	shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
+		const Geometry::Geometries::const_iterator &chbegin,
+		const Geometry::Geometries::const_iterator &chend);
 	//FIXME: Old, can be removed:
 	//void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
