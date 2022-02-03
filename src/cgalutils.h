@@ -101,6 +101,14 @@ namespace CGALUtils {
 	template <typename Polyhedron>
 	void orientToBoundAVolume(Polyhedron &polyhedron);
 	template <typename K>
+	void inPlaceNefUnion(CGAL::Nef_polyhedron_3<K> &lhs, const CGAL::Nef_polyhedron_3<K> &rhs);
+	template <typename K>
+	void inPlaceNefDifference(CGAL::Nef_polyhedron_3<K> &lhs, const CGAL::Nef_polyhedron_3<K> &rhs);
+	template <typename K>
+	void inPlaceNefIntersection(CGAL::Nef_polyhedron_3<K> &lhs, const CGAL::Nef_polyhedron_3<K> &rhs);
+	template <typename K>
+	void inPlaceNefMinkowski(CGAL::Nef_polyhedron_3<K> &lhs, CGAL::Nef_polyhedron_3<K> &rhs);
+	template <typename K>
 	void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<K> &nef, CGAL::Polyhedron_3<K> &polyhedron);
 	template <typename K>
 	bool corefineAndComputeUnion(CGAL::Polyhedron_3<K> &lhs, CGAL::Polyhedron_3<K> &rhs, CGAL::Polyhedron_3<K> &out);
