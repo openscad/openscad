@@ -425,7 +425,6 @@ if(NOT HEADLESS)
 
   find_package(Qt5QScintilla 2.8.0 REQUIRED QUIET)
   message(STATUS "QScintilla: ${QT5QSCINTILLA_VERSION_STRING}")
-  target_compile_definitions(OpenSCAD PRIVATE USE_SCINTILLA_EDITOR)
 
   option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON)
   if(ENABLE_QTDBUS)

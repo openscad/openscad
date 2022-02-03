@@ -1,10 +1,6 @@
 #include "LibraryInfo.h"
 #include <glib.h>
 #include <vector>
-#ifdef USE_SCINTILLA_EDITOR
-#include <Qsci/qsciglobal.h>
-#include "input/InputDriverManager.h"
-#endif
 
 #include "version_check.h"
 #include "PlatformUtils.h"
@@ -14,6 +10,11 @@
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
+
+#ifndef OPENSCAD_NOGUI
+#include <Qsci/qsciglobal.h>
+#include "input/InputDriverManager.h"
+#endif
 
 #ifdef ENABLE_CGAL
 #include "cgal.h"
@@ -126,7 +127,7 @@ std::string LibraryInfo::info()
 	  << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
 	  << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
 	  << "\nQt version: " << qtVersion
-#ifdef USE_SCINTILLA_EDITOR
+#ifndef OPENSCAD_NOGUI
 	  << "\nQScintilla version: " << QSCINTILLA_VERSION_STR
           << "\nInputDrivers: " << InputDriverManager::instance()->listDrivers()
 #endif
