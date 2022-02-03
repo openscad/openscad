@@ -18,8 +18,8 @@
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 
-#include <CGAL/config.h>
-#include <CGAL/version.h>
+#include <CGAL/config.h> 
+#include <CGAL/version.h> 
 
 #include <CGAL/convex_hull_3.h>
 
@@ -27,7 +27,6 @@
 #include "svg.h"
 #include "Reindexer.h"
 #include "GeometryUtils.h"
-#include "ModuleInstantiation.h"
 
 #include <map>
 #include <queue>
@@ -46,7 +45,6 @@ namespace CGALUtils {
 		}
 
 		CGAL_Nef_polyhedron *N = nullptr;
-		// CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
 
 		assert(op != OpenSCADOperator::UNION && "use applyUnion3D() instead of applyOperator3D()");
 		bool foundFirst = false;
@@ -70,7 +68,7 @@ namespace CGALUtils {
 					foundFirst = true;
 					continue;
 				}
-
+				
 				// Intersecting something with nothing results in nothing
 				if (!chN || chN->isEmpty()) {
 					if (op == OpenSCADOperator::INTERSECTION) {
@@ -79,10 +77,10 @@ namespace CGALUtils {
                     }
 					continue;
 				}
-
+				
 				// empty op <something> => empty
 				if (!N || N->isEmpty()) continue;
-
+				
 				switch (op) {
 				case OpenSCADOperator::INTERSECTION:
 					*N *= *chN;
@@ -127,7 +125,6 @@ namespace CGALUtils {
 		};
 		std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater> q;
 
-		// CGALUtils::CGALErrorBehaviour behaviour{CGAL::THROW_EXCEPTION};
 		try {
 			// sort children by fewest faces
 			for (auto it = chbegin; it != chend; ++it) {

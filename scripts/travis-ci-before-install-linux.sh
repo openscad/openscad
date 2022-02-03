@@ -45,4 +45,3 @@ sudo apt-cache rdepends libzip4 || true
 sudo apt-get purge -qq libzip4 $(apt-cache rdepends --installed libzip4 | tail -n+3)
 
 sudo apt-get install -qq $PACKAGES1 $PACKAGES2 $PACKAGES3 $PACKAGES4 $PACKAGES5
-

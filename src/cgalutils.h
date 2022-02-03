@@ -64,7 +64,7 @@ namespace CGALUtils {
 	shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries &children);
 
 	template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron &p, PolySet &ps);
-	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p, bool invert_orientation = true, bool use_grid = true);
+	template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet &ps, Polyhedron &p);
 	template <class InputKernel, class OutputKernel>
 	void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel> &poly_a, CGAL::Polyhedron_3<OutputKernel> &poly_b);
 

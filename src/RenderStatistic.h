@@ -69,7 +69,7 @@ public:
    * Format and print time elapsed by rendering.
    */
   void printRenderingTime();
-
+  
   /**
    * Print all available statistic information.
    */
