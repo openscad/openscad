@@ -12,15 +12,21 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-18.04, ubuntu-20.04 ]
+        same-kernel: [false]
         include:
           - os: ubuntu-18.04
             distro: bionic
+            same-kernel: false
           - os: ubuntu-20.04
             distro: focal
+            same-kernel: false
+          - os: ubuntu-20.04
+            distro: focal
+            same-kernel: true
 
     runs-on: ${{ matrix.os }}
 
-    name: ${{ matrix.os }}
+    name: "${{ matrix.os }} (same-kernel=${{ matrix.same-kernel }})"
 
     steps:
     - name: Checkout
@@ -32,7 +38,7 @@ jobs:
     - name: Dependency fixup
       run: sudo apt-get install qt5-default gettext gcovr
     - name: Build and test
-      run: ./scripts/github-ci.sh build test coverage
+      run: FAST_CSG_USE_SAME_KERNEL=${{ matrix.same-kernel }} ./scripts/github-ci.sh build test coverage
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v2
       if: ${{ always() }}
