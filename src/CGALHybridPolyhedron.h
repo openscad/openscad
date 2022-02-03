@@ -19,7 +19,7 @@ std::shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(
 		const CGALHybridPolyhedron &hybrid);
 } // namespace CGALUtils
 
-/*! A mutable polyhedron backed by a CGAL::Polyhedron_3 and fast Polygon Mesh
+/*! A mutable polyhedron backed by a CGAL::Surface_mesh and fast Polygon Mesh
  * Processing (PMP) CSG functions when possible (manifold cases), or by a
  * CGAL::Nef_polyhedron_3 when it's not (non manifold cases).
  *
@@ -102,7 +102,7 @@ private:
 	 * Returns false if the operation failed (e.g. because of shared edges), in
 	 * which case it may still have corefined the polyhedron, but it reverts the
 	 * original nef if there was one. */
-	bool polyBinOp(const std::string &opName, CGALHybridPolyhedron &other,
+	bool meshBinOp(const std::string &opName, CGALHybridPolyhedron &other,
 								 const std::function<bool(mesh_t &lhs, mesh_t &rhs, mesh_t &out)> &operation);
 
 	nef_polyhedron_t &convertToNef();

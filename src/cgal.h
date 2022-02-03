@@ -44,7 +44,7 @@ typedef CGAL::Polygon_2<CGAL_ExactKernel2> CGAL_Poly2;
 typedef CGAL::Polygon_with_holes_2<CGAL_ExactKernel2> CGAL_Poly2h;
 
 typedef CGAL::Gmpq NT3;
-// #ifdef FAST_CSG_USE_SAME_KERNEL
+// #if FAST_CSG_SAME_KERNEL
 // typedef CGAL::Epeck CGAL_Kernel3;
 // #else
 typedef CGAL::Cartesian<NT3> CGAL_Kernel3;
@@ -84,23 +84,27 @@ typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e
 // (see cgalutils-kernel.cc) and require -DCGAL_USE_GMPXX.
 //
 // Ideally we'll want to use a filtered but non-lazy kernel for all our code.
-#ifdef FAST_CSG_USE_SAME_KERNEL
+#ifndef FAST_CSG_SAME_KERNEL
+#define FAST_CSG_SAME_KERNEL 0
+#endif
 
-#if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 2, 0)
+#if FAST_CSG_SAME_KERNEL
+
+#if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 2, 1)
 #pragma error("Cannot use the same kernel for corefinement before CGAL 5.2.1 "
               "(see https://github.com/CGAL/cgal/issues/5322)")
-#endif // FAST_CSG_USE_SAME_KERNEL
+#endif // CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 2, 0)
 
 #pragma message("[fast-csg] Using same kernel for CGAL_Kernel3 and CGAL_HybridKernel3.")
 
+#define FAST_CSG_KERNEL_IS_LAZY 0
 typedef CGAL_Kernel3 CGAL_HybridKernel3;
 
-#else // not FAST_CSG_USE_SAME_KERNEL
+#else // !FAST_CSG_SAME_KERNEL
 
-#define FAST_CSG_DIFFERENT_KERNEL
-#define FAST_CSG_KERNEL_IS_LAZY
+#define FAST_CSG_KERNEL_IS_LAZY 1
 typedef CGAL::Epeck CGAL_HybridKernel3;
 
-#endif // FAST_CSG_USE_SAME_KERNEL
+#endif // FAST_CSG_SAME_KERNEL
 
 #endif /* ENABLE_CGAL */

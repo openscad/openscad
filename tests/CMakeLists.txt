@@ -215,11 +215,6 @@ function(is_2d FULLNAME RESULT)
   endif()
 endfunction()
 
-# See CGALPolyhedron.h for CGAL version needed for this feature.
-if(NOT DEFINED FAST_CSG_AVAILABLE)
-  set(FAST_CSG_AVAILABLE 1)
-endif()
-
 # Specific tests for which fast-csg cannot be enabled yet. If fast-csg fails in
 # all the tests on a file, add it to FAST_CSG_FAILING_SCADFILES instead.
 list(APPEND FAST_CSG_FAILING_TESTS
@@ -359,8 +354,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (${EXPERIMENTAL_TEST} EQUAL -1)
         set(EXPERIMENTAL_OPTION "")
         # Enable fast-csg for all tests but those that have different expectations or fail for other reasons.
-        if (FAST_CSG_AVAILABLE
-            AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
+        if (NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
             AND NOT SCADFILE IN_LIST FAST_CSG_FAILING_SCADFILES
             AND NOT TEST_FULLNAME IN_LIST FAST_CSG_FAILING_TESTS)
           set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
@@ -1120,10 +1114,7 @@ add_cmdline_test(lazyunion-stlpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX
 add_cmdline_test(lazyunion-offpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF --enable=lazy-union --render=cgal)
 add_cmdline_test(lazyunion-dxfpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --enable=lazy-union --render=cgal)
 add_cmdline_test(lazyunion-svgpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=lazy-union --render=cgal)
-
-if (FAST_CSG_AVAILABLE)
-  add_cmdline_test(fastcsg-cgalpng     OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS} ARGS --enable=fast-csg --render)
-endif()
+add_cmdline_test(fastcsg-cgalpng       OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS} ARGS --enable=fast-csg --render)
 
 #
 # Trivial Export/Import files

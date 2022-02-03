@@ -30,7 +30,7 @@ Feature::list_t Feature::feature_list;  // Double-listed values. --^
  * const Features listed below.
  */
 const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG operations with corefinement instead of nef when possible.");
-#ifdef FAST_CSG_KERNEL_IS_LAZY
+#if FAST_CSG_KERNEL_IS_LAZY
 const Feature Feature::ExperimentalFastCsgExactCallback("fast-csg-exact-callbacks", "Force lazy numbers to exact during corefinement using callbacks rather than at the end of each operation. Only works with fast-csg-mesh for now.");
 #endif // FAST_CSG_KERNEL_IS_LAZY
 const Feature Feature::ExperimentalRoof("roof", "Enable <code>roof</code>");

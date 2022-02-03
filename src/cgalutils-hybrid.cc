@@ -42,7 +42,10 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromNefPolyhedron(co
 
   SCOPED_PERFORMANCE_TIMER("createHybridPolyhedronFromNefPolyhedron");
 
-#ifdef FAST_CSG_DIFFERENT_KERNEL
+#if FAST_CSG_SAME_KERNEL
+  return make_shared<CGALHybridPolyhedron>(
+      make_shared<CGALHybridPolyhedron::nef_polyhedron_t>(*nef.p3));
+#else // !FAST_CSG_SAME_KERNEL
   auto mesh = make_shared<CGALHybridPolyhedron::mesh_t>();
 
   CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>> alien_mesh;
@@ -50,10 +53,7 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromNefPolyhedron(co
   copyMesh(alien_mesh, *mesh);
 
   return make_shared<CGALHybridPolyhedron>(mesh);
-#else
-  return make_shared<CGALHybridPolyhedron>(
-      make_shared<CGALHybridPolyhedron::nef_polyhedron_t>(*nef.p3));
-#endif // FAST_CSG_DIFFERENT_KERNEL
+#endif // FAST_CSG_SAME_KERNEL
 }
 
 std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const Geometry &geom)
@@ -79,19 +79,21 @@ shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPo
 	if (auto mesh = hybrid.getMesh()) {
 		SCOPED_PERFORMANCE_TIMER("createNefPolyhedronFromHybrid: mesh -> nef");
 
-#ifdef FAST_CSG_DIFFERENT_KERNEL
+#if FAST_CSG_SAME_KERNEL
+		return make_shared<CGAL_Nef_polyhedron>(make_shared<CGAL_Nef_polyhedron3>(*mesh));
+#else // FAST_CSG_SAME_KERNEL
 		CGAL_SurfaceMesh alien_mesh;
 		copyMesh(*mesh, alien_mesh);
 
 		return make_shared<CGAL_Nef_polyhedron>(make_shared<CGAL_Nef_polyhedron3>(alien_mesh));
-#else // FAST_CSG_DIFFERENT_KERNEL
-		return make_shared<CGAL_Nef_polyhedron>(make_shared<CGAL_Nef_polyhedron3>(*mesh));
-#endif // FAST_CSG_DIFFERENT_KERNEL
+#endif // FAST_CSG_SAME_KERNEL
 	}
 	if (auto nef = hybrid.getNefPolyhedron()) {
 		SCOPED_PERFORMANCE_TIMER("createNefPolyhedronFromHybrid: nef -> nef");
 
-#ifdef FAST_CSG_DIFFERENT_KERNEL
+#if FAST_CSG_SAME_KERNEL
+		return make_shared<CGAL_Nef_polyhedron>(make_shared<CGAL_Nef_polyhedron3>(*nef));
+#else // !FAST_CSG_SAME_KERNEL
 		CGALHybridPolyhedron::mesh_t mesh;
 		CGALUtils::convertNefPolyhedronToTriangleMesh(*nef, mesh);
 
@@ -99,9 +101,7 @@ shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPo
     copyMesh(mesh, alien_mesh);
 
 		return make_shared<CGAL_Nef_polyhedron>(make_shared<CGAL_Nef_polyhedron3>(alien_mesh));
-#else // FAST_CSG_DIFFERENT_KERNEL
-		return make_shared<CGAL_Nef_polyhedron>(make_shared<CGAL_Nef_polyhedron3>(*nef));
-#endif // FAST_CSG_DIFFERENT_KERNEL
+#endif // FAST_CSG_SAME_KERNEL
 	}
 	else {
 		assert(!"Invalid hybrid polyhedron state");

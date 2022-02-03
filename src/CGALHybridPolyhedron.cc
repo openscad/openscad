@@ -7,7 +7,8 @@
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/boost/graph/helpers.h>
 
-#ifdef FAST_CSG_DEBUG_SERIALIZE_COREFINEMENT_OPERANDS
+#define FAST_CSG_DEBUG_SERIALIZE_COREFINEMENT_OPERANDS 0
+#if FAST_CSG_DEBUG_SERIALIZE_COREFINEMENT_OPERANDS
 #include <sstream>
 #include <fstream>
 #endif // FAST_CSG_DEBUG_SERIALIZE_COREFINEMENT_OPERANDS
@@ -22,7 +23,7 @@ void cleanupMesh(CGALHybridPolyhedron::mesh_t &mesh, bool is_corefinement_result
 
 	mesh.collect_garbage();
 
-#ifdef FAST_CSG_KERNEL_IS_LAZY
+#if FAST_CSG_KERNEL_IS_LAZY
 	// Coordinates of new vertices would have already been forced to exact in the
 	// corefinement callbacks called whenever new faces are created.
 	if (!Feature::ExperimentalFastCsgExactCallback.is_enabled() || !is_corefinement_result) {
@@ -155,7 +156,7 @@ void CGALHybridPolyhedron::clear()
 void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 {
 	if (!sharesAnyVertexWith(other) && isManifold() && other.isManifold()) {
-		if (polyBinOp("corefinement mesh union", other, [&](mesh_t &lhs, mesh_t &rhs, mesh_t &out) {
+		if (meshBinOp("corefinement mesh union", other, [&](mesh_t &lhs, mesh_t &rhs, mesh_t &out) {
 					return CGALUtils::corefineAndComputeUnion(lhs, rhs, out);
 				}))
 			return;
@@ -170,7 +171,7 @@ void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron &other)
 void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
 {
 	if (!sharesAnyVertexWith(other) && isManifold() && other.isManifold()) {
-		if (polyBinOp("corefinement mesh intersection", other,
+		if (meshBinOp("corefinement mesh intersection", other,
 									[&](mesh_t &lhs, mesh_t &rhs, mesh_t &out) {
 										return CGALUtils::corefineAndComputeIntersection(lhs, rhs, out);
 									}))
@@ -186,7 +187,7 @@ void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron &other)
 void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron &other)
 {
 	if (!sharesAnyVertexWith(other) && isManifold() && other.isManifold()) {
-		if (polyBinOp("corefinement mesh difference", other,
+		if (meshBinOp("corefinement mesh difference", other,
 									[&](mesh_t &lhs, mesh_t &rhs, mesh_t &out) {
 										return CGALUtils::corefineAndComputeDifference(lhs, rhs, out);
 									}))
@@ -306,7 +307,7 @@ void CGALHybridPolyhedron::nefPolyBinOp(
 	operation(convertToNef(), other.convertToNef());
 }
 
-bool CGALHybridPolyhedron::polyBinOp(
+bool CGALHybridPolyhedron::meshBinOp(
 		const std::string &opName, CGALHybridPolyhedron &other,
 		const std::function<bool(mesh_t &lhs, mesh_t &rhs, mesh_t &out)> &operation)
 {
@@ -323,7 +324,7 @@ bool CGALHybridPolyhedron::polyBinOp(
 		auto &lhs = convertToMesh();
 		auto &rhs = other.convertToMesh();
 
-#ifdef FAST_CSG_DEBUG_SERIALIZE_COREFINEMENT_OPERANDS
+#if FAST_CSG_DEBUG_SERIALIZE_COREFINEMENT_OPERANDS
 		static std::map<std::string, size_t> opCount;
 		auto opNumber = opCount[opName]++;
 		std::ofstream(opName + "_lhs.off") << lhs;

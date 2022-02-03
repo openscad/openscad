@@ -14,7 +14,7 @@ typedef CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> CGAL_HybridSurface
 /*! Visitor that forces exact numbers for the vertices of all the faces created during corefinement.
  */
 template <typename TriangleMesh>
-struct ExactNumbersVisitor
+struct ExactLazyNumbersVisitor
 	: public CGAL::Polygon_mesh_processing::Corefinement::Default_visitor<TriangleMesh> {
 	typedef typename TriangleMesh::Face_index face_descriptor;
 
@@ -49,14 +49,14 @@ bool corefineAndComputeUnion(CGAL::Surface_mesh<CGAL::Point_3<K>> &lhs,
 														 CGAL::Surface_mesh<CGAL::Point_3<K>> &rhs,
 														 CGAL::Surface_mesh<CGAL::Point_3<K>> &out)
 {
-#ifdef FAST_CSG_KERNEL_IS_LAZY
+#if FAST_CSG_KERNEL_IS_LAZY
 	if (Feature::ExperimentalFastCsgExactCallback.is_enabled()) {
 		return CGAL::Polygon_mesh_processing::corefine_and_compute_union(
 				lhs, rhs, out,
 				CGAL::Polygon_mesh_processing::parameters::visitor(
-						ExactNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()),
+						ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()),
 				CGAL::Polygon_mesh_processing::parameters::visitor(
-						ExactNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()));
+						ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()));
 	}
 	else
 #endif// FAST_CSG_KERNEL_IS_LAZY
@@ -70,14 +70,14 @@ bool corefineAndComputeIntersection(CGAL::Surface_mesh<CGAL::Point_3<K>> &lhs,
 																		CGAL::Surface_mesh<CGAL::Point_3<K>> &rhs,
 																		CGAL::Surface_mesh<CGAL::Point_3<K>> &out)
 {
-#ifdef FAST_CSG_KERNEL_IS_LAZY
+#if FAST_CSG_KERNEL_IS_LAZY
 	if (Feature::ExperimentalFastCsgExactCallback.is_enabled()) {
 		return CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(
 				lhs, rhs, out,
 				CGAL::Polygon_mesh_processing::parameters::visitor(
-						ExactNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()),
+						ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()),
 				CGAL::Polygon_mesh_processing::parameters::visitor(
-						ExactNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()));
+						ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()));
 	}
 	else
 #endif // FAST_CSG_KERNEL_IS_LAZY
@@ -91,14 +91,14 @@ bool corefineAndComputeDifference(CGAL::Surface_mesh<CGAL::Point_3<K>> &lhs,
 																	CGAL::Surface_mesh<CGAL::Point_3<K>> &rhs,
 																	CGAL::Surface_mesh<CGAL::Point_3<K>> &out)
 {
-#ifdef FAST_CSG_KERNEL_IS_LAZY
+#if FAST_CSG_KERNEL_IS_LAZY
 	if (Feature::ExperimentalFastCsgExactCallback.is_enabled()) {
 		return CGAL::Polygon_mesh_processing::corefine_and_compute_difference(
 				lhs, rhs, out,
 				CGAL::Polygon_mesh_processing::parameters::visitor(
-						ExactNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()),
+						ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()),
 				CGAL::Polygon_mesh_processing::parameters::visitor(
-						ExactNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()));
+						ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()));
 	}
 	else
 #endif // FAST_CSG_KERNEL_IS_LAZY
