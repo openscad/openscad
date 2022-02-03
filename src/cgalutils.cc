@@ -13,6 +13,7 @@
 #include "node.h"
 #include "degree_trig.h"
 
+#include <CGAL/Aff_transformation_3.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 
@@ -126,15 +127,22 @@ namespace CGALUtils {
 	}
 	template CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N);
 
-	CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3 &N)
+	CGAL_Iso_cuboid_3 boundingBox(const Geometry& geom) {
+		if (auto polyset = dynamic_cast<const PolySet*>(&geom)) {
+			return createIsoCuboidFromBoundingBox(polyset->getBoundingBox());
+		} else if (auto nef = dynamic_cast<const CGAL_Nef_polyhedron*>(&geom)) {
+			return boundingBox(*nef->p3);
+		} else {
+			assert(!"Unsupported geometry type in boundingBox");
+			return CGAL_Iso_cuboid_3(0,0,0,0,0,0);
+		}
+	}
+
+	CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox &bbox)
 	{
-		CGAL_Iso_cuboid_3 result(0,0,0,0,0,0);
-		CGAL_Nef_polyhedron3::Vertex_const_iterator vi;
-		std::vector<CGAL_Nef_polyhedron3::Point_3> points;
-		// can be optimized by rewriting bounding_box to accept vertices
-		CGAL_forall_vertices(vi, N) points.push_back(vi->point());
-		if (points.size()) result = CGAL::bounding_box(points.begin(), points.end());
-		return result;
+		return CGAL_Iso_cuboid_3(
+			vector_convert<CGAL_Point_3>(bbox.min()),
+			vector_convert<CGAL_Point_3>(bbox.max()));
 	}
 
 	namespace {
@@ -403,6 +411,73 @@ namespace CGALUtils {
 	}
 
 	template bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
+
+	template <typename K>
+	CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d &matrix) {
+		return CGAL::Aff_transformation_3<K>(
+			matrix(0,0), matrix(0,1), matrix(0,2), matrix(0,3),
+			matrix(1,0), matrix(1,1), matrix(1,2), matrix(1,3),
+			matrix(2,0), matrix(2,1), matrix(2,2), matrix(2,3), matrix(3,3));
+	}
+
+	template <typename K>
+	void transform(CGAL::Nef_polyhedron_3<K> &N, const Transform3d &matrix)
+	{
+		assert(matrix.matrix().determinant() != 0);
+		N.transform(createAffineTransformFromMatrix<K>(matrix));
+	}
+
+	template void transform(CGAL_Nef_polyhedron3 &N, const Transform3d &matrix);
+
+	template <typename K>
+	Transform3d computeResizeTransform(
+		const CGAL::Iso_cuboid_3<K>& bb, int dimension, const Vector3d &newsize,
+		const Eigen::Matrix<bool,3,1> &autosize)
+	{
+		// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
+
+		// The numeric type is our kernel's field type.
+		typedef typename K::FT NT;
+
+		std::vector<NT> scale, bbox_size;
+		for (unsigned int i=0; i<3; ++i) {
+			scale.push_back(NT(1));
+			bbox_size.push_back(bb.max_coord(i) - bb.min_coord(i));
+		}
+		int newsizemax_index = 0;
+		for (unsigned int i=0; i<dimension; ++i) {
+			if (newsize[i]) {
+				if (bbox_size[i] == NT(0)) {
+					LOG(message_group::Warning,Location::NONE,"","Resize in direction normal to flat object is not implemented");
+					return Transform3d::Identity();
+				}
+				else {
+					scale[i] = NT(newsize[i]) / bbox_size[i];
+				}
+				if (newsize[i] > newsize[newsizemax_index]) newsizemax_index = i;
+			}
+		}
+
+		auto autoscale = NT(1);
+		if (newsize[newsizemax_index] != 0) {
+			autoscale = NT(newsize[newsizemax_index]) / bbox_size[newsizemax_index];
+		}
+		for (unsigned int i=0; i<dimension; ++i) {
+			if (autosize[i] && newsize[i]==0) scale[i] = autoscale;
+		}
+
+		Eigen::Matrix4d t;
+		t << CGAL::to_double(scale[0]),           0,        0,        0,
+					0,        CGAL::to_double(scale[1]),           0,        0,
+					0,        0,        CGAL::to_double(scale[2]),           0,
+					0,        0,        0,                                   1;
+
+		return Transform3d(t);
+	}
+
+	template Transform3d computeResizeTransform(
+		const CGAL_Iso_cuboid_3& bb, int dimension, const Vector3d &newsize,
+		const Eigen::Matrix<bool,3,1> &autosize);
 
 	shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>& geom)
 	{

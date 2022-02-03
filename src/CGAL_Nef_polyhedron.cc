@@ -87,42 +87,10 @@ void CGAL_Nef_polyhedron::resize(const Vector3d &newsize,
 	// Based on resize() in Giles Bathgate's RapCAD (but not exactly)
 	if (this->isEmpty()) return;
 
-	auto bb = CGALUtils::boundingBox(*this->p3);
-
-	std::vector<NT3> scale, bbox_size;
-	for (unsigned int i=0; i<3; ++i) {
-		scale.push_back(NT3(1));
-		bbox_size.push_back(bb.max_coord(i) - bb.min_coord(i));
-	}
-	int newsizemax_index = 0;
-	for (unsigned int i=0; i<this->getDimension(); ++i) {
-		if (newsize[i]) {
-			if (bbox_size[i] == NT3(0)) {
-				LOG(message_group::Warning,Location::NONE,"","Resize in direction normal to flat object is not implemented");
-				return;
-			}
-			else {
-				scale[i] = NT3(newsize[i]) / bbox_size[i];
-			}
-			if (newsize[i] > newsize[newsizemax_index]) newsizemax_index = i;
-		}
-	}
-
-	auto autoscale = NT3(1);
-	if (newsize[newsizemax_index] != 0) {
-		autoscale = NT3(newsize[newsizemax_index]) / bbox_size[newsizemax_index];
-	}
-	for (unsigned int i=0; i<this->getDimension(); ++i) {
-		if (autosize[i] && newsize[i]==0) scale[i] = autoscale;
-	}
-
-	Eigen::Matrix4d t;
-	t << CGAL::to_double(scale[0]),           0,        0,        0,
-	     0,        CGAL::to_double(scale[1]),           0,        0,
-	     0,        0,        CGAL::to_double(scale[2]),           0,
-	     0,        0,        0,                                   1;
-
-	this->transform(Transform3d(t));
+	transform(
+		CGALUtils::computeResizeTransform(
+			CGALUtils::boundingBox(*this->p3),
+			getDimension(), newsize, autosize));
 }
 
 std::string CGAL_Nef_polyhedron::dump() const
@@ -139,11 +107,7 @@ void CGAL_Nef_polyhedron::transform( const Transform3d &matrix )
 		}
 		else {
 			auto N = new CGAL_Nef_polyhedron3(*this->p3);
-			CGAL_Aff_transformation t(
-				matrix(0,0), matrix(0,1), matrix(0,2), matrix(0,3),
-				matrix(1,0), matrix(1,1), matrix(1,2), matrix(1,3),
-				matrix(2,0), matrix(2,1), matrix(2,2), matrix(2,3), matrix(3,3));
-			N->transform(t);
+			CGALUtils::transform(*N, matrix);
 			this->p3.reset(N);
 		}
 	}
