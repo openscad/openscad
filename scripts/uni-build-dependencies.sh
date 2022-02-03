@@ -200,7 +200,7 @@ build_qt5scintilla2()
   fi
 
   if [ ! -e $DEPLOYDIR/include/Qsci ]; then
-    # workaround numerous bugs in qscintilla build system, see 
+    # workaround numerous bugs in qscintilla build system, see
     # ../qscintilla2.prf and ../scintilla.pri for more info
     qsci_staticlib=`find $tmpinstalldir -name libqscintilla2.a`
     qsci_include=`find $tmpinstalldir -name Qsci`
@@ -344,7 +344,7 @@ build_boost()
     curl --insecure -LO http://downloads.sourceforge.net/project/boost/boost/$version/boost_$bversion.tar.bz2
   fi
   if [ ! $? -eq 0 ]; then
-    echo download failed. 
+    echo download failed.
     exit 1
   fi
   tar xjf boost_$bversion.tar.bz2
@@ -400,6 +400,7 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
+  ver5_4="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.4/CGAL-5.4-library.tar.xz --output CGAL-5.4.tar.xz"
   ver5_3="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.3/CGAL-5.3-library.tar.xz --output CGAL-5.3.tar.xz"
   ver5_2="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.2/CGAL-5.2-library.tar.xz --output CGAL-5.2.tar.xz"
   ver5_1="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.1/CGAL-5.1-library.tar.xz --output CGAL-5.1.tar.xz"
@@ -812,7 +813,7 @@ if [ $1 ]; then
     exit $?
   fi
   if [ $1 = "cgal" ]; then
-    build_cgal ${CGAL_VERSION:-5.2} use-sys-libs
+    build_cgal ${CGAL_VERSION:-5.3} use-sys-libs
     exit $?
   fi
   if [ $1 = "opencsg" ]; then

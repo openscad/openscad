@@ -58,7 +58,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 		// If not found in any caches, we need to evaluate the geometry
 		if (N) {
 			this->root = N;
-		}	
+		}
 		else {
 			this->traverse(node);
 		}
@@ -114,7 +114,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 
 /*!
 	Applies the operator to all child nodes of the given node.
-	
+
 	May return nullptr or any 3D Geometry object (can be either PolySet or CGAL_Nef_polyhedron)
 */
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const AbstractNode &node, OpenSCADOperator op)
@@ -132,7 +132,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 		delete ps;
 		return ResultObject();
 	}
-	
+
 	// Only one child -> this is a noop
 	if (children.size() == 1) return ResultObject(children.front().second);
 
@@ -244,11 +244,11 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 		if (chnode->modinst->isBackground()) continue;
 
 		// NB! We insert into the cache here to ensure that all children of
-		// a node is a valid object. If we inserted as we created them, the 
+		// a node is a valid object. If we inserted as we created them, the
 		// cache could have been modified before we reach this point due to a large
-		// sibling object. 
+		// sibling object.
 		smartCacheInsert(*chnode, chgeom);
-		
+
 		if (chgeom) {
 			if (chgeom->getDimension() == 3) {
 				LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(), "Ignoring 3D child object for 2D operation");
@@ -274,7 +274,7 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 	the appropriate cache.
 	This method inserts the geometry into the appropriate cache if it's not already cached.
 */
-void GeometryEvaluator::smartCacheInsert(const AbstractNode &node, 
+void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 																				 const shared_ptr<const Geometry> &geom)
 {
 	const std::string &key = this->tree.getIdString(node);
@@ -322,11 +322,11 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &no
 		if (chnode->modinst->isBackground()) continue;
 
 		// NB! We insert into the cache here to ensure that all children of
-		// a node is a valid object. If we inserted as we created them, the 
+		// a node is a valid object. If we inserted as we created them, the
 		// cache could have been modified before we reach this point due to a large
 		// sibling object.
 		smartCacheInsert(*chnode, chgeom);
-		
+
 		if (chgeom && chgeom->getDimension() == 2) {
 			LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(), "Ignoring 2D child object for 3D operation");
 			children.push_back(std::make_pair(item.first, nullptr)); // replace 2D geometry with empty geometry
@@ -338,7 +338,7 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode &no
 	return children;
 }
 /*!
-	
+
 */
 Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSCADOperator op)
 {
@@ -387,14 +387,14 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode &node, OpenSC
 /*!
 	Adds ourself to our parent's list of traversed children.
 	Call this for _every_ node which affects output during traversal.
-	Usually, this should be called from the postfix stage, but for some nodes, 
-	we defer traversal letting other components (e.g. CGAL) render the subgraph, 
+	Usually, this should be called from the postfix stage, but for some nodes,
+	we defer traversal letting other components (e.g. CGAL) render the subgraph,
 	and we'll then call this from prefix and prune further traversal.
 
 	The added geometry can be nullptr if it wasn't possible to evaluate it.
 */
-void GeometryEvaluator::addToParent(const State &state, 
-																		const AbstractNode &node, 
+void GeometryEvaluator::addToParent(const State &state,
+																		const AbstractNode &node,
 																		const shared_ptr<const Geometry> &geom)
 {
 	this->visitedchildren.erase(node.index());
@@ -486,9 +486,9 @@ Response GeometryEvaluator::lazyEvaluateRootNode(State &state, const AbstractNod
 			const shared_ptr<const Geometry> &chgeom = item.second;
 			if (chnode->modinst->isBackground()) continue;
 			// NB! We insert into the cache here to ensure that all children of
-			// a node is a valid object. If we inserted as we created them, the 
+			// a node is a valid object. If we inserted as we created them, the
 			// cache could have been modified before we reach this point due to a large
-			// sibling object. 
+			// sibling object.
 			smartCacheInsert(*chnode, chgeom);
 			// Only use valid geometries
 			if (chgeom && !chgeom->isEmpty()) geometries.push_back(item);
@@ -505,7 +505,7 @@ Response GeometryEvaluator::lazyEvaluateRootNode(State &state, const AbstractNod
 	Root nodes are handled specially; they will flatten any child group
 	nodes to avoid doing an implicit top-level union.
 
-	NB! This is likely a temporary measure until a better implementation of 
+	NB! This is likely a temporary measure until a better implementation of
 	group nodes is in place.
 */
 Response GeometryEvaluator::visit(State &state, const RootNode &node)
@@ -627,7 +627,7 @@ Response GeometryEvaluator::visit(State &state, const TextNode &node)
 	output: Polygon2d or 3D PolySet
 	operation:
 		o Perform csg op on children
- */			
+ */
 Response GeometryEvaluator::visit(State &state, const CsgOpNode &node)
 {
 	if (state.isPrefix()) {
@@ -672,14 +672,14 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 					if (geom->getDimension() == 2) {
 						shared_ptr<const Polygon2d> polygons = dynamic_pointer_cast<const Polygon2d>(geom);
 						assert(polygons);
-						
+
 						// If we got a const object, make a copy
 						shared_ptr<Polygon2d> newpoly;
 						if (res.isConst()) newpoly.reset(new Polygon2d(*polygons));
 						else newpoly = dynamic_pointer_cast<Polygon2d>(res.ptr());
-						
+
 						Transform2d mat2;
-						mat2.matrix() << 
+						mat2.matrix() <<
 							node.matrix(0,0), node.matrix(0,1), node.matrix(0,3),
 							node.matrix(1,0), node.matrix(1,1), node.matrix(1,3),
 							node.matrix(3,0), node.matrix(3,1), node.matrix(3,3);
@@ -777,7 +777,7 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 		// and extruded with twist.  Diagonal choice determined by whichever option
 		// matched the direction of diagonal for neighboring edges (which did not exhibit "equal" diagonals).
 		bool flip = ((!o.positive) xor (back_twist));
-	
+
 		for (size_t i=1;i<=o.vertices.size();++i) {
 			Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
 			Vector2d curr2 = trans2 * o.vertices[i % o.vertices.size()];
@@ -841,7 +841,7 @@ static void add_slice(PolySet *ps, const Polygon2d &poly,
 	}
 }
 
-// Insert vertices for segments interpolated between v0 and v1.  
+// Insert vertices for segments interpolated between v0 and v1.
 // The last vertex (t==1) is not added here to avoid duplicate vertices,
 // since it will be the first vertex of the *next* edge.
 static void add_segmented_edge(Outline2d& o, const Vector2d& v0, const Vector2d& v1, unsigned int edge_segments) {
@@ -1448,7 +1448,7 @@ Response GeometryEvaluator::visit(State &state, const ProjectionNode &node)
 	output: any Geometry
 	operation:
 		o Perform cgal operation
- */			
+ */
 Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 {
 	if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;

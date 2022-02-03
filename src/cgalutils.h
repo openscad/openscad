@@ -105,7 +105,6 @@ namespace CGALUtils {
 	bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3> &polygons,
 																 std::vector<CGAL_Polygon_3> &triangles,
 																 CGAL::Plane_3<CGAL_Kernel3> &plane);
-
 	template <typename FromKernel, typename ToKernel>
 	struct KernelConverter {
 		// Note: we could have this return `CGAL::to_double(n)` by default, but
