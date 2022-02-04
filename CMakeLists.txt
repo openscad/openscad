@@ -7,8 +7,6 @@
 #   -DSNAPSHOT=<ON|OFF>
 #   -DEXPERIMENTAL=<ON|OFF>
 #
-#  TODO
-#   find packages for spnav, hidapi
 
 # Ubuntu Bionic (18.04LTS): 3.10.2,  Debian 10 buster (oldstable): 3.13.4
 cmake_minimum_required(VERSION 3.10)
@@ -353,6 +351,20 @@ else()
   message(STATUS "HIDAPI: disabled per user request")
 endif()
 
+option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
+if(ENABLE_SPNAV)
+  find_package(SpNav QUIET)
+  if(SPNAV_FOUND)
+    message(STATUS "SpNav: found")
+    set(INPUT_DRIVER_SPNAV_SOURCES src/input/SpaceNavInputDriver.cc)
+    target_include_directories(OpenSCAD SYSTEM PRIVATE ${SPNAV_INCLUDE_DIR})
+    list(APPEND COMMON_LIBRARIES ${SPNAV_LIBRARY})
+    target_compile_definitions(OpenSCAD PRIVATE ENABLE_SPNAV)
+  else()
+    message(STATUS "SpNav: disabled")
+  endif()
+endif()
+
 option(ENABLE_CAIRO "Enable support for cairo vector graphics library." ON)
 if(ENABLE_CAIRO)
   find_package(Cairo 1.14 QUIET)
@@ -426,8 +438,6 @@ if(NOT HEADLESS)
 
   find_package(Qt5QScintilla 2.8.0 REQUIRED QUIET)
   message(STATUS "QScintilla: ${QT5QSCINTILLA_VERSION_STRING}")
-  target_compile_definitions(OpenSCAD PRIVATE USE_SCINTILLA_EDITOR)
-  target_compile_definitions(OpenSCAD PRIVATE ENABLE_MDI)
 
   option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON)
   if(ENABLE_QTDBUS)
@@ -759,6 +769,7 @@ endif()
 set(INPUT_DRIVER_SOURCES
   ${PLATFORM_INPUT_DRIVER_SOURCES}
   ${INPUT_DRIVER_HIDAPI_SOURCES}
+  ${INPUT_DRIVER_SPNAV_SOURCES}
   ${INPUT_DRIVER_DBUS_SOURCES})
 
 set(GUI_SOURCES
@@ -842,11 +853,6 @@ else()
 endif()
 set(RESOURCE_FILES icons/${MACOSX_BUNDLE_ICON_FILE})
 
-if(ENABLE_SPNAV)
-  target_compile_definitions(OpenSCAD PRIVATE ENABLE_SPNAV)
-  list(APPEND Sources src/input/SpaceNavInputDriver.cc)
-endif()
-
 target_sources(OpenSCAD PRIVATE ${Sources} ${RESOURCE_FILES} ${WINDOWS_RESOURCE_PATH})
 find_program(SHELL_EXE NAMES sh bash $ENV{SHELL})
 add_custom_command(TARGET OpenSCAD POST_BUILD
@@ -879,10 +885,6 @@ elseif(MSVC)
   set_target_properties(OpenSCAD PROPERTIES
     LINK_FLAGS "-subsystem:windows -ENTRY:mainCRTStartup -stack:${STACKSIZE}"
   )
-endif()
-
-if(ENABLE_SPNAV)
-  list(APPEND COMMON_LIBRARIES spnav)
 endif()
 
 if(NOT HEADLESS)

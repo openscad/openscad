@@ -39,15 +39,15 @@ namespace {
 
 std::string toString(const Vector3d &v)
 {
-	return STR(v[0] << " " << v[1] << " " << v[2]);
+    return STR(v[0] << " " << v[1] << " " << v[2]);
 }
 
 Vector3d fromString(const std::string &vertexString)
 {
-	Vector3d v;
-	std::istringstream stream{vertexString};
-	stream >> v[0] >> v[1] >> v[2];
-	return v;
+    Vector3d v;
+    std::istringstream stream{vertexString};
+    stream >> v[0] >> v[1] >> v[2];
+    return v;
 }
 
 void write_vector(std::ostream &output, const Vector3f& v) {
@@ -68,15 +68,15 @@ void write_vector(std::ostream &output, const Vector3f& v) {
     }
 }
 
-	
-size_t append_stl(const PolySet &ps, std::ostream &output, bool binary)
+    
+uint64_t append_stl(const PolySet &ps, std::ostream &output, bool binary)
 {
-    size_t triangle_count = 0;
+    uint64_t triangle_count = 0;
     PolySet triangulated(3);
     PolysetUtils::tessellate_faces(ps, triangulated);
 
-	for(const auto &p : triangulated.polygons) {
-		assert(p.size() == 3); // STL only allows triangles
+    for(const auto &p : triangulated.polygons) {
+        assert(p.size() == 3); // STL only allows triangles
         triangle_count++;
 
         if (binary) {
@@ -144,24 +144,24 @@ size_t append_stl(const PolySet &ps, std::ostream &output, bool binary)
 }
 
 /*!
-	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
-	The file must be open.
+    Saves the current 3D CGAL Nef polyhedron as STL to the given file.
+    The file must be open.
  */
-size_t append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output,
+uint64_t append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output,
     bool binary)
 {
-  size_t triangle_count = 0;
-	if (!root_N.p3->is_simple()) {
-		LOG(message_group::Export_Warning,Location::NONE,"","Exported object may not be a valid 2-manifold and may need repair");
-	}
+  uint64_t triangle_count = 0;
+    if (!root_N.p3->is_simple()) {
+        LOG(message_group::Export_Warning,Location::NONE,"","Exported object may not be a valid 2-manifold and may need repair");
+    }
 
-	PolySet ps(3);
-	if (!CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3), ps)) {
-		triangle_count += append_stl(ps, output, binary);
-	}
-	else {
-		LOG(message_group::Export_Error,Location::NONE,"","Nef->PolySet failed");
-	}
+    PolySet ps(3);
+    if (!CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3), ps)) {
+        triangle_count += append_stl(ps, output, binary);
+    }
+    else {
+        LOG(message_group::Export_Error,Location::NONE,"","Nef->PolySet failed");
+    }
 
   return triangle_count;
 }
@@ -170,48 +170,48 @@ size_t append_stl(const CGAL_Nef_polyhedron &root_N, std::ostream &output,
 	Saves the current 3D CGAL Nef polyhedron as STL to the given file.
 	The file must be open.
  */
-size_t append_stl(const CGALHybridPolyhedron &hybrid, std::ostream &output,
+uint64_t append_stl(const CGALHybridPolyhedron &hybrid, std::ostream &output,
 		bool binary)
 {
-  size_t triangle_count = 0;
-	if (!hybrid.isManifold()) {
-		LOG(message_group::Export_Warning,Location::NONE,"","Exported object may not be a valid 2-manifold and may need repair");
-	}
+    uint64_t triangle_count = 0;
+    if (!hybrid.isManifold()) {
+        LOG(message_group::Export_Warning,Location::NONE,"","Exported object may not be a valid 2-manifold and may need repair");
+    }
 
   auto ps = hybrid.toPolySet();
-	if (ps) {
-		triangle_count += append_stl(*ps, output, binary);
-	}
-	else {
-		LOG(message_group::Export_Error,Location::NONE,"","Nef->PolySet failed");
-	}
+    if (ps) {
+        triangle_count += append_stl(*ps, output, binary);
+    }
+    else {
+        LOG(message_group::Export_Error,Location::NONE,"","Nef->PolySet failed");
+    }
 
   return triangle_count;
 }
 
-size_t append_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
+uint64_t append_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
     bool binary)
 {
-    size_t triangle_count = 0;
-	if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
-		for(const Geometry::GeometryItem &item : geomlist->getChildren()) {
-			triangle_count += append_stl(item.second, output, binary);
-		}
-	}
-	else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-		triangle_count += append_stl(*N, output, binary);
-	}
-	else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
-		triangle_count += append_stl(*ps, output, binary);
-	}
-	else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-		triangle_count += append_stl(*hybrid, output, binary);
-	}
-	else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
-		assert(false && "Unsupported file format");
-	} else {
-		assert(false && "Not implemented");
-	}
+    uint64_t triangle_count = 0;
+    if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+        for(const Geometry::GeometryItem &item : geomlist->getChildren()) {
+            triangle_count += append_stl(item.second, output, binary);
+        }
+    }
+    else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+        triangle_count += append_stl(*N, output, binary);
+    }
+    else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+        triangle_count += append_stl(*ps, output, binary);
+    }
+    else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+        triangle_count += append_stl(*hybrid, output, binary);
+    }
+    else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
+        assert(false && "Unsupported file format");
+    } else {
+        assert(false && "Not implemented");
+    }
 
     return triangle_count;
 }
@@ -232,7 +232,7 @@ void export_stl(const shared_ptr<const Geometry> &geom, std::ostream &output,
         output << "solid OpenSCAD_Model\n";
     }
 
-	size_t triangle_count = append_stl(geom, output, binary);
+    uint64_t triangle_count = append_stl(geom, output, binary);
 
     if (binary) {
         // Fill in triangle count.
