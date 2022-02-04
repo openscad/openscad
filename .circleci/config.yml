@@ -47,6 +47,20 @@ jobs:
               export LIB3MF_LIBDIR=/mxe/usr/x86_64-w64-mingw32.static.posix/lib
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
+              
+              # Begin workaround for CGAL 5.3+ bug in CGAL::Polygon_mesh_processing::triangulate_faces
+              export MPFR_INCLUDE_DIR=/mxe/usr/x86_64-w64-mingw32.static.posix/include
+              export MPFR_LIBRARIES=/mxe/usr/x86_64-w64-mingw32.static.posix/include
+              export BOOST_INCLUDEDIR=/mxe/usr/x86_64-w64-mingw32.static.posix/include/
+              export CGAL_VERSION=5.2.4
+              apt install -y cmake
+              (
+                wget https://github.com/CGAL/cgal/releases/download/v${CGAL_VERSION}/CGAL-${CGAL_VERSION}-library.zip && unzip CGAL-${CGAL_VERSION}-library.zip
+                cd CGAL-${CGAL_VERSION}/ && mkdir build && cd build
+                cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$MXE_PREFIX && make install
+              )
+              # End workaround
+              
               ./scripts/release-common.sh -snapshot -mingw64 -v "$OPENSCAD_VERSION"
               mkdir -p /tmp/out
               for f in mingw*/*.zip mingw*/*.exe; do N=$(basename "$f" | sed -e "s/\\(-x86-[36][24]\\)/\\1${SUFFIX}/;"); cp -iv "$f" /tmp/out/"$N"; done
