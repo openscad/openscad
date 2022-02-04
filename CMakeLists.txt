@@ -298,7 +298,6 @@ set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 find_package(CGAL REQUIRED COMPONENTS Core)
 message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
 target_compile_definitions(OpenSCAD PRIVATE ENABLE_CGAL)
-#target_compile_definitions(OpenSCAD PRIVATE CGAL_USE_GMPXX)
 # The macro `CGAL_DEBUG` allows to force CGAL assertions, even if `NDEBUG` is defined,
 # Enabling CGAL assertions is necessary for us to catch them before they cause a crash
 # on bad geometry input.

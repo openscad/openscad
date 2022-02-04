@@ -275,7 +275,7 @@ void CGALHybridPolyhedron::nefPolyBinOp(
 		const std::function<void(nef_polyhedron_t &destinationNef, nef_polyhedron_t &otherNef)>
 				&operation)
 {
-	LOG(message_group::Echo, Location::NONE, "", "[fast-csg] %1$s (%2$lu vs. %3$lu facets)",
+	LOG(message_group::None, Location::NONE, "", "[fast-csg] %1$s (%2$lu vs. %3$lu facets)",
 			opName.c_str(), numFacets(), other.numFacets());
 
 	operation(convertToNef(), other.convertToNef());
@@ -285,7 +285,7 @@ bool CGALHybridPolyhedron::meshBinOp(
 		const std::string &opName, CGALHybridPolyhedron &other,
 		const std::function<bool(mesh_t &lhs, mesh_t &rhs, mesh_t &out)> &operation)
 {
-	LOG(message_group::Echo, Location::NONE, "", "[fast-csg] %1$s (%2$lu vs. %3$lu facets)",
+	LOG(message_group::None, Location::NONE, "", "[fast-csg] %1$s (%2$lu vs. %3$lu facets)",
 			opName.c_str(), numFacets(), other.numFacets());
 
 	auto previousData = data;
