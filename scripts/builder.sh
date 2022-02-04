@@ -355,9 +355,9 @@ update_win_www_download_links()
 	cd inc
 	echo `pwd`
 	# BASEURL='https://openscad.googlecode.com/files/'
-	BASEURL='http://files.openscad.org/'
+	BASEURL='https://files.openscad.org/'
 	if [ $DOSNAPSHOT ]; then
-		BASEURL='http://files.openscad.org/snapshots/'
+		BASEURL='https://files.openscad.org/snapshots/'
 	fi
 
 	mv win_snapshot_links.js win_snapshot_links.js.backup

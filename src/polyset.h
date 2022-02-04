@@ -30,6 +30,7 @@ public:
 
 	void quantizeVertices();
 	size_t numFacets() const override { return polygons.size(); }
+	void reserve(size_t numFacets) { polygons.reserve(numFacets); }
 	void append_poly();
 	void append_poly(const Polygon &poly);
 	void append_vertex(double x, double y, double z = 0.0);
@@ -40,8 +41,8 @@ public:
 	void insert_vertex(const Vector3f &v);
 	void append(const PolySet &ps);
 
-	void transform(const Transform3d &mat);
-	void resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize);
+	virtual void transform(const Transform3d &mat) override;
+	virtual void resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize) override;
 
 	bool is_convex() const;
 	boost::tribool convexValue() const { return this->convex; }

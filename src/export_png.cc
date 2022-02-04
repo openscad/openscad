@@ -7,10 +7,10 @@
 #include "rendersettings.h"
 
 #ifdef ENABLE_CGAL
-#include "CGALRenderer.h"
 #include "cgal.h"
 #include "cgalutils.h"
 #include "CGAL_Nef_polyhedron.h"
+#include "CGALRenderer.h"
 
 static void setupCamera(Camera &cam, const BoundingBox &bbox)
 {

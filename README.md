@@ -1,16 +1,14 @@
 [![GitHub (master)](https://img.shields.io/github/checks-status/openscad/openscad/master.svg?logo=github&label=build&logoColor=black&colorA=f9d72c&style=plastic)](https://github.com/openscad/openscad/actions)
-[![Travis (master)](https://img.shields.io/travis/openscad/openscad/master.svg?logo=travis&logoColor=black&colorA=f9d72c&style=plastic)](https://travis-ci.org/openscad/openscad/)
 [![CircleCI (master)](https://img.shields.io/circleci/project/github/openscad/openscad/master.svg?logo=circleci&logoColor=black&colorA=f9d72c&style=plastic)](https://circleci.com/gh/openscad/openscad/tree/master)
 [![Coverity Scan](https://img.shields.io/coverity/scan/2510.svg?colorA=f9d72c&logoColor=black&style=plastic)](https://scan.coverity.com/projects/2510)
 
-
-[![Visit our IRC channel](https://kiwiirc.com/buttons/irc.freenode.net/openscad.png)](https://kiwiirc.com/client/irc.freenode.net/#openscad)
+[![Visit our IRC channel](https://kiwiirc.com/buttons/irc.libera.chat/openscad.png)](https://kiwiirc.com/client/irc.libera.chat/#openscad)
 
 # What is OpenSCAD?
-[![Flattr this git repo](https://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=openscad&url=http://openscad.org&title=OpenSCAD&language=&tags=github&category=software)
+<p><a href="https://opencollective.com/openscad/donate"><img align="right" src="https://opencollective.com/openscad/donate/button@2x.png?color=white" width="200"/></a>
 
-OpenSCAD is a software for creating solid 3D CAD objects. It is free software
-and available for Linux/UNIX, MS Windows and macOS.
+OpenSCAD is a software for creating solid 3D CAD objects. It is free software and
+available for Linux/UNIX, MS Windows and macOS.</p>
 
 Unlike most free software for creating 3D models (such as the famous
 application Blender), OpenSCAD focuses on the CAD aspects rather than the 
@@ -108,7 +106,7 @@ Follow the instructions for the platform you're compiling on below.
 * [cmake (3.5 ->)](https://cmake.org/)
 * [Qt (5.4 ->)](https://qt.io/)
 * [QScintilla2 (2.9 ->)](https://riverbankcomputing.com/software/qscintilla/)
-* [CGAL (4.9 ->)](https://www.cgal.org/)
+* [CGAL (5.3 ->)](https://www.cgal.org/)
  * [GMP (5.x)](https://gmplib.org/)
  * [MPFR (3.x)](https://www.mpfr.org/)
 * [boost (1.56 ->)](https://www.boost.org/)

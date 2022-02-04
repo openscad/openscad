@@ -18,7 +18,6 @@
 #include "projectionnode.h"
 #include "csgops.h"
 #include "textnode.h"
-#include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
 #include "rendernode.h"
 #include "clipper-utils.h"
@@ -50,7 +49,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 {
 	const std::string &key = this->tree.getIdString(node);
 	if (!GeometryCache::instance()->contains(key)) {
-		shared_ptr<const CGAL_Nef_polyhedron> N;
+		shared_ptr<const Geometry> N;
 		if (CGALCache::instance()->contains(key)) {
 			N = CGALCache::instance()->get(key);
 		}
@@ -63,20 +62,10 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
 			this->traverse(node);
 		}
 
-		if (!allownef) {
-			if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root)) {
-				PolySet *ps = new PolySet(3);
-				ps->setConvexity(N->getConvexity());
-				this->root.reset(ps);
-				if (!N->isEmpty()) {
-					bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
-					if (err) {
-						LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed.");					}
-				}
-			}
 
+		if (!allownef) {
 			// We cannot render concave polygons, so tessellate any 3D PolySets
-			auto ps = dynamic_pointer_cast<const PolySet>(this->root);
+			auto ps = CGALUtils::getGeometryAsPolySet(this->root);
 			if (ps && !ps->isEmpty()) {
 				// Since is_convex() doesn't handle non-planar faces, we need to tessellate
 				// also in the indeterminate state so we cannot just use a boolean comparison. See #1061
@@ -129,7 +118,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 	if (children.size() == 0) return ResultObject();
 
 	if (op == OpenSCADOperator::HULL) {
-		PolySet *ps = new PolySet(3, true);
+		PolySet *ps = new PolySet(3, /* convex */ true);
 
 		if (CGALUtils::applyHull(children, *ps)) {
 			return ps;
@@ -285,9 +274,8 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode &node,
 {
 	const std::string &key = this->tree.getIdString(node);
 
-	shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
-	if (N) {
-		if (!CGALCache::instance()->contains(key)) CGALCache::instance()->insert(key, N);
+	if (CGALCache::acceptsGeometry(geom)) {
+		if (!CGALCache::instance()->contains(key)) CGALCache::instance()->insert(key, geom);
 	}
 	else {
 		if (!GeometryCache::instance()->contains(key)) {
@@ -565,24 +553,9 @@ Response GeometryEvaluator::visit(State &state, const RenderNode &node)
 		shared_ptr<const class Geometry> geom;
 		if (!isSmartCached(node)) {
 			ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
-
-			geom = res.constptr();
-			if (shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom)) {
-				// If we got a const object, make a copy
-				shared_ptr<PolySet> newps;
-				if (res.isConst()) newps.reset(new PolySet(*ps));
-				else newps = dynamic_pointer_cast<PolySet>(res.ptr());
-				newps->setConvexity(node.convexity);
-				geom = newps;
-			}
-			else if (shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-				// If we got a const object, make a copy
-				shared_ptr<CGAL_Nef_polyhedron> newN;
-				if (res.isConst()) newN.reset((CGAL_Nef_polyhedron*)N->copy());
-				else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
-				newN->setConvexity(node.convexity);
-				geom = newN;
-			}
+			auto mutableGeom = res.asMutableGeometry();
+			if (mutableGeom) mutableGeom->setConvexity(node.convexity);
+			geom = mutableGeom;
 		}
 		else {
 			geom = smartCacheGet(node, state.preferNef());
@@ -714,25 +687,9 @@ Response GeometryEvaluator::visit(State &state, const TransformNode &node)
 						}
 					}
 					else if (geom->getDimension() == 3) {
-						shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom);
-						if (ps) {
-							// If we got a const object, make a copy
-							shared_ptr<PolySet> newps;
-							if (res.isConst()) newps.reset(new PolySet(*ps));
-							else newps = dynamic_pointer_cast<PolySet>(res.ptr());
-							newps->transform(node.matrix);
-							geom = newps;
-						}
-						else {
-							shared_ptr<const CGAL_Nef_polyhedron> N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom);
-							assert(N);
-							// If we got a const object, make a copy
-							shared_ptr<CGAL_Nef_polyhedron> newN;
-							if (res.isConst()) newN.reset((CGAL_Nef_polyhedron*)N->copy());
-							else newN = dynamic_pointer_cast<CGAL_Nef_polyhedron>(res.ptr());
-							newN->transform(node.matrix);
-							geom = newN;
-						}
+						auto mutableGeom = res.asMutableGeometry();
+						if (mutableGeom) mutableGeom->transform(node.matrix);
+						geom = mutableGeom;
 					}
 				}
 			}
@@ -1392,11 +1349,8 @@ shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const ProjectionNode
 	shared_ptr<const class Geometry> geom;
 	shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
 	if (newgeom) {
-		shared_ptr<const CGAL_Nef_polyhedron> Nptr = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(newgeom);
-		if (!Nptr) {
-			Nptr.reset(CGALUtils::createNefPolyhedronFromGeometry(*newgeom));
-		}
-		if (!Nptr->isEmpty()) {
+		auto Nptr = CGALUtils::getGeometryAsNefPolyhedron(newgeom);
+		if (Nptr && !Nptr->isEmpty()) {
 			Polygon2d *poly = CGALUtils::project(*Nptr, node.cut_mode);
 			if (poly) {
 				poly->setConvexity(node.convexity);
@@ -1423,20 +1377,7 @@ shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const ProjectionNo
 		// Clipper doesn't handle meshes very well.
 		// It's better in V6 but not quite there. FIXME: stand-alone example.
 		// project chgeom -> polygon2d
-		shared_ptr<const PolySet> chPS = dynamic_pointer_cast<const PolySet>(chgeom);
-		if (!chPS) {
-			shared_ptr<const CGAL_Nef_polyhedron> chN = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-			if (chN && !chN->isEmpty()) {
-				PolySet *ps = new PolySet(3);
-				bool err = CGALUtils::createPolySetFromNefPolyhedron3(*chN->p3, *ps);
-				if (err) {
-					LOG(message_group::Error,Location::NONE,"","Nef->PolySet failed");
-				}
-				else {
-					chPS.reset(ps);
-				}
-			}
-		}
+		auto chPS = CGALUtils::getGeometryAsPolySet(chgeom);
 		if (chPS) poly = PolysetUtils::project(*chPS);
 
 		if (poly) {
@@ -1530,37 +1471,11 @@ Response GeometryEvaluator::visit(State &state, const CgaladvNode &node)
 			}
 			case CgaladvType::RESIZE: {
 				ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
-				geom = res.constptr();
-				if (geom) {
-					shared_ptr<Geometry> editablegeom;
-					// If we got a const object, make a copy
-					if (res.isConst()) editablegeom.reset(geom->copy());
-					else editablegeom = res.ptr();
-					if (editablegeom->getConvexity() != node.convexity) {
-						editablegeom->setConvexity(node.convexity);
-					}
-					geom = editablegeom;
-
-					shared_ptr<CGAL_Nef_polyhedron> N = dynamic_pointer_cast<CGAL_Nef_polyhedron>(editablegeom);
-					if (N) {
-						N->resize(node.newsize, node.autosize);
-					}
-					else {
-						shared_ptr<Polygon2d> poly = dynamic_pointer_cast<Polygon2d>(editablegeom);
-						if (poly) {
-							poly->resize(Vector2d(node.newsize[0], node.newsize[1]),
-													 Eigen::Matrix<bool,2,1>(node.autosize[0], node.autosize[1]));
-						}
-						else {
-							shared_ptr<PolySet> ps = dynamic_pointer_cast<PolySet>(editablegeom);
-							if (ps) {
-								ps->resize(node.newsize, node.autosize);
-							}
-							else {
-								assert(false);
-							}
-						}
-					}
+				auto editablegeom = res.asMutableGeometry();
+				geom = editablegeom;
+				if (editablegeom) {
+					editablegeom->setConvexity(node.convexity);
+					editablegeom->resize(node.newsize, node.autosize);
 				}
 				break;
 			}

@@ -80,13 +80,13 @@ static std::vector<SettingsEntryEnum::Item> axisValues() {
 	std::vector<SettingsEntryEnum::Item> output;
 	output.push_back({"None", _("None")});
 	for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i ){
-		auto userData = (boost::format("+%d") % (i+1)).str();
-		auto text = (boost::format(_("Axis %d")) % i).str();
+		const auto userData = (boost::format("+%d") % (i+1)).str();
+		const auto text = (boost::format(_("Axis %d")) % i).str();
 		output.push_back({userData, text});
 
-		userData = (boost::format("-%d") % (i+1)).str();
-		text = (boost::format(_("Axis %d (inverted)")) % i).str();
-		output.push_back({userData, text});
+		const auto userDataInv = (boost::format("-%d") % (i+1)).str();
+		const auto textInv = (boost::format(_("Axis %d (inverted)")) % i).str();
+		output.push_back({userDataInv, textInv});
 	}
 	return output;
 }
@@ -159,7 +159,7 @@ SettingsEntryDouble Settings::inputRotateVPRelGain("input", "rotateVPRelGain", 0
 SettingsEntryDouble Settings::inputZoomGain("input", "zoomGain", 0.1, 0.1, 99.9, 1.0);
 
 SettingsEntryString Settings::inputButton0("input", "button0", "");
-SettingsEntryString Settings::inputButton1("input", "button1", "viewActionResetView");
+SettingsEntryString Settings::inputButton1("input", "button1", "");
 SettingsEntryString Settings::inputButton2("input", "button2", "");
 SettingsEntryString Settings::inputButton3("input", "button3", "");
 SettingsEntryString Settings::inputButton4("input", "button4", "");
@@ -174,6 +174,14 @@ SettingsEntryString Settings::inputButton12("input", "button12", "");
 SettingsEntryString Settings::inputButton13("input", "button13", "");
 SettingsEntryString Settings::inputButton14("input", "button14", "");
 SettingsEntryString Settings::inputButton15("input", "button15", "");
+SettingsEntryString Settings::inputButton16("input", "button16", "");
+SettingsEntryString Settings::inputButton17("input", "button17", "");
+SettingsEntryString Settings::inputButton18("input", "button18", "");
+SettingsEntryString Settings::inputButton19("input", "button19", "");
+SettingsEntryString Settings::inputButton20("input", "button20", "");
+SettingsEntryString Settings::inputButton21("input", "button21", "");
+SettingsEntryString Settings::inputButton22("input", "button22", "");
+SettingsEntryString Settings::inputButton23("input", "button23", "");
 SettingsEntryDouble Settings::axisTrim0("input", "axisTrim0", -1.0, 0.01, 1.0, 0.0);
 SettingsEntryDouble Settings::axisTrim1("input", "axisTrim1", -1.0, 0.01, 1.0, 0.0);
 SettingsEntryDouble Settings::axisTrim2("input", "axisTrim2", -1.0, 0.01, 1.0, 0.0);
@@ -183,7 +191,6 @@ SettingsEntryDouble Settings::axisTrim5("input", "axisTrim5", -1.0, 0.01, 1.0, 0
 SettingsEntryDouble Settings::axisTrim6("input", "axisTrim6", -1.0, 0.01, 1.0, 0.0);
 SettingsEntryDouble Settings::axisTrim7("input", "axisTrim7", -1.0, 0.01, 1.0, 0.0);
 SettingsEntryDouble Settings::axisTrim8("input", "axisTrim8", -1.0, 0.01, 1.0, 0.0);
-SettingsEntryDouble Settings::axisTrim9("input", "axisTrim9", -1.0, 0.01, 1.0, 0.0);
 SettingsEntryDouble Settings::axisDeadzone0("input", "axisDeadzone0", 0.0, 0.01, 1.0, 0.10);
 SettingsEntryDouble Settings::axisDeadzone1("input", "axisDeadzone1", 0.0, 0.01, 1.0, 0.10);
 SettingsEntryDouble Settings::axisDeadzone2("input", "axisDeadzone2", 0.0, 0.01, 1.0, 0.10);
@@ -193,40 +200,43 @@ SettingsEntryDouble Settings::axisDeadzone5("input", "axisDeadzone5", 0.0, 0.01,
 SettingsEntryDouble Settings::axisDeadzone6("input", "axisDeadzone6", 0.0, 0.01, 1.0, 0.10);
 SettingsEntryDouble Settings::axisDeadzone7("input", "axisDeadzone7", 0.0, 0.01, 1.0, 0.10);
 SettingsEntryDouble Settings::axisDeadzone8("input", "axisDeadzone8", 0.0, 0.01, 1.0, 0.10);
-SettingsEntryDouble Settings::axisDeadzone9("input", "axisDeadzone9", 0.0, 0.01, 1.0, 0.10);
 
 SettingsEntryInt    Settings::joystickNr("input", "joystickNr", 0, 9, 0);
 
 
 SettingsEntryString& Settings::inputButton(int id)
 {
-	SettingsEntryString* entries[] = {
-		&inputButton0 , &inputButton1 , &inputButton2 , &inputButton3 ,
-		&inputButton4 , &inputButton5 , &inputButton6 , &inputButton7 ,
-		&inputButton8 , &inputButton9 , &inputButton10, &inputButton11,
-		&inputButton12, &inputButton13, &inputButton14, &inputButton15
+	const std::array<SettingsEntryString*, InputDriver::max_buttons> entries {
+		&inputButton0,  &inputButton1,  &inputButton2,  &inputButton3,
+		&inputButton4,  &inputButton5,  &inputButton6,  &inputButton7,
+		&inputButton8,  &inputButton9,  &inputButton10, &inputButton11,
+		&inputButton12, &inputButton13, &inputButton14, &inputButton15,
+		&inputButton16, &inputButton17, &inputButton18, &inputButton19,
+		&inputButton20, &inputButton21, &inputButton22, &inputButton23
 	};
-	assert(id >= 0 && id < sizeof(entries) / sizeof(*entries));
+	assert(id >= 0 && id < entries.size());
 	return *entries[id];
 }
 
 SettingsEntryDouble& Settings::axisTrim(int id)
 {
-	SettingsEntryDouble* entries[] = {
-		&axisTrim0, &axisTrim1, &axisTrim2, &axisTrim3, &axisTrim4,
-		&axisTrim5, &axisTrim6, &axisTrim7, &axisTrim8, &axisTrim9
+	const std::array<SettingsEntryDouble*, InputDriver::max_axis> entries {
+		&axisTrim0, &axisTrim1, &axisTrim2,
+		&axisTrim3, &axisTrim4, &axisTrim5,
+		&axisTrim6, &axisTrim7, &axisTrim8
 	};
-	assert(id >= 0 && id < sizeof(entries) / sizeof(*entries));
+	assert(id >= 0 && id < entries.size());
 	return *entries[id];
 }
 
 SettingsEntryDouble& Settings::axisDeadzone(int id)
 {
-	SettingsEntryDouble* entries[] = {
-		&axisDeadzone0, &axisDeadzone1, &axisDeadzone2, &axisDeadzone3, &axisDeadzone4,
-		&axisDeadzone5, &axisDeadzone6, &axisDeadzone7, &axisDeadzone8, &axisDeadzone9
+	const std::array<SettingsEntryDouble*, InputDriver::max_axis> entries {
+		&axisDeadzone0, &axisDeadzone1, &axisDeadzone2,
+		&axisDeadzone3, &axisDeadzone4, &axisDeadzone5,
+		&axisDeadzone6, &axisDeadzone7, &axisDeadzone8
 	};
-	assert(id >= 0 && id < sizeof(entries) / sizeof(*entries));
+	assert(id >= 0 && id < entries.size());
 	return *entries[id];
 }
 

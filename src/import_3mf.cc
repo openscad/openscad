@@ -192,17 +192,20 @@ Geometry * import_3mf(const std::string &filename, const Location &loc)
 	} else if (meshes.empty()) {
 		return first_mesh;
 	} else {
-		PolySet *p = new PolySet(3);
+		PolySet *p = nullptr;
 #ifdef ENABLE_CGAL
 		Geometry::Geometries children;
 		children.push_back(std::make_pair((const AbstractNode*)NULL,  shared_ptr<const Geometry>(first_mesh)));
 		for (polysets_t::iterator it = meshes.begin(); it != meshes.end(); ++it) {
 			children.push_back(std::make_pair((const AbstractNode*)NULL,  shared_ptr<const Geometry>(*it)));
 		}
-		CGAL_Nef_polyhedron *N = CGALUtils::applyUnion3D(children.begin(), children.end());
-
-		CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *p);
-		delete N;
+		if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
+			p = new PolySet(*ps);
+		} else {
+			p = new PolySet(3);
+		}
+#else
+		p = new PolySet(3);
 #endif
 		return p;
 	}

@@ -39,12 +39,12 @@ InputEventMapper::InputEventMapper()
 {
     stopRequest=false;
 
-    for (int a = 0; a < max_axis; ++a) {
+    for (int a = 0; a < InputDriver::max_axis; ++a) {
         axisRawValue[a] = 0.0;
         axisTrimValue[a] = 0.0;
         axisDeadzone[a] = 0.1;
     }
-    for (int a = 0; a < max_buttons; ++a) {
+    for (int a = 0; a < InputDriver::max_buttons; ++a) {
         button_state[a]=false;
         button_state_last[a]=false;
     }
@@ -80,11 +80,11 @@ InputEventMapper * InputEventMapper::instance()
 }
 
 int InputEventMapper::getMaxButtons(){
-    return max_buttons;
+    return InputDriver::max_buttons;
 }
 
 int InputEventMapper::getMaxAxis(){
-    return max_axis;
+    return InputDriver::max_axis;
 }
 
 /*
@@ -180,13 +180,13 @@ void InputEventMapper::onTimer()
     bool generated_any_events = generateDeferredEvents();
 
     //update the UI on time, NOT on event as a joystick can fire a high rate of events
-    for (int i = 0; i < max_buttons; ++i ){
+    for (int i = 0; i < InputDriver::max_buttons; ++i ){
         if(button_state[i] != button_state_last[i]){
             button_state_last[i] = button_state[i];
             Preferences::inst()->ButtonConfig->updateButtonState(i,button_state[i]);
         }
     }
-    for (int i = 0; i < max_axis; ++i ){ 
+    for (int i = 0; i < InputDriver::max_axis; ++i ){
        Preferences::inst()->AxisConfig->AxesChanged(i,axisRawValue[i] + axisTrimValue[i]);
     }
 
@@ -207,7 +207,7 @@ void InputEventMapper::onButtonChanged(InputEventButtonChanged *event)
 {
     int button = event->button;
 
-    if (button < max_buttons) {
+    if (button < InputDriver::max_buttons) {
         if (event->down) {
             this->button_state[button]=true;
         }else{
@@ -262,7 +262,7 @@ int InputEventMapper::parseSettingValue(const std::string val)
 
 void InputEventMapper::onInputMappingUpdated()
 {
-    for (int i = 0; i < max_buttons; ++i ){
+    for (int i = 0; i < InputDriver::max_buttons; ++i ){
 		actions[i] = QString::fromStdString(Settings::Settings::inputButton(i).value());
 	}
     
@@ -296,7 +296,7 @@ void InputEventMapper::onInputGainUpdated()
 
 void InputEventMapper::onInputCalibrationUpdated()
 {
-    for (int i = 0; i < max_axis; ++i) {
+    for (int i = 0; i < InputDriver::max_axis; ++i) {
         axisTrimValue[i] = Settings::Settings::axisTrim(i).value();
         axisDeadzone[i] = Settings::Settings::axisDeadzone(i).value();
     }
@@ -305,7 +305,7 @@ void InputEventMapper::onInputCalibrationUpdated()
 
 void InputEventMapper::onAxisAutoTrim()
 {
-    for (int i = 0; i < max_axis; ++i ){ 
+    for (int i = 0; i < InputDriver::max_axis; ++i ){
         axisTrimValue[i] = -axisRawValue[i];
         Settings::Settings::axisTrim(i).setValue(axisTrimValue[i]);
     }
@@ -314,7 +314,7 @@ void InputEventMapper::onAxisAutoTrim()
 
 void InputEventMapper::onAxisTrimReset()
 {
-    for (int i = 0; i < max_axis; ++i ){ 
+    for (int i = 0; i < InputDriver::max_axis; ++i ){
         axisTrimValue[i] = 0.00;
         Settings::Settings::axisTrim(i).setValue(axisTrimValue[i]);
     }
