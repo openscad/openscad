@@ -50,11 +50,13 @@
 #include "boost-utils.h"
 #include"parameter/parameterobject.h"
 #include"parameter/parameterset.h"
+#include "openscad_mimalloc.h"
 #include <string>
 #include <vector>
 #include <fstream>
 
 #ifdef ENABLE_CGAL
+
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
 #endif
@@ -66,7 +68,6 @@
 #include <chrono>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/join.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -308,7 +309,7 @@ void set_render_color_scheme(const std::string color_scheme, const bool exit_if_
 	}
 
 	if (exit_if_not_found) {
-		LOG(message_group::None,Location::NONE,"",(boost::join(ColorMap::inst()->colorSchemeNames(), "\n")));
+		LOG(message_group::None,Location::NONE,"",(boost::algorithm::join(ColorMap::inst()->colorSchemeNames(), "\n")));
 
 		exit(1);
 	} else {
@@ -568,12 +569,12 @@ int do_export(const CommandLine &cmd, const RenderVariables& render_variables, F
 						auto flatlist = geomlist->flatten();
 						for (auto &child : flatlist) {
 							if (child.second->getDimension() == 3 && !dynamic_pointer_cast<const CGAL_Nef_polyhedron>(child.second)) {
-								child.second.reset(CGALUtils::createNefPolyhedronFromGeometry(*child.second));
+								child.second = CGALUtils::createNefPolyhedronFromGeometry(*child.second);
 							}
 						}
 						root_geom.reset(new GeometryList(flatlist));
 					} else if (!dynamic_pointer_cast<const CGAL_Nef_polyhedron>(root_geom)) {
-						root_geom.reset(CGALUtils::createNefPolyhedronFromGeometry(*root_geom));
+						root_geom = CGALUtils::createNefPolyhedronFromGeometry(*root_geom);
 					}
 					LOG(message_group::None,Location::NONE,"","Converted to Nef polyhedron");
 				}
@@ -917,7 +918,7 @@ struct CommaSeparatedVector
 };
 
 template <class Seq, typename ToString>
-std::string join(const Seq &seq, const std::string &sep, const ToString &toString)
+std::string str_join(const Seq &seq, const std::string &sep, const ToString &toString)
 {
     return boost::algorithm::join(boost::adaptors::transform(seq, toString), sep);
 }
@@ -933,9 +934,14 @@ bool flagConvert(std::string str){
 	return false;
 }
 
-// openSCAD
+// OpenSCAD
 int main(int argc, char **argv)
 {
+#if defined(ENABLE_CGAL) && defined(USE_MIMALLOC)
+	// call init_mimalloc before any GMP variables are initialized. (defined in src/openscad_mimalloc.h)
+	init_mimalloc();
+#endif
+
 	int rc = 0;
 	StackCheck::inst();
 
@@ -947,7 +953,7 @@ int main(int argc, char **argv)
 #else
 	PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
 #endif
-	
+
 #ifdef Q_OS_MAC
 	bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
 	auto nslog = [](const Message &msg, void *userdata) { CocoaUtils::nslog(msg.msg, userdata); };
@@ -979,7 +985,7 @@ int main(int argc, char **argv)
 		("P,P", po::value<string>(), "customizer parameter set")
 #ifdef ENABLE_EXPERIMENTAL
 		("enable", po::value<vector<string>>(), ("enable experimental features (specify 'all' for enabling all available features): " +
-		                                          join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ",
+		                                          str_join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ",
 		                                               [](const Feature *feature) {
 		                                                   return feature->get_name();
 		                                               }) +
@@ -996,13 +1002,13 @@ int main(int argc, char **argv)
 		("render", po::value<string>()->implicit_value(""), "for full geometry evaluation when exporting png")
 		("preview", po::value<string>()->implicit_value(""), "[=throwntogether] -for ThrownTogether preview png")
 		("animate", po::value<unsigned>(), "export N animated frames")
-		("view", po::value<CommaSeparatedVector>(), ("=view options: " + boost::join(viewOptions.names(), " | ")).c_str())
+		("view", po::value<CommaSeparatedVector>(), ("=view options: " + boost::algorithm::join(viewOptions.names(), " | ")).c_str())
 		("projection", po::value<string>(), "=(o)rtho or (p)erspective when exporting png")
 		("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
     ("summary", po::value<vector<string>>(), "enable additional render summary and statistics: all | cache | time | camera | geometry | bounding-box | area")
     ("summary-file", po::value<string>(), "output summary information in JSON format to the given file, using '-' outputs to stdout")
 		("colorscheme", po::value<string>(), ("=colorscheme: " +
-		                                      join(ColorMap::inst()->colorSchemeNames(), " | ",
+		                                      str_join(ColorMap::inst()->colorSchemeNames(), " | ",
 		                                           [](const std::string& colorScheme) {
 		                                               return (colorScheme == ColorMap::inst()->defaultColorSchemeName() ? "*" : "") + colorScheme;
 		                                           }) +

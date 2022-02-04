@@ -503,16 +503,20 @@ void TabManager::openTabFile(const QString &filename)
         editor->setPlainText(cmd.arg(filename));
     }
     par->fileChangedOnDisk(); // force cached autoReloadId to update
-    refreshDocument();
+    bool opened = refreshDocument();
 
-    par->hideCurrentOutput(); // Initial parse for customizer, hide any errors to avoid duplication
-    try {
-        par->parseTopLevelDocument();
-    } catch (const HardWarningException&) {
-        par->exceptionCleanup();
+    if (opened) {   // only try to parse if the file opened
+        par->hideCurrentOutput(); // Initial parse for customizer, hide any errors to avoid duplication
+        try {
+            par->parseTopLevelDocument();
+        } catch (const HardWarningException&) {
+            par->exceptionCleanup();
+        } catch (...) {
+            par->UnknownExceptionCleanup();
+        }
+        par->last_compiled_doc = ""; // undo the damage so F4 works
+        par->clearCurrentOutput();
     }
-    par->last_compiled_doc = ""; // undo the damage so F4 works
-    par->clearCurrentOutput();
 }
 
 void TabManager::setTabName(const QString &filename, EditorInterface *edt)
@@ -541,8 +545,9 @@ void TabManager::setTabName(const QString &filename, EditorInterface *edt)
     par->setWindowTitle(fname);
 }
 
-void TabManager::refreshDocument()
+bool TabManager::refreshDocument()
 {
+    bool file_opened = false;
     par->setCurrentOutput();
     if (!editor->filepath.isEmpty()) {
         QFile file(editor->filepath);
@@ -559,9 +564,11 @@ void TabManager::refreshDocument()
                 editor->setPlainText(text);
                 setContentRenderState(); // since last render
             }
+            file_opened = true;
         }
     }
     par->setCurrentOutput();
+    return file_opened;
 }
 
 bool TabManager::maybeSave(int x)

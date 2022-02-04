@@ -32,6 +32,14 @@ public slots:
         void on_comboBoxButton13_activated(int val);
         void on_comboBoxButton14_activated(int val);
         void on_comboBoxButton15_activated(int val);
+        void on_comboBoxButton16_activated(int val);
+        void on_comboBoxButton17_activated(int val);
+        void on_comboBoxButton18_activated(int val);
+        void on_comboBoxButton19_activated(int val);
+        void on_comboBoxButton20_activated(int val);
+        void on_comboBoxButton21_activated(int val);
+        void on_comboBoxButton22_activated(int val);
+        void on_comboBoxButton23_activated(int val);
 
 signals:
         void inputMappingChanged() const;

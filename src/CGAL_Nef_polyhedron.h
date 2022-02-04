@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Geometry.h"
 #include "cgal.h"
+#include "Geometry.h"
 #include "memory.h"
 #include <string>
 #include "linalg.h"
@@ -31,8 +31,8 @@ public:
 	CGAL_Nef_polyhedron &operator*=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &operator-=(const CGAL_Nef_polyhedron &other);
 	CGAL_Nef_polyhedron &minkowski(const CGAL_Nef_polyhedron &other);
-	void transform(const Transform3d &matrix);
-	void resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize);
+	virtual void transform(const Transform3d &matrix) override;
+	virtual void resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize) override;
 
 	shared_ptr<const CGAL_Nef_polyhedron3> p3;
 };
