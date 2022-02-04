@@ -303,6 +303,7 @@ target_compile_definitions(OpenSCAD PRIVATE ENABLE_CGAL)
 # Enabling CGAL assertions is necessary for us to catch them before they cause a crash
 # on bad geometry input.
 target_compile_definitions(OpenSCAD PRIVATE CGAL_DEBUG)
+target_compile_definitions(OpenSCAD PRIVATE CGAL_USE_GMPXX)
 if(TARGET CGAL::CGAL)
   list(APPEND COMMON_LIBRARIES CGAL::CGAL CGAL::CGAL_Core)
   message(STATUS "CGAL: Using target CGAL::CGAL CGAL::CGAL_Core")
