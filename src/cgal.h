@@ -67,6 +67,11 @@ typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e
 #pragma error("CGAL 4.6.0 or above is required.")
 #endif
 
+#if __MINGW64__ && CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 3, 0)
+#pragma warning("fast-csg is disabled on Win64 with CGAL >= 5.3.")
+#define FAST_CSG_DISABLED_TRIANGULATION_BUG
+#endif
+
 typedef CGAL::Epeck CGAL_HybridKernel3;
 
 #endif /* ENABLE_CGAL */

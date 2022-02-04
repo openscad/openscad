@@ -40,9 +40,11 @@ namespace CGALUtils {
 */
 	shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries &children, OpenSCADOperator op)
 	{
+#ifndef FAST_CSG_DISABLED_TRIANGULATION_BUG
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
 			return applyOperator3DHybrid(children, op);
 		}
+#endif
 
 		CGAL_Nef_polyhedron *N = nullptr;
 
@@ -109,9 +111,11 @@ namespace CGALUtils {
 	shared_ptr<const Geometry> applyUnion3D(
 		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
 	{
+#ifndef FAST_CSG_DISABLED_TRIANGULATION_BUG
 		if (Feature::ExperimentalFastCsg.is_enabled()) {
 			return applyUnion3DHybrid(chbegin, chend);
 		}
+#endif
 
 		typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
 		struct QueueItemGreater {
