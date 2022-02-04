@@ -57,7 +57,8 @@ jobs:
               (
                 wget https://github.com/CGAL/cgal/releases/download/v${CGAL_VERSION}/CGAL-${CGAL_VERSION}-library.zip && unzip CGAL-${CGAL_VERSION}-library.zip
                 cd CGAL-${CGAL_VERSION}/ && mkdir build && cd build
-                cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$MXE_PREFIX && make install
+                cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$MXE_PREFIX -DMPFR_INCLUDE_DIR=$MXE_PREFIX/include -DMPFR_LIBRARIES=$MXE_PREFIX/lib/libmpfr.so
+                make install
               )
               # End workaround
               
