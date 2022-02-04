@@ -30,6 +30,8 @@ namespace CGALUtils {
 	Polygon2d *project(const CGAL_Nef_polyhedron &N, bool cut);
 	template <typename K>
 	CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K> &N);
+	CGAL_Iso_cuboid_3 boundingBox(const Geometry&geom);
+	CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox &bbox);
 	bool is_approximately_convex(const PolySet &ps);
 	shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries &children);
 
@@ -44,6 +46,14 @@ namespace CGALUtils {
 	shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>&);
 	shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>&);
 
+	template <typename K>
+	CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d &matrix);
+	template <typename K>
+	void transform(CGAL::Nef_polyhedron_3<K> &N, const Transform3d &matrix);
+	template <typename K>
+	Transform3d computeResizeTransform(
+		const CGAL::Iso_cuboid_3<K>& bb, int dimension, const Vector3d &newsize,
+		const Eigen::Matrix<bool,3,1> &autosize);
 	bool tessellatePolygon(const PolygonK &polygon,
 												 Polygons &triangles,
 												 const K::Vector_3 *normal = nullptr);
