@@ -842,6 +842,13 @@ else()
 endif()
 set(RESOURCE_FILES icons/${MACOSX_BUNDLE_ICON_FILE})
 
+if ((NOT WIN32 AND NOT DEFINED SORT_BUILD) OR SORT_BUILD)
+  # Build the last modified sources first (to fail fast during development)
+  execute_process(
+    COMMAND ../scripts/sort_cmake_filelist.sh "${Sources}"
+    OUTPUT_VARIABLE Sources)
+endif()
+
 target_sources(OpenSCAD PRIVATE ${Sources} ${RESOURCE_FILES} ${WINDOWS_RESOURCE_PATH})
 find_program(SHELL_EXE NAMES sh bash $ENV{SHELL})
 add_custom_command(TARGET OpenSCAD POST_BUILD
