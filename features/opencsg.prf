@@ -10,3 +10,4 @@ OPENCSG_DIR = $$(OPENCSGDIR)
 }
 
 LIBS += -lopencsg
+mingw-cross-env*:LIBS += -lopengl32
