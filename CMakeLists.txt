@@ -842,7 +842,7 @@ else()
 endif()
 set(RESOURCE_FILES icons/${MACOSX_BUNDLE_ICON_FILE})
 
-if ((NOT WIN32 AND NOT DEFINED SORT_BUILD) OR SORT_BUILD)
+if (SORT_BUILD)
   # Build the last modified sources first (to fail fast during development)
   execute_process(
     COMMAND ../scripts/sort_cmake_filelist.sh "${Sources}"
