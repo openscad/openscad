@@ -232,12 +232,54 @@ For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions.
 
 ### Compilation
 
-First, run `mkdir build && cd build && cmake ..` to generate a Makefile.
+First, run `mkdir build && cd build && cmake .. -DEXPERIMENTAL=1` to generate a Makefile.
 
-Then run `make`. Finally, on Linux you might run `make install` as root.
+Then run `make -j`. Finally, on Linux you might run `make install` as root.
 
 If you had problems compiling from source, raise a new issue in the
 [issue tracker on the github page](https://github.com/openscad/openscad/issues).
 
 This site and it's subpages can also be helpful:
 https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_OpenSCAD_from_Sources
+
+Once built, you can run tests with `cd build/tests && ctest -j`.
+
+### Running CI workflows locally
+
+*   Install [circleci-cli](https://circleci.com/docs/2.0/local-cli/) (you'll need an API key)
+
+    *Note*: we also use GitHub Workflows, but only to run tests on Windows (which we cross-build for in the Linux-based CircleCI workflows below). Also, [act](https://github.com/nektos/act) doesn't like our submodule setup anyway.
+
+*   Run the CI jobs
+
+	```bash
+	# When "successful", these will fail to upload at the very end of the workflow.
+	circleci local execute --job  openscad-mxe-64bit
+	circleci local execute --job  openscad-mxe-32bit
+	circleci local execute --job  openscad-appimage-64bit
+	```
+
+	*Note*: openscad-macos can't be built locally.
+
+*   If/when GCC gets randomly killed, give docker more RAM (e.g. 4GB per concurrent image you plan to run)
+
+*   To debug the jobs more interactively, you can go the manual route (inspect .circleci/config.yml to get the actual docker image you need)
+
+	```bash
+	docker run --entrypoint=/bin/bash -it openscad/mxe-x86_64-gui:latest
+	```
+
+	Then once you get the console:
+	
+	```bash
+	git clone https://github.com/%your username%/openscad.git workspace
+	cd workspace
+	git checkout %your branch%
+	git submodule init
+	git submodule update
+
+	# Then execute the commands from .circleci/config.yml:
+	#    export NUMCPU=2
+	#    ...
+	#    ./scripts/release-common.sh -snapshot -mingw64 -v "$OPENSCAD_VERSION"
+	```
