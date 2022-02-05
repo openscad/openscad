@@ -4,13 +4,14 @@ jobs:
     working_directory: ~/workspace
     docker:
       - image: openscad/mxe-i686-gui:latest
+    resource_class: large
     steps:
       - checkout
       - run:
           name: Build OpenSCAD Windows Application (32bit)
           no_output_timeout: 18000
           command: |
-              export NUMCPU=2
+              export NUMCPU=4
               export MXEDIR=/mxe
               export LIB3MF_INCLUDEPATH=/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
               export LIB3MF_LIBPATH=/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
@@ -35,13 +36,14 @@ jobs:
     working_directory: ~/workspace
     docker:
       - image: openscad/mxe-x86_64-gui:latest
+    resource_class: large
     steps:
       - checkout
       - run:
           name: Build OpenSCAD Windows Application (64bit)
           no_output_timeout: 18000
           command: |
-              export NUMCPU=2
+              export NUMCPU=4
               export MXEDIR=/mxe
               export LIB3MF_INCLUDEPATH=/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
               export LIB3MF_LIBPATH=/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
@@ -66,6 +68,7 @@ jobs:
     working_directory: ~/workspace
     docker:
       - image: openscad/appimage-x86_64-base:latest
+    resource_class: large
     steps:
       - checkout
       - run:
@@ -80,9 +83,14 @@ jobs:
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               qmake -v
               qmake CONFIG+=experimental CONFIG+=snapshot CONFIG-=debug PREFIX=/usr VERSION="$OPENSCAD_VERSION" OPENSCAD_COMMIT="$OPENSCAD_COMMIT"
-              make -j2
+              make -j4
+              pwd
+              ls -la icons
               make install INSTALL_ROOT=AppDir
               export PATH=/appimage/usr/bin:"$PATH"
+              mv -iv AppDir/usr/share/applications/openscad.desktop AppDir/usr/share/applications/org.openscad.OpenSCAD.desktop
+              sed -i -e 's/openscad.desktop/org.openscad.OpenSCAD.desktop/' AppDir/usr/share/metainfo/org.openscad.OpenSCAD.appdata.xml
+              sed -i -e '/<content_rating/d' AppDir/usr/share/metainfo/org.openscad.OpenSCAD.appdata.xml
               linuxdeploy --plugin qt --output appimage --appdir AppDir
               mkdir -p /tmp/out
               for f in OpenSCAD-*.AppImage; do N=$(basename "$f" | sed -e "s/OpenSCAD-\\(.*\\)/OpenSCAD-${OPENSCAD_VERSION}-${SUFFIX}\\1/;"); cp -iv "$f" /tmp/out/"$N"; done
