@@ -92,7 +92,7 @@ static std::string getComment(const std::string &fulltext, int line)
 	}
 
 	int end = start + 1;
-	while (fulltext[end] != '\n') end++;
+	while (end < fulltext.size() && fulltext[end] != '\n') end++;
 
 	std::string comment = fulltext.substr(start, end - start);
 
