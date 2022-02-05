@@ -10,7 +10,7 @@ pacman --query --explicit
 for pkg in \
     mingw-w64-x86_64-toolchain \
     mingw-w64-x86_64-boost \
-    mingw-w64-x86_64-cgal=5.2-3 \
+    mingw-w64-x86_64-cgal \
     mingw-w64-x86_64-eigen3 \
     mingw-w64-x86_64-glew \
     mingw-w64-x86_64-qscintilla \
@@ -34,5 +34,11 @@ do
 	date "+### %Y-%m-%d %T install ${pkg}"
 	pacman --noconfirm --ask 20 --sync --needed ${pkg}
 done
+
+date "+### %Y-%m-%d %T downgrading cgal"
+pactree mingw-w64-x86_64-cgal
+curl --insecure -O https://files.openscad.org/tmp/mingw-w64-x86_64-cgal-5.2-3-any.pkg.tar.zst
+curl --insecure -O https://files.openscad.org/tmp/mingw-w64-x86_64-cgal-5.2-3-any.pkg.tar.zst.sig
+pacman -U mingw-w64-x86_64-cgal-5.2-3-any.pkg.tar.zst
 
 date "+### %Y-%m-%d %T msys2-install-dependencies finished"
