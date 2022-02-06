@@ -11,66 +11,66 @@ namespace fs = boost::filesystem;
 std::unordered_set<std::string> dependencies;
 const char *make_command = nullptr;
 
-void handle_dep(const std::string &filename)
+void handle_dep(const std::string& filename)
 {
-    fs::path filepath(filename);
-    std::string dep = boost::regex_replace(filepath.generic_string(), boost::regex("\\ "), "\\\\ ");
-    if (dependencies.find(dep) != dependencies.end()) {
-        return; // included and used files are very likely to be added many times by the parser
-    }
-    dependencies.insert(dep);
+  fs::path filepath(filename);
+  std::string dep = boost::regex_replace(filepath.generic_string(), boost::regex("\\ "), "\\\\ ");
+  if (dependencies.find(dep) != dependencies.end()) {
+    return; // included and used files are very likely to be added many times by the parser
+  }
+  dependencies.insert(dep);
 
-    if (make_command && !fs::exists(filepath)) {
-        // This should only happen from command-line execution.
-        // If changed, add an alternate error-reporting process.
-        auto cmd = STR(make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'");
-        errno = 0;
-        int res = system(cmd.c_str());
+  if (make_command && !fs::exists(filepath)) {
+    // This should only happen from command-line execution.
+    // If changed, add an alternate error-reporting process.
+    auto cmd = STR(make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'");
+    errno = 0;
+    int res = system(cmd.c_str());
 
-        // Could not launch system() correctly
+    // Could not launch system() correctly
 #ifdef _WIN32
-        if ((res == 0 || res == -1) && errno != 0) {
+    if ((res == 0 || res == -1) && errno != 0) {
 #else // NOT _WIN32
-        if (res == -1 && errno != 0) {
+    if (res == -1 && errno != 0) {
 #endif // _WIN32 / NOT _WIN32
-            perror("ERROR: system(make_cmd) failed");
-        }
+      perror("ERROR: system(make_cmd) failed");
+    }
 
 #ifndef _WIN32 // NOT _WIN32
-        // Abnormal process failure (e.g., segfault, killed, etc)
-        else if (!WIFEXITED(res)) {
-            std::cerr << "ERROR: " << cmd.c_str()
+    // Abnormal process failure (e.g., segfault, killed, etc)
+    else if (!WIFEXITED(res)) {
+      std::cerr << "ERROR: " << cmd.c_str()
                 << ": Process terminated abnormally!" << std::endl;
-        }
+    }
 #endif // NOT _WIN32
 
-        // Error code from process.
+    // Error code from process.
 #ifdef _WIN32
-        else if (0 != res) {
+    else if (0 != res) {
 #else // NOT _WIN32
-        else if (0 != (res = WEXITSTATUS(res))) {
+    else if (0 != (res = WEXITSTATUS(res))) {
 #endif // _WIN32 / NOT _WIN32
-            std::cerr << "ERROR: " << cmd.c_str() << ": Exit status "
+      std::cerr << "ERROR: " << cmd.c_str() << ": Exit status "
                 << res << std::endl;
-        }
-
-        // Otherwise, success!
     }
+
+    // Otherwise, success!
+  }
 }
 
-bool write_deps(const std::string &filename, const std::string &output_file)
+bool write_deps(const std::string& filename, const std::string& output_file)
 {
-    FILE *fp = fopen(filename.c_str(), "wt");
-    if (!fp) {
-        fprintf(stderr, "Can't open dependencies file `%s' for writing!\n", filename.c_str());
-        return false;
-    }
-    fprintf(fp, "%s:", output_file.c_str());
+  FILE *fp = fopen(filename.c_str(), "wt");
+  if (!fp) {
+    fprintf(stderr, "Can't open dependencies file `%s' for writing!\n", filename.c_str());
+    return false;
+  }
+  fprintf(fp, "%s:", output_file.c_str());
 
-    for(const auto &str : dependencies) {
-        fprintf(fp, " \\\n\t%s", str.c_str());
-    }
-    fprintf(fp, "\n");
-    fclose(fp);
-    return true;
+  for (const auto& str : dependencies) {
+    fprintf(fp, " \\\n\t%s", str.c_str());
+  }
+  fprintf(fp, "\n");
+  fclose(fp);
+  return true;
 }

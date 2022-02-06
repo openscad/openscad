@@ -7,14 +7,14 @@
 namespace CGALUtils {
 
 template <typename Polyhedron>
-void triangulateFaces(Polyhedron &polyhedron)
+void triangulateFaces(Polyhedron& polyhedron)
 {
 #ifndef FAST_CSG_DISABLED_TRIANGULATION_BUG
-	CGAL::Polygon_mesh_processing::triangulate_faces(polyhedron);
+  CGAL::Polygon_mesh_processing::triangulate_faces(polyhedron);
 #endif
 }
 
-template void triangulateFaces(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &polyhedron);
+template void triangulateFaces(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& polyhedron);
 
 } // namespace CGALUtils
 

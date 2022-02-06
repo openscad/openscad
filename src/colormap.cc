@@ -10,7 +10,7 @@ namespace fs = boost::filesystem;
 static const char *DEFAULT_COLOR_SCHEME_NAME = "Cornfield";
 
 // See http://lolengine.net/blog/2013/01/13/fast-rgb-to-hsv
-static void rgbtohsv(float r, float g, float b, float &h, float &s, float &v)
+static void rgbtohsv(float r, float g, float b, float& h, float& s, float& v)
 {
   float K = 0.f;
 
@@ -51,30 +51,30 @@ RenderColorScheme::RenderColorScheme() : _path("")
 
 RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
 {
-    try {
-	boost::property_tree::read_json(path.generic_string().c_str(), pt);
-	_name = pt.get<std::string>("name");
-	_index = pt.get<int>("index");
-	_show_in_gui = pt.get<bool>("show-in-gui");
-	
-	addColor(RenderColor::BACKGROUND_COLOR, "background");
-	addColor(RenderColor::AXES_COLOR, "axes-color");
-	addColor(RenderColor::OPENCSG_FACE_FRONT_COLOR, "opencsg-face-front");
-	addColor(RenderColor::OPENCSG_FACE_BACK_COLOR, "opencsg-face-back");
-	addColor(RenderColor::CGAL_FACE_FRONT_COLOR, "cgal-face-front");
-	addColor(RenderColor::CGAL_FACE_2D_COLOR, "cgal-face-2d");
-	addColor(RenderColor::CGAL_FACE_BACK_COLOR, "cgal-face-back");
-	addColor(RenderColor::CGAL_EDGE_FRONT_COLOR, "cgal-edge-front");
-	addColor(RenderColor::CGAL_EDGE_BACK_COLOR, "cgal-edge-back");
-	addColor(RenderColor::CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
-	addColor(RenderColor::CROSSHAIR_COLOR, "crosshair");
-    } catch (const std::exception & e) {
-			LOG(message_group::None,Location::NONE,"","Error reading color scheme file: '%1$s': %2$s",path.generic_string().c_str(),e.what());
-	_error = e.what();
-	_name = "";
-	_index = 0;
-	_show_in_gui = false;
-    }
+  try {
+    boost::property_tree::read_json(path.generic_string().c_str(), pt);
+    _name = pt.get<std::string>("name");
+    _index = pt.get<int>("index");
+    _show_in_gui = pt.get<bool>("show-in-gui");
+
+    addColor(RenderColor::BACKGROUND_COLOR, "background");
+    addColor(RenderColor::AXES_COLOR, "axes-color");
+    addColor(RenderColor::OPENCSG_FACE_FRONT_COLOR, "opencsg-face-front");
+    addColor(RenderColor::OPENCSG_FACE_BACK_COLOR, "opencsg-face-back");
+    addColor(RenderColor::CGAL_FACE_FRONT_COLOR, "cgal-face-front");
+    addColor(RenderColor::CGAL_FACE_2D_COLOR, "cgal-face-2d");
+    addColor(RenderColor::CGAL_FACE_BACK_COLOR, "cgal-face-back");
+    addColor(RenderColor::CGAL_EDGE_FRONT_COLOR, "cgal-edge-front");
+    addColor(RenderColor::CGAL_EDGE_BACK_COLOR, "cgal-edge-back");
+    addColor(RenderColor::CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
+    addColor(RenderColor::CROSSHAIR_COLOR, "crosshair");
+  } catch (const std::exception& e) {
+    LOG(message_group::None, Location::NONE, "", "Error reading color scheme file: '%1$s': %2$s", path.generic_string().c_str(), e.what());
+    _error = e.what();
+    _name = "";
+    _index = 0;
+    _show_in_gui = false;
+  }
 }
 
 RenderColorScheme::~RenderColorScheme()
@@ -86,7 +86,7 @@ bool RenderColorScheme::valid() const
   return !_name.empty();
 }
 
-const std::string &RenderColorScheme::name() const
+const std::string& RenderColorScheme::name() const
 {
   return _name;
 }
@@ -111,19 +111,19 @@ std::string RenderColorScheme::error() const
   return _error;
 }
 
-ColorScheme &RenderColorScheme::colorScheme()
+ColorScheme& RenderColorScheme::colorScheme()
 {
   return _color_scheme;
 }
 
-const boost::property_tree::ptree &RenderColorScheme::propertyTree() const
+const boost::property_tree::ptree& RenderColorScheme::propertyTree() const
 {
   return pt;
 }
 
 void RenderColorScheme::addColor(RenderColor colorKey, std::string key)
 {
-  const boost::property_tree::ptree &colors = pt.get_child("colors");
+  const boost::property_tree::ptree& colors = pt.get_child("colors");
   std::string color = colors.get<std::string>(key);
   if ((color.length() == 7) && (color.at(0) == '#')) {
     char *endptr;
@@ -132,8 +132,7 @@ void RenderColorScheme::addColor(RenderColor colorKey, std::string key)
     int g = (val >> 8) & 0xff;
     int b = val & 0xff;
     _color_scheme.insert(ColorScheme::value_type(colorKey, Color4f(r, g, b)));
-  }
-  else {
+  } else {
     throw std::invalid_argument(std::string("invalid color value for key '") + key + "': '" + color + "'");
   }
 }
@@ -163,14 +162,14 @@ const char *ColorMap::defaultColorSchemeName() const
   return DEFAULT_COLOR_SCHEME_NAME;
 }
 
-const ColorScheme &ColorMap::defaultColorScheme() const
+const ColorScheme& ColorMap::defaultColorScheme() const
 {
   return *findColorScheme(DEFAULT_COLOR_SCHEME_NAME);
 }
 
-const ColorScheme *ColorMap::findColorScheme(const std::string &name) const
+const ColorScheme *ColorMap::findColorScheme(const std::string& name) const
 {
-  for (const auto &item : colorSchemeSet) {
+  for (const auto& item : colorSchemeSet) {
     RenderColorScheme *scheme = item.second.get();
     if (name == scheme->name()) {
       return &scheme->colorScheme();
@@ -185,17 +184,16 @@ void ColorMap::dump() const
 
   std::list<std::string> names = colorSchemeNames();
   unsigned int length = 0;
-  for (const auto &name : names) {
+  for (const auto& name : names) {
     length = name.length() > length ? name.length() : length;
   }
 
-  for (const auto &item : colorSchemeSet) {
+  for (const auto& item : colorSchemeSet) {
     const RenderColorScheme *cs = item.second.get();
     const char gui = cs->showInGui() ? 'G' : '-';
     if (cs->path().empty()) {
       PRINTDB("%6d:%c: %s (built-in)", cs->index() % gui % boost::io::group(std::setw(length), cs->name()));
-    }
-    else {
+    } else {
       PRINTDB("%6d:%c: %s from %s", cs->index() % gui % boost::io::group(std::setw(length), cs->name()) % cs->path());
     }
   }
@@ -205,7 +203,7 @@ void ColorMap::dump() const
 std::list<std::string> ColorMap::colorSchemeNames(bool guiOnly) const
 {
   std::list<std::string> colorSchemeNames;
-  for (const auto &item : colorSchemeSet) {
+  for (const auto& item : colorSchemeSet) {
     const RenderColorScheme *scheme = item.second.get();
     if (guiOnly && !scheme->showInGui()) {
       continue;
@@ -215,14 +213,14 @@ std::list<std::string> ColorMap::colorSchemeNames(bool guiOnly) const
   return colorSchemeNames;
 }
 
-Color4f ColorMap::getColor(const ColorScheme &cs, const RenderColor rc)
+Color4f ColorMap::getColor(const ColorScheme& cs, const RenderColor rc)
 {
   if (cs.count(rc)) return cs.at(rc);
   if (ColorMap::inst()->defaultColorScheme().count(rc)) return ColorMap::inst()->defaultColorScheme().at(rc);
   return Color4f(0, 0, 0, 127);
 }
 
-Color4f ColorMap::getColorHSV(const Color4f &col)
+Color4f ColorMap::getColorHSV(const Color4f& col)
 {
   float h, s, v;
   rgbtohsv(col[0], col[1], col[2], h, s, v);
@@ -236,7 +234,7 @@ Color4f ColorMap::getColorHSV(const Color4f &col)
  * @param col the input color
  * @return a color with high contrast to the input color
  */
-Color4f ColorMap::getContrastColor(const Color4f &col)
+Color4f ColorMap::getContrastColor(const Color4f& col)
 {
   Color4f hsv = ColorMap::getColorHSV(col);
   float Y = 0.2126f * col[0] + 0.7152f * col[1] + 0.0722f * col[2];
@@ -246,22 +244,19 @@ Color4f ColorMap::getContrastColor(const Color4f &col)
     // low saturation, choose between black / white based on luminance Y
     float val = Y > 0.5 ? 0.0f : 1.0f;
     return Color4f(val, val, val, 1.0f);
-  }
-  else {
+  } else {
     float H = 360 * hsv[0];
     if ((H < 60) || (H > 300)) {
       return Color4f(0.0f, 1.0f, 1.0f, 1.0f); // red -> cyan
-    }
-    else if (H < 180) {
+    } else if (H < 180) {
       return Color4f(1.0f, 0.0f, 1.0f, 1.0f); // green -> magenta
-    }
-    else {
+    } else {
       return Color4f(1.0f, 1.0f, 0.0f, 1.0f); // blue -> yellow
     }
   }
 }
 
-void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t &result_set, const fs::path basePath)
+void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t& result_set, const fs::path basePath)
 {
   const fs::path color_schemes = basePath / "color-schemes" / "render";
 
@@ -285,8 +280,7 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t &result_set, const 
         result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), shared_ptr<RenderColorScheme>(colorScheme)));
         PRINTDB("Found file '%s' with color scheme '%s' and index %d",
                 colorScheme->path() % colorScheme->name() % colorScheme->index());
-      }
-      else {
+      } else {
         PRINTDB("Invalid file '%s': %s", colorScheme->path() % colorScheme->error());
         delete colorScheme;
       }

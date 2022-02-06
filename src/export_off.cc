@@ -31,27 +31,27 @@
 
 #include "IndexedMesh.h"
 
-void export_off(const shared_ptr<const Geometry> &geom, std::ostream &output)
+void export_off(const shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-	IndexedMesh mesh;
-	mesh.append_geometry(geom);
+  IndexedMesh mesh;
+  mesh.append_geometry(geom);
 
-	output << "OFF " << mesh.vertices.size() << " " << mesh.numfaces << " 0\n";
-	const auto& v = mesh.vertices.getArray();
-	size_t numverts = mesh.vertices.size();
-	for (size_t i=0; i<numverts; ++i) {
-		output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
-	}
-	size_t cnt = 0;
-	for (size_t i=0; i<mesh.numfaces; ++i) {
-		size_t nverts = 0;
-		while (mesh.indices[cnt++] != -1) nverts++;
-		output << nverts;
-		cnt -= nverts + 1;
-		for (size_t n=0; n<nverts; ++n) output << " " << mesh.indices[cnt++];
-		output << "\n";
-		cnt++; // Skip the -1 marker
-	}
+  output << "OFF " << mesh.vertices.size() << " " << mesh.numfaces << " 0\n";
+  const auto& v = mesh.vertices.getArray();
+  size_t numverts = mesh.vertices.size();
+  for (size_t i = 0; i < numverts; ++i) {
+    output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
+  }
+  size_t cnt = 0;
+  for (size_t i = 0; i < mesh.numfaces; ++i) {
+    size_t nverts = 0;
+    while (mesh.indices[cnt++] != -1) nverts++;
+    output << nverts;
+    cnt -= nverts + 1;
+    for (size_t n = 0; n < nverts; ++n) output << " " << mesh.indices[cnt++];
+    output << "\n";
+    cnt++; // Skip the -1 marker
+  }
 
 }
 

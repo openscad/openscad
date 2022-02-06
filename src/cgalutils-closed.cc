@@ -7,12 +7,12 @@
 namespace CGALUtils {
 
 template <typename Polyhedron>
-bool isClosed(const Polyhedron &p)
+bool isClosed(const Polyhedron& p)
 {
-	return CGAL::is_closed(p);
+  return CGAL::is_closed(p);
 }
 
-template bool isClosed(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &p);
+template bool isClosed(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& p);
 
 } // namespace CGALUtils
 

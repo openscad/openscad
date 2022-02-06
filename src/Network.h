@@ -34,95 +34,95 @@
 #include "PlatformUtils.h"
 #include "NetworkSignal.h"
 
-class NetworkException: public std::exception
+class NetworkException : public std::exception
 {
 public:
-	NetworkException(const QNetworkReply::NetworkError& error, const QString& errorMessage) : error(error), errorMessage(errorMessage.toStdString()) { }
-	virtual ~NetworkException() {}
+  NetworkException(const QNetworkReply::NetworkError& error, const QString& errorMessage) : error(error), errorMessage(errorMessage.toStdString()) { }
+  virtual ~NetworkException() {}
 
-	const QNetworkReply::NetworkError& getError() const { return error; }
-	const std::string& getErrorMessage() const { return errorMessage; }
+  const QNetworkReply::NetworkError& getError() const { return error; }
+  const std::string& getErrorMessage() const { return errorMessage; }
 
-	const char* what() const throw() override
-	{
-		return errorMessage.c_str();
-	}
+  const char *what() const throw() override
+  {
+    return errorMessage.c_str();
+  }
 
 private:
-	QNetworkReply::NetworkError error;
-	std::string errorMessage;
+  QNetworkReply::NetworkError error;
+  std::string errorMessage;
 };
 
-using network_progress_func_t = std::function<bool(double)>;
+using network_progress_func_t = std::function<bool (double)>;
 
 template <typename ResultType>
 class NetworkRequest
 {
 public:
-	using setup_func_t = std::function<void(QNetworkRequest&)>;
-	using reply_func_t = std::function<QNetworkReply*(QNetworkAccessManager&, QNetworkRequest&)>;
-	using transform_func_t = std::function<ResultType(QNetworkReply *)>;
+  using setup_func_t = std::function<void (QNetworkRequest&)>;
+  using reply_func_t = std::function<QNetworkReply *(QNetworkAccessManager&, QNetworkRequest&)>;
+  using transform_func_t = std::function<ResultType(QNetworkReply *)>;
 
-	NetworkRequest(const QUrl url, const std::vector<int> accepted_codes, const int timeout_seconds) : url(url), accepted_codes(accepted_codes), timeout_seconds(timeout_seconds) { }
-	virtual ~NetworkRequest() { }
+  NetworkRequest(const QUrl url, const std::vector<int> accepted_codes, const int timeout_seconds) : url(url), accepted_codes(accepted_codes), timeout_seconds(timeout_seconds) { }
+  virtual ~NetworkRequest() { }
 
-	void set_progress_func(network_progress_func_t progress_func) { this->progress_func = progress_func; }
-	ResultType execute(setup_func_t setup_func, reply_func_t reply_func, transform_func_t transform_func);
+  void set_progress_func(network_progress_func_t progress_func) { this->progress_func = progress_func; }
+  ResultType execute(setup_func_t setup_func, reply_func_t reply_func, transform_func_t transform_func);
 
 private:
-	QUrl url;
-	std::vector<int> accepted_codes;
-	int timeout_seconds;
-	network_progress_func_t progress_func = nullptr;
+  QUrl url;
+  std::vector<int> accepted_codes;
+  int timeout_seconds;
+  network_progress_func_t progress_func = nullptr;
 };
 
 template <typename ResultType>
 ResultType NetworkRequest<ResultType>::execute(NetworkRequest::setup_func_t setup_func, NetworkRequest::reply_func_t reply_func, NetworkRequest::transform_func_t transform_func)
 {
-	QNetworkRequest request(url);
-	request.setHeader(QNetworkRequest::UserAgentHeader, QString::fromStdString(PlatformUtils::user_agent()));
-	setup_func(request);
+  QNetworkRequest request(url);
+  request.setHeader(QNetworkRequest::UserAgentHeader, QString::fromStdString(PlatformUtils::user_agent()));
+  setup_func(request);
 
-	QNetworkAccessManager nam;
-	QNetworkReply *reply = reply_func(nam, request);
+  QNetworkAccessManager nam;
+  QNetworkReply *reply = reply_func(nam, request);
 
-	QTimer timer;
-	QEventLoop loop;
-	NetworkSignal forwarder{nullptr, [&](qint64 bytesSent, qint64 bytesTotal) {
-		const double permille = (1000.0 * bytesSent) / bytesTotal;
-		timer.start();
-		if (progress_func && progress_func(permille)) {
-			reply->abort();
-		}
-	}};
-	QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
-	QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-	QObject::connect(reply, SIGNAL(uploadProgress(qint64, qint64)), &forwarder, SLOT(network_progress(qint64, qint64)));
-	timer.setSingleShot(true);
-	timer.start(timeout_seconds * 1000);
-	loop.exec();
+  QTimer timer;
+  QEventLoop loop;
+  NetworkSignal forwarder{nullptr, [&](qint64 bytesSent, qint64 bytesTotal) {
+                            const double permille = (1000.0 * bytesSent) / bytesTotal;
+                            timer.start();
+                            if (progress_func && progress_func(permille)) {
+                              reply->abort();
+                            }
+                          }};
+  QObject::connect(&timer, SIGNAL(timeout()), &loop, SLOT(quit()));
+  QObject::connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+  QObject::connect(reply, SIGNAL(uploadProgress(qint64,qint64)), &forwarder, SLOT(network_progress(qint64,qint64)));
+  timer.setSingleShot(true);
+  timer.start(timeout_seconds * 1000);
+  loop.exec();
 
-	bool isTimeout = false;
-	if (timer.isActive()) {
-		timer.stop();
-	}
-	if (!reply->isFinished()) {
-		reply->abort();
-		isTimeout = true;
-	}
+  bool isTimeout = false;
+  if (timer.isActive()) {
+    timer.stop();
+  }
+  if (!reply->isFinished()) {
+    reply->abort();
+    isTimeout = true;
+  }
 
-	reply->deleteLater();
-	if (isTimeout) {
-		throw NetworkException{QNetworkReply::TimeoutError, _("Timeout error")};
-	}
-	if (reply->error() != QNetworkReply::NoError) {
-		throw NetworkException{reply->error(), reply->errorString()};
-	}
-	const auto statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
-	if (std::find(accepted_codes.begin(), accepted_codes.end(), statusCode) == accepted_codes.end()) {
-		QString reason = reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
-		throw NetworkException{QNetworkReply::ProtocolFailure, reason};
-	}
+  reply->deleteLater();
+  if (isTimeout) {
+    throw NetworkException{QNetworkReply::TimeoutError, _("Timeout error")};
+  }
+  if (reply->error() != QNetworkReply::NoError) {
+    throw NetworkException{reply->error(), reply->errorString()};
+  }
+  const auto statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+  if (std::find(accepted_codes.begin(), accepted_codes.end(), statusCode) == accepted_codes.end()) {
+    QString reason = reply->attribute(QNetworkRequest::HttpReasonPhraseAttribute).toString();
+    throw NetworkException{QNetworkReply::ProtocolFailure, reason};
+  }
 
-	return transform_func(reply);
+  return transform_func(reply);
 }

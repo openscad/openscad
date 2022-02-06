@@ -6,14 +6,14 @@ namespace CGALUtils {
 
 template <typename K>
 void inPlaceNefMinkowski(
-	CGAL::Nef_polyhedron_3<K> &lhs,
-	CGAL::Nef_polyhedron_3<K> &rhs)
+  CGAL::Nef_polyhedron_3<K>& lhs,
+  CGAL::Nef_polyhedron_3<K>& rhs)
 {
-	lhs = CGAL::minkowski_sum_3(lhs, rhs);
+  lhs = CGAL::minkowski_sum_3(lhs, rhs);
 }
 
 template void inPlaceNefMinkowski(
-	CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &lhs,
-	CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &rhs);
+  CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& lhs,
+  CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& rhs);
 
 } // namespace CGALUtils

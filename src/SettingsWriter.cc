@@ -27,13 +27,13 @@
 #include "QSettingsCached.h"
 
 void SettingsWriter::handle(Settings::SettingsEntry& entry) const {
-	QSettingsCached settings;
-	std::string key = entry.category() + "/" + entry.name();
-	if (entry.isDefault()) {
-	    settings.remove(QString::fromStdString(key));
-	    PRINTDB("SettingsWriter D: %s", key.c_str());
-	} else {
-	    settings.setValue(QString::fromStdString(key), QString::fromStdString(entry.encode()));
-	    PRINTDB("SettingsWriter W: %s = '%s'", key.c_str() % entry.encode().c_str());
-	}
+  QSettingsCached settings;
+  std::string key = entry.category() + "/" + entry.name();
+  if (entry.isDefault()) {
+    settings.remove(QString::fromStdString(key));
+    PRINTDB("SettingsWriter D: %s", key.c_str());
+  } else {
+    settings.setValue(QString::fromStdString(key), QString::fromStdString(entry.encode()));
+    PRINTDB("SettingsWriter W: %s = '%s'", key.c_str() % entry.encode().c_str());
+  }
 }

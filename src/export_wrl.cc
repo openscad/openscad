@@ -29,54 +29,54 @@
 
 #include "IndexedMesh.h"
 
-void export_wrl(const shared_ptr<const Geometry> &geom, std::ostream &output)
+void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-    IndexedMesh mesh;
-    mesh.append_geometry(geom);
+  IndexedMesh mesh;
+  mesh.append_geometry(geom);
 
-    output << "#VRML V2.0 utf8\n\n";
+  output << "#VRML V2.0 utf8\n\n";
 
-    output << "Shape {\n\n";
+  output << "Shape {\n\n";
 
-    output << "appearance Appearance { material Material {\n";
-    output << "ambientIntensity 0.3\n";
-    output << "diffuseColor 0.97647 0.843137 0.172549\n";
-    output << "specularColor 0.2 0.2 0.2\n";
-    output << "shininess 0.3\n";
-    output << "} }\n\n";
+  output << "appearance Appearance { material Material {\n";
+  output << "ambientIntensity 0.3\n";
+  output << "diffuseColor 0.97647 0.843137 0.172549\n";
+  output << "specularColor 0.2 0.2 0.2\n";
+  output << "shininess 0.3\n";
+  output << "} }\n\n";
 
-    output << "geometry IndexedFaceSet {\n\n";
+  output << "geometry IndexedFaceSet {\n\n";
 
-    output << "creaseAngle 0.5\n\n";
+  output << "creaseAngle 0.5\n\n";
 
-    output << "coord Coordinate { point [\n";
-    const auto& v = mesh.vertices.getArray();
-    const size_t numverts = mesh.vertices.size();
-    for (size_t i=0; i<numverts; ++i) {
-        output << v[i][0] << " " << v[i][1] << " " << v[i][2];
-        if (i < numverts - 1) {
-            output << ",";
-        }
-        output << "\n";
+  output << "coord Coordinate { point [\n";
+  const auto& v = mesh.vertices.getArray();
+  const size_t numverts = mesh.vertices.size();
+  for (size_t i = 0; i < numverts; ++i) {
+    output << v[i][0] << " " << v[i][1] << " " << v[i][2];
+    if (i < numverts - 1) {
+      output << ",";
     }
-    output << "] }\n\n";
+    output << "\n";
+  }
+  output << "] }\n\n";
 
-    output << "coordIndex [\n";
-    const size_t numindices = mesh.indices.size();
-    for (size_t i=0; i < numindices; ++i) {
-        output << mesh.indices[i];
-        if (i < numindices - 1) {
-            output << ",";
-        }
-        if (mesh.indices[i] == -1) {
-            output << "\n";
-        }
+  output << "coordIndex [\n";
+  const size_t numindices = mesh.indices.size();
+  for (size_t i = 0; i < numindices; ++i) {
+    output << mesh.indices[i];
+    if (i < numindices - 1) {
+      output << ",";
     }
-    output << "]\n\n";
+    if (mesh.indices[i] == -1) {
+      output << "\n";
+    }
+  }
+  output << "]\n\n";
 
-    output << "}\n\n";
+  output << "}\n\n";
 
-    output << "}\n";
+  output << "}\n";
 }
 
 #endif // ENABLE_CGAL

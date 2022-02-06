@@ -42,17 +42,17 @@ group::~group()
 void
 group::set_attrs(attr_map_t& attrs, void *context)
 {
-	shape::set_attrs(attrs, context);
+  shape::set_attrs(attrs, context);
 }
 
 const std::string
 group::dump() const
 {
-	std::stringstream s;
-	s << get_name()
-		<< ": x = " << this->x
-		<< ": y = " << this->y;
-	return s.str();
+  std::stringstream s;
+  s << get_name()
+    << ": x = " << this->x
+    << ": y = " << this->y;
+  return s.str();
 }
 
 }

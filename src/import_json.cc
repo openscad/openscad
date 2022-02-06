@@ -39,50 +39,50 @@ ObjectType to_obj(const json& j, EvaluationSession *session);
 
 Value to_value(const json& j, EvaluationSession *session)
 {
-	if (j.is_string()) {
-		return Value{j.get<std::string>()};
-	} else if (j.is_number()) {
-		return Value{j.get<double>()};
-	} else if (j.is_boolean()) {
-		return Value{j.get<bool>()};
-	} else if (j.is_object()) {
-		return Value{to_obj(j, session)};
-	} else if (j.is_array()) {
-		Value::VectorType vec{session};
-		for (const auto& elem : j) {
-			vec.emplace_back(to_value(elem, session));
-		}
-		return std::move(vec);
-	}
-	return Value::undefined.clone();
+  if (j.is_string()) {
+    return Value{j.get<std::string>()};
+  } else if (j.is_number()) {
+    return Value{j.get<double>()};
+  } else if (j.is_boolean()) {
+    return Value{j.get<bool>()};
+  } else if (j.is_object()) {
+    return Value{to_obj(j, session)};
+  } else if (j.is_array()) {
+    Value::VectorType vec{session};
+    for (const auto& elem : j) {
+      vec.emplace_back(to_value(elem, session));
+    }
+    return std::move(vec);
+  }
+  return Value::undefined.clone();
 }
 
 ObjectType to_obj(const json& j, EvaluationSession *session)
 {
-	ObjectType obj{session};
-	for (const auto& item : j.items()) {
-		obj.set(item.key(), to_value(item.value(), session));
-	}
-	return obj;
+  ObjectType obj{session};
+  for (const auto& item : j.items()) {
+    obj.set(item.key(), to_value(item.value(), session));
+  }
+  return obj;
 }
 
-}
+} // namespace
 
 Value import_json(const std::string& filename, EvaluationSession *session, const Location& loc)
 {
-	std::ifstream i(filename);
+  std::ifstream i(filename);
 
-	try {
-		if (i) {
-			json j;
-			i >> j;
-			return Value{to_value(j, session)};
-		} else {
-			LOG(message_group::Warning, loc, "", "Could not read file '%1$s'", filename);
-		}
-	} catch (const std::exception& e) {
-		LOG(message_group::Warning, loc, "", "Failed to parse file '%1$s': %s", filename, e.what());
-	}
+  try {
+    if (i) {
+      json j;
+      i >> j;
+      return Value{to_value(j, session)};
+    } else {
+      LOG(message_group::Warning, loc, "", "Could not read file '%1$s'", filename);
+    }
+  } catch (const std::exception& e) {
+    LOG(message_group::Warning, loc, "", "Failed to parse file '%1$s': %s", filename, e.what());
+  }
 
-	return Value::undefined.clone();
+  return Value::undefined.clone();
 }

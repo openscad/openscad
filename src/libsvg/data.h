@@ -28,23 +28,24 @@
 
 namespace libsvg {
 
-class data : public shape {
+class data : public shape
+{
 private:
-    std::string text;
+  std::string text;
 
 public:
-    data();
-    ~data();
+  data();
+  ~data();
 
-    const std::string& get_text() const { return text; }
+  const std::string& get_text() const { return text; }
 
-    void set_attrs(attr_map_t& attrs, void *context) override;
-    const std::string dump() const override;
-    const std::string& get_name() const override { return data::name; };
-    
-    static const std::string name;
+  void set_attrs(attr_map_t& attrs, void *context) override;
+  const std::string dump() const override;
+  const std::string& get_name() const override { return data::name; }
 
-	shape* clone() const override { return new data(*this); };
+  static const std::string name;
+
+  shape *clone() const override { return new data(*this); }
 };
 
 }

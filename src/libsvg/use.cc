@@ -42,64 +42,60 @@ use::~use()
 void
 use::set_attrs(attr_map_t& attrs, void *context)
 {
-	shape::set_attrs(attrs, context);
-	this->x = parse_double(attrs["x"]);
-	this->y = parse_double(attrs["y"]);
+  shape::set_attrs(attrs, context);
+  this->x = parse_double(attrs["x"]);
+  this->y = parse_double(attrs["y"]);
 
-	//Note: width, and height have no effect on use elements, unless the element referenced has a viewbox - i.e. they only have an effect when use refers to a svg or symbol element.
-	//Lets store them, but I am not going to use them.
-	this->width = parse_double(attrs["width"]);
-	this->height = parse_double(attrs["height"]);
+  //Note: width, and height have no effect on use elements, unless the element referenced has a viewbox - i.e. they only have an effect when use refers to a svg or symbol element.
+  //Lets store them, but I am not going to use them.
+  this->width = parse_double(attrs["width"]);
+  this->height = parse_double(attrs["height"]);
 
-	std::string temp_href = attrs["href"];
-	if (attrs["href"].empty() && !attrs["xlink:href"].empty())
-	{
-		temp_href = attrs["xlink:href"];
-	}
+  std::string temp_href = attrs["href"];
+  if (attrs["href"].empty() && !attrs["xlink:href"].empty()) {
+    temp_href = attrs["xlink:href"];
+  }
 
-	if (this->href != temp_href)
-	{
-		this->href = temp_href;
-		if (href.rfind("#", 0) != 0)
-		{
-			printf("<use> can only use references to ids in the href field (starting with #). Error in element type %s with id: %s\n", this->get_name().c_str(), this->get_id().c_str());
-		}
-	}
+  if (this->href != temp_href) {
+    this->href = temp_href;
+    if (href.rfind("#", 0) != 0) {
+      printf("<use> can only use references to ids in the href field (starting with #). Error in element type %s with id: %s\n", this->get_name().c_str(), this->get_id().c_str());
+    }
+  }
 
-	//apply the x/y coordinates to all the children by using a transform
-	std::stringstream s;
-	s << this->transform << " translate(" << this->x << "," << this->y << ")";
-	this->transform = s.str();
+  //apply the x/y coordinates to all the children by using a transform
+  std::stringstream s;
+  s << this->transform << " translate(" << this->x << "," << this->y << ")";
+  this->transform = s.str();
 }
 
 const std::string
 use::get_href_id() const
 {
-	if (href.rfind("#", 0) != 0)
-	{
-		return nullptr;
-	}
-	return href.substr(1); //remove the #
+  if (href.rfind("#", 0) != 0) {
+    return nullptr;
+  }
+  return href.substr(1); //remove the #
 }
 
 std::vector<std::shared_ptr<shape>>
-use::set_clone_child(shape* child)
+use::set_clone_child(shape *child)
 {
-	shape* copy = child->clone();
-	copy->set_parent(this);
-	auto cloned_objects = copy->clone_children();
-	cloned_objects.insert(cloned_objects.begin(), std::shared_ptr<shape>(copy));
-	return cloned_objects;
+  shape *copy = child->clone();
+  copy->set_parent(this);
+  auto cloned_objects = copy->clone_children();
+  cloned_objects.insert(cloned_objects.begin(), std::shared_ptr<shape>(copy));
+  return cloned_objects;
 }
 
 const std::string
 use::dump() const
 {
-	std::stringstream s;
-	s << get_name()
-		<< ": x = " << this->x
-		<< ": y = " << this->y;
-	return s.str();
+  std::stringstream s;
+  s << get_name()
+    << ": x = " << this->x
+    << ": y = " << this->y;
+  return s.str();
 }
 
-}
+} // namespace libsvg

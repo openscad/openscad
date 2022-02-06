@@ -43,59 +43,59 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-static AbstractNode* builtin_offset(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static AbstractNode *builtin_offset(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	auto node = new OffsetNode(inst);
+  auto node = new OffsetNode(inst);
 
-	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"delta", "chamfer"});
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"delta", "chamfer"});
 
-	node->fn = parameters["$fn"].toDouble();
-	node->fs = parameters["$fs"].toDouble();
-	node->fa = parameters["$fa"].toDouble();
+  node->fn = parameters["$fn"].toDouble();
+  node->fs = parameters["$fs"].toDouble();
+  node->fa = parameters["$fa"].toDouble();
 
-	// default with no argument at all is (r = 1, chamfer = false)
-	// radius takes precedence if both r and delta are given.
-	node->delta = 1;
-	node->chamfer = false;
-	node->join_type = ClipperLib::jtRound;
-	if (parameters["r"].isDefinedAs(Value::Type::NUMBER)) {
-		node->delta = parameters["r"].toDouble();
-	} else if (parameters["delta"].isDefinedAs(Value::Type::NUMBER)) {
-		node->delta = parameters["delta"].toDouble();
-		node->join_type = ClipperLib::jtMiter;
-		if (parameters["chamfer"].isDefinedAs(Value::Type::BOOL) && parameters["chamfer"].toBool()) {
-			node->chamfer = true;
-			node->join_type = ClipperLib::jtSquare;
-		}
-	}
+  // default with no argument at all is (r = 1, chamfer = false)
+  // radius takes precedence if both r and delta are given.
+  node->delta = 1;
+  node->chamfer = false;
+  node->join_type = ClipperLib::jtRound;
+  if (parameters["r"].isDefinedAs(Value::Type::NUMBER)) {
+    node->delta = parameters["r"].toDouble();
+  } else if (parameters["delta"].isDefinedAs(Value::Type::NUMBER)) {
+    node->delta = parameters["delta"].toDouble();
+    node->join_type = ClipperLib::jtMiter;
+    if (parameters["chamfer"].isDefinedAs(Value::Type::BOOL) && parameters["chamfer"].toBool()) {
+      node->chamfer = true;
+      node->join_type = ClipperLib::jtSquare;
+    }
+  }
 
-	return children.instantiate(node);
+  return children.instantiate(node);
 }
 
 std::string OffsetNode::toString() const
 {
-	std::ostringstream stream;
+  std::ostringstream stream;
 
-	bool isRadius = this->join_type == ClipperLib::jtRound;
-	auto var = isRadius ? "(r = " : "(delta = ";
+  bool isRadius = this->join_type == ClipperLib::jtRound;
+  auto var = isRadius ? "(r = " : "(delta = ";
 
-	stream  << this->name() << var << std::dec << this->delta;
-	if (!isRadius) {
-	    stream << ", chamfer = " << (this->chamfer ? "true" : "false");
-	}
-	stream  << ", $fn = " << this->fn
-		<< ", $fa = " << this->fa
-		<< ", $fs = " << this->fs << ")";
+  stream << this->name() << var << std::dec << this->delta;
+  if (!isRadius) {
+    stream << ", chamfer = " << (this->chamfer ? "true" : "false");
+  }
+  stream << ", $fn = " << this->fn
+         << ", $fa = " << this->fa
+         << ", $fs = " << this->fs << ")";
 
-	return stream.str();
+  return stream.str();
 }
 
 void register_builtin_offset()
 {
-	Builtins::init("offset", new BuiltinModule(builtin_offset),
-				{
-					"offset(r = number)",
-					"offset(delta = number)",
-					"offset(r = number, chamfer = false)",
-				});
+  Builtins::init("offset", new BuiltinModule(builtin_offset),
+  {
+    "offset(r = number)",
+    "offset(delta = number)",
+    "offset(r = number, chamfer = false)",
+  });
 }

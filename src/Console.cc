@@ -37,12 +37,12 @@
 
 Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {
-	setupUi(this);
-	connect(this->actionClear, SIGNAL(triggered()), this, SLOT(actionClearConsole_triggered()));
-	connect(this->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs_triggered()));
-	connect(this, SIGNAL(linkActivated(QString)), this, SLOT(hyperlinkClicked(const QString&)));
-	this->setUndoRedoEnabled(false);
-	this->appendCursor = this->textCursor();
+  setupUi(this);
+  connect(this->actionClear, SIGNAL(triggered()), this, SLOT(actionClearConsole_triggered()));
+  connect(this->actionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs_triggered()));
+  connect(this, SIGNAL(linkActivated(QString)), this, SLOT(hyperlinkClicked(const QString&)));
+  this->setUndoRedoEnabled(false);
+  this->appendCursor = this->textCursor();
 }
 
 Console::~Console()
@@ -51,122 +51,120 @@ Console::~Console()
 
 void Console::addMessage(const Message& msg)
 {
-	// Messages with links to source must be inserted separately,
-	// since anchor href is set via the "format" argument of:
-	//    QTextCursor::insertText(const QString &text, const QTextCharFormat &format)
-	// But if no link, and matching colors, then concat message strings with newline inbetween.
-	// This results in less calls to insertText in Console::update(), and much better performance.
-	if (!this->msgBuffer.empty() && msg.loc.isNone() && this->msgBuffer.back().link.isEmpty() && 
-	    (getGroupColor(msg.group) == getGroupColor(this->msgBuffer.back().group)) )
-	{
-		auto &lastmsg = this->msgBuffer.back().message;
-		lastmsg += QChar('\n');
-		lastmsg += QString::fromStdString(msg.str());
-	} else {
-		this->msgBuffer.push_back(
-			{
-				QString::fromStdString(msg.str()), 
-				(getGroupTextPlain(msg.group) || msg.loc.isNone()) ? 
-					QString() : 
-					QString("%1,%2").arg(msg.loc.firstLine()).arg(QString::fromStdString(msg.loc.fileName())),
-				msg.group
-			}
-		);
-	}
+  // Messages with links to source must be inserted separately,
+  // since anchor href is set via the "format" argument of:
+  //    QTextCursor::insertText(const QString &text, const QTextCharFormat &format)
+  // But if no link, and matching colors, then concat message strings with newline inbetween.
+  // This results in less calls to insertText in Console::update(), and much better performance.
+  if (!this->msgBuffer.empty() && msg.loc.isNone() && this->msgBuffer.back().link.isEmpty() &&
+      (getGroupColor(msg.group) == getGroupColor(this->msgBuffer.back().group)) ) {
+    auto& lastmsg = this->msgBuffer.back().message;
+    lastmsg += QChar('\n');
+    lastmsg += QString::fromStdString(msg.str());
+  } else {
+    this->msgBuffer.push_back(
+    {
+      QString::fromStdString(msg.str()),
+      (getGroupTextPlain(msg.group) || msg.loc.isNone()) ?
+      QString() :
+      QString("%1,%2").arg(msg.loc.firstLine()).arg(QString::fromStdString(msg.loc.fileName())),
+      msg.group
+    }
+      );
+  }
 }
 
 // Slow due to HTML parsing required, only used for initial Console header.
 void Console::addHtml(const QString& html)
 {
-	this->appendHtml(html+QStringLiteral("&nbsp;"));
-	this->appendCursor.movePosition(QTextCursor::End);
-	this->setTextCursor(this->appendCursor);
+  this->appendHtml(html + QStringLiteral("&nbsp;"));
+  this->appendCursor.movePosition(QTextCursor::End);
+  this->setTextCursor(this->appendCursor);
 }
 
-void Console::setFont(const QString &fontFamily, uint ptSize) {
-	this->document()->setDefaultFont(QFont(fontFamily, ptSize));
+void Console::setFont(const QString& fontFamily, uint ptSize) {
+  this->document()->setDefaultFont(QFont(fontFamily, ptSize));
 }
 
 void Console::update()
 {
-	// Faster to ignore block count until group of messages are done inserting.
-	this->setMaximumBlockCount(0);
-	for (const auto &line : this->msgBuffer) {
-		QTextCharFormat charFormat;
-		if (line.group != message_group::None && line.group != message_group::Echo)
-			charFormat.setForeground(QBrush(QColor("#000000")));
-		charFormat.setBackground(QBrush(QColor(getGroupColor(line.group).c_str())));
-		if (!line.link.isEmpty()) {
-			charFormat.setAnchor(true);
-			charFormat.setAnchorHref(line.link);
-			charFormat.setFontUnderline(true);
-		}
-		// TODO insert timestamp as tooltip? (see #3570)
-		//   may have to get rid of concatenation feature of Console::addMessage,
-		//   or just live with grouped messages using the same timestamp
-		//charFormat.setToolTip(timestr);
+  // Faster to ignore block count until group of messages are done inserting.
+  this->setMaximumBlockCount(0);
+  for (const auto& line : this->msgBuffer) {
+    QTextCharFormat charFormat;
+    if (line.group != message_group::None && line.group != message_group::Echo) charFormat.setForeground(QBrush(QColor("#000000")));
+    charFormat.setBackground(QBrush(QColor(getGroupColor(line.group).c_str())));
+    if (!line.link.isEmpty()) {
+      charFormat.setAnchor(true);
+      charFormat.setAnchorHref(line.link);
+      charFormat.setFontUnderline(true);
+    }
+    // TODO insert timestamp as tooltip? (see #3570)
+    //   may have to get rid of concatenation feature of Console::addMessage,
+    //   or just live with grouped messages using the same timestamp
+    //charFormat.setToolTip(timestr);
 
-		appendCursor.insertBlock();
-		appendCursor.insertText(line.message, charFormat);
-	}
-	msgBuffer.clear();
-	this->setTextCursor(appendCursor);
-	this->setMaximumBlockCount(Preferences::inst()->getValue("advanced/consoleMaxLines").toUInt());
+    appendCursor.insertBlock();
+    appendCursor.insertText(line.message, charFormat);
+  }
+  msgBuffer.clear();
+  this->setTextCursor(appendCursor);
+  this->setMaximumBlockCount(Preferences::inst()->getValue("advanced/consoleMaxLines").toUInt());
 }
 
 void Console::actionClearConsole_triggered()
 {
-	this->msgBuffer.clear();
-	this->document()->clear();
-	this->appendCursor = this->textCursor();
+  this->msgBuffer.clear();
+  this->document()->clear();
+  this->appendCursor = this->textCursor();
 }
 
 void Console::actionSaveAs_triggered()
 {
-	const auto& text = this->document()->toPlainText();
-	const auto fileName = QFileDialog::getSaveFileName(this, _("Save console content"));
-	QFile file(fileName);
-	if (file.open(QIODevice::ReadWrite)) {
-		QTextStream stream(&file);
-		stream << text;
-		stream.flush();
-		LOG(message_group::None,Location::NONE,"","Console content saved to '%1$s'.",fileName.toStdString());
-	}
+  const auto& text = this->document()->toPlainText();
+  const auto fileName = QFileDialog::getSaveFileName(this, _("Save console content"));
+  QFile file(fileName);
+  if (file.open(QIODevice::ReadWrite)) {
+    QTextStream stream(&file);
+    stream << text;
+    stream.flush();
+    LOG(message_group::None, Location::NONE, "", "Console content saved to '%1$s'.", fileName.toStdString());
+  }
 }
 
 void Console::contextMenuEvent(QContextMenuEvent *event)
 {
-	// Clear leaves characterCount() at 1, not 0
-	const bool hasContent = this->document()->characterCount() > 1;
-	this->actionClear->setEnabled(hasContent);
-	this->actionSaveAs->setEnabled(hasContent);
-	QMenu *menu = createStandardContextMenu();
-	menu->insertAction(menu->actions().at(0), this->actionClear);
-	menu->addSeparator();
-	menu->addAction(this->actionSaveAs);
-	menu->exec(event->globalPos());
-	delete menu;
+  // Clear leaves characterCount() at 1, not 0
+  const bool hasContent = this->document()->characterCount() > 1;
+  this->actionClear->setEnabled(hasContent);
+  this->actionSaveAs->setEnabled(hasContent);
+  QMenu *menu = createStandardContextMenu();
+  menu->insertAction(menu->actions().at(0), this->actionClear);
+  menu->addSeparator();
+  menu->addAction(this->actionSaveAs);
+  menu->exec(event->globalPos());
+  delete menu;
 }
 
 void Console::hyperlinkClicked(const QString& url)
 {
-	if (url.startsWith("http://") || url.startsWith("https://")) {
-		UIUtils::openURL(url);
-		return;
-	}
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    UIUtils::openURL(url);
+    return;
+  }
 
-	const QRegularExpression regEx("^(\\d+),(.*)$");
-	const auto match = regEx.match(url);
-	if (match.hasMatch()) {
-		const auto line = match.captured(1).toInt();
-		const auto file = match.captured(2);
-		const auto info = QFileInfo(file);
-		if (info.isFile()) {
-			if (info.isReadable()) {
-				emit openFile(file, line - 1);
-			}
-		} else {
-			openFile(QString(), line - 1);
-		}
-	}
+  const QRegularExpression regEx("^(\\d+),(.*)$");
+  const auto match = regEx.match(url);
+  if (match.hasMatch()) {
+    const auto line = match.captured(1).toInt();
+    const auto file = match.captured(2);
+    const auto info = QFileInfo(file);
+    if (info.isFile()) {
+      if (info.isReadable()) {
+        emit openFile(file, line - 1);
+      }
+    } else {
+      openFile(QString(), line - 1);
+    }
+  }
 }

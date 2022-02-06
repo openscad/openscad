@@ -40,144 +40,144 @@
 #define QUOTED(x__) QUOTE(x__)
 
 bool canPreview(const FileFormat format) {
-	return (format == FileFormat::AST ||
-					format == FileFormat::CSG ||
-					format == FileFormat::PARAM ||
-					format == FileFormat::ECHO ||
-					format == FileFormat::TERM ||
-					format == FileFormat::PNG);
+  return (format == FileFormat::AST ||
+          format == FileFormat::CSG ||
+          format == FileFormat::PARAM ||
+          format == FileFormat::ECHO ||
+          format == FileFormat::TERM ||
+          format == FileFormat::PNG);
 }
 
-void exportFile(const shared_ptr<const Geometry> &root_geom, std::ostream &output, const ExportInfo& exportInfo)
+void exportFile(const shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
 {
-	switch (exportInfo.format) {
-	case FileFormat::ASCIISTL:
-		export_stl(root_geom, output, false);
-		break;
-	case FileFormat::STL:
-		export_stl(root_geom, output, true);
-		break;
-	case FileFormat::OFF:
-		export_off(root_geom, output);
-		break;
-	case FileFormat::WRL:
-		export_wrl(root_geom, output);
-		break;
-	case FileFormat::AMF:
-		export_amf(root_geom, output);
-		break;
-	case FileFormat::_3MF:
-		export_3mf(root_geom, output);
-		break;
-	case FileFormat::DXF:
-		export_dxf(root_geom, output);
-		break;
-	case FileFormat::SVG:
-		export_svg(root_geom, output);
-		break;
-	case FileFormat::PDF:
-		export_pdf(root_geom, output, exportInfo);
-		break;
-	case FileFormat::NEFDBG:
-		export_nefdbg(root_geom, output);
-		break;
-	case FileFormat::NEF3:
-		export_nef3(root_geom, output);
-		break;
-	default:
-		assert(false && "Unknown file format");
-	}
+  switch (exportInfo.format) {
+  case FileFormat::ASCIISTL:
+    export_stl(root_geom, output, false);
+    break;
+  case FileFormat::STL:
+    export_stl(root_geom, output, true);
+    break;
+  case FileFormat::OFF:
+    export_off(root_geom, output);
+    break;
+  case FileFormat::WRL:
+    export_wrl(root_geom, output);
+    break;
+  case FileFormat::AMF:
+    export_amf(root_geom, output);
+    break;
+  case FileFormat::_3MF:
+    export_3mf(root_geom, output);
+    break;
+  case FileFormat::DXF:
+    export_dxf(root_geom, output);
+    break;
+  case FileFormat::SVG:
+    export_svg(root_geom, output);
+    break;
+  case FileFormat::PDF:
+    export_pdf(root_geom, output, exportInfo);
+    break;
+  case FileFormat::NEFDBG:
+    export_nefdbg(root_geom, output);
+    break;
+  case FileFormat::NEF3:
+    export_nef3(root_geom, output);
+    break;
+  default:
+    assert(false && "Unknown file format");
+  }
 }
 
-void exportFileByNameStdout(const shared_ptr<const Geometry> &root_geom, const ExportInfo& exportInfo)
+void exportFileByNameStdout(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
 #ifdef _WIN32
-	_setmode(_fileno(stdout), _O_BINARY);
+  _setmode(_fileno(stdout), _O_BINARY);
 #endif
-	exportFile(root_geom, std::cout, exportInfo);
+  exportFile(root_geom, std::cout, exportInfo);
 }
 
-void exportFileByNameStream(const shared_ptr<const Geometry> &root_geom, const ExportInfo& exportInfo)
+void exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
-	std::ios::openmode mode = std::ios::out | std::ios::trunc;
-	if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::STL || exportInfo.format == FileFormat::PDF) {
-		mode |= std::ios::binary;
-	}
-	std::ofstream fstream(exportInfo.name2open, mode);
-	if (!fstream.is_open()) {
-		LOG(message_group::None, Location::NONE, "", _("Can't open file \"%1$s\" for export"), exportInfo.name2display);
-	} else {
-		bool onerror = false;
-		fstream.exceptions(std::ios::badbit|std::ios::failbit);
-		try {
-			exportFile(root_geom, fstream, exportInfo);
-		} catch (std::ios::failure&) {
-			onerror = true;
-		}
-		try { // make sure file closed - resources released
-			fstream.close();
-		} catch (std::ios::failure&) {
-			onerror = true;
-		}
-		if (onerror) {
-			LOG(message_group::Error, Location::NONE, "", _("\"%1$s\" write error. (Disk full?)"), exportInfo.name2display);
-		}
-	}
+  std::ios::openmode mode = std::ios::out | std::ios::trunc;
+  if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::STL || exportInfo.format == FileFormat::PDF) {
+    mode |= std::ios::binary;
+  }
+  std::ofstream fstream(exportInfo.name2open, mode);
+  if (!fstream.is_open()) {
+    LOG(message_group::None, Location::NONE, "", _("Can't open file \"%1$s\" for export"), exportInfo.name2display);
+  } else {
+    bool onerror = false;
+    fstream.exceptions(std::ios::badbit | std::ios::failbit);
+    try {
+      exportFile(root_geom, fstream, exportInfo);
+    } catch (std::ios::failure&) {
+      onerror = true;
+    }
+    try { // make sure file closed - resources released
+      fstream.close();
+    } catch (std::ios::failure&) {
+      onerror = true;
+    }
+    if (onerror) {
+      LOG(message_group::Error, Location::NONE, "", _("\"%1$s\" write error. (Disk full?)"), exportInfo.name2display);
+    }
+  }
 }
 
-void exportFileByName(const shared_ptr<const Geometry> &root_geom, const ExportInfo& exportInfo)
+void exportFileByName(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
-	if (exportInfo.useStdOut) {
-		exportFileByNameStdout(root_geom, exportInfo);
-	} else {
-		exportFileByNameStream(root_geom, exportInfo);
-	}
+  if (exportInfo.useStdOut) {
+    exportFileByNameStdout(root_geom, exportInfo);
+  } else {
+    exportFileByNameStream(root_geom, exportInfo);
+  }
 }
 
 namespace Export {
 
-ExportMesh::ExportMesh(const PolySet &ps)
+ExportMesh::ExportMesh(const PolySet& ps)
 {
-	std::vector<std::array<int, 3>> triangleIndices;
-	for (const auto &p : ps.polygons) {
-		auto pos1 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[0].x(), p[0].y(), p[0].z()}, vertexMap.size()));
-		auto pos2 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[1].x(), p[1].y(), p[1].z()}, vertexMap.size()));
-		auto pos3 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[2].x(), p[2].y(), p[2].z()}, vertexMap.size()));
-		triangleIndices.push_back({pos1.first->second, pos2.first->second, pos3.first->second});
-	}
+  std::vector<std::array<int, 3>> triangleIndices;
+  for (const auto& p : ps.polygons) {
+    auto pos1 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[0].x(), p[0].y(), p[0].z()}, vertexMap.size()));
+    auto pos2 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[1].x(), p[1].y(), p[1].z()}, vertexMap.size()));
+    auto pos3 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[2].x(), p[2].y(), p[2].z()}, vertexMap.size()));
+    triangleIndices.push_back({pos1.first->second, pos2.first->second, pos3.first->second});
+  }
 
-	int index = 0;
-	std::map<int, int> indexTranslationMap;
-	for (const auto& e : vertexMap) {
-		indexTranslationMap.emplace(e.second, index++);
-	}
+  int index = 0;
+  std::map<int, int> indexTranslationMap;
+  for (const auto& e : vertexMap) {
+    indexTranslationMap.emplace(e.second, index++);
+  }
 
-	for (const auto &i : triangleIndices) {
-		triangles.emplace_back(indexTranslationMap[i[0]], indexTranslationMap[i[1]], indexTranslationMap[i[2]]);
-	}
-	std::sort(triangles.begin(), triangles.end(), [](const Triangle& t1, const Triangle& t2) -> bool {
-		return t1.key < t2.key;
-	});
+  for (const auto& i : triangleIndices) {
+    triangles.emplace_back(indexTranslationMap[i[0]], indexTranslationMap[i[1]], indexTranslationMap[i[2]]);
+  }
+  std::sort(triangles.begin(), triangles.end(), [](const Triangle& t1, const Triangle& t2) -> bool {
+      return t1.key < t2.key;
+    });
 }
 
 bool ExportMesh::foreach_vertex(const std::function<bool(const std::array<double, 3>&)> callback) const
 {
-	for (const auto& e : vertexMap) {
-		if (!callback(e.first)) {
-			return false;
-		}
-	}
-	return true;
+  for (const auto& e : vertexMap) {
+    if (!callback(e.first)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 bool ExportMesh::foreach_triangle(const std::function<bool(const std::array<int, 3>&)> callback) const
 {
-	for (const auto& t : triangles) {
-		if (!callback(t.key)) {
-			return false;
-		}
-	}
-	return true;
+  for (const auto& t : triangles) {
+    if (!callback(t.key)) {
+      return false;
+    }
+  }
+  return true;
 }
 
-}
+} // namespace Export

@@ -38,47 +38,47 @@ class CGAL_OGL_VBOPolyhedron : public VBOPolyhedron, public CGAL_OGL_Polyhedron
 {
 public:
 
-	CGAL_OGL_VBOPolyhedron(const ColorScheme &cs)
-		: VBOPolyhedron(), CGAL_OGL_Polyhedron(cs) {
-		PRINTD("CGAL_OGL_VBOPolyhedron()");
-		PRINTD("CGAL_OGL_VBOPolyhedron() end");
-	}
+  CGAL_OGL_VBOPolyhedron(const ColorScheme& cs)
+    : VBOPolyhedron(), CGAL_OGL_Polyhedron(cs) {
+    PRINTD("CGAL_OGL_VBOPolyhedron()");
+    PRINTD("CGAL_OGL_VBOPolyhedron() end");
+  }
 
-	void draw(bool showedges) const override {
-		PRINTDB("VBO draw(showedges = %d)", showedges);
-		// grab current state to restore after
-		GLfloat current_point_size, current_line_width;
-		GLboolean origVertexArrayState = glIsEnabled(GL_VERTEX_ARRAY);
-		GLboolean origNormalArrayState = glIsEnabled(GL_NORMAL_ARRAY);
-		GLboolean origColorArrayState = glIsEnabled(GL_COLOR_ARRAY);
+  void draw(bool showedges) const override {
+    PRINTDB("VBO draw(showedges = %d)", showedges);
+    // grab current state to restore after
+    GLfloat current_point_size, current_line_width;
+    GLboolean origVertexArrayState = glIsEnabled(GL_VERTEX_ARRAY);
+    GLboolean origNormalArrayState = glIsEnabled(GL_NORMAL_ARRAY);
+    GLboolean origColorArrayState = glIsEnabled(GL_COLOR_ARRAY);
 
-		glGetFloatv(GL_POINT_SIZE, &current_point_size); GL_ERROR_CHECK();
-		glGetFloatv(GL_LINE_WIDTH, &current_line_width); GL_ERROR_CHECK();
+    glGetFloatv(GL_POINT_SIZE, &current_point_size); GL_ERROR_CHECK();
+    glGetFloatv(GL_LINE_WIDTH, &current_line_width); GL_ERROR_CHECK();
 
-		if(this->style == SNC_BOUNDARY) {
-			for (const auto &halffacet : this->halffacets_states) {
-				if (halffacet) halffacet->draw();
-			}
-		}
-		
-		if (this->style != SNC_BOUNDARY || showedges) {
-			for (const auto &point_edge : this->points_edges_states) {
-				if (point_edge) point_edge->draw();
-			}
-		}
+    if (this->style == SNC_BOUNDARY) {
+      for (const auto& halffacet : this->halffacets_states) {
+        if (halffacet) halffacet->draw();
+      }
+    }
 
-		// restore states
-		GL_TRACE("glPointSize(%d)", current_point_size);
-		glPointSize(current_point_size); GL_ERROR_CHECK();
-		GL_TRACE("glLineWidth(%d)", current_line_width);
-		glLineWidth(current_line_width); GL_ERROR_CHECK();
+    if (this->style != SNC_BOUNDARY || showedges) {
+      for (const auto& point_edge : this->points_edges_states) {
+        if (point_edge) point_edge->draw();
+      }
+    }
 
-		if (!origVertexArrayState) glDisableClientState(GL_VERTEX_ARRAY);
-		if (!origNormalArrayState) glDisableClientState(GL_NORMAL_ARRAY);
-		if (!origColorArrayState) glDisableClientState(GL_COLOR_ARRAY);
+    // restore states
+    GL_TRACE("glPointSize(%d)", current_point_size);
+    glPointSize(current_point_size); GL_ERROR_CHECK();
+    GL_TRACE("glLineWidth(%d)", current_line_width);
+    glLineWidth(current_line_width); GL_ERROR_CHECK();
 
-		PRINTD("VBO draw() end");
-	}
+    if (!origVertexArrayState) glDisableClientState(GL_VERTEX_ARRAY);
+    if (!origNormalArrayState) glDisableClientState(GL_NORMAL_ARRAY);
+    if (!origColorArrayState) glDisableClientState(GL_COLOR_ARRAY);
+
+    PRINTD("VBO draw() end");
+  }
 }; // CGAL_OGL_Polyhedron
 
 
@@ -91,9 +91,9 @@ public:
 class CGAL_OGL_VBOPolyhedron : public CGAL::OGL::VBOPolyhedron, public CGAL_OGL_Polyhedron
 {
 public:
-	CGAL_OGL_VBOPolyhedron() {}
-	void draw(bool showedges) const {}
-	CGAL::Bbox_3 bbox() const { return CGAL::Bbox_3(-1,-1,-1,1,1,1); }
+  CGAL_OGL_VBOPolyhedron() {}
+  void draw(bool showedges) const {}
+  CGAL::Bbox_3 bbox() const { return CGAL::Bbox_3(-1, -1, -1, 1, 1, 1); }
 };
 
 #endif // NULLGL
