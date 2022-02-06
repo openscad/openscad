@@ -26,6 +26,9 @@ Feature::list_t Feature::feature_list;  // Double-listed values. --^
  * (well-defined) order of object construction, matching the order of the
  * const Features listed below.
  */
+#ifndef FAST_CSG_DISABLED_TRIANGULATION_BUG
+const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG operations with corefinement instead of nef when possible.");
+#endif
 const Feature Feature::ExperimentalRoof("roof", "Enable <code>roof</code>");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");

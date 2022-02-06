@@ -16,6 +16,7 @@
 #include <CGAL/Aff_transformation_3.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
+#include <CGAL/Surface_mesh.h>
 
 #include <CGAL/config.h>
 #include <CGAL/version.h>
@@ -26,6 +27,7 @@
 #include "Reindexer.h"
 #include "hash.h"
 #include "GeometryUtils.h"
+#include "CGALHybridPolyhedron.h"
 
 #include <map>
 #include <queue>
@@ -262,6 +264,9 @@ namespace CGALUtils {
 		if (auto ps = dynamic_cast<const PolySet*>(&geom)) {
 			return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolySet(*ps));
 		}
+		else if (auto poly = dynamic_cast<const CGALHybridPolyhedron*>(&geom)) {
+			return createNefPolyhedronFromHybrid(*poly);
+		}
 		else if (auto poly2d = dynamic_cast<const Polygon2d*>(&geom)) {
 			return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolygon2d(*poly2d));
 		}
@@ -411,6 +416,7 @@ namespace CGALUtils {
 	}
 
 	template bool createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3 &N, PolySet &ps);
+	template bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &N, PolySet &ps);
 
 	template <typename K>
 	CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d &matrix) {
@@ -419,6 +425,7 @@ namespace CGALUtils {
 			matrix(1,0), matrix(1,1), matrix(1,2), matrix(1,3),
 			matrix(2,0), matrix(2,1), matrix(2,2), matrix(2,3), matrix(3,3));
 	}
+	template CGAL::Aff_transformation_3<CGAL_HybridKernel3> createAffineTransformFromMatrix(const Transform3d &matrix);
 
 	template <typename K>
 	void transform(CGAL::Nef_polyhedron_3<K> &N, const Transform3d &matrix)
@@ -428,6 +435,21 @@ namespace CGALUtils {
 	}
 
 	template void transform(CGAL_Nef_polyhedron3 &N, const Transform3d &matrix);
+	template void transform(CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> &N, const Transform3d &matrix);
+
+	template <typename K>
+	void transform(CGAL::Surface_mesh<CGAL::Point_3<K>> &mesh, const Transform3d &matrix)
+	{
+		assert(matrix.matrix().determinant() != 0);
+		auto t = createAffineTransformFromMatrix<K>(matrix);
+
+		for (auto v : mesh.vertices())
+		{
+			auto &pt = mesh.point(v);
+			pt = t(pt);
+		}
+	}
+	template void transform(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> &mesh, const Transform3d &matrix);
 
 	template <typename K>
 	Transform3d computeResizeTransform(
@@ -478,6 +500,9 @@ namespace CGALUtils {
 	template Transform3d computeResizeTransform(
 		const CGAL_Iso_cuboid_3& bb, int dimension, const Vector3d &newsize,
 		const Eigen::Matrix<bool,3,1> &autosize);
+	template Transform3d computeResizeTransform(
+		const CGAL::Iso_cuboid_3<CGAL_HybridKernel3>& bb, int dimension, const Vector3d &newsize,
+		const Eigen::Matrix<bool,3,1> &autosize);
 
 	shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>& geom)
 	{
@@ -494,6 +519,9 @@ namespace CGALUtils {
 				}
 			}
 			return ps;
+		}
+		if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+			return hybrid->toPolySet();
 		}
 		return nullptr;
 	}

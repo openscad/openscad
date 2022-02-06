@@ -1,6 +1,7 @@
 #include "CGALCache.h"
 #include "printutils.h"
 #include "CGAL_Nef_polyhedron.h"
+#include "CGALHybridPolyhedron.h"
 
 CGALCache *CGALCache::inst = nullptr;
 
@@ -19,6 +20,7 @@ shared_ptr<const Geometry> CGALCache::get(const std::string &id) const
 
 bool CGALCache::acceptsGeometry(const shared_ptr<const Geometry> &geom) {
   return
+    dynamic_pointer_cast<const CGALHybridPolyhedron>(geom).get() ||
     dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom).get();
 }
 

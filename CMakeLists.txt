@@ -302,6 +302,7 @@ target_compile_definitions(OpenSCAD PRIVATE ENABLE_CGAL)
 # Enabling CGAL assertions is necessary for us to catch them before they cause a crash
 # on bad geometry input.
 target_compile_definitions(OpenSCAD PRIVATE CGAL_DEBUG)
+target_compile_definitions(OpenSCAD PRIVATE CGAL_USE_GMPXX)
 if(TARGET CGAL::CGAL)
   list(APPEND COMMON_LIBRARIES CGAL::CGAL CGAL::CGAL_Core)
   message(STATUS "CGAL: Using target CGAL::CGAL CGAL::CGAL_Core")
@@ -705,12 +706,22 @@ set(CORE_SOURCES
 set(CGAL_SOURCES
   src/cgalutils.cc
   src/cgalutils-applyops.cc
+  src/cgalutils-applyops-hybrid.cc
+  src/cgalutils-closed.cc
   src/cgalutils-convex.cc
+  src/cgalutils-corefine.cc
   src/cgalutils-kernel.cc
+  src/cgalutils-hybrid.cc
+  src/cgalutils-mesh.cc
+  src/cgalutils-minkowski.cc
+  src/cgalutils-nef.cc
+  src/cgalutils-orient.cc
   src/cgalutils-polyhedron.cc
   src/cgalutils-project.cc
   src/cgalutils-tess.cc
+  src/cgalutils-triangulate.cc
   src/export_nef.cc
+  src/CGALHybridPolyhedron.cc
   src/import_nef.cc
   src/CGAL_Nef_polyhedron.cc
   src/CGALCache.cc

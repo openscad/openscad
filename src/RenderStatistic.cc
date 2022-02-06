@@ -33,6 +33,7 @@
 #include "boost-utils.h"
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
+#include "CGALHybridPolyhedron.h"
 #endif // ENABLE_CGAL
 
 #include "RenderStatistic.h"
@@ -66,6 +67,7 @@ struct LogVisitor: public StatisticVisitor
   void visit(const class Polygon2d &node) override;
 #ifdef ENABLE_CGAL
   void visit(const class CGAL_Nef_polyhedron &node) override;
+  void visit(const class CGALHybridPolyhedron &node) override;
 #endif // ENABLE_CGAL
 	void printCamera(const Camera& camera) override;
 	void printCacheStatistic() override;
@@ -87,6 +89,7 @@ struct StreamVisitor: public StatisticVisitor
   void visit(const class Polygon2d &node) override;
 #ifdef ENABLE_CGAL
   void visit(const class CGAL_Nef_polyhedron &node) override;
+  void visit(const class CGALHybridPolyhedron &node) override;
 #endif // ENABLE_CGAL
 	void printCamera(const Camera& camera) override;
 	void printCacheStatistic() override;
@@ -249,6 +252,18 @@ void LogVisitor::visit(const CGAL_Nef_polyhedron& nef)
     printBoundingBox3(nef.getBoundingBox());
   }
 }
+void LogVisitor::visit(const CGALHybridPolyhedron& poly)
+{
+  bool simple = poly.isManifold();
+  LOG(message_group::None,Location::NONE,"","   Top level object is a 3D object (fast-csg):");
+  LOG(message_group::None,Location::NONE,"","   Simple:     %6s",(simple ? "yes" : "no"));
+  LOG(message_group::None,Location::NONE,"","   Vertices:   %1$6d",poly.numVertices());
+  LOG(message_group::None,Location::NONE,"","   Facets:     %1$6d",poly.numFacets());
+  if (!simple) {
+    LOG(message_group::UI_Warning,Location::NONE,"","Object may not be a valid 2-manifold and may need repair!");
+  }
+  printBoundingBox3(poly.getBoundingBox());
+}
 #endif // ENABLE_CGAL
 
 void LogVisitor::printCamera(const Camera& camera)
@@ -331,6 +346,20 @@ void StreamVisitor::visit(const CGAL_Nef_polyhedron& nef)
 		geometryJson["volumes"] = nef.p3->number_of_volumes();
 		if (is_enabled(RenderStatistic::BOUNDING_BOX)) {
 			geometryJson["bounding_box"] = getBoundingBox3(nef);
+		}
+		json["geometry"] = geometryJson;
+	}
+}
+void StreamVisitor::visit(const CGALHybridPolyhedron& poly)
+{
+	if (is_enabled(RenderStatistic::GEOMETRY)) {
+		nlohmann::json geometryJson;
+		geometryJson["dimensions"] = 3;
+		geometryJson["simple"] = poly.isManifold();
+		geometryJson["vertices"] = poly.numVertices();
+		geometryJson["facets"] = poly.numFacets();
+		if (is_enabled(RenderStatistic::BOUNDING_BOX)) {
+			geometryJson["bounding_box"] = getBoundingBox3(poly);
 		}
 		json["geometry"] = geometryJson;
 	}

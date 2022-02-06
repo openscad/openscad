@@ -29,6 +29,7 @@
 #include <CGAL/minkowski_sum_3.h>
 #include <CGAL/bounding_box.h>
 #include <CGAL/utils.h>
+#include <CGAL/version.h>
 
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
@@ -61,5 +62,16 @@ typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
 // CGAL_Kernel2::Point. Hence the suffix 'e'
 typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2e;
 typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e;
+
+#if CGAL_VERSION_NR <= CGAL_VERSION_NUMBER(4, 6, 0)
+#pragma error("CGAL 4.6.0 or above is required.")
+#endif
+
+#if __MINGW64__ && CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 3, 0)
+#pragma warning("fast-csg is disabled on Win64 with CGAL >= 5.3.")
+#define FAST_CSG_DISABLED_TRIANGULATION_BUG
+#endif
+
+typedef CGAL::Epeck CGAL_HybridKernel3;
 
 #endif /* ENABLE_CGAL */
