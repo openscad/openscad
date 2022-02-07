@@ -49,6 +49,7 @@ Context::Context(const std::shared_ptr<const Context>& parent) :
 Context::~Context()
 {
   clear();
+    if (accountingAdded) // avoiding bad accounting where exception threw in constructor  issue #3871
   session()->contextMemoryManager().releaseContext();
 }
 
