@@ -72,6 +72,7 @@ typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e
 #define FAST_CSG_DISABLED_TRIANGULATION_BUG
 #endif
 
+#define FAST_CSG_KERNEL_IS_LAZY 1
 typedef CGAL::Epeck CGAL_HybridKernel3;
 
 #endif /* ENABLE_CGAL */

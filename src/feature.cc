@@ -9,6 +9,10 @@
 #include "feature.h"
 #include "printutils.h"
 
+#ifdef ENABLE_CGAL
+#include "cgal.h" // for FAST_CSG_KERNEL_IS_LAZY
+#endif
+
 /**
  * Feature registration map/list for later lookup. This must be initialized
  * before the static feature instances as those register with this map.
@@ -29,6 +33,10 @@ Feature::list_t Feature::feature_list;  // Double-listed values. --^
 #ifndef FAST_CSG_DISABLED_TRIANGULATION_BUG
 const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG operations with corefinement instead of nef when possible.");
 #endif
+#if FAST_CSG_KERNEL_IS_LAZY
+const Feature Feature::ExperimentalFastCsgExact("fast-csg-exact", "Force lazy numbers to exact after each CSG operation.");
+const Feature Feature::ExperimentalFastCsgExactCorefinementCallback("fast-csg-exact-callbacks", "Same as fast-csg-exact but even forces exact numbers inside corefinement callbacks rather than at the end of each operation.");
+#endif // FAST_CSG_KERNEL_IS_LAZY
 const Feature Feature::ExperimentalRoof("roof", "Enable <code>roof</code>");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
