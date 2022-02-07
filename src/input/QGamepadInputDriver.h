@@ -33,23 +33,23 @@
 class QGamepadInputDriver : public InputDriver
 {
 public:
-    QGamepadInputDriver();
-    ~QGamepadInputDriver();
-    void run() override;
-    bool open() override;
-    void close() override;
-    bool isOpen() const override;
+  QGamepadInputDriver();
+  ~QGamepadInputDriver();
+  void run() override;
+  bool open() override;
+  void close() override;
+  bool isOpen() const override;
 
-    const std::string & get_name() const override;
-    std::string get_info() const override;
+  const std::string& get_name() const override;
+  std::string get_info() const override;
 
-    int getButtonCount() const override{
-        return InputDriver::max_buttons;
-    }
-    int getAxisCount() const override{
-        return InputDriver::max_axis;
-    }
+  int getButtonCount() const override {
+    return InputDriver::max_buttons;
+  }
+  int getAxisCount() const override {
+    return InputDriver::max_axis;
+  }
 
 private:
-	std::unique_ptr<QGamepad> gamepad;
+  std::unique_ptr<QGamepad> gamepad;
 };

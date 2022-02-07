@@ -28,19 +28,20 @@ class QuotedString : public std::string
 {
 public:
   QuotedString() : std::string() {}
-  QuotedString(const std::string &s) : std::string(s) {}
+  QuotedString(const std::string& s) : std::string(s) {}
 };
-std::ostream &operator<<(std::ostream &stream, const QuotedString &s);
+std::ostream& operator<<(std::ostream& stream, const QuotedString& s);
 
 class Filename : public QuotedString
 {
 public:
   Filename() : QuotedString() {}
-  Filename(const std::string &f) : QuotedString(f) {}
+  Filename(const std::string& f) : QuotedString(f) {}
 };
-std::ostream &operator<<(std::ostream &stream, const Filename &filename);
+std::ostream& operator<<(std::ostream& stream, const Filename& filename);
 
-class RangeType {
+class RangeType
+{
 private:
   double begin_val;
   double step_val;
@@ -52,21 +53,22 @@ public:
 
   enum class type_t { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END };
 
-  class iterator {
-  public:
+  class iterator
+  {
+public:
     // iterator_traits required types:
-    using iterator_category = std::forward_iterator_tag ;
-    using value_type        = double;
-    using difference_type   = void;       // type used by operator-(iterator), not implemented for forward iterator
-    using reference         = value_type; // type used by operator*(), not actually a reference
-    using pointer           = void;       // type used by operator->(), not implemented
-    iterator(const RangeType &range, type_t type);
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = double;
+    using difference_type = void; // type used by operator-(iterator), not implemented for forward iterator
+    using reference = value_type; // type used by operator*(), not actually a reference
+    using pointer = void;     // type used by operator->(), not implemented
+    iterator(const RangeType& range, type_t type);
     iterator& operator++();
     reference operator*();
     bool operator==(const iterator& other) const;
     bool operator!=(const iterator& other) const;
-  private:
-    const RangeType &range;
+private:
+    const RangeType& range;
     double val;
     type_t type;
     const uint32_t num_values;
@@ -74,8 +76,8 @@ public:
     void update_type();
   };
 
-  RangeType(const RangeType &) = delete;            // never copy, move instead
-  RangeType& operator=(const RangeType &) = delete; // never copy, move instead
+  RangeType(const RangeType&) = delete;       // never copy, move instead
+  RangeType& operator=(const RangeType&) = delete; // never copy, move instead
   RangeType(RangeType&&) = default;
   RangeType& operator=(RangeType&&) = default;
 
@@ -85,63 +87,63 @@ public:
   explicit RangeType(double begin, double step, double end)
     : begin_val(begin), step_val(step), end_val(end) {}
 
-  bool operator==(const RangeType &other) const {
+  bool operator==(const RangeType& other) const {
     auto n1 = this->numValues();
     auto n2 = other.numValues();
     if (n1 == 0) return n2 == 0;
     if (n2 == 0) return false;
     return this == &other ||
-      (this->begin_val == other.begin_val &&
-       this->step_val == other.step_val &&
-       n1 == n2);
+           (this->begin_val == other.begin_val &&
+            this->step_val == other.step_val &&
+            n1 == n2);
   }
 
-  bool operator!=(const RangeType &other) const {
-    return !(*this==other);
+  bool operator!=(const RangeType& other) const {
+    return !(*this == other);
   }
 
-  bool operator<(const RangeType &other) const {
+  bool operator<(const RangeType& other) const {
     auto n1 = this->numValues();
     auto n2 = other.numValues();
     if (n1 == 0) return 0 < n2;
     if (n2 == 0) return false;
     return this->begin_val < other.begin_val ||
-      (this->begin_val == other.begin_val &&
-        (this->step_val < other.step_val || (this->step_val == other.step_val && n1 < n2))
-      );
+           (this->begin_val == other.begin_val &&
+            (this->step_val < other.step_val || (this->step_val == other.step_val && n1 < n2))
+           );
   }
 
-  bool operator<=(const RangeType &other) const {
+  bool operator<=(const RangeType& other) const {
     auto n1 = this->numValues();
     auto n2 = other.numValues();
     if (n1 == 0) return true; // (0 <= n2) is always true
     if (n2 == 0) return false;
     return this->begin_val < other.begin_val ||
-      (this->begin_val == other.begin_val &&
-        (this->step_val < other.step_val || (this->step_val == other.step_val && n1 <= n2))
-      );
+           (this->begin_val == other.begin_val &&
+            (this->step_val < other.step_val || (this->step_val == other.step_val && n1 <= n2))
+           );
   }
 
-  bool operator>(const RangeType &other) const {
+  bool operator>(const RangeType& other) const {
     auto n1 = this->numValues();
     auto n2 = other.numValues();
     if (n2 == 0) return n1 > 0;
     if (n1 == 0) return false;
     return this->begin_val > other.begin_val ||
-      (this->begin_val == other.begin_val &&
-        (this->step_val > other.step_val || (this->step_val == other.step_val && n1 > n2))
-      );
+           (this->begin_val == other.begin_val &&
+            (this->step_val > other.step_val || (this->step_val == other.step_val && n1 > n2))
+           );
   }
 
-  bool operator>=(const RangeType &other) const {
+  bool operator>=(const RangeType& other) const {
     auto n1 = this->numValues();
     auto n2 = other.numValues();
     if (n2 == 0) return true; // (n1 >= 0) is always true
     if (n1 == 0) return false;
     return this->begin_val > other.begin_val ||
-      (this->begin_val == other.begin_val &&
-        (this->step_val > other.step_val || (this->step_val == other.step_val && n1 >= n2))
-      );
+           (this->begin_val == other.begin_val &&
+            (this->step_val > other.step_val || (this->step_val == other.step_val && n1 >= n2))
+           );
   }
 
   double begin_value() const { return begin_val; }
@@ -149,7 +151,7 @@ public:
   double end_value() const { return end_val; }
 
   iterator begin() const { return iterator(*this, type_t::RANGE_TYPE_BEGIN); }
-  iterator end() const{ return iterator(*this, type_t::RANGE_TYPE_END); }
+  iterator end() const { return iterator(*this, type_t::RANGE_TYPE_END); }
 
   /// return number of values, max uint32_t value if step is 0 or range is infinite
   uint32_t numValues() const;
@@ -158,15 +160,16 @@ std::ostream& operator<<(std::ostream& stream, const RangeType& r);
 
 
 template <typename T>
-class ValuePtr {
+class ValuePtr
+{
 private:
-  explicit ValuePtr(const std::shared_ptr<T> &val_in) : value(val_in) { }
+  explicit ValuePtr(const std::shared_ptr<T>& val_in) : value(val_in) { }
 public:
   ValuePtr(T&& value) : value(std::make_shared<T>(std::move(value))) { }
   ValuePtr clone() const { return ValuePtr(value); }
 
   const T& operator*() const { return *value; }
-  const T* operator->() const { return value.get(); }
+  const T *operator->() const { return value.get(); }
   const std::shared_ptr<T>& get() const { return value; }
 
 private:
@@ -183,32 +186,33 @@ private:
     static constexpr glong LENGTH_UNKNOWN = -1;
     str_utf8_t() : u8str(), u8len(0) { }
     str_utf8_t(const std::string& s) : u8str(s) { }
-    str_utf8_t(const char* cstr) : u8str(cstr) { }
-    str_utf8_t(const char* cstr, size_t size, glong u8len) : u8str(cstr, size), u8len(u8len) { }
+    str_utf8_t(const char *cstr) : u8str(cstr) { }
+    str_utf8_t(const char *cstr, size_t size, glong u8len) : u8str(cstr, size), u8len(u8len) { }
     const std::string u8str;
     glong u8len = LENGTH_UNKNOWN;
   };
   // private constructor for copying members
-  explicit str_utf8_wrapper(const shared_ptr<str_utf8_t> &str_in) : str_ptr(str_in) { }
+  explicit str_utf8_wrapper(const shared_ptr<str_utf8_t>& str_in) : str_ptr(str_in) { }
 
 public:
-  class iterator {
-  public:
+  class iterator
+  {
+public:
     // iterator_traits required types:
-    using iterator_category = std::forward_iterator_tag ;
-    using value_type        = str_utf8_wrapper;
-    using difference_type   = void;
-    using reference         = value_type; // type used by operator*(), not actually a reference
-    using pointer           = void;
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = str_utf8_wrapper;
+    using difference_type = void;
+    using reference = value_type; // type used by operator*(), not actually a reference
+    using pointer = void;
     iterator() : ptr(&nullterm) {} // DefaultConstructible
     iterator(const str_utf8_wrapper& str) : ptr(str.c_str()), len(char_len()) { }
     iterator(const str_utf8_wrapper& str, bool /*end*/) : ptr(str.c_str() + str.size()) { }
 
     iterator& operator++() { ptr += len; len = char_len(); return *this; }
     reference operator*() { return {ptr, len}; } // Note: returns a new str_utf8_wrapper **by value**, representing a single UTF8 character.
-    bool operator==(const iterator &other) const { return ptr == other.ptr; }
-    bool operator!=(const iterator &other) const { return ptr != other.ptr; }
-  private:
+    bool operator==(const iterator& other) const { return ptr == other.ptr; }
+    bool operator!=(const iterator& other) const { return ptr != other.ptr; }
+private:
     size_t char_len();
     static const char nullterm = '\0';
     const char *ptr;
@@ -216,26 +220,26 @@ public:
   };
 
   iterator begin() const { return iterator(*this); }
-  iterator end() const{ return iterator(*this, true); }
+  iterator end() const { return iterator(*this, true); }
   str_utf8_wrapper() : str_ptr(make_shared<str_utf8_t>()) { }
   str_utf8_wrapper(const std::string& s) : str_ptr(make_shared<str_utf8_t>(s)) { }
-  str_utf8_wrapper(const char* cstr) : str_ptr(make_shared<str_utf8_t>(cstr)) { }
+  str_utf8_wrapper(const char *cstr) : str_ptr(make_shared<str_utf8_t>(cstr)) { }
   // for enumerating single utf8 chars from iterator
-  str_utf8_wrapper(const char* cstr, size_t clen) : str_ptr(make_shared<str_utf8_t>(cstr,clen,1)) { }
-  str_utf8_wrapper(const str_utf8_wrapper &) = delete; // never copy, move instead
-  str_utf8_wrapper& operator=(const str_utf8_wrapper &) = delete; // never copy, move instead
+  str_utf8_wrapper(const char *cstr, size_t clen) : str_ptr(make_shared<str_utf8_t>(cstr, clen, 1)) { }
+  str_utf8_wrapper(const str_utf8_wrapper&) = delete; // never copy, move instead
+  str_utf8_wrapper& operator=(const str_utf8_wrapper&) = delete; // never copy, move instead
   str_utf8_wrapper(str_utf8_wrapper&&) = default;
   str_utf8_wrapper& operator=(str_utf8_wrapper&&) = default;
   str_utf8_wrapper clone() const { return str_utf8_wrapper(this->str_ptr); } // makes a copy of shared_ptr
 
-  bool operator==(const str_utf8_wrapper &rhs) const { return this->str_ptr->u8str == rhs.str_ptr->u8str; }
-  bool operator!=(const str_utf8_wrapper &rhs) const { return this->str_ptr->u8str != rhs.str_ptr->u8str; }
-  bool operator< (const str_utf8_wrapper &rhs) const { return this->str_ptr->u8str <  rhs.str_ptr->u8str; }
-  bool operator> (const str_utf8_wrapper &rhs) const { return this->str_ptr->u8str >  rhs.str_ptr->u8str; }
-  bool operator<=(const str_utf8_wrapper &rhs) const { return this->str_ptr->u8str <= rhs.str_ptr->u8str; }
-  bool operator>=(const str_utf8_wrapper &rhs) const { return this->str_ptr->u8str >= rhs.str_ptr->u8str; }
+  bool operator==(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str == rhs.str_ptr->u8str; }
+  bool operator!=(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str != rhs.str_ptr->u8str; }
+  bool operator<(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str < rhs.str_ptr->u8str; }
+  bool operator>(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str > rhs.str_ptr->u8str; }
+  bool operator<=(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str <= rhs.str_ptr->u8str; }
+  bool operator>=(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str >= rhs.str_ptr->u8str; }
   bool empty() const { return this->str_ptr->u8str.empty(); }
-  const char* c_str() const { return this->str_ptr->u8str.c_str(); }
+  const char *c_str() const { return this->str_ptr->u8str.c_str(); }
   const std::string& toString() const { return this->str_ptr->u8str; }
   size_t size() const { return this->str_ptr->u8str.size(); }
 
@@ -244,22 +248,23 @@ public:
       str_ptr->u8len = g_utf8_strlen(str_ptr->u8str.c_str(), str_ptr->u8str.size());
     }
     return str_ptr->u8len;
-  };
+  }
 
 private:
   shared_ptr<str_utf8_t> str_ptr;
 };
 
-class FunctionType {
+class FunctionType
+{
 public:
   FunctionType(std::shared_ptr<const Context> context, std::shared_ptr<Expression> expr, std::shared_ptr<AssignmentList> parameters)
     : context(context), expr(expr), parameters(parameters) { }
-  Value operator==(const FunctionType &other) const;
-  Value operator!=(const FunctionType &other) const;
-  Value operator< (const FunctionType &other) const;
-  Value operator> (const FunctionType &other) const;
-  Value operator<=(const FunctionType &other) const;
-  Value operator>=(const FunctionType &other) const;
+  Value operator==(const FunctionType& other) const;
+  Value operator!=(const FunctionType& other) const;
+  Value operator<(const FunctionType& other) const;
+  Value operator>(const FunctionType& other) const;
+  Value operator<=(const FunctionType& other) const;
+  Value operator>=(const FunctionType& other) const;
 
   const std::shared_ptr<const Context>& getContext() const { return context; }
   const std::shared_ptr<Expression>& getExpr() const { return expr; }
@@ -275,25 +280,25 @@ using FunctionPtr = ValuePtr<FunctionType>;
 std::ostream& operator<<(std::ostream& stream, const FunctionType& f);
 
 /*
-  Require a reason why (string), any time an undefined value is created/returned.
-  This allows for passing of "exception" information from low level functions (i.e. from value.cc)
-  up to Expression::evaluate() or other functions where a proper "WARNING: ..."
-  with ASTNode Location info (source file, line number) can be included.
-*/
+   Require a reason why (string), any time an undefined value is created/returned.
+   This allows for passing of "exception" information from low level functions (i.e. from value.cc)
+   up to Expression::evaluate() or other functions where a proper "WARNING: ..."
+   with ASTNode Location info (source file, line number) can be included.
+ */
 class UndefType
 {
 public:
   // TODO: eventually deprecate undef creation without a reason.
-  UndefType() : reasons{ std::make_unique<std::vector<std::string>>() } { }
-  explicit UndefType(const std::string &why) : reasons{ std::make_unique<std::vector<std::string>>(std::initializer_list<std::string>({why})) } { }
+  UndefType() : reasons{std::make_unique<std::vector<std::string>>()} { }
+  explicit UndefType(const std::string& why) : reasons{std::make_unique<std::vector<std::string>>(std::initializer_list<std::string>({why}))} { }
 
   // Append another reason in case a chain of undefined operations are made before handling
-  const UndefType &append(const std::string &why) const { reasons->push_back(why); return *this; }
+  const UndefType& append(const std::string& why) const { reasons->push_back(why); return *this; }
 
-  Value operator< (const UndefType &other) const;
-  Value operator> (const UndefType &other) const;
-  Value operator<=(const UndefType &other) const;
-  Value operator>=(const UndefType &other) const;
+  Value operator<(const UndefType& other) const;
+  Value operator>(const UndefType& other) const;
+  Value operator<=(const UndefType& other) const;
+  Value operator>=(const UndefType& other) const;
   friend std::ostream& operator<<(std::ostream& stream, const ValuePtr<UndefType>& u);
 
   std::string toString() const;
@@ -362,44 +367,46 @@ public:
    *    Performing such use_count checks may be an area for further optimization.
    */
   class EmbeddedVectorType;
-  class VectorType {
+  class VectorType
+  {
 
-  protected:
+protected:
     // The object type which VectorType's shared_ptr points to.
     struct VectorObject {
       using vec_t = std::vector<Value>;
       using size_type = vec_t::size_type;
       vec_t vec;
       size_type embed_excess = 0; // Keep count of the number of embedded elements *excess of* vec.size()
-      class EvaluationSession* evaluation_session = nullptr; // Used for heap size bookkeeping. May be null for vectors of known small maximum size.
+      class EvaluationSession *evaluation_session = nullptr; // Used for heap size bookkeeping. May be null for vectors of known small maximum size.
       size_type size() const { return vec.size() + embed_excess;  }
     };
     using vec_t = VectorObject::vec_t;
-  public:
+public:
     shared_ptr<VectorObject> ptr;
-  protected:
+protected:
 
     // A Deleter is used on the shared_ptrs to avoid stack overflow in cases
     // of destructing a very large list of nested embedded vectors, such as from a
     // recursive function which concats one element at a time.
     // (A similar solution can also be seen with csgnode.h:CSGOperationDeleter).
     struct VectorObjectDeleter {
-      void operator()(VectorObject* vec);
+      void operator()(VectorObject *vec);
     };
     void flatten() const; // flatten replaces VectorObject::vec with a new vector
                           // where any embedded elements are copied directly into the top level vec,
                           // leaving only true elements for straightforward indexing by operator[].
-    explicit VectorType(const shared_ptr<VectorObject> &copy) : ptr(copy) { } // called by clone()
-  public:
+    explicit VectorType(const shared_ptr<VectorObject>& copy) : ptr(copy) { } // called by clone()
+public:
     using size_type = VectorObject::size_type;
     static const VectorType EMPTY;
     // EmbeddedVectorType-aware iterator, manages its own stack of begin/end vec_t::const_iterators
     // such that calling code will only receive references to "true" elements (i.e. NOT EmbeddedVectorTypes).
     // Also tracks the overall element index. In case flattening occurs during iteration, it can continue based on that index. (Issue #3541)
-    class iterator {
-    private:
-      const VectorObject* vo;
-      std::vector<std::pair<vec_t::const_iterator, vec_t::const_iterator> > it_stack;
+    class iterator
+    {
+private:
+      const VectorObject *vo;
+      std::vector<std::pair<vec_t::const_iterator, vec_t::const_iterator>> it_stack;
       vec_t::const_iterator it, end;
       size_t index;
 
@@ -411,25 +418,25 @@ public:
       {
         if (it != end) {
           while (it->type() == Type::EMBEDDED_VECTOR) {
-            const vec_t &cur = it->toEmbeddedVector().ptr->vec;
+            const vec_t& cur = it->toEmbeddedVector().ptr->vec;
             it_stack.emplace_back(it, end);
             it = cur.begin();
             end = cur.end();
           }
         }
       }
-    public:
-      using iterator_category = std::forward_iterator_tag ;
-      using value_type        = Value;
-      using difference_type   = void;
-      using reference         = const value_type&;
-      using pointer           = const value_type*;
+public:
+      using iterator_category = std::forward_iterator_tag;
+      using value_type = Value;
+      using difference_type = void;
+      using reference = const value_type&;
+      using pointer = const value_type *;
 
       iterator() : vo(EMPTY.ptr.get()), it_stack(), it(EMPTY.ptr->vec.begin()), end(EMPTY.ptr->vec.end()), index(0) {}
-      iterator(const VectorObject* v) : vo(v), it(v->vec.begin()), end(v->vec.end()), index(0) {
+      iterator(const VectorObject *v) : vo(v), it(v->vec.begin()), end(v->vec.end()), index(0) {
         if (vo->embed_excess) check_and_push();
       }
-      iterator(const VectorObject* v, bool /*end*/) : vo(v), index(v->size()) { }
+      iterator(const VectorObject *v, bool /*end*/) : vo(v), index(v->size()) { }
       iterator& operator++() {
         ++index;
         if (vo->embed_excess) {
@@ -446,16 +453,16 @@ public:
         }
         return *this;
       }
-      reference operator*() const { return *it; };
-      pointer operator->() const { return &*it; };
-      bool operator==(const iterator &other) const { return this->vo == other.vo && this->index == other.index; }
-      bool operator!=(const iterator &other) const { return this->vo != other.vo || this->index != other.index; }
+      reference operator*() const { return *it; }
+      pointer operator->() const { return &*it; }
+      bool operator==(const iterator& other) const { return this->vo == other.vo && this->index == other.index; }
+      bool operator!=(const iterator& other) const { return this->vo != other.vo || this->index != other.index; }
     };
     using const_iterator = const iterator;
-    VectorType(class EvaluationSession* session);// : ptr(shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() )) {}
-    VectorType(class EvaluationSession* session, double x, double y, double z);
-    VectorType(const VectorType &) = delete;            // never copy, move instead
-    VectorType& operator=(const VectorType &) = delete; // never copy, move instead
+    VectorType(class EvaluationSession *session); // : ptr(shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() )) {}
+    VectorType(class EvaluationSession *session, double x, double y, double z);
+    VectorType(const VectorType&) = delete; // never copy, move instead
+    VectorType& operator=(const VectorType&) = delete; // never copy, move instead
     VectorType(VectorType&&) = default;
     VectorType& operator=(VectorType&&) = default;
     VectorType clone() const { return VectorType(this->ptr); } // Copy explicitly only when necessary
@@ -466,84 +473,86 @@ public:
     size_type size() const { return ptr->size(); }
     bool empty() const { return ptr->vec.empty(); }
     // const accesses to VectorObject require .clone to be move-able
-    const Value &operator[](size_t idx) const {
+    const Value& operator[](size_t idx) const {
       if (idx < this->size()) {
         if (ptr->embed_excess) flatten();
-         return ptr->vec[idx];
+        return ptr->vec[idx];
       } else {
         return Value::undefined;
       }
     }
-    Value operator==(const VectorType &v) const;
-    Value operator< (const VectorType &v) const;
-    Value operator> (const VectorType &v) const;
-    Value operator!=(const VectorType &v) const;
-    Value operator<=(const VectorType &v) const;
-    Value operator>=(const VectorType &v) const;
-    class EvaluationSession* evaluation_session() const { return ptr->evaluation_session; }
+    Value operator==(const VectorType& v) const;
+    Value operator<(const VectorType& v) const;
+    Value operator>(const VectorType& v) const;
+    Value operator!=(const VectorType& v) const;
+    Value operator<=(const VectorType& v) const;
+    Value operator>=(const VectorType& v) const;
+    class EvaluationSession *evaluation_session() const { return ptr->evaluation_session; }
 
     void emplace_back(Value&& val);
     void emplace_back(EmbeddedVectorType&& mbed);
-    template<typename... Args> void emplace_back(Args&&... args) { emplace_back(Value(std::forward<Args>(args)...)); }
+    template <typename ... Args> void emplace_back(Args&&... args) { emplace_back(Value(std::forward<Args>(args)...)); }
   };
 
-  class EmbeddedVectorType : public VectorType {
-  private:
-      explicit EmbeddedVectorType(const shared_ptr<VectorObject> &copy) : VectorType(copy) { } // called by clone()
-  public:
-    EmbeddedVectorType(class EvaluationSession* session) : VectorType(session) {};
-    EmbeddedVectorType(const EmbeddedVectorType &) = delete;
-    EmbeddedVectorType& operator=(const EmbeddedVectorType &) = delete;
+  class EmbeddedVectorType : public VectorType
+  {
+private:
+    explicit EmbeddedVectorType(const shared_ptr<VectorObject>& copy) : VectorType(copy) { } // called by clone()
+public:
+    EmbeddedVectorType(class EvaluationSession *session) : VectorType(session) {}
+    EmbeddedVectorType(const EmbeddedVectorType&) = delete;
+    EmbeddedVectorType& operator=(const EmbeddedVectorType&) = delete;
     EmbeddedVectorType(EmbeddedVectorType&&) = default;
     EmbeddedVectorType& operator=(EmbeddedVectorType&&) = default;
 
-    EmbeddedVectorType(VectorType&& v) : VectorType(std::move(v)) {}; // converting constructor
+    EmbeddedVectorType(VectorType&& v) : VectorType(std::move(v)) {} // converting constructor
     EmbeddedVectorType clone() const { return EmbeddedVectorType(this->ptr); }
     static Value Empty() { return EmbeddedVectorType(nullptr); }
   };
 
-  class ObjectType {
-  protected:
+  class ObjectType
+  {
+protected:
     struct ObjectObject;
     struct ObjectObjectDeleter {
-      void operator()(ObjectObject* obj);
+      void operator()(ObjectObject *obj);
     };
 
-  private:
-    explicit ObjectType(const shared_ptr<ObjectObject> &copy);
+private:
+    explicit ObjectType(const shared_ptr<ObjectObject>& copy);
 
-  public:
+public:
     shared_ptr<ObjectObject> ptr;
-    ObjectType(class EvaluationSession* session);
+    ObjectType(class EvaluationSession *session);
     ObjectType clone() const;
     const Value& get(const std::string& key) const;
     void set(const std::string& key, Value&& value);
-    Value operator==(const ObjectType &v) const;
-    Value operator< (const ObjectType &v) const;
-    Value operator> (const ObjectType &v) const;
-    Value operator!=(const ObjectType &v) const;
-    Value operator<=(const ObjectType &v) const;
-    Value operator>=(const ObjectType &v) const;
-    const Value& operator[](const str_utf8_wrapper &v) const;
+    Value operator==(const ObjectType& v) const;
+    Value operator<(const ObjectType& v) const;
+    Value operator>(const ObjectType& v) const;
+    Value operator!=(const ObjectType& v) const;
+    Value operator<=(const ObjectType& v) const;
+    Value operator>=(const ObjectType& v) const;
+    const Value& operator[](const str_utf8_wrapper& v) const;
     const std::vector<std::string>& keys() const;
   };
 
 private:
   Value() : value(UndefType()) { } // Don't default construct empty Values.  If "undefined" needed, use reference to Value::undefined, or call Value::undef() for return by value
 public:
-  Value(const Value &) = delete; // never copy, move instead
-  Value &operator=(const Value &v) = delete; // never copy, move instead
+  Value(const Value&) = delete; // never copy, move instead
+  Value& operator=(const Value& v) = delete; // never copy, move instead
   Value(Value&&) = default;
   Value& operator=(Value&&) = default;
   Value clone() const; // Use sparingly to explicitly copy a Value
 
   Value(int v) : value(double(v)) { }
   Value(const char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!
-  Value(      char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!
-                                                        // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0608r3.html
-  template<class T> Value(T&& val) : value(std::forward<T>(val)) { }
+  Value(char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!
+                                                  // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0608r3.html
+  template <class T> Value(T&& val) : value(std::forward<T>(val)) { }
 
-  static Value undef(const std::string &why); // creation of undef requires a reason!
+  static Value undef(const std::string& why); // creation of undef requires a reason!
 
   const std::string typeName() const;
   static std::string typeName(Type type);
@@ -557,51 +566,51 @@ public:
   bool toBool() const;
   double toDouble() const;
   const str_utf8_wrapper& toStrUtf8Wrapper() const;
-  const VectorType &toVector() const;
+  const VectorType& toVector() const;
   const EmbeddedVectorType& toEmbeddedVector() const;
-  VectorType &toVectorNonConst();
-  EmbeddedVectorType &toEmbeddedVectorNonConst();
+  VectorType& toVectorNonConst();
+  EmbeddedVectorType& toEmbeddedVectorNonConst();
   const RangeType& toRange() const;
   const FunctionType& toFunction() const;
-  const ObjectType &toObject() const;
+  const ObjectType& toObject() const;
 
   // Other conversion utility functions
-  bool getDouble(double &v) const;
-  bool getFiniteDouble(double &v) const;
+  bool getDouble(double& v) const;
+  bool getFiniteDouble(double& v) const;
   std::string toString() const;
   std::string toString(const tostring_visitor *visitor) const;
   std::string toEchoString() const;
   std::string toEchoString(const tostring_visitor *visitor) const;
   const UndefType& toUndef();
   std::string toUndefString() const;
-  void toStream(std::ostringstream &stream) const;
+  void toStream(std::ostringstream& stream) const;
   void toStream(const tostream_visitor *visitor) const;
   std::string chrString() const;
-  bool getVec2(double &x, double &y, bool ignoreInfinite = false) const;
-  bool getVec3(double &x, double &y, double &z) const;
-  bool getVec3(double &x, double &y, double &z, double defaultval) const;
+  bool getVec2(double& x, double& y, bool ignoreInfinite = false) const;
+  bool getVec3(double& x, double& y, double& z) const;
+  bool getVec3(double& x, double& y, double& z, double defaultval) const;
 
   // Common Operators
   operator bool() const = delete;
-  Value operator==(const Value &v) const;
-  Value operator!=(const Value &v) const;
-  Value operator< (const Value &v) const;
-  Value operator<=(const Value &v) const;
-  Value operator>=(const Value &v) const;
-  Value operator> (const Value &v) const;
+  Value operator==(const Value& v) const;
+  Value operator!=(const Value& v) const;
+  Value operator<(const Value& v) const;
+  Value operator<=(const Value& v) const;
+  Value operator>=(const Value& v) const;
+  Value operator>(const Value& v) const;
   Value operator-() const;
   Value operator[](size_t idx) const;
-  Value operator[](const Value &v) const;
-  Value operator+(const Value &v) const;
-  Value operator-(const Value &v) const;
-  Value operator*(const Value &v) const;
-  Value operator/(const Value &v) const;
-  Value operator%(const Value &v) const;
-  Value operator^(const Value &v) const;
+  Value operator[](const Value& v) const;
+  Value operator+(const Value& v) const;
+  Value operator-(const Value& v) const;
+  Value operator*(const Value& v) const;
+  Value operator/(const Value& v) const;
+  Value operator%(const Value& v) const;
+  Value operator^(const Value& v) const;
 
   static bool cmp_less(const Value& v1, const Value& v2);
 
-  friend std::ostream &operator<<(std::ostream &stream, const Value &value) {
+  friend std::ostream& operator<<(std::ostream& stream, const Value& value) {
     if (value.type() == Value::Type::STRING) stream << QuotedString(value.toString());
     else stream << value.toString();
     return stream;
@@ -619,11 +628,11 @@ private:
 
 // The object type which ObjectType's shared_ptr points to.
 struct Value::ObjectType::ObjectObject {
-    using obj_t = std::unordered_map<std::string, Value>;
-    obj_t map;
-    class EvaluationSession* evaluation_session = nullptr;
-    std::vector<std::string> keys;
-    std::vector<Value> values;
+  using obj_t = std::unordered_map<std::string, Value>;
+  obj_t map;
+  class EvaluationSession *evaluation_session = nullptr;
+  std::vector<std::string> keys;
+  std::vector<Value> values;
 };
 
 std::ostream& operator<<(std::ostream& stream, const Value::ObjectType& u);

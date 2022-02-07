@@ -30,31 +30,32 @@
 
 namespace libsvg {
 
-class use : public shape {
+class use : public shape
+{
 protected:
-	std::string href;
-	double width;
-	double height;
+  std::string href;
+  double width;
+  double height;
 
 public:
-	use();
-	~use();
+  use();
+  ~use();
 
-	bool is_container() const override { return false; }
+  bool is_container() const override { return false; }
 
-	void set_attrs(attr_map_t& attrs, void *context) override;
-	const std::string dump() const override;
-	const std::string& get_name() const override { return use::name; };
+  void set_attrs(attr_map_t& attrs, void *context) override;
+  const std::string dump() const override;
+  const std::string& get_name() const override { return use::name; }
 
-	static const std::string name;
+  static const std::string name;
 
-	const std::string get_href() const { return href; };
-	const std::string get_href_id() const;
+  const std::string get_href() const { return href; }
+  const std::string get_href_id() const;
 
-	// I'm hoping here something else can find the href for us.
-	std::vector<std::shared_ptr<shape>> set_clone_child(shape* child);
+  // I'm hoping here something else can find the href for us.
+  std::vector<std::shared_ptr<shape>> set_clone_child(shape *child);
 
-	shape* clone() const override { return new use(*this); };
+  shape *clone() const override { return new use(*this); }
 };
 
-}
+} // namespace libsvg

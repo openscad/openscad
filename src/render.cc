@@ -36,27 +36,27 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-static AbstractNode* builtin_render(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static AbstractNode *builtin_render(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	auto node = new RenderNode(inst);
+  auto node = new RenderNode(inst);
 
-	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"convexity"});
-	if (parameters["convexity"].type() == Value::Type::NUMBER) {
-		node->convexity = static_cast<int>(parameters["convexity"].toDouble());
-	}
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"convexity"});
+  if (parameters["convexity"].type() == Value::Type::NUMBER) {
+    node->convexity = static_cast<int>(parameters["convexity"].toDouble());
+  }
 
-	return children.instantiate(node);
+  return children.instantiate(node);
 }
 
 std::string RenderNode::toString() const
 {
-	return STR(this->name() << "(convexity = " << convexity << ")");
+  return STR(this->name() << "(convexity = " << convexity << ")");
 }
 
 void register_builtin_render()
 {
-	Builtins::init("render", new BuiltinModule(builtin_render),
-				{
-					"render(convexity = 1)",
-				});
+  Builtins::init("render", new BuiltinModule(builtin_render),
+  {
+    "render(convexity = 1)",
+  });
 }

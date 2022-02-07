@@ -11,55 +11,55 @@
 class Feature
 {
 public:
-	typedef std::vector<Feature *> list_t;
-	typedef list_t::iterator iterator;
+  typedef std::vector<Feature *> list_t;
+  typedef list_t::iterator iterator;
 
-	static const Feature ExperimentalFastCsg;
-	static const Feature ExperimentalFastCsgExact;
-	static const Feature ExperimentalFastCsgExactCorefinementCallback;
-	static const Feature ExperimentalRoof;
-	static const Feature ExperimentalInputDriverDBus;
-	static const Feature ExperimentalLazyUnion;
-	static const Feature ExperimentalVxORenderers;
-	static const Feature ExperimentalVxORenderersIndexing;
-	static const Feature ExperimentalVxORenderersDirect;
-	static const Feature ExperimentalVxORenderersPrealloc;
-	static const Feature ExperimentalTextMetricsFunctions;
-	static const Feature ExperimentalImportFunction;
+  static const Feature ExperimentalFastCsg;
+  static const Feature ExperimentalFastCsgExact;
+  static const Feature ExperimentalFastCsgExactCorefinementCallback;
+  static const Feature ExperimentalRoof;
+  static const Feature ExperimentalInputDriverDBus;
+  static const Feature ExperimentalLazyUnion;
+  static const Feature ExperimentalVxORenderers;
+  static const Feature ExperimentalVxORenderersIndexing;
+  static const Feature ExperimentalVxORenderersDirect;
+  static const Feature ExperimentalVxORenderersPrealloc;
+  static const Feature ExperimentalTextMetricsFunctions;
+  static const Feature ExperimentalImportFunction;
 
-	const std::string& get_name() const;
-	const std::string& get_description() const;
+  const std::string& get_name() const;
+  const std::string& get_description() const;
 
-	bool is_enabled() const;
-	void enable(bool status);
+  bool is_enabled() const;
+  void enable(bool status);
 
-	static iterator begin();
-	static iterator end();
+  static iterator begin();
+  static iterator end();
 
-	static std::string features();
-	static void enable_feature(const std::string &feature_name, bool status = true);
-	static void enable_all(bool status = true);
+  static std::string features();
+  static void enable_feature(const std::string& feature_name, bool status = true);
+  static void enable_all(bool status = true);
 
 private:
-	bool enabled;
+  bool enabled;
 
-	const std::string name;
-	const std::string description;
+  const std::string name;
+  const std::string description;
 
-	typedef std::map<std::string, Feature *> map_t;
-	static map_t feature_map;
-	static list_t feature_list;
+  typedef std::map<std::string, Feature *> map_t;
+  static map_t feature_map;
+  static list_t feature_list;
 
-	Feature(const std::string &name, const std::string &description);
-	virtual ~Feature();
+  Feature(const std::string& name, const std::string& description);
+  virtual ~Feature();
 };
 
 class ExperimentalFeatureException : public EvaluationException
 {
 public:
-	static void check(const Feature &feature);
-	~ExperimentalFeatureException() throw();
+  static void check(const Feature& feature);
+  ~ExperimentalFeatureException() throw();
 
 private:
-	ExperimentalFeatureException(const std::string &what_arg);
+  ExperimentalFeatureException(const std::string& what_arg);
 };

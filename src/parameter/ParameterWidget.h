@@ -36,59 +36,59 @@
 
 class ParameterWidget : public QWidget, public Ui::ParameterWidget
 {
-	Q_OBJECT
+  Q_OBJECT
 private:
-	ParameterSets sets;
-	std::string source;
-	ParameterObjects parameters;
-	std::map<ParameterObject*, std::vector<ParameterVirtualWidget*>> widgets;
+  ParameterSets sets;
+  std::string source;
+  ParameterObjects parameters;
+  std::map<ParameterObject *, std::vector<ParameterVirtualWidget *>> widgets;
 
-	QString invalidJsonFile; // set if a json file was read that could not be parsed
-	QTimer autoPreviewTimer;
-	bool modified = false;
+  QString invalidJsonFile; // set if a json file was read that could not be parsed
+  QTimer autoPreviewTimer;
+  bool modified = false;
 
 public:
-	ParameterWidget(QWidget *parent = nullptr);
-	void readFile(QString scadFile);
-	void saveFile(QString scadFile);
-	void saveBackupFile(QString scadFile);
-	void setParameters(const SourceFile* sourceFile, const std::string& source);
-	void applyParameters(SourceFile *sourceFile);
-	bool childHasFocus();
-	bool isModified() const { return modified; }
+  ParameterWidget(QWidget *parent = nullptr);
+  void readFile(QString scadFile);
+  void saveFile(QString scadFile);
+  void saveBackupFile(QString scadFile);
+  void setParameters(const SourceFile *sourceFile, const std::string& source);
+  void applyParameters(SourceFile *sourceFile);
+  bool childHasFocus();
+  bool isModified() const { return modified; }
 
 public slots:
-	void setModified(bool modified = true);
+  void setModified(bool modified = true);
 
 protected slots:
-	void autoPreview(bool immediate = false);
-	void emitParametersChanged();
-	void onSetChanged(int index);
-	void onSetNameChanged();
-	void onSetAdd();
-	void onSetDelete();
-	void parameterModified(bool immediate);
-	void loadSet(int index);
-	void createSet(QString name);
-	void updateSetEditability();
-	void rebuildWidgets();
+  void autoPreview(bool immediate = false);
+  void emitParametersChanged();
+  void onSetChanged(int index);
+  void onSetNameChanged();
+  void onSetAdd();
+  void onSetDelete();
+  void parameterModified(bool immediate);
+  void loadSet(int index);
+  void createSet(QString name);
+  void updateSetEditability();
+  void rebuildWidgets();
 
 signals:
-	// emitted when the effective values of the parameters have changed,
-	// and the model view can be updated
-	void parametersChanged();
-	// emitted when the sets that would be saved to the json file have changed,
-	// and the parameter sets should be saved before closing
-	void modificationChanged();
+  // emitted when the effective values of the parameters have changed,
+  // and the model view can be updated
+  void parametersChanged();
+  // emitted when the sets that would be saved to the json file have changed,
+  // and the parameter sets should be saved before closing
+  void modificationChanged();
 
 protected:
-	struct ParameterGroup
-	{
-		QString name;
-		std::vector<ParameterObject*> parameters;
-	};
-	std::vector<ParameterGroup> getParameterGroups();
-	ParameterVirtualWidget* createParameterWidget(ParameterObject* parameter, DescriptionStyle descriptionStyle);
-	QString getJsonFile(QString scadFile);
-	void cleanSets();
+  struct ParameterGroup
+  {
+    QString name;
+    std::vector<ParameterObject *> parameters;
+  };
+  std::vector<ParameterGroup> getParameterGroups();
+  ParameterVirtualWidget *createParameterWidget(ParameterObject *parameter, DescriptionStyle descriptionStyle);
+  QString getJsonFile(QString scadFile);
+  void cleanSets();
 };

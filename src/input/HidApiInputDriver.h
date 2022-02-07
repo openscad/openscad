@@ -33,42 +33,42 @@
 
 class HidApiInputDriver : public InputDriver
 {
-    Q_OBJECT
+  Q_OBJECT
 
-    std::string name;
-    unsigned int buttons;
-    hid_device* hid_dev;
-    const struct device_id *dev;
+  std::string name;
+  unsigned int buttons;
+  hid_device *hid_dev;
+  const struct device_id *dev;
 
 public:
-    HidApiInputDriver();
-    ~HidApiInputDriver();
-    void run() override;
-    bool open() override;
-    void close() override;
+  HidApiInputDriver();
+  ~HidApiInputDriver();
+  void run() override;
+  bool open() override;
+  void close() override;
 
-    const std::string & get_name() const override;
-    std::string get_info() const override;
+  const std::string& get_name() const override;
+  std::string get_info() const override;
 
-    void hidapi_decode_axis(const unsigned char *buf, unsigned int len);
-    void hidapi_decode_button(const unsigned char *buf, unsigned int len);
+  void hidapi_decode_axis(const unsigned char *buf, unsigned int len);
+  void hidapi_decode_button(const unsigned char *buf, unsigned int len);
 
-    int getButtonCount() const override{
-        return InputDriver::max_buttons;
-    }
-    int getAxisCount() const override{
-        return InputDriver::max_axis;
-    }
+  int getButtonCount() const override {
+    return InputDriver::max_buttons;
+  }
+  int getAxisCount() const override {
+    return InputDriver::max_axis;
+  }
 
 private:
-	std::pair<hid_device *, const struct device_id *> enumerate() const;
-    void hidapi_input(hid_device* hid_dev);
+  std::pair<hid_device *, const struct device_id *> enumerate() const;
+  void hidapi_input(hid_device *hid_dev);
 };
 
 struct device_id {
-    int vendor_id;
-    int product_id;
-    void (HidApiInputDriver::*axis_decoder)(const unsigned char *buf, unsigned int len);
-    void (HidApiInputDriver::*button_decoder)(const unsigned char *buf, unsigned int len);
-    const char *name;
+  int vendor_id;
+  int product_id;
+  void (HidApiInputDriver::*axis_decoder)(const unsigned char *buf, unsigned int len);
+  void (HidApiInputDriver::*button_decoder)(const unsigned char *buf, unsigned int len);
+  const char *name;
 };

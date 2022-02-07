@@ -17,31 +17,31 @@ class Context;
 class HeapSizeAccounting
 {
 public:
-	void addContext(size_t number = 1) { count += number; }
-	void removeContext(size_t number = 1) { count -= number; }
-	void addContextVariable(size_t number = 1) { count += number; }
-	void removeContextVariable(size_t number = 1) { count -= number; }
-	void addVectorElement(size_t number = 1) { count += number; }
-	void removeVectorElement(size_t number = 1) { count -= number; }
-	
-	size_t size() const { return count; }
+  void addContext(size_t number = 1) { count += number; }
+  void removeContext(size_t number = 1) { count -= number; }
+  void addContextVariable(size_t number = 1) { count += number; }
+  void removeContextVariable(size_t number = 1) { count -= number; }
+  void addVectorElement(size_t number = 1) { count += number; }
+  void removeVectorElement(size_t number = 1) { count -= number; }
+
+  size_t size() const { return count; }
 
 private:
-	size_t count = 0;
+  size_t count = 0;
 };
 
 class ContextMemoryManager
 {
 public:
-	~ContextMemoryManager();
-	
-	void addContext(std::shared_ptr<Context> context);
-	void releaseContext() { heapSizeAccounting.removeContext(); }
-	
-	HeapSizeAccounting& accounting() { return heapSizeAccounting; }
+  ~ContextMemoryManager();
+
+  void addContext(std::shared_ptr<Context> context);
+  void releaseContext() { heapSizeAccounting.removeContext(); }
+
+  HeapSizeAccounting& accounting() { return heapSizeAccounting; }
 
 private:
-	std::vector<std::weak_ptr<Context>> managedContexts;
-	HeapSizeAccounting heapSizeAccounting;
-	size_t nextGarbageCollectSize = 0;
+  std::vector<std::weak_ptr<Context>> managedContexts;
+  HeapSizeAccounting heapSizeAccounting;
+  size_t nextGarbageCollectSize = 0;
 };

@@ -32,19 +32,19 @@
 
 namespace libsvg {
 
-class SvgException: public std::exception
+class SvgException : public std::exception
 {
 public:
-        SvgException(const std::string& message) : message(message) { }
-        virtual ~SvgException() {}
+  SvgException(const std::string& message) : message(message) { }
+  virtual ~SvgException() {}
 
-        const char* what() const throw() override
-        {
-                return message.c_str();
-        }
+  const char *what() const throw() override
+  {
+    return message.c_str();
+  }
 
 private:
-        std::string message;
+  std::string message;
 };
 
 using shapes_list_t = std::vector<shared_ptr<shape>>;

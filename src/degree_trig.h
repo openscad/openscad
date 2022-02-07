@@ -29,7 +29,7 @@
 #pragma once
 #include "linalg.h"
 
-constexpr double M_SQRT3   = 1.73205080756887719318;  /* sqrt(3)   */
+constexpr double M_SQRT3 = 1.73205080756887719318;    /* sqrt(3)   */
 constexpr double M_SQRT3_4 = 0.86602540378443859659;  /* sqrt(3/4) == sqrt(3)/2 */
 constexpr double M_SQRT1_3 = 0.57735026918962573106;  /* sqrt(1/3) == sqrt(3)/3 */
 constexpr double M_RAD2DEG = 57.2957795130823208767;  /* 180/PI */

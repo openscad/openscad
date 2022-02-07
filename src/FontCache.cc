@@ -42,29 +42,29 @@ namespace fs = boost::filesystem;
 
 const std::string get_fontconfig_version()
 {
-	const unsigned int version = FcGetVersion();
+  const unsigned int version = FcGetVersion();
 
-	const OpenSCAD::library_version_number header_version{FC_MAJOR, FC_MINOR, FC_REVISION};
-	const OpenSCAD::library_version_number runtime_version{version / 10000, (version / 100) % 100, version % 100};
-	return OpenSCAD::get_version_string(header_version, runtime_version);
+  const OpenSCAD::library_version_number header_version{FC_MAJOR, FC_MINOR, FC_REVISION};
+  const OpenSCAD::library_version_number runtime_version{version / 10000, (version / 100) % 100, version % 100};
+  return OpenSCAD::get_version_string(header_version, runtime_version);
 }
 
 const std::string get_harfbuzz_version()
 {
-	unsigned int major, minor, micro;
-	hb_version(&major, &minor, &micro);
+  unsigned int major, minor, micro;
+  hb_version(&major, &minor, &micro);
 
-	const OpenSCAD::library_version_number header_version{HB_VERSION_MAJOR, HB_VERSION_MINOR, HB_VERSION_MICRO};
-	const OpenSCAD::library_version_number runtime_version{major, minor, micro};
-	return OpenSCAD::get_version_string(header_version, runtime_version);
+  const OpenSCAD::library_version_number header_version{HB_VERSION_MAJOR, HB_VERSION_MINOR, HB_VERSION_MICRO};
+  const OpenSCAD::library_version_number runtime_version{major, minor, micro};
+  return OpenSCAD::get_version_string(header_version, runtime_version);
 }
 
 const std::string get_freetype_version()
 {
-	return FontCache::instance()->get_freetype_version();
+  return FontCache::instance()->get_freetype_version();
 }
 
-FontInfo::FontInfo(const std::string &family, const std::string &style, const std::string &file) : family(family), style(style), file(file)
+FontInfo::FontInfo(const std::string& family, const std::string& style, const std::string& file) : family(family), style(style), file(file)
 {
 }
 
@@ -72,33 +72,33 @@ FontInfo::~FontInfo()
 {
 }
 
-bool FontInfo::operator<(const FontInfo &rhs) const
+bool FontInfo::operator<(const FontInfo& rhs) const
 {
-	if (family < rhs.family) {
-		return true;
-	}
-	if (style < rhs.style) {
-		return true;
-	}
-	return file < rhs.file;
+  if (family < rhs.family) {
+    return true;
+  }
+  if (style < rhs.style) {
+    return true;
+  }
+  return file < rhs.file;
 }
 
-const std::string &FontInfo::get_family() const
+const std::string& FontInfo::get_family() const
 {
-	return family;
+  return family;
 }
 
-const std::string &FontInfo::get_style() const
+const std::string& FontInfo::get_style() const
 {
-	return style;
+  return style;
 }
 
-const std::string &FontInfo::get_file() const
+const std::string& FontInfo::get_file() const
 {
-	return file;
+  return file;
 }
 
-FontCache * FontCache::self = nullptr;
+FontCache *FontCache::self = nullptr;
 FontCache::InitHandlerFunc *FontCache::cb_handler = FontCache::defaultInitHandler;
 void *FontCache::cb_userdata = nullptr;
 const std::string FontCache::DEFAULT_FONT("Liberation Sans:style=Regular");
@@ -110,326 +110,317 @@ const std::string FontCache::DEFAULT_FONT("Liberation Sans:style=Regular");
  */
 void FontCache::defaultInitHandler(FontCacheInitializer *initializer, void *)
 {
-	initializer->run();
+  initializer->run();
 }
 
 FontCache::FontCache()
 {
-	this->init_ok = false;
-	this->library = nullptr;
+  this->init_ok = false;
+  this->library = nullptr;
 
-	// If we've got a bundled fonts.conf, initialize fontconfig with our own config
-	// by overriding the built-in fontconfig path.
-	// For system installs and dev environments, we leave this alone
-	fs::path fontdir(PlatformUtils::resourcePath("fonts"));
-	if (fs::is_regular_file(fontdir / "fonts.conf")) {
-		PlatformUtils::setenv("FONTCONFIG_PATH", (fs::absolute(fontdir).generic_string()).c_str(), 0);
-	}
+  // If we've got a bundled fonts.conf, initialize fontconfig with our own config
+  // by overriding the built-in fontconfig path.
+  // For system installs and dev environments, we leave this alone
+  fs::path fontdir(PlatformUtils::resourcePath("fonts"));
+  if (fs::is_regular_file(fontdir / "fonts.conf")) {
+    PlatformUtils::setenv("FONTCONFIG_PATH", (fs::absolute(fontdir).generic_string()).c_str(), 0);
+  }
 
-	// Just load the configs. We'll build the fonts once all configs are loaded
-	this->config = FcInitLoadConfig();
-	if (!this->config) {
-		LOG(message_group::Font_Warning,Location::NONE,"","Can't initialize fontconfig library, text() objects will not be rendered");
-		return;
-	}
+  // Just load the configs. We'll build the fonts once all configs are loaded
+  this->config = FcInitLoadConfig();
+  if (!this->config) {
+    LOG(message_group::Font_Warning, Location::NONE, "", "Can't initialize fontconfig library, text() objects will not be rendered");
+    return;
+  }
 
-	// Add the built-in fonts & config
-	fs::path builtinfontpath(PlatformUtils::resourcePath("fonts"));
-	if (fs::is_directory(builtinfontpath)) {
-		FcConfigParseAndLoad(this->config, reinterpret_cast<const FcChar8 *>(builtinfontpath.generic_string().c_str()), false);
-		add_font_dir(fs::canonical(builtinfontpath).generic_string());
-	}
+  // Add the built-in fonts & config
+  fs::path builtinfontpath(PlatformUtils::resourcePath("fonts"));
+  if (fs::is_directory(builtinfontpath)) {
+    FcConfigParseAndLoad(this->config, reinterpret_cast<const FcChar8 *>(builtinfontpath.generic_string().c_str()), false);
+    add_font_dir(fs::canonical(builtinfontpath).generic_string());
+  }
 
-	const char *home = getenv("HOME");
+  const char *home = getenv("HOME");
 
-	// Add Linux font folders, the system folders are expected to be
-	// configured by the system configuration for fontconfig.
-	if (home) {
-		add_font_dir(std::string(home) + "/.fonts");
-	}
+  // Add Linux font folders, the system folders are expected to be
+  // configured by the system configuration for fontconfig.
+  if (home) {
+    add_font_dir(std::string(home) + "/.fonts");
+  }
 
-	const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
-	if (env_font_path != nullptr) {
-		std::string paths(env_font_path);
-		const std::string sep = PlatformUtils::pathSeparatorChar();
-		typedef boost::split_iterator<std::string::iterator> string_split_iterator;
-		for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal())); it != string_split_iterator(); ++it) {
-			const fs::path p(boost::copy_range<std::string>(*it));
-			if (fs::exists(p) && fs::is_directory(p)) {
-				std::string path = fs::absolute(p).string();
-				add_font_dir(path);
-			}
-		}
-	}
+  const char *env_font_path = getenv("OPENSCAD_FONT_PATH");
+  if (env_font_path != nullptr) {
+    std::string paths(env_font_path);
+    const std::string sep = PlatformUtils::pathSeparatorChar();
+    typedef boost::split_iterator<std::string::iterator> string_split_iterator;
+    for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal())); it != string_split_iterator(); ++it) {
+      const fs::path p(boost::copy_range<std::string>(*it));
+      if (fs::exists(p) && fs::is_directory(p)) {
+        std::string path = fs::absolute(p).string();
+        add_font_dir(path);
+      }
+    }
+  }
 
-	FontCacheInitializer initializer(this->config);
-	cb_handler(&initializer, cb_userdata);
+  FontCacheInitializer initializer(this->config);
+  cb_handler(&initializer, cb_userdata);
 
-	// For use by LibraryInfo
-	FcStrList *dirs = FcConfigGetFontDirs(this->config);
-	while (FcChar8 *dir = FcStrListNext(dirs)) {
-		fontpath.push_back(std::string((const char *)dir));
-	}
-	FcStrListDone(dirs);
+  // For use by LibraryInfo
+  FcStrList *dirs = FcConfigGetFontDirs(this->config);
+  while (FcChar8 *dir = FcStrListNext(dirs)) {
+    fontpath.push_back(std::string((const char *)dir));
+  }
+  FcStrListDone(dirs);
 
-	const FT_Error error = FT_Init_FreeType(&this->library);
-	if (error) {
-		LOG(message_group::Font_Warning,Location::NONE,"","Can't initialize freetype library, text() objects will not be rendered");
-		return;
-	}
+  const FT_Error error = FT_Init_FreeType(&this->library);
+  if (error) {
+    LOG(message_group::Font_Warning, Location::NONE, "", "Can't initialize freetype library, text() objects will not be rendered");
+    return;
+  }
 
-	this->init_ok = true;
+  this->init_ok = true;
 }
 
 FontCache::~FontCache()
 {
 }
 
-FontCache * FontCache::instance()
+FontCache *FontCache::instance()
 {
-	if (!self) {
-		self = new FontCache();
-	}
-	return self;
+  if (!self) {
+    self = new FontCache();
+  }
+  return self;
 }
 
 const std::string FontCache::get_freetype_version() const
 {
-	if (!this->is_init_ok()) {
-		return "(not initialized)";
-	}
+  if (!this->is_init_ok()) {
+    return "(not initialized)";
+  }
 
-	FT_Int major, minor, micro;
-	FT_Library_Version(this->library, &major, &minor, &micro);
+  FT_Int major, minor, micro;
+  FT_Library_Version(this->library, &major, &minor, &micro);
 
-	const OpenSCAD::library_version_number header_version{FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH};
-	const OpenSCAD::library_version_number runtime_version{static_cast<unsigned>(major), static_cast<unsigned>(minor), static_cast<unsigned>(micro)};
-	return OpenSCAD::get_version_string(header_version, runtime_version);
+  const OpenSCAD::library_version_number header_version{FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH};
+  const OpenSCAD::library_version_number runtime_version{static_cast<unsigned>(major), static_cast<unsigned>(minor), static_cast<unsigned>(micro)};
+  return OpenSCAD::get_version_string(header_version, runtime_version);
 }
 
 void FontCache::registerProgressHandler(InitHandlerFunc *handler, void *userdata)
 {
-	FontCache::cb_handler = handler;
-	FontCache::cb_userdata = userdata;
+  FontCache::cb_handler = handler;
+  FontCache::cb_userdata = userdata;
 }
 
-void FontCache::register_font_file(const std::string &path)
+void FontCache::register_font_file(const std::string& path)
 {
-	if (!FcConfigAppFontAddFile(this->config, reinterpret_cast<const FcChar8 *> (path.c_str()))) {
-		LOG(message_group::None,Location::NONE,"","Can't register font '%1$s'",path);
-	}
+  if (!FcConfigAppFontAddFile(this->config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
+    LOG(message_group::None, Location::NONE, "", "Can't register font '%1$s'", path);
+  }
 }
 
-void FontCache::add_font_dir(const std::string &path)
+void FontCache::add_font_dir(const std::string& path)
 {
-	if (!fs::is_directory(path)) {
-		return;
-	}
-	if (!FcConfigAppFontAddDir(this->config, reinterpret_cast<const FcChar8 *> (path.c_str()))) {
-		LOG(message_group::None,Location::NONE,"","Can't register font directory '%1$s'",path);
-	}
+  if (!fs::is_directory(path)) {
+    return;
+  }
+  if (!FcConfigAppFontAddDir(this->config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
+    LOG(message_group::None, Location::NONE, "", "Can't register font directory '%1$s'", path);
+  }
 }
 
 FontInfoList *FontCache::list_fonts() const
 {
-	FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, FC_STYLE, FC_FILE, nullptr);
-	FcPattern *pattern = FcPatternCreate();
-	init_pattern(pattern);
-	FcFontSet *font_set = FcFontList(this->config, pattern, object_set);
-	FcObjectSetDestroy(object_set);
-	FcPatternDestroy(pattern);
+  FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, FC_STYLE, FC_FILE, nullptr);
+  FcPattern *pattern = FcPatternCreate();
+  init_pattern(pattern);
+  FcFontSet *font_set = FcFontList(this->config, pattern, object_set);
+  FcObjectSetDestroy(object_set);
+  FcPatternDestroy(pattern);
 
-	FontInfoList *list = new FontInfoList();
-	for (int a = 0; a < font_set->nfont; ++a) {
-		FcValue file_value;
-		FcPatternGet(font_set->fonts[a], FC_FILE, 0, &file_value);
+  FontInfoList *list = new FontInfoList();
+  for (int a = 0; a < font_set->nfont; ++a) {
+    FcValue file_value;
+    FcPatternGet(font_set->fonts[a], FC_FILE, 0, &file_value);
 
-		FcValue family_value;
-		FcPatternGet(font_set->fonts[a], FC_FAMILY, 0, &family_value);
+    FcValue family_value;
+    FcPatternGet(font_set->fonts[a], FC_FAMILY, 0, &family_value);
 
-		FcValue style_value;
-		FcPatternGet(font_set->fonts[a], FC_STYLE, 0, &style_value);
+    FcValue style_value;
+    FcPatternGet(font_set->fonts[a], FC_STYLE, 0, &style_value);
 
-		std::string family((const char *) family_value.u.s);
-		std::string style((const char *) style_value.u.s);
-		std::string file((const char *) file_value.u.s);
+    std::string family((const char *) family_value.u.s);
+    std::string style((const char *) style_value.u.s);
+    std::string file((const char *) file_value.u.s);
 
-		list->push_back(FontInfo(family, style, file));
-	}
-	FcFontSetDestroy(font_set);
+    list->push_back(FontInfo(family, style, file));
+  }
+  FcFontSetDestroy(font_set);
 
-	return list;
+  return list;
 }
 
 bool FontCache::is_init_ok() const
 {
-	return this->init_ok;
+  return this->init_ok;
 }
 
 void FontCache::clear()
 {
-	this->cache.clear();
+  this->cache.clear();
 }
 
-void FontCache::dump_cache(const std::string &info)
+void FontCache::dump_cache(const std::string& info)
 {
-	std::cout << info << ":";
-	for (const auto &item : this->cache) {
-		std::cout << " " <<  item.first << " (" << item.second.second << ")";
-	}
-	std::cout << std::endl;
+  std::cout << info << ":";
+  for (const auto& item : this->cache) {
+    std::cout << " " << item.first << " (" << item.second.second << ")";
+  }
+  std::cout << std::endl;
 }
 
 void FontCache::check_cleanup()
 {
-	if (this->cache.size() < MAX_NR_OF_CACHE_ENTRIES) {
-		return;
-	}
+  if (this->cache.size() < MAX_NR_OF_CACHE_ENTRIES) {
+    return;
+  }
 
-	cache_t::iterator pos = this->cache.begin()++;
-	for (cache_t::iterator it = this->cache.begin(); it != this->cache.end(); ++it) {
-		if ((*pos).second.second > (*it).second.second) {
-			pos = it;
-		}
-	}
-	FT_Done_Face((*pos).second.first);
-	this->cache.erase(pos);
+  cache_t::iterator pos = this->cache.begin()++;
+  for (cache_t::iterator it = this->cache.begin(); it != this->cache.end(); ++it) {
+    if ((*pos).second.second > (*it).second.second) {
+      pos = it;
+    }
+  }
+  FT_Done_Face((*pos).second.first);
+  this->cache.erase(pos);
 }
 
-FT_Face FontCache::get_font(const std::string &font)
+FT_Face FontCache::get_font(const std::string& font)
 {
-	FT_Face face;
-	cache_t::iterator it = this->cache.find(font);
-	if (it == this->cache.end()) {
-		face = find_face(font);
-		if (!face) {
-			return nullptr;
-		}
-		check_cleanup();
-	} else {
-		face = (*it).second.first;
-	}
-	this->cache[font] = cache_entry_t(face, time(nullptr));
-	return face;
+  FT_Face face;
+  cache_t::iterator it = this->cache.find(font);
+  if (it == this->cache.end()) {
+    face = find_face(font);
+    if (!face) {
+      return nullptr;
+    }
+    check_cleanup();
+  } else {
+    face = (*it).second.first;
+  }
+  this->cache[font] = cache_entry_t(face, time(nullptr));
+  return face;
 }
 
-FT_Face FontCache::find_face(const std::string &font) const
+FT_Face FontCache::find_face(const std::string& font) const
 {
-	std::string trimmed(font);
-	boost::algorithm::trim(trimmed);
+  std::string trimmed(font);
+  boost::algorithm::trim(trimmed);
 
-	const std::string lookup = trimmed.empty() ? DEFAULT_FONT : trimmed;
-	PRINTDB("font = \"%s\", lookup = \"%s\"", font % lookup);
-	FT_Face face = find_face_fontconfig(lookup);
-	if (face) {
-		PRINTDB("result = \"%s\", style = \"%s\"", face->family_name % face->style_name);
-	}
-	else {
-		PRINTD("font not found");
-	}
-	return face;
+  const std::string lookup = trimmed.empty() ? DEFAULT_FONT : trimmed;
+  PRINTDB("font = \"%s\", lookup = \"%s\"", font % lookup);
+  FT_Face face = find_face_fontconfig(lookup);
+  if (face) {
+    PRINTDB("result = \"%s\", style = \"%s\"", face->family_name % face->style_name);
+  } else {
+    PRINTD("font not found");
+  }
+  return face;
 }
 
 void FontCache::init_pattern(FcPattern *pattern) const
 {
-	FcValue true_value;
-	true_value.type = FcTypeBool;
-	true_value.u.b = true;
+  FcValue true_value;
+  true_value.type = FcTypeBool;
+  true_value.u.b = true;
 
-	FcPatternAdd(pattern, FC_OUTLINE, true_value, true);
-	FcPatternAdd(pattern, FC_SCALABLE, true_value, true);
+  FcPatternAdd(pattern, FC_OUTLINE, true_value, true);
+  FcPatternAdd(pattern, FC_SCALABLE, true_value, true);
 }
 
-FT_Face FontCache::find_face_fontconfig(const std::string &font) const
+FT_Face FontCache::find_face_fontconfig(const std::string& font) const
 {
-	FcResult result;
+  FcResult result;
 
-	FcPattern *pattern = FcNameParse((unsigned char *)font.c_str());
-	init_pattern(pattern);
+  FcPattern *pattern = FcNameParse((unsigned char *)font.c_str());
+  init_pattern(pattern);
 
-	FcConfigSubstitute(this->config, pattern, FcMatchPattern);
-	FcDefaultSubstitute(pattern);
+  FcConfigSubstitute(this->config, pattern, FcMatchPattern);
+  FcDefaultSubstitute(pattern);
 
-	FcPattern *match = FcFontMatch(this->config, pattern, &result);
+  FcPattern *match = FcFontMatch(this->config, pattern, &result);
 
-	FcValue file_value;
-	if (FcPatternGet(match, FC_FILE, 0, &file_value) != FcResultMatch) {
-		return nullptr;
-	}
+  FcValue file_value;
+  if (FcPatternGet(match, FC_FILE, 0, &file_value) != FcResultMatch) {
+    return nullptr;
+  }
 
-	FcValue font_index;
-	if (FcPatternGet(match, FC_INDEX, 0, &font_index)) {
-		return nullptr;
-	}
-	
-	FT_Face face;
-	FT_Error error = FT_New_Face(this->library, (const char *) file_value.u.s, font_index.u.i, &face);
+  FcValue font_index;
+  if (FcPatternGet(match, FC_INDEX, 0, &font_index)) {
+    return nullptr;
+  }
 
-	FcPatternDestroy(pattern);
-	FcPatternDestroy(match);
+  FT_Face face;
+  FT_Error error = FT_New_Face(this->library, (const char *) file_value.u.s, font_index.u.i, &face);
 
-	for (int a = 0; a < face->num_charmaps; ++a) {
-		FT_CharMap charmap = face->charmaps[a];
-		PRINTDB("charmap = %d: platform = %d, encoding = %d", a % charmap->platform_id % charmap->encoding_id);
-	}
+  FcPatternDestroy(pattern);
+  FcPatternDestroy(match);
 
-	if (FT_Select_Charmap(face, ft_encoding_unicode) == 0) {
-		PRINTDB("Successfully selected unicode charmap: %s/%s", face->family_name % face->style_name);
-	} else {
-		bool charmap_set = false;
-		if (!charmap_set)
-			charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_UNICODE_CS);
-		if (!charmap_set)
-			charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_10646);
-		if (!charmap_set)
-			charmap_set = try_charmap(face, TT_PLATFORM_APPLE_UNICODE, -1);
-		if (!charmap_set)
-			charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_SYMBOL_CS);
-		if (!charmap_set)
-			charmap_set = try_charmap(face, TT_PLATFORM_MACINTOSH, TT_MAC_ID_ROMAN);
-		if (!charmap_set)
-			charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_8859_1);
-		if (!charmap_set)
-			charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_7BIT_ASCII);
-		if (!charmap_set)
-			LOG(message_group::Font_Warning,Location::NONE,"","Could not select a char map for font %1$s/%2$s'",face->family_name,face->style_name);
-	}
-	
-	return error ? nullptr : face;
+  for (int a = 0; a < face->num_charmaps; ++a) {
+    FT_CharMap charmap = face->charmaps[a];
+    PRINTDB("charmap = %d: platform = %d, encoding = %d", a % charmap->platform_id % charmap->encoding_id);
+  }
+
+  if (FT_Select_Charmap(face, ft_encoding_unicode) == 0) {
+    PRINTDB("Successfully selected unicode charmap: %s/%s", face->family_name % face->style_name);
+  } else {
+    bool charmap_set = false;
+    if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_UNICODE_CS);
+    if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_10646);
+    if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_APPLE_UNICODE, -1);
+    if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_MICROSOFT, TT_MS_ID_SYMBOL_CS);
+    if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_MACINTOSH, TT_MAC_ID_ROMAN);
+    if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_8859_1);
+    if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_7BIT_ASCII);
+    if (!charmap_set) LOG(message_group::Font_Warning, Location::NONE, "", "Could not select a char map for font %1$s/%2$s'", face->family_name, face->style_name);
+  }
+
+  return error ? nullptr : face;
 }
 
 bool FontCache::try_charmap(FT_Face face, int platform_id, int encoding_id) const
 {
-	for (int idx = 0; idx < face->num_charmaps; ++idx) {
-		FT_CharMap charmap = face->charmaps[idx];
-		if ((charmap->platform_id == platform_id) && ((encoding_id < 0) || (charmap->encoding_id == encoding_id))) {
-			if (FT_Set_Charmap(face, charmap) == 0) {
-				PRINTDB("Selected charmap: platform_id = %d, encoding_id = %d", charmap->platform_id % charmap->encoding_id);
-				if (is_windows_symbol_font(face)) {
-					PRINTDB("Detected windows symbol font with character codes in the Private Use Area of Unicode at 0xf000: %s/%s", face->family_name % face->style_name);
-				}
-				return true;
-			}
-		}
-	}
-	return false;
+  for (int idx = 0; idx < face->num_charmaps; ++idx) {
+    FT_CharMap charmap = face->charmaps[idx];
+    if ((charmap->platform_id == platform_id) && ((encoding_id < 0) || (charmap->encoding_id == encoding_id))) {
+      if (FT_Set_Charmap(face, charmap) == 0) {
+        PRINTDB("Selected charmap: platform_id = %d, encoding_id = %d", charmap->platform_id % charmap->encoding_id);
+        if (is_windows_symbol_font(face)) {
+          PRINTDB("Detected windows symbol font with character codes in the Private Use Area of Unicode at 0xf000: %s/%s", face->family_name % face->style_name);
+        }
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
-bool FontCache::is_windows_symbol_font(const FT_Face &face) const
+bool FontCache::is_windows_symbol_font(const FT_Face& face) const
 {
-	if (face->charmap->platform_id != TT_PLATFORM_MICROSOFT) {
-		return false;
-	}
+  if (face->charmap->platform_id != TT_PLATFORM_MICROSOFT) {
+    return false;
+  }
 
-	if (face->charmap->encoding_id != TT_MS_ID_SYMBOL_CS) {
-		return false;
-	}
+  if (face->charmap->encoding_id != TT_MS_ID_SYMBOL_CS) {
+    return false;
+  }
 
-	FT_UInt gindex;
-	FT_ULong charcode = FT_Get_First_Char(face, &gindex);
-	if ((gindex == 0) || (charcode < 0xf000)) {
-		return false;
-	}
-	
-	return true;
+  FT_UInt gindex;
+  FT_ULong charcode = FT_Get_First_Char(face, &gindex);
+  if ((gindex == 0) || (charcode < 0xf000)) {
+    return false;
+  }
+
+  return true;
 }

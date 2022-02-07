@@ -6,31 +6,31 @@
 
 class TabWidget : public QTabBar
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    TabWidget(QWidget *parent = nullptr);
-    ~TabWidget();
-    QWidget *getContentWidget();
+  TabWidget(QWidget *parent = nullptr);
+  ~TabWidget();
+  QWidget *getContentWidget();
 
-    int addTab(QWidget *w, const QString &label);
-    int indexOf(QWidget *w);
-    QWidget *widget(int index);
-    void removeTab(int index);
-    void setCurrentWidget(int index);
-    void fireTabCountChanged();
-	void mouseReleaseEvent(QMouseEvent *event);
+  int addTab(QWidget *w, const QString& label);
+  int indexOf(QWidget *w);
+  QWidget *widget(int index);
+  void removeTab(int index);
+  void setCurrentWidget(int index);
+  void fireTabCountChanged();
+  void mouseReleaseEvent(QMouseEvent *event);
 
 private:
-	QList<QWidget *> tabContent;
-	QStackedWidget *stackWidget;
+  QList<QWidget *> tabContent;
+  QStackedWidget *stackWidget;
 
 signals:
-	void currentTabChanged(int);
-    void tabCountChanged(int);
-	void middleMouseClicked(int);
+  void currentTabChanged(int);
+  void tabCountChanged(int);
+  void middleMouseClicked(int);
 
 private slots:
-	void handleCurrentChanged(int);
-	void handleTabMoved(int, int);
+  void handleCurrentChanged(int);
+  void handleTabMoved(int, int);
 };

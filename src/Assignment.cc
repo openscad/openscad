@@ -31,54 +31,54 @@
 
 void Assignment::addAnnotations(AnnotationList *annotations)
 {
-	for (auto &annotation : *annotations) {
-		this->annotations.insert({annotation.getName(), &annotation});
-	}
+  for (auto& annotation : *annotations) {
+    this->annotations.insert({annotation.getName(), &annotation});
+  }
 }
 
 bool Assignment::hasAnnotations() const
 {
-	return !annotations.empty();
+  return !annotations.empty();
 }
 
-const Annotation * Assignment::annotation(const std::string &name) const
+const Annotation *Assignment::annotation(const std::string& name) const
 {
-	auto found = annotations.find(name);
-	return found == annotations.end() ? nullptr : found->second;
+  auto found = annotations.find(name);
+  return found == annotations.end() ? nullptr : found->second;
 }
 
 
-void Assignment::print(std::ostream &stream, const std::string &indent) const
+void Assignment::print(std::ostream& stream, const std::string& indent) const
 {
-	if (this->hasAnnotations()) {
-		const Annotation *group = this->annotation("Group");
-		if (group) group->print(stream, indent);
-		const Annotation *description = this->annotation("Description");
-		if (description) description->print(stream, indent);
-		const Annotation *parameter = this->annotation("Parameter");
-		if (parameter) parameter->print(stream, indent);
-	}
-	stream << indent << this->name << " = " << *this->expr << ";\n";
+  if (this->hasAnnotations()) {
+    const Annotation *group = this->annotation("Group");
+    if (group) group->print(stream, indent);
+    const Annotation *description = this->annotation("Description");
+    if (description) description->print(stream, indent);
+    const Annotation *parameter = this->annotation("Parameter");
+    if (parameter) parameter->print(stream, indent);
+  }
+  stream << indent << this->name << " = " << *this->expr << ";\n";
 }
 
-std::ostream &operator <<(std::ostream &stream, const AssignmentList& assignments)
+std::ostream& operator<<(std::ostream& stream, const AssignmentList& assignments)
 {
-	bool first = true;
-	for (const auto& assignment : assignments) {
-		if (first) {
-			first = false;
-		} else {
-			stream << ", ";
-		}
-		if (!assignment->getName().empty()) {
-			stream << assignment->getName();
-		}
-		if (!assignment->getName().empty() && assignment->getExpr()) {
-		 	stream << " = ";
-		}
-		if (assignment->getExpr()) {
-			stream << *assignment->getExpr();
-		}
-	}
-	return stream;
+  bool first = true;
+  for (const auto& assignment : assignments) {
+    if (first) {
+      first = false;
+    } else {
+      stream << ", ";
+    }
+    if (!assignment->getName().empty()) {
+      stream << assignment->getName();
+    }
+    if (!assignment->getName().empty() && assignment->getExpr()) {
+      stream << " = ";
+    }
+    if (assignment->getExpr()) {
+      stream << *assignment->getExpr();
+    }
+  }
+  return stream;
 }

@@ -33,14 +33,14 @@
 #include "Reindexer.h"
 
 struct IndexedMesh {
-    IndexedMesh();
+  IndexedMesh();
 
-    Reindexer<Vector3d> vertices;
-    std::vector<int> indices;
-    size_t numfaces;
+  Reindexer<Vector3d> vertices;
+  std::vector<int> indices;
+  size_t numfaces;
 
-    void append_geometry(const PolySet &ps);
-    void append_geometry(const shared_ptr<const Geometry> &geom);
+  void append_geometry(const PolySet& ps);
+  void append_geometry(const shared_ptr<const Geometry>& geom);
 };
 
 #endif // ENABLE_CGAL

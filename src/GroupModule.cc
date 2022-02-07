@@ -30,16 +30,16 @@
 #include "children.h"
 #include "parameters.h"
 
-AbstractNode* builtin_group(const ModuleInstantiation *inst, Arguments arguments, Children children)
+AbstractNode *builtin_group(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
-	return children.instantiate(new GroupNode(inst));
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
+  return children.instantiate(new GroupNode(inst));
 }
 
 void register_builtin_group()
 {
-	Builtins::init("group", new BuiltinModule(builtin_group),
-				{
-					"group",
-				});
+  Builtins::init("group", new BuiltinModule(builtin_group),
+  {
+    "group",
+  });
 }
