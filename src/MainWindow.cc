@@ -128,6 +128,9 @@
 
 #include "qt-obsolete.h"
 
+std::shared_ptr<AbstractNode> rewrite_tree(const std::shared_ptr<AbstractNode> &node);
+void printTree(const AbstractNode& node, const std::string& indent = "");
+
 static const int autoReloadPollingPeriodMS = 200;
 
 // Global application state
@@ -1238,6 +1241,20 @@ void MainWindow::instantiateRoot()
 
     std::shared_ptr<const FileContext> file_context;
     this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
+
+    if (Feature::ExperimentalRewriteTree.is_enabled()) {
+#ifdef DEBUG
+      LOG(message_group::None,Location::NONE,"","BEFORE:");
+      printTree(*this->absolute_root_node);
+#endif
+      absolute_root_node = rewrite_tree(absolute_root_node);
+        this->absolute_root_node = rewrite_tree(this->absolute_root_node);
+    }
+#ifdef DEBUG
+      LOG(message_group::None,Location::NONE,"","AFTER:");
+      printTree(*this->absolute_root_node);
+#endif
+
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
     }

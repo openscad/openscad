@@ -636,6 +636,7 @@ set(CORE_SOURCES
   src/projection.cc
   src/render.cc
   src/rendersettings.cc
+  src/rewrite_tree.cc
   src/roof.cc
   src/roof_ss.cc
   src/roof_vd.cc
