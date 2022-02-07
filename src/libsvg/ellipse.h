@@ -28,25 +28,26 @@
 
 namespace libsvg {
 
-class ellipse : public shape {
+class ellipse : public shape
+{
 protected:
-    double rx;
-    double ry;
-    
+  double rx;
+  double ry;
+
 public:
-    ellipse();
-    ~ellipse();
-    
-    double get_radius_x() const { return rx; }
-    double get_radius_y() const { return ry; }
+  ellipse();
+  ~ellipse();
 
-    void set_attrs(attr_map_t& attrs, void *context) override;
-    const std::string dump() const override;
-    const std::string& get_name() const override { return ellipse::name; };
+  double get_radius_x() const { return rx; }
+  double get_radius_y() const { return ry; }
 
-    static const std::string name;
+  void set_attrs(attr_map_t& attrs, void *context) override;
+  const std::string dump() const override;
+  const std::string& get_name() const override { return ellipse::name; }
 
-	shape* clone() const override { return new ellipse(*this); };
+  static const std::string name;
+
+  shape *clone() const override { return new ellipse(*this); }
 };
 
 }

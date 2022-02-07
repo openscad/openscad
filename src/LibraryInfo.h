@@ -3,5 +3,5 @@
 #include <string>
 
 namespace LibraryInfo {
-	std::string info();
+std::string info();
 }

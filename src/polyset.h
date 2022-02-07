@@ -12,45 +12,45 @@
 class PolySet : public Geometry
 {
 public:
-	VISITABLE_GEOMETRY();
-	Polygons polygons;
+  VISITABLE_GEOMETRY();
+  Polygons polygons;
 
-	PolySet(unsigned int dim, boost::tribool convex = unknown);
-	PolySet(const Polygon2d &origin);
-	~PolySet();
+  PolySet(unsigned int dim, boost::tribool convex = unknown);
+  PolySet(const Polygon2d& origin);
+  ~PolySet();
 
-	const Polygon2d &getPolygon() const { return polygon; }
+  const Polygon2d& getPolygon() const { return polygon; }
 
-	size_t memsize() const override;
-	BoundingBox getBoundingBox() const override;
-	std::string dump() const override;
-	unsigned int getDimension() const override { return this->dim; }
-	bool isEmpty() const override { return polygons.size() == 0; }
-	Geometry *copy() const override { return new PolySet(*this); }
+  size_t memsize() const override;
+  BoundingBox getBoundingBox() const override;
+  std::string dump() const override;
+  unsigned int getDimension() const override { return this->dim; }
+  bool isEmpty() const override { return polygons.size() == 0; }
+  Geometry *copy() const override { return new PolySet(*this); }
 
-	void quantizeVertices();
-	size_t numFacets() const override { return polygons.size(); }
-	void reserve(size_t numFacets) { polygons.reserve(numFacets); }
-	void append_poly();
-	void append_poly(const Polygon &poly);
-	void append_vertex(double x, double y, double z = 0.0);
-	void append_vertex(const Vector3d &v);
-	void append_vertex(const Vector3f &v);
-	void insert_vertex(double x, double y, double z = 0.0);
-	void insert_vertex(const Vector3d &v);
-	void insert_vertex(const Vector3f &v);
-	void append(const PolySet &ps);
+  void quantizeVertices();
+  size_t numFacets() const override { return polygons.size(); }
+  void reserve(size_t numFacets) { polygons.reserve(numFacets); }
+  void append_poly();
+  void append_poly(const Polygon& poly);
+  void append_vertex(double x, double y, double z = 0.0);
+  void append_vertex(const Vector3d& v);
+  void append_vertex(const Vector3f& v);
+  void insert_vertex(double x, double y, double z = 0.0);
+  void insert_vertex(const Vector3d& v);
+  void insert_vertex(const Vector3f& v);
+  void append(const PolySet& ps);
 
-	virtual void transform(const Transform3d &mat) override;
-	virtual void resize(const Vector3d &newsize, const Eigen::Matrix<bool,3,1> &autosize) override;
+  virtual void transform(const Transform3d& mat) override;
+  virtual void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
-	bool is_convex() const;
-	boost::tribool convexValue() const { return this->convex; }
+  bool is_convex() const;
+  boost::tribool convexValue() const { return this->convex; }
 
 private:
-	Polygon2d polygon;
-	unsigned int dim;
-	mutable boost::tribool convex;
-	mutable BoundingBox bbox;
-	mutable bool dirty;
+  Polygon2d polygon;
+  unsigned int dim;
+  mutable boost::tribool convex;
+  mutable BoundingBox bbox;
+  mutable bool dirty;
 };

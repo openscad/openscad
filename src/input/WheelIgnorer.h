@@ -18,11 +18,11 @@
 
 class WheelIgnorer : public QObject
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-	WheelIgnorer(QWidget *parent);
+  WheelIgnorer(QWidget *parent);
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *event);
+  bool eventFilter(QObject *obj, QEvent *event);
 };

@@ -32,34 +32,34 @@
 class InputDriver : public QThread
 {
 public:
-	// Note that those 2 values also relate to the currently
-	// static list of fields in the preferences GUI, so updating
-	// here needs a change in the UI definition!
-    const static int max_axis = 9;
-    const static int max_buttons = 24;
+  // Note that those 2 values also relate to the currently
+  // static list of fields in the preferences GUI, so updating
+  // here needs a change in the UI definition!
+  const static int max_axis = 9;
+  const static int max_buttons = 24;
 
 public:
-    InputDriver();
-    virtual ~InputDriver();
+  InputDriver();
+  virtual ~InputDriver();
 
-    virtual const std::string & get_name() const = 0;
-    virtual std::string get_info() const = 0;
+  virtual const std::string& get_name() const = 0;
+  virtual std::string get_info() const = 0;
 
-    virtual bool open() = 0;
-    virtual void close() = 0;
+  virtual bool open() = 0;
+  virtual void close() = 0;
 
-    /*
-     * Return if the driver is currently opened. The default implementation
-     * simply returns the {@link #isRunning()} status of the thread.
-     */
-    virtual bool isOpen() const;
+  /*
+   * Return if the driver is currently opened. The default implementation
+   * simply returns the {@link #isRunning()} status of the thread.
+   */
+  virtual bool isOpen() const;
 
-    /*
-     * Drivers that are not connected to a device and can be opened on
-     * application start. No attempt to re-open is made.
-     */
-    virtual bool openOnce() const;
+  /*
+   * Drivers that are not connected to a device and can be opened on
+   * application start. No attempt to re-open is made.
+   */
+  virtual bool openOnce() const;
 
-    virtual int getButtonCount() const {return 0;}
-    virtual int getAxisCount() const {return 0;}
+  virtual int getButtonCount() const {return 0;}
+  virtual int getAxisCount() const {return 0;}
 };

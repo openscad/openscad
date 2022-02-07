@@ -18,7 +18,7 @@ FORMAT_CMD=$FORMAT_CMD_UNCRUSTIFY
 FILTER_CMD="grep -v -E ext/"
 
 function reformat_all() {
-    find "$ROOT_DIR/src" -name "*.h" -o -name "*.hpp" -o -name "*.cc" -o -name "*.cpp" \
+    find "$ROOT_DIR/src" \( -name "*.h" -o -name "*.hpp" -o -name "*.cc" -o -name "*.cpp" \) -a -not -name findversion.h \
         | $FILTER_CMD \
         | xargs $FORMAT_CMD
 }

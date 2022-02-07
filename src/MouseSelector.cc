@@ -15,12 +15,12 @@
  */
 
 #define OPENGL_TEST(place) \
-do { \
-  auto err = glGetError(); \
-  if (err != GL_NO_ERROR) { \
-    fprintf(stderr, "OpenGL error " __FILE__ ":%i:" place ":\n %s\n\n", __LINE__, gluErrorString(err)); \
-  } \
-} while (false)
+  do { \
+    auto err = glGetError(); \
+    if (err != GL_NO_ERROR) { \
+      fprintf(stderr, "OpenGL error " __FILE__ ":%i:" place ":\n %s\n\n", __LINE__, gluErrorString(err)); \
+    } \
+  } while (false)
 
 MouseSelector::MouseSelector(GLView *view) {
   this->view = view;
@@ -45,21 +45,21 @@ void MouseSelector::reset(GLView *view) {
  */
 void MouseSelector::init_shader() {
   /*
-    Attributes:
-      * frag_idcolor - (uniform) 24 bit of the selected object's id encoded into R/G/B components as float values
-  */
+     Attributes:
+   * frag_idcolor - (uniform) 24 bit of the selected object's id encoded into R/G/B components as float values
+   */
 
   std::string vs_str = Renderer::loadShaderSource("MouseSelector.vert");
   std::string fs_str = Renderer::loadShaderSource("MouseSelector.frag");
-  const char* vs_source = vs_str.c_str();
-  const char* fs_source = fs_str.c_str();
+  const char *vs_source = vs_str.c_str();
+  const char *fs_source = fs_str.c_str();
 
   int shaderstatus;
 
   // Compile the shaders
   auto vs = glCreateShader(GL_VERTEX_SHADER);
   OPENGL_TEST("Vertex Shader");
-  glShaderSource(vs, 1, (const GLchar**)&vs_source, nullptr);
+  glShaderSource(vs, 1, (const GLchar **)&vs_source, nullptr);
   glCompileShader(vs);
   glGetShaderiv(vs, GL_COMPILE_STATUS, &shaderstatus);
   if (shaderstatus != GL_TRUE) {
@@ -71,7 +71,7 @@ void MouseSelector::init_shader() {
 
   auto fs = glCreateShader(GL_FRAGMENT_SHADER);
   OPENGL_TEST("Fragment Shader");
-  glShaderSource(fs, 1, (const GLchar**)&fs_source, nullptr);
+  glShaderSource(fs, 1, (const GLchar **)&fs_source, nullptr);
   glCompileShader(fs);
   glGetShaderiv(fs, GL_COMPILE_STATUS, &shaderstatus);
   if (shaderstatus != GL_TRUE) {
@@ -115,8 +115,7 @@ void MouseSelector::init_shader() {
   if (identifier < 0) {
     fprintf(stderr, __FILE__ ": OpenGL symbol retrieval went wrong, id is %i\n\n", identifier);
     this->shaderinfo.data.select_rendering.identifier = 0;
-  }
-  else {
+  } else {
     this->shaderinfo.data.select_rendering.identifier = identifier;
   }
 }
@@ -130,9 +129,9 @@ void MouseSelector::setup_framebuffer(const GLView *view) {
       this->framebuffer->height() != view->cam.pixel_height) {
     this->framebuffer.reset(
       new QOpenGLFramebufferObject(
-      view->cam.pixel_width,
-      view->cam.pixel_width,
-      QOpenGLFramebufferObject::Depth));
+        view->cam.pixel_width,
+        view->cam.pixel_width,
+        QOpenGLFramebufferObject::Depth));
     this->framebuffer->release();
   }
 }

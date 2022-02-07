@@ -35,26 +35,26 @@
 
 void JoystickInputDriver::run()
 {
-	struct js_event js;
+  struct js_event js;
 
-	while (!stopRequest) {
-		ssize_t len = read(fd, &js, sizeof(struct js_event));
-		if (len < 0) {
-			break;
-		}
-		if (len != sizeof(struct js_event)) {
-			continue;
-		}
-		switch (js.type & ~JS_EVENT_INIT) {
-		case JS_EVENT_BUTTON:
-			InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(js.number, js.value != 0));
-			break;
-		case JS_EVENT_AXIS:
-			InputDriverManager::instance()->sendEvent(new InputEventAxisChanged(js.number, js.value / 32767.0));
-			break;
-		}
-	}
-	::close(fd);
+  while (!stopRequest) {
+    ssize_t len = read(fd, &js, sizeof(struct js_event));
+    if (len < 0) {
+      break;
+    }
+    if (len != sizeof(struct js_event)) {
+      continue;
+    }
+    switch (js.type & ~JS_EVENT_INIT) {
+    case JS_EVENT_BUTTON:
+      InputDriverManager::instance()->sendEvent(new InputEventButtonChanged(js.number, js.value != 0));
+      break;
+    case JS_EVENT_AXIS:
+      InputDriverManager::instance()->sendEvent(new InputEventAxisChanged(js.number, js.value / 32767.0));
+      break;
+    }
+  }
+  ::close(fd);
 }
 
 JoystickInputDriver::JoystickInputDriver() : fd(-1), version(0), axes(0), buttons(0), stopRequest(false)
@@ -69,51 +69,51 @@ JoystickInputDriver::~JoystickInputDriver()
 
 bool JoystickInputDriver::open()
 {
-    stopRequest = false;
+  stopRequest = false;
 
-    auto path = boost::format("/dev/input/js%d") % this->nr;
-    this->fd = ::open(path.str().c_str(), O_RDONLY);
+  auto path = boost::format("/dev/input/js%d") % this->nr;
+  this->fd = ::open(path.str().c_str(), O_RDONLY);
 
-    if (fd < 0) {
-        return false;
-    }
+  if (fd < 0) {
+    return false;
+  }
 
-    version = 0;
-    ioctl(fd, JSIOCGVERSION, &version);
-    if (version < 0x010000) {
-        return false;
-    }
+  version = 0;
+  ioctl(fd, JSIOCGVERSION, &version);
+  if (version < 0x010000) {
+    return false;
+  }
 
-    ioctl(fd, JSIOCGAXES, &axes);
-    ioctl(fd, JSIOCGBUTTONS, &buttons);
-    ioctl(fd, JSIOCGNAME(sizeof(name)), name);
+  ioctl(fd, JSIOCGAXES, &axes);
+  ioctl(fd, JSIOCGBUTTONS, &buttons);
+  ioctl(fd, JSIOCGNAME(sizeof(name)), name);
 
-    start();
-    return true;
+  start();
+  return true;
 }
 
 void JoystickInputDriver::close()
 {
-    stopRequest=true;
+  stopRequest = true;
 }
 
-const std::string & JoystickInputDriver::get_name() const
+const std::string& JoystickInputDriver::get_name() const
 {
-    static std::string name = "JoystickInputDriver";
-    return name;
+  static std::string name = "JoystickInputDriver";
+  return name;
 }
 
 std::string JoystickInputDriver::get_info() const
 {
-	return STR(
-		get_name() << " " << (isOpen() ? "open" : "not open") << " " <<
-		"Name: " << name << " " <<
-		"Axis: " << (int) axes << " " <<
-		"Buttons: " << (int) buttons << " "
-	);
+  return STR(
+    get_name() << " " << (isOpen() ? "open" : "not open") << " " <<
+      "Name: " << name << " " <<
+      "Axis: " << (int) axes << " " <<
+      "Buttons: " << (int) buttons << " "
+    );
 }
 
 void JoystickInputDriver::setJoystickNr(std::string jnr)
 {
-    this->nr=jnr;
+  this->nr = jnr;
 }

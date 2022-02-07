@@ -31,35 +31,35 @@
 #include "boost-utils.h"
 
 namespace UIUtils {
-    static const int maxRecentFiles = 10;
+static const int maxRecentFiles = 10;
 
-    QFileInfo openFile(QWidget *parent = nullptr);
+QFileInfo openFile(QWidget *parent = nullptr);
 
-    QFileInfoList openFiles(QWidget *parent = nullptr);
-    
-    QStringList recentFiles();
-    
-    QStringList exampleCategories();
-    
-    QFileInfoList exampleFiles(const QString &category);
+QFileInfoList openFiles(QWidget *parent = nullptr);
 
-    void openURL(const QString& url);
+QStringList recentFiles();
 
-    void openHomepageURL();
+QStringList exampleCategories();
 
-    void openUserManualURL();
+QFileInfoList exampleFiles(const QString& category);
 
-    fs::path returnOfflineUserManualPath();
+void openURL(const QString& url);
 
-    bool hasOfflineUserManual();
+void openHomepageURL();
 
-    void openOfflineUserManual();
+void openUserManualURL();
 
-    void openCheatSheetURL();
+fs::path returnOfflineUserManualPath();
 
-    fs::path returnOfflineCheatSheetPath();
+bool hasOfflineUserManual();
 
-    bool hasOfflineCheatSheet();
+void openOfflineUserManual();
 
-    void openOfflineCheatSheet();
-}
+void openCheatSheetURL();
+
+fs::path returnOfflineCheatSheetPath();
+
+bool hasOfflineCheatSheet();
+
+void openOfflineCheatSheet();
+} // namespace UIUtils

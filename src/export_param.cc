@@ -34,33 +34,33 @@
 
 using json = nlohmann::json;
 
-bool export_param(SourceFile *sourceFile, const fs::path& path, std::ostream &output)
+bool export_param(SourceFile *sourceFile, const fs::path& path, std::ostream& output)
 {
-	const ParameterObjects parameters = ParameterObjects::fromSourceFile(sourceFile);
+  const ParameterObjects parameters = ParameterObjects::fromSourceFile(sourceFile);
 
-	json params;
-	for (auto& param : parameters) {
-		const std::string description = param->description();
-		const std::string group = param->group();
+  json params;
+  for (auto& param : parameters) {
+    const std::string description = param->description();
+    const std::string group = param->group();
 
-		json o;
-		o["name"] = param->name();
-		if (!description.empty()) {
-			o["caption"] = description;
-		}
-		if (!group.empty()) {
-			o["group"] = group;
-		}
-		o.merge_patch(param->jsonValue());
-		params.push_back(o);
-	}
+    json o;
+    o["name"] = param->name();
+    if (!description.empty()) {
+      o["caption"] = description;
+    }
+    if (!group.empty()) {
+      o["group"] = group;
+    }
+    o.merge_patch(param->jsonValue());
+    params.push_back(o);
+  }
 
-	json paramFile;
-	paramFile["title"] = path.has_stem() ? path.stem().generic_string() : "Unnamed";
-	if (params.size() > 0) {
-		paramFile["parameters"] = params;
-	}
-	output << paramFile;
+  json paramFile;
+  paramFile["title"] = path.has_stem() ? path.stem().generic_string() : "Unnamed";
+  if (params.size() > 0) {
+    paramFile["parameters"] = params;
+  }
+  output << paramFile;
 
-	return true;
+  return true;
 }
