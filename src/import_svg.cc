@@ -56,6 +56,8 @@ double to_mm(const libsvg::length_t& length, const double viewbox, const bool vi
     return 10 * length.number;
   case libsvg::unit_t::MM:
     return length.number;
+  case libsvg::unit_t::PERCENT:
+    return viewbox_valid ? INCH_TO_MM * length.number / 100.0 * viewbox / dpi : 0.0;
   case libsvg::unit_t::UNDEFINED:
     // If no width/height given, but viewbox is set, then rely on
     // the DPI value (e.g. Adobe Illustrator does that in older
@@ -110,8 +112,9 @@ Polygon2d *import_svg(double fn, double fs, double fa,
         height_mm = to_mm(h, page->get_viewbox().height, viewbox_valid, dpi);
 
         if (viewbox_valid) {
-          viewbox << page->get_viewbox().x,
-            page->get_viewbox().y;
+          double px = w.unit == libsvg::unit_t::PERCENT ? w.number / 100.0 : 1.0;
+          double py = h.unit == libsvg::unit_t::PERCENT ? h.number / 100.0 : 1.0;
+          viewbox << px * page->get_viewbox().x, py * page->get_viewbox().y;
 
           scale << width_mm / page->get_viewbox().width,
             height_mm / page->get_viewbox().height;
