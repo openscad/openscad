@@ -236,7 +236,7 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
 {
   std::vector<const Polygon2d *> children;
   for (const auto& item : this->visitedchildren[node.index()]) {
-    auto chnode = item.first;
+    auto &chnode = item.first;
     const shared_ptr<const Geometry>& chgeom = item.second;
     if (chnode->modinst->isBackground()) continue;
 
@@ -313,7 +313,7 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode& no
 {
   Geometry::Geometries children;
   for (const auto& item : this->visitedchildren[node.index()]) {
-    auto chnode = item.first;
+    auto &chnode = item.first;
     const shared_ptr<const Geometry>& chgeom = item.second;
     if (chnode->modinst->isBackground()) continue;
 
@@ -438,7 +438,7 @@ Response GeometryEvaluator::visit(State& state, const ListNode& node)
       unsigned int dim = 0;
       for (const auto& item : this->visitedchildren[node.index()]) {
         if (!isValidDim(item, dim)) break;
-        auto chnode = item.first;
+        auto &chnode = item.first;
         const shared_ptr<const Geometry>& chgeom = item.second;
         addToParent(state, *chnode, chgeom);
       }
@@ -475,7 +475,7 @@ Response GeometryEvaluator::lazyEvaluateRootNode(State& state, const AbstractNod
     GeometryList::Geometries geometries;
     for (const auto& item : this->visitedchildren[node.index()]) {
       if (!isValidDim(item, dim)) break;
-      auto chnode = item.first;
+      auto &chnode = item.first;
       const shared_ptr<const Geometry>& chgeom = item.second;
       if (chnode->modinst->isBackground()) continue;
       // NB! We insert into the cache here to ensure that all children of
@@ -1342,7 +1342,7 @@ shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const ProjectionNo
   std::vector<const Polygon2d *> tmp_geom;
   BoundingBox bounds;
   for (const auto& item : this->visitedchildren[node.index()]) {
-    auto chnode = item.first;
+    auto &chnode = item.first;
     const shared_ptr<const Geometry>& chgeom = item.second;
     if (chnode->modinst->isBackground()) continue;
 

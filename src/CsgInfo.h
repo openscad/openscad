@@ -20,7 +20,7 @@ public:
   shared_ptr<CSGProducts> background_products;
 
   bool compile_products(const Tree& tree) {
-    auto root_node = tree.root();
+    auto &root_node = tree.root();
     GeometryEvaluator geomevaluator(tree);
     CSGTreeEvaluator evaluator(tree, &geomevaluator);
     shared_ptr<CSGNode> csgRoot = evaluator.buildCSGTree(*root_node);

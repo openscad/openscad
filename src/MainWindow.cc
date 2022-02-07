@@ -2239,7 +2239,7 @@ void MainWindow::selectObject(QPoint mouse)
     // Create context menu with the backtrace
     QMenu tracemenu(this);
     std::stringstream ss;
-    for (auto step : path) {
+    for (auto &step : path) {
       // Skip certain node types
       if (step->name() == "root") {
         continue;

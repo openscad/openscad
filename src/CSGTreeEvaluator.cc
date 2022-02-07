@@ -157,7 +157,7 @@ Response CSGTreeEvaluator::visit(State& state, const class ListNode& node)
       if (node.modinst->isBackground()) state.setBackground(true);
     }
     if (state.isPostfix()) {
-      for (auto chnode : this->visitedchildren[node.index()]) {
+      for (auto &chnode : this->visitedchildren[node.index()]) {
         addToParent(state, *chnode);
       }
     }
