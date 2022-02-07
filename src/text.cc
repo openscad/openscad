@@ -38,14 +38,14 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-static AbstractNode *builtin_text(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
         "module %1$s() does not support child modules", inst->name());
   }
 
-  auto node = new TextNode(inst);
+  auto node = std::make_shared<TextNode>(inst);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"text", "size", "font"},

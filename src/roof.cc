@@ -11,9 +11,9 @@
 #include "children.h"
 #include "roofnode.h"
 
-static AbstractNode *builtin_roof(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new RoofNode(inst);
+  auto node = std::make_shared<RoofNode>(inst);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"method"},

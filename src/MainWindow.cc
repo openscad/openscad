@@ -888,9 +888,7 @@ MainWindow::~MainWindow()
   // If root_file is not null then it will be the same as parsed_file,
   // so no need to delete it.
   delete parsed_file;
-  delete root_node;
 #ifdef ENABLE_CGAL
-  this->root_geom.reset();
   delete this->cgalRenderer;
 #endif
 #ifdef ENABLE_OPENCSG
@@ -910,7 +908,7 @@ void MainWindow::showProgress()
   updateStatusBar(qobject_cast<ProgressWidget *>(sender()));
 }
 
-void MainWindow::report_func(const class AbstractNode *, void *vp, int mark)
+void MainWindow::report_func(const std::shared_ptr<const AbstractNode>& , void *vp, int mark)
 {
   // limit to progress bar update calls to 5 per second
   static const qint64 MIN_TIMEOUT = 200;
@@ -1215,14 +1213,13 @@ void MainWindow::instantiateRoot()
   this->thrownTogetherRenderer = nullptr;
 
   // Remove previous CSG tree
-  delete this->absolute_root_node;
-  this->absolute_root_node = nullptr;
+  this->absolute_root_node.reset();
 
   this->csgRoot.reset();
   this->normalizedRoot.reset();
   this->root_products.reset();
 
-  this->root_node = nullptr;
+  this->root_node.reset();
   this->tree.setRoot(nullptr);
 
   boost::filesystem::path doc(activeEditor->filepath.toStdString());
@@ -2235,14 +2232,14 @@ void MainWindow::selectObject(QPoint mouse)
 
   // Select the object at mouse coordinates
   int index = this->selector->select(this->qglview->renderer, mouse.x(), mouse.y());
-  std::deque<const AbstractNode *> path;
-  const AbstractNode *result = this->root_node->getNodeByID(index, path);
+  std::deque<std::shared_ptr<const AbstractNode>> path;
+  std::shared_ptr<const AbstractNode> result = this->root_node->getNodeByID(index, path);
 
   if (result) {
     // Create context menu with the backtrace
     QMenu tracemenu(this);
     std::stringstream ss;
-    for (const auto *step : path) {
+    for (auto step : path) {
       // Skip certain node types
       if (step->name() == "root") {
         continue;

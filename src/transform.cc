@@ -48,9 +48,9 @@ enum class transform_type_e {
   MULTMATRIX
 };
 
-AbstractNode *builtin_scale(const ModuleInstantiation *inst, Arguments arguments, Children children)
+std::shared_ptr<AbstractNode> builtin_scale(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new TransformNode(inst, "scale");
+  auto node = std::make_shared<TransformNode>(inst, "scale");
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"v"});
 
@@ -73,9 +73,9 @@ AbstractNode *builtin_scale(const ModuleInstantiation *inst, Arguments arguments
   return children.instantiate(node);
 }
 
-AbstractNode *builtin_rotate(const ModuleInstantiation *inst, Arguments arguments, Children children)
+std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new TransformNode(inst, "rotate");
+  auto node = std::make_shared<TransformNode>(inst, "rotate");
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"a", "v"});
 
@@ -152,9 +152,9 @@ AbstractNode *builtin_rotate(const ModuleInstantiation *inst, Arguments argument
   return children.instantiate(node);
 }
 
-AbstractNode *builtin_mirror(const ModuleInstantiation *inst, Arguments arguments, Children children)
+std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new TransformNode(inst, "mirror");
+  auto node = std::make_shared<TransformNode>(inst, "mirror");
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"v"});
 
@@ -183,9 +183,9 @@ AbstractNode *builtin_mirror(const ModuleInstantiation *inst, Arguments argument
   return children.instantiate(node);
 }
 
-AbstractNode *builtin_translate(const ModuleInstantiation *inst, Arguments arguments, Children children)
+std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new TransformNode(inst, "translate");
+  auto node = std::make_shared<TransformNode>(inst, "translate");
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"v"});
 
@@ -201,9 +201,9 @@ AbstractNode *builtin_translate(const ModuleInstantiation *inst, Arguments argum
   return children.instantiate(node);
 }
 
-AbstractNode *builtin_multmatrix(const ModuleInstantiation *inst, Arguments arguments, Children children)
+std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new TransformNode(inst, "multmatrix");
+  auto node = std::make_shared<TransformNode>(inst, "multmatrix");
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"m"});
 

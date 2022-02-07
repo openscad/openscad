@@ -36,9 +36,9 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-static AbstractNode *builtin_minkowski(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_minkowski(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new CgaladvNode(inst, CgaladvType::MINKOWSKI);
+  auto node = std::make_shared<CgaladvNode>(inst, CgaladvType::MINKOWSKI);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"convexity"});
   node->convexity = static_cast<int>(parameters["convexity"].toDouble());
@@ -46,9 +46,9 @@ static AbstractNode *builtin_minkowski(const ModuleInstantiation *inst, Argument
   return children.instantiate(node);
 }
 
-static AbstractNode *builtin_hull(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_hull(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new CgaladvNode(inst, CgaladvType::HULL);
+  auto node = std::make_shared<CgaladvNode>(inst, CgaladvType::HULL);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
   node->convexity = 0;
@@ -56,9 +56,9 @@ static AbstractNode *builtin_hull(const ModuleInstantiation *inst, Arguments arg
   return children.instantiate(node);
 }
 
-static AbstractNode *builtin_resize(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_resize(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new CgaladvNode(inst, CgaladvType::RESIZE);
+  auto node = std::make_shared<CgaladvNode>(inst, CgaladvType::RESIZE);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"newsize", "auto", "convexity"});
   node->convexity = static_cast<int>(parameters["convexity"].toDouble());

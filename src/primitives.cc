@@ -198,9 +198,9 @@ const Geometry *CubeNode::createGeometry() const
   return p;
 }
 
-static AbstractNode *builtin_cube(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new CubeNode(inst);
+  auto node = std::make_shared<CubeNode>(inst);
 
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
@@ -329,9 +329,9 @@ sphere_next_r2:
   return p;
 }
 
-static AbstractNode *builtin_sphere(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new SphereNode(inst);
+  auto node = std::make_shared<SphereNode>(inst);
 
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
@@ -449,9 +449,9 @@ const Geometry *CylinderNode::createGeometry() const
   return p;
 }
 
-static AbstractNode *builtin_cylinder(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new CylinderNode(inst);
+  auto node = std::make_shared<CylinderNode>(inst);
 
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
@@ -571,9 +571,9 @@ const Geometry *PolyhedronNode::createGeometry() const
   return p;
 }
 
-static AbstractNode *builtin_polyhedron(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new PolyhedronNode(inst);
+  auto node = std::make_shared<PolyhedronNode>(inst);
 
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
@@ -689,9 +689,9 @@ const Geometry *SquareNode::createGeometry() const
   return p;
 }
 
-static AbstractNode *builtin_square(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new SquareNode(inst);
+  auto node = std::make_shared<SquareNode>(inst);
 
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
@@ -768,9 +768,9 @@ const Geometry *CircleNode::createGeometry() const
   return p;
 }
 
-static AbstractNode *builtin_circle(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new CircleNode(inst);
+  auto node = std::make_shared<CircleNode>(inst);
 
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
@@ -876,9 +876,9 @@ const Geometry *PolygonNode::createGeometry() const
   return p;
 }
 
-static AbstractNode *builtin_polygon(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new PolygonNode(inst);
+  auto node = std::make_shared<PolygonNode>(inst);
 
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),

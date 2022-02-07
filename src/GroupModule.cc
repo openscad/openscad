@@ -30,10 +30,10 @@
 #include "children.h"
 #include "parameters.h"
 
-AbstractNode *builtin_group(const ModuleInstantiation *inst, Arguments arguments, Children children)
+std::shared_ptr<AbstractNode> builtin_group(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
-  return children.instantiate(new GroupNode(inst));
+  return children.instantiate(std::make_shared<GroupNode>(inst));
 }
 
 void register_builtin_group()

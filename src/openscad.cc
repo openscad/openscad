@@ -474,7 +474,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
   AbstractNode::resetIndexCounter();
   std::shared_ptr<const FileContext> file_context;
-  AbstractNode *absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
+  auto absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
   Camera camera = cmd.camera;
   if (file_context) {
     camera.updateView(file_context, true);
@@ -484,7 +484,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   fs::current_path(cmd.original_path);
 
   // Do we have an explicit root node (! modifier)?
-  const AbstractNode *root_node;
+  std::shared_ptr<const AbstractNode> root_node;
   const Location *nextLocation = nullptr;
   if (!(root_node = find_root_tag(absolute_root_node, &nextLocation))) {
     root_node = absolute_root_node;
@@ -611,7 +611,6 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 #endif // ifdef ENABLE_CGAL
 
   }
-  delete root_node;
   return 0;
 }
 

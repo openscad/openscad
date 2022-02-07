@@ -43,9 +43,9 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-static AbstractNode *builtin_offset(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new OffsetNode(inst);
+  auto node = std::make_shared<OffsetNode>(inst);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"delta", "chamfer"});
 

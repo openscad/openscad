@@ -36,9 +36,9 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-static AbstractNode *builtin_projection(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_projection(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new ProjectionNode(inst);
+  auto node = std::make_shared<ProjectionNode>(inst);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"cut"}, {"convexity"});
   node->convexity = static_cast<int>(parameters["convexity"].toDouble());
