@@ -145,8 +145,7 @@ void CGALHybridPolyhedron::clear()
 
 void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron& other)
 {
-  if (Feature::ExperimentalFastCsgTrustCorefinement.is_enabled() || 
-      (!sharesAnyVertexWith(other) && isManifold() && other.isManifold())) {
+  if (canCorefineWith(other)) {
     if (meshBinOp("corefinement mesh union", other, [&](mesh_t& lhs, mesh_t& rhs, mesh_t& out) {
       return CGALUtils::corefineAndComputeUnion(lhs, rhs, out);
     })) return;
@@ -160,8 +159,7 @@ void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron& other)
 
 void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron& other)
 {
-  if (Feature::ExperimentalFastCsgTrustCorefinement.is_enabled() || 
-      (!sharesAnyVertexWith(other) && isManifold() && other.isManifold())) {
+  if (canCorefineWith(other)) {
     if (meshBinOp("corefinement mesh intersection", other,
                   [&](mesh_t& lhs, mesh_t& rhs, mesh_t& out) {
       return CGALUtils::corefineAndComputeIntersection(lhs, rhs, out);
@@ -176,8 +174,7 @@ void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron& other)
 
 void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron& other)
 {
-  if (Feature::ExperimentalFastCsgTrustCorefinement.is_enabled() || 
-      (!sharesAnyVertexWith(other) && isManifold() && other.isManifold())) {
+  if (canCorefineWith(other)) {
     if (meshBinOp("corefinement mesh difference", other,
                   [&](mesh_t& lhs, mesh_t& rhs, mesh_t& out) {
       return CGALUtils::corefineAndComputeDifference(lhs, rhs, out);
@@ -188,6 +185,24 @@ void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron& other)
                [&](nef_polyhedron_t& destinationNef, nef_polyhedron_t& otherNef) {
     CGALUtils::inPlaceNefDifference(destinationNef, otherNef);
   });
+}
+
+bool CGALHybridPolyhedron::canCorefineWith(const CGALHybridPolyhedron& other) const
+{
+  if (Feature::ExperimentalFastCsgTrustCorefinement.is_enabled()) {
+    return true;
+  }
+  const char* reasonWontCorefine = nullptr;
+  if (sharesAnyVertexWith(other)) {
+    reasonWontCorefine = "operands share some vertices";
+  } else if (!isManifold() || !other.isManifold()) {
+    reasonWontCorefine = "non manifoldness detected";
+  }
+  LOG(message_group::None, Location::NONE, "",
+      "[fast-csg] Performing safer but slower nef operation instead of corefinement because %1$s. "
+      "(can override with fast-csg-trust-corefinement)",
+      reasonWontCorefine);
+  return !reasonWontCorefine;
 }
 
 void CGALHybridPolyhedron::minkowski(CGALHybridPolyhedron& other)
