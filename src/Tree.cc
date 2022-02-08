@@ -63,7 +63,7 @@ const std::string Tree::getIdString(const AbstractNode& node) const
 /*!
    Sets a new root. Will clear the existing cache.
  */
-void Tree::setRoot(const AbstractNode *root)
+void Tree::setRoot(const std::shared_ptr<const AbstractNode> &root)
 {
   this->root_node = root;
   this->nodecachemap.clear();

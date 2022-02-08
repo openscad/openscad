@@ -42,7 +42,7 @@ static void NOINLINE print_err(std::string name, const Location& loc, const std:
   LOG(message_group::Error, loc, context->documentRoot(), "Recursion detected calling module '%1$s'", name);
 }
 
-AbstractNode *UserModule::instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
+std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
 {
   if (StackCheck::inst().check()) {
     print_err(inst->name(), loc, context);
@@ -63,7 +63,7 @@ AbstractNode *UserModule::instantiate(const std::shared_ptr<const Context>& defi
   PRINTDB("%s", module_context->dump());
 #endif
 
-  return this->body.instantiateModules(*module_context, new GroupNode(inst, std::string("module ") + this->name));
+  return this->body.instantiateModules(*module_context, std::make_shared<GroupNode>(inst, std::string("module ") + this->name));
 }
 
 void UserModule::print(std::ostream& stream, const std::string& indent) const

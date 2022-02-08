@@ -235,9 +235,9 @@ static boost::optional<Color4f> parse_hex_color(const std::string& hex) {
   return rgba;
 }
 
-static AbstractNode *builtin_color(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new ColorNode(inst);
+  auto node = std::make_shared<ColorNode>(inst);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"c", "alpha"});
   if (parameters["c"].type() == Value::Type::VECTOR) {

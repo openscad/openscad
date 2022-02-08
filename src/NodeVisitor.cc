@@ -15,7 +15,7 @@ Response NodeVisitor::traverse(const AbstractNode& node, const State& state)
 
   // Pruned traversals mean don't traverse children
   if (response == Response::ContinueTraversal) {
-    newstate.setParent(&node);
+    newstate.setParent(node.shared_from_this());
     for (const auto& chnode : node.getChildren()) {
       response = this->traverse(*chnode, newstate);
       if (response == Response::AbortTraversal) return response; // Abort immediately

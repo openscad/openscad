@@ -157,7 +157,7 @@ Response CSGTreeEvaluator::visit(State& state, const class ListNode& node)
       if (node.modinst->isBackground()) state.setBackground(true);
     }
     if (state.isPostfix()) {
-      for (const AbstractNode *chnode : this->visitedchildren[node.index()]) {
+      for (auto &chnode : this->visitedchildren[node.index()]) {
         addToParent(state, *chnode);
       }
     }
@@ -297,6 +297,6 @@ void CSGTreeEvaluator::addToParent(const State& state, const AbstractNode& node)
 {
   this->visitedchildren.erase(node.index());
   if (state.parent()) {
-    this->visitedchildren[state.parent()->index()].push_back(&node);
+    this->visitedchildren[state.parent()->index()].push_back(node.shared_from_this());
   }
 }

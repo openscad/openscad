@@ -170,9 +170,9 @@ time_t SourceFile::handleDependencies(bool is_root)
   return latest;
 }
 
-AbstractNode *SourceFile::instantiate(const std::shared_ptr<const Context>& context, std::shared_ptr<const FileContext> *resulting_file_context) const
+std::shared_ptr<AbstractNode> SourceFile::instantiate(const std::shared_ptr<const Context>& context, std::shared_ptr<const FileContext> *resulting_file_context) const
 {
-  auto node = new RootNode();
+  auto node = std::make_shared<RootNode>();
   try {
     ContextHandle<FileContext> file_context{Context::create<FileContext>(context, this)};
     *resulting_file_context = *file_context;

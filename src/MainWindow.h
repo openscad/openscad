@@ -28,6 +28,7 @@
 Q_IMPORT_PLUGIN(QSvgPlugin)
 #endif
 
+class AbstractNode;
 class MouseSelector;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
@@ -52,8 +53,8 @@ public:
 
   SourceFile *root_file; // Result of parsing
   SourceFile *parsed_file; // Last parse for include list
-  AbstractNode *absolute_root_node; // Result of tree evaluation
-  AbstractNode *root_node; // Root if the root modifier (!) is used
+  std::shared_ptr<AbstractNode> absolute_root_node; // Result of tree evaluation
+  std::shared_ptr<AbstractNode> root_node; // Root if the root modifier (!) is used
   Tree tree;
   EditorInterface *activeEditor;
   TabManager *tabManager;
@@ -126,7 +127,7 @@ private:
   void compile(bool reload, bool forcedone = false);
   void compileCSG();
   bool checkEditorModified();
-  QString dumpCSGTree(AbstractNode *root);
+  QString dumpCSGTree(const std::shared_ptr<AbstractNode> &root);
 
   void loadViewSettings();
   void loadDesignSettings();
@@ -329,7 +330,7 @@ public slots:
 
 private:
   bool network_progress_func(const double permille);
-  static void report_func(const class AbstractNode *, void *vp, int mark);
+  static void report_func(const std::shared_ptr<const AbstractNode> &, void *vp, int mark);
   static bool undockMode;
   static bool reorderMode;
   static const int tabStopWidth;

@@ -47,7 +47,7 @@ private:
                                                     const AbstractNode& node);
   void applyBackgroundAndHighlight(State& state, const AbstractNode& node);
 
-  typedef std::list<const AbstractNode *> ChildList;
+  typedef std::list<std::shared_ptr<const AbstractNode>> ChildList;
   std::map<int, ChildList> visitedchildren;
 
 protected:

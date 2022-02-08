@@ -402,7 +402,7 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
         for (const auto& part : result_parts) {
           PolySet ps(3, true);
           createPolySetFromPolyhedron(part, ps);
-          fake_children.push_back(std::make_pair((const AbstractNode *)nullptr,
+          fake_children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(),
                                                  createNefPolyhedronFromGeometry(ps)));
         }
         auto N = CGALUtils::applyUnion3D(fake_children.begin(), fake_children.end());

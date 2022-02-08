@@ -73,9 +73,9 @@ Parameters parse_parameters(Arguments arguments, const Location& location)
                            );
 }
 
-static AbstractNode *builtin_linear_extrude(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = new LinearExtrudeNode(inst);
+  auto node = std::make_shared<LinearExtrudeNode>(inst);
 
   Parameters parameters = parse_parameters(std::move(arguments), inst->location());
 

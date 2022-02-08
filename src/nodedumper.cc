@@ -79,7 +79,7 @@ Response NodeDumper::visit(State& state, const GroupNode& node)
   if (state.isPrefix()) {
     // For handling root modifier '!'
     // Check if we are processing the root of the current Tree and init cache
-    if (this->root == &node) {
+    if (this->root.get() == &node) {
       this->initCache();
     }
 
@@ -111,7 +111,7 @@ Response NodeDumper::visit(State& state, const GroupNode& node)
 
     // For handling root modifier '!'
     // Check if we are processing the root of the current Tree and finalize cache
-    if (this->root == &node) {
+    if (this->root.get() == &node) {
       this->finalizeCache();
     }
   }
@@ -129,7 +129,7 @@ Response NodeDumper::visit(State& state, const AbstractNode& node)
 
     // For handling root modifier '!'
     // Check if we are processing the root of the current Tree and init cache
-    if (this->root == &node) {
+    if (this->root.get() == &node) {
       this->initCache();
     }
 
@@ -197,7 +197,7 @@ Response NodeDumper::visit(State& state, const AbstractNode& node)
 
     // For handling root modifier '!'
     // Check if we are processing the root of the current Tree and finalize cache
-    if (this->root == &node) {
+    if (this->root.get() == &node) {
       this->finalizeCache();
     }
   }
@@ -212,7 +212,7 @@ Response NodeDumper::visit(State& state, const ListNode& node)
 {
   if (state.isPrefix()) {
     // For handling root modifier '!'
-    if (this->root == &node) {
+    if (this->root.get() == &node) {
       this->initCache();
     }
     // pass modifiers down to children via state
@@ -222,7 +222,7 @@ Response NodeDumper::visit(State& state, const ListNode& node)
   } else if (state.isPostfix()) {
     this->cache.insertEnd(node.index(), this->dumpstream.tellp());
     // For handling root modifier '!'
-    if (this->root == &node) {
+    if (this->root.get() == &node) {
       this->finalizeCache();
     }
   }

@@ -56,7 +56,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 extern PolySet *import_amf(std::string, const Location& loc);
 extern Geometry *import_3mf(const std::string&, const Location& loc);
 
-static AbstractNode *do_import(const ModuleInstantiation *inst, Arguments arguments, Children children, ImportType type)
+static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments, Children children, ImportType type)
 {
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
@@ -93,7 +93,7 @@ static AbstractNode *do_import(const ModuleInstantiation *inst, Arguments argume
     else if (ext == ".svg") actualtype = ImportType::SVG;
   }
 
-  auto node = new ImportNode(inst, actualtype);
+  auto node = std::make_shared<ImportNode>(inst, actualtype);
 
   node->fn = parameters["$fn"].toDouble();
   node->fs = parameters["$fs"].toDouble();
@@ -151,16 +151,16 @@ static AbstractNode *do_import(const ModuleInstantiation *inst, Arguments argume
   return node;
 }
 
-static AbstractNode *builtin_import(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *inst, Arguments arguments, Children children)
 { return do_import(inst, std::move(arguments), std::move(children), ImportType::UNKNOWN); }
 
-static AbstractNode *builtin_import_stl(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_import_stl(const ModuleInstantiation *inst, Arguments arguments, Children children)
 { return do_import(inst, std::move(arguments), std::move(children), ImportType::STL); }
 
-static AbstractNode *builtin_import_off(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_import_off(const ModuleInstantiation *inst, Arguments arguments, Children children)
 { return do_import(inst, std::move(arguments), std::move(children), ImportType::OFF); }
 
-static AbstractNode *builtin_import_dxf(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_import_dxf(const ModuleInstantiation *inst, Arguments arguments, Children children)
 { return do_import(inst, std::move(arguments), std::move(children), ImportType::DXF); }
 
 

@@ -22,18 +22,18 @@ public:
   virtual ~AbstractModule() {}
   virtual bool is_experimental() const { return feature != nullptr; }
   virtual bool is_enabled() const { return (feature == nullptr) || feature->is_enabled(); }
-  virtual AbstractNode *instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const = 0;
+  virtual std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const = 0;
 };
 
 class BuiltinModule : public AbstractModule
 {
 public:
-  BuiltinModule(AbstractNode *(*instantiate)(const class ModuleInstantiation *, const std::shared_ptr<const Context>&), const Feature *feature = nullptr);
-  BuiltinModule(AbstractNode *(*instantiate)(const class ModuleInstantiation *, Arguments, Children), const Feature *feature = nullptr);
-  AbstractNode *instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const override;
+  BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const class ModuleInstantiation *, const std::shared_ptr<const Context>&), const Feature *feature = nullptr);
+  BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const class ModuleInstantiation *, Arguments, Children), const Feature *feature = nullptr);
+  std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const override;
 
 private:
-  std::function<AbstractNode *(const class ModuleInstantiation *, const std::shared_ptr<const class Context>&)> do_instantiate;
+  std::function<std::shared_ptr<AbstractNode> (const class ModuleInstantiation *, const std::shared_ptr<const class Context>&)> do_instantiate;
 };
 
 struct InstantiableModule

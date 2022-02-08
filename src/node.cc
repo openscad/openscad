@@ -42,26 +42,22 @@ AbstractNode::AbstractNode(const ModuleInstantiation *mi) :
 {
 }
 
-AbstractNode::~AbstractNode()
-{
-  std::for_each(this->children.begin(), this->children.end(), std::default_delete<AbstractNode>());
-}
-
 std::string AbstractNode::toString() const
 {
   return this->name() + "()";
 }
 
-const AbstractNode *AbstractNode::getNodeByID(int idx, std::deque<const AbstractNode *>& path) const
+std::shared_ptr<const AbstractNode> AbstractNode::getNodeByID(int idx, std::deque<std::shared_ptr<const AbstractNode> >& path) const
 {
+  auto self = shared_from_this();
   if (this->idx == idx) {
-    path.push_back(this);
-    return this;
+    path.push_back(self);
+    return self;
   }
   for (const auto& node : this->children) {
     auto res = node->getNodeByID(idx, path);
     if (res) {
-      path.push_back(this);
+      path.push_back(self);
       return res;
     }
   }
@@ -108,7 +104,7 @@ void AbstractNode::progress_prepare()
 
 void AbstractNode::progress_report() const
 {
-  progress_update(this, this->progress_mark);
+  progress_update(shared_from_this(), this->progress_mark);
 }
 
 std::ostream& operator<<(std::ostream& stream, const AbstractNode& node)
@@ -123,11 +119,11 @@ std::ostream& operator<<(std::ostream& stream, const AbstractNode& node)
    If a second root modifier was found, nextLocation (if non-zero) will be set to point to
    the location of that second modifier.
  */
-AbstractNode *find_root_tag(AbstractNode *node, const Location **nextLocation)
+std::shared_ptr<AbstractNode> find_root_tag(const std::shared_ptr<AbstractNode> &node, const Location **nextLocation)
 {
-  AbstractNode *rootTag = nullptr;
+  std::shared_ptr<AbstractNode> rootTag;
 
-  std::function<void (AbstractNode *)> recursive_find_tag = [&](AbstractNode *node) {
+  std::function<void (const std::shared_ptr<const AbstractNode> &)> recursive_find_tag = [&](const std::shared_ptr<const AbstractNode> &node) {
       for (auto child : node->children) {
         if (child->modinst->tag_root) {
           if (!rootTag) {
