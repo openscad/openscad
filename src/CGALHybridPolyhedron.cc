@@ -308,8 +308,12 @@ bool CGALHybridPolyhedron::meshBinOp(
     if (Feature::ExperimentalFastCsgDebugCorefinement.is_enabled()) {
       static std::map<std::string, size_t> opCount;
       auto opNumber = opCount[opName]++;
-      lhsDebugDumpFile = (std::ostringstream() << opName << "_" << opNumber << "_lhs.off").str();
-      rhsDebugDumpFile = (std::ostringstream() << opName << "_" << opNumber << "_rhs.off").str();
+
+      std::ostringstream lhsOut, rhsOut;
+      lhsOut << opName << " " << opNumber << " lhs.off";
+      rhsOut << opName << " " << opNumber << " rhs.off";
+      lhsDebugDumpFile = lhsOut.str();
+      rhsDebugDumpFile = rhsOut.str();
       
       std::ofstream(lhsDebugDumpFile) << lhs;
       std::ofstream(rhsDebugDumpFile) << rhs;
