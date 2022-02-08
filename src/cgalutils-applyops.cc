@@ -40,11 +40,9 @@ namespace CGALUtils {
  */
 shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op)
 {
-#ifndef FAST_CSG_DISABLED_TRIANGULATION_BUG
   if (Feature::ExperimentalFastCsg.is_enabled()) {
     return applyOperator3DHybrid(children, op);
   }
-#endif
 
   CGAL_Nef_polyhedron *N = nullptr;
 
