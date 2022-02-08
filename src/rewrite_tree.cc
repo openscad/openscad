@@ -4,6 +4,8 @@
 #include "ModuleInstantiation.h"
 #include "transformnode.h"
 #include "printutils.h"
+#include "cgaladvnode.h"
+#include <vector>
 
 bool hasSpecialTags(const std::shared_ptr<AbstractNode> &node)
 {
@@ -55,16 +57,7 @@ std::shared_ptr<AbstractNode> listOf(const ModuleInstantiation *modinst, const C
 	return list;
 }
 
-/*! Destructively transforms the tree according to various enabled features.
- * Generates nodes that may lack proper debug info in the process, so this
- * definitely should be considererd highly experimental.
- *
- * This code is quite obviously very hard to maintain: it's a hack, and
- * just a way to evaluate this approach / a discussion starter. We might want
- * to roll out some transformer pattern instead, or maybe embed this logic into
- * some AbstractNode::normalize() method instead.
- *
- * TODO(ochafik): Skip cacheable nodes to avoid working against the cache.
+/*! TODO(ochafik): Skip cacheable nodes to avoid working against the cache.
  */
 std::shared_ptr<AbstractNode> rewrite_tree(const std::shared_ptr<AbstractNode> &node)
 {
@@ -72,20 +65,20 @@ std::shared_ptr<AbstractNode> rewrite_tree(const std::shared_ptr<AbstractNode> &
 		*it = rewrite_tree(*it);
 	}
 
-	if (hasSpecialTags(node)) {
-		return node;
-	}
-
-	if (auto csg = std::dynamic_pointer_cast<CsgOpNode>(node)) {
-		auto op = csg->type;
+	if (std::dynamic_pointer_cast<CsgOpNode>(node) || std::dynamic_pointer_cast<CgaladvNode>(node)) {
 
 		// Normalize `csg() { list() { a; b } }` -> `csg() { a; b; }`
 		if (node->children.size() == 1) {
 			auto child = node->children[0];
-			if (std::dynamic_pointer_cast<ListNode>(child)) {
+			if (std::dynamic_pointer_cast<ListNode>(child) ||
+					std::dynamic_pointer_cast<GroupNode>(child)) {
 				node->children = child->children;
 			}
 		}
+	}
+
+	if (auto csg = std::dynamic_pointer_cast<CsgOpNode>(node)) {
+		auto op = csg->type;
 
 		if (op == OpenSCADOperator::UNION || op == OpenSCADOperator::INTERSECTION) {
 			flattenChildren(node, [op](auto &child) {
@@ -110,16 +103,35 @@ std::shared_ptr<AbstractNode> rewrite_tree(const std::shared_ptr<AbstractNode> &
 		return !hasSpecialTags(child) && isUnionLike(child);
 	};
 
-	if (auto list = std::dynamic_pointer_cast<ListNode>(node)) {
-		if (list->children.size() == 1) {
-			return list->children[0];
+	auto &children = node->children;
+
+	if (std::dynamic_pointer_cast<ListNode>(node)) {
+		if (children.size() == 1) {
+			return children[0];
 		}
+	}
+	else if (std::dynamic_pointer_cast<RootNode>(node)) {
+		flattenChildren(node, isFlattenableUnionLikeChild);
+
+		static auto hasRootMark = [](auto n) { return n && n->modinst && n->modinst->isRoot(); };
+		if (std::any_of(children.begin(), children.end(), hasRootMark)) {
+			// Drop the children that don't have the root ! mark if any of them has it.
+			ChildList roots;  // copy_if only avail. in c++20
+			for (auto &child : children) {
+				if (hasRootMark(child)) roots.push_back(child);
+			}
+			children = roots;
+    }
+    if (children.size() == 1 && (std::dynamic_pointer_cast<GroupNode>(children[0]) || std::dynamic_pointer_cast<GroupNode>(children[0]))) {
+      auto childrenCopy = children[0]->children;
+      children = childrenCopy;
+    }
+    return node;
 	}
 	else if (std::dynamic_pointer_cast<GroupNode>(node)) {
 		flattenChildren(node, isFlattenableUnionLikeChild);
-		return node->children.size() == 1 && !std::dynamic_pointer_cast<RootNode>(node)
-							 ? node->children[0]
-							 : node;
+
+		return children.size() == 1 ? children[0] : node;
 	}
 	else if (auto transform = std::dynamic_pointer_cast<TransformNode>(node)) {
 		flattenChildren(node, isFlattenableUnionLikeChild);
@@ -127,7 +139,6 @@ std::shared_ptr<AbstractNode> rewrite_tree(const std::shared_ptr<AbstractNode> &
 		// Push down the transform onto its children.
 		// Only doing a meaningful rewrite here if there's more than one child
 		// or if the child is a color or transform.
-		auto children = node->children;
 		if (children.size() > 1 || std::any_of(children.begin(), children.end(), [](auto child) {
 					return std::dynamic_pointer_cast<ColorNode>(child) ||
 								 std::dynamic_pointer_cast<TransformNode>(child);
@@ -161,7 +172,6 @@ std::shared_ptr<AbstractNode> rewrite_tree(const std::shared_ptr<AbstractNode> &
 	else if (auto color = std::dynamic_pointer_cast<ColorNode>(node)) {
 		flattenChildren(node, isFlattenableUnionLikeChild);
 
-		auto children = node->children;
 		if (children.size() > 1 || std::any_of(children.begin(), children.end(), [](auto child) {
 					return std::dynamic_pointer_cast<ColorNode>(child);
 				})) {
@@ -176,7 +186,7 @@ std::shared_ptr<AbstractNode> rewrite_tree(const std::shared_ptr<AbstractNode> &
 					child = subColor;
 				}
 			}
-			return listOf(node->modinst, node->children);
+			return listOf(node->modinst, children);
 		}
 	}
 
