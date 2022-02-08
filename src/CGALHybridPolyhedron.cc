@@ -142,7 +142,8 @@ void CGALHybridPolyhedron::clear()
 
 void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron& other)
 {
-  if (!sharesAnyVertexWith(other) && isManifold() && other.isManifold()) {
+  if (Feature::ExperimentalFastCsgTrustCorefinement.is_enabled() || 
+      (!sharesAnyVertexWith(other) && isManifold() && other.isManifold())) {
     if (meshBinOp("corefinement mesh union", other, [&](mesh_t& lhs, mesh_t& rhs, mesh_t& out) {
       return CGALUtils::corefineAndComputeUnion(lhs, rhs, out);
     })) return;
@@ -156,7 +157,8 @@ void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron& other)
 
 void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron& other)
 {
-  if (!sharesAnyVertexWith(other) && isManifold() && other.isManifold()) {
+  if (Feature::ExperimentalFastCsgTrustCorefinement.is_enabled() || 
+      (!sharesAnyVertexWith(other) && isManifold() && other.isManifold())) {
     if (meshBinOp("corefinement mesh intersection", other,
                   [&](mesh_t& lhs, mesh_t& rhs, mesh_t& out) {
       return CGALUtils::corefineAndComputeIntersection(lhs, rhs, out);
@@ -171,7 +173,8 @@ void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron& other)
 
 void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron& other)
 {
-  if (!sharesAnyVertexWith(other) && isManifold() && other.isManifold()) {
+  if (Feature::ExperimentalFastCsgTrustCorefinement.is_enabled() || 
+      (!sharesAnyVertexWith(other) && isManifold() && other.isManifold())) {
     if (meshBinOp("corefinement mesh difference", other,
                   [&](mesh_t& lhs, mesh_t& rhs, mesh_t& out) {
       return CGALUtils::corefineAndComputeDifference(lhs, rhs, out);

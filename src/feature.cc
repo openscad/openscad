@@ -32,6 +32,7 @@ Feature::list_t Feature::feature_list;  // Double-listed values. --^
  */
 #ifndef FAST_CSG_DISABLED_TRIANGULATION_BUG
 const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG operations with corefinement instead of nef when possible.");
+const Feature Feature::ExperimentalFastCsgTrustCorefinement("fast-csg-trust-corefinement", "Speed up fast-csg by trusting corefinement functions to tell us the cases they don't support, rather than proactively avoiding these with costly checks.");
 #endif
 #if FAST_CSG_KERNEL_IS_LAZY
 const Feature Feature::ExperimentalFastCsgExact("fast-csg-exact", "Force lazy numbers to exact after each CSG operation.");
