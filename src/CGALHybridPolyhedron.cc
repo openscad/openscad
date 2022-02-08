@@ -198,10 +198,12 @@ bool CGALHybridPolyhedron::canCorefineWith(const CGALHybridPolyhedron& other) co
   } else if (!isManifold() || !other.isManifold()) {
     reasonWontCorefine = "non manifoldness detected";
   }
-  LOG(message_group::None, Location::NONE, "",
-      "[fast-csg] Performing safer but slower nef operation instead of corefinement because %1$s. "
-      "(can override with fast-csg-trust-corefinement)",
-      reasonWontCorefine);
+  if (reasonWontCorefine) {
+    LOG(message_group::None, Location::NONE, "",
+        "[fast-csg] Performing safer but slower nef operation instead of corefinement because %1$s. "
+        "(can override with fast-csg-trust-corefinement)",
+        reasonWontCorefine);
+  }
   return !reasonWontCorefine;
 }
 
