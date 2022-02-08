@@ -39,6 +39,9 @@ namespace fs = boost::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
 
+std::shared_ptr<AbstractNode> rewrite_tree(const std::shared_ptr<AbstractNode> &node);
+void printTree(const AbstractNode& node, const std::string& indent = "");
+
 SourceFile::SourceFile(const std::string& path, const std::string& filename)
   : ASTNode(Location::NONE), is_handling_dependencies(false), path(path), filename(filename)
 {
@@ -177,6 +180,18 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(const std::shared_ptr<cons
     ContextHandle<FileContext> file_context{Context::create<FileContext>(context, this)};
     *resulting_file_context = *file_context;
     this->scope.instantiateModules(*file_context, node);
+
+    if (Feature::ExperimentalRewriteTree.is_enabled()) {
+#ifdef DEBUG
+      LOG(message_group::None,Location::NONE,"","BEFORE:");
+      printTree(*node);
+#endif
+      node = std::dynamic_pointer_cast<RootNode>(rewrite_tree(node));
+    }
+#ifdef DEBUG
+    LOG(message_group::None,Location::NONE,"","AFTER:");
+    printTree(*node);
+#endif
   } catch (HardWarningException& e) {
     throw;
   } catch (EvaluationException& e) {
