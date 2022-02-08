@@ -1107,6 +1107,7 @@ experimental_tests(lazyunion-offpngtest_2d-3d)
 experimental_tests(lazyunion-dxfpngtest_lazyunion-toplevel-2dobjects)
 experimental_tests(lazyunion-svgpngtest_lazyunion-toplevel-2dobjects)
 
+add_cmdline_test(rewritetree-dump      OPENSCAD SUFFIX csg FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union --enable=rewrite-tree)
 add_cmdline_test(lazyunion-dump        OPENSCAD SUFFIX csg FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
 add_cmdline_test(lazyunion-opencsg     OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
 add_cmdline_test(lazyunion-cgalpng     OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union --render)
