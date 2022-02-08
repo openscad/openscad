@@ -5,6 +5,9 @@
 #include "hash.h"
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/boost/graph/helpers.h>
+#include <fstream>
+#include <sstream>
+#include <stdio.h>
 
 /**
  * Will force lazy coordinates to be exact to avoid subsequent performance issues
@@ -295,12 +298,30 @@ bool CGALHybridPolyhedron::meshBinOp(
   auto previousOtherData = other.data;
 
   auto success = false;
+
+  std::string lhsDebugDumpFile, rhsDebugDumpFile;
+
   try {
     auto& lhs = convertToMesh();
     auto& rhs = other.convertToMesh();
 
+    if (Feature::ExperimentalFastCsgDebugCorefinement.is_enabled()) {
+      static std::map<std::string, size_t> opCount;
+      auto opNumber = opCount[opName]++;
+      lhsDebugDumpFile = (std::ostringstream() << opName << "_" << opNumber << "_lhs.off").str();
+      rhsDebugDumpFile = (std::ostringstream() << opName << "_" << opNumber << "_rhs.off").str();
+      
+      std::ofstream(lhsDebugDumpFile) << lhs;
+      std::ofstream(rhsDebugDumpFile) << rhs;
+    }
+
     if ((success = operation(lhs, rhs, lhs))) {
       cleanupMesh(lhs, /* is_corefinement_result */ true);
+
+      if (Feature::ExperimentalFastCsgDebugCorefinement.is_enabled()) {
+        remove(lhsDebugDumpFile.c_str());
+        remove(rhsDebugDumpFile.c_str());
+      }
     } else {
       LOG(message_group::Warning, Location::NONE, "", "[fast-csg] Corefinement %1$s failed",
           opName.c_str());
@@ -310,7 +331,11 @@ bool CGALHybridPolyhedron::meshBinOp(
     // knows what else...
     success = false;
     LOG(message_group::Warning, Location::NONE, "",
-        "[fast-csg] Corefinement %1$s failed with an error: %2$s", opName.c_str(), e.what());
+        "[fast-csg] Corefinement %1$s failed with an error: %2$s\n", opName.c_str(), e.what());
+    if (Feature::ExperimentalFastCsgDebugCorefinement.is_enabled()) {
+      LOG(message_group::Warning, Location::NONE, "",
+          "Dumps of operands were written to %1$s and %2$s", lhsDebugDumpFile.c_str(), rhsDebugDumpFile.c_str());
+    }
   }
 
   if (!success) {
