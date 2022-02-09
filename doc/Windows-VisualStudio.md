@@ -157,4 +157,6 @@ Once it has built, run the ```Build|install openscad``` menu command to install 
 
 If all is well, you should finally now be able to run OpenSCAD under Visual Studio by hitting ```F5```.
 
-October 2021
+## Return to the main README
+
+This concludes the Visual Studio-specific instructions; you may now return to the main README.

@@ -208,4 +208,52 @@ The release version of OpenSCAD for Windows is currently cross-compiled from Lin
 1. Instructions for building OpenSCAD using Microsoft's Visual Studio are available in [this document](doc/Windows-VisualStudio.md).
 1. Instructions for cross-compiling using MingGW are available in [this document](doc/Windows-MinGW.md).
 
+If you have problems compiling from source, raise a new issue in the
+[issue tracker on the github page](https://github.com/openscad/openscad/issues).
+
+This site and it's subpages can also be helpful:
+https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_OpenSCAD_from_Sources
+
+Once built, you can run tests with `cd build/tests && ctest -j`.
+
 >*The legacy instructions for building using Visual Studio Express continue to be available on the Wikibooks web site, at: [https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows](https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_on_Windows) but, starting from Visual Studio 2019, they are no longer required to build OpenSCAD on Windows.*
+
+### Running CI workflows locally
+
+*   Install [circleci-cli](https://circleci.com/docs/2.0/local-cli/) (you'll need an API key)
+
+    *Note*: we also use GitHub Workflows, but only to run tests on Windows (which we cross-build for in the Linux-based CircleCI workflows below). Also, [act](https://github.com/nektos/act) doesn't like our submodule setup anyway.
+
+*   Run the CI jobs
+
+	```bash
+	# When "successful", these will fail to upload at the very end of the workflow.
+	circleci local execute --job  openscad-mxe-64bit
+	circleci local execute --job  openscad-mxe-32bit
+	circleci local execute --job  openscad-appimage-64bit
+	```
+
+	*Note*: openscad-macos can't be built locally.
+
+*   If/when GCC gets randomly killed, give docker more RAM (e.g. 4GB per concurrent image you plan to run)
+
+*   To debug the jobs more interactively, you can go the manual route (inspect .circleci/config.yml to get the actual docker image you need)
+
+	```bash
+	docker run --entrypoint=/bin/bash -it openscad/mxe-x86_64-gui:latest
+	```
+
+	Then once you get the console:
+	
+	```bash
+	git clone https://github.com/%your username%/openscad.git workspace
+	cd workspace
+	git checkout %your branch%
+	git submodule init
+	git submodule update
+
+	# Then execute the commands from .circleci/config.yml:
+	#    export NUMCPU=2
+	#    ...
+	#    ./scripts/release-common.sh -snapshot -mingw64 -v "$OPENSCAD_VERSION"
+	```
