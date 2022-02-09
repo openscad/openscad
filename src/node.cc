@@ -36,32 +36,28 @@
 size_t AbstractNode::idx_counter;
 
 AbstractNode::AbstractNode(const ModuleInstantiation *mi) :
-    modinst(mi),
-    progress_mark(0),
-    idx(idx_counter++)
+  modinst(mi),
+  progress_mark(0),
+  idx(idx_counter++)
 {
-}
-
-AbstractNode::~AbstractNode()
-{
-	std::for_each(this->children.begin(), this->children.end(), std::default_delete<AbstractNode>());
 }
 
 std::string AbstractNode::toString() const
 {
-	return this->name() + "()";
+  return this->name() + "()";
 }
 
-const AbstractNode *AbstractNode::getNodeByID(int idx, std::deque<const AbstractNode *> &path) const
+std::shared_ptr<const AbstractNode> AbstractNode::getNodeByID(int idx, std::deque<std::shared_ptr<const AbstractNode> >& path) const
 {
+  auto self = shared_from_this();
   if (this->idx == idx) {
-    path.push_back(this);
-    return this;
+    path.push_back(self);
+    return self;
   }
-  for (const auto &node : this->children) {
+  for (const auto& node : this->children) {
     auto res = node->getNodeByID(idx, path);
     if (res) {
-      path.push_back(this);
+      path.push_back(self);
       return res;
     }
   }
@@ -80,72 +76,71 @@ std::string GroupNode::verbose_name() const
 
 std::string ListNode::name() const
 {
-	return "list";
+  return "list";
 }
 
 std::string RootNode::name() const
 {
-	return "root";
+  return "root";
 }
 
 std::string AbstractIntersectionNode::toString() const
 {
-	return this->name() + "()";
+  return this->name() + "()";
 }
 
 std::string AbstractIntersectionNode::name() const
 {
   // We write intersection here since the module will have to be evaluated
-	// before we get here and it will not longer retain the intersection_for parameters
-	return "intersection";
+  // before we get here and it will not longer retain the intersection_for parameters
+  return "intersection";
 }
 
 void AbstractNode::progress_prepare()
 {
-	std::for_each(this->children.begin(), this->children.end(), std::mem_fn(&AbstractNode::progress_prepare));
-	this->progress_mark = ++progress_report_count;
+  std::for_each(this->children.begin(), this->children.end(), std::mem_fn(&AbstractNode::progress_prepare));
+  this->progress_mark = ++progress_report_count;
 }
 
 void AbstractNode::progress_report() const
 {
-	progress_update(this, this->progress_mark);
+  progress_update(shared_from_this(), this->progress_mark);
 }
 
-std::ostream &operator<<(std::ostream &stream, const AbstractNode &node)
+std::ostream& operator<<(std::ostream& stream, const AbstractNode& node)
 {
-	stream << node.toString();
-	return stream;
+  stream << node.toString();
+  return stream;
 }
 
 /*!
-	Locates and returns the node containing a root modifier (!).
-	Returns nullptr if no root modifier was found.
-	If a second root modifier was found, nextLocation (if non-zero) will be set to point to
-	the location of that second modifier.
-*/
-AbstractNode *find_root_tag(AbstractNode *node, const Location **nextLocation)
+   Locates and returns the node containing a root modifier (!).
+   Returns nullptr if no root modifier was found.
+   If a second root modifier was found, nextLocation (if non-zero) will be set to point to
+   the location of that second modifier.
+ */
+std::shared_ptr<AbstractNode> find_root_tag(const std::shared_ptr<AbstractNode> &node, const Location **nextLocation)
 {
-	AbstractNode *rootTag = nullptr;
+  std::shared_ptr<AbstractNode> rootTag;
 
-	std::function <void (AbstractNode *)> recursive_find_tag = [&](AbstractNode *node) {
-		for (auto child : node->children) {
-			if (child->modinst->tag_root) {
-				if (!rootTag) {
-					rootTag = child;
-					// shortcut if we're not interested in further root modifiers
-					if (!nextLocation) return;
-				}
-				else if (nextLocation && rootTag->modinst != child->modinst) {
-					// Throw if we have more than one root modifier in the source
-					*nextLocation = &child->modinst->location();
-					return;
-				}
-			}
-			recursive_find_tag(child);
-		}
-	};
+  std::function<void (const std::shared_ptr<const AbstractNode> &)> recursive_find_tag = [&](const std::shared_ptr<const AbstractNode> &node) {
+      for (auto child : node->children) {
+        if (child->modinst->tag_root) {
+          if (!rootTag) {
+            rootTag = child;
+            // shortcut if we're not interested in further root modifiers
+            if (!nextLocation) return;
+          } else if (nextLocation && rootTag->modinst != child->modinst) {
+            // Throw if we have more than one root modifier in the source
+            *nextLocation = &child->modinst->location();
+            return;
+          }
+        }
+        recursive_find_tag(child);
+      }
+    };
 
-	recursive_find_tag(node);
+  recursive_find_tag(node);
 
-	return rootTag;
+  return rootTag;
 }

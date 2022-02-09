@@ -5,15 +5,15 @@
 
 class ParameterComboBox : public ParameterVirtualWidget, Ui::ParameterComboBox
 {
-	Q_OBJECT
+  Q_OBJECT
 
 public:
-	ParameterComboBox(QWidget *parent, EnumParameter *parameter, DescriptionStyle descriptionStyle);
-	void setValue() override;
+  ParameterComboBox(QWidget *parent, EnumParameter *parameter, DescriptionStyle descriptionStyle);
+  void setValue() override;
 
 protected slots:
-	void onChanged(int index);
+  void onChanged(int index);
 
 private:
-	EnumParameter* parameter;
+  EnumParameter *parameter;
 };

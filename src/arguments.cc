@@ -27,45 +27,45 @@
 #include "arguments.h"
 #include "expression.h"
 
-Arguments::Arguments(const AssignmentList& argument_expressions, const std::shared_ptr<const Context>& context):
-	evaluation_session(context->session())
+Arguments::Arguments(const AssignmentList& argument_expressions, const std::shared_ptr<const Context>& context) :
+  evaluation_session(context->session())
 {
-	for (const auto& argument_expression : argument_expressions) {
-		emplace_back(
-			argument_expression->getName().empty() ? boost::none : boost::optional<std::string>(argument_expression->getName()),
-			argument_expression->getExpr()->evaluate(context)
-		);
-	}
+  for (const auto& argument_expression : argument_expressions) {
+    emplace_back(
+      argument_expression->getName().empty() ? boost::none : boost::optional<std::string>(argument_expression->getName()),
+      argument_expression->getExpr()->evaluate(context)
+      );
+  }
 }
 
 Arguments Arguments::clone() const
 {
-	Arguments output(evaluation_session);
-	for (const Argument& argument : *this) {
-		output.emplace_back(argument.name, argument.value.clone());
-	}
-	return output;
+  Arguments output(evaluation_session);
+  for (const Argument& argument : *this) {
+    output.emplace_back(argument.name, argument.value.clone());
+  }
+  return output;
 }
 
-std::ostream &operator<<(std::ostream &stream, const Argument& argument)
+std::ostream& operator<<(std::ostream& stream, const Argument& argument)
 {
-	if (argument.name) {
-		stream << *argument.name << " = ";
-	}
-	stream << argument.value.toEchoString();
-	return stream;
+  if (argument.name) {
+    stream << *argument.name << " = ";
+  }
+  stream << argument.value.toEchoString();
+  return stream;
 }
 
-std::ostream &operator<<(std::ostream &stream, const Arguments& arguments)
+std::ostream& operator<<(std::ostream& stream, const Arguments& arguments)
 {
-	bool first = true;
-	for (const auto& argument : arguments) {
-		if (first) {
-			first = false;
-		} else {
-			stream << ", ";
-		}
-		stream << argument;
-	}
-	return stream;
+  bool first = true;
+  for (const auto& argument : arguments) {
+    if (first) {
+      first = false;
+    } else {
+      stream << ", ";
+    }
+    stream << argument;
+  }
+  return stream;
 }

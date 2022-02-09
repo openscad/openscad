@@ -11,66 +11,65 @@
 #include "children.h"
 #include "roofnode.h"
 
-static AbstractNode* builtin_roof(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-	auto node = new RoofNode(inst);
+  auto node = std::make_shared<RoofNode>(inst);
 
-	Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
-		{"method"},
-		{"convexity"}
-	);
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
+                                            {"method"},
+                                            {"convexity"}
+                                            );
 
-	node->fn = parameters["$fn"].toDouble();
-	node->fs = parameters["$fs"].toDouble();
-	node->fa = parameters["$fa"].toDouble();
+  node->fn = parameters["$fn"].toDouble();
+  node->fs = parameters["$fs"].toDouble();
+  node->fa = parameters["$fa"].toDouble();
 
-	node->fa = std::max(node->fa, 0.01);
-	node->fs = std::max(node->fs, 0.01);
-	if (node->fn > 0) {
-		node->fa = 360.0 / node->fn;
-		node->fs = 0.0;
-	}
+  node->fa = std::max(node->fa, 0.01);
+  node->fs = std::max(node->fs, 0.01);
+  if (node->fn > 0) {
+    node->fa = 360.0 / node->fn;
+    node->fs = 0.0;
+  }
 
-	if (parameters["method"].isUndefined()) {
-		node->method = "voronoi";
-	} else {
-		node->method = parameters["method"].toString();
-		// method can only be one of...
-		if (node->method != "voronoi" && node->method != "straight") {
-			LOG(message_group::Warning,inst->location(), parameters.documentRoot(),
-							"Unknown roof method '" + node->method + "'. Using 'voronoi'.");
-			node->method = "voronoi";
-		}
-	}
+  if (parameters["method"].isUndefined()) {
+    node->method = "voronoi";
+  } else {
+    node->method = parameters["method"].toString();
+    // method can only be one of...
+    if (node->method != "voronoi" && node->method != "straight") {
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "Unknown roof method '" + node->method + "'. Using 'voronoi'.");
+      node->method = "voronoi";
+    }
+  }
 
-	double tmp_convexity = 0.0;
-	parameters["convexity"].getFiniteDouble(tmp_convexity);
-	node->convexity = static_cast<int>(tmp_convexity);
-	if (node->convexity <= 0)
-		node->convexity = 1;
+  double tmp_convexity = 0.0;
+  parameters["convexity"].getFiniteDouble(tmp_convexity);
+  node->convexity = static_cast<int>(tmp_convexity);
+  if (node->convexity <= 0) node->convexity = 1;
 
-	children.instantiate(node);
+  children.instantiate(node);
 
-	return node;
+  return node;
 }
 
 std::string RoofNode::toString() const
 {
-	std::stringstream stream;
+  std::stringstream stream;
 
-	stream  << "roof(method = \"" << this->method << "\""
-		<< ", $fa = " << this->fa
-		<< ", $fs = " << this->fs
-		<< ", $fn = " << this->fn
-		<< ", convexity = " << this->convexity
-		<< ")";
+  stream << "roof(method = \"" << this->method << "\""
+         << ", $fa = " << this->fa
+         << ", $fs = " << this->fs
+         << ", $fn = " << this->fn
+         << ", convexity = " << this->convexity
+         << ")";
 
-	return stream.str();
+  return stream.str();
 }
 
 void register_builtin_roof()
 {
-	Builtins::init("roof", new BuiltinModule(builtin_roof, &Feature::ExperimentalRoof), {
-			"roof(method = \"voronoi\")"
-	});
+  Builtins::init("roof", new BuiltinModule(builtin_roof, &Feature::ExperimentalRoof), {
+    "roof(method = \"voronoi\")"
+  });
 }

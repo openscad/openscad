@@ -5,15 +5,15 @@
 
 class ParameterCheckBox : public ParameterVirtualWidget, Ui::ParameterCheckBox
 {
-	Q_OBJECT
+  Q_OBJECT
 
 public:
-	ParameterCheckBox(QWidget *parent, BoolParameter *parameter, DescriptionStyle descriptionStyle);
-	void setValue() override;
+  ParameterCheckBox(QWidget *parent, BoolParameter *parameter, DescriptionStyle descriptionStyle);
+  void setValue() override;
 
 protected slots:
-	void onChanged();
+  void onChanged();
 
 private:
-	BoolParameter* parameter;
+  BoolParameter *parameter;
 };

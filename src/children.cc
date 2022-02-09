@@ -27,17 +27,17 @@
 #include "children.h"
 #include "modcontext.h"
 
-AbstractNode* Children::instantiate(AbstractNode* target) const
+std::shared_ptr<AbstractNode> Children::instantiate(const std::shared_ptr<AbstractNode> &target) const
 {
-	return children_scope->instantiateModules(*scopeContext(), target);
+  return children_scope->instantiateModules(*scopeContext(), target);
 }
 
-AbstractNode* Children::instantiate(AbstractNode* target, const std::vector<size_t>& indices) const
+std::shared_ptr<AbstractNode> Children::instantiate(const std::shared_ptr<AbstractNode> &target, const std::vector<size_t>& indices) const
 {
-	return children_scope->instantiateModules(*scopeContext(), target, indices);
+  return children_scope->instantiateModules(*scopeContext(), target, indices);
 }
 
 ContextHandle<ScopeContext> Children::scopeContext() const
 {
-	return Context::create<ScopeContext>(context, children_scope);
+  return Context::create<ScopeContext>(context, children_scope);
 }

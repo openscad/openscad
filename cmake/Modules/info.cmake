@@ -1,4 +1,4 @@
-get_directory_property(DEFINES COMPILE_DEFINITIONS)
+get_target_property(DEFINES OpenSCAD COMPILE_DEFINITIONS)
 
 message(STATUS " ")
 message(STATUS "====================================")

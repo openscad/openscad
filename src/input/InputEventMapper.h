@@ -32,62 +32,62 @@
 
 class InputEventMapper : public QObject, public InputEventHandler
 {
-    Q_OBJECT
+  Q_OBJECT
 
 private:
-    QTimer *timer;
-    double axisRawValue[InputDriver::max_axis];
-    double axisTrimValue[InputDriver::max_axis];
-    double axisDeadzone[InputDriver::max_axis];
-    QString actions[InputDriver::max_buttons];
-    int translate[6];
-    int rotate[6];
-    int zoom;
-    int zoom2;
-    volatile bool stopRequest;
+  QTimer *timer;
+  double axisRawValue[InputDriver::max_axis];
+  double axisTrimValue[InputDriver::max_axis];
+  double axisDeadzone[InputDriver::max_axis];
+  QString actions[InputDriver::max_buttons];
+  int translate[6];
+  int rotate[6];
+  int zoom;
+  int zoom2;
+  volatile bool stopRequest;
 
-    double scale(double val);
-    double getAxisValue(int config);
-    int parseSettingValue(const std::string val);
-    bool generateDeferredEvents();
-    void considerGeneratingDeferredEvents();
-    bool button_state[InputDriver::max_buttons];
-    bool button_state_last[InputDriver::max_buttons];
-    
-    static InputEventMapper *self;
+  double scale(double val);
+  double getAxisValue(int config);
+  int parseSettingValue(const std::string val);
+  bool generateDeferredEvents();
+  void considerGeneratingDeferredEvents();
+  bool button_state[InputDriver::max_buttons];
+  bool button_state_last[InputDriver::max_buttons];
 
-	double translationGain;
-	double translationVPRelGain;
-	double rotateGain;
-	double rotateVPRelGain;
-	double zoomGain;
+  static InputEventMapper *self;
+
+  double translationGain;
+  double translationVPRelGain;
+  double rotateGain;
+  double rotateVPRelGain;
+  double zoomGain;
 
 public:
-    InputEventMapper();
-    virtual ~InputEventMapper();
+  InputEventMapper();
+  virtual ~InputEventMapper();
 
-    void stop();
+  void stop();
 
-    void onAxisChanged(class InputEventAxisChanged *event) override;
-    void onButtonChanged(class InputEventButtonChanged *event) override;
+  void onAxisChanged(class InputEventAxisChanged *event) override;
+  void onButtonChanged(class InputEventButtonChanged *event) override;
 
-    void onTranslateEvent(class InputEventTranslate *event) override;
-    void onRotateEvent(class InputEventRotate *event) override;
-    void onRotate2Event(class InputEventRotate2 *event) override;
-    void onActionEvent(class InputEventAction *event) override;
-    void onZoomEvent(class InputEventZoom *event) override;
+  void onTranslateEvent(class InputEventTranslate *event) override;
+  void onRotateEvent(class InputEventRotate *event) override;
+  void onRotate2Event(class InputEventRotate2 *event) override;
+  void onActionEvent(class InputEventAction *event) override;
+  void onZoomEvent(class InputEventZoom *event) override;
 
-    void onInputMappingUpdated();
-    void onInputCalibrationUpdated();
-    void onInputGainUpdated();
+  void onInputMappingUpdated();
+  void onInputCalibrationUpdated();
+  void onInputGainUpdated();
 
-    void onAxisAutoTrim();
-    void onAxisTrimReset();
+  void onAxisAutoTrim();
+  void onAxisTrimReset();
 
-    static InputEventMapper * instance();
-    static int getMaxButtons();
-    static int getMaxAxis();
+  static InputEventMapper *instance();
+  static int getMaxButtons();
+  static int getMaxAxis();
 
 private slots:
-    void onTimer();
+  void onTimer();
 };

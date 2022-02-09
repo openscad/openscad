@@ -29,12 +29,12 @@
 #include "expression.h"
 #include "context.h"
 
-Annotation::Annotation(const std::string &name, shared_ptr<Expression> expr)
-	: name(name), expr(expr)
+Annotation::Annotation(const std::string& name, shared_ptr<Expression> expr)
+  : name(name), expr(expr)
 {
 }
 
-void Annotation::print(std::ostream &stream, const std::string &indent) const
+void Annotation::print(std::ostream& stream, const std::string& indent) const
 {
-	stream << indent << "//" << name << "(" << *this->expr << ")" << std::endl;
+  stream << indent << "//" << name << "(" << *this->expr << ")" << std::endl;
 }

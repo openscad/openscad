@@ -23,7 +23,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
- 
+
 #include "compiler_specific.h"
 #include "context.h"
 #include "expression.h"
@@ -36,120 +36,121 @@
 #include "boost-utils.h"
 namespace fs = boost::filesystem;
 
-Context::Context(EvaluationSession* session):
-	ContextFrame(session),
-	parent(nullptr)
+Context::Context(EvaluationSession *session) :
+  ContextFrame(session),
+  parent(nullptr)
 {}
 
-Context::Context(const std::shared_ptr<const Context>& parent):
-	ContextFrame(parent->evaluation_session),
-	parent(parent)
+Context::Context(const std::shared_ptr<const Context>& parent) :
+  ContextFrame(parent->evaluation_session),
+  parent(parent)
 {}
 
 Context::~Context()
 {
-	clear();
-	session()->contextMemoryManager().releaseContext();
+  clear();
+  if (accountingAdded)   // avoiding bad accounting where exception threw in constructor  issue #3871
+    session()->contextMemoryManager().releaseContext();
 }
 
-const Children* Context::user_module_children() const
+const Children *Context::user_module_children() const
 {
-	if (parent) {
-		return parent->user_module_children();
-	} else {
-		return nullptr;
-	}
+  if (parent) {
+    return parent->user_module_children();
+  } else {
+    return nullptr;
+  }
 }
 
-std::vector<const std::shared_ptr<const Context>*> Context::list_referenced_contexts() const
+std::vector<const std::shared_ptr<const Context> *> Context::list_referenced_contexts() const
 {
-	std::vector<const std::shared_ptr<const Context>*> output;
-	if (parent) {
-		output.push_back(&parent);
-	}
-	return output;
+  std::vector<const std::shared_ptr<const Context> *> output;
+  if (parent) {
+    output.push_back(&parent);
+  }
+  return output;
 }
 
-boost::optional<const Value&> Context::try_lookup_variable(const std::string &name) const
+boost::optional<const Value&> Context::try_lookup_variable(const std::string& name) const
 {
-	if (is_config_variable(name)) {
-		return session()->try_lookup_special_variable(name);
-	}
-	for (const Context* context = this; context != nullptr; context = context->getParent().get()) {
-		boost::optional<const Value&> result = context->lookup_local_variable(name);
-		if (result) {
-			return result;
-		}
-	}
-	return boost::none;
+  if (is_config_variable(name)) {
+    return session()->try_lookup_special_variable(name);
+  }
+  for (const Context *context = this; context != nullptr; context = context->getParent().get()) {
+    boost::optional<const Value&> result = context->lookup_local_variable(name);
+    if (result) {
+      return result;
+    }
+  }
+  return boost::none;
 }
 
-const Value& Context::lookup_variable(const std::string &name, const Location &loc) const
+const Value& Context::lookup_variable(const std::string& name, const Location& loc) const
 {
-	boost::optional<const Value&> result = try_lookup_variable(name);
-	if (!result) {
-		LOG(message_group::Warning,loc,documentRoot(),"Ignoring unknown variable '%1$s'",name);
-		return Value::undefined;
-	}
-	return *result;
+  boost::optional<const Value&> result = try_lookup_variable(name);
+  if (!result) {
+    LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown variable '%1$s'", name);
+    return Value::undefined;
+  }
+  return *result;
 }
 
-boost::optional<CallableFunction> Context::lookup_function(const std::string &name, const Location &loc) const
+boost::optional<CallableFunction> Context::lookup_function(const std::string& name, const Location& loc) const
 {
-	if (is_config_variable(name)) {
-		return session()->lookup_special_function(name, loc);
-	}
-	for (const Context* context = this; context != nullptr; context = context->getParent().get()) {
-		boost::optional<CallableFunction> result = context->lookup_local_function(name, loc);
-		if (result) {
-			return result;
-		}
-	}
-	LOG(message_group::Warning,loc,documentRoot(),"Ignoring unknown function '%1$s'",name);
-	return boost::none;
+  if (is_config_variable(name)) {
+    return session()->lookup_special_function(name, loc);
+  }
+  for (const Context *context = this; context != nullptr; context = context->getParent().get()) {
+    boost::optional<CallableFunction> result = context->lookup_local_function(name, loc);
+    if (result) {
+      return result;
+    }
+  }
+  LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown function '%1$s'", name);
+  return boost::none;
 }
 
-boost::optional<InstantiableModule> Context::lookup_module(const std::string &name, const Location &loc) const
+boost::optional<InstantiableModule> Context::lookup_module(const std::string& name, const Location& loc) const
 {
-	if (is_config_variable(name)) {
-		return session()->lookup_special_module(name, loc);
-	}
-	for (const Context* context = this; context != nullptr; context = context->getParent().get()) {
-		boost::optional<InstantiableModule> result = context->lookup_local_module(name, loc);
-		if (result) {
-			return result;
-		}
-	}
-	LOG(message_group::Warning,loc,this->documentRoot(),"Ignoring unknown module '%1$s'",name);
-	return boost::none;
+  if (is_config_variable(name)) {
+    return session()->lookup_special_module(name, loc);
+  }
+  for (const Context *context = this; context != nullptr; context = context->getParent().get()) {
+    boost::optional<InstantiableModule> result = context->lookup_local_module(name, loc);
+    if (result) {
+      return result;
+    }
+  }
+  LOG(message_group::Warning, loc, this->documentRoot(), "Ignoring unknown module '%1$s'", name);
+  return boost::none;
 }
 
-bool Context::set_variable(const std::string &name, Value&& value)
+bool Context::set_variable(const std::string& name, Value&& value)
 {
-	bool new_variable = ContextFrame::set_variable(name, std::move(value));
-	if (new_variable) {
-		session()->accounting().addContextVariable();
-	}
-	return new_variable;
+  bool new_variable = ContextFrame::set_variable(name, std::move(value));
+  if (new_variable) {
+    session()->accounting().addContextVariable();
+  }
+  return new_variable;
 }
 
 size_t Context::clear()
 {
-	size_t removed = ContextFrame::clear();
-	session()->accounting().removeContextVariable(removed);
-	return removed;
+  size_t removed = ContextFrame::clear();
+  session()->accounting().removeContextVariable(removed);
+  return removed;
 }
 
 #ifdef DEBUG
 std::string Context::dump() const
 {
-	std::ostringstream s;
-	s << boost::format("Context %p:\n") % this;
-	Context const* context = this;
-	while (context) {
-		s << "  " << context->dumpFrame();
-		context = context->getParent().get();
-	}
-	return s.str();
+  std::ostringstream s;
+  s << boost::format("Context %p:\n") % this;
+  Context const *context = this;
+  while (context) {
+    s << "  " << context->dumpFrame();
+    context = context->getParent().get();
+  }
+  return s.str();
 }
-#endif
+#endif // ifdef DEBUG

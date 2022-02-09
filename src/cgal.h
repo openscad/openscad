@@ -4,15 +4,15 @@
 
 // STL Allocator doesn't make any significant difference on my Linux dev machine - Hans
 /*
-#ifdef USE_MIMALLOC
-  #ifndef MI_OVERRIDE
-    #include <mimalloc.h>
+ #ifdef USE_MIMALLOC
+ #ifndef MI_OVERRIDE
+ #include <mimalloc.h>
     // If using CGAL_ALLOCATOR to override, then make sure to define it as the first thing
     // ****** NOTE: THAT MEANS THIS FILE "cgal.h" SHOULD ALWAYS COME BEFORE OTHER CGAL INCLUDES! ******
-    #define CGAL_ALLOCATOR(t) mi_stl_allocator<t>
-  #endif
-#endif
-//*/
+ #define CGAL_ALLOCATOR(t) mi_stl_allocator<t>
+ #endif
+ #endif
+   //*/
 
 #include "ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h" // This file must be included prior to CGAL/Nef_polyhedron_3.h
 #include <CGAL/Gmpq.h>
@@ -29,6 +29,7 @@
 #include <CGAL/minkowski_sum_3.h>
 #include <CGAL/bounding_box.h>
 #include <CGAL/utils.h>
+#include <CGAL/version.h>
 
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
@@ -61,5 +62,12 @@ typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
 // CGAL_Kernel2::Point. Hence the suffix 'e'
 typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2e;
 typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e;
+
+#if CGAL_VERSION_NR <= CGAL_VERSION_NUMBER(4, 6, 0)
+#pragma error("CGAL 4.6.0 or above is required.")
+#endif
+
+#define FAST_CSG_KERNEL_IS_LAZY 1
+typedef CGAL::Epeck CGAL_HybridKernel3;
 
 #endif /* ENABLE_CGAL */

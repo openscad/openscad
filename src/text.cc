@@ -38,50 +38,50 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-static AbstractNode* builtin_text(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-    if (!children.empty()) {
-        LOG(message_group::Warning,inst->location(),arguments.documentRoot(),
-            "module %1$s() does not support child modules",inst->name());
-    }
+  if (!children.empty()) {
+    LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
+        "module %1$s() does not support child modules", inst->name());
+  }
 
-    auto node = new TextNode(inst);
+  auto node = std::make_shared<TextNode>(inst);
 
-    Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
-        {"text", "size", "font"},
-        {"direction", "language", "script", "halign", "valign", "spacing"}
-    );
-    parameters.set_caller("text");
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
+                                            {"text", "size", "font"},
+                                            {"direction", "language", "script", "halign", "valign", "spacing"}
+                                            );
+  parameters.set_caller("text");
 
-    node->params.set_loc(inst->location());
-    node->params.set_documentPath(arguments.documentRoot());
+  node->params.set_loc(inst->location());
+  node->params.set_documentPath(arguments.documentRoot());
 
-    node->params.set(parameters);
-    node->params.detect_properties();
+  node->params.set(parameters);
+  node->params.detect_properties();
 
-    return node;
+  return node;
 }
 
 std::vector<const Geometry *> TextNode::createGeometryList() const
 {
-	FreetypeRenderer renderer;
-	return renderer.render(this->get_params());
+  FreetypeRenderer renderer;
+  return renderer.render(this->get_params());
 }
 
 FreetypeRenderer::Params TextNode::get_params() const
 {
-	return params;
+  return params;
 }
 
 std::string TextNode::toString() const
 {
-	return STR(name() << "(" << this->params << ")");
+  return STR(name() << "(" << this->params << ")");
 }
 
 void register_builtin_text()
 {
-	Builtins::init("text", new BuiltinModule(builtin_text),
-				{
-					"text(text = \"\", size = 10, font = \"\", halign = \"left\", valign = \"baseline\", spacing = 1, direction = \"ltr\", language = \"en\", script = \"latin\"[, $fn])",
-				});
+  Builtins::init("text", new BuiltinModule(builtin_text),
+  {
+    "text(text = \"\", size = 10, font = \"\", halign = \"left\", valign = \"baseline\", spacing = 1, direction = \"ltr\", language = \"en\", script = \"latin\"[, $fn])",
+  });
 }

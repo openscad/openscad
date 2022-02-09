@@ -35,4 +35,10 @@ do
 	pacman --noconfirm --ask 20 --sync --needed ${pkg}
 done
 
+date "+### %Y-%m-%d %T downgrading cgal"
+pactree mingw-w64-x86_64-cgal
+curl --insecure -O https://files.openscad.org/tmp/mingw-w64-x86_64-cgal-5.2-3-any.pkg.tar.zst
+curl --insecure -O https://files.openscad.org/tmp/mingw-w64-x86_64-cgal-5.2-3-any.pkg.tar.zst.sig
+pacman -U --noconfirm mingw-w64-x86_64-cgal-5.2-3-any.pkg.tar.zst
+
 date "+### %Y-%m-%d %T msys2-install-dependencies finished"

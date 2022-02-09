@@ -7,8 +7,6 @@
 #   -DSNAPSHOT=<ON|OFF>
 #   -DEXPERIMENTAL=<ON|OFF>
 #
-#  TODO
-#   find packages for spnav, hidapi
 
 # Ubuntu Bionic (18.04LTS): 3.10.2,  Debian 10 buster (oldstable): 3.13.4
 cmake_minimum_required(VERSION 3.10)
@@ -304,6 +302,7 @@ target_compile_definitions(OpenSCAD PRIVATE ENABLE_CGAL)
 # Enabling CGAL assertions is necessary for us to catch them before they cause a crash
 # on bad geometry input.
 target_compile_definitions(OpenSCAD PRIVATE CGAL_DEBUG)
+target_compile_definitions(OpenSCAD PRIVATE CGAL_USE_GMPXX)
 if(TARGET CGAL::CGAL)
   list(APPEND COMMON_LIBRARIES CGAL::CGAL CGAL::CGAL_Core)
   message(STATUS "CGAL: Using target CGAL::CGAL CGAL::CGAL_Core")
@@ -350,6 +349,20 @@ if(ENABLE_HIDAPI)
   endif()
 else()
   message(STATUS "HIDAPI: disabled per user request")
+endif()
+
+option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
+if(ENABLE_SPNAV)
+  find_package(SpNav QUIET)
+  if(SPNAV_FOUND)
+    message(STATUS "SpNav: found")
+    set(INPUT_DRIVER_SPNAV_SOURCES src/input/SpaceNavInputDriver.cc)
+    target_include_directories(OpenSCAD SYSTEM PRIVATE ${SPNAV_INCLUDE_DIR})
+    list(APPEND COMMON_LIBRARIES ${SPNAV_LIBRARY})
+    target_compile_definitions(OpenSCAD PRIVATE ENABLE_SPNAV)
+  else()
+    message(STATUS "SpNav: disabled")
+  endif()
 endif()
 
 option(ENABLE_CAIRO "Enable support for cairo vector graphics library." ON)
@@ -425,8 +438,6 @@ if(NOT HEADLESS)
 
   find_package(Qt5QScintilla 2.8.0 REQUIRED QUIET)
   message(STATUS "QScintilla: ${QT5QSCINTILLA_VERSION_STRING}")
-  target_compile_definitions(OpenSCAD PRIVATE USE_SCINTILLA_EDITOR)
-  target_compile_definitions(OpenSCAD PRIVATE ENABLE_MDI)
 
   option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON)
   if(ENABLE_QTDBUS)
@@ -695,10 +706,22 @@ set(CORE_SOURCES
 set(CGAL_SOURCES
   src/cgalutils.cc
   src/cgalutils-applyops.cc
+  src/cgalutils-applyops-hybrid.cc
+  src/cgalutils-closed.cc
+  src/cgalutils-convex.cc
+  src/cgalutils-corefine.cc
+  src/cgalutils-kernel.cc
+  src/cgalutils-hybrid.cc
+  src/cgalutils-mesh.cc
+  src/cgalutils-minkowski.cc
+  src/cgalutils-nef.cc
+  src/cgalutils-orient.cc
   src/cgalutils-polyhedron.cc
   src/cgalutils-project.cc
   src/cgalutils-tess.cc
+  src/cgalutils-triangulate.cc
   src/export_nef.cc
+  src/CGALHybridPolyhedron.cc
   src/import_nef.cc
   src/CGAL_Nef_polyhedron.cc
   src/CGALCache.cc
@@ -746,6 +769,7 @@ endif()
 set(INPUT_DRIVER_SOURCES
   ${PLATFORM_INPUT_DRIVER_SOURCES}
   ${INPUT_DRIVER_HIDAPI_SOURCES}
+  ${INPUT_DRIVER_SPNAV_SOURCES}
   ${INPUT_DRIVER_DBUS_SOURCES})
 
 set(GUI_SOURCES
@@ -829,9 +853,11 @@ else()
 endif()
 set(RESOURCE_FILES icons/${MACOSX_BUNDLE_ICON_FILE})
 
-if(ENABLE_SPNAV)
-  target_compile_definitions(OpenSCAD PRIVATE ENABLE_SPNAV)
-  list(APPEND Sources src/input/SpaceNavInputDriver.cc)
+if (SORT_BUILD)
+  # Build the last modified sources first (to fail fast during development)
+  execute_process(
+    COMMAND ../scripts/sort_cmake_filelist.sh "${Sources}"
+    OUTPUT_VARIABLE Sources)
 endif()
 
 target_sources(OpenSCAD PRIVATE ${Sources} ${RESOURCE_FILES} ${WINDOWS_RESOURCE_PATH})
@@ -866,10 +892,6 @@ elseif(MSVC)
   set_target_properties(OpenSCAD PROPERTIES
     LINK_FLAGS "-subsystem:windows -ENTRY:mainCRTStartup -stack:${STACKSIZE}"
   )
-endif()
-
-if(ENABLE_SPNAV)
-  list(APPEND COMMON_LIBRARIES spnav)
 endif()
 
 if(NOT HEADLESS)

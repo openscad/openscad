@@ -39,17 +39,17 @@ data::~data()
 void
 data::set_attrs(attr_map_t& attrs, void *context)
 {
-	shape::set_attrs(attrs, context);
-	this->text = attrs["text"];
+  shape::set_attrs(attrs, context);
+  this->text = attrs["text"];
 }
 
 const std::string
 data::dump() const
 {
-	std::stringstream s;
-	s << get_name()
-		<< ": text = '" << this->text << "'";
-	return s.str();
+  std::stringstream s;
+  s << get_name()
+    << ": text = '" << this->text << "'";
+  return s.str();
 }
 
 }
