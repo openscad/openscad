@@ -5,6 +5,9 @@
 #include "hash.h"
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/boost/graph/helpers.h>
+#include <fstream>
+#include <sstream>
+#include <stdio.h>
 
 /**
  * Will force lazy coordinates to be exact to avoid subsequent performance issues
@@ -142,7 +145,7 @@ void CGALHybridPolyhedron::clear()
 
 void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron& other)
 {
-  if (!sharesAnyVertexWith(other) && isManifold() && other.isManifold()) {
+  if (canCorefineWith(other)) {
     if (meshBinOp("corefinement mesh union", other, [&](mesh_t& lhs, mesh_t& rhs, mesh_t& out) {
       return CGALUtils::corefineAndComputeUnion(lhs, rhs, out);
     })) return;
@@ -156,7 +159,7 @@ void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron& other)
 
 void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron& other)
 {
-  if (!sharesAnyVertexWith(other) && isManifold() && other.isManifold()) {
+  if (canCorefineWith(other)) {
     if (meshBinOp("corefinement mesh intersection", other,
                   [&](mesh_t& lhs, mesh_t& rhs, mesh_t& out) {
       return CGALUtils::corefineAndComputeIntersection(lhs, rhs, out);
@@ -171,7 +174,7 @@ void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron& other)
 
 void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron& other)
 {
-  if (!sharesAnyVertexWith(other) && isManifold() && other.isManifold()) {
+  if (canCorefineWith(other)) {
     if (meshBinOp("corefinement mesh difference", other,
                   [&](mesh_t& lhs, mesh_t& rhs, mesh_t& out) {
       return CGALUtils::corefineAndComputeDifference(lhs, rhs, out);
@@ -182,6 +185,26 @@ void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron& other)
                [&](nef_polyhedron_t& destinationNef, nef_polyhedron_t& otherNef) {
     CGALUtils::inPlaceNefDifference(destinationNef, otherNef);
   });
+}
+
+bool CGALHybridPolyhedron::canCorefineWith(const CGALHybridPolyhedron& other) const
+{
+  if (Feature::ExperimentalFastCsgTrustCorefinement.is_enabled()) {
+    return true;
+  }
+  const char* reasonWontCorefine = nullptr;
+  if (sharesAnyVertexWith(other)) {
+    reasonWontCorefine = "operands share some vertices";
+  } else if (!isManifold() || !other.isManifold()) {
+    reasonWontCorefine = "non manifoldness detected";
+  }
+  if (reasonWontCorefine) {
+    LOG(message_group::None, Location::NONE, "",
+        "[fast-csg] Performing safer but slower nef operation instead of corefinement because %1$s. "
+        "(can override with fast-csg-trust-corefinement)",
+        reasonWontCorefine);
+  }
+  return !reasonWontCorefine;
 }
 
 void CGALHybridPolyhedron::minkowski(CGALHybridPolyhedron& other)
@@ -292,12 +315,34 @@ bool CGALHybridPolyhedron::meshBinOp(
   auto previousOtherData = other.data;
 
   auto success = false;
+
+  std::string lhsDebugDumpFile, rhsDebugDumpFile;
+
   try {
     auto& lhs = convertToMesh();
     auto& rhs = other.convertToMesh();
 
+    if (Feature::ExperimentalFastCsgDebugCorefinement.is_enabled()) {
+      static std::map<std::string, size_t> opCount;
+      auto opNumber = opCount[opName]++;
+
+      std::ostringstream lhsOut, rhsOut;
+      lhsOut << opName << " " << opNumber << " lhs.off";
+      rhsOut << opName << " " << opNumber << " rhs.off";
+      lhsDebugDumpFile = lhsOut.str();
+      rhsDebugDumpFile = rhsOut.str();
+      
+      std::ofstream(lhsDebugDumpFile) << lhs;
+      std::ofstream(rhsDebugDumpFile) << rhs;
+    }
+
     if ((success = operation(lhs, rhs, lhs))) {
       cleanupMesh(lhs, /* is_corefinement_result */ true);
+
+      if (Feature::ExperimentalFastCsgDebugCorefinement.is_enabled()) {
+        remove(lhsDebugDumpFile.c_str());
+        remove(rhsDebugDumpFile.c_str());
+      }
     } else {
       LOG(message_group::Warning, Location::NONE, "", "[fast-csg] Corefinement %1$s failed",
           opName.c_str());
@@ -307,7 +352,11 @@ bool CGALHybridPolyhedron::meshBinOp(
     // knows what else...
     success = false;
     LOG(message_group::Warning, Location::NONE, "",
-        "[fast-csg] Corefinement %1$s failed with an error: %2$s", opName.c_str(), e.what());
+        "[fast-csg] Corefinement %1$s failed with an error: %2$s\n", opName.c_str(), e.what());
+    if (Feature::ExperimentalFastCsgDebugCorefinement.is_enabled()) {
+      LOG(message_group::Warning, Location::NONE, "",
+          "Dumps of operands were written to %1$s and %2$s", lhsDebugDumpFile.c_str(), rhsDebugDumpFile.c_str());
+    }
   }
 
   if (!success) {
