@@ -137,6 +137,10 @@ template <typename K>
 bool corefineAndComputeIntersection(CGAL::Surface_mesh<CGAL::Point_3<K>>& lhs, CGAL::Surface_mesh<CGAL::Point_3<K>>& rhs, CGAL::Surface_mesh<CGAL::Point_3<K>>& out);
 template <typename K>
 bool corefineAndComputeDifference(CGAL::Surface_mesh<CGAL::Point_3<K>>& lhs, CGAL::Surface_mesh<CGAL::Point_3<K>>& rhs, CGAL::Surface_mesh<CGAL::Point_3<K>>& out);
+#ifdef ENABLE_CGAL_REMESHING
+template <typename M>
+bool remeshPlanarPatches(M &mesh);
+#endif
 
 template <typename K>
 void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh);

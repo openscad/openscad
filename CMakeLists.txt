@@ -65,6 +65,7 @@ if(APPLE)
 endif()
 
 option(ENABLE_TESTS "Run testsuite after building." ON)
+option(ENABLE_CGAL_REMESHING "Enable usage of CGAL's branch-experimental remeshing (https://github.com/CGAL/cgal/pull/5461)" OFF)
 set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
 set(STACKSIZE 8388608 CACHE STRING "Stack size (default is 8MB)")
 
@@ -303,6 +304,9 @@ target_compile_definitions(OpenSCAD PRIVATE ENABLE_CGAL)
 # on bad geometry input.
 target_compile_definitions(OpenSCAD PRIVATE CGAL_DEBUG)
 target_compile_definitions(OpenSCAD PRIVATE CGAL_USE_GMPXX)
+if(ENABLE_CGAL_REMESHING)
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_CGAL_REMESHING)
+endif()
 if(TARGET CGAL::CGAL)
   list(APPEND COMMON_LIBRARIES CGAL::CGAL CGAL::CGAL_Core)
   message(STATUS "CGAL: Using target CGAL::CGAL CGAL::CGAL_Core")
@@ -718,6 +722,7 @@ set(CGAL_SOURCES
   src/cgalutils-orient.cc
   src/cgalutils-polyhedron.cc
   src/cgalutils-project.cc
+  src/cgalutils-repair.cc
   src/cgalutils-tess.cc
   src/cgalutils-triangulate.cc
   src/export_nef.cc
