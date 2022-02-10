@@ -87,9 +87,9 @@ jobs:
               cd ..
               export PATH=/appimage/usr/bin:"$PATH"
               export EXTRA_QT_PLUGINS=svg
-              VERSION="$OPENSCAD_VERSION" linuxdeploy --plugin qt --output appimage --appdir AppDir
+              VERSION="${OPENSCAD_VERSION}${SUFFIX}" linuxdeploy --plugin qt --output appimage --appdir AppDir
               mkdir -p /tmp/out
-              for f in OpenSCAD-*.AppImage; do N=$(basename "$f" | sed -e "s/OpenSCAD-\\(.*\\)/OpenSCAD-${OPENSCAD_VERSION}-${SUFFIX}\\1/;"); cp -iv "$f" /tmp/out/"$N"; done
+              cp -iv OpenSCAD-*.AppImage /tmp/out
               if [ -n "${CODE_SIGNING_KEY}" ]; then
                   cd /tmp/out
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
