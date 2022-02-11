@@ -37,6 +37,9 @@ const Feature Feature::ExperimentalFastCsgDebugCorefinement("fast-csg-debug-core
 const Feature Feature::ExperimentalFastCsgExact("fast-csg-exact", "Force lazy numbers to exact after each CSG operation.");
 const Feature Feature::ExperimentalFastCsgExactCorefinementCallback("fast-csg-exact-callbacks", "Same as fast-csg-exact but even forces exact numbers inside corefinement callbacks rather than at the end of each operation.");
 #endif // FAST_CSG_KERNEL_IS_LAZY
+#ifdef ENABLE_CGAL_REMESHING
+const Feature Feature::ExperimentalFastCsgRemesh("fast-csg-remesh", "Simplify meshes after each corefinement operation. HIGHLY RECOMMENDED esp for models that are hanging.");
+#endif // ENABLE_CGAL_REMESHING
 const Feature Feature::ExperimentalRoof("roof", "Enable <code>roof</code>");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");

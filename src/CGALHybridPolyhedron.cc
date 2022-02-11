@@ -19,7 +19,7 @@ void cleanupMesh(CGALHybridPolyhedron::mesh_t& mesh, bool is_corefinement_result
   mesh.collect_garbage();
 
 #ifdef ENABLE_CGAL_REMESHING
-  if (is_corefinement_result) {
+  if (is_corefinement_result && Feature::ExperimentalFastCsgRemesh.is_enabled()) {
     CGALUtils::remeshPlanarPatches(mesh);
   }
 #endif // CGAL_REMESHING_AVAILABLE
