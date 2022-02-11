@@ -2,6 +2,8 @@
 
 #include "cgal.h"
 #include "cgalutils.h"
+#include <CGAL/Plane_3.h>
+#include <CGAL/Surface_mesh.h>
 #include <queue>
 #include <unordered_set>
 
@@ -46,6 +48,50 @@ bool is_weakly_convex(const CGAL::Polyhedron_3<K>& p) {
 }
 
 template bool is_weakly_convex(const CGAL::Polyhedron_3<CGAL_Kernel3>& p);
+
+
+template <typename K>
+bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m) {
+  typedef typename CGAL::Surface_mesh<CGAL::Point_3<K>> Mesh;
+
+  for (auto i : m.halfedges()) {
+    CGAL::Plane_3<K> p(
+        m.point(m.target(m.opposite(i))),
+        m.point(m.target(i)),
+        m.point(m.target(m.next(i))));
+    auto pt = m.point(m.target(m.next(m.opposite(i))));
+    if (p.has_on_positive_side(pt) && CGAL::squared_distance(p, pt) > 1e-8) {
+      return false;
+    }
+  }
+                        
+  // Also make sure that there is only one shell:
+  std::unordered_set<typename Mesh::Face_index, typename CGAL::Handle_hash_function> visited;
+  visited.reserve(m.number_of_faces());
+
+  std::queue<typename Mesh::Face_index> to_explore;
+  to_explore.push(*m.faces().begin()); // One arbitrary facet
+  visited.insert(to_explore.front());
+
+  while (!to_explore.empty()) {
+    typename Mesh::Face_index f = to_explore.front();
+    to_explore.pop();
+
+    CGAL::Halfedge_around_face_iterator<Mesh> he, end;
+    for (boost::tie(he, end) = CGAL::halfedges_around_face(m.halfedge(f), m); he != end; ++he){
+      typename Mesh::Face_index o = m.face(m.opposite(*he));
+
+      if (!visited.count(o)) {
+        visited.insert(o);
+        to_explore.push(o);
+      }
+    }
+  }
+
+  return visited.size() == m.number_of_faces();
+}
+
+template bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& p);
 
 }  // namespace CGALUtils
 
