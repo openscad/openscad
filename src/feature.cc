@@ -32,7 +32,7 @@ Feature::list_t Feature::feature_list;  // Double-listed values. --^
  */
 const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG operations with corefinement instead of nef when possible.");
 const Feature Feature::ExperimentalFastCsgTrustCorefinement("fast-csg-trust-corefinement", "Speed up fast-csg by trusting corefinement functions to tell us the cases they don't support, rather than proactively avoiding these with costly checks.");
-const Feature Feature::ExperimentalFastCsgDebugCorefinement("fast-csg-debug-corefinement", "Debug feature only for command-line usage: dumps .off files with all corefinement operands to help the dev team reproduce issues. This may create lots of files, beware!");
+const Feature Feature::ExperimentalFastCsgDebug("fast-csg-debug", "Debug mode for fast-csg: adds logs with extra costly checks and dumps .off files with the last corefinement operands.");
 #if FAST_CSG_KERNEL_IS_LAZY
 const Feature Feature::ExperimentalFastCsgExact("fast-csg-exact", "Force lazy numbers to exact after each CSG operation.");
 const Feature Feature::ExperimentalFastCsgExactCorefinementCallback("fast-csg-exact-callbacks", "Same as fast-csg-exact but even forces exact numbers inside corefinement callbacks rather than at the end of each operation.");

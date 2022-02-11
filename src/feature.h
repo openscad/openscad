@@ -16,7 +16,7 @@ public:
 
   static const Feature ExperimentalFastCsg;
   static const Feature ExperimentalFastCsgTrustCorefinement;
-  static const Feature ExperimentalFastCsgDebugCorefinement;
+  static const Feature ExperimentalFastCsgDebug;
   static const Feature ExperimentalFastCsgExact;
   static const Feature ExperimentalFastCsgExactCorefinementCallback;
   static const Feature ExperimentalRoof;
