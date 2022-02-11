@@ -145,11 +145,11 @@ void CGALHybridPolyhedron::clear()
 
 void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron& other)
 {
-  if (canCorefineWith(other)) {
-    if (meshBinOp("corefinement mesh union", other, [&](mesh_t& lhs, mesh_t& rhs, mesh_t& out) {
-      return CGALUtils::corefineAndComputeUnion(lhs, rhs, out);
-    })) return;
-  }
+  if (canCorefineWith(other) &&
+      meshBinOp(
+        "corefinement union", other,
+        &CGALUtils::corefineAndComputeUnion<CGAL_HybridKernel3>))
+    return;
 
   nefPolyBinOp("nef union", other,
                [&](nef_polyhedron_t& destinationNef, nef_polyhedron_t& otherNef) {
@@ -159,12 +159,11 @@ void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron& other)
 
 void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron& other)
 {
-  if (canCorefineWith(other)) {
-    if (meshBinOp("corefinement mesh intersection", other,
-                  [&](mesh_t& lhs, mesh_t& rhs, mesh_t& out) {
-      return CGALUtils::corefineAndComputeIntersection(lhs, rhs, out);
-    })) return;
-  }
+  if (canCorefineWith(other) &&
+      meshBinOp(
+        "corefinement intersection", other,
+        &CGALUtils::corefineAndComputeIntersection<CGAL_HybridKernel3>))
+    return;
 
   nefPolyBinOp("nef intersection", other,
                [&](nef_polyhedron_t& destinationNef, nef_polyhedron_t& otherNef) {
@@ -174,12 +173,11 @@ void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron& other)
 
 void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron& other)
 {
-  if (canCorefineWith(other)) {
-    if (meshBinOp("corefinement mesh difference", other,
-                  [&](mesh_t& lhs, mesh_t& rhs, mesh_t& out) {
-      return CGALUtils::corefineAndComputeDifference(lhs, rhs, out);
-    })) return;
-  }
+  if (canCorefineWith(other) &&
+      meshBinOp(
+        "corefinement difference", other,
+        &CGALUtils::corefineAndComputeDifference<CGAL_HybridKernel3>))
+    return;
 
   nefPolyBinOp("nef difference", other,
                [&](nef_polyhedron_t& destinationNef, nef_polyhedron_t& otherNef) {
@@ -306,7 +304,7 @@ void CGALHybridPolyhedron::nefPolyBinOp(
 
 bool CGALHybridPolyhedron::meshBinOp(
   const std::string& opName, CGALHybridPolyhedron& other,
-  const std::function<bool(mesh_t& lhs, mesh_t& rhs, mesh_t& out)>& operation)
+  const std::function<bool(mesh_t& lhs, mesh_t& rhs, mesh_t& out, bool throwOnSelfIntersection)>& operation)
 {
   LOG(message_group::None, Location::NONE, "", "[fast-csg] %1$s (%2$lu vs. %3$lu facets)",
       opName.c_str(), numFacets(), other.numFacets());

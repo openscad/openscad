@@ -100,7 +100,7 @@ private:
    * original nef if there was one. */
   bool meshBinOp(
     const std::string& opName, CGALHybridPolyhedron& other,
-    const std::function<bool(mesh_t& lhs, mesh_t& rhs, mesh_t& out)>& operation);
+    const std::function<bool(mesh_t& lhs, mesh_t& rhs, mesh_t& out, bool throwOnSelfIntersection)>& operation);
 
   nef_polyhedron_t& convertToNef();
   mesh_t& convertToMesh();
