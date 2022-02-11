@@ -336,7 +336,20 @@ bool CGALHybridPolyhedron::meshBinOp(
       std::ofstream(rhsDebugDumpFile) << rhs;
     }
 
-    if ((success = operation(lhs, rhs, lhs))) {
+    auto operationWithRepairs = [&]() {
+      auto repair = Feature::ExperimentalFastCsgRepairSelfIntersections.is_enabled();
+      try {
+        return operation(lhs, rhs, lhs, /* throwOnSelfIntersection= */ repair);
+      } catch (CGAL::Polygon_mesh_processing::Corefinement::Self_intersection_exception &e) {
+        LOG(message_group::Warning, Location::NONE, "",
+          "[fast-csg] Self intersections detected during %1$s: attempting repairs (%2$s)...\n", opName.c_str(), e.what());
+        CGALUtils::removeSelfIntersections(lhs);
+        CGALUtils::removeSelfIntersections(rhs);
+        return operation(lhs, rhs, lhs, /* throwOnSelfIntersection= */ false);
+      }
+    };
+
+    if ((success = operationWithRepairs())) {
       cleanupMesh(lhs, /* is_corefinement_result */ true);
 
       if (Feature::ExperimentalFastCsgDebugCorefinement.is_enabled()) {

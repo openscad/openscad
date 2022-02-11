@@ -18,6 +18,7 @@ public:
   static const Feature ExperimentalFastCsgTrustCorefinement;
   static const Feature ExperimentalFastCsgDebugCorefinement;
   static const Feature ExperimentalFastCsgExact;
+  static const Feature ExperimentalFastCsgRepairSelfIntersections;
   static const Feature ExperimentalFastCsgExactCorefinementCallback;
   static const Feature ExperimentalRoof;
   static const Feature ExperimentalInputDriverDBus;

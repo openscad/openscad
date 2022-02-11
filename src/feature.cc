@@ -36,6 +36,7 @@ const Feature Feature::ExperimentalFastCsgDebugCorefinement("fast-csg-debug-core
 #if FAST_CSG_KERNEL_IS_LAZY
 const Feature Feature::ExperimentalFastCsgExact("fast-csg-exact", "Force lazy numbers to exact after each CSG operation.");
 const Feature Feature::ExperimentalFastCsgExactCorefinementCallback("fast-csg-exact-callbacks", "Same as fast-csg-exact but even forces exact numbers inside corefinement callbacks rather than at the end of each operation.");
+const Feature Feature::ExperimentalFastCsgRepairSelfIntersections("fast-csg-repair", "Repair self-intersections in meshes detected during corefinement.");
 #endif // FAST_CSG_KERNEL_IS_LAZY
 const Feature Feature::ExperimentalRoof("roof", "Enable <code>roof</code>");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");

@@ -43,80 +43,66 @@ struct ExactLazyNumbersVisitor
   void after_subface_created(face_descriptor fi, TriangleMesh &tm) { created_faces.push_back(fi); }
 };
 
-#endif// FAST_CSG_KERNEL_IS_LAZY
+#endif // FAST_CSG_KERNEL_IS_LAZY
+
+#define COREFINEMENT_IMPL_SIMPLE(fn) \
+  return fn(lhs, rhs, out, \
+    CGAL::parameters::throw_on_self_intersection(throwOnSelfIntersection));
+#define COREFINEMENT_IMPL_CALLBACKS(fn) \
+  return fn(lhs, rhs, out, \
+    CGAL::Polygon_mesh_processing::parameters::visitor( \
+        ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()), \
+    CGAL::Polygon_mesh_processing::parameters::visitor( \
+        ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()), \
+    CGAL::parameters::throw_on_self_intersection(throwOnSelfIntersection));
+
+#if FAST_CSG_KERNEL_IS_LAZY
+#define COREFINEMENT_IMPL(fn) \
+  if (Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()) { \
+    COREFINEMENT_IMPL_CALLBACKS(fn); \
+  } else { \
+    COREFINEMENT_IMPL_SIMPLE(fn); \
+  }
+#else
+#define COREFINEMENT_IMPL(fn) COREFINEMENT_IMPL_SIMPLE(fn);
+#endif // FAST_CSG_KERNEL_IS_LAZY
 
 template <typename K>
 bool corefineAndComputeUnion(
   CGAL::Surface_mesh<CGAL::Point_3<K>>& lhs,
   CGAL::Surface_mesh<CGAL::Point_3<K>>& rhs,
-  CGAL::Surface_mesh<CGAL::Point_3<K>>& out)
+  CGAL::Surface_mesh<CGAL::Point_3<K>>& out,
+  bool throwOnSelfIntersection)
 {
-#if FAST_CSG_KERNEL_IS_LAZY
-  if (Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()) {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_union(
-        lhs, rhs, out,
-        CGAL::Polygon_mesh_processing::parameters::visitor(
-            ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()),
-        CGAL::Polygon_mesh_processing::parameters::visitor(
-            ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()));
-  }
-  else
-#endif// FAST_CSG_KERNEL_IS_LAZY
-  {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_union(lhs, rhs, out);
-  }
+  COREFINEMENT_IMPL(CGAL::Polygon_mesh_processing::corefine_and_compute_union);
 }
 
 template <typename K>
 bool corefineAndComputeIntersection(
   CGAL::Surface_mesh<CGAL::Point_3<K>>& lhs,
   CGAL::Surface_mesh<CGAL::Point_3<K>>& rhs,
-  CGAL::Surface_mesh<CGAL::Point_3<K>>& out)
+  CGAL::Surface_mesh<CGAL::Point_3<K>>& out,
+  bool throwOnSelfIntersection)
 {
-#if FAST_CSG_KERNEL_IS_LAZY
-  if (Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()) {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(
-        lhs, rhs, out,
-        CGAL::Polygon_mesh_processing::parameters::visitor(
-            ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()),
-        CGAL::Polygon_mesh_processing::parameters::visitor(
-            ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()));
-  }
-  else
-#endif // FAST_CSG_KERNEL_IS_LAZY
-  {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(lhs, rhs, out);
-  }
+  COREFINEMENT_IMPL(CGAL::Polygon_mesh_processing::corefine_and_compute_intersection);
 }
 
 template <typename K>
 bool corefineAndComputeDifference(
   CGAL::Surface_mesh<CGAL::Point_3<K>>& lhs,
   CGAL::Surface_mesh<CGAL::Point_3<K>>& rhs,
-  CGAL::Surface_mesh<CGAL::Point_3<K>>& out)
+  CGAL::Surface_mesh<CGAL::Point_3<K>>& out,
+  bool throwOnSelfIntersection)
 {
-#if FAST_CSG_KERNEL_IS_LAZY
-  if (Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()) {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_difference(
-        lhs, rhs, out,
-        CGAL::Polygon_mesh_processing::parameters::visitor(
-            ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()),
-        CGAL::Polygon_mesh_processing::parameters::visitor(
-            ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()));
-  }
-  else
-#endif // FAST_CSG_KERNEL_IS_LAZY
-  {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_difference(lhs, rhs, out);
-  }
+  COREFINEMENT_IMPL(CGAL::Polygon_mesh_processing::corefine_and_compute_difference);
 }
 
 template bool corefineAndComputeUnion(
-  CGAL_HybridSurfaceMesh& lhs, CGAL_HybridSurfaceMesh& rhs, CGAL_HybridSurfaceMesh& out);
+  CGAL_HybridSurfaceMesh& lhs, CGAL_HybridSurfaceMesh& rhs, CGAL_HybridSurfaceMesh& out, bool throwOnSelfIntersection);
 template bool corefineAndComputeIntersection(
-  CGAL_HybridSurfaceMesh& lhs, CGAL_HybridSurfaceMesh& rhs, CGAL_HybridSurfaceMesh& out);
+  CGAL_HybridSurfaceMesh& lhs, CGAL_HybridSurfaceMesh& rhs, CGAL_HybridSurfaceMesh& out, bool throwOnSelfIntersection);
 template bool corefineAndComputeDifference(
-  CGAL_HybridSurfaceMesh& lhs, CGAL_HybridSurfaceMesh& rhs, CGAL_HybridSurfaceMesh& out);
+  CGAL_HybridSurfaceMesh& lhs, CGAL_HybridSurfaceMesh& rhs, CGAL_HybridSurfaceMesh& out, bool throwOnSelfIntersection);
 
 } // namespace CGALUtils
 
