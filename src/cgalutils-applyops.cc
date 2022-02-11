@@ -391,19 +391,26 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 
       if (it != std::next(children.begin())) operands[0].reset();
 
+      auto partToGeom = [&](auto &poly) -> shared_ptr<const Geometry> {
+        // Don't convert to a hybrid poly if there's no union to be done, as it loses the convexity flag.
+        if (Feature::ExperimentalFastCsg.is_enabled() && result_parts.size() > 1) {
+          return CGALUtils::createHybridPolyhedronFromPolyhedron(poly);
+        } else {
+          PolySet *ps = new PolySet(3, /* convex= */ true);
+          createPolySetFromPolyhedron(poly, *ps);
+          return shared_ptr<const Geometry>(ps);
+        }
+      };
+
       if (result_parts.size() == 1) {
-        PolySet *ps = new PolySet(3, true);
-        createPolySetFromPolyhedron(*result_parts.begin(), *ps);
-        operands[0] = shared_ptr<const Geometry>(ps);
+        operands[0] = partToGeom(*result_parts.begin());
       } else if (!result_parts.empty()) {
         t.start();
         PRINTDB("Minkowski: Computing union of %d parts", result_parts.size());
         Geometry::Geometries fake_children;
         for (const auto& part : result_parts) {
-          PolySet ps(3, true);
-          createPolySetFromPolyhedron(part, ps);
           fake_children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(),
-                                                 createNefPolyhedronFromGeometry(ps)));
+                                                 partToGeom(part)));
         }
         auto N = CGALUtils::applyUnion3D(fake_children.begin(), fake_children.end());
         // FIXME: This should really never throw.

@@ -105,6 +105,9 @@ template void copyMesh(
 template void copyMesh(
   const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& input,
   CGAL::Surface_mesh<CGAL_Point_3>& output);
+template void copyMesh(
+  const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& input,
+  CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epeck>>& output);
 
 template <typename K>
 void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh)

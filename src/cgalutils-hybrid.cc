@@ -13,6 +13,21 @@
 
 namespace CGALUtils {
 
+template <typename K>
+std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolyhedron(const CGAL::Polyhedron_3<K>& poly)
+{
+  CGAL::Surface_mesh<CGAL::Point_3<K>> mesh;
+  CGAL::copy_face_graph(poly, mesh);
+
+  auto hybrid_mesh = make_shared<CGALHybridPolyhedron::mesh_t>();
+  copyMesh(mesh, *hybrid_mesh);
+  CGALUtils::triangulateFaces(*hybrid_mesh);
+
+  return make_shared<CGALHybridPolyhedron>(hybrid_mesh);
+}
+
+template std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick>& poly);
+
 std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const PolySet& ps)
 {
   auto mesh = make_shared<CGALHybridPolyhedron::mesh_t>();
