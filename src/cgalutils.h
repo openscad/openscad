@@ -108,7 +108,8 @@ getCartesianConverter()
     FromKernel, ToKernel, KernelConverter<FromKernel, ToKernel>>();
 }
 shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron& hybrid);
-std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const Geometry& geom);
+std::shared_ptr<CGALHybridPolyhedron> createMutableHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
+std::shared_ptr<const CGALHybridPolyhedron> getHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
 template <typename K>
 std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolyhedron(const CGAL::Polyhedron_3<K>& poly);
 template <typename Polyhedron>
