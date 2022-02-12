@@ -8,7 +8,7 @@
 #include "node.h"
 #include "progress.h"
 
-Location getLocation(const std::shared_ptr<const AbstractNode> &node)
+Location getLocation(const std::shared_ptr<const AbstractNode>& node)
 {
   return node && node->modinst ? node->modinst->location() : Location::NONE;
 }

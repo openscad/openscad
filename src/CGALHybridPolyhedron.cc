@@ -169,7 +169,7 @@ bool CGALHybridPolyhedron::canCorefineWith(const CGALHybridPolyhedron& other) co
   if (Feature::ExperimentalFastCsgTrustCorefinement.is_enabled()) {
     return true;
   }
-  const char* reasonWontCorefine = nullptr;
+  const char *reasonWontCorefine = nullptr;
   if (sharesAnyVertexWith(other)) {
     reasonWontCorefine = "operands share some vertices";
   } else if (!isManifold() || !other.isManifold()) {
@@ -308,7 +308,7 @@ bool CGALHybridPolyhedron::meshBinOp(
       rhsOut << opName << " " << opNumber << " rhs.off";
       lhsDebugDumpFile = lhsOut.str();
       rhsDebugDumpFile = rhsOut.str();
-      
+
       std::ofstream(lhsDebugDumpFile) << lhs;
       std::ofstream(rhsDebugDumpFile) << rhs;
     }

@@ -56,15 +56,15 @@ bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m) {
 
   for (auto i : m.halfedges()) {
     CGAL::Plane_3<K> p(
-        m.point(m.target(m.opposite(i))),
-        m.point(m.target(i)),
-        m.point(m.target(m.next(i))));
+      m.point(m.target(m.opposite(i))),
+      m.point(m.target(i)),
+      m.point(m.target(m.next(i))));
     auto pt = m.point(m.target(m.next(m.opposite(i))));
     if (p.has_on_positive_side(pt) && CGAL::squared_distance(p, pt) > 1e-8) {
       return false;
     }
   }
-                        
+
   // Also make sure that there is only one shell:
   std::unordered_set<typename Mesh::Face_index, typename CGAL::Handle_hash_function> visited;
   visited.reserve(m.number_of_faces());
@@ -78,7 +78,7 @@ bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m) {
     to_explore.pop();
 
     CGAL::Halfedge_around_face_iterator<Mesh> he, end;
-    for (boost::tie(he, end) = CGAL::halfedges_around_face(m.halfedge(f), m); he != end; ++he){
+    for (boost::tie(he, end) = CGAL::halfedges_around_face(m.halfedge(f), m); he != end; ++he) {
       typename Mesh::Face_index o = m.face(m.opposite(*he));
 
       if (!visited.count(o)) {

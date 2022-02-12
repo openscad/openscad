@@ -43,7 +43,7 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
   // TODO: use Surface_mesh everywhere!!!
   typedef CGAL::Epick Hull_kernel;
   typedef CGAL::Polyhedron_3<CGAL_HybridKernel3> Hybrid_Polyhedron;
-  typedef CGAL::Polyhedron_3<Hull_kernel>        Hull_Polyhedron;
+  typedef CGAL::Polyhedron_3<Hull_kernel> Hull_Polyhedron;
   typedef CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> Hybrid_Nef;
 
   CGAL::Timer t, t_tot;
@@ -69,12 +69,10 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
         else if (auto nef = hybrid->getNefPolyhedron()) {
           if (nef->is_simple()) CGALUtils::convertNefToPolyhedron(*nef, *poly);
           else throw 0;
-        }  
-        else if (auto mesh = hybrid->getMesh()) {
+        } else if (auto mesh = hybrid->getMesh())   {
           if (CGAL::is_valid_polygon_mesh(*mesh)) CGAL::copy_face_graph(*mesh, *poly);
           else throw 0;
-        }  
-        else throw 0;
+        } else throw 0;
 
         if ((ps && ps->is_convex()) ||
             (!ps && CGALUtils::is_weakly_convex(*poly))) {
@@ -205,12 +203,12 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
 
       if (it != std::next(children.begin())) operands[0].reset();
 
-      auto partToGeom = [&](auto &poly) -> shared_ptr<const Geometry> {
-        auto mesh = make_shared<CGALHybridPolyhedron::mesh_t>();
-        CGAL::copy_face_graph(*poly, *mesh);
-        CGALUtils::triangulateFaces(*mesh);
-        return make_shared<CGALHybridPolyhedron>(mesh);
-      };
+      auto partToGeom = [&](auto& poly) -> shared_ptr<const Geometry> {
+          auto mesh = make_shared<CGALHybridPolyhedron::mesh_t>();
+          CGAL::copy_face_graph(*poly, *mesh);
+          CGALUtils::triangulateFaces(*mesh);
+          return make_shared<CGALHybridPolyhedron>(mesh);
+        };
 
       if (result_parts.size() == 1) {
         operands[0] = partToGeom(*result_parts.begin());

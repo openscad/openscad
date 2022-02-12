@@ -221,7 +221,7 @@ struct Copy_polyhedron_to : public CGAL::Modifier_base<typename CGAL::Polyhedron
       do {
         builder.add_vertex_to_facet(index[hc->vertex()]);
         ++hc;
-      } while(hc != hc_end);
+      } while (hc != hc_end);
       builder.end_facet();
     }
     builder.end_surface();

@@ -66,14 +66,11 @@ std::shared_ptr<CGALHybridPolyhedron> createMutableHybridPolyhedronFromGeometry(
 {
   if (auto poly = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return make_shared<CGALHybridPolyhedron>(*poly);
-  }
-  else if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+  } else if (auto ps = dynamic_pointer_cast<const PolySet>(geom))   {
     return createHybridPolyhedronFromPolySet(*ps);
-  }
-  else if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  } else if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom))   {
     return createHybridPolyhedronFromNefPolyhedron(*nef);
-  }
-  else {
+  } else {
     LOG(message_group::Warning, Location::NONE, "", "Unsupported geometry format.");
     return nullptr;
   }
@@ -83,8 +80,7 @@ std::shared_ptr<const CGALHybridPolyhedron> getHybridPolyhedronFromGeometry(cons
 {
   if (auto poly = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return poly;
-  }
-  else {
+  } else {
     return createMutableHybridPolyhedronFromGeometry(geom);
   }
 }

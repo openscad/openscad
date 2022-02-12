@@ -392,11 +392,11 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 
       if (it != std::next(children.begin())) operands[0].reset();
 
-      auto partToGeom = [&](auto &poly) -> shared_ptr<const Geometry> {
-        PolySet *ps = new PolySet(3, /* convex= */ true);
-        createPolySetFromPolyhedron(poly, *ps);
-        return shared_ptr<const Geometry>(ps);
-      };
+      auto partToGeom = [&](auto& poly) -> shared_ptr<const Geometry> {
+          PolySet *ps = new PolySet(3, /* convex= */ true);
+          createPolySetFromPolyhedron(poly, *ps);
+          return shared_ptr<const Geometry>(ps);
+        };
 
       if (result_parts.size() == 1) {
         operands[0] = partToGeom(*result_parts.begin());

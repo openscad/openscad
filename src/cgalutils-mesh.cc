@@ -127,14 +127,14 @@ void cleanupMesh(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& mesh, bo
   mesh.collect_garbage();
 #if FAST_CSG_KERNEL_IS_LAZY
   // If exact corefinement callbacks are enabled, no need to make numbers exact here again.
-  auto make_exact = 
+  auto make_exact =
     Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()
       ? !is_corefinement_result
       : Feature::ExperimentalFastCsgExact.is_enabled();
 
   if (make_exact) {
     for (auto v : mesh.vertices()) {
-      auto &pt = mesh.point(v);
+      auto& pt = mesh.point(v);
       CGAL::exact(pt.x());
       CGAL::exact(pt.y());
       CGAL::exact(pt.z());
