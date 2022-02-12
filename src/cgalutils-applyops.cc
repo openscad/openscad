@@ -231,6 +231,9 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
  */
 shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 {
+  if (Feature::ExperimentalFastCsg.is_enabled()) {
+    return applyMinkowskiHybrid(children);
+  }
   CGAL::Timer t, t_tot;
   assert(children.size() >= 2);
   Geometry::Geometries::const_iterator it = children.begin();

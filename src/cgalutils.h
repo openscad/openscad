@@ -37,6 +37,8 @@ namespace CGALUtils {
 bool applyHull(const Geometry::Geometries& children, PolySet& P);
 template <typename K>
 bool is_weakly_convex(const CGAL::Polyhedron_3<K>& p);
+template <typename K>
+bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m);
 shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op);
 shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
 shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries& children, OpenSCADOperator op);
@@ -54,6 +56,7 @@ CGAL_Iso_cuboid_3 boundingBox(const Geometry& geom);
 CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox& bbox);
 bool is_approximately_convex(const PolySet& ps);
 shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children);
+shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& children);
 
 template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps);
 template <class InputKernel, class OutputKernel>
