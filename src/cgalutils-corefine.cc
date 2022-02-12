@@ -1,8 +1,7 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #include "cgalutils.h"
 
-#include <CGAL/Polygon_mesh_processing/corefinement.h>
-#include <CGAL/Surface_mesh.h>
+#include "cgalutils-corefinement-visitor.h"
 
 namespace CGALUtils {
 
@@ -12,11 +11,8 @@ namespace CGALUtils {
  */
 template <typename TriangleMesh>
 struct ExactLazyNumbersVisitor
-  : public CGAL::Polygon_mesh_processing::Corefinement::Default_visitor<TriangleMesh> {
-  typedef boost::graph_traits<TriangleMesh> GT;
-  typedef typename GT::face_descriptor face_descriptor;
-  typedef typename GT::halfedge_descriptor halfedge_descriptor;
-  typedef typename GT::vertex_descriptor vertex_descriptor;
+  : public PMP::Corefinement::Default_visitor<TriangleMesh> {
+  typedef typename TriangleMesh::Face_index face_descriptor;
 
 #if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 4, 0)
   void new_vertex_added(std::size_t i_id, vertex_descriptor v, const TriangleMesh& tm) {
@@ -58,54 +54,57 @@ struct ExactLazyNumbersVisitor
 template <class TriangleMesh>
 bool corefineAndComputeUnion(TriangleMesh& lhs, TriangleMesh& rhs, TriangleMesh& out)
 {
-#if FAST_CSG_KERNEL_IS_LAZY
-  if (Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()) {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_union(
-      lhs, rhs, out,
-      CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<TriangleMesh>()),
-      CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<TriangleMesh>()));
-  } else
-#endif// FAST_CSG_KERNEL_IS_LAZY
-  {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_union(lhs, rhs, out);
+  auto remesh = Feature::ExperimentalFastCsgRemesh.is_enabled();
+  auto exactCallback = Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled();
+  if (exactCallback && !remesh) {
+    auto param = PMP::parameters::visitor(ExactLazyNumbersVisitor<TriangleMesh>());
+    return PMP::corefine_and_compute_union(lhs, rhs, out, param, param);
+  } else if (remesh) {
+    CorefinementVisitor<TriangleMesh> visitor(lhs, rhs, out, exactCallback);
+    auto param = PMP::parameters::visitor(visitor);
+    auto result = PMP::corefine_and_compute_union(lhs, rhs, out, param, param, param);
+    visitor.remeshSplitFaces(out);
+    return result;
+  } else {
+    return PMP::corefine_and_compute_union(lhs, rhs, out);
   }
 }
 
 template <class TriangleMesh>
 bool corefineAndComputeIntersection(TriangleMesh& lhs, TriangleMesh& rhs, TriangleMesh& out)
 {
-#if FAST_CSG_KERNEL_IS_LAZY
-  if (Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()) {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(
-      lhs, rhs, out,
-      CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<TriangleMesh>()),
-      CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<TriangleMesh>()));
-  } else
-#endif // FAST_CSG_KERNEL_IS_LAZY
-  {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(lhs, rhs, out);
+  auto remesh = Feature::ExperimentalFastCsgRemesh.is_enabled();
+  auto exactCallback = Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled();
+  if (exactCallback && !remesh) {
+    auto param = PMP::parameters::visitor(ExactLazyNumbersVisitor<TriangleMesh>());
+    return PMP::corefine_and_compute_intersection(lhs, rhs, out, param, param);
+  } else if (remesh) {
+    CorefinementVisitor<TriangleMesh> visitor(lhs, rhs, out, exactCallback);
+    auto param = PMP::parameters::visitor(visitor);
+    auto result = PMP::corefine_and_compute_intersection(lhs, rhs, out, param, param, param);
+    visitor.remeshSplitFaces(out);
+    return result;
+  } else {
+    return PMP::corefine_and_compute_intersection(lhs, rhs, out);
   }
 }
 
 template <class TriangleMesh>
 bool corefineAndComputeDifference(TriangleMesh& lhs, TriangleMesh& rhs, TriangleMesh& out)
 {
-#if FAST_CSG_KERNEL_IS_LAZY
-  if (Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()) {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_difference(
-      lhs, rhs, out,
-      CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<TriangleMesh>()),
-      CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<TriangleMesh>()));
-  } else
-#endif // FAST_CSG_KERNEL_IS_LAZY
-  {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_difference(lhs, rhs, out);
+  auto remesh = Feature::ExperimentalFastCsgRemesh.is_enabled();
+  auto exactCallback = Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled();
+  if (exactCallback && !remesh) {
+    auto param = PMP::parameters::visitor(ExactLazyNumbersVisitor<TriangleMesh>());
+    return PMP::corefine_and_compute_difference(lhs, rhs, out, param, param);
+  } else if (remesh) {
+    CorefinementVisitor<TriangleMesh> visitor(lhs, rhs, out, exactCallback);
+    auto param = PMP::parameters::visitor(visitor);
+    auto result = PMP::corefine_and_compute_difference(lhs, rhs, out, param, param, param);
+    visitor.remeshSplitFaces(out);
+    return result;
+  } else {
+    return PMP::corefine_and_compute_difference(lhs, rhs, out);
   }
 }
 
