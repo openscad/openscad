@@ -146,4 +146,5 @@ bool corefineAndComputeDifference(CGAL::Surface_mesh<CGAL::Point_3<K>>& lhs, CGA
 
 template <typename K>
 void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh);
+void cleanupMesh(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& mesh, bool is_corefinement_result);
 } // namespace CGALUtils

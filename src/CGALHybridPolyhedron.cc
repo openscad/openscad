@@ -9,30 +9,6 @@
 #include <sstream>
 #include <stdio.h>
 
-/**
- * Will force lazy coordinates to be exact to avoid subsequent performance issues
- * (only if the kernel is lazy), and will also collect the mesh's garbage if applicable.
- */
-void cleanupMesh(CGALHybridPolyhedron::mesh_t& mesh, bool is_corefinement_result)
-{
-  mesh.collect_garbage();
-#if FAST_CSG_KERNEL_IS_LAZY
-  // If exact corefinement callbacks are enabled, no need to make numbers exact here again.
-  auto make_exact = 
-    Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()
-      ? !is_corefinement_result
-      : Feature::ExperimentalFastCsgExact.is_enabled();
-
-  if (make_exact) {
-    for (auto v : mesh.vertices()) {
-      auto &pt = mesh.point(v);
-      CGAL::exact(pt.x());
-      CGAL::exact(pt.y());
-      CGAL::exact(pt.z());
-    }
-  }
-#endif // FAST_CSG_KERNEL_IS_LAZY
-}
 
 CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<nef_polyhedron_t>& nef)
 {
@@ -112,6 +88,7 @@ bool CGALHybridPolyhedron::isManifold() const
 {
   if (auto mesh = getMesh()) {
     // Note: haven't tried mesh->is_valid() but it could be too expensive.
+    // TODO: use is_valid_polygon_mesh and remember
     return CGAL::is_closed(*mesh);
   } else if (auto nef = getNefPolyhedron()) {
     return nef->is_simple();
@@ -225,7 +202,7 @@ void CGALHybridPolyhedron::transform(const Transform3d& mat)
 
     if (auto mesh = getMesh()) {
       CGALUtils::transform(*mesh, mat);
-      cleanupMesh(*mesh, /* is_corefinement_result */ false);
+      CGALUtils::cleanupMesh(*mesh, /* is_corefinement_result */ false);
     } else if (auto nef = getNefPolyhedron()) {
       CGALUtils::transform(*nef, mat);
     } else {
@@ -337,7 +314,7 @@ bool CGALHybridPolyhedron::meshBinOp(
     }
 
     if ((success = operation(lhs, rhs, lhs))) {
-      cleanupMesh(lhs, /* is_corefinement_result */ true);
+      CGALUtils::cleanupMesh(lhs, /* is_corefinement_result */ true);
 
       if (Feature::ExperimentalFastCsgDebugCorefinement.is_enabled()) {
         remove(lhsDebugDumpFile.c_str());
@@ -390,7 +367,7 @@ CGALHybridPolyhedron::mesh_t& CGALHybridPolyhedron::convertToMesh()
   } else if (auto nef = getNefPolyhedron()) {
     auto mesh = make_shared<mesh_t>();
     CGALUtils::convertNefPolyhedronToTriangleMesh(*nef, *mesh);
-    cleanupMesh(*mesh, /* is_corefinement_result */ false);
+    CGALUtils::cleanupMesh(*mesh, /* is_corefinement_result */ false);
     data = mesh;
     return *mesh;
   } else {
