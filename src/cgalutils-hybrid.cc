@@ -28,6 +28,8 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const Po
       // (try testdata/scad/3D/issues/issue1105d.scad for instance), but
       // PMP::orient_to_bound_a_volume seems just fine.
       orientToBoundAVolume(*mesh);
+    } else {
+      LOG(message_group::Warning, Location::NONE, "", "Warning: mesh is not closed!");
     }
   }
 

@@ -293,24 +293,54 @@ void CGALHybridPolyhedron::foreachVertexUntilTrue(
   }
 }
 
+std::string describeForDebug(const CGALHybridPolyhedron::nef_polyhedron_t &nef)
+{
+  std::ostringstream stream;
+  stream
+      // << (nef.is_valid() ? "valid " : "INVALID ") 
+      << (nef.is_simple() ? "" : "NOT 2-manifold ")
+      << nef.number_of_facets() << " facets"
+      ;
+  return stream.str();
+}
+
+std::string describeForDebug(const CGALHybridPolyhedron::mesh_t &mesh) {
+  std::ostringstream stream;
+  stream
+      << (CGAL::is_valid_polygon_mesh(mesh) ? "" : "INVALID ")
+      << (CGAL::is_closed(mesh) ? "" : "UNCLOSED ") 
+      << mesh.number_of_faces() << " facets";
+  return stream.str();
+}
+
 void CGALHybridPolyhedron::nefPolyBinOp(
   const std::string& opName, CGALHybridPolyhedron& other,
   const std::function<void(nef_polyhedron_t& destinationNef, nef_polyhedron_t& otherNef)>
   & operation)
 {
-  LOG(message_group::None, Location::NONE, "", "[fast-csg] %1$s (%2$lu vs. %3$lu facets)",
-      opName.c_str(), numFacets(), other.numFacets());
+  auto &lhs = convertToNef();
+  auto &rhs = other.convertToNef();
+  
+  if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
+    LOG(message_group::None, Location::NONE, "",
+        "[fast-csg] %1$s: %2$s vs. %3$s",
+        opName.c_str(), describeForDebug(lhs), describeForDebug(rhs));
+  }
 
-  operation(convertToNef(), other.convertToNef());
+  operation(lhs, rhs);
+
+  if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
+    if (!lhs.is_simple()) {
+      LOG(message_group::Warning, Location::NONE, "",
+          "[fast-csg] %1$s output is a %2$s", opName.c_str(), describeForDebug(lhs));
+    }
+  }
 }
 
 bool CGALHybridPolyhedron::meshBinOp(
   const std::string& opName, CGALHybridPolyhedron& other,
   const std::function<bool(mesh_t& lhs, mesh_t& rhs, mesh_t& out)>& operation)
 {
-  LOG(message_group::None, Location::NONE, "", "[fast-csg] %1$s (%2$lu vs. %3$lu facets)",
-      opName.c_str(), numFacets(), other.numFacets());
-
   auto previousData = data;
   auto previousOtherData = other.data;
 
@@ -319,12 +349,18 @@ bool CGALHybridPolyhedron::meshBinOp(
   std::string lhsDebugDumpFile, rhsDebugDumpFile;
 
   try {
-    auto& lhs = convertToMesh();
-    auto& rhs = other.convertToMesh();
+    mesh_t& lhs = convertToMesh();
+    mesh_t& rhs = other.convertToMesh();
 
-    if (Feature::ExperimentalFastCsgDebugCorefinement.is_enabled()) {
+    size_t opNumber = 0;
+
+    if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
+      LOG(message_group::None, Location::NONE, "",
+          "[fast-csg] %1$s #%2$lu: %3$s vs. %4$s",
+          opName.c_str(), opNumber, describeForDebug(lhs), describeForDebug(rhs));
+
       static std::map<std::string, size_t> opCount;
-      auto opNumber = opCount[opName]++;
+      opNumber = opCount[opName]++;
 
       std::ostringstream lhsOut, rhsOut;
       lhsOut << opName << " " << opNumber << " lhs.off";
@@ -339,7 +375,7 @@ bool CGALHybridPolyhedron::meshBinOp(
     if ((success = operation(lhs, rhs, lhs))) {
       cleanupMesh(lhs, /* is_corefinement_result */ true);
 
-      if (Feature::ExperimentalFastCsgDebugCorefinement.is_enabled()) {
+      if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
         remove(lhsDebugDumpFile.c_str());
         remove(rhsDebugDumpFile.c_str());
       }
@@ -347,13 +383,19 @@ bool CGALHybridPolyhedron::meshBinOp(
       LOG(message_group::Warning, Location::NONE, "", "[fast-csg] Corefinement %1$s failed",
           opName.c_str());
     }
+    if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
+      if (!CGAL::is_valid_polygon_mesh(lhs) || !CGAL::is_closed(lhs)) {
+        LOG(message_group::Warning, Location::NONE, "",
+            "[fast-csg] %1$s output is %2$s", opName.c_str(), describeForDebug(lhs));
+      }
+    }
   } catch (const std::exception& e) {
     // This can be a CGAL::Failure_exception, a CGAL::Intersection_of_constraints_exception or who
     // knows what else...
     success = false;
     LOG(message_group::Warning, Location::NONE, "",
         "[fast-csg] Corefinement %1$s failed with an error: %2$s\n", opName.c_str(), e.what());
-    if (Feature::ExperimentalFastCsgDebugCorefinement.is_enabled()) {
+    if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
       LOG(message_group::Warning, Location::NONE, "",
           "Dumps of operands were written to %1$s and %2$s", lhsDebugDumpFile.c_str(), rhsDebugDumpFile.c_str());
     }
