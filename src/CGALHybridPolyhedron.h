@@ -117,10 +117,10 @@ private:
 
   /*! Returns the mesh if that's what's in the current data, or else nullptr.
    * Do NOT make this public. */
-  mesh_t *getMesh() const;
+  std::shared_ptr<mesh_t> getMesh() const;
   /*! Returns the nef polyhedron if that's what's in the current data, or else nullptr.
    * Do NOT make this public. */
-  nef_polyhedron_t *getNefPolyhedron() const;
+  std::shared_ptr<nef_polyhedron_t> getNefPolyhedron() const;
 
   bbox_t getExactBoundingBox() const;
 

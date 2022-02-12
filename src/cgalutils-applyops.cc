@@ -113,11 +113,9 @@ shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children,
 shared_ptr<const Geometry> applyUnion3D(
   Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
 {
-#ifndef FAST_CSG_DISABLED_TRIANGULATION_BUG
   if (Feature::ExperimentalFastCsg.is_enabled()) {
     return applyUnion3DHybrid(chbegin, chend);
   }
-#endif
 
   typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
   struct QueueItemGreater {
@@ -395,14 +393,9 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
       if (it != std::next(children.begin())) operands[0].reset();
 
       auto partToGeom = [&](auto &poly) -> shared_ptr<const Geometry> {
-        // Don't convert to a hybrid poly if there's no union to be done, as it loses the convexity flag.
-        if (Feature::ExperimentalFastCsg.is_enabled() && result_parts.size() > 1) {
-          return CGALUtils::createHybridPolyhedronFromPolyhedron(poly);
-        } else {
-          PolySet *ps = new PolySet(3, /* convex= */ true);
-          createPolySetFromPolyhedron(poly, *ps);
-          return shared_ptr<const Geometry>(ps);
-        }
+        PolySet *ps = new PolySet(3, /* convex= */ true);
+        createPolySetFromPolyhedron(poly, *ps);
+        return shared_ptr<const Geometry>(ps);
       };
 
       if (result_parts.size() == 1) {

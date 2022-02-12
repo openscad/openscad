@@ -45,16 +45,16 @@ CGALHybridPolyhedron::CGALHybridPolyhedron()
   data = make_shared<CGALHybridPolyhedron::mesh_t>();
 }
 
-CGALHybridPolyhedron::nef_polyhedron_t *CGALHybridPolyhedron::getNefPolyhedron() const
+std::shared_ptr<CGALHybridPolyhedron::nef_polyhedron_t> CGALHybridPolyhedron::getNefPolyhedron() const
 {
   auto pp = boost::get<shared_ptr<nef_polyhedron_t>>(&data);
-  return pp ? pp->get() : nullptr;
+  return pp ? *pp : nullptr;
 }
 
-CGALHybridPolyhedron::mesh_t *CGALHybridPolyhedron::getMesh() const
+std::shared_ptr<CGALHybridPolyhedron::mesh_t> CGALHybridPolyhedron::getMesh() const
 {
   auto pp = boost::get<shared_ptr<mesh_t>>(&data);
-  return pp ? pp->get() : nullptr;
+  return pp ? *pp : nullptr;
 }
 
 bool CGALHybridPolyhedron::isEmpty() const
