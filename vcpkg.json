@@ -1,0 +1,26 @@
+{
+  "name": "openscad",
+  "version-string": "2022-01-30",
+  "builtin-baseline": "8dbd66f5a7821ced1ed57696b50375a977006813",
+  "dependencies": [
+    "boost",
+    "cairo",
+    "cgl",
+    "cgal",
+    "eigen3",
+    "glib",
+    "gmp",
+    "libxml2",
+    "libzip",
+    "mimalloc",
+    "mpfr",
+    "opencsg",
+    "qscintilla"
+  ],
+  "overrides": [
+    {
+      "name": "cgal",
+      "version": "5.2.2"
+    }
+  ]
+}
