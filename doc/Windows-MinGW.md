@@ -59,4 +59,4 @@ Then run `make -j`. Finally, on Linux you might run `make install` as root.
 
 ## Return to the main README
 
-This concludes the MinGW-specific instructions; you may now return to the main README.
+This concludes the MinGW-specific instructions; you may choose to return to the main README for further information.

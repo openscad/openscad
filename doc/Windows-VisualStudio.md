@@ -21,21 +21,18 @@ This section contains a summary of the steps to build OpenSCAD for Windows 10 us
     C:\> set VCPKG_DEFAULT_TRIPLET
     VCPKG_DEFAULT_TRIPLET=x64-windows
 ```
-5. Install the dependencies using `vcpkg`. ___This step can take a considerable amount of time; possibly several hours, depending on the power of your machine and the speed of your network.___
-```
-    vcpkg install boost cairo cgal opencsg eigen3 glib libxml2 libzip mpfr pkgconf qscintilla
-```
-6. Download the OpenSCAD source code:
+1. Download the OpenSCAD source code:
 ```
     C:\> git clone https://github.com/openscad
     C:\> cd openscad
     C:\openscad> git submodule update --init
 ```
 
-7. Open the `C:\openscad` folder in Visual Studio; wait for Visual Studio to parse the CMake files.
-1. Use the ```Build|Build All - F6``` command to compile and link OpenSCAD (___only several minutes, this time___).
+1. Open the `C:\openscad` folder in Visual Studio; wait for Visual Studio to parse the CMake files. This step may take several minutes.
+1. Use the ```Build|Build All - F6``` command to compile and link OpenSCAD. This step will probably take several hours, as Visual Studio will download and build all of the third-party dependencies, as well as the OpenSCAD source itself.
 1. Use the ```Build|install openscad``` command to copy the resource files to the output folder.
-1. Run OpenSCAD by using the ```Debug|Start Debugging - F5``` command.
+
+That completes the build process. To run OpenSCAD under the Visual Studio  debugger, click the "Select Startup Item..." toolbar dropdown and select the option that says something similar to ```openscad.exe (Install) (bin\openscad.exe)```. That ensures that the debugger loads a version of the exe that can find all of the runtime dependencies. Other versions may also start up but fail in strange ways.
 
 If you are unsure of how to do some or all of the above steps, please consult the rest of this document for more help.
 
@@ -118,19 +115,9 @@ vcpkg integrate install
 
 This will configure Visual Studio so that the build process can automatically locate all of the header files and libraries that are needed to build OpenSCAD.
 
-## Install the packages
-
-Now it is time to use `vcpkg` to build all of the dependencies for OpenSCAD. This step is likely to take several hours, unless you already have most of the dependencies installed.
-
-```
-vcpkg install boost cairo cgal eigen3 glib libxml2 libzip mimalloc mpfr opencsg qscintilla
-```
-
-If the command fails to complete, look for any advice in the error messages that were output. Sometimes it may be that you have missed out one of the steps described above, or that you need to install some of the optional modules (ATL, MFC etc) for Visual Studio.
-
-If that is the case, fix the problem(s) and rerun the above command; `vcpkg` is idempotent - it will skip any packages that have already been installed, and resume building the remainder.
-
 ## Build OpenSCAD using Visual Studio
+
+__*The next step may take several minutes, as Visual Studio will need to retrieve the appropriate versions of the third-party dependencies. If possible, it will do this either by copying them from your own ```vcpkg``` installation. Otherwise, it will download them from the main Microsoft repository.*__
 
 Start Visual Studio and open the `openscad` folder that was created when you downloaded the source at the start. Visual Studio will detect and load the CMakeLists.txt file and it will automatically configure itself to build OpenSCAD using CMake.
 
@@ -149,14 +136,35 @@ Wait until the Output Window shows that the initial configuration is complete; s
 1> CMake generation finished.
 ```
 
-(The location of the Build files will naturally depend on your particular setup for CMake and Visual Studio.)
+(The precise filenames will depend on your particular setup for CMake and Visual Studio.)
+
+>__*The next step will probably take several hours the first time that you build OpenSCAD, as Visual Studio will build all of the third-party dependencies, as well as the code for OpenSCAD itself.*__
 
 Run the ```Build|Build All``` menu command (or hit ```F6```) to build and link OpenSCAD.
 
+*...after a long delay...*
+
 Once it has built, run the ```Build|install openscad``` menu command to install some extra resources (such as the shaders) to the output folder.
 
-If all is well, you should finally now be able to run OpenSCAD under Visual Studio by hitting ```F5```.
+## Debug OpenSCAD using Visual Studio
+
+To run OpenSCAD under the Visual Studio  debugger, click the ```Select Startup Item...``` dropdown combo on the Visual Studio toolbar. Then select the option that says something similar to:
+
+```
+openscad.exe (Install) (bin\openscad.exe)
+```
+
+This tells the debugger to run a specific version of the executable that you just built that will also be able to locate all of the runtime dependencies that OpenSCAD needs. The other options in the dropdown list may also appear to run but may misbehave without warning.
+
+Then hit ```F5```. If all is well, OpenSCAD should startup and run under the Visual Studio debugger.
+
+### Exceptions inside OpenSCAD
+
+You may notice that some exceptions are thrown and that Visual Studio suspends the program and reports these. This commonly happens during startup and occasionally at other times when debugging under Visual Studio.
+
+Some exceptions are expected and should be handled safely by the code. If the debugger stops at a such an exception, select the "ignore this exception" checkbox in the dialog box and continue debugging with ```F5```. If the debugger refuses to continue, then the exception is not expected by the code and it represents a serious problem. Either the build failed for some reason, or there is a problem with running that version of OpenSCAD on your machine. You should raise a new issue in the
+[issue tracker on the github page](https://github.com/openscad/openscad/issues).
 
 ## Return to the main README
 
-This concludes the Visual Studio-specific instructions; you may now return to the main README.
+This concludes the Visual Studio-specific instructions; you may choose to return to the main README for further information.
