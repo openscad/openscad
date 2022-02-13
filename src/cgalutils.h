@@ -37,6 +37,8 @@ namespace CGALUtils {
 bool applyHull(const Geometry::Geometries& children, PolySet& P);
 template <typename K>
 bool is_weakly_convex(const CGAL::Polyhedron_3<K>& p);
+template <typename K>
+bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m);
 shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op);
 shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
 shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries& children, OpenSCADOperator op);
@@ -54,6 +56,7 @@ CGAL_Iso_cuboid_3 boundingBox(const Geometry& geom);
 CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox& bbox);
 bool is_approximately_convex(const PolySet& ps);
 shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children);
+shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& children);
 
 template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps);
 template <class InputKernel, class OutputKernel>
@@ -70,7 +73,7 @@ bool createMeshFromPolySet(const PolySet& ps, CGAL::Surface_mesh<CGAL::Point_3<K
 
 template <typename K>
 bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet& ps);
-shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromGeometry(const class Geometry& geom);
+shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromGeometry(const class Geometry &geom);
 shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>&);
 shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>&);
 
@@ -108,7 +111,10 @@ getCartesianConverter()
     FromKernel, ToKernel, KernelConverter<FromKernel, ToKernel>>();
 }
 shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron& hybrid);
-std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const Geometry& geom);
+std::shared_ptr<CGALHybridPolyhedron> createMutableHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
+std::shared_ptr<const CGALHybridPolyhedron> getHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
+template <typename K>
+std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolyhedron(const CGAL::Polyhedron_3<K>& poly);
 template <typename Polyhedron>
 void triangulateFaces(Polyhedron& polyhedron);
 template <typename Polyhedron>
@@ -140,4 +146,5 @@ bool corefineAndComputeDifference(CGAL::Surface_mesh<CGAL::Point_3<K>>& lhs, CGA
 
 template <typename K>
 void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh);
+void cleanupMesh(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& mesh, bool is_corefinement_result);
 } // namespace CGALUtils
