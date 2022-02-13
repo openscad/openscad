@@ -63,10 +63,6 @@ typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
 typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2e;
 typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e;
 
-#if CGAL_VERSION_NR <= CGAL_VERSION_NUMBER(4, 6, 0)
-#pragma error("CGAL 4.6.0 or above is required.")
-#endif
-
 #define FAST_CSG_KERNEL_IS_LAZY 1
 typedef CGAL::Epeck CGAL_HybridKernel3;
 

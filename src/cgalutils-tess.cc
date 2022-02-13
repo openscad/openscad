@@ -4,7 +4,7 @@
 //#include "tess.h"
 
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
-#if CGAL_VERSION_NR < 1050401000
+#if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 4, 0)
 #include <CGAL/Triangulation_2_projection_traits_3.h>
 typedef CGAL::Triangulation_2_filtered_projection_traits_3<K> Projection;
 #else
