@@ -125,6 +125,13 @@ template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CG
 void cleanupMesh(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& mesh, bool is_corefinement_result)
 {
   mesh.collect_garbage();
+
+#ifdef ENABLE_CGAL_REMESHING
+  if (is_corefinement_result && Feature::ExperimentalFastCsgRemesh.is_enabled()) {
+    CGALUtils::remeshPlanarPatches(mesh);
+  }
+#endif // ENABLE_CGAL_REMESHING
+
 #if FAST_CSG_KERNEL_IS_LAZY
   // If exact corefinement callbacks are enabled, no need to make numbers exact here again.
   auto make_exact =

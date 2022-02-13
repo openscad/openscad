@@ -5,6 +5,7 @@
 #include "hash.h"
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/boost/graph/helpers.h>
+#include <CGAL/Polygon_mesh_processing/corefinement.h>
 #include <fstream>
 #include <sstream>
 #include <stdio.h>
