@@ -113,11 +113,9 @@ shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children,
 shared_ptr<const Geometry> applyUnion3D(
   Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
 {
-#ifndef FAST_CSG_DISABLED_TRIANGULATION_BUG
   if (Feature::ExperimentalFastCsg.is_enabled()) {
     return applyUnion3DHybrid(chbegin, chend);
   }
-#endif
 
   typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
   struct QueueItemGreater {
@@ -176,19 +174,22 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
 {
   typedef CGAL::Epick K;
   // Collect point cloud
-  // NB! CGAL's convex_hull_3() doesn't like std::set iterators, so we use a list
-  // instead.
-  std::list<K::Point_3> points;
+  // NB! CGAL's convex_hull_3() doesn't like std::set iterators, so we use a
+  // vector instead.
+
+  std::vector<K::Point_3> points;
 
   for (const auto& item : children) {
     auto& chgeom = item.second;
     if (auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom)) {
       if (!N->isEmpty()) {
+        points.reserve(points.size() + N->p3->number_of_vertices());
         for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
           points.push_back(vector_convert<K::Point_3>(i->point()));
         }
       }
     } else if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(chgeom)) {
+      points.reserve(points.size() + hybrid->numVertices());
       hybrid->foreachVertexUntilTrue([&](auto& p) {
           points.push_back(vector_convert<K::Point_3>(p));
           return false;
@@ -196,6 +197,7 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
     } else {
       const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
       if (ps) {
+        points.reserve(points.size() + ps->polygons.size() * 3);
         for (const auto& p : ps->polygons) {
           for (const auto& v : p) {
             points.push_back(vector_convert<K::Point_3>(v));
@@ -231,6 +233,9 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
  */
 shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 {
+  if (Feature::ExperimentalFastCsg.is_enabled()) {
+    return applyMinkowskiHybrid(children);
+  }
   CGAL::Timer t, t_tot;
   assert(children.size() >= 2);
   Geometry::Geometries::const_iterator it = children.begin();
@@ -391,19 +396,21 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 
       if (it != std::next(children.begin())) operands[0].reset();
 
+      auto partToGeom = [&](auto& poly) -> shared_ptr<const Geometry> {
+          PolySet *ps = new PolySet(3, /* convex= */ true);
+          createPolySetFromPolyhedron(poly, *ps);
+          return shared_ptr<const Geometry>(ps);
+        };
+
       if (result_parts.size() == 1) {
-        PolySet *ps = new PolySet(3, true);
-        createPolySetFromPolyhedron(*result_parts.begin(), *ps);
-        operands[0] = shared_ptr<const Geometry>(ps);
+        operands[0] = partToGeom(*result_parts.begin());
       } else if (!result_parts.empty()) {
         t.start();
         PRINTDB("Minkowski: Computing union of %d parts", result_parts.size());
         Geometry::Geometries fake_children;
         for (const auto& part : result_parts) {
-          PolySet ps(3, true);
-          createPolySetFromPolyhedron(part, ps);
           fake_children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(),
-                                                 createNefPolyhedronFromGeometry(ps)));
+                                                 partToGeom(part)));
         }
         auto N = CGALUtils::applyUnion3D(fake_children.begin(), fake_children.end());
         // FIXME: This should really never throw.

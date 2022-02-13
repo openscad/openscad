@@ -4,13 +4,14 @@ jobs:
     working_directory: ~/workspace
     docker:
       - image: openscad/mxe-i686-gui:latest
+    resource_class: large
     steps:
       - checkout
       - run:
           name: Build OpenSCAD Windows Application (32bit)
           no_output_timeout: 18000
           command: |
-              export NUMCPU=2
+              export NUMCPU=4
               export MXEDIR=/mxe
               export LIB3MF_INCLUDEDIR=/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
               export LIB3MF_LIBDIR=/mxe/usr/i686-w64-mingw32.static.posix/lib
@@ -35,13 +36,14 @@ jobs:
     working_directory: ~/workspace
     docker:
       - image: openscad/mxe-x86_64-gui:latest
+    resource_class: large
     steps:
       - checkout
       - run:
           name: Build OpenSCAD Windows Application (64bit)
           no_output_timeout: 18000
           command: |
-              export NUMCPU=2
+              export NUMCPU=4
               export MXEDIR=/mxe
               export LIB3MF_INCLUDEDIR=/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
               export LIB3MF_LIBDIR=/mxe/usr/x86_64-w64-mingw32.static.posix/lib
@@ -67,6 +69,7 @@ jobs:
     working_directory: ~/workspace
     docker:
       - image: openscad/appimage-x86_64-base:latest
+    resource_class: large
     steps:
       - checkout
       - run:
@@ -82,14 +85,14 @@ jobs:
               git submodule update --init
               mkdir build && cd build
               cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DOPENSCAD_VERSION="$OPENSCAD_VERSION" -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT"
-              make -j2
+              make -j4
               make install DESTDIR=../AppDir
               cd ..
               export PATH=/appimage/usr/bin:"$PATH"
               export EXTRA_QT_PLUGINS=svg
-              VERSION="$OPENSCAD_VERSION" linuxdeploy --plugin qt --output appimage --appdir AppDir
+              VERSION="${OPENSCAD_VERSION}${SUFFIX}" linuxdeploy --plugin qt --output appimage --appdir AppDir
               mkdir -p /tmp/out
-              for f in OpenSCAD-*.AppImage; do N=$(basename "$f" | sed -e "s/OpenSCAD-\\(.*\\)/OpenSCAD-${OPENSCAD_VERSION}-${SUFFIX}\\1/;"); cp -iv "$f" /tmp/out/"$N"; done
+              cp -iv OpenSCAD-*.AppImage /tmp/out
               if [ -n "${CODE_SIGNING_KEY}" ]; then
                   cd /tmp/out
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
