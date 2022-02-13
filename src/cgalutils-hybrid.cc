@@ -13,6 +13,21 @@
 
 namespace CGALUtils {
 
+template <typename K>
+std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolyhedron(const CGAL::Polyhedron_3<K>& poly)
+{
+  CGAL::Surface_mesh<CGAL::Point_3<K>> mesh;
+  CGAL::copy_face_graph(poly, mesh);
+
+  auto hybrid_mesh = make_shared<CGALHybridPolyhedron::mesh_t>();
+  copyMesh(mesh, *hybrid_mesh);
+  CGALUtils::triangulateFaces(*hybrid_mesh);
+
+  return make_shared<CGALHybridPolyhedron>(hybrid_mesh);
+}
+
+template std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick>& poly);
+
 std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const PolySet& ps)
 {
   auto mesh = make_shared<CGALHybridPolyhedron::mesh_t>();
@@ -49,18 +64,26 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromNefPolyhedron(co
   return make_shared<CGALHybridPolyhedron>(mesh);
 }
 
-std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromGeometry(const Geometry& geom)
+std::shared_ptr<CGALHybridPolyhedron> createMutableHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom)
 {
-  if (auto poly = dynamic_cast<const CGALHybridPolyhedron *>(&geom)) {
+  if (auto poly = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return make_shared<CGALHybridPolyhedron>(*poly);
-  } else if (auto ps = dynamic_cast<const PolySet *>(&geom)) {
+  } else if (auto ps = dynamic_pointer_cast<const PolySet>(geom))   {
     return createHybridPolyhedronFromPolySet(*ps);
-  }
-  if (auto nef = dynamic_cast<const CGAL_Nef_polyhedron *>(&geom)) {
+  } else if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom))   {
     return createHybridPolyhedronFromNefPolyhedron(*nef);
   } else {
     LOG(message_group::Warning, Location::NONE, "", "Unsupported geometry format.");
     return nullptr;
+  }
+}
+
+std::shared_ptr<const CGALHybridPolyhedron> getHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom)
+{
+  if (auto poly = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+    return poly;
+  } else {
+    return createMutableHybridPolyhedronFromGeometry(geom);
   }
 }
 
