@@ -252,9 +252,7 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   # This one no longer crashes, yay!
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/bugs/issue1455.scad
   # These are less broken than before:
-  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/bugs/issue591.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/bugs/issue791.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/polyhedron-tests.scad
 
   # No more green faces from differences.
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/CSG-modules.scad
@@ -281,7 +279,6 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1105d.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1165.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1215c.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1223.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1803.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue3158.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue835.scad
@@ -293,6 +290,15 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/let-module-tests.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/rotate_extrude-hole.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/rotate-empty-bbox.scad
+)
+
+list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS_WITHOUT_TRUST_COREF
+  # These are less broken than before:
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/bugs/issue591.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/polyhedron-tests.scad
+
+  # No more green faces from differences.
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1223.scad
 )
 
 #
@@ -355,9 +361,10 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(EXPERIMENTAL_OPTION "")
         # Enable fast-csg for all tests but those that have different expectations or fail for other reasons.
         if (NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
+            AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS_WITHOUT_TRUST_COREF
             AND NOT SCADFILE IN_LIST FAST_CSG_FAILING_SCADFILES
             AND NOT TEST_FULLNAME IN_LIST FAST_CSG_FAILING_TESTS)
-          set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
+          set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg --enable=fast-csg-trust-corefinement")
         endif()
       else()
         # add global experimental options here
@@ -1116,7 +1123,8 @@ add_cmdline_test(lazyunion-stlpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX
 add_cmdline_test(lazyunion-offpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF --enable=lazy-union --render=cgal)
 add_cmdline_test(lazyunion-dxfpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --enable=lazy-union --render=cgal)
 add_cmdline_test(lazyunion-svgpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=lazy-union --render=cgal)
-add_cmdline_test(fastcsg-cgalpng       OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS} ARGS --enable=fast-csg --render)
+add_cmdline_test(fastcsg-cgalpng       OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS}                     ARGS --enable=fast-csg --enable=fast-csg-trust-corefinement --render)
+add_cmdline_test(fastcsg-cgalpng       OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS_WITHOUT_TRUST_COREF} ARGS --enable=fast-csg --render)
 
 #
 # Trivial Export/Import files

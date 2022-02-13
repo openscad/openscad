@@ -105,6 +105,9 @@ template void copyMesh(
 template void copyMesh(
   const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& input,
   CGAL::Surface_mesh<CGAL_Point_3>& output);
+template void copyMesh(
+  const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& input,
+  CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epeck>>& output);
 
 template <typename K>
 void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh)
@@ -114,6 +117,31 @@ void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CG
 
 template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CGAL_Kernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>>& mesh);
 template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& mesh);
+
+/**
+ * Will force lazy coordinates to be exact to avoid subsequent performance issues
+ * (only if the kernel is lazy), and will also collect the mesh's garbage if applicable.
+ */
+void cleanupMesh(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& mesh, bool is_corefinement_result)
+{
+  mesh.collect_garbage();
+#if FAST_CSG_KERNEL_IS_LAZY
+  // If exact corefinement callbacks are enabled, no need to make numbers exact here again.
+  auto make_exact =
+    Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()
+      ? !is_corefinement_result
+      : Feature::ExperimentalFastCsgExact.is_enabled();
+
+  if (make_exact) {
+    for (auto v : mesh.vertices()) {
+      auto& pt = mesh.point(v);
+      CGAL::exact(pt.x());
+      CGAL::exact(pt.y());
+      CGAL::exact(pt.z());
+    }
+  }
+#endif // FAST_CSG_KERNEL_IS_LAZY
+}
 
 } // namespace CGALUtils
 

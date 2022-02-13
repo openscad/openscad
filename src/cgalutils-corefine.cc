@@ -15,8 +15,19 @@ typedef CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>> CGAL_HybridSurface
 template <typename TriangleMesh>
 struct ExactLazyNumbersVisitor
   : public CGAL::Polygon_mesh_processing::Corefinement::Default_visitor<TriangleMesh> {
-  typedef typename TriangleMesh::Face_index face_descriptor;
+  typedef boost::graph_traits<TriangleMesh> GT;
+  typedef typename GT::face_descriptor face_descriptor;
+  typedef typename GT::halfedge_descriptor halfedge_descriptor;
+  typedef typename GT::vertex_descriptor vertex_descriptor;
 
+#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 4, 0)
+  void new_vertex_added(std::size_t i_id, vertex_descriptor v, const TriangleMesh &tm) {
+    auto &pt = tm.point(v);
+    CGAL::exact(pt.x());
+    CGAL::exact(pt.y());
+    CGAL::exact(pt.z());
+  }
+#else
   face_descriptor split_face;
   std::vector<face_descriptor> created_faces;
 
@@ -41,6 +52,7 @@ struct ExactLazyNumbersVisitor
     created_faces.clear();
   }
   void after_subface_created(face_descriptor fi, TriangleMesh &tm) { created_faces.push_back(fi); }
+#endif
 };
 
 #endif// FAST_CSG_KERNEL_IS_LAZY
