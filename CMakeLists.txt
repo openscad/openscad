@@ -295,7 +295,7 @@ endif()
 # Reconsider this after CGAL 5.4: https://github.com/CGAL/cgal/pull/6029
 set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
-find_package(CGAL REQUIRED COMPONENTS Core)
+find_package(CGAL 5.0 REQUIRED COMPONENTS Core)
 message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
 target_compile_definitions(OpenSCAD PRIVATE ENABLE_CGAL)
 # The macro `CGAL_DEBUG` allows to force CGAL assertions, even if `NDEBUG` is defined,
