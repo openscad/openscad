@@ -224,7 +224,7 @@ endfunction()
 #                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>)
 #
 if(MSVC)
-  # 'vcpkg'' does not appear to work with FindPythonInterp.cmake, so we use the version-specific
+  # 'vcpkg' does not appear to work with FindPythonInterp.cmake, so we use the version-specific
   # FindPython3.cmake instead.
   message(STATUS "searching VCPKG for a compatible version of python (this make take a minute or two, depending on your installation; please be patient!)")
   find_package(Python3 3.4 REQUIRED COMPONENTS Interpreter)
