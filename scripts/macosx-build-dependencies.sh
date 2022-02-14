@@ -4,12 +4,16 @@
 # The libraries will be build in 64-bit mode and backwards compatible
 # with 10.13 "High Sierra".
 #
-# This script must be run from the OpenSCAD source root directory
+# This script must be run from the OpenSCAD source root directory.
+# By default, dependencies will be built for the local architecture.
 #
-# Usage: macosx-build-dependencies.sh [-16lcdfv] [<package>]
-#  -d   Build for deployment (if not specified, e.g. Sparkle won't be built)
-#  -f   Force build even if package is installed
-#  -v   Verbose
+# Usage: macosx-build-dependencies.sh [-dflaxv] [<package>]
+#  -d         Build for deployment (if not specified, e.g. Sparkle won't be built)
+#  -f         Force build even if package is installed
+#  -l MINUTES Build time limit in minutes
+#  -a         Build arm64 binaries
+#  -x         Build x86_64 binaries
+#  -v         Verbose
 #
 # Prerequisites: automake, libtool, cmake, pkg-config, wget, meson
 #
@@ -996,6 +1000,9 @@ else
 fi
 
 LOCAL_ARCH=`uname -m`
+
+# Some older autotools doesn't recognize 'arm64', so we set
+# LOCAL_GNU_ARCH and GNU_ARCHS to 'aarch64' for usage with those tools.
 if [[ $LOCAL_ARCH == "arm64" ]]; then
     LOCAL_GNU_ARCH=aarch64
 else
@@ -1003,7 +1010,6 @@ else
 fi
 
 ARCHS=()
-# Some older autotools doesn't recognize arm64
 GNU_ARCHS=()
 if $OPTION_ARM64 || $OPTION_X86_64; then
     if $OPTION_X86_64; then
