@@ -53,7 +53,7 @@ The build process might take several hours to complete, depending on the speed o
 Ensure that you have downloaded the latest OpenSCAD source code from [Github](https://github.com/openscad/openscad), e.g. by opening a `Command Prompt` and running the following commands:
 
 ```
-C:\> git clone https://github.com/openscad/openscad
+C:\> git clone https://github.com/openscad/openscad.git
 C:\> cd openscad
 C:\openscad> git submodule update --init
 ```
@@ -83,6 +83,7 @@ Validating signature... done.
 
 C:\vcpkg> setx VCPKG_ROOT C:\vcpkg
 C:\vcpkg> setx VCPKG_DEFAULT_TRIPLET x64-windows
+```
 
 >__*If you fail to set these environment variables and ensure that Visual Studio can see them, CMake will not be able to locate its toolchain file and/or you may waste a lot of time on compiling the wrong versions of the third-party libraries.*__
 ### Using the Chocolatey Package Manager to install flex, bison and python
@@ -106,17 +107,15 @@ You will need to ensure that the environment is updated before trying to build O
 
 ## Build OpenSCAD using Visual Studio
 
->__*The next step will probably take a long time, especially if you have not previously installed any of the `vcpkg` packages. This is the point at which Visual Studio will build all of the third-party libraries and then compile and link them to the OpenSCAD source code.*__
+>__*This section will probably take several hours to complete, if it is the first time that you have tried to build OpenSCAD on this machine. The longest delay will be just after you have opened the project, when Visual Studio downloads and builds all of the dependencies for OpenSCAD.*__
 
 Start Visual Studio and open the `C:\openscad` folder that was created when you downloaded the source from [Github](https://www.github.com/openscad/openscad), as described above.
 
-Visual Studio will detect the `CMakeLists.txt` file and it will immediately configure itself to build OpenSCAD using `CMake` and information in the `vcpkg.json` manifest file.
+There will be a short delay while Visual Studio loads and initializes the project. It may appear that nothing is happening, but please allow a minute or two before you conclude that something is wrong. Once Visual Studio has completed its initialization phase, it will display the project in the Solution Explorer and then go on to process the `CMakeLists.txt` file and the `vcpkg.json` manifest file.
 
-Please be patient and wait (possibly a few hours) until the `Output` window in Visual Studio shows that this initial configuration phase is complete. It takes such a long time because it is not only creating the script files used by CMake in this step. Visual Studio will also download and compile all of the third-party libraries that are needed to build OpenSCAD.
+This is the step that takes the most time. However, everything should run automatically at this point. You may safely leave it running in the background and go and do something else, checking only periodically to see if something has failed.
 
-Once they have been built, these dependencies will be cached in a `vcpkg_installed` subfolder, so that they can be reused. Unless you explicitly delete the CMake cache, or Visual Studio detects that one or more of the third-party dependencies has changed, you will not have to wait for Visual Studio to do this again.
-
-When the `Output` window displays a message to the effect that the CMake generation has finished, check that the final few lines look something like this:
+Eventually, the `Output` window in the Visual Studio IDE should show the configuration phase is complete. You should check that the final output does not mention anything that implies it failed, or there was a fatal error. The final few lines should look something like this:
 
 ```
 [...]
@@ -131,11 +130,15 @@ When the `Output` window displays a message to the effect that the CMake generat
 1> CMake generation finished.
 ```
 
-The precise filenames will naturally depend on your particular setup for CMake and Visual Studio. If you see errors that you do not understand and are unable to fix, please raise a new issue in the [issue tracker on the github page](https://github.com/openscad/openscad/issues).
+If you see that there were errors that you do not understand and are unable to fix yourself, please raise a new issue in the [issue tracker on the github page](https://github.com/openscad/openscad/issues).
+
+## Select the build target - Debug or Release
+
+As mentioned above, the project is shipped to build a 64-bit release version. If you want to build a debug version instead, then change the Visual Studio active configuration from `x64-Release` to `x64-Debug`.
 
 Run the `Build|Build All` menu command (or hit `F6`) to build and link OpenSCAD.
 
-Once it has built, run the `Build|install openscad` menu command to copy the third-party DLLs and some extra resource files (such as the shaders) to the output folder.
+Once that has finished, run the `Build|install openscad` menu command to copy the third-party DLLs and some extra resource files (such as the shaders) to the output folder.
 
 ## Debug OpenSCAD using Visual Studio
 
