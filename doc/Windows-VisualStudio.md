@@ -14,8 +14,13 @@ This section contains a summary of the steps to build OpenSCAD for Windows 10 us
 
 1. Your Visual Studio installation must include support for ATL and MFC.
 1. You will need to have a working version of `bison` and `flex` available on the PATH. See the section [Install flex and bison](##Install-flex-and-bison) below for some possible ways to install these.
-1. You will need to have a copy of Python (at least version 3.4) available on the PATH. See the section [Install Python](##Install-Python) below for some possible ways to install this.
-1. You will need to have a copy of `vcpkg` on your machine and an environment variable `VCPKG_ROOT` that points to the folder that holds the `vcpkg.exe` file. You should also set the `VCPKG_DEFAULT_TRIPLET` environment variable to your chosen build type, e.g. `x64-windows`. By default, `vcpkg` will build 32-bit libraries (`x86-windows`). See the section [Install vcpkg](##Install-vcpkg) below for more details.
+1. You will need to have a copy of [vcpkg](https://vcpkg.io/en/index.html), which is the Microsoft Package Manager for Windows.
+1. Ensure that an environment variable called `VCPKG_ROOT` points to the root folder of your `vcpkg` installation.
+1. Ensure that `vcpkg` will use the correct target-triplet for your needs, by setting another environment variable:
+```
+    C:\> set VCPKG_DEFAULT_TRIPLET
+    VCPKG_DEFAULT_TRIPLET=x64-windows
+```
 1. Download the OpenSCAD source code:
 ```
     C:\> git clone https://github.com/openscad
@@ -55,13 +60,14 @@ C:\openscad> git submodule update --init
 
 ## Install third party utilities
 
-To build OpenSCAD, you need to have a copy of Microsoft's Package Manager `vcpkg`, a ccopy of Python v3.4 or later and two GNU utilities called `bison` and `flex` available on your PATH.
+To build OpenSCAD, you need to have a copy of Microsoft's Package Manager `vcpkg`, a copy of Python v3.4 or later and two GNU utilities called `bison` and `flex` available on your PATH.
 
 ## Install vcpkg
 
 Building OpenSCAD imports a lot of open-source library code. These are published in a public repository maintained by Microsoft's package manager 'vcpkg', which you must have installed on your machine in order to be able to build OpenSCAD.
 
-To install `vcpkg`, retrieve the latest version from [Github](https://www.github.com/Microsoft/vcpkg) and run the `bootstrap-vcpkg.bat` script to initialise it. Then define two environment variables: one called `VCPKG_ROOT` to point to the `vcpkg` folder and the other called `VCPKG_DEFAULT_TRIPLET` to specify the build type (`x64-windows`):
+To install `vcpkg`, retrieve the latest version from [Github](https://www.github.com/Microsoft/vcpkg) and run the `bootstrap-vcpkg.bat` script to initialise it.
+Then define two environment variables: one called `VCPKG_ROOT` to point to the `vcpkg` folder and the other called `VCPKG_DEFAULT_TRIPLET` to specify the build type (`x64-windows`):
 
 ```
 C:\> git clone https://github.com/microsoft/vcpkg.git
@@ -78,10 +84,7 @@ Validating signature... done.
 C:\vcpkg> setx VCPKG_ROOT C:\vcpkg
 C:\vcpkg> setx VCPKG_DEFAULT_TRIPLET x64-windows
 
-```
-
 >__*If you fail to set these environment variables and ensure that Visual Studio can see them, CMake will not be able to locate its toolchain file and/or you may waste a lot of time on compiling the wrong versions of the third-party libraries.*__
-
 ### Using the Chocolatey Package Manager to install flex, bison and python
 
 [Chocolatey](https://chocolatey.org/install) is a Package Manager for Windows utilities. 
@@ -132,8 +135,6 @@ The precise filenames will naturally depend on your particular setup for CMake a
 
 Run the `Build|Build All` menu command (or hit `F6`) to build and link OpenSCAD.
 
-*...after a considerable delay; possibly several hours...*
-
 Once it has built, run the `Build|install openscad` menu command to copy the third-party DLLs and some extra resource files (such as the shaders) to the output folder.
 
 ## Debug OpenSCAD using Visual Studio
@@ -152,7 +153,7 @@ Then hit `F5`. If all is well, OpenSCAD should startup and run under the Visual 
 
 You may notice that some exceptions are thrown when you run OpenSCAD under the Visual Studio debugger, and that Visual Studio suspends the program and reports them. This most commonly happens when you first start OpenSCAD but it also occasionally happens at other times.
 
-Some exceptions are expected and should be handled safely by the code. If the debugger stops at a such an exception, select the "ignore this exception" checkbox in the dialog box and choose to continue debugging (hit `F5`). If the debugger refuses to continue, then the exception was not expected by the code and it represents a serious problem.
+Some exceptions are expected and should be handled safely by the code. If the debugger stops at a such an exception, try turning off the "break on this exception" checkbox in the dialog box and tell the debugger to continue (hit `F5`). If the debugger refuses to continue, then the exception was not expected by the code and it represents a serious problem.
 
 Either the build failed for some reason, or there is a problem with running that version of OpenSCAD on your machine. If you are unable to solve the problem yourself, you should raise a new issue in the [issue tracker on the github page](https://github.com/openscad/openscad/issues).
 
