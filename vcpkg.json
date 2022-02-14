@@ -3,7 +3,11 @@
   "version-string": "2022-01-30",
   "builtin-baseline": "8dbd66f5a7821ced1ed57696b50375a977006813",
   "dependencies": [
-    "boost",
+    "boost-assign",
+    "boost-filesystem",
+    "boost-program-options",
+    "boost-regex",
+    "boost-system",
     "cairo",
     "cgl",
     "cgal",
@@ -12,7 +16,6 @@
     "gmp",
     "libxml2",
     "libzip",
-    "mimalloc",
     "mpfr",
     "opencsg",
     "qscintilla"
