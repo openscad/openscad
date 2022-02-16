@@ -36,7 +36,7 @@ bool createMeshFromPolySet(const PolySet& ps, CGAL::Surface_mesh<CGAL::Point_3<K
   return err;
 }
 
-template bool createMeshFromPolySet(const PolySet& ps, CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& mesh);
+template bool createMeshFromPolySet(const PolySet& ps, CGAL_HybridMesh& mesh);
 
 template <typename K>
 bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh, PolySet& ps)
@@ -60,7 +60,7 @@ bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh, Pol
   return err;
 }
 
-template bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& mesh, PolySet& ps);
+template bool createPolySetFromMesh(const CGAL_HybridMesh& mesh, PolySet& ps);
 
 template <class InputKernel, class OutputKernel>
 void copyMesh(
@@ -97,13 +97,13 @@ void copyMesh(
 }
 
 template void copyMesh(
-  const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& input,
-  CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& output);
+  const CGAL_HybridMesh& input,
+  CGAL_HybridMesh& output);
 template void copyMesh(
   const CGAL::Surface_mesh<CGAL_Point_3>& input,
-  CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& output);
+  CGAL_HybridMesh& output);
 template void copyMesh(
-  const CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& input,
+  const CGAL_HybridMesh& input,
   CGAL::Surface_mesh<CGAL_Point_3>& output);
 template void copyMesh(
   const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& input,
@@ -116,13 +116,13 @@ void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CG
 }
 
 template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CGAL_Kernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>>& mesh);
-template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& mesh);
+template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& nef, CGAL_HybridMesh& mesh);
 
 /**
  * Will force lazy coordinates to be exact to avoid subsequent performance issues
  * (only if the kernel is lazy), and will also collect the mesh's garbage if applicable.
  */
-void cleanupMesh(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& mesh, bool is_corefinement_result)
+void cleanupMesh(CGAL_HybridMesh& mesh, bool is_corefinement_result)
 {
   mesh.collect_garbage();
 #if FAST_CSG_KERNEL_IS_LAZY
