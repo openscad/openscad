@@ -70,6 +70,8 @@ void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>& input,
               CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>>& output);
 template <typename K>
 bool createMeshFromPolySet(const PolySet& ps, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh);
+template <typename TriangleMesh>
+void repairMesh(TriangleMesh& tm);
 
 template <typename K>
 bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet& ps);
@@ -131,12 +133,6 @@ template <typename K>
 void inPlaceNefMinkowski(CGAL::Nef_polyhedron_3<K>& lhs, CGAL::Nef_polyhedron_3<K>& rhs);
 template <typename K>
 void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Polyhedron_3<K>& polyhedron);
-template <typename K>
-bool corefineAndComputeUnion(CGAL::Polyhedron_3<K>& lhs, CGAL::Polyhedron_3<K>& rhs, CGAL::Polyhedron_3<K>& out);
-template <typename K>
-bool corefineAndComputeIntersection(CGAL::Polyhedron_3<K>& lhs, CGAL::Polyhedron_3<K>& rhs, CGAL::Polyhedron_3<K>& out);
-template <typename K>
-bool corefineAndComputeDifference(CGAL::Polyhedron_3<K>& lhs, CGAL::Polyhedron_3<K>& rhs, CGAL::Polyhedron_3<K>& out);
 template <typename K>
 bool corefineAndComputeUnion(CGAL::Surface_mesh<CGAL::Point_3<K>>& lhs, CGAL::Surface_mesh<CGAL::Point_3<K>>& rhs, CGAL::Surface_mesh<CGAL::Point_3<K>>& out);
 template <typename K>

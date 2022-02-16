@@ -1,10 +1,89 @@
 #include "cgalutils.h"
 
+#include <CGAL/Polygon_mesh_processing/repair.h>
+#include <CGAL/Polygon_mesh_processing/self_intersections.h>
+#include <CGAL/Polygon_mesh_processing/triangulate_hole.h>
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/Surface_mesh.h>
 #include "Reindexer.h"
 
 namespace CGALUtils {
+
+namespace PMP = CGAL::Polygon_mesh_processing;
+
+
+template <typename TriangleMesh>
+void repairMesh(TriangleMesh& tm)
+{
+  typedef boost::graph_traits<TriangleMesh> GT;
+  typedef typename GT::face_descriptor face_descriptor;
+  typedef typename GT::halfedge_descriptor halfedge_descriptor;
+  typedef typename GT::edge_descriptor edge_descriptor;
+  typedef typename GT::vertex_descriptor vertex_descriptor;
+
+  auto rewriteMesh = [&]() {
+      TriangleMesh copy;
+      copyMesh(tm, copy);
+      tm = copy;
+    };
+
+  auto debug = Feature::ExperimentalFastCsgDebug.is_enabled();
+
+  auto addedVertexCount = PMP::duplicate_non_manifold_vertices(tm);
+  if (addedVertexCount) {
+    if (debug) {
+      LOG(message_group::None, Location::NONE, "", "[fast-csg-repair] Added %1$s vertices to avoid non manifold vertices", addedVertexCount);
+    }
+    rewriteMesh();
+  }
+
+  if (!CGAL::is_closed(tm)) {
+    std::vector<face_descriptor> facesAdded;
+    size_t holeCount = 0;
+
+    // TODO(ochafik): Experiment w/ grid + stitch.
+    //   #include <CGAL/Polygon_mesh_processing/internal/repair_extra.h>
+    //   std::vector<std::pair<halfedge_descriptor, halfedge_descriptor>> halfEdgesToStitch;
+    //   // Does not compile with Epeck yet!
+    //   PMP::collect_close_stitchable_boundary_edges(tm, /* epsilon= */ GRID_FINE, get(boost::vertex_point, tm), halfEdgesToStitch);
+    //   PMP::stitch_borders(tm, halfEdgesToStitch);
+    //   // Or simply PMP::stitch_borders(tm); after throwing border vertices into the grid?
+
+    for (auto& he : tm.halfedges()) {
+      // if (!tm.is_border(he)) continue;
+      if (tm.face(he).is_valid()) continue;
+      PMP::triangulate_hole(tm, he, back_inserter(facesAdded));
+      holeCount++;
+    }
+
+    if (debug) {
+      LOG(message_group::None, Location::NONE, "", "[fast-csg-repair] Triangulated %1$lu holes with %2$lu new faces", holeCount, facesAdded.size());
+    }
+
+    std::vector<std::pair<face_descriptor, face_descriptor>> selfIntersectionPairs;
+    PMP::self_intersections(facesAdded, tm, back_inserter(selfIntersectionPairs));
+
+    if (!selfIntersectionPairs.empty()) {
+      size_t removedCount = 0;
+      for (auto& p : selfIntersectionPairs) {
+        auto& f = p.first;
+        if (!tm.is_removed(f)) {
+          tm.remove_face(f);
+          removedCount++;
+        }
+      }
+      if (debug) {
+        LOG(message_group::None, Location::NONE, "", "[fast-csg-repair] Patching holes created %1$lu pairs of self-intersecting faces. Removed %2$lu offending hole-patching faces.", selfIntersectionPairs.size(), removedCount);
+      }
+    }
+
+    if (!facesAdded.empty()) {
+      rewriteMesh();
+    }
+  }
+}
+
+template void repairMesh(CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>>& tm);
 
 template <typename K>
 bool createMeshFromPolySet(const PolySet& ps, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh)
@@ -33,6 +112,11 @@ bool createMeshFromPolySet(const PolySet& ps, CGAL::Surface_mesh<CGAL::Point_3<K
     }
     mesh.add_face(polygon);
   }
+
+  // if (Feature::ExperimentalFastCsgRepair.is_enabled()) {
+  //   repairMesh(mesh);
+  // }
+
   return err;
 }
 

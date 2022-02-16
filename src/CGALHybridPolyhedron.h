@@ -113,8 +113,6 @@ private:
 
   bool sharesAnyVertexWith(const CGALHybridPolyhedron& other) const;
 
-  bool canCorefineWith(const CGALHybridPolyhedron& other) const;
-
   /*! Returns the mesh if that's what's in the current data, or else nullptr.
    * Do NOT make this public. */
   std::shared_ptr<mesh_t> getMesh() const;

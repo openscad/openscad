@@ -9,7 +9,6 @@
 #include <sstream>
 #include <stdio.h>
 
-
 CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<nef_polyhedron_t>& nef)
 {
   assert(nef);
@@ -20,7 +19,6 @@ CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<mesh_t>& mesh)
 {
   assert(mesh);
   data = mesh;
-
 }
 
 CGALHybridPolyhedron::CGALHybridPolyhedron(const CGALHybridPolyhedron& other)
@@ -45,7 +43,8 @@ CGALHybridPolyhedron::CGALHybridPolyhedron()
   data = make_shared<CGALHybridPolyhedron::mesh_t>();
 }
 
-std::shared_ptr<CGALHybridPolyhedron::nef_polyhedron_t> CGALHybridPolyhedron::getNefPolyhedron() const
+std::shared_ptr<CGALHybridPolyhedron::nef_polyhedron_t> CGALHybridPolyhedron::getNefPolyhedron()
+const
 {
   auto pp = boost::get<shared_ptr<nef_polyhedron_t>>(&data);
   return pp ? *pp : nullptr;
@@ -87,9 +86,7 @@ size_t CGALHybridPolyhedron::numVertices() const
 bool CGALHybridPolyhedron::isManifold() const
 {
   if (auto mesh = getMesh()) {
-    // Note: haven't tried mesh->is_valid() but it could be too expensive.
-    // TODO: use is_valid_polygon_mesh and remember
-    return CGAL::is_closed(*mesh);
+    return CGAL::is_valid_polygon_mesh(*mesh);
   } else if (auto nef = getNefPolyhedron()) {
     return nef->is_simple();
   }
@@ -122,74 +119,29 @@ void CGALHybridPolyhedron::clear()
 
 void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron& other)
 {
-  if (canCorefineWith(other)) {
-    if (meshBinOp("corefinement mesh union", other, [&](mesh_t& lhs, mesh_t& rhs, mesh_t& out) {
-      return CGALUtils::corefineAndComputeUnion(lhs, rhs, out);
-    })) return;
+  if (!meshBinOp("corefinement union", other, &CGALUtils::corefineAndComputeUnion<CGAL_HybridKernel3>)) {
+    nefPolyBinOp("nef union", other, &CGALUtils::inPlaceNefUnion<CGAL_HybridKernel3>);
   }
-
-  nefPolyBinOp("nef union", other,
-               [&](nef_polyhedron_t& destinationNef, nef_polyhedron_t& otherNef) {
-    CGALUtils::inPlaceNefUnion(destinationNef, otherNef);
-  });
 }
 
 void CGALHybridPolyhedron::operator*=(CGALHybridPolyhedron& other)
 {
-  if (canCorefineWith(other)) {
-    if (meshBinOp("corefinement mesh intersection", other,
-                  [&](mesh_t& lhs, mesh_t& rhs, mesh_t& out) {
-      return CGALUtils::corefineAndComputeIntersection(lhs, rhs, out);
-    })) return;
+  if (!meshBinOp("corefinement intersection", other,
+                 &CGALUtils::corefineAndComputeIntersection<CGAL_HybridKernel3>)) {
+    nefPolyBinOp("nef intersection", other, &CGALUtils::inPlaceNefIntersection<CGAL_HybridKernel3>);
   }
-
-  nefPolyBinOp("nef intersection", other,
-               [&](nef_polyhedron_t& destinationNef, nef_polyhedron_t& otherNef) {
-    CGALUtils::inPlaceNefIntersection(destinationNef, otherNef);
-  });
 }
 
 void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron& other)
 {
-  if (canCorefineWith(other)) {
-    if (meshBinOp("corefinement mesh difference", other,
-                  [&](mesh_t& lhs, mesh_t& rhs, mesh_t& out) {
-      return CGALUtils::corefineAndComputeDifference(lhs, rhs, out);
-    })) return;
+  if (!meshBinOp("corefinement difference", other, &CGALUtils::corefineAndComputeDifference<CGAL_HybridKernel3>)) {
+    nefPolyBinOp("nef difference", other, &CGALUtils::inPlaceNefDifference<CGAL_HybridKernel3>);
   }
-
-  nefPolyBinOp("nef difference", other,
-               [&](nef_polyhedron_t& destinationNef, nef_polyhedron_t& otherNef) {
-    CGALUtils::inPlaceNefDifference(destinationNef, otherNef);
-  });
-}
-
-bool CGALHybridPolyhedron::canCorefineWith(const CGALHybridPolyhedron& other) const
-{
-  if (Feature::ExperimentalFastCsgTrustCorefinement.is_enabled()) {
-    return true;
-  }
-  const char *reasonWontCorefine = nullptr;
-  if (sharesAnyVertexWith(other)) {
-    reasonWontCorefine = "operands share some vertices";
-  } else if (!isManifold() || !other.isManifold()) {
-    reasonWontCorefine = "non manifoldness detected";
-  }
-  if (reasonWontCorefine) {
-    LOG(message_group::None, Location::NONE, "",
-        "[fast-csg] Performing safer but slower nef operation instead of corefinement because %1$s. "
-        "(can override with fast-csg-trust-corefinement)",
-        reasonWontCorefine);
-  }
-  return !reasonWontCorefine;
 }
 
 void CGALHybridPolyhedron::minkowski(CGALHybridPolyhedron& other)
 {
-  nefPolyBinOp("minkowski", other,
-               [&](nef_polyhedron_t& destinationNef, nef_polyhedron_t& otherNef) {
-    CGALUtils::inPlaceNefMinkowski(destinationNef, otherNef);
-  });
+  nefPolyBinOp("minkowski", other, &CGALUtils::inPlaceNefMinkowski<CGAL_HybridKernel3>);
 }
 
 void CGALHybridPolyhedron::transform(const Transform3d& mat)
@@ -211,8 +163,8 @@ void CGALHybridPolyhedron::transform(const Transform3d& mat)
   }
 }
 
-void CGALHybridPolyhedron::resize(
-  const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize)
+void CGALHybridPolyhedron::resize(const Vector3d& newsize,
+                                  const Eigen::Matrix<bool, 3, 1>& autosize)
 {
   if (this->isEmpty()) return;
 
@@ -270,23 +222,18 @@ void CGALHybridPolyhedron::foreachVertexUntilTrue(
   }
 }
 
-std::string describeForDebug(const CGALHybridPolyhedron::nef_polyhedron_t &nef)
+std::string describeForDebug(const CGALHybridPolyhedron::nef_polyhedron_t& nef)
 {
   std::ostringstream stream;
-  stream
-      // << (nef.is_valid() ? "valid " : "INVALID ") 
-      << (nef.is_simple() ? "" : "NOT 2-manifold ")
-      << nef.number_of_facets() << " facets"
-      ;
+  stream << (nef.is_simple() ? "" : "NOT 2-manifold ") << nef.number_of_facets() << " facets";
   return stream.str();
 }
 
-std::string describeForDebug(const CGALHybridPolyhedron::mesh_t &mesh) {
+std::string describeForDebug(const CGALHybridPolyhedron::mesh_t& mesh)
+{
   std::ostringstream stream;
-  stream
-      << (CGAL::is_valid_polygon_mesh(mesh) ? "" : "INVALID ")
-      << (CGAL::is_closed(mesh) ? "" : "UNCLOSED ") 
-      << mesh.number_of_faces() << " facets";
+  stream << (CGAL::is_valid_polygon_mesh(mesh) ? "" : "INVALID ")
+         << (CGAL::is_closed(mesh) ? "" : "UNCLOSED ") << mesh.number_of_faces() << " facets";
   return stream.str();
 }
 
@@ -295,21 +242,20 @@ void CGALHybridPolyhedron::nefPolyBinOp(
   const std::function<void(nef_polyhedron_t& destinationNef, nef_polyhedron_t& otherNef)>
   & operation)
 {
-  auto &lhs = convertToNef();
-  auto &rhs = other.convertToNef();
-  
+  auto& lhs = convertToNef();
+  auto& rhs = other.convertToNef();
+
   if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
-    LOG(message_group::None, Location::NONE, "",
-        "[fast-csg] %1$s: %2$s vs. %3$s",
-        opName.c_str(), describeForDebug(lhs), describeForDebug(rhs));
+    LOG(message_group::None, Location::NONE, "", "[fast-csg] %1$s: %2$s vs. %3$s", opName.c_str(),
+        describeForDebug(lhs), describeForDebug(rhs));
   }
 
   operation(lhs, rhs);
 
   if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
     if (!lhs.is_simple()) {
-      LOG(message_group::Warning, Location::NONE, "",
-          "[fast-csg] %1$s output is a %2$s", opName.c_str(), describeForDebug(lhs));
+      LOG(message_group::Warning, Location::NONE, "", "[fast-csg] %1$s output is a %2$s",
+          opName.c_str(), describeForDebug(lhs));
     }
   }
 }
@@ -321,50 +267,104 @@ bool CGALHybridPolyhedron::meshBinOp(
   auto previousData = data;
   auto previousOtherData = other.data;
 
-  auto success = false;
-
+  auto repairEnabled = Feature::ExperimentalFastCsgRepair.is_enabled();
+  auto trustEnabled = Feature::ExperimentalFastCsgTrustCorefinement.is_enabled();
+  auto debugEnabled = Feature::ExperimentalFastCsgDebug.is_enabled();
   std::string lhsDebugDumpFile, rhsDebugDumpFile;
 
+  auto success = false;
   try {
     mesh_t& lhs = convertToMesh();
     mesh_t& rhs = other.convertToMesh();
 
+    auto isValid = [&](const mesh_t& mesh) {
+        return CGAL::is_valid_polygon_mesh(mesh) && CGAL::is_closed(mesh);
+      };
+
+    // When fast-csg-repair is enabled:
+    // - If fast-csg-trust-corefinement is on: we try to run the operation before
+    //   attempting any repairs, and in case of soft or hard failure we then
+    //   do the repairs and retry.
+    // - If fast-csg-trust-corefinement is off: we check the validity of the
+    //   inputs and repair them *before* running the operation.
+
+    auto repaired = false;
+    if (repairEnabled && !trustEnabled) {
+      CGALUtils::repairMesh(lhs);
+      CGALUtils::repairMesh(rhs);
+      repaired = true;
+    } else if (!trustEnabled) {
+      if (!isValid(lhs) || !isValid(rhs)) {
+        LOG(message_group::None, Location::NONE, "",
+            "[fast-csg] Performing safer but slower nef operation as inputs are "
+            "not manifold and/or closed. Repair them with fast-csg-repair or "
+            "override with fast-csg-trust-corefinement");
+        return false;
+      }
+    }
+
     size_t opNumber = 0;
 
-    if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
-      LOG(message_group::None, Location::NONE, "",
-          "[fast-csg] %1$s #%2$lu: %3$s vs. %4$s",
+    if (debugEnabled) {
+      LOG(message_group::None, Location::NONE, "", "[fast-csg] %1$s #%2$lu: %3$s vs. %4$s",
           opName.c_str(), opNumber, describeForDebug(lhs), describeForDebug(rhs));
 
       static std::map<std::string, size_t> opCount;
       opNumber = opCount[opName]++;
 
-      std::ostringstream lhsOut, rhsOut;
-      lhsOut << opName << " " << opNumber << " lhs.off";
-      rhsOut << opName << " " << opNumber << " rhs.off";
-      lhsDebugDumpFile = lhsOut.str();
-      rhsDebugDumpFile = rhsOut.str();
+      auto writeMesh = [&](const char *nameSuffix, mesh_t& mesh) {
+          std::ostringstream nameOut;
+          nameOut << opName << " " << opNumber << " " << nameSuffix << ".off";
+          auto name = nameOut.str();
+          std::ofstream(name) << mesh;
+          return name;
+        };
 
-      std::ofstream(lhsDebugDumpFile) << lhs;
-      std::ofstream(rhsDebugDumpFile) << rhs;
+      lhsDebugDumpFile = writeMesh("lhs", lhs);
+      rhsDebugDumpFile = writeMesh("rhs", rhs);
     }
 
-    if ((success = operation(lhs, rhs, lhs))) {
-      CGALUtils::cleanupMesh(lhs, /* is_corefinement_result */ true);
+    auto tryOperation = [&](auto silentErrors) {
+        try {
+          return operation(lhs, rhs, lhs);
+        } catch (const std::exception& e) {
+          // This can be a CGAL::Failure_exception, a CGAL::Intersection_of_constraints_exception or who
+          // knows what else...
+          if (!silentErrors) {
+            LOG(message_group::Error, Location::NONE, "", "[fast-csg] CGAL error in %1$s: %2$s", opName.c_str(), e.what());
+            return false;
+          }
+        }
+      };
 
-      if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
-        remove(lhsDebugDumpFile.c_str());
-        remove(rhsDebugDumpFile.c_str());
+    // If repairs are enabled, try with silent errors first,
+    // then retry loudly after repairing.
+    auto willRetryAfterRepairs = repairEnabled && !repaired;
+    if (willRetryAfterRepairs) {
+      try {
+        success = operation(lhs, rhs, lhs);
+      } catch (const std::exception& e) {
+        success = false;
+        if (debugEnabled) {
+          LOG(message_group::Error, Location::NONE, "", "[fast-csg] CGAL error in %1$s (will retry after repairs): %2$s", opName.c_str(), e.what());
+          return false;
+        }
       }
-    } else {
-      LOG(message_group::Warning, Location::NONE, "", "[fast-csg] Corefinement %1$s failed",
-          opName.c_str());
+      CGALUtils::repairMesh(lhs);
+      CGALUtils::repairMesh(rhs);
+      repaired = true;
     }
-    if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
-      if (!CGAL::is_valid_polygon_mesh(lhs) || !CGAL::is_closed(lhs)) {
-        LOG(message_group::Warning, Location::NONE, "",
-            "[fast-csg] %1$s output is %2$s", opName.c_str(), describeForDebug(lhs));
+
+    if (!success) {
+      // If this one throws, we're out.
+      if ((success = operation(lhs, rhs, lhs))) {
+        CGALUtils::cleanupMesh(lhs, /* is_corefinement_result */ true);
       }
+    }
+
+    if (debugEnabled && !isValid(lhs)) {
+      LOG(message_group::Warning, Location::NONE, "", "[fast-csg] %1$s output (%2$s) is %3$s",
+          opName.c_str(), success ? "success" : "failure", describeForDebug(lhs));
     }
   } catch (const std::exception& e) {
     // This can be a CGAL::Failure_exception, a CGAL::Intersection_of_constraints_exception or who
@@ -372,10 +372,6 @@ bool CGALHybridPolyhedron::meshBinOp(
     success = false;
     LOG(message_group::Warning, Location::NONE, "",
         "[fast-csg] Corefinement %1$s failed with an error: %2$s\n", opName.c_str(), e.what());
-    if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
-      LOG(message_group::Warning, Location::NONE, "",
-          "Dumps of operands were written to %1$s and %2$s", lhsDebugDumpFile.c_str(), rhsDebugDumpFile.c_str());
-    }
   }
 
   if (!success) {
@@ -384,6 +380,17 @@ bool CGALHybridPolyhedron::meshBinOp(
     // had nefs.
     data = previousData;
     other.data = previousOtherData;
+  }
+
+  if (debugEnabled) {
+    if (success) {
+      remove(lhsDebugDumpFile.c_str());
+      remove(rhsDebugDumpFile.c_str());
+    } else {
+      LOG(message_group::Warning, Location::NONE, "",
+          "Dumps of operands were written to %1$s and %2$s", lhsDebugDumpFile.c_str(),
+          rhsDebugDumpFile.c_str());
+    }
   }
 
   return success;
