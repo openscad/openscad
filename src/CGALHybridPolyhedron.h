@@ -79,6 +79,9 @@ public:
   /*! Iterate over all vertices' points until the function returns true (for done). */
   void foreachVertexUntilTrue(const std::function<bool(const point_t& pt)>& f) const;
 
+  std::shared_ptr<CGAL_HybridNef> convertToNef();
+  std::shared_ptr<CGAL_HybridMesh> convertToMesh();
+
 private:
   // Old GCC versions used to build releases have object file limitations.
   // This conversion function could have been in the class but it requires knowledge
@@ -103,9 +106,6 @@ private:
   bool meshBinOp(
     const std::string& opName, CGALHybridPolyhedron& other,
     const std::function<bool(CGAL_HybridMesh& lhs, CGAL_HybridMesh& rhs, CGAL_HybridMesh& out)>& operation);
-
-  CGAL_HybridNef& convertToNef();
-  CGAL_HybridMesh& convertToMesh();
 
   bool sharesAnyVertexWith(const CGALHybridPolyhedron& other) const;
 
