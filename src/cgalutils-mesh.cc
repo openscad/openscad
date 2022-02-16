@@ -83,7 +83,7 @@ void repairMesh(TriangleMesh& tm)
   }
 }
 
-template void repairMesh(CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>>& tm);
+template void repairMesh(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& tm);
 
 template <typename K>
 bool createMeshFromPolySet(const PolySet& ps, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh)
@@ -112,10 +112,6 @@ bool createMeshFromPolySet(const PolySet& ps, CGAL::Surface_mesh<CGAL::Point_3<K
     }
     mesh.add_face(polygon);
   }
-
-  // if (Feature::ExperimentalFastCsgRepair.is_enabled()) {
-  //   repairMesh(mesh);
-  // }
 
   return err;
 }

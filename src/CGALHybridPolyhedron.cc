@@ -324,19 +324,6 @@ bool CGALHybridPolyhedron::meshBinOp(
       rhsDebugDumpFile = writeMesh("rhs", rhs);
     }
 
-    auto tryOperation = [&](auto silentErrors) {
-        try {
-          return operation(lhs, rhs, lhs);
-        } catch (const std::exception& e) {
-          // This can be a CGAL::Failure_exception, a CGAL::Intersection_of_constraints_exception or who
-          // knows what else...
-          if (!silentErrors) {
-            LOG(message_group::Error, Location::NONE, "", "[fast-csg] CGAL error in %1$s: %2$s", opName.c_str(), e.what());
-            return false;
-          }
-        }
-      };
-
     // If repairs are enabled, try with silent errors first,
     // then retry loudly after repairing.
     auto willRetryAfterRepairs = repairEnabled && !repaired;
@@ -349,17 +336,19 @@ bool CGALHybridPolyhedron::meshBinOp(
           LOG(message_group::Error, Location::NONE, "", "[fast-csg] CGAL error in %1$s (will retry after repairs): %2$s", opName.c_str(), e.what());
           return false;
         }
+        CGALUtils::repairMesh(lhs);
+        CGALUtils::repairMesh(rhs);
+        repaired = true;
       }
-      CGALUtils::repairMesh(lhs);
-      CGALUtils::repairMesh(rhs);
-      repaired = true;
     }
 
     if (!success) {
       // If this one throws, we're out.
-      if ((success = operation(lhs, rhs, lhs))) {
-        CGALUtils::cleanupMesh(lhs, /* is_corefinement_result */ true);
-      }
+      success = operation(lhs, rhs, lhs);
+    }
+
+    if (success) {
+      CGALUtils::cleanupMesh(lhs, /* is_corefinement_result */ true);
     }
 
     if (debugEnabled && !isValid(lhs)) {
