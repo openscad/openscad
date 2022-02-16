@@ -55,20 +55,17 @@ struct ExactLazyNumbersVisitor
 
 #endif// FAST_CSG_KERNEL_IS_LAZY
 
-template <typename K>
-bool corefineAndComputeUnion(
-  CGAL::Surface_mesh<CGAL::Point_3<K>>& lhs,
-  CGAL::Surface_mesh<CGAL::Point_3<K>>& rhs,
-  CGAL::Surface_mesh<CGAL::Point_3<K>>& out)
+template <class TriangleMesh>
+bool corefineAndComputeUnion(TriangleMesh& lhs, TriangleMesh& rhs, TriangleMesh& out)
 {
 #if FAST_CSG_KERNEL_IS_LAZY
   if (Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()) {
     return CGAL::Polygon_mesh_processing::corefine_and_compute_union(
       lhs, rhs, out,
       CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()),
+        ExactLazyNumbersVisitor<TriangleMesh>()),
       CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()));
+        ExactLazyNumbersVisitor<TriangleMesh>()));
   } else
 #endif// FAST_CSG_KERNEL_IS_LAZY
   {
@@ -76,20 +73,17 @@ bool corefineAndComputeUnion(
   }
 }
 
-template <typename K>
-bool corefineAndComputeIntersection(
-  CGAL::Surface_mesh<CGAL::Point_3<K>>& lhs,
-  CGAL::Surface_mesh<CGAL::Point_3<K>>& rhs,
-  CGAL::Surface_mesh<CGAL::Point_3<K>>& out)
+template <class TriangleMesh>
+bool corefineAndComputeIntersection(TriangleMesh& lhs, TriangleMesh& rhs, TriangleMesh& out)
 {
 #if FAST_CSG_KERNEL_IS_LAZY
   if (Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()) {
     return CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(
       lhs, rhs, out,
       CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()),
+        ExactLazyNumbersVisitor<TriangleMesh>()),
       CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()));
+        ExactLazyNumbersVisitor<TriangleMesh>()));
   } else
 #endif // FAST_CSG_KERNEL_IS_LAZY
   {
@@ -97,20 +91,17 @@ bool corefineAndComputeIntersection(
   }
 }
 
-template <typename K>
-bool corefineAndComputeDifference(
-  CGAL::Surface_mesh<CGAL::Point_3<K>>& lhs,
-  CGAL::Surface_mesh<CGAL::Point_3<K>>& rhs,
-  CGAL::Surface_mesh<CGAL::Point_3<K>>& out)
+template <class TriangleMesh>
+bool corefineAndComputeDifference(TriangleMesh& lhs, TriangleMesh& rhs, TriangleMesh& out)
 {
 #if FAST_CSG_KERNEL_IS_LAZY
   if (Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()) {
     return CGAL::Polygon_mesh_processing::corefine_and_compute_difference(
       lhs, rhs, out,
       CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()),
+        ExactLazyNumbersVisitor<TriangleMesh>()),
       CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<CGAL::Surface_mesh<CGAL::Point_3<K>>>()));
+        ExactLazyNumbersVisitor<TriangleMesh>()));
   } else
 #endif // FAST_CSG_KERNEL_IS_LAZY
   {
