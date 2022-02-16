@@ -1,14 +1,18 @@
 #include "cgalutils.h"
 
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
+#include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Surface_mesh.h>
 #include "Reindexer.h"
 
 namespace CGALUtils {
 
-template <typename K>
-bool createMeshFromPolySet(const PolySet& ps, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh)
+template <class TriangleMesh>
+bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
 {
+  typedef boost::graph_traits<TriangleMesh> GT;
+  typedef typename GT::vertex_descriptor vertex_descriptor;
+
   bool err = false;
   auto num_vertices = ps.numFacets() * 3;
   auto num_facets = ps.numFacets();
@@ -16,10 +20,9 @@ bool createMeshFromPolySet(const PolySet& ps, CGAL::Surface_mesh<CGAL::Point_3<K
   mesh.reserve(mesh.number_of_vertices() + num_vertices, mesh.number_of_halfedges() + num_edges,
                mesh.number_of_faces() + num_facets);
 
-  typedef typename CGAL::Surface_mesh<CGAL::Point_3<K>>::Vertex_index Vertex_index;
-  std::vector<Vertex_index> polygon;
+  std::vector<vertex_descriptor> polygon;
 
-  std::unordered_map<Vector3d, Vertex_index> indices;
+  std::unordered_map<Vector3d, vertex_descriptor> indices;
 
   for (const auto& p : ps.polygons) {
     polygon.clear();
@@ -27,7 +30,7 @@ bool createMeshFromPolySet(const PolySet& ps, CGAL::Surface_mesh<CGAL::Point_3<K
       auto size_before = indices.size();
       auto& index = indices[v];
       if (size_before != indices.size()) {
-        index = mesh.add_vertex(vector_convert<CGAL::Point_3<K>>(v));
+        index = mesh.add_vertex(vector_convert<typename TriangleMesh::Point>(v));
       }
       polygon.push_back(index);
     }
@@ -38,15 +41,15 @@ bool createMeshFromPolySet(const PolySet& ps, CGAL::Surface_mesh<CGAL::Point_3<K
 
 template bool createMeshFromPolySet(const PolySet& ps, CGAL_HybridMesh& mesh);
 
-template <typename K>
-bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh, PolySet& ps)
+template <class TriangleMesh>
+bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
 {
   bool err = false;
   ps.reserve(ps.numFacets() + mesh.number_of_faces());
   for (auto& f : mesh.faces()) {
     ps.append_poly();
 
-    CGAL::Vertex_around_face_iterator<typename CGAL::Surface_mesh<CGAL::Point_3<K>>> vbegin, vend;
+    CGAL::Vertex_around_face_iterator<TriangleMesh> vbegin, vend;
     for (boost::tie(vbegin, vend) = vertices_around_face(mesh.halfedge(f), mesh); vbegin != vend;
          ++vbegin) {
       auto& v = mesh.point(*vbegin);
@@ -96,18 +99,10 @@ void copyMesh(
   }
 }
 
-template void copyMesh(
-  const CGAL_HybridMesh& input,
-  CGAL_HybridMesh& output);
-template void copyMesh(
-  const CGAL::Surface_mesh<CGAL_Point_3>& input,
-  CGAL_HybridMesh& output);
-template void copyMesh(
-  const CGAL_HybridMesh& input,
-  CGAL::Surface_mesh<CGAL_Point_3>& output);
-template void copyMesh(
-  const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& input,
-  CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epeck>>& output);
+template void copyMesh(const CGAL_HybridMesh& input, CGAL_HybridMesh& output);
+template void copyMesh(const CGAL::Surface_mesh<CGAL_Point_3>& input, CGAL_HybridMesh& output);
+template void copyMesh(const CGAL_HybridMesh& input, CGAL::Surface_mesh<CGAL_Point_3>& output);
+template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& input, CGAL_HybridMesh& output);
 
 template <typename K>
 void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh)

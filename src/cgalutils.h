@@ -6,17 +6,13 @@
 #include "enums.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+
 typedef CGAL::Epick K;
 typedef CGAL::Point_3<K> Vertex3K;
 typedef std::vector<Vertex3K> PolygonK;
 typedef std::vector<PolygonK> PolyholeK;
 
 class CGALHybridPolyhedron;
-
-namespace CGAL {
-template <typename P>
-class Surface_mesh;
-}
 
 namespace CGAL {
 inline std::size_t hash_value(const CGAL_HybridKernel3::FT& x) {
@@ -63,13 +59,13 @@ template <class InputKernel, class OutputKernel>
 void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel>& poly_a, CGAL::Polyhedron_3<OutputKernel>& poly_b);
 template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p);
 
-template <typename K>
-bool createPolySetFromMesh(const CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh, PolySet& ps);
+template <class TriangleMesh>
+bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps);
 template <class InputKernel, class OutputKernel>
 void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>& input,
               CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>>& output);
-template <typename K>
-bool createMeshFromPolySet(const PolySet& ps, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh);
+template <class TriangleMesh>
+bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh);
 
 template <typename K>
 bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet& ps);
