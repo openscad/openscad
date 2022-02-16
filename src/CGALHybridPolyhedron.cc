@@ -295,9 +295,9 @@ void CGALHybridPolyhedron::nefPolyBinOp(
   const std::function<void(nef_polyhedron_t& destinationNef, nef_polyhedron_t& otherNef)>
   & operation)
 {
-  auto &lhs = convertToNef();
-  auto &rhs = other.convertToNef();
-  
+  auto& lhs = *convertToNef();
+  auto& rhs = *other.convertToNef();
+
   if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
     LOG(message_group::None, Location::NONE, "",
         "[fast-csg] %1$s: %2$s vs. %3$s",
@@ -326,8 +326,8 @@ bool CGALHybridPolyhedron::meshBinOp(
   std::string lhsDebugDumpFile, rhsDebugDumpFile;
 
   try {
-    mesh_t& lhs = convertToMesh();
-    mesh_t& rhs = other.convertToMesh();
+    mesh_t& lhs = *convertToMesh();
+    mesh_t& rhs = *other.convertToMesh();
 
     size_t opNumber = 0;
 
@@ -389,29 +389,29 @@ bool CGALHybridPolyhedron::meshBinOp(
   return success;
 }
 
-CGALHybridPolyhedron::nef_polyhedron_t& CGALHybridPolyhedron::convertToNef()
+std::shared_ptr<CGALHybridPolyhedron::nef_polyhedron_t> CGALHybridPolyhedron::convertToNef()
 {
   if (auto mesh = getMesh()) {
     auto nef = make_shared<nef_polyhedron_t>(*mesh);
     data = nef;
-    return *nef;
+    return nef;
   } else if (auto nef = getNefPolyhedron()) {
-    return *nef;
+    return nef;
   } else {
     throw "Bad data state";
   }
 }
 
-CGALHybridPolyhedron::mesh_t& CGALHybridPolyhedron::convertToMesh()
+std::shared_ptr<CGALHybridPolyhedron::mesh_t> CGALHybridPolyhedron::convertToMesh()
 {
   if (auto mesh = getMesh()) {
-    return *mesh;
+    return mesh;
   } else if (auto nef = getNefPolyhedron()) {
     auto mesh = make_shared<mesh_t>();
     CGALUtils::convertNefPolyhedronToTriangleMesh(*nef, *mesh);
     CGALUtils::cleanupMesh(*mesh, /* is_corefinement_result */ false);
     data = mesh;
-    return *mesh;
+    return mesh;
   } else {
     throw "Bad data state";
   }
