@@ -57,7 +57,7 @@ void dumpMesh(const TriangleMesh &tm, size_t dimension, size_t convexity, OutStr
 
     auto first = true;
     printIndents();
-    out << "  [";
+    out << "[";
 
     CGAL::Vertex_around_face_iterator<TriangleMesh> vit, vend;
     for (boost::tie(vit, vend) = vertices_around_face(tm.halfedge(f), tm); vit != vend; ++vit) {
