@@ -21,6 +21,7 @@
 #include <CGAL/Cartesian.h>
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/Nef_polyhedron_3.h>
+#include <CGAL/Surface_mesh.h>
 #include <CGAL/IO/Polyhedron_iostream.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Polygon_2.h>
@@ -65,5 +66,9 @@ typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e
 
 #define FAST_CSG_KERNEL_IS_LAZY 1
 typedef CGAL::Epeck CGAL_HybridKernel3;
+
+typedef CGAL::Point_3<CGAL_HybridKernel3> CGAL_HybridPoint;
+typedef CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> CGAL_HybridNef;
+typedef CGAL::Surface_mesh<CGAL_HybridPoint> CGAL_HybridMesh;
 
 #endif /* ENABLE_CGAL */
