@@ -308,7 +308,18 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS_WITHOUT_TRUST_COREF
 #                        [SCRIPT <script>]
 #                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>)
 #
-find_package(PythonInterp 3.4 REQUIRED)
+if(MSVC)
+  # 'vcpkg' does not appear to work with FindPythonInterp.cmake, so we use the version-specific
+  # FindPython3.cmake instead.
+  message(STATUS "searching VCPKG for a compatible version of python (this make take a minute or two, depending on your installation; please be patient!)")
+  find_package(Python3 3.4 REQUIRED COMPONENTS Interpreter)
+  message(STATUS "Python interpreter: ${Python3_EXECUTABLE}, version ${Python3_VERSION}")
+
+  # Set the PYTHON_EXECUTABLE variable to match, to avoid having to customize the rest of this file.
+  set(PYTHON_EXECUTABLE ${Python3_EXECUTABLE})
+else()
+  find_package(PythonInterp 3.4 REQUIRED)
+endif()
 function(add_cmdline_test TESTCMD_BASENAME)
   cmake_parse_arguments(TESTCMD "OPENSCAD;STDIO" "EXE;SCRIPT;SUFFIX;KERNEL;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
 
@@ -894,7 +905,6 @@ set_test_config(Heavy FILES
   stlpngtest_surface
   stlpngtest_rounded_box
   stlpngtest_translation
-  fastcsg-cgalpng_minkowski3-erosion
 )
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
@@ -1122,8 +1132,6 @@ add_cmdline_test(lazyunion-stlpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX
 add_cmdline_test(lazyunion-offpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS --openscad=${OPENSCAD_BINPATH} --format=OFF --enable=lazy-union --render=cgal)
 add_cmdline_test(lazyunion-dxfpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS --openscad=${OPENSCAD_BINPATH} --format=DXF --enable=lazy-union --render=cgal)
 add_cmdline_test(lazyunion-svgpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=lazy-union --render=cgal)
-add_cmdline_test(fastcsg-cgalpng       OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS}                     ARGS --enable=fast-csg --enable=fast-csg-trust-corefinement --render)
-add_cmdline_test(fastcsg-cgalpng       OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS_WITHOUT_TRUST_COREF} ARGS --enable=fast-csg --render)
 
 #
 # Trivial Export/Import files

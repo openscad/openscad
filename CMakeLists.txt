@@ -130,7 +130,40 @@ endif()
 
 set(BOOST_DIRECTLY_REQUIRED_LIBRARIES filesystem system regex program_options)
 
+find_program(PKG_CONFIG_EXECUTABLE NAMES pkgconf.exe pkg-config.exe)
 find_package(PkgConfig)
+
+# Note: Saving CMAKE_MODULE_PATH as CGAL will overwrite it.
+# Reconsider this after CGAL 5.4: https://github.com/CGAL/cgal/pull/6029
+if ("${CMAKE_MODULE_PATH}" STREQUAL "")
+  set(ORIGINAL_CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
+  set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
+else()
+  message(STATUS "Saving CMAKE_MODULE_PATH '${ORIGINAL_CMAKE_MODULE_PATH}'")
+  set(ORIGINAL_CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}")
+endif()
+
+if (MSVC)
+  # Disable distracting warning messages
+  add_definitions(/wd4003)  # not enough arguments for function-like macro invocation
+  add_definitions(/wd4005)  # macro redefinition
+  add_definitions(/wd4244)  # conversion, possible loss of data
+  add_definitions(/wd4267)  # '': conversion from '' to '', possible loss of data
+  add_definitions(/wd4305)  # '': truncation from '' to ''
+  add_definitions(/wd4996)  # '': This function or variable may be unsafe. Consider using [...]
+
+  # Override the location of the installation to cause "Build|install <project-name>" to copy the resource
+  # files to the build\x64-Debug folder, which is required to debug the program from within the IDE.
+  # Comment out this line to produce a standard install
+  if(VS_DEBUGGING)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/..")
+  endif()
+
+  message(STATUS "Running the Visual Studio 'Build|install ${PROJECT_NAME}' menu command will copy dependencies and resources to '${CMAKE_INSTALL_PREFIX}'.
+    You may change this behaviour by editing CMakeSettings.json to:
+      (a) modify the '-DVS_DEBUGGING=...' BOOLEAN setting in the \"cmakeCommandArgs\" field; and/or
+      (b) modify the X_VCPKG_APPLOCAL_DEPS_INSTALL flag in the \"variables\" section (see https://github.com/Microsoft/vcpkg/issues/1653).")
+endif()
 
 macro(find_graphics)
   # NULLGL - Allow us to build without OpenGL(TM). run 'cmake .. -DNULLGL=1'
@@ -213,8 +246,18 @@ if (USE_MIMALLOC)
 endif()
 
 if (MSVC)
+  # Library files are in a well-known common triplet-specific folder, and may end in "d" for Debug builds.
+  if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
+    set(VCPKG_LIBRARY_DIR ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/debug/lib)
+    set(VCPKG_LIBRARY_SUFFIX d)
+  else()
+    set(VCPKG_LIBRARY_DIR ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib)
+    set(VCPKG_LIBRARY_SUFFIX "")
+  endif()
+  set(VCPKG_INCLUDE_DIR ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
+
   # Flex lexer options
-  set(WINCOMPAT "--wincompat --nounistd")
+  set(WINCOMPAT "--nounistd")
   target_compile_definitions(OpenSCAD PRIVATE _USE_MATH_DEFINES)
 
   message("COMMON_LIBRARIES ${COMMON_LIBRARIES}")
@@ -233,18 +276,25 @@ if (MSVC)
   target_include_directories(OpenSCAD SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
   list(APPEND COMMON_LIBRARIES harfbuzz::harfbuzz)
 
-  find_package(unofficial-fontconfig CONFIG REQUIRED)
-  list(APPEND COMMON_LIBRARIES unofficial::fontconfig::fontconfig)
+  find_package(fontconfig REQUIRED)
+  list(APPEND COMMON_LIBRARIES ${VCPKG_LIBRARY_DIR}/fontconfig.lib)
 
-  find_package(unofficial-glib CONFIG REQUIRED)
+  find_package(glib2 REQUIRED)
   target_include_directories(OpenSCAD SYSTEM PRIVATE ${GLIB2_INCLUDE_DIRS})
-  list(APPEND COMMON_LIBRARIES unofficial::glib::gio unofficial::glib::glib unofficial::glib::gmodule unofficial::glib::gobject)
+  list(APPEND COMMON_LIBRARIES
+    ${VCPKG_LIBRARY_DIR}/gio-2.0.lib
+    ${VCPKG_LIBRARY_DIR}/glib-2.0.lib
+    ${VCPKG_LIBRARY_DIR}/gmodule-2.0.lib
+    ${VCPKG_LIBRARY_DIR}/gobject-2.0.lib
+    )
 
   find_package(double-conversion CONFIG REQUIRED)
   list(APPEND COMMON_LIBRARIES double-conversion::double-conversion)
 
-  find_library(GETTEXT_LIBRARY libintl)
-  list(APPEND COMMON_LIBRARIES ${GETTEXT_LIBRARY})
+  find_library(GETTEXT_LIBRARY intl)  
+  list(APPEND COMMON_LIBRARIES ${VCPKG_LIBRARY_DIR}/intl.lib) # In MSVC, 'libintl' is called 'intl'
+
+  set(OPENCSG_LIBRARY "${VCPKG_LIBRARY_DIR}/opencsg.lib")
 
   # call before setting local CMAKE_MODULE_PATH so we use VCPKG version of FindGLEW
   find_graphics()
@@ -291,9 +341,6 @@ else()
   find_graphics()
 endif()
 
-# Note: Saving CMAKE_MODULE_PATH as CGAL will overwrite it.
-# Reconsider this after CGAL 5.4: https://github.com/CGAL/cgal/pull/6029
-set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 find_package(CGAL 5.0 REQUIRED COMPONENTS Core)
 message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
