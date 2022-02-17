@@ -82,6 +82,7 @@ if(WASM)
   set(NULLGL ON)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_options(OpenSCAD PRIVATE "-pthread")
+  target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
 endif()
 
 if(NULLGL)
