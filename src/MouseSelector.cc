@@ -187,6 +187,8 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   GLubyte color[3] = { 0 };
   glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color);
   OPENGL_TEST("glReadPixels");
+  glDisable(GL_DEPTH_TEST);
+
   int index = (uint32_t)color[0] | ((uint32_t)color[1] << 8) | ((uint32_t)color[2] << 16);
 
   // Switch the active framebuffer back to the default
