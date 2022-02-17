@@ -6,6 +6,8 @@
 #include "polyset.h"
 #include "rendersettings.h"
 
+#ifndef NULLGL
+
 #ifdef ENABLE_CGAL
 #include "cgal.h"
 #include "cgalutils.h"
@@ -104,3 +106,11 @@ bool export_png(const OffscreenView& glview, std::ostream& output)
 }
 
 #endif // ENABLE_CGAL
+
+#else // NULLGL
+
+bool export_png(const shared_ptr<const Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output) { return false; }
+std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera) { return nullptr; }
+bool export_png(const OffscreenView& glview, std::ostream& output) { return false; }
+
+#endif // NULLGL
