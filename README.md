@@ -106,7 +106,7 @@ Follow the instructions for the platform you're compiling on below.
 * [cmake (3.5 ->)](https://cmake.org/)
 * [Qt (5.4 ->)](https://qt.io/)
 * [QScintilla2 (2.9 ->)](https://riverbankcomputing.com/software/qscintilla/)
-* [CGAL (5.3 ->)](https://www.cgal.org/)
+* [CGAL (5.4 ->)](https://www.cgal.org/)
  * [GMP (5.x)](https://gmplib.org/)
  * [MPFR (3.x)](https://www.mpfr.org/)
 * [boost (1.56 ->)](https://www.boost.org/)
