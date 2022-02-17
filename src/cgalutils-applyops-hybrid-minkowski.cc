@@ -69,7 +69,7 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
         else if (auto nef = hybrid->getNefPolyhedron()) {
           if (nef->is_simple()) CGALUtils::convertNefToPolyhedron(*nef, *poly);
           else throw 0;
-        } else if (auto mesh = hybrid->getMesh())   {
+        } else if (auto mesh = hybrid->getMesh()) {
           if (CGAL::is_valid_polygon_mesh(*mesh)) CGAL::copy_face_graph(*mesh, *poly);
           else throw 0;
         } else throw 0;
@@ -204,7 +204,7 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
       if (it != std::next(children.begin())) operands[0].reset();
 
       auto partToGeom = [&](auto& poly) -> shared_ptr<const Geometry> {
-          auto mesh = make_shared<CGALHybridPolyhedron::mesh_t>();
+          auto mesh = make_shared<CGAL_HybridMesh>();
           CGAL::copy_face_graph(*poly, *mesh);
           CGALUtils::triangulateFaces(*mesh);
           return make_shared<CGALHybridPolyhedron>(mesh);
