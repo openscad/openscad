@@ -36,12 +36,10 @@ public:
   VISITABLE_GEOMETRY();
 
   typedef CGAL::Point_3<CGAL_HybridKernel3> point_t;
-  typedef CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> nef_polyhedron_t;
   typedef CGAL::Iso_cuboid_3<CGAL_HybridKernel3> bbox_t;
-  typedef CGAL::Surface_mesh<point_t> mesh_t;
 
-  CGALHybridPolyhedron(const shared_ptr<nef_polyhedron_t>& nef);
-  CGALHybridPolyhedron(const shared_ptr<mesh_t>& mesh);
+  CGALHybridPolyhedron(const shared_ptr<CGAL_HybridNef>& nef);
+  CGALHybridPolyhedron(const shared_ptr<CGAL_HybridMesh>& mesh);
   CGALHybridPolyhedron(const CGALHybridPolyhedron& other);
   CGALHybridPolyhedron();
   CGALHybridPolyhedron& operator=(const CGALHybridPolyhedron& other);
@@ -81,6 +79,9 @@ public:
   /*! Iterate over all vertices' points until the function returns true (for done). */
   void foreachVertexUntilTrue(const std::function<bool(const point_t& pt)>& f) const;
 
+  std::shared_ptr<CGAL_HybridNef> convertToNef();
+  std::shared_ptr<CGAL_HybridMesh> convertToMesh();
+
 private:
   // Old GCC versions used to build releases have object file limitations.
   // This conversion function could have been in the class but it requires knowledge
@@ -95,9 +96,7 @@ private:
    * the first one and potentially mutates (e.g. corefines) the second. */
   void nefPolyBinOp(
     const std::string& opName, CGALHybridPolyhedron& other,
-    const std::function<void(
-                          nef_polyhedron_t& destinationNef,
-                          nef_polyhedron_t& otherNef)>& operation);
+    const std::function<void(CGAL_HybridNef& destinationNef, CGAL_HybridNef& otherNef)>& operation);
 
   /*! Runs a binary operation that operates on polyhedra, stores the result in
    * the first one and potentially mutates (e.g. corefines) the second.
@@ -106,19 +105,16 @@ private:
    * original nef if there was one. */
   bool meshBinOp(
     const std::string& opName, CGALHybridPolyhedron& other,
-    const std::function<bool(mesh_t& lhs, mesh_t& rhs, mesh_t& out)>& operation);
-
-  nef_polyhedron_t& convertToNef();
-  mesh_t& convertToMesh();
+    const std::function<bool(CGAL_HybridMesh& lhs, CGAL_HybridMesh& rhs, CGAL_HybridMesh& out)>& operation);
 
   bool sharesAnyVertexWith(const CGALHybridPolyhedron& other) const;
 
   /*! Returns the mesh if that's what's in the current data, or else nullptr.
    * Do NOT make this public. */
-  std::shared_ptr<mesh_t> getMesh() const;
+  std::shared_ptr<CGAL_HybridMesh> getMesh() const;
   /*! Returns the nef polyhedron if that's what's in the current data, or else nullptr.
    * Do NOT make this public. */
-  std::shared_ptr<nef_polyhedron_t> getNefPolyhedron() const;
+  std::shared_ptr<CGAL_HybridNef> getNefPolyhedron() const;
 
   bbox_t getExactBoundingBox() const;
 
@@ -127,5 +123,5 @@ private:
   // We stick to nef polyhedra in presence of non-manifold geometry or literal
   // edge-cases of the Polygon Mesh Processing corefinement functions (e.g. it
   // does not like shared edges, but tells us so politely).
-  boost::variant<std::shared_ptr<mesh_t>, std::shared_ptr<nef_polyhedron_t>> data;
+  boost::variant<std::shared_ptr<CGAL_HybridMesh>, std::shared_ptr<CGAL_HybridNef>> data;
 };

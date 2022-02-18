@@ -444,7 +444,7 @@ void transform(CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh, const Transform3d& ma
     pt = t(pt);
   }
 }
-template void transform(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& mesh, const Transform3d& matrix);
+template void transform(CGAL_HybridMesh& mesh, const Transform3d& matrix);
 
 template <typename K>
 Transform3d computeResizeTransform(

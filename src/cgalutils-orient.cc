@@ -12,7 +12,7 @@ void orientToBoundAVolume(Polyhedron& polyhedron)
   CGAL::Polygon_mesh_processing::orient_to_bound_a_volume(polyhedron);
 }
 
-template void orientToBoundAVolume(CGAL::Surface_mesh<CGAL::Point_3<CGAL_HybridKernel3>>& polyhedron);
+template void orientToBoundAVolume(CGAL_HybridMesh& polyhedron);
 
 } // namespace CGALUtils
 

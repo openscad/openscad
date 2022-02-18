@@ -12,6 +12,8 @@
 #include "grid.h"
 #include <Eigen/LU>
 
+#ifndef NULLGL
+
 Renderer::Renderer() : colorscheme(nullptr)
 {
   PRINTD("Renderer() start");
@@ -262,7 +264,6 @@ static void draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector
 }
 #endif // ifdef ENABLE_OPENCSG
 
-#ifndef NULLGL
 static void draw_tri(const Vector3d& p0, const Vector3d& p1, const Vector3d& p2, double z, bool mirror)
 {
   glVertex3d(p0[0], p0[1], p0[2] + z);
@@ -456,9 +457,18 @@ void Renderer::render_edges(const PolySet& ps, csgmode_e csgmode) const
   glEnable(GL_LIGHTING);
 }
 
-
 #else //NULLGL
-static void gl_draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector3d& p0, const Vector3d& p1, const Vector3d& p2, bool e0, bool e1, bool e2, double z, bool mirrored) {}
+
+Renderer::Renderer() : colorscheme(nullptr) {}
+void Renderer::resize(int /*w*/, int /*h*/) {}
+bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const { return false; }
+std::string Renderer::loadShaderSource(const std::string& name) { return ""; }
+Renderer::csgmode_e Renderer::get_csgmode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type) const { return {}; }
+void Renderer::setColor(const float color[4], const shaderinfo_t *shaderinfo) const {}
+Color4f Renderer::setColor(ColorMode colormode, const float color[4], const shaderinfo_t *shaderinfo) const { return {}; }
+void Renderer::setColor(ColorMode colormode, const shaderinfo_t *shaderinfo) const {}
+void Renderer::setColorScheme(const ColorScheme& cs) {}
 void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transform3d& m, const shaderinfo_t *shaderinfo) const {}
 void Renderer::render_edges(const PolySet& ps, csgmode_e csgmode) const {}
+
 #endif //NULLGL
