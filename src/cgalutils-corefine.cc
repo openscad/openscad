@@ -12,7 +12,10 @@ namespace CGALUtils {
 template <typename TriangleMesh>
 struct ExactLazyNumbersVisitor
   : public PMP::Corefinement::Default_visitor<TriangleMesh> {
-  typedef typename TriangleMesh::Face_index face_descriptor;
+  typedef boost::graph_traits<TriangleMesh> GT;
+  typedef typename GT::face_descriptor face_descriptor;
+  typedef typename GT::halfedge_descriptor halfedge_descriptor;
+  typedef typename GT::vertex_descriptor vertex_descriptor;
 
 #if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 4, 0)
   void new_vertex_added(std::size_t i_id, vertex_descriptor v, const TriangleMesh& tm) {
