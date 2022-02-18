@@ -366,16 +366,11 @@ bool CGALHybridPolyhedron::meshBinOp(
             "[fast-csg] %1$s output is %2$s", opName.c_str(), describeForDebug(lhs));
       }
     }
-  } catch (const std::exception& e) {
-    // This can be a CGAL::Failure_exception, a CGAL::Intersection_of_constraints_exception or who
-    // knows what else...
+    // union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
+  } catch (const CGAL::Failure_exception& e) {
     success = false;
     LOG(message_group::Warning, Location::NONE, "",
         "[fast-csg] Corefinement %1$s failed with an error: %2$s\n", opName.c_str(), e.what());
-    if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
-      LOG(message_group::Warning, Location::NONE, "",
-          "Dumps of operands were written to %1$s and %2$s", lhsDebugDumpFile.c_str(), rhsDebugDumpFile.c_str());
-    }
   }
 
   if (!success) {
@@ -384,6 +379,11 @@ bool CGALHybridPolyhedron::meshBinOp(
     // had nefs.
     data = previousData;
     other.data = previousOtherData;
+  } else {
+    if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
+      LOG(message_group::Warning, Location::NONE, "",
+          "Dumps of operands were written to %1$s and %2$s", lhsDebugDumpFile.c_str(), rhsDebugDumpFile.c_str());
+    }
   }
 
   return success;
