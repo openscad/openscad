@@ -276,7 +276,7 @@ if (MSVC)
   list(APPEND COMMON_LIBRARIES harfbuzz::harfbuzz)
 
   find_package(fontconfig REQUIRED)
-  list(APPEND COMMON_LIBRARIES ${VCPKG_LIBRARY_DIR}/fontconfig.lib)
+  list(APPEND COMMON_LIBRARIES ${FONTCONFIG_LIBRARIES})
 
   find_package(glib2 REQUIRED)
   target_include_directories(OpenSCAD SYSTEM PRIVATE ${GLIB2_INCLUDE_DIRS})
