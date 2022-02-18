@@ -90,7 +90,7 @@ public:
         // p2 (at index i + 1) can be removed.
         if (indicesToRemove.empty()) {
           // Late reservation: when we start to have stuff to remove, think big and reserve the worst case.
-          indicesToRemove.reserve(path.size() - 3 - i);
+          indicesToRemove.reserve(std::min(n - i, n - 3));
         }
         indicesToRemove.push_back(i + 1);
       }
@@ -154,8 +154,12 @@ public:
       }
 
       auto face = copy.add_face(polygon);
-      if (polygon.size() > 3) {
-        PMP::triangulate_face(face, copy);
+      if (!face.is_valid()) {
+        std::cerr << "Failed to add face\n";
+      } else {
+        if (polygon.size() > 3) {
+          PMP::triangulate_face(face, copy);
+        }
       }
     }
 
@@ -169,9 +173,10 @@ public:
       auto face = copy.add_face(polygon);
       if (!face.is_valid()) {
         std::cerr << "Failed to add face\n";
-      }
-      if (polygon.size() > 3) {
-        PMP::triangulate_face(face, copy);
+      } else {
+        if (polygon.size() > 3) {
+          PMP::triangulate_face(face, copy);
+        }
       }
     }
 
