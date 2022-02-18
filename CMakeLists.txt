@@ -291,7 +291,7 @@ if (MSVC)
   list(APPEND COMMON_LIBRARIES double-conversion::double-conversion)
 
   find_library(GETTEXT_LIBRARY intl)  
-  list(APPEND COMMON_LIBRARIES ${VCPKG_LIBRARY_DIR}/intl.lib) # In MSVC, 'libintl' is called 'intl'
+  list(APPEND COMMON_LIBRARIES ${GETTEXT_LIBRARY})
 
   set(OPENCSG_LIBRARY "${VCPKG_LIBRARY_DIR}/opencsg.lib")
 
