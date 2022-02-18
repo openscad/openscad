@@ -9,13 +9,13 @@
 #include <sstream>
 #include <stdio.h>
 
-CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<nef_polyhedron_t>& nef)
+CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<CGAL_HybridNef>& nef)
 {
   assert(nef);
   data = nef;
 }
 
-CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<mesh_t>& mesh)
+CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<CGAL_HybridMesh>& mesh)
 {
   assert(mesh);
   data = mesh;
@@ -29,9 +29,9 @@ CGALHybridPolyhedron::CGALHybridPolyhedron(const CGALHybridPolyhedron& other)
 CGALHybridPolyhedron& CGALHybridPolyhedron::operator=(const CGALHybridPolyhedron& other)
 {
   if (auto nef = other.getNefPolyhedron()) {
-    data = make_shared<nef_polyhedron_t>(*nef);
+    data = make_shared<CGAL_HybridNef>(*nef);
   } else if (auto mesh = other.getMesh()) {
-    data = make_shared<mesh_t>(*mesh);
+    data = make_shared<CGAL_HybridMesh>(*mesh);
   } else {
     assert(!"Bad hybrid polyhedron state");
   }
@@ -40,19 +40,19 @@ CGALHybridPolyhedron& CGALHybridPolyhedron::operator=(const CGALHybridPolyhedron
 
 CGALHybridPolyhedron::CGALHybridPolyhedron()
 {
-  data = make_shared<CGALHybridPolyhedron::mesh_t>();
+  data = make_shared<CGAL_HybridMesh>();
 }
 
-std::shared_ptr<CGALHybridPolyhedron::nef_polyhedron_t> CGALHybridPolyhedron::getNefPolyhedron()
+std::shared_ptr<CGAL_HybridNef> CGALHybridPolyhedron::getNefPolyhedron()
 const
 {
-  auto pp = boost::get<shared_ptr<nef_polyhedron_t>>(&data);
+  auto pp = boost::get<shared_ptr<CGAL_HybridNef>>(&data);
   return pp ? *pp : nullptr;
 }
 
-std::shared_ptr<CGALHybridPolyhedron::mesh_t> CGALHybridPolyhedron::getMesh() const
+std::shared_ptr<CGAL_HybridMesh> CGALHybridPolyhedron::getMesh() const
 {
-  auto pp = boost::get<shared_ptr<mesh_t>>(&data);
+  auto pp = boost::get<shared_ptr<CGAL_HybridMesh>>(&data);
   return pp ? *pp : nullptr;
 }
 
@@ -114,7 +114,7 @@ shared_ptr<const PolySet> CGALHybridPolyhedron::toPolySet() const
 
 void CGALHybridPolyhedron::clear()
 {
-  data = make_shared<mesh_t>();
+  data = make_shared<CGAL_HybridMesh>();
 }
 
 void CGALHybridPolyhedron::operator+=(CGALHybridPolyhedron& other)
@@ -212,7 +212,7 @@ void CGALHybridPolyhedron::foreachVertexUntilTrue(
       if (f(mesh->point(v))) return;
     }
   } else if (auto nef = getNefPolyhedron()) {
-    nef_polyhedron_t::Vertex_const_iterator vi;
+    CGAL_HybridNef::Vertex_const_iterator vi;
     CGAL_forall_vertices(vi, *nef)
     {
       if (f(vi->point())) return;
@@ -222,14 +222,14 @@ void CGALHybridPolyhedron::foreachVertexUntilTrue(
   }
 }
 
-std::string describeForDebug(const CGALHybridPolyhedron::nef_polyhedron_t& nef)
+std::string describeForDebug(const CGAL_HybridNef& nef)
 {
   std::ostringstream stream;
   stream << (nef.is_simple() ? "" : "NOT 2-manifold ") << nef.number_of_facets() << " facets";
   return stream.str();
 }
 
-std::string describeForDebug(const CGALHybridPolyhedron::mesh_t& mesh)
+std::string describeForDebug(const CGAL_HybridMesh& mesh)
 {
   std::ostringstream stream;
   stream << (CGAL::is_valid_polygon_mesh(mesh) ? "" : "INVALID ")
@@ -239,7 +239,7 @@ std::string describeForDebug(const CGALHybridPolyhedron::mesh_t& mesh)
 
 void CGALHybridPolyhedron::nefPolyBinOp(
   const std::string& opName, CGALHybridPolyhedron& other,
-  const std::function<void(nef_polyhedron_t& destinationNef, nef_polyhedron_t& otherNef)>
+  const std::function<void(CGAL_HybridNef& destinationNef, CGAL_HybridNef& otherNef)>
   & operation)
 {
   auto& lhs = convertToNef();
@@ -262,7 +262,7 @@ void CGALHybridPolyhedron::nefPolyBinOp(
 
 bool CGALHybridPolyhedron::meshBinOp(
   const std::string& opName, CGALHybridPolyhedron& other,
-  const std::function<bool(mesh_t& lhs, mesh_t& rhs, mesh_t& out)>& operation)
+  const std::function<bool(CGAL_HybridMesh& lhs, CGAL_HybridMesh& rhs, CGAL_HybridMesh& out)>& operation)
 {
   auto previousData = data;
   auto previousOtherData = other.data;
@@ -274,10 +274,10 @@ bool CGALHybridPolyhedron::meshBinOp(
 
   auto success = false;
   try {
-    mesh_t& lhs = convertToMesh();
-    mesh_t& rhs = other.convertToMesh();
+    auto& lhs = convertToMesh();
+    auto& rhs = other.convertToMesh();
 
-    auto isValid = [&](const mesh_t& mesh) {
+    auto isValid = [&](const CGAL_HybridMesh& mesh) {
         return CGAL::is_valid_polygon_mesh(mesh) && CGAL::is_closed(mesh);
       };
 
@@ -312,7 +312,7 @@ bool CGALHybridPolyhedron::meshBinOp(
       static std::map<std::string, size_t> opCount;
       opNumber = opCount[opName]++;
 
-      auto writeMesh = [&](const char *nameSuffix, mesh_t& mesh) {
+      auto writeMesh = [&](const char *nameSuffix, CGAL_HybridMesh& mesh) {
           std::ostringstream nameOut;
           nameOut << opName << " " << opNumber << " " << nameSuffix << ".off";
           auto name = nameOut.str();
@@ -385,10 +385,10 @@ bool CGALHybridPolyhedron::meshBinOp(
   return success;
 }
 
-CGALHybridPolyhedron::nef_polyhedron_t& CGALHybridPolyhedron::convertToNef()
+CGAL_HybridNef& CGALHybridPolyhedron::convertToNef()
 {
   if (auto mesh = getMesh()) {
-    auto nef = make_shared<nef_polyhedron_t>(*mesh);
+    auto nef = make_shared<CGAL_HybridNef>(*mesh);
     data = nef;
     return *nef;
   } else if (auto nef = getNefPolyhedron()) {
@@ -398,12 +398,12 @@ CGALHybridPolyhedron::nef_polyhedron_t& CGALHybridPolyhedron::convertToNef()
   }
 }
 
-CGALHybridPolyhedron::mesh_t& CGALHybridPolyhedron::convertToMesh()
+CGAL_HybridMesh& CGALHybridPolyhedron::convertToMesh()
 {
   if (auto mesh = getMesh()) {
     return *mesh;
   } else if (auto nef = getNefPolyhedron()) {
-    auto mesh = make_shared<mesh_t>();
+    auto mesh = make_shared<CGAL_HybridMesh>();
     CGALUtils::convertNefPolyhedronToTriangleMesh(*nef, *mesh);
     CGALUtils::cleanupMesh(*mesh, /* is_corefinement_result */ false);
     data = mesh;
