@@ -139,14 +139,14 @@ static bool append_3mf(const shared_ptr<const Geometry>& geom, PLib3MFModelMeshO
     for (const auto& item : geomlist->getChildren()) {
       if (!append_3mf(item.second, model)) return false;
     }
-  } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
-    PolySet triangulated(3);
-    PolysetUtils::tessellate_faces(*ps, triangulated);
-    return append_polyset(triangulated, model);
   } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     return append_nef(*N, model);
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return append_polyset(*hybrid->toPolySet(), model);
+  } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+    PolySet triangulated(3);
+    PolysetUtils::tessellate_faces(*ps, triangulated);
+    return append_polyset(triangulated, model);
   } else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
     assert(false && "Unsupported file format");
   } else {
