@@ -245,17 +245,17 @@ bool is_approximately_convex(const PolySet& ps) {
   return explored_facets.size() == ps.polygons.size();
 }
 
-
-shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromGeometry(const Geometry& geom)
+shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const shared_ptr<const Geometry>& geom)
 {
-  if (auto ps = dynamic_cast<const PolySet *>(&geom)) {
+  if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
     return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolySet(*ps));
-  } else if (auto poly = dynamic_cast<const CGALHybridPolyhedron *>(&geom)) {
+  } else if (auto poly = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return createNefPolyhedronFromHybrid(*poly);
-  } else if (auto poly2d = dynamic_cast<const Polygon2d *>(&geom)) {
+  } else if (auto poly2d = dynamic_pointer_cast<const Polygon2d>(geom)) {
     return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolygon2d(*poly2d));
+  } else if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+    return nef;
   }
-  assert(false && "createNefPolyhedronFromGeometry(): Unsupported geometry type");
   return nullptr;
 }
 
@@ -509,13 +509,6 @@ shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>&
   return nullptr;
 }
 
-shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>& geom)
-{
-  if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-    return nef;
-  }
-  return geom ? shared_ptr<const CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromGeometry(*geom)) : nullptr;
-}
 }  // namespace CGALUtils
 
 #endif /* ENABLE_CGAL */
