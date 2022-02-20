@@ -127,16 +127,16 @@ CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K>& N)
 }
 template CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3& N);
 
-CGAL_Iso_cuboid_3 boundingBox(const Geometry& geom) {
-  if (auto polyset = dynamic_cast<const PolySet *>(&geom)) {
-    return createIsoCuboidFromBoundingBox(polyset->getBoundingBox());
-  } else if (auto nef = dynamic_cast<const CGAL_Nef_polyhedron *>(&geom)) {
-    return boundingBox(*nef->p3);
-  } else {
-    assert(!"Unsupported geometry type in boundingBox");
-    return CGAL_Iso_cuboid_3(0, 0, 0, 0, 0, 0);
-  }
-}
+// CGAL_Iso_cuboid_3 boundingBox(const Geometry& geom) {
+//   if (auto polyset = dynamic_cast<const PolySet *>(&geom)) {
+//     return createIsoCuboidFromBoundingBox(polyset->getBoundingBox());
+//   } else if (auto nef = dynamic_cast<const CGAL_Nef_polyhedron *>(&geom)) {
+//     return boundingBox(*nef->p3);
+//   } else {
+//     assert(!"Unsupported geometry type in boundingBox");
+//     return CGAL_Iso_cuboid_3(0, 0, 0, 0, 0, 0);
+//   }
+// }
 
 CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox& bbox)
 {
