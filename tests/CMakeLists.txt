@@ -1042,6 +1042,13 @@ list(APPEND LAZYUNION_2D_FILES
 )
 list(APPEND LAZYUNION_FILES ${LAZYUNION_2D_FILES} ${LAZYUNION_3D_FILES})
 
+list(APPEND FASTCSG_LAZYUNION_FILES ${LAZYUNION_3D_FILES}
+  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-1.scad
+  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-2.scad
+  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-3.scad
+  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-4.scad
+)
+
 experimental_tests(lazyunion-dump_lazyunion-toplevel-2dobjects)
 experimental_tests(lazyunion-dump_lazyunion-toplevel-objects)
 experimental_tests(lazyunion-dump_lazyunion-toplevel-for)
@@ -1124,6 +1131,9 @@ add_cmdline_test(lazyunion-dxfpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX
 add_cmdline_test(lazyunion-svgpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=lazy-union --render=cgal)
 add_cmdline_test(fastcsg-cgalpng       OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS}                     ARGS --enable=fast-csg --enable=fast-csg-trust-corefinement --render)
 add_cmdline_test(fastcsg-cgalpng       OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS_WITHOUT_TRUST_COREF} ARGS --enable=fast-csg --render)
+add_cmdline_test(fastcsg-lazyunion-cgalpng     OPENSCAD SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} ARGS --enable=lazy-union --render)
+add_cmdline_test(fastcsg-lazyunion-amfpngtest    SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_3D_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union --openscad=${OPENSCAD_BINPATH} --format=AMF)
+add_cmdline_test(fastcsg-lazyunion-3mfpngtest    SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${TRIVIAL_IMPORT_EXPORT_3D_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union --openscad=${OPENSCAD_BINPATH} --format=3MF)
 
 #
 # Trivial Export/Import files
