@@ -149,8 +149,7 @@ static void append_amf(const shared_ptr<const Geometry>& geom, std::ostream& out
     for (const auto& item : geomlist->getChildren()) {
       append_amf(item.second, output);
     }
-  }
-  if (geom->getDimension() != 3) {
+  } else if (geom->getDimension() != 3) {
     assert(false && "Unsupported file format");
   } else if (auto N = CGALUtils::getNefPolyhedronFromGeometry(geom)) {
     // FIXME: Implement this without creating a Nef polyhedron
