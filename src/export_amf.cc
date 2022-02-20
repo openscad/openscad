@@ -150,13 +150,11 @@ static void append_amf(const shared_ptr<const Geometry>& geom, std::ostream& out
       append_amf(item.second, output);
     }
   }
-  if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-    if (!N->isEmpty()) append_amf(*N, output);
-  } else if (auto N = CGALUtils::createNefPolyhedronFromGeometry(*geom)) {
+  if (geom->getDimension() != 3) {
+    assert(false && "Unsupported file format");
+  } else if (auto N = CGALUtils::getNefPolyhedronFromGeometry(geom)) {
     // FIXME: Implement this without creating a Nef polyhedron
     if (!N->isEmpty()) append_amf(*N, output);
-  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
-    assert(false && "Unsupported file format");
   } else {
     assert(false && "Not implemented");
   }

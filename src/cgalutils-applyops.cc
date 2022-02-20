@@ -52,12 +52,8 @@ shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children,
   try {
     for (const auto& item : children) {
       const shared_ptr<const Geometry>& chgeom = item.second;
-      shared_ptr<const CGAL_Nef_polyhedron> chN =
-        dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-      if (!chN) {
-        const PolySet *chps = dynamic_cast<const PolySet *>(chgeom.get());
-        if (chps) chN = createNefPolyhedronFromGeometry(*chps);
-      }
+      auto chN = getNefPolyhedronFromGeometry(chgeom);
+
       // Initialize N with first expected geometric object
       if (!foundFirst) {
         if (chN) {
@@ -132,12 +128,7 @@ shared_ptr<const Geometry> applyUnion3D(
   try {
     // sort children by fewest faces
     for (auto it = chbegin; it != chend; ++it) {
-      const shared_ptr<const Geometry>& chgeom = it->second;
-      shared_ptr<const CGAL_Nef_polyhedron> curChild = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(chgeom);
-      if (!curChild) {
-        const PolySet *chps = dynamic_cast<const PolySet *>(chgeom.get());
-        if (chps) curChild = createNefPolyhedronFromGeometry(*chps);
-      }
+      auto curChild = getNefPolyhedronFromGeometry(it->second);
       if (curChild && !curChild->isEmpty()) {
         int node_mark = -1;
         if (it->first) {
@@ -272,8 +263,8 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 
           if (ps) {
             PRINTDB("Minkowski: child %d is nonconvex PolySet, transforming to Nef and decomposing...", i);
-            auto p = createNefPolyhedronFromGeometry(*ps);
-            if (!p->isEmpty()) decomposed_nef = *p->p3;
+            auto p = getNefPolyhedronFromGeometry(ps);
+            if (p && !p->isEmpty()) decomposed_nef = *p->p3;
           } else {
             PRINTDB("Minkowski: child %d is nonconvex Nef, decomposing...", i);
             decomposed_nef = *nef->p3;

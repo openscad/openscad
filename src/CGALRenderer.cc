@@ -70,6 +70,7 @@ void CGALRenderer::addGeometry(const shared_ptr<const Geometry>& geom)
       this->nefPolyhedrons.push_back(new_N);
     }
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+    // TODO(ochafik): Implement rendering of CGAL_HybridMesh (CGAL::Surface_mesh) instead.
     this->polysets.push_back(hybrid->toPolySet());
   }
 
