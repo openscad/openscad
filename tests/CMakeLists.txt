@@ -245,6 +245,9 @@ list(APPEND FAST_CSG_FAILING_SCADFILES
   # Needs investigation:
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1246.scad
 )
+list(APPEND FAST_CSG_TRUST_FAILING_SCADFILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/edge-cases.scad
+)
 
 # Tests for which fast-csg works but produces different expectation files.
 # These tests are run twice (w/ and without fast-csg).
@@ -253,6 +256,8 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/bugs/issue1455.scad
   # These are less broken than before:
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/bugs/issue791.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1138.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1137.scad
 
   # No more green faces from differences.
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/CSG-modules.scad
@@ -364,7 +369,10 @@ function(add_cmdline_test TESTCMD_BASENAME)
             AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS_WITHOUT_TRUST_COREF
             AND NOT SCADFILE IN_LIST FAST_CSG_FAILING_SCADFILES
             AND NOT TEST_FULLNAME IN_LIST FAST_CSG_FAILING_TESTS)
-          set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg" "--enable=fast-csg-trust-corefinement")
+          set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
+          if (NOT SCADFILE IN_LIST FAST_CSG_TRUST_FAILING_SCADFILES)
+            set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg-trust-corefinement")
+          endif()
         endif()
       else()
         # add global experimental options here
