@@ -47,16 +47,106 @@ public:
     auto facesBefore = tm.number_of_faces();
     auto verbose = Feature::ExperimentalFastCsgDebug.is_enabled();
 
+    // auto patchToPolyhedronStr = [&](auto &patchFaces) {
+    //   std::vector<vertex_descriptor> vertices; 
+    //   std::map<vertex_descriptor, size_t> vertexIndex;
+
+    //   std::ostringstream verticesOut;
+    //   std::ostringstream facesOut;
+
+    //   facesOut << "[\n";
+    //   for (auto& face : patchFaces) {
+    //     CGAL::Halfedge_around_face_iterator<TriangleMesh> heIt, heEnd;
+    //     facesOut << "  [";
+    //     auto first = true;
+    //     for (boost::tie(heIt, heEnd) = halfedges_around_face(tm.halfedge(face), tm); heIt != heEnd; ++heIt) {
+    //       auto he = *heIt;
+    //       auto v = tm.source(he);
+    //       auto it = vertexIndex.find(v);
+    //       size_t idx;
+    //       if (it == vertexIndex.end()) {
+    //         idx = vertices.size();
+    //         vertices.push_back(v);
+    //         vertexIndex[v] = idx;
+    //       } else {
+    //         idx = it->second;
+    //       }
+    //       if (first) first = false;
+    //       else facesOut << ", ";
+    //       facesOut << idx;
+    //     }
+    //     facesOut << "],\n";
+    //   }
+    //   facesOut << "]";
+
+    //   verticesOut << "[\n";
+    //   for (auto v : vertices) {
+    //     auto p = tm.point(v);
+    //     verticesOut << "[" << CGAL::to_double(p.x()) << ", " << CGAL::to_double(p.y()) << ", " << CGAL::to_double(p.z()) << "],\n";
+    //   }
+    //   verticesOut << "]";
+
+    //   std::ostringstream out;
+    //   out << "polyhedron(" << verticesOut.str().c_str() << ", " << facesOut.str().c_str() << ");";
+    //   return out.str();
+    // };
+
+    // auto patchBorderToPolyhedronStr = [&](auto &borderPathVertices) {
+    //   std::vector<vertex_descriptor> vertices; 
+    //   std::map<vertex_descriptor, size_t> vertexIndex;
+
+    //   std::ostringstream verticesOut;
+    //   std::ostringstream facesOut;
+
+    //   facesOut << "[[";
+    //   auto first = true;
+    //   for (auto& v : borderPathVertices) {
+    //     auto it = vertexIndex.find(v);
+    //     size_t idx;
+    //     if (it == vertexIndex.end()) {
+    //       idx = vertices.size();
+    //       vertices.push_back(v);
+    //       vertexIndex[v] = idx;
+    //     } else {
+    //       idx = it->second;
+    //     }
+    //     if (first) first = false;
+    //     else facesOut << ", ";
+    //     facesOut << idx;
+    //   }
+    //   facesOut << "]]\n";
+
+    //   verticesOut << "[\n";
+    //   for (auto v : vertices) {
+    //     auto p = tm.point(v);
+    //     verticesOut << "[" << CGAL::to_double(p.x()) << ", " << CGAL::to_double(p.y()) << ", " << CGAL::to_double(p.z()) << "],\n";
+    //   }
+    //   verticesOut << "]";
+
+    //   std::ostringstream out;
+    //   out << "polyhedron(" << verticesOut.str().c_str() << ", " << facesOut.str().c_str() << ");";
+    //   return out.str();
+    // };
+
     try {
       TriangleMeshEdits<TriangleMesh> edits;
-      std::unordered_set<PatchId> patchesProcessed;
-      patchesProcessed.reserve(patchesToRemesh.size());
+
+      std::unordered_set<face_descriptor> facesProcessed;
 
       std::set<face_descriptor> loopLocalPatchFaces;
       std::map<PatchId, bool> loopLocalIsPatchIdMap;
-      std::vector<vertex_descriptor> loopLocalBorderVertices;
+      std::vector<halfedge_descriptor> loopLocalBorderEdges;
+      std::vector<halfedge_descriptor> loopLocalBorderPath;
+      std::vector<vertex_descriptor> loopLocalBorderPathVertices;
+      std::unordered_set<halfedge_descriptor> loopLocalBorderPathEdges;
+
+      // std::unordered_map<PatchId, std::string> allPatchPolyStrings;
+      // std::unordered_map<PatchId, std::string> allPatchReplacementsPolyStrings;
 
       for (auto face : tm.faces()) {
+        if (tm.is_removed(face)) {
+          continue;
+        }
         auto idIt = faceToCoplanarPatchId.find(face);
         if (idIt == faceToCoplanarPatchId.end()) {
           continue;
@@ -66,10 +156,9 @@ public:
         if (patchesToRemesh.find(id) == patchesToRemesh.end()) {
           continue;
         }
-        if (patchesProcessed.find(id) != patchesProcessed.end()) {
+        if (facesProcessed.find(face) != facesProcessed.end()) {
           continue;
         }
-        patchesProcessed.insert(id);
 
         loopLocalIsPatchIdMap.clear();
         auto& isPatchIdMap = loopLocalIsPatchIdMap;
@@ -98,11 +187,14 @@ public:
               return !isPatchId;
             }
 
-            // We're on the border
-            return true;
+            auto isCoplanar = isEdgeBetweenCoplanarFaces(he);
+            isPatchIdMap[neighbourId] = isCoplanar;
+            return !isCoplanar;
           };
 
         floodFillPatch(patchFaces, isHalfedgeOnBorder);
+
+        // allPatchPolyStrings[id] = patchToPolyhedronStr(patchFaces);
 
         if (patchFaces.size() < 2) {
           continue;
@@ -112,24 +204,28 @@ public:
             return patchFaces.find(f) != patchFaces.end();
           };
 
-        halfedge_descriptor borderEdge;
+        loopLocalBorderEdges.clear();
+        auto &borderEdges = loopLocalBorderEdges;
+
         for (auto& face : patchFaces) {
           CGAL::Halfedge_around_face_iterator<TriangleMesh> heIt, heEnd;
           for (boost::tie(heIt, heEnd) = halfedges_around_face(tm.halfedge(face), tm); heIt != heEnd; ++heIt) {
             auto he = *heIt;
             if (isHalfedgeOnBorder(he)) {
-              borderEdge = he;
-              break;
+              borderEdges.push_back(he);
             }
           }
         }
 
-        if (!borderEdge.is_valid()) {
+        if (borderEdges.empty()) {
           std::cerr << "Failed to find a border edge for patch " << id << "!\n";
           continue;
         }
+        halfedge_descriptor borderEdge = *borderEdges.begin();
 
-        std::vector<halfedge_descriptor> borderPath;
+        loopLocalBorderPath.clear();
+        auto& borderPath = loopLocalBorderPath;
+
         if (!walkAroundPatch(borderEdge, isFaceOnPatch, borderPath)) {
           LOG(message_group::Error, Location::NONE, "",
               "[fast-csg-remesh] Failed to collect path around patch faces, invalid mesh!");
@@ -140,26 +236,68 @@ public:
           continue;
         }
 
-        loopLocalBorderVertices.clear();
-        auto& borderVertices = loopLocalBorderVertices;
+        loopLocalBorderPathVertices.clear();
+        auto& borderPathVertices = loopLocalBorderPathVertices;
+
+        loopLocalBorderPathEdges.clear();
+        auto &borderPathEdges = loopLocalBorderPathEdges;
+
         for (auto he : borderPath) {
-          borderVertices.push_back(tm.target(he));
+          borderPathEdges.insert(he);
+          borderPathVertices.push_back(tm.target(he));
         }
 
-        // Only remesh patches that have consecutive collinear edges.
-        auto lengthBefore = borderVertices.size();
-        if (TriangleMeshEdits<TriangleMesh>::collapsePathWithConsecutiveCollinearEdges(borderVertices, tm)) {
-          auto lengthAfter = borderVertices.size();
-          std::cerr << "Collapsed path around patch " << id << " (" << patchFaces.size() << " faces) from " << lengthBefore << " to " << lengthAfter << " vertices\n";
-
-          for (auto& face : patchFaces) {
-            edits.removeFace(face);
+        auto hasHoles = false;
+        for (auto he : borderEdges) {
+          if (borderPathEdges.find(he) == borderPathEdges.end()) {
+            // Found a border halfedge that's not in the border path we've walked around the patch.
+            // This means the patch is holed / has more than one border: abort!!
+            hasHoles = true;
+            break;
           }
-          // Cover the patch with a polygon. It will be triangulated when the
-          // edits are applied.
-          edits.addFace(borderVertices);
         }
+        if (hasHoles) {
+          if (verbose) {
+            LOG(message_group::None, Location::NONE, "",
+              "[fast-csg-remesh] Skipping remeshing of patch with %1$lu faces as it seems to have holes.", borderPathEdges.size());
+          }
+          continue;
+        }
+        auto lengthBefore = borderPathVertices.size();
+        auto collapsed = TriangleMeshEdits<TriangleMesh>::collapsePathWithConsecutiveCollinearEdges(borderPathVertices, tm);
+
+        auto lengthAfter = borderPathVertices.size();
+        // if (collapsed && verbose) {
+        //   std::cerr << "Collapsed path around patch " << id << " (" << patchFaces.size() << " faces) from " << lengthBefore << " to " << lengthAfter << " vertices\n";
+        // }
+
+        // allPatchReplacementsPolyStrings[id] = patchBorderToPolyhedronStr(borderPathVertices);
+
+        // Cover the patch with a polygon. It will be triangulated when the
+        // edits are applied.
+        
+        // edits.replaceFaces(patchFaces, borderPathVertices);
+
+        for (auto& face : patchFaces) edits.removeFace(face);
+        edits.addFace(borderPathVertices);
+          
       }
+
+      // {
+      //   std::ofstream fout("patches.scad");
+      //   fout << "before=true;\npatchIndex=-1;\n";
+      //   size_t patchIndex = 0;
+      //   for (auto &p : allPatchPolyStrings) {
+      //     auto id = p.first;
+      //     fout << "// Patch id " << id << " (index " << patchIndex << "):\n";
+      //     if (allPatchReplacementsPolyStrings[id].empty()) fout << "%";
+      //     fout << "if (patchIndex < 0 || patchIndex == " << patchIndex << ") {\n";
+      //     fout << "  if (before) { " << p.second.c_str() << " }\n";
+      //     fout << "  else { " << allPatchReplacementsPolyStrings[id] << " }\n";
+      //     fout << "}\n";
+      //     patchIndex++;
+      //   }
+      // }
 
       if (!edits.isEmpty()) {
         edits.apply(tm);
@@ -178,6 +316,13 @@ public:
 
 private:
 
+  bool isEdgeBetweenCoplanarFaces(const halfedge_descriptor& h) {
+    auto& p = tm.point(tm.source(h));
+    auto& q = tm.point(tm.target(h));
+    auto& r = tm.point(tm.target(tm.next(h)));
+    auto& s = tm.point(tm.target(tm.next(tm.opposite(h))));
+
+    return CGAL::coplanar(p, q, r, s);
   }
 
   /*! Expand the patch of known faces to surrounding neighbours that pass the (fast) predicate. */
@@ -201,11 +346,10 @@ private:
         }
 
         auto neighbourFace = tm.face(tm.opposite(he));
-        if (facePatch.find(neighbourFace) != facePatch.end()) {
+        if (!facePatch.insert(neighbourFace).second) {
           continue;
         }
 
-        facePatch.insert(neighbourFace);
         unprocessedFaces.push_back(neighbourFace);
       }
     }
@@ -250,12 +394,10 @@ private:
         }
 
         auto v = tm.target(he);
-        if (visitedVertices.find(v) != visitedVertices.end()) {
+        if (!visitedVertices.insert(v).second) {
           continue;
         }
-        visitedVertices.insert(v);
 
-        std::cerr << "Edge " << he << " between " << tm.face(he) << " and " << tm.face(tm.opposite(he)) << " is on the border!\n";
 
         // Edge is on the border of the patch.
         currentEdge = he;

@@ -52,9 +52,18 @@ private:
   std::unordered_set<face_descriptor> facesToRemove;
   std::unordered_set<vertex_descriptor> verticesToRemove;
   std::vector<std::vector<vertex_descriptor>> facesToAdd;
+  std::vector<std::pair<std::vector<face_descriptor>, std::vector<vertex_descriptor>>> faceReplacements;
   std::unordered_map<vertex_descriptor, vertex_descriptor> vertexReplacements;
 
 public:
+
+  bool isEmpty() {
+    return facesToRemove.empty() &&
+        verticesToRemove.empty() &&
+        facesToAdd.empty() &&
+        faceReplacements.empty() &&
+        vertexReplacements.empty();
+  }
 
   void removeFace(const face_descriptor& f) {
     facesToRemove.insert(f);
@@ -68,11 +77,17 @@ public:
     facesToAdd.push_back(vertices);
   }
 
+  template <class FaceContainer, class VertexContainer>
+  void replaceFaces(const FaceContainer& originalFaces, const VertexContainer& replacementFaceVertices) {
+    faceReplacements.emplace_back(
+      make_pair(
+        std::vector<face_descriptor>(originalFaces.begin(), originalFaces.end()),
+        std::vector<vertex_descriptor>(replacementFaceVertices.begin(), replacementFaceVertices.end())));
+  }
+
   void replaceVertex(const vertex_descriptor& original, const vertex_descriptor& replacement) {
     vertexReplacements[original] = replacement;
   }
-
-  bool isEmpty() { return facesToRemove.empty() && verticesToRemove.empty() && facesToAdd.empty(); }
 
   static bool collapsePathWithConsecutiveCollinearEdges(std::vector<vertex_descriptor>& path, const TriangleMesh& tm) {
     if (path.size() <= 3) {
@@ -92,7 +107,11 @@ public:
           // Late reservation: when we start to have stuff to remove, think big and reserve the worst case.
           indicesToRemove.reserve(std::min(n - i, n - 3));
         }
-        indicesToRemove.push_back(i + 1);
+        if (i == n - 1) {
+          indicesToRemove.insert(indicesToRemove.begin(), 0);
+        } else {  
+          indicesToRemove.push_back(i + 1);
+        }
       }
       p1 = p2;
       p2 = p3;
@@ -108,7 +127,7 @@ public:
 
   /*! Mutating in place is tricky, to say the least, so this creates a new mesh
    * and overwrites the original to it at the end for now. */
-  void apply(TriangleMesh& src)
+  void apply(TriangleMesh& src) const
   {
     TriangleMesh copy;
 
@@ -141,10 +160,13 @@ public:
 
     std::vector<vertex_descriptor> polygon;
 
-    for (auto f : src.faces()) {
-      if (facesToRemove.find(f) != facesToRemove.end()) {
-        continue;
-      }
+    
+    std::unordered_set<face_descriptor> facesBeingReplaced;
+    for (auto &rep : faceReplacements) {
+      std::copy(rep.first.begin(), rep.first.end(), inserter(facesBeingReplaced));
+    }
+
+    auto copyFace = [&](auto &f) {
       polygon.clear();
 
       CGAL::Vertex_around_face_iterator<TriangleMesh> vit, vend;
@@ -154,13 +176,30 @@ public:
       }
 
       auto face = copy.add_face(polygon);
-      if (!face.is_valid()) {
-        std::cerr << "Failed to add face\n";
-      } else {
+      if (face.is_valid()) {
         if (polygon.size() > 3) {
           PMP::triangulate_face(face, copy);
         }
+        // std::cerr << "Succesfully added face with " << polygon.size() << " vertices:\n";
+        return true;
+
+      } else {
+        std::cerr << "Failed to add face with " << polygon.size() << " vertices:\n";
+        return false;
       }
+    };
+
+    for (auto f : src.faces()) {
+      if (src.is_removed(f)) {
+        continue;
+      }
+      if (facesToRemove.find(f) != facesToRemove.end()) {
+        continue;
+      }
+      if (facesBeingReplaced.find(f) != facesBeingReplaced.end()) {
+        continue;
+      }
+      copyFace(f);
     }
 
     for (auto& originalPolygon : facesToAdd) {
@@ -171,14 +210,44 @@ public:
       }
 
       auto face = copy.add_face(polygon);
-      if (!face.is_valid()) {
-        std::cerr << "Failed to add face\n";
-      } else {
+      if (face.is_valid()) {
         if (polygon.size() > 3) {
           PMP::triangulate_face(face, copy);
         }
+      } else {
+        std::cerr << "Failed to add face with " << polygon.size() << " vertices:\n";
       }
     }
+
+    for (auto &rep : faceReplacements) {
+      polygon.clear();
+
+      auto &originalFaces = rep.first;
+      auto &rawReplacementPolygon = rep.second;
+
+      for (auto v : rawReplacementPolygon) {
+        polygon.push_back(getDestinationVertex(v));
+      }
+
+      face_descriptor face;
+      try {
+        face = copy.add_face(polygon);
+      } catch (const CGAL::Failure_exception& e) {
+        LOG(message_group::Warning, Location::NONE, "", "[fast-csg] Remesh add_face error: %1$s\n", e.what());
+      }
+
+      if (face.is_valid()) {
+        if (polygon.size() > 3) {
+          PMP::triangulate_face(face, copy);
+        }
+      } else {
+        std::cerr << "Failed to replace " << originalFaces.size() << " faces with a " << polygon.size() << " vertices poly. Keeping the originals\n";
+        for (auto &f : originalFaces) {
+          copyFace(f);
+        }
+      }
+    }
+    // std::vector<std::pair<std::vector<face_descriptor>, std::vector<vertex_descriptor>>> faceReplacements;
 
     src = copy;
   }
