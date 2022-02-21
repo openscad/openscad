@@ -103,7 +103,7 @@ jobs:
           destination: 64-bit
   openscad-macos:
     macos:
-      xcode: 13.2.0
+      xcode: 13.2.1
     environment:
       OPENSCAD_LIBRARIES: /Users/distiller/libraries/install
       PKG_CONFIG_PATH: /Users/distiller/libraries/install/lib/pkgconfig
