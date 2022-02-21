@@ -12,6 +12,13 @@
 # This script lives here:
 # https://github.com/kintel/MacOSX-tools
 #
+# Notes:
+# * On macOS < 10.14, LC_VERSION_MIN_MACOSX is used in binaries to specify minimum supported macOS version.
+#   On macOS >= 10.14, LC_BUILD_VERSION is used instead
+# * We expect bundled dependencies to use @rpath or @executable_path
+# * Non-bundled dependencies must be built into macOS (in /usr/lib or /System/Library)
+# * DYLD_LIBRARY_PATH is currently supported, but it's not a good practice to depend on it
+#
 
 import sys
 import os
@@ -22,6 +29,8 @@ from distutils.version import StrictVersion
 DEBUG = False
 
 cxxlib = None
+
+macos_version_min = '10.13'
 
 def usage():
     print("Usage: " + sys.argv[0] + " <executable>", sys.stderr)
@@ -90,18 +99,20 @@ def validate_lib(lib):
     output = p.communicate()[0]
     if p.returncode != 0: return False
     # Check deployment target
-    m = re.search("LC_VERSION_MIN_MACOSX.*\n(.*)\n\s+version (.*)", output, re.MULTILINE)
-    if not m:
-        print("Error: LC_VERSION_MIN_MACOSX not found in " + lib)
+    m = re.search("LC_VERSION_MIN_MACOSX([^\n]*\n){2}\s+version (.*)", output, re.MULTILINE)
+    deploymenttarget = None
+    if m is not None:
+        deploymenttarget = m.group(2)
+    if deploymenttarget is None:
+        m = re.search("LC_BUILD_VERSION([^\n]*\n){3}\s+minos (.*)", output, re.MULTILINE)
+        if m is not None:
+            deploymenttarget = m.group(2)
+    if deploymenttarget is None:
+        print("Error: Neither LC_VERSION_MIN_MACOSX nor LC_BUILD_VERSION found in " + lib)
         return False
-    deploymenttarget = m.group(2)
-    if StrictVersion(deploymenttarget) > StrictVersion('10.13'):
+    if StrictVersion(deploymenttarget) > StrictVersion(macos_version_min):
         print("Error: Unsupported deployment target " + m.group(2) + " found: " + lib)
         return False
-# We don't support Snow Leopard anymore
-#    if re.search("LC_DYLD_INFO_ONLY", output):
-#        print("Error: Requires Snow Leopard: " + lib)
-#        return False
 
     # This is a check for a weak symbols from a build made on 10.12 or newer sneaking into a build for an
     # earlier deployment target. The 'mkostemp' symbol tends to be introduced by fontconfig.
@@ -113,18 +124,19 @@ def validate_lib(lib):
         print("Error: Reference to mkostemp() found - only supported on macOS 10.12->")
         return None
 
-    p  = subprocess.Popen(["lipo", lib, "-verify_arch", "x86_64"], stdout=subprocess.PIPE, universal_newlines=True)
-    output = p.communicate()[0]
-    if p.returncode != 0: 
-        print("Error: x86_64 architecture not supported: " + lib)
+    # Check that both x86_64 and arm64 architectures exist
+    p = subprocess.Popen(["lipo", lib, "-verify_arch", "x86_64"], stdout=subprocess.PIPE, universal_newlines=True)
+    p.communicate()[0]
+    if p.returncode != 0:
+        print("Error: x86_64 architecture not found in " + lib)
         return False
 
-# We don't support 32-bit binaries anymore
-#    p  = subprocess.Popen(["lipo", lib, "-verify_arch", "i386"], stdout=subprocess.PIPE, universal_newlines=True)
-#    output = p.communicate()[0]
-#    if p.returncode != 0: 
-#        print("Error: i386 architecture not supported: " + lib)
-#        return False
+    p  = subprocess.Popen(["lipo", lib, "-verify_arch", "arm64"], stdout=subprocess.PIPE, universal_newlines=True)
+    p.communicate()[0]
+    if p.returncode != 0:
+        print("Error: arm64 architecture not found in " + lib)
+        return False
+
     return True
 
 if __name__ == '__main__':

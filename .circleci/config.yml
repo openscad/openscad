@@ -107,7 +107,7 @@ jobs:
           destination: 64-bit
   openscad-macos:
     macos:
-      xcode: 12.5.1
+      xcode: 13.2.1
     environment:
       OPENSCAD_LIBRARIES: /Users/distiller/libraries/install
       PKG_CONFIG_PATH: /Users/distiller/libraries/install/lib/pkgconfig
@@ -138,8 +138,8 @@ jobs:
           command: |
             # Pick up our own Qt
             export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
-            # Limit to 30 minutes
-            ./scripts/macosx-build-dependencies.sh -l 30 -d double_conversion eigen gmp mpfr glew gettext libffi freetype ragel harfbuzz libzip libxml2 libuuid fontconfig hidapi lib3mf pixman cairo glib2 boost cgal qt5 opencsg qscintilla sparkle
+            # Build universal binaries and limit to 30 minutes
+            ./scripts/macosx-build-dependencies.sh -l 30 -x -a -d double_conversion eigen gmp mpfr glew gettext libffi freetype ragel harfbuzz libzip libxml2 libuuid fontconfig hidapi lib3mf pixman cairo glib2 boost cgal qt5 opencsg qscintilla sparkle
       - run:
           name: Package Dependencies as an artifact
           command: |
