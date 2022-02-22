@@ -556,13 +556,13 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
           if (auto geomlist = dynamic_pointer_cast<const GeometryList>(root_geom)) {
             auto flatlist = geomlist->flatten();
             for (auto& child : flatlist) {
-              if (child.second->getDimension() == 3 && !dynamic_pointer_cast<const CGAL_Nef_polyhedron>(child.second)) {
-                child.second = CGALUtils::createNefPolyhedronFromGeometry(*child.second);
+              if (child.second->getDimension() == 3) {
+                child.second = CGALUtils::getNefPolyhedronFromGeometry(child.second);
               }
             }
             root_geom.reset(new GeometryList(flatlist));
-          } else if (!dynamic_pointer_cast<const CGAL_Nef_polyhedron>(root_geom)) {
-            root_geom = CGALUtils::createNefPolyhedronFromGeometry(*root_geom);
+          } else {
+            root_geom = CGALUtils::getNefPolyhedronFromGeometry(root_geom);
           }
           LOG(message_group::None, Location::NONE, "", "Converted to Nef polyhedron");
         }
