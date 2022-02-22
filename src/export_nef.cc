@@ -36,7 +36,7 @@
 
 void export_nefdbg(const shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
+  if (auto N = CGALUtils::getNefPolyhedronFromGeometry(geom)) {
     output << N->dump();
   } else {
     LOG(message_group::None, Location::NONE, "", "Not a CGALNefPoly. Add some CSG ops?");
@@ -45,7 +45,7 @@ void export_nefdbg(const shared_ptr<const Geometry>& geom, std::ostream& output)
 
 void export_nef3(const shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  if (const CGAL_Nef_polyhedron *N = dynamic_cast<const CGAL_Nef_polyhedron *>(geom.get())) {
+  if (auto N = CGALUtils::getNefPolyhedronFromGeometry(geom)) {
     output << const_cast<CGAL_Nef_polyhedron3&>(*N->p3); // CGAL why?
   } else {
     LOG(message_group::None, Location::NONE, "", "Not a CGALNefPoly. Add some CSG ops?");

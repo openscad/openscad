@@ -99,6 +99,17 @@ bool CGALHybridPolyhedron::isManifold() const
   return false;
 }
 
+bool CGALHybridPolyhedron::isValid() const
+{
+  if (auto mesh = getMesh()) {
+    return CGAL::is_valid_polygon_mesh(*mesh);
+  } else if (auto nef = getNefPolyhedron()) {
+    return nef->is_valid();
+  }
+  assert(!"Bad hybrid polyhedron state");
+  return false;
+}
+
 shared_ptr<const PolySet> CGALHybridPolyhedron::toPolySet() const
 {
   if (auto mesh = getMesh()) {

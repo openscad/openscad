@@ -1324,7 +1324,7 @@ shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const ProjectionNode
   shared_ptr<const class Geometry> geom;
   shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
   if (newgeom) {
-    auto Nptr = CGALUtils::getGeometryAsNefPolyhedron(newgeom);
+    auto Nptr = CGALUtils::getNefPolyhedronFromGeometry(newgeom);
     if (Nptr && !Nptr->isEmpty()) {
       Polygon2d *poly = CGALUtils::project(*Nptr, node.cut_mode);
       if (poly) {
