@@ -89,7 +89,9 @@ bool CGALHybridPolyhedron::isManifold() const
   if (auto mesh = getMesh()) {
     // Note: haven't tried mesh->is_valid() but it could be too expensive.
     // TODO: use is_valid_polygon_mesh and remember
-    return CGAL::is_closed(*mesh);
+    // return CGAL::is_closed(*mesh);
+    auto isValid = CGAL::is_valid_polygon_mesh(*mesh);
+    return isValid;
   } else if (auto nef = getNefPolyhedron()) {
     return nef->is_simple();
   }
@@ -379,7 +381,7 @@ bool CGALHybridPolyhedron::meshBinOp(
     // had nefs.
     data = previousData;
     other.data = previousOtherData;
-  } else {
+    
     if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
       LOG(message_group::Warning, Location::NONE, "",
           "Dumps of operands were written to %1$s and %2$s", lhsDebugDumpFile.c_str(), rhsDebugDumpFile.c_str());
