@@ -121,7 +121,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   bool originOk = origin.getVec2(node->origin_x, node->origin_y);
   originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
   if (origin.isDefined() && !originOk) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "linear_extrude(..., origin=%1$s) could not be converted", origin.toEchoString());
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert import(..., origin=%1$s) parameter to vec2", origin.toEchoString());
   }
 
   const auto& center = parameters["center"];
