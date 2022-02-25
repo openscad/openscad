@@ -74,6 +74,25 @@ uint64_t append_stl(const PolySet& ps, std::ostream& output, bool binary)
   PolySet triangulated(3);
   PolysetUtils::tessellate_faces(ps, triangulated);
 
+  if (Feature::ExperimentalSortStl.is_enabled()) {
+    auto vectorLessThan = [](Vector3d& a, Vector3d& b) {
+        for (int i = 0; i < 3; i++) {
+          if (a[i] < b[i]) return true;
+        }
+        return false;
+      };
+    std::sort(triangulated.polygons.begin(), triangulated.polygons.end(),
+              [&](Polygon& p1, Polygon& p2) {
+        if (p1.size() != 3 || p2.size() != 3) {
+          return false;
+        }
+        for (int i = 0; i < 3; i++) {
+          if (vectorLessThan(p1[i], p2[i])) return true;
+        }
+        return false;
+      });
+  }
+
   for (const auto& p : triangulated.polygons) {
     assert(p.size() == 3); // STL only allows triangles
     triangle_count++;

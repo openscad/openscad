@@ -46,6 +46,7 @@ const Feature Feature::ExperimentalVxORenderersDirect("vertex-object-renderers-d
 const Feature Feature::ExperimentalVxORenderersPrealloc("vertex-object-renderers-prealloc", "Enable preallocating buffers in vertex object renderers");
 const Feature Feature::ExperimentalTextMetricsFunctions("textmetrics", "Enable the <code>textmetrics()</code> and <code>fontmetrics()</code> functions.");
 const Feature Feature::ExperimentalImportFunction("import-function", "Enable import function returning data instead of geometry.");
+const Feature Feature::ExperimentalSortStl("sort-stl", "Sort the STL output for predictible, diffable results.");
 
 Feature::Feature(const std::string& name, const std::string& description)
   : enabled(false), name(name), description(description)
