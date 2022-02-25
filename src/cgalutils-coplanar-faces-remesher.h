@@ -52,21 +52,60 @@ public:
     auto verbose = Feature::ExperimentalFastCsgDebug.is_enabled();
 
 #ifdef VERBOSE_REMESHING
-    auto patchToPolyhedronStr = [&](auto &patchFaces) {
-      std::vector<vertex_descriptor> vertices; 
-      std::map<vertex_descriptor, size_t> vertexIndex;
+    auto patchToPolyhedronStr = [&](auto& patchFaces) {
+        std::vector<vertex_descriptor> vertices;
+        std::map<vertex_descriptor, size_t> vertexIndex;
 
-      std::ostringstream verticesOut;
-      std::ostringstream facesOut;
+        std::ostringstream verticesOut;
+        std::ostringstream facesOut;
 
-      facesOut << "[\n";
-      for (auto& face : patchFaces) {
-        CGAL::Halfedge_around_face_iterator<TriangleMesh> heIt, heEnd;
-        facesOut << "  [";
+        facesOut << "[\n";
+        for (auto& face : patchFaces) {
+          CGAL::Halfedge_around_face_iterator<TriangleMesh> heIt, heEnd;
+          facesOut << "  [";
+          auto first = true;
+          for (boost::tie(heIt, heEnd) = halfedges_around_face(tm.halfedge(face), tm); heIt != heEnd; ++heIt) {
+            auto he = *heIt;
+            auto v = tm.source(he);
+            auto it = vertexIndex.find(v);
+            size_t idx;
+            if (it == vertexIndex.end()) {
+              idx = vertices.size();
+              vertices.push_back(v);
+              vertexIndex[v] = idx;
+            } else {
+              idx = it->second;
+            }
+            if (first) first = false;
+            else facesOut << ", ";
+            facesOut << idx;
+          }
+          facesOut << "],\n";
+        }
+        facesOut << "]";
+
+        verticesOut << "[\n";
+        for (auto v : vertices) {
+          auto p = tm.point(v);
+          verticesOut << "[" << CGAL::to_double(p.x()) << ", " << CGAL::to_double(p.y()) << ", " << CGAL::to_double(p.z()) << "],\n";
+        }
+        verticesOut << "]";
+
+        std::ostringstream out;
+        out << "polyhedron(" << verticesOut.str().c_str() << ", " << facesOut.str().c_str() << ");";
+        return out.str();
+      };
+
+    auto patchBorderToPolyhedronStr = [&](auto& borderPathVertices) {
+        std::vector<vertex_descriptor> vertices;
+        std::map<vertex_descriptor, size_t> vertexIndex;
+
+        std::ostringstream verticesOut;
+        std::ostringstream facesOut;
+
+        facesOut << "[[";
         auto first = true;
-        for (boost::tie(heIt, heEnd) = halfedges_around_face(tm.halfedge(face), tm); heIt != heEnd; ++heIt) {
-          auto he = *heIt;
-          auto v = tm.source(he);
+        for (auto& v : borderPathVertices) {
           auto it = vertexIndex.find(v);
           size_t idx;
           if (it == vertexIndex.end()) {
@@ -80,58 +119,19 @@ public:
           else facesOut << ", ";
           facesOut << idx;
         }
-        facesOut << "],\n";
-      }
-      facesOut << "]";
+        facesOut << "]]\n";
 
-      verticesOut << "[\n";
-      for (auto v : vertices) {
-        auto p = tm.point(v);
-        verticesOut << "[" << CGAL::to_double(p.x()) << ", " << CGAL::to_double(p.y()) << ", " << CGAL::to_double(p.z()) << "],\n";
-      }
-      verticesOut << "]";
-
-      std::ostringstream out;
-      out << "polyhedron(" << verticesOut.str().c_str() << ", " << facesOut.str().c_str() << ");";
-      return out.str();
-    };
-
-    auto patchBorderToPolyhedronStr = [&](auto &borderPathVertices) {
-      std::vector<vertex_descriptor> vertices; 
-      std::map<vertex_descriptor, size_t> vertexIndex;
-
-      std::ostringstream verticesOut;
-      std::ostringstream facesOut;
-
-      facesOut << "[[";
-      auto first = true;
-      for (auto& v : borderPathVertices) {
-        auto it = vertexIndex.find(v);
-        size_t idx;
-        if (it == vertexIndex.end()) {
-          idx = vertices.size();
-          vertices.push_back(v);
-          vertexIndex[v] = idx;
-        } else {
-          idx = it->second;
+        verticesOut << "[\n";
+        for (auto v : vertices) {
+          auto p = tm.point(v);
+          verticesOut << "[" << CGAL::to_double(p.x()) << ", " << CGAL::to_double(p.y()) << ", " << CGAL::to_double(p.z()) << "],\n";
         }
-        if (first) first = false;
-        else facesOut << ", ";
-        facesOut << idx;
-      }
-      facesOut << "]]\n";
+        verticesOut << "]";
 
-      verticesOut << "[\n";
-      for (auto v : vertices) {
-        auto p = tm.point(v);
-        verticesOut << "[" << CGAL::to_double(p.x()) << ", " << CGAL::to_double(p.y()) << ", " << CGAL::to_double(p.z()) << "],\n";
-      }
-      verticesOut << "]";
-
-      std::ostringstream out;
-      out << "polyhedron(" << verticesOut.str().c_str() << ", " << facesOut.str().c_str() << ");";
-      return out.str();
-    };
+        std::ostringstream out;
+        out << "polyhedron(" << verticesOut.str().c_str() << ", " << facesOut.str().c_str() << ");";
+        return out.str();
+      };
 #endif // VERBOSE_REMESHING
 
     try {
@@ -206,7 +206,7 @@ public:
         allPatchPolyStrings[id] = patchToPolyhedronStr(patchFaces);
 #endif // VERBOSE_REMESHING
 
-        for (auto &face : patchFaces) {
+        for (auto& face : patchFaces) {
           facesProcessed.insert(face);
         }
 
@@ -219,7 +219,7 @@ public:
           };
 
         loopLocalBorderEdges.clear();
-        auto &borderEdges = loopLocalBorderEdges;
+        auto& borderEdges = loopLocalBorderEdges;
 
         for (auto& face : patchFaces) {
           CGAL::Halfedge_around_face_iterator<TriangleMesh> heIt, heEnd;
@@ -246,6 +246,7 @@ public:
           return;
         }
 
+        // TODO(ochafik): Find out when it's pointless to remesh (e.g. when no vertex can be collapsed or dropped because it's inside the patch).
         if (borderPath.size() <= 3) {
           continue;
         }
@@ -254,7 +255,7 @@ public:
         auto& borderPathVertices = loopLocalBorderPathVertices;
 
         loopLocalBorderPathEdges.clear();
-        auto &borderPathEdges = loopLocalBorderPathEdges;
+        auto& borderPathEdges = loopLocalBorderPathEdges;
 
         for (auto he : borderPath) {
           borderPathEdges.insert(he);
@@ -273,7 +274,7 @@ public:
         if (hasHoles) {
           if (verbose) {
             LOG(message_group::None, Location::NONE, "",
-              "[fast-csg-remesh] Skipping remeshing of patch with %1$lu faces as it seems to have holes.", borderPathEdges.size());
+                "[fast-csg-remesh] Skipping remeshing of patch with %1$lu faces as it seems to have holes.", borderPathEdges.size());
           }
           continue;
         }
@@ -313,7 +314,7 @@ public:
         std::mt19937 gen(123456789);
         std::uniform_int_distribution<> distrib(0, 255);
 
-        for (auto &p : allPatchPolyStrings) {
+        for (auto& p : allPatchPolyStrings) {
           auto id = p.first;
           fout << "// Patch id " << id << " (index " << patchIndex << "):\n";
           fout << "color (\"#" << boost::format("%02x%02x%02x") % distrib(gen) % distrib(gen) % distrib(gen) << "\") {\n";

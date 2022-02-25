@@ -58,9 +58,9 @@ public:
 
   bool isEmpty() {
     return facesToRemove.empty() &&
-        verticesToRemove.empty() &&
-        facesToAdd.empty() &&
-        vertexReplacements.empty();
+           verticesToRemove.empty() &&
+           facesToAdd.empty() &&
+           vertexReplacements.empty();
   }
 
   void removeFace(const face_descriptor& f) {
@@ -99,7 +99,7 @@ public:
         }
         if (i == n - 1) {
           indicesToRemove.insert(indicesToRemove.begin(), 0);
-        } else {  
+        } else {
           indicesToRemove.push_back(i + 1);
         }
       }
@@ -153,29 +153,29 @@ public:
 
     std::vector<vertex_descriptor> polygon;
 
-    auto addFace = [&](auto &polygon) {
-      auto face = copy.add_face(polygon);
-      if (face.is_valid()) {
-        if (polygon.size() > 3) {
-          PMP::triangulate_face(face, copy);
+    auto addFace = [&](auto& polygon) {
+        auto face = copy.add_face(polygon);
+        if (face.is_valid()) {
+          if (polygon.size() > 3) {
+            PMP::triangulate_face(face, copy);
+          }
+          return true;
+        } else {
+          std::cerr << "Failed to add face with " << polygon.size() << " vertices:\n";
+          return false;
         }
-        return true;
-      } else {
-        std::cerr << "Failed to add face with " << polygon.size() << " vertices:\n";
-        return false;
-      }
-    };
-    auto copyFace = [&](auto &f) {
-      polygon.clear();
+      };
+    auto copyFace = [&](auto& f) {
+        polygon.clear();
 
-      CGAL::Vertex_around_face_iterator<TriangleMesh> vit, vend;
-      for (boost::tie(vit, vend) = vertices_around_face(src.halfedge(f), src); vit != vend; ++vit) {
-        auto v = *vit;
-        polygon.push_back(getDestinationVertex(v));
-      }
+        CGAL::Vertex_around_face_iterator<TriangleMesh> vit, vend;
+        for (boost::tie(vit, vend) = vertices_around_face(src.halfedge(f), src); vit != vend; ++vit) {
+          auto v = *vit;
+          polygon.push_back(getDestinationVertex(v));
+        }
 
-      return addFace(polygon);
-    };
+        return addFace(polygon);
+      };
 
     for (auto f : src.faces()) {
       if (src.is_removed(f)) {

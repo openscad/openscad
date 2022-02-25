@@ -393,7 +393,7 @@ bool CGALHybridPolyhedron::meshBinOp(
     // had nefs.
     data = previousData;
     other.data = previousOtherData;
-    
+
     if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
       LOG(message_group::Warning, Location::NONE, "",
           "Dumps of operands were written to %1$s and %2$s", lhsDebugDumpFile.c_str(), rhsDebugDumpFile.c_str());
