@@ -52,7 +52,6 @@ private:
   std::unordered_set<face_descriptor> facesToRemove;
   std::unordered_set<vertex_descriptor> verticesToRemove;
   std::vector<std::vector<vertex_descriptor>> facesToAdd;
-  std::vector<std::pair<std::vector<face_descriptor>, std::vector<vertex_descriptor>>> faceReplacements;
   std::unordered_map<vertex_descriptor, vertex_descriptor> vertexReplacements;
 
 public:
@@ -61,7 +60,6 @@ public:
     return facesToRemove.empty() &&
         verticesToRemove.empty() &&
         facesToAdd.empty() &&
-        faceReplacements.empty() &&
         vertexReplacements.empty();
   }
 
@@ -75,14 +73,6 @@ public:
 
   void addFace(const std::vector<vertex_descriptor>& vertices) {
     facesToAdd.push_back(vertices);
-  }
-
-  template <class FaceContainer, class VertexContainer>
-  void replaceFaces(const FaceContainer& originalFaces, const VertexContainer& replacementFaceVertices) {
-    faceReplacements.emplace_back(
-      make_pair(
-        std::vector<face_descriptor>(originalFaces.begin(), originalFaces.end()),
-        std::vector<vertex_descriptor>(replacementFaceVertices.begin(), replacementFaceVertices.end())));
   }
 
   void replaceVertex(const vertex_descriptor& original, const vertex_descriptor& replacement) {
@@ -130,6 +120,8 @@ public:
   bool apply(TriangleMesh& src) const
   {
     TriangleMesh copy;
+    auto wasValid = CGAL::is_valid_polygon_mesh(src);
+    auto wasClosed = CGAL::is_closed(src);
 
     auto edgesAdded = 0;
     for (auto& vs : facesToAdd) edgesAdded += vs.size();
@@ -141,6 +133,7 @@ public:
                  copy.number_of_halfedges() + projectedHalfedgeCount,
                  copy.number_of_faces() + projectedFaceCount);
 
+    // TODO(ochafik): Speed up with a lookup vector : std::vector<vertex_descriptor> vertexMap(src.number_of_vertices());
     std::unordered_map<vertex_descriptor, vertex_descriptor> vertexMap;
     vertexMap.reserve(projectedVertexCount);
 
@@ -160,12 +153,18 @@ public:
 
     std::vector<vertex_descriptor> polygon;
 
-    
-    std::unordered_set<face_descriptor> facesBeingReplaced;
-    for (auto &rep : faceReplacements) {
-      std::copy(rep.first.begin(), rep.first.end(), inserter(facesBeingReplaced));
-    }
-
+    auto addFace = [&](auto &polygon) {
+      auto face = copy.add_face(polygon);
+      if (face.is_valid()) {
+        if (polygon.size() > 3) {
+          PMP::triangulate_face(face, copy);
+        }
+        return true;
+      } else {
+        std::cerr << "Failed to add face with " << polygon.size() << " vertices:\n";
+        return false;
+      }
+    };
     auto copyFace = [&](auto &f) {
       polygon.clear();
 
@@ -175,18 +174,7 @@ public:
         polygon.push_back(getDestinationVertex(v));
       }
 
-      auto face = copy.add_face(polygon);
-      if (face.is_valid()) {
-        if (polygon.size() > 3) {
-          PMP::triangulate_face(face, copy);
-        }
-        // std::cerr << "Succesfully added face with " << polygon.size() << " vertices:\n";
-        return true;
-
-      } else {
-        std::cerr << "Failed to add face with " << polygon.size() << " vertices:\n";
-        return false;
-      }
+      return addFace(polygon);
     };
 
     for (auto f : src.faces()) {
@@ -194,9 +182,6 @@ public:
         continue;
       }
       if (facesToRemove.find(f) != facesToRemove.end()) {
-        continue;
-      }
-      if (facesBeingReplaced.find(f) != facesBeingReplaced.end()) {
         continue;
       }
       if (!copyFace(f)) {
@@ -211,50 +196,23 @@ public:
         polygon.push_back(getDestinationVertex(v));
       }
 
-      auto face = copy.add_face(polygon);
-      if (face.is_valid()) {
-        if (polygon.size() > 3) {
-          PMP::triangulate_face(face, copy);
-        }
-      } else {
-        std::cerr << "Failed to add face with " << polygon.size() << " vertices. Aborting.\n";
+      if (!addFace(polygon)) {
         return false;
       }
     }
 
-    for (auto &rep : faceReplacements) {
-      polygon.clear();
-
-      auto &originalFaces = rep.first;
-      auto &rawReplacementPolygon = rep.second;
-
-      for (auto v : rawReplacementPolygon) {
-        polygon.push_back(getDestinationVertex(v));
-      }
-
-      face_descriptor face;
-      try {
-        face = copy.add_face(polygon);
-      } catch (const CGAL::Failure_exception& e) {
-        LOG(message_group::Warning, Location::NONE, "", "[fast-csg] Remesh add_face error: %1$s\n", e.what());
-      }
-
-      if (face.is_valid()) {
-        if (polygon.size() > 3) {
-          PMP::triangulate_face(face, copy);
-        }
-      } else {
-        std::cerr << "Failed to replace " << originalFaces.size() << " faces with a " << polygon.size() << " vertices poly. Aborting\n";
-        return false;
-        // std::cerr << "Failed to replace " << originalFaces.size() << " faces with a " << polygon.size() << " vertices poly. Keeping the originals\n";
-        // for (auto &f : originalFaces) {
-        //   copyFace(f);
-        // }
-      }
+    if (wasValid && !CGAL::is_valid_polygon_mesh(copy)) {
+      LOG(message_group::Warning, Location::NONE, "", "Remeshing output isn't valid");
+      return false;
     }
-    // std::vector<std::pair<std::vector<face_descriptor>, std::vector<vertex_descriptor>>> faceReplacements;
+    if (wasClosed && !CGAL::is_closed(copy)) {
+      LOG(message_group::Warning, Location::NONE, "", "Remeshing output isn't closed");
+      return false;
+    }
 
     src = copy;
+
+    return true;
   }
 };
 
