@@ -127,7 +127,7 @@ public:
 
   /*! Mutating in place is tricky, to say the least, so this creates a new mesh
    * and overwrites the original to it at the end for now. */
-  void apply(TriangleMesh& src) const
+  bool apply(TriangleMesh& src) const
   {
     TriangleMesh copy;
 
@@ -199,7 +199,9 @@ public:
       if (facesBeingReplaced.find(f) != facesBeingReplaced.end()) {
         continue;
       }
-      copyFace(f);
+      if (!copyFace(f)) {
+        return false;
+      }
     }
 
     for (auto& originalPolygon : facesToAdd) {
@@ -215,7 +217,8 @@ public:
           PMP::triangulate_face(face, copy);
         }
       } else {
-        std::cerr << "Failed to add face with " << polygon.size() << " vertices:\n";
+        std::cerr << "Failed to add face with " << polygon.size() << " vertices. Aborting.\n";
+        return false;
       }
     }
 
@@ -241,10 +244,12 @@ public:
           PMP::triangulate_face(face, copy);
         }
       } else {
-        std::cerr << "Failed to replace " << originalFaces.size() << " faces with a " << polygon.size() << " vertices poly. Keeping the originals\n";
-        for (auto &f : originalFaces) {
-          copyFace(f);
-        }
+        std::cerr << "Failed to replace " << originalFaces.size() << " faces with a " << polygon.size() << " vertices poly. Aborting\n";
+        return false;
+        // std::cerr << "Failed to replace " << originalFaces.size() << " faces with a " << polygon.size() << " vertices poly. Keeping the originals\n";
+        // for (auto &f : originalFaces) {
+        //   copyFace(f);
+        // }
       }
     }
     // std::vector<std::pair<std::vector<face_descriptor>, std::vector<vertex_descriptor>>> faceReplacements;
