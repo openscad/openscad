@@ -28,7 +28,6 @@
 #include "polyset.h"
 #include "printutils.h"
 #include "Geometry.h"
-#include "Reindexer.h"
 
 #include <fstream>
 
