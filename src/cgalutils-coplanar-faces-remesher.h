@@ -196,6 +196,10 @@ public:
 
         // allPatchPolyStrings[id] = patchToPolyhedronStr(patchFaces);
 
+        for (auto &face : patchFaces) {
+          facesProcessed.insert(face);
+        }
+
         if (patchFaces.size() < 2) {
           continue;
         }
