@@ -1,6 +1,10 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #pragma once
 
+#ifdef VERBOSE_REMESHING
+  #include <boost/format.hpp>
+  #include <random>
+#endif
 #include <iterator>
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/Kernel/global_functions.h>
@@ -47,86 +51,88 @@ public:
     auto facesBefore = tm.number_of_faces();
     auto verbose = Feature::ExperimentalFastCsgDebug.is_enabled();
 
-    // auto patchToPolyhedronStr = [&](auto &patchFaces) {
-    //   std::vector<vertex_descriptor> vertices; 
-    //   std::map<vertex_descriptor, size_t> vertexIndex;
+#ifdef VERBOSE_REMESHING
+    auto patchToPolyhedronStr = [&](auto &patchFaces) {
+      std::vector<vertex_descriptor> vertices; 
+      std::map<vertex_descriptor, size_t> vertexIndex;
 
-    //   std::ostringstream verticesOut;
-    //   std::ostringstream facesOut;
+      std::ostringstream verticesOut;
+      std::ostringstream facesOut;
 
-    //   facesOut << "[\n";
-    //   for (auto& face : patchFaces) {
-    //     CGAL::Halfedge_around_face_iterator<TriangleMesh> heIt, heEnd;
-    //     facesOut << "  [";
-    //     auto first = true;
-    //     for (boost::tie(heIt, heEnd) = halfedges_around_face(tm.halfedge(face), tm); heIt != heEnd; ++heIt) {
-    //       auto he = *heIt;
-    //       auto v = tm.source(he);
-    //       auto it = vertexIndex.find(v);
-    //       size_t idx;
-    //       if (it == vertexIndex.end()) {
-    //         idx = vertices.size();
-    //         vertices.push_back(v);
-    //         vertexIndex[v] = idx;
-    //       } else {
-    //         idx = it->second;
-    //       }
-    //       if (first) first = false;
-    //       else facesOut << ", ";
-    //       facesOut << idx;
-    //     }
-    //     facesOut << "],\n";
-    //   }
-    //   facesOut << "]";
+      facesOut << "[\n";
+      for (auto& face : patchFaces) {
+        CGAL::Halfedge_around_face_iterator<TriangleMesh> heIt, heEnd;
+        facesOut << "  [";
+        auto first = true;
+        for (boost::tie(heIt, heEnd) = halfedges_around_face(tm.halfedge(face), tm); heIt != heEnd; ++heIt) {
+          auto he = *heIt;
+          auto v = tm.source(he);
+          auto it = vertexIndex.find(v);
+          size_t idx;
+          if (it == vertexIndex.end()) {
+            idx = vertices.size();
+            vertices.push_back(v);
+            vertexIndex[v] = idx;
+          } else {
+            idx = it->second;
+          }
+          if (first) first = false;
+          else facesOut << ", ";
+          facesOut << idx;
+        }
+        facesOut << "],\n";
+      }
+      facesOut << "]";
 
-    //   verticesOut << "[\n";
-    //   for (auto v : vertices) {
-    //     auto p = tm.point(v);
-    //     verticesOut << "[" << CGAL::to_double(p.x()) << ", " << CGAL::to_double(p.y()) << ", " << CGAL::to_double(p.z()) << "],\n";
-    //   }
-    //   verticesOut << "]";
+      verticesOut << "[\n";
+      for (auto v : vertices) {
+        auto p = tm.point(v);
+        verticesOut << "[" << CGAL::to_double(p.x()) << ", " << CGAL::to_double(p.y()) << ", " << CGAL::to_double(p.z()) << "],\n";
+      }
+      verticesOut << "]";
 
-    //   std::ostringstream out;
-    //   out << "polyhedron(" << verticesOut.str().c_str() << ", " << facesOut.str().c_str() << ");";
-    //   return out.str();
-    // };
+      std::ostringstream out;
+      out << "polyhedron(" << verticesOut.str().c_str() << ", " << facesOut.str().c_str() << ");";
+      return out.str();
+    };
 
-    // auto patchBorderToPolyhedronStr = [&](auto &borderPathVertices) {
-    //   std::vector<vertex_descriptor> vertices; 
-    //   std::map<vertex_descriptor, size_t> vertexIndex;
+    auto patchBorderToPolyhedronStr = [&](auto &borderPathVertices) {
+      std::vector<vertex_descriptor> vertices; 
+      std::map<vertex_descriptor, size_t> vertexIndex;
 
-    //   std::ostringstream verticesOut;
-    //   std::ostringstream facesOut;
+      std::ostringstream verticesOut;
+      std::ostringstream facesOut;
 
-    //   facesOut << "[[";
-    //   auto first = true;
-    //   for (auto& v : borderPathVertices) {
-    //     auto it = vertexIndex.find(v);
-    //     size_t idx;
-    //     if (it == vertexIndex.end()) {
-    //       idx = vertices.size();
-    //       vertices.push_back(v);
-    //       vertexIndex[v] = idx;
-    //     } else {
-    //       idx = it->second;
-    //     }
-    //     if (first) first = false;
-    //     else facesOut << ", ";
-    //     facesOut << idx;
-    //   }
-    //   facesOut << "]]\n";
+      facesOut << "[[";
+      auto first = true;
+      for (auto& v : borderPathVertices) {
+        auto it = vertexIndex.find(v);
+        size_t idx;
+        if (it == vertexIndex.end()) {
+          idx = vertices.size();
+          vertices.push_back(v);
+          vertexIndex[v] = idx;
+        } else {
+          idx = it->second;
+        }
+        if (first) first = false;
+        else facesOut << ", ";
+        facesOut << idx;
+      }
+      facesOut << "]]\n";
 
-    //   verticesOut << "[\n";
-    //   for (auto v : vertices) {
-    //     auto p = tm.point(v);
-    //     verticesOut << "[" << CGAL::to_double(p.x()) << ", " << CGAL::to_double(p.y()) << ", " << CGAL::to_double(p.z()) << "],\n";
-    //   }
-    //   verticesOut << "]";
+      verticesOut << "[\n";
+      for (auto v : vertices) {
+        auto p = tm.point(v);
+        verticesOut << "[" << CGAL::to_double(p.x()) << ", " << CGAL::to_double(p.y()) << ", " << CGAL::to_double(p.z()) << "],\n";
+      }
+      verticesOut << "]";
 
-    //   std::ostringstream out;
-    //   out << "polyhedron(" << verticesOut.str().c_str() << ", " << facesOut.str().c_str() << ");";
-    //   return out.str();
-    // };
+      std::ostringstream out;
+      out << "polyhedron(" << verticesOut.str().c_str() << ", " << facesOut.str().c_str() << ");";
+      return out.str();
+    };
+#endif // VERBOSE_REMESHING
 
     try {
       TriangleMeshEdits<TriangleMesh> edits;
@@ -140,8 +146,10 @@ public:
       std::vector<vertex_descriptor> loopLocalBorderPathVertices;
       std::unordered_set<halfedge_descriptor> loopLocalBorderPathEdges;
 
+#ifdef VERBOSE_REMESHING
       // std::unordered_map<PatchId, std::string> allPatchPolyStrings;
       // std::unordered_map<PatchId, std::string> allPatchReplacementsPolyStrings;
+#endif // VERBOSE_REMESHING
 
       for (auto face : tm.faces()) {
         if (tm.is_removed(face)) {
@@ -194,7 +202,9 @@ public:
 
         floodFillPatch(patchFaces, isHalfedgeOnBorder);
 
-        // allPatchPolyStrings[id] = patchToPolyhedronStr(patchFaces);
+#ifdef VERBOSE_REMESHING
+        allPatchPolyStrings[id] = patchToPolyhedronStr(patchFaces);
+#endif // VERBOSE_REMESHING
 
         for (auto &face : patchFaces) {
           facesProcessed.insert(face);
@@ -267,48 +277,62 @@ public:
           }
           continue;
         }
+
+#if VERBOSE_REMESHING
         auto lengthBefore = borderPathVertices.size();
+#endif // VERBOSE_REMESHING
+
+        // TODO(ochafik): Ensure collapse happens on both sides of the border! (e.g. count of patches around vertex == 2)
         auto collapsed = TriangleMeshEdits<TriangleMesh>::collapsePathWithConsecutiveCollinearEdges(borderPathVertices, tm);
 
+#if VERBOSE_REMESHING
         auto lengthAfter = borderPathVertices.size();
-        // if (collapsed && verbose) {
-        //   std::cerr << "Collapsed path around patch " << id << " (" << patchFaces.size() << " faces) from " << lengthBefore << " to " << lengthAfter << " vertices\n";
-        // }
-
-        // allPatchReplacementsPolyStrings[id] = patchBorderToPolyhedronStr(borderPathVertices);
+        if (collapsed && verbose) {
+          std::cerr << "Collapsed path around patch " << id << " (" << patchFaces.size() << " faces) from " << lengthBefore << " to " << lengthAfter << " vertices\n";
+        }
+        allPatchReplacementsPolyStrings[id] = patchBorderToPolyhedronStr(borderPathVertices);
+#endif // VERBOSE_REMESHING
 
         // Cover the patch with a polygon. It will be triangulated when the
         // edits are applied.
-        
-        // edits.replaceFaces(patchFaces, borderPathVertices);
-
         for (auto& face : patchFaces) edits.removeFace(face);
         edits.addFace(borderPathVertices);
-          
       }
 
-      // {
-      //   std::ofstream fout("patches.scad");
-      //   fout << "before=true;\npatchIndex=-1;\n";
-      //   size_t patchIndex = 0;
-      //   for (auto &p : allPatchPolyStrings) {
-      //     auto id = p.first;
-      //     fout << "// Patch id " << id << " (index " << patchIndex << "):\n";
-      //     if (allPatchReplacementsPolyStrings[id].empty()) fout << "%";
-      //     fout << "if (patchIndex < 0 || patchIndex == " << patchIndex << ") {\n";
-      //     fout << "  if (before) { " << p.second.c_str() << " }\n";
-      //     fout << "  else { " << allPatchReplacementsPolyStrings[id] << " }\n";
-      //     fout << "}\n";
-      //     patchIndex++;
-      //   }
-      // }
+#if VERBOSE_REMESHING
+      if (verbose) {
+        static size_t i = 0;
+        std::ostringstream outName;
+        outName << "patches " << i++ << ".scad";
+        std::cout << "Writing " << outName.str().c_str() << "\n";
+
+        std::ofstream fout(outName.str().c_str());
+        fout << "before=true;\npatchIndex=-1;\n";
+        size_t patchIndex = 0;
+
+        std::mt19937 gen(123456789);
+        std::uniform_int_distribution<> distrib(0, 255);
+
+        for (auto &p : allPatchPolyStrings) {
+          auto id = p.first;
+          fout << "// Patch id " << id << " (index " << patchIndex << "):\n";
+          fout << "color (\"#" << boost::format("%02x%02x%02x") % distrib(gen) % distrib(gen) % distrib(gen) << "\") {\n";
+          if (allPatchReplacementsPolyStrings[id].empty()) fout << "%";
+          fout << "  if (patchIndex < 0 || patchIndex == " << patchIndex << ") {\n";
+          fout << "    if (before) { " << p.second.c_str() << " }\n";
+          fout << "    else { " << allPatchReplacementsPolyStrings[id] << " }\n";
+          fout << "  }\n}\n";
+          patchIndex++;
+        }
+      }
+#endif // VERBOSE_REMESHING
 
       if (!edits.isEmpty()) {
         edits.apply(tm);
       }
 
       auto facesAfter = tm.number_of_faces();
-      if (verbose) {
+      if (verbose && facesBefore != facesAfter) {
         LOG(message_group::None, Location::NONE, "",
             "[fast-csg-remesh] Remeshed from %1$lu to %2$lu faces (%3$lu % improvement)", facesBefore, facesAfter,
             (facesBefore - facesAfter) * 100 / facesBefore);
