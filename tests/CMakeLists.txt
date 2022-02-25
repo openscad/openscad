@@ -1143,6 +1143,14 @@ add_cmdline_test(fastcsg-lazyunion-cgalpng     OPENSCAD SUFFIX png FILES ${FASTC
 add_cmdline_test(fastcsg-lazyunion-amfpngtest    SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union --openscad=${OPENSCAD_BINPATH} --format=AMF)
 add_cmdline_test(fastcsg-lazyunion-3mfpngtest    SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union --openscad=${OPENSCAD_BINPATH} --format=3MF)
 
+list(APPEND FASTCSG_REMESH_FILES
+  ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cubes.scad
+  ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cube-1.scad
+  ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cube-2.scad
+)
+
+add_cmdline_test(remesh-stl     OPENSCAD SUFFIX stl FILES ${FASTCSG_REMESH_FILES} ARGS --enable=fast-csg --enable=fast-csg-remesh --enable=fast-csg-trust-corefinement --render)
+
 #
 # Trivial Export/Import files
 # This sanity-checks bidirectional file format import/export
