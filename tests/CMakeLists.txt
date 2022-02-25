@@ -369,7 +369,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
             AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS_WITHOUT_TRUST_COREF
             AND NOT SCADFILE IN_LIST FAST_CSG_FAILING_SCADFILES
             AND NOT TEST_FULLNAME IN_LIST FAST_CSG_FAILING_TESTS)
-          set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
+          set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg" "--enable=fast-csg-remesh")
           if (NOT SCADFILE IN_LIST FAST_CSG_TRUST_FAILING_SCADFILES)
             set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg-trust-corefinement")
           endif()
@@ -1149,7 +1149,8 @@ list(APPEND FASTCSG_REMESH_FILES
   ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cube-2.scad
 )
 
-add_cmdline_test(remesh-stl     OPENSCAD SUFFIX stl FILES ${FASTCSG_REMESH_FILES} ARGS --enable=fast-csg --enable=fast-csg-remesh --enable=fast-csg-trust-corefinement --render)
+add_cmdline_test(remesh-cgalpng OPENSCAD SUFFIX png FILES ${FASTCSG_REMESH_FILES} ARGS --enable=fast-csg --enable=fast-csg-remesh --enable=fast-csg-trust-corefinement --render)
+add_cmdline_test(remesh-stl     OPENSCAD SUFFIX stl FILES ${FASTCSG_REMESH_FILES} ARGS --enable=sort-stl --enable=fast-csg --enable=fast-csg-remesh --enable=fast-csg-trust-corefinement --render)
 
 #
 # Trivial Export/Import files
