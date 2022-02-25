@@ -148,13 +148,13 @@ ExportMesh::ExportMesh(const PolySet& ps)
     triangleIndices.push_back({pos1.first->second, pos2.first->second, pos3.first->second});
   }
 
-  std::vector<size_t> indexTranslationMap;
-  indexTranslationMap.reserve(vertexMap.size());
+  std::vector<size_t> indexTranslationMap(vertexMap.size());
   vertices.reserve(vertexMap.size());
 
+  size_t index = 0;
   for (const auto& e : vertexMap) {
     vertices.push_back(e.first);
-    indexTranslationMap.push_back(e.second);
+    indexTranslationMap[e.second] = index++;
   }
 
   for (const auto& i : triangleIndices) {
