@@ -393,13 +393,10 @@ private:
   {
     auto currentEdge = startingEdge;
     borderOut.push_back(startingEdge);
-    // std::set<vertex_descriptor> visitedVertices;
 
     std::unordered_set<vertex_descriptor> visitedVertices;
 
     while (tm.target(currentEdge) != tm.source(startingEdge)) {
-      // visitedVertices.insert(tm.target(currentEdge));
-
       auto foundNext = false;
       CGAL::Halfedge_around_source_iterator<TriangleMesh> heIt, heEnd;
       for (boost::tie(heIt, heEnd) = halfedges_around_source(tm.target(currentEdge), tm); heIt != heEnd; ++heIt) {
@@ -408,9 +405,6 @@ private:
           // Don't go back to where we just came from so quickly!
           continue;
         }
-        // if (visitedVertices.find(tm.target(he)) != visitedVertices.end()) {
-        //   continue;
-        // }
 
         if (!isFaceOnPatch(tm.face(he))) {
           // This halfedge's face isn't on the patch, ignore it.
@@ -426,7 +420,6 @@ private:
         if (!visitedVertices.insert(v).second) {
           continue;
         }
-
 
         // Edge is on the border of the patch.
         currentEdge = he;
