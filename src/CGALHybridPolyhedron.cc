@@ -336,19 +336,17 @@ bool CGALHybridPolyhedron::meshBinOp(
 
   auto success = false;
 
+  auto debug = Feature::ExperimentalFastCsgDebug.is_enabled();
   std::string lhsDebugDumpFile, rhsDebugDumpFile;
 
-  auto opNumber = -1;
+  static std::map<std::string, int> opCount;
+  auto opNumber = opCount[opName]++;
 
   try {
     auto& lhs = *convertToMesh();
     auto& rhs = *other.convertToMesh();
 
-
-    if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
-      static std::map<std::string, int> opCount;
-      opNumber = opCount[opName]++;
-
+    if (debug) {
       LOG(message_group::None, Location::NONE, "",
           "[fast-csg] %1$s #%2$lu: %3$s vs. %4$s",
           opName.c_str(), opNumber, describeForDebug(lhs), describeForDebug(rhs));
@@ -366,7 +364,7 @@ bool CGALHybridPolyhedron::meshBinOp(
     if ((success = operation(lhs, rhs, lhs))) {
       CGALUtils::cleanupMesh(lhs, /* is_corefinement_result */ true);
 
-      if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
+      if (debug) {
         remove(lhsDebugDumpFile.c_str());
         remove(rhsDebugDumpFile.c_str());
       }
@@ -374,7 +372,7 @@ bool CGALHybridPolyhedron::meshBinOp(
       LOG(message_group::Warning, Location::NONE, "", "[fast-csg] Corefinement %1$s #%2$lu failed",
           opName.c_str(), opNumber);
     }
-    if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
+    if (debug) {
       if (!CGAL::is_valid_polygon_mesh(lhs) || !CGAL::is_closed(lhs)) {
         LOG(message_group::Warning, Location::NONE, "",
             "[fast-csg] %1$s #%2$lu output is %3$s", opName.c_str(), opNumber, describeForDebug(lhs));
@@ -394,7 +392,7 @@ bool CGALHybridPolyhedron::meshBinOp(
     data = previousData;
     other.data = previousOtherData;
 
-    if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
+    if (debug) {
       LOG(message_group::Warning, Location::NONE, "",
           "Dumps of operands were written to %1$s and %2$s", lhsDebugDumpFile.c_str(), rhsDebugDumpFile.c_str());
     }
