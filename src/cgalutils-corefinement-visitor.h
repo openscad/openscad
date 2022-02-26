@@ -17,10 +17,15 @@ void forceExact(Pt& point)
   CGAL::exact(point.z());
 }
 
-/*! Implements corefinement callbacks to support remeshing coplanar faces and forcing new numbers to
- * be exact. */
+/*!
+ * Corefinement visitor that serves two purposes:
+ * - Track the ancestors of all resulting faces in the original meshes, and 
+ *   remesh those descendants with their neighbouring coplanar faces. All 
+ *   original faces have a patch id, which is inherited by copy or splitting.
+ * - Make any new numbers exact (if forceNewLazyNumbersToExact set)
+ */
 template <typename TriangleMesh>
-struct CorefinementVisitorDelegate_ { // : public PMP::Corefinement::Default_visitor<TriangleMesh> {
+struct CorefinementVisitorDelegate_ {
 private:
   typedef boost::graph_traits<TriangleMesh> GT;
   typedef typename GT::face_descriptor face_descriptor;
@@ -107,7 +112,6 @@ public:
     auto mi = indexOf(tm);
     auto id = getPatchId(faceBeingSplit_[mi], tm);
     setPatchId(fi, tm, getPatchId(faceBeingSplit_[mi], tm));
-    // splitPatchIds_.insert(id); // Doing it once in after_subface_creations instead.
 
 #if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 4, 0)
     if (forceNewLazyNumbersToExact_) {
@@ -148,6 +152,11 @@ public:
 
 } // namespace internal
 
+/**
+ * This corefinement visitor can be used for all of the (lhs, rhs, output) meshes
+ * involved in corefinement. It will be copied but refers to a single delegate
+ * that gets the callbacks from all of the copies.
+ */
 template <typename TriangleMesh>
 struct CorefinementVisitor : public PMP::Corefinement::Default_visitor<TriangleMesh> {
   typedef boost::graph_traits<TriangleMesh> GT;

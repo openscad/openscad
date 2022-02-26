@@ -16,7 +16,10 @@
 
 namespace CGALUtils {
 
-/*! Helper that remeshes coplanar faces.
+/*! Class that remeshes coplanar faces of a surface mesh.
+ *
+ * Please read the concepts about halfedge here:
+ * https://doc.cgal.org/latest/Surface_mesh/index.html#title2
  *
  * This is useful for the results of corefinement operations, which result in
  * suboptimal meshes which growth compounds over several operations and makes
@@ -26,6 +29,21 @@ namespace CGALUtils {
  * (technically the same patch id could result in different patches, e.g. if
  * during corefinement the same original face got split in disjoint sets of
  * descendants).
+ * 
+ * Maximal patches of neighbouring coplanar faces are found with a flood-fill
+ * algorithm starting from a given set of patch ids and using coplanarity tests
+ * to merge patches with their neighbours.
+ * 
+ * Patches that contain holes are skipped for now.
+ * 
+ * Patch borders are found and we mark their collapsible vertices (those between
+ * collinear edges). If exactly two neighbour patches agree, those vertices will
+ * be dropped.
+ * 
+ * Each patch is replaced with a polygon that espouses its borders, and we let
+ * CGAL triangulate it.
+ * 
+ * A new mesh is created with the edits, as in-place edits seem tricky.
  */
 template <typename TriangleMesh>
 struct CoplanarFacesRemesher {

@@ -88,4 +88,3 @@ tests/data/scad/issues/issue2342.scad
 tests/data/scad/misc/include-tests.scad
 tests/data/scad/misc/use-tests.scad
 tests/data/svg/viewbox/viewbox_*.svg
-buildRelease

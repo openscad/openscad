@@ -89,7 +89,6 @@ bool CGALHybridPolyhedron::isManifold() const
   if (auto mesh = getMesh()) {
     // Note: haven't tried mesh->is_valid() but it could be too expensive.
     // TODO: use is_valid_polygon_mesh and remember
-    // return CGAL::is_closed(*mesh);
     auto isValid = CGAL::is_valid_polygon_mesh(*mesh);
     return isValid;
   } else if (auto nef = getNefPolyhedron()) {
