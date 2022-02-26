@@ -42,6 +42,10 @@ std::string toString(const Vector3d& v)
   return STR(v[0] << " " << v[1] << " " << v[2]);
 }
 
+Vector3d toVector(const std::array<double, 3>& pt) {
+  return Vector3d(pt[0], pt[1], pt[2]);
+}
+
 Vector3d fromString(const std::string& vertexString)
 {
   Vector3d v;
@@ -74,8 +78,7 @@ uint64_t append_stl(const PolySet& ps, std::ostream& output, bool binary)
   PolySet triangulated(3);
   PolysetUtils::tessellate_faces(ps, triangulated);
 
-  for (const auto& p : triangulated.polygons) {
-    assert(p.size() == 3); // STL only allows triangles
+  auto processTriangle = [&](const std::array<Vector3d, 3>& p) {
     triangle_count++;
 
     if (binary) {
@@ -134,6 +137,19 @@ uint64_t append_stl(const PolySet& ps, std::ostream& output, bool binary)
         output << "    endloop\n";
         output << "  endfacet\n";
       }
+    }
+  };
+
+  if (Feature::ExperimentalSortStl.is_enabled()) {
+    Export::ExportMesh exportMesh { triangulated };
+    exportMesh.foreach_triangle([&](const auto& pts) {
+        processTriangle({ toVector(pts[0]), toVector(pts[1]), toVector(pts[2]) });
+        return true;
+      });
+  } else {
+    for (const auto& p : triangulated.polygons) {
+      assert(p.size() == 3); // STL only allows triangles
+      processTriangle({ p[0], p[1], p[2] });
     }
   }
 

@@ -98,7 +98,7 @@ static bool append_polyset(const PolySet& ps, PLib3MFModelMeshObject *& model)
     return false;
   }
 
-  if (!exportMesh.foreach_triangle(triangleFunc)) {
+  if (!exportMesh.foreach_indexed_triangle(triangleFunc)) {
     export_3mf_error("Can't add triangle to 3MF model.", model);
     return false;
   }
@@ -261,7 +261,7 @@ static bool append_polyset(const PolySet& ps, Lib3MF::PWrapper& wrapper, Lib3MF:
       return false;
     }
 
-    if (!exportMesh.foreach_triangle(triangleFunc)) {
+    if (!exportMesh.foreach_indexed_triangle(triangleFunc)) {
       export_3mf_error("Can't add triangle to 3MF model.");
       return false;
     }
