@@ -11,28 +11,6 @@
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
 #include "grid.h"
 
-template <typename T, typename IndicesContainer>
-bool removeItemsAtSortedIndices(std::vector<T>& items, const IndicesContainer& removalIndices) {
-  if (removalIndices.empty()) {
-    return false;
-  }
-  size_t outputIndex = 0;
-  auto removalIndexIt = removalIndices.begin();
-
-  for (size_t i = 0, n = items.size(); i < n; i++) {
-    if (removalIndexIt != removalIndices.end() && i == *removalIndexIt) {
-      ++removalIndexIt;
-      continue;
-    }
-    if (i != outputIndex) {
-      items[outputIndex] = items[i];
-    }
-    outputIndex++;
-  }
-  items.resize(outputIndex);
-  return true;
-}
-
 namespace CGALUtils {
 
 namespace PMP = CGAL::Polygon_mesh_processing;
@@ -79,12 +57,13 @@ public:
     vertexReplacements[original] = replacement;
   }
 
-  static bool collapsePathWithConsecutiveCollinearEdges(std::vector<vertex_descriptor>& path, const TriangleMesh& tm) {
+  static bool findCollapsibleVertices(
+    const std::vector<vertex_descriptor>& path,
+    const TriangleMesh& tm,
+    const std::function<void(size_t, vertex_descriptor)>& sinkFn) {
     if (path.size() <= 3) {
       return false;
     }
-
-    std::vector<size_t> indicesToRemove;
 
     const auto *p1 = &tm.point(path[0]);
     const auto *p2 = &tm.point(path[1]);
@@ -93,26 +72,15 @@ public:
     for (size_t i = 0, n = path.size(); i < n; i++) {
       if (CGAL::are_ordered_along_line(*p1, *p2, *p3)) {
         // p2 (at index i + 1) can be removed.
-        if (indicesToRemove.empty()) {
-          // Late reservation: when we start to have stuff to remove, think big and reserve the worst case.
-          indicesToRemove.reserve(std::min(n - i, n - 3));
-        }
-        if (i == n - 1) {
-          indicesToRemove.insert(indicesToRemove.begin(), 0);
-        } else {
-          indicesToRemove.push_back(i + 1);
-        }
+        auto ii = (i + 1) % n;
+        sinkFn(ii, path[ii]);
       }
       p1 = p2;
       p2 = p3;
       p3 = &tm.point(path[(i + 3) % n]);
     }
 
-    if (path.size() - indicesToRemove.size() < 3) {
-      return false;
-    }
-
-    return removeItemsAtSortedIndices(path, indicesToRemove);
+    return true;
   }
 
   /*! Mutating in place is tricky, to say the least, so this creates a new mesh
@@ -161,7 +129,7 @@ public:
           }
           return true;
         } else {
-          std::cerr << "Failed to add face with " << polygon.size() << " vertices:\n";
+          LOG(message_group::Warning, Location::NONE, "", "Failed to add face with %1$lu vertices!", polygon.size());
           return false;
         }
       };
@@ -171,7 +139,14 @@ public:
         CGAL::Vertex_around_face_iterator<TriangleMesh> vit, vend;
         for (boost::tie(vit, vend) = vertices_around_face(src.halfedge(f), src); vit != vend; ++vit) {
           auto v = *vit;
+          if (verticesToRemove.find(v) != verticesToRemove.end()) {
+            continue;
+          }
           polygon.push_back(getDestinationVertex(v));
+        }
+        if (polygon.size() < 3) {
+          LOG(message_group::Warning, Location::NONE, "", "Attempted to remove too many vertices around this copied face, remesh aborted!");
+          return false;
         }
 
         return addFace(polygon);
@@ -193,9 +168,15 @@ public:
       polygon.clear();
 
       for (auto v : originalPolygon) {
+        if (verticesToRemove.find(v) != verticesToRemove.end()) {
+          continue;
+        }
         polygon.push_back(getDestinationVertex(v));
       }
-
+      if (polygon.size() < 3) {
+        LOG(message_group::Warning, Location::NONE, "", "Attempted to remove too many vertices around this added face, remesh aborted!");
+        return false;
+      }
       if (!addFace(polygon)) {
         return false;
       }

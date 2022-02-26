@@ -56,7 +56,7 @@ struct ExactLazyNumbersVisitor
 
 #define COREFINEMENT_FUNCTION(functionName, cgalFunctionName) \
   template <class TriangleMesh> \
-  bool functionName(TriangleMesh& lhs, TriangleMesh& rhs, TriangleMesh& out) \
+  bool functionName(TriangleMesh & lhs, TriangleMesh & rhs, TriangleMesh & out) \
   { \
     auto remesh = Feature::ExperimentalFastCsgRemesh.is_enabled(); \
     auto exactCallback = Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled(); \

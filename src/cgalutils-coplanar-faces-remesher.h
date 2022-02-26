@@ -1,6 +1,8 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #pragma once
 
+// #define VERBOSE_REMESHING 1
+
 #ifdef VERBOSE_REMESHING
   #include <boost/format.hpp>
   #include <random>
@@ -138,6 +140,8 @@ public:
       TriangleMeshEdits<TriangleMesh> edits;
 
       std::unordered_set<face_descriptor> facesProcessed;
+      // Each patch border vertex to collapse should receive two marks to be collapsible.
+      std::unordered_map<vertex_descriptor, size_t> collapsibleBorderVerticesMarks;
 
       std::set<face_descriptor> loopLocalPatchFaces;
       std::map<PatchId, bool> loopLocalIsPatchIdMap;
@@ -147,8 +151,8 @@ public:
       std::unordered_set<halfedge_descriptor> loopLocalBorderPathEdges;
 
 #ifdef VERBOSE_REMESHING
-      // std::unordered_map<PatchId, std::string> allPatchPolyStrings;
-      // std::unordered_map<PatchId, std::string> allPatchReplacementsPolyStrings;
+      std::unordered_map<PatchId, std::string> allPatchPolyStrings;
+      std::unordered_map<PatchId, std::string> allPatchReplacementsPolyStrings;
 #endif // VERBOSE_REMESHING
 
       for (auto face : tm.faces()) {
@@ -279,18 +283,13 @@ public:
           continue;
         }
 
-#if VERBOSE_REMESHING
-        auto lengthBefore = borderPathVertices.size();
-#endif // VERBOSE_REMESHING
-
         // TODO(ochafik): Ensure collapse happens on both sides of the border! (e.g. count of patches around vertex == 2)
-        auto collapsed = TriangleMeshEdits<TriangleMesh>::collapsePathWithConsecutiveCollinearEdges(borderPathVertices, tm);
+        // auto collapsed = TriangleMeshEdits<TriangleMesh>::collapsePathWithConsecutiveCollinearEdges(borderPathVertices, tm);
+        TriangleMeshEdits<TriangleMesh>::findCollapsibleVertices(borderPathVertices, tm, [&](size_t index, vertex_descriptor v) {
+            collapsibleBorderVerticesMarks[v]++;
+          });
 
 #if VERBOSE_REMESHING
-        auto lengthAfter = borderPathVertices.size();
-        if (collapsed && verbose) {
-          std::cerr << "Collapsed path around patch " << id << " (" << patchFaces.size() << " faces) from " << lengthBefore << " to " << lengthAfter << " vertices\n";
-        }
         allPatchReplacementsPolyStrings[id] = patchBorderToPolyhedronStr(borderPathVertices);
 #endif // VERBOSE_REMESHING
 
@@ -300,8 +299,26 @@ public:
         edits.addFace(borderPathVertices);
       }
 
+      size_t collapsedVertexCount = 0;
+      for (auto& p : collapsibleBorderVerticesMarks) {
+        if (p.second != 2) {
+          // If a vertex doesn't have 2 marks, then either the mesh has a
+          // physical hole here (unsupported), or the neighbouring patch isn't
+          // being remeshed (too bad, we don't want to spend too much time
+          // remeshing all the patches), or the geometry isn't manifold (more
+          // than two patches incident to that vertex with two collinear edges
+          // around it)
+          continue;
+        }
+        edits.removeVertex(p.first);
+        collapsedVertexCount++;
+      }
+
 #if VERBOSE_REMESHING
       if (verbose) {
+        LOG(message_group::None, Location::NONE, "",
+            "[fast-csg-remesh] Collapsing %1$lu double-marked vertices", collapsedVertexCount);
+
         static size_t i = 0;
         std::ostringstream outName;
         outName << "patches " << i++ << ".scad";
