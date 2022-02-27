@@ -138,18 +138,22 @@ namespace Export {
 
 ExportMesh::ExportMesh(const PolySet& ps)
 {
+  std::map<Vertex, int> vertexMap;
   std::vector<std::array<int, 3>> triangleIndices;
   for (const auto& p : ps.polygons) {
-    auto pos1 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[0].x(), p[0].y(), p[0].z()}, vertexMap.size()));
-    auto pos2 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[1].x(), p[1].y(), p[1].z()}, vertexMap.size()));
-    auto pos3 = vertexMap.emplace(std::make_pair<std::array<double, 3>, int>({p[2].x(), p[2].y(), p[2].z()}, vertexMap.size()));
+    auto pos1 = vertexMap.emplace(std::make_pair<Vertex, int>({p[0].x(), p[0].y(), p[0].z()}, vertexMap.size()));
+    auto pos2 = vertexMap.emplace(std::make_pair<Vertex, int>({p[1].x(), p[1].y(), p[1].z()}, vertexMap.size()));
+    auto pos3 = vertexMap.emplace(std::make_pair<Vertex, int>({p[2].x(), p[2].y(), p[2].z()}, vertexMap.size()));
     triangleIndices.push_back({pos1.first->second, pos2.first->second, pos3.first->second});
   }
 
-  int index = 0;
-  std::map<int, int> indexTranslationMap;
+  std::vector<size_t> indexTranslationMap(vertexMap.size());
+  vertices.reserve(vertexMap.size());
+
+  size_t index = 0;
   for (const auto& e : vertexMap) {
-    indexTranslationMap.emplace(e.second, index++);
+    vertices.push_back(e.first);
+    indexTranslationMap[e.second] = index++;
   }
 
   for (const auto& i : triangleIndices) {
@@ -160,20 +164,33 @@ ExportMesh::ExportMesh(const PolySet& ps)
     });
 }
 
-bool ExportMesh::foreach_vertex(const std::function<bool(const std::array<double, 3>&)> callback) const
+bool ExportMesh::foreach_vertex(const std::function<bool(const Vertex&)> callback) const
 {
-  for (const auto& e : vertexMap) {
-    if (!callback(e.first)) {
+  for (const auto& v : vertices) {
+    if (!callback(v)) {
       return false;
     }
   }
   return true;
 }
 
-bool ExportMesh::foreach_triangle(const std::function<bool(const std::array<int, 3>&)> callback) const
+bool ExportMesh::foreach_indexed_triangle(const std::function<bool(const std::array<int, 3>&)> callback) const
 {
   for (const auto& t : triangles) {
     if (!callback(t.key)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool ExportMesh::foreach_triangle(const std::function<bool(const std::array<std::array<double, 3>, 3>&)> callback) const
+{
+  for (const auto& t : triangles) {
+    auto& v0 = vertices[t.key[0]];
+    auto& v1 = vertices[t.key[1]];
+    auto& v2 = vertices[t.key[2]];
+    if (!callback({ v0, v1, v2 })) {
       return false;
     }
   }

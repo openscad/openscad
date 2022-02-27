@@ -154,13 +154,16 @@ struct Triangle {
 class ExportMesh
 {
 public:
+  typedef std::array<double, 3> Vertex;
+
   ExportMesh(const PolySet& ps);
 
-  bool foreach_vertex(const std::function<bool(const std::array<double, 3>&)> callback) const;
-  bool foreach_triangle(const std::function<bool(const std::array<int, 3>&)> callback) const;
+  bool foreach_vertex(const std::function<bool(const Vertex&)> callback) const;
+  bool foreach_indexed_triangle(const std::function<bool(const std::array<int, 3>&)> callback) const;
+  bool foreach_triangle(const std::function<bool(const std::array<Vertex, 3>&)> callback) const;
 
 private:
-  std::map<std::array<double, 3>, int> vertexMap;
+  std::vector<Vertex> vertices;
   std::vector<Triangle> triangles;
 };
 

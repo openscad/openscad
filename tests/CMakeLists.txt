@@ -1175,8 +1175,7 @@ add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SC
 
 add_cmdline_test(monotonepngtest OPENSCAD SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES} ${EXPORT3D_CGALCGAL_TEST_FILES} ARGS --colorscheme=Monotone --render)
 
-# Disabled for now, needs implementation of #420 to be stable
-#add_cmdline_test(stlexport             ARGS SUFFIX stl FILES ${EXPORT_STL_TEST_FILES})
+add_cmdline_test(stlexport             OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=sort-stl --render)
 add_cmdline_test(3mfexport             OPENSCAD ARGS SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES})
 
 # stlpngtest: direct STL output, preview rendering
