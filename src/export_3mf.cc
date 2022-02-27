@@ -28,6 +28,7 @@
 #include "polyset.h"
 #include "polyset-utils.h"
 #include "printutils.h"
+#include "CGALHybridPolyhedron.h"
 
 #ifdef ENABLE_LIB3MF
 
@@ -97,7 +98,7 @@ static bool append_polyset(const PolySet& ps, PLib3MFModelMeshObject *& model)
     return false;
   }
 
-  if (!exportMesh.foreach_triangle(triangleFunc)) {
+  if (!exportMesh.foreach_indexed_triangle(triangleFunc)) {
     export_3mf_error("Can't add triangle to 3MF model.", model);
     return false;
   }
@@ -140,6 +141,8 @@ static bool append_3mf(const shared_ptr<const Geometry>& geom, PLib3MFModelMeshO
     }
   } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     return append_nef(*N, model);
+  } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+    return append_polyset(*hybrid->toPolySet(), model);
   } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
     PolySet triangulated(3);
     PolysetUtils::tessellate_faces(*ps, triangulated);
@@ -258,7 +261,7 @@ static bool append_polyset(const PolySet& ps, Lib3MF::PWrapper& wrapper, Lib3MF:
       return false;
     }
 
-    if (!exportMesh.foreach_triangle(triangleFunc)) {
+    if (!exportMesh.foreach_indexed_triangle(triangleFunc)) {
       export_3mf_error("Can't add triangle to 3MF model.");
       return false;
     }
@@ -305,6 +308,8 @@ static bool append_3mf(const shared_ptr<const Geometry>& geom, Lib3MF::PWrapper&
     }
   } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     return append_nef(*N, wrapper, model);
+  } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+    return append_polyset(*hybrid->toPolySet(), model);
   } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
     PolySet triangulated(3);
     PolysetUtils::tessellate_faces(*ps, triangulated);

@@ -115,6 +115,7 @@
 #include "GeometryEvaluator.h"
 #include "CGALRenderer.h"
 #include "CGAL_Nef_polyhedron.h"
+#include "CGALHybridPolyhedron.h"
 #include "CGALWorker.h"
 
 #endif // ENABLE_CGAL
@@ -2434,11 +2435,9 @@ void MainWindow::actionCheckValidity()
   }
 
   bool valid = false;
-  shared_ptr<const CGAL_Nef_polyhedron> N;
-  if (auto ps = dynamic_cast<const PolySet *>(this->root_geom.get())) {
-    N = CGALUtils::createNefPolyhedronFromGeometry(*ps);
-  }
-  if (N || (N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root_geom))) {
+  if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root_geom)) {
+    valid = hybrid->isValid();
+  } else if (auto N = CGALUtils::getNefPolyhedronFromGeometry(this->root_geom)) {
     valid = N->p3 ? const_cast<CGAL_Nef_polyhedron3&>(*N->p3).is_valid() : false;
   }
   LOG(message_group::None, Location::NONE, "", "Valid:      %1$6s", (valid ? "yes" : "no"));

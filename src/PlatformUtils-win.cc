@@ -192,6 +192,14 @@ const std::string PlatformUtils::sysinfo(bool extended)
 #include <stdio.h>
 #include <fstream>
 
+#ifdef USE_MIMALLOC
+#include <mimalloc.h>
+// mimalloc needs an output handler that references stderr after we mess with it.
+static void mi_output( const char* msg, void* arg ) {
+  fputs(msg, stderr);
+}
+#endif
+
 // attach to parent console if standard IO handles not available
 // It may be good idea to redirect the output to file(s) here in some future.
 void PlatformUtils::ensureStdIO(void)
@@ -201,16 +209,22 @@ void PlatformUtils::ensureStdIO(void)
   HANDLE hWrite = (HANDLE)_get_osfhandle(_fileno(stdout));
   HANDLE hError = (HANDLE)_get_osfhandle(_fileno(stderr));
 
-  if (/* INVALID_HANDLE_VALUE != hRead && */ INVALID_HANDLE_VALUE != hWrite && INVALID_HANDLE_VALUE != hError) return;
+  if (/* INVALID_HANDLE_VALUE == hRead || */ INVALID_HANDLE_VALUE == hWrite || INVALID_HANDLE_VALUE == hError) {
 
-  // I see nothing to do about error(s) here.
-  if (!AttachConsole(ATTACH_PARENT_PROCESS)) return;
+    // I see nothing to do about error(s) here.
+    if (AttachConsole(ATTACH_PARENT_PROCESS)) {
 
-  // Let CRT machinery performs proper setup.
-  // if (INVALID_HANDLE_VALUE == hRead) (void)_wfreopen(L"CONIN$",  L"rt", stdin);
-  if (INVALID_HANDLE_VALUE == hWrite) (void)_wfreopen(L"CONOUT$",  L"wt", stdout);
-  if (INVALID_HANDLE_VALUE == hError) (void)_wfreopen(L"CONOUT$",  L"wt", stderr);
+      // Let CRT machinery performs proper setup.
+      // if (INVALID_HANDLE_VALUE == hRead) (void)_wfreopen(L"CONIN$",  L"rt", stdin);
+      if (INVALID_HANDLE_VALUE == hWrite) (void)_wfreopen(L"CONOUT$",  L"wt", stdout);
+      if (INVALID_HANDLE_VALUE == hError) (void)_wfreopen(L"CONOUT$",  L"wt", stderr);
 
-  std::ios_base::sync_with_stdio();
+      std::ios_base::sync_with_stdio();
+    }
+  }
+
+#ifdef USE_MIMALLOC
+  mi_register_output(&mi_output, NULL);
+#endif
 }
 

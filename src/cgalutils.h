@@ -48,7 +48,6 @@ template <typename K>
 CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K>& N);
 template <typename K>
 CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh);
-CGAL_Iso_cuboid_3 boundingBox(const Geometry& geom);
 CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox& bbox);
 bool is_approximately_convex(const PolySet& ps);
 shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children);
@@ -71,7 +70,7 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh);
 
 template <typename K>
 bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet& ps);
-shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromGeometry(const class Geometry &geom);
+shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const shared_ptr<const Geometry>& geom);
 shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>&);
 shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>&);
 

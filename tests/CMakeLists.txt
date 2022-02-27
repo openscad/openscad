@@ -245,6 +245,9 @@ list(APPEND FAST_CSG_FAILING_SCADFILES
   # Needs investigation:
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1246.scad
 )
+list(APPEND FAST_CSG_TRUST_FAILING_SCADFILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/edge-cases.scad
+)
 
 # Tests for which fast-csg works but produces different expectation files.
 # These tests are run twice (w/ and without fast-csg).
@@ -253,6 +256,8 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/bugs/issue1455.scad
   # These are less broken than before:
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/bugs/issue791.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1138.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1137.scad
 
   # No more green faces from differences.
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/CSG-modules.scad
@@ -364,7 +369,10 @@ function(add_cmdline_test TESTCMD_BASENAME)
             AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS_WITHOUT_TRUST_COREF
             AND NOT SCADFILE IN_LIST FAST_CSG_FAILING_SCADFILES
             AND NOT TEST_FULLNAME IN_LIST FAST_CSG_FAILING_TESTS)
-          set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg --enable=fast-csg-trust-corefinement")
+          set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
+          if (NOT SCADFILE IN_LIST FAST_CSG_TRUST_FAILING_SCADFILES)
+            set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg-trust-corefinement")
+          endif()
         endif()
       else()
         # add global experimental options here
@@ -1042,6 +1050,13 @@ list(APPEND LAZYUNION_2D_FILES
 )
 list(APPEND LAZYUNION_FILES ${LAZYUNION_2D_FILES} ${LAZYUNION_3D_FILES})
 
+list(APPEND FASTCSG_LAZYUNION_FILES ${LAZYUNION_3D_FILES}
+  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-1.scad
+  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-2.scad
+  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-3.scad
+  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-4.scad
+)
+
 experimental_tests(lazyunion-dump_lazyunion-toplevel-2dobjects)
 experimental_tests(lazyunion-dump_lazyunion-toplevel-objects)
 experimental_tests(lazyunion-dump_lazyunion-toplevel-for)
@@ -1124,6 +1139,9 @@ add_cmdline_test(lazyunion-dxfpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX
 add_cmdline_test(lazyunion-svgpngtest  SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS --openscad=${OPENSCAD_BINPATH} --format=SVG --enable=lazy-union --render=cgal)
 add_cmdline_test(fastcsg-cgalpng       OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS}                     ARGS --enable=fast-csg --enable=fast-csg-trust-corefinement --render)
 add_cmdline_test(fastcsg-cgalpng       OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS_WITHOUT_TRUST_COREF} ARGS --enable=fast-csg --render)
+add_cmdline_test(fastcsg-lazyunion-cgalpng     OPENSCAD SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} ARGS --enable=lazy-union --render)
+add_cmdline_test(fastcsg-lazyunion-amfpngtest    SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union --openscad=${OPENSCAD_BINPATH} --format=AMF)
+add_cmdline_test(fastcsg-lazyunion-3mfpngtest    SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union --openscad=${OPENSCAD_BINPATH} --format=3MF)
 
 #
 # Trivial Export/Import files
@@ -1148,8 +1166,7 @@ add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SC
 
 add_cmdline_test(monotonepngtest OPENSCAD SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES} ${EXPORT3D_CGALCGAL_TEST_FILES} ARGS --colorscheme=Monotone --render)
 
-# Disabled for now, needs implementation of #420 to be stable
-#add_cmdline_test(stlexport             ARGS SUFFIX stl FILES ${EXPORT_STL_TEST_FILES})
+add_cmdline_test(stlexport             OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=sort-stl --render)
 add_cmdline_test(3mfexport             OPENSCAD ARGS SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES})
 
 # stlpngtest: direct STL output, preview rendering
