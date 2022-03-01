@@ -1,16 +1,10 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #pragma once
 
-// #define VERBOSE_REMESHING 1
-
-#ifdef VERBOSE_REMESHING
-  #include <boost/format.hpp>
-  #include <random>
-#endif
-#include <iterator>
 #include <CGAL/Surface_mesh.h>
-#include <CGAL/Kernel/global_functions.h>
-#include <CGAL/Kernel/function_objects.h>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "cgalutils-mesh-edits.h"
 
@@ -76,88 +70,6 @@ public:
     auto facesBefore = tm.number_of_faces();
     auto verbose = Feature::ExperimentalFastCsgDebug.is_enabled();
 
-#ifdef VERBOSE_REMESHING
-    auto patchToPolyhedronStr = [&](auto& patchFaces, bool translucent) {
-        std::vector<vertex_descriptor> vertices;
-        std::map<vertex_descriptor, size_t> vertexIndex;
-
-        std::ostringstream verticesOut;
-        std::ostringstream facesOut;
-
-        facesOut << "[\n";
-        for (auto& face : patchFaces) {
-          CGAL::Halfedge_around_face_iterator<TriangleMesh> heIt, heEnd;
-          facesOut << "  [";
-          auto first = true;
-          for (boost::tie(heIt, heEnd) = halfedges_around_face(tm.halfedge(face), tm); heIt != heEnd; ++heIt) {
-            auto he = *heIt;
-            auto v = tm.source(he);
-            auto it = vertexIndex.find(v);
-            size_t idx;
-            if (it == vertexIndex.end()) {
-              idx = vertices.size();
-              vertices.push_back(v);
-              vertexIndex[v] = idx;
-            } else {
-              idx = it->second;
-            }
-            if (first) first = false;
-            else facesOut << ", ";
-            facesOut << idx;
-          }
-          facesOut << "],\n";
-        }
-        facesOut << "]";
-
-        verticesOut << "[\n";
-        for (auto v : vertices) {
-          auto p = tm.point(v);
-          verticesOut << "[" << CGAL::to_double(p.x()) << ", " << CGAL::to_double(p.y()) << ", " << CGAL::to_double(p.z()) << "],\n";
-        }
-        verticesOut << "]";
-
-        std::ostringstream out;
-        out << (translucent ? "%" : "") << "polyhedron(" << verticesOut.str().c_str() << ", " << facesOut.str().c_str() << ");";
-        return out.str();
-      };
-
-    auto patchBorderToPolyhedronStr = [&](auto& borderPathVertices) {
-        std::vector<vertex_descriptor> vertices;
-        std::map<vertex_descriptor, size_t> vertexIndex;
-
-        std::ostringstream verticesOut;
-        std::ostringstream facesOut;
-
-        facesOut << "[[";
-        auto first = true;
-        for (auto& v : borderPathVertices) {
-          auto it = vertexIndex.find(v);
-          size_t idx;
-          if (it == vertexIndex.end()) {
-            idx = vertices.size();
-            vertices.push_back(v);
-            vertexIndex[v] = idx;
-          } else {
-            idx = it->second;
-          }
-          if (first) first = false;
-          else facesOut << ", ";
-          facesOut << idx;
-        }
-        facesOut << "]]\n";
-
-        verticesOut << "[\n";
-        for (auto v : vertices) {
-          auto p = tm.point(v);
-          verticesOut << "[" << CGAL::to_double(p.x()) << ", " << CGAL::to_double(p.y()) << ", " << CGAL::to_double(p.z()) << "],\n";
-        }
-        verticesOut << "]";
-
-        std::ostringstream out;
-        out << "polyhedron(" << verticesOut.str().c_str() << ", " << facesOut.str().c_str() << ");";
-        return out.str();
-      };
-#endif // VERBOSE_REMESHING
 
     class PatchData
     {
@@ -314,11 +226,6 @@ public:
         return true;
       };
 
-#ifdef VERBOSE_REMESHING
-      std::unordered_map<PatchId, std::string> allPatchPolyStrings;
-      std::unordered_map<PatchId, std::string> allPatchReplacementsPolyStrings;
-#endif // VERBOSE_REMESHING
-
       PatchData loopLocalPatchData;
 
       for (auto face : tm.faces()) {
@@ -343,15 +250,7 @@ public:
         patch.patchFaces.insert(face);
         patch.isPatchIdMap[id] = true;
 
-        auto remeshed = remeshPatch(patch, id);
-
-#ifdef VERBOSE_REMESHING
-        allPatchPolyStrings[id] = patchToPolyhedronStr(patch.patchFaces, /* translucent= */ !remeshed);
-
-        if (remeshed) {
-          allPatchReplacementsPolyStrings[id] = patchBorderToPolyhedronStr(patch.borderPathVertices);
-        }
-#endif // VERBOSE_REMESHING
+        remeshPatch(patch, id);
 
         for (auto& face : patch.patchFaces) {
           facesProcessed.insert(face);
@@ -372,37 +271,6 @@ public:
         edits.removeVertex(p.first);
         collapsedVertexCount++;
       }
-
-#if VERBOSE_REMESHING
-      if (verbose) {
-        LOG(message_group::None, Location::NONE, "",
-            "[fast-csg-remesh] Collapsing %1$lu double-marked vertices", collapsedVertexCount);
-
-        static size_t i = 0;
-        std::ostringstream outName;
-        outName << "patches " << i++ << ".scad";
-        std::cout << "Writing " << outName.str().c_str() << "\n";
-
-        std::ofstream fout(outName.str().c_str());
-        fout << "before=true;\npatchIndex=-1;\n";
-        size_t patchIndex = 0;
-
-        std::mt19937 gen(123456789);
-        std::uniform_int_distribution<> distrib(0, 255);
-
-        for (auto& p : allPatchPolyStrings) {
-          auto id = p.first;
-          fout << "// Patch id " << id << " (index " << patchIndex << "):\n";
-          fout << "color (\"#" << boost::format("%02x%02x%02x") % distrib(gen) % distrib(gen) % distrib(gen) << "\") {\n";
-          if (allPatchReplacementsPolyStrings[id].empty()) fout << "%";
-          fout << "  if (patchIndex < 0 || patchIndex == " << patchIndex << ") {\n";
-          fout << "    if (before) { " << p.second.c_str() << " }\n";
-          fout << "    else { " << allPatchReplacementsPolyStrings[id] << " }\n";
-          fout << "  }\n}\n";
-          patchIndex++;
-        }
-      }
-#endif // VERBOSE_REMESHING
 
       if (!edits.isEmpty()) {
         edits.apply(tm);

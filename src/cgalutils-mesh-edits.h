@@ -1,15 +1,10 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #pragma once
 
-#include <iterator>
-#include <list>
-#include <unordered_set>
-#include <CGAL/Kernel/global_functions.h>
 #include <CGAL/Surface_mesh.h>
-#include <CGAL/boost/graph/helpers.h>
-#include <CGAL/boost/graph/properties.h>
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
-#include "grid.h"
+#include <unordered_set>
+#include <vector>
 
 namespace CGALUtils {
 
