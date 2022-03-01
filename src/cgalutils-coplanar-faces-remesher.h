@@ -258,11 +258,11 @@ public:
           auto& v1 = tm.point(tm.source(he1));
           auto& v2 = tm.point(tm.source(he2));
 
-          if (v1.x() < v2.x()) true;
-          if (v1.x() != v2.x()) false;
+          if (v1.x() < v2.x()) return true;
+          if (v1.x() != v2.x()) return false;
 
-          if (v1.y() < v2.y()) true;
-          if (v1.y() != v2.y()) false;
+          if (v1.y() < v2.y()) return true;
+          if (v1.y() != v2.y()) return false;
 
           return v1.z() < v2.z();
         });
