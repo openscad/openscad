@@ -16,6 +16,11 @@
 
 namespace CGALUtils {
 
+template <class Container, class Item>
+bool contains(const Container& container, const Item& item) {
+  return container.find(item) != container.end();
+}
+
 /*! Class that remeshes coplanar faces of a surface mesh.
  *
  * Please read the concepts about halfedge here:
@@ -29,20 +34,20 @@ namespace CGALUtils {
  * (technically the same patch id could result in different patches, e.g. if
  * during corefinement the same original face got split in disjoint sets of
  * descendants).
- * 
+ *
  * Maximal patches of neighbouring coplanar faces are found with a flood-fill
  * algorithm starting from a given set of patch ids and using coplanarity tests
  * to merge patches with their neighbours.
- * 
+ *
  * Patches that contain holes are skipped for now.
- * 
+ *
  * Patch borders are found and we mark their collapsible vertices (those between
  * collinear edges). If exactly two neighbour patches agree, those vertices will
  * be dropped.
- * 
+ *
  * Each patch is replaced with a polygon that espouses its borders, and we let
  * CGAL triangulate it.
- * 
+ *
  * A new mesh is created with the edits, as in-place edits seem tricky.
  */
 template <typename TriangleMesh>
@@ -154,6 +159,26 @@ public:
       };
 #endif // VERBOSE_REMESHING
 
+    class PatchData
+    {
+public:
+      std::unordered_set<face_descriptor> patchFaces;
+      std::unordered_map<PatchId, bool> isPatchIdMap;
+      std::vector<halfedge_descriptor> borderEdges;
+      std::vector<halfedge_descriptor> borderPath;
+      std::vector<vertex_descriptor> borderPathVertices;
+      std::unordered_set<halfedge_descriptor> borderPathEdges;
+
+      void clear() {
+        patchFaces.clear();
+        isPatchIdMap.clear();
+        borderEdges.clear();
+        borderPath.clear();
+        borderPathVertices.clear();
+        borderPathEdges.clear();
+      }
+    };
+
     try {
       TriangleMeshEdits<TriangleMesh> edits;
 
@@ -161,46 +186,21 @@ public:
       // Each patch border vertex to collapse should receive two marks to be collapsible.
       std::unordered_map<vertex_descriptor, size_t> collapsibleBorderVerticesMarks;
 
-      std::set<face_descriptor> loopLocalPatchFaces;
-      std::map<PatchId, bool> loopLocalIsPatchIdMap;
-      std::vector<halfedge_descriptor> loopLocalBorderEdges;
-      std::vector<halfedge_descriptor> loopLocalBorderPath;
-      std::vector<vertex_descriptor> loopLocalBorderPathVertices;
-      std::unordered_set<halfedge_descriptor> loopLocalBorderPathEdges;
-
-#ifdef VERBOSE_REMESHING
-      std::unordered_map<PatchId, std::string> allPatchPolyStrings;
-      std::unordered_map<PatchId, std::string> allPatchReplacementsPolyStrings;
-#endif // VERBOSE_REMESHING
-
-      for (auto face : tm.faces()) {
-        if (tm.is_removed(face)) {
-          continue;
-        }
-        auto idIt = faceToCoplanarPatchId.find(face);
-        if (idIt == faceToCoplanarPatchId.end()) {
-          continue;
-        }
-        const auto id = idIt->second;
-
-        if (patchesToRemesh.find(id) == patchesToRemesh.end()) {
-          continue;
-        }
-        if (facesProcessed.find(face) != facesProcessed.end()) {
-          continue;
-        }
-
-        loopLocalIsPatchIdMap.clear();
-        auto& isPatchIdMap = loopLocalIsPatchIdMap;
-        isPatchIdMap[id] = true;
-
-        loopLocalPatchFaces.clear();
-        auto& patchFaces = loopLocalPatchFaces;
-        patchFaces.insert(face);
-
+      auto remeshPatch = [&](PatchData& patch, PatchId id) {
+        // This predicate assumes the halfedge's incident face is in the patch,
+        // and tells whether the opposite face isn't.
+        // It tries to keep expensive coplanarity tests to a minimum by
+        // remembering what patch ids were already encountered.
         auto isHalfedgeOnBorder = [&](auto& he) {
             auto neighbourFace = tm.face(tm.opposite(he));
             if (!neighbourFace.is_valid()) {
+              return true;
+            }
+
+            if (contains(facesProcessed, neighbourFace)) {
+              // If we've already processed that face, it cannot be coplanar as
+              // otherwise it would have engulfed the current face in its own
+              // patch, so we're at a patch border right now.
               return true;
             }
 
@@ -211,82 +211,63 @@ public:
             }
             auto neighbourId = neighbourIdIt->second;
 
-            auto isPatchIdIt = isPatchIdMap.find(neighbourId);
-            if (isPatchIdIt != isPatchIdMap.end()) {
+            auto isPatchIdIt = patch.isPatchIdMap.find(neighbourId);
+            if (isPatchIdIt != patch.isPatchIdMap.end()) {
               auto isPatchId = isPatchIdIt->second;
               return !isPatchId;
             }
 
             auto isCoplanar = isEdgeBetweenCoplanarFaces(he);
-            isPatchIdMap[neighbourId] = isCoplanar;
+            patch.isPatchIdMap[neighbourId] = isCoplanar;
             return !isCoplanar;
           };
 
-        floodFillPatch(patchFaces, isHalfedgeOnBorder);
+        floodFillPatch(patch.patchFaces, isHalfedgeOnBorder);
 
-#ifdef VERBOSE_REMESHING
-        allPatchPolyStrings[id] = patchToPolyhedronStr(patchFaces);
-#endif // VERBOSE_REMESHING
-
-        for (auto& face : patchFaces) {
-          facesProcessed.insert(face);
-        }
-
-        if (patchFaces.size() < 2) {
-          continue;
+        if (patch.patchFaces.size() < 2) {
+          return false;
         }
 
         auto isFaceOnPatch = [&](auto& f) {
-            return patchFaces.find(f) != patchFaces.end();
+            return contains(patch.patchFaces, f);
           };
 
-        loopLocalBorderEdges.clear();
-        auto& borderEdges = loopLocalBorderEdges;
-
-        for (auto& face : patchFaces) {
+        for (auto& face : patch.patchFaces) {
           CGAL::Halfedge_around_face_iterator<TriangleMesh> heIt, heEnd;
           for (boost::tie(heIt, heEnd) = halfedges_around_face(tm.halfedge(face), tm); heIt != heEnd; ++heIt) {
             auto he = *heIt;
             if (isHalfedgeOnBorder(he)) {
-              borderEdges.push_back(he);
+              patch.borderEdges.push_back(he);
             }
           }
         }
 
-        if (borderEdges.empty()) {
+        if (patch.borderEdges.empty()) {
           std::cerr << "Failed to find a border edge for patch " << id << "!\n";
-          continue;
+          return false;
         }
-        halfedge_descriptor borderEdge = *borderEdges.begin();
 
-        loopLocalBorderPath.clear();
-        auto& borderPath = loopLocalBorderPath;
+        halfedge_descriptor borderEdge = *patch.borderEdges.begin();
 
-        if (!walkAroundPatch(borderEdge, isFaceOnPatch, borderPath)) {
+        if (!walkAroundPatch(borderEdge, isFaceOnPatch, patch.borderPath)) {
           LOG(message_group::Error, Location::NONE, "",
               "[fast-csg-remesh] Failed to collect path around patch faces, invalid mesh!");
-          return;
+          return false;
         }
 
         // TODO(ochafik): Find out when it's pointless to remesh (e.g. when no vertex can be collapsed or dropped because it's inside the patch).
-        if (borderPath.size() <= 3) {
-          continue;
+        if (patch.borderPath.size() <= 3) {
+          return false;
         }
 
-        loopLocalBorderPathVertices.clear();
-        auto& borderPathVertices = loopLocalBorderPathVertices;
-
-        loopLocalBorderPathEdges.clear();
-        auto& borderPathEdges = loopLocalBorderPathEdges;
-
-        for (auto he : borderPath) {
-          borderPathEdges.insert(he);
-          borderPathVertices.push_back(tm.target(he));
+        for (auto he : patch.borderPath) {
+          patch.borderPathEdges.insert(he);
+          patch.borderPathVertices.push_back(tm.target(he));
         }
 
         auto hasHoles = false;
-        for (auto he : borderEdges) {
-          if (borderPathEdges.find(he) == borderPathEdges.end()) {
+        for (auto he : patch.borderEdges) {
+          if (!contains(patch.borderPathEdges, he)) {
             // Found a border halfedge that's not in the border path we've walked around the patch.
             // This means the patch is holed / has more than one border: abort!!
             hasHoles = true;
@@ -296,25 +277,67 @@ public:
         if (hasHoles) {
           if (verbose) {
             LOG(message_group::None, Location::NONE, "",
-                "[fast-csg-remesh] Skipping remeshing of patch with %1$lu faces as it seems to have holes.", borderPathEdges.size());
+                "[fast-csg-remesh] Skipping remeshing of patch with %1$lu faces as it seems to have holes.", patch.borderPathEdges.size());
           }
-          continue;
+          return false;
         }
 
         // TODO(ochafik): Ensure collapse happens on both sides of the border! (e.g. count of patches around vertex == 2)
         // auto collapsed = TriangleMeshEdits<TriangleMesh>::collapsePathWithConsecutiveCollinearEdges(borderPathVertices, tm);
-        TriangleMeshEdits<TriangleMesh>::findCollapsibleVertices(borderPathVertices, tm, [&](size_t index, vertex_descriptor v) {
-            collapsibleBorderVerticesMarks[v]++;
-          });
-
-#if VERBOSE_REMESHING
-        allPatchReplacementsPolyStrings[id] = patchBorderToPolyhedronStr(borderPathVertices);
-#endif // VERBOSE_REMESHING
+        TriangleMeshEdits<TriangleMesh>::findCollapsibleVertices(patch.borderPathVertices, tm, [&](size_t index, vertex_descriptor v) {
+          collapsibleBorderVerticesMarks[v]++;
+        });
 
         // Cover the patch with a polygon. It will be triangulated when the
         // edits are applied.
-        for (auto& face : patchFaces) edits.removeFace(face);
-        edits.addFace(borderPathVertices);
+        for (auto& face : patch.patchFaces) edits.removeFace(face);
+        edits.addFace(patch.borderPathVertices);
+
+        return true;
+      };
+
+#ifdef VERBOSE_REMESHING
+      std::unordered_map<PatchId, std::string> allPatchPolyStrings;
+      std::unordered_map<PatchId, std::string> allPatchReplacementsPolyStrings;
+#endif // VERBOSE_REMESHING
+
+      PatchData loopLocalPatchData;
+
+      for (auto face : tm.faces()) {
+        if (tm.is_removed(face)) {
+          continue;
+        }
+        if (contains(facesProcessed, face)) {
+          continue;
+        }
+
+        auto idIt = faceToCoplanarPatchId.find(face);
+        if (idIt == faceToCoplanarPatchId.end()) {
+          continue;
+        }
+        const auto id = idIt->second;
+        if (!contains(patchesToRemesh, id)) {
+          continue;
+        }
+
+        loopLocalPatchData.clear();
+        auto& patch = loopLocalPatchData;
+        patch.patchFaces.insert(face);
+        patch.isPatchIdMap[id] = true;
+
+        auto remeshed = remeshPatch(patch, id);
+
+#ifdef VERBOSE_REMESHING
+        allPatchPolyStrings[id] = patchToPolyhedronStr(patch.patchFaces);
+
+        if (remeshed) {
+          allPatchReplacementsPolyStrings[id] = patchBorderToPolyhedronStr(patch.borderPathVertices);
+        }
+#endif // VERBOSE_REMESHING
+
+        for (auto& face : patch.patchFaces) {
+          facesProcessed.insert(face);
+        }
       }
 
       size_t collapsedVertexCount = 0;
@@ -378,9 +401,7 @@ public:
     }
   }
 
-private:
-
-  bool isEdgeBetweenCoplanarFaces(const halfedge_descriptor& h) {
+  bool isEdgeBetweenCoplanarFaces(const halfedge_descriptor& h) const {
     auto& p = tm.point(tm.source(h));
     auto& q = tm.point(tm.target(h));
     auto& r = tm.point(tm.target(tm.next(h)));
@@ -391,7 +412,7 @@ private:
 
   /*! Expand the patch of known faces to surrounding neighbours that pass the (fast) predicate. */
   bool floodFillPatch(
-    std::set<face_descriptor>& facePatch,
+    std::unordered_set<face_descriptor>& facePatch,
     const std::function<bool(const halfedge_descriptor&)>& isHalfedgeOnBorder)
   {
     // Avoid recursion as its depth would be model-dependent.
@@ -424,7 +445,7 @@ private:
   /*! Returns true if the border is closed. */
   bool walkAroundPatch(halfedge_descriptor startingEdge,
                        const face_predicate& isFaceOnPatch,
-                       std::vector<halfedge_descriptor>& borderOut)
+                       std::vector<halfedge_descriptor>& borderOut) const
   {
     auto currentEdge = startingEdge;
     borderOut.push_back(startingEdge);
