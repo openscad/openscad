@@ -99,132 +99,132 @@ public:
       std::unordered_map<vertex_descriptor, size_t> collapsibleBorderVerticesMarks;
 
       auto remeshPatch = [&](PatchData& patch, PatchId id) {
-        // This predicate assumes the halfedge's incident face is in the patch,
-        // and tells whether the opposite face isn't.
-        // It tries to keep expensive coplanarity tests to a minimum by
-        // remembering what patch ids were already encountered.
-        auto isHalfedgeOnBorder = [&](auto& he) {
-            auto neighbourFace = tm.face(tm.opposite(he));
-            if (!neighbourFace.is_valid()) {
-              return true;
-            }
+          // This predicate assumes the halfedge's incident face is in the patch,
+          // and tells whether the opposite face isn't.
+          // It tries to keep expensive coplanarity tests to a minimum by
+          // remembering what patch ids were already encountered.
+          auto isHalfedgeOnBorder = [&](auto& he) {
+              auto neighbourFace = tm.face(tm.opposite(he));
+              if (!neighbourFace.is_valid()) {
+                return true;
+              }
 
-            if (contains(facesProcessed, neighbourFace)) {
-              // If we've already processed that face, it cannot be coplanar as
-              // otherwise it would have engulfed the current face in its own
-              // patch, so we're at a patch border right now.
-              return true;
-            }
+              if (contains(facesProcessed, neighbourFace)) {
+                // If we've already processed that face, it cannot be coplanar as
+                // otherwise it would have engulfed the current face in its own
+                // patch, so we're at a patch border right now.
+                return true;
+              }
 
-            auto neighbourIdIt = faceToCoplanarPatchId.find(neighbourFace);
-            if (neighbourIdIt == faceToCoplanarPatchId.end()) {
-              std::cerr << "Unknown face, weird!";
-              return true;
-            }
-            auto neighbourId = neighbourIdIt->second;
+              auto neighbourIdIt = faceToCoplanarPatchId.find(neighbourFace);
+              if (neighbourIdIt == faceToCoplanarPatchId.end()) {
+                std::cerr << "Unknown face, weird!";
+                return true;
+              }
+              auto neighbourId = neighbourIdIt->second;
 
-            auto isPatchIdIt = patch.isPatchIdMap.find(neighbourId);
-            if (isPatchIdIt != patch.isPatchIdMap.end()) {
-              auto isPatchId = isPatchIdIt->second;
-              return !isPatchId;
-            }
+              auto isPatchIdIt = patch.isPatchIdMap.find(neighbourId);
+              if (isPatchIdIt != patch.isPatchIdMap.end()) {
+                auto isPatchId = isPatchIdIt->second;
+                return !isPatchId;
+              }
 
-            auto isCoplanar = isEdgeBetweenCoplanarFaces(he);
-            patch.isPatchIdMap[neighbourId] = isCoplanar;
-            return !isCoplanar;
-          };
+              auto isCoplanar = isEdgeBetweenCoplanarFaces(he);
+              patch.isPatchIdMap[neighbourId] = isCoplanar;
+              return !isCoplanar;
+            };
 
-        floodFillPatch(patch.patchFaces, isHalfedgeOnBorder);
+          floodFillPatch(patch.patchFaces, isHalfedgeOnBorder);
 
-        if (patch.patchFaces.size() < 2) {
-          return false;
-        }
+          if (patch.patchFaces.size() < 2) {
+            return false;
+          }
 
-        auto isFaceOnPatch = [&](auto& f) {
-            return contains(patch.patchFaces, f);
-          };
+          auto isFaceOnPatch = [&](auto& f) {
+              return contains(patch.patchFaces, f);
+            };
 
-        for (auto& face : patch.patchFaces) {
-          CGAL::Halfedge_around_face_iterator<TriangleMesh> heIt, heEnd;
-          for (boost::tie(heIt, heEnd) = halfedges_around_face(tm.halfedge(face), tm); heIt != heEnd; ++heIt) {
-            auto he = *heIt;
-            if (isHalfedgeOnBorder(he)) {
-              patch.borderEdges.push_back(he);
+          for (auto& face : patch.patchFaces) {
+            CGAL::Halfedge_around_face_iterator<TriangleMesh> heIt, heEnd;
+            for (boost::tie(heIt, heEnd) = halfedges_around_face(tm.halfedge(face), tm); heIt != heEnd; ++heIt) {
+              auto he = *heIt;
+              if (isHalfedgeOnBorder(he)) {
+                patch.borderEdges.push_back(he);
+              }
             }
           }
-        }
 
-        if (patch.borderEdges.empty()) {
-          std::cerr << "Failed to find a border edge for patch " << id << "!\n";
-          return false;
-        }
-
-        // Corefinement gives differently ordered meshes in release vs. debug builds.
-        // (see https://github.com/CGAL/cgal/issues/6363).
-        // To avoid remeshing them differently in these builds (and have stable
-        // test expectations) we pick the "smallest" point to start the
-        // border from. This comes at a a cost, but oh well!
-        halfedge_descriptor borderEdge =
-          *std::min_element(patch.borderEdges.begin(), patch.borderEdges.end(),
-                            [&](auto& he1, auto& he2) {
-          auto& v1 = tm.point(tm.source(he1));
-          auto& v2 = tm.point(tm.source(he2));
-
-          if (v1.x() < v2.x()) return true;
-          if (v1.x() != v2.x()) return false;
-
-          if (v1.y() < v2.y()) return true;
-          if (v1.y() != v2.y()) return false;
-
-          return v1.z() < v2.z();
-        });
-
-        if (!walkAroundPatch(borderEdge, isFaceOnPatch, patch.borderPath)) {
-          LOG(message_group::Error, Location::NONE, "",
-              "[fast-csg-remesh] Failed to collect path around patch faces, invalid mesh!");
-          return false;
-        }
-
-        // TODO(ochafik): Find out when it's pointless to remesh (e.g. when no vertex can be collapsed or dropped because it's inside the patch).
-        if (patch.borderPath.size() <= 3) {
-          return false;
-        }
-
-        for (auto he : patch.borderPath) {
-          patch.borderPathEdges.insert(he);
-          patch.borderPathVertices.push_back(tm.target(he));
-        }
-
-        auto hasHoles = false;
-        for (auto he : patch.borderEdges) {
-          if (!contains(patch.borderPathEdges, he)) {
-            // Found a border halfedge that's not in the border path we've walked around the patch.
-            // This means the patch is holed / has more than one border: abort!!
-            hasHoles = true;
-            break;
+          if (patch.borderEdges.empty()) {
+            std::cerr << "Failed to find a border edge for patch " << id << "!\n";
+            return false;
           }
-        }
-        if (hasHoles) {
-          if (verbose) {
-            LOG(message_group::None, Location::NONE, "",
-                "[fast-csg-remesh] Skipping remeshing of patch with %1$lu faces as it seems to have holes.", patch.borderPathEdges.size());
+
+          // Corefinement gives differently ordered meshes in release vs. debug builds.
+          // (see https://github.com/CGAL/cgal/issues/6363).
+          // To avoid remeshing them differently in these builds (and have stable
+          // test expectations) we pick the "smallest" point to start the
+          // border from. This comes at a a cost, but oh well!
+          halfedge_descriptor borderEdge =
+            *std::min_element(patch.borderEdges.begin(), patch.borderEdges.end(),
+                              [&](auto& he1, auto& he2) {
+            auto& v1 = tm.point(tm.source(he1));
+            auto& v2 = tm.point(tm.source(he2));
+
+            if (v1.x() < v2.x()) return true;
+            if (v1.x() != v2.x()) return false;
+
+            if (v1.y() < v2.y()) return true;
+            if (v1.y() != v2.y()) return false;
+
+            return v1.z() < v2.z();
+          });
+
+          if (!walkAroundPatch(borderEdge, isFaceOnPatch, patch.borderPath)) {
+            LOG(message_group::Error, Location::NONE, "",
+                "[fast-csg-remesh] Failed to collect path around patch faces, invalid mesh!");
+            return false;
           }
-          return false;
-        }
 
-        // TODO(ochafik): Ensure collapse happens on both sides of the border! (e.g. count of patches around vertex == 2)
-        // auto collapsed = TriangleMeshEdits<TriangleMesh>::collapsePathWithConsecutiveCollinearEdges(borderPathVertices, tm);
-        TriangleMeshEdits<TriangleMesh>::findCollapsibleVertices(patch.borderPathVertices, tm, [&](size_t index, vertex_descriptor v) {
-          collapsibleBorderVerticesMarks[v]++;
-        });
+          // TODO(ochafik): Find out when it's pointless to remesh (e.g. when no vertex can be collapsed or dropped because it's inside the patch).
+          if (patch.borderPath.size() <= 3) {
+            return false;
+          }
 
-        // Cover the patch with a polygon. It will be triangulated when the
-        // edits are applied.
-        for (auto& face : patch.patchFaces) edits.removeFace(face);
-        edits.addFace(patch.borderPathVertices);
+          for (auto he : patch.borderPath) {
+            patch.borderPathEdges.insert(he);
+            patch.borderPathVertices.push_back(tm.target(he));
+          }
 
-        return true;
-      };
+          auto hasHoles = false;
+          for (auto he : patch.borderEdges) {
+            if (!contains(patch.borderPathEdges, he)) {
+              // Found a border halfedge that's not in the border path we've walked around the patch.
+              // This means the patch is holed / has more than one border: abort!!
+              hasHoles = true;
+              break;
+            }
+          }
+          if (hasHoles) {
+            if (verbose) {
+              LOG(message_group::None, Location::NONE, "",
+                  "[fast-csg-remesh] Skipping remeshing of patch with %1$lu faces as it seems to have holes.", patch.borderPathEdges.size());
+            }
+            return false;
+          }
+
+          // TODO(ochafik): Ensure collapse happens on both sides of the border! (e.g. count of patches around vertex == 2)
+          // auto collapsed = TriangleMeshEdits<TriangleMesh>::collapsePathWithConsecutiveCollinearEdges(borderPathVertices, tm);
+          TriangleMeshEdits<TriangleMesh>::findCollapsibleVertices(patch.borderPathVertices, tm, [&](size_t index, vertex_descriptor v) {
+            collapsibleBorderVerticesMarks[v]++;
+          });
+
+          // Cover the patch with a polygon. It will be triangulated when the
+          // edits are applied.
+          for (auto& face : patch.patchFaces) edits.removeFace(face);
+          edits.addFace(patch.borderPathVertices);
+
+          return true;
+        };
 
       PatchData loopLocalPatchData;
 
