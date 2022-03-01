@@ -19,8 +19,8 @@ void forceExact(Pt& point)
 
 /*!
  * Corefinement visitor that serves two purposes:
- * - Track the ancestors of all resulting faces in the original meshes, and 
- *   remesh those descendants with their neighbouring coplanar faces. All 
+ * - Track the ancestors of all resulting faces in the original meshes, and
+ *   remesh those descendants with their neighbouring coplanar faces. All
  *   original faces have a patch id, which is inherited by copy or splitting.
  * - Make any new numbers exact (if forceNewLazyNumbersToExact set)
  */
@@ -64,6 +64,7 @@ private:
     if (&tm == mesh2_) return 1;
     if (&tm == meshOut_) return 2;
     CGAL_assertion(false && "Unknown mesh");
+    throw 0;
   }
 
 public:
