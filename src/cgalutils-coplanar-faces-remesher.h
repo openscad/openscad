@@ -247,7 +247,25 @@ public:
           return false;
         }
 
-        halfedge_descriptor borderEdge = *patch.borderEdges.begin();
+        // Corefinement gives differently ordered meshes in release vs. debug builds.
+        // (see https://github.com/CGAL/cgal/issues/6363).
+        // To avoid remeshing them differently in these builds (and have stable
+        // test expectations) we pick the "smallest" point to start the
+        // border from. This comes at a a cost, but oh well!
+        halfedge_descriptor borderEdge =
+          *std::min_element(patch.borderEdges.begin(), patch.borderEdges.end(),
+                            [&](auto& he1, auto& he2) {
+          auto& v1 = tm.point(tm.source(he1));
+          auto& v2 = tm.point(tm.source(he2));
+
+          if (v1.x() < v2.x()) true;
+          if (v1.x() != v2.x()) false;
+
+          if (v1.y() < v2.y()) true;
+          if (v1.y() != v2.y()) false;
+
+          return v1.z() < v2.z();
+        });
 
         if (!walkAroundPatch(borderEdge, isFaceOnPatch, patch.borderPath)) {
           LOG(message_group::Error, Location::NONE, "",
