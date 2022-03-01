@@ -77,7 +77,7 @@ public:
     auto verbose = Feature::ExperimentalFastCsgDebug.is_enabled();
 
 #ifdef VERBOSE_REMESHING
-    auto patchToPolyhedronStr = [&](auto& patchFaces) {
+    auto patchToPolyhedronStr = [&](auto& patchFaces, bool translucent) {
         std::vector<vertex_descriptor> vertices;
         std::map<vertex_descriptor, size_t> vertexIndex;
 
@@ -117,7 +117,7 @@ public:
         verticesOut << "]";
 
         std::ostringstream out;
-        out << "polyhedron(" << verticesOut.str().c_str() << ", " << facesOut.str().c_str() << ");";
+        out << (translucent ? "%" : "") << "polyhedron(" << verticesOut.str().c_str() << ", " << facesOut.str().c_str() << ");";
         return out.str();
       };
 
@@ -346,7 +346,7 @@ public:
         auto remeshed = remeshPatch(patch, id);
 
 #ifdef VERBOSE_REMESHING
-        allPatchPolyStrings[id] = patchToPolyhedronStr(patch.patchFaces);
+        allPatchPolyStrings[id] = patchToPolyhedronStr(patch.patchFaces, /* translucent= */ !remeshed);
 
         if (remeshed) {
           allPatchReplacementsPolyStrings[id] = patchBorderToPolyhedronStr(patch.borderPathVertices);
