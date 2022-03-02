@@ -439,7 +439,7 @@ endfunction()
 function(add_failing_test TESTCMD_BASENAME)
   cmake_parse_arguments(TESTCMD "" "RETVAL;EXE;SCRIPT;SUFFIX" "FILES;ARGS" ${ARGN})
 
-  if ("${TESTCMD_SUFFIX}" STREQUAL "") # Suffix "off" counts as a falsy value, so check diectly for empty string.
+  if ("${TESTCMD_SUFFIX}" STREQUAL "") # Suffix "off" counts as a false value, so check directly for empty string.
     message(FATAL_ERROR "add_failing_test() requires SUFFIX to be set" )
   endif()
   if (NOT TESTCMD_EXE)

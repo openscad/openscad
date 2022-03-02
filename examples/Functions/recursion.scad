@@ -2,7 +2,7 @@
 
 // Recursive functions are very powerful for calculating values.
 // A good number of algorithms make use of recursive definitions,
-// e.g the caluclation of the factorial of a number.
+// e.g the calculation of the factorial of a number.
 // The ternary operator " ? : " is the easiest way to define the
 // termination condition.
 // Note how the following simple implementation will never terminate

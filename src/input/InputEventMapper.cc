@@ -101,7 +101,7 @@ double InputEventMapper::scale(double val)
 
 double InputEventMapper::getAxisValue(int config)
 {
-  if (config == 0)    // avoid indexing by -1 when using default settings (and causing bizzare behavior)
+  if (config == 0)    // avoid indexing by -1 when using default settings (and causing bizarre behavior)
     return scale(0);
 
   int idx = abs(config) - 1;

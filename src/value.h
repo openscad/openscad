@@ -351,7 +351,7 @@ public:
    * EmbeddedVectorType class derives from VectorType and enables O(1) concatenation of vectors
    * by treating their elements as elements of their parent, traversable via VectorType's custom iterator.
    * -- An embedded vector should never exist "in the wild", only as a pseudo-element of a parent vector.
-   *    Eg "Lc*" Expressions return Embedded Vectors but they are necessairly child expressions of a Vector expression.
+   *    Eg "Lc*" Expressions return Embedded Vectors but they are necessarily child expressions of a Vector expression.
    * -- Any VectorType containing embedded elements will be forced to "flatten" upon usage of operator[],
    *    which is the only case of random-access.
    * -- Any loops through VectorTypes should prefer automatic range-based for loops  eg: for(const auto& value : vec) { ... }
