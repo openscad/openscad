@@ -136,14 +136,23 @@ void exportFileByName(const shared_ptr<const Geometry>& root_geom, const ExportI
 
 namespace Export {
 
+double normalize(double x) {
+  return x == -0 ? 0 : x;
+}
+
+ExportMesh::Vertex vectorToVertex(const Vector3d& pt) {
+  return {normalize(pt.x()), normalize(pt.y()), normalize(pt.z())};
+}
+
 ExportMesh::ExportMesh(const PolySet& ps)
 {
   std::map<Vertex, int> vertexMap;
   std::vector<std::array<int, 3>> triangleIndices;
-  for (const auto& p : ps.polygons) {
-    auto pos1 = vertexMap.emplace(std::make_pair<Vertex, int>({p[0].x(), p[0].y(), p[0].z()}, vertexMap.size()));
-    auto pos2 = vertexMap.emplace(std::make_pair<Vertex, int>({p[1].x(), p[1].y(), p[1].z()}, vertexMap.size()));
-    auto pos3 = vertexMap.emplace(std::make_pair<Vertex, int>({p[2].x(), p[2].y(), p[2].z()}, vertexMap.size()));
+
+  for (const auto& pts : ps.polygons) {
+    auto pos1 = vertexMap.emplace(std::make_pair(vectorToVertex(pts[0]), vertexMap.size()));
+    auto pos2 = vertexMap.emplace(std::make_pair(vectorToVertex(pts[1]), vertexMap.size()));
+    auto pos3 = vertexMap.emplace(std::make_pair(vectorToVertex(pts[2]), vertexMap.size()));
     triangleIndices.push_back({pos1.first->second, pos2.first->second, pos3.first->second});
   }
 
