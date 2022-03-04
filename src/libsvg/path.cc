@@ -146,7 +146,7 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
 
   double rmax = fmax(rx, ry);
   unsigned long fn = Calc::get_fragments_from_r(rmax, fValues->fn, fValues->fs, fValues->fa);
-  fn = (unsigned long) ceil(fn * fabs(delta) / 360.0); // beause we are creating a section of an ellipse, not the full ellipse
+  fn = (unsigned long) ceil(fn * fabs(delta) / 360.0); // because we are creating a section of an ellipse, not the full ellipse
   int steps = (std::fabs(delta) * 10.0 / 180) + 4;
   if (steps < fn) // use the maximum of calculated steps and user specified steps
     steps = fn;

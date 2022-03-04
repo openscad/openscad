@@ -189,7 +189,7 @@ build_win32()
 	if [ $DOSNAPSHOT ] ; then
 		./scripts/release-common.sh snapshot mingw32 tests
 	else
-		echo "this script cant yet build releases, only snapshots"
+		echo "this script can't yet build releases, only snapshots"
 		exit 1
 	fi
 	if [ $? -eq 0 ]; then
@@ -208,7 +208,7 @@ build_win64()
 	if [ $DOSNAPSHOT ] ; then
 		./scripts/release-common.sh snapshot mingw64 tests
 	else
-		echo "this script cant yet build releases, only snapshots"
+		echo "this script can't yet build releases, only snapshots"
 		exit 1
 	fi
 	if [ $? -eq 0 ]; then
@@ -226,7 +226,7 @@ build_lin32()
 	if [ $DOSNAPSHOT ] ; then
 		./scripts/release-common.sh snapshot
 	else
-		echo "this script cant yet build releases, only snapshots"
+		echo "this script can't yet build releases, only snapshots"
 		exit 1
 	fi
 }
