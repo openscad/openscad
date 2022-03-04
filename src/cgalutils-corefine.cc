@@ -58,7 +58,7 @@ struct ExactLazyNumbersVisitor
   template <class TriangleMesh> \
   bool functionName(TriangleMesh & lhs, TriangleMesh & rhs, TriangleMesh & out) \
   { \
-    auto remesh = Feature::ExperimentalFastCsgRemesh.is_enabled(); \
+    auto remesh = Feature::ExperimentalFastCsgRemesh.is_enabled() || Feature::ExperimentalFastCsgRemeshPredictibly.is_enabled(); \
     auto exactCallback = Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled(); \
     if (exactCallback && !remesh) { \
       auto param = PMP::parameters::visitor(ExactLazyNumbersVisitor<TriangleMesh>()); \

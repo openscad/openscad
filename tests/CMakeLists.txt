@@ -1150,7 +1150,7 @@ list(APPEND FASTCSG_REMESH_FILES
 )
 
 add_cmdline_test(remesh-cgalpng OPENSCAD SUFFIX png FILES ${FASTCSG_REMESH_FILES} ARGS --enable=fast-csg --enable=fast-csg-remesh --enable=fast-csg-trust-corefinement --render)
-add_cmdline_test(remesh-stl     OPENSCAD SUFFIX stl FILES ${FASTCSG_REMESH_FILES} ARGS --enable=sort-stl --enable=fast-csg --enable=fast-csg-remesh --enable=fast-csg-trust-corefinement --render)
+add_cmdline_test(remesh-stl     OPENSCAD SUFFIX stl FILES ${FASTCSG_REMESH_FILES} ARGS --enable=sort-stl --enable=fast-csg --enable=fast-csg-remesh-predictibly --enable=fast-csg-trust-corefinement --render)
 
 #
 # Trivial Export/Import files

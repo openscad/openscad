@@ -69,7 +69,7 @@ public:
 
     auto facesBefore = tm.number_of_faces();
     auto verbose = Feature::ExperimentalFastCsgDebug.is_enabled();
-
+    auto predictibleRemesh = Feature::ExperimentalFastCsgRemeshPredictibly.is_enabled();
 
     class PatchData
     {
@@ -164,20 +164,24 @@ public:
           // To avoid remeshing them differently in these builds (and have stable
           // test expectations) we pick the "smallest" point to start the
           // border from. This comes at a a cost, but oh well!
-          halfedge_descriptor borderEdge =
-            *std::min_element(patch.borderEdges.begin(), patch.borderEdges.end(),
-                              [&](auto& he1, auto& he2) {
-            auto& v1 = tm.point(tm.source(he1));
-            auto& v2 = tm.point(tm.source(he2));
+          halfedge_descriptor borderEdge;
+          if (predictibleRemesh) {
+            borderEdge = *std::min_element(patch.borderEdges.begin(), patch.borderEdges.end(),
+                                           [&](auto& he1, auto& he2) {
+              auto& v1 = tm.point(tm.source(he1));
+              auto& v2 = tm.point(tm.source(he2));
 
-            if (v1.x() < v2.x()) return true;
-            if (v1.x() != v2.x()) return false;
+              if (v1.x() < v2.x()) return true;
+              if (v1.x() != v2.x()) return false;
 
-            if (v1.y() < v2.y()) return true;
-            if (v1.y() != v2.y()) return false;
+              if (v1.y() < v2.y()) return true;
+              if (v1.y() != v2.y()) return false;
 
-            return v1.z() < v2.z();
-          });
+              return v1.z() < v2.z();
+            });
+          } else {
+            borderEdge = *patch.borderEdges.begin();
+          }
 
           if (!walkAroundPatch(borderEdge, isFaceOnPatch, patch.borderPath)) {
             LOG(message_group::Error, Location::NONE, "",
