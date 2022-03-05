@@ -142,7 +142,7 @@ jobs:
               cd ../build
               make -j4 VERBOSE=1
               mkdir -p /tmp/out
-              zip -9r "/tmp/out/OpenSCAD-WASM-${OPENSCAD_VERSION}${SUFFIX}.zip" openscad.*
+              zip -9r "/tmp/out/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}-WebAssembly.zip" openscad.*
               if [ -n "${CODE_SIGNING_KEY}" ]; then
                   cd /tmp/out
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
