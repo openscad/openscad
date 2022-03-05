@@ -1239,6 +1239,7 @@ void MainWindow::instantiateRoot()
 
     std::shared_ptr<const FileContext> file_context;
     this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
+
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
     }

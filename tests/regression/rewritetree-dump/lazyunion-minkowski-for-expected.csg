@@ -1,0 +1,12 @@
+minkowski(convexity = 0) {
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		cube(size = [5, 5, 5], center = false);
+	}
+	multmatrix([[1, 0, 0, 0], [0, 0.866025, -0.5, 0], [0, 0.5, 0.866025, 0], [0, 0, 0, 1]]) {
+		cube(size = [5, 5, 5], center = false);
+	}
+	multmatrix([[1, 0, 0, 0], [0, 0.5, -0.866025, 0], [0, 0.866025, 0.5, 0], [0, 0, 0, 1]]) {
+		cube(size = [5, 5, 5], center = false);
+	}
+}
+

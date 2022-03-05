@@ -1,0 +1,8 @@
+cube(size = [10, 10, 10], center = true);
+multmatrix([[1, 0, 0, 11], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	sphere($fn = 0, $fa = 12, $fs = 2, r = 5);
+}
+multmatrix([[1, 0, 0, 22], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	cylinder($fn = 0, $fa = 12, $fs = 2, h = 10, r1 = 5, r2 = 5, center = true);
+}
+

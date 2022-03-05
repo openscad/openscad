@@ -1,0 +1,28 @@
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	cube(size = [8, 8, 8], center = false);
+}
+multmatrix([[1, 0, 0, 10], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	cube(size = [8, 8, 8], center = false);
+}
+multmatrix([[1, 0, 0, 20], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	cube(size = [8, 8, 8], center = false);
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	cube(size = [8, 8, 8], center = false);
+}
+multmatrix([[1, 0, 0, 10], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	cube(size = [8, 8, 8], center = false);
+}
+multmatrix([[1, 0, 0, 20], [0, 1, 0, 10], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	cube(size = [8, 8, 8], center = false);
+}
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	cube(size = [8, 8, 8], center = false);
+}
+multmatrix([[1, 0, 0, 10], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	cube(size = [8, 8, 8], center = false);
+}
+multmatrix([[1, 0, 0, 20], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	cube(size = [8, 8, 8], center = false);
+}
+
