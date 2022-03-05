@@ -352,7 +352,7 @@ if(ENABLE_HIDAPI)
   find_package(HidAPI 0.10 QUIET)
   if(HIDAPI_FOUND)
     message(STATUS "HidAPI: ${HIDAPI_VERSION_STRING}")
-    set(INPUT_DRIVER_HIDAPI_SOURCES src/input/HidApiInputDriver.cc)
+    set(INPUT_DRIVER_HIDAPI_SOURCES src/gui/input/HidApiInputDriver.cc)
     target_include_directories(OpenSCAD SYSTEM PRIVATE ${HIDAPI_INCLUDE_DIR})
     list(APPEND COMMON_LIBRARIES ${HIDAPI_LIBRARY})
     target_compile_definitions(OpenSCAD PRIVATE ENABLE_HIDAPI)
@@ -368,7 +368,7 @@ if(ENABLE_SPNAV)
   find_package(SpNav QUIET)
   if(SPNAV_FOUND)
     message(STATUS "SpNav: found")
-    set(INPUT_DRIVER_SPNAV_SOURCES src/input/SpaceNavInputDriver.cc)
+    set(INPUT_DRIVER_SPNAV_SOURCES src/gui/input/SpaceNavInputDriver.cc)
     target_include_directories(OpenSCAD SYSTEM PRIVATE ${SPNAV_INCLUDE_DIR})
     list(APPEND COMMON_LIBRARIES ${SPNAV_LIBRARY})
     target_compile_definitions(OpenSCAD PRIVATE ENABLE_SPNAV)
@@ -457,7 +457,7 @@ if(NOT HEADLESS)
     if (Qt5DBus_FOUND)
       message(STATUS "DBus input driver enabled")
       target_compile_definitions(OpenSCAD PRIVATE ENABLE_DBUS)
-      set(INPUT_DRIVER_DBUS_SOURCES src/input/DBusInputDriver.cc)
+      set(INPUT_DRIVER_DBUS_SOURCES src/gui/input/DBusInputDriver.cc)
       qt5_add_dbus_interface(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml openscad_interface)
       qt5_add_dbus_adaptor(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml input/DBusInputDriver.h DBusInputDriver openscad_adaptor)
     else()
@@ -472,7 +472,7 @@ if(NOT HEADLESS)
     find_package(Qt5Gamepad QUIET)
     if (Qt5Gamepad_FOUND)
       message(STATUS "Qt5Gamepad input driver enabled")
-      set(GUI_SOURCES ${GUI_SOURCES} src/input/QGamepadInputDriver.cc)
+      set(GUI_SOURCES ${GUI_SOURCES} src/gui/input/QGamepadInputDriver.cc)
       target_compile_definitions(OpenSCAD PRIVATE ENABLE_QGAMEPAD)
     else()
       message(STATUS "Qt5Gamepad input driver disabled as the Qt5Gamepad module could not be found.")
@@ -530,7 +530,7 @@ if(APPLE)
   message(STATUS "Offscreen OpenGL Context - using Apple CGL")
   set(PLATFORM_SOURCES src/PlatformUtils-mac.mm src/imageutils-macosx.cc src/CocoaUtils.mm)
   if(NOT HEADLESS)
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/AppleEvents.cc)
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/gui/AppleEvents.cc)
   endif()
   if(NULLGL)
     set(OFFSCREEN_METHOD "NULLGL")
@@ -775,7 +775,7 @@ endif()
 
 
 if(UNIX AND (NOT APPLE) AND (NOT HEADLESS))
-  set(PLATFORM_INPUT_DRIVER_SOURCES src/input/JoystickInputDriver.cc)
+  set(PLATFORM_INPUT_DRIVER_SOURCES src/gui/input/JoystickInputDriver.cc)
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_JOYSTICK)
 endif()
 
@@ -787,66 +787,66 @@ set(INPUT_DRIVER_SOURCES
 
 set(GUI_SOURCES
   ${GUI_SOURCES}
-  src/AutoUpdater.cc
-  src/CGALWorker.cc
-  src/Console.cc
-  src/Dock.cc
-  src/Editor.cc
-  src/ErrorLog.cc
-  src/EventFilter.h
-  src/FontListDialog.cc
-  src/FontListTableView.cc
-  src/InitConfigurator.cc
-  src/LaunchingScreen.cc
-  src/LibraryInfoDialog.cc
-  src/MainWindow.cc
-  src/MouseSelector.cc
-  src/OctoPrint.cc
-  src/OpenCSGWarningDialog.cc
-  src/OpenSCADApp.cc
-  src/Preferences.cc
-  src/PrintInitDialog.cc
-  src/PrintService.cc
-  src/ProgressWidget.cc
-  src/QGLView.cc
-  src/QSettingsCached.cc
-  src/QWordSearchField.cc
-  src/ScadApi.cc
-  src/ScadLexer.cc
-  src/ScintillaEditor.cc
-  src/Settings.cc
-  src/SettingsWriter.cc
-  src/TabManager.cc
-  src/TabWidget.cc
-  src/UIUtils.cc
-  src/WindowManager.cc
-  src/input/AxisConfigWidget.cc
-  src/input/ButtonConfigWidget.cc
-  src/input/InputDriver.cc
-  src/input/InputDriverManager.cc
-  src/input/InputEventMapper.cc
-  src/input/WheelIgnorer.cc
-  src/parameter/GroupWidget.cc
-  src/parameter/IgnoreWheelWhenNotFocused.cc
-  src/parameter/ParameterCheckBox.cc
-  src/parameter/ParameterComboBox.cc
-  src/parameter/ParameterSlider.cc
-  src/parameter/ParameterSpinBox.cc
-  src/parameter/ParameterText.cc
-  src/parameter/ParameterVector.cc
-  src/parameter/ParameterVirtualWidget.cc
-  src/parameter/ParameterWidget.cc
+  src/gui/AutoUpdater.cc
+  src/gui/CGALWorker.cc
+  src/gui/Console.cc
+  src/gui/Dock.cc
+  src/gui/Editor.cc
+  src/gui/ErrorLog.cc
+  src/gui/EventFilter.h
+  src/gui/FontListDialog.cc
+  src/gui/FontListTableView.cc
+  src/gui/InitConfigurator.cc
+  src/gui/LaunchingScreen.cc
+  src/gui/LibraryInfoDialog.cc
+  src/gui/MainWindow.cc
+  src/gui/MouseSelector.cc
+  src/gui/OctoPrint.cc
+  src/gui/OpenCSGWarningDialog.cc
+  src/gui/OpenSCADApp.cc
+  src/gui/Preferences.cc
+  src/gui/PrintInitDialog.cc
+  src/gui/PrintService.cc
+  src/gui/ProgressWidget.cc
+  src/gui/QGLView.cc
+  src/gui/QSettingsCached.cc
+  src/gui/QWordSearchField.cc
+  src/gui/ScadApi.cc
+  src/gui/ScadLexer.cc
+  src/gui/ScintillaEditor.cc
+  src/gui/Settings.cc
+  src/gui/SettingsWriter.cc
+  src/gui/TabManager.cc
+  src/gui/TabWidget.cc
+  src/gui/UIUtils.cc
+  src/gui/WindowManager.cc
+  src/gui/input/AxisConfigWidget.cc
+  src/gui/input/ButtonConfigWidget.cc
+  src/gui/input/InputDriver.cc
+  src/gui/input/InputDriverManager.cc
+  src/gui/input/InputEventMapper.cc
+  src/gui/input/WheelIgnorer.cc
+  src/gui/parameter/GroupWidget.cc
+  src/gui/parameter/IgnoreWheelWhenNotFocused.cc
+  src/gui/parameter/ParameterCheckBox.cc
+  src/gui/parameter/ParameterComboBox.cc
+  src/gui/parameter/ParameterSlider.cc
+  src/gui/parameter/ParameterSpinBox.cc
+  src/gui/parameter/ParameterText.cc
+  src/gui/parameter/ParameterVector.cc
+  src/gui/parameter/ParameterVirtualWidget.cc
+  src/gui/parameter/ParameterWidget.cc
   ${INPUT_DRIVER_SOURCES}
   )
 
 # header-only code
 set(GUI_HEADERS
-  src/AboutDialog.h
-  src/Network.h
-  src/NetworkSignal.h
+  src/gui/AboutDialog.h
+  src/gui/Network.h
+  src/gui/NetworkSignal.h
   )
 
-file(GLOB UIs src/*.ui)
+file(GLOB UIs src/gui/*.ui)
 file(GLOB Resources *.qrc)
 
 list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES} ${Resources})
