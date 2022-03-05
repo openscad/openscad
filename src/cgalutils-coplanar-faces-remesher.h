@@ -52,8 +52,6 @@ struct CoplanarFacesRemesher {
   typedef typename GT::edge_descriptor edge_descriptor;
   typedef typename GT::vertex_descriptor vertex_descriptor;
 
-  typedef std::function<bool (const face_descriptor&)> face_predicate;
-
   TriangleMesh& tm;
 
 public:
@@ -103,7 +101,7 @@ public:
           // and tells whether the opposite face isn't.
           // It tries to keep expensive coplanarity tests to a minimum by
           // remembering what patch ids were already encountered.
-          auto isHalfedgeOnBorder = [&](auto& he) {
+          auto isHalfedgeOnBorder = [&](const halfedge_descriptor& he) -> bool {
               auto neighbourFace = tm.face(tm.opposite(he));
               if (!neighbourFace.is_valid()) {
                 return true;
@@ -140,7 +138,7 @@ public:
             return false;
           }
 
-          auto isFaceOnPatch = [&](auto& f) {
+          auto isFaceOnPatch = [&](const face_descriptor& f) -> bool {
               return contains(patch.patchFaces, f);
             };
 
@@ -301,9 +299,10 @@ public:
   }
 
   /*! Expand the patch of known faces to surrounding neighbours that pass the (fast) predicate. */
+  template <class IsHalfedgeOnBorder>
   bool floodFillPatch(
     std::unordered_set<face_descriptor>& facePatch,
-    const std::function<bool(const halfedge_descriptor&)>& isHalfedgeOnBorder)
+    const IsHalfedgeOnBorder& isHalfedgeOnBorder)
   {
     // Avoid recursion as its depth would be model-dependent.
     std::vector<face_descriptor> unprocessedFaces(facePatch.begin(), facePatch.end());
@@ -333,8 +332,9 @@ public:
   }
 
   /*! Returns true if the border is closed. */
+  template <class IsFaceOnPatch>
   bool walkAroundPatch(halfedge_descriptor startingEdge,
-                       const face_predicate& isFaceOnPatch,
+                       const IsFaceOnPatch& isFaceOnPatch,
                        std::vector<halfedge_descriptor>& borderOut) const
   {
     auto currentEdge = startingEdge;
