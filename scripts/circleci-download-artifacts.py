@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 #
-# Script for retrieving the artifact download URLs from CircleCI via the
-# REST API. This fetches all artifacts from the last build for both the
-# 32bit (mxe-i686-openscad) and 64bit (mxe-x86_64-openscad) docker builds
+# Script for retrieving the artifact download URLs from CircleCI via
+# the REST API. This fetches all artifacts from the last build for all
+# builds:
+# - Windows MXE 32bit
+# - Windows MXE 64bit
+# - AppImage 64bit
+# - WASM
+# - MacOS
 #
 # The script does not actually download the binaries, that can be done
 # using wget or similar tools, e.g.:
@@ -33,7 +38,7 @@ def filter(x, job):
 		return False
 	if x["branch"] != 'master':
 		return False
-	return x["build_parameters"]["CIRCLE_JOB"] == job
+	return x["workflows"]["job_name"] == job
 
 def latest_builds():
 	response = http.request('GET', circleci_build_url, headers={ 'Accept': 'application/json' })
@@ -42,8 +47,9 @@ def latest_builds():
 	builds32 = [ x["build_num"] for x in data if filter(x, 'openscad-mxe-32bit') ]
 	builds64 = [ x["build_num"] for x in data if filter(x, 'openscad-mxe-64bit') ]
 	appimages64 = [ x["build_num"] for x in data if filter(x, 'openscad-appimage-64bit') ]
+	wasm = [ x["build_num"] for x in data if filter(x, 'openscad-wasm') ]
 	macos = [ x["build_num"] for x in data if filter(x, 'openscad-macos') ]
-	list = zip(['32bit', '64bit', 'appimage-64bit', 'macos'], [builds32, builds64, appimages64, macos])
+	list = zip(['32bit', '64bit', 'appimage-64bit', 'wasm', 'macos'], [builds32, builds64, appimages64, wasm, macos])
 	builds = { key : max(val) for (key, val) in list if val }
 	return builds
 
@@ -61,7 +67,7 @@ def new_builds():
 	try:
 		with open(cache_file) as infile:
 			last_builds = json.load(infile)
-	except Exception:
+	except:
 		last_builds = {}
 
 	builds = latest_builds()
@@ -69,7 +75,7 @@ def new_builds():
 	    json.dump(builds, outfile)
 
 	new_builds = []
-	for key in ['32bit', '64bit', 'appimage-64bit', 'macos']:
+	for key in ['32bit', '64bit', 'appimage-64bit', 'wasm', 'macos']:
 		if key not in last_builds or (key in builds and last_builds[key] != builds[key]):
 			if key in builds:
 				new_builds.append(builds[key])
