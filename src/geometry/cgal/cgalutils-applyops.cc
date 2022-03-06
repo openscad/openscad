@@ -24,7 +24,6 @@
 #include <CGAL/convex_hull_3.h>
 
 #include "memory.h"
-#include "svg.h"
 #include "Reindexer.h"
 #include "GeometryUtils.h"
 

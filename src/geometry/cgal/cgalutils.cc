@@ -23,7 +23,6 @@
 
 #include <CGAL/convex_hull_3.h>
 
-#include "svg.h"
 #include "Reindexer.h"
 #include "hash.h"
 #include "GeometryUtils.h"

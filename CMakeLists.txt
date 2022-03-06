@@ -126,9 +126,6 @@ target_compile_options(OpenSCAD PRIVATE "$<$<CONFIG:DEBUG>:-DDEBUG>")
 
 target_compile_definitions(OpenSCAD PRIVATE _REENTRANT UNICODE _UNICODE)
 
-# Stack size 8MB; github issue 116
-target_compile_definitions(OpenSCAD PRIVATE "STACKSIZE=${STACKSIZE}") # used as default in src/PlatformUtils.h
-
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
   if (WIN32) # gcc bug spams warnings, See issue #2771
@@ -413,18 +410,28 @@ endif()
 set(CMAKE_INCLUDE_CURRENT_DIR ON) # does not propagate down to subdirectories
 target_include_directories(OpenSCAD PRIVATE
   "src"
-  "src/gui"
+  "src/core"
+  "src/core/customizer"
   "src/ext/json"
   "src/ext/lexertl/include"
   "src/ext/libtess2/Include"
+  "src/geometry"
+  "src/geometry/cgal"
+  "src/glview"
+  "src/glview/preview"
+  "src/glview/cgal"
+  "src/gui"
+  "src/io"
+  "src/platform"
+  "src/utils"
 )
 
-FLEX_TARGET(openscad_lexer src/lexer.l ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
-BISON_TARGET(openscad_parser src/parser.y ${OPENSCAD_LIB_OUTPUT_DIR}/parser.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/parser.hxx COMPILE_FLAGS "-d -p parser")
+FLEX_TARGET(openscad_lexer src/core/lexer.l ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
+BISON_TARGET(openscad_parser src/core/parser.y ${OPENSCAD_LIB_OUTPUT_DIR}/parser.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/parser.hxx COMPILE_FLAGS "-d -p parser")
 ADD_FLEX_BISON_DEPENDENCY(openscad_lexer openscad_parser)
 
-FLEX_TARGET(comment_lexer src/comment_lexer.l ${OPENSCAD_LIB_OUTPUT_DIR}/comment_lexer.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/comment_lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
-BISON_TARGET(comment_parser src/comment_parser.y ${OPENSCAD_LIB_OUTPUT_DIR}/comment_parser.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/comment_parser.hxx COMPILE_FLAGS "-d -p comment_parser")
+FLEX_TARGET(comment_lexer src/core/customizer/comment_lexer.l ${OPENSCAD_LIB_OUTPUT_DIR}/comment_lexer.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/comment_lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
+BISON_TARGET(comment_parser src/core/customizer/comment_parser.y ${OPENSCAD_LIB_OUTPUT_DIR}/comment_parser.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/comment_parser.hxx COMPILE_FLAGS "-d -p comment_parser")
 ADD_FLEX_BISON_DEPENDENCY(comment_lexer comment_parser)
 
 if(NOT HEADLESS)
@@ -529,39 +536,43 @@ endif()
 #
 # Platform specific settings
 #
-SET(OFFSCREEN_METHOD "<undefined>")
+
+# Stack size 8MB; github issue 116
+target_compile_definitions(OpenSCAD PRIVATE "STACKSIZE=${STACKSIZE}") # used as default in src/platform/PlatformUtils.h
+
+if(NULLGL)
+  set(OFFSCREEN_METHOD "NULLGL")
+  message(STATUS "Offscreen OpenGL Context - using NULLGL")
+else()
+  SET(OFFSCREEN_METHOD "<undefined>")
+endif()
 if(APPLE)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_OS="Mac OS X")
   message(STATUS "Offscreen OpenGL Context - using Apple CGL")
-  set(PLATFORM_SOURCES src/PlatformUtils-mac.mm src/imageutils-macosx.cc src/CocoaUtils.mm)
+  set(PLATFORM_SOURCES src/platform/PlatformUtils-mac.mm src/io/imageutils-macosx.cc src/platform/CocoaUtils.mm)
   if(NOT HEADLESS)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/gui/AppleEvents.cc)
   endif()
-  if(NULLGL)
-    set(OFFSCREEN_METHOD "NULLGL")
-  else()
+  if(NOT NULLGL)
     set(OFFSCREEN_METHOD "Apple CGL")
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/OffscreenContextCGL.mm)
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextCGL.mm)
   endif()
   find_library(COCOA_LIBRARY Cocoa)
   list(APPEND PLATFORM_LIBS ${COCOA_LIBRARY})
 elseif(UNIX)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_OS="Unix")
-  set(PLATFORM_SOURCES src/imageutils-lodepng.cc src/PlatformUtils-posix.cc)
-  if(NULLGL)
-    set(OFFSCREEN_METHOD "NULLGL")
-    message(STATUS "Offscreen OpenGL Context - using NULLGL")
-  else()
+  set(PLATFORM_SOURCES src/io/imageutils-lodepng.cc src/platform/PlatformUtils-posix.cc)
+  if(NOT NULLGL)
     if(ENABLE_EGL AND OpenGL_EGL_FOUND)
       set(OFFSCREEN_METHOD "Unix EGL")
       message(STATUS "Offscreen OpenGL Context - using Unix EGL")
-      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/OffscreenContextEGL.cc)
+      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextEGL.cc)
       add_definitions(-DGLEW_EGL)
       list(APPEND PLATFORM_LIBS OpenGL::EGL)
     else()
       set(OFFSCREEN_METHOD "Unix GLX on X11")
       message(STATUS "Offscreen OpenGL Context - using Unix GLX on X11")
-      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/OffscreenContextGLX.cc)
+      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextGLX.cc)
       find_library(X11_LIBRARY X11)
       list(APPEND PLATFORM_LIBS ${X11_LIBRARY})
     endif()
@@ -570,118 +581,76 @@ elseif(WIN32)
   target_compile_definitions(OpenSCAD PRIVATE NOGDI)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_OS="Windows")
   message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
-  set(PLATFORM_SOURCES src/imageutils-lodepng.cc src/PlatformUtils-win.cc)
-  set(PLATFORM_SOURCES src/imageutils-lodepng.cc src/PlatformUtils-win.cc)
-  if(NULLGL)
-    set(OFFSCREEN_METHOD "NULLGL")
-  else()
+  set(PLATFORM_SOURCES src/io/imageutils-lodepng.cc src/platform/PlatformUtils-win.cc)
+  if(NOT NULLGL)
     set(OFFSCREEN_METHOD "Windows WGL")
     message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/OffscreenContextWGL.cc)
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextWGL.cc)
   endif()
 endif()
 
 # NOTE: To keep HEADLESS builds working, do NOT add Qt-dependent sources here,
 #       see GUI_SOURCES list below for that.
 set(CORE_SOURCES
-  src/annotation.cc
-  src/arguments.cc
-  src/boost-utils.cc
-  src/builtin.cc
-  src/builtincontext.cc
-  src/calc.cc
-  src/cgaladv.cc
-  src/children.cc
-  src/clipper-utils.cc
-  src/color.cc
-  src/colormap.cc
-  src/context.cc
-  src/contextframe.cc
-  src/context-mm.cc
-  src/control.cc
-  src/comment.cc
-  src/csgnode.cc
-  src/csgops.cc
-  src/degree_trig.cc
-  src/dxfdata.cc
-  src/dxfdim.cc
-  src/evaluationsession.cc
-  src/IndexedMesh.cc
-  src/export.cc
-  src/export_3mf.cc
-  src/export_amf.cc
-  src/export_dxf.cc
-  src/export_off.cc
-  src/export_wrl.cc
-  src/export_pdf.cc
-  src/export_stl.cc
-  src/export_svg.cc
-  src/export_param.cc
-  src/expr.cc
   src/feature.cc
-  src/fileutils.cc
-  src/func.cc
-  src/function.cc
-  src/handle_dep.cc
-  src/hash.cc
-  src/import.cc
-  src/import_3mf.cc
-  src/import_amf.cc
-  src/import_stl.cc
-  src/import_off.cc
-  src/import_svg.cc
-  src/import_json.cc
-  src/linalg.cc
-  src/linearextrude.cc
-  src/localscope.cc
-  src/modcontext.cc
-  src/module.cc
-  src/node.cc
-  src/nodedumper.cc
-  src/offset.cc
-  src/parameters.cc
-  src/parsersettings.cc
-  src/polyset.cc
-  src/polyset-utils.cc
-  src/primitives.cc
-  src/printutils.cc
-  src/progress.cc
-  src/projection.cc
-  src/render.cc
-  src/rendersettings.cc
-  src/roof.cc
-  src/roof_ss.cc
-  src/roof_vd.cc
-  src/rotateextrude.cc
-  src/stackcheck.h
-  src/surface.cc
-  src/svg.cc
-  src/text.cc
-  src/transform.cc
-  src/value.cc
-  src/version.cc
-  src/Assignment.cc
-  src/AST.cc
-  src/Camera.cc
-  src/CSGTreeNormalizer.cc
-  src/DrawingCallback.cc
   src/FontCache.cc
-  src/FreetypeRenderer.cc
-  src/Geometry.cc
-  src/GeometryCache.cc
-  src/GeometryUtils.cc
-  src/GroupModule.cc
+  src/handle_dep.cc
   src/LibraryInfo.cc
-  src/ModuleInstantiation.cc
-  src/NodeVisitor.cc
-  src/PlatformUtils.cc
-  src/Polygon2d.cc
   src/RenderStatistic.cc
-  src/SourceFile.cc
-  src/SourceFileCache.cc
-  src/StatCache.cc
-  src/UserModule.cc
-  src/Tree.cc
+  src/version.cc
+  src/core/arguments.cc
+  src/core/builtin.cc
+  src/core/builtincontext.cc
+  src/core/cgaladv.cc
+  src/core/children.cc
+  src/core/color.cc
+  src/core/context.cc
+  src/core/contextframe.cc
+  src/core/context-mm.cc
+  src/core/control.cc
+  src/core/csgnode.cc
+  src/core/csgops.cc
+  src/core/CSGTreeEvaluator.cc
+  src/core/customizer/annotation.cc
+  src/core/customizer/comment.cc
+  src/core/evaluationsession.cc
+  src/core/expr.cc
+  src/core/func.cc
+  src/core/function.cc
+  src/core/import.cc
+  src/core/linearextrude.cc
+  src/core/localscope.cc
+  src/core/modcontext.cc
+  src/core/module.cc
+  src/core/node.cc
+  src/core/nodedumper.cc
+  src/core/offset.cc
+  src/core/parameters.cc
+  src/core/parsersettings.cc
+  src/core/primitives.cc
+  src/core/progress.cc
+  src/core/projection.cc
+  src/core/render.cc
+  src/core/roof.cc
+  src/core/DrawingCallback.cc
+  src/core/rotateextrude.cc
+  src/core/surface.cc
+  src/core/text.cc
+  src/core/transform.cc
+  src/core/value.cc
+  src/core/Assignment.cc
+  src/core/AST.cc
+  src/core/FreetypeRenderer.cc
+  src/core/GroupModule.cc
+  src/core/ModuleInstantiation.cc
+  src/core/NodeVisitor.cc
+  src/core/SourceFile.cc
+  src/core/SourceFileCache.cc
+  src/core/StatCache.cc
+  src/core/UserModule.cc
+  src/core/Tree.cc
+  src/core/customizer/parameterobject.cc
+  src/core/customizer/parameterset.cc
   src/ext/lodepng/lodepng.cpp
   src/ext/polyclipping/clipper.cpp
   src/ext/libtess2/Source/bucketalloc.c
@@ -691,25 +660,65 @@ set(CORE_SOURCES
   src/ext/libtess2/Source/priorityq.c
   src/ext/libtess2/Source/sweep.c
   src/ext/libtess2/Source/tess.c
-  src/libsvg/circle.cc
-  src/libsvg/data.cc
-  src/libsvg/ellipse.cc
-  src/libsvg/group.cc
-  src/libsvg/libsvg.cc
-  src/libsvg/line.cc
-  src/libsvg/path.cc
-  src/libsvg/polygon.cc
-  src/libsvg/polyline.cc
-  src/libsvg/rect.cc
-  src/libsvg/shape.cc
-  src/libsvg/svgpage.cc
-  src/libsvg/text.cc
-  src/libsvg/transformation.cc
-  src/libsvg/tspan.cc
-  src/libsvg/use.cc
-  src/libsvg/util.cc
-  src/parameterobject.cc
-  src/parameterset.cc
+  src/geometry/clipper-utils.cc
+  src/geometry/Geometry.cc
+  src/geometry/GeometryCache.cc
+  src/geometry/GeometryUtils.cc
+  src/geometry/IndexedMesh.cc
+  src/geometry/Polygon2d.cc
+  src/geometry/linalg.cc
+  src/geometry/polyset.cc
+  src/geometry/polyset-utils.cc
+  src/geometry/roof_ss.cc
+  src/geometry/roof_vd.cc
+  src/glview/rendersettings.cc
+  src/glview/Camera.cc
+  src/glview/colormap.cc
+  src/glview/preview/CSGTreeNormalizer.cc
+  src/io/dxfdata.cc
+  src/io/dxfdim.cc
+  src/io/export.cc
+  src/io/export_3mf.cc
+  src/io/export_amf.cc
+  src/io/export_dxf.cc
+  src/io/export_off.cc
+  src/io/export_wrl.cc
+  src/io/export_pdf.cc
+  src/io/export_stl.cc
+  src/io/export_svg.cc
+  src/io/export_param.cc
+  src/io/fileutils.cc
+  src/io/import_3mf.cc
+  src/io/import_amf.cc
+  src/io/import_stl.cc
+  src/io/import_off.cc
+  src/io/import_svg.cc
+  src/io/import_json.cc
+  src/io/libsvg/circle.cc
+  src/io/libsvg/data.cc
+  src/io/libsvg/ellipse.cc
+  src/io/libsvg/group.cc
+  src/io/libsvg/libsvg.cc
+  src/io/libsvg/line.cc
+  src/io/libsvg/path.cc
+  src/io/libsvg/polygon.cc
+  src/io/libsvg/polyline.cc
+  src/io/libsvg/rect.cc
+  src/io/libsvg/shape.cc
+  src/io/libsvg/svgpage.cc
+  src/io/libsvg/text.cc
+  src/io/libsvg/transformation.cc
+  src/io/libsvg/tspan.cc
+  src/io/libsvg/use.cc
+  src/io/libsvg/util.cc
+  src/platform/PlatformUtils.cc
+  src/utils/boost-utils.cc
+  src/utils/calc.cc
+  src/utils/degree_trig.cc
+  src/utils/hash.cc
+  src/utils/printutils.cc
+  src/utils/stackcheck.h
+  src/utils/svg.cc
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
   ${BISON_openscad_parser_OUTPUTS}
@@ -717,31 +726,31 @@ set(CORE_SOURCES
   ${BISON_comment_parser_OUTPUTS})
 
 set(CGAL_SOURCES
-  src/cgalutils.cc
-  src/cgalutils-applyops.cc
-  src/cgalutils-applyops-hybrid.cc
-  src/cgalutils-applyops-hybrid-minkowski.cc
-  src/cgalutils-closed.cc
-  src/cgalutils-convex.cc
-  src/cgalutils-corefine.cc
-  src/cgalutils-kernel.cc
-  src/cgalutils-hybrid.cc
-  src/cgalutils-mesh.cc
-  src/cgalutils-minkowski.cc
-  src/cgalutils-nef.cc
-  src/cgalutils-orient.cc
-  src/cgalutils-polyhedron.cc
-  src/cgalutils-project.cc
-  src/cgalutils-tess.cc
-  src/cgalutils-triangulate.cc
-  src/export_nef.cc
-  src/CGALHybridPolyhedron.cc
-  src/import_nef.cc
-  src/CGAL_Nef_polyhedron.cc
-  src/CGALCache.cc
-  src/CSGTreeEvaluator.cc
-  src/Polygon2d-CGAL.cc
-  src/GeometryEvaluator.cc)
+  src/geometry/GeometryEvaluator.cc
+  src/geometry/cgal/cgalutils.cc
+  src/geometry/cgal/cgalutils-applyops.cc
+  src/geometry/cgal/cgalutils-applyops-hybrid.cc
+  src/geometry/cgal/cgalutils-applyops-hybrid-minkowski.cc
+  src/geometry/cgal/cgalutils-closed.cc
+  src/geometry/cgal/cgalutils-convex.cc
+  src/geometry/cgal/cgalutils-corefine.cc
+  src/geometry/cgal/cgalutils-kernel.cc
+  src/geometry/cgal/cgalutils-hybrid.cc
+  src/geometry/cgal/cgalutils-mesh.cc
+  src/geometry/cgal/cgalutils-minkowski.cc
+  src/geometry/cgal/cgalutils-nef.cc
+  src/geometry/cgal/cgalutils-orient.cc
+  src/geometry/cgal/cgalutils-polyhedron.cc
+  src/geometry/cgal/cgalutils-project.cc
+  src/geometry/cgal/cgalutils-tess.cc
+  src/geometry/cgal/cgalutils-triangulate.cc
+  src/geometry/cgal/CGALHybridPolyhedron.cc
+  src/geometry/cgal/CGAL_Nef_polyhedron.cc
+  src/geometry/cgal/CGALCache.cc
+  src/geometry/cgal/Polygon2d-CGAL.cc
+  src/io/export_nef.cc
+  src/io/import_nef.cc
+)
 
 #
 # Offscreen OpenGL context source code
@@ -749,29 +758,27 @@ set(CGAL_SOURCES
 if(NULLGL)
   message(STATUS "NULLGL is set. Overriding OpenGL(TM) settings")
   set(OFFSCREEN_SOURCES
-    src/export_png.cc
-    src/imageutils.cc
-    src/renderer.cc
-    src/render.cc
-    src/NULLGL.cc # contains several 'nullified' versions of above .cc files
-    src/OffscreenView.cc
-    src/OffscreenContextNULL.cc
-    src/${OFFSCREEN_IMGUTILS_SOURCE})
+    src/glview/renderer.cc
+    src/glview/NULLGL.cc # contains several 'nullified' versions of above .cc files
+    src/glview/OffscreenView.cc
+    src/glview/OffscreenContextNULL.cc
+    src/io/export_png.cc
+    src/io/imageutils.cc
+    ${OFFSCREEN_IMGUTILS_SOURCE})
 else()
   set(OFFSCREEN_SOURCES
-    src/export_png.cc
-    src/fbo.cc
-    src/imageutils.cc
-    src/render.cc
-    src/renderer.cc
-    src/system-gl.cc
-    src/VertexArray.cc
-    src/VBORenderer.cc
-    src/CGALRenderer.cc
-    src/GLView.cc
-    src/OffscreenView.cc
-    src/OpenCSGRenderer.cc
-    src/ThrownTogetherRenderer.cc)
+    src/glview/fbo.cc
+    src/glview/renderer.cc
+    src/glview/system-gl.cc
+    src/glview/VertexArray.cc
+    src/glview/VBORenderer.cc
+    src/glview/GLView.cc
+    src/glview/OffscreenView.cc
+    src/glview/cgal/CGALRenderer.cc
+    src/glview/preview/OpenCSGRenderer.cc
+    src/glview/preview/ThrownTogetherRenderer.cc
+    src/io/export_png.cc
+    src/io/imageutils.cc)
 endif()
 
 
@@ -847,7 +854,6 @@ set(GUI_HEADERS
   src/gui/NetworkSignal.h
   )
 
-file(GLOB UIs src/gui/*.ui)
 file(GLOB Resources *.qrc)
 
 list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES} ${Resources})
