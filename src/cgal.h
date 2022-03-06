@@ -38,26 +38,26 @@
 
 #if USE_WASM_COMPATIBLE_KERNELS
 
-  typedef FilteredNumber<CGAL::Gmpq> NT2, NT3;
+typedef FilteredNumber<CGAL::Gmpq> NT2, NT3;
 
   #define FAST_CSG_KERNEL_IS_SAME_AS_NEF 1
-  typedef CGAL::Cartesian<NT2> CGAL_ExactKernel2;
-  typedef CGAL::Extended_cartesian<NT2> CGAL_Kernel2;
-  typedef CGAL::Cartesian<NT3> CGAL_Kernel3, CGAL_HybridKernel3, CGAL_HullKernel;
-  // TODO(ochafik): Ditch Epick altogether. Need some template specialization for cgalutils-tess.cc to compile.
-  typedef CGAL::Epick CGAL_InexactKernel;
+typedef CGAL::Cartesian<NT2> CGAL_ExactKernel2;
+typedef CGAL::Extended_cartesian<NT2> CGAL_Kernel2;
+typedef CGAL::Cartesian<NT3> CGAL_Kernel3, CGAL_HybridKernel3, CGAL_HullKernel;
+// TODO(ochafik): Ditch Epick altogether. Need some template specialization for cgalutils-tess.cc to compile.
+typedef CGAL::Epick CGAL_InexactKernel;
 
 #else
   #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 
-  typedef CGAL::Gmpq NT2, NT3;
+typedef CGAL::Gmpq NT2, NT3;
 
   #define FAST_CSG_KERNEL_IS_LAZY 1
-  typedef CGAL::Exact_predicates_exact_constructions_kernel CGAL_ExactKernel2;
-  typedef CGAL::Extended_cartesian<NT2> CGAL_Kernel2;
-  typedef CGAL::Cartesian<NT3> CGAL_Kernel3;
-  typedef CGAL::Epeck CGAL_HybridKernel3;
-  typedef CGAL::Epick CGAL_InexactKernel, CGAL_HullKernel;
+typedef CGAL::Exact_predicates_exact_constructions_kernel CGAL_ExactKernel2;
+typedef CGAL::Extended_cartesian<NT2> CGAL_Kernel2;
+typedef CGAL::Cartesian<NT3> CGAL_Kernel3;
+typedef CGAL::Epeck CGAL_HybridKernel3;
+typedef CGAL::Epick CGAL_InexactKernel, CGAL_HullKernel;
 #endif // USE_WASM_COMPATIBLE_KERNELS
 
 typedef CGAL::Nef_polyhedron_2<CGAL_Kernel2> CGAL_Nef_polyhedron2;
