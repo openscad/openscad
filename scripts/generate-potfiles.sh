@@ -12,7 +12,7 @@ do
     fi
 done
 
-for src in src{/,gui/,gui/input/,gui/input/parameter}*.{h,cc,cpp,mm}
+for src in src/{,gui/,gui/input/,gui/parameter/}*.{h,cc,cpp,mm}
 do
     if [ -f "$src" ]
     then
