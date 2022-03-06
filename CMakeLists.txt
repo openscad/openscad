@@ -410,9 +410,14 @@ if(NOT MSVC)
   endif()
 endif()
 
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON) # does not propagate down to subdirectories
-target_include_directories(OpenSCAD PRIVATE src)
+target_include_directories(OpenSCAD PRIVATE
+  "src"
+  "src/gui"
+  "src/ext/json"
+  "src/ext/lexertl/include"
+  "src/ext/libtess2/Include"
+)
 
 FLEX_TARGET(openscad_lexer src/lexer.l ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
 BISON_TARGET(openscad_parser src/parser.y ${OPENSCAD_LIB_OUTPUT_DIR}/parser.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/parser.hxx COMPILE_FLAGS "-d -p parser")
@@ -459,7 +464,7 @@ if(NOT HEADLESS)
       target_compile_definitions(OpenSCAD PRIVATE ENABLE_DBUS)
       set(INPUT_DRIVER_DBUS_SOURCES src/gui/input/DBusInputDriver.cc)
       qt5_add_dbus_interface(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml openscad_interface)
-      qt5_add_dbus_adaptor(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml input/DBusInputDriver.h DBusInputDriver openscad_adaptor)
+      qt5_add_dbus_adaptor(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml gui/input/DBusInputDriver.h DBusInputDriver openscad_adaptor)
     else()
       message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
     endif()
@@ -575,10 +580,6 @@ elseif(WIN32)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/OffscreenContextWGL.cc)
   endif()
 endif()
-
-target_include_directories(OpenSCAD PRIVATE "src/ext/libtess2/Include")
-target_include_directories(OpenSCAD PRIVATE "src/ext/json")
-target_include_directories(OpenSCAD PRIVATE "src/ext/lexertl/include")
 
 # NOTE: To keep HEADLESS builds working, do NOT add Qt-dependent sources here,
 #       see GUI_SOURCES list below for that.
@@ -707,8 +708,8 @@ set(CORE_SOURCES
   src/libsvg/tspan.cc
   src/libsvg/use.cc
   src/libsvg/util.cc
-  src/parameter/parameterobject.cc
-  src/parameter/parameterset.cc
+  src/parameterobject.cc
+  src/parameterset.cc
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
   ${BISON_openscad_parser_OUTPUTS}

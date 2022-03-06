@@ -48,8 +48,8 @@
 #include "GeometryEvaluator.h"
 #include "RenderStatistic.h"
 #include "boost-utils.h"
-#include "parameter/parameterobject.h"
-#include "parameter/parameterset.h"
+#include "parameterobject.h"
+#include "parameterset.h"
 #include "openscad_mimalloc.h"
 #include <string>
 #include <vector>

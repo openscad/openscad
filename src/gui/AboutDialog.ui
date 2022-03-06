@@ -103,7 +103,7 @@
      </property>
      <property name="source">
       <url>
-       <string>qrc:/src/AboutDialog.html</string>
+       <string>qrc:/src/gui/AboutDialog.html</string>
       </url>
      </property>
      <property name="openExternalLinks">

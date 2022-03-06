@@ -1521,36 +1521,36 @@
   <customwidget>
    <class>QGLView</class>
    <extends>QWidget</extends>
-   <header>QGLView.h</header>
+   <header>gui/QGLView.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>Dock</class>
    <extends>QDockWidget</extends>
-   <header>Dock.h</header>
+   <header>gui/Dock.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>ParameterWidget</class>
    <extends>QWidget</extends>
-   <header>parameter/ParameterWidget.h</header>
+   <header>gui/parameter/ParameterWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>QWordSearchField</class>
    <extends>QFrame</extends>
-   <header>QWordSearchField.h</header>
+   <header>gui/QWordSearchField.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>Console</class>
    <extends>QPlainTextEdit</extends>
-   <header>Console.h</header>
+   <header>gui/Console.h</header>
   </customwidget>
   <customwidget>
    <class>ErrorLog</class>
    <extends>QWidget</extends>
-   <header>ErrorLog.h</header>
+   <header>gui/ErrorLog.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
