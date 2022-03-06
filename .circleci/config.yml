@@ -105,6 +105,56 @@ jobs:
       - store_artifacts:
           path: /tmp/out
           destination: 64-bit
+  openscad-wasm:
+    working_directory: ~/workspace
+    docker:
+      - image: openscad/wasm-base:latest
+    resource_class: large
+    steps:
+      - checkout
+      - run:
+          name: Build OpenSCAD WASM
+          no_output_timeout: 18000
+          command: |
+              export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
+              export OPENSCAD_VERSION="$(date +%Y.%m.%d).wasm${CIRCLE_BUILD_NUM}"
+              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
+              export PKG_CONFIG_PATH="/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig"
+              git submodule update --init
+              emcmake cmake -B ../build . \
+                  -DWASM=ON \
+                  -DSNAPSHOT=ON \
+                  -DEXPERIMENTAL=ON \
+                  -DENABLE_CAIRO=OFF \
+                  -DUSE_MIMALLOC=OFF \
+                  -DBoost_USE_STATIC_RUNTIME=ON \
+                  -DBoost_USE_STATIC_LIBS=ON \
+                  -DCMAKE_BUILD_TYPE=Release \
+                  -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT" \
+                  -DOPENSCAD_VERSION="$OPENSCAD_VERSION" \
+                  -DHARFBUZZ_INCLUDE_DIRS=/emsdk/upstream/emscripten/cache/sysroot/include/harfbuzz \
+                  -DFONTCONFIG_INCLUDE_DIR=/emsdk/upstream/emscripten/cache/sysroot/include/fontconfig \
+                  -DFONTCONFIG_LIBRARIES=libfontconfig.a
+              sed -e "s|-isystem /emsdk/upstream/emscripten/cache/sysroot/include[^/]||g" -i ../build/CMakeFiles/OpenSCAD.dir/includes_C.rsp
+              sed -e "s|-isystem /emsdk/upstream/emscripten/cache/sysroot/include[^/]||g" -i ../build/CMakeFiles/OpenSCAD.dir/includes_CXX.rsp
+              sed -e "s|-lfontconfig|/emsdk/upstream/emscripten/cache/sysroot/lib/libglib-2.0.a /emsdk/upstream/emscripten/cache/sysroot/lib/libzip.a /emsdk/upstream/emscripten/cache/sysroot/lib/libz.a /emsdk/upstream/emscripten/cache/sysroot/lib/libfontconfig.a|g" -i ../build/CMakeFiles/OpenSCAD.dir/linklibs.rsp
+              sed -e "s|em++|em++ ${EMXX_FLAGS} -s USE_PTHREADS=1 -s NO_DISABLE_EXCEPTION_CATCHING -s FORCE_FILESYSTEM=1 -s ALLOW_MEMORY_GROWTH=1 -s EXPORTED_RUNTIME_METHODS=['FS','callMain'] -s EXPORT_ES6=1 -s ENVIRONMENT=web,worker -s MODULARIZE=1 -s EXPORT_NAME=OpenSCAD -s EXIT_RUNTIME=1|g" -i ../build/CMakeFiles/OpenSCAD.dir/link.txt
+              cd ../build
+              make -j4 VERBOSE=1
+              mkdir -p /tmp/out
+              zip -9r "/tmp/out/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}-WebAssembly.zip" openscad.*
+              if [ -n "${CODE_SIGNING_KEY}" ]; then
+                  cd /tmp/out
+                  echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
+                  export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
+                  for a in *.zip; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
+                  rm -rf ~/.gnupg
+              else
+                  echo "Skipping code signing."
+              fi
+      - store_artifacts:
+          path: /tmp/out
+          destination: wasm
   openscad-macos:
     macos:
       xcode: 13.2.1
@@ -190,6 +240,12 @@ workflows:
               branches:
                   only:
                       - master
+      - openscad-wasm:
+          context: secret-context
+          filters:
+              branches:
+                  only:
+                      - master
   branch-build:
     jobs:
       - openscad-mxe-32bit:
@@ -207,6 +263,13 @@ workflows:
                       - coverity_scan
                       - /^(?i:continuous)$/
       - openscad-appimage-64bit:
+          filters:
+              branches:
+                  ignore:
+                      - master
+                      - coverity_scan
+                      - /^(?i:continuous)$/
+      - openscad-wasm:
           filters:
               branches:
                   ignore:
