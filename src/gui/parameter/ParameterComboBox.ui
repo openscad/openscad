@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ParameterCheckBox</class>
- <widget class="QWidget" name="ParameterCheckBox">
+ <class>ParameterComboBox</class>
+ <widget class="QWidget" name="ParameterComboBox">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>218</width>
-    <height>25</height>
+    <width>464</width>
+    <height>47</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
-    <number>4</number>
+    <number>0</number>
    </property>
    <property name="leftMargin">
     <number>0</number>
@@ -33,17 +33,7 @@
     <widget class="ParameterDescriptionWidget" name="descriptionWidget" native="true"/>
    </item>
    <item>
-    <widget class="QCheckBox" name="checkBox">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
+    <widget class="QComboBox" name="comboBox"/>
    </item>
   </layout>
  </widget>
@@ -51,7 +41,7 @@
   <customwidget>
    <class>ParameterDescriptionWidget</class>
    <extends>QWidget</extends>
-   <header>parameter/ParameterVirtualWidget.h</header>
+   <header>gui/parameter/ParameterVirtualWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

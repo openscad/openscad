@@ -133,7 +133,7 @@
   <customwidget>
    <class>ParameterDescriptionWidget</class>
    <extends>QWidget</extends>
-   <header>parameter/ParameterVirtualWidget.h</header>
+   <header>gui/parameter/ParameterVirtualWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

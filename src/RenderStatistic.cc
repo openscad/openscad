@@ -37,7 +37,7 @@
 #endif // ENABLE_CGAL
 
 #include "RenderStatistic.h"
-#include "parameter/parameterobject.h"
+#include "parameterobject.h"
 
 namespace {
 
