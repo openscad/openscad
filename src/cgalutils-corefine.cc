@@ -1,8 +1,7 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #include "cgalutils.h"
 
-#include <CGAL/Polygon_mesh_processing/corefinement.h>
-#include <CGAL/Surface_mesh.h>
+#include "cgalutils-corefinement-visitor.h"
 
 namespace CGALUtils {
 
@@ -12,7 +11,7 @@ namespace CGALUtils {
  */
 template <typename TriangleMesh>
 struct ExactLazyNumbersVisitor
-  : public CGAL::Polygon_mesh_processing::Corefinement::Default_visitor<TriangleMesh> {
+  : public PMP::Corefinement::Default_visitor<TriangleMesh> {
   typedef boost::graph_traits<TriangleMesh> GT;
   typedef typename GT::face_descriptor face_descriptor;
   typedef typename GT::halfedge_descriptor halfedge_descriptor;
@@ -55,66 +54,33 @@ struct ExactLazyNumbersVisitor
 
 #endif// FAST_CSG_KERNEL_IS_LAZY
 
-template <class TriangleMesh>
-bool corefineAndComputeUnion(TriangleMesh& lhs, TriangleMesh& rhs, TriangleMesh& out)
-{
-#if FAST_CSG_KERNEL_IS_LAZY
-  if (Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()) {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_union(
-      lhs, rhs, out,
-      CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<TriangleMesh>()),
-      CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<TriangleMesh>()));
-  } else
-#endif// FAST_CSG_KERNEL_IS_LAZY
-  {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_union(lhs, rhs, out);
+#define COREFINEMENT_FUNCTION(functionName, cgalFunctionName) \
+  template <class TriangleMesh> \
+  bool functionName(TriangleMesh & lhs, TriangleMesh & rhs, TriangleMesh & out) \
+  { \
+    auto remesh = Feature::ExperimentalFastCsgRemesh.is_enabled() || Feature::ExperimentalFastCsgRemeshPredictibly.is_enabled(); \
+    auto exactCallback = Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled(); \
+    if (exactCallback && !remesh) { \
+      auto param = PMP::parameters::visitor(ExactLazyNumbersVisitor<TriangleMesh>()); \
+      return cgalFunctionName(lhs, rhs, out, param, param); \
+    } else if (remesh) { \
+      CorefinementVisitor<TriangleMesh> visitor(lhs, rhs, out, exactCallback); \
+      auto param = PMP::parameters::visitor(visitor); \
+      auto result = cgalFunctionName(lhs, rhs, out, param, param, param); \
+      visitor.remeshSplitFaces(out); \
+      return result; \
+    } else { \
+      return cgalFunctionName(lhs, rhs, out); \
+    } \
   }
-}
 
-template <class TriangleMesh>
-bool corefineAndComputeIntersection(TriangleMesh& lhs, TriangleMesh& rhs, TriangleMesh& out)
-{
-#if FAST_CSG_KERNEL_IS_LAZY
-  if (Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()) {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(
-      lhs, rhs, out,
-      CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<TriangleMesh>()),
-      CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<TriangleMesh>()));
-  } else
-#endif // FAST_CSG_KERNEL_IS_LAZY
-  {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_intersection(lhs, rhs, out);
-  }
-}
+COREFINEMENT_FUNCTION(corefineAndComputeUnion, PMP::corefine_and_compute_union);
+COREFINEMENT_FUNCTION(corefineAndComputeIntersection, PMP::corefine_and_compute_intersection);
+COREFINEMENT_FUNCTION(corefineAndComputeDifference, PMP::corefine_and_compute_difference);
 
-template <class TriangleMesh>
-bool corefineAndComputeDifference(TriangleMesh& lhs, TriangleMesh& rhs, TriangleMesh& out)
-{
-#if FAST_CSG_KERNEL_IS_LAZY
-  if (Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()) {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_difference(
-      lhs, rhs, out,
-      CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<TriangleMesh>()),
-      CGAL::Polygon_mesh_processing::parameters::visitor(
-        ExactLazyNumbersVisitor<TriangleMesh>()));
-  } else
-#endif // FAST_CSG_KERNEL_IS_LAZY
-  {
-    return CGAL::Polygon_mesh_processing::corefine_and_compute_difference(lhs, rhs, out);
-  }
-}
-
-template bool corefineAndComputeUnion(
-  CGAL_HybridMesh& lhs, CGAL_HybridMesh& rhs, CGAL_HybridMesh& out);
-template bool corefineAndComputeIntersection(
-  CGAL_HybridMesh& lhs, CGAL_HybridMesh& rhs, CGAL_HybridMesh& out);
-template bool corefineAndComputeDifference(
-  CGAL_HybridMesh& lhs, CGAL_HybridMesh& rhs, CGAL_HybridMesh& out);
+template bool corefineAndComputeUnion(CGAL_HybridMesh& lhs, CGAL_HybridMesh& rhs, CGAL_HybridMesh& out);
+template bool corefineAndComputeIntersection(CGAL_HybridMesh& lhs, CGAL_HybridMesh& rhs, CGAL_HybridMesh& out);
+template bool corefineAndComputeDifference(CGAL_HybridMesh& lhs, CGAL_HybridMesh& rhs, CGAL_HybridMesh& out);
 
 } // namespace CGALUtils
 
