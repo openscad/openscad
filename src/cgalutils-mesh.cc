@@ -100,8 +100,10 @@ void copyMesh(
 }
 
 template void copyMesh(const CGAL_HybridMesh& input, CGAL_HybridMesh& output);
+#ifndef FAST_CSG_KERNEL_IS_SAME_AS_NEF
 template void copyMesh(const CGAL::Surface_mesh<CGAL_Point_3>& input, CGAL_HybridMesh& output);
 template void copyMesh(const CGAL_HybridMesh& input, CGAL::Surface_mesh<CGAL_Point_3>& output);
+#endif
 template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& input, CGAL_HybridMesh& output);
 
 template <typename K>
@@ -111,7 +113,9 @@ void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CG
 }
 
 template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CGAL_Kernel3>& nef, CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>>& mesh);
+#ifndef FAST_CSG_KERNEL_IS_SAME_AS_NEF
 template void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& nef, CGAL_HybridMesh& mesh);
+#endif
 
 /**
  * Will force lazy coordinates to be exact to avoid subsequent performance issues

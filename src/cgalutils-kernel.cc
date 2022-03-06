@@ -20,32 +20,46 @@ CGAL::Gmpq KernelConverter<CGAL::Epick, CGAL::Cartesian<CGAL::Gmpq>>::operator()
 }
 
 template <>
-CGAL_HybridKernel3::FT KernelConverter<CGAL::Epick, CGAL_HybridKernel3>::operator()(
+CGAL::Epeck::FT KernelConverter<CGAL::Epick, CGAL::Epeck>::operator()(
   const double& n) const
 {
   return n;
 }
 
 template <>
-CGAL::Epick::FT KernelConverter<CGAL_HybridKernel3, CGAL::Epick>::operator()(
-  const CGAL_HybridKernel3::FT& n) const
+CGAL::Epick::FT KernelConverter<CGAL::Epeck, CGAL::Epick>::operator()(
+  const CGAL::Epeck::FT& n) const
 {
   return CGAL::to_double(n);
 }
 
 template <>
-CGAL_HybridKernel3::FT KernelConverter<CGAL_Kernel3, CGAL_HybridKernel3>::operator()(
+CGAL::Epeck::FT KernelConverter<CGAL::Cartesian<CGAL::Gmpq>, CGAL::Epeck>::operator()(
   const CGAL::Gmpq& n) const
 {
   return mpq_class(mpz_class(n.numerator().mpz()), mpz_class(n.denominator().mpz()));
 }
 
 template <>
-CGAL::Gmpq KernelConverter<CGAL_HybridKernel3, CGAL_Kernel3>::operator()(
-  const CGAL_HybridKernel3::FT& n) const
+CGAL::Gmpq KernelConverter<CGAL::Epeck, CGAL::Cartesian<CGAL::Gmpq>>::operator()(
+  const CGAL::Epeck::FT& n) const
 {
   auto& e = n.exact();
   return CGAL::Gmpq(CGAL::Gmpz(e.get_num().get_mpz_t()), CGAL::Gmpz(e.get_den().get_mpz_t()));
+}
+
+template <>
+FilteredNumber<CGAL::Gmpq> KernelConverter<CGAL::Epick, CGAL::Cartesian<FilteredNumber<CGAL::Gmpq>>>::operator()(
+  const double& n) const
+{
+  return FilteredNumber<CGAL::Gmpq>(n);
+}
+
+template <>
+CGAL::Epick::FT KernelConverter<CGAL::Cartesian<FilteredNumber<CGAL::Gmpq>>, CGAL::Epick>::operator()(
+  const CGAL::Cartesian<FilteredNumber<CGAL::Gmpq>>::FT& n) const
+{
+  return CGAL::to_double(n);
 }
 
 } // namespace CGALUtils

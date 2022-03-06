@@ -23,7 +23,6 @@
 #include <CGAL/Nef_polyhedron_3.h>
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/IO/Polyhedron_iostream.h>
-#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Polygon_2.h>
 #include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/minkowski_sum_2.h>
@@ -35,19 +34,38 @@
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
 
-typedef CGAL::Gmpq NT2;
-typedef CGAL::Extended_cartesian<NT2> CGAL_Kernel2;
+#include <cgal-filtered-number.h>
+
+#if USE_WASM_COMPATIBLE_KERNELS
+
+  typedef FilteredNumber<CGAL::Gmpq> NT2, NT3;
+
+  #define FAST_CSG_KERNEL_IS_SAME_AS_NEF 1
+  typedef CGAL::Cartesian<NT2> CGAL_ExactKernel2;
+  typedef CGAL::Extended_cartesian<NT2> CGAL_Kernel2;
+  typedef CGAL::Cartesian<NT3> CGAL_Kernel3, CGAL_HybridKernel3, CGAL_HullKernel;
+  // TODO(ochafik): Ditch Epick altogether. Need some template specialization for cgalutils-tess.cc to compile.
+  typedef CGAL::Epick CGAL_InexactKernel;
+
+#else
+  #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+
+  typedef CGAL::Gmpq NT2, NT3;
+
+  #define FAST_CSG_KERNEL_IS_LAZY 1
+  typedef CGAL::Exact_predicates_exact_constructions_kernel CGAL_ExactKernel2;
+  typedef CGAL::Extended_cartesian<NT2> CGAL_Kernel2;
+  typedef CGAL::Cartesian<NT3> CGAL_Kernel3;
+  typedef CGAL::Epeck CGAL_HybridKernel3;
+  typedef CGAL::Epick CGAL_InexactKernel, CGAL_HullKernel;
+#endif // USE_WASM_COMPATIBLE_KERNELS
+
 typedef CGAL::Nef_polyhedron_2<CGAL_Kernel2> CGAL_Nef_polyhedron2;
 typedef CGAL_Kernel2::Aff_transformation_2 CGAL_Aff_transformation2;
 
-typedef CGAL::Exact_predicates_exact_constructions_kernel CGAL_ExactKernel2;
 typedef CGAL::Polygon_2<CGAL_ExactKernel2> CGAL_Poly2;
 typedef CGAL::Polygon_with_holes_2<CGAL_ExactKernel2> CGAL_Poly2h;
 
-typedef CGAL::Gmpq NT3;
-typedef CGAL::Cartesian<NT3> CGAL_Kernel3;
-//typedef CGAL::Exact_predicates_exact_constructions_kernel::FT NT3;
-//typedef CGAL::Exact_predicates_exact_constructions_kernel CGAL_Kernel3;
 typedef CGAL::Nef_polyhedron_3<CGAL_Kernel3> CGAL_Nef_polyhedron3;
 typedef CGAL_Nef_polyhedron3::Aff_transformation_3 CGAL_Aff_transformation;
 
@@ -64,8 +82,6 @@ typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
 typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2e;
 typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e;
 
-#define FAST_CSG_KERNEL_IS_LAZY 1
-typedef CGAL::Epeck CGAL_HybridKernel3;
 
 typedef CGAL::Point_3<CGAL_HybridKernel3> CGAL_HybridPoint;
 typedef CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> CGAL_HybridNef;

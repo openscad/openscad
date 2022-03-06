@@ -7,8 +7,8 @@
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
-typedef CGAL::Epick K;
-typedef CGAL::Point_3<K> Vertex3K;
+typedef CGAL::Point_3<CGAL_InexactKernel> Vertex3K;
+typedef CGAL::Vector_3<CGAL_InexactKernel> Vector3K;
 typedef std::vector<Vertex3K> PolygonK;
 typedef std::vector<PolygonK> PolyholeK;
 
@@ -84,10 +84,10 @@ Transform3d computeResizeTransform(
   const Eigen::Matrix<bool, 3, 1>& autosize);
 bool tessellatePolygon(const PolygonK& polygon,
                        Polygons& triangles,
-                       const K::Vector_3 *normal = nullptr);
+                       const Vector3K *normal = nullptr);
 bool tessellatePolygonWithHoles(const PolyholeK& polygons,
                                 Polygons& triangles,
-                                const K::Vector_3 *normal = nullptr);
+                                const Vector3K *normal = nullptr);
 bool tessellate3DFaceWithHoles(std::vector<CGAL_Polygon_3>& polygons,
                                std::vector<CGAL_Polygon_3>& triangles,
                                CGAL::Plane_3<CGAL_Kernel3>& plane);

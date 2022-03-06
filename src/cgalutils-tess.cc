@@ -3,6 +3,8 @@
 //#include "cgal.h"
 //#include "tess.h"
 
+typedef CGAL_InexactKernel K;
+
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 4, 0)
 #include <CGAL/Triangulation_2_projection_traits_3.h>
