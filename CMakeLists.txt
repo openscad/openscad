@@ -60,6 +60,7 @@ option(PROFILE "Enable compiling with profiling / test coverage instrumentation"
 option(MXECROSS "Enable setup for MXE cross platform build" OFF)
 option(OFFLINE_DOCS "Download Documentation for offline usage" OFF)
 option(USE_MIMALLOC "Use mimalloc as malloc replacement." ON)
+option(PERFORMANCE_TIMINGS "Print time spent in various costly CSG operations." OFF)
 
 if(APPLE)
   option(APPLE_UNIX "Build OpenSCAD in Unix mode in MaxOS X instead of an Apple Bundle" OFF)
@@ -83,6 +84,10 @@ if(WASM)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_options(OpenSCAD PRIVATE "-pthread")
   target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
+endif()
+
+if(PERFORMANCE_TIMINGS)
+  target_compile_definitions(OpenSCAD PRIVATE PERFORMANCE_TIMINGS)
 endif()
 
 if(NULLGL)

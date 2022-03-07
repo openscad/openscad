@@ -10,12 +10,15 @@
 
 #include "CGAL_Nef_polyhedron.h"
 #include "polyset-utils.h"
+#include "scoped_timer.h"
 
 namespace CGALUtils {
 
 template <typename K>
 std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolyhedron(const CGAL::Polyhedron_3<K>& poly)
 {
+  SCOPED_PERFORMANCE_TIMER("createHybridPolyhedronFromPolyhedron");
+
   CGAL::Surface_mesh<CGAL::Point_3<K>> mesh;
   CGAL::copy_face_graph(poly, mesh);
 
@@ -30,6 +33,7 @@ template std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolyhed
 
 std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const PolySet& ps)
 {
+  SCOPED_PERFORMANCE_TIMER("createHybridPolyhedronFromPolySet");
   auto mesh = make_shared<CGAL_HybridMesh>();
 
   auto err = createMeshFromPolySet(ps, *mesh);
@@ -53,6 +57,7 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const Po
 
 std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromNefPolyhedron(const CGAL_Nef_polyhedron& nef)
 {
+  SCOPED_PERFORMANCE_TIMER("createHybridPolyhedronFromNefPolyhedron");
   assert(nef.p3);
 
   auto mesh = make_shared<CGAL_HybridMesh>();

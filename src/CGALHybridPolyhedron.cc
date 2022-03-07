@@ -8,7 +8,7 @@
 #include <fstream>
 #include <sstream>
 #include <stdio.h>
-
+#include "scoped_timer.h"
 
 CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<CGAL_HybridNef>& nef)
 {
@@ -213,9 +213,11 @@ void CGALHybridPolyhedron::transform(const Transform3d& mat)
     auto t = CGALUtils::createAffineTransformFromMatrix<CGAL_HybridKernel3>(mat);
 
     if (auto mesh = getMesh()) {
+			SCOPED_PERFORMANCE_TIMER("mesh transform");
       CGALUtils::transform(*mesh, mat);
       CGALUtils::cleanupMesh(*mesh, /* is_corefinement_result */ false);
     } else if (auto nef = getNefPolyhedron()) {
+			SCOPED_PERFORMANCE_TIMER("nef transform");
       CGALUtils::transform(*nef, mat);
     } else {
       assert(!"Bad hybrid polyhedron state");
@@ -307,6 +309,8 @@ void CGALHybridPolyhedron::nefPolyBinOp(
   const std::function<void(CGAL_HybridNef& destinationNef, CGAL_HybridNef& otherNef)>
   & operation)
 {
+  SCOPED_PERFORMANCE_TIMER(opName);
+
   auto& lhs = *convertToNef();
   auto& rhs = *other.convertToNef();
 
@@ -330,6 +334,8 @@ bool CGALHybridPolyhedron::meshBinOp(
   const std::string& opName, CGALHybridPolyhedron& other,
   const std::function<bool(CGAL_HybridMesh& lhs, CGAL_HybridMesh& rhs, CGAL_HybridMesh& out)>& operation)
 {
+  SCOPED_PERFORMANCE_TIMER(opName);
+
   auto previousData = data;
   auto previousOtherData = other.data;
 
@@ -403,6 +409,7 @@ bool CGALHybridPolyhedron::meshBinOp(
 std::shared_ptr<CGAL_HybridNef> CGALHybridPolyhedron::convertToNef()
 {
   if (auto mesh = getMesh()) {
+		SCOPED_PERFORMANCE_TIMER("mesh -> nef");
     auto nef = make_shared<CGAL_HybridNef>(*mesh);
     data = nef;
     return nef;
@@ -418,6 +425,7 @@ std::shared_ptr<CGAL_HybridMesh> CGALHybridPolyhedron::convertToMesh()
   if (auto mesh = getMesh()) {
     return mesh;
   } else if (auto nef = getNefPolyhedron()) {
+		SCOPED_PERFORMANCE_TIMER("nef -> mesh");
     auto mesh = make_shared<CGAL_HybridMesh>();
     CGALUtils::convertNefPolyhedronToTriangleMesh(*nef, *mesh);
     CGALUtils::cleanupMesh(*mesh, /* is_corefinement_result */ false);
