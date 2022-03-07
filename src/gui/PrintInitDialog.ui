@@ -53,7 +53,7 @@
      </property>
      <property name="source">
       <url>
-       <string>qrc:/src/PrintInitDialog.html</string>
+       <string>qrc:/src/gui/PrintInitDialog.html</string>
       </url>
      </property>
      <property name="openExternalLinks">

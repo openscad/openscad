@@ -19,6 +19,8 @@ public:
   static const Feature ExperimentalFastCsgDebug;
   static const Feature ExperimentalFastCsgExact;
   static const Feature ExperimentalFastCsgExactCorefinementCallback;
+  static const Feature ExperimentalFastCsgRemesh;
+  static const Feature ExperimentalFastCsgRemeshPredictibly;
   static const Feature ExperimentalRoof;
   static const Feature ExperimentalInputDriverDBus;
   static const Feature ExperimentalLazyUnion;

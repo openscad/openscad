@@ -30,7 +30,7 @@
 
 #include "export.h"
 #include "expression.h"
-#include "parameter/parameterobject.h"
+#include "parameterobject.h"
 
 using json = nlohmann::json;
 

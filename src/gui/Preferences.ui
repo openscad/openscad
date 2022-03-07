@@ -2512,13 +2512,13 @@
   <customwidget>
    <class>AxisConfigWidget</class>
    <extends>QWidget</extends>
-   <header>input/AxisConfigWidget.h</header>
+   <header>gui/input/AxisConfigWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>
    <class>ButtonConfigWidget</class>
    <extends>QWidget</extends>
-   <header>input/ButtonConfigWidget.h</header>
+   <header>gui/input/ButtonConfigWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

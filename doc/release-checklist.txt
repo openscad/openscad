@@ -5,7 +5,7 @@ o Pre-release preparations
   - Update translations:
     - Send emails to translation managers, see .po files:
       https://github.com/openscad/openscad/tree/master/locale
-  - Update src/AboutDialog.html with new contributors etc.
+  - Update src/gui/AboutDialog.html with new contributors etc.
   - Merge MCAD
     o In MCAD clone:
       $ git fetch upstream
@@ -25,7 +25,7 @@ o Update releases/$VERSION.md
 o scripts/makereleasenotes.sh
 
 o Update version number in doc/openscad.1
-o Update copyright year in AboutDialog.html and MainWindow.cc
+o Update copyright year in gui/AboutDialog.html and gui/MainWindow.cc
 o Add VERSION and VERSIONDATE in openscad.pro, scripts/publish-macosx.sh, scripts/release-common.sh tests/CMakeLists.txt
 o Add VERSION in tests/CMakeLists.txt, scripts/publish-mingw-x.sh
 

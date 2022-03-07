@@ -49,7 +49,6 @@ updatepot()
   echo error running xgettext
   exit 1
  fi
- # Try --no-fuzzy-matching ?
  cmd="${GETTEXT_PATH}msgcat -o ./locale/openscad.pot ./locale/openscad-tmp.pot ./locale/json-strings.pot ./locale/appdata-strings.pot"
  echo $cmd
  $cmd

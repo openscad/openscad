@@ -34,7 +34,7 @@ PrintInitDialog::PrintInitDialog()
   setupUi(this);
 
   const auto printService = PrintService::inst();
-  this->textBrowser->setSource(QUrl{"qrc:/src/PrintInitDialog.html"});
+  this->textBrowser->setSource(QUrl{"qrc:/src/gui/PrintInitDialog.html"});
 
   this->okButton->setEnabled(false);
 
