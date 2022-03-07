@@ -20,6 +20,7 @@
 #include <CGAL/Nef_polyhedron_2.h>
 #include <CGAL/Cartesian.h>
 #include <CGAL/Polyhedron_3.h>
+#include <CGAL/Surface_mesh.h>
 #include <CGAL/Nef_polyhedron_3.h>
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/IO/Polyhedron_iostream.h>

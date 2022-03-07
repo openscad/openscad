@@ -10,10 +10,6 @@ class CGAL_Nef_polyhedron;
 class CGALHybridPolyhedron;
 class PolySet;
 
-namespace CGAL {
-template <typename P>
-class Surface_mesh;
-}
 namespace CGALUtils {
 std::shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(
   const CGALHybridPolyhedron& hybrid);

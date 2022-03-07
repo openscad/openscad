@@ -3,7 +3,9 @@
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Surface_mesh.h>
+#include "CGALHybridPolyhedron.h"
 #include "Reindexer.h"
+#include "Polygon2d.h"
 
 namespace CGALUtils {
 
@@ -138,5 +140,18 @@ void cleanupMesh(CGAL_HybridMesh& mesh, bool is_corefinement_result)
 #endif // FAST_CSG_KERNEL_IS_LAZY
 }
 
-} // namespace CGALUtils
+std::shared_ptr<const CGAL_HybridMesh> getMeshFromNDGeometry(const std::shared_ptr<const Geometry>& geomRef)
+{
+  auto geom = geomRef;
+  if (auto polygon2d = dynamic_pointer_cast<const Polygon2d>(geom)) {
+    geom = std::shared_ptr<const PolySet>(polygon2d->tessellate());
+  }
 
+  if (auto hybrid = createMutableHybridPolyhedronFromGeometry(geom)) {
+    return hybrid->convertToMesh();
+  }
+
+  return nullptr;
+}
+
+} // namespace CGALUtils

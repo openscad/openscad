@@ -42,6 +42,7 @@ const Feature Feature::ExperimentalFastCsgRemeshPredictibly("fast-csg-remesh-pre
 const Feature Feature::ExperimentalRoof("roof", "Enable <code>roof</code>");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
+const Feature Feature::ExperimentalCsgInlineImports("inline-imports", "Inline imported geometry inside CSG files.");
 const Feature Feature::ExperimentalVxORenderers("vertex-object-renderers", "Enable vertex object renderers");
 const Feature Feature::ExperimentalVxORenderersIndexing("vertex-object-renderers-indexing", "Enable indexing in vertex object renderers");
 const Feature Feature::ExperimentalVxORenderersDirect("vertex-object-renderers-direct", "Enable direct buffer writes in vertex object renderers");

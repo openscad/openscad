@@ -1152,6 +1152,16 @@ list(APPEND FASTCSG_REMESH_FILES
 add_cmdline_test(remesh-cgalpng OPENSCAD SUFFIX png FILES ${FASTCSG_REMESH_FILES} ARGS --enable=fast-csg --enable=fast-csg-remesh --enable=fast-csg-trust-corefinement --render)
 add_cmdline_test(remesh-stl     OPENSCAD SUFFIX stl FILES ${FASTCSG_REMESH_FILES} ARGS --enable=sort-stl --enable=fast-csg --enable=fast-csg-remesh-predictibly --enable=fast-csg-trust-corefinement --render)
 
+list(APPEND INLINEIMPORTS_FILES
+  # 3D file imports -> polyhedra
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/projection.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../tests/data/scad/3D/features/import_stl-tests.scad
+  # 2D file imports -> polygons
+  ${CMAKE_CURRENT_SOURCE_DIR}/../tests/data/scad/2D/features/import_dxf-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example008.scad
+)
+add_cmdline_test(inlineimports-dump    OPENSCAD SUFFIX csg FILES ${INLINEIMPORTS_FILES} ARGS --enable=inline-imports)
+
 #
 # Trivial Export/Import files
 # This sanity-checks bidirectional file format import/export

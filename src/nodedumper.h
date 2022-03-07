@@ -31,7 +31,7 @@ private:
 class NodeDumper : public NodeVisitor
 {
 public:
-  NodeDumper(NodeCache& cache, const std::shared_ptr<const AbstractNode> &root_node, const std::string& indent, bool idString) :
+  NodeDumper(NodeCache& cache, const std::shared_ptr<const AbstractNode>& root_node, const std::string& indent, bool idString) :
     cache(cache), indent(indent), idString(idString), currindent(0), root(root_node) {
     if (idString) {
       groupChecker.traverse(*root);
@@ -43,11 +43,14 @@ public:
   Response visit(State& state, const GroupNode& node) override;
   Response visit(State& state, const ListNode& node) override;
   Response visit(State& state, const RootNode& node) override;
+  Response visit(State& state, const ImportNode& node) override;
 
 private:
   void initCache();
   void finalizeCache();
   bool isCached(const AbstractNode& node) const;
+
+  void dumpModifiers(State& state, const AbstractNode& node);
 
   NodeCache& cache;
   // Output Formatting options

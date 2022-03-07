@@ -1,7 +1,14 @@
+#ifdef ENABLE_CGAL
+#include "cgalutils.h"
+#endif
+
 #include "nodedumper.h"
 #include "state.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
+#include "importnode.h"
+#include "feature.h"
+#include "Geometry.h"
 #include <string>
 #include <sstream>
 #include <boost/regex.hpp>
@@ -83,9 +90,7 @@ Response NodeDumper::visit(State& state, const GroupNode& node)
       this->initCache();
     }
 
-    // ListNodes can pass down modifiers to children via state, so check both modinst and state
-    if (node.modinst->isBackground() || state.isBackground()) this->dumpstream << "%";
-    if (node.modinst->isHighlight() || state.isHighlight()) this->dumpstream << "#";
+    dumpModifiers(state, node);
 
 // If IDPREFIX is set, we will output "/*id*/" in front of each node
 // which is useful for debugging.
@@ -120,6 +125,14 @@ Response NodeDumper::visit(State& state, const GroupNode& node)
 }
 
 
+void NodeDumper::dumpModifiers(State& state, const AbstractNode& node)
+{
+  // ListNodes can pass down modifiers to children via state, so check both modinst and state
+  if (node.modinst->isBackground() || state.isBackground()) this->dumpstream << "%";
+  if (node.modinst->isHighlight() || state.isHighlight()) this->dumpstream << "#";
+}
+
+
 /*!
    Called for each node in the tree.
  */
@@ -133,9 +146,7 @@ Response NodeDumper::visit(State& state, const AbstractNode& node)
       this->initCache();
     }
 
-    // ListNodes can pass down modifiers to children via state, so check both modinst and state
-    if (node.modinst->isBackground() || state.isBackground()) this->dumpstream << "%";
-    if (node.modinst->isHighlight() || state.isHighlight()) this->dumpstream << "#";
+    dumpModifiers(state, node);
 
 // If IDPREFIX is set, we will output "/*id*/" in front of each node
 // which is useful for debugging.
@@ -246,4 +257,43 @@ Response NodeDumper::visit(State& state, const RootNode& node)
   }
 
   return Response::ContinueTraversal;
+}
+
+Response NodeDumper::visit(State& state, const ImportNode& node)
+{
+#ifdef ENABLE_CGAL
+  if (Feature::ExperimentalCsgInlineImports.is_enabled()) {
+
+    if (state.isPrefix()) {
+      // For handling root modifier '!'
+      if (this->root.get() == &node) {
+        this->initCache();
+      }
+      this->cache.insertStart(node.index(), this->dumpstream.tellp());
+
+      dumpModifiers(state, node);
+
+      for (int i = 0; i < this->currindent; ++i) {
+        this->dumpstream << this->indent;
+      }
+      this->dumpstream << "/* " << STR(node).c_str() << " */\n";
+
+      if (auto geom = std::shared_ptr<const Geometry>(node.createGeometry())) {
+        if (auto mesh = CGALUtils::getMeshFromNDGeometry(geom)) {
+          CGALUtils::dumpMesh(*mesh, geom->getDimension(), node.convexity, this->dumpstream, this->indent, this->currindent);
+        }
+      }
+
+    } else if (state.isPostfix()) {
+      this->cache.insertEnd(node.index(), this->dumpstream.tellp());
+      // For handling root modifier '!'
+      if (this->root.get() == &node) {
+        this->finalizeCache();
+      }
+    }
+    return Response::ContinueTraversal;
+  }
+#endif // ENABLE_CGAL
+
+  return visit(state, *(const AbstractNode *)&node);
 }
