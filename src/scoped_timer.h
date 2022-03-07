@@ -1,6 +1,7 @@
 #pragma once
 
-class ScopedTimer {
+class ScopedTimer
+{
 public:
   ScopedTimer(const std::string& name) : name(name) {
     t.start();

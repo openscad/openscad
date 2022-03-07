@@ -213,11 +213,11 @@ void CGALHybridPolyhedron::transform(const Transform3d& mat)
     auto t = CGALUtils::createAffineTransformFromMatrix<CGAL_HybridKernel3>(mat);
 
     if (auto mesh = getMesh()) {
-			SCOPED_PERFORMANCE_TIMER("mesh transform");
+      SCOPED_PERFORMANCE_TIMER("mesh transform");
       CGALUtils::transform(*mesh, mat);
       CGALUtils::cleanupMesh(*mesh, /* is_corefinement_result */ false);
     } else if (auto nef = getNefPolyhedron()) {
-			SCOPED_PERFORMANCE_TIMER("nef transform");
+      SCOPED_PERFORMANCE_TIMER("nef transform");
       CGALUtils::transform(*nef, mat);
     } else {
       assert(!"Bad hybrid polyhedron state");
@@ -409,7 +409,7 @@ bool CGALHybridPolyhedron::meshBinOp(
 std::shared_ptr<CGAL_HybridNef> CGALHybridPolyhedron::convertToNef()
 {
   if (auto mesh = getMesh()) {
-		SCOPED_PERFORMANCE_TIMER("mesh -> nef");
+    SCOPED_PERFORMANCE_TIMER("mesh -> nef");
     auto nef = make_shared<CGAL_HybridNef>(*mesh);
     data = nef;
     return nef;
@@ -425,7 +425,7 @@ std::shared_ptr<CGAL_HybridMesh> CGALHybridPolyhedron::convertToMesh()
   if (auto mesh = getMesh()) {
     return mesh;
   } else if (auto nef = getNefPolyhedron()) {
-		SCOPED_PERFORMANCE_TIMER("nef -> mesh");
+    SCOPED_PERFORMANCE_TIMER("nef -> mesh");
     auto mesh = make_shared<CGAL_HybridMesh>();
     CGALUtils::convertNefPolyhedronToTriangleMesh(*nef, *mesh);
     CGALUtils::cleanupMesh(*mesh, /* is_corefinement_result */ false);
