@@ -116,6 +116,8 @@ template <typename Polyhedron>
 bool isClosed(const Polyhedron& polyhedron);
 template <typename Polyhedron>
 void orientToBoundAVolume(Polyhedron& polyhedron);
+template <typename Polyhedron>
+void reverseFaceOrientations(Polyhedron& polyhedron);
 template <typename K>
 void inPlaceNefUnion(CGAL::Nef_polyhedron_3<K>& lhs, const CGAL::Nef_polyhedron_3<K>& rhs);
 template <typename K>

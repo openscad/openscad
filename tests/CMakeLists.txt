@@ -295,6 +295,9 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/let-module-tests.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/rotate_extrude-hole.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/rotate-empty-bbox.scad
+
+  # Not really different expectations, just fastcsg-specific tests
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/experimental/fastcsg-issue4150.scad
 )
 
 list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS_WITHOUT_TRUST_COREF

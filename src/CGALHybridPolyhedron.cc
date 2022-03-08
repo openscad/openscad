@@ -206,7 +206,8 @@ void CGALHybridPolyhedron::minkowski(CGALHybridPolyhedron& other)
 
 void CGALHybridPolyhedron::transform(const Transform3d& mat)
 {
-  if (mat.matrix().determinant() == 0) {
+  auto det = mat.matrix().determinant();
+  if (det == 0) {
     LOG(message_group::Warning, Location::NONE, "", "Scaling a 3D object with 0 - removing object");
     clear();
   } else {
@@ -215,6 +216,9 @@ void CGALHybridPolyhedron::transform(const Transform3d& mat)
     if (auto mesh = getMesh()) {
       CGALUtils::transform(*mesh, mat);
       CGALUtils::cleanupMesh(*mesh, /* is_corefinement_result */ false);
+      if (det < 0) {
+        CGALUtils::reverseFaceOrientations(*mesh);
+      }
     } else if (auto nef = getNefPolyhedron()) {
       CGALUtils::transform(*nef, mat);
     } else {
