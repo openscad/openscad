@@ -249,6 +249,7 @@ void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel>& poly_a, CGAL::Polyhed
 
 template void copyPolyhedron<CGAL::Epick, CGAL_Kernel3>(const CGAL::Polyhedron_3<CGAL::Epick>&, CGAL_Polyhedron&);
 template void copyPolyhedron<CGAL_Kernel3, CGAL::Epick>(const CGAL_Polyhedron&, CGAL::Polyhedron_3<CGAL::Epick>&);
+template void copyPolyhedron<CGAL_Kernel3, CGAL_Kernel3>(const CGAL_Polyhedron&, CGAL_Polyhedron&);
 
 template <typename K>
 void convertNefToPolyhedron(
@@ -258,7 +259,9 @@ void convertNefToPolyhedron(
 }
 
 template void convertNefToPolyhedron(const CGAL_Nef_polyhedron3& nef, CGAL_Polyhedron& polyhedron);
+#ifndef FAST_CSG_KERNEL_IS_SAME_AS_NEF
 template void convertNefToPolyhedron(const CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>& nef, CGAL::Polyhedron_3<CGAL_HybridKernel3>& polyhedron);
+#endif
 
 template <typename Polyhedron>
 bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p)

@@ -41,7 +41,7 @@ namespace CGALUtils {
 shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& children)
 {
   // TODO: use Surface_mesh everywhere!!!
-  typedef CGAL::Epick Hull_kernel;
+  typedef CGAL_HullKernel Hull_kernel;
   typedef CGAL::Polyhedron_3<CGAL_HybridKernel3> Hybrid_Polyhedron;
   typedef CGAL::Polyhedron_3<Hull_kernel> Hull_Polyhedron;
   typedef CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> Hybrid_Nef;

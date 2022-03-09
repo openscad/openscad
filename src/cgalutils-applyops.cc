@@ -163,7 +163,7 @@ shared_ptr<const Geometry> applyUnion3D(
 
 bool applyHull(const Geometry::Geometries& children, PolySet& result)
 {
-  typedef CGAL::Epick K;
+  typedef CGAL_HullKernel K;
   // Collect point cloud
   // NB! CGAL's convex_hull_3() doesn't like std::set iterators, so we use a
   // vector instead.
@@ -236,7 +236,7 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
     while (++it != children.end()) {
       operands[1] = it->second;
 
-      typedef CGAL::Epick Hull_kernel;
+      typedef CGAL_HullKernel Hull_kernel;
 
       std::list<CGAL_Polyhedron> P[2];
       std::list<CGAL::Polyhedron_3<Hull_kernel>> result_parts;
