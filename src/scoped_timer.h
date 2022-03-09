@@ -1,5 +1,7 @@
 #pragma once
 
+#include <CGAL/Real_timer.h>
+
 class ScopedTimer
 {
 public:
@@ -12,7 +14,7 @@ public:
   }
 private:
   std::string name;
-  CGAL::Timer t;
+  CGAL::Real_timer t;
 };
 
 #ifndef PERFORMANCE_TIMINGS
