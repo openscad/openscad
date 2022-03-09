@@ -124,10 +124,46 @@ void GLView::paintGL()
   auto bgcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_COLOR);
   auto axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
   auto crosshaircol = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
-  glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  setupCamera();
+// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+//  glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
+
+
+  //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	if(1){
+//		glClearColor(1,1,1,0);
+/*
+glClearColor(1,1,1,1);
+	   glDisable(GL_DEPTH_TEST);
+glMatrixMode(GL_PROJECTION);
+  glMatrixMode(GL_MODELVIEW);
+glLoadIdentity();
+*/
+	   glDisable(GL_DEPTH_TEST);
+glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+	   //draw screen aligned quad with color gradient 
+	   //    (top two vertices white, bottom two blue)
+// draw a quad that fills the whole screen, that is red at   
+// the top and blue at the bottom  
+glBegin(GL_QUADS);  
+glColor3f( 1.0f, 0.0f, 0.0f );  
+glVertex2f(-1.0f, 1.0f);
+glVertex2f(-1.0f, -1.0f);
+
+glColor3f( 0.0f, 0.0f, 1.0f );  
+glVertex2f(1.0f, -1.0f);
+glVertex2f(1.0f, 1.0f);
+glEnd();  
+  
+
+	   glEnable(GL_DEPTH_TEST);
+	}
+ setupCamera();
+// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+
   // The crosshair should be fixed at the center of the viewport...
   if (showcrosshairs) GLView::showCrosshairs(crosshaircol);
   glTranslated(cam.object_trans.x(), cam.object_trans.y(), cam.object_trans.z());
