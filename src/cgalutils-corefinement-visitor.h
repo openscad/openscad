@@ -9,6 +9,7 @@ namespace CGALUtils {
 
 namespace internal {
 
+#if FAST_CSG_KERNEL_IS_LAZY
 template <typename Pt>
 void forceExact(Pt& point)
 {
@@ -16,6 +17,7 @@ void forceExact(Pt& point)
   CGAL::exact(point.y());
   CGAL::exact(point.z());
 }
+#endif // FAST_CSG_KERNEL_IS_LAZY
 
 /*!
  * Corefinement visitor that serves two purposes:
@@ -127,6 +129,7 @@ public:
     auto id = getPatchId(faceBeingSplit_[mi], tm);
     splitPatchIds_.insert(id);
 
+#if FAST_CSG_KERNEL_IS_LAZY
     // From CGAL 5.4 on we rely on new_vertex_added instead.
 #if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 4, 0)
     if (forceNewLazyNumbersToExact_) {
@@ -139,14 +142,17 @@ public:
       }
     }
 #endif // if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 4, 0)
+#endif // FAST_CSG_KERNEL_IS_LAZY
   }
 
   // Note: only called in CGAL 5.4+
   void new_vertex_added(std::size_t node_id, vertex_descriptor vh, const TriangleMesh& tm)
   {
+#if FAST_CSG_KERNEL_IS_LAZY
     if (forceNewLazyNumbersToExact_) {
       forceExact(tm.point(vh));
     }
+#endif // FAST_CSG_KERNEL_IS_LAZY
   }
 
 };
