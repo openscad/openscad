@@ -1295,6 +1295,7 @@ add_cmdline_test(openscad-colorscheme-sunset          OPENSCAD FILES ${EXAMPLES_
 add_cmdline_test(openscad-colorscheme-starnight       OPENSCAD FILES ${EXAMPLES_DIR}/Basics/logo.scad SUFFIX png ARGS --colorscheme=Starnight)
 add_cmdline_test(openscad-colorscheme-monotone        OPENSCAD FILES ${EXAMPLES_DIR}/Basics/logo.scad SUFFIX png ARGS --colorscheme=Monotone)
 add_cmdline_test(openscad-colorscheme-metallic-render OPENSCAD FILES ${EXAMPLES_DIR}/Basics/CSG.scad  SUFFIX png ARGS --colorscheme=Metallic --render)
+add_cmdline_test(openscad-colorscheme-clearsky        OPENSCAD FILES ${EXAMPLES_DIR}/Basics/logo.scad SUFFIX png ARGS --colorscheme=ClearSky)
 
 #message("Available test configurations: ${TEST_CONFIGS}")
 #foreach(CONF ${TEST_CONFIGS})
