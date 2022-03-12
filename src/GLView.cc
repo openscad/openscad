@@ -122,14 +122,14 @@ void GLView::paintGL()
 {
   glDisable(GL_LIGHTING);
   auto bgcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_COLOR);
-  auto bgcolstop = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_STOP_COLOR);
+  auto bgstopcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_STOP_COLOR);
   auto axescolor = ColorMap::getColor(*this->colorscheme, RenderColor::AXES_COLOR);
   auto crosshaircol = ColorMap::getColor(*this->colorscheme, RenderColor::CROSSHAIR_COLOR);
 
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  if(bgcol != bgcolstop){
+  if(bgcol != bgstopcol){
     glDisable(GL_DEPTH_TEST);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -140,15 +140,14 @@ void GLView::paintGL()
     glVertex2f(-1.0f, +1.0f);
     glVertex2f(+1.0f, +1.0f);
 
-    glColor3f(bgcolstop[0], bgcolstop[1], bgcolstop[2]);  
+    glColor3f(bgstopcol[0], bgstopcol[1], bgstopcol[2]);  
     glVertex2f(+1.0f, -1.0f);
     glVertex2f(-1.0f, -1.0f);
     glEnd();  
     glEnable(GL_DEPTH_TEST);
   }
-  setupCamera();
-// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
+  setupCamera();
 
   // The crosshair should be fixed at the center of the viewport...
   if (showcrosshairs) GLView::showCrosshairs(crosshaircol);
