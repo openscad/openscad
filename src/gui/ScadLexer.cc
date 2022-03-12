@@ -261,9 +261,9 @@ void ScadLexer2::fold(int start, int end)
     bool style = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i - 1) == Comment);
     bool startstyle = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i) == Comment);
 
-    if ((ch == '{') || (ch == '[') || ((!style) && (startstyle))) {
+    if (((ch == '{') || (ch == '[')) && !style || ((!style) && (startstyle))) {
       levelCurrent++;
-    } else if ((ch == '}') || (ch == ']') || ((style) && (!startstyle))) {
+    } else if (((ch == '}') || (ch == ']')) && !style || ((style) && (!startstyle))) {
       levelCurrent--;
     }
 
