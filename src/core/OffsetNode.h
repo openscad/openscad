@@ -1,8 +1,8 @@
 #pragma once
 
 #include "node.h"
-#include "value.h"
-#include "clipper-utils.h"
+#include "Value.h"
+#include "ClipperUtils.h"
 
 class OffsetNode : public AbstractPolyNode
 {

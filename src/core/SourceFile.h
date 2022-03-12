@@ -6,9 +6,9 @@
 #include <ctime>
 
 #include "module.h"
-#include "value.h"
-#include "localscope.h"
-#include "indicatordata.h"
+#include "Value.h"
+#include "LocalScope.h"
+#include "IndicatorData.h"
 
 class SourceFile : public ASTNode
 {

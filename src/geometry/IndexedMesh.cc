@@ -28,8 +28,8 @@
 #include "IndexedMesh.h"
 
 #include "export.h"
-#include "polyset-utils.h"
-#include "dxfdata.h"
+#include "PolySetUtils.h"
+#include "DxfData.h"
 
 #ifdef ENABLE_CGAL
 
@@ -38,7 +38,7 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "CGALHybridPolyhedron.h"
 
-#include "grid.h"
+#include "Grid.h"
 
 IndexedMesh::IndexedMesh()
   : numfaces(0)

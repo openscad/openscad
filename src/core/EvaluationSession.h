@@ -4,10 +4,10 @@
 #include <vector>
 #include <boost/optional.hpp>
 
-#include "context-mm.h"
+#include "ContextMemoryManager.h"
 #include "function.h"
 #include "module.h"
-#include "value.h"
+#include "Value.h"
 
 class ContextFrame;
 

@@ -1,6 +1,6 @@
-#include "annotation.h"
+#include "Annotation.h"
 #include "module.h"
-#include "parameterobject.h"
+#include "ParameterObject.h"
 
 #include <sstream>
 #include <boost/algorithm/string.hpp>

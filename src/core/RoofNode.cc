@@ -6,10 +6,10 @@
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "fileutils.h"
-#include "builtin.h"
-#include "parameters.h"
-#include "children.h"
-#include "roofnode.h"
+#include "Builtins.h"
+#include "Parameters.h"
+#include "Children.h"
+#include "RoofNode.h"
 
 static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {

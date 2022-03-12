@@ -1,5 +1,5 @@
 #include "Camera.h"
-#include "rendersettings.h"
+#include "RenderSettings.h"
 #include "printutils.h"
 #include "degree_trig.h"
 

@@ -29,12 +29,12 @@
 #include <mpfr.h>
 #endif
 
-// dxfdata.h must come first for Eigen SIMD alignment issues
-#include "dxfdata.h"
-#include "polyset.h"
-#include "polyset-utils.h"
+// DxfData.h must come first for Eigen SIMD alignment issues
+#include "DxfData.h"
+#include "PolySet.h"
+#include "PolySetUtils.h"
 #include "printutils.h"
-#include "feature.h"
+#include "Feature.h"
 
 #include "CGALRenderer.h"
 #include "CGALHybridPolyhedron.h"
@@ -60,7 +60,7 @@ void CGALRenderer::addGeometry(const shared_ptr<const Geometry>& geom)
     // See tests/data/scad/3D/features/polyhedron-concave-test.scad
     auto ps_tri = new PolySet(3, ps->convexValue());
     ps_tri->setConvexity(ps->getConvexity());
-    PolysetUtils::tessellate_faces(*ps, *ps_tri);
+    PolySetUtils::tessellate_faces(*ps, *ps_tri);
     this->polysets.push_back(shared_ptr<const PolySet>(ps_tri));
   } else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
     this->polysets.push_back(shared_ptr<const PolySet>(poly->tessellate()));
@@ -125,9 +125,9 @@ void CGALRenderer::setColorScheme(const ColorScheme& cs)
   PRINTD("setColorScheme done");
 }
 
-void CGALRenderer::createPolysets()
+void CGALRenderer::createPolySets()
 {
-  PRINTD("createPolysets() polyset");
+  PRINTD("createPolySets() polyset");
 
   polyset_states.clear();
 
@@ -240,7 +240,7 @@ void CGALRenderer::createPolysets()
 void CGALRenderer::prepare(bool showfaces, bool showedges, const shaderinfo_t * /*shaderinfo*/)
 {
   PRINTD("prepare()");
-  if (!polyset_states.size()) createPolysets();
+  if (!polyset_states.size()) createPolySets();
   if (!this->nefPolyhedrons.empty() &&
       (this->polyhedrons.empty() || Feature::ExperimentalVxORenderers.is_enabled() != last_render_state)) // FIXME: this is temporary to make switching between renderers seamless.
     createPolyhedrons();

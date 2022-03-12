@@ -5,7 +5,7 @@
 #include <list>
 #include "NodeVisitor.h"
 #include "node.h"
-#include "nodecache.h"
+#include "NodeCache.h"
 
 // GroupNodeChecker does a quick first pass to count children of group nodes
 // If a GroupNode has 0 children, don't include in node id strings

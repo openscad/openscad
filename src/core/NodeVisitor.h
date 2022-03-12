@@ -2,7 +2,7 @@
 
 #include "BaseVisitable.h"
 #include "node.h"
-#include "state.h"
+#include "State.h"
 
 class NodeVisitor :
   public BaseVisitor,
@@ -13,7 +13,7 @@ class NodeVisitor :
   public Visitor<class GroupNode>,
   public Visitor<class RootNode>,
   public Visitor<class LeafNode>,
-  public Visitor<class CgaladvNode>,
+  public Visitor<class CgalAdvNode>,
   public Visitor<class CsgOpNode>,
   public Visitor<class LinearExtrudeNode>,
   public Visitor<class RotateExtrudeNode>,
@@ -53,7 +53,7 @@ public:
   Response visit(class State& state, const class LeafNode& node) override {
     return visit(state, (const class AbstractPolyNode&)node);
   }
-  Response visit(class State& state, const class CgaladvNode& node) override {
+  Response visit(class State& state, const class CgalAdvNode& node) override {
     return visit(state, (const class AbstractNode&)node);
   }
   Response visit(class State& state, const class CsgOpNode& node) override {

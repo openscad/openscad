@@ -1,7 +1,7 @@
 #pragma once
 
-#include "context.h"
-#include "localscope.h"
+#include "Context.h"
+#include "LocalScope.h"
 
 class AbstractNode;
 class ScopeContext;

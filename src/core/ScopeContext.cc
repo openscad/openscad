@@ -1,9 +1,9 @@
-#include "modcontext.h"
+#include "ScopeContext.h"
 #include "ModuleInstantiation.h"
-#include "expression.h"
-#include "parameters.h"
+#include "Expression.h"
+#include "Parameters.h"
 #include "printutils.h"
-#include "builtin.h"
+#include "Builtins.h"
 #include "SourceFileCache.h"
 #include <cmath>
 #include "boost-utils.h"

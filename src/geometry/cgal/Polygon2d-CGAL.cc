@@ -1,5 +1,5 @@
 #include "Polygon2d-CGAL.h"
-#include "polyset.h"
+#include "PolySet.h"
 #include "printutils.h"
 #include "boost-utils.h"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>

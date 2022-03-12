@@ -25,9 +25,9 @@
  */
 
 
-#include "annotation.h"
-#include "expression.h"
-#include "context.h"
+#include "Annotation.h"
+#include "Expression.h"
+#include "Context.h"
 
 Annotation::Annotation(const std::string& name, shared_ptr<Expression> expr)
   : name(name), expr(expr)

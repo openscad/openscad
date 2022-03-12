@@ -1,4 +1,4 @@
-#include "colormap.h"
+#include "ColorMap.h"
 #include "printutils.h"
 #include "PlatformUtils.h"
 

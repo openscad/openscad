@@ -13,7 +13,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include "GLView.h"
-#include "renderer.h"
+#include "Renderer.h"
 
 class QGLView :
 #ifdef USE_QOPENGLWIDGET

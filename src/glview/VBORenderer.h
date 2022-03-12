@@ -1,12 +1,12 @@
 #ifndef __VBORENDERER_H__
 #define __VBORENDERER_H__
 
-#include "renderer.h"
+#include "Renderer.h"
 #include "system-gl.h"
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
 #endif
-#include "csgnode.h"
+#include "CSGNode.h"
 #include "VertexArray.h"
 #include <unordered_map>
 #include <boost/functional/hash.hpp>

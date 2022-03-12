@@ -40,7 +40,7 @@
 #include "UserModule.h"
 #include "ModuleInstantiation.h"
 #include "Assignment.h"
-#include "expression.h"
+#include "Expression.h"
 #include "function.h"
 #include "printutils.h"
 #include "memory.h"
@@ -48,7 +48,7 @@
 #include <stack>
 #include <boost/filesystem.hpp>
 #include "boost-utils.h"
-#include "feature.h"
+#include "Feature.h"
 
 namespace fs = boost::filesystem;
 

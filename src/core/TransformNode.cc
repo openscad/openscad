@@ -24,13 +24,13 @@
  *
  */
 
-#include "transformnode.h"
+#include "TransformNode.h"
 #include "ModuleInstantiation.h"
-#include "children.h"
-#include "polyset.h"
-#include "builtin.h"
-#include "value.h"
-#include "parameters.h"
+#include "Children.h"
+#include "PolySet.h"
+#include "Builtins.h"
+#include "Value.h"
+#include "Parameters.h"
 #include "printutils.h"
 #include "degree_trig.h"
 #include <sstream>

@@ -3,9 +3,9 @@
 #include <json.hpp>
 
 #include "Assignment.h"
-#include "expression.h"
+#include "Expression.h"
 #include "SourceFile.h"
-#include "parameterset.h"
+#include "ParameterSet.h"
 
 using json = nlohmann::json;
 

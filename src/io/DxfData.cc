@@ -27,8 +27,8 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include "dxfdata.h"
-#include "grid.h"
+#include "DxfData.h"
+#include "Grid.h"
 #include "printutils.h"
 #include "calc.h"
 
@@ -42,7 +42,7 @@
 #include <sstream>
 #include <map>
 
-#include "value.h"
+#include "Value.h"
 #include "boost-utils.h"
 #include "Polygon2d.h"
 #include "printutils.h"

@@ -1,6 +1,6 @@
 #include "export.h"
-#include "polyset.h"
-#include "polyset-utils.h"
+#include "PolySet.h"
+#include "PolySetUtils.h"
 #include "printutils.h"
 #include "version.h"
 #include "version_helper.h"

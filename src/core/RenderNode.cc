@@ -24,13 +24,13 @@
  *
  */
 
-#include "rendernode.h"
+#include "RenderNode.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "builtin.h"
-#include "children.h"
-#include "parameters.h"
-#include "polyset.h"
+#include "Builtins.h"
+#include "Children.h"
+#include "Parameters.h"
+#include "PolySet.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>

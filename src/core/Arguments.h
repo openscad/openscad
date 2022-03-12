@@ -5,7 +5,7 @@
 #include <boost/optional.hpp>
 
 #include "Assignment.h"
-#include "context.h"
+#include "Context.h"
 
 struct Argument {
   boost::optional<std::string> name;

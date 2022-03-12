@@ -1,4 +1,4 @@
-#include "parameterset.h"
+#include "ParameterSet.h"
 #include "printutils.h"
 #include <boost/property_tree/json_parser.hpp>
 

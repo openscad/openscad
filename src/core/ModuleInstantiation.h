@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AST.h"
-#include "localscope.h"
+#include "LocalScope.h"
 #include <vector>
 
 typedef std::vector<class ModuleInstantiation *> ModuleInstantiationList;

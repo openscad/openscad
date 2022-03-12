@@ -24,13 +24,13 @@
  *
  */
 
-#include "projectionnode.h"
+#include "ProjectionNode.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "children.h"
-#include "parameters.h"
-#include "builtin.h"
-#include "polyset.h"
+#include "Children.h"
+#include "Parameters.h"
+#include "Builtins.h"
+#include "PolySet.h"
 
 #include <assert.h>
 #include <boost/assign/std/vector.hpp>

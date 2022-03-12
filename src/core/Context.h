@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Assignment.h"
-#include "contextframe.h"
-#include "context-mm.h"
+#include "ContextFrame.h"
+#include "ContextMemoryManager.h"
 
 /**
  * Local handle to a all context objects. This is used to maintain the

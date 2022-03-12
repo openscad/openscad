@@ -1,11 +1,11 @@
 #pragma once
 
-#include "renderer.h"
+#include "Renderer.h"
 #include "system-gl.h"
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
 #endif
-#include "csgnode.h"
+#include "CSGNode.h"
 
 #include "VBORenderer.h"
 

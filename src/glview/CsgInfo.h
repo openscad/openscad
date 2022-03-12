@@ -1,11 +1,11 @@
 #pragma once
 
-#include "csgnode.h"
+#include "CSGNode.h"
 #include "Tree.h"
 #include "GeometryEvaluator.h"
 #include "CSGTreeEvaluator.h"
 #include "CSGTreeNormalizer.h"
-#include "rendersettings.h"
+#include "RenderSettings.h"
 #include "printutils.h"
 
 /*

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "renderer.h"
-#include "csgnode.h"
+#include "Renderer.h"
+#include "CSGNode.h"
 
 #include "VBORenderer.h"
 

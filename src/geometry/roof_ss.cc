@@ -13,9 +13,9 @@
 #include <map>
 
 #include "GeometryUtils.h"
-#include "clipper-utils.h"
+#include "ClipperUtils.h"
 #include "printutils.h"
-#include "roofnode.h"
+#include "RoofNode.h"
 #include "roof_ss.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \

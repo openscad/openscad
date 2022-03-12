@@ -24,14 +24,14 @@
  *
  */
 
-#include "children.h"
+#include "Children.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "parameters.h"
+#include "Parameters.h"
 #include "printutils.h"
-#include "builtin.h"
+#include "Builtins.h"
 
-#include "textnode.h"
+#include "TextNode.h"
 #include "FreetypeRenderer.h"
 #include "Polygon2d.h"
 

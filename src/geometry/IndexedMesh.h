@@ -29,7 +29,7 @@
 
 #ifdef ENABLE_CGAL
 
-#include "polyset.h"
+#include "PolySet.h"
 #include "Reindexer.h"
 
 struct IndexedMesh {

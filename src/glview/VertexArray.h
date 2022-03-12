@@ -9,7 +9,7 @@
 #include "system-gl.h"
 #include "printutils.h"
 #include "linalg.h"
-#include "feature.h"
+#include "Feature.h"
 
 #define GL_ERROR_CHECK() \
   do { \

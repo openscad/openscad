@@ -3,8 +3,8 @@
 #include <string>
 #include <vector>
 
-#include "arguments.h"
-#include "contextframe.h"
+#include "Arguments.h"
+#include "ContextFrame.h"
 
 /*
  * The parameters of a builtin function or module do not form a true Context;

@@ -2,9 +2,9 @@
     #include <sstream>
     #include <string.h>
     #include "Assignment.h"
-    #include "expression.h"
+    #include "Expression.h"
     #include "printutils.h"
-    #include "comment.h"
+    #include "CommentParser.h"
     #ifdef _MSC_VER
     #define strdup _strdup
     #endif

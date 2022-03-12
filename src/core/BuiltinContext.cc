@@ -1,9 +1,9 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include "builtin.h"
-#include "builtincontext.h"
-#include "expression.h"
+#include "Builtins.h"
+#include "BuiltinContext.h"
+#include "Expression.h"
 #include "function.h"
 #include "ModuleInstantiation.h"
 #include "printutils.h"

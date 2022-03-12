@@ -3,7 +3,7 @@
 #include <QRegularExpression>
 
 #include "ScadApi.h"
-#include "builtin.h"
+#include "Builtins.h"
 #include "ScintillaEditor.h"
 #include "parsersettings.h"
 

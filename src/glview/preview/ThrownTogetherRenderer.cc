@@ -25,8 +25,8 @@
  */
 
 #include "ThrownTogetherRenderer.h"
-#include "feature.h"
-#include "polyset.h"
+#include "Feature.h"
+#include "PolySet.h"
 #include "printutils.h"
 
 #include "system-gl.h"

@@ -2,8 +2,8 @@
 
 %{
     #include "Assignment.h"
-    #include "expression.h"
-    #include "value.h"  
+    #include "Expression.h"
+    #include "Value.h"  
     #include "comment_parser.hxx"
     #include <boost/lexical_cast.hpp>
     YY_BUFFER_STATE yy_scan_string ( const char *str ) ;

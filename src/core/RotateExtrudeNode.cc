@@ -24,15 +24,15 @@
  *
  */
 
-#include "rotateextrudenode.h"
+#include "RotateExtrudeNode.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "children.h"
-#include "parameters.h"
+#include "Children.h"
+#include "Parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
-#include "builtin.h"
-#include "polyset.h"
+#include "Builtins.h"
+#include "PolySet.h"
 #include "handle_dep.h"
 #include "boost-utils.h"
 #include <sstream>

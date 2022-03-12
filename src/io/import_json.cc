@@ -27,9 +27,9 @@
 #include <fstream>
 #include <json.hpp>
 
-#include "value.h"
+#include "Value.h"
 #include "printutils.h"
-#include "evaluationsession.h"
+#include "EvaluationSession.h"
 
 using json = nlohmann::json;
 

@@ -24,8 +24,8 @@
  *
  */
 
-#include "arguments.h"
-#include "expression.h"
+#include "Arguments.h"
+#include "Expression.h"
 
 Arguments::Arguments(const AssignmentList& argument_expressions, const std::shared_ptr<const Context>& context) :
   evaluation_session(context->session())

@@ -25,17 +25,17 @@
  */
 
 #include "function.h"
-#include "arguments.h"
-#include "expression.h"
-#include "builtin.h"
+#include "Arguments.h"
+#include "Expression.h"
+#include "Builtins.h"
 #include "printutils.h"
-#include "stackcheck.h"
+#include "StackCheck.h"
 #include "exceptions.h"
 #include "memory.h"
 #include "UserModule.h"
 #include "degree_trig.h"
 #include "FreetypeRenderer.h"
-#include "parameters.h"
+#include "Parameters.h"
 #include "import.h"
 
 #include <cmath>

@@ -21,7 +21,7 @@ private:
   void addGeometry(const shared_ptr<const class Geometry>& geom);
   const std::list<shared_ptr<class CGAL_OGL_Polyhedron>>& getPolyhedrons() const { return this->polyhedrons; }
   void createPolyhedrons();
-  void createPolysets();
+  void createPolySets();
   bool last_render_state; // FIXME: this is temporary to make switching between renderers seamless.
 
   std::list<shared_ptr<class CGAL_OGL_Polyhedron>> polyhedrons;

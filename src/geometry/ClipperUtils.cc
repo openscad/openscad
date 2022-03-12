@@ -1,4 +1,4 @@
-#include "clipper-utils.h"
+#include "ClipperUtils.h"
 #include "printutils.h"
 
 namespace ClipperUtils {
@@ -38,7 +38,7 @@ ClipperLib::Paths fromPolygon2d(const Polygon2d& poly, int pow2)
       p.emplace_back(v[0] * scale, v[1] * scale);
     }
     // Make sure all polygons point up, since we project also
-    // back-facing polygon in PolysetUtils::project()
+    // back-facing polygon in PolySetUtils::project()
     if (!keep_orientation && !ClipperLib::Orientation(p)) std::reverse(p.begin(), p.end());
     result.push_back(std::move(p));
   }

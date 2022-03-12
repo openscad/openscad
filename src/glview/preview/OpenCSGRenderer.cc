@@ -27,8 +27,8 @@
 #include "system-gl.h"
 #include "memory.h"
 #include "OpenCSGRenderer.h"
-#include "polyset.h"
-#include "feature.h"
+#include "PolySet.h"
+#include "Feature.h"
 
 #ifdef ENABLE_OPENCSG
 

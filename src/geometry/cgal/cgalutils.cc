@@ -5,11 +5,11 @@
 
 #include "cgal.h"
 #include "cgalutils.h"
-#include "polyset.h"
+#include "PolySet.h"
 #include "printutils.h"
 #include "Polygon2d.h"
-#include "polyset-utils.h"
-#include "grid.h"
+#include "PolySetUtils.h"
+#include "Grid.h"
 #include "node.h"
 #include "degree_trig.h"
 
@@ -41,7 +41,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps)
   PolySet psq(ps);
   psq.quantizeVertices();
   PolySet ps_tri(3, psq.convexValue());
-  PolysetUtils::tessellate_faces(psq, ps_tri);
+  PolySetUtils::tessellate_faces(psq, ps_tri);
   if (ps_tri.is_convex()) {
     typedef CGAL::Epick K;
     // Collect point cloud

@@ -29,7 +29,7 @@
 #include <cassert>
 #include <algorithm>
 #include "calc.h"
-#include "grid.h"
+#include "Grid.h"
 #include "degree_trig.h"
 
 // Linear interpolate.  Can replace with std::lerp in C++20

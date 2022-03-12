@@ -1,7 +1,7 @@
 #include <stack>
 
 #include "CSGTreeNormalizer.h"
-#include "csgnode.h"
+#include "CSGNode.h"
 #include "printutils.h"
 
 // Helper function to debug normalization bugs

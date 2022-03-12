@@ -4,9 +4,9 @@
 #include "system-gl.h"
 #include "linalg.h"
 #include "memory.h"
-#include "colormap.h"
+#include "ColorMap.h"
 #include "enums.h"
-#include "polyset.h"
+#include "PolySet.h"
 
 #ifdef _MSC_VER // NULL
 #include <cstdlib>

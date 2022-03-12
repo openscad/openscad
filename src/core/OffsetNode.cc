@@ -24,17 +24,17 @@
  *
  */
 
-#include "offsetnode.h"
+#include "OffsetNode.h"
 
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "children.h"
-#include "parameters.h"
+#include "Children.h"
+#include "Parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
-#include "builtin.h"
+#include "Builtins.h"
 #include "calc.h"
-#include "polyset.h"
+#include "PolySet.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>

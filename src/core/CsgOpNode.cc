@@ -24,14 +24,14 @@
  *
  */
 
-#include "csgops.h"
+#include "CsgOpNode.h"
 
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "csgnode.h"
-#include "builtin.h"
-#include "children.h"
-#include "parameters.h"
+#include "CSGNode.h"
+#include "Builtins.h"
+#include "Children.h"
+#include "Parameters.h"
 #include <sstream>
 #include <assert.h>
 

@@ -1,10 +1,10 @@
 #include "GLView.h"
 
 #include "stdio.h"
-#include "colormap.h"
-#include "rendersettings.h"
+#include "ColorMap.h"
+#include "RenderSettings.h"
 #include "printutils.h"
-#include "renderer.h"
+#include "Renderer.h"
 #include "degree_trig.h"
 #include <cmath>
 #include "boost-utils.h"

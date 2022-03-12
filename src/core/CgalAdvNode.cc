@@ -24,13 +24,13 @@
  *
  */
 
-#include "cgaladvnode.h"
+#include "CgalAdvNode.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "builtin.h"
-#include "children.h"
-#include "parameters.h"
-#include "polyset.h"
+#include "Builtins.h"
+#include "Children.h"
+#include "Parameters.h"
+#include "PolySet.h"
 #include <sstream>
 #include <assert.h>
 #include <boost/assign/std/vector.hpp>
@@ -38,7 +38,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 
 static std::shared_ptr<AbstractNode> builtin_minkowski(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = std::make_shared<CgaladvNode>(inst, CgaladvType::MINKOWSKI);
+  auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::MINKOWSKI);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"convexity"});
   node->convexity = static_cast<int>(parameters["convexity"].toDouble());
@@ -48,7 +48,7 @@ static std::shared_ptr<AbstractNode> builtin_minkowski(const ModuleInstantiation
 
 static std::shared_ptr<AbstractNode> builtin_hull(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = std::make_shared<CgaladvNode>(inst, CgaladvType::HULL);
+  auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::HULL);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
   node->convexity = 0;
@@ -58,7 +58,7 @@ static std::shared_ptr<AbstractNode> builtin_hull(const ModuleInstantiation *ins
 
 static std::shared_ptr<AbstractNode> builtin_resize(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
-  auto node = std::make_shared<CgaladvNode>(inst, CgaladvType::RESIZE);
+  auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::RESIZE);
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"newsize", "auto", "convexity"});
   node->convexity = static_cast<int>(parameters["convexity"].toDouble());
@@ -83,16 +83,16 @@ static std::shared_ptr<AbstractNode> builtin_resize(const ModuleInstantiation *i
   return children.instantiate(node);
 }
 
-std::string CgaladvNode::name() const
+std::string CgalAdvNode::name() const
 {
   switch (this->type) {
-  case CgaladvType::MINKOWSKI:
+  case CgalAdvType::MINKOWSKI:
     return "minkowski";
     break;
-  case CgaladvType::HULL:
+  case CgalAdvType::HULL:
     return "hull";
     break;
-  case CgaladvType::RESIZE:
+  case CgalAdvType::RESIZE:
     return "resize";
     break;
   default:
@@ -101,19 +101,19 @@ std::string CgaladvNode::name() const
   return "internal_error";
 }
 
-std::string CgaladvNode::toString() const
+std::string CgalAdvNode::toString() const
 {
   std::ostringstream stream;
 
   stream << this->name();
   switch (type) {
-  case CgaladvType::MINKOWSKI:
+  case CgalAdvType::MINKOWSKI:
     stream << "(convexity = " << this->convexity << ")";
     break;
-  case CgaladvType::HULL:
+  case CgalAdvType::HULL:
     stream << "()";
     break;
-  case CgaladvType::RESIZE:
+  case CgalAdvType::RESIZE:
     stream << "(newsize = ["
            << this->newsize[0] << "," << this->newsize[1] << "," << this->newsize[2] << "]"
            << ", auto = ["

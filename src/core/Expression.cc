@@ -24,8 +24,8 @@
  *
  */
 #include "compiler_specific.h"
-#include "expression.h"
-#include "value.h"
+#include "Expression.h"
+#include "Value.h"
 #include <cstdint>
 #include <cmath>
 #include <assert.h>
@@ -34,11 +34,11 @@
 #include <typeinfo>
 #include <forward_list>
 #include "printutils.h"
-#include "stackcheck.h"
-#include "context.h"
+#include "StackCheck.h"
+#include "Context.h"
 #include "exceptions.h"
-#include "feature.h"
-#include "parameters.h"
+#include "Feature.h"
+#include "Parameters.h"
 #include "printutils.h"
 #include <boost/bind.hpp>
 #include "boost-utils.h"

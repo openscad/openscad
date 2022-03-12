@@ -6,7 +6,7 @@
 #include <boost/algorithm/string/join.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 
-#include "feature.h"
+#include "Feature.h"
 #include "printutils.h"
 
 #ifdef ENABLE_CGAL

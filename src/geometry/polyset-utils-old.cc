@@ -1,6 +1,6 @@
 #include "cgal.h"
-#include "polyset-utils.h"
-#include "polyset.h"
+#include "PolySetUtils.h"
+#include "PolySet.h"
 #include "Polygon2d.h"
 #include "printutils.h"
 
@@ -40,7 +40,7 @@ public:
   Is_bad is_bad_object() const { return Is_bad(); }
 };
 
-namespace PolysetUtils {
+namespace PolySetUtils {
 
 // Project all polygons (also back-facing) into a Polygon2d instance.
 // It's important to select all faces, since filtering by normal vector here
@@ -63,7 +63,7 @@ Polygon2d *project(const PolySet& ps) {
    This code is for tessellating the faces of a 3d PolySet, assuming that
    the faces are near-planar polygons.
 
-   We do the tessellation by projecting each polygon of the Polyset onto a
+   We do the tessellation by projecting each polygon of the PolySet onto a
    2-d plane, then running a 2d tessellation algorithm on the projected 2d
    polygon. Then we project each of the newly generated 2d 'tiles' (the
    polygons used for tessellation, typically triangles) back up into 3d
@@ -240,4 +240,4 @@ void tessellate_faces(const PolySet& inps, PolySet& outps) {
   }
   if (degeneratePolygons > 0) LOG(message_group::Warning, Location::NONE, "", "PolySet has degenerate polygons");
 }
-} // namespace PolysetUtils
+} // namespace PolySetUtils

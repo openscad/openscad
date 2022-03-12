@@ -25,8 +25,8 @@
  */
 
 #include "export.h"
-#include "polyset.h"
-#include "polyset-utils.h"
+#include "PolySet.h"
+#include "PolySetUtils.h"
 
 static void append_svg(const Polygon2d& poly, std::ostream& output)
 {

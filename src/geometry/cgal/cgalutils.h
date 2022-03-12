@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cgal.h"
-#include "polyset.h"
+#include "PolySet.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "enums.h"
 

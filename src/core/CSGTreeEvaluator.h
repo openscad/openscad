@@ -6,7 +6,7 @@
 #include <cstddef>
 #include "NodeVisitor.h"
 #include "memory.h"
-#include "csgnode.h"
+#include "CSGNode.h"
 
 class CSGTreeEvaluator : public NodeVisitor
 {
@@ -24,7 +24,7 @@ public:
   Response visit(State& state, const class TransformNode& node) override;
   Response visit(State& state, const class ColorNode& node) override;
   Response visit(State& state, const class RenderNode& node) override;
-  Response visit(State& state, const class CgaladvNode& node) override;
+  Response visit(State& state, const class CgalAdvNode& node) override;
 
   shared_ptr<class CSGNode> buildCSGTree(const AbstractNode& node);
 

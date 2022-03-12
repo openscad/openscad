@@ -25,9 +25,9 @@
  */
 
 #include "export.h"
-#include "polyset.h"
-#include "polyset-utils.h"
-#include "dxfdata.h"
+#include "PolySet.h"
+#include "PolySetUtils.h"
+#include "DxfData.h"
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
@@ -76,7 +76,7 @@ uint64_t append_stl(const PolySet& ps, std::ostream& output, bool binary)
 {
   uint64_t triangle_count = 0;
   PolySet triangulated(3);
-  PolysetUtils::tessellate_faces(ps, triangulated);
+  PolySetUtils::tessellate_faces(ps, triangulated);
 
   auto processTriangle = [&](const std::array<Vector3d, 3>& p) {
     triangle_count++;

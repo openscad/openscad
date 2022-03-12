@@ -24,9 +24,9 @@
  *
  */
 
-#include "importnode.h"
+#include "ImportNode.h"
 
-#include "polyset.h"
+#include "PolySet.h"
 #include "printutils.h"
 #include "AST.h"
 

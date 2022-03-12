@@ -1,15 +1,15 @@
-#include "polyset-utils.h"
-#include "polyset.h"
+#include "PolySetUtils.h"
+#include "PolySet.h"
 #include "Polygon2d.h"
 #include "printutils.h"
 #include "GeometryUtils.h"
 #include "Reindexer.h"
-#include "grid.h"
+#include "Grid.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #endif
 
-namespace PolysetUtils {
+namespace PolySetUtils {
 
 // Project all polygons (also back-facing) into a Polygon2d instance.
 // It is important to select all faces, since filtering by normal vector here
@@ -130,4 +130,4 @@ bool is_approximately_convex(const PolySet& ps) {
 #endif
 }
 
-} // namespace PolysetUtils
+} // namespace PolySetUtils

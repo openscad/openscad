@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "module.h"
-#include "localscope.h"
+#include "LocalScope.h"
 
 class StaticModuleNameStack
 {

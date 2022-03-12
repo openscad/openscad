@@ -31,7 +31,7 @@
 #include "Polygon2d.h"
 #include "printutils.h"
 #include "libsvg/libsvg.h"
-#include "clipper-utils.h"
+#include "ClipperUtils.h"
 #include "AST.h"
 #include "boost-utils.h"
 

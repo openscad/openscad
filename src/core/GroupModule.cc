@@ -26,9 +26,9 @@
 
 #include "ModuleInstantiation.h"
 #include "node.h"
-#include "builtin.h"
-#include "children.h"
-#include "parameters.h"
+#include "Builtins.h"
+#include "Children.h"
+#include "Parameters.h"
 
 std::shared_ptr<AbstractNode> builtin_group(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {

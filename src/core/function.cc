@@ -24,8 +24,8 @@
  *
  */
 
-#include "arguments.h"
-#include "expression.h"
+#include "Arguments.h"
+#include "Expression.h"
 #include "function.h"
 #include "printutils.h"
 

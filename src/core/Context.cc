@@ -25,12 +25,12 @@
  */
 
 #include "compiler_specific.h"
-#include "context.h"
-#include "expression.h"
+#include "Context.h"
+#include "Expression.h"
 #include "function.h"
 #include "UserModule.h"
 #include "ModuleInstantiation.h"
-#include "builtin.h"
+#include "Builtins.h"
 #include "printutils.h"
 #include <boost/filesystem.hpp>
 #include "boost-utils.h"

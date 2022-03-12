@@ -6,7 +6,7 @@
 
 #include "AST.h"
 #include "memory.h"
-#include "annotation.h"
+#include "Annotation.h"
 
 class Assignment : public ASTNode
 {
@@ -22,7 +22,7 @@ public:
   const std::string& getName() const { return name; }
   const shared_ptr<Expression>& getExpr() const { return expr; }
   const AnnotationMap& getAnnotations() const { return annotations; }
-  // setExpr used by customizer parameterobject etc.
+  // setExpr used by customizer ParameterObject etc.
   void setExpr(shared_ptr<Expression> e) { expr = std::move(e); }
 
   virtual void addAnnotations(AnnotationList *annotations);

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "evaluationsession.h"
-#include "valuemap.h"
+#include "EvaluationSession.h"
+#include "ValueMap.h"
 
 class ContextFrame
 {

@@ -28,9 +28,9 @@
 #include "ModuleInstantiation.h"
 #include "node.h"
 #include "exceptions.h"
-#include "stackcheck.h"
-#include "modcontext.h"
-#include "expression.h"
+#include "StackCheck.h"
+#include "ScopeContext.h"
+#include "Expression.h"
 #include "printutils.h"
 #include "compiler_specific.h"
 #include <sstream>

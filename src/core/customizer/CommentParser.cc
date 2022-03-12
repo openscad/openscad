@@ -1,6 +1,6 @@
-#include "comment.h"
-#include "expression.h"
-#include "annotation.h"
+#include "CommentParser.h"
+#include "Expression.h"
+#include "Annotation.h"
 #include <string>
 #include <vector>
 #include <boost/range/adaptor/reversed.hpp>

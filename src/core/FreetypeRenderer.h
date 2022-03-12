@@ -29,7 +29,7 @@
 #include <vector>
 #include <ostream>
 
-#include "parameters.h"
+#include "Parameters.h"
 #include <hb.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H

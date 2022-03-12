@@ -25,7 +25,7 @@
  */
 
 #include "export.h"
-#include "polyset.h"
+#include "PolySet.h"
 #include "printutils.h"
 #include "Geometry.h"
 

@@ -1,7 +1,7 @@
 #include "compiler_specific.h"
-#include "context.h"
+#include "Context.h"
 #include "ModuleInstantiation.h"
-#include "expression.h"
+#include "Expression.h"
 #include "exceptions.h"
 #include "printutils.h"
 #include <boost/filesystem.hpp>

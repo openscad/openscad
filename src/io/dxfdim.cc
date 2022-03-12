@@ -25,11 +25,11 @@
  */
 
 #include "dxfdim.h"
-#include "value.h"
+#include "Value.h"
 #include "function.h"
-#include "dxfdata.h"
-#include "builtin.h"
-#include "parameters.h"
+#include "DxfData.h"
+#include "Builtins.h"
+#include "Parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
 #include "handle_dep.h"

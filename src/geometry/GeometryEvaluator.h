@@ -30,7 +30,7 @@ public:
   Response visit(State& state, const LeafNode& node) override;
   Response visit(State& state, const TransformNode& node) override;
   Response visit(State& state, const CsgOpNode& node) override;
-  Response visit(State& state, const CgaladvNode& node) override;
+  Response visit(State& state, const CgalAdvNode& node) override;
   Response visit(State& state, const ProjectionNode& node) override;
   Response visit(State& state, const RenderNode& node) override;
   Response visit(State& state, const TextNode& node) override;

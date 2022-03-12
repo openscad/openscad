@@ -1,20 +1,20 @@
 #pragma once
 
 #include "node.h"
-#include "value.h"
+#include "Value.h"
 #include "linalg.h"
 
-enum class CgaladvType {
+enum class CgalAdvType {
   MINKOWSKI,
   HULL,
   RESIZE
 };
 
-class CgaladvNode : public AbstractNode
+class CgalAdvNode : public AbstractNode
 {
 public:
   VISITABLE();
-  CgaladvNode(const ModuleInstantiation *mi, CgaladvType type) : AbstractNode(mi), type(type) {
+  CgalAdvNode(const ModuleInstantiation *mi, CgalAdvType type) : AbstractNode(mi), type(type) {
     convexity = 1;
   }
   std::string toString() const override;
@@ -23,5 +23,5 @@ public:
   unsigned int convexity;
   Vector3d newsize;
   Eigen::Matrix<bool, 3, 1> autosize;
-  CgaladvType type;
+  CgalAdvType type;
 };

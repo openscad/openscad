@@ -26,8 +26,8 @@
 
 #include <set>
 
-#include "expression.h"
-#include "parameters.h"
+#include "Expression.h"
+#include "Parameters.h"
 
 Parameters::Parameters(ContextFrame&& frame, const Location& loc) :
   frame(std::move(frame)),

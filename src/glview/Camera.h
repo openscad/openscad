@@ -17,7 +17,7 @@
  */
 
 #include "linalg.h"
-#include "modcontext.h"
+#include "ScopeContext.h"
 #include <vector>
 #include <Eigen/Geometry>
 

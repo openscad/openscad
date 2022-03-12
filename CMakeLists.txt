@@ -591,52 +591,52 @@ endif()
 # NOTE: To keep HEADLESS builds working, do NOT add Qt-dependent sources here,
 #       see GUI_SOURCES list below for that.
 set(CORE_SOURCES
-  src/feature.cc
+  src/Feature.cc
   src/FontCache.cc
   src/handle_dep.cc
   src/LibraryInfo.cc
   src/RenderStatistic.cc
   src/version.cc
-  src/core/arguments.cc
-  src/core/builtin.cc
-  src/core/builtincontext.cc
-  src/core/cgaladv.cc
-  src/core/children.cc
-  src/core/color.cc
-  src/core/context.cc
-  src/core/contextframe.cc
-  src/core/context-mm.cc
+  src/core/Arguments.cc
+  src/core/Builtins.cc
+  src/core/BuiltinContext.cc
+  src/core/CgalAdvNode.cc
+  src/core/Children.cc
+  src/core/ColorNode.cc
+  src/core/Context.cc
+  src/core/ContextFrame.cc
+  src/core/ContextMemoryManager.cc
   src/core/control.cc
-  src/core/csgnode.cc
-  src/core/csgops.cc
+  src/core/CSGNode.cc
+  src/core/CsgOpNode.cc
   src/core/CSGTreeEvaluator.cc
-  src/core/customizer/annotation.cc
-  src/core/customizer/comment.cc
-  src/core/evaluationsession.cc
-  src/core/expr.cc
-  src/core/func.cc
+  src/core/customizer/Annotation.cc
+  src/core/customizer/CommentParser.cc
+  src/core/EvaluationSession.cc
+  src/core/Expression.cc
+  src/core/builtin_functions.cc
   src/core/function.cc
-  src/core/import.cc
-  src/core/linearextrude.cc
-  src/core/localscope.cc
-  src/core/modcontext.cc
+  src/core/ImportNode.cc
+  src/core/LinearExtrudeNode.cc
+  src/core/LocalScope.cc
+  src/core/ScopeContext.cc
   src/core/module.cc
   src/core/node.cc
-  src/core/nodedumper.cc
-  src/core/offset.cc
-  src/core/parameters.cc
+  src/core/NodeDumper.cc
+  src/core/OffsetNode.cc
+  src/core/Parameters.cc
   src/core/parsersettings.cc
   src/core/primitives.cc
   src/core/progress.cc
-  src/core/projection.cc
-  src/core/render.cc
-  src/core/roof.cc
+  src/core/ProjectionNode.cc
+  src/core/RenderNode.cc
+  src/core/RoofNode.cc
   src/core/DrawingCallback.cc
-  src/core/rotateextrude.cc
-  src/core/surface.cc
-  src/core/text.cc
-  src/core/transform.cc
-  src/core/value.cc
+  src/core/RotateExtrudeNode.cc
+  src/core/SurfaceNode.cc
+  src/core/TextNode.cc
+  src/core/TransformNode.cc
+  src/core/Value.cc
   src/core/Assignment.cc
   src/core/AST.cc
   src/core/FreetypeRenderer.cc
@@ -648,8 +648,8 @@ set(CORE_SOURCES
   src/core/StatCache.cc
   src/core/UserModule.cc
   src/core/Tree.cc
-  src/core/customizer/parameterobject.cc
-  src/core/customizer/parameterset.cc
+  src/core/customizer/ParameterObject.cc
+  src/core/customizer/ParameterSet.cc
   src/ext/lodepng/lodepng.cpp
   src/ext/polyclipping/clipper.cpp
   src/ext/libtess2/Source/bucketalloc.c
@@ -659,22 +659,22 @@ set(CORE_SOURCES
   src/ext/libtess2/Source/priorityq.c
   src/ext/libtess2/Source/sweep.c
   src/ext/libtess2/Source/tess.c
-  src/geometry/clipper-utils.cc
+  src/geometry/ClipperUtils.cc
   src/geometry/Geometry.cc
   src/geometry/GeometryCache.cc
   src/geometry/GeometryUtils.cc
   src/geometry/IndexedMesh.cc
   src/geometry/Polygon2d.cc
   src/geometry/linalg.cc
-  src/geometry/polyset.cc
-  src/geometry/polyset-utils.cc
+  src/geometry/PolySet.cc
+  src/geometry/PolySetUtils.cc
   src/geometry/roof_ss.cc
   src/geometry/roof_vd.cc
-  src/glview/rendersettings.cc
+  src/glview/RenderSettings.cc
   src/glview/Camera.cc
-  src/glview/colormap.cc
+  src/glview/ColorMap.cc
   src/glview/preview/CSGTreeNormalizer.cc
-  src/io/dxfdata.cc
+  src/io/DxfData.cc
   src/io/dxfdim.cc
   src/io/export.cc
   src/io/export_3mf.cc
@@ -716,7 +716,7 @@ set(CORE_SOURCES
   src/utils/degree_trig.cc
   src/utils/hash.cc
   src/utils/printutils.cc
-  src/utils/stackcheck.h
+  src/utils/StackCheck.h
   src/utils/svg.cc
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
@@ -767,7 +767,7 @@ if(NULLGL)
 else()
   set(OFFSCREEN_SOURCES
     src/glview/fbo.cc
-    src/glview/renderer.cc
+    src/glview/Renderer.cc
     src/glview/system-gl.cc
     src/glview/VertexArray.cc
     src/glview/VBORenderer.cc

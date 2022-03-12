@@ -24,11 +24,11 @@
  *
  */
 
-#include "polyset.h"
-#include "polyset-utils.h"
+#include "PolySet.h"
+#include "PolySetUtils.h"
 #include "linalg.h"
 #include "printutils.h"
-#include "grid.h"
+#include "Grid.h"
 #include <Eigen/LU>
 
 /*! /class PolySet
@@ -172,7 +172,7 @@ void PolySet::transform(const Transform3d& mat)
 bool PolySet::is_convex() const {
   if (convex || this->isEmpty()) return true;
   if (!convex) return false;
-  return PolysetUtils::is_approximately_convex(*this);
+  return PolySetUtils::is_approximately_convex(*this);
 }
 
 void PolySet::resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize)

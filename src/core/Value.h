@@ -388,7 +388,7 @@ protected:
     // A Deleter is used on the shared_ptrs to avoid stack overflow in cases
     // of destructing a very large list of nested embedded vectors, such as from a
     // recursive function which concats one element at a time.
-    // (A similar solution can also be seen with csgnode.h:CSGOperationDeleter).
+    // (A similar solution can also be seen with CSGNode.h:CSGOperationDeleter).
     struct VectorObjectDeleter {
       void operator()(VectorObject *vec);
     };

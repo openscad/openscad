@@ -25,22 +25,22 @@
  */
 
 #include "import.h"
-#include "importnode.h"
+#include "ImportNode.h"
 
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "polyset.h"
+#include "PolySet.h"
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #endif
 #include "Polygon2d.h"
-#include "builtin.h"
-#include "children.h"
-#include "dxfdata.h"
-#include "parameters.h"
+#include "Builtins.h"
+#include "Children.h"
+#include "DxfData.h"
+#include "Parameters.h"
 #include "printutils.h"
 #include "fileutils.h"
-#include "feature.h"
+#include "Feature.h"
 #include "handle_dep.h"
 #include "boost-utils.h"
 #include <sys/types.h>

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "Polygon2d.h"
-#include "polyset.h"
+#include "PolySet.h"
 
 namespace roof_vd {
 PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs);

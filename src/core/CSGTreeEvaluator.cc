@@ -1,17 +1,17 @@
 #include "CSGTreeEvaluator.h"
-#include "state.h"
-#include "csgops.h"
+#include "State.h"
+#include "CsgOpNode.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "csgnode.h"
-#include "transformnode.h"
-#include "colornode.h"
-#include "rendernode.h"
-#include "cgaladvnode.h"
+#include "CSGNode.h"
+#include "TransformNode.h"
+#include "ColorNode.h"
+#include "RenderNode.h"
+#include "CgalAdvNode.h"
 #include "printutils.h"
 #include "GeometryEvaluator.h"
-#include "polyset.h"
-#include "polyset-utils.h"
+#include "PolySet.h"
+#include "PolySetUtils.h"
 
 #include <string>
 #include <map>
@@ -180,7 +180,7 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
     if (p2d) {
       g.reset(p2d->tessellate());
     }
-    // 3D Polysets are tessellated before inserting into Geometry cache, inside GeometryEvaluator::evaluateGeometry
+    // 3D PolySets are tessellated before inserting into Geometry cache, inside GeometryEvaluator::evaluateGeometry
   }
 
   shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), STR(node.name() << node.index()), node.index()));
@@ -266,7 +266,7 @@ Response CSGTreeEvaluator::visit(State& state, const RenderNode& node)
   return Response::ContinueTraversal;
 }
 
-Response CSGTreeEvaluator::visit(State& state, const CgaladvNode& node)
+Response CSGTreeEvaluator::visit(State& state, const CgalAdvNode& node)
 {
   if (state.isPostfix()) {
     shared_ptr<CSGNode> t1;

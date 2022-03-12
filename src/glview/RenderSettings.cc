@@ -1,4 +1,4 @@
-#include "rendersettings.h"
+#include "RenderSettings.h"
 #include "printutils.h"
 
 RenderSettings *RenderSettings::inst(bool erase)

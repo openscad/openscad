@@ -23,7 +23,7 @@
 #include "system-gl.h"
 #include <iostream>
 #include "Camera.h"
-#include "colormap.h"
+#include "ColorMap.h"
 
 class GLView
 {

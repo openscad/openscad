@@ -25,8 +25,8 @@
  */
 
 #include "export.h"
-#include "polyset.h"
-#include "polyset-utils.h"
+#include "PolySet.h"
+#include "PolySetUtils.h"
 #include "printutils.h"
 #include "CGALHybridPolyhedron.h"
 
@@ -145,7 +145,7 @@ static bool append_3mf(const shared_ptr<const Geometry>& geom, PLib3MFModelMeshO
     return append_polyset(*hybrid->toPolySet(), model);
   } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
     PolySet triangulated(3);
-    PolysetUtils::tessellate_faces(*ps, triangulated);
+    PolySetUtils::tessellate_faces(*ps, triangulated);
     return append_polyset(triangulated, model);
   } else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
     assert(false && "Unsupported file format");
@@ -312,7 +312,7 @@ static bool append_3mf(const shared_ptr<const Geometry>& geom, Lib3MF::PWrapper&
     return append_polyset(*hybrid->toPolySet(), model);
   } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
     PolySet triangulated(3);
-    PolysetUtils::tessellate_faces(*ps, triangulated);
+    PolySetUtils::tessellate_faces(*ps, triangulated);
     return append_polyset(triangulated, wrapper, model);
   } else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
     assert(false && "Unsupported file format");

@@ -24,7 +24,7 @@
  *
  */
 
-#include "csgnode.h"
+#include "CSGNode.h"
 #include "Geometry.h"
 #include "linalg.h"
 #include "printutils.h"

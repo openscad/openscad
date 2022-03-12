@@ -24,7 +24,7 @@
  *
  */
 
-#include "contextframe.h"
+#include "ContextFrame.h"
 
 ContextFrame::ContextFrame(EvaluationSession *session) :
   evaluation_session(session)

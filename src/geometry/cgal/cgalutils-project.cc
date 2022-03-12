@@ -5,11 +5,11 @@
 
 #include "cgal.h"
 #include "cgalutils.h"
-#include "polyset.h"
+#include "PolySet.h"
 #include "printutils.h"
 #include "Polygon2d.h"
-#include "polyset-utils.h"
-#include "grid.h"
+#include "PolySetUtils.h"
+#include "Grid.h"
 #include "node.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -243,7 +243,7 @@ Polygon2d *project(const CGAL_Nef_polyhedron& N, bool cut)
       LOG(message_group::Error, Location::NONE, "", "Nef->PolySet failed");
       return poly;
     }
-    poly = PolysetUtils::project(ps);
+    poly = PolySetUtils::project(ps);
   }
   return poly;
 }

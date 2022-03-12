@@ -9,7 +9,7 @@
 #include <CGAL/Surface_mesh.h>
 
 #include "CGAL_Nef_polyhedron.h"
-#include "polyset-utils.h"
+#include "PolySetUtils.h"
 
 namespace CGALUtils {
 

@@ -29,7 +29,7 @@
 #include "node.h"
 #include "printutils.h"
 #include "exceptions.h"
-#include "modcontext.h"
+#include "ScopeContext.h"
 #include "parsersettings.h"
 #include "StatCache.h"
 #include <boost/algorithm/string.hpp>

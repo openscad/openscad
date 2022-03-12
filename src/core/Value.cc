@@ -34,9 +34,9 @@
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
 
-#include "value.h"
-#include "expression.h"
-#include "evaluationsession.h"
+#include "Value.h"
+#include "Expression.h"
+#include "EvaluationSession.h"
 #include "printutils.h"
 #include "boost-utils.h"
 #include "double-conversion/double-conversion.h"

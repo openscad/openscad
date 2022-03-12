@@ -34,12 +34,12 @@
 #include <boost/algorithm/string.hpp>
 #include "GeometryCache.h"
 #include "AutoUpdater.h"
-#include "feature.h"
+#include "Feature.h"
 #ifdef ENABLE_CGAL
 #include "CGALCache.h"
 #endif
-#include "colormap.h"
-#include "rendersettings.h"
+#include "ColorMap.h"
+#include "RenderSettings.h"
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"

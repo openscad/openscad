@@ -25,10 +25,10 @@
  */
 
 #include "VBORenderer.h"
-#include "feature.h"
-#include "polyset.h"
-#include "polyset-utils.h"
-#include "csgnode.h"
+#include "Feature.h"
+#include "PolySet.h"
+#include "PolySetUtils.h"
+#include "CSGNode.h"
 #include "printutils.h"
 #include "hash.h"
 

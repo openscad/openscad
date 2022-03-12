@@ -25,8 +25,8 @@
  */
 
 #include "Assignment.h"
-#include "annotation.h"
-#include "expression.h"
+#include "Annotation.h"
+#include "Expression.h"
 #include <sstream>
 
 void Assignment::addAnnotations(AnnotationList *annotations)

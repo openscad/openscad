@@ -5,29 +5,29 @@
 #include "Polygon2d.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "state.h"
-#include "offsetnode.h"
-#include "transformnode.h"
-#include "linearextrudenode.h"
-#include "roofnode.h"
+#include "State.h"
+#include "OffsetNode.h"
+#include "TransformNode.h"
+#include "LinearExtrudeNode.h"
+#include "RoofNode.h"
 #include "roof_ss.h"
 #include "roof_vd.h"
-#include "rotateextrudenode.h"
-#include "csgnode.h"
-#include "cgaladvnode.h"
-#include "projectionnode.h"
-#include "csgops.h"
-#include "textnode.h"
+#include "RotateExtrudeNode.h"
+#include "CSGNode.h"
+#include "CgalAdvNode.h"
+#include "ProjectionNode.h"
+#include "CsgOpNode.h"
+#include "TextNode.h"
 #include "CGALHybridPolyhedron.h"
 #include "cgalutils.h"
-#include "rendernode.h"
-#include "clipper-utils.h"
-#include "polyset-utils.h"
-#include "polyset.h"
+#include "RenderNode.h"
+#include "ClipperUtils.h"
+#include "PolySetUtils.h"
+#include "PolySet.h"
 #include "calc.h"
 #include "printutils.h"
 #include "calc.h"
-#include "dxfdata.h"
+#include "DxfData.h"
 #include "degree_trig.h"
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
@@ -76,7 +76,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
           assert(ps->getDimension() == 3);
           auto ps_tri = new PolySet(3, ps->convexValue());
           ps_tri->setConvexity(ps->getConvexity());
-          PolysetUtils::tessellate_faces(*ps, *ps_tri);
+          PolySetUtils::tessellate_faces(*ps, *ps_tri);
           this->root.reset(ps_tri);
         }
       }
@@ -1352,7 +1352,7 @@ shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const ProjectionNo
     // It's better in V6 but not quite there. FIXME: stand-alone example.
     // project chgeom -> polygon2d
     auto chPS = CGALUtils::getGeometryAsPolySet(chgeom);
-    if (chPS) poly = PolysetUtils::project(*chPS);
+    if (chPS) poly = PolySetUtils::project(*chPS);
 
     if (poly) {
       bounds.extend(poly->getBoundingBox());
@@ -1418,14 +1418,14 @@ Response GeometryEvaluator::visit(State& state, const ProjectionNode& node)
    operation:
     o Perform cgal operation
  */
-Response GeometryEvaluator::visit(State& state, const CgaladvNode& node)
+Response GeometryEvaluator::visit(State& state, const CgalAdvNode& node)
 {
   if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
   if (state.isPostfix()) {
     shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
       switch (node.type) {
-      case CgaladvType::MINKOWSKI: {
+      case CgalAdvType::MINKOWSKI: {
         ResultObject res = applyToChildren(node, OpenSCADOperator::MINKOWSKI);
         geom = res.constptr();
         // If we added convexity, we need to pass it on
@@ -1439,11 +1439,11 @@ Response GeometryEvaluator::visit(State& state, const CgaladvNode& node)
         }
         break;
       }
-      case CgaladvType::HULL: {
+      case CgalAdvType::HULL: {
         geom = applyToChildren(node, OpenSCADOperator::HULL).constptr();
         break;
       }
-      case CgaladvType::RESIZE: {
+      case CgalAdvType::RESIZE: {
         ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
         auto editablegeom = res.asMutableGeometry();
         geom = editablegeom;

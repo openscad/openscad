@@ -2,8 +2,8 @@
 
 #include "AST.h"
 #include "Assignment.h"
-#include "feature.h"
-#include "value.h"
+#include "Feature.h"
+#include "Value.h"
 
 #include <functional>
 #include <string>

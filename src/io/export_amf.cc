@@ -25,9 +25,9 @@
  */
 
 #include "export.h"
-#include "polyset.h"
-#include "polyset-utils.h"
-#include "dxfdata.h"
+#include "PolySet.h"
+#include "PolySetUtils.h"
+#include "DxfData.h"
 
 #ifdef ENABLE_CGAL
 #include "cgal.h"

@@ -1,15 +1,15 @@
-#include "renderer.h"
-#include "rendersettings.h"
+#include "Renderer.h"
+#include "RenderSettings.h"
 #include "Geometry.h"
-#include "polyset.h"
+#include "PolySet.h"
 #include "Polygon2d.h"
-#include "colormap.h"
+#include "ColorMap.h"
 #include "printutils.h"
-#include "feature.h"
+#include "Feature.h"
 #include "PlatformUtils.h"
 
-#include "polyset-utils.h"
-#include "grid.h"
+#include "PolySetUtils.h"
+#include "Grid.h"
 #include <Eigen/LU>
 
 #ifndef NULLGL
