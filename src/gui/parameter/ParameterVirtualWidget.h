@@ -3,7 +3,7 @@
 #include <boost/optional.hpp>
 #include "qtgettext.h"
 #include "ui_ParameterDescriptionWidget.h"
-#include "parameterobject.h"
+#include "ParameterObject.h"
 
 enum class DescriptionStyle { ShowDetails, Inline, HideDetails, DescriptionOnly };
 

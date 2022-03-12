@@ -27,7 +27,7 @@
 #include "qtgettext.h"
 #include "QGLView.h"
 #include "Preferences.h"
-#include "renderer.h"
+#include "Renderer.h"
 #include "degree_trig.h"
 
 #include <QApplication>
