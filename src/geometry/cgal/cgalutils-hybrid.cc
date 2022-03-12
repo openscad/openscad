@@ -7,6 +7,7 @@
 #include <CGAL/Polygon_mesh_processing/orientation.h>
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
 #include <CGAL/Surface_mesh.h>
+#include <CGAL/convex_hull_3.h>
 
 #include "CGAL_Nef_polyhedron.h"
 #include "PolySetUtils.h"
@@ -39,22 +40,35 @@ bool hasOnlyTriangles(const PolySet& ps) {
 
 std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const PolySet& ps)
 {
-  auto mesh = make_shared<CGAL_HybridMesh>();
+  // Since is_convex doesn't work well with non-planar faces,
+  // we tessellate the polyset before checking.
+  PolySet psq(ps);
+  std::vector<Vector3d> points3d;
+  psq.quantizeVertices(&points3d);
+  PolySet ps_tri(3, psq.convexValue());
+  PolySetUtils::tessellate_faces(psq, ps_tri);
+  if (ps_tri.is_convex()) {
+    typedef CGAL::Epick K;
+    // Collect point cloud
+    std::vector<K::Point_3> points(points3d.size());
+    for (size_t i = 0, n = points3d.size(); i < n; i++) {
+      points[i] = vector_convert<K::Point_3>(points3d[i]);
+    }
+    if (points.size() <= 3) return make_shared<CGALHybridPolyhedron>();
 
-  const PolySet *poly;
-  PolySet ps_tri(3, ps.convexValue());
-  if (hasOnlyTriangles(ps)) {
-    poly = &ps;
-  } else {
-    ps_tri.setConvexity(ps.getConvexity());
-    PolySetUtils::tessellate_faces(ps, ps_tri);
-    poly = &ps_tri;
+    // Apply hull
+    CGAL::Surface_mesh<CGAL::Point_3<K>> r;
+    CGAL::convex_hull_3(points.begin(), points.end(), r);
+    auto r_exact = make_shared<CGAL_HybridMesh>();
+    copyMesh(r, *r_exact);
+    return make_shared<CGALHybridPolyhedron>(r_exact);
   }
 
-  auto err = createMeshFromPolySet(*poly, *mesh);
+  auto mesh = make_shared<CGAL_HybridMesh>();
+  auto err = createMeshFromPolySet(ps_tri, *mesh);
   assert(!err);
 
-  if (!ps.is_convex()) {
+  if (!ps_tri.is_convex()) {
     if (isClosed(*mesh)) {
       // Note: PMP::orient can corrupt models and cause cataclysmic memory leaks
       // (try testdata/scad/3D/issues/issue1105d.scad for instance), but

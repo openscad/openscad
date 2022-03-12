@@ -277,7 +277,6 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1105b.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1105c.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1105d.scad
-  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1165.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1215c.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1803.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue3158.scad
