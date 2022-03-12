@@ -261,8 +261,8 @@ void ScadLexer2::fold(int start, int end)
     int prevStyle = editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i - 1);
     int currStyle = editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i);
 
-    bool currStyleIsBracket = (currStyle == 22);
-    if(currStyleIsBracket){
+    bool currStyleIsOtherText = (currStyle == OtherText);
+    if(currStyleIsOtherText){
       if ((ch == '{') || (ch == '[') ) {
         levelCurrent++;
       } else if ((ch == '}') || (ch == ']') ) {
