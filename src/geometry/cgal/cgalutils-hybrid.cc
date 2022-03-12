@@ -28,14 +28,31 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolyhedron(const
 
 template std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick>& poly);
 
+bool hasOnlyTriangles(const PolySet& ps) {
+  for (auto &p : ps.polygons) {
+    if (p.size() != 3) {
+      return false;
+    }
+  }
+  return true;
+}
+
 std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const PolySet& ps)
 {
   auto mesh = make_shared<CGAL_HybridMesh>();
 
-  auto err = createMeshFromPolySet(ps, *mesh);
-  assert(!err);
+  const PolySet *poly;
+  PolySet ps_tri(3, ps.convexValue());
+  if (hasOnlyTriangles(ps)) {
+    poly = &ps;
+  } else {
+    ps_tri.setConvexity(ps.getConvexity());
+    PolysetUtils::tessellate_faces(ps, ps_tri);
+    poly = &ps_tri;
+  }
 
-  triangulateFaces(*mesh);
+  auto err = createMeshFromPolySet(*poly, *mesh);
+  assert(!err);
 
   if (!ps.is_convex()) {
     if (isClosed(*mesh)) {
