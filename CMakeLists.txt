@@ -757,7 +757,7 @@ set(CGAL_SOURCES
 if(NULLGL)
   message(STATUS "NULLGL is set. Overriding OpenGL(TM) settings")
   set(OFFSCREEN_SOURCES
-    src/glview/renderer.cc
+    src/glview/Renderer.cc
     src/glview/NULLGL.cc # contains several 'nullified' versions of above .cc files
     src/glview/OffscreenView.cc
     src/glview/OffscreenContextNULL.cc
