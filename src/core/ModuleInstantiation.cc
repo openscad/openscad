@@ -70,7 +70,7 @@ static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shar
   AssignmentList argument_expressions = mod->arguments;
   for (const auto& argument_expression: argument_expressions) {
     std::string name  = argument_expression->getName();
-    std::string value = argument_expression->getExpr()->evaluate(context).toString();
+    std::string value = argument_expression->getExpr()->evaluate(context).toEchoString();
     if(name!=""){
       ss << name << "=";
     }

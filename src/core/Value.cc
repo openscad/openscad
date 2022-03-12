@@ -442,6 +442,10 @@ std::string Value::toEchoString() const
 {
   if (type() == Value::Type::STRING) {
     return std::string("\"") + toString() + '"';
+  } else if (type() == Value::Type::VECTOR) {
+    //we need to limit the length
+    //[1,2,3,4..]
+    return toString();
   } else {
     return toString();
   }
@@ -452,6 +456,10 @@ std::string Value::toEchoString(const tostring_visitor *visitor) const
 {
   if (type() == Value::Type::STRING) {
     return std::string("\"") + toString(visitor) + '"';
+  } else if (type() == Value::Type::VECTOR) {
+    //we need to limit the length
+    //[1,2,3,4..]
+    return toString(visitor);
   } else {
     return toString(visitor);
   }

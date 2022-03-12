@@ -460,7 +460,7 @@ static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<
   AssignmentList argument_expressions = val->arguments;
   for (const auto& argument_expression: argument_expressions) {
     std::string name  = argument_expression->getName();
-    std::string value = argument_expression->getExpr()->evaluate(context).toString();
+    std::string value = argument_expression->getExpr()->evaluate(context).toEchoString();
     if(name!=""){
       ss << name << "=";
     }
