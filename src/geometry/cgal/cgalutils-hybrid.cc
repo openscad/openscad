@@ -47,7 +47,7 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const Po
     poly = &ps;
   } else {
     ps_tri.setConvexity(ps.getConvexity());
-    PolysetUtils::tessellate_faces(ps, ps_tri);
+    PolySetUtils::tessellate_faces(ps, ps_tri);
     poly = &ps_tri;
   }
 
