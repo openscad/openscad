@@ -258,12 +258,24 @@ void ScadLexer2::fold(int start, int end)
 
     bool atEOL = ((ch == '\r' && chNext != '\n') || (ch == '\n'));
 
-    bool style = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i - 1) == Comment);
-    bool startstyle = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i) == Comment);
+    bool prevStyleIsComment = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i - 1) == Comment);
+    bool currStyleIsComment = (editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i) == Comment);
 
-    if (((ch == '{') || (ch == '[')) && !style || ((!style) && (startstyle))) {
+    if(!currStyleIsComment){
+      if ((ch == '{') || (ch == '[') ) {
+        levelCurrent++;
+      } else if ((ch == '}') || (ch == ']') ) {
+        levelCurrent--;
+      }
+    }
+    
+    bool isStartOfComment = (!prevStyleIsComment) && (currStyleIsComment);
+    bool isEndOfComment   = (prevStyleIsComment) && (!currStyleIsComment);
+    
+    if (isStartOfComment) {
       levelCurrent++;
-    } else if (((ch == '}') || (ch == ']')) && !style || ((style) && (!startstyle))) {
+    }
+    if (isEndOfComment){
       levelCurrent--;
     }
 
