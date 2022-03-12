@@ -456,7 +456,21 @@ static void NOINLINE print_err(const char *name, const Location& loc, const std:
  * during normal operating, not runtime during error handling.
  */
 static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<const Context>& context){
-  LOG(message_group::Trace, val->location(), context->documentRoot(), "called by '%1$s'", val->get_name());
+  std::stringstream ss;
+  AssignmentList argument_expressions = val->arguments;
+  for (const auto& argument_expression: argument_expressions) {
+    std::string name  = argument_expression->getName();
+    std::string value = argument_expression->getExpr()->evaluate(context).toString();
+    if(name!=""){
+      ss << name << "=";
+    }
+    ss << value;
+    if(argument_expression != argument_expressions.back()){
+      ss << ", ";
+    }
+  }
+
+  LOG(message_group::Trace, val->location(), context->documentRoot(), "called by '%1$s(%2$s)'", val->get_name(), ss.str());
 }
 
 FunctionCall::FunctionCall(Expression *expr, const AssignmentList& args, const Location& loc)
