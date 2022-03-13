@@ -391,14 +391,39 @@ public:
   }
 
   void operator()(const VectorType& v) const {
+    int stopAtCharacter=120;
+    bool stop = false;
     stream << '[';
-    if (!v.empty()) {
+
+    int size = stream.tellp();
+    if(size > stopAtCharacter){
+      stop = true;
+      stream << "...";
+    }
+
+    if (!v.empty() && !stop) {
       auto it = v.begin();
+
       it->toStream(stream);
-      for (++it; it != v.end(); ++it) {
+
+      int size = stream.tellp();
+      if(size > stopAtCharacter){
+        stop = true;
+        stream << ", ...";
+      }
+
+      for (++it; it != v.end() && !stop; ++it) {
         stream << ", ";
         it->toStream(stream);
+        
+        int size = stream.tellp();
+        if(size > stopAtCharacter && it != v.end()){
+          stop = true;
+          stream << ", ...";
+          break;
+        }
       }
+
     }
     stream << ']';
   }
@@ -440,29 +465,25 @@ void Value::toStream(const tostream_visitor *visitor) const
 
 std::string Value::toEchoString() const
 {
-  if (type() == Value::Type::STRING) {
-    return std::string("\"") + toString() + '"';
-  } else if (type() == Value::Type::VECTOR) {
-    //we need to limit the length
-    //[1,2,3,4..]
-    return toString();
-  } else {
-    return toString();
-  }
-}
+  int stopAtCharacter=200;
 
-// helper called by tostring_visitor methods to avoid extra instantiations
-std::string Value::toEchoString(const tostring_visitor *visitor) const
-{
+  std::string ret;
   if (type() == Value::Type::STRING) {
-    return std::string("\"") + toString(visitor) + '"';
+    auto str = toString();
+    if(str.length() > stopAtCharacter){
+      ret = std::string("\"") + str.substr(0, stopAtCharacter) + '"' + "..";
+    }else{
+      ret = std::string("\"") + str + '"';
+    }
   } else if (type() == Value::Type::VECTOR) {
-    //we need to limit the length
-    //[1,2,3,4..]
-    return toString(visitor);
+    //directly call tostream to use stringstream for efficiency and "stop at character" suppprt
+    std::ostringstream stream;
+    boost::apply_visitor(tostream_visitor(stream), this->value);
+    ret = stream.str();
   } else {
-    return toString(visitor);
+    ret = toString();
   }
+  return ret;
 }
 
 std::string UndefType::toString() const {
