@@ -219,13 +219,8 @@ endfunction()
 list(APPEND TESTS_FAILING_WITH_FAST_CSG
   # Different order of vertices
   3mfexport_3mf-export
-  # # Seems to only fail on some CI platforms:
-  # cgalpngtest_module-recursion
-  # fastcsg-cgalpng_LetterBlock # Different font on github{mac,windows} builds
   # Test script argument passing issue
   cgalstlsanitytest_normal-nan
-  # # No wireframe rendering yet.
-  # openscad-viewoptions-wireframe_view-options-tests
 )
 
 # Tests for which fast-csg works but produces different expectation files.
@@ -251,8 +246,6 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/bugs/issue791.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1138.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1137.scad
-  # Less broken and no green faces
-  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/polyhedron-tests.scad
 
   # No more green faces from differences.
   ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/CSG-modules.scad
@@ -289,6 +282,8 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/let-module-tests.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/rotate_extrude-hole.scad
   ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/rotate-empty-bbox.scad
+  # Less broken and no green faces
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/polyhedron-tests.scad
 )
 
 #

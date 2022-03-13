@@ -168,15 +168,15 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
   std::vector<K::Point_3> points;
   size_t pointsSaved = 0;
 
-  auto addPoint = [&](const auto &v) {
-    size_t s = reindexer.size();
-    size_t idx = reindexer.lookup(v);
-    if (idx == s) {
-      points.push_back(vector_convert<K::Point_3>(v));
-    } else {
-      pointsSaved++;
-    }
-  };
+  auto addPoint = [&](const auto& v) {
+      size_t s = reindexer.size();
+      size_t idx = reindexer.lookup(v);
+      if (idx == s) {
+        points.push_back(vector_convert<K::Point_3>(v));
+      } else {
+        pointsSaved++;
+      }
+    };
 
   for (const auto& item : children) {
     auto& chgeom = item.second;
@@ -196,7 +196,7 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
     } else {
       const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
       if (ps) {
-        points.reserve(points.size() + ps->polygons.size() * 3); 
+        points.reserve(points.size() + ps->polygons.size() * 3);
         for (const auto& p : ps->polygons) {
           for (const auto& v : p) {
             addPoint(vector_convert<K::Point_3>(v));
@@ -207,8 +207,6 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
   }
 
   if (points.size() <= 3) return false;
-
-  LOG(message_group::None, Location::NONE, "", "Hull: saved %1$lu / %2$lu points (%2$lu %)", pointsSaved, points.size(), 100 * pointsSaved / points.size());
 
   // Apply hull
   bool success = false;

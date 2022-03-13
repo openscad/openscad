@@ -30,7 +30,7 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolyhedron(const
 template std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick>& poly);
 
 bool hasOnlyTriangles(const PolySet& ps) {
-  for (auto &p : ps.polygons) {
+  for (auto& p : ps.polygons) {
     if (p.size() != 3) {
       return false;
     }
