@@ -61,13 +61,9 @@ parts:
     - libglew2.1
 
   cgal:
-    disable-parallel: true
-    source: https://github.com/CGAL/cgal/releases/download/v5.3/CGAL-5.3-library.tar.xz
+    source: https://github.com/CGAL/cgal/releases/download/v5.4/CGAL-5.4-library.tar.xz
     plugin: cmake
     cmake-parameters: [ "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_INSTALL_PREFIX=/usr" ]
-    override-build: |
-      patch -d "$SNAPCRAFT_PART_SRC" -p1 < "$SNAPCRAFT_STAGE/001-remove-demo-install.patch"
-      snapcraftctl build
     after: [ patches ]
     build-packages:
     - cmake
@@ -86,9 +82,10 @@ parts:
     - uuid-dev
 
   openscad-nightly:
-    disable-parallel: true
     source: .
     plugin: cmake
+    build-environment:
+    - SNAPCRAFT_PARALLEL_BUILD_COUNT: 2
     cmake-parameters: [
         "-DCMAKE_PREFIX_PATH=${SNAPCRAFT_STAGE}/usr",
         "-DCMAKE_INSTALL_PREFIX=/usr",
