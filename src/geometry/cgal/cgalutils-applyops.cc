@@ -208,7 +208,7 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
 
   if (points.size() <= 3) return false;
 
-  LOG(message_group::None, Location::None, "", "Hull: saved %1$lu / %2$lu points (%2$lu %)", pointsSaved, points.size(), 100 * pointsSaved / points.size());
+  LOG(message_group::None, Location::NONE, "", "Hull: saved %1$lu / %2$lu points (%2$lu %)", pointsSaved, points.size(), 100 * pointsSaved / points.size());
 
   // Apply hull
   bool success = false;
