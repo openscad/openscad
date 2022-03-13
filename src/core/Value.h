@@ -580,7 +580,6 @@ public:
   std::string toString() const;
   std::string toString(const tostring_visitor *visitor) const;
   std::string toEchoString() const;
-  std::string toEchoString(const tostring_visitor *visitor) const;
   const UndefType& toUndef();
   std::string toUndefString() const;
   void toStream(std::ostringstream& stream) const;
