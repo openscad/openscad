@@ -61,7 +61,6 @@ parts:
     - libglew2.1
 
   cgal:
-    disable-parallel: true
     source: https://github.com/CGAL/cgal/releases/download/v5.4/CGAL-5.4-library.tar.xz
     plugin: cmake
     cmake-parameters: [ "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_INSTALL_PREFIX=/usr" ]
@@ -83,9 +82,10 @@ parts:
     - uuid-dev
 
   openscad-nightly:
-    disable-parallel: true
     source: .
     plugin: cmake
+    build-environment:
+    - SNAPCRAFT_PARALLEL_BUILD_COUNT: 2
     cmake-parameters: [
         "-DCMAKE_PREFIX_PATH=${SNAPCRAFT_STAGE}/usr",
         "-DCMAKE_INSTALL_PREFIX=/usr",
