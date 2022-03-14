@@ -28,7 +28,7 @@ public:
   bool isEmpty() const override { return polygons.size() == 0; }
   Geometry *copy() const override { return new PolySet(*this); }
 
-  void quantizeVertices();
+  void quantizeVertices(std::vector<Vector3d> *pPointsOut = nullptr);
   size_t numFacets() const override { return polygons.size(); }
   void reserve(size_t numFacets) { polygons.reserve(numFacets); }
   void append_poly();

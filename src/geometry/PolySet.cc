@@ -207,7 +207,7 @@ void PolySet::resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& a
    neighboring grids.
    May reduce the number of polygons if polygons collapse into < 3 vertices.
  */
-void PolySet::quantizeVertices()
+void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
 {
   Grid3d<int> grid(GRID_FINE);
   std::vector<int> indices; // Vertex indices in one polygon
@@ -215,7 +215,12 @@ void PolySet::quantizeVertices()
     Polygon& p = *iter;
     indices.resize(p.size());
     // Quantize all vertices. Build index list
-    for (unsigned int i = 0; i < p.size(); ++i) indices[i] = grid.align(p[i]);
+    for (unsigned int i = 0; i < p.size(); ++i) {
+      auto index = indices[i] = grid.align(p[i]);
+      if (pPointsOut && index == grid.db.size() - 1) {
+        pPointsOut->push_back(p[i]);
+      }
+    }
     // Remove consecutive duplicate vertices
     Polygon::iterator currp = p.begin();
     for (unsigned int i = 0; i < indices.size(); ++i) {
