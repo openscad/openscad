@@ -369,6 +369,15 @@ public:
     dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
   {}
 
+  //used for VectorType
+  int rec = 0;
+  tostream_visitor(std::ostringstream& stream, int rec)
+    : stream(stream), builder(buffer, DC_BUFFER_SIZE),
+    dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
+  {
+      this->rec = rec;
+  }
+
   template <typename T> void operator()(const T& op1) const {
     //std::cout << "[generic tostream_visitor]\n";
     stream << boost::lexical_cast<std::string>(op1);
@@ -391,34 +400,40 @@ public:
   }
 
   void operator()(const VectorType& v) const {
-    int stopAtCharacter=120;
-    bool stop = false;
-    stream << '[';
 
+    int stopAtTotalCharacters=200;
+    bool stopVectorStream = false;
+
+    stream << '[';
+    //for every level of recurrsion, we need at least 1 closing braket
+    int stopAtCharacter=stopAtTotalCharacters - rec;
     int size = stream.tellp();
+
     if(size > stopAtCharacter){
-      stop = true;
-      stream << "...";
+      stopVectorStream = true;
+      if(!v.empty()){
+        stream << "...";
+      }
     }
 
-    if (!v.empty() && !stop) {
+    if (!v.empty() && !stopVectorStream) {
       auto it = v.begin();
 
-      it->toStream(stream);
+      it->toStream(stream, rec + 1);
 
       int size = stream.tellp();
       if(size > stopAtCharacter){
-        stop = true;
+        stopVectorStream = true;
         stream << ", ...";
       }
 
-      for (++it; it != v.end() && !stop; ++it) {
+      for (++it; it != v.end() && !stopVectorStream; ++it) {
         stream << ", ";
-        it->toStream(stream);
+        it->toStream(stream, rec + 1);
         
         int size = stream.tellp();
         if(size > stopAtCharacter && it != v.end()){
-          stop = true;
+          stopVectorStream = true;
           stream << ", ...";
           break;
         }
@@ -455,6 +470,11 @@ std::string Value::toString(const tostring_visitor *visitor) const
 void Value::toStream(std::ostringstream& stream) const
 {
   boost::apply_visitor(tostream_visitor(stream), this->value);
+}
+
+void Value::toStream(std::ostringstream& stream, int rec) const
+{
+  boost::apply_visitor(tostream_visitor(stream, rec), this->value);
 }
 
 // helper called by tostream_visitor methods to avoid extra instantiations

@@ -583,6 +583,7 @@ public:
   const UndefType& toUndef();
   std::string toUndefString() const;
   void toStream(std::ostringstream& stream) const;
+  void toStream(std::ostringstream& stream, int rec) const;
   void toStream(const tostream_visitor *visitor) const;
   std::string chrString() const;
   bool getVec2(double& x, double& y, bool ignoreInfinite = false) const;
