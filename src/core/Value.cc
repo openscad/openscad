@@ -370,13 +370,11 @@ public:
   {}
 
   //used for VectorType
-  int rec = 0;
-  tostream_visitor(std::ostringstream& stream, int rec)
-    : stream(stream), builder(buffer, DC_BUFFER_SIZE),
+  int recursionDepth = 0;
+  tostream_visitor(std::ostringstream& stream, int recursionDepth)
+    : stream(stream), recursionDepth(recursionDepth), builder(buffer, DC_BUFFER_SIZE),
     dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
-  {
-      this->rec = rec;
-  }
+  {}
 
   template <typename T> void operator()(const T& op1) const {
     //std::cout << "[generic tostream_visitor]\n";
@@ -404,11 +402,12 @@ public:
     int stopAtTotalCharacters=200;
     bool stopVectorStream = false;
 
-    stream << '[';
     //for every level of recurrsion, we need at least 1 closing braket
-    int stopAtCharacter=stopAtTotalCharacters - rec;
-    int size = stream.tellp();
+    int stopAtCharacter = stopAtTotalCharacters - recursionDepth;
 
+    stream << '[';
+
+    int size = stream.tellp();
     if(size > stopAtCharacter){
       stopVectorStream = true;
       if(!v.empty()){
@@ -419,7 +418,7 @@ public:
     if (!v.empty() && !stopVectorStream) {
       auto it = v.begin();
 
-      it->toStream(stream, rec + 1);
+      it->toStream(stream, recursionDepth + 1);
 
       int size = stream.tellp();
       if(size > stopAtCharacter){
@@ -429,7 +428,7 @@ public:
 
       for (++it; it != v.end() && !stopVectorStream; ++it) {
         stream << ", ";
-        it->toStream(stream, rec + 1);
+        it->toStream(stream, recursionDepth + 1);
         
         int size = stream.tellp();
         if(size > stopAtCharacter && it != v.end()){
