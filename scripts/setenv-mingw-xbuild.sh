@@ -51,13 +51,8 @@ if [ ! $MXEDIR ]; then
 fi
 
 if [ ! $MXEQTSUBDIR ]; then
-	if [ "`echo $* | grep qt4 `" ]; then
-		# qt4 is just 'qt' in MXE, see http://mxe.cc
-		MXEQTSUBDIR=qt
-	else
-		# default is qt5 see issue #252
-		MXEQTSUBDIR=qt5
-	fi
+	# default is qt5 see issue #252
+	MXEQTSUBDIR=qt5
 fi
 
 if [ ! -e $DEPLOYDIR ]; then

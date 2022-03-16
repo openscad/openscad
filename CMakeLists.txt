@@ -53,6 +53,7 @@ option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
 option(ENABLE_EGL "Enable EGL instead of GLX support if available" OFF)
+option(WASM "Build WebAssembly, (implies NULLGL=ON) " OFF)
 option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
 option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
@@ -77,7 +78,13 @@ if(PROFILE)
   SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
 endif()
 
-if (NULLGL)
+if(WASM)
+  set(NULLGL ON)
+  set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
+  target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
+endif()
+
+if(NULLGL)
   set(HEADLESS ON)
 endif()
 if(EXPERIMENTAL)
@@ -117,9 +124,6 @@ file(MAKE_DIRECTORY ${OPENSCAD_LIB_OUTPUT_DIR})
 target_compile_options(OpenSCAD PRIVATE "$<$<CONFIG:DEBUG>:-DDEBUG>")
 
 target_compile_definitions(OpenSCAD PRIVATE _REENTRANT UNICODE _UNICODE)
-
-# Stack size 8MB; github issue 116
-target_compile_definitions(OpenSCAD PRIVATE "STACKSIZE=${STACKSIZE}") # used as default in src/PlatformUtils.h
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
@@ -295,7 +299,11 @@ endif()
 # Reconsider this after CGAL 5.4: https://github.com/CGAL/cgal/pull/6029
 set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
 set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
-find_package(CGAL 5.0 REQUIRED COMPONENTS Core)
+# Some older versions do not match with CGAL 5.0 REQUIRED, so we check after.
+find_package(CGAL REQUIRED COMPONENTS Core)
+if (${CGAL_MAJOR_VERSION} LESS 5)
+  message(FATAL_ERROR "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION} less than required minimum version 5.0")
+endif()
 message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
 target_compile_definitions(OpenSCAD PRIVATE ENABLE_CGAL)
 # The macro `CGAL_DEBUG` allows to force CGAL assertions, even if `NDEBUG` is defined,
@@ -340,7 +348,7 @@ if(ENABLE_HIDAPI)
   find_package(HidAPI 0.10 QUIET)
   if(HIDAPI_FOUND)
     message(STATUS "HidAPI: ${HIDAPI_VERSION_STRING}")
-    set(INPUT_DRIVER_HIDAPI_SOURCES src/input/HidApiInputDriver.cc)
+    set(INPUT_DRIVER_HIDAPI_SOURCES src/gui/input/HidApiInputDriver.cc)
     target_include_directories(OpenSCAD SYSTEM PRIVATE ${HIDAPI_INCLUDE_DIR})
     list(APPEND COMMON_LIBRARIES ${HIDAPI_LIBRARY})
     target_compile_definitions(OpenSCAD PRIVATE ENABLE_HIDAPI)
@@ -356,7 +364,7 @@ if(ENABLE_SPNAV)
   find_package(SpNav QUIET)
   if(SPNAV_FOUND)
     message(STATUS "SpNav: found")
-    set(INPUT_DRIVER_SPNAV_SOURCES src/input/SpaceNavInputDriver.cc)
+    set(INPUT_DRIVER_SPNAV_SOURCES src/gui/input/SpaceNavInputDriver.cc)
     target_include_directories(OpenSCAD SYSTEM PRIVATE ${SPNAV_INCLUDE_DIR})
     list(APPEND COMMON_LIBRARIES ${SPNAV_LIBRARY})
     target_compile_definitions(OpenSCAD PRIVATE ENABLE_SPNAV)
@@ -390,7 +398,7 @@ if(NOT MSVC)
   find_package(Lib3MF QUIET)
   if (LIB3MF_FOUND)
     message(STATUS "lib3mf: ${LIB3MF_VERSION}")
-    target_compile_definitions(OpenSCAD PRIVATE ${LIB3MF_CFLAGS})
+    target_compile_definitions(OpenSCAD PRIVATE ${LIB3MF_DEFINITIONS})
     target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIB3MF_INCLUDE_DIRS})
     list(APPEND COMMON_LIBRARIES ${LIB3MF_LIBRARIES})
   else()
@@ -398,16 +406,31 @@ if(NOT MSVC)
   endif()
 endif()
 
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON) # does not propagate down to subdirectories
-target_include_directories(OpenSCAD PRIVATE src)
+target_include_directories(OpenSCAD PRIVATE
+  "src"
+  "src/core"
+  "src/core/customizer"
+  "src/ext/json"
+  "src/ext/lexertl/include"
+  "src/ext/libtess2/Include"
+  "src/geometry"
+  "src/geometry/cgal"
+  "src/glview"
+  "src/glview/preview"
+  "src/glview/cgal"
+  "src/gui"
+  "src/io"
+  "src/platform"
+  "src/utils"
+)
 
-FLEX_TARGET(openscad_lexer src/lexer.l ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
-BISON_TARGET(openscad_parser src/parser.y ${OPENSCAD_LIB_OUTPUT_DIR}/parser.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/parser.hxx COMPILE_FLAGS "-d -p parser")
+FLEX_TARGET(openscad_lexer src/core/lexer.l ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
+BISON_TARGET(openscad_parser src/core/parser.y ${OPENSCAD_LIB_OUTPUT_DIR}/parser.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/parser.hxx COMPILE_FLAGS "-d -p parser")
 ADD_FLEX_BISON_DEPENDENCY(openscad_lexer openscad_parser)
 
-FLEX_TARGET(comment_lexer src/comment_lexer.l ${OPENSCAD_LIB_OUTPUT_DIR}/comment_lexer.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/comment_lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
-BISON_TARGET(comment_parser src/comment_parser.y ${OPENSCAD_LIB_OUTPUT_DIR}/comment_parser.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/comment_parser.hxx COMPILE_FLAGS "-d -p comment_parser")
+FLEX_TARGET(comment_lexer src/core/customizer/comment_lexer.l ${OPENSCAD_LIB_OUTPUT_DIR}/comment_lexer.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/comment_lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
+BISON_TARGET(comment_parser src/core/customizer/comment_parser.y ${OPENSCAD_LIB_OUTPUT_DIR}/comment_parser.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/comment_parser.hxx COMPILE_FLAGS "-d -p comment_parser")
 ADD_FLEX_BISON_DEPENDENCY(comment_lexer comment_parser)
 
 if(NOT HEADLESS)
@@ -445,9 +468,9 @@ if(NOT HEADLESS)
     if (Qt5DBus_FOUND)
       message(STATUS "DBus input driver enabled")
       target_compile_definitions(OpenSCAD PRIVATE ENABLE_DBUS)
-      set(INPUT_DRIVER_DBUS_SOURCES src/input/DBusInputDriver.cc)
+      set(INPUT_DRIVER_DBUS_SOURCES src/gui/input/DBusInputDriver.cc)
       qt5_add_dbus_interface(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml openscad_interface)
-      qt5_add_dbus_adaptor(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml input/DBusInputDriver.h DBusInputDriver openscad_adaptor)
+      qt5_add_dbus_adaptor(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml gui/input/DBusInputDriver.h DBusInputDriver openscad_adaptor)
     else()
       message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
     endif()
@@ -460,7 +483,7 @@ if(NOT HEADLESS)
     find_package(Qt5Gamepad QUIET)
     if (Qt5Gamepad_FOUND)
       message(STATUS "Qt5Gamepad input driver enabled")
-      set(GUI_SOURCES ${GUI_SOURCES} src/input/QGamepadInputDriver.cc)
+      set(GUI_SOURCES ${GUI_SOURCES} src/gui/input/QGamepadInputDriver.cc)
       target_compile_definitions(OpenSCAD PRIVATE ENABLE_QGAMEPAD)
     else()
       message(STATUS "Qt5Gamepad input driver disabled as the Qt5Gamepad module could not be found.")
@@ -512,39 +535,43 @@ endif()
 #
 # Platform specific settings
 #
-SET(OFFSCREEN_METHOD "<undefined>")
+
+# Stack size 8MB; github issue 116
+target_compile_definitions(OpenSCAD PRIVATE "STACKSIZE=${STACKSIZE}") # used as default in src/platform/PlatformUtils.h
+
+if(NULLGL)
+  set(OFFSCREEN_METHOD "NULLGL")
+  message(STATUS "Offscreen OpenGL Context - using NULLGL")
+else()
+  SET(OFFSCREEN_METHOD "<undefined>")
+endif()
 if(APPLE)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_OS="Mac OS X")
   message(STATUS "Offscreen OpenGL Context - using Apple CGL")
-  set(PLATFORM_SOURCES src/PlatformUtils-mac.mm src/imageutils-macosx.cc src/CocoaUtils.mm)
+  set(PLATFORM_SOURCES src/platform/PlatformUtils-mac.mm src/io/imageutils-macosx.cc src/platform/CocoaUtils.mm)
   if(NOT HEADLESS)
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/AppleEvents.cc)
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/gui/AppleEvents.cc)
   endif()
-  if(NULLGL)
-    set(OFFSCREEN_METHOD "NULLGL")
-  else()
+  if(NOT NULLGL)
     set(OFFSCREEN_METHOD "Apple CGL")
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/OffscreenContextCGL.mm)
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextCGL.mm)
   endif()
   find_library(COCOA_LIBRARY Cocoa)
   list(APPEND PLATFORM_LIBS ${COCOA_LIBRARY})
 elseif(UNIX)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_OS="Unix")
-  set(PLATFORM_SOURCES src/imageutils-lodepng.cc src/PlatformUtils-posix.cc)
-  if(NULLGL)
-    set(OFFSCREEN_METHOD "NULLGL")
-    message(STATUS "Offscreen OpenGL Context - using NULLGL")
-  else()
+  set(PLATFORM_SOURCES src/io/imageutils-lodepng.cc src/platform/PlatformUtils-posix.cc)
+  if(NOT NULLGL)
     if(ENABLE_EGL AND OpenGL_EGL_FOUND)
       set(OFFSCREEN_METHOD "Unix EGL")
       message(STATUS "Offscreen OpenGL Context - using Unix EGL")
-      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/OffscreenContextEGL.cc)
+      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextEGL.cc)
       add_definitions(-DGLEW_EGL)
       list(APPEND PLATFORM_LIBS OpenGL::EGL)
     else()
       set(OFFSCREEN_METHOD "Unix GLX on X11")
       message(STATUS "Offscreen OpenGL Context - using Unix GLX on X11")
-      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/OffscreenContextGLX.cc)
+      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextGLX.cc)
       find_library(X11_LIBRARY X11)
       list(APPEND PLATFORM_LIBS ${X11_LIBRARY})
     endif()
@@ -553,122 +580,76 @@ elseif(WIN32)
   target_compile_definitions(OpenSCAD PRIVATE NOGDI)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_OS="Windows")
   message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
-  set(PLATFORM_SOURCES src/imageutils-lodepng.cc src/PlatformUtils-win.cc)
-  set(PLATFORM_SOURCES src/imageutils-lodepng.cc src/PlatformUtils-win.cc)
-  if(NULLGL)
-    set(OFFSCREEN_METHOD "NULLGL")
-  else()
+  set(PLATFORM_SOURCES src/io/imageutils-lodepng.cc src/platform/PlatformUtils-win.cc)
+  if(NOT NULLGL)
     set(OFFSCREEN_METHOD "Windows WGL")
     message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/OffscreenContextWGL.cc)
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextWGL.cc)
   endif()
 endif()
-
-target_include_directories(OpenSCAD PRIVATE "src/ext/libtess2/Include")
-target_include_directories(OpenSCAD PRIVATE "src/ext/json")
-target_include_directories(OpenSCAD PRIVATE "src/ext/lexertl/include")
 
 # NOTE: To keep HEADLESS builds working, do NOT add Qt-dependent sources here,
 #       see GUI_SOURCES list below for that.
 set(CORE_SOURCES
-  src/annotation.cc
-  src/arguments.cc
-  src/boost-utils.cc
-  src/builtin.cc
-  src/builtincontext.cc
-  src/calc.cc
-  src/cgaladv.cc
-  src/children.cc
-  src/clipper-utils.cc
-  src/color.cc
-  src/colormap.cc
-  src/context.cc
-  src/contextframe.cc
-  src/context-mm.cc
-  src/control.cc
-  src/comment.cc
-  src/csgnode.cc
-  src/csgops.cc
-  src/degree_trig.cc
-  src/dxfdata.cc
-  src/dxfdim.cc
-  src/evaluationsession.cc
-  src/IndexedMesh.cc
-  src/export.cc
-  src/export_3mf.cc
-  src/export_amf.cc
-  src/export_dxf.cc
-  src/export_off.cc
-  src/export_wrl.cc
-  src/export_pdf.cc
-  src/export_stl.cc
-  src/export_svg.cc
-  src/export_param.cc
-  src/expr.cc
-  src/feature.cc
-  src/fileutils.cc
-  src/func.cc
-  src/function.cc
-  src/handle_dep.cc
-  src/hash.cc
-  src/import.cc
-  src/import_3mf.cc
-  src/import_amf.cc
-  src/import_stl.cc
-  src/import_off.cc
-  src/import_svg.cc
-  src/import_json.cc
-  src/linalg.cc
-  src/linearextrude.cc
-  src/localscope.cc
-  src/modcontext.cc
-  src/module.cc
-  src/node.cc
-  src/nodedumper.cc
-  src/offset.cc
-  src/parameters.cc
-  src/parsersettings.cc
-  src/polyset.cc
-  src/polyset-utils.cc
-  src/primitives.cc
-  src/printutils.cc
-  src/progress.cc
-  src/projection.cc
-  src/render.cc
-  src/rendersettings.cc
-  src/roof.cc
-  src/roof_ss.cc
-  src/roof_vd.cc
-  src/rotateextrude.cc
-  src/stackcheck.h
-  src/surface.cc
-  src/svg.cc
-  src/text.cc
-  src/transform.cc
-  src/value.cc
-  src/version.cc
-  src/Assignment.cc
-  src/AST.cc
-  src/Camera.cc
-  src/CSGTreeNormalizer.cc
-  src/DrawingCallback.cc
+  src/Feature.cc
   src/FontCache.cc
-  src/FreetypeRenderer.cc
-  src/Geometry.cc
-  src/GeometryCache.cc
-  src/GeometryUtils.cc
-  src/GroupModule.cc
+  src/handle_dep.cc
   src/LibraryInfo.cc
-  src/ModuleInstantiation.cc
-  src/NodeVisitor.cc
-  src/PlatformUtils.cc
-  src/Polygon2d.cc
   src/RenderStatistic.cc
-  src/SourceFile.cc
-  src/SourceFileCache.cc
-  src/StatCache.cc
-  src/UserModule.cc
-  src/Tree.cc
+  src/version.cc
+  src/core/Arguments.cc
+  src/core/Builtins.cc
+  src/core/BuiltinContext.cc
+  src/core/CgalAdvNode.cc
+  src/core/Children.cc
+  src/core/ColorNode.cc
+  src/core/Context.cc
+  src/core/ContextFrame.cc
+  src/core/ContextMemoryManager.cc
+  src/core/control.cc
+  src/core/CSGNode.cc
+  src/core/CsgOpNode.cc
+  src/core/CSGTreeEvaluator.cc
+  src/core/customizer/Annotation.cc
+  src/core/customizer/CommentParser.cc
+  src/core/EvaluationSession.cc
+  src/core/Expression.cc
+  src/core/builtin_functions.cc
+  src/core/function.cc
+  src/core/ImportNode.cc
+  src/core/LinearExtrudeNode.cc
+  src/core/LocalScope.cc
+  src/core/ScopeContext.cc
+  src/core/module.cc
+  src/core/node.cc
+  src/core/NodeDumper.cc
+  src/core/OffsetNode.cc
+  src/core/Parameters.cc
+  src/core/parsersettings.cc
+  src/core/primitives.cc
+  src/core/progress.cc
+  src/core/ProjectionNode.cc
+  src/core/RenderNode.cc
+  src/core/RoofNode.cc
+  src/core/DrawingCallback.cc
+  src/core/RotateExtrudeNode.cc
+  src/core/SurfaceNode.cc
+  src/core/TextNode.cc
+  src/core/TransformNode.cc
+  src/core/Value.cc
+  src/core/Assignment.cc
+  src/core/AST.cc
+  src/core/FreetypeRenderer.cc
+  src/core/GroupModule.cc
+  src/core/ModuleInstantiation.cc
+  src/core/NodeVisitor.cc
+  src/core/SourceFile.cc
+  src/core/SourceFileCache.cc
+  src/core/StatCache.cc
+  src/core/UserModule.cc
+  src/core/Tree.cc
+  src/core/customizer/ParameterObject.cc
+  src/core/customizer/ParameterSet.cc
   src/ext/lodepng/lodepng.cpp
   src/ext/polyclipping/clipper.cpp
   src/ext/libtess2/Source/bucketalloc.c
@@ -678,25 +659,65 @@ set(CORE_SOURCES
   src/ext/libtess2/Source/priorityq.c
   src/ext/libtess2/Source/sweep.c
   src/ext/libtess2/Source/tess.c
-  src/libsvg/circle.cc
-  src/libsvg/data.cc
-  src/libsvg/ellipse.cc
-  src/libsvg/group.cc
-  src/libsvg/libsvg.cc
-  src/libsvg/line.cc
-  src/libsvg/path.cc
-  src/libsvg/polygon.cc
-  src/libsvg/polyline.cc
-  src/libsvg/rect.cc
-  src/libsvg/shape.cc
-  src/libsvg/svgpage.cc
-  src/libsvg/text.cc
-  src/libsvg/transformation.cc
-  src/libsvg/tspan.cc
-  src/libsvg/use.cc
-  src/libsvg/util.cc
-  src/parameter/parameterobject.cc
-  src/parameter/parameterset.cc
+  src/geometry/ClipperUtils.cc
+  src/geometry/Geometry.cc
+  src/geometry/GeometryCache.cc
+  src/geometry/GeometryUtils.cc
+  src/geometry/IndexedMesh.cc
+  src/geometry/Polygon2d.cc
+  src/geometry/linalg.cc
+  src/geometry/PolySet.cc
+  src/geometry/PolySetUtils.cc
+  src/geometry/roof_ss.cc
+  src/geometry/roof_vd.cc
+  src/glview/RenderSettings.cc
+  src/glview/Camera.cc
+  src/glview/ColorMap.cc
+  src/glview/preview/CSGTreeNormalizer.cc
+  src/io/DxfData.cc
+  src/io/dxfdim.cc
+  src/io/export.cc
+  src/io/export_3mf.cc
+  src/io/export_amf.cc
+  src/io/export_dxf.cc
+  src/io/export_off.cc
+  src/io/export_wrl.cc
+  src/io/export_pdf.cc
+  src/io/export_stl.cc
+  src/io/export_svg.cc
+  src/io/export_param.cc
+  src/io/fileutils.cc
+  src/io/import_3mf.cc
+  src/io/import_amf.cc
+  src/io/import_stl.cc
+  src/io/import_off.cc
+  src/io/import_svg.cc
+  src/io/import_json.cc
+  src/io/libsvg/circle.cc
+  src/io/libsvg/data.cc
+  src/io/libsvg/ellipse.cc
+  src/io/libsvg/group.cc
+  src/io/libsvg/libsvg.cc
+  src/io/libsvg/line.cc
+  src/io/libsvg/path.cc
+  src/io/libsvg/polygon.cc
+  src/io/libsvg/polyline.cc
+  src/io/libsvg/rect.cc
+  src/io/libsvg/shape.cc
+  src/io/libsvg/svgpage.cc
+  src/io/libsvg/text.cc
+  src/io/libsvg/transformation.cc
+  src/io/libsvg/tspan.cc
+  src/io/libsvg/use.cc
+  src/io/libsvg/util.cc
+  src/platform/PlatformUtils.cc
+  src/utils/boost-utils.cc
+  src/utils/calc.cc
+  src/utils/degree_trig.cc
+  src/utils/hash.cc
+  src/utils/printutils.cc
+  src/utils/StackCheck.h
+  src/utils/svg.cc
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
   ${BISON_openscad_parser_OUTPUTS}
@@ -704,31 +725,31 @@ set(CORE_SOURCES
   ${BISON_comment_parser_OUTPUTS})
 
 set(CGAL_SOURCES
-  src/cgalutils.cc
-  src/cgalutils-applyops.cc
-  src/cgalutils-applyops-hybrid.cc
-  src/cgalutils-applyops-hybrid-minkowski.cc
-  src/cgalutils-closed.cc
-  src/cgalutils-convex.cc
-  src/cgalutils-corefine.cc
-  src/cgalutils-kernel.cc
-  src/cgalutils-hybrid.cc
-  src/cgalutils-mesh.cc
-  src/cgalutils-minkowski.cc
-  src/cgalutils-nef.cc
-  src/cgalutils-orient.cc
-  src/cgalutils-polyhedron.cc
-  src/cgalutils-project.cc
-  src/cgalutils-tess.cc
-  src/cgalutils-triangulate.cc
-  src/export_nef.cc
-  src/CGALHybridPolyhedron.cc
-  src/import_nef.cc
-  src/CGAL_Nef_polyhedron.cc
-  src/CGALCache.cc
-  src/CSGTreeEvaluator.cc
-  src/Polygon2d-CGAL.cc
-  src/GeometryEvaluator.cc)
+  src/geometry/GeometryEvaluator.cc
+  src/geometry/cgal/cgalutils.cc
+  src/geometry/cgal/cgalutils-applyops.cc
+  src/geometry/cgal/cgalutils-applyops-hybrid.cc
+  src/geometry/cgal/cgalutils-applyops-hybrid-minkowski.cc
+  src/geometry/cgal/cgalutils-closed.cc
+  src/geometry/cgal/cgalutils-convex.cc
+  src/geometry/cgal/cgalutils-corefine.cc
+  src/geometry/cgal/cgalutils-kernel.cc
+  src/geometry/cgal/cgalutils-hybrid.cc
+  src/geometry/cgal/cgalutils-mesh.cc
+  src/geometry/cgal/cgalutils-minkowski.cc
+  src/geometry/cgal/cgalutils-nef.cc
+  src/geometry/cgal/cgalutils-orient.cc
+  src/geometry/cgal/cgalutils-polyhedron.cc
+  src/geometry/cgal/cgalutils-project.cc
+  src/geometry/cgal/cgalutils-tess.cc
+  src/geometry/cgal/cgalutils-triangulate.cc
+  src/geometry/cgal/CGALHybridPolyhedron.cc
+  src/geometry/cgal/CGAL_Nef_polyhedron.cc
+  src/geometry/cgal/CGALCache.cc
+  src/geometry/cgal/Polygon2d-CGAL.cc
+  src/io/export_nef.cc
+  src/io/import_nef.cc
+)
 
 #
 # Offscreen OpenGL context source code
@@ -736,34 +757,32 @@ set(CGAL_SOURCES
 if(NULLGL)
   message(STATUS "NULLGL is set. Overriding OpenGL(TM) settings")
   set(OFFSCREEN_SOURCES
-    src/export_png.cc
-    src/imageutils.cc
-    src/renderer.cc
-    src/render.cc
-    src/NULLGL.cc # contains several 'nullified' versions of above .cc files
-    src/OffscreenView.cc
-    src/OffscreenContextNULL.cc
-    src/${OFFSCREEN_IMGUTILS_SOURCE})
+    src/glview/Renderer.cc
+    src/glview/NULLGL.cc # contains several 'nullified' versions of above .cc files
+    src/glview/OffscreenView.cc
+    src/glview/OffscreenContextNULL.cc
+    src/io/export_png.cc
+    src/io/imageutils.cc
+    ${OFFSCREEN_IMGUTILS_SOURCE})
 else()
   set(OFFSCREEN_SOURCES
-    src/export_png.cc
-    src/fbo.cc
-    src/imageutils.cc
-    src/render.cc
-    src/renderer.cc
-    src/system-gl.cc
-    src/VertexArray.cc
-    src/VBORenderer.cc
-    src/CGALRenderer.cc
-    src/GLView.cc
-    src/OffscreenView.cc
-    src/OpenCSGRenderer.cc
-    src/ThrownTogetherRenderer.cc)
+    src/glview/fbo.cc
+    src/glview/Renderer.cc
+    src/glview/system-gl.cc
+    src/glview/VertexArray.cc
+    src/glview/VBORenderer.cc
+    src/glview/GLView.cc
+    src/glview/OffscreenView.cc
+    src/glview/cgal/CGALRenderer.cc
+    src/glview/preview/OpenCSGRenderer.cc
+    src/glview/preview/ThrownTogetherRenderer.cc
+    src/io/export_png.cc
+    src/io/imageutils.cc)
 endif()
 
 
 if(UNIX AND (NOT APPLE) AND (NOT HEADLESS))
-  set(PLATFORM_INPUT_DRIVER_SOURCES src/input/JoystickInputDriver.cc)
+  set(PLATFORM_INPUT_DRIVER_SOURCES src/gui/input/JoystickInputDriver.cc)
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_JOYSTICK)
 endif()
 
@@ -775,66 +794,65 @@ set(INPUT_DRIVER_SOURCES
 
 set(GUI_SOURCES
   ${GUI_SOURCES}
-  src/AutoUpdater.cc
-  src/CGALWorker.cc
-  src/Console.cc
-  src/Dock.cc
-  src/Editor.cc
-  src/ErrorLog.cc
-  src/EventFilter.h
-  src/FontListDialog.cc
-  src/FontListTableView.cc
-  src/InitConfigurator.cc
-  src/LaunchingScreen.cc
-  src/LibraryInfoDialog.cc
-  src/MainWindow.cc
-  src/MouseSelector.cc
-  src/OctoPrint.cc
-  src/OpenCSGWarningDialog.cc
-  src/OpenSCADApp.cc
-  src/Preferences.cc
-  src/PrintInitDialog.cc
-  src/PrintService.cc
-  src/ProgressWidget.cc
-  src/QGLView.cc
-  src/QSettingsCached.cc
-  src/QWordSearchField.cc
-  src/ScadApi.cc
-  src/ScadLexer.cc
-  src/ScintillaEditor.cc
-  src/Settings.cc
-  src/SettingsWriter.cc
-  src/TabManager.cc
-  src/TabWidget.cc
-  src/UIUtils.cc
-  src/WindowManager.cc
-  src/input/AxisConfigWidget.cc
-  src/input/ButtonConfigWidget.cc
-  src/input/InputDriver.cc
-  src/input/InputDriverManager.cc
-  src/input/InputEventMapper.cc
-  src/input/WheelIgnorer.cc
-  src/parameter/GroupWidget.cc
-  src/parameter/IgnoreWheelWhenNotFocused.cc
-  src/parameter/ParameterCheckBox.cc
-  src/parameter/ParameterComboBox.cc
-  src/parameter/ParameterSlider.cc
-  src/parameter/ParameterSpinBox.cc
-  src/parameter/ParameterText.cc
-  src/parameter/ParameterVector.cc
-  src/parameter/ParameterVirtualWidget.cc
-  src/parameter/ParameterWidget.cc
+  src/gui/AutoUpdater.cc
+  src/gui/CGALWorker.cc
+  src/gui/Console.cc
+  src/gui/Dock.cc
+  src/gui/Editor.cc
+  src/gui/ErrorLog.cc
+  src/gui/EventFilter.h
+  src/gui/FontListDialog.cc
+  src/gui/FontListTableView.cc
+  src/gui/InitConfigurator.cc
+  src/gui/LaunchingScreen.cc
+  src/gui/LibraryInfoDialog.cc
+  src/gui/MainWindow.cc
+  src/gui/MouseSelector.cc
+  src/gui/OctoPrint.cc
+  src/gui/OpenCSGWarningDialog.cc
+  src/gui/OpenSCADApp.cc
+  src/gui/Preferences.cc
+  src/gui/PrintInitDialog.cc
+  src/gui/PrintService.cc
+  src/gui/ProgressWidget.cc
+  src/gui/QGLView.cc
+  src/gui/QSettingsCached.cc
+  src/gui/QWordSearchField.cc
+  src/gui/ScadApi.cc
+  src/gui/ScadLexer.cc
+  src/gui/ScintillaEditor.cc
+  src/gui/Settings.cc
+  src/gui/SettingsWriter.cc
+  src/gui/TabManager.cc
+  src/gui/TabWidget.cc
+  src/gui/UIUtils.cc
+  src/gui/WindowManager.cc
+  src/gui/input/AxisConfigWidget.cc
+  src/gui/input/ButtonConfigWidget.cc
+  src/gui/input/InputDriver.cc
+  src/gui/input/InputDriverManager.cc
+  src/gui/input/InputEventMapper.cc
+  src/gui/input/WheelIgnorer.cc
+  src/gui/parameter/GroupWidget.cc
+  src/gui/parameter/IgnoreWheelWhenNotFocused.cc
+  src/gui/parameter/ParameterCheckBox.cc
+  src/gui/parameter/ParameterComboBox.cc
+  src/gui/parameter/ParameterSlider.cc
+  src/gui/parameter/ParameterSpinBox.cc
+  src/gui/parameter/ParameterText.cc
+  src/gui/parameter/ParameterVector.cc
+  src/gui/parameter/ParameterVirtualWidget.cc
+  src/gui/parameter/ParameterWidget.cc
   ${INPUT_DRIVER_SOURCES}
   )
 
 # header-only code
 set(GUI_HEADERS
-  src/AboutDialog.h
-  src/Network.h
-  src/NetworkSignal.h
+  src/gui/AboutDialog.h
+  src/gui/Network.h
+  src/gui/NetworkSignal.h
   )
 
-file(GLOB UIs src/*.ui)
 file(GLOB Resources *.qrc)
 
 list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES} ${Resources})
