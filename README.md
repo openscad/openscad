@@ -127,7 +127,7 @@ Follow the instructions for the platform you're compiling on below.
 
 Install git (https://git-scm.com/) onto your system. Then run a clone:
 
-    git clone git://github.com/openscad/openscad.git
+    git clone https://github.com/openscad/openscad.git
 
 This will download the latest sources into a directory named `openscad`.
 
