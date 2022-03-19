@@ -164,10 +164,19 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
 {
   typedef CGAL::Epick K;
   // Collect point cloud
-  // NB! CGAL's convex_hull_3() doesn't like std::set iterators, so we use a
-  // vector instead.
-
+  Reindexer<K::Point_3> reindexer;
   std::vector<K::Point_3> points;
+  size_t pointsSaved = 0;
+
+  auto addPoint = [&](const auto& v) {
+      size_t s = reindexer.size();
+      size_t idx = reindexer.lookup(v);
+      if (idx == s) {
+        points.push_back(vector_convert<K::Point_3>(v));
+      } else {
+        pointsSaved++;
+      }
+    };
 
   for (const auto& item : children) {
     auto& chgeom = item.second;
@@ -175,13 +184,13 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
       if (!N->isEmpty()) {
         points.reserve(points.size() + N->p3->number_of_vertices());
         for (CGAL_Nef_polyhedron3::Vertex_const_iterator i = N->p3->vertices_begin(); i != N->p3->vertices_end(); ++i) {
-          points.push_back(vector_convert<K::Point_3>(i->point()));
+          addPoint(vector_convert<K::Point_3>(i->point()));
         }
       }
     } else if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(chgeom)) {
       points.reserve(points.size() + hybrid->numVertices());
       hybrid->foreachVertexUntilTrue([&](auto& p) {
-          points.push_back(vector_convert<K::Point_3>(p));
+          addPoint(vector_convert<K::Point_3>(p));
           return false;
         });
     } else {
@@ -190,7 +199,7 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
         points.reserve(points.size() + ps->polygons.size() * 3);
         for (const auto& p : ps->polygons) {
           for (const auto& v : p) {
-            points.push_back(vector_convert<K::Point_3>(v));
+            addPoint(vector_convert<K::Point_3>(v));
           }
         }
       }

@@ -60,9 +60,12 @@ get_opensuse_deps()
  zypper install  mpfr-devel gmp-devel boost-devel \
   glew-devel cmake git bison flex cgal-devel curl \
   glib2-devel gettext freetype-devel harfbuzz-devel  \
-  libqscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
+  qscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
   xvfb-run libzip-devel libqt5-qtmultimedia-devel libqt5-qtsvg-devel \
-  double-conversion-devel
+  double-conversion-devel libboost_filesystem-devel libboost_regex-devel \
+  libboost_program_options-devel
+ # qscintilla-qt5-devel replaces libqscintilla_qt5-devel
+ # but openscad compiles with both
  zypper install libeigen3-devel
  if [ $? -ne 0 ]; then
   zypper install libeigen3

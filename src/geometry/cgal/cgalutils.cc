@@ -39,20 +39,16 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps)
   // Since is_convex doesn't work well with non-planar faces,
   // we tessellate the polyset before checking.
   PolySet psq(ps);
-  psq.quantizeVertices();
+  std::vector<Vector3d> points3d;
+  psq.quantizeVertices(&points3d);
   PolySet ps_tri(3, psq.convexValue());
   PolySetUtils::tessellate_faces(psq, ps_tri);
   if (ps_tri.is_convex()) {
     typedef CGAL::Epick K;
     // Collect point cloud
-    // FIXME: Use unordered container (need hash)
-    // NB! CGAL's convex_hull_3() doesn't like std::set iterators, so we use a list
-    // instead.
-    std::list<K::Point_3> points;
-    for (const auto& poly : psq.polygons) {
-      for (const auto& p : poly) {
-        points.push_back(vector_convert<K::Point_3>(p));
-      }
+    std::vector<K::Point_3> points(points3d.size());
+    for (size_t i = 0, n = points3d.size(); i < n; i++) {
+      points[i] = vector_convert<K::Point_3>(points3d[i]);
     }
 
     if (points.size() <= 3) return new CGAL_Nef_polyhedron();

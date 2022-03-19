@@ -84,8 +84,6 @@ parts:
   openscad-nightly:
     source: .
     plugin: cmake
-    build-environment:
-    - SNAPCRAFT_PARALLEL_BUILD_COUNT: 2
     cmake-parameters: [
         "-DCMAKE_PREFIX_PATH=${SNAPCRAFT_STAGE}/usr",
         "-DCMAKE_INSTALL_PREFIX=/usr",
@@ -94,6 +92,17 @@ parts:
         "-DEXPERIMENTAL=ON",
         "-DSNAPSHOT=ON"
     ]
+    override-build: |
+        cmake ${SNAPCRAFT_PART_SRC} \
+            -G 'Unix Makefiles' \
+            -DCMAKE_PREFIX_PATH="${SNAPCRAFT_STAGE}/usr" \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DSUFFIX=nightly \
+            -DEXPERIMENTAL=ON \
+            -DSNAPSHOT=ON
+        cmake --build .
+        cmake --install . --prefix "${SNAPCRAFT_PART_INSTALL}/usr"
     after: [ desktop-qt5, opencsg, cgal, lib3mf ]
     build-packages:
     - git
