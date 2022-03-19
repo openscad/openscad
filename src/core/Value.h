@@ -578,13 +578,9 @@ public:
   bool getDouble(double& v) const;
   bool getFiniteDouble(double& v) const;
   std::string toString() const;
-  std::string toString(const tostring_visitor *visitor) const;
   std::string toEchoString() const;
-  std::string toEchoString(const tostring_visitor *visitor) const;
   const UndefType& toUndef();
   std::string toUndefString() const;
-  void toStream(std::ostringstream& stream) const;
-  void toStream(const tostream_visitor *visitor) const;
   std::string chrString() const;
   bool getVec2(double& x, double& y, bool ignoreInfinite = false) const;
   bool getVec3(double& x, double& y, double& z) const;
