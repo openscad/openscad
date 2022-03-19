@@ -38,6 +38,7 @@
 #include "Expression.h"
 #include "EvaluationSession.h"
 #include "printutils.h"
+#include "StackCheck.h"
 #include "boost-utils.h"
 #include "double-conversion/double-conversion.h"
 #include "double-conversion/utils.h"
@@ -328,6 +329,15 @@ public:
     // Create a single stream and pass reference to it for list elements for optimization.
     std::ostringstream stream;
     stream << '[';
+
+    if (StackCheck::inst().check()) { 
+       if(!v.empty()){
+         stream << "...";
+       }
+      stream << ']';
+      return stream.str();
+     }
+
     if (!v.empty()) {
       auto it = v.begin();
       it->toStream(stream);
@@ -398,44 +408,23 @@ public:
   }
 
   void operator()(const VectorType& v) const {
-
-    int stopAtTotalCharacters=200;
-    bool stopVectorStream = false;
-
-    //for every level of recurrsion, we need at least 1 closing braket
-    int stopAtCharacter = stopAtTotalCharacters - recursionDepth;
-
     stream << '[';
-
-    int size = stream.tellp();
-    if(size > stopAtCharacter){
-      stopVectorStream = true;
+    if (StackCheck::inst().check()) { 
       if(!v.empty()){
         stream << "...";
       }
+      stream << ']';
+      return;
     }
 
-    if (!v.empty() && !stopVectorStream) {
+    if (!v.empty()) {
       auto it = v.begin();
 
       it->toStream(stream, recursionDepth + 1);
 
-      int size = stream.tellp();
-      if(size > stopAtCharacter){
-        stopVectorStream = true;
-        stream << ", ...";
-      }
-
-      for (++it; it != v.end() && !stopVectorStream; ++it) {
+      for (++it; it != v.end(); ++it) {
         stream << ", ";
         it->toStream(stream, recursionDepth + 1);
-        
-        int size = stream.tellp();
-        if(size > stopAtCharacter && it != v.end()){
-          stopVectorStream = true;
-          stream << ", ...";
-          break;
-        }
       }
 
     }

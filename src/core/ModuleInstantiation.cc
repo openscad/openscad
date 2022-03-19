@@ -66,27 +66,7 @@ void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& i
  * during normal operating, not runtime during error handling.
  */
 static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<const Context> context){
-  std::stringstream ss;
-  AssignmentList argument_expressions = mod->arguments;
-  for (const auto& argument_expression: argument_expressions) {
-    std::string name  = argument_expression->getName();
-    auto expression = argument_expression->getExpr();
-    std::string value;
-    try{
-       value = expression->evaluate(context).toEchoString();
-    } catch (EvaluationException& e) {
-       value="???";
-    }
-    if(name!=""){
-      ss << name << "=";
-    }
-    ss << value;
-    if(argument_expression != argument_expressions.back()){
-      ss << ", ";
-    }
-  }
-
-  LOG(message_group::Trace, mod->location(), context->documentRoot(), "called by '%1$s(%2$s)'", mod->name(), ss.str());
+  LOG(message_group::Trace, mod->location(), context->documentRoot(), "called by '%1$s'", mod->name());
 }
 
 std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_ptr<const Context> context) const

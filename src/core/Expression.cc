@@ -456,27 +456,7 @@ static void NOINLINE print_err(const char *name, const Location& loc, const std:
  * during normal operating, not runtime during error handling.
  */
 static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<const Context>& context){
-  std::stringstream ss;
-  AssignmentList argument_expressions = val->arguments;
-  for (const auto& argument_expression: argument_expressions) {
-    std::string name  = argument_expression->getName();
-    auto expression = argument_expression->getExpr();
-    std::string value;
-    try{
-       value = expression->evaluate(context).toEchoString();
-    } catch (EvaluationException& e) {
-       value="???";
-    }
-    if(name!=""){
-      ss << name << "=";
-    }
-    ss << value;
-    if(argument_expression != argument_expressions.back()){
-      ss << ", ";
-    }
-  }
-
-  LOG(message_group::Trace, val->location(), context->documentRoot(), "called by '%1$s(%2$s)'", val->get_name(), ss.str());
+  LOG(message_group::Trace, val->location(), context->documentRoot(), "called by '%1$s'", val->get_name());
 }
 
 FunctionCall::FunctionCall(Expression *expr, const AssignmentList& args, const Location& loc)
@@ -597,29 +577,29 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
   ContextHandle<Context> expression_context{Context::create<Context>(context)};
   const Expression *expression = this;
   while (true) {
-    try {
-      auto result = simplify_function_body(expression, *expression_context);
-      if (Value *value = boost::get<Value>(&result)) {
-        return std::move(*value);
-      }
+    auto result = simplify_function_body(expression, *expression_context);
+    if (Value *value = boost::get<Value>(&result)) {
+      return std::move(*value);
+    }
 
-      SimplifiedExpression *simplified_expression = boost::get<SimplifiedExpression>(&result);
-      assert(simplified_expression);
+    SimplifiedExpression *simplified_expression = boost::get<SimplifiedExpression>(&result);
+    assert(simplified_expression);
 
-      expression = simplified_expression->expression;
-      if (simplified_expression->new_context) {
-        expression_context = std::move(*simplified_expression->new_context);
+    expression = simplified_expression->expression;
+try{
+    if (simplified_expression->new_context) {
+      expression_context = std::move(*simplified_expression->new_context);
+    }
+    if (simplified_expression->new_active_function_call) {
+      current_call = *simplified_expression->new_active_function_call;
+      if (recursion_depth++ == 1000000) {
+        LOG(message_group::Error, expression->location(), expression_context->documentRoot(), "Recursion detected calling function '%1$s'", current_call->name);
+        throw RecursionException::create("function", current_call->name, current_call->location());
       }
-      if (simplified_expression->new_active_function_call) {
-        current_call = *simplified_expression->new_active_function_call;
-        if (recursion_depth++ == 1000000) {
-          LOG(message_group::Error, expression->location(), expression_context->documentRoot(), "Recursion detected calling function '%1$s'", current_call->name);
-          throw RecursionException::create("function", current_call->name, current_call->location());
-        }
-      }
-    } catch (EvaluationException& e) {
+    }
+} catch (EvaluationException& e) {
       if (e.traceDepth > 0) {
-        print_trace(current_call, *expression_context);
+        print_trace(this, *expression_context);
         e.traceDepth--;
       }
       throw;
