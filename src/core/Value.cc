@@ -291,6 +291,68 @@ const str_utf8_wrapper& Value::toStrUtf8Wrapper() const {
   return boost::get<str_utf8_wrapper>(this->value);
 }
 
+// Optimization to avoid multiple stream instantiations and copies to str for long vectors.
+// Functions identically to "class tostring_visitor", except outputting to stream and not returning strings
+class tostream_visitor : public boost::static_visitor<>
+{
+public:
+  std::ostringstream& stream;
+  mutable char buffer[DC_BUFFER_SIZE];
+  mutable double_conversion::StringBuilder builder;
+  double_conversion::DoubleToStringConverter dc;
+
+  tostream_visitor(std::ostringstream& stream)
+    : stream(stream), builder(buffer, DC_BUFFER_SIZE),
+    dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
+  {}
+
+  template <typename T> void operator()(const T& op1) const {
+    //std::cout << "[generic tostream_visitor]\n";
+    stream << boost::lexical_cast<std::string>(op1);
+  }
+
+  void operator()(const double& op1) const {
+    stream << DoubleConvert(op1, buffer, builder, dc);
+  }
+
+  void operator()(const UndefType&) const {
+    stream << "undef";
+  }
+
+  void operator()(const bool& v) const {
+    stream << (v ? "true" : "false");
+  }
+
+  void operator()(const EmbeddedVectorType&) const {
+    assert(false && "Error: unexpected visit to EmbeddedVectorType!");
+  }
+
+  void operator()(const VectorType& v) const {
+    stream << '[';
+    if (!v.empty()) {
+      auto it = v.begin();
+      boost::apply_visitor(*this, it->getVariant());
+      for (++it; it != v.end(); ++it) {
+        stream << ", ";
+        boost::apply_visitor(*this, it->getVariant());
+      }
+    }
+    stream << ']';
+  }
+
+  void operator()(const str_utf8_wrapper& v) const {
+    stream << '"' << v.toString() << '"';
+  }
+
+  void operator()(const RangePtr& v) const {
+    stream << *v;
+  }
+
+  void operator()(const FunctionPtr& v) const {
+    stream << *v;
+  }
+};
+
 class tostring_visitor : public boost::static_visitor<std::string>
 {
 public:
@@ -327,16 +389,7 @@ public:
   std::string operator()(const VectorType& v) const {
     // Create a single stream and pass reference to it for list elements for optimization.
     std::ostringstream stream;
-    stream << '[';
-    if (!v.empty()) {
-      auto it = v.begin();
-      it->toStream(stream);
-      for (++it; it != v.end(); ++it) {
-        stream << ", ";
-        it->toStream(stream);
-      }
-    }
-    stream << ']';
+    (tostream_visitor(stream))(v);
     return stream.str();
   }
 
@@ -353,89 +406,9 @@ public:
   }
 };
 
-// Optimization to avoid multiple stream instantiations and copies to str for long vectors.
-// Functions identically to "class tostring_visitor", except outputting to stream and not returning strings
-class tostream_visitor : public boost::static_visitor<>
-{
-public:
-  std::ostringstream& stream;
-
-  mutable char buffer[DC_BUFFER_SIZE];
-  mutable double_conversion::StringBuilder builder;
-  double_conversion::DoubleToStringConverter dc;
-
-  tostream_visitor(std::ostringstream& stream)
-    : stream(stream), builder(buffer, DC_BUFFER_SIZE),
-    dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
-  {}
-
-  template <typename T> void operator()(const T& op1) const {
-    //std::cout << "[generic tostream_visitor]\n";
-    stream << boost::lexical_cast<std::string>(op1);
-  }
-
-  void operator()(const double& op1) const {
-    stream << DoubleConvert(op1, buffer, builder, dc);
-  }
-
-  void operator()(const UndefType&) const {
-    stream << "undef";
-  }
-
-  void operator()(const bool& v) const {
-    stream << (v ? "true" : "false");
-  }
-
-  void operator()(const EmbeddedVectorType&) const {
-    assert(false && "Error: unexpected visit to EmbeddedVectorType!");
-  }
-
-  void operator()(const VectorType& v) const {
-    stream << '[';
-    if (!v.empty()) {
-      auto it = v.begin();
-      it->toStream(stream);
-      for (++it; it != v.end(); ++it) {
-        stream << ", ";
-        it->toStream(stream);
-      }
-    }
-    stream << ']';
-  }
-
-  void operator()(const str_utf8_wrapper& v) const {
-    stream << '"' << v.toString() << '"';
-  }
-
-  void operator()(const RangePtr& v) const {
-    stream << *v;
-  }
-
-  void operator()(const FunctionPtr& v) const {
-    stream << *v;
-  }
-};
-
 std::string Value::toString() const
 {
   return boost::apply_visitor(tostring_visitor(), this->value);
-}
-
-// helper called by tostring_visitor methods to avoid extra instantiations
-std::string Value::toString(const tostring_visitor *visitor) const
-{
-  return boost::apply_visitor(*visitor, this->value);
-}
-
-void Value::toStream(std::ostringstream& stream) const
-{
-  boost::apply_visitor(tostream_visitor(stream), this->value);
-}
-
-// helper called by tostream_visitor methods to avoid extra instantiations
-void Value::toStream(const tostream_visitor *visitor) const
-{
-  boost::apply_visitor(*visitor, this->value);
 }
 
 std::string Value::toEchoString() const
@@ -444,16 +417,6 @@ std::string Value::toEchoString() const
     return std::string("\"") + toString() + '"';
   } else {
     return toString();
-  }
-}
-
-// helper called by tostring_visitor methods to avoid extra instantiations
-std::string Value::toEchoString(const tostring_visitor *visitor) const
-{
-  if (type() == Value::Type::STRING) {
-    return std::string("\"") + toString(visitor) + '"';
-  } else {
-    return toString(visitor);
   }
 }
 
