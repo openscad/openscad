@@ -54,6 +54,18 @@ private:
   LoopCntException(const std::string& what_arg, const Location& loc) : EvaluationException(what_arg), loc(loc) {}
 };
 
+class VectorEchoStringException : public EvaluationException
+{
+public:
+  static VectorEchoStringException create() {
+    return VectorEchoStringException{STR("ERROR: Stack exhausted while trying to convert a vector to EchoString")};
+  }
+  ~VectorEchoStringException() throw() {}
+
+private:
+  VectorEchoStringException(const std::string& what_arg) : EvaluationException(what_arg) {}
+};
+
 class HardWarningException : public EvaluationException
 {
 public:

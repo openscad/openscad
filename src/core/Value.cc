@@ -38,6 +38,7 @@
 #include "Expression.h"
 #include "EvaluationSession.h"
 #include "printutils.h"
+#include "StackCheck.h"
 #include "boost-utils.h"
 #include "double-conversion/double-conversion.h"
 #include "double-conversion/utils.h"
@@ -328,6 +329,10 @@ public:
   }
 
   void operator()(const VectorType& v) const {
+    if (StackCheck::inst().check()) { 
+      LOG(message_group::Error, Location::NONE, "", "Stack exhausted while trying to convert a vector to EchoString");
+      throw VectorEchoStringException::create();
+    }
     stream << '[';
     if (!v.empty()) {
       auto it = v.begin();
