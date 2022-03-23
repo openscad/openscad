@@ -330,7 +330,6 @@ public:
 
   void operator()(const VectorType& v) const {
     if (StackCheck::inst().check()) { 
-      LOG(message_group::Error, Location::NONE, "", "Stack exhausted while trying to convert a vector to EchoString");
       throw VectorEchoStringException::create();
     }
     stream << '[';
@@ -394,7 +393,12 @@ public:
   std::string operator()(const VectorType& v) const {
     // Create a single stream and pass reference to it for list elements for optimization.
     std::ostringstream stream;
-    (tostream_visitor(stream))(v);
+    try {
+      (tostream_visitor(stream))(v);
+    } catch (EvaluationException& e) {
+      LOG(message_group::Error, Location::NONE, "", "Stack exhausted while trying to convert a vector to EchoString");
+      throw;
+    }
     return stream.str();
   }
 
