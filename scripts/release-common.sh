@@ -115,7 +115,7 @@ case $OS in
         ZIP="zip"
         ZIPARGS="-r -q"
         echo Mingw-cross build using ARCH=$ARCH MXELIBTYPE=$MXELIBTYPE
-        CMAKE_CONFIG="$CMAKE_CONFIG -DMXECROSS=ON"
+        CMAKE_CONFIG="$CMAKE_CONFIG -DMXECROSS=ON -DALLOW_BUNDLED_HIDAPI=ON"
     ;;
 esac
 
