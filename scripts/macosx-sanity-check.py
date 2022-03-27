@@ -169,7 +169,7 @@ if __name__ == '__main__':
         assert(deps)
         for d in deps:
             absfile = lookup_library(d)
-            if absfile == None:
+            if absfile is None:
                 print("Not found: " + d)
                 print("  ..required by " + str(processed[dep]))
                 error = True
