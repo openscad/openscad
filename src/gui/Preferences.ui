@@ -2407,7 +2407,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset resource="../../resources/common.qrc">
      <normaloff>:/icons/prefs3DView.png</normaloff>:/icons/prefs3DView.png</iconset>
    </property>
    <property name="text">
@@ -2419,7 +2419,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset resource="../../resources/common.qrc">
      <normaloff>:/icons/prefsAdvanced.png</normaloff>:/icons/prefsAdvanced.png</iconset>
    </property>
    <property name="text">
@@ -2431,7 +2431,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset resource="../../resources/common.qrc">
      <normaloff>:/icons/prefsEditor.png</normaloff>:/icons/prefsEditor.png</iconset>
    </property>
    <property name="text">
@@ -2443,7 +2443,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset resource="../../resources/common.qrc">
      <normaloff>:/icons/prefsUpdate.png</normaloff>:/icons/prefsUpdate.png</iconset>
    </property>
    <property name="text">
@@ -2455,7 +2455,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset resource="../../resources/common.qrc">
      <normaloff>:/icons/prefsFeatures.png</normaloff>:/icons/prefsFeatures.png</iconset>
    </property>
    <property name="text">
@@ -2470,7 +2470,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset resource="../../resources/common.qrc">
      <normaloff>:/icons/prefsInputAxis.png</normaloff>:/icons/prefsInputAxis.png</iconset>
    </property>
    <property name="text">
@@ -2485,7 +2485,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset resource="../../resources/common.qrc">
      <normaloff>:/icons/prefsInputButtons.png</normaloff>:/icons/prefsInputButtons.png</iconset>
    </property>
    <property name="text">
@@ -2497,7 +2497,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../openscad.qrc">
+    <iconset resource="../../resources/common.qrc">
      <normaloff>:/icons/prefs3DPrint.png</normaloff>:/icons/prefs3DPrint.png</iconset>
    </property>
    <property name="text">
@@ -2523,7 +2523,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../openscad.qrc"/>
+  <include location="../../resources/common.qrc"/>
  </resources>
  <connections/>
 </ui>
