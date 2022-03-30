@@ -187,7 +187,7 @@ def process_templates():
             scadname = filename.replace("-template","")
             # search for path of template output
             scadpath = find_single_file(scadname, winbase + r'\tests\data\scad')
-            if scadpath != None:
+            if scadpath is not None:
                 print('Ovewriting ' + scadpath + ' based on ' + filename + ' using path ' + cmakebase)
                 fout = open(scadpath, 'w')
                 fin = open(templatepath + '\\' + filename, 'r')

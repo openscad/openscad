@@ -97,6 +97,7 @@ bool create_wgl_dummy_context(OffscreenContext& ctx)
   //  and ctx->dev_context if successful
 
   // create window
+  LPCWSTR lpClassName = L"OpenSCAD";
 
   HINSTANCE inst = GetModuleHandleW(0);
   WNDCLASSW wc;
@@ -104,17 +105,19 @@ bool create_wgl_dummy_context(OffscreenContext& ctx)
   wc.style = CS_OWNDC;
   wc.lpfnWndProc = WndProc;
   wc.hInstance = inst;
-  wc.lpszClassName = L"OpenSCAD";
+  wc.lpszClassName = lpClassName;
   ATOM class_atom = RegisterClassW(&wc);
 
   if (class_atom == 0) {
-    std::cerr << "MS GDI - RegisterClass failed\n";
-    std::cerr << "last-error code: " << GetLastError() << "\n";
-    return false;
+    const DWORD last_error = GetLastError();
+    if (last_error != ERROR_CLASS_ALREADY_EXISTS) {
+      std::cerr << "MS GDI - RegisterClass failed\n";
+      std::cerr << "last-error code: " << last_error << "\n";
+      return false;
+    }
   }
 
-  LPCTSTR lpClassName = L"OpenSCAD";
-  LPCTSTR lpWindowName = L"OpenSCAD";
+  LPCWSTR lpWindowName = L"OpenSCAD";
   DWORD dwStyle = WS_CAPTION | WS_POPUPWINDOW; // | WS_VISIBLE
   int x = 0;
   int y = 0;

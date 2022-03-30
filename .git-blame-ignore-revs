@@ -1,0 +1,11 @@
+# Commits listed in this file will be ignored by github in "blame" view.  
+# This feature is still in public beta at time of writing, 2022-03-27.
+# See Github docs here: https://docs.github.com/en/repositories/working-with-files/using-files/viewing-a-file#ignore-commits-in-the-blame-view
+
+# This file may also be used when running git blame locally (git v2.23+):
+#   git blame --ignore-revs-file .git-blame-ignore-revs
+
+# Any mass-formatting / whitespace-only types of changes should ideally be listed in this file
+
+# Run uncrustify (via scripts/beautify.sh --all). 2022-02-06 by t-paul
+9b3163e740cbcc771c6825b679e02bb76a9b2b45

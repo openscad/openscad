@@ -527,7 +527,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
   connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
 
-  connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(updateGL()));
+  connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(update()));
   connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
   connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
   connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
@@ -1939,9 +1939,7 @@ void MainWindow::csgRender()
         anim_dumping = true;
         anim_dump_start_step = anim_step;
       }
-      // Force reading from front buffer. Some configurations will read from the back buffer here.
-      glReadBuffer(GL_FRONT);
-      QImage img = this->qglview->grabFrameBuffer();
+      QImage img = this->qglview->grabFrame();
       QString filename = QString("frame%1.png").arg(this->anim_step, 5, 10, QChar('0'));
       img.save(filename, "PNG");
     }
@@ -2664,7 +2662,7 @@ void MainWindow::viewModePreview()
     viewActionPreview->setChecked(true);
     this->qglview->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : (Renderer *)this->thrownTogetherRenderer);
     this->qglview->updateColorScheme();
-    this->qglview->updateGL();
+    this->qglview->update();
   } else {
     viewModeThrownTogether();
   }
@@ -2681,7 +2679,7 @@ void MainWindow::viewModeSurface()
   this->qglview->setShowFaces(true);
   this->qglview->setRenderer(this->cgalRenderer);
   this->qglview->updateColorScheme();
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewModeWireframe()
@@ -2691,7 +2689,7 @@ void MainWindow::viewModeWireframe()
   this->qglview->setShowFaces(false);
   this->qglview->setRenderer(this->cgalRenderer);
   this->qglview->updateColorScheme();
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 #endif /* ENABLE_CGAL */
@@ -2702,7 +2700,7 @@ void MainWindow::viewModeThrownTogether()
   viewActionThrownTogether->setChecked(true);
   this->qglview->setRenderer(this->thrownTogetherRenderer);
   this->qglview->updateColorScheme();
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewModeShowEdges()
@@ -2710,7 +2708,7 @@ void MainWindow::viewModeShowEdges()
   QSettingsCached settings;
   settings.setValue("view/showEdges", viewActionShowEdges->isChecked());
   this->qglview->setShowEdges(viewActionShowEdges->isChecked());
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewModeShowAxes()
@@ -2720,7 +2718,7 @@ void MainWindow::viewModeShowAxes()
   settings.setValue("view/showAxes", showaxes);
   this->viewActionShowScaleProportional->setEnabled(showaxes);
   this->qglview->setShowAxes(showaxes);
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewModeShowCrosshairs()
@@ -2728,7 +2726,7 @@ void MainWindow::viewModeShowCrosshairs()
   QSettingsCached settings;
   settings.setValue("view/showCrosshairs", viewActionShowCrosshairs->isChecked());
   this->qglview->setShowCrosshairs(viewActionShowCrosshairs->isChecked());
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewModeShowScaleProportional()
@@ -2736,7 +2734,7 @@ void MainWindow::viewModeShowScaleProportional()
   QSettingsCached settings;
   settings.setValue("view/showScaleProportional", viewActionShowScaleProportional->isChecked());
   this->qglview->setShowScaleProportional(viewActionShowScaleProportional->isChecked());
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewModeAnimate()
@@ -2781,49 +2779,49 @@ void MainWindow::animateUpdate()
 void MainWindow::viewAngleTop()
 {
   qglview->cam.object_rot << 90, 0, 0;
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewAngleBottom()
 {
   qglview->cam.object_rot << 270, 0, 0;
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewAngleLeft()
 {
   qglview->cam.object_rot << 0, 0, 90;
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewAngleRight()
 {
   qglview->cam.object_rot << 0, 0, 270;
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewAngleFront()
 {
   qglview->cam.object_rot << 0, 0, 0;
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewAngleBack()
 {
   qglview->cam.object_rot << 0, 0, 180;
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewAngleDiagonal()
 {
   qglview->cam.object_rot << 35, 0, -25;
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewCenter()
 {
   qglview->cam.object_trans << 0, 0, 0;
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewPerspective()
@@ -2833,7 +2831,7 @@ void MainWindow::viewPerspective()
   viewActionPerspective->setChecked(true);
   viewActionOrthogonal->setChecked(false);
   this->qglview->setOrthoMode(false);
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewOrthogonal()
@@ -2843,7 +2841,7 @@ void MainWindow::viewOrthogonal()
   viewActionPerspective->setChecked(false);
   viewActionOrthogonal->setChecked(true);
   this->qglview->setOrthoMode(true);
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewTogglePerspective()
@@ -2858,13 +2856,13 @@ void MainWindow::viewTogglePerspective()
 void MainWindow::viewResetView()
 {
   this->qglview->resetView();
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::viewAll()
 {
   this->qglview->viewAll();
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::on_editorDock_visibilityChanged(bool)
@@ -3252,7 +3250,7 @@ void MainWindow::setColorScheme(const QString& scheme)
 {
   RenderSettings::inst()->colorscheme = scheme.toStdString();
   this->qglview->setColorScheme(scheme.toStdString());
-  this->qglview->updateGL();
+  this->qglview->update();
 }
 
 void MainWindow::setFont(const QString& family, uint size)
