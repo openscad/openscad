@@ -1,0 +1,6 @@
+<RCC>
+  <qresource>
+    <file>icons/openscad-macos.png</file>
+    <file>icons/openscad-nightly-macos.png</file>
+  </qresource>
+</RCC>

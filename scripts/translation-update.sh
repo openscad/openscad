@@ -114,8 +114,8 @@ updatemo()
  then
   echo "using suffix '$SUFFIX'"
  fi
- cp -f ./icons/openscad.desktop.in ./icons/openscad.desktop
- sed -i.bak -e "s,@@openscad@@,openscad${SUFFIX}," ./icons/openscad.desktop
+ cp -f ./resources/icons/openscad.desktop.in ./resources/icons/openscad.desktop
+ sed -i.bak -e "s,@@openscad@@,openscad${SUFFIX}," ./resources/icons/openscad.desktop
  sed -i.bak -e "s,</id>,${SUFFIX}\\0,; s/openscad.desktop/openscad${SUFFIX}.desktop/; s/openscad.png/openscad${SUFFIX}.png/" ./openscad.appdata.xml
 }
 
