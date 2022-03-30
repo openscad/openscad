@@ -98,7 +98,7 @@ init_variables()
 check_starting_path()
 {
 	cd $STARTPATH
-	if [ -e openscad.qrc ]; then
+	if [ -e openscad.appdata.xml.in ]; then
 		echo 'please start from a clean directory outside of openscad'
 		exit
 	fi
