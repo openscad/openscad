@@ -52,7 +52,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="../openscad.qrc">:/icons/openscad.png</pixmap>
+        <pixmap resource="../../resources/common.qrc">:/icons/openscad.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -134,7 +134,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../openscad.qrc"/>
+  <include location="../../resources/common.qrc"/>
  </resources>
  <connections/>
 </ui>
