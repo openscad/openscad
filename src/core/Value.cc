@@ -396,7 +396,7 @@ public:
     try {
       (tostream_visitor(stream))(v);
     } catch (EvaluationException& e) {
-      LOG(message_group::Error, Location::NONE, "", "Stack exhausted while trying to convert a vector to EchoString");
+      LOG(message_group::Error, Location::NONE, "", e.what());
       throw;
     }
     return stream.str();
