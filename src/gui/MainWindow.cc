@@ -2020,7 +2020,7 @@ void MainWindow::sendToOctoPrint()
 
   const QString fileFormat = QString::fromStdString(Settings::Settings::octoPrintFileFormat.value());
   FileFormat exportFileFormat{FileFormat::STL};
-  if (fileFormat == "OFF") {
+  if (fileFormat == "OBJ") {
     exportFileFormat = FileFormat::OBJ;
   } else if (fileFormat == "OFF") {
     exportFileFormat = FileFormat::OFF;
