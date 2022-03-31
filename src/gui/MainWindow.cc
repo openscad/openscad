@@ -174,6 +174,8 @@ QAction *getExport3DAction(const MainWindow *mainWindow) {
   const QString format = QString::fromStdString(Settings::Settings::toolbarExport3D.value());
   if (format == "STL") {
     return mainWindow->fileActionExportSTL;
+  } else if (format == "OBJ") {
+    return mainWindow->fileActionExportOBJ;
   } else if (format == "OFF") {
     return mainWindow->fileActionExportOFF;
   } else if (format == "WRL") {
@@ -439,6 +441,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
   connect(this->fileActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
   connect(this->fileActionExport3MF, SIGNAL(triggered()), this, SLOT(actionExport3MF()));
+  connect(this->fileActionExportOBJ, SIGNAL(triggered()), this, SLOT(actionExportOBJ()));
   connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
   connect(this->fileActionExportWRL, SIGNAL(triggered()), this, SLOT(actionExportWRL()));
   connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
@@ -594,6 +597,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   initActionIcon(fileActionExportSTL, ":/resources/icons/svg-default/export-stl.svg", ":/resources/icons/svg-default/export-stl-white.svg");
   initActionIcon(fileActionExportAMF, ":/resources/icons/svg-default/export-amf.svg", ":/resources/icons/svg-default/export-amf-white.svg");
   initActionIcon(fileActionExport3MF, ":/resources/icons/svg-default/export-3mf.svg", ":/resources/icons/svg-default/export-3mf-white.svg");
+  initActionIcon(fileActionExportOBJ, ":/resources/icons/svg-default/export-obj.svg", ":/resources/icons/svg-default/export-obj-white.svg");
   initActionIcon(fileActionExportOFF, ":/resources/icons/svg-default/export-off.svg", ":/resources/icons/svg-default/export-off-white.svg");
   initActionIcon(fileActionExportWRL, ":/resources/icons/svg-default/export-wrl.svg", ":/resources/icons/svg-default/export-wrl-white.svg");
   initActionIcon(fileActionExportDXF, ":/resources/icons/svg-default/export-dxf.svg", ":/resources/icons/svg-default/export-dxf-white.svg");
@@ -2017,6 +2021,8 @@ void MainWindow::sendToOctoPrint()
   const QString fileFormat = QString::fromStdString(Settings::Settings::octoPrintFileFormat.value());
   FileFormat exportFileFormat{FileFormat::STL};
   if (fileFormat == "OFF") {
+    exportFileFormat = FileFormat::OBJ;
+  } else if (fileFormat == "OFF") {
     exportFileFormat = FileFormat::OFF;
   } else if (fileFormat == "ASCIISTL") {
     exportFileFormat = FileFormat::ASCIISTL;
@@ -2539,6 +2545,11 @@ void MainWindow::actionExportSTL()
 void MainWindow::actionExport3MF()
 {
   actionExport(FileFormat::_3MF, "3MF", ".3mf", 3);
+}
+
+void MainWindow::actionExportOBJ()
+{
+  actionExport(FileFormat::OBJ, "OBJ", ".obj", 3);
 }
 
 void MainWindow::actionExportOFF()
