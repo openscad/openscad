@@ -36,6 +36,8 @@ void export_obj(const shared_ptr<const Geometry>& geom, std::ostream& output)
   IndexedMesh mesh;
   mesh.append_geometry(geom);
 
+  output << "# OpenSCAD obj exporter\n";
+
   size_t numverts = mesh.vertices.size();
   const auto& v = mesh.vertices.getArray();
   for (size_t i = 0; i < numverts; ++i) {
