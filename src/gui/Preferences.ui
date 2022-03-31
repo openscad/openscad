@@ -2079,6 +2079,11 @@
                    </item>
                    <item>
                     <property name="text">
+                     <string>OBJ</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
                      <string>OFF</string>
                     </property>
                    </item>
