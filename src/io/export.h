@@ -15,6 +15,7 @@ class PolySet;
 enum class FileFormat {
   ASCIISTL,
   STL,
+  OBJ,
   OFF,
   WRL,
   AMF,
@@ -47,6 +48,7 @@ void exportFileByName(const shared_ptr<const class Geometry>& root_geom, const E
 void export_stl(const shared_ptr<const Geometry>& geom, std::ostream& output,
                 bool binary = true);
 void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output);
+void export_obj(const shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_off(const shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_amf(const shared_ptr<const Geometry>& geom, std::ostream& output);
@@ -67,6 +69,7 @@ struct ExportFileFormatOptions {
     {"asciistl", FileFormat::ASCIISTL},
     {"binstl", FileFormat::STL},
     {"stl", FileFormat::ASCIISTL}, // Deprecated.  Later to FileFormat::STL
+    {"obj", FileFormat::OBJ},
     {"off", FileFormat::OFF},
     {"wrl", FileFormat::WRL},
     {"amf", FileFormat::AMF},
