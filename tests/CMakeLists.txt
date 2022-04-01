@@ -527,6 +527,7 @@ list(APPEND MISC_FILES
   ${TEST_SCAD_DIR}/misc/escape-test.scad
   ${TEST_SCAD_DIR}/misc/include-tests.scad
   ${TEST_SCAD_DIR}/misc/include-overwrite-main.scad
+  ${TEST_SCAD_DIR}/misc/include-overwrite-main2.scad
   ${TEST_SCAD_DIR}/misc/use-tests.scad
   ${TEST_SCAD_DIR}/misc/assert-tests.scad
   ${TEST_SCAD_DIR}/misc/let-module-tests.scad

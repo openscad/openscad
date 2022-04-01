@@ -747,7 +747,7 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 				warn_reassignment(loc, assignment, mainFilePath, uncPathPrev);
 			}
 			assignment->setExpr(shared_ptr<Expression>(expr));
-			assignment->setLocation(loc);
+			//assignment->setLocation(loc); //do not update the location
 			found = true;
 			break;
 		}

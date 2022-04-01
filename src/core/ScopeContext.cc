@@ -52,7 +52,6 @@ void ScopeContext::evaluateAssignments(const AssignmentList& assignments)
         }
       }
     }
-    + -
   }
 }
 #endif // if 0
@@ -63,7 +62,15 @@ void ScopeContext::init()
     if (assignment->getExpr()->isLiteral() && lookup_local_variable(assignment->getName())) {
       LOG(message_group::Warning, assignment->location(), this->documentRoot(), "Parameter %1$s is overwritten with a literal", assignment->getName());
     }
-    set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
+    try{
+      set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
+    } catch (EvaluationException& e) {
+      if (e.traceDepth > 0) {
+        LOG(message_group::Trace, assignment->location(), this->documentRoot(), "assignment to '%1$s'", assignment->getName());
+        e.traceDepth--;
+      }
+      throw;
+    }
   }
 
 // Experimental code. See issue #399
