@@ -36,7 +36,7 @@ protected:
   const std::string name;
   shared_ptr<class Expression> expr;
   AnnotationMap annotations;
-  Location locOfOverwrite/*=Location::NONE*/;
+  Location locOfOverwrite;
 };
 
 template <class ... Args> shared_ptr<Assignment> assignment(Args... args) {
