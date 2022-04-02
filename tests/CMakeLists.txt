@@ -537,6 +537,7 @@ list(APPEND MISC_FILES
   ${TEST_SCAD_DIR}/misc/allfunctions.scad
   ${TEST_SCAD_DIR}/misc/allmodules.scad
   ${TEST_SCAD_DIR}/misc/special-consts.scad
+  ${TEST_SCAD_DIR}/misc/variable-overwrite.scad
 )
 
 

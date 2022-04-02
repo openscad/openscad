@@ -1,0 +1,12 @@
+//Description("this works as intuitively expected")
+//Parameter("")
+overwriteFalse = false;
+after = overwriteFalse;
+before = overwriteTrue;
+//Description("this causes 'before' to be undef")
+//Parameter("")
+overwriteTrue = true;
+echo("after");
+echo(after = after);
+echo("before");
+echo(before = before);

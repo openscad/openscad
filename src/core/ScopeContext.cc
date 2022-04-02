@@ -66,7 +66,12 @@ void ScopeContext::init()
       set_variable(assignment->getName(), assignment->getExpr()->evaluate(get_shared_ptr()));
     } catch (EvaluationException& e) {
       if (e.traceDepth > 0) {
-        LOG(message_group::Trace, assignment->location(), this->documentRoot(), "assignment to '%1$s'", assignment->getName());
+        if(assignment->locationOfOverwrite().isNone()){
+          LOG(message_group::Trace, assignment->location(), this->documentRoot(), "assignment to '%1$s'", assignment->getName());
+        } else {
+          LOG(message_group::Trace, assignment->location(), this->documentRoot(), "overwritten assignment to '%1$s' (this is where the assignment is evaluated)", assignment->getName());
+          LOG(message_group::Trace, assignment->locationOfOverwrite(), this->documentRoot(), "overwritting assignment to '%1$s'", assignment->getName());
+        }
         e.traceDepth--;
       }
       throw;
