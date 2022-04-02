@@ -70,7 +70,7 @@ void ScopeContext::init()
           LOG(message_group::Trace, assignment->location(), this->documentRoot(), "assignment to '%1$s'", assignment->getName());
         } else {
           LOG(message_group::Trace, assignment->location(), this->documentRoot(), "overwritten assignment to '%1$s' (this is where the assignment is evaluated)", assignment->getName());
-          LOG(message_group::Trace, assignment->locationOfOverwrite(), this->documentRoot(), "overwritting assignment to '%1$s'", assignment->getName());
+          LOG(message_group::Trace, assignment->locationOfOverwrite(), this->documentRoot(), "overwriting assignment to '%1$s'", assignment->getName());
         }
         e.traceDepth--;
       }
