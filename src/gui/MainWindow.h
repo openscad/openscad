@@ -235,6 +235,7 @@ private slots:
   void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim);
   void actionExportSTL();
   void actionExport3MF();
+  void actionExportOBJ();
   void actionExportOFF();
   void actionExportWRL();
   void actionExportAMF();

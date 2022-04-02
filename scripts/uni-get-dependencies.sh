@@ -10,7 +10,7 @@ get_fedora_deps_yum()
   fontconfig-devel freetype-devel \
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl imagemagick ImageMagick glib2-devel make \
-  xorg-x11-server-Xvfb gettext qscintilla-devel qscintilla-qt5-devel \
+  xorg-x11-server-Xvfb gettext qscintilla-qt5-devel \
   mesa-dri-drivers double-conversion-devel
 }
 
@@ -20,7 +20,7 @@ get_fedora_deps_dnf()
   fontconfig-devel freetype-devel \
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl ImageMagick glib2-devel make \
-  xorg-x11-server-Xvfb gettext qscintilla-devel qscintilla-qt5-devel \
+  xorg-x11-server-Xvfb gettext qscintilla-qt5-devel \
   mesa-dri-drivers libzip-devel ccache qt5-qtmultimedia-devel qt5-qtsvg-devel \
   double-conversion-devel
  dnf -y install libxml2-devel
@@ -138,7 +138,7 @@ get_arch_deps()
 	base-devel gcc bison flex make libzip \
 	qt5 qscintilla-qt5 cgal gmp mpfr boost opencsg \
 	glew eigen glib2 fontconfig freetype2 harfbuzz \
-	double-conversion
+	double-conversion imagemagick
 }
 
 get_ubuntu_16_deps()

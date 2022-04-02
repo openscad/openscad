@@ -573,6 +573,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
     if (curFormat == FileFormat::ASCIISTL ||
         curFormat == FileFormat::STL ||
+        curFormat == FileFormat::OBJ ||
         curFormat == FileFormat::OFF ||
         curFormat == FileFormat::WRL ||
         curFormat == FileFormat::AMF ||
@@ -766,24 +767,6 @@ int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, cha
   if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
   updater->init();
 #endif
-
-#ifndef USE_QOPENGLWIDGET
-  // This workaround appears to only be needed when QGLWidget is used QOpenGLWidget
-  // available in Qt 5.4 is much better.
-  QGLFormat fmt;
-#if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
-  // turn on anti-aliasing
-  fmt.setSampleBuffers(true);
-  fmt.setSamples(4);
-#endif
-  // The default SwapInterval causes very bad interactive behavior as
-  // waiting for the buffer swap seems to block mouse events. So the
-  // effect is that we can process mouse events at the frequency of
-  // the screen retrace interval causing them to queue up.
-  // (see https://bugreports.qt-project.org/browse/QTBUG-39370
-  fmt.setSwapInterval(0);
-  QGLFormat::setDefaultFormat(fmt);
-#endif // ifndef USE_QOPENGLWIDGET
 
   set_render_color_scheme(arg_colorscheme, false);
   auto noInputFiles = false;

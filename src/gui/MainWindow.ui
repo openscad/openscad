@@ -294,6 +294,7 @@
       <string>E&amp;xport</string>
      </property>
      <addaction name="fileActionExportSTL"/>
+     <addaction name="fileActionExportOBJ"/>
      <addaction name="fileActionExportOFF"/>
      <addaction name="fileActionExportWRL"/>
      <addaction name="fileActionExportAMF"/>
@@ -1010,6 +1011,11 @@
    </property>
    <property name="shortcut">
     <string>F7</string>
+   </property>
+  </action>
+  <action name="fileActionExportOBJ">
+   <property name="text">
+    <string>Export as &amp;OBJ...</string>
    </property>
   </action>
   <action name="fileActionExportOFF">

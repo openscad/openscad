@@ -17,6 +17,7 @@ export_font = "Open Sans:style=Bold";
 
 icons = [
     ["export-stl"],
+    ["export-obj"],
     ["export-off"],
     ["export-wrl"],
     ["export-amf"],
@@ -62,6 +63,7 @@ icons = [
 
 icon(selected_icon) {
     export("STL");
+    export("OBJ");
     export("OFF");
     export("WRL");
     export("AMF");
@@ -375,7 +377,7 @@ module undo() {
 }
 
 module redo() {
-    translate([width / 2, , height / 3])
+    translate([width / 2, height / 3])
         curved_arrow();
 }
 

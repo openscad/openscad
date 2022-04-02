@@ -344,14 +344,23 @@ target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
 list(APPEND COMMON_LIBRARIES ${LIBXML2_LIBRARIES})
 
 option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
+option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 if(ENABLE_HIDAPI)
   find_package(HidAPI 0.10 QUIET)
   if(HIDAPI_FOUND)
-    message(STATUS "HidAPI: ${HIDAPI_VERSION_STRING}")
     set(INPUT_DRIVER_HIDAPI_SOURCES src/gui/input/HidApiInputDriver.cc)
     target_include_directories(OpenSCAD SYSTEM PRIVATE ${HIDAPI_INCLUDE_DIR})
     list(APPEND COMMON_LIBRARIES ${HIDAPI_LIBRARY})
     target_compile_definitions(OpenSCAD PRIVATE ENABLE_HIDAPI)
+    message(STATUS "HidAPI: ${HIDAPI_VERSION_STRING}")
+  elseif(ALLOW_BUNDLED_HIDAPI)
+    set(HIDAPI_SRC_DIR "src/ext/hidapi")
+    file(STRINGS "${HIDAPI_SRC_DIR}/VERSION" HIDAPI_VERSION_STRING)
+    target_include_directories(OpenSCAD SYSTEM PRIVATE "${HIDAPI_SRC_DIR}")
+    set(INPUT_DRIVER_HIDAPI_SOURCES "${HIDAPI_SRC_DIR}/hid.c" src/gui/input/HidApiInputDriver.cc)
+    target_compile_definitions(OpenSCAD PRIVATE ENABLE_HIDAPI)
+    list(APPEND PLATFORM_LIBS -lsetupapi -lhid)
+    message(STATUS "HidAPI: ${HIDAPI_VERSION_STRING} (bundled)")
   else()
     message(STATUS "HIDAPI: disabled")
   endif()
@@ -680,6 +689,7 @@ set(CORE_SOURCES
   src/io/export_3mf.cc
   src/io/export_amf.cc
   src/io/export_dxf.cc
+  src/io/export_obj.cc
   src/io/export_off.cc
   src/io/export_wrl.cc
   src/io/export_pdf.cc
