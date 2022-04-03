@@ -12,23 +12,7 @@ do
     fi
 done
 
-for src in src/*.{h,cc,cpp,mm}
-do
-    if [ -f "$src" ]
-    then
-	    echo $src
-    fi
-done
-
-for src in src/parameter/*.{h,cc,cpp}
-do
-    if [ -f "$src" ]
-    then
-	    echo $src
-    fi
-done
-
-for src in src/input/*.{h,cc,cpp}
+for src in src/{,gui/,gui/input/,gui/parameter/}*.{h,cc,cpp,mm}
 do
     if [ -f "$src" ]
     then

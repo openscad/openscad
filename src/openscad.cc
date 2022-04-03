@@ -25,31 +25,31 @@
  */
 
 #include "openscad.h"
-#include "comment.h"
+#include "CommentParser.h"
 #include "node.h"
 #include "SourceFile.h"
 #include "ModuleInstantiation.h"
-#include "builtincontext.h"
-#include "value.h"
+#include "BuiltinContext.h"
+#include "Value.h"
 #include "export.h"
-#include "builtin.h"
+#include "Builtins.h"
 #include "printutils.h"
 #include "handle_dep.h"
-#include "feature.h"
+#include "Feature.h"
 #include "parsersettings.h"
-#include "rendersettings.h"
+#include "RenderSettings.h"
 #include "PlatformUtils.h"
 #include "LibraryInfo.h"
-#include "nodedumper.h"
-#include "stackcheck.h"
+#include "NodeDumper.h"
+#include "StackCheck.h"
 #include "CocoaUtils.h"
 #include "FontCache.h"
 #include "OffscreenView.h"
 #include "GeometryEvaluator.h"
 #include "RenderStatistic.h"
 #include "boost-utils.h"
-#include "parameter/parameterobject.h"
-#include "parameter/parameterset.h"
+#include "ParameterObject.h"
+#include "ParameterSet.h"
 #include "openscad_mimalloc.h"
 #include <string>
 #include <vector>
@@ -61,7 +61,7 @@
 #include "cgalutils.h"
 #endif
 
-#include "csgnode.h"
+#include "CSGNode.h"
 #include "CSGTreeEvaluator.h"
 
 #include "Camera.h"
@@ -556,13 +556,13 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
           if (auto geomlist = dynamic_pointer_cast<const GeometryList>(root_geom)) {
             auto flatlist = geomlist->flatten();
             for (auto& child : flatlist) {
-              if (child.second->getDimension() == 3 && !dynamic_pointer_cast<const CGAL_Nef_polyhedron>(child.second)) {
-                child.second = CGALUtils::createNefPolyhedronFromGeometry(*child.second);
+              if (child.second->getDimension() == 3) {
+                child.second = CGALUtils::getNefPolyhedronFromGeometry(child.second);
               }
             }
             root_geom.reset(new GeometryList(flatlist));
-          } else if (!dynamic_pointer_cast<const CGAL_Nef_polyhedron>(root_geom)) {
-            root_geom = CGALUtils::createNefPolyhedronFromGeometry(*root_geom);
+          } else {
+            root_geom = CGALUtils::getNefPolyhedronFromGeometry(root_geom);
           }
           LOG(message_group::None, Location::NONE, "", "Converted to Nef polyhedron");
         }
@@ -573,6 +573,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
     if (curFormat == FileFormat::ASCIISTL ||
         curFormat == FileFormat::STL ||
+        curFormat == FileFormat::OBJ ||
         curFormat == FileFormat::OFF ||
         curFormat == FileFormat::WRL ||
         curFormat == FileFormat::AMF ||
@@ -766,24 +767,6 @@ int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, cha
   if (updater->automaticallyChecksForUpdates()) updater->checkForUpdates();
   updater->init();
 #endif
-
-#ifndef USE_QOPENGLWIDGET
-  // This workaround appears to only be needed when QGLWidget is used QOpenGLWidget
-  // available in Qt 5.4 is much better.
-  QGLFormat fmt;
-#if 0 /*** disabled by clifford wolf: adds rendering artefacts with OpenCSG ***/
-  // turn on anti-aliasing
-  fmt.setSampleBuffers(true);
-  fmt.setSamples(4);
-#endif
-  // The default SwapInterval causes very bad interactive behavior as
-  // waiting for the buffer swap seems to block mouse events. So the
-  // effect is that we can process mouse events at the frequency of
-  // the screen retrace interval causing them to queue up.
-  // (see https://bugreports.qt-project.org/browse/QTBUG-39370
-  fmt.setSwapInterval(0);
-  QGLFormat::setDefaultFormat(fmt);
-#endif // ifndef USE_QOPENGLWIDGET
 
   set_render_color_scheme(arg_colorscheme, false);
   auto noInputFiles = false;

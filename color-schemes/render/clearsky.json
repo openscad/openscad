@@ -1,0 +1,19 @@
+{
+    "name" : "ClearSky",
+    "index" : 2000,
+    "show-in-gui" : true,
+    "colors" : {
+        "background" :         "#87ceeb",
+        "background-stop" :    "#c9e9f6",
+        "axes-color" :         "#000000",
+        "opencsg-face-front" : "#f9d72c",
+        "opencsg-face-back" :  "#9dcb51",
+        "cgal-face-front" :    "#ffec5e",
+        "cgal-face-back" :     "#9dcb51",
+        "cgal-face-2d" :       "#00bf99",
+        "cgal-edge-front" :    "#ffec5e",
+        "cgal-edge-back" :     "#abd856",
+        "cgal-edge-2d" :       "#ff0000",
+        "crosshair" :          "#800000"
+    }
+}

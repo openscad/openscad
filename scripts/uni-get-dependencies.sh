@@ -10,7 +10,7 @@ get_fedora_deps_yum()
   fontconfig-devel freetype-devel \
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl imagemagick ImageMagick glib2-devel make \
-  xorg-x11-server-Xvfb gettext qscintilla-devel qscintilla-qt5-devel \
+  xorg-x11-server-Xvfb gettext qscintilla-qt5-devel \
   mesa-dri-drivers double-conversion-devel
 }
 
@@ -20,7 +20,7 @@ get_fedora_deps_dnf()
   fontconfig-devel freetype-devel \
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl ImageMagick glib2-devel make \
-  xorg-x11-server-Xvfb gettext qscintilla-devel qscintilla-qt5-devel \
+  xorg-x11-server-Xvfb gettext qscintilla-qt5-devel \
   mesa-dri-drivers libzip-devel ccache qt5-qtmultimedia-devel qt5-qtsvg-devel \
   double-conversion-devel
  dnf -y install libxml2-devel
@@ -36,7 +36,7 @@ get_qomo_deps()
 get_altlinux_deps()
 {
  for i in boost-devel boost-filesystem-devel gcc4.5 gcc4.5-c++ boost-program_options-devel \
-  boost-thread-devel boost-system-devel boost-regex-devel eigen3 libmpfr libgmp libgmp_cxx-devel qt4-devel libcgal-devel git-core \
+  boost-thread-devel boost-system-devel boost-regex-devel eigen3 libmpfr libgmp libgmp_cxx-devel qt5-devel libcgal-devel git-core \
   libglew-devel flex bison curl imagemagick gettext glib2-devel; do apt-get install $i; done
 }
 
@@ -44,14 +44,14 @@ get_freebsd_deps()
 {
  pkg_add -r bison boost-libs cmake git bash eigen3 flex gmake gmp mpfr \
   xorg libGLU libXmu libXi xorg-vfbserver glew \
-  qt4-corelib qt4-gui qt4-moc qt4-opengl qt4-qmake qt4-rcc qt4-uic \
+  qt5-core qt5-gui qt5-buildtools qt5-opengl qt5-qmake \
   opencsg cgal curl imagemagick glib2-devel gettext libdouble-conversion-3.0.0
 }
 
 get_netbsd_deps()
 {
  pkgin install bison boost cmake git bash eigen3 flex gmake gmp mpfr \
-  qt4 glew cgal opencsg python27 curl \
+  qt5 glew cgal opencsg python27 curl \
   ImageMagick glib2 gettext
 }
 
@@ -60,9 +60,12 @@ get_opensuse_deps()
  zypper install  mpfr-devel gmp-devel boost-devel \
   glew-devel cmake git bison flex cgal-devel curl \
   glib2-devel gettext freetype-devel harfbuzz-devel  \
-  libqscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
+  qscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
   xvfb-run libzip-devel libqt5-qtmultimedia-devel libqt5-qtsvg-devel \
-  double-conversion-devel
+  double-conversion-devel libboost_filesystem-devel libboost_regex-devel \
+  libboost_program_options-devel
+ # qscintilla-qt5-devel replaces libqscintilla_qt5-devel
+ # but openscad compiles with both
  zypper install libeigen3-devel
  if [ $? -ne 0 ]; then
   zypper install libeigen3
@@ -86,7 +89,7 @@ get_opensuse_deps()
 get_mageia_deps()
 {
  urpmi ctags
- urpmi task-c-devel task-c++-devel libqt4-devel libgmp-devel \
+ urpmi task-c-devel task-c++-devel libqt5-devel libgmp-devel \
   libmpfr-devel libboost-devel eigen3-devel libglew-devel bison flex \
   cmake imagemagick glib2-devel python curl git x11-server-xvfb gettext \
   double-conversion-devel
@@ -104,57 +107,16 @@ get_debian_deps()
  apt-get -y install libxi-dev libfontconfig-dev libzip-dev
 }
 
-get_debian_7_deps()
+get_qt5_deps_debian()
 {
-  get_debian_deps
-  apt-get -y install libqt4-dev libqscintilla2-dev
-  echo "debian 7 detected"
-  echo "please build harfbuzz & see the README on building dependencies"
-  echo ". ./scripts/setenv-unibuild.sh"
-  echo "./scripts/uni-build-dependencies.sh harfbuzz"
-}
-
-get_qt4or5_deps_debian()
-{
-  # debian 8 can have both qt4 and qt5 installed... or neither. figure out which
-  # and cater to it.
-  useqt=5
-
-  if [ "`dpkg --list | grep qt5-default`" ]; then
-    useqt=5
-  elif [ "`dpkg --list | grep qt4-default`" ]; then
-    useqt=4
-  elif [ "`echo QT_SELECT | grep ^4`" ]; then
-    useqt=4
-  elif [ "`echo QT_SELECT | grep qt4`" ]; then
-    useqt=4
-  elif [ "`echo QT_SELECT | grep ^5`" ]; then
-    useqt=5
-  elif [ "`echo QT_SELECT | grep qt5`" ]; then
-    useqt=5
-  elif [ ! "`command -v qtchooser`" ]; then
-    useqt=5
-  elif [ "`qtchooser -l | grep qt5`" ]; then
-    useqt=5
-  elif [ ! "`qtchooser -l | grep qt4`" ]; then
-    useqt=5
-  elif [ ! "`command -v qmake`" ]; then
-    useqt=5
-  elif [ "`qmake --version | grep -i qt.version.4`" ]; then
-    useqt=4
-  fi
-
-  if [ $useqt = 5 ]; then
-    apt-get -y install qtbase5-dev libqt5scintilla2-dev libqt5opengl5-dev libqt5svg5-dev qtmultimedia5-dev libqt5multimedia5-plugins qt5-qmake
-  else
-    apt-get -y install libqt4-dev libqscintilla2-dev libqt4-opengl-dev
-  fi
+  # OpenSCAD requires Qt5
+  apt-get -y install qtbase5-dev libqt5scintilla2-dev libqt5opengl5-dev libqt5svg5-dev qtmultimedia5-dev libqt5multimedia5-plugins qt5-qmake
   if [ ! "`command -v qmake`" ]; then
-    apt-get -y install qt$useqt-default
-    echo "installed qt$useqt-default to enable qmake"
+    apt-get -y install qt5-default
+    echo "installed qt5-default to enable qmake"
   elif [ ! "`qmake --version | grep qmake.version`" ]; then
-    apt-get -y install qt$useqt-default
-    echo "installed qt$useqt-default to enable qmake"
+    apt-get -y install qt5-default
+    echo "installed qt5qt-default to enable qmake"
   fi
 }
 
@@ -162,7 +124,7 @@ get_debian_8_deps()
 {
   apt-get -y install libharfbuzz-dev libxml2-dev
   get_debian_deps
-  get_qt4or5_deps_debian
+  get_qt5_deps_debian
 }
 
 get_ubuntu_14_deps()
@@ -176,7 +138,7 @@ get_arch_deps()
 	base-devel gcc bison flex make libzip \
 	qt5 qscintilla-qt5 cgal gmp mpfr boost opencsg \
 	glew eigen glib2 fontconfig freetype2 harfbuzz \
-	double-conversion
+	double-conversion imagemagick
 }
 
 get_ubuntu_16_deps()
@@ -189,13 +151,7 @@ get_ubuntu_16_deps()
 
 get_neon_deps()
 {
-  get_debian_deps
-  apt-get -y install libxi-dev libxml2-dev libfontconfig1-dev
-  apt-get -y install libharfbuzz-dev libxml2-dev
-  # qt5 scintilla is broken on kde neon. use qt4 # issue 1790
-  apt-get -y install libcgal-dev
-  apt-get -y install libqt4-dev libqscintilla2-dev libqt4-opengl-dev
-  echo on KDE Neon please use qmake-qt4 to build
+  get_debian_8_deps
 }
 
 get_solus_deps()
@@ -230,8 +186,6 @@ if [ -e /etc/issue ]; then
   get_ubuntu_14_deps
  elif [ "`grep ID=.solus /etc/os-release`" ]; then
   get_solus_deps
- elif [ "`grep -i debian.GNU.Linux.7 /etc/issue`" ]; then
-  get_debian_7_deps
  elif [ "`grep -i debian /etc/issue`" ]; then
   get_debian_8_deps
  elif [ "`grep -i raspbian /etc/issue`" ]; then
@@ -242,8 +196,6 @@ if [ -e /etc/issue ]; then
   get_ubuntu_14_deps
  elif [ "`grep -i linux.mint.1[89] /etc/issue`" ]; then
   get_ubuntu_16_deps
- elif [ "`grep -i mint /etc/issue`" ]; then
-  get_debian_7_deps
  elif [ "`grep -i suse /etc/issue`" ]; then
   get_opensuse_deps
  elif [ "`grep -i fedora.release.2[2-9] /etc/issue`" ]; then

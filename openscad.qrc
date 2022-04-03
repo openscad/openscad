@@ -1,8 +1,8 @@
 <RCC>
   <qresource prefix="/">
-    <file>src/PrintInitDialog.html</file>
-    <file>src/OctoPrintInfo.html</file>
-    <file>src/AboutDialog.html</file>
+    <file>src/gui/PrintInitDialog.html</file>
+    <file>src/gui/OctoPrintInfo.html</file>
+    <file>src/gui/AboutDialog.html</file>
 
     <file>sounds/complete.wav</file>
 
@@ -38,6 +38,8 @@
     <file>resources/icons/svg-default/export-csg-white.svg</file>
     <file>resources/icons/svg-default/export-dxf.svg</file>
     <file>resources/icons/svg-default/export-dxf-white.svg</file>
+    <file>resources/icons/svg-default/export-obj.svg</file>
+    <file>resources/icons/svg-default/export-obj-white.svg</file>
     <file>resources/icons/svg-default/export-off.svg</file>
     <file>resources/icons/svg-default/export-off-white.svg</file>
     <file>resources/icons/svg-default/export-wrl.svg</file>

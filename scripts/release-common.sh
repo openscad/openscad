@@ -15,7 +15,7 @@
 #  -snapshot Build a snapshot binary (make e.g. experimental features available, build with commit info)
 #  -tests   Build additional package containing the regression tests
 #
-# If no version string or version date is given, todays date will be used (YYYY-MM-DD)
+# If no version string or version date is given, today's date will be used (YYYY-MM-DD)
 # If only version date is given, it will be used also as version string.
 # If no make target is given, release will be used on Windows, none one Mac OS X
 #
@@ -40,7 +40,7 @@ lf2crlf()
     mv $fname".temp" $fname
     return
   fi
-  echo 'warning- cant change eol to cr eol'
+  echo "warning- can't change eol to cr eol"
 }
 
 printUsage()
@@ -90,6 +90,7 @@ fi
 case $OS in
     MACOSX)
         . ./scripts/setenv-macos.sh
+        CMAKE_CONFIG="$CMAKE_CONFIG -DCMAKE_OSX_ARCHITECTURES=x86_64;arm64"
     ;;
     LINUX)
         TARGET=
@@ -114,7 +115,7 @@ case $OS in
         ZIP="zip"
         ZIPARGS="-r -q"
         echo Mingw-cross build using ARCH=$ARCH MXELIBTYPE=$MXELIBTYPE
-        CMAKE_CONFIG="$CMAKE_CONFIG -DMXECROSS=ON"
+        CMAKE_CONFIG="$CMAKE_CONFIG -DMXECROSS=ON -DALLOW_BUNDLED_HIDAPI=ON"
     ;;
 esac
 

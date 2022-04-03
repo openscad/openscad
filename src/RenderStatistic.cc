@@ -28,7 +28,7 @@
 #include "printutils.h"
 #include "GeometryCache.h"
 #include "CGALCache.h"
-#include "polyset.h"
+#include "PolySet.h"
 #include "Polygon2d.h"
 #include "boost-utils.h"
 #ifdef ENABLE_CGAL
@@ -37,7 +37,7 @@
 #endif // ENABLE_CGAL
 
 #include "RenderStatistic.h"
-#include "parameter/parameterobject.h"
+#include "ParameterObject.h"
 
 namespace {
 

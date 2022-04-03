@@ -55,7 +55,7 @@ formats = ['pdf']
 parser = argparse.ArgumentParser()
 parser.add_argument('--openscad', required=True, help='Specify OpenSCAD executable')
 parser.add_argument('--format', required=True, choices=[item for sublist in [(f,f.upper()) for f in formats] for item in sublist], help='Specify export format')
-args,remaining_args = parser.parse_known_args()
+args, remaining_args = parser.parse_known_args()
 
 args.format = args.format.lower()
 inputfile = remaining_args[0]
@@ -63,9 +63,9 @@ pngfile = remaining_args[-1]
 remaining_args = remaining_args[1:-1] # Passed on to the OpenSCAD executable
 
 if not os.path.exists(inputfile):
-    failquit('cant find input file named: ' + inputfile)
+    failquit("can't find input file named: " + inputfile)
 if not os.path.exists(args.openscad):
-    failquit('cant find openscad executable named: ' + args.openscad)
+    failquit("can't find openscad executable named: " + args.openscad)
 
 outputdir = os.path.dirname(pngfile)
 inputpath, inputfilename = os.path.split(inputfile)

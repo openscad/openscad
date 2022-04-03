@@ -27,12 +27,12 @@
 # - OpenGL (GL/gl.h)
 # - GLU (GL/glu.h)
 # - gcc
-# - Qt4
+# - Qt5
 #
-# If your system lacks qt4, build like this:
+# If your system lacks qt5, build like this:
 #
-#   ./scripts/uni-build-dependencies.sh qt4
-#   . ./scripts/setenv-unibuild.sh #(Rerun to re-detect qt4)
+#   ./scripts/uni-build-dependencies.sh qt5
+#   . ./scripts/setenv-unibuild.sh #(Rerun to re-detect qt5)
 #
 # If your system lacks glu, gettext, or glib2, you can build them as well:
 #
@@ -43,10 +43,6 @@
 # If you want to try Clang compiler (experimental, only works on linux):
 #
 #   . ./scripts/setenv-unibuild.sh clang
-#
-# If you want to try Qt5 (experimental)
-#
-#   . ./scripts/setenv-unibuild.sh qt5
 #
 
 printUsage()
@@ -116,31 +112,6 @@ build_glu()
   ./autogen.sh --prefix=$DEPLOYDIR
   make -j$NUMCPU
   make install
-}
-
-build_qt4()
-{
-  version=$1
-  if [ -e $DEPLOYDIR/include/Qt ]; then
-    echo "qt already installed. not building"
-    return
-  fi
-  echo "Building Qt" $version "..."
-  cd $BASEDIR/src
-  rm -rf qt-everywhere-opensource-src-$version
-  if [ ! -f qt-everywhere-opensource-src-$version.tar.gz ]; then
-    curl -O http://releases.qt-project.org/qt4/source/qt-everywhere-opensource-src-$version.tar.gz
-  fi
-  tar xzf qt-everywhere-opensource-src-$version.tar.gz
-  cd qt-everywhere-opensource-src-$version
-  ./configure -prefix $DEPLOYDIR -opensource -confirm-license -fast -no-qt3support -no-svg -no-phonon -no-audio-backend -no-multimedia -no-javascript-jit -no-script -no-scripttools -no-declarative -no-xmlpatterns -nomake demos -nomake examples -nomake docs -nomake translations -no-webkit
-  make -j$NUMCPU
-  make install
-  QTDIR=$DEPLOYDIR
-  export QTDIR
-  echo "----------"
-  echo " Please set QTDIR to $DEPLOYDIR ( or run '. scripts/setenv-unibuild.sh' )"
-  echo "----------"
 }
 
 build_qt5()
@@ -472,9 +443,9 @@ build_cgal()
   DEBUGBOOSTFIND=0 # for debugging FindBoost.cmake (not for debugging boost)
   Boost_NO_SYSTEM_PATHS=1
   if [ "`echo $2 | grep use-sys-libs`" ]; then
-    cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND ..
+    cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND ..
   else
-    cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.so -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.so -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.so -DWITH_CGAL_Qt3=OFF -DWITH_CGAL_Qt4=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_LIBRARYDIR=$DEPLOYDIR/lib -DBOOST_INCLUDEDIR=$DEPLOYDIR/include -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND -DBoost_NO_SYSTEM_PATHS=1 ..
+    cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.so -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.so -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.so -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DBOOST_LIBRARYDIR=$DEPLOYDIR/lib -DBOOST_INCLUDEDIR=$DEPLOYDIR/include -DCMAKE_BUILD_TYPE=$CGAL_BUILDTYPE -DBoost_DEBUG=$DEBUGBOOSTFIND -DBoost_NO_SYSTEM_PATHS=1 ..
   fi
   make -j$NUMCPU
   make install
@@ -568,11 +539,7 @@ build_opencsg()
     build_glu 9.0.0
   fi
 
-  if [ "`command -v qmake-qt4`" ]; then
-    OPENCSG_QMAKE=qmake-qt4
-  elif [ "`command -v qmake4`" ]; then
-    OPENCSG_QMAKE=qmake4
-  elif [ "`command -v qmake-qt5`" ]; then
+  if [ "`command -v qmake-qt5`" ]; then
     OPENCSG_QMAKE=qmake-qt5
   elif [ "`command -v qmake5`" ]; then
     OPENCSG_QMAKE=qmake5
@@ -820,18 +787,13 @@ if [ $1 ]; then
     build_opencsg 1.4.2
     exit $?
   fi
-  if [ $1 = "qt4" ]; then
-    # such a huge build, put here by itself
-    build_qt4 4.8.4
-    exit $?
-  fi
   if [ $1 = "qt5scintilla2" ]; then
-    build_qt5scintilla2 2.8.3
+    build_qt5scintilla2 2.10.8
     exit $?
   fi
   if [ $1 = "qt5" ]; then
     build_qt5 5.3.1
-    build_qt5scintilla2 2.8.3
+    build_qt5scintilla2 2.10.8
     exit $?
   fi
   if [ $1 = "glu" ]; then
@@ -860,13 +822,11 @@ if [ $1 ]; then
 fi
 
 
-# todo - cgal 4.02 for gcc<4.7, gcc 4.2 for above
-
 #
 # Main build of libraries
 # edit version numbers here as needed.
 # This is only for libraries most systems won't have new enough versions of.
-# For big things like Qt4, see the notes at the head of this file on
+# For big things like Qt5, see the notes at the head of this file on
 # building individual dependencies.
 # 
 # Some of these are defined in scripts/common-build-dependencies.sh
