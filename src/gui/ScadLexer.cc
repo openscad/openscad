@@ -201,7 +201,7 @@ void Lex::lex_results(const std::string& input, int start, LexInterface *const o
   lexertl::smatch results(input.begin(), input.end());
 
   int isstyle = obj->getStyleAt(start - 1);
-  if (isstyle == ecomment)    // WARNING - hardcoded number, not positive about this!
+  if (isstyle == ecomment)
     results.state = rules_.state("COMMENT");
   lexertl::lookup(sm, results);
 
