@@ -121,8 +121,7 @@ void Lex::default_rules()
   //include and use have a unique syntax
   rules_.push("INITIAL", "use", ekeyword, "PATH");
   rules_.push("INITIAL", "include", ekeyword, "PATH");  
-  rules_.push("PATH", ".|\n", etext, "INITIAL"); // catches things like (); but also acts as a "fail safe" so that the path state is allways leaved
-  rules_.push("PATH", "[\\+\\-\\*\\/%\\^!=]", eoperator, "INITIAL"); //include and use can be used as variable names
+  rules_.push("PATH", ".|\n", etext, "INITIAL"); //leave this state; "use" and "include" can also be used as variable names 
   rules_.push("PATH", "[ \t\r\n]*<[^>]*>", eQuotedString, "INITIAL");
 
   std::string transformations("translate rotate scale linear_extrude "
