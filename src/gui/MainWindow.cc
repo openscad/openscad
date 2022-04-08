@@ -1298,7 +1298,8 @@ void MainWindow::compileCSG()
     CSGTreeEvaluator csgrenderer(this->tree, &geomevaluator);
 #endif
 
-    progress_report_prep(this->root_node, report_func, this);
+    if (!isClosing) progress_report_prep(this->root_node, report_func, this);
+    else return;
     try {
 #ifdef ENABLE_OPENCSG
       this->processEvents();
@@ -2162,7 +2163,8 @@ void MainWindow::cgalRender()
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
 
-  progress_report_prep(this->root_node, report_func, this);
+  if (!isClosing) progress_report_prep(this->root_node, report_func, this);
+  else return;
 
   this->cgalworker->start(this->tree);
 }
@@ -3229,6 +3231,8 @@ void MainWindow::helpFontInfo()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
   if (tabManager->shouldClose()) {
+    isClosing=true;
+    progress_report_fin();
     // Disable invokeMethod calls for consoleOutput during shutdown,
     // otherwise will segfault if echos are in progress.
     hideCurrentOutput();

@@ -87,6 +87,7 @@ public:
   ~MainWindow();
 
 private:
+  volatile bool isClosing=false;
   void consoleOutputRaw(const QString& msg);
 
 protected:
