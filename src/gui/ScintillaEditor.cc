@@ -1310,9 +1310,14 @@ void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorDa
 
   int idx = 0;
   for (const auto& data : indicatorData) {
-    int pos = qsci->positionFromLineIndex(data.linenr - 1, data.colnr - 1);
+    int startPos = qsci->positionFromLineIndex(data.first_line - 1, data.first_col - 1);
+    int stopPos  = qsci->positionFromLineIndex(data.last_line - 1,  data.last_col  - 1);
+
+    int nrOfChars = stopPos - startPos;
     qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, idx + hyperlinkIndicatorOffset);
-    qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, pos, data.nrofchar);
+
+    qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, startPos, nrOfChars);
+
     idx++;
   }
 }
