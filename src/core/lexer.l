@@ -316,7 +316,7 @@ void includefile(const Location& loc)
   }
   else {
     rootfile->registerInclude(localpath.generic_string(), localpath.generic_string(), Location::NONE);
-    LOG(message_group::Warning,Location::NONE,"","Can't open include file '%1$s'.",localpath.generic_string());
+    LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open include file '%1$s'.",localpath.generic_string());
     return;
   };
 
@@ -329,7 +329,7 @@ void includefile(const Location& loc)
 
   yyin = fopen(fullname.c_str(), "r");
   if (!yyin) {
-    LOG(message_group::Warning,Location::NONE,"","Can't open include file '%1$s'.",localpath.generic_string());
+    LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open include file '%1$s'.",localpath.generic_string());
     filename_stack.pop_back();
     return;
   }
