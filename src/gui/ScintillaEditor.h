@@ -144,6 +144,7 @@ private slots:
   void onAutocompleteChanged(bool state);
   void onCharacterThresholdChanged(int val);
   void fireModificationChanged();
+  void resetToolTip();
   void onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state);
 
 public:
