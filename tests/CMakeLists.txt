@@ -620,6 +620,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/text-metrics-test.scad
   ${TEST_SCAD_DIR}/json/import-json.scad
   ${TEST_SCAD_DIR}/misc/vector-swizzling.scad
+  ${TEST_SCAD_DIR}/misc/linenumber.scad
 )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}

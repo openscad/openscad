@@ -92,6 +92,19 @@ extern YYLTYPE parserlloc;
 #define LOCATION_NEXT(loc) do { (loc).first_column = (loc).last_column; (loc).first_line = (loc).last_line; } while (0)
 #define LOCATION_ADD_LINES(loc, cnt) do { (loc).last_column = 1; (loc).last_line += cnt; LOCATION_NEXT(loc); } while (0)
 
+#define ACCOUNT_NEWLINES(loc, text) \
+    std::cout << text << std::endl; \
+    for(int i = 0; (text[i]) != '\0'; i++) { \
+        if((text[i]) == '\n') { \
+            (loc).last_line++; \
+            (loc).last_column = 1; \
+            /*std::cout << "pong" << std::endl;*/ \
+        } \
+        else { \
+            loc.last_column++; \
+        } \
+    } 
+
 #ifdef DEBUG
 #define YY_USER_ACTION parserlloc.last_column += yyleng; \
         PRINTDB("YY_USER_ACTION(): %3d, %3d - %3d, %3d | %3d: %s", \
@@ -139,8 +152,9 @@ UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 LOCATION_NEXT(parserlloc);
 %}
 
-include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
+include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; ACCOUNT_NEWLINES(parserlloc, yytext); }
 <cond_include>{
+[\n\r]					{ LOCATION_ADD_LINES(parserlloc, yyleng); }
 [^\t\r\n>]*"/"			{ filepath = yytext; }
 [^\t\r\n>/]+			{ filename = yytext; }
 ">"						{ BEGIN(INITIAL); includefile(LOCATION(parserlloc));  }
@@ -148,8 +162,9 @@ include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
 }
 
 
-use[ \t\r\n]*"<"		{ BEGIN(cond_use); }
+use[ \t\r\n]*"<"		{ BEGIN(cond_use); ACCOUNT_NEWLINES(parserlloc, yytext); }
 <cond_use>{
+[\n\r]					{ LOCATION_ADD_LINES(parserlloc, yyleng); }
 [^\t\r\n>]+				{ filename = yytext; }
  ">"					{
 							BEGIN(INITIAL);
