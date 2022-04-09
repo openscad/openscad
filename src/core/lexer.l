@@ -155,7 +155,7 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); }
 							BEGIN(INITIAL);
 							fs::path fullpath = find_valid_path(sourcefile()->parent_path(), fs::path(filename), &openfilenames);
 							if (fullpath.empty()) {
-							LOG(message_group::Warning,Location::NONE,"","Can't open library '%1$s'.",filename);
+							LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open library '%1$s'.",filename);
 								parserlval.text = strdup(filename.c_str());
 							} else {
 								handle_dep(fullpath.generic_string());
