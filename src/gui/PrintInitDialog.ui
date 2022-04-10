@@ -53,7 +53,7 @@
      </property>
      <property name="source">
       <url>
-       <string>qrc:/src/gui/PrintInitDialog.html</string>
+       <string>qrc:/html/PrintInitDialog.html</string>
       </url>
      </property>
      <property name="openExternalLinks">
@@ -131,7 +131,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../openscad.qrc"/>
+  <include location="../../resources/common.qrc"/>
  </resources>
  <connections/>
 </ui>

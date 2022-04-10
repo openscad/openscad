@@ -27,7 +27,7 @@ updatepot()
 	> ./locale/json-strings.pot
 
  # extract strings from appdata file
- itstool -o ./locale/appdata-strings.pot ./openscad.appdata.xml.in --its=./contrib/appdata.its
+ itstool -o ./locale/appdata-strings.pot ./openscad.appdata.xml.in2 --its=./contrib/appdata.its
 
  VER=`date +"%Y.%m.%d"`
  OPTS=
@@ -77,46 +77,38 @@ updatepo()
 
 updatemo()
 {
- SUFFIX="$1"
- for LANGCODE in `cat locale/LINGUAS | grep -v "#"`; do
-  mkdir -p ./locale/$LANGCODE/LC_MESSAGES
-  OPTS='-c -v'
-  cmd="$GETTEXT_PATH"'msgfmt '$OPTS' -o ./locale/'$LANGCODE'/LC_MESSAGES/openscad.mo ./locale/'$LANGCODE'.po'
-  echo $cmd
-  $cmd
-  if [ ! $? = 0 ]; then
-   echo error running msgfmt
-   exit 1
-  fi
- done
-
- if which itstool > /dev/null 2>&1; then
-  # ugly workaround for bug https://bugs.freedesktop.org/show_bug.cgi?id=90937
+  SUFFIX="$1"
   for LANGCODE in `cat locale/LINGUAS | grep -v "#"`; do
-   ln -s openscad.mo ./locale/$LANGCODE/LC_MESSAGES/$LANGCODE.mo
+    mkdir -p ./locale/$LANGCODE/LC_MESSAGES
+    OPTS='-c -v'
+    cmd="$GETTEXT_PATH"'msgfmt '$OPTS' -o ./locale/'$LANGCODE'/LC_MESSAGES/openscad.mo ./locale/'$LANGCODE'.po'
+    echo $cmd
+    $cmd
+    if [ ! $? = 0 ]; then
+      echo error running msgfmt
+      exit 1
+    fi
   done
 
-  # generate translated appdata file
-  itstool -j ./openscad.appdata.xml.in -o ./openscad.appdata.xml ./locale/*/LC_MESSAGES/[a-z][a-z].mo
+  if which itstool > /dev/null 2>&1; then
+    # ugly workaround for bug https://bugs.freedesktop.org/show_bug.cgi?id=90937
+    for LANGCODE in `cat locale/LINGUAS | grep -v "#"`; do
+      ln -s openscad.mo ./locale/$LANGCODE/LC_MESSAGES/$LANGCODE.mo
+    done
 
-  # clean the mess
-  for LANGCODE in `cat locale/LINGUAS | grep -v "#"`; do
-   unlink ./locale/$LANGCODE/LC_MESSAGES/$LANGCODE.mo
-  done
- else
-  if [ x"$(uname -s)" = x"Linux" ]; then
-   echo "itstool missing, won't apply translations to openscad.appdata.xml"
+    # generate translated appdata file
+    itstool -j ./openscad.appdata.xml.in2 -o ./openscad.appdata.xml ./locale/*/LC_MESSAGES/[a-z][a-z].mo
+
+    # clean the mess
+    for LANGCODE in `cat locale/LINGUAS | grep -v "#"`; do
+      unlink ./locale/$LANGCODE/LC_MESSAGES/$LANGCODE.mo
+    done
+  else
+    if [ x"$(uname -s)" = x"Linux" ]; then
+      echo "itstool missing, won't apply translations to openscad.appdata.xml"
+    fi
+    cp -f ./openscad.appdata.xml.in2 ./openscad.appdata.xml
   fi
-  cp -f ./openscad.appdata.xml.in ./openscad.appdata.xml
- fi
-
- if test -n "$SUFFIX"
- then
-  echo "using suffix '$SUFFIX'"
- fi
- cp -f ./icons/openscad.desktop.in ./icons/openscad.desktop
- sed -i.bak -e "s,@@openscad@@,openscad${SUFFIX}," ./icons/openscad.desktop
- sed -i.bak -e "s,</id>,${SUFFIX}\\0,; s/openscad.desktop/openscad${SUFFIX}.desktop/; s/openscad.png/openscad${SUFFIX}.png/" ./openscad.appdata.xml
 }
 
 GETTEXT_PATH=""
