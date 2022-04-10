@@ -20,7 +20,7 @@ cube("line 18");
 line20 = "
 line21
 line22
-line24
+line23
 ";
 
 cube("line 26");
