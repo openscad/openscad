@@ -1304,10 +1304,21 @@ void ScintillaEditor::onCharacterThresholdChanged(int val)
 
 void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorData)
 {
+  qsci->recolor(); //lex and restyle the whole file
+  // We do that here for the following reasons:
+  // * this is a convenient place to hook into
+  //    * this is called after evaluating the file
+  //    * evaluting is called during Preview and Render
+  //    * "automatic reload and preview" causes a preview on file save
+  // * it makes sense to clean up potential artifacts in the syntax highlighting,
+  //    before cleaning up old and setting new indicators
+  
+  //remove all indicators
   qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
   qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->length());
   this->indicatorData = indicatorData;
 
+  //set indicators
   int idx = 0;
   for (const auto& data : indicatorData) {
     int pos = qsci->positionFromLineIndex(data.linenr - 1, data.colnr - 1);
