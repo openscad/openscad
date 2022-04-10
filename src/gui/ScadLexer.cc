@@ -199,11 +199,16 @@ void Lex::lex_results(const std::string& input, int start, LexInterface *const o
 #endif
   lexertl::smatch results(input.begin(), input.end());
 
+  //The editor can ask to only lex from a starting point.
+  //This can be faster the lexing the whole text,
+  //but requires the lexer to try to restore the lexer state.
+  //We currently handle comments (COMMENT State) pretty well.
+  //We currently do not handle include/use (PATH State).
   int isstyle = obj->getStyleAt(start - 1);
   if (isstyle == ecomment)
     results.state = rules_.state("COMMENT");
-  lexertl::lookup(sm, results);
 
+  lexertl::lookup(sm, results);
   while (results.id != eEOF) {
     obj->highlighting(start, input, results);
     lexertl::lookup(sm, results);

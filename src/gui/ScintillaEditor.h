@@ -66,6 +66,7 @@ public:
   QStringList colorSchemes() override;
   bool canUndo() override;
   void addTemplate() override;
+  void resetHighlighting() override;
   void setIndicator(const std::vector<IndicatorData>& indicatorData) override;
   QMenu *createStandardContextMenu() override;
   QPoint mapToGlobal(const QPoint&) override;

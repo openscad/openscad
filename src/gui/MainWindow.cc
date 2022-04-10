@@ -1809,6 +1809,7 @@ void MainWindow::parseTopLevelDocument()
   this->root_file = nullptr;  // ditto
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
 
+  this->activeEditor->resetHighlighting();
   if (this->root_file != nullptr) {
     //add parameters as annotation in AST
     CommentParser::collectParameters(fulltext, this->root_file);

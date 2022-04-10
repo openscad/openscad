@@ -1302,10 +1302,16 @@ void ScintillaEditor::onCharacterThresholdChanged(int val)
   qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
 }
 
-void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorData)
-{
+void ScintillaEditor::resetHighlighting(){
+  qsci->recolor(); //lex and restyle the whole text
+  
+  //remove all indicators
   qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
   qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->length());
+}
+
+void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorData)
+{
   this->indicatorData = indicatorData;
 
   int idx = 0;
