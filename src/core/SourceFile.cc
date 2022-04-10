@@ -89,7 +89,7 @@ void SourceFile::registerInclude(const std::string& localpath, const std::string
 
   this->includes[localpath] = fullpath;
   if (!loc.isNone()) {
-    indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(), path);
+    indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(), fullpath);
   }
 }
 
