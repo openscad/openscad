@@ -1,7 +1,7 @@
-WARNING: Can't open library 'line 1'.
-WARNING: Can't open include file 'line 1'.
-WARNING: Can't open include file 'line 9'.
-WARNING: Can't open library 'line 16'.
+WARNING: Can't open library 'line 1'. in file ../../tests/data/scad/misc/linenumber.scad, line 1
+WARNING: Can't open include file 'line 1'. in file ../../tests/data/scad/misc/linenumber.scad, line 1
+WARNING: Can't open include file 'line 9'. in file ../../tests/data/scad/misc/linenumber.scad, line 10
+WARNING: Can't open library 'line 16'. in file ../../tests/data/scad/misc/linenumber.scad, line 16
 WARNING: Unable to convert cube(size="line 3", ...) parameter to a number or a vec3 of numbers in file linenumber.scad, line 3
 WARNING: Unable to convert cube(size="line 12", ...) parameter to a number or a vec3 of numbers in file linenumber.scad, line 12
 WARNING: Unable to convert cube(size="line 18", ...) parameter to a number or a vec3 of numbers in file linenumber.scad, line 18
