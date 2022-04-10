@@ -1303,8 +1303,6 @@ void ScintillaEditor::onCharacterThresholdChanged(int val)
 }
 
 void ScintillaEditor::resetHighlighting(){
-  std::cout << "recolor on setIndicator" << std::endl;
-
   qsci->recolor(); //lex and restyle the whole text
   
   //remove all indicators
