@@ -290,7 +290,7 @@ QPushButton:pressed {
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="../../resources/common.qrc">:/icons/openscad.png</pixmap>
+        <pixmap resource="../../resources/common.qrc">:/logo.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>

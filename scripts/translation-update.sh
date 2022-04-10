@@ -27,7 +27,7 @@ updatepot()
 	> ./locale/json-strings.pot
 
  # extract strings from appdata file
- itstool -o ./locale/appdata-strings.pot ./openscad.appdata.xml.in --its=./contrib/appdata.its
+ itstool -o ./locale/appdata-strings.pot ./openscad.appdata.xml.in2 --its=./contrib/appdata.its
 
  VER=`date +"%Y.%m.%d"`
  OPTS=
@@ -97,7 +97,7 @@ updatemo()
   done
 
   # generate translated appdata file
-  itstool -j ./openscad.appdata.xml.in -o ./openscad.appdata.xml ./locale/*/LC_MESSAGES/[a-z][a-z].mo
+  itstool -j ./openscad.appdata.xml.in2 -o ./openscad.appdata.xml ./locale/*/LC_MESSAGES/[a-z][a-z].mo
 
   # clean the mess
   for LANGCODE in `cat locale/LINGUAS | grep -v "#"`; do
@@ -107,16 +107,7 @@ updatemo()
   if [ x"$(uname -s)" = x"Linux" ]; then
    echo "itstool missing, won't apply translations to openscad.appdata.xml"
   fi
-  cp -f ./openscad.appdata.xml.in ./openscad.appdata.xml
  fi
-
- if test -n "$SUFFIX"
- then
-  echo "using suffix '$SUFFIX'"
- fi
- cp -f ./resources/icons/openscad.desktop.in ./resources/icons/openscad.desktop
- sed -i.bak -e "s,@@openscad@@,openscad${SUFFIX}," ./resources/icons/openscad.desktop
- sed -i.bak -e "s,</id>,${SUFFIX}\\0,; s/openscad.desktop/openscad${SUFFIX}.desktop/; s/openscad.png/openscad${SUFFIX}.png/" ./openscad.appdata.xml
 }
 
 GETTEXT_PATH=""

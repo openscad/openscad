@@ -871,9 +871,6 @@ if(HEADLESS)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_NOGUI)
 else()
   list(APPEND RESOURCE_FILES ${RESOURCE_DIR}/common.qrc)
-  if (APPLE)
-    list(APPEND RESOURCE_FILES ${RESOURCE_DIR}/mac.qrc)
-  endif()
   list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADERS})
 endif()
 
@@ -887,6 +884,7 @@ else()
 endif()
 
 if (APPLE)
+  list(APPEND RESOURCE_FILES ${RESOURCE_DIR}/mac.qrc)
   list(APPEND RESOURCE_FILES ${MACOSX_BUNDLE_ICON_FILE})
 elseif(WIN32)
   list(APPEND RESOURCE_FILES ${WINDOWS_RESOURCE_PATH})
@@ -915,7 +913,7 @@ if(APPLE AND NOT APPLE_UNIX)
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${OPENSCAD_YEAR}.${OPENSCAD_MONTH}
     RESOURCE "${RESOURCE_FILES}"
   )
-  set(BUNDLE_RESOURCES_DIR ${CMAKE_BINARY_DIR}/OpenSCAD.app/Contents/Resources)
+  set(BUNDLE_RESOURCES_DIR ${CMAKE_CURRENT_BINARY_DIR}/OpenSCAD.app/Contents/Resources)
   file(COPY ${CMAKE_SOURCE_DIR}/color-schemes DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/examples DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/fonts DESTINATION ${BUNDLE_RESOURCES_DIR})
@@ -939,6 +937,12 @@ endif()
 if(MXECROSS)
   list(APPEND COMMON_LIBRARIES Qt5::QSvgPlugin)
 endif()
+
+# Configure icon-related files, for release vs nightly
+configure_file(${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml.in ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml.in2)
+configure_file(${RESOURCE_DIR}/icons/openscad.desktop.in ${RESOURCE_DIR}/icons/openscad.desktop)
+configure_file(${RESOURCE_DIR}/common.qrc.in ${RESOURCE_DIR}/common.qrc)
+configure_file(${RESOURCE_DIR}/mac.qrc.in ${RESOURCE_DIR}/mac.qrc)
 
 target_link_libraries(OpenSCAD PRIVATE ${COMMON_LIBRARIES} ${PLATFORM_LIBS})
 

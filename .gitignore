@@ -49,10 +49,13 @@ object_script.openscad.Release
 /openscad_interface.cpp
 /OpenSCAD.app
 /openscad.appdata.xml
+/openscad.appdata.xml.in2
 /openscad.pro.user
 /openscad
 /openscad-nightly
 /resources/icons/openscad.desktop
+/resources/common.qrc
+/resources/mac.qrc
 /locale/*/*/*.mo
 /locale/*.mo
 /locale/POTFILES
