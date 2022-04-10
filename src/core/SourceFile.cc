@@ -74,7 +74,7 @@ void SourceFile::registerUse(const std::string path, const Location& loc)
     if (pos != usedlibs.end()) usedlibs.erase(pos);
     usedlibs.insert(usedlibs.begin(), path);
     if (!loc.isNone()) {
-      indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), path);
+      indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(), path);
     }
   }
 }
@@ -89,7 +89,7 @@ void SourceFile::registerInclude(const std::string& localpath, const std::string
 
   this->includes[localpath] = fullpath;
   if (!loc.isNone()) {
-    indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastColumn() - loc.firstColumn(), fullpath);
+    indicatorData.emplace_back(loc.firstLine(), loc.firstColumn(), loc.lastLine(), loc.lastColumn(), fullpath);
   }
 }
 

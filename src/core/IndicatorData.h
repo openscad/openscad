@@ -2,17 +2,19 @@
 
 struct IndicatorData
 {
-  IndicatorData(int linenr, int colnr, int nrofchar, std::string path)
-    : linenr(linenr), colnr(colnr), nrofchar(nrofchar), path(path)
-  {
+  IndicatorData(int firstLine, int firstCol, int lastLine, int lastCol,
+           std::string path)
+    : first_line(firstLine), first_col(firstCol), last_line(lastLine),
+    last_col(lastCol), path(path) {
   }
 
   ~IndicatorData()
   {
   }
 
-  int linenr;
-  int colnr;
-  int nrofchar;
+  int first_line;
+  int first_col;
+  int last_line;
+  int last_col;
   std::string path;
 };
