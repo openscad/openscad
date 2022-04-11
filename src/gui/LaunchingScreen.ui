@@ -20,7 +20,7 @@
    <string>Welcome to OpenSCAD</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../openscad.qrc">
+   <iconset resource="../../resources/common.qrc">
     <normaloff>:/icons/prefs3DView.png</normaloff>:/icons/prefs3DView.png</iconset>
   </property>
   <property name="sizeGripEnabled">
@@ -290,7 +290,7 @@ QPushButton:pressed {
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="../openscad.qrc">:/icons/openscad.png</pixmap>
+        <pixmap resource="../../resources/common.qrc">:/logo.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -383,7 +383,7 @@ QPushButton:pressed {
   </layout>
  </widget>
  <resources>
-  <include location="../openscad.qrc"/>
+  <include location="../../resources/common.qrc"/>
  </resources>
  <connections/>
 </ui>

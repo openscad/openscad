@@ -52,7 +52,7 @@
         <string/>
        </property>
        <property name="pixmap">
-        <pixmap resource="../openscad.qrc">:/icons/openscad.png</pixmap>
+        <pixmap resource="../../resources/common.qrc">:/logo.png</pixmap>
        </property>
        <property name="scaledContents">
         <bool>true</bool>
@@ -103,7 +103,7 @@
      </property>
      <property name="source">
       <url>
-       <string>qrc:/src/gui/AboutDialog.html</string>
+       <string>qrc:/html/AboutDialog.html</string>
       </url>
      </property>
      <property name="openExternalLinks">
@@ -134,7 +134,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../openscad.qrc"/>
+  <include location="../../resources/common.qrc"/>
  </resources>
  <connections/>
 </ui>

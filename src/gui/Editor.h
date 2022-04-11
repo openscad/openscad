@@ -28,6 +28,7 @@ public:
   virtual QStringList colorSchemes() = 0;
   virtual bool canUndo() = 0;
   virtual void addTemplate() = 0;
+  virtual void resetHighlighting() = 0;
   virtual void setIndicator(const std::vector<IndicatorData>& indicatorData) = 0;
   virtual QMenu *createStandardContextMenu() = 0;
   virtual QPoint mapToGlobal(const QPoint&) = 0;
