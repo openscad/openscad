@@ -1522,6 +1522,11 @@
     <string>Alt+Ins</string>
    </property>
   </action>
+  <action name="editActionFoldAll">
+   <property name="text">
+    <string>Fold/Unfoll All</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
