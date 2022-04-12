@@ -243,6 +243,7 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   // actions not included in menu
   this->addAction(editActionInsertTemplate);
+  this->addAction(editActionFoldAll);
 
   this->editorDock->setConfigKey("view/hideEditor");
   this->editorDock->setAction(this->windowActionHideEditor);
@@ -3116,6 +3117,11 @@ void MainWindow::on_windowActionPreviousWindow_triggered()
 void MainWindow::on_editActionInsertTemplate_triggered()
 {
   activeEditor->displayTemplates();
+}
+
+void MainWindow::on_editActionFoldAll_triggered()
+{
+  activeEditor->foldUnfold();
 }
 
 void MainWindow::activateWindow(int offset)
