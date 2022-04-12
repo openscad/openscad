@@ -19,6 +19,7 @@
 
 #include <QWheelEvent>
 #include <QPoint>
+#include <QToolTip>
 
 namespace fs = boost::filesystem;
 
@@ -1328,17 +1329,8 @@ void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorDa
   }
 }
 
-void ScintillaEditor::resetToolTip(){
-  setToolTip("");
-}
-
 void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state)
 {
-  if (!(state == Qt::ControlModifier || state == (Qt::ControlModifier | Qt::AltModifier))){
-    setToolTip("to open links, use <b>CTRL + Click</b>");
-    QTimer::singleShot(5000,this,SLOT(resetToolTip()));
-    return;
-  }
   qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
 
   int pos = qsci->positionFromLineIndex(line, col);
@@ -1346,7 +1338,13 @@ void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifier
 
   // checking if indicator clicked is hyperlinkIndicator
   if (val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset + indicatorData.size()) {
-    emit hyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
+    if (QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) || QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)) {
+      emit hyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
+    } else if (QGuiApplication::keyboardModifiers() == Qt::NoModifier) {
+      QTimer::singleShot(0, this, [this] {
+        QToolTip::showText(QCursor::pos(), "Use <b>CTRL + Click</b> to open the file", this, rect(), toolTipDuration());
+      });
+    }
   }
 }
 
