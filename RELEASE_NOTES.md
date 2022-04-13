@@ -78,7 +78,7 @@
 **Bug Fixes**
 * Raise error when export folder does not exist (fixes #432)
 * Fixes for linear_extrude with scale and/or twist
-* Avoid undefined behavior for `convexity' parameter to linear_extrude
+* Avoid undefined behavior for 'convexity' parameter to linear_extrude
 * Fix echo() formatting error (fixes #2950)
 * Fix search order for use<>
 * Fix large text (fixes #3262)
