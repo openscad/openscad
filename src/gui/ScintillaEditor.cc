@@ -1356,7 +1356,7 @@ void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifier
 
   // checking if indicator clicked is hyperlinkIndicator
   if (val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset + indicatorData.size()) {
-    if (QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) || QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)) {
+    if (indicatorsActive) {
       emit hyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
     }
   }
@@ -1371,7 +1371,7 @@ void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifie
 
   // checking if indicator clicked is hyperlinkIndicator
   if (val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset + indicatorData.size()) {
-    if (QGuiApplication::keyboardModifiers() == Qt::NoModifier) {
+    if (!indicatorsActive) {
       QTimer::singleShot(0, this, [this] {
         QToolTip::showText(QCursor::pos(), "Use <b>CTRL + Click</b> to open the file", this, rect(), toolTipDuration());
       });
