@@ -133,6 +133,7 @@ public slots:
   void paste() override;
   void initFont(const QString&, uint) override;
   void displayTemplates() override;
+  void foldUnfold() override;
   void toggleBookmark() override;
   void nextBookmark() override;
   void prevBookmark() override;

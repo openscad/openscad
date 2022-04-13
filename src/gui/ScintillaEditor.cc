@@ -280,6 +280,11 @@ void ScintillaEditor::displayTemplates()
   qsci->showUserList(1, userList);
 }
 
+void ScintillaEditor::foldUnfold()
+{
+  qsci->foldAll();
+}
+
 /**
  * Apply the settings that are changeable in the preferences. This is also
  * called in the event handler from the preferences.

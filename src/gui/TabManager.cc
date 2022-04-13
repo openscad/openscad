@@ -383,6 +383,7 @@ void TabManager::showContextMenuEvent(const QPoint& pos)
   menu->addAction(par->editActionFindPrevious);
   menu->addSeparator();
   menu->addAction(par->editActionInsertTemplate);
+  menu->addAction(par->editActionFoldAll);
   menu->exec(editor->mapToGlobal(pos));
 
   delete menu;
