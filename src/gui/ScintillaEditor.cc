@@ -912,10 +912,12 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
   if(QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) || QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)){
     if(!this->indicatorsActive){
+        this->indicatorsActive = true;
         qsci->setIndicatorHoverStyle(QsciScintilla::PlainIndicator, hyperlinkIndicatorNumber);
     }
   }else{
     if(this->indicatorsActive){
+        this->indicatorsActive = false;
         qsci->setIndicatorHoverStyle(QsciScintilla::HiddenIndicator, hyperlinkIndicatorNumber);
     }
   }
