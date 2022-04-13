@@ -147,6 +147,7 @@ private slots:
   void onCharacterThresholdChanged(int val);
   void fireModificationChanged();
   void onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state);
+  void onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state);
 
 public:
   void public_applySettings();
@@ -161,6 +162,8 @@ private:
   static const int hyperlinkIndicatorOffset = 100;
   static const int errMarkerNumber = 2;
   static const int bmMarkerNumber = 3;
+
+  bool indicatorsActive = false;
 
 #if ENABLE_LEXERTL
   ScadLexer2 *lexer;
