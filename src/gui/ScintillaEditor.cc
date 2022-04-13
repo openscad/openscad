@@ -220,6 +220,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, hyperlinkIndicatorNumber);
   qsci->SendScintilla(QsciScintilla::SCI_INDICSETSTYLE, hyperlinkIndicatorNumber, QsciScintilla::INDIC_HIDDEN);
   connect(qsci, SIGNAL(indicatorClicked(int,int,Qt::KeyboardModifiers)), this, SLOT(onIndicatorClicked(int,int,Qt::KeyboardModifiers)));
+  connect(qsci, SIGNAL(indicatorReleased(int,int,Qt::KeyboardModifiers)), this, SLOT(onIndicatorReleased(int,int,Qt::KeyboardModifiers)));
 
 #if QSCINTILLA_VERSION >= 0x020b00
   connect(qsci, SIGNAL(SCN_URIDROPPED(const QUrl&)), this, SIGNAL(uriDropped(const QUrl&)));
@@ -1352,7 +1353,20 @@ void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifier
   if (val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset + indicatorData.size()) {
     if (QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) || QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)) {
       emit hyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
-    } else if (QGuiApplication::keyboardModifiers() == Qt::NoModifier) {
+    }
+  }
+}
+
+void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state)
+{
+  qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
+
+  int pos = qsci->positionFromLineIndex(line, col);
+  int val = qsci->SendScintilla(QsciScintilla::SCI_INDICATORVALUEAT, ScintillaEditor::hyperlinkIndicatorNumber, pos);
+
+  // checking if indicator clicked is hyperlinkIndicator
+  if (val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset + indicatorData.size()) {
+    if (QGuiApplication::keyboardModifiers() == Qt::NoModifier) {
       QTimer::singleShot(0, this, [this] {
         QToolTip::showText(QCursor::pos(), "Use <b>CTRL + Click</b> to open the file", this, rect(), toolTipDuration());
       });

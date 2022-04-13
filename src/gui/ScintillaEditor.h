@@ -146,6 +146,7 @@ private slots:
   void onCharacterThresholdChanged(int val);
   void fireModificationChanged();
   void onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state);
+  void onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state);
 
 public:
   void public_applySettings();
