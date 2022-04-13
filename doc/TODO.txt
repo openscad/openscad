@@ -203,9 +203,7 @@ o Export to other file formats
 
 IDEAS FOR LANGUAGE CHANGES
 --------------------------
-o More strict checking of module parameters to make e.g. this fail:
-  module test(a,b) { a=1; b=2; echo(a,b,c); } test(c=3);
-  (also for built-in modules)
+o (...)
 
 CODE
 ----
