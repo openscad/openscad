@@ -218,7 +218,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   connect(qsci, SIGNAL(customContextMenuRequested(const QPoint&)), this, SIGNAL(showContextMenuEvent(const QPoint&)));
 
   qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, hyperlinkIndicatorNumber);
-  qsci->setIndicatorHoverStyle(QsciScintilla::DotBoxIndicator, hyperlinkIndicatorNumber);
+  qsci->SendScintilla(QsciScintilla::SCI_INDICSETSTYLE, hyperlinkIndicatorNumber, QsciScintilla::INDIC_HIDDEN);
   connect(qsci, SIGNAL(indicatorClicked(int,int,Qt::KeyboardModifiers)), this, SLOT(onIndicatorClicked(int,int,Qt::KeyboardModifiers)));
 
 #if QSCINTILLA_VERSION >= 0x020b00
@@ -910,6 +910,16 @@ QString ScintillaEditor::selectedText()
 
 bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
+  if(QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) || QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)){
+    if(!this->indicatorsActive){
+        qsci->setIndicatorHoverStyle(QsciScintilla::PlainIndicator, hyperlinkIndicatorNumber);
+    }
+  }else{
+    if(this->indicatorsActive){
+        qsci->setIndicatorHoverStyle(QsciScintilla::HiddenIndicator, hyperlinkIndicatorNumber);
+    }
+  }
+
   bool enableNumberScrollWheel = Settings::Settings::enableNumberScrollWheel.value();
 
   if (obj == qsci->viewport() && enableNumberScrollWheel) {

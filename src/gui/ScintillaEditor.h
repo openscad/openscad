@@ -161,6 +161,8 @@ private:
   static const int errMarkerNumber = 2;
   static const int bmMarkerNumber = 3;
 
+  bool indicatorsActive = false;
+
 #if ENABLE_LEXERTL
   ScadLexer2 *lexer;
 #else
