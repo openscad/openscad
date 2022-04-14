@@ -93,7 +93,6 @@ extern YYLTYPE parserlloc;
 #define LOCATION_ADD_LINES(loc, cnt) do { (loc).last_column = 1; (loc).last_line += cnt; LOCATION_NEXT(loc); } while (0)
 
 #define LOCATION_COUNT_LINES(loc, text) \
-    std::cout << text << std::endl; \
     for(int i = 0; (text[i]) != '\0'; i++) { \
         if((text[i]) == '\n') { \
             (loc).last_line++; \
