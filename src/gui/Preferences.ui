@@ -2176,47 +2176,12 @@
                <string>OpenSCAD Language Features</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_15">
-               <item>
-                <widget class="QCheckBox" name="enableParameterCheckBox">
-                 <property name="text">
-                  <string>Warn when there is a parameter mismatch in user module calls</string>
-                 </property>
-                 <property name="checked">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_traceDepth">
-                 <item>
-                  <widget class="QLabel" name="traceDepthLabel">
-                   <property name="text">
-                    <string>traceDepth:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="traceDepthEdit">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="enableTraceUsermoduleParametersCheckBox">
-                 <property name="text">
-                  <string>traceUsermoduleParametersCheckBox</string>
-                 </property>
-                 <property name="checked">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_warn">
+              <property name="title">
+               <string>Warnings</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_15a">
                <item>
                 <widget class="QCheckBox" name="enableHardwarningsCheckBox">
                  <property name="text">
@@ -2237,6 +2202,82 @@
                  </property>
                 </widget>
                </item>
+               <item>
+                <widget class="QCheckBox" name="enableParameterCheckBox">
+                 <property name="text">
+                  <string>Warn when there is a parameter mismatch in user module calls</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+              </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_trace">
+              <property name="title">
+               <string>Trace</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_15b">
+                <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_traceDepth">
+                 <item>
+                  <widget class="QLabel" name="traceDepthLabel">
+                   <property name="text">
+                    <string>Trace depth:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="traceDepthEdit">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="alignment">
+                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="traceDepthLabel2">
+                   <property name="text">
+                    <string>(max. number or trace messages)</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer38">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                 </layout>
+               </item>
+               <item>
+                <widget class="QCheckBox" name="enableTraceUsermoduleParametersCheckBox">
+                 <property name="text">
+                  <string>show parameters of usermodul calls in trace</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+              </widget>
+              </item>
               </layout>
              </widget>
             </item>
