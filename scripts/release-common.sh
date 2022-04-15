@@ -219,7 +219,7 @@ case $OS in
         if [ $FAKEMAKE ]; then
             echo "notexe. debugging build process" > openscad.exe
         else
-            make -j$NUMCPU
+            make -j$NUMCPU VERBOSE=1
         fi
         if [ ! -e openscad.exe ]; then
             echo "can't find openscad.exe. build failed. stopping."
