@@ -46,8 +46,8 @@ static void NOINLINE print_trace(const UserModule *mod,std::shared_ptr<const Use
   std::stringstream stream ;
   if (StackCheck::inst().check()) { 
     stream << "...";
-  }else{
-    bool first =true;
+  } else {
+    bool first = true;
     for (const auto& assignment : parameters) {
       if (first) {
         first = false;
@@ -56,17 +56,17 @@ static void NOINLINE print_trace(const UserModule *mod,std::shared_ptr<const Use
       }
       if (!assignment->getName().empty()) {
         stream << assignment->getName();
+        stream << " = ";
       }
-      stream << " = ";
-      try{
+      try {
         stream << context->lookup_variable(assignment->getName(),Location::NONE);
       } catch (EvaluationException& e) {
         stream << "...";
       }
   }
 }
-  LOG(message_group::Trace, mod->location(), context->documentRoot(), "call of '%1$s(%2$s)'", mod->name, 
-  stream.str()
+  LOG(message_group::Trace, mod->location(), context->documentRoot(), "call of '%1$s(%2$s)'",
+     mod->name, stream.str()
   );
 }
 
@@ -101,7 +101,8 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<cons
     }
     throw;
   }
-  return ret;}
+  return ret;
+}
 
 void UserModule::print(std::ostream& stream, const std::string& indent) const
 {
