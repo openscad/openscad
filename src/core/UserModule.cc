@@ -44,7 +44,9 @@ static void NOINLINE print_err(std::string name, const Location& loc, const std:
 
 static void NOINLINE print_trace(const UserModule *mod,std::shared_ptr<const UserModuleContext> context, const AssignmentList parameters){
   std::stringstream stream ;
-  if (StackCheck::inst().check()) { 
+  if (parameters.size() == 0){
+      //nothing to do
+  } else if (StackCheck::inst().check()) { 
     stream << "...";
   } else {
     bool first = true;
