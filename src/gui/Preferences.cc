@@ -132,6 +132,7 @@ void Preferences::init() {
   this->defaultmap["advanced/timeThresholdOnRenderCompleteSound"] = 0;
   this->defaultmap["advanced/consoleMaxLines"] = 5000;
   this->defaultmap["advanced/enableHardwarnings"] = false;
+  this->defaultmap["advanced/enableTraceUsermoduleParameters"] = true;
   this->defaultmap["advanced/enableParameterCheck"] = true;
   this->defaultmap["advanced/enableParameterRangeCheck"] = false;
 
@@ -673,6 +674,12 @@ void Preferences::on_enableHardwarningsCheckBox_toggled(bool state)
   settings.setValue("advanced/enableHardwarnings", state);
 }
 
+void Preferences::on_enableTraceUsermoduleParametersCheckBox_toggled(bool state)
+{
+  QSettingsCached settings;
+  settings.setValue("advanced/enableTraceUsermoduleParameters", state);
+}
+
 void Preferences::on_enableParameterCheckBox_toggled(bool state)
 {
   QSettingsCached settings;
@@ -959,6 +966,7 @@ void Preferences::updateGUI()
     }
   }
   BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)->setChecked(getValue("advanced/enableHardwarnings").toBool());
+  BlockSignals<QCheckBox *>(this->enableTraceUsermoduleParametersCheckBox)->setChecked(getValue("advanced/enableTraceUsermoduleParameters").toBool());
   BlockSignals<QCheckBox *>(this->enableParameterCheckBox)->setChecked(getValue("advanced/enableParameterCheck").toBool());
   BlockSignals<QCheckBox *>(this->enableRangeCheckBox)->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
   BlockSignals<QCheckBox *>(this->useAsciiSTLCheckBox)->setChecked(Settings::Settings::exportUseAsciiSTL.value());

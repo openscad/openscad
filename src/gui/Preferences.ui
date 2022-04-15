@@ -2187,6 +2187,16 @@
                 </widget>
                </item>
                <item>
+                <widget class="QCheckBox" name="enableTraceUsermoduleParametersCheckBox">
+                 <property name="text">
+                  <string>traceUsermoduleParametersCheckBox</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <widget class="QCheckBox" name="enableHardwarningsCheckBox">
                  <property name="text">
                   <string>Stop on the first warning</string>

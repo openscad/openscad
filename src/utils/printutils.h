@@ -76,6 +76,7 @@ namespace OpenSCAD {
 extern std::string debug;
 extern bool quiet;
 extern bool hardwarnings;
+extern bool traceUsermoduleParameters;
 extern bool parameterCheck;
 extern bool rangeCheck;
 }
