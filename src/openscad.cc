@@ -978,6 +978,7 @@ int main(int argc, char **argv)
     ("m,m", po::value<string>(), "make_cmd -runs make_cmd file if file is missing")
     ("quiet,q", "quiet mode (don't print anything *except* errors)")
     ("hardwarnings", "Stop on the first warning")
+    ("trace-depth", po::value<unsigned int>(), "=n, maximum number of trace outputs")
     ("trace-usermodule-parameters", po::value<string>(), "=true/false, configure the output of user modul parameters in a trace")
     ("check-parameters", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
     ("check-parameter-ranges", po::value<string>(), "=true/false, configure the parameter range check for builtin modules")
@@ -1020,6 +1021,9 @@ int main(int argc, char **argv)
     OpenSCAD::hardwarnings = true;
   }
 
+  if (vm.count("traceDepth")) {
+    OpenSCAD::traceDepth = vm["traceDepth"].as<unsigned int>();
+  }
   std::map<std::string, bool *> flags;
   flags.insert(std::make_pair("trace-usermodule-parameters", &OpenSCAD::traceUsermoduleParameters));
   flags.insert(std::make_pair("check-parameters", &OpenSCAD::parameterCheck));

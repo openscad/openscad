@@ -2187,6 +2187,27 @@
                 </widget>
                </item>
                <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_traceDepth">
+                 <item>
+                  <widget class="QLabel" name="traceDepthLabel">
+                   <property name="text">
+                    <string>traceDepth:</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="traceDepthEdit">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
                 <widget class="QCheckBox" name="enableTraceUsermoduleParametersCheckBox">
                  <property name="text">
                   <string>traceUsermoduleParametersCheckBox</string>
