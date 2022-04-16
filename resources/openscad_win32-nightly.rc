@@ -26,16 +26,14 @@ VS_VERSION_INFO VERSIONINFO
 			BEGIN
 				VALUE "CompanyName", "\0"
 				VALUE "FileDescription", "OpenSCAD Executable\0"
-				VALUE "FileVersion", "development build\0"
+				VALUE "FileVersion", "Development build\0"
 				VALUE "LegalCopyright", "Copyright (C) 2009-2022 The OpenSCAD Developers\0"
 				VALUE "OriginalFilename", "openscad.exe\0"
-				VALUE "ProductName", "OpenSCAD\0"
+				VALUE "ProductName", "OpenSCAD (Nightly)\0"
 			END
 		END
 	END
 /* End of Version info */
 
-IDI_ICON1   ICON    DISCARDABLE "icons/openscad.ico"
-IDI_ICON2   ICON    DISCARDABLE "icons/openscad_doc.ico"
-
-
+IDI_ICON1   ICON    DISCARDABLE "resources/icons/openscad-nightly.ico"
+IDI_ICON2   ICON    DISCARDABLE "resources/icons/openscad_doc.ico"

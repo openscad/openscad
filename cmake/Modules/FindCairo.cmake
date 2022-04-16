@@ -29,24 +29,33 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 find_package(PkgConfig)
-pkg_check_modules(PC_CAIRO QUIET cairo)
 
-find_path(CAIRO_INCLUDE_DIRS
+if (APPLE)
+  pkg_check_modules(PC_CAIRO QUIET cairo)
+
+  find_path(CAIRO_INCLUDE_DIRS
     NAMES cairo.h
     HINTS ${PC_CAIRO_INCLUDEDIR}
           ${PC_CAIRO_INCLUDE_DIRS}
     PATH_SUFFIXES cairo
-)
+  )
 
-find_library(CAIRO_LIBRARIES
+  find_library(CAIRO_LIBRARIES
     NAMES cairo
     HINTS ${PC_CAIRO_LIBDIR}
           ${PC_CAIRO_LIBRARY_DIRS}
-)
+  )
 
-if (CAIRO_INCLUDE_DIRS)
-    if (EXISTS "${CAIRO_INCLUDE_DIRS}/cairo-version.h")
-        file(READ "${CAIRO_INCLUDE_DIRS}/cairo-version.h" CAIRO_VERSION_CONTENT)
+  set(CAIRO_INCLUDEDIR "${CAIRO_INCLUDE_DIRS}")
+else ()
+  pkg_check_modules(CAIRO QUIET cairo)
+endif ()
+
+message(STATUS "CAIRO_INCLUDEDIR: ${CAIRO_INCLUDEDIR}")
+
+if (CAIRO_INCLUDEDIR)
+    if (EXISTS "${CAIRO_INCLUDEDIR}/cairo-version.h")
+        file(READ "${CAIRO_INCLUDEDIR}/cairo-version.h" CAIRO_VERSION_CONTENT)
 
         string(REGEX MATCH "#define +CAIRO_VERSION_MAJOR +([0-9]+)" _dummy "${CAIRO_VERSION_CONTENT}")
         set(CAIRO_VERSION_MAJOR "${CMAKE_MATCH_1}")
@@ -66,10 +75,12 @@ if ("${Cairo_FIND_VERSION}" VERSION_GREATER "${CAIRO_VERSION}")
 endif ()
 
 include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Cairo REQUIRED_VARS CAIRO_INCLUDE_DIRS CAIRO_LIBRARIES
-                                        VERSION_VAR CAIRO_VERSION)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(Cairo REQUIRED_VARS CAIRO_INCLUDE_DIRS CAIRO_LIBRARIES VERSION_VAR CAIRO_VERSION)
 
 mark_as_advanced(
     CAIRO_INCLUDE_DIRS
     CAIRO_LIBRARIES
 )
+
+message(STATUS "CAIRO_INCLUDE_DIRS: ${CAIRO_INCLUDE_DIRS}")
+message(STATUS "CAIRO_LIBRARIES: ${CAIRO_LIBRARIES}")

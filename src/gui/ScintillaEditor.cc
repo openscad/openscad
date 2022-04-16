@@ -19,6 +19,7 @@
 
 #include <QWheelEvent>
 #include <QPoint>
+#include <QToolTip>
 
 namespace fs = boost::filesystem;
 
@@ -217,8 +218,9 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   connect(qsci, SIGNAL(customContextMenuRequested(const QPoint&)), this, SIGNAL(showContextMenuEvent(const QPoint&)));
 
   qsci->indicatorDefine(QsciScintilla::ThinCompositionIndicator, hyperlinkIndicatorNumber);
-  qsci->setIndicatorHoverStyle(QsciScintilla::DotBoxIndicator, hyperlinkIndicatorNumber);
+  qsci->SendScintilla(QsciScintilla::SCI_INDICSETSTYLE, hyperlinkIndicatorNumber, QsciScintilla::INDIC_HIDDEN);
   connect(qsci, SIGNAL(indicatorClicked(int,int,Qt::KeyboardModifiers)), this, SLOT(onIndicatorClicked(int,int,Qt::KeyboardModifiers)));
+  connect(qsci, SIGNAL(indicatorReleased(int,int,Qt::KeyboardModifiers)), this, SLOT(onIndicatorReleased(int,int,Qt::KeyboardModifiers)));
 
 #if QSCINTILLA_VERSION >= 0x020b00
   connect(qsci, SIGNAL(SCN_URIDROPPED(const QUrl&)), this, SIGNAL(uriDropped(const QUrl&)));
@@ -276,6 +278,11 @@ void ScintillaEditor::addTemplate(const fs::path path)
 void ScintillaEditor::displayTemplates()
 {
   qsci->showUserList(1, userList);
+}
+
+void ScintillaEditor::foldUnfold()
+{
+  qsci->foldAll();
 }
 
 /**
@@ -909,6 +916,18 @@ QString ScintillaEditor::selectedText()
 
 bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
+  if(QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) || QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)){
+    if(!this->indicatorsActive){
+        this->indicatorsActive = true;
+        qsci->setIndicatorHoverStyle(QsciScintilla::PlainIndicator, hyperlinkIndicatorNumber);
+    }
+  }else{
+    if(this->indicatorsActive){
+        this->indicatorsActive = false;
+        qsci->setIndicatorHoverStyle(QsciScintilla::HiddenIndicator, hyperlinkIndicatorNumber);
+    }
+  }
+
   bool enableNumberScrollWheel = Settings::Settings::enableNumberScrollWheel.value();
 
   if (obj == qsci->viewport() && enableNumberScrollWheel) {
@@ -1302,25 +1321,34 @@ void ScintillaEditor::onCharacterThresholdChanged(int val)
   qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
 }
 
-void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorData)
-{
+void ScintillaEditor::resetHighlighting(){
+  qsci->recolor(); //lex and restyle the whole text
+  
+  //remove all indicators
   qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
   qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->length());
+}
+
+void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorData)
+{
   this->indicatorData = indicatorData;
 
   int idx = 0;
   for (const auto& data : indicatorData) {
-    int pos = qsci->positionFromLineIndex(data.linenr - 1, data.colnr - 1);
+    int startPos = qsci->positionFromLineIndex(data.first_line - 1, data.first_col - 1);
+    int stopPos  = qsci->positionFromLineIndex(data.last_line - 1,  data.last_col  - 1);
+
+    int nrOfChars = stopPos - startPos;
     qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, idx + hyperlinkIndicatorOffset);
-    qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, pos, data.nrofchar);
+
+    qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, startPos, nrOfChars);
+
     idx++;
   }
 }
 
 void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state)
 {
-  if (!(state == Qt::ControlModifier || state == (Qt::ControlModifier | Qt::AltModifier))) return;
-
   qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
 
   int pos = qsci->positionFromLineIndex(line, col);
@@ -1328,7 +1356,26 @@ void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifier
 
   // checking if indicator clicked is hyperlinkIndicator
   if (val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset + indicatorData.size()) {
-    emit hyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
+    if (indicatorsActive) {
+      emit hyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
+    }
+  }
+}
+
+void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state)
+{
+  qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
+
+  int pos = qsci->positionFromLineIndex(line, col);
+  int val = qsci->SendScintilla(QsciScintilla::SCI_INDICATORVALUEAT, ScintillaEditor::hyperlinkIndicatorNumber, pos);
+
+  // checking if indicator clicked is hyperlinkIndicator
+  if (val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset + indicatorData.size()) {
+    if (!indicatorsActive) {
+      QTimer::singleShot(0, this, [this] {
+        QToolTip::showText(QCursor::pos(), "Use <b>CTRL + Click</b> to open the file", this, rect(), toolTipDuration());
+      });
+    }
   }
 }
 

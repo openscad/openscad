@@ -727,19 +727,10 @@ int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, cha
   QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
   QGuiApplication::setApplicationDisplayName("OpenSCAD");
   QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-#ifndef Q_OS_MAC
-#ifdef OPENSCAD_SNAPSHOT
-  app.setWindowIcon(QIcon(":/icons/openscad-nightly.png"));
-#else
-  app.setWindowIcon(QIcon(":/icons/openscad.png"));
-#endif
-#endif
 #ifdef Q_OS_MAC
-#ifdef OPENSCAD_SNAPSHOT
-  app.setWindowIcon(QIcon(":/icons/openscad-nightly-macos.png"));
+  app.setWindowIcon(QIcon(":/icon-macos.png"));
 #else
-  app.setWindowIcon(QIcon(":/icons/openscad-macos.png"));
-#endif
+  app.setWindowIcon(QIcon(":/logo.png"));
 #endif
 
   // Other global settings

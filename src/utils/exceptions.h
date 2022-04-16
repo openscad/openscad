@@ -28,7 +28,7 @@ class RecursionException : public EvaluationException
 {
 public:
   static RecursionException create(const std::string& recursiontype, const std::string& name, const Location& loc) {
-    return RecursionException{STR("ERROR: Recursion detected calling " << recursiontype << " '" << name << "'"), loc};
+    return RecursionException{STR("Recursion detected calling " << recursiontype << " '" << name << "'"), loc};
   }
   ~RecursionException() throw() {}
 
@@ -43,7 +43,7 @@ class LoopCntException : public EvaluationException
 {
 public:
   static LoopCntException create(const std::string& type, const Location& loc) {
-    return LoopCntException{STR("ERROR: " << type << " loop counter exceeded limit"), loc};
+    return LoopCntException{STR(type << " loop counter exceeded limit"), loc};
   }
   ~LoopCntException() throw() {}
 
@@ -52,6 +52,18 @@ public:
 
 private:
   LoopCntException(const std::string& what_arg, const Location& loc) : EvaluationException(what_arg), loc(loc) {}
+};
+
+class VectorEchoStringException : public EvaluationException
+{
+public:
+  static VectorEchoStringException create() {
+    return VectorEchoStringException{"Stack exhausted while trying to convert a vector to EchoString"};
+  }
+  ~VectorEchoStringException() throw() {}
+
+private:
+  VectorEchoStringException(const std::string& what_arg) : EvaluationException(what_arg) {}
 };
 
 class HardWarningException : public EvaluationException

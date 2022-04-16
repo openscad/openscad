@@ -106,7 +106,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../openscad.qrc">
+             <iconset resource="../../resources/common.qrc">
               <normaloff>:/icons/close.png</normaloff>:/icons/close.png</iconset>
             </property>
             <property name="iconSize">
@@ -132,7 +132,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset resource="../openscad.qrc">
+             <iconset resource="../../resources/common.qrc">
               <normaloff>:/icons/information-icons-error.png</normaloff>:/icons/information-icons-error.png</iconset>
             </property>
             <property name="iconSize">
@@ -1522,6 +1522,11 @@
     <string>Alt+Ins</string>
    </property>
   </action>
+  <action name="editActionFoldAll">
+   <property name="text">
+    <string>Fold/Unfoll All</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -1561,7 +1566,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../openscad.qrc"/>
+  <include location="../../resources/common.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -34,7 +34,7 @@ PrintInitDialog::PrintInitDialog()
   setupUi(this);
 
   const auto printService = PrintService::inst();
-  this->textBrowser->setSource(QUrl{"qrc:/src/gui/PrintInitDialog.html"});
+  this->textBrowser->setSource(QUrl{"qrc:/html/PrintInitDialog.html"});
 
   this->okButton->setEnabled(false);
 
@@ -59,7 +59,7 @@ void PrintInitDialog::on_printServiceButton_clicked()
 
 void PrintInitDialog::on_octoPrintButton_clicked()
 {
-  this->textBrowser->setSource(QUrl{"qrc:/src/OctoPrintInfo.html"});
+  this->textBrowser->setSource(QUrl{"qrc:/html/OctoPrintInfo.html"});
   this->result = print_service_t::OCTOPRINT;
   this->okButton->setEnabled(true);
 }

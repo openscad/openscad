@@ -51,7 +51,7 @@
       </size>
      </property>
      <property name="icon">
-      <iconset resource="../openscad.qrc">
+      <iconset resource="../../resources/common.qrc">
        <normaloff>:/icons/stopbutton.png</normaloff>:/icons/stopbutton.png</iconset>
      </property>
      <property name="iconSize">
@@ -68,7 +68,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../openscad.qrc"/>
+  <include location="../../resources/common.qrc"/>
  </resources>
  <connections/>
 </ui>

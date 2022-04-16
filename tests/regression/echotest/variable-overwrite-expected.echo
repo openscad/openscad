@@ -1,0 +1,5 @@
+WARNING: a was assigned on line 2 but was overwritten in file variable-overwrite.scad, line 4
+WARNING: Ignoring unknown variable 'b' in file variable-overwrite.scad, line 4
+ERROR: Assertion 'b' failed in file variable-overwrite.scad, line 4
+TRACE: overwritten assignment to 'a' (this is where the assignment is evaluated) in file variable-overwrite.scad, line 2
+TRACE: overwriting assignment to 'a' in file variable-overwrite.scad, line 4
