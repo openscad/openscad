@@ -258,6 +258,6 @@ void print_argConvert_warning(
     }
     message << ")";
   }
-  message << ", found " << Value::typeName(found.type()) << " " << "(" << found.toEchoString() <<")";
+  message << ", found " << Value::typeName(found.type()) << " " << "(" << found.toEchoStringNoThrow() << ")";
   LOG(message_group::Warning, loc, documentRoot, "%1$s", message.str());
 }

@@ -67,7 +67,7 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
   bool originOk = parameters["origin"].getVec2(node->origin_x, node->origin_y);
   originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
   if (parameters["origin"].isDefined() && !originOk) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "rotate_extrude(..., origin=%1$s) could not be converted", parameters["origin"].toEchoString());
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "rotate_extrude(..., origin=%1$s) could not be converted", parameters["origin"].toEchoStringNoThrow());
   }
   node->scale = parameters["scale"].toDouble();
   node->angle = 360;
