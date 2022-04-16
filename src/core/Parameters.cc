@@ -77,7 +77,7 @@ bool Parameters::valid(const std::string& name, const Value& value,
   if (value.type() == type) {
     return true;
   }
-  print_argConvert_warning(caller, name, value.type(), {type}, loc,
+  print_argConvert_warning(caller, name, value, {type}, loc,
                            documentRoot());
   return false;
 }
@@ -241,7 +241,7 @@ void print_argCnt_warning(
 void print_argConvert_warning(
   const std::string& name,
   const std::string& where,
-  Value::Type found,
+  const Value& found,
   std::vector<Value::Type> expected,
   const Location& loc,
   const std::string& documentRoot
@@ -258,6 +258,6 @@ void print_argConvert_warning(
     }
     message << ")";
   }
-  message << ", found " << Value::typeName(found);
+  message << ", found " << Value::typeName(found.type()) << " " << "(" << found.toEchoString() <<")";
   LOG(message_group::Warning, loc, documentRoot, "%1$s", message.str());
 }

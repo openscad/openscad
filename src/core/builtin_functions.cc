@@ -87,7 +87,7 @@ static inline bool check_arguments(const char *function_name, const Arguments& a
   for (size_t i = 0; i < N; i++) {
     if (arguments[i]->type() != expected_types[i]) {
       if (warn) {
-        print_argConvert_warning(function_name, "argument " + STR(i), arguments[i]->type(), {expected_types[i]}, loc, arguments.documentRoot());
+        print_argConvert_warning(function_name, "argument " + STR(i), arguments[i]->clone(), {expected_types[i]}, loc, arguments.documentRoot());
       }
       return false;
     }
@@ -194,7 +194,7 @@ static std::vector<double> min_max_arguments(const Arguments& arguments, const L
       // 4/20/14 semantic change per discussion:
       // break on any non-number
       if (element.type() != Value::Type::NUMBER) {
-        print_argConvert_warning(function_name, "vector element " + STR(i), element.type(), {Value::Type::NUMBER}, loc, arguments.documentRoot());
+        print_argConvert_warning(function_name, "vector element " + STR(i), element, {Value::Type::NUMBER}, loc, arguments.documentRoot());
         return {};
       }
       output.push_back(element.toDouble());
@@ -205,7 +205,7 @@ static std::vector<double> min_max_arguments(const Arguments& arguments, const L
       // 4/20/14 semantic change per discussion:
       // break on any non-number
       if (argument->type() != Value::Type::NUMBER) {
-        print_argConvert_warning(function_name, "argument " + STR(i), argument->type(), {Value::Type::NUMBER}, loc, arguments.documentRoot());
+        print_argConvert_warning(function_name, "argument " + STR(i), argument->clone(), {Value::Type::NUMBER}, loc, arguments.documentRoot());
         return {};
       }
       output.push_back(argument->toDouble());
