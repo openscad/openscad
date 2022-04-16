@@ -118,7 +118,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../openscad.qrc"/>
+  <include location="../../resources/common.qrc"/>
  </resources>
  <connections/>
 </ui>

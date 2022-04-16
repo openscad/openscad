@@ -538,6 +538,7 @@ list(APPEND MISC_FILES
   ${TEST_SCAD_DIR}/misc/escape-test.scad
   ${TEST_SCAD_DIR}/misc/include-tests.scad
   ${TEST_SCAD_DIR}/misc/include-overwrite-main.scad
+  ${TEST_SCAD_DIR}/misc/include-overwrite-main2.scad
   ${TEST_SCAD_DIR}/misc/use-tests.scad
   ${TEST_SCAD_DIR}/misc/assert-tests.scad
   ${TEST_SCAD_DIR}/misc/let-module-tests.scad
@@ -547,6 +548,7 @@ list(APPEND MISC_FILES
   ${TEST_SCAD_DIR}/misc/allfunctions.scad
   ${TEST_SCAD_DIR}/misc/allmodules.scad
   ${TEST_SCAD_DIR}/misc/special-consts.scad
+  ${TEST_SCAD_DIR}/misc/variable-overwrite.scad
 )
 
 
@@ -631,6 +633,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/text-metrics-test.scad
   ${TEST_SCAD_DIR}/json/import-json.scad
   ${TEST_SCAD_DIR}/misc/vector-swizzling.scad
+  ${TEST_SCAD_DIR}/misc/linenumber.scad
 )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -982,6 +985,9 @@ add_cmdline_test(csgtermtest      OPENSCAD SUFFIX term FILES
 add_cmdline_test(echotest         OPENSCAD SUFFIX echo FILES ${ECHO_FILES})
 add_cmdline_test(echostdiotest    OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/echo-tests.scad STDIO EXPECTEDDIR echotest ARGS --export-format echo)
 add_cmdline_test(echotest         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/builtin-invalid-range-test.scad ARGS --check-parameter-ranges=on)
+
+# This test is quiet to speed up the test and to have a stable and reproducable output
+add_cmdline_test(echotest         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/issues/issue4172-echo-vector-stack-exhaust.scad ARGS --quiet)
 
 # generate a very large scad file which we would rather not commit to the source tree
 # this is for stress-testing the parser

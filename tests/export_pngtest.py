@@ -82,7 +82,7 @@ result = subprocess.call(export_cmd, env = fontenv)
 if result != 0:
     failquit('OpenSCAD failed with return code ' + str(result))
 
-convert_cmd = gs_cmd + ["-sOutputFile=\"" + pngfile + "\"", exportfile]
+convert_cmd = gs_cmd + ["-sOutputFile=" + pngfile, exportfile]
 print('Running Converter:', ' '.join(convert_cmd), file=sys.stderr)
 result = subprocess.call(convert_cmd)
 if result != 0:

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop">
-  <id>org.openscad.OpenSCAD</id>
+  <id>org.openscad.OpenSCAD${SUFFIX_WITH_DASH}</id>
   <metadata_license>CC0-1.0</metadata_license>
   <name>OpenSCAD</name>
   <summary>The Programmers Solid 3D CAD Modeller</summary>
-  <icon type="remote">https://www.openscad.org/images/openscad.png</icon>
+  <icon type="remote">https://www.openscad.org/images/openscad${SUFFIX_WITH_DASH}.png</icon>
   <categories>
     <category>Graphics</category>
     <category>3DGraphics</category>
@@ -14,7 +14,7 @@
   <url type="faq">https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/FAQ</url>
   <url type="help">https://en.wikibooks.org/wiki/OpenSCAD_User_Manual</url>
   <url type="donation">https://www.openscad.org/community.html</url>
-  <launchable type="desktop-id">openscad.desktop</launchable>
+  <launchable type="desktop-id">openscad${SUFFIX_WITH_DASH}.desktop</launchable>
   <project_license>GPL-3.0+</project_license>
   <description>
     <p>OpenSCAD is a software for creating solid 3D CAD models. Unlike most free software for creating 3D models (such as Blender) it does not focus on the artistic aspects of 3D modelling but instead on the CAD aspects. Thus it might be the application you are looking for when you are planning to create 3D models of machine parts but pretty sure is not what you are looking for when you are more interested in creating computer-animated movies.</p>

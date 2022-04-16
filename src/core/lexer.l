@@ -92,6 +92,14 @@ extern YYLTYPE parserlloc;
 #define LOCATION_NEXT(loc) do { (loc).first_column = (loc).last_column; (loc).first_line = (loc).last_line; } while (0)
 #define LOCATION_ADD_LINES(loc, cnt) do { (loc).last_column = 1; (loc).last_line += cnt; LOCATION_NEXT(loc); } while (0)
 
+#define LOCATION_COUNT_LINES(loc, text) \
+    for(int i = 0; (text[i]) != '\0'; i++) { \
+        if((text[i]) == '\n') { \
+            (loc).last_line++; \
+            (loc).last_column = 1; \
+        } \
+    } 
+
 #ifdef DEBUG
 #define YY_USER_ACTION parserlloc.last_column += yyleng; \
         PRINTDB("YY_USER_ACTION(): %3d, %3d - %3d, %3d | %3d: %s", \
@@ -139,8 +147,9 @@ UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 LOCATION_NEXT(parserlloc);
 %}
 
-include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
+include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; LOCATION_COUNT_LINES(parserlloc, yytext); }
 <cond_include>{
+[\n\r]					{ LOCATION_ADD_LINES(parserlloc, yyleng); }
 [^\t\r\n>]*"/"			{ filepath = yytext; }
 [^\t\r\n>/]+			{ filename = yytext; }
 ">"						{ BEGIN(INITIAL); includefile(LOCATION(parserlloc));  }
@@ -148,14 +157,15 @@ include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; }
 }
 
 
-use[ \t\r\n]*"<"		{ BEGIN(cond_use); }
+use[ \t\r\n]*"<"		{ BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
 <cond_use>{
+[\n\r]					{ LOCATION_ADD_LINES(parserlloc, yyleng); }
 [^\t\r\n>]+				{ filename = yytext; }
  ">"					{
 							BEGIN(INITIAL);
 							fs::path fullpath = find_valid_path(sourcefile()->parent_path(), fs::path(filename), &openfilenames);
 							if (fullpath.empty()) {
-							LOG(message_group::Warning,Location::NONE,"","Can't open library '%1$s'.",filename);
+							LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open library '%1$s'.",filename);
 								parserlval.text = strdup(filename.c_str());
 							} else {
 								handle_dep(fullpath.generic_string());
@@ -316,7 +326,7 @@ void includefile(const Location& loc)
   }
   else {
     rootfile->registerInclude(localpath.generic_string(), localpath.generic_string(), Location::NONE);
-    LOG(message_group::Warning,Location::NONE,"","Can't open include file '%1$s'.",localpath.generic_string());
+    LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open include file '%1$s'.",localpath.generic_string());
     return;
   };
 
@@ -329,7 +339,7 @@ void includefile(const Location& loc)
 
   yyin = fopen(fullname.c_str(), "r");
   if (!yyin) {
-    LOG(message_group::Warning,Location::NONE,"","Can't open include file '%1$s'.",localpath.generic_string());
+    LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open include file '%1$s'.",localpath.generic_string());
     filename_stack.pop_back();
     return;
   }

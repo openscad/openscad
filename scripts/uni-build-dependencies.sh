@@ -723,7 +723,7 @@ if [ "`command -v dirname`" ]; then
   OPENSCAD_SCRIPTDIR=$PWD
   cd $RUNDIR
 else
-  if [ ! -f openscad.qrc ]; then
+  if [ ! -f openscad.appdata.xml.in ]; then
     echo "Must be run from the OpenSCAD source root directory (don't have 'dirname')"
     exit 1
   else

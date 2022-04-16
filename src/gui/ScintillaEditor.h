@@ -66,6 +66,7 @@ public:
   QStringList colorSchemes() override;
   bool canUndo() override;
   void addTemplate() override;
+  void resetHighlighting() override;
   void setIndicator(const std::vector<IndicatorData>& indicatorData) override;
   QMenu *createStandardContextMenu() override;
   QPoint mapToGlobal(const QPoint&) override;
@@ -132,6 +133,7 @@ public slots:
   void paste() override;
   void initFont(const QString&, uint) override;
   void displayTemplates() override;
+  void foldUnfold() override;
   void toggleBookmark() override;
   void nextBookmark() override;
   void prevBookmark() override;
@@ -145,6 +147,7 @@ private slots:
   void onCharacterThresholdChanged(int val);
   void fireModificationChanged();
   void onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state);
+  void onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state);
 
 public:
   void public_applySettings();
@@ -159,6 +162,8 @@ private:
   static const int hyperlinkIndicatorOffset = 100;
   static const int errMarkerNumber = 2;
   static const int bmMarkerNumber = 3;
+
+  bool indicatorsActive = false;
 
 #if ENABLE_LEXERTL
   ScadLexer2 *lexer;

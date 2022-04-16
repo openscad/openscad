@@ -65,7 +65,6 @@ o 3D View
   - 4 x split view w/orthogonal cameras?
   - Quick highlighting of object under the cursor in the editor
   - View All
-  - Allow specifying viewpoint in the scad file
   - overlay indicator displaying current view mode
   - Use OpenGL picking to facilitate ray-tracing like features like measuring
     thicknesses, distances, slot thicknesses etc.
@@ -203,9 +202,7 @@ o Export to other file formats
 
 IDEAS FOR LANGUAGE CHANGES
 --------------------------
-o More strict checking of module parameters to make e.g. this fail:
-  module test(a,b) { a=1; b=2; echo(a,b,c); } test(c=3);
-  (also for built-in modules)
+o (...)
 
 CODE
 ----

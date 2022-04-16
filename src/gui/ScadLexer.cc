@@ -111,11 +111,18 @@ Lex::Lex()
 
 void Lex::default_rules()
 {
+  rules_.push_state("PATH");
   rules_.push_state("COMMENT");
 
-  std::string keywords("module function use echo include import projection render "
+  std::string keywords("module function echo import projection render "
                        "return if else let for each assert");
   defineRules(keywords, ekeyword);
+
+  //include and use have a unique syntax
+  rules_.push("INITIAL", "use", ekeyword, "PATH");
+  rules_.push("INITIAL", "include", ekeyword, "PATH");  
+  rules_.push("PATH", ".|\n", etext, "INITIAL"); //leave this state; "use" and "include" can also be used as variable names 
+  rules_.push("PATH", "[ \t\r\n]*<[^>]*>", eQuotedString, "INITIAL");
 
   std::string transformations("translate rotate scale linear_extrude "
                               "rotate_extrude resize mirror multmatrix color "
@@ -192,11 +199,16 @@ void Lex::lex_results(const std::string& input, int start, LexInterface *const o
 #endif
   lexertl::smatch results(input.begin(), input.end());
 
+  //The editor can ask to only lex from a starting point.
+  //This can be faster the lexing the whole text,
+  //but requires the lexer to try to restore the lexer state.
+  //We currently handle comments (COMMENT State) pretty well.
+  //We currently do not handle include/use (PATH State).
   int isstyle = obj->getStyleAt(start - 1);
-  if (isstyle == ecomment)    // WARNING - hardcoded number, not positive about this!
-    results.state = 1;
-  lexertl::lookup(sm, results);
+  if (isstyle == ecomment)
+    results.state = rules_.state("COMMENT");
 
+  lexertl::lookup(sm, results);
   while (results.id != eEOF) {
     obj->highlighting(start, input, results);
     lexertl::lookup(sm, results);
