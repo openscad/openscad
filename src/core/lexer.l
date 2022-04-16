@@ -151,7 +151,8 @@ include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; LOCATION_C
 <cond_include>{
 [\n\r]					{
 							LOCATION_ADD_LINES(parserlloc, yyleng);
-							LOG(message_group::Warning,LOCATION(parserlloc),"","new lines in 'include'-statement is not definded - behavior may change in the future");
+							// see merge request #4221
+							LOG(message_group::Warning,LOCATION(parserlloc),"","new lines in 'include<>'-statement is not defined - behavior may change in the future");
 }
 [^\t\r\n>]*"/"			{ filepath = yytext; }
 [^\t\r\n>/]+			{ filename = yytext; }
@@ -164,7 +165,8 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
 <cond_use>{
 [\n\r]					{
 							LOCATION_ADD_LINES(parserlloc, yyleng);
-							LOG(message_group::Warning,LOCATION(parserlloc),"","new lines 'use'-statement is not definded - behavior may change in the future");
+							// see merge request #4221
+							LOG(message_group::Warning,LOCATION(parserlloc),"","new lines 'use<>'-statement is not defined - behavior may change in the future");
 }
 [^\t\r\n>]+				{ filename = yytext; }
  ">"					{
