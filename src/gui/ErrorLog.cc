@@ -12,13 +12,16 @@ ErrorLog::ErrorLog(QWidget *parent) : QWidget(parent)
 void ErrorLog::initGUI()
 {
   row = 0;
-  const int numColumns = 4;
+  QList<QString> labels = QList<QString>() << QString("Nr.") << QString("Group") << QString("File") << QString("Line") << QString("Info");
+
+  const int numColumns = labels.count();
   this->errorLogModel = new QStandardItemModel(row, numColumns, logTable);
-  QList<QString> labels = QList<QString>() << QString("Group") << QString("File") << QString("Line") << QString("Info");
+
   errorLogModel->setHorizontalHeaderLabels(labels);
   logTable->verticalHeader()->hide();
   logTable->setModel(errorLogModel);
   logTable->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
+  logTable->setColumnWidth(COLUMN_NR, 20);
   logTable->setColumnWidth(COLUMN_GROUP, 80);
   logTable->setColumnWidth(COLUMN_FILE, 200);
   logTable->setColumnWidth(COLUMN_LINENO, 80);
@@ -30,6 +33,7 @@ void ErrorLog::toErrorLog(const Message& log_msg)
 {
   lastMessages.push_back(std::forward<const Message>(log_msg));
   QString currGroup = errorLogComboBox->currentText();
+  std::cout << getGroupName(log_msg.group) <<std::endl;
   //handle combobox
   if (errorLogComboBox->currentIndex() == 0);
   else if (currGroup.toStdString() != getGroupName(log_msg.group)) return;
@@ -39,6 +43,12 @@ void ErrorLog::toErrorLog(const Message& log_msg)
 
 void ErrorLog::showtheErrorInGUI(const Message& log_msg)
 {
+  QStandardItem *msgNr = new QStandardItem();
+  msgNr->setData(row, Qt::DisplayRole);
+  msgNr->setEditable(false);
+  msgNr->setTextAlignment(Qt::AlignVCenter | Qt::AlignRight);
+  errorLogModel->setItem(row, COLUMN_NR, msgNr);
+
   QStandardItem *groupName = new QStandardItem(QString::fromStdString(getGroupName(log_msg.group)));
   groupName->setEditable(false);
 
