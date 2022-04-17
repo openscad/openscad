@@ -44,6 +44,7 @@ void ErrorLog::showtheErrorInGUI(const Message& log_msg)
 
   if (log_msg.group == message_group::Error) groupName->setForeground(QColor::fromRgb(255, 0, 0)); //make this item red.
   else if (log_msg.group == message_group::Warning) groupName->setForeground(QColor::fromRgb(252, 211, 3)); //make this item yellow
+  else if (log_msg.group == message_group::Trace) groupName->setForeground(QColor::fromRgb(0, 0, 255)); //make this item blue
 
   errorLogModel->setItem(row, COLUMN_GROUP, groupName);
 

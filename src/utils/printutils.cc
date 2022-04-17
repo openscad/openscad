@@ -85,7 +85,7 @@ void PRINT(const Message& msgObj)
 
   //to error log
   if (outputhandler2 &&
-      !(msgObj.group == message_group::None || msgObj.group == message_group::Echo || msgObj.group == message_group::Trace)) {
+      !(msgObj.group == message_group::None || msgObj.group == message_group::Echo )) {
 
     outputhandler2(msgObj, outputhandler_data);
   }
