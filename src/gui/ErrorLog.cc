@@ -21,10 +21,10 @@ void ErrorLog::initGUI()
   logTable->verticalHeader()->hide();
   logTable->setModel(errorLogModel);
   logTable->setSelectionMode(QAbstractItemView::SelectionMode::SingleSelection);
-  logTable->setColumnWidth(COLUMN_NR, 20);
-  logTable->setColumnWidth(COLUMN_GROUP, 80);
-  logTable->setColumnWidth(COLUMN_FILE, 200);
-  logTable->setColumnWidth(COLUMN_LINENO, 80);
+  logTable->setColumnWidth(errorLog_column::nr, 20);
+  logTable->setColumnWidth(errorLog_column::group, 80);
+  logTable->setColumnWidth(errorLog_column::file, 200);
+  logTable->setColumnWidth(errorLog_column::lineNo, 80);
   logTable->addAction(actionRowSelected);
   //last column will stretch itself
 }
@@ -47,7 +47,7 @@ void ErrorLog::showtheErrorInGUI(const Message& log_msg)
   msgNr->setData(row, Qt::DisplayRole);
   msgNr->setEditable(false);
   msgNr->setTextAlignment(Qt::AlignVCenter | Qt::AlignRight);
-  errorLogModel->setItem(row, COLUMN_NR, msgNr);
+  errorLogModel->setItem(row, errorLog_column::nr, msgNr);
 
   QStandardItem *groupName = new QStandardItem(QString::fromStdString(getGroupName(log_msg.group)));
   groupName->setEditable(false);
@@ -56,7 +56,7 @@ void ErrorLog::showtheErrorInGUI(const Message& log_msg)
   else if (log_msg.group == message_group::Warning) groupName->setForeground(QColor::fromRgb(252, 211, 3)); //make this item yellow
   else if (log_msg.group == message_group::Trace) groupName->setForeground(QColor::fromRgb(0, 0, 255)); //make this item blue
 
-  errorLogModel->setItem(row, COLUMN_GROUP, groupName);
+  errorLogModel->setItem(row, errorLog_column::group, groupName);
 
   QStandardItem *fileName;
   QStandardItem *lineNo;
@@ -78,12 +78,12 @@ void ErrorLog::showtheErrorInGUI(const Message& log_msg)
   fileName->setEditable(false);
   lineNo->setEditable(false);
   lineNo->setTextAlignment(Qt::AlignVCenter | Qt::AlignRight);
-  errorLogModel->setItem(row, COLUMN_FILE, fileName);
-  errorLogModel->setItem(row, COLUMN_LINENO, lineNo);
+  errorLogModel->setItem(row, errorLog_column::file, fileName);
+  errorLogModel->setItem(row, errorLog_column::lineNo, lineNo);
 
   QStandardItem *msg = new QStandardItem(QString::fromStdString(log_msg.msg));
   msg->setEditable(false);
-  errorLogModel->setItem(row, COLUMN_MESSAGE, msg);
+  errorLogModel->setItem(row, errorLog_column::message, msg);
   errorLogModel->setRowCount(++row);
 
   if (!logTable->selectionModel()->hasSelection()) {
@@ -132,8 +132,8 @@ void ErrorLog::onIndexSelected(const QModelIndex& index)
 {
   if (index.isValid()) {
     const int r = index.row();
-    const int line = getLine(r, COLUMN_LINENO);
-    const auto path = logTable->model()->index(r, COLUMN_FILE).data(Qt::UserRole).toString();
+    const int line = getLine(r, errorLog_column::lineNo);
+    const auto path = logTable->model()->index(r, errorLog_column::file).data(Qt::UserRole).toString();
     emit openFile(path, line - 1);
   }
 }

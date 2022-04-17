@@ -6,6 +6,10 @@
 #include <QStandardItemModel>
 #include "Editor.h"
 
+enum errorLog_column {
+  nr=0, group, file, lineNo, message
+};
+
 class ErrorLog : public QWidget, public Ui::errorLogWidget
 {
   Q_OBJECT
@@ -32,12 +36,6 @@ private:
   std::list<Message> lastMessages;
 
 private:
-  static constexpr int COLUMN_NR = 0;
-  static constexpr int COLUMN_GROUP = 1;
-  static constexpr int COLUMN_FILE = 2;
-  static constexpr int COLUMN_LINENO = 3;
-  static constexpr int COLUMN_MESSAGE = 4;
-
 signals:
   void openFile(const QString, int);
 
