@@ -28,14 +28,14 @@ void ErrorLog::initGUI()
   logTable->addAction(actionRowSelected);
   //last column will stretch itself
 
-  connect(logTable->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(sectionResized(int,int,int)));
+  connect(logTable->horizontalHeader(), SIGNAL(sectionResized(int,int,int)), this, SLOT(onSectionResized(int,int,int)));
 }
 
 void ErrorLog::toErrorLog(const Message& log_msg)
 {
   lastMessages.push_back(std::forward<const Message>(log_msg));
   QString currGroup = errorLogComboBox->currentText();
-  std::cout << getGroupName(log_msg.group) <<std::endl;
+
   //handle combobox
   if (errorLogComboBox->currentIndex() == 0);
   else if (currGroup.toStdString() != getGroupName(log_msg.group)) return;
@@ -100,7 +100,7 @@ void ErrorLog::resize()
   logTable->resizeRowsToContents();
 }
 
-void ErrorLog::sectionResized(int,int,int){
+void ErrorLog::onSectionResized(int logicalIndex, int oldSize, int newSize){
   this->resize();
 }
 

@@ -47,5 +47,5 @@ private slots:
   void on_logTable_doubleClicked(const QModelIndex& index);
   void on_errorLogComboBox_currentIndexChanged(const QString& arg1);
   void on_actionRowSelected_triggered(bool);
-  void sectionResized(int,int,int);
+  void onSectionResized(int,int,int);
 };
