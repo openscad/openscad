@@ -6,6 +6,10 @@
 #include <QStandardItemModel>
 #include "Editor.h"
 
+enum errorLog_column {
+  group = 0, file, lineNo, message
+};
+
 class ErrorLog : public QWidget, public Ui::errorLogWidget
 {
   Q_OBJECT
@@ -25,17 +29,15 @@ public:
   QHash<QString, bool> logsMap;
   int row;
 
+protected:
+  void resizeEvent(QResizeEvent *event) override;
+
 private:
   void onIndexSelected(const QModelIndex& index);
+  void resize();
 
 private:
   std::list<Message> lastMessages;
-
-private:
-  static constexpr int COLUMN_GROUP = 0;
-  static constexpr int COLUMN_FILE = 1;
-  static constexpr int COLUMN_LINENO = 2;
-  static constexpr int COLUMN_MESSAGE = 3;
 
 signals:
   void openFile(const QString, int);
@@ -44,4 +46,5 @@ private slots:
   void on_logTable_doubleClicked(const QModelIndex& index);
   void on_errorLogComboBox_currentIndexChanged(const QString& arg1);
   void on_actionRowSelected_triggered(bool);
+  void onSectionResized(int,int,int);
 };

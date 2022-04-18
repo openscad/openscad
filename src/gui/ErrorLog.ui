@@ -25,11 +25,14 @@
      <property name="focusPolicy">
       <enum>Qt::StrongFocus</enum>
      </property>
+     <property name="toolTip">
+      <string>double click to jump to file and line</string>
+     </property>
      <property name="dragEnabled">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <property name="dragDropMode">
-      <enum>QAbstractItemView::DragOnly</enum>
+      <enum>QAbstractItemView::NoDragDrop</enum>
      </property>
      <property name="selectionMode">
       <enum>QAbstractItemView::SingleSelection</enum>
@@ -99,11 +102,6 @@
      <item>
       <property name="text">
        <string>EXPORT-ERROR</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>TRACE</string>
       </property>
      </item>
      <item>
