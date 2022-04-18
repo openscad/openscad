@@ -106,11 +106,6 @@
      </item>
      <item>
       <property name="text">
-       <string>TRACE</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
        <string>DEPRECATED</string>
       </property>
      </item>
