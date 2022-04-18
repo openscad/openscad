@@ -1,5 +1,5 @@
 #include "ParameterSlider.h"
-#include "../IgnoreWheelWhenNotFocused.h"
+#include "IgnoreWheelWhenNotFocused.h"
 
 ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter, DescriptionStyle descriptionStyle) :
   ParameterVirtualWidget(parent, parameter),
