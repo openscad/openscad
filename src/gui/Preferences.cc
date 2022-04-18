@@ -44,7 +44,7 @@
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
 #include "OctoPrint.h"
-#include "parameter/IgnoreWheelWhenNotFocused.h"
+#include "IgnoreWheelWhenNotFocused.h"
 
 Preferences *Preferences::instance = nullptr;
 

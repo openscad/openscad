@@ -30,7 +30,7 @@
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
-#include "WheelIgnorer.h"
+#include "../IgnoreWheelWhenNotFocused.h"
 
 ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)
 {
@@ -60,9 +60,9 @@ void ButtonConfigWidget::init() {
 
   auto comboBoxes = this->findChildren<QComboBox *>();
   if (comboBoxes.size() > 0) {  // only allocate if there are comboboxes to use the function
-    auto wheelIgnorer = new WheelIgnorer(this);
+    auto *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
     for (auto comboBox : comboBoxes) {
-      comboBox->installEventFilter(wheelIgnorer); // this takes ownership of the wheelIgnorer object
+      comboBox->installEventFilter(ignoreWheelWhenNotFocused); // this takes ownership of the wheelIgnorer object
     }
   }
   // clang generates a bogus warning that wheelIgnorer may be leaked
