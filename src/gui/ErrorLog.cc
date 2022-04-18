@@ -80,9 +80,26 @@ void ErrorLog::showtheErrorInGUI(const Message& log_msg)
   errorLogModel->setItem(row, errorLog_column::message, msg);
   errorLogModel->setRowCount(++row);
 
+  this->resize();
+
   if (!logTable->selectionModel()->hasSelection()) {
     logTable->selectRow(0);
   }
+}
+
+void ErrorLog::resize()
+{
+  logTable->resizeRowsToContents();
+}
+
+void ErrorLog::onSectionResized(int logicalIndex, int oldSize, int newSize){
+  this->resize();
+}
+
+void ErrorLog::resizeEvent(QResizeEvent *event)
+{
+  QWidget::resizeEvent(event);
+  this->resize();
 }
 
 void ErrorLog::clearModel()

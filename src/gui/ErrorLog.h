@@ -29,8 +29,12 @@ public:
   QHash<QString, bool> logsMap;
   int row;
 
+protected:
+  void resizeEvent(QResizeEvent *event) override;
+
 private:
   void onIndexSelected(const QModelIndex& index);
+  void resize();
 
 private:
   std::list<Message> lastMessages;
@@ -42,4 +46,5 @@ private slots:
   void on_logTable_doubleClicked(const QModelIndex& index);
   void on_errorLogComboBox_currentIndexChanged(const QString& arg1);
   void on_actionRowSelected_triggered(bool);
+  void onSectionResized(int,int,int);
 };
