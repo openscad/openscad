@@ -200,17 +200,7 @@ void Preferences::init() {
   initComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
   initComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
 
-  IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
-  auto spinBoxes = this->findChildren<QSpinBox *>();
-  for (const auto& spinBox : spinBoxes){
-      spinBox->installEventFilter(ignoreWheelWhenNotFocused);
-      spinBox->setFocusPolicy(Qt::StrongFocus);
-  }
-  auto comboBoxes = this->findChildren<QComboBox *>();
-  for (const auto& comboBox : comboBoxes){
-      comboBox->installEventFilter(ignoreWheelWhenNotFocused);
-      comboBox->setFocusPolicy(Qt::StrongFocus);
-  }
+  installIgnoreWheelWhenNotFocused(this);
 
   Settings::Settings::visit(SettingsReader());
 

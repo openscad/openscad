@@ -132,23 +132,7 @@ void AxisConfigWidget::init() {
   initUpdateCheckBox(this->checkBoxQGamepad, Settings::Settings::inputEnableDriverQGAMEPAD);
   initUpdateCheckBox(this->checkBoxDBus,     Settings::Settings::inputEnableDriverDBUS);
 
-  auto comboBoxes = this->findChildren<QComboBox *>();
-  if (comboBoxes.size() > 0) { // only allocate if there are comboboxes to use the function
-     auto *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
-    for (auto comboBox : comboBoxes) {
-      comboBox->installEventFilter(ignoreWheelWhenNotFocused); // this takes ownership of the wheelIgnorer object
-      comboBox->setFocusPolicy(Qt::StrongFocus);
-    }
-  }
-  auto spinBoxes = this->findChildren<QDoubleSpinBox *>();
-  if (spinBoxes.size() > 0) { // only allocate if there are spinboxes to use the function
-    auto *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
-    for (auto spinBox : spinBoxes) {
-      spinBox->installEventFilter(ignoreWheelWhenNotFocused); // this takes ownership of the wheelIgnorer object
-      spinBox->setFocusPolicy(Qt::StrongFocus);
-    }
-  }
-  // clang generates a bogus warning that wheelIgnorer may be leaked
+  installIgnoreWheelWhenNotFocused(this);
 
   for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     std::string s = std::to_string(i);

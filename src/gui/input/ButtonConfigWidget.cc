@@ -58,14 +58,7 @@ void ButtonConfigWidget::init() {
     }
   }
 
-  auto comboBoxes = this->findChildren<QComboBox *>();
-  if (comboBoxes.size() > 0) {  // only allocate if there are comboboxes to use the function
-    auto *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
-    for (auto comboBox : comboBoxes) {
-      comboBox->installEventFilter(ignoreWheelWhenNotFocused); // this takes ownership of the wheelIgnorer object
-    }
-  }
-  // clang generates a bogus warning that wheelIgnorer may be leaked
+  installIgnoreWheelWhenNotFocused(this);
 
   initialized = true;
 }
