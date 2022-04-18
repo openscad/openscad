@@ -1086,6 +1086,9 @@ void MainWindow::compile(bool reload, bool forcedone)
     no_exceptions_for_warnings();
     if (shouldcompiletoplevel) {
       this->errorLogWidget->clearModel();
+      if(Preferences::inst()->getValue("advanced/consoleAutoClear").toBool()){
+        this->console->actionClearConsole_triggered();
+      }
       if (activeEditor->isContentModified()) saveBackup();
       parseTopLevelDocument();
       didcompile = true;
