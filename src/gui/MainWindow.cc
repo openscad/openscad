@@ -2530,9 +2530,9 @@ void MainWindow::actionExport(FileFormat, QString, QString, unsigned int, QStrin
   this->export_paths[suffix] = exportFilename;
 
   ExportInfo exportInfo = createExportInfo(format, exportFilename, activeEditor->filepath);
-  exportFileByName(this->root_geom, exportInfo);
+  bool exportResult = exportFileByName(this->root_geom, exportInfo);
 
-  fileExportedMessage(type_name, exportFilename);
+  if (exportResult) fileExportedMessage(type_name, exportFilename);
   clearCurrentOutput();
 #endif /* ENABLE_CGAL */
 }
