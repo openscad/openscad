@@ -1971,6 +1971,16 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_Console">
                <item>
+                <widget class="QCheckBox" name="enableClearConsoleCheckBox">
+                 <property name="text">
+                  <string>clear console before Preview/Render</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_consoleMaxLines">
                  <item>
                   <widget class="QLabel" name="consoleMaxLinesLabel">

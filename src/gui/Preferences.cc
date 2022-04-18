@@ -131,6 +131,7 @@ void Preferences::init() {
   this->defaultmap["advanced/enableSoundNotification"] = true;
   this->defaultmap["advanced/timeThresholdOnRenderCompleteSound"] = 0;
   this->defaultmap["advanced/consoleMaxLines"] = 5000;
+  this->defaultmap["advanced/consoleAutoClear"] = false;
   this->defaultmap["advanced/enableHardwarnings"] = false;
   this->defaultmap["advanced/enableParameterCheck"] = true;
   this->defaultmap["advanced/enableParameterRangeCheck"] = false;
@@ -618,6 +619,12 @@ void Preferences::on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QS
   settings.setValue("advanced/timeThresholdOnRenderCompleteSound", text);
 }
 
+void Preferences::on_enableClearConsoleCheckBox_toggled(bool state)
+{
+  QSettingsCached settings;
+  settings.setValue("advanced/consoleAutoClear", state);
+}
+
 void Preferences::on_consoleMaxLinesEdit_textChanged(const QString& text)
 {
   QSettingsCached settings;
@@ -943,6 +950,7 @@ void Preferences::updateGUI()
   BlockSignals<QCheckBox *>(this->launcherBox)->setChecked(getValue("launcher/showOnStartup").toBool());
   BlockSignals<QCheckBox *>(this->enableSoundOnRenderCompleteCheckBox)->setChecked(getValue("advanced/enableSoundNotification").toBool());
   BlockSignals<QLineEdit *>(this->timeThresholdOnRenderCompleteSoundEdit)->setText(getValue("advanced/timeThresholdOnRenderCompleteSound").toString());
+  BlockSignals<QCheckBox *>(this->enableClearConsoleCheckBox)->setChecked(getValue("advanced/consoleAutoClear").toBool());
   BlockSignals<QLineEdit *>(this->consoleMaxLinesEdit)->setText(getValue("advanced/consoleMaxLines").toString());
   {
     const auto fontfamily = getValue("advanced/consoleFontFamily").toString();

@@ -61,6 +61,7 @@ public slots:
   void on_checkBoxShowWarningsIn3dView_toggled(bool);
   void on_checkBoxMouseCentricZoom_toggled(bool);
   void on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QString&);
+  void on_enableClearConsoleCheckBox_toggled(bool);
   void on_consoleMaxLinesEdit_textChanged(const QString&);
   void on_consoleFontChooser_activated(const QString&);
   void on_consoleFontSize_currentIndexChanged(const QString&);
