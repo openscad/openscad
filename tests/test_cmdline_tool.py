@@ -128,7 +128,15 @@ def get_normalized_text(filename):
         f = open(filename)
         text = f.read()
     except: 
-        text = ''
+      try:
+        # 'ord-tests.scad' contains some invalid UTF-8 chars.
+        # latin-1 is for "files in an ASCII compatible encoding,
+        # best effort is acceptable".
+        f = open(filename, encoding="latin-1")
+        text = f.read()
+      except: 
+        # do not fail silenty
+        text = "could not read " + "\n" + filename + "\n" + repr(err) 
     text = normalize_string(text)
     return text.strip("\r\n").replace("\r\n", "\n") + "\n"
 
