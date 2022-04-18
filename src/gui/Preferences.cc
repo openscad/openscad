@@ -132,6 +132,8 @@ void Preferences::init() {
   this->defaultmap["advanced/timeThresholdOnRenderCompleteSound"] = 0;
   this->defaultmap["advanced/consoleMaxLines"] = 5000;
   this->defaultmap["advanced/enableHardwarnings"] = false;
+  this->defaultmap["advanced/traceDepth"] = 12;
+  this->defaultmap["advanced/enableTraceUsermoduleParameters"] = true;
   this->defaultmap["advanced/enableParameterCheck"] = true;
   this->defaultmap["advanced/enableParameterRangeCheck"] = false;
 
@@ -181,6 +183,7 @@ void Preferences::init() {
   this->consoleMaxLinesEdit->setValidator(uintValidator);
   this->lineEditCharacterThreshold->setValidator(validator1);
   this->lineEditStepSize->setValidator(validator1);
+  this->traceDepthEdit->setValidator(uintValidator);
 
   initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
   initComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
@@ -673,6 +676,18 @@ void Preferences::on_enableHardwarningsCheckBox_toggled(bool state)
   settings.setValue("advanced/enableHardwarnings", state);
 }
 
+void Preferences::on_traceDepthEdit_textChanged(const QString& text)
+{
+  QSettingsCached settings;
+  settings.setValue("advanced/traceDepth", text);
+}
+
+void Preferences::on_enableTraceUsermoduleParametersCheckBox_toggled(bool state)
+{
+  QSettingsCached settings;
+  settings.setValue("advanced/enableTraceUsermoduleParameters", state);
+}
+
 void Preferences::on_enableParameterCheckBox_toggled(bool state)
 {
   QSettingsCached settings;
@@ -959,6 +974,8 @@ void Preferences::updateGUI()
     }
   }
   BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)->setChecked(getValue("advanced/enableHardwarnings").toBool());
+  BlockSignals<QLineEdit *>(this->traceDepthEdit)->setText(getValue("advanced/traceDepth").toString());
+  BlockSignals<QCheckBox *>(this->enableTraceUsermoduleParametersCheckBox)->setChecked(getValue("advanced/enableTraceUsermoduleParameters").toBool());
   BlockSignals<QCheckBox *>(this->enableParameterCheckBox)->setChecked(getValue("advanced/enableParameterCheck").toBool());
   BlockSignals<QCheckBox *>(this->enableRangeCheckBox)->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
   BlockSignals<QCheckBox *>(this->useAsciiSTLCheckBox)->setChecked(Settings::Settings::exportUseAsciiSTL.value());

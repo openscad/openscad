@@ -1038,6 +1038,8 @@ void MainWindow::updateTVal()
 void MainWindow::compile(bool reload, bool forcedone)
 {
   OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+  OpenSCAD::traceDepth = Preferences::inst()->getValue("advanced/traceDepth").toUInt();
+  OpenSCAD::traceUsermoduleParameters = Preferences::inst()->getValue("advanced/enableTraceUsermoduleParameters").toBool();
   OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
   OpenSCAD::rangeCheck = Preferences::inst()->getValue("advanced/enableParameterRangeCheck").toBool();
 

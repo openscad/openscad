@@ -49,6 +49,8 @@ public slots:
   void on_launcherBox_toggled(bool);
   void on_enableSoundOnRenderCompleteCheckBox_toggled(bool);
   void on_enableHardwarningsCheckBox_toggled(bool);
+  void on_traceDepthEdit_textChanged(const QString&);
+  void on_enableTraceUsermoduleParametersCheckBox_toggled(bool);
   void on_enableParameterCheckBox_toggled(bool);
   void on_enableRangeCheckBox_toggled(bool);
   void on_useAsciiSTLCheckBox_toggled(bool);
