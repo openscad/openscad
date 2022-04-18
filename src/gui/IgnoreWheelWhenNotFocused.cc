@@ -4,21 +4,26 @@
 #include <QDoubleSpinBox>
 
 void installIgnoreWheelWhenNotFocused(QWidget *parent){
+  auto comboBoxes = parent->findChildren<QComboBox *>();
+  auto spinBoxes = parent->findChildren<QSpinBox *>();
+  auto spinDoubleBoxes = parent->findChildren<QDoubleSpinBox *>();
+
+  if(comboBoxes.size() == 0 && spinBoxes.size() == 0 && spinDoubleBoxes.size() == 0){
+    return; //nothing do
+  }
+
   auto *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(parent);
 
-  auto comboBoxes = parent->findChildren<QComboBox *>();
   for (auto comboBox : comboBoxes) {
     comboBox->installEventFilter(ignoreWheelWhenNotFocused);
     comboBox->setFocusPolicy(Qt::StrongFocus);
   }
 
-  auto spinBoxes = parent->findChildren<QSpinBox *>();
   for (const auto& spinBox : spinBoxes){
       spinBox->installEventFilter(ignoreWheelWhenNotFocused);
       spinBox->setFocusPolicy(Qt::StrongFocus);
   }
 
-  auto spinDoubleBoxes = parent->findChildren<QDoubleSpinBox *>();
   for (auto spinDoubleBox : spinDoubleBoxes) {
     spinDoubleBox->installEventFilter(ignoreWheelWhenNotFocused);
     spinDoubleBox->setFocusPolicy(Qt::StrongFocus);
