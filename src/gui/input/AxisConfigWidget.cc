@@ -158,6 +158,7 @@ void AxisConfigWidget::init() {
   initUpdateDoubleSpinBox(this->doubleSpinBoxTranslationGain, Settings::Settings::inputTranslationGain);
   initUpdateDoubleSpinBox(this->doubleSpinBoxTranslationVPRelGain, Settings::Settings::inputTranslationVPRelGain);
   initUpdateDoubleSpinBox(this->doubleSpinBoxRotateGain, Settings::Settings::inputRotateGain);
+  initUpdateDoubleSpinBox(this->doubleSpinBoxRotateVPRelGain, Settings::Settings::inputRotateVPRelGain);
   initUpdateDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
 
   //use a custom style for the axis indicators,
@@ -388,6 +389,13 @@ void AxisConfigWidget::on_doubleSpinBoxDeadzone8_valueChanged(double val)
 void AxisConfigWidget::on_doubleSpinBoxRotateGain_valueChanged(double val)
 {
   Settings::Settings::inputRotateGain.setValue(val);
+  emit inputGainChanged();
+  writeSettings();
+}
+
+void AxisConfigWidget::on_doubleSpinBoxRotateVPRelGain_valueChanged(double val)
+{
+  Settings::Settings::inputRotateVPRelGain.setValue(val);
   emit inputGainChanged();
   writeSettings();
 }
