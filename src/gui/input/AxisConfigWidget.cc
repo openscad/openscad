@@ -135,9 +135,18 @@ void AxisConfigWidget::init() {
 
   auto comboBoxes = this->findChildren<QComboBox *>();
   if (comboBoxes.size() > 0) { // only allocate if there are comboboxes to use the function
-    auto *wheelIgnorer = new WheelIgnorer(this);
+    WheelIgnorer *wheelIgnorer = new WheelIgnorer(this);
     for (auto comboBox : comboBoxes) {
       comboBox->installEventFilter(wheelIgnorer); // this takes ownership of the wheelIgnorer object
+      comboBox->setFocusPolicy(Qt::StrongFocus);
+    }
+  }
+  auto spinBoxes = this->findChildren<QDoubleSpinBox *>();
+  if (spinBoxes.size() > 0) { // only allocate if there are spinboxes to use the function
+    auto *wheelIgnorer = new WheelIgnorer(this);
+    for (auto spinBox : spinBoxes) {
+      spinBox->installEventFilter(wheelIgnorer); // this takes ownership of the wheelIgnorer object
+      spinBox->setFocusPolicy(Qt::StrongFocus);
     }
   }
   // clang generates a bogus warning that wheelIgnorer may be leaked
