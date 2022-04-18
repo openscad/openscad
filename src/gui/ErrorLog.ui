@@ -25,6 +25,9 @@
      <property name="focusPolicy">
       <enum>Qt::StrongFocus</enum>
      </property>
+     <property name="toolTip">
+      <string>double click to jump to file and line</string>
+     </property>
      <property name="dragEnabled">
       <bool>false</bool>
      </property>
