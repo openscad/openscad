@@ -35,8 +35,8 @@ public slots:
   void on_comboBoxZoom_activated(int val);
   void on_comboBoxZoom2_activated(int val);
 
-
   void on_doubleSpinBoxRotateGain_valueChanged(double val);
+  void on_doubleSpinBoxRotateVPRelGain_valueChanged(double val);
   void on_doubleSpinBoxTranslationGain_valueChanged(double val);
   void on_doubleSpinBoxTranslationVPRelGain_valueChanged(double val);
   void on_doubleSpinBoxZoomGain_valueChanged(double val);
