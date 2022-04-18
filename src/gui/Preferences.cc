@@ -44,6 +44,7 @@
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
 #include "OctoPrint.h"
+#include "IgnoreWheelWhenNotFocused.h"
 
 Preferences *Preferences::instance = nullptr;
 
@@ -202,6 +203,8 @@ void Preferences::init() {
   initComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
   initComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
   initComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
+
+  installIgnoreWheelWhenNotFocused(this);
 
   Settings::Settings::visit(SettingsReader());
 

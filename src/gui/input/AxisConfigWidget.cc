@@ -31,9 +31,8 @@
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
-#include "WheelIgnorer.h"
+#include "IgnoreWheelWhenNotFocused.h"
 #include "InitConfigurator.h"
-
 
 AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
 {
@@ -133,14 +132,7 @@ void AxisConfigWidget::init() {
   initUpdateCheckBox(this->checkBoxQGamepad, Settings::Settings::inputEnableDriverQGAMEPAD);
   initUpdateCheckBox(this->checkBoxDBus,     Settings::Settings::inputEnableDriverDBUS);
 
-  auto comboBoxes = this->findChildren<QComboBox *>();
-  if (comboBoxes.size() > 0) { // only allocate if there are comboboxes to use the function
-    auto *wheelIgnorer = new WheelIgnorer(this);
-    for (auto comboBox : comboBoxes) {
-      comboBox->installEventFilter(wheelIgnorer); // this takes ownership of the wheelIgnorer object
-    }
-  }
-  // clang generates a bogus warning that wheelIgnorer may be leaked
+  installIgnoreWheelWhenNotFocused(this);
 
   for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     std::string s = std::to_string(i);

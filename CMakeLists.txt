@@ -838,14 +838,13 @@ set(GUI_SOURCES
   src/gui/TabWidget.cc
   src/gui/UIUtils.cc
   src/gui/WindowManager.cc
+  src/gui/IgnoreWheelWhenNotFocused.cc
   src/gui/input/AxisConfigWidget.cc
   src/gui/input/ButtonConfigWidget.cc
   src/gui/input/InputDriver.cc
   src/gui/input/InputDriverManager.cc
   src/gui/input/InputEventMapper.cc
-  src/gui/input/WheelIgnorer.cc
   src/gui/parameter/GroupWidget.cc
-  src/gui/parameter/IgnoreWheelWhenNotFocused.cc
   src/gui/parameter/ParameterCheckBox.cc
   src/gui/parameter/ParameterComboBox.cc
   src/gui/parameter/ParameterSlider.cc
