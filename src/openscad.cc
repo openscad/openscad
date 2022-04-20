@@ -317,7 +317,6 @@ struct CommandLine
   const std::string& filename;
   const bool is_stdout;
   std::string output_file;
-  const char *deps_output_file;
   const fs::path& original_path;
   const std::string& parameterFile;
   const std::string& setName;
@@ -493,16 +492,6 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     LOG(message_group::Warning, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
   }
   Tree tree(root_node, fparent.string());
-
-  if (cmd.deps_output_file) {
-    std::string deps_out(cmd.deps_output_file);
-    std::string geom_out(cmd.output_file);
-    int result = write_deps(deps_out, geom_out);
-    if (!result) {
-      LOG(message_group::None, Location::NONE, "", "Error writing deps");
-      return 1;
-    }
-  }
 
   if (curFormat == FileFormat::CSG) {
     // https://github.com/openscad/openscad/issues/128
@@ -1192,7 +1181,6 @@ int main(int argc, char **argv)
             input_file,
             is_stdout,
             output_file,
-            deps_output_file,
             original_path,
             parameterFile,
             parameterSet,
@@ -1208,6 +1196,16 @@ int main(int argc, char **argv)
       }
     } catch (const HardWarningException&) {
       rc = 1;
+    }
+
+    if (deps_output_file) {
+      std::string deps_out(deps_output_file);
+      vector<std::string> geom_out(output_files);
+      int result = write_deps(deps_out, geom_out);
+      if (!result) {
+        LOG(message_group::None, Location::NONE, "", "Error writing deps");
+        return 1;
+      }
     }
   } else if (QtUseGUI()) {
     if (vm.count("export-format")) {
