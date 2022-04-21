@@ -223,6 +223,13 @@
            <widget class="QLineEdit" name="e_fsteps"/>
           </item>
           <item>
+           <widget class="QPushButton" name="pauseButton">
+            <property name="text">
+             <string>Pause</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QCheckBox" name="e_dump">
             <property name="text">
              <string>Dump Pictures</string>

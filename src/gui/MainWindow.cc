@@ -3133,6 +3133,15 @@ void MainWindow::on_editActionFoldAll_triggered()
   activeEditor->foldUnfold();
 }
 
+void MainWindow::on_pauseButton_pressed()
+{
+  if (animate_timer->isActive()) {
+    animate_timer->stop() ;
+  } else {
+    animate_timer->start();
+  }
+}
+
 void MainWindow::activateWindow(int offset)
 {
   const std::array<DockFocus, 4> docks = {{
