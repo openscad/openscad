@@ -23,7 +23,7 @@ description: >
     NOTE: This is the development snapshot, automatically built from the source
     repository.
 confinement: strict
-icon: icons/openscad-nightly-256.png
+icon: resources/icons/openscad-nightly-256.png
 license: GPL-3.0
 grade: stable
 architectures:
