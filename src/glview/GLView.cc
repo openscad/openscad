@@ -131,7 +131,11 @@ void GLView::paintGL()
 
   if(bgcol != bgstopcol){
     glDisable(GL_DEPTH_TEST);
+
     glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
     //draw screen aligned quad with color gradient 
