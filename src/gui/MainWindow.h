@@ -145,6 +145,7 @@ private:
   class LibraryInfoDialog *library_info_dialog;
   class FontListDialog *font_list_dialog;
 
+  void isLightTheme();
 public slots:
   void updateExportActions();
   void updateRecentFiles(EditorInterface *edt);

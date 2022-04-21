@@ -715,10 +715,14 @@ void MainWindow::openFileFromPath(QString path, int line)
   }
 }
 
+bool MainWindow::isLightTheme(){
+  int defaultcolor = viewerToolBar->palette().window().color().lightness();
+  return (defaultcolor > 165);
+}
+
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
 {
-  int defaultcolor = viewerToolBar->palette().window().color().lightness();
-  const char *resource = (defaultcolor > 165) ? darkResource : lightResource;
+  const char *resource = this->isLightTheme() ? darkResource : lightResource;
   action->setIcon(QIcon(resource));
 }
 
@@ -1034,15 +1038,21 @@ void MainWindow::updateTVal()
 
 void MainWindow::on_pauseButton_pressed()
 {
+  static QIcon runDark(":/icons/svg-default/animate.svg");
+  static QIcon runLight(":/icons/svg-default/animate-white.svg");
+  static QIcon pauseDark(":/icons/svg-default/animate-pause.svg");
+  static QIcon pauseLight(":/icons/svg-default/animate-pause-white.svg");
+
   if (animate_timer->isActive()) {
-    animate_timer->stop() ;
+    animate_timer->stop();
   } else {
     animate_timer->start();
   }
+
   if (animate_timer->isActive()) {
-    pauseButton->setIcon(QIcon(":/icons/svg-default/animate.svg"));
+    pauseButton->setIcon( this->isLightTheme() ? runDark : runLight );
   } else {
-    pauseButton->setIcon(QIcon(":/icons/svg-default/animate-pause.svg"));
+    pauseButton->setIcon( this->isLightTheme() ? pauseDark : pauseLight );
   }
 }
 
