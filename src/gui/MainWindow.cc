@@ -1032,6 +1032,20 @@ void MainWindow::updateTVal()
   this->e_tval->setText(txt);
 }
 
+void MainWindow::on_pauseButton_pressed()
+{
+  if (animate_timer->isActive()) {
+    animate_timer->stop() ;
+  } else {
+    animate_timer->start();
+  }
+  if (animate_timer->isActive()) {
+    pauseButton->setIcon(QIcon(":/icons/svg-default/animate.svg"));
+  } else {
+    pauseButton->setIcon(QIcon(":/icons/svg-default/animate-pause.svg"));
+  }
+}
+
 /*!
    compiles the design. Calls compileDone() if anything was compiled
  */
@@ -3131,15 +3145,6 @@ void MainWindow::on_editActionInsertTemplate_triggered()
 void MainWindow::on_editActionFoldAll_triggered()
 {
   activeEditor->foldUnfold();
-}
-
-void MainWindow::on_pauseButton_pressed()
-{
-  if (animate_timer->isActive()) {
-    animate_timer->stop() ;
-  } else {
-    animate_timer->start();
-  }
 }
 
 void MainWindow::activateWindow(int offset)

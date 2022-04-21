@@ -225,7 +225,11 @@
           <item>
            <widget class="QPushButton" name="pauseButton">
             <property name="text">
-             <string>Pause</string>
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../../resources/common.qrc">
+              <normaloff>:/icons/svg-default/animate-pause.svg</normaloff>:/icons/svg-default/animate-pause.svg</iconset>
             </property>
            </widget>
           </item>
