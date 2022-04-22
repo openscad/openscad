@@ -983,6 +983,7 @@ void MainWindow::updatedAnimTval()
     this->anim_tval = 0.0;
   }
   emit actionRenderPreview();
+  updatePauseButtonIcon();
 }
 
 void MainWindow::updatedAnimFps()
@@ -996,6 +997,14 @@ void MainWindow::updatedAnimFps()
     animate_timer->setInterval(int(1000 / fps));
     animate_timer->start();
   }
+  
+  if( fps_ok || this->e_fps->text()=="" ){
+    this->e_fps->setStyleSheet(""); 
+  }else{
+    this->e_fps->setStyleSheet("background-color:#ffaaaa;"); 
+  }
+
+  updatePauseButtonIcon();
 }
 
 void MainWindow::updatedAnimSteps()
@@ -1008,12 +1017,22 @@ void MainWindow::updatedAnimSteps()
   } else {
     this->anim_numsteps = 0;
   }
-  anim_dumping = false;
+  this->anim_dumping = false;
+
+  if( steps_ok || this->e_fsteps->text()=="" ){
+    this->e_fsteps->setStyleSheet(""); 
+  }else{
+    this->e_fsteps->setStyleSheet("background-color:#ffaaaa;"); 
+  }
+
+  updatePauseButtonIcon();
 }
 
 void MainWindow::updatedAnimDump(bool checked)
 {
   if (!checked) this->anim_dumping = false;
+
+  updatePauseButtonIcon();
 }
 
 // Only called from animate_timer
@@ -1034,25 +1053,40 @@ void MainWindow::updateTVal()
   }
   const QString txt = QString::number(this->anim_tval, 'f', 5);
   this->e_tval->setText(txt);
+
+  updatePauseButtonIcon();
 }
 
 void MainWindow::on_pauseButton_pressed()
 {
-  static QIcon runDark(":/icons/svg-default/animate.svg");
-  static QIcon runLight(":/icons/svg-default/animate-white.svg");
-  static QIcon pauseDark(":/icons/svg-default/animate-pause.svg");
-  static QIcon pauseLight(":/icons/svg-default/animate-pause-white.svg");
-
   if (animate_timer->isActive()) {
     animate_timer->stop();
   } else {
     animate_timer->start();
   }
+  
+  updatePauseButtonIcon();
+}
+
+void MainWindow::updatePauseButtonIcon()
+{
+  static QIcon runDark(":/icons/svg-default/animate.svg");
+  static QIcon runLight(":/icons/svg-default/animate-white.svg");
+  static QIcon pauseDark(":/icons/svg-default/animate-pause.svg");
+  static QIcon pauseLight(":/icons/svg-default/animate-pause-white.svg");
+  static QIcon recDark(":/icons/svg-default/animate-rec-pause.svg");
+  static QIcon recLight(":/icons/svg-default/animate-rece-white.svg");
 
   if (animate_timer->isActive()) {
-    pauseButton->setIcon( this->isLightTheme() ? runDark : runLight );
+    if(this->anim_dumping ){
+      pauseButton->setIcon( this->isLightTheme() ? runDark : runLight );
+    } else {
+      pauseButton->setIcon( this->isLightTheme() ? recDark : recLight );
+    }
+    pauseButton->setToolTip( "press to pause animation" );
   } else {
     pauseButton->setIcon( this->isLightTheme() ? pauseDark : pauseLight );
+    pauseButton->setToolTip( "press to resume animation" );
   }
 }
 
