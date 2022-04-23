@@ -442,9 +442,9 @@ void TabManager::setContentRenderState() //since last render
 
 void TabManager::stopAnimation()
 {
-  par->viewActionAnimate->setChecked(false);
-  par->viewModeAnimate();
-  par->e_tval->setText("");
+ // par->viewActionAnimate->setChecked(false); //fixme?
+ // par->viewModeAnimate();
+  par->animateWidget->e_tval->setText("");
 }
 
 void TabManager::updateFindState()

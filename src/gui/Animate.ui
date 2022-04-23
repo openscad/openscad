@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AnimateWidget</class>
+ <widget class="QWidget" name="AnimateWidget">
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>501</width>
+    <height>43</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Animate</string>
+  </property>
+  <property name="lineWidth" stdset="0">
+   <number>0</number>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayoutAnimate">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="label_time">
+     <property name="text">
+      <string>Time:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="e_tval"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_fps">
+     <property name="text">
+      <string>FPS:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="e_fps"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_steps">
+     <property name="text">
+      <string>Steps:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="e_fsteps"/>
+   </item>
+   <item>
+    <widget class="QPushButton" name="pauseButton">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="icon">
+      <iconset resource="../../resources/common.qrc">
+       <normaloff>:/icons/svg-default/animate-pause.svg</normaloff>:/icons/svg-default/animate-pause.svg</iconset>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="e_dump">
+     <property name="text">
+      <string>Dump Pictures</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+  <action name="actionRowSelected">
+   <property name="text">
+    <string>RowSelected</string>
+   </property>
+   <property name="shortcut">
+    <string>Return</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="../../resources/common.qrc"/>
+ </resources>
+ <connections/>
+</ui>
