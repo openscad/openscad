@@ -198,3 +198,18 @@ int Animate::nextFrame(){
   }
   return anim_step;
 }
+
+void Animate::resizeEvent(QResizeEvent *event)
+{
+  const QSize sizeEvent = event->size();
+  if(sizeEvent.width() < 500){
+      ((QBoxLayout *)this->layout())->setDirection(QBoxLayout::TopToBottom);
+  }
+
+  if(sizeEvent.width() > 600){
+      ((QBoxLayout *)this->layout())->setDirection(QBoxLayout::LeftToRight);
+  }
+
+  QWidget::resizeEvent(event);
+  
+}

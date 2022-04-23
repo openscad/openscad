@@ -30,7 +30,7 @@ public slots:
   void updatedAnimFps();
 
 protected:
-//  void resizeEvent(QResizeEvent *event) override;
+  void resizeEvent(QResizeEvent *event) override;
 
 
 private:
