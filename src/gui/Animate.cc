@@ -2,6 +2,7 @@
 #include "printutils.h"
 #include "MainWindow.h"
 #include <boost/filesystem.hpp>
+#include <QFormLayout>
 
 Animate::Animate(QWidget *parent) : QWidget(parent)
 {
@@ -19,7 +20,6 @@ void Animate::initGUI()
 
   animate_timer = new QTimer(this);
   connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
-//  connect(animate_timer, SIGNAL(timeout()), ((MainWindow*)parentWidget()), SLOT(updateTVal()));
 
   connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimTval()));
   connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
@@ -39,10 +39,9 @@ bool Animate::isLightTheme()
 
 void Animate::updatedAnimTval()
 {
-
-  double t = this->e_tval->text().toDouble(&t_ok);
+  double t = this->e_tval->text().toDouble(&this->t_ok);
   // Clamp t to 0-1
-  if (t_ok) {
+  if (this->t_ok) {
     t = t < 0 ? 0.0 : ((t > 1.0) ? 1.0 : t);
   } else {
     t = 0.0;
@@ -57,17 +56,16 @@ void Animate::updatedAnimTval()
 
 void Animate::updatedAnimFps()
 {
-  bool fps_ok;
-  double fps = this->e_fps->text().toDouble(&fps_ok);
+  double fps = this->e_fps->text().toDouble(&this->fps_ok);
   animate_timer->stop();
-  if (fps_ok && fps > 0 && this->anim_numsteps > 0) {
+  if (this->fps_ok && fps > 0 && this->anim_numsteps > 0) {
     this->anim_step = int(this->anim_tval * this->anim_numsteps) % this->anim_numsteps;
     animate_timer->setSingleShot(false);
     animate_timer->setInterval(int(1000 / fps));
     animate_timer->start();
   }
   
-  if( fps_ok || this->e_fps->text()=="" ){
+  if( this->fps_ok || this->e_fps->text()=="" ){
     this->e_fps->setStyleSheet(""); 
   }else{
     this->e_fps->setStyleSheet("background-color:#ffaaaa;"); 
@@ -78,8 +76,8 @@ void Animate::updatedAnimFps()
 
 void Animate::updatedAnimSteps()
 {
-  int numsteps = this->e_fsteps->text().toInt(&steps_ok);
-  if (steps_ok) {
+  int numsteps = this->e_fsteps->text().toInt(&this->steps_ok);
+  if (this->steps_ok) {
     this->anim_numsteps = numsteps;
     updatedAnimFps(); // Make sure we start
   } else {
@@ -112,7 +110,6 @@ void Animate::updateTVal()
     if (mainWindow->activeEditor->parameterWidget->childHasFocus()) return;
   }
 
-
   if (this->anim_numsteps > 1) {
     this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
     this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
@@ -129,8 +126,6 @@ void Animate::updateTVal()
 
 void Animate::on_pauseButton_pressed()
 {
-//auto animate_timer = ((MainWindow*)parentWidget()))-> animate_timer;
-
   if (animate_timer->isActive()) {
     animate_timer->stop();
   } else {
@@ -142,8 +137,6 @@ void Animate::on_pauseButton_pressed()
 
 void Animate::updatePauseButtonIcon()
 {
-//auto animate_timer = ((MainWindow*)parentWidget()))-> animate_timer;
-
   static QIcon runDark(":/icons/svg-default/animate.svg");
   static QIcon runLight(":/icons/svg-default/animate-white.svg");
   static QIcon recDark(":/icons/svg-default/animate-rec.svg");
@@ -162,7 +155,7 @@ void Animate::updatePauseButtonIcon()
     }
     pauseButton->setToolTip( "press to pause animation" );
   } else {
-    if( fps_ok && t_ok && steps_ok){
+    if( this->fps_ok && this->steps_ok ){
       pauseButton->setIcon( this->isLightTheme() ? pauseDark : pauseLight );
       pauseButton->setToolTip( "press to resume animation" );
     } else {
@@ -175,11 +168,9 @@ void Animate::updatePauseButtonIcon()
 
 void  Animate::animateUpdate()
 {
-//  auto animate_panel =   mainWindow->animateDockContents;
   if (mainWindow->animateDockContents->isVisible()) {
-
-    double fps = this->e_fps->text().toDouble(&fps_ok);
-    if (fps_ok && fps <= 0 && !animate_timer->isActive()) {
+    double fps = this->e_fps->text().toDouble(&this->fps_ok);
+    if (this->fps_ok && fps <= 0 && !animate_timer->isActive()) {
       animate_timer->stop();
       animate_timer->setSingleShot(true);
       animate_timer->setInterval(50);
@@ -207,15 +198,35 @@ int Animate::nextFrame(){
 
 void Animate::resizeEvent(QResizeEvent *event)
 {
-  const QSize sizeEvent = event->size();
-  if(sizeEvent.width() < 500){
-      ((QBoxLayout *)this->layout())->setDirection(QBoxLayout::TopToBottom);
+  const QSize sizeEvent = size();
+  
+  // QTDesigner does not make it obvious, but
+  // QBoxLayout can be switch from vertical to horizontal.
+  if(auto mainLayout = dynamic_cast<QBoxLayout *> (this->layout())){
+    if(sizeEvent.width() < 400){
+        mainLayout->setDirection(QBoxLayout::TopToBottom);
+    }
+    if(sizeEvent.width() > 500){
+        mainLayout->setDirection(QBoxLayout::LeftToRight);
+    }
+  } else {
+    static bool warnOnce = true;
+    if(warnOnce) {
+      std::cout << "you should not see this message - "
+                << " if you work on the animate UI: consider removing this code"
+                << std::endl;
+      warnOnce = false;
+    }
   }
 
-  if(sizeEvent.width() > 600){
-      ((QBoxLayout *)this->layout())->setDirection(QBoxLayout::LeftToRight);
+  QFormLayout::RowWrapPolicy policy = QFormLayout::RowWrapPolicy::DontWrapRows;
+  if(sizeEvent.width() < 150){
+    policy = QFormLayout::RowWrapPolicy::WrapAllRows;
+  }
+  auto qFormLayouts = this->findChildren<QFormLayout*>();
+  for(auto qFormLayout : qFormLayouts){
+      qFormLayout->setRowWrapPolicy(policy);
   }
 
   QWidget::resizeEvent(event);
-  
 }

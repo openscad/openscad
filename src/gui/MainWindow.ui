@@ -635,7 +635,7 @@
     <property name="focusPolicy">
      <enum>Qt::StrongFocus</enum>
     </property>
-    <layout class="QVBoxLayout" name="verticalLayout_6">
+    <layout class="QVBoxLayout" name="verticalLayout_Animate">
      <property name="leftMargin">
       <number>0</number>
      </property>
@@ -650,12 +650,6 @@
      </property>
      <item>
       <widget class="Animate" name="animateWidget" native="true">
-       <property name="minimumSize">
-        <size>
-         <width>400</width>
-         <height>30</height>
-        </size>
-       </property>
       </widget>
      </item>
     </layout>
