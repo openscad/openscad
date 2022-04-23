@@ -197,42 +197,6 @@
       <zorder>frameCompileResult</zorder>
      </widget>
     </item>
-       <item>
-  <widget class="Dock" name="animateDock">
-   <attribute name="dockWidgetArea">
-    <number>9</number>
-   </attribute>
-   <widget class="QWidget" name="animateDockContents">
-    <property name="focusPolicy">
-     <enum>Qt::StrongFocus</enum>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout_animate">
-     <property name="leftMargin">
-      <number>0</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="rightMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
-      <number>0</number>
-     </property>
-     <item>
-      <widget class="Animate" name="animateWidget" native="true">
-       <property name="minimumSize">
-        <size>
-         <width>400</width>
-         <height>30</height>
-        </size>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-  </widget>
-       </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -662,6 +626,40 @@
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
+  </widget>
+  <widget class="Dock" name="animateDock">
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="animateDockContents">
+    <property name="focusPolicy">
+     <enum>Qt::StrongFocus</enum>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_6">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="Animate" name="animateWidget" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>400</width>
+         <height>30</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="Dock" name="errorLogDock">
    <attribute name="dockWidgetArea">
