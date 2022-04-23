@@ -39,7 +39,7 @@ bool Animate::isLightTheme()
 
 void Animate::updatedAnimTval()
 {
-  bool t_ok;
+
   double t = this->e_tval->text().toDouble(&t_ok);
   // Clamp t to 0-1
   if (t_ok) {
@@ -62,7 +62,6 @@ void Animate::updatedAnimFps()
   animate_timer->stop();
   if (fps_ok && fps > 0 && this->anim_numsteps > 0) {
     this->anim_step = int(this->anim_tval * this->anim_numsteps) % this->anim_numsteps;
-    //auto animate_timer = ((MainWindow*)parentWidget()))-> animate_timer;
     animate_timer->setSingleShot(false);
     animate_timer->setInterval(int(1000 / fps));
     animate_timer->start();
@@ -79,7 +78,6 @@ void Animate::updatedAnimFps()
 
 void Animate::updatedAnimSteps()
 {
-  bool steps_ok;
   int numsteps = this->e_fsteps->text().toInt(&steps_ok);
   if (steps_ok) {
     this->anim_numsteps = numsteps;
@@ -148,10 +146,13 @@ void Animate::updatePauseButtonIcon()
 
   static QIcon runDark(":/icons/svg-default/animate.svg");
   static QIcon runLight(":/icons/svg-default/animate-white.svg");
-  static QIcon pauseDark(":/icons/svg-default/animate-pause.svg");
-  static QIcon pauseLight(":/icons/svg-default/animate-pause-white.svg");
   static QIcon recDark(":/icons/svg-default/animate-rec.svg");
   static QIcon recLight(":/icons/svg-default/animate-rec-white.svg");
+
+  static QIcon pauseDark(":/icons/svg-default/animate-pause.svg");
+  static QIcon pauseLight(":/icons/svg-default/animate-pause-white.svg");
+  static QIcon stopDark(":/icons/svg-default/animate-stop.svg");
+  static QIcon stopLight(":/icons/svg-default/animate-stop-white.svg");
 
   if (animate_timer->isActive()) {
     if(this->anim_dumping ){
@@ -161,8 +162,13 @@ void Animate::updatePauseButtonIcon()
     }
     pauseButton->setToolTip( "press to pause animation" );
   } else {
-    pauseButton->setIcon( this->isLightTheme() ? pauseDark : pauseLight );
-    pauseButton->setToolTip( "press to resume animation" );
+    if( fps_ok && t_ok && steps_ok){
+      pauseButton->setIcon( this->isLightTheme() ? pauseDark : pauseLight );
+      pauseButton->setToolTip( "press to resume animation" );
+    } else {
+      pauseButton->setIcon( this->isLightTheme() ? stopDark : stopLight );
+      pauseButton->setToolTip( "incorrect values" );
+    }
   }
 
 }
@@ -171,7 +177,7 @@ void  Animate::animateUpdate()
 {
 //  auto animate_panel =   mainWindow->animateDockContents;
   if (mainWindow->animateDockContents->isVisible()) {
-    bool fps_ok;
+
     double fps = this->e_fps->text().toDouble(&fps_ok);
     if (fps_ok && fps <= 0 && !animate_timer->isActive()) {
       animate_timer->stop();

@@ -45,6 +45,10 @@ private:
 
   bool isLightTheme();
   
+  bool fps_ok;
+  bool t_ok;
+  bool steps_ok;
+
 signals:
 
 private slots:
