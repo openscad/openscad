@@ -25,8 +25,7 @@ public:
   QTimer *animate_timer;
 
   void setMainWindow(MainWindow *mainWindow);
-  MainWindow *mainWindow;
-  
+
   const QList<QAction *>& actions();
   double getAnim_tval();
 
@@ -41,6 +40,8 @@ protected:
 
 
 private:
+  MainWindow *mainWindow;
+
   void updatePauseButtonIcon();
 
   double anim_tval;
@@ -61,7 +62,6 @@ signals:
 
 private slots:
   void updatedAnimTval();
-
   void updatedAnimSteps();
   void updatedAnimDump(bool checked);
   void updateTVal();
