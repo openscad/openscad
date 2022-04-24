@@ -365,7 +365,6 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(waitAfterReloadTimer, SIGNAL(timeout()), this, SLOT(waitAfterReload()));
   connect(Preferences::inst(), SIGNAL(ExperimentalChanged()), this, SLOT(changeParameterWidget()));
 
-
   progressThrottle->start();
 
 //  animateDockContents->hide();
@@ -563,10 +562,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   addKeyboardShortCut(this->viewerToolBar->actions());
   addKeyboardShortCut(this->editortoolbar->actions());
 
-  InputDriverManager::instance()->registerActions(this->menuBar()->actions(), "", "");
-  InputDriverManager::instance()->registerActions(this->animateWidget->actions(), "", "animate");
   Preferences *instance = Preferences::inst();
-  instance->ButtonConfig->init();
 
   initActionIcon(fileActionNew, ":/icons/svg-default/new.svg", ":/icons/svg-default/new-white.svg");
   initActionIcon(fileActionOpen, ":/icons/svg-default/open.svg", ":/icons/svg-default/open-white.svg");
@@ -610,6 +606,10 @@ MainWindow::MainWindow(const QStringList& filenames)
   initActionIcon(editActionIndent, ":/icons/svg-default/indent.svg", ":/icons/svg-default/indent-white.svg");
   initActionIcon(viewActionResetView, ":/icons/svg-default/reset-view.svg", ":/icons/svg-default/reset-view-white.svg");
   initActionIcon(viewActionShowScaleProportional, ":/icons/svg-default/scalemarkers.svg", ":/icons/svg-default/scalemarkers-white.svg");
+
+  InputDriverManager::instance()->registerActions(this->menuBar()->actions(), "", "");
+  InputDriverManager::instance()->registerActions(this->animateWidget->actions(), "", "animate");
+  instance->ButtonConfig->init();
 
   // fetch window states to be restored after restoreState() call
   bool hideConsole = settings.value("view/hideConsole").toBool();

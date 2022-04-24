@@ -25,16 +25,17 @@ void Animate::initGUI()
   connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
   connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimSteps()));
   connect(this->e_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
-  
-  QAction *pauseUnpause = new QAction(_("animation - pause/unpause"), this);
-  pauseUnpause->setObjectName("pause");
-  connect(pauseUnpause, SIGNAL(triggered()), this, SLOT(on_pauseButton_pressed()));
-  this->action_list.append(pauseUnpause);
 }
 
 void Animate::setMainWindow(MainWindow *mainWindow)
 {
   this->mainWindow = mainWindow;
+
+  QIcon playIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate.svg") : QIcon(":/icons/svg-default/animate-white.svg");
+  QAction *pauseUnpause = new QAction(playIcon, _("animation - pause/unpause"), this);
+  pauseUnpause->setObjectName("pause");
+  connect(pauseUnpause, SIGNAL(triggered()), this, SLOT(on_pauseButton_pressed()));
+  this->action_list.append(pauseUnpause);
 }
 
 bool Animate::isLightTheme()
