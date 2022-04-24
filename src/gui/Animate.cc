@@ -180,7 +180,6 @@ void Animate::updatePauseButtonIcon()
       pauseButton->setToolTip( _("incorrect values") );
     }
   }
-
 }
 
 void  Animate::animateUpdate()

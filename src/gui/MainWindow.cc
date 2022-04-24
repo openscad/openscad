@@ -365,7 +365,6 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   progressThrottle->start();
 
-//  animateDockContents->hide();
   this->hideFind();
   frameCompileResult->hide();
   this->labelCompileResultMessage->setOpenExternalLinks(false);
@@ -476,7 +475,6 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->viewActionShowAxes, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
   connect(this->viewActionShowCrosshairs, SIGNAL(triggered()), this, SLOT(viewModeShowCrosshairs()));
   connect(this->viewActionShowScaleProportional, SIGNAL(triggered()), this, SLOT(viewModeShowScaleProportional()));
-//  connect(this->viewActionAnimate, SIGNAL(triggered()), this, SLOT(viewModeAnimate()));
   connect(this->viewActionTop, SIGNAL(triggered()), this, SLOT(viewAngleTop()));
   connect(this->viewActionBottom, SIGNAL(triggered()), this, SLOT(viewAngleBottom()));
   connect(this->viewActionLeft, SIGNAL(triggered()), this, SLOT(viewAngleLeft()));
@@ -1876,8 +1874,7 @@ void MainWindow::actionRenderPreview()
   GuiLocker::lock();
   preview_requested = false;
 
-//  prepareCompile("csgRender", !viewActionAnimate->isChecked(), true); //fix me
-  prepareCompile("csgRender", false, true); //fix me
+  prepareCompile("csgRender", windowActionHideAnimate->isChecked(), true);
   compile(false, false);
   if (preview_requested) {
     // if the action was called when the gui was locked, we must request it one more time
@@ -2712,19 +2709,7 @@ void MainWindow::viewModeShowScaleProportional()
   this->qglview->setShowScaleProportional(viewActionShowScaleProportional->isChecked());
   this->qglview->update();
 }
-/*
-void MainWindow::viewModeAnimate()
-{
-  if (viewActionAnimate->isChecked()) {
-    animateDockContents->show();
-    actionRenderPreview();
-    animateWidget->updatedAnimFps();
-  } else {
-    animateDockContents->hide();
-    animateWidget->animate_timer->stop();
-  }
-}
-*/
+
 bool MainWindow::isEmpty()
 {
   return activeEditor->toPlainText().isEmpty();
@@ -3045,10 +3030,8 @@ void MainWindow::hideErrorLog()
 void MainWindow::showAnimate()
 {
   windowActionHideAnimate->setChecked(false);
-  //frameCompileResult->hide();
   animateDock->show();
   animateDock->raise();
-  //errorLogWidget->logTable->setFocus();
 }
 
 void MainWindow::hideAnimate()
