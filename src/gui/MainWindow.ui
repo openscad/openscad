@@ -191,7 +191,6 @@
         </widget>
        </item>
       </layout>
-      <!--<zorder>animate_panel</zorder>-->
       <zorder>qglview</zorder>
       <zorder>viewerToolBar</zorder>
       <zorder>frameCompileResult</zorder>
@@ -330,7 +329,6 @@
     <addaction name="viewActionShowAxes"/>
     <addaction name="viewActionShowScaleProportional"/>
     <addaction name="viewActionShowCrosshairs"/>
-    <!--<addaction name="viewActionAnimate"/>-->
     <addaction name="separator"/>
     <addaction name="viewActionTop"/>
     <addaction name="viewActionBottom"/>
@@ -1076,16 +1074,6 @@
     <string>Show Scale Markers</string>
    </property>
   </action>
-<!--
-  <action name="viewActionAnimate">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Animate</string>
-   </property>
-  </action>
--->
   <action name="viewActionTop">
    <property name="text">
     <string>&amp;Top</string>

@@ -40,8 +40,6 @@ public:
 
   QTimer *consoleUpdater;
 
-  double anim_tval; //for now
-
   bool is_preview;
 
   QTimer *autoReloadTimer;
@@ -140,9 +138,6 @@ private:
   class LibraryInfoDialog *library_info_dialog;
   class FontListDialog *font_list_dialog;
 
-
-
-
 public slots:
   void updateExportActions();
   void updateRecentFiles(EditorInterface *edt);
@@ -195,7 +190,6 @@ private slots:
   void on_windowActionPreviousWindow_triggered();
   void on_editActionInsertTemplate_triggered();
   void on_editActionFoldAll_triggered();
-
 
 public slots:
   void hideFind();
@@ -304,7 +298,6 @@ public slots:
   void viewModeShowAxes();
   void viewModeShowCrosshairs();
   void viewModeShowScaleProportional();
-//  void viewModeAnimate();
   void viewAngleTop();
   void viewAngleBottom();
   void viewAngleLeft();

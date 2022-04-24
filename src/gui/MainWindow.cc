@@ -344,8 +344,6 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   root_node = nullptr;
 
-  this->anim_tval = 0.0; //for now
-
   this->qglview->statusLabel = new QLabel(this);
   this->qglview->statusLabel->setMinimumWidth(100);
   statusBar()->addWidget(this->qglview->statusLabel);
@@ -802,7 +800,6 @@ void MainWindow::onRotate2Event(InputEventRotate2 *event)
 void MainWindow::onActionEvent(InputEventAction *event)
 {
   std::string actionName = event->action;
-  std::cout << actionName <<std::endl;
   if (actionName.find("::") == std::string::npos) {
     QAction *action = findAction(this->menuBar()->actions(), actionName);
     if (action) {
@@ -1726,7 +1723,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 void MainWindow::setRenderVariables(ContextHandle<BuiltinContext>& context)
 {
   context->set_variable("$preview", Value(this->is_preview));
-  context->set_variable("$t", Value(this->anim_tval));
+  context->set_variable("$t", Value(this->animateWidget->getAnim_tval()));
   auto camVpt = qglview->cam.getVpt();
   context->set_variable("$vpt", Value(VectorType(context->session(), camVpt.x(), camVpt.y(), camVpt.z())));
   auto camVpr = qglview->cam.getVpr();

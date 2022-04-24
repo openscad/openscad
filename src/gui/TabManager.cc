@@ -442,8 +442,7 @@ void TabManager::setContentRenderState() //since last render
 
 void TabManager::stopAnimation()
 {
- // par->viewActionAnimate->setChecked(false); //fixme?
- // par->viewModeAnimate();
+  par->animateWidget->pauseAnimation();
   par->animateWidget->e_tval->setText("");
 }
 
