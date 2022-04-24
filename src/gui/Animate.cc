@@ -25,6 +25,11 @@ void Animate::initGUI()
   connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
   connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimSteps()));
   connect(this->e_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
+  
+  QAction *pauseUnpause = new QAction(_("animation - pause/unpause"), this);
+  pauseUnpause->setObjectName("pause");
+  connect(pauseUnpause, SIGNAL(triggered()), this, SLOT(on_pauseButton_pressed()));
+  this->action_list.append(pauseUnpause);
 }
 
 void Animate::setMainWindow(MainWindow *mainWindow)
@@ -153,14 +158,14 @@ void Animate::updatePauseButtonIcon()
     } else {
       pauseButton->setIcon( this->isLightTheme() ? runDark : runLight );
     }
-    pauseButton->setToolTip( "press to pause animation" );
+    pauseButton->setToolTip( _("press to pause animation") );
   } else {
     if( this->fps_ok && this->steps_ok ){
       pauseButton->setIcon( this->isLightTheme() ? pauseDark : pauseLight );
-      pauseButton->setToolTip( "press to resume animation" );
+      pauseButton->setToolTip( _("press to resume animation") );
     } else {
       pauseButton->setIcon( this->isLightTheme() ? stopDark : stopLight );
-      pauseButton->setToolTip( "incorrect values" );
+      pauseButton->setToolTip( _("incorrect values") );
     }
   }
 
@@ -229,4 +234,19 @@ void Animate::resizeEvent(QResizeEvent *event)
   }
 
   QWidget::resizeEvent(event);
+}
+
+const QList<QAction *>& Animate::actions(){
+  return action_list;
+}
+
+void Animate::onActionEvent(InputEventAction *event)
+{
+  std::string action = event->action;
+  std::string target = action.substr(0, action.find("::"));
+  std::string actionName = action.substr(action.find("::")+2, std::string::npos);
+  std::cout << actionName << std::endl;
+  if("pause" == actionName){
+    on_pauseButton_pressed();
+  }
 }

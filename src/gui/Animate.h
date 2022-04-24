@@ -3,6 +3,7 @@
 #include "qtgettext.h"
 #include "ui_Animate.h"
 #include <QIcon>
+#include "input/InputDriverEvent.h"
 
 class MainWindow;
 
@@ -24,17 +25,19 @@ public:
 
   void setMainWindow(MainWindow *mainWindow);
   MainWindow *mainWindow;
+  
+  const QList<QAction *>& actions();
 
 public slots:
   void animateUpdate();
   void updatedAnimFps();
+  void onActionEvent(InputEventAction *event);
 
 protected:
   void resizeEvent(QResizeEvent *event) override;
 
 
 private:
-
   void updatePauseButtonIcon();
 
   double anim_tval;
@@ -49,6 +52,8 @@ private:
   bool t_ok;
   bool steps_ok;
 
+  QList<QAction *> action_list;
+
 signals:
 
 private slots:
@@ -58,5 +63,4 @@ private slots:
   void updatedAnimDump(bool checked);
   void updateTVal();
   void on_pauseButton_pressed();
-
 };
