@@ -32,10 +32,17 @@ void Animate::setMainWindow(MainWindow *mainWindow)
   this->mainWindow = mainWindow;
 
   QIcon playIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate.svg") : QIcon(":/icons/svg-default/animate-white.svg");
-  QAction *pauseUnpause = new QAction(playIcon, _("animation - pause/unpause"), this);
-  pauseUnpause->setObjectName("pause");
+  QIcon pauseIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate-pause.svg") : QIcon(":/icons/svg-default/animate-pause-white.svg");
+
+  QAction *pauseUnpause = new QAction(playIcon, _("animation - toogle pause/unpause"), this);
+  pauseUnpause->setObjectName("pauseUnpause");
   connect(pauseUnpause, SIGNAL(triggered()), this, SLOT(on_pauseButton_pressed()));
   this->action_list.append(pauseUnpause);
+  
+  QAction *pause = new QAction(pauseIcon, _("animation - pause"), this);
+  pause->setObjectName("pause");
+  connect(pause, SIGNAL(triggered()), this, SLOT(pauseAnimation()));
+  this->action_list.append(pause);
 }
 
 bool Animate::isLightTheme()
@@ -54,7 +61,6 @@ void Animate::updatedAnimTval()
   }
 
   this->anim_tval = t;
-  mainWindow->anim_tval = t;
   emit mainWindow->actionRenderPreview();
 
   updatePauseButtonIcon();
@@ -127,6 +133,11 @@ void Animate::updateTVal()
   const QString txt = QString::number(this->anim_tval, 'f', 5);
   this->e_tval->setText(txt);
 
+  updatePauseButtonIcon();
+}
+
+void Animate::pauseAnimation(){
+  animate_timer->stop();
   updatePauseButtonIcon();
 }
 
@@ -219,7 +230,7 @@ void Animate::resizeEvent(QResizeEvent *event)
     static bool warnOnce = true;
     if(warnOnce) {
       std::cout << "you should not see this message - "
-                << " if you work on the animate UI: consider removing this code"
+                << " if you work on the animate UI, you can consider removing this code"
                 << std::endl;
       warnOnce = false;
     }
@@ -243,11 +254,16 @@ const QList<QAction *>& Animate::actions(){
 
 void Animate::onActionEvent(InputEventAction *event)
 {
-  std::string action = event->action;
-  std::string target = action.substr(0, action.find("::"));
-  std::string actionName = action.substr(action.find("::")+2, std::string::npos);
-  std::cout << actionName << std::endl;
-  if("pause" == actionName){
-    on_pauseButton_pressed();
+  const std::string actionString = event->action;
+  const std::string target = actionString.substr(0, actionString.find("::"));
+  const std::string actionName = actionString.substr(actionString.find("::")+2, std::string::npos);
+  for(auto action : action_list){
+    if(actionName == action->objectName().toStdString()){
+        action->trigger();
+    }
   }
+}
+
+double Animate::getAnim_tval(){
+  return anim_tval;
 }

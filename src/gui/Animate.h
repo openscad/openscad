@@ -17,6 +17,7 @@ public:
   Animate(Animate&& source) = delete;
   Animate& operator=(const Animate& source) = delete;
   Animate& operator=(Animate&& source) = delete;
+
   void initGUI();
   bool dumpPictures();
   int nextFrame();
@@ -27,11 +28,13 @@ public:
   MainWindow *mainWindow;
   
   const QList<QAction *>& actions();
+  double getAnim_tval();
 
 public slots:
   void animateUpdate();
   void updatedAnimFps();
   void onActionEvent(InputEventAction *event);
+  void pauseAnimation();
 
 protected:
   void resizeEvent(QResizeEvent *event) override;
