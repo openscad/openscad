@@ -246,7 +246,6 @@ MainWindow::MainWindow(const QStringList& filenames)
   // actions not included in menu
   this->addAction(editActionInsertTemplate);
   this->addAction(editActionFoldAll);
- //todo: add animate pause/unpause
 
   this->editorDock->setConfigKey("view/hideEditor");
   this->editorDock->setAction(this->windowActionHideEditor);
@@ -564,7 +563,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   addKeyboardShortCut(this->viewerToolBar->actions());
   addKeyboardShortCut(this->editortoolbar->actions());
 
-  InputDriverManager::instance()->registerActions(this->menuBar()->actions(), "");
+  InputDriverManager::instance()->registerActions(this->menuBar()->actions(), "", "");
+  InputDriverManager::instance()->registerActions(this->animateWidget->actions(), "", "animate");
   Preferences *instance = Preferences::inst();
   instance->ButtonConfig->init();
 
@@ -592,7 +592,6 @@ MainWindow::MainWindow(const QStringList& filenames)
   initActionIcon(viewActionPerspective, ":/icons/svg-default/perspective.svg", ":/icons/svg-default/perspective-white.svg");
   initActionIcon(viewActionOrthogonal, ":/icons/svg-default/orthogonal.svg", ":/icons/svg-default/orthogonal-white.svg");
   initActionIcon(designActionPreview, ":/icons/svg-default/preview.svg", ":/icons/svg-default/preview-white.svg");
-//  initActionIcon(viewActionAnimate, ":/icons/svg-default/animate.svg", ":/icons/svg-default/animate-white.svg");
   initActionIcon(fileActionExportSTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
   initActionIcon(fileActionExportAMF, ":/icons/svg-default/export-amf.svg", ":/icons/svg-default/export-amf-white.svg");
   initActionIcon(fileActionExport3MF, ":/icons/svg-default/export-3mf.svg", ":/icons/svg-default/export-3mf-white.svg");
@@ -802,11 +801,22 @@ void MainWindow::onRotate2Event(InputEventRotate2 *event)
 
 void MainWindow::onActionEvent(InputEventAction *event)
 {
-  QAction *action = findAction(this->menuBar()->actions(), event->action);
-  if (action) {
-    action->trigger();
-  } else if ("viewActionTogglePerspective" == event->action) {
-    viewTogglePerspective();
+  std::string actionName = event->action;
+  std::cout << actionName <<std::endl;
+  if (actionName.find("::") == std::string::npos) {
+    QAction *action = findAction(this->menuBar()->actions(), actionName);
+    if (action) {
+      action->trigger();
+    } else if ("viewActionTogglePerspective" == actionName) {
+      viewTogglePerspective();
+    }
+  } else {
+    std::string target = actionName.substr(0, actionName.find("::"));
+    if("animate" == target) {
+      this->animateWidget->onActionEvent(event);
+    } else {
+      std::cout << "unknown onActionEvent target: " << actionName << std::endl;
+    }
   }
 }
 
