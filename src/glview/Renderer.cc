@@ -11,6 +11,7 @@
 #include "PolySetUtils.h"
 #include "Grid.h"
 #include <Eigen/LU>
+#include <fstream>
 
 #ifndef NULLGL
 
