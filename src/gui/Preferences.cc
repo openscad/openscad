@@ -511,6 +511,13 @@ void Preferences::on_checkBoxMouseCentricZoom_toggled(bool val)
   emit updateMouseCentricZoom(val);
 }
 
+void Preferences::on_checkBoxMouseInvertButtons_toggled(bool val)
+{
+  Settings::Settings::mouseInvertButtons.setValue(val);
+  writeSettings();
+  emit updateMouseInvertButtons(val);
+}
+
 void Preferences::on_spinBoxIndentationWidth_valueChanged(int val)
 {
   Settings::Settings::indentationWidth.setValue(val);
@@ -1029,6 +1036,7 @@ void Preferences::updateGUI()
   initUpdateCheckBox(this->checkBoxEnableNumberScrollWheel, Settings::Settings::enableNumberScrollWheel);
   initUpdateCheckBox(this->checkBoxShowWarningsIn3dView, Settings::Settings::showWarningsIn3dView);
   initUpdateCheckBox(this->checkBoxMouseCentricZoom, Settings::Settings::mouseCentricZoom);
+  initUpdateCheckBox(this->checkBoxMouseInvertButtons, Settings::Settings::mouseInvertButtons);
   initUpdateCheckBox(this->checkBoxEnableLineNumbers, Settings::Settings::enableLineNumbers);
 
 

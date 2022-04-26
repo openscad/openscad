@@ -44,6 +44,9 @@ public slots:
   void setMouseCentricZoom(bool var){
     this->mouseCentricZoom = var;
   }
+  void setMouseInvertButtons(bool var){
+    this->mouseInvertButtons = var;
+  }
 
 public:
   QLabel *statusLabel;
@@ -60,6 +63,7 @@ private:
   bool mouse_drag_active;
   bool mouse_drag_moved = true;
   bool mouseCentricZoom = true;
+  bool mouseInvertButtons = false;
   QPoint last_mouse;
   QImage frame; // Used by grabFrame() and save()
 

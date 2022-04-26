@@ -352,6 +352,7 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   QSettingsCached settings;
   this->qglview->setMouseCentricZoom(Settings::Settings::mouseCentricZoom.value());
+  this->qglview->setMouseInvertButtons(Settings::Settings::mouseInvertButtons.value());
 
   animate_timer = new QTimer(this);
   connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
@@ -533,6 +534,7 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(update()));
   connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
+  connect(Preferences::inst(), SIGNAL(updateMouseInvertButtons(bool)), this->qglview, SLOT(setMouseInvertButtons(bool)));
   connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
   connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
   connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()), this, SLOT(openCSGSettingsChanged()));
