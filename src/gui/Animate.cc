@@ -43,11 +43,19 @@ void Animate::setMainWindow(MainWindow *mainWindow)
   pause->setObjectName("pause");
   connect(pause, SIGNAL(triggered()), this, SLOT(pauseAnimation()));
   this->action_list.append(pause);
+
+  updatePauseButtonIcon();
 }
 
 bool Animate::isLightTheme()
 {
-  return mainWindow->isLightTheme();
+  bool ret = true;
+  if(mainWindow){
+    ret = mainWindow->isLightTheme();
+  } else {
+    std::cout << "Animate: You need to set the mainWindow before calling isLightTheme" << std::endl;
+  }
+  return ret;
 }
 
 void Animate::updatedAnimTval()
@@ -94,6 +102,7 @@ void Animate::updatedAnimSteps()
     updatedAnimFps(); // Make sure we start
   } else {
     this->anim_numsteps = 0;
+    animate_timer->stop();
   }
   this->anim_dumping = false;
 
@@ -146,7 +155,7 @@ void Animate::on_pauseButton_pressed()
   if (animate_timer->isActive()) {
     animate_timer->stop();
   } else {
-    animate_timer->start();
+    this->updatedAnimFps();
   }
   
   updatePauseButtonIcon();
@@ -156,27 +165,22 @@ void Animate::updatePauseButtonIcon()
 {
   static QIcon runDark(":/icons/svg-default/animate.svg");
   static QIcon runLight(":/icons/svg-default/animate-white.svg");
-  static QIcon recDark(":/icons/svg-default/animate-rec.svg");
-  static QIcon recLight(":/icons/svg-default/animate-rec-white.svg");
 
   static QIcon pauseDark(":/icons/svg-default/animate-pause.svg");
   static QIcon pauseLight(":/icons/svg-default/animate-pause-white.svg");
-  static QIcon stopDark(":/icons/svg-default/animate-stop.svg");
-  static QIcon stopLight(":/icons/svg-default/animate-stop-white.svg");
+
+  static QIcon disabledDark(":/icons/svg-default/animate-disabled.svg");
+  static QIcon disabledLight(":/icons/svg-default/animate-disabled-white.svg");
 
   if (animate_timer->isActive()) {
-    if(this->anim_dumping ){
-      pauseButton->setIcon( this->isLightTheme() ? recDark : recLight );
-    } else {
-      pauseButton->setIcon( this->isLightTheme() ? runDark : runLight );
-    }
+    pauseButton->setIcon( this->isLightTheme() ? pauseDark : pauseLight );
     pauseButton->setToolTip( _("press to pause animation") );
   } else {
     if( this->fps_ok && this->steps_ok ){
-      pauseButton->setIcon( this->isLightTheme() ? pauseDark : pauseLight );
-      pauseButton->setToolTip( _("press to resume animation") );
+      pauseButton->setIcon( this->isLightTheme() ? runDark : runLight );
+      pauseButton->setToolTip( _("press to start animation") );
     } else {
-      pauseButton->setIcon( this->isLightTheme() ? stopDark : stopLight );
+      pauseButton->setIcon( this->isLightTheme() ? disabledDark : disabledLight );
       pauseButton->setToolTip( _("incorrect values") );
     }
   }
