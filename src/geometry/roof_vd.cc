@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 #include <boost/polygon/voronoi.hpp>
+#include <boost/math/tools/roots.hpp>
 
 #include "GeometryUtils.h"
 #include "ClipperUtils.h"
@@ -110,8 +111,7 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
 {
   std::vector<Vector2d> ret;
 
-  const double max_angle_deviation = M_PI / 180.0 * fa / 2.0;
-  const double max_segment_sqr_length = fs * fs;
+  const double fa_rad = M_PI / 180.0 * fa;
 
   const Vector2d p(point.a, point.b);
   const Vector2d p0(segment.p0.a, segment.p0.b);
@@ -149,36 +149,84 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
   auto y_prime = [point_distance](double x) {
       return x / point_distance;
     };
-  // angle between a segment and the parabola
-  auto segment_angle = [y, y_prime](double x1, double x2){
-      double dx = x2 - x1,
-       dy = y(x2) - y(x1);
-      double tx = 1,
-             ty = (std::abs(x1) < std::abs(x2)) ? y_prime(x1) : y_prime(x2);
-      return std::abs(std::atan2(dx * ty - dy * tx, dx * tx + dy * ty));
+  // angle of tangent to the parabola at x
+  auto angle = [y_prime](double x){
+      return std::atan2(y_prime(x), 1.0);
+    };
+  // .. and its inverse
+  auto angle_inv = [point_distance, y_prime](double a){
+      return point_distance * std::tan(a);
     };
   // squared length of segment
-  auto segment_sqr_length = [y](double x1, double x2){
-      double dx = x2 - x1,
-       dy = y(x2) - y(x1);
-      return dx * dx + dy * dy;
+  // arch length on the parabola between the vertex and the point
+  // (oriented, negative on the left, positive on the right)
+  auto arc_length = [point_distance](double x){
+      const double d = point_distance;
+      return 0.5 * (x * sqrt(x * x / (d * d) + 1.0) + d * asinh(x / d));
+    };
+  // derivative of arc_length
+  auto arc_length_prime = [point_distance](double x){
+      const double d = point_distance;
+      return sqrt(x * x / (d * d) + 1.0);
+    };
+  // inverse of arc_length
+  auto arc_length_inv = [arc_length, arc_length_prime, point_distance](double t){
+      const double d = point_distance;
+      if (t == 0) {
+        return double(0);
+      }
+      double x_guess = ((t > 0) ? 1 : -1) * std::sqrt(2 * d * (-d + std::sqrt(d * d + t * t))),
+             x_min = (t > 0) ? (x_guess / 2) : x_guess,
+             x_max = (t < 0) ? (x_guess / 2) : x_guess;
+      const int digits = std::numeric_limits<double>::digits;
+      double x;
+      try { // Try Newton-Raphson
+        auto feed = [arc_length, arc_length_prime, t](double x) {
+            return std::make_pair(arc_length(x) - t, arc_length_prime(x));
+          };
+        int get_digits = static_cast<int>(digits * 0.6);
+        const boost::uintmax_t maxit = 4242;
+        boost::uintmax_t it = maxit;
+        x = boost::math::tools::newton_raphson_iterate(feed, x_guess, x_min, x_max, get_digits, it);
+      } catch (...) { // Fallback to bisection
+        auto feed = [arc_length, t](double x) {
+            return arc_length(x) - t;
+          };
+        int get_digits = static_cast<int>(digits - 3);
+        boost::math::tools::eps_tolerance<double> tol(get_digits);
+        try {
+          auto xxx = boost::math::tools::bisect(feed, x_min, x_max, tol);
+          x = (xxx.first + xxx.second) / 2;
+        } catch (...) {
+          RAISE_ROOF_EXCEPTION("error in parabolic arc discretization");
+        }
+      }
+      return x;
     };
 
-  std::vector<double> transformed_points_x = {transformed_v0_x, transformed_v1_x};
-
-  for (;;) {
-    double x1 = transformed_points_x.end()[-2];
-    double x2 = transformed_points_x.end()[-1];
-    if (segment_angle(x1, x2) > max_angle_deviation ||
-        (max_segment_sqr_length > 0 && segment_sqr_length(x1, x2) > max_segment_sqr_length)) {
-      transformed_points_x.end()[-1] = 0.5 * x1 + 0.5 * x2;
-    } else {
-      if (x2 == transformed_v1_x) {
-        break;
-      } else {
-        transformed_points_x.push_back(transformed_v1_x);
-      }
+  double arc_length_0 = arc_length(transformed_v0_x),
+         arc_length_1 = arc_length(transformed_v1_x);
+  int segments_fx = (fs == 0.0) ? 1 : std::ceil((arc_length_1 - arc_length_0) / fs);
+  double angle_0 = angle(transformed_v0_x),
+         angle_1 = angle(transformed_v1_x);
+  int segments_fa = std::ceil((angle_1 - angle_0) / fa_rad);
+  std::vector<double> transformed_points_x;
+  if (fs > 0 && segments_fx < segments_fa) {
+    transformed_points_x.reserve(segments_fx + 1);
+    transformed_points_x.push_back(transformed_v0_x);
+    for (int p = 1; p < segments_fx; p++) {
+      double a = (arc_length_0 * (segments_fx - p) + arc_length_1 * p) / segments_fx;
+      transformed_points_x.push_back(arc_length_inv(a));
     }
+    transformed_points_x.push_back(transformed_v1_x);
+  } else {
+    transformed_points_x.reserve(segments_fa + 1);
+    transformed_points_x.push_back(transformed_v0_x);
+    for (int p = 1; p < segments_fa; p++) {
+      double a = (angle_0 * (segments_fa - p) + angle_1 * p) / segments_fa;
+      transformed_points_x.push_back(angle_inv(a));
+    }
+    transformed_points_x.push_back(transformed_v1_x);
   }
 
   for (auto x : transformed_points_x) {

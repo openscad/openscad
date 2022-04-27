@@ -25,7 +25,7 @@ static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *ins
   node->fa = parameters["$fa"].toDouble();
 
   node->fa = std::max(node->fa, 0.01);
-  node->fs = std::max(node->fs, 0.01);
+  node->fs = std::max(node->fs, 0.0001);
   if (node->fn > 0) {
     node->fa = 360.0 / node->fn;
     node->fs = 0.0;
