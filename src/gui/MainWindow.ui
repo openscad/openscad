@@ -1473,7 +1473,7 @@
   </action>
   <action name="windowActionSelectAnimate">
    <property name="text">
-    <string>Animate</string>
+    <string>&amp;Animate</string>
    </property>
   </action>
   <action name="windowActionNextWindow">

@@ -3032,6 +3032,7 @@ void MainWindow::showAnimate()
   windowActionHideAnimate->setChecked(false);
   animateDock->show();
   animateDock->raise();
+  animateWidget->setFocus();
 }
 
 void MainWindow::hideAnimate()
@@ -3111,8 +3112,8 @@ void MainWindow::activateWindow(int offset)
     { editorDock, &MainWindow::on_windowActionSelectEditor_triggered },
     { consoleDock, &MainWindow::on_windowActionSelectConsole_triggered },
     { errorLogDock, &MainWindow::on_windowActionSelectErrorLog_triggered },
-    { animateDock, &MainWindow::on_windowActionSelectAnimate_triggered },
     { parameterDock, &MainWindow::on_windowActionSelectCustomizer_triggered },
+    { animateDock, &MainWindow::on_windowActionSelectAnimate_triggered },
   }};
 
   const int cnt = docks.size();
