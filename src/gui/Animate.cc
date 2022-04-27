@@ -212,6 +212,10 @@ int Animate::nextFrame(){
   return anim_step;
 }
 
+QSize Animate::minimumSizeHint() const{
+    return QSize(-1,-1);
+}
+
 void Animate::resizeEvent(QResizeEvent *event)
 {
   const QSize sizeEvent = size();
@@ -219,12 +223,26 @@ void Animate::resizeEvent(QResizeEvent *event)
   // QTDesigner does not make it obvious, but
   // QBoxLayout can be switch from vertical to horizontal.
   if(auto mainLayout = dynamic_cast<QBoxLayout *> (this->layout())){
-    if(sizeEvent.width() < 400){
-        mainLayout->setDirection(QBoxLayout::TopToBottom);
+    if(sizeEvent.height() > 140){
+      mainLayout->setDirection(QBoxLayout::TopToBottom);
+      if(sizeEvent.height() > 180 && sizeEvent.width() > 200){
+        mainLayout->setMargin(10);
+        mainLayout->setSpacing(10);
+        pauseButton->setIconSize(QSize(32, 23));
+      } else {
+        mainLayout->setMargin(0);
+        mainLayout->setSpacing(0);
+        pauseButton->setIconSize(QSize(16, 16));
+      }
+    } else {
+      mainLayout->setDirection(QBoxLayout::LeftToRight);
+
+      mainLayout->setMargin(0);
+      mainLayout->setSpacing(0);
+      pauseButton->setIconSize(QSize(16, 16));
     }
-    if(sizeEvent.width() > 500){
-        mainLayout->setDirection(QBoxLayout::LeftToRight);
-    }
+
+
   } else {
     static bool warnOnce = true;
     if(warnOnce) {

@@ -28,6 +28,7 @@ public:
 
   const QList<QAction *>& actions();
   double getAnim_tval();
+  QSize minimumSizeHint() const override;
 
 public slots:
   void animateUpdate();

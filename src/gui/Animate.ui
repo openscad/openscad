@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>759</width>
-    <height>27</height>
+    <width>828</width>
+    <height>67</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,22 +21,22 @@
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout_3">
    <property name="spacing">
-    <number>0</number>
+    <number>10</number>
    </property>
    <property name="sizeConstraint">
     <enum>QLayout::SetDefaultConstraint</enum>
    </property>
    <property name="leftMargin">
-    <number>0</number>
+    <number>10</number>
    </property>
    <property name="topMargin">
-    <number>0</number>
+    <number>10</number>
    </property>
    <property name="rightMargin">
-    <number>0</number>
+    <number>10</number>
    </property>
    <property name="bottomMargin">
-    <number>0</number>
+    <number>10</number>
    </property>
    <item>
     <layout class="QFormLayout" name="formLayout_time">
@@ -188,12 +188,22 @@
        <property name="text">
         <string>Dump Pictures</string>
        </property>
-       <property name="wordWrap">
-        <bool>true</bool>
-       </property>
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
   <action name="actionRowSelected">
