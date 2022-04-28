@@ -214,6 +214,10 @@ int Animate::nextFrame(){
   return anim_step;
 }
 
+// Invalid minimumSizeHint means we accept any size.
+// This is not ideal, but  QT does not seam to have an
+// elegant way to handle widgets that can adapt
+// to horizontal and vertical layout
 QSize Animate::minimumSizeHint() const{
     return QSize(-1,-1);
 }
@@ -243,8 +247,6 @@ void Animate::resizeEvent(QResizeEvent *event)
       mainLayout->setSpacing(0);
       pauseButton->setIconSize(QSize(16, 16));
     }
-
-
   } else {
     static bool warnOnce = true;
     if(warnOnce) {
