@@ -31,8 +31,9 @@ void Animate::setMainWindow(MainWindow *mainWindow)
 {
   this->mainWindow = mainWindow;
 
+  //prepare actions for inputdriver
   QIcon playIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate.svg") : QIcon(":/icons/svg-default/animate-white.svg");
-  QIcon pauseIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate-pause.svg") : QIcon(":/icons/svg-default/animate-pause-white.svg");
+  QIcon pauseIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate_pause.svg") : QIcon(":/icons/svg-default/animate_pause-white.svg");
 
   QAction *pauseUnpause = new QAction(playIcon, _("animation - toogle pause/unpause"), this);
   pauseUnpause->setObjectName("pauseUnpause");
@@ -115,6 +116,7 @@ void Animate::updatedAnimSteps()
   updatePauseButtonIcon();
 }
 
+
 void Animate::updatedAnimDump(bool checked)
 {
   if (!checked) this->anim_dumping = false;
@@ -166,11 +168,11 @@ void Animate::updatePauseButtonIcon()
   static QIcon runDark(":/icons/svg-default/animate.svg");
   static QIcon runLight(":/icons/svg-default/animate-white.svg");
 
-  static QIcon pauseDark(":/icons/svg-default/animate-pause.svg");
-  static QIcon pauseLight(":/icons/svg-default/animate-pause-white.svg");
+  static QIcon pauseDark(":/icons/svg-default/animate_pause.svg");
+  static QIcon pauseLight(":/icons/svg-default/animate_pause-white.svg");
 
-  static QIcon disabledDark(":/icons/svg-default/animate-disabled.svg");
-  static QIcon disabledLight(":/icons/svg-default/animate-disabled-white.svg");
+  static QIcon disabledDark(":/icons/svg-default/animate_disabled.svg");
+  static QIcon disabledLight(":/icons/svg-default/animate_disabled-white.svg");
 
   if (animate_timer->isActive()) {
     pauseButton->setIcon( this->isLightTheme() ? pauseDark : pauseLight );
