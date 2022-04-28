@@ -14,9 +14,43 @@
 #include "printutils.h"
 #include "RoofNode.h"
 #include "roof_vd.h"
+#include "earcut.hpp"
 
 #define RAISE_ROOF_EXCEPTION(message) \
   throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
+
+// implement "get" for Vector2d and ClipperLib::IntPoint for earcut
+namespace mapbox {
+namespace util {
+
+template <>
+struct nth<0, Vector2d> {
+  inline static auto get(const Vector2d& v) {
+    return v[0];
+  }
+};
+template <>
+struct nth<1, Vector2d> {
+  inline static auto get(const Vector2d& v) {
+    return v[1];
+  }
+};
+
+template <>
+struct nth<0, ClipperLib::IntPoint> {
+  inline static auto get(const ClipperLib::IntPoint& t) {
+    return t.X;
+  }
+};
+template <>
+struct nth<1, ClipperLib::IntPoint> {
+  inline static auto get(const ClipperLib::IntPoint& t) {
+    return t.Y;
+  }
+};
+
+} // namespace util
+} // namespace mapbox
 
 namespace roof_vd {
 
@@ -416,55 +450,43 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
     ::boost::polygon::construct_voronoi(segments.begin(), segments.end(), &vd);
     Faces_2_plus_1 inner_faces = vd_inner_faces(vd, segments, fa, scale * fs);
 
-    // roof
+    // tessellate roof and add triangles to hat
     for (std::vector<Vector2d> face : inner_faces.faces) {
       if (!(face.size() >= 3)) {
         RAISE_ROOF_EXCEPTION("Voronoi error");
       }
-      // convex partition (actually a triangulation - maybe do a proper convex partition later)
-      Polygon2d face_poly;
-      Outline2d outline;
-      outline.vertices = face;
-      face_poly.addOutline(outline);
-      PolySet *tess = face_poly.tessellate();
-      for (std::vector<Vector3d> triangle : tess->polygons) {
-        Polygon roof;
-        for (Vector3d tv : triangle) {
-          Vector2d v;
-          v << tv[0], tv[1];
-          if (!(inner_faces.heights.find(v) != inner_faces.heights.end())) {
-            RAISE_ROOF_EXCEPTION("Voronoi error");
-          }
-          roof.push_back(Vector3d(v[0] / scale, v[1] / scale, inner_faces.heights[v] / scale));
+      std::vector<std::vector<Vector2d>> face_array = { face };
+      const std::vector<size_t> indices = mapbox::earcut<size_t>(face_array);
+      for (size_t i = 0; i < indices.size(); i += 3) {
+        std::vector<Vector3d> triangle(3);
+        for (size_t k = 0; k < 3; k++) {
+          triangle[k][0] = face[indices[i + k]][0] / scale;
+          triangle[k][1] = face[indices[i + k]][1] / scale;
+          triangle[k][2] = inner_faces.heights[face[indices[i + k]]] / scale;
         }
-        hat->append_poly(roof);
+        hat->append_poly(triangle);
       }
-      delete tess;
     }
 
-    // floor
+    // tessellate floor and add triangles to hat
     {
       // poly has to go through clipper just as it does for the roof
       // because this may change coordinates
-      Polygon2d poly_floor;
+      const std::vector<size_t> indices = mapbox::earcut<size_t>(paths);
+      std::vector<Vector3d> vertices;
       for (auto path : paths) {
-        Outline2d o;
         for (auto p : path) {
-          o.vertices.push_back({p.X / scale, p.Y / scale});
+          vertices.push_back({p.X / scale, p.Y / scale, 0.0});
         }
-        poly_floor.addOutline(o);
       }
-      PolySet *tess = poly_floor.tessellate();
-      for (std::vector<Vector3d> triangle : tess->polygons) {
-        Polygon floor;
-        for (Vector3d tv : triangle) {
-          floor.push_back(tv);
+      for (size_t i = 0; i < indices.size(); i += 3) {
+        std::vector<Vector3d> triangle(3);
+        for (size_t k = 0; k < 3; k++) {
+          // floor has reverse orientation hence 2-k
+          triangle[2 - k] = vertices[indices[i + k]];
         }
-        // floor has reverse orientation
-        std::reverse(floor.begin(), floor.end());
-        hat->append_poly(floor);
+        hat->append_poly(triangle);
       }
-      delete tess;
     }
   } catch (RoofNode::roof_exception& e) {
     delete hat;
