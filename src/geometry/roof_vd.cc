@@ -14,7 +14,7 @@
 #include "printutils.h"
 #include "RoofNode.h"
 #include "roof_vd.h"
-#include "earcut.hpp"
+#include "../ext/earcut/earcut.hpp"
 
 #define RAISE_ROOF_EXCEPTION(message) \
   throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
