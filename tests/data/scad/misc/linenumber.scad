@@ -1,7 +1,7 @@
 use <line 1> include <line 1>
 
 cube("line 3");
-
+// see merge request #4221 and #4211 for context
 include
 < line 6
 line 7

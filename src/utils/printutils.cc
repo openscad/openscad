@@ -19,6 +19,8 @@ void *outputhandler_data = nullptr;
 std::string OpenSCAD::debug("");
 bool OpenSCAD::quiet = false;
 bool OpenSCAD::hardwarnings = false;
+int OpenSCAD::traceDepth = 12;
+bool OpenSCAD::traceUsermoduleParameters = true;
 bool OpenSCAD::parameterCheck = true;
 bool OpenSCAD::rangeCheck = false;
 

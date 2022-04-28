@@ -15,6 +15,8 @@
 #include <QWidget>
 #include <QMouseEvent>
 
+void installIgnoreWheelWhenNotFocused(QWidget *parent);
+
 class IgnoreWheelWhenNotFocused : public QObject
 {
   Q_OBJECT

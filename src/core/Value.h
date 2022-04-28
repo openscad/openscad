@@ -579,6 +579,7 @@ public:
   bool getFiniteDouble(double& v) const;
   std::string toString() const;
   std::string toEchoString() const;
+  std::string toEchoStringNoThrow() const; //use this for warnings
   const UndefType& toUndef();
   std::string toUndefString() const;
   std::string chrString() const;

@@ -1038,6 +1038,8 @@ void MainWindow::updateTVal()
 void MainWindow::compile(bool reload, bool forcedone)
 {
   OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
+  OpenSCAD::traceDepth = Preferences::inst()->getValue("advanced/traceDepth").toUInt();
+  OpenSCAD::traceUsermoduleParameters = Preferences::inst()->getValue("advanced/enableTraceUsermoduleParameters").toBool();
   OpenSCAD::parameterCheck = Preferences::inst()->getValue("advanced/enableParameterCheck").toBool();
   OpenSCAD::rangeCheck = Preferences::inst()->getValue("advanced/enableParameterRangeCheck").toBool();
 
@@ -1084,6 +1086,9 @@ void MainWindow::compile(bool reload, bool forcedone)
     no_exceptions_for_warnings();
     if (shouldcompiletoplevel) {
       this->errorLogWidget->clearModel();
+      if(Preferences::inst()->getValue("advanced/consoleAutoClear").toBool()){
+        this->console->actionClearConsole_triggered();
+      }
       if (activeEditor->isContentModified()) saveBackup();
       parseTopLevelDocument();
       didcompile = true;
@@ -2530,9 +2535,9 @@ void MainWindow::actionExport(FileFormat, QString, QString, unsigned int, QStrin
   this->export_paths[suffix] = exportFilename;
 
   ExportInfo exportInfo = createExportInfo(format, exportFilename, activeEditor->filepath);
-  exportFileByName(this->root_geom, exportInfo);
+  bool exportResult = exportFileByName(this->root_geom, exportInfo);
 
-  fileExportedMessage(type_name, exportFilename);
+  if (exportResult) fileExportedMessage(type_name, exportFilename);
   clearCurrentOutput();
 #endif /* ENABLE_CGAL */
 }
@@ -2625,11 +2630,15 @@ void MainWindow::actionExportImage()
   auto img_filename = QFileDialog::getSaveFileName(this,
                                                    _("Export Image"),  exportPath(suffix), _("PNG Files (*.png)"));
   if (!img_filename.isEmpty()) {
-    qglview->save(img_filename.toLocal8Bit().constData());
-    this->export_paths[suffix] = img_filename;
-    setCurrentOutput();
-    fileExportedMessage("PNG", img_filename);
-    clearCurrentOutput();
+    bool saveResult = qglview->save(img_filename.toLocal8Bit().constData());
+    if (saveResult) {
+      this->export_paths[suffix] = img_filename;
+      setCurrentOutput();
+      fileExportedMessage("PNG", img_filename);
+      clearCurrentOutput();
+    } else {
+        LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
+    }
   }
 }
 

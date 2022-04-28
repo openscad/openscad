@@ -146,7 +146,7 @@ static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation 
     return children->instantiate(lazyUnionNode(inst), indices);
   } else {
     // Invalid argument
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range", parameters["index"].toEchoString());
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range", parameters["index"].toEchoStringNoThrow());
     return std::shared_ptr<AbstractNode>();
   }
 }
@@ -188,10 +188,10 @@ static std::shared_ptr<AbstractNode> builtin_assign(const ModuleInstantiation *i
   ContextHandle<Context> assignContext{Context::create<Context>(context)};
   for (auto& argument : arguments) {
     if (!argument.name) {
-      LOG(message_group::Warning, inst->location(), context->documentRoot(), "Assignment without variable name %1$s", argument->toEchoString());
+      LOG(message_group::Warning, inst->location(), context->documentRoot(), "Assignment without variable name %1$s", argument->toEchoStringNoThrow());
     } else {
       if (assignContext->lookup_local_variable(*argument.name)) {
-        LOG(message_group::Warning, inst->location(), context->documentRoot(), "Duplicate variable assignment %1$s = %2$s", *argument.name, argument->toEchoString());
+        LOG(message_group::Warning, inst->location(), context->documentRoot(), "Duplicate variable assignment %1$s = %2$s", *argument.name, argument->toEchoStringNoThrow());
       }
       assignContext->set_variable(*argument.name, std::move(argument.value));
     }

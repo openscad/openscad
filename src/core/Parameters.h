@@ -74,5 +74,5 @@ void print_argCnt_warning(const std::string& name, int found,
                           const std::string& expected, const Location& loc,
                           const std::string& documentRoot);
 void print_argConvert_warning(const std::string& name, const std::string& where,
-                              Value::Type found, std::vector<Value::Type> expected,
+                              const Value& found, std::vector<Value::Type> expected,
                               const Location& loc, const std::string& documentRoot);

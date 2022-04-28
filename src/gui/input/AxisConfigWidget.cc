@@ -31,9 +31,8 @@
 #include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
-#include "WheelIgnorer.h"
+#include "IgnoreWheelWhenNotFocused.h"
 #include "InitConfigurator.h"
-
 
 AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
 {
@@ -133,14 +132,7 @@ void AxisConfigWidget::init() {
   initUpdateCheckBox(this->checkBoxQGamepad, Settings::Settings::inputEnableDriverQGAMEPAD);
   initUpdateCheckBox(this->checkBoxDBus,     Settings::Settings::inputEnableDriverDBUS);
 
-  auto comboBoxes = this->findChildren<QComboBox *>();
-  if (comboBoxes.size() > 0) { // only allocate if there are comboboxes to use the function
-    auto *wheelIgnorer = new WheelIgnorer(this);
-    for (auto comboBox : comboBoxes) {
-      comboBox->installEventFilter(wheelIgnorer); // this takes ownership of the wheelIgnorer object
-    }
-  }
-  // clang generates a bogus warning that wheelIgnorer may be leaked
+  installIgnoreWheelWhenNotFocused(this);
 
   for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     std::string s = std::to_string(i);
@@ -158,6 +150,7 @@ void AxisConfigWidget::init() {
   initUpdateDoubleSpinBox(this->doubleSpinBoxTranslationGain, Settings::Settings::inputTranslationGain);
   initUpdateDoubleSpinBox(this->doubleSpinBoxTranslationVPRelGain, Settings::Settings::inputTranslationVPRelGain);
   initUpdateDoubleSpinBox(this->doubleSpinBoxRotateGain, Settings::Settings::inputRotateGain);
+  initUpdateDoubleSpinBox(this->doubleSpinBoxRotateVPRelGain, Settings::Settings::inputRotateVPRelGain);
   initUpdateDoubleSpinBox(this->doubleSpinBoxZoomGain, Settings::Settings::inputZoomGain);
 
   //use a custom style for the axis indicators,
@@ -388,6 +381,13 @@ void AxisConfigWidget::on_doubleSpinBoxDeadzone8_valueChanged(double val)
 void AxisConfigWidget::on_doubleSpinBoxRotateGain_valueChanged(double val)
 {
   Settings::Settings::inputRotateGain.setValue(val);
+  emit inputGainChanged();
+  writeSettings();
+}
+
+void AxisConfigWidget::on_doubleSpinBoxRotateVPRelGain_valueChanged(double val)
+{
+  Settings::Settings::inputRotateVPRelGain.setValue(val);
   emit inputGainChanged();
   writeSettings();
 }

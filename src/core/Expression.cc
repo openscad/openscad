@@ -645,7 +645,7 @@ void Assert::performAssert(const AssignmentList& arguments, const Location& loca
 
   if (!parameters["condition"].toBool()) {
     std::string conditionString = conditionExpression ? STR(" '" << *conditionExpression << "'") : "";
-    std::string messageString = parameters.contains("message") ? (": " + parameters["message"].toEchoString()) : "";
+    std::string messageString = parameters.contains("message") ? (": " + parameters["message"].toEchoStringNoThrow()) : "";
     LOG(message_group::Error, location, context->documentRoot(), "Assertion%1$s failed%2$s", conditionString, messageString);
     throw AssertionFailedException("Assertion Failed", location);
   }
@@ -705,9 +705,9 @@ void Let::doSequentialAssignment(const AssignmentList& assignments, const Locati
   for (const auto& assignment : assignments) {
     Value value = assignment->getExpr()->evaluate(*targetContext);
     if (assignment->getName().empty()) {
-      LOG(message_group::Warning, location, targetContext->documentRoot(), "Assignment without variable name %1$s", value.toEchoString());
+      LOG(message_group::Warning, location, targetContext->documentRoot(), "Assignment without variable name %1$s", value.toEchoStringNoThrow());
     } else if (seen.find(assignment->getName()) != seen.end()) {
-      LOG(message_group::Warning, location, targetContext->documentRoot(), "Ignoring duplicate variable assignment %1$s = %2$s", assignment->getName(), value.toEchoString());
+      LOG(message_group::Warning, location, targetContext->documentRoot(), "Ignoring duplicate variable assignment %1$s = %2$s", assignment->getName(), value.toEchoStringNoThrow());
     } else {
       targetContext->set_variable(assignment->getName(), std::move(value));
       seen.insert(assignment->getName());
