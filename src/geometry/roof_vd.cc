@@ -142,14 +142,14 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
     RAISE_ROOF_EXCEPTION("error in parabolic arc discretization");
   }
 
-  // in transformed coordinates the parabola has equation y = (x^2 - point_distance^2) / (2 point_distance)
+  // in transformed coordinates the parabola has equation y = ...
   auto y = [point_distance](double x) {
       return (x * x - point_distance * point_distance) / (2 * point_distance);
     };
   auto y_prime = [point_distance](double x) {
       return x / point_distance;
     };
-  // angle of tangent to the parabola at x
+  // angle of the tangent to the parabola at x
   auto angle = [y_prime](double x){
       return std::atan2(y_prime(x), 1.0);
     };
@@ -169,7 +169,7 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
       const double d = point_distance;
       return sqrt(x * x / (d * d) + 1.0);
     };
-  // inverse of arc_length
+  // inverse of arc_length, no explicit formula sadly
   auto arc_length_inv = [arc_length, arc_length_prime, point_distance](double t){
       const double d = point_distance;
       if (t == 0) {
@@ -180,7 +180,8 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
              x_max = (t < 0) ? (x_guess / 2) : x_guess;
       const int digits = std::numeric_limits<double>::digits;
       double x;
-      try { // Try Newton-Raphson
+      try {
+        // try Newton-Raphson
         auto feed = [arc_length, arc_length_prime, t](double x) {
             return std::make_pair(arc_length(x) - t, arc_length_prime(x));
           };
@@ -188,7 +189,8 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
         const boost::uintmax_t maxit = 4242;
         boost::uintmax_t it = maxit;
         x = boost::math::tools::newton_raphson_iterate(feed, x_guess, x_min, x_max, get_digits, it);
-      } catch (...) { // Fallback to bisection
+      } catch (...) {
+        // fall back to bisection
         auto feed = [arc_length, t](double x) {
             return arc_length(x) - t;
           };
@@ -206,29 +208,37 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
 
   double arc_length_0 = arc_length(transformed_v0_x),
          arc_length_1 = arc_length(transformed_v1_x);
-  int segments_fx = (fs == 0.0) ? 1 : std::ceil((arc_length_1 - arc_length_0) / fs);
+  // number of points if we discretize according to fs
+  int segments_fs = (fs == 0.0) ? 1 : std::ceil((arc_length_1 - arc_length_0) / fs);
+
   double angle_0 = angle(transformed_v0_x),
          angle_1 = angle(transformed_v1_x);
+  // number of points if we discretize according to fa
   int segments_fa = std::ceil((angle_1 - angle_0) / fa_rad);
+
+  // make a choice and discretize
   std::vector<double> transformed_points_x;
-  if (fs > 0 && segments_fx < segments_fa) {
-    transformed_points_x.reserve(segments_fx + 1);
+  if (fs > 0 && segments_fs < segments_fa) {
+    // fs wins
+    transformed_points_x.reserve(segments_fs + 1);
     transformed_points_x.push_back(transformed_v0_x);
-    for (int p = 1; p < segments_fx; p++) {
-      double a = (arc_length_0 * (segments_fx - p) + arc_length_1 * p) / segments_fx;
+    for (int k = 1; k < segments_fs; k++) {
+      double a = (arc_length_0 * (segments_fs - k) + arc_length_1 * k) / segments_fs;
       transformed_points_x.push_back(arc_length_inv(a));
     }
     transformed_points_x.push_back(transformed_v1_x);
   } else {
+    // fa wins
     transformed_points_x.reserve(segments_fa + 1);
     transformed_points_x.push_back(transformed_v0_x);
-    for (int p = 1; p < segments_fa; p++) {
-      double a = (angle_0 * (segments_fa - p) + angle_1 * p) / segments_fa;
+    for (int k = 1; k < segments_fa; k++) {
+      double a = (angle_0 * (segments_fa - k) + angle_1 * k) / segments_fa;
       transformed_points_x.push_back(angle_inv(a));
     }
     transformed_points_x.push_back(transformed_v1_x);
   }
 
+  // assemble the discretized vector
   for (auto x : transformed_points_x) {
     if (x == transformed_v0_x) {
       ret.push_back(v0);
