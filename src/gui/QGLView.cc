@@ -213,7 +213,7 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
   if (success == GL_TRUE) {
     cam.object_trans -= Vector3d(px, py, pz);
     update();
-    emit doAnimateUpdate();
+    emit cameraChanged();
   }
 }
 
@@ -376,7 +376,7 @@ void QGLView::translate(double x, double y, double z, bool relative, bool viewPo
   cam.object_trans.y() = f * cam.object_trans.y() + tm(1, 3);
   cam.object_trans.z() = f * cam.object_trans.z() + tm(2, 3);
   update();
-  emit doAnimateUpdate();
+  emit cameraChanged();
 }
 
 void QGLView::rotate(double x, double y, double z, bool relative)
@@ -389,7 +389,7 @@ void QGLView::rotate(double x, double y, double z, bool relative)
   normalizeAngle(cam.object_rot.y());
   normalizeAngle(cam.object_rot.z());
   update();
-  emit doAnimateUpdate();
+  emit cameraChanged();
 }
 
 void QGLView::rotate2(double x, double y, double z)
@@ -436,5 +436,5 @@ void QGLView::rotate2(double x, double y, double z)
   normalizeAngle(cam.object_rot.z());
 
   update();
-  emit doAnimateUpdate();
+  emit cameraChanged();
 }
