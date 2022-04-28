@@ -22,8 +22,8 @@ void Animate::initGUI()
   connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
 
   connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimTval()));
-  connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
-  connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimSteps()));
+  connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFpsAndAnimSteps()));
+  connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFpsAndAnimSteps()));
   connect(this->e_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
 }
 
@@ -75,8 +75,18 @@ void Animate::updatedAnimTval()
   updatePauseButtonIcon();
 }
 
-void Animate::updatedAnimFps()
+void Animate::updatedAnimFpsAndAnimSteps()
 {
+  animate_timer->stop();
+
+  int numsteps = this->e_fsteps->text().toInt(&this->steps_ok);
+  if (this->steps_ok) {
+    this->anim_numsteps = numsteps;
+  } else {
+    this->anim_numsteps = 0;
+  }
+  this->anim_dumping = false;
+
   double fps = this->e_fps->text().toDouble(&this->fps_ok);
   animate_timer->stop();
   if (this->fps_ok && fps > 0 && this->anim_numsteps > 0) {
@@ -85,32 +95,19 @@ void Animate::updatedAnimFps()
     animate_timer->setInterval(int(1000 / fps));
     animate_timer->start();
   }
-  
+
+  QString redBackground = QString (isLightTheme() ? "background-color:#ffaaaa;" : "background-color:#502020;");
+
+  if( this->steps_ok || this->e_fsteps->text()=="" ){
+    this->e_fsteps->setStyleSheet(""); 
+  } else {
+    this->e_fsteps->setStyleSheet(redBackground); 
+  }
+
   if( this->fps_ok || this->e_fps->text()=="" ){
     this->e_fps->setStyleSheet(""); 
-  }else{
-    this->e_fps->setStyleSheet("background-color:#ffaaaa;"); 
-  }
-
-  updatePauseButtonIcon();
-}
-
-void Animate::updatedAnimSteps()
-{
-  int numsteps = this->e_fsteps->text().toInt(&this->steps_ok);
-  if (this->steps_ok) {
-    this->anim_numsteps = numsteps;
-    updatedAnimFps(); // Make sure we start
   } else {
-    this->anim_numsteps = 0;
-    animate_timer->stop();
-  }
-  this->anim_dumping = false;
-
-  if( steps_ok || this->e_fsteps->text()=="" ){
-    this->e_fsteps->setStyleSheet(""); 
-  }else{
-    this->e_fsteps->setStyleSheet("background-color:#ffaaaa;"); 
+    this->e_fps->setStyleSheet(redBackground); 
   }
 
   updatePauseButtonIcon();
@@ -156,11 +153,10 @@ void Animate::on_pauseButton_pressed()
 {
   if (animate_timer->isActive()) {
     animate_timer->stop();
+    updatePauseButtonIcon();
   } else {
-    this->updatedAnimFps();
+    this->updatedAnimFpsAndAnimSteps();
   }
-  
-  updatePauseButtonIcon();
 }
 
 void Animate::updatePauseButtonIcon()

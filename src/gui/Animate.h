@@ -32,7 +32,6 @@ public:
 
 public slots:
   void animateUpdate();
-  void updatedAnimFps();
   void onActionEvent(InputEventAction *event);
   void pauseAnimation();
 
@@ -63,7 +62,7 @@ signals:
 
 private slots:
   void updatedAnimTval();
-  void updatedAnimSteps();
+  void updatedAnimFpsAndAnimSteps();
   void updatedAnimDump(bool checked);
   void updateTVal();
   void on_pauseButton_pressed();
