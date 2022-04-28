@@ -8,10 +8,12 @@
 class EvaluationException : public std::runtime_error
 {
 public:
-  EvaluationException(const std::string& what_arg) : std::runtime_error(what_arg) {}
+  EvaluationException(const std::string& what_arg) : std::runtime_error(what_arg) {
+    this->traceDepth = OpenSCAD::traceDepth;
+  }
   ~EvaluationException() throw() {}
 public:
-  int traceDepth = 12;
+  int traceDepth = 0;
 };
 
 class AssertionFailedException : public EvaluationException

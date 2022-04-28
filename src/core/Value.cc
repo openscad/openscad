@@ -429,6 +429,17 @@ std::string Value::toEchoString() const
   }
 }
 
+std::string Value::toEchoStringNoThrow() const
+{
+  std::string ret;
+  try{
+    ret = toEchoString();
+  } catch (EvaluationException& e) {
+     ret = "...";
+  }
+  return ret;
+}
+
 std::string UndefType::toString() const {
   std::ostringstream stream;
   if (!reasons->empty()) {

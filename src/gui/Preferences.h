@@ -49,6 +49,8 @@ public slots:
   void on_launcherBox_toggled(bool);
   void on_enableSoundOnRenderCompleteCheckBox_toggled(bool);
   void on_enableHardwarningsCheckBox_toggled(bool);
+  void on_traceDepthEdit_textChanged(const QString&);
+  void on_enableTraceUsermoduleParametersCheckBox_toggled(bool);
   void on_enableParameterCheckBox_toggled(bool);
   void on_enableRangeCheckBox_toggled(bool);
   void on_useAsciiSTLCheckBox_toggled(bool);
@@ -61,6 +63,7 @@ public slots:
   void on_checkBoxShowWarningsIn3dView_toggled(bool);
   void on_checkBoxMouseCentricZoom_toggled(bool);
   void on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QString&);
+  void on_enableClearConsoleCheckBox_toggled(bool);
   void on_consoleMaxLinesEdit_textChanged(const QString&);
   void on_consoleFontChooser_activated(const QString&);
   void on_consoleFontSize_currentIndexChanged(const QString&);

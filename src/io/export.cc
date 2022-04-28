@@ -92,15 +92,16 @@ void exportFile(const shared_ptr<const Geometry>& root_geom, std::ostream& outpu
   }
 }
 
-void exportFileByNameStdout(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
+bool exportFileByNameStdout(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
 #ifdef _WIN32
   _setmode(_fileno(stdout), _O_BINARY);
 #endif
   exportFile(root_geom, std::cout, exportInfo);
+  return true;
 }
 
-void exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
+bool exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
   std::ios::openmode mode = std::ios::out | std::ios::trunc;
   if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::STL || exportInfo.format == FileFormat::PDF) {
@@ -109,6 +110,7 @@ void exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const E
   std::ofstream fstream(exportInfo.name2open, mode);
   if (!fstream.is_open()) {
     LOG(message_group::None, Location::NONE, "", _("Can't open file \"%1$s\" for export"), exportInfo.name2display);
+    return false;
   } else {
     bool onerror = false;
     fstream.exceptions(std::ios::badbit | std::ios::failbit);
@@ -125,16 +127,19 @@ void exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const E
     if (onerror) {
       LOG(message_group::Error, Location::NONE, "", _("\"%1$s\" write error. (Disk full?)"), exportInfo.name2display);
     }
+    return !onerror;
   }
 }
 
-void exportFileByName(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
+bool exportFileByName(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
+  bool exportResult = false;
   if (exportInfo.useStdOut) {
-    exportFileByNameStdout(root_geom, exportInfo);
+    exportResult = exportFileByNameStdout(root_geom, exportInfo);
   } else {
-    exportFileByNameStream(root_geom, exportInfo);
+    exportResult = exportFileByNameStream(root_geom, exportInfo);
   }
+  return exportResult;
 }
 
 namespace Export {

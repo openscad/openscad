@@ -60,12 +60,12 @@ std::shared_ptr<AbstractNode> builtin_scale(const ModuleInstantiation *inst, Arg
     if (parameters["v"].getDouble(num)) {
       scalevec.setConstant(num);
     } else {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert scale(%1$s) parameter to a number, a vec3 or vec2 of numbers or a number", parameters["v"].toEchoString());
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert scale(%1$s) parameter to a number, a vec3 or vec2 of numbers or a number", parameters["v"].toEchoStringNoThrow());
     }
   }
   if (OpenSCAD::rangeCheck) {
     if (scalevec[0] == 0 || scalevec[1] == 0 || scalevec[2] == 0 || !std::isfinite(scalevec[0])|| !std::isfinite(scalevec[1])|| !std::isfinite(scalevec[2])) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "scale(%1$s)", parameters["v"].toEchoString());
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "scale(%1$s)", parameters["v"].toEchoStringNoThrow());
     }
   }
   node->matrix.scale(scalevec);
@@ -116,13 +116,13 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
     bool v_supplied = val_v.isDefined();
     if (ok) {
       if (v_supplied) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "When parameter a is supplied as vector, v is ignored rotate(a=%1$s, v=%2$s)", val_a.toEchoString(), val_v.toEchoString());
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "When parameter a is supplied as vector, v is ignored rotate(a=%1$s, v=%2$s)", val_a.toEchoStringNoThrow(), val_v.toEchoStringNoThrow());
       }
     } else {
       if (v_supplied) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s, v=%2$s) parameter", val_a.toEchoString(), val_v.toEchoString());
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s, v=%2$s) parameter", val_a.toEchoStringNoThrow(), val_v.toEchoStringNoThrow());
       } else {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s) parameter", val_a.toEchoString());
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s) parameter", val_a.toEchoStringNoThrow());
       }
     }
     Matrix3d M;
@@ -140,12 +140,12 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
     node->matrix.rotate(angle_axis_degrees(aConverted ? a : 0, v));
     if (val_v.isDefined() && !vConverted) {
       if (aConverted) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(..., v=%1$s) parameter", val_v.toEchoString());
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(..., v=%1$s) parameter", val_v.toEchoStringNoThrow());
       } else {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s, v=%2$s) parameter", val_a.toEchoString(), val_v.toEchoString());
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s, v=%2$s) parameter", val_a.toEchoStringNoThrow(), val_v.toEchoStringNoThrow());
       }
     } else if (!aConverted) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s) parameter", val_a.toEchoString());
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s) parameter", val_a.toEchoStringNoThrow());
     }
   }
 
@@ -160,7 +160,7 @@ std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Ar
 
   double x = 1.0, y = 0.0, z = 0.0;
   if (!parameters["v"].getVec3(x, y, z, 0.0)) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert mirror(%1$s) parameter to a vec3 or vec2 of numbers", parameters["v"].toEchoString());
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert mirror(%1$s) parameter to a vec3 or vec2 of numbers", parameters["v"].toEchoStringNoThrow());
   }
 
   // x /= sqrt(x*x + y*y + z*z)
@@ -195,7 +195,7 @@ std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst,
   if (ok) {
     node->matrix.translate(translatevec);
   } else {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert translate(%1$s) parameter to a vec3 or vec2 of numbers", parameters["v"].toEchoString());
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert translate(%1$s) parameter to a vec3 or vec2 of numbers", parameters["v"].toEchoStringNoThrow());
   }
 
   return children.instantiate(node);

@@ -43,7 +43,7 @@ struct ExportInfo {
 };
 
 bool canPreview(const FileFormat format);
-void exportFileByName(const shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);
+bool exportFileByName(const shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);
 
 void export_stl(const shared_ptr<const Geometry>& geom, std::ostream& output,
                 bool binary = true);

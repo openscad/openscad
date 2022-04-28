@@ -103,14 +103,14 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
   bool originOk = parameters["origin"].getVec2(node->origin_x, node->origin_y);
   originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
   if (parameters["origin"].isDefined() && !originOk) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "linear_extrude(..., origin=%1$s) could not be converted", parameters["origin"].toEchoString());
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "linear_extrude(..., origin=%1$s) could not be converted", parameters["origin"].toEchoStringNoThrow());
   }
   node->scale_x = node->scale_y = 1;
   bool scaleOK = parameters["scale"].getFiniteDouble(node->scale_x);
   scaleOK &= parameters["scale"].getFiniteDouble(node->scale_y);
   scaleOK |= parameters["scale"].getVec2(node->scale_x, node->scale_y, true);
   if ((parameters["scale"].isDefined()) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "linear_extrude(..., scale=%1$s) could not be converted", parameters["scale"].toEchoString());
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "linear_extrude(..., scale=%1$s) could not be converted", parameters["scale"].toEchoStringNoThrow());
   }
 
   if (parameters["center"].type() == Value::Type::BOOL) node->center = parameters["center"].toBool();
