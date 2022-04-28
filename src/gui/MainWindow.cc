@@ -520,7 +520,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   this->menuBar()->addMenu(AutoUpdater::updater()->updateMenu);
 #endif
 
-  connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
+  connect(this->qglview, SIGNAL(cameraChanged()), animateWidget, SLOT(cameraChanged()));
   connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
 
   connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(update()));
@@ -2715,17 +2715,12 @@ bool MainWindow::isEmpty()
   return activeEditor->toPlainText().isEmpty();
 }
 
-void MainWindow::animateUpdateDocChanged()
+void MainWindow::editorContentChanged()
 {
   auto current_doc = activeEditor->toPlainText();
   if (current_doc != last_compiled_doc) {
-    animateUpdate();
+    animateWidget->editorContentChanged();
   }
-}
-
-void MainWindow::animateUpdate()
-{
-    //animateWidget->animateUpdate();
 }
 
 void MainWindow::viewAngleTop()

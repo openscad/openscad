@@ -311,8 +311,7 @@ public slots:
   void viewTogglePerspective();
   void viewResetView();
   void viewAll();
-  void animateUpdateDocChanged();
-  void animateUpdate();
+  void editorContentChanged();
   void selectObject(QPoint coordinate);
   void dragEnterEvent(QDragEnterEvent *event) override;
   void dropEvent(QDropEvent *event) override;

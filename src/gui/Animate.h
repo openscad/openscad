@@ -32,6 +32,8 @@ public:
 
 public slots:
   void animateUpdate();
+  void cameraChanged();
+  void editorContentChanged();
   void onActionEvent(InputEventAction *event);
   void pauseAnimation();
 

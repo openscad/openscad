@@ -184,6 +184,14 @@ void Animate::updatePauseButtonIcon()
   }
 }
 
+void Animate::cameraChanged(){
+  this->animateUpdate(); //for now so that we do not change the behavior
+}
+
+void Animate::editorContentChanged(){
+  this->animateUpdate(); //for now so that we do not change the behavior
+}
+
 void  Animate::animateUpdate()
 {
   if (mainWindow->animateDockContents->isVisible()) {
