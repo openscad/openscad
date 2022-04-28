@@ -108,6 +108,10 @@
     <file>icons/svg-default/crosshairs-white.svg</file>
     <file>icons/svg-default/animate.svg</file>
     <file>icons/svg-default/animate-white.svg</file>
+    <file>icons/svg-default/animate_pause.svg</file>
+    <file>icons/svg-default/animate_pause-white.svg</file>
+    <file>icons/svg-default/animate_disabled.svg</file>
+    <file>icons/svg-default/animate_disabled-white.svg</file>
     <file>icons/svg-default/surface.svg</file>
     <file>icons/svg-default/surface-white.svg</file>
     <file>icons/svg-default/wireframe.svg</file>

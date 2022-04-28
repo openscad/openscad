@@ -194,7 +194,7 @@ void TabManager::createTab(const QString& filename)
   connect(par->editActionZoomTextOut, SIGNAL(triggered()), editor, SLOT(zoomOut()));
 
   connect(editor, SIGNAL(contentsChanged()), this, SLOT(updateActionUndoState()));
-  connect(editor, SIGNAL(contentsChanged()), par, SLOT(animateUpdateDocChanged()));
+  connect(editor, SIGNAL(contentsChanged()), par,  SLOT(editorContentChanged()));
   connect(editor, SIGNAL(contentsChanged()), this, SLOT(setContentRenderState()));
   connect(editor, SIGNAL(modificationChanged(EditorInterface*)), this, SLOT(setTabModified(EditorInterface*)));
   connect(editor->parameterWidget, &ParameterWidget::modificationChanged, [editor = this->editor, this] {
@@ -442,9 +442,8 @@ void TabManager::setContentRenderState() //since last render
 
 void TabManager::stopAnimation()
 {
-  par->viewActionAnimate->setChecked(false);
-  par->viewModeAnimate();
-  par->e_tval->setText("");
+  par->animateWidget->pauseAnimation();
+  par->animateWidget->e_tval->setText("");
 }
 
 void TabManager::updateFindState()
