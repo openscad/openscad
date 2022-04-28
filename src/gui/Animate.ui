@@ -153,7 +153,7 @@
        </property>
        <property name="icon">
         <iconset resource="../../resources/common.qrc">
-         <normaloff>:/icons/svg-default/animate-pause.svg</normaloff>:/icons/svg-default/animate-pause.svg</iconset>
+         <normaloff>:/icons/svg-default/animate_pause.svg</normaloff>:/icons/svg-default/animate_pause.svg</iconset>
        </property>
       </widget>
      </item>
