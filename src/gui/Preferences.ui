@@ -108,9 +108,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QCheckBox" name="checkBoxMouseInvertButtons">
+         <widget class="QCheckBox" name="checkBoxMouseSwapButtons">
           <property name="text">
-           <string>Invert Mouse Buttons</string>
+           <string>Swap Mouse Buttons</string>
           </property>
           <property name="checked">
            <bool>false</bool>

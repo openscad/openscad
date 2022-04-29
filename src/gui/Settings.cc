@@ -93,7 +93,7 @@ static std::vector<SettingsEntryEnum::Item> axisValues() {
 
 SettingsEntryBool Settings::showWarningsIn3dView("3dview", "showWarningsIn3dView", true);
 SettingsEntryBool Settings::mouseCentricZoom("3dview", "mouseCentricZoom", true);
-SettingsEntryBool Settings::mouseInvertButtons("3dview", "mouseInvertButtons", false);
+SettingsEntryBool Settings::mouseSwapButtons("3dview", "mouseSwapButtons", false);
 SettingsEntryInt Settings::indentationWidth("editor", "indentationWidth", 1, 16, 4);
 SettingsEntryInt Settings::tabWidth("editor", "tabWidth", 1, 16, 4);
 SettingsEntryEnum Settings::lineWrap("editor", "lineWrap", {{"None", _("None")}, {"Char", _("Wrap at character boundaries")}, {"Word", _("Wrap at word boundaries")}}, "Word");
