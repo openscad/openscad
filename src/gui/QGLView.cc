@@ -230,7 +230,7 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
   double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
   if (mouse_drag_active) {
     mouse_drag_moved = true;
-    auto button_compare = this->mouseInvertButtons?Qt::RightButton : Qt::LeftButton;
+    auto button_compare = this->mouseSwapButtons?Qt::RightButton : Qt::LeftButton;
     if (event->buttons() & button_compare
 #ifdef Q_OS_MAC
         && !(event->modifiers() & Qt::MetaModifier)
@@ -277,7 +277,7 @@ void QGLView::mouseReleaseEvent(QMouseEvent *event)
   mouse_drag_active = false;
   releaseMouse();
 
-  auto button_compare = this->mouseInvertButtons?Qt::LeftButton : Qt::RightButton;
+  auto button_compare = this->mouseSwapButtons?Qt::LeftButton : Qt::RightButton;
   if (!mouse_drag_moved
       && (event->button() == button_compare)) {
     QPoint point = event->pos();

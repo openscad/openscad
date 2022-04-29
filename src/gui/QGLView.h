@@ -44,8 +44,8 @@ public slots:
   void setMouseCentricZoom(bool var){
     this->mouseCentricZoom = var;
   }
-  void setMouseInvertButtons(bool var){
-    this->mouseInvertButtons = var;
+  void setMouseSwapButtons(bool var){
+    this->mouseSwapButtons = var;
   }
 
 public:
@@ -63,7 +63,7 @@ private:
   bool mouse_drag_active;
   bool mouse_drag_moved = true;
   bool mouseCentricZoom = true;
-  bool mouseInvertButtons = false;
+  bool mouseSwapButtons = false;
   QPoint last_mouse;
   QImage frame; // Used by grabFrame() and save()
 

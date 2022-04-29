@@ -158,7 +158,7 @@ class Settings
 public:
   static SettingsEntryBool showWarningsIn3dView;
   static SettingsEntryBool mouseCentricZoom;
-  static SettingsEntryBool mouseInvertButtons;
+  static SettingsEntryBool mouseSwapButtons;
   static SettingsEntryInt indentationWidth;
   static SettingsEntryInt tabWidth;
   static SettingsEntryEnum lineWrap;
