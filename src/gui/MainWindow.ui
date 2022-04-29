@@ -440,6 +440,7 @@
     <addaction name="windowActionSelectConsole"/>
     <addaction name="windowActionSelectErrorLog"/>
     <addaction name="windowActionSelectCustomizer"/>
+    <addaction name="windowActionSelectCameraControlWidget"/>
     <addaction name="separator"/>
     <addaction name="windowActionNextWindow"/>
     <addaction name="windowActionPreviousWindow"/>
@@ -448,6 +449,7 @@
     <addaction name="windowActionHideConsole"/>
     <addaction name="windowActionHideErrorLog"/>
     <addaction name="windowActionHideCustomizer"/>
+    <addaction name="windowActionHideCameraControlWidget"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -691,6 +693,40 @@
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
+  </widget>
+  <widget class="Dock" name="cameraControlWidgetDock">
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="cameraControlWidgetDockContents">
+    <property name="focusPolicy">
+     <enum>Qt::StrongFocus</enum>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_6">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="CameraControlWidget" name="cameraControlWidget" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>10</width>
+         <height>10</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="Dock" name="errorLogDock">
    <attribute name="dockWidgetArea">
@@ -1484,6 +1520,20 @@
     <string>Hide ErrorLog</string>
    </property>
   </action>
+  <action name="windowActionHideCameraControlWidget">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide CameraControlWidget</string>
+   </property>
+   <property name="toolTip">
+    <string>Hide CameraControlWidget</string>
+   </property>
+  </action>
   <action name="windowActionSelectEditor">
    <property name="text">
     <string>&amp;Editor</string>
@@ -1562,6 +1612,12 @@
    <class>ErrorLog</class>
    <extends>QWidget</extends>
    <header>gui/ErrorLog.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CameraControlWidget</class>
+   <extends>QWidget</extends>
+   <header>gui/CameraControlWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

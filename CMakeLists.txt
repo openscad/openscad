@@ -807,6 +807,7 @@ set(GUI_SOURCES
   ${GUI_SOURCES}
   src/gui/AutoUpdater.cc
   src/gui/CGALWorker.cc
+  src/gui/CameraControlWidget.cc
   src/gui/Console.cc
   src/gui/Dock.cc
   src/gui/Editor.cc

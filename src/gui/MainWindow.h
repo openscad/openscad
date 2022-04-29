@@ -79,6 +79,7 @@ public:
   QWidget *consoleDockTitleWidget;
   QWidget *parameterDockTitleWidget;
   QWidget *errorLogDockTitleWidget;
+  QWidget *cameraControlTitleWidget;
 
   int compileErrors;
   int compileWarnings;
@@ -133,7 +134,7 @@ private:
   void loadViewSettings();
   void loadDesignSettings();
   void prepareCompile(const char *afterCompileSlot, bool procevents, bool preview);
-  void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar);
+  void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool cameraControlWidget);
   void saveBackup();
   void writeBackup(class QFile *file);
   void show_examples();
@@ -184,12 +185,15 @@ private slots:
   void hideConsole();
   void showErrorLog();
   void hideErrorLog();
+  void showCameraControlWidget();
+  void hideCameraControlWidget();
   void showParameters();
   void hideParameters();
   void on_windowActionSelectEditor_triggered();
   void on_windowActionSelectConsole_triggered();
   void on_windowActionSelectCustomizer_triggered();
   void on_windowActionSelectErrorLog_triggered();
+  void on_windowActionSelectCameraControlWidget_triggered();
   void on_windowActionNextWindow_triggered();
   void on_windowActionPreviousWindow_triggered();
   void on_editActionInsertTemplate_triggered();
@@ -268,6 +272,7 @@ public:
   void changedTopLevelConsole(bool);
   void changedTopLevelEditor(bool);
   void changedTopLevelErrorLog(bool);
+  void changedTopLevelCameraControlWidget(bool);
 
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
@@ -278,11 +283,13 @@ public slots:
   void on_consoleDock_visibilityChanged(bool);
   void on_parameterDock_visibilityChanged(bool);
   void on_errorLogDock_visibilityChanged(bool);
+  void on_cameraControlWidgetDock_visibilityChanged(bool);
   void on_toolButtonCompileResultClose_clicked();
   void editorTopLevelChanged(bool);
   void consoleTopLevelChanged(bool);
   void parameterTopLevelChanged(bool);
   void errorLogTopLevelChanged(bool);
+  void cameraControlWidgetTopLevelChanged(bool);
   void processEvents();
   void jumpToLine(int, int);
   void openFileFromPath(QString, int);
