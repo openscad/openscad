@@ -82,6 +82,6 @@ private slots:
 #endif
 
 signals:
-  void doAnimateUpdate();
+  void cameraChanged();
   void doSelectObject(QPoint screen_coordinate);
 };

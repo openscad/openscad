@@ -39,12 +39,7 @@ public:
   class Preferences *prefs;
 
   QTimer *consoleUpdater;
-  QTimer *animate_timer;
-  int anim_step;
-  int anim_numsteps;
-  double anim_tval;
-  bool anim_dumping;
-  int anim_dump_start_step;
+
   bool is_preview;
 
   QTimer *autoReloadTimer;
@@ -79,6 +74,7 @@ public:
   QWidget *consoleDockTitleWidget;
   QWidget *parameterDockTitleWidget;
   QWidget *errorLogDockTitleWidget;
+  QWidget *animateDockTitleWidget;
   QWidget *cameraControlTitleWidget;
 
   int compileErrors;
@@ -96,11 +92,6 @@ protected:
 
 private slots:
   void setTabToolBarVisible(int);
-  void updatedAnimTval();
-  void updatedAnimFps();
-  void updatedAnimSteps();
-  void updatedAnimDump(bool checked);
-  void updateTVal();
   void updateUndockMode(bool undockMode);
   void updateReorderMode(bool reorderMode);
   void setFont(const QString& family, uint size);
@@ -122,6 +113,8 @@ public:
   void exceptionCleanup();
   void UnknownExceptionCleanup();
 
+  bool isLightTheme();
+
 private:
   void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
   void setRenderVariables(ContextHandle<class BuiltinContext>& context);
@@ -134,7 +127,7 @@ private:
   void loadViewSettings();
   void loadDesignSettings();
   void prepareCompile(const char *afterCompileSlot, bool procevents, bool preview);
-  void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool cameraControlWidget);
+  void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool cameraControlWidget);
   void saveBackup();
   void writeBackup(class QFile *file);
   void show_examples();
@@ -189,10 +182,13 @@ private slots:
   void hideCameraControlWidget();
   void showParameters();
   void hideParameters();
+  void showAnimate();
+  void hideAnimate();
   void on_windowActionSelectEditor_triggered();
   void on_windowActionSelectConsole_triggered();
   void on_windowActionSelectCustomizer_triggered();
   void on_windowActionSelectErrorLog_triggered();
+  void on_windowActionSelectAnimate_triggered();
   void on_windowActionSelectCameraControlWidget_triggered();
   void on_windowActionNextWindow_triggered();
   void on_windowActionPreviousWindow_triggered();
@@ -272,6 +268,7 @@ public:
   void changedTopLevelConsole(bool);
   void changedTopLevelEditor(bool);
   void changedTopLevelErrorLog(bool);
+  void changedTopLevelAnimate(bool);
   void changedTopLevelCameraControlWidget(bool);
 
   QList<double> getTranslation() const;
@@ -283,12 +280,14 @@ public slots:
   void on_consoleDock_visibilityChanged(bool);
   void on_parameterDock_visibilityChanged(bool);
   void on_errorLogDock_visibilityChanged(bool);
+  void on_animateDock_visibilityChanged(bool);
   void on_cameraControlWidgetDock_visibilityChanged(bool);
   void on_toolButtonCompileResultClose_clicked();
   void editorTopLevelChanged(bool);
   void consoleTopLevelChanged(bool);
   void parameterTopLevelChanged(bool);
   void errorLogTopLevelChanged(bool);
+  void animateTopLevelChanged(bool);
   void cameraControlWidgetTopLevelChanged(bool);
   void processEvents();
   void jumpToLine(int, int);
@@ -306,7 +305,6 @@ public slots:
   void viewModeShowAxes();
   void viewModeShowCrosshairs();
   void viewModeShowScaleProportional();
-  void viewModeAnimate();
   void viewAngleTop();
   void viewAngleBottom();
   void viewAngleLeft();
@@ -320,8 +318,7 @@ public slots:
   void viewTogglePerspective();
   void viewResetView();
   void viewAll();
-  void animateUpdateDocChanged();
-  void animateUpdate();
+  void editorContentChanged();
   void selectObject(QPoint coordinate);
   void dragEnterEvent(QDragEnterEvent *event) override;
   void dropEvent(QDropEvent *event) override;
