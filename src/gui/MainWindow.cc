@@ -244,6 +244,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   cameraControlTitleWidget = new QWidget();
 
   this->animateWidget->setMainWindow(this);
+  this->cameraControlWidget->setMainWindow(this);
   // actions not included in menu
   this->addAction(editActionInsertTemplate);
   this->addAction(editActionFoldAll);
@@ -258,8 +259,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   this->errorLogDock->setAction(this->windowActionHideErrorLog);
   this->animateDock->setConfigKey("view/hideAnimate");
   this->animateDock->setAction(this->windowActionHideAnimate);
-  this->cameraControlWidgetDock->setConfigKey("view/hideCameraControlWidget");
-  this->cameraControlWidgetDock->setAction(this->windowActionHideCameraControlWidget);
+  this->cameraControlDock->setConfigKey("view/hideCameraControl");
+  this->cameraControlDock->setAction(this->windowActionHideCameraControl);
 
   this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
   updateStatusBar(nullptr);
@@ -499,7 +500,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->windowActionHideCustomizer, SIGNAL(triggered()), this, SLOT(hideParameters()));
   connect(this->windowActionHideErrorLog, SIGNAL(triggered()), this, SLOT(hideErrorLog()));
   connect(this->windowActionHideAnimate, SIGNAL(triggered()), this, SLOT(hideAnimate()));
-  connect(this->windowActionHideCameraControlWidget, SIGNAL(triggered()), this, SLOT(hideCameraControlWidget()));
+  connect(this->windowActionHideCameraControl, SIGNAL(triggered()), this, SLOT(hideCameraControl()));
 
   // Help menu
   connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
@@ -525,6 +526,7 @@ MainWindow::MainWindow(const QStringList& filenames)
 #endif
 
   connect(this->qglview, SIGNAL(cameraChanged()), animateWidget, SLOT(cameraChanged()));
+  connect(this->qglview, SIGNAL(cameraChanged()), cameraControlWidget, SLOT(cameraChanged()));
   connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
 
   connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(update()));
@@ -617,7 +619,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   bool hideCustomizer = settings.value("view/hideCustomizer").toBool();
   bool hideErrorLog = settings.value("view/hideErrorLog").toBool();
   bool hideAnimate = settings.value("view/hideAnimate").toBool();
-  bool hideCameraControlWidget = settings.value("view/hideCameraControlWidget").toBool();
+  bool hideCameraControl = settings.value("view/hideCameraControl").toBool();
   bool hideEditorToolbar = settings.value("view/hideEditorToolbar").toBool();
   bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
 
@@ -626,7 +628,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   restoreState(windowState);
   resize(settings.value("window/size", QSize(800, 600)).toSize());
   move(settings.value("window/position", QPoint(0, 0)).toPoint());
-  updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideCameraControlWidget);
+  updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideCameraControl);
 
   if (windowState.size() == 0) {
     /*
@@ -667,7 +669,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
   connect(this->errorLogDock, SIGNAL(topLevelChanged(bool)), this, SLOT(errorLogTopLevelChanged(bool)));
   connect(this->animateDock, SIGNAL(topLevelChanged(bool)), this, SLOT(animateTopLevelChanged(bool)));
-  connect(this->cameraControlWidgetDock, SIGNAL(topLevelChanged(bool)), this, SLOT(cameraControlWidgetTopLevelChanged(bool)));
+  connect(this->cameraControlDock, SIGNAL(topLevelChanged(bool)), this, SLOT(cameraControlTopLevelChanged(bool)));
 
   // display this window and check for OpenGL 2.0 (OpenCSG) support
   viewModeThrownTogether();
@@ -750,7 +752,7 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)
  * Qt call. So the values are loaded before the call and restored here
  * regardless of the (potential outdated) serialized state.
  */
-void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool cameraControlWidget)
+void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool cameraControl)
 {
   windowActionHideEditor->setChecked(editor);
   hideEditor();
@@ -758,8 +760,8 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
   hideConsole();
   windowActionHideErrorLog->setChecked(errorLog);
   hideErrorLog();
-  windowActionHideCameraControlWidget->setChecked(cameraControlWidget);
-  hideCameraControlWidget();
+  windowActionHideCameraControl->setChecked(cameraControl);
+  hideCameraControl();
   windowActionHideCustomizer->setChecked(customizer);
   hideParameters();
   windowActionHideAnimate->setChecked(animate);
@@ -880,7 +882,7 @@ void MainWindow::updateUndockMode(bool undockMode)
     parameterDock->setFeatures(parameterDock->features() | QDockWidget::DockWidgetFloatable);
     errorLogDock->setFeatures(errorLogDock->features() | QDockWidget::DockWidgetFloatable);
     animateDock->setFeatures(animateDock->features() | QDockWidget::DockWidgetFloatable);
-    cameraControlWidgetDock->setFeatures(cameraControlWidgetDock->features() | QDockWidget::DockWidgetFloatable);
+    cameraControlDock->setFeatures(cameraControlDock->features() | QDockWidget::DockWidgetFloatable);
 
   } else {
     if (editorDock->isFloating()) {
@@ -908,10 +910,10 @@ void MainWindow::updateUndockMode(bool undockMode)
     }
     animateDock->setFeatures(animateDock->features() & ~QDockWidget::DockWidgetFloatable);
 
-    if (cameraControlWidgetDock->isFloating()) {
-      cameraControlWidgetDock->setFloating(false);
+    if (cameraControlDock->isFloating()) {
+      cameraControlDock->setFloating(false);
     }
-    cameraControlWidgetDock->setFeatures(cameraControlWidgetDock->features() & ~QDockWidget::DockWidgetFloatable);
+    cameraControlDock->setFeatures(cameraControlDock->features() & ~QDockWidget::DockWidgetFloatable);
   }
 }
 
@@ -923,7 +925,7 @@ void MainWindow::updateReorderMode(bool reorderMode)
   parameterDock->setTitleBarWidget(reorderMode ? nullptr : parameterDockTitleWidget);
   errorLogDock->setTitleBarWidget(reorderMode ? nullptr : errorLogDockTitleWidget);
   animateDock->setTitleBarWidget(reorderMode ? nullptr : animateDockTitleWidget);
-  cameraControlWidgetDock->setTitleBarWidget(reorderMode ? nullptr : cameraControlWidget);
+  cameraControlDock->setTitleBarWidget(reorderMode ? nullptr : cameraControlWidget);
 }
 
 MainWindow::~MainWindow()
@@ -2855,9 +2857,9 @@ void MainWindow::on_animateDock_visibilityChanged(bool)
   animateTopLevelChanged(animateDock->isFloating());
 }
 
-void MainWindow::on_cameraControlWidgetDock_visibilityChanged(bool)
+void MainWindow::on_cameraControlDock_visibilityChanged(bool)
 {
-  cameraControlWidgetTopLevelChanged(cameraControlWidgetDock->isFloating());
+  cameraControlTopLevelChanged(cameraControlDock->isFloating());
 }
 
 void MainWindow::changedTopLevelEditor(bool topLevel)
@@ -2932,14 +2934,14 @@ void MainWindow::animateTopLevelChanged(bool topLevel)
   }
 }
 
-void MainWindow::cameraControlWidgetTopLevelChanged(bool topLevel)
+void MainWindow::cameraControlTopLevelChanged(bool topLevel)
 {
-  setDockWidgetTitle(cameraControlWidgetDock, QString(_("Camera-Control")), topLevel);
+  setDockWidgetTitle(cameraControlDock, QString(_("Camera-Control")), topLevel);
 
-  Qt::WindowFlags flags = (cameraControlWidgetDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
+  Qt::WindowFlags flags = (cameraControlDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
   if (topLevel) {
-    cameraControlWidgetDock->setWindowFlags(flags);
-    cameraControlWidgetDock->show();
+    cameraControlDock->setWindowFlags(flags);
+    cameraControlDock->show();
   }
 }
 
@@ -3071,21 +3073,20 @@ void MainWindow::hideAnimate()
   }
 }
 
-void MainWindow::showCameraControlWidget()
+void MainWindow::showCameraControl()
 {
-  windowActionHideCameraControlWidget->setChecked(false);
-  frameCompileResult->hide();
-  cameraControlWidgetDock->show();
-  cameraControlWidgetDock->raise();
+  windowActionHideCameraControl->setChecked(false);
+  cameraControlDock->show();
+  cameraControlDock->raise();
   cameraControlWidget->setFocus();
 }
 
-void MainWindow::hideCameraControlWidget()
+void MainWindow::hideCameraControl()
 {
   if (windowActionHideErrorLog->isChecked()) {
-    errorLogDock->hide();
+    cameraControlDock->hide();
   } else {
-    errorLogDock->show();
+    cameraControlDock->show();
   }
 }
 
@@ -3127,9 +3128,9 @@ void MainWindow::on_windowActionSelectAnimate_triggered()
   showAnimate();
 }
 
-void MainWindow::on_windowActionSelectCameraControlWidget_triggered()
+void MainWindow::on_windowActionSelectCameraControl_triggered()
 {
-  showCameraControlWidget();
+  showCameraControl();
 }
 
 void MainWindow::on_windowActionSelectCustomizer_triggered()
@@ -3165,7 +3166,7 @@ void MainWindow::activateWindow(int offset)
     { errorLogDock, &MainWindow::on_windowActionSelectErrorLog_triggered },
     { parameterDock, &MainWindow::on_windowActionSelectCustomizer_triggered },
     { animateDock, &MainWindow::on_windowActionSelectAnimate_triggered },
-    { cameraControlWidgetDock, &MainWindow::on_windowActionSelectCameraControlWidget_triggered },
+    { cameraControlDock, &MainWindow::on_windowActionSelectCameraControl_triggered },
   }};
 
   const int cnt = docks.size();
