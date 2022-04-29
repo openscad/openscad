@@ -242,12 +242,12 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
 
   double arc_length_0 = arc_length(transformed_v0_x),
          arc_length_1 = arc_length(transformed_v1_x);
-  // number of points if we discretize according to fs
+  // number of segments if we discretize with fs
   int segments_fs = (fs == 0.0) ? 1 : std::ceil((arc_length_1 - arc_length_0) / fs);
 
   double angle_0 = angle(transformed_v0_x),
          angle_1 = angle(transformed_v1_x);
-  // number of points if we discretize according to fa
+  // number of segments if we discretize with fa
   int segments_fa = std::ceil((angle_1 - angle_0) / fa_rad);
 
   // make a choice and discretize
@@ -288,11 +288,13 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
 
 // a structure that saves 2d faces and heights of vertices
 struct Faces_2_plus_1 {
+  // comparison of Vector2d for the map vertex -> height
   struct Vector2d_comp {
     bool operator()(const Vector2d& lhs, const Vector2d& rhs) const {
       return (lhs[0] < rhs[0]) || (lhs[0] == rhs[0] && lhs[1] < rhs[1]);
     }
   };
+
   std::vector<std::vector<Vector2d>> faces;
   std::map<Vector2d, double, Vector2d_comp> heights;
 };
