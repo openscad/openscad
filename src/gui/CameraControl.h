@@ -25,12 +25,16 @@ public:
 public slots:
   void cameraChanged();
 
+private slots:
+  void updateCamera();
+
 protected:
   void resizeEvent(QResizeEvent *event) override;
 
 private:
   MainWindow *mainWindow;
   QGLView *qglview;
+  bool blockInputs=true; //mutex or other lock?
 
 signals:
   void openFile(const QString, int);

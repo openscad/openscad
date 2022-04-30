@@ -18,14 +18,15 @@ void CameraControl::initGUI()
   for (auto spinDoubleBox : spinDoubleBoxes) {
     spinDoubleBox->setMinimum(-DBL_MAX);
     spinDoubleBox->setMaximum(+DBL_MAX);
+    connect(spinDoubleBox, SIGNAL(valueChanged(double)), this, SLOT(updateCamera()));
   }
-
 }
 
 void CameraControl::setMainWindow(MainWindow *mainWindow)
 {
   this->mainWindow = mainWindow;
   this->qglview = mainWindow->qglview;
+  blockInputs = false;
 }
 
 void CameraControl::resizeEvent(QResizeEvent *event)
@@ -50,4 +51,32 @@ void CameraControl::cameraChanged(){
   doubleSpinBox_d->setValue(qglview->cam.zoomValue());
 
   doubleSpinBox_fov->setValue(qglview->cam.fov);
+  
+  blockInputs = false;
+}
+
+void CameraControl::updateCamera(){
+  if(blockInputs) return;
+
+  blockInputs = true;
+
+  //viewport translation
+  qglview->cam.setVpt(
+    doubleSpinBox_tx->value(),
+    doubleSpinBox_ty->value(),
+    doubleSpinBox_tz->value()
+  );
+
+  //viewport rotation angles in degrees
+  qglview->cam.setVpr(
+    doubleSpinBox_rx->value(),
+    doubleSpinBox_ry->value(),
+    doubleSpinBox_rz->value()
+  );
+
+  //viewport camera field of view
+  qglview->cam.setVpf(doubleSpinBox_fov->value());
+
+  qglview->update();
+  blockInputs = false;
 }
