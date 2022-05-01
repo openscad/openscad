@@ -67,7 +67,8 @@ private:
   bool steps_ok;
 
   QList<QAction *> action_list;
-
+  void createActionAndPrepareButton(const QIcon &icon, QString description, std::string actionName, QPushButton* button);
+ 
 signals:
 
 private slots:

@@ -3,6 +3,7 @@
 #include "MainWindow.h"
 #include <boost/filesystem.hpp>
 #include <QFormLayout>
+#include <QPushButton>
 
 Animate::Animate(QWidget *parent) : QWidget(parent)
 {
@@ -49,6 +50,18 @@ void Animate::setMainWindow(MainWindow *mainWindow)
   updatePauseButtonIcon();
 }
 
+void Animate::createActionAndPrepareButton(const QIcon &icon, QString description, std::string actionName, QPushButton* button){
+  QAction *action = new QAction(icon, description, this);
+  action->setObjectName(QString::fromStdString(actionName));
+
+  connect(action, SIGNAL(triggered()), button, SLOT(click()));
+  this->action_list.append(action);
+
+  button->setIcon(icon);
+  button->setToolTip(description);
+  button->setText("");
+}
+
 void Animate::initVCR(){
   QString suffix("");
   if(!isLightTheme()){
@@ -62,58 +75,24 @@ void Animate::initVCR(){
   static QIcon endIcon      = QIcon(":/icons/svg-default/vcr-control-end" + suffix + ".svg");
 
   QString startDescription = _("animation - Move to beginning (first frame)");
-  QAction *startAction = new QAction(startIcon, startDescription, this);
-  startAction->setObjectName("vcr-start");
-  connect(startAction, SIGNAL(triggered()), this, SLOT(on_pushButton_MoveToBeginning_clicked()));
-  this->action_list.append(startAction);
-  pushButton_MoveToBeginning->setIcon(startIcon);
-  pushButton_MoveToBeginning->setToolTip(startDescription);
-  pushButton_MoveToBeginning->setText("");
+  createActionAndPrepareButton(startIcon, startDescription, "vcr-start", pushButton_MoveToBeginning);
 
   QString stepBackDescription = _("animation - step one frame back");
-  QAction *stepBackAction = new QAction(stepBackIcon, stepBackDescription, this);
-  stepBackAction->setObjectName("vcr-stepBack");
-  connect(stepBackAction, SIGNAL(triggered()), this, SLOT(on_pushButton_StepBack_clicked()));
-  this->action_list.append(stepBackAction);
-  pushButton_StepBack->setIcon(stepBackIcon);
-  pushButton_StepBack->setToolTip(stepBackDescription);
-  pushButton_StepBack->setText("");
+  createActionAndPrepareButton(stepBackIcon, stepBackDescription, "vcr-stepBack", pushButton_StepBack);
 
   QString playDescription = _("animation - play animation");
-  QAction *playAction = new QAction(playIcon, playDescription, this);
-  playAction->setObjectName("vcr-play");
-  connect(playAction, SIGNAL(triggered()), this, SLOT(on_pushButton_Resume_clicked()));
-  this->action_list.append(playAction);
-  pushButton_Resume->setIcon(playIcon);
-  pushButton_Resume->setToolTip(playDescription);
-  pushButton_Resume->setText("");
+  createActionAndPrepareButton(playIcon, playDescription, "vcr-play", pushButton_Resume);
 
   QString pauseDescription = _("animation - pause animation");
-  QAction *pauseAction = new QAction(pauseIcon, pauseDescription, this);
-  pauseAction->setObjectName("vcr-pause");
-  connect(pauseAction, SIGNAL(triggered()), this, SLOT(on_pushButton_Pause_clicked()));
-  this->action_list.append(pauseAction);
-  pushButton_Pause->setIcon(pauseIcon);
-  pushButton_Pause->setToolTip(pauseDescription);
-  pushButton_Pause->setText("");
+  createActionAndPrepareButton(pauseIcon, pauseDescription, "vcr-pause", pushButton_Pause);
+
 
   QString stepFwrdDescription = _("animation - step one frame forward");
-  QAction *stepFwrdAction = new QAction(stepFwrdIcon, stepFwrdDescription, this);
-  stepFwrdAction->setObjectName("vcr-stepFwrd");
-  connect(stepFwrdAction, SIGNAL(triggered()), this, SLOT(on_pushButton_StepForward_clicked()));
-  this->action_list.append(stepFwrdAction);
-  pushButton_StepForward->setIcon(stepFwrdIcon);
-  pushButton_StepForward->setToolTip(stepFwrdDescription);
-  pushButton_StepForward->setText("");
+  createActionAndPrepareButton(stepFwrdIcon, stepFwrdDescription, "vcr-stepFwrd", pushButton_StepForward);
+
 
   QString endDescription = _("animation - Move to end (last frame)");
-  QAction *endAction = new QAction(endIcon, endDescription, this);
-  endAction->setObjectName("vcr-end");
-  connect(endAction, SIGNAL(triggered()), this, SLOT(on_pushButton_MoveToEnd_clicked()));
-  this->action_list.append(endAction);
-  pushButton_MoveToEnd->setIcon(endIcon);
-  pushButton_MoveToEnd->setToolTip(endDescription);
-  pushButton_MoveToEnd->setText("");
+  createActionAndPrepareButton(endIcon, endDescription, "vcr-end", pushButton_MoveToEnd);
 }
 
 bool Animate::isLightTheme()
