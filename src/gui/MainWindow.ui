@@ -1479,14 +1479,14 @@
    </property>
   </action>
   <action name="windowActionHideCameraControl">
-   <property name="checked">
+   <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide CameraControl</string>
+    <string>Hide Camera-Control</string>
    </property>
    <property name="toolTip">
-    <string>Hide CameraControl</string>
+    <string>Hide Camera-Control</string>
    </property>
   </action>
   <action name="windowActionSelectEditor">

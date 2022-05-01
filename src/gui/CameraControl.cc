@@ -5,6 +5,7 @@
 #include <boost/filesystem.hpp>
 #include "float.h"
 #include <QDoubleSpinBox>
+#include <QDesktopWidget>
 
 CameraControl::CameraControl(QWidget *parent) : QWidget(parent)
 {
@@ -14,19 +15,44 @@ CameraControl::CameraControl(QWidget *parent) : QWidget(parent)
 
 void CameraControl::initGUI()
 {
-  auto spinDoubleBoxes = this->findChildren<QDoubleSpinBox *>();
+  auto spinDoubleBoxes = this->groupBoxAbsoluteCamera->findChildren<QDoubleSpinBox *>();
   for (auto spinDoubleBox : spinDoubleBoxes) {
     spinDoubleBox->setMinimum(-DBL_MAX);
     spinDoubleBox->setMaximum(+DBL_MAX);
     connect(spinDoubleBox, SIGNAL(valueChanged(double)), this, SLOT(updateCamera()));
   }
+
+  spinBoxWidth->setMinimum(100);
+  spinBoxHeight->setMinimum(100);
+  connect(spinBoxWidth, SIGNAL(valueChanged(int)), this, SLOT(requestResize()));
+  connect(spinBoxHeight, SIGNAL(valueChanged(int)), this, SLOT(requestResize()));
 }
 
 void CameraControl::setMainWindow(MainWindow *mainWindow)
 {
   this->mainWindow = mainWindow;
   this->qglview = mainWindow->qglview;
-  blockInputs = false;
+}
+
+bool CameraControl::isLightTheme()
+{
+  bool ret = true;
+  if(mainWindow){
+    ret = mainWindow->isLightTheme();
+  } else {
+    std::cout << "CameraControl: You need to set the mainWindow before calling isLightTheme" << std::endl;
+  }
+  return ret;
+}
+
+QString CameraControl::yellowHintBackground()
+{
+  return QString (isLightTheme() ? "background-color:#ffffaa;" : "background-color:#30306;");
+}
+
+QString CameraControl::redHintBackground()
+{
+  return QString (isLightTheme() ? "background-color:#ffaaaa;" : "background-color:#502020;");
 }
 
 void CameraControl::resizeEvent(QResizeEvent *event)
@@ -35,9 +61,8 @@ void CameraControl::resizeEvent(QResizeEvent *event)
 }
 
 void CameraControl::cameraChanged(){
-  if(this->qglview == nullptr){
-    return;
-  }
+  if(!inputMutex.try_lock()) return;
+
   const auto vpt = qglview->cam.getVpt();
   doubleSpinBox_tx->setValue(vpt.x());
   doubleSpinBox_ty->setValue(vpt.y());
@@ -51,14 +76,12 @@ void CameraControl::cameraChanged(){
   doubleSpinBox_d->setValue(qglview->cam.zoomValue());
 
   doubleSpinBox_fov->setValue(qglview->cam.fov);
-  
-  blockInputs = false;
+  updateCameraControlHints();
+  inputMutex.unlock();
 }
 
 void CameraControl::updateCamera(){
-  if(blockInputs) return;
-
-  blockInputs = true;
+  if(!inputMutex.try_lock()) return;
 
   //viewport translation
   qglview->cam.setVpt(
@@ -75,8 +98,68 @@ void CameraControl::updateCamera(){
   );
 
   //viewport camera field of view
-  qglview->cam.setVpf(doubleSpinBox_fov->value());
+  double fov = doubleSpinBox_fov->value();
+  qglview->cam.setVpf(fov);
+
+  //camera distance
+  double d = doubleSpinBox_d->value();
+  qglview->cam.setVpd(d);
 
   qglview->update();
-  blockInputs = false;
+  updateCameraControlHints();
+  inputMutex.unlock();
+}
+
+void CameraControl::updateCameraControlHints(){
+  //viewport camera field of view
+  double fov = doubleSpinBox_fov->value();
+  if(fov < 0 || fov > 180){
+    doubleSpinBox_fov->setToolTip(_("extrem values might may lead to strange behavior"));
+    doubleSpinBox_fov->setStyleSheet(redHintBackground()); 
+  }else if(fov < 5 || fov > 175){
+    doubleSpinBox_fov->setToolTip(_("extrem values might may lead to strange behavior"));
+    doubleSpinBox_fov->setStyleSheet(yellowHintBackground()); 
+  } else {
+    doubleSpinBox_fov->setToolTip("");
+    doubleSpinBox_fov->setStyleSheet(""); 
+  }
+
+  //camera distance
+  double d = doubleSpinBox_d->value();
+  if(d < 0){
+    doubleSpinBox_d->setToolTip(_("negativ distances are not supported"));
+    doubleSpinBox_d->setStyleSheet(redHintBackground()); 
+  }else if(d < 5){
+    doubleSpinBox_d->setToolTip(_("extrem values might may lead to strange behavior"));
+    doubleSpinBox_d->setStyleSheet(yellowHintBackground()); 
+  }else{
+    doubleSpinBox_d->setToolTip("");
+    doubleSpinBox_d->setStyleSheet(""); 
+  }
+
+}
+
+void CameraControl::viewResized(){
+  if(!resizeMutex.try_lock()) return;
+
+  int w = qglview->size().rwidth();
+  int h = qglview->size().rheight();
+
+  spinBoxWidth->setMaximum(w);
+  spinBoxHeight->setMaximum(h);
+
+  spinBoxWidth->setValue(w);
+  spinBoxHeight->setValue(h);
+
+  resizeMutex.unlock();
+}
+
+void CameraControl::requestResize(){
+  if(!resizeMutex.try_lock()) return;
+
+  int w = spinBoxWidth->value();
+  int h = spinBoxHeight->value();
+  qglview->resize(w, h);
+  
+  resizeMutex.unlock();
 }
