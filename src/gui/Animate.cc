@@ -330,7 +330,7 @@ void Animate::resizeEvent(QResizeEvent *event)
   if(auto mainLayout = dynamic_cast<QBoxLayout *> (this->layout())){
     if(sizeEvent.height() > 140){
       mainLayout->setDirection(QBoxLayout::TopToBottom);
-      if(sizeEvent.height() > 180 && sizeEvent.width() > 200){
+      if(sizeEvent.height() > 250 && sizeEvent.width() > 200){
         mainLayout->setMargin(10);
         mainLayout->setSpacing(10);
         iconSize = 32;
@@ -338,11 +338,17 @@ void Animate::resizeEvent(QResizeEvent *event)
         mainLayout->setMargin(0);
         mainLayout->setSpacing(0);
       }
+      this->vcr_controls->show();
     } else {
       mainLayout->setDirection(QBoxLayout::LeftToRight);
 
       mainLayout->setMargin(0);
       mainLayout->setSpacing(0);
+      if(sizeEvent.width() > 720){
+        this->vcr_controls->show();
+      } else {
+        this->vcr_controls->hide();
+      }
     }
   } else {
     static bool warnOnce = true;
