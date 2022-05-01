@@ -107,6 +107,16 @@
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxMouseSwapButtons">
+          <property name="text">
+           <string>Swap Mouse Buttons</string>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
       <widget class="QWidget" name="pageEditor">
