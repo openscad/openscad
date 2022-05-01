@@ -4,6 +4,7 @@
 #include <sstream>
 #include <stdlib.h> // for system()
 #include <unordered_set>
+#include <vector>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
@@ -58,14 +59,18 @@ void handle_dep(const std::string& filename)
   }
 }
 
-bool write_deps(const std::string& filename, const std::string& output_file)
+bool write_deps(const std::string& filename, const std::vector<std::string> output_files)
 {
   FILE *fp = fopen(filename.c_str(), "wt");
   if (!fp) {
     fprintf(stderr, "Can't open dependencies file `%s' for writing!\n", filename.c_str());
     return false;
   }
-  fprintf(fp, "%s:", output_file.c_str());
+  for (const auto& filename : output_files) {
+    fprintf(fp, "%s ", filename.c_str());
+  }
+  fseek(fp, -1, SEEK_CUR);
+  fprintf(fp, ":");
 
   for (const auto& str : dependencies) {
     fprintf(fp, " \\\n\t%s", str.c_str());
