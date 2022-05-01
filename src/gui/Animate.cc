@@ -3,7 +3,6 @@
 #include "MainWindow.h"
 #include <boost/filesystem.hpp>
 #include <QFormLayout>
-#include <QPushButton>
 
 Animate::Animate(QWidget *parent) : QWidget(parent)
 {
@@ -36,15 +35,10 @@ void Animate::setMainWindow(MainWindow *mainWindow)
   QIcon playIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate.svg") : QIcon(":/icons/svg-default/animate-white.svg");
   QIcon pauseIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate_pause.svg") : QIcon(":/icons/svg-default/animate_pause-white.svg");
 
-  QAction *pauseUnpause = new QAction(playIcon, _("animation - toogle pause/unpause"), this);
-  pauseUnpause->setObjectName("pauseUnpause");
-  connect(pauseUnpause, SIGNAL(triggered()), this, SLOT(on_pauseButton_pressed()));
-  this->action_list.append(pauseUnpause);
-  
-  QAction *pause = new QAction(pauseIcon, _("animation - pause"), this);
-  pause->setObjectName("pause");
-  connect(pause, SIGNAL(triggered()), this, SLOT(pauseAnimation()));
-  this->action_list.append(pause);
+  createActionAndPrepareButton(
+    playIcon, _("toogle pause/unpause"),
+    "pauseUnpause", pauseButton
+    );
 
   initVCR();
   updatePauseButtonIcon();
@@ -74,25 +68,29 @@ void Animate::initVCR(){
   static QIcon stepFwrdIcon = QIcon(":/icons/svg-default/vcr-control-step-forward" + suffix + ".svg");
   static QIcon endIcon      = QIcon(":/icons/svg-default/vcr-control-end" + suffix + ".svg");
 
-  QString startDescription = _("animation - Move to beginning (first frame)");
-  createActionAndPrepareButton(startIcon, startDescription, "vcr-start", pushButton_MoveToBeginning);
+  createActionAndPrepareButton(
+    startIcon, _("Move to beginning (first frame)"),
+    "vcr-start", pushButton_MoveToBeginning);
 
-  QString stepBackDescription = _("animation - step one frame back");
-  createActionAndPrepareButton(stepBackIcon, stepBackDescription, "vcr-stepBack", pushButton_StepBack);
+  createActionAndPrepareButton(
+    stepBackIcon, _("step one frame back"),
+    "vcr-stepBack", pushButton_StepBack);
 
-  QString playDescription = _("animation - play animation");
-  createActionAndPrepareButton(playIcon, playDescription, "vcr-play", pushButton_Resume);
+  createActionAndPrepareButton(
+    playIcon, _("play animation"),
+    "vcr-play", pushButton_Resume);
 
-  QString pauseDescription = _("animation - pause animation");
-  createActionAndPrepareButton(pauseIcon, pauseDescription, "vcr-pause", pushButton_Pause);
+  createActionAndPrepareButton(
+    pauseIcon, _("pause animation"),
+    "vcr-pause", pushButton_Pause);
 
+  createActionAndPrepareButton(
+    stepFwrdIcon, _("step one frame forward"),
+    "vcr-stepFwrd", pushButton_StepForward);
 
-  QString stepFwrdDescription = _("animation - step one frame forward");
-  createActionAndPrepareButton(stepFwrdIcon, stepFwrdDescription, "vcr-stepFwrd", pushButton_StepForward);
-
-
-  QString endDescription = _("animation - Move to end (last frame)");
-  createActionAndPrepareButton(endIcon, endDescription, "vcr-end", pushButton_MoveToEnd);
+  createActionAndPrepareButton(
+    endIcon,_("Move to end (last frame)"),
+     "vcr-end", pushButton_MoveToEnd);
 }
 
 bool Animate::isLightTheme()
