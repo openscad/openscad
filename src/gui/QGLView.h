@@ -87,5 +87,6 @@ private slots:
 
 signals:
   void cameraChanged();
+  void resized();
   void doSelectObject(QPoint screen_coordinate);
 };

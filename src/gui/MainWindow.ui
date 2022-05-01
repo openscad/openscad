@@ -1503,15 +1503,19 @@
    </property>
   </action>
   <action name="windowActionHideCameraControl">
+<<<<<<< HEAD
 >>>>>>> 9ce4ef952 (displaying the current values)
    <property name="checked">
+=======
+   <property name="checkable">
+>>>>>>> c20cd3dd2 (polished the camera control widget)
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide CameraControl</string>
+    <string>Hide Camera-Control</string>
    </property>
    <property name="toolTip">
-    <string>Hide CameraControl</string>
+    <string>Hide Camera-Control</string>
    </property>
   </action>
   <action name="windowActionSelectEditor">

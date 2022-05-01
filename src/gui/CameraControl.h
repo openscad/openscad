@@ -5,6 +5,7 @@
 #include "printutils.h"
 #include <QStandardItemModel>
 #include "Editor.h"
+#include <mutex> 
 
 class MainWindow;
 class QGLView;
@@ -24,9 +25,12 @@ public:
 
 public slots:
   void cameraChanged();
+  void viewResized();
 
 private slots:
   void updateCamera();
+  void updateCameraControlHints();
+  void requestResize();
 
 protected:
   void resizeEvent(QResizeEvent *event) override;
@@ -34,11 +38,14 @@ protected:
 private:
   MainWindow *mainWindow;
   QGLView *qglview;
-  bool blockInputs=true; //mutex or other lock?
+  std::mutex inputMutex;
+  std::mutex resizeMutex;
+  QString yellowHintBackground();
+  QString redHintBackground();
 
 signals:
   void openFile(const QString, int);
 
-private slots:
-
+private:
+  bool isLightTheme();
 };

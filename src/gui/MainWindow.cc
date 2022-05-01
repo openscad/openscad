@@ -536,6 +536,7 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   connect(this->qglview, SIGNAL(cameraChanged()), animateWidget, SLOT(cameraChanged()));
   connect(this->qglview, SIGNAL(cameraChanged()), cameraControlWidget, SLOT(cameraChanged()));
+  connect(this->qglview, SIGNAL(resized()), cameraControlWidget, SLOT(viewResized()));
   connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
 
   connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(update()));
@@ -786,12 +787,12 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
   hideConsole();
   windowActionHideErrorLog->setChecked(errorLog);
   hideErrorLog();
-  windowActionHideCameraControl->setChecked(cameraControl);
-  hideCameraControl();
   windowActionHideCustomizer->setChecked(customizer);
   hideParameters();
   windowActionHideAnimate->setChecked(animate);
   hideAnimate();
+  windowActionHideCameraControl->setChecked(cameraControl);
+  hideCameraControl();
 
   viewActionHideEditorToolBar->setChecked(editorToolbar);
   hideEditorToolbar();
@@ -1265,6 +1266,7 @@ void MainWindow::instantiateRoot()
     this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
+      cameraControlWidget->cameraChanged();
     }
 
     if (this->absolute_root_node) {
