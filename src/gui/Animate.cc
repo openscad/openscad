@@ -19,7 +19,7 @@ void Animate::initGUI()
   this->anim_dump_start_step = 0;
 
   animate_timer = new QTimer(this);
-  connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
+  connect(animate_timer, SIGNAL(timeout()), this, SLOT(incrementTVal()));
 
   connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimTval()));
   connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFpsAndAnimSteps()));
@@ -45,7 +45,75 @@ void Animate::setMainWindow(MainWindow *mainWindow)
   connect(pause, SIGNAL(triggered()), this, SLOT(pauseAnimation()));
   this->action_list.append(pause);
 
+  initVCR();
   updatePauseButtonIcon();
+}
+
+void Animate::initVCR(){
+  QString suffix("");
+  if(!isLightTheme()){
+    suffix = QString("-white");
+  }
+  static QIcon startIcon    = QIcon(":/icons/svg-default/vcr-control-start" + suffix + ".svg");
+  static QIcon stepBackIcon = QIcon(":/icons/svg-default/vcr-control-step-back" + suffix + ".svg");
+  static QIcon playIcon     = QIcon(":/icons/svg-default/vcr-control-play" + suffix + ".svg");
+  static QIcon pauseIcon    = QIcon(":/icons/svg-default/vcr-control-pause" + suffix + ".svg");
+  static QIcon stepFwrdIcon = QIcon(":/icons/svg-default/vcr-control-step-forward" + suffix + ".svg");
+  static QIcon endIcon      = QIcon(":/icons/svg-default/vcr-control-end" + suffix + ".svg");
+
+  QString startDescription = _("animation - Move to beginning (first frame)");
+  QAction *startAction = new QAction(startIcon, startDescription, this);
+  startAction->setObjectName("vcr-start");
+  connect(startAction, SIGNAL(triggered()), this, SLOT(on_pushButton_MoveToBeginning_clicked()));
+  this->action_list.append(startAction);
+  pushButton_MoveToBeginning->setIcon(startIcon);
+  pushButton_MoveToBeginning->setToolTip(startDescription);
+  pushButton_MoveToBeginning->setText("");
+
+  QString stepBackDescription = _("animation - step one frame back");
+  QAction *stepBackAction = new QAction(stepBackIcon, stepBackDescription, this);
+  stepBackAction->setObjectName("vcr-stepBack");
+  connect(stepBackAction, SIGNAL(triggered()), this, SLOT(on_pushButton_StepBack_clicked()));
+  this->action_list.append(stepBackAction);
+  pushButton_StepBack->setIcon(stepBackIcon);
+  pushButton_StepBack->setToolTip(stepBackDescription);
+  pushButton_StepBack->setText("");
+
+  QString playDescription = _("animation - play animation");
+  QAction *playAction = new QAction(playIcon, playDescription, this);
+  playAction->setObjectName("vcr-play");
+  connect(playAction, SIGNAL(triggered()), this, SLOT(on_pushButton_Resume_clicked()));
+  this->action_list.append(playAction);
+  pushButton_Resume->setIcon(playIcon);
+  pushButton_Resume->setToolTip(playDescription);
+  pushButton_Resume->setText("");
+
+  QString pauseDescription = _("animation - pause animation");
+  QAction *pauseAction = new QAction(pauseIcon, pauseDescription, this);
+  pauseAction->setObjectName("vcr-pause");
+  connect(pauseAction, SIGNAL(triggered()), this, SLOT(on_pushButton_Pause_clicked()));
+  this->action_list.append(pauseAction);
+  pushButton_Pause->setIcon(pauseIcon);
+  pushButton_Pause->setToolTip(pauseDescription);
+  pushButton_Pause->setText("");
+
+  QString stepFwrdDescription = _("animation - step one frame forward");
+  QAction *stepFwrdAction = new QAction(stepFwrdIcon, stepFwrdDescription, this);
+  stepFwrdAction->setObjectName("vcr-stepFwrd");
+  connect(stepFwrdAction, SIGNAL(triggered()), this, SLOT(on_pushButton_StepForward_clicked()));
+  this->action_list.append(stepFwrdAction);
+  pushButton_StepForward->setIcon(stepFwrdIcon);
+  pushButton_StepForward->setToolTip(stepFwrdDescription);
+  pushButton_StepForward->setText("");
+
+  QString endDescription = _("animation - Move to end (last frame)");
+  QAction *endAction = new QAction(endIcon, endDescription, this);
+  endAction->setObjectName("vcr-end");
+  connect(endAction, SIGNAL(triggered()), this, SLOT(on_pushButton_MoveToEnd_clicked()));
+  this->action_list.append(endAction);
+  pushButton_MoveToEnd->setIcon(endIcon);
+  pushButton_MoveToEnd->setToolTip(endDescription);
+  pushButton_MoveToEnd->setText("");
 }
 
 bool Animate::isLightTheme()
@@ -122,7 +190,7 @@ void Animate::updatedAnimDump(bool checked)
 }
 
 // Only called from animate_timer
-void Animate::updateTVal()
+void Animate::incrementTVal()
 {
   if (this->anim_numsteps == 0) return;
 
@@ -133,6 +201,28 @@ void Animate::updateTVal()
   if (this->anim_numsteps > 1) {
     this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
     this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
+  } else if (this->anim_numsteps > 0) {
+    this->anim_step = 0;
+    this->anim_tval = 0.0;
+  }
+
+  const QString txt = QString::number(this->anim_tval, 'f', 5);
+  this->e_tval->setText(txt);
+
+  updatePauseButtonIcon();
+}
+
+void Animate::updateTVal()
+{
+  if (this->anim_numsteps == 0) return;
+
+  if(this->anim_step < 0){
+    this->anim_step = this->anim_numsteps - this->anim_step - 2;
+  }
+
+  if (this->anim_numsteps > 1) {
+    this->anim_step =      (this->anim_step) % this->anim_numsteps;
+    this->anim_tval = 1.0 * this->anim_step  / this->anim_numsteps;
   } else if (this->anim_numsteps > 0) {
     this->anim_step = 0;
     this->anim_tval = 0.0;
@@ -236,24 +326,23 @@ void Animate::resizeEvent(QResizeEvent *event)
   
   // QTDesigner does not make it obvious, but
   // QBoxLayout can be switch from vertical to horizontal.
+  int iconSize = 16;
   if(auto mainLayout = dynamic_cast<QBoxLayout *> (this->layout())){
     if(sizeEvent.height() > 140){
       mainLayout->setDirection(QBoxLayout::TopToBottom);
       if(sizeEvent.height() > 180 && sizeEvent.width() > 200){
         mainLayout->setMargin(10);
         mainLayout->setSpacing(10);
-        pauseButton->setIconSize(QSize(32, 23));
+        iconSize = 32;
       } else {
         mainLayout->setMargin(0);
         mainLayout->setSpacing(0);
-        pauseButton->setIconSize(QSize(16, 16));
       }
     } else {
       mainLayout->setDirection(QBoxLayout::LeftToRight);
 
       mainLayout->setMargin(0);
       mainLayout->setSpacing(0);
-      pauseButton->setIconSize(QSize(16, 16));
     }
   } else {
     static bool warnOnce = true;
@@ -265,6 +354,11 @@ void Animate::resizeEvent(QResizeEvent *event)
     }
   }
 
+  auto qPushButtons = this->findChildren<QPushButton*>();
+  for(auto qPushButton : qPushButtons){
+      qPushButton->setIconSize(QSize(iconSize, iconSize));
+  }
+  
   QFormLayout::RowWrapPolicy policy = QFormLayout::RowWrapPolicy::DontWrapRows;
   if(sizeEvent.width() < 150){
     policy = QFormLayout::RowWrapPolicy::WrapAllRows;
@@ -295,4 +389,36 @@ void Animate::onActionEvent(InputEventAction *event)
 
 double Animate::getAnim_tval(){
   return anim_tval;
+}
+
+void Animate::on_pushButton_MoveToBeginning_clicked(){
+  pauseAnimation();
+  this->anim_step = 0;
+  this->updateTVal();
+}
+
+void Animate::on_pushButton_StepBack_clicked(){
+  pauseAnimation();
+  this->anim_step -= 1;
+  this->updateTVal();
+}
+
+void Animate::on_pushButton_Resume_clicked(){
+  updatedAnimFpsAndAnimSteps();
+}
+
+void Animate::on_pushButton_Pause_clicked(){
+  pauseAnimation();
+}
+
+void Animate::on_pushButton_StepForward_clicked(){
+  pauseAnimation();
+  this->anim_step += 1;
+  this->updateTVal();
+}
+
+void Animate::on_pushButton_MoveToEnd_clicked(){
+  pauseAnimation();
+  this->anim_step = this->anim_numsteps - 1;
+  this->updateTVal();
 }
