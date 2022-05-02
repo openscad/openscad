@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CameraControlWidget</class>
- <widget class="QWidget" name="CameraControlWidget">
+ <class>ViewportControlWidget</class>
+ <widget class="QWidget" name="ViewportControlWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>CameraControlWidget</string>
+   <string>ViewportControlWidget</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="2" column="1">

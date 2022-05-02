@@ -372,7 +372,7 @@
     <addaction name="windowActionSelectErrorLog"/>
     <addaction name="windowActionSelectCustomizer"/>
     <addaction name="windowActionSelectAnimate"/>
-    <addaction name="windowActionSelectCameraControl"/>
+    <addaction name="windowActionSelectViewportControl"/>
     <addaction name="separator"/>
     <addaction name="windowActionNextWindow"/>
     <addaction name="windowActionPreviousWindow"/>
@@ -382,7 +382,7 @@
     <addaction name="windowActionHideErrorLog"/>
     <addaction name="windowActionHideCustomizer"/>
     <addaction name="windowActionHideAnimate"/>
-    <addaction name="windowActionHideCameraControl"/>
+    <addaction name="windowActionHideViewportControl"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -655,15 +655,15 @@
     </layout>
    </widget>
   </widget>
-  <widget class="Dock" name="cameraControlDock">
+  <widget class="Dock" name="ViewportControlDock">
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="cameraControlDockContents">
+   <widget class="QWidget" name="ViewportControlDockContents">
     <property name="focusPolicy">
      <enum>Qt::StrongFocus</enum>
     </property>
-    <layout class="QVBoxLayout" name="verticalLayout_CameraControl">
+    <layout class="QVBoxLayout" name="verticalLayout_ViewportControl">
      <property name="leftMargin">
       <number>0</number>
      </property>
@@ -677,7 +677,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="CameraControl" name="cameraControlWidget" native="true">
+      <widget class="ViewportControl" name="ViewportControlWidget" native="true">
       </widget>
      </item>
     </layout>
@@ -1478,7 +1478,7 @@
     <string>Hide Animation Toolbar/Window</string>
    </property>
   </action>
-  <action name="windowActionHideCameraControl">
+  <action name="windowActionHideViewportControl">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1514,7 +1514,7 @@
     <string>&amp;Animate</string>
    </property>
   </action>
-  <action name="windowActionSelectCameraControl">
+  <action name="windowActionSelectViewportControl">
    <property name="text">
     <string>Camera Control</string>
    </property>
@@ -1586,9 +1586,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>CameraControl</class>
+   <class>ViewportControl</class>
    <extends>QWidget</extends>
-   <header>gui/CameraControl.h</header>
+   <header>gui/ViewportControl.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

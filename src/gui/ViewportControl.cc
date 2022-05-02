@@ -1,4 +1,4 @@
-#include "CameraControl.h"
+#include "ViewportControl.h"
 #include "printutils.h"
 #include "MainWindow.h"
 #include "QGLView.h"
@@ -7,13 +7,13 @@
 #include <QDoubleSpinBox>
 #include <QDesktopWidget>
 
-CameraControl::CameraControl(QWidget *parent) : QWidget(parent)
+ViewportControl::ViewportControl(QWidget *parent) : QWidget(parent)
 {
   setupUi(this);
   initGUI();
 }
 
-void CameraControl::initGUI()
+void ViewportControl::initGUI()
 {
   auto spinDoubleBoxes = this->groupBoxAbsoluteCamera->findChildren<QDoubleSpinBox *>();
   for (auto spinDoubleBox : spinDoubleBoxes) {
@@ -28,39 +28,39 @@ void CameraControl::initGUI()
   connect(spinBoxHeight, SIGNAL(valueChanged(int)), this, SLOT(requestResize()));
 }
 
-void CameraControl::setMainWindow(MainWindow *mainWindow)
+void ViewportControl::setMainWindow(MainWindow *mainWindow)
 {
   this->mainWindow = mainWindow;
   this->qglview = mainWindow->qglview;
 }
 
-bool CameraControl::isLightTheme()
+bool ViewportControl::isLightTheme()
 {
   bool ret = true;
   if(mainWindow){
     ret = mainWindow->isLightTheme();
   } else {
-    std::cout << "CameraControl: You need to set the mainWindow before calling isLightTheme" << std::endl;
+    std::cout << "ViewportControl: You need to set the mainWindow before calling isLightTheme" << std::endl;
   }
   return ret;
 }
 
-QString CameraControl::yellowHintBackground()
+QString ViewportControl::yellowHintBackground()
 {
   return QString (isLightTheme() ? "background-color:#ffffaa;" : "background-color:#30306;");
 }
 
-QString CameraControl::redHintBackground()
+QString ViewportControl::redHintBackground()
 {
   return QString (isLightTheme() ? "background-color:#ffaaaa;" : "background-color:#502020;");
 }
 
-void CameraControl::resizeEvent(QResizeEvent *event)
+void ViewportControl::resizeEvent(QResizeEvent *event)
 {
   QWidget::resizeEvent(event);
 }
 
-void CameraControl::cameraChanged(){
+void ViewportControl::cameraChanged(){
   if(!inputMutex.try_lock()) return;
 
   const auto vpt = qglview->cam.getVpt();
@@ -76,11 +76,11 @@ void CameraControl::cameraChanged(){
   doubleSpinBox_d->setValue(qglview->cam.zoomValue());
 
   doubleSpinBox_fov->setValue(qglview->cam.fov);
-  updateCameraControlHints();
+  updateViewportControlHints();
   inputMutex.unlock();
 }
 
-void CameraControl::updateCamera(){
+void ViewportControl::updateCamera(){
   if(!inputMutex.try_lock()) return;
 
   //viewport translation
@@ -106,11 +106,11 @@ void CameraControl::updateCamera(){
   qglview->cam.setVpd(d);
 
   qglview->update();
-  updateCameraControlHints();
+  updateViewportControlHints();
   inputMutex.unlock();
 }
 
-void CameraControl::updateCameraControlHints(){
+void ViewportControl::updateViewportControlHints(){
   //viewport camera field of view
   double fov = doubleSpinBox_fov->value();
   if(fov < 0 || fov > 180){
@@ -139,7 +139,7 @@ void CameraControl::updateCameraControlHints(){
 
 }
 
-void CameraControl::viewResized(){
+void ViewportControl::viewResized(){
   if(!resizeMutex.try_lock()) return;
 
   int w = qglview->size().rwidth();
@@ -154,7 +154,7 @@ void CameraControl::viewResized(){
   resizeMutex.unlock();
 }
 
-void CameraControl::requestResize(){
+void ViewportControl::requestResize(){
   if(!resizeMutex.try_lock()) return;
 
   int w = spinBoxWidth->value();

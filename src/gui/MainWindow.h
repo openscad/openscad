@@ -75,7 +75,7 @@ public:
   QWidget *parameterDockTitleWidget;
   QWidget *errorLogDockTitleWidget;
   QWidget *animateDockTitleWidget;
-  QWidget *cameraControlTitleWidget;
+  QWidget *ViewportControlTitleWidget;
 
   int compileErrors;
   int compileWarnings;
@@ -127,7 +127,7 @@ private:
   void loadViewSettings();
   void loadDesignSettings();
   void prepareCompile(const char *afterCompileSlot, bool procevents, bool preview);
-  void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool cameraControlWidget);
+  void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool ViewportControlWidget);
   void saveBackup();
   void writeBackup(class QFile *file);
   void show_examples();
@@ -178,8 +178,8 @@ private slots:
   void hideConsole();
   void showErrorLog();
   void hideErrorLog();
-  void showCameraControl();
-  void hideCameraControl();
+  void showViewportControl();
+  void hideViewportControl();
   void showParameters();
   void hideParameters();
   void showAnimate();
@@ -189,7 +189,7 @@ private slots:
   void on_windowActionSelectCustomizer_triggered();
   void on_windowActionSelectErrorLog_triggered();
   void on_windowActionSelectAnimate_triggered();
-  void on_windowActionSelectCameraControl_triggered();
+  void on_windowActionSelectViewportControl_triggered();
   void on_windowActionNextWindow_triggered();
   void on_windowActionPreviousWindow_triggered();
   void on_editActionInsertTemplate_triggered();
@@ -269,7 +269,7 @@ public:
   void changedTopLevelEditor(bool);
   void changedTopLevelErrorLog(bool);
   void changedTopLevelAnimate(bool);
-  void changedTopLevelCameraControl(bool);
+  void changedTopLevelViewportControl(bool);
 
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
@@ -281,14 +281,14 @@ public slots:
   void on_parameterDock_visibilityChanged(bool);
   void on_errorLogDock_visibilityChanged(bool);
   void on_animateDock_visibilityChanged(bool);
-  void on_cameraControlDock_visibilityChanged(bool);
+  void on_ViewportControlDock_visibilityChanged(bool);
   void on_toolButtonCompileResultClose_clicked();
   void editorTopLevelChanged(bool);
   void consoleTopLevelChanged(bool);
   void parameterTopLevelChanged(bool);
   void errorLogTopLevelChanged(bool);
   void animateTopLevelChanged(bool);
-  void cameraControlTopLevelChanged(bool);
+  void ViewportControlTopLevelChanged(bool);
   void processEvents();
   void jumpToLine(int, int);
   void openFileFromPath(QString, int);

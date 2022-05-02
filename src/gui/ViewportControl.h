@@ -1,7 +1,7 @@
 #pragma once
 
 #include "qtgettext.h"
-#include "ui_CameraControl.h"
+#include "ui_ViewportControl.h"
 #include "printutils.h"
 #include <QStandardItemModel>
 #include "Editor.h"
@@ -10,16 +10,16 @@
 class MainWindow;
 class QGLView;
 
-class CameraControl : public QWidget, public Ui::CameraControlWidget
+class ViewportControl : public QWidget, public Ui::ViewportControlWidget
 {
   Q_OBJECT
 
 public:
-  CameraControl(QWidget *parent = nullptr);
-  CameraControl(const CameraControl& source) = delete;
-  CameraControl(CameraControl&& source) = delete;
-  CameraControl& operator=(const CameraControl& source) = delete;
-  CameraControl& operator=(CameraControl&& source) = delete;
+  ViewportControl(QWidget *parent = nullptr);
+  ViewportControl(const ViewportControl& source) = delete;
+  ViewportControl(ViewportControl&& source) = delete;
+  ViewportControl& operator=(const ViewportControl& source) = delete;
+  ViewportControl& operator=(ViewportControl&& source) = delete;
   void initGUI();
   void setMainWindow(MainWindow *mainWindow);
 
@@ -29,7 +29,7 @@ public slots:
 
 private slots:
   void updateCamera();
-  void updateCameraControlHints();
+  void updateViewportControlHints();
   void requestResize();
 
 protected:
