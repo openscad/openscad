@@ -252,7 +252,7 @@ void InputEventMapper::onZoomEvent(InputEventZoom *event)
   InputDriverManager::instance()->postEvent(event);
 }
 
-int InputEventMapper::parseSettingValue(const std::string val)
+int InputEventMapper::parseSettingValue(const std::string& val)
 {
   if (val.length() != 2) {
     return 0;

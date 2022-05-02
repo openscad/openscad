@@ -913,7 +913,7 @@ public:
          ++it1, ++it2) {
       sum.emplace_back(*it1 + *it2);
     }
-    return std::move(sum);
+    return sum;
   }
 };
 
@@ -938,7 +938,7 @@ public:
     for (size_t i = 0; i < op1.size() && i < op2.size(); ++i) {
       sum.emplace_back(op1[i] - op2[i]);
     }
-    return std::move(sum);
+    return sum;
   }
 };
 
@@ -954,7 +954,7 @@ Value multvecnum(const VectorType& vecval, const Value& numval)
   for (const auto& val : vecval) {
     dstv.emplace_back(val * numval);
   }
-  return std::move(dstv);
+  return dstv;
 }
 
 Value multmatvec(const VectorType& matrixvec, const VectorType& vectorvec)
@@ -978,7 +978,7 @@ Value multmatvec(const VectorType& matrixvec, const VectorType& vectorvec)
     }
     dstv.emplace_back(Value(r_e));
   }
-  return std::move(dstv);
+  return dstv;
 }
 
 Value multvecmat(const VectorType& vectorvec, const VectorType& matrixvec)
@@ -1089,13 +1089,13 @@ Value Value::operator/(const Value& v) const
     for (const auto& vecval : this->toVector()) {
       dstv.emplace_back(vecval / v);
     }
-    return std::move(dstv);
+    return dstv;
   } else if (this->type() == Type::NUMBER && v.type() == Type::VECTOR) {
     VectorType dstv(v.toVector().evaluation_session());
     for (const auto& vecval : v.toVector()) {
       dstv.emplace_back(*this / vecval);
     }
-    return std::move(dstv);
+    return dstv;
   }
   return Value::undef(STR("undefined operation (" << this->typeName() << " / " << v.typeName() << ")"));
 }
@@ -1117,7 +1117,7 @@ Value Value::operator-() const
     for (const auto& vecval : this->toVector()) {
       dstv.emplace_back(-vecval);
     }
-    return std::move(dstv);
+    return dstv;
   }
   return Value::undef(STR("undefined operation (-" << this->typeName() << ")"));
 }

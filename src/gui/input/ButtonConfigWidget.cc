@@ -43,7 +43,6 @@ ButtonConfigWidget::~ButtonConfigWidget()
 
 void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const {
   QString style = pressed ? ButtonConfigWidget::ActiveStyleString : ButtonConfigWidget::EmptyString;
-  std::string number = std::to_string(nr);
 
   auto label = this->findChild<QLabel *>(QString("labelInputButton%1").arg(nr));
   if (label == nullptr) return;

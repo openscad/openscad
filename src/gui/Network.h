@@ -63,7 +63,7 @@ public:
   using reply_func_t = std::function<QNetworkReply *(QNetworkAccessManager&, QNetworkRequest&)>;
   using transform_func_t = std::function<ResultType(QNetworkReply *)>;
 
-  NetworkRequest(const QUrl url, const std::vector<int> accepted_codes, const int timeout_seconds) : url(url), accepted_codes(accepted_codes), timeout_seconds(timeout_seconds) { }
+  NetworkRequest(const QUrl& url, const std::vector<int>& accepted_codes, const int timeout_seconds) : url(url), accepted_codes(accepted_codes), timeout_seconds(timeout_seconds) { }
   virtual ~NetworkRequest() { }
 
   void set_progress_func(network_progress_func_t progress_func) { this->progress_func = progress_func; }
