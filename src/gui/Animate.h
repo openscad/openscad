@@ -37,6 +37,13 @@ public slots:
   void onActionEvent(InputEventAction *event);
   void pauseAnimation();
 
+  void on_pushButton_MoveToBeginning_clicked();
+  void on_pushButton_StepBack_clicked();
+  void on_pushButton_Resume_clicked();
+  void on_pushButton_Pause_clicked();
+  void on_pushButton_StepForward_clicked();
+  void on_pushButton_MoveToEnd_clicked();
+
 protected:
   void resizeEvent(QResizeEvent *event) override;
 
@@ -45,6 +52,7 @@ private:
   MainWindow *mainWindow;
 
   void updatePauseButtonIcon();
+  void initVCR();
 
   double anim_tval;
   bool anim_dumping;
@@ -59,13 +67,15 @@ private:
   bool steps_ok;
 
   QList<QAction *> action_list;
-
+  void createActionAndPrepareButton(const QIcon &icon, QString description, std::string actionName, QPushButton* button);
+ 
 signals:
 
 private slots:
   void updatedAnimTval();
   void updatedAnimFpsAndAnimSteps();
   void updatedAnimDump(bool checked);
+  void incrementTVal();
   void updateTVal();
   void on_pauseButton_pressed();
 };

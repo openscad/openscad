@@ -19,7 +19,7 @@ void Animate::initGUI()
   this->anim_dump_start_step = 0;
 
   animate_timer = new QTimer(this);
-  connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
+  connect(animate_timer, SIGNAL(timeout()), this, SLOT(incrementTVal()));
 
   connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimTval()));
   connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFpsAndAnimSteps()));
@@ -35,17 +35,62 @@ void Animate::setMainWindow(MainWindow *mainWindow)
   QIcon playIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate.svg") : QIcon(":/icons/svg-default/animate-white.svg");
   QIcon pauseIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate_pause.svg") : QIcon(":/icons/svg-default/animate_pause-white.svg");
 
-  QAction *pauseUnpause = new QAction(playIcon, _("animation - toogle pause/unpause"), this);
-  pauseUnpause->setObjectName("pauseUnpause");
-  connect(pauseUnpause, SIGNAL(triggered()), this, SLOT(on_pauseButton_pressed()));
-  this->action_list.append(pauseUnpause);
-  
-  QAction *pause = new QAction(pauseIcon, _("animation - pause"), this);
-  pause->setObjectName("pause");
-  connect(pause, SIGNAL(triggered()), this, SLOT(pauseAnimation()));
-  this->action_list.append(pause);
+  createActionAndPrepareButton(
+    playIcon, _("toogle pause/unpause"),
+    "pauseUnpause", pauseButton
+    );
 
+  initVCR();
   updatePauseButtonIcon();
+}
+
+void Animate::createActionAndPrepareButton(const QIcon &icon, QString description, std::string actionName, QPushButton* button){
+  QAction *action = new QAction(icon, description, this);
+  action->setObjectName(QString::fromStdString(actionName));
+
+  connect(action, SIGNAL(triggered()), button, SLOT(click()));
+  this->action_list.append(action);
+
+  button->setIcon(icon);
+  button->setToolTip(description);
+  button->setText("");
+}
+
+void Animate::initVCR(){
+  QString suffix("");
+  if(!isLightTheme()){
+    suffix = QString("-white");
+  }
+  static QIcon startIcon    = QIcon(":/icons/svg-default/vcr-control-start" + suffix + ".svg");
+  static QIcon stepBackIcon = QIcon(":/icons/svg-default/vcr-control-step-back" + suffix + ".svg");
+  static QIcon playIcon     = QIcon(":/icons/svg-default/vcr-control-play" + suffix + ".svg");
+  static QIcon pauseIcon    = QIcon(":/icons/svg-default/vcr-control-pause" + suffix + ".svg");
+  static QIcon stepFwrdIcon = QIcon(":/icons/svg-default/vcr-control-step-forward" + suffix + ".svg");
+  static QIcon endIcon      = QIcon(":/icons/svg-default/vcr-control-end" + suffix + ".svg");
+
+  createActionAndPrepareButton(
+    startIcon, _("Move to beginning (first frame)"),
+    "start", pushButton_MoveToBeginning);
+
+  createActionAndPrepareButton(
+    stepBackIcon, _("step one frame back"),
+    "stepBack", pushButton_StepBack);
+
+  createActionAndPrepareButton(
+    playIcon, _("play animation"),
+    "play", pushButton_Resume);
+
+  createActionAndPrepareButton(
+    pauseIcon, _("pause animation"),
+    "pause", pushButton_Pause);
+
+  createActionAndPrepareButton(
+    stepFwrdIcon, _("step one frame forward"),
+    "stepFwrd", pushButton_StepForward);
+
+  createActionAndPrepareButton(
+    endIcon,_("Move to end (last frame)"),
+    "end", pushButton_MoveToEnd);
 }
 
 bool Animate::isLightTheme()
@@ -122,7 +167,7 @@ void Animate::updatedAnimDump(bool checked)
 }
 
 // Only called from animate_timer
-void Animate::updateTVal()
+void Animate::incrementTVal()
 {
   if (this->anim_numsteps == 0) return;
 
@@ -133,6 +178,28 @@ void Animate::updateTVal()
   if (this->anim_numsteps > 1) {
     this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
     this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
+  } else if (this->anim_numsteps > 0) {
+    this->anim_step = 0;
+    this->anim_tval = 0.0;
+  }
+
+  const QString txt = QString::number(this->anim_tval, 'f', 5);
+  this->e_tval->setText(txt);
+
+  updatePauseButtonIcon();
+}
+
+void Animate::updateTVal()
+{
+  if (this->anim_numsteps == 0) return;
+
+  if(this->anim_step < 0){
+    this->anim_step = this->anim_numsteps - this->anim_step - 2;
+  }
+
+  if (this->anim_numsteps > 1) {
+    this->anim_step =      (this->anim_step) % this->anim_numsteps;
+    this->anim_tval = 1.0 * this->anim_step  / this->anim_numsteps;
   } else if (this->anim_numsteps > 0) {
     this->anim_step = 0;
     this->anim_tval = 0.0;
@@ -236,24 +303,29 @@ void Animate::resizeEvent(QResizeEvent *event)
   
   // QTDesigner does not make it obvious, but
   // QBoxLayout can be switch from vertical to horizontal.
+  int iconSize = 16;
   if(auto mainLayout = dynamic_cast<QBoxLayout *> (this->layout())){
     if(sizeEvent.height() > 140){
       mainLayout->setDirection(QBoxLayout::TopToBottom);
-      if(sizeEvent.height() > 180 && sizeEvent.width() > 200){
+      if(sizeEvent.height() > 250 && sizeEvent.width() > 200){
         mainLayout->setMargin(10);
         mainLayout->setSpacing(10);
-        pauseButton->setIconSize(QSize(32, 23));
+        iconSize = 32;
       } else {
         mainLayout->setMargin(0);
         mainLayout->setSpacing(0);
-        pauseButton->setIconSize(QSize(16, 16));
       }
+      this->vcr_controls->show();
     } else {
       mainLayout->setDirection(QBoxLayout::LeftToRight);
 
       mainLayout->setMargin(0);
       mainLayout->setSpacing(0);
-      pauseButton->setIconSize(QSize(16, 16));
+      if(sizeEvent.width() > 720){
+        this->vcr_controls->show();
+      } else {
+        this->vcr_controls->hide();
+      }
     }
   } else {
     static bool warnOnce = true;
@@ -265,6 +337,11 @@ void Animate::resizeEvent(QResizeEvent *event)
     }
   }
 
+  auto qPushButtons = this->findChildren<QPushButton*>();
+  for(auto qPushButton : qPushButtons){
+      qPushButton->setIconSize(QSize(iconSize, iconSize));
+  }
+  
   QFormLayout::RowWrapPolicy policy = QFormLayout::RowWrapPolicy::DontWrapRows;
   if(sizeEvent.width() < 150){
     policy = QFormLayout::RowWrapPolicy::WrapAllRows;
@@ -295,4 +372,36 @@ void Animate::onActionEvent(InputEventAction *event)
 
 double Animate::getAnim_tval(){
   return anim_tval;
+}
+
+void Animate::on_pushButton_MoveToBeginning_clicked(){
+  pauseAnimation();
+  this->anim_step = 0;
+  this->updateTVal();
+}
+
+void Animate::on_pushButton_StepBack_clicked(){
+  pauseAnimation();
+  this->anim_step -= 1;
+  this->updateTVal();
+}
+
+void Animate::on_pushButton_Resume_clicked(){
+  updatedAnimFpsAndAnimSteps();
+}
+
+void Animate::on_pushButton_Pause_clicked(){
+  pauseAnimation();
+}
+
+void Animate::on_pushButton_StepForward_clicked(){
+  pauseAnimation();
+  this->anim_step += 1;
+  this->updateTVal();
+}
+
+void Animate::on_pushButton_MoveToEnd_clicked(){
+  pauseAnimation();
+  this->anim_step = this->anim_numsteps - 1;
+  this->updateTVal();
 }

@@ -61,6 +61,12 @@ icons = [
     ["surface"],
     ["wireframe"],
     ["throwntogether"],
+    ["vcr-control-start"],
+    ["vcr-control-step-back"],
+    ["vcr-control-play"],
+    ["vcr-control-pause"],
+    ["vcr-control-step-forward"],
+    ["vcr-control-end"],
 ];
 
 icon(selected_icon) {
@@ -109,6 +115,12 @@ icon(selected_icon) {
     surface_();
     wireframe();
     throwntogether();
+    vcr_control_start();
+    vcr_control_step_back();
+    vcr_control_play();
+    vcr_control_pause();
+    vcr_control_step_forward();
+    vcr_control_end();
 }
 
 if (list_icons) {
@@ -667,3 +679,57 @@ module throwntogether() {
     }
 }
 
+module vcr_control_start(){
+    offset(rounding)
+    translate([width/2,height/2])
+    rotate([0,180,0]){
+        x =  0.5 * width /2;
+        translate([-x, 0])
+        circle(d = 0.5 * width, $fn = 3);
+        circle(d = 0.5 * width, $fn = 3);
+       translate([x, 0]) square([thick, 0.4 * width], center = true);
+    }
+}
+module vcr_control_step_back(){
+    offset(rounding)
+    translate([width/2,height/2])
+    rotate([0,180,0]){
+        circle(d = 0.5 * width, $fn = 3);
+        x =  0.5 * width /2;
+       translate([x, 0]) square([thick, 0.4 * width], center = true);
+    }
+}
+
+module vcr_control_play(){
+    offset(rounding)
+    translate([width/2,height/2])
+    circle(d = 0.5 * width, $fn = 3);
+}
+
+module vcr_control_pause(){
+    offset(rounding)
+    translate([width/2,height/2])
+    for (x = [-thick, thick]) {
+        translate([x, 0]) square([thick, 0.4 * width], center = true);
+    }
+}
+
+module vcr_control_step_forward(){
+    offset(rounding)
+    translate([width/2,height/2]){
+        circle(d = 0.5 * width, $fn = 3);
+        x =  0.5 * width /2;
+       translate([x, 0]) square([thick, 0.4 * width], center = true);
+    }
+}
+
+module vcr_control_end(){
+    offset(rounding)
+    translate([width/2,height/2]){
+        x =  0.5 * width /2;
+        translate([-x, 0])
+        circle(d = 0.5 * width, $fn = 3);
+        circle(d = 0.5 * width, $fn = 3);
+       translate([x, 0]) square([thick, 0.4 * width], center = true);
+    }
+}
