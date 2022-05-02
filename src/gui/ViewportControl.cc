@@ -22,8 +22,10 @@ void ViewportControl::initGUI()
     connect(spinDoubleBox, SIGNAL(valueChanged(double)), this, SLOT(updateCamera()));
   }
 
-  spinBoxWidth->setMinimum(100);
-  spinBoxHeight->setMinimum(100);
+  spinBoxWidth->setMinimum(1);
+  spinBoxHeight->setMinimum(1);
+  spinBoxWidth->setMaximum(8192);
+  spinBoxHeight->setMaximum(8192);
   connect(spinBoxWidth, SIGNAL(valueChanged(int)), this, SLOT(requestResize()));
   connect(spinBoxHeight, SIGNAL(valueChanged(int)), this, SLOT(requestResize()));
 }
@@ -139,27 +141,40 @@ void ViewportControl::updateViewportControlHints(){
 
 }
 
+void ViewportControl::resizeToRatio(){
+    int w0 = spinBoxWidth->value();
+    int h0 = spinBoxHeight->value();
+
+    int w1 = this->maxW; 
+    int h1 = this->maxW * h0 / w0; 
+    int w2 = this->maxH * w0 / h0; 
+    int h2 = this->maxH;
+    if(h1 <= this->maxH){
+        qglview->resize(w1, h1);
+    } else {
+        qglview->resize(w2, h2);
+    } 
+}
+
 void ViewportControl::viewResized(){
   if(!resizeMutex.try_lock()) return;
 
-  int w = qglview->size().rwidth();
-  int h = qglview->size().rheight();
-
-  spinBoxWidth->setMaximum(w);
-  spinBoxHeight->setMaximum(h);
-
-  spinBoxWidth->setValue(w);
-  spinBoxHeight->setValue(h);
-
+  this->maxW = qglview->size().rwidth();
+  this->maxH = qglview->size().rheight();
+  
+  if(checkBoxAspecRatioLock->checkState() == Qt::Checked){
+    resizeToRatio();
+  } else {
+    spinBoxWidth->setValue(this-> maxW);
+    spinBoxHeight->setValue(this-> maxH);
+  }
   resizeMutex.unlock();
 }
 
 void ViewportControl::requestResize(){
   if(!resizeMutex.try_lock()) return;
 
-  int w = spinBoxWidth->value();
-  int h = spinBoxHeight->value();
-  qglview->resize(w, h);
+  resizeToRatio();
   
   resizeMutex.unlock();
 }
