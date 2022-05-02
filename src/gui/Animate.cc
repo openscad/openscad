@@ -70,27 +70,27 @@ void Animate::initVCR(){
 
   createActionAndPrepareButton(
     startIcon, _("Move to beginning (first frame)"),
-    "vcr-start", pushButton_MoveToBeginning);
+    "start", pushButton_MoveToBeginning);
 
   createActionAndPrepareButton(
     stepBackIcon, _("step one frame back"),
-    "vcr-stepBack", pushButton_StepBack);
+    "stepBack", pushButton_StepBack);
 
   createActionAndPrepareButton(
     playIcon, _("play animation"),
-    "vcr-play", pushButton_Resume);
+    "play", pushButton_Resume);
 
   createActionAndPrepareButton(
     pauseIcon, _("pause animation"),
-    "vcr-pause", pushButton_Pause);
+    "pause", pushButton_Pause);
 
   createActionAndPrepareButton(
     stepFwrdIcon, _("step one frame forward"),
-    "vcr-stepFwrd", pushButton_StepForward);
+    "stepFwrd", pushButton_StepForward);
 
   createActionAndPrepareButton(
     endIcon,_("Move to end (last frame)"),
-     "vcr-end", pushButton_MoveToEnd);
+    "end", pushButton_MoveToEnd);
 }
 
 bool Animate::isLightTheme()
