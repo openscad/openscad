@@ -48,4 +48,7 @@ signals:
 
 private:
   bool isLightTheme();
+  void resizeToRatio();
+  int maxH;
+  int maxW;
 };
