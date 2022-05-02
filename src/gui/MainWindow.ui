@@ -375,8 +375,12 @@
     <addaction name="windowActionSelectCameraControlWidget"/>
 =======
     <addaction name="windowActionSelectAnimate"/>
+<<<<<<< HEAD
     <addaction name="windowActionSelectCameraControl"/>
 >>>>>>> 9ce4ef952 (displaying the current values)
+=======
+    <addaction name="windowActionSelectViewportControl"/>
+>>>>>>> 726fc89ff (CameraControl -> ViewportControl)
     <addaction name="separator"/>
     <addaction name="windowActionNextWindow"/>
     <addaction name="windowActionPreviousWindow"/>
@@ -389,8 +393,12 @@
     <addaction name="windowActionHideCameraControlWidget"/>
 =======
     <addaction name="windowActionHideAnimate"/>
+<<<<<<< HEAD
     <addaction name="windowActionHideCameraControl"/>
 >>>>>>> 9ce4ef952 (displaying the current values)
+=======
+    <addaction name="windowActionHideViewportControl"/>
+>>>>>>> 726fc89ff (CameraControl -> ViewportControl)
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -666,16 +674,24 @@
     </layout>
    </widget>
   </widget>
+<<<<<<< HEAD
   <widget class="Dock" name="cameraControlDock">
 >>>>>>> 9ce4ef952 (displaying the current values)
+=======
+  <widget class="Dock" name="ViewportControlDock">
+>>>>>>> 726fc89ff (CameraControl -> ViewportControl)
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="cameraControlDockContents">
+   <widget class="QWidget" name="ViewportControlDockContents">
     <property name="focusPolicy">
      <enum>Qt::StrongFocus</enum>
     </property>
+<<<<<<< HEAD
     <layout class="QVBoxLayout" name="verticalLayout_6">
+=======
+    <layout class="QVBoxLayout" name="verticalLayout_ViewportControl">
+>>>>>>> 726fc89ff (CameraControl -> ViewportControl)
      <property name="leftMargin">
       <number>0</number>
      </property>
@@ -690,6 +706,7 @@
      </property>
      <item>
 <<<<<<< HEAD
+<<<<<<< HEAD
       <widget class="CameraControlWidget" name="cameraControlWidget" native="true">
        <property name="minimumSize">
         <size>
@@ -700,6 +717,9 @@
 =======
       <widget class="CameraControl" name="cameraControlWidget" native="true">
 >>>>>>> 9ce4ef952 (displaying the current values)
+=======
+      <widget class="ViewportControl" name="ViewportControlWidget" native="true">
+>>>>>>> 726fc89ff (CameraControl -> ViewportControl)
       </widget>
      </item>
     </layout>
@@ -1502,11 +1522,15 @@
     <string>Hide Animation Toolbar/Window</string>
    </property>
   </action>
+<<<<<<< HEAD
   <action name="windowActionHideCameraControl">
 <<<<<<< HEAD
 >>>>>>> 9ce4ef952 (displaying the current values)
    <property name="checked">
 =======
+=======
+  <action name="windowActionHideViewportControl">
+>>>>>>> 726fc89ff (CameraControl -> ViewportControl)
    <property name="checkable">
 >>>>>>> c20cd3dd2 (polished the camera control widget)
     <bool>true</bool>
@@ -1543,7 +1567,7 @@
     <string>&amp;Animate</string>
    </property>
   </action>
-  <action name="windowActionSelectCameraControl">
+  <action name="windowActionSelectViewportControl">
    <property name="text">
     <string>Camera Control</string>
    </property>
@@ -1618,10 +1642,14 @@
    <container>1</container>
   </customwidget>
   <customwidget>
+<<<<<<< HEAD
    <class>CameraControl</class>
 >>>>>>> 9ce4ef952 (displaying the current values)
+=======
+   <class>ViewportControl</class>
+>>>>>>> 726fc89ff (CameraControl -> ViewportControl)
    <extends>QWidget</extends>
-   <header>gui/CameraControl.h</header>
+   <header>gui/ViewportControl.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
