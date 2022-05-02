@@ -53,7 +53,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <cstdint>
 
-extern PolySet *import_amf(std::string, const Location& loc);
+extern PolySet *import_amf(const std::string&, const Location& loc);
 extern Geometry *import_3mf(const std::string&, const Location& loc);
 
 static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments, Children children, ImportType type)

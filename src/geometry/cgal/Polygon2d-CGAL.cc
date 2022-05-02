@@ -14,7 +14,7 @@ struct FaceInfo
 {
   FaceInfo() : nesting_level(42) {}
   int nesting_level;
-  bool in_domain() { return nesting_level % 2 == 1; }
+  bool in_domain() const { return nesting_level % 2 == 1; }
 };
 
 

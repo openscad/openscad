@@ -48,7 +48,7 @@ private:
 
   double scale(double val);
   double getAxisValue(int config);
-  int parseSettingValue(const std::string val);
+  int parseSettingValue(const std::string& val);
   bool generateDeferredEvents();
   void considerGeneratingDeferredEvents();
   bool button_state[InputDriver::max_buttons];

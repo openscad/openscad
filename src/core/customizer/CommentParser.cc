@@ -45,7 +45,7 @@ static int getLineToStop(const std::string& fulltext){
 
     if (!inString && fulltext.compare(i, 2, "//") == 0) {
       i++;
-      while (fulltext[i] != '\n' && i < fulltext.length()) i++;
+      while (i < fulltext.length() && fulltext[i] != '\n') i++;
       lineNo++;
       continue;
     }
@@ -67,7 +67,7 @@ static int getLineToStop(const std::string& fulltext){
       }
     }
 
-    if (fulltext[i] == '{') {
+    if (i < fulltext.length() && fulltext[i] == '{') {
       return lineNo;
     }
   }
@@ -84,13 +84,13 @@ static std::string getComment(const std::string& fulltext, int line)
   if (line < 1) return "";
 
   // Locate line
-  unsigned int start = 0;
+  std::size_t start = 0;
   for (; start < fulltext.length(); ++start) {
     if (line <= 1) break;
     if (fulltext[start] == '\n') line--;
   }
 
-  int end = start + 1;
+  std::size_t end = start + 1;
   while (end < fulltext.size() && fulltext[end] != '\n') end++;
 
   std::string comment = fulltext.substr(start, end - start);
@@ -216,7 +216,7 @@ static GroupList collectGroups(const std::string& fulltext)
 
     if (!inString && fulltext.compare(i, 2, "//") == 0) {
       i++;
-      while (fulltext[i] != '\n' && i < fulltext.length() ) i++;
+      while (i < fulltext.length() && fulltext[i] != '\n') i++;
       lineNo++;
       continue;
     }

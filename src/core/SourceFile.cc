@@ -53,7 +53,7 @@ void SourceFile::print(std::ostream& stream, const std::string& indent) const
   scope.print(stream, indent);
 }
 
-void SourceFile::registerUse(const std::string path, const Location& loc)
+void SourceFile::registerUse(const std::string& path, const Location& loc)
 {
   PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this %
           loc.firstLine() % loc.firstColumn() %
@@ -107,7 +107,7 @@ time_t SourceFile::include_modified(const std::string& filename) const
 {
   struct stat st;
 
-  if (StatCache::stat(filename.c_str(), st) == 0) {
+  if (StatCache::stat(filename, st) == 0) {
     return st.st_mtime;
   }
 
