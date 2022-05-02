@@ -19,7 +19,7 @@ public:
   Animate& operator=(Animate&& source) = delete;
 
   void initGUI();
-  bool dumpPictures();
+  void dumpPicture();
   int nextFrame();
 
   QTimer *animate_timer;

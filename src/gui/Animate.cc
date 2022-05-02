@@ -272,8 +272,13 @@ void  Animate::animateUpdate()
   }
 }
 
-bool Animate::dumpPictures(){
-  return this->e_dump->isChecked() && this->animate_timer->isActive();
+void Animate::dumpPicture(){
+  if( this->e_dump->isChecked() && this->animate_timer->isActive() ){
+      int steps = this->nextFrame();
+      QImage img = mainWindow->qglview->grabFrame();
+      QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
+      img.save(filename, "PNG");
+  }  
 }
 
 int Animate::nextFrame(){

@@ -1901,12 +1901,7 @@ void MainWindow::csgRender()
 #endif
   }
 
-  if ( animateWidget->dumpPictures() ) {
-      int steps = animateWidget->nextFrame();
-      QImage img = this->qglview->grabFrame();
-      QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
-      img.save(filename, "PNG");
-  }
+  animateWidget->dumpPicture();
 
   compileEnded();
 }
