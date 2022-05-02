@@ -3,6 +3,7 @@
 #include "MainWindow.h"
 #include <boost/filesystem.hpp>
 #include <QFormLayout>
+#include "OffscreenView.h"
 
 Animate::Animate(QWidget *parent) : QWidget(parent)
 {
@@ -275,9 +276,24 @@ void  Animate::animateUpdate()
 void Animate::dumpPicture(){
   if( this->e_dump->isChecked() && this->animate_timer->isActive() ){
       int steps = this->nextFrame();
-      QImage img = mainWindow->qglview->grabFrame();
+      OffscreenView offscreenView(1920, 1080);
+
       QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
-      img.save(filename, "PNG");
+      offscreenView.setCamera(mainWindow->qglview->cam);
+  offscreenView.setRenderer(mainWindow->qglview->getRenderer());
+  offscreenView.setColorScheme(*mainWindow->qglview->colorscheme);
+/*
+  offscreenView->setShowFaces(!options["wireframe"]);
+  offscreenView->setShowCrosshairs(options["crosshairs"]);
+  offscreenView->setShowAxes(options["axes"]);
+  offscreenView->setShowScaleProportional(options["scales"]);
+  offscreenView->setShowEdges(options["edges"]);
+*/
+  offscreenView.paintGL();
+      offscreenView.save(filename.toStdString().c_str());
+//      QImage img = mainWindow->qglview->grabFrame();
+//      QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
+//      img.save(filename, "PNG");
   }  
 }
 
