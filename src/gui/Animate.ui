@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>828</width>
-    <height>282</height>
+    <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -191,6 +191,95 @@
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QWidget" name="offscreenSettingWidget" native="true">
+     <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QCheckBox" name="checkBox_offscreen">
+        <property name="text">
+         <string>use offscreen buffer for export</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_time_2">
+        <property name="text">
+         <string>Width</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="spinBox_offScreenWidth">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="suffix">
+         <string> px</string>
+        </property>
+        <property name="minimum">
+         <number>8</number>
+        </property>
+        <property name="maximum">
+         <number>4096</number>
+        </property>
+        <property name="singleStep">
+         <number>8</number>
+        </property>
+        <property name="value">
+         <number>1920</number>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_time_3">
+        <property name="text">
+         <string>Height</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QSpinBox" name="spinBox_offScreenHeight">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="suffix">
+         <string> px</string>
+        </property>
+        <property name="minimum">
+         <number>8</number>
+        </property>
+        <property name="maximum">
+         <number>4096</number>
+        </property>
+        <property name="singleStep">
+         <number>8</number>
+        </property>
+        <property name="value">
+         <number>1080</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
    <item>
     <widget class="QWidget" name="vcr_controls" native="true">

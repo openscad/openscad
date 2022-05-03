@@ -276,24 +276,31 @@ void  Animate::animateUpdate()
 void Animate::dumpPicture(){
   if( this->e_dump->isChecked() && this->animate_timer->isActive() ){
       int steps = this->nextFrame();
-      OffscreenView offscreenView(1920, 1080);
-
       QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
-      offscreenView.setCamera(mainWindow->qglview->cam);
-  offscreenView.setRenderer(mainWindow->qglview->getRenderer());
-  offscreenView.setColorScheme(*mainWindow->qglview->colorscheme);
-/*
-  offscreenView->setShowFaces(!options["wireframe"]);
-  offscreenView->setShowCrosshairs(options["crosshairs"]);
-  offscreenView->setShowAxes(options["axes"]);
-  offscreenView->setShowScaleProportional(options["scales"]);
-  offscreenView->setShowEdges(options["edges"]);
-*/
-  offscreenView.paintGL();
-      offscreenView.save(filename.toStdString().c_str());
-//      QImage img = mainWindow->qglview->grabFrame();
-//      QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
-//      img.save(filename, "PNG");
+      if(this->checkBox_offscreen->isChecked()){
+        int w = spinBox_offScreenWidth->value();
+        int h = spinBox_offScreenHeight->value();
+        OffscreenView offscreenView(w, h);
+
+        QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
+
+        auto qglview = mainWindow->qglview;
+        offscreenView.setCamera(qglview->cam);
+        offscreenView.setRenderer(qglview->getRenderer());
+        offscreenView.setColorScheme(*(qglview->colorscheme));
+        offscreenView.setShowFaces(qglview->showFaces());
+        offscreenView.setShowCrosshairs(qglview->showCrosshairs());
+        offscreenView.setShowAxes(qglview->showAxes());
+        offscreenView.setShowScaleProportional(qglview->showScaleProportional());
+        offscreenView.setShowEdges(qglview->showEdges());
+
+        offscreenView.paintGL();
+
+        offscreenView.save(filename.toStdString().c_str());
+      } else {
+        QImage img = mainWindow->qglview->grabFrame();
+        img.save(filename, "PNG");
+    }
   }  
 }
 
