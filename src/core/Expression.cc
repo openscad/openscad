@@ -330,12 +330,12 @@ Value Vector::evaluate(const std::shared_ptr<const Context>& context) const
     } else {
       VectorType vec(context->session());
       vec.emplace_back(std::move(val));
-      return vec;
+      return std::move(vec);
     }
   } else {
     VectorType vec(context->session());
     for (const auto& e : this->children) vec.emplace_back(e->evaluate(context));
-    return vec;
+    return std::move(vec);
   }
 }
 
