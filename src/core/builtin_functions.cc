@@ -173,7 +173,7 @@ Value builtin_rands(Arguments arguments, const Location& loc)
       vec.emplace_back(distributor(deterministic_rng));
     }
   }
-  return vec;
+  return std::move(vec);
 }
 
 static std::vector<double> min_max_arguments(const Arguments& arguments, const Location& loc, const char *function_name)
@@ -424,7 +424,7 @@ Value builtin_concat(Arguments arguments, const Location& loc)
       result.emplace_back(std::move(argument.value));
     }
   }
-  return result;
+  return std::move(result);
 }
 
 Value builtin_lookup(Arguments arguments, const Location& loc)
@@ -672,7 +672,7 @@ Value builtin_search(Arguments arguments, const Location& loc)
   } else {
     return Value::undefined.clone();
   }
-  return returnvec;
+  return std::move(returnvec);
 }
 
 #define QUOTE(x__) # x__
@@ -686,7 +686,7 @@ Value builtin_version(Arguments arguments, const Location& loc)
 #ifdef OPENSCAD_DAY
   vec.emplace_back(double(OPENSCAD_DAY));
 #endif
-  return vec;
+  return std::move(vec);
 }
 
 Value builtin_version_num(Arguments arguments, const Location& loc)
@@ -827,7 +827,7 @@ Value builtin_textmetrics(Arguments arguments, const Location& loc)
   text_metrics.set("descent", metrics.descent);
   text_metrics.set("offset", std::move(offset));
   text_metrics.set("advance", std::move(advance));
-  return text_metrics;
+  return std::move(text_metrics);
 }
 
 Value builtin_fontmetrics(Arguments arguments, const Location& loc)
@@ -866,7 +866,7 @@ Value builtin_fontmetrics(Arguments arguments, const Location& loc)
   font_metrics.set("interline", metrics.interline);
   font_metrics.set("font", font);
 
-  return font_metrics;
+  return std::move(font_metrics);
 }
 
 Value builtin_is_undef(const std::shared_ptr<const Context>& context, const FunctionCall *call)
