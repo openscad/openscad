@@ -14,7 +14,7 @@ public:
 
   std::time_t evaluate(const std::string& mainFile, const std::string& filename, class SourceFile *& sourceFile);
   class SourceFile *lookup(const std::string& filename);
-  size_t size() { return this->entries.size(); }
+  size_t size() const { return this->entries.size(); }
   void clear();
   static void clear_markers();
 

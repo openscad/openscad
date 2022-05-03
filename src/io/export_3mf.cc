@@ -57,9 +57,9 @@ using namespace NMR;
 #include "cgalutils.h"
 #include "CGAL_Nef_polyhedron.h"
 
-static void export_3mf_error(const std::string msg, PLib3MFModel *& model)
+static void export_3mf_error(const std::string& msg, PLib3MFModel *& model)
 {
-  LOG(message_group::Export_Error, Location::NONE, "", std::string(msg));
+  LOG(message_group::Export_Error, Location::NONE, "", msg);
   if (model) {
     lib3mf_release(model);
     model = nullptr;
@@ -217,9 +217,9 @@ void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output)
 #include "cgalutils.h"
 #include "CGAL_Nef_polyhedron.h"
 
-static void export_3mf_error(const std::string msg)
+static void export_3mf_error(const std::string& msg)
 {
-  LOG(message_group::Export_Error, Location::NONE, "", std::string(msg));
+  LOG(message_group::Export_Error, Location::NONE, "", msg);
 }
 
 /*

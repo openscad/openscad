@@ -70,13 +70,13 @@ private:
 public:
   CorefinementVisitorDelegate_(TriangleMesh& m1, TriangleMesh& m2, TriangleMesh& mout,
                                bool forceNewLazyNumbersToExact)
-    : mesh1_(&m1), mesh2_(&m2), meshOut_(&mout), forceNewLazyNumbersToExact_(forceNewLazyNumbersToExact)
+    : forceNewLazyNumbersToExact_(forceNewLazyNumbersToExact), mesh1_(&m1), mesh2_(&m2), meshOut_(&mout)
   {
     TriangleMesh *meshes[3] = {&m1, &m2, &mout};
 
     // Give each existing face its own global patch id.
     PatchId nextPatchId = 1;
-    for (auto mi = 0; mi < 3; mi++) {
+    for (std::size_t mi = 0; mi < 3; mi++) {
       auto& m = *meshes[mi];
 
       if (mi != indexOf(m)) {
@@ -112,7 +112,7 @@ public:
   {
     auto mi = indexOf(tm);
     auto id = getPatchId(faceBeingSplit_[mi], tm);
-    setPatchId(fi, tm, getPatchId(faceBeingSplit_[mi], tm));
+    setPatchId(fi, tm, id);
 
 #if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 4, 0)
     if (forceNewLazyNumbersToExact_) {

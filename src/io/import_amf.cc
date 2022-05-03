@@ -91,7 +91,7 @@ protected:
 public:
   AmfImporter(const Location& loc);
   virtual ~AmfImporter();
-  PolySet *read(const std::string filename);
+  PolySet *read(const std::string& filename);
 
   virtual xmlTextReaderPtr createXmlReader(const char *filename);
 };
@@ -246,7 +246,7 @@ int AmfImporter::streamFile(const char *filename)
   return ret;
 }
 
-PolySet *AmfImporter::read(const std::string filename)
+PolySet *AmfImporter::read(const std::string& filename)
 {
   funcs[coordinates_x] = set_x;
   funcs[coordinates_y] = set_y;
@@ -357,14 +357,14 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
   }
 }
 
-PolySet *import_amf(const std::string filename, const Location& loc) {
+PolySet *import_amf(const std::string& filename, const Location& loc) {
   AmfImporterZIP importer(loc);
   return importer.read(filename);
 }
 
 #else
 
-PolySet *import_amf(const std::string filename, const Location& loc) {
+PolySet *import_amf(const std::string& filename, const Location& loc) {
   AmfImporter importer(loc);
   return importer.read(filename);
 }

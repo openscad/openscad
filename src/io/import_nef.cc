@@ -20,7 +20,6 @@ CGAL_Nef_polyhedron *import_nef3(const std::string& filename, const Location& lo
     return N;
   }
 
-  std::string msg = "";
   try {
     auto nef = make_shared<CGAL_Nef_polyhedron3>();
     f >> *nef;

@@ -147,7 +147,6 @@ OpenCSGVBOPrim *OpenCSGRenderer::createVBOPrimitive(const std::shared_ptr<OpenCS
 void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode)
 {
   size_t vbo_count = products.products.size();
-  size_t vbo_index = 0;
   if (vbo_count) {
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
       vbo_count *= 2;
@@ -157,6 +156,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
   }
 
 #ifdef ENABLE_OPENCSG
+  size_t vbo_index = 0;
   for (const auto& product : products.products) {
     Color4f last_color;
     std::unique_ptr<OpenCSGPrimitives> primitives = std::make_unique<OpenCSGPrimitives>();
