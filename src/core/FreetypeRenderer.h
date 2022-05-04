@@ -180,7 +180,7 @@ private:
     hb_glyph_position_t *glyph_pos;
   };
 
-  struct done_glyph : public std::unary_function<const GlyphData *, void> {
+  struct done_glyph {
     void operator()(const GlyphData *glyph_data) {
       FT_Done_Glyph(glyph_data->get_glyph());
       delete glyph_data;
