@@ -100,7 +100,7 @@ public:
 #endif
 #ifdef GEN_SURFACE_DEBUG
     printf("points=[");
-    for (int i = 0; i < vertices.size(); ++i) {
+    for (std::size_t i = 0; i < vertices.size(); ++i) {
       if (i > 0) printf(",");
       const CGALPoint& p = vertices[i];
       printf("[%g,%g,%g]", CGAL::to_double(p.x()), CGAL::to_double(p.y()), CGAL::to_double(p.z()));
@@ -126,7 +126,7 @@ public:
       if (pidx++ > 0) printf(",");
 #endif
       indices.clear();
-      for (const auto& v, boost::adaptors::reverse(p)) {
+      for (const auto& v: boost::adaptors::reverse(p)) {
         size_t s = vertices.size();
         size_t idx = vertices.lookup(v);
         // If we added a vertex, also add it to the CGAL builder
@@ -164,7 +164,7 @@ public:
     printf("],\n");
 
     printf("points=[");
-    for (int vidx = 0; vidx < vertices.size(); ++vidx) {
+    for (std::size_t vidx = 0; vidx < vertices.size(); ++vidx) {
       if (vidx > 0) printf(",");
       const Vector3d& v = vertices.getArray()[vidx];
       printf("[%g,%g,%g]", v[0], v[1], v[2]);
