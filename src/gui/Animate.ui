@@ -282,6 +282,13 @@
     </widget>
    </item>
    <item>
+    <widget class="QSlider" name="horizontalSlider">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QWidget" name="vcr_controls" native="true">
      <layout class="QHBoxLayout" name="horizontalLayout_VCR">
       <property name="leftMargin">

@@ -68,7 +68,9 @@ private:
 
   QList<QAction *> action_list;
   void createActionAndPrepareButton(const QIcon &icon, QString description, std::string actionName, QPushButton* button);
- 
+
+  std::mutex anim_step_Mutex;
+
 signals:
 
 private slots:
@@ -78,4 +80,5 @@ private slots:
   void incrementTVal();
   void updateTVal();
   void on_pauseButton_pressed();
+  void on_horizontalSlider_valueChanged(int);
 };

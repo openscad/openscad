@@ -107,6 +107,8 @@ bool Animate::isLightTheme()
 
 void Animate::updatedAnimTval()
 {
+  bool ownsMutex = anim_step_Mutex.try_lock();
+
   double t = this->e_tval->text().toDouble(&this->t_ok);
   // Clamp t to 0-1
   if (this->t_ok) {
@@ -114,11 +116,18 @@ void Animate::updatedAnimTval()
   } else {
     t = 0.0;
   }
+  if(ownsMutex){
+    anim_step = (int)(anim_numsteps * t);
+  }
+  horizontalSlider->setValue(anim_step);
+  horizontalSlider->setMaximum(anim_numsteps);
 
   this->anim_tval = t;
   emit mainWindow->actionRenderPreview();
 
   updatePauseButtonIcon();
+  
+  if(ownsMutex) anim_step_Mutex.unlock();
 }
 
 void Animate::updatedAnimFpsAndAnimSteps()
@@ -170,6 +179,8 @@ void Animate::updatedAnimDump(bool checked)
 // Only called from animate_timer
 void Animate::incrementTVal()
 {
+  bool ownsMutex = anim_step_Mutex.try_lock();
+
   if (this->anim_numsteps == 0) return;
 
   if (mainWindow->windowActionHideCustomizer->isVisible()) {
@@ -188,6 +199,8 @@ void Animate::incrementTVal()
   this->e_tval->setText(txt);
 
   updatePauseButtonIcon();
+  
+  if(ownsMutex) anim_step_Mutex.unlock();
 }
 
 void Animate::updateTVal()
@@ -432,4 +445,11 @@ void Animate::on_pushButton_MoveToEnd_clicked(){
   pauseAnimation();
   this->anim_step = this->anim_numsteps - 1;
   this->updateTVal();
+}
+
+void Animate::on_horizontalSlider_valueChanged(int val){
+  if(!anim_step_Mutex.try_lock()) return;
+  this->anim_step  = val;
+  updateTVal();
+  anim_step_Mutex.unlock();
 }
