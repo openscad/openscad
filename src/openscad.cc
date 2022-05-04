@@ -291,7 +291,7 @@ static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
   return true;
 }
 
-void set_render_color_scheme(const std::string color_scheme, const bool exit_if_not_found)
+void set_render_color_scheme(const std::string& color_scheme, const bool exit_if_not_found)
 {
   if (color_scheme.empty()) {
     return;

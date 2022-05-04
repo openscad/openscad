@@ -16,7 +16,7 @@ public:
   ~Tree();
 
   void setRoot(const std::shared_ptr<const AbstractNode> &root);
-  void setDocumentPath(const std::string path);
+  void setDocumentPath(const std::string& path);
   const std::shared_ptr<const AbstractNode>& root() const { return this->root_node; }
 
   const std::string getString(const AbstractNode& node, const std::string& indent) const;

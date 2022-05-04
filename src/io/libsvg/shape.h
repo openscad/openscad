@@ -78,7 +78,7 @@ protected:
   double get_stroke_width() const;
   ClipperLib::EndType get_stroke_linecap() const;
   ClipperLib::JoinType get_stroke_linejoin() const;
-  const std::string get_style(std::string name) const;
+  const std::string get_style(const std::string& name) const;
   void draw_ellipse(path_t& path, double x, double y, double rx, double ry, void *context);
   void offset_path(path_list_t& path_list, path_t& path, double stroke_width, ClipperLib::EndType stroke_linecap);
   void collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape *s);

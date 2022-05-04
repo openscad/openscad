@@ -606,7 +606,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   initActionIcon(viewActionShowScaleProportional, ":/icons/svg-default/scalemarkers.svg", ":/icons/svg-default/scalemarkers-white.svg");
 
   InputDriverManager::instance()->registerActions(this->menuBar()->actions(), "", "");
-  InputDriverManager::instance()->registerActions(this->animateWidget->actions(), "", "animate");
+  InputDriverManager::instance()->registerActions(this->animateWidget->actions(), "animation", "animate");
   instance->ButtonConfig->init();
 
   // fetch window states to be restored after restoreState() call

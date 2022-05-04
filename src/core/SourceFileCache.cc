@@ -40,7 +40,7 @@ std::time_t SourceFileCache::evaluate(const std::string& mainFile, const std::st
 
   // Create cache ID
   struct stat st;
-  bool valid = (StatCache::stat(filename.c_str(), st) == 0);
+  bool valid = (StatCache::stat(filename, st) == 0);
 
   // If file isn't there, just return and let the cache retain the old file
   if (!valid) return 0;
