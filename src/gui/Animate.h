@@ -81,4 +81,8 @@ private slots:
   void updateTVal();
   void on_pauseButton_pressed();
   void on_horizontalSlider_valueChanged(int);
+  void on_comboBoxResolution_currentIndexChanged(int);
+
+  void on_spinBox_offScreenWidth_valueChanged(int);
+  void on_spinBox_offScreenHeight_valueChanged(int);
 };

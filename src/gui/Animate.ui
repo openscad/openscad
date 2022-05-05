@@ -193,8 +193,8 @@
     </layout>
    </item>
    <item>
-    <widget class="QWidget" name="offscreenSettingWidget" native="true">
-     <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <widget class="QGroupBox" name="offscreenSettingGroupBox">
+     <layout class="QGridLayout" name="gridLayout">
       <property name="leftMargin">
        <number>0</number>
       </property>
@@ -207,14 +207,7 @@
       <property name="bottomMargin">
        <number>0</number>
       </property>
-      <item>
-       <widget class="QCheckBox" name="checkBox_offscreen">
-        <property name="text">
-         <string>use offscreen buffer for export</string>
-        </property>
-       </widget>
-      </item>
-      <item>
+      <item row="1" column="1">
        <widget class="QLabel" name="label_time_2">
         <property name="text">
          <string>Width</string>
@@ -224,29 +217,7 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QSpinBox" name="spinBox_offScreenWidth">
-        <property name="alignment">
-         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-        </property>
-        <property name="suffix">
-         <string> px</string>
-        </property>
-        <property name="minimum">
-         <number>8</number>
-        </property>
-        <property name="maximum">
-         <number>4096</number>
-        </property>
-        <property name="singleStep">
-         <number>8</number>
-        </property>
-        <property name="value">
-         <number>1920</number>
-        </property>
-       </widget>
-      </item>
-      <item>
+      <item row="1" column="3">
        <widget class="QLabel" name="label_time_3">
         <property name="text">
          <string>Height</string>
@@ -256,7 +227,7 @@
         </property>
        </widget>
       </item>
-      <item>
+      <item row="1" column="4">
        <widget class="QSpinBox" name="spinBox_offScreenHeight">
         <property name="alignment">
          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -268,13 +239,91 @@
          <number>8</number>
         </property>
         <property name="maximum">
-         <number>4096</number>
+         <number>7680</number>
         </property>
         <property name="singleStep">
          <number>8</number>
         </property>
         <property name="value">
          <number>1080</number>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="checkBox_offscreen">
+        <property name="text">
+         <string>enable</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QSpinBox" name="spinBox_offScreenWidth">
+        <property name="alignment">
+         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        </property>
+        <property name="suffix">
+         <string> px</string>
+        </property>
+        <property name="minimum">
+         <number>8</number>
+        </property>
+        <property name="maximum">
+         <number>7680</number>
+        </property>
+        <property name="singleStep">
+         <number>8</number>
+        </property>
+        <property name="value">
+         <number>1920</number>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" colspan="3">
+       <widget class="QComboBox" name="comboBoxResolution">
+        <property name="currentIndex">
+         <number>2</number>
+        </property>
+        <item>
+         <property name="text">
+          <string notr="true">SD (640 x 480px)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string notr="true">HD (1280 x 720px)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string notr="true">Full HD (1920 x 1080px)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string notr="true">QHD (2560 x 1440px)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string notr="true">2K (2048 x 1080px)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string notr="true">4K (3840 x 2160px)</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string notr="true">8K (7680 x 4320px)</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>offscreen buffer for export</string>
         </property>
        </widget>
       </item>

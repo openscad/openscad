@@ -346,7 +346,7 @@ void Animate::resizeEvent(QResizeEvent *event)
   // QBoxLayout can be switch from vertical to horizontal.
   int iconSize = 16;
   if(auto mainLayout = dynamic_cast<QBoxLayout *> (this->layout())){
-    if(sizeEvent.height() > 140){
+    if(sizeEvent.height() > 180){
       mainLayout->setDirection(QBoxLayout::TopToBottom);
       if(sizeEvent.height() > 250 && sizeEvent.width() > 200){
         mainLayout->setMargin(10);
@@ -356,7 +356,9 @@ void Animate::resizeEvent(QResizeEvent *event)
         mainLayout->setMargin(0);
         mainLayout->setSpacing(0);
       }
+      this->horizontalSlider->show();
       this->vcr_controls->show();
+      this->offscreenSettingGroupBox->show();
     } else {
       mainLayout->setDirection(QBoxLayout::LeftToRight);
 
@@ -367,6 +369,8 @@ void Animate::resizeEvent(QResizeEvent *event)
       } else {
         this->vcr_controls->hide();
       }
+      this->horizontalSlider->hide();
+      this->offscreenSettingGroupBox->hide();
     }
   } else {
     static bool warnOnce = true;
@@ -452,4 +456,28 @@ void Animate::on_horizontalSlider_valueChanged(int val){
   this->anim_step  = val;
   updateTVal();
   anim_step_Mutex.unlock();
+}
+void Animate::on_comboBoxResolution_currentIndexChanged(int){
+  std::string current  = comboBoxResolution->currentText().toStdString();
+
+  size_t start = current.find("(")+1;
+  size_t stop  = current.find("x")-1;
+  std::string width= current.substr(start,stop-start);
+
+  start = current.find("x")+1;
+  stop  = current.find("px)");
+  std::string height= current.substr(start,stop-start);
+
+  std::cout << width << " : " << height << std::endl;
+
+  spinBox_offScreenWidth->setValue(std::stoi(width));
+  spinBox_offScreenHeight->setValue(std::stoi(height));        
+}
+
+void Animate::on_spinBox_offScreenWidth_valueChanged(int){
+  checkBox_offscreen->setCheckState(Qt::Checked);
+}
+
+void Animate::on_spinBox_offScreenHeight_valueChanged(int){
+  checkBox_offscreen->setCheckState(Qt::Checked);
 }
