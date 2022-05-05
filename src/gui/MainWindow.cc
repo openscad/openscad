@@ -1901,7 +1901,7 @@ void MainWindow::csgRender()
 #endif
   }
 
-  animateWidget->dumpPicture();
+  animateWidget->csgRendered();
 
   compileEnded();
 }
