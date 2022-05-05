@@ -457,7 +457,9 @@ void Animate::on_horizontalSlider_valueChanged(int val){
   updateTVal();
   anim_step_Mutex.unlock();
 }
-void Animate::on_comboBoxResolution_currentIndexChanged(int){
+void Animate::on_comboBoxResolution_currentIndexChanged(int index){
+  if(index == 0) return;
+  bool ownsLock = anim_resolution_Mutex.try_lock();
   std::string current  = comboBoxResolution->currentText().toStdString();
 
   size_t start = current.find("(")+1;
@@ -468,16 +470,29 @@ void Animate::on_comboBoxResolution_currentIndexChanged(int){
   stop  = current.find("px)");
   std::string height= current.substr(start,stop-start);
 
-  std::cout << width << " : " << height << std::endl;
-
-  spinBox_offScreenWidth->setValue(std::stoi(width));
-  spinBox_offScreenHeight->setValue(std::stoi(height));        
+  try
+  {
+    int w = std::stoi(width);
+    int h = std::stoi(height);
+    spinBox_offScreenWidth->setValue(w);
+    spinBox_offScreenHeight->setValue(h);
+  }catch(std::exception const& ex){
+  }
+  if(ownsLock) anim_resolution_Mutex.unlock();
 }
 
 void Animate::on_spinBox_offScreenWidth_valueChanged(int){
+  bool ownsLock = anim_resolution_Mutex.try_lock();
   checkBox_offscreen->setCheckState(Qt::Checked);
+
+  if(ownsLock) comboBoxResolution->setCurrentIndex(0);
+  if(ownsLock) anim_resolution_Mutex.unlock();
 }
 
 void Animate::on_spinBox_offScreenHeight_valueChanged(int){
+  bool ownsLock = anim_resolution_Mutex.try_lock();
   checkBox_offscreen->setCheckState(Qt::Checked);
+
+  if(ownsLock) comboBoxResolution->setCurrentIndex(0);
+  if(ownsLock) anim_resolution_Mutex.unlock();
 }

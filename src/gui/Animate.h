@@ -70,6 +70,7 @@ private:
   void createActionAndPrepareButton(const QIcon &icon, QString description, std::string actionName, QPushButton* button);
 
   std::mutex anim_step_Mutex;
+  std::mutex anim_resolution_Mutex;
 
 signals:
 
