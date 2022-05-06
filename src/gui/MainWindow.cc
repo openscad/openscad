@@ -241,10 +241,10 @@ MainWindow::MainWindow(const QStringList& filenames)
   parameterDockTitleWidget = new QWidget();
   errorLogDockTitleWidget = new QWidget();
   animateDockTitleWidget = new QWidget();
-  ViewportControlTitleWidget = new QWidget();
+  viewportControlTitleWidget = new QWidget();
 
   this->animateWidget->setMainWindow(this);
-  this->ViewportControlWidget->setMainWindow(this);
+  this->viewportControlWidget->setMainWindow(this);
   // actions not included in menu
   this->addAction(editActionInsertTemplate);
   this->addAction(editActionFoldAll);
@@ -259,8 +259,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   this->errorLogDock->setAction(this->windowActionHideErrorLog);
   this->animateDock->setConfigKey("view/hideAnimate");
   this->animateDock->setAction(this->windowActionHideAnimate);
-  this->ViewportControlDock->setConfigKey("view/hideViewportControl");
-  this->ViewportControlDock->setAction(this->windowActionHideViewportControl);
+  this->viewportControlDock->setConfigKey("view/hideViewportControl");
+  this->viewportControlDock->setAction(this->windowActionHideViewportControl);
 
   this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
   updateStatusBar(nullptr);
@@ -527,8 +527,8 @@ MainWindow::MainWindow(const QStringList& filenames)
 #endif
 
   connect(this->qglview, SIGNAL(cameraChanged()), animateWidget, SLOT(cameraChanged()));
-  connect(this->qglview, SIGNAL(cameraChanged()), ViewportControlWidget, SLOT(cameraChanged()));
-  connect(this->qglview, SIGNAL(resized()), ViewportControlWidget, SLOT(viewResized()));
+  connect(this->qglview, SIGNAL(cameraChanged()), viewportControlWidget, SLOT(cameraChanged()));
+  connect(this->qglview, SIGNAL(resized()), viewportControlWidget, SLOT(viewResized()));
   connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
 
   connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(update()));
@@ -672,7 +672,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
   connect(this->errorLogDock, SIGNAL(topLevelChanged(bool)), this, SLOT(errorLogTopLevelChanged(bool)));
   connect(this->animateDock, SIGNAL(topLevelChanged(bool)), this, SLOT(animateTopLevelChanged(bool)));
-  connect(this->ViewportControlDock, SIGNAL(topLevelChanged(bool)), this, SLOT(ViewportControlTopLevelChanged(bool)));
+  connect(this->viewportControlDock, SIGNAL(topLevelChanged(bool)), this, SLOT(viewportControlTopLevelChanged(bool)));
 
   // display this window and check for OpenGL 2.0 (OpenCSG) support
   viewModeThrownTogether();
@@ -885,7 +885,7 @@ void MainWindow::updateUndockMode(bool undockMode)
     parameterDock->setFeatures(parameterDock->features() | QDockWidget::DockWidgetFloatable);
     errorLogDock->setFeatures(errorLogDock->features() | QDockWidget::DockWidgetFloatable);
     animateDock->setFeatures(animateDock->features() | QDockWidget::DockWidgetFloatable);
-    ViewportControlDock->setFeatures(ViewportControlDock->features() | QDockWidget::DockWidgetFloatable);
+    viewportControlDock->setFeatures(viewportControlDock->features() | QDockWidget::DockWidgetFloatable);
 
   } else {
     if (editorDock->isFloating()) {
@@ -913,10 +913,10 @@ void MainWindow::updateUndockMode(bool undockMode)
     }
     animateDock->setFeatures(animateDock->features() & ~QDockWidget::DockWidgetFloatable);
 
-    if (ViewportControlDock->isFloating()) {
-      ViewportControlDock->setFloating(false);
+    if (viewportControlDock->isFloating()) {
+      viewportControlDock->setFloating(false);
     }
-    ViewportControlDock->setFeatures(ViewportControlDock->features() & ~QDockWidget::DockWidgetFloatable);
+    viewportControlDock->setFeatures(viewportControlDock->features() & ~QDockWidget::DockWidgetFloatable);
   }
 }
 
@@ -928,7 +928,7 @@ void MainWindow::updateReorderMode(bool reorderMode)
   parameterDock->setTitleBarWidget(reorderMode ? nullptr : parameterDockTitleWidget);
   errorLogDock->setTitleBarWidget(reorderMode ? nullptr : errorLogDockTitleWidget);
   animateDock->setTitleBarWidget(reorderMode ? nullptr : animateDockTitleWidget);
-  ViewportControlDock->setTitleBarWidget(reorderMode ? nullptr : ViewportControlWidget);
+  viewportControlDock->setTitleBarWidget(reorderMode ? nullptr : viewportControlWidget);
 }
 
 MainWindow::~MainWindow()
@@ -1229,7 +1229,7 @@ void MainWindow::instantiateRoot()
     this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
-      ViewportControlWidget->cameraChanged();
+      viewportControlWidget->cameraChanged();
     }
 
     if (this->absolute_root_node) {
@@ -2861,9 +2861,9 @@ void MainWindow::on_animateDock_visibilityChanged(bool)
   animateTopLevelChanged(animateDock->isFloating());
 }
 
-void MainWindow::on_ViewportControlDock_visibilityChanged(bool)
+void MainWindow::on_viewportControlDock_visibilityChanged(bool)
 {
-  ViewportControlTopLevelChanged(ViewportControlDock->isFloating());
+  viewportControlTopLevelChanged(viewportControlDock->isFloating());
 }
 
 void MainWindow::changedTopLevelEditor(bool topLevel)
@@ -2938,14 +2938,14 @@ void MainWindow::animateTopLevelChanged(bool topLevel)
   }
 }
 
-void MainWindow::ViewportControlTopLevelChanged(bool topLevel)
+void MainWindow::viewportControlTopLevelChanged(bool topLevel)
 {
-  setDockWidgetTitle(ViewportControlDock, QString(_("Camera-Control")), topLevel);
+  setDockWidgetTitle(viewportControlDock, QString(_("Viewport-Control")), topLevel);
 
-  Qt::WindowFlags flags = (ViewportControlDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
+  Qt::WindowFlags flags = (viewportControlDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
   if (topLevel) {
-    ViewportControlDock->setWindowFlags(flags);
-    ViewportControlDock->show();
+    viewportControlDock->setWindowFlags(flags);
+    viewportControlDock->show();
   }
 }
 
@@ -3080,17 +3080,17 @@ void MainWindow::hideAnimate()
 void MainWindow::showViewportControl()
 {
   windowActionHideViewportControl->setChecked(false);
-  ViewportControlDock->show();
-  ViewportControlDock->raise();
-  ViewportControlWidget->setFocus();
+  viewportControlDock->show();
+  viewportControlDock->raise();
+  viewportControlWidget->setFocus();
 }
 
 void MainWindow::hideViewportControl()
 {
   if (windowActionHideErrorLog->isChecked()) {
-    ViewportControlDock->hide();
+    viewportControlDock->hide();
   } else {
-    ViewportControlDock->show();
+    viewportControlDock->show();
   }
 }
 
@@ -3170,7 +3170,7 @@ void MainWindow::activateWindow(int offset)
     { errorLogDock, &MainWindow::on_windowActionSelectErrorLog_triggered },
     { parameterDock, &MainWindow::on_windowActionSelectCustomizer_triggered },
     { animateDock, &MainWindow::on_windowActionSelectAnimate_triggered },
-    { ViewportControlDock, &MainWindow::on_windowActionSelectViewportControl_triggered },
+    { viewportControlDock, &MainWindow::on_windowActionSelectViewportControl_triggered },
   }};
 
   const int cnt = docks.size();

@@ -655,11 +655,11 @@
     </layout>
    </widget>
   </widget>
-  <widget class="Dock" name="ViewportControlDock">
+  <widget class="Dock" name="viewportControlDock">
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="ViewportControlDockContents">
+   <widget class="QWidget" name="viewportControlDockContents">
     <property name="focusPolicy">
      <enum>Qt::StrongFocus</enum>
     </property>
@@ -677,7 +677,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="ViewportControl" name="ViewportControlWidget" native="true">
+      <widget class="ViewportControl" name="viewportControlWidget" native="true">
       </widget>
      </item>
     </layout>
@@ -1471,6 +1471,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Hide Animation Toolbar/Window</string>
    </property>
@@ -1482,11 +1485,14 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Hide Camera-Control</string>
+    <string>Hide Viewport-Control</string>
    </property>
    <property name="toolTip">
-    <string>Hide Camera-Control</string>
+    <string>Hide Viewport-Control</string>
    </property>
   </action>
   <action name="windowActionSelectEditor">
@@ -1516,7 +1522,7 @@
   </action>
   <action name="windowActionSelectViewportControl">
    <property name="text">
-    <string>Camera Control</string>
+    <string>Viewport-Control</string>
    </property>
   </action>
   <action name="windowActionNextWindow">

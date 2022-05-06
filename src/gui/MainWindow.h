@@ -75,7 +75,7 @@ public:
   QWidget *parameterDockTitleWidget;
   QWidget *errorLogDockTitleWidget;
   QWidget *animateDockTitleWidget;
-  QWidget *ViewportControlTitleWidget;
+  QWidget *viewportControlTitleWidget;
 
   int compileErrors;
   int compileWarnings;
@@ -281,14 +281,14 @@ public slots:
   void on_parameterDock_visibilityChanged(bool);
   void on_errorLogDock_visibilityChanged(bool);
   void on_animateDock_visibilityChanged(bool);
-  void on_ViewportControlDock_visibilityChanged(bool);
+  void on_viewportControlDock_visibilityChanged(bool);
   void on_toolButtonCompileResultClose_clicked();
   void editorTopLevelChanged(bool);
   void consoleTopLevelChanged(bool);
   void parameterTopLevelChanged(bool);
   void errorLogTopLevelChanged(bool);
   void animateTopLevelChanged(bool);
-  void ViewportControlTopLevelChanged(bool);
+  void viewportControlTopLevelChanged(bool);
   void processEvents();
   void jumpToLine(int, int);
   void openFileFromPath(QString, int);
