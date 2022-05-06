@@ -755,7 +755,7 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)
  * Qt call. So the values are loaded before the call and restored here
  * regardless of the (potential outdated) serialized state.
  */
-void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool ViewportControl)
+void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool viewportControl)
 {
   windowActionHideEditor->setChecked(editor);
   hideEditor();
@@ -767,7 +767,7 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
   hideParameters();
   windowActionHideAnimate->setChecked(animate);
   hideAnimate();
-  windowActionHideViewportControl->setChecked(ViewportControl);
+  windowActionHideViewportControl->setChecked(viewportControl);
   hideViewportControl();
 
   viewActionHideEditorToolBar->setChecked(editorToolbar);
@@ -3059,7 +3059,6 @@ void MainWindow::hideErrorLog()
   }
 }
 
-
 void MainWindow::showAnimate()
 {
   windowActionHideAnimate->setChecked(false);
@@ -3087,7 +3086,7 @@ void MainWindow::showViewportControl()
 
 void MainWindow::hideViewportControl()
 {
-  if (windowActionHideErrorLog->isChecked()) {
+  if (windowActionHideViewportControl->isChecked()) {
     viewportControlDock->hide();
   } else {
     viewportControlDock->show();
