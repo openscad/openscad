@@ -78,8 +78,12 @@ public:
   QWidget *cameraControlTitleWidget;
 =======
   QWidget *animateDockTitleWidget;
+<<<<<<< HEAD
   QWidget *ViewportControlTitleWidget;
 >>>>>>> 726fc89ff (CameraControl -> ViewportControl)
+=======
+  QWidget *viewportControlTitleWidget;
+>>>>>>> 7454f55c6 (variable name starting with lower case letter)
 
   int compileErrors;
   int compileWarnings;
@@ -309,11 +313,15 @@ public slots:
 =======
   void on_animateDock_visibilityChanged(bool);
 <<<<<<< HEAD
+<<<<<<< HEAD
   void on_cameraControlDock_visibilityChanged(bool);
 >>>>>>> 9ce4ef952 (displaying the current values)
 =======
   void on_ViewportControlDock_visibilityChanged(bool);
 >>>>>>> 726fc89ff (CameraControl -> ViewportControl)
+=======
+  void on_viewportControlDock_visibilityChanged(bool);
+>>>>>>> 7454f55c6 (variable name starting with lower case letter)
   void on_toolButtonCompileResultClose_clicked();
   void editorTopLevelChanged(bool);
   void consoleTopLevelChanged(bool);
@@ -324,11 +332,15 @@ public slots:
 =======
   void animateTopLevelChanged(bool);
 <<<<<<< HEAD
+<<<<<<< HEAD
   void cameraControlTopLevelChanged(bool);
 >>>>>>> 9ce4ef952 (displaying the current values)
 =======
   void ViewportControlTopLevelChanged(bool);
 >>>>>>> 726fc89ff (CameraControl -> ViewportControl)
+=======
+  void viewportControlTopLevelChanged(bool);
+>>>>>>> 7454f55c6 (variable name starting with lower case letter)
   void processEvents();
   void jumpToLine(int, int);
   void openFileFromPath(QString, int);

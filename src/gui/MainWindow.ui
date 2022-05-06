@@ -675,15 +675,19 @@
    </widget>
   </widget>
 <<<<<<< HEAD
+<<<<<<< HEAD
   <widget class="Dock" name="cameraControlDock">
 >>>>>>> 9ce4ef952 (displaying the current values)
 =======
   <widget class="Dock" name="ViewportControlDock">
 >>>>>>> 726fc89ff (CameraControl -> ViewportControl)
+=======
+  <widget class="Dock" name="viewportControlDock">
+>>>>>>> 7454f55c6 (variable name starting with lower case letter)
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="ViewportControlDockContents">
+   <widget class="QWidget" name="viewportControlDockContents">
     <property name="focusPolicy">
      <enum>Qt::StrongFocus</enum>
     </property>
@@ -707,6 +711,7 @@
      <item>
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
       <widget class="CameraControlWidget" name="cameraControlWidget" native="true">
        <property name="minimumSize">
         <size>
@@ -720,6 +725,9 @@
 =======
       <widget class="ViewportControl" name="ViewportControlWidget" native="true">
 >>>>>>> 726fc89ff (CameraControl -> ViewportControl)
+=======
+      <widget class="ViewportControl" name="viewportControlWidget" native="true">
+>>>>>>> 7454f55c6 (variable name starting with lower case letter)
       </widget>
      </item>
     </layout>
@@ -1514,7 +1522,13 @@
     <bool>true</bool>
    </property>
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+>>>>>>> 7454f55c6 (variable name starting with lower case letter)
    <property name="text">
     <string>Hide Animation Toolbar/Window</string>
    </property>
@@ -1535,11 +1549,14 @@
 >>>>>>> c20cd3dd2 (polished the camera control widget)
     <bool>true</bool>
    </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
    <property name="text">
-    <string>Hide Camera-Control</string>
+    <string>Hide Viewport-Control</string>
    </property>
    <property name="toolTip">
-    <string>Hide Camera-Control</string>
+    <string>Hide Viewport-Control</string>
    </property>
   </action>
   <action name="windowActionSelectEditor">
@@ -1569,7 +1586,7 @@
   </action>
   <action name="windowActionSelectViewportControl">
    <property name="text">
-    <string>Camera Control</string>
+    <string>Viewport-Control</string>
    </property>
   </action>
   <action name="windowActionNextWindow">
