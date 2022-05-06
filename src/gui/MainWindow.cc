@@ -816,6 +816,7 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)
  */
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool cameraControlWidget)
 =======
 void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool cameraControl)
@@ -823,6 +824,9 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
 =======
 void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool ViewportControl)
 >>>>>>> 726fc89ff (CameraControl -> ViewportControl)
+=======
+void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool viewportControl)
+>>>>>>> 17c764de5 (debug windowActionHideViewportControl)
 {
   windowActionHideEditor->setChecked(editor);
   hideEditor();
@@ -834,7 +838,7 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
   hideParameters();
   windowActionHideAnimate->setChecked(animate);
   hideAnimate();
-  windowActionHideViewportControl->setChecked(ViewportControl);
+  windowActionHideViewportControl->setChecked(viewportControl);
   hideViewportControl();
 
   viewActionHideEditorToolBar->setChecked(editorToolbar);
@@ -3182,6 +3186,7 @@ void MainWindow::hideErrorLog()
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 void MainWindow::showCameraControlWidget()
 {
   windowActionHideCameraControlWidget->setChecked(false);
@@ -3191,6 +3196,8 @@ void MainWindow::showCameraControlWidget()
 //  cameraControlWidget->logTable->setFocus();
 =======
 
+=======
+>>>>>>> 17c764de5 (debug windowActionHideViewportControl)
 void MainWindow::showAnimate()
 {
   windowActionHideAnimate->setChecked(false);
@@ -3232,7 +3239,7 @@ void MainWindow::showViewportControl()
 
 void MainWindow::hideViewportControl()
 {
-  if (windowActionHideErrorLog->isChecked()) {
+  if (windowActionHideViewportControl->isChecked()) {
     viewportControlDock->hide();
   } else {
     viewportControlDock->show();
