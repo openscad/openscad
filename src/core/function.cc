@@ -58,3 +58,12 @@ void UserFunction::print(std::ostream& stream, const std::string& indent) const
   }
   stream << ") = " << *expr << ";\n";
 }
+
+void UserFunction::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  for(auto parameter : parameters){
+    parameter->gatherChilderen(nodes);
+  }
+  expr->gatherChilderen(nodes);
+}

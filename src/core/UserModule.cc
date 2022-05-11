@@ -125,3 +125,12 @@ void UserModule::print(std::ostream& stream, const std::string& indent) const
     stream << indent << "}\n";
   }
 }
+
+void UserModule::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  for(auto parameter : parameters){
+    if (parameter->getExpr()) parameter->getExpr()->gatherChilderen(nodes);
+  }
+  body.gatherChilderen(nodes);
+}

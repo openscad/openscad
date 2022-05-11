@@ -62,6 +62,7 @@ UnaryOp::UnaryOp(UnaryOp::Op op, Expression *expr, const Location& loc) : Expres
 
 Value UnaryOp::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   switch (this->op) {
   case (Op::Not):    return !this->expr->evaluate(context).toBool();
   case (Op::Negate): return checkUndef(-this->expr->evaluate(context), context);
@@ -91,6 +92,11 @@ void UnaryOp::print(std::ostream& stream, const std::string&) const
   stream << opString() << *this->expr;
 }
 
+void UnaryOp::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+}
+
 BinaryOp::BinaryOp(Expression *left, BinaryOp::Op op, Expression *right, const Location& loc) :
   Expression(loc), op(op), left(left), right(right)
 {
@@ -98,6 +104,7 @@ BinaryOp::BinaryOp(Expression *left, BinaryOp::Op op, Expression *right, const L
 
 Value BinaryOp::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   switch (this->op) {
   case Op::LogicalAnd:
     return this->left->evaluate(context).toBool() && this->right->evaluate(context).toBool();
@@ -161,6 +168,13 @@ void BinaryOp::print(std::ostream& stream, const std::string&) const
   stream << "(" << *this->left << " " << opString() << " " << *this->right << ")";
 }
 
+void BinaryOp::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  nodes.push_back(this->left.get());
+  nodes.push_back(this->right.get());
+}
+
 TernaryOp::TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location& loc)
   : Expression(loc), cond(cond), ifexpr(ifexpr), elseexpr(elseexpr)
 {
@@ -173,6 +187,7 @@ const Expression *TernaryOp::evaluateStep(const std::shared_ptr<const Context>& 
 
 Value TernaryOp::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   return evaluateStep(context)->evaluate(context);
 }
 
@@ -181,18 +196,34 @@ void TernaryOp::print(std::ostream& stream, const std::string&) const
   stream << "(" << *this->cond << " ? " << *this->ifexpr << " : " << *this->elseexpr << ")";
 }
 
+void TernaryOp::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  nodes.push_back(this->cond.get());
+  nodes.push_back(this->ifexpr.get());
+  nodes.push_back(this->elseexpr.get());
+}
+
 ArrayLookup::ArrayLookup(Expression *array, Expression *index, const Location& loc)
   : Expression(loc), array(array), index(index)
 {
 }
 
 Value ArrayLookup::evaluate(const std::shared_ptr<const Context>& context) const {
+  setEvaluated();
   return this->array->evaluate(context)[this->index->evaluate(context)];
 }
 
 void ArrayLookup::print(std::ostream& stream, const std::string&) const
 {
   stream << *array << "[" << *index << "]";
+}
+
+void ArrayLookup::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  array.get()->gatherChilderen(nodes);
+  index.get()->gatherChilderen(nodes);
 }
 
 Literal::Literal(bool val, const Location& loc) : Expression(loc), value(val) {}
@@ -203,6 +234,7 @@ Literal::Literal(boost::none_t val, const Location& loc) : Expression(loc), valu
 
 Value Literal::evaluate(const std::shared_ptr<const Context>&) const
 {
+  setEvaluated();
   if (isBool()) {
     return Value(*toBool());
   } else if (isDouble()) {
@@ -220,6 +252,11 @@ Value Literal::evaluate(const std::shared_ptr<const Context>&) const
 void Literal::print(std::ostream& stream, const std::string&) const
 {
   stream << evaluate(nullptr);
+}
+
+void Literal::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
 }
 
 Range::Range(Expression *begin, Expression *end, const Location& loc)
@@ -250,6 +287,7 @@ static void NOINLINE print_range_err(const std::string& begin, const std::string
 
 Value Range::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   Value beginValue = this->begin->evaluate(context);
   if (beginValue.type() == Value::Type::NUMBER) {
     Value endValue = this->end->evaluate(context);
@@ -290,6 +328,14 @@ void Range::print(std::ostream& stream, const std::string&) const
   stream << "]";
 }
 
+void Range::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  begin.get()->gatherChilderen(nodes);
+  step.get()->gatherChilderen(nodes);
+  end.get()->gatherChilderen(nodes);
+}
+
 bool Range::isLiteral() const {
   return this->step ?
          begin->isLiteral() && end->isLiteral() && step->isLiteral() :
@@ -322,6 +368,7 @@ void Vector::emplace_back(Expression *expr)
 
 Value Vector::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   if (children.size() == 1) {
     Value val = children.front()->evaluate(context);
     // If only 1 EmbeddedVectorType, convert to plain VectorType
@@ -349,18 +396,32 @@ void Vector::print(std::ostream& stream, const std::string&) const
   stream << "]";
 }
 
+void Vector::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  for (auto child : children) {
+    child.get()->gatherChilderen(nodes);
+  }
+}
+
 Lookup::Lookup(const std::string& name, const Location& loc) : Expression(loc), name(name)
 {
 }
 
 Value Lookup::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   return context->lookup_variable(this->name, loc).clone();
 }
 
 void Lookup::print(std::ostream& stream, const std::string&) const
 {
   stream << this->name;
+}
+
+void Lookup::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
 }
 
 MemberLookup::MemberLookup(Expression *expr, const std::string& member, const Location& loc)
@@ -370,6 +431,7 @@ MemberLookup::MemberLookup(Expression *expr, const std::string& member, const Lo
 
 Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   const Value& v = this->expr->evaluate(context);
   static const boost::regex re_swizzle_validation("^([xyzw]{1,4}|[rgba]{1,4})$");
 
@@ -413,6 +475,12 @@ void MemberLookup::print(std::ostream& stream, const std::string&) const
   stream << *this->expr << "." << this->member;
 }
 
+void MemberLookup::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  expr.get()->gatherChilderen(nodes);
+}
+
 FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList& parameters, const Location& loc)
   : Expression(loc), context(nullptr), parameters(parameters), expr(expr)
 {
@@ -420,6 +488,7 @@ FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList& p
 
 Value FunctionDefinition::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   return FunctionPtr{FunctionType{context, expr, std::unique_ptr<AssignmentList>{new AssignmentList{parameters}}}};
 }
 
@@ -435,6 +504,12 @@ void FunctionDefinition::print(std::ostream& stream, const std::string& indent) 
     first = false;
   }
   stream << ") " << *this->expr;
+}
+
+void FunctionDefinition::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  expr.get()->gatherChilderen(nodes);
 }
 
 /**
@@ -561,6 +636,7 @@ static SimplificationResult simplify_function_body(const Expression *expression,
 
 Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   const auto& name = get_name();
   if (StackCheck::inst().check()) {
     print_err(name.c_str(), loc, context);
@@ -612,6 +688,15 @@ void FunctionCall::print(std::ostream& stream, const std::string&) const
   stream << this->get_name() << "(" << this->arguments << ")";
 }
 
+void FunctionCall::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  for(auto argument : this->arguments){
+    argument.get()->gatherChilderen(nodes);
+  }
+}
+
+
 Expression *FunctionCall::create(const std::string& funcname, const AssignmentList& arglist, Expression *expr, const Location& loc)
 {
   if (funcname == "assert") {
@@ -659,6 +744,7 @@ const Expression *Assert::evaluateStep(const std::shared_ptr<const Context>& con
 
 Value Assert::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   const Expression *nextexpr = evaluateStep(context);
   return nextexpr ? nextexpr->evaluate(context) : Value::undefined.clone();
 }
@@ -667,6 +753,12 @@ void Assert::print(std::ostream& stream, const std::string&) const
 {
   stream << "assert(" << this->arguments << ")";
   if (this->expr) stream << " " << *this->expr;
+}
+
+void Assert::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  if(this->expr) this->expr.get()->gatherChilderen(nodes);
 }
 
 Echo::Echo(const AssignmentList& args, Expression *expr, const Location& loc)
@@ -684,6 +776,7 @@ const Expression *Echo::evaluateStep(const std::shared_ptr<const Context>& conte
 
 Value Echo::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   const Expression *nextexpr = evaluateStep(context);
   return nextexpr ? nextexpr->evaluate(context) : Value::undefined.clone();
 }
@@ -692,6 +785,15 @@ void Echo::print(std::ostream& stream, const std::string&) const
 {
   stream << "echo(" << this->arguments << ")";
   if (this->expr) stream << " " << *this->expr;
+}
+
+void Echo::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  if(this->expr) this->expr.get()->gatherChilderen(nodes);
+  for(auto argument : arguments){
+    argument.get()->gatherChilderen(nodes);
+  }
 }
 
 Let::Let(const AssignmentList& args, Expression *expr, const Location& loc)
@@ -730,6 +832,7 @@ const Expression *Let::evaluateStep(ContextHandle<Context>& targetContext) const
 
 Value Let::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   ContextHandle<Context> letContext{Context::create<Context>(context)};
   return evaluateStep(letContext)->evaluate(*letContext);
 }
@@ -737,6 +840,15 @@ Value Let::evaluate(const std::shared_ptr<const Context>& context) const
 void Let::print(std::ostream& stream, const std::string&) const
 {
   stream << "let(" << this->arguments << ") " << *expr;
+}
+
+
+void Let::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  for(auto argument : this->arguments){
+    argument.get()->gatherChilderen(nodes);
+  }
 }
 
 ListComprehension::ListComprehension(const Location& loc) : Expression(loc)
@@ -750,6 +862,7 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 
 Value LcIf::evaluate(const std::shared_ptr<const Context>& context) const
 {
+setEvaluated();
   const shared_ptr<Expression>& expr = this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
   if (expr) {
     return expr->evaluate(context);
@@ -764,6 +877,12 @@ void LcIf::print(std::ostream& stream, const std::string&) const
   if (this->elseexpr) {
     stream << " else (" << *this->elseexpr << ")";
   }
+}
+
+void LcIf::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  if (this->elseexpr) this->elseexpr.get()->gatherChilderen(nodes);
 }
 
 LcEach::LcEach(Expression *expr, const Location& loc) : ListComprehension(loc), expr(expr)
@@ -806,6 +925,7 @@ Value LcEach::evalRecur(Value&& v, const std::shared_ptr<const Context>& context
 
 Value LcEach::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   return evalRecur(this->expr->evaluate(context), context);
 }
 
@@ -813,6 +933,13 @@ void LcEach::print(std::ostream& stream, const std::string&) const
 {
   stream << "each (" << *this->expr << ")";
 }
+
+void LcEach::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  if (this->expr) this->expr.get()->gatherChilderen(nodes);
+}
+
 
 LcFor::LcFor(const AssignmentList& args, Expression *expr, const Location& loc)
   : ListComprehension(loc), arguments(args), expr(expr)
@@ -886,6 +1013,7 @@ void LcFor::forEach(const AssignmentList& assignments, const Location& loc, cons
 
 Value LcFor::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   EmbeddedVectorType vec(context->session());
   forEach(this->arguments, this->loc, context,
           [&vec, expression = expr.get()] (const std::shared_ptr<const Context>& iterationContext) {
@@ -900,6 +1028,14 @@ void LcFor::print(std::ostream& stream, const std::string&) const
   stream << "for(" << this->arguments << ") (" << *this->expr << ")";
 }
 
+void LcFor::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  for(auto argument : arguments){
+    argument.get()->gatherChilderen(nodes);
+  }
+}
+
 LcForC::LcForC(const AssignmentList& args, const AssignmentList& incrargs, Expression *cond, Expression *expr, const Location& loc)
   : ListComprehension(loc), arguments(args), incr_arguments(incrargs), cond(cond), expr(expr)
 {
@@ -907,6 +1043,7 @@ LcForC::LcForC(const AssignmentList& args, const AssignmentList& incrargs, Expre
 
 Value LcForC::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   EmbeddedVectorType output(context->session());
 
   ContextHandle<Context> initialContext{Let::sequentialAssignmentContext(this->arguments, this->location(), context)};
@@ -948,6 +1085,19 @@ void LcForC::print(std::ostream& stream, const std::string&) const
     << ") " << *this->expr;
 }
 
+void LcForC::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  for(auto argument : arguments){
+    argument.get()->gatherChilderen(nodes);
+  }
+  this->cond.get()->gatherChilderen(nodes);
+  for(auto argument : incr_arguments){
+    argument.get()->gatherChilderen(nodes);
+  }
+  this->expr.get()->gatherChilderen(nodes);
+}
+
 LcLet::LcLet(const AssignmentList& args, Expression *expr, const Location& loc)
   : ListComprehension(loc), arguments(args), expr(expr)
 {
@@ -955,10 +1105,20 @@ LcLet::LcLet(const AssignmentList& args, Expression *expr, const Location& loc)
 
 Value LcLet::evaluate(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   return this->expr->evaluate(*Let::sequentialAssignmentContext(this->arguments, this->location(), context));
 }
 
 void LcLet::print(std::ostream& stream, const std::string&) const
 {
   stream << "let(" << this->arguments << ") (" << *this->expr << ")";
+}
+
+void LcLet::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  for(auto argument : arguments){
+    argument.get()->gatherChilderen(nodes);
+  }
+  this->expr.get()->gatherChilderen(nodes);
 }

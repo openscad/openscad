@@ -38,4 +38,6 @@ public:
   std::string name;
   AssignmentList parameters;
   LocalScope body;
+
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 };

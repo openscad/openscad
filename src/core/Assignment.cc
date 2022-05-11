@@ -47,6 +47,10 @@ const Annotation *Assignment::annotation(const std::string& name) const
   return found == annotations.end() ? nullptr : found->second;
 }
 
+const shared_ptr<Expression>& Assignment::getExpr() const {
+  setEvaluated();
+  return expr;
+}
 
 void Assignment::print(std::ostream& stream, const std::string& indent) const
 {
@@ -59,6 +63,12 @@ void Assignment::print(std::ostream& stream, const std::string& indent) const
     if (parameter) parameter->print(stream, indent);
   }
   stream << indent << this->name << " = " << *this->expr << ";\n";
+}
+
+void Assignment::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  if(expr) expr.get()->gatherChilderen(nodes);
 }
 
 std::ostream& operator<<(std::ostream& stream, const AssignmentList& assignments)

@@ -53,6 +53,21 @@ void LocalScope::print(std::ostream& stream, const std::string& indent, const bo
   }
 }
 
+void LocalScope::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  for (const auto& f : this->astFunctions) {
+    f.second->gatherChilderen(nodes);
+  }
+  for (const auto& m : this->astModules) {
+    m.second->gatherChilderen(nodes);
+  }
+  for (const auto& assignment : this->assignments) {
+    assignment->gatherChilderen(nodes);
+  }
+  for (const auto& inst : this->moduleInstantiations) {
+    inst->gatherChilderen(nodes);
+  }
+}
 std::shared_ptr<AbstractNode> LocalScope::instantiateModules(const std::shared_ptr<const Context>& context, const std::shared_ptr<AbstractNode> &target) const
 {
   for (const auto& modinst : this->moduleInstantiations) {

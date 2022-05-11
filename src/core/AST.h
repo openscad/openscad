@@ -46,13 +46,20 @@ public:
   virtual ~ASTNode() {}
 
   virtual void print(std::ostream& stream, const std::string& indent) const = 0;
+  virtual void gatherChilderen(std::vector<const ASTNode*>& nodes) const = 0;
 
   std::string dump(const std::string& indent) const;
   const Location& location() const { return loc; }
   void setLocation(const Location& loc) { this->loc = loc; }
+  bool isEvaluated() const {return this->evaluated;}
 
 protected:
   Location loc;
+  void setEvaluated() const {
+    this->evaluated=true;
+  }
+private:
+  volatile mutable bool evaluated=false;
 };
 
 std::ostream& operator<<(std::ostream& stream, const ASTNode& ast);

@@ -38,6 +38,7 @@ public:
   UserFunction(const char *name, AssignmentList& parameters, shared_ptr<Expression> expr, const Location& loc);
 
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 };
 
 

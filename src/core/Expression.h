@@ -32,6 +32,7 @@ public:
   UnaryOp(Op op, Expression *expr, const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 
 private:
   const char *opString() const;
@@ -63,6 +64,7 @@ public:
   BinaryOp(Expression *left, Op op, Expression *right, const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 
 private:
   const char *opString() const;
@@ -79,6 +81,8 @@ public:
   const Expression *evaluateStep(const std::shared_ptr<const Context>& context) const;
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
+
 private:
   shared_ptr<Expression> cond;
   shared_ptr<Expression> ifexpr;
@@ -91,6 +95,8 @@ public:
   ArrayLookup(Expression *array, Expression *index, const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
+
 private:
   shared_ptr<Expression> array;
   shared_ptr<Expression> index;
@@ -114,6 +120,7 @@ public:
 
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
   bool isLiteral() const override { return true;}
 private:
   boost::variant<bool, double, std::string, boost::none_t> value;
@@ -129,6 +136,7 @@ public:
   const Expression *getEnd() const { return end.get(); }
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
   bool isLiteral() const override;
 private:
   shared_ptr<Expression> begin;
@@ -143,6 +151,7 @@ public:
   const std::vector<shared_ptr<Expression>>& getChildren() const { return children; }
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
   void emplace_back(Expression *expr);
   bool isLiteral() const override;
 private:
@@ -156,6 +165,7 @@ public:
   Lookup(const std::string& name, const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
   const std::string& get_name() const { return name; }
 private:
   std::string name;
@@ -167,6 +177,7 @@ public:
   MemberLookup(Expression *expr, const std::string& member, const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 private:
   shared_ptr<Expression> expr;
   std::string member;
@@ -179,6 +190,7 @@ public:
   boost::optional<CallableFunction> evaluate_function_expression(const std::shared_ptr<const Context>& context) const;
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
   const std::string& get_name() const { return name; }
   static Expression *create(const std::string& funcname, const AssignmentList& arglist, Expression *expr, const Location& loc);
 public:
@@ -194,6 +206,7 @@ public:
   FunctionDefinition(Expression *expr, const AssignmentList& parameters, const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 public:
   shared_ptr<const Context> context;
   AssignmentList parameters;
@@ -208,6 +221,7 @@ public:
   const Expression *evaluateStep(const std::shared_ptr<const Context>& context) const;
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 private:
   AssignmentList arguments;
   shared_ptr<Expression> expr;
@@ -220,6 +234,7 @@ public:
   const Expression *evaluateStep(const std::shared_ptr<const Context>& context) const;
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 private:
   AssignmentList arguments;
   shared_ptr<Expression> expr;
@@ -234,6 +249,7 @@ public:
   const Expression *evaluateStep(ContextHandle<Context>& targetContext) const;
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 private:
   AssignmentList arguments;
   shared_ptr<Expression> expr;
@@ -252,6 +268,7 @@ public:
   LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 private:
   shared_ptr<Expression> cond;
   shared_ptr<Expression> ifexpr;
@@ -265,6 +282,7 @@ public:
   static void forEach(const AssignmentList& assignments, const Location& loc, const std::shared_ptr<const Context>& context, std::function<void(const std::shared_ptr<const Context>&)> operation);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 private:
   AssignmentList arguments;
   shared_ptr<Expression> expr;
@@ -276,6 +294,7 @@ public:
   LcForC(const AssignmentList& args, const AssignmentList& incrargs, Expression *cond, Expression *expr, const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 private:
   AssignmentList arguments;
   AssignmentList incr_arguments;
@@ -289,6 +308,7 @@ public:
   LcEach(Expression *expr, const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 private:
   Value evalRecur(Value&& v, const std::shared_ptr<const Context>& context) const;
   shared_ptr<Expression> expr;
@@ -300,6 +320,7 @@ public:
   LcLet(const AssignmentList& args, Expression *expr, const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 private:
   AssignmentList arguments;
   shared_ptr<Expression> expr;

@@ -17,6 +17,8 @@ public:
   void print(std::ostream& stream, const std::string& indent) const override { print(stream, indent, false); }
   std::shared_ptr<AbstractNode> evaluate(const std::shared_ptr<const Context> context) const;
 
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
+
   const std::string& name() const { return this->modname; }
   bool isBackground() const { return this->tag_background; }
   bool isHighlight() const { return this->tag_highlight; }
@@ -28,6 +30,7 @@ public:
   bool tag_root;
   bool tag_highlight;
   bool tag_background;
+  
 protected:
   std::string modname;
 };
@@ -41,6 +44,7 @@ public:
   LocalScope *makeElseScope();
   LocalScope *getElseScope() const { return this->else_scope.get(); }
   void print(std::ostream& stream, const std::string& indent, const bool inlined) const final;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 private:
   std::unique_ptr<LocalScope> else_scope;
 };
