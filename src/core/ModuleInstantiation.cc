@@ -40,6 +40,9 @@ void ModuleInstantiation::print(std::ostream& stream, const std::string& indent,
 void ModuleInstantiation::gatherChilderen(std::vector<const ASTNode*>& nodes) const
 {
   nodes.push_back(this);
+  for(auto argument : arguments){
+    argument->gatherChilderen(nodes);
+  }
   scope.gatherChilderen(nodes);
 }
 
@@ -66,7 +69,7 @@ void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& i
 void IfElseModuleInstantiation::gatherChilderen(std::vector<const ASTNode*>& nodes) const
 {
   ModuleInstantiation::gatherChilderen(nodes);
-  if (else_scope) else_scope.get()->gatherChilderen(nodes);
+  if (else_scope) else_scope->gatherChilderen(nodes);
 }
 
 /**

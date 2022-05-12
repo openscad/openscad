@@ -553,6 +553,7 @@ FunctionCall::FunctionCall(Expression *expr, const AssignmentList& args, const L
 
 boost::optional<CallableFunction> FunctionCall::evaluate_function_expression(const std::shared_ptr<const Context>& context) const
 {
+  setEvaluated();
   if (isLookup) {
     return context->lookup_function(name, location());
   } else {
@@ -692,7 +693,7 @@ void FunctionCall::gatherChilderen(std::vector<const ASTNode*>& nodes) const
 {
   nodes.push_back(this);
   for(auto argument : this->arguments){
-    argument.get()->gatherChilderen(nodes);
+    argument->gatherChilderen(nodes);
   }
 }
 
@@ -738,6 +739,7 @@ void Assert::performAssert(const AssignmentList& arguments, const Location& loca
 
 const Expression *Assert::evaluateStep(const std::shared_ptr<const Context>& context) const
 {
+  this->setEvaluated();
   performAssert(this->arguments, this->loc, context);
   return expr.get();
 }
@@ -790,9 +792,9 @@ void Echo::print(std::ostream& stream, const std::string&) const
 void Echo::gatherChilderen(std::vector<const ASTNode*>& nodes) const
 {
   nodes.push_back(this);
-  if(this->expr) this->expr.get()->gatherChilderen(nodes);
+  if(this->expr) this->expr->gatherChilderen(nodes);
   for(auto argument : arguments){
-    argument.get()->gatherChilderen(nodes);
+    argument->gatherChilderen(nodes);
   }
 }
 
@@ -826,6 +828,7 @@ ContextHandle<Context> Let::sequentialAssignmentContext(const AssignmentList& as
 
 const Expression *Let::evaluateStep(ContextHandle<Context>& targetContext) const
 {
+  this->setEvaluated();
   doSequentialAssignment(this->arguments, this->location(), targetContext);
   return this->expr.get();
 }
@@ -847,7 +850,7 @@ void Let::gatherChilderen(std::vector<const ASTNode*>& nodes) const
 {
   nodes.push_back(this);
   for(auto argument : this->arguments){
-    argument.get()->gatherChilderen(nodes);
+    argument->gatherChilderen(nodes);
   }
 }
 
@@ -937,7 +940,7 @@ void LcEach::print(std::ostream& stream, const std::string&) const
 void LcEach::gatherChilderen(std::vector<const ASTNode*>& nodes) const
 {
   nodes.push_back(this);
-  if (this->expr) this->expr.get()->gatherChilderen(nodes);
+  if (this->expr) this->expr->gatherChilderen(nodes);
 }
 
 
@@ -1089,13 +1092,13 @@ void LcForC::gatherChilderen(std::vector<const ASTNode*>& nodes) const
 {
   nodes.push_back(this);
   for(auto argument : arguments){
-    argument.get()->gatherChilderen(nodes);
+    argument->gatherChilderen(nodes);
   }
   this->cond.get()->gatherChilderen(nodes);
   for(auto argument : incr_arguments){
-    argument.get()->gatherChilderen(nodes);
+    argument->gatherChilderen(nodes);
   }
-  this->expr.get()->gatherChilderen(nodes);
+  this->expr->gatherChilderen(nodes);
 }
 
 LcLet::LcLet(const AssignmentList& args, Expression *expr, const Location& loc)
@@ -1118,7 +1121,7 @@ void LcLet::gatherChilderen(std::vector<const ASTNode*>& nodes) const
 {
   nodes.push_back(this);
   for(auto argument : arguments){
-    argument.get()->gatherChilderen(nodes);
+    argument->gatherChilderen(nodes);
   }
-  this->expr.get()->gatherChilderen(nodes);
+  this->expr->gatherChilderen(nodes);
 }

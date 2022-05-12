@@ -1209,12 +1209,23 @@ void MainWindow::instantiateRoot()
     std::shared_ptr<const FileContext> file_context;
     this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
         auto editor = (ScintillaEditor *) this->activeEditor;
+std::vector<const ASTNode*> astNodes;
     if( (editor != nullptr) ){
-          std::vector<const ASTNode*> nodes;
-          this->root_file->gatherChilderen(nodes);
-          editor->evalutated(this->root_file->getFullpath(), nodes);
+          
+          this->root_file->gatherChilderen(astNodes);
+          editor->evalutated(this->root_file->getFullpath(), astNodes);
         }
-      
+        uint64_t nodes = 0;
+        uint64_t evaluated = 0;
+          for (auto astNode : astNodes) {
+        if(astNode) {
+          nodes++;
+            if(astNode->isEvaluated()){
+              evaluated++;
+            }
+          }
+        }
+    LOG(message_group::None, Location::NONE, "", "Evalutated %1d/%2d", evaluated, nodes);
 
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
