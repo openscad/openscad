@@ -186,6 +186,19 @@
    </property>
   </action>
  </widget>
+ <tabstops>
+  <tabstop>spinBoxWidth</tabstop>
+  <tabstop>spinBoxHeight</tabstop>
+  <tabstop>checkBoxAspecRatioLock</tabstop>
+  <tabstop>doubleSpinBox_tx</tabstop>
+  <tabstop>doubleSpinBox_ty</tabstop>
+  <tabstop>doubleSpinBox_tz</tabstop>
+  <tabstop>doubleSpinBox_rx</tabstop>
+  <tabstop>doubleSpinBox_ry</tabstop>
+  <tabstop>doubleSpinBox_rz</tabstop>
+  <tabstop>doubleSpinBox_d</tabstop>
+  <tabstop>doubleSpinBox_fov</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

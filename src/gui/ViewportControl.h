@@ -34,6 +34,7 @@ private slots:
 
 protected:
   void resizeEvent(QResizeEvent *event) override;
+  bool focusNextPrevChild(bool next) override;
 
 private:
   MainWindow *mainWindow;
