@@ -178,3 +178,22 @@ void ViewportControl::requestResize(){
   
   resizeMutex.unlock();
 }
+
+bool ViewportControl::focusNextPrevChild(bool next){
+    QWidget::focusNextPrevChild(next);
+
+    bool bChildHasFocus=false;
+    for(auto child : QObject::findChildren<QWidget*>()){
+        if(child->hasFocus()){
+            bChildHasFocus=true;
+        }
+    }
+    if(! bChildHasFocus){
+        if(next){
+            spinBoxWidth->setFocus();
+        }else{
+            doubleSpinBox_fov->setFocus();
+        }
+    }
+    return true;
+}
