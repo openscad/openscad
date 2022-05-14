@@ -176,6 +176,11 @@ public:
   {
   }
 
+  template <typename ... Args>
+  MessageClass(const std::string& fmt, Args&&... args) : fmt(fmt), args(std::forward<Args>(args)...)
+  {
+  }
+
   std::string format() const
   {
     return format(std::index_sequence_for<Ts...>{});

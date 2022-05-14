@@ -165,7 +165,7 @@ void bucketFree( struct BucketAlloc *ba, void *ptr )
 	}
 	else
 	{
-		printf("ERROR! pointer 0x%p does not belong to allocator '%s'\n", ba->name);
+		printf("ERROR! pointer 0x%p does not belong to allocator '%s'\n", ptr, ba->name);
 	}
 #else
 	// Add the node in front of the free list.

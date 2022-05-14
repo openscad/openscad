@@ -380,7 +380,7 @@ chrpath(const char *filename, const char *newpath, int convert)
 
   if (strlen(newpath) > rpathlen)
   {
-    fprintf(stderr, "new rpath '%s' too large; maximum length %i\n",
+    fprintf(stderr, "new rpath '%s' too large; maximum length %u\n",
             newpath, rpathlen);
     free(dyns);
     free(strtab);

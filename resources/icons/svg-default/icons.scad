@@ -56,9 +56,17 @@ icons = [
     ["show-edges"],
     ["crosshairs"],
     ["animate"],
+    ["animate_disabled"],
+    ["animate_pause"],
     ["surface"],
     ["wireframe"],
     ["throwntogether"],
+    ["vcr-control-start"],
+    ["vcr-control-step-back"],
+    ["vcr-control-play"],
+    ["vcr-control-pause"],
+    ["vcr-control-step-forward"],
+    ["vcr-control-end"],
 ];
 
 icon(selected_icon) {
@@ -102,9 +110,17 @@ icon(selected_icon) {
     show_edges();
     crosshairs();
     animate();
+    animate_disabled();
+    animate_pause();
     surface_();
     wireframe();
     throwntogether();
+    vcr_control_start();
+    vcr_control_step_back();
+    vcr_control_play();
+    vcr_control_pause();
+    vcr_control_step_forward();
+    vcr_control_end();
 }
 
 if (list_icons) {
@@ -431,17 +447,17 @@ module open() {
 }
 
 module save() {
-	u = height/32;
-	difference() {
-		square(32*[u,u]);
-		translate([4,2]*u) square([24,14]*u);
-		translate([8,19]*u) square([16, 23]*u);
-		translate([100,100]) rotate(45) square([8,8]*u, center=true);
-	}
-	translate([18,21]*u) square([4,9]*u);
-	translate([6,4]*u) square([20,2]*u);
-	translate([6,8]*u) square([20,2]*u);
-	translate([6,12]*u) square([20,2]*u);
+    u = height/32;
+    difference() {
+        square(32*[u,u]);
+        translate([4,2]*u) square([24,14]*u);
+        translate([8,19]*u) square([16, 23]*u);
+      translate([100,100]) rotate(45) square([8,8]*u, center=true);
+    }
+    translate([18,21]*u) square([4,9]*u);
+    translate([6,4]*u) square([20,2]*u);
+    translate([6,8]*u) square([20,2]*u);
+    translate([6,12]*u) square([20,2]*u);
 }
 
 module reset_view() {
@@ -611,6 +627,23 @@ module animate() {
     }
 }
 
+module animate_disabled() {
+    translate([width / 2, height / 2]) {
+        outline(thin) circle(d = 0.8 * width);
+        circle(d = 0.5 * width, $fn = 3);
+        rotate(50) square([thin, 0.8 * width], center = true);
+    }
+}
+
+module animate_pause() {
+    translate([width / 2, height / 2]) {
+        outline(thin) circle(d = 0.8 * width);
+        for (x = [-thick, thick]) {
+            translate([x, 0]) square([thick, 0.4 * width], center = true);
+        }
+    }
+}
+
 module surface_() {
     translate([width / 2, height / 2]) {
         circle(d = 0.8 * width);
@@ -643,5 +676,60 @@ module throwntogether() {
                 hull() c();
         }
         c();
+    }
+}
+
+module vcr_control_start(){
+    offset(rounding)
+    translate([width/2,height/2])
+    rotate([0,180,0]){
+        x =  0.5 * width /2;
+        translate([-x, 0])
+        circle(d = 0.5 * width, $fn = 3);
+        circle(d = 0.5 * width, $fn = 3);
+       translate([x, 0]) square([thick, 0.4 * width], center = true);
+    }
+}
+module vcr_control_step_back(){
+    offset(rounding)
+    translate([width/2,height/2])
+    rotate([0,180,0]){
+        circle(d = 0.5 * width, $fn = 3);
+        x =  0.5 * width /2;
+       translate([x, 0]) square([thick, 0.4 * width], center = true);
+    }
+}
+
+module vcr_control_play(){
+    offset(rounding)
+    translate([width/2,height/2])
+    circle(d = 0.5 * width, $fn = 3);
+}
+
+module vcr_control_pause(){
+    offset(rounding)
+    translate([width/2,height/2])
+    for (x = [-thick, thick]) {
+        translate([x, 0]) square([thick, 0.4 * width], center = true);
+    }
+}
+
+module vcr_control_step_forward(){
+    offset(rounding)
+    translate([width/2,height/2]){
+        circle(d = 0.5 * width, $fn = 3);
+        x =  0.5 * width /2;
+       translate([x, 0]) square([thick, 0.4 * width], center = true);
+    }
+}
+
+module vcr_control_end(){
+    offset(rounding)
+    translate([width/2,height/2]){
+        x =  0.5 * width /2;
+        translate([-x, 0])
+        circle(d = 0.5 * width, $fn = 3);
+        circle(d = 0.5 * width, $fn = 3);
+       translate([x, 0]) square([thick, 0.4 * width], center = true);
     }
 }

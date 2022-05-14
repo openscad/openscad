@@ -32,9 +32,9 @@ void LocalScope::addFunction(const shared_ptr<class UserFunction>& func)
   this->astFunctions.emplace_back(func->name, func);
 }
 
-void LocalScope::addAssignment(const shared_ptr<Assignment>& ass)
+void LocalScope::addAssignment(const shared_ptr<Assignment>& assignment)
 {
-  this->assignments.push_back(ass);
+  this->assignments.push_back(assignment);
 }
 
 void LocalScope::print(std::ostream& stream, const std::string& indent, const bool inlined) const
@@ -45,8 +45,8 @@ void LocalScope::print(std::ostream& stream, const std::string& indent, const bo
   for (const auto& m : this->astModules) {
     m.second->print(stream, indent);
   }
-  for (const auto& ass : this->assignments) {
-    ass->print(stream, indent);
+  for (const auto& assignment : this->assignments) {
+    assignment->print(stream, indent);
   }
   for (const auto& inst : this->moduleInstantiations) {
     inst->print(stream, indent, inlined);

@@ -206,6 +206,7 @@ OffscreenContext *create_offscreen_context(int w, int h)
   // This call alters ctx->window and ctx->openGLContext
   //  and ctx->dev_context if successful
   if (!create_wgl_dummy_context(*ctx)) {
+    delete ctx;
     return nullptr;
   }
 

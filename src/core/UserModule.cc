@@ -42,7 +42,7 @@ static void NOINLINE print_err(std::string name, const Location& loc, const std:
   LOG(message_group::Error, loc, context->documentRoot(), "Recursion detected calling module '%1$s'", name);
 }
 
-static void NOINLINE print_trace(const UserModule *mod,std::shared_ptr<const UserModuleContext> context, const AssignmentList parameters){
+static void NOINLINE print_trace(const UserModule *mod,std::shared_ptr<const UserModuleContext> context, const AssignmentList& parameters){
   std::stringstream stream ;
   if (parameters.size() == 0){
       //nothing to do

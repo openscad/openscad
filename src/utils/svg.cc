@@ -22,7 +22,7 @@ std::string svg_header(int widthpx, int heightpx)
   return out.str();
 }
 
-std::string svg_label(std::string s)
+std::string svg_label(const std::string& s)
 {
   std::ostringstream out;
   out << "   <text fill='black' x='20' y='40' font-size='24'>" << s << "</text>";
