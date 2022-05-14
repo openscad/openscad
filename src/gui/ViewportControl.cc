@@ -180,7 +180,7 @@ void ViewportControl::requestResize(){
 }
 
 bool ViewportControl::focusNextPrevChild(bool next){
-    QWidget::focusNextPrevChild(next);
+    QWidget::focusNextPrevChild(next); //tab order is set in the UI File
 
     bool bChildHasFocus=false;
     for(auto child : QObject::findChildren<QWidget*>()){
@@ -188,6 +188,7 @@ bool ViewportControl::focusNextPrevChild(bool next){
             bChildHasFocus=true;
         }
     }
+    //do not let the focus leave this widget
     if(! bChildHasFocus){
         if(next){
             spinBoxWidth->setFocus();
