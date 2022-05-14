@@ -631,6 +631,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
   ${TEST_SCAD_DIR}/misc/text-metrics-test.scad
   ${TEST_SCAD_DIR}/json/import-json.scad
+  ${TEST_SCAD_DIR}/json/import-json-relative-path.scad
   ${TEST_SCAD_DIR}/misc/vector-swizzling.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
 )
@@ -854,6 +855,7 @@ experimental_tests(throwntogethertest_text-metrics)
 experimental_tests(dxfpngtest_text-metrics)
 experimental_tests(svgpngtest_text-metrics)
 experimental_tests(echotest_import-json)
+experimental_tests(echotest_import-json-relative-path)
 
 # Test config handling
 

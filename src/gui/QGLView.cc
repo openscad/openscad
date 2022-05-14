@@ -213,7 +213,7 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
   if (success == GL_TRUE) {
     cam.object_trans -= Vector3d(px, py, pz);
     update();
-    emit doAnimateUpdate();
+    emit cameraChanged();
   }
 }
 
@@ -230,7 +230,8 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
   double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
   if (mouse_drag_active) {
     mouse_drag_moved = true;
-    if (event->buttons() & Qt::LeftButton
+    auto button_compare = this->mouseSwapButtons?Qt::RightButton : Qt::LeftButton;
+    if (event->buttons() & button_compare
 #ifdef Q_OS_MAC
         && !(event->modifiers() & Qt::MetaModifier)
 #endif
@@ -276,8 +277,9 @@ void QGLView::mouseReleaseEvent(QMouseEvent *event)
   mouse_drag_active = false;
   releaseMouse();
 
+  auto button_compare = this->mouseSwapButtons?Qt::LeftButton : Qt::RightButton;
   if (!mouse_drag_moved
-      && (event->button() == Qt::RightButton)) {
+      && (event->button() == button_compare)) {
     QPoint point = event->pos();
     //point.setY(this->height() - point.y());
     emit doSelectObject(point);
@@ -376,7 +378,7 @@ void QGLView::translate(double x, double y, double z, bool relative, bool viewPo
   cam.object_trans.y() = f * cam.object_trans.y() + tm(1, 3);
   cam.object_trans.z() = f * cam.object_trans.z() + tm(2, 3);
   update();
-  emit doAnimateUpdate();
+  emit cameraChanged();
 }
 
 void QGLView::rotate(double x, double y, double z, bool relative)
@@ -389,7 +391,7 @@ void QGLView::rotate(double x, double y, double z, bool relative)
   normalizeAngle(cam.object_rot.y());
   normalizeAngle(cam.object_rot.z());
   update();
-  emit doAnimateUpdate();
+  emit cameraChanged();
 }
 
 void QGLView::rotate2(double x, double y, double z)
@@ -436,5 +438,5 @@ void QGLView::rotate2(double x, double y, double z)
   normalizeAngle(cam.object_rot.z());
 
   update();
-  emit doAnimateUpdate();
+  emit cameraChanged();
 }

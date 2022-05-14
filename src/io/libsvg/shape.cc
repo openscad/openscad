@@ -117,7 +117,7 @@ shape::set_attrs(attr_map_t& attrs, void *context)
 }
 
 const std::string
-shape::get_style(std::string name) const
+shape::get_style(const std::string& name) const
 {
   std::vector<std::string> styles;
   boost::split(styles, this->style, boost::is_any_of(";"));

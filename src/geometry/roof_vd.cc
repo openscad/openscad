@@ -410,7 +410,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
     }
   } catch (RoofNode::roof_exception& e) {
     delete hat;
-    throw e;
+    throw;
   }
 
   return hat;

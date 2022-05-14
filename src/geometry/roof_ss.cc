@@ -149,7 +149,7 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
     return hat;
   } catch (RoofNode::roof_exception& e) {
     delete hat;
-    throw e;
+    throw;
   }
 }
 

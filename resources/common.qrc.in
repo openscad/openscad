@@ -108,11 +108,27 @@
     <file>icons/svg-default/crosshairs-white.svg</file>
     <file>icons/svg-default/animate.svg</file>
     <file>icons/svg-default/animate-white.svg</file>
+    <file>icons/svg-default/animate_pause.svg</file>
+    <file>icons/svg-default/animate_pause-white.svg</file>
+    <file>icons/svg-default/animate_disabled.svg</file>
+    <file>icons/svg-default/animate_disabled-white.svg</file>
     <file>icons/svg-default/surface.svg</file>
     <file>icons/svg-default/surface-white.svg</file>
     <file>icons/svg-default/wireframe.svg</file>
     <file>icons/svg-default/wireframe-white.svg</file>
     <file>icons/svg-default/throwntogether.svg</file>
     <file>icons/svg-default/throwntogether-white.svg</file>
+    <file>icons/svg-default/vcr-control-start.svg</file>
+    <file>icons/svg-default/vcr-control-start-white.svg</file>
+    <file>icons/svg-default/vcr-control-step-back.svg</file>
+    <file>icons/svg-default/vcr-control-step-back-white.svg</file>
+    <file>icons/svg-default/vcr-control-play.svg</file>
+    <file>icons/svg-default/vcr-control-play-white.svg</file>
+    <file>icons/svg-default/vcr-control-pause.svg</file>
+    <file>icons/svg-default/vcr-control-pause-white.svg</file>
+    <file>icons/svg-default/vcr-control-step-forward.svg</file>
+    <file>icons/svg-default/vcr-control-step-forward-white.svg</file>
+    <file>icons/svg-default/vcr-control-end.svg</file>
+    <file>icons/svg-default/vcr-control-end-white.svg</file>
   </qresource>
 </RCC>

@@ -240,7 +240,9 @@ MainWindow::MainWindow(const QStringList& filenames)
   consoleDockTitleWidget = new QWidget();
   parameterDockTitleWidget = new QWidget();
   errorLogDockTitleWidget = new QWidget();
+  animateDockTitleWidget = new QWidget();
 
+  this->animateWidget->setMainWindow(this);
   // actions not included in menu
   this->addAction(editActionInsertTemplate);
   this->addAction(editActionFoldAll);
@@ -253,6 +255,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   this->parameterDock->setAction(this->windowActionHideCustomizer);
   this->errorLogDock->setConfigKey("view/hideErrorLog");
   this->errorLogDock->setAction(this->windowActionHideErrorLog);
+  this->animateDock->setConfigKey("view/hideAnimate");
+  this->animateDock->setAction(this->windowActionHideAnimate);
 
   this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
   updateStatusBar(nullptr);
@@ -340,21 +344,14 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   root_node = nullptr;
 
-  this->anim_step = 0;
-  this->anim_numsteps = 0;
-  this->anim_tval = 0.0;
-  this->anim_dumping = false;
-  this->anim_dump_start_step = 0;
-
   this->qglview->statusLabel = new QLabel(this);
   this->qglview->statusLabel->setMinimumWidth(100);
   statusBar()->addWidget(this->qglview->statusLabel);
 
   QSettingsCached settings;
   this->qglview->setMouseCentricZoom(Settings::Settings::mouseCentricZoom.value());
+  this->qglview->setMouseSwapButtons(Settings::Settings::mouseSwapButtons.value());
 
-  animate_timer = new QTimer(this);
-  connect(animate_timer, SIGNAL(timeout()), this, SLOT(updateTVal()));
 
   autoReloadTimer = new QTimer(this);
   autoReloadTimer->setSingleShot(false);
@@ -366,14 +363,9 @@ MainWindow::MainWindow(const QStringList& filenames)
   waitAfterReloadTimer->setInterval(autoReloadPollingPeriodMS);
   connect(waitAfterReloadTimer, SIGNAL(timeout()), this, SLOT(waitAfterReload()));
   connect(Preferences::inst(), SIGNAL(ExperimentalChanged()), this, SLOT(changeParameterWidget()));
-  connect(this->e_tval, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimTval()));
-  connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFps()));
-  connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimSteps()));
-  connect(this->e_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
 
   progressThrottle->start();
 
-  animate_panel->hide();
   this->hideFind();
   frameCompileResult->hide();
   this->labelCompileResultMessage->setOpenExternalLinks(false);
@@ -484,7 +476,6 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->viewActionShowAxes, SIGNAL(triggered()), this, SLOT(viewModeShowAxes()));
   connect(this->viewActionShowCrosshairs, SIGNAL(triggered()), this, SLOT(viewModeShowCrosshairs()));
   connect(this->viewActionShowScaleProportional, SIGNAL(triggered()), this, SLOT(viewModeShowScaleProportional()));
-  connect(this->viewActionAnimate, SIGNAL(triggered()), this, SLOT(viewModeAnimate()));
   connect(this->viewActionTop, SIGNAL(triggered()), this, SLOT(viewAngleTop()));
   connect(this->viewActionBottom, SIGNAL(triggered()), this, SLOT(viewAngleBottom()));
   connect(this->viewActionLeft, SIGNAL(triggered()), this, SLOT(viewAngleLeft()));
@@ -505,6 +496,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->windowActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
   connect(this->windowActionHideCustomizer, SIGNAL(triggered()), this, SLOT(hideParameters()));
   connect(this->windowActionHideErrorLog, SIGNAL(triggered()), this, SLOT(hideErrorLog()));
+  connect(this->windowActionHideAnimate, SIGNAL(triggered()), this, SLOT(hideAnimate()));
+
   // Help menu
   connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
   connect(this->helpActionHomepage, SIGNAL(triggered()), this, SLOT(helpHomepage()));
@@ -528,11 +521,12 @@ MainWindow::MainWindow(const QStringList& filenames)
   this->menuBar()->addMenu(AutoUpdater::updater()->updateMenu);
 #endif
 
-  connect(this->qglview, SIGNAL(doAnimateUpdate()), this, SLOT(animateUpdate()));
+  connect(this->qglview, SIGNAL(cameraChanged()), animateWidget, SLOT(cameraChanged()));
   connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
 
   connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(update()));
   connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
+  connect(Preferences::inst(), SIGNAL(updateMouseSwapButtons(bool)), this->qglview, SLOT(setMouseSwapButtons(bool)));
   connect(Preferences::inst(), SIGNAL(updateReorderMode(bool)), this, SLOT(updateReorderMode(bool)));
   connect(Preferences::inst(), SIGNAL(updateUndockMode(bool)), this, SLOT(updateUndockMode(bool)));
   connect(Preferences::inst(), SIGNAL(openCSGSettingsChanged()), this, SLOT(openCSGSettingsChanged()));
@@ -566,9 +560,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   addKeyboardShortCut(this->viewerToolBar->actions());
   addKeyboardShortCut(this->editortoolbar->actions());
 
-  InputDriverManager::instance()->registerActions(this->menuBar()->actions(), "");
   Preferences *instance = Preferences::inst();
-  instance->ButtonConfig->init();
 
   initActionIcon(fileActionNew, ":/icons/svg-default/new.svg", ":/icons/svg-default/new-white.svg");
   initActionIcon(fileActionOpen, ":/icons/svg-default/open.svg", ":/icons/svg-default/open-white.svg");
@@ -594,7 +586,6 @@ MainWindow::MainWindow(const QStringList& filenames)
   initActionIcon(viewActionPerspective, ":/icons/svg-default/perspective.svg", ":/icons/svg-default/perspective-white.svg");
   initActionIcon(viewActionOrthogonal, ":/icons/svg-default/orthogonal.svg", ":/icons/svg-default/orthogonal-white.svg");
   initActionIcon(designActionPreview, ":/icons/svg-default/preview.svg", ":/icons/svg-default/preview-white.svg");
-  initActionIcon(viewActionAnimate, ":/icons/svg-default/animate.svg", ":/icons/svg-default/animate-white.svg");
   initActionIcon(fileActionExportSTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
   initActionIcon(fileActionExportAMF, ":/icons/svg-default/export-amf.svg", ":/icons/svg-default/export-amf-white.svg");
   initActionIcon(fileActionExport3MF, ":/icons/svg-default/export-3mf.svg", ":/icons/svg-default/export-3mf-white.svg");
@@ -614,11 +605,16 @@ MainWindow::MainWindow(const QStringList& filenames)
   initActionIcon(viewActionResetView, ":/icons/svg-default/reset-view.svg", ":/icons/svg-default/reset-view-white.svg");
   initActionIcon(viewActionShowScaleProportional, ":/icons/svg-default/scalemarkers.svg", ":/icons/svg-default/scalemarkers-white.svg");
 
+  InputDriverManager::instance()->registerActions(this->menuBar()->actions(), "", "");
+  InputDriverManager::instance()->registerActions(this->animateWidget->actions(), "animation", "animate");
+  instance->ButtonConfig->init();
+
   // fetch window states to be restored after restoreState() call
   bool hideConsole = settings.value("view/hideConsole").toBool();
   bool hideEditor = settings.value("view/hideEditor").toBool();
   bool hideCustomizer = settings.value("view/hideCustomizer").toBool();
   bool hideErrorLog = settings.value("view/hideErrorLog").toBool();
+  bool hideAnimate = settings.value("view/hideAnimate").toBool();
   bool hideEditorToolbar = settings.value("view/hideEditorToolbar").toBool();
   bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
 
@@ -627,7 +623,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   restoreState(windowState);
   resize(settings.value("window/size", QSize(800, 600)).toSize());
   move(settings.value("window/position", QPoint(0, 0)).toPoint());
-  updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar);
+  updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate);
 
   if (windowState.size() == 0) {
     /*
@@ -667,6 +663,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
   connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
   connect(this->errorLogDock, SIGNAL(topLevelChanged(bool)), this, SLOT(errorLogTopLevelChanged(bool)));
+  connect(this->animateDock, SIGNAL(topLevelChanged(bool)), this, SLOT(animateTopLevelChanged(bool)));
 
   // display this window and check for OpenGL 2.0 (OpenCSG) support
   viewModeThrownTogether();
@@ -715,10 +712,14 @@ void MainWindow::openFileFromPath(QString path, int line)
   }
 }
 
+bool MainWindow::isLightTheme(){
+  int defaultcolor = viewerToolBar->palette().window().color().lightness();
+  return (defaultcolor > 165);
+}
+
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)
 {
-  int defaultcolor = viewerToolBar->palette().window().color().lightness();
-  const char *resource = (defaultcolor > 165) ? darkResource : lightResource;
+  const char *resource = this->isLightTheme() ? darkResource : lightResource;
   action->setIcon(QIcon(resource));
 }
 
@@ -745,7 +746,7 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)
  * Qt call. So the values are loaded before the call and restored here
  * regardless of the (potential outdated) serialized state.
  */
-void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar)
+void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate)
 {
   windowActionHideEditor->setChecked(editor);
   hideEditor();
@@ -755,6 +756,8 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
   hideErrorLog();
   windowActionHideCustomizer->setChecked(customizer);
   hideParameters();
+  windowActionHideAnimate->setChecked(animate);
+  hideAnimate();
 
   viewActionHideEditorToolBar->setChecked(editorToolbar);
   hideEditorToolbar();
@@ -796,11 +799,21 @@ void MainWindow::onRotate2Event(InputEventRotate2 *event)
 
 void MainWindow::onActionEvent(InputEventAction *event)
 {
-  QAction *action = findAction(this->menuBar()->actions(), event->action);
-  if (action) {
-    action->trigger();
-  } else if ("viewActionTogglePerspective" == event->action) {
-    viewTogglePerspective();
+  std::string actionName = event->action;
+  if (actionName.find("::") == std::string::npos) {
+    QAction *action = findAction(this->menuBar()->actions(), actionName);
+    if (action) {
+      action->trigger();
+    } else if ("viewActionTogglePerspective" == actionName) {
+      viewTogglePerspective();
+    }
+  } else {
+    std::string target = actionName.substr(0, actionName.find("::"));
+    if("animate" == target) {
+      this->animateWidget->onActionEvent(event);
+    } else {
+      std::cout << "unknown onActionEvent target: " << actionName << std::endl;
+    }
   }
 }
 
@@ -860,23 +873,32 @@ void MainWindow::updateUndockMode(bool undockMode)
     consoleDock->setFeatures(consoleDock->features() | QDockWidget::DockWidgetFloatable);
     parameterDock->setFeatures(parameterDock->features() | QDockWidget::DockWidgetFloatable);
     errorLogDock->setFeatures(errorLogDock->features() | QDockWidget::DockWidgetFloatable);
+    animateDock->setFeatures(animateDock->features() | QDockWidget::DockWidgetFloatable);
   } else {
     if (editorDock->isFloating()) {
       editorDock->setFloating(false);
     }
     editorDock->setFeatures(editorDock->features() & ~QDockWidget::DockWidgetFloatable);
+
     if (consoleDock->isFloating()) {
       consoleDock->setFloating(false);
     }
     consoleDock->setFeatures(consoleDock->features() & ~QDockWidget::DockWidgetFloatable);
+
     if (parameterDock->isFloating()) {
       parameterDock->setFloating(false);
     }
     parameterDock->setFeatures(parameterDock->features() & ~QDockWidget::DockWidgetFloatable);
+
     if (errorLogDock->isFloating()) {
       errorLogDock->setFloating(false);
     }
     errorLogDock->setFeatures(errorLogDock->features() & ~QDockWidget::DockWidgetFloatable);
+
+    if (animateDock->isFloating()) {
+      animateDock->setFloating(false);
+    }
+    animateDock->setFeatures(animateDock->features() & ~QDockWidget::DockWidgetFloatable);
   }
 }
 
@@ -887,6 +909,7 @@ void MainWindow::updateReorderMode(bool reorderMode)
   consoleDock->setTitleBarWidget(reorderMode ? nullptr : consoleDockTitleWidget);
   parameterDock->setTitleBarWidget(reorderMode ? nullptr : parameterDockTitleWidget);
   errorLogDock->setTitleBarWidget(reorderMode ? nullptr : errorLogDockTitleWidget);
+  animateDock->setTitleBarWidget(reorderMode ? nullptr : animateDockTitleWidget);
 }
 
 MainWindow::~MainWindow()
@@ -966,70 +989,6 @@ void MainWindow::setTabToolBarVisible(int count)
 {
   tabCount = count;
   tabToolBar->setVisible((tabCount > 1) && editorDock->isVisible());
-}
-
-void MainWindow::updatedAnimTval()
-{
-  bool t_ok;
-  double t = this->e_tval->text().toDouble(&t_ok);
-  // Clamp t to 0-1
-  if (t_ok) {
-    this->anim_tval = t < 0 ? 0.0 : ((t > 1.0) ? 1.0 : t);
-  } else {
-    this->anim_tval = 0.0;
-  }
-  emit actionRenderPreview();
-}
-
-void MainWindow::updatedAnimFps()
-{
-  bool fps_ok;
-  double fps = this->e_fps->text().toDouble(&fps_ok);
-  animate_timer->stop();
-  if (fps_ok && fps > 0 && this->anim_numsteps > 0) {
-    this->anim_step = int(this->anim_tval * this->anim_numsteps) % this->anim_numsteps;
-    animate_timer->setSingleShot(false);
-    animate_timer->setInterval(int(1000 / fps));
-    animate_timer->start();
-  }
-}
-
-void MainWindow::updatedAnimSteps()
-{
-  bool steps_ok;
-  int numsteps = this->e_fsteps->text().toInt(&steps_ok);
-  if (steps_ok) {
-    this->anim_numsteps = numsteps;
-    updatedAnimFps(); // Make sure we start
-  } else {
-    this->anim_numsteps = 0;
-  }
-  anim_dumping = false;
-}
-
-void MainWindow::updatedAnimDump(bool checked)
-{
-  if (!checked) this->anim_dumping = false;
-}
-
-// Only called from animate_timer
-void MainWindow::updateTVal()
-{
-  if (this->anim_numsteps == 0) return;
-
-  if (windowActionHideCustomizer->isVisible()) {
-    if (this->activeEditor->parameterWidget->childHasFocus()) return;
-  }
-
-  if (this->anim_numsteps > 1) {
-    this->anim_step = (this->anim_step + 1) % this->anim_numsteps;
-    this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
-  } else if (this->anim_numsteps > 0) {
-    this->anim_step = 0;
-    this->anim_tval = 0.0;
-  }
-  const QString txt = QString::number(this->anim_tval, 'f', 5);
-  this->e_tval->setText(txt);
 }
 
 /*!
@@ -1764,7 +1723,7 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 void MainWindow::setRenderVariables(ContextHandle<BuiltinContext>& context)
 {
   context->set_variable("$preview", Value(this->is_preview));
-  context->set_variable("$t", Value(this->anim_tval));
+  context->set_variable("$t", Value(this->animateWidget->getAnim_tval()));
   auto camVpt = qglview->cam.getVpt();
   context->set_variable("$vpt", Value(VectorType(context->session(), camVpt.x(), camVpt.y(), camVpt.z())));
   auto camVpr = qglview->cam.getVpr();
@@ -1917,7 +1876,7 @@ void MainWindow::actionRenderPreview()
   GuiLocker::lock();
   preview_requested = false;
 
-  prepareCompile("csgRender", !viewActionAnimate->isChecked(), true);
+  prepareCompile("csgRender", windowActionHideAnimate->isChecked(), true);
   compile(false, false);
   if (preview_requested) {
     // if the action was called when the gui was locked, we must request it one more time
@@ -1942,19 +1901,11 @@ void MainWindow::csgRender()
 #endif
   }
 
-  if (e_dump->isChecked() && animate_timer->isActive()) {
-    if (anim_dumping && anim_dump_start_step == anim_step) {
-      anim_dumping = false;
-      e_dump->setChecked(false);
-    } else {
-      if (!anim_dumping) {
-        anim_dumping = true;
-        anim_dump_start_step = anim_step;
-      }
+  if ( animateWidget->dumpPictures() ) {
+      int steps = animateWidget->nextFrame();
       QImage img = this->qglview->grabFrame();
-      QString filename = QString("frame%1.png").arg(this->anim_step, 5, 10, QChar('0'));
+      QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
       img.save(filename, "PNG");
-    }
   }
 
   compileEnded();
@@ -2761,42 +2712,16 @@ void MainWindow::viewModeShowScaleProportional()
   this->qglview->update();
 }
 
-void MainWindow::viewModeAnimate()
-{
-  if (viewActionAnimate->isChecked()) {
-    animate_panel->show();
-    actionRenderPreview();
-    updatedAnimFps();
-  } else {
-    animate_panel->hide();
-    animate_timer->stop();
-  }
-}
-
 bool MainWindow::isEmpty()
 {
   return activeEditor->toPlainText().isEmpty();
 }
 
-void MainWindow::animateUpdateDocChanged()
+void MainWindow::editorContentChanged()
 {
   auto current_doc = activeEditor->toPlainText();
   if (current_doc != last_compiled_doc) {
-    animateUpdate();
-  }
-}
-
-void MainWindow::animateUpdate()
-{
-  if (animate_panel->isVisible()) {
-    bool fps_ok;
-    double fps = this->e_fps->text().toDouble(&fps_ok);
-    if (fps_ok && fps <= 0 && !animate_timer->isActive()) {
-      animate_timer->stop();
-      animate_timer->setSingleShot(true);
-      animate_timer->setInterval(50);
-      animate_timer->start();
-    }
+    animateWidget->editorContentChanged();
   }
 }
 
@@ -2911,6 +2836,12 @@ void MainWindow::on_errorLogDock_visibilityChanged(bool)
   errorLogTopLevelChanged(errorLogDock->isFloating());
 }
 
+void MainWindow::on_animateDock_visibilityChanged(bool)
+{
+  animateTopLevelChanged(animateDock->isFloating());
+}
+
+
 void MainWindow::changedTopLevelEditor(bool topLevel)
 {
   setDockWidgetTitle(editorDock, QString(_("Editor")), topLevel);
@@ -2963,6 +2894,23 @@ void MainWindow::errorLogTopLevelChanged(bool topLevel)
   if (topLevel) {
     errorLogDock->setWindowFlags(flags);
     errorLogDock->show();
+  }
+}
+
+void MainWindow::changedTopLevelAnimate(bool topLevel)
+{
+  setDockWidgetTitle(animateDock, QString(_("Animate")), topLevel);
+}
+
+
+void MainWindow::animateTopLevelChanged(bool topLevel)
+{
+  setDockWidgetTitle(animateDock, QString(_("Animate")), topLevel);
+
+  Qt::WindowFlags flags = (animateDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
+  if (topLevel) {
+    animateDock->setWindowFlags(flags);
+    animateDock->show();
   }
 }
 
@@ -3076,6 +3024,23 @@ void MainWindow::hideErrorLog()
   }
 }
 
+void MainWindow::showAnimate()
+{
+  windowActionHideAnimate->setChecked(false);
+  animateDock->show();
+  animateDock->raise();
+  animateWidget->setFocus();
+}
+
+void MainWindow::hideAnimate()
+{
+  if (windowActionHideAnimate->isChecked()) {
+    animateDock->hide();
+  } else {
+    animateDock->show();
+  }
+}
+
 void MainWindow::showParameters()
 {
   windowActionHideCustomizer->setChecked(false);
@@ -3108,6 +3073,11 @@ void MainWindow::on_windowActionSelectErrorLog_triggered()
   showErrorLog();
 }
 
+void MainWindow::on_windowActionSelectAnimate_triggered()
+{
+  showAnimate();
+}
+
 void MainWindow::on_windowActionSelectCustomizer_triggered()
 {
   showParameters();
@@ -3135,11 +3105,12 @@ void MainWindow::on_editActionFoldAll_triggered()
 
 void MainWindow::activateWindow(int offset)
 {
-  const std::array<DockFocus, 4> docks = {{
+  const std::array<DockFocus, 5> docks = {{
     { editorDock, &MainWindow::on_windowActionSelectEditor_triggered },
     { consoleDock, &MainWindow::on_windowActionSelectConsole_triggered },
     { errorLogDock, &MainWindow::on_windowActionSelectErrorLog_triggered },
     { parameterDock, &MainWindow::on_windowActionSelectCustomizer_triggered },
+    { animateDock, &MainWindow::on_windowActionSelectAnimate_triggered },
   }};
 
   const int cnt = docks.size();

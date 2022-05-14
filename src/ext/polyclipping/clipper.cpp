@@ -4520,7 +4520,7 @@ void MinkowskiSum(const Path& pattern, const Path& path, Paths& solution, bool p
 }
 //------------------------------------------------------------------------------
 
-void TranslatePath(const Path& input, Path& output, const IntPoint delta)
+void TranslatePath(const Path& input, Path& output, const IntPoint& delta)
 {
   //precondition: input != output
   output.resize(input.size());
