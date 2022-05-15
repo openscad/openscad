@@ -429,7 +429,6 @@ bool ParameterWidget::focusNextPrevChild(bool next){
   // we do not want the focus to leave this widget
   // so we cycle last->first and first->last manual
 
-  bool bChildHasFocus=false;
   for(auto child : QObject::findChildren<QWidget*>()){
     if(child->hasFocus()){
       //when a child is focused, we do not need to do anything
@@ -437,26 +436,29 @@ bool ParameterWidget::focusNextPrevChild(bool next){
     }
   }
 
+  //when no child is focues
+
   if(next) { //when moving forward,
     checkBoxAutoPreview->setFocus(); //set focus to first widget
     return true;
   }
 
+  //when moving backwards, we need to manually find a suitable widget 
   auto groups = QObject::findChildren<GroupWidget*>();
   if(groups.empty()){
-    scrollArea->setFocus();
+    scrollArea->setFocus(Qt::BacktabFocusReason);
     return true;
   }
   
   auto lastGroup = groups.last();
   if(!lastGroup->isExpanded()){
-    lastGroup->setFocus();
+    lastGroup->setFocusOnButton();
     return true;
   }
   
   auto parameterWidgets = lastGroup->findChildren<ParameterVirtualWidget*>();
   if(parameterWidgets.empty()){
-    lastGroup->setFocus();
+    lastGroup->setFocusOnButton();
     return true;
   }
   
@@ -469,12 +471,13 @@ bool ParameterWidget::focusNextPrevChild(bool next){
     if((*widgetIterator)->isVisible()){
       const auto focusPolicy = (*widgetIterator)->focusPolicy();
       if((Qt::StrongFocus == focusPolicy) || (Qt::TabFocus == focusPolicy)){
-        (*widgetIterator)->setFocus();
+        (*widgetIterator)->setFocus(Qt::BacktabFocusReason);
         return true;
       }
     }
     --widgetIterator;
   }
-  
+
+  lastGroup->setFocus(Qt::BacktabFocusReason);
   return true;
 }

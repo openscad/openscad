@@ -2,12 +2,18 @@
 
 #include <QLineEdit>
 
+#include "KeyEnterForwarder.h"
+
 GroupWidget::GroupWidget(QString title, QWidget *parent) : QWidget(parent)
 {
   this->toggleButton.setText(title);
   this->toggleButton.setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
   this->toggleButton.setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
   this->toggleButton.setCheckable(true);
+
+  KeyEnterForwarder* keyEnterForwarder = new KeyEnterForwarder();
+  toggleButton.installEventFilter(keyEnterForwarder);
+
   setExpanded(false);
 
   // don't waste space
@@ -25,6 +31,7 @@ GroupWidget::GroupWidget(QString title, QWidget *parent) : QWidget(parent)
   setLayout(&mainLayout);
 
   QObject::connect(&toggleButton, SIGNAL(toggled(bool)), this, SLOT(setExpanded(bool)));
+  QObject::connect(keyEnterForwarder, SIGNAL(enterPressed()), &toggleButton, SLOT(toggle()));
 }
 
 void GroupWidget::addWidget(QWidget *widget)
@@ -41,4 +48,8 @@ void GroupWidget::setExpanded(bool expanded)
   } else {
     contentArea.hide();
   }
+}
+
+void GroupWidget::setFocusOnButton(){
+  toggleButton.setFocus();
 }

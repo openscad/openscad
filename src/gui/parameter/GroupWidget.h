@@ -1,9 +1,9 @@
 #pragma once
 
 #include <QGridLayout>
-#include <QToolButton>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QToolButton>
 
 #include "qtgettext.h"
 
@@ -25,4 +25,5 @@ public:
 
 public slots:
   void setExpanded(bool expanded);
+  void setFocusOnButton();
 };

@@ -1,4 +1,5 @@
 #include "ParameterCheckBox.h"
+#include "KeyEnterForwarder.h"
 
 ParameterCheckBox::ParameterCheckBox(QWidget *parent, BoolParameter *parameter, DescriptionStyle descriptionStyle) :
   ParameterVirtualWidget(parent, parameter),
@@ -11,6 +12,10 @@ ParameterCheckBox::ParameterCheckBox(QWidget *parent, BoolParameter *parameter, 
     //large checkbox, when we have the space
     checkBox->setStyleSheet("QCheckBox::indicator { width: 20px; height: 20px; } QCheckBox { spacing: 0px; }");
   }
+
+  KeyEnterForwarder* keyEnterForwarder = new KeyEnterForwarder();
+  checkBox->installEventFilter(keyEnterForwarder);
+  connect(keyEnterForwarder, SIGNAL(enterPressed()), checkBox, SLOT(toggle()));
 
   connect(checkBox, SIGNAL(clicked()), this, SLOT(onChanged()));
   setValue();
