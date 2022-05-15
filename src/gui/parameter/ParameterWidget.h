@@ -47,6 +47,9 @@ private:
   QTimer autoPreviewTimer;
   bool modified = false;
 
+protected:
+  bool focusNextPrevChild(bool next) override;
+
 public:
   ParameterWidget(QWidget *parent = nullptr);
   void readFile(QString scadFile);
