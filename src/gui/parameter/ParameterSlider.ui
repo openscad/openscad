@@ -70,11 +70,14 @@
    </item>
    <item>
     <widget class="QSlider" name="slider">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+     <property name="focusPolicy">
+      <enum>Qt::ClickFocus</enum>
      </property>
      <property name="tracking">
       <bool>false</bool>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
     </widget>
    </item>
