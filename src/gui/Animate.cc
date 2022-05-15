@@ -287,6 +287,9 @@ void  Animate::animateUpdate()
 }
 
 void Animate::csgRendered(){
+  if(e_viewAll->isChecked()){
+    mainWindow->viewAll();
+  }
   if( this->e_dump->isChecked() && this->animate_timer->isActive() ){
       int steps = this->nextFrame();
       QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
