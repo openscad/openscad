@@ -409,7 +409,6 @@ const QList<QAction *>& Animate::actions(){
 void Animate::onActionEvent(InputEventAction *event)
 {
   const std::string actionString = event->action;
-  const std::string target = actionString.substr(0, actionString.find("::"));
   const std::string actionName = actionString.substr(actionString.find("::")+2, std::string::npos);
   for(auto action : action_list){
     if(actionName == action->objectName().toStdString()){

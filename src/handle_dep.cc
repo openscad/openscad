@@ -59,15 +59,15 @@ void handle_dep(const std::string& filename)
   }
 }
 
-bool write_deps(const std::string& filename, const std::vector<std::string> output_files)
+bool write_deps(const std::string& filename, const std::vector<std::string>& output_files)
 {
   FILE *fp = fopen(filename.c_str(), "wt");
   if (!fp) {
     fprintf(stderr, "Can't open dependencies file `%s' for writing!\n", filename.c_str());
     return false;
   }
-  for (const auto& filename : output_files) {
-    fprintf(fp, "%s ", filename.c_str());
+  for (const auto& output_file : output_files) {
+    fprintf(fp, "%s ", output_file.c_str());
   }
   fseek(fp, -1, SEEK_CUR);
   fprintf(fp, ":");

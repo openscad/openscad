@@ -372,6 +372,7 @@
     <addaction name="windowActionSelectErrorLog"/>
     <addaction name="windowActionSelectCustomizer"/>
     <addaction name="windowActionSelectAnimate"/>
+    <addaction name="windowActionSelectViewportControl"/>
     <addaction name="separator"/>
     <addaction name="windowActionNextWindow"/>
     <addaction name="windowActionPreviousWindow"/>
@@ -381,6 +382,7 @@
     <addaction name="windowActionHideErrorLog"/>
     <addaction name="windowActionHideCustomizer"/>
     <addaction name="windowActionHideAnimate"/>
+    <addaction name="windowActionHideViewportControl"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -648,6 +650,34 @@
      </property>
      <item>
       <widget class="Animate" name="animateWidget" native="true">
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="Dock" name="viewportControlDock">
+   <attribute name="dockWidgetArea">
+    <number>2</number>
+   </attribute>
+   <widget class="QWidget" name="viewportControlDockContents">
+    <property name="focusPolicy">
+     <enum>Qt::StrongFocus</enum>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_ViewportControl">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="ViewportControl" name="viewportControlWidget" native="true">
       </widget>
      </item>
     </layout>
@@ -1451,6 +1481,20 @@
     <string>Hide Animation Toolbar/Window</string>
    </property>
   </action>
+  <action name="windowActionHideViewportControl">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Hide Viewport-Control</string>
+   </property>
+   <property name="toolTip">
+    <string>Hide Viewport-Control</string>
+   </property>
+  </action>
   <action name="windowActionSelectEditor">
    <property name="text">
     <string>&amp;Editor</string>
@@ -1474,6 +1518,11 @@
   <action name="windowActionSelectAnimate">
    <property name="text">
     <string>&amp;Animate</string>
+   </property>
+  </action>
+  <action name="windowActionSelectViewportControl">
+   <property name="text">
+    <string>Viewport-Control</string>
    </property>
   </action>
   <action name="windowActionNextWindow">
@@ -1540,6 +1589,12 @@
    <class>Animate</class>
    <extends>QWidget</extends>
    <header>gui/Animate.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ViewportControl</class>
+   <extends>QWidget</extends>
+   <header>gui/ViewportControl.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -7,7 +7,7 @@
 
 namespace {
 
-bool set_enum_value(json& o, const std::string name, const EnumParameter::EnumItem& item)
+bool set_enum_value(json& o, const std::string& name, const EnumParameter::EnumItem& item)
 {
   EnumParameter::EnumValue itemValue = item.value;
   double *doubleValue = boost::get<double>(&itemValue);
@@ -388,7 +388,7 @@ struct NumericLimits
   boost::optional<double> maximum;
   boost::optional<double> step;
 };
-static NumericLimits parseNumericLimits(const Expression *parameter, const std::vector<double> values)
+static NumericLimits parseNumericLimits(const Expression *parameter, const std::vector<double>& values)
 {
   NumericLimits output;
 

@@ -135,8 +135,6 @@ void AxisConfigWidget::init() {
   installIgnoreWheelWhenNotFocused(this);
 
   for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
-    std::string s = std::to_string(i);
-
     auto spinTrim = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
     if (spinTrim) {
       initUpdateDoubleSpinBox(spinTrim, Settings::Settings::axisTrim(i));

@@ -16,7 +16,6 @@ void VertexData::fillInterleavedBuffer(GLbyte *interleaved_buffer) const
 {
   // All attribute vectors need to be the same size to interleave
   if (attributes_.size()) {
-    size_t idx = 0;
     size_t last_size = attributes_[0]->size() / attributes_[0]->count();
 
     GLbyte *dst_start = interleaved_buffer;

@@ -23,7 +23,7 @@ public:
   class roof_exception : public std::exception
   {
 public:
-    roof_exception(const std::string message) : m(message) {}
+    roof_exception(const std::string& message) : m(message) {}
     std::string message() {return m;}
 private:
     std::string m;
