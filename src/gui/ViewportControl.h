@@ -22,6 +22,7 @@ public:
   ViewportControl& operator=(ViewportControl&& source) = delete;
   void initGUI();
   void setMainWindow(MainWindow *mainWindow);
+  void setAspectRatio(int x, int y);
 
 public slots:
   void cameraChanged();

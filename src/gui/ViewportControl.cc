@@ -198,3 +198,14 @@ bool ViewportControl::focusNextPrevChild(bool next){
     }
     return true;
 }
+
+void ViewportControl::setAspectRatio(int x, int y){
+  if(!resizeMutex.try_lock()) return;
+
+  spinBoxWidth->setValue(x);
+  spinBoxHeight->setValue(y);
+  checkBoxAspecRatioLock->setChecked(true);
+  resizeToRatio();
+  
+  resizeMutex.unlock();
+}

@@ -480,6 +480,7 @@ void Animate::on_comboBoxResolution_currentIndexChanged(int index){
     spinBox_offScreenHeight->setValue(h);
   }catch(std::exception const& ex){
   }
+  setAspectRatio();
   if(ownsLock) anim_resolution_Mutex.unlock();
 }
 
@@ -497,4 +498,10 @@ void Animate::on_spinBox_offScreenHeight_valueChanged(int){
 
   if(ownsLock) comboBoxResolution->setCurrentIndex(0);
   if(ownsLock) anim_resolution_Mutex.unlock();
+}
+
+void Animate::setAspectRatio(){
+  int w = spinBox_offScreenWidth->value();
+  int h = spinBox_offScreenHeight->value();
+  this->mainWindow->viewportControlWidget->setAspectRatio(w, h);
 }

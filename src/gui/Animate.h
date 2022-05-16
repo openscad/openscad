@@ -71,6 +71,7 @@ private:
 
   std::mutex anim_step_Mutex;
   std::mutex anim_resolution_Mutex;
+  void setAspectRatio();
 
 signals:
 
