@@ -36,7 +36,7 @@ public:
   const QImage& grabFrame();
   bool save(const char *filename) const override;
   void resetView();
-  void viewAll();
+  void viewAll(bool autocenter=true);
 
 public slots:
   void ZoomIn(void);

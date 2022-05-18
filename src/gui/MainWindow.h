@@ -366,6 +366,7 @@ private:
 signals:
   void highlightError(int);
   void unhighlightLastError();
+  void csgRendered();
 };
 
 class GuiLocker

@@ -74,11 +74,11 @@ void QGLView::resetView()
   cam.resetView();
 }
 
-void QGLView::viewAll()
+void QGLView::viewAll(bool autocenter)
 {
   if (auto renderer = this->getRenderer()) {
     auto bbox = renderer->getBoundingBox();
-    cam.autocenter = true;
+    cam.autocenter = autocenter;
     cam.viewAll(renderer->getBoundingBox());
   }
 }

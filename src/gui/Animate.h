@@ -3,6 +3,7 @@
 #include "qtgettext.h"
 #include "ui_Animate.h"
 #include <QIcon>
+#include <mutex>
 #include "input/InputDriverEvent.h"
 
 class MainWindow;
@@ -19,7 +20,7 @@ public:
   Animate& operator=(Animate&& source) = delete;
 
   void initGUI();
-  void csgRendered();
+
   int nextFrame();
 
   QTimer *animate_timer;
@@ -34,6 +35,7 @@ public slots:
   void animateUpdate();
   void cameraChanged();
   void editorContentChanged();
+  void cameraApplied();
   void onActionEvent(InputEventAction *event);
   void pauseAnimation();
 

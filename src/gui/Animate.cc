@@ -286,10 +286,7 @@ void  Animate::animateUpdate()
   }
 }
 
-void Animate::csgRendered(){
-  if(e_viewAll->isChecked()){
-    mainWindow->viewAll();
-  }
+void Animate::cameraApplied(){
   if( this->e_dump->isChecked() && this->animate_timer->isActive() ){
       int steps = this->nextFrame();
       QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
@@ -351,7 +348,7 @@ void Animate::resizeEvent(QResizeEvent *event)
   if(auto mainLayout = dynamic_cast<QBoxLayout *> (this->layout())){
     if(sizeEvent.height() > 180){
       mainLayout->setDirection(QBoxLayout::TopToBottom);
-      if(sizeEvent.height() > 250 && sizeEvent.width() > 200){
+      if(sizeEvent.height() > 400 && sizeEvent.width() > 200){
         mainLayout->setMargin(10);
         mainLayout->setSpacing(10);
         iconSize = 32;
@@ -480,7 +477,7 @@ void Animate::on_comboBoxResolution_currentIndexChanged(int index){
     spinBox_offScreenHeight->setValue(h);
   }catch(std::exception const& ex){
   }
-  setAspectRatio();
+  if(ownsLock) setAspectRatio();
   if(ownsLock) anim_resolution_Mutex.unlock();
 }
 
@@ -489,6 +486,7 @@ void Animate::on_spinBox_offScreenWidth_valueChanged(int){
   checkBox_offscreen->setCheckState(Qt::Checked);
 
   if(ownsLock) comboBoxResolution->setCurrentIndex(0);
+  if(ownsLock) setAspectRatio();
   if(ownsLock) anim_resolution_Mutex.unlock();
 }
 
@@ -497,6 +495,7 @@ void Animate::on_spinBox_offScreenHeight_valueChanged(int){
   checkBox_offscreen->setCheckState(Qt::Checked);
 
   if(ownsLock) comboBoxResolution->setCurrentIndex(0);
+  if(ownsLock) setAspectRatio();
   if(ownsLock) anim_resolution_Mutex.unlock();
 }
 

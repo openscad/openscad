@@ -20,6 +20,19 @@
    <string>ViewportControlWidget</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="4" column="1">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
    <item row="2" column="1">
     <widget class="QGroupBox" name="groupBoxAbsoluteCamera">
      <property name="title">
@@ -164,17 +177,46 @@
     </widget>
    </item>
    <item row="3" column="1">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string>view all after render option</string>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
+     <layout class="QFormLayout" name="formLayout_2">
+      <property name="labelAlignment">
+       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+      </property>
+      <property name="formAlignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="e_viewAll"/>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLabel" name="label_viewAll">
+        <property name="text">
+         <string>auto &quot;view all&quot; after a new render</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLabel" name="label_viewAllCenter">
+        <property name="toolTip">
+         <string>&lt;b&gt;checked:&lt;/b&gt; center the bounding box&lt;br /&gt;&lt;b&gt;unchecked:&lt;/b&gt; leave the absolute translate (vpt) untouched</string>
+        </property>
+        <property name="text">
+         <string>center the bounding box</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="e_viewAllCenter">
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
    </item>
   </layout>
   <action name="actionRowSelected">
