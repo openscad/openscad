@@ -142,6 +142,7 @@ void Preferences::init() {
   this->defaultmap["editor/enableAutocomplete"] = true;
   this->defaultmap["editor/characterThreshold"] = 1;
   this->defaultmap["editor/stepSize"] = 1;
+  this->defaultmap["editor/backgroundColorEvaluated"] = "#A1DC98";
 
   // Toolbar
   QActionGroup *group = new QActionGroup(this);
@@ -675,6 +676,13 @@ void Preferences::on_lineEditCharacterThreshold_textChanged(const QString& text)
   emit characterThresholdChanged(text.toInt());
 }
 
+void Preferences::on_lineEditColorEvalutate_textChanged(const QString& text)
+{
+  QSettingsCached settings;
+  settings.setValue("editor/backgroundColorEvaluated", text);
+  emit characterThresholdChanged(text.toInt());
+}
+
 void Preferences::on_lineEditStepSize_textChanged(const QString& text)
 {
   QSettingsCached settings;
@@ -1008,6 +1016,7 @@ void Preferences::updateGUI()
   BlockSignals<QCheckBox *>(this->checkBoxEnableAutocomplete)->setChecked(getValue("editor/enableAutocomplete").toBool());
   BlockSignals<QLineEdit *>(this->lineEditCharacterThreshold)->setText(getValue("editor/characterThreshold").toString());
   BlockSignals<QLineEdit *>(this->lineEditStepSize)->setText(getValue("editor/stepSize").toString());
+  BlockSignals<QLineEdit *>(this->lineEditColorEvalutate)->setText(getValue("editor/backgroundColorEvaluated").toString());
 
   this->secLabelOnRenderCompleteSound->setEnabled(getValue("advanced/enableSoundNotification").toBool());
   this->undockCheckBox->setEnabled(this->reorderCheckBox->isChecked());

@@ -224,7 +224,6 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 
   qsci->indicatorDefine(QsciScintilla::FullBoxIndicator, usedIndicatorNumber);
   qsci->setIndicatorDrawUnder(true, usedIndicatorNumber);
-  qsci->setIndicatorForegroundColor(QColor("#A1DC98"), usedIndicatorNumber);
     
 #if QSCINTILLA_VERSION >= 0x020b00
   connect(qsci, SIGNAL(SCN_URIDROPPED(const QUrl&)), this, SIGNAL(uriDropped(const QUrl&)));
@@ -1461,10 +1460,13 @@ void ScintillaEditor::setFocus()
 
 void ScintillaEditor::evalutated(std::string rootFileName, std::vector<const ASTNode*> astNodes)
 {
+  QString color = Preferences::inst()->getValue("editor/backgroundColorEvaluated").toString();
+  qsci->setIndicatorForegroundColor(QColor(color), usedIndicatorNumber);
+
   //remove all indicators
   qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, usedIndicatorNumber);
   qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->length());
-//std::cout << astNodes.size()<< std::endl;
+
     for (auto astNode : astNodes) {
         if(astNode) evalutated(rootFileName, astNode);
     }
@@ -1477,7 +1479,7 @@ void ScintillaEditor::evalutated(std::string rootFileName, const ASTNode* astNod
           bool isRootFile = astNode->location().fileName() == rootFileName;
           bool isEvaluated = astNode->isEvaluated();
           bool setIndicator = isRootFile && isEvaluated;
-//std::cout << isRootFile << isEvaluated << setIndicator << std::endl;
+
           if( setIndicator ){
             auto data = astNode->location();
             int startPos = qsci->positionFromLineIndex(data.firstLine() - 1, data.firstColumn() - 1);

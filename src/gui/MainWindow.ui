@@ -309,6 +309,7 @@
     <addaction name="designActionRender"/>
     <addaction name="designAction3DPrint"/>
     <addaction name="separator"/>
+    <addaction name="designShowEvaluated"/>
     <addaction name="designCheckValidity"/>
     <addaction name="designActionDisplayAST"/>
     <addaction name="designActionDisplayCSGTree"/>
@@ -944,6 +945,17 @@
    </property>
    <property name="shortcut">
     <string>F8</string>
+   </property>
+  </action>
+  <action name="designShowEvaluated">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Highlight Evaluated AST-Nodes</string>
    </property>
   </action>
   <action name="designCheckValidity">

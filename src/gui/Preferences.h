@@ -73,6 +73,7 @@ public slots:
   //
   // editor settings
   //
+  void on_lineEditColorEvalutate_textChanged(const QString&);
 
   // Indentation
   void on_checkBoxAutoIndent_toggled(bool);
