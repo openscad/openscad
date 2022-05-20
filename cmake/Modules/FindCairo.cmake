@@ -30,7 +30,7 @@
 
 find_package(PkgConfig)
 
-if (APPLE)
+if (APPLE OR MSVC)
   pkg_check_modules(PC_CAIRO QUIET cairo)
 
   find_path(CAIRO_INCLUDE_DIRS
