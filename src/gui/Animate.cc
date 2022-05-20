@@ -348,16 +348,24 @@ void Animate::resizeEvent(QResizeEvent *event)
   if(auto mainLayout = dynamic_cast<QBoxLayout *> (this->layout())){
     if(sizeEvent.height() > 180){
       mainLayout->setDirection(QBoxLayout::TopToBottom);
-      if(sizeEvent.height() > 400 && sizeEvent.width() > 200){
+      if(sizeEvent.height() > 360 && sizeEvent.width() > 200){
         mainLayout->setMargin(10);
         mainLayout->setSpacing(10);
         iconSize = 32;
+        this->horizontalSlider->show();
+        this->vcr_controls->show();
       } else {
+        if (sizeEvent.height() > 240) {
+          this->horizontalSlider->show();
+          this->vcr_controls->show();
+        } else {
+          this->horizontalSlider->hide();
+          this->vcr_controls->hide();
+        }
         mainLayout->setMargin(0);
         mainLayout->setSpacing(0);
       }
-      this->horizontalSlider->show();
-      this->vcr_controls->show();
+
       this->offscreenSettingGroupBox->show();
     } else {
       mainLayout->setDirection(QBoxLayout::LeftToRight);
