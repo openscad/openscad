@@ -150,6 +150,7 @@ void QGLView::display_opencsg_warning_dialog()
 void QGLView::resizeGL(int w, int h)
 {
   GLView::resizeGL(w, h);
+  emit resized();
 }
 
 void QGLView::paintGL()
@@ -325,6 +326,7 @@ void QGLView::zoom(double v, bool relative)
 {
   this->cam.zoom(v, relative);
   update();
+  emit cameraChanged();
 }
 
 void QGLView::zoomCursor(int x, int y, int zoom)
