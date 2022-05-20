@@ -31,6 +31,7 @@
 #include <QKeyEvent>
 #include <QStatusBar>
 #include <QSettings>
+#include <QColorDialog>
 #include <boost/algorithm/string.hpp>
 #include "GeometryCache.h"
 #include "AutoUpdater.h"
@@ -680,7 +681,21 @@ void Preferences::on_lineEditColorEvalutate_textChanged(const QString& text)
 {
   QSettingsCached settings;
   settings.setValue("editor/backgroundColorEvaluated", text);
-  emit characterThresholdChanged(text.toInt());
+}
+
+void Preferences::on_pushButtonColorEvalutate_pressed()
+{
+  QColorDialog *dialog = new QColorDialog(this);
+  dialog->setAttribute(Qt::WA_DeleteOnClose);
+  dialog->setOption(QColorDialog::ShowAlphaChannel);
+  dialog->setCurrentColor(QColor(lineEditColorEvalutate->text()));
+  connect(dialog, SIGNAL(colorSelected(QColor)), this, SLOT(colorEvalutatePicked(QColor)));
+  dialog->open();
+}
+
+void Preferences::colorEvalutatePicked(QColor color)
+{
+  lineEditColorEvalutate->setText(color.name(QColor::HexArgb));
 }
 
 void Preferences::on_lineEditStepSize_textChanged(const QString& text)

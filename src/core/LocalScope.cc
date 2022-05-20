@@ -68,6 +68,7 @@ void LocalScope::gatherChilderen(std::vector<const ASTNode*>& nodes) const
     inst->gatherChilderen(nodes);
   }
 }
+
 std::shared_ptr<AbstractNode> LocalScope::instantiateModules(const std::shared_ptr<const Context>& context, const std::shared_ptr<AbstractNode> &target) const
 {
   for (const auto& modinst : this->moduleInstantiations) {

@@ -31,5 +31,5 @@ public:
   std::unordered_map<std::string, shared_ptr<UserModule>> modules;
   std::vector<std::pair<std::string, shared_ptr<UserModule>>> astModules;
 
-  void gatherChilderen(std::vector<const ASTNode*>& nodes) const /*override*/;
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const;
 };

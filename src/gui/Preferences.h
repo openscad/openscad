@@ -74,6 +74,7 @@ public slots:
   // editor settings
   //
   void on_lineEditColorEvalutate_textChanged(const QString&);
+  void on_pushButtonColorEvalutate_pressed();
 
   // Indentation
   void on_checkBoxAutoIndent_toggled(bool);
@@ -133,6 +134,8 @@ private slots:
   void on_lineEditStepSize_textChanged(const QString& arg1);
 
   void on_checkBoxEnableNumberScrollWheel_toggled(bool checked);
+
+  void colorEvalutatePicked(QColor c);
 
 private:
   Preferences(QWidget *parent = nullptr);

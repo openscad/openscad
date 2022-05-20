@@ -162,7 +162,7 @@ private:
   static const int errorIndicatorNumber = 8; // first 8 are used by lexers
   static const int findIndicatorNumber = 9;
   static const int hyperlinkIndicatorNumber = 10;
-  static const int usedIndicatorNumber = 11;
+  static const int evaluatedIndicatorNumber = 11;
   static const int hyperlinkIndicatorOffset = 100;
   static const int errMarkerNumber = 2;
   static const int bmMarkerNumber = 3;

@@ -697,7 +697,6 @@ void FunctionCall::gatherChilderen(std::vector<const ASTNode*>& nodes) const
   }
 }
 
-
 Expression *FunctionCall::create(const std::string& funcname, const AssignmentList& arglist, Expression *expr, const Location& loc)
 {
   if (funcname == "assert") {
@@ -865,7 +864,7 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 
 Value LcIf::evaluate(const std::shared_ptr<const Context>& context) const
 {
-setEvaluated();
+  setEvaluated();
   const shared_ptr<Expression>& expr = this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
   if (expr) {
     return expr->evaluate(context);
@@ -942,7 +941,6 @@ void LcEach::gatherChilderen(std::vector<const ASTNode*>& nodes) const
   nodes.push_back(this);
   if (this->expr) this->expr->gatherChilderen(nodes);
 }
-
 
 LcFor::LcFor(const AssignmentList& args, Expression *expr, const Location& loc)
   : ListComprehension(loc), arguments(args), expr(expr)

@@ -59,7 +59,7 @@ protected:
     this->evaluated=true;
   }
 private:
-  volatile mutable bool evaluated=false;
+  mutable bool evaluated=false;
 };
 
 std::ostream& operator<<(std::ostream& stream, const ASTNode& ast);

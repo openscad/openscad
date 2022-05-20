@@ -37,6 +37,7 @@ void ModuleInstantiation::print(std::ostream& stream, const std::string& indent,
     stream << indent << "}\n";
   }
 }
+
 void ModuleInstantiation::gatherChilderen(std::vector<const ASTNode*>& nodes) const
 {
   nodes.push_back(this);

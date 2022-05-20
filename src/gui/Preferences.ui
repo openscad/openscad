@@ -749,6 +749,13 @@
                  </widget>
                 </item>
                 <item>
+                 <widget class="QPushButton" name="pushButtonColorEvalutate">
+                  <property name="text">
+                   <string>Color Picker</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
                 <spacer name="horizontalSpacer_6">
                  <property name="orientation">
                   <enum>Qt::Horizontal</enum>
