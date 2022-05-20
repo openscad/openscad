@@ -681,6 +681,7 @@ void Preferences::on_lineEditColorEvalutate_textChanged(const QString& text)
 {
   QSettingsCached settings;
   settings.setValue("editor/backgroundColorEvaluated", text);
+  emit backgroundColorEvaluatedChanged(text);
 }
 
 void Preferences::on_pushButtonColorEvalutate_pressed()

@@ -187,6 +187,7 @@ void TabManager::createTab(const QString& filename)
   connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
   connect(Preferences::inst(), SIGNAL(autocompleteChanged(bool)), editor, SLOT(onAutocompleteChanged(bool)));
   connect(Preferences::inst(), SIGNAL(characterThresholdChanged(int)), editor, SLOT(onCharacterThresholdChanged(int)));
+  connect(Preferences::inst(), SIGNAL(backgroundColorEvaluatedChanged(const QString&)), editor, SLOT(onBackgroundColorEvaluatedChanged(const QString&)));
   ((ScintillaEditor *)editor)->public_applySettings();
   editor->addTemplate();
 

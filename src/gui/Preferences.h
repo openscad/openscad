@@ -129,6 +129,7 @@ signals:
   void characterThresholdChanged(int val) const;
   void stepSizeChanged(int val) const;
   void toolbarExportChanged() const;
+  void backgroundColorEvaluatedChanged(const QString& text);
 
 private slots:
   void on_lineEditStepSize_textChanged(const QString& arg1);
