@@ -1327,6 +1327,11 @@ void ScintillaEditor::onCharacterThresholdChanged(int val)
   qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
 }
 
+void ScintillaEditor::onBackgroundColorEvaluatedChanged(const QString& text){
+  QString color = Preferences::inst()->getValue("editor/backgroundColorEvaluated").toString();
+  qsci->setIndicatorForegroundColor(QColor(color), evaluatedIndicatorNumber);
+}
+
 void ScintillaEditor::resetHighlighting(){
   qsci->recolor(); //lex and restyle the whole text
   
