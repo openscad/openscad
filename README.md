@@ -30,11 +30,14 @@ OpenSCAD focuses on the 3D Drafting rather than the artistic aspects of 3D Drawi
 
 ## Understand CAD: Computer Aided Design (Drafting vs. Drawing)
 
-The acronym CAD "Computer Aided Drafting" is antiquated and many non-English speakers conflate "Drafting" with "Drawing" since both techniques produce 3d objects and the words to a layperson are similar.  
+OpenSCAD is a drafting [DSL](https://en.wikipedia.org/wiki/Domain-specific_language)
 
-In an artistic drawing the objects created are  internally incoherent.  This means the relationships between shapes of the object are geometrically unconstrained. Unconstrained means more unrestrained freedom of movement, which for drawing a sketch is ideal for artists such as those doing character animation or modelling objects purely for a video game or movie. 
+In CAD "Computer Aided Design" and the "D" could also mean "Drafting" or "Drawing".  All methods design, drafting &amp; drawing each produce 3d objects, so let's define them in more detail. 
 
-However for those planning to create realistic "physical world" fabricable 3D printable or CNC models of machine parts to which must fit &amp; move together with mathematical precision or risk being broken if they move inside eachother then you will likely want a parametric drafting modelling application which constrains the geometry. 
+In artistic "Drawing" the objects created are internally incoherent points in space.  This means the relationships between shapes of the object are geometrically unconstrained. Unconstrained means more unrestrained freedom of movement.  Unconstrainted creativity is ideal for artists such as those doing character animation or modelling objects purely for a video game or movie.  OpenSCAD is not a drawing program. 
+
+"Drafting" is for those planning to create realistic "physical world" fabricable 3D printable or CNC models of machine parts to which must fit &amp; move together with mathematical precision or risk being broken if they move inside eachother then you will likely want a parametric drafting modelling application which constrains the geometry.  
+
 
 ## What OpenSCAD is &amp; isn't!
 
