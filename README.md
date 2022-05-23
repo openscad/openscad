@@ -28,7 +28,7 @@ OpenSCAD focuses on the 3D Drafting rather than the artistic aspects of 3D Drawi
 
 🥰 fyi: both Blender & FreeCAD can embed the OpenSCAD C++ syntax as a plugin! 
 
-## Understand CAD: Computer Aided Drafting vs. Drawing
+## Understand CAD: Computer Aided Design (Drafting vs. Drawing)
 
 The acronym CAD "Computer Aided Drafting" is antiquated and many non-English speakers conflate "Drafting" with "Drawing" since both techniques produce 3d objects and the words to a layperson are similar.  
 
