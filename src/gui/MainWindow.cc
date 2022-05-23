@@ -241,8 +241,10 @@ MainWindow::MainWindow(const QStringList& filenames)
   parameterDockTitleWidget = new QWidget();
   errorLogDockTitleWidget = new QWidget();
   animateDockTitleWidget = new QWidget();
+  viewportControlTitleWidget = new QWidget();
 
   this->animateWidget->setMainWindow(this);
+  this->viewportControlWidget->setMainWindow(this);
   // actions not included in menu
   this->addAction(editActionInsertTemplate);
   this->addAction(editActionFoldAll);
@@ -257,6 +259,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   this->errorLogDock->setAction(this->windowActionHideErrorLog);
   this->animateDock->setConfigKey("view/hideAnimate");
   this->animateDock->setAction(this->windowActionHideAnimate);
+  this->viewportControlDock->setConfigKey("view/hideViewportControl");
+  this->viewportControlDock->setAction(this->windowActionHideViewportControl);
 
   this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
   updateStatusBar(nullptr);
@@ -497,6 +501,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->windowActionHideCustomizer, SIGNAL(triggered()), this, SLOT(hideParameters()));
   connect(this->windowActionHideErrorLog, SIGNAL(triggered()), this, SLOT(hideErrorLog()));
   connect(this->windowActionHideAnimate, SIGNAL(triggered()), this, SLOT(hideAnimate()));
+  connect(this->windowActionHideViewportControl, SIGNAL(triggered()), this, SLOT(hideViewportControl()));
 
   // Help menu
   connect(this->helpActionAbout, SIGNAL(triggered()), this, SLOT(helpAbout()));
@@ -522,6 +527,8 @@ MainWindow::MainWindow(const QStringList& filenames)
 #endif
 
   connect(this->qglview, SIGNAL(cameraChanged()), animateWidget, SLOT(cameraChanged()));
+  connect(this->qglview, SIGNAL(cameraChanged()), viewportControlWidget, SLOT(cameraChanged()));
+  connect(this->qglview, SIGNAL(resized()), viewportControlWidget, SLOT(viewResized()));
   connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
 
   connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(update()));
@@ -615,6 +622,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   bool hideCustomizer = settings.value("view/hideCustomizer").toBool();
   bool hideErrorLog = settings.value("view/hideErrorLog").toBool();
   bool hideAnimate = settings.value("view/hideAnimate").toBool();
+  bool hideViewportControl = settings.value("view/hideViewportControl").toBool();
   bool hideEditorToolbar = settings.value("view/hideEditorToolbar").toBool();
   bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
 
@@ -623,7 +631,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   restoreState(windowState);
   resize(settings.value("window/size", QSize(800, 600)).toSize());
   move(settings.value("window/position", QPoint(0, 0)).toPoint());
-  updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate);
+  updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideViewportControl);
 
   if (windowState.size() == 0) {
     /*
@@ -664,6 +672,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
   connect(this->errorLogDock, SIGNAL(topLevelChanged(bool)), this, SLOT(errorLogTopLevelChanged(bool)));
   connect(this->animateDock, SIGNAL(topLevelChanged(bool)), this, SLOT(animateTopLevelChanged(bool)));
+  connect(this->viewportControlDock, SIGNAL(topLevelChanged(bool)), this, SLOT(viewportControlTopLevelChanged(bool)));
 
   // display this window and check for OpenGL 2.0 (OpenCSG) support
   viewModeThrownTogether();
@@ -746,7 +755,7 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)
  * Qt call. So the values are loaded before the call and restored here
  * regardless of the (potential outdated) serialized state.
  */
-void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate)
+void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool viewportControl)
 {
   windowActionHideEditor->setChecked(editor);
   hideEditor();
@@ -758,6 +767,8 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
   hideParameters();
   windowActionHideAnimate->setChecked(animate);
   hideAnimate();
+  windowActionHideViewportControl->setChecked(viewportControl);
+  hideViewportControl();
 
   viewActionHideEditorToolBar->setChecked(editorToolbar);
   hideEditorToolbar();
@@ -874,6 +885,8 @@ void MainWindow::updateUndockMode(bool undockMode)
     parameterDock->setFeatures(parameterDock->features() | QDockWidget::DockWidgetFloatable);
     errorLogDock->setFeatures(errorLogDock->features() | QDockWidget::DockWidgetFloatable);
     animateDock->setFeatures(animateDock->features() | QDockWidget::DockWidgetFloatable);
+    viewportControlDock->setFeatures(viewportControlDock->features() | QDockWidget::DockWidgetFloatable);
+
   } else {
     if (editorDock->isFloating()) {
       editorDock->setFloating(false);
@@ -899,6 +912,11 @@ void MainWindow::updateUndockMode(bool undockMode)
       animateDock->setFloating(false);
     }
     animateDock->setFeatures(animateDock->features() & ~QDockWidget::DockWidgetFloatable);
+
+    if (viewportControlDock->isFloating()) {
+      viewportControlDock->setFloating(false);
+    }
+    viewportControlDock->setFeatures(viewportControlDock->features() & ~QDockWidget::DockWidgetFloatable);
   }
 }
 
@@ -910,6 +928,7 @@ void MainWindow::updateReorderMode(bool reorderMode)
   parameterDock->setTitleBarWidget(reorderMode ? nullptr : parameterDockTitleWidget);
   errorLogDock->setTitleBarWidget(reorderMode ? nullptr : errorLogDockTitleWidget);
   animateDock->setTitleBarWidget(reorderMode ? nullptr : animateDockTitleWidget);
+  viewportControlDock->setTitleBarWidget(reorderMode ? nullptr : viewportControlWidget);
 }
 
 MainWindow::~MainWindow()
@@ -1210,6 +1229,7 @@ void MainWindow::instantiateRoot()
     this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
+      viewportControlWidget->cameraChanged();
     }
 
     if (this->absolute_root_node) {
@@ -2841,6 +2861,10 @@ void MainWindow::on_animateDock_visibilityChanged(bool)
   animateTopLevelChanged(animateDock->isFloating());
 }
 
+void MainWindow::on_viewportControlDock_visibilityChanged(bool)
+{
+  viewportControlTopLevelChanged(viewportControlDock->isFloating());
+}
 
 void MainWindow::changedTopLevelEditor(bool topLevel)
 {
@@ -2911,6 +2935,17 @@ void MainWindow::animateTopLevelChanged(bool topLevel)
   if (topLevel) {
     animateDock->setWindowFlags(flags);
     animateDock->show();
+  }
+}
+
+void MainWindow::viewportControlTopLevelChanged(bool topLevel)
+{
+  setDockWidgetTitle(viewportControlDock, QString(_("Viewport-Control")), topLevel);
+
+  Qt::WindowFlags flags = (viewportControlDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
+  if (topLevel) {
+    viewportControlDock->setWindowFlags(flags);
+    viewportControlDock->show();
   }
 }
 
@@ -3041,6 +3076,24 @@ void MainWindow::hideAnimate()
   }
 }
 
+void MainWindow::showViewportControl()
+{
+  windowActionHideViewportControl->setChecked(false);
+  viewportControlDock->show();
+  viewportControlDock->raise();
+  viewportControlWidget->setFocus();
+}
+
+void MainWindow::hideViewportControl()
+{
+  if (windowActionHideViewportControl->isChecked()) {
+    viewportControlDock->hide();
+  } else {
+    viewportControlDock->show();
+  }
+}
+
+
 void MainWindow::showParameters()
 {
   windowActionHideCustomizer->setChecked(false);
@@ -3078,6 +3131,11 @@ void MainWindow::on_windowActionSelectAnimate_triggered()
   showAnimate();
 }
 
+void MainWindow::on_windowActionSelectViewportControl_triggered()
+{
+  showViewportControl();
+}
+
 void MainWindow::on_windowActionSelectCustomizer_triggered()
 {
   showParameters();
@@ -3105,12 +3163,13 @@ void MainWindow::on_editActionFoldAll_triggered()
 
 void MainWindow::activateWindow(int offset)
 {
-  const std::array<DockFocus, 5> docks = {{
+  const std::array<DockFocus, 6> docks = {{
     { editorDock, &MainWindow::on_windowActionSelectEditor_triggered },
     { consoleDock, &MainWindow::on_windowActionSelectConsole_triggered },
     { errorLogDock, &MainWindow::on_windowActionSelectErrorLog_triggered },
     { parameterDock, &MainWindow::on_windowActionSelectCustomizer_triggered },
     { animateDock, &MainWindow::on_windowActionSelectAnimate_triggered },
+    { viewportControlDock, &MainWindow::on_windowActionSelectViewportControl_triggered },
   }};
 
   const int cnt = docks.size();

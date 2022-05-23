@@ -34,7 +34,7 @@
 
 // Hash function for opengl vertex data.
 template <typename T>
-struct vertex_hash : std::unary_function<T, size_t> {
+struct vertex_hash {
   std::size_t operator()(T const& vertex) const {
     size_t seed = 0;
     for (size_t i = 0; i < vertex.size(); ++i) boost::hash_combine(seed, vertex.data()[i]);
