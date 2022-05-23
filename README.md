@@ -40,7 +40,7 @@ However for those planning to create realistic "physical world" fabricable 3D pr
 
 OpenSCAD is not an interactive modeler, you won't use a mouse, trackball or pen to create objects - instead all you will require is a keyboard. 
 
-OpenSCAD is a 3D-syntax compiler that reads a script file that describes the object and renders the 3D model  (see examples below).  The ability to store parametric objects as code in text makes OpenSCAD uniquely better suited to for AGILE collaboration & review using the ubiquitous GIT version control system as well. 
+OpenSCAD is a 3D-syntax compiler that reads a script file that describes the object and renders the 3D model  (see examples below).  The ability to store parametric objects as code in text makes OpenSCAD uniquely better suited to for AGILE collaboration &amp; review using the ubiquitous GIT version control system as well. 
 
 OpenSCAD gives you, the designer, complete control over the modeling process and enables you to easily change/revise any step in the modeling process or make designs that are defined by configurable parameters to functions.
 
