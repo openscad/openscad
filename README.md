@@ -26,7 +26,7 @@ OpenSCAD focuses on the 3D Drafting rather than the artistic aspects of 3D Drawi
 |[FreeCad](http://freecad.org)|3D Drafting|Open Source &amp; Free**|
 |SolidWorks|3D Drafting|Commercial|
 
-🥰 fyi: both Blender & FreeCAD can embed the OpenSCAD C++ syntax as a plugin! 
+🥰 fyi: both Blender & FreeCAD can use OpenSCAD engine as Plugin & write code in OpenSCAD DSL (DSL: domain specific language, OpenSCAD script syntax)
 
 ## Understand CAD: Computer Aided Design (Drafting vs. Drawing)
 
