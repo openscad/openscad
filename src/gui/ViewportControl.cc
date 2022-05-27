@@ -34,7 +34,6 @@ void ViewportControl::setMainWindow(MainWindow *mainWindow)
 {
   this->mainWindow = mainWindow;
   this->qglview = mainWindow->qglview;
-   this->qglview->setTotalHalfEdgeThickness(5.0);
 }
 
 bool ViewportControl::isLightTheme()

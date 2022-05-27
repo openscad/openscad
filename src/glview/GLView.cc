@@ -46,7 +46,8 @@ void GLView::setRenderer(Renderer *r)
 {
   renderer = r;
   if (this->renderer) {
-renderer->setTotalHalfEdgeThickness(this->totalHalfEdgeThickness);
+    renderer->setTotalHalfEdgeThickness(this->totalHalfEdgeThickness);
+    renderer->setEdgeFadeThickness(this->edgeFadeThickness);
     this->renderer->resize(cam.pixel_width, cam.pixel_height);
   }
 }
@@ -771,25 +772,22 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 }
 
 void GLView::setTotalHalfEdgeThickness(float value){
-   this->totalHalfEdgeThickness = value;
+  this->totalHalfEdgeThickness = value;
   if (auto renderer = this->getRenderer()) {
     renderer->setTotalHalfEdgeThickness(value);
-    //update();
   }
 }
 
 void GLView::setEdgeFadeThickness(float value){
-   this->totalHalfEdgeThickness = value;
+  this->edgeFadeThickness = value;
   if (auto renderer = this->getRenderer()) {
     renderer->setEdgeFadeThickness(value);
-    //update();
   }
 }
 
 void GLView::setEdgeColorOverwrite(bool flag){
   edgeColorOverwrite = flag;
   renderer->setEdgeColorOverwrite(flag);
-  //update();
 }
 
 void GLView::setEdgeColor(float red, float green, float blue){
@@ -797,5 +795,4 @@ void GLView::setEdgeColor(float red, float green, float blue){
   edgeColor[1] = green;
   edgeColor[2] = blue;
   renderer->setEdgeColor(red, green, blue);
-  //update();
 }

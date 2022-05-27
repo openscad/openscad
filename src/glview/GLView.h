@@ -76,6 +76,7 @@ public:
 
   void setEdgeColorOverwrite(bool flag);
   void setEdgeColor(float red, float green, float blue);
+
 #ifdef ENABLE_OPENCSG
   bool is_opencsg_capable;
   bool has_shaders;
@@ -92,6 +93,7 @@ private:
   void decodeMarkerValue(double i, double l, int size_div_sm);
 
   float totalHalfEdgeThickness = 1.414;
+  float edgeFadeThickness = 1.414;
   bool edgeColorOverwrite = false;
   float edgeColor[3];
 };
