@@ -31,6 +31,7 @@ private slots:
   void updateCamera();
   void updateViewportControlHints();
   void requestResize();
+  void on_doubleSpinBox_edge_valueChanged(double value);
 
 protected:
   void resizeEvent(QResizeEvent *event) override;

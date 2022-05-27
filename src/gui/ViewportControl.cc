@@ -34,6 +34,7 @@ void ViewportControl::setMainWindow(MainWindow *mainWindow)
 {
   this->mainWindow = mainWindow;
   this->qglview = mainWindow->qglview;
+   this->qglview->setTotalHalfEdgeThickness(5.0);
 }
 
 bool ViewportControl::isLightTheme()
@@ -197,4 +198,8 @@ bool ViewportControl::focusNextPrevChild(bool next){
         }
     }
     return true;
+}
+
+void ViewportControl::on_doubleSpinBox_edge_valueChanged(double value){
+   this->qglview->setTotalHalfEdgeThickness((float) value);
 }

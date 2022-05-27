@@ -2,6 +2,8 @@
 
 uniform vec4 color1;        // face color
 uniform vec4 color2;        // edge color
+uniform float totalHalfEdgeThickness; // total thickness of half-edge (per triangle) including fade, (must be >= fade)
+uniform float edgeFadeThickness; // thickness of fade (antialiasing) in screen pixels
 attribute vec3 barycentric; // barycentric form of vertex coord
                             // either [1,0,0], [0,1,0] or [0,0,1] under normal circumstances (no edges disabled)
 varying vec3 vBC;           // varying barycentric coords

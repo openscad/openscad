@@ -43,6 +43,7 @@ void GLView::setRenderer(Renderer *r)
 {
   renderer = r;
   if (this->renderer) {
+renderer->setTotalHalfEdgeThickness(this->totalHalfEdgeThickness);
     this->renderer->resize(cam.pixel_width, cam.pixel_height);
   }
 }
@@ -763,5 +764,21 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 
       }
     }
+  }
+}
+
+void GLView::setTotalHalfEdgeThickness(float value){
+   this->totalHalfEdgeThickness = value;
+  if (auto renderer = this->getRenderer()) {
+    renderer->setTotalHalfEdgeThickness(value);
+    //update();
+  }
+}
+
+void GLView::setTotalHalfEdgeThickness(float value){
+   this->totalHalfEdgeThickness = value;
+  if (auto renderer = this->getRenderer()) {
+    renderer->setTotalHalfEdgeThickness(value);
+    //update();
   }
 }

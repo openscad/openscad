@@ -116,6 +116,8 @@ Renderer::Renderer() : colorscheme(nullptr)
   renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
   renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
   renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
+  renderer_shader.data.csg_rendering.totalHalfEdgeThickness = glGetUniformLocation(edgeshader_prog, "totalHalfEdgeThickness");
+  renderer_shader.data.csg_rendering.edgeFadeThickness = glGetUniformLocation(edgeshader_prog, "edgeFadeThickness");
 
   PRINTD("Renderer() end");
 }
@@ -296,6 +298,12 @@ static void gl_draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vec
 void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transform3d& m, const shaderinfo_t *shaderinfo) const
 {
   PRINTD("Renderer render");
+
+  if(shaderinfo){
+    glUniform1f(shaderinfo->data.csg_rendering.totalHalfEdgeThickness, totalHalfEdgeThickness);
+    glUniform1f(shaderinfo->data.csg_rendering.edgeFadeThickness, totalHalfEdgeThickness);
+  }
+
   bool mirrored = m.matrix().determinant() < 0;
 
   if (ps.getDimension() == 2) {
@@ -473,3 +481,7 @@ void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transf
 void Renderer::render_edges(const PolySet& ps, csgmode_e csgmode) const {}
 
 #endif //NULLGL
+
+void Renderer::setTotalHalfEdgeThickness(float value){
+   this->totalHalfEdgeThickness = value;
+}
