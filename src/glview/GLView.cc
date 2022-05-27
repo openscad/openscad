@@ -46,6 +46,7 @@ void GLView::setRenderer(Renderer *r)
 {
   renderer = r;
   if (this->renderer) {
+    renderer->setEdgeColorOverwrite(edgeColorOverwrite);
     renderer->setTotalHalfEdgeThickness(this->totalHalfEdgeThickness);
     renderer->setEdgeFadeThickness(this->edgeFadeThickness);
     this->renderer->resize(cam.pixel_width, cam.pixel_height);
