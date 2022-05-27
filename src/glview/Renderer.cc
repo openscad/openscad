@@ -307,11 +307,6 @@ void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transf
 {
   PRINTD("Renderer render");
 
-  if(shaderinfo){
-    glUniform1f(shaderinfo->data.csg_rendering.totalHalfEdgeThickness, totalHalfEdgeThickness);
-    glUniform1f(shaderinfo->data.csg_rendering.edgeFadeThickness, edgeFadeThickness);
-  }
-
   bool mirrored = m.matrix().determinant() < 0;
 
   if (ps.getDimension() == 2) {

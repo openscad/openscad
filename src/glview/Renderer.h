@@ -97,11 +97,11 @@ public:
 protected:
   std::map<ColorMode, Color4f> colormap;
   const ColorScheme *colorscheme;
+  float totalHalfEdgeThickness = 1.414;
+  float edgeFadeThickness = 1.414;
 
 private:
   shaderinfo_t renderer_shader;
   bool edgeColorOverwrite = false;
-  float totalHalfEdgeThickness = 1.414;
-  float edgeFadeThickness = 1.414;
   float edgeColor[3];
 };

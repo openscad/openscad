@@ -389,7 +389,11 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
 
       if (shaderinfo && shaderinfo->progid) {
         if (shaderinfo->type != EDGE_RENDERING ||
-            (shaderinfo->type == EDGE_RENDERING && showedges)) glUseProgram(shaderinfo->progid); GL_ERROR_CHECK();
+            (shaderinfo->type == EDGE_RENDERING && showedges)){
+               glUseProgram(shaderinfo->progid); GL_ERROR_CHECK();
+               glUniform1f(shaderinfo->data.csg_rendering.totalHalfEdgeThickness, totalHalfEdgeThickness);
+               glUniform1f(shaderinfo->data.csg_rendering.edgeFadeThickness, edgeFadeThickness);
+             }
       }
 
       for (const auto& csgobj : product.intersections) {
@@ -477,6 +481,9 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
       if (shaderinfo && shaderinfo->progid) {
         GL_TRACE("glUseProgram(%d)", shaderinfo->progid);
         glUseProgram(shaderinfo->progid); GL_ERROR_CHECK();
+        
+        glUniform1f(shaderinfo->data.csg_rendering.totalHalfEdgeThickness, totalHalfEdgeThickness);
+        glUniform1f(shaderinfo->data.csg_rendering.edgeFadeThickness, edgeFadeThickness);
 
         if (shaderinfo->type == EDGE_RENDERING && showedges) {
           shader_attribs_enable();
