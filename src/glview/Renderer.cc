@@ -309,7 +309,7 @@ void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transf
 
   if(shaderinfo){
     glUniform1f(shaderinfo->data.csg_rendering.totalHalfEdgeThickness, totalHalfEdgeThickness);
-    glUniform1f(shaderinfo->data.csg_rendering.edgeFadeThickness, totalHalfEdgeThickness);
+    glUniform1f(shaderinfo->data.csg_rendering.edgeFadeThickness, edgeFadeThickness);
   }
 
   bool mirrored = m.matrix().determinant() < 0;
@@ -493,6 +493,11 @@ void Renderer::render_edges(const PolySet& ps, csgmode_e csgmode) const {}
 void Renderer::setTotalHalfEdgeThickness(float value)
 {
   this->totalHalfEdgeThickness = value;
+}
+
+void Renderer::setEdgeFadeThickness(float value)
+{
+  this->edgeFadeThickness = value;
 }
 
 void Renderer::setEdgeColorOverwrite(bool flag){

@@ -32,6 +32,7 @@ private slots:
   void updateViewportControlHints();
   void requestResize();
   void on_doubleSpinBox_edge_valueChanged(double value);
+  void on_doubleSpinBox_edgeFade_valueChanged(double value);
   void on_checkBoxOverwriteEdgeColor_stateChanged(int state);
   void on_lineEditEdgeColor_textChanged(const QString &text);
 

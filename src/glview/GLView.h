@@ -72,6 +72,8 @@ public:
   bool showscale;
 
   void setTotalHalfEdgeThickness(float value);
+  void setEdgeFadeThickness(float value);
+
   void setEdgeColorOverwrite(bool flag);
   void setEdgeColor(float red, float green, float blue);
 #ifdef ENABLE_OPENCSG

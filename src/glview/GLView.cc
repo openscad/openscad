@@ -778,6 +778,14 @@ void GLView::setTotalHalfEdgeThickness(float value){
   }
 }
 
+void GLView::setEdgeFadeThickness(float value){
+   this->totalHalfEdgeThickness = value;
+  if (auto renderer = this->getRenderer()) {
+    renderer->setEdgeFadeThickness(value);
+    //update();
+  }
+}
+
 void GLView::setEdgeColorOverwrite(bool flag){
   edgeColorOverwrite = flag;
   renderer->setEdgeColorOverwrite(flag);
