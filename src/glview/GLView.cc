@@ -37,6 +37,9 @@ GLView::GLView()
   static int sId = 0;
   this->opencsg_id = sId++;
 #endif
+  this->edgeColor[0] = 0.0;
+  this->edgeColor[1] = 0.0;
+  this->edgeColor[2] = 0.0;
 }
 
 void GLView::setRenderer(Renderer *r)
@@ -775,10 +778,16 @@ void GLView::setTotalHalfEdgeThickness(float value){
   }
 }
 
-void GLView::setTotalHalfEdgeThickness(float value){
-   this->totalHalfEdgeThickness = value;
-  if (auto renderer = this->getRenderer()) {
-    renderer->setTotalHalfEdgeThickness(value);
-    //update();
-  }
+void GLView::setEdgeColorOverwrite(bool flag){
+  edgeColorOverwrite = flag;
+  renderer->setEdgeColorOverwrite(flag);
+  //update();
+}
+
+void GLView::setEdgeColor(float red, float green, float blue){
+  edgeColor[0] = red;
+  edgeColor[1] = green;
+  edgeColor[2] = blue;
+  renderer->setEdgeColor(red, green, blue);
+  //update();
 }

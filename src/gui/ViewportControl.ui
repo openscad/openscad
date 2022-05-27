@@ -177,20 +177,44 @@
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="QGroupBox" name="groupBox">
+    <widget class="QGroupBox" name="groupBoxEdge">
      <property name="title">
       <string>Edge</string>
      </property>
      <layout class="QFormLayout" name="formLayout">
-      <item row="0" column="0">
-       <widget class="QDoubleSpinBox" name="doubleSpinBox_edge"/>
-      </item>
-      <item row="0" column="1">
+      <item row="1" column="0">
        <widget class="QLabel" name="label_edge">
         <property name="text">
          <string>TotalHalfEdgeThickness</string>
         </property>
        </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QDoubleSpinBox" name="doubleSpinBox_edge"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_edge_2">
+        <property name="text">
+         <string>Overwrite Edge Color</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="checkBoxOverwriteEdgeColor">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Edge Color</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="lineEditEdgeColor"/>
       </item>
      </layout>
     </widget>

@@ -88,6 +88,8 @@ public:
   virtual void render_surface(const PolySet& geom, csgmode_e csgmode, const Transform3d& m, const shaderinfo_t *shaderinfo = nullptr) const;
   virtual void render_edges(const PolySet& geom, csgmode_e csgmode) const;
   virtual void setTotalHalfEdgeThickness(float value);
+  virtual void setEdgeColorOverwrite(bool flag);
+  virtual void setEdgeColor(float red, float green, float blue);
 
 protected:
   std::map<ColorMode, Color4f> colormap;
@@ -95,5 +97,7 @@ protected:
 
 private:
   shaderinfo_t renderer_shader;
+  bool edgeColorOverwrite = false;
   float totalHalfEdgeThickness = 1.414;
+  float edgeColor[3];
 };

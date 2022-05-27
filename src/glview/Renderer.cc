@@ -19,6 +19,10 @@ Renderer::Renderer() : colorscheme(nullptr)
 {
   PRINTD("Renderer() start");
 
+  this->edgeColor[0] = 0.0;
+  this->edgeColor[1] = 0.0;
+  this->edgeColor[2] = 0.0;
+
   renderer_shader.progid = 0;
 
   // Setup default colors
@@ -172,7 +176,11 @@ void Renderer::setColor(const float color[4], const shaderinfo_t *shaderinfo) co
 #ifdef ENABLE_OPENCSG
   if (shaderinfo) {
     glUniform4f(shaderinfo->data.csg_rendering.color_area, c[0], c[1], c[2], c[3]);
-    glUniform4f(shaderinfo->data.csg_rendering.color_edge, (c[0] + 1) / 2, (c[1] + 1) / 2, (c[2] + 1) / 2, 1.0);
+    if(edgeColorOverwrite){
+      glUniform4f(shaderinfo->data.csg_rendering.color_edge, edgeColor[0], edgeColor[1], edgeColor[2], 1.0);
+    }else{
+      glUniform4f(shaderinfo->data.csg_rendering.color_edge, (c[0] + 1) / 2, (c[1] + 1) / 2, (c[2] + 1) / 2, 1.0);
+    }
   }
 #endif
 }
@@ -482,6 +490,18 @@ void Renderer::render_edges(const PolySet& ps, csgmode_e csgmode) const {}
 
 #endif //NULLGL
 
-void Renderer::setTotalHalfEdgeThickness(float value){
-   this->totalHalfEdgeThickness = value;
+void Renderer::setTotalHalfEdgeThickness(float value)
+{
+  this->totalHalfEdgeThickness = value;
 }
+
+void Renderer::setEdgeColorOverwrite(bool flag){
+  this->edgeColorOverwrite = flag;
+}
+  
+void Renderer::setEdgeColor(float red, float green, float blue)
+{
+   this->edgeColor[0] = red;
+   this->edgeColor[1] = green;
+   this->edgeColor[2] = blue;
+ }

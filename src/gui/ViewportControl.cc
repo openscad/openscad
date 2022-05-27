@@ -200,6 +200,15 @@ bool ViewportControl::focusNextPrevChild(bool next){
     return true;
 }
 
+void ViewportControl::on_checkBoxOverwriteEdgeColor_stateChanged(int state){
+  bool bState = (Qt::CheckState::Checked == state);
+  this->qglview->setEdgeColorOverwrite(state);
+}
+
+void ViewportControl::on_lineEditEdgeColor_textChanged(const QString &text){
+  QColor color = QColor(text);
+    this->qglview->setEdgeColor(color.redF(), color.greenF(), color.blueF());
+}
 void ViewportControl::on_doubleSpinBox_edge_valueChanged(double value){
    this->qglview->setTotalHalfEdgeThickness((float) value);
 }
