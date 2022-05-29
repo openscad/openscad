@@ -443,29 +443,56 @@ Value builtin_lookup(Arguments arguments, const Location& loc)
 
   // Second must be a vector of vec2, with valid numbers inside
   auto it = vec.begin();
-  if (vec.empty() || it->toVector().size() < 2 || !it->getVec2(low_p, low_v)) {
+  if (vec.empty() || it->toVector().size() < 2 /*|| !it->getVec2(low_p, low_v)*/) {
     return Value::undefined.clone();
-  }
-  high_p = low_p;
-  high_v = low_v;
+  } 
+  if(it->getVec2(low_p, low_v)){
+    high_p = low_p;
+    high_v = low_v;
 
-  for (++it; it != vec.end(); ++it) {
-    double this_p, this_v;
-    if (it->getVec2(this_p, this_v)) {
+    for (++it; it != vec.end(); ++it) {
+      double this_p, this_v;
+      if (it->getVec2(this_p, this_v)) {
+        if (this_p <= p && (this_p > low_p || low_p > p)) {
+          low_p = this_p;
+          low_v = this_v;
+        }
+        if (this_p >= p && (this_p < high_p || high_p < p)) {
+          high_p = this_p;
+          high_v = this_v;
+        }
+      }
+    }
+    if (p <= low_p) return Value(high_v);
+    if (p >= high_p) return Value(low_v);
+    double f = (p - low_p) / (high_p - low_p);
+    return Value(high_v * f + low_v * (1 - f));
+  }else if(true /*|| it->toVector()[1].type() == Type::VECTOR)*/){
+    it->toVector()[0].getDouble(low_p);
+    high_p = low_p;
+    auto low_value  = it;
+    auto high_value = it;
+
+    for (++it; it != vec.end(); ++it) {
+      double this_p;
+      it->toVector()[0].getDouble(this_p);
+      
       if (this_p <= p && (this_p > low_p || low_p > p)) {
         low_p = this_p;
-        low_v = this_v;
+        low_value = it;
       }
       if (this_p >= p && (this_p < high_p || high_p < p)) {
         high_p = this_p;
-        high_v = this_v;
+        high_value = it;
       }
     }
+    if (p <= low_p) return Value(high_value->toVector()[1].clone());
+    if (p >= high_p) return Value(low_value->toVector()[1].clone());
+    double f = (p - low_p) / (high_p - low_p);
+    return Value(high_value->toVector()[1].operator*(f) + low_value->toVector()[1].operator*(1 - f));
+  }else{
+    return Value::undefined.clone();
   }
-  if (p <= low_p) return Value(high_v);
-  if (p >= high_p) return Value(low_v);
-  double f = (p - low_p) / (high_p - low_p);
-  return Value(high_v * f + low_v * (1 - f));
 }
 
 /*
