@@ -467,7 +467,7 @@ Value builtin_lookup(Arguments arguments, const Location& loc)
     if (p >= high_p) return Value(low_v);
     double f = (p - low_p) / (high_p - low_p);
     return Value(high_v * f + low_v * (1 - f));
-  }else if(true /*|| it->toVector()[1].type() == Type::VECTOR)*/){
+  }else if(it->toVector()[1].type() == Value::Type::VECTOR){
     it->toVector()[0].getDouble(low_p);
     high_p = low_p;
     auto low_value  = it;
