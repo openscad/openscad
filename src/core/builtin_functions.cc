@@ -441,37 +441,21 @@ Value builtin_lookup(Arguments arguments, const Location& loc)
   double low_p, low_v, high_p, high_v;
   const auto& vec = arguments[1]->toVector();
 
-  // Second must be a vector of vec2, with valid numbers inside
+  // Second must be a vector of vec2,
   auto it = vec.begin();
-  if (vec.empty() || it->toVector().size() < 2 /*|| !it->getVec2(low_p, low_v)*/) {
+  if (vec.empty() || it->toVector().size() < 2) {
     return Value::undefined.clone();
-  } 
-  if(it->getVec2(low_p, low_v)){
-    high_p = low_p;
-    high_v = low_v;
-
-    for (++it; it != vec.end(); ++it) {
-      double this_p, this_v;
-      if (it->getVec2(this_p, this_v)) {
-        if (this_p <= p && (this_p > low_p || low_p > p)) {
-          low_p = this_p;
-          low_v = this_v;
-        }
-        if (this_p >= p && (this_p < high_p || high_p < p)) {
-          high_p = this_p;
-          high_v = this_v;
-        }
-      }
-    }
-    if (p <= low_p) return Value(high_v);
-    if (p >= high_p) return Value(low_v);
-    double f = (p - low_p) / (high_p - low_p);
-    return Value(high_v * f + low_v * (1 - f));
-  }else if(it->toVector()[1].type() == Value::Type::VECTOR){
+  }
+  //first element of the vector must be a number
+  if (Value::Type::NUMBER  != it->toVector()[0].type()) {
+    return Value::undefined.clone();
+  }
+  //second element of the vector must be either a number or vector
+  if(Value::Type::NUMBER  == it->toVector()[1].type() || Value::Type::VECTOR == it->toVector()[1].type() ){
     it->toVector()[0].getDouble(low_p);
     high_p = low_p;
-    auto low_value  = it;
-    auto high_value = it;
+    auto low_v  = it;
+    auto high_v = it;
 
     for (++it; it != vec.end(); ++it) {
       double this_p;
@@ -479,17 +463,17 @@ Value builtin_lookup(Arguments arguments, const Location& loc)
       
       if (this_p <= p && (this_p > low_p || low_p > p)) {
         low_p = this_p;
-        low_value = it;
+        low_v = it;
       }
       if (this_p >= p && (this_p < high_p || high_p < p)) {
         high_p = this_p;
-        high_value = it;
+        high_v = it;
       }
     }
-    if (p <= low_p) return Value(high_value->toVector()[1].clone());
-    if (p >= high_p) return Value(low_value->toVector()[1].clone());
+    if (p <= low_p) return high_v->toVector()[1].clone();
+    if (p >= high_p) return low_v->toVector()[1].clone();
     double f = (p - low_p) / (high_p - low_p);
-    return Value(high_value->toVector()[1].operator*(f) + low_value->toVector()[1].operator*(1 - f));
+    return (high_v->toVector()[1].operator*(f) + low_v->toVector()[1].operator*(1 - f));
   }else{
     return Value::undefined.clone();
   }
