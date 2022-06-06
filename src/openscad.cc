@@ -902,8 +902,12 @@ if (QDir(cwd).exists() == false) {
 QString qtemp = cwd;
 std::string temp = qtemp.toStdString();
 if (temp  == "") {
+<<<<<<< HEAD
   LOG(message_group::None, Location::NONE, "", "Current Working Directory does not exists. Try running from an existing location.\n");
 >>>>>>> 01dcfc148 (Updates.)
+=======
+  LOG(message_group::None, Location::NONE, "", "Current Working Directory does not exist.\n");
+>>>>>>> 38d183946 (Error messaga update.)
   return 1;
 };
 
