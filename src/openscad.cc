@@ -895,8 +895,15 @@ int main(int argc, char **argv)
 
 // Current Working Directory needs to be valid.
 auto cwd = QDir::currentPath();
+<<<<<<< HEAD
 if (QDir(cwd).exists() == false) {
   LOG(message_group::None, Location::NONE, "", "Current Working Directory does not exist.\n");
+=======
+QString qtemp = cwd;
+std::string temp = qtemp.toStdString();
+if (temp  == "") {
+  LOG(message_group::None, Location::NONE, "", "Current Working Directory does not exists. Try running from an existing location.\n");
+>>>>>>> 01dcfc148 (Updates.)
   return 1;
 };
 
