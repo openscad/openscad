@@ -371,7 +371,12 @@
     <addaction name="windowActionSelectConsole"/>
     <addaction name="windowActionSelectErrorLog"/>
     <addaction name="windowActionSelectCustomizer"/>
+<<<<<<< HEAD
     <addaction name="windowActionSelectCameraControlWidget"/>
+=======
+    <addaction name="windowActionSelectAnimate"/>
+    <addaction name="windowActionSelectCameraControl"/>
+>>>>>>> 9ce4ef952 (displaying the current values)
     <addaction name="separator"/>
     <addaction name="windowActionNextWindow"/>
     <addaction name="windowActionPreviousWindow"/>
@@ -380,7 +385,12 @@
     <addaction name="windowActionHideConsole"/>
     <addaction name="windowActionHideErrorLog"/>
     <addaction name="windowActionHideCustomizer"/>
+<<<<<<< HEAD
     <addaction name="windowActionHideCameraControlWidget"/>
+=======
+    <addaction name="windowActionHideAnimate"/>
+    <addaction name="windowActionHideCameraControl"/>
+>>>>>>> 9ce4ef952 (displaying the current values)
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -625,11 +635,43 @@
     <number>2</number>
    </attribute>
   </widget>
+<<<<<<< HEAD
   <widget class="Dock" name="cameraControlWidgetDock">
+=======
+  <widget class="Dock" name="animateDock">
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="animateDockContents">
+    <property name="focusPolicy">
+     <enum>Qt::StrongFocus</enum>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_Animate">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="Animate" name="animateWidget" native="true">
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="Dock" name="cameraControlDock">
+>>>>>>> 9ce4ef952 (displaying the current values)
    <attribute name="dockWidgetArea">
     <number>2</number>
    </attribute>
-   <widget class="QWidget" name="cameraControlWidgetDockContents">
+   <widget class="QWidget" name="cameraControlDockContents">
     <property name="focusPolicy">
      <enum>Qt::StrongFocus</enum>
     </property>
@@ -647,6 +689,7 @@
       <number>0</number>
      </property>
      <item>
+<<<<<<< HEAD
       <widget class="CameraControlWidget" name="cameraControlWidget" native="true">
        <property name="minimumSize">
         <size>
@@ -654,6 +697,9 @@
          <height>10</height>
         </size>
        </property>
+=======
+      <widget class="CameraControl" name="cameraControlWidget" native="true">
+>>>>>>> 9ce4ef952 (displaying the current values)
       </widget>
      </item>
     </layout>
@@ -1447,14 +1493,25 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
+<<<<<<< HEAD
+=======
+   <property name="text">
+    <string>Hide Animation Toolbar/Window</string>
+   </property>
+   <property name="toolTip">
+    <string>Hide Animation Toolbar/Window</string>
+   </property>
+  </action>
+  <action name="windowActionHideCameraControl">
+>>>>>>> 9ce4ef952 (displaying the current values)
    <property name="checked">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide CameraControlWidget</string>
+    <string>Hide CameraControl</string>
    </property>
    <property name="toolTip">
-    <string>Hide CameraControlWidget</string>
+    <string>Hide CameraControl</string>
    </property>
   </action>
   <action name="windowActionSelectEditor">
@@ -1480,6 +1537,11 @@
   <action name="windowActionSelectAnimate">
    <property name="text">
     <string>&amp;Animate</string>
+   </property>
+  </action>
+  <action name="windowActionSelectCameraControl">
+   <property name="text">
+    <string>Camera Control</string>
    </property>
   </action>
   <action name="windowActionNextWindow">
@@ -1543,9 +1605,19 @@
    <container>1</container>
   </customwidget>
   <customwidget>
+<<<<<<< HEAD
    <class>CameraControlWidget</class>
+=======
+   <class>Animate</class>
    <extends>QWidget</extends>
-   <header>gui/CameraControlWidget.h</header>
+   <header>gui/Animate.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>CameraControl</class>
+>>>>>>> 9ce4ef952 (displaying the current values)
+   <extends>QWidget</extends>
+   <header>gui/CameraControl.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

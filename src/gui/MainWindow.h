@@ -177,8 +177,8 @@ private slots:
   void hideConsole();
   void showErrorLog();
   void hideErrorLog();
-  void showCameraControlWidget();
-  void hideCameraControlWidget();
+  void showCameraControl();
+  void hideCameraControl();
   void showParameters();
   void hideParameters();
   void showAnimate();
@@ -187,7 +187,12 @@ private slots:
   void on_windowActionSelectConsole_triggered();
   void on_windowActionSelectCustomizer_triggered();
   void on_windowActionSelectErrorLog_triggered();
+<<<<<<< HEAD
   void on_windowActionSelectCameraControlWidget_triggered();
+=======
+  void on_windowActionSelectAnimate_triggered();
+  void on_windowActionSelectCameraControl_triggered();
+>>>>>>> 9ce4ef952 (displaying the current values)
   void on_windowActionNextWindow_triggered();
   void on_windowActionPreviousWindow_triggered();
   void on_editActionInsertTemplate_triggered();
@@ -266,7 +271,12 @@ public:
   void changedTopLevelConsole(bool);
   void changedTopLevelEditor(bool);
   void changedTopLevelErrorLog(bool);
+<<<<<<< HEAD
   void changedTopLevelCameraControlWidget(bool);
+=======
+  void changedTopLevelAnimate(bool);
+  void changedTopLevelCameraControl(bool);
+>>>>>>> 9ce4ef952 (displaying the current values)
 
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
@@ -277,13 +287,23 @@ public slots:
   void on_consoleDock_visibilityChanged(bool);
   void on_parameterDock_visibilityChanged(bool);
   void on_errorLogDock_visibilityChanged(bool);
+<<<<<<< HEAD
   void on_cameraControlWidgetDock_visibilityChanged(bool);
+=======
+  void on_animateDock_visibilityChanged(bool);
+  void on_cameraControlDock_visibilityChanged(bool);
+>>>>>>> 9ce4ef952 (displaying the current values)
   void on_toolButtonCompileResultClose_clicked();
   void editorTopLevelChanged(bool);
   void consoleTopLevelChanged(bool);
   void parameterTopLevelChanged(bool);
   void errorLogTopLevelChanged(bool);
+<<<<<<< HEAD
   void cameraControlWidgetTopLevelChanged(bool);
+=======
+  void animateTopLevelChanged(bool);
+  void cameraControlTopLevelChanged(bool);
+>>>>>>> 9ce4ef952 (displaying the current values)
   void processEvents();
   void jumpToLine(int, int);
   void openFileFromPath(QString, int);
