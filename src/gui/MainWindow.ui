@@ -371,7 +371,7 @@
     <addaction name="windowActionSelectConsole"/>
     <addaction name="windowActionSelectErrorLog"/>
     <addaction name="windowActionSelectCustomizer"/>
-    <addaction name="windowActionSelectAnimate"/>
+    <addaction name="windowActionSelectCameraControlWidget"/>
     <addaction name="separator"/>
     <addaction name="windowActionNextWindow"/>
     <addaction name="windowActionPreviousWindow"/>
@@ -380,7 +380,7 @@
     <addaction name="windowActionHideConsole"/>
     <addaction name="windowActionHideErrorLog"/>
     <addaction name="windowActionHideCustomizer"/>
-    <addaction name="windowActionHideAnimate"/>
+    <addaction name="windowActionHideCameraControlWidget"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
@@ -625,15 +625,15 @@
     <number>2</number>
    </attribute>
   </widget>
-  <widget class="Dock" name="animateDock">
+  <widget class="Dock" name="cameraControlWidgetDock">
    <attribute name="dockWidgetArea">
-    <number>8</number>
+    <number>2</number>
    </attribute>
-   <widget class="QWidget" name="animateDockContents">
+   <widget class="QWidget" name="cameraControlWidgetDockContents">
     <property name="focusPolicy">
      <enum>Qt::StrongFocus</enum>
     </property>
-    <layout class="QVBoxLayout" name="verticalLayout_Animate">
+    <layout class="QVBoxLayout" name="verticalLayout_6">
      <property name="leftMargin">
       <number>0</number>
      </property>
@@ -647,7 +647,13 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="Animate" name="animateWidget" native="true">
+      <widget class="CameraControlWidget" name="cameraControlWidget" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>10</width>
+         <height>10</height>
+        </size>
+       </property>
       </widget>
      </item>
     </layout>
@@ -1437,7 +1443,7 @@
     <string>Hide ErrorLog</string>
    </property>
   </action>
-  <action name="windowActionHideAnimate">
+  <action name="windowActionHideCameraControlWidget">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1445,10 +1451,10 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Hide Animation Toolbar/Window</string>
+    <string>Hide CameraControlWidget</string>
    </property>
    <property name="toolTip">
-    <string>Hide Animation Toolbar/Window</string>
+    <string>Hide CameraControlWidget</string>
    </property>
   </action>
   <action name="windowActionSelectEditor">
@@ -1537,9 +1543,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>Animate</class>
+   <class>CameraControlWidget</class>
    <extends>QWidget</extends>
-   <header>gui/Animate.h</header>
+   <header>gui/CameraControlWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

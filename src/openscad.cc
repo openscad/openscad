@@ -893,15 +893,15 @@ int main(int argc, char **argv)
   int rc = 0;
   StackCheck::inst();
 
+// Current Working Directory needs to be valid.
+auto cwd = QDir::currentPath();
+if (QDir(cwd).exists() == false) {
+  LOG(message_group::None, Location::NONE, "", "Current Working Directory does not exist.\n");
+  return 1;
+};
+
 #ifdef OPENSCAD_QTGUI
   {
-    // Current Working Directory needs to be valid.
-    auto cwd = QDir::currentPath();
-    if (QDir(cwd).exists() == 1) {
-      LOG(message_group::None, Location::NONE, "", "Current Working Directory does not exists. Try running from an existing location.\n");
-      return 1;
-    };
-
     // Need a dummy app instance to get the application path but it needs to be destroyed before the GUI is launched.
     QCoreApplication app(argc, argv);
     PlatformUtils::registerApplicationPath(app.applicationDirPath().toLocal8Bit().constData());
