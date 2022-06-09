@@ -74,16 +74,8 @@ public:
   QWidget *consoleDockTitleWidget;
   QWidget *parameterDockTitleWidget;
   QWidget *errorLogDockTitleWidget;
-<<<<<<< HEAD
-  QWidget *cameraControlTitleWidget;
-=======
   QWidget *animateDockTitleWidget;
-<<<<<<< HEAD
-  QWidget *ViewportControlTitleWidget;
->>>>>>> 726fc89ff (CameraControl -> ViewportControl)
-=======
   QWidget *viewportControlTitleWidget;
->>>>>>> 7454f55c6 (variable name starting with lower case letter)
 
   int compileErrors;
   int compileWarnings;
@@ -135,11 +127,7 @@ private:
   void loadViewSettings();
   void loadDesignSettings();
   void prepareCompile(const char *afterCompileSlot, bool procevents, bool preview);
-<<<<<<< HEAD
-  void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool cameraControlWidget);
-=======
   void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool ViewportControlWidget);
->>>>>>> 726fc89ff (CameraControl -> ViewportControl)
   void saveBackup();
   void writeBackup(class QFile *file);
   void show_examples();
@@ -200,16 +188,8 @@ private slots:
   void on_windowActionSelectConsole_triggered();
   void on_windowActionSelectCustomizer_triggered();
   void on_windowActionSelectErrorLog_triggered();
-<<<<<<< HEAD
-  void on_windowActionSelectCameraControlWidget_triggered();
-=======
   void on_windowActionSelectAnimate_triggered();
-<<<<<<< HEAD
-  void on_windowActionSelectCameraControl_triggered();
->>>>>>> 9ce4ef952 (displaying the current values)
-=======
   void on_windowActionSelectViewportControl_triggered();
->>>>>>> 726fc89ff (CameraControl -> ViewportControl)
   void on_windowActionNextWindow_triggered();
   void on_windowActionPreviousWindow_triggered();
   void on_editActionInsertTemplate_triggered();
@@ -288,16 +268,8 @@ public:
   void changedTopLevelConsole(bool);
   void changedTopLevelEditor(bool);
   void changedTopLevelErrorLog(bool);
-<<<<<<< HEAD
-  void changedTopLevelCameraControlWidget(bool);
-=======
   void changedTopLevelAnimate(bool);
-<<<<<<< HEAD
-  void changedTopLevelCameraControl(bool);
->>>>>>> 9ce4ef952 (displaying the current values)
-=======
   void changedTopLevelViewportControl(bool);
->>>>>>> 726fc89ff (CameraControl -> ViewportControl)
 
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
@@ -308,39 +280,15 @@ public slots:
   void on_consoleDock_visibilityChanged(bool);
   void on_parameterDock_visibilityChanged(bool);
   void on_errorLogDock_visibilityChanged(bool);
-<<<<<<< HEAD
-  void on_cameraControlWidgetDock_visibilityChanged(bool);
-=======
   void on_animateDock_visibilityChanged(bool);
-<<<<<<< HEAD
-<<<<<<< HEAD
-  void on_cameraControlDock_visibilityChanged(bool);
->>>>>>> 9ce4ef952 (displaying the current values)
-=======
-  void on_ViewportControlDock_visibilityChanged(bool);
->>>>>>> 726fc89ff (CameraControl -> ViewportControl)
-=======
   void on_viewportControlDock_visibilityChanged(bool);
->>>>>>> 7454f55c6 (variable name starting with lower case letter)
   void on_toolButtonCompileResultClose_clicked();
   void editorTopLevelChanged(bool);
   void consoleTopLevelChanged(bool);
   void parameterTopLevelChanged(bool);
   void errorLogTopLevelChanged(bool);
-<<<<<<< HEAD
-  void cameraControlWidgetTopLevelChanged(bool);
-=======
   void animateTopLevelChanged(bool);
-<<<<<<< HEAD
-<<<<<<< HEAD
-  void cameraControlTopLevelChanged(bool);
->>>>>>> 9ce4ef952 (displaying the current values)
-=======
-  void ViewportControlTopLevelChanged(bool);
->>>>>>> 726fc89ff (CameraControl -> ViewportControl)
-=======
   void viewportControlTopLevelChanged(bool);
->>>>>>> 7454f55c6 (variable name starting with lower case letter)
   void processEvents();
   void jumpToLine(int, int);
   void openFileFromPath(QString, int);
