@@ -894,10 +894,9 @@ int main(int argc, char **argv)
   StackCheck::inst();
 
 // Current Working Directory needs to be valid.
-auto cwd = QDir::currentPath();
-QString qtemp = cwd;
-std::string temp = qtemp.toStdString();
-if (temp  == "") {
+try {
+  auto cwd = boost::filesystem::current_path();
+} catch (const std::exception& e)  {
   LOG(message_group::None, Location::NONE, "", "Current Working Directory does not exist.\n");
   return 1;
 };
