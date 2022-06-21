@@ -327,7 +327,12 @@ void Preferences::setupFeaturesPage()
     cb->setFont(bold_font);
     // synchronize Qt settings with the feature settings
     bool value = getValue(featurekey).toBool();
-    feature->enable(value);
+    if( !feature->is_enabled() ) {
+      feature->enable(value); // only if not already set from command-line
+    } else {
+      value = feature->is_enabled(); // otherwise sync QT with command-line request
+    }
+
     cb->setChecked(value);
     cb->setProperty(featurePropertyName, QVariant::fromValue<Feature *>(feature));
     connect(cb, SIGNAL(toggled(bool)), this, SLOT(featuresCheckBoxToggled(bool)));
