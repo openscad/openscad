@@ -939,6 +939,27 @@ Value builtin_import(Arguments arguments, const Location& loc)
   return import_json(file, arguments.session(), loc);
 }
 
+Value builtin_dict(const std::shared_ptr<const Context>& context, const FunctionCall *call)
+{
+  ObjectType obj(context->session());
+
+  std::set<std::string> seen;
+  for (const auto& argument : call->arguments) {
+    Value value = argument->getExpr()->evaluate(context);
+    if (argument->getName().empty()) {
+	
+      LOG(message_group::Warning, call->location(), context->documentRoot(), "Assignment without variable name %1$s", value.toEchoStringNoThrow());
+    } else if (seen.find(argument->getName()) != seen.end()) {
+      LOG(message_group::Warning, call->location(), context->documentRoot(), "Ignoring duplicate variable assignment %1$s = %2$s", argument->getName(), value.toEchoStringNoThrow());
+    } else {
+      obj.set(argument->getName(), std::move(value));
+      seen.insert(argument->getName());
+    }
+  }
+
+  return std::move(obj);
+}
+
 void register_builtin_functions()
 {
   Builtins::init("abs", new BuiltinFunction(&builtin_abs),
@@ -1160,5 +1181,10 @@ void register_builtin_functions()
   Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
   {
     "import(file) -> object",
+  });
+
+  Builtins::init("dict", new BuiltinFunction(&builtin_dict),
+  {
+    "dict(param=value, ...) -> object",
   });
 }
