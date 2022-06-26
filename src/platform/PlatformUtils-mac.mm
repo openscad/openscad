@@ -26,6 +26,9 @@ std::string PlatformUtils::userConfigPath()
 {
 	NSError *error;
 	NSURL *appSupportDir = [[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error];
+	if (error) {
+		return "";
+	}
 	return std::string([[appSupportDir path] UTF8String]) + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }
 
