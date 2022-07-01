@@ -31,16 +31,27 @@ Result vector_convert(V const& v) {
 namespace CGALUtils {
 
 bool applyHull(const Geometry::Geometries& children, PolySet& P);
+bool applyBasicHull(const Geometry::Geometries& children, PolySet& P);
+bool applyHullMulticore(const Geometry::Geometries& children, PolySet& result);
+
 template <typename K>
 bool is_weakly_convex(const CGAL::Polyhedron_3<K>& p);
 template <typename K>
 bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m);
 shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op);
 shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
+
 shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries& children, OpenSCADOperator op);
 shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
   const Geometry::Geometries::const_iterator& chbegin,
   const Geometry::Geometries::const_iterator& chend);
+
+shared_ptr<const Geometry> applyOperator3DMulticore(const Geometry::Geometries& children, OpenSCADOperator op);
+shared_ptr<const Geometry> applyUnion3DMulticore(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
+
+shared_ptr<const Geometry> applyBasicOperator3D(const Geometry::Geometries& children, OpenSCADOperator op);
+shared_ptr<const Geometry> applyBasicUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
+
 //FIXME: Old, can be removed:
 //void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
 Polygon2d *project(const CGAL_Nef_polyhedron& N, bool cut);
@@ -52,6 +63,7 @@ CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox& bbox);
 bool is_approximately_convex(const PolySet& ps);
 shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children);
 shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& children);
+shared_ptr<const Geometry> applyBasicMinkowski(const Geometry::Geometries& children);
 
 template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps);
 template <class InputKernel, class OutputKernel>

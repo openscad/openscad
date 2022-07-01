@@ -739,6 +739,7 @@ set(CGAL_SOURCES
   src/geometry/GeometryEvaluator.cc
   src/geometry/cgal/cgalutils.cc
   src/geometry/cgal/cgalutils-applyops.cc
+  src/geometry/cgal/cgalutils-applyops-multicore.cc
   src/geometry/cgal/cgalutils-applyops-hybrid.cc
   src/geometry/cgal/cgalutils-applyops-hybrid-minkowski.cc
   src/geometry/cgal/cgalutils-closed.cc
