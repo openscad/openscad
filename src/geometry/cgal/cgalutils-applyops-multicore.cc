@@ -28,11 +28,11 @@ uint64_t timeSinceEpochMs() {
 
 void applyUnion3DMulticoreWorker( int index,
 		Geometry::Geometries::iterator& chbegin,
-	 Geometry::Geometries::iterator& chend,
-	 shared_ptr<const Geometry>& partialResult );
+        Geometry::Geometries::iterator& chend,
+        shared_ptr<const Geometry>& partialResult );
 
 void applyOperator3DMulticoreWorker(const Geometry::Geometries& children,
-																		OpenSCADOperator op, shared_ptr<const Geometry> partialResult );
+                                    OpenSCADOperator op, shared_ptr<const Geometry> partialResult );
 
 void applyHullMulticoreWorker(const Geometry::Geometries& childrens, PolySet& result, bool& continueExec );
 
@@ -41,93 +41,85 @@ shared_ptr<const Geometry> applyUnion3DMulticore(
   Geometry::Geometries::iterator chend)
 {
 	uint64_t start  = timeSinceEpochMs();
+    std::cout << timeSinceEpochMs() - start << " Start Union Multicore" << std::endl;
 
-	int numElements = std::distance( chbegin, chend );
-//	unsigned int numCores = std::thread::hardware_concurrency();
-//
-//	if( numElements < numCores * 2 ) {
-//		// needs at least two elements per core, if  not then fallback basic
-//		return applyBasicUnion3D( chbegin, chend );
-//	}
+    shared_ptr<const Geometry> result;
+    applyUnion3DMulticoreWorker( 1, chbegin, chend, result );
 
-	// re-order by facets so that there's some load balancing among threads
-	Geometry::Geometries balancedList( chbegin, chend );
-	balancedList.sort([](const Geometry::GeometryItem& poly1, const Geometry::GeometryItem& poly2)
-										{
-											return poly1.second->numFacets() < poly2.second->numFacets();
-										});
+    std::cout << timeSinceEpochMs() - start << "End Union Multicore " << std::endl;
+    return result;
+}
 
-	std::cout << timeSinceEpochMs() - start << " Main Elements: " << numElements << std::endl;
-	Geometry::Geometries::iterator chmiddle1 = chbegin;
-	std::advance( chmiddle1, numElements / 4 );
-	Geometry::Geometries::iterator chmiddle2 = chmiddle1;
-	std::advance( chmiddle2, numElements / 4 );
-	Geometry::Geometries::iterator chmiddle3 = chmiddle2;
-	std::advance( chmiddle3, numElements / 4 );
+void applyUnion3DMulticoreWorker( int index,
+                                  Geometry::Geometries::iterator& chbegin,
+                                  Geometry::Geometries::iterator& chend,
+                                  shared_ptr<const Geometry>& partialResult )
+{
+    uint64_t start  = timeSinceEpochMs();
 
-	shared_ptr<const Geometry> partialResultLeft;
-	std::thread t1( applyUnion3DMulticoreWorker, 1, std::ref(chbegin), std::ref(chmiddle1), std::ref(partialResultLeft) );
+    unsigned int numElements = std::distance( chbegin, chend );
+	unsigned int numCores = std::thread::hardware_concurrency();
 
-	shared_ptr<const Geometry> partialResultRight;
-	std::thread t2( applyUnion3DMulticoreWorker, 2, std::ref(chmiddle1), std::ref(chmiddle2), std::ref(partialResultRight) );
+    // base case is if either the splitted threads have reached the max cores available
+    // or the elements remaining in the local list are not splittable again in two lists
+    if( index == numCores || numElements / numCores == 0 ) {
+        shared_ptr<const Geometry> tmpResult = applyBasicUnion3D(chbegin, chend);
 
-	shared_ptr<const Geometry> partialResultLeft2;
-	std::thread t3( applyUnion3DMulticoreWorker, 3, std::ref(chmiddle2), std::ref(chmiddle3), std::ref(partialResultLeft2) );
+        partialResult.swap( tmpResult );
+        return;
+    }
 
-	shared_ptr<const Geometry> partialResultRight2;
-	std::thread t4( applyUnion3DMulticoreWorker, 4, std::ref(chmiddle3), std::ref(chend), std::ref(partialResultRight2) );
+    // re-order by facets so that there's some load balancing among threads
+    Geometry::Geometries balancedList( chbegin, chend );
+    balancedList.sort([](const Geometry::GeometryItem& poly1, const Geometry::GeometryItem& poly2)
+                      {
+                          return poly1.second->numFacets() >= poly2.second->numFacets();
+                      });
 
-	t1.join();
-	t2.join();
-	t3.join();
-	t4.join();
+    // now we split the list in two and launch the threads
+    // the facets number sum should be roughly the same on both
+    // as the balanced list is in descending order
+    Geometry::Geometries listThreadLeft;
+    Geometry::Geometries listThreadRight;
 
-	Geometry::Geometries partials;
-	partials.push_back(std::make_pair(nullptr, partialResultRight));
-	partials.push_back(std::make_pair(nullptr, partialResultLeft));
+    int thElementindex = 0;
+    for( auto ch : balancedList ) {
+        if( thElementindex % 2 == 0 )
+            listThreadLeft.push_back( ch );
+        else
+            listThreadRight.push_back( ch );
 
-	Geometry::Geometries::iterator chstart2 = partials.begin();
-	Geometry::Geometries::iterator chend2 = partials.end();
-	shared_ptr<const Geometry> partialResultUnion1;
-	std::thread u1( applyUnion3DMulticoreWorker, 5, std::ref(chstart2), std::ref(chend2), std::ref(partialResultUnion1) );
+        thElementindex++;
+    }
 
-	Geometry::Geometries partials2;
-	partials2.push_back(std::make_pair(nullptr, partialResultRight2));
-	partials2.push_back(std::make_pair(nullptr, partialResultLeft2));
+    // launch the threads and wait termination
+    shared_ptr<const Geometry> partialResultLeft;
+    Geometry::Geometries::iterator leftItBegin = listThreadLeft.begin();
+    Geometry::Geometries::iterator leftItEnd = listThreadLeft.end();
+    std::thread threadLeft( applyUnion3DMulticoreWorker, index*2, std::ref(leftItBegin), std::ref(leftItEnd), std::ref(partialResultLeft) );
 
-	Geometry::Geometries::iterator chstart3 = partials2.begin();
-	Geometry::Geometries::iterator chend3 = partials2.end();
-	shared_ptr<const Geometry> partialResultUnion2;
+    shared_ptr<const Geometry> partialResultRight;
+    Geometry::Geometries::iterator rightItBegin = listThreadRight.begin();
+    Geometry::Geometries::iterator rightItEnd = listThreadRight.end();
+    std::thread threadRight( applyUnion3DMulticoreWorker, index*2, std::ref(rightItBegin), std::ref(rightItEnd), std::ref(partialResultRight) );
 
-	std::thread u2( applyUnion3DMulticoreWorker, 6, std::ref(chstart3), std::ref(chend3), std::ref(partialResultUnion2) );
+    threadLeft.join();
+    threadRight.join();
 
-	u1.join();
-	u2.join();
+    // union the two partial results and swap with the out pointer
+    Geometry::Geometries unionData;
+    unionData.push_back(std::make_pair(nullptr, partialResultLeft));
+    unionData.push_back(std::make_pair(nullptr, partialResultRight));
 
-	std::cout << timeSinceEpochMs() - start << " 2nd Partials Finished" << std::endl;
+    auto unionGeom = applyBasicUnion3D(unionData.begin(), unionData.end() );
 
-	Geometry::Geometries unionData;
-	unionData.push_back(std::make_pair(nullptr, partialResultUnion1));
-	unionData.push_back(std::make_pair(nullptr, partialResultUnion2));
-
-	auto finalUnion = applyBasicUnion3D( unionData.begin(), unionData.end() );
-	std::cout << timeSinceEpochMs() - start << " Finished" << std::endl;
-
-	return finalUnion;
+    partialResult.swap(unionGeom );
 }
 
 shared_ptr<const Geometry> applyOperator3DMulticore(
   const Geometry::Geometries& children, 
   OpenSCADOperator op)
 {
-	//	int numElements = std::distance( chbegin, chend );
-	//	unsigned int numCores = std::thread::hardware_concurrency();
-	//
-	//	if( numElements < numCores * 2 ) {
-	//		// needs at least two elements per core, if  not then fallback basic
-	//		return applyBasicUnion3D( chbegin, chend );
-	//	}
-
 	shared_ptr<const Geometry> partialResult;
 	std::thread t1( applyOperator3DMulticoreWorker, std::ref(children), op, std::ref(partialResult) );
 
@@ -152,26 +144,6 @@ bool applyHullMulticore(const Geometry::Geometries& children, PolySet& result)
 	t1.join();
 
 	return resultFlag;
-}
-
-void applyUnion3DMulticoreWorker( int index,
-		Geometry::Geometries::iterator& chbegin,
-		 Geometry::Geometries::iterator& chend,
-		 shared_ptr<const Geometry>& partialResult )
-{
-	for( auto ch = chbegin; ch != chend; ch++ ) {
-		std::cout<< "[" << index << "] Facets: " << ch->second->numFacets() << std::endl;
-	}
-
-	uint64_t start = timeSinceEpochMs();
-	int numElements = std::distance( chbegin, chend );
-	std::cout << timeSinceEpochMs() - start << "["<< index << "] Elements: " << numElements << std::endl;
-	shared_ptr<const Geometry> tmpResult = applyBasicUnion3D(chbegin, chend);
-
-	std::cout << timeSinceEpochMs() - start << "["<< index << "] Swap" << std::endl;
-	partialResult.swap( tmpResult );
-
-	std::cout << timeSinceEpochMs() - start << "["<< index << "] Finished" << std::endl;
 }
 
 void applyOperator3DMulticoreWorker(const Geometry::Geometries& children,
