@@ -133,12 +133,17 @@ shared_ptr<const Geometry> applyOperator3DMulticore(  const Geometry::Geometries
 
     shared_ptr<const Geometry> result;
     applyMulticoreWorker( 1, children.begin(), children.end(), result,
-          [&](const Geometry::Geometries::const_iterator& itbegin, const Geometry::Geometries::const_iterator& itend, shared_ptr<const Geometry>& partialResult)
-          {
-              Geometry::Geometries list( itbegin, itend );
-              auto operationGeom = applyBasicOperator3D(list, op );
+      [&](const Geometry::Geometries::const_iterator& itbegin, const Geometry::Geometries::const_iterator& itend, shared_ptr<const Geometry>& partialResult)
+      {
+          Geometry::Geometries list( itbegin, itend );
+          if( op == OpenSCADOperator::MINKOWSKI ) {
+              auto operationGeom = applyBasicMinkowski( list );
               partialResult.swap(operationGeom );
-          } );
+              return;
+          }
+          auto operationGeom = applyBasicOperator3D(list, op );
+          partialResult.swap(operationGeom );
+      } );
 
     std::cout << timeSinceEpochMs() - start << "End Operator Multicore " << std::endl;
     return result;
