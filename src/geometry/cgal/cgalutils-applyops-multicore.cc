@@ -26,15 +26,13 @@ uint64_t timeSinceEpochMs() {
 	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 };
 
-void applyUnion3DMulticoreWorker( int index,
-		Geometry::Geometries::iterator& chbegin,
-        Geometry::Geometries::iterator& chend,
-        shared_ptr<const Geometry>& partialResult );
+typedef std::function<void(Geometry::Geometries::iterator, Geometry::Geometries::iterator, shared_ptr<const Geometry>&)> mtOperation;
 
-void applyOperator3DMulticoreWorker(const Geometry::Geometries& children,
-                                    OpenSCADOperator op, shared_ptr<const Geometry> partialResult );
-
-void applyHullMulticoreWorker(const Geometry::Geometries& childrens, PolySet& result, bool& continueExec );
+void applyMulticoreWorker( int index,
+                           Geometry::Geometries::iterator chbegin,
+                           Geometry::Geometries::iterator chend,
+                           shared_ptr<const Geometry>& partialResult,
+                           mtOperation operationFunc );
 
 shared_ptr<const Geometry> applyUnion3DMulticore(
   Geometry::Geometries::iterator chbegin,
@@ -44,28 +42,32 @@ shared_ptr<const Geometry> applyUnion3DMulticore(
     std::cout << timeSinceEpochMs() - start << " Start Union Multicore" << std::endl;
 
     shared_ptr<const Geometry> result;
-    applyUnion3DMulticoreWorker( 1, chbegin, chend, result );
+    applyMulticoreWorker( 1, chbegin, chend, result,
+        [](Geometry::Geometries::iterator itbegin, Geometry::Geometries::iterator itend, shared_ptr<const Geometry>& partialResult)
+        {
+            auto unionGeom = applyBasicUnion3D(itbegin, itend );
+            partialResult.swap(unionGeom );
+        } );
 
     std::cout << timeSinceEpochMs() - start << "End Union Multicore " << std::endl;
     return result;
 }
 
-void applyUnion3DMulticoreWorker( int index,
-                                  Geometry::Geometries::iterator& chbegin,
-                                  Geometry::Geometries::iterator& chend,
-                                  shared_ptr<const Geometry>& partialResult )
+void applyMulticoreWorker( int index,
+                          Geometry::Geometries::iterator chbegin,
+                          Geometry::Geometries::iterator chend,
+                          shared_ptr<const Geometry>& partialResult,
+                          mtOperation operationFunc )
 {
     uint64_t start  = timeSinceEpochMs();
 
     unsigned int numElements = std::distance( chbegin, chend );
-	unsigned int numCores = std::thread::hardware_concurrency();
+    unsigned int numCores = std::thread::hardware_concurrency();
 
     // base case is if either the splitted threads have reached the max cores available
     // or the elements remaining in the local list are not splittable again in two lists
     if( index == numCores || numElements / numCores == 0 ) {
-        shared_ptr<const Geometry> tmpResult = applyBasicUnion3D(chbegin, chend);
-
-        partialResult.swap( tmpResult );
+        operationFunc(chbegin, chend, partialResult);
         return;
     }
 
@@ -96,12 +98,12 @@ void applyUnion3DMulticoreWorker( int index,
     shared_ptr<const Geometry> partialResultLeft;
     Geometry::Geometries::iterator leftItBegin = listThreadLeft.begin();
     Geometry::Geometries::iterator leftItEnd = listThreadLeft.end();
-    std::thread threadLeft( applyUnion3DMulticoreWorker, index*2, std::ref(leftItBegin), std::ref(leftItEnd), std::ref(partialResultLeft) );
+    std::thread threadLeft( applyMulticoreWorker, index*2, std::ref(leftItBegin), std::ref(leftItEnd), std::ref(partialResultLeft), operationFunc );
 
     shared_ptr<const Geometry> partialResultRight;
     Geometry::Geometries::iterator rightItBegin = listThreadRight.begin();
     Geometry::Geometries::iterator rightItEnd = listThreadRight.end();
-    std::thread threadRight( applyUnion3DMulticoreWorker, index*2, std::ref(rightItBegin), std::ref(rightItEnd), std::ref(partialResultRight) );
+    std::thread threadRight( applyMulticoreWorker, index*2, std::ref(rightItBegin), std::ref(rightItEnd), std::ref(partialResultRight), operationFunc );
 
     threadLeft.join();
     threadRight.join();
@@ -111,19 +113,17 @@ void applyUnion3DMulticoreWorker( int index,
     unionData.push_back(std::make_pair(nullptr, partialResultLeft));
     unionData.push_back(std::make_pair(nullptr, partialResultRight));
 
-    auto unionGeom = applyBasicUnion3D(unionData.begin(), unionData.end() );
-
-    partialResult.swap(unionGeom );
+    operationFunc(unionData.begin(), unionData.end(), partialResult);
 }
 
 shared_ptr<const Geometry> applyOperator3DMulticore(
-  const Geometry::Geometries& children, 
+  const Geometry::Geometries& children,
   OpenSCADOperator op)
 {
 	shared_ptr<const Geometry> partialResult;
-	std::thread t1( applyOperator3DMulticoreWorker, std::ref(children), op, std::ref(partialResult) );
+	//std::thread t1( applyOperator3DMulticoreWorker, std::ref(children), op, std::ref(partialResult) );
 
-	t1.join();
+	//t1.join();
 
 	return partialResult;
 }
@@ -139,23 +139,11 @@ bool applyHullMulticore(const Geometry::Geometries& children, PolySet& result)
 	//	}
 
 	bool resultFlag = false;
-	std::thread t1( applyHullMulticoreWorker, std::ref(children), std::ref(result), std::ref(resultFlag) );
+	//std::thread t1( applyHullMulticoreWorker, std::ref(children), std::ref(result), std::ref(resultFlag) );
 
-	t1.join();
+	//t1.join();
 
 	return resultFlag;
-}
-
-void applyOperator3DMulticoreWorker(const Geometry::Geometries& children,
-																		OpenSCADOperator op, shared_ptr<const Geometry> partialResult )
-{
-	shared_ptr<const Geometry> tmpResult = applyBasicOperator3D(children, op);
-	partialResult.swap( tmpResult );
-}
-
-void applyHullMulticoreWorker(const Geometry::Geometries& children, PolySet& result, bool& continueExec )
-{
-	continueExec = applyBasicHull(children, result);
 }
 
 }  // namespace CGALUtils
