@@ -39,7 +39,8 @@ bool is_weakly_convex(const CGAL::Polyhedron_3<K>& p);
 template <typename K>
 bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m);
 shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op);
-shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
+shared_ptr<const Geometry> applyUnion3D(const Geometry::Geometries::const_iterator& chbegin,
+                                        const Geometry::Geometries::const_iterator& chend);
 
 shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries& children, OpenSCADOperator op);
 shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
@@ -47,10 +48,12 @@ shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
   const Geometry::Geometries::const_iterator& chend);
 
 shared_ptr<const Geometry> applyOperator3DMulticore(const Geometry::Geometries& children, OpenSCADOperator op);
-shared_ptr<const Geometry> applyUnion3DMulticore(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
+shared_ptr<const Geometry> applyUnion3DMulticore(const Geometry::Geometries::const_iterator& chbegin,
+                                                 const Geometry::Geometries::const_iterator& chend);
 
 shared_ptr<const Geometry> applyBasicOperator3D(const Geometry::Geometries& children, OpenSCADOperator op);
-shared_ptr<const Geometry> applyBasicUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
+shared_ptr<const Geometry> applyBasicUnion3D(const Geometry::Geometries::const_iterator& chbegin,
+                                             const Geometry::Geometries::const_iterator& chend);
 
 //FIXME: Old, can be removed:
 //void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);

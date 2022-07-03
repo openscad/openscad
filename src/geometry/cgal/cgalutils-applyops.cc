@@ -117,7 +117,7 @@ shared_ptr<const Geometry> applyBasicOperator3D(const Geometry::Geometries& chil
 }
 
 shared_ptr<const Geometry> applyUnion3D(
-		Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
+		const Geometry::Geometries::const_iterator& chbegin, const Geometry::Geometries::const_iterator& chend)
 {
 	if (Feature::ExperimentalMulticore.is_enabled()) {
 		return applyUnion3DMulticore(chbegin, chend);
@@ -130,7 +130,7 @@ shared_ptr<const Geometry> applyUnion3D(
 }
 
 shared_ptr<const Geometry> applyBasicUnion3D(
-  Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
+        const Geometry::Geometries::const_iterator& chbegin, const Geometry::Geometries::const_iterator& chend)
 {
   typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
   struct QueueItemGreater {
