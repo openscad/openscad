@@ -260,7 +260,10 @@ bool applyBasicHull(const Geometry::Geometries& children, PolySet& result)
 shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 {
 	if (Feature::ExperimentalMulticore.is_enabled()) {
-		return applyOperator3DMulticore(children, OpenSCADOperator::MINKOWSKI);
+        if (Feature::ExperimentalFastCsg.is_enabled()) {
+            return applyOperator3DMulticore<CGALHybridPolyhedron>(children, OpenSCADOperator::MINKOWSKI);
+        }
+		return applyOperator3DMulticore<const Geometry>(children, OpenSCADOperator::MINKOWSKI);
 	}
 	if (Feature::ExperimentalFastCsg.is_enabled()) {
 		return applyMinkowskiHybrid(children);

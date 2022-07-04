@@ -47,6 +47,7 @@ shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
   const Geometry::Geometries::const_iterator& chbegin,
   const Geometry::Geometries::const_iterator& chend);
 
+template<class T>
 shared_ptr<const Geometry> applyOperator3DMulticore(const Geometry::Geometries& children, OpenSCADOperator op);
 template<class T>
 shared_ptr<const Geometry> applyUnion3DMulticore(const Geometry::Geometries::const_iterator& chbegin,
