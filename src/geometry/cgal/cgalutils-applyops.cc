@@ -120,7 +120,10 @@ shared_ptr<const Geometry> applyUnion3D(
 		const Geometry::Geometries::const_iterator& chbegin, const Geometry::Geometries::const_iterator& chend)
 {
 	if (Feature::ExperimentalMulticore.is_enabled()) {
-		return applyUnion3DMulticore(chbegin, chend);
+        if (Feature::ExperimentalFastCsg.is_enabled()) {
+            return applyUnion3DMulticore<CGALHybridPolyhedron>(chbegin, chend);
+        }
+		return applyUnion3DMulticore<const Geometry>(chbegin, chend);
 	}
 	if (Feature::ExperimentalFastCsg.is_enabled()) {
 		return applyUnion3DHybrid(chbegin, chend);
