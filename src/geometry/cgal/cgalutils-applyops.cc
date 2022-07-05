@@ -38,12 +38,12 @@
 namespace CGALUtils {
 
 shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op) {
-	if (Feature::ExperimentalMulticore.is_enabled()) {
-		return applyOperator3DMulticore(children, op);
-	}
-	if (Feature::ExperimentalFastCsg.is_enabled()) {
-		return applyOperator3DHybrid(children, op);
-	}
+    if (Feature::ExperimentalMulticore.is_enabled()) {
+        return applyOperator3DMulticore<const Geometry>(children, op);
+    }
+    if (Feature::ExperimentalFastCsg.is_enabled()) {
+        return applyOperator3DHybrid(children, op);
+    }
 
 	return applyBasicOperator3D( children, op );
 }
