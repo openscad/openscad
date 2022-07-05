@@ -26,12 +26,14 @@ uint64_t timeSinceEpochMs() {
 	return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 };
 
+// lamda type used in the threads operations
 typedef std::function<void(const Geometry::Geometries::const_iterator&, const Geometry::Geometries::const_iterator&, shared_ptr<const Geometry>&)> mtOperation;
 typedef std::function<void(const Geometry::Geometries::const_iterator&, const Geometry::Geometries::const_iterator&, shared_ptr<CGALHybridPolyhedron>&)> mtHybridOperation;
 
-typedef std::function<void(const Geometry::Geometries&, PolySet&)> mtHullOperation;
+// special lambda type for hull operation
+typedef std::function<void(const Geometry::Geometries&, PolySet&, bool& )> mtHullOperation;
 void applyMulticoreHullWorker( int index,
-                               const Geometry::Geometries& children, PolySet& result,
+                               const Geometry::Geometries& children, PolySet& result, bool& stopFlag,
                                mtHullOperation operationFunc );
 
 template<class T, typename U>
@@ -144,9 +146,9 @@ template<>
 shared_ptr<const Geometry> applyOperator3DMulticore<const Geometry>( const Geometry::Geometries& children,
                                                      OpenSCADOperator op )
 {
-    if( op == OpenSCADOperator::UNION )
+    if( op == OpenSCADOperator::UNION ) // has a dedicated operation
         return nullptr;
-    if( op == OpenSCADOperator::MINKOWSKI )
+    if( op == OpenSCADOperator::MINKOWSKI ) // has a template specialization of it's own
         return nullptr;
 
     uint64_t start  = timeSinceEpochMs();
@@ -170,7 +172,7 @@ template<>
 shared_ptr<const Geometry> applyOperator3DMulticore<CGALHybridPolyhedron>( const Geometry::Geometries& children,
                                                                            OpenSCADOperator op )
 {
-    if( op != OpenSCADOperator::MINKOWSKI )
+    if( op != OpenSCADOperator::MINKOWSKI ) // this specialization is for minkowky-hybrid only
         return nullptr;
 
     uint64_t start  = timeSinceEpochMs();
@@ -193,21 +195,17 @@ shared_ptr<const Geometry> applyOperator3DMulticore<CGALHybridPolyhedron>( const
 
 bool applyHullMulticore(const Geometry::Geometries& children, PolySet& result)
 {
-    uint64_t start  = timeSinceEpochMs();
-    std::cout << timeSinceEpochMs() - start << " Start Hull Multicore" << std::endl;
-
-    applyMulticoreHullWorker( 1, children, result,
-                          [&](const Geometry::Geometries& chlist, PolySet& partialResult)
+    bool outResult;
+    applyMulticoreHullWorker( 1, children, result, outResult,
+                          [&](const Geometry::Geometries& chlist, PolySet& partialResult, bool& stopFlag)
                           {
-                              applyBasicHull( chlist, partialResult );
+                              stopFlag = applyBasicHull( chlist, partialResult );
                           } );
-
-    std::cout << timeSinceEpochMs() - start << "End Hull Multicore " << std::endl;
-    return true;
+    return outResult;
 }
 
 void applyMulticoreHullWorker( int index,
-                               const Geometry::Geometries& children, PolySet& result,
+                               const Geometry::Geometries& children, PolySet& result, bool& stopFlag,
                                 mtHullOperation operationFunc )
 {
     uint64_t start  = timeSinceEpochMs();
@@ -218,7 +216,7 @@ void applyMulticoreHullWorker( int index,
     // base case is if either the splitted threads have reached the max cores available
     // or the elements remaining in the local list are not splittable again in two lists
     if( index == numCores || numElements / numCores == 0 ) {
-        operationFunc(children, result);
+        operationFunc(children, result, stopFlag);
         return;
     }
 
@@ -246,14 +244,23 @@ void applyMulticoreHullWorker( int index,
     }
 
     // launch the threads and wait termination
+    bool stopLeft;
     PolySet partialResultLeft(result.getDimension());
-    std::thread threadLeft( applyMulticoreHullWorker, index*2, std::ref(listThreadLeft), std::ref(partialResultLeft), operationFunc );
+    std::thread threadLeft( applyMulticoreHullWorker, index*2, std::ref(listThreadLeft),
+                            std::ref(partialResultLeft), std::ref(stopLeft), operationFunc );
 
+    bool stopRight;
     PolySet partialResultRight(result.getDimension());
-    std::thread threadRight( applyMulticoreHullWorker, index*2, std::ref(listThreadRight), std::ref(partialResultRight), operationFunc );
+    std::thread threadRight( applyMulticoreHullWorker, index*2, std::ref(listThreadRight),
+                             std::ref(partialResultRight), std::ref(stopRight), operationFunc );
 
     threadLeft.join();
     threadRight.join();
+
+    if( !stopLeft || !stopRight ) {
+        stopFlag = false;
+        return;
+    }
 
     // union the two partial results and swap with the out pointer
     Geometry::Geometries unionData;
@@ -266,7 +273,7 @@ void applyMulticoreHullWorker( int index,
     unionData.push_back(std::make_pair(nullptr, sxGeom));
     unionData.push_back(std::make_pair(nullptr, dxGeom));
 
-    operationFunc(unionData, result);
+    operationFunc(unionData, result, stopFlag);
 }
 
 }  // namespace CGALUtils
