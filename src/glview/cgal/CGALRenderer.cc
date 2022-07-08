@@ -174,11 +174,11 @@ void CGALRenderer::createPolySets()
 
   for (const auto& polyset : this->polysets) {
     Color4f color;
+    add_shader_pointers(vertex_array);
     PRINTD("polysets");
     if (polyset->getDimension() == 2) {
       PRINTD("2d polysets");
       vertex_array.writeEdge();
-      add_shader_pointers(vertex_array);
 
       std::shared_ptr<VertexState> init_state = std::make_shared<VertexState>();
       init_state->glEnd().emplace_back([]() {
@@ -215,7 +215,6 @@ void CGALRenderer::createPolySets()
     } else {
       PRINTD("3d polysets");
       vertex_array.writeSurface();
-      add_shader_pointers(vertex_array);
 
       // Create 3D polygons
       getColor(ColorMode::MATERIAL, color);
