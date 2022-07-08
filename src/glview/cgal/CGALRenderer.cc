@@ -178,6 +178,7 @@ void CGALRenderer::createPolySets()
     if (polyset->getDimension() == 2) {
       PRINTD("2d polysets");
       vertex_array.writeEdge();
+      add_shader_pointers(vertex_array);
 
       std::shared_ptr<VertexState> init_state = std::make_shared<VertexState>();
       init_state->glEnd().emplace_back([]() {
