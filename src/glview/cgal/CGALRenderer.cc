@@ -236,7 +236,7 @@ void CGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const shaderi
   PRINTD("prepare() end");
 }
 
-void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*shaderinfo*/) const
+void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * shaderinfo) const
 {
   PRINTD("draw()");
   if (!Feature::ExperimentalVxORenderers.is_enabled()) {
@@ -271,6 +271,11 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
     }
     #endif //DISABLE_FIXEDFUNCTION_GL
   } else {
+    if(!shaderinfo) {
+      shaderinfo = &getShader();
+    }
+    glUseProgram(shaderinfo->progid);
+    GL_ERROR_CHECK();
     // grab current state to restore after
     GLfloat current_point_size, current_line_width;
     #ifndef DISABLE_FIXEDFUNCTION_GL
