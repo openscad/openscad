@@ -145,6 +145,7 @@ void CGALRenderer::createPolySets()
 
   vertex_array.addEdgeData();
   vertex_array.addSurfaceData();
+  add_shader_data(vertex_array);
 
 
   size_t num_vertices = 0;
@@ -201,6 +202,7 @@ void CGALRenderer::createPolySets()
     } else {
       PRINTD("3d polysets");
       vertex_array.writeSurface();
+      add_shader_pointers(vertex_array);
 
       // Create 3D polygons
       getColor(ColorMode::MATERIAL, color);
