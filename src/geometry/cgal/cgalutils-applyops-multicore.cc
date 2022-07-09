@@ -148,8 +148,8 @@ shared_ptr<const Geometry> applyOperator3DMulticore<const Geometry>( const Geome
 {
     if( op == OpenSCADOperator::UNION ) // has a dedicated operation
         return nullptr;
-    if( op == OpenSCADOperator::MINKOWSKI ) // has a template specialization of it's own
-        return nullptr;
+    if( op == OpenSCADOperator::DIFFERENCE ) // difference operator not serializable
+        return applyBasicOperator3D( children, op );
 
     uint64_t start  = timeSinceEpochMs();
     std::cout << timeSinceEpochMs() - start << " Start Operator Multicore" << std::endl;
@@ -172,8 +172,8 @@ template<>
 shared_ptr<const Geometry> applyOperator3DMulticore<CGALHybridPolyhedron>( const Geometry::Geometries& children,
                                                                            OpenSCADOperator op )
 {
-    if( op != OpenSCADOperator::MINKOWSKI ) // this specialization is for minkowky-hybrid only
-        return nullptr;
+    if( op == OpenSCADOperator::DIFFERENCE ) // difference operator not serializable
+        return applyOperator3DHybrid( children, op );
 
     uint64_t start  = timeSinceEpochMs();
     std::cout << timeSinceEpochMs() - start << " Start Operator Multicore" << std::endl;
