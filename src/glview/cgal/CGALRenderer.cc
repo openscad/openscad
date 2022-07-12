@@ -145,7 +145,6 @@ void CGALRenderer::createPolySets()
 
   vertex_array.addEdgeData();
   vertex_array.addSurfaceData();
-  add_shader_data(vertex_array);
 
 
   size_t num_vertices = 0;
@@ -160,7 +159,7 @@ void CGALRenderer::createPolySets()
 
   for (const auto& polyset : this->polysets) {
     Color4f color;
-    add_shader_pointers(vertex_array);
+
     PRINTD("polysets");
     if (polyset->getDimension() == 2) {
       PRINTD("2d polysets");
