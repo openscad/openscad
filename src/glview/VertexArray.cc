@@ -117,6 +117,9 @@ void VertexState::draw(bool bind_buffers) const
     gl_func();
   }
   if (draw_size_ > 0) {
+    GLint id;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &id);
+    PRINTDB("About to draw using shader ID: %d\n", id);
     if (elements_vbo_) {
       GL_TRACE("glDrawElements(%s, %d, %s, %d)",
                (draw_mode_ == GL_POINTS ? "GL_POINTS" :

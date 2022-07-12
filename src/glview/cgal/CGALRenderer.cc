@@ -281,11 +281,18 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * sha
       }
     }
   } else {
+    GLint prev_id;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &prev_id);
+    PRINTDB("Previously, was using shader ID: %d\n", prev_id);
     if(!shaderinfo) {
+      PRINTD("Fetching shaderinfo\n");
       shaderinfo = &getShader();
     }
     glUseProgram(shaderinfo->progid);
     GL_ERROR_CHECK();
+    GLint new_id;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &new_id);
+    PRINTDB("Now, using shader ID: %d\n", new_id);
     // grab current state to restore after
     GLfloat current_point_size, current_line_width;
     GLboolean origVertexArrayState = glIsEnabled(GL_VERTEX_ARRAY);
@@ -308,6 +315,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * sha
     if (!origVertexArrayState) glDisableClientState(GL_VERTEX_ARRAY);
     if (!origNormalArrayState) glDisableClientState(GL_NORMAL_ARRAY);
     if (!origColorArrayState) glDisableClientState(GL_COLOR_ARRAY);
+    glUseProgram(prev_id);
   }
 
   for (const auto& p : this->getPolyhedrons()) {

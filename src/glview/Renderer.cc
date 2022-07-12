@@ -112,6 +112,7 @@ Renderer::Renderer() : colorscheme(nullptr)
   }
 
   renderer_shader.progid = edgeshader_prog; // 0
+  PRINTDB("Created shader with ID: %d\n", edgeshader_prog);
   renderer_shader.type = EDGE_RENDERING;
   renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
   renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
