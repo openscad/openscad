@@ -84,5 +84,9 @@ private:
   void showAxes(const Color4f& col);
   void showSmallaxes(const Color4f& col);
   void showScalemarkers(const Color4f& col);
+  std::array<Eigen::Vector4d, 6> getFrustumPlanes();
+  double vectorToVectorAngle(const Eigen::Vector3d& a, const Eigen::Vector3d& b);
+  bool frustumAxisInterstaction(const std::array<Eigen::Vector4d, 6>& planes, const Eigen::Vector3d axis, double& min_t, double& max_t);
+
   void decodeMarkerValue(double i, double l, int size_div_sm);
 };

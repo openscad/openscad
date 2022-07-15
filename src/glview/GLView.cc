@@ -419,6 +419,39 @@ void GLView::showCrosshairs(const Color4f& col)
 
 void GLView::showScalemarkers(const Color4f& col)
 {
+  // Setup axes.
+  int ax[6][3] = {
+    {1, 0, 0},
+    {0, 1, 0},
+    {0, 0, 1},
+    {-1, 0, 0},
+    {0, -1, 0},
+    {0, 0, -1}};
+
+  double min_t = INFINITY;
+  double max_t = 0;
+
+  auto planes = GLView::getFrustumPlanes();
+  // Iterate over axes and find global min&max
+  for (int i = 0; i < 6; ++i) {
+    double l_min_t, l_max_t;
+    if(!GLView::frustumAxisInterstaction(planes, Eigen::Vector3d(ax[i][0], ax[i][1], ax[i][2]), l_min_t, l_max_t))
+      continue;
+    // All axes start from zero. So clip there.
+    l_min_t = fmax(0, l_min_t);
+    // Update bounds.
+    if (min_t > l_min_t) {
+      min_t = l_min_t;
+    }
+    if (max_t < l_max_t) {
+      max_t = l_max_t;
+    }
+  }
+
+  // Align to 10
+  int i_min = floor(min_t / 10) * 10;
+  int i_max = ceil(max_t / 10) * 10;
+
   // Add scale ticks on large axes
   auto l = cam.zoomValue();
   glLineWidth(this->getDPI());
@@ -435,7 +468,8 @@ void GLView::showScalemarkers(const Color4f& col)
 
   const int size_div_sm = 60; // divisor for l to determine minor tick size
   int line_cnt = 0;
-  for (double i = 0; i < l; i += tick_width) { // i represents the position along the axis
+
+  for (double i = i_min; i < i_max; i += tick_width) { // i represents the position along the axis
     int size_div;
     if (line_cnt > 0 && line_cnt % 10 == 0) { // major tick
       size_div = size_div_sm * .5; // resize to a major tick
@@ -510,6 +544,95 @@ void GLView::showScalemarkers(const Color4f& col)
     glEnd();
     glPopAttrib();
   }
+}
+
+std::array<Eigen::Vector4d, 6> GLView::getFrustumPlanes()
+{
+  // Read current modelview and projection matrix
+  Eigen::Matrix4d model_view;
+  glGetDoublev(GL_MODELVIEW_MATRIX, model_view.data());
+  Eigen::Matrix4d projection;
+  glGetDoublev(GL_PROJECTION_MATRIX, projection.data());
+
+  auto mvp = (projection * model_view).eval();
+
+  std::array<Eigen::Vector4d, 6> planes;
+
+  // Get frustum plans:
+  // Left clipping plane
+  planes[0].x() = mvp(3, 0) + mvp(0, 0);
+  planes[0].y() = mvp(3, 1) + mvp(0, 1);
+  planes[0].z() = mvp(3, 2) + mvp(0, 2);
+  planes[0].w() = mvp(3, 3) + mvp(0, 3);
+  // Right clipping plane
+  planes[1].x() = mvp(3, 0) - mvp(0, 0);
+  planes[1].y() = mvp(3, 1) - mvp(0, 1);
+  planes[1].z() = mvp(3, 2) - mvp(0, 2);
+  planes[1].w() = mvp(3, 3) - mvp(0, 3);
+  // Top clipping plane
+  planes[2].x() = mvp(3, 0) - mvp(1, 0);
+  planes[2].y() = mvp(3, 1) - mvp(1, 1);
+  planes[2].z() = mvp(3, 2) - mvp(1, 2);
+  planes[2].w() = mvp(3, 3) - mvp(1, 3);
+  // Bottom clipping plane
+  planes[3].x() = mvp(3, 0) + mvp(1, 0);
+  planes[3].y() = mvp(3, 1) + mvp(1, 1);
+  planes[3].z() = mvp(3, 2) + mvp(1, 2);
+  planes[3].w() = mvp(3, 3) + mvp(1, 3);
+  // Near clipping plane
+  planes[4].x() = mvp(3, 0) + mvp(2, 0);
+  planes[4].y() = mvp(3, 1) + mvp(2, 1);
+  planes[4].z() = mvp(3, 2) + mvp(2, 2);
+  planes[4].w() = mvp(3, 3) + mvp(2, 3);
+  // Far clipping plane
+  planes[5].x() = mvp(3, 0) - mvp(2, 0);
+  planes[5].y() = mvp(3, 1) - mvp(2, 1);
+  planes[5].z() = mvp(3, 2) - mvp(2, 2);
+  planes[5].w() = mvp(3, 3) - mvp(2, 3);
+
+  return planes;
+}
+
+double GLView::vectorToVectorAngle(const Eigen::Vector3d& a, const Eigen::Vector3d& b)
+{
+  return acos(a.normalized().dot(b.normalized().eval()));
+}
+
+bool GLView::frustumAxisInterstaction(const std::array<Eigen::Vector4d, 6>& planes, const Eigen::Vector3d axis, double& min_t, double& max_t)
+{
+  min_t = 0;
+  max_t = 0;
+
+  bool minValid = false;
+  bool maxValid = false;
+
+  for (auto i = 0; i < 6; ++i) {
+    Eigen::Vector3d plane_xyz(planes[i].x(), planes[i].y(), planes[i].z());
+    auto angle = fabs(GLView::vectorToVectorAngle(plane_xyz, axis)) * 180.0 / M_PI;
+    if (angle < 2.0)
+      continue;
+
+    auto dot = plane_xyz.dot(axis);
+
+    auto plane_co = (-(plane_xyz * (-planes[i].w() / plane_xyz.dot(plane_xyz)))).eval();
+
+    auto t = -(plane_xyz.dot(plane_co)) / dot;
+
+    if (dot > 0) {
+      if (!minValid || min_t < t) {
+        min_t = t;
+        minValid = true;
+      }
+    }
+    else {
+      if (!maxValid || max_t > t) {
+        max_t = t;
+        maxValid = true;
+      }
+    }
+  }
+
+  return minValid && maxValid;
 }
 
 void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
