@@ -6,6 +6,7 @@
 #include "printutils.h"
 #include "Renderer.h"
 #include "degree_trig.h"
+#define _USE_MATH_DEFINES
 #include <cmath>
 #include "boost-utils.h"
 #ifdef _WIN32
