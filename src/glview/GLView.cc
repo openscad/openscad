@@ -6,7 +6,6 @@
 #include "printutils.h"
 #include "Renderer.h"
 #include "degree_trig.h"
-#define _USE_MATH_DEFINES
 #include <cmath>
 #include "boost-utils.h"
 #ifdef _WIN32
@@ -609,7 +608,7 @@ bool GLView::frustumAxisInterstaction(const std::array<Eigen::Vector4d, 6>& plan
 
   for (auto i = 0; i < 6; ++i) {
     Eigen::Vector3d plane_xyz(planes[i].x(), planes[i].y(), planes[i].z());
-    auto angle = fabs(GLView::vectorToVectorAngle(plane_xyz, axis)) * 180.0 / M_PI;
+    auto angle = fabs(GLView::vectorToVectorAngle(plane_xyz, axis)) * M_RAD2DEG;
     if (angle < 2.0)
       continue;
 
