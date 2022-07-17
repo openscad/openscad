@@ -134,6 +134,8 @@ void CGALRenderer::createPolySets()
   VertexArray vertex_array(std::make_shared<VertexStateFactory>(), polyset_states);
   vertex_array.addEdgeData();
   vertex_array.addSurfaceData();
+  vertex_array.writeSurface();
+  add_shader_data(vertex_array);
 
   if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
     size_t vertices_size = 0, elements_size = 0;
@@ -217,7 +219,18 @@ void CGALRenderer::createPolySets()
 
       // Create 3D polygons
       getColor(ColorMode::MATERIAL, color);
-      this->create_surface(*polyset, vertex_array, CSGMODE_NORMAL, Transform3d::Identity(), color);
+      Color4f last_color = color;
+      add_shader_pointers(vertex_array);
+      shaderinfo_t shader_info = this->getShader();
+      std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
+      color_state->glBegin().emplace_back([shader_info, last_color]() {
+        GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % last_color[0] % last_color[1] % last_color[2] % last_color[3]);
+        glUniform4f(shader_info.data.csg_rendering.color_area, last_color[0], last_color[1], last_color[2], last_color[3]); GL_ERROR_CHECK();
+        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % ((last_color[0] + 1) / 2) % ((last_color[1] + 1) / 2) % ((last_color[2] + 1) / 2));
+        glUniform4f(shader_info.data.csg_rendering.color_edge, (last_color[0] + 1) / 2, (last_color[1] + 1) / 2, (last_color[2] + 1) / 2, 1.0); GL_ERROR_CHECK();
+      });
+      polyset_states.emplace_back(std::move(color_state));
+      this->create_surface(*polyset, vertex_array, CSGMODE_NORMAL, Transform3d::Identity(), last_color);
     }
   }
 
