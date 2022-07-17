@@ -13,5 +13,5 @@ void main(void) {
   vec3 normal, lightDir;
   normal = normalize(gl_NormalMatrix * gl_Normal);
   lightDir = normalize(vec3(gl_LightSource[0].position));
-  shading =   vec4(gl_Vertex.xyz ,0.) ;
+  shading =   vec4(normal.xyz*.5+.5,0.) ;
 }
