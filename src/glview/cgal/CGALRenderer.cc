@@ -67,7 +67,13 @@ void CGALRenderer::addGeometry(const shared_ptr<const Geometry>& geom)
   } else if (const auto new_N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     assert(new_N->getDimension() == 3);
     if (!new_N->isEmpty()) {
-      this->nefPolyhedrons.push_back(new_N);
+      auto ps = new PolySet(3);
+      bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(new_N->p3), *ps);
+      if (err) {
+        LOG(message_group::Error, Location::NONE, "", "Nef->PolySet failed");
+        return;
+      }
+      this->polysets.push_back(shared_ptr<const PolySet>(ps));
     }
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement rendering of CGAL_HybridMesh (CGAL::Surface_mesh) instead.

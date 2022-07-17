@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cgal.h"
+#include "cgalutils.h"
 
 #include "VBORenderer.h"
 #include "CGAL_OGL_Polyhedron.h"
