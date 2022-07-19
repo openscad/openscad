@@ -35,6 +35,8 @@ static const int maxRecentFiles = 10;
 
 QFileInfo openFile(QWidget *parent = nullptr);
 
+QString openDirectory(QWidget *parent = nullptr);
+
 QFileInfoList openFiles(QWidget *parent = nullptr);
 
 QStringList recentFiles();

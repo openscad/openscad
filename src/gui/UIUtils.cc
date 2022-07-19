@@ -59,6 +59,11 @@ QFileInfo UIUtils::openFile(QWidget *parent)
   return fileInfo;
 }
 
+QString UIUtils::openDirectory(QWidget *parent)
+{
+  return QFileDialog::getExistingDirectory(parent, "Open Directory", QString::fromStdString(PlatformUtils::resourcePath("shaders").string()), QFileDialog::ShowDirsOnly);
+}
+
 QFileInfoList UIUtils::openFiles(QWidget *parent)
 {
   QSettingsCached settings;

@@ -496,6 +496,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->viewActionZoomOut, SIGNAL(triggered()), qglview, SLOT(ZoomOut()));
   connect(this->viewActionHideEditorToolBar, SIGNAL(triggered()), this, SLOT(hideEditorToolbar()));
   connect(this->viewActionHide3DViewToolBar, SIGNAL(triggered()), this, SLOT(hide3DViewToolbar()));
+  connect(this->viewActionSetShader, SIGNAL(triggered()), this, SLOT(setShader()));
   connect(this->windowActionHideEditor, SIGNAL(triggered()), this, SLOT(hideEditor()));
   connect(this->windowActionHideConsole, SIGNAL(triggered()), this, SLOT(hideConsole()));
   connect(this->windowActionHideCustomizer, SIGNAL(triggered()), this, SLOT(hideParameters()));
@@ -1385,6 +1386,12 @@ void MainWindow::actionOpen()
     }
     tabManager->open(fileInfoList[i].filePath());
   }
+}
+
+void MainWindow::setShader()
+{
+  auto shaderLocation = UIUtils::openDirectory(this);
+  LOG(message_group::None, Location::NONE, "", "User selected shader location: %1$s", shaderLocation.toUtf8().constData());
 }
 
 void MainWindow::actionNewWindow()

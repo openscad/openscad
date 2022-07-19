@@ -349,6 +349,8 @@
     <addaction name="separator"/>
     <addaction name="viewActionHideEditorToolBar"/>
     <addaction name="viewActionHide3DViewToolBar"/>
+    <addaction name="separator"/>
+    <addaction name="viewActionSetShader"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -1095,6 +1097,11 @@
    <property name="shortcut">
     <string>Ctrl+3</string>
    </property>
+  </action>
+  <action name="viewActionSetShader">
+    <property name="text">
+      <string>Set Shader</string>
+    </property>
   </action>
   <action name="viewActionShowScaleProportional">
    <property name="checkable">
