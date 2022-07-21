@@ -301,6 +301,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * sha
     GLint new_id;
     glGetIntegerv(GL_CURRENT_PROGRAM, &new_id);
     PRINTDB("Now, using shader ID: %d\n", new_id);
+    shader_attribs_enable();
     // grab current state to restore after
     GLfloat current_point_size, current_line_width;
     #ifndef DISABLE_FIXEDFUNCTION_GL
@@ -327,6 +328,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * sha
     if (!origColorArrayState) glDisableClientState(GL_COLOR_ARRAY);
     #endif //DISABLE_FIXEDFUNCTION_GL
     glUseProgram(prev_id);
+    shader_attribs_disable();
   }
 
   for (const auto& p : this->getPolyhedrons()) {
