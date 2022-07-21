@@ -65,6 +65,7 @@ public:
   Tree tree;
   EditorInterface *activeEditor;
   TabManager *tabManager;
+  std::string shader_directory_path;
 
 #ifdef ENABLE_CGAL
   shared_ptr<const Geometry> root_geom;

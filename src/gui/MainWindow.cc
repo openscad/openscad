@@ -1431,7 +1431,8 @@ void MainWindow::setShader()
   auto userOpenedPath = UIUtils::openDirectory(this);
   std::string shaderLocation = userOpenedPath.toStdString();
   LOG(message_group::None, Location::NONE, "", "User selected shader location: %1$s", shaderLocation);
-  this->qglview->renderer->setShader(&shaderLocation);
+  this->shader_directory_path = shaderLocation;
+  cgalRender();
 }
 
 void MainWindow::actionNewWindow()
@@ -2306,7 +2307,7 @@ void MainWindow::actionRenderDone(const shared_ptr<const Geometry>& root_geom)
     LOG("Rendering finished.");
 
     this->root_geom = root_geom;
-    this->cgalRenderer = new CGALRenderer(root_geom);
+    this->cgalRenderer = new CGALRenderer(root_geom, &shader_directory_path);
     // Go to CGAL view mode
     if (viewActionWireframe->isChecked()) viewModeWireframe();
     else viewModeSurface();

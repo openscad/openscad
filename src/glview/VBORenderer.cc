@@ -34,8 +34,8 @@
 #include <iomanip>
 #include <sstream>
 
-VBORenderer::VBORenderer()
-  : Renderer()
+VBORenderer::VBORenderer(const std::string* shaderDirectoryPath)
+  : Renderer(shaderDirectoryPath), shader_attributes_index(0)
 {
 }
 

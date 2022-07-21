@@ -21,8 +21,8 @@ public:
 class VBORenderer : public Renderer
 {
 public:
-  VBORenderer();
-  void resize(int w, int h) override;
+  VBORenderer(const std::string* shaderDirectoryPath = nullptr);
+  void resize(int w, int h);
   virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f& col, Color4f& outcolor) const;
   virtual size_t getSurfaceBufferSize(const std::shared_ptr<CSGProducts>& products, bool highlight_mode, bool background_mode, bool unique_geometry = false) const;
   virtual size_t getSurfaceBufferSize(const CSGChainObject& csgobj, bool highlight_mode, bool background_mode, const OpenSCADOperator type = OpenSCADOperator::UNION, bool unique_geometry = false) const;

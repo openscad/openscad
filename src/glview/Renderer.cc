@@ -13,7 +13,7 @@
 
 #ifndef NULLGL
 
-Renderer::Renderer()
+Renderer::Renderer(const std::string* shaderDirectoryPath) : colorscheme(nullptr)
 {
   PRINTD("Renderer() start");
 
@@ -36,18 +36,8 @@ Renderer::Renderer()
 
   Renderer::setColorScheme(ColorMap::inst()->defaultColorScheme());
 
-  this->setShader();
-
-  PRINTD("Renderer() end");
-}
-
-void Renderer::resize(int /*w*/, int /*h*/)
-{
-}
-
-void Renderer::setShader(const std::string* location) {
-  std::string vs_str = Renderer::loadShaderSource("Preview.vert", location);
-  std::string fs_str = Renderer::loadShaderSource("Preview.frag", location);
+  std::string vs_str = Renderer::loadShaderSource("Preview.vert", shaderDirectoryPath);
+  std::string fs_str = Renderer::loadShaderSource("Preview.frag", shaderDirectoryPath);
   const char *vs_source = vs_str.c_str();
   const char *fs_source = fs_str.c_str();
 
@@ -125,6 +115,12 @@ void Renderer::setShader(const std::string* location) {
   renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
   renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
   renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
+  
+  PRINTD("Renderer() end");
+}
+
+void Renderer::resize(int /*w*/, int /*h*/)
+{
 }
 
 bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const
@@ -139,7 +135,7 @@ bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const
 
 std::string Renderer::loadShaderSource(const std::string& name, const std::string* location) {
   std::string shaderLocation;
-  if(!location) {
+  if(!location || location->empty()) {
     shaderLocation = PlatformUtils::resourcePath("shaders").string();
   } else {
     shaderLocation = *location;

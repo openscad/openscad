@@ -44,8 +44,9 @@
 
 //#include "Preferences.h"
 
-CGALRenderer::CGALRenderer(const shared_ptr<const class Geometry>& geom)
-  : last_render_state(Feature::ExperimentalVxORenderers.is_enabled()) // FIXME: this is temporary to make switching between renderers seamless.
+CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom, const std::string* shaderDirectoryPath)
+  : VBORenderer(shaderDirectoryPath), last_render_state(Feature::ExperimentalVxORenderers.is_enabled()), // FIXME: this is temporary to make switching between renderers seamless.
+  polyset_vertices_vbo(0), polyset_elements_vbo(0)
 {
   this->addGeometry(geom);
 }
