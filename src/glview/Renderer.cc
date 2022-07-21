@@ -6,7 +6,6 @@
 #include "ColorMap.h"
 #include "printutils.h"
 #include "Feature.h"
-#include "PlatformUtils.h"
 
 #include "PolySetUtils.h"
 #include "Grid.h"
@@ -38,8 +37,8 @@ Renderer::Renderer() : colorscheme(nullptr)
 
   setColorScheme(ColorMap::inst()->defaultColorScheme());
 
-  std::string vs_str = Renderer::loadShaderSource("Preview.vert");
-  std::string fs_str = Renderer::loadShaderSource("Preview.frag");
+  std::string vs_str = Renderer::loadShaderSource(this->shader_location, "Preview.vert");
+  std::string fs_str = Renderer::loadShaderSource(this->shader_location, "Preview.frag");
   const char *vs_source = vs_str.c_str();
   const char *fs_source = fs_str.c_str();
 
@@ -135,8 +134,8 @@ bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const
   return false;
 }
 
-std::string Renderer::loadShaderSource(const std::string& name) {
-  std::string shaderPath = (PlatformUtils::resourcePath("shaders") / name).string();
+std::string Renderer::loadShaderSource(const std::string& name, const std::string& location) {
+  std::string shaderPath = location + "/" + name;
   std::stringstream buffer;
   std::ifstream f(shaderPath);
   if (f.is_open()) {
