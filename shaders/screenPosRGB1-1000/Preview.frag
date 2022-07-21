@@ -3,6 +3,7 @@
 uniform vec4 color1, color2;
 varying vec3 vBC;
 varying float shading;
+varying vec4 screenPosition;
 
 vec3 smoothstep3f(vec3 edge0, vec3 edge1, vec3 x) {
   vec3 t;
@@ -19,5 +20,13 @@ float edgeFactor() {
 }
 
 void main(void) {
-  gl_FragColor = mix(color2, vec4(color1.rgb * shading, color1.a), edgeFactor());
+  gl_FragColor =  vec4( 
+  vec3( 
+   ( screenPosition.x+1000.)/1000. ,
+   ( screenPosition.y+1000.)/1000. ,
+   smoothstep(1.,0.,(pow(max(0.,screenPosition.z),0.95)-1.)/1000.)
+   
+   )
+  
+  , color1.a) ;
 }
