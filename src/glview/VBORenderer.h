@@ -23,7 +23,7 @@ public:
 class VBORenderer : public Renderer
 {
 public:
-  VBORenderer();
+  VBORenderer(const std::string* shaderDirectoryPath = nullptr);
   virtual ~VBORenderer() {}
   virtual void resize(int w, int h);
   virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f& col, Color4f& outcolor) const;
