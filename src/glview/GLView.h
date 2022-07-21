@@ -60,7 +60,6 @@ public:
   virtual ~GLView() = default;
 
   Renderer *renderer;
-  std::string shader_location;
   const ColorScheme *colorscheme;
   Camera cam;
   double far_far_away;

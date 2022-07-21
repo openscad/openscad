@@ -4,6 +4,7 @@
 #include "ColorMap.h"
 #include "enums.h"
 #include "PolySet.h"
+#include "PlatformUtils.h"
 
 #ifdef _MSC_VER // NULL
 #include <cstdlib>
@@ -12,6 +13,7 @@
 class Renderer
 {
 public:
+  std::string shader_location;
   enum shader_type_t {
     NONE,
     CSG_RENDERING,
@@ -42,7 +44,7 @@ public:
   virtual void resize(int w, int h);
   [[nodiscard]] virtual inline const Renderer::shaderinfo_t& getShader() const { return renderer_shader; }
 
-  static std::string loadShaderSource(const std::string& name);
+  static std::string loadShaderSource(const std::string& name, const std::string& location = PlatformUtils::resourcePath("shaders").string());
   virtual void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) {}
   virtual void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const = 0;
   [[nodiscard]] virtual BoundingBox getBoundingBox() const = 0;
