@@ -6,6 +6,7 @@
 #include "ColorMap.h"
 #include "printutils.h"
 #include "Feature.h"
+#include "PlatformUtils.h"
 
 #include "PolySetUtils.h"
 #include "Grid.h"
@@ -37,8 +38,18 @@ Renderer::Renderer() : colorscheme(nullptr)
 
   setColorScheme(ColorMap::inst()->defaultColorScheme());
 
-  std::string vs_str = Renderer::loadShaderSource(this->shader_location, "Preview.vert");
-  std::string fs_str = Renderer::loadShaderSource(this->shader_location, "Preview.frag");
+  this->setShader();
+
+  PRINTD("Renderer() end");
+}
+
+void Renderer::resize(int /*w*/, int /*h*/)
+{
+}
+
+void Renderer::setShader(const std::string* location) {
+  std::string vs_str = Renderer::loadShaderSource("Preview.vert", location);
+  std::string fs_str = Renderer::loadShaderSource("Preview.frag", location);
   const char *vs_source = vs_str.c_str();
   const char *fs_source = fs_str.c_str();
 
@@ -116,12 +127,6 @@ Renderer::Renderer() : colorscheme(nullptr)
   renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
   renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
   renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
-
-  PRINTD("Renderer() end");
-}
-
-void Renderer::resize(int /*w*/, int /*h*/)
-{
 }
 
 bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const
@@ -134,8 +139,14 @@ bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const
   return false;
 }
 
-std::string Renderer::loadShaderSource(const std::string& name, const std::string& location) {
-  std::string shaderPath = location + "/" + name;
+std::string Renderer::loadShaderSource(const std::string& name, const std::string* location) {
+  std::string shaderLocation;
+  if(!location) {
+    shaderLocation = PlatformUtils::resourcePath("shaders").string();
+  } else {
+    shaderLocation = *location;
+  }
+  std::string shaderPath = shaderLocation + "/" + name;
   std::stringstream buffer;
   std::ifstream f(shaderPath);
   if (f.is_open()) {

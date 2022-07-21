@@ -1391,9 +1391,9 @@ void MainWindow::actionOpen()
 void MainWindow::setShader()
 {
   auto userOpenedPath = UIUtils::openDirectory(this);
-  std::string shaderLocation = userOpenedPath.toUtf8().constData();
+  std::string shaderLocation = userOpenedPath.toStdString();
   LOG(message_group::None, Location::NONE, "", "User selected shader location: %1$s", shaderLocation);
-  this->qglview->renderer->shader_location = shaderLocation;
+  this->qglview->renderer->setShader(&shaderLocation);
 }
 
 void MainWindow::actionNewWindow()
