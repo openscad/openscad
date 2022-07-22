@@ -37,7 +37,13 @@ Renderer::Renderer(const std::string* shaderDirectoryPath) : colorscheme(nullptr
   colormap[ColorMode::BACKGROUND_EDGES] = {150, 150, 150, 128};
 
   setColorScheme(ColorMap::inst()->defaultColorScheme());
+  
+  this->setShader(shaderDirectoryPath);
 
+  PRINTD("Renderer() end");
+}
+
+void Renderer::setShader(const std::string* shaderDirectoryPath) {
   std::string vs_str = Renderer::loadShaderSource("Preview.vert", shaderDirectoryPath);
   std::string fs_str = Renderer::loadShaderSource("Preview.frag", shaderDirectoryPath);
   const char *vs_source = vs_str.c_str();
@@ -117,8 +123,6 @@ Renderer::Renderer(const std::string* shaderDirectoryPath) : colorscheme(nullptr
   renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
   renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
   renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
-  
-  PRINTD("Renderer() end");
 }
 
 void Renderer::resize(int /*w*/, int /*h*/)
