@@ -1394,7 +1394,7 @@ void MainWindow::setShader()
   std::string shaderLocation = userOpenedPath.toStdString();
   LOG(message_group::None, Location::NONE, "", "User selected shader location: %1$s", shaderLocation);
   this->shader_directory_path = shaderLocation;
-  this->renderer->setShader(&shaderLocation);
+  this->qglview->renderer->setShader(&shaderLocation);
   this->qglview->update();
 }
 
