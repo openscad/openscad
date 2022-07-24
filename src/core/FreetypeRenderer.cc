@@ -276,7 +276,13 @@ FT_Face FreetypeRenderer::Params::get_font_face() const
     return nullptr;
   }
 
-  FT_Error error = FT_Set_Char_Size(face, 0, scale, 100, 100);
+  // 100 is the legacy value for resolution, but yields a 100:72 scaling
+  // factor because the input size is in points and the output coordinates
+  // are in 1/resolution inches.  Setting the resolution to 72 cancels
+  // the unit conversion out, so that the result is scaled the same as the
+  // input and both can be treated as unitless.
+  int resolution = size_compat ? 100 : 72;
+  FT_Error error = FT_Set_Char_Size(face, 0, scale, resolution, resolution);
   if (error) {
     LOG(message_group::Warning, loc, documentPath,
         "Can't set font size for font %1$s", font);
@@ -294,6 +300,7 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
   // ones are and are not needed.
 
   (void) parameters.valid("size", Value::Type::NUMBER);
+  (void) parameters.valid("em", Value::Type::NUMBER);
   (void) parameters.valid("text", Value::Type::STRING);
   (void) parameters.valid("spacing", Value::Type::NUMBER);
   (void) parameters.valid("font", Value::Type::STRING);
@@ -307,7 +314,30 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
   set_fa(parameters["$fa"].toDouble());
   set_fs(parameters["$fs"].toDouble());
 
-  set_size(parameters.get("size", 10.0));
+  // There was a bug (#4304):  FreetypeRenderer::Params::get_font_face()
+  // would inappropriately apply a scaling factor of 100/72, so
+  // that a specified size of 72 would yield an em-size of 100.
+  // This went undetected for years because the error introduced
+  // was approximately the same as the typical ratio between the
+  // em size and the height of capital letters, and so "size"
+  // was explained as the height of capital letters.
+  // When the user specifies "size" or uses the default, we tell
+  // get_font_face() to use "compatible" sizing, and when the
+  // user specifies "em" we tell it to use correct sizing.
+  const Value& sizeParam = parameters.get("size");
+  const Value& emParam = parameters.get("em");
+  double sizetmp;
+  if (emParam.getDouble(sizetmp)) {
+    if (sizeParam.isDefined()) {
+      LOG(message_group::Warning, loc, documentPath,
+        "%1$s: \"size\" ignored when \"em\" is set", parameters.get_caller());
+    }
+    set_size(sizetmp, false);
+  } else if (sizeParam.getDouble(sizetmp)) {
+    set_size(sizetmp, true);
+  } else {
+    set_size(10.0, true);
+  }
   set_text(parameters.get("text", ""));
   set_spacing(parameters.get("spacing", 1.0));
   set_font(parameters.get("font", ""));
@@ -501,6 +531,19 @@ FreetypeRenderer::FontMetrics::FontMetrics(
   interline =
     FT_MulFix(face->height, size_metrics->y_scale) / scale
     * params.size;
+  underline_thickness =
+    FT_MulFix(face->underline_thickness, size_metrics->y_scale) / scale
+    * params.size;
+  // FreeType defines underline position as the vertical center of the underline.
+  // That's inconvenient for our user, who probably wants to call square()
+  // to generate the underline and would need to translate it down to
+  // center it.  Rather than making our user do that, *we* define the
+  // underline position as being the position of the bottom of the underline,
+  // so that translate([0,position,0]) square(lenth, thickness) will do
+  // the right thing.
+  underline_position =
+    FT_MulFix(face->underline_position, size_metrics->y_scale) / scale
+    * params.size - underline_thickness / 2;
   family_name = face->family_name;
   style_name = face->style_name;
 

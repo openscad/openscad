@@ -49,7 +49,8 @@ static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *ins
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"text", "size", "font"},
-                                            {"direction", "language", "script", "halign", "valign", "spacing"}
+                                            {"direction", "language", "script", "halign", "valign",
+                                              "spacing", "em"}
                                             );
   parameters.set_caller("text");
 
@@ -82,6 +83,6 @@ void register_builtin_text()
 {
   Builtins::init("text", new BuiltinModule(builtin_text),
   {
-    "text(text = \"\", size = 10, font = \"\", halign = \"left\", valign = \"baseline\", spacing = 1, direction = \"ltr\", language = \"en\", script = \"latin\"[, $fn])",
+    "text(text = \"\", size = 10, font = \"\", halign = \"left\", valign = \"baseline\", spacing = 1, direction = \"ltr\", language = \"en\", script = \"latin\", em = 13.9 [, $fn])",
   });
 }
