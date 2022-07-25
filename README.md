@@ -8,7 +8,7 @@
 <p><a href="https://opencollective.com/openscad/donate"><img align="right" src="https://opencollective.com/openscad/donate/button@2x.png?color=white" width="200"/></a>
 
 OpenSCAD is a software for creating solid 3D CAD objects. It is free software and
-available for Linux/UNIX, MS Windows and macOS.</p>
+is available for Linux/UNIX, MS Windows, and macOS.</p>
 
 Unlike most free software for creating 3D models (such as the famous
 application Blender), OpenSCAD focuses on the CAD aspects rather than the 
@@ -16,7 +16,7 @@ artistic aspects of 3D modeling. Thus this might be the application you are
 looking for when you are planning to create 3D models of machine parts but
 probably not the tool for creating computer-animated movies.
 
-OpenSCAD is not an interactive modeler. Instead it is more like a
+OpenSCAD is not an interactive modeler. Instead, it is more like a
 3D-compiler that reads a script file that describes the object and renders
 the 3D model from this script file (see examples below). This gives you, the
 designer, complete control over the modeling process and enables you to easily
@@ -25,8 +25,8 @@ configurable parameters.
 
 OpenSCAD provides two main modeling techniques: First there is constructive
 solid geometry (aka CSG) and second there is extrusion of 2D outlines. As the data
-exchange format for these 2D outlines Autocad DXF files are used. In
-addition to 2D paths for extrusion it is also possible to read design parameters
+exchange format for these 2D outlines, Autocad DXF files are used. In
+addition to 2D paths for extrusion, it is also possible to read design parameters
 from DXF files. Besides DXF files OpenSCAD can read and create 3D models in the
 STL and OFF file formats.
 
@@ -58,7 +58,7 @@ Let's make a tree! Type the following code into the left frame:
     cylinder(h = 30, r = 8);
 
 Then render the 3D model by hitting F5. Now you can see a cylinder for
-the trunk in our tree. Now let's add the bushy/leafy part of the tree
+the trunk of our tree. Now let's add the bushy/leafy part of the tree
 represented by a sphere. To do so, we will union a cylinder and a
 sphere.
 
@@ -99,8 +99,8 @@ development. Other versions may or may not work as well.
 
 If you're using a newer version of Ubuntu, you can install these 
 libraries from aptitude. If you're using Mac, or an older Linux/BSD, there 
-are build scripts that download and compile the libraries from source. 
-Follow the instructions for the platform you're compiling on below.
+are build scripts that download and compile the libraries from the source. 
+Follow the instructions for the platform you're compiling below.
 
 * A C++ compiler supporting C++17
 * [cmake (3.5 ->)](https://cmake.org/)
