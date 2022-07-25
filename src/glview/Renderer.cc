@@ -15,7 +15,7 @@
 
 #ifndef NULLGL
 
-Renderer::Renderer(const std::string* shaderDirectoryPath) : colorscheme(nullptr)
+Renderer::Renderer(const std::string& shaderDirectoryPath) : colorscheme(nullptr)
 {
   PRINTD("Renderer() start");
 
@@ -43,7 +43,7 @@ Renderer::Renderer(const std::string* shaderDirectoryPath) : colorscheme(nullptr
   PRINTD("Renderer() end");
 }
 
-void Renderer::setShader(const std::string* shaderDirectoryPath) {
+void Renderer::setShader(const std::string& shaderDirectoryPath) {
   std::string vs_str = Renderer::loadShaderSource("Preview.vert", shaderDirectoryPath);
   std::string fs_str = Renderer::loadShaderSource("Preview.frag", shaderDirectoryPath);
   const char *vs_source = vs_str.c_str();
@@ -139,12 +139,12 @@ bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const
   return false;
 }
 
-std::string Renderer::loadShaderSource(const std::string& name, const std::string* location) {
+std::string Renderer::loadShaderSource(const std::string& name, const std::string& location) {
   std::string shaderLocation;
-  if(!location || location->empty()) {
+  if(location.empty()) {
     shaderLocation = PlatformUtils::resourcePath("shaders").string();
   } else {
-    shaderLocation = *location;
+    shaderLocation = location;
   }
   std::string shaderPath = shaderLocation + "/" + name;
   std::stringstream buffer;
