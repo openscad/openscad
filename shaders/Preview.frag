@@ -1,6 +1,7 @@
 #version 110
 
 uniform vec4 color1, color2;
+uniform bool showEdges;
 varying vec3 vBC;
 varying float shading;
 
@@ -11,6 +12,9 @@ vec3 smoothstep3f(vec3 edge0, vec3 edge1, vec3 x) {
 }
 
 float edgeFactor() {
+  if(!showEdges) {
+    return 1.0f; // only mix in the edge color when edges are shown
+  }
   const float th = 1.414; // total thickness of half-edge (per triangle) including fade, (must be >= fade)
   const float fade = 1.414; // thickness of fade (antialiasing) in screen pixels
   vec3 d = fwidth(vBC);
