@@ -354,9 +354,11 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
       }
 
       if (shaderinfo && shaderinfo->progid) {
-        if (shaderinfo->type != EDGE_RENDERING || (shaderinfo->type == EDGE_RENDERING && showedges)) {
-          GL_CHECKD(glUseProgram(shaderinfo->progid));
-        }
+        if (shaderinfo->type != EDGE_RENDERING ||
+            (shaderinfo->type == EDGE_RENDERING && showedges)) {
+              GL_CHECKD(glUseProgram(shaderinfo->progid));
+              GL_CHECKD(glUniform1i(shaderinfo->data.csg_rendering.draw_edges, 1));
+            }
       }
 
       for (const auto& csgobj : product.intersections) {
@@ -448,6 +450,10 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
 
         if (shaderinfo->type == EDGE_RENDERING && showedges) {
           shader_attribs_enable();
+          glUniform1i(shaderinfo->data.csg_rendering.draw_edges, 1);
+        }
+        else {
+          glUniform1i(shaderinfo->data.csg_rendering.draw_edges, 0);
         }
       }
 
