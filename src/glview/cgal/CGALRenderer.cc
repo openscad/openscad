@@ -228,6 +228,7 @@ void CGALRenderer::createPolySets()
       Color4f last_color = color;
       add_shader_pointers(vertex_array);
       shaderinfo_t shader_info = this->getShader();
+      glUniform1i(shader_info.data.csg_rendering.draw_edges, 0);
       std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
       color_state->glBegin().emplace_back([shader_info, last_color]() {
         GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % last_color[0] % last_color[1] % last_color[2] % last_color[3]);
