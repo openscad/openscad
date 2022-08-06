@@ -475,7 +475,8 @@ void Renderer::render_edges(const PolySet& ps, csgmode_e csgmode) const
 Renderer::Renderer() : colorscheme(nullptr) {}
 void Renderer::resize(int /*w*/, int /*h*/) {}
 bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const { return false; }
-std::string Renderer::loadShaderSource(const std::string& name) { return ""; }
+std::string Renderer::loadShaderSource(const std::string& name, const std::string& location) { return ""; }
+void Renderer::setShader(const std::string& shaderDirectoryPath) {}
 Renderer::csgmode_e Renderer::get_csgmode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type) const { return {}; }
 void Renderer::setColor(const float color[4], const shaderinfo_t *shaderinfo) const {}
 Color4f Renderer::setColor(ColorMode colormode, const float color[4], const shaderinfo_t *shaderinfo) const { return {}; }
