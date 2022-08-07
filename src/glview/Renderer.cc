@@ -459,7 +459,7 @@ void Renderer::render_edges(const PolySet& ps, csgmode_e csgmode) const
 #endif // ifndef DISABLE_FIXEDFUNCTION_GL
 #else //NULLGL
 
-Renderer::Renderer() : colorscheme(nullptr) {}
+Renderer::Renderer(const std::string& shaderDirectoryPath) : colorscheme(nullptr) {}
 void Renderer::resize(int /*w*/, int /*h*/) {}
 bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const { return false; }
 std::string Renderer::loadShaderSource(const std::string& name, const std::string& location) { return ""; }
