@@ -225,6 +225,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
 #if QSCINTILLA_VERSION >= 0x020b00
   connect(qsci, SIGNAL(SCN_URIDROPPED(const QUrl&)), this, SIGNAL(uriDropped(const QUrl&)));
 #endif
+  connect(qsci, SIGNAL(SCN_FOCUSIN()), this, SIGNAL(focusIn()));
 
   // Disabling buffered drawing resolves non-integer HiDPI scaling.
   qsci->SendScintilla(QsciScintillaBase::SCI_SETBUFFEREDDRAW, false);

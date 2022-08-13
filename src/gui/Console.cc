@@ -31,6 +31,7 @@
 #include <QRegularExpression>
 #include <QString>
 #include "Console.h"
+#include "MainWindow.h"
 #include "printutils.h"
 #include "Preferences.h"
 #include "UIUtils.h"
@@ -47,6 +48,12 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 
 Console::~Console()
 {
+}
+
+void Console::focusInEvent(QFocusEvent *event)
+{
+  MainWindow *mw = dynamic_cast<MainWindow*>(this->window());
+  mw->setLastFocus(this);
 }
 
 void Console::addMessage(const Message& msg)

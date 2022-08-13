@@ -57,7 +57,6 @@ private slots:
   void undo();
   void redo();
   void cut();
-  void copy();
   void paste();
   void indentSelection();
   void unindentSelection();
@@ -82,6 +81,7 @@ private slots:
 
 public slots:
   void actionNew();
+  void copy();
   void setContentRenderState(); // since last render
   void setTabModified(EditorInterface *);
   bool saveAll();

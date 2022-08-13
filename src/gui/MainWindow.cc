@@ -405,6 +405,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->editActionNextTab, SIGNAL(triggered()), tabManager, SLOT(nextTab()));
   connect(this->editActionPrevTab, SIGNAL(triggered()), tabManager, SLOT(prevTab()));
 
+  connect(this->editActionCopy, SIGNAL(triggered()), this, SLOT(copyText()));
   connect(this->editActionCopyViewport, SIGNAL(triggered()), this, SLOT(actionCopyViewport()));
   connect(this->editActionConvertTabsToSpaces, SIGNAL(triggered()), this, SLOT(convertTabsToSpaces()));
   connect(this->editActionCopyVPT, SIGNAL(triggered()), this, SLOT(copyViewportTranslation()));
@@ -2290,6 +2291,10 @@ void MainWindow::setCursor()
   this->activeEditor->setCursorPosition(line - 1, column - 1);
 }
 
+void MainWindow::setLastFocus(QWidget *widget) {
+  this->lastFocus = widget;
+}
+
 /**
  * Switch version label and progress widget. When switching to the progress
  * widget, the new instance is passed by the caller.
@@ -2610,6 +2615,16 @@ void MainWindow::actionExportImage()
     } else {
         LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
     }
+  }
+}
+
+void MainWindow::copyText()
+{
+  Console* c = dynamic_cast<Console *>(lastFocus);
+  if (c) {
+    c->copy();
+  } else {
+    tabManager->copy();
   }
 }
 
