@@ -52,7 +52,12 @@ Console::~Console()
 
 void Console::focusInEvent(QFocusEvent *event)
 {
-  MainWindow *mw = dynamic_cast<MainWindow*>(this->window());
+  QWidget *current = this;
+  MainWindow *mw;
+  while(current && !(mw = dynamic_cast<MainWindow*>(current->window()))) {
+    current = current->parentWidget();
+  }
+  assert(mw);
   mw->setLastFocus(this);
 }
 
