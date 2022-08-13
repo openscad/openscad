@@ -33,7 +33,11 @@
     <widget class="ParameterDescriptionWidget" name="descriptionWidget" native="true"/>
    </item>
    <item>
-    <widget class="QComboBox" name="comboBox"/>
+    <widget class="QComboBox" name="comboBox">
+       <property name="focusPolicy">
+        <enum>Qt::StrongFocus</enum>
+       </property>
+    </widget>
    </item>
   </layout>
  </widget>
