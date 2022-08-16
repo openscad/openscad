@@ -34,6 +34,7 @@ public:
         int barycentric;
         int draw_edges;
         int marked;
+        int color_marked;
       } csg_rendering;
       struct {
         int identifier;

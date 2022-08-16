@@ -48,7 +48,7 @@ public:
                                size_t primitive_index = 0,
                                double z_offset = 0, size_t shape_size = 0,
                                size_t shape_dimensions = 0, bool outlines = false,
-                               bool mirror = false, bool marked) const;
+                               bool mirror = false, bool marked = false) const;
 
   virtual void create_vertex(VertexArray& vertex_array, const Color4f& color,
                              const std::array<Vector3d, 3>& points,
@@ -56,7 +56,7 @@ public:
                              size_t active_point_index = 0, size_t primitive_index = 0,
                              double z_offset = 0, size_t shape_size = 0,
                              size_t shape_dimensions = 0, bool outlines = false,
-                             bool mirror = false, bool marked) const;
+                             bool mirror = false, bool marked = false) const;
 
 protected:
   void add_shader_data(VertexArray& vertex_array);
@@ -75,7 +75,7 @@ private:
                              size_t active_point_index = 0, size_t primitive_index = 0,
                              double z_offset = 0, size_t shape_size = 0,
                              size_t shape_dimensions = 0, bool outlines = false,
-                             bool mirror = false, bool marked) const;
+                             bool mirror = false, bool marked = false) const;
 
   size_t shader_attributes_index;
   enum ShaderAttribIndex {

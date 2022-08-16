@@ -212,12 +212,12 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
                                size_t active_point_index, size_t primitive_index,
                                double z_offset, size_t shape_size,
                                size_t shape_dimensions, bool outlines,
-                               bool mirror, CreateVertexCallback vertex_callback)
+                               bool mirror, bool marked, CreateVertexCallback vertex_callback)
 {
   if (vertex_callback)
     vertex_callback(*this, points, normals, color, active_point_index,
                     primitive_index, z_offset, shape_size,
-                    shape_dimensions, outlines, mirror);
+                    shape_dimensions, outlines, mirror, marked);
 
   addAttributeValues(*(data()->positionData()), points[active_point_index][0], points[active_point_index][1], points[active_point_index][2]);
   if (data()->hasNormalData()) {

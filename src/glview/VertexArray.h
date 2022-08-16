@@ -349,7 +349,7 @@ public:
                               size_t active_point_index, size_t primitive_index,
                               double z_offset, size_t shape_size,
                               size_t shape_dimensions, bool outlines,
-                              bool mirror)> CreateVertexCallback;
+                              bool mirror, bool marked)> CreateVertexCallback;
 
 
   VertexArray(std::shared_ptr<VertexStateFactory> factory, VertexStates& states,
@@ -401,7 +401,7 @@ public:
                     size_t active_point_index = 0, size_t primitive_index = 0,
                     double z_offset = 0, size_t shape_size = 0,
                     size_t shape_dimensions = 0, bool outlines = false,
-                    bool mirror = false, CreateVertexCallback vertex_callback = nullptr);
+                    bool mirror = false, bool marked = false, CreateVertexCallback vertex_callback = nullptr);
 
   // Return reference to the VertexStates
   inline VertexStates& states() { return states_; }

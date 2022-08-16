@@ -246,7 +246,7 @@ void VBORenderer::create_vertex(VertexArray& vertex_array, const Color4f& color,
 {
   vertex_array.createVertex(points, normals, color, active_point_index,
                             primitive_index, z_offset, shape_size,
-                            shape_dimensions, outlines, mirror,
+                            shape_dimensions, outlines, mirror, marked,
                             [this](VertexArray& vertex_array,
                                    const std::array<Vector3d, 3>& points,
                                    const std::array<Vector3d, 3>& normals,
@@ -254,7 +254,7 @@ void VBORenderer::create_vertex(VertexArray& vertex_array, const Color4f& color,
                                    size_t active_point_index, size_t primitive_index,
                                    double z_offset, size_t shape_size,
                                    size_t shape_dimensions, bool outlines,
-                                   bool mirror) -> void {
+                                   bool mirror, bool marked) -> void {
     this->add_shader_attributes(vertex_array, points, normals, color,
                                 active_point_index, primitive_index,
                                 z_offset, shape_size, shape_dimensions,
@@ -351,7 +351,7 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
         Vector3d p2 = uniqueMultiply(vert_mult_map, mult_verts, poly.at(2), m);
 
         create_triangle(vertex_array, color, p0, p1, p2,
-                        0, 0, poly.size(), 3, false, mirrored, ps.marked);
+                        0, 0, poly.size(), 3, false, mirrored, poly.marked);
         triangle_count++;
       } else if (poly.size() == 4) {
         Vector3d p0 = uniqueMultiply(vert_mult_map, mult_verts, poly.at(0), m);
@@ -360,9 +360,9 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
         Vector3d p3 = uniqueMultiply(vert_mult_map, mult_verts, poly.at(3), m);
 
         create_triangle(vertex_array, color, p0, p1, p3,
-                        0, 0, poly.size(), 3, false, mirrored, ps.marked);
+                        0, 0, poly.size(), 3, false, mirrored, poly.marked);
         create_triangle(vertex_array, color, p2, p3, p1,
-                        1, 0, poly.size(), 3, false, mirrored, ps.marked);
+                        1, 0, poly.size(), 3, false, mirrored, poly.marked);
         triangle_count += 2;
       } else {
         Vector3d center = Vector3d::Zero();
@@ -376,7 +376,7 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
           Vector3d p2 = uniqueMultiply(vert_mult_map, mult_verts, poly.at(i - 1), m);
 
           create_triangle(vertex_array, color, p0, p2, p1,
-                          i - 1, 0, poly.size(), 3, false, mirrored, ps.marked);
+                          i - 1, 0, poly.size(), 3, false, mirrored, poly.marked);
           triangle_count++;
         }
       }

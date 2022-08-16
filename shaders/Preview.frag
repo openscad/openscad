@@ -1,6 +1,6 @@
 #version 110
 
-uniform vec4 color1, color2;
+uniform vec4 color1, color2, color3;
 uniform int drawEdges;
 varying vec3 vBC;
 varying float shading;
@@ -23,5 +23,5 @@ float edgeFactor() {
 }
 
 void main(void) {
-  gl_FragColor = mix(color2, vec4(color1.rgb * shading, color1.a), edgeFactor());
+  gl_FragColor = mix(color2, vec4(drawColor.rgb * shading, drawColor.a), edgeFactor());
 }
