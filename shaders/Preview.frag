@@ -4,6 +4,7 @@ uniform vec4 color1, color2, color3;
 uniform int drawEdges;
 varying vec3 vBC;
 varying float shading;
+varying vec4 drawColor;
 
 vec3 smoothstep3f(vec3 edge0, vec3 edge1, vec3 x) {
   vec3 t;

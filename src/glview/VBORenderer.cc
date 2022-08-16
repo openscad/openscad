@@ -230,7 +230,7 @@ void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
     barycentric_flags[active_point_index] = 1;
 
     addAttributeValues(*(vertex_data->attributes()[shader_attributes_index + BARYCENTRIC_ATTRIB]), barycentric_flags[0], barycentric_flags[1], barycentric_flags[2], 0);
-    addAttributeValues(*(vertex_data->attributes()[shader_attributes_index + MARKED_ATTRIB]), marked ? 1 : 0);
+    addAttributeValues(*(vertex_data->attributes()[shader_attributes_index + MARKED_ATTRIB]), marked ? 0 : 1);
   } else {
     if (OpenSCAD::debug != "") PRINTDB("add_shader_attributes bad points size = %d", points.size());
   }
@@ -760,8 +760,8 @@ void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
     ss->glBegin().emplace_back([index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
       auto ss = ss_ptr.lock();
       if (ss) {
-        GL_TRACE("glVertexAttribPointer(%d, %d, %d, %p)", count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
-        glVertexAttribPointer(index, count, type, GL_FALSE, stride, (GLvoid *)(ss->drawOffset() + offset));
+        GL_TRACE("glVertexAttribIPointer(%d, %d, %d, %p)", count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
+        glVertexAttribIPointer(index, count, type, stride, (GLvoid *)(ss->drawOffset() + offset));
         GL_ERROR_CHECK();
       }
     });
