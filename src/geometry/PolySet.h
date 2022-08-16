@@ -32,6 +32,7 @@ public:
   void reserve(size_t numFacets) { polygons.reserve(numFacets); }
   void append_poly(size_t expected_vertex_count);
   void append_poly(const Polygon& poly);
+  void append_poly(bool marked);
   void append_vertex(double x, double y, double z = 0.0);
   void append_vertex(const Vector3d& v);
   void append_vertex(const Vector3f& v);
