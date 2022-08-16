@@ -3,11 +3,10 @@
 #include "linalg.h"
 #include <vector>
 
-class MarkedVector3d : public Vector3d {
+class Polygon : public std::vector<Vector3d>  {
 public:
-  bool marked;
+  bool marked = false;
 }
-typedef std::vector<Vector3d> Polygon;
 typedef std::vector<Polygon> Polygons;
 
 typedef std::vector<int> IndexedFace;
