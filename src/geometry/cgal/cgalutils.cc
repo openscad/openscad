@@ -278,16 +278,17 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
   // 1. Build Indexed PolyMesh
   Reindexer<Vector3f> allVertices;
   std::vector<std::vector<IndexedFace>> polygons;
-  std::vector<bool> markedFaces;
+  std::vector<bool> markedPolygons;
 
   typename Nef::Halffacet_const_iterator hfaceti;
   CGAL_forall_halffacets(hfaceti, N) {
-    bool marked = hfaceti->mark();
     CGAL::Plane_3<K> plane(hfaceti->plane());
     // Since we're downscaling to float, vertices might merge during this conversion.
     // To avoid passing equal vertices to the tessellator, we remove consecutively identical
     // vertices.
     polygons.push_back(std::vector<IndexedFace>());
+    bool marked = hfaceti->mark();
+    markedPolygons.push_back(marked);
     auto& faces = polygons.back();
     // the 0-mark-volume is the 'empty' volume of space. skip it.
     if (!hfaceti->incident_volume()->mark()) {
@@ -296,7 +297,6 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
         typename Nef::SHalfedge_around_facet_const_circulator c1(cyclei);
         typename Nef::SHalfedge_around_facet_const_circulator c2(c1);
         faces.push_back(IndexedFace());
-        markedFaces.push_back(marked);
         auto& currface = faces.back();
         CGAL_For_all(c1, c2) {
           auto p = c1->source()->center_vertex()->point();
@@ -305,13 +305,13 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
           if (currface.empty() || idx != currface.back()) currface.push_back(idx);
         }
         if (!currface.empty() && currface.front() == currface.back()) currface.pop_back();
-        if (currface.size() < 3) {
-          faces.pop_back(); // Cull empty triangles
-          markedFaces.pop_back();
-        }
+        if (currface.size() < 3) faces.pop_back(); // Cull empty triangles
       }
     }
-    if (faces.empty()) polygons.pop_back(); // Cull empty faces
+    if (faces.empty()) {
+      polygons.pop_back(); // Cull empty faces
+      markedPolygons.pop_back();
+    }
   }
 
   // 2. Validate mesh (manifoldness)
