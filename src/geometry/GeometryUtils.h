@@ -3,8 +3,12 @@
 #include "linalg.h"
 #include <vector>
 
-using Polygon = std::vector<Vector3d>;
-using Polygons = std::vector<Polygon>;
+class MarkedVector3d : public Vector3d {
+public:
+  bool marked;
+}
+typedef std::vector<Vector3d> Polygon;
+typedef std::vector<Polygon> Polygons;
 
 using IndexedFace = std::vector<int>;
 using IndexedTriangle = Vector3i;
