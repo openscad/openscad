@@ -322,6 +322,8 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
   // 3. Triangulate each face
   const auto& verts = allVertices.getArray();
   std::vector<IndexedTriangle> allTriangles;
+  std::vector<bool> markedTriangles;
+  size_t polygonIndex = 0;
   for (const auto& faces : polygons) {
 #if 0 // For debugging
     std::cerr << "---\n";
@@ -369,8 +371,10 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
         assert(t[1] >= 0 && t[1] < static_cast<int>(allVertices.size()));
         assert(t[2] >= 0 && t[2] < static_cast<int>(allVertices.size()));
         allTriangles.push_back(t);
+        markedTriangles.push_back(markedPolygons.at(polygonIndex));
       }
     }
+    polygonIndex++;
   }
 
 #if 0 // For debugging
