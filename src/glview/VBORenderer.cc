@@ -230,7 +230,7 @@ void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
     barycentric_flags[active_point_index] = 1;
 
     addAttributeValues(*(vertex_data->attributes()[shader_attributes_index + BARYCENTRIC_ATTRIB]), barycentric_flags[0], barycentric_flags[1], barycentric_flags[2], 0);
-    addAttributeValues(*(vertex_data->attributes()[shader_attributes_index + MARKED_ATTRIB]), marked ? 1.0f : 0.0f);
+    addAttributeValues(*(vertex_data->attributes()[shader_attributes_index + MARKED_ATTRIB]), marked ? 0.0f : 1.0f);
   } else {
     if (OpenSCAD::debug != "") PRINTDB("add_shader_attributes bad points size = %d", points.size());
   }
