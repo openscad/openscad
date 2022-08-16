@@ -92,7 +92,7 @@ void PolySet::append_poly(const Polygon& poly)
 }
 void PolySet::append_poly(bool marked) {
   Polygon poly = Polygon();
-  poly.marked = true;
+  poly.marked = marked;
   polygons.push_back(poly);
 }
 
