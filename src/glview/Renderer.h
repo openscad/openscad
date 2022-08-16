@@ -33,6 +33,7 @@ public:
         // barycentric coordinates of the current vertex
         int barycentric;
         int draw_edges;
+        int marked;
       } csg_rendering;
       struct {
         int identifier;

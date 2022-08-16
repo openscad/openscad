@@ -79,7 +79,8 @@ private:
 
   size_t shader_attributes_index;
   enum ShaderAttribIndex {
-    BARYCENTRIC_ATTRIB
+    BARYCENTRIC_ATTRIB,
+    MARKED_ATTRIB
   };
 };
 

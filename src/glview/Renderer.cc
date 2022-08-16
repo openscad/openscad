@@ -124,6 +124,7 @@ void Renderer::setShader(const std::string& shaderDirectoryPath) {
   renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
   renderer_shader.data.csg_rendering.draw_edges = glGetUniformLocation(edgeshader_prog, "drawEdges");
   renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
+  renderer_shader.data.csg_rendering.marked = glGetAttribLocation(edgeshader_prog, "marked");
 }
 
 void Renderer::resize(int /*w*/, int /*h*/)
