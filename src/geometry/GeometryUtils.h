@@ -6,7 +6,7 @@
 class Polygon : public std::vector<Vector3d>  {
 public:
   bool marked = false;
-}
+};
 typedef std::vector<Polygon> Polygons;
 
 using IndexedFace = std::vector<int>;
