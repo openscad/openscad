@@ -289,6 +289,142 @@ function(is_2d FULLNAME RESULT)
   endif()
 endfunction()
 
+# Specific tests for which fast-csg cannot be enabled yet.
+list(APPEND TESTS_FAILING_WITH_FAST_CSG
+  # Different order of vertices
+  3mfexport_3mf-export
+  # Test script argument passing issue
+  cgalstlsanitytest_normal-nan
+  # Exempted because of shaders
+  cgalpngtest_example015
+  cgalpngtest_module_recursion
+  cgalpngtest_list_comprehensions
+  cgalpngtest_polygon_areas
+  cgalpngtest_recursion
+  cgalpngtest_GEB
+  cgalpngtest_animation
+  cgalpngtest_assert
+  cgalpngtest_children
+  cgalpngtest_children_indexed
+  cgalpngtest_offset
+  cgalpngtest_surface_image
+  cgalpngtest_LetterBlock
+  cgalpngtest_linear_extrude
+  cgalpngtest_logo_and_text
+  cgalpngtest_projection
+  cgalpngtest_roof
+  cgalpngtest_rotate_extrude
+  cgalpngtest_text_on_cube
+  cgalpngtest_example007
+  cgalpngtest_example008
+  cgalpngtest_example009
+  cgalpngtest_example010
+  cgalpngtest_example011
+  cgalpngtest_example013
+  cgalpngtest_example014
+  cgalpngtest_example017
+  cgalpngtest_example018
+  cgalpngtest_example019
+  cgalpngtest_example020
+  cgalpngtest_example021
+  cgalpngtest_example022
+  cgalpngtest_example023
+  cgalpngtest_candleStand
+  cgalpngtest_sign
+  opencsgtest_roof
+  csgpngtest_example015
+  csgpngtest_module_recursion
+  csgpngtest_list_comprehensions
+  csgpngtest_polygon_areas
+  csgpngtest_GEB
+  csgpngtest_CSG-modules
+  csgpngtest_CSG
+  csgpngtest_LetterBlock
+  csgpngtest_logo
+  csgpngtest_logo_and_text
+  csgpngtest_roof
+  csgpngtest_text_on_cube
+  csgpngtest_example001
+  csgpngtest_example002
+  csgpngtest_example003
+  csgpngtest_example004
+  csgpngtest_example005
+  csgpngtest_example006
+  csgpngtest_example012
+  csgpngtest_example022
+  csgpngtest_example024
+  csgpngtest_sign
+  throwntogethertest_roof
+  dxfpngtest_example015
+  dxfpngtest_module_recursion
+  dxfpngtest_list_comprehensions
+  dxfpngtest_polygon_areas
+  dxfpngtest_recursion
+)
+
+# Tests for which fast-csg works but produces different expectation files.
+# These tests are run twice (w/ and without fast-csg).
+list(APPEND SCADFILES_FAILING_WITH_FAST_CSG
+  # Corefinement leaves some polyhedra in a state that we can't build Nefs from
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/mirror-tests.scad
+  # Resize issue!
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/resize-convexity-tests.scad
+  # Needs investigation:
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1246.scad
+)
+list(APPEND FAST_CSG_TRUST_FAILING_SCADFILES
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/edge-cases.scad
+)
+
+# Tests for which fast-csg works but produces different expectation files.
+# These tests are run twice (w/ and without fast-csg).
+list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
+  # This one no longer crashes, yay!
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/bugs/issue1455.scad
+  # These are less broken than before:
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/bugs/issue791.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1138.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1137.scad
+
+  # No more green faces from differences.
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/CSG-modules.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/CSG.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Basics/logo.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example001.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example002.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example003.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example004.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example005.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example006.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example012.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example016.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/../examples/Old/example024.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/2D/features/highlight-modifier-2d.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/difference-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/highlight-modifier.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/highlight-modifier2.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/minkowski3-erosion.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/render-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1105.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1105b.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1105c.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1105d.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1215c.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue1803.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue3158.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue835.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue911.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/issues/issue913.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/misc/view-options-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/internal-cavity-polyhedron.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/internal-cavity.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/let-module-tests.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/rotate_extrude-hole.scad
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/misc/rotate-empty-bbox.scad
+  # Less broken and no green faces
+  ${CMAKE_CURRENT_SOURCE_DIR}/data/scad/3D/features/polyhedron-tests.scad
+)
+
 #
 # This functions adds cmd-line tests given files.
 #
