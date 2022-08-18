@@ -221,6 +221,71 @@ list(APPEND TESTS_FAILING_WITH_FAST_CSG
   3mfexport_3mf-export
   # Test script argument passing issue
   cgalstlsanitytest_normal-nan
+  # Exempted because of shaders
+  cgalpngtest_example015
+  cgalpngtest_module_recursion
+  cgalpngtest_list_comprehensions
+  cgalpngtest_polygon_areas
+  cgalpngtest_recursion
+  cgalpngtest_GEB
+  cgalpngtest_animation
+  cgalpngtest_assert
+  cgalpngtest_children
+  cgalpngtest_children_indexed
+  cgalpngtest_offset
+  cgalpngtest_surface_image
+  cgalpngtest_LetterBlock
+  cgalpngtest_linear_extrude
+  cgalpngtest_logo_and_text
+  cgalpngtest_projection
+  cgalpngtest_roof
+  cgalpngtest_rotate_extrude
+  cgalpngtest_text_on_cube
+  cgalpngtest_example007
+  cgalpngtest_example008
+  cgalpngtest_example009
+  cgalpngtest_example010
+  cgalpngtest_example011
+  cgalpngtest_example013
+  cgalpngtest_example014
+  cgalpngtest_example017
+  cgalpngtest_example018
+  cgalpngtest_example019
+  cgalpngtest_example020
+  cgalpngtest_example021
+  cgalpngtest_example022
+  cgalpngtest_example023
+  cgalpngtest_candleStand
+  cgalpngtest_sign
+  opencsgtest_roof
+  csgpngtest_example015
+  csgpngtest_module_recursion
+  csgpngtest_list_comprehensions
+  csgpngtest_polygon_areas
+  csgpngtest_GEB
+  csgpngtest_CSG-modules
+  csgpngtest_CSG
+  csgpngtest_LetterBlock
+  csgpngtest_logo
+  csgpngtest_logo_and_text
+  csgpngtest_roof
+  csgpngtest_text_on_cube
+  csgpngtest_example001
+  csgpngtest_example002
+  csgpngtest_example003
+  csgpngtest_example004
+  csgpngtest_example005
+  csgpngtest_example006
+  csgpngtest_example012
+  csgpngtest_example022
+  csgpngtest_example024
+  csgpngtest_sign
+  throwntogethertest_roof
+  dxfpngtest_example015
+  dxfpngtest_module_recursion
+  dxfpngtest_list_comprehensions
+  dxfpngtest_polygon_areas
+  dxfpngtest_recursion
 )
 
 # Tests for which fast-csg works but produces different expectation files.
@@ -396,9 +461,9 @@ function(add_cmdline_test TESTCMD_BASENAME)
       # Enable vertex-object-renderers by default for all test if experimental build and openscad executable
       if (EXPERIMENTAL AND TESTCMD_OPENSCAD)
         set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers")
-        #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-prealloc")
-        #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-direct")
-        #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-indexing")
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-prealloc")
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-direct")
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-indexing")
       endif()
 
       # debug message
