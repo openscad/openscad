@@ -176,7 +176,47 @@ void QGLView::mousePressEvent(QMouseEvent *event)
   last_mouse = event->globalPos();
 }
 
+/*
+ * Voodoo warning...
+ *
+ * This function selects the widget's OpenGL context (via this->makeCurrent()).
+ * Because it's changing the OpenGL context, it seems polite to save and restore it.
+ * That resolution seems correct, independent of the mysteries below.
+ *
+ * Let's call the widget's context W, and the alternate context that we are called with A.
+ *
+ * It's important that A is selected when we return (as it is when we enter), because
+ * if it isn't then sometimes the subsequent mouseReleaseEvent is called with W, when it
+ * is normally called with A.  When that happens, the object-selection magic in selectObject
+ * messes up W, and rendering is forever after broken in that window.
+ *
+ * However, as hygienic as saving-and-restoring seems, the picture is still unsatisfying.
+ *
+ * Open questions:
+ * - Why are these mouse event functions called with A, rather than being called with W?
+ *   It's unsurprising that the selection magic needs its own GL context, but it seems like
+ *   it should be the one that needs to explicitly select it, not this function.
+ * - Where did A come from?
+ * - Why does a subsequent mouseReleaseEvent call get called with W?
+ * - Why does it only sometimes get called with W, and sometimes (correctly) with A?
+ * - Why do later mouseReleaseEvent calls revert to being (correctly) called with A?
+ * - Why does this only happen with right clicks?  With left clicks, this function
+ *   changes the context, but it's OK again on the following mouseReleaseEvent.
+ * - Why does this only happen when you click on empty space, and not when you click
+ *   on the model?  Double clicks on the model are not detected as double clicks.
+ *   Perhaps this is because the first click pops a menu and the second click is
+ *   on the menu, not this widget.
+ *
+ * getGLContext() and setGLContext() are in a separate file, QGLView2.cc, so that this
+ * file doesn't need a full declaration of QOpenGLContext.  <QOpenGLContext> is
+ * incompatible with GLEW and causes compilation warnings.
+ *
+ * For future attention:
+ * - This function should probably only react to left double clicks.  Right double clicks
+ *   should probably be ignored.
+ */
 void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
+  QOpenGLContext *oldContext = getGLContext();
   this->makeCurrent();
   setupCamera();
 
@@ -202,10 +242,14 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
         .arg(QString::fromLocal8Bit((const char *)gluErrorString(glError)));
       statusLabel->setText(status);
     }
+    setGLContext(oldContext);
     return;
   }
 
-  if (z == 1) return; // outside object
+  if (z == 1) {
+    setGLContext(oldContext);
+    return; // outside object
+  }
 
   GLdouble px, py, pz;
 
@@ -216,6 +260,7 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
     update();
     emit cameraChanged();
   }
+  setGLContext(oldContext);
 }
 
 void QGLView::normalizeAngle(GLdouble& angle)

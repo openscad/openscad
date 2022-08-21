@@ -829,6 +829,7 @@ set(GUI_SOURCES
   src/gui/PrintService.cc
   src/gui/ProgressWidget.cc
   src/gui/QGLView.cc
+  src/gui/QGLView2.cc
   src/gui/QSettingsCached.cc
   src/gui/QWordSearchField.cc
   src/gui/ScadApi.cc
