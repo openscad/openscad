@@ -287,7 +287,7 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
     // To avoid passing equal vertices to the tessellator, we remove consecutively identical
     // vertices.
     polygons.push_back(std::vector<IndexedFace>());
-    bool marked = hfaceti->mark();
+    bool marked = !hfaceti->mark();
     markedPolygons.push_back(marked);
     auto& faces = polygons.back();
     // the 0-mark-volume is the 'empty' volume of space. skip it.
