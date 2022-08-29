@@ -427,6 +427,19 @@ Value builtin_concat(Arguments arguments, const Location& loc)
   return std::move(result);
 }
 
+Value builtin_object(Arguments arguments, const Location& loc)
+{
+  ObjectType result(arguments.session());
+  for (auto& argument : arguments) {
+    if (argument.name == boost::none) {
+      LOG(message_group::Warning, loc, arguments.documentRoot(), "object() argument is not named");
+    } else {
+      result.set(argument.name->c_str(), std::move(argument.value));
+    }
+  }
+  return std::move(result);
+}
+
 Value builtin_lookup(Arguments arguments, const Location& loc)
 {
   if (!check_arguments("lookup", arguments, loc, { Value::Type::NUMBER, Value::Type::VECTOR })) {
@@ -1084,6 +1097,11 @@ void register_builtin_functions()
   Builtins::init("concat", new BuiltinFunction(&builtin_concat),
   {
     "concat(number or string or vector, ...) -> vector",
+  });
+
+  Builtins::init("object", new BuiltinFunction(&builtin_object),
+  {
+    "object(key=value, ...) -> object",
   });
 
   Builtins::init("lookup", new BuiltinFunction(&builtin_lookup),
