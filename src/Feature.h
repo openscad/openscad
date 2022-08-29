@@ -31,6 +31,7 @@ public:
 #ifdef ENABLE_PYTHON
   static const Feature ExperimentalPythonEngine;
 #endif
+  static const Feature ExperimentalObjectFunction;
 
   [[nodiscard]] const std::string& get_name() const;
   [[nodiscard]] const std::string& get_description() const;

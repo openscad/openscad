@@ -48,6 +48,7 @@ const Feature Feature::ExperimentalPredictibleOutput("predictible-output", "Atte
 #ifdef ENABLE_PYTHON
 const Feature Feature::ExperimentalPythonEngine("python-engine", "Enable experimental Python Engine (implies risk of malicious scripts downloaded).");
 #endif
+const Feature Feature::ExperimentalObjectFunction("object-function", "Enable object function to allow user creation of objects.");
 
 Feature::Feature(const std::string& name, std::string description)
   : name(name), description(std::move(description))
