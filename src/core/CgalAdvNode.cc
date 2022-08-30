@@ -56,6 +56,15 @@ static std::shared_ptr<AbstractNode> builtin_hull(const ModuleInstantiation *ins
   return children.instantiate(node);
 }
 
+static std::shared_ptr<AbstractNode> builtin_fill(const ModuleInstantiation *inst, Arguments arguments, Children children)
+{
+  auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::FILL);
+
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
+
+  return children.instantiate(node);
+}
+
 static std::shared_ptr<AbstractNode> builtin_resize(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
   auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::RESIZE);
@@ -92,6 +101,9 @@ std::string CgalAdvNode::name() const
   case CgalAdvType::HULL:
     return "hull";
     break;
+  case CgalAdvType::FILL:
+    return "fill";
+    break;
   case CgalAdvType::RESIZE:
     return "resize";
     break;
@@ -111,6 +123,7 @@ std::string CgalAdvNode::toString() const
     stream << "(convexity = " << this->convexity << ")";
     break;
   case CgalAdvType::HULL:
+  case CgalAdvType::FILL:
     stream << "()";
     break;
   case CgalAdvType::RESIZE:
@@ -138,6 +151,11 @@ void register_builtin_cgaladv()
   Builtins::init("hull", new BuiltinModule(builtin_hull),
   {
     "hull()",
+  });
+
+  Builtins::init("fill", new BuiltinModule(builtin_fill),
+  {
+    "fill()",
   });
 
   Builtins::init("resize", new BuiltinModule(builtin_resize),

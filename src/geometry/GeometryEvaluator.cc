@@ -171,6 +171,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 
    May return an empty geometry but will not return nullptr.
  */
+
 Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode& node)
 {
   std::vector<const Polygon2d *> children = collectChildren2D(node);
@@ -204,6 +205,18 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode& node)
     }
   }
   return geometry;
+}
+
+Polygon2d *GeometryEvaluator::applyFill2D(const AbstractNode& node)
+{
+  // Merge and sanitize input geometry
+  Polygon2d *geometry_in = applyToChildren2D(node, OpenSCADOperator::UNION);
+  Polygon2d *geometry_out = new Polygon2d();
+  // Keep only the 'positive' outlines, eg: the outside edges
+  for (const auto& outline : geometry_in->outlines()) {
+        if (outline.positive) geometry_out->addOutline(outline);
+  }
+  return geometry_out;
 }
 
 Geometry *GeometryEvaluator::applyHull3D(const AbstractNode& node)
@@ -342,6 +355,8 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode& node, OpenSC
     return applyMinkowski2D(node);
   } else if (op == OpenSCADOperator::HULL) {
     return applyHull2D(node);
+  } else if (op == OpenSCADOperator::FILL) {
+    return applyFill2D(node);
   }
 
   std::vector<const Polygon2d *> children = collectChildren2D(node);
@@ -1441,6 +1456,10 @@ Response GeometryEvaluator::visit(State& state, const CgalAdvNode& node)
       }
       case CgalAdvType::HULL: {
         geom = applyToChildren(node, OpenSCADOperator::HULL).constptr();
+        break;
+      }
+      case CgalAdvType::FILL: {
+        geom = applyToChildren(node, OpenSCADOperator::FILL).constptr();
         break;
       }
       case CgalAdvType::RESIZE: {
