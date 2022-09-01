@@ -1122,7 +1122,7 @@ void register_builtin_functions()
 
   Builtins::init("object", new BuiltinFunction(&builtin_object),
   {
-    "object(key=value, ...) -> object",
+    "object([ object, ] [ key-val list, ] key=value, ...) -> object",
   });
 
   Builtins::init("lookup", new BuiltinFunction(&builtin_lookup),
