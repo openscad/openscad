@@ -1120,11 +1120,6 @@ void register_builtin_functions()
     "concat(number or string or vector, ...) -> vector",
   });
 
-  Builtins::init("object", new BuiltinFunction(&builtin_object),
-  {
-    "object([ object, ] [ key-val list, ] key=value, ...) -> object",
-  });
-
   Builtins::init("lookup", new BuiltinFunction(&builtin_lookup),
   {
     "lookup(key, <key,value> vector) -> value",
@@ -1196,8 +1191,14 @@ void register_builtin_functions()
     "is_object(arg) -> boolean",
   });
 
+  Builtins::init("object", new BuiltinFunction(&builtin_object, &Feature::ExperimentalObjectFunction),
+  {
+    "object([ object, ] [ key-val list, ] key=value, ...) -> object",
+  });
+
   Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
   {
     "import(file) -> object",
   });
+
 }

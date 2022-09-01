@@ -30,6 +30,7 @@ public:
   static const Feature ExperimentalVxORenderersPrealloc;
   static const Feature ExperimentalTextMetricsFunctions;
   static const Feature ExperimentalImportFunction;
+  static const Feature ExperimentalObjectFunction;
   static const Feature ExperimentalSortStl;
 
   const std::string& get_name() const;
