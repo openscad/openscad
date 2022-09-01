@@ -427,14 +427,35 @@ Value builtin_concat(Arguments arguments, const Location& loc)
   return std::move(result);
 }
 
-Value builtin_object(Arguments arguments, const Location& loc)
+Value builtin_object(const std::shared_ptr<const Context>& context, const FunctionCall *call)
 {
-  ObjectType result(arguments.session());
-  for (auto& argument : arguments) {
-    if (argument.name == boost::none) {
-      LOG(message_group::Warning, loc, arguments.documentRoot(), "object() argument is not named");
+  ObjectType result(context->session());
+  for (const auto& argument : call->arguments) {
+    Value value = argument->getExpr()->evaluate(context);
+    if (argument->getName().empty()) {
+      if (value.type() == Value::Type::VECTOR) {
+	const auto &vec = value.toVector();
+	for (const auto& keyval : vec) {
+	  if (keyval.type() == Value::Type::VECTOR && keyval.toVector().size()==2) {
+	    if (keyval[0].type() == Value::Type::STRING) {
+	      result.set(keyval[0].toString(), keyval[1]);
+	    } else {
+	      LOG(message_group::Warning, call->location(), context->documentRoot(), "un-named object() arguments must be another object or a list of [keystring,value] pairs.");
+	    }
+	  } else {
+	    LOG(message_group::Warning, call->location(), context->documentRoot(), "un-named object() arguments must be another object or a list of [keystring,value] pairs.");
+	  }
+	}
+      } else if (value.type() == Value::Type::OBJECT) {
+	const auto obj = value.toObject();
+	for (const auto& key : obj.keys()) {
+	  result.set(key, obj.get(key).clone());
+	}
+      } else {
+	LOG(message_group::Warning, call->location(), context->documentRoot(), "un-named object() arguments must be another object or a list of [keystring,value] pairs.");
+      }
     } else {
-      result.set(argument.name->c_str(), std::move(argument.value));
+      result.set(argument->getName(), std::move(value));
     }
   }
   return std::move(result);

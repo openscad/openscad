@@ -1320,9 +1320,18 @@ const Value& ObjectType::get(const std::string& key) const
 
 void ObjectType::set(const std::string& key, Value&& value)
 {
-  ptr->map.emplace(key, std::move(value));
-  ptr->keys.emplace_back(key);
-  ptr->values.emplace_back(std::move(value));
+  if (ptr->map.find(key) == ptr->map.end()) {
+    ptr->map.emplace(key, std::move(value));
+    ptr->keys.emplace_back(key);
+    ptr->values.emplace_back(std::move(value));
+  } else {
+    for (int i = ptr->keys.size() - 1; i >= 0; i--) {
+      if (ptr->keys[i] == key) {
+	ptr->values[i] = std::move(value);
+	break;
+      }
+    }
+  }
 }
 
 const std::vector<std::string>& ObjectType::keys() const
