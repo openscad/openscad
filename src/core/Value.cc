@@ -1325,6 +1325,8 @@ void ObjectType::set(const std::string& key, Value&& value)
     ptr->keys.emplace_back(key);
     ptr->values.emplace_back(std::move(value));
   } else {
+    ptr->map.erase(key);
+    ptr->map.emplace(key, std::move(value));
     for (int i = ptr->keys.size() - 1; i >= 0; i--) {
       if (ptr->keys[i] == key) {
 	ptr->values[i] = std::move(value);
