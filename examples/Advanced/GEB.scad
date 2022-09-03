@@ -1,6 +1,4 @@
-font = "Liberation Sans";
-// Nicer, but not generally installed:
-// font = "Bank Gothic";
+font = "Liberation Mono";
 
 module G() offset(0.3) text("G", size=10, halign="center", valign="center", font = font);
 module E() offset(0.3) text("E", size=10, halign="center", valign="center", font = font);
