@@ -1336,6 +1336,22 @@ void ObjectType::set(const std::string& key, Value&& value)
   }
 }
 
+void ObjectType::del(const std::string& key)
+{
+  if (ptr->map.find(key) != ptr->map.end()) {
+    ptr->map.erase(key);
+    auto kit = ptr->keys.begin();
+    auto vit = ptr->values.begin();
+    for ( ; kit != ptr->keys.end(); ++kit, ++vit) {
+      if (*kit == key) {
+	ptr->keys.erase(kit);
+	ptr->values.erase(vit);
+	break;
+      }
+    }
+  }
+}
+
 const std::vector<std::string>& ObjectType::keys() const
 {
   return ptr->keys;
