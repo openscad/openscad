@@ -470,6 +470,16 @@ Value builtin_object(const std::shared_ptr<const Context>& context, const Functi
   return std::move(result);
 }
 
+Value builtin_has_key(Arguments arguments, const Location& loc)
+{
+  if (!check_arguments("has_key", arguments, loc, { Value::Type::OBJECT, Value::Type::STRING })) {
+    return Value::undefined.clone();
+  }
+  const auto &obj = arguments[0]->toObject();
+  const auto &key = arguments[1]->toString();
+  return Value(obj.contains(key));
+}
+
 Value builtin_lookup(Arguments arguments, const Location& loc)
 {
   if (!check_arguments("lookup", arguments, loc, { Value::Type::NUMBER, Value::Type::VECTOR })) {
@@ -1203,6 +1213,11 @@ void register_builtin_functions()
   Builtins::init("object", new BuiltinFunction(&builtin_object, &Feature::ExperimentalObjectFunction),
   {
     "object([ object, ] [ key-val list, ] key=value, ...) -> object",
+  });
+
+  Builtins::init("has_key", new BuiltinFunction(&builtin_has_key, &Feature::ExperimentalObjectFunction),
+  {
+    "has_key(object, key) -> boolean",
   });
 
   Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
