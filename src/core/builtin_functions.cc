@@ -436,32 +436,25 @@ Value builtin_object(const std::shared_ptr<const Context>& context, const Functi
       if (value.type() == Value::Type::VECTOR) {
 	const auto &vec = value.toVector();
 	for (const auto& keyval : vec) {
-	  if (keyval.type() == Value::Type::STRING) {
-	    // keyval is one of a list of key name strings to delete.
-	    result.del(keyval.toString());
-	  } else if (keyval.type() != Value::Type::VECTOR || (keyval.toVector().size()!=1 && keyval.toVector().size()!=2)) {
-	    LOG(message_group::Warning, call->location(), context->documentRoot(), "un-named object() arguments must be another object, a list of [keystring,value] pairs, or a list of key strings to delete.");
+	  if (keyval.type() != Value::Type::VECTOR || (keyval.toVector().size()!=1 && keyval.toVector().size()!=2)) {
+	    LOG(message_group::Warning, call->location(), context->documentRoot(), "un-named object() arguments must be another object, a list of [keystring,value] pairs to set, or a list of singleton [keystring] names to delete.");
 	  } else {
 	    if (keyval[0].type() != Value::Type::STRING) {
-	      LOG(message_group::Warning, call->location(), context->documentRoot(), "un-named object() arguments must be another object, a list of [keystring,value] pairs to set, or a list of key strings to delete.");
+	      LOG(message_group::Warning, call->location(), context->documentRoot(), "un-named object() arguments must be another object, a list of [keystring,value] pairs to set, or a list of singleton [keystring] names to delete.");
 	    } else {
 	      const auto &key = keyval[0].toString();
-	      if (!std::all_of(key.cbegin(), key.cend(), [](unsigned char c){ return std::isalnum(c) || c=='_'; })) {
-		LOG(message_group::Warning, call->location(), context->documentRoot(), "Key name strings must be composed of only alphanumeric characters.");
+	      if (keyval.toVector().size()==1) {
+		// keyval is one of a list of singleton [key] name strings to delete.
+		result.del(key);
 	      } else {
-		if (keyval.toVector().size()==1) {
-		  // keyval is one of a list of singleton [key] name strings to delete.
-		  result.del(key);
-		} else {
-		  // keyval is one of a list of [key,value] entries to add or set.
-		  result.set(key, keyval[1]);
-		}
+		// keyval is one of a list of [key,value] entries to add or set.
+		result.set(key, keyval[1]);
 	      }
 	    }
 	  }
 	}
       } else if (value.type() != Value::Type::OBJECT) {
-	LOG(message_group::Warning, call->location(), context->documentRoot(), "un-named object() arguments must be another object, a list of [keystring,value] pairs to set, or a list of key strings to delete.");
+	LOG(message_group::Warning, call->location(), context->documentRoot(), "un-named object() arguments must be another object, a list of [keystring,value] pairs to set, or a list of singleton [keystring] names to delete.");
       } else {
 	// Argument is another object to copy from.
 	const auto obj = value.toObject();
