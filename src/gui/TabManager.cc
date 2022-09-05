@@ -47,7 +47,6 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   connect(par->editActionRedo, SIGNAL(triggered()), this, SLOT(redo()));
   connect(par->editActionRedo_2, SIGNAL(triggered()), this, SLOT(redo()));
   connect(par->editActionCut, SIGNAL(triggered()), this, SLOT(cut()));
-  connect(par->editActionCopy, SIGNAL(triggered()), this, SLOT(copy()));
   connect(par->editActionPaste, SIGNAL(triggered()), this, SLOT(paste()));
 
   connect(par->editActionIndent, SIGNAL(triggered()), this, SLOT(indentSelection()));
@@ -184,6 +183,8 @@ void TabManager::createTab(const QString& filename)
   connect(editor, SIGNAL(uriDropped(const QUrl&)), par, SLOT(handleFileDrop(const QUrl&)));
   connect(editor, SIGNAL(previewRequest()), par, SLOT(actionRenderPreview()));
   connect(editor, SIGNAL(showContextMenuEvent(const QPoint&)), this, SLOT(showContextMenuEvent(const QPoint&)));
+  connect(editor, &EditorInterface::focusIn, this, [=]() { par->setLastFocus(editor); });
+
   connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
   connect(Preferences::inst(), SIGNAL(autocompleteChanged(bool)), editor, SLOT(onAutocompleteChanged(bool)));
   connect(Preferences::inst(), SIGNAL(characterThresholdChanged(int)), editor, SLOT(onCharacterThresholdChanged(int)));

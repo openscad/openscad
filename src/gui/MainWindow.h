@@ -111,6 +111,7 @@ public:
   bool fileChangedOnDisk();
   void parseTopLevelDocument();
   void exceptionCleanup();
+  void setLastFocus(QWidget *widget);
   void UnknownExceptionCleanup();
 
   bool isLightTheme();
@@ -157,6 +158,7 @@ private slots:
   void actionReload();
   void actionShowLibraryFolder();
   void convertTabsToSpaces();
+  void copyText();
 
   void instantiateRoot();
   void compileDone(bool didchange);
@@ -342,6 +344,7 @@ private:
   static bool reorderMode;
   static const int tabStopWidth;
   static QElapsedTimer *progressThrottle;
+  QWidget *lastFocus; // keep track of active copyable widget (Editor|Console) for global menu action Edit->Copy
 
   shared_ptr<class CSGNode> csgRoot; // Result of the CSGTreeEvaluator
   shared_ptr<CSGNode> normalizedRoot; // Normalized CSG tree
