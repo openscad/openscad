@@ -129,6 +129,11 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     delete ps;
     return ResultObject();
   }
+  else if (op == OpenSCADOperator::FILL) {
+    for (const auto& item : children) {
+      LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(), "fill() not yet implemented for 3D");
+    }
+  }
 
   // Only one child -> this is a noop
   if (children.size() == 1) return ResultObject(children.front().second);
