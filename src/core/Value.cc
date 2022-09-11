@@ -256,7 +256,7 @@ bool Value::toBool() const
   case Type::STRING:    return !boost::get<str_utf8_wrapper>(this->value).empty();
   case Type::VECTOR:    return !boost::get<VectorType>(this->value).empty();
   case Type::RANGE:     return true;
-  case Type::OBJECT:    return true;
+  case Type::OBJECT:    return !boost::get<ObjectType>(this->value).empty();
   case Type::FUNCTION:  return true;
   default: assert(false && "unknown Value variant type"); return false;
   }
@@ -1355,6 +1355,11 @@ void ObjectType::del(const std::string& key)
 bool ObjectType::contains(const std::string& key) const
 {
   return ptr->map.find(key) != ptr->map.end();
+}
+
+bool ObjectType::empty() const
+{
+  return ptr->map.empty();
 }
 
 const std::vector<std::string>& ObjectType::keys() const

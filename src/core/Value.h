@@ -529,6 +529,7 @@ public:
     void set(const std::string& key, Value&& value);
     void del(const std::string& key);
     bool contains(const std::string& key) const;
+    bool empty() const;
     Value operator==(const ObjectType& v) const;
     Value operator<(const ObjectType& v) const;
     Value operator>(const ObjectType& v) const;
