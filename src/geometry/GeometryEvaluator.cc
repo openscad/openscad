@@ -215,13 +215,21 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode& node)
 Polygon2d *GeometryEvaluator::applyFill2D(const AbstractNode& node)
 {
   // Merge and sanitize input geometry
-  Polygon2d *geometry_in = applyToChildren2D(node, OpenSCADOperator::UNION);
-  Polygon2d *geometry_out = new Polygon2d();
+  std::vector<const Polygon2d *> children = collectChildren2D(node);
+  Polygon2d *geometry_in = ClipperUtils::apply(children, ClipperLib::ctUnion);
+
+  std::vector<const Polygon2d *> newchildren;
   // Keep only the 'positive' outlines, eg: the outside edges
   for (const auto& outline : geometry_in->outlines()) {
-        if (outline.positive) geometry_out->addOutline(outline);
+    if (outline.positive) {
+      Polygon2d *poly = new Polygon2d();
+      poly->addOutline(outline);
+      newchildren.push_back(poly);
+    }
   }
-  return geometry_out;
+
+  // Re-merge geometry in case of nested outlines
+  return ClipperUtils::apply(newchildren, ClipperLib::ctUnion);
 }
 
 Geometry *GeometryEvaluator::applyHull3D(const AbstractNode& node)
