@@ -32,4 +32,5 @@ private:
   VertexStates polyset_states;
   GLuint polyset_vertices_vbo;
   GLuint polyset_elements_vbo;
+  std::vector<bool> polyset_2d_locations;
 };

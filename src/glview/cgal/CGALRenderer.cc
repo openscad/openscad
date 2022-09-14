@@ -145,7 +145,6 @@ void CGALRenderer::createPolySets()
   vertex_array.addEdgeData();
   vertex_array.addSurfaceData();
   vertex_array.writeSurface();
-  add_shader_data(vertex_array);
 
   if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
     size_t vertices_size = 0, elements_size = 0;
@@ -187,7 +186,9 @@ void CGALRenderer::createPolySets()
     Color4f color;
 
     PRINTD("polysets");
-    if (polyset->getDimension() == 2) {
+    int start_size = polyset_states.size();
+    bool was_2d;
+    if (polyset->getDimension() == 2 /*&& !Feature::ExperimentalVxORenderers.is_enabled()*/) {
       PRINTD("2d polysets");
       vertex_array.writeEdge();
 
@@ -223,8 +224,10 @@ void CGALRenderer::createPolySets()
         glEnable(GL_DEPTH_TEST); GL_ERROR_CHECK();
       });
       polyset_states.emplace_back(std::move(end_state));
+      was_2d = true;
     } else {
       PRINTD("3d polysets");
+      add_shader_data(vertex_array);
       vertex_array.writeSurface();
 
       // Create 3D polygons
@@ -248,6 +251,11 @@ void CGALRenderer::createPolySets()
         polyset_states.emplace_back(std::move(color_state));
       }
       this->create_surface(*polyset, vertex_array, CSGMODE_NORMAL, Transform3d::Identity(), last_color);
+      was_2d = false;
+    }
+    int end_size = polyset_states.size();
+    for(size_t i = start_size; i <= end_size; i++) {
+      polyset_2d_locations.emplace_back(was_2d);
     }
   }
 
@@ -332,9 +340,18 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * sha
 
     glGetFloatv(GL_POINT_SIZE, &current_point_size); GL_ERROR_CHECK();
     glGetFloatv(GL_LINE_WIDTH, &current_line_width); GL_ERROR_CHECK();
-
+    size_t i{0};
     for (const auto& polyset : polyset_states) {
-      if (polyset) polyset->draw();
+      if (polyset) {
+        if(polyset_2d_locations[i++]) {
+          glUseProgram(prev_id);
+          GL_ERROR_CHECK();
+        } else {
+          glUseProgram(new_id);
+          GL_ERROR_CHECK();
+        }
+        polyset->draw();
+      }
     }
 
     // restore states
