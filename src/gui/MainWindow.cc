@@ -1103,7 +1103,7 @@ void MainWindow::compile(bool reload, bool forcedone)
     compileDone(didcompile | forcedone);
   } catch (const HardWarningException&) {
     exceptionCleanup();
-  } catch (std::exception &ex) {
+  } catch (const std::exception& ex) {
     UnknownExceptionCleanup(ex.what());
   } catch (...) {
     UnknownExceptionCleanup();
