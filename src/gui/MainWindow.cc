@@ -1103,6 +1103,8 @@ void MainWindow::compile(bool reload, bool forcedone)
     compileDone(didcompile | forcedone);
   } catch (const HardWarningException&) {
     exceptionCleanup();
+  } catch (std::exception &ex) {
+    UnknownExceptionCleanup(ex.what());
   } catch (...) {
     UnknownExceptionCleanup();
   }
@@ -2335,9 +2337,14 @@ void MainWindow::exceptionCleanup(){
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
-void MainWindow::UnknownExceptionCleanup(){
+void MainWindow::UnknownExceptionCleanup(std::string msg){
   setCurrentOutput(); // we need to show this error
-  LOG(message_group::Error, Location::NONE, "", "Parsing aborted by unknown exception");
+  if (msg.size() == 0) {
+    LOG(message_group::Error, Location::NONE, "", "Compilation aborted by unknown exception");
+  }
+  else {
+    LOG(message_group::Error, Location::NONE, "", "Compilation aborted by exception: %1$s", msg);
+  }
   LOG(message_group::None, Location::NONE, "", " ");
   GuiLocker::unlock();
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();

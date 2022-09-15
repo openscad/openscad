@@ -501,6 +501,8 @@ void TabManager::openTabFile(const QString& filename)
       par->parseTopLevelDocument();
     } catch (const HardWarningException&) {
       par->exceptionCleanup();
+    } catch (std::exception& ex) {
+      par->UnknownExceptionCleanup(ex.what());
     } catch (...) {
       par->UnknownExceptionCleanup();
     }
