@@ -22,6 +22,7 @@
 #include "TabManager.h"
 #include "RenderStatistic.h"
 #include <memory>
+#include <string>
 
 #ifdef STATIC_QT_SVG_PLUGIN
 #include <QtPlugin>
@@ -112,7 +113,7 @@ public:
   void parseTopLevelDocument();
   void exceptionCleanup();
   void setLastFocus(QWidget *widget);
-  void UnknownExceptionCleanup();
+  void UnknownExceptionCleanup(std::string msg="");
 
   bool isLightTheme();
 
