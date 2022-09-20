@@ -1,13 +1,10 @@
 #!/bin/bash
 
-# Reformat C++ code using clang-format
+# Reformat C++ code using uncrustify
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ROOT_DIR=$SCRIPT_DIR/..
 
-# note: with the -style=file option, clang-format reads the config from ./.clang-format
-# See here for the full list of supported options: https://clang.llvm.org/docs/ClangFormatStyleOptions.html
-FORMAT_CMD_CLANG_FORMAT="clang-format -i -style=file"
 FORMAT_CMD_UNCRUSTIFY="uncrustify -c "$ROOT_DIR/.uncrustify.cfg" --no-backup"
 FORMAT_CMD=$FORMAT_CMD_UNCRUSTIFY
 
@@ -36,11 +33,35 @@ function reformat_changed() {
     fi
 }
 
-# main
-if [ "`echo $* | grep clang`" ]; then
-    FORMAT_CMD=$FORMAT_CMD_CLANG_FORMAT
-fi
-if [ "`echo $* | grep -- --all`" ]; then
+# parse options
+for PARAM in "$@"
+do
+  KEY="${PARAM%%=*}"
+  if [[ "$PARAM" == *"="* ]]; then
+    VALUE="${PARAM#*=}"
+  else
+    VALUE=""
+  fi
+
+  if [ "$KEY" == "--diffbase" ]; then
+    [ -z "$var" ] && echo "script option --diffbase=BASE requires a non-empty value" && exit 1
+    DIFFBASE="${VALUE}"
+  elif [ "$PARAM" == "--all" ]; then
+    DOALL=1
+  elif [ "$KEY" == "-h" ]; then
+    SCRIPT=$(basename "$0")
+    echo "Runs uncrustify on files which differ from diffbase, OR across the entire project (for --all)"
+    echo "If no options given, then diffbase defaults to \"origin/master\""
+    echo
+    echo "Usage:"
+    echo "    $SCRIPT [--all|--diffbase=BASE]"
+    echo
+    exit
+  fi
+done
+
+
+if ((DOALL)); then
     echo "Reformatting all files..."
     reformat_all
 else
