@@ -67,9 +67,8 @@ void CGALRenderer::addGeometry(const shared_ptr<const Geometry>& geom)
   } else if (const auto new_N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     assert(new_N->getDimension() == 3);
     if (!new_N->isEmpty()) {
-      if(!Feature::ExperimentalVxORenderers.is_enabled()) {
-        this->nefPolyhedrons.push_back(new_N);
-      } else {
+      this->nefPolyhedrons.push_back(new_N);
+      if(Feature::ExperimentalVxORenderers.is_enabled()) {
         auto ps = new PolySet(3);
         bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(new_N->p3), *ps);
         if (err) {
@@ -367,11 +366,13 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * sha
     shader_attribs_disable();
   }
 
-  for (const auto& p : this->getPolyhedrons()) {
-    *const_cast<bool *>(&last_render_state) = Feature::ExperimentalVxORenderers.is_enabled(); // FIXME: this is temporary to make switching between renderers seamless.
-    if (showfaces) p->set_style(SNC_BOUNDARY);
-    else p->set_style(SNC_SKELETON);
-    p->draw(showfaces && showedges);
+  if(!Feature::ExperimentalVxORenderers.is_enabled() || !showfaces) {
+    for (const auto& p : this->getPolyhedrons()) {
+      *const_cast<bool *>(&last_render_state) = Feature::ExperimentalVxORenderers.is_enabled(); // FIXME: this is temporary to make switching between renderers seamless.
+      if (showfaces) p->set_style(SNC_BOUNDARY);
+      else p->set_style(SNC_SKELETON);
+      p->draw(showfaces && showedges);
+    }
   }
 
   PRINTD("draw() end");
