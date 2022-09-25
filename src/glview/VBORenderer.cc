@@ -230,7 +230,9 @@ void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
     barycentric_flags[active_point_index] = 1;
 
     addAttributeValues(*(vertex_data->attributes()[shader_attributes_index + BARYCENTRIC_ATTRIB]), barycentric_flags[0], barycentric_flags[1], barycentric_flags[2], 0);
-    addAttributeValues(*(vertex_data->attributes()[shader_attributes_index + MARKED_ATTRIB]), marked ? 1.0f : 0.0f);
+    if(!Feature::ExperimentalLazyUnion.is_enabled()) {
+      addAttributeValues(*(vertex_data->attributes()[shader_attributes_index + MARKED_ATTRIB]), marked ? 1.0f : 0.0f);
+    }
   } else {
     if (OpenSCAD::debug != "") PRINTDB("add_shader_attributes bad points size = %d", points.size());
   }
@@ -716,7 +718,9 @@ void VBORenderer::add_shader_data(VertexArray& vertex_array)
   std::shared_ptr<VertexData> vertex_data = vertex_array.data();
   shader_attributes_index = vertex_data->attributes().size();
   vertex_data->addAttributeData(std::make_shared<AttributeData<GLubyte, 4, GL_UNSIGNED_BYTE>>()); // barycentric
-  vertex_data->addAttributeData(std::make_shared<AttributeData<GLfloat, 1, GL_FLOAT>>()); // marked
+  if(!Feature::ExperimentalLazyUnion.is_enabled()) {
+    vertex_data->addAttributeData(std::make_shared<AttributeData<GLfloat, 1, GL_FLOAT>>()); // marked
+  }
 }
 
 void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
@@ -750,21 +754,22 @@ void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
       }
     });
   }
-
-  if (getShader().data.csg_rendering.marked) {
-    index = getShader().data.csg_rendering.marked;
-    count = vertex_data->attributes()[shader_attributes_index + MARKED_ATTRIB]->count();
-    type = vertex_data->attributes()[shader_attributes_index + MARKED_ATTRIB]->glType();
-    stride = vertex_data->stride();
-    offset = start_offset + vertex_data->interleavedOffset(shader_attributes_index + MARKED_ATTRIB);
-    ss->glBegin().emplace_back([index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
-      auto ss = ss_ptr.lock();
-      if (ss) {
-        GL_TRACE("glVertexAttribPointer(%d, %d, %d, %p)", count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
-        glVertexAttribPointer(index, count, type, GL_FALSE, stride, (GLvoid *)(ss->drawOffset() + offset));
-        GL_ERROR_CHECK();
-      }
-    });
+  if(!Feature::ExperimentalLazyUnion.is_enabled()) {
+    if (getShader().data.csg_rendering.marked) {
+      index = getShader().data.csg_rendering.marked;
+      count = vertex_data->attributes()[shader_attributes_index + MARKED_ATTRIB]->count();
+      type = vertex_data->attributes()[shader_attributes_index + MARKED_ATTRIB]->glType();
+      stride = vertex_data->stride();
+      offset = start_offset + vertex_data->interleavedOffset(shader_attributes_index + MARKED_ATTRIB);
+      ss->glBegin().emplace_back([index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
+        auto ss = ss_ptr.lock();
+        if (ss) {
+          GL_TRACE("glVertexAttribPointer(%d, %d, %d, %p)", count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
+          glVertexAttribPointer(index, count, type, GL_FALSE, stride, (GLvoid *)(ss->drawOffset() + offset));
+          GL_ERROR_CHECK();
+        }
+      });
+    }
   }
 
   vertex_array.states().emplace_back(std::move(ss));
@@ -774,13 +779,17 @@ void VBORenderer::shader_attribs_enable() const
 {
   GL_TRACE("glEnableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
   glEnableVertexAttribArray(getShader().data.csg_rendering.barycentric); GL_ERROR_CHECK();
-  GL_TRACE("glEnableVertexAttribArray(%d)", getShader().data.csg_rendering.marked);
-  glEnableVertexAttribArray(getShader().data.csg_rendering.marked); GL_ERROR_CHECK();
+  if(!Feature::ExperimentalLazyUnion.is_enabled()){
+    GL_TRACE("glEnableVertexAttribArray(%d)", getShader().data.csg_rendering.marked);
+    glEnableVertexAttribArray(getShader().data.csg_rendering.marked); GL_ERROR_CHECK();
+  }
 }
 void VBORenderer::shader_attribs_disable() const
 {
   GL_TRACE("glDisableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
   glDisableVertexAttribArray(getShader().data.csg_rendering.barycentric); GL_ERROR_CHECK();
-  GL_TRACE("glDisableVertexAttribArray(%d)", getShader().data.csg_rendering.marked);
-  glDisableVertexAttribArray(getShader().data.csg_rendering.marked); GL_ERROR_CHECK();
+  if(!Feature::ExperimentalLazyUnion.is_enabled()){
+    GL_TRACE("glDisableVertexAttribArray(%d)", getShader().data.csg_rendering.marked);
+    glDisableVertexAttribArray(getShader().data.csg_rendering.marked); GL_ERROR_CHECK();
+  }
 }
