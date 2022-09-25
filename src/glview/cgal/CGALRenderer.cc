@@ -135,7 +135,7 @@ void CGALRenderer::setColorScheme(const ColorScheme& cs)
   PRINTD("setColorScheme done");
 }
 
-void CGALRenderer::createPolySets()
+void CGALRenderer::createPolySets(bool showfaces)
 {
   PRINTD("createPolySets() polyset");
 
@@ -240,13 +240,13 @@ void CGALRenderer::createPolySets()
         shaderinfo_t shader_info = this->getShader();
         glUniform1i(shader_info.data.csg_rendering.draw_edges, 0);
         std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
-        color_state->glBegin().emplace_back([shader_info, last_color, marked_color]() {
-          GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % last_color[0] % last_color[1] % last_color[2] % last_color[3]);
-          glUniform4f(shader_info.data.csg_rendering.color_area, last_color[0], last_color[1], last_color[2], last_color[3]); GL_ERROR_CHECK();
+        color_state->glBegin().emplace_back([shader_info, last_color, marked_color, showfaces]() {
+          GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % last_color[0] % last_color[1] % last_color[2] % showfaces ? last_color[3] : 0.0);
+          glUniform4f(shader_info.data.csg_rendering.color_area, last_color[0], last_color[1], last_color[2], showfaces ? last_color[3] : 0.0); GL_ERROR_CHECK();
           GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % ((last_color[0] + 1) / 2) % ((last_color[1] + 1) / 2) % ((last_color[2] + 1) / 2));
           glUniform4f(shader_info.data.csg_rendering.color_edge, (last_color[0] + 1) / 2, (last_color[1] + 1) / 2, (last_color[2] + 1) / 2, 1.0); GL_ERROR_CHECK();
-          GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % last_color[0] % last_color[1] % last_color[2] % last_color[3]);
-          glUniform4f(shader_info.data.csg_rendering.color_marked, marked_color[0], marked_color[1], marked_color[2], marked_color[3]); GL_ERROR_CHECK();
+          GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_marked % marked_color[0] % marked_color[1] % marked_color[2] % showfaces ? marked_color[3] : 0.0);
+          glUniform4f(shader_info.data.csg_rendering.color_marked, marked_color[0], marked_color[1], marked_color[2], showfaces ? marked_color[3] : 0.0); GL_ERROR_CHECK();
         });
         polyset_states.emplace_back(std::move(color_state));
       }
@@ -278,7 +278,7 @@ void CGALRenderer::createPolySets()
 void CGALRenderer::prepare(bool showfaces, bool showedges, const shaderinfo_t * /*shaderinfo*/)
 {
   PRINTD("prepare()");
-  if (!polyset_states.size()) createPolySets();
+  if (!polyset_states.size()) createPolySets(showfaces);
   if (!this->nefPolyhedrons.empty() &&
       (this->polyhedrons.empty() || Feature::ExperimentalVxORenderers.is_enabled() != last_render_state)) // FIXME: this is temporary to make switching between renderers seamless.
     createPolyhedrons();
