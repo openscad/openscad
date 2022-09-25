@@ -47,9 +47,6 @@ GeometryEvaluator::GeometryEvaluator(const class Tree& tree) :
 shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode& node,
                                                                bool allownef)
 {
-  if(Feature::ExperimentalLazyUnion.is_enabled()) {
-    allownef = false;
-  }
   const std::string& key = this->tree.getIdString(node);
   if (!GeometryCache::instance()->contains(key)) {
     shared_ptr<const Geometry> N;
