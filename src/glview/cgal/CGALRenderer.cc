@@ -144,7 +144,7 @@ void CGALRenderer::createPolySets(bool showfaces)
   vertex_array.addEdgeData();
   vertex_array.addSurfaceData();
   vertex_array.writeSurface();
-  if(Feature::ExperimentalLazyUnion.is_enabled()) {
+  if(this->polysets.size() > 1) {
     add_shader_data(vertex_array);
   }
 
@@ -229,7 +229,7 @@ void CGALRenderer::createPolySets(bool showfaces)
       was_2d = true;
     } else {
       PRINTD("3d polysets");
-      if(!Feature::ExperimentalLazyUnion.is_enabled()) {
+      if(this->polysets.size() == 1) {
         add_shader_data(vertex_array);
       }
       vertex_array.writeSurface();
@@ -347,14 +347,12 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * sha
     size_t i{0};
     for (const auto& polyset : polyset_states) {
       if (polyset) {
-        if (!Feature::ExperimentalLazyUnion.is_enabled()) {
-          if(polyset_2d_locations[i++]) {
-            glUseProgram(prev_id);
-            GL_ERROR_CHECK();
-          } else {
-            glUseProgram(new_id);
-            GL_ERROR_CHECK();
-          }
+        if(polyset_2d_locations[i++]) {
+          glUseProgram(prev_id);
+          GL_ERROR_CHECK();
+        } else {
+          glUseProgram(new_id);
+          GL_ERROR_CHECK();
         }
         polyset->draw();
       }
