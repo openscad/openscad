@@ -198,3 +198,26 @@ bool ViewportControl::focusNextPrevChild(bool next){
     }
     return true;
 }
+
+void ViewportControl::on_checkBoxOverwriteEdgeColor_stateChanged(int state){
+  bool bState = (Qt::CheckState::Checked == state);
+  this->qglview->setEdgeColorOverwrite(state);
+  this->qglview->update();
+}
+
+void ViewportControl::on_lineEditEdgeColor_textChanged(const QString &text){
+  QColor color = QColor(text);
+  this->qglview->setEdgeColor(color.redF(), color.greenF(), color.blueF());
+  checkBoxOverwriteEdgeColor->setCheckState(Qt::CheckState::Checked);
+  this->qglview->update();
+}
+
+void ViewportControl::on_doubleSpinBox_edge_valueChanged(double value){
+  this->qglview->setTotalHalfEdgeThickness((float) value);
+  this->qglview->update();
+}
+
+void ViewportControl::on_doubleSpinBox_edgeFade_valueChanged(double value){
+  this->qglview->setEdgeFadeThickness((float) value);
+  this->qglview->update();
+}

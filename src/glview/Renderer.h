@@ -32,6 +32,8 @@ public:
         int color_edge;
         // barycentric coordinates of the current vertex
         int barycentric;
+        int totalHalfEdgeThickness;
+        int edgeFadeThickness;
       } csg_rendering;
       struct {
         int identifier;
@@ -83,13 +85,23 @@ public:
   virtual void setColorScheme(const ColorScheme& cs);
 
   virtual csgmode_e get_csgmode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type = OpenSCADOperator::UNION) const;
+
   virtual void render_surface(const PolySet& geom, csgmode_e csgmode, const Transform3d& m, const shaderinfo_t *shaderinfo = nullptr) const;
   virtual void render_edges(const PolySet& geom, csgmode_e csgmode) const;
+
+  virtual void setTotalHalfEdgeThickness(float value);
+  virtual void setEdgeFadeThickness(float value);
+  virtual void setEdgeColorOverwrite(bool flag);
+  virtual void setEdgeColor(float red, float green, float blue);
 
 protected:
   std::map<ColorMode, Color4f> colormap;
   const ColorScheme *colorscheme;
+  float totalHalfEdgeThickness = 1.414;
+  float edgeFadeThickness = 1.414;
 
 private:
   shaderinfo_t renderer_shader;
+  bool edgeColorOverwrite = false;
+  float edgeColor[3];
 };
