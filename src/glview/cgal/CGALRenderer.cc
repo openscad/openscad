@@ -144,9 +144,8 @@ void CGALRenderer::createPolySets(bool showfaces)
   vertex_array.addEdgeData();
   vertex_array.addSurfaceData();
   vertex_array.writeSurface();
-  if(this->polysets.size() > 1) {
-    add_shader_data(vertex_array);
-  }
+
+  bool shader_data_created = false;
 
   if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
     size_t vertices_size = 0, elements_size = 0;
@@ -229,8 +228,9 @@ void CGALRenderer::createPolySets(bool showfaces)
       was_2d = true;
     } else {
       PRINTD("3d polysets");
-      if(this->polysets.size() == 1) {
+      if(!shader_data_created) {
         add_shader_data(vertex_array);
+        shader_data_created = true;
       }
       vertex_array.writeSurface();
 
