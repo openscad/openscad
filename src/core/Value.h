@@ -17,6 +17,8 @@
 #include "UndefType.h"
 
 #include "memory.h"
+#include "ValuePtr.h"
+#include "ModuleReference.h"
 
 class tostring_visitor;
 class tostream_visitor;
@@ -85,7 +87,8 @@ public:
     EMBEDDED_VECTOR,
     RANGE,
     FUNCTION,
-    OBJECT
+    OBJECT,
+    MODULE
   };
   // FIXME: eventually remove this in favor of specific messages for each undef usage
   static const Value undefined;
@@ -332,6 +335,7 @@ public:
   [[nodiscard]] const RangeType& toRange() const;
   [[nodiscard]] const FunctionType& toFunction() const;
   [[nodiscard]] const ObjectType& toObject() const;
+  [[nodiscard]] const ModuleReference& toModuleReference() const;
 
   // Other conversion utility functions
   bool getDouble(double& v) const;
@@ -374,7 +378,7 @@ public:
     return stream;
   }
 
-  using Variant = std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType>;
+  using Variant = std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType, ModuleReferencePtr>;
 
   static_assert(sizeof(Value::Variant) <= 24, "Memory size of Value too big");
   [[nodiscard]] const Variant& getVariant() const { return value; }

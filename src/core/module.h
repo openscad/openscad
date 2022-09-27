@@ -37,6 +37,7 @@ private:
 
 struct InstantiableModule
 {
-  std::shared_ptr<const Context> defining_context;
-  const AbstractModule *module;
+  using contextPtr = std::shared_ptr<const Context>;
+  contextPtr defining_context;
+  AbstractModule const * module;
 };

@@ -71,7 +71,9 @@ static void NOINLINE print_trace(const UserModule *mod, const std::shared_ptr<co
       );
 }
 
-std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
+std::shared_ptr<AbstractNode>
+UserModule::instantiate(const std::shared_ptr<const Context>& defining_context,
+   const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
 {
   if (StackCheck::inst().check()) {
     print_err(inst->name(), loc, context);

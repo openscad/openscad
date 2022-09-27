@@ -1,0 +1,15 @@
+color([1, 0, 0, 1]) {
+	multmatrix([[1, 0, 0, -10], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		group() {
+			group() {
+				cylinder($fn = 0, $fa = 12, $fs = 2, h = 10, r1 = 5, r2 = 5, center = false);
+			}
+		}
+	}
+}
+color([0, 0, 1, 1]) {
+	multmatrix([[1, 0, 0, 10], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+		cylinder($fn = 0, $fa = 12, $fs = 2, h = 10, r1 = 5, r2 = 5, center = false);
+	}
+}
+

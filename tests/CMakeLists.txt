@@ -805,6 +805,17 @@ list(APPEND SVG_VIEWBOX_TESTS
   viewbox_600x600_slice_xMinYMin viewbox_600x600_slice_xMinYMid viewbox_600x600_slice_xMinYMax
 )
 
+# module-literals
+list(APPEND MODULE_LITERAL_3D_FILES
+  ${TEST_SCAD_DIR}/3D/features/module_literal_extrusions3d.scad
+  ${TEST_SCAD_DIR}/3D/features/module_literal_extrusion3d.scad
+)
+list(APPEND MODULE_LITERAL_2D_FILES
+  ${TEST_SCAD_DIR}/2D/features/module_literal_extrusions2d.scad
+)
+list(APPEND MODULE_LITERAL_FILES ${MODULE_LITERAL_2D_FILES} ${MODULE_LITERAL_3D_FILES})
+
+
 list(APPEND SCADFILES_WITH_GREEN_FACES
   ${EXAMPLES_DIR}/Advanced/children.scad
   ${EXAMPLES_DIR}/Basics/CSG-modules.scad
@@ -879,6 +890,7 @@ list(APPEND TESTS_FAILING_WITH_MANIFOLD
   cgalstlcgalpngtest_mirror-tests
   cgalbinstlcgalpngtest_mirror-tests
 )
+
 
 ##############################
 # Define test configurations #
@@ -994,6 +1006,15 @@ add_cmdline_test(lazyunion-dxfpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} S
 add_cmdline_test(lazyunion-svgpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=SVG --enable=lazy-union --render=cgal)
 
 add_cmdline_test(manifold-cgalpng      EXPERIMENTAL OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS} ARGS --enable=manifold --render)
+
+add_cmdline_test(module_literals-dump        EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${MODULE_LITERALS_FILES} ARGS --enable=module-literals)
+add_cmdline_test(module_literals-opencsg     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${MODULE_LITERALS_FILES} ARGS --enable=module-literals)
+add_cmdline_test(module_literals-cgalpng     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${MODULE_LITERALS_FILES} ARGS --enable=module-literals --render)
+add_cmdline_test(module_literals-monotonepng EXPERIMENTAL OPENSCAD SUFFIX png FILES ${MODULE_LITERALS_3D_FILES} ARGS --colorscheme=Monotone --enable=module-literals --render )
+add_cmdline_test(module_literals-stlpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${MODULE_LITERALS_3D_FILES} EXPECTEDDIR module_literals-monotonepng ARGS ${OPENSCAD_ARG} --format=STL --enable=module-literals --render=cgal)
+add_cmdline_test(module_literals-offpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${MODULE_LITERALS_3D_FILES} EXPECTEDDIR module_literals-monotonepng ARGS ${OPENSCAD_ARG} --format=OFF --enable=module-literals --render=cgal)
+add_cmdline_test(module_literals-dxfpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${MODULE_LITERALS_2D_FILES} EXPECTEDDIR module_literals-cgalpng     ARGS ${OPENSCAD_ARG} --format=DXF --enable=module-literals --render=cgal)
+add_cmdline_test(module_literals-svgpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${MODULE_LITERALS_2D_FILES} EXPECTEDDIR module_literals-cgalpng     ARGS ${OPENSCAD_ARG} --format=SVG --enable=module-literals --render=cgal)
 
 # Trivial Export/Import files
 # This sanity-checks bidirectional file format import/export

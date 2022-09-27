@@ -43,8 +43,8 @@
 #include "Parameters.h"
 #include "printutils.h"
 #include "boost-utils.h"
-#include <boost/regex.hpp>
 #include <boost/assign/std/vector.hpp>
+
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 Value Expression::checkUndef(Value&& val, const std::shared_ptr<const Context>& context) const {
@@ -388,6 +388,7 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
     break;
   case Value::Type::OBJECT:
     return v[this->member];
+  case Value::Type::MODULE:
   default:
     break;
   }
@@ -408,6 +409,8 @@ Value FunctionDefinition::evaluate(const std::shared_ptr<const Context>& context
 {
   return FunctionPtr{FunctionType{context, expr, std::make_unique<AssignmentList>(parameters)}};
 }
+
+
 
 void FunctionDefinition::print(std::ostream& stream, const std::string& indent) const
 {
@@ -975,3 +978,4 @@ void LcLet::print(std::ostream& stream, const std::string&) const
 {
   stream << "let(" << this->arguments << ") (" << *this->expr << ")";
 }
+

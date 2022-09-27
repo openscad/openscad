@@ -60,6 +60,7 @@ struct IdentifierVisitor
   ValueIdentifier operator()(const EmbeddedVectorType& value) const { return value.ptr.get(); }
   ValueIdentifier operator()(const ObjectType& value) const { return value.ptr.get(); }
   ValueIdentifier operator()(const FunctionPtr& value) const { return value.get().get(); }
+  ValueIdentifier operator()(const ModuleReferencePtr& value) const { return value.get().get(); }
 };
 
 struct UseCountVisitor
@@ -74,6 +75,7 @@ struct UseCountVisitor
   int operator()(const EmbeddedVectorType& value) const { return value.ptr.use_count(); }
   int operator()(const ObjectType& value) const { return value.ptr.use_count(); }
   int operator()(const FunctionPtr& value) const { return value.get().use_count(); }
+  int operator()(const ModuleReferencePtr& value) const { return value.get().use_count(); }
 };
 
 struct EmbeddedValuesVisitor
@@ -88,6 +90,7 @@ struct EmbeddedValuesVisitor
   const std::vector<Value> *operator()(const EmbeddedVectorType& value) const { return &value.ptr->vec; }
   const std::vector<Value> *operator()(const ObjectType& value) const { return &value.ptr->values; }
   const std::vector<Value> *operator()(const FunctionPtr&) const { return nullptr; }
+  const std::vector<Value> *operator()(const ModuleReferencePtr&) const { return nullptr; }
 };
 
 struct ReferencedContextVisitor
@@ -102,6 +105,7 @@ struct ReferencedContextVisitor
   const std::shared_ptr<const Context> *operator()(const EmbeddedVectorType&) const { return nullptr; }
   const std::shared_ptr<const Context> *operator()(const ObjectType&) const { return nullptr; }
   const std::shared_ptr<const Context> *operator()(const FunctionPtr& value) const { return &value->getContext(); }
+  const std::shared_ptr<const Context> *operator()(const ModuleReferencePtr& value) const { return &value->getContext(); }
 };
 
 

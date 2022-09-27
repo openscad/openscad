@@ -674,6 +674,7 @@ set(CORE_SOURCES
   src/core/customizer/CommentParser.cc
   src/core/EvaluationSession.cc
   src/core/Expression.cc
+  src/core/ValueWrapper.cc
   src/core/builtin_functions.cc
   src/core/function.cc
   src/core/FunctionType.cc
@@ -703,7 +704,10 @@ set(CORE_SOURCES
   src/core/AST.cc
   src/core/FreetypeRenderer.cc
   src/core/GroupModule.cc
+  src/core/ModuleLiteral.cc
+  src/core/ModuleReference.cc
   src/core/ModuleInstantiation.cc
+  src/core/MemberLookup.cc
   src/core/NodeVisitor.cc
   src/core/SourceFile.cc
   src/core/SourceFileCache.cc
