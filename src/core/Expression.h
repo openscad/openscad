@@ -3,6 +3,7 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <list>
 #include <boost/variant.hpp>
 #include "Assignment.h"
 #include "boost-utils.h"
@@ -199,6 +200,23 @@ public:
   AssignmentList parameters;
   shared_ptr<Expression> expr;
 };
+
+
+class ModuleLiteral : public Expression
+{
+public:
+
+  ModuleLiteral(const std::string& name, const AssignmentList & literal_params,
+               const AssignmentList& module_args, const Location& loc );
+  Value evaluate(const std::shared_ptr<const Context>& context) const override;
+  void print(std::ostream& stream, const std::string& indent) const override;
+  // the name of the module  we are referring to
+  std::string const module_name;
+  AssignmentList module_literal_parameters;
+  AssignmentList module_arguments;
+};
+
+using ExpressionList = std::list<std::shared_ptr<Expression> >;
 
 class Assert : public Expression
 {

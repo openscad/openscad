@@ -13,31 +13,60 @@ class ModuleInstantiation;
 
 class AbstractModule
 {
-private:
-  const Feature *feature;
 public:
-  AbstractModule() : feature(nullptr) {}
-  AbstractModule(const Feature& feature) : feature(&feature) {}
-  AbstractModule(const Feature *feature) : feature(feature) {}
-  virtual ~AbstractModule() {}
-  virtual bool is_experimental() const { return feature != nullptr; }
-  virtual bool is_enabled() const { return (feature == nullptr) || feature->is_enabled(); }
-  virtual std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const = 0;
+
+   using abstractNodePtr = std::shared_ptr<AbstractNode>;
+   using contextPtr = std::shared_ptr<const Context>;
+   using ModInst = ModuleInstantiation;
+
+   AbstractModule() : feature(nullptr) {}
+   AbstractModule(const Feature& feature) : feature(&feature) {}
+   AbstractModule(const Feature *feature) : feature(feature) {}
+   virtual ~AbstractModule() {}
+
+   virtual bool is_experimental() const
+   {
+      return feature != nullptr;
+   }
+   virtual bool is_enabled() const
+   {
+      return (feature == nullptr) || feature->is_enabled();
+   }
+   virtual abstractNodePtr instantiate(
+      contextPtr const & defining_context,
+      ModInst const *inst,
+      contextPtr const & context
+   ) const = 0;
+private:
+   const Feature *feature;
 };
 
 class BuiltinModule : public AbstractModule
 {
 public:
-  BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const class ModuleInstantiation *, const std::shared_ptr<const Context>&), const Feature *feature = nullptr);
-  BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const class ModuleInstantiation *, Arguments, Children), const Feature *feature = nullptr);
-  std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const override;
+
+   using fnContextInstantiate =
+      abstractNodePtr(*)(ModInst const *, contextPtr const &);
+   using fnArgsChildrenInstantiate =
+      abstractNodePtr (*) (ModInst const *, Arguments, Children);
+
+   BuiltinModule(fnContextInstantiate,Feature const *feature = nullptr);
+   BuiltinModule(fnArgsChildrenInstantiate,Feature const *feature = nullptr);
+   abstractNodePtr instantiate(
+      contextPtr const & defining_context,
+      ModInst const *inst,
+      contextPtr const & context
+   ) const override;
 
 private:
-  std::function<std::shared_ptr<AbstractNode> (const class ModuleInstantiation *, const std::shared_ptr<const class Context>&)> do_instantiate;
+  std::function<
+    abstractNodePtr (ModInst const *, contextPtr const &)
+  > do_instantiate;
 };
 
 struct InstantiableModule
 {
-  std::shared_ptr<const Context> defining_context;
-  const AbstractModule *module;
+  using contextPtr = std::shared_ptr<const Context>;
+  contextPtr defining_context;
+  AbstractModule const * module;
 };

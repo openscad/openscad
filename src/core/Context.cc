@@ -85,6 +85,15 @@ boost::optional<const Value&> Context::try_lookup_variable(const std::string& na
   return boost::none;
 }
 
+boost::optional<const Value&> Context::lookup_moduleReference(const std::string& name) const
+{
+  boost::optional<const Value&> value = try_lookup_variable(name);
+  if (value && value->type() == Value::Type::MODULE) {
+     return value;
+  }
+  return boost::none;
+}
+
 const Value& Context::lookup_variable(const std::string& name, const Location& loc) const
 {
   boost::optional<const Value&> result = try_lookup_variable(name);
@@ -121,7 +130,7 @@ boost::optional<InstantiableModule> Context::lookup_module(const std::string& na
       return result;
     }
   }
-  LOG(message_group::Warning, loc, this->documentRoot(), "Ignoring unknown module '%1$s'", name);
+
   return boost::none;
 }
 

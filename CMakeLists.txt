@@ -651,6 +651,7 @@ set(CORE_SOURCES
   src/core/AST.cc
   src/core/FreetypeRenderer.cc
   src/core/GroupModule.cc
+  src/core/ModuleLiteral.cc
   src/core/ModuleInstantiation.cc
   src/core/NodeVisitor.cc
   src/core/SourceFile.cc

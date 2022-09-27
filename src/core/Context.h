@@ -85,6 +85,7 @@ public:
   const Value& lookup_variable(const std::string& name, const Location& loc) const;
   boost::optional<CallableFunction> lookup_function(const std::string& name, const Location& loc) const;
   boost::optional<InstantiableModule> lookup_module(const std::string& name, const Location& loc) const;
+  boost::optional<const Value&> lookup_moduleReference(const std::string& name) const;
   bool set_variable(const std::string& name, Value&& value) override;
   size_t clear() override;
 

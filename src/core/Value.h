@@ -279,6 +279,54 @@ using FunctionPtr = ValuePtr<FunctionType>;
 
 std::ostream& operator<<(std::ostream& stream, const FunctionType& f);
 
+
+class ModuleReference
+{
+public:
+  ModuleReference(std::shared_ptr<const Context> context_in,
+                  std::shared_ptr<AssignmentList> literal_params_in,
+                  std::string const & module_name_in,
+                  std::shared_ptr<AssignmentList> mod_args_in
+                  )
+    : context(context_in),
+      module_literal_parameters(literal_params_in),
+      module_name(module_name_in),
+      module_args(mod_args_in),
+      m_unique_id(generate_unique_id())
+      { }
+
+  Value operator==(const ModuleReference& other) const;
+  Value operator!=(const ModuleReference& other) const;
+  Value operator<(const ModuleReference& other) const;
+  Value operator>(const ModuleReference& other) const;
+  Value operator<=(const ModuleReference& other) const;
+  Value operator>=(const ModuleReference& other) const;
+
+  const std::shared_ptr<const Context>& getContext() const { return context; }
+  const std::shared_ptr<AssignmentList>& getModuleLiteralParameters() const { return module_literal_parameters; }
+  const std::string & getModuleName() const { return module_name; }
+  const std::shared_ptr<AssignmentList>& getModuleArgs() const { return module_args; }
+  bool transformToInstantiationArgs(
+      AssignmentList const & evalContextArgs,
+      const Location& loc,
+      const std::shared_ptr<const Context> evalContext,
+      AssignmentList & argsOut
+  ) const ;
+  int64_t getUniqueID() const { return m_unique_id;}
+private:
+  static int64_t generate_unique_id() { ++ next_id; return next_id;}
+  static int64_t next_id;
+  std::shared_ptr<const Context> context;
+  std::shared_ptr<AssignmentList> module_literal_parameters;
+  std::string module_name;
+  std::shared_ptr<AssignmentList> module_args;
+  int64_t const m_unique_id;
+};
+
+using ModuleReferencePtr = ValuePtr<ModuleReference>;
+
+std::ostream& operator<<(std::ostream& stream, const ModuleReference& m);
+
 /*
    Require a reason why (string), any time an undefined value is created/returned.
    This allows for passing of "exception" information from low level functions (i.e. from value.cc)
@@ -338,7 +386,8 @@ public:
     EMBEDDED_VECTOR,
     RANGE,
     FUNCTION,
-    OBJECT
+    OBJECT,
+    MODULE
   };
   // FIXME: eventually remove this in favor of specific messages for each undef usage
   static const Value undefined;
@@ -573,6 +622,7 @@ public:
   const RangeType& toRange() const;
   const FunctionType& toFunction() const;
   const ObjectType& toObject() const;
+  const ModuleReference& toModuleReference() const;
 
   // Other conversion utility functions
   bool getDouble(double& v) const;
@@ -613,8 +663,10 @@ public:
     return stream;
   }
 
-  typedef boost::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType> Variant;
-
+  typedef boost::variant<UndefType, bool, double, str_utf8_wrapper,
+    VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType,
+    ModuleReferencePtr
+  > Variant;
 
   static_assert(sizeof(Value::Variant) <= 24, "Memory size of Value too big");
   const Variant& getVariant() const { return value; }

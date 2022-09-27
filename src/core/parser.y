@@ -40,12 +40,14 @@
 #include "UserModule.h"
 #include "ModuleInstantiation.h"
 #include "Assignment.h"
+#include "ModuleLiteral.h"
 #include "Expression.h"
 #include "function.h"
 #include "printutils.h"
 #include "memory.h"
 #include <sstream>
 #include <stack>
+#include <list>
 #include <boost/filesystem.hpp>
 #include "boost-utils.h"
 #include "Feature.h"
@@ -103,6 +105,7 @@ bool fileEnded=false;
   class IfElseModuleInstantiation *ifelse;
   class Assignment *arg;
   AssignmentList *args;
+  std::list< std::shared_ptr<Expression> > *exprlist;
 }
 
 %token TOK_ERROR
@@ -136,6 +139,7 @@ bool fileEnded=false;
 %type <expr> expr
 %type <expr> call
 %type <expr> logic_or
+%type <expr> module_literal
 %type <expr> logic_and
 %type <expr> equality
 %type <expr> comparison
@@ -159,7 +163,7 @@ bool fileEnded=false;
 %type <args> argument_list
 %type <args> parameters
 %type <args> parameter_list
-
+%type <args> braced_parameters_or_empty
 %type <arg> argument
 %type <arg> parameter
 %type <text> module_id
@@ -331,6 +335,7 @@ single_module_instantiation
 
 expr
         : logic_or
+        | module_literal
         | TOK_FUNCTION '(' parameters ')' expr %prec NO_ELSE
             {
               $$ = new FunctionDefinition($5, *$3, LOCD("anonfunc", @$));
@@ -355,6 +360,84 @@ expr
               $$ = FunctionCall::create("echo", *$3, $5, LOCD("echo", @$));
               delete $3;
             }
+        ;
+
+braced_parameters_or_empty
+     :
+       {
+         $$ = new AssignmentList;
+       }
+     | '(' parameters ')'
+       {
+         $$ = $2;
+       }
+     ;
+
+module_literal
+        :
+           TOK_MODULE TOK_ID
+           {
+             AssignmentList params;
+             AssignmentList args;
+             $$ = MakeModuleLiteral($2, params, args, LOCD("moduleliteral", @$));
+             free($2);
+           }
+       |   TOK_MODULE TOK_ID '('arguments ')'
+           {
+              AssignmentList params;
+              $$ = MakeModuleLiteral($2, params, *$4, LOCD("moduleliteral", @$));
+              free($2);
+              delete $4;
+           }
+       |   TOK_MODULE '(' parameters ')' TOK_ID '(' arguments ')'
+           {
+              std::string const modname = generateAnonymousModuleName();
+              UserModule *newmodule = new UserModule(modname.c_str(), LOCD("anonmodule", @$));
+              newmodule->parameters = *$3;
+              delete $3;
+              auto top = scope_stack.top();
+              scope_stack.push(&newmodule->body);
+              top->addModule(shared_ptr<UserModule>(newmodule));
+              auto inst = new ModuleInstantiation($5, *$7, LOCD("modulecall", @$));
+              scope_stack.top()->addModuleInst(shared_ptr<ModuleInstantiation>(inst));
+              free($5);
+              delete($7);
+              scope_stack.pop();
+              AssignmentList args;
+              $$ = MakeModuleLiteral(
+                   modname,
+                    newmodule->parameters,
+                    args,
+                      LOCD("anonmodule", @$)
+              );
+           }
+        |  TOK_MODULE braced_parameters_or_empty '{'
+          {
+              std::string modname = generateAnonymousModuleName();
+              UserModule *newmodule = new UserModule(modname.c_str(), LOCD("anonmodule", @$));
+              pushAnonymousModuleName(modname);
+              newmodule->parameters = *$2;
+              delete $2;
+              auto top = scope_stack.top();
+              scope_stack.push(&newmodule->body);
+              top->addModule(shared_ptr<UserModule>(newmodule));
+          }
+            inner_input '}'
+          {
+              scope_stack.pop();
+              auto top = scope_stack.top();
+              std::string modname = popAnonymousModuleName();
+              auto it = top->modules.find(modname.c_str());
+              if( it != top->modules.end() ){
+                auto  m = it->second;
+                AssignmentList args;
+                $$ = MakeModuleLiteral(
+                   m->name,
+                    m->parameters,
+                    args,
+                      LOCD("anonmodule", @$));
+              }
+          }
         ;
 
 logic_or
@@ -481,7 +564,7 @@ call
               $$ = new MemberLookup($1, $3, LOCD("member", @$));
               free($3);
             }
-		;
+        ;
 
 primary
         : TOK_TRUE
