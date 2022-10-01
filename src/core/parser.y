@@ -164,6 +164,7 @@ bool fileEnded=false;
 %type <args> parameters
 %type <args> parameter_list
 %type <args> braced_parameters_or_empty
+%type <args> braced_arguments_or_empty
 %type <arg> argument
 %type <arg> parameter
 %type <text> module_id
@@ -373,21 +374,25 @@ braced_parameters_or_empty
        }
      ;
 
+braced_arguments_or_empty
+     :
+       {
+         $$ = new AssignmentList;
+       }
+     | '(' arguments ')'
+       {
+         $$ = $2;
+       }
+     ;
+
 module_literal
         :
-           TOK_MODULE TOK_ID
-           {
-             AssignmentList params;
-             AssignmentList args;
-             $$ = MakeModuleLiteral($2, params, args, LOCD("moduleliteral", @$));
-             free($2);
-           }
-       |   TOK_MODULE TOK_ID '('arguments ')'
+          TOK_MODULE TOK_ID braced_arguments_or_empty
            {
               AssignmentList params;
-              $$ = MakeModuleLiteral($2, params, *$4, LOCD("moduleliteral", @$));
+              $$ = MakeModuleLiteral($2, params, *$3, LOCD("moduleliteral", @$));
               free($2);
-              delete $4;
+              delete $3;
            }
        |   TOK_MODULE '(' parameters ')' TOK_ID '(' arguments ')'
            {
@@ -404,12 +409,7 @@ module_literal
               delete($7);
               scope_stack.pop();
               AssignmentList args;
-              $$ = MakeModuleLiteral(
-                   modname,
-                    newmodule->parameters,
-                    args,
-                      LOCD("anonmodule", @$)
-              );
+              $$ = MakeModuleLiteral(modname,newmodule->parameters,args,LOCD("anonmodule", @$));
            }
         |  TOK_MODULE braced_parameters_or_empty '{'
           {
@@ -431,11 +431,7 @@ module_literal
               if( it != top->modules.end() ){
                 auto  m = it->second;
                 AssignmentList args;
-                $$ = MakeModuleLiteral(
-                   m->name,
-                    m->parameters,
-                    args,
-                      LOCD("anonmodule", @$));
+                $$ = MakeModuleLiteral(m->name,m->parameters,args,LOCD("anonmodule", @$));
               }
           }
         ;
