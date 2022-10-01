@@ -7,5 +7,6 @@ enum class OpenSCADOperator {
   DIFFERENCE,
   MINKOWSKI,
   HULL,
+  FILL,
   RESIZE
 };
