@@ -319,6 +319,8 @@ public slots:
   void viewTogglePerspective();
   void viewResetView();
   void setShader();
+  void useDefaultShader();
+  void useShader(const std::string& shaderLocation);
   void viewAll();
   void editorContentChanged();
   void selectObject(QPoint coordinate);

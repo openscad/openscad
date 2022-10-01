@@ -351,6 +351,7 @@
     <addaction name="viewActionHide3DViewToolBar"/>
     <addaction name="separator"/>
     <addaction name="viewActionSetShader"/>
+    <addaction name="viewActionUseDefaultShader"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -1101,6 +1102,11 @@
   <action name="viewActionSetShader">
     <property name="text">
       <string>Set Shader</string>
+    </property>
+  </action>
+  <action name="viewActionUseDefaultShader">
+    <property name="text">
+      <string>Use Default Shader</string>
     </property>
   </action>
   <action name="viewActionShowScaleProportional">
