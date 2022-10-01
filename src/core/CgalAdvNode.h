@@ -7,6 +7,7 @@
 enum class CgalAdvType {
   MINKOWSKI,
   HULL,
+  FILL,
   RESIZE
 };
 
