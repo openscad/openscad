@@ -47,8 +47,8 @@ Renderer::Renderer(const std::string& shaderDirectoryPath) : colorscheme(nullptr
   Returns the error message if there was a problem with the selected shader, and an empty string on success
 */
 std::string Renderer::setShader(const std::string& shaderDirectoryPath) {
-  std::string vs_str = Renderer::loadShaderSource("Preview.vert", shaderDirectoryPath);
-  std::string fs_str = Renderer::loadShaderSource("Preview.frag", shaderDirectoryPath);
+  std::string vs_str = Renderer::loadShaderSource("Viewport.vert", shaderDirectoryPath);
+  std::string fs_str = Renderer::loadShaderSource("Viewport.frag", shaderDirectoryPath);
   const char *vs_source = vs_str.c_str();
   const char *fs_source = fs_str.c_str();
 
