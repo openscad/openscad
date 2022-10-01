@@ -43,7 +43,10 @@ Renderer::Renderer(const std::string& shaderDirectoryPath) : colorscheme(nullptr
   PRINTD("Renderer() end");
 }
 
-void Renderer::setShader(const std::string& shaderDirectoryPath) {
+/*
+  Returns the error message if there was a problem with the selected shader, and an empty string on success
+*/
+std::string Renderer::setShader(const std::string& shaderDirectoryPath) {
   std::string vs_str = Renderer::loadShaderSource("Preview.vert", shaderDirectoryPath);
   std::string fs_str = Renderer::loadShaderSource("Preview.frag", shaderDirectoryPath);
   const char *vs_source = vs_str.c_str();
@@ -56,16 +59,14 @@ void Renderer::setShader(const std::string& shaderDirectoryPath) {
   glCompileShader(vs);
   err = glGetError();
   if (err != GL_NO_ERROR) {
-    PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
-    return;
+    SHADER_SELECT_ERROR("OpenGL Error: %s\n", gluErrorString(err));
   }
   glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
   if (status == GL_FALSE) {
     int loglen;
     char logbuffer[1000];
     glGetShaderInfoLog(vs, sizeof(logbuffer), &loglen, logbuffer);
-    PRINTDB("OpenGL Program Compile Vertex Shader Error:\n%s", logbuffer);
-    return;
+    SHADER_SELECT_ERROR("OpenGL Program Compile Vertex Shader Error:\n%s", logbuffer);
   }
 
   auto fs = glCreateShader(GL_FRAGMENT_SHADER);
@@ -73,16 +74,14 @@ void Renderer::setShader(const std::string& shaderDirectoryPath) {
   glCompileShader(fs);
   err = glGetError();
   if (err != GL_NO_ERROR) {
-    PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
-    return;
+    SHADER_SELECT_ERROR("OpenGL Error: %s\n", gluErrorString(err));
   }
   glGetShaderiv(fs, GL_COMPILE_STATUS, &status);
   if (status == GL_FALSE) {
     int loglen;
     char logbuffer[1000];
     glGetShaderInfoLog(fs, sizeof(logbuffer), &loglen, logbuffer);
-    PRINTDB("OpenGL Program Compile Fragment Shader Error:\n%s", logbuffer);
-    return;
+    SHADER_SELECT_ERROR("OpenGL Program Compile Fragment Shader Error:\n%s", logbuffer);
   }
 
   auto edgeshader_prog = glCreateProgram();
@@ -92,8 +91,7 @@ void Renderer::setShader(const std::string& shaderDirectoryPath) {
 
   err = glGetError();
   if (err != GL_NO_ERROR) {
-    PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
-    return;
+    SHADER_SELECT_ERROR("OpenGL Error: %s\n", gluErrorString(err));
   }
 
   glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);
@@ -101,8 +99,7 @@ void Renderer::setShader(const std::string& shaderDirectoryPath) {
     int loglen;
     char logbuffer[1000];
     glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-    PRINTDB("OpenGL Program Linker Error:\n%s", logbuffer);
-    return;
+    SHADER_SELECT_ERROR("OpenGL Program Linker Error:\n%s", logbuffer);
   }
 
   int loglen;
@@ -126,6 +123,7 @@ void Renderer::setShader(const std::string& shaderDirectoryPath) {
   renderer_shader.data.csg_rendering.draw_edges = glGetUniformLocation(edgeshader_prog, "drawEdges");
   renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric");
   renderer_shader.data.csg_rendering.marked = glGetAttribLocation(edgeshader_prog, "marked");
+  return "";
 }
 
 void Renderer::resize(int /*w*/, int /*h*/)

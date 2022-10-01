@@ -1394,7 +1394,10 @@ void MainWindow::setShader()
   std::string shaderLocation = userOpenedPath.toStdString();
   LOG(message_group::None, Location::NONE, "", "User selected shader location: %1$s", shaderLocation);
   this->shader_directory_path = shaderLocation;
-  this->qglview->renderer->setShader(shaderLocation);
+  const std::string result = this->qglview->renderer->setShader(shaderLocation);
+  if(result.length() > 0) {
+    QMessageBox::warning(this, "The selected shader location had an error.", QString::fromStdString(result));
+  }
   this->qglview->update();
 }
 
