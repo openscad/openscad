@@ -9,7 +9,9 @@ typedef std::vector<class ModuleInstantiation *> ModuleInstantiationList;
 class ModuleInstantiation : public ASTNode
 {
 public:
-  ModuleInstantiation(const std::string& name, const AssignmentList& args = AssignmentList(), const Location& loc = Location::NONE)
+  ModuleInstantiation(std::shared_ptr<Expression> expr, const AssignmentList& args , const Location& loc)
+    : ASTNode(loc), arguments(args), tag_root(false), tag_highlight(false), tag_background(false), id_expr(expr) { }
+  ModuleInstantiation(std::string const & name, const AssignmentList& args = AssignmentList(), const Location& loc = Location::NONE)
     : ASTNode(loc), arguments(args), tag_root(false), tag_highlight(false), tag_background(false), modname(name) { }
   ~ModuleInstantiation();
 
@@ -30,6 +32,7 @@ public:
   bool tag_background;
 protected:
   std::string modname;
+  std::shared_ptr<Expression> id_expr;
 };
 
 class IfElseModuleInstantiation : public ModuleInstantiation

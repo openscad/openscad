@@ -151,6 +151,7 @@ bool fileEnded=false;
 %type <vec> vector_elements
 %type <expr> list_comprehension_elements
 %type <expr> list_comprehension_elements_p
+%type <expr> instantiation_expr
 %type <expr> vector_element
 %type <expr> expr_or_empty
 
@@ -325,12 +326,21 @@ module_id
         | TOK_EACH { $$ = strdup("each"); }
         ;
 
+instantiation_expr
+      : module_id
+      {
+        $$ = new Literal(std::string($1), LOCD("string", @$));
+        free($1);
+      }
+      | '(' expr ')'
+      { $$ = $2;}
+      ;
+
 single_module_instantiation
-        : module_id '(' arguments ')'
+        : instantiation_expr '(' arguments ')'
             {
-                $$ = new ModuleInstantiation($1, *$3, LOCD("modulecall", @$));
-                free($1);
-                delete $3;
+               $$ = new ModuleInstantiation(shared_ptr<Expression>($1), *$3, LOCD("modulecall", @$));
+               delete $3;
             }
         ;
 

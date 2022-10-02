@@ -71,8 +71,27 @@ static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shar
 
 std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_ptr<const Context> context) const
 {
-   std::string const old_name = this->modname;
+   std::string const old_name = this->modname; //N.B will be if id_exp ! empty
    AssignmentList const old_args = this->arguments;
+
+   if ( id_expr) {
+      auto const value = id_expr->evaluate(context);
+      switch(value.type()){
+         // Literal string or ModuleReference
+         case Value::Type::STRING:
+            const_cast<ModuleInstantiation*>(this)->modname = value.toString();
+         break;
+         case Value::Type::MODULE:{
+            auto const & modref = value.toModuleReference();
+            const_cast<ModuleInstantiation*>(this)->modname = modref.getModuleName();
+         }
+         break;
+         default:
+            LOG(message_group::Warning, this->loc, context->documentRoot(),
+            "ModuleInstantiation: invalid id expression" );
+         return nullptr;
+      }
+   }
 
    auto setTo = [this](std::string const & name , AssignmentList const & args){
      const_cast<ModuleInstantiation*>(this)->modname = name;

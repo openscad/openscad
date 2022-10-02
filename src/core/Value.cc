@@ -792,6 +792,7 @@ bool ModuleReference::transformToInstantiationArgs(
             LOG(message_group::Warning, loc, evalContext->documentRoot(),"Default arguments not supplied");
             return false;
           }
+          // evaluate the expr in the moduleLiteral defining context
           newArg->setExpr(param->getExpr());
           argsOut.push_back(std::shared_ptr<Assignment>(newArg));
        }
