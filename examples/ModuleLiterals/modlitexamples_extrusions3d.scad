@@ -19,6 +19,5 @@ for(elem = extrusionInfo)
    translate(elem[0])
       rotate(elem[1]){
          height = 40;
-         m = elem[2];
-         m(height);
+         (elem[2])(height);
       }

@@ -35,6 +35,5 @@ for(i = [0:len(extrusionInfo)-1])
    translate(extrusionInfo[i][0])
       rotate(extrusionInfo[i][1]){
          height = 40;
-         extrusion = extrusionInfo[i][2];
-         extrusion(height);
+         (extrusionInfo[i][2])(height);
       }

@@ -22,6 +22,5 @@ shapeInfo = [
 for(elem = shapeInfo)
    translate(elem[0])
       rotate(elem[1]){
-         m = elem[2];
-         m();
+         (elem[2])();
       }
