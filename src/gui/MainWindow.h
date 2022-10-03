@@ -117,6 +117,8 @@ public:
 
   bool isLightTheme();
 
+  bool isLightTheme();
+
 private:
   void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
   void setRenderVariables(ContextHandle<class BuiltinContext>& context);

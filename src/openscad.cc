@@ -893,8 +893,17 @@ int main(int argc, char **argv)
   int rc = 0;
   StackCheck::inst();
 
+// Current Working Directory needs to be valid.
+try {
+  auto cwd = boost::filesystem::current_path();
+} catch (const std::exception& e)  {
+  LOG(message_group::None, Location::NONE, "", "Current Working Directory does not exist.\n");
+  return 1;
+};
+
 #ifdef OPENSCAD_QTGUI
-  { // Need a dummy app instance to get the application path but it needs to be destroyed before the GUI is launched.
+  {
+    // Need a dummy app instance to get the application path but it needs to be destroyed before the GUI is launched.
     QCoreApplication app(argc, argv);
     PlatformUtils::registerApplicationPath(app.applicationDirPath().toLocal8Bit().constData());
   }
