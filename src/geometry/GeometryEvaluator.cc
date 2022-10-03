@@ -1047,7 +1047,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
       slicesNonUniScale = Calc::get_diagonal_slices(max_delta_sqr, node.height, node.fn, node.fs);
       slicesTwist = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height, node.twist, node.scale_x, node.fn, node.fs, node.fa);
       slices = max(sclicesNonUniScale,slicesTwist);
-    }else { // uniform scaling with twist, use conical helix calculation
+    } else { // uniform scaling with twist, use conical helix calculation
       slices = (unsigned int)Calc::get_conical_helix_slices(max_r1_sqr, node.height, node.twist, node.scale_x, node.fn, node.fs, node.fa);
     }
   } else if (node.scale_x != node.scale_y) {
