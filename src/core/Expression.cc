@@ -979,31 +979,3 @@ void LcLet::print(std::ostream& stream, const std::string&) const
   stream << "let(" << this->arguments << ") (" << *this->expr << ")";
 }
 
-ModuleLiteral::ModuleLiteral(const std::string& mod_name, const AssignmentList &literal_params,
-                         const AssignmentList& mod_args, const Location& loc )
-: Expression(loc),module_name(mod_name),module_literal_parameters(literal_params),module_arguments(mod_args)
-{};
-
-Value ModuleLiteral::evaluate(const std::shared_ptr<const Context>& context) const
-{
-   return ModuleReferencePtr(
-      ModuleReference(
-         context,
-         std::unique_ptr<AssignmentList>{new AssignmentList{this->module_literal_parameters}},
-         this->module_name,
-         std::unique_ptr<AssignmentList>{new AssignmentList{this->module_arguments}}
-      )
-   );
-}
-
-void ModuleLiteral::print(std::ostream& stream, const std::string& indent) const
-{
-   stream << indent << "module ";
-   if ( ! this->module_literal_parameters.empty()){
-      stream << "(" << this->module_literal_parameters << ")";
-   }
-   stream << this->module_name ;
-   if ( ! this->module_arguments.empty() ){
-      stream << "(" << this->module_arguments << ")" ;
-   }
-}
