@@ -222,6 +222,9 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   connect(qsci, SIGNAL(indicatorClicked(int,int,Qt::KeyboardModifiers)), this, SLOT(onIndicatorClicked(int,int,Qt::KeyboardModifiers)));
   connect(qsci, SIGNAL(indicatorReleased(int,int,Qt::KeyboardModifiers)), this, SLOT(onIndicatorReleased(int,int,Qt::KeyboardModifiers)));
 
+  qsci->indicatorDefine(QsciScintilla::FullBoxIndicator, evaluatedIndicatorNumber);
+  qsci->setIndicatorDrawUnder(true, evaluatedIndicatorNumber);
+    
 #if QSCINTILLA_VERSION >= 0x020b00
   connect(qsci, SIGNAL(SCN_URIDROPPED(const QUrl&)), this, SIGNAL(uriDropped(const QUrl&)));
 #endif
@@ -569,6 +572,9 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     qsci->setIndicatorForegroundColor(readColor(colors, "hyperlink-indicator", QColor(139, 24, 168, 100)), hyperlinkIndicatorNumber); //violet
     qsci->setIndicatorOutlineColor(readColor(colors, "hyperlink-indicator-outline", QColor(139, 24, 168, 100)), hyperlinkIndicatorNumber); //violet
     qsci->setIndicatorHoverForegroundColor(readColor(colors, "hyperlink-indicator-hover", QColor(139, 24, 168, 100)), hyperlinkIndicatorNumber); //violet
+
+    qsci->setIndicatorForegroundColor(QColor(180, 255, 180, 100), evaluatedIndicatorNumber);
+    
     qsci->setWhitespaceForegroundColor(readColor(colors, "whitespace-foreground", textColor));
     qsci->setMarginsBackgroundColor(readColor(colors, "margin-background", paperColor));
     qsci->setMarginsForegroundColor(readColor(colors, "margin-foreground", textColor));
@@ -1322,6 +1328,11 @@ void ScintillaEditor::onCharacterThresholdChanged(int val)
   qsci->setAutoCompletionThreshold(val <= 0 ? 1 : val);
 }
 
+void ScintillaEditor::onBackgroundColorEvaluatedChanged(const QString& text){
+  QString color = Preferences::inst()->getValue("editor/backgroundColorEvaluated").toString();
+  qsci->setIndicatorForegroundColor(QColor(color), evaluatedIndicatorNumber);
+}
+
 void ScintillaEditor::resetHighlighting(){
   qsci->recolor(); //lex and restyle the whole text
   
@@ -1452,3 +1463,38 @@ void ScintillaEditor::setFocus()
   qsci->setFocus();
   qsci->SendScintilla(QsciScintilla::SCI_SETFOCUS, true);
 }
+
+void ScintillaEditor::evalutated(std::string rootFileName, std::vector<const ASTNode*> astNodes)
+{
+  QString color = Preferences::inst()->getValue("editor/backgroundColorEvaluated").toString();
+  qsci->setIndicatorForegroundColor(QColor(color), evaluatedIndicatorNumber);
+
+  //remove all indicators
+  qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, evaluatedIndicatorNumber);
+  qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->length());
+
+    for (auto astNode : astNodes) {
+        if(astNode) evalutated(rootFileName, astNode);
+    }
+}
+
+void ScintillaEditor::evalutated(std::string rootFileName, const ASTNode* astNode)
+{
+  bool isLocation = !astNode->location().isNone();
+  if(isLocation){
+    bool isRootFile = astNode->location().fileName() == rootFileName;
+    bool isEvaluated = astNode->isEvaluated();
+    bool setIndicator = isRootFile && isEvaluated;
+
+    if( setIndicator ){
+      auto data = astNode->location();
+      int startPos = qsci->positionFromLineIndex(data.firstLine() - 1, data.firstColumn() - 1);
+      int stopPos  = qsci->positionFromLineIndex(data.lastLine() - 1,  data.lastColumn()  - 1);
+
+      int nrOfChars = stopPos - startPos;
+      qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, evaluatedIndicatorNumber);
+      qsci->SendScintilla(QsciScintilla::SCI_INDICATORFILLRANGE, startPos, nrOfChars);
+    }
+  }
+}
+

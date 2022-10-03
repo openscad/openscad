@@ -38,6 +38,15 @@ void ModuleInstantiation::print(std::ostream& stream, const std::string& indent,
   }
 }
 
+void ModuleInstantiation::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  for(auto argument : arguments){
+    argument->gatherChilderen(nodes);
+  }
+  scope.gatherChilderen(nodes);
+}
+
 void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
 {
   ModuleInstantiation::print(stream, indent, inlined);
@@ -58,6 +67,12 @@ void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& i
   }
 }
 
+void IfElseModuleInstantiation::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  ModuleInstantiation::gatherChilderen(nodes);
+  if (else_scope) else_scope->gatherChilderen(nodes);
+}
+
 /**
  * This is separated because PRINTB uses quite a lot of stack space
  * and the method using it evaluate()
@@ -71,6 +86,8 @@ static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shar
 
 std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_ptr<const Context> context) const
 {
+  setEvaluated();
+
   boost::optional<InstantiableModule> module = context->lookup_module(this->name(), this->loc);
   if (!module) {
     return nullptr;

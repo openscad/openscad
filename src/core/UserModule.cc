@@ -80,6 +80,8 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<cons
     return nullptr;
   }
 
+  this->setEvaluated();
+
   StaticModuleNameStack name{inst->name()}; // push on static stack, pop at end of method!
   ContextHandle<UserModuleContext> module_context{Context::create<UserModuleContext>(
                                                     defining_context,
@@ -124,4 +126,13 @@ void UserModule::print(std::ostream& stream, const std::string& indent) const
   if (!this->name.empty()) {
     stream << indent << "}\n";
   }
+}
+
+void UserModule::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  for(auto parameter : parameters){
+    parameter->gatherChilderen(nodes);
+  }
+  body.gatherChilderen(nodes);
 }

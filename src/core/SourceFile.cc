@@ -53,6 +53,12 @@ void SourceFile::print(std::ostream& stream, const std::string& indent) const
   scope.print(stream, indent);
 }
 
+void SourceFile::gatherChilderen(std::vector<const ASTNode*>& nodes) const
+{
+  nodes.push_back(this);
+  scope.gatherChilderen(nodes);
+}
+
 void SourceFile::registerUse(const std::string& path, const Location& loc)
 {
   PRINTDB("registerUse(): (%p) %d, %d - %d, %d (%s) -> %s", this %
@@ -172,6 +178,7 @@ time_t SourceFile::handleDependencies(bool is_root)
 
 std::shared_ptr<AbstractNode> SourceFile::instantiate(const std::shared_ptr<const Context>& context, std::shared_ptr<const FileContext> *resulting_file_context) const
 {
+  setEvaluated();
   auto node = std::make_shared<RootNode>();
   try {
     ContextHandle<FileContext> file_context{Context::create<FileContext>(context, this)};

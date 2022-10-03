@@ -75,6 +75,9 @@ public:
   void setFocus() override;
   void setupAutoComplete(const bool forceOff = false);
 
+  void evalutated(std::string rootFileName, std::vector<const ASTNode*> astNodes);
+  void evalutated(std::string rootFileName, const ASTNode* astNode);
+
 private:
   void getRange(int *lineFrom, int *lineTo);
   void setColormap(const EditorColorScheme *colorScheme);
@@ -145,6 +148,7 @@ private slots:
   void applySettings();
   void onAutocompleteChanged(bool state);
   void onCharacterThresholdChanged(int val);
+  void onBackgroundColorEvaluatedChanged(const QString& text);
   void fireModificationChanged();
   void onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state);
   void onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state);
@@ -159,6 +163,7 @@ private:
   static const int errorIndicatorNumber = 8; // first 8 are used by lexers
   static const int findIndicatorNumber = 9;
   static const int hyperlinkIndicatorNumber = 10;
+  static const int evaluatedIndicatorNumber = 11;
   static const int hyperlinkIndicatorOffset = 100;
   static const int errMarkerNumber = 2;
   static const int bmMarkerNumber = 3;

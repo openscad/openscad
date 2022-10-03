@@ -20,7 +20,7 @@ public:
 
   void print(std::ostream& stream, const std::string& indent) const override;
   const std::string& getName() const { return name; }
-  const shared_ptr<Expression>& getExpr() const { return expr; }
+  const shared_ptr<Expression>& getExpr() const;
   const AnnotationMap& getAnnotations() const { return annotations; }
   // setExpr used by customizer ParameterObject etc.
   void setExpr(shared_ptr<Expression> e) { expr = std::move(e); }
@@ -31,6 +31,8 @@ public:
 
   const Location& locationOfOverwrite() const { return locOfOverwrite; }
   void setLocationOfOverwrite(const Location& locOfOverwrite) { this->locOfOverwrite = locOfOverwrite; }
+
+  void gatherChilderen(std::vector<const ASTNode*>& nodes) const override;
 
 protected:
   const std::string name;
