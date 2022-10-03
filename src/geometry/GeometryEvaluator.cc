@@ -1039,9 +1039,11 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     } else if ( node.scale_x != node.scale_y) { // non uniform scaling with twist using max slices from twist and non uniform scale
       double max_delta_sqr = 0; // delta from before/after scaling
       Vector2d scale(node.scale_x, node.scale_y);
-      for (const auto& o : poly.outlines())
-        for (const auto& v : o.vertices)
+      for (const auto& o : poly.outlines()){
+        for (const auto& v : o.vertices){
           max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
+        }
+      }
       size_t slicesNonUniScale;
       size_t slicesTwist;
       slicesNonUniScale = (unsigned int)Calc::get_diagonal_slices(max_delta_sqr, node.height, node.fn, node.fs);
@@ -1054,9 +1056,11 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     // Non uniform scaling, w/o twist
     double max_delta_sqr = 0; // delta from before/after scaling
     Vector2d scale(node.scale_x, node.scale_y);
-    for (const auto& o : poly.outlines())
-      for (const auto& v : o.vertices)
+    for (const auto& o : poly.outlines()){
+      for (const auto& v : o.vertices){
         max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
+      }
+    }
     slices = Calc::get_diagonal_slices(max_delta_sqr, node.height, node.fn, node.fs);
   } else {
     // uniform or [1,1] scaling w/o twist needs only one slice
