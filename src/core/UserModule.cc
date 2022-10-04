@@ -46,7 +46,7 @@ static void NOINLINE print_trace(const UserModule *mod,std::shared_ptr<const Use
   std::stringstream stream ;
   if (parameters.size() == 0){
       //nothing to do
-  } else if (StackCheck::inst().check()) { 
+  } else if (StackCheck::inst().check()) {
     stream << "...";
   } else {
     bool first = true;
@@ -72,7 +72,9 @@ static void NOINLINE print_trace(const UserModule *mod,std::shared_ptr<const Use
   );
 }
 
-std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
+std::shared_ptr<AbstractNode>
+UserModule::instantiate(const std::shared_ptr<const Context>& defining_context,
+   const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
 {
   if (StackCheck::inst().check()) {
     print_err(inst->name(), loc, context);

@@ -655,6 +655,7 @@ set(CORE_SOURCES
   src/core/ModuleLiteral.cc
   src/core/ModuleReference.cc
   src/core/ModuleInstantiation.cc
+  src/core/MemberLookup.cc
   src/core/NodeVisitor.cc
   src/core/SourceFile.cc
   src/core/SourceFileCache.cc
