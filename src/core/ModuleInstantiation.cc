@@ -74,11 +74,13 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_pt
    std::string const old_name = this->modname; //N.B will be if id_exp ! empty
    AssignmentList const old_args = this->arguments;
 
+
     auto setTo = [this](std::string const & name , AssignmentList const & args){
      const_cast<ModuleInstantiation*>(this)->modname = name;
      const_cast<ModuleInstantiation*>(this)->arguments = args;
    };
 
+   std::shared_ptr<const Context> module_lookup_context = context;
    if ( id_expr) {
       auto const value = id_expr->evaluate(context);
       switch(value.type()){
@@ -101,6 +103,7 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_pt
                argsOut
             )){
                setTo(modRef.getModuleName(),argsOut);
+               module_lookup_context = modRef.getContext();
             }else{
                setTo(old_name,old_args);
                return nullptr;
@@ -124,7 +127,7 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_pt
         setTo(old_name,old_args);
         return nullptr;
       }
-      boost::optional<InstantiableModule> module = context->lookup_module(this->name(), this->loc);
+      boost::optional<InstantiableModule> module = module_lookup_context->lookup_module(this->name(), this->loc);
       if (module) {
         try{
           auto node = module->module->instantiate(module->defining_context, this, context);
@@ -139,9 +142,9 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_pt
           throw;
         }
      }else{
-      boost::optional<const Value&> maybe_modRef = context->lookup_moduleReference(this->name());
+      boost::optional<const Value&> maybe_modRef =  module_lookup_context->lookup_moduleReference(this->name());
       if (!maybe_modRef ){
-        LOG(message_group::Warning, this->loc, context->documentRoot(), "Ignoring unknown module '%1$s'", this->name());
+        LOG(message_group::Warning, this->loc, context->documentRoot(), "Ignoring unknown module/ref '%1$s'", this->name());
         setTo(old_name,old_args);
         return nullptr;
       }
@@ -159,6 +162,7 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_pt
          argsOut
       )){
          setTo(modRef.getModuleName(),argsOut);
+         module_lookup_context = modRef.getContext();
       }else{
           setTo(old_name,old_args);
           return nullptr;

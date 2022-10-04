@@ -49,6 +49,7 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
     return v[this->member];
   case Value::Type::MODULE:{
      auto const & modRef = v.toModuleReference();
+     // TODO modref to modref, contexts and transform args
      boost::optional<InstantiableModule> iModule = context->lookup_module(modRef.getModuleName(), this->loc);
      if (iModule) {
         auto user_module = dynamic_cast<const UserModule*>(iModule->module);
