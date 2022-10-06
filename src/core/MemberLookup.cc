@@ -48,32 +48,51 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
   case Value::Type::OBJECT:
     return v[this->member];
   case Value::Type::MODULE:{
+    
      auto const & modRef = v.toModuleReference();
      // TODO modref to modref, contexts and transform args
-     boost::optional<InstantiableModule> iModule = context->lookup_module(modRef.getModuleName(), this->loc);
-     if (iModule) {
-        auto user_module = dynamic_cast<const UserModule*>(iModule->module);
-        // iModule->module  :  AbstractModule *  ==  UserModule * | BuiltinModule *
-        if ( user_module){
-            StaticModuleNameStack name{modRef.getModuleName()}; // push on static stack, pop at end of method!
-            ContextHandle<UserModuleContext> module_context{
-               Context::create<UserModuleContext>(
-                  iModule->defining_context,
-                  user_module,
-                  this->location(),
-                  Arguments(*modRef.getModuleArgs(), modRef.getContext()),
-                  Children(&user_module->body, modRef.getContext())
-               )
-            };
+     std::shared_ptr<const Context> module_lookup_context = modRef.getContext();
+     ModuleReference const * pModRef = &modRef;
+     //LOG(message_group::Trace, loc, context->documentRoot(), 
+      // "lkp %1$s.%2$s", pModRef->getModuleName(), this->member );
+     for (;;){
+      boost::optional<InstantiableModule> iModule = 
+         module_lookup_context->lookup_module(pModRef->getModuleName(), this->loc);
+      if (iModule) {
+          auto user_module = dynamic_cast<const UserModule*>(iModule->module);
+          // iModule->module  :  AbstractModule *  ==  UserModule * | BuiltinModule *
+          if ( user_module){
+            // push on static stack, pop at end of method!
+              StaticModuleNameStack name{pModRef->getModuleName()}; 
+              ContextHandle<UserModuleContext> module_context{
+                Context::create<UserModuleContext>(
+                    iModule->defining_context,
+                    user_module,
+                    this->location(),
+                    Arguments(*pModRef->getModuleArgs(), pModRef->getContext()),
+                    Children(&user_module->body, pModRef->getContext())
+                )
+              };
+              auto maybe_value = module_context->lookup_local_variable( this->member);
 
-            auto maybe_value = module_context->lookup_local_variable( this->member);
-            if (maybe_value){
-               return std::move(maybe_value->clone());
-            }
-        } else{
-           //TODO
-          // auto builin_module = dynamic_cast<const BuiltinModule*>(iModule->module)
+              if (maybe_value){
+                return std::move(maybe_value->clone());
+              }
+          } else{
+            //TODO
+            // auto builtin_module = dynamic_cast<const BuiltinModule*>(iModule->module)
+             return Value::undefined.clone();
+          }
+      }else{
+        boost::optional<const Value&> maybe_modRef = module_lookup_context->lookup_moduleReference(pModRef->getModuleName());
+        if ( static_cast<bool>(maybe_modRef) == true){
+           auto const & modRef = maybe_modRef->toModuleReference();
+           module_lookup_context = modRef.getContext();
+           pModRef = & modRef;
+        }else{
+          return Value::undefined.clone();
         }
+      }
      }
   }
 
