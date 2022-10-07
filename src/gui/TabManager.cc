@@ -487,7 +487,7 @@ void TabManager::openTabFile(const QString& filename)
   if (knownFileType && cmd.isEmpty()) {
     setTabName(filename);
     editor->parameterWidget->readFile(fileinfo.absoluteFilePath());
-    par->updateRecentFiles(editor);
+    par->updateRecentFiles(filename);
   } else {
     setTabName(nullptr);
     editor->setPlainText(cmd.arg(filename));
@@ -680,7 +680,7 @@ bool TabManager::save(EditorInterface *edt, const QString path)
     edt->parameterWidget->saveFile(path);
     edt->setContentModified(false);
     edt->parameterWidget->setModified(false);
-    par->updateRecentFiles(edt);
+    par->updateRecentFiles(path);
   } else {
     saveError(file, _("Error saving design"), path);
   }

@@ -143,7 +143,7 @@ private:
 
 public slots:
   void updateExportActions();
-  void updateRecentFiles(EditorInterface *edt);
+  void updateRecentFiles(QString FileSavedOrOpened );
   void updateRecentFileActions();
   void handleFileDrop(const QUrl& url);
 
