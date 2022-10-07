@@ -984,16 +984,14 @@ bool MainWindow::network_progress_func(const double permille)
   return (progresswidget && progresswidget->wasCanceled());
 }
 
-void MainWindow::updateRecentFiles(EditorInterface *edt)
+void MainWindow::updateRecentFiles(QString FileSavedOrOpened)
 {
   // Check that the canonical file path exists - only update recent files
   // if it does. Should prevent empty list items on initial open etc.
-  QFileInfo fileinfo(edt->filepath);
-  auto infoFileName = fileinfo.absoluteFilePath();
   QSettingsCached settings; // already set up properly via main.cpp
   auto files = settings.value("recentFileList").toStringList();
-  files.removeAll(infoFileName);
-  files.prepend(infoFileName);
+  files.removeAll(FileSavedOrOpened);
+  files.prepend(FileSavedOrOpened);
   while (files.size() > UIUtils::maxRecentFiles) files.removeLast();
   settings.setValue("recentFileList", files);
 
