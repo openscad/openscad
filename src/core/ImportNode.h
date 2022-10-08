@@ -1,5 +1,7 @@
 #pragma once
 
+#include <boost/optional.hpp>
+
 #include "node.h"
 #include "Value.h"
 
@@ -26,8 +28,8 @@ public:
 
   ImportType type;
   Filename filename;
-  std::string layer;
-  std::string id;
+  boost::optional<std::string> id;
+  boost::optional<std::string> layer;
   int convexity;
   bool center;
   double dpi;

@@ -24,8 +24,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="2.5620932"
-     inkscape:cx="141.87618"
-     inkscape:cy="53.081598"
+     inkscape:cx="135.24098"
+     inkscape:cy="52.691292"
      inkscape:window-width="1920"
      inkscape:window-height="1011"
      inkscape:window-x="0"
@@ -34,6 +34,30 @@
      inkscape:current-layer="id-layer-2" />
   <defs
      id="defs2" />
+  <g
+     inkscape:groupmode="layer"
+     inkscape:label=""
+     id="id-layer-3">
+    <ellipse
+       style="fill:none;fill-opacity:0.358349;stroke:#000000;stroke-width:1;stroke-linecap:square;stroke-miterlimit:10"
+       id="id-ellipse"
+       cx="17.698433"
+       cy="8.4165783"
+       rx="12.207458"
+       ry="2.5403628"
+       inkscape:label="ellipse" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="id-layer-2"
+     inkscape:label="layer-2"
+     style="display:inline">
+    <path
+       id="id-circle"
+       style="fill:none;stroke:#000000;stroke-width:0.1;stroke-linecap:square;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 23.059575,16.392569 A 15.838794,14.746005 0 0 0 7.2207476,31.13843 15.838794,14.746005 0 0 0 23.059575,45.88431 15.838794,14.746005 0 0 0 35.138424,40.65362 26.70094,23.592397 0 0 1 27.74921,24.36728 a 26.70094,23.592397 0 0 1 1.180806,-6.923611 15.838794,14.746005 0 0 0 -5.870441,-1.0511 z"
+       inkscape:label="circle" />
+  </g>
   <g
      inkscape:label="layer-1"
      inkscape:groupmode="layer"
@@ -49,17 +73,6 @@
        rx="5"
        ry="5"
        inkscape:label="rectangle" />
-  </g>
-  <g
-     inkscape:groupmode="layer"
-     id="id-layer-2"
-     inkscape:label="layer-2"
-     style="display:inline">
-    <path
-       id="id-circle"
-       style="fill:none;stroke:#000000;stroke-width:0.1;stroke-linecap:square;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 20.942907,11.100899 A 15.838794,14.746005 0 0 0 5.1040808,25.84676 15.838794,14.746005 0 0 0 20.942907,40.59264 15.838794,14.746005 0 0 0 33.021756,35.36195 26.70094,23.592397 0 0 1 25.632542,19.07561 a 26.70094,23.592397 0 0 1 1.180806,-6.923611 15.838794,14.746005 0 0 0 -5.870441,-1.0511 z"
-       inkscape:label="circle" />
   </g>
   <g
      inkscape:groupmode="layer"

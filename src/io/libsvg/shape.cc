@@ -97,7 +97,9 @@ shape::create_from_name(const char *name)
 void
 shape::set_attrs(attr_map_t& attrs, void *context)
 {
-  this->id = attrs["id"];
+  if (attrs.find("id") != attrs.end()) {
+    this->id = attrs["id"];
+  }
   this->transform = attrs["transform"];
   this->stroke_width = attrs["stroke-width"];
   this->stroke_linecap = attrs["stroke-linecap"];
@@ -115,10 +117,9 @@ shape::set_attrs(attr_map_t& attrs, void *context)
     excluded = true;
   }
 
-  const std::string inkscape_label = attrs["inkscape:label"];
   const std::string inkscape_groupmode = attrs["inkscape:groupmode"];
-  if (inkscape_groupmode == "layer" && !inkscape_label.empty()) {
-      this->layer = inkscape_label;
+  if (inkscape_groupmode == "layer" && attrs.find("inkscape:label") != attrs.end()) {
+    this->layer = attrs["inkscape:label"];
   }
 
   const fnContext *ctx = reinterpret_cast<const fnContext *>(context);
@@ -349,7 +350,7 @@ shape::clone_children() {
 
 std::ostream& operator<<(std::ostream& os, const shape& s)
 {
-  return os << s.dump() << " | id = '" << s.id << "', transform = '" << s.transform << "'";
+  return os << s.dump() << " | id = '" << s.id.value_or("") << "', transform = '" << s.transform << "'";
 }
 
 } // namespace libsvg

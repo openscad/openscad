@@ -25,6 +25,7 @@
 #pragma once
 
 #include <map>
+#include <atomic>
 #include <string>
 #include <vector>
 #include <memory>
@@ -35,6 +36,8 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+#include <boost/optional.hpp>
+
 #include "util.h"
 #include "ext/polyclipping/clipper.hpp"
 
@@ -44,17 +47,18 @@ class shape;
 
 // ccox - I don't like putting this here, but the svg library code did not plan ahead for app customization.
 // And this is one of the few sensible places to put it without adding new header files.
-typedef struct fnContext {
-public:
+struct fnContext {
   fnContext(double fNN, double fSS, double fAA) : fn(fNN), fs(fSS), fa(fAA) {}
+  bool match(bool val) { if (val) matches++; return val; }
+  bool has_matches() { return matches.load() > 0; }
 
-public:
   double fn;
   double fs;
   double fa;
   std::function<bool (const libsvg::shape *)> selector;
-} fnContext;
-
+private:
+  std::atomic<int> matches{0};
+};
 
 namespace libsvg {
 
@@ -69,7 +73,8 @@ private:
   std::vector<shape *> children;
 
 protected:
-  std::string id;
+  boost::optional<std::string> id;
+  boost::optional<std::string> layer;
   double x;
   double y;
   path_list_t path_list;
@@ -78,7 +83,6 @@ protected:
   std::string stroke_linecap;
   std::string stroke_linejoin;
   std::string style;
-  std::string layer;
   bool excluded;
   bool selected;
 
@@ -99,8 +103,11 @@ public:
   virtual void add_child(shape *s) { children.push_back(s); s->set_parent(this); }
   virtual const std::vector<shape *>& get_children() const { return children; }
 
-  virtual const std::string& get_id() const { return id; }
-  virtual const std::string& get_layer() const { return layer; }
+  virtual bool has_id() const { return id.is_initialized(); }
+  virtual const std::string& get_id() const { return id.get(); }
+  virtual const std::string get_id_or_default(const std::string& def = "") const { return id.get_value_or(def); }
+  virtual bool has_layer() const { return layer.is_initialized(); }
+  virtual const std::string& get_layer() const { return layer.get(); }
   virtual double get_x() const { return x; }
   virtual double get_y() const { return y; }
 

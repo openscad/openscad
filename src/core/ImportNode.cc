@@ -108,15 +108,11 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     if (layername.isDefined()) {
       LOG(message_group::Deprecated, Location::NONE, "", "layername= is deprecated. Please use layer=");
       node->layer = layername.toString();
-    } else {
-      node->layer = "";
     }
   }
   const auto& idval = parameters["id"];
   if (idval.isDefined()) {
     node->id = idval.toString();
-  } else {
-    node->id = "";
   }
   node->convexity = (int)parameters["convexity"].toDouble();
 
@@ -201,7 +197,7 @@ const Geometry *ImportNode::createGeometry() const
     break;
   }
   case ImportType::DXF: {
-    DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layer, this->origin_x, this->origin_y, this->scale);
+    DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layer.value_or(""), this->origin_x, this->origin_y, this->scale);
     g = dd.toPolygon2d();
     break;
   }
@@ -226,10 +222,12 @@ std::string ImportNode::toString() const
   fs::path path((std::string)this->filename);
 
   stream << this->name();
-  stream << "(file = " << this->filename
-         << ", layer = " << QuotedString(this->layer);
-  if (!this->id.empty()) {
-    stream << ", id = " << QuotedString(this->id);
+  stream << "(file = " << this->filename;
+  if (this->id) {
+    stream << ", id = " << QuotedString(this->id.get());
+  }
+  if (this->layer) {
+    stream << ", layer = " << QuotedString(this->layer.get());
   }
   stream << ", origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "]";
   if (this->type == ImportType::SVG) {

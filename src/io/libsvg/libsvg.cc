@@ -128,7 +128,7 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list, 
         if (!in_defs) {
           shape_list->push_back(s);
         } else {
-          if (!s->get_id().empty()) {
+          if (!s->get_id_or_default().empty()) {
             defs_lookup_list->insert(std::make_pair(s->get_id(), s));
           }
           temp_defs_storage->push_back(s);
