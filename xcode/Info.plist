@@ -28,5 +28,17 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>OpenSCAD wants to be able to read/write files in this folder.</string>
+	<key>NSDesktopFolderUsageDescription</key>
+	<string>OpenSCAD wants to be able to read/write files in this folder.</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>OpenSCAD wants to be able to read/write files in this folder.</string>
+	<key>NSNetworkVolumesUsageDescription</key>
+	<string>OpenSCAD wants to be able to read/write files in this folder.</string>
+	<key>NSRemovableVolumesUsageDescription</key>
+	<string>OpenSCAD wants to be able to read/write files in this folder.</string>
+	<key>NSFileProviderDomainUsageDescription</key>
+	<string>OpenSCAD wants to be able to read/write files in this folder.</string>
 </dict>
 </plist>
