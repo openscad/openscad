@@ -28,6 +28,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <functional>
 
 #include <iostream>
 
@@ -37,6 +38,9 @@
 #include "util.h"
 #include "ext/polyclipping/clipper.hpp"
 
+namespace libsvg {
+class shape;
+}
 
 // ccox - I don't like putting this here, but the svg library code did not plan ahead for app customization.
 // And this is one of the few sensible places to put it without adding new header files.
@@ -48,6 +52,7 @@ public:
   double fn;
   double fs;
   double fa;
+  std::function<bool (const libsvg::shape *)> selector;
 } fnContext;
 
 
@@ -74,6 +79,7 @@ protected:
   std::string stroke_linejoin;
   std::string style;
   bool excluded;
+  bool selected;
 
   double get_stroke_width() const;
   ClipperLib::EndType get_stroke_linecap() const;

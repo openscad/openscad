@@ -27,6 +27,7 @@ public:
   ImportType type;
   Filename filename;
   std::string layername;
+  std::string id;
   int convexity;
   bool center;
   double dpi;

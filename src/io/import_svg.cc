@@ -84,10 +84,20 @@ double calc_alignment(const libsvg::align_t alignment, double page_mm, double sc
 
 
 Polygon2d *import_svg(double fn, double fs, double fa,
-                      const std::string& filename, const double dpi, const bool center, const Location& loc)
+                      const std::string& filename, const double dpi, const bool center, const std::string& selected_id, const Location& loc)
 {
   try {
     fnContext scadContext(fn, fs, fa);
+    if (!selected_id.empty()) {
+      scadContext.selector = [selected_id](const libsvg::shape *s) {
+          return s->get_id() == selected_id;
+        };
+    } else {
+      // no selection means selecting the root
+      scadContext.selector = [](const libsvg::shape *s) {
+          return s->get_parent() == nullptr;
+        };
+    }
 
     const auto shapes = libsvg::libsvg_read_file(filename.c_str(), (void *) &scadContext);
 

@@ -52,7 +52,7 @@
 
 namespace libsvg {
 
-shape::shape() : parent(nullptr), x(0), y(0), excluded(false)
+shape::shape() : parent(nullptr), x(0), y(0), excluded(false), selected(false)
 {
 }
 
@@ -114,6 +114,9 @@ shape::set_attrs(attr_map_t& attrs, void *context)
   if (display == "none") {
     excluded = true;
   }
+
+  const fnContext *ctx = reinterpret_cast<const fnContext *>(context);
+  selected = (ctx->selector) ? ctx->selector(this) : false;
 }
 
 const std::string
@@ -259,9 +262,10 @@ bool
 shape::is_excluded() const
 {
   for (const shape *s = this; s != nullptr; s = s->get_parent()) {
+    if (s->selected) return false;
     if (s->excluded) return true;
   }
-  return false;
+  return true;
 }
 
 void
