@@ -493,6 +493,7 @@ file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/box-w-holes-2d.scad
   ${TEST_SCAD_DIR}/svg/display.scad
   ${TEST_SCAD_DIR}/svg/id.scad
+  ${TEST_SCAD_DIR}/svg/id-layer-selection-test.scad
   ${TEST_SCAD_DIR}/svg/line-cap-line-join.scad
   ${TEST_SCAD_DIR}/svg/simple-center-2d.scad
   ${TEST_SCAD_DIR}/svg/use-transform.scad

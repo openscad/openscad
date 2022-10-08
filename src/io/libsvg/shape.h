@@ -78,6 +78,7 @@ protected:
   std::string stroke_linecap;
   std::string stroke_linejoin;
   std::string style;
+  std::string layer;
   bool excluded;
   bool selected;
 
@@ -99,6 +100,7 @@ public:
   virtual const std::vector<shape *>& get_children() const { return children; }
 
   virtual const std::string& get_id() const { return id; }
+  virtual const std::string& get_layer() const { return layer; }
   virtual double get_x() const { return x; }
   virtual double get_y() const { return y; }
 

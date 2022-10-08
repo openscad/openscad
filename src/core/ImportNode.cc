@@ -102,14 +102,14 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   node->filename = filename;
   const auto& layerval = parameters["layer"];
   if (layerval.isDefined()) {
-    node->layername = layerval.toString();
+    node->layer = layerval.toString();
   } else {
     const auto& layername = parameters["layername"];
     if (layername.isDefined()) {
       LOG(message_group::Deprecated, Location::NONE, "", "layername= is deprecated. Please use layer=");
-      node->layername = layername.toString();
+      node->layer = layername.toString();
     } else {
-      node->layername = "";
+      node->layer = "";
     }
   }
   const auto& idval = parameters["id"];
@@ -197,11 +197,11 @@ const Geometry *ImportNode::createGeometry() const
     break;
   }
   case ImportType::SVG: {
-    g = import_svg(this->fn, this->fs, this->fa, this->filename, this->dpi, this->center, this->id, loc);
+    g = import_svg(this->fn, this->fs, this->fa, this->filename, this->id, this->layer, this->dpi, this->center, loc);
     break;
   }
   case ImportType::DXF: {
-    DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
+    DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layer, this->origin_x, this->origin_y, this->scale);
     g = dd.toPolygon2d();
     break;
   }
@@ -227,7 +227,7 @@ std::string ImportNode::toString() const
 
   stream << this->name();
   stream << "(file = " << this->filename
-         << ", layer = " << QuotedString(this->layername);
+         << ", layer = " << QuotedString(this->layer);
   if (!this->id.empty()) {
     stream << ", id = " << QuotedString(this->id);
   }

@@ -106,13 +106,19 @@ shape::set_attrs(attr_map_t& attrs, void *context)
 
   std::string display = get_style("display");
   if (display.empty()) {
-    attr_map_t::const_iterator it = attrs.find("display");
+    const attr_map_t::const_iterator it = attrs.find("display");
     if (it != attrs.end()) {
       display = it->second;
     }
   }
   if (display == "none") {
     excluded = true;
+  }
+
+  const std::string inkscape_label = attrs["inkscape:label"];
+  const std::string inkscape_groupmode = attrs["inkscape:groupmode"];
+  if (inkscape_groupmode == "layer" && !inkscape_label.empty()) {
+      this->layer = inkscape_label;
   }
 
   const fnContext *ctx = reinterpret_cast<const fnContext *>(context);
