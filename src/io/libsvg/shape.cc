@@ -52,7 +52,7 @@
 
 namespace libsvg {
 
-shape::shape() : parent(nullptr), x(0), y(0), excluded(false)
+shape::shape() : parent(nullptr), x(0), y(0), excluded(false), selected(false)
 {
 }
 
@@ -97,7 +97,9 @@ shape::create_from_name(const char *name)
 void
 shape::set_attrs(attr_map_t& attrs, void *context)
 {
-  this->id = attrs["id"];
+  if (attrs.find("id") != attrs.end()) {
+    this->id = attrs["id"];
+  }
   this->transform = attrs["transform"];
   this->stroke_width = attrs["stroke-width"];
   this->stroke_linecap = attrs["stroke-linecap"];
@@ -106,7 +108,7 @@ shape::set_attrs(attr_map_t& attrs, void *context)
 
   std::string display = get_style("display");
   if (display.empty()) {
-    attr_map_t::const_iterator it = attrs.find("display");
+    const attr_map_t::const_iterator it = attrs.find("display");
     if (it != attrs.end()) {
       display = it->second;
     }
@@ -114,6 +116,14 @@ shape::set_attrs(attr_map_t& attrs, void *context)
   if (display == "none") {
     excluded = true;
   }
+
+  const std::string inkscape_groupmode = attrs["inkscape:groupmode"];
+  if (inkscape_groupmode == "layer" && attrs.find("inkscape:label") != attrs.end()) {
+    this->layer = attrs["inkscape:label"];
+  }
+
+  const fnContext *ctx = reinterpret_cast<const fnContext *>(context);
+  selected = (ctx->selector) ? ctx->selector(this) : false;
 }
 
 const std::string
@@ -259,9 +269,10 @@ bool
 shape::is_excluded() const
 {
   for (const shape *s = this; s != nullptr; s = s->get_parent()) {
+    if (s->selected) return false;
     if (s->excluded) return true;
   }
-  return false;
+  return true;
 }
 
 void
@@ -339,7 +350,7 @@ shape::clone_children() {
 
 std::ostream& operator<<(std::ostream& os, const shape& s)
 {
-  return os << s.dump() << " | id = '" << s.id << "', transform = '" << s.transform << "'";
+  return os << s.dump() << " | id = '" << s.id.value_or("") << "', transform = '" << s.transform << "'";
 }
 
 } // namespace libsvg

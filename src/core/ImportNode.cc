@@ -65,7 +65,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"file", "layer", "convexity", "origin", "scale"},
-                                            {"width", "height", "filename", "layername", "center", "dpi"}
+                                            {"width", "height", "filename", "layername", "center", "dpi", "id"}
                                             );
 
   const auto& v = parameters["file"];
@@ -102,15 +102,17 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   node->filename = filename;
   const auto& layerval = parameters["layer"];
   if (layerval.isDefined()) {
-    node->layername = layerval.toString();
+    node->layer = layerval.toString();
   } else {
     const auto& layername = parameters["layername"];
     if (layername.isDefined()) {
       LOG(message_group::Deprecated, Location::NONE, "", "layername= is deprecated. Please use layer=");
-      node->layername = layername.toString();
-    } else {
-      node->layername = "";
+      node->layer = layername.toString();
     }
+  }
+  const auto& idval = parameters["id"];
+  if (idval.isDefined()) {
+    node->id = idval.toString();
   }
   node->convexity = (int)parameters["convexity"].toDouble();
 
@@ -191,11 +193,11 @@ const Geometry *ImportNode::createGeometry() const
     break;
   }
   case ImportType::SVG: {
-    g = import_svg(this->fn, this->fs, this->fa, this->filename, this->dpi, this->center, loc);
+    g = import_svg(this->fn, this->fs, this->fa, this->filename, this->id, this->layer, this->dpi, this->center, loc);
     break;
   }
   case ImportType::DXF: {
-    DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
+    DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layer.value_or(""), this->origin_x, this->origin_y, this->scale);
     g = dd.toPolygon2d();
     break;
   }
@@ -220,9 +222,14 @@ std::string ImportNode::toString() const
   fs::path path((std::string)this->filename);
 
   stream << this->name();
-  stream << "(file = " << this->filename
-         << ", layer = " << QuotedString(this->layername)
-         << ", origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "]";
+  stream << "(file = " << this->filename;
+  if (this->id) {
+    stream << ", id = " << QuotedString(this->id.get());
+  }
+  if (this->layer) {
+    stream << ", layer = " << QuotedString(this->layer.get());
+  }
+  stream << ", origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "]";
   if (this->type == ImportType::SVG) {
     stream << ", center = " << (this->center ? "true" : "false")
            << ", dpi = " << this->dpi;
