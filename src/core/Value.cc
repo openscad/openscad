@@ -23,6 +23,10 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+/*
+Copyright (C) Andy Little (kwikius@yahoo.com) 10/10/2022  add module_reference value type
+https://github.com/openscad/openscad/blob/master/COPYING
+*/
 
 #include <cassert>
 #include <cmath>

@@ -1,4 +1,8 @@
 #pragma once
+/*
+Copyright (C) Andy Little (kwikius@yahoo.com) 10/10/2022  add module_reference value type
+https://github.com/openscad/openscad/blob/master/COPYING
+*/
 
 #include <vector>
 #include <string>
