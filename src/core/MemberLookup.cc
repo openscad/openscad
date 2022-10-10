@@ -1,4 +1,8 @@
 
+/*
+Copyright (C) Andy Little (kwikius@yahoo.com) 10/10/2022  initial revision module_reference member lookup
+https://github.com/openscad/openscad/blob/master/COPYING
+*/
 #include <typeinfo>
 #include <boost/regex.hpp>
 #include "MemberLookup.h"

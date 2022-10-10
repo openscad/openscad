@@ -1,3 +1,8 @@
+
+/*
+Copyright (C) Andy Little (kwikius@yahoo.com) 10/10/2022  initial revision module_reference evaluate
+https://github.com/openscad/openscad/blob/master/COPYING
+*/
 #include "compiler_specific.h"
 #include "Context.h"
 #include "ModuleInstantiation.h"
