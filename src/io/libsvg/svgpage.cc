@@ -48,6 +48,9 @@ svgpage::set_attrs(attr_map_t& attrs, void *context)
   this->height = parse_length(attrs["height"]);
   this->viewbox = parse_viewbox(attrs["viewBox"]);
   this->alignment = parse_alignment(attrs["preserveAspectRatio"]);
+
+  const fnContext *ctx = reinterpret_cast<const fnContext *>(context);
+  selected = (ctx->selector) ? ctx->selector(this) : false;
 }
 
 const std::string
