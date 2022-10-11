@@ -89,17 +89,8 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_pt
    if ( id_expr) {
       auto const value = id_expr->evaluate(context);
       switch(value.type()){
-         // Literal string or ModuleReference
-         case Value::Type::STRING:
-            const_cast<ModuleInstantiation*>(this)->modname = value.toString();
-         break;
          case Value::Type::MODULE:{
             auto const & modRef = value.toModuleReference();
-            if ( modRef.getModuleName() == this->name() ){
-               LOG(message_group::Warning, this->loc, context->documentRoot(), "Ignoring recursive module reference '%1$s'", this->name());
-               setTo(old_name,old_args);
-               return nullptr;
-            }
             AssignmentList argsOut;
             if (modRef.transformToInstantiationArgs(
                this->arguments,
@@ -154,11 +145,7 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_pt
         return nullptr;
       }
       auto const & modRef = maybe_modRef->toModuleReference();
-      if ( modRef.getModuleName() == this->name() ){
-          LOG(message_group::Warning, this->loc, context->documentRoot(), "Ignoring recursive module reference '%1$s'", this->name());
-          setTo(old_name,old_args);
-          return nullptr;
-      }
+
       AssignmentList argsOut;
       if (modRef.transformToInstantiationArgs(
          this->arguments,
