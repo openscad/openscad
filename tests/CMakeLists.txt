@@ -348,7 +348,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         # add global experimental options here
         set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=module-literal" "--enable=roof" "--enable=lazy-union" "--enable=textmetrics" "--enable=import-function")
       endif()
-      
+
       # Enable fast-csg for all tests but those that have different expectations or fail for other reasons.
       if (NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
           AND NOT SCADFILE IN_LIST SCADFILES_FAILING_WITH_FAST_CSG
@@ -358,7 +358,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
           set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg-trust-corefinement")
         endif()
       endif()
-        
+
       # 2D tests should be viewed from the top, not an angle.
       set(CAMERA_OPTION "")
       is_2d(${SCADFILE} IS2D)
@@ -849,6 +849,7 @@ experimental_tests(svgpngtest_text-metrics)
 experimental_tests(echotest_import-json)
 experimental_tests(echotest_import-json-relative-path)
 
+experimental_tests(dumptest_modlitexamples_subtract)
 experimental_tests(dumptest_module_literal_extrusion3d)
 experimental_tests(dumptest_module_literal_extrusions3d)
 experimental_tests(dumptest-examples_modlitexamples_airfoil)
@@ -873,9 +874,11 @@ experimental_tests(dumptest-examples_modlitexamples_shape_choice)
 experimental_tests(dumptest-examples_modlitexamples_simple)
 experimental_tests(dumptest-examples_modlitexamples_simple_args)
 experimental_tests(dumptest-examples_modlitexamples_wiki_example2)
+experimental_tests(cgalpngtest_modlitexamples_subtract)
 experimental_tests(cgalpngtest_module_literal_extrusions2d)
 experimental_tests(cgalpngtest_module_literal_extrusion3d)
 experimental_tests(cgalpngtest_module_literal_extrusions3d)
+experimental_tests(opencsg_test-examples_modlitexamples_subtract)
 experimental_tests(opencsgtest_module_literal_extrusion3d)
 experimental_tests(opencsgtest_module_literal_extrusions3d)
 experimental_tests(csgpngtest_module_literal_extrusions2d)
