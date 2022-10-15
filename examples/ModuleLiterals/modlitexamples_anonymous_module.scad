@@ -10,9 +10,7 @@ use <modlitexamples_airfoil.scad>
 
 wing = module (span,chord, dihedral, taper =0,twist =0) {
 
-    // the braces are optional in case there are no parameters
-     wing_panel = module{  
-    // wing_panel = module() { // alternative form
+    wing_panel = module() {
        rotate([90-dihedral,0,0])
           linear_extrude( height = span/2, scale = (1-taper), twist = -twist)
             scale([chord,chord])

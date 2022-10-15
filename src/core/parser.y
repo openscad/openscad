@@ -41,14 +41,12 @@
 #include "ModuleInstantiation.h"
 #include "Assignment.h"
 #include "Expression.h"
-#include "ModuleLiteral.h"
-#include "MemberLookup.h"
+#include "GeometryLiteral.h"
 #include "function.h"
 #include "printutils.h"
 #include "memory.h"
 #include <sstream>
 #include <stack>
-#include <list>
 #include <boost/filesystem.hpp>
 #include "boost-utils.h"
 
@@ -101,11 +99,11 @@ bool fileEnded=false;
   double number;
   class Expression *expr;
   class Vector *vec;
+  class Object *obj;
   class ModuleInstantiation *inst;
   class IfElseModuleInstantiation *ifelse;
   class Assignment *arg;
   AssignmentList *args;
-  std::list< std::shared_ptr<Expression> > *exprlist;
 }
 
 %token TOK_ERROR
@@ -139,7 +137,6 @@ bool fileEnded=false;
 %type <expr> expr
 %type <expr> call
 %type <expr> logic_or
-%type <expr> module_literal
 %type <expr> logic_and
 %type <expr> equality
 %type <expr> comparison
@@ -149,6 +146,7 @@ bool fileEnded=false;
 %type <expr> unary
 %type <expr> primary
 %type <vec> vector_elements
+%type <obj> object_elements
 %type <expr> list_comprehension_elements
 %type <expr> list_comprehension_elements_p
 %type <expr> vector_element
@@ -158,16 +156,20 @@ bool fileEnded=false;
 %type <ifelse> if_statement
 %type <ifelse> ifelse_statement
 %type <inst> single_module_instantiation
+%type <inst> geometry
 
 %type <args> arguments
 %type <args> argument_list
 %type <args> parameters
 %type <args> parameter_list
-%type <args> braced_parameters_or_empty
-%type <args> braced_arguments_or_empty
+
 %type <arg> argument
 %type <arg> parameter
 %type <text> module_id
+%type <expr> ref
+%type <text> reserved_but_allowed_in_module_name
+%type <text> reserved_but_allowed_in_object_key
+%type <text> object_key
 
 %debug
 %locations
@@ -195,11 +197,9 @@ statement
         | assignment
         | TOK_MODULE TOK_ID '(' parameters ')'
             {
-              UserModule *newmodule = new UserModule($2, LOCD("module", @$));
-              newmodule->parameters = *$4;
-              auto top = scope_stack.top();
+              UserModule *newmodule = new UserModule($2, LOCD("module", @$), *$4);
+              scope_stack.top()->addModule(shared_ptr<UserModule>(newmodule));
               scope_stack.push(&newmodule->body);
-              top->addModule(shared_ptr<UserModule>(newmodule));
               free($2);
               delete $4;
             }
@@ -269,6 +269,11 @@ module_instantiation
             {
                 $$ = $1;
             }
+        | geometry
+            {
+              $<inst>$ = $1;
+            }
+
         ;
 
 ifelse_statement
@@ -315,37 +320,107 @@ child_statement
             }
         ;
 
+// Maybe geometry should *only* be allowed to be "(expr);".  That would make it
+// totally general - not a subset expression - and would make it kind of
+// visually distinctive.
+geometry
+        : ref ';'
+            {
+              $$ = new GeometryInstantiation(
+                std::shared_ptr<Expression>($1), LOCD("geometry", @$));
+            }
+        ;
+
 // "for", "let" and "each" are valid module identifiers
-module_id
-        : TOK_ID  { $$ = $1; }
-        | TOK_FOR { $$ = strdup("for"); }
+reserved_but_allowed_in_module_name
+        : TOK_FOR { $$ = strdup("for"); }
         | TOK_LET { $$ = strdup("let"); }
         | TOK_ASSERT { $$ = strdup("assert"); }
         | TOK_ECHO { $$ = strdup("echo"); }
         | TOK_EACH { $$ = strdup("each"); }
         ;
 
+module_id
+        : TOK_ID
+        | reserved_but_allowed_in_module_name
+        ;
+
+// NEEDSWORK: "ref" is *almost* the same as "call", except for the exclusion of
+// function calls, and it sure seems desirable to unify them.  However, (a) I
+// don't immediately see how to do that, and (b) it might as well wait until
+// we decide exactly what forms to allow.
+ref
+        : module_id
+            {
+              $$ = new Lookup($1, LOCD("variable", @$));
+              free($1);
+            }
+// Allowing both (expr), an expression that evaluates to a module reference,
+// and a sequence of function calls f(a)(b)... that evaluates to a module
+// reference, yields a reduce-reduce conflict:
+// f(a)(b)(c) can be either:
+// * A module invocation f(a) with a module invocation (b)(c) as a child, where
+//   b is an expression that evaluates to a module reference, or
+// * A function invocation f(a) that returns a function reference, with argument
+//   (b), that returns a module reference with argument (c).
+//
+// It is not clear to me which interpretation is more useful - or, more
+// precisely, whether it's more useful to allow f(a)(b) as a function returning
+// a module reference, or (m)(a), where m is an expression yielding a
+// module reference.
+//
+        | '(' expr ')'
+            {
+               $$ = $2;
+            }
+//        | ref '(' arguments ')'
+//            {
+//              $$ = new FunctionCall($1, *$3, LOCD("functioncall", @$));
+//              delete $3;
+//            }
+        | ref '[' expr ']'
+            {
+              $$ = new ArrayLookup($1, $3, LOCD("index", @$));
+            }
+        | ref '.' TOK_ID
+            {
+              $$ = new MemberLookup($1, $3, LOCD("member", @$));
+              free($3);
+            }
+        ;
+
 single_module_instantiation
-       : module_id '(' arguments ')'
-        {
-           $$ = new ModuleInstantiation($1, *$3, LOCD("modulecall", @$));
-           delete $3;
-        }
-     | '(' expr ')' '(' arguments ')'
-         {
-            $$ = new ModuleInstantiation(shared_ptr<Expression>($2), *$5, LOCD("modulecall", @$));
-            delete $5;
-         }
+        : ref '(' arguments ')'
+            {
+                $$ = new ModuleInstantiation($1, *$3, LOCD("modulecall", @$));
+                delete $3;
+            }
         ;
 
 expr
         : logic_or
-        | module_literal
         | TOK_FUNCTION '(' parameters ')' expr %prec NO_ELSE
             {
               $$ = new FunctionDefinition($5, *$3, LOCD("anonfunc", @$));
               delete $3;
             }
+        |  TOK_MODULE '(' parameters ')' '{'
+          {
+            if (!Feature::ExperimentalModuleLiteral.is_enabled()){
+              // NEEDSWORK should refuse to work, not just warn.
+              LOG(message_group::Warning, LOC(@$),"", "Experimental module-literal is not enabled");
+            }
+
+            UserModule *newmodule = new UserModule("", LOCD("anonmodule", @$), *$3);
+            $<expr>$ = new ModuleDefinition(newmodule, LOCD("anonmodule", @$));
+            scope_stack.push(&newmodule->body);
+            delete $3;
+          }
+            inner_input '}'
+          {
+            scope_stack.pop();
+            $$ = $<expr>6;
+          }
         | logic_or '?' expr ':' expr
             {
               $$ = new TernaryOp($1, $3, $5, LOCD("ternary", @$));
@@ -365,79 +440,6 @@ expr
               $$ = FunctionCall::create("echo", *$3, $5, LOCD("echo", @$));
               delete $3;
             }
-        ;
-
-braced_parameters_or_empty
-     :
-       {
-         $$ = new AssignmentList;
-       }
-     | '(' parameters ')'
-       {
-         $$ = $2;
-       }
-     ;
-
-braced_arguments_or_empty
-     :
-       {
-         $$ = new AssignmentList;
-       }
-     | '(' arguments ')'
-       {
-         $$ = $2;
-       }
-     ;
-
-module_literal
-        :
-          TOK_MODULE TOK_ID braced_arguments_or_empty
-           {
-              AssignmentList params;
-              $$ = MakeModuleLiteral($2, params, *$3, LOCD("moduleliteral", @$));
-              free($2);
-              delete $3;
-           }
-       |   TOK_MODULE '(' parameters ')' TOK_ID '(' arguments ')'
-           {
-              std::string const modname = generateAnonymousModuleName();
-              UserModule *newmodule = new UserModule(modname.c_str(), LOCD("anonmodule", @$));
-              newmodule->parameters = *$3;
-              delete $3;
-              auto top = scope_stack.top();
-              scope_stack.push(&newmodule->body);
-              top->addModule(shared_ptr<UserModule>(newmodule));
-              auto inst = new ModuleInstantiation($5, *$7, LOCD("modulecall", @$));
-              scope_stack.top()->addModuleInst(shared_ptr<ModuleInstantiation>(inst));
-              free($5);
-              delete($7);
-              scope_stack.pop();
-              AssignmentList args;
-              $$ = MakeModuleLiteral(modname,newmodule->parameters,args,LOCD("anonmodule", @$));
-           }
-        |  TOK_MODULE braced_parameters_or_empty '{'
-          {
-              std::string modname = generateAnonymousModuleName();
-              UserModule *newmodule = new UserModule(modname.c_str(), LOCD("anonmodule", @$));
-              pushAnonymousModuleName(modname);
-              newmodule->parameters = *$2;
-              delete $2;
-              auto top = scope_stack.top();
-              scope_stack.push(&newmodule->body);
-              top->addModule(shared_ptr<UserModule>(newmodule));
-          }
-            inner_input '}'
-          {
-              scope_stack.pop();
-              auto top = scope_stack.top();
-              std::string modname = popAnonymousModuleName();
-              auto it = top->modules.find(modname.c_str());
-              if( it != top->modules.end() ){
-                auto  m = it->second;
-                AssignmentList args;
-                $$ = MakeModuleLiteral(m->name,m->parameters,args,LOCD("anonmodule", @$));
-              }
-          }
         ;
 
 logic_or
@@ -613,7 +615,37 @@ primary
             {
               $$ = $2;
             }
-		;
+        | '{' '}'
+            {
+              $$ = new Object(LOCD("object", @$));
+            }
+        | '{' object_elements optional_trailing_comma '}'
+            {
+              $$ = $2;
+            }
+        | '{' '{'
+            {
+              GeometryLiteral *gl = new GeometryLiteral(LOCD("literal", @$));
+              scope_stack.push(&gl->body);
+              $<expr>$ = gl;
+            }
+          inner_input '}' '}'
+            {
+              scope_stack.pop();
+              $$ = $<expr>3;
+            }
+        | '{' '('
+            {
+              HybridLiteral *gl = new HybridLiteral(LOCD("literal", @$));
+              scope_stack.push(&gl->body);
+              $<expr>$ = gl;
+            }
+          inner_input ')' '}'
+            {
+              scope_stack.pop();
+              $$ = $<expr>3;
+            }
+            ;
 
 expr_or_empty
         : /* empty */
@@ -689,6 +721,41 @@ vector_elements
 vector_element
         : list_comprehension_elements_p
         | expr
+        ;
+
+object_elements
+        : object_key ':' expr
+            {
+              $$ = new Object(LOCD("object", @$));
+              $$->set($1, $3);
+              free($1);
+            }
+        | object_elements ',' object_key ':' expr
+            {
+              $$ = $1;
+              $$->set($3, $5);
+              free($3);
+            }
+        ;
+
+reserved_but_allowed_in_object_key
+        : reserved_but_allowed_in_module_name
+        | TOK_USE
+        | TOK_MODULE { $$ = strdup("module"); }
+        | TOK_FUNCTION { $$ = strdup("function"); }
+        | TOK_IF { $$ = strdup("if"); }
+        | TOK_ELSE { $$ = strdup("else"); }
+        // Maybe not these next three; maybe they should be reserved for indexed by bool
+        // and indexed by undef.
+        | TOK_TRUE { $$ = strdup("true"); }
+        | TOK_FALSE { $$ = strdup("false"); }
+        | TOK_UNDEF { $$ = strdup("undef"); }
+        ;
+
+object_key
+        : TOK_STRING
+        | TOK_ID
+        | reserved_but_allowed_in_object_key
         ;
 
 parameters

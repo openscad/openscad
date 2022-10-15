@@ -7,7 +7,7 @@
  is a module_literal
  
 */
-modRef = module cube([10,10,20], center=true);
+modRef = module () { cube([10,10,20], center=true); };
 
 /*
  The module_reference can be used to instantiate 

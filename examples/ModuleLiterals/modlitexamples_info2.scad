@@ -1,11 +1,11 @@
 use <modlitexamples_find.scad>
 
 cyl = module(s) { translate([s.x/2,s.y/2,0]) cylinder(d = min(s.x,s.y), h = s.z);};
-cube1 = module(s) cube(s);
+cube1 = module(s) { cube(s); };
 
 size = [20,20,40];
-mycube = module cube1(size);
-mycyl = module cyl(size *2);
+mycube = module () { cube1(size); };
+mycyl = module () { cyl(size *2); };
 
 function get_info(m) =
 let(info_dict = [

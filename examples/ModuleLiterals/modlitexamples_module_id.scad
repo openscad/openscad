@@ -8,7 +8,7 @@
  an alias name for the module
 */
 
-my_cube = module cube;
+my_cube = module (size, center) { cube(size=size, center=center); };
 
 /*
 In this form the arguments are supplied when the module the 

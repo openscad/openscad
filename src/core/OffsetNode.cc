@@ -83,6 +83,10 @@ std::string OffsetNode::toString() const
   return stream.str();
 }
 
+std::shared_ptr<AbstractNode> OffsetNode::cloneOne() const {
+  return std::make_shared<OffsetNode>(*this);
+}
+
 void register_builtin_offset()
 {
   Builtins::init("offset", new BuiltinModule(builtin_offset),

@@ -259,6 +259,10 @@ std::string TransformNode::verbose_name() const
   return _name;
 }
 
+std::shared_ptr<AbstractNode> TransformNode::cloneOne() const {
+  return std::make_shared<TransformNode>(*this);
+}
+
 void register_builtin_transform()
 {
   Builtins::init("scale", new BuiltinModule(builtin_scale),

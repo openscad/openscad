@@ -281,6 +281,10 @@ std::string ColorNode::name() const
   return "color";
 }
 
+std::shared_ptr<AbstractNode> ColorNode::cloneOne() const {
+  return std::make_shared<ColorNode>(*this);
+}
+
 void register_builtin_color()
 {
   Builtins::init("color", new BuiltinModule(builtin_color),

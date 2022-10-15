@@ -5,6 +5,33 @@
 #include "exceptions.h"
 #include "printutils.h"
 
+ModuleInstantiation::ModuleInstantiation(const std::string name, const AssignmentList args, const Location& loc)
+   : ASTNode(loc), arguments(std::move(args)), modname(std::move(name)), isLookup(true)
+{
+}
+
+/* Subclass must supply the meat. */
+ModuleInstantiation::ModuleInstantiation(const Location& loc) : ASTNode(loc)
+{
+}
+
+ModuleInstantiation::ModuleInstantiation(Expression *ref_expr, const AssignmentList args, const Location& loc)
+    : ASTNode(loc), arguments(args), ref_expr(ref_expr)
+{
+  if (typeid(*ref_expr) == typeid(Lookup)) {
+    isLookup = true;
+    const Lookup *lookup = static_cast<Lookup *>(ref_expr);
+    modname = lookup->get_name();
+  } else {
+    isLookup = false;
+    std::ostringstream s;
+    s << "(";
+    ref_expr->print(s, "");
+    s << ")";
+    modname = s.str();
+  }
+}
+
 void ModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
 {
   if (!inlined) stream << indent;
@@ -58,105 +85,37 @@ static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shar
   LOG(message_group::Trace, mod->location(), context->documentRoot(), "called by '%1$s'", mod->name());
 }
 
+boost::optional<InstantiableModule> ModuleInstantiation::evaluate_module_expression(const std::shared_ptr<const Context>& context) const
+{
+  if (isLookup) {
+    return context->lookup_module(modname, location());
+  } else {
+    Value v = ref_expr->evaluate(context);
+    if (v.type() == Value::Type::MODULE) {
+      return InstantiableModule{context, v.toModule().getModule()};
+    } else {
+      LOG(message_group::Warning, loc, context->documentRoot(), "Can't call module on %1$s", v.typeName());
+      return boost::none;
+    }
+  }
+}
+
 std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_ptr<const Context>& context) const
 {
-   std::string const old_name = this->modname; //N.B will be if id_exp ! empty
-   AssignmentList const old_args = this->arguments;
+  auto module = evaluate_module_expression(context);
+  if (!module) {
+    return nullptr;
+  }
 
-
-    auto setTo = [this](std::string const & name , AssignmentList const & args){
-     const_cast<ModuleInstantiation*>(this)->modname = name;
-     const_cast<ModuleInstantiation*>(this)->arguments = args;
-   };
-
-   std::shared_ptr<const Context> module_lookup_context = context;
-   if ( id_expr) {
-      auto const value = id_expr->evaluate(context);
-      switch(value.type()){
-         // Literal string or ModuleReference
-         case Value::Type::STRING:
-            const_cast<ModuleInstantiation*>(this)->modname = value.toString();
-         break;
-         case Value::Type::MODULE:{
-            auto const & modRef = value.toModuleReference();
-            if ( modRef.getModuleName() == this->name() ){
-               LOG(message_group::Warning, this->loc, context->documentRoot(), "Ignoring recursive module reference '%1$s'", this->name());
-               setTo(old_name,old_args);
-               return nullptr;
-            }
-            AssignmentList argsOut;
-            if (modRef.transformToInstantiationArgs(
-               this->arguments,
-               this->loc,
-               context,
-               argsOut
-            )){
-               setTo(modRef.getModuleName(),argsOut);
-               module_lookup_context = modRef.getContext();
-            }else{
-               setTo(old_name,old_args);
-               return nullptr;
-            }
-         }
-         break;
-         default:
-            LOG(message_group::Warning, this->loc, context->documentRoot(),
-            "ModuleInstantiation: invalid id expression" );
-         return nullptr;
-      }
-   }
-
-   int32_t loopcount = 0;
-   // max number of references to reference
-   int32_t constexpr maxLoopCount = 1000;
-   for(;;){
-      if (++loopcount > maxLoopCount){
-        LOG(message_group::Warning, this->loc, context->documentRoot(),
-          "ModuleInstantiation: too many module_references '%1$s'", this->name());
-        setTo(old_name,old_args);
-        return nullptr;
-      }
-      boost::optional<InstantiableModule> module = module_lookup_context->lookup_module(this->name(), this->loc);
-      if (module) {
-        try{
-          auto node = module->module->instantiate(module->defining_context, this, context);
-          setTo(old_name,old_args);
-          return node;
-        } catch (EvaluationException& e) {
-          setTo(old_name,old_args);
-          if (e.traceDepth > 0) {
-            print_trace(this, context);
-            e.traceDepth--;
-          }
-          throw;
-        }
-     }else{
-      boost::optional<const Value&> maybe_modRef =  module_lookup_context->lookup_moduleReference(this->name());
-      if (!maybe_modRef ){
-        LOG(message_group::Warning, this->loc, context->documentRoot(), "Ignoring unknown module/ref '%1$s'", this->name());
-        setTo(old_name,old_args);
-        return nullptr;
-      }
-      auto const & modRef = maybe_modRef->toModuleReference();
-      if ( modRef.getModuleName() == this->name() ){
-          LOG(message_group::Warning, this->loc, context->documentRoot(), "Ignoring recursive module reference '%1$s'", this->name());
-          setTo(old_name,old_args);
-          return nullptr;
-      }
-      AssignmentList argsOut;
-      if (modRef.transformToInstantiationArgs(
-         this->arguments,
-         this->loc,
-         context,
-         argsOut
-      )){
-         setTo(modRef.getModuleName(),argsOut);
-         module_lookup_context = modRef.getContext();
-      }else{
-          setTo(old_name,old_args);
-          return nullptr;
-      }
+  try{
+    auto node = module->module->instantiate(module->defining_context, this, context);
+    return node;
+  } catch (EvaluationException& e) {
+    if (e.traceDepth > 0) {
+      print_trace(this, context);
+      e.traceDepth--;
     }
+    throw;
   }
 }
 

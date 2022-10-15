@@ -10,7 +10,7 @@ color("red"){
 }
 
 // alternative ModuleLiteral syntax
-my_module2 = module cube([10,10,10],center = true); 
+my_module2 = module () { cube([10,10,10],center = true); };
 color("blue"){
    translate([10,0,0]) my_module2();
 }

@@ -140,6 +140,10 @@ std::string CgalAdvNode::toString() const
   return stream.str();
 }
 
+std::shared_ptr<AbstractNode> CgalAdvNode::cloneOne() const {
+  return std::make_shared<CgalAdvNode>(*this);
+}
+
 void register_builtin_cgaladv()
 {
   Builtins::init("minkowski", new BuiltinModule(builtin_minkowski),

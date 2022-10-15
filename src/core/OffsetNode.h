@@ -10,6 +10,7 @@ public:
   OffsetNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
   std::string toString() const override;
   std::string name() const override { return "offset"; }
+  std::shared_ptr<AbstractNode> cloneOne() const override;
 
   bool chamfer{false};
   double fn{0}, fs{0}, fa{0}, delta{1};

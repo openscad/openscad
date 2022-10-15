@@ -56,6 +56,9 @@ public:
   // FIXME: Make protected
   std::vector<std::shared_ptr<AbstractNode>> children;
   const ModuleInstantiation *modinst;
+  void setModuleInstantiation(const ModuleInstantiation *modinst) {
+    this->modinst = modinst;
+  }
 
   // progress_mark is a running number used for progress indication
   // FIXME: Make all progress handling external, put it in the traverser class?
@@ -66,6 +69,8 @@ public:
   int idx; // Node index (unique per tree)
 
   std::shared_ptr<const AbstractNode> getNodeByID(int idx, std::deque<std::shared_ptr<const AbstractNode>>& path) const;
+  virtual std::shared_ptr<AbstractNode> cloneOne() const = 0;
+  std::shared_ptr<AbstractNode> clone() const;
 };
 
 class AbstractIntersectionNode : public AbstractNode
@@ -75,6 +80,7 @@ public:
   AbstractIntersectionNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
   std::string toString() const override;
   std::string name() const override;
+  std::shared_ptr<AbstractNode> cloneOne() const override;
 };
 
 class AbstractPolyNode : public AbstractNode
@@ -99,6 +105,7 @@ public:
   VISITABLE();
   ListNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
   std::string name() const override;
+  std::shared_ptr<AbstractNode> cloneOne() const override;
 };
 
 /*!
@@ -112,6 +119,7 @@ public:
   GroupNode(const ModuleInstantiation *mi, std::string name = "") : AbstractNode(mi), _name(std::move(name)) { }
   std::string name() const override;
   std::string verbose_name() const override;
+  std::shared_ptr<AbstractNode> cloneOne() const override;
 private:
   const std::string _name;
 };
@@ -124,6 +132,19 @@ class RootNode : public GroupNode
 public:
   VISITABLE();
   RootNode() : GroupNode(&mi), mi("group") { }
+  std::string name() const override;
+private:
+  ModuleInstantiation mi;
+};
+
+/*!
+  Top of a geometry value.
+ */
+class LiteralNode : public GroupNode
+{
+public:
+  VISITABLE();
+  LiteralNode() : GroupNode(&mi), mi("literal") { }
   std::string name() const override;
 private:
   ModuleInstantiation mi;

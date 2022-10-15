@@ -41,6 +41,7 @@ void LocalScope::print(std::ostream& stream, const std::string& indent, const bo
   }
   for (const auto& m : this->astModules) {
     m.second->print(stream, indent);
+    stream << "\n";
   }
   for (const auto& assignment : this->assignments) {
     assignment->print(stream, indent);

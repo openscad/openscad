@@ -66,6 +66,10 @@ std::string RoofNode::toString() const
   return stream.str();
 }
 
+std::shared_ptr<AbstractNode> RoofNode::cloneOne() const {
+  return std::make_shared<RoofNode>(*this);
+}
+
 void register_builtin_roof()
 {
   Builtins::init("roof", new BuiltinModule(builtin_roof, &Feature::ExperimentalRoof), {

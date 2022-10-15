@@ -36,10 +36,10 @@ color("red"){
 }
 // Using ModuleLiteral syntax we could do
 choices = [
-  /* square =  */ module { translate([-5,-5,0]) cube([10,10,10]);},
-  /* cylinder = */  module cylinder(d = 10, h = 10),
-  /* triangle = */ module triangle_prism(10,5),
-  /* octagon = */ module octagon_prism(10,5)
+  /* square =  */ module () { translate([-5,-5,0]) cube([10,10,10]);},
+  /* cylinder = */  module () { cylinder(d = 10, h = 10); },
+  /* triangle = */ module () { triangle_prism(10,5); },
+  /* octagon = */ module () { octagon_prism(10,5); }
 ];
 shape2 = choices[choice];
 color("blue"){

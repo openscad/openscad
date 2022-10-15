@@ -55,12 +55,13 @@ struct IdentifierVisitor
   ValueIdentifier operator()(double) const { return nullptr; }
   ValueIdentifier operator()(const str_utf8_wrapper&) const { return nullptr; }
   ValueIdentifier operator()(const RangePtr&) const { return nullptr; }
+  ValueIdentifier operator()(const GeometryType& value) const { return nullptr; }
 
   ValueIdentifier operator()(const VectorType& value) const { return value.ptr.get(); }
   ValueIdentifier operator()(const EmbeddedVectorType& value) const { return value.ptr.get(); }
   ValueIdentifier operator()(const ObjectType& value) const { return value.ptr.get(); }
   ValueIdentifier operator()(const FunctionPtr& value) const { return value.get().get(); }
-  ValueIdentifier operator()(const ModuleReferencePtr& value) const { return value.get().get(); }
+  ValueIdentifier operator()(const ModulePtr& value) const { return value.get().get(); }
 };
 
 struct UseCountVisitor
@@ -70,12 +71,13 @@ struct UseCountVisitor
   int operator()(double) const { return 0; }
   int operator()(const str_utf8_wrapper&) const { return 0; }
   int operator()(const RangePtr&) const { return 0; }
+  int operator()(const GeometryType&) const { return 0; }
 
   int operator()(const VectorType& value) const { return value.ptr.use_count(); }
   int operator()(const EmbeddedVectorType& value) const { return value.ptr.use_count(); }
   int operator()(const ObjectType& value) const { return value.ptr.use_count(); }
   int operator()(const FunctionPtr& value) const { return value.get().use_count(); }
-  int operator()(const ModuleReferencePtr& value) const { return value.get().use_count(); }
+  int operator()(const ModulePtr& value) const { return value.get().use_count(); }
 };
 
 struct EmbeddedValuesVisitor
@@ -90,7 +92,8 @@ struct EmbeddedValuesVisitor
   const std::vector<Value> *operator()(const EmbeddedVectorType& value) const { return &value.ptr->vec; }
   const std::vector<Value> *operator()(const ObjectType& value) const { return &value.ptr->values; }
   const std::vector<Value> *operator()(const FunctionPtr&) const { return nullptr; }
-  const std::vector<Value> *operator()(const ModuleReferencePtr&) const { return nullptr; }
+  const std::vector<Value> *operator()(const ModulePtr&) const { return nullptr; }
+  const std::vector<Value> *operator()(const GeometryType&) const { return nullptr; }
 };
 
 struct ReferencedContextVisitor
@@ -105,7 +108,8 @@ struct ReferencedContextVisitor
   const std::shared_ptr<const Context> *operator()(const EmbeddedVectorType&) const { return nullptr; }
   const std::shared_ptr<const Context> *operator()(const ObjectType&) const { return nullptr; }
   const std::shared_ptr<const Context> *operator()(const FunctionPtr& value) const { return &value->getContext(); }
-  const std::shared_ptr<const Context> *operator()(const ModuleReferencePtr& value) const { return &value->getContext(); }
+  const std::shared_ptr<const Context> *operator()(const ModulePtr& value) const { return &value->getContext(); }
+  const std::shared_ptr<const Context> *operator()(const GeometryType& value) const { return nullptr; }
 };
 
 

@@ -6,15 +6,18 @@ use <MCAD/regular_shapes.scad>
 use <MCAD/boxes.scad>
 
 // extrusion modules parameterised on height
-module extSquare(height) 
+extSquare = module (height) {
   translate([-3.5,-3.5,0]) cube([7,7,height]);
-module extCircle(height) 
+};
+extCircle = module (height) {
   cylinder(d = 7, h = height, $fn = 30);
-module extTriangle(height) triangle_prism(height,5);
-module extOctagon(height) octagon_prism(height,4);
-module extRoundedCube(height) 
+};
+extTriangle = module (height) { triangle_prism(height,5); };
+extOctagon = module (height) { octagon_prism(height,4); };
+extRoundedCube = module (height) {
    translate([-3.5,-3.5,0]) 
      roundedCube([7,7, height],2,false,false);
+};
 
 // array of transforms
 // translations in col 0
@@ -32,11 +35,11 @@ poseInfo = [
 using ModuleLiterals feature, we can store Module Literals representing the modules in an array
 */
 extrusions = [
-   module extSquare,
-   module extCircle,
-   module extTriangle,
-   module extOctagon,
-   module extRoundedCube,
+   extSquare,
+   extCircle,
+   extTriangle,
+   extOctagon,
+   extRoundedCube,
 ];
 
 // The modules can be accessed directly

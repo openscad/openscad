@@ -17,13 +17,13 @@
 #include "UndefType.h"
 
 #include "memory.h"
-#include "ValuePtr.h"
-#include "ModuleReference.h"
 
 class tostring_visitor;
 class tostream_visitor;
 class Expression;
 class Value;
+class AbstractModule;
+class AbstractNode;
 
 class QuotedString : public std::string
 {
@@ -61,6 +61,29 @@ private:
 using RangePtr = ValuePtr<RangeType>;
 using FunctionPtr = ValuePtr<FunctionType>;
 
+class ModuleType
+{
+public:
+  ModuleType(std::shared_ptr<const Context> context, const AbstractModule *mod)
+    : context(context), mod(mod) { }
+  Value operator==(const ModuleType& other) const;
+  Value operator!=(const ModuleType& other) const;
+  Value operator<(const ModuleType& other) const;
+  Value operator>(const ModuleType& other) const;
+  Value operator<=(const ModuleType& other) const;
+  Value operator>=(const ModuleType& other) const;
+
+  const std::shared_ptr<const Context>& getContext() const { return context; }
+  const AbstractModule *getModule() const { return mod; }
+private:
+  std::shared_ptr<const Context> context;
+  const AbstractModule *mod;
+};
+
+using ModulePtr = ValuePtr<ModuleType>;
+
+std::ostream& operator<<(std::ostream& stream, const ModuleType& f);
+
 /**
  *  Value class encapsulates a std::variant value which can represent any of the
  *  value types existing in the SCAD language.
@@ -88,7 +111,8 @@ public:
     RANGE,
     FUNCTION,
     OBJECT,
-    MODULE
+    MODULE,
+    GEOMETRY
   };
   // FIXME: eventually remove this in favor of specific messages for each undef usage
   static const Value undefined;
@@ -266,6 +290,24 @@ public:
     static Value Empty() { return EmbeddedVectorType(nullptr); }
   };
 
+  class GeometryType
+  {
+private:
+    std::shared_ptr<AbstractNode> node;
+
+public:
+    GeometryType(std::shared_ptr<AbstractNode> node);
+    GeometryType clone() const;
+    Value operator==(const GeometryType& v) const;
+    Value operator<(const GeometryType& v) const;
+    Value operator>(const GeometryType& v) const;
+    Value operator!=(const GeometryType& v) const;
+    Value operator<=(const GeometryType& v) const;
+    Value operator>=(const GeometryType& v) const;
+    void print(std::ostream& stream) const;
+    std::shared_ptr<AbstractNode> getNode() const;
+  };
+
   class ObjectType
   {
 protected:
@@ -280,6 +322,7 @@ private:
 public:
     shared_ptr<ObjectObject> ptr;
     ObjectType(class EvaluationSession *session);
+    ObjectType(class EvaluationSession *session, std::shared_ptr<AbstractNode> node);
     [[nodiscard]] ObjectType clone() const;
     [[nodiscard]] const Value& get(const std::string& key) const;
     void set(const std::string& key, Value&& value);
@@ -294,6 +337,7 @@ public:
     Value operator>=(const ObjectType& v) const;
     const Value& operator[](const str_utf8_wrapper& v) const;
     [[nodiscard]] const std::vector<std::string>& keys() const;
+    static bool keyIsIdentifier(const std::string& k);
   };
 
 private:
@@ -334,8 +378,9 @@ public:
   [[nodiscard]] EmbeddedVectorType& toEmbeddedVectorNonConst();
   [[nodiscard]] const RangeType& toRange() const;
   [[nodiscard]] const FunctionType& toFunction() const;
+  [[nodiscard]] const ModuleType& toModule() const;
   [[nodiscard]] const ObjectType& toObject() const;
-  [[nodiscard]] const ModuleReference& toModuleReference() const;
+  [[nodiscard]] const GeometryType& toGeometry() const;
 
   // Other conversion utility functions
   bool getDouble(double& v) const;
@@ -378,7 +423,7 @@ public:
     return stream;
   }
 
-  using Variant = std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType, ModuleReferencePtr>;
+  using Variant = std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType, ModulePtr, GeometryType>;
 
   static_assert(sizeof(Value::Variant) <= 24, "Memory size of Value too big");
   [[nodiscard]] const Variant& getVariant() const { return value; }
@@ -389,15 +434,17 @@ private:
 
 // The object type which ObjectType's shared_ptr points to.
 struct Value::ObjectType::ObjectObject {
-  using obj_t = std::unordered_map<std::string, Value>;
-  obj_t map;
+  std::unordered_map<std::string, Value> map;
   class EvaluationSession *evaluation_session = nullptr;
   std::vector<std::string> keys;
   std::vector<Value> values;
+  std::shared_ptr<AbstractNode> node = nullptr;
 };
 
 std::ostream& operator<<(std::ostream& stream, const Value::ObjectType& u);
+std::ostream& operator<<(std::ostream& stream, const Value::GeometryType& u);
 
 using VectorType = Value::VectorType;
 using EmbeddedVectorType = Value::EmbeddedVectorType;
 using ObjectType = Value::ObjectType;
+using GeometryType = Value::GeometryType;

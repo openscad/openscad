@@ -12,9 +12,9 @@ function find (dict, key, pos = 0) =
 
 // example dictionary
 shape_lookup = [
-  ["cylinder", module(hgt) cylinder(d= 10,h=hgt,$fn = 20,center = true)],
-  ["cube",module(side,side1) cube([side,side1,side], center = true)],
-  ["pill", module {
+  ["cylinder", module(hgt) { cylinder(d= 10,h=hgt,$fn = 20,center = true); }],
+  ["cube",module(side,side1) { cube([side,side1,side], center = true); }],
+  ["pill", module () {
       hull(){
          ts = module (z) {
             translate([0,0,z])sphere(d = 18,$fn = 50);

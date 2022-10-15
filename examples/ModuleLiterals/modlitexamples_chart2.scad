@@ -12,10 +12,10 @@ use <modlitexamples_find.scad>
 module end_customisations(){}
 
 shapeLookup = [
-  ["square", module (height) { translate([-3.5,-3.5,0]) cube([7,7,height]);}],
-  ["cylinder", module (height) cylinder(d = 7, h = height)],
-  ["triangle", module (height) triangle_prism(height,4)],
-  ["octagon", module (height) octagon_prism(height,4)],
+  ["square", module (height) { translate([-3.5,-3.5,0]) cube([7,7,height]); }],
+  ["cylinder", module (height) { cylinder(d = 7, h = height); }],
+  ["triangle", module (height) { triangle_prism(height,4); }],
+  ["octagon", module (height) { octagon_prism(height,4); }],
   ["rounded cube", module(height) {
      translate([-3.5,-3.5,0]){
        roundedCube([7,7, height],2,false,false);

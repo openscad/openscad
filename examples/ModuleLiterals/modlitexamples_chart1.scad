@@ -11,14 +11,14 @@ module end_customisations(){}
 chooseSquare = 0;
 chooseCylindrical = 1;
 chooseTriangular = 2;
-chooseOctoganal = 3;
+chooseOctogonal = 3;
 
 assert( choice >=0 && choice < 4);
 choices = [
   module (height) { translate([-3.5,-3.5,0]) cube([7,7,height]);},
-  module (height) cylinder(d = 7, h = height),
-  module (height) triangle_prism(height,4),
-  module (height) octagon_prism(height,3)
+  module (height) { cylinder(d = 7, h = height); },
+  module (height) { triangle_prism(height,4); },
+  module (height) { octagon_prism(height,3); }
 ];
 
 translate([0,0,0])

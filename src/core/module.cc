@@ -43,6 +43,14 @@ BuiltinModule::BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const M
     };
 }
 
+// In theory this would be used to print a module reference that pointed
+// at a builtin module.  However, there's currently no syntactic way to
+// create such a thing.
+void BuiltinModule::print(std::ostream& stream, const std::string& indent) const
+{
+    stream << "(builtin)";
+}
+
 std::shared_ptr<AbstractNode> BuiltinModule::instantiate(const std::shared_ptr<const Context>& /*defining_context*/, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
 {
   return do_instantiate(inst, context);

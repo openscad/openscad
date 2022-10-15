@@ -43,8 +43,8 @@
 #include "Parameters.h"
 #include "printutils.h"
 #include "boost-utils.h"
+#include <boost/regex.hpp>
 #include <boost/assign/std/vector.hpp>
-
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 Value Expression::checkUndef(Value&& val, const std::shared_ptr<const Context>& context) const {
@@ -334,6 +334,54 @@ void Vector::print(std::ostream& stream, const std::string&) const
   stream << "]";
 }
 
+Object::Object(const Location& loc) : Expression(loc), literal_flag(unknown)
+{
+}
+
+bool Object::isLiteral() const {
+  if (unknown(literal_flag)) {
+    for (const auto& v : this->values) {
+      if (!v->isLiteral()) {
+        literal_flag = false;
+        return false;
+      }
+    }
+    literal_flag = true;
+    return true;
+  } else {
+    return bool(literal_flag);
+  }
+}
+
+void Object::set(const char *key, Expression *expr)
+{
+  this->keys.emplace_back(key);
+  this->values.emplace_back(expr);
+}
+
+Value Object::evaluate(const std::shared_ptr<const Context>& context) const
+{
+  ObjectType obj(context->session());
+  for (size_t i = 0; i < this->keys.size(); i++) {
+    obj.set(this->keys[i], this->values[i]->evaluate(context));
+  }
+  return std::move(obj);
+}
+
+// This is used to print an object literal in the AST.
+void Object::print(std::ostream& stream, const std::string&) const
+{
+  stream << "{";
+  bool first = true;
+  for (size_t i = 0; i < this->keys.size(); i++) {
+    if (first) first = false;
+    else stream << ", ";
+    // NEEDSWORK does not handle special characters in the key
+    stream << Value(this->keys[i]) << ":" << *this->values[i];
+  }
+  stream << "}";
+}
+
 Lookup::Lookup(std::string name, const Location& loc) : Expression(loc), name(std::move(name))
 {
 }
@@ -388,7 +436,6 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
     break;
   case Value::Type::OBJECT:
     return v[this->member];
-  case Value::Type::MODULE:
   default:
     break;
   }
@@ -410,8 +457,6 @@ Value FunctionDefinition::evaluate(const std::shared_ptr<const Context>& context
   return FunctionPtr{FunctionType{context, expr, std::make_unique<AssignmentList>(parameters)}};
 }
 
-
-
 void FunctionDefinition::print(std::ostream& stream, const std::string& indent) const
 {
   stream << indent << "function(";
@@ -424,6 +469,21 @@ void FunctionDefinition::print(std::ostream& stream, const std::string& indent) 
     first = false;
   }
   stream << ") " << *this->expr;
+}
+
+ModuleDefinition::ModuleDefinition(AbstractModule *mod, const Location& loc)
+  : Expression(loc), context(nullptr), mod(mod)
+{
+}
+
+Value ModuleDefinition::evaluate(const std::shared_ptr<const Context>& context) const
+{
+  return ModulePtr{ModuleType{context, mod}};
+}
+
+void ModuleDefinition::print(std::ostream& stream, const std::string& indent) const
+{
+  mod->print(stream, indent);
 }
 
 /**
@@ -978,4 +1038,3 @@ void LcLet::print(std::ostream& stream, const std::string&) const
 {
   stream << "let(" << this->arguments << ") (" << *this->expr << ")";
 }
-

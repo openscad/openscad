@@ -7,13 +7,13 @@ use <modlitexamples_find.scad>
 
 module house(roof="flat",paint=[1,0,0]) {
    roofs =[
-      ["flat",module { translate([0,-1,0]) cube(); }],
-      ["pitched",module {
+      ["flat",module () { translate([0,-1,0]) cube(); }],
+      ["pitched",module () {
          rotate([90,0,0]) 
          linear_extrude(height=1)
          polygon(points=[[0,0],[0,1],[0.5,1.5],[1,1],[1,0]]);
       }],
-      ["domical",module { 
+      ["domical",module () { 
          translate([0,-1,0]){
          translate([0.5,0.5,1]) sphere(r=0.5,$fn=20); cube();}
       }]

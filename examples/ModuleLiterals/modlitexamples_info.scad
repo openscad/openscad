@@ -5,9 +5,9 @@ Output on console only
 */
 use <modlitexamples_find.scad>
 
-mycube1 = module cube([20,20,40]);
-mycube2 = module cube([30,20,20]);
-mycylinder = module cylinder(d = 20, h = 30);
+mycube1 = module () { cube([20,20,40]);};
+mycube2 = module () { cube([30,20,20]);};
+mycylinder = module () { cylinder(d = 20, h = 30);};
 
 my_slot = module(dia,l){ 
    cen = (l-dia)/2;

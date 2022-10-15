@@ -71,9 +71,7 @@ static void NOINLINE print_trace(const UserModule *mod, const std::shared_ptr<co
       );
 }
 
-std::shared_ptr<AbstractNode>
-UserModule::instantiate(const std::shared_ptr<const Context>& defining_context,
-   const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
+std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
 {
   if (StackCheck::inst().check()) {
     print_err(inst->name(), loc, context);
@@ -107,22 +105,18 @@ UserModule::instantiate(const std::shared_ptr<const Context>& defining_context,
   return ret;
 }
 
+// Used for both AST dumps and echo()/str().
 void UserModule::print(std::ostream& stream, const std::string& indent) const
 {
-  std::string tab;
-  if (!this->name.empty()) {
-    stream << indent << "module " << this->name << "(";
-    for (size_t i = 0; i < this->parameters.size(); ++i) {
-      const auto& parameter = this->parameters[i];
-      if (i > 0) stream << ", ";
-      stream << parameter->getName();
-      if (parameter->getExpr()) stream << " = " << *parameter->getExpr();
-    }
-    stream << ") {\n";
-    tab = "\t";
+  std::string tab = "\t";
+  stream << indent << "module " << this->name << "(";
+  for (size_t i = 0; i < this->parameters.size(); ++i) {
+    const auto& parameter = this->parameters[i];
+    if (i > 0) stream << ", ";
+    stream << parameter->getName();
+    if (parameter->getExpr()) stream << " = " << *parameter->getExpr();
   }
+  stream << ") {\n";
   body.print(stream, indent + tab);
-  if (!this->name.empty()) {
-    stream << indent << "}\n";
-  }
+  stream << indent << "}";
 }
