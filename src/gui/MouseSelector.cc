@@ -139,7 +139,7 @@ void MouseSelector::setup_framebuffer(const GLView *view) {
 /**
  * Setup the shaders, Projection and Model matrix and call the given renderer.
  * The renderer has to make sure, that the colors are defined accordingly, or
- * the selection wont work.
+ * the selection won't work.
  *
  * returns 0 if no object was found
  */

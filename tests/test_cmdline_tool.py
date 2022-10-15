@@ -135,7 +135,7 @@ def get_normalized_text(filename):
         f = open(filename, encoding="latin-1")
         text = f.read()
       except: 
-        # do not fail silenty
+        # do not fail silently
         text = "could not read " + "\n" + filename + "\n" + repr(err) 
     text = normalize_string(text)
     return text.strip("\r\n").replace("\r\n", "\n") + "\n"

@@ -6,7 +6,7 @@
 #include <boost/range/adaptor/reversed.hpp>
 // gcc 4.8 and earlier have issues with std::regex see
 // #2291 and https://stackoverflow.com/questions/12530406/is-gcc-4-8-or-earlier-buggy-about-regular-expressions
-// therefor, we use boost::regex
+// therefore, we use boost::regex
 #include <boost/regex.hpp>
 
 struct GroupInfo {
