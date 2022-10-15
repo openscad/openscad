@@ -110,7 +110,7 @@ module test1() {
 	translate([2, -4, -0.5]) scale(0.05) alignds420([0, 0, 0], [0, 0, 0]);
 }
 test2_variable = 0.7;
-TAU = 6.28319;
+TAU = 6.2831853071;
 PI = (TAU / 2);
 mm_per_inch = 25.4;
 echo("included.scad");
