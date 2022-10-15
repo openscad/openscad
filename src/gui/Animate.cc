@@ -36,7 +36,7 @@ void Animate::setMainWindow(MainWindow *mainWindow)
   QIcon pauseIcon = isLightTheme() ? QIcon(":/icons/svg-default/animate_pause.svg") : QIcon(":/icons/svg-default/animate_pause-white.svg");
 
   createActionAndPrepareButton(
-    playIcon, _("toogle pause/unpause"),
+    playIcon, _("toggle pause/unpause"),
     "pauseUnpause", pauseButton
     );
 

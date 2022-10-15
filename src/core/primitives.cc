@@ -271,7 +271,7 @@ const Geometry *SphereNode::createGeometry() const
 
   auto fragments = Calc::get_fragments_from_r(r, fn, fs, fa);
   int rings = (fragments + 1) / 2;
-// Uncomment the following three lines to enable experimental sphere tesselation
+// Uncomment the following three lines to enable experimental sphere tessellation
 //	if (rings % 2 == 0) rings++; // To ensure that the middle ring is at phi == 0 degrees
 
   auto ring = std::vector<ring_s>(rings);
