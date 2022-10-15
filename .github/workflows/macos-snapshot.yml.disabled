@@ -15,7 +15,7 @@ jobs:
       LIBRARIES_CACHE: libraries.tar.gz
     steps:
     - name: Checkout OpenSCAD
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: 'recursive'
     - name: Install Homebrew packages
@@ -24,7 +24,7 @@ jobs:
         brew install automake meson
     - name: Cache Libraries
       id: cache-libraries
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ env.OPENSCAD_LIBRARIES }}
         key: ${{ runner.os }}-libraries2-${{ hashFiles('./scripts/macosx-build-dependencies.sh', '.github/workflows/macos-release.yml') }}
@@ -63,7 +63,7 @@ jobs:
       run: |
         ./scripts/macosx-sanity-check.py ./build/OpenSCAD.app/Contents/MacOS/OpenSCAD
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Build Artifacts
         path: ${{ runner.temp }}/out/
