@@ -10,8 +10,4 @@ lollipop = module {
   cylinder(d=diameter,h=height);
 };
 
-echo(r = lollipop.radius);
-echo(d = lollipop.diameter);
-echo(h = lollipop.height);
-
 lollipop();
