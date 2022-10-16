@@ -1,0 +1,11 @@
+group() {
+	difference() {
+		group() {
+			multmatrix([[1, 0, 0, -20], [0, 1, 0, 0], [0, 0, 1, -20], [0, 0, 0, 1]]) {
+				cube(size = [40, 40, 40], center = false);
+			}
+		}
+		sphere($fn = 0, $fa = 12, $fs = 2, r = 10);
+	}
+}
+
