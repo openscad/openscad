@@ -59,7 +59,7 @@ namespace fs = boost::filesystem;
    1) Read DXF file from disk
    2) Store contents of DXF files as points, paths and dims
    3) Store 2D polygons, both from the polygon() module and from 2D CSG operations.
-     Used for tesselation into triangles
+     Used for tessellation into triangles
    4) Store 2D polygons before exporting to DXF
 
 
