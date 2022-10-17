@@ -14,7 +14,7 @@
 	}
 }
 intersection() {
-	linear_extrude(height = 20, center = true, twist = -57.52880770915151, $fn = 0, $fa = 3, $fs = 1, convexity = 10) {
+	linear_extrude(height = 20, center = true, twist = -57.528807709151515, $fn = 0, $fa = 3, $fs = 1, convexity = 10) {
 		import(file = "example009.dxf", layer = "fan_top", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 3, $fs = 1, timestamp = 1634785823);
 	}
 	rotate_extrude(angle = 360, convexity = 10, $fn = 0, $fa = 3, $fs = 1) {

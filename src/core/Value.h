@@ -545,6 +545,7 @@ public:
   Value clone() const; // Use sparingly to explicitly copy a Value
 
   Value(int v) : value(double(v)) { }
+  Value(long double v) : value(double(v)) { }
   Value(const char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!
   Value(char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!
                                                   // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0608r3.html

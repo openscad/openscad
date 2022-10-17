@@ -22,7 +22,7 @@ namespace scad {
 class ostringstream
 {
 public:
-  ostringstream() : 
+  ostringstream() :
       oss(),
       builder(buffer, DC_BUFFER_SIZE),
       dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
@@ -50,7 +50,7 @@ public:
   template <typename T>
   friend ostringstream& operator<<(ostringstream&, const T&);
 
-  // Additional overload to handle ostream specific io manipulators 
+  // Additional overload to handle ostream specific io manipulators
   friend scad::ostringstream& operator<<(scad::ostringstream&, std::ostream& (*)(std::ostream&));
 
   // Accessor function to get a reference to the ostream

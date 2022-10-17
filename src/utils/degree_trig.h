@@ -29,19 +29,37 @@
 #pragma once
 #include "linalg.h"
 
-constexpr double M_SQRT3 = 1.73205080756887719318;    /* sqrt(3)   */
-constexpr double M_SQRT3_4 = 0.86602540378443859659;  /* sqrt(3/4) == sqrt(3)/2 */
-constexpr double M_SQRT1_3 = 0.57735026918962573106;  /* sqrt(1/3) == sqrt(3)/3 */
-constexpr double M_RAD2DEG = 57.2957795130823208767;  /* 180/PI */
-constexpr double M_DEG2RAD = 0.017453292519943295769; /* PI/180 */
+// increased precision for intermediate calculations involving trig
+typedef Eigen::Matrix<long double, 3, 1> Vector3ld;
 
-double sin_degrees(double x);
-double cos_degrees(double x);
-double tan_degrees(double x);
-double asin_degrees(double x);
-double acos_degrees(double x);
-double atan_degrees(double x);
-double atan2_degrees(double y, double x);
+// long double constants, determined to precision of 50 digits using PARI/GP `\p 50`
+constexpr long double LM_SQRT3   = 1.7320508075688772935274463415058723669428052538104L;  /* sqrt(3)   */
+constexpr long double LM_SQRT3_4 = 0.86602540378443864676372317075293618347140262690519L; /* sqrt(3/4) == sqrt(3) / 2 */
+constexpr long double LM_SQRT1_3 = 0.57735026918962576450914878050195745564760175127013L; /* sqrt(1/3) == sqrt(3) / 3 == 1 / sqrt(3) */
+
+constexpr long double LM_PI      = 3.1415926535897932384626433832795028841971693993751L;   /* PI */
+constexpr long double LM_RAD2DEG = 57.295779513082320876798154814105170332405472466564L;  /* 180/PI */
+constexpr long double LM_DEG2RAD = 0.017453292519943295769236907684886127134428718885417L;/* PI/180 */
+
+constexpr long double LM_SQRT1_2 = 0.70710678118654752440084436210484903928483593768847L; /* sqrt(1/2) == 1 / sqrt(2) */
+
+inline long double rad2deg(long double x)
+{
+  return x * LM_RAD2DEG;
+}
+
+inline long double deg2rad(long double x)
+{
+  return x * LM_DEG2RAD;
+}
+
+long double sin_degrees(long double x);
+long double cos_degrees(long double x);
+long double tan_degrees(long double x);
+long double asin_degrees(long double x);
+long double acos_degrees(long double x);
+long double atan_degrees(long double x);
+long double atan2_degrees(long double y, long double x);
 
 Matrix3d angle_axis_degrees(double a, Vector3d v);
 Matrix3d rotate_degrees(double angle);
