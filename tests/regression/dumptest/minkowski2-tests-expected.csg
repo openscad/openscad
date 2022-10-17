@@ -46,14 +46,14 @@ multmatrix([[1, 0, 0, -5], [0, 1, 0, -45], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			group() {
 				render(convexity = 1) {
 					difference() {
-						square(size = [1e+06, 1e+06], center = true);
+						square(size = [1000000, 1000000], center = true);
 						group() {
 							minkowski(convexity = 0) {
 								circle($fn = 0, $fa = 12, $fs = 2, r = 0.3);
 								group() {
 									render(convexity = 1) {
 										difference() {
-											square(size = [1e+06, 1e+06], center = true);
+											square(size = [1000000, 1000000], center = true);
 											group() {
 												group() {
 													minkowski(convexity = 0) {
@@ -79,14 +79,14 @@ multmatrix([[1, 0, 0, 30], [0, 1, 0, -30], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			group() {
 				render(convexity = 1) {
 					difference() {
-						square(size = [1e+06, 1e+06], center = true);
+						square(size = [1000000, 1000000], center = true);
 						group() {
 							minkowski(convexity = 0) {
 								circle($fn = 0, $fa = 12, $fs = 2, r = 0.3);
 								group() {
 									render(convexity = 1) {
 										difference() {
-											square(size = [1e+06, 1e+06], center = true);
+											square(size = [1000000, 1000000], center = true);
 											group() {
 												group() {
 													minkowski(convexity = 0) {

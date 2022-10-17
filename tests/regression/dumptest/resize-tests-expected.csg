@@ -263,7 +263,7 @@ color([1, 0.752941, 0.796078, 1]) {
 	}
 	multmatrix([[1, 0, 0, 70], [0, 1, 0, 0], [0, 0, 1, -10], [0, 0, 0, 1]]) {
 		resize(newsize = [0,0,0.5], auto = [0,0,0], convexity = 0) {
-			cube(size = [6, 6, 1e+10], center = false);
+			cube(size = [6, 6, 10000000000], center = false);
 		}
 	}
 }
