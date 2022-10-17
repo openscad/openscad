@@ -8,13 +8,12 @@
 
 /* Define values for double-conversion library. */
 #define DC_BUFFER_SIZE 128
-#define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO | \
-                  double_conversion::DoubleToStringConverter::EMIT_POSITIVE_EXPONENT_SIGN)
+#define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO)
 #define DC_INF "inf"
 #define DC_NAN "nan"
 #define DC_EXP 'e'
-#define DC_DECIMAL_LOW_EXP -6
-#define DC_DECIMAL_HIGH_EXP 21
+#define DC_DECIMAL_LOW_EXP -5
+#define DC_DECIMAL_HIGH_EXP 6
 #define DC_MAX_LEADING_ZEROES 5
 #define DC_MAX_TRAILING_ZEROES 0
 
