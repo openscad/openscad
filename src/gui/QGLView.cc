@@ -383,7 +383,7 @@ void QGLView::zoomCursor(int x, int y, int zoom)
   // screen coordinates from -1 to 1
   const auto screen_x = 2.0 * (x + 0.5) / this->cam.pixel_width - 1.0;
   const auto screen_y = 1.0 - 2.0 * (y + 0.5) / this->cam.pixel_height;
-  const auto height = dist * tan_degrees(cam.fov / 2);
+  const double height = dist * tan_degrees(cam.fov / 2);
   const auto mx = ratio * screen_x * (aspectratio * height);
   const auto mz = ratio * screen_y * height;
   translate(-mx, 0, -mz, true);
