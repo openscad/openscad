@@ -89,8 +89,7 @@ Value ModuleLiteral::evaluate(const std::shared_ptr<const Context>& context) con
        }
        params_out->push_back(std::shared_ptr<Assignment>(new_param));
    }
-   // if no params
-   // evalate here?
+   // if no params  evaluate here
    AssignmentList outArgs = module_arguments;
    if ( params_in.size() ==0){
       for ( auto i = 0; i < outArgs.size(); ++i){
