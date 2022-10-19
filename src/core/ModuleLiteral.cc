@@ -89,12 +89,29 @@ Value ModuleLiteral::evaluate(const std::shared_ptr<const Context>& context) con
        }
        params_out->push_back(std::shared_ptr<Assignment>(new_param));
    }
+   // if no params
+   // evalate here?
+   AssignmentList outArgs = module_arguments;
+   if ( params_in.size() ==0){
+      for ( auto i = 0; i < outArgs.size(); ++i){
+          auto & arg = outArgs[i];
+          arg->setExpr(
+           std::shared_ptr<ValueWrapper>(
+               new ValueWrapper(
+                  std::shared_ptr<Value>(
+                     new Value(std::move(arg->getExpr()->evaluate(context))))
+              ,loc)
+           )
+         );
+      }
+   }
+
    return ModuleReferencePtr(
       ModuleReference(
          context,
          std::unique_ptr<AssignmentList>(params_out),
          this->module_name,
-         std::unique_ptr<AssignmentList>{new AssignmentList{this->module_arguments}}
+         std::unique_ptr<AssignmentList>{new AssignmentList{outArgs}}
       )
    );
 }
