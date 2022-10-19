@@ -1034,10 +1034,21 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
       for (const auto& v : o.vertices)
         max_r1_sqr = fmax(max_r1_sqr, v.squaredNorm());
     // Calculate Helical curve length for Twist with no Scaling
-    // **** Don't know how to handle twist with non-uniform scaling, ****
-    // **** so just use this straight helix calculation anyways.     ****
-    if ((node.scale_x == 1.0 && node.scale_y == 1.0) || node.scale_x != node.scale_y) {
+    if (node.scale_x == 1.0 && node.scale_y == 1.0) {
       slices = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height, node.twist, node.fn, node.fs, node.fa);
+    } else if ( node.scale_x != node.scale_y) { // non uniform scaling with twist using max slices from twist and non uniform scale
+      double max_delta_sqr = 0; // delta from before/after scaling
+      Vector2d scale(node.scale_x, node.scale_y);
+      for (const auto& o : poly.outlines()){
+        for (const auto& v : o.vertices){
+          max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
+        }
+      }
+      size_t slicesNonUniScale;
+      size_t slicesTwist;
+      slicesNonUniScale = (unsigned int)Calc::get_diagonal_slices(max_delta_sqr, node.height, node.fn, node.fs);
+      slicesTwist = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height, node.twist, node.fn, node.fs, node.fa);
+      slices = std::max(slicesNonUniScale,slicesTwist);
     } else { // uniform scaling with twist, use conical helix calculation
       slices = (unsigned int)Calc::get_conical_helix_slices(max_r1_sqr, node.height, node.twist, node.scale_x, node.fn, node.fs, node.fa);
     }
@@ -1045,9 +1056,11 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     // Non uniform scaling, w/o twist
     double max_delta_sqr = 0; // delta from before/after scaling
     Vector2d scale(node.scale_x, node.scale_y);
-    for (const auto& o : poly.outlines())
-      for (const auto& v : o.vertices)
+    for (const auto& o : poly.outlines()){
+      for (const auto& v : o.vertices){
         max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
+      }
+    }
     slices = Calc::get_diagonal_slices(max_delta_sqr, node.height, node.fn, node.fs);
   } else {
     // uniform or [1,1] scaling w/o twist needs only one slice
