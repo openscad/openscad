@@ -287,6 +287,30 @@ bool Value::getFiniteDouble(double& v) const
   return false;
 }
 
+bool Value::getUnsignedInt(unsigned int& v) const
+{
+  double result;
+  if (getFiniteDouble(result) &&
+      result >= 0.0 && result <= std::numeric_limits<unsigned int>::max())
+  {
+    v = result;
+    return true;
+  }
+  return false;
+}
+
+bool Value::getPositiveInt(unsigned int& v) const
+{
+  double result;
+  if (getFiniteDouble(result) &&
+      result >= 1 && result <= std::numeric_limits<unsigned int>::max())
+  {
+    v = result;
+    return true;
+  }
+  return false;
+}
+
 const str_utf8_wrapper& Value::toStrUtf8Wrapper() const {
   return boost::get<str_utf8_wrapper>(this->value);
 }
@@ -328,7 +352,7 @@ public:
   }
 
   void operator()(const VectorType& v) const {
-    if (StackCheck::inst().check()) { 
+    if (StackCheck::inst().check()) {
       throw VectorEchoStringException::create();
     }
     stream << '[';

@@ -577,6 +577,8 @@ public:
   // Other conversion utility functions
   bool getDouble(double& v) const;
   bool getFiniteDouble(double& v) const;
+  bool getUnsignedInt(unsigned int& v) const;
+  bool getPositiveInt(unsigned int& v) const;
   std::string toString() const;
   std::string toEchoString() const;
   std::string toEchoStringNoThrow() const; //use this for warnings

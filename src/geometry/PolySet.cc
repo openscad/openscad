@@ -209,8 +209,8 @@ void PolySet::resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& a
  */
 void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
 {
-  Grid3d<int> grid(GRID_FINE);
-  std::vector<int> indices; // Vertex indices in one polygon
+  Grid3d<unsigned int> grid(GRID_FINE);
+  std::vector<unsigned int> indices; // Vertex indices in one polygon
   for (std::vector<Polygon>::iterator iter = this->polygons.begin(); iter != this->polygons.end();) {
     Polygon& p = *iter;
     indices.resize(p.size());

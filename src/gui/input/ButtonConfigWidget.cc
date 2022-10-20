@@ -50,7 +50,7 @@ void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const {
 }
 
 void ButtonConfigWidget::init() {
-  for (int i = 0; i < InputEventMapper::getMaxButtons(); ++i) {
+  for (size_t i = 0; i < InputEventMapper::getMaxButtons(); ++i) {
     auto box = this->findChild<QComboBox *>(QString("comboBoxButton%1").arg(i));
     if (box) {
       initActionComboBox(box, Settings::Settings::inputButton(i));
@@ -254,8 +254,8 @@ void ButtonConfigWidget::initActionComboBox(QComboBox *comboBox, const Settings:
 void ButtonConfigWidget::updateStates(){
   if (!initialized) return;
 
-  int cnt = InputDriverManager::instance()->getButtonCount();
-  for (int i = 0; i < InputEventMapper::getMaxButtons(); ++i) {
+  size_t cnt = InputDriverManager::instance()->getButtonCount();
+  for (size_t i = 0; i < InputEventMapper::getMaxButtons(); ++i) {
     auto label = this->findChild<QLabel *>(QString("labelInputButton%1").arg(i));
     if (label) {
       QString style = (cnt <= i) ? ButtonConfigWidget::DisabledStyleString : ButtonConfigWidget::EmptyString;

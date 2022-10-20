@@ -225,7 +225,7 @@ void TabManager::createTab(const QString& filename)
   par->updateRecentFileActions();
 }
 
-int TabManager::count()
+size_t TabManager::count()
 {
   return tabWidget->count();
 }

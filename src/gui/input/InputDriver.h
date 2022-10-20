@@ -35,8 +35,8 @@ public:
   // Note that those 2 values also relate to the currently
   // static list of fields in the preferences GUI, so updating
   // here needs a change in the UI definition!
-  const static int max_axis = 9;
-  const static int max_buttons = 24;
+  const static size_t max_axis = 9;
+  const static size_t max_buttons = 24;
 
 public:
   InputDriver();
@@ -60,6 +60,6 @@ public:
    */
   virtual bool openOnce() const;
 
-  virtual int getButtonCount() const {return 0;}
-  virtual int getAxisCount() const {return 0;}
+  virtual size_t getButtonCount() const {return 0;}
+  virtual size_t getAxisCount() const {return 0;}
 };

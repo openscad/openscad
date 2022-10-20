@@ -1324,7 +1324,7 @@ void ScintillaEditor::onCharacterThresholdChanged(int val)
 
 void ScintillaEditor::resetHighlighting(){
   qsci->recolor(); //lex and restyle the whole text
-  
+
   //remove all indicators
   qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
   qsci->SendScintilla(QsciScintilla::SCI_INDICATORCLEARRANGE, 0, qsci->length());
@@ -1356,7 +1356,7 @@ void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifier
   int val = qsci->SendScintilla(QsciScintilla::SCI_INDICATORVALUEAT, ScintillaEditor::hyperlinkIndicatorNumber, pos);
 
   // checking if indicator clicked is hyperlinkIndicator
-  if (val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset + indicatorData.size()) {
+  if (val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset + static_cast<int>(indicatorData.size())) {
     if (indicatorsActive) {
       emit hyperlinkIndicatorClicked(val - hyperlinkIndicatorOffset);
     }
@@ -1371,7 +1371,7 @@ void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifie
   int val = qsci->SendScintilla(QsciScintilla::SCI_INDICATORVALUEAT, ScintillaEditor::hyperlinkIndicatorNumber, pos);
 
   // checking if indicator clicked is hyperlinkIndicator
-  if (val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset + indicatorData.size()) {
+  if (val >= hyperlinkIndicatorOffset && val <= hyperlinkIndicatorOffset + static_cast<int>(indicatorData.size())) {
     if (!indicatorsActive) {
       QTimer::singleShot(0, this, [this] {
         QToolTip::showText(QCursor::pos(), "Use <b>CTRL + Click</b> to open the file", this, rect(), toolTipDuration());

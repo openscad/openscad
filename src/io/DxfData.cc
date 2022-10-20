@@ -419,7 +419,7 @@ DxfData::DxfData(double fn, double fs, double fa,
         auto lv = grid.data(this->points[lines[idx].idx[j]][0], this->points[lines[idx].idx[j]][1]);
         for (size_t ki = 0; ki < lv.size(); ++ki) {
           int k = lv.at(ki);
-          if (k < 0 || k >= lines.size()) {
+          if (k < 0 || k >= static_cast<int>(lines.size())) {
             LOG(message_group::Warning, Location::NONE, "",
                 "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
             continue;
@@ -449,7 +449,7 @@ create_open_path:
       auto lv = grid.data(ref_point[0], ref_point[1]);
       for (size_t ki = 0; ki < lv.size(); ++ki) {
         int k = lv.at(ki);
-        if (k < 0 || k >= lines.size()) {
+        if (k < 0 || k >= static_cast<int>(lines.size())) {
           LOG(message_group::Warning, Location::NONE, "",
               "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
           continue;
@@ -491,7 +491,7 @@ found_next_line_in_open_path:;
       auto lv = grid.data(ref_point[0], ref_point[1]);
       for (size_t ki = 0; ki < lv.size(); ++ki) {
         int k = lv.at(ki);
-        if (k < 0 || k >= lines.size()) {
+        if (k < 0 || k >= static_cast<int>(lines.size())) {
           LOG(message_group::Warning, Location::NONE, "",
               "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
           continue;

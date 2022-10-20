@@ -64,7 +64,7 @@ int process_id = getpid();
 std::mt19937 deterministic_rng(std::time(nullptr) + process_id);
 #include <array>
 
-static inline bool check_arguments(const char *function_name, const Arguments& arguments, const Location& loc, int expected_count, bool warn = true)
+static inline bool check_arguments(const char *function_name, const Arguments& arguments, const Location& loc, unsigned int expected_count, bool warn = true)
 {
   if (arguments.size() != expected_count) {
     if (warn) {
@@ -74,11 +74,12 @@ static inline bool check_arguments(const char *function_name, const Arguments& a
   }
   return true;
 }
+/* // Commented due to compiler warning of unused function.
 static inline bool try_check_arguments(const Arguments& arguments, int expected_count)
 {
   return check_arguments(nullptr, arguments, Location::NONE, expected_count, false);
 }
-
+*/
 template <size_t N>
 static inline bool check_arguments(const char *function_name, const Arguments& arguments, const Location& loc, const Value::Type (& expected_types) [N], bool warn = true)
 {
@@ -95,6 +96,7 @@ static inline bool check_arguments(const char *function_name, const Arguments& a
   }
   return true;
 }
+
 template <size_t N>
 static inline bool try_check_arguments(const Arguments& arguments, const Value::Type (& expected_types) [N])
 {
