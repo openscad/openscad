@@ -207,7 +207,7 @@ int streamFile(const char *filename, void *context)
     throw SvgException((boost::format("Can't open file '%1%'") % filename).str());
   }
 
-  for (const auto shape : (*shape_list)) {
+  for (const auto& shape : (*shape_list)) {
     shape->apply_transform();
   }
 
