@@ -28,7 +28,6 @@
 #include <cmath>
 #include <numeric>
 #include <sstream>
-#include <boost/format.hpp>
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
 /*Unicode support for string lengths and array accesses*/

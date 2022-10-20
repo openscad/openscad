@@ -7,9 +7,6 @@
 #include "SourceFileCache.h"
 #include <cmath>
 #include "boost-utils.h"
-#ifdef DEBUG
-#include <boost/format.hpp>
-#endif
 
 // Experimental code. See issue #399
 #if 0
