@@ -1,3 +1,5 @@
+%expect 3
+
 %{
     #include <sstream>
     #include <string.h>

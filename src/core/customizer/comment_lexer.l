@@ -1,4 +1,6 @@
 %option prefix="comment_lexer"
+%option nounput
+%option noinput
 
 %{
     #include "Assignment.h"
