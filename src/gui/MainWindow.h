@@ -22,6 +22,7 @@
 #include "TabManager.h"
 #include "RenderStatistic.h"
 #include <memory>
+#include <string>
 
 #ifdef STATIC_QT_SVG_PLUGIN
 #include <QtPlugin>
@@ -111,7 +112,8 @@ public:
   bool fileChangedOnDisk();
   void parseTopLevelDocument();
   void exceptionCleanup();
-  void UnknownExceptionCleanup();
+  void setLastFocus(QWidget *widget);
+  void UnknownExceptionCleanup(std::string msg="");
 
   bool isLightTheme();
 
@@ -141,7 +143,7 @@ private:
 
 public slots:
   void updateExportActions();
-  void updateRecentFiles(EditorInterface *edt);
+  void updateRecentFiles(QString FileSavedOrOpened );
   void updateRecentFileActions();
   void handleFileDrop(const QUrl& url);
 
@@ -157,6 +159,7 @@ private slots:
   void actionReload();
   void actionShowLibraryFolder();
   void convertTabsToSpaces();
+  void copyText();
 
   void instantiateRoot();
   void compileDone(bool didchange);
@@ -342,6 +345,7 @@ private:
   static bool reorderMode;
   static const int tabStopWidth;
   static QElapsedTimer *progressThrottle;
+  QWidget *lastFocus; // keep track of active copyable widget (Editor|Console) for global menu action Edit->Copy
 
   shared_ptr<class CSGNode> csgRoot; // Result of the CSGTreeEvaluator
   shared_ptr<CSGNode> normalizedRoot; // Normalized CSG tree

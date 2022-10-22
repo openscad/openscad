@@ -72,6 +72,7 @@ private:
   Geometry::Geometries collectChildren3D(const AbstractNode& node);
   Polygon2d *applyMinkowski2D(const AbstractNode& node);
   Polygon2d *applyHull2D(const AbstractNode& node);
+  Polygon2d *applyFill2D(const AbstractNode& node);
   Geometry *applyHull3D(const AbstractNode& node);
   void applyResize3D(class CGAL_Nef_polyhedron& N, const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize);
   Polygon2d *applyToChildren2D(const AbstractNode& node, OpenSCADOperator op);

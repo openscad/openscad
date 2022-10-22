@@ -59,7 +59,7 @@ use::set_attrs(attr_map_t& attrs, void *context)
   if (this->href != temp_href) {
     this->href = temp_href;
     if (href.rfind("#", 0) != 0) {
-      printf("<use> can only use references to ids in the href field (starting with #). Error in element type %s with id: %s\n", this->get_name().c_str(), this->get_id().c_str());
+      printf("<use> can only use references to ids in the href field (starting with #). Error in element type %s with id: %s\n", this->get_name().c_str(), this->get_id_or_default().c_str());
     }
   }
 

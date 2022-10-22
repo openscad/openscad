@@ -174,25 +174,11 @@ public:
     double get_y_offset() const { return glyph_pos->y_offset / scale; }
     double get_x_advance() const { return glyph_pos->x_advance / scale; }
     double get_y_advance() const { return glyph_pos->y_advance / scale; }
+    ~GlyphData() { FT_Done_Glyph(glyph); }
 private:
     FT_Glyph glyph;
     unsigned int idx;
     hb_glyph_position_t *glyph_pos;
-  };
-
-  struct done_glyph {
-    void operator()(const GlyphData *glyph_data) {
-      FT_Done_Glyph(glyph_data->get_glyph());
-      delete glyph_data;
-    }
-  };
-
-  class GlyphArray : public std::vector<const GlyphData *>
-  {
-public:
-    virtual ~GlyphArray() {
-      std::for_each(begin(), end(), done_glyph());
-    }
   };
 
   class ShapeResults
@@ -203,7 +189,7 @@ public:
     // They have been downscaled from the 1e+5 unit size used for
     // when rendering from Freetype, and have not yet been scaled
     // back up to the desired font size.
-    GlyphArray glyph_array;
+    std::vector<GlyphData> glyph_array;
     double x_offset;
     double y_offset;
     double left;

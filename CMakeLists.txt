@@ -563,6 +563,7 @@ if(APPLE)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/gui/AppleEvents.cc)
   endif()
   if(NOT NULLGL)
+    target_compile_definitions(OpenSCAD PRIVATE GL_SILENCE_DEPRECATION)
     set(OFFSCREEN_METHOD "Apple CGL")
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextCGL.mm)
   endif()
@@ -829,6 +830,7 @@ set(GUI_SOURCES
   src/gui/PrintService.cc
   src/gui/ProgressWidget.cc
   src/gui/QGLView.cc
+  src/gui/QGLView2.cc
   src/gui/QSettingsCached.cc
   src/gui/QWordSearchField.cc
   src/gui/ScadApi.cc
@@ -877,16 +879,16 @@ endif()
 
 if (SNAPSHOT)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_SNAPSHOT)
-  set(MACOSX_BUNDLE_ICON_FILE ${RESOURCE_DIR}/icons/icon-nightly.icns)
+  set(MACOSX_BUNDLE_ICON_FILE icon-nightly.icns)
   set(WINDOWS_RESOURCE_PATH ${RESOURCE_DIR}/openscad_win32-nightly.rc)
 else()
-  set(MACOSX_BUNDLE_ICON_FILE ${RESOURCE_DIR}/icons/OpenSCAD.icns)
+  set(MACOSX_BUNDLE_ICON_FILE OpenSCAD.icns)
   set(WINDOWS_RESOURCE_PATH ${RESOURCE_DIR}/openscad_win32.rc)
 endif()
 
 if (APPLE)
   list(APPEND RESOURCE_FILES ${RESOURCE_DIR}/mac.qrc)
-  list(APPEND RESOURCE_FILES ${MACOSX_BUNDLE_ICON_FILE})
+  list(APPEND RESOURCE_FILES ${RESOURCE_DIR}/icons/${MACOSX_BUNDLE_ICON_FILE})
 elseif(WIN32)
   list(APPEND RESOURCE_FILES ${WINDOWS_RESOURCE_PATH})
 endif()
@@ -910,7 +912,7 @@ if(APPLE AND NOT APPLE_UNIX)
     MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/Info.plist.in
     MACOSX_BUNDLE TRUE
     MACOSX_BUNDLE_ICON_FILE ${MACOSX_BUNDLE_ICON_FILE}
-    MACOSX_BUNDLE_BUNDLE_VERSION ${OPENSCAD_YEAR}.${OPENSCAD_MONTH}
+    MACOSX_BUNDLE_BUNDLE_VERSION ${OPENSCAD_YEAR}.${OPENSCAD_MONTH}.${OPENSCAD_DAY}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${OPENSCAD_YEAR}.${OPENSCAD_MONTH}
     RESOURCE "${RESOURCE_FILES}"
   )

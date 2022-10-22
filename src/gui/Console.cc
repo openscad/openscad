@@ -31,6 +31,7 @@
 #include <QRegularExpression>
 #include <QString>
 #include "Console.h"
+#include "MainWindow.h"
 #include "printutils.h"
 #include "Preferences.h"
 #include "UIUtils.h"
@@ -49,12 +50,23 @@ Console::~Console()
 {
 }
 
+void Console::focusInEvent(QFocusEvent *event)
+{
+  QWidget *current = this;
+  MainWindow *mw;
+  while(current && !(mw = dynamic_cast<MainWindow*>(current->window()))) {
+    current = current->parentWidget();
+  }
+  assert(mw);
+  mw->setLastFocus(this);
+}
+
 void Console::addMessage(const Message& msg)
 {
   // Messages with links to source must be inserted separately,
   // since anchor href is set via the "format" argument of:
   //    QTextCursor::insertText(const QString &text, const QTextCharFormat &format)
-  // But if no link, and matching colors, then concat message strings with newline inbetween.
+  // But if no link, and matching colors, then concat message strings with newline in between.
   // This results in less calls to insertText in Console::update(), and much better performance.
   if (!this->msgBuffer.empty() && msg.loc.isNone() && this->msgBuffer.back().link.isEmpty() &&
       (getGroupColor(msg.group) == getGroupColor(this->msgBuffer.back().group)) ) {
