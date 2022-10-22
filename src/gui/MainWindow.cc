@@ -382,6 +382,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
   connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
   connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
+  connect(this->fileActionSaveACopy, SIGNAL(triggered()), this, SLOT(actionSaveACopy()));
   connect(this->fileActionSaveAll, SIGNAL(triggered()), tabManager, SLOT(saveAll()));
   connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
   connect(this->fileActionClose, SIGNAL(triggered()), tabManager, SLOT(closeCurrentTab()));
@@ -1513,6 +1514,11 @@ void MainWindow::actionSave()
 void MainWindow::actionSaveAs()
 {
   tabManager->saveAs(activeEditor);
+}
+
+void MainWindow::actionSaveACopy()
+{
+  tabManager->saveACopy(activeEditor);
 }
 
 void MainWindow::actionShowLibraryFolder()
