@@ -156,6 +156,7 @@ private slots:
   void clearRecentFiles();
   void actionSave();
   void actionSaveAs();
+  void actionSaveACopy();
   void actionReload();
   void actionShowLibraryFolder();
   void convertTabsToSpaces();

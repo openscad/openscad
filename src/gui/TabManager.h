@@ -26,6 +26,7 @@ public:
   bool shouldClose();
   bool save(EditorInterface *edt);
   bool saveAs(EditorInterface *edt);
+  bool saveACopy(EditorInterface *edt);
   void open(const QString& filename);
   int count();
 

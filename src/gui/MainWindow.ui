@@ -250,6 +250,7 @@
     <addaction name="separator"/>
     <addaction name="fileActionSave"/>
     <addaction name="fileActionSaveAs"/>
+    <addaction name="fileActionSaveACopy"/>
     <addaction name="fileActionSaveAll"/>
     <addaction name="separator"/>
     <addaction name="menuExport"/>
@@ -757,6 +758,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="fileActionSaveACopy">
+   <property name="text">
+    <string>Save a Copy</string>
    </property>
   </action>
   <action name="fileActionSaveAll">
