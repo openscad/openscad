@@ -13,7 +13,7 @@ cmake_minimum_required(VERSION 3.10)
 
 if(POLICY CMP0071)
   # Let AUTOMOC and AUTOUIC process GENERATED files.
-  cmake_policy(SET CMP0071 OLD)
+  cmake_policy(SET CMP0071 NEW)
 endif()
 if(POLICY CMP0072)
   # FindOpenGL prefers GLVND by default when available.
@@ -293,6 +293,12 @@ else()
   list(APPEND COMMON_LIBRARIES ${DoubleConversion_LIBRARIES})
 
   find_graphics()
+endif()
+
+if (("${Boost_VERSION}" VERSION_GREATER "1.72") AND ("${Boost_VERSION}" VERSION_LESS "1.76"))
+  # Avoid warning messages from boost which are also caused by boost's code.
+  #   https://github.com/boostorg/property_tree/issues/51
+  target_compile_definitions(OpenSCAD PUBLIC BOOST_BIND_GLOBAL_PLACEHOLDERS)
 endif()
 
 # Note: Saving CMAKE_MODULE_PATH as CGAL will overwrite it.
@@ -866,6 +872,12 @@ set(GUI_HEADERS
   src/gui/Network.h
   src/gui/NetworkSignal.h
   )
+
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  # Ignore specific warning on external lib
+  set_source_files_properties("src/ext/polyclipping/clipper.cpp" PROPERTIES COMPILE_FLAGS "-Wno-class-memaccess")
+endif()
 
 list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES})
 

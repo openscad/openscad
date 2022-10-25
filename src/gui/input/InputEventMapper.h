@@ -85,8 +85,8 @@ public:
   void onAxisTrimReset();
 
   static InputEventMapper *instance();
-  static int getMaxButtons();
-  static int getMaxAxis();
+  static size_t getMaxButtons();
+  static size_t getMaxAxis();
 
 private slots:
   void onTimer();

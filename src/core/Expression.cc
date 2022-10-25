@@ -40,7 +40,6 @@
 #include "Feature.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include <boost/bind.hpp>
 #include "boost-utils.h"
 #include <boost/regex.hpp>
 #include <boost/assign/std/vector.hpp>

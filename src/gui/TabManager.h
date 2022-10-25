@@ -28,7 +28,7 @@ public:
   bool saveAs(EditorInterface *edt);
   bool saveACopy(EditorInterface *edt);
   void open(const QString& filename);
-  int count();
+  size_t count();
 
 public:
   static constexpr const int FIND_HIDDEN = 0;

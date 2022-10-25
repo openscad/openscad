@@ -181,7 +181,7 @@ void ParameterWidget::onSetChanged(int index)
 
 void ParameterWidget::onSetNameChanged()
 {
-  assert(comboBoxPreset->count() == sets.size() + 1);
+  assert(static_cast<size_t>(comboBoxPreset->count()) == sets.size() + 1);
   comboBoxPreset->setItemText(comboBoxPreset->currentIndex(), comboBoxPreset->lineEdit()->text());
   sets[comboBoxPreset->currentIndex() - 1].setName(comboBoxPreset->currentText().toStdString());
   setModified();
@@ -261,7 +261,7 @@ void ParameterWidget::parameterModified(bool immediate)
   autoPreview(immediate);
 }
 
-void ParameterWidget::loadSet(int index)
+void ParameterWidget::loadSet(size_t index)
 {
   assert(index <= sets.size());
   if (index == 0) {

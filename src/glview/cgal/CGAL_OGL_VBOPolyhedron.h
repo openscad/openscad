@@ -44,6 +44,7 @@ public:
     PRINTD("CGAL_OGL_VBOPolyhedron() end");
   }
 
+  using VBOPolyhedron::draw; // draw()
   void draw(bool showedges) const override {
     PRINTDB("VBO draw(showedges = %d)", showedges);
     // grab current state to restore after

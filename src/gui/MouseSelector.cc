@@ -125,8 +125,8 @@ void MouseSelector::init_shader() {
  */
 void MouseSelector::setup_framebuffer(const GLView *view) {
   if (!this->framebuffer ||
-      this->framebuffer->width() != view->cam.pixel_width ||
-      this->framebuffer->height() != view->cam.pixel_height) {
+      static_cast<unsigned int>(this->framebuffer->width()) != view->cam.pixel_width ||
+      static_cast<unsigned int>(this->framebuffer->height()) != view->cam.pixel_height) {
     this->framebuffer.reset(
       new QOpenGLFramebufferObject(
         view->cam.pixel_width,
@@ -147,8 +147,8 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   // x/y is originated topleft, so turn y around
   y = this->view->cam.pixel_height - y;
 
-  if (x > this->view->cam.pixel_width || x < 0 ||
-      y > this->view->cam.pixel_height || y < 0) {
+  if (x > static_cast<int>(this->view->cam.pixel_width) || x < 0 ||
+      y > static_cast<int>(this->view->cam.pixel_height) || y < 0) {
     return -1;
   }
 

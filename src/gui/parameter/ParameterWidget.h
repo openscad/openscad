@@ -68,7 +68,7 @@ protected slots:
   void onSetAdd();
   void onSetDelete();
   void parameterModified(bool immediate);
-  void loadSet(int index);
+  void loadSet(size_t index);
   void createSet(QString name);
   void updateSetEditability();
   void rebuildWidgets();

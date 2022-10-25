@@ -25,6 +25,8 @@
  */
 
 %option prefix="lexer"
+%option nounput
+%option noinput
 
 %{
 
@@ -54,9 +56,6 @@ extern "C" int __cdecl _isatty(int _FileHandle);
 
 std::string stringcontents;
 int lexerget_lineno(void);
-#ifdef __GNUC__
-static void yyunput(int, char*) __attribute__((unused));
-#endif
 extern const char *parser_input_buffer;
 extern SourceFile *rootfile;
 
