@@ -79,9 +79,9 @@ Value builtin_dxf_dim(Arguments arguments, const Location& loc)
     LOG(message_group::Warning, loc, parameters.documentRoot(), "Can't open DXF file '%1$s'!", rawFilename);
     return Value::undefined.clone();
   }
-  std::string key = STR(filename << "|" << layername << "|" << name << "|" << xorigin
-                                 << "|" << yorigin << "|" << scale << "|" << lastwritetime
-                                 << "|" << filesize);
+  std::string key = STR(filename, "|", layername, "|", name, "|", xorigin
+                                , "|", yorigin, "|", scale, "|", lastwritetime
+                                , "|", filesize);
   auto result = dxf_dim_cache.find(key);
   if (result != dxf_dim_cache.end()) return Value(result->second);
   handle_dep(filepath.string());
@@ -175,9 +175,9 @@ Value builtin_dxf_cross(Arguments arguments, const Location& loc)
     return Value::undefined.clone();
   }
 
-  std::string key = STR(filename << "|" << layername << "|" << xorigin << "|" << yorigin
-                                 << "|" << scale << "|" << lastwritetime
-                                 << "|" << filesize);
+  std::string key = STR(filename, "|", layername, "|", xorigin, "|", yorigin
+                                , "|", scale, "|", lastwritetime
+                                , "|", filesize);
 
   auto result = dxf_cross_cache.find(key);
   if (result != dxf_cross_cache.end()) {

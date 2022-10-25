@@ -62,8 +62,8 @@ std::string get_os_info()
   if (uname(&u) < 0) {
     return STR("OS info: unknown, uname() error\n");
   } else {
-    return STR("OS info: " << u.sysname << " " << u.release << " " << u.version << "\n" <<
-               "Machine: " << u.machine);
+    return STR("OS info: ", u.sysname, " ", u.release, " ", u.version, "\n",
+               "Machine: ", u.machine);
   }
   return "";
 }
@@ -74,8 +74,8 @@ std::string get_gl_info(EGLDisplay display)
   char const *version = eglQueryString(display, EGL_VERSION);
 
   return STR("GL context creator: EGL\n"
-             << "EGL version: " << version << " (" << vendor << ")" << "\n"
-             << get_os_info());
+            , "EGL version: ", version, " (", vendor, ")", "\n"
+            , get_os_info());
 }
 
 std::string offscreen_context_getinfo(OffscreenContext *ctx)

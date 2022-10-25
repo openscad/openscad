@@ -180,5 +180,5 @@ const std::string& SpaceNavInputDriver::get_name() const
 
 std::string SpaceNavInputDriver::get_info() const
 {
-  return STR(get_name() << " " << (isOpen() ? "open" : "not open") << " ");
+  return STR(get_name(), " ", (isOpen() ? "open" : "not open"), " ");
 }

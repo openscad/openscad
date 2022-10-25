@@ -39,7 +39,7 @@ namespace {
 
 std::string toString(const Vector3d& v)
 {
-  return STR(v[0] << " " << v[1] << " " << v[2]);
+  return STR(v[0], " ", v[1], " ", v[2]);
 }
 
 Vector3d toVector(const std::array<double, 3>& pt) {

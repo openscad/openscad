@@ -75,7 +75,7 @@ FreetypeRenderer::Params TextNode::get_params() const
 
 std::string TextNode::toString() const
 {
-  return STR(name() << "(" << this->params << ")");
+  return STR(name(), "(", this->params, ")");
 }
 
 void register_builtin_text()

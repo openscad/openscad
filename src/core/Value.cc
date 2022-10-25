@@ -385,7 +385,7 @@ class tostring_visitor : public boost::static_visitor<std::string>
 public:
   template <typename T> std::string operator()(const T& op1) const {
     assert(false && "unhandled tostring_visitor type");
-    return boost::lexical_cast<std::string>(op1);
+    return STR(op1);
   }
 
   std::string operator()(const str_utf8_wrapper& op1) const {
@@ -777,7 +777,7 @@ Value VectorType::operator==(const VectorType& v) const {
   for ( ; (first1 != last1) && (first2 != last2); ++first1, ++first2, ++i) {
     Value temp = *first1 == *first2;
     if (temp.isUndefined()) {
-      temp.toUndef().append(STR("in vector comparison at index " << i));
+      temp.toUndef().append(STR("in vector comparison at index ", i));
       return temp;
     }
     if (!temp.toBool()) return false;
@@ -798,7 +798,7 @@ Value VectorType::operator<(const VectorType& v) const {
   for ( ; (first1 != last1) && (first2 != last2); ++first1, ++first2, ++i) {
     Value temp = *first1 < *first2;
     if (temp.isUndefined()) {
-      temp.toUndef().append(STR("in vector comparison at index " << i));
+      temp.toUndef().append(STR("in vector comparison at index ", i));
       return temp;
     }
     if (temp.toBool()) return true;
@@ -845,7 +845,7 @@ class less_visitor : public boost::static_visitor<Value>
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
-    return Value::undef(STR("undefined operation (" << getTypeName(op1) << " < " << getTypeName(op2) << ")"));
+    return Value::undef(STR("undefined operation (", getTypeName(op1), " < ", getTypeName(op2), ")"));
   }
   template <typename T> Value operator()(const T& op1, const T& op2) const { return op1 < op2; }
   template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 < *op2; }
@@ -855,7 +855,7 @@ class greater_visitor : public boost::static_visitor<Value>
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
-    return Value::undef(STR("undefined operation (" << getTypeName(op1) << " > " << getTypeName(op2) << ")"));
+    return Value::undef(STR("undefined operation (", getTypeName(op1), " > ", getTypeName(op2), ")"));
   }
   template <typename T> Value operator()(const T& op1, const T& op2) const { return op1 > op2; }
   template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 > *op2; }
@@ -865,7 +865,7 @@ class lessequal_visitor : public boost::static_visitor<Value>
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
-    return Value::undef(STR("undefined operation (" << getTypeName(op1) << " <= " << getTypeName(op2) << ")"));
+    return Value::undef(STR("undefined operation (", getTypeName(op1), " <= ", getTypeName(op2), ")"));
   }
   template <typename T> Value operator()(const T& op1, const T& op2) const { return op1 <= op2; }
   template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 <= *op2; }
@@ -875,7 +875,7 @@ class greaterequal_visitor : public boost::static_visitor<Value>
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
-    return Value::undef(STR("undefined operation (" << getTypeName(op1) << " >= " << getTypeName(op2) << ")"));
+    return Value::undef(STR("undefined operation (", getTypeName(op1), " >= ", getTypeName(op2), ")"));
   }
   template <typename T> Value operator()(const T& op1, const T& op2) const { return op1 >= op2; }
   template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 >= *op2; }
@@ -919,7 +919,7 @@ class plus_visitor : public boost::static_visitor<Value>
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
-    return Value::undef(STR("undefined operation (" << getTypeName(op1) << " + " << getTypeName(op2) << ")"));
+    return Value::undef(STR("undefined operation (", getTypeName(op1), " + ", getTypeName(op2), ")"));
   }
 
   Value operator()(const double& op1, const double& op2) const {
@@ -949,7 +949,7 @@ class minus_visitor : public boost::static_visitor<Value>
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
-    return Value::undef(STR("undefined operation (" << getTypeName(op1) << " - " << getTypeName(op2) << ")"));
+    return Value::undef(STR("undefined operation (", getTypeName(op1), " - ", getTypeName(op2), ")"));
   }
 
   Value operator()(const double& op1, const double& op2) const {
@@ -987,15 +987,15 @@ Value multmatvec(const VectorType& matrixvec, const VectorType& vectorvec)
   for (size_t i = 0; i < matrixvec.size(); ++i) {
     if (matrixvec[i].type() != Value::Type::VECTOR ||
         matrixvec[i].toVector().size() != vectorvec.size()) {
-      return Value::undef(STR("Matrix must be rectangular. Problem at row " << i));
+      return Value::undef(STR("Matrix must be rectangular. Problem at row ", i));
     }
     double r_e = 0.0;
     for (size_t j = 0; j < matrixvec[i].toVector().size(); ++j) {
       if (matrixvec[i].toVector()[j].type() != Value::Type::NUMBER) {
-        return Value::undef(STR("Matrix must contain only numbers. Problem at row " << i << ", col " << j));
+        return Value::undef(STR("Matrix must contain only numbers. Problem at row ", i, ", col ", j));
       }
       if (vectorvec[j].type() != Value::Type::NUMBER) {
-        return Value::undef(STR("Vector must contain only numbers. Problem at index " << j));
+        return Value::undef(STR("Vector must contain only numbers. Problem at index ", j));
       }
       r_e += matrixvec[i].toVector()[j].toDouble() * vectorvec[j].toDouble();
     }
@@ -1016,15 +1016,15 @@ Value multvecmat(const VectorType& vectorvec, const VectorType& matrixvec)
       if (matrixvec[j].type() != Value::Type::VECTOR ||
           matrixvec[j].toVector().size() != firstRowSize) {
         LOG(message_group::Warning, Location::NONE, "", "Matrix must be rectangular. Problem at row %1$lu", j);
-        return Value::undef(STR("Matrix must be rectangular. Problem at row " << j));
+        return Value::undef(STR("Matrix must be rectangular. Problem at row ", j));
       }
       if (vectorvec[j].type() != Value::Type::NUMBER) {
         LOG(message_group::Warning, Location::NONE, "", "Vector must contain only numbers. Problem at index %1$lu", j);
-        return Value::undef(STR("Vector must contain only numbers. Problem at index " << j));
+        return Value::undef(STR("Vector must contain only numbers. Problem at index ", j));
       }
       if (matrixvec[j].toVector()[i].type() != Value::Type::NUMBER) {
         LOG(message_group::Warning, Location::NONE, "", "Matrix must contain only numbers. Problem at row %1$lu, col %2$lu", j, i);
-        return Value::undef(STR("Matrix must contain only numbers. Problem at row " << j << ", col " << i));
+        return Value::undef(STR("Matrix must contain only numbers. Problem at row ", j, ", col ", i));
       }
       r_e += vectorvec[j].toDouble() * matrixvec[j].toVector()[i].toDouble();
     }
@@ -1038,7 +1038,7 @@ Value multvecvec(const VectorType& vec1, const VectorType& vec2) {
   auto r = 0.0;
   for (size_t i = 0; i < vec1.size(); i++) {
     if (vec1[i].type() != Value::Type::NUMBER || vec2[i].type() != Value::Type::NUMBER) {
-      return Value::undef(STR("undefined operation (" << vec1[i].typeName() << " * " << vec2[i].typeName() << ")"));
+      return Value::undef(STR("undefined operation (", vec1[i].typeName(), " * ", vec2[i].typeName(), ")"));
     }
     r += vec1[i].toDouble() * vec2[i].toDouble();
   }
@@ -1049,7 +1049,7 @@ class multiply_visitor : public boost::static_visitor<Value>
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
-    return Value::undef(STR("undefined operation (" << getTypeName(op1) << " * " << getTypeName(op2) << ")"));
+    return Value::undef(STR("undefined operation (", getTypeName(op1), " * ", getTypeName(op2), ")"));
   }
   Value operator()(const double& op1, const double& op2) const { return op1 * op2; }
   Value operator()(const double& op1, const VectorType& op2) const { return multvecnum(op2, op1); }
@@ -1062,15 +1062,15 @@ public:
     if (eltype1 == Value::Type::NUMBER) {
       if (eltype2 == Value::Type::NUMBER) {
         if (op1.size() == op2.size()) return multvecvec(op1, op2);
-        else return Value::undef(STR("vector*vector requires matching lengths (" << op1.size() << " != " << op2.size() << ')'));
+        else return Value::undef(STR("vector*vector requires matching lengths (", op1.size(), " != ", op2.size(), ')'));
       } else if (eltype2 == Value::Type::VECTOR) {
         if (op1.size() == op2.size()) return multvecmat(op1, op2);
-        else return Value::undef(STR("vector*matrix requires vector length to match matrix row count (" << op1.size() << " != " << op2.size() << ')'));
+        else return Value::undef(STR("vector*matrix requires vector length to match matrix row count (", op1.size(), " != ", op2.size(), ')'));
       }
     } else if (eltype1 == Value::Type::VECTOR) {
       if (eltype2 == Value::Type::NUMBER) {
         if ((*first1).toVector().size() == op2.size()) return multmatvec(op1, op2);
-        else return Value::undef(STR("matrix*vector requires matrix column count to match vector length (" << (*first1).toVector().size() << " != " << op2.size() << ')'));
+        else return Value::undef(STR("matrix*vector requires matrix column count to match vector length (", (*first1).toVector().size(), " != ", op2.size(), ')'));
       } else if (eltype2 == Value::Type::VECTOR) {
         if ((*first1).toVector().size() == op2.size()) {
           // Matrix * Matrix
@@ -1078,10 +1078,10 @@ public:
           size_t i = 0;
           for (const auto& srcrow : op1) {
             const auto& srcrowvec = srcrow.toVector();
-            if (srcrowvec.size() != op2.size()) return Value::undef(STR("matrix*matrix left operand row length does not match right operand row count (" << srcrowvec.size() << " != " << op2.size() << ") at row " << i));
+            if (srcrowvec.size() != op2.size()) return Value::undef(STR("matrix*matrix left operand row length does not match right operand row count (", srcrowvec.size(), " != ", op2.size(), ") at row ", i));
             auto temp = multvecmat(srcrowvec, op2);
             if (temp.isUndefined()) {
-              temp.toUndef().append(STR("while processing left operand at row " << i));
+              temp.toUndef().append(STR("while processing left operand at row ", i));
               return temp;
             } else {
               dstv.emplace_back(std::move(temp));
@@ -1090,11 +1090,11 @@ public:
           }
           return Value(std::move(dstv));
         } else {
-          return Value::undef(STR("matrix*matrix requires left operand column count to match right operand row count (" << (*first1).toVector().size() << " != " << op2.size() << ')'));
+          return Value::undef(STR("matrix*matrix requires left operand column count to match right operand row count (", (*first1).toVector().size(), " != ", op2.size(), ')'));
         }
       }
     }
-    return Value::undef(STR("undefined vector*vector multiplication where first elements are types " << (*first1).typeName() << " and " << (*first2).typeName() ));
+    return Value::undef(STR("undefined vector*vector multiplication where first elements are types ", (*first1).typeName(), " and ", (*first2).typeName() ));
   }
 };
 
@@ -1120,7 +1120,7 @@ Value Value::operator/(const Value& v) const
     }
     return std::move(dstv);
   }
-  return Value::undef(STR("undefined operation (" << this->typeName() << " / " << v.typeName() << ")"));
+  return Value::undef(STR("undefined operation (", this->typeName(), " / ", v.typeName(), ")"));
 }
 
 Value Value::operator%(const Value& v) const
@@ -1128,7 +1128,7 @@ Value Value::operator%(const Value& v) const
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
     return fmod(boost::get<double>(this->value), boost::get<double>(v.value));
   }
-  return Value::undef(STR("undefined operation (" << this->typeName() << " % " << v.typeName() << ")"));
+  return Value::undef(STR("undefined operation (", this->typeName(), " % ", v.typeName(), ")"));
 }
 
 Value Value::operator-() const
@@ -1142,7 +1142,7 @@ Value Value::operator-() const
     }
     return std::move(dstv);
   }
-  return Value::undef(STR("undefined operation (-" << this->typeName() << ")"));
+  return Value::undef(STR("undefined operation (-", this->typeName(), ")"));
 }
 
 Value Value::operator^(const Value& v) const
@@ -1150,7 +1150,7 @@ Value Value::operator^(const Value& v) const
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
     return {pow(boost::get<double>(this->value), boost::get<double>(v.value))};
   }
-  return Value::undef(STR("undefined operation (" << this->typeName() << " ^ " << v.typeName() << ")"));
+  return Value::undef(STR("undefined operation (", this->typeName(), " ^ ", v.typeName(), ")"));
 }
 
 /*
@@ -1180,7 +1180,7 @@ public:
   Value operator()(const VectorType& vec, const double& idx) const {
     const auto i = convert_to_uint32(idx);
     if (i < vec.size()) return vec[i].clone();
-    return Value::undef(STR("index " << i << " out of bounds for vector of size " << vec.size()));
+    return Value::undef(STR("index ", i, " out of bounds for vector of size ", vec.size()));
   }
 
   Value operator()(const ObjectType& obj, const str_utf8_wrapper& key) const {
@@ -1199,7 +1199,7 @@ public:
 
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
     //std::cout << "generic bracket_visitor " << getTypeName(op1) << " " << getTypeName(op2) << "\n";
-    return Value::undef(STR("undefined operation " << getTypeName(op1) << "[" << getTypeName(op2) << "]"));
+    return Value::undef(STR("undefined operation ", getTypeName(op1), "[", getTypeName(op2), "]"));
   }
 };
 
