@@ -40,7 +40,12 @@ public:
 
   typedef std::vector<Outline2d> Outlines2d;
   const Outlines2d& outlines() const { return theoutlines; }
-  using Geometry::transform;
+  // Note: The "using" here is a kludge to avoid a compiler warning.
+  // It would be better to fix the class relationships, so that Polygon2d does
+  // not inherit an unused 3d transform function.
+  // But that will likely require significant refactoring.
+  using Geometry::transform;   
+
   void transform(const Transform2d& mat);
   void resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>& autosize);
   virtual void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override {
