@@ -51,8 +51,8 @@ static std::shared_ptr<AbstractNode> builtin_projection(const ModuleInstantiatio
 
 std::string ProjectionNode::toString() const
 {
-  return STR("projection(cut = " << (this->cut_mode ? "true" : "false")
-                                 << ", convexity = " << this->convexity << ")");
+  return STR("projection(cut = ", (this->cut_mode ? "true" : "false"),
+                                 ", convexity = ", this->convexity, ")");
 }
 
 void register_builtin_projection()

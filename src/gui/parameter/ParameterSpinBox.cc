@@ -54,7 +54,7 @@ void ParameterSpinBox::valueApplied() {
 void ParameterSpinBox::onChanged(double value)
 {
 #ifdef DEBUG
-  PRINTD(STR("[changed] value=" << value << ", parameter->value=" << parameter->value << ", lastSent=" << lastSent << ", lastApplied=" << lastApplied));
+  PRINTD(STR("[changed] value=", value, ", parameter->value=", parameter->value, ", lastSent=", lastSent, ", lastApplied=", lastApplied));
 #endif
   parameter->value = value;
   if (lastSent != value) {
@@ -66,7 +66,7 @@ void ParameterSpinBox::onChanged(double value)
 void ParameterSpinBox::onEditingFinished()
 {
 #ifdef DEBUG
-  PRINTD(STR("[finished] parameter->value=" << parameter->value << ", lastSent=" << lastSent << ", lastApplied=" << lastApplied));
+  PRINTD(STR("[finished] parameter->value=", parameter->value, ", lastSent=", lastSent, ", lastApplied=", lastApplied));
 #endif
   if (lastApplied != parameter->value) {
     lastSent = parameter->value;

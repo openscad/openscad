@@ -643,7 +643,7 @@ void Assert::performAssert(const AssignmentList& arguments, const Location& loca
   }
 
   if (!parameters["condition"].toBool()) {
-    std::string conditionString = conditionExpression ? STR(" '" << *conditionExpression << "'") : "";
+    std::string conditionString = conditionExpression ? STR(" '", *conditionExpression, "'") : "";
     std::string messageString = parameters.contains("message") ? (": " + parameters["message"].toEchoStringNoThrow()) : "";
     LOG(message_group::Error, location, context->documentRoot(), "Assertion%1$s failed%2$s", conditionString, messageString);
     throw AssertionFailedException("Assertion Failed", location);

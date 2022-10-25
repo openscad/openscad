@@ -96,7 +96,7 @@ std::time_t SourceFileCache::evaluate(const std::string& mainFile, const std::st
         LOG(message_group::Warning, Location::NONE, "", "Can't open library file '%1$s'\n", filename);
         return 0;
       }
-      text = STR(ifs.rdbuf() << "\n\x03\n" << commandline_commands);
+      text = STR(ifs.rdbuf(), "\n\x03\n", commandline_commands);
     }
 
     print_messages_push();

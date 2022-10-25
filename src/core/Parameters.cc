@@ -235,7 +235,7 @@ void print_argCnt_warning(
   const Location& loc,
   const std::string& documentRoot
   ){
-  LOG(message_group::Warning, loc, documentRoot, "%1$s() number of parameters does not match: expected " + expected + ", found " + STR(found), name);
+  LOG(message_group::Warning, loc, documentRoot, "%1$s() number of parameters does not match: expected %2$s, found %3$i", name, expected, found);
 }
 
 void print_argConvert_warning(

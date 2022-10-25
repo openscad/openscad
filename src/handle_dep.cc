@@ -24,7 +24,7 @@ void handle_dep(const std::string& filename)
   if (make_command && !fs::exists(filepath)) {
     // This should only happen from command-line execution.
     // If changed, add an alternate error-reporting process.
-    auto cmd = STR(make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'");
+    auto cmd = STR(make_command, " '", boost::regex_replace(filename, boost::regex("'"), "'\\''"), "'");
     errno = 0;
     int res = system(cmd.c_str());
 

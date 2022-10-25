@@ -131,7 +131,7 @@ private:
 static void help(const char *arg0, const po::options_description& desc, bool failure = false)
 {
   const fs::path progpath(arg0);
-  LOG(message_group::None, Location::NONE, "", "Usage: %1$s [options] file.scad\n%2$s", progpath.filename().string(), STR(desc));
+  LOG(message_group::None, Location::NONE, "", "Usage: %1$s [options] file.scad\n%2$s", progpath.filename().string(), desc);
   exit(failure ? 1 : 0);
 }
 

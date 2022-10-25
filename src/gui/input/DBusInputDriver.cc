@@ -153,5 +153,5 @@ const std::string& DBusInputDriver::get_name() const
 
 std::string DBusInputDriver::get_info() const
 {
-  return STR(get_name() << " " << (isOpen() ? "open" : "not open"));
+  return STR(get_name(), " ", (isOpen() ? "open" : "not open"));
 }

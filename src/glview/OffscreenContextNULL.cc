@@ -39,8 +39,8 @@ string offscreen_context_getinfo(OffscreenContext *ctx)
 #else
   auto OSInfo = "unknown";
 #endif
-  return STR("OS info: " << OSInfo
-                         << "\nMachine: " << arch << "\n");
+  return STR("OS info: ", OSInfo
+                        , "\nMachine: ", arch, "\n");
 }
 
 OffscreenContext *create_offscreen_context(int w, int h)
