@@ -9,6 +9,6 @@ public:
   VISITABLE();
   OpenSCADOperator type;
   CsgOpNode(const ModuleInstantiation *mi, OpenSCADOperator type) : AbstractNode(mi), type(type) { }
-  std::string toString() const override;
+  void print(scad::ostringstream& stream) const override;
   std::string name() const override;
 };

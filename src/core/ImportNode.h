@@ -23,7 +23,7 @@ public:
 
   VISITABLE();
   ImportNode(const ModuleInstantiation *mi, ImportType type) : LeafNode(mi), type(type) { }
-  std::string toString() const override;
+  void print(scad::ostringstream& stream) const override;
   std::string name() const override;
 
   ImportType type;

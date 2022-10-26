@@ -224,10 +224,8 @@ std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst
   return children.instantiate(node);
 }
 
-std::string TransformNode::toString() const
+void TransformNode::print(scad::ostringstream& stream) const
 {
-  std::ostringstream stream;
-
   stream << "multmatrix([";
   for (int j = 0; j < 4; ++j) {
     stream << "[";
@@ -239,8 +237,6 @@ std::string TransformNode::toString() const
     if (j != 3) stream << ", ";
   }
   stream << "])";
-
-  return stream.str();
 }
 
 TransformNode::TransformNode(const ModuleInstantiation *mi, const std::string& verbose_name) :

@@ -9,8 +9,8 @@ public:
   VISITABLE();
   LinearExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
   }
-  std::string toString() const override;
-  std::string name() const override { return "linear_extrude"; }
+  void print(scad::ostringstream& stream) const override final;
+  std::string name() const override final { return "linear_extrude"; }
 
   double height = 100.0;
   double origin_x = 0.0, origin_y = 0.0;

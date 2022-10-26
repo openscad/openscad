@@ -90,10 +90,8 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
   return node;
 }
 
-std::string RotateExtrudeNode::toString() const
+void RotateExtrudeNode::print(scad::ostringstream& stream) const
 {
-  std::ostringstream stream;
-
   stream << this->name() << "(";
   if (!this->filename.empty()) { // Ignore deprecated parameters if empty
     fs::path path((std::string)this->filename);
@@ -109,8 +107,6 @@ std::string RotateExtrudeNode::toString() const
     "angle = " << this->angle << ", "
     "convexity = " << this->convexity << ", "
     "$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
-
-  return stream.str();
 }
 
 void register_builtin_dxf_rotate_extrude()

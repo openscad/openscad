@@ -271,9 +271,13 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
   return children.instantiate(node);
 }
 
-std::string ColorNode::toString() const
+void ColorNode::print(scad::ostringstream& stream) const
 {
-  return STR("color([", this->color[0], ", ", this->color[1], ", ", this->color[2], ", ", this->color[3], "])");
+  stream << "color(["
+    << this->color[0] << ", "
+    << this->color[1] << ", "
+    << this->color[2] << ", "
+    << this->color[3] << "])";
 }
 
 std::string ColorNode::name() const

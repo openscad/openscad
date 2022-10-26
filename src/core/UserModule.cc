@@ -43,7 +43,7 @@ static void NOINLINE print_err(std::string name, const Location& loc, const std:
 }
 
 static void NOINLINE print_trace(const UserModule *mod,std::shared_ptr<const UserModuleContext> context, const AssignmentList& parameters){
-  std::stringstream stream ;
+  scad::ostringstream stream;
   if (parameters.size() == 0){
       //nothing to do
   } else if (StackCheck::inst().check()) { 
@@ -61,7 +61,7 @@ static void NOINLINE print_trace(const UserModule *mod,std::shared_ptr<const Use
         stream << " = ";
       }
       try {
-        stream << context->lookup_variable(assignment->getName(),Location::NONE);
+        stream << context->lookup_variable(assignment->getName(), Location::NONE);
       } catch (EvaluationException& e) {
         stream << "...";
       }
@@ -106,7 +106,7 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<cons
   return ret;
 }
 
-void UserModule::print(std::ostream& stream, const std::string& indent) const
+void UserModule::print(scad::ostringstream& stream, const std::string& indent) const
 {
   std::string tab;
   if (!this->name.empty()) {

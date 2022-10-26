@@ -1,11 +1,11 @@
 #pragma once
 
-#include <ostream>
 #include <vector>
 #include <boost/optional.hpp>
 
 #include "Assignment.h"
 #include "Context.h"
+#include "scadstream.h"
 
 struct Argument {
   boost::optional<std::string> name;
@@ -39,5 +39,5 @@ private:
   EvaluationSession *evaluation_session;
 };
 
-std::ostream& operator<<(std::ostream& stream, const Argument& argument);
-std::ostream& operator<<(std::ostream& stream, const Arguments& arguments);
+scad::ostringstream& operator<<(scad::ostringstream& stream, const Argument& argument);
+scad::ostringstream& operator<<(scad::ostringstream& stream, const Arguments& arguments);

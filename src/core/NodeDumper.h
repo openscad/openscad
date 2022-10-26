@@ -57,7 +57,7 @@ private:
   int currindent;
   std::shared_ptr<const AbstractNode> root;
   GroupNodeChecker groupChecker;
-  std::ostringstream dumpstream;
+  scad::ostringstream dumpstream;
 
 };
 

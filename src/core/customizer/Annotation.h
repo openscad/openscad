@@ -4,13 +4,14 @@
 #include <vector>
 #include <unordered_map>
 #include "memory.h"
+#include "scadstream.h"
 
 class Annotation
 {
 public:
   Annotation(const std::string& name, shared_ptr<class Expression> expr);
 
-  void print(std::ostream& stream, const std::string& indent) const;
+  void print(scad::ostringstream& stream, const std::string& indent) const;
   const std::string& getName() const { return name; }
   const shared_ptr<Expression>& getExpr() const { return expr; }
 

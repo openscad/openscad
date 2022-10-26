@@ -6,6 +6,7 @@
 #include "BaseVisitable.h"
 #include "AST.h"
 #include "ModuleInstantiation.h"
+#include "scadstream.h"
 
 extern int progress_report_count;
 extern void (*progress_report_f)(const std::shared_ptr<const AbstractNode> &, void *, int);
@@ -31,7 +32,7 @@ class AbstractNode : public BaseVisitable, public std::enable_shared_from_this<A
 public:
   VISITABLE();
   AbstractNode(const ModuleInstantiation *mi);
-  virtual std::string toString() const;
+  virtual void print(scad::ostringstream& stream) const;
   /*! The 'OpenSCAD name' of this node, defaults to classname, but can be
       overloaded to provide specialization for e.g. CSG nodes, primitive nodes etc.
       Used for human-readable output. */
@@ -71,8 +72,8 @@ class AbstractIntersectionNode : public AbstractNode
 public:
   VISITABLE();
   AbstractIntersectionNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
-  std::string toString() const override;
-  std::string name() const override;
+  void print(scad::ostringstream& stream) const override final;
+  std::string name() const override final;
 };
 
 class AbstractPolyNode : public AbstractNode
@@ -135,5 +136,6 @@ public:
   virtual const class Geometry *createGeometry() const = 0;
 };
 
-std::ostream& operator<<(std::ostream& stream, const AbstractNode& node);
+scad::ostringstream& operator<<(scad::ostringstream& stream, const AbstractNode& node);
+scad::ostringstream& operator<<(scad::ostringstream& stream, const GroupNode& node);
 std::shared_ptr<AbstractNode> find_root_tag(const std::shared_ptr<AbstractNode> &node, const Location **nextLocation = nullptr);

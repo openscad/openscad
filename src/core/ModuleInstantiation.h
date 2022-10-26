@@ -13,8 +13,8 @@ public:
     : ASTNode(loc), arguments(args), tag_root(false), tag_highlight(false), tag_background(false), modname(name) { }
   ~ModuleInstantiation();
 
-  virtual void print(std::ostream& stream, const std::string& indent, const bool inlined) const;
-  void print(std::ostream& stream, const std::string& indent) const override { print(stream, indent, false); }
+  virtual void print(scad::ostringstream& stream, const std::string& indent, const bool inlined) const;
+  void print(scad::ostringstream& stream, const std::string& indent) const override { print(stream, indent, false); }
   std::shared_ptr<AbstractNode> evaluate(const std::shared_ptr<const Context> context) const;
 
   const std::string& name() const { return this->modname; }
@@ -40,7 +40,7 @@ public:
   ~IfElseModuleInstantiation();
   LocalScope *makeElseScope();
   LocalScope *getElseScope() const { return this->else_scope.get(); }
-  void print(std::ostream& stream, const std::string& indent, const bool inlined) const final;
+  void print(scad::ostringstream& stream, const std::string& indent, const bool inlined) const override final;
 private:
   std::unique_ptr<LocalScope> else_scope;
 };

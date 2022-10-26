@@ -48,9 +48,9 @@ static std::shared_ptr<AbstractNode> builtin_render(const ModuleInstantiation *i
   return children.instantiate(node);
 }
 
-std::string RenderNode::toString() const
+void RenderNode::print(scad::ostringstream& stream) const
 {
-  return STR(this->name(), "(convexity = ", convexity, ")");
+  stream << this->name() << "(convexity = " << this->convexity << ")";
 }
 
 void register_builtin_render()

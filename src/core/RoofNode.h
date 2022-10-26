@@ -13,8 +13,8 @@ class RoofNode : public AbstractPolyNode
 public:
   VISITABLE();
   RoofNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {}
-  std::string toString() const override;
-  std::string name() const override { return "roof"; }
+  void print(scad::ostringstream& stream) const override final;
+  std::string name() const override final { return "roof"; }
 
   double fa, fs, fn;
   int convexity = 1;

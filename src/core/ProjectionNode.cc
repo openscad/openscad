@@ -49,10 +49,10 @@ static std::shared_ptr<AbstractNode> builtin_projection(const ModuleInstantiatio
   return children.instantiate(node);
 }
 
-std::string ProjectionNode::toString() const
+void ProjectionNode::print(scad::ostringstream& stream) const
 {
-  return STR("projection(cut = ", (this->cut_mode ? "true" : "false"),
-                                 ", convexity = ", this->convexity, ")");
+  stream << "projection(cut = " << (this->cut_mode ? "true" : "false")
+                                 << ", convexity = " << this->convexity << ")";
 }
 
 void register_builtin_projection()

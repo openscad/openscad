@@ -216,9 +216,8 @@ const Geometry *ImportNode::createGeometry() const
   return g;
 }
 
-std::string ImportNode::toString() const
+void ImportNode::print(scad::ostringstream& stream) const
 {
-  std::ostringstream stream;
   fs::path path((std::string)this->filename);
 
   stream << this->name();
@@ -239,8 +238,6 @@ std::string ImportNode::toString() const
          << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs
          << ", timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
          << ")";
-
-  return stream.str();
 }
 
 std::string ImportNode::name() const

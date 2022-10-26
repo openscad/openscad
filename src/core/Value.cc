@@ -39,37 +39,12 @@
 #include "printutils.h"
 #include "StackCheck.h"
 #include "boost-utils.h"
-#include "double-conversion/double-conversion.h"
-#include "double-conversion/utils.h"
-#include "double-conversion/ieee.h"
-#include "boost-utils.h"
 
 namespace fs = boost::filesystem;
 
 const Value Value::undefined;
 const VectorType VectorType::EMPTY(nullptr);
 const RangeType RangeType::EMPTY{0, 0, 0};
-
-/* Define values for double-conversion library. */
-#define DC_BUFFER_SIZE 128
-#define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO | \
-                  double_conversion::DoubleToStringConverter::EMIT_POSITIVE_EXPONENT_SIGN)
-#define DC_INF "inf"
-#define DC_NAN "nan"
-#define DC_EXP 'e'
-#define DC_DECIMAL_LOW_EXP -6
-#define DC_DECIMAL_HIGH_EXP 21
-#define DC_MAX_LEADING_ZEROES 5
-#define DC_MAX_TRAILING_ZEROES 0
-
-inline std::string DoubleConvert(const double& value, char *buffer,
-                                 double_conversion::StringBuilder& builder, const double_conversion::DoubleToStringConverter& dc) {
-  builder.Reset();
-  dc.ToShortest(value, &builder);
-  int pos = builder.position(); // get position before Finalize destroys it
-  builder.Finalize();
-  return buffer;
-}
 
 static uint32_t convert_to_uint32(const double d)
 {
@@ -84,7 +59,7 @@ static uint32_t convert_to_uint32(const double d)
   return ret;
 }
 
-std::ostream& operator<<(std::ostream& stream, const Filename& filename)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const Filename& filename)
 {
   fs::path fnpath{static_cast<std::string>(filename)}; // gcc-4.6
   auto fpath = boostfs_uncomplete(fnpath, fs::current_path());
@@ -93,7 +68,7 @@ std::ostream& operator<<(std::ostream& stream, const Filename& filename)
 }
 
 // FIXME: This could probably be done more elegantly using boost::regex
-std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const QuotedString& s)
 {
   stream << '"';
   for (char c : s) {
@@ -232,23 +207,16 @@ const str_utf8_wrapper& Value::toStrUtf8Wrapper() const {
 class tostream_visitor : public boost::static_visitor<>
 {
 public:
-  std::ostringstream& stream;
-  mutable char buffer[DC_BUFFER_SIZE];
-  mutable double_conversion::StringBuilder builder;
-  double_conversion::DoubleToStringConverter dc;
+  scad::ostringstream& stream;
 
-  tostream_visitor(std::ostringstream& stream)
-    : stream(stream), builder(buffer, DC_BUFFER_SIZE),
-    dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
-  {}
+  tostream_visitor(scad::ostringstream& stream) : stream(stream) {}
 
   template <typename T> void operator()(const T& op1) const {
-    //std::cout << "[generic tostream_visitor]\n";
-    stream << boost::lexical_cast<std::string>(op1);
+    stream << op1;
   }
 
   void operator()(const double& op1) const {
-    stream << DoubleConvert(op1, buffer, builder, dc);
+    stream << op1;
   }
 
   void operator()(const UndefType&) const {
@@ -292,6 +260,12 @@ public:
   }
 };
 
+scad::ostringstream& operator<<(scad::ostringstream& stream, const Value& value) {
+    if (value.type() == Value::Type::STRING) stream << QuotedString(value.toString());
+    else boost::apply_visitor(tostream_visitor(stream), value.getVariant());
+    return stream;
+}
+
 class tostring_visitor : public boost::static_visitor<std::string>
 {
 public:
@@ -305,11 +279,9 @@ public:
   }
 
   std::string operator()(const double& op1) const {
-    char buffer[DC_BUFFER_SIZE];
-    double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
-    double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
-                                                  DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
-    return DoubleConvert(op1, buffer, builder, dc);
+    scad::ostringstream stream;
+    stream << op1;
+    return stream.str();
   }
 
   std::string operator()(const UndefType&) const {
@@ -327,7 +299,7 @@ public:
 
   std::string operator()(const VectorType& v) const {
     // Create a single stream and pass reference to it for list elements for optimization.
-    std::ostringstream stream;
+    scad::ostringstream stream;
     try {
       (tostream_visitor(stream))(v);
     } catch (EvaluationException& e) {
@@ -376,7 +348,7 @@ std::string Value::toEchoStringNoThrow() const
 }
 
 std::string UndefType::toString() const {
-  std::ostringstream stream;
+  scad::ostringstream stream;
   if (!reasons->empty()) {
     auto it = reasons->begin();
     stream << *it;
@@ -399,7 +371,7 @@ std::string Value::toUndefString() const
   return boost::get<UndefType>(this->value).toString();
 }
 
-std::ostream& operator<<(std::ostream& stream, const UndefType& u)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const UndefType& u)
 {
   stream << "undef";
   return stream;
@@ -428,7 +400,7 @@ public:
 
   std::string operator()(const VectorType& v) const
   {
-    std::ostringstream stream;
+    scad::ostringstream stream;
     for (auto& val : v) {
       stream << val.chrString();
     }
@@ -443,7 +415,7 @@ public:
       return "";
     }
 
-    std::ostringstream stream;
+    scad::ostringstream stream;
     for (double d : *v) stream << Value(d).chrString();
     return stream.str();
   }
@@ -1205,20 +1177,15 @@ bool RangeType::iterator::operator!=(const iterator& other) const
   return !(*this == other);
 }
 
-std::ostream& operator<<(std::ostream& stream, const RangeType& r)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const RangeType& r)
 {
-  char buffer[DC_BUFFER_SIZE];
-  double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
-  double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
-                                                DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP,
-                                                DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
   return stream << "["
-                << DoubleConvert(r.begin_value(), buffer, builder, dc) << " : "
-                << DoubleConvert(r.step_value(),  buffer, builder, dc) << " : "
-                << DoubleConvert(r.end_value(),   buffer, builder, dc) << "]";
+                << r.begin_value() << " : "
+                << r.step_value()  << " : "
+                << r.end_value()   << "]";
 }
 
-std::ostream& operator<<(std::ostream& stream, const FunctionType& f)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const FunctionType& f)
 {
   stream << "function(";
   bool first = true;
@@ -1276,7 +1243,7 @@ ObjectType ObjectType::clone() const
   return ObjectType(this->ptr);
 }
 
-std::ostream& operator<<(std::ostream& stream, const ObjectType& v)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const ObjectType& v)
 {
   stream << "{ ";
   auto iter = v.ptr->keys.begin();

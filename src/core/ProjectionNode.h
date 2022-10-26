@@ -8,8 +8,8 @@ class ProjectionNode : public AbstractPolyNode
 public:
   VISITABLE();
   ProjectionNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi), convexity(1), cut_mode(false) { }
-  std::string toString() const override;
-  std::string name() const override { return "projection"; }
+  void print(scad::ostringstream& stream) const override final;
+  std::string name() const override final { return "projection"; }
 
   int convexity;
   bool cut_mode;
