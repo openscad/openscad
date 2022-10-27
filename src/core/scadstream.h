@@ -6,28 +6,28 @@
 #include <iterator>
 #include <double-conversion/double-conversion.h>
 
-/* Define values for double-conversion library. */
-#define DC_BUFFER_SIZE 128
-#define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO)
-#define DC_INF "inf"
-#define DC_NAN "nan"
-#define DC_EXP 'e'
-#define DC_DECIMAL_LOW_EXP -5
-#define DC_DECIMAL_HIGH_EXP 6
-#define DC_MAX_LEADING_ZEROES 5
-#define DC_MAX_TRAILING_ZEROES 0
-
 namespace scad {
 
 class ostringstream
 {
 public:
+  using dc_flags_t = double_conversion::DoubleToStringConverter::Flags;
+  static constexpr auto dc_flags = dc_flags_t::UNIQUE_ZERO;
+  static constexpr size_t dc_buffer_size = 128;
+  static constexpr const char * dc_inf = "inf";
+  static constexpr const char * dc_nan = "nan";
+  static constexpr char dc_exp = 'e';
+  static constexpr int dc_decimal_low_exp = -5;
+  static constexpr int dc_decimal_high_exp = 6;
+  static constexpr int dc_max_leading_zeros = 5;
+  static constexpr int dc_max_trailing_zeros = 0;
+
   ostringstream() :
       oss(),
-      builder(buffer, DC_BUFFER_SIZE),
-      dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
-          DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP,
-          DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
+      builder(buffer, dc_buffer_size),
+      dc(dc_flags, dc_inf, dc_nan, dc_exp,
+          dc_decimal_low_exp, dc_decimal_high_exp,
+          dc_max_leading_zeros, dc_max_trailing_zeros)
   {}
 
   using CharT = char;
@@ -57,7 +57,7 @@ public:
   //std::ostringstream& get_ostringstream() { return *this; }
 protected:
   std::ostringstream oss;
-  char buffer[DC_BUFFER_SIZE];
+  char buffer[dc_buffer_size];
   double_conversion::StringBuilder builder;
   double_conversion::DoubleToStringConverter dc;
 };
