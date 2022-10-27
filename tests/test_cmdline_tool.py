@@ -107,16 +107,18 @@ def normalize_string(s):
 
     s = re.sub(', timestamp = [0-9]+', '', s)
 
-    """ Don't replace floats after implementing double-conversion library
+    """Some test platforms differ for the last one or two significant digits.
+    double precision's 53 bit mantissa has almost 16 digits of precision
+      math.log10(2**53-1) = 15.954589770191003
+    So we round to 14 significant digits.
+    """
     def floatrep(match):
         value = float(match.groups()[0])
-        if abs(value) < 10**-12:
+        if abs(value) < 10**-14:
             return "0"
-        if abs(value) >= 10**6:
-            return "%d"%value
-        return "%.6g"%value
+        return "%.14g"%value
     s = re.sub('(-?[0-9]+(\\.[0-9]+)?(e[+-][0-9]+)?)', floatrep, s)
-    """
+
     def pathrep(match):
         return match.groups()[0] + match.groups()[2]
     s = re.sub('(file = ")([^"/]*/)*([^"]*")', pathrep, s)
