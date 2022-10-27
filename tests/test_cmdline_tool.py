@@ -34,9 +34,16 @@ import shutil
 import platform
 import string
 import difflib
+import decimal
+from decimal import Decimal
 
 #_debug_tcct = True
 _debug_tcct = False
+
+ctx = decimal.getcontext()
+ctx.prec = 13 # number of significant digits, used to round numbers before test comparison.
+near0 = Decimal('1e-14') # values less than this are replaced with '0' before test comparison
+# used by floatrep function, inside normalize_string
 
 def debug(*args):
     global _debug_tcct
@@ -110,13 +117,15 @@ def normalize_string(s):
     """Some test platforms differ for the last one or two significant digits.
     double precision's 53 bit mantissa has almost 16 digits of precision
       math.log10(2**53-1) = 15.954589770191003
-    So we round to 14 significant digits.
+    So we round to 13 significant digits.
     """
     def floatrep(match):
-        value = float(match.groups()[0])
-        if abs(value) < 10**-14:
+        value = Decimal(match.groups()[0])
+        if ctx.abs(value) < near0:
             return "0"
-        return "%.14g"%value
+        # Plus corresponds to the unary prefix plus operator in Python.
+        # This operation applies the context precision and rounding, so it is not an identity operation.
+        return ctx.to_sci_string(ctx.plus(value))
     s = re.sub('(-?[0-9]+(\\.[0-9]+)?(e[+-][0-9]+)?)', floatrep, s)
 
     def pathrep(match):
