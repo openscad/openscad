@@ -24,8 +24,6 @@
  *
  */
 
-#include "ImportNode.h"
-
 #include "PolySet.h"
 #include "printutils.h"
 #include "AST.h"
@@ -40,7 +38,6 @@
 #include <assert.h>
 #include <libxml/xmlreader.h>
 #include <boost/filesystem.hpp>
-#include "boost-utils.h"
 
 static const std::string text_node("#text");
 static const std::string object("/amf/object");

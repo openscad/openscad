@@ -6,7 +6,6 @@
 #include <ctime>
 
 #include "module.h"
-#include "Value.h"
 #include "LocalScope.h"
 #include "IndicatorData.h"
 

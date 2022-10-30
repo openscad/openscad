@@ -5,8 +5,6 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "qtgettext.h"
-
 class GroupWidget : public QWidget
 {
   Q_OBJECT

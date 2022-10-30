@@ -39,7 +39,7 @@
 #include "printutils.h"
 #include "StackCheck.h"
 #include "boost-utils.h"
-#include "double-conversion/double-conversion.h"
+#include "double-conversion/double-to-string.h"
 #include "double-conversion/utils.h"
 #include "double-conversion/ieee.h"
 #include "boost-utils.h"

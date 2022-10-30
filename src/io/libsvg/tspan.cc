@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 #include "tspan.h"
+#include "util.h"
 
 namespace libsvg {
 

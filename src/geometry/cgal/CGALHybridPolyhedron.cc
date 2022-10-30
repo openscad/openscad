@@ -2,7 +2,7 @@
 #include "CGALHybridPolyhedron.h"
 
 #include "cgalutils.h"
-#include "hash.h"
+#include "Feature.h"
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/boost/graph/helpers.h>
 #include <fstream>

@@ -26,6 +26,7 @@
 #include <iostream>
 
 #include "use.h"
+#include "util.h"
 
 namespace libsvg {
 

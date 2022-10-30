@@ -9,7 +9,6 @@
 #include "printutils.h"
 #include "Polygon2d.h"
 #include "PolySetUtils.h"
-#include "Grid.h"
 #include "node.h"
 #include "degree_trig.h"
 
@@ -24,7 +23,6 @@
 #include <CGAL/convex_hull_3.h>
 
 #include "Reindexer.h"
-#include "hash.h"
 #include "GeometryUtils.h"
 #include "CGALHybridPolyhedron.h"
 

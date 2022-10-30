@@ -37,7 +37,6 @@
 #include "StackCheck.h"
 #include "Context.h"
 #include "exceptions.h"
-#include "Feature.h"
 #include "Parameters.h"
 #include "printutils.h"
 #include "boost-utils.h"

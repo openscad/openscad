@@ -2,7 +2,6 @@
 #include "PolySet.h"
 #include "printutils.h"
 #include "AST.h"
-#include "boost-utils.h"
 
 #include <fstream>
 #include <boost/predef.h>

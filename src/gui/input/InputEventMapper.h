@@ -28,7 +28,8 @@
 #include <QTimer>
 #include <QObject>
 
-#include "input/InputDriver.h"
+#include "InputDriver.h"
+#include "InputDriverEvent.h"
 
 class InputEventMapper : public QObject, public InputEventHandler
 {

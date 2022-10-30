@@ -27,7 +27,7 @@
 #pragma once
 
 #include "system-gl.h"
-#include "VBORenderer.h"
+#include "VertexArray.h"
 #include "ext/CGAL/OGL_helper.h"
 #include <cstdlib>
 

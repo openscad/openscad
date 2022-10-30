@@ -3,9 +3,9 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include <boost/logic/tribool.hpp>
 #include <boost/variant.hpp>
 #include "Assignment.h"
-#include "boost-utils.h"
 #include "function.h"
 #include "memory.h"
 

@@ -25,7 +25,6 @@
  */
 
 #include "StatCache.h"
-#include "printutils.h"
 
 #include <string>
 #include <unordered_map>

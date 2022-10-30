@@ -10,7 +10,6 @@
 
 #include "GeometryUtils.h"
 #include "ClipperUtils.h"
-#include "printutils.h"
 #include "RoofNode.h"
 #include "roof_vd.h"
 

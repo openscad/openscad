@@ -37,6 +37,7 @@
 #include "path.h"
 #include "degree_trig.h"
 #include "calc.h"
+#include "util.h"
 
 namespace libsvg {
 

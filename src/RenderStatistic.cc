@@ -30,14 +30,12 @@
 #include "CGALCache.h"
 #include "PolySet.h"
 #include "Polygon2d.h"
-#include "boost-utils.h"
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "CGALHybridPolyhedron.h"
 #endif // ENABLE_CGAL
 
 #include "RenderStatistic.h"
-#include "ParameterObject.h"
 
 namespace {
 

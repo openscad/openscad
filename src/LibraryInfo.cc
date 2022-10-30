@@ -4,7 +4,6 @@
 
 #include "version_check.h"
 #include "PlatformUtils.h"
-#include "openscad.h"
 #include "version.h"
 #include "Feature.h"
 

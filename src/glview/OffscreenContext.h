@@ -7,7 +7,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "fbo.h"
 
 struct OffscreenContext *create_offscreen_context(int w, int h);
 bool teardown_offscreen_context(OffscreenContext *ctx);

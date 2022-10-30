@@ -29,7 +29,6 @@
 #ifndef NULLGL
 
 #include "ColorMap.h"
-#include "RenderSettings.h"
 #include "CGAL_OGL_Polyhedron.h"
 #include "CGAL_OGL_VBO_helper.h"
 #include "printutils.h"

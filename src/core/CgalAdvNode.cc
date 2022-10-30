@@ -30,7 +30,6 @@
 #include "Builtins.h"
 #include "Children.h"
 #include "Parameters.h"
-#include "PolySet.h"
 #include <sstream>
 #include <assert.h>
 #include <boost/assign/std/vector.hpp>

@@ -27,10 +27,6 @@
 
 #include "IndexedMesh.h"
 
-#include "export.h"
-#include "PolySetUtils.h"
-#include "DxfData.h"
-
 #ifdef ENABLE_CGAL
 
 #include "cgal.h"
@@ -38,7 +34,7 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "CGALHybridPolyhedron.h"
 
-#include "Grid.h"
+#include "PolySet.h"
 
 IndexedMesh::IndexedMesh()
   : numfaces(0)

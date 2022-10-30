@@ -32,9 +32,7 @@
 #include "printutils.h"
 #include "fileutils.h"
 #include "Builtins.h"
-#include "PolySet.h"
 #include "handle_dep.h"
-#include "boost-utils.h"
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope

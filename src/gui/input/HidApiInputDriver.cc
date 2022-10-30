@@ -40,8 +40,9 @@
 
 #include "Settings.h"
 #include "PlatformUtils.h"
-#include "input/HidApiInputDriver.h"
-#include "input/InputDriverManager.h"
+#include "HidApiInputDriver.h"
+#include "InputDriverEvent.h"
+#include "InputDriverManager.h"
 
 static constexpr int BUFLEN = 64;
 static constexpr int MAX_LOG_SIZE = 20 * 1024;

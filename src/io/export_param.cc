@@ -29,7 +29,6 @@
 #include <boost/property_tree/json_parser.hpp>
 
 #include "export.h"
-#include "Expression.h"
 #include "ParameterObject.h"
 
 using json = nlohmann::json;

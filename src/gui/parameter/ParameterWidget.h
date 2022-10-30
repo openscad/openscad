@@ -28,7 +28,7 @@
 #include <QTimer>
 #include <map>
 
-#include "qtgettext.h"
+#include "qtgettext.h" // IWYU pragma: keep
 #include "ui_ParameterWidget.h"
 #include "ParameterObject.h"
 #include "ParameterSet.h"
