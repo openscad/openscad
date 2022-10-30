@@ -230,16 +230,6 @@ Key bindings:
             scad-completions
             :exclusive "no"))))
 
-;; From: http://stackoverflow.com/questions/14520073/add-words-for-dynamic-expansion-to-emacs-mode
-(defun scad-prime-dabbrev ()
-  "Makes a hidden scad-mode buffer containing all the scad keywords, so dabbrev expansion just works."
-  (unless (get-buffer " *scad words*")
-    (with-current-buffer (get-buffer-create " *scad words*")
-      (scad-mode)
-      (insert "module function use include")  ; Explicitly add these -- they're not in the below vars
-      (insert (mapconcat 'identity (append scad-keywords scad-functions scad-modules scad-deprecated) " ")))))
-(add-hook 'scad-mode-hook 'scad-prime-dabbrev)
-
 (defun scad-open-current-buffer ()
   "Open current buffer with `scad-command'."
   (interactive)
