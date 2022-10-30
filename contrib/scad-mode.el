@@ -224,11 +224,10 @@ Key bindings:
 
 (defun scad-completion-at-point ()
   "Completion at point function."
-  (let ((bounds (bounds-of-thing-at-point 'word)))
-    (when bounds
-      (list (car bounds) (cdr bounds)
-            scad-completions
-            :exclusive "no"))))
+  (when-let (bounds (bounds-of-thing-at-point 'word))
+    (list (car bounds) (cdr bounds)
+          scad-completions
+          :exclusive 'no)))
 
 (defun scad-open-current-buffer ()
   "Open current buffer with `scad-command'."
