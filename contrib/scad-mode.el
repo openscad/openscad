@@ -29,7 +29,7 @@
 ;; This is a major-mode to implement the SCAD constructs and
 ;; font-locking for OpenSCAD
 ;;
-;; If installing manually, insert the following into your emacs startup:
+;; If installing manually, insert the following into your Emacs startup:
 ;;
 ;; (autoload 'scad-mode "scad-mode" "A major mode for editing OpenSCAD code." t)
 ;; (add-to-list 'auto-mode-alist '("\\.scad$" . scad-mode))
@@ -54,22 +54,25 @@
 (eval-when-compile
   (require 'cc-langs)
   (require 'cc-fonts)
-  (require 'cl))
+  (require 'cl-lib))
 
 (eval-and-compile
   (c-add-language 'scad-mode 'c-mode))
 
+(defgroup scad nil
+  "A major mode for editing OpenSCAD code."
+  :group 'languages
+  :prefix "scad-")
+
 (defcustom scad-command
-  '"openscad"
-  "Path to openscad executable"
-  :type 'string
-  )
+  "openscad"
+  "Path to openscad executable."
+  :type 'string)
 
 (defcustom scad-keywords
   '("return" "true" "false")
   "SCAD keywords."
-  :type 'list
-  :group 'scad-font-lock)
+  :type 'list)
 
 (defcustom scad-functions
   '("cos" "acos" "sin" "asin" "tan" "atan" "atan2"                      ;;func.cc
@@ -85,8 +88,7 @@
     "is_undef" "is_list" "is_num" "is_bool" "is_string"                 ;;2019.05 type test
     )
   "SCAD functions."
-  :type 'list
-  :group 'scad-font-lock)
+  :type 'list)
 
 (defcustom scad-modules
   '("children" "echo" "for" "intersection_for" "if" "else"              ;;control.cc
@@ -106,15 +108,13 @@
     "let" "offset" "text"                                               ;;2015.03
     )
   "SCAD modules."
-  :type 'list
-  :group 'scad-font-lock)
+  :type 'list)
 
 (defcustom scad-deprecated
   '("child" "assign" "dxf_linear_extrude" "dxf_rotate_extrude"
     "import_stl" "import_off" "import_dxf")
   "SCAD deprecated modules and functions."
-  :type 'list
-  :group 'scad-font-lock)
+  :type 'list)
 
 (defcustom scad-operators
   '("+" "-" "*" "/" "%"
@@ -122,8 +122,7 @@
     "<" "<=" "==" "!=" ">" ">="
     "?" ":" "=")
   "SCAD operators."
-  :type 'list
-  :group 'scad-font-lock)
+  :type 'list)
 
 (defvar scad-mode-map
   (let ((map (make-sparse-keymap)))
@@ -181,9 +180,9 @@
 (defconst scad-font-lock-keywords-3 scad-font-lock-keywords)
 
 (defvar scad-indent-style nil
-  "The style of indentation for scad-mode. Defaults to \"k&r\" if
-  nil. If you want to set the style with file local variables use
-  the `c-file-style' variable")
+  "The style of indentation for `scad-mode'.
+Defaults to K&R if nil. If you want to set the style with file
+  local variables use the `c-file-style' variable.")
 
 (defvar scad-completions
   (append '("module" "function" "use" "include")
@@ -191,8 +190,7 @@
   "List of known words for completion.")
 
 (defcustom scad-mode-disable-c-mode-hook t
-  "When set to `T', do not run hooks of parent mode (`c-mode')."
-  :group 'scad-mode
+  "When set to t, do not run hooks of parent mode (`c-mode')."
   :tag "SCAD Mode Disable C Mode Hook"
   :type 'boolean)
 
@@ -208,8 +206,9 @@ initialization, then `scad-mode-hook'.
 
 Key bindings:
 \\{scad-mode-map}"
+  :group 'scad
   (add-hook 'completion-at-point-functions
-            'scad-completion-at-point nil 'local)
+            #'scad-completion-at-point nil 'local)
   (when scad-mode-disable-c-mode-hook
     (setq-local c-mode-hook nil))
   (c-initialize-cc-mode t)
@@ -242,6 +241,7 @@ Key bindings:
 (add-hook 'scad-mode-hook 'scad-prime-dabbrev)
 
 (defun scad-open-current-buffer ()
+  "Open current buffer with `scad-command'."
   (interactive)
   (call-process scad-command nil 0 nil (buffer-file-name)))
 
