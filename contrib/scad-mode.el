@@ -36,9 +36,9 @@
 ;;
 ;; or
 ;;
-;; install from marmalade: http://marmalade-repo.org/
+;; install from MELPA
+;;
 ;; M-x install-package <ENTER> scad-mode <ENTER>
-
 
 ;;; To Do:
 ;; - Support for background/debug/root/disable modifiers
