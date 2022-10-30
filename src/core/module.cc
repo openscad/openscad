@@ -29,7 +29,6 @@
 #include "Context.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "Value.h"
 
 BuiltinModule::BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const class ModuleInstantiation *, const std::shared_ptr<const Context>&), const Feature *feature) :
   AbstractModule(feature),

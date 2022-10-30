@@ -1,10 +1,8 @@
 #ifdef ENABLE_CGAL
 
-#include "cgal.h"
 #include "cgalutils.h"
 #include "PolySet.h"
 #include "printutils.h"
-#include "PolySetUtils.h"
 #include "Grid.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>

@@ -24,14 +24,11 @@
  *
  */
 
-#include "ImportNode.h"
-
 #include "PolySet.h"
 #include "Geometry.h"
 #include "printutils.h"
 #include "version_helper.h"
 #include "AST.h"
-#include "boost-utils.h"
 
 #ifdef ENABLE_LIB3MF
 #ifndef LIB3MF_API_2

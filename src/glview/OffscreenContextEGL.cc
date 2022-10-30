@@ -34,7 +34,7 @@
 #define EGL_EGLEXT_PROTOTYPES
 #include <EGL/eglext.h>
 
-#include <assert.h>
+#include <cassert>
 #include <sstream>
 #include <string>
 

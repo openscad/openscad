@@ -4,7 +4,6 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <string>
-#include "system-gl.h"
 #include <iostream>
 #include "GLView.h"
 

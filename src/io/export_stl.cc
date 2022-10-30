@@ -27,7 +27,6 @@
 #include "export.h"
 #include "PolySet.h"
 #include "PolySetUtils.h"
-#include "DxfData.h"
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"

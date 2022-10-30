@@ -28,10 +28,12 @@
 #include <QWidget>
 #include <QThread>
 #include <QTimer>
+#include <QIcon>
 
 #include "InputDriver.h"
 #include "InputEventMapper.h"
-#include "MainWindow.h"
+
+class MainWindow;
 
 struct ActionStruct {
   QString name;

@@ -25,6 +25,7 @@
 #include <boost/tokenizer.hpp>
 
 #include "polyline.h"
+#include "util.h"
 
 namespace libsvg {
 

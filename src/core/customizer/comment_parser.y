@@ -2,8 +2,7 @@
 
 %{
     #include <sstream>
-    #include <string.h>
-    #include "Assignment.h"
+    #include <string>
     #include "Expression.h"
     #include "printutils.h"
     #include "CommentParser.h"

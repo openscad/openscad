@@ -28,13 +28,12 @@
 #include "ModuleInstantiation.h"
 #include "node.h"
 #include "Arguments.h"
-#include "ScopeContext.h"
+#include "Children.h"
 #include "Expression.h"
 #include "Builtins.h"
 #include "Parameters.h"
 #include "printutils.h"
 #include <cstdint>
-#include "boost-utils.h"
 
 static std::shared_ptr<AbstractNode> lazyUnionNode(const ModuleInstantiation *inst)
 {

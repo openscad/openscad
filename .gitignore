@@ -1,4 +1,5 @@
 .uuid
+.cache/
 .vs/
 .vscode/
 /*.scad

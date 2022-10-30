@@ -28,7 +28,6 @@
 #include "AxisConfigWidget.h"
 
 #include "Settings.h"
-#include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
 #include "IgnoreWheelWhenNotFocused.h"

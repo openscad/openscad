@@ -1,6 +1,6 @@
 #include "fbo.h"
 #include "system-gl.h"
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 using namespace std;
 

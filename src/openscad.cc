@@ -28,7 +28,6 @@
 #include "CommentParser.h"
 #include "node.h"
 #include "SourceFile.h"
-#include "ModuleInstantiation.h"
 #include "BuiltinContext.h"
 #include "Value.h"
 #include "export.h"
@@ -40,14 +39,11 @@
 #include "RenderSettings.h"
 #include "PlatformUtils.h"
 #include "LibraryInfo.h"
-#include "NodeDumper.h"
 #include "StackCheck.h"
-#include "CocoaUtils.h"
 #include "FontCache.h"
 #include "OffscreenView.h"
 #include "GeometryEvaluator.h"
 #include "RenderStatistic.h"
-#include "boost-utils.h"
 #include "ParameterObject.h"
 #include "ParameterSet.h"
 #include "openscad_mimalloc.h"
@@ -80,6 +76,7 @@
 #endif
 
 #ifdef __APPLE__
+#include "CocoaUtils.h"
 #include "AppleEvents.h"
   #ifdef OPENSCAD_UPDATER
     #include "SparkleAutoUpdater.h"

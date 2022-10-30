@@ -1,10 +1,9 @@
 #include <ciso646> // C alternative tokens (xor)
-#include <stdlib.h>
+#include <cstdlib>
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include "boost-utils.h"
 #include <QString>
 #include <QChar>
 #include <QShortcut>
@@ -14,7 +13,6 @@
 #include "Preferences.h"
 #include "PlatformUtils.h"
 #include "Settings.h"
-#include "QSettingsCached.h"
 #include "ScadLexer.h"
 
 #include <QWheelEvent>

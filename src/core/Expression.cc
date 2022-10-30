@@ -28,7 +28,7 @@
 #include "Value.h"
 #include <cstdint>
 #include <cmath>
-#include <assert.h>
+#include <cassert>
 #include <sstream>
 #include <algorithm>
 #include <typeinfo>
@@ -37,7 +37,6 @@
 #include "StackCheck.h"
 #include "Context.h"
 #include "exceptions.h"
-#include "Feature.h"
 #include "Parameters.h"
 #include "printutils.h"
 #include "boost-utils.h"

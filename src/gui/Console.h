@@ -30,7 +30,8 @@
 #include <QMouseEvent>
 #include <QString>
 #include <vector>
-#include "qtgettext.h"
+#include "printutils.h"
+#include "qtgettext.h" // IWYU pragma: keep
 #include "ui_Console.h"
 
 struct ConsoleMessageBlock {

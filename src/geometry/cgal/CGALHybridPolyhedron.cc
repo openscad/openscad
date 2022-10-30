@@ -2,12 +2,12 @@
 #include "CGALHybridPolyhedron.h"
 
 #include "cgalutils.h"
-#include "hash.h"
+#include "Feature.h"
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/boost/graph/helpers.h>
 #include <fstream>
 #include <sstream>
-#include <stdio.h>
+#include <cstdio>
 
 
 CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<CGAL_HybridNef>& nef)

@@ -8,7 +8,6 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include "GLView.h"
-#include "Renderer.h"
 
 class QGLView : public QOpenGLWidget, public GLView
 {

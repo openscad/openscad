@@ -5,7 +5,8 @@
 #include "Children.h"
 #include "Context.h"
 #include "SourceFile.h"
-#include "UserModule.h"
+
+class UserModule;
 
 class ScopeContext : public Context
 {

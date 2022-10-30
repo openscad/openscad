@@ -37,14 +37,12 @@
 
 #include "OffscreenContext.h"
 #include "printutils.h"
-#include "imageutils.h"
-#include "system-gl.h"
 #include "fbo.h"
 
 #include <GL/gl.h>
 #include <GL/glx.h>
 
-#include <assert.h>
+#include <cassert>
 #include <sstream>
 #include <string>
 

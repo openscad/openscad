@@ -27,9 +27,8 @@
 #include <QPixmap>
 #include <QPainter>
 #include <QMimeData>
-
-#include "qtgettext.h"
-#include "FontListDialog.h"
+#include <QTableView>
+#include "FontListTableView.h"
 
 FontListTableView::FontListTableView(QWidget *parent) : QTableView(parent)
 {

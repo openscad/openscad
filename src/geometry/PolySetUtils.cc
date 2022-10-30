@@ -4,7 +4,6 @@
 #include "printutils.h"
 #include "GeometryUtils.h"
 #include "Reindexer.h"
-#include "Grid.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #endif

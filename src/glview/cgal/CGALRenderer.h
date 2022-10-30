@@ -1,10 +1,7 @@
 #pragma once
 
-#include "cgal.h"
-
 #include "VBORenderer.h"
 #include "CGAL_OGL_Polyhedron.h"
-#include "CGAL_OGL_VBOPolyhedron.h"
 #include "CGAL_Nef_polyhedron.h"
 
 class CGALRenderer : public VBORenderer

@@ -2,7 +2,6 @@
 
 #include <functional>
 #include <string>
-#include "AST.h"
 #include "Feature.h"
 
 class AbstractNode;

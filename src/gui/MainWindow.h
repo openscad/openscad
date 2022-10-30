@@ -1,28 +1,24 @@
 #pragma once
 
-#include "qtgettext.h"
-#include <QMainWindow>
-#include <QIcon>
-#include "ui_MainWindow.h"
-#include "UIUtils.h"
-#include "openscad.h"
-#include "module.h"
-#include "ModuleInstantiation.h"
-#include "Tree.h"
-#include "memory.h"
 #include "Editor.h"
 #include "export.h"
-#include <vector>
-#include <QMutex>
-#include <QElapsedTimer>
-#include <QTime>
-#include <QIODevice>
-#include "input/InputDriver.h"
-#include "Editor.h"
-#include "TabManager.h"
+#include "memory.h"
 #include "RenderStatistic.h"
+#include "TabManager.h"
+#include "Tree.h"
+#include "UIUtils.h"
+#include "qtgettext.h" // IWYU pragma: keep
+#include "ui_MainWindow.h"
+
 #include <memory>
 #include <string>
+#include <vector>
+#include <QMainWindow>
+#include <QElapsedTimer>
+#include <QIcon>
+#include <QIODevice>
+#include <QMutex>
+#include <QTime>
 
 #ifdef STATIC_QT_SVG_PLUGIN
 #include <QtPlugin>

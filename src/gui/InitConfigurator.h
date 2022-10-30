@@ -2,7 +2,6 @@
 #include <QSettings>
 #include <QObject>
 #include "Settings.h"
-#include "qtgettext.h"
 #include <QComboBox>
 #include <QSpinBox>
 #include <QCheckBox>

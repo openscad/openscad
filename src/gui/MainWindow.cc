@@ -38,7 +38,6 @@
 #include "printutils.h"
 #include "node.h"
 #include "CSGNode.h"
-#include "Builtins.h"
 #include "memory.h"
 #include "Expression.h"
 #include "ScopeContext.h"
@@ -120,14 +119,14 @@
 
 #endif // ENABLE_CGAL
 
-#include "FontCache.h"
 #include "PrintInitDialog.h"
+#include "input/InputDriverEvent.h"
 #include "input/InputDriverManager.h"
 #include <cstdio>
 #include <memory>
 #include <QtNetwork>
 
-#include "qt-obsolete.h"
+#include "qt-obsolete.h" // IWYU pragma: keep
 
 static const int autoReloadPollingPeriodMS = 200;
 
