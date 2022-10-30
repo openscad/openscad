@@ -1,12 +1,13 @@
 ;;; scad-mode.el --- A major mode for editing OpenSCAD code
 
-;; Author:     Len Trigg, Łukasz Stelmach
-;; Maintainer: Len Trigg <lenbok@gmail.com>
-;; Created:    March 2010
-;; Modified:   28 Jun 2020
-;; Keywords:   languages
-;; URL:        https://raw.github.com/openscad/openscad/master/contrib/scad-mode.el
-;; Version:    92.0
+;; Author:           Len Trigg, Łukasz Stelmach
+;; Maintainer:       Len Trigg <lenbok@gmail.com>
+;; Created:          March 2010
+;; Modified:         28 Jun 2020
+;; Keywords:         languages
+;; URL:              https://raw.github.com/openscad/openscad/master/contrib/scad-mode.el
+;; Package-Requires: ((emacs "26"))
+;; Version:          92.0
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
