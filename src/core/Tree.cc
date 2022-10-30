@@ -1,7 +1,7 @@
 #include "Tree.h"
 #include "NodeDumper.h"
 
-#include <assert.h>
+#include <cassert>
 #include <algorithm>
 #include <sstream>
 #include <tuple>

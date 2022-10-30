@@ -28,7 +28,7 @@
 #include "Value.h"
 #include <cstdint>
 #include <cmath>
-#include <assert.h>
+#include <cassert>
 #include <sstream>
 #include <algorithm>
 #include <typeinfo>

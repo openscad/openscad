@@ -7,7 +7,7 @@
 #include <CGAL/boost/graph/helpers.h>
 #include <fstream>
 #include <sstream>
-#include <stdio.h>
+#include <cstdio>
 
 
 CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<CGAL_HybridNef>& nef)

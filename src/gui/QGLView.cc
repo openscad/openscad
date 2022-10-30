@@ -43,7 +43,7 @@
 #include <QErrorMessage>
 #include "OpenCSGWarningDialog.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <sstream>
 
 #ifdef ENABLE_OPENCSG

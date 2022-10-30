@@ -3,6 +3,7 @@
 #include "Parameters.h"
 #include "printutils.h"
 #include "SourceFileCache.h"
+#include "UserModule.h"
 #include <cmath>
 
 // Experimental code. See issue #399

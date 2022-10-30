@@ -14,7 +14,7 @@
 #include <string>
 #include <map>
 #include <list>
-#include <assert.h>
+#include <cassert>
 #include <cstddef>
 
 /*!

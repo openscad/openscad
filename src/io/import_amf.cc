@@ -35,7 +35,7 @@
 #include <sys/types.h>
 #include <map>
 #include <fstream>
-#include <assert.h>
+#include <cassert>
 #include <libxml/xmlreader.h>
 #include <boost/filesystem.hpp>
 

@@ -35,7 +35,7 @@
 #include "calc.h"
 #include "degree_trig.h"
 #include <sstream>
-#include <assert.h>
+#include <cassert>
 #include <cmath>
 #include <boost/assign/std/vector.hpp>
 #include "ModuleInstantiation.h"

@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include <cstdlib>
 #include <iomanip>
 #include "PlatformUtils.h"
 #include "printutils.h"

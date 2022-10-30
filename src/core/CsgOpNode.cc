@@ -32,7 +32,7 @@
 #include "Children.h"
 #include "Parameters.h"
 #include <sstream>
-#include <assert.h>
+#include <cassert>
 
 static std::shared_ptr<AbstractNode> builtin_union(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {

@@ -2,11 +2,12 @@
 
 #include <json.hpp>
 
-#include "Assignment.h"
-#include "SourceFile.h"
 #include "ParameterSet.h"
 #include <boost/variant.hpp>
 using json = nlohmann::json;
+
+class SourceFile;
+class Assignment;
 
 class ParameterObject
 {

@@ -2,7 +2,7 @@
 #include "printutils.h"
 #include "OffscreenView.h"
 #include "CsgInfo.h"
-#include <stdio.h>
+#include <cstdio>
 #include "RenderSettings.h"
 
 #ifndef NULLGL

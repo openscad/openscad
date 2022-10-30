@@ -25,6 +25,11 @@
  */
 #include "InputDriverEvent.h"
 #include "InputDriverManager.h"
+#include "MainWindow.h"
+#include <QAction>
+#include <QMenu>
+#include <QApplication>
+#include <QCoreApplication>
 
 InputDriverManager *InputDriverManager::self = 0;
 

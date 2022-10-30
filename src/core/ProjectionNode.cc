@@ -31,7 +31,7 @@
 #include "Parameters.h"
 #include "Builtins.h"
 
-#include <assert.h>
+#include <cassert>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 

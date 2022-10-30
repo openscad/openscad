@@ -34,7 +34,7 @@
 #include "degree_trig.h"
 #include <sstream>
 #include <vector>
-#include <assert.h>
+#include <cassert>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
