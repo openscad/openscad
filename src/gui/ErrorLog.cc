@@ -1,6 +1,5 @@
 #include "ErrorLog.h"
 #include "printutils.h"
-#include "MainWindow.h"
 #include <boost/filesystem.hpp>
 
 ErrorLog::ErrorLog(QWidget *parent) : QWidget(parent)

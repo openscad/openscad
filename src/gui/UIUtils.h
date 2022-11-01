@@ -27,8 +27,8 @@
 
 #include <QStringList>
 #include <QFileInfoList>
-
-#include "boost-utils.h"
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
 
 namespace UIUtils {
 static const int maxRecentFiles = 10;

@@ -48,7 +48,6 @@
 #include <stack>
 #include <boost/filesystem.hpp>
 #include "boost-utils.h"
-#include "Feature.h"
 
 namespace fs = boost::filesystem;
 

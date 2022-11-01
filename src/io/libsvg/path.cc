@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <stdlib.h>
+#include <cstdlib>
 
 #include <string>
 #include <iostream>
@@ -37,6 +37,7 @@
 #include "path.h"
 #include "degree_trig.h"
 #include "calc.h"
+#include "util.h"
 
 namespace libsvg {
 

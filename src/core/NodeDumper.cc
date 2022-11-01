@@ -1,6 +1,5 @@
 #include "NodeDumper.h"
 #include "State.h"
-#include "module.h"
 #include "ModuleInstantiation.h"
 #include <string>
 #include <sstream>

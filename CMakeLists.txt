@@ -736,6 +736,7 @@ set(CORE_SOURCES
   src/utils/printutils.cc
   src/utils/StackCheck.h
   src/utils/svg.cc
+  src/utils/version_check.h
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
   ${BISON_openscad_parser_OUTPUTS}

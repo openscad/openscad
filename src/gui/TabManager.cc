@@ -15,7 +15,6 @@
 #include "TabManager.h"
 #include "TabWidget.h"
 #include "ScintillaEditor.h"
-#include "QSettingsCached.h"
 #include "Preferences.h"
 #include "MainWindow.h"
 

@@ -1,7 +1,6 @@
 #include "CSGTreeEvaluator.h"
 #include "State.h"
 #include "CsgOpNode.h"
-#include "module.h"
 #include "ModuleInstantiation.h"
 #include "CSGNode.h"
 #include "TransformNode.h"
@@ -11,12 +10,11 @@
 #include "printutils.h"
 #include "GeometryEvaluator.h"
 #include "PolySet.h"
-#include "PolySetUtils.h"
 
 #include <string>
 #include <map>
 #include <list>
-#include <assert.h>
+#include <cassert>
 #include <cstddef>
 
 /*!

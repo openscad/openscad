@@ -3,10 +3,9 @@
 #include "SourceFile.h"
 #include "printutils.h"
 #include "openscad.h"
-#include "boost-utils.h"
 #include <boost/format.hpp>
 
-#include <stdio.h>
+#include <cstdio>
 #include <fstream>
 #include <sys/stat.h>
 #include <algorithm>

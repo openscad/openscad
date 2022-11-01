@@ -42,17 +42,15 @@
 #include <QVBoxLayout>
 #include <QErrorMessage>
 #include "OpenCSGWarningDialog.h"
-#include "QSettingsCached.h"
 
-
-#include <stdio.h>
+#include <cstdio>
 #include <sstream>
 
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
 #endif
 
-#include "qt-obsolete.h"
+#include "qt-obsolete.h" 
 
 QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent)
 {

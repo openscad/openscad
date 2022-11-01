@@ -5,12 +5,10 @@
 
 #include "cgal.h"
 #include "cgalutils.h"
+#include "Feature.h"
 #include "PolySet.h"
 #include "printutils.h"
 #include "progress.h"
-#include "Polygon2d.h"
-#include "PolySetUtils.h"
-#include "Grid.h"
 #include "CGALHybridPolyhedron.h"
 #include "node.h"
 

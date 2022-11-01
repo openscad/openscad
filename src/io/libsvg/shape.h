@@ -38,7 +38,6 @@
 
 #include <boost/optional.hpp>
 
-#include "util.h"
 #include "ext/polyclipping/clipper.hpp"
 
 namespace libsvg {

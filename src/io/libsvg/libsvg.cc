@@ -34,12 +34,6 @@
 #include "libsvg.h"
 
 #include "shape.h"
-#include "circle.h"
-#include "ellipse.h"
-#include "line.h"
-#include "polygon.h"
-#include "polyline.h"
-#include "rect.h"
 #include "use.h"
 
 namespace fs = boost::filesystem;

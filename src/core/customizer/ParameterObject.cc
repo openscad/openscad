@@ -1,5 +1,7 @@
 #include "Annotation.h"
-#include "module.h"
+#include "Assignment.h"
+#include "Expression.h"
+#include "SourceFile.h"
 #include "ParameterObject.h"
 
 #include <sstream>

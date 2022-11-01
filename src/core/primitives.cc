@@ -35,11 +35,10 @@
 #include "calc.h"
 #include "degree_trig.h"
 #include <sstream>
-#include <assert.h>
+#include <cassert>
 #include <cmath>
 #include <boost/assign/std/vector.hpp>
 #include "ModuleInstantiation.h"
-#include "boost-utils.h"
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01

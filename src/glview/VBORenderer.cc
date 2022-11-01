@@ -25,12 +25,10 @@
  */
 
 #include "VBORenderer.h"
-#include "Feature.h"
 #include "PolySet.h"
-#include "PolySetUtils.h"
 #include "CSGNode.h"
 #include "printutils.h"
-#include "hash.h"
+#include "hash.h" // IWYU pragma: keep
 
 #include <cstddef>
 #include <iomanip>

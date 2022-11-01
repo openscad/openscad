@@ -24,16 +24,10 @@
  *
  */
 
-#include "compiler_specific.h"
 #include "Context.h"
-#include "Expression.h"
 #include "function.h"
-#include "UserModule.h"
-#include "ModuleInstantiation.h"
-#include "Builtins.h"
 #include "printutils.h"
 #include <boost/filesystem.hpp>
-#include "boost-utils.h"
 namespace fs = boost::filesystem;
 
 Context::Context(EvaluationSession *session) :

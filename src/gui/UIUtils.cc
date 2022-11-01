@@ -32,11 +32,8 @@
 
 #include "version.h"
 #include "UIUtils.h"
-#include "qtgettext.h"
 #include "PlatformUtils.h"
 #include "QSettingsCached.h"
-#include "boost-utils.h"
-
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>

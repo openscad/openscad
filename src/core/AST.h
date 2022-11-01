@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <memory.h>
+#include <memory>
 #include <boost/filesystem.hpp>
 #include "scadstream.h"
 

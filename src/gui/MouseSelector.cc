@@ -1,3 +1,4 @@
+#include "system-gl.h"
 #include "MouseSelector.h"
 
 #include <QOpenGLFramebufferObject>
@@ -6,7 +7,7 @@
  * that is derived from its index(), by using the first 24 bits of the identifier as a
  * 3-tuple for color.
  *
- * roghly at most 1/3rd of the index()-es are rendered, therefore exhausting the keyspace
+ * Roughly at most 1/3rd of the index()-es are rendered, therefore exhausting the keyspace
  * faster than expected.
  * If this ever becomes a problem, the index-mapping can be adjusted to use 10 up to 16 bit
  * per color channel to store the identifier.

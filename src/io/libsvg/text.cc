@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 #include "text.h"
+#include "util.h"
 
 namespace libsvg {
 

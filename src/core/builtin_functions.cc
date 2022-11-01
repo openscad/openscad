@@ -29,8 +29,6 @@
 #include "Expression.h"
 #include "Builtins.h"
 #include "printutils.h"
-#include "StackCheck.h"
-#include "exceptions.h"
 #include "memory.h"
 #include "UserModule.h"
 #include "degree_trig.h"

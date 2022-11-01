@@ -6,7 +6,6 @@
 #include <string>
 
 #include "node.h"
-#include "Value.h"
 
 class RoofNode : public AbstractPolyNode
 {
