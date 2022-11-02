@@ -5,6 +5,8 @@
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 #include <CGAL/Polygon_2.h>
+#include <CGAL/exceptions.h>
+
 #include <iostream>
 
 namespace Polygon2DCGAL {
