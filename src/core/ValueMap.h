@@ -14,23 +14,7 @@ public:
   using iterator = map_t::iterator;
   using const_iterator = map_t::const_iterator;
 
-  // Workaround for function not existing in C++14
-  //  - Purpose is to replace assignments such as:  map[key] = value;
-  //      That would default construct a Value when insert is required,
-  //      but Value() is private now.
-  //  - Should not be necessary once upgraded to C++17
-  //  - Doesn't bother with return type
-  bool insert_or_assign(const std::string& name, Value&& value) {
-    auto result = map.find(name);
-    if (result == map.end()) {
-      map.emplace(name, std::move(value));
-      return true;
-    } else {
-      std::swap(result->second, value);
-      return false;
-    }
-  }
-  // Gotta have C++20 for this beast
+// Gotta have C++20 for this beast
   bool contains(const std::string& name) const { return map.count(name); }
 
 // Directly wrapped calls
@@ -43,6 +27,9 @@ public:
   size_t size() const { return map.size(); }
   template <typename ... Args> std::pair<iterator, bool> emplace(Args&&... args) {
     return map.emplace(std::forward<Args>(args)...);
+  }
+  std::pair<iterator, bool> insert_or_assign(const std::string& name, Value&& value) {
+    return map.insert_or_assign(name, std::move(value));
   }
 
   // Get value by name, without possibility of default-constructing a missing name
