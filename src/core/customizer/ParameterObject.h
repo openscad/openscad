@@ -134,7 +134,7 @@ public:
 class EnumParameter : public ParameterObject
 {
 public:
-  typedef boost::variant<double, std::string> EnumValue;
+  typedef std::variant<double, std::string> EnumValue;
   struct EnumItem {
     std::string key;
     EnumValue value;

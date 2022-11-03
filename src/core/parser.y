@@ -443,7 +443,7 @@ unary
             {
               Literal* argument = dynamic_cast<Literal*>($2);
               if (argument && argument->isDouble()) {
-                double value = *argument->toDouble();
+                double value = argument->toDouble();
                 delete $2;
                 $$ = new Literal(-value, LOCD("literal", @$));
               } else {
@@ -493,7 +493,7 @@ primary
             }
         | TOK_UNDEF
             {
-              $$ = new Literal(boost::none, LOCD("literal", @$));
+              $$ = new Literal(LOCD("literal", @$));
             }
         | TOK_NUMBER
             {

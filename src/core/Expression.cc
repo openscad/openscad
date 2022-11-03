@@ -193,31 +193,14 @@ void ArrayLookup::print(std::ostream& stream, const std::string&) const
   stream << *array << "[" << *index << "]";
 }
 
-Literal::Literal(bool val, const Location& loc) : Expression(loc), value(val) {}
-Literal::Literal(double val, const Location& loc) : Expression(loc), value(val) {}
-Literal::Literal(const std::string& val, const Location& loc) : Expression(loc), value(val) {}
-Literal::Literal(const char *val, const Location& loc) : Expression(loc), value(std::string(val)) {}
-Literal::Literal(boost::none_t val, const Location& loc) : Expression(loc), value(val) {}
-
 Value Literal::evaluate(const std::shared_ptr<const Context>&) const
 {
-  if (isBool()) {
-    return Value(*toBool());
-  } else if (isDouble()) {
-    return Value(*toDouble());
-  } else if (isString()) {
-    return Value(*toString());
-  } else if (isUndefined()) {
-    return Value(UndefType());
-  } else {
-    assert(false);
-    return Value(UndefType());
-  }
+  return value.clone();
 }
 
 void Literal::print(std::ostream& stream, const std::string&) const
 {
-  stream << evaluate(nullptr);
+  stream << value;
 }
 
 Range::Range(Expression *begin, Expression *end, const Location& loc)
@@ -494,7 +477,7 @@ struct SimplifiedExpression {
   boost::optional<ContextHandle<Context>> new_context = boost::none;
   boost::optional<const FunctionCall *> new_active_function_call = boost::none;
 };
-typedef boost::variant<SimplifiedExpression, Value> SimplificationResult;
+typedef std::variant<SimplifiedExpression, Value> SimplificationResult;
 
 static SimplificationResult simplify_function_body(const Expression *expression, const std::shared_ptr<const Context>& context)
 {
@@ -524,17 +507,17 @@ static SimplificationResult simplify_function_body(const Expression *expression,
     auto f = call->evaluate_function_expression(context);
     if (!f) {
       return Value::undefined.clone();
-    } else if (const BuiltinFunction **function = boost::get<const BuiltinFunction *>(&*f)) {
+    } else if (const BuiltinFunction **function = std::get_if<const BuiltinFunction *>(&*f)) {
       return (*function)->evaluate(context, call);
-    } else if (CallableUserFunction *callable = boost::get<CallableUserFunction>(&*f)) {
+    } else if (CallableUserFunction *callable = std::get_if<CallableUserFunction>(&*f)) {
       function_body = callable->function->expr.get();
       required_parameters = &callable->function->parameters;
       defining_context = callable->defining_context;
     } else {
       const Value *function_value;
-      if (Value *callable = boost::get<Value>(&*f)) {
+      if (Value *callable = std::get_if<Value>(&*f)) {
         function_value = callable;
-      } else if (const Value **callable = boost::get<const Value *>(&*f)) {
+      } else if (const Value **callable = std::get_if<const Value *>(&*f)) {
         function_value = *callable;
       } else {
         assert(false);
@@ -577,11 +560,11 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
   while (true) {
     try {
       auto result = simplify_function_body(expression, *expression_context);
-      if (Value *value = boost::get<Value>(&result)) {
+      if (Value *value = std::get_if<Value>(&result)) {
         return std::move(*value);
       }
 
-      SimplifiedExpression *simplified_expression = boost::get<SimplifiedExpression>(&result);
+      SimplifiedExpression *simplified_expression = std::get_if<SimplifiedExpression>(&result);
       assert(simplified_expression);
 
       expression = simplified_expression->expression;
