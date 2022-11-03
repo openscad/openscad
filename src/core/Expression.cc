@@ -483,60 +483,65 @@ static SimplificationResult simplify_function_body(const Expression *expression,
 {
   if (!expression) {
     return Value::undefined.clone();
-  } else if (typeid(*expression) == typeid(TernaryOp)) {
-    const TernaryOp *ternary = static_cast<const TernaryOp *>(expression);
-    return SimplifiedExpression{ternary->evaluateStep(context)};
-  } else if (typeid(*expression) == typeid(Assert)) {
-    const Assert *assertion = static_cast<const Assert *>(expression);
-    return SimplifiedExpression{assertion->evaluateStep(context)};
-  } else if (typeid(*expression) == typeid(Echo)) {
-    const Echo *echo = static_cast<const Echo *>(expression);
-    return SimplifiedExpression{echo->evaluateStep(context)};
-  } else if (typeid(*expression) == typeid(Let)) {
-    const Let *let = static_cast<const Let *>(expression);
-    ContextHandle<Context> let_context{Context::create<Context>(context)};
-    let_context->apply_config_variables(*context);
-    return SimplifiedExpression{let->evaluateStep(let_context), std::move(let_context)};
-  } else if (typeid(*expression) == typeid(FunctionCall)) {
-    const FunctionCall *call = static_cast<const FunctionCall *>(expression);
-
-    const Expression *function_body;
-    const AssignmentList *required_parameters;
-    std::shared_ptr<const Context> defining_context;
-
-    auto f = call->evaluate_function_expression(context);
-    if (!f) {
-      return Value::undefined.clone();
-    } else if (const BuiltinFunction **function = std::get_if<const BuiltinFunction *>(&*f)) {
-      return (*function)->evaluate(context, call);
-    } else if (CallableUserFunction *callable = std::get_if<CallableUserFunction>(&*f)) {
-      function_body = callable->function->expr.get();
-      required_parameters = &callable->function->parameters;
-      defining_context = callable->defining_context;
-    } else {
-      const Value *function_value;
-      if (Value *callable = std::get_if<Value>(&*f)) {
-        function_value = callable;
-      } else if (const Value **callable = std::get_if<const Value *>(&*f)) {
-        function_value = *callable;
-      } else {
-        assert(false);
-      }
-      const auto& function = function_value->toFunction();
-      function_body = function.getExpr().get();
-      required_parameters = function.getParameters().get();
-      defining_context = function.getContext();
-    }
-
-    ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
-    body_context->apply_config_variables(*context);
-    Arguments arguments{call->arguments, context};
-    Parameters parameters = Parameters::parse(std::move(arguments), call->location(), *required_parameters, defining_context);
-    body_context->apply_variables(std::move(parameters).to_context_frame());
-
-    return SimplifiedExpression{function_body, std::move(body_context), call};
   } else {
-    return expression->evaluate(context);
+    const auto& type = typeid(*expression);
+    if (type == typeid(TernaryOp)) {
+      const TernaryOp *ternary = static_cast<const TernaryOp *>(expression);
+      return SimplifiedExpression{ternary->evaluateStep(context)};
+    } else if (type == typeid(Assert)) {
+      const Assert *assertion = static_cast<const Assert *>(expression);
+      return SimplifiedExpression{assertion->evaluateStep(context)};
+    } else if (type == typeid(Echo)) {
+      const Echo *echo = static_cast<const Echo *>(expression);
+      return SimplifiedExpression{echo->evaluateStep(context)};
+    } else if (type == typeid(Let)) {
+      const Let *let = static_cast<const Let *>(expression);
+      ContextHandle<Context> let_context{Context::create<Context>(context)};
+      let_context->apply_config_variables(*context);
+      return SimplifiedExpression{let->evaluateStep(let_context), std::move(let_context)};
+    } else if (type == typeid(FunctionCall)) {
+      const FunctionCall *call = static_cast<const FunctionCall *>(expression);
+
+      const Expression *function_body;
+      const AssignmentList *required_parameters;
+      std::shared_ptr<const Context> defining_context;
+
+      auto f = call->evaluate_function_expression(context);
+      if (!f) {
+        return Value::undefined.clone();
+      } else {
+        auto index = f->index();
+        if (index == 0) {
+            return std::get<const BuiltinFunction *>(*f)->evaluate(context, call);
+        } else if (index == 1) {
+            CallableUserFunction callable = std::get<CallableUserFunction>(*f);
+            function_body = callable.function->expr.get();
+            required_parameters = &callable.function->parameters;
+            defining_context = callable.defining_context;
+        } else {
+          const FunctionType* function;
+          if (index == 2) {
+            function = &std::get<Value>(*f).toFunction();
+          } else if (index == 3) {
+            function = &std::get<const Value *>(*f)->toFunction();
+          } else {
+            assert(false);
+          }
+          function_body = function->getExpr().get();
+          required_parameters = function->getParameters().get();
+          defining_context = function->getContext();
+        }
+      }
+      ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
+      body_context->apply_config_variables(*context);
+      Arguments arguments{call->arguments, context};
+      Parameters parameters = Parameters::parse(std::move(arguments), call->location(), *required_parameters, defining_context);
+      body_context->apply_variables(std::move(parameters).to_context_frame());
+
+      return SimplifiedExpression{function_body, std::move(body_context), call};
+    } else {
+      return expression->evaluate(context);
+    }
   }
 }
 
