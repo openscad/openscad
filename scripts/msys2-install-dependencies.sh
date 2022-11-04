@@ -18,17 +18,17 @@ for pkg in \
     mingw-w64-x86_64-libzip \
     mingw-w64-x86_64-cmake \
     mingw-w64-x86_64-mesa \
+    mingw-w64-x86_64-ninja \
     mingw-w64-x86_64-double-conversion \
     mingw-w64-x86_64-cairo \
     mingw-w64-x86_64-ghostscript \
     mingw-w64-x86_64-imagemagick \
     mingw-w64-x86_64-qt5-svg \
     mingw-w64-x86_64-qt5-multimedia \
-    make \
-    cmake \
     bison \
     flex \
     git \
+    base-devel \
     msys2-devel
 do
 	date "+### %Y-%m-%d %T install ${pkg}"
