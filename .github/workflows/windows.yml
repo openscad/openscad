@@ -29,8 +29,8 @@ jobs:
         run: |
           git submodule update --init --recursive
           mkdir build && cd build
-          cmake .. -G"MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON
-          mingw32-make.exe -j2
+          cmake .. -G"Ninja" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON
+          cmake --build . -j2
       - name: Run Test Suite
         run: |
           cd build
