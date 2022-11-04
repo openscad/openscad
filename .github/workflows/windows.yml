@@ -20,11 +20,29 @@ jobs:
         with:
           msystem: UCRT64
           update: true
-          install: git mingw-w64-ucrt-x86_64-gcc
-      - name: Install MSYS2 Dependencies
-        run: |
-          pwd
-          ./scripts/msys2-install-dependencies.sh
+          install: >- # using example here: https://github.com/msys2/setup-msys2/blob/main/examples/cmake.yml
+            git
+            make
+            bison
+            flex
+          pacboy: >- # `:p` suffix installs the package for the current environment only.
+            toolchain:p
+            cmake:p
+            ninja:p
+            boost:p
+            cgal:p
+            eigen3:p
+            glew:p
+            qscintilla:p
+            opencsg:p
+            libzip:p
+            mesa:p
+            double-conversion:p
+            cairo:p
+            ghostscript:p
+            imagemagick:p
+            qt5-svg:p
+            qt5-multimedia:p
       - name: Build OpenSCAD
         run: |
           git submodule update --init --recursive
