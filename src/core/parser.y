@@ -127,7 +127,7 @@ bool fileEnded=false;
 %token TOK_FALSE
 %token TOK_UNDEF
 
-%token LE GE EQ NE AND OR
+%token LE GE EQ NEQ AND OR
 
 %nonassoc NO_ELSE
 %nonassoc TOK_ELSE
@@ -378,7 +378,7 @@ equality
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Equal, $3, LOCD("equal", @$));
             }
-        | equality NE comparison
+        | equality NEQ comparison
             {
               $$ = new BinaryOp($1, BinaryOp::Op::NotEqual, $3, LOCD("notequal", @$));
             }
