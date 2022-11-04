@@ -1,9 +1,9 @@
 #pragma once
 
 #include <json.hpp>
+#include <variant>
 
 #include "ParameterSet.h"
-#include <boost/variant.hpp>
 using json = nlohmann::json;
 
 class SourceFile;

@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <typeinfo>
 #include <forward_list>
+#include <variant>
 #include "printutils.h"
 #include "StackCheck.h"
 #include "Context.h"
