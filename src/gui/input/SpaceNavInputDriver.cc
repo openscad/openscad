@@ -31,6 +31,7 @@
 
 #include "input/SpaceNavInputDriver.h"
 #include "input/InputDriverManager.h"
+#include "utils/printutils.h"
 
 #include <spnav.h>
 #include <unistd.h>
