@@ -11,12 +11,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-18.04, ubuntu-20.04 ]
+        os: [ ubuntu-18.04, ubuntu-20.04, ubuntu-22.04 ]
         include:
           - os: ubuntu-18.04
             distro: bionic
           - os: ubuntu-20.04
             distro: focal
+          - os: ubuntu-22.04
+            distro: kinetic
 
     runs-on: ${{ matrix.os }}
 
