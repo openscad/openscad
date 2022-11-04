@@ -11,12 +11,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-18.04, ubuntu-20.04 ]
+        os: [ ubuntu-18.04, ubuntu-20.04, ubuntu-22.04 ]
         include:
           - os: ubuntu-18.04
             distro: bionic
+            qt5default: true
           - os: ubuntu-20.04
             distro: focal
+            qt5default: true
+          - os: ubuntu-22.04
+            distro: kinetic
+            qt5default: false
 
     runs-on: ${{ matrix.os }}
 
@@ -30,7 +35,10 @@ jobs:
     - name: Install dependencies
       run: ./scripts/travis-ci-before-install-linux.sh ${{ matrix.distro }}
     - name: Dependency fixup
-      run: sudo apt-get install qt5-default gettext gcovr
+      run: sudo apt-get install gettext gcovr
+    - name: Make Qt5 the default
+      if: ${{ matrix.qt5default }}
+      run: sudo apt-get install qt5-default
     - name: Build and test
       run: ./scripts/github-ci.sh build test coverage
     - name: Upload Test Result Report
