@@ -35,4 +35,11 @@ do
 	pacman --noconfirm --ask 20 --sync --needed ${pkg}
 done
 
+date "+### %Y-%m-%d %T downgrading mesa"
+pactree mingw-w64-x86_64-mesa
+
+curl --insecure -O https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-mesa-22.1.7-3-any.pkg.tar.zst
+curl --insecure -O https://repo.msys2.org/mingw/mingw64/mingw-w64-x86_64-mesa-22.1.7-3-any.pkg.tar.zst.sig
+pacman -U --noconfirm mingw-w64-x86_64-mesa-22.1.7-3-any.pkg.tar.zst
+
 date "+### %Y-%m-%d %T msys2-install-dependencies finished"
