@@ -5,12 +5,14 @@ date "+### %Y-%m-%d %T msys2-install-dependencies started"
 pacman --query --explicit
 
 export MINGW_PACKAGE_PREFIX=mingw-w64-ucrt-x86_64
+date "+### %Y-%m-%d %T install pactoys (for pacboy)"
 pacman --noconfirm --sync --needed pactoys
 # pacboy is a pacman wrapper for MSYS2 which handles the package prefixes automatically
 #            name:p means MINGW_PACKAGE_PREFIX-only
 #            name:  disables any translation for name
 
-for pkg in \
+date "+### %Y-%m-%d %T install remaining packages"
+pacboy --noconfirm --sync --needed \
     git: \
     make: \
     bison: \
@@ -31,9 +33,5 @@ for pkg in \
     imagemagick:p \
     qt5-svg:p \
     qt5-multimedia:p
-do
-	date "+### %Y-%m-%d %T install ${pkg}"
-	pacboy --noconfirm --sync --needed ${pkg}
-done
 
 date "+### %Y-%m-%d %T msys2-install-dependencies finished"
