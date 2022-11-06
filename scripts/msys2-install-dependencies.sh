@@ -1,12 +1,14 @@
 #!/bin/bash
 
-export MINGW_PACKAGE_PREFIX=ucrt-x86_64
+date "+### %Y-%m-%d %T msys2-install-dependencies started"
 
+pacman --query --explicit
+
+export MINGW_PACKAGE_PREFIX=ucrt-x86_64
+pacman --noconfirm --sync --needed pactoys
 # pacboy is a pacman wrapper for MSYS2 which handles the package prefixes automatically
 #            name:p means MINGW_PACKAGE_PREFIX-only
 #            name:  disables any translation for name
-
-date "+### %Y-%m-%d %T msys2-install-dependencies started"
 
 for pkg in \
     git: \
