@@ -2,37 +2,36 @@
 
 date "+### %Y-%m-%d %T msys2-install-dependencies started"
 
-#pacman --noconfirm --ask 20 -Sy
-#pacman --noconfirm --ask 20 -Su
-
 pacman --query --explicit
 
-for pkg in \
-    mingw-w64-x86_64-toolchain \
-    mingw-w64-x86_64-boost \
-    mingw-w64-x86_64-cgal \
-    mingw-w64-x86_64-eigen3 \
-    mingw-w64-x86_64-glew \
-    mingw-w64-x86_64-qscintilla \
-    mingw-w64-x86_64-opencsg \
-    mingw-w64-x86_64-libzip \
-    mingw-w64-x86_64-cmake \
-    mingw-w64-x86_64-mesa \
-    mingw-w64-x86_64-double-conversion \
-    mingw-w64-x86_64-cairo \
-    mingw-w64-x86_64-ghostscript \
-    mingw-w64-x86_64-imagemagick \
-    mingw-w64-x86_64-qt5-svg \
-    mingw-w64-x86_64-qt5-multimedia \
-    make \
-    cmake \
-    bison \
-    flex \
-    git \
-    msys2-devel
-do
-	date "+### %Y-%m-%d %T install ${pkg}"
-	pacman --noconfirm --ask 20 --sync --needed ${pkg}
-done
+export MINGW_PACKAGE_PREFIX=mingw-w64-ucrt-x86_64
+date "+### %Y-%m-%d %T install pactoys (for pacboy)"
+pacman --noconfirm --sync --needed pactoys
+# pacboy is a pacman wrapper for MSYS2 which handles the package prefixes automatically
+#            name:p means MINGW_PACKAGE_PREFIX-only
+#            name:  disables any translation for name
+
+date "+### %Y-%m-%d %T install remaining packages"
+pacboy --noconfirm --sync --needed \
+    git: \
+    make: \
+    bison: \
+    flex: \
+    toolchain:p \
+    cmake:p \
+    ninja:p \
+    boost:p \
+    cgal:p \
+    eigen3:p \
+    glew:p \
+    qscintilla:p \
+    opencsg:p \
+    libzip:p \
+    double-conversion:p \
+    cairo:p \
+    ghostscript:p \
+    imagemagick:p \
+    qt5-svg:p \
+    qt5-multimedia:p
 
 date "+### %Y-%m-%d %T msys2-install-dependencies finished"
