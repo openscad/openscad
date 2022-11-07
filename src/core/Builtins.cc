@@ -110,7 +110,7 @@ Builtins::Builtins()
   this->assignments.emplace_back(new Assignment("$fs", make_shared<Literal>(2.0)) );
   this->assignments.emplace_back(new Assignment("$fa", make_shared<Literal>(12.0)) );
   this->assignments.emplace_back(new Assignment("$t", make_shared<Literal>(0.0)) );
-  this->assignments.emplace_back(new Assignment("$preview", make_shared<Literal>(boost::none)) ); //undef as should always be overwritten.
+  this->assignments.emplace_back(new Assignment("$preview", make_shared<Literal>()) ); //undef as should always be overwritten.
   auto zeroVector = make_shared<Vector>(Location::NONE);
   zeroVector->emplace_back(new Literal(0.0));
   zeroVector->emplace_back(new Literal(0.0));

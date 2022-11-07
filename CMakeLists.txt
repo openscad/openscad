@@ -41,8 +41,8 @@ endif()
 
 add_executable(OpenSCAD)
 
-# Strict c++14, e.g. no GNU extensions
-set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD 14)
+# Strict c++17, e.g. no GNU extensions
+set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD 17)
 set_property(TARGET OpenSCAD PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD_REQUIRED ON)
 # Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately

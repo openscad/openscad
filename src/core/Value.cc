@@ -28,10 +28,9 @@
 #include <cmath>
 #include <numeric>
 #include <sstream>
-#include <boost/variant/apply_visitor.hpp>
-#include <boost/variant/static_visitor.hpp>
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
+#include <boost/lexical_cast.hpp>
 
 #include "Value.h"
 #include "Expression.h"
@@ -42,7 +41,6 @@
 #include "double-conversion/double-conversion.h"
 #include "double-conversion/utils.h"
 #include "double-conversion/ieee.h"
-#include "boost-utils.h"
 
 namespace fs = boost::filesystem;
 
@@ -200,13 +198,13 @@ std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
 Value Value::clone() const {
   switch (this->type()) {
   case Type::UNDEFINED: return Value();
-  case Type::BOOL:      return boost::get<bool>(this->value);
-  case Type::NUMBER:    return boost::get<double>(this->value);
-  case Type::STRING:    return boost::get<str_utf8_wrapper>(this->value).clone();
-  case Type::RANGE:     return boost::get<RangePtr>(this->value).clone();
-  case Type::VECTOR:    return boost::get<VectorType>(this->value).clone();
-  case Type::OBJECT:    return boost::get<ObjectType>(this->value).clone();
-  case Type::FUNCTION:  return boost::get<FunctionPtr>(this->value).clone();
+  case Type::BOOL:      return std::get<bool>(this->value);
+  case Type::NUMBER:    return std::get<double>(this->value);
+  case Type::STRING:    return std::get<str_utf8_wrapper>(this->value).clone();
+  case Type::RANGE:     return std::get<RangePtr>(this->value).clone();
+  case Type::VECTOR:    return std::get<VectorType>(this->value).clone();
+  case Type::OBJECT:    return std::get<ObjectType>(this->value).clone();
+  case Type::FUNCTION:  return std::get<FunctionPtr>(this->value).clone();
   default: assert(false && "unknown Value variant type"); return Value();
   }
 }
@@ -250,10 +248,10 @@ bool Value::toBool() const
 {
   switch (this->type()) {
   case Type::UNDEFINED: return false;
-  case Type::BOOL:      return boost::get<bool>(this->value);
-  case Type::NUMBER:    return boost::get<double>(this->value) != 0;
-  case Type::STRING:    return !boost::get<str_utf8_wrapper>(this->value).empty();
-  case Type::VECTOR:    return !boost::get<VectorType>(this->value).empty();
+  case Type::BOOL:      return std::get<bool>(this->value);
+  case Type::NUMBER:    return std::get<double>(this->value) != 0;
+  case Type::STRING:    return !std::get<str_utf8_wrapper>(this->value).empty();
+  case Type::VECTOR:    return !std::get<VectorType>(this->value).empty();
   case Type::RANGE:     return true;
   case Type::OBJECT:    return true;
   case Type::FUNCTION:  return true;
@@ -263,13 +261,13 @@ bool Value::toBool() const
 
 double Value::toDouble() const
 {
-  const double *d = boost::get<double>(&this->value);
+  const double *d = std::get_if<double>(&this->value);
   return d ? *d : 0.0;
 }
 
 bool Value::getDouble(double& v) const
 {
-  const double *d = boost::get<double>(&this->value);
+  const double *d = std::get_if<double>(&this->value);
   if (d) {
     v = *d;
     return true;
@@ -312,12 +310,12 @@ bool Value::getPositiveInt(unsigned int& v) const
 }
 
 const str_utf8_wrapper& Value::toStrUtf8Wrapper() const {
-  return boost::get<str_utf8_wrapper>(this->value);
+  return std::get<str_utf8_wrapper>(this->value);
 }
 
 // Optimization to avoid multiple stream instantiations and copies to str for long vectors.
 // Functions identically to "class tostring_visitor", except outputting to stream and not returning strings
-class tostream_visitor : public boost::static_visitor<>
+class tostream_visitor
 {
 public:
   std::ostringstream& stream;
@@ -358,10 +356,10 @@ public:
     stream << '[';
     if (!v.empty()) {
       auto it = v.begin();
-      boost::apply_visitor(*this, it->getVariant());
+      std::visit(*this, it->getVariant());
       for (++it; it != v.end(); ++it) {
         stream << ", ";
-        boost::apply_visitor(*this, it->getVariant());
+        std::visit(*this, it->getVariant());
       }
     }
     stream << ']';
@@ -380,7 +378,7 @@ public:
   }
 };
 
-class tostring_visitor : public boost::static_visitor<std::string>
+class tostring_visitor
 {
 public:
   template <typename T> std::string operator()(const T& op1) const {
@@ -440,7 +438,7 @@ public:
 
 std::string Value::toString() const
 {
-  return boost::apply_visitor(tostring_visitor(), this->value);
+  return std::visit(tostring_visitor(), this->value);
 }
 
 std::string Value::toEchoString() const
@@ -479,12 +477,12 @@ std::string UndefType::toString() const {
 
 const UndefType& Value::toUndef()
 {
-  return boost::get<UndefType>(this->value);
+  return std::get<UndefType>(this->value);
 }
 
 std::string Value::toUndefString() const
 {
-  return boost::get<UndefType>(this->value).toString();
+  return std::get<UndefType>(this->value).toString();
 }
 
 std::ostream& operator<<(std::ostream& stream, const UndefType& u)
@@ -493,7 +491,7 @@ std::ostream& operator<<(std::ostream& stream, const UndefType& u)
   return stream;
 }
 
-class chr_visitor : public boost::static_visitor<std::string>
+class chr_visitor
 {
 public:
   template <typename S> std::string operator()(const S&) const
@@ -539,7 +537,7 @@ public:
 
 std::string Value::chrString() const
 {
-  return boost::apply_visitor(chr_visitor(), this->value);
+  return std::visit(chr_visitor(), this->value);
 }
 
 VectorType::VectorType(EvaluationSession *session) :
@@ -619,10 +617,10 @@ void VectorType::VectorObjectDeleter::operator()(VectorObject *v)
       for (Value& val : v->vec) {
         auto type = val.type();
         if (type == Value::Type::EMBEDDED_VECTOR) {
-          shared_ptr<VectorObject>& temp = boost::get<EmbeddedVectorType>(val.value).ptr;
+          shared_ptr<VectorObject>& temp = std::get<EmbeddedVectorType>(val.value).ptr;
           if (temp.use_count() <= 1) purge.emplace_back(std::move(temp));
         } else if (type == Value::Type::VECTOR) {
-          shared_ptr<VectorObject>& temp = boost::get<VectorType>(val.value).ptr;
+          shared_ptr<VectorObject>& temp = std::get<VectorType>(val.value).ptr;
           if (temp.use_count() <= 1) purge.emplace_back(std::move(temp));
         }
       }
@@ -638,30 +636,30 @@ void VectorType::VectorObjectDeleter::operator()(VectorObject *v)
 const VectorType& Value::toVector() const
 {
   static const VectorType empty(nullptr);
-  const VectorType *v = boost::get<VectorType>(&this->value);
+  const VectorType *v = std::get_if<VectorType>(&this->value);
   return v ? *v : empty;
 }
 
 VectorType& Value::toVectorNonConst()
 {
-  return boost::get<VectorType>(this->value);
+  return std::get<VectorType>(this->value);
 }
 
 const ObjectType& Value::toObject() const
 {
   static const ObjectType empty(nullptr);
-  const ObjectType *v = boost::get<ObjectType>(&this->value);
+  const ObjectType *v = std::get_if<ObjectType>(&this->value);
   return v ? *v : empty;
 }
 
 EmbeddedVectorType& Value::toEmbeddedVectorNonConst()
 {
-  return boost::get<EmbeddedVectorType>(this->value);
+  return std::get<EmbeddedVectorType>(this->value);
 }
 
 const EmbeddedVectorType& Value::toEmbeddedVector() const
 {
-  return boost::get<EmbeddedVectorType>(this->value);
+  return std::get<EmbeddedVectorType>(this->value);
 }
 
 bool Value::getVec2(double& x, double& y, bool ignoreInfinite) const
@@ -704,7 +702,7 @@ bool Value::getVec3(double& x, double& y, double& z, double defaultval) const
 
 const RangeType& Value::toRange() const
 {
-  const RangePtr *val = boost::get<RangePtr>(&this->value);
+  const RangePtr *val = std::get_if<RangePtr>(&this->value);
   if (val) {
     return **val;
   } else return RangeType::EMPTY;
@@ -712,12 +710,12 @@ const RangeType& Value::toRange() const
 
 const FunctionType& Value::toFunction() const
 {
-  return *boost::get<FunctionPtr>(this->value);
+  return *std::get<FunctionPtr>(this->value);
 }
 
 bool Value::isUncheckedUndef() const
 {
-  return this->type() == Type::UNDEFINED && !boost::get<UndefType>(this->value).empty();
+  return this->type() == Type::UNDEFINED && !std::get<UndefType>(this->value).empty();
 }
 
 Value FunctionType::operator==(const FunctionType& other) const {
@@ -823,7 +821,7 @@ Value VectorType::operator>=(const VectorType& v) const {
   return !temp.toBool();
 }
 
-class notequal_visitor : public boost::static_visitor<Value>
+class notequal_visitor
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const { return true; }
@@ -832,7 +830,7 @@ public:
   template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 != *op2; }
 };
 
-class equals_visitor : public boost::static_visitor<Value>
+class equals_visitor
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const { return false; }
@@ -841,7 +839,7 @@ public:
   template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 == *op2; }
 };
 
-class less_visitor : public boost::static_visitor<Value>
+class less_visitor
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
@@ -851,7 +849,7 @@ public:
   template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 < *op2; }
 };
 
-class greater_visitor : public boost::static_visitor<Value>
+class greater_visitor
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
@@ -861,7 +859,7 @@ public:
   template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 > *op2; }
 };
 
-class lessequal_visitor : public boost::static_visitor<Value>
+class lessequal_visitor
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
@@ -871,7 +869,7 @@ public:
   template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 <= *op2; }
 };
 
-class greaterequal_visitor : public boost::static_visitor<Value>
+class greaterequal_visitor
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
@@ -883,39 +881,39 @@ public:
 
 Value Value::operator==(const Value& v) const
 {
-  return boost::apply_visitor(equals_visitor(), this->value, v.value);
+  return std::visit(equals_visitor(), this->value, v.value);
 }
 
 Value Value::operator!=(const Value& v) const
 {
-  return boost::apply_visitor(notequal_visitor(), this->value, v.value);
+  return std::visit(notequal_visitor(), this->value, v.value);
 }
 
 Value Value::operator<(const Value& v) const
 {
-  return boost::apply_visitor(less_visitor(), this->value, v.value);
+  return std::visit(less_visitor(), this->value, v.value);
 }
 
 Value Value::operator>=(const Value& v) const
 {
-  return boost::apply_visitor(greaterequal_visitor(), this->value, v.value);
+  return std::visit(greaterequal_visitor(), this->value, v.value);
 }
 
 Value Value::operator>(const Value& v) const
 {
-  return boost::apply_visitor(greater_visitor(), this->value, v.value);
+  return std::visit(greater_visitor(), this->value, v.value);
 }
 
 Value Value::operator<=(const Value& v) const
 {
-  return boost::apply_visitor(lessequal_visitor(), this->value, v.value);
+  return std::visit(lessequal_visitor(), this->value, v.value);
 }
 
 bool Value::cmp_less(const Value& v1, const Value& v2) {
   return v1.operator<(v2).toBool();
 }
 
-class plus_visitor : public boost::static_visitor<Value>
+class plus_visitor
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
@@ -942,10 +940,10 @@ public:
 
 Value Value::operator+(const Value& v) const
 {
-  return boost::apply_visitor(plus_visitor(), this->value, v.value);
+  return std::visit(plus_visitor(), this->value, v.value);
 }
 
-class minus_visitor : public boost::static_visitor<Value>
+class minus_visitor
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
@@ -967,7 +965,7 @@ public:
 
 Value Value::operator-(const Value& v) const
 {
-  return boost::apply_visitor(minus_visitor(), this->value, v.value);
+  return std::visit(minus_visitor(), this->value, v.value);
 }
 
 Value multvecnum(const VectorType& vecval, const Value& numval)
@@ -1045,7 +1043,7 @@ Value multvecvec(const VectorType& vec1, const VectorType& vec2) {
   return Value(r);
 }
 
-class multiply_visitor : public boost::static_visitor<Value>
+class multiply_visitor
 {
 public:
   template <typename T, typename U> Value operator()(const T& op1, const U& op2) const {
@@ -1100,7 +1098,7 @@ public:
 
 Value Value::operator*(const Value& v) const
 {
-  return boost::apply_visitor(multiply_visitor(), this->value, v.value);
+  return std::visit(multiply_visitor(), this->value, v.value);
 }
 
 Value Value::operator/(const Value& v) const
@@ -1126,7 +1124,7 @@ Value Value::operator/(const Value& v) const
 Value Value::operator%(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
-    return fmod(boost::get<double>(this->value), boost::get<double>(v.value));
+    return fmod(std::get<double>(this->value), std::get<double>(v.value));
   }
   return Value::undef(STR("undefined operation (", this->typeName(), " % ", v.typeName(), ")"));
 }
@@ -1148,7 +1146,7 @@ Value Value::operator-() const
 Value Value::operator^(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
-    return {pow(boost::get<double>(this->value), boost::get<double>(v.value))};
+    return {pow(std::get<double>(this->value), std::get<double>(v.value))};
   }
   return Value::undef(STR("undefined operation (", this->typeName(), " ^ ", v.typeName(), ")"));
 }
@@ -1158,7 +1156,7 @@ Value Value::operator^(const Value& v) const
  * If the string is multi-byte unicode then the index will offset to the character (2 or 4 byte) and not to the byte.
  * A 'normal' string with byte chars are a subset of unicode and still work.
  */
-class bracket_visitor : public boost::static_visitor<Value>
+class bracket_visitor
 {
 public:
   Value operator()(const str_utf8_wrapper& str, const double& idx) const {
@@ -1205,13 +1203,13 @@ public:
 
 Value Value::operator[](const Value& v) const
 {
-  return boost::apply_visitor(bracket_visitor(), this->value, v.value);
+  return std::visit(bracket_visitor(), this->value, v.value);
 }
 
 Value Value::operator[](size_t idx) const
 {
   Value v{(double)idx};
-  return boost::apply_visitor(bracket_visitor(), this->value, v.value);
+  return std::visit(bracket_visitor(), this->value, v.value);
 }
 
 size_t str_utf8_wrapper::iterator::char_len()

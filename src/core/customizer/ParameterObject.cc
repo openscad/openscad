@@ -12,12 +12,12 @@ namespace {
 bool set_enum_value(json& o, const std::string& name, const EnumParameter::EnumItem& item)
 {
   EnumParameter::EnumValue itemValue = item.value;
-  double *doubleValue = boost::get<double>(&itemValue);
+  double *doubleValue = std::get_if<double>(&itemValue);
   if (doubleValue) {
     o[name] = *doubleValue;
     return true;
   } else {
-    o[name] = boost::get<std::string>(itemValue);
+    o[name] = std::get<std::string>(itemValue);
     return false;
   }
 }
@@ -254,13 +254,12 @@ bool EnumParameter::importValue(boost::property_tree::ptree encodedValue, bool s
 
 boost::property_tree::ptree EnumParameter::exportValue() const
 {
-  EnumValue itemValue = items[valueIndex].value;
+  const EnumValue& itemValue = items[valueIndex].value;
   boost::property_tree::ptree output;
-  double *doubleValue = boost::get<double>(&itemValue);
-  if (doubleValue) {
-    output.put_value<double>(*doubleValue);
+  if (std::holds_alternative<double>(itemValue)) {
+    output.put_value<double>(std::get<double>(itemValue));
   } else {
-    output.data() = boost::get<std::string>(itemValue);
+    output.data() = std::get<std::string>(itemValue);
   }
   return output;
 }
@@ -288,12 +287,11 @@ json EnumParameter::jsonValue() const
 
 void EnumParameter::apply(Assignment *assignment) const
 {
-  EnumValue itemValue = items[valueIndex].value;
-  double *doubleValue = boost::get<double>(&itemValue);
-  if (doubleValue) {
-    assignment->setExpr(std::make_shared<Literal>(*doubleValue));
+  const EnumValue& itemValue = items[valueIndex].value;
+  if (std::holds_alternative<double>(itemValue)) {
+    assignment->setExpr(std::make_shared<Literal>(std::get<double>(itemValue)));
   } else {
-    assignment->setExpr(std::make_shared<Literal>(boost::get<std::string>(itemValue)));
+    assignment->setExpr(std::make_shared<Literal>(std::get<std::string>(itemValue)));
   }
 }
 
@@ -325,12 +323,11 @@ static EnumValues parseEnumItems(const Expression *parameter, const std::string&
           // it's a range with a maximum and no minimum.
           return output;
         }
-
-        item.value = *element->toDouble();
-        item.key = STR(*element->toDouble());
+        item.value = element->toDouble();
+        item.key = STR(element->toDouble());
       } else if (element->isString()) {
-        item.value = *element->toString();
-        item.key = *element->toString();
+        item.value = element->toString();
+        item.key = element->toString();
       } else {
         return output;
       }
@@ -345,9 +342,9 @@ static EnumValues parseEnumItems(const Expression *parameter, const std::string&
         return output;
       }
       if (key->isDouble()) {
-        item.key = STR(*key->toDouble());
+        item.key = STR(key->toDouble());
       } else if (key->isString()) {
-        item.key = *key->toString();
+        item.key = key->toString();
       } else {
         return output;
       }
@@ -357,9 +354,9 @@ static EnumValues parseEnumItems(const Expression *parameter, const std::string&
         return output;
       }
       if (value->isDouble()) {
-        item.value = *value->toDouble();
+        item.value = value->toDouble();
       } else if (value->isString()) {
-        item.value = *value->toString();
+        item.value = value->toString();
       } else {
         return output;
       }
@@ -396,13 +393,13 @@ static NumericLimits parseNumericLimits(const Expression *parameter, const std::
 
   if (const Literal *step = dynamic_cast<const Literal *>(parameter)) {
     if (step->isDouble()) {
-      output.step = *step->toDouble();
+      output.step = step->toDouble();
     }
   } else if (const Vector *maximum = dynamic_cast<const Vector *>(parameter)) {
     if (maximum->getChildren().size() == 1) {
       const Literal *maximumChild = dynamic_cast<const Literal *>(maximum->getChildren()[0].get());
       if (maximumChild && maximumChild->isDouble()) {
-        output.maximum = *maximumChild->toDouble();
+        output.maximum = maximumChild->toDouble();
       }
     }
   } else if (const Range *range = dynamic_cast<const Range *>(parameter)) {
@@ -412,20 +409,20 @@ static NumericLimits parseNumericLimits(const Expression *parameter, const std::
       minimum && minimum->isDouble()
       && maximum && maximum->isDouble()
       ) {
-      output.minimum = *minimum->toDouble();
-      output.maximum = *maximum->toDouble();
+      output.minimum = minimum->toDouble();
+      output.maximum = maximum->toDouble();
 
       const Literal *step = dynamic_cast<const Literal *>(range->getStep());
       if (step && step->isDouble()) {
-        output.step = *step->toDouble();
+        output.step = step->toDouble();
       }
     }
   }
   for (double value : values) {
-    if (output.minimum && value < *output.minimum) {
+    if (output.minimum && value < output.minimum) {
       output.minimum = value;
     }
-    if (output.maximum && value > *output.maximum) {
+    if (output.maximum && value > output.maximum) {
       output.maximum = value;
     }
   }
@@ -449,7 +446,7 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
   if (descriptionAnnotation) {
     const Literal *expression = dynamic_cast<const Literal *>(descriptionAnnotation->getExpr().get());
     if (expression && expression->isString()) {
-      description = *expression->toString();
+      description = expression->toString();
     }
   }
 
@@ -458,7 +455,7 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
   if (groupAnnotation) {
     const Literal *expression = dynamic_cast<const Literal *>(groupAnnotation->getExpr().get());
     if (expression && expression->isString()) {
-      group = boost::algorithm::trim_copy(*expression->toString());
+      group = boost::algorithm::trim_copy(expression->toString());
 
     }
     if (group == "Hidden") return nullptr;
@@ -467,18 +464,18 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
   const Expression *valueExpression = assignment->getExpr().get();
   if (const Literal *expression = dynamic_cast<const Literal *>(valueExpression)) {
     if (expression->isBool()) {
-      return std::make_unique<BoolParameter>(name, description, group, *expression->toBool());
+      return std::make_unique<BoolParameter>(name, description, group, expression->toBool());
     }
 
     if (expression->isDouble() || expression->isString()) {
       std::string key;
       EnumParameter::EnumValue value;
       if (expression->isDouble()) {
-        value = *expression->toDouble();
-        key = STR(*expression->toDouble());
+        value = expression->toDouble();
+        key = STR(expression->toDouble());
       } else {
-        value = *expression->toString();
-        key = *expression->toString();
+        value = expression->toString();
+        key = expression->toString();
       }
       EnumValues values = parseEnumItems(parameter, key, value);
       if (!values.items.empty()) {
@@ -487,17 +484,17 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
     }
 
     if (expression->isString()) {
-      std::string value = *expression->toString();
+      std::string value = expression->toString();
       boost::optional<size_t> maximumSize = boost::none;
       const Literal *maximumSizeExpression = dynamic_cast<const Literal *>(parameter);
       if (maximumSizeExpression && maximumSizeExpression->isDouble()) {
-        maximumSize = (size_t)(*maximumSizeExpression->toDouble());
+        maximumSize = (size_t)(maximumSizeExpression->toDouble());
       }
       return std::make_unique<StringParameter>(name, description, group, value, maximumSize);
     }
 
     if (expression->isDouble()) {
-      double value = *expression->toDouble();
+      double value = expression->toDouble();
       NumericLimits limits = parseNumericLimits(parameter, {value});
       return std::make_unique<NumberParameter>(name, description, group, value, limits.minimum, limits.maximum, limits.step);
     }
@@ -515,7 +512,7 @@ std::unique_ptr<ParameterObject> ParameterObject::fromAssignment(const Assignmen
       if (!item->isDouble()) {
         return nullptr;
       }
-      value.push_back(*item->toDouble());
+      value.push_back(item->toDouble());
     }
 
     NumericLimits limits = parseNumericLimits(parameter, value);

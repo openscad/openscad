@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <string>
+#include <variant>
 #include <vector>
 
 class Arguments;
@@ -46,4 +47,4 @@ struct CallableUserFunction
   std::shared_ptr<const Context> defining_context;
   const UserFunction *function;
 };
-typedef boost::variant<const BuiltinFunction *, CallableUserFunction, Value, const Value *> CallableFunction;
+typedef std::variant<const BuiltinFunction *, CallableUserFunction, Value, const Value *> CallableFunction;

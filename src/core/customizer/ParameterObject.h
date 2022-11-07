@@ -1,9 +1,9 @@
 #pragma once
 
 #include <json.hpp>
+#include <variant>
 
 #include "ParameterSet.h"
-#include <boost/variant.hpp>
 using json = nlohmann::json;
 
 class SourceFile;
@@ -134,7 +134,7 @@ public:
 class EnumParameter : public ParameterObject
 {
 public:
-  typedef boost::variant<double, std::string> EnumValue;
+  typedef std::variant<double, std::string> EnumValue;
   struct EnumItem {
     std::string key;
     EnumValue value;

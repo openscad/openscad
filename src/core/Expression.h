@@ -2,12 +2,13 @@
 
 #include <functional>
 #include <string>
+#include <variant>
 #include <vector>
 #include <boost/logic/tribool.hpp>
-#include <boost/variant.hpp>
 #include "Assignment.h"
 #include "function.h"
 #include "memory.h"
+#include "Value.h"
 
 template <class T> class ContextHandle;
 
@@ -99,24 +100,21 @@ private:
 class Literal : public Expression
 {
 public:
-  Literal(bool val, const Location& loc = Location::NONE);
-  Literal(double val, const Location& loc = Location::NONE);
-  Literal(const std::string& val, const Location& loc = Location::NONE);
-  Literal(const char *val, const Location& loc = Location::NONE);
-  Literal(boost::none_t val, const Location& loc = Location::NONE);
-  bool isBool() const { return !!toBool(); }
-  const bool *toBool() const { return boost::get<bool>(&value); }
-  bool isDouble() const { return !!toDouble(); }
-  const double *toDouble() const { return boost::get<double>(&value); }
-  bool isString() const { return !!toString(); }
-  const std::string *toString() const { return boost::get<std::string>(&value); }
-  bool isUndefined() const { return !!boost::get<boost::none_t>(&value); }
+  Literal(const Location& loc = Location::NONE) : Expression(loc), value(Value::undefined.clone()) { };
+  Literal(Value val, const Location& loc = Location::NONE) : Expression(loc), value(std::move(val)) { };
+  bool isBool() const { return value.type() == Value::Type::BOOL; }
+  bool toBool() const { return value.toBool(); }
+  bool isDouble() const { return value.type() == Value::Type::NUMBER; }
+  double toDouble() const { return value.toDouble(); }
+  bool isString() const { return value.type() == Value::Type::STRING; }
+  const std::string& toString() const { return value.toStrUtf8Wrapper().toString(); }
+  bool isUndefined() const { return value.type() == Value::Type::UNDEFINED; }
 
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
-  bool isLiteral() const override { return true;}
+  bool isLiteral() const override { return true; }
 private:
-  boost::variant<bool, double, std::string, boost::none_t> value;
+  const Value value;
 };
 
 class Range : public Expression

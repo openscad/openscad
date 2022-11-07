@@ -275,7 +275,7 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
 "<="	return LE;
 ">="	return GE;
 "=="	return EQ;
-"!="	return NE;
+"!="	return NEQ;
 "&&"	return AND;
 "||"	return OR;
 
