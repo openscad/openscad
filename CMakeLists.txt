@@ -28,6 +28,29 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment ve
 include("cmake/Modules/openscad_version.cmake")
 project(openscad LANGUAGES C CXX)
 
+option(INFO "Display build configuration info at end of cmake config" ON)
+option(ENABLE_TESTS "Run testsuite after building." ON)
+option(EXPERIMENTAL "Enable Experimental Features" OFF)
+option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
+option(HEADLESS "Build without GUI frontend" OFF)
+option(ENABLE_EGL "Enable EGL instead of GLX support if available" OFF)
+option(WASM "Build WebAssembly, (implies NULLGL=ON) " OFF)
+option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
+option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
+option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
+option(MXECROSS "Enable setup for MXE cross platform build" OFF)
+option(OFFLINE_DOCS "Download Documentation for offline usage" OFF)
+option(USE_MIMALLOC "Use mimalloc as malloc replacement." ON)
+option(USE_CCACHE "Use ccache to speed up compilation." ON)
+option(ENABLE_CAIRO "Enable support for cairo vector graphics library." ON)
+option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
+option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
+option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
+include(CMakeDependentOption)
+cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
+cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON "NOT HEADLESS" OFF)
+cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS" OFF)
+
 # GNUInstallDirs must be done before BuildParameters
 include(GNUInstallDirs)
 
@@ -57,24 +80,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang|GNU")
   set_property(TARGET OpenSCAD PROPERTY LINK_FLAGS -v)
 endif()
 
-option(INFO "Display build configuration info at end of cmake config" ON)
-option(EXPERIMENTAL "Enable Experimental Features" OFF)
-option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
-option(HEADLESS "Build without GUI frontend" OFF)
-option(ENABLE_EGL "Enable EGL instead of GLX support if available" OFF)
-option(WASM "Build WebAssembly, (implies NULLGL=ON) " OFF)
-option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
-option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
-option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
-option(MXECROSS "Enable setup for MXE cross platform build" OFF)
-option(OFFLINE_DOCS "Download Documentation for offline usage" OFF)
-option(USE_MIMALLOC "Use mimalloc as malloc replacement." ON)
-
-if(APPLE)
-  option(APPLE_UNIX "Build OpenSCAD in Unix mode in MaxOS X instead of an Apple Bundle" OFF)
-endif()
-
-option(ENABLE_TESTS "Run testsuite after building." ON)
 set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
 set(STACKSIZE 8388608 CACHE STRING "Stack size (default is 8MB)")
 
@@ -88,13 +93,13 @@ if(PROFILE)
 endif()
 
 if(WASM)
-  set(NULLGL ON)
+  set(NULLGL ON CACHE BOOL "" FORCE)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
 endif()
 
 if(NULLGL)
-  set(HEADLESS ON)
+  set(HEADLESS ON CACHE BOOL "" FORCE)
 endif()
 if(EXPERIMENTAL)
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_EXPERIMENTAL)
@@ -352,8 +357,6 @@ message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
-option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
-option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 if(ENABLE_HIDAPI)
   find_package(HidAPI 0.10 QUIET)
   if(HIDAPI_FOUND)
@@ -377,7 +380,6 @@ else()
   message(STATUS "HIDAPI: disabled per user request")
 endif()
 
-option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
 if(ENABLE_SPNAV)
   find_package(SpNav QUIET)
   if(SPNAV_FOUND)
@@ -391,7 +393,6 @@ if(ENABLE_SPNAV)
   endif()
 endif()
 
-option(ENABLE_CAIRO "Enable support for cairo vector graphics library." ON)
 if(ENABLE_CAIRO)
   find_package(Cairo 1.14 QUIET)
   if (CAIRO_VERSION)
@@ -424,7 +425,9 @@ if(NOT MSVC)
   endif()
 endif()
 
-set(CMAKE_INCLUDE_CURRENT_DIR ON) # does not propagate down to subdirectories
+# Automatically add the current source and build directories to the include path.
+set(CMAKE_INCLUDE_CURRENT_DIR ON) # (does not propagate down to subdirectories)
+
 target_include_directories(OpenSCAD PRIVATE
   "src"
   "src/core"
@@ -474,14 +477,13 @@ if(NOT HEADLESS)
     set_property(TARGET OpenSCAD PROPERTY POSITION_INDEPENDENT_CODE ON)
   endif()
 
-  if (("${Qt5_VERSION}" VERSION_EQUAL "5.4") OR ("${Qt5_VERSION}" VERSION_GREATER "5.4"))
+  if (("${Qt5_VERSION}" VERSION_GREATER_EQUAL "5.4"))
     target_compile_definitions(OpenSCAD PRIVATE USE_QOPENGLWIDGET)
   endif()
 
   find_package(Qt5QScintilla 2.8.0 REQUIRED QUIET)
   message(STATUS "QScintilla: ${QT5QSCINTILLA_VERSION_STRING}")
 
-  option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON)
   if(ENABLE_QTDBUS)
     find_package(Qt5DBus QUIET)
     if (Qt5DBus_FOUND)
@@ -497,7 +499,6 @@ if(NOT HEADLESS)
     message(STATUS "DBus input driver disabled per user request.")
   endif()
 
-  option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON)
   if(ENABLE_GAMEPAD)
     find_package(Qt5Gamepad QUIET)
     if (Qt5Gamepad_FOUND)
@@ -516,7 +517,6 @@ endif()
 # Setup ccache (if available) to speed up recompiles. It's especially useful
 # when switching back and forth between branches where large numbers of files
 # would otherwise need to be re-compiled each time.
-option(USE_CCACHE "Use ccache to speed up compilation." ON)
 if(USE_CCACHE)
   find_program(CCACHE_PATH ccache)
   if (CCACHE_PATH)
