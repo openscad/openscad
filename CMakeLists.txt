@@ -8,16 +8,19 @@
 #   -DEXPERIMENTAL=<ON|OFF>
 #
 
-# Ubuntu Bionic (18.04LTS): 3.10.2,  Debian 10 buster (oldstable): 3.13.4
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.13)
 
-if(POLICY CMP0071)
-  # Let AUTOMOC and AUTOUIC process GENERATED files.
+if(POLICY CMP0071) # Let AUTOMOC and AUTOUIC process GENERATED files.
   cmake_policy(SET CMP0071 NEW)
 endif()
-if(POLICY CMP0072)
-  # FindOpenGL prefers GLVND by default when available.
+if(POLICY CMP0072) # FindOpenGL prefers GLVND by default when available.
   cmake_policy(SET CMP0072 NEW)
+endif()
+if(POLICY CMP0079) # `target_link_libraries()` allows use with targets in other directories.
+  cmake_policy(SET CMP0079 NEW)
+endif()
+if(POLICY CMP0082) # Install rules from add_subdirectory() calls are interleaved with those in caller.
+  cmake_policy(SET CMP0082 NEW)
 endif()
 
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version")
@@ -582,7 +585,7 @@ elseif(UNIX)
       set(OFFSCREEN_METHOD "Unix EGL")
       message(STATUS "Offscreen OpenGL Context - using Unix EGL")
       set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextEGL.cc)
-      add_definitions(-DGLEW_EGL)
+      target_compile_definitions(OpenSCAD PRIVATE GLEW_EGL)
       target_link_libraries(OpenSCAD PRIVATE OpenGL::EGL)
     else()
       set(OFFSCREEN_METHOD "Unix GLX on X11")
@@ -947,7 +950,10 @@ elseif(MSVC)
 endif()
 
 if(NOT HEADLESS)
-  target_link_libraries(OpenSCAD PRIVATE Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network Qt5::Svg ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES})
+  target_link_libraries(OpenSCAD PRIVATE
+    Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network Qt5::Svg
+    ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES}
+  )
 endif()
 if(MXECROSS)
   target_link_libraries(OpenSCAD PRIVATE Qt5::QSvgPlugin)
