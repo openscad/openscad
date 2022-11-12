@@ -2,10 +2,10 @@
 
 #ifdef USE_MIMALLOC
 
-#ifdef MI_OVERRIDE
-  #include <mimalloc.h>
-#else
+#ifdef _WIN32
   #include <mimalloc-new-delete.h>
+#else
+  #include <mimalloc.h>
 #endif
 
 #if defined(ENABLE_CGAL)
