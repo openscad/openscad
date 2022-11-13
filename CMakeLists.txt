@@ -158,7 +158,7 @@ if(USE_MIMALLOC)
     target_compile_definitions(OpenSCAD PRIVATE MI_LINK_SHARED) # So cmake install/pack know which files are needed.
     target_link_libraries(OpenSCAD PRIVATE mimalloc)
   else()
-    set(MI_SUBDIR mimalloc)
+    set(MI_SUBDIR submodules/mimalloc)
     set(mimalloc_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${MI_SUBDIR}/cmake" PARENT_SCOPE)
 
     set(MI_DEBUG_FULL        OFF CACHE BOOL "") # Use full internal heap invariant checking in DEBUG mode (expensive)
