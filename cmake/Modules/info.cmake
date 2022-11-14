@@ -1,4 +1,5 @@
 get_target_property(DEFINES OpenSCAD COMPILE_DEFINITIONS)
+get_target_property(LINK_OPTS OpenSCAD LINK_OPTIONS)
 
 message(STATUS " ")
 message(STATUS "====================================")
@@ -53,4 +54,5 @@ else()
 endif()
 message(STATUS " ")
 message(STATUS "DEFINES = ${DEFINES}")
+message(STATUS "LINK OPTIONS = ${LINK_OPTS}")
 message(STATUS " ")

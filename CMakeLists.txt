@@ -80,8 +80,9 @@ set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET OpenSCAD PROPERTY EXPORT_COMPILE_COMMANDS ON)
 set_property(TARGET OpenSCAD PROPERTY LINKER_LANGUAGE CXX)
 # Verbose link step
-if(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang|GNU")
-  set_property(TARGET OpenSCAD PROPERTY LINK_FLAGS -v)
+if(("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU") OR 
+   ("${CMAKE_CXX_COMPILER_ID}" MATCHES "AppleClang|Clang|GNU"))
+  target_link_options(OpenSCAD BEFORE PRIVATE "-v")
 endif()
 
 set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
