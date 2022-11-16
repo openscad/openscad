@@ -26,17 +26,17 @@ mingw_convert_ctest.run()
 print('searching for ctest.exe')
 ctestpath=''
 for basedir in 'C:/Program Files','C:/Program Files (x86)':
-        if os.path.isdir(basedir):
-            pflist = os.listdir(basedir)
-            for subdir in pflist:
-                if 'cmake' in subdir.lower():
-                    abssubdir=os.path.join(basedir,subdir)
-                    for root,dirs,files in os.walk(abssubdir):
-                        if 'ctest.exe' in files:
-                            ctestpath=os.path.join(root,'ctest.exe')
+    if os.path.isdir(basedir):
+        pflist = os.listdir(basedir)
+        for subdir in pflist:
+            if 'cmake' in subdir.lower():
+                abssubdir=os.path.join(basedir,subdir)
+                for root,dirs,files in os.walk(abssubdir):
+                    if 'ctest.exe' in files:
+                        ctestpath=os.path.join(root,'ctest.exe')
 
 if not os.path.isfile(ctestpath):
-        print('error, cant find ctest.exe')
+    print('error, cant find ctest.exe')
 else:
     ctestdir = os.pathsep + os.path.dirname(ctestpath)
     print('adding ctest dir to PATH: ' + ctestdir)
@@ -52,5 +52,3 @@ os.system( cmd )
 # figure out how to run convert script
 # dont use mingw64 in linbuild path?
 # figure out better windows prompt, can it be set?
-
-
