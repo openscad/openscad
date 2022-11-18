@@ -120,17 +120,6 @@ endif()
 list(APPEND CTEST_ENVIRONMENT "OPENSCAD_BINARY=${OPENSCAD_BINPATH}")
 
 #
-# Tags tests as disabled. This is more convenient than removing them manually
-# from the lists of filenames
-#
-macro(disable_tests)
-  foreach (TESTNAME ${ARGN})
-#    message("Disabling ${TESTNAME}")
-    list(APPEND DISABLED_TESTS ${TESTNAME})
-  endforeach()
-endmacro()
-
-#
 # Tags tests as experimental. This will add all the --enable=<feature>
 # options for the tagged tests.
 #
@@ -336,78 +325,73 @@ function(add_cmdline_test TESTCMD_BASENAME)
     get_filename_component(FILE_BASENAME ${SCADFILE} NAME_WE)
     string(REPLACE " " "_" FILE_BASENAME ${FILE_BASENAME}) # Test names cannot include spaces
     set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
-    list(FIND DISABLED_TESTS ${TEST_FULLNAME} DISABLED)
+    list(FIND EXPERIMENTAL_TESTS ${TEST_FULLNAME} EXPERIMENTAL_TEST)
 
-    if (${DISABLED} EQUAL -1)
+    set(EXPERIMENTAL_OPTION "")
 
-      list(FIND EXPERIMENTAL_TESTS ${TEST_FULLNAME} EXPERIMENTAL_TEST)
+    if (NOT (${EXPERIMENTAL_TEST} EQUAL -1))
+      # add global experimental options here
+      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=roof" "--enable=lazy-union" "--enable=textmetrics" "--enable=import-function")
+    endif()
 
-      set(EXPERIMENTAL_OPTION "")
-
-      if (NOT (${EXPERIMENTAL_TEST} EQUAL -1))
-        # add global experimental options here
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=roof" "--enable=lazy-union" "--enable=textmetrics" "--enable=import-function")
+    # Enable fast-csg for all tests but those that have different expectations or fail for other reasons.
+    if (NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
+        AND NOT SCADFILE IN_LIST SCADFILES_FAILING_WITH_FAST_CSG
+        AND NOT TEST_FULLNAME IN_LIST TESTS_FAILING_WITH_FAST_CSG)
+      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg" "--enable=fast-csg-remesh")
+      if (NOT SCADFILE IN_LIST FAST_CSG_TRUST_FAILING_SCADFILES)
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg-trust-corefinement")
       endif()
+    endif()
       
-      # Enable fast-csg for all tests but those that have different expectations or fail for other reasons.
-      if (NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
-          AND NOT SCADFILE IN_LIST SCADFILES_FAILING_WITH_FAST_CSG
-          AND NOT TEST_FULLNAME IN_LIST TESTS_FAILING_WITH_FAST_CSG)
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg" "--enable=fast-csg-remesh")
-        if (NOT SCADFILE IN_LIST FAST_CSG_TRUST_FAILING_SCADFILES)
-          set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg-trust-corefinement")
-        endif()
-      endif()
-        
-      # 2D tests should be viewed from the top, not an angle.
-      set(CAMERA_OPTION "")
-      is_2d(${SCADFILE} IS2D)
-      if (IS2D)
-        set(CAMERA_OPTION "--camera=0,0,100,0,0,0" "--viewall" "--autocenter" "--projection=ortho")
-      endif()
+    # 2D tests should be viewed from the top, not an angle.
+    set(CAMERA_OPTION "")
+    is_2d(${SCADFILE} IS2D)
+    if (IS2D)
+      set(CAMERA_OPTION "--camera=0,0,100,0,0,0" "--viewall" "--autocenter" "--projection=ortho")
+    endif()
 
-      # Handle configurations
-      unset(FOUNDCONFIGS)
-      get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
-      if (NOT FOUNDCONFIGS)
-        set_test_config(Default FILES ${TEST_FULLNAME})
-      endif()
-      set_test_config(All FILES ${TEST_FULLNAME})
-      list(FIND FOUNDCONFIGS Bugs FOUND)
-      if (FOUND EQUAL -1)
-        set_test_config(Good FILES ${TEST_FULLNAME})
-      endif()
+    # Handle configurations
+    unset(FOUNDCONFIGS)
+    get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
+    if (NOT FOUNDCONFIGS)
+      set_test_config(Default FILES ${TEST_FULLNAME})
+    endif()
+    set_test_config(All FILES ${TEST_FULLNAME})
+    list(FIND FOUNDCONFIGS Bugs FOUND)
+    if (FOUND EQUAL -1)
+      set_test_config(Good FILES ${TEST_FULLNAME})
+    endif()
 
-      unset(FOUNDCONFIGS)
-      get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
-      set(CONFARG CONFIGURATIONS)
-      set(CONFVAL ${FOUNDCONFIGS})
+    unset(FOUNDCONFIGS)
+    get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
+    set(CONFARG CONFIGURATIONS)
+    set(CONFVAL ${FOUNDCONFIGS})
 
-      # The python script cannot extract the testname when given extra parameters
-      #if (TESTCMD_ARGS)
-        set(FILENAME_OPTION -f ${FILE_BASENAME})
-      #endif()
+    # The python script cannot extract the testname when given extra parameters
+    #if (TESTCMD_ARGS)
+      set(FILENAME_OPTION -f ${FILE_BASENAME})
+    #endif()
 
-      # Apply lazy-union to *all* tests for comprehensive testing of this experimental feature.
-      # Would need all passing before making lazy-union non-experimental, but that's probably a long way off.
-      # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
-      #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
+    # Apply lazy-union to *all* tests for comprehensive testing of this experimental feature.
+    # Would need all passing before making lazy-union non-experimental, but that's probably a long way off.
+    # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
+    #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
 
-      # Enable vertex-object-renderers by default for all test if experimental build and openscad executable
-      if (EXPERIMENTAL AND TESTCMD_OPENSCAD)
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers")
-        #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-prealloc")
-        #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-direct")
-        #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-indexing")
-      endif()
+    # Enable vertex-object-renderers by default for all test if experimental build and openscad executable
+    if (EXPERIMENTAL AND TESTCMD_OPENSCAD)
+      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers")
+      #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-prealloc")
+      #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-direct")
+      #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-indexing")
+    endif()
 
-      # debug message
-      #message(STATUS "${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS}")
-      # only add test if it is not experimental or if it is and experimental option is enabled
-      if (${EXPERIMENTAL_TEST} EQUAL -1 OR EXPERIMENTAL)
-        add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS})
-        set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
-      endif()
+    # debug message
+    #message(STATUS "${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS}")
+    # only add test if it is not experimental or if it is and experimental option is enabled
+    if (${EXPERIMENTAL_TEST} EQUAL -1 OR EXPERIMENTAL)
+      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${PYTHON_EXECUTABLE} ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXECUTABLE} -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION} ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION} ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS})
+      set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
     endif()
   endforeach()
 endfunction()
@@ -436,29 +420,25 @@ function(add_failing_test TESTCMD_BASENAME)
     get_filename_component(FILE_BASENAME ${SCADFILE} NAME_WE)
     string(REPLACE " " "_" FILE_BASENAME ${FILE_BASENAME}) # Test names cannot include spaces
     set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
-    list(FIND DISABLED_TESTS ${TEST_FULLNAME} DISABLED)
-
-    if (${DISABLED} EQUAL -1)
-      # Handle configurations
-      unset(FOUNDCONFIGS)
-      get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
-      if (NOT FOUNDCONFIGS)
-        set_test_config(Default FILES ${TEST_FULLNAME})
-      endif()
-      set_test_config(All FILES ${TEST_FULLNAME})
-      unset(FOUNDCONFIGS)
-      get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
-      set(CONFARG CONFIGURATIONS)
-      set(CONFVAL ${FOUNDCONFIGS})
-
-      # The python script cannot extract the testname when given extra parameters
-      if (TESTCMD_ARGS)
-        set(FILENAME_OPTION -f ${FILE_BASENAME})
-      endif()
-
-      add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
-      set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
+    # Handle configurations
+    unset(FOUNDCONFIGS)
+    get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
+    if (NOT FOUNDCONFIGS)
+      set_test_config(Default FILES ${TEST_FULLNAME})
     endif()
+    set_test_config(All FILES ${TEST_FULLNAME})
+    unset(FOUNDCONFIGS)
+    get_test_config(${TEST_FULLNAME} FOUNDCONFIGS)
+    set(CONFARG CONFIGURATIONS)
+    set(CONFVAL ${FOUNDCONFIGS})
+
+    # The python script cannot extract the testname when given extra parameters
+    if (TESTCMD_ARGS)
+      set(FILENAME_OPTION -f ${FILE_BASENAME})
+    endif()
+
+    add_test(NAME ${TEST_FULLNAME} ${CONFARG} ${CONFVAL} COMMAND ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" -s ${TESTCMD_SUFFIX} ${TESTCMD_ARGS})
+    set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT "${CTEST_ENVIRONMENT}")
   endforeach()
 endfunction()
 
@@ -720,7 +700,6 @@ set_test_config(Bugs FILES
   offcgalpngtest_polyhedron-tests
   offpngtest_nonmanifold-polyhedron
   offpngtest_bad-stl-wing
-
   cgalpngtest_escape-test.scad
 )
 
@@ -738,96 +717,9 @@ list(APPEND EXPORT3D_TEST_FILES
   ${TEST_SCAD_DIR}/misc/bad-stl-wing.scad
 )
 
-disable_tests(
-  # These don't output anything
-  dxfpngtest_text-empty-tests
-  dxfpngtest_nothing-decimal-comma-separated
-  dxfpngtest_nullspace-2d
-  svgpngtest_text-empty-tests
-  svgpngtest_nothing-decimal-comma-separated
-  svgpngtest_nullspace-2d
-
-  # Not useful
-  throwntogethertest_internal-cavity
-  throwntogethertest_internal-cavity-polyhedron
-  throwntogethertest_nullspace-difference
-
-  # these take too long, for little relative gain in testing
-  stlpngtest_iteration
-  offpngtest_iteration
-  stlpngtest_fractal
-  offpngtest_fractal
-  stlpngtest_logo_and_text
-  offpngtest_logo_and_text
-
-  # z-fighting different on different machines
-  throwntogethertest_issue1803
-  opencsgtest_issue1165
-  opencsgtest_issue1215
-  throwntogethertest_issue1089
-  throwntogethertest_issue1215
-
-  # FIXME: This test illustrates a weakness in child() combined with modifiers.
-  # Reenable it when this is improved
-  opencsgtest_child-background
-
-  # These tests only makes sense in OpenCSG mode
-  cgalpngtest_child-background
-  cgalpngtest_highlight-and-background-modifier
-  cgalpngtest_highlight-modifier2
-  cgalpngtest_background-modifier2
-  cgalpngtest_testcolornames
-  csgpngtest_child-background
-  csgpngtest_highlight-and-background-modifier
-  csgpngtest_highlight-modifier2
-  csgpngtest_background-modifier2
-  csgpngtest_testcolornames
-  throwntogethertest_testcolornames
-
-  # This test won't render anything meaningful in throwntogether mode
-  throwntogethertest_minkowski3-erosion
-
-  # The inf/nan tests fail when exporting CSG and rendering that output again
-  # as currently inf/nan is written directly to the CSG file (e.g. r = inf)
-  # which is not valid or even misleading in case a variable inf exists.
-  # FIXME: define export behavior for inf/nan when exporting CSG files
-  # These tests return error code 1.
-  # FIXME: We should have a way of running these and verify the return code
-  csgpngtest_primitive-inf-tests
-  csgpngtest_transform-nan-inf-tests
-  csgpngtest_primitive-inf-tests
-  csgpngtest_transform-nan-inf-tests
-  # Triggers a floating point accuracy issue causing loaded .csg to
-  # render slightly differently
-  cgalpngtest_nothing-decimal-comma-separated
-  cgalpngtest_import-empty-tests
-  cgalpngtest_empty-shape-tests
-  csgpngtest_issue1258
-
-)
-
-# Disable LIB3MF tests if library was disabled in build
-if(NOT LIB3MF_FOUND)
-  # check for package again in case this is qmake build ctest
-  if(NOT MSVC)
-    pkg_check_modules(LIB3MF lib3MF)
-  endif()
-  if (NOT LIB3MF_FOUND)
-    disable_tests(
-      opencsgtest_import_3mf-tests
-      cgalpngtest_import_3mf-tests
-      csgpngtest_import_3mf-tests
-      throwntogethertest_import_3mf-tests
-      3mfpngtest_cube10
-      3mfexport_3mf-export
-    )
-  endif()
-endif()
-
 # 2D tests
 list(APPEND FILES_2D ${FEATURES_2D_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES})
 list(APPEND ALL_2D_FILES ${FILES_2D} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES})
-
 
 #
 # Add experimental features tests
@@ -1236,12 +1128,7 @@ add_cmdline_test(customizertest-setNameWithDot OPENSCAD FILES ${TEST_CUSTOMIZER_
 add_cmdline_test(openscad-nonascii             OPENSCAD FILES ${TEST_SCAD_DIR}/misc/sfære.scad SUFFIX csg)
 
 # Variable override (-D arg)
-
-# FIXME - this breaks on older cmake that is very common 'in the wild' on linux
-# Override simple variable
-if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CMAKE_PATCH_VERSION}" VERSION_GREATER 2.8.10)
 add_cmdline_test(openscad-override         OPENSCAD FILES ${TEST_SCAD_DIR}/misc/override.scad SUFFIX echo ARGS -D a=3$<SEMICOLON>)
-endif()
 
 # Image output parameters
 add_cmdline_test(openscad-imgsize          OPENSCAD FILES ${TEST_SCAD_DIR}/3D/misc/camera-tests.scad SUFFIX png ARGS --imgsize 100,100)
@@ -1305,3 +1192,87 @@ add_cmdline_test(openscad-colorscheme-clearsky        OPENSCAD FILES ${EXAMPLES_
 #foreach(CONF ${TEST_CONFIGS})
 #  message("${CONF}: ${${CONF}_TEST_CONFIG}")
 #endforeach()
+
+# Disabled Tests
+set_tests_properties(
+  # These don't output anything
+  dxfpngtest_text-empty-tests
+  dxfpngtest_nothing-decimal-comma-separated
+  dxfpngtest_nullspace-2d
+  svgpngtest_text-empty-tests
+  svgpngtest_nullspace-2d
+
+  # Not useful
+  throwntogethertest_internal-cavity
+  throwntogethertest_internal-cavity-polyhedron
+  throwntogethertest_nullspace-difference
+
+  # z-fighting different on different machines
+  throwntogethertest_issue1803
+  opencsgtest_issue1165
+  opencsgtest_issue1215
+  throwntogethertest_issue1089
+  throwntogethertest_issue1215
+
+  # FIXME: This test illustrates a weakness in child() combined with modifiers.
+  # Reenable it when this is improved
+  opencsgtest_child-background
+
+  # These tests only makes sense in OpenCSG mode
+  cgalpngtest_child-background
+  cgalpngtest_highlight-and-background-modifier
+  cgalpngtest_highlight-modifier2
+  cgalpngtest_background-modifier2
+  cgalpngtest_testcolornames
+  csgpngtest_child-background
+  csgpngtest_highlight-and-background-modifier
+  csgpngtest_highlight-modifier2
+  csgpngtest_background-modifier2
+  csgpngtest_testcolornames
+  throwntogethertest_testcolornames
+
+  # This test won't render anything meaningful in throwntogether mode
+  throwntogethertest_minkowski3-erosion
+
+  # The inf/nan tests fail when exporting CSG and rendering that output again
+  # as currently inf/nan is written directly to the CSG file (e.g. r = inf)
+  # which is not valid or even misleading in case a variable inf exists.
+  # FIXME: define export behavior for inf/nan when exporting CSG files
+  # These tests return error code 1.
+  # FIXME: We should have a way of running these and verify the return code
+  csgpngtest_primitive-inf-tests
+  csgpngtest_transform-nan-inf-tests
+  csgpngtest_primitive-inf-tests
+  csgpngtest_transform-nan-inf-tests
+
+  # Triggers a floating point accuracy issue causing loaded .csg to
+  # render slightly differently
+  cgalpngtest_nothing-decimal-comma-separated
+  cgalpngtest_import-empty-tests
+  cgalpngtest_empty-shape-tests
+  csgpngtest_issue1258
+  PROPERTIES DISABLED TRUE
+)
+
+find_package(Lib3MF QUIET)
+# Disable LIB3MF tests if library was disabled in build
+if(NOT LIB3MF_FOUND)
+  # check for package again in case this is qmake build ctest
+  if(NOT MSVC)
+    find_package(PkgConfig QUIET)
+    if (PKG_CONFIG_FOUND)
+      pkg_check_modules(LIB3MF lib3MF)
+    endif()
+  endif()
+  if (NOT LIB3MF_FOUND)
+    set_tests_properties(
+      opencsgtest_import_3mf-tests
+      cgalpngtest_import_3mf-tests
+      csgpngtest_import_3mf-tests
+      throwntogethertest_import_3mf-tests
+      3mfpngtest_cube10
+      3mfexport_3mf-export
+      PROPERTIES DISABLED TRUE
+    )
+  endif()
+endif()
