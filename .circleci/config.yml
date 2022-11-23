@@ -12,6 +12,7 @@ jobs:
           no_output_timeout: 18000
           command: |
               export NUMCPU=4
+              export LC_ALL=C.UTF-8
               export MXEDIR=/mxe
               export LIB3MF_INCLUDEDIR=/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
               export LIB3MF_LIBDIR=/mxe/usr/i686-w64-mingw32.static.posix/lib
@@ -44,6 +45,7 @@ jobs:
           no_output_timeout: 18000
           command: |
               export NUMCPU=4
+              export LC_ALL=C.UTF-8
               export MXEDIR=/mxe
               export LIB3MF_INCLUDEDIR=/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
               export LIB3MF_LIBDIR=/mxe/usr/x86_64-w64-mingw32.static.posix/lib
