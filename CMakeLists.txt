@@ -945,11 +945,12 @@ if(NOT APPLE OR APPLE_UNIX)
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/templates DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}" FILES_MATCHING PATTERN "*.json")
 endif()
 
-# Packaging
+# Packaging: CPACK_* settings should be configured before `include(CPack)`
 include(InstallRequiredSystemLibraries)
 set(CPACK_PACKAGE_NAME OpenSCAD)
 set(CPACK_PACKAGE_VERSION ${OPENSCAD_VERSION})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Programmer's Solid 3D CAD Modeler")
+
 if(MXECROSS)
   set(CPACK_GENERATOR ZIP;NSIS)
   set(CPACK_SYSTEM_NAME ${PACKAGE_ARCH})
@@ -972,14 +973,12 @@ if(MXECROSS)
   ")
 endif()
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
-set(CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_CURRENT_BINARY_DIR};${CMAKE_PROJECT_NAME};ALL;/")
-set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/openscad_cpack.cmake")
+# None of config time variables are available for CPACK_PROJECT_CONFIG_FILE, so we configure it now with values.
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/openscad_cpack.cmake.in"
+               "${CMAKE_BINARY_DIR}/openscad_cpack.cmake" @ONLY)
+# CPACK_PROJECT_CONFIG_FILE is for configuring CPack-generator specific settings
+set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/openscad_cpack.cmake")
 set(CPACK_THREADS 0)
-include(CPack)
-
-if(INFO)
-  include("cmake/Modules/info.cmake")
-endif()
 
 if(ENABLE_TESTS)
   add_subdirectory(tests)
@@ -987,4 +986,10 @@ endif()
 
 if(OFFLINE_DOCS)
   add_subdirectory(resources)
+endif()
+
+include(CPack)
+
+if(INFO)
+  include("cmake/Modules/info.cmake")
 endif()

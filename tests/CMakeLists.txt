@@ -8,10 +8,9 @@ if(POLICY CMP0017)
   # http://www.cmake.org/cmake/help/cmake-2-8-docs.html#policy:CMP0017
   cmake_policy(SET CMP0017 NEW)
 endif()
-# Interpret IN_LIST
-cmake_policy(SET CMP0057 NEW)
+cmake_policy(SET CMP0057 NEW) # Interpret IN_LIST
+cmake_policy(SET CMP0070 NEW) # Allow relative paths for file(GENERATE ...)
 
-project(openscad_tests)
 enable_testing()
 
 # Use variables for common paths, to reduce line lengths.
@@ -1285,6 +1284,55 @@ if (NOT LIB3MF_FOUND)
     3mfexport_3mf-export
     PROPERTIES DISABLED TRUE
   )
+endif()
+
+##############################################
+# Test Installation and Packaging (Win only) #
+##############################################
+
+# TODO function for replacing ../../ with relative_path
+# cmake_path(RELATIVE_PATH ${CSD} BASE_DIRECTORY ${**CWD**} ...
+# Actually needs to exist as Python function in the test runner script
+# test runner working directory compared to
+# os.path.relpath(${CSD})
+
+# Package Tests with Windows (.zip archive only)
+if(MXECROSS AND EXPERIMENTAL)
+  set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+
+  include(CPackComponent)
+  cpack_add_component(Tests ARCHIVE_FILE OpenSCAD-Tests-${CPACK_PACKAGE_VERSION})
+
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION tests
+    USE_SOURCE_PERMISSIONS
+    COMPONENT Tests
+    PATTERN ".git*" EXCLUDE
+    PATTERN "OpenSCAD_Test_Console.py" EXCLUDE
+    PATTERN "WinReadme.txt" EXCLUDE
+  )
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
+    DESTINATION tests-build
+    USE_SOURCE_PERMISSIONS
+    COMPONENT Tests
+    PATTERN "CMakeFiles" EXCLUDE
+    PATTERN "CMakeLists.txt" EXCLUDE
+    PATTERN "cmake_install.cmake" EXCLUDE
+  )
+
+  # Move files to top project dir for visibility
+  install(FILES OpenSCAD_Test_Console.py DESTINATION . COMPONENT Tests)
+  install(FILES WinReadme.txt DESTINATION . COMPONENT Tests RENAME "Windows_Test_Readme.txt")
+
+  file(GENERATE OUTPUT mingw_cross_info.py CONTENT
+"# created automatically during packaging by cmake from within linux
+linux_abs_basedir='${CMAKE_SOURCE_DIR}'
+linux_abs_builddir='${CMAKE_BINARY_DIR}'
+linux_python='${PYTHON_EXECUTABLE}'
+linux_convert='${IMAGE_COMPARE_EXE}'
+win_installdir='OpenSCAD-Tests-${CPACK_PACKAGE_VERSION}'
+" NEWLINE_STYLE WIN32)
+
 endif()
 
 ####################
