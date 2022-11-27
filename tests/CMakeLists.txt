@@ -1286,15 +1286,43 @@ if (NOT LIB3MF_FOUND)
   )
 endif()
 
+list(APPEND NEF3_BROKEN_TESTS
+  cgalpngtest_nef3_broken
+  opencsgtest_nef3_broken
+  throwntogethertest_nef3_broken
+  csgpngtest_nef3_broken
+)
+
+# Platform specific test disable
+if(UNIX)
+  set_tests_properties(
+    ${NEF3_BROKEN_TESTS}
+    PROPERTIES DISABLED TRUE
+  )
+elseif(APPLE)
+  set_tests_properties(
+    ${NEF3_BROKEN_TESTS}
+    # Z issues specific to edge shader
+    openscad-viewoptions-edges_view-options-tests
+    openscad-viewoptions-axes-scales-edges_view-options-tests
+    PROPERTIES DISABLED TRUE
+  )
+elseif(WIN32 OR MXECROSS)
+  set_tests_properties(
+    # Z issues specific to edge shader
+    openscad-viewoptions-edges_view-options-tests
+    openscad-viewoptions-axes-scales-edges_view-options-tests
+    # Known UTF-8 issue on Windows
+    openscad-nonascii_sfære
+    # requires `gs` tool
+    pdfexporttest_centered
+    PROPERTIES DISABLED TRUE
+  )
+endif()
+
 ##############################################
 # Test Installation and Packaging (Win only) #
 ##############################################
-
-# TODO function for replacing ../../ with relative_path
-# cmake_path(RELATIVE_PATH ${CSD} BASE_DIRECTORY ${**CWD**} ...
-# Actually needs to exist as Python function in the test runner script
-# test runner working directory compared to
-# os.path.relpath(${CSD})
 
 # Package Tests with Windows (.zip archive only)
 if(MXECROSS AND EXPERIMENTAL)

@@ -30,7 +30,7 @@ jobs:
       run: |
         cd build/tests
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
-        ctest -j$NUMCPU -E 'edges_view-options-tests|nef3_broken'
+        ctest -j$NUMCPU
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v3
       if: ${{ always() }}
