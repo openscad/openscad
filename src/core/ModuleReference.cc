@@ -9,6 +9,7 @@ https://github.com/openscad/openscad/blob/master/COPYING
 #include "Value.h"
 #include "Context.h"
 #include "Expression.h"
+#include <set>
 
 Value ModuleReference::operator==(const ModuleReference& other) const {
   return this->getUniqueID() == other.getUniqueID();
@@ -111,4 +112,81 @@ std::ostream& operator<<(std::ostream& stream, const ModuleReference& m)
       stream << "(" << *args << ")" ;
    }
    return stream;
+}
+/*
+  paramsIn has the param names in sequence
+  args may have named arguments
+  paramsOut is an AssignmenList of same size as paramsIn.
+  Any named arg has its expression put in paramsOut
+*/
+bool ModuleReference::processNamedArgs(
+      std::shared_ptr<AssignmentList> const & paramsIn,
+      std::shared_ptr<AssignmentList> const & args,
+      std::shared_ptr<AssignmentList> & paramsOut)
+{
+    assert( paramsIn->size() == paramsOut->size());
+    assert(args->size() <= paramsIn->size());
+    // put paramsIn names in paramsOut and zero out params out expressions
+    for ( auto i = 0U; i < paramsOut->size();++i){
+      paramsOut->at(i)->resetExpr();
+      paramsOut->at(i)->setName(paramsIn->at(i)->getName());
+    }
+    // to remember what names we found already
+    std::set<std::string> found_names;
+    for ( std::size_t i = 0U; i < args->size(); ++i){
+       auto const & arg = args->at(i);
+       if ( arg->hasName()){
+          std::string const & param_name = arg->getName();
+          if (found_names.find(param_name) == found_names.end()){
+             AssignmentList::iterator paramIter = std::find_if(paramsOut->begin(), paramsOut->end(),
+              [param_name](auto const & elem)
+              { return elem->getName() == param_name;}
+             );
+
+             if (paramIter != paramsOut->end()){
+                found_names.insert(param_name);
+               (*paramIter)->setExpr(arg->getExpr());
+             }else{
+                std::cout << "named argument \"" << param_name << "\" not found in parameters\n";
+                return false;
+             }
+
+          }else{
+             std::cout << "duplicate named argument \"" << param_name << "\"\n";
+             return false;
+          }
+       }
+    }
+    return true;
+}
+
+
+bool ModuleReference::processUnnamedArgs(
+      std::shared_ptr<AssignmentList> const & paramsIn,
+      std::shared_ptr<AssignmentList> const & args,
+      std::shared_ptr<AssignmentList> & paramsOut)
+{
+  for ( std::size_t i = 0U; i < args->size(); ++i){
+      auto const & arg = args->at(i);
+      auto & paramOut = paramsOut->at(i);
+
+      if ( arg->hasName() == false && paramOut->hasExpr() == false){
+          paramOut->setExpr(arg->getExpr());
+      }
+
+      if ( arg->hasName() == false && paramOut->hasExpr() == true){
+          std::cout << "warning named arg \"" <<  paramOut->getName()
+            << "\" overrides positional arg [" << i << "] of value (" << arg->getExpr() << ")\n";
+      }
+   }
+
+   for ( std::size_t i = 0U; i < paramsIn->size();++i){
+       auto const & paramIn = paramsIn->at(i);
+       auto & paramOut = paramsOut->at(i);
+       if ( paramOut->hasExpr() == false){
+          paramOut->setExpr(paramIn->getExpr());
+       }
+   }
+   return true;
+
 }
