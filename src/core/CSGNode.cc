@@ -27,7 +27,6 @@
 #include "CSGNode.h"
 #include "Geometry.h"
 #include "linalg.h"
-#include "printutils.h"
 
 #include <numeric>
 #include <sstream>

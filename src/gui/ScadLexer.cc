@@ -91,7 +91,6 @@ QStringList ScadLexer::autoCompletionWordSeparators() const
 #include <Qsci/qscilexercustom.h>
 #include <Qsci/qsciscintilla.h>
 
-#include "lexertl/dot.hpp"
 #include "lexertl/generator.hpp"
 #include "lexertl/lookup.hpp"
 

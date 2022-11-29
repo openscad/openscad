@@ -1,6 +1,6 @@
 #include "printutils.h"
 #include <sstream>
-#include <stdio.h>
+#include <cstdio>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/circular_buffer.hpp>

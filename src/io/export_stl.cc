@@ -27,7 +27,6 @@
 #include "export.h"
 #include "PolySet.h"
 #include "PolySetUtils.h"
-#include "DxfData.h"
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
@@ -39,7 +38,7 @@ namespace {
 
 std::string toString(const Vector3d& v)
 {
-  return STR(v[0] << " " << v[1] << " " << v[2]);
+  return STR(v[0], " ", v[1], " ", v[2]);
 }
 
 Vector3d toVector(const std::array<double, 3>& pt) {

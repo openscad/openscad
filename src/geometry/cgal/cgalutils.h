@@ -80,7 +80,7 @@ template <typename K>
 void transform(CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh, const Transform3d& matrix);
 template <typename K>
 Transform3d computeResizeTransform(
-  const CGAL::Iso_cuboid_3<K>& bb, int dimension, const Vector3d& newsize,
+  const CGAL::Iso_cuboid_3<K>& bb, unsigned int dimension, const Vector3d& newsize,
   const Eigen::Matrix<bool, 3, 1>& autosize);
 bool tessellatePolygon(const PolygonK& polygon,
                        Polygons& triangles,

@@ -2,16 +2,12 @@
 #include "printutils.h"
 #include "OffscreenView.h"
 #include "CsgInfo.h"
-#include <stdio.h>
-#include "PolySet.h"
+#include <cstdio>
 #include "RenderSettings.h"
 
 #ifndef NULLGL
 
 #ifdef ENABLE_CGAL
-#include "cgal.h"
-#include "cgalutils.h"
-#include "CGAL_Nef_polyhedron.h"
 #include "CGALRenderer.h"
 
 static void setupCamera(Camera& cam, const BoundingBox& bbox)

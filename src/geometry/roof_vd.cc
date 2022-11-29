@@ -10,7 +10,6 @@
 
 #include "GeometryUtils.h"
 #include "ClipperUtils.h"
-#include "printutils.h"
 #include "RoofNode.h"
 #include "roof_vd.h"
 
@@ -210,7 +209,7 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
                               double fa, double fs) {
   Faces_2_plus_1 ret;
 
-  auto cell_contains_boundary_point = [&vd, &segments](const voronoi_diagram::cell_type *cell,
+  auto cell_contains_boundary_point = [&segments](const voronoi_diagram::cell_type *cell,
                                                        const Point& point) {
       Segment segment = segments[cell->source_index()];
       return (cell->contains_segment() && segment_has_endpoint(segment, point) )

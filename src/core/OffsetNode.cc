@@ -30,11 +30,7 @@
 #include "ModuleInstantiation.h"
 #include "Children.h"
 #include "Parameters.h"
-#include "printutils.h"
-#include "fileutils.h"
 #include "Builtins.h"
-#include "calc.h"
-#include "PolySet.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>

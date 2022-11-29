@@ -31,8 +31,8 @@
 
 #include "FontCache.h"
 #include "PlatformUtils.h"
-#include "parsersettings.h"
 #include "printutils.h"
+#include "version_helper.h"
 
 extern std::vector<std::string> librarypath;
 

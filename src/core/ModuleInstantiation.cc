@@ -10,7 +10,6 @@ https://github.com/openscad/openscad/blob/master/COPYING
 #include "exceptions.h"
 #include "printutils.h"
 #include <boost/filesystem.hpp>
-#include "boost-utils.h"
 namespace fs = boost::filesystem;
 
 ModuleInstantiation::~ModuleInstantiation()

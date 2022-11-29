@@ -15,7 +15,6 @@
 #include "TabManager.h"
 #include "TabWidget.h"
 #include "ScintillaEditor.h"
-#include "QSettingsCached.h"
 #include "Preferences.h"
 #include "MainWindow.h"
 
@@ -225,7 +224,7 @@ void TabManager::createTab(const QString& filename)
   par->updateRecentFileActions();
 }
 
-int TabManager::count()
+size_t TabManager::count()
 {
   return tabWidget->count();
 }
@@ -716,6 +715,23 @@ bool TabManager::saveAs(EditorInterface *edt)
     setTabName(filename, edt);
   }
   return saveOk;
+}
+
+bool TabManager::saveACopy(EditorInterface *edt)
+{
+  assert(edt != nullptr);
+
+  const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
+  auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, _("OpenSCAD Designs (*.scad)"));
+  if (filename.isEmpty()) {
+    return false;
+  }
+
+  if (QFileInfo(filename).suffix().isEmpty()) {
+    filename.append(".scad");
+  }
+
+  return save(edt, filename);
 }
 
 bool TabManager::saveAll()

@@ -1,9 +1,6 @@
 #pragma once
 
-#include "GLView.h"
-#include "system-gl.h"
 #include "linalg.h"
-#include "memory.h"
 #include "ColorMap.h"
 #include "enums.h"
 #include "PolySet.h"

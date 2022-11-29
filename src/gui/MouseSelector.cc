@@ -1,3 +1,4 @@
+#include "system-gl.h"
 #include "MouseSelector.h"
 
 #include <QOpenGLFramebufferObject>
@@ -6,7 +7,7 @@
  * that is derived from its index(), by using the first 24 bits of the identifier as a
  * 3-tuple for color.
  *
- * roghly at most 1/3rd of the index()-es are rendered, therefore exhausting the keyspace
+ * Roughly at most 1/3rd of the index()-es are rendered, therefore exhausting the keyspace
  * faster than expected.
  * If this ever becomes a problem, the index-mapping can be adjusted to use 10 up to 16 bit
  * per color channel to store the identifier.
@@ -125,8 +126,8 @@ void MouseSelector::init_shader() {
  */
 void MouseSelector::setup_framebuffer(const GLView *view) {
   if (!this->framebuffer ||
-      this->framebuffer->width() != view->cam.pixel_width ||
-      this->framebuffer->height() != view->cam.pixel_height) {
+      static_cast<unsigned int>(this->framebuffer->width()) != view->cam.pixel_width ||
+      static_cast<unsigned int>(this->framebuffer->height()) != view->cam.pixel_height) {
     this->framebuffer.reset(
       new QOpenGLFramebufferObject(
         view->cam.pixel_width,
@@ -147,8 +148,8 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   // x/y is originated topleft, so turn y around
   y = this->view->cam.pixel_height - y;
 
-  if (x > this->view->cam.pixel_width || x < 0 ||
-      y > this->view->cam.pixel_height || y < 0) {
+  if (x > static_cast<int>(this->view->cam.pixel_width) || x < 0 ||
+      y > static_cast<int>(this->view->cam.pixel_height) || y < 0) {
     return -1;
   }
 

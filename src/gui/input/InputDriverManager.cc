@@ -23,9 +23,13 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "InputDriverEvent.h"
 #include "InputDriverManager.h"
-
-#include "printutils.h"
+#include "MainWindow.h"
+#include <QAction>
+#include <QMenu>
+#include <QApplication>
+#include <QCoreApplication>
 
 InputDriverManager *InputDriverManager::self = 0;
 
@@ -216,8 +220,8 @@ void InputDriverManager::onInputGainUpdated()
   mapper.onInputGainUpdated();
 }
 
-int InputDriverManager::getButtonCount(){
-  int max = 0;
+size_t InputDriverManager::getButtonCount() const {
+  size_t max = 0;
   for (auto driver : drivers) {
     if (driver->isOpen()) {
       max = std::max(max, driver->getButtonCount());
@@ -226,8 +230,8 @@ int InputDriverManager::getButtonCount(){
   return max;
 }
 
-int InputDriverManager::getAxisCount(){
-  int max = 0;
+size_t InputDriverManager::getAxisCount() const {
+  size_t max = 0;
   for (auto driver : drivers) {
     if (driver->isOpen()) {
       max = std::max(max, driver->getAxisCount());

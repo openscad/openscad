@@ -17,8 +17,8 @@ public:
   double fn = 0.0, fs = 0.0, fa = 0.0;
   double scale_x = 1.0, scale_y = 1.0;
   double twist = 0.0;
-  int convexity = 1;
-  int slices = 1, segments = 0;
+  unsigned int convexity = 1u;
+  unsigned int slices = 1u, segments = 0u;
   bool has_twist = false, has_slices = false, has_segments = false;
   bool center = false;
 

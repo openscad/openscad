@@ -11,13 +11,9 @@ https://github.com/openscad/openscad/blob/master/COPYING
 #include <limits>
 #include <iostream>
 #include <memory>
+#include <variant>
 
-// Workaround for https://bugreports.qt-project.org/browse/QTBUG-22829
-#ifndef Q_MOC_RUN
-#include <boost/variant.hpp>
-#include <boost/lexical_cast.hpp>
 #include <glib.h>
-#endif
 
 #include "Assignment.h"
 #include "memory.h"
@@ -304,7 +300,7 @@ private:
 std::ostream& operator<<(std::ostream& stream, const UndefType& u);
 
 /**
- *  Value class encapsulates a boost::variant value which can represent any of the
+ *  Value class encapsulates a std::variant value which can represent any of the
  *  value types existing in the SCAD language.
  * -- As part of a refactoring effort which began as PR #2881 and continued as PR #3102,
  *    Value and its constituent types have been made (nominally) "move only".
@@ -336,7 +332,7 @@ public:
   static const Value undefined;
 
   /**
-   * VectorType is the underlying "BoundedType" of boost::variant for OpenSCAD vectors.
+   * VectorType is the underlying "BoundedType" of std::variant for OpenSCAD vectors.
    * It holds only a shared_ptr to its VectorObject type, and provides a convenient
    * interface for various operations needed on the vector.
    *
@@ -548,13 +544,13 @@ public:
 
   const std::string typeName() const;
   static std::string typeName(Type type);
-  Type type() const { return static_cast<Type>(this->value.which()); }
+  Type type() const { return static_cast<Type>(this->value.index()); }
   bool isDefinedAs(const Type type) const { return this->type() == type; }
   bool isDefined()   const { return this->type() != Type::UNDEFINED; }
   bool isUndefined() const { return this->type() == Type::UNDEFINED; }
   bool isUncheckedUndef() const;
 
-  // Conversion to boost::variant "BoundedType"s. const ref where appropriate.
+  // Conversion to std::variant "BoundedType"s. const ref where appropriate.
   bool toBool() const;
   double toDouble() const;
   const str_utf8_wrapper& toStrUtf8Wrapper() const;
@@ -570,6 +566,8 @@ public:
   // Other conversion utility functions
   bool getDouble(double& v) const;
   bool getFiniteDouble(double& v) const;
+  bool getUnsignedInt(unsigned int& v) const;
+  bool getPositiveInt(unsigned int& v) const;
   std::string toString() const;
   std::string toEchoString() const;
   std::string toEchoStringNoThrow() const; //use this for warnings
@@ -606,10 +604,10 @@ public:
     return stream;
   }
 
-  typedef boost::variant<UndefType, bool, double, str_utf8_wrapper,
+  typedef std::variant<UndefType, bool, double, str_utf8_wrapper,
     VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType,
     ModuleReferencePtr
-  > Variant;
+   > Variant;
 
   static_assert(sizeof(Value::Variant) <= 24, "Memory size of Value too big");
   const Variant& getVariant() const { return value; }

@@ -1,7 +1,9 @@
 #pragma once
 
 #include <cstring>
+#include <memory>
 #include "linalg.h"
+#include "node.h"
 
 #define FLAG(var, flag, on) on ? (var |= flag) : (var &= ~flag)
 

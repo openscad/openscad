@@ -2,9 +2,7 @@
 
 #include "qtgettext.h"
 #include "ui_ViewportControl.h"
-#include "printutils.h"
 #include <QStandardItemModel>
-#include "Editor.h"
 #include <mutex> 
 
 class MainWindow;

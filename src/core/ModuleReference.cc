@@ -81,7 +81,7 @@ bool ModuleReference::transformToInstantiationArgs(
 
 const ModuleReference& Value::toModuleReference() const
 {
-  return *boost::get<ModuleReferencePtr>(this->value);
+  return *std::get<ModuleReferencePtr>(this->value);
 }
 
 std::ostream& operator<<(std::ostream& stream, const ModuleReference& m)

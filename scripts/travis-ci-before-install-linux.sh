@@ -23,6 +23,11 @@ elif [[ "$DIST" == "focal" ]]; then
     LIB3MF_REPO="https://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_20.04/"
     LIBCGAL_REPO="https://download.opensuse.org/repositories/home:/t-paul:/cgal/xUbuntu_20.04/"
 
+elif [[ "$DIST" == "kinetic" ]]; then
+
+    LIB3MF_REPO="https://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_22.04/"
+    LIBCGAL_REPO="https://download.opensuse.org/repositories/home:/t-paul:/cgal/xUbuntu_22.04/"
+
 else
 
     echo "ERROR: unhandled DIST: $DIST"

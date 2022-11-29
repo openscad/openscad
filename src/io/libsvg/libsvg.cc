@@ -34,12 +34,6 @@
 #include "libsvg.h"
 
 #include "shape.h"
-#include "circle.h"
-#include "ellipse.h"
-#include "line.h"
-#include "polygon.h"
-#include "polyline.h"
-#include "rect.h"
 #include "use.h"
 
 namespace fs = boost::filesystem;
@@ -207,7 +201,7 @@ int streamFile(const char *filename, void *context)
     throw SvgException((boost::format("Can't open file '%1%'") % filename).str());
   }
 
-  for (const auto shape : (*shape_list)) {
+  for (const auto& shape : (*shape_list)) {
     shape->apply_transform();
   }
 

@@ -15,8 +15,6 @@
 #include "Editor.h"
 #include "memory.h"
 #include "ScadApi.h"
-#include "parsersettings.h"
-
 
 // don't need the full definition, because it confuses Qt
 class ScadLexer;

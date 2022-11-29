@@ -25,10 +25,8 @@
  */
 
 #include "node.h"
-#include "module.h"
 #include "ModuleInstantiation.h"
 #include "progress.h"
-#include "printutils.h"
 #include <functional>
 #include <iostream>
 #include <algorithm>

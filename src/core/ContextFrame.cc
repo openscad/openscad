@@ -83,9 +83,9 @@ size_t ContextFrame::clear()
 bool ContextFrame::set_variable(const std::string& name, Value&& value)
 {
   if (is_config_variable(name)) {
-    return config_variables.insert_or_assign(name, std::move(value));
+    return config_variables.insert_or_assign(name, std::move(value)).second;
   } else {
-    return lexical_variables.insert_or_assign(name, std::move(value));
+    return lexical_variables.insert_or_assign(name, std::move(value)).second;
   }
 }
 

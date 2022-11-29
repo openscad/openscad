@@ -30,7 +30,7 @@ Expression* MakeModuleLiteral(
       return new ModuleLiteral(moduleName,parameters,arguments,loc);
    } else {
        LOG(message_group::Warning, loc,"", "Experimental module-literal is not enabled");
-       return new Literal(boost::none,loc);
+       return new Literal(loc);
    }
 }
 

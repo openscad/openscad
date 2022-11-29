@@ -7,10 +7,6 @@
 #include "cgalutils.h"
 #include "PolySet.h"
 #include "printutils.h"
-#include "progress.h"
-#include "Polygon2d.h"
-#include "PolySetUtils.h"
-#include "Grid.h"
 #include "CGALHybridPolyhedron.h"
 #include "node.h"
 
@@ -25,8 +21,6 @@
 #include <CGAL/convex_hull_3.h>
 
 #include "memory.h"
-#include "Reindexer.h"
-#include "GeometryUtils.h"
 
 #include <map>
 #include <queue>

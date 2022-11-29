@@ -2,7 +2,6 @@
 #include "memory.h"
 #include "printutils.h"
 #include "AST.h"
-#include "boost-utils.h"
 
 #ifdef ENABLE_CGAL
 #include "cgal.h"

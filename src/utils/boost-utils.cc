@@ -1,5 +1,5 @@
 #include "boost-utils.h"
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 
 namespace fs = boost::filesystem;

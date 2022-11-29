@@ -33,13 +33,10 @@
 #include "printutils.h"
 #include "fileutils.h"
 #include "Builtins.h"
-#include "calc.h"
-#include "PolySet.h"
 #include "handle_dep.h"
 
 #include <cmath>
 #include <sstream>
-#include "boost-utils.h"
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -96,9 +93,7 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
 
   node->layername = parameters["layer"].isUndefined() ? "" : parameters["layer"].toString();
 
-  double tmp_convexity = 0.0;
-  parameters["convexity"].getFiniteDouble(tmp_convexity);
-  node->convexity = static_cast<int>(tmp_convexity);
+  parameters["convexity"].getPositiveInt(node->convexity);
 
   bool originOk = parameters["origin"].getVec2(node->origin_x, node->origin_y);
   originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
@@ -117,23 +112,11 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
 
   if (node->height <= 0) node->height = 0;
 
-  if (node->convexity <= 0) node->convexity = 1;
-
   if (node->scale_x < 0) node->scale_x = 0;
   if (node->scale_y < 0) node->scale_y = 0;
 
-  double slicesVal = 0;
-  parameters["slices"].getFiniteDouble(slicesVal);
-  node->slices = static_cast<int>(slicesVal);
-  if (node->slices > 0) {
-    node->has_slices = true;
-  }
-
-  double segmentsVal = 0;
-  if (parameters["segments"].getFiniteDouble(segmentsVal)) {
-    node->has_segments = true;
-    node->segments = static_cast<int>(std::max(segmentsVal, 0.0));
-  }
+  node->has_slices = parameters["slices"].getUnsignedInt(node->slices);
+  node->has_segments = parameters["segments"].getUnsignedInt(node->segments);
 
   node->twist = 0.0;
   parameters["twist"].getFiniteDouble(node->twist);
