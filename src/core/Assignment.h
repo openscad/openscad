@@ -24,7 +24,10 @@ public:
   const AnnotationMap& getAnnotations() const { return annotations; }
   // setExpr used by customizer ParameterObject etc.
   void setExpr(shared_ptr<Expression> e) { expr = std::move(e); }
-
+  void setName( const std::string & nameIn) { name = nameIn;}
+  bool hasName() const { return name !="";}
+  void resetExpr() { expr.reset();}
+  bool hasExpr() const { return static_cast<bool>(expr);}
   virtual void addAnnotations(AnnotationList *annotations);
   virtual bool hasAnnotations() const;
   virtual const Annotation *annotation(const std::string& name) const;
@@ -33,7 +36,7 @@ public:
   void setLocationOfOverwrite(const Location& locOfOverwrite) { this->locOfOverwrite = locOfOverwrite; }
 
 protected:
-  const std::string name;
+  std::string name;
   shared_ptr<class Expression> expr;
   AnnotationMap annotations;
   Location locOfOverwrite;
