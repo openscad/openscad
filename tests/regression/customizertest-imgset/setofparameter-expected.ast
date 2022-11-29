@@ -42,4 +42,3 @@ Vector2 = [12, 34, 45, 23];
 //Parameter("")
 nonparameter = "new";
 echo(String);
-

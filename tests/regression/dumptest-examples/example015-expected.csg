@@ -24,6 +24,6 @@ group() {
 			}
 		}
 	}
-	import(file = "example009.dxf", layer = "body", origin = [0, 0], scale = 2, convexity = 6, $fn = 0, $fa = 12, $fs = 2, timestamp = 1590623338);
+	import(file = "example009.dxf", layer = "body", origin = [0, 0], scale = 2, convexity = 6, $fn = 0, $fa = 12, $fs = 2, timestamp = 1661877520);
 }
 

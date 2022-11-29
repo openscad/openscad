@@ -344,7 +344,6 @@ single_module_instantiation
 
 expr
         : logic_or
-        | module_literal
         | TOK_FUNCTION '(' parameters ')' expr %prec NO_ELSE
             {
               $$ = new FunctionDefinition($5, *$3, LOCD("anonfunc", @$));
@@ -546,6 +545,7 @@ unary
 
 exponent
        : call
+       | module_literal
        | call '^' unary
            {
               $$ = new BinaryOp($1, BinaryOp::Op::Exponent, $3, LOCD("exponent", @$));
