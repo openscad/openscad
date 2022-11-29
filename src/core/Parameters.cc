@@ -129,9 +129,11 @@ static ContextFrame parse_without_defaults(
     if (argument.name) {
       name = *argument.name;
       if (named_arguments.count(name)) {
-        LOG(message_group::Warning, loc, arguments.documentRoot(), "argument %1$s supplied more than once", name);
+        LOG(message_group::Warning, loc, arguments.documentRoot(),
+           "argument %1$s supplied more than once", name);
       } else if (output.lookup_local_variable(name)) {
-        LOG(message_group::Warning, loc, arguments.documentRoot(), "argument %1$s overrides positional argument", name);
+        LOG(message_group::Warning, loc, arguments.documentRoot(),
+           "argument %1$s overrides positional argument", name);
       } else if (warn_for_unexpected_arguments && !ContextFrame::is_config_variable(name)) {
         bool found = false;
         for (const auto& parameter : required_parameters) {
@@ -147,7 +149,8 @@ static ContextFrame parse_without_defaults(
           }
         }
         if (!found) {
-          LOG(message_group::Warning, loc, arguments.documentRoot(), "variable %1$s not specified as parameter", name);
+          LOG(message_group::Warning, loc, arguments.documentRoot(),
+             "variable %1$s not specified as parameter", name);
         }
       }
       named_arguments.insert(name);
