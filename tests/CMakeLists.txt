@@ -1316,6 +1316,7 @@ elseif(WIN32 OR MXECROSS)
     openscad-nonascii_sfære
     # requires `gs` tool
     pdfexporttest_centered
+    pdfexporttest_simple-pdf
     PROPERTIES DISABLED TRUE
   )
 endif()
