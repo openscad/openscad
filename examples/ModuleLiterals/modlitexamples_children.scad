@@ -16,15 +16,23 @@ ar = [
    module (a) { x_rotate(a) children();}
 ];
 
+child_ar = [ 
+   module (dia) cone(dia), 
+   module (dia) cylinder( d = dia, h = 5, $fn = 20)
+];
+
 // inst 1
-r() cylinder( d = 20, h = 5, $fn = 20);
+// r is a module reference
+// (child_ar[1])(25) is an instantiation of 
+//  an expression returning a module literal
+r() (child_ar[1])(25);
 
 // inst 2
 translate([0,0,30]){
-  r() cone(20);
+  r() (child_ar[0])(20);
 }
 
-// inst 3
+// inst 3 using expression with child expression
 translate([0,0,70]){
    (ar[1])(-30) cone(100);
 }
