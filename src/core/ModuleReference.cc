@@ -1,6 +1,7 @@
 
 /*
 Copyright (C) Andy Little (kwikius@yahoo.com) 10/10/2022  initial revision
+Copyright (C) Andy Little (kwikius@yahoo.com) 12/12/2022  fix https://github.com/kwikius/openscad/issues/2
 https://github.com/openscad/openscad/blob/master/COPYING
 */
 
@@ -30,6 +31,22 @@ Value ModuleReference::operator>=(const ModuleReference& other) const {
   return this->getUniqueID() >= other.getUniqueID();
 }
 
+namespace {
+
+   int getParamIndex(
+      AssignmentList const & params,
+      std::string const & name
+   ){
+      auto numParams = params.size();
+      for ( auto i =0U; i < numParams; ++i){
+         if ( params[i]->getName() == name){
+            return static_cast<int>(i);
+         }
+      }
+      return -1;
+   }
+}
+
 bool ModuleReference::transformToInstantiationArgs(
       AssignmentList const & evalContextArgs,
       const Location& loc,
@@ -50,7 +67,7 @@ bool ModuleReference::transformToInstantiationArgs(
     // e.g  m = module cube([10,20,30]);
     //      m = module () cube([10,20,30]);
 
-// the following are also valid. They have no module_args
+    // the following are also valid. They have no module_params
     //      m = module { cube([10,20,30]); }
     //      m = module () { cube([10,20,30]); }
     if ( this->module_literal_parameters->empty() && evalContextArgs.empty()){
@@ -61,47 +78,76 @@ bool ModuleReference::transformToInstantiationArgs(
     // arguments forwarding syntax
     // anonymous module syntax
     // m = module (module_literal_params) {...}
-    // TODO evalContextArgs may have named args
     if ( ! this->module_literal_parameters->empty() ){
-
-       auto const nParams = this->module_literal_parameters->size();
-       auto const nArgs = evalContextArgs.size();
-       auto const nArgsToProcess = std::min(nArgs,nParams);
-       if ( nArgs > nArgsToProcess){
-          LOG(message_group::Warning, loc, evalContext->documentRoot(),
-            "Ignoring Arguments greater than number of params");
-       }
-
-       // positional args
-       for (auto i = 0; i < nArgsToProcess;++i){
-          auto const & param = this->module_literal_parameters->at(i);
-          auto const & arg = evalContextArgs.at(i);
-          auto new_arg = new Assignment(param->getName(),loc);
-          new_arg->setExpr(arg->getExpr());
+      auto const & paramsIn = *(this->module_literal_parameters);
+      auto const numParams = paramsIn.size();
+      // init assignments
+      for ( auto i = 0; i < numParams; ++i){
+          auto new_arg = new Assignment("",loc);
           argsOut.push_back(std::shared_ptr<Assignment>(new_arg));
+      };
+
+      auto const numInArgs = evalContextArgs.size();
+      std::set<std::string> named_args;
+      // keep count of number of named args which affects the actual index of positional args
+      auto namedArgsCount = 0U;
+      for ( auto i = 0U; i < numInArgs; ++i){
+         // process named args
+         if ( evalContextArgs.at(i)->hasName()){
+            ++namedArgsCount;
+            auto const & name = evalContextArgs.at(i)->getName();
+            if (named_args.find(name) != named_args.end()){
+               LOG(message_group::Warning, loc, evalContext->documentRoot(),
+                    "WARNING: arg '%1$s' supplied more than once", name);
+            }else{
+               int const idx = getParamIndex(paramsIn,name);
+               if ( idx >= 0 ){
+                  auto & arg = argsOut.at(idx);
+                  if ( arg->hasExpr()){
+                    LOG(message_group::Warning, loc, evalContext->documentRoot(),
+                    "WARNING: arg '%1$s' overriding value", name);
+                  }
+                  arg->setExpr(std::shared_ptr<Expression>(evalContextArgs[i]->getExpr()));
+                  named_args.insert(name);
+               }else{
+                 LOG(message_group::Warning, loc, evalContext->documentRoot(),
+                    "param '%1$s' not found\n", name);
+                  return false;
+               }
+            }
+         }else{  // positional arg
+             // Positional args output index is found by subtracting
+             // number of named input args from input args index
+             auto const posIdx = i - namedArgsCount;
+             assert( posIdx < argsOutTemp.size());
+
+            if(!argsOut.at(posIdx)->hasExpr()){
+                argsOut.at(posIdx)->setExpr(std::shared_ptr<Expression>(evalContextArgs.at(i)->getExpr()));
+             }else{
+                 LOG(message_group::Warning, loc, evalContext->documentRoot(),
+                    "ignoring positional argument overridden by named argument");
+             }
+         }
        }
-       // default args from params
-       // ToDo do these first from start to end of
-       // todo put these in pos if param->hasExpr()
-       for (auto i = nArgsToProcess; i < nParams; ++i ){
-          auto const & param = this->module_literal_parameters->at(i);
-          auto newArg = new Assignment(param->getName());
-          auto expr = param->getExpr();
-          if( !expr){
-            LOG(message_group::Warning, loc, evalContext->documentRoot(),
-               "Default arguments not supplied");
-            return false;
-          }
-          // evaluate the expr in the moduleLiteral defining context
-          newArg->setExpr(param->getExpr());
-          argsOut.push_back(std::shared_ptr<Assignment>(newArg));
-       }
-       return true;
+
+       // Assign any unassigned args from params default args
+       for ( auto i = 0U; i < numParams; ++i){
+         if (! argsOut.at(i)->hasExpr() ){
+            auto const & paramIn = paramsIn.at(i);
+            if ( paramIn->hasExpr()){
+                argsOut.at(i)->setExpr(std::shared_ptr<Expression>(paramIn->getExpr()));
+            }else{
+                LOG(message_group::Warning, loc, evalContext->documentRoot(),
+                    "not enough arguments");
+               return false;
+            }
+         }
+      }
+      return true;
     }
     LOG(message_group::Warning, loc, evalContext->documentRoot(),"Invalid Arguments format");
     return false;
 }
-
 
 const ModuleReference& Value::toModuleReference() const
 {
@@ -136,80 +182,4 @@ std::ostream& operator<<(std::ostream& stream, const ModuleReference& m)
    }
    return stream;
 }
-/*
-  paramsIn has the param names in sequence
-  args may have named arguments
-  paramsOut is an AssignmenList of same size as paramsIn.
-  Any named arg has its expression put in paramsOut
-*/
-bool ModuleReference::processNamedArgs(
-      std::shared_ptr<AssignmentList> const & paramsIn,
-      std::shared_ptr<AssignmentList> const & args,
-      std::shared_ptr<AssignmentList> & paramsOut)
-{
-    assert( paramsIn->size() == paramsOut->size());
-    assert(args->size() <= paramsIn->size());
-    // put paramsIn names in paramsOut and zero out params out expressions
-    for ( auto i = 0U; i < paramsOut->size();++i){
-      paramsOut->at(i)->resetExpr();
-      paramsOut->at(i)->setName(paramsIn->at(i)->getName());
-    }
-    // to remember what names we found already
-    std::set<std::string> found_names;
-    for ( std::size_t i = 0U; i < args->size(); ++i){
-       auto const & arg = args->at(i);
-       if ( arg->hasName()){
-          std::string const & param_name = arg->getName();
-          if (found_names.find(param_name) == found_names.end()){
-             AssignmentList::iterator paramIter = std::find_if(paramsOut->begin(), paramsOut->end(),
-              [param_name](auto const & elem)
-              { return elem->getName() == param_name;}
-             );
 
-             if (paramIter != paramsOut->end()){
-                found_names.insert(param_name);
-               (*paramIter)->setExpr(arg->getExpr());
-             }else{
-                std::cout << "named argument \"" << param_name << "\" not found in parameters\n";
-                return false;
-             }
-
-          }else{
-             std::cout << "duplicate named argument \"" << param_name << "\"\n";
-             return false;
-          }
-       }
-    }
-    return true;
-}
-
-
-bool ModuleReference::processUnnamedArgs(
-      std::shared_ptr<AssignmentList> const & paramsIn,
-      std::shared_ptr<AssignmentList> const & args,
-      std::shared_ptr<AssignmentList> & paramsOut)
-{
-  for ( std::size_t i = 0U; i < args->size(); ++i){
-      auto const & arg = args->at(i);
-      auto & paramOut = paramsOut->at(i);
-
-      if ( arg->hasName() == false && paramOut->hasExpr() == false){
-          paramOut->setExpr(arg->getExpr());
-      }
-
-      if ( arg->hasName() == false && paramOut->hasExpr() == true){
-          std::cout << "warning named arg \"" <<  paramOut->getName()
-            << "\" overrides positional arg [" << i << "] of value (" << arg->getExpr() << ")\n";
-      }
-   }
-
-   for ( std::size_t i = 0U; i < paramsIn->size();++i){
-       auto const & paramIn = paramsIn->at(i);
-       auto & paramOut = paramsOut->at(i);
-       if ( paramOut->hasExpr() == false){
-          paramOut->setExpr(paramIn->getExpr());
-       }
-   }
-   return true;
-
-}
