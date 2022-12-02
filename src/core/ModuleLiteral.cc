@@ -68,7 +68,7 @@ Value ModuleLiteral::evaluate(const std::shared_ptr<const Context>& context) con
    AssignmentList const & params_in = this->module_literal_parameters;
    AssignmentList * params_out = new AssignmentList;
 
-   bool in_default_args = false;
+   // put any evaluated default args in params_out
    for ( auto i = 0; i < params_in.size(); ++i){
        auto const & param = params_in[i];
        auto new_param = new Assignment(param->getName(),loc);
@@ -81,19 +81,25 @@ Value ModuleLiteral::evaluate(const std::shared_ptr<const Context>& context) con
               ,loc)
            )
          );
-        in_default_args = true;
-       }else{
-         if ( in_default_args){
-             LOG(message_group::Warning, loc, context->documentRoot(),"default args not continuous to last param");
-         }
        }
-       params_out->push_back(std::shared_ptr<Assignment>(new_param));
+      params_out->push_back(std::shared_ptr<Assignment>(new_param));
    }
-   // if no params  evaluate here
+   // if no module_literal_params evaluate here
+   // or ...
+   // could also be done for module with parameters with more effort :
+   // for each expression in the module_arguments
+   // if it doesnt access a parameter then evaluate it
+   // How to find if the module_argument accesses a module_parameter?
+   //  walk the expressions in the module arguments, looking for module_param_names
+   // which match the names of params in module_literal_params
+   // expr->contains(param_names)
+   // if found dont evaluate the expression
+
    AssignmentList outArgs = module_arguments;
    if ( params_in.size() ==0){
       for ( auto i = 0; i < outArgs.size(); ++i){
           auto & arg = outArgs[i];
+          //TODO if ! arg->getExpr().contains(params_in){...
           arg->setExpr(
            std::shared_ptr<ValueWrapper>(
                new ValueWrapper(
