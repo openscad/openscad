@@ -1,6 +1,5 @@
 
-fm = function(x) 
-  let ( m = module(y,x1 = x) cube([x1,y,20]) )
-m;
-(fm(100))(50);  // instantiate the module returned from fm 
+fm = function(x) module(y,x = x) cube([x,y,20]);
+(fm(10))(15);   // instantiate the module returned from fm
+
 

@@ -22,17 +22,17 @@ child_ar = [
 ];
 
 // inst 1
-// r is a module reference
-// (child_ar[1])(25) is an instantiation of 
-//  an expression returning a module literal
-r() (child_ar[1])(25);
-
-// inst 2
+// module_reference with child module literal expression
 translate([0,0,30]){
   r() (child_ar[0])(20);
 }
 
-// inst 3 using expression with child expression
+// inst 3 using module_literal expression with child module
 translate([0,0,70]){
    (ar[1])(-30) cone(100);
+}
+
+// inst 4 using module_literal expression with child module_literal expression
+translate([0,0,100]){
+   (ar[1])(-30) (child_ar[1])(100);
 }
