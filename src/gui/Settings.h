@@ -264,9 +264,9 @@ public:
   static SettingsEntryDouble axisDeadzone8;
   static SettingsEntryInt joystickNr;
 
-  static SettingsEntryString& inputButton(int id);
-  static SettingsEntryDouble& axisTrim(int id);
-  static SettingsEntryDouble& axisDeadzone(int id);
+  static SettingsEntryString& inputButton(size_t id);
+  static SettingsEntryDouble& axisTrim(size_t id);
+  static SettingsEntryDouble& axisDeadzone(size_t id);
 
   static void visit(const class SettingsVisitor& visitor);
 };

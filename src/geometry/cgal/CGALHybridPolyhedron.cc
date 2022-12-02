@@ -2,13 +2,13 @@
 #include "CGALHybridPolyhedron.h"
 
 #include "cgalutils.h"
-#include "hash.h"
+#include "Feature.h"
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/boost/graph/helpers.h>
 #include <fstream>
 #include <sstream>
-#include <stdio.h>
-
+#include <cstdio>
+#include <variant>
 
 CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<CGAL_HybridNef>& nef)
 {
@@ -47,14 +47,16 @@ CGALHybridPolyhedron::CGALHybridPolyhedron()
 
 std::shared_ptr<CGAL_HybridNef> CGALHybridPolyhedron::getNefPolyhedron() const
 {
-  auto pp = boost::get<shared_ptr<CGAL_HybridNef>>(&data);
-  return pp ? *pp : nullptr;
+  return std::holds_alternative<shared_ptr<CGAL_HybridNef>>(data) ?
+    std::get<shared_ptr<CGAL_HybridNef>>(data) :
+    nullptr;
 }
 
 std::shared_ptr<CGAL_HybridMesh> CGALHybridPolyhedron::getMesh() const
 {
-  auto pp = boost::get<shared_ptr<CGAL_HybridMesh>>(&data);
-  return pp ? *pp : nullptr;
+  return std::holds_alternative<shared_ptr<CGAL_HybridMesh>>(data) ?
+    std::get<shared_ptr<CGAL_HybridMesh>>(data) :
+    nullptr;
 }
 
 bool CGALHybridPolyhedron::isEmpty() const

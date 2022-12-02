@@ -38,7 +38,6 @@
 #include "printutils.h"
 #include "node.h"
 #include "CSGNode.h"
-#include "Builtins.h"
 #include "memory.h"
 #include "Expression.h"
 #include "ScopeContext.h"
@@ -120,14 +119,14 @@
 
 #endif // ENABLE_CGAL
 
-#include "FontCache.h"
 #include "PrintInitDialog.h"
+#include "input/InputDriverEvent.h"
 #include "input/InputDriverManager.h"
 #include <cstdio>
 #include <memory>
 #include <QtNetwork>
 
-#include "qt-obsolete.h"
+#include "qt-obsolete.h" // IWYU pragma: keep
 
 static const int autoReloadPollingPeriodMS = 200;
 
@@ -382,6 +381,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
   connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
   connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
+  connect(this->fileActionSaveACopy, SIGNAL(triggered()), this, SLOT(actionSaveACopy()));
   connect(this->fileActionSaveAll, SIGNAL(triggered()), tabManager, SLOT(saveAll()));
   connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
   connect(this->fileActionClose, SIGNAL(triggered()), tabManager, SLOT(closeCurrentTab()));
@@ -1513,6 +1513,11 @@ void MainWindow::actionSave()
 void MainWindow::actionSaveAs()
 {
   tabManager->saveAs(activeEditor);
+}
+
+void MainWindow::actionSaveACopy()
+{
+  tabManager->saveACopy(activeEditor);
 }
 
 void MainWindow::actionShowLibraryFolder()

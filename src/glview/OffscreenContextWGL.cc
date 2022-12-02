@@ -17,8 +17,6 @@
 
 #include "OffscreenContext.h"
 #include "printutils.h"
-#include "imageutils.h"
-#include "system-gl.h"
 #include "fbo.h"
 
 #include <GL/gl.h> // must be included after glew.h
@@ -81,8 +79,8 @@ std::string get_os_info()
 std::string offscreen_context_getinfo(OffscreenContext * /*ctx*/)
 {
   // should probably get some info from WGL context here?
-  return STR("GL context creator: WGL\n" <<
-             "PNG generator: lodepng\n" <<
+  return STR("GL context creator: WGL\n",
+             "PNG generator: lodepng\n",
              get_os_info());
 }
 

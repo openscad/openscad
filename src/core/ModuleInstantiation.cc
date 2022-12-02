@@ -10,7 +10,6 @@ https://github.com/openscad/openscad/blob/master/COPYING
 #include "exceptions.h"
 #include "printutils.h"
 #include <boost/filesystem.hpp>
-#include "boost-utils.h"
 namespace fs = boost::filesystem;
 
 ModuleInstantiation::~ModuleInstantiation()
@@ -76,11 +75,10 @@ static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shar
 
 std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_ptr<const Context> context) const
 {
-   std::string const old_name = this->modname; //N.B will be if id_exp ! empty
+   std::string const old_name = this->modname;
    AssignmentList const old_args = this->arguments;
 
-
-    auto setTo = [this](std::string const & name , AssignmentList const & args){
+   auto setTo = [this](std::string const & name , AssignmentList const & args){
      const_cast<ModuleInstantiation*>(this)->modname = name;
      const_cast<ModuleInstantiation*>(this)->arguments = args;
    };

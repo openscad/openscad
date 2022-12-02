@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <stdlib.h>
+#include <cstdlib>
 
 #include <string>
 #include <iostream>
@@ -37,6 +37,7 @@
 #include "path.h"
 #include "degree_trig.h"
 #include "calc.h"
+#include "util.h"
 
 namespace libsvg {
 
@@ -147,10 +148,10 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
   double rmax = fmax(rx, ry);
   unsigned long fn = Calc::get_fragments_from_r(rmax, fValues->fn, fValues->fs, fValues->fa);
   fn = (unsigned long) ceil(fn * fabs(delta) / 360.0); // because we are creating a section of an ellipse, not the full ellipse
-  int steps = (std::fabs(delta) * 10.0 / 180) + 4;
+  unsigned int steps = (std::fabs(delta) * 10.0 / 180) + 4;
   if (steps < fn) // use the maximum of calculated steps and user specified steps
     steps = fn;
-  for (int a = 0; a <= steps; ++a) {
+  for (unsigned int a = 0; a <= steps; ++a) {
     double phi = theta + delta * a / steps;
 
     double xx = cos_rad * cos_degrees(phi) * rx - sin_rad * sin_degrees(phi) * ry;

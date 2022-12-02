@@ -113,7 +113,7 @@ void ParameterSlider::onSpinBoxEditingFinished()
 void ParameterSlider::commitChange(bool immediate) {
   double value = parameterValue(slider->sliderPosition());
 #ifdef DEBUG
-  PRINTD(STR("[commit] value=" << value << ", parameter->value=" << parameter->value << ", lastSent=" << lastSent << ", lastApplied=" << lastApplied));
+  PRINTD(STR("[commit] value=", value, ", parameter->value=", parameter->value, ", lastSent=", lastSent, ", lastApplied=", lastApplied));
 #endif
   if ((immediate && lastApplied != value) || (!immediate && lastSent != value) ) {
     lastSent = parameter->value = value;
@@ -125,7 +125,7 @@ void ParameterSlider::commitChange(bool immediate) {
 void ParameterSlider::setValue()
 {
 #ifdef DEBUG
-  PRINTD(STR("[setValue] parameter->value=" << parameter->value << ", lastSent=" << lastSent << ", lastApplied=" << lastApplied));
+  PRINTD(STR("[setValue] parameter->value=", parameter->value, ", lastSent=", lastSent, ", lastApplied=", lastApplied));
 #endif
   int position = sliderPosition(parameter->value);
   lastApplied = lastSent = parameter->value;

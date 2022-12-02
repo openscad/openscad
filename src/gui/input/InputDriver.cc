@@ -24,6 +24,7 @@
  *
  */
 #include "InputDriver.h"
+#include "InputDriverEvent.h"
 
 const QEvent::Type InputEvent::eventType = static_cast<QEvent::Type>(QEvent::registerEventType());
 

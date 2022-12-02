@@ -45,7 +45,6 @@
 #pragma once
 
 #include <unordered_map>
-#include <boost/format.hpp>
 #include "printutils.h"
 
 template <class Key, class T>

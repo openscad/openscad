@@ -1,8 +1,8 @@
 multmatrix([[1, 0, 0, 4], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	import(file = "import.3mf", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1663680136);
+	import(file = "import.3mf", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1661877521);
 }
 multmatrix([[1, 0, 0, 0], [0, 1, 0, 4], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	import(file = "import.3mf", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1663680136);
+	import(file = "import.3mf", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 1661877521);
 }
 multmatrix([[1, 0, 0, 4], [0, 1, 0, 4], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	difference() {

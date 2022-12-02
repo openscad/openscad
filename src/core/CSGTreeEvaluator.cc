@@ -1,7 +1,6 @@
 #include "CSGTreeEvaluator.h"
 #include "State.h"
 #include "CsgOpNode.h"
-#include "module.h"
 #include "ModuleInstantiation.h"
 #include "CSGNode.h"
 #include "TransformNode.h"
@@ -11,12 +10,11 @@
 #include "printutils.h"
 #include "GeometryEvaluator.h"
 #include "PolySet.h"
-#include "PolySetUtils.h"
 
 #include <string>
 #include <map>
 #include <list>
-#include <assert.h>
+#include <cassert>
 #include <cstddef>
 
 /*!
@@ -184,7 +182,7 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
     // 3D PolySets are tessellated before inserting into Geometry cache, inside GeometryEvaluator::evaluateGeometry
   }
 
-  shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), STR(node.name() << node.index()), node.index()));
+  shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), STR(node.name(), node.index()), node.index()));
   if (modinst->isHighlight() || state.isHighlight()) t->setHighlight(true);
   if (modinst->isBackground() || state.isBackground()) t->setBackground(true);
   return t;

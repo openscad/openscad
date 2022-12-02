@@ -3,7 +3,7 @@ group() {
 		linear_extrude(height = 2, $fn = 0, $fa = 12, $fs = 2, convexity = 10) {
 			projection(cut = true, convexity = 0) {
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -30], [0, 0, 0, 1]]) {
-					surface(file = "surface_image.png", center = true, invert = false, timestamp = 1576020815);
+					surface(file = "surface_image.png", center = true, invert = false, timestamp = 1661877520);
 				}
 			}
 		}
@@ -12,7 +12,7 @@ group() {
 		linear_extrude(height = 4, $fn = 0, $fa = 12, $fs = 2, convexity = 10) {
 			projection(cut = true, convexity = 0) {
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -60], [0, 0, 0, 1]]) {
-					surface(file = "surface_image.png", center = true, invert = false, timestamp = 1576020815);
+					surface(file = "surface_image.png", center = true, invert = false, timestamp = 1661877520);
 				}
 			}
 		}
@@ -21,7 +21,7 @@ group() {
 		linear_extrude(height = 6, $fn = 0, $fa = 12, $fs = 2, convexity = 10) {
 			projection(cut = true, convexity = 0) {
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -90], [0, 0, 0, 1]]) {
-					surface(file = "surface_image.png", center = true, invert = false, timestamp = 1576020815);
+					surface(file = "surface_image.png", center = true, invert = false, timestamp = 1661877520);
 				}
 			}
 		}

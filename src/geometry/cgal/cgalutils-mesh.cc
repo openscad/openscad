@@ -1,10 +1,11 @@
 #include "cgalutils.h"
+#include "Feature.h"
+#include "linalg.h"
+#include "hash.h"
 
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Surface_mesh.h>
-#include "Reindexer.h"
-
 namespace CGALUtils {
 
 template <class TriangleMesh>

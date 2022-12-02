@@ -33,7 +33,6 @@
 
 #include "TextNode.h"
 #include "FreetypeRenderer.h"
-#include "Polygon2d.h"
 
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
@@ -75,7 +74,7 @@ FreetypeRenderer::Params TextNode::get_params() const
 
 std::string TextNode::toString() const
 {
-  return STR(name() << "(" << this->params << ")");
+  return STR(name(), "(", this->params, ")");
 }
 
 void register_builtin_text()

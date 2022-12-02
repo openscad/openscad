@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 #include "circle.h"
+#include "util.h"
 
 namespace libsvg {
 

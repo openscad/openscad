@@ -4,7 +4,6 @@
 #include "ui_ErrorLog.h"
 #include "printutils.h"
 #include <QStandardItemModel>
-#include "Editor.h"
 
 enum errorLog_column {
   group = 0, file, lineNo, message

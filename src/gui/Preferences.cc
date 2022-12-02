@@ -31,6 +31,7 @@
 #include <QKeyEvent>
 #include <QStatusBar>
 #include <QSettings>
+#include <QTextDocument>
 #include <boost/algorithm/string.hpp>
 #include "GeometryCache.h"
 #include "AutoUpdater.h"
@@ -41,7 +42,6 @@
 #include "ColorMap.h"
 #include "RenderSettings.h"
 #include "QSettingsCached.h"
-#include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
 #include "OctoPrint.h"
 #include "IgnoreWheelWhenNotFocused.h"

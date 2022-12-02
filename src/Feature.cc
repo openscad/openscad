@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -137,6 +137,6 @@ ExperimentalFeatureException::~ExperimentalFeatureException() throw()
 void ExperimentalFeatureException::check(const Feature& feature)
 {
   if (!feature.is_enabled()) {
-    throw ExperimentalFeatureException(STR("ERROR: Experimental feature not enabled: '" << feature.get_name() << "'. Please check preferences."));
+    throw ExperimentalFeatureException(STR("ERROR: Experimental feature not enabled: '", feature.get_name(), "'. Please check preferences."));
   }
 }

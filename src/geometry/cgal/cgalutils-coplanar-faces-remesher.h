@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "cgalutils-mesh-edits.h"
+#include "Feature.h"
 
 namespace CGALUtils {
 

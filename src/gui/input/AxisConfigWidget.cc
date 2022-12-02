@@ -28,7 +28,6 @@
 #include "AxisConfigWidget.h"
 
 #include "Settings.h"
-#include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
 #include "IgnoreWheelWhenNotFocused.h"
@@ -134,7 +133,7 @@ void AxisConfigWidget::init() {
 
   installIgnoreWheelWhenNotFocused(this);
 
-  for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
+  for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     auto spinTrim = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
     if (spinTrim) {
       initUpdateDoubleSpinBox(spinTrim, Settings::Settings::axisTrim(i));
@@ -415,7 +414,7 @@ void AxisConfigWidget::on_AxisTrim()
 {
   InputEventMapper::instance()->onAxisAutoTrim();
 
-  for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
+  for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
     if (spin) {
       spin->setValue(Settings::Settings::axisTrim(i).value());
@@ -428,7 +427,7 @@ void AxisConfigWidget::on_AxisTrim()
 void AxisConfigWidget::on_AxisTrimReset()
 {
   InputEventMapper::instance()->onAxisTrimReset();
-  for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
+  for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
     if (spin) {
       Settings::Settings::axisTrim(i).setValue(0.00);
@@ -510,8 +509,8 @@ void AxisConfigWidget::writeSettings()
 void AxisConfigWidget::updateStates(){
   if (!initialized) return;
 
-  int cnt = InputDriverManager::instance()->getAxisCount();
-  for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
+  size_t cnt = InputDriverManager::instance()->getAxisCount();
+  for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     auto progressbar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(i));
     if (progressbar) {
       if (cnt <= i) {

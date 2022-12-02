@@ -30,7 +30,6 @@
 #include "Builtins.h"
 #include "Children.h"
 #include "Parameters.h"
-#include "PolySet.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
@@ -50,7 +49,7 @@ static std::shared_ptr<AbstractNode> builtin_render(const ModuleInstantiation *i
 
 std::string RenderNode::toString() const
 {
-  return STR(this->name() << "(convexity = " << convexity << ")");
+  return STR(this->name(), "(convexity = ", convexity, ")");
 }
 
 void register_builtin_render()

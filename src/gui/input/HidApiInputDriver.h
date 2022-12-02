@@ -53,10 +53,10 @@ public:
   void hidapi_decode_axis(const unsigned char *buf, unsigned int len);
   void hidapi_decode_button(const unsigned char *buf, unsigned int len);
 
-  int getButtonCount() const override {
+  size_t getButtonCount() const override {
     return InputDriver::max_buttons;
   }
-  int getAxisCount() const override {
+  size_t getAxisCount() const override {
     return InputDriver::max_axis;
   }
 

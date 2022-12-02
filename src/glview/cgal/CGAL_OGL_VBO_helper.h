@@ -27,7 +27,7 @@
 #pragma once
 
 #include "system-gl.h"
-#include "VBORenderer.h"
+#include "VertexArray.h"
 #include "ext/CGAL/OGL_helper.h"
 #include <cstdlib>
 
@@ -52,6 +52,7 @@ public:
     if (halffacets_elements_vbo) glDeleteBuffers(1, &halffacets_elements_vbo);
   }
 
+  using CGAL::OGL::Polyhedron::draw;
   void draw(Vertex_iterator v, VertexArray& vertex_array) const {
     PRINTD("draw(Vertex_iterator)");
 

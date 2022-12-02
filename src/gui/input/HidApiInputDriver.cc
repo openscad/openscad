@@ -35,13 +35,15 @@
 #include <fstream>
 #include <ostream>
 #include <codecvt>
-
+#include <cmath>
 #include <boost/format.hpp>
 
 #include "Settings.h"
 #include "PlatformUtils.h"
-#include "input/HidApiInputDriver.h"
-#include "input/InputDriverManager.h"
+#include "HidApiInputDriver.h"
+#include "InputDriverEvent.h"
+#include "InputDriverManager.h"
+#include "printutils.h"
 
 static constexpr int BUFLEN = 64;
 static constexpr int MAX_LOG_SIZE = 20 * 1024;
@@ -164,7 +166,7 @@ void HidApiInputDriver::hidapi_decode_axis(const unsigned char *buf, unsigned in
     for (int a = 0; a < 6; ++a) {
       const int16_t i = buf[2 * a + 1] | (buf[2 * a + 2] << 8);
       double val = (double)i / 350.0;
-      if (fabs(val) > 0.01) {
+      if (std::fabs(val) > 0.01) {
         InputEvent *event = new InputEventAxisChanged(a, val);
         InputDriverManager::instance()->sendEvent(event);
       }
@@ -272,9 +274,9 @@ bool HidApiInputDriver::open()
 
   std::tie(this->hid_dev, this->dev) = enumerate();
   if (this->dev) {
-    name = STR(std::setfill('0') << std::setw(4) << std::hex
-                                 << "HidApiInputDriver (" << dev->vendor_id << ":" << dev->product_id
-                                 << " - " << dev->name << ")");
+    name = STR(std::setfill('0'), std::setw(4), std::hex
+                                , "HidApiInputDriver (", dev->vendor_id, ":", dev->product_id
+                                , " - ", dev->name, ")");
     start();
     HIDAPI_LOGP("HidApiInputDriver::open(): %s", name);
     return true;

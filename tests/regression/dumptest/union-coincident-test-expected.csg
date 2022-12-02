@@ -6,3 +6,4 @@ group() {
 		cube(size = [1, 5, 1], center = true);
 	}
 }
+

@@ -23,13 +23,17 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include <string>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <boost/format.hpp>
 
 #include "InputDriverManager.h"
 #include "JoystickInputDriver.h"
+#include "printutils.h"
 
+#include <unistd.h>
 #include <linux/input.h>
 #include <linux/joystick.h>
 
@@ -106,10 +110,10 @@ const std::string& JoystickInputDriver::get_name() const
 std::string JoystickInputDriver::get_info() const
 {
   return STR(
-    get_name() << " " << (isOpen() ? "open" : "not open") << " " <<
-      "Name: " << name << " " <<
-      "Axis: " << (int) axes << " " <<
-      "Buttons: " << (int) buttons << " "
+    get_name(), " ", (isOpen() ? "open" : "not open"), " ",
+      "Name: ", name, " ",
+      "Axis: ", (int) axes, " ",
+      "Buttons: ", (int) buttons, " "
     );
 }
 

@@ -55,7 +55,6 @@ https://github.com/openscad/openscad/blob/master/COPYING
 #include <list>
 #include <boost/filesystem.hpp>
 #include "boost-utils.h"
-#include "Feature.h"
 
 namespace fs = boost::filesystem;
 
@@ -136,7 +135,7 @@ bool fileEnded=false;
 %token TOK_FALSE
 %token TOK_UNDEF
 
-%token LE GE EQ NE AND OR
+%token LE GE EQ NEQ AND OR
 
 %nonassoc NO_ELSE
 %nonassoc TOK_ELSE
@@ -345,7 +344,6 @@ single_module_instantiation
 
 expr
         : logic_or
-        | module_literal
         | TOK_FUNCTION '(' parameters ')' expr %prec NO_ELSE
             {
               $$ = new FunctionDefinition($5, *$3, LOCD("anonfunc", @$));
@@ -467,7 +465,7 @@ equality
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Equal, $3, LOCD("equal", @$));
             }
-        | equality NE comparison
+        | equality NEQ comparison
             {
               $$ = new BinaryOp($1, BinaryOp::Op::NotEqual, $3, LOCD("notequal", @$));
             }
@@ -532,7 +530,7 @@ unary
             {
               Literal* argument = dynamic_cast<Literal*>($2);
               if (argument && argument->isDouble()) {
-                double value = *argument->toDouble();
+                double value = argument->toDouble();
                 delete $2;
                 $$ = new Literal(-value, LOCD("literal", @$));
               } else {
@@ -547,6 +545,7 @@ unary
 
 exponent
        : call
+       | module_literal
        | call '^' unary
            {
               $$ = new BinaryOp($1, BinaryOp::Op::Exponent, $3, LOCD("exponent", @$));
@@ -582,7 +581,7 @@ primary
             }
         | TOK_UNDEF
             {
-              $$ = new Literal(boost::none, LOCD("literal", @$));
+              $$ = new Literal(LOCD("literal", @$));
             }
         | TOK_NUMBER
             {

@@ -9,8 +9,6 @@
 #include "printutils.h"
 #include "Polygon2d.h"
 #include "PolySetUtils.h"
-#include "Grid.h"
-#include "node.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
@@ -22,7 +20,6 @@
 #include <CGAL/convex_hull_3.h>
 
 #include "svg.h"
-#include "GeometryUtils.h"
 
 #include <map>
 #include <queue>

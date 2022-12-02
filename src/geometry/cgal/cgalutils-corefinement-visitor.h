@@ -3,7 +3,6 @@
 
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
 #include "cgalutils-coplanar-faces-remesher.h"
-#include "cgalutils-mesh-edits.h"
 
 namespace CGALUtils {
 

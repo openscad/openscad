@@ -3,7 +3,7 @@
 #include <QMainWindow>
 #include <QSettings>
 
-#include "qtgettext.h"
+#include "qtgettext.h" // IWYU pragma: keep
 #include "ui_Preferences.h"
 #include "Settings.h"
 #include "InitConfigurator.h"

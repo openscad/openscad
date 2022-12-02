@@ -30,9 +30,8 @@
 #include "Children.h"
 #include "Parameters.h"
 #include "Builtins.h"
-#include "PolySet.h"
 
-#include <assert.h>
+#include <cassert>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -51,8 +50,8 @@ static std::shared_ptr<AbstractNode> builtin_projection(const ModuleInstantiatio
 
 std::string ProjectionNode::toString() const
 {
-  return STR("projection(cut = " << (this->cut_mode ? "true" : "false")
-                                 << ", convexity = " << this->convexity << ")");
+  return STR("projection(cut = ", (this->cut_mode ? "true" : "false"),
+                                 ", convexity = ", this->convexity, ")");
 }
 
 void register_builtin_projection()
