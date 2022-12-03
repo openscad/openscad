@@ -41,8 +41,9 @@ public:
   class Params
   {
 public:
-    void set_size(double size) {
+    void set_size(double size, bool size_compat) {
       this->size = size;
+      this->size_compat = size_compat;
     }
     void set_spacing(double spacing) {
       this->spacing = spacing;
@@ -92,7 +93,10 @@ public:
     friend std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params) {
       return stream
              << "text = \"" << params.text
-             << "\", size = " << params.size
+             << (params.size_compat
+                ? "\", size = "
+                : "\", em = "
+                ) << params.size
              << ", spacing = " << params.spacing
              << ", font = \"" << params.font
              << "\", direction = \"" << params.direction
@@ -106,6 +110,7 @@ public:
     }
 private:
     double size, spacing, fn, fa, fs, segments;
+    bool size_compat;
     std::string text, font, direction, language, script, halign, valign;
     Location loc = Location::NONE;
     std::string documentPath = "";
@@ -148,6 +153,8 @@ public:
     double max_ascent;
     double max_descent;
     double interline;
+    double underline_position;
+    double underline_thickness;
     std::string family_name;
     std::string style_name;
     FontMetrics(const FreetypeRenderer::Params& params);

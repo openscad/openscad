@@ -48,6 +48,7 @@ public:
   boost::optional<const Value&> lookup(const std::string& name) const;
 
   void set_caller(const std::string& caller);
+  const std::string& get_caller() const;
   const Value& get(const std::string& name) const;
   double get(const std::string& name, double default_value) const;
   const std::string& get(const std::string& name, const std::string& default_value) const;

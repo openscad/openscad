@@ -785,7 +785,8 @@ Value builtin_textmetrics(Arguments arguments, const Location& loc)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), loc,
                                             { "text", "size", "font" },
-                                            { "direction", "language", "script", "halign", "valign", "spacing" }
+                                            { "direction", "language", "script", "halign", "valign",
+                                              "spacing", "em" }
                                             );
   parameters.set_caller("textmetrics");
 
@@ -833,7 +834,7 @@ Value builtin_textmetrics(Arguments arguments, const Location& loc)
 Value builtin_fontmetrics(Arguments arguments, const Location& loc)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), loc,
-                                            { "size", "font" }
+                                            { "size", "font", "em" }
                                             );
   parameters.set_caller("fontmetrics");
 
@@ -860,11 +861,16 @@ Value builtin_fontmetrics(Arguments arguments, const Location& loc)
   font.set("family", metrics.family_name);
   font.set("style", metrics.style_name);
 
+  ObjectType underline(arguments.session());
+  underline.set("position", metrics.underline_position);
+  underline.set("thickness", metrics.underline_thickness);
+
   ObjectType font_metrics(arguments.session());
   font_metrics.set("nominal", nominal);
   font_metrics.set("max", max);
   font_metrics.set("interline", metrics.interline);
   font_metrics.set("font", font);
+  font_metrics.set("underline", underline);
 
   return std::move(font_metrics);
 }
@@ -1066,14 +1072,14 @@ void register_builtin_functions()
                  new BuiltinFunction(&builtin_textmetrics,
                                      &Feature::ExperimentalTextMetricsFunctions),
   {
-    "textmetrics(text, size, font, direction, language, script, halign, valign, spacing) -> object",
+    "textmetrics(text, size, font, direction, language, script, halign, valign, spacing, em) -> object",
   });
 
   Builtins::init("fontmetrics",
                  new BuiltinFunction(&builtin_fontmetrics,
                                      &Feature::ExperimentalTextMetricsFunctions),
   {
-    "fontmetrics(size, font) -> object",
+    "fontmetrics(size, font, em) -> object",
   });
 
   Builtins::init("ord", new BuiltinFunction(&builtin_ord),

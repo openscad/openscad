@@ -228,6 +228,11 @@ void Parameters::set_caller(const std::string& caller)
   this->caller = caller;
 }
 
+const std::string& Parameters::get_caller() const
+{
+    return (caller);
+}
+
 void print_argCnt_warning(
   const std::string& name,
   int found,
