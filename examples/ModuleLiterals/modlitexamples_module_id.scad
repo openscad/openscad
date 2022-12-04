@@ -4,7 +4,7 @@
  
  In this style the module_literal is refering to an existing 
  module_id but no arguments are specified.
- The module reference can be though of in soam ways as  
+ The module reference can be thought of in some ways as  
  an alias name for the module
 */
 

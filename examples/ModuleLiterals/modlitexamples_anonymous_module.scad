@@ -27,4 +27,4 @@ wing = module (span,chord, dihedral, taper =0,twist =0) {
 
 }; //##### <--- note the semicolon!
 
-wing(1000,170,9,0.25,1);
+wing(span = 1000,chord = 170,dihedral = 9,taper = 0.25,twist = 1);
