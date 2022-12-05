@@ -818,7 +818,7 @@ set(GUI_HEADERS
 
 target_precompile_headers(OpenSCAD PRIVATE
   $<$<COMPILE_LANGUAGE:CXX>:"Builtins.h";"cgal.h";"cgalutils.h";"CGAL_Nef_polyhedron.h";"ColorMap.h";"export.h";"json.hpp";"linalg.h">
-  $<$<COMPILE_LANGUAGE:CXX>:"ParameterObject.h";"ParameterSet.h";"parameter/ParameterVirtualWidget.h";"parameter/ParameterWidget.h";"printutils.h">
+  $<$<COMPILE_LANGUAGE:CXX>:"ParameterObject.h";"ParameterSet.h";"printutils.h">
   $<$<COMPILE_LANGUAGE:CXX>:<boost/filesystem.hpp$<ANGLE-R>;<boost/algorithm/string.hpp$<ANGLE-R>;<boost/spirit/include/qi.hpp$<ANGLE-R>;<boost/property_tree/ptree.hpp$<ANGLE-R>>
   $<$<COMPILE_LANGUAGE:CXX>:<CGAL/Exact_predicates_inexact_constructions_kernel.h$<ANGLE-R>>
   $<$<COMPILE_LANGUAGE:CXX>:<Eigen/Core$<ANGLE-R>>
@@ -833,7 +833,7 @@ if (NOT HEADLESS)
     #$<$<COMPILE_LANGUAGE:CXX>:"MainWindow.h";"QGLView.h">
     #$<$<COMPILE_LANGUAGE:CXX>:<QOpenGLFunctions$<ANGLE-R>>
     $<$<COMPILE_LANGUAGE:CXX>:<QWidget$<ANGLE-R>;<QString$<ANGLE-R>;<QThread$<ANGLE-R>;<QComboBox$<ANGLE-R>>
-    $<$<COMPILE_LANGUAGE:CXX>:"Editor.h";"input/InputDriver.h";"input/InputDriverManager.h";"OctoPrint.h";"PrintService.h";"Preferences.h";"QSettingsCached.h";"qtgettext.h">
+    $<$<COMPILE_LANGUAGE:CXX>:"Editor.h";"input/InputDriver.h";"input/InputDriverManager.h";"OctoPrint.h";"parameter/ParameterVirtualWidget.h";"parameter/ParameterWidget.h";"PrintService.h";"Preferences.h";"QSettingsCached.h";"qtgettext.h">
   )
 endif()
 
