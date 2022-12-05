@@ -810,31 +810,33 @@ set(GUI_HEADERS
   src/gui/NetworkSignal.h
   )
 
-# Precompiling headers helps speed up build times. 
+# Precompiling headers helps speed up build times.
 #   Specifically those which are frequently included, and/or take very long to process.
 #   The most time-intensive headers below were determined using `-ftime-trace` and ClangBuildAnalyzer
-#   See README for instructions: https://github.com/aras-p/ClangBuildAnalyzer 
-# target_compile_options(OpenSCAD PRIVATE "-ftime-trace")
-
-target_precompile_headers(OpenSCAD PRIVATE
-  $<$<COMPILE_LANGUAGE:CXX>:"Builtins.h";"cgal.h";"cgalutils.h";"CGAL_Nef_polyhedron.h";"ColorMap.h";"export.h";"json.hpp";"linalg.h">
-  $<$<COMPILE_LANGUAGE:CXX>:"ParameterObject.h";"ParameterSet.h";"printutils.h">
-  $<$<COMPILE_LANGUAGE:CXX>:<boost/filesystem.hpp$<ANGLE-R>;<boost/algorithm/string.hpp$<ANGLE-R>;<boost/spirit/include/qi.hpp$<ANGLE-R>;<boost/property_tree/ptree.hpp$<ANGLE-R>>
-  $<$<COMPILE_LANGUAGE:CXX>:<CGAL/Exact_predicates_inexact_constructions_kernel.h$<ANGLE-R>>
-  $<$<COMPILE_LANGUAGE:CXX>:<Eigen/Core$<ANGLE-R>>
-)
-
-if (NOT HEADLESS)
+#   See README for instructions: https://github.com/aras-p/ClangBuildAnalyzer
+#target_compile_options(OpenSCAD PRIVATE "-ftime-trace")
+if("${CMAKE_VERSION}" VERSION_GREATER_EQUAL "3.16")
   target_precompile_headers(OpenSCAD PRIVATE
-    # Unable to include any GL or GL-dependent headers as PCH due to conflict with Qt:
-    #   https://forum.qt.io/topic/59434/resolving-qt-glew-conflicts-when-using-pch  
-    #$<$<COMPILE_LANGUAGE:CXX>:"system-gl.h">
-    #$<$<COMPILE_LANGUAGE:CXX>:<GL/glew.h$<ANGLE-R>>
-    #$<$<COMPILE_LANGUAGE:CXX>:"MainWindow.h";"QGLView.h">
-    #$<$<COMPILE_LANGUAGE:CXX>:<QOpenGLFunctions$<ANGLE-R>>
-    $<$<COMPILE_LANGUAGE:CXX>:<QWidget$<ANGLE-R>;<QString$<ANGLE-R>;<QThread$<ANGLE-R>;<QComboBox$<ANGLE-R>>
-    $<$<COMPILE_LANGUAGE:CXX>:"Editor.h";"input/InputDriver.h";"input/InputDriverManager.h";"OctoPrint.h";"parameter/ParameterVirtualWidget.h";"parameter/ParameterWidget.h";"PrintService.h";"Preferences.h";"QSettingsCached.h";"qtgettext.h">
+    $<$<COMPILE_LANGUAGE:CXX>:"Builtins.h";"cgal.h";"cgalutils.h";"CGAL_Nef_polyhedron.h";"ColorMap.h";"export.h";"json.hpp";"linalg.h">
+    $<$<COMPILE_LANGUAGE:CXX>:"ParameterObject.h";"ParameterSet.h";"printutils.h">
+    $<$<COMPILE_LANGUAGE:CXX>:<boost/filesystem.hpp$<ANGLE-R>;<boost/algorithm/string.hpp$<ANGLE-R>;<boost/spirit/include/qi.hpp$<ANGLE-R>;<boost/property_tree/ptree.hpp$<ANGLE-R>>
+    $<$<COMPILE_LANGUAGE:CXX>:<CGAL/Exact_predicates_inexact_constructions_kernel.h$<ANGLE-R>>
+    $<$<COMPILE_LANGUAGE:CXX>:<Eigen/Core$<ANGLE-R>>
   )
+  if (NOT HEADLESS)
+    target_precompile_headers(OpenSCAD PRIVATE
+      # Unable to include any GL or GL-dependent headers as PCH due to conflict with Qt:
+      #   https://forum.qt.io/topic/59434/resolving-qt-glew-conflicts-when-using-pch
+      #$<$<COMPILE_LANGUAGE:CXX>:"system-gl.h">
+      #$<$<COMPILE_LANGUAGE:CXX>:<GL/glew.h$<ANGLE-R>>
+      #$<$<COMPILE_LANGUAGE:CXX>:"MainWindow.h";"QGLView.h">
+      #$<$<COMPILE_LANGUAGE:CXX>:<QOpenGLFunctions$<ANGLE-R>>
+      $<$<COMPILE_LANGUAGE:CXX>:<QWidget$<ANGLE-R>;<QString$<ANGLE-R>;<QThread$<ANGLE-R>;<QComboBox$<ANGLE-R>>
+      $<$<COMPILE_LANGUAGE:CXX>:"Editor.h";"input/InputDriver.h";"input/InputDriverManager.h";"OctoPrint.h";"parameter/ParameterVirtualWidget.h";"parameter/ParameterWidget.h";"PrintService.h";"Preferences.h";"QSettingsCached.h";"qtgettext.h">
+    )
+  endif()
+else()
+  message(STATUS "cmake version ${CMAKE_VERSION} < 3.16 is too old for precompiled header build speedup.")
 endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
