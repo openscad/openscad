@@ -123,7 +123,7 @@ static const device_id *match_device(const struct hid_device_info *info)
   return nullptr;
 }
 
-HidApiInputDriver::HidApiInputDriver() : buttons(0), hid_dev(0), dev(0)
+HidApiInputDriver::HidApiInputDriver() : buttons(0), hid_dev(nullptr), dev(nullptr)
 {
   name = "HidApiInputDriver";
 }

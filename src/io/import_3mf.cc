@@ -117,7 +117,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     return import_3mf_error(model);
   }
 
-  PolySet *first_mesh = 0;
+  PolySet *first_mesh = nullptr;
   polysets_t meshes;
   unsigned int mesh_idx = 0;
   while (true) {
@@ -184,7 +184,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
   lib3mf_release(object_it);
   lib3mf_release(model);
 
-  if (first_mesh == 0) {
+  if (first_mesh == nullptr) {
     return new PolySet(3);
   } else if (meshes.empty()) {
     return first_mesh;

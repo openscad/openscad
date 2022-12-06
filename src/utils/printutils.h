@@ -29,7 +29,7 @@ inline const char *_(const char *msgid, const char *msgctxt) {
   std::string str = msgctxt;
   str += GETTEXT_CONTEXT_GLUE;
   str += msgid;
-  auto translation = dcgettext(NULL, str.c_str(), LC_MESSAGES);
+  auto translation = dcgettext(nullptr, str.c_str(), LC_MESSAGES);
   if (translation == str) {
     return gettext(msgid);
   } else {

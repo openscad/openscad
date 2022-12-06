@@ -10,7 +10,7 @@ class AxisConfigWidget : public QWidget, public Ui::Axis, public InitConfigurato
   Q_OBJECT
 
 public:
-  AxisConfigWidget(QWidget *parent = 0);
+  AxisConfigWidget(QWidget *parent = nullptr);
   virtual ~AxisConfigWidget();
   void updateButtonState(int, bool) const;
   void AxesChanged(int nr, double val) const;

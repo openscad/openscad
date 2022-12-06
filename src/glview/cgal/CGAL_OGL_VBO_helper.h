@@ -207,7 +207,7 @@ public:
     }
     gluTessEndPolygon(tess_);
     gluDeleteTess(tess_);
-    combineCallback(NULL, NULL, NULL, NULL);
+    combineCallback(nullptr, nullptr, nullptr, nullptr);
   }
 
   void create_polyhedron() {

@@ -31,7 +31,7 @@
 #include <QApplication>
 #include <QCoreApplication>
 
-InputDriverManager *InputDriverManager::self = 0;
+InputDriverManager *InputDriverManager::self = nullptr;
 
 /**
  * This can be called from non-GUI context, so no Qt initialization is done

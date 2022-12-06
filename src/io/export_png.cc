@@ -60,7 +60,7 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
     glview.reset(new OffscreenView(camera.pixel_width, camera.pixel_height));
   } catch (int error) {
     fprintf(stderr, "Can't create OpenGL OffscreenView. Code: %i.\n", error);
-    return 0;
+    return nullptr;
   }
 
 #ifdef ENABLE_OPENCSG

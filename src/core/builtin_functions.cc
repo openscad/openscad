@@ -401,7 +401,7 @@ Value builtin_ord(Arguments arguments, const Location& loc)
   }
   const str_utf8_wrapper& arg_str = arguments[0]->toStrUtf8Wrapper();
   const char *ptr = arg_str.c_str();
-  if (!g_utf8_validate(ptr, -1, NULL)) {
+  if (!g_utf8_validate(ptr, -1, nullptr)) {
     LOG(message_group::Warning, loc, arguments.documentRoot(), "ord() argument '%1$s' is not a valid utf8 string", arg_str.toString());
     return Value::undefined.clone();
   }
