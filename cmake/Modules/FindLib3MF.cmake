@@ -28,8 +28,9 @@ find_path(LIB3MF_INCLUDE_DIRS
     NAMES Model/COM/NMR_DLLInterfaces.h lib3mf_implicit.hpp
     HINTS $ENV{LIB3MF_INCLUDEDIR}
           ${PC_LIB3MF_INCLUDEDIR}
+          ${PC_LIB3MF_INCLUDEDIR}
           ${PC_LIB3MF_INCLUDE_DIRS}
-    PATH_SUFFIXES lib3mf
+    PATH_SUFFIXES lib3mf Bindings/Cpp
 )
 
 find_library(LIB3MF_LIBRARIES

@@ -35,6 +35,7 @@ pacboy --noconfirm --sync --needed \
     glew:p \
     qscintilla:p \
     opencsg:p \
+    lib3mf:p \
     libzip:p \
     mimalloc:p \
     double-conversion:p \
