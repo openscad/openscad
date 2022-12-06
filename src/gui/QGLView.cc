@@ -174,6 +174,49 @@ void QGLView::mousePressEvent(QMouseEvent *event)
   last_mouse = event->globalPos();
 }
 
+bool firstPoint = true;
+
+void measureDist(GLdouble px, GLdouble py, GLdouble pz){
+  static float firstx, firsty, firstz;
+  float deltax, deltay, deltaz, deltadistance;
+  float secondx, secondy, secondz;
+  if(firstPoint){
+    firstx = px;
+    firsty = py;
+    firstz = pz;
+    glBegin(GL_LINES);
+    glVertex3f(firstx-1, firsty, firstz);
+    glVertex3f(firstx+1, firsty, firstz);
+    glVertex3f(firstx, firsty+1, firstz);
+    glVertex3f(firstx, firsty-1, firstz);
+    glVertex3f(firstx, firsty, firstz+1);
+    glVertex3f(firstx, firsty, firstz-1);
+    glEnd();
+    LOG(message_group::None, Location::NONE, "", "first point stored, select second point");
+    firstPoint = false;
+    return;
+  }else{
+    secondx = px;
+    secondy = py;
+    secondz = pz;
+    glBegin(GL_LINES);
+    glVertex3f(secondx-1, secondy, secondz);
+    glVertex3f(secondx+1, secondy, secondz);
+    glVertex3f(secondx, secondy+1, secondz);
+    glVertex3f(secondx, secondy-1, secondz);
+    glVertex3f(secondx, secondy, secondz+1);
+    glVertex3f(secondx, secondy, secondz-1);
+    glVertex3f(firstx, firsty, firstz);
+    glVertex3f(secondx, secondy, secondz);
+    glEnd(); 
+    deltax=px-firstx;
+    deltay=py-firsty;
+    deltaz=pz-firstz;
+    deltadistance=sqrt(pow(deltax,2)+pow(deltay,2)+pow(deltaz,2));
+    LOG(message_group::None, Location::NONE, "", "distance x=: %1$.4f  y=: %2$.4f   z=: %3$.4f  Total= %4$.4f",deltax,deltay,deltaz, deltadistance);
+    firstPoint = true;
+  }
+}
 /*
  * Voodoo warning...
  *
@@ -254,10 +297,15 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
   auto success = gluUnProject(x, y, z, modelview, projection, viewport, &px, &py, &pz);
 
   if (success == GL_TRUE) {
-    cam.object_trans -= Vector3d(px, py, pz);
-    update();
-    emit cameraChanged();
-  }
+    LOG(message_group::None, Location::NONE, "", "Model coordinates: x=: %1$.4f  y=: %2$.4f   z=: %3$.4f",px,py, pz);  //debugging
+    if ((QApplication::keyboardModifiers() & Qt::ShiftModifier) != 0) {
+      measureDist(px,py,pz);
+      }else{
+      cam.object_trans -= Vector3d(px, py, pz);
+      update();
+      emit cameraChanged();
+      }
+    }
   setGLContext(oldContext);
 }
 
