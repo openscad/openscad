@@ -1294,17 +1294,17 @@ list(APPEND NEF3_BROKEN_TESTS
 )
 
 # Platform specific test disable
-if(UNIX)
-  set_tests_properties(
-    ${NEF3_BROKEN_TESTS}
-    PROPERTIES DISABLED TRUE
-  )
-elseif(APPLE)
+if(APPLE)
   set_tests_properties(
     ${NEF3_BROKEN_TESTS}
     # Z issues specific to edge shader
     openscad-viewoptions-edges_view-options-tests
     openscad-viewoptions-axes-scales-edges_view-options-tests
+    PROPERTIES DISABLED TRUE
+  )
+elseif(UNIX)
+  set_tests_properties(
+    ${NEF3_BROKEN_TESTS}
     PROPERTIES DISABLED TRUE
   )
 elseif(WIN32 OR MXECROSS)
