@@ -254,7 +254,7 @@ def post_process_3mf(filename):
     xml_content = ZipFile(filename).read("3D/3dmodel.model")
     xml_content = re.sub('UUID="[^"]*"', 'UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX"', xml_content.decode('utf-8'))
     # lib3mf v2 has an additional <model> attribute compared to v1
-    sc = ' xmlns:sc="http://schemas.microsoft.com/3dmanufacturing/securecontent/2019/04'
+    sc = ' xmlns:sc="http://schemas.microsoft.com/3dmanufacturing/securecontent/2019/04"'
     xml_content = xml_content.replace(sc, '')
     # add tag end whitespace for lib3mf 2.0 output files
     xml_content = re.sub('\"/>', '\" />', xml_content)
