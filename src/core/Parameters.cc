@@ -275,7 +275,7 @@ void print_argConvert_positioned_warning(
     }
     message << ")";
   }
-  message << ", found " << Value::typeName(found.type()) << " " << "(" << found.toEchoStringNoThrow() << ")";
+  message << ", found " << found.typeName()) << " " << "(" << found.toEchoStringNoThrow() << ")";
   LOG(message_group::Warning, loc, documentRoot, "%1$s", message.str());
 }
 
@@ -288,7 +288,7 @@ void print_argConvert_warning(
   const std::string& documentRoot
   ) {
   std::stringstream message;
-  message << calledName << "(..., " << argName << "=" << found.toEchoStringNoThrow() << ") parameter could not be converted: expected ";
+  message << calledName << "(..., " << argName << "=" << found.toEchoStringNoThrow() << ") Invalid type: expected ";
   if (expected.size() == 1) {
     message << Value::typeName(expected[0]);
   } else {
@@ -299,6 +299,6 @@ void print_argConvert_warning(
     }
     message << ")";
   }
-  message << ", found " << Value::typeName(found.type());
+  message << ", found " << found.typeName();
   LOG(message_group::Warning, loc, documentRoot, "%1$s", message.str());
 }
