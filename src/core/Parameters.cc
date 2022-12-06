@@ -275,7 +275,7 @@ void print_argConvert_positioned_warning(
     }
     message << ")";
   }
-  message << ", found " << found.typeName()) << " " << "(" << found.toEchoStringNoThrow() << ")";
+  message << ", found " << found.typeName() << " " << "(" << found.toEchoStringNoThrow() << ")";
   LOG(message_group::Warning, loc, documentRoot, "%1$s", message.str());
 }
 
