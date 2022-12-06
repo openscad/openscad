@@ -70,6 +70,7 @@ public:
     QPlainTextEdit::mouseReleaseEvent(e);
   }
 
+  void focusInEvent(QFocusEvent *event) override;
   void addMessage(const Message& msg);
   void addHtml(const QString& html);
 

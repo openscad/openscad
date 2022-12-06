@@ -24,7 +24,7 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Submodules
       run: git submodule update --init --recursive
     - name: Install dependencies
@@ -34,7 +34,7 @@ jobs:
     - name: Build and test
       run: ./scripts/github-ci.sh build test coverage
     - name: Upload Test Result Report
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: ${{ always() }}
       with:
         name: Test Result Report (${{ matrix.os }})
@@ -42,7 +42,7 @@ jobs:
           b/tests/Testing/Temporary/*_report.html
           b/tests/Testing/Temporary/LastTest.log
     - name: Upload Code Coverage Report
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: Code Coverage Report (${{ matrix.os }})
         path: c/coverage*.html

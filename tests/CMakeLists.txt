@@ -503,6 +503,8 @@ file(GLOB SCAD_PDF_FILES      ${TEST_SCAD_DIR}/pdf/*.scad)
 file(GLOB SCAD_SVG_FILES      ${TEST_SCAD_DIR}/svg/svg-spec/*.scad
   ${TEST_SCAD_DIR}/svg/box-w-holes-2d.scad
   ${TEST_SCAD_DIR}/svg/display.scad
+  ${TEST_SCAD_DIR}/svg/id-selection-test.scad
+  ${TEST_SCAD_DIR}/svg/id-layer-selection-test.scad
   ${TEST_SCAD_DIR}/svg/line-cap-line-join.scad
   ${TEST_SCAD_DIR}/svg/simple-center-2d.scad
   ${TEST_SCAD_DIR}/svg/use-transform.scad
@@ -655,6 +657,7 @@ list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
   ${TEST_SCAD_DIR}/functions/list-comprehensions.scad
   ${TEST_SCAD_DIR}/functions/exponent-operator-test.scad
   ${TEST_SCAD_DIR}/misc/ifelse-ast-dump.scad
+  ${TEST_SCAD_DIR}/svg/id-layer-selection-test.scad
 )
 
 list(APPEND DUMPTEST_FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${MISC_FILES})

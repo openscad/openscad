@@ -90,3 +90,7 @@ signals:
   void resized();
   void doSelectObject(QPoint screen_coordinate);
 };
+
+/* These are defined in QLGView2.cc.  See the commentary there. */
+QOpenGLContext *getGLContext(void);
+void setGLContext(QOpenGLContext *);

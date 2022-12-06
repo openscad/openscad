@@ -116,10 +116,10 @@ void ViewportControl::updateViewportControlHints(){
   //viewport camera field of view
   double fov = doubleSpinBox_fov->value();
   if(fov < 0 || fov > 180){
-    doubleSpinBox_fov->setToolTip(_("extrem values might may lead to strange behavior"));
+    doubleSpinBox_fov->setToolTip(_("extreme values might may lead to strange behavior"));
     doubleSpinBox_fov->setStyleSheet(redHintBackground()); 
   }else if(fov < 5 || fov > 175){
-    doubleSpinBox_fov->setToolTip(_("extrem values might may lead to strange behavior"));
+    doubleSpinBox_fov->setToolTip(_("extreme values might may lead to strange behavior"));
     doubleSpinBox_fov->setStyleSheet(yellowHintBackground()); 
   } else {
     doubleSpinBox_fov->setToolTip("");
@@ -129,10 +129,10 @@ void ViewportControl::updateViewportControlHints(){
   //camera distance
   double d = doubleSpinBox_d->value();
   if(d < 0){
-    doubleSpinBox_d->setToolTip(_("negativ distances are not supported"));
+    doubleSpinBox_d->setToolTip(_("negative distances are not supported"));
     doubleSpinBox_d->setStyleSheet(redHintBackground()); 
   }else if(d < 5){
-    doubleSpinBox_d->setToolTip(_("extrem values might may lead to strange behavior"));
+    doubleSpinBox_d->setToolTip(_("extreme values might may lead to strange behavior"));
     doubleSpinBox_d->setStyleSheet(yellowHintBackground()); 
   }else{
     doubleSpinBox_d->setToolTip("");
