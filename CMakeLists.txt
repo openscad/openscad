@@ -58,12 +58,14 @@ include(GNUInstallDirs)
 find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 set(CLANG_TIDY ${CLANG_TIDY} CACHE BOOL "Enable clang-tidy")
 if(CLANG_TIDY AND CLANG_TIDY_EXE)
-  include(RegexUtils)
-  escape_string_as_regex(regex "${CMAKE_SOURCE_DIR}/src")
-  # From cmake docs: https://cmake.org/cmake/help/latest/variable/CMAKE_LANG_CLANG_TIDY.html :
-  #   "[CMAKE_CXX_CLANG_TIDY] is used to initialize the property on each target as it is created"
-  # So this is done **before** the add_executable command.
-  set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-header-filter=${regex}")
+  include("cmake/Modules/RegexUtils.cmake")
+  escape_string_as_regex(regex "${CMAKE_SOURCE_DIR}/src/")
+  # /src/ext/.clang-tidy disables all checks for that dir.  Copy into build dir to ignore generated sources.
+  configure_file(${CMAKE_SOURCE_DIR}/src/ext/.clang-tidy ${CMAKE_BINARY_DIR} COPYONLY)
+  # Regex hack below since negative lookahead is not supported (POSIX regex only)
+  #  (?!ext/) becomes ([^e]...|e[^x]..|ex[^t].|ext[^/]|.{0,3}$)
+  # CMAKE_CXX_CLANG_TIDY must be set before target is created (with add_executable())
+  set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};--header-filter=${regex}([^e]...|e[^x]..|ex[^t].|ext[^/]|.{0,3}$)")
 endif()
 
 add_executable(OpenSCAD)
