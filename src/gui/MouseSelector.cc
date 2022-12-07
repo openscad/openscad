@@ -2,6 +2,7 @@
 #include "MouseSelector.h"
 
 #include <QOpenGLFramebufferObject>
+#include <memory>
 /**
  * The selection is making use of a special shader, that renders each object in a color
  * that is derived from its index(), by using the first 24 bits of the identifier as a
@@ -128,11 +129,10 @@ void MouseSelector::setup_framebuffer(const GLView *view) {
   if (!this->framebuffer ||
       static_cast<unsigned int>(this->framebuffer->width()) != view->cam.pixel_width ||
       static_cast<unsigned int>(this->framebuffer->height()) != view->cam.pixel_height) {
-    this->framebuffer.reset(
-      new QOpenGLFramebufferObject(
+    this->framebuffer = std::make_unique<QOpenGLFramebufferObject>(
         view->cam.pixel_width,
         view->cam.pixel_width,
-        QOpenGLFramebufferObject::Depth));
+        QOpenGLFramebufferObject::Depth);
     this->framebuffer->release();
   }
 }

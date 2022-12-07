@@ -29,6 +29,7 @@
 #include <cstdint>
 #include <cmath>
 #include <cassert>
+#include <memory>
 #include <sstream>
 #include <algorithm>
 #include <typeinfo>
@@ -402,7 +403,7 @@ FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList& p
 
 Value FunctionDefinition::evaluate(const std::shared_ptr<const Context>& context) const
 {
-  return FunctionPtr{FunctionType{context, expr, std::unique_ptr<AssignmentList>{new AssignmentList{parameters}}}};
+  return FunctionPtr{FunctionType{context, expr, std::make_unique<AssignmentList>(parameters)}};
 }
 
 void FunctionDefinition::print(std::ostream& stream, const std::string& indent) const

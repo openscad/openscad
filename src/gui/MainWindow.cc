@@ -90,6 +90,7 @@
 #include <QDockWidget>
 #include <QClipboard>
 #include <QDesktopWidget>
+#include <memory>
 #include <string>
 #include "QWordSearchField.h"
 #include <QSettings> //Include QSettings for direct operations on settings arrays
@@ -697,7 +698,7 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   updateExportActions();
 
-  this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
+  this->selector = std::make_unique<MouseSelector>(this->qglview);
   activeEditor->setFocus();
 }
 
