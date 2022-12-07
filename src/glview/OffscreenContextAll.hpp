@@ -42,7 +42,7 @@ bool save_framebuffer_common(const OffscreenContext *ctx, std::ostream& output)
   unsigned char *flippedBuffer = (unsigned char *)malloc(rowBytes * ctx->height);
   if (!flippedBuffer) {
     std::cerr << "Unable to allocate flipped buffer for corrected image.";
-    return 1;
+    return true;
   }
   flip_image(&pixels[0], flippedBuffer, samplesPerPixel, ctx->width, ctx->height);
 

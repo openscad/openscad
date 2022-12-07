@@ -441,7 +441,7 @@ create_open_path:
     Path *this_path = &this->paths.back();
 
     this_path->indices.push_back(lines[current_line].idx[current_point]);
-    while (1) {
+    while (true) {
       this_path->indices.push_back(lines[current_line].idx[!current_point]);
       const auto& ref_point = this->points[lines[current_line].idx[!current_point]];
       lines[current_line].disabled = true;
@@ -483,7 +483,7 @@ found_next_line_in_open_path:;
     this_path.is_closed = true;
 
     this_path.indices.push_back(lines[current_line].idx[current_point]);
-    while (1) {
+    while (true) {
       this_path.indices.push_back(lines[current_line].idx[!current_point]);
       const auto& ref_point = this->points[lines[current_line].idx[!current_point]];
       lines[current_line].disabled = true;
