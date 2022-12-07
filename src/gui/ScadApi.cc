@@ -51,8 +51,8 @@ ScadApi::ScadApi(ScintillaEditor *editor, QsciLexer *lexer) : QsciAbstractAPIs(l
 {
   for (const auto & iter : Builtins::keywordList) {
     QStringList calltipList;
-    for (auto it = iter.second.cbegin(); it != iter.second.cend(); ++it)
-      calltipList.append(QString::fromStdString(*it));
+    for (const auto & it : iter.second)
+      calltipList.append(QString::fromStdString(it));
 
     funcs.append(ApiFunc(QString::fromStdString(iter.first), calltipList));
   }

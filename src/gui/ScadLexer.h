@@ -104,6 +104,8 @@ public:
   Lex *my_lexer;
 
   ScadLexer2(QObject *parent);
+  ScadLexer2(const ScadLexer2&) = delete;
+  ScadLexer2& operator=(const ScadLexer2&) = delete;
   ~ScadLexer2() override;
 
   const char *language() const override;
@@ -125,10 +127,6 @@ public:
   void finalizeLexer() {
     my_lexer->finalize_rules();
   }
-
-private:
-  ScadLexer2(const ScadLexer2&) = delete;
-  ScadLexer2& operator=(const ScadLexer2&) = delete;
 
 };
 
