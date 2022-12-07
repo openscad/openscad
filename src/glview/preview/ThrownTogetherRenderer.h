@@ -19,7 +19,6 @@ public:
                  size_t csg_object_index = 0)
     : VertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo), csg_object_index_(csg_object_index)
   {}
-  ~TTRVertexState() override {}
 
   size_t csgObjectIndex() const { return csg_object_index_; }
   void csgObjectIndex(size_t csg_object_index) { csg_object_index_ = csg_object_index; }
@@ -31,8 +30,7 @@ private:
 class TTRVertexStateFactory : public VertexStateFactory
 {
 public:
-  TTRVertexStateFactory() {}
-  ~TTRVertexStateFactory() override {}
+  TTRVertexStateFactory() = default;
 
   std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type,
                                                  size_t draw_offset, size_t element_offset,

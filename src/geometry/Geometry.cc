@@ -3,15 +3,7 @@
 #include <boost/foreach.hpp>
 #include <utility>
 
-GeometryList::GeometryList()
-{
-}
-
 GeometryList::GeometryList(Geometry::Geometries geometries) : children(std::move(geometries))
-{
-}
-
-GeometryList::~GeometryList()
 {
 }
 

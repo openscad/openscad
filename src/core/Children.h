@@ -18,6 +18,9 @@ public:
 
   Children(Children&& other) = default;
   Children& operator=(Children&& other) = default;
+  Children(const Children& other) = default;
+  Children& operator=(const Children& other) = default;
+  ~Children() = default;
 
   std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<AbstractNode> &target) const;
   std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<AbstractNode> &target, const std::vector<size_t>& indices) const;

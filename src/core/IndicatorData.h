@@ -12,10 +12,6 @@ struct IndicatorData
     last_col(lastCol), path(std::move(path)) {
   }
 
-  ~IndicatorData()
-  {
-  }
-
   int first_line;
   int first_col;
   int last_line;

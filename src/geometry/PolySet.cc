@@ -54,10 +54,6 @@ PolySet::PolySet(Polygon2d origin) : polygon(std::move(origin)), dim(2), convex(
 {
 }
 
-PolySet::~PolySet()
-{
-}
-
 std::string PolySet::dump() const
 {
   std::ostringstream out;

@@ -16,7 +16,6 @@ public:
     this->matrix_ = Transform3d::Identity();
     this->color_.fill(-1.0f);
   }
-  virtual ~State() {}
 
   void setPrefix(bool on) { FLAG(this->flags, PREFIX, on); }
   void setPostfix(bool on) { FLAG(this->flags, POSTFIX, on); }

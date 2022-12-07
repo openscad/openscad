@@ -71,10 +71,6 @@ struct Line {
   Line(int i1 = -1, int i2 = -1) : idx{i1, i2} { }
 };
 
-DxfData::DxfData()
-{
-}
-
 /*!
    Reads a layer from the given file, or all layers if layername.empty()
  */

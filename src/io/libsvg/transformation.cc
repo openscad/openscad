@@ -36,10 +36,6 @@ transformation::transformation(const std::string op, const std::string name) : o
 {
 }
 
-transformation::~transformation()
-{
-}
-
 void
 transformation::add_arg(const std::string arg)
 {
@@ -58,10 +54,6 @@ transformation::get_args() const {
 }
 
 matrix::matrix() : transformation("m", "matrix")
-{
-}
-
-matrix::~matrix()
 {
 }
 
@@ -90,10 +82,6 @@ matrix::get_matrices()
 }
 
 translate::translate() : transformation("t", "translate")
-{
-}
-
-translate::~translate()
 {
 }
 
@@ -127,10 +115,6 @@ scale::scale() : transformation("s", "scale")
 {
 }
 
-scale::~scale()
-{
-}
-
 /**
  * scale(<sx> [<sy>]), which specifies a scale operation by sx and sy.
  * If <sy> is not provided, it is assumed to be equal to <sx>.
@@ -158,10 +142,6 @@ scale::get_matrices()
 }
 
 rotate::rotate() : transformation("r", "rotate")
-{
-}
-
-rotate::~rotate()
 {
 }
 
@@ -219,10 +199,6 @@ skew_x::skew_x() : transformation("x", "skew_x")
 {
 }
 
-skew_x::~skew_x()
-{
-}
-
 /**
  * skewX(<skew-angle>), which specifies a skew transformation along the x-axis.
  */
@@ -248,10 +224,6 @@ skew_x::get_matrices()
 }
 
 skew_y::skew_y() : transformation("y", "skew_y")
-{
-}
-
-skew_y::~skew_y()
 {
 }
 

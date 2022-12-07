@@ -48,7 +48,7 @@ BoundingBox operator*(const Transform3d& m, const BoundingBox& box);
 class Color4f : public Eigen::Matrix<float, 4, 1, Eigen::DontAlign>
 {
 public:
-  Color4f() { }
+  Color4f() = default;
   Color4f(int r, int g, int b, int a = 255) { setRgb(r, g, b, a); }
   Color4f(float r, float g, float b, float a = 1.0f) : Eigen::Matrix<float, 4, 1, Eigen::DontAlign>(r, g, b, a) { }
 

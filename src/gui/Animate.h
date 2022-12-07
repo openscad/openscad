@@ -17,6 +17,7 @@ public:
   Animate(Animate&& source) = delete;
   Animate& operator=(const Animate& source) = delete;
   Animate& operator=(Animate&& source) = delete;
+  ~Animate() override = default;
 
   void initGUI();
   bool dumpPictures();

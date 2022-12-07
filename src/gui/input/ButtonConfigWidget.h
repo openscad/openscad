@@ -10,7 +10,6 @@ class ButtonConfigWidget : public QWidget, public Ui::Button
 
 public:
   ButtonConfigWidget(QWidget *parent = nullptr);
-  ~ButtonConfigWidget() override;
   void updateButtonState(int, bool) const;
   void init();
   void updateStates();

@@ -29,14 +29,6 @@ namespace libsvg {
 
 const std::string tspan::name("tspan");
 
-tspan::tspan()
-{
-}
-
-tspan::~tspan()
-{
-}
-
 void
 tspan::set_attrs(attr_map_t& attrs, void *context)
 {

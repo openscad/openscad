@@ -39,11 +39,6 @@ DBusInputDriver::DBusInputDriver()
   name = "DBusInputDriver";
 }
 
-DBusInputDriver::~DBusInputDriver()
-{
-
-}
-
 bool DBusInputDriver::openOnce() const
 {
   return true;

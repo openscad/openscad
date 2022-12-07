@@ -39,8 +39,7 @@ private:
   int font_size{0};
 
 public:
-  text();
-  ~text() override;
+  text() = default;
 
   bool is_container() const override { return true; }
 

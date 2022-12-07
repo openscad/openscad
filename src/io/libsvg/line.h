@@ -35,8 +35,7 @@ private:
   double y2{0};
 
 public:
-  line();
-  ~line() override;
+  line() = default;
 
   double get_x2() const { return x2; }
   double get_y2() const { return y2; }

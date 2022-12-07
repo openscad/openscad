@@ -67,14 +67,6 @@ const std::string path::name("path");
    PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL t
  */
 
-path::path()
-{
-}
-
-path::~path()
-{
-}
-
 static double
 vector_angle(double ux, double uy, double vx, double vy)
 {

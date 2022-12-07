@@ -31,7 +31,7 @@ class InputEventHandler
 {
 public:
 
-  virtual ~InputEventHandler() { }
+  virtual ~InputEventHandler() = default;
 
   virtual void onAxisChanged(class InputEventAxisChanged *event) = 0;
   virtual void onButtonChanged(class InputEventButtonChanged *event) = 0;
@@ -50,8 +50,6 @@ public:
 
   InputEvent(const bool activeOnly = true);
 
-  ~InputEvent() override;
-
   virtual void deliver(InputEventHandler *receiver) = 0;
 
   static const QEvent::Type eventType;
@@ -61,7 +59,6 @@ class GenericInputEvent : public InputEvent
 {
 public:
   GenericInputEvent(const bool activeOnly = true) : InputEvent(activeOnly) { }
-  ~GenericInputEvent() override { }
 };
 
 /**

@@ -33,7 +33,7 @@
 #include "Reindexer.h"
 
 struct IndexedMesh {
-  IndexedMesh();
+  IndexedMesh() = default;
 
   Reindexer<Vector3d> vertices;
   std::vector<int> indices;

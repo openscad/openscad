@@ -34,8 +34,7 @@ private:
   std::string text;
 
 public:
-  data();
-  ~data() override;
+  data() = default;
 
   const std::string& get_text() const { return text; }
 

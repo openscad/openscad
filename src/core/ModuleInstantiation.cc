@@ -7,14 +7,6 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-ModuleInstantiation::~ModuleInstantiation()
-{
-}
-
-IfElseModuleInstantiation::~IfElseModuleInstantiation()
-{
-}
-
 void ModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
 {
   if (!inlined) stream << indent;

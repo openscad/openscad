@@ -48,8 +48,8 @@ using ElementsMap = std::unordered_map<std::vector<GLbyte>, GLuint, vertex_hash<
 class IAttributeData
 {
 public:
-  IAttributeData() {}
-  virtual ~IAttributeData() {}
+  IAttributeData() = default;
+  virtual ~IAttributeData() = default;
 
   // Return number of elements that make up one attribute
   virtual size_t count() const = 0;
@@ -109,7 +109,6 @@ class AttributeData : public IAttributeData
 {
 public:
   AttributeData() : data_() {}
-  ~AttributeData() override {}
 
   inline size_t count() const override { return C; }
   inline size_t size() const override { return data_.size(); }
@@ -153,7 +152,7 @@ class VertexData
 {
 public:
   VertexData() : position_data_(nullptr), normal_data_(nullptr), color_data_(nullptr) {}
-  virtual ~VertexData() {}
+  virtual ~VertexData() = default;
 
   // Add generic attribute data to vertex vector
   void addAttributeData(std::shared_ptr<IAttributeData> data)
@@ -271,7 +270,7 @@ public:
     : draw_mode_(draw_mode), draw_size_(draw_size), draw_type_(draw_type), draw_offset_(draw_offset),
     element_offset_(element_offset), vertices_vbo_(vertices_vbo), elements_vbo_(elements_vbo)
   {}
-  virtual ~VertexState() {}
+  virtual ~VertexState() = default;
 
   // Return the OpenGL mode for glDrawArrays/glDrawElements call
   inline GLenum drawMode() const { return draw_mode_; }
@@ -324,8 +323,8 @@ using VertexStates = std::vector<std::shared_ptr<VertexState>>;
 class VertexStateFactory
 {
 public:
-  VertexStateFactory() {}
-  virtual ~VertexStateFactory() {}
+  VertexStateFactory() = default;
+  virtual ~VertexStateFactory() = default;
 
   // Create and return a VertexState object
   virtual std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type, size_t draw_offset, size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo) const {
@@ -359,7 +358,7 @@ public:
       use_elements_ = true;
     }
   }
-  virtual ~VertexArray() {}
+  virtual ~VertexArray() = default;
 
   // Add generic VertexData to VertexArray
   void addVertexData(std::shared_ptr<VertexData> data) { vertices_.emplace_back(std::move(data)); }

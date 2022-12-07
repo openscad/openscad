@@ -38,7 +38,7 @@ public:
 
 
   Renderer();
-  virtual ~Renderer() {}
+  virtual ~Renderer() = default;
   virtual void resize(int w, int h);
   virtual inline const Renderer::shaderinfo_t& getShader() const { return renderer_shader; }
 

@@ -107,7 +107,9 @@ public:
     while (f) {
       delete f->t; f = f->n;
     }
-    hash.clear(); l = nullptr; total = 0;
+    hash.clear();
+    l = nullptr;
+    total = 0;
   }
 
   bool insert(const Key& key, T *object, size_t cost);

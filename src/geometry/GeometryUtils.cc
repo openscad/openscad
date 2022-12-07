@@ -30,7 +30,7 @@ public:
 // Counts occurrences of edges
   using IndexedEdgeDict = std::unordered_map<IndexedEdge, int, boost::hash<IndexedEdge>>;
 
-  EdgeDict() { }
+  EdgeDict() = default;
 
   void add(const IndexedFace& face) {
     for (size_t i = 0; i < face.size(); ++i) {

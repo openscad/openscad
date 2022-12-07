@@ -57,7 +57,7 @@ public:
   virtual std::string getRendererInfo() const = 0;
   virtual float getDPI() { return 1.0f; }
 
-  virtual ~GLView(){}
+  virtual ~GLView() = default;
 
   Renderer *renderer;
   const ColorScheme *colorscheme;

@@ -46,7 +46,7 @@ class FontInfo
 {
 public:
   FontInfo(std::string family, std::string style, std::string file);
-  virtual ~FontInfo();
+  virtual ~FontInfo() = default;
 
   const std::string& get_family() const;
   const std::string& get_style() const;
@@ -81,7 +81,7 @@ public:
   const static unsigned int MAX_NR_OF_CACHE_ENTRIES = 3;
 
   FontCache();
-  virtual ~FontCache();
+  virtual ~FontCache() = default;
 
   bool is_init_ok() const;
   FT_Face get_font(const std::string& font);

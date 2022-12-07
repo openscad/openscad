@@ -35,8 +35,7 @@ protected:
   double ry{0};
 
 public:
-  ellipse();
-  ~ellipse() override;
+  ellipse() = default;
 
   double get_radius_x() const { return rx; }
   double get_radius_y() const { return ry; }

@@ -38,7 +38,6 @@ class DBusInputDriver : public InputDriver
 
 public:
   DBusInputDriver();
-  ~DBusInputDriver() override;
   void run() override;
   bool open() override;
   void close() override;

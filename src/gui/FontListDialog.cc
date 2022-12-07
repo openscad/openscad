@@ -38,10 +38,6 @@ FontListDialog::FontListDialog()
   connect(this->okButton, SIGNAL(clicked()), this, SLOT(accept()));
 }
 
-FontListDialog::~FontListDialog()
-{
-}
-
 void FontListDialog::on_copyButton_clicked()
 {
   font_selected(selection);

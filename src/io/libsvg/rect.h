@@ -37,8 +37,7 @@ protected:
   double ry{0};
 
 public:
-  rect();
-  ~rect() override;
+  rect() = default;
 
   double get_width() const { return width; }
   double get_height() const { return height; }

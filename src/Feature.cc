@@ -58,10 +58,6 @@ Feature::Feature(const std::string& name, std::string description)
   feature_list.push_back(this);
 }
 
-Feature::~Feature()
-{
-}
-
 const std::string& Feature::get_name() const
 {
   return name;

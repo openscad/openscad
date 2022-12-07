@@ -39,8 +39,7 @@ private:
   int font_size{0};
 
 public:
-  tspan();
-  ~tspan() override;
+  tspan() = default;
 
   bool is_container() const override { return true; }
 

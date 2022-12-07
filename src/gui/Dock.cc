@@ -7,10 +7,6 @@ Dock::Dock(QWidget *parent) : QDockWidget(parent)
 {
 }
 
-Dock::~Dock()
-{
-}
-
 void Dock::disableSettingsUpdate()
 {
   updateSettings = false;

@@ -38,8 +38,7 @@ protected:
   double height;
 
 public:
-  use();
-  ~use() override;
+  use() = default;
 
   bool is_container() const override { return false; }
 

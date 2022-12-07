@@ -44,7 +44,7 @@ class ASTNode
 {
 public:
   ASTNode(Location loc) : loc(std::move(loc)) {}
-  virtual ~ASTNode() {}
+  virtual ~ASTNode() = default;
 
   virtual void print(std::ostream& stream, const std::string& indent) const = 0;
 

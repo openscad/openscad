@@ -20,7 +20,7 @@ public:
 
 protected:
   SettingsEntry(std::string category, std::string name);
-  virtual ~SettingsEntry() {}
+  virtual ~SettingsEntry() = default;
 
 private:
   std::string _category;
@@ -274,8 +274,8 @@ public:
 class SettingsVisitor
 {
 public:
-  SettingsVisitor() {}
-  virtual ~SettingsVisitor() {}
+  SettingsVisitor() = default;
+  virtual ~SettingsVisitor() = default;
 
   virtual void handle(SettingsEntry& entry) const = 0;
 };

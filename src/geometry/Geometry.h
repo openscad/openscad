@@ -16,8 +16,8 @@ public:
   using GeometryItem = std::pair<std::shared_ptr<const AbstractNode>, shared_ptr<const Geometry>>;
   using Geometries = std::list<GeometryItem>;
 
-  Geometry() {}
-  virtual ~Geometry() {}
+  Geometry() = default;
+  virtual ~Geometry() = default;
 
   virtual size_t memsize() const = 0;
   virtual BoundingBox getBoundingBox() const = 0;
@@ -51,7 +51,7 @@ public:
   virtual void visit(const class CGAL_Nef_polyhedron& node) = 0;
   virtual void visit(const class CGALHybridPolyhedron& node) = 0;
 #endif
-  virtual ~GeometryVisitor(){}
+  virtual ~GeometryVisitor() = default;
 };
 
 #define VISITABLE_GEOMETRY() \
@@ -67,7 +67,6 @@ public:
 
   GeometryList();
   GeometryList(Geometry::Geometries geometries);
-  ~GeometryList() override;
 
   size_t memsize() const override;
   BoundingBox getBoundingBox() const override;

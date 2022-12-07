@@ -32,14 +32,6 @@ namespace libsvg {
 
 const std::string ellipse::name("ellipse");
 
-ellipse::ellipse()
-{
-}
-
-ellipse::~ellipse()
-{
-}
-
 void
 ellipse::set_attrs(attr_map_t& attrs, void *context)
 {

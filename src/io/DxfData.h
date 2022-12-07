@@ -9,7 +9,7 @@ public:
   struct Path {
     std::vector<int> indices; // indices into DxfData::points
     bool is_closed{false}, is_inner{false};
-    Path() { }
+    Path() = default;
   };
   struct Dim {
     unsigned int type;
@@ -33,7 +33,7 @@ public:
   std::vector<Path> paths;
   std::vector<Dim> dims;
 
-  DxfData();
+  DxfData() = default;
   DxfData(double fn, double fs, double fa,
           const std::string& filename, const std::string& layername = "",
           double xorigin = 0.0, double yorigin = 0.0, double scale = 1.0);

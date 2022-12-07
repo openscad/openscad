@@ -50,7 +50,7 @@ public:
    * Constructor for reading external JSON files.
    */
   RenderColorScheme(const fs::path path);
-  virtual ~RenderColorScheme();
+  virtual ~RenderColorScheme() = default;
 
   const std::string& name() const;
   int index() const;
@@ -85,7 +85,7 @@ public:
 
 private:
   ColorMap();
-  virtual ~ColorMap();
+  virtual ~ColorMap() = default;
   void dump() const;
   colorscheme_set_t enumerateColorSchemes();
   void enumerateColorSchemesInPath(colorscheme_set_t& result_set, const fs::path path);

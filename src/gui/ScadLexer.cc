@@ -39,10 +39,6 @@ ScadLexer::ScadLexer(QObject *parent) : QsciLexerCPP(parent)
   setFoldAtElse(true);
 }
 
-ScadLexer::~ScadLexer()
-{
-}
-
 const char *ScadLexer::language() const
 {
   return "SCAD";
@@ -103,10 +99,6 @@ QStringList ScadLexer::autoCompletionWordSeparators() const
 #endif
 
 /// See original attempt at https://github.com/openscad/openscad/tree/lexertl/src
-
-Lex::Lex()
-{
-}
 
 void Lex::default_rules()
 {

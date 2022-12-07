@@ -309,7 +309,7 @@ class Polyhedron_writer
   bool firstv{true};
   std::vector<int> indices;
 public:
-  Polyhedron_writer() {}
+  Polyhedron_writer() = default;
   void write_header(std::ostream& stream,
                     std::size_t /*vertices*/,
                     std::size_t /*halfedges*/,

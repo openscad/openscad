@@ -8,8 +8,7 @@ class AutoUpdater : public QObject
   Q_OBJECT;
 
 public:
-  AutoUpdater() {}
-  ~AutoUpdater() override {}
+  AutoUpdater() = default;
 
   virtual void setAutomaticallyChecksForUpdates(bool on) = 0;
   virtual bool automaticallyChecksForUpdates() = 0;

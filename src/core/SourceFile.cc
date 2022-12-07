@@ -44,10 +44,6 @@ SourceFile::SourceFile(std::string path, std::string filename)
 {
 }
 
-SourceFile::~SourceFile()
-{
-}
-
 void SourceFile::print(std::ostream& stream, const std::string& indent) const
 {
   scope.print(stream, indent);

@@ -34,8 +34,7 @@ private:
   std::string points;
 
 public:
-  polyline();
-  ~polyline() override;
+  polyline() = default;
 
   void set_attrs(attr_map_t& attrs, void *context) override;
   const std::string& get_name() const override { return polyline::name; }

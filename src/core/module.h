@@ -18,7 +18,7 @@ public:
   AbstractModule() : feature(nullptr) {}
   AbstractModule(const Feature& feature) : feature(&feature) {}
   AbstractModule(const Feature *feature) : feature(feature) {}
-  virtual ~AbstractModule() {}
+  virtual ~AbstractModule() = default;
   virtual bool is_experimental() const { return feature != nullptr; }
   virtual bool is_enabled() const { return (feature == nullptr) || feature->is_enabled(); }
   virtual std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const = 0;

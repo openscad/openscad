@@ -23,7 +23,7 @@ public:
 
 private:
   Builtins();
-  ~Builtins() = default;
+  virtual ~Builtins() = default;
 
   static void initKeywordList();
 

@@ -46,8 +46,7 @@ private:
   void curve_to(path_t& path, double x, double y, double cx1, double cy1, double cx2, double cy2, double x2, double y2, void *context);
 
 public:
-  path();
-  ~path() override;
+  path() = default;
 
   void set_attrs(attr_map_t& attrs, void *context) override;
   const std::string dump() const override;

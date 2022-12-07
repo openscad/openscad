@@ -59,10 +59,6 @@ FreetypeRenderer::FreetypeRenderer()
   funcs.shift = 0;
 }
 
-FreetypeRenderer::~FreetypeRenderer()
-{
-}
-
 int FreetypeRenderer::outline_move_to_func(const FT_Vector *to, void *user)
 {
   DrawingCallback *cb = reinterpret_cast<DrawingCallback *>(user);

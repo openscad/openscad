@@ -83,10 +83,6 @@ RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
   }
 }
 
-RenderColorScheme::~RenderColorScheme()
-{
-}
-
 bool RenderColorScheme::valid() const
 {
   return !_name.empty();
@@ -157,10 +153,6 @@ ColorMap::ColorMap()
 {
   colorSchemeSet = enumerateColorSchemes();
   dump();
-}
-
-ColorMap::~ColorMap()
-{
 }
 
 const char *ColorMap::defaultColorSchemeName() const

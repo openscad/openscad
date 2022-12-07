@@ -58,10 +58,6 @@ ScadApi::ScadApi(ScintillaEditor *editor, QsciLexer *lexer) : QsciAbstractAPIs(l
   }
 }
 
-ScadApi::~ScadApi()
-{
-}
-
 void ScadApi::updateAutoCompletionList(const QStringList& context, QStringList& list)
 {
   int line, col;

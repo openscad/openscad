@@ -38,10 +38,10 @@ public:
   using point_t = CGAL::Point_3<CGAL_HybridKernel3>;
   using bbox_t = CGAL::Iso_cuboid_3<CGAL_HybridKernel3>;
 
+  CGALHybridPolyhedron();
   CGALHybridPolyhedron(const shared_ptr<CGAL_HybridNef>& nef);
   CGALHybridPolyhedron(const shared_ptr<CGAL_HybridMesh>& mesh);
   CGALHybridPolyhedron(const CGALHybridPolyhedron& other);
-  CGALHybridPolyhedron();
   CGALHybridPolyhedron& operator=(const CGALHybridPolyhedron& other);
 
   bool isEmpty() const override;

@@ -38,10 +38,6 @@ AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
   setupUi(this);
 }
 
-AxisConfigWidget::~AxisConfigWidget()
-{
-}
-
 void AxisConfigWidget::AxesChanged(int nr, double val) const {
   QProgressBar *progressBar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(nr));
   if (progressBar == nullptr) return;

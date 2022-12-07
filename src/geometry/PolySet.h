@@ -17,7 +17,6 @@ public:
 
   PolySet(unsigned int dim, boost::tribool convex = unknown);
   PolySet(Polygon2d origin);
-  ~PolySet() override;
 
   const Polygon2d& getPolygon() const { return polygon; }
 

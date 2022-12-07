@@ -13,7 +13,7 @@ namespace Polygon2DCGAL {
 
 struct FaceInfo
 {
-  FaceInfo() {}
+  FaceInfo() = default;
   int nesting_level{42};
   bool in_domain() const { return nesting_level % 2 == 1; }
 };

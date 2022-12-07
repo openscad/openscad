@@ -8,7 +8,7 @@ enum class Response {ContinueTraversal, AbortTraversal, PruneTraversal};
 class BaseVisitor
 {
 public:
-  virtual ~BaseVisitor() {}
+  virtual ~BaseVisitor() = default;
 };
 
 template <class T>
@@ -21,7 +21,7 @@ public:
 class BaseVisitable
 {
 public:
-  virtual ~BaseVisitable() {}
+  virtual ~BaseVisitable() = default;
   virtual Response accept(class State&, BaseVisitor&) const = 0;
 protected:
   template <class T>

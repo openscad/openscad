@@ -37,15 +37,6 @@ InputDriverManager *InputDriverManager::self = nullptr;
  * This can be called from non-GUI context, so no Qt initialization is done
  * at this point.
  */
-InputDriverManager::InputDriverManager()
-{
-}
-
-InputDriverManager::~InputDriverManager()
-{
-
-}
-
 InputDriverManager *InputDriverManager::instance()
 {
   if (!self) {

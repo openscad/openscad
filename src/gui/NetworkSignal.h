@@ -40,7 +40,6 @@ class NetworkSignal : public QObject
   using callback_t = std::function<void (qint64, qint64)>;
 
   NetworkSignal(QObject *parent, callback_t callback) : QObject(parent), callback(std::move(callback)) { }
-  ~NetworkSignal() override { }
 
 public slots:
   void network_progress(qint64 bytesSent, qint64 bytesTotal) {

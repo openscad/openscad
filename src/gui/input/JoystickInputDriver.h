@@ -30,8 +30,7 @@
 class JoystickInputDriver : public InputDriver
 {
 public:
-  JoystickInputDriver();
-  ~JoystickInputDriver() override;
+  JoystickInputDriver() = default;
   void run() override;
   bool open() override;
   void close() override;

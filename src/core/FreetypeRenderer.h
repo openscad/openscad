@@ -153,7 +153,7 @@ public:
     FontMetrics(const FreetypeRenderer::Params& params);
   };
   FreetypeRenderer();
-  virtual ~FreetypeRenderer();
+  virtual ~FreetypeRenderer() = default;
 
   std::vector<const class Geometry *> render(const FreetypeRenderer::Params& params) const;
 private:

@@ -128,11 +128,6 @@ HidApiInputDriver::HidApiInputDriver()
   name = "HidApiInputDriver";
 }
 
-HidApiInputDriver::~HidApiInputDriver()
-{
-
-}
-
 void HidApiInputDriver::run()
 {
   hidapi_input(hid_dev);

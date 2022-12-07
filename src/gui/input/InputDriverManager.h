@@ -62,8 +62,7 @@ private:
   void postEvent(InputEvent *event);
 
 public:
-  InputDriverManager();
-  ~InputDriverManager() override;
+  InputDriverManager() = default;
 
   void sendEvent(InputEvent *event);
 

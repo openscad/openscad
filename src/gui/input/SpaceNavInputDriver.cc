@@ -36,16 +36,6 @@
 #include <spnav.h>
 #include <unistd.h>
 
-SpaceNavInputDriver::SpaceNavInputDriver()
-{
-
-}
-
-SpaceNavInputDriver::~SpaceNavInputDriver()
-{
-
-}
-
 void SpaceNavInputDriver::run()
 {
   while (spnav_input()) {

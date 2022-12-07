@@ -52,14 +52,6 @@
 
 namespace libsvg {
 
-shape::shape()
-{
-}
-
-shape::~shape()
-{
-}
-
 shape *
 shape::create_from_name(const char *name)
 {

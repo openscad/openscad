@@ -94,8 +94,8 @@ protected:
   void collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape *s);
 
 public:
-  shape();
-  virtual ~shape();
+  shape() = default;
+  virtual ~shape() = default;
 
   virtual shape *get_parent() const { return parent; }
   virtual void set_parent(shape *s) { parent = s; }

@@ -56,14 +56,13 @@ private:
   static list_t feature_list;
 
   Feature(const std::string& name, std::string description);
-  virtual ~Feature();
+  virtual ~Feature() = default;
 };
 
 class ExperimentalFeatureException : public EvaluationException
 {
 public:
   static void check(const Feature& feature);
-  ~ExperimentalFeatureException() noexcept override = default;
 
 private:
   ExperimentalFeatureException(const std::string& what_arg);

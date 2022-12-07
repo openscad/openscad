@@ -46,10 +46,6 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
   this->appendCursor = this->textCursor();
 }
 
-Console::~Console()
-{
-}
-
 void Console::focusInEvent(QFocusEvent *event)
 {
   QWidget *current = this;

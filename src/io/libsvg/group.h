@@ -33,8 +33,7 @@ class group : public shape
 protected:
 
 public:
-  group();
-  ~group() override;
+  group() = default;
 
   bool is_container() const override { return true; }
 

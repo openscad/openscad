@@ -69,10 +69,6 @@ FontInfo::FontInfo(std::string family, std::string style, std::string file) : fa
 {
 }
 
-FontInfo::~FontInfo()
-{
-}
-
 bool FontInfo::operator<(const FontInfo& rhs) const
 {
   if (family < rhs.family) {
@@ -180,10 +176,6 @@ FontCache::FontCache()
   }
 
   this->init_ok = true;
-}
-
-FontCache::~FontCache()
-{
 }
 
 FontCache *FontCache::instance()

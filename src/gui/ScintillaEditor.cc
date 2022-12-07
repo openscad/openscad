@@ -97,11 +97,6 @@ EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
   }
 }
 
-EditorColorScheme::~EditorColorScheme()
-{
-
-}
-
 bool EditorColorScheme::valid() const
 {
   return !_name.isEmpty();

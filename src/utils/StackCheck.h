@@ -12,7 +12,6 @@ public:
     return instance;
   }
 
-  ~StackCheck() {}
   inline bool check() { return size() >= limit; }
 
 private:

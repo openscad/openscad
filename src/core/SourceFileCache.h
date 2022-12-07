@@ -19,7 +19,7 @@ public:
   static void clear_markers();
 
 private:
-  SourceFileCache() {}
+  SourceFileCache() = default;
 
   static SourceFileCache *inst;
 

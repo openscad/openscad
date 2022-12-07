@@ -10,7 +10,6 @@ class TabWidget : public QTabBar
 
 public:
   TabWidget(QWidget *parent = nullptr);
-  ~TabWidget() override;
   QWidget *getContentWidget();
 
   int addTab(QWidget *w, const QString& label);

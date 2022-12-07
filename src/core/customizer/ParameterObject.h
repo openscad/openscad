@@ -15,7 +15,7 @@ class ParameterObject
 public:
   enum class ParameterType { Bool, String, Number, Vector, Enum };
 
-  virtual ~ParameterObject() {}
+  virtual ~ParameterObject() = default;
   static std::unique_ptr<ParameterObject> fromAssignment(const Assignment *assignment);
 
   ParameterType type() const { return type_; }

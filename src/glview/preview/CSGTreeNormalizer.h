@@ -6,7 +6,6 @@ class CSGTreeNormalizer
 {
 public:
   CSGTreeNormalizer(size_t limit) : limit(limit) {}
-  ~CSGTreeNormalizer() {}
 
   shared_ptr<class CSGNode> normalize(const shared_ptr<CSGNode>& term);
 

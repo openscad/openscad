@@ -42,7 +42,7 @@ protected:
 
 public:
   transformation(const std::string op, const std::string name);
-  virtual ~transformation();
+  virtual ~transformation() = default;
 
   const std::string& get_op() const { return op; }
   const std::string& get_name() const { return name; }
@@ -56,7 +56,6 @@ class matrix : public transformation
 {
 public:
   matrix();
-  ~matrix() override;
 
   std::vector<Eigen::Matrix3d> get_matrices() override;
 };
@@ -65,7 +64,6 @@ class translate : public transformation
 {
 public:
   translate();
-  ~translate() override;
 
   std::vector<Eigen::Matrix3d> get_matrices() override;
 };
@@ -74,7 +72,6 @@ class scale : public transformation
 {
 public:
   scale();
-  ~scale() override;
 
   std::vector<Eigen::Matrix3d> get_matrices() override;
 };
@@ -83,7 +80,6 @@ class rotate : public transformation
 {
 public:
   rotate();
-  ~rotate() override;
 
   std::vector<Eigen::Matrix3d> get_matrices() override;
 };
@@ -92,7 +88,6 @@ class skew_x : public transformation
 {
 public:
   skew_x();
-  ~skew_x() override;
 
   std::vector<Eigen::Matrix3d> get_matrices() override;
 };
@@ -101,7 +96,6 @@ class skew_y : public transformation
 {
 public:
   skew_y();
-  ~skew_y() override;
 
   std::vector<Eigen::Matrix3d> get_matrices() override;
 };

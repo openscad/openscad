@@ -17,14 +17,12 @@ class VBOShaderVertexState : public VertexState
 public:
   VBOShaderVertexState(size_t draw_offset, size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo)
     : VertexState(0, 0, 0, draw_offset, element_offset, vertices_vbo, elements_vbo) {}
-  ~VBOShaderVertexState() override {}
 };
 
 class VBORenderer : public Renderer
 {
 public:
   VBORenderer();
-  ~VBORenderer() override {}
   void resize(int w, int h) override;
   virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f& col, Color4f& outcolor) const;
   virtual size_t getSurfaceBufferSize(const std::shared_ptr<CSGProducts>& products, bool highlight_mode, bool background_mode, bool unique_geometry = false) const;

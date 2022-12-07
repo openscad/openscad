@@ -28,8 +28,7 @@ class NodeVisitor :
   public Visitor<class OffsetNode>
 {
 public:
-  NodeVisitor() {}
-  ~NodeVisitor() override {}
+  NodeVisitor() = default;
 
   Response traverse(const AbstractNode& node, const class State& state = NodeVisitor::nullstate);
 

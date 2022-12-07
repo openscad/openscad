@@ -32,14 +32,6 @@ namespace libsvg {
 
 const std::string use::name("use");
 
-use::use()
-{
-}
-
-use::~use()
-{
-}
-
 void
 use::set_attrs(attr_map_t& attrs, void *context)
 {

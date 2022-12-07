@@ -35,10 +35,6 @@ svgpage::svgpage() : width({0.0, unit_t::UNDEFINED}), height({0.0, unit_t::UNDEF
 {
 }
 
-svgpage::~svgpage()
-{
-}
-
 void
 svgpage::set_attrs(attr_map_t& attrs, void *context)
 {

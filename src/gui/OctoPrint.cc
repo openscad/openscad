@@ -29,14 +29,6 @@
 #include "printutils.h"
 #include "PlatformUtils.h"
 
-OctoPrint::OctoPrint()
-{
-}
-
-OctoPrint::~OctoPrint()
-{
-}
-
 const QString OctoPrint::url() const
 {
   return QString::fromStdString(Settings::Settings::octoPrintUrl.value());

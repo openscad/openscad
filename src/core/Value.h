@@ -77,6 +77,7 @@ private:
   RangeType& operator=(const RangeType&) = delete; // never copy, move instead
   RangeType(RangeType&&) = default;
   RangeType& operator=(RangeType&&) = default;
+  ~RangeType() = default;
 
   explicit RangeType(double begin, double end)
     : begin_val(begin), step_val(1.0), end_val(end) {}
@@ -227,6 +228,7 @@ private:
   str_utf8_wrapper& operator=(const str_utf8_wrapper&) = delete; // never copy, move instead
   str_utf8_wrapper(str_utf8_wrapper&&) = default;
   str_utf8_wrapper& operator=(str_utf8_wrapper&&) = default;
+  ~str_utf8_wrapper() = default;
   str_utf8_wrapper clone() const { return str_utf8_wrapper(this->str_ptr); } // makes a copy of shared_ptr
 
   bool operator==(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str == rhs.str_ptr->u8str; }
@@ -456,12 +458,13 @@ public:
       bool operator!=(const iterator& other) const { return this->vo != other.vo || this->index != other.index; }
     };
     using const_iterator = const iterator;
-    VectorType(class EvaluationSession *session); // : ptr(shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() )) {}
+    VectorType(class EvaluationSession *session);
     VectorType(class EvaluationSession *session, double x, double y, double z);
     VectorType(const VectorType&) = delete; // never copy, move instead
     VectorType& operator=(const VectorType&) = delete; // never copy, move instead
     VectorType(VectorType&&) = default;
     VectorType& operator=(VectorType&&) = default;
+    ~VectorType() = default;
     VectorType clone() const { return VectorType(this->ptr); } // Copy explicitly only when necessary
     static Value Empty() { return VectorType(nullptr); }
 
@@ -501,7 +504,7 @@ public:
     EmbeddedVectorType& operator=(const EmbeddedVectorType&) = delete;
     EmbeddedVectorType(EmbeddedVectorType&&) = default;
     EmbeddedVectorType& operator=(EmbeddedVectorType&&) = default;
-
+    ~EmbeddedVectorType() = default;
     EmbeddedVectorType(VectorType&& v) : VectorType(std::move(v)) {} // converting constructor
     EmbeddedVectorType clone() const { return EmbeddedVectorType(this->ptr); }
     static Value Empty() { return EmbeddedVectorType(nullptr); }
@@ -542,6 +545,7 @@ public:
   Value(Value&&) = default;
   Value& operator=(Value&&) = default;
   Value clone() const; // Use sparingly to explicitly copy a Value
+  ~Value() = default;
 
   Value(int v) : value(double(v)) { }
   Value(const char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!

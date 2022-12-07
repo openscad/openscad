@@ -34,7 +34,7 @@ private:
 
 public:
   EditorColorScheme(const fs::path path);
-  virtual ~EditorColorScheme();
+  virtual ~EditorColorScheme() = default;
 
   const QString& name() const;
   int index() const;
@@ -50,7 +50,6 @@ class ScintillaEditor : public EditorInterface
 
 public:
   ScintillaEditor(QWidget *parent);
-  ~ScintillaEditor() override {}
   QsciScintilla *qsci;
   QString toPlainText() override;
   void initMargin();

@@ -16,7 +16,7 @@
 class GroupNodeChecker : public NodeVisitor
 {
 public:
-  GroupNodeChecker(){}
+  GroupNodeChecker() = default;
 
   Response visit(State& state, const AbstractNode& node) override;
   Response visit(State& state, const GroupNode& node) override;
@@ -38,7 +38,6 @@ public:
       groupChecker.traverse(*root);
     }
   }
-  ~NodeDumper() override {}
 
   Response visit(State& state, const AbstractNode& node) override;
   Response visit(State& state, const GroupNode& node) override;

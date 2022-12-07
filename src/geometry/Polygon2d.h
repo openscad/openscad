@@ -10,7 +10,7 @@
    positive is (optionally) used to distinguish between polygon contours and hole contours.
  */
 struct Outline2d {
-  Outline2d() {}
+  Outline2d() = default;
   VectorOfVector2d vertices;
   bool positive{true};
   BoundingBox getBoundingBox() const;
@@ -20,7 +20,7 @@ class Polygon2d : public Geometry
 {
 public:
   VISITABLE_GEOMETRY();
-  Polygon2d() {}
+  Polygon2d() = default;
   size_t memsize() const override;
   BoundingBox getBoundingBox() const override;
   std::string dump() const override;

@@ -17,7 +17,7 @@ public:
   };
 
   CSGNode(Flag flags = FLAG_NONE) : flags(flags) {}
-  virtual ~CSGNode() {}
+  virtual ~CSGNode() = default;
   virtual std::string dump() const = 0;
   virtual bool isEmptySet() { return false; }
 
@@ -43,8 +43,7 @@ protected:
 class CSGOperation : public CSGNode
 {
 public:
-  CSGOperation() {}
-  ~CSGOperation() override {}
+  CSGOperation() = default;
   void initBoundingBox() override;
   std::string dump() const override;
 
@@ -87,7 +86,6 @@ class CSGLeaf : public CSGNode
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   CSGLeaf(const shared_ptr<const class Geometry>& geom, Transform3d matrix, Color4f color, std::string label, const int index);
-  ~CSGLeaf() override {}
   void initBoundingBox() override;
   bool isEmptySet() override { return geom == nullptr || geom->isEmpty(); }
   std::string dump() const override;
@@ -118,8 +116,7 @@ public:
 class CSGProduct
 {
 public:
-  CSGProduct() {}
-  ~CSGProduct() {}
+  CSGProduct() = default;
 
   std::string dump() const;
   BoundingBox getBoundingBox(bool throwntogether = false) const;
@@ -134,7 +131,6 @@ public:
   CSGProducts() {
     this->createProduct();
   }
-  ~CSGProducts() {}
 
   void import(shared_ptr<CSGNode> csgtree, OpenSCADOperator type = OpenSCADOperator::UNION, CSGNode::Flag flags = CSGNode::FLAG_NONE);
   std::string dump() const;

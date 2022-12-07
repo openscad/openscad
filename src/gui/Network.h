@@ -40,8 +40,7 @@ class NetworkException : public std::exception
 {
 public:
   NetworkException(const QNetworkReply::NetworkError& error, const QString& errorMessage) : error(error), errorMessage(errorMessage.toStdString()) { }
-  ~NetworkException() override {}
-
+  
   const QNetworkReply::NetworkError& getError() const { return error; }
   const std::string& getErrorMessage() const { return errorMessage; }
 
@@ -66,7 +65,7 @@ public:
   using transform_func_t = std::function<ResultType(QNetworkReply *)>;
 
   NetworkRequest(QUrl url, std::vector<int> accepted_codes, const int timeout_seconds) : url(std::move(url)), accepted_codes(std::move(accepted_codes)), timeout_seconds(timeout_seconds) { }
-  virtual ~NetworkRequest() { }
+  virtual ~NetworkRequest() = default;
 
   void set_progress_func(network_progress_func_t progress_func) { this->progress_func = progress_func; }
   ResultType execute(setup_func_t setup_func, reply_func_t reply_func, transform_func_t transform_func);

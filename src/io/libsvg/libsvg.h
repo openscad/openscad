@@ -35,7 +35,6 @@ class SvgException : public std::exception
 {
 public:
   SvgException(std::string message) : message(std::move(message)) { }
-  ~SvgException() override {}
 
   const char *what() const noexcept override
   {

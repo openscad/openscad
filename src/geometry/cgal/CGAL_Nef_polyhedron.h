@@ -14,7 +14,10 @@ public:
   CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron3 *p = nullptr);
   CGAL_Nef_polyhedron(shared_ptr<const CGAL_Nef_polyhedron3> p) : p3(std::move(p)) {}
   CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron& src);
-  ~CGAL_Nef_polyhedron() override {}
+  CGAL_Nef_polyhedron& operator=(const CGAL_Nef_polyhedron&) = default;
+  CGAL_Nef_polyhedron(CGAL_Nef_polyhedron&&) = default;
+  CGAL_Nef_polyhedron& operator=(CGAL_Nef_polyhedron&&) = default;
+  ~CGAL_Nef_polyhedron() override = default;
 
   size_t memsize() const override;
   // FIXME: Implement, but we probably want a high-resolution BBox..

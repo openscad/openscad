@@ -39,7 +39,6 @@ protected:
 
 public:
   svgpage();
-  ~svgpage() override;
 
   const length_t& get_width() const { return width; }
   const length_t& get_height() const { return height; }

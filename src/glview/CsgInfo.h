@@ -14,7 +14,7 @@
 class CsgInfo
 {
 public:
-  CsgInfo() {}
+  CsgInfo() = default;
   shared_ptr<class CSGProducts> root_products;
   shared_ptr<CSGProducts> highlights_products;
   shared_ptr<CSGProducts> background_products;
