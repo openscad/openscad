@@ -26,6 +26,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <memory>
 #include <numeric>
 #include <sstream>
 /*Unicode support for string lengths and array accesses*/
@@ -1326,7 +1327,7 @@ ObjectType::ObjectType(const shared_ptr<ObjectObject>& copy)
 }
 
 ObjectType::ObjectType(EvaluationSession *session) :
-  ptr(shared_ptr<ObjectObject>(new ObjectObject()))
+  ptr(std::make_shared<ObjectObject>())
 {
   ptr->evaluation_session = session;
 }
