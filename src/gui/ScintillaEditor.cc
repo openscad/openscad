@@ -1197,7 +1197,7 @@ bool ScintillaEditor::modifyNumber(int key)
   qsci->SendScintilla(QsciScintilla::SCI_SETEMPTYSELECTION);
   qsci->setCursorPosition(line, index);
 
-  auto begin = QRegExp("[-+]?\\d*\\.?\\d*$").indexIn(text.left(index));
+  auto begin = QRegExp(R"([-+]?\d*\.?\d*$)").indexIn(text.left(index));
 
   QRegExp rx("[_a-zA-Z]");
   auto check = text.mid(begin - 1, 1);
@@ -1206,7 +1206,7 @@ bool ScintillaEditor::modifyNumber(int key)
   auto end = text.indexOf(QRegExp("[^0-9.]"), index);
   if (end < 0) end = text.length();
   auto nr = text.mid(begin, end - begin);
-  if (!(nr.contains(QRegExp("^[-+]?\\d*\\.?\\d+$")) && nr.contains(QRegExp("\\d"))) ) return false;
+  if (!(nr.contains(QRegExp(R"(^[-+]?\d*\.?\d+$)")) && nr.contains(QRegExp("\\d"))) ) return false;
   auto sign = nr[0] == '+'||nr[0] == '-';
   if (nr.endsWith('.')) nr = nr.left(nr.length() - 1);
   auto curpos = index - begin;

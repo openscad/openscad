@@ -114,7 +114,7 @@ const QString OctoPrint::upload(const QString exportFileName, const QString file
 
   QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
   QHttpPart filePart;
-  filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant{"form-data; name=\"file\"; filename=\"" + fileName + "\""});
+  filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant{R"(form-data; name="file"; filename=")" + fileName + "\""});
   filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant{"application/octet-stream"});
 
   QFile *file = new QFile(exportFileName, multiPart);

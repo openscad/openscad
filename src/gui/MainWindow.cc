@@ -1158,7 +1158,7 @@ void MainWindow::updateCompileResult()
   toolButtonCompileResultIcon->setIconSize(QSize(sizeIcon, sizeIcon));
   toolButtonCompileResultClose->setIconSize(QSize(sizeClose, sizeClose));
 
-  msg += _(" For details see the <a href=\"#errorlog\">error log</a> and <a href=\"#console\">console window</a>.");
+  msg += _(R"( For details see the <a href="#errorlog">error log</a> and <a href="#console">console window</a>.)");
   labelCompileResultMessage->setText(msg);
   frameCompileResult->show();
 }

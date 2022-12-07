@@ -142,10 +142,10 @@ void Lex::default_rules()
   defineRules(models, emodel);
 
   // Operators and Modifier Characters
-  std::string operators("\\+ - \\* \\/ % \\^ < <= >= == != >= > && \\|\\| ! = #");
+  std::string operators(R"(\+ - \* \/ % \^ < <= >= == != >= > && \|\| ! = #)");
   defineRules(operators, eoperator);
 
-  rules_.push("[\"](([\\\\][\"])|[^\"])*[\"]", eQuotedString);
+  rules_.push(R"(["](([\\]["])|[^"])*["])", eQuotedString);
 
   std::string values("true false undef PI");
   defineRules(values, enumber);

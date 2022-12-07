@@ -79,7 +79,7 @@ void ScadApi::updateAutoCompletionList(const QStringList& context, QStringList& 
 
 void ScadApi::autoCompleteFolder(const QStringList& context, const QString& text, const int col, QStringList& list)
 {
-  const QRegularExpression re("\\s*(use|include)\\s*<\\s*");
+  const QRegularExpression re(R"(\s*(use|include)\s*<\s*)");
   const auto useDir = QFileInfo{text.left(col).replace(re, "")}.dir().path();
 
   QFileInfoList dirs;
