@@ -75,7 +75,7 @@ matrix::get_matrices()
 {
   if (args.size() != 6) {
     std::cout << "invalid arguments for matrix" << std::endl;
-    return std::vector<Eigen::Matrix3d>();
+    return {};
   }
 
   Eigen::Matrix3d m;
@@ -106,7 +106,7 @@ translate::get_matrices()
 {
   if ((args.size() < 1) || (args.size() > 2)) {
     std::cout << "invalid arguments for " << get_name() << std::endl;
-    return std::vector<Eigen::Matrix3d>();
+    return {};
   }
 
   double tx = args[0];
@@ -140,7 +140,7 @@ scale::get_matrices()
 {
   if ((args.size() < 1) || (args.size() > 2)) {
     std::cout << "invalid arguments for " << get_name() << std::endl;
-    return std::vector<Eigen::Matrix3d>();
+    return {};
   }
 
   double sx = args[0];
@@ -181,7 +181,7 @@ rotate::get_matrices()
 {
   if ((args.size() != 1) && (args.size() != 3)) {
     std::cout << "invalid arguments for " << get_name() << std::endl;
-    return std::vector<Eigen::Matrix3d>();
+    return {};
   }
 
   bool has_center = args.size() == 3;
@@ -231,7 +231,7 @@ skew_x::get_matrices()
 {
   if (args.size() != 1) {
     std::cout << "invalid arguments for " << get_name() << std::endl;
-    return std::vector<Eigen::Matrix3d>();
+    return {};
   }
 
   double angle = args[0];
@@ -263,7 +263,7 @@ skew_y::get_matrices()
 {
   if (args.size() != 1) {
     std::cout << "invalid arguments for " << get_name() << std::endl;
-    return std::vector<Eigen::Matrix3d>();
+    return {};
   }
 
   double angle = args[0];

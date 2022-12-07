@@ -198,7 +198,7 @@ std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
 
 Value Value::clone() const {
   switch (this->type()) {
-  case Type::UNDEFINED: return Value();
+  case Type::UNDEFINED: return {};
   case Type::BOOL:      return std::get<bool>(this->value);
   case Type::NUMBER:    return std::get<double>(this->value);
   case Type::STRING:    return std::get<str_utf8_wrapper>(this->value).clone();
@@ -206,7 +206,7 @@ Value Value::clone() const {
   case Type::VECTOR:    return std::get<VectorType>(this->value).clone();
   case Type::OBJECT:    return std::get<ObjectType>(this->value).clone();
   case Type::FUNCTION:  return std::get<FunctionPtr>(this->value).clone();
-  default: assert(false && "unknown Value variant type"); return Value();
+  default: assert(false && "unknown Value variant type"); return {};
   }
 }
 

@@ -49,12 +49,12 @@ bool ViewportControl::isLightTheme()
 
 QString ViewportControl::yellowHintBackground()
 {
-  return QString (isLightTheme() ? "background-color:#ffffaa;" : "background-color:#30306;");
+  return {isLightTheme() ? "background-color:#ffffaa;" : "background-color:#30306;"};
 }
 
 QString ViewportControl::redHintBackground()
 {
-  return QString (isLightTheme() ? "background-color:#ffaaaa;" : "background-color:#502020;");
+  return {isLightTheme() ? "background-color:#ffaaaa;" : "background-color:#502020;"};
 }
 
 void ViewportControl::resizeEvent(QResizeEvent *event)

@@ -146,7 +146,7 @@ static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation 
   } else {
     // Invalid argument
     LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range", parameters["index"].toEchoStringNoThrow());
-    return std::shared_ptr<AbstractNode>();
+    return {};
   }
 }
 
@@ -157,7 +157,7 @@ static std::shared_ptr<AbstractNode> builtin_echo(const ModuleInstantiation *ins
   auto node = children.instantiate(lazyUnionNode(inst));
   // echo without child geometries should not count as valid CSGNode
   if (node->children.empty()) {
-    return std::shared_ptr<AbstractNode>();
+    return {};
   }
   return node;
 }
@@ -169,7 +169,7 @@ static std::shared_ptr<AbstractNode> builtin_assert(const ModuleInstantiation *i
   auto node = Children(&inst->scope, context).instantiate(lazyUnionNode(inst));
   // assert without child geometries should not count as valid CSGNode
   if (node->children.empty()) {
-    return std::shared_ptr<AbstractNode>();
+    return {};
   }
   return node;
 }

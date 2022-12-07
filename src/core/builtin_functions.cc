@@ -578,7 +578,7 @@ static VectorType search(
       const auto& entryVec = table[j].toVector();
       if (entryVec.size() <= index_col_num) {
         LOG(message_group::Warning, loc, session->documentRoot(), "Invalid entry in search vector at index %1$d, required number of values in the entry: %2$d. Invalid entry: %3$s", j, (index_col_num + 1), table[j].toEchoStringNoThrow());
-        return VectorType(session);
+        return {session};
       }
       const gchar *ptr_st = g_utf8_offset_to_pointer(entryVec[index_col_num].toString().c_str(), 0);
       if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {

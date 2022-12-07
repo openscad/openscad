@@ -29,7 +29,7 @@ fs::path search_libs(const fs::path& localpath)
       return usepath.string();
     }
   }
-  return fs::path();
+  return {};
 }
 
 // files must be 'ordinary' - they must exist and be non-directories
@@ -88,7 +88,7 @@ fs::path _find_valid_path(const fs::path& sourcepath,
     fpath = search_libs(localpath);
     if (!fpath.empty() && check_valid(fpath, openfilenames)) return fpath;
   }
-  return fs::path();
+  return {};
 }
 
 fs::path find_valid_path(const fs::path& sourcepath,
@@ -128,7 +128,7 @@ fs::path get_library_for_path(const fs::path& localpath)
       return libpath;
     }
   }
-  return fs::path();
+  return {};
 }
 
 

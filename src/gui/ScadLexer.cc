@@ -406,7 +406,7 @@ QString ScadLexer2::description(int style) const
   case Comment:
     return "Comment";
   }
-  return QString(style);
+  return {style};
 }
 
 const char *ScadLexer2::language() const

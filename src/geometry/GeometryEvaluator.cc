@@ -102,9 +102,9 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
   for (const auto& item : this->visitedchildren[node.index()]) {
     if (!isValidDim(item, dim)) break;
   }
-  if (dim == 2) return ResultObject(applyToChildren2D(node, op));
+  if (dim == 2) return {applyToChildren2D(node, op)};
   else if (dim == 3) return applyToChildren3D(node, op);
-  return ResultObject();
+  return {};
 }
 
 /*!
@@ -115,7 +115,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const AbstractNode& node, OpenSCADOperator op)
 {
   Geometry::Geometries children = collectChildren3D(node);
-  if (children.size() == 0) return ResultObject();
+  if (children.size() == 0) return {};
 
   if (op == OpenSCADOperator::HULL) {
     PolySet *ps = new PolySet(3, /* convex */ true);
@@ -125,7 +125,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     }
 
     delete ps;
-    return ResultObject();
+    return {};
   }
   else if (op == OpenSCADOperator::FILL) {
     for (const auto& item : children) {
@@ -134,7 +134,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   }
 
   // Only one child -> this is a noop
-  if (children.size() == 1) return ResultObject(children.front().second);
+  if (children.size() == 1) return {children.front().second};
 
   switch (op) {
   case OpenSCADOperator::MINKOWSKI:
@@ -143,9 +143,9 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     for (const auto& item : children) {
       if (item.second && !item.second->isEmpty()) actualchildren.push_back(item);
     }
-    if (actualchildren.empty()) return ResultObject();
-    if (actualchildren.size() == 1) return ResultObject(actualchildren.front().second);
-    return ResultObject(CGALUtils::applyMinkowski(actualchildren));
+    if (actualchildren.empty()) return {};
+    if (actualchildren.size() == 1) return {actualchildren.front().second};
+    return {CGALUtils::applyMinkowski(actualchildren)};
     break;
   }
   case OpenSCADOperator::UNION:
@@ -154,14 +154,14 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     for (const auto& item : children) {
       if (item.second && !item.second->isEmpty()) actualchildren.push_back(item);
     }
-    if (actualchildren.empty()) return ResultObject();
-    if (actualchildren.size() == 1) return ResultObject(actualchildren.front().second);
-    return ResultObject(CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end()));
+    if (actualchildren.empty()) return {};
+    if (actualchildren.size() == 1) return {actualchildren.front().second};
+    return {CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())};
     break;
   }
   default:
   {
-    return ResultObject(CGALUtils::applyOperator3D(children, op));
+    return {CGALUtils::applyOperator3D(children, op)};
     break;
   }
   }

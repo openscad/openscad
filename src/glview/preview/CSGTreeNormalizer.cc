@@ -90,7 +90,7 @@ entrypoint:
     if (nodecount > this->limit) {
       LOG(message_group::Warning, Location::NONE, "", "Normalized tree is growing past %1$d elements. Aborting normalization.\n", this->limit);
       this->aborted = true;
-      return shared_ptr<CSGNode>();
+      return {};
     }
     if (!node || dynamic_pointer_cast<CSGLeaf>(node)) goto return_node;
     goto normalize_left_if_op;

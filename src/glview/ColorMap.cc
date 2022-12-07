@@ -223,14 +223,14 @@ Color4f ColorMap::getColor(const ColorScheme& cs, const RenderColor rc)
 {
   if (cs.count(rc)) return cs.at(rc);
   if (ColorMap::inst()->defaultColorScheme().count(rc)) return ColorMap::inst()->defaultColorScheme().at(rc);
-  return Color4f(0, 0, 0, 127);
+  return {0, 0, 0, 127};
 }
 
 Color4f ColorMap::getColorHSV(const Color4f& col)
 {
   float h, s, v;
   rgbtohsv(col[0], col[1], col[2], h, s, v);
-  return Color4f(h, s, v, col[3]);
+  return {h, s, v, col[3]};
 }
 
 /**
@@ -249,15 +249,15 @@ Color4f ColorMap::getContrastColor(const Color4f& col)
   if (S < 0.5) {
     // low saturation, choose between black / white based on luminance Y
     float val = Y > 0.5 ? 0.0f : 1.0f;
-    return Color4f(val, val, val, 1.0f);
+    return {val, val, val, 1.0f};
   } else {
     float H = 360 * hsv[0];
     if ((H < 60) || (H > 300)) {
-      return Color4f(0.0f, 1.0f, 1.0f, 1.0f); // red -> cyan
+      return {0.0f, 1.0f, 1.0f, 1.0f}; // red -> cyan
     } else if (H < 180) {
-      return Color4f(1.0f, 0.0f, 1.0f, 1.0f); // green -> magenta
+      return {1.0f, 0.0f, 1.0f, 1.0f}; // green -> magenta
     } else {
-      return Color4f(1.0f, 1.0f, 0.0f, 1.0f); // blue -> yellow
+      return {1.0f, 1.0f, 0.0f, 1.0f}; // blue -> yellow
     }
   }
 }

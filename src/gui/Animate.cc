@@ -294,7 +294,7 @@ int Animate::nextFrame(){
 // elegant way to handle widgets that can adapt
 // to horizontal and vertical layout
 QSize Animate::minimumSizeHint() const{
-    return QSize(-1,-1);
+    return {-1,-1};
 }
 
 void Animate::resizeEvent(QResizeEvent *event)

@@ -111,7 +111,7 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
     }
   }
 
-  return shared_ptr<CSGNode>(new CSGOperation(type, left, right), CSGOperationDeleter());
+  return {new CSGOperation(type, left, right), CSGOperationDeleter()};
 }
 
 CSGLeaf::CSGLeaf(const shared_ptr<const Geometry>& geom, Transform3d matrix, Color4f color, std::string label, const int index)

@@ -557,7 +557,7 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
   ShapeResults sr(params);
 
   if (!sr.ok) {
-    return std::vector<const Geometry *>();
+    return {};
   }
 
   DrawingCallback callback(params.segments, params.size);

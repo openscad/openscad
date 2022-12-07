@@ -55,7 +55,7 @@ public:
   BoundingBox getBoundingBox() const override
   {
     assert(false && "not implemented");
-    return BoundingBox();
+    return {};
   }
 
   std::string dump() const override;
