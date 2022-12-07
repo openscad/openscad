@@ -148,7 +148,7 @@ void AmfImporter::end_object(AmfImporter *importer, const xmlChar *)
 void AmfImporter::end_vertex(AmfImporter *importer, const xmlChar *)
 {
   PRINTDB("AMF: add vertex %d - (%.2f, %.2f, %.2f)", importer->vertex_list.size() % importer->x % importer->y % importer->z);
-  importer->vertex_list.push_back(Eigen::Vector3d(importer->x, importer->y, importer->z));
+  importer->vertex_list.emplace_back(importer->x, importer->y, importer->z);
 }
 
 void AmfImporter::end_triangle(AmfImporter *importer, const xmlChar *)

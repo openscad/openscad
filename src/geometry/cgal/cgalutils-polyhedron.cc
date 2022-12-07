@@ -47,7 +47,7 @@ public:
 
     // Align all vertices to grid and build vertex array in vertices
     for (const auto& p : ps.polygons) {
-      indices.push_back(std::vector<size_t>());
+      indices.emplace_back();
       indices.back().reserve(p.size());
       for (auto v : boost::adaptors::reverse(p)) {
         // align v to the grid; the CGALPoint will receive the aligned vertex

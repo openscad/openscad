@@ -178,7 +178,7 @@ Polygon2d *apply(const std::vector<const Polygon2d *>& polygons,
       if (!polygon->isSanitized()) ClipperLib::PolyTreeToPaths(sanitize(polypaths), polypaths);
       pathsvector.push_back(polypaths);
     } else {
-      pathsvector.push_back(ClipperLib::Paths());
+      pathsvector.emplace_back();
     }
   }
   auto res = apply(pathsvector, clipType, pow2);

@@ -278,7 +278,7 @@ DxfData::DxfData(double fn, double fs, double fa,
           }
         } else if (mode == "DIMENSION" &&
                    (layername.empty() || layername == layer)) {
-          this->dims.push_back(Dim());
+          this->dims.emplace_back();
           this->dims.back().type = dimtype;
           for (int i = 0; i < 7; ++i) {
             for (int j = 0; j < 2; ++j) {
@@ -437,7 +437,7 @@ next_open_path_j:;
     break;
 
 create_open_path:
-    this->paths.push_back(Path());
+    this->paths.emplace_back();
     Path *this_path = &this->paths.back();
 
     this_path->indices.push_back(lines[current_line].idx[current_point]);
@@ -478,7 +478,7 @@ found_next_line_in_open_path:;
     int current_line = enabled_lines.begin()->second;
     int current_point = 0;
 
-    this->paths.push_back(Path());
+    this->paths.emplace_back();
     auto& this_path = this->paths.back();
     this_path.is_closed = true;
 

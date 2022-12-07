@@ -751,7 +751,7 @@ int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, cha
 
   if (!inputFiles.size()) {
     noInputFiles = true;
-    inputFiles.push_back("");
+    inputFiles.emplace_back("");
   }
 
   auto showOnStartup = settings.value("launcher/showOnStartup");

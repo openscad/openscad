@@ -184,7 +184,7 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
     } else if (x == transformed_v1_x) {
       ret.push_back(v1);
     } else {
-      ret.push_back(p + Ai * Vector2d(x, y(x)));
+      ret.emplace_back(p + Ai * Vector2d(x, y(x)));
     }
   }
 
@@ -346,7 +346,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
     for (auto path : paths) {
       auto prev = path.back();
       for (auto p : path) {
-        segments.push_back(Segment(prev.X, prev.Y, p.X, p.Y));
+        segments.emplace_back(prev.X, prev.Y, p.X, p.Y);
         prev = p;
       }
     }

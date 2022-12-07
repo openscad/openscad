@@ -146,7 +146,7 @@ public:
 
 private:
   void createProduct() {
-    this->products.push_back(CSGProduct());
+    this->products.emplace_back();
     this->currentproduct = &this->products.back();
     this->currentlist = &this->currentproduct->intersections;
   }

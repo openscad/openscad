@@ -2160,13 +2160,13 @@ void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
   if (root_geom) {
     std::vector<std::string> options;
     if (Settings::Settings::summaryCamera.value()) {
-      options.push_back(RenderStatistic::CAMERA);
+      options.emplace_back(RenderStatistic::CAMERA);
     }
     if (Settings::Settings::summaryArea.value()) {
-      options.push_back(RenderStatistic::AREA);
+      options.emplace_back(RenderStatistic::AREA);
     }
     if (Settings::Settings::summaryBoundingBox.value()) {
-      options.push_back(RenderStatistic::BOUNDING_BOX);
+      options.emplace_back(RenderStatistic::BOUNDING_BOX);
     }
     renderStatistic.printAll(root_geom, qglview->cam, options);
     LOG(message_group::None, Location::NONE, "", "Rendering finished.");

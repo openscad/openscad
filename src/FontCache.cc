@@ -168,7 +168,7 @@ FontCache::FontCache()
   // For use by LibraryInfo
   FcStrList *dirs = FcConfigGetFontDirs(this->config);
   while (FcChar8 *dir = FcStrListNext(dirs)) {
-    fontpath.push_back(std::string((const char *)dir));
+    fontpath.emplace_back((const char *)dir);
   }
   FcStrListDone(dirs);
 

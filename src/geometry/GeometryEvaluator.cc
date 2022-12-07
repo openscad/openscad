@@ -187,7 +187,7 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode& node)
     if (p) {
       for (const auto& o : p->outlines()) {
         for (const auto& v : o.vertices) {
-          points.push_back(CGALPoint2(v[0], v[1]));
+          points.emplace_back(v[0], v[1]);
         }
       }
     }

@@ -283,7 +283,7 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
     // Since we're downscaling to float, vertices might merge during this conversion.
     // To avoid passing equal vertices to the tessellator, we remove consecutively identical
     // vertices.
-    polygons.push_back(std::vector<IndexedFace>());
+    polygons.emplace_back();
     auto& faces = polygons.back();
     // the 0-mark-volume is the 'empty' volume of space. skip it.
     if (!hfaceti->incident_volume()->mark()) {
