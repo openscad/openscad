@@ -37,7 +37,7 @@ struct IndexedMesh {
 
   Reindexer<Vector3d> vertices;
   std::vector<int> indices;
-  size_t numfaces;
+  size_t numfaces{0};
 
   void append_geometry(const PolySet& ps);
   void append_geometry(const shared_ptr<const Geometry>& geom);

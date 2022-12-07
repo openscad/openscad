@@ -39,11 +39,7 @@ using namespace CGAL::OGL;
 class VBOPolyhedron : public virtual Polyhedron
 {
 public:
-  VBOPolyhedron()
-    : Polyhedron(),
-    points_edges_vertices_vbo(0), points_edges_elements_vbo(0),
-    halffacets_vertices_vbo(0), halffacets_elements_vbo(0)
-  {}
+  VBOPolyhedron() : Polyhedron() {}
   virtual ~VBOPolyhedron()
   {
     if (points_edges_vertices_vbo) glDeleteBuffers(1, &points_edges_vertices_vbo);
@@ -384,10 +380,10 @@ public:
   }
 
 protected:
-  GLuint points_edges_vertices_vbo;
-  GLuint points_edges_elements_vbo;
-  GLuint halffacets_vertices_vbo;
-  GLuint halffacets_elements_vbo;
+  GLuint points_edges_vertices_vbo{0};
+  GLuint points_edges_elements_vbo{0};
+  GLuint halffacets_vertices_vbo{0};
+  GLuint halffacets_elements_vbo{0};
   VertexStates points_edges_states;
   VertexStates halffacets_states;
 }; // Polyhedron

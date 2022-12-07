@@ -152,12 +152,7 @@ private:
 class VertexData
 {
 public:
-  VertexData()
-    : position_index_(0), position_data_(nullptr),
-    normal_index_(0), normal_data_(nullptr),
-    color_index_(0), color_data_(nullptr),
-    stride_(0)
-  {}
+  VertexData() : position_data_(nullptr), normal_data_(nullptr), color_data_(nullptr) {}
   virtual ~VertexData() {}
 
   // Add generic attribute data to vertex vector
@@ -255,13 +250,13 @@ public:
 
 private:
   std::vector<std::shared_ptr<IAttributeData>> attributes_;
-  size_t position_index_;
+  size_t position_index_{0};
   std::shared_ptr<IAttributeData> position_data_;
-  size_t normal_index_;
+  size_t normal_index_{0};
   std::shared_ptr<IAttributeData> normal_data_;
-  size_t color_index_;
+  size_t color_index_{0};
   std::shared_ptr<IAttributeData> color_data_;
-  size_t stride_;
+  size_t stride_{0};
 };
 
 // Storage for minimum state information necessary to draw VBO.
@@ -354,12 +349,8 @@ public:
 
   VertexArray(std::shared_ptr<VertexStateFactory> factory, VertexStates& states,
               GLuint vertices_vbo = 0, GLuint elements_vbo = 0)
-    : factory_(std::move(factory)), states_(states), write_index_(0),
-    surface_index_(0), edge_index_(0),
-    use_elements_(false),
-    vertices_vbo_(vertices_vbo), elements_vbo_(elements_vbo),
-    vertices_size_(0), elements_size_(0),
-    vertices_offset_(0), elements_offset_(0)
+    : factory_(std::move(factory)), states_(states),
+    vertices_vbo_(vertices_vbo), elements_vbo_(elements_vbo)
   {
     if (!vertices_vbo_) {
       glGenBuffers(1, &vertices_vbo_);
@@ -497,15 +488,15 @@ public:
 private:
   std::shared_ptr<VertexStateFactory> factory_;
   VertexStates& states_;
-  size_t write_index_;
-  size_t surface_index_;
-  size_t edge_index_;
-  bool use_elements_;
+  size_t write_index_{0};
+  size_t surface_index_{0};
+  size_t edge_index_{0};
+  bool use_elements_{false};
   std::vector<std::shared_ptr<VertexData>> vertices_;
   std::vector<GLbyte> interleaved_buffer_;
   GLuint vertices_vbo_, elements_vbo_;
-  size_t vertices_size_, elements_size_;
-  size_t vertices_offset_, elements_offset_;
+  size_t vertices_size_{0}, elements_size_{0};
+  size_t vertices_offset_{0}, elements_offset_{0};
   VertexData elements_;
   ElementsMap elements_map_;
 };

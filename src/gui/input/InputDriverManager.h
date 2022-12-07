@@ -53,9 +53,9 @@ private:
 
   InputEventMapper mapper;
 
-  MainWindow *currentWindow;
+  MainWindow *currentWindow{nullptr};
 
-  QTimer *timer;
+  QTimer *timer{nullptr};
 
   static InputDriverManager *self;
 

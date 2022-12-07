@@ -3,7 +3,7 @@
 
 #include "Dock.h"
 
-Dock::Dock(QWidget *parent) : QDockWidget(parent), action(nullptr), updateSettings(true)
+Dock::Dock(QWidget *parent) : QDockWidget(parent)
 {
 }
 

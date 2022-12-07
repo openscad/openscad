@@ -68,22 +68,22 @@ using attr_map_t = std::map<std::string, std::string>;
 class shape
 {
 private:
-  shape *parent;
+  shape *parent{nullptr};
   std::vector<shape *> children;
 
 protected:
   boost::optional<std::string> id;
   boost::optional<std::string> layer;
-  double x;
-  double y;
+  double x{0};
+  double y{0};
   path_list_t path_list;
   std::string transform;
   std::string stroke_width;
   std::string stroke_linecap;
   std::string stroke_linejoin;
   std::string style;
-  bool excluded;
-  bool selected;
+  bool excluded{false};
+  bool selected{false};
 
   double get_stroke_width() const;
   ClipperLib::EndType get_stroke_linecap() const;

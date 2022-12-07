@@ -16,7 +16,7 @@ public:
   using GeometryItem = std::pair<std::shared_ptr<const AbstractNode>, shared_ptr<const Geometry>>;
   using Geometries = std::list<GeometryItem>;
 
-  Geometry() : convexity(1) {}
+  Geometry() {}
   virtual ~Geometry() {}
 
   virtual size_t memsize() const = 0;
@@ -35,7 +35,7 @@ public:
 
   virtual void accept(class GeometryVisitor& visitor) const = 0;
 protected:
-  int convexity;
+  int convexity{1};
 };
 
 /**

@@ -8,7 +8,7 @@ class AutoUpdater : public QObject
   Q_OBJECT;
 
 public:
-  AutoUpdater() : updateAction(nullptr), updateMenu(nullptr) {}
+  AutoUpdater() {}
   ~AutoUpdater() {}
 
   virtual void setAutomaticallyChecksForUpdates(bool on) = 0;
@@ -26,8 +26,8 @@ public slots:
 
 
 public:
-  class QAction *updateAction;
-  class QMenu *updateMenu;
+  class QAction *updateAction{nullptr};
+  class QMenu *updateMenu{nullptr};
 
 protected:
   static AutoUpdater *updater_instance;

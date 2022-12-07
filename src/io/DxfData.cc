@@ -67,8 +67,8 @@ namespace fs = boost::filesystem;
 
 struct Line {
   int idx[2]; // indices into DxfData::points
-  bool disabled;
-  Line(int i1 = -1, int i2 = -1) : idx{i1, i2}, disabled(false) { }
+  bool disabled{false};
+  Line(int i1 = -1, int i2 = -1) : idx{i1, i2} { }
 };
 
 DxfData::DxfData()

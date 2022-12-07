@@ -144,15 +144,15 @@ void Animate::updatedAnimFpsAndAnimSteps()
   QString redBackground = QString (isLightTheme() ? "background-color:#ffaaaa;" : "background-color:#502020;");
 
   if( this->steps_ok || this->e_fsteps->text()=="" ){
-    this->e_fsteps->setStyleSheet(""); 
+    this->e_fsteps->setStyleSheet("");
   } else {
-    this->e_fsteps->setStyleSheet(redBackground); 
+    this->e_fsteps->setStyleSheet(redBackground);
   }
 
   if( this->fps_ok || this->e_fps->text()=="" ){
-    this->e_fps->setStyleSheet(""); 
+    this->e_fps->setStyleSheet("");
   } else {
-    this->e_fps->setStyleSheet(redBackground); 
+    this->e_fps->setStyleSheet(redBackground);
   }
 
   updatePauseButtonIcon();
@@ -300,7 +300,7 @@ QSize Animate::minimumSizeHint() const{
 void Animate::resizeEvent(QResizeEvent *event)
 {
   const QSize sizeEvent = size();
-  
+
   // QTDesigner does not make it obvious, but
   // QBoxLayout can be switch from vertical to horizontal.
   int iconSize = 16;
@@ -341,7 +341,7 @@ void Animate::resizeEvent(QResizeEvent *event)
   for(auto qPushButton : qPushButtons){
       qPushButton->setIconSize(QSize(iconSize, iconSize));
   }
-  
+
   QFormLayout::RowWrapPolicy policy = QFormLayout::RowWrapPolicy::DontWrapRows;
   if(sizeEvent.width() < 150){
     policy = QFormLayout::RowWrapPolicy::WrapAllRows;

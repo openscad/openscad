@@ -46,7 +46,7 @@ public:
   static void enable_all(bool status = true);
 
 private:
-  bool enabled;
+  bool enabled{false};
 
   const std::string name;
   const std::string description;

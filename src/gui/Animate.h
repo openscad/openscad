@@ -61,14 +61,14 @@ private:
   int anim_numsteps;
 
   bool isLightTheme();
-  
+
   bool fps_ok;
   bool t_ok;
   bool steps_ok;
 
   QList<QAction *> action_list;
   void createActionAndPrepareButton(const QIcon &icon, QString description, std::string actionName, QPushButton* button);
- 
+
 signals:
 
 private slots:

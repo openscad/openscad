@@ -137,16 +137,16 @@ void GLView::paintGL()
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    //draw screen aligned quad with color gradient 
-    glBegin(GL_QUADS);  
-    glColor3f(bgcol[0], bgcol[1], bgcol[2]);  
+    //draw screen aligned quad with color gradient
+    glBegin(GL_QUADS);
+    glColor3f(bgcol[0], bgcol[1], bgcol[2]);
     glVertex2f(-1.0f, +1.0f);
     glVertex2f(+1.0f, +1.0f);
 
-    glColor3f(bgstopcol[0], bgstopcol[1], bgstopcol[2]);  
+    glColor3f(bgstopcol[0], bgstopcol[1], bgstopcol[2]);
     glVertex2f(+1.0f, -1.0f);
     glVertex2f(-1.0f, -1.0f);
-    glEnd();  
+    glEnd();
     glEnable(GL_DEPTH_TEST);
   }
 
@@ -462,7 +462,7 @@ void GLView::showScalemarkers(const Color4f& col)
 
     /*
      * The length of each tick is proportional to the length of the axis
-     * (which changes with the zoom value.)  l/size_div provides the
+     * (which changes with the zoom value.) l/size_div provides the
      * proportional length
      *
      * Commented glVertex3d lines provide additional 'arms' for the tick

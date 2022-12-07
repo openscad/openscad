@@ -40,7 +40,7 @@ namespace fs = boost::filesystem;
 #include <sys/stat.h>
 
 SourceFile::SourceFile(std::string path, std::string filename)
-  : ASTNode(Location::NONE), is_handling_dependencies(false), path(std::move(path)), filename(std::move(filename))
+  : ASTNode(Location::NONE), path(std::move(path)), filename(std::move(filename))
 {
 }
 

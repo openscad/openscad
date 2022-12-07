@@ -1301,7 +1301,7 @@ std::ostream& operator<<(std::ostream& stream, const RangeType& r)
                                                 DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
   return stream << "["
                 << DoubleConvert(r.begin_value(), buffer, builder, dc) << " : "
-                << DoubleConvert(r.step_value(),  buffer, builder, dc) << " : "
+                << DoubleConvert(r.step_value(), buffer, builder, dc) << " : "
                 << DoubleConvert(r.end_value(),   buffer, builder, dc) << "]";
 }
 

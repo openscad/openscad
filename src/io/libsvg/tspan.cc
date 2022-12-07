@@ -29,7 +29,7 @@ namespace libsvg {
 
 const std::string tspan::name("tspan");
 
-tspan::tspan() : dx(0), dy(0), rotate(0), text_length(0), font_size(0)
+tspan::tspan()
 {
 }
 

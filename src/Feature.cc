@@ -52,7 +52,7 @@ const Feature Feature::ExperimentalImportFunction("import-function", "Enable imp
 const Feature Feature::ExperimentalSortStl("sort-stl", "Sort the STL output for predictable, diffable results.");
 
 Feature::Feature(const std::string& name, std::string description)
-  : enabled(false), name(name), description(std::move(description))
+  : name(name), description(std::move(description))
 {
   feature_map[name] = this;
   feature_list.push_back(this);

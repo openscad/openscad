@@ -10,7 +10,7 @@
 #include "QSettingsCached.h"
 
 OpenSCADApp::OpenSCADApp(int& argc, char **argv)
-  : QApplication(argc, argv), fontCacheDialog(nullptr)
+  : QApplication(argc, argv)
 {
 #ifdef Q_OS_MAC
   this->installEventFilter(new SCADEventFilter(this));

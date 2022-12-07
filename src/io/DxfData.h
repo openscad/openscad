@@ -8,8 +8,8 @@ class DxfData
 public:
   struct Path {
     std::vector<int> indices; // indices into DxfData::points
-    bool is_closed, is_inner;
-    Path() : is_closed(false), is_inner(false) { }
+    bool is_closed{false}, is_inner{false};
+    Path() { }
   };
   struct Dim {
     unsigned int type;

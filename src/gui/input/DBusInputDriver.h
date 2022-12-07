@@ -32,7 +32,7 @@ class DBusInputDriver : public InputDriver
 {
   Q_OBJECT
 
-  bool is_open;
+  bool is_open{false};
 
   std::string name;
 

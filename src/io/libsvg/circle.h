@@ -31,7 +31,7 @@ namespace libsvg {
 class circle : public shape
 {
 protected:
-  double r;
+  double r{0};
 
 public:
   circle();

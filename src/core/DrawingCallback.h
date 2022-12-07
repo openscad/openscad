@@ -54,7 +54,7 @@ private:
   double size;
 
   Outline2d outline;
-  class Polygon2d *polygon;
+  class Polygon2d *polygon{nullptr};
   std::vector<const class Geometry *> polygons;
 
   void add_vertex(const Vector2d& v);

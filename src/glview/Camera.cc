@@ -6,8 +6,7 @@
 static const double DEFAULT_DISTANCE = 140.0;
 static const double DEFAULT_FOV = 22.5;
 
-Camera::Camera() :
-  projection(ProjectionType::PERSPECTIVE), fov(DEFAULT_FOV), viewall(false), autocenter(false)
+Camera::Camera() : fov(DEFAULT_FOV)
 {
   PRINTD("Camera()");
 

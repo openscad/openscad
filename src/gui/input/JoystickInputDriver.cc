@@ -61,7 +61,7 @@ void JoystickInputDriver::run()
   ::close(fd);
 }
 
-JoystickInputDriver::JoystickInputDriver() : fd(-1), version(0), axes(0), buttons(0), stopRequest(false)
+JoystickInputDriver::JoystickInputDriver()
 {
 
 }

@@ -52,7 +52,7 @@
 
 namespace libsvg {
 
-shape::shape() : parent(nullptr), x(0), y(0), excluded(false), selected(false)
+shape::shape()
 {
 }
 

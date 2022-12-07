@@ -227,8 +227,6 @@ void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *
 } // namespace
 
 MainWindow::MainWindow(const QStringList& filenames)
-  : library_info_dialog(nullptr), font_list_dialog(nullptr),
-  procevents(false), tempFile(nullptr), progresswidget(nullptr), includes_mtime(0), deps_mtime(0), last_parser_error_pos(-1)
 {
   setupUi(this);
 
@@ -2614,7 +2612,7 @@ void MainWindow::actionExportImage()
   qglview->grabFrame();
   const auto suffix = ".png";
   auto img_filename = QFileDialog::getSaveFileName(this,
-                                                   _("Export Image"),  exportPath(suffix), _("PNG Files (*.png)"));
+                                                   _("Export Image"), exportPath(suffix), _("PNG Files (*.png)"));
   if (!img_filename.isEmpty()) {
     bool saveResult = qglview->save(img_filename.toLocal8Bit().constData());
     if (saveResult) {

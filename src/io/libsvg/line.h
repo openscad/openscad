@@ -31,8 +31,8 @@ namespace libsvg {
 class line : public shape
 {
 private:
-  double x2;
-  double y2;
+  double x2{0};
+  double y2{0};
 
 public:
   line();

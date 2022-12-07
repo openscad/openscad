@@ -35,7 +35,6 @@ size_t AbstractNode::idx_counter;
 
 AbstractNode::AbstractNode(const ModuleInstantiation *mi) :
   modinst(mi),
-  progress_mark(0),
   idx(idx_counter++)
 {
 }

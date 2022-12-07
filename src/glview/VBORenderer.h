@@ -77,7 +77,7 @@ private:
                              size_t shape_dimensions = 0, bool outlines = false,
                              bool mirror = false) const;
 
-  size_t shader_attributes_index;
+  size_t shader_attributes_index{0};
   enum ShaderAttribIndex {
     BARYCENTRIC_ATTRIB
   };

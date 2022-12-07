@@ -41,7 +41,7 @@ private:
   std::time_t include_modified(const std::string& filename) const;
 
   std::unordered_map<std::string, std::string> includes;
-  bool is_handling_dependencies;
+  bool is_handling_dependencies{false};
 
   std::string path;
   std::string filename;

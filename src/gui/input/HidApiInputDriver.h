@@ -36,9 +36,9 @@ class HidApiInputDriver : public InputDriver
   Q_OBJECT
 
   std::string name;
-  unsigned int buttons;
-  hid_device *hid_dev;
-  const struct device_id *dev;
+  unsigned int buttons{0};
+  hid_device *hid_dev{nullptr};
+  const struct device_id *dev{nullptr};
 
 public:
   HidApiInputDriver();

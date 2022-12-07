@@ -184,7 +184,7 @@ private:
   class ShapeResults
   {
 public:
-    bool ok; // true if object is valid
+    bool ok{false}; // true if object is valid
     // The values here are all in fractions of the specified size.
     // They have been downscaled from the 1e+5 unit size used for
     // when rendering from Freetype, and have not yet been scaled
@@ -205,8 +205,8 @@ public:
 private:
     void calc_offsets_horiz(const FreetypeRenderer::Params& params);
     void calc_offsets_vert(const FreetypeRenderer::Params& params);
-    hb_font_t *hb_ft_font;
-    hb_buffer_t *hb_buf;
+    hb_font_t *hb_ft_font{nullptr};
+    hb_buffer_t *hb_buf{nullptr};
   };
 
   static int outline_move_to_func(const FT_Vector *to, void *user);

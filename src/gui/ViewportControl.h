@@ -3,7 +3,7 @@
 #include "qtgettext.h"
 #include "ui_ViewportControl.h"
 #include <QStandardItemModel>
-#include <mutex> 
+#include <mutex>
 
 class MainWindow;
 class QGLView;

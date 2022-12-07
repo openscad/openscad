@@ -39,10 +39,10 @@ class OpenCSGPrim : public OpenCSG::Primitive
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity, const OpenCSGRenderer& renderer) :
-    OpenCSG::Primitive(operation, convexity), csgmode(Renderer::CSGMODE_NONE), renderer(renderer) { }
+    OpenCSG::Primitive(operation, convexity), renderer(renderer) { }
   std::shared_ptr<const PolySet> geom;
   Transform3d m;
-  Renderer::csgmode_e csgmode;
+  Renderer::csgmode_e csgmode{Renderer::CSGMODE_NONE};
 
   void render() override {
     if (geom) {

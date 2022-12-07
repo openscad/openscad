@@ -117,26 +117,26 @@ void ViewportControl::updateViewportControlHints(){
   double fov = doubleSpinBox_fov->value();
   if(fov < 0 || fov > 180){
     doubleSpinBox_fov->setToolTip(_("extreme values might may lead to strange behavior"));
-    doubleSpinBox_fov->setStyleSheet(redHintBackground()); 
+    doubleSpinBox_fov->setStyleSheet(redHintBackground());
   }else if(fov < 5 || fov > 175){
     doubleSpinBox_fov->setToolTip(_("extreme values might may lead to strange behavior"));
-    doubleSpinBox_fov->setStyleSheet(yellowHintBackground()); 
+    doubleSpinBox_fov->setStyleSheet(yellowHintBackground());
   } else {
     doubleSpinBox_fov->setToolTip("");
-    doubleSpinBox_fov->setStyleSheet(""); 
+    doubleSpinBox_fov->setStyleSheet("");
   }
 
   //camera distance
   double d = doubleSpinBox_d->value();
   if(d < 0){
     doubleSpinBox_d->setToolTip(_("negative distances are not supported"));
-    doubleSpinBox_d->setStyleSheet(redHintBackground()); 
+    doubleSpinBox_d->setStyleSheet(redHintBackground());
   }else if(d < 5){
     doubleSpinBox_d->setToolTip(_("extreme values might may lead to strange behavior"));
-    doubleSpinBox_d->setStyleSheet(yellowHintBackground()); 
+    doubleSpinBox_d->setStyleSheet(yellowHintBackground());
   }else{
     doubleSpinBox_d->setToolTip("");
-    doubleSpinBox_d->setStyleSheet(""); 
+    doubleSpinBox_d->setStyleSheet("");
   }
 
 }
@@ -145,15 +145,15 @@ void ViewportControl::resizeToRatio(){
     int w0 = spinBoxWidth->value();
     int h0 = spinBoxHeight->value();
 
-    int w1 = this->maxW; 
-    int h1 = this->maxW * h0 / w0; 
-    int w2 = this->maxH * w0 / h0; 
+    int w1 = this->maxW;
+    int h1 = this->maxW * h0 / w0;
+    int w2 = this->maxH * w0 / h0;
     int h2 = this->maxH;
     if(h1 <= this->maxH){
         qglview->resize(w1, h1);
     } else {
         qglview->resize(w2, h2);
-    } 
+    }
 }
 
 void ViewportControl::viewResized(){
@@ -161,7 +161,7 @@ void ViewportControl::viewResized(){
 
   this->maxW = qglview->size().rwidth();
   this->maxH = qglview->size().rheight();
-  
+
   if(checkBoxAspecRatioLock->checkState() == Qt::Checked){
     resizeToRatio();
   } else {
@@ -175,7 +175,7 @@ void ViewportControl::requestResize(){
   if(!resizeMutex.try_lock()) return;
 
   resizeToRatio();
-  
+
   resizeMutex.unlock();
 }
 

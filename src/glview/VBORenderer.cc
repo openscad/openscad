@@ -35,7 +35,7 @@
 #include <sstream>
 
 VBORenderer::VBORenderer()
-  : Renderer(), shader_attributes_index(0)
+  : Renderer()
 {
 }
 

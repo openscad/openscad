@@ -915,8 +915,8 @@ static Outline2d splitOutlineByFn(
   struct segment_tracker {
     size_t edge_index;
     double max_edgelen;
-    unsigned int segment_count;
-    segment_tracker(size_t i, double len) : edge_index(i), max_edgelen(len), segment_count(1u)  { }
+    unsigned int segment_count{1u};
+    segment_tracker(size_t i, double len) : edge_index(i), max_edgelen(len) { }
     // metric for comparison: average between (max segment length, and max segment length after split)
     double metric() const { return max_edgelen / (segment_count + 0.5); }
     bool operator<(const segment_tracker& rhs) const { return this->metric() < rhs.metric();  }

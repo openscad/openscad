@@ -31,10 +31,10 @@ namespace libsvg {
 class rect : public path
 {
 protected:
-  double width;
-  double height;
-  double rx;
-  double ry;
+  double width{0};
+  double height{0};
+  double rx{0};
+  double ry{0};
 
 public:
   rect();

@@ -321,7 +321,6 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
 
 FreetypeRenderer::ShapeResults::ShapeResults(
   const FreetypeRenderer::Params& params)
-  : ok(false), hb_ft_font(nullptr), hb_buf(nullptr)
 {
   FT_Face face = params.get_font_face();
   if (face == nullptr) {

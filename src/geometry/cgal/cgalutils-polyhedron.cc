@@ -305,11 +305,11 @@ template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_
 
 class Polyhedron_writer
 {
-  std::ostream *out;
-  bool firstv;
+  std::ostream *out{nullptr};
+  bool firstv{true};
   std::vector<int> indices;
 public:
-  Polyhedron_writer() : out(nullptr), firstv(true) {}
+  Polyhedron_writer() {}
   void write_header(std::ostream& stream,
                     std::size_t /*vertices*/,
                     std::size_t /*halfedges*/,

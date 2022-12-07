@@ -81,14 +81,14 @@ class SurfaceNode : public LeafNode
 {
 public:
   VISITABLE();
-  SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi), center(false), invert(false), convexity(1) { }
+  SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi) { }
   std::string toString() const override;
   std::string name() const override { return "surface"; }
 
   Filename filename;
-  bool center;
-  bool invert;
-  int convexity;
+  bool center{false};
+  bool invert{false};
+  int convexity{1};
 
   const Geometry *createGeometry() const override;
 private:

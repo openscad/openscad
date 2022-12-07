@@ -24,7 +24,7 @@
 class Camera
 {
 public:
-  enum class ProjectionType { ORTHOGONAL, PERSPECTIVE } projection;
+  enum class ProjectionType { ORTHOGONAL, PERSPECTIVE } projection{ProjectionType::PERSPECTIVE};
   Camera();
   void setup(std::vector<double> params);
   void gimbalDefaultTranslate();
@@ -54,11 +54,11 @@ public:
 
   // true if camera should try to view everything in a given
   // bounding box.
-  bool viewall;
+  bool viewall{false};
 
   // true if camera should point at center of bounding box
   // (normally it points at 0,0,0 or at given coordinates)
-  bool autocenter;
+  bool autocenter{false};
 
   unsigned int pixel_width;
   unsigned int pixel_height;

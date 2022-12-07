@@ -61,8 +61,8 @@ class Cache
 
   std::unordered_map<Key, Node> hash;
   Node *f, *l;
-  void *unused;
-  size_t mx, total;
+  void *unused{nullptr};
+  size_t mx, total{0};
 
   inline void unlink(Node& n) {
     if (n.p) n.p->n = n.n;
@@ -93,7 +93,7 @@ class Cache
 
 public:
   inline explicit Cache(size_t maxCost = 100)
-    : f(nullptr), l(nullptr), unused(nullptr), mx(maxCost), total(0) { }
+    : f(nullptr), l(nullptr), mx(maxCost) { }
   inline ~Cache() { clear(); }
 
   inline size_t maxCost() const { return mx; }

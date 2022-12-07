@@ -132,7 +132,6 @@ public:
   SettingsEntryEnum(const std::string& category, const std::string& name, std::vector<Item> items, std::string defaultValue) :
     SettingsEntry(category, name),
     _items(std::move(items)),
-    _index(0),
     _defaultValue(std::move(defaultValue))
   {
     setValue(_defaultValue);
@@ -149,7 +148,7 @@ public:
 
 private:
   std::vector<Item> _items;
-  size_t _index;
+  size_t _index{0};
   std::string _defaultValue;
 };
 

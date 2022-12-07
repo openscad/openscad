@@ -34,6 +34,6 @@ private:
   void checkOpen(const QVariant& data, bool forceShowEditor);
 
   QStringList files;
-  bool forceShowEditor;
+  bool forceShowEditor{true};
   static LaunchingScreen *inst;
 };

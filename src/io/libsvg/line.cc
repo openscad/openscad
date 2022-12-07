@@ -29,7 +29,7 @@ namespace libsvg {
 
 const std::string line::name("line");
 
-line::line() : x2(0), y2(0)
+line::line()
 {
 }
 

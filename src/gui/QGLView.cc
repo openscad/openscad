@@ -50,7 +50,7 @@
 #  include <opencsg.h>
 #endif
 
-#include "qt-obsolete.h" 
+#include "qt-obsolete.h"
 
 QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent)
 {

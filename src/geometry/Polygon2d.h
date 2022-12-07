@@ -10,9 +10,9 @@
    positive is (optionally) used to distinguish between polygon contours and hole contours.
  */
 struct Outline2d {
-  Outline2d() : positive(true) {}
+  Outline2d() {}
   VectorOfVector2d vertices;
-  bool positive;
+  bool positive{true};
   BoundingBox getBoundingBox() const;
 };
 
@@ -20,7 +20,7 @@ class Polygon2d : public Geometry
 {
 public:
   VISITABLE_GEOMETRY();
-  Polygon2d() : sanitized(false) {}
+  Polygon2d() {}
   size_t memsize() const override;
   BoundingBox getBoundingBox() const override;
   std::string dump() const override;
@@ -44,7 +44,7 @@ public:
   // It would be better to fix the class relationships, so that Polygon2d does
   // not inherit an unused 3d transform function.
   // But that will likely require significant refactoring.
-  using Geometry::transform;   
+  using Geometry::transform;
 
   void transform(const Transform2d& mat);
   void resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>& autosize);
@@ -57,5 +57,5 @@ public:
   bool is_convex() const;
 private:
   Outlines2d theoutlines;
-  bool sanitized;
+  bool sanitized{false};
 };

@@ -50,16 +50,13 @@
 
 struct OffscreenContext
 {
-  OffscreenContext(int width, int height) :
-    openGLContext(nullptr), xdisplay(nullptr), xwindow(0),
-    width(width), height(height),
-    fbo(nullptr) {}
-  GLXContext openGLContext;
-  Display *xdisplay;
-  Window xwindow;
+  OffscreenContext(int width, int height) : width(width), height(height) {}
+  GLXContext openGLContext{nullptr};
+  Display *xdisplay{nullptr};
+  Window xwindow{0};
   int width;
   int height;
-  fbo_t *fbo;
+  fbo_t *fbo{nullptr};
 };
 
 #include "OffscreenContextAll.hpp"

@@ -31,12 +31,12 @@ namespace libsvg {
 class tspan : public shape
 {
 private:
-  double dx;
-  double dy;
-  double rotate;
-  double text_length;
+  double dx{0};
+  double dy{0};
+  double rotate{0};
+  double text_length{0};
   std::string font_family;
-  int font_size;
+  int font_size{0};
 
 public:
   tspan();

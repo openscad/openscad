@@ -12,7 +12,7 @@ class State
 {
 public:
   State(std::shared_ptr<const AbstractNode> parent)
-    : flags(NONE), parentnode(std::move(parent)), numchildren(0) {
+    : parentnode(std::move(parent)) {
     this->matrix_ = Transform3d::Identity();
     this->color_.fill(-1.0f);
   }
@@ -48,9 +48,9 @@ private:
     BACKGROUND = 0x10
   };
 
-  unsigned int flags;
+  unsigned int flags{NONE};
   std::shared_ptr<const AbstractNode> parentnode;
-  unsigned int numchildren;
+  unsigned int numchildren{0};
 
   // Transformation matrix and color. FIXME: Generalize such state variables?
   Transform3d matrix_;

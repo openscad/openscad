@@ -37,7 +37,7 @@
 #include "PolySet.h"
 
 IndexedMesh::IndexedMesh()
-  : numfaces(0)
+
 {
 }
 

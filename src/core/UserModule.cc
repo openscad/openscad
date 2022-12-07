@@ -45,7 +45,7 @@ static void NOINLINE print_trace(const UserModule *mod,std::shared_ptr<const Use
   std::stringstream stream ;
   if (parameters.size() == 0){
       //nothing to do
-  } else if (StackCheck::inst().check()) { 
+  } else if (StackCheck::inst().check()) {
     stream << "...";
   } else {
     bool first = true;

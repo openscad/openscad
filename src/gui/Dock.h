@@ -20,6 +20,6 @@ public slots:
 
 private:
   QString configKey;
-  QAction *action;
-  bool updateSettings;
+  QAction *action{nullptr};
+  bool updateSettings{true};
 };

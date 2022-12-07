@@ -36,8 +36,7 @@
 ThrownTogetherRenderer::ThrownTogetherRenderer(shared_ptr<CSGProducts> root_products,
                                                shared_ptr<CSGProducts> highlight_products,
                                                shared_ptr<CSGProducts> background_products)
-  : root_products(std::move(root_products)), highlight_products(std::move(highlight_products)), background_products(std::move(background_products)),
-  vertices_vbo(0), elements_vbo(0)
+  : root_products(std::move(root_products)), highlight_products(std::move(highlight_products)), background_products(std::move(background_products))
 {
 }
 

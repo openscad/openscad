@@ -74,6 +74,6 @@ private:
   shared_ptr<CSGProducts> root_products;
   shared_ptr<CSGProducts> highlight_products;
   shared_ptr<CSGProducts> background_products;
-  GLuint vertices_vbo;
-  GLuint elements_vbo;
+  GLuint vertices_vbo{0};
+  GLuint elements_vbo{0};
 };

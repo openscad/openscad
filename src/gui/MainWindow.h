@@ -134,8 +134,8 @@ private:
   void updateStatusBar(class ProgressWidget *progressWidget);
   void activateWindow(int);
 
-  class LibraryInfoDialog *library_info_dialog;
-  class FontListDialog *font_list_dialog;
+  class LibraryInfoDialog *library_info_dialog{nullptr};
+  class FontListDialog *font_list_dialog{nullptr};
 
 public slots:
   void updateExportActions();
@@ -351,17 +351,17 @@ private:
   shared_ptr<CSGProducts> background_products;
 
   char const *afterCompileSlot;
-  bool procevents;
-  class QTemporaryFile *tempFile;
-  class ProgressWidget *progresswidget;
+  bool procevents{false};
+  class QTemporaryFile *tempFile{nullptr};
+  class ProgressWidget *progresswidget{nullptr};
   class CGALWorker *cgalworker;
   QMutex consolemutex;
   EditorInterface *renderedEditor; // stores pointer to editor which has been most recently rendered
-  time_t includes_mtime; // latest include mod time
-  time_t deps_mtime; // latest dependency mod time
+  time_t includes_mtime{0}; // latest include mod time
+  time_t deps_mtime{0}; // latest dependency mod time
   std::unordered_map<std::string, QString> export_paths; // for each file type, where it was exported to last
   QString exportPath(const char *suffix); // look up the last export path and generate one if not found
-  int last_parser_error_pos; // last highlighted error position
+  int last_parser_error_pos{-1}; // last highlighted error position
   int tabCount = 0;
 
 signals:

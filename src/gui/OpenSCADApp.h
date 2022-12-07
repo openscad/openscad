@@ -24,7 +24,7 @@ public:
   WindowManager windowManager;
 
 private:
-  class QProgressDialog *fontCacheDialog;
+  class QProgressDialog *fontCacheDialog{nullptr};
 };
 
 #define scadApp (static_cast<OpenSCADApp *>(QCoreApplication::instance()))

@@ -57,11 +57,11 @@ private:
 
   using cb_func = void (*)(AmfImporter *, const xmlChar *);
 
-  PolySet *polySet;
+  PolySet *polySet{nullptr};
   std::vector<PolySet *> polySets;
 
-  double x, y, z;
-  int idx_v1, idx_v2, idx_v3;
+  double x{0}, y{0}, z{0};
+  int idx_v1{0}, idx_v2{0}, idx_v3{0};
   std::vector<Eigen::Vector3d> vertex_list;
 
   std::map<const std::string, cb_func> funcs;
@@ -93,7 +93,7 @@ public:
   virtual xmlTextReaderPtr createXmlReader(const char *filename);
 };
 
-AmfImporter::AmfImporter(const Location& loc) : polySet(nullptr), x(0), y(0), z(0), idx_v1(0), idx_v2(0), idx_v3(0), loc(loc)
+AmfImporter::AmfImporter(const Location& loc) : loc(loc)
 {
 }
 
@@ -266,7 +266,7 @@ PolySet *AmfImporter::read(const std::string& filename)
   if (polySets.size() > 1) {
     Geometry::Geometries children;
     for (auto & polySet : polySets) {
-      children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(),  shared_ptr<const Geometry>(polySet)));
+      children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(polySet)));
     }
 
     if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
@@ -291,8 +291,8 @@ PolySet *AmfImporter::read(const std::string& filename)
 class AmfImporterZIP : public AmfImporter
 {
 private:
-  struct zip *archive;
-  struct zip_file *zipfile;
+  struct zip *archive{nullptr};
+  struct zip_file *zipfile{nullptr};
 
   static int read_callback(void *context, char *buffer, int len);
   static int close_callback(void *context);
@@ -304,7 +304,7 @@ public:
   xmlTextReaderPtr createXmlReader(const char *filename) override;
 };
 
-AmfImporterZIP::AmfImporterZIP(const Location& loc) : AmfImporter(loc), archive(nullptr), zipfile(nullptr)
+AmfImporterZIP::AmfImporterZIP(const Location& loc) : AmfImporter(loc)
 {
 }
 

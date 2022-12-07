@@ -11,7 +11,7 @@
 
 #ifndef NULLGL
 
-Renderer::Renderer() : colorscheme(nullptr)
+Renderer::Renderer()
 {
   PRINTD("Renderer() start");
 

@@ -191,7 +191,7 @@ Polygon2d *project(const CGAL_Nef_polyhedron& N, bool cut)
         double inf = 1e8;
         double eps = 0.001;
         CGAL_Point_3 minpt(-inf, -inf, -eps);
-        CGAL_Point_3 maxpt(inf,  inf,  eps);
+        CGAL_Point_3 maxpt( inf,  inf,  eps);
         CGAL_Iso_cuboid_3 bigcuboid(minpt, maxpt);
         for (int i = 0; i < 8; ++i) pts.push_back(bigcuboid.vertex(i));
         CGAL_Polyhedron bigbox;

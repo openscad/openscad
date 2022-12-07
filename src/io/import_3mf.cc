@@ -192,9 +192,9 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     PolySet *p = nullptr;
 #ifdef ENABLE_CGAL
     Geometry::Geometries children;
-    children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(),  shared_ptr<const Geometry>(first_mesh)));
+    children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(first_mesh)));
     for (auto & meshe : meshes) {
-      children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(),  shared_ptr<const Geometry>(meshe)));
+      children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(meshe)));
     }
     if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
       p = new PolySet(*ps);
@@ -369,9 +369,9 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     PolySet *p = nullptr;
 #ifdef ENABLE_CGAL
     Geometry::Geometries children;
-    children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(),  shared_ptr<const Geometry>(first_mesh)));
+    children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), shared_ptr<const Geometry>(first_mesh)));
     for (polysets_t::iterator it = meshes.begin(); it != meshes.end(); ++it) {
-      children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(),  shared_ptr<const Geometry>(*it)));
+      children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), shared_ptr<const Geometry>(*it)));
     }
     if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
       p = new PolySet(*ps);

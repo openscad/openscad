@@ -12,7 +12,7 @@ class ModuleInstantiation : public ASTNode
 {
 public:
   ModuleInstantiation(std::string name, AssignmentList args = AssignmentList(), const Location& loc = Location::NONE)
-    : ASTNode(loc), arguments(std::move(args)), tag_root(false), tag_highlight(false), tag_background(false), modname(std::move(name)) { }
+    : ASTNode(loc), arguments(std::move(args)), modname(std::move(name)) { }
   ~ModuleInstantiation();
 
   virtual void print(std::ostream& stream, const std::string& indent, const bool inlined) const;
@@ -27,9 +27,9 @@ public:
   AssignmentList arguments;
   LocalScope scope;
 
-  bool tag_root;
-  bool tag_highlight;
-  bool tag_background;
+  bool tag_root{false};
+  bool tag_highlight{false};
+  bool tag_background{false};
 protected:
   std::string modname;
 };

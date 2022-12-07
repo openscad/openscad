@@ -31,8 +31,8 @@ namespace libsvg {
 class ellipse : public shape
 {
 protected:
-  double rx;
-  double ry;
+  double rx{0};
+  double ry{0};
 
 public:
   ellipse();
