@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+#include <utility>
 #include <vector>
 #include <string>
 #include <deque>
@@ -107,7 +109,7 @@ class GroupNode : public AbstractNode
 {
 public:
   VISITABLE();
-  GroupNode(const ModuleInstantiation *mi, const std::string& name = "") : AbstractNode(mi), _name(name) { }
+  GroupNode(const ModuleInstantiation *mi, std::string name = "") : AbstractNode(mi), _name(std::move(name)) { }
   std::string name() const override;
   std::string verbose_name() const override;
 private:

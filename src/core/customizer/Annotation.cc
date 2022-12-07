@@ -26,10 +26,12 @@
 
 
 #include "Annotation.h"
+
+#include <utility>
 #include "Expression.h"
 
-Annotation::Annotation(const std::string& name, shared_ptr<Expression> expr)
-  : name(name), expr(expr)
+Annotation::Annotation(std::string name, shared_ptr<Expression> expr)
+  : name(std::move(name)), expr(std::move(expr))
 {
 }
 

@@ -30,6 +30,7 @@
 #include "printutils.h"
 #include "Grid.h"
 #include <Eigen/LU>
+#include <utility>
 
 /*! /class PolySet
 
@@ -49,7 +50,7 @@ PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(con
 {
 }
 
-PolySet::PolySet(const Polygon2d& origin) : polygon(origin), dim(2), convex(unknown), dirty(false)
+PolySet::PolySet(Polygon2d origin) : polygon(std::move(origin)), dim(2), convex(unknown), dirty(false)
 {
 }
 

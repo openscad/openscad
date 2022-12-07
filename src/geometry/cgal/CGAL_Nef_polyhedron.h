@@ -4,6 +4,7 @@
 #include "Geometry.h"
 #include "memory.h"
 #include <string>
+#include <utility>
 #include "linalg.h"
 
 class CGAL_Nef_polyhedron : public Geometry
@@ -11,7 +12,7 @@ class CGAL_Nef_polyhedron : public Geometry
 public:
   VISITABLE_GEOMETRY();
   CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron3 *p = nullptr);
-  CGAL_Nef_polyhedron(shared_ptr<const CGAL_Nef_polyhedron3> p) : p3(p) {}
+  CGAL_Nef_polyhedron(shared_ptr<const CGAL_Nef_polyhedron3> p) : p3(std::move(p)) {}
   CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron& src);
   ~CGAL_Nef_polyhedron() {}
 

@@ -3,6 +3,7 @@
 #include <map>
 #include <list>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace Settings {
@@ -18,7 +19,7 @@ public:
   virtual void decode(const std::string& encoded) = 0;
 
 protected:
-  SettingsEntry(const std::string& category, const std::string& name);
+  SettingsEntry(std::string category, std::string name);
   virtual ~SettingsEntry() {}
 
 private:
@@ -128,11 +129,11 @@ public:
     std::string value;
     std::string description;
   };
-  SettingsEntryEnum(const std::string& category, const std::string& name, const std::vector<Item>& items, const std::string& defaultValue) :
+  SettingsEntryEnum(const std::string& category, const std::string& name, std::vector<Item> items, std::string defaultValue) :
     SettingsEntry(category, name),
-    _items(items),
+    _items(std::move(items)),
     _index(0),
-    _defaultValue(defaultValue)
+    _defaultValue(std::move(defaultValue))
   {
     setValue(_defaultValue);
   }

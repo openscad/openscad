@@ -23,7 +23,7 @@ using Tds = CGAL::Triangulation_data_structure_2<CGAL::Triangulation_vertex_base
 using CDT = CGAL::Constrained_Delaunay_triangulation_2<Projection, Tds, CGAL::Exact_predicates_tag>;
 
 
-static void  mark_domains(CDT& ct,
+static void mark_domains(CDT& ct,
                           CDT::Face_handle start,
                           int index,
                           std::list<CDT::Edge>& border)

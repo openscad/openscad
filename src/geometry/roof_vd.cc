@@ -127,7 +127,7 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
 
   // an orthogonal affine transformation which maps point to zero and
   // segment parallel to the x axes on the negative side
-  //     a_point ->  A(a_point - point)
+  //     a_point -> A(a_point - point)
   Eigen::Matrix2d A, Ai;
   Ai << point_direction.y(), point_direction.x(), -point_direction.x(), point_direction.y();
   A = Ai.inverse();

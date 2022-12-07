@@ -34,12 +34,13 @@
 #include "StatCache.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include <utility>
 namespace fs = boost::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
 
-SourceFile::SourceFile(const std::string& path, const std::string& filename)
-  : ASTNode(Location::NONE), is_handling_dependencies(false), path(path), filename(filename)
+SourceFile::SourceFile(std::string path, std::string filename)
+  : ASTNode(Location::NONE), is_handling_dependencies(false), path(std::move(path)), filename(std::move(filename))
 {
 }
 

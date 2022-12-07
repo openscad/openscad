@@ -66,7 +66,7 @@ public:
   Geometries children;
 
   GeometryList();
-  GeometryList(const Geometry::Geometries& geometries);
+  GeometryList(Geometry::Geometries geometries);
   virtual ~GeometryList();
 
   size_t memsize() const override;

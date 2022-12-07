@@ -28,6 +28,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
+#include <utility>
 
 #include "FontCache.h"
 #include "PlatformUtils.h"
@@ -64,7 +65,7 @@ const std::string get_freetype_version()
   return FontCache::instance()->get_freetype_version();
 }
 
-FontInfo::FontInfo(const std::string& family, const std::string& style, const std::string& file) : family(family), style(style), file(file)
+FontInfo::FontInfo(std::string family, std::string style, std::string file) : family(std::move(family)), style(std::move(style)), file(std::move(file))
 {
 }
 

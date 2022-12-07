@@ -2,13 +2,14 @@
 
 #include <stdexcept>
 #include <sstream>
+#include <utility>
 #include "AST.h"
 #include "printutils.h"
 
 class EvaluationException : public std::runtime_error
 {
 public:
-  EvaluationException(const std::string& what_arg) : std::runtime_error(what_arg), traceDepth(OpenSCAD::traceDepth) {}
+  EvaluationException(std::string what_arg) : std::runtime_error(std::move(what_arg)), traceDepth(OpenSCAD::traceDepth) {}
   ~EvaluationException() noexcept = default;
 public:
   int traceDepth = 0;
@@ -17,7 +18,7 @@ public:
 class AssertionFailedException : public EvaluationException
 {
 public:
-  AssertionFailedException(const std::string& what_arg, const Location& loc) : EvaluationException(what_arg), loc(loc) {}
+  AssertionFailedException(std::string what_arg, Location loc) : EvaluationException(std::move(what_arg)), loc(std::move(loc)) {}
   ~AssertionFailedException() noexcept = default;
 
 public:
@@ -27,8 +28,8 @@ public:
 class RecursionException : public EvaluationException
 {
 public:
-  static RecursionException create(const std::string& recursiontype, const std::string& name, const Location& loc) {
-    return RecursionException{STR("Recursion detected calling ", recursiontype, " '", name, "'"), loc};
+  static RecursionException create(std::string recursiontype, std::string name, const Location& loc) {
+    return RecursionException{STR("Recursion detected calling ", std::move(recursiontype), " '", std::move(name), "'"), loc};
   }
   ~RecursionException() noexcept = default;
 
@@ -36,7 +37,7 @@ public:
   Location loc;
 
 private:
-  RecursionException(const std::string& what_arg, const Location& loc) : EvaluationException(what_arg), loc(loc) {}
+  RecursionException(const std::string& what_arg, Location loc) : EvaluationException(what_arg), loc(std::move(loc)) {}
 };
 
 class LoopCntException : public EvaluationException
@@ -51,7 +52,7 @@ public:
   Location loc;
 
 private:
-  LoopCntException(const std::string& what_arg, const Location& loc) : EvaluationException(what_arg), loc(loc) {}
+  LoopCntException(const std::string& what_arg, Location loc) : EvaluationException(what_arg), loc(std::move(loc)) {}
 };
 
 class VectorEchoStringException : public EvaluationException

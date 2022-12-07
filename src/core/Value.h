@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility>
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -159,7 +160,7 @@ template <typename T>
 class ValuePtr
 {
 private:
-  explicit ValuePtr(const std::shared_ptr<T>& val_in) : value(val_in) { }
+  explicit ValuePtr(std::shared_ptr<T> val_in) : value(std::move(val_in)) { }
 public:
   ValuePtr(T&& value) : value(std::make_shared<T>(std::move(value))) { }
   ValuePtr clone() const { return ValuePtr(value); }
@@ -181,7 +182,7 @@ private:
   struct str_utf8_t {
     static constexpr glong LENGTH_UNKNOWN = -1;
     str_utf8_t() : u8str(), u8len(0) { }
-    str_utf8_t(const std::string& s) : u8str(s) { }
+    str_utf8_t(std::string s) : u8str(std::move(s)) { }
     str_utf8_t(const char *cstr) : u8str(cstr) { }
     str_utf8_t(const char *cstr, size_t size, glong u8len) : u8str(cstr, size), u8len(u8len) { }
     const std::string u8str;
@@ -254,7 +255,7 @@ class FunctionType
 {
 public:
   FunctionType(std::shared_ptr<const Context> context, std::shared_ptr<Expression> expr, std::shared_ptr<AssignmentList> parameters)
-    : context(context), expr(expr), parameters(parameters) { }
+    : context(std::move(context)), expr(std::move(expr)), parameters(std::move(parameters)) { }
   Value operator==(const FunctionType& other) const;
   Value operator!=(const FunctionType& other) const;
   Value operator<(const FunctionType& other) const;
@@ -350,7 +351,7 @@ public:
    *    Eg "Lc*" Expressions return Embedded Vectors but they are necessarily child expressions of a Vector expression.
    * -- Any VectorType containing embedded elements will be forced to "flatten" upon usage of operator[],
    *    which is the only case of random-access.
-   * -- Any loops through VectorTypes should prefer automatic range-based for loops  eg: for(const auto& value : vec) { ... }
+   * -- Any loops through VectorTypes should prefer automatic range-based for loops eg: for(const auto& value : vec) { ... }
    *    which make use of begin() and end() iterators of VectorType.  https://en.cppreference.com/w/cpp/language/range-for
    * -- Moving a temporary Value of type VectorType or EmbeddedVectorType is always safe,
    *    since it just moves the shared_ptr in its possession (which might be a copy but that doesn't matter).

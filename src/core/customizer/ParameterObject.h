@@ -1,6 +1,7 @@
 #pragma once
 
 #include <json.hpp>
+#include <utility>
 #include <variant>
 
 #include "ParameterSet.h"
@@ -29,8 +30,8 @@ public:
   virtual void apply(Assignment *assignment) const = 0;
 
 protected:
-  ParameterObject(const std::string& name, const std::string& description, const std::string& group, ParameterType type) :
-    type_(type), name_(name), description_(description), group_(group) {}
+  ParameterObject(std::string name, std::string description, std::string group, ParameterType type) :
+    type_(type), name_(std::move(name)), description_(std::move(description)), group_(std::move(group)) {}
 
   ParameterType type_;
   std::string name_;
@@ -143,11 +144,11 @@ public:
   EnumParameter(
     const std::string& name, const std::string& description, const std::string& group,
     int defaultValueIndex,
-    const std::vector<EnumItem>& items
+    std::vector<EnumItem> items
     ) :
     ParameterObject(name, description, group, ParameterObject::ParameterType::Enum),
     valueIndex(defaultValueIndex), defaultValueIndex(defaultValueIndex),
-    items(items)
+    items(std::move(items))
   {}
 
   void reset() override { valueIndex = defaultValueIndex; }

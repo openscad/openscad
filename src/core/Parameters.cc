@@ -25,14 +25,15 @@
  */
 
 #include <set>
+#include <utility>
 
 #include "Expression.h"
 #include "Parameters.h"
 
-Parameters::Parameters(ContextFrame&& frame, const Location& loc) :
+Parameters::Parameters(ContextFrame&& frame, Location loc) :
   frame(std::move(frame)),
   handle(&this->frame),
-  loc(loc)
+  loc(std::move(loc))
 {}
 
 Parameters::Parameters(Parameters&& other) :

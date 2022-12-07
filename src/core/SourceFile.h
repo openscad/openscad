@@ -12,7 +12,7 @@
 class SourceFile : public ASTNode
 {
 public:
-  SourceFile(const std::string& path, const std::string& filename);
+  SourceFile(std::string path, std::string filename);
   ~SourceFile();
 
   std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<const Context>& context, std::shared_ptr<const class FileContext> *resulting_file_context) const;

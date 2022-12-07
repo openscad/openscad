@@ -34,6 +34,7 @@
 #include <tuple>
 
 #include <boost/range/iterator_range.hpp>
+#include <utility>
 
 /*!
    \class CSGNode
@@ -113,8 +114,8 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
   return shared_ptr<CSGNode>(new CSGOperation(type, left, right), CSGOperationDeleter());
 }
 
-CSGLeaf::CSGLeaf(const shared_ptr<const Geometry>& geom, const Transform3d& matrix, const Color4f& color, const std::string& label, const int index)
-  : label(label), matrix(matrix), color(color), index(index)
+CSGLeaf::CSGLeaf(const shared_ptr<const Geometry>& geom, Transform3d matrix, Color4f color, std::string label, const int index)
+  : label(std::move(label)), matrix(std::move(matrix)), color(std::move(color)), index(index)
 {
   if (geom && !geom->isEmpty()) this->geom = geom;
   initBoundingBox();

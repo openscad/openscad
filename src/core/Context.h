@@ -96,7 +96,7 @@ public:
 protected:
   std::shared_ptr<const Context> parent;
 
-  bool accountingAdded = false;   // avoiding bad accounting when exception threw in constructor  issue #3871
+  bool accountingAdded = false;   // avoiding bad accounting when exception threw in constructor issue #3871
 
 public:
 #ifdef DEBUG

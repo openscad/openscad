@@ -27,6 +27,8 @@
 #include "system-gl.h"
 #include "memory.h"
 #include "OpenCSGRenderer.h"
+
+#include <utility>
 #include "PolySet.h"
 #include "Feature.h"
 
@@ -75,9 +77,9 @@ private:
 OpenCSGRenderer::OpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,
                                  std::shared_ptr<CSGProducts> highlights_products,
                                  std::shared_ptr<CSGProducts> background_products)
-  : root_products(root_products),
-  highlights_products(highlights_products),
-  background_products(background_products)
+  : root_products(std::move(root_products)),
+  highlights_products(std::move(highlights_products)),
+  background_products(std::move(background_products))
 {
 }
 

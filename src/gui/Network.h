@@ -29,6 +29,8 @@
 #include <QObject>
 #include <QString>
 #include <QtNetwork>
+#include <utility>
+#include <utility>
 
 #include "printutils.h"
 #include "PlatformUtils.h"
@@ -63,7 +65,7 @@ public:
   using reply_func_t = std::function<QNetworkReply *(QNetworkAccessManager&, QNetworkRequest&)>;
   using transform_func_t = std::function<ResultType(QNetworkReply *)>;
 
-  NetworkRequest(const QUrl& url, const std::vector<int>& accepted_codes, const int timeout_seconds) : url(url), accepted_codes(accepted_codes), timeout_seconds(timeout_seconds) { }
+  NetworkRequest(QUrl url, std::vector<int> accepted_codes, const int timeout_seconds) : url(std::move(url)), accepted_codes(std::move(accepted_codes)), timeout_seconds(timeout_seconds) { }
   virtual ~NetworkRequest() { }
 
   void set_progress_func(network_progress_func_t progress_func) { this->progress_func = progress_func; }

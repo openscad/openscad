@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 #include <vector>
 #include <boost/optional.hpp>
 
@@ -14,8 +15,8 @@ class ContextFrame;
 class EvaluationSession
 {
 public:
-  EvaluationSession(const std::string& documentRoot) :
-    document_root(documentRoot)
+  EvaluationSession(std::string documentRoot) :
+    document_root(std::move(documentRoot))
   {}
 
   size_t push_frame(ContextFrame *frame);

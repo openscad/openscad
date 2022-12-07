@@ -34,6 +34,7 @@
 #include <algorithm>
 #include <typeinfo>
 #include <forward_list>
+#include <utility>
 #include <variant>
 #include "printutils.h"
 #include "StackCheck.h"
@@ -332,7 +333,7 @@ void Vector::print(std::ostream& stream, const std::string&) const
   stream << "]";
 }
 
-Lookup::Lookup(const std::string& name, const Location& loc) : Expression(loc), name(name)
+Lookup::Lookup(std::string name, const Location& loc) : Expression(loc), name(std::move(name))
 {
 }
 
@@ -346,8 +347,8 @@ void Lookup::print(std::ostream& stream, const std::string&) const
   stream << this->name;
 }
 
-MemberLookup::MemberLookup(Expression *expr, const std::string& member, const Location& loc)
-  : Expression(loc), expr(expr), member(member)
+MemberLookup::MemberLookup(Expression *expr, std::string member, const Location& loc)
+  : Expression(loc), expr(expr), member(std::move(member))
 {
 }
 
@@ -396,8 +397,8 @@ void MemberLookup::print(std::ostream& stream, const std::string&) const
   stream << *this->expr << "." << this->member;
 }
 
-FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList& parameters, const Location& loc)
-  : Expression(loc), context(nullptr), parameters(parameters), expr(expr)
+FunctionDefinition::FunctionDefinition(Expression *expr, AssignmentList parameters, const Location& loc)
+  : Expression(loc), context(nullptr), parameters(std::move(parameters)), expr(expr)
 {
 }
 
@@ -442,8 +443,8 @@ static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<
   LOG(message_group::Trace, val->location(), context->documentRoot(), "called by '%1$s'", val->get_name());
 }
 
-FunctionCall::FunctionCall(Expression *expr, const AssignmentList& args, const Location& loc)
-  : Expression(loc), expr(expr), arguments(args)
+FunctionCall::FunctionCall(Expression *expr, AssignmentList args, const Location& loc)
+  : Expression(loc), expr(expr), arguments(std::move(args))
 {
   if (typeid(*expr) == typeid(Lookup)) {
     isLookup = true;
@@ -614,8 +615,8 @@ Expression *FunctionCall::create(const std::string& funcname, const AssignmentLi
   //return new FunctionCall(funcname, arglist, loc);
 }
 
-Assert::Assert(const AssignmentList& args, Expression *expr, const Location& loc)
-  : Expression(loc), arguments(args), expr(expr)
+Assert::Assert(AssignmentList args, Expression *expr, const Location& loc)
+  : Expression(loc), arguments(std::move(args)), expr(expr)
 {
 
 }
@@ -657,8 +658,8 @@ void Assert::print(std::ostream& stream, const std::string&) const
   if (this->expr) stream << " " << *this->expr;
 }
 
-Echo::Echo(const AssignmentList& args, Expression *expr, const Location& loc)
-  : Expression(loc), arguments(args), expr(expr)
+Echo::Echo(AssignmentList args, Expression *expr, const Location& loc)
+  : Expression(loc), arguments(std::move(args)), expr(expr)
 {
 
 }
@@ -682,8 +683,8 @@ void Echo::print(std::ostream& stream, const std::string&) const
   if (this->expr) stream << " " << *this->expr;
 }
 
-Let::Let(const AssignmentList& args, Expression *expr, const Location& loc)
-  : Expression(loc), arguments(args), expr(expr)
+Let::Let(AssignmentList args, Expression *expr, const Location& loc)
+  : Expression(loc), arguments(std::move(args)), expr(expr)
 {
 }
 
@@ -802,8 +803,8 @@ void LcEach::print(std::ostream& stream, const std::string&) const
   stream << "each (" << *this->expr << ")";
 }
 
-LcFor::LcFor(const AssignmentList& args, Expression *expr, const Location& loc)
-  : ListComprehension(loc), arguments(args), expr(expr)
+LcFor::LcFor(AssignmentList args, Expression *expr, const Location& loc)
+  : ListComprehension(loc), arguments(std::move(args)), expr(expr)
 {
 }
 
@@ -888,8 +889,8 @@ void LcFor::print(std::ostream& stream, const std::string&) const
   stream << "for(" << this->arguments << ") (" << *this->expr << ")";
 }
 
-LcForC::LcForC(const AssignmentList& args, const AssignmentList& incrargs, Expression *cond, Expression *expr, const Location& loc)
-  : ListComprehension(loc), arguments(args), incr_arguments(incrargs), cond(cond), expr(expr)
+LcForC::LcForC(AssignmentList args, AssignmentList incrargs, Expression *cond, Expression *expr, const Location& loc)
+  : ListComprehension(loc), arguments(std::move(args)), incr_arguments(std::move(incrargs)), cond(cond), expr(expr)
 {
 }
 
@@ -936,8 +937,8 @@ void LcForC::print(std::ostream& stream, const std::string&) const
     << ") " << *this->expr;
 }
 
-LcLet::LcLet(const AssignmentList& args, Expression *expr, const Location& loc)
-  : ListComprehension(loc), arguments(args), expr(expr)
+LcLet::LcLet(AssignmentList args, Expression *expr, const Location& loc)
+  : ListComprehension(loc), arguments(std::move(args)), expr(expr)
 {
 }
 

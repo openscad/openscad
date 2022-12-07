@@ -29,6 +29,7 @@
 #include <functional>
 
 #include <QObject>
+#include <utility>
 
 using network_progress_func_t = std::function<bool (double)>;
 
@@ -38,7 +39,7 @@ class NetworkSignal : public QObject
 
   using callback_t = std::function<void (qint64, qint64)>;
 
-  NetworkSignal(QObject *parent, callback_t callback) : QObject(parent), callback(callback) { }
+  NetworkSignal(QObject *parent, callback_t callback) : QObject(parent), callback(std::move(callback)) { }
   virtual ~NetworkSignal() { }
 
 public slots:

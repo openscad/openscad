@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+
 #include "Context.h"
 #include "LocalScope.h"
 
@@ -9,9 +11,9 @@ class ScopeContext;
 class Children
 {
 public:
-  Children(const LocalScope *children_scope, const std::shared_ptr<const Context>& context) :
+  Children(const LocalScope *children_scope, std::shared_ptr<const Context> context) :
     children_scope(children_scope),
-    context(context)
+    context(std::move(context))
   {}
 
   Children(Children&& other) = default;

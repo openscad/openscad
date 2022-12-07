@@ -151,7 +151,7 @@ private:
 class Lookup : public Expression
 {
 public:
-  Lookup(const std::string& name, const Location& loc);
+  Lookup(std::string name, const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
   const std::string& get_name() const { return name; }
@@ -162,7 +162,7 @@ private:
 class MemberLookup : public Expression
 {
 public:
-  MemberLookup(Expression *expr, const std::string& member, const Location& loc);
+  MemberLookup(Expression *expr, std::string member, const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
 private:
@@ -173,7 +173,7 @@ private:
 class FunctionCall : public Expression
 {
 public:
-  FunctionCall(Expression *expr, const AssignmentList& arglist, const Location& loc);
+  FunctionCall(Expression *expr, AssignmentList arglist, const Location& loc);
   boost::optional<CallableFunction> evaluate_function_expression(const std::shared_ptr<const Context>& context) const;
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
@@ -189,7 +189,7 @@ public:
 class FunctionDefinition : public Expression
 {
 public:
-  FunctionDefinition(Expression *expr, const AssignmentList& parameters, const Location& loc);
+  FunctionDefinition(Expression *expr, AssignmentList parameters, const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
 public:
@@ -201,7 +201,7 @@ public:
 class Assert : public Expression
 {
 public:
-  Assert(const AssignmentList& args, Expression *expr, const Location& loc);
+  Assert(AssignmentList args, Expression *expr, const Location& loc);
   static void performAssert(const AssignmentList& arguments, const Location& location, const std::shared_ptr<const Context>& context);
   const Expression *evaluateStep(const std::shared_ptr<const Context>& context) const;
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
@@ -214,7 +214,7 @@ private:
 class Echo : public Expression
 {
 public:
-  Echo(const AssignmentList& args, Expression *expr, const Location& loc);
+  Echo(AssignmentList args, Expression *expr, const Location& loc);
   const Expression *evaluateStep(const std::shared_ptr<const Context>& context) const;
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
@@ -226,7 +226,7 @@ private:
 class Let : public Expression
 {
 public:
-  Let(const AssignmentList& args, Expression *expr, const Location& loc);
+  Let(AssignmentList args, Expression *expr, const Location& loc);
   static void doSequentialAssignment(const AssignmentList& assignments, const Location& location, ContextHandle<Context>& targetContext);
   static ContextHandle<Context> sequentialAssignmentContext(const AssignmentList& assignments, const Location& location, const std::shared_ptr<const Context>& context);
   const Expression *evaluateStep(ContextHandle<Context>& targetContext) const;
@@ -259,7 +259,7 @@ private:
 class LcFor : public ListComprehension
 {
 public:
-  LcFor(const AssignmentList& args, Expression *expr, const Location& loc);
+  LcFor(AssignmentList args, Expression *expr, const Location& loc);
   static void forEach(const AssignmentList& assignments, const Location& loc, const std::shared_ptr<const Context>& context, std::function<void(const std::shared_ptr<const Context>&)> operation);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
@@ -271,7 +271,7 @@ private:
 class LcForC : public ListComprehension
 {
 public:
-  LcForC(const AssignmentList& args, const AssignmentList& incrargs, Expression *cond, Expression *expr, const Location& loc);
+  LcForC(AssignmentList args, AssignmentList incrargs, Expression *cond, Expression *expr, const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
 private:
@@ -295,7 +295,7 @@ private:
 class LcLet : public ListComprehension
 {
 public:
-  LcLet(const AssignmentList& args, Expression *expr, const Location& loc);
+  LcLet(AssignmentList args, Expression *expr, const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
 private:

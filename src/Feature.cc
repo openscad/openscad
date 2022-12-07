@@ -5,6 +5,7 @@
 #include <map>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/range/adaptor/transformed.hpp>
+#include <utility>
 
 #include "Feature.h"
 #include "printutils.h"
@@ -50,8 +51,8 @@ const Feature Feature::ExperimentalTextMetricsFunctions("textmetrics", "Enable t
 const Feature Feature::ExperimentalImportFunction("import-function", "Enable import function returning data instead of geometry.");
 const Feature Feature::ExperimentalSortStl("sort-stl", "Sort the STL output for predictable, diffable results.");
 
-Feature::Feature(const std::string& name, const std::string& description)
-  : enabled(false), name(name), description(description)
+Feature::Feature(const std::string& name, std::string description)
+  : enabled(false), name(name), description(std::move(description))
 {
   feature_map[name] = this;
   feature_list.push_back(this);

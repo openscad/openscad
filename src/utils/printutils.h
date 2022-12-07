@@ -56,8 +56,8 @@ struct Message {
     : msg(""), loc(Location::NONE), docPath(""), group(message_group::None)
   { }
 
-  Message(const std::string& msg, const Location& loc, const std::string& docPath, const message_group& group)
-    : msg(msg), loc(loc), docPath(docPath), group(group)
+  Message(std::string msg, Location loc, std::string docPath, message_group group)
+    : msg(std::move(msg)), loc(std::move(loc)), docPath(std::move(docPath)), group(group)
   { }
 
   std::string str() const {
@@ -193,11 +193,6 @@ private:
 public:
   template <typename ... Args>
   MessageClass(std::string&& fmt, Args&&... args) : fmt(std::forward<std::string>(fmt)), args(std::forward<Args>(args)...)
-  {
-  }
-
-  template <typename ... Args>
-  MessageClass(const std::string& fmt, Args&&... args) : fmt(fmt), args(std::forward<Args>(args)...)
   {
   }
 

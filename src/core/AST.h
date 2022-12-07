@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <boost/filesystem.hpp>
+#include <utility>
 namespace fs = boost::filesystem;
 
 #include <string>
@@ -25,7 +26,7 @@ public:
   int lastColumn() const { return last_col; }
   bool isNone() const;
 
-  std::string toRelativeString(const std::string& docPath) const;
+  std::string toRelativeString(std::string docPath) const;
 
   bool operator==(Location const& rhs);
   bool operator!=(Location const& rhs);
@@ -42,7 +43,7 @@ private:
 class ASTNode
 {
 public:
-  ASTNode(const Location& loc) : loc(loc) {}
+  ASTNode(Location loc) : loc(std::move(loc)) {}
   virtual ~ASTNode() {}
 
   virtual void print(std::ostream& stream, const std::string& indent) const = 0;

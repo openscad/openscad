@@ -8,7 +8,7 @@
 class Annotation
 {
 public:
-  Annotation(const std::string& name, shared_ptr<class Expression> expr);
+  Annotation(std::string name, shared_ptr<class Expression> expr);
 
   void print(std::ostream& stream, const std::string& indent) const;
   const std::string& getName() const { return name; }

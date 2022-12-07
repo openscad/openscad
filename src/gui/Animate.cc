@@ -259,7 +259,7 @@ void Animate::editorContentChanged(){
   this->animateUpdate(); //for now so that we do not change the behavior
 }
 
-void  Animate::animateUpdate()
+void Animate::animateUpdate()
 {
   if (mainWindow->animateDockContents->isVisible()) {
     double fps = this->e_fps->text().toDouble(&this->fps_ok);
@@ -290,7 +290,7 @@ int Animate::nextFrame(){
 }
 
 // Invalid minimumSizeHint means we accept any size.
-// This is not ideal, but  QT does not seam to have an
+// This is not ideal, but QT does not seam to have an
 // elegant way to handle widgets that can adapt
 // to horizontal and vertical layout
 QSize Animate::minimumSizeHint() const{

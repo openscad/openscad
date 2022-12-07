@@ -2,6 +2,7 @@
 
 #include <cstring>
 #include <memory>
+#include <utility>
 #include "linalg.h"
 #include "node.h"
 
@@ -10,8 +11,8 @@
 class State
 {
 public:
-  State(const std::shared_ptr<const AbstractNode> &parent)
-    : flags(NONE), parentnode(parent), numchildren(0) {
+  State(std::shared_ptr<const AbstractNode> parent)
+    : flags(NONE), parentnode(std::move(parent)), numchildren(0) {
     this->matrix_ = Transform3d::Identity();
     this->color_.fill(-1.0f);
   }

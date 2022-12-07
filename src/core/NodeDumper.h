@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <list>
+#include <utility>
 #include "NodeVisitor.h"
 #include "node.h"
 #include "NodeCache.h"
@@ -31,8 +32,8 @@ private:
 class NodeDumper : public NodeVisitor
 {
 public:
-  NodeDumper(NodeCache& cache, const std::shared_ptr<const AbstractNode> &root_node, const std::string& indent, bool idString) :
-    cache(cache), indent(indent), idString(idString), currindent(0), root(root_node) {
+  NodeDumper(NodeCache& cache, std::shared_ptr<const AbstractNode> root_node, std::string indent, bool idString) :
+    cache(cache), indent(std::move(indent)), idString(idString), currindent(0), root(std::move(root_node)) {
     if (idString) {
       groupChecker.traverse(*root);
     }

@@ -45,7 +45,7 @@
 class FontInfo
 {
 public:
-  FontInfo(const std::string& family, const std::string& style, const std::string& file);
+  FontInfo(std::string family, std::string style, std::string file);
   virtual ~FontInfo();
 
   const std::string& get_family() const;
