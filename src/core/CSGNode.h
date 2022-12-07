@@ -44,7 +44,7 @@ class CSGOperation : public CSGNode
 {
 public:
   CSGOperation() {}
-  ~CSGOperation() {}
+  ~CSGOperation() override {}
   void initBoundingBox() override;
   std::string dump() const override;
 
@@ -87,7 +87,7 @@ class CSGLeaf : public CSGNode
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   CSGLeaf(const shared_ptr<const class Geometry>& geom, Transform3d matrix, Color4f color, std::string label, const int index);
-  ~CSGLeaf() {}
+  ~CSGLeaf() override {}
   void initBoundingBox() override;
   bool isEmptySet() override { return geom == nullptr || geom->isEmpty(); }
   std::string dump() const override;

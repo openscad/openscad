@@ -104,7 +104,7 @@ public:
   Lex *my_lexer;
 
   ScadLexer2(QObject *parent);
-  virtual ~ScadLexer2();
+  ~ScadLexer2() override;
 
   const char *language() const override;
 

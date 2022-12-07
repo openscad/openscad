@@ -40,7 +40,7 @@ class VBOPolyhedron : public virtual Polyhedron
 {
 public:
   VBOPolyhedron() : Polyhedron() {}
-  virtual ~VBOPolyhedron()
+  ~VBOPolyhedron() override
   {
     if (points_edges_vertices_vbo) glDeleteBuffers(1, &points_edges_vertices_vbo);
     if (points_edges_elements_vbo) glDeleteBuffers(1, &points_edges_elements_vbo);

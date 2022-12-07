@@ -38,7 +38,7 @@ protected:
 
 public:
   rect();
-  ~rect();
+  ~rect() override;
 
   double get_width() const { return width; }
   double get_height() const { return height; }

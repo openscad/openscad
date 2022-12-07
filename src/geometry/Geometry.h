@@ -67,7 +67,7 @@ public:
 
   GeometryList();
   GeometryList(Geometry::Geometries geometries);
-  virtual ~GeometryList();
+  ~GeometryList() override;
 
   size_t memsize() const override;
   BoundingBox getBoundingBox() const override;

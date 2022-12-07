@@ -36,7 +36,7 @@ protected:
 
 public:
   ellipse();
-  ~ellipse();
+  ~ellipse() override;
 
   double get_radius_x() const { return rx; }
   double get_radius_y() const { return ry; }

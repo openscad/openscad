@@ -14,7 +14,7 @@ public:
   CSGTreeEvaluator(const class Tree& tree, class GeometryEvaluator *geomevaluator = nullptr)
     : tree(tree), geomevaluator(geomevaluator) {
   }
-  ~CSGTreeEvaluator() {}
+  ~CSGTreeEvaluator() override {}
 
   Response visit(State& state, const class AbstractNode& node) override;
   Response visit(State& state, const class AbstractIntersectionNode& node) override;

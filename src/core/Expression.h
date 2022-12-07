@@ -16,7 +16,7 @@ class Expression : public ASTNode
 {
 public:
   Expression(const Location& loc) : ASTNode(loc) {}
-  ~Expression() {}
+  ~Expression() override {}
   virtual bool isLiteral() const;
   virtual Value evaluate(const std::shared_ptr<const Context>& context) const = 0;
   Value checkUndef(Value&& val, const std::shared_ptr<const Context>& context) const;
@@ -241,7 +241,7 @@ class ListComprehension : public Expression
 {
 public:
   ListComprehension(const Location& loc);
-  ~ListComprehension() = default;
+  ~ListComprehension() override = default;
 };
 
 class LcIf : public ListComprehension

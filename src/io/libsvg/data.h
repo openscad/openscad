@@ -35,7 +35,7 @@ private:
 
 public:
   data();
-  ~data();
+  ~data() override;
 
   const std::string& get_text() const { return text; }
 

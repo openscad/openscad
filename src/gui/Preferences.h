@@ -13,7 +13,7 @@ class Preferences : public QMainWindow, public Ui::Preferences, public InitConfi
   Q_OBJECT;
 
 public:
-  ~Preferences();
+  ~Preferences() override;
 
   static void create(QStringList colorSchemes);
   static Preferences *inst();

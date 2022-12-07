@@ -8,7 +8,7 @@ class CGALWorker : public QObject
   Q_OBJECT;
 public:
   CGALWorker();
-  ~CGALWorker();
+  ~CGALWorker() override;
 
 public slots:
   void start(const class Tree& tree);

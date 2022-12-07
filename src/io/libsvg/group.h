@@ -34,7 +34,7 @@ protected:
 
 public:
   group();
-  ~group();
+  ~group() override;
 
   bool is_container() const override { return true; }
 

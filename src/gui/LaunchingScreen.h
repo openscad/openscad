@@ -14,7 +14,7 @@ class LaunchingScreen : public QDialog, public Ui::LaunchingScreen
 public:
   static LaunchingScreen *getDialog();
   explicit LaunchingScreen(QWidget *parent = nullptr);
-  ~LaunchingScreen();
+  ~LaunchingScreen() override;
   QStringList selectedFiles() const;
   bool isForceShowEditor() const;
 

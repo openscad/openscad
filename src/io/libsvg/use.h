@@ -39,7 +39,7 @@ protected:
 
 public:
   use();
-  ~use();
+  ~use() override;
 
   bool is_container() const override { return false; }
 

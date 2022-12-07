@@ -13,7 +13,7 @@ class ModuleInstantiation : public ASTNode
 public:
   ModuleInstantiation(std::string name, AssignmentList args = AssignmentList(), const Location& loc = Location::NONE)
     : ASTNode(loc), arguments(std::move(args)), modname(std::move(name)) { }
-  ~ModuleInstantiation();
+  ~ModuleInstantiation() override;
 
   virtual void print(std::ostream& stream, const std::string& indent, const bool inlined) const;
   void print(std::ostream& stream, const std::string& indent) const override { print(stream, indent, false); }
@@ -39,7 +39,7 @@ class IfElseModuleInstantiation : public ModuleInstantiation
 public:
   IfElseModuleInstantiation(shared_ptr<class Expression> expr, const Location& loc) :
     ModuleInstantiation("if", AssignmentList{assignment("", expr)}, loc) { }
-  ~IfElseModuleInstantiation();
+  ~IfElseModuleInstantiation() override;
   LocalScope *makeElseScope();
   LocalScope *getElseScope() const { return this->else_scope.get(); }
   void print(std::ostream& stream, const std::string& indent, const bool inlined) const final;

@@ -299,7 +299,7 @@ private:
 
 public:
   AmfImporterZIP(const Location& loc);
-  ~AmfImporterZIP();
+  ~AmfImporterZIP() override;
 
   xmlTextReaderPtr createXmlReader(const char *filename) override;
 };

@@ -11,7 +11,7 @@ class OffscreenView : public GLView
 {
 public:
   OffscreenView(int width, int height);
-  ~OffscreenView();
+  ~OffscreenView() override;
   bool save(std::ostream& output) const;
   OffscreenContext *ctx;
 

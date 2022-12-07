@@ -47,7 +47,7 @@ private:
 
 public:
   path();
-  ~path();
+  ~path() override;
 
   void set_attrs(attr_map_t& attrs, void *context) override;
   const std::string dump() const override;

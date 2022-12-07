@@ -38,7 +38,7 @@ public:
 
 public:
   InputDriver();
-  virtual ~InputDriver();
+  ~InputDriver() override;
 
   virtual const std::string& get_name() const = 0;
   virtual std::string get_info() const = 0;

@@ -40,7 +40,7 @@ private:
 
 public:
   text();
-  ~text();
+  ~text() override;
 
   bool is_container() const override { return true; }
 

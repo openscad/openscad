@@ -9,7 +9,7 @@ class OpenSCADApp : public QApplication
 
 public:
   OpenSCADApp(int& argc, char **argv);
-  ~OpenSCADApp();
+  ~OpenSCADApp() override;
 
   bool notify(QObject *object, QEvent *event) override;
   void workaround_QTBUG_65592(QObject *object, QEvent *event);

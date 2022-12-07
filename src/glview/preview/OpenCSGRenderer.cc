@@ -61,7 +61,7 @@ class OpenCSGVBOPrim : public OpenCSG::Primitive
 public:
   OpenCSGVBOPrim(OpenCSG::Operation operation, unsigned int convexity, std::unique_ptr<VertexState> vertex_state) :
     OpenCSG::Primitive(operation, convexity), vertex_state(std::move(vertex_state)) { }
-  virtual void render() {
+  void render() override {
     if (vertex_state != nullptr) {
       vertex_state->draw();
     } else {

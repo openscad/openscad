@@ -35,7 +35,7 @@ protected:
 
 public:
   circle();
-  ~circle();
+  ~circle() override;
 
   double get_radius() const { return r; }
 

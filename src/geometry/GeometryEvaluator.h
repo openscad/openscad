@@ -14,7 +14,7 @@ class GeometryEvaluator : public NodeVisitor
 {
 public:
   GeometryEvaluator(const class Tree& tree);
-  ~GeometryEvaluator() {}
+  ~GeometryEvaluator() override {}
 
   shared_ptr<const Geometry> evaluateGeometry(const AbstractNode& node, bool allownef);
 

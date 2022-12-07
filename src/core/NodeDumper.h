@@ -38,7 +38,7 @@ public:
       groupChecker.traverse(*root);
     }
   }
-  ~NodeDumper() {}
+  ~NodeDumper() override {}
 
   Response visit(State& state, const AbstractNode& node) override;
   Response visit(State& state, const GroupNode& node) override;

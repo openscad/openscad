@@ -67,7 +67,7 @@ protected:
   Context(const std::shared_ptr<const Context>& parent);
 
 public:
-  ~Context();
+  ~Context() override;
 
   template <typename C, typename ... T>
   static ContextHandle<C> create(T&& ... t) {

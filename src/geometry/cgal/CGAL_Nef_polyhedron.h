@@ -14,7 +14,7 @@ public:
   CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron3 *p = nullptr);
   CGAL_Nef_polyhedron(shared_ptr<const CGAL_Nef_polyhedron3> p) : p3(std::move(p)) {}
   CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron& src);
-  ~CGAL_Nef_polyhedron() {}
+  ~CGAL_Nef_polyhedron() override {}
 
   size_t memsize() const override;
   // FIXME: Implement, but we probably want a high-resolution BBox..
@@ -32,8 +32,8 @@ public:
   CGAL_Nef_polyhedron& operator*=(const CGAL_Nef_polyhedron& other);
   CGAL_Nef_polyhedron& operator-=(const CGAL_Nef_polyhedron& other);
   CGAL_Nef_polyhedron& minkowski(const CGAL_Nef_polyhedron& other);
-  virtual void transform(const Transform3d& matrix) override;
-  virtual void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
+  void transform(const Transform3d& matrix) override;
+  void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
   shared_ptr<const CGAL_Nef_polyhedron3> p3;
 };

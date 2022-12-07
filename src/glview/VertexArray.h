@@ -109,7 +109,7 @@ class AttributeData : public IAttributeData
 {
 public:
   AttributeData() : data_() {}
-  virtual ~AttributeData() {}
+  ~AttributeData() override {}
 
   inline size_t count() const override { return C; }
   inline size_t size() const override { return data_.size(); }

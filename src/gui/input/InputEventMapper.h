@@ -65,7 +65,7 @@ private:
 
 public:
   InputEventMapper();
-  virtual ~InputEventMapper();
+  ~InputEventMapper() override;
 
   void stop();
 

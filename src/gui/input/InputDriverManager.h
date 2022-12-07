@@ -63,7 +63,7 @@ private:
 
 public:
   InputDriverManager();
-  virtual ~InputDriverManager();
+  ~InputDriverManager() override;
 
   void sendEvent(InputEvent *event);
 

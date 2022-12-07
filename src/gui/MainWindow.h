@@ -78,7 +78,7 @@ public:
   int compileWarnings;
 
   MainWindow(const QStringList& filenames);
-  ~MainWindow();
+  ~MainWindow() override;
 
 private:
   volatile bool isClosing=false;

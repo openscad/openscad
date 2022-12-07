@@ -79,7 +79,7 @@ struct StreamVisitor : public StatisticVisitor
 {
   StreamVisitor(const std::vector<std::string>& options, std::ostream& stream) : StatisticVisitor(options), stream(stream) {}
   StreamVisitor(const std::vector<std::string>& options, const std::string& filename) : StatisticVisitor(options), fstream(filename), stream(fstream) {}
-  ~StreamVisitor() {
+  ~StreamVisitor() override {
     if (fstream.is_open()) fstream.close();
   }
   void visit(const class GeometryList& node) override;

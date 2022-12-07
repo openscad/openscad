@@ -34,7 +34,7 @@ class SpaceNavInputDriver : public InputDriver
 
 public:
   SpaceNavInputDriver();
-  ~SpaceNavInputDriver();
+  ~SpaceNavInputDriver() override;
   void run() override;
   bool open() override;
   void close() override;

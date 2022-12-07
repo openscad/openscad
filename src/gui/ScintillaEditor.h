@@ -50,7 +50,7 @@ class ScintillaEditor : public EditorInterface
 
 public:
   ScintillaEditor(QWidget *parent);
-  ~ScintillaEditor() {}
+  ~ScintillaEditor() override {}
   QsciScintilla *qsci;
   QString toPlainText() override;
   void initMargin();

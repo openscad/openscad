@@ -78,7 +78,7 @@ protected:
 
 public:
   ScadApi(ScintillaEditor *editor, QsciLexer *lexer);
-  virtual ~ScadApi();
+  ~ScadApi() override;
 
   void updateAutoCompletionList(const QStringList& context, QStringList& list) override;
   void autoCompletionSelected(const QString& selection) override;

@@ -29,7 +29,7 @@ class NodeVisitor :
 {
 public:
   NodeVisitor() {}
-  ~NodeVisitor() {}
+  ~NodeVisitor() override {}
 
   Response traverse(const AbstractNode& node, const class State& state = NodeVisitor::nullstate);
 

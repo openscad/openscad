@@ -35,7 +35,7 @@ private:
 
 public:
   polygon();
-  ~polygon();
+  ~polygon() override;
 
   void set_attrs(attr_map_t& attrs, void *context) override;
   const std::string& get_name() const override { return polygon::name; }

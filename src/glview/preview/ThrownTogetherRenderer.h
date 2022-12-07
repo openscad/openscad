@@ -19,7 +19,7 @@ public:
                  size_t csg_object_index = 0)
     : VertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo), csg_object_index_(csg_object_index)
   {}
-  virtual ~TTRVertexState() {}
+  ~TTRVertexState() override {}
 
   size_t csgObjectIndex() const { return csg_object_index_; }
   void csgObjectIndex(size_t csg_object_index) { csg_object_index_ = csg_object_index; }
@@ -32,7 +32,7 @@ class TTRVertexStateFactory : public VertexStateFactory
 {
 public:
   TTRVertexStateFactory() {}
-  virtual ~TTRVertexStateFactory() {}
+  ~TTRVertexStateFactory() override {}
 
   std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type,
                                                  size_t draw_offset, size_t element_offset,
@@ -47,7 +47,7 @@ public:
   ThrownTogetherRenderer(shared_ptr<class CSGProducts> root_products,
                          shared_ptr<CSGProducts> highlight_products,
                          shared_ptr<CSGProducts> background_products);
-  virtual ~ThrownTogetherRenderer();
+  ~ThrownTogetherRenderer() override;
   void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) override;
   void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
 

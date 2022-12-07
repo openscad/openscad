@@ -40,7 +40,7 @@ private:
 
 public:
   tspan();
-  ~tspan();
+  ~tspan() override;
 
   bool is_container() const override { return true; }
 

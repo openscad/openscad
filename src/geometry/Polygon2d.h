@@ -48,7 +48,7 @@ public:
 
   void transform(const Transform2d& mat);
   void resize(const Vector2d& newsize, const Eigen::Matrix<bool, 2, 1>& autosize);
-  virtual void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override {
+  void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override {
     resize(Vector2d(newsize[0], newsize[1]), Eigen::Matrix<bool, 2, 1>(autosize[0], autosize[1]));
   }
 

@@ -9,7 +9,7 @@ class WindowManager : public QObject
 
 public:
   WindowManager();
-  ~WindowManager();
+  ~WindowManager() override;
 
   void add(class MainWindow *mainwin);
   void remove(class MainWindow *mainwin);

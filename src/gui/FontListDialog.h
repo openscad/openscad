@@ -11,7 +11,7 @@ class FontListDialog : public QDialog, public Ui::FontListDialog
   Q_OBJECT;
 public:
   FontListDialog();
-  ~FontListDialog();
+  ~FontListDialog() override;
 
   void update_font_list();
 

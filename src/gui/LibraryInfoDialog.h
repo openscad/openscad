@@ -12,7 +12,7 @@ class LibraryInfoDialog : public QDialog, public Ui::LibraryInfoDialog
 
 public:
   LibraryInfoDialog(const QString& rendererInfo);
-  ~LibraryInfoDialog();
+  ~LibraryInfoDialog() override;
 
   void update_library_info(const QString& rendererInfo);
 };

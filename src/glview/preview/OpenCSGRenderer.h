@@ -30,7 +30,7 @@ public:
     : VertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo),
     csg_object_index_(csg_object_index)
   {}
-  virtual ~OpenCSGVertexState() {}
+  ~OpenCSGVertexState() override {}
 
   size_t csgObjectIndex() const { return csg_object_index_; }
   void csgObjectIndex(size_t csg_object_index) { csg_object_index_ = csg_object_index; }
@@ -43,7 +43,7 @@ class OpenCSGVertexStateFactory : public VertexStateFactory
 {
 public:
   OpenCSGVertexStateFactory() {}
-  virtual ~OpenCSGVertexStateFactory() {}
+  ~OpenCSGVertexStateFactory() override {}
 
   std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type,
                                                  size_t draw_offset, size_t element_offset,
@@ -75,7 +75,7 @@ public:
   OpenCSGRenderer(std::shared_ptr<class CSGProducts> root_products,
                   std::shared_ptr<CSGProducts> highlights_products,
                   std::shared_ptr<CSGProducts> background_products);
-  virtual ~OpenCSGRenderer() {
+  ~OpenCSGRenderer() override {
     if (all_vbos_.size()) {
       glDeleteBuffers(all_vbos_.size(), all_vbos_.data());
     }

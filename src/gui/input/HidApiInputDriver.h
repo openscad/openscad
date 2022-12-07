@@ -42,7 +42,7 @@ class HidApiInputDriver : public InputDriver
 
 public:
   HidApiInputDriver();
-  ~HidApiInputDriver();
+  ~HidApiInputDriver() override;
   void run() override;
   bool open() override;
   void close() override;

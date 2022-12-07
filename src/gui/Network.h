@@ -40,7 +40,7 @@ class NetworkException : public std::exception
 {
 public:
   NetworkException(const QNetworkReply::NetworkError& error, const QString& errorMessage) : error(error), errorMessage(errorMessage.toStdString()) { }
-  virtual ~NetworkException() {}
+  ~NetworkException() override {}
 
   const QNetworkReply::NetworkError& getError() const { return error; }
   const std::string& getErrorMessage() const { return errorMessage; }

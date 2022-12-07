@@ -74,8 +74,8 @@ public:
    * it is also modified during the computation, i.e., it is decomposed into convex pieces.
    */
   void minkowski(CGALHybridPolyhedron& other);
-  virtual void transform(const Transform3d& mat) override;
-  virtual void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
+  void transform(const Transform3d& mat) override;
+  void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
   /*! Iterate over all vertices' points until the function returns true (for done). */
   void foreachVertexUntilTrue(const std::function<bool(const point_t& pt)>& f) const;

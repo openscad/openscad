@@ -8,7 +8,7 @@
 class BuiltinContext : public Context
 {
 public:
-  ~BuiltinContext() {}
+  ~BuiltinContext() override {}
 
   void init() override;
   boost::optional<CallableFunction> lookup_local_function(const std::string& name, const Location& loc) const override;
