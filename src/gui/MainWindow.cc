@@ -285,11 +285,11 @@ MainWindow::MainWindow(const QStringList& filenames)
   absolute_root_node = nullptr;
 
   // Open Recent
-  for (int i = 0; i < UIUtils::maxRecentFiles; ++i) {
-    this->actionRecentFile[i] = new QAction(this);
-    this->actionRecentFile[i]->setVisible(false);
-    this->menuOpenRecent->addAction(this->actionRecentFile[i]);
-    connect(this->actionRecentFile[i], SIGNAL(triggered()),
+  for (auto & recent : this->actionRecentFile) {
+    recent = new QAction(this);
+    recent->setVisible(false);
+    this->menuOpenRecent->addAction(recent);
+    connect(recent, SIGNAL(triggered()),
             this, SLOT(actionOpenRecent()));
   }
 
@@ -1326,8 +1326,8 @@ void MainWindow::compileCSG()
       this->processEvents();
 
       this->highlights_products.reset(new CSGProducts());
-      for (unsigned int i = 0; i < highlight_terms.size(); ++i) {
-        auto nterm = normalizer.normalize(highlight_terms[i]);
+      for (const auto & highlight_term : highlight_terms) {
+        auto nterm = normalizer.normalize(highlight_term);
         if (nterm) {
           this->highlights_products->import(nterm);
         }
@@ -1342,8 +1342,8 @@ void MainWindow::compileCSG()
       this->processEvents();
 
       this->background_products.reset(new CSGProducts());
-      for (unsigned int i = 0; i < background_terms.size(); ++i) {
-        auto nterm = normalizer.normalize(background_terms[i]);
+      for (const auto & background_term : background_terms) {
+        auto nterm = normalizer.normalize(background_term);
         if (nterm) {
           this->background_products->import(nterm);
         }
@@ -1381,11 +1381,11 @@ void MainWindow::compileCSG()
 void MainWindow::actionOpen()
 {
   auto fileInfoList = UIUtils::openFiles(this);
-  for (int i = 0; i < fileInfoList.size(); ++i) {
-    if (!fileInfoList[i].exists()) {
+  for (auto & i : fileInfoList) {
+    if (!i.exists()) {
       return;
     }
-    tabManager->open(fileInfoList[i].filePath());
+    tabManager->open(i.filePath());
   }
 }
 
@@ -1397,11 +1397,11 @@ void MainWindow::actionNewWindow()
 void MainWindow::actionOpenWindow()
 {
   auto fileInfoList = UIUtils::openFiles(this);
-  for (int i = 0; i < fileInfoList.size(); ++i) {
-    if (!fileInfoList[i].exists()) {
+  for (auto & i : fileInfoList) {
+    if (!i.exists()) {
       return;
     }
-    new MainWindow(QStringList(fileInfoList[i].filePath()));
+    new MainWindow(QStringList(i.filePath()));
   }
 }
 
@@ -1674,8 +1674,7 @@ void MainWindow::convertTabsToSpaces()
   QString converted;
 
   int cnt = 4;
-  for (int idx = 0; idx < text.length(); ++idx) {
-    auto c = text.at(idx);
+  for (auto c : text) {
     if (c == '\t') {
       for (; cnt > 0; cnt--) {
         converted.append(' ');
@@ -3227,8 +3226,8 @@ void MainWindow::dropEvent(QDropEvent *event)
 {
   setCurrentOutput();
   const QList<QUrl> urls = event->mimeData()->urls();
-  for (int i = 0; i < urls.size(); ++i) {
-    handleFileDrop(urls[i]);
+  for (const auto & url : urls) {
+    handleFileDrop(url);
   }
   clearCurrentOutput();
 }

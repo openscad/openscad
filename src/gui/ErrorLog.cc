@@ -117,10 +117,10 @@ void ErrorLog::on_errorLogComboBox_currentIndexChanged(const QString& group)
 {
   errorLogModel->clear();
   initGUI();
-  for (auto itr = lastMessages.begin(); itr != lastMessages.end(); itr++) {
-    if (group == QString::fromStdString("All")) showtheErrorInGUI(*itr);
-    else if (group == QString::fromStdString(getGroupName(itr->group))) {
-      showtheErrorInGUI(*itr);
+  for (auto & lastMessage : lastMessages) {
+    if (group == QString::fromStdString("All")) showtheErrorInGUI(lastMessage);
+    else if (group == QString::fromStdString(getGroupName(lastMessage.group))) {
+      showtheErrorInGUI(lastMessage);
     }
   }
 }

@@ -66,11 +66,9 @@ std::string PolySet::dump() const
       << "\n num polygons: " << polygons.size()
       << "\n num outlines: " << polygon.outlines().size()
       << "\n polygons data:";
-  for (size_t i = 0; i < polygons.size(); ++i) {
+  for (const auto & polygon : polygons) {
     out << "\n  polygon begin:";
-    const Polygon *poly = &polygons[i];
-    for (size_t j = 0; j < poly->size(); ++j) {
-      Vector3d v = poly->at(j);
+    for (auto v : polygon) {
       out << "\n   vertex:" << v.transpose();
     }
   }

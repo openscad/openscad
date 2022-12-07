@@ -87,10 +87,10 @@ Value builtin_dxf_dim(Arguments arguments, const Location& loc)
   handle_dep(filepath.string());
   DxfData dxf(36, 0, 0, filename, layername, xorigin, yorigin, scale);
 
-  for (size_t i = 0; i < dxf.dims.size(); ++i) {
-    if (!name.empty() && dxf.dims[i].name != name) continue;
+  for (auto & dim : dxf.dims) {
+    if (!name.empty() && dim.name != name) continue;
 
-    DxfData::Dim *d = &dxf.dims[i];
+    DxfData::Dim *d = &dim;
     int type = d->type & 7;
 
     if (type == 0) {

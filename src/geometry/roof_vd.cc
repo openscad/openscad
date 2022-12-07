@@ -217,24 +217,24 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
                  && segment.p1 == point);
     };
 
-  for (voronoi_diagram::const_cell_iterator cell = vd.cells().begin(); cell != vd.cells().end(); cell++) {
+  for (const auto & cell : vd.cells()) {
 
-    std::size_t cell_index = cell->source_index();
-    if (cell->is_degenerate()) {
+    std::size_t cell_index = cell.source_index();
+    if (cell.is_degenerate()) {
       RAISE_ROOF_EXCEPTION("Voronoi error");
     }
     const Segment& segment = segments[cell_index];
 
-    if (cell->contains_segment()) {
+    if (cell.contains_segment()) {
       // walk around the cell, find edge starting from segment.p1 or passing through it
-      const voronoi_diagram::edge_type *edge = cell->incident_edge();
+      const voronoi_diagram::edge_type *edge = cell.incident_edge();
       for (;;) {
         if (cell_contains_boundary_point(edge->twin()->cell(), segment.p1)
             && !cell_contains_boundary_point(edge->next()->twin()->cell(), segment.p1)) {
           break;
         }
         edge = edge->next();
-        if (edge == cell->incident_edge()) {
+        if (edge == cell.incident_edge()) {
           RAISE_ROOF_EXCEPTION("Voronoi error");
         }
       }
@@ -276,12 +276,12 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
         ret.heights[p] = 0.0;
       }
     } else { // point cell
-      const voronoi_diagram::edge_type *edge = cell->incident_edge();
-      const Point point = (cell->source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT) ?
+      const voronoi_diagram::edge_type *edge = cell.incident_edge();
+      const Point point = (cell.source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT) ?
         segment.p0 : segment.p1;
       while (!(edge->is_secondary() && edge->prev()->is_secondary() )) {
         edge = edge->next();
-        if (edge == cell->incident_edge()) {
+        if (edge == cell.incident_edge()) {
           RAISE_ROOF_EXCEPTION("Voronoi error");
         }
       }

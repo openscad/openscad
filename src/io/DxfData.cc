@@ -124,9 +124,9 @@ DxfData::DxfData(double fn, double fs, double fa,
   double arc_start_angle = 0, arc_stop_angle = 0;
   double ellipse_start_angle = 0, ellipse_stop_angle = 0;
 
-  for (int i = 0; i < 7; ++i) {
-    for (int j = 0; j < 2; ++j) {
-      coords[i][j] = 0;
+  for (auto & coord : coords) {
+    for (double & j : coord) {
+      j = 0;
     }
   }
 
@@ -302,9 +302,9 @@ DxfData::DxfData(double fn, double fs, double fa,
         name.erase();
         iddata.erase();
         dimtype = 0;
-        for (int i = 0; i < 7; ++i) {
-          for (int j = 0; j < 2; ++j) {
-            coords[i][j] = 0;
+        for (auto & coord : coords) {
+          for (double & j : coord) {
+            j = 0;
           }
         }
         xverts.clear();
@@ -417,8 +417,7 @@ DxfData::DxfData(double fn, double fs, double fa,
       int idx = l.second;
       for (int j = 0; j < 2; ++j) {
         auto lv = grid.data(this->points[lines[idx].idx[j]][0], this->points[lines[idx].idx[j]][1]);
-        for (size_t ki = 0; ki < lv.size(); ++ki) {
-          int k = lv.at(ki);
+        for (int k : lv) {
           if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
             LOG(message_group::Warning, Location::NONE, "",
                 "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
@@ -447,8 +446,7 @@ create_open_path:
       lines[current_line].disabled = true;
       enabled_lines.erase(current_line);
       auto lv = grid.data(ref_point[0], ref_point[1]);
-      for (size_t ki = 0; ki < lv.size(); ++ki) {
-        int k = lv.at(ki);
+      for (int k : lv) {
         if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
           LOG(message_group::Warning, Location::NONE, "",
               "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
@@ -489,8 +487,7 @@ found_next_line_in_open_path:;
       lines[current_line].disabled = true;
       enabled_lines.erase(current_line);
       auto lv = grid.data(ref_point[0], ref_point[1]);
-      for (size_t ki = 0; ki < lv.size(); ++ki) {
-        int k = lv.at(ki);
+      for (int k : lv) {
         if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
           LOG(message_group::Warning, Location::NONE, "",
               "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
@@ -535,25 +532,25 @@ found_next_line_in_closed_path:;
  */
 void DxfData::fixup_path_direction()
 {
-  for (size_t i = 0; i < this->paths.size(); ++i) {
-    if (!this->paths[i].is_closed) break;
-    this->paths[i].is_inner = true;
-    double min_x = this->points[this->paths[i].indices[0]][0];
+  for (auto & path : this->paths) {
+    if (!path.is_closed) break;
+    path.is_inner = true;
+    double min_x = this->points[path.indices[0]][0];
     size_t min_x_point = 0;
-    for (size_t j = 1; j < this->paths[i].indices.size(); ++j) {
-      if (this->points[this->paths[i].indices[j]][0] < min_x) {
-        min_x = this->points[this->paths[i].indices[j]][0];
+    for (size_t j = 1; j < path.indices.size(); ++j) {
+      if (this->points[path.indices[j]][0] < min_x) {
+        min_x = this->points[path.indices[j]][0];
         min_x_point = j;
       }
     }
     // rotate points if the path is in non-standard rotation
     size_t b = min_x_point;
-    size_t a = b == 0 ? this->paths[i].indices.size() - 2 : b - 1;
-    size_t c = b == this->paths[i].indices.size() - 1 ? 1 : b + 1;
-    double ax = this->points[this->paths[i].indices[a]][0] - this->points[this->paths[i].indices[b]][0];
-    double ay = this->points[this->paths[i].indices[a]][1] - this->points[this->paths[i].indices[b]][1];
-    double cx = this->points[this->paths[i].indices[c]][0] - this->points[this->paths[i].indices[b]][0];
-    double cy = this->points[this->paths[i].indices[c]][1] - this->points[this->paths[i].indices[b]][1];
+    size_t a = b == 0 ? path.indices.size() - 2 : b - 1;
+    size_t c = b == path.indices.size() - 1 ? 1 : b + 1;
+    double ax = this->points[path.indices[a]][0] - this->points[path.indices[b]][0];
+    double ay = this->points[path.indices[a]][1] - this->points[path.indices[b]][1];
+    double cx = this->points[path.indices[c]][0] - this->points[path.indices[b]][0];
+    double cy = this->points[path.indices[c]][1] - this->points[path.indices[b]][1];
 #if 0
     printf("Rotate check:\n");
     printf("  a/b/c indices = %d %d %d\n", a, b, c);
@@ -562,7 +559,7 @@ void DxfData::fixup_path_direction()
 #endif
     // FIXME: atan2() usually takes y,x. This variant probably makes the path clockwise..
     if (atan2(ax, ay) < atan2(cx, cy)) {
-      std::reverse(this->paths[i].indices.begin(), this->paths[i].indices.end());
+      std::reverse(path.indices.begin(), path.indices.end());
     }
   }
 }
@@ -584,8 +581,8 @@ std::string DxfData::dump() const
       << "\n num paths: " << paths.size()
       << "\n num dims: " << dims.size()
       << "\n points: ";
-  for (size_t k = 0; k < points.size(); ++k) {
-    out << "\n  x y: " << points[k].transpose();
+  for (const auto & point : points) {
+    out << "\n  x y: " << point.transpose();
   }
   out << "\n paths: ";
   for (size_t i = 0; i < paths.size(); ++i) {
@@ -607,8 +604,7 @@ std::string DxfData::dump() const
 Polygon2d *DxfData::toPolygon2d() const
 {
   auto poly = new Polygon2d();
-  for (size_t i = 0; i < this->paths.size(); ++i) {
-    const auto& path = this->paths[i];
+  for (const auto & path : this->paths) {
     Outline2d outline;
     size_t endidx = path.indices.size();
     // We don't support open paths; closing them to be compatible with existing behavior

@@ -202,16 +202,16 @@ static void minkowski_outline(const ClipperLib::Path& poly, const ClipperLib::Pa
     for (size_t i = 0; i < pathCnt; ++i) {
       ClipperLib::Path p;
       p.reserve(polyCnt);
-      for (size_t j = 0; j < poly.size(); ++j)
-        p.push_back(ClipperLib::IntPoint(path[i].X + poly[j].X, path[i].Y + poly[j].Y));
+      for (auto point : poly)
+        p.push_back(ClipperLib::IntPoint(path[i].X + point.X, path[i].Y + point.Y));
       pp.push_back(p);
     }
   else
     for (size_t i = 0; i < pathCnt; ++i) {
       ClipperLib::Path p;
       p.reserve(polyCnt);
-      for (size_t j = 0; j < poly.size(); ++j)
-        p.push_back(ClipperLib::IntPoint(path[i].X - poly[j].X, path[i].Y - poly[j].Y));
+      for (auto point : poly)
+        p.push_back(ClipperLib::IntPoint(path[i].X - point.X, path[i].Y - point.Y));
       pp.push_back(p);
     }
 

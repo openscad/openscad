@@ -49,12 +49,12 @@ QStringList getSorted(const QFileInfoList& list, C cond) {
 
 ScadApi::ScadApi(ScintillaEditor *editor, QsciLexer *lexer) : QsciAbstractAPIs(lexer), editor(editor)
 {
-  for (auto iter = Builtins::keywordList.cbegin(); iter != Builtins::keywordList.cend(); ++iter) {
+  for (const auto & iter : Builtins::keywordList) {
     QStringList calltipList;
-    for (auto it = iter->second.cbegin(); it != iter->second.cend(); ++it)
+    for (auto it = iter.second.cbegin(); it != iter.second.cend(); ++it)
       calltipList.append(QString::fromStdString(*it));
 
-    funcs.append(ApiFunc(QString::fromStdString(iter->first), calltipList));
+    funcs.append(ApiFunc(QString::fromStdString(iter.first), calltipList));
   }
 }
 
@@ -121,8 +121,7 @@ void ScadApi::autoCompleteFunctions(const QStringList& context, QStringList& lis
     return;
   }
 
-  for (int a = 0; a < funcs.size(); ++a) {
-    const ApiFunc& func = funcs.at(a);
+  for (const auto & func : funcs) {
     const QString& name = func.get_name();
     if (name.startsWith(c)) {
       if (!list.contains(name)) {
@@ -139,9 +138,9 @@ void ScadApi::autoCompletionSelected(const QString& /*selection*/)
 QStringList ScadApi::callTips(const QStringList& context, int /*commas*/, QsciScintilla::CallTipsStyle /*style*/, QList<int>& /*shifts*/)
 {
   QStringList callTips;
-  for (int a = 0; a < funcs.size(); ++a) {
-    if (funcs.at(a).get_name() == context.at(context.size() - 2)) {
-      callTips = funcs.at(a).get_params();
+  for (const auto & func : funcs) {
+    if (func.get_name() == context.at(context.size() - 2)) {
+      callTips = func.get_params();
       break;
     }
   }

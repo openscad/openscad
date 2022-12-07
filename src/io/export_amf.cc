@@ -104,8 +104,7 @@ static void append_amf(const CGAL_Nef_polyhedron& root_N, std::ostream& output)
     output << " <object id=\"" << objectid++ << "\">\r\n"
            << "  <mesh>\r\n";
     output << "   <vertices>\r\n";
-    for (size_t i = 0; i < vertices.size(); ++i) {
-      std::string s = vertices[i];
+    for (auto s : vertices) {
       output << "    <vertex><coordinates>\r\n";
       char *chrs = new char[s.length() + 1];
       strcpy(chrs, s.c_str());
@@ -120,8 +119,7 @@ static void append_amf(const CGAL_Nef_polyhedron& root_N, std::ostream& output)
     }
     output << "   </vertices>\r\n";
     output << "   <volume>\r\n";
-    for (size_t i = 0; i < triangles.size(); ++i) {
-      triangle t = triangles[i];
+    for (auto t : triangles) {
       output << "    <triangle>\r\n";
       size_t index;
       index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs1));

@@ -641,11 +641,10 @@ Value builtin_search(Arguments arguments, const Location& loc)
     }
   } else if (findThis.type() == Value::Type::VECTOR) {
     const auto& findVec = findThis.toVector();
-    for (size_t i = 0; i < findVec.size(); ++i) {
+    for (const auto & find_value : findVec) {
       unsigned int matchCount = 0;
       VectorType resultvec(arguments.session());
 
-      const auto& find_value = findVec[i];
       size_t j = 0;
       for (const auto& search_element : searchTable.toVector()) {
         if ((index_col_num == 0 && (find_value == search_element).toBool()) ||

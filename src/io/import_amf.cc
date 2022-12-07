@@ -265,8 +265,8 @@ PolySet *AmfImporter::read(const std::string& filename)
   }
   if (polySets.size() > 1) {
     Geometry::Geometries children;
-    for (std::vector<PolySet *>::iterator it = polySets.begin(); it != polySets.end(); ++it) {
-      children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(),  shared_ptr<const Geometry>(*it)));
+    for (auto & polySet : polySets) {
+      children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(),  shared_ptr<const Geometry>(polySet)));
     }
 
     if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {

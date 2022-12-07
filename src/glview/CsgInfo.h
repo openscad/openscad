@@ -44,18 +44,18 @@ public:
     if (highlightNodes.size() > 0) {
       LOG(message_group::None, Location::NONE, "", "Compiling highlights (%1$i CSG Trees)...", highlightNodes.size());
       this->highlights_products.reset(new CSGProducts());
-      for (unsigned int i = 0; i < highlightNodes.size(); ++i) {
-        highlightNodes[i] = normalizer.normalize(highlightNodes[i]);
-        this->highlights_products->import(highlightNodes[i]);
+      for (auto & highlightNode : highlightNodes) {
+        highlightNode = normalizer.normalize(highlightNode);
+        this->highlights_products->import(highlightNode);
       }
     }
 
     if (backgroundNodes.size() > 0) {
       LOG(message_group::None, Location::NONE, "", "Compiling background (%1$i CSG Trees)...", backgroundNodes.size());
       this->background_products.reset(new CSGProducts());
-      for (unsigned int i = 0; i < backgroundNodes.size(); ++i) {
-        backgroundNodes[i] = normalizer.normalize(backgroundNodes[i]);
-        this->background_products->import(backgroundNodes[i]);
+      for (auto & backgroundNode : backgroundNodes) {
+        backgroundNode = normalizer.normalize(backgroundNode);
+        this->background_products->import(backgroundNode);
       }
     }
     return true;

@@ -46,8 +46,8 @@ std::string glew_extensions_dump()
   std::sort(extensions.begin(), extensions.end());
   std::ostringstream out;
   out << "GL Extensions:";
-  for (unsigned int i = 0; i < extensions.size(); ++i) {
-    out << extensions[i] << "\n";
+  for (auto & extension : extensions) {
+    out << extension << "\n";
   }
   return out.str();
 }
