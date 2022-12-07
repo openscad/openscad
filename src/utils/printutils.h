@@ -18,7 +18,7 @@
 #undef vsnprintf
 #endif
 
-#include <locale.h>
+#include <clocale>
 #include "AST.h"
 #include <set>
 inline char *_(const char *msgid) { return gettext(msgid); }

@@ -3,7 +3,7 @@
 #include "MainWindow.h"
 #include "QGLView.h"
 #include <boost/filesystem.hpp>
-#include "float.h"
+#include <cfloat>
 #include <QDoubleSpinBox>
 #include <QDesktopWidget>
 
