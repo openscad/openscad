@@ -43,7 +43,7 @@ public:
   const QNetworkReply::NetworkError& getError() const { return error; }
   const std::string& getErrorMessage() const { return errorMessage; }
 
-  const char *what() const throw() override
+  const char *what() const noexcept override
   {
     return errorMessage.c_str();
   }

@@ -35,7 +35,7 @@ public:
   SvgException(const std::string& message) : message(message) { }
   virtual ~SvgException() {}
 
-  const char *what() const throw() override
+  const char *what() const noexcept override
   {
     return message.c_str();
   }

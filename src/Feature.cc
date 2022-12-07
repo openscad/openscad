@@ -128,11 +128,6 @@ ExperimentalFeatureException::ExperimentalFeatureException(const std::string& wh
 
 }
 
-ExperimentalFeatureException::~ExperimentalFeatureException() throw()
-{
-
-}
-
 void ExperimentalFeatureException::check(const Feature& feature)
 {
   if (!feature.is_enabled()) {

@@ -8,10 +8,8 @@
 class EvaluationException : public std::runtime_error
 {
 public:
-  EvaluationException(const std::string& what_arg) : std::runtime_error(what_arg) {
-    this->traceDepth = OpenSCAD::traceDepth;
-  }
-  ~EvaluationException() throw() {}
+  EvaluationException(const std::string& what_arg) : std::runtime_error(what_arg), traceDepth(OpenSCAD::traceDepth) {}
+  ~EvaluationException() noexcept = default;
 public:
   int traceDepth = 0;
 };
@@ -20,7 +18,7 @@ class AssertionFailedException : public EvaluationException
 {
 public:
   AssertionFailedException(const std::string& what_arg, const Location& loc) : EvaluationException(what_arg), loc(loc) {}
-  ~AssertionFailedException() throw() {}
+  ~AssertionFailedException() noexcept = default;
 
 public:
   Location loc;
@@ -32,7 +30,7 @@ public:
   static RecursionException create(const std::string& recursiontype, const std::string& name, const Location& loc) {
     return RecursionException{STR("Recursion detected calling ", recursiontype, " '", name, "'"), loc};
   }
-  ~RecursionException() throw() {}
+  ~RecursionException() noexcept = default;
 
 public:
   Location loc;
@@ -47,7 +45,7 @@ public:
   static LoopCntException create(const std::string& type, const Location& loc) {
     return LoopCntException{STR(type, " loop counter exceeded limit"), loc};
   }
-  ~LoopCntException() throw() {}
+  ~LoopCntException() noexcept = default;
 
 public:
   Location loc;
@@ -62,7 +60,7 @@ public:
   static VectorEchoStringException create() {
     return VectorEchoStringException{"Stack exhausted while trying to convert a vector to EchoString"};
   }
-  ~VectorEchoStringException() throw() {}
+  ~VectorEchoStringException() noexcept = default;
 
 private:
   VectorEchoStringException(const std::string& what_arg) : EvaluationException(what_arg) {}
@@ -72,5 +70,5 @@ class HardWarningException : public EvaluationException
 {
 public:
   HardWarningException(const std::string& what_arg) : EvaluationException(what_arg) {}
-  ~HardWarningException() throw() {}
+  ~HardWarningException() noexcept = default;
 };
