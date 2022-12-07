@@ -161,7 +161,7 @@ static double wrap(double angle)
 
 Eigen::Vector3d Camera::getVpr() const
 {
-  return Eigen::Vector3d(wrap(90 - object_rot.x()), wrap(-object_rot.y()), wrap(-object_rot.z()));
+  return {wrap(90 - object_rot.x()), wrap(-object_rot.y()), wrap(-object_rot.z())};
 }
 
 void Camera::setVpr(double x, double y, double z)

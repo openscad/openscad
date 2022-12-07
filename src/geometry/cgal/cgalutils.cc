@@ -122,9 +122,8 @@ template CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3& N);
 
 CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox& bbox)
 {
-  return CGAL_Iso_cuboid_3(
-    vector_convert<CGAL_Point_3>(bbox.min()),
-    vector_convert<CGAL_Point_3>(bbox.max()));
+  return {vector_convert<CGAL_Point_3>(bbox.min()),
+          vector_convert<CGAL_Point_3>(bbox.max())};
 }
 
 namespace {

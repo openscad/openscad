@@ -148,8 +148,8 @@ private:
   double step_value() const { return step_val; }
   double end_value() const { return end_val; }
 
-  iterator begin() const { return iterator(*this, type_t::RANGE_TYPE_BEGIN); }
-  iterator end() const { return iterator(*this, type_t::RANGE_TYPE_END); }
+  iterator begin() const { return {*this, type_t::RANGE_TYPE_BEGIN}; }
+  iterator end() const { return {*this, type_t::RANGE_TYPE_END}; }
 
   /// return number of values, max uint32_t value if step is 0 or range is infinite
   uint32_t numValues() const;
@@ -217,8 +217,8 @@ private:
     size_t len = 0;
   };
 
-  iterator begin() const { return iterator(*this); }
-  iterator end() const { return iterator(*this, true); }
+  iterator begin() const { return {*this}; }
+  iterator end() const { return {*this, true}; }
   str_utf8_wrapper() : str_ptr(make_shared<str_utf8_t>()) { }
   str_utf8_wrapper(const std::string& s) : str_ptr(make_shared<str_utf8_t>(s)) { }
   str_utf8_wrapper(const char *cstr) : str_ptr(make_shared<str_utf8_t>(cstr)) { }

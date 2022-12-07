@@ -106,7 +106,7 @@ Value builtin_abs(Arguments arguments, const Location& loc)
   if (!check_arguments("abs", arguments, loc, { Value::Type::NUMBER })) {
     return Value::undefined.clone();
   }
-  return Value(std::fabs(arguments[0]->toDouble()));
+  return {std::fabs(arguments[0]->toDouble())};
 }
 
 Value builtin_sign(Arguments arguments, const Location& loc)
@@ -115,7 +115,7 @@ Value builtin_sign(Arguments arguments, const Location& loc)
     return Value::undefined.clone();
   }
   double x = arguments[0]->toDouble();
-  return Value((x < 0) ? -1.0 : ((x > 0) ? 1.0 : 0.0));
+  return {(x < 0) ? -1.0 : ((x > 0) ? 1.0 : 0.0)};
 }
 
 Value builtin_rands(Arguments arguments, const Location& loc)
@@ -221,7 +221,7 @@ Value builtin_min(Arguments arguments, const Location& loc)
   if (values.empty()) {
     return Value::undefined.clone();
   }
-  return Value(*std::min_element(values.begin(), values.end()));
+  return {*std::min_element(values.begin(), values.end())};
 }
 
 Value builtin_max(Arguments arguments, const Location& loc)
@@ -230,7 +230,7 @@ Value builtin_max(Arguments arguments, const Location& loc)
   if (values.empty()) {
     return Value::undefined.clone();
   }
-  return Value(*std::max_element(values.begin(), values.end()));
+  return {*std::max_element(values.begin(), values.end())};
 }
 
 Value builtin_sin(Arguments arguments, const Location& loc)
@@ -238,7 +238,7 @@ Value builtin_sin(Arguments arguments, const Location& loc)
   if (!check_arguments("sin", arguments, loc, { Value::Type::NUMBER })) {
     return Value::undefined.clone();
   }
-  return Value(sin_degrees(arguments[0]->toDouble()));
+  return {sin_degrees(arguments[0]->toDouble())};
 }
 
 Value builtin_cos(Arguments arguments, const Location& loc)
@@ -246,7 +246,7 @@ Value builtin_cos(Arguments arguments, const Location& loc)
   if (!check_arguments("cos", arguments, loc, { Value::Type::NUMBER })) {
     return Value::undefined.clone();
   }
-  return Value(cos_degrees(arguments[0]->toDouble()));
+  return {cos_degrees(arguments[0]->toDouble())};
 }
 
 Value builtin_asin(Arguments arguments, const Location& loc)
@@ -254,7 +254,7 @@ Value builtin_asin(Arguments arguments, const Location& loc)
   if (!check_arguments("asin", arguments, loc, { Value::Type::NUMBER })) {
     return Value::undefined.clone();
   }
-  return Value(asin_degrees(arguments[0]->toDouble()));
+  return {asin_degrees(arguments[0]->toDouble())};
 }
 
 Value builtin_acos(Arguments arguments, const Location& loc)
@@ -262,7 +262,7 @@ Value builtin_acos(Arguments arguments, const Location& loc)
   if (!check_arguments("acos", arguments, loc, { Value::Type::NUMBER })) {
     return Value::undefined.clone();
   }
-  return Value(acos_degrees(arguments[0]->toDouble()));
+  return {acos_degrees(arguments[0]->toDouble())};
 }
 
 Value builtin_tan(Arguments arguments, const Location& loc)
@@ -270,7 +270,7 @@ Value builtin_tan(Arguments arguments, const Location& loc)
   if (!check_arguments("tan", arguments, loc, { Value::Type::NUMBER })) {
     return Value::undefined.clone();
   }
-  return Value(tan_degrees(arguments[0]->toDouble()));
+  return {tan_degrees(arguments[0]->toDouble())};
 }
 
 Value builtin_atan(Arguments arguments, const Location& loc)
@@ -278,7 +278,7 @@ Value builtin_atan(Arguments arguments, const Location& loc)
   if (!check_arguments("atan", arguments, loc, { Value::Type::NUMBER })) {
     return Value::undefined.clone();
   }
-  return Value(atan_degrees(arguments[0]->toDouble()));
+  return {atan_degrees(arguments[0]->toDouble())};
 }
 
 Value builtin_atan2(Arguments arguments, const Location& loc)
@@ -286,7 +286,7 @@ Value builtin_atan2(Arguments arguments, const Location& loc)
   if (!check_arguments("atan2", arguments, loc, { Value::Type::NUMBER, Value::Type::NUMBER })) {
     return Value::undefined.clone();
   }
-  return Value(atan2_degrees(arguments[0]->toDouble(), arguments[1]->toDouble()));
+  return {atan2_degrees(arguments[0]->toDouble(), arguments[1]->toDouble())};
 }
 
 Value builtin_pow(Arguments arguments, const Location& loc)
@@ -294,7 +294,7 @@ Value builtin_pow(Arguments arguments, const Location& loc)
   if (!check_arguments("pow", arguments, loc, { Value::Type::NUMBER, Value::Type::NUMBER })) {
     return Value::undefined.clone();
   }
-  return Value(pow(arguments[0]->toDouble(), arguments[1]->toDouble()));
+  return {pow(arguments[0]->toDouble(), arguments[1]->toDouble())};
 }
 
 Value builtin_round(Arguments arguments, const Location& loc)
@@ -302,7 +302,7 @@ Value builtin_round(Arguments arguments, const Location& loc)
   if (!check_arguments("round", arguments, loc, { Value::Type::NUMBER })) {
     return Value::undefined.clone();
   }
-  return Value(round(arguments[0]->toDouble()));
+  return {round(arguments[0]->toDouble())};
 }
 
 Value builtin_ceil(Arguments arguments, const Location& loc)
@@ -310,7 +310,7 @@ Value builtin_ceil(Arguments arguments, const Location& loc)
   if (!check_arguments("ceil", arguments, loc, { Value::Type::NUMBER })) {
     return Value::undefined.clone();
   }
-  return Value(ceil(arguments[0]->toDouble()));
+  return {ceil(arguments[0]->toDouble())};
 }
 
 Value builtin_floor(Arguments arguments, const Location& loc)
@@ -318,7 +318,7 @@ Value builtin_floor(Arguments arguments, const Location& loc)
   if (!check_arguments("floor", arguments, loc, { Value::Type::NUMBER })) {
     return Value::undefined.clone();
   }
-  return Value(floor(arguments[0]->toDouble()));
+  return {floor(arguments[0]->toDouble())};
 }
 
 Value builtin_sqrt(Arguments arguments, const Location& loc)
@@ -326,7 +326,7 @@ Value builtin_sqrt(Arguments arguments, const Location& loc)
   if (!check_arguments("sqrt", arguments, loc, { Value::Type::NUMBER })) {
     return Value::undefined.clone();
   }
-  return Value(sqrt(arguments[0]->toDouble()));
+  return {sqrt(arguments[0]->toDouble())};
 }
 
 Value builtin_exp(Arguments arguments, const Location& loc)
@@ -334,19 +334,19 @@ Value builtin_exp(Arguments arguments, const Location& loc)
   if (!check_arguments("exp", arguments, loc, { Value::Type::NUMBER })) {
     return Value::undefined.clone();
   }
-  return Value(exp(arguments[0]->toDouble()));
+  return {exp(arguments[0]->toDouble())};
 }
 
 Value builtin_length(Arguments arguments, const Location& loc)
 {
   if (try_check_arguments(arguments, { Value::Type::VECTOR })) {
-    return Value(double(arguments[0]->toVector().size()));
+    return {double(arguments[0]->toVector().size())};
   }
   if (!check_arguments("len", arguments, loc, { Value::Type::STRING })) {
     return Value::undefined.clone();
   }
   //Unicode glyph count for the length -- rather than the string (num. of bytes) length.
-  return Value(double( arguments[0]->toStrUtf8Wrapper().get_utf8_strlen() ));
+  return {double( arguments[0]->toStrUtf8Wrapper().get_utf8_strlen() )};
 }
 
 Value builtin_log(Arguments arguments, const Location& loc)
@@ -365,7 +365,7 @@ Value builtin_log(Arguments arguments, const Location& loc)
     x = arguments[0]->toDouble();
     y = arguments[1]->toDouble();
   }
-  return Value(log(y) / log(x));
+  return {log(y) / log(x)};
 }
 
 Value builtin_ln(Arguments arguments, const Location& loc)
@@ -373,7 +373,7 @@ Value builtin_ln(Arguments arguments, const Location& loc)
   if (!check_arguments("ln", arguments, loc, { Value::Type::NUMBER })) {
     return Value::undefined.clone();
   }
-  return Value(log(arguments[0]->toDouble()));
+  return {log(arguments[0]->toDouble())};
 }
 
 Value builtin_str(Arguments arguments, const Location& loc)
@@ -382,7 +382,7 @@ Value builtin_str(Arguments arguments, const Location& loc)
   for (const auto& argument : arguments) {
     stream << argument->toString();
   }
-  return Value(stream.str());
+  return {stream.str()};
 }
 
 Value builtin_chr(Arguments arguments, const Location& loc)
@@ -391,7 +391,7 @@ Value builtin_chr(Arguments arguments, const Location& loc)
   for (const auto& argument : arguments) {
     stream << argument->chrString();
   }
-  return Value(stream.str());
+  return {stream.str()};
 }
 
 Value builtin_ord(Arguments arguments, const Location& loc)
@@ -411,7 +411,7 @@ Value builtin_ord(Arguments arguments, const Location& loc)
   }
 
   const gunichar ch = g_utf8_get_char(ptr);
-  return Value((double)ch);
+  return {(double)ch};
 }
 
 Value builtin_concat(Arguments arguments, const Location& loc)
@@ -462,10 +462,10 @@ Value builtin_lookup(Arguments arguments, const Location& loc)
       }
     }
   }
-  if (p <= low_p) return Value(high_v);
-  if (p >= high_p) return Value(low_v);
+  if (p <= low_p) return {high_v};
+  if (p >= high_p) return {low_v};
   double f = (p - low_p) / (high_p - low_p);
-  return Value(high_v * f + low_v * (1 - f));
+  return {high_v * f + low_v * (1 - f)};
 }
 
 /*
@@ -695,7 +695,7 @@ Value builtin_version_num(Arguments arguments, const Location& loc)
   if (!val.getVec3(y, m, d, 0)) {
     return Value::undefined.clone();
   }
-  return Value(y * 10000 + m * 100 + d);
+  return {y * 10000 + m * 100 + d};
 }
 
 Value builtin_parent_module(Arguments arguments, const Location& loc)
@@ -719,7 +719,7 @@ Value builtin_parent_module(Arguments arguments, const Location& loc)
     LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent module index (%1$d) greater than the number of modules on the stack", n);
     return Value::undefined.clone();
   }
-  return Value(UserModule::stack_element(s - 1 - n));
+  return {UserModule::stack_element(s - 1 - n)};
 }
 
 Value builtin_norm(Arguments arguments, const Location& loc)
@@ -737,7 +737,7 @@ Value builtin_norm(Arguments arguments, const Location& loc)
       return Value::undefined.clone();
     }
   }
-  return Value(sqrt(sum));
+  return {sqrt(sum)};
 }
 
 Value builtin_cross(Arguments arguments, const Location& loc)
@@ -749,7 +749,7 @@ Value builtin_cross(Arguments arguments, const Location& loc)
   const auto& v0 = arguments[0]->toVector();
   const auto& v1 = arguments[1]->toVector();
   if ((v0.size() == 2) && (v1.size() == 2)) {
-    return Value(v0[0].toDouble() * v1[1].toDouble() - v0[1].toDouble() * v1[0].toDouble());
+    return {v0[0].toDouble() * v1[1].toDouble() - v0[1].toDouble() * v1[0].toDouble()};
   }
 
   if ((v0.size() != 3) || (v1.size() != 3)) {
@@ -887,7 +887,7 @@ Value builtin_is_list(Arguments arguments, const Location& loc)
   if (!check_arguments("is_list", arguments, loc, 1)) {
     return Value::undefined.clone();
   }
-  return Value(arguments[0]->isDefinedAs(Value::Type::VECTOR));
+  return {arguments[0]->isDefinedAs(Value::Type::VECTOR)};
 }
 
 Value builtin_is_num(Arguments arguments, const Location& loc)
@@ -895,7 +895,7 @@ Value builtin_is_num(Arguments arguments, const Location& loc)
   if (!check_arguments("is_num", arguments, loc, 1)) {
     return Value::undefined.clone();
   }
-  return Value(arguments[0]->isDefinedAs(Value::Type::NUMBER) && !std::isnan(arguments[0]->toDouble()));
+  return {arguments[0]->isDefinedAs(Value::Type::NUMBER) && !std::isnan(arguments[0]->toDouble())};
 }
 
 Value builtin_is_bool(Arguments arguments, const Location& loc)
@@ -903,7 +903,7 @@ Value builtin_is_bool(Arguments arguments, const Location& loc)
   if (!check_arguments("is_bool", arguments, loc, 1)) {
     return Value::undefined.clone();
   }
-  return Value(arguments[0]->isDefinedAs(Value::Type::BOOL));
+  return {arguments[0]->isDefinedAs(Value::Type::BOOL)};
 }
 
 Value builtin_is_string(Arguments arguments, const Location& loc)
@@ -911,7 +911,7 @@ Value builtin_is_string(Arguments arguments, const Location& loc)
   if (!check_arguments("is_string", arguments, loc, 1)) {
     return Value::undefined.clone();
   }
-  return Value(arguments[0]->isDefinedAs(Value::Type::STRING));
+  return {arguments[0]->isDefinedAs(Value::Type::STRING)};
 }
 
 Value builtin_is_function(Arguments arguments, const Location& loc)
@@ -919,7 +919,7 @@ Value builtin_is_function(Arguments arguments, const Location& loc)
   if (!check_arguments("is_function", arguments, loc, 1)) {
     return Value::undefined.clone();
   }
-  return Value(arguments[0]->isDefinedAs(Value::Type::FUNCTION));
+  return {arguments[0]->isDefinedAs(Value::Type::FUNCTION)};
 }
 
 Value builtin_is_object(Arguments arguments, const Location& loc)
@@ -927,7 +927,7 @@ Value builtin_is_object(Arguments arguments, const Location& loc)
   if (!check_arguments("is_object", arguments, loc, 1)) {
     return Value::undefined.clone();
   }
-  return Value(arguments[0]->isDefinedAs(Value::Type::OBJECT));
+  return {arguments[0]->isDefinedAs(Value::Type::OBJECT)};
 }
 
 Value builtin_import(Arguments arguments, const Location& loc)

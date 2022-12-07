@@ -95,7 +95,7 @@ fs::path find_valid_path(const fs::path& sourcepath,
                          const fs::path& localpath,
                          const std::vector<std::string> *openfilenames)
 {
-  return fs::path(_find_valid_path(sourcepath, localpath, openfilenames).generic_string());
+  return {_find_valid_path(sourcepath, localpath, openfilenames).generic_string()};
 }
 
 

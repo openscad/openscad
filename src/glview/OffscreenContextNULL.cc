@@ -72,4 +72,3 @@ bool save_framebuffer(const OffscreenContext *ctx, std::ostream& output)
   output << "NULLGL framebuffer";
   return true;
 }
-

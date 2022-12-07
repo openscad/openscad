@@ -368,7 +368,7 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
         case 'b': case 'z': ret.emplace_back(v[2]); break;
         case 'a': case 'w': ret.emplace_back(v[3]); break;
         }
-      return Value(std::move(ret));
+      return {std::move(ret)};
     }
     if (this->member == "x") return v[0];
     if (this->member == "y") return v[1];
@@ -771,22 +771,22 @@ Value LcEach::evalRecur(Value&& v, const std::shared_ptr<const Context>& context
     } else {
       EmbeddedVectorType vec(context->session());
       for (double d : range) vec.emplace_back(d);
-      return Value(std::move(vec));
+      return {std::move(vec)};
     }
   } else if (v.type() == Value::Type::VECTOR) {
     // Safe to move the overall vector ptr since we have a temporary value (could be a copy, or constructed just for us, doesn't matter)
     auto vec = EmbeddedVectorType(std::move(v.toVectorNonConst()));
-    return Value(std::move(vec));
+    return {std::move(vec)};
   } else if (v.type() == Value::Type::EMBEDDED_VECTOR) {
     EmbeddedVectorType vec(context->session());
     // Not safe to move values out of a vector, since it's shared_ptr maye be shared with another Value,
     // which should remain constant
     for (const auto& val : v.toEmbeddedVector()) vec.emplace_back(evalRecur(val.clone(), context) );
-    return Value(std::move(vec));
+    return {std::move(vec)};
   } else if (v.type() == Value::Type::STRING) {
     EmbeddedVectorType vec(context->session());
     for (auto ch : v.toStrUtf8Wrapper()) vec.emplace_back(std::move(ch));
-    return Value(std::move(vec));
+    return {std::move(vec)};
   } else if (v.type() != Value::Type::UNDEFINED) {
     return std::move(v);
   }
@@ -881,7 +881,7 @@ Value LcFor::evaluate(const std::shared_ptr<const Context>& context) const
     vec.emplace_back(expression->evaluate(iterationContext));
   }
           );
-  return Value(std::move(vec));
+  return {std::move(vec)};
 }
 
 void LcFor::print(std::ostream& stream, const std::string&) const
@@ -925,7 +925,7 @@ Value LcForC::evaluate(const std::shared_ptr<const Context>& context) const
     currentContext = std::move(nextContext);
     currentContext->setParent(*initialContext);
   }
-  return Value(std::move(output));
+  return {std::move(output)};
 }
 
 void LcForC::print(std::ostream& stream, const std::string&) const

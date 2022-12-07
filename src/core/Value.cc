@@ -510,7 +510,7 @@ public:
         g_unichar_to_utf8(c, buf);
       }
     }
-    return std::string(buf);
+    return {buf};
   }
 
   std::string operator()(const VectorType& v) const
@@ -1029,7 +1029,7 @@ Value multvecmat(const VectorType& vectorvec, const VectorType& matrixvec)
     }
     dstv.emplace_back(r_e);
   }
-  return Value(std::move(dstv));
+  return {std::move(dstv)};
 }
 
 Value multvecvec(const VectorType& vec1, const VectorType& vec2) {
@@ -1041,7 +1041,7 @@ Value multvecvec(const VectorType& vec1, const VectorType& vec2) {
     }
     r += vec1[i].toDouble() * vec2[i].toDouble();
   }
-  return Value(r);
+  return {r};
 }
 
 class multiply_visitor
@@ -1087,7 +1087,7 @@ public:
             }
             ++i;
           }
-          return Value(std::move(dstv));
+          return {std::move(dstv)};
         } else {
           return Value::undef(STR("matrix*matrix requires left operand column count to match right operand row count (", (*first1).toVector().size(), " != ", op2.size(), ')'));
         }
@@ -1133,7 +1133,7 @@ Value Value::operator%(const Value& v) const
 Value Value::operator-() const
 {
   if (this->type() == Type::NUMBER) {
-    return Value(-this->toDouble());
+    return {-this->toDouble()};
   } else if (this->type() == Type::VECTOR) {
     VectorType dstv(this->toVector().evaluation_session());
     for (const auto& vecval : this->toVector()) {

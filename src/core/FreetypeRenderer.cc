@@ -44,7 +44,7 @@
 #define SCRIPT_UNTAG(tag)   ((uint8_t)((tag) >> 24)) % ((uint8_t)((tag) >> 16)) % ((uint8_t)((tag) >> 8)) % ((uint8_t)(tag))
 
 static inline Vector2d get_scaled_vector(const FT_Vector *ft_vector, double scale) {
-  return Vector2d(ft_vector->x / scale, ft_vector->y / scale);
+  return {ft_vector->x / scale, ft_vector->y / scale};
 }
 
 const double FreetypeRenderer::scale = 1e5;

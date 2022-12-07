@@ -83,7 +83,7 @@ std::string offscreen_context_getinfo(OffscreenContext *ctx)
   assert(ctx);
 
   if (!ctx->context) {
-    return std::string("No GL Context initialized. No information to report\n");
+    return {"No GL Context initialized. No information to report\n"};
   }
 
   return get_gl_info(ctx->display);

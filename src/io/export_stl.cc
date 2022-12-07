@@ -42,7 +42,7 @@ std::string toString(const Vector3d& v)
 }
 
 Vector3d toVector(const std::array<double, 3>& pt) {
-  return Vector3d(pt[0], pt[1], pt[2]);
+  return {pt[0], pt[1], pt[2]};
 }
 
 Vector3d fromString(const std::string& vertexString)
