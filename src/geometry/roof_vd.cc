@@ -43,8 +43,7 @@ struct Segment {
 } // roof_vd
 
 // pass our Point and Segment structures to boost::polygon
-namespace boost {
-namespace polygon {
+namespace boost::polygon {
 template <>
 struct geometry_concept<roof_vd::Point> {
   using type = point_concept;
@@ -71,8 +70,7 @@ struct segment_traits<roof_vd::Segment> {
     return dir.to_int() ? segment.p1 : segment.p0;
   }
 };
-}  // polygon
-}  // boost
+}  // boost::polygon
 
 
 namespace roof_vd {
