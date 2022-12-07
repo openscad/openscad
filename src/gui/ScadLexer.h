@@ -127,8 +127,8 @@ public:
   }
 
 private:
-  ScadLexer2(const ScadLexer2&);
-  ScadLexer2& operator=(const ScadLexer2&);
+  ScadLexer2(const ScadLexer2&) = delete;
+  ScadLexer2& operator=(const ScadLexer2&) = delete;
 
 };
 
