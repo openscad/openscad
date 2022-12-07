@@ -31,7 +31,7 @@ class InputEventHandler
 {
 public:
 
-  virtual ~InputEventHandler(void) { }
+  virtual ~InputEventHandler() { }
 
   virtual void onAxisChanged(class InputEventAxisChanged *event) = 0;
   virtual void onButtonChanged(class InputEventButtonChanged *event) = 0;
@@ -50,7 +50,7 @@ public:
 
   InputEvent(const bool activeOnly = true);
 
-  virtual ~InputEvent(void);
+  virtual ~InputEvent();
 
   virtual void deliver(InputEventHandler *receiver) = 0;
 

@@ -105,7 +105,7 @@ private:
   void findMarker(int, int, std::function<int(int)>);
 
 signals:
-  void previewRequest(void);
+  void previewRequest();
   void hyperlinkIndicatorClicked(int val);
   void uriDropped(const QUrl&);
 

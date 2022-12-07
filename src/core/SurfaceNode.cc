@@ -58,7 +58,7 @@ public:
 
   img_data_t() { min_val = 0; height = width = 0; }
 
-  void clear(void) { min_val = 0; height = width = 0; storage.clear(); }
+  void clear() { min_val = 0; height = width = 0; storage.clear(); }
 
   void reserve(size_t x) { storage.reserve(x); }
 

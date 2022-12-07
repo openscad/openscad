@@ -34,7 +34,7 @@ namespace {
 
 const float stale = 190;  // 190ms, maximum lifetime of a cache entry chosen to be shorter than the automatic reload poll time
 
-double millis_clock(void)
+double millis_clock()
 {
   return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }

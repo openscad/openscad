@@ -62,8 +62,8 @@ private:
   void postEvent(InputEvent *event);
 
 public:
-  InputDriverManager(void);
-  virtual ~InputDriverManager(void);
+  InputDriverManager();
+  virtual ~InputDriverManager();
 
   void sendEvent(InputEvent *event);
 

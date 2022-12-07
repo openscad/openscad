@@ -272,4 +272,4 @@ const std::string PlatformUtils::sysinfo(bool extended)
   return result;
 }
 
-void PlatformUtils::ensureStdIO(void) {}
+void PlatformUtils::ensureStdIO() {}
