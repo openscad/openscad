@@ -49,9 +49,9 @@ static Polygon2d *convertToPolygon2d(const CGAL_Nef_polyhedron2& p2)
 {
   Polygon2d *poly = new Polygon2d;
 
-  typedef CGAL_Nef_polyhedron2::Explorer Explorer;
-  typedef Explorer::Face_const_iterator fci_t;
-  typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
+  using Explorer = CGAL_Nef_polyhedron2::Explorer;
+  using fci_t = Explorer::Face_const_iterator;
+  using heafcc_t = Explorer::Halfedge_around_face_const_circulator;
   Explorer E = p2.explorer();
   for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit) {
     if (!fit->mark()) continue;

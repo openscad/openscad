@@ -80,7 +80,7 @@ public:
                               0, 1, 0.0, 1, 2, true);
   }
 
-  typedef struct _TessUserData {
+  using TessUserData = struct _TessUserData {
     GLenum which;
     GLdouble *normal;
     CGAL::Color color;
@@ -90,7 +90,7 @@ public:
     size_t draw_size;
     size_t elements_offset;
     VertexArray& vertex_array;
-  } TessUserData;
+  };
 
   static inline void CGAL_GLU_TESS_CALLBACK beginCallback(GLenum which, GLvoid *user) {
     TessUserData *tess(static_cast<TessUserData *>(user));

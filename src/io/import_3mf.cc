@@ -54,7 +54,7 @@ const std::string get_lib3mf_version() {
 #include "cgalutils.h"
 #endif
 
-typedef std::list<std::shared_ptr<PolySet>> polysets_t;
+using polysets_t = std::list<std::shared_ptr<PolySet>>;
 
 static Geometry *import_3mf_error(PLib3MFModel *model = nullptr, PLib3MFModelResourceIterator *object_it = nullptr, PolySet *mesh = nullptr, PolySet *mesh2 = nullptr)
 {
@@ -237,7 +237,7 @@ const std::string get_lib3mf_version() {
 #include "cgalutils.h"
 #endif
 
-typedef std::list<std::shared_ptr<PolySet>> polysets_t;
+using polysets_t = std::list<std::shared_ptr<PolySet>>;
 
 static Geometry *import_3mf_error(PolySet *mesh = nullptr, PolySet *mesh2 = nullptr)
 {

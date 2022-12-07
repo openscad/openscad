@@ -56,10 +56,10 @@ static void append_amf(const CGAL_Nef_polyhedron& root_N, std::ostream& output)
     CGAL_Polyhedron P;
     CGALUtils::convertNefToPolyhedron(*root_N.p3, P);
 
-    typedef CGAL_Polyhedron::Vertex Vertex;
-    typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
-    typedef CGAL_Polyhedron::Facet_const_iterator FCI;
-    typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
+    using Vertex = CGAL_Polyhedron::Vertex;
+    using VCI = CGAL_Polyhedron::Vertex_const_iterator;
+    using FCI = CGAL_Polyhedron::Facet_const_iterator;
+    using HFCC = CGAL_Polyhedron::Halfedge_around_facet_const_circulator;
 
     std::vector<std::string> vertices;
     std::vector<triangle> triangles;

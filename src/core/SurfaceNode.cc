@@ -51,10 +51,10 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 namespace fs = boost::filesystem;
 
 
-typedef struct img_data_t
+struct img_data_t
 {
 public:
-  typedef double storage_type; // float could be enough here
+  using storage_type = double; // float could be enough here
 
   img_data_t() { min_val = 0; height = width = 0; }
 
@@ -74,7 +74,7 @@ public:
   storage_type min_val;
   std::vector<storage_type> storage;
 
-} img_data_t;
+};
 
 
 class SurfaceNode : public LeafNode
@@ -204,12 +204,12 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
   int lines = 0, columns = 0;
   double min_val = 1; // this balances out with the (min_val-1) inside createGeometry, to match old behavior
 
-  typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
+  using tokenizer = boost::tokenizer<boost::char_separator<char>>;
   boost::char_separator<char> sep(" \t");
 
   // We use an unordered map because the data file may not be rectangular,
   // and we may need to fill in some bits.
-  typedef std::unordered_map<std::pair<int, int>, double, boost::hash<std::pair<int, int>>> unordered_image_data_t;
+  using unordered_image_data_t = std::unordered_map<std::pair<int, int>, double, boost::hash<std::pair<int, int>>>;
   unordered_image_data_t unordered_data;
 
   while (!stream.eof()) {

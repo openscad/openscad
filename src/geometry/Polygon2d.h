@@ -38,7 +38,7 @@ public:
   class PolySet *tessellate() const;
   double area() const;
 
-  typedef std::vector<Outline2d> Outlines2d;
+  using Outlines2d = std::vector<Outline2d>;
   const Outlines2d& outlines() const { return theoutlines; }
   // Note: The "using" here is a kludge to avoid a compiler warning.
   // It would be better to fix the class relationships, so that Polygon2d does

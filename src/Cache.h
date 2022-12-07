@@ -55,9 +55,9 @@ class Cache
     inline Node(T *data, size_t cost) : keyPtr(nullptr), t(data), c(cost), p(nullptr), n(nullptr) {}
     const Key *keyPtr; T *t; size_t c; Node *p, *n;
   };
-  typedef typename std::unordered_map<Key, Node> map_type;
-  typedef typename map_type::iterator iterator_type;
-  typedef typename map_type::value_type value_type;
+  using map_type = typename std::unordered_map<Key, Node>;
+  using iterator_type = typename map_type::iterator;
+  using value_type = typename map_type::value_type;
 
   std::unordered_map<Key, Node> hash;
   Node *f, *l;

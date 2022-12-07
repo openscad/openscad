@@ -42,7 +42,7 @@ struct vertex_hash {
   }
 };
 
-typedef std::unordered_map<std::vector<GLbyte>, GLuint, vertex_hash<std::vector<GLbyte>>> ElementsMap;
+using ElementsMap = std::unordered_map<std::vector<GLbyte>, GLuint, vertex_hash<std::vector<GLbyte>>>;
 
 // Interface class for basic attribute data that will be loaded into VBO
 class IAttributeData
@@ -321,7 +321,7 @@ private:
   std::vector<std::function<void()>> gl_end_;
 };
 // A set of VertexState objects
-typedef std::vector<std::shared_ptr<VertexState>> VertexStates;
+using VertexStates = std::vector<std::shared_ptr<VertexState>>;
 
 // Allows Renderers to override VertexState objects with their own derived
 // type. VertexArray will create the appropriate type for creating
@@ -342,14 +342,14 @@ public:
 class VertexArray
 {
 public:
-  typedef std::function<void (VertexArray & vertex_array,
+  using CreateVertexCallback = std::function<void (VertexArray & vertex_array,
                               const std::array<Vector3d, 3>& points,
                               const std::array<Vector3d, 3>& normals,
                               const Color4f& color,
                               size_t active_point_index, size_t primitive_index,
                               double z_offset, size_t shape_size,
                               size_t shape_dimensions, bool outlines,
-                              bool mirror)> CreateVertexCallback;
+                              bool mirror)>;
 
 
   VertexArray(std::shared_ptr<VertexStateFactory> factory, VertexStates& states,

@@ -63,9 +63,9 @@ bool matrix_contains_nan(const Transform3d& m)
    http://stackoverflow.com/questions/4238122/hash-function-for-floats
    http://betterexplained.com/articles/fun-with-modular-arithmetic/
  */
-typedef int32_t Py_hash_t;
-typedef uint32_t Py_uhash_t;
-typedef double Float_t;
+using Py_hash_t = int32_t;
+using Py_uhash_t  =uint32_t;
+using Float_t = double;
 Py_hash_t hash_floating_point(Float_t v)
 {
   int _PyHASH_BITS = 31;

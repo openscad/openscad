@@ -15,10 +15,10 @@ namespace /* anonymous */ {
 template <typename Polyhedron>
 class CGAL_Build_PolySet : public CGAL::Modifier_base<typename Polyhedron::HalfedgeDS>
 {
-  typedef typename Polyhedron::HalfedgeDS HDS;
-  typedef CGAL::Polyhedron_incremental_builder_3<typename Polyhedron::HalfedgeDS> CGAL_Polybuilder;
+  using HDS = typename Polyhedron::HalfedgeDS;
+  using CGAL_Polybuilder = CGAL::Polyhedron_incremental_builder_3<typename Polyhedron::HalfedgeDS>;
 public:
-  typedef typename CGAL_Polybuilder::Point_3 CGALPoint;
+  using CGALPoint = typename CGAL_Polybuilder::Point_3;
 
   const PolySet& ps;
   CGAL_Build_PolySet(const PolySet& ps) : ps(ps) { }
@@ -176,20 +176,20 @@ public:
 template <class InputKernel, class OutputKernel>
 struct Copy_polyhedron_to : public CGAL::Modifier_base<typename CGAL::Polyhedron_3<OutputKernel>::HalfedgeDS>
 {
-  typedef CGAL::Polyhedron_3<OutputKernel> Polyhedron_output;
-  typedef CGAL::Polyhedron_3<InputKernel> Polyhedron_input;
+  using Polyhedron_output = CGAL::Polyhedron_3<OutputKernel>;
+  using Polyhedron_input = CGAL::Polyhedron_3<InputKernel>;
 
   Copy_polyhedron_to(const Polyhedron_input& in_poly) : in_poly(in_poly) {}
 
   void operator()(typename Polyhedron_output::HalfedgeDS& out_hds) override
   {
-    typedef typename Polyhedron_output::HalfedgeDS Output_HDS;
+    using Output_HDS = typename Polyhedron_output::HalfedgeDS;
 
     CGAL::Polyhedron_incremental_builder_3<Output_HDS> builder(out_hds);
 
-    typedef typename Polyhedron_input::Vertex_const_iterator Vertex_const_iterator;
-    typedef typename Polyhedron_input::Facet_const_iterator Facet_const_iterator;
-    typedef typename Polyhedron_input::Halfedge_around_facet_const_circulator HFCC;
+    using Vertex_const_iterator = typename Polyhedron_input::Vertex_const_iterator;
+    using Facet_const_iterator = typename Polyhedron_input::Facet_const_iterator;
+    using HFCC = typename Polyhedron_input::Halfedge_around_facet_const_circulator;
 
     builder.begin_surface(in_poly.size_of_vertices(),
                           in_poly.size_of_facets(),
@@ -205,7 +205,7 @@ struct Copy_polyhedron_to : public CGAL::Modifier_base<typename CGAL::Polyhedron
       builder.add_vertex(p);
     }
 
-    typedef CGAL::Inverse_index<Vertex_const_iterator> Index;
+    using Index = CGAL::Inverse_index<Vertex_const_iterator>;
     Index index(in_poly.vertices_begin(), in_poly.vertices_end());
 
     for (Facet_const_iterator
@@ -280,9 +280,9 @@ template <typename Polyhedron>
 bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps)
 {
   bool err = false;
-  typedef typename Polyhedron::Vertex Vertex;
-  typedef typename Polyhedron::Facet_const_iterator FCI;
-  typedef typename Polyhedron::Halfedge_around_facet_const_circulator HFCC;
+  using Vertex = typename Polyhedron::Vertex;
+  using FCI = typename Polyhedron::Facet_const_iterator;
+  using HFCC = typename Polyhedron::Halfedge_around_facet_const_circulator;
 
   for (FCI fi = p.facets_begin(); fi != p.facets_end(); ++fi) {
     HFCC hc = fi->facet_begin();

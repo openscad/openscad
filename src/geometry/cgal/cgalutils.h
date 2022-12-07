@@ -7,10 +7,10 @@
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
-typedef CGAL::Epick K;
-typedef CGAL::Point_3<K> Vertex3K;
-typedef std::vector<Vertex3K> PolygonK;
-typedef std::vector<PolygonK> PolyholeK;
+using K = CGAL::Epick;
+using Vertex3K = CGAL::Point_3<K>;
+using PolygonK = std::vector<Vertex3K>;
+using PolyholeK = std::vector<PolygonK>;
 
 class CGALHybridPolyhedron;
 

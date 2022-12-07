@@ -67,8 +67,8 @@ struct Message {
   }
 };
 
-typedef void (OutputHandlerFunc)(const Message& msg, void *userdata);
-typedef void (OutputHandlerFunc2)(const Message& msg, void *userdata);
+using OutputHandlerFunc = void (const Message &, void *);
+using OutputHandlerFunc2 = void (const Message &, void *);
 
 extern OutputHandlerFunc *outputhandler;
 extern void *outputhandler_data;

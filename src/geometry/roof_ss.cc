@@ -22,21 +22,21 @@
 
 namespace roof_ss {
 
-typedef CGAL::Exact_predicates_inexact_constructions_kernel CGAL_KERNEL;
-typedef CGAL_KERNEL::Point_2 CGAL_Point_2;
-typedef CGAL::Polygon_2<CGAL_KERNEL> CGAL_Polygon_2;
-typedef CGAL::Vector_2<CGAL_KERNEL> CGAL_Vector_2;
-typedef CGAL::Line_2<CGAL_KERNEL> CGAL_Line_2;
-typedef CGAL::Segment_2<CGAL_KERNEL> CGAL_Segment_2;
-typedef CGAL::Polygon_with_holes_2<CGAL_KERNEL> CGAL_Polygon_with_holes_2;
-typedef CGAL::Straight_skeleton_2<CGAL_KERNEL> CGAL_Ss;
+using CGAL_KERNEL = CGAL::Exact_predicates_inexact_constructions_kernel;
+using CGAL_Point_2 = CGAL_KERNEL::Point_2;
+using CGAL_Polygon_2 = CGAL::Polygon_2<CGAL_KERNEL>;
+using CGAL_Vector_2 = CGAL::Vector_2<CGAL_KERNEL>;
+using CGAL_Line_2 = CGAL::Line_2<CGAL_KERNEL>;
+using CGAL_Segment_2 = CGAL::Segment_2<CGAL_KERNEL>;
+using CGAL_Polygon_with_holes_2 = CGAL::Polygon_with_holes_2<CGAL_KERNEL>;
+using CGAL_Ss = CGAL::Straight_skeleton_2<CGAL_KERNEL>;
 
-typedef CGAL::Partition_traits_2<CGAL_KERNEL> CGAL_PT;
+using CGAL_PT = CGAL::Partition_traits_2<CGAL_KERNEL>;
 
-typedef boost::shared_ptr<CGAL_Ss> CGAL_SsPtr;
+using CGAL_SsPtr = boost::shared_ptr<CGAL_Ss>;
 
-typedef ClipperLib::PolyTree PolyTree;
-typedef ClipperLib::PolyNode PolyNode;
+using PolyTree = ClipperLib::PolyTree;
+using PolyNode = ClipperLib::PolyNode;
 
 CGAL_Polygon_2 to_cgal_polygon_2(const VectorOfVector2d& points)
 {

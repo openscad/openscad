@@ -52,7 +52,7 @@ public:
   }
 };
 
-typedef std::vector<OpenCSG::Primitive *> OpenCSGPrimitives;
+using OpenCSGPrimitives = std::vector<OpenCSG::Primitive *>;
 class OpenCSGVBOProduct
 {
 public:
@@ -67,7 +67,7 @@ private:
   const std::unique_ptr<OpenCSGPrimitives> primitives_;
   const std::unique_ptr<VertexStates> states_;
 };
-typedef std::vector<std::unique_ptr<OpenCSGVBOProduct>> OpenCSGVBOProducts;
+using OpenCSGVBOProducts = std::vector<std::unique_ptr<OpenCSGVBOProduct>>;
 
 class OpenCSGRenderer : public VBORenderer
 {

@@ -46,7 +46,7 @@
  * - the use_count() of the shared object;
  * - the list of values stored, and contexts referenced.
  */
-typedef void *ValueIdentifier;
+using ValueIdentifier = void *;
 
 struct IdentifierVisitor
 {

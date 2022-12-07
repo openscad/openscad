@@ -478,7 +478,7 @@ struct SimplifiedExpression {
   boost::optional<ContextHandle<Context>> new_context = boost::none;
   boost::optional<const FunctionCall *> new_active_function_call = boost::none;
 };
-typedef std::variant<SimplifiedExpression, Value> SimplificationResult;
+using SimplificationResult = std::variant<SimplifiedExpression, Value>;
 
 static SimplificationResult simplify_function_body(const Expression *expression, const std::shared_ptr<const Context>& context)
 {

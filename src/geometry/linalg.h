@@ -16,12 +16,12 @@ using Eigen::Vector3i;
   #if !EIGEN_HAS_CXX11_CONTAINERS
     #warning "Eigen has detected no support for CXX11 containers and has redefined std::vector"
   #endif
-typedef std::vector<Vector2d, Eigen::aligned_allocator<Vector2d>> VectorOfVector2d;
+using VectorOfVector2d = std::vector<Vector2d, Eigen::aligned_allocator<Vector2d>>;
 #else
-typedef std::vector<Vector2d> VectorOfVector2d;
+using VectorOfVector2d = std::vector<Vector2d>;
 #endif
 
-typedef Eigen::AlignedBox<double, 3> BoundingBox;
+using BoundingBox = Eigen::AlignedBox<double, 3>;
 using Eigen::Matrix3f;
 using Eigen::Matrix3d;
 using Eigen::Matrix4d;

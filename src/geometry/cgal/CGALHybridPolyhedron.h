@@ -35,8 +35,8 @@ class CGALHybridPolyhedron : public Geometry
 public:
   VISITABLE_GEOMETRY();
 
-  typedef CGAL::Point_3<CGAL_HybridKernel3> point_t;
-  typedef CGAL::Iso_cuboid_3<CGAL_HybridKernel3> bbox_t;
+  using point_t = CGAL::Point_3<CGAL_HybridKernel3>;
+  using bbox_t = CGAL::Iso_cuboid_3<CGAL_HybridKernel3>;
 
   CGALHybridPolyhedron(const shared_ptr<CGAL_HybridNef>& nef);
   CGALHybridPolyhedron(const shared_ptr<CGAL_HybridMesh>& mesh);

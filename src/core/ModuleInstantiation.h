@@ -4,7 +4,7 @@
 #include "LocalScope.h"
 #include <vector>
 
-typedef std::vector<class ModuleInstantiation *> ModuleInstantiationList;
+using ModuleInstantiationList = std::vector<class ModuleInstantiation *>;
 
 class ModuleInstantiation : public ASTNode
 {

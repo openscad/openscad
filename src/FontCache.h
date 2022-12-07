@@ -58,7 +58,7 @@ private:
   std::string file;
 };
 
-typedef std::vector<FontInfo> FontInfoList;
+using FontInfoList = std::vector<FontInfo>;
 
 /**
  * Slow call of the font cache initialization. This is separated here so it
@@ -93,12 +93,12 @@ public:
 
   static FontCache *instance();
 
-  typedef void (InitHandlerFunc)(FontCacheInitializer *initializer, void *userdata);
+  using InitHandlerFunc = void (FontCacheInitializer *, void *);
   static void registerProgressHandler(InitHandlerFunc *handler, void *userdata = nullptr);
 
 private:
-  typedef std::pair<FT_Face, std::time_t> cache_entry_t;
-  typedef std::map<std::string, cache_entry_t> cache_t;
+  using cache_entry_t = std::pair<FT_Face, std::time_t>;
+  using cache_t = std::map<std::string, cache_entry_t>;
 
   static FontCache *self;
   static InitHandlerFunc *cb_handler;

@@ -611,7 +611,7 @@ public:
     return stream;
   }
 
-  typedef std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType> Variant;
+  using Variant = std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType>;
 
 
   static_assert(sizeof(Value::Variant) <= 24, "Memory size of Value too big");

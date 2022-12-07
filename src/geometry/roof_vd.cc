@@ -18,9 +18,9 @@
 
 namespace roof_vd {
 
-typedef int32_t VD_int;
+using VD_int = int32_t;
 
-typedef ::boost::polygon::voronoi_diagram<double> voronoi_diagram;
+using voronoi_diagram = ::boost::polygon::voronoi_diagram<double>;
 
 struct Point {
   VD_int a;
@@ -47,11 +47,11 @@ namespace boost {
 namespace polygon {
 template <>
 struct geometry_concept<roof_vd::Point> {
-  typedef point_concept type;
+  using type = point_concept;
 };
 template <>
 struct point_traits<roof_vd::Point> {
-  typedef roof_vd::VD_int coordinate_type;
+  using coordinate_type = roof_vd::VD_int;
 
   static inline coordinate_type get(
     const roof_vd::Point& point, orientation_2d orient) {
@@ -60,12 +60,12 @@ struct point_traits<roof_vd::Point> {
 };
 template <>
 struct geometry_concept<roof_vd::Segment> {
-  typedef segment_concept type;
+  using type = segment_concept;
 };
 template <>
 struct segment_traits<roof_vd::Segment> {
-  typedef roof_vd::VD_int coordinate_type;
-  typedef roof_vd::Point point_type;
+  using coordinate_type = roof_vd::VD_int;
+  using point_type = roof_vd::Point;
 
   static inline point_type get(const roof_vd::Segment& segment, direction_1d dir) {
     return dir.to_int() ? segment.p1 : segment.p0;

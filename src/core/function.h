@@ -47,4 +47,4 @@ struct CallableUserFunction
   std::shared_ptr<const Context> defining_context;
   const UserFunction *function;
 };
-typedef std::variant<const BuiltinFunction *, CallableUserFunction, Value, const Value *> CallableFunction;
+using CallableFunction = std::variant<const BuiltinFunction *, CallableUserFunction, Value, const Value *>;

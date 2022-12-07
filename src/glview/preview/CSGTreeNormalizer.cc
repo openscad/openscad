@@ -78,7 +78,7 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
   // See Pull Request #2343 for the initial reasons for making this not recursive.
 
   // stores current node and bool indicating if it was a left or right call;
-  typedef std::pair<shared_ptr<CSGOperation>, bool> stackframe_t;
+  using stackframe_t = std::pair<shared_ptr<CSGOperation>, bool>;
   std::stack<stackframe_t> callstack;
 
 entrypoint:

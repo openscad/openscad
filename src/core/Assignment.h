@@ -43,7 +43,7 @@ template <class ... Args> shared_ptr<Assignment> assignment(Args... args) {
   return make_shared<Assignment>(args ...);
 }
 
-typedef std::vector<shared_ptr<Assignment>> AssignmentList;
-typedef std::unordered_map<std::string, const Expression *> AssignmentMap;
+using AssignmentList = std::vector<shared_ptr<Assignment>>;
+using AssignmentMap = std::unordered_map<std::string, const Expression *>;
 
 std::ostream& operator<<(std::ostream& stream, const AssignmentList& assignments);

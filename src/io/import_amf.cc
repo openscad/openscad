@@ -55,7 +55,7 @@ class AmfImporter
 private:
   std::string xpath; // element nesting stack
 
-  typedef void (*cb_func)(AmfImporter *, const xmlChar *);
+  using cb_func = void (*)(AmfImporter *, const xmlChar *);
 
   PolySet *polySet;
   std::vector<PolySet *> polySets;

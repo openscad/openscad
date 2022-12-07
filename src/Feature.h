@@ -11,8 +11,8 @@
 class Feature
 {
 public:
-  typedef std::vector<Feature *> list_t;
-  typedef list_t::iterator iterator;
+  using list_t = std::vector<Feature *>;
+  using iterator = list_t::iterator;
 
   static const Feature ExperimentalFastCsg;
   static const Feature ExperimentalFastCsgTrustCorefinement;
@@ -51,7 +51,7 @@ private:
   const std::string name;
   const std::string description;
 
-  typedef std::map<std::string, Feature *> map_t;
+  using map_t = std::map<std::string, Feature *>;
   static map_t feature_map;
   static list_t feature_list;
 

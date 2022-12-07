@@ -19,5 +19,5 @@ private:
   shared_ptr<Expression> expr;
 };
 
-typedef std::vector<Annotation> AnnotationList;
-typedef std::unordered_map<std::string, Annotation *> AnnotationMap;
+using AnnotationList = std::vector<Annotation>;
+using AnnotationMap = std::unordered_map<std::string, Annotation *>;

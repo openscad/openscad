@@ -48,7 +48,7 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const Po
   PolySet ps_tri(3, psq.convexValue());
   PolySetUtils::tessellate_faces(psq, ps_tri);
   if (ps_tri.is_convex()) {
-    typedef CGAL::Epick K;
+    using K = CGAL::Epick;
     // Collect point cloud
     std::vector<K::Point_3> points(points3d.size());
     for (size_t i = 0, n = points3d.size(); i < n; i++) {
@@ -120,7 +120,7 @@ std::shared_ptr<const CGALHybridPolyhedron> getHybridPolyhedronFromGeometry(cons
 
 shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron& hybrid)
 {
-  typedef CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>> CGAL_SurfaceMesh;
+  using CGAL_SurfaceMesh = CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>>;
   if (auto mesh = hybrid.getMesh()) {
     CGAL_SurfaceMesh alien_mesh;
     copyMesh(*mesh, alien_mesh);

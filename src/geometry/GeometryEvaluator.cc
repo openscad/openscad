@@ -180,7 +180,7 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode& node)
   std::vector<const Polygon2d *> children = collectChildren2D(node);
   Polygon2d *geometry = new Polygon2d();
 
-  typedef CGAL::Point_2<CGAL::Cartesian<double>> CGALPoint2;
+  using CGALPoint2 = CGAL::Point_2<CGAL::Cartesian<double>>;
   // Collect point cloud
   std::list<CGALPoint2> points;
   for (const auto& p : children) {

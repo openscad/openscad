@@ -110,7 +110,7 @@ shared_ptr<const Geometry> applyUnion3D(
     return applyUnion3DHybrid(chbegin, chend);
   }
 
-  typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
+  using QueueConstItem = std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int>;
   struct QueueItemGreater {
     // stable sort for priority_queue by facets, then progress mark
     bool operator()(const QueueConstItem& lhs, const QueueConstItem& rhs) const
@@ -160,7 +160,7 @@ shared_ptr<const Geometry> applyUnion3D(
 
 bool applyHull(const Geometry::Geometries& children, PolySet& result)
 {
-  typedef CGAL::Epick K;
+  using K = CGAL::Epick;
   // Collect point cloud
   Reindexer<K::Point_3> reindexer;
   std::vector<K::Point_3> points;
@@ -242,7 +242,7 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
     while (++it != children.end()) {
       operands[1] = it->second;
 
-      typedef CGAL::Epick Hull_kernel;
+      using Hull_kernel = CGAL::Epick;
 
       std::list<CGAL_Polyhedron> P[2];
       std::list<CGAL::Polyhedron_3<Hull_kernel>> result_parts;

@@ -13,8 +13,8 @@ class GeometryVisitor;
 class Geometry
 {
 public:
-  typedef std::pair<std::shared_ptr<const AbstractNode>, shared_ptr<const Geometry>> GeometryItem;
-  typedef std::list<GeometryItem> Geometries;
+  using GeometryItem = std::pair<std::shared_ptr<const AbstractNode>, shared_ptr<const Geometry>>;
+  using Geometries = std::list<GeometryItem>;
 
   Geometry() : convexity(1) {}
   virtual ~Geometry() {}

@@ -85,8 +85,8 @@ class Grid3d
 {
 public:
   double res;
-  typedef Vector3l Key;
-  typedef std::unordered_map<Key, T> GridContainer;
+  using Key = Vector3l ;
+  using GridContainer = std::unordered_map<Key, T>;
   GridContainer db;
 
   Grid3d(double resolution) {

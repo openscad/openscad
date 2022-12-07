@@ -18,7 +18,7 @@ static void stdFree(void *userData, void *ptr) {
   free(ptr);
 }
 
-typedef std::pair<int, int> IndexedEdge;
+using IndexedEdge = std::pair<int, int>;
 
 /*!
    Helper class for keeping track of edges in a mesh.
@@ -28,7 +28,7 @@ class EdgeDict
 {
 public:
 // Counts occurrences of edges
-  typedef std::unordered_map<IndexedEdge, int, boost::hash<IndexedEdge>> IndexedEdgeDict;
+  using IndexedEdgeDict = std::unordered_map<IndexedEdge, int, boost::hash<IndexedEdge>>;
 
   EdgeDict() { }
 

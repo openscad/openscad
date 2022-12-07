@@ -19,15 +19,15 @@ struct FaceInfo
 };
 
 
-typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
-typedef CGAL::Triangulation_vertex_base_2<K> Vb;
-typedef CGAL::Triangulation_face_base_with_info_2<FaceInfo, K> Fbb;
-typedef CGAL::Constrained_triangulation_face_base_2<K, Fbb> Fb;
-typedef CGAL::Triangulation_data_structure_2<Vb, Fb> TDS;
-typedef CGAL::Exact_predicates_tag Itag;
-typedef CGAL::Constrained_Delaunay_triangulation_2<K, TDS, Itag> CDT;
-typedef CDT::Point Point;
-typedef CGAL::Polygon_2<K> Polygon_2;
+using K = CGAL::Exact_predicates_inexact_constructions_kernel;
+using Vb = CGAL::Triangulation_vertex_base_2<K>;
+using Fbb = CGAL::Triangulation_face_base_with_info_2<FaceInfo, K>;
+using Fb = CGAL::Constrained_triangulation_face_base_2<K, Fbb>;
+using TDS = CGAL::Triangulation_data_structure_2<Vb, Fb>;
+using Itag = CGAL::Exact_predicates_tag;
+using CDT = CGAL::Constrained_Delaunay_triangulation_2<K, TDS, Itag>;
+using Point = CDT::Point;
+using Polygon_2 = CGAL::Polygon_2<K>;
 
 void
 mark_domains(CDT& ct,
