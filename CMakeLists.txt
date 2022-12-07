@@ -800,6 +800,7 @@ set(GUI_SOURCES
   src/gui/parameter/ParameterVector.cc
   src/gui/parameter/ParameterVirtualWidget.cc
   src/gui/parameter/ParameterWidget.cc
+  src/gui/parameter/KeyEnterForwarder.cc
   ${INPUT_DRIVER_SOURCES}
   )
 

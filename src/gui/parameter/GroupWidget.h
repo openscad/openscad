@@ -1,9 +1,9 @@
 #pragma once
 
 #include <QGridLayout>
-#include <QToolButton>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QToolButton>
 
 class GroupWidget : public QWidget
 {
@@ -23,4 +23,5 @@ public:
 
 public slots:
   void setExpanded(bool expanded);
+  void setFocusOnButton();
 };
