@@ -1532,13 +1532,13 @@ static Geometry *roofOverPolygon(const RoofNode& node, const Polygon2d& poly)
   PolySet *roof;
   if (node.method == "voronoi") {
     roof = roof_vd::voronoi_diagram_roof(poly, node.fa, node.fs);
+    roof->setConvexity(node.convexity);
   } else if (node.method == "straight") {
     roof = roof_ss::straight_skeleton_roof(poly);
+    roof->setConvexity(node.convexity);
   } else {
     assert(false && "Invalid roof method");
   }
-
-  roof->setConvexity(node.convexity);
 
   return roof;
 }
