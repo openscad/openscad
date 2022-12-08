@@ -54,7 +54,7 @@ void Console::focusInEvent(QFocusEvent *event)
     current = current->parentWidget();
   }
   assert(mw);
-  mw->setLastFocus(this);
+  if (mw) mw->setLastFocus(this);
 }
 
 void Console::addMessage(const Message& msg)
