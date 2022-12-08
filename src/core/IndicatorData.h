@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 struct IndicatorData
 {
   IndicatorData(int firstLine, int firstCol, int lastLine, int lastCol,

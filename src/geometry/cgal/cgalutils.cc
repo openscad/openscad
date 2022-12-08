@@ -9,7 +9,6 @@
 #include "printutils.h"
 #include "Polygon2d.h"
 #include "PolySetUtils.h"
-#include "Grid.h"
 #include "node.h"
 #include "degree_trig.h"
 
@@ -24,7 +23,6 @@
 #include <CGAL/convex_hull_3.h>
 
 #include "Reindexer.h"
-#include "hash.h"
 #include "GeometryUtils.h"
 #include "CGALHybridPolyhedron.h"
 
@@ -432,7 +430,7 @@ template void transform(CGAL_HybridMesh& mesh, const Transform3d& matrix);
 
 template <typename K>
 Transform3d computeResizeTransform(
-  const CGAL::Iso_cuboid_3<K>& bb, int dimension, const Vector3d& newsize,
+  const CGAL::Iso_cuboid_3<K>& bb, unsigned int dimension, const Vector3d& newsize,
   const Eigen::Matrix<bool, 3, 1>& autosize)
 {
   // Based on resize() in Giles Bathgate's RapCAD (but not exactly)
@@ -476,10 +474,10 @@ Transform3d computeResizeTransform(
 }
 
 template Transform3d computeResizeTransform(
-  const CGAL_Iso_cuboid_3& bb, int dimension, const Vector3d& newsize,
+  const CGAL_Iso_cuboid_3& bb, unsigned int dimension, const Vector3d& newsize,
   const Eigen::Matrix<bool, 3, 1>& autosize);
 template Transform3d computeResizeTransform(
-  const CGAL::Iso_cuboid_3<CGAL_HybridKernel3>& bb, int dimension, const Vector3d& newsize,
+  const CGAL::Iso_cuboid_3<CGAL_HybridKernel3>& bb, unsigned int dimension, const Vector3d& newsize,
   const Eigen::Matrix<bool, 3, 1>& autosize);
 
 shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>& geom)

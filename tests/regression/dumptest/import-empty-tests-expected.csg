@@ -1,4 +1,5 @@
 difference() {
-	import(file = "", layer = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 0);
+	import(file = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 0);
 	cube(size = [1, 1, 1], center = false);
 }
+

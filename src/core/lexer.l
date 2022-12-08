@@ -25,6 +25,8 @@
  */
 
 %option prefix="lexer"
+%option nounput
+%option noinput
 
 %{
 
@@ -38,7 +40,7 @@
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
-#include "boost-utils.h"
+//#include "boost-utils.h"
 namespace fs = boost::filesystem;
 
 //isatty for visual c++ and mingw-cross-env
@@ -54,9 +56,6 @@ extern "C" int __cdecl _isatty(int _FileHandle);
 
 std::string stringcontents;
 int lexerget_lineno(void);
-#ifdef __GNUC__
-static void yyunput(int, char*) __attribute__((unused));
-#endif
 extern const char *parser_input_buffer;
 extern SourceFile *rootfile;
 
@@ -276,7 +275,7 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
 "<="	return LE;
 ">="	return GE;
 "=="	return EQ;
-"!="	return NE;
+"!="	return NEQ;
 "&&"	return AND;
 "||"	return OR;
 

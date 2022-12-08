@@ -189,7 +189,7 @@ const std::string PlatformUtils::sysinfo(bool extended)
 }
 
 #include <io.h>
-#include <stdio.h>
+#include <cstdio>
 #include <fstream>
 
 #ifdef USE_MIMALLOC

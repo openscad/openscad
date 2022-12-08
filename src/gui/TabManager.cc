@@ -15,7 +15,6 @@
 #include "TabManager.h"
 #include "TabWidget.h"
 #include "ScintillaEditor.h"
-#include "QSettingsCached.h"
 #include "Preferences.h"
 #include "MainWindow.h"
 
@@ -47,7 +46,6 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   connect(par->editActionRedo, SIGNAL(triggered()), this, SLOT(redo()));
   connect(par->editActionRedo_2, SIGNAL(triggered()), this, SLOT(redo()));
   connect(par->editActionCut, SIGNAL(triggered()), this, SLOT(cut()));
-  connect(par->editActionCopy, SIGNAL(triggered()), this, SLOT(copy()));
   connect(par->editActionPaste, SIGNAL(triggered()), this, SLOT(paste()));
 
   connect(par->editActionIndent, SIGNAL(triggered()), this, SLOT(indentSelection()));
@@ -184,6 +182,8 @@ void TabManager::createTab(const QString& filename)
   connect(editor, SIGNAL(uriDropped(const QUrl&)), par, SLOT(handleFileDrop(const QUrl&)));
   connect(editor, SIGNAL(previewRequest()), par, SLOT(actionRenderPreview()));
   connect(editor, SIGNAL(showContextMenuEvent(const QPoint&)), this, SLOT(showContextMenuEvent(const QPoint&)));
+  connect(editor, &EditorInterface::focusIn, this, [=]() { par->setLastFocus(editor); });
+
   connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
   connect(Preferences::inst(), SIGNAL(autocompleteChanged(bool)), editor, SLOT(onAutocompleteChanged(bool)));
   connect(Preferences::inst(), SIGNAL(characterThresholdChanged(int)), editor, SLOT(onCharacterThresholdChanged(int)));
@@ -224,7 +224,7 @@ void TabManager::createTab(const QString& filename)
   par->updateRecentFileActions();
 }
 
-int TabManager::count()
+size_t TabManager::count()
 {
   return tabWidget->count();
 }
@@ -486,7 +486,7 @@ void TabManager::openTabFile(const QString& filename)
   if (knownFileType && cmd.isEmpty()) {
     setTabName(filename);
     editor->parameterWidget->readFile(fileinfo.absoluteFilePath());
-    par->updateRecentFiles(editor);
+    par->updateRecentFiles(filename);
   } else {
     setTabName(nullptr);
     editor->setPlainText(cmd.arg(filename));
@@ -500,6 +500,8 @@ void TabManager::openTabFile(const QString& filename)
       par->parseTopLevelDocument();
     } catch (const HardWarningException&) {
       par->exceptionCleanup();
+    } catch (const std::exception& ex) {
+      par->UnknownExceptionCleanup(ex.what());
     } catch (...) {
       par->UnknownExceptionCleanup();
     }
@@ -677,7 +679,7 @@ bool TabManager::save(EditorInterface *edt, const QString path)
     edt->parameterWidget->saveFile(path);
     edt->setContentModified(false);
     edt->parameterWidget->setModified(false);
-    par->updateRecentFiles(edt);
+    par->updateRecentFiles(path);
   } else {
     saveError(file, _("Error saving design"), path);
   }
@@ -713,6 +715,23 @@ bool TabManager::saveAs(EditorInterface *edt)
     setTabName(filename, edt);
   }
   return saveOk;
+}
+
+bool TabManager::saveACopy(EditorInterface *edt)
+{
+  assert(edt != nullptr);
+
+  const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
+  auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, _("OpenSCAD Designs (*.scad)"));
+  if (filename.isEmpty()) {
+    return false;
+  }
+
+  if (QFileInfo(filename).suffix().isEmpty()) {
+    filename.append(".scad");
+  }
+
+  return save(edt, filename);
 }
 
 bool TabManager::saveAll()

@@ -30,7 +30,7 @@ class RecursionException : public EvaluationException
 {
 public:
   static RecursionException create(const std::string& recursiontype, const std::string& name, const Location& loc) {
-    return RecursionException{STR("Recursion detected calling " << recursiontype << " '" << name << "'"), loc};
+    return RecursionException{STR("Recursion detected calling ", recursiontype, " '", name, "'"), loc};
   }
   ~RecursionException() throw() {}
 
@@ -45,7 +45,7 @@ class LoopCntException : public EvaluationException
 {
 public:
   static LoopCntException create(const std::string& type, const Location& loc) {
-    return LoopCntException{STR(type << " loop counter exceeded limit"), loc};
+    return LoopCntException{STR(type, " loop counter exceeded limit"), loc};
   }
   ~LoopCntException() throw() {}
 

@@ -5,7 +5,6 @@
 #include <memory>
 #include <cstdio>
 #include <functional>
-#include "enums.h"
 #include "VertexArray.h"
 
 #include "printutils.h"

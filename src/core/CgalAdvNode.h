@@ -1,12 +1,12 @@
 #pragma once
 
 #include "node.h"
-#include "Value.h"
 #include "linalg.h"
 
 enum class CgalAdvType {
   MINKOWSKI,
   HULL,
+  FILL,
   RESIZE
 };
 

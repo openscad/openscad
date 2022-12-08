@@ -8,7 +8,6 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include "GLView.h"
-#include "Renderer.h"
 
 class QGLView : public QOpenGLWidget, public GLView
 {
@@ -90,3 +89,7 @@ signals:
   void resized();
   void doSelectObject(QPoint screen_coordinate);
 };
+
+/* These are defined in QLGView2.cc.  See the commentary there. */
+QOpenGLContext *getGLContext(void);
+void setGLContext(QOpenGLContext *);

@@ -28,7 +28,6 @@
 #include "CommentParser.h"
 #include "node.h"
 #include "SourceFile.h"
-#include "ModuleInstantiation.h"
 #include "BuiltinContext.h"
 #include "Value.h"
 #include "export.h"
@@ -40,14 +39,11 @@
 #include "RenderSettings.h"
 #include "PlatformUtils.h"
 #include "LibraryInfo.h"
-#include "NodeDumper.h"
 #include "StackCheck.h"
-#include "CocoaUtils.h"
 #include "FontCache.h"
 #include "OffscreenView.h"
 #include "GeometryEvaluator.h"
 #include "RenderStatistic.h"
-#include "boost-utils.h"
 #include "ParameterObject.h"
 #include "ParameterSet.h"
 #include "openscad_mimalloc.h"
@@ -68,6 +64,7 @@
 #include <chrono>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -79,6 +76,7 @@
 #endif
 
 #ifdef __APPLE__
+#include "CocoaUtils.h"
 #include "AppleEvents.h"
   #ifdef OPENSCAD_UPDATER
     #include "SparkleAutoUpdater.h"
@@ -130,7 +128,7 @@ private:
 static void help(const char *arg0, const po::options_description& desc, bool failure = false)
 {
   const fs::path progpath(arg0);
-  LOG(message_group::None, Location::NONE, "", "Usage: %1$s [options] file.scad\n%2$s", progpath.filename().string(), STR(desc));
+  LOG(message_group::None, Location::NONE, "", "Usage: %1$s [options] file.scad\n%2$s", progpath.filename().string(), desc);
   exit(failure ? 1 : 0);
 }
 
@@ -968,7 +966,7 @@ int main(int argc, char **argv)
     ("quiet,q", "quiet mode (don't print anything *except* errors)")
     ("hardwarnings", "Stop on the first warning")
     ("trace-depth", po::value<unsigned int>(), "=n, maximum number of trace messages")
-    ("trace-usermodule-parameters", po::value<string>(), "=true/false, configure the output of user modul parameters in a trace")
+    ("trace-usermodule-parameters", po::value<string>(), "=true/false, configure the output of user module parameters in a trace")
     ("check-parameters", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
     ("check-parameter-ranges", po::value<string>(), "=true/false, configure the parameter range check for builtin modules")
     ("debug", po::value<string>(), "special debug info - specify 'all' or a set of source file names")

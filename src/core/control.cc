@@ -28,13 +28,12 @@
 #include "ModuleInstantiation.h"
 #include "node.h"
 #include "Arguments.h"
-#include "ScopeContext.h"
+#include "Children.h"
 #include "Expression.h"
 #include "Builtins.h"
 #include "Parameters.h"
 #include "printutils.h"
 #include <cstdint>
-#include "boost-utils.h"
 
 static std::shared_ptr<AbstractNode> lazyUnionNode(const ModuleInstantiation *inst)
 {
@@ -60,7 +59,7 @@ static boost::optional<size_t> validChildIndex(const Value& value, const Childre
     LOG(message_group::Warning, inst->location(), context->documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range.", value.toString());
     return boost::none;
   }
-  return validChildIndex(static_cast<int>(trunc(value.toDouble())), children, inst, context);
+  return validChildIndex(static_cast<int>(value.toDouble()), children, inst, context);
 }
 
 static std::shared_ptr<AbstractNode> builtin_child(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
@@ -138,7 +137,7 @@ static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation 
     }
     std::vector<size_t> indices;
     for (double d : range) {
-      auto index = validChildIndex(static_cast<int>(trunc(d)), children, inst, context);
+      auto index = validChildIndex(static_cast<int>(d), children, inst, context);
       if (index) {
         indices.push_back(*index);
       }

@@ -3,7 +3,6 @@
 #include <string>
 #include <unordered_map>
 #include "module.h"
-#include "LocalScope.h"
 #include "Assignment.h"
 
 class Builtins

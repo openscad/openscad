@@ -1,13 +1,12 @@
 #include "GLView.h"
-
-#include "stdio.h"
+#include "system-gl.h"
 #include "ColorMap.h"
 #include "RenderSettings.h"
 #include "printutils.h"
 #include "Renderer.h"
 #include "degree_trig.h"
 #include <cmath>
-#include "boost-utils.h"
+#include <cstdio>
 #ifdef _WIN32
 #include <GL/wglew.h>
 #elif !defined(__APPLE__)

@@ -37,14 +37,12 @@
 
 #include "OffscreenContext.h"
 #include "printutils.h"
-#include "imageutils.h"
-#include "system-gl.h"
 #include "fbo.h"
 
 #include <GL/gl.h>
 #include <GL/glx.h>
 
-#include <assert.h>
+#include <cassert>
 #include <sstream>
 #include <string>
 
@@ -73,8 +71,8 @@ std::string get_os_info()
   if (uname(&u) < 0) {
     return STR("OS info: unknown, uname() error\n");
   } else {
-    return STR("OS info: " << u.sysname << " " << u.release << " " << u.version << "\n" <<
-               "Machine: " << u.machine);
+    return STR("OS info: ", u.sysname, " ", u.release, " ", u.version, "\n",
+               "Machine: ", u.machine);
   }
   return "";
 }
@@ -90,9 +88,9 @@ std::string offscreen_context_getinfo(OffscreenContext *ctx)
   int major, minor;
   glXQueryVersion(ctx->xdisplay, &major, &minor);
 
-  return STR("GL context creator: GLX\n" <<
-             "PNG generator: lodepng\n" <<
-             "GLX version: " << major << "." << minor << "\n" <<
+  return STR("GL context creator: GLX\n",
+             "PNG generator: lodepng\n",
+             "GLX version: ", major, ".", minor, "\n",
              get_os_info());
 }
 

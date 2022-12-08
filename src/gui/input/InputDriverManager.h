@@ -28,10 +28,12 @@
 #include <QWidget>
 #include <QThread>
 #include <QTimer>
+#include <QIcon>
 
 #include "InputDriver.h"
 #include "InputEventMapper.h"
-#include "MainWindow.h"
+
+class MainWindow;
 
 struct ActionStruct {
   QString name;
@@ -79,8 +81,8 @@ public:
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
 
-  int getButtonCount();
-  int getAxisCount();
+  size_t getButtonCount() const;
+  size_t getAxisCount() const;
 
 public slots:
   void onInputMappingUpdated();

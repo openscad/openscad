@@ -27,7 +27,6 @@
 #include <QClipboard>
 #include <QSortFilterProxyModel>
 
-#include "qtgettext.h"
 #include "FontListDialog.h"
 #include "FontCache.h"
 
@@ -87,9 +86,9 @@ void FontListDialog::update_font_list()
 
   FontInfoList *list = FontCache::instance()->list_fonts();
   model = new QStandardItemModel(list->size(), 3, this);
-  model->setHorizontalHeaderItem(0, new QStandardItem(QString("Font name")));
-  model->setHorizontalHeaderItem(1, new QStandardItem(QString("Font style")));
-  model->setHorizontalHeaderItem(2, new QStandardItem(QString("Filename")));
+  model->setHorizontalHeaderItem(0, new QStandardItem(_("Font name")));
+  model->setHorizontalHeaderItem(1, new QStandardItem(_("Font style")));
+  model->setHorizontalHeaderItem(2, new QStandardItem(_("Filename")));
 
   int idx = 0;
   for (FontInfoList::iterator it = list->begin(); it != list->end(); it++, idx++) {

@@ -33,7 +33,7 @@
 #include "calc.h"
 
 #include <fstream>
-#include <assert.h>
+#include <cassert>
 #include <unordered_map>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -59,7 +59,7 @@ namespace fs = boost::filesystem;
    1) Read DXF file from disk
    2) Store contents of DXF files as points, paths and dims
    3) Store 2D polygons, both from the polygon() module and from 2D CSG operations.
-     Used for tesselation into triangles
+     Used for tessellation into triangles
    4) Store 2D polygons before exporting to DXF
 
 
@@ -419,7 +419,7 @@ DxfData::DxfData(double fn, double fs, double fa,
         auto lv = grid.data(this->points[lines[idx].idx[j]][0], this->points[lines[idx].idx[j]][1]);
         for (size_t ki = 0; ki < lv.size(); ++ki) {
           int k = lv.at(ki);
-          if (k < 0 || k >= lines.size()) {
+          if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
             LOG(message_group::Warning, Location::NONE, "",
                 "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
             continue;
@@ -449,7 +449,7 @@ create_open_path:
       auto lv = grid.data(ref_point[0], ref_point[1]);
       for (size_t ki = 0; ki < lv.size(); ++ki) {
         int k = lv.at(ki);
-        if (k < 0 || k >= lines.size()) {
+        if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
           LOG(message_group::Warning, Location::NONE, "",
               "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
           continue;
@@ -491,7 +491,7 @@ found_next_line_in_open_path:;
       auto lv = grid.data(ref_point[0], ref_point[1]);
       for (size_t ki = 0; ki < lv.size(); ++ki) {
         int k = lv.at(ki);
-        if (k < 0 || k >= lines.size()) {
+        if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
           LOG(message_group::Warning, Location::NONE, "",
               "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
           continue;

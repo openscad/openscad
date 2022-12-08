@@ -29,14 +29,13 @@
 #include <mpfr.h>
 #endif
 
-// DxfData.h must come first for Eigen SIMD alignment issues
-#include "DxfData.h"
 #include "PolySet.h"
 #include "PolySetUtils.h"
 #include "printutils.h"
 #include "Feature.h"
 
 #include "CGALRenderer.h"
+#include "CGAL_OGL_VBOPolyhedron.h"
 #include "CGALHybridPolyhedron.h"
 
 //#include "Preferences.h"

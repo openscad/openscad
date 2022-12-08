@@ -24,7 +24,7 @@
  *
  */
 #include <cmath>
-#include <stdio.h>
+#include <cstdio>
 
 #include <iostream>
 
@@ -368,6 +368,7 @@ FreetypeRenderer::ShapeResults::ShapeResults(
   hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(hb_buf, &glyph_count);
   hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(hb_buf, &glyph_count);
 
+  glyph_array.reserve(glyph_count);
   for (unsigned int idx = 0; idx < glyph_count; ++idx) {
     FT_Error error;
     FT_UInt glyph_index = glyph_info[idx].codepoint;
@@ -389,8 +390,8 @@ FreetypeRenderer::ShapeResults::ShapeResults(
           glyph_index, idx, params.text);
       continue;
     }
-    const GlyphData *glyph_data = new GlyphData(glyph, idx, &glyph_pos[idx]);
-    glyph_array.push_back(glyph_data);
+
+    glyph_array.emplace_back(glyph, idx, &glyph_pos[idx]);
   }
 
   ascent = std::numeric_limits<double>::lowest();
@@ -402,9 +403,9 @@ FreetypeRenderer::ShapeResults::ShapeResults(
   bottom = std::numeric_limits<double>::max();
   top = std::numeric_limits<double>::lowest();
 
-  for (const auto glyph : glyph_array) {
+  for (const auto& glyph : glyph_array) {
     FT_BBox bbox;
-    FT_Glyph_Get_CBox(glyph->get_glyph(), FT_GLYPH_BBOX_GRIDFIT, &bbox);
+    FT_Glyph_Get_CBox(glyph.get_glyph(), FT_GLYPH_BBOX_GRIDFIT, &bbox);
 
     // Note that glyphs can extend left of their origin
     // and right of their advance-width, into the next
@@ -419,8 +420,8 @@ FreetypeRenderer::ShapeResults::ShapeResults(
       ascent = std::max(ascent, bbox.yMax / scale);
       descent = std::min(descent, bbox.yMin / scale);
 
-      double gxoff = glyph->get_x_offset();
-      double gyoff = glyph->get_y_offset();
+      const double gxoff = glyph.get_x_offset();
+      const double gyoff = glyph.get_y_offset();
 
       left = std::min(left,
                       advance_x + gxoff + bbox.xMin / scale);
@@ -433,8 +434,8 @@ FreetypeRenderer::ShapeResults::ShapeResults(
                         advance_y + gyoff + bbox.yMin / scale);
     }
 
-    advance_x += glyph->get_x_advance() * params.spacing;
-    advance_y += glyph->get_y_advance() * params.spacing;
+    advance_x += glyph.get_x_advance() * params.spacing;
+    advance_y += glyph.get_y_advance() * params.spacing;
   }
 
   // Right and left start out reversed.  If any ink is ever
@@ -560,16 +561,16 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
   }
 
   DrawingCallback callback(params.segments, params.size);
-  for (const auto glyph : sr.glyph_array) {
+  for (const auto& glyph : sr.glyph_array) {
     callback.start_glyph();
     callback.set_glyph_offset(
-      sr.x_offset + glyph->get_x_offset(),
-      sr.y_offset + glyph->get_y_offset());
-    FT_Outline outline = reinterpret_cast<FT_OutlineGlyph>(glyph->get_glyph())->outline;
+      sr.x_offset + glyph.get_x_offset(),
+      sr.y_offset + glyph.get_y_offset());
+    FT_Outline outline = reinterpret_cast<FT_OutlineGlyph>(glyph.get_glyph())->outline;
     FT_Outline_Decompose(&outline, &funcs, &callback);
 
-    double adv_x = glyph->get_x_advance() * params.spacing;
-    double adv_y = glyph->get_y_advance() * params.spacing;
+    double adv_x = glyph.get_x_advance() * params.spacing;
+    double adv_y = glyph.get_y_advance() * params.spacing;
     callback.add_glyph_advance(adv_x, adv_y);
     callback.finish_glyph();
   }

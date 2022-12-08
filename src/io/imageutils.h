@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <iostream>
 
 bool write_png(const char *filename, unsigned char *pixels, int width, int height);

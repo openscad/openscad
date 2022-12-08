@@ -1,15 +1,11 @@
 #include "Renderer.h"
-#include "RenderSettings.h"
-#include "Geometry.h"
 #include "PolySet.h"
 #include "Polygon2d.h"
 #include "ColorMap.h"
 #include "printutils.h"
-#include "Feature.h"
 #include "PlatformUtils.h"
+#include "system-gl.h"
 
-#include "PolySetUtils.h"
-#include "Grid.h"
 #include <Eigen/LU>
 #include <fstream>
 

@@ -388,8 +388,9 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
       }
 
       if (shaderinfo && shaderinfo->progid) {
-        if (shaderinfo->type != EDGE_RENDERING ||
-            (shaderinfo->type == EDGE_RENDERING && showedges)) glUseProgram(shaderinfo->progid); GL_ERROR_CHECK();
+        if (shaderinfo->type != EDGE_RENDERING || (shaderinfo->type == EDGE_RENDERING && showedges)) {
+          glUseProgram(shaderinfo->progid); GL_ERROR_CHECK();
+        }
       }
 
       for (const auto& csgobj : product.intersections) {
@@ -450,7 +451,7 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
           colormode = ColorMode::CUTOUT;
         }
 
-        const Color4f color = setColor(colormode, c.data(), shaderinfo);
+        (void) setColor(colormode, c.data(), shaderinfo);
         glPushMatrix();
         glMultMatrixd(csgobj.leaf->matrix.data());
         // negative objects should only render rear faces

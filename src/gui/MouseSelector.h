@@ -2,13 +2,9 @@
 
 #include "GLView.h"
 #include "Renderer.h"
-
 #include <QOpenGLFramebufferObject>
 
 #include <memory>
-
-
-class QOpenGLFramebufferObject;
 
 /**
  * Grab the of the Tree element that was rendered at a specific location

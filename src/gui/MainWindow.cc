@@ -38,7 +38,6 @@
 #include "printutils.h"
 #include "node.h"
 #include "CSGNode.h"
-#include "Builtins.h"
 #include "memory.h"
 #include "Expression.h"
 #include "ScopeContext.h"
@@ -120,14 +119,14 @@
 
 #endif // ENABLE_CGAL
 
-#include "FontCache.h"
 #include "PrintInitDialog.h"
+#include "input/InputDriverEvent.h"
 #include "input/InputDriverManager.h"
 #include <cstdio>
 #include <memory>
 #include <QtNetwork>
 
-#include "qt-obsolete.h"
+#include "qt-obsolete.h" // IWYU pragma: keep
 
 static const int autoReloadPollingPeriodMS = 200;
 
@@ -382,6 +381,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->fileActionOpen, SIGNAL(triggered()), this, SLOT(actionOpen()));
   connect(this->fileActionSave, SIGNAL(triggered()), this, SLOT(actionSave()));
   connect(this->fileActionSaveAs, SIGNAL(triggered()), this, SLOT(actionSaveAs()));
+  connect(this->fileActionSaveACopy, SIGNAL(triggered()), this, SLOT(actionSaveACopy()));
   connect(this->fileActionSaveAll, SIGNAL(triggered()), tabManager, SLOT(saveAll()));
   connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
   connect(this->fileActionClose, SIGNAL(triggered()), tabManager, SLOT(closeCurrentTab()));
@@ -405,6 +405,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->editActionNextTab, SIGNAL(triggered()), tabManager, SLOT(nextTab()));
   connect(this->editActionPrevTab, SIGNAL(triggered()), tabManager, SLOT(prevTab()));
 
+  connect(this->editActionCopy, SIGNAL(triggered()), this, SLOT(copyText()));
   connect(this->editActionCopyViewport, SIGNAL(triggered()), this, SLOT(actionCopyViewport()));
   connect(this->editActionConvertTabsToSpaces, SIGNAL(triggered()), this, SLOT(convertTabsToSpaces()));
   connect(this->editActionCopyVPT, SIGNAL(triggered()), this, SLOT(copyViewportTranslation()));
@@ -986,16 +987,14 @@ bool MainWindow::network_progress_func(const double permille)
   return (progresswidget && progresswidget->wasCanceled());
 }
 
-void MainWindow::updateRecentFiles(EditorInterface *edt)
+void MainWindow::updateRecentFiles(QString FileSavedOrOpened)
 {
   // Check that the canonical file path exists - only update recent files
   // if it does. Should prevent empty list items on initial open etc.
-  QFileInfo fileinfo(edt->filepath);
-  auto infoFileName = fileinfo.absoluteFilePath();
   QSettingsCached settings; // already set up properly via main.cpp
   auto files = settings.value("recentFileList").toStringList();
-  files.removeAll(infoFileName);
-  files.prepend(infoFileName);
+  files.removeAll(FileSavedOrOpened);
+  files.prepend(FileSavedOrOpened);
   while (files.size() > UIUtils::maxRecentFiles) files.removeLast();
   settings.setValue("recentFileList", files);
 
@@ -1105,6 +1104,8 @@ void MainWindow::compile(bool reload, bool forcedone)
     compileDone(didcompile | forcedone);
   } catch (const HardWarningException&) {
     exceptionCleanup();
+  } catch (const std::exception& ex) {
+    UnknownExceptionCleanup(ex.what());
   } catch (...) {
     UnknownExceptionCleanup();
   }
@@ -1515,6 +1516,11 @@ void MainWindow::actionSave()
 void MainWindow::actionSaveAs()
 {
   tabManager->saveAs(activeEditor);
+}
+
+void MainWindow::actionSaveACopy()
+{
+  tabManager->saveACopy(activeEditor);
 }
 
 void MainWindow::actionShowLibraryFolder()
@@ -2288,6 +2294,10 @@ void MainWindow::setCursor()
   this->activeEditor->setCursorPosition(line - 1, column - 1);
 }
 
+void MainWindow::setLastFocus(QWidget *widget) {
+  this->lastFocus = widget;
+}
+
 /**
  * Switch version label and progress widget. When switching to the progress
  * widget, the new instance is passed by the caller.
@@ -2328,9 +2338,14 @@ void MainWindow::exceptionCleanup(){
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
-void MainWindow::UnknownExceptionCleanup(){
+void MainWindow::UnknownExceptionCleanup(std::string msg){
   setCurrentOutput(); // we need to show this error
-  LOG(message_group::Error, Location::NONE, "", "Parsing aborted by unknown exception");
+  if (msg.size() == 0) {
+    LOG(message_group::Error, Location::NONE, "", "Compilation aborted by unknown exception");
+  }
+  else {
+    LOG(message_group::Error, Location::NONE, "", "Compilation aborted by exception: %1$s", msg);
+  }
   LOG(message_group::None, Location::NONE, "", " ");
   GuiLocker::unlock();
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
@@ -2608,6 +2623,16 @@ void MainWindow::actionExportImage()
     } else {
         LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
     }
+  }
+}
+
+void MainWindow::copyText()
+{
+  Console* c = dynamic_cast<Console *>(lastFocus);
+  if (c) {
+    c->copy();
+  } else {
+    tabManager->copy();
   }
 }
 

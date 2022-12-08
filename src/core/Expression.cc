@@ -28,19 +28,18 @@
 #include "Value.h"
 #include <cstdint>
 #include <cmath>
-#include <assert.h>
+#include <cassert>
 #include <sstream>
 #include <algorithm>
 #include <typeinfo>
 #include <forward_list>
+#include <variant>
 #include "printutils.h"
 #include "StackCheck.h"
 #include "Context.h"
 #include "exceptions.h"
-#include "Feature.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include <boost/bind.hpp>
 #include "boost-utils.h"
 #include <boost/regex.hpp>
 #include <boost/assign/std/vector.hpp>
@@ -195,31 +194,14 @@ void ArrayLookup::print(std::ostream& stream, const std::string&) const
   stream << *array << "[" << *index << "]";
 }
 
-Literal::Literal(bool val, const Location& loc) : Expression(loc), value(val) {}
-Literal::Literal(double val, const Location& loc) : Expression(loc), value(val) {}
-Literal::Literal(const std::string& val, const Location& loc) : Expression(loc), value(val) {}
-Literal::Literal(const char *val, const Location& loc) : Expression(loc), value(std::string(val)) {}
-Literal::Literal(boost::none_t val, const Location& loc) : Expression(loc), value(val) {}
-
 Value Literal::evaluate(const std::shared_ptr<const Context>&) const
 {
-  if (isBool()) {
-    return Value(*toBool());
-  } else if (isDouble()) {
-    return Value(*toDouble());
-  } else if (isString()) {
-    return Value(*toString());
-  } else if (isUndefined()) {
-    return Value(UndefType());
-  } else {
-    assert(false);
-    return Value(UndefType());
-  }
+  return value.clone();
 }
 
 void Literal::print(std::ostream& stream, const std::string&) const
 {
-  stream << evaluate(nullptr);
+  stream << value;
 }
 
 Range::Range(Expression *begin, Expression *end, const Location& loc)
@@ -496,66 +478,71 @@ struct SimplifiedExpression {
   boost::optional<ContextHandle<Context>> new_context = boost::none;
   boost::optional<const FunctionCall *> new_active_function_call = boost::none;
 };
-typedef boost::variant<SimplifiedExpression, Value> SimplificationResult;
+typedef std::variant<SimplifiedExpression, Value> SimplificationResult;
 
 static SimplificationResult simplify_function_body(const Expression *expression, const std::shared_ptr<const Context>& context)
 {
   if (!expression) {
     return Value::undefined.clone();
-  } else if (typeid(*expression) == typeid(TernaryOp)) {
-    const TernaryOp *ternary = static_cast<const TernaryOp *>(expression);
-    return SimplifiedExpression{ternary->evaluateStep(context)};
-  } else if (typeid(*expression) == typeid(Assert)) {
-    const Assert *assertion = static_cast<const Assert *>(expression);
-    return SimplifiedExpression{assertion->evaluateStep(context)};
-  } else if (typeid(*expression) == typeid(Echo)) {
-    const Echo *echo = static_cast<const Echo *>(expression);
-    return SimplifiedExpression{echo->evaluateStep(context)};
-  } else if (typeid(*expression) == typeid(Let)) {
-    const Let *let = static_cast<const Let *>(expression);
-    ContextHandle<Context> let_context{Context::create<Context>(context)};
-    let_context->apply_config_variables(*context);
-    return SimplifiedExpression{let->evaluateStep(let_context), std::move(let_context)};
-  } else if (typeid(*expression) == typeid(FunctionCall)) {
-    const FunctionCall *call = static_cast<const FunctionCall *>(expression);
-
-    const Expression *function_body;
-    const AssignmentList *required_parameters;
-    std::shared_ptr<const Context> defining_context;
-
-    auto f = call->evaluate_function_expression(context);
-    if (!f) {
-      return Value::undefined.clone();
-    } else if (const BuiltinFunction **function = boost::get<const BuiltinFunction *>(&*f)) {
-      return (*function)->evaluate(context, call);
-    } else if (CallableUserFunction *callable = boost::get<CallableUserFunction>(&*f)) {
-      function_body = callable->function->expr.get();
-      required_parameters = &callable->function->parameters;
-      defining_context = callable->defining_context;
-    } else {
-      const Value *function_value;
-      if (Value *callable = boost::get<Value>(&*f)) {
-        function_value = callable;
-      } else if (const Value **callable = boost::get<const Value *>(&*f)) {
-        function_value = *callable;
-      } else {
-        assert(false);
-      }
-      const auto& function = function_value->toFunction();
-      function_body = function.getExpr().get();
-      required_parameters = function.getParameters().get();
-      defining_context = function.getContext();
-    }
-
-    ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
-    body_context->apply_config_variables(*context);
-    Arguments arguments{call->arguments, context};
-    Parameters parameters = Parameters::parse(std::move(arguments), call->location(), *required_parameters, defining_context);
-    body_context->apply_variables(std::move(parameters).to_context_frame());
-
-    return SimplifiedExpression{function_body, std::move(body_context), call};
   } else {
-    return expression->evaluate(context);
+    const auto& type = typeid(*expression);
+    if (type == typeid(TernaryOp)) {
+      const TernaryOp *ternary = static_cast<const TernaryOp *>(expression);
+      return SimplifiedExpression{ternary->evaluateStep(context)};
+    } else if (type == typeid(Assert)) {
+      const Assert *assertion = static_cast<const Assert *>(expression);
+      return SimplifiedExpression{assertion->evaluateStep(context)};
+    } else if (type == typeid(Echo)) {
+      const Echo *echo = static_cast<const Echo *>(expression);
+      return SimplifiedExpression{echo->evaluateStep(context)};
+    } else if (type == typeid(Let)) {
+      const Let *let = static_cast<const Let *>(expression);
+      ContextHandle<Context> let_context{Context::create<Context>(context)};
+      let_context->apply_config_variables(*context);
+      return SimplifiedExpression{let->evaluateStep(let_context), std::move(let_context)};
+    } else if (type == typeid(FunctionCall)) {
+      const FunctionCall *call = static_cast<const FunctionCall *>(expression);
+
+      const Expression *function_body;
+      const AssignmentList *required_parameters;
+      std::shared_ptr<const Context> defining_context;
+
+      auto f = call->evaluate_function_expression(context);
+      if (!f) {
+        return Value::undefined.clone();
+      } else {
+        auto index = f->index();
+        if (index == 0) {
+            return std::get<const BuiltinFunction *>(*f)->evaluate(context, call);
+        } else if (index == 1) {
+            CallableUserFunction callable = std::get<CallableUserFunction>(*f);
+            function_body = callable.function->expr.get();
+            required_parameters = &callable.function->parameters;
+            defining_context = callable.defining_context;
+        } else {
+          const FunctionType* function;
+          if (index == 2) {
+            function = &std::get<Value>(*f).toFunction();
+          } else if (index == 3) {
+            function = &std::get<const Value *>(*f)->toFunction();
+          } else {
+            assert(false);
+          }
+          function_body = function->getExpr().get();
+          required_parameters = function->getParameters().get();
+          defining_context = function->getContext();
+        }
+      }
+      ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
+      body_context->apply_config_variables(*context);
+      Arguments arguments{call->arguments, context};
+      Parameters parameters = Parameters::parse(std::move(arguments), call->location(), *required_parameters, defining_context);
+      body_context->apply_variables(std::move(parameters).to_context_frame());
+
+      return SimplifiedExpression{function_body, std::move(body_context), call};
+    } else {
+      return expression->evaluate(context);
+    }
   }
 }
 
@@ -579,11 +566,11 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
   while (true) {
     try {
       auto result = simplify_function_body(expression, *expression_context);
-      if (Value *value = boost::get<Value>(&result)) {
+      if (Value *value = std::get_if<Value>(&result)) {
         return std::move(*value);
       }
 
-      SimplifiedExpression *simplified_expression = boost::get<SimplifiedExpression>(&result);
+      SimplifiedExpression *simplified_expression = std::get_if<SimplifiedExpression>(&result);
       assert(simplified_expression);
 
       expression = simplified_expression->expression;
@@ -644,7 +631,7 @@ void Assert::performAssert(const AssignmentList& arguments, const Location& loca
   }
 
   if (!parameters["condition"].toBool()) {
-    std::string conditionString = conditionExpression ? STR(" '" << *conditionExpression << "'") : "";
+    std::string conditionString = conditionExpression ? STR(" '", *conditionExpression, "'") : "";
     std::string messageString = parameters.contains("message") ? (": " + parameters["message"].toEchoStringNoThrow()) : "";
     LOG(message_group::Error, location, context->documentRoot(), "Assertion%1$s failed%2$s", conditionString, messageString);
     throw AssertionFailedException("Assertion Failed", location);
