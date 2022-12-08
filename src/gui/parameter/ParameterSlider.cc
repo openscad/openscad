@@ -56,7 +56,7 @@ ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter, De
   connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onSpinBoxChanged(double)));
   connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(onSpinBoxEditingFinished()));
 
-  setValue();
+  ParameterSlider::setValue();
 }
 
 void ParameterSlider::valueApplied() {

@@ -118,7 +118,7 @@ CSGLeaf::CSGLeaf(const shared_ptr<const Geometry>& geom, Transform3d matrix, Col
   : label(std::move(label)), matrix(std::move(matrix)), color(std::move(color)), index(index)
 {
   if (geom && !geom->isEmpty()) this->geom = geom;
-  initBoundingBox();
+  CSGLeaf::initBoundingBox();
 }
 
 CSGOperation::CSGOperation(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
@@ -126,7 +126,7 @@ CSGOperation::CSGOperation(OpenSCADOperator type, shared_ptr<CSGNode> left, shar
 {
   this->children.push_back(left);
   this->children.push_back(right);
-  initBoundingBox();
+  CSGOperation::initBoundingBox();
 }
 
 void CSGLeaf::initBoundingBox()

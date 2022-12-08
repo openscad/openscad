@@ -32,7 +32,7 @@ Renderer::Renderer()
   colormap[ColorMode::HIGHLIGHT_EDGES] = {255, 171, 86, 128};
   colormap[ColorMode::BACKGROUND_EDGES] = {150, 150, 150, 128};
 
-  setColorScheme(ColorMap::inst()->defaultColorScheme());
+  Renderer::setColorScheme(ColorMap::inst()->defaultColorScheme());
 
   std::string vs_str = Renderer::loadShaderSource("Preview.vert");
   std::string fs_str = Renderer::loadShaderSource("Preview.frag");

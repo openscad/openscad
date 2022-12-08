@@ -75,7 +75,7 @@ ParameterVector::ParameterVector(QWidget *parent, VectorParameter *parameter, De
     connect(spinbox, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
   }
 
-  setValue();
+  ParameterVector::setValue();
 }
 
 void ParameterVector::valueApplied() {

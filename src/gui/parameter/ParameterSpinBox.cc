@@ -44,7 +44,7 @@ ParameterSpinBox::ParameterSpinBox(QWidget *parent, NumberParameter *parameter, 
 
   connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onChanged(double)));
   connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
-  setValue();
+  ParameterSpinBox::setValue();
 }
 
 void ParameterSpinBox::valueApplied() {
