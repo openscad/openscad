@@ -11,13 +11,14 @@ class ProgressWidget : public QWidget, public Ui::ProgressWidget
 
 public:
   ProgressWidget(QWidget *parent = nullptr);
-  [[nodiscard]] bool wasCanceled() const;
-  [[nodiscard]] int elapsedTime() const;
+  // Qt moc has problems with [[nodiscard]]
+  bool wasCanceled() const; // NOLINT(modernize-use-nodiscard)
+  int elapsedTime() const;  // NOLINT(modernize-use-nodiscard)
 
 public slots:
   void setRange(int minimum, int maximum);
   void setValue(int progress);
-  [[nodiscard]] int value() const;
+  int value() const; // NOLINT(modernize-use-nodiscard)
   void cancel();
 
 signals:
