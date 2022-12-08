@@ -6,10 +6,9 @@
 #include "linalg.h"
 #include "node.h"
 
-#define FLAG(var, flag, on) on ? (var |= flag) : (var &= ~flag)
-
 class State
 {
+
 public:
   State(std::shared_ptr<const AbstractNode> parent)
     : parentnode(std::move(parent)) {
@@ -38,14 +37,22 @@ public:
   [[nodiscard]] const Color4f& color() const { return this->color_; }
 
 private:
-  enum StateFlags {
-    NONE       = 0x00,
-    PREFIX     = 0x01,
-    POSTFIX    = 0x02,
-    PREFERNEF  = 0x04,
-    HIGHLIGHT  = 0x08,
-    BACKGROUND = 0x10
+  enum StateFlags : unsigned int {
+    NONE       = 0x00u,
+    PREFIX     = 0x01u,
+    POSTFIX    = 0x02u,
+    PREFERNEF  = 0x04u,
+    HIGHLIGHT  = 0x08u,
+    BACKGROUND = 0x10u
   };
+
+  constexpr void FLAG(unsigned int& var, StateFlags flag, bool on) {
+    if (on) {
+      var |= flag;
+    } else {
+      var &= ~flag;
+    }
+  }
 
   unsigned int flags{NONE};
   std::shared_ptr<const AbstractNode> parentnode;
