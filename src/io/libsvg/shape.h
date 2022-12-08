@@ -47,7 +47,8 @@ class shape;
 // ccox - I don't like putting this here, but the svg library code did not plan ahead for app customization.
 // And this is one of the few sensible places to put it without adding new header files.
 struct fnContext {
-  fnContext(double fNN, double fSS, double fAA) : fn(fNN), fs(fSS), fa(fAA) {}
+  fnContext(double fNN, double fSS, double fAA) : fn(fNN), fs(fSS), fa(fAA) {
+  }
   bool match(bool val) { if (val) matches++; return val; }
   bool has_matches() { return matches.load() > 0; }
 

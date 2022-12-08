@@ -910,15 +910,15 @@ QString ScintillaEditor::selectedText()
 
 bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
-  if(QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) || QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)){
-    if(!this->indicatorsActive){
-        this->indicatorsActive = true;
-        qsci->setIndicatorHoverStyle(QsciScintilla::PlainIndicator, hyperlinkIndicatorNumber);
+  if (QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) || QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)) {
+    if (!this->indicatorsActive) {
+      this->indicatorsActive = true;
+      qsci->setIndicatorHoverStyle(QsciScintilla::PlainIndicator, hyperlinkIndicatorNumber);
     }
-  }else{
-    if(this->indicatorsActive){
-        this->indicatorsActive = false;
-        qsci->setIndicatorHoverStyle(QsciScintilla::HiddenIndicator, hyperlinkIndicatorNumber);
+  } else {
+    if (this->indicatorsActive) {
+      this->indicatorsActive = false;
+      qsci->setIndicatorHoverStyle(QsciScintilla::HiddenIndicator, hyperlinkIndicatorNumber);
     }
   }
 
@@ -1330,7 +1330,7 @@ void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorDa
   int idx = 0;
   for (const auto& data : indicatorData) {
     int startPos = qsci->positionFromLineIndex(data.first_line - 1, data.first_col - 1);
-    int stopPos  = qsci->positionFromLineIndex(data.last_line - 1, data.last_col  - 1);
+    int stopPos = qsci->positionFromLineIndex(data.last_line - 1, data.last_col - 1);
 
     int nrOfChars = stopPos - startPos;
     qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, idx + hyperlinkIndicatorOffset);

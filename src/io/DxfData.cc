@@ -93,22 +93,22 @@ DxfData::DxfData(double fn, double fs, double fa,
   std::string current_block;
 
 #define ADD_LINE(_x1, _y1, _x2, _y2) do {                   \
-    double _p1x = _x1, _p1y = _y1, _p2x = _x2, _p2y = _y2;  \
-    if (!in_entities_section && !in_blocks_section)         \
-    break;                                                \
-    if (in_entities_section &&                              \
-        !(layername.empty() || layername == layer))         \
-    break;                                                \
-    grid.align(_p1x, _p1y);                                 \
-    grid.align(_p2x, _p2y);                                 \
-    grid.data(_p1x, _p1y).push_back(lines.size());          \
-    grid.data(_p2x, _p2y).push_back(lines.size());          \
-    if (in_entities_section)                                \
-    lines.emplace_back(                                   \
-      addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));        \
-    if (in_blocks_section && !current_block.empty())        \
-    blockdata[current_block].emplace_back(                \
-      addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));        \
+          double _p1x = _x1, _p1y = _y1, _p2x = _x2, _p2y = _y2;  \
+          if (!in_entities_section && !in_blocks_section)         \
+          break;                                                \
+          if (in_entities_section &&                              \
+              !(layername.empty() || layername == layer))         \
+          break;                                                \
+          grid.align(_p1x, _p1y);                                 \
+          grid.align(_p2x, _p2y);                                 \
+          grid.data(_p1x, _p1y).push_back(lines.size());          \
+          grid.data(_p2x, _p2y).push_back(lines.size());          \
+          if (in_entities_section)                                \
+          lines.emplace_back(                                   \
+            addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));        \
+          if (in_blocks_section && !current_block.empty())        \
+          blockdata[current_block].emplace_back(                \
+            addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));        \
 } while (0)
 
   std::string mode, layer, name, iddata;
@@ -120,8 +120,8 @@ DxfData::DxfData(double fn, double fs, double fa,
   double arc_start_angle = 0, arc_stop_angle = 0;
   double ellipse_start_angle = 0, ellipse_stop_angle = 0;
 
-  for (auto & coord : coords) {
-    for (double & j : coord) {
+  for (auto& coord : coords) {
+    for (double& j : coord) {
       j = 0;
     }
   }
@@ -298,8 +298,8 @@ DxfData::DxfData(double fn, double fs, double fa,
         name.erase();
         iddata.erase();
         dimtype = 0;
-        for (auto & coord : coords) {
-          for (double & j : coord) {
+        for (auto& coord : coords) {
+          for (double& j : coord) {
             j = 0;
           }
         }
@@ -528,7 +528,7 @@ found_next_line_in_closed_path:;
  */
 void DxfData::fixup_path_direction()
 {
-  for (auto & path : this->paths) {
+  for (auto& path : this->paths) {
     if (!path.is_closed) break;
     path.is_inner = true;
     double min_x = this->points[path.indices[0]][0];
@@ -577,7 +577,7 @@ std::string DxfData::dump() const
       << "\n num paths: " << paths.size()
       << "\n num dims: " << dims.size()
       << "\n points: ";
-  for (const auto & point : points) {
+  for (const auto& point : points) {
     out << "\n  x y: " << point.transpose();
   }
   out << "\n paths: ";
@@ -600,7 +600,7 @@ std::string DxfData::dump() const
 Polygon2d *DxfData::toPolygon2d() const
 {
   auto poly = new Polygon2d();
-  for (const auto & path : this->paths) {
+  for (const auto& path : this->paths) {
     Outline2d outline;
     size_t endidx = path.indices.size();
     // We don't support open paths; closing them to be compatible with existing behavior

@@ -17,12 +17,12 @@
  */
 
 #define OPENGL_TEST(place) \
-  do { \
-    auto err = glGetError(); \
-    if (err != GL_NO_ERROR) { \
-      fprintf(stderr, "OpenGL error " __FILE__ ":%i:" place ":\n %s\n\n", __LINE__, gluErrorString(err)); \
-    } \
-  } while (false)
+        do { \
+          auto err = glGetError(); \
+          if (err != GL_NO_ERROR) { \
+            fprintf(stderr, "OpenGL error " __FILE__ ":%i:" place ":\n %s\n\n", __LINE__, gluErrorString(err)); \
+          } \
+        } while (false)
 
 MouseSelector::MouseSelector(GLView *view) {
   this->view = view;
@@ -130,9 +130,9 @@ void MouseSelector::setup_framebuffer(const GLView *view) {
       static_cast<unsigned int>(this->framebuffer->width()) != view->cam.pixel_width ||
       static_cast<unsigned int>(this->framebuffer->height()) != view->cam.pixel_height) {
     this->framebuffer = std::make_unique<QOpenGLFramebufferObject>(
-        view->cam.pixel_width,
-        view->cam.pixel_width,
-        QOpenGLFramebufferObject::Depth);
+      view->cam.pixel_width,
+      view->cam.pixel_width,
+      QOpenGLFramebufferObject::Depth);
     this->framebuffer->release();
   }
 }

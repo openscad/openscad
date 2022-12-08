@@ -152,6 +152,7 @@ private:
   std::string _defaultValue;
 };
 
+class SettingsVisitor;
 
 class Settings
 {
@@ -268,7 +269,7 @@ public:
   static SettingsEntryDouble& axisTrim(size_t id);
   static SettingsEntryDouble& axisDeadzone(size_t id);
 
-  static void visit(const class SettingsVisitor& visitor);
+  static void visit(const SettingsVisitor& visitor);
 };
 
 class SettingsVisitor

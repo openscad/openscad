@@ -5,6 +5,8 @@
 // FIXME: Default constructor Response()
 enum class Response {ContinueTraversal, AbortTraversal, PruneTraversal};
 
+class State;
+
 class BaseVisitor
 {
 public:
@@ -15,17 +17,17 @@ template <class T>
 class Visitor
 {
 public:
-  virtual Response visit(class State& state, const T&) = 0;
+  virtual Response visit(State& state, const T&) = 0;
 };
 
 class BaseVisitable
 {
 public:
   virtual ~BaseVisitable() = default;
-  virtual Response accept(class State&, BaseVisitor&) const = 0;
+  virtual Response accept(State&, BaseVisitor&) const = 0;
 protected:
   template <class T>
-  static Response acceptImpl(class State& state, const T& node, BaseVisitor& visitor) {
+  static Response acceptImpl(State& state, const T& node, BaseVisitor& visitor) {
     if (Visitor<T> *p = dynamic_cast<Visitor<T> *>(&visitor)) {
       return p->visit(state, node);
     }
@@ -37,6 +39,6 @@ protected:
 };
 
 #define VISITABLE() \
-  Response accept(class State& state, BaseVisitor& visitor) const override { \
-    return acceptImpl(state, *this, visitor); \
-  }
+        Response accept(State &state, BaseVisitor &visitor) const override { \
+          return acceptImpl(state, *this, visitor); \
+        }

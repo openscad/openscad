@@ -229,8 +229,8 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
 }
 
 void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
-                                               const class CSGChainObject& csgobj, bool highlight_mode,
-                                                 bool background_mode, OpenSCADOperator type)
+                                               const CSGChainObject& csgobj, bool highlight_mode,
+                                               bool background_mode, OpenSCADOperator type)
 {
   if (csgobj.leaf->geom) {
     const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());

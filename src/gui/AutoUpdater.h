@@ -3,6 +3,9 @@
 #include <QString>
 #include <QObject>
 
+class QAction;
+class QMenu;
+
 class AutoUpdater : public QObject
 {
   Q_OBJECT;
@@ -25,8 +28,8 @@ public slots:
 
 
 public:
-  class QAction *updateAction{nullptr};
-  class QMenu *updateMenu{nullptr};
+  QAction *updateAction{nullptr};
+  QMenu *updateMenu{nullptr};
 
 protected:
   static AutoUpdater *updater_instance;

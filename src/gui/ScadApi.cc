@@ -49,9 +49,9 @@ QStringList getSorted(const QFileInfoList& list, C cond) {
 
 ScadApi::ScadApi(ScintillaEditor *editor, QsciLexer *lexer) : QsciAbstractAPIs(lexer), editor(editor)
 {
-  for (const auto & iter : Builtins::keywordList) {
+  for (const auto& iter : Builtins::keywordList) {
     QStringList calltipList;
-    for (const auto & it : iter.second)
+    for (const auto& it : iter.second)
       calltipList.append(QString::fromStdString(it));
 
     funcs.append(ApiFunc(QString::fromStdString(iter.first), calltipList));
@@ -117,7 +117,7 @@ void ScadApi::autoCompleteFunctions(const QStringList& context, QStringList& lis
     return;
   }
 
-  for (const auto & func : funcs) {
+  for (const auto& func : funcs) {
     const QString& name = func.get_name();
     if (name.startsWith(c)) {
       if (!list.contains(name)) {
@@ -134,7 +134,7 @@ void ScadApi::autoCompletionSelected(const QString& /*selection*/)
 QStringList ScadApi::callTips(const QStringList& context, int /*commas*/, QsciScintilla::CallTipsStyle /*style*/, QList<int>& /*shifts*/)
 {
   QStringList callTips;
-  for (const auto & func : funcs) {
+  for (const auto& func : funcs) {
     if (func.get_name() == context.at(context.size() - 2)) {
       callTips = func.get_params();
       break;

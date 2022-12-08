@@ -3,9 +3,10 @@
 #include <string>
 #include <vector>
 #include "memory.h"
-#include "Geometry.h"
 #include "linalg.h"
 #include "enums.h"
+
+class Geometry;
 
 class CSGNode
 {
@@ -19,7 +20,7 @@ public:
   CSGNode(Flag flags = FLAG_NONE) : flags(flags) {}
   virtual ~CSGNode() = default;
   [[nodiscard]] virtual std::string dump() const = 0;
-  virtual bool isEmptySet() { return false; }
+  [[nodiscard]] virtual bool isEmptySet() const { return false; }
 
   [[nodiscard]] const BoundingBox& getBoundingBox() const { return this->bbox; }
   [[nodiscard]] unsigned int getFlags() const { return this->flags; }
@@ -77,7 +78,7 @@ struct CSGOperationDeleter {
         purge.emplace_back(std::move(op->right()));
         purge.emplace_back(std::move(op->left()));
       }
-    } while(!purge.empty());
+    } while (!purge.empty());
   }
 };
 
@@ -85,9 +86,9 @@ class CSGLeaf : public CSGNode
 {
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  CSGLeaf(const shared_ptr<const class Geometry>& geom, Transform3d matrix, Color4f color, std::string label, const int index);
+  CSGLeaf(const shared_ptr<const Geometry>& geom, Transform3d matrix, Color4f color, std::string label, const int index);
   void initBoundingBox() override;
-  bool isEmptySet() override { return geom == nullptr || geom->isEmpty(); }
+  [[nodiscard]] bool isEmptySet() const override;
   [[nodiscard]] std::string dump() const override;
   std::string label;
   shared_ptr<const Geometry> geom;

@@ -269,9 +269,9 @@ bool HidApiInputDriver::open()
 
   std::tie(this->hid_dev, this->dev) = enumerate();
   if (this->dev) {
-    name = STR(std::setfill('0'), std::setw(4), std::hex
-                                , "HidApiInputDriver (", dev->vendor_id, ":", dev->product_id
-                                , " - ", dev->name, ")");
+    name = STR(std::setfill('0'), std::setw(4), std::hex,
+               "HidApiInputDriver (", dev->vendor_id, ":", dev->product_id,
+               " - ", dev->name, ")");
     start();
     HIDAPI_LOGP("HidApiInputDriver::open(): %s", name);
     return true;

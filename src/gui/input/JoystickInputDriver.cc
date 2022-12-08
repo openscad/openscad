@@ -101,9 +101,9 @@ std::string JoystickInputDriver::get_info() const
 {
   return STR(
     get_name(), " ", (isOpen() ? "open" : "not open"), " ",
-      "Name: ", name, " ",
-      "Axis: ", (int) axes, " ",
-      "Buttons: ", (int) buttons, " "
+    "Name: ", name, " ",
+    "Axis: ", (int) axes, " ",
+    "Buttons: ", (int) buttons, " "
     );
 }
 

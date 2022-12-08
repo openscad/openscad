@@ -196,8 +196,7 @@ void Lex::lex_results(const std::string& input, int start, LexInterface *const o
   //We currently handle comments (COMMENT State) pretty well.
   //We currently do not handle include/use (PATH State).
   int isstyle = obj->getStyleAt(start - 1);
-  if (isstyle == ecomment)
-    results.state = rules_.state("COMMENT");
+  if (isstyle == ecomment) results.state = rules_.state("COMMENT");
 
   lexertl::lookup(sm, results);
   while (results.id != eEOF) {
@@ -265,7 +264,7 @@ void ScadLexer2::fold(int start, int end)
     int currStyle = editor()->SendScintilla(QsciScintilla::SCI_GETSTYLEAT, i);
 
     bool currStyleIsOtherText = (currStyle == OtherText);
-    if(currStyleIsOtherText){
+    if (currStyleIsOtherText) {
       if ((ch == '{') || (ch == '[') ) {
         levelCurrent++;
       } else if ((ch == '}') || (ch == ']') ) {
@@ -277,12 +276,12 @@ void ScadLexer2::fold(int start, int end)
     bool prevStyleIsComment = (prevStyle == Comment);
     bool currStyleIsComment = (currStyle == Comment);
     bool isStartOfComment = (!prevStyleIsComment) && (currStyleIsComment);
-    bool isEndOfComment   = (prevStyleIsComment) && (!currStyleIsComment);
+    bool isEndOfComment = (prevStyleIsComment) && (!currStyleIsComment);
 
     if (isStartOfComment) {
       levelCurrent++;
     }
-    if (isEndOfComment){
+    if (isEndOfComment) {
       levelCurrent--;
     }
 

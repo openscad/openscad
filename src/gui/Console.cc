@@ -50,7 +50,7 @@ void Console::focusInEvent(QFocusEvent *event)
 {
   QWidget *current = this;
   MainWindow *mw;
-  while(current && !(mw = dynamic_cast<MainWindow*>(current->window()))) {
+  while (current && !(mw = dynamic_cast<MainWindow *>(current->window()))) {
     current = current->parentWidget();
   }
   assert(mw);

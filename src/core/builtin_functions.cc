@@ -73,11 +73,11 @@ static inline bool check_arguments(const char *function_name, const Arguments& a
   return true;
 }
 /* // Commented due to compiler warning of unused function.
-static inline bool try_check_arguments(const Arguments& arguments, int expected_count)
-{
-  return check_arguments(nullptr, arguments, Location::NONE, expected_count, false);
-}
-*/
+   static inline bool try_check_arguments(const Arguments& arguments, int expected_count)
+   {
+   return check_arguments(nullptr, arguments, Location::NONE, expected_count, false);
+   }
+ */
 template <size_t N>
 static inline bool check_arguments(const char *function_name, const Arguments& arguments, const Location& loc, const Value::Type (& expected_types) [N], bool warn = true)
 {
@@ -465,7 +465,7 @@ Value builtin_lookup(Arguments arguments, const Location& loc)
   if (p <= low_p) return {high_v};
   if (p >= high_p) return {low_v};
   double f = (p - low_p) / (high_p - low_p);
-  return {high_v * f + low_v * (1 - f)};
+  return {high_v *f + low_v * (1 - f)};
 }
 
 /*
@@ -641,7 +641,7 @@ Value builtin_search(Arguments arguments, const Location& loc)
     }
   } else if (findThis.type() == Value::Type::VECTOR) {
     const auto& findVec = findThis.toVector();
-    for (const auto & find_value : findVec) {
+    for (const auto& find_value : findVec) {
       unsigned int matchCount = 0;
       VectorType resultvec(arguments.session());
 

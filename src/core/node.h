@@ -10,10 +10,10 @@
 #include "ModuleInstantiation.h"
 
 extern int progress_report_count;
-extern void (*progress_report_f)(const std::shared_ptr<const AbstractNode> &, void *, int);
+extern void (*progress_report_f)(const std::shared_ptr<const AbstractNode>&, void *, int);
 extern void *progress_report_vp;
 
-void progress_report_prep(const std::shared_ptr<AbstractNode> &root, void (*f)(const std::shared_ptr<const AbstractNode> &node, void *vp, int mark), void *vp);
+void progress_report_prep(const std::shared_ptr<AbstractNode>& root, void (*f)(const std::shared_ptr<const AbstractNode>& node, void *vp, int mark), void *vp);
 void progress_report_fin();
 
 /*!
@@ -65,7 +65,7 @@ public:
 
   int idx; // Node index (unique per tree)
 
-  std::shared_ptr<const AbstractNode> getNodeByID(int idx, std::deque<std::shared_ptr<const AbstractNode> >& path) const;
+  std::shared_ptr<const AbstractNode> getNodeByID(int idx, std::deque<std::shared_ptr<const AbstractNode>>& path) const;
 };
 
 class AbstractIntersectionNode : public AbstractNode
@@ -138,4 +138,4 @@ public:
 };
 
 std::ostream& operator<<(std::ostream& stream, const AbstractNode& node);
-std::shared_ptr<AbstractNode> find_root_tag(const std::shared_ptr<AbstractNode> &node, const Location **nextLocation = nullptr);
+std::shared_ptr<AbstractNode> find_root_tag(const std::shared_ptr<AbstractNode>& node, const Location **nextLocation = nullptr);

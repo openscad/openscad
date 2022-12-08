@@ -265,7 +265,7 @@ PolySet *AmfImporter::read(const std::string& filename)
   }
   if (polySets.size() > 1) {
     Geometry::Geometries children;
-    for (auto & polySet : polySets) {
+    for (auto& polySet : polySets) {
       children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(polySet)));
     }
 
@@ -291,8 +291,8 @@ PolySet *AmfImporter::read(const std::string& filename)
 class AmfImporterZIP : public AmfImporter
 {
 private:
-  struct zip *archive{nullptr};
-  struct zip_file *zipfile{nullptr};
+  struct zip *archive {nullptr};
+  struct zip_file *zipfile {nullptr};
 
   static int read_callback(void *context, char *buffer, int len);
   static int close_callback(void *context);

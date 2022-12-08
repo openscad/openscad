@@ -12,20 +12,20 @@
 #include "Feature.h"
 
 #define GL_ERROR_CHECK() \
-  do { \
-    auto err = glGetError(); \
-    if (err != GL_NO_ERROR) { \
-      PRINTDB("%d : OpenGL error: %s\n", __LINE__ % gluErrorString(err)); \
-    } \
-  } while (0)
+        do { \
+          auto err = glGetError(); \
+          if (err != GL_NO_ERROR) { \
+            PRINTDB("%d : OpenGL error: %s\n", __LINE__ % gluErrorString(err)); \
+          } \
+        } while (0)
 
 //#define GL_TRACE_ENABLE
 #ifdef GL_TRACE_ENABLE
 #define GL_TRACE(fmt_, args) do { \
-    if (OpenSCAD::debug != "") PRINTDB("%d : " fmt_, __LINE__ % args); \
+          if (OpenSCAD::debug != "") PRINTDB("%d : " fmt_, __LINE__ % args); \
 } while (0)
 #define GL_TRACE0(fmt_) do { \
-    if (OpenSCAD::debug != "") PRINTDB("%d : " fmt_, __LINE__); \
+          if (OpenSCAD::debug != "") PRINTDB("%d : " fmt_, __LINE__); \
 } while (0)
 #else // GL_TRACE_ENABLE
 #define GL_TRACE(fmt_, args) do {} while (0)
@@ -336,14 +336,14 @@ public:
 class VertexArray
 {
 public:
-  using CreateVertexCallback = std::function<void (VertexArray & vertex_array,
-                              const std::array<Vector3d, 3>& points,
-                              const std::array<Vector3d, 3>& normals,
-                              const Color4f& color,
-                              size_t active_point_index, size_t primitive_index,
-                              double z_offset, size_t shape_size,
-                              size_t shape_dimensions, bool outlines,
-                              bool mirror)>;
+  using CreateVertexCallback = std::function<void (VertexArray& vertex_array,
+                                                   const std::array<Vector3d, 3>& points,
+                                                   const std::array<Vector3d, 3>& normals,
+                                                   const Color4f& color,
+                                                   size_t active_point_index, size_t primitive_index,
+                                                   double z_offset, size_t shape_size,
+                                                   size_t shape_dimensions, bool outlines,
+                                                   bool mirror)>;
 
 
   VertexArray(std::shared_ptr<VertexStateFactory> factory, VertexStates& states,

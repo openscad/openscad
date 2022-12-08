@@ -5,6 +5,9 @@
 
 #include "VBORenderer.h"
 
+class CSGProducts;
+class CSGChainObject;
+
 class TTRVertexState : public VertexState
 {
 public:
@@ -33,8 +36,8 @@ public:
   TTRVertexStateFactory() = default;
 
   [[nodiscard]] std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type,
-                                                 size_t draw_offset, size_t element_offset,
-                                                 GLuint vertices_vbo, GLuint elements_vbo) const override {
+                                                               size_t draw_offset, size_t element_offset,
+                                                               GLuint vertices_vbo, GLuint elements_vbo) const override {
     return std::make_shared<TTRVertexState>(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo);
   }
 };
@@ -42,7 +45,7 @@ public:
 class ThrownTogetherRenderer : public VBORenderer
 {
 public:
-  ThrownTogetherRenderer(shared_ptr<class CSGProducts> root_products,
+  ThrownTogetherRenderer(shared_ptr<CSGProducts> root_products,
                          shared_ptr<CSGProducts> highlight_products,
                          shared_ptr<CSGProducts> background_products);
   ~ThrownTogetherRenderer() override;
@@ -55,15 +58,15 @@ private:
                          const Renderer::shaderinfo_t *shaderinfo = nullptr,
                          bool highlight_mode = false, bool background_mode = false,
                          bool fberror = false) const;
-  void renderChainObject(const class CSGChainObject& csgobj, bool showedges,
-                           const Renderer::shaderinfo_t *, bool highlight_mode,
-                           bool background_mode, bool fberror, OpenSCADOperator type) const;
+  void renderChainObject(const CSGChainObject& csgobj, bool showedges,
+                         const Renderer::shaderinfo_t *, bool highlight_mode,
+                         bool background_mode, bool fberror, OpenSCADOperator type) const;
 
   void createCSGProducts(const CSGProducts& products, VertexArray& vertex_array,
                          bool highlight_mode, bool background_mode);
-  void createChainObject(VertexArray& vertex_array, const class CSGChainObject& csgobj,
-                           bool highlight_mode, bool background_mode,
-                           OpenSCADOperator type);
+  void createChainObject(VertexArray& vertex_array, const CSGChainObject& csgobj,
+                         bool highlight_mode, bool background_mode,
+                         OpenSCADOperator type);
 
   Renderer::ColorMode getColorMode(const CSGNode::Flag& flags, bool highlight_mode,
                                    bool background_mode, bool fberror, OpenSCADOperator type) const;

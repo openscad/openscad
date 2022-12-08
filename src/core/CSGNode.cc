@@ -155,6 +155,11 @@ void CSGOperation::initBoundingBox()
   }
 }
 
+bool CSGLeaf::isEmptySet() const
+{
+  return geom == nullptr || geom->isEmpty();
+}
+
 std::string CSGLeaf::dump() const
 {
   return this->label;
@@ -214,7 +219,7 @@ std::string CSGOperation::dump() const
       out << postfixstr;
     }
 
-  } while(!callstack.empty());
+  } while (!callstack.empty());
   return out.str();
 }
 
@@ -246,7 +251,7 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
       callstack.emplace(op->right(), op->getType(), newflags);
       callstack.emplace(op->left(), type, newflags);
     }
-  } while(!callstack.empty());
+  } while (!callstack.empty());
 }
 
 std::string CSGProduct::dump() const

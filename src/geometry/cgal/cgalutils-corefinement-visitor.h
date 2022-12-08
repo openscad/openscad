@@ -67,7 +67,7 @@ private:
   }
 
 public:
-  CorefinementVisitorDelegate_(TriangleMesh& m1, TriangleMesh& m2, TriangleMesh& mout,
+  CorefinementVisitorDelegate_(TriangleMesh & m1, TriangleMesh & m2, TriangleMesh & mout,
                                bool forceNewLazyNumbersToExact)
     : forceNewLazyNumbersToExact_(forceNewLazyNumbersToExact), mesh1_(&m1), mesh2_(&m2), meshOut_(&mout)
   {
@@ -167,7 +167,7 @@ struct CorefinementVisitor : public PMP::Corefinement::Default_visitor<TriangleM
 
   std::shared_ptr<Delegate> delegate_;
 
-  CorefinementVisitor(TriangleMesh& m1, TriangleMesh& m2, TriangleMesh& mout,
+  CorefinementVisitor(TriangleMesh & m1, TriangleMesh & m2, TriangleMesh & mout,
                       bool forceNewLazyNumbersToExact)
     : delegate_(std::make_shared<Delegate>(m1, m2, mout, forceNewLazyNumbersToExact))
   {

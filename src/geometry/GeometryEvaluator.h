@@ -10,10 +10,14 @@
 #include <vector>
 #include <map>
 
+class CGAL_Nef_polyhedron;
+class Polygon2d;
+class Tree;
+
 class GeometryEvaluator : public NodeVisitor
 {
 public:
-  GeometryEvaluator(const class Tree& tree);
+  GeometryEvaluator(const Tree& tree);
 
   shared_ptr<const Geometry> evaluateGeometry(const AbstractNode& node, bool allownef);
 
@@ -67,13 +71,13 @@ private:
   shared_ptr<const Geometry> smartCacheGet(const AbstractNode& node, bool preferNef);
   bool isSmartCached(const AbstractNode& node);
   bool isValidDim(const Geometry::GeometryItem& item, unsigned int& dim) const;
-  std::vector<const class Polygon2d *> collectChildren2D(const AbstractNode& node);
+  std::vector<const Polygon2d *> collectChildren2D(const AbstractNode& node);
   Geometry::Geometries collectChildren3D(const AbstractNode& node);
   Polygon2d *applyMinkowski2D(const AbstractNode& node);
   Polygon2d *applyHull2D(const AbstractNode& node);
   Polygon2d *applyFill2D(const AbstractNode& node);
   Geometry *applyHull3D(const AbstractNode& node);
-  void applyResize3D(class CGAL_Nef_polyhedron& N, const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize);
+  void applyResize3D(CGAL_Nef_polyhedron& N, const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize);
   Polygon2d *applyToChildren2D(const AbstractNode& node, OpenSCADOperator op);
   ResultObject applyToChildren3D(const AbstractNode& node, OpenSCADOperator op);
   ResultObject applyToChildren(const AbstractNode& node, OpenSCADOperator op);

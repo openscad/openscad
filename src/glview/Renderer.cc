@@ -301,7 +301,7 @@ void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transf
 
     // Render top+bottom
     for (double z = -zbase / 2; z < zbase; z += zbase) {
-      for (const auto & poly : ps.polygons) {
+      for (const auto& poly : ps.polygons) {
         if (poly.size() == 3) {
           if (z < 0) {
             gl_draw_triangle(shaderinfo, poly.at(0), poly.at(2), poly.at(1), true, true, true, z, mirrored);
@@ -318,7 +318,7 @@ void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transf
           }
         } else {
           Vector3d center = Vector3d::Zero();
-          for (const auto & point : poly) {
+          for (const auto& point : poly) {
             center[0] += point[0];
             center[1] += point[1];
           }
@@ -352,7 +352,7 @@ void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transf
       // If we don't have borders, use the polygons as borders.
       // FIXME: When is this used?
       const Polygons *borders_p = &ps.polygons;
-      for (const auto & poly : *borders_p) {
+      for (const auto& poly : *borders_p) {
         for (size_t j = 1; j <= poly.size(); ++j) {
           Vector3d p1 = poly.at(j - 1), p2 = poly.at(j - 1);
           Vector3d p3 = poly.at(j % poly.size()), p4 = poly.at(j % poly.size());
@@ -365,7 +365,7 @@ void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transf
     }
     glEnd();
   } else if (ps.getDimension() == 3) {
-    for (const auto & poly : ps.polygons) {
+    for (const auto& poly : ps.polygons) {
       glBegin(GL_TRIANGLES);
       if (poly.size() == 3) {
         gl_draw_triangle(shaderinfo, poly.at(0), poly.at(1), poly.at(2), true, true, true, 0, mirrored);
@@ -374,7 +374,7 @@ void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transf
         gl_draw_triangle(shaderinfo, poly.at(2), poly.at(3), poly.at(1), false, true, true, 0, mirrored);
       } else {
         Vector3d center = Vector3d::Zero();
-        for (const auto & point : poly) {
+        for (const auto& point : poly) {
           center += point;
         }
         center /= poly.size();
@@ -431,10 +431,10 @@ void Renderer::render_edges(const PolySet& ps, csgmode_e csgmode) const
       }
     }
   } else if (ps.getDimension() == 3) {
-    for (const auto & polygon : ps.polygons) {
+    for (const auto& polygon : ps.polygons) {
       const Polygon *poly = &polygon;
       glBegin(GL_LINE_LOOP);
-      for (const auto & p : *poly) {
+      for (const auto& p : *poly) {
         glVertex3d(p[0], p[1], p[2]);
       }
       glEnd();

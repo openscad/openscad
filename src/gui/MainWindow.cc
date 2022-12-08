@@ -283,7 +283,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   absolute_root_node = nullptr;
 
   // Open Recent
-  for (auto & recent : this->actionRecentFile) {
+  for (auto& recent : this->actionRecentFile) {
     recent = new QAction(this);
     recent->setVisible(false);
     this->menuOpenRecent->addAction(recent);
@@ -820,7 +820,7 @@ void MainWindow::onActionEvent(InputEventAction *event)
     }
   } else {
     std::string target = actionName.substr(0, actionName.find("::"));
-    if("animate" == target) {
+    if ("animate" == target) {
       this->animateWidget->onActionEvent(event);
     } else {
       std::cout << "unknown onActionEvent target: " << actionName << std::endl;
@@ -956,7 +956,7 @@ void MainWindow::showProgress()
   updateStatusBar(qobject_cast<ProgressWidget *>(sender()));
 }
 
-void MainWindow::report_func(const std::shared_ptr<const AbstractNode>& , void *vp, int mark)
+void MainWindow::report_func(const std::shared_ptr<const AbstractNode>&, void *vp, int mark)
 {
   // limit to progress bar update calls to 5 per second
   static const qint64 MIN_TIMEOUT = 200;
@@ -1062,7 +1062,7 @@ void MainWindow::compile(bool reload, bool forcedone)
     no_exceptions_for_warnings();
     if (shouldcompiletoplevel) {
       this->errorLogWidget->clearModel();
-      if(Preferences::inst()->getValue("advanced/consoleAutoClear").toBool()){
+      if (Preferences::inst()->getValue("advanced/consoleAutoClear").toBool()) {
         this->console->actionClearConsole_triggered();
       }
       if (activeEditor->isContentModified()) saveBackup();
@@ -1324,7 +1324,7 @@ void MainWindow::compileCSG()
       this->processEvents();
 
       this->highlights_products.reset(new CSGProducts());
-      for (const auto & highlight_term : highlight_terms) {
+      for (const auto& highlight_term : highlight_terms) {
         auto nterm = normalizer.normalize(highlight_term);
         if (nterm) {
           this->highlights_products->import(nterm);
@@ -1340,7 +1340,7 @@ void MainWindow::compileCSG()
       this->processEvents();
 
       this->background_products.reset(new CSGProducts());
-      for (const auto & background_term : background_terms) {
+      for (const auto& background_term : background_terms) {
         auto nterm = normalizer.normalize(background_term);
         if (nterm) {
           this->background_products->import(nterm);
@@ -1379,7 +1379,7 @@ void MainWindow::compileCSG()
 void MainWindow::actionOpen()
 {
   auto fileInfoList = UIUtils::openFiles(this);
-  for (auto & i : fileInfoList) {
+  for (auto& i : fileInfoList) {
     if (!i.exists()) {
       return;
     }
@@ -1395,7 +1395,7 @@ void MainWindow::actionNewWindow()
 void MainWindow::actionOpenWindow()
 {
   auto fileInfoList = UIUtils::openFiles(this);
-  for (auto & i : fileInfoList) {
+  for (auto& i : fileInfoList) {
     if (!i.exists()) {
       return;
     }
@@ -1925,11 +1925,11 @@ void MainWindow::csgRender()
 #endif
   }
 
-  if ( animateWidget->dumpPictures() ) {
-      int steps = animateWidget->nextFrame();
-      QImage img = this->qglview->grabFrame();
-      QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
-      img.save(filename, "PNG");
+  if (animateWidget->dumpPictures() ) {
+    int steps = animateWidget->nextFrame();
+    QImage img = this->qglview->grabFrame();
+    QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
+    img.save(filename, "PNG");
   }
 
   compileEnded();
@@ -2228,7 +2228,7 @@ void MainWindow::selectObject(QPoint mouse)
     // Create context menu with the backtrace
     QMenu tracemenu(this);
     std::stringstream ss;
-    for (auto &step : path) {
+    for (auto& step : path) {
       // Skip certain node types
       if (step->name() == "root") {
         continue;
@@ -2342,8 +2342,7 @@ void MainWindow::UnknownExceptionCleanup(std::string msg){
   setCurrentOutput(); // we need to show this error
   if (msg.size() == 0) {
     LOG(message_group::Error, Location::NONE, "", "Compilation aborted by unknown exception");
-  }
-  else {
+  } else {
     LOG(message_group::Error, Location::NONE, "", "Compilation aborted by exception: %1$s", msg);
   }
   LOG(message_group::None, Location::NONE, "", " ");
@@ -2621,14 +2620,14 @@ void MainWindow::actionExportImage()
       fileExportedMessage("PNG", img_filename);
       clearCurrentOutput();
     } else {
-        LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
+      LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
     }
   }
 }
 
 void MainWindow::copyText()
 {
-  Console* c = dynamic_cast<Console *>(lastFocus);
+  Console *c = dynamic_cast<Console *>(lastFocus);
   if (c) {
     c->copy();
   } else {
@@ -3224,7 +3223,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 {
   setCurrentOutput();
   const QList<QUrl> urls = event->mimeData()->urls();
-  for (const auto & url : urls) {
+  for (const auto& url : urls) {
     handleFileDrop(url);
   }
   clearCurrentOutput();
@@ -3300,7 +3299,7 @@ void MainWindow::helpFontInfo()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
   if (tabManager->shouldClose()) {
-    isClosing=true;
+    isClosing = true;
     progress_report_fin();
     // Disable invokeMethod calls for consoleOutput during shutdown,
     // otherwise will segfault if echos are in progress.

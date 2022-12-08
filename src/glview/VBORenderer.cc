@@ -363,7 +363,7 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
         triangle_count += 2;
       } else {
         Vector3d center = Vector3d::Zero();
-        for (const auto & point : poly) {
+        for (const auto& point : poly) {
           center += point;
         }
         center /= poly.size();

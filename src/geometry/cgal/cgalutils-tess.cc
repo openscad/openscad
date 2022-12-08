@@ -24,9 +24,9 @@ using CDT = CGAL::Constrained_Delaunay_triangulation_2<Projection, Tds, CGAL::Ex
 
 
 static void mark_domains(CDT& ct,
-                          CDT::Face_handle start,
-                          int index,
-                          std::list<CDT::Edge>& border)
+                         CDT::Face_handle start,
+                         int index,
+                         std::list<CDT::Edge>& border)
 {
   if (start->info().nesting_level != -1) return;
   std::list<CDT::Face_handle> queue;

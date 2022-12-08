@@ -290,8 +290,7 @@ bool Value::getUnsignedInt(unsigned int& v) const
 {
   double result;
   if (getFiniteDouble(result) &&
-      result >= 0.0 && result <= std::numeric_limits<unsigned int>::max())
-  {
+      result >= 0.0 && result <= std::numeric_limits<unsigned int>::max()) {
     v = result;
     return true;
   }
@@ -302,8 +301,7 @@ bool Value::getPositiveInt(unsigned int& v) const
 {
   double result;
   if (getFiniteDouble(result) &&
-      result >= 1 && result <= std::numeric_limits<unsigned int>::max())
-  {
+      result >= 1 && result <= std::numeric_limits<unsigned int>::max()) {
     v = result;
     return true;
   }
@@ -457,7 +455,7 @@ std::string Value::toEchoStringNoThrow() const
   try{
     ret = toEchoString();
   } catch (EvaluationException& e) {
-     ret = "...";
+    ret = "...";
   }
   return ret;
 }

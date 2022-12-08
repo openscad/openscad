@@ -14,7 +14,7 @@
 #include "roof_vd.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
-  throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
+        throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
 
 namespace roof_vd {
 
@@ -208,7 +208,7 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
   Faces_2_plus_1 ret;
 
   auto cell_contains_boundary_point = [&segments](const voronoi_diagram::cell_type *cell,
-                                                       const Point& point) {
+                                                  const Point& point) {
       Segment segment = segments[cell->source_index()];
       return (cell->contains_segment() && segment_has_endpoint(segment, point) )
              || (cell->source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT
@@ -217,7 +217,7 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
                  && segment.p1 == point);
     };
 
-  for (const auto & cell : vd.cells()) {
+  for (const auto& cell : vd.cells()) {
 
     std::size_t cell_index = cell.source_index();
     if (cell.is_degenerate()) {

@@ -55,24 +55,24 @@ struct ExactLazyNumbersVisitor
 #endif// FAST_CSG_KERNEL_IS_LAZY
 
 #define COREFINEMENT_FUNCTION(functionName, cgalFunctionName) \
-  template <class TriangleMesh> \
-  bool functionName(TriangleMesh & lhs, TriangleMesh & rhs, TriangleMesh & out) \
-  { \
-    auto remesh = Feature::ExperimentalFastCsgRemesh.is_enabled() || Feature::ExperimentalFastCsgRemeshPredictibly.is_enabled(); \
-    auto exactCallback = Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled(); \
-    if (exactCallback && !remesh) { \
-      auto param = PMP::parameters::visitor(ExactLazyNumbersVisitor<TriangleMesh>()); \
-      return cgalFunctionName(lhs, rhs, out, param, param); \
-    } else if (remesh) { \
-      CorefinementVisitor<TriangleMesh> visitor(lhs, rhs, out, exactCallback); \
-      auto param = PMP::parameters::visitor(visitor); \
-      auto result = cgalFunctionName(lhs, rhs, out, param, param, param); \
-      visitor.remeshSplitFaces(out); \
-      return result; \
-    } else { \
-      return cgalFunctionName(lhs, rhs, out); \
-    } \
-  }
+        template <class TriangleMesh> \
+        bool functionName(TriangleMesh &lhs, TriangleMesh &rhs, TriangleMesh &out) \
+        { \
+          auto remesh = Feature::ExperimentalFastCsgRemesh.is_enabled() || Feature::ExperimentalFastCsgRemeshPredictibly.is_enabled(); \
+          auto exactCallback = Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled(); \
+          if (exactCallback && !remesh) { \
+            auto param = PMP::parameters::visitor(ExactLazyNumbersVisitor<TriangleMesh>()); \
+            return cgalFunctionName(lhs, rhs, out, param, param); \
+          } else if (remesh) { \
+            CorefinementVisitor<TriangleMesh> visitor(lhs, rhs, out, exactCallback); \
+            auto param = PMP::parameters::visitor(visitor); \
+            auto result = cgalFunctionName(lhs, rhs, out, param, param, param); \
+            visitor.remeshSplitFaces(out); \
+            return result; \
+          } else { \
+            return cgalFunctionName(lhs, rhs, out); \
+          } \
+        }
 
 COREFINEMENT_FUNCTION(corefineAndComputeUnion, PMP::corefine_and_compute_union);
 COREFINEMENT_FUNCTION(corefineAndComputeIntersection, PMP::corefine_and_compute_intersection);

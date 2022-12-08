@@ -54,11 +54,13 @@ struct Message {
 
   Message()
     : msg(""), loc(Location::NONE), docPath(""), group(message_group::None)
-  { }
+  {
+  }
 
   Message(std::string msg, Location loc, std::string docPath, message_group group)
     : msg(std::move(msg)), loc(std::move(loc)), docPath(std::move(docPath)), group(group)
-  { }
+  {
+  }
 
   [[nodiscard]] std::string str() const {
     const auto g = group == message_group::None ? "" : getGroupName(group) + ": ";
@@ -67,8 +69,8 @@ struct Message {
   }
 };
 
-using OutputHandlerFunc = void (const Message &, void *);
-using OutputHandlerFunc2 = void (const Message &, void *);
+using OutputHandlerFunc = void (const Message&, void *);
+using OutputHandlerFunc2 = void (const Message&, void *);
 
 extern OutputHandlerFunc *outputhandler;
 extern void *outputhandler_data;
@@ -145,10 +147,10 @@ public:
 };
 
 inline std::string STR(std::ostringstream& oss) {
-   auto s = oss.str();
-   oss.str(""); // clear the string buffer for next STR call
-   oss.clear(); // reset stream error state for next STR call
-   return s;
+  auto s = oss.str();
+  oss.str("");  // clear the string buffer for next STR call
+  oss.clear();  // reset stream error state for next STR call
+  return s;
 }
 
 template <typename T, typename ... Args>

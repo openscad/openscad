@@ -18,8 +18,8 @@ public:
     double length;
     std::string name;
     Dim() {
-      for (auto & coord : coords) {
-        for (double & j : coord) {
+      for (auto& coord : coords) {
+        for (double& j : coord) {
           j = 0;
         }
       }

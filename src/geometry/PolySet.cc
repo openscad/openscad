@@ -63,7 +63,7 @@ std::string PolySet::dump() const
       << "\n num polygons: " << polygons.size()
       << "\n num outlines: " << polygon.outlines().size()
       << "\n polygons data:";
-  for (const auto & polygon : polygons) {
+  for (const auto& polygon : polygons) {
     out << "\n  polygon begin:";
     for (auto v : polygon) {
       out << "\n   vertex:" << v.transpose();

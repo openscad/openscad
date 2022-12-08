@@ -9,6 +9,11 @@
 
 #include "VBORenderer.h"
 
+class CSGChainObject;
+class CSGProducts;
+class OpenCSGPrim;
+class OpenCSGVBOPrim;
+
 class OpenCSGVertexState : public VertexState
 {
 public:
@@ -44,8 +49,8 @@ public:
   OpenCSGVertexStateFactory() = default;
 
   [[nodiscard]] std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type,
-                                                 size_t draw_offset, size_t element_offset,
-                                                 GLuint vertices_vbo, GLuint elements_vbo) const override {
+                                                               size_t draw_offset, size_t element_offset,
+                                                               GLuint vertices_vbo, GLuint elements_vbo) const override {
     return std::make_shared<OpenCSGVertexState>(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo);
   }
 };
@@ -70,7 +75,7 @@ using OpenCSGVBOProducts = std::vector<std::unique_ptr<OpenCSGVBOProduct>>;
 class OpenCSGRenderer : public VBORenderer
 {
 public:
-  OpenCSGRenderer(std::shared_ptr<class CSGProducts> root_products,
+  OpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,
                   std::shared_ptr<CSGProducts> highlights_products,
                   std::shared_ptr<CSGProducts> background_products);
   ~OpenCSGRenderer() override {
@@ -84,12 +89,12 @@ public:
   BoundingBox getBoundingBox() const override;
 private:
 #ifdef ENABLE_OPENCSG
-  class OpenCSGPrim *createCSGPrimitive(const class CSGChainObject& csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const;
-  class OpenCSGVBOPrim *createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState>& vertex_state,
-                                           const OpenCSG::Operation operation, const unsigned int convexity) const;
+  OpenCSGPrim *createCSGPrimitive(const CSGChainObject& csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const;
+  OpenCSGVBOPrim *createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState>& vertex_state,
+                                     const OpenCSG::Operation operation, const unsigned int convexity) const;
 #endif // ENABLE_OPENCSG
-  void createCSGProducts(const class CSGProducts& products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode);
-  void renderCSGProducts(const std::shared_ptr<class CSGProducts>& products, bool showedges = false, const Renderer::shaderinfo_t *shaderinfo = nullptr,
+  void createCSGProducts(const CSGProducts& products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode);
+  void renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges = false, const Renderer::shaderinfo_t *shaderinfo = nullptr,
                          bool highlight_mode = false, bool background_mode = false) const;
 
   OpenCSGVBOProducts vbo_vertex_products;

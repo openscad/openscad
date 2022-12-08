@@ -99,8 +99,8 @@ private:
 class Literal : public Expression
 {
 public:
-  Literal(const Location& loc = Location::NONE) : Expression(loc), value(Value::undefined.clone()) { };
-  Literal(Value val, const Location& loc = Location::NONE) : Expression(loc), value(std::move(val)) { };
+  Literal(const Location& loc = Location::NONE) : Expression(loc), value(Value::undefined.clone()) { }
+  Literal(Value val, const Location& loc = Location::NONE) : Expression(loc), value(std::move(val)) { }
   [[nodiscard]] bool isBool() const { return value.type() == Value::Type::BOOL; }
   [[nodiscard]] bool toBool() const { return value.toBool(); }
   [[nodiscard]] bool isDouble() const { return value.type() == Value::Type::NUMBER; }

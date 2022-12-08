@@ -14,7 +14,7 @@
 
 using K = CGAL::Exact_predicates_inexact_constructions_kernel;
 using Vb = CGAL::Triangulation_vertex_base_2<K>;
-using Fb = CGAL::Delaunay_mesh_face_base_2<K> ;
+using Fb = CGAL::Delaunay_mesh_face_base_2<K>;
 using Tds = CGAL::Triangulation_data_structure_2<Vb, Fb>;
 using CDT = CGAL::Constrained_Delaunay_triangulation_2<K, Tds, CGAL::Exact_predicates_tag>;
 using Criteria = CGAL::Delaunay_mesh_criteria_2<CDT>;

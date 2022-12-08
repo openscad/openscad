@@ -34,10 +34,11 @@
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
 
-GeometryEvaluator::GeometryEvaluator(const class Tree& tree) :
-  tree(tree)
-{
-}
+class Geometry;
+class Polygon2d;
+class Tree;
+
+GeometryEvaluator::GeometryEvaluator(const Tree& tree) : tree(tree) { }
 
 /*!
    Set allownef to false to force the result to _not_ be a Nef polyhedron
@@ -126,8 +127,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 
     delete ps;
     return {};
-  }
-  else if (op == OpenSCADOperator::FILL) {
+  } else if (op == OpenSCADOperator::FILL) {
     for (const auto& item : children) {
       LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(), "fill() not yet implemented for 3D");
     }
@@ -255,11 +255,11 @@ Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode& node)
    Returns a list of Polygon2d children of the given node.
    May return empty Polygon2d object, but not nullptr objects
  */
-std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const AbstractNode& node)
+std::vector<const Polygon2d *> GeometryEvaluator::collectChildren2D(const AbstractNode& node)
 {
   std::vector<const Polygon2d *> children;
   for (const auto& item : this->visitedchildren[node.index()]) {
-    auto &chnode = item.first;
+    auto& chnode = item.first;
     const shared_ptr<const Geometry>& chgeom = item.second;
     if (chnode->modinst->isBackground()) continue;
 
@@ -336,7 +336,7 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode& no
 {
   Geometry::Geometries children;
   for (const auto& item : this->visitedchildren[node.index()]) {
-    auto &chnode = item.first;
+    auto& chnode = item.first;
     const shared_ptr<const Geometry>& chgeom = item.second;
     if (chnode->modinst->isBackground()) continue;
 
@@ -437,7 +437,7 @@ Response GeometryEvaluator::visit(State& state, const AbstractNode& node)
     state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
   }
   if (state.isPostfix()) {
-    shared_ptr<const class Geometry> geom;
+    shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
       geom = applyToChildren(node, OpenSCADOperator::UNION).constptr();
     } else {
@@ -463,7 +463,7 @@ Response GeometryEvaluator::visit(State& state, const ListNode& node)
       unsigned int dim = 0;
       for (const auto& item : this->visitedchildren[node.index()]) {
         if (!isValidDim(item, dim)) break;
-        auto &chnode = item.first;
+        auto& chnode = item.first;
         const shared_ptr<const Geometry>& chgeom = item.second;
         addToParent(state, *chnode, chgeom);
       }
@@ -494,13 +494,13 @@ Response GeometryEvaluator::lazyEvaluateRootNode(State& state, const AbstractNod
     }
   }
   if (state.isPostfix()) {
-    shared_ptr<const class Geometry> geom;
+    shared_ptr<const Geometry> geom;
 
     unsigned int dim = 0;
     GeometryList::Geometries geometries;
     for (const auto& item : this->visitedchildren[node.index()]) {
       if (!isValidDim(item, dim)) break;
-      auto &chnode = item.first;
+      auto& chnode = item.first;
       const shared_ptr<const Geometry>& chgeom = item.second;
       if (chnode->modinst->isBackground()) continue;
       // NB! We insert into the cache here to ensure that all children of
@@ -572,7 +572,7 @@ Response GeometryEvaluator::visit(State& state, const RenderNode& node)
     state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
   }
   if (state.isPostfix()) {
-    shared_ptr<const class Geometry> geom;
+    shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
       ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
       auto mutableGeom = res.asMutableGeometry();
@@ -672,7 +672,7 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
 {
   if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
   if (state.isPostfix()) {
-    shared_ptr<const class Geometry> geom;
+    shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
       if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
         // due to the way parse/eval works we can't currently distinguish between NaN and Inf
@@ -1034,11 +1034,11 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     // Calculate Helical curve length for Twist with no Scaling
     if (node.scale_x == 1.0 && node.scale_y == 1.0) {
       slices = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height, node.twist, node.fn, node.fs, node.fa);
-    } else if ( node.scale_x != node.scale_y) { // non uniform scaling with twist using max slices from twist and non uniform scale
+    } else if (node.scale_x != node.scale_y) {  // non uniform scaling with twist using max slices from twist and non uniform scale
       double max_delta_sqr = 0; // delta from before/after scaling
       Vector2d scale(node.scale_x, node.scale_y);
-      for (const auto& o : poly.outlines()){
-        for (const auto& v : o.vertices){
+      for (const auto& o : poly.outlines()) {
+        for (const auto& v : o.vertices) {
           max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
         }
       }
@@ -1046,7 +1046,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
       size_t slicesTwist;
       slicesNonUniScale = (unsigned int)Calc::get_diagonal_slices(max_delta_sqr, node.height, node.fn, node.fs);
       slicesTwist = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height, node.twist, node.fn, node.fs, node.fa);
-      slices = std::max(slicesNonUniScale,slicesTwist);
+      slices = std::max(slicesNonUniScale, slicesTwist);
     } else { // uniform scaling with twist, use conical helix calculation
       slices = (unsigned int)Calc::get_conical_helix_slices(max_r1_sqr, node.height, node.twist, node.scale_x, node.fn, node.fs, node.fa);
     }
@@ -1054,8 +1054,8 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     // Non uniform scaling, w/o twist
     double max_delta_sqr = 0; // delta from before/after scaling
     Vector2d scale(node.scale_x, node.scale_y);
-    for (const auto& o : poly.outlines()){
-      for (const auto& v : o.vertices){
+    for (const auto& o : poly.outlines()) {
+      for (const auto& v : o.vertices) {
         max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
       }
     }
@@ -1359,7 +1359,7 @@ Response GeometryEvaluator::visit(State& /*state*/, const AbstractPolyNode& /*no
 
 shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const ProjectionNode& node)
 {
-  shared_ptr<const class Geometry> geom;
+  shared_ptr<const Geometry> geom;
   shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
   if (newgeom) {
     auto Nptr = CGALUtils::getNefPolyhedronFromGeometry(newgeom);
@@ -1376,11 +1376,11 @@ shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const ProjectionNode
 
 shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const ProjectionNode& node)
 {
-  shared_ptr<const class Geometry> geom;
+  shared_ptr<const Geometry> geom;
   std::vector<const Polygon2d *> tmp_geom;
   BoundingBox bounds;
   for (const auto& item : this->visitedchildren[node.index()]) {
-    auto &chnode = item.first;
+    auto& chnode = item.first;
     const shared_ptr<const Geometry>& chgeom = item.second;
     if (chnode->modinst->isBackground()) continue;
 
@@ -1435,7 +1435,7 @@ Response GeometryEvaluator::visit(State& state, const ProjectionNode& node)
 {
   if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
   if (state.isPostfix()) {
-    shared_ptr<const class Geometry> geom;
+    shared_ptr<const Geometry> geom;
     if (isSmartCached(node)) {
       geom = smartCacheGet(node, false);
     } else {
@@ -1515,7 +1515,7 @@ Response GeometryEvaluator::visit(State& state, const AbstractIntersectionNode& 
     state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
   }
   if (state.isPostfix()) {
-    shared_ptr<const class Geometry> geom;
+    shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
       geom = applyToChildren(node, OpenSCADOperator::INTERSECTION).constptr();
     } else {

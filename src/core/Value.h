@@ -182,10 +182,14 @@ private:
   // store the cached length in glong, paired with its string
   struct str_utf8_t {
     static constexpr glong LENGTH_UNKNOWN = -1;
-    str_utf8_t() : u8str(), u8len(0) { }
-    str_utf8_t(std::string s) : u8str(std::move(s)) { }
-    str_utf8_t(const char *cstr) : u8str(cstr) { }
-    str_utf8_t(const char *cstr, size_t size, glong u8len) : u8str(cstr, size), u8len(u8len) { }
+    str_utf8_t() : u8str(), u8len(0) {
+    }
+    str_utf8_t(std::string s) : u8str(std::move(s)) {
+    }
+    str_utf8_t(const char *cstr) : u8str(cstr) {
+    }
+    str_utf8_t(const char *cstr, size_t size, glong u8len) : u8str(cstr, size), u8len(u8len) {
+    }
     const std::string u8str;
     glong u8len = LENGTH_UNKNOWN;
   };

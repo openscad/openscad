@@ -20,7 +20,7 @@ public:
   shared_ptr<CSGProducts> background_products;
 
   bool compile_products(const Tree& tree) {
-    auto &root_node = tree.root();
+    auto& root_node = tree.root();
     GeometryEvaluator geomevaluator(tree);
     CSGTreeEvaluator evaluator(tree, &geomevaluator);
     shared_ptr<CSGNode> csgRoot = evaluator.buildCSGTree(*root_node);
@@ -44,7 +44,7 @@ public:
     if (highlightNodes.size() > 0) {
       LOG(message_group::None, Location::NONE, "", "Compiling highlights (%1$i CSG Trees)...", highlightNodes.size());
       this->highlights_products.reset(new CSGProducts());
-      for (auto & highlightNode : highlightNodes) {
+      for (auto& highlightNode : highlightNodes) {
         highlightNode = normalizer.normalize(highlightNode);
         this->highlights_products->import(highlightNode);
       }
@@ -53,7 +53,7 @@ public:
     if (backgroundNodes.size() > 0) {
       LOG(message_group::None, Location::NONE, "", "Compiling background (%1$i CSG Trees)...", backgroundNodes.size());
       this->background_products.reset(new CSGProducts());
-      for (auto & backgroundNode : backgroundNodes) {
+      for (auto& backgroundNode : backgroundNodes) {
         backgroundNode = normalizer.normalize(backgroundNode);
         this->background_products->import(backgroundNode);
       }

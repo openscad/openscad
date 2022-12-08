@@ -266,9 +266,9 @@ void CommentParser::collectParameters(const std::string& fulltext, SourceFile *r
     if (!assignment->getExpr()->isLiteral()) continue; // Only consider literals
 
     // get location of assignment node
-    auto firstLocation     = assignment->location();
+    auto firstLocation = assignment->location();
     auto overwriteLocation = assignment->locationOfOverwrite();
-    auto location = overwriteLocation.isNone() ? firstLocation : overwriteLocation ;
+    auto location = overwriteLocation.isNone() ? firstLocation : overwriteLocation;
 
     int firstLine = location.firstLine();
     if (firstLine >= parseTill || (

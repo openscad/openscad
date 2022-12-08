@@ -193,7 +193,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
 #ifdef ENABLE_CGAL
     Geometry::Geometries children;
     children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(first_mesh)));
-    for (auto & meshe : meshes) {
+    for (auto& meshe : meshes) {
       children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(meshe)));
     }
     if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {

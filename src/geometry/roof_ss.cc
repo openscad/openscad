@@ -18,7 +18,7 @@
 #include "roof_ss.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
-  throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
+        throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
 
 namespace roof_ss {
 

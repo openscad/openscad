@@ -128,7 +128,7 @@ void GLView::paintGL()
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  if(bgcol != bgstopcol){
+  if (bgcol != bgstopcol) {
     glDisable(GL_DEPTH_TEST);
 
     glMatrixMode(GL_PROJECTION);

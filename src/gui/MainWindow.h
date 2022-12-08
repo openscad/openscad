@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Editor.h"
+#include "Geometry.h"
 #include "export.h"
 #include "memory.h"
 #include "RenderStatistic.h"
@@ -25,15 +26,22 @@
 Q_IMPORT_PLUGIN(QSvgPlugin)
 #endif
 
-class AbstractNode;
-class MouseSelector;
+class BuiltinContext;
+class CGALWorker;
+class CSGNode;
+class CSGProducts;
+class FontListDialog;
+class LibraryInfoDialog;
+class Preferences;
+class ProgressWidget;
+class ThrownTogetherRenderer;
 
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
   Q_OBJECT
 
 public:
-  class Preferences *prefs;
+  Preferences *prefs;
 
   QTimer *consoleUpdater;
 
@@ -52,14 +60,14 @@ public:
   TabManager *tabManager;
 
 #ifdef ENABLE_CGAL
-  shared_ptr<const class Geometry> root_geom;
+  shared_ptr<const Geometry> root_geom;
   class CGALRenderer *cgalRenderer;
 #endif
 #ifdef ENABLE_OPENCSG
   class OpenCSGRenderer *opencsgRenderer;
-  std::unique_ptr<MouseSelector> selector;
+  std::unique_ptr<class MouseSelector> selector;
 #endif
-  class ThrownTogetherRenderer *thrownTogetherRenderer;
+  ThrownTogetherRenderer *thrownTogetherRenderer;
 
   QString last_compiled_doc;
 
@@ -81,7 +89,7 @@ public:
   ~MainWindow() override;
 
 private:
-  volatile bool isClosing=false;
+  volatile bool isClosing = false;
   void consoleOutputRaw(const QString& msg);
 
 protected:
@@ -109,37 +117,37 @@ public:
   void parseTopLevelDocument();
   void exceptionCleanup();
   void setLastFocus(QWidget *widget);
-  void UnknownExceptionCleanup(std::string msg="");
+  void UnknownExceptionCleanup(std::string msg = "");
 
   bool isLightTheme();
 
 private:
   void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);
-  void setRenderVariables(ContextHandle<class BuiltinContext>& context);
+  void setRenderVariables(ContextHandle<BuiltinContext>& context);
   void updateCompileResult();
   void compile(bool reload, bool forcedone = false);
   void compileCSG();
   bool checkEditorModified();
-  QString dumpCSGTree(const std::shared_ptr<AbstractNode> &root);
+  QString dumpCSGTree(const std::shared_ptr<AbstractNode>& root);
 
   void loadViewSettings();
   void loadDesignSettings();
   void prepareCompile(const char *afterCompileSlot, bool procevents, bool preview);
   void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool ViewportControlWidget);
   void saveBackup();
-  void writeBackup(class QFile *file);
+  void writeBackup(QFile *file);
   void show_examples();
   void setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel);
   void addKeyboardShortCut(const QList<QAction *>& actions);
-  void updateStatusBar(class ProgressWidget *progressWidget);
+  void updateStatusBar(ProgressWidget *progressWidget);
   void activateWindow(int);
 
-  class LibraryInfoDialog *library_info_dialog{nullptr};
-  class FontListDialog *font_list_dialog{nullptr};
+  LibraryInfoDialog *library_info_dialog{nullptr};
+  FontListDialog *font_list_dialog{nullptr};
 
 public slots:
   void updateExportActions();
-  void updateRecentFiles(QString FileSavedOrOpened );
+  void updateRecentFiles(QString FileSavedOrOpened);
   void updateRecentFileActions();
   void handleFileDrop(const QUrl& url);
 
@@ -226,7 +234,7 @@ private slots:
   void sendToPrintService();
 #ifdef ENABLE_CGAL
   void actionRender();
-  void actionRenderDone(shared_ptr<const class Geometry>);
+  void actionRenderDone(shared_ptr<const Geometry>);
   void cgalRender();
 #endif
   void actionCheckValidity();
@@ -337,24 +345,24 @@ public slots:
 
 private:
   bool network_progress_func(const double permille);
-  static void report_func(const std::shared_ptr<const AbstractNode> &, void *vp, int mark);
+  static void report_func(const std::shared_ptr<const AbstractNode>&, void *vp, int mark);
   static bool undockMode;
   static bool reorderMode;
   static const int tabStopWidth;
   static QElapsedTimer *progressThrottle;
   QWidget *lastFocus; // keep track of active copyable widget (Editor|Console) for global menu action Edit->Copy
 
-  shared_ptr<class CSGNode> csgRoot; // Result of the CSGTreeEvaluator
+  shared_ptr<CSGNode> csgRoot; // Result of the CSGTreeEvaluator
   shared_ptr<CSGNode> normalizedRoot; // Normalized CSG tree
-  shared_ptr<class CSGProducts> root_products;
+  shared_ptr<CSGProducts> root_products;
   shared_ptr<CSGProducts> highlights_products;
   shared_ptr<CSGProducts> background_products;
 
   char const *afterCompileSlot;
   bool procevents{false};
-  class QTemporaryFile *tempFile{nullptr};
-  class ProgressWidget *progresswidget{nullptr};
-  class CGALWorker *cgalworker;
+  QTemporaryFile *tempFile{nullptr};
+  ProgressWidget *progresswidget{nullptr};
+  CGALWorker *cgalworker;
   QMutex consolemutex;
   EditorInterface *renderedEditor; // stores pointer to editor which has been most recently rendered
   time_t includes_mtime{0}; // latest include mod time

@@ -126,5 +126,5 @@ private:
   // We stick to nef polyhedra in presence of non-manifold geometry or literal
   // edge-cases of the Polygon Mesh Processing corefinement functions (e.g. it
   // does not like shared edges, but tells us so politely).
-  std::variant<std::shared_ptr<CGAL_HybridMesh>, std::shared_ptr<CGAL_HybridNef> > data;
+  std::variant<std::shared_ptr<CGAL_HybridMesh>, std::shared_ptr<CGAL_HybridNef>> data;
 };

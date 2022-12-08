@@ -3,6 +3,8 @@
 #include <QApplication>
 #include "WindowManager.h"
 
+class QProgressDialog;
+
 class OpenSCADApp : public QApplication
 {
   Q_OBJECT
@@ -24,7 +26,7 @@ public:
   WindowManager windowManager;
 
 private:
-  class QProgressDialog *fontCacheDialog{nullptr};
+  QProgressDialog *fontCacheDialog{nullptr};
 };
 
 #define scadApp (static_cast<OpenSCADApp *>(QCoreApplication::instance()))

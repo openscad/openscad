@@ -3,6 +3,8 @@
 #include <QObject>
 #include "memory.h"
 
+class Tree;
+
 class CGALWorker : public QObject
 {
   Q_OBJECT;
@@ -11,7 +13,7 @@ public:
   ~CGALWorker() override;
 
 public slots:
-  void start(const class Tree& tree);
+  void start(const Tree& tree);
 
 protected slots:
   void work();

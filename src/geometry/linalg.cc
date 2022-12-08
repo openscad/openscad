@@ -17,9 +17,9 @@ BoundingBox operator*(const Transform3d& m, const BoundingBox& box)
   if (box.isEmpty()) return box;
   BoundingBox newbox;
   Vector3d boxvec[2] = { box.min(), box.max() };
-  for (auto & k : boxvec) {
-    for (auto & j : boxvec) {
-      for (auto & i : boxvec) {
+  for (auto& k : boxvec) {
+    for (auto& j : boxvec) {
+      for (auto& i : boxvec) {
         newbox.extend(m * Vector3d(i[0], j[1], k[2]));
       }
     }
@@ -64,7 +64,7 @@ bool matrix_contains_nan(const Transform3d& m)
    http://betterexplained.com/articles/fun-with-modular-arithmetic/
  */
 using Py_hash_t = int32_t;
-using Py_uhash_t  =uint32_t;
+using Py_uhash_t = uint32_t;
 using Float_t = double;
 Py_hash_t hash_floating_point(Float_t v)
 {

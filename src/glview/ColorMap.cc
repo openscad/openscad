@@ -70,9 +70,9 @@ RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
     addColor(RenderColor::CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
     addColor(RenderColor::CROSSHAIR_COLOR, "crosshair");
     try{
-        addColor(RenderColor::BACKGROUND_STOP_COLOR, "background-stop");
-    }catch (const std::exception& e) {
-        addColor(RenderColor::BACKGROUND_STOP_COLOR, "background");
+      addColor(RenderColor::BACKGROUND_STOP_COLOR, "background-stop");
+    } catch (const std::exception& e) {
+      addColor(RenderColor::BACKGROUND_STOP_COLOR, "background");
     }
   } catch (const std::exception& e) {
     LOG(message_group::None, Location::NONE, "", "Error reading color scheme file: '%1$s': %2$s", path.generic_string().c_str(), e.what());

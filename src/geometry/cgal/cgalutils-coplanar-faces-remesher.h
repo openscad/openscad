@@ -57,7 +57,8 @@ struct CoplanarFacesRemesher {
 
 public:
 
-  CoplanarFacesRemesher(TriangleMesh& mesh) : tm(mesh) {}
+  CoplanarFacesRemesher(TriangleMesh & mesh) : tm(mesh) {
+  }
 
   template <typename PatchId>
   void remesh(

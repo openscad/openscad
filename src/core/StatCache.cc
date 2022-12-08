@@ -51,7 +51,7 @@ std::unordered_map<std::string, CacheEntry> statMap;
 
 namespace StatCache {
 
-int stat(const std::string& path, struct ::stat& st)
+int stat(const std::string& path, struct ::stat &st)
 {
   auto iter = statMap.find(path);
   if (iter != statMap.end()) {                // Have we got an entry for this file?

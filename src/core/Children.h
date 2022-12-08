@@ -22,8 +22,8 @@ public:
   Children& operator=(const Children& other) = default;
   ~Children() = default;
 
-  [[nodiscard]] std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<AbstractNode> &target) const;
-  [[nodiscard]] std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<AbstractNode> &target, const std::vector<size_t>& indices) const;
+  [[nodiscard]] std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<AbstractNode>& target) const;
+  [[nodiscard]] std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<AbstractNode>& target, const std::vector<size_t>& indices) const;
 
   [[nodiscard]] bool empty() const { return !children_scope->hasChildren(); }
   [[nodiscard]] size_t size() const { return children_scope->moduleInstantiations.size(); }
