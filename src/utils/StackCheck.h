@@ -17,7 +17,7 @@ public:
 private:
   StackCheck() : limit(PlatformUtils::stackLimit()) {
     unsigned char c;
-    ptr = &c;
+    ptr = &c; // NOLINT(*StackAddressEscape)
   }
   inline unsigned long size() {
     unsigned char c;
