@@ -932,10 +932,11 @@ Value builtin_is_object(Arguments arguments, const Location& loc)
 
 Value builtin_import(Arguments arguments, const Location& loc)
 {
+  auto session = arguments.session();
   const Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file"});
   std::string raw_filename = parameters.get("file", "");
   std::string file = lookup_file(raw_filename, loc.filePath().parent_path().string(), parameters.documentRoot());
-  return import_json(file, arguments.session(), loc);
+  return import_json(file, session, loc);
 }
 
 void register_builtin_functions()
