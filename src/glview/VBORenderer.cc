@@ -440,7 +440,7 @@ void VBORenderer::create_edges(const PolySet& ps,
         }
 
         // Render top+bottom outlines
-        for (double z = -zbase / 2; z < zbase; z += zbase) {
+        for (double z : {-zbase / 2, zbase / 2}) {
           for (const Vector2d& v : o.vertices) {
             Vector3d p0 = uniqueMultiply(vert_mult_map, mult_verts, Vector3d(v[0], v[1], z), m);
 
@@ -575,7 +575,7 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
       // Render 2D objects 1mm thick, but differences slightly larger
       double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0.0);
       // Render top+bottom
-      for (double z = -zbase / 2; z < zbase; z += zbase) {
+      for (double z : { -zbase / 2, zbase / 2}) {
         for (const auto& poly : ps.polygons) {
           if (poly.size() == 3) {
             Vector3d p0 = poly.at(0); p0[2] += z;

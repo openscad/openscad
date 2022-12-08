@@ -300,7 +300,7 @@ void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transf
     glBegin(GL_TRIANGLES);
 
     // Render top+bottom
-    for (double z = -zbase / 2; z < zbase; z += zbase) {
+    for (double z : {-zbase / 2, zbase / 2}) {
       for (const auto& poly : ps.polygons) {
         if (poly.size() == 3) {
           if (z < 0) {
@@ -414,7 +414,7 @@ void Renderer::render_edges(const PolySet& ps, csgmode_e csgmode) const
 
       for (const Outline2d& o : ps.getPolygon().outlines()) {
         // Render top+bottom outlines
-        for (double z = -zbase / 2; z < zbase; z += zbase) {
+        for (double z : { -zbase / 2, zbase / 2}) {
           glBegin(GL_LINE_LOOP);
           for (const Vector2d& v : o.vertices) {
             glVertex3d(v[0], v[1], z);
