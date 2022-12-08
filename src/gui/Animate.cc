@@ -3,6 +3,7 @@
 #include "MainWindow.h"
 #include <boost/filesystem.hpp>
 #include <QFormLayout>
+#include "OffscreenView.h"
 
 Animate::Animate(QWidget *parent) : QWidget(parent)
 {
@@ -106,6 +107,8 @@ bool Animate::isLightTheme()
 
 void Animate::updatedAnimTval()
 {
+  bool ownsMutex = anim_step_Mutex.try_lock();
+
   double t = this->e_tval->text().toDouble(&this->t_ok);
   // Clamp t to 0-1
   if (this->t_ok) {
@@ -113,11 +116,18 @@ void Animate::updatedAnimTval()
   } else {
     t = 0.0;
   }
+  if(ownsMutex){
+    anim_step = (int)(anim_numsteps * t);
+  }
+  horizontalSlider->setValue(anim_step);
+  horizontalSlider->setMaximum(anim_numsteps);
 
   this->anim_tval = t;
   emit mainWindow->actionRenderPreview();
 
   updatePauseButtonIcon();
+  
+  if(ownsMutex) anim_step_Mutex.unlock();
 }
 
 void Animate::updatedAnimFpsAndAnimSteps()
@@ -169,6 +179,8 @@ void Animate::updatedAnimDump(bool checked)
 // Only called from animate_timer
 void Animate::incrementTVal()
 {
+  bool ownsMutex = anim_step_Mutex.try_lock();
+
   if (this->anim_numsteps == 0) return;
 
   if (mainWindow->windowActionHideCustomizer->isVisible()) {
@@ -187,6 +199,8 @@ void Animate::incrementTVal()
   this->e_tval->setText(txt);
 
   updatePauseButtonIcon();
+  
+  if(ownsMutex) anim_step_Mutex.unlock();
 }
 
 void Animate::updateTVal()
@@ -272,8 +286,35 @@ void  Animate::animateUpdate()
   }
 }
 
-bool Animate::dumpPictures(){
-  return this->e_dump->isChecked() && this->animate_timer->isActive();
+void Animate::cameraApplied(){
+  if( this->e_dump->isChecked() && this->animate_timer->isActive() ){
+      int steps = this->nextFrame();
+      QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
+      if(this->checkBox_offscreen->isChecked()){
+        int w = spinBox_offScreenWidth->value();
+        int h = spinBox_offScreenHeight->value();
+        OffscreenView offscreenView(w, h);
+
+        QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
+
+        auto qglview = mainWindow->qglview;
+        offscreenView.setCamera(qglview->cam);
+        offscreenView.setRenderer(qglview->getRenderer());
+        offscreenView.setColorScheme(*(qglview->colorscheme));
+        offscreenView.setShowFaces(qglview->showFaces());
+        offscreenView.setShowCrosshairs(qglview->showCrosshairs());
+        offscreenView.setShowAxes(qglview->showAxes());
+        offscreenView.setShowScaleProportional(qglview->showScaleProportional());
+        offscreenView.setShowEdges(qglview->showEdges());
+
+        offscreenView.paintGL();
+
+        offscreenView.save(filename.toStdString().c_str());
+      } else {
+        QImage img = mainWindow->qglview->grabFrame();
+        img.save(filename, "PNG");
+    }
+  }  
 }
 
 int Animate::nextFrame(){
@@ -305,17 +346,27 @@ void Animate::resizeEvent(QResizeEvent *event)
   // QBoxLayout can be switch from vertical to horizontal.
   int iconSize = 16;
   if(auto mainLayout = dynamic_cast<QBoxLayout *> (this->layout())){
-    if(sizeEvent.height() > 140){
+    if(sizeEvent.height() > 180){
       mainLayout->setDirection(QBoxLayout::TopToBottom);
-      if(sizeEvent.height() > 250 && sizeEvent.width() > 200){
+      if(sizeEvent.height() > 360 && sizeEvent.width() > 200){
         mainLayout->setMargin(10);
         mainLayout->setSpacing(10);
         iconSize = 32;
+        this->horizontalSlider->show();
+        this->vcr_controls->show();
       } else {
+        if (sizeEvent.height() > 240) {
+          this->horizontalSlider->show();
+          this->vcr_controls->show();
+        } else {
+          this->horizontalSlider->hide();
+          this->vcr_controls->hide();
+        }
         mainLayout->setMargin(0);
         mainLayout->setSpacing(0);
       }
-      this->vcr_controls->show();
+
+      this->offscreenSettingGroupBox->show();
     } else {
       mainLayout->setDirection(QBoxLayout::LeftToRight);
 
@@ -326,6 +377,8 @@ void Animate::resizeEvent(QResizeEvent *event)
       } else {
         this->vcr_controls->hide();
       }
+      this->horizontalSlider->hide();
+      this->offscreenSettingGroupBox->hide();
     }
   } else {
     static bool warnOnce = true;
@@ -403,4 +456,59 @@ void Animate::on_pushButton_MoveToEnd_clicked(){
   pauseAnimation();
   this->anim_step = this->anim_numsteps - 1;
   this->updateTVal();
+}
+
+void Animate::on_horizontalSlider_valueChanged(int val){
+  if(!anim_step_Mutex.try_lock()) return;
+  this->anim_step  = val;
+  updateTVal();
+  anim_step_Mutex.unlock();
+}
+void Animate::on_comboBoxResolution_currentIndexChanged(int index){
+  if(index == 0) return;
+  bool ownsLock = anim_resolution_Mutex.try_lock();
+  std::string current  = comboBoxResolution->currentText().toStdString();
+
+  size_t start = current.find("(")+1;
+  size_t stop  = current.find("x")-1;
+  std::string width= current.substr(start,stop-start);
+
+  start = current.find("x")+1;
+  stop  = current.find("px)");
+  std::string height= current.substr(start,stop-start);
+
+  try
+  {
+    int w = std::stoi(width);
+    int h = std::stoi(height);
+    spinBox_offScreenWidth->setValue(w);
+    spinBox_offScreenHeight->setValue(h);
+  }catch(std::exception const& ex){
+  }
+  if(ownsLock) setAspectRatio();
+  if(ownsLock) anim_resolution_Mutex.unlock();
+}
+
+void Animate::on_spinBox_offScreenWidth_valueChanged(int){
+  bool ownsLock = anim_resolution_Mutex.try_lock();
+  checkBox_offscreen->setCheckState(Qt::Checked);
+
+  if(ownsLock) comboBoxResolution->setCurrentIndex(0);
+  if(ownsLock) setAspectRatio();
+  if(ownsLock) anim_resolution_Mutex.unlock();
+}
+
+void Animate::on_spinBox_offScreenHeight_valueChanged(int){
+  bool ownsLock = anim_resolution_Mutex.try_lock();
+  checkBox_offscreen->setCheckState(Qt::Checked);
+
+  if(ownsLock) comboBoxResolution->setCurrentIndex(0);
+  if(ownsLock) setAspectRatio();
+  if(ownsLock) anim_resolution_Mutex.unlock();
+}
+
+void Animate::setAspectRatio(){
+  int w = spinBox_offScreenWidth->value();
+  int h = spinBox_offScreenHeight->value();
+  this->mainWindow->viewportControlWidget->setAspectRatio(w, h);
 }

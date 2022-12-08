@@ -15,6 +15,7 @@ ViewportControl::ViewportControl(QWidget *parent) : QWidget(parent)
 
 void ViewportControl::initGUI()
 {
+  bool bOwnsLock = inputMutex.try_lock();
   auto spinDoubleBoxes = this->groupBoxAbsoluteCamera->findChildren<QDoubleSpinBox *>();
   for (auto spinDoubleBox : spinDoubleBoxes) {
     spinDoubleBox->setMinimum(-DBL_MAX);
@@ -28,12 +29,21 @@ void ViewportControl::initGUI()
   spinBoxHeight->setMaximum(8192);
   connect(spinBoxWidth, SIGNAL(valueChanged(int)), this, SLOT(requestResize()));
   connect(spinBoxHeight, SIGNAL(valueChanged(int)), this, SLOT(requestResize()));
+
+  if(bOwnsLock){
+    inputMutex.unlock();
+  }
 }
 
 void ViewportControl::setMainWindow(MainWindow *mainWindow)
 {
+  bool bOwnsLock = inputMutex.try_lock();
   this->mainWindow = mainWindow;
   this->qglview = mainWindow->qglview;
+  
+  if(bOwnsLock){
+    inputMutex.unlock();
+  }
 }
 
 bool ViewportControl::isLightTheme()
@@ -197,4 +207,23 @@ bool ViewportControl::focusNextPrevChild(bool next){
         }
     }
     return true;
+}
+
+void ViewportControl::setAspectRatio(int x, int y){
+  if(!resizeMutex.try_lock()) return;
+
+  spinBoxWidth->setValue(x);
+  spinBoxHeight->setValue(y);
+  checkBoxAspecRatioLock->setChecked(true);
+  resizeToRatio();
+  
+  resizeMutex.unlock();
+}
+
+void ViewportControl::csgRendered(){
+  if(e_viewAll->isChecked()){
+    qglview->viewAll(e_viewAllCenter->isChecked());
+    qglview->update();
+  }
+  emit cameraApplied();
 }

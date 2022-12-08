@@ -20,10 +20,12 @@ public:
   ViewportControl& operator=(ViewportControl&& source) = delete;
   void initGUI();
   void setMainWindow(MainWindow *mainWindow);
+  void setAspectRatio(int x, int y);
 
 public slots:
   void cameraChanged();
   void viewResized();
+  void csgRendered();
 
 private slots:
   void updateCamera();
@@ -43,7 +45,7 @@ private:
   QString redHintBackground();
 
 signals:
-  void openFile(const QString, int);
+  void cameraApplied();
 
 private:
   bool isLightTheme();

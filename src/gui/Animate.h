@@ -3,6 +3,7 @@
 #include "qtgettext.h"
 #include "ui_Animate.h"
 #include <QIcon>
+#include <mutex>
 #include "input/InputDriverEvent.h"
 
 class MainWindow;
@@ -19,7 +20,7 @@ public:
   Animate& operator=(Animate&& source) = delete;
 
   void initGUI();
-  bool dumpPictures();
+
   int nextFrame();
 
   QTimer *animate_timer;
@@ -34,6 +35,7 @@ public slots:
   void animateUpdate();
   void cameraChanged();
   void editorContentChanged();
+  void cameraApplied();
   void onActionEvent(InputEventAction *event);
   void pauseAnimation();
 
@@ -68,7 +70,11 @@ private:
 
   QList<QAction *> action_list;
   void createActionAndPrepareButton(const QIcon &icon, QString description, std::string actionName, QPushButton* button);
- 
+
+  std::mutex anim_step_Mutex;
+  std::mutex anim_resolution_Mutex;
+  void setAspectRatio();
+
 signals:
 
 private slots:
@@ -78,4 +84,9 @@ private slots:
   void incrementTVal();
   void updateTVal();
   void on_pauseButton_pressed();
+  void on_horizontalSlider_valueChanged(int);
+  void on_comboBoxResolution_currentIndexChanged(int);
+
+  void on_spinBox_offScreenWidth_valueChanged(int);
+  void on_spinBox_offScreenHeight_valueChanged(int);
 };
