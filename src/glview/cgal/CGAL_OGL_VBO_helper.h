@@ -318,7 +318,6 @@ public:
     VertexArray halffacets_array(std::make_shared<VertexStateFactory>(), halffacets_states);
     halffacets_array.addSurfaceData();
     halffacets_array.writeSurface();
-    last_size = 0;
 
     settings = std::make_shared<VertexState>();
     settings->glBegin().emplace_back([]() {

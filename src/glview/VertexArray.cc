@@ -344,11 +344,11 @@ void VertexArray::createInterleavedVBOs()
     size_t dst_start = 0;
     for (const auto& vertex_data : vertices_) {
       // All attribute vectors need to be the same size to interleave
-      size_t idx = 0, last_size = 0, stride = vertex_data->stride(), dst = dst_start;
+      size_t idx = 0, last_size = 0, stride = vertex_data->stride();
       for (const auto& data : vertex_data->attributes()) {
         size_t size = data->sizeofAttribute();
         const GLbyte *src = data->toBytes();
-        dst = dst_start;
+        size_t dst = dst_start;
 
         if (src) {
           if (idx != 0) {

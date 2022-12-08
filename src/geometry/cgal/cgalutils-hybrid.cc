@@ -65,9 +65,9 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const Po
   }
 
   auto mesh = make_shared<CGAL_HybridMesh>();
-  auto err = createMeshFromPolySet(ps_tri, *mesh);
-  assert(!err);
-
+  if (createMeshFromPolySet(ps_tri, *mesh)) {
+    assert(false && "Error from createMeshFromPolySet");
+  }
   if (!ps_tri.is_convex()) {
     if (isClosed(*mesh)) {
       // Note: PMP::orient can corrupt models and cause cataclysmic memory leaks
