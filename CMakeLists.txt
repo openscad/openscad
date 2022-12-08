@@ -66,6 +66,7 @@ if(CLANG_TIDY AND CLANG_TIDY_EXE)
   #  (?!ext/) becomes ([^e]...|e[^x]..|ex[^t].|ext[^/]|.{0,3}$)
   # CMAKE_CXX_CLANG_TIDY must be set before target is created (with add_executable())
   set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};--header-filter=${regex}([^e]...|e[^x]..|ex[^t].|ext[^/]|.{0,3}$)")
+  #  append ";--fix" to arguments above to apply automatic fix (if the given checks support it)
 endif()
 
 add_executable(OpenSCAD)
