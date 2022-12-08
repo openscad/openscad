@@ -18,7 +18,7 @@ public:
   static void create(QStringList colorSchemes);
   static Preferences *inst();
 
-  [[nodiscard]] [[nodiscard]] QVariant getValue(const QString& key) const;
+  [[nodiscard]] QVariant getValue(const QString& key) const;
   void init();
   void apply_win() const;
   void updateGUI();

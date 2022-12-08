@@ -174,7 +174,7 @@ private:
   std::string fmt;
   std::tuple<Ts...> args;
   template <std::size_t... Is>
-  [[nodiscard]] [[nodiscard]] [[nodiscard]] std::string format(const std::index_sequence<Is...>) const
+  [[nodiscard]] std::string format(const std::index_sequence<Is...>) const
   {
 
     std::string s;

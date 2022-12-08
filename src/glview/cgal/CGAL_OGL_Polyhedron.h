@@ -77,7 +77,7 @@ public:
   }
 
   // overrides function in OGL_helper.h
-  [[nodiscard]] [[nodiscard]] CGAL::Color getVertexColor(Vertex_iterator v) const override {
+  [[nodiscard]] CGAL::Color getVertexColor(Vertex_iterator v) const override {
     PRINTD("getVertexColor");
     CGAL::Color c = v->mark() ? colors[CGALColorIndex::UNMARKED_VERTEX_COLOR] : colors[CGALColorIndex::MARKED_VERTEX_COLOR];
     return c;

@@ -55,7 +55,7 @@ public:
     return db[std::make_pair(ix, iy)];
   }
 
-  [[nodiscard]] [[nodiscard]] bool has(double x, double y) const {
+  [[nodiscard]] bool has(double x, double y) const {
     auto ix = (int64_t)std::round(x / res);
     auto iy = (int64_t)std::round(y / res);
     if (db.find(std::make_pair(ix, iy)) != db.end()) return true;
