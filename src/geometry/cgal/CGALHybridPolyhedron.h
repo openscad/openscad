@@ -44,25 +44,25 @@ public:
   CGALHybridPolyhedron(const CGALHybridPolyhedron& other);
   CGALHybridPolyhedron& operator=(const CGALHybridPolyhedron& other);
 
-  bool isEmpty() const override;
-  size_t numFacets() const override;
-  size_t numVertices() const;
-  bool isManifold() const;
-  bool isValid() const;
+  [[nodiscard]] bool isEmpty() const override;
+  [[nodiscard]] size_t numFacets() const override;
+  [[nodiscard]] size_t numVertices() const;
+  [[nodiscard]] bool isManifold() const;
+  [[nodiscard]] bool isValid() const;
   void clear();
 
-  size_t memsize() const override;
-  BoundingBox getBoundingBox() const override
+  [[nodiscard]] size_t memsize() const override;
+  [[nodiscard]] BoundingBox getBoundingBox() const override
   {
     assert(false && "not implemented");
     return {};
   }
 
-  std::string dump() const override;
-  unsigned int getDimension() const override { return 3; }
-  Geometry *copy() const override { return new CGALHybridPolyhedron(*this); }
+  [[nodiscard]] std::string dump() const override;
+  [[nodiscard]] unsigned int getDimension() const override { return 3; }
+  [[nodiscard]] Geometry *copy() const override { return new CGALHybridPolyhedron(*this); }
 
-  std::shared_ptr<const PolySet> toPolySet() const;
+  [[nodiscard]] std::shared_ptr<const PolySet> toPolySet() const;
 
   /*! In-place union (this may also mutate/corefine the other polyhedron). */
   void operator+=(CGALHybridPolyhedron& other);
@@ -108,18 +108,18 @@ private:
     const std::string& opName, CGALHybridPolyhedron& other,
     const std::function<bool(CGAL_HybridMesh& lhs, CGAL_HybridMesh& rhs, CGAL_HybridMesh& out)>& operation);
 
-  bool sharesAnyVertexWith(const CGALHybridPolyhedron& other) const;
+  [[nodiscard]] bool sharesAnyVertexWith(const CGALHybridPolyhedron& other) const;
 
-  bool canCorefineWith(const CGALHybridPolyhedron& other) const;
+  [[nodiscard]] bool canCorefineWith(const CGALHybridPolyhedron& other) const;
 
   /*! Returns the mesh if that's what's in the current data, or else nullptr.
    * Do NOT make this public. */
-  std::shared_ptr<CGAL_HybridMesh> getMesh() const;
+  [[nodiscard]] std::shared_ptr<CGAL_HybridMesh> getMesh() const;
   /*! Returns the nef polyhedron if that's what's in the current data, or else nullptr.
    * Do NOT make this public. */
-  std::shared_ptr<CGAL_HybridNef> getNefPolyhedron() const;
+  [[nodiscard]] std::shared_ptr<CGAL_HybridNef> getNefPolyhedron() const;
 
-  bbox_t getExactBoundingBox() const;
+  [[nodiscard]] bbox_t getExactBoundingBox() const;
 
   // This contains data either as a polyhedron, or as a nef polyhedron.
   //

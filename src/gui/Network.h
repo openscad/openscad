@@ -41,10 +41,10 @@ class NetworkException : public std::exception
 public:
   NetworkException(const QNetworkReply::NetworkError& error, const QString& errorMessage) : error(error), errorMessage(errorMessage.toStdString()) { }
   
-  const QNetworkReply::NetworkError& getError() const { return error; }
-  const std::string& getErrorMessage() const { return errorMessage; }
+  [[nodiscard]] const QNetworkReply::NetworkError& getError() const { return error; }
+  [[nodiscard]] const std::string& getErrorMessage() const { return errorMessage; }
 
-  const char *what() const noexcept override
+  [[nodiscard]] const char *what() const noexcept override
   {
     return errorMessage.c_str();
   }

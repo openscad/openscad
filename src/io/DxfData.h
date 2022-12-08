@@ -41,6 +41,6 @@ public:
   int addPoint(double x, double y);
 
   void fixup_path_direction();
-  std::string dump() const;
-  class Polygon2d *toPolygon2d() const;
+  [[nodiscard]] std::string dump() const;
+  [[nodiscard]] class Polygon2d *toPolygon2d() const;
 };

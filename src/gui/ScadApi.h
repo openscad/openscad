@@ -19,12 +19,12 @@ public:
 
   virtual ~ApiFunc() = default;
 
-  const QString& get_name() const
+  [[nodiscard]] const QString& get_name() const
   {
     return name;
   }
 
-  const QStringList& get_params() const
+  [[nodiscard]] const QStringList& get_params() const
   {
     return params;
   }
@@ -49,8 +49,8 @@ public:
   ScadTemplate() : text(""), cursor_offset(0) { }
   ScadTemplate(const QString text, const int cursor_offset) : text(text), cursor_offset(cursor_offset) { }
   virtual ~ScadTemplate() = default;
-  const QString& get_text() const { return text; }
-  int get_cursor_offset() const { return cursor_offset; }
+  [[nodiscard]] const QString& get_text() const { return text; }
+  [[nodiscard]] int get_cursor_offset() const { return cursor_offset; }
 
   ScadTemplate& operator=(const ScadTemplate& other)
   {

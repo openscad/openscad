@@ -52,16 +52,16 @@ public:
   RenderColorScheme(const fs::path path);
   virtual ~RenderColorScheme() = default;
 
-  const std::string& name() const;
-  int index() const;
-  bool valid() const;
-  bool showInGui() const;
+  [[nodiscard]] const std::string& name() const;
+  [[nodiscard]] int index() const;
+  [[nodiscard]] bool valid() const;
+  [[nodiscard]] bool showInGui() const;
   ColorScheme& colorScheme();
-  const boost::property_tree::ptree& propertyTree() const;
+  [[nodiscard]] const boost::property_tree::ptree& propertyTree() const;
 
 private:
-  std::string path() const;
-  std::string error() const;
+  [[nodiscard]] std::string path() const;
+  [[nodiscard]] std::string error() const;
   void addColor(RenderColor colorKey, std::string key);
 
   friend class ColorMap;
@@ -74,10 +74,10 @@ class ColorMap
 public:
   static ColorMap *inst(bool erase = false);
 
-  const char *defaultColorSchemeName() const;
-  const ColorScheme& defaultColorScheme() const;
-  const ColorScheme *findColorScheme(const std::string& name) const;
-  std::list<std::string> colorSchemeNames(bool guiOnly = false) const;
+  [[nodiscard]] const char *defaultColorSchemeName() const;
+  [[nodiscard]] const ColorScheme& defaultColorScheme() const;
+  [[nodiscard]] const ColorScheme *findColorScheme(const std::string& name) const;
+  [[nodiscard]] std::list<std::string> colorSchemeNames(bool guiOnly = false) const;
 
   static Color4f getColor(const ColorScheme& cs, const RenderColor rc);
   static Color4f getContrastColor(const Color4f& col);

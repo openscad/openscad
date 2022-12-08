@@ -60,7 +60,7 @@ struct Message {
     : msg(std::move(msg)), loc(std::move(loc)), docPath(std::move(docPath)), group(group)
   { }
 
-  std::string str() const {
+  [[nodiscard]] std::string str() const {
     const auto g = group == message_group::None ? "" : getGroupName(group) + ": ";
     const auto l = loc.isNone() ? "" : " " + loc.toRelativeString(docPath);
     return g + msg + l;
@@ -172,7 +172,7 @@ private:
   std::string fmt;
   std::tuple<Ts...> args;
   template <std::size_t... Is>
-  std::string format(const std::index_sequence<Is...>) const
+  [[nodiscard]] [[nodiscard]] [[nodiscard]] std::string format(const std::index_sequence<Is...>) const
   {
 
     std::string s;
@@ -196,7 +196,7 @@ public:
   {
   }
 
-  std::string format() const
+  [[nodiscard]] std::string format() const
   {
     return format(std::index_sequence_for<Ts...>{});
   }

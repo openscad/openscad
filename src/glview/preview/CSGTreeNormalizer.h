@@ -14,7 +14,7 @@ private:
   bool match_and_replace(shared_ptr<class CSGNode>& term);
   shared_ptr<CSGNode> collapse_null_terms(const shared_ptr<CSGNode>& term);
   shared_ptr<CSGNode> cleanup_term(shared_ptr<CSGNode>& t);
-  unsigned int count(const shared_ptr<CSGNode>& term) const;
+  [[nodiscard]] unsigned int count(const shared_ptr<CSGNode>& term) const;
 
   bool aborted{false};
   size_t limit;

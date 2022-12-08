@@ -36,10 +36,10 @@ public:
   EditorColorScheme(const fs::path path);
   virtual ~EditorColorScheme() = default;
 
-  const QString& name() const;
-  int index() const;
-  bool valid() const;
-  const boost::property_tree::ptree& propertyTree() const;
+  [[nodiscard]] const QString& name() const;
+  [[nodiscard]] int index() const;
+  [[nodiscard]] bool valid() const;
+  [[nodiscard]] const boost::property_tree::ptree& propertyTree() const;
 };
 
 class ScintillaEditor : public EditorInterface

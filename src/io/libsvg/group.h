@@ -35,15 +35,15 @@ protected:
 public:
   group() = default;
 
-  bool is_container() const override { return true; }
+  [[nodiscard]] bool is_container() const override { return true; }
 
   void set_attrs(attr_map_t& attrs, void *context) override;
-  const std::string dump() const override;
-  const std::string& get_name() const override { return group::name; }
+  [[nodiscard]] const std::string dump() const override;
+  [[nodiscard]] const std::string& get_name() const override { return group::name; }
 
   static const std::string name;
 
-  shape *clone() const override { return new group(*this); }
+  [[nodiscard]] shape *clone() const override { return new group(*this); }
 };
 
 }

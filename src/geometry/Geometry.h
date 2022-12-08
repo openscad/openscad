@@ -19,15 +19,15 @@ public:
   Geometry() = default;
   virtual ~Geometry() = default;
 
-  virtual size_t memsize() const = 0;
-  virtual BoundingBox getBoundingBox() const = 0;
-  virtual std::string dump() const = 0;
-  virtual unsigned int getDimension() const = 0;
-  virtual bool isEmpty() const = 0;
-  virtual Geometry *copy() const = 0;
-  virtual size_t numFacets() const = 0;
+  [[nodiscard]] virtual size_t memsize() const = 0;
+  [[nodiscard]] virtual BoundingBox getBoundingBox() const = 0;
+  [[nodiscard]] virtual std::string dump() const = 0;
+  [[nodiscard]] virtual unsigned int getDimension() const = 0;
+  [[nodiscard]] virtual bool isEmpty() const = 0;
+  [[nodiscard]] virtual Geometry *copy() const = 0;
+  [[nodiscard]] virtual size_t numFacets() const = 0;
 
-  unsigned int getConvexity() const { return convexity; }
+  [[nodiscard]] unsigned int getConvexity() const { return convexity; }
   void setConvexity(int c) { this->convexity = c; }
 
   virtual void transform(const Transform3d& mat) { assert(!"transform not implemented!"); }
@@ -68,18 +68,18 @@ public:
   GeometryList();
   GeometryList(Geometry::Geometries geometries);
 
-  size_t memsize() const override;
-  BoundingBox getBoundingBox() const override;
-  std::string dump() const override;
-  unsigned int getDimension() const override;
-  bool isEmpty() const override;
-  Geometry *copy() const override { return new GeometryList(*this); }
-  size_t numFacets() const override { assert(false && "not implemented"); return 0; }
+  [[nodiscard]] size_t memsize() const override;
+  [[nodiscard]] BoundingBox getBoundingBox() const override;
+  [[nodiscard]] std::string dump() const override;
+  [[nodiscard]] unsigned int getDimension() const override;
+  [[nodiscard]] bool isEmpty() const override;
+  [[nodiscard]] Geometry *copy() const override { return new GeometryList(*this); }
+  [[nodiscard]] size_t numFacets() const override { assert(false && "not implemented"); return 0; }
 
-  const Geometries& getChildren() const {
+  [[nodiscard]] const Geometries& getChildren() const {
     return this->children;
   }
 
-  Geometries flatten() const;
+  [[nodiscard]] Geometries flatten() const;
 
 };

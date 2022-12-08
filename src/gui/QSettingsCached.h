@@ -29,7 +29,7 @@ public:
     // qsettingsPointer->sync(); // force write to file system on each modification of open scad settings
   }
 
-  inline QVariant value(const QString& key, const QVariant& defaultValue = QVariant()) const {
+  [[nodiscard]] inline QVariant value(const QString& key, const QVariant& defaultValue = QVariant()) const {
     return qsettingsPointer->value(key, defaultValue);
   }
 
@@ -39,7 +39,7 @@ public:
     // qsettingsPointer->sync();
   }
 
-  inline bool contains(const QString& key) const {
+  [[nodiscard]] inline bool contains(const QString& key) const {
     return qsettingsPointer->contains(key);
   }
 

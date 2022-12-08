@@ -456,7 +456,7 @@ Response GeometryEvaluator::visit(State& state, const ListNode& node)
 {
   if (state.parent()) {
     if (state.isPrefix() && node.modinst->isBackground()) {
-      if (node.modinst->isBackground()) state.isBackground();
+      if (node.modinst->isBackground()) state.setBackground(true);
       return Response::PruneTraversal;
     }
     if (state.isPostfix()) {
@@ -486,7 +486,7 @@ Response GeometryEvaluator::visit(State& state, const GroupNode& node)
 Response GeometryEvaluator::lazyEvaluateRootNode(State& state, const AbstractNode& node) {
   if (state.isPrefix()) {
     if (node.modinst->isBackground()) {
-      state.isBackground();
+      state.setBackground(true);
       return Response::PruneTraversal;
     }
     if (isSmartCached(node)) {
@@ -918,9 +918,9 @@ static Outline2d splitOutlineByFn(
     unsigned int segment_count{1u};
     segment_tracker(size_t i, double len) : edge_index(i), max_edgelen(len) { }
     // metric for comparison: average between (max segment length, and max segment length after split)
-    double metric() const { return max_edgelen / (segment_count + 0.5); }
+    [[nodiscard]] double metric() const { return max_edgelen / (segment_count + 0.5); }
     bool operator<(const segment_tracker& rhs) const { return this->metric() < rhs.metric();  }
-    bool close_match(const segment_tracker& other) const {
+    [[nodiscard]] bool close_match(const segment_tracker& other) const {
       // Edges are grouped when metrics match by at least 99.9%
       constexpr double APPROX_EQ_RATIO = 0.999;
       double l1 = this->metric(), l2 = other.metric();

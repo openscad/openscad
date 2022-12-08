@@ -37,11 +37,11 @@ public:
   polyline() = default;
 
   void set_attrs(attr_map_t& attrs, void *context) override;
-  const std::string& get_name() const override { return polyline::name; }
+  [[nodiscard]] const std::string& get_name() const override { return polyline::name; }
 
   static const std::string name;
 
-  shape *clone() const override { return new polyline(*this); }
+  [[nodiscard]] shape *clone() const override { return new polyline(*this); }
 };
 
 }

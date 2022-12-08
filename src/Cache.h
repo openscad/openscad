@@ -96,12 +96,12 @@ public:
     : f(nullptr), l(nullptr), mx(maxCost) { }
   inline ~Cache() { clear(); }
 
-  inline size_t maxCost() const { return mx; }
+  [[nodiscard]] inline size_t maxCost() const { return mx; }
   void setMaxCost(size_t m) { mx = m; trim(mx); }
-  inline size_t totalCost() const { return total; }
+  [[nodiscard]] inline size_t totalCost() const { return total; }
 
-  inline size_t size() const { return hash.size(); }
-  inline bool empty() const { return hash.empty(); }
+  [[nodiscard]] inline size_t size() const { return hash.size(); }
+  [[nodiscard]] inline bool empty() const { return hash.empty(); }
 
   void clear() {
     while (f) {

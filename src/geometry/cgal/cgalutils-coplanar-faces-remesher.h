@@ -290,7 +290,7 @@ public:
     }
   }
 
-  bool isEdgeBetweenCoplanarFaces(const halfedge_descriptor& h) const {
+  [[nodiscard]] bool isEdgeBetweenCoplanarFaces(const halfedge_descriptor& h) const {
     auto& p = tm.point(tm.source(h));
     auto& q = tm.point(tm.target(h));
     auto& r = tm.point(tm.target(tm.next(h)));

@@ -56,5 +56,5 @@ public:
     *this << r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f;
   }
 
-  bool isValid() const { return this->minCoeff() >= 0.0f; }
+  [[nodiscard]] bool isValid() const { return this->minCoeff() >= 0.0f; }
 };

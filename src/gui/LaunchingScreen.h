@@ -15,8 +15,8 @@ public:
   static LaunchingScreen *getDialog();
   explicit LaunchingScreen(QWidget *parent = nullptr);
   ~LaunchingScreen() override;
-  QStringList selectedFiles() const;
-  bool isForceShowEditor() const;
+  [[nodiscard]] QStringList selectedFiles() const;
+  [[nodiscard]] bool isForceShowEditor() const;
 
 public slots:
   void openFile(const QString& filename);

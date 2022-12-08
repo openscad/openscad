@@ -37,10 +37,10 @@ private:
   Arguments(EvaluationSession *session) : evaluation_session(session) {}
 
 public:
-  Arguments clone() const;
+  [[nodiscard]] Arguments clone() const;
 
-  EvaluationSession *session() const { return evaluation_session; }
-  const std::string& documentRoot() const { return evaluation_session->documentRoot(); }
+  [[nodiscard]] EvaluationSession *session() const { return evaluation_session; }
+  [[nodiscard]] const std::string& documentRoot() const { return evaluation_session->documentRoot(); }
 
 private:
   EvaluationSession *evaluation_session;

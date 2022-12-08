@@ -25,11 +25,11 @@ public:
   bool hasOpenCSGSupport() { return this->opencsg_support; }
 #endif
   // Properties
-  bool orthoMode() const { return (this->cam.projection == Camera::ProjectionType::ORTHOGONAL); }
+  [[nodiscard]] bool orthoMode() const { return (this->cam.projection == Camera::ProjectionType::ORTHOGONAL); }
   void setOrthoMode(bool enabled);
-  bool showScaleProportional() const { return this->showscale; }
+  [[nodiscard]] bool showScaleProportional() const { return this->showscale; }
   void setShowScaleProportional(bool enabled) { this->showscale = enabled; }
-  std::string getRendererInfo() const override;
+  [[nodiscard]] std::string getRendererInfo() const override;
   float getDPI() override { return this->devicePixelRatio(); }
 
   const QImage& grabFrame();

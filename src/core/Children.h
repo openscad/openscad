@@ -22,16 +22,16 @@ public:
   Children& operator=(const Children& other) = default;
   ~Children() = default;
 
-  std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<AbstractNode> &target) const;
-  std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<AbstractNode> &target, const std::vector<size_t>& indices) const;
+  [[nodiscard]] std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<AbstractNode> &target) const;
+  [[nodiscard]] std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<AbstractNode> &target, const std::vector<size_t>& indices) const;
 
-  bool empty() const { return !children_scope->hasChildren(); }
-  size_t size() const { return children_scope->moduleInstantiations.size(); }
-  const std::shared_ptr<const Context>& getContext() const { return context; }
+  [[nodiscard]] bool empty() const { return !children_scope->hasChildren(); }
+  [[nodiscard]] size_t size() const { return children_scope->moduleInstantiations.size(); }
+  [[nodiscard]] const std::shared_ptr<const Context>& getContext() const { return context; }
 
 private:
   const LocalScope *children_scope;
   std::shared_ptr<const Context> context;
 
-  ContextHandle<ScopeContext> scopeContext() const;
+  [[nodiscard]] ContextHandle<ScopeContext> scopeContext() const;
 };

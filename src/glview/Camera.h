@@ -30,17 +30,17 @@ public:
   void gimbalDefaultTranslate();
   void setProjection(ProjectionType type);
   void zoom(int delta, bool relative);
-  double zoomValue() const;
-  double fovValue() const;
+  [[nodiscard]] double zoomValue() const;
+  [[nodiscard]] double fovValue() const;
   void resetView();
   void updateView(const std::shared_ptr<const class FileContext> context, bool enableWarning);
   void viewAll(const BoundingBox& bbox);
-  std::string statusText() const;
+  [[nodiscard]] std::string statusText() const;
 
   // accessors to get and set camera settings in the user space format (different for historical reasons)
-  Eigen::Vector3d getVpt() const;
+  [[nodiscard]] Eigen::Vector3d getVpt() const;
   void setVpt(double x, double y, double z);
-  Eigen::Vector3d getVpr() const;
+  [[nodiscard]] Eigen::Vector3d getVpr() const;
   void setVpr(double x, double y, double z);
   void setVpd(double d);
   void setVpf(double d);

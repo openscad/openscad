@@ -39,8 +39,8 @@ public:
 public:
   InputDriver() = default;
 
-  virtual const std::string& get_name() const = 0;
-  virtual std::string get_info() const = 0;
+  [[nodiscard]] virtual const std::string& get_name() const = 0;
+  [[nodiscard]] virtual std::string get_info() const = 0;
 
   virtual bool open() = 0;
   virtual void close() = 0;
@@ -49,14 +49,14 @@ public:
    * Return if the driver is currently opened. The default implementation
    * simply returns the {@link #isRunning()} status of the thread.
    */
-  virtual bool isOpen() const;
+  [[nodiscard]] virtual bool isOpen() const;
 
   /*
    * Drivers that are not connected to a device and can be opened on
    * application start. No attempt to re-open is made.
    */
-  virtual bool openOnce() const;
+  [[nodiscard]] virtual bool openOnce() const;
 
-  virtual size_t getButtonCount() const {return 0;}
-  virtual size_t getAxisCount() const {return 0;}
+  [[nodiscard]] virtual size_t getButtonCount() const {return 0;}
+  [[nodiscard]] virtual size_t getAxisCount() const {return 0;}
 };

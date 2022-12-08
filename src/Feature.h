@@ -32,10 +32,10 @@ public:
   static const Feature ExperimentalImportFunction;
   static const Feature ExperimentalSortStl;
 
-  const std::string& get_name() const;
-  const std::string& get_description() const;
+  [[nodiscard]] const std::string& get_name() const;
+  [[nodiscard]] const std::string& get_description() const;
 
-  bool is_enabled() const;
+  [[nodiscard]] bool is_enabled() const;
   void enable(bool status);
 
   static iterator begin();

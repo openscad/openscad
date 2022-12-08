@@ -31,7 +31,7 @@ public:
     csg_object_index_(csg_object_index)
   {}
 
-  size_t csgObjectIndex() const { return csg_object_index_; }
+  [[nodiscard]] size_t csgObjectIndex() const { return csg_object_index_; }
   void csgObjectIndex(size_t csg_object_index) { csg_object_index_ = csg_object_index; }
 
 private:
@@ -43,7 +43,7 @@ class OpenCSGVertexStateFactory : public VertexStateFactory
 public:
   OpenCSGVertexStateFactory() = default;
 
-  std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type,
+  [[nodiscard]] std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type,
                                                  size_t draw_offset, size_t element_offset,
                                                  GLuint vertices_vbo, GLuint elements_vbo) const override {
     return std::make_shared<OpenCSGVertexState>(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo);
@@ -58,8 +58,8 @@ public:
     : primitives_(std::move(primitives)), states_(std::move(states)) {}
   virtual ~OpenCSGVBOProduct() = default;
 
-  const OpenCSGPrimitives& primitives() const { return *(primitives_.get()); }
-  const VertexStates& states() const { return *(states_.get()); }
+  [[nodiscard]] const OpenCSGPrimitives& primitives() const { return *(primitives_.get()); }
+  [[nodiscard]] const VertexStates& states() const { return *(states_.get()); }
 
 private:
   const std::unique_ptr<OpenCSGPrimitives> primitives_;

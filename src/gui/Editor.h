@@ -14,7 +14,7 @@ class EditorInterface : public QWidget
   Q_OBJECT
 public:
   EditorInterface(QWidget *parent) : QWidget(parent) {}
-  QSize sizeHint() const override { QSize size; return size;}
+  [[nodiscard]] QSize sizeHint() const override { QSize size; return size;}
   virtual void setInitialSizeHint(const QSize&) { }
   void wheelEvent(QWheelEvent *) override;
   virtual QString toPlainText() = 0;

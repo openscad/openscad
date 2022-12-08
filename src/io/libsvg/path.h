@@ -36,7 +36,7 @@ protected:
   std::string data;
 
 private:
-  inline double t(double t, int exp) const {
+  [[nodiscard]] inline double t(double t, int exp) const {
     return std::pow(1.0 - t, exp);
   }
 
@@ -49,12 +49,12 @@ public:
   path() = default;
 
   void set_attrs(attr_map_t& attrs, void *context) override;
-  const std::string dump() const override;
-  const std::string& get_name() const override { return path::name; }
+  [[nodiscard]] const std::string dump() const override;
+  [[nodiscard]] const std::string& get_name() const override { return path::name; }
 
   static const std::string name;
 
-  shape *clone() const override { return new path(*this); }
+  [[nodiscard]] shape *clone() const override { return new path(*this); }
 };
 
 } // namespace libsvg

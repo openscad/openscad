@@ -44,9 +44,9 @@ public:
   transformation(const std::string op, const std::string name);
   virtual ~transformation() = default;
 
-  const std::string& get_op() const { return op; }
-  const std::string& get_name() const { return name; }
-  const std::string get_args() const;
+  [[nodiscard]] const std::string& get_op() const { return op; }
+  [[nodiscard]] const std::string& get_name() const { return name; }
+  [[nodiscard]] const std::string get_args() const;
 
   void add_arg(const std::string arg);
   virtual std::vector<Eigen::Matrix3d> get_matrices() = 0;

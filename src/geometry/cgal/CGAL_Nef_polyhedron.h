@@ -19,15 +19,15 @@ public:
   CGAL_Nef_polyhedron& operator=(CGAL_Nef_polyhedron&&) = default;
   ~CGAL_Nef_polyhedron() override = default;
 
-  size_t memsize() const override;
+  [[nodiscard]] size_t memsize() const override;
   // FIXME: Implement, but we probably want a high-resolution BBox..
-  BoundingBox getBoundingBox() const override;
-  std::string dump() const override;
-  unsigned int getDimension() const override { return 3; }
+  [[nodiscard]] BoundingBox getBoundingBox() const override;
+  [[nodiscard]] std::string dump() const override;
+  [[nodiscard]] unsigned int getDimension() const override { return 3; }
   // Empty means it is a geometric node which has zero area/volume
-  bool isEmpty() const override;
-  Geometry *copy() const override { return new CGAL_Nef_polyhedron(*this); }
-  size_t numFacets() const override { return p3->number_of_facets(); }
+  [[nodiscard]] bool isEmpty() const override;
+  [[nodiscard]] Geometry *copy() const override { return new CGAL_Nef_polyhedron(*this); }
+  [[nodiscard]] size_t numFacets() const override { return p3->number_of_facets(); }
 
   void reset() { p3.reset(); }
   CGAL_Nef_polyhedron operator+(const CGAL_Nef_polyhedron& other) const;

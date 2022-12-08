@@ -32,7 +32,7 @@ public:
   /*!
      Returns the current size of the new element array
    */
-  std::size_t size() const {
+  [[nodiscard]] [[nodiscard]] [[nodiscard]] std::size_t size() const {
     return this->map.size();
   }
 

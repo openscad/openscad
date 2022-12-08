@@ -39,14 +39,14 @@ protected:
 public:
   rect() = default;
 
-  double get_width() const { return width; }
-  double get_height() const { return height; }
-  double get_rx() const { return rx; }
-  double get_ry() const { return ry; }
+  [[nodiscard]] double get_width() const { return width; }
+  [[nodiscard]] double get_height() const { return height; }
+  [[nodiscard]] double get_rx() const { return rx; }
+  [[nodiscard]] double get_ry() const { return ry; }
 
   void set_attrs(attr_map_t& attrs, void *context) override;
-  const std::string dump() const override;
-  const std::string& get_name() const override { return rect::name; }
+  [[nodiscard]] const std::string dump() const override;
+  [[nodiscard]] const std::string& get_name() const override { return rect::name; }
 
   static const std::string name;
 };

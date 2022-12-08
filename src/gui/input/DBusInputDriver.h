@@ -41,11 +41,11 @@ public:
   void run() override;
   bool open() override;
   void close() override;
-  bool isOpen() const override;
-  bool openOnce() const override;
+  [[nodiscard]] bool isOpen() const override;
+  [[nodiscard]] bool openOnce() const override;
 
-  const std::string& get_name() const override;
-  std::string get_info() const override;
+  [[nodiscard]] const std::string& get_name() const override;
+  [[nodiscard]] std::string get_info() const override;
 
 public slots:
   void zoom(double zoom) const;
@@ -57,7 +57,7 @@ public slots:
   void translateTo(double x, double y, double z) const;
   void action(QString action) const;
   void buttonPress(uint idx) const;
-  const QList<double> getRotation() const;
-  const QList<double> getTranslation() const;
-  const QStringList getActions() const;
+  [[nodiscard]] const QList<double> getRotation() const;
+  [[nodiscard]] const QList<double> getTranslation() const;
+  [[nodiscard]] const QStringList getActions() const;
 };

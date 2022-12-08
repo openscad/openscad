@@ -11,13 +11,13 @@ class ProgressWidget : public QWidget, public Ui::ProgressWidget
 
 public:
   ProgressWidget(QWidget *parent = nullptr);
-  bool wasCanceled() const;
-  int elapsedTime() const;
+  [[nodiscard]] bool wasCanceled() const;
+  [[nodiscard]] int elapsedTime() const;
 
 public slots:
   void setRange(int minimum, int maximum);
   void setValue(int progress);
-  int value() const;
+  [[nodiscard]] int value() const;
   void cancel();
 
 signals:

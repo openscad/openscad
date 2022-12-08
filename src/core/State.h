@@ -26,16 +26,16 @@ public:
   void setMatrix(const Transform3d& m) { this->matrix_ = m; }
   void setColor(const Color4f& c) { this->color_ = c; }
   void setPreferNef(bool on) { FLAG(this->flags, PREFERNEF, on); }
-  bool preferNef() const { return this->flags & PREFERNEF; }
+  [[nodiscard]] bool preferNef() const { return this->flags & PREFERNEF; }
 
-  bool isPrefix() const { return this->flags & PREFIX; }
-  bool isPostfix() const { return this->flags & POSTFIX; }
-  bool isHighlight() const { return this->flags & HIGHLIGHT; }
-  bool isBackground() const { return this->flags & BACKGROUND; }
-  unsigned int numChildren() const { return this->numchildren; }
-  std::shared_ptr<const AbstractNode> parent() const { return this->parentnode; }
-  const Transform3d& matrix() const { return this->matrix_; }
-  const Color4f& color() const { return this->color_; }
+  [[nodiscard]] bool isPrefix() const { return this->flags & PREFIX; }
+  [[nodiscard]] bool isPostfix() const { return this->flags & POSTFIX; }
+  [[nodiscard]] bool isHighlight() const { return this->flags & HIGHLIGHT; }
+  [[nodiscard]] bool isBackground() const { return this->flags & BACKGROUND; }
+  [[nodiscard]] unsigned int numChildren() const { return this->numchildren; }
+  [[nodiscard]] std::shared_ptr<const AbstractNode> parent() const { return this->parentnode; }
+  [[nodiscard]] const Transform3d& matrix() const { return this->matrix_; }
+  [[nodiscard]] const Color4f& color() const { return this->color_; }
 
 private:
   enum StateFlags {

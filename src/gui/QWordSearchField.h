@@ -10,7 +10,7 @@ class QWordSearchField : public QLineEdit
 
 public:
   QWordSearchField(QFrame *parent = nullptr);
-  int findCount() const { return findcount; }
+  [[nodiscard]] int findCount() const { return findcount; }
 
 protected:
   void resizeEvent(QResizeEvent *) override;

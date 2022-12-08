@@ -52,21 +52,21 @@ public:
   virtual ~IAttributeData() = default;
 
   // Return number of elements that make up one attribute
-  virtual size_t count() const = 0;
+  [[nodiscard]] virtual size_t count() const = 0;
   // Return number of elements in vector
-  virtual size_t size() const = 0;
+  [[nodiscard]] virtual size_t size() const = 0;
   // Return size in bytes of the element type
-  virtual size_t sizeofType() const = 0;
+  [[nodiscard]] virtual size_t sizeofType() const = 0;
   // Return the total size in bytes of one attribute
-  virtual size_t sizeofAttribute() const = 0;
+  [[nodiscard]] virtual size_t sizeofAttribute() const = 0;
   // Return the total size in bytes of entire element vector
-  virtual size_t sizeInBytes() const = 0;
+  [[nodiscard]] virtual size_t sizeInBytes() const = 0;
   // Return the OpenGL type of the element
-  virtual GLenum glType() const = 0;
+  [[nodiscard]] virtual GLenum glType() const = 0;
   // Return pointer to the raw bytes of the element vector
-  virtual const GLbyte *toBytes() const = 0;
+  [[nodiscard]] virtual const GLbyte *toBytes() const = 0;
   // Create an empty copy of the attribute data type
-  virtual std::shared_ptr<IAttributeData> create() const = 0;
+  [[nodiscard]] virtual std::shared_ptr<IAttributeData> create() const = 0;
   // Append data to the end of the attribute
   virtual void append(const IAttributeData& data) = 0;
   // Clear the entire attribute
@@ -110,13 +110,13 @@ class AttributeData : public IAttributeData
 public:
   AttributeData() : data_() {}
 
-  inline size_t count() const override { return C; }
-  inline size_t size() const override { return data_.size(); }
-  inline size_t sizeofType() const override { return sizeof(T); }
-  inline size_t sizeofAttribute() const override { return sizeof(T) * C; }
-  inline size_t sizeInBytes() const override { return data_.size() * sizeof(T); }
-  inline GLenum glType() const override { return E; }
-  inline std::shared_ptr<IAttributeData> create() const override { return std::make_shared<AttributeData<T, C, E>>(); }
+  [[nodiscard]] inline size_t count() const override { return C; }
+  [[nodiscard]] inline size_t size() const override { return data_.size(); }
+  [[nodiscard]] inline size_t sizeofType() const override { return sizeof(T); }
+  [[nodiscard]] inline size_t sizeofAttribute() const override { return sizeof(T) * C; }
+  [[nodiscard]] inline size_t sizeInBytes() const override { return data_.size() * sizeof(T); }
+  [[nodiscard]] inline GLenum glType() const override { return E; }
+  [[nodiscard]] inline std::shared_ptr<IAttributeData> create() const override { return std::make_shared<AttributeData<T, C, E>>(); }
   void append(const IAttributeData& data) override {
     const AttributeData<T, C, E> *from = dynamic_cast<const AttributeData<T, C, E> *>(&data);
     if (from != nullptr) {
@@ -127,7 +127,7 @@ public:
   }
   void clear() override { data_.clear(); }
   void remove(size_t count) override { data_.erase(data_.end() - (count * C), data_.end()); }
-  inline const GLbyte *toBytes() const override { return (GLbyte *)(data_.data()); }
+  [[nodiscard]] inline const GLbyte *toBytes() const override { return (GLbyte *)(data_.data()); }
 
   inline void addData(GLbyte value) override { add_data((T)value); }
   inline void addData(GLshort value) override { add_data((T)value); }
@@ -138,7 +138,7 @@ public:
   inline void addData(GLdouble value) override { add_data((T)value); }
 
   // Return the template type element vector
-  inline std::shared_ptr<std::vector<T>> getData() const { return std::shared_ptr<std::vector<T>>(data_); }
+  [[nodiscard]] inline std::shared_ptr<std::vector<T>> getData() const { return std::shared_ptr<std::vector<T>>(data_); }
 
 private:
   // Internal method to add data of template type to element vector
@@ -192,32 +192,32 @@ public:
   void remove(size_t count = 1);
 
   // Return reference to internal IAttributeData vector
-  inline const std::vector<std::shared_ptr<IAttributeData>>& attributes() const { return attributes_; }
+  [[nodiscard]] inline const std::vector<std::shared_ptr<IAttributeData>>& attributes() const { return attributes_; }
   // Return reference to IAttributeData
-  inline const std::shared_ptr<IAttributeData> attributeData() const { if (attributes_.size()) return attributes_.back(); else return nullptr; }
+  [[nodiscard]] inline const std::shared_ptr<IAttributeData> attributeData() const { if (attributes_.size()) return attributes_.back(); else return nullptr; }
   // Return reference to position attribute data
-  inline const std::shared_ptr<IAttributeData>& positionData() const { return position_data_; }
+  [[nodiscard]] inline const std::shared_ptr<IAttributeData>& positionData() const { return position_data_; }
   // Return reference to normal attribute data
-  inline const std::shared_ptr<IAttributeData>& normalData() const { return normal_data_; }
+  [[nodiscard]] inline const std::shared_ptr<IAttributeData>& normalData() const { return normal_data_; }
   // Return reference to color data
-  inline const std::shared_ptr<IAttributeData>& colorData() const { return color_data_; }
+  [[nodiscard]] inline const std::shared_ptr<IAttributeData>& colorData() const { return color_data_; }
   // Check if VertexData has position data
-  inline bool hasPositionData() const { return (position_data_ != nullptr); }
+  [[nodiscard]] inline bool hasPositionData() const { return (position_data_ != nullptr); }
   // Return position attribute data vector index
-  inline size_t positionIndex() const { return position_index_; }
+  [[nodiscard]] inline size_t positionIndex() const { return position_index_; }
   // Check if VertexData has normal data
-  inline bool hasNormalData() const { return (normal_data_ != nullptr); }
+  [[nodiscard]] inline bool hasNormalData() const { return (normal_data_ != nullptr); }
   // Return normal attribute data vector index
-  inline size_t normalIndex() const { return normal_index_; }
+  [[nodiscard]] inline size_t normalIndex() const { return normal_index_; }
   // Check if VertexData has color data
-  inline bool hasColorData() const { return (color_data_ != nullptr); }
+  [[nodiscard]] inline bool hasColorData() const { return (color_data_ != nullptr); }
   // Return color attribute data vector index
-  inline size_t colorIndex() const { return color_index_; }
+  [[nodiscard]] inline size_t colorIndex() const { return color_index_; }
   // Return stride of VertexData
-  inline size_t stride() const { return stride_; }
+  [[nodiscard]] inline size_t stride() const { return stride_; }
 
   // Calculate the offset of interleaved attribute data based on VertexData index
-  size_t interleavedOffset(size_t index) const {
+  [[nodiscard]] size_t interleavedOffset(size_t index) const {
     if (index && attributes_.size()) {
       --index;
       return (attributes_[index]->sizeofAttribute() + interleavedOffset(index));
@@ -225,16 +225,16 @@ public:
     return 0;
   }
   // Calculate the total size of the buffer in bytes
-  size_t sizeInBytes() const { size_t size = 0; for (const auto& data : attributes_) size += data->sizeInBytes(); return size; }
+  [[nodiscard]] size_t sizeInBytes() const { size_t size = 0; for (const auto& data : attributes_) size += data->sizeInBytes(); return size; }
   // Calculate the total number of items in buffer
-  inline size_t size() const {
+  [[nodiscard]] inline size_t size() const {
     if (stride_) {
       return sizeInBytes() / stride();
     } else {
       size_t size = 0; for (const auto& data : attributes_) size += data->size(); return size;
     }
   }
-  inline bool empty() const { return attributes_.empty(); }
+  [[nodiscard]] inline bool empty() const { return attributes_.empty(); }
 
   // Create an interleaved buffer and return it as GLbyte array pointer
   void fillInterleavedBuffer(GLbyte *interleaved_buffer) const;
@@ -245,7 +245,7 @@ public:
   void createInterleavedVBO(GLuint& vbo) const;
 
   // Create an empty copy of the this vertex data
-  std::shared_ptr<VertexData> create() const;
+  [[nodiscard]] std::shared_ptr<VertexData> create() const;
 
 private:
   std::vector<std::shared_ptr<IAttributeData>> attributes_;
@@ -273,23 +273,23 @@ public:
   virtual ~VertexState() = default;
 
   // Return the OpenGL mode for glDrawArrays/glDrawElements call
-  inline GLenum drawMode() const { return draw_mode_; }
+  [[nodiscard]] inline GLenum drawMode() const { return draw_mode_; }
   // Set the OpenGL mode for glDrawArrays/glDrawElements call
   inline void drawMode(GLenum draw_mode) { draw_mode_ = draw_mode; }
   // Return the number of vertices for glDrawArrays/glDrawElements call
-  inline GLsizei drawSize() const { return draw_size_; }
+  [[nodiscard]] inline GLsizei drawSize() const { return draw_size_; }
   // Set the number of vertices for glDrawArrays/glDrawElements call
   inline void drawSize(GLsizei draw_size) { draw_size_ = draw_size; }
   // Return the OpenGL type for glDrawElements call
-  inline GLenum drawType() const { return draw_type_; }
+  [[nodiscard]] inline GLenum drawType() const { return draw_type_; }
   // Set the OpenGL type for glDrawElements call
   inline void drawType(GLenum draw_type) { draw_type_ = draw_type; }
   // Return the VBO offset for glDrawArrays call
-  inline size_t drawOffset() const { return draw_offset_; }
+  [[nodiscard]] inline size_t drawOffset() const { return draw_offset_; }
   // Set the VBO offset for glDrawArrays call
   inline void drawOffset(size_t draw_offset) { draw_offset_ = draw_offset; }
   // Return the Element VBO offset for glDrawElements call
-  inline size_t elementOffset() const { return element_offset_; }
+  [[nodiscard]] inline size_t elementOffset() const { return element_offset_; }
   // Set the Element VBO offset for glDrawElements call
   inline void elementOffset(size_t element_offset) { element_offset_ = element_offset; }
 
@@ -327,7 +327,7 @@ public:
   virtual ~VertexStateFactory() = default;
 
   // Create and return a VertexState object
-  virtual std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type, size_t draw_offset, size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo) const {
+  [[nodiscard]] virtual std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type, size_t draw_offset, size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo) const {
     return std::make_shared<VertexState>(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo);
   }
 };

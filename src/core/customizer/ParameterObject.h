@@ -18,15 +18,15 @@ public:
   virtual ~ParameterObject() = default;
   static std::unique_ptr<ParameterObject> fromAssignment(const Assignment *assignment);
 
-  ParameterType type() const { return type_; }
-  const std::string& name() const { return name_; }
-  const std::string& description() const { return description_; }
-  const std::string& group() const { return group_; }
+  [[nodiscard]] ParameterType type() const { return type_; }
+  [[nodiscard]] const std::string& name() const { return name_; }
+  [[nodiscard]] const std::string& description() const { return description_; }
+  [[nodiscard]] const std::string& group() const { return group_; }
 
   virtual void reset() = 0;
   virtual bool importValue(boost::property_tree::ptree encodedValue, bool store) = 0;
-  virtual boost::property_tree::ptree exportValue() const = 0;
-  virtual json jsonValue() const = 0;
+  [[nodiscard]] virtual boost::property_tree::ptree exportValue() const = 0;
+  [[nodiscard]] virtual json jsonValue() const = 0;
   virtual void apply(Assignment *assignment) const = 0;
 
 protected:
@@ -52,8 +52,8 @@ public:
 
   void reset() override { value = defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
-  boost::property_tree::ptree exportValue() const override;
-  json jsonValue() const override;
+  [[nodiscard]] boost::property_tree::ptree exportValue() const override;
+  [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
 
   bool value;
@@ -71,8 +71,8 @@ public:
 
   void reset() override { value = defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
-  boost::property_tree::ptree exportValue() const override;
-  json jsonValue() const override;
+  [[nodiscard]] boost::property_tree::ptree exportValue() const override;
+  [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
 
   std::string value;
@@ -95,8 +95,8 @@ public:
 
   void reset() override { value = defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
-  boost::property_tree::ptree exportValue() const override;
-  json jsonValue() const override;
+  [[nodiscard]] boost::property_tree::ptree exportValue() const override;
+  [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
 
   double value;
@@ -121,8 +121,8 @@ public:
 
   void reset() override { value = defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
-  boost::property_tree::ptree exportValue() const override;
-  json jsonValue() const override;
+  [[nodiscard]] boost::property_tree::ptree exportValue() const override;
+  [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
 
   std::vector<double> value;
@@ -153,8 +153,8 @@ public:
 
   void reset() override { valueIndex = defaultValueIndex; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
-  boost::property_tree::ptree exportValue() const override;
-  json jsonValue() const override;
+  [[nodiscard]] boost::property_tree::ptree exportValue() const override;
+  [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
 
   int valueIndex;

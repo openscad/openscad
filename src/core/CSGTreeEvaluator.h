@@ -27,13 +27,13 @@ public:
 
   shared_ptr<class CSGNode> buildCSGTree(const AbstractNode& node);
 
-  const shared_ptr<CSGNode>& getRootNode() const {
+  [[nodiscard]] const shared_ptr<CSGNode>& getRootNode() const {
     return this->rootNode;
   }
-  const std::vector<shared_ptr<CSGNode>>& getHighlightNodes() const {
+  [[nodiscard]] const std::vector<shared_ptr<CSGNode>>& getHighlightNodes() const {
     return this->highlightNodes;
   }
-  const std::vector<shared_ptr<CSGNode>>& getBackgroundNodes() const {
+  [[nodiscard]] const std::vector<shared_ptr<CSGNode>>& getBackgroundNodes() const {
     return this->backgroundNodes;
   }
 
