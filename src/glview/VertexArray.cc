@@ -269,19 +269,19 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
       addAttributeValues(*elementsData(), entry.first->second);
     } else {
       if (elementsData()->sizeofAttribute() == sizeof(GLubyte)) {
-        GLubyte index = (GLubyte)entry.first->second;
+        auto index = (GLubyte)entry.first->second;
         GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
                         elementsData()->sizeofAttribute(),
                         &index); GL_ERROR_CHECK();
       } else if (elementsData()->sizeofAttribute() == sizeof(GLushort)) {
-        GLushort index = (GLushort)entry.first->second;
+        auto index = (GLushort)entry.first->second;
         GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
                         elementsData()->sizeofAttribute(),
                         &index); GL_ERROR_CHECK();
       } else if (elementsData()->sizeofAttribute() == sizeof(GLuint)) {
-        GLuint index = (GLuint)entry.first->second;
+        auto index = (GLuint)entry.first->second;
         GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
                         elementsData()->sizeofAttribute(),

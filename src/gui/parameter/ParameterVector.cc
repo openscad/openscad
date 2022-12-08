@@ -33,7 +33,7 @@ ParameterVector::ParameterVector(QWidget *parent, VectorParameter *parameter, De
   }
 
   if (spinboxes.size() > 0) { // only allocate if there are spinboxes to use the function
-    IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
+    auto *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
     for (auto spinbox : spinboxes) {
       spinbox->installEventFilter(ignoreWheelWhenNotFocused); // this takes ownership of the ignoreWheelWhenNotFocused object
     }

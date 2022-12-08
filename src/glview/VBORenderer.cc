@@ -95,7 +95,7 @@ size_t VBORenderer::getSurfaceBufferSize(const CSGChainObject& csgobj, bool high
   csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
 
   if (csgobj.leaf->geom) {
-    const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+    const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
     if (ps) {
       buffer_size += getSurfaceBufferSize(*ps, csgmode);
     }
@@ -156,7 +156,7 @@ size_t VBORenderer::getEdgeBufferSize(const CSGChainObject& csgobj, bool highlig
   csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
 
   if (csgobj.leaf->geom) {
-    const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+    const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
     if (ps) {
       buffer_size += getEdgeBufferSize(*ps, csgmode);
     }

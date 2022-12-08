@@ -156,10 +156,10 @@ Value builtin_rands(Arguments arguments, const Location& loc)
     LOG(message_group::Warning, Location::NONE, "", "resetting number of results to 1");
     numresultsd = 1;
   }
-  size_t numresults = boost_numeric_cast<size_t, double>(numresultsd);
+  auto numresults = boost_numeric_cast<size_t, double>(numresultsd);
 
   if (arguments.size() > 3) {
-    uint32_t seed = static_cast<uint32_t>(hash_floating_point(arguments[3]->toDouble() ));
+    auto seed = static_cast<uint32_t>(hash_floating_point(arguments[3]->toDouble() ));
     deterministic_rng.seed(seed);
   }
 

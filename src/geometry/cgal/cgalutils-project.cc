@@ -47,7 +47,7 @@ static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer& explorer,
 
 static Polygon2d *convertToPolygon2d(const CGAL_Nef_polyhedron2& p2)
 {
-  Polygon2d *poly = new Polygon2d;
+  auto *poly = new Polygon2d;
 
   using Explorer = CGAL_Nef_polyhedron2::Explorer;
   using fci_t = Explorer::Face_const_iterator;

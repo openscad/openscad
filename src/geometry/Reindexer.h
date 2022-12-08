@@ -21,7 +21,7 @@ public:
      Looks up a value. Will insert the value if it doesn't already exist.
      Returns the new index. */
   int lookup(const T& val) {
-    typename std::unordered_map<T, int>::const_iterator iter = this->map.find(val);
+    auto iter = this->map.find(val);
     if (iter != this->map.end()) return iter->second;
     else {
       this->map.insert(std::make_pair(val, this->map.size()));

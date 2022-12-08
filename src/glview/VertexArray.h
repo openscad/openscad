@@ -118,7 +118,7 @@ public:
   [[nodiscard]] inline GLenum glType() const override { return E; }
   [[nodiscard]] inline std::shared_ptr<IAttributeData> create() const override { return std::make_shared<AttributeData<T, C, E>>(); }
   void append(const IAttributeData& data) override {
-    const AttributeData<T, C, E> *from = dynamic_cast<const AttributeData<T, C, E> *>(&data);
+    const auto *from = dynamic_cast<const AttributeData<T, C, E> *>(&data);
     if (from != nullptr) {
       data_.insert(data_.end(), from->data_.begin(), from->data_.end());
     } else {

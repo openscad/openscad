@@ -126,7 +126,7 @@ const boost::property_tree::ptree& RenderColorScheme::propertyTree() const
 void RenderColorScheme::addColor(RenderColor colorKey, std::string key)
 {
   const boost::property_tree::ptree& colors = pt.get_child("colors");
-  std::string color = colors.get<std::string>(key);
+  auto color = colors.get<std::string>(key);
   if ((color.length() == 7) && (color.at(0) == '#')) {
     char *endptr;
     unsigned int val = strtol(color.substr(1).c_str(), &endptr, 16);
@@ -141,7 +141,7 @@ void RenderColorScheme::addColor(RenderColor colorKey, std::string key)
 
 ColorMap *ColorMap::inst(bool erase)
 {
-  static ColorMap *instance = new ColorMap;
+  static auto *instance = new ColorMap;
   if (erase) {
     delete instance;
     instance = nullptr;
@@ -273,7 +273,7 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t& result_set, const 
         continue;
       }
 
-      RenderColorScheme *colorScheme = new RenderColorScheme(path);
+      auto *colorScheme = new RenderColorScheme(path);
       if (colorScheme->valid() && (findColorScheme(colorScheme->name()) == nullptr)) {
         result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), shared_ptr<RenderColorScheme>(colorScheme)));
         PRINTDB("Found file '%s' with color scheme '%s' and index %d",
@@ -290,7 +290,7 @@ ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
 {
   colorscheme_set_t result_set;
 
-  RenderColorScheme *defaultColorScheme = new RenderColorScheme();
+  auto *defaultColorScheme = new RenderColorScheme();
   result_set.insert(colorscheme_set_t::value_type(defaultColorScheme->index(),
                                                   shared_ptr<RenderColorScheme>(defaultColorScheme)));
   enumerateColorSchemesInPath(result_set, PlatformUtils::resourceBasePath());

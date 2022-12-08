@@ -45,7 +45,7 @@ void Animate::setMainWindow(MainWindow *mainWindow)
 }
 
 void Animate::createActionAndPrepareButton(const QIcon& icon, QString description, std::string actionName, QPushButton *button){
-  QAction *action = new QAction(icon, description, this);
+  auto *action = new QAction(icon, description, this);
   action->setObjectName(QString::fromStdString(actionName));
 
   connect(action, SIGNAL(triggered()), button, SLOT(click()));

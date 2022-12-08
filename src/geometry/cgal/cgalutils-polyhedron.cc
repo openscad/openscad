@@ -75,7 +75,7 @@ public:
 
       // We remove duplicate indices since there is a bug in CGAL's
       // Polyhedron_incremental_builder_3::test_facet() which fails to detect this
-      std::vector<size_t>::iterator last = std::unique(pindices.begin(), pindices.end());
+      auto last = std::unique(pindices.begin(), pindices.end());
       std::advance(last, -1);
       if (*last != pindices.front()) last++; // In case the first & last are equal
       pindices.erase(last, pindices.end());

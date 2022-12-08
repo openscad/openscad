@@ -154,7 +154,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, boo
                                                bool fberror, OpenSCADOperator type) const
 {
   if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;
-  const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+  const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
   if (!ps) return;
 
   const Color4f& c = csgobj.leaf->color;
@@ -233,7 +233,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
                                                bool background_mode, OpenSCADOperator type)
 {
   if (csgobj.leaf->geom) {
-    const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+    const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
     if (!ps) return;
 
     if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;

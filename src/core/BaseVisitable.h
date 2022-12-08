@@ -28,7 +28,7 @@ public:
 protected:
   template <class T>
   static Response acceptImpl(State& state, const T& node, BaseVisitor& visitor) {
-    if (Visitor<T> *p = dynamic_cast<Visitor<T> *>(&visitor)) {
+    if (auto *p = dynamic_cast<Visitor<T> *>(&visitor)) {
       return p->visit(state, node);
     }
     // FIXME: If we want to allow for missing nodes in visitors, we need

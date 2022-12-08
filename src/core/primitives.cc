@@ -620,7 +620,7 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
         if (pointIndexValue.type() != Value::Type::NUMBER) {
           LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert faces[%1$d][%2$d] = %3$s to a number", faceIndex, pointIndexIndex, pointIndexValue.toEchoStringNoThrow());
         } else {
-          size_t pointIndex = (size_t)pointIndexValue.toDouble();
+          auto pointIndex = (size_t)pointIndexValue.toDouble();
           if (pointIndex < node->points.size()) {
             face.push_back(pointIndex);
           } else {
@@ -914,7 +914,7 @@ static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *
           if (pointIndexValue.type() != Value::Type::NUMBER) {
             LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert paths[%1$d][%2$d] = %3$s to a number", pathIndex, pointIndexIndex, pointIndexValue.toEchoStringNoThrow());
           } else {
-            size_t pointIndex = (size_t)pointIndexValue.toDouble();
+            auto pointIndex = (size_t)pointIndexValue.toDouble();
             if (pointIndex < node->points.size()) {
               path.push_back(pointIndex);
             } else {

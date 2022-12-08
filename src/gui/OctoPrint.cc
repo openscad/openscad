@@ -104,12 +104,12 @@ const std::pair<const QString, const QString> OctoPrint::getVersion() const
 
 const QString OctoPrint::upload(const QString exportFileName, const QString fileName, network_progress_func_t progress_func) const {
 
-  QHttpMultiPart *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+  auto *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
   QHttpPart filePart;
   filePart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant{R"(form-data; name="file"; filename=")" + fileName + "\""});
   filePart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant{"application/octet-stream"});
 
-  QFile *file = new QFile(exportFileName, multiPart);
+  auto *file = new QFile(exportFileName, multiPart);
   file->open(QIODevice::ReadOnly);
   filePart.setBodyDevice(file);
 

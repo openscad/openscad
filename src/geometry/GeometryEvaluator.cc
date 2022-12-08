@@ -119,7 +119,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   if (children.size() == 0) return {};
 
   if (op == OpenSCADOperator::HULL) {
-    PolySet *ps = new PolySet(3, /* convex */ true);
+    auto *ps = new PolySet(3, /* convex */ true);
 
     if (CGALUtils::applyHull(children, *ps)) {
       return ps;
@@ -178,7 +178,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode& node)
 {
   std::vector<const Polygon2d *> children = collectChildren2D(node);
-  Polygon2d *geometry = new Polygon2d();
+  auto *geometry = new Polygon2d();
 
   using CGALPoint2 = CGAL::Point_2<CGAL::Cartesian<double>>;
   // Collect point cloud
@@ -220,7 +220,7 @@ Polygon2d *GeometryEvaluator::applyFill2D(const AbstractNode& node)
   // Keep only the 'positive' outlines, eg: the outside edges
   for (const auto& outline : geometry_in->outlines()) {
     if (outline.positive) {
-      Polygon2d *poly = new Polygon2d();
+      auto *poly = new Polygon2d();
       poly->addOutline(outline);
       newchildren.push_back(poly);
     }
@@ -234,7 +234,7 @@ Geometry *GeometryEvaluator::applyHull3D(const AbstractNode& node)
 {
   Geometry::Geometries children = collectChildren3D(node);
 
-  PolySet *P = new PolySet(3);
+  auto *P = new PolySet(3);
   if (CGALUtils::applyHull(children, *P)) {
     return P;
   }
@@ -277,7 +277,7 @@ std::vector<const Polygon2d *> GeometryEvaluator::collectChildren2D(const Abstra
         if (chgeom->isEmpty()) {
           children.push_back(nullptr);
         } else {
-          const Polygon2d *polygons = dynamic_cast<const Polygon2d *>(chgeom.get());
+          const auto *polygons = dynamic_cast<const Polygon2d *>(chgeom.get());
           assert(polygons);
           children.push_back(polygons);
         }
@@ -543,7 +543,7 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
     if (!isSmartCached(node)) {
       const Geometry *geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       if (geometry) {
-        const Polygon2d *polygon = dynamic_cast<const Polygon2d *>(geometry);
+        const auto *polygon = dynamic_cast<const Polygon2d *>(geometry);
         // ClipperLib documentation: The formula for the number of steps in a full
         // circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
         double n = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
@@ -600,7 +600,7 @@ Response GeometryEvaluator::visit(State& state, const LeafNode& node)
     if (!isSmartCached(node)) {
       const Geometry *geometry = node.createGeometry();
       assert(geometry);
-      if (const Polygon2d *polygon = dynamic_cast<const Polygon2d *>(geometry)) {
+      if (const auto *polygon = dynamic_cast<const Polygon2d *>(geometry)) {
         if (!polygon->isSanitized()) {
           Polygon2d *p = ClipperUtils::sanitize(*polygon);
           delete geometry;
@@ -623,7 +623,7 @@ Response GeometryEvaluator::visit(State& state, const TextNode& node)
       std::vector<const Geometry *> geometrylist = node.createGeometryList();
       std::vector<const Polygon2d *> polygonlist;
       for (const auto& geometry : geometrylist) {
-        const Polygon2d *polygon = dynamic_cast<const Polygon2d *>(geometry);
+        const auto *polygon = dynamic_cast<const Polygon2d *>(geometry);
         assert(polygon);
         polygonlist.push_back(polygon);
       }
@@ -888,7 +888,7 @@ static Outline2d splitOutlineByFs(
         double edgelen = (trans * v1 - trans * v0).norm();
         max_edgelen = std::max(max_edgelen, edgelen);
       }
-      unsigned int edge_segments = static_cast<unsigned int>(std::ceil(max_edgelen / fs));
+      auto edge_segments = static_cast<unsigned int>(std::ceil(max_edgelen / fs));
       add_segmented_edge(o2, v0, v1, edge_segments);
       v0 = v1;
     }
@@ -1018,7 +1018,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
   boost::tribool isConvex{poly.is_convex()};
   // Twist or non-uniform scale makes convex polygons into unknown polyhedrons
   if (isConvex && non_linear) isConvex = unknown;
-  PolySet *ps = new PolySet(3, isConvex);
+  auto *ps = new PolySet(3, isConvex);
   ps->setConvexity(node.convexity);
   if (node.height <= 0) return ps;
 
@@ -1090,7 +1090,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
         }
       }
     } else { // $fs and $fa based segmentation
-      unsigned int fa_segs = static_cast<unsigned int>(std::ceil(360.0 / node.fa));
+      auto fa_segs = static_cast<unsigned int>(std::ceil(360.0 / node.fa));
       for (const auto& o : poly.outlines()) {
         if (o.vertices.size() >= fa_segs) {
           seg_poly.addOutline(o);
@@ -1181,7 +1181,7 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
         geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       }
       if (geometry) {
-        const Polygon2d *polygons = dynamic_cast<const Polygon2d *>(geometry);
+        const auto *polygons = dynamic_cast<const Polygon2d *>(geometry);
         Geometry *extruded = extrudePolygon(node, *polygons);
         assert(extruded);
         geom.reset(extruded);
@@ -1236,7 +1236,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
 {
   if (node.angle == 0) return nullptr;
 
-  PolySet *ps = new PolySet(3);
+  auto *ps = new PolySet(3);
   ps->setConvexity(node.convexity);
 
   double min_x = 0;
@@ -1334,7 +1334,7 @@ Response GeometryEvaluator::visit(State& state, const RotateExtrudeNode& node)
         geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       }
       if (geometry) {
-        const Polygon2d *polygons = dynamic_cast<const Polygon2d *>(geometry);
+        const auto *polygons = dynamic_cast<const Polygon2d *>(geometry);
         Geometry *rotated = rotatePolygon(node, *polygons);
         geom.reset(rotated);
         delete geometry;

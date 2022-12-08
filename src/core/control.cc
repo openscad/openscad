@@ -228,7 +228,7 @@ static std::shared_ptr<AbstractNode> builtin_intersection_for(const ModuleInstan
 static std::shared_ptr<AbstractNode> builtin_if(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
   Arguments arguments{inst->arguments, context};
-  const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation *>(inst);
+  const auto *ifelse = dynamic_cast<const IfElseModuleInstantiation *>(inst);
   if (arguments.size() > 0 && arguments[0]->toBool()) {
     return Children(&inst->scope, context).instantiate(lazyUnionNode(inst));
   } else if (ifelse->getElseScope()) {

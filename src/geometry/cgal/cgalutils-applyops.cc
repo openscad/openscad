@@ -192,7 +192,7 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
           return false;
         });
     } else {
-      const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
+      const auto *ps = dynamic_cast<const PolySet *>(chgeom.get());
       if (ps) {
         points.reserve(points.size() + ps->polygons.size() * 3);
         for (const auto& p : ps->polygons) {
@@ -235,7 +235,7 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
   }
   CGAL::Timer t, t_tot;
   assert(children.size() >= 2);
-  Geometry::Geometries::const_iterator it = children.begin();
+  auto it = children.begin();
   t_tot.start();
   shared_ptr<const Geometry> operands[2] = {it->second, shared_ptr<const Geometry>()};
   try {
@@ -308,7 +308,7 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
           points[1].clear();
 
           for (int k = 0; k < 2; ++k) {
-            std::list<CGAL_Polyhedron>::iterator it = P[k].begin();
+            auto it = P[k].begin();
             std::advance(it, k == 0?i:j);
 
             CGAL_Polyhedron const& poly = *it;
@@ -394,7 +394,7 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
       if (it != std::next(children.begin())) operands[0].reset();
 
       auto partToGeom = [&](auto& poly) -> shared_ptr<const Geometry> {
-          PolySet *ps = new PolySet(3, /* convex= */ true);
+          auto *ps = new PolySet(3, /* convex= */ true);
           createPolySetFromPolyhedron(poly, *ps);
           return shared_ptr<const Geometry>(ps);
         };

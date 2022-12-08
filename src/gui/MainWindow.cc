@@ -1719,7 +1719,7 @@ void MainWindow::findBufferChanged()
 
 bool MainWindow::event(QEvent *event) {
   if (event->type() == InputEvent::eventType) {
-    InputEvent *inputEvent = dynamic_cast<InputEvent *>(event);
+    auto *inputEvent = dynamic_cast<InputEvent *>(event);
     if (inputEvent) {
       inputEvent->deliver(this);
     }
@@ -2274,7 +2274,7 @@ void MainWindow::selectObject(QPoint mouse)
  */
 void MainWindow::setCursor()
 {
-  QAction *action = qobject_cast<QAction *>(sender());
+  auto *action = qobject_cast<QAction *>(sender());
   if (!action || !action->property("file").isValid() || !action->property("line").isValid() ||
       !action->property("column").isValid()) {
     return;
@@ -2627,7 +2627,7 @@ void MainWindow::actionExportImage()
 
 void MainWindow::copyText()
 {
-  Console *c = dynamic_cast<Console *>(lastFocus);
+  auto *c = dynamic_cast<Console *>(lastFocus);
   if (c) {
     c->copy();
   } else {

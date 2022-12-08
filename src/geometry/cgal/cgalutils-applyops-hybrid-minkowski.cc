@@ -41,7 +41,7 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
 
   CGAL::Timer t, t_tot;
   assert(children.size() >= 2);
-  Geometry::Geometries::const_iterator it = children.begin();
+  auto it = children.begin();
   t_tot.start();
   shared_ptr<const Geometry> operands[2] = {it->second, shared_ptr<const Geometry>()};
   try {

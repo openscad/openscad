@@ -489,10 +489,10 @@ static SimplificationResult simplify_function_body(const Expression *expression,
   } else {
     const auto& type = typeid(*expression);
     if (type == typeid(TernaryOp)) {
-      const TernaryOp *ternary = static_cast<const TernaryOp *>(expression);
+      const auto *ternary = static_cast<const TernaryOp *>(expression);
       return SimplifiedExpression{ternary->evaluateStep(context)};
     } else if (type == typeid(Assert)) {
-      const Assert *assertion = static_cast<const Assert *>(expression);
+      const auto *assertion = static_cast<const Assert *>(expression);
       return SimplifiedExpression{assertion->evaluateStep(context)};
     } else if (type == typeid(Echo)) {
       const Echo *echo = static_cast<const Echo *>(expression);
@@ -503,7 +503,7 @@ static SimplificationResult simplify_function_body(const Expression *expression,
       let_context->apply_config_variables(*context);
       return SimplifiedExpression{let->evaluateStep(let_context), std::move(let_context)};
     } else if (type == typeid(FunctionCall)) {
-      const FunctionCall *call = static_cast<const FunctionCall *>(expression);
+      const auto *call = static_cast<const FunctionCall *>(expression);
 
       const Expression *function_body;
       const AssignmentList *required_parameters;

@@ -279,7 +279,7 @@ void CommentParser::collectParameters(const std::string& fulltext, SourceFile *r
       continue;
     }
     // making list to add annotations
-    AnnotationList *annotationList = new AnnotationList();
+    auto *annotationList = new AnnotationList();
 
     // Extracting the parameter comment
     shared_ptr<Expression> params;

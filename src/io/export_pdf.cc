@@ -163,7 +163,7 @@ void draw_geom(const shared_ptr<const Geometry>& geom, cairo_t *cr, bool& inpape
 
 static cairo_status_t export_pdf_write(void *closure, const unsigned char *data, unsigned int length)
 {
-  std::ostream *stream = static_cast<std::ostream *>(closure);
+  auto *stream = static_cast<std::ostream *>(closure);
   stream->write(reinterpret_cast<const char *>(data), length);
   return !(*stream) ? CAIRO_STATUS_WRITE_ERROR : CAIRO_STATUS_SUCCESS;
 }

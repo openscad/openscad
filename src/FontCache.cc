@@ -232,7 +232,7 @@ FontInfoList *FontCache::list_fonts() const
   FcObjectSetDestroy(object_set);
   FcPatternDestroy(pattern);
 
-  FontInfoList *list = new FontInfoList();
+  auto *list = new FontInfoList();
   for (int a = 0; a < font_set->nfont; ++a) {
     FcValue file_value;
     FcPatternGet(font_set->fonts[a], FC_FILE, 0, &file_value);
@@ -279,8 +279,8 @@ void FontCache::check_cleanup()
     return;
   }
 
-  cache_t::iterator pos = this->cache.begin()++;
-  for (cache_t::iterator it = this->cache.begin(); it != this->cache.end(); ++it) {
+  auto pos = this->cache.begin()++;
+  for (auto it = this->cache.begin(); it != this->cache.end(); ++it) {
     if ((*pos).second.second > (*it).second.second) {
       pos = it;
     }
@@ -292,7 +292,7 @@ void FontCache::check_cleanup()
 FT_Face FontCache::get_font(const std::string& font)
 {
   FT_Face face;
-  cache_t::iterator it = this->cache.find(font);
+  auto it = this->cache.find(font);
   if (it == this->cache.end()) {
     face = find_face(font);
     if (!face) {

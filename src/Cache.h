@@ -77,7 +77,7 @@ class Cache
     delete obj;
   }
   inline T *relink(const Key& key) {
-    iterator_type i = hash.find(key);
+    auto i = hash.find(key);
     if (i == hash.end()) return nullptr;
 
     Node& n = i->second;
@@ -129,7 +129,7 @@ private:
 template <class Key, class T>
 inline bool Cache<Key, T>::remove(const Key& key)
 {
-  iterator_type i = hash.find(key);
+  auto i = hash.find(key);
   if (i == hash.end()) {
     return false;
   } else {
@@ -162,7 +162,7 @@ bool Cache<Key, T>::insert(const Key& akey, T *aobject, size_t acost)
   trim(mx - acost);
   Node node(aobject, acost);
   hash[akey] = node;
-  iterator_type i = hash.find(akey);
+  auto i = hash.find(akey);
   total += acost;
   Node *n = &i->second;
   n->keyPtr = &i->first;

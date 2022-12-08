@@ -8,7 +8,7 @@ ParameterSpinBox::ParameterSpinBox(QWidget *parent, NumberParameter *parameter, 
   setupUi(this);
   descriptionWidget->setDescription(parameter, descriptionStyle);
 
-  IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
+  auto *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
   doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
   doubleSpinBox->setKeyboardTracking(true);
 

@@ -89,7 +89,7 @@ unsigned long CalcFn(double fn, unsigned long minimum) {
 void
 path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2, double y2, double angle, bool large, bool sweep, void *context)
 {
-  const fnContext *fValues = reinterpret_cast<const fnContext *>(context);
+  const auto *fValues = reinterpret_cast<const fnContext *>(context);
 
   // http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
 
@@ -158,7 +158,7 @@ void
 path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double x2, double y2, void *context)
 {
   // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa (lot of work, little gain)
-  const fnContext *fValues = reinterpret_cast<const fnContext *>(context);
+  const auto *fValues = reinterpret_cast<const fnContext *>(context);
   unsigned long fn = CalcFn(fValues->fn, 20); // preserve the old minimum
   for (unsigned long idx = 1; idx <= fn; ++idx) {
     const double a = idx * (1.0 / (double)fn);
@@ -172,7 +172,7 @@ void
 path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double cx2, double cy2, double x2, double y2, void *context)
 {
   // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa (lot of work, little gain)
-  const fnContext *fValues = reinterpret_cast<const fnContext *>(context);
+  const auto *fValues = reinterpret_cast<const fnContext *>(context);
   unsigned long fn = CalcFn(fValues->fn, 20); // preserve the old minimum
   for (unsigned long idx = 1; idx <= fn; ++idx) {
     const double a = idx * (1.0 / (double)fn);

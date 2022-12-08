@@ -7,7 +7,7 @@ std::unordered_map<std::string, const std::vector<std::string>> Builtins::keywor
 
 Builtins *Builtins::instance(bool erase)
 {
-  static Builtins *builtins = new Builtins;
+  static auto *builtins = new Builtins;
   if (erase) {
     delete builtins;
     builtins = nullptr;

@@ -309,13 +309,13 @@ AmfImporterZIP::AmfImporterZIP(const Location& loc) : AmfImporter(loc)
 
 int AmfImporterZIP::read_callback(void *context, char *buffer, int len)
 {
-  AmfImporterZIP *importer = (AmfImporterZIP *)context;
+  auto *importer = (AmfImporterZIP *)context;
   return zip_fread(importer->zipfile, buffer, len);
 }
 
 int AmfImporterZIP::close_callback(void *context)
 {
-  AmfImporterZIP *importer = (AmfImporterZIP *)context;
+  auto *importer = (AmfImporterZIP *)context;
   return zip_fclose(importer->zipfile);
 }
 

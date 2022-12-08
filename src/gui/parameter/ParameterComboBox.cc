@@ -8,7 +8,7 @@ ParameterComboBox::ParameterComboBox(QWidget *parent, EnumParameter *parameter, 
   setupUi(this);
   descriptionWidget->setDescription(parameter, descriptionStyle);
 
-  IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
+  auto *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
   comboBox->installEventFilter(ignoreWheelWhenNotFocused);
 
   for (const auto& item : parameter->items) {

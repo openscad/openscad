@@ -330,7 +330,7 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
 
 PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
 {
-  PolySet *hat = new PolySet(3);
+  auto *hat = new PolySet(3);
 
   try {
 

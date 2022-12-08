@@ -206,7 +206,7 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
 {
   Grid3d<unsigned int> grid(GRID_FINE);
   std::vector<unsigned int> indices; // Vertex indices in one polygon
-  for (std::vector<Polygon>::iterator iter = this->polygons.begin(); iter != this->polygons.end();) {
+  for (auto iter = this->polygons.begin(); iter != this->polygons.end();) {
     Polygon& p = *iter;
     indices.resize(p.size());
     // Quantize all vertices. Build index list
@@ -217,7 +217,7 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
       }
     }
     // Remove consecutive duplicate vertices
-    Polygon::iterator currp = p.begin();
+    auto currp = p.begin();
     for (unsigned int i = 0; i < indices.size(); ++i) {
       if (indices[i] != indices[(i + 1) % indices.size()]) {
         (*currp++) = p[i];

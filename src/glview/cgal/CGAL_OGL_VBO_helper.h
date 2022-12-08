@@ -89,7 +89,7 @@ public:
   };
 
   static inline void CGAL_GLU_TESS_CALLBACK beginCallback(GLenum which, GLvoid *user) {
-    TessUserData *tess(static_cast<TessUserData *>(user));
+    auto *tess(static_cast<TessUserData *>(user));
     // Create separate vertex set since "which" could be different draw type
     tess->which = which;
     tess->draw_size = 0;
@@ -105,7 +105,7 @@ public:
   }
 
   static inline void CGAL_GLU_TESS_CALLBACK endCallback(GLvoid *user) {
-    TessUserData *tess(static_cast<TessUserData *>(user));
+    auto *tess(static_cast<TessUserData *>(user));
 
     GLenum elements_type = 0;
     if (tess->vertex_array.useElements()) elements_type = tess->vertex_array.elementsData()->glType();
@@ -125,8 +125,8 @@ public:
   }
 
   static inline void CGAL_GLU_TESS_CALLBACK vertexCallback(GLvoid *vertex, GLvoid *user) {
-    GLdouble *pc(static_cast<GLdouble *>(vertex));
-    TessUserData *tess(static_cast<TessUserData *>(user));
+    auto *pc(static_cast<GLdouble *>(vertex));
+    auto *tess(static_cast<TessUserData *>(user));
     size_t shape_size = 0;
 
     switch (tess->which) {
@@ -154,15 +154,15 @@ public:
   static inline void CGAL_GLU_TESS_CALLBACK combineCallback(GLdouble coords[3], GLvoid *[4], GLfloat [4], GLvoid **dataOut) {
     static std::list<GLdouble *> pcache;
     if (dataOut) {
-      GLdouble *n = new GLdouble[3];
+      auto *n = new GLdouble[3];
       n[0] = coords[0];
       n[1] = coords[1];
       n[2] = coords[2];
       pcache.push_back(n);
       *dataOut = n;
     } else {
-      for (std::list<GLdouble *>::const_iterator i = pcache.begin(); i != pcache.end(); i++)
-        delete[] *i;
+      for (auto& i : pcache)
+        delete[] i;
       pcache.clear();
     }
   }

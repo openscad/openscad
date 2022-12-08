@@ -149,7 +149,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
 
     PRINTDB("%s: mesh %d, vertex count: %lu, triangle count: %lu", filename.c_str() % mesh_idx % vertex_count % triangle_count);
 
-    PolySet *p = new PolySet(3);
+    auto *p = new PolySet(3);
     for (DWORD idx = 0; idx < triangle_count; ++idx) {
       MODELMESHTRIANGLE triangle;
       if (lib3mf_meshobject_gettriangle(object, idx, &triangle) != LIB3MF_OK) {

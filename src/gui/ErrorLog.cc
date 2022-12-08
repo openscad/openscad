@@ -43,7 +43,7 @@ void ErrorLog::toErrorLog(const Message& log_msg)
 
 void ErrorLog::showtheErrorInGUI(const Message& log_msg)
 {
-  QStandardItem *groupName = new QStandardItem(QString::fromStdString(getGroupName(log_msg.group)));
+  auto *groupName = new QStandardItem(QString::fromStdString(getGroupName(log_msg.group)));
   groupName->setEditable(false);
 
   if (log_msg.group == message_group::Error) groupName->setForeground(QColor::fromRgb(255, 0, 0)); //make this item red.
@@ -74,7 +74,7 @@ void ErrorLog::showtheErrorInGUI(const Message& log_msg)
   errorLogModel->setItem(row, errorLog_column::file, fileName);
   errorLogModel->setItem(row, errorLog_column::lineNo, lineNo);
 
-  QStandardItem *msg = new QStandardItem(QString::fromStdString(log_msg.msg));
+  auto *msg = new QStandardItem(QString::fromStdString(log_msg.msg));
   msg->setEditable(false);
   errorLogModel->setItem(row, errorLog_column::message, msg);
   errorLogModel->setRowCount(++row);
