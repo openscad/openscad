@@ -66,7 +66,7 @@ const std::string
 use::get_href_id() const
 {
   if (href.rfind("#", 0) != 0) {
-    return nullptr;
+    return {};
   }
   return href.substr(1); //remove the #
 }
