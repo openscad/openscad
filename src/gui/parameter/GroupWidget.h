@@ -18,8 +18,8 @@ public:
   GroupWidget(QString title, QWidget *parent = nullptr);
   void addWidget(QWidget *widget);
 
-  [[nodiscard]] bool isExpanded() const { return toggleButton.isChecked(); }
-  [[nodiscard]] QString title() const { return toggleButton.text(); }
+  bool isExpanded() const { return toggleButton.isChecked(); }
+  QString title() const { return toggleButton.text(); }
 
 public slots:
   void setExpanded(bool expanded);

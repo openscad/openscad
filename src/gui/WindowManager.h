@@ -12,7 +12,7 @@ public:
 
   void add(class MainWindow *mainwin);
   void remove(class MainWindow *mainwin);
-  [[nodiscard]] const QSet<MainWindow *>& getWindows() const;
+  const QSet<MainWindow *>& getWindows() const;
 private:
   QSet<MainWindow *> windows;
 };

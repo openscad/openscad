@@ -23,7 +23,7 @@ class ParameterVirtualWidget : public QWidget
 
 public:
   ParameterVirtualWidget(QWidget *parent, ParameterObject *parameter);
-  [[nodiscard]] ParameterObject *getParameter() const { return parameter; }
+  ParameterObject *getParameter() const { return parameter; }
   virtual void setValue() = 0;
   // Parent container (ParameterWidget) notifies when preview is updated,
   // so that widgets with immediate AND delayed changes can keep track

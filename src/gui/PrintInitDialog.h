@@ -36,7 +36,7 @@ class PrintInitDialog : public QDialog, public Ui::PrintInitDialog
   Q_OBJECT;
 public:
   PrintInitDialog();
-  [[nodiscard]] print_service_t getResult() const { return this->result; }
+  print_service_t getResult() const { return this->result; }
 
 public slots:
   void on_printServiceButton_clicked();

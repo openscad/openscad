@@ -108,18 +108,18 @@ public:
   ScadLexer2& operator=(const ScadLexer2&) = delete;
   ~ScadLexer2() override;
 
-  [[nodiscard]] const char *language() const override;
+  const char *language() const override;
 
   void styleText(int start, int end) override;
   void autoScroll(int error_pos);
   int getStyleAt(int pos) override;
   void fold(int start, int end);
 
-  [[nodiscard]] QColor defaultColor(int style) const override;
+  QColor defaultColor(int style) const override;
 
   void highlighting(int start, const std::string& input, lexertl::smatch results) override;
-  [[nodiscard]] QString description(int style) const override;
-  [[nodiscard]] QStringList autoCompletionWordSeparators() const override;
+  QString description(int style) const override;
+  QStringList autoCompletionWordSeparators() const override;
 
   void addKeywords(const std::string& keywords, int id) {
     my_lexer->defineRules(keywords, id);

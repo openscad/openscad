@@ -46,21 +46,21 @@ public:
   bool open() override;
   void close() override;
 
-  [[nodiscard]] const std::string& get_name() const override;
-  [[nodiscard]] std::string get_info() const override;
+  const std::string& get_name() const override;
+  std::string get_info() const override;
 
   void hidapi_decode_axis(const unsigned char *buf, unsigned int len);
   void hidapi_decode_button(const unsigned char *buf, unsigned int len);
 
-  [[nodiscard]] size_t getButtonCount() const override {
+  size_t getButtonCount() const override {
     return InputDriver::max_buttons;
   }
-  [[nodiscard]] size_t getAxisCount() const override {
+  size_t getAxisCount() const override {
     return InputDriver::max_axis;
   }
 
 private:
-  [[nodiscard]] std::pair<hid_device *, const struct device_id *> enumerate() const;
+  std::pair<hid_device *, const struct device_id *> enumerate() const;
   void hidapi_input(hid_device *hid_dev);
 };
 

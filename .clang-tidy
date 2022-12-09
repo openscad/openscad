@@ -1,3 +1,2 @@
-Checks:          '-*,modernize-*,-modernize-use-trailing-return-type,-modernize-avoid-c-arrays'
+Checks: '-*,modernize-*,-modernize-use-trailing-return-type,-modernize-avoid-c-arrays,-modernize-use-nodiscard'
 WarningsAsErrors: ''
-AnalyzeTemporaryDtors: false

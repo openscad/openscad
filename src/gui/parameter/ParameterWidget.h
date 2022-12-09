@@ -55,7 +55,7 @@ public:
   void setParameters(const SourceFile *sourceFile, const std::string& source);
   void applyParameters(SourceFile *sourceFile);
   bool childHasFocus();
-  [[nodiscard]] bool isModified() const { return modified; }
+  bool isModified() const { return modified; }
 
 public slots:
   void setModified(bool modified = true);

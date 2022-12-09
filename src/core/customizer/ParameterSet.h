@@ -18,5 +18,5 @@ class ParameterSets : public std::vector<ParameterSet>
 {
 public:
   bool readFile(const std::string& filename);
-  [[nodiscard]] bool writeFile(const std::string& filename) const;
+  void writeFile(const std::string& filename) const;
 };

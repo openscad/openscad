@@ -11,11 +11,11 @@ namespace Settings {
 class SettingsEntry
 {
 public:
-  [[nodiscard]] const std::string& category() const { return _category; }
-  [[nodiscard]] const std::string& name() const { return _name; }
+  const std::string& category() const { return _category; }
+  const std::string& name() const { return _name; }
 
-  [[nodiscard]] virtual bool isDefault() const = 0;
-  [[nodiscard]] virtual std::string encode() const = 0;
+  virtual bool isDefault() const = 0;
+  virtual std::string encode() const = 0;
   virtual void decode(const std::string& encoded) = 0;
 
 protected:
@@ -36,10 +36,10 @@ public:
     _defaultValue(defaultValue)
   {}
 
-  [[nodiscard]] bool value() const { return _value; }
+  bool value() const { return _value; }
   void setValue(bool value) { _value = value; }
-  [[nodiscard]] bool isDefault() const override { return _value == _defaultValue; }
-  [[nodiscard]] std::string encode() const override;
+  bool isDefault() const override { return _value == _defaultValue; }
+  std::string encode() const override;
   void decode(const std::string& encoded) override;
 
 private:
@@ -58,12 +58,12 @@ public:
     _maximum(maximum)
   {}
 
-  [[nodiscard]] int value() const { return _value; }
+  int value() const { return _value; }
   void setValue(int value) { _value = value; }
-  [[nodiscard]] int minimum() const { return _minimum; }
-  [[nodiscard]] int maximum() const { return _maximum; }
-  [[nodiscard]] bool isDefault() const override { return _value == _defaultValue; }
-  [[nodiscard]] std::string encode() const override;
+  int minimum() const { return _minimum; }
+  int maximum() const { return _maximum; }
+  bool isDefault() const override { return _value == _defaultValue; }
+  std::string encode() const override;
   void decode(const std::string& encoded) override;
 
 private:
@@ -85,13 +85,13 @@ public:
     _maximum(maximum)
   {}
 
-  [[nodiscard]] double value() const { return _value; }
+  double value() const { return _value; }
   void setValue(double value) { _value = value; }
-  [[nodiscard]] double minimum() const { return _minimum; }
-  [[nodiscard]] double step() const { return _step; }
-  [[nodiscard]] double maximum() const { return _maximum; }
-  [[nodiscard]] bool isDefault() const override { return _value == _defaultValue; }
-  [[nodiscard]] std::string encode() const override;
+  double minimum() const { return _minimum; }
+  double step() const { return _step; }
+  double maximum() const { return _maximum; }
+  bool isDefault() const override { return _value == _defaultValue; }
+  std::string encode() const override;
   void decode(const std::string& encoded) override;
 
 private:
@@ -111,10 +111,10 @@ public:
     _defaultValue(defaultValue)
   {}
 
-  [[nodiscard]] const std::string& value() const { return _value; }
+  const std::string& value() const { return _value; }
   void setValue(const std::string& value) { _value = value; }
-  [[nodiscard]] bool isDefault() const override { return _value == _defaultValue; }
-  [[nodiscard]] std::string encode() const override { return value(); }
+  bool isDefault() const override { return _value == _defaultValue; }
+  std::string encode() const override { return value(); }
   void decode(const std::string& encoded) override { setValue(encoded); }
 
 private:
@@ -137,13 +137,13 @@ public:
     setValue(_defaultValue);
   }
 
-  [[nodiscard]] const std::string& value() const { return _items[_index].value; }
-  [[nodiscard]] size_t index() const { return _index; }
+  const std::string& value() const { return _items[_index].value; }
+  size_t index() const { return _index; }
   void setValue(const std::string& value);
   void setIndex(size_t index) { if (index < _items.size()) _index = index; }
-  [[nodiscard]] const std::vector<Item>& items() const { return _items; }
-  [[nodiscard]] bool isDefault() const override { return value() == _defaultValue; }
-  [[nodiscard]] std::string encode() const override { return value(); }
+  const std::vector<Item>& items() const { return _items; }
+  bool isDefault() const override { return value() == _defaultValue; }
+  std::string encode() const override { return value(); }
   void decode(const std::string& encoded) override { setValue(encoded); }
 
 private:

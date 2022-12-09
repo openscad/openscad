@@ -39,13 +39,13 @@ public:
   void close() override;
   void setDominantAxisOnly(bool var);
 
-  [[nodiscard]] const std::string& get_name() const override;
-  [[nodiscard]] std::string get_info() const override;
+  const std::string& get_name() const override;
+  std::string get_info() const override;
 
-  [[nodiscard]] size_t getButtonCount() const override {
+  size_t getButtonCount() const override {
     return InputDriver::max_buttons;
   }
-  [[nodiscard]] size_t getAxisCount() const override {
+  size_t getAxisCount() const override {
     return InputDriver::max_axis;
   }
 

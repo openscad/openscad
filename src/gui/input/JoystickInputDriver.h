@@ -34,14 +34,14 @@ public:
   void run() override;
   bool open() override;
   void close() override;
-  [[nodiscard]] const std::string& get_name() const override;
-  [[nodiscard]] std::string get_info() const override;
+  const std::string& get_name() const override;
+  std::string get_info() const override;
   void setJoystickNr(std::string jnr);
 
-  [[nodiscard]] size_t getButtonCount() const override {
+  size_t getButtonCount() const override {
     return buttons;
   }
-  [[nodiscard]] size_t getAxisCount() const override {
+  size_t getAxisCount() const override {
     return axes;
   }
 
