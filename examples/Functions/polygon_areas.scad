@@ -1,12 +1,14 @@
 // polygon_areas.scad: Another recursion example 
 
 // Draw all geometry
-translate([0,20]) color("Red") text("Areas:", size=8, halign="center");
-translate([-44,0]) shapeWithArea(3, 10);
-translate([-22,0]) shapeWithArea(4, 10);
-translate([0,0]) shapeWithArea(6, 10);
-translate([22,0]) shapeWithArea(10, 10);
-translate([44,0]) shapeWithArea(360, 10);
+linear_extrude(1){
+	translate([0,20]) color("Red") text("Areas:", size=8, halign="center");
+	translate([-44,0]) shapeWithArea(3, 10);
+	translate([-22,0]) shapeWithArea(4, 10);
+	translate([0,0]) shapeWithArea(6, 10);
+	translate([22,0]) shapeWithArea(10, 10);
+	translate([44,0]) shapeWithArea(360, 10);
+}
 
 // One shape with corresponding text
 module shapeWithArea(num, r) {

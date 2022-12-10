@@ -38,7 +38,7 @@ module tree(length, thickness, count, m = identity, r = 1) {
     }
 }
 
-tree(len, thickness, levels);
+linear_extrude(1) tree(len, thickness, levels);
 
 echo(version=version());
 // Written in 2015 by Torsten Paul <Torsten.Paul@gmx.de>
