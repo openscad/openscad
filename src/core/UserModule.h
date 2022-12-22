@@ -6,12 +6,14 @@
 #include "module.h"
 #include "LocalScope.h"
 
+typedef std::vector<std::shared_ptr<Assignment> > ModuleParameter;
+
 class StaticModuleNameStack
 {
 public:
-  StaticModuleNameStack(const std::string& name, const std::string &parname) {
+  StaticModuleNameStack(const std::string& name, const ModuleParameter &parameters) {
     stack_name.push_back(name);
-    stack_param.push_back(parname);
+    stack_param.push_back(parameters);
   }
   ~StaticModuleNameStack() {
     stack_name.pop_back();
@@ -20,11 +22,11 @@ public:
 
   static int size() { return stack_name.size(); }
   static const std::string& name_at(int idx) { return stack_name[idx]; }
-  static const std::string& param_at(int idx) { return stack_param[idx]; }
+  static const ModuleParameter& param_at(int idx) { return stack_param[idx]; }
 
 private:
   static std::vector<std::string> stack_name;
-  static std::vector<std::string> stack_param;
+  static std::vector<ModuleParameter> stack_param;
 };
 
 class UserModule : public AbstractModule, public ASTNode
@@ -37,7 +39,7 @@ public:
   std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
   static const std::string& stack_element_name(int n) { return StaticModuleNameStack::name_at(n); }
-  static const std::string& stack_element_param(int n) { return StaticModuleNameStack::param_at(n); }
+  static const ModuleParameter& stack_element_param(int n) { return StaticModuleNameStack::param_at(n); }
   static int stack_size() { return StaticModuleNameStack::size(); }
 
   std::string name;

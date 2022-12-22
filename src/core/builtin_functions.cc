@@ -746,7 +746,16 @@ Value builtin_parent_param(Arguments arguments, const Location& loc)
     LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent module param (%1$d) greater than the number of modules on the stack", n);
     return Value::undefined.clone();
   }
-  return Value(StaticModuleNameStack::name_at(s - 1 - n));
+  ModuleParameter mp=StaticModuleNameStack::param_at(s - 1 - n);
+  for(int i=0;i<mp.size();i++) {
+    if(mp[i]->getName() == parname) {
+	    std::shared_ptr<Expression>  expr=mp[i]->getExpr();
+	    Value value = expr->evaluate(NULL);
+	    return value;
+    }
+  }
+  LOG(message_group::Warning, loc, arguments.documentRoot(), "Module parameter (%1$d) not found", parname);
+  return Value::undefined.clone();
 }
 
 Value builtin_norm(Arguments arguments, const Location& loc)

@@ -36,7 +36,7 @@
 #include <sstream>
 
 std::vector<std::string> StaticModuleNameStack::stack_name;
-std::vector<std::string> StaticModuleNameStack::stack_param;
+std::vector<ModuleParameter> StaticModuleNameStack::stack_param;
 
 static void NOINLINE print_err(std::string name, const Location& loc, const std::shared_ptr<const Context> context){
   LOG(message_group::Error, loc, context->documentRoot(), "Recursion detected calling module '%1$s'", name);
@@ -80,7 +80,7 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<cons
     return nullptr;
   }
 
-  StaticModuleNameStack name{inst->name(),"fixme"}; // push on static stack, pop at end of method!
+  StaticModuleNameStack name{inst->name(),inst->arguments}; // push on static stack, pop at end of method!
   ContextHandle<UserModuleContext> module_context{Context::create<UserModuleContext>(
                                                     defining_context,
                                                     this,
