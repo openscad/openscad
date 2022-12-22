@@ -9,18 +9,22 @@
 class StaticModuleNameStack
 {
 public:
-  StaticModuleNameStack(const std::string& name) {
-    stack.push_back(name);
+  StaticModuleNameStack(const std::string& name, const std::string &parname) {
+    stack_name.push_back(name);
+    stack_param.push_back(parname);
   }
   ~StaticModuleNameStack() {
-    stack.pop_back();
+    stack_name.pop_back();
+    stack_param.pop_back();
   }
 
-  static int size() { return stack.size(); }
-  static const std::string& at(int idx) { return stack[idx]; }
+  static int size() { return stack_name.size(); }
+  static const std::string& name_at(int idx) { return stack_name[idx]; }
+  static const std::string& param_at(int idx) { return stack_param[idx]; }
 
 private:
-  static std::vector<std::string> stack;
+  static std::vector<std::string> stack_name;
+  static std::vector<std::string> stack_param;
 };
 
 class UserModule : public AbstractModule, public ASTNode
@@ -32,7 +36,8 @@ public:
 
   std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
-  static const std::string& stack_element(int n) { return StaticModuleNameStack::at(n); }
+  static const std::string& stack_element_name(int n) { return StaticModuleNameStack::name_at(n); }
+  static const std::string& stack_element_param(int n) { return StaticModuleNameStack::param_at(n); }
   static int stack_size() { return StaticModuleNameStack::size(); }
 
   std::string name;

@@ -720,7 +720,33 @@ Value builtin_parent_module(Arguments arguments, const Location& loc)
     LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent module index (%1$d) greater than the number of modules on the stack", n);
     return Value::undefined.clone();
   }
-  return Value(UserModule::stack_element(s - 1 - n));
+  return Value(UserModule::stack_element_name(s - 1 - n));
+}
+
+Value builtin_parent_param(Arguments arguments, const Location& loc)
+{
+  double d;
+  std::string parname;
+  if (arguments.size() == 0) {
+    d = 1;
+  } else if (!check_arguments("parent_param", arguments, loc, { Value::Type::NUMBER, Value::Type::STRING })) {
+    return Value::undefined.clone();
+  } else {
+    d = arguments[0]->toDouble();
+    parname = arguments[1]->toString();
+  }
+
+  int n = trunc(d);
+  int s = UserModule::stack_size();
+  if (n < 0) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(), "Negative parent param index (%1$d) not allowed", n);
+    return Value::undefined.clone();
+  }
+  if (n >= s) {
+    LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent module param (%1$d) greater than the number of modules on the stack", n);
+    return Value::undefined.clone();
+  }
+  return Value(StaticModuleNameStack::name_at(s - 1 - n));
 }
 
 Value builtin_norm(Arguments arguments, const Location& loc)
@@ -1119,6 +1145,11 @@ void register_builtin_functions()
   Builtins::init("parent_module", new BuiltinFunction(&builtin_parent_module),
   {
     "parent_module(number) -> string",
+  });
+
+  Builtins::init("parent_param", new BuiltinFunction(&builtin_parent_param),
+  {
+    "parent_param(number, parameter name) -> string",
   });
 
   Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef),
