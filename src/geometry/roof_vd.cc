@@ -7,14 +7,49 @@
 #include <algorithm>
 #include <map>
 #include <boost/polygon/voronoi.hpp>
+#include <boost/math/tools/roots.hpp>
 
 #include "GeometryUtils.h"
 #include "ClipperUtils.h"
 #include "RoofNode.h"
 #include "roof_vd.h"
+#include "../ext/earcut/earcut.hpp"
 
 #define RAISE_ROOF_EXCEPTION(message) \
   throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
+
+// implement "get" for Vector2d and ClipperLib::IntPoint for earcut
+namespace mapbox {
+namespace util {
+
+template <>
+struct nth<0, Vector2d> {
+  inline static auto get(const Vector2d& v) {
+    return v[0];
+  }
+};
+template <>
+struct nth<1, Vector2d> {
+  inline static auto get(const Vector2d& v) {
+    return v[1];
+  }
+};
+
+template <>
+struct nth<0, ClipperLib::IntPoint> {
+  inline static auto get(const ClipperLib::IntPoint& t) {
+    return t.X;
+  }
+};
+template <>
+struct nth<1, ClipperLib::IntPoint> {
+  inline static auto get(const ClipperLib::IntPoint& t) {
+    return t.Y;
+  }
+};
+
+} // namespace util
+} // namespace mapbox
 
 namespace roof_vd {
 
@@ -109,8 +144,7 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
 {
   std::vector<Vector2d> ret;
 
-  const double max_angle_deviation = M_PI / 180.0 * fa / 2.0;
-  const double max_segment_sqr_length = fs * fs;
+  const double fa_rad = M_PI / 180.0 * fa;
 
   const Vector2d p(point.a, point.b);
   const Vector2d p0(segment.p0.a, segment.p0.b);
@@ -141,45 +175,103 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
     RAISE_ROOF_EXCEPTION("error in parabolic arc discretization");
   }
 
-  // in transformed coordinates the parabola has equation y = (x^2 - point_distance^2) / (2 point_distance)
+  // in transformed coordinates the parabola has equation y = ...
   auto y = [point_distance](double x) {
       return (x * x - point_distance * point_distance) / (2 * point_distance);
     };
   auto y_prime = [point_distance](double x) {
       return x / point_distance;
     };
-  // angle between a segment and the parabola
-  auto segment_angle = [y, y_prime](double x1, double x2){
-      double dx = x2 - x1,
-       dy = y(x2) - y(x1);
-      double tx = 1,
-             ty = (std::abs(x1) < std::abs(x2)) ? y_prime(x1) : y_prime(x2);
-      return std::abs(std::atan2(dx * ty - dy * tx, dx * tx + dy * ty));
+  // angle of the tangent to the parabola at x
+  auto angle = [y_prime](double x){
+      return std::atan2(y_prime(x), 1.0);
+    };
+  // .. and its inverse
+  auto angle_inv = [point_distance, y_prime](double a){
+      return point_distance * std::tan(a);
     };
   // squared length of segment
-  auto segment_sqr_length = [y](double x1, double x2){
-      double dx = x2 - x1,
-       dy = y(x2) - y(x1);
-      return dx * dx + dy * dy;
+  // arch length on the parabola between the vertex and the point
+  // (oriented, negative on the left, positive on the right)
+  auto arc_length = [point_distance](double x){
+      const double d = point_distance;
+      return 0.5 * (x * sqrt(x * x / (d * d) + 1.0) + d * asinh(x / d));
+    };
+  // derivative of arc_length
+  auto arc_length_prime = [point_distance](double x){
+      const double d = point_distance;
+      return sqrt(x * x / (d * d) + 1.0);
+    };
+  // inverse of arc_length, no explicit formula sadly
+  auto arc_length_inv = [arc_length, arc_length_prime, point_distance](double t){
+      const double d = point_distance;
+      if (t == 0) {
+        return double(0);
+      }
+      double x_guess = ((t > 0) ? 1 : -1) * std::sqrt(2 * d * (-d + std::sqrt(d * d + t * t))),
+             x_min = (t > 0) ? (x_guess / 2) : x_guess,
+             x_max = (t < 0) ? (x_guess / 2) : x_guess;
+      const int digits = std::numeric_limits<double>::digits;
+      double x;
+      try {
+        // try Newton-Raphson
+        auto feed = [arc_length, arc_length_prime, t](double x) {
+            return std::make_pair(arc_length(x) - t, arc_length_prime(x));
+          };
+        int get_digits = static_cast<int>(digits * 0.6);
+        const boost::uintmax_t maxit = 4242;
+        boost::uintmax_t it = maxit;
+        x = boost::math::tools::newton_raphson_iterate(feed, x_guess, x_min, x_max, get_digits, it);
+      } catch (...) {
+        // fall back to bisection
+        auto feed = [arc_length, t](double x) {
+            return arc_length(x) - t;
+          };
+        int get_digits = static_cast<int>(digits - 3);
+        boost::math::tools::eps_tolerance<double> tol(get_digits);
+        try {
+          auto xxx = boost::math::tools::bisect(feed, x_min, x_max, tol);
+          x = (xxx.first + xxx.second) / 2;
+        } catch (...) {
+          RAISE_ROOF_EXCEPTION("error in parabolic arc discretization");
+        }
+      }
+      return x;
     };
 
-  std::vector<double> transformed_points_x = {transformed_v0_x, transformed_v1_x};
+  double arc_length_0 = arc_length(transformed_v0_x),
+         arc_length_1 = arc_length(transformed_v1_x);
+  // number of segments if we discretize with fs
+  int segments_fs = (fs == 0.0) ? 1 : std::ceil((arc_length_1 - arc_length_0) / fs);
 
-  for (;;) {
-    double x1 = transformed_points_x.end()[-2];
-    double x2 = transformed_points_x.end()[-1];
-    if (segment_angle(x1, x2) > max_angle_deviation ||
-        (max_segment_sqr_length > 0 && segment_sqr_length(x1, x2) > max_segment_sqr_length)) {
-      transformed_points_x.end()[-1] = 0.5 * x1 + 0.5 * x2;
-    } else {
-      if (x2 == transformed_v1_x) {
-        break;
-      } else {
-        transformed_points_x.push_back(transformed_v1_x);
-      }
+  double angle_0 = angle(transformed_v0_x),
+         angle_1 = angle(transformed_v1_x);
+  // number of segments if we discretize with fa
+  int segments_fa = std::ceil((angle_1 - angle_0) / fa_rad);
+
+  // make a choice and discretize
+  std::vector<double> transformed_points_x;
+  if (fs > 0 && segments_fs < segments_fa) {
+    // fs wins
+    transformed_points_x.reserve(segments_fs + 1);
+    transformed_points_x.push_back(transformed_v0_x);
+    for (int k = 1; k < segments_fs; k++) {
+      double a = (arc_length_0 * (segments_fs - k) + arc_length_1 * k) / segments_fs;
+      transformed_points_x.push_back(arc_length_inv(a));
     }
+    transformed_points_x.push_back(transformed_v1_x);
+  } else {
+    // fa wins
+    transformed_points_x.reserve(segments_fa + 1);
+    transformed_points_x.push_back(transformed_v0_x);
+    for (int k = 1; k < segments_fa; k++) {
+      double a = (angle_0 * (segments_fa - k) + angle_1 * k) / segments_fa;
+      transformed_points_x.push_back(angle_inv(a));
+    }
+    transformed_points_x.push_back(transformed_v1_x);
   }
 
+  // assemble the discretized vector
   for (auto x : transformed_points_x) {
     if (x == transformed_v0_x) {
       ret.push_back(v0);
@@ -195,11 +287,13 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
 
 // a structure that saves 2d faces and heights of vertices
 struct Faces_2_plus_1 {
+  // comparison of Vector2d for the map vertex -> height
   struct Vector2d_comp {
     bool operator()(const Vector2d& lhs, const Vector2d& rhs) const {
       return (lhs[0] < rhs[0]) || (lhs[0] == rhs[0] && lhs[1] < rhs[1]);
     }
   };
+
   std::vector<std::vector<Vector2d>> faces;
   std::map<Vector2d, double, Vector2d_comp> heights;
 };
@@ -357,55 +451,43 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
     ::boost::polygon::construct_voronoi(segments.begin(), segments.end(), &vd);
     Faces_2_plus_1 inner_faces = vd_inner_faces(vd, segments, fa, scale * fs);
 
-    // roof
+    // tessellate roof and add triangles to hat
     for (std::vector<Vector2d> face : inner_faces.faces) {
       if (!(face.size() >= 3)) {
         RAISE_ROOF_EXCEPTION("Voronoi error");
       }
-      // convex partition (actually a triangulation - maybe do a proper convex partition later)
-      Polygon2d face_poly;
-      Outline2d outline;
-      outline.vertices = face;
-      face_poly.addOutline(outline);
-      PolySet *tess = face_poly.tessellate();
-      for (std::vector<Vector3d> triangle : tess->polygons) {
-        Polygon roof;
-        for (Vector3d tv : triangle) {
-          Vector2d v;
-          v << tv[0], tv[1];
-          if (!(inner_faces.heights.find(v) != inner_faces.heights.end())) {
-            RAISE_ROOF_EXCEPTION("Voronoi error");
-          }
-          roof.push_back(Vector3d(v[0] / scale, v[1] / scale, inner_faces.heights[v] / scale));
+      std::vector<std::vector<Vector2d>> face_array = { face };
+      const std::vector<size_t> indices = mapbox::earcut<size_t>(face_array);
+      for (size_t i = 0; i < indices.size(); i += 3) {
+        std::vector<Vector3d> triangle(3);
+        for (size_t k = 0; k < 3; k++) {
+          triangle[k][0] = face[indices[i + k]][0] / scale;
+          triangle[k][1] = face[indices[i + k]][1] / scale;
+          triangle[k][2] = inner_faces.heights[face[indices[i + k]]] / scale;
         }
-        hat->append_poly(roof);
+        hat->append_poly(triangle);
       }
-      delete tess;
     }
 
-    // floor
+    // tessellate floor and add triangles to hat
     {
       // poly has to go through clipper just as it does for the roof
       // because this may change coordinates
-      Polygon2d poly_floor;
+      const std::vector<size_t> indices = mapbox::earcut<size_t>(paths);
+      std::vector<Vector3d> vertices;
       for (auto path : paths) {
-        Outline2d o;
         for (auto p : path) {
-          o.vertices.push_back({p.X / scale, p.Y / scale});
+          vertices.push_back({p.X / scale, p.Y / scale, 0.0});
         }
-        poly_floor.addOutline(o);
       }
-      PolySet *tess = poly_floor.tessellate();
-      for (std::vector<Vector3d> triangle : tess->polygons) {
-        Polygon floor;
-        for (Vector3d tv : triangle) {
-          floor.push_back(tv);
+      for (size_t i = 0; i < indices.size(); i += 3) {
+        std::vector<Vector3d> triangle(3);
+        for (size_t k = 0; k < 3; k++) {
+          // floor has reverse orientation hence 2-k
+          triangle[2 - k] = vertices[indices[i + k]];
         }
-        // floor has reverse orientation
-        std::reverse(floor.begin(), floor.end());
-        hat->append_poly(floor);
+        hat->append_poly(triangle);
       }
-      delete tess;
     }
   } catch (RoofNode::roof_exception& e) {
     delete hat;
