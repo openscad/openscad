@@ -79,7 +79,6 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<cons
     throw RecursionException::create("module", inst->name(), loc);
     return nullptr;
   }
-
   StaticModuleNameStack name{inst->name(),inst->arguments}; // push on static stack, pop at end of method!
   ContextHandle<UserModuleContext> module_context{Context::create<UserModuleContext>(
                                                     defining_context,
@@ -88,6 +87,9 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<cons
                                                     Arguments(inst->arguments, context),
                                                     Children(&inst->scope, context)
                                                     )};
+//  module_context  const Value& lookup_variable(const std::string& name, const Location& loc) const;
+
+
 #if 0 && DEBUG
   PRINTDB("UserModuleContext for module %s(%s):\n", this->name % STR(this->parameters));
   PRINTDB("%s", module_context->dump());

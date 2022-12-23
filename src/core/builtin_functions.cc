@@ -723,13 +723,22 @@ Value builtin_parent_module(Arguments arguments, const Location& loc)
   return Value(UserModule::stack_element_name(s - 1 - n));
 }
 
-Value builtin_parent_param(Arguments arguments, const Location& loc)
+//#include "ProjectionNode.h"
+//#include "module.h"
+//#include "ModuleInstantiation.h"
+//#include "Children.h"
+//#include "Parameters.h"
+//#include "Builtins.h"
+
+Value builtin_module_variable(const std::shared_ptr<const Context>& context, const FunctionCall * func_call)
 {
+  Arguments arguments(func_call->arguments, context);
+  Location loc = Location::NONE;
   double d;
   std::string parname;
   if (arguments.size() == 0) {
     d = 1;
-  } else if (!check_arguments("parent_param", arguments, loc, { Value::Type::NUMBER, Value::Type::STRING })) {
+  } else if (!check_arguments("module_variable", arguments, loc, { Value::Type::NUMBER, Value::Type::STRING })) {
     return Value::undefined.clone();
   } else {
     d = arguments[0]->toDouble();
@@ -746,6 +755,23 @@ Value builtin_parent_param(Arguments arguments, const Location& loc)
     LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent module param (%1$d) greater than the number of modules on the stack", n);
     return Value::undefined.clone();
   }
+
+  std::shared_ptr<const Context> cont_iter= context, parent;
+
+  for(int i=0;i<n;i++) { // traverse n parents
+    parent  =  context->getParent() ;
+    if(parent == NULL) {
+      LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent Number of out Range");
+    }
+    cont_iter = parent;
+  }
+  return context->lookup_variable(parname,loc).clone();
+  // TODO big error checking
+  // when n out of range
+  // when variable now known
+
+#if 0	
+
   ModuleParameter mp=StaticModuleNameStack::param_at(s - 1 - n);
   for(int i=0;i<mp.size();i++) {
     if(mp[i]->getName() == parname) {
@@ -754,7 +780,8 @@ Value builtin_parent_param(Arguments arguments, const Location& loc)
 	    return value;
     }
   }
-  LOG(message_group::Warning, loc, arguments.documentRoot(), "Module parameter (%1$d) not found", parname);
+  LOG(message_group::Warning, loc, arguments.documentRoot(), "Module variable (%1$d) not found", parname);
+#endif  
   return Value::undefined.clone();
 }
 
@@ -1156,9 +1183,9 @@ void register_builtin_functions()
     "parent_module(number) -> string",
   });
 
-  Builtins::init("parent_param", new BuiltinFunction(&builtin_parent_param),
+  Builtins::init("module_variable", new BuiltinFunction(&builtin_module_variable),
   {
-    "parent_param(number, parameter name) -> string",
+    "module_variable(number, parameter name) -> string",
   });
 
   Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef),
