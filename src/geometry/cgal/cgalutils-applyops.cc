@@ -1,6 +1,10 @@
 // this file is split into many separate cgalutils* files
 // in order to workaround gcc 4.9.1 crashing on systems with only 2GB of RAM
 
+// remove this at last commit (vscode limitation)
+#ifndef ENABLE_CGAL
+  #define ENABLE_CGAL
+#endif
 #ifdef ENABLE_CGAL
 
 #include "cgal.h"
@@ -31,16 +35,26 @@
 
 namespace CGALUtils {
 
+shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op) {
+    if (Feature::ExperimentalMulticore.is_enabled()) {
+        if (Feature::ExperimentalFastCsg.is_enabled()) {
+            return applyOperator3DMulticore<CGALHybridPolyhedron>(children, op);
+        }
+        return applyOperator3DMulticore<const Geometry>(children, op);
+    }
+    if (Feature::ExperimentalFastCsg.is_enabled()) {
+        return applyOperator3DHybrid(children, op);
+    }
+
+	return applyBasicOperator3D( children, op );
+}
+
 /*!
    Applies op to all children and returns the result.
    The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
  */
-shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op)
+shared_ptr<const Geometry> applyBasicOperator3D(const Geometry::Geometries& children, OpenSCADOperator op)
 {
-  if (Feature::ExperimentalFastCsg.is_enabled()) {
-    return applyOperator3DHybrid(children, op);
-  }
-
   CGAL_Nef_polyhedron *N = nullptr;
 
   assert(op != OpenSCADOperator::UNION && "use applyUnion3D() instead of applyOperator3D()");
@@ -104,12 +118,24 @@ shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children,
 }
 
 shared_ptr<const Geometry> applyUnion3D(
-  Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
+		const Geometry::Geometries::const_iterator& chbegin, const Geometry::Geometries::const_iterator& chend)
 {
-  if (Feature::ExperimentalFastCsg.is_enabled()) {
-    return applyUnion3DHybrid(chbegin, chend);
-  }
+	if (Feature::ExperimentalMulticore.is_enabled()) {
+        if (Feature::ExperimentalFastCsg.is_enabled()) {
+            return applyUnion3DMulticore<CGALHybridPolyhedron>(chbegin, chend);
+        }
+		return applyUnion3DMulticore<const Geometry>(chbegin, chend);
+	}
+	if (Feature::ExperimentalFastCsg.is_enabled()) {
+		return applyUnion3DHybrid(chbegin, chend);
+	}
 
+	return applyBasicUnion3D(chbegin, chend);
+}
+
+shared_ptr<const Geometry> applyBasicUnion3D(
+        const Geometry::Geometries::const_iterator& chbegin, const Geometry::Geometries::const_iterator& chend)
+{
   typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
   struct QueueItemGreater {
     // stable sort for priority_queue by facets, then progress mark
@@ -156,9 +182,16 @@ shared_ptr<const Geometry> applyUnion3D(
   return nullptr;
 }
 
-
-
 bool applyHull(const Geometry::Geometries& children, PolySet& result)
+{
+	if (Feature::ExperimentalMulticore.is_enabled()) {
+		return applyHullMulticore(children, result);
+	}
+
+	return applyBasicHull(children, result);
+}
+
+bool applyBasicHull(const Geometry::Geometries& children, PolySet& result)
 {
   typedef CGAL::Epick K;
   // Collect point cloud
@@ -225,14 +258,26 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
 }
 
 
+shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
+{
+	if (Feature::ExperimentalMulticore.is_enabled()) {
+        if (Feature::ExperimentalFastCsg.is_enabled()) {
+            return applyOperator3DMulticore<CGALHybridPolyhedron>(children, OpenSCADOperator::MINKOWSKI);
+        }
+		return applyOperator3DMulticore<const Geometry>(children, OpenSCADOperator::MINKOWSKI);
+	}
+	if (Feature::ExperimentalFastCsg.is_enabled()) {
+		return applyMinkowskiHybrid(children);
+	}
+
+	return applyBasicMinkowski( children );
+}
+
 /*!
    children cannot contain nullptr objects
  */
-shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
+shared_ptr<const Geometry> applyBasicMinkowski(const Geometry::Geometries& children)
 {
-  if (Feature::ExperimentalFastCsg.is_enabled()) {
-    return applyMinkowskiHybrid(children);
-  }
   CGAL::Timer t, t_tot;
   assert(children.size() >= 2);
   Geometry::Geometries::const_iterator it = children.begin();

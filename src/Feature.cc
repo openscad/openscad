@@ -50,6 +50,8 @@ const Feature Feature::ExperimentalTextMetricsFunctions("textmetrics", "Enable t
 const Feature Feature::ExperimentalImportFunction("import-function", "Enable import function returning data instead of geometry.");
 const Feature Feature::ExperimentalSortStl("sort-stl", "Sort the STL output for predictable, diffable results.");
 
+const Feature Feature::ExperimentalMulticore("multicore-ops", "Enable multicore parallelization of operations on geometry sets");
+
 Feature::Feature(const std::string& name, const std::string& description)
   : enabled(false), name(name), description(description)
 {
