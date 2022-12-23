@@ -720,15 +720,8 @@ Value builtin_parent_module(Arguments arguments, const Location& loc)
     LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent module index (%1$d) greater than the number of modules on the stack", n);
     return Value::undefined.clone();
   }
-  return Value(UserModule::stack_element_name(s - 1 - n));
+  return Value(UserModule::stack_element(s - 1 - n));
 }
-
-//#include "ProjectionNode.h"
-//#include "module.h"
-//#include "ModuleInstantiation.h"
-//#include "Children.h"
-//#include "Parameters.h"
-//#include "Builtins.h"
 
 Value builtin_module_variable(const std::shared_ptr<const Context>& context, const FunctionCall * func_call)
 {
@@ -746,43 +739,28 @@ Value builtin_module_variable(const std::shared_ptr<const Context>& context, con
   }
 
   int n = trunc(d);
-  int s = UserModule::stack_size();
   if (n < 0) {
-    LOG(message_group::Warning, loc, arguments.documentRoot(), "Negative parent param index (%1$d) not allowed", n);
-    return Value::undefined.clone();
-  }
-  if (n >= s) {
-    LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent module param (%1$d) greater than the number of modules on the stack", n);
+    LOG(message_group::Warning, loc, arguments.documentRoot(), "Negative  depth index (%1$d) not allowed", n);
     return Value::undefined.clone();
   }
 
   std::shared_ptr<const Context> cont_iter= context, parent;
 
   for(int i=0;i<n;i++) { // traverse n parents
+    LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent iteration");
     parent  =  context->getParent() ;
+    LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent is %p",parent);
     if(parent == NULL) {
       LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent Number of out Range");
     }
     cont_iter = parent;
   }
-  return context->lookup_variable(parname,loc).clone();
-  // TODO big error checking
-  // when n out of range
-  // when variable now known
-
-#if 0	
-
-  ModuleParameter mp=StaticModuleNameStack::param_at(s - 1 - n);
-  for(int i=0;i<mp.size();i++) {
-    if(mp[i]->getName() == parname) {
-	    std::shared_ptr<Expression>  expr=mp[i]->getExpr();
-	    Value value = expr->evaluate(NULL);
-	    return value;
-    }
+  boost::optional<const Value&> result = cont_iter->try_lookup_variable(parname);
+  if (!result) {
+    return Value::undefined.clone();
   }
-  LOG(message_group::Warning, loc, arguments.documentRoot(), "Module variable (%1$d) not found", parname);
-#endif  
-  return Value::undefined.clone();
+  return result->clone();
+
 }
 
 Value builtin_norm(Arguments arguments, const Location& loc)
