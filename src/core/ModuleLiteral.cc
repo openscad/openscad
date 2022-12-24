@@ -84,24 +84,13 @@ Value ModuleLiteral::evaluate(const std::shared_ptr<const Context>& context) con
        }
       params_out->push_back(std::shared_ptr<Assignment>(new_param));
    }
-   // if no module_literal_params evaluate here
-   // or ...
-   // could also be done for module with parameters with more effort :
-   // for each expression in the module_arguments
-   // if it doesnt access a parameter then evaluate it
-   // How to find if the module_argument accesses a module_parameter?
-   //  walk the expressions in the module arguments, looking for module_param_names
-   // which match the names of params in module_literal_params
-   // expr->contains(param_names)
-   // if found dont evaluate the expression
 
    return ModuleReferencePtr(
       ModuleReference(
          context,
          std::unique_ptr<AssignmentList>(params_out),
          this->module_name,
-        // std::unique_ptr<AssignmentList>{new AssignmentList{module_arguments}}
-        std::move(std::make_shared<AssignmentList>(module_arguments))
+         std::move(std::make_shared<AssignmentList>(module_arguments))
       )
    );
 }
