@@ -95,28 +95,13 @@ Value ModuleLiteral::evaluate(const std::shared_ptr<const Context>& context) con
    // expr->contains(param_names)
    // if found dont evaluate the expression
 
-   AssignmentList outArgs = module_arguments;
-   if ( params_in.size() ==0){
-      for ( auto i = 0; i < outArgs.size(); ++i){
-          auto & arg = outArgs[i];
-          //TODO if ! arg->getExpr().contains(params_in){...
-          arg->setExpr(
-           std::shared_ptr<ValueWrapper>(
-               new ValueWrapper(
-                  std::shared_ptr<Value>(
-                     new Value(std::move(arg->getExpr()->evaluate(context))))
-              ,loc)
-           )
-         );
-      }
-   }
-
    return ModuleReferencePtr(
       ModuleReference(
          context,
          std::unique_ptr<AssignmentList>(params_out),
          this->module_name,
-         std::unique_ptr<AssignmentList>{new AssignmentList{outArgs}}
+        // std::unique_ptr<AssignmentList>{new AssignmentList{module_arguments}}
+        std::move(std::make_shared<AssignmentList>(module_arguments))
       )
    );
 }
