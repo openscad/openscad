@@ -723,44 +723,23 @@ Value builtin_parent_module(Arguments arguments, const Location& loc)
   return Value(UserModule::stack_element(s - 1 - n));
 }
 
-Value builtin_module_variable(const std::shared_ptr<const Context>& context, const FunctionCall * func_call)
+Value builtin_evalstring(const std::shared_ptr<const Context>& context, const FunctionCall * func_call)
 {
   Arguments arguments(func_call->arguments, context);
   Location loc = Location::NONE;
-  double d;
   std::string parname;
   if (arguments.size() == 0) {
-    d = 1;
-  } else if (!check_arguments("module_variable", arguments, loc, { Value::Type::NUMBER, Value::Type::STRING })) {
+  } else if (!check_arguments("evalstring", arguments, loc, { Value::Type::STRING })) {
     return Value::undefined.clone();
   } else {
-    d = arguments[0]->toDouble();
-    parname = arguments[1]->toString();
+    parname = arguments[0]->toString();
   }
 
-  int n = trunc(d);
-  if (n < 0) {
-    LOG(message_group::Warning, loc, arguments.documentRoot(), "Negative  depth index (%1$d) not allowed", n);
-    return Value::undefined.clone();
-  }
-
-  std::shared_ptr<const Context> cont_iter= context, parent;
-
-  for(int i=0;i<n;i++) { // traverse n parents
-    LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent iteration");
-    parent  =  context->getParent() ;
-    LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent is %p",parent);
-    if(parent == NULL) {
-      LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent Number of out Range");
-    }
-    cont_iter = parent;
-  }
-  boost::optional<const Value&> result = cont_iter->try_lookup_variable(parname);
+  boost::optional<const Value&> result = context->try_lookup_variable(parname);
   if (!result) {
     return Value::undefined.clone();
   }
   return result->clone();
-
 }
 
 Value builtin_norm(Arguments arguments, const Location& loc)
@@ -1161,9 +1140,9 @@ void register_builtin_functions()
     "parent_module(number) -> string",
   });
 
-  Builtins::init("module_variable", new BuiltinFunction(&builtin_module_variable),
+  Builtins::init("evalstring", new BuiltinFunction(&builtin_evalstring),
   {
-    "module_variable(number, parameter name) -> string",
+    "evalstring(string) -> expression",
   });
 
   Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef),
