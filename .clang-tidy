@@ -1,11 +1,16 @@
 Checks: '
   -*,
-  modernize-*,
-    -modernize-use-trailing-return-type,
-    -modernize-avoid-c-arrays,
-    -modernize-use-nodiscard,
+  bugprone-*,
+    -bugprone-easily-swappable-parameters,
+    -bugprone-exception-escape,
+    -bugprone-narrowing-conversions,
+    -bugprone-reserved-identifier,
   clang-analyzer-*,
     -clang-analyzer-cplusplus.NewDelete,
     -clang-analyzer-cplusplus.NewDeleteLeaks,
+  modernize-*,
+    -modernize-avoid-c-arrays,
+    -modernize-use-nodiscard,
+    -modernize-use-trailing-return-type,
 '
 WarningsAsErrors: ''
