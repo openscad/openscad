@@ -1340,7 +1340,7 @@ const Value& ObjectType::get(const std::string& key) const
 
 void ObjectType::set(const std::string& key, Value&& value)
 {
-  ptr->map.emplace(key, std::move(value));
+  ptr->map.emplace(key, value.clone());
   ptr->keys.emplace_back(key);
   ptr->values.emplace_back(std::move(value));
 }
