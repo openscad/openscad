@@ -357,7 +357,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
     Faces_2_plus_1 inner_faces = vd_inner_faces(vd, segments, fa, scale * fs);
 
     // roof
-    for (std::vector<Vector2d> face : inner_faces.faces) {
+    for (const std::vector<Vector2d>& face : inner_faces.faces) {
       if (!(face.size() >= 3)) {
         RAISE_ROOF_EXCEPTION("Voronoi error");
       }
@@ -367,7 +367,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
       outline.vertices = face;
       face_poly.addOutline(outline);
       PolySet *tess = face_poly.tessellate();
-      for (std::vector<Vector3d> triangle : tess->polygons) {
+      for (const std::vector<Vector3d>& triangle : tess->polygons) {
         Polygon roof;
         for (Vector3d tv : triangle) {
           Vector2d v;
@@ -387,7 +387,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
       // poly has to go through clipper just as it does for the roof
       // because this may change coordinates
       Polygon2d poly_floor;
-      for (auto path : paths) {
+      for (const auto& path : paths) {
         Outline2d o;
         for (auto p : path) {
           o.vertices.push_back({p.X / scale, p.Y / scale});
@@ -395,9 +395,9 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
         poly_floor.addOutline(o);
       }
       PolySet *tess = poly_floor.tessellate();
-      for (std::vector<Vector3d> triangle : tess->polygons) {
+      for (const std::vector<Vector3d>& triangle : tess->polygons) {
         Polygon floor;
-        for (Vector3d tv : triangle) {
+        for (const Vector3d& tv : triangle) {
           floor.push_back(tv);
         }
         // floor has reverse orientation

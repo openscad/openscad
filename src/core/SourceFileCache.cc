@@ -129,6 +129,6 @@ SourceFile *SourceFileCache::lookup(const std::string& filename)
 }
 
 void SourceFileCache::clear_markers() {
-  for (auto entry : instance()->entries)
+  for (const auto& entry : instance()->entries)
     if (auto lib = entry.second.file) lib->clearHandlingDependencies();
 }

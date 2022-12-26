@@ -1018,7 +1018,7 @@ int main(int argc, char **argv)
   flags.insert(std::make_pair("trace-usermodule-parameters", &OpenSCAD::traceUsermoduleParameters));
   flags.insert(std::make_pair("check-parameters", &OpenSCAD::parameterCheck));
   flags.insert(std::make_pair("check-parameter-ranges", &OpenSCAD::rangeCheck));
-  for (auto flag : flags) {
+  for (const auto& flag : flags) {
     std::string name = flag.first;
     if (vm.count(name)) {
       std::string opt = vm[name].as<string>();

@@ -64,7 +64,7 @@ QFileInfoList UIUtils::openFiles(QWidget *parent)
                                                             last_dirname, "OpenSCAD Designs (*.scad *.csg)");
 
   QFileInfoList fileInfoList;
-  for (QString filename: new_filenames) {
+  for (const QString& filename: new_filenames) {
     if (filename.isEmpty()) {
       continue;
     }

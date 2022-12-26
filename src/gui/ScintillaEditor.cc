@@ -240,7 +240,7 @@ void ScintillaEditor::addTemplate()
 {
   addTemplate(PlatformUtils::resourceBasePath());
   addTemplate(PlatformUtils::userConfigPath());
-  for (auto key: templateMap.keys()) {
+  for (const auto& key: templateMap.keys()) {
     userList.append(key);
   }
 }
