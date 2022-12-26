@@ -1529,7 +1529,7 @@ Response GeometryEvaluator::visit(State& state, const AbstractIntersectionNode& 
 
 static Geometry *roofOverPolygon(const RoofNode& node, const Polygon2d& poly)
 {
-  PolySet *roof;
+  PolySet *roof = nullptr;
   if (node.method == "voronoi") {
     roof = roof_vd::voronoi_diagram_roof(poly, node.fa, node.fs);
     roof->setConvexity(node.convexity);
