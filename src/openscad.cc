@@ -1193,7 +1193,7 @@ int main(int argc, char **argv)
 
     if (deps_output_file) {
       std::string deps_out(deps_output_file);
-      vector<std::string> geom_out(output_files);
+      const vector<std::string>& geom_out(output_files);
       int result = write_deps(deps_out, geom_out);
       if (!result) {
         LOG(message_group::None, Location::NONE, "", "Error writing deps");

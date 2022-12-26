@@ -53,7 +53,7 @@ static bool check_valid(const fs::path& p, const std::vector<std::string> *openf
     // LOG(message_group::Warning,Location::NONE,"","%1$s invalid - points to a directory",p);
     return false;
   }
-  std::string fullname = p.generic_string();
+  const std::string& fullname = p.generic_string();
   // Detect circular includes
   if (openfilenames) {
     for (const auto& s : *openfilenames) {

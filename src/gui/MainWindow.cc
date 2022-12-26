@@ -2044,7 +2044,7 @@ void MainWindow::sendToOctoPrint()
       return network_progress_func(v);
     });
 
-    const std::string action = Settings::Settings::octoPrintAction.value();
+    const std::string& action = Settings::Settings::octoPrintAction.value();
     if (action == "upload") {
       return;
     }
@@ -3202,7 +3202,7 @@ void MainWindow::activateWindow(int offset)
       if (widget == docks.at(idx).widget) {
         for (int o = 1; o < cnt; ++o) {
           const int target = (cnt + idx + o * offset) % cnt;
-          const auto dock = docks.at(target);
+          const auto& dock = docks.at(target);
           if (dock.widget->isVisible()) {
             dock.focus(this);
             return;

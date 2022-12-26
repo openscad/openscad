@@ -111,7 +111,7 @@ void ScadApi::autoCompleteFolder(const QStringList& context, const QString& text
 
 void ScadApi::autoCompleteFunctions(const QStringList& context, QStringList& list)
 {
-  const QString c = context.last();
+  const QString& c = context.last();
   // for now we only auto-complete functions and modules
   if (c.isEmpty()) {
     return;

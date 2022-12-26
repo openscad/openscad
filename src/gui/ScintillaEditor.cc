@@ -301,9 +301,9 @@ void ScintillaEditor::applySettings()
   qsci->setAutoIndent(Settings::Settings::autoIndent.value());
   qsci->setBackspaceUnindents(Settings::Settings::backspaceUnindents.value());
 
-  auto indentStyle = Settings::Settings::indentStyle.value();
+  const auto& indentStyle = Settings::Settings::indentStyle.value();
   qsci->setIndentationsUseTabs(indentStyle == "Tabs");
-  auto tabKeyFunction = Settings::Settings::tabKeyFunction.value();
+  const auto& tabKeyFunction = Settings::Settings::tabKeyFunction.value();
   qsci->setTabIndents(tabKeyFunction == "Indent");
 
   qsci->setBraceMatching(Settings::Settings::enableBraceMatching.value() ? QsciScintilla::SloppyBraceMatch : QsciScintilla::NoBraceMatch);
@@ -1110,7 +1110,7 @@ bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
 
 bool ScintillaEditor::handleWheelEventNavigateNumber(QWheelEvent *wheelEvent)
 {
-  auto modifierNumberScrollWheel = Settings::Settings::modifierNumberScrollWheel.value();
+  const auto& modifierNumberScrollWheel = Settings::Settings::modifierNumberScrollWheel.value();
   bool modifier;
   static bool previewAfterUndo = false;
 
