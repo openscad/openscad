@@ -407,8 +407,7 @@ QColor ScintillaEditor::readColor(const boost::property_tree::ptree& pt, const s
 std::string ScintillaEditor::readString(const boost::property_tree::ptree& pt, const std::string& name, const std::string& defaultValue)
 {
   try {
-    const auto val = pt.get<std::string>(name);
-    return val;
+    return pt.get<std::string>(name);
   } catch (const std::exception& e) {
     return defaultValue;
   }

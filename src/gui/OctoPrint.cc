@@ -58,11 +58,11 @@ const QJsonDocument OctoPrint::getJsonData(const QString& endpoint) const
     return nam.get(request);
   },
     [](QNetworkReply *reply) -> const QJsonDocument {
-    const auto doc = QJsonDocument::fromJson(reply->readAll());
+    auto doc = QJsonDocument::fromJson(reply->readAll());
     PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
     return doc;
   }
-    );
+  );
 }
 
 const std::vector<std::pair<const QString, const QString>> OctoPrint::getSlicers() const
@@ -132,7 +132,7 @@ const QString OctoPrint::upload(const QString& exportFileName, const QString& fi
     [](QNetworkReply *reply) -> const QString {
     const auto doc = QJsonDocument::fromJson(reply->readAll());
     PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
-    const auto location = reply->header(QNetworkRequest::LocationHeader).toString();
+    auto location = reply->header(QNetworkRequest::LocationHeader).toString();
     LOG(message_group::None, Location::NONE, "", "Uploaded successfully to %1$s", location.toStdString());
     return location;
   }
