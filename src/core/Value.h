@@ -43,12 +43,11 @@ private:
   double begin_val;
   double step_val;
   double end_val;
+  enum class iter_state { RANGE_BEGIN, RANGE_RUNNING, RANGE_END };
 
 public:
   static constexpr uint32_t MAX_RANGE_STEPS = 10000;
   static const RangeType EMPTY;
-
-  enum class type_t { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END };
 
   class iterator
   {
@@ -59,7 +58,7 @@ public:
     using difference_type = void; // type used by operator-(iterator), not implemented for forward iterator
     using reference = value_type; // type used by operator*(), not actually a reference
     using pointer = void;     // type used by operator->(), not implemented
-    iterator(const RangeType& range, type_t type);
+    iterator(const RangeType& range, iter_state type);
     iterator& operator++();
     reference operator*();
     bool operator==(const iterator& other) const;
@@ -67,10 +66,10 @@ public:
 private:
     const RangeType& range;
     double val;
-    type_t type;
+    iter_state state;
     const uint32_t num_values;
     uint32_t i_step;
-    void update_type();
+    void update_state();
   };
 
   RangeType(const RangeType&) = delete;       // never copy, move instead
@@ -148,8 +147,8 @@ private:
   [[nodiscard]] double step_value() const { return step_val; }
   [[nodiscard]] double end_value() const { return end_val; }
 
-  [[nodiscard]] iterator begin() const { return {*this, type_t::RANGE_TYPE_BEGIN}; }
-  [[nodiscard]] iterator end() const { return {*this, type_t::RANGE_TYPE_END}; }
+  [[nodiscard]] iterator begin() const { return {*this, iter_state::RANGE_BEGIN}; }
+  [[nodiscard]] iterator end() const { return {*this, iter_state::RANGE_END}; }
 
   /// return number of values, max uint32_t value if step is 0 or range is infinite
   [[nodiscard]] uint32_t numValues() const;
@@ -587,7 +586,7 @@ public:
   [[nodiscard]] std::string toString() const;
   [[nodiscard]] std::string toEchoString() const;
   [[nodiscard]] std::string toEchoStringNoThrow() const; //use this for warnings
-  const UndefType& toUndef();
+  [[nodiscard]] const UndefType& toUndef() const;
   [[nodiscard]] std::string toUndefString() const;
   [[nodiscard]] std::string chrString() const;
   bool getVec2(double& x, double& y, bool ignoreInfinite = false) const;

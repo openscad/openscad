@@ -120,9 +120,7 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
       boost::trim(line);
       boost::smatch results;
 
-      if (line.length() == 0) {
-        continue;
-      } else if (boost::regex_search(line, ex_sfe)) {
+      if (line.length() == 0 || boost::regex_search(line, ex_sfe)) {
         continue;
       } else if (boost::regex_search(line, ex_outer)) {
         i = 0;

@@ -320,13 +320,7 @@ DxfData::DxfData(double fn, double fs, double fa,
       case 8:
         layer = data;
         break;
-      case 10:
-        if (in_blocks_section) {
-          xverts.push_back((boost::lexical_cast<double>(data)));
-        } else {
-          xverts.push_back((boost::lexical_cast<double>(data) - xorigin) * scale);
-        }
-        break;
+      case 10: [[fallthrough]];
       case 11:
         if (in_blocks_section) {
           xverts.push_back((boost::lexical_cast<double>(data)));
@@ -334,13 +328,7 @@ DxfData::DxfData(double fn, double fs, double fa,
           xverts.push_back((boost::lexical_cast<double>(data) - xorigin) * scale);
         }
         break;
-      case 20:
-        if (in_blocks_section) {
-          yverts.push_back((boost::lexical_cast<double>(data)));
-        } else {
-          yverts.push_back((boost::lexical_cast<double>(data) - yorigin) * scale);
-        }
-        break;
+      case 20: [[fallthrough]];
       case 21:
         if (in_blocks_section) {
           yverts.push_back((boost::lexical_cast<double>(data)));

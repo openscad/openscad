@@ -239,11 +239,11 @@ void export_dxf(const shared_ptr<const Geometry>& geom, std::ostream& output)
     for (const auto& item : geomlist->getChildren()) {
       export_dxf(item.second, output);
     }
-  } else if (dynamic_pointer_cast<const PolySet>(geom)) {
-    assert(false && "Unsupported file format");
   } else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
     export_dxf(*poly, output);
-  } else {
+  } else if (dynamic_pointer_cast<const PolySet>(geom)) { // NOLINT(bugprone-branch-clone)
+    assert(false && "Unsupported file format");
+  } else { // NOLINT(bugprone-branch-clone)
     assert(false && "Export as DXF for this geometry type is not supported");
   }
 }

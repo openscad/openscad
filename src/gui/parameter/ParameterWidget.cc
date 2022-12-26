@@ -67,9 +67,7 @@ void ParameterWidget::readFile(QString scadFile)
   assert(widgets.empty());
 
   QString jsonFile = getJsonFile(scadFile);
-  if (!boost::filesystem::exists(jsonFile.toStdString())) {
-    this->invalidJsonFile = QString();
-  } else if (this->sets.readFile(jsonFile.toStdString())) {
+  if (!boost::filesystem::exists(jsonFile.toStdString()) || this->sets.readFile(jsonFile.toStdString())) {
     this->invalidJsonFile = QString();
   } else {
     this->invalidJsonFile = jsonFile;

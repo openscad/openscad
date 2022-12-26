@@ -247,6 +247,7 @@ std::string getTypeName(const FunctionPtr&) { return "function"; }
 
 bool Value::toBool() const
 {
+  // NOLINTBEGIN(bugprone-branch-clone)
   switch (this->type()) {
   case Type::UNDEFINED: return false;
   case Type::BOOL:      return std::get<bool>(this->value);
@@ -258,6 +259,7 @@ bool Value::toBool() const
   case Type::FUNCTION:  return true;
   default: assert(false && "unknown Value variant type"); return false;
   }
+  // NOLINTEND(bugprone-branch-clone)
 }
 
 double Value::toDouble() const
@@ -474,7 +476,7 @@ std::string UndefType::toString() const {
   return stream.str();
 }
 
-const UndefType& Value::toUndef()
+const UndefType& Value::toUndef() const
 {
   return std::get<UndefType>(this->value);
 }
@@ -1238,29 +1240,21 @@ uint32_t RangeType::numValues() const
   return (num_steps == max) ? max : num_steps + 1;
 }
 
-RangeType::iterator::iterator(const RangeType& range, type_t type) : range(range), val(range.begin_val), type(type),
-  num_values(range.numValues()), i_step(type == type_t::RANGE_TYPE_END ? num_values : 0)
+RangeType::iterator::iterator(const RangeType& range, iter_state state) : range(range), val(range.begin_val), state(state),
+  num_values(range.numValues()), i_step(state == iter_state::RANGE_END ? num_values : 0)
 {
-  update_type();
+  if (std::isnan(range.begin_val) || std::isnan(range.end_val) ||
+      std::isnan(range.step_val) || range.step_val == 0) {
+    state = iter_state::RANGE_END;
+    i_step = num_values;
+  }
+  update_state();
 }
 
-void RangeType::iterator::update_type()
+void RangeType::iterator::update_state()
 {
-  if (range.step_val == 0) {
-    type = type_t::RANGE_TYPE_END;
-  } else if (range.step_val < 0) {
-    if (i_step >= num_values) {
-      type = type_t::RANGE_TYPE_END;
-    }
-  } else {
-    if (i_step >= num_values) {
-      type = type_t::RANGE_TYPE_END;
-    }
-  }
-
-  if (std::isnan(range.begin_val) || std::isnan(range.end_val) || std::isnan(range.step_val)) {
-    type = type_t::RANGE_TYPE_END;
-    i_step = num_values;
+  if (i_step >= num_values) {
+    state = iter_state::RANGE_END;
   }
 }
 
@@ -1272,17 +1266,14 @@ RangeType::iterator::reference RangeType::iterator::operator*()
 RangeType::iterator& RangeType::iterator::operator++()
 {
   val = range.begin_val + range.step_val * ++i_step;
-  update_type();
+  update_state();
   return *this;
 }
 
 bool RangeType::iterator::operator==(const iterator& other) const
 {
-  if (type == type_t::RANGE_TYPE_RUNNING) {
-    return (type == other.type) && (val == other.val) && (range == other.range);
-  } else {
-    return (type == other.type) && (range == other.range);
-  }
+  return (val == other.val || state != iter_state::RANGE_RUNNING) &&
+         state == other.state && range == other.range;
 }
 
 bool RangeType::iterator::operator!=(const iterator& other) const

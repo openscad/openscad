@@ -661,10 +661,9 @@ Value builtin_search(Arguments arguments, const Location& loc)
         }
         ++j;
       }
-      if (num_returns_per_match == 1 && matchCount == 0) {
-        returnvec.emplace_back(std::move(resultvec));
-      }
-      if (num_returns_per_match == 0 || num_returns_per_match > 1) {
+      if ((num_returns_per_match == 1 && matchCount == 0) ||
+          num_returns_per_match == 0 ||
+          num_returns_per_match > 1) {
         returnvec.emplace_back(std::move(resultvec));
       }
     }

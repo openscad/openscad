@@ -68,9 +68,9 @@ void IndexedMesh::append_geometry(const shared_ptr<const Geometry>& geom)
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement append_geometry(Surface_mesh) instead of converting to PolySet
     mesh.append_geometry(hybrid->toPolySet());
-  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
+  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
-  } else {
+  } else { // NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
   }
 }
