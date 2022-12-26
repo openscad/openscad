@@ -252,7 +252,7 @@ void FreetypeRenderer::Params::detect_properties()
   // by using a fraction of the number of full circle segments
   // the resolution will be better matching the detail level of
   // other objects.
-  auto text_segments = std::max(floor(segments / 8) + 1, 2.0);
+  auto text_segments = std::max(segments / 8 + 1, 2);
   set_segments(text_segments);
 }
 

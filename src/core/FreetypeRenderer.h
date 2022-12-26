@@ -56,7 +56,7 @@ public:
     void set_fs(double fs) {
       this->fs = fs;
     }
-    void set_segments(double segments) {
+    void set_segments(unsigned int segments) {
       this->segments = segments;
     }
     void set_text(const std::string& text) {
@@ -105,7 +105,8 @@ public:
              << ", $fs = " << params.fs;
     }
 private:
-    double size, spacing, fn, fa, fs, segments;
+    double size, spacing, fn, fa, fs;
+    unsigned int segments;
     std::string text, font, direction, language, script, halign, valign;
     Location loc = Location::NONE;
     std::string documentPath = "";
