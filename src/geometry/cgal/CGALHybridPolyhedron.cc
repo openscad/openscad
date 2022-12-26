@@ -118,12 +118,14 @@ shared_ptr<const PolySet> CGALHybridPolyhedron::toPolySet() const
     if (CGALUtils::createPolySetFromMesh(*mesh, *ps)) {
       assert(false && "Error from CGALUtils::createPolySetFromNefPolyhedron3");
     }
+    ps->setConvexity(convexity);
     return ps;
   } else if (auto nef = getNefPolyhedron()) {
     auto ps = make_shared<PolySet>(3, /* convex */ unknown);
     if (CGALUtils::createPolySetFromNefPolyhedron3(*nef, *ps)) {
       assert(false && "Error from CGALUtils::createPolySetFromNefPolyhedron3");
     }
+    ps->setConvexity(convexity);
     return ps;
   } else {
     assert(!"Bad hybrid polyhedron state");
