@@ -36,7 +36,7 @@ Parameters::Parameters(ContextFrame&& frame, Location loc) :
   loc(std::move(loc))
 {}
 
-Parameters::Parameters(Parameters&& other) :
+Parameters::Parameters(Parameters&& other) noexcept :
   frame(std::move(other).to_context_frame()),
   handle(&this->frame),
   loc(other.location())

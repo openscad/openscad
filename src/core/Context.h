@@ -34,11 +34,10 @@ public:
 
   ContextHandle(const ContextHandle&) = delete;
   ContextHandle& operator=(const ContextHandle&) = delete;
-  ContextHandle(ContextHandle&& other) = default;
+  ContextHandle(ContextHandle&& other) noexcept = default;
 
   // Valid only if $other is on the top of the stack.
-  ContextHandle& operator=(ContextHandle&& other)
-  {
+  ContextHandle& operator=(ContextHandle&& other) noexcept {
     assert(session);
     assert(context);
     assert(other.context);

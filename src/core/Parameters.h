@@ -19,7 +19,7 @@ private:
   Parameters(ContextFrame&& frame, Location loc);
 
 public:
-  Parameters(Parameters&& other);
+  Parameters(Parameters&& other) noexcept;
 
   /*
    * Matches arguments with parameters.
