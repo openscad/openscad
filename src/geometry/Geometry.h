@@ -22,6 +22,10 @@ public:
   using Geometries = std::list<GeometryItem>;
 
   Geometry() = default;
+  Geometry(const Geometry&) = default;
+  Geometry& operator=(const Geometry&) = default;
+  Geometry(Geometry&&) = default;
+  Geometry& operator=(Geometry&&) = default;
   virtual ~Geometry() = default;
 
   [[nodiscard]] virtual size_t memsize() const = 0;

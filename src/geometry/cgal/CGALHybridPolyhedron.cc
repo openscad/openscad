@@ -20,16 +20,16 @@ CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<CGAL_HybridMesh>& me
 {
   assert(mesh);
   data = mesh;
-
 }
 
-CGALHybridPolyhedron::CGALHybridPolyhedron(const CGALHybridPolyhedron& other)
+CGALHybridPolyhedron::CGALHybridPolyhedron(const CGALHybridPolyhedron& other) : Geometry(other)
 {
   *this = other;
 }
 
 CGALHybridPolyhedron& CGALHybridPolyhedron::operator=(const CGALHybridPolyhedron& other)
 {
+  Geometry::operator=(other);
   if (auto nef = other.getNefPolyhedron()) {
     data = make_shared<CGAL_HybridNef>(*nef);
   } else if (auto mesh = other.getMesh()) {
@@ -40,7 +40,7 @@ CGALHybridPolyhedron& CGALHybridPolyhedron::operator=(const CGALHybridPolyhedron
   return *this;
 }
 
-CGALHybridPolyhedron::CGALHybridPolyhedron()
+CGALHybridPolyhedron::CGALHybridPolyhedron() : Geometry()
 {
   data = make_shared<CGAL_HybridMesh>();
 }
@@ -48,15 +48,15 @@ CGALHybridPolyhedron::CGALHybridPolyhedron()
 std::shared_ptr<CGAL_HybridNef> CGALHybridPolyhedron::getNefPolyhedron() const
 {
   return std::holds_alternative<shared_ptr<CGAL_HybridNef>>(data) ?
-    std::get<shared_ptr<CGAL_HybridNef>>(data) :
-    nullptr;
+         std::get<shared_ptr<CGAL_HybridNef>>(data) :
+         nullptr;
 }
 
 std::shared_ptr<CGAL_HybridMesh> CGALHybridPolyhedron::getMesh() const
 {
   return std::holds_alternative<shared_ptr<CGAL_HybridMesh>>(data) ?
-    std::get<shared_ptr<CGAL_HybridMesh>>(data) :
-    nullptr;
+         std::get<shared_ptr<CGAL_HybridMesh>>(data) :
+         nullptr;
 }
 
 bool CGALHybridPolyhedron::isEmpty() const
