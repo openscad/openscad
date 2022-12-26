@@ -76,7 +76,7 @@ public:
                               0, 1, 0.0, 1, 2, true);
   }
 
-  using TessUserData = struct _TessUserData {
+  struct TessUserData {
     GLenum which;
     GLdouble *normal;
     CGAL::Color color;

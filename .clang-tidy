@@ -4,7 +4,6 @@ Checks: '
     -bugprone-easily-swappable-parameters,
     -bugprone-exception-escape,
     -bugprone-narrowing-conversions,
-    -bugprone-reserved-identifier,
   clang-analyzer-*,
     -clang-analyzer-cplusplus.NewDelete,
     -clang-analyzer-cplusplus.NewDeleteLeaks,
