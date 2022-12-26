@@ -267,7 +267,7 @@ Camera get_camera(const po::variables_map& vm)
 #include "QSettingsCached.h"
 #define OPENSCAD_QTGUI 1
 #endif
-static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
+static bool checkAndExport(const shared_ptr<const Geometry>& root_geom, unsigned nd,
                            FileFormat format, const bool is_stdout, const std::string& filename)
 {
   if (root_geom->getDimension() != nd) {
@@ -700,7 +700,7 @@ void registerDefaultIcon(QString applicationFilePath) {
   reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"), QVariant(appPath));
 }
 #else
-void registerDefaultIcon(QString) { }
+void registerDefaultIcon(const QString&) { }
 #endif
 
 int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, char **argv)
@@ -872,7 +872,7 @@ std::string str_join(const Seq& seq, const std::string& sep, const ToString& toS
   return boost::algorithm::join(boost::adaptors::transform(seq, toString), sep);
 }
 
-bool flagConvert(std::string str){
+bool flagConvert(const std::string& str){
   if (str == "1" || boost::iequals(str, "on") || boost::iequals(str, "true")) {
     return true;
   }

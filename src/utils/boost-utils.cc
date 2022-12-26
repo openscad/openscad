@@ -53,7 +53,7 @@ fs::path boostfs_normalize(const fs::path& path)
  *   write to output, the remaining elements in path
  */
 fs::path
-boostfs_uncomplete(fs::path const p, fs::path const base)
+boostfs_uncomplete(fs::path const& p, fs::path const& base)
 {
   if (p == base) return "./";
   /*!! this breaks stuff if path is a filename rather than a directory,

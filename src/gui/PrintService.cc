@@ -101,7 +101,7 @@ void PrintService::initService(const QJsonObject& serviceObject)
  * Outputs:
  *    The resulting url to go to next to continue the order process.
  */
-const QString PrintService::upload(const QString& fileName, const QString& contentBase64, network_progress_func_t progress_func)
+const QString PrintService::upload(const QString& fileName, const QString& contentBase64, const network_progress_func_t& progress_func)
 {
   QJsonObject jsonInput;
   jsonInput.insert("fileName", fileName);

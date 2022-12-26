@@ -17,7 +17,7 @@ int getScalePow2(const BoundingBox& bounds, int bits)
   return (_bits - 1) - exp;
 }
 
-VectorOfVector2d fromPath(ClipperLib::Path path, int pow2)
+VectorOfVector2d fromPath(const ClipperLib::Path& path, int pow2)
 {
   double scale = std::ldexp(1.0, -pow2);
   VectorOfVector2d ret;
@@ -49,7 +49,7 @@ AutoScaled<ClipperLib::Paths> fromPolygon2d(const Polygon2d& poly)
 {
   auto b = poly.getBoundingBox();
   auto scale = ClipperUtils::getScalePow2(b);
-  return {fromPolygon2d(poly, scale), std::move(b)};
+  return {fromPolygon2d(poly, scale), b};
 }
 
 ClipperLib::PolyTree sanitize(const ClipperLib::Paths& paths)

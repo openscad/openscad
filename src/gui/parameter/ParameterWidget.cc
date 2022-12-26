@@ -39,6 +39,7 @@
 
 #include <QInputDialog>
 #include <QMessageBox>
+#include <utility>
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
@@ -60,7 +61,7 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 }
 
 // Can only be called before the initial setParameters().
-void ParameterWidget::readFile(QString scadFile)
+void ParameterWidget::readFile(const QString& scadFile)
 {
   assert(sets.empty());
   assert(parameters.empty());
@@ -80,7 +81,7 @@ void ParameterWidget::readFile(QString scadFile)
 
 // Write the json file if the parameter sets are not empty.
 // This prevents creating unnecessary json files.
-void ParameterWidget::saveFile(QString scadFile)
+void ParameterWidget::saveFile(const QString& scadFile)
 {
   if (sets.empty()) {
     return;
@@ -102,7 +103,7 @@ void ParameterWidget::saveFile(QString scadFile)
   sets.writeFile(jsonFile.toStdString());
 }
 
-void ParameterWidget::saveBackupFile(QString scadFile)
+void ParameterWidget::saveBackupFile(const QString& scadFile)
 {
   if (sets.empty()) {
     return;
@@ -277,7 +278,7 @@ void ParameterWidget::loadSet(size_t index)
   }
 }
 
-void ParameterWidget::createSet(QString name)
+void ParameterWidget::createSet(const QString& name)
 {
   sets.push_back(parameters.exportValues(name.toStdString()));
   comboBoxPreset->addItem(name);
@@ -391,7 +392,7 @@ ParameterVirtualWidget *ParameterWidget::createParameterWidget(ParameterObject *
   }
 }
 
-QString ParameterWidget::getJsonFile(QString scadFile)
+QString ParameterWidget::getJsonFile(const QString& scadFile)
 {
   boost::filesystem::path p = scadFile.toStdString();
   return QString::fromStdString(p.replace_extension(".json").string());

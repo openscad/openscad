@@ -161,9 +161,9 @@ public:
 
   ExportMesh(const PolySet& ps);
 
-  bool foreach_vertex(const std::function<bool(const Vertex&)> callback) const;
-  bool foreach_indexed_triangle(const std::function<bool(const std::array<int, 3>&)> callback) const;
-  bool foreach_triangle(const std::function<bool(const std::array<Vertex, 3>&)> callback) const;
+  bool foreach_vertex(const std::function<bool(const Vertex&)>& callback) const;
+  bool foreach_indexed_triangle(const std::function<bool(const std::array<int, 3>&)>& callback) const;
+  bool foreach_triangle(const std::function<bool(const std::array<Vertex, 3>&)>& callback) const;
 
 private:
   std::vector<Vertex> vertices;

@@ -54,7 +54,7 @@ struct point_traits<roof_vd::Point> {
   using coordinate_type = roof_vd::VD_int;
 
   static inline coordinate_type get(
-    const roof_vd::Point& point, orientation_2d orient) {
+    const roof_vd::Point& point, const orientation_2d& orient) {
     return (orient == HORIZONTAL) ? point.a : point.b;
   }
 };
@@ -67,7 +67,7 @@ struct segment_traits<roof_vd::Segment> {
   using coordinate_type = roof_vd::VD_int;
   using point_type = roof_vd::Point;
 
-  static inline point_type get(const roof_vd::Segment& segment, direction_1d dir) {
+  static inline point_type get(const roof_vd::Segment& segment, const direction_1d& dir) {
     return dir.to_int() ? segment.p1 : segment.p0;
   }
 };

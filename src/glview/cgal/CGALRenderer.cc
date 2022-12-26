@@ -40,7 +40,7 @@
 
 //#include "Preferences.h"
 
-CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
+CGALRenderer::CGALRenderer(const shared_ptr<const class Geometry>& geom)
   : last_render_state(Feature::ExperimentalVxORenderers.is_enabled()) // FIXME: this is temporary to make switching between renderers seamless.
 {
   this->addGeometry(geom);

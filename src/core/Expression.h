@@ -258,7 +258,7 @@ class LcFor : public ListComprehension
 {
 public:
   LcFor(AssignmentList args, Expression *expr, const Location& loc);
-  static void forEach(const AssignmentList& assignments, const Location& loc, const std::shared_ptr<const Context>& context, std::function<void(const std::shared_ptr<const Context>&)> operation);
+  static void forEach(const AssignmentList& assignments, const Location& loc, const std::shared_ptr<const Context>& context, const std::function<void(const std::shared_ptr<const Context>&)>& operation);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
 private:

@@ -150,7 +150,7 @@ static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation 
   }
 }
 
-static std::shared_ptr<AbstractNode> builtin_echo(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_echo(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   LOG(message_group::Echo, Location::NONE, "", "%1$s", STR(arguments));
 

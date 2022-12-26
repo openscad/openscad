@@ -50,7 +50,7 @@ RenderColorScheme::RenderColorScheme() : _path("")
   _color_scheme.insert(ColorScheme::value_type(RenderColor::CROSSHAIR_COLOR, Color4f(0x80, 0x00, 0x00)));
 }
 
-RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
+RenderColorScheme::RenderColorScheme(const fs::path& path) : _path(path)
 {
   try {
     boost::property_tree::read_json(path.generic_string().c_str(), pt);
@@ -123,7 +123,7 @@ const boost::property_tree::ptree& RenderColorScheme::propertyTree() const
   return pt;
 }
 
-void RenderColorScheme::addColor(RenderColor colorKey, std::string key)
+void RenderColorScheme::addColor(RenderColor colorKey, const std::string& key)
 {
   const boost::property_tree::ptree& colors = pt.get_child("colors");
   auto color = colors.get<std::string>(key);
@@ -254,7 +254,7 @@ Color4f ColorMap::getContrastColor(const Color4f& col)
   }
 }
 
-void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t& result_set, const fs::path basePath)
+void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t& result_set, const fs::path& basePath)
 {
   const fs::path color_schemes = basePath / "color-schemes" / "render";
 

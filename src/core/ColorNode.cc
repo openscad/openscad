@@ -235,7 +235,7 @@ static boost::optional<Color4f> parse_hex_color(const std::string& hex) {
   return rgba;
 }
 
-static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<ColorNode>(inst);
 

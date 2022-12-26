@@ -13,9 +13,9 @@ private:
   QStringList params;
 
 public:
-  ApiFunc(const QString name, const QString param) : name(name), params(QStringList(param)) { }
-  ApiFunc(const QString name, const QString param1, const QString param2) : name(name), params(QStringList(param1) << param2) { }
-  ApiFunc(const QString name, const QStringList params) : name(name), params(params) { }
+  ApiFunc(const QString& name, const QString& param) : name(name), params(QStringList(param)) { }
+  ApiFunc(const QString& name, const QString& param1, const QString& param2) : name(name), params(QStringList(param1) << param2) { }
+  ApiFunc(const QString& name, const QStringList& params) : name(name), params(params) { }
 
   const QString& get_name() const
   {
@@ -45,7 +45,7 @@ private:
 public:
 
   ScadTemplate() : text(""), cursor_offset(0) { }
-  ScadTemplate(const QString text, const int cursor_offset) : text(text), cursor_offset(cursor_offset) { }
+  ScadTemplate(const QString& text, const int cursor_offset) : text(text), cursor_offset(cursor_offset) { }
   const QString& get_text() const { return text; }
   int get_cursor_offset() const { return cursor_offset; }
 

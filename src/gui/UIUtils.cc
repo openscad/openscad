@@ -160,7 +160,7 @@ void UIUtils::openHomepageURL()
   QDesktopServices::openUrl(QUrl("https://www.openscad.org/"));
 }
 
-static void openVersionedURL(QString url)
+static void openVersionedURL(const QString& url)
 {
   QDesktopServices::openUrl(QUrl(url.arg(openscad_shortversionnumber.c_str())));
 }

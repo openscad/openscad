@@ -64,11 +64,13 @@ public:
   using reply_func_t = std::function<QNetworkReply *(QNetworkAccessManager&, QNetworkRequest&)>;
   using transform_func_t = std::function<ResultType (QNetworkReply *)>;
 
-  NetworkRequest(QUrl url, std::vector<int> accepted_codes, const int timeout_seconds) : url(std::move(url)), accepted_codes(std::move(accepted_codes)), timeout_seconds(timeout_seconds) { }
+  NetworkRequest(QUrl url, std::vector<int> accepted_codes, const int timeout_seconds)
+    : url(std::move(url)), accepted_codes(std::move(accepted_codes)), timeout_seconds(timeout_seconds)
+  { }
   virtual ~NetworkRequest() = default;
 
-  void set_progress_func(network_progress_func_t progress_func) { this->progress_func = progress_func; }
-  ResultType execute(setup_func_t setup_func, reply_func_t reply_func, transform_func_t transform_func);
+  void set_progress_func(const network_progress_func_t& progress_func) { this->progress_func = progress_func; }
+  ResultType execute(const setup_func_t& setup_func, const reply_func_t& reply_func, transform_func_t transform_func);
 
 private:
   QUrl url;
@@ -78,7 +80,9 @@ private:
 };
 
 template <typename ResultType>
-ResultType NetworkRequest<ResultType>::execute(NetworkRequest::setup_func_t setup_func, NetworkRequest::reply_func_t reply_func, NetworkRequest::transform_func_t transform_func)
+ResultType NetworkRequest<ResultType>::execute(const NetworkRequest::setup_func_t& setup_func,
+    const NetworkRequest::reply_func_t& reply_func,
+    NetworkRequest::transform_func_t transform_func)
 {
   QNetworkRequest request(url);
   request.setHeader(QNetworkRequest::UserAgentHeader, QString::fromStdString(PlatformUtils::user_agent()));

@@ -304,7 +304,7 @@ struct EnumValues
   std::vector<EnumParameter::EnumItem> items;
   int defaultValueIndex;
 };
-static EnumValues parseEnumItems(const Expression *parameter, const std::string& defaultKey, EnumParameter::EnumValue defaultValue)
+static EnumValues parseEnumItems(const Expression *parameter, const std::string& defaultKey, const EnumParameter::EnumValue& defaultValue)
 {
   EnumValues output;
 

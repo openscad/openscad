@@ -99,10 +99,10 @@ void ScadApi::autoCompleteFolder(const QStringList& context, const QString& text
       }
     }
 
-    list << getSorted(result, [](QFileInfo i){
+    list << getSorted(result, [](const QFileInfo& i){
       return i.isDir();
     });
-    list << getSorted(result, [](QFileInfo i){
+    list << getSorted(result, [](const QFileInfo& i){
       return i.isFile();
     });
     list.removeDuplicates();

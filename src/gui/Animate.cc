@@ -44,7 +44,7 @@ void Animate::setMainWindow(MainWindow *mainWindow)
   updatePauseButtonIcon();
 }
 
-void Animate::createActionAndPrepareButton(const QIcon& icon, QString description, std::string actionName, QPushButton *button){
+void Animate::createActionAndPrepareButton(const QIcon& icon, const QString& description, const std::string& actionName, QPushButton *button){
   auto *action = new QAction(icon, description, this);
   action->setObjectName(QString::fromStdString(actionName));
 

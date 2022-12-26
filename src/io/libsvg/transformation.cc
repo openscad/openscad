@@ -32,12 +32,12 @@
 
 namespace libsvg {
 
-transformation::transformation(const std::string op, const std::string name) : op(op), name(name)
+transformation::transformation(const std::string& op, const std::string& name) : op(op), name(name)
 {
 }
 
 void
-transformation::add_arg(const std::string arg)
+transformation::add_arg(const std::string& arg)
 {
   double d = parse_double(arg);
   args.push_back(d);

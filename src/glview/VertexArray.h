@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
+#include <utility>
 
 #include "system-gl.h"
 #include "printutils.h"
@@ -369,7 +370,7 @@ public:
       glGenBuffers(1, &elements_vbo_);
     }
     use_elements_ = true;
-    elements_.addAttributeData(data);
+    elements_.addAttributeData(std::move(data));
   }
 
   // Create an empty copy of the VertexArray structure
@@ -388,7 +389,7 @@ public:
                     size_t active_point_index = 0, size_t primitive_index = 0,
                     double z_offset = 0, size_t shape_size = 0,
                     size_t shape_dimensions = 0, bool outlines = false,
-                    bool mirror = false, CreateVertexCallback vertex_callback = nullptr);
+                    bool mirror = false, const CreateVertexCallback& vertex_callback = nullptr);
 
   // Return reference to the VertexStates
   inline VertexStates& states() { return states_; }

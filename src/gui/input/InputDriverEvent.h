@@ -171,7 +171,7 @@ class InputEventAction : public InputEvent
 public:
   const std::string action;
 
-  InputEventAction(const std::string action, const bool activeOnly = true) : InputEvent(activeOnly), action(action) { }
+  InputEventAction(const std::string& action, const bool activeOnly = true) : InputEvent(activeOnly), action(action) { }
 
   void deliver(InputEventHandler *receiver) override
   {

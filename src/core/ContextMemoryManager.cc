@@ -354,7 +354,7 @@ ContextMemoryManager::~ContextMemoryManager()
   assert(heapSizeAccounting.size() == 0);
 }
 
-void ContextMemoryManager::addContext(std::shared_ptr<Context> context)
+void ContextMemoryManager::addContext(const std::shared_ptr<Context>& context)
 {
   heapSizeAccounting.addContext();
   context->setAccountingAdded();   // avoiding bad accounting when an exception threw in constructor issue #3871
