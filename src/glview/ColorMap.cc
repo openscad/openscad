@@ -4,6 +4,7 @@
 
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/filesystem.hpp>
+#include <cmath>
 
 namespace fs = boost::filesystem;
 
@@ -25,7 +26,7 @@ static void rgbtohsv(float r, float g, float b, float& h, float& s, float& v)
   }
 
   float chroma = r - std::min(g, b);
-  h = fabs(K + (g - b) / (6.f * chroma + 1e-20f));
+  h = std::fabs(K + (g - b) / (6.f * chroma + 1e-20f));
   s = chroma / (r + 1e-20f);
   v = r;
 }
