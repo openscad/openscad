@@ -1,12 +1,12 @@
-find_package(PkgConfig QUIET)
-PKG_CHECK_MODULES(PC_HIDAPI QUIET hidapi-libusb)
+find_package(PkgConfig)
+pkg_search_module(PC_HIDAPI QUIET hidapi hidapi-libusb)
 
 find_path(HIDAPI_INCLUDE_DIR NAMES hidapi.h
 	HINTS
 	${PC_HIDAPI_INCLUDEDIR}
 	${PC_HIDAPI_INCLUDE_DIRS})
 
-find_library(HIDAPI_LIBRARY NAMES hidapi-libusb
+find_library(HIDAPI_LIBRARY NAMES hidapi hidapi-libusb
 	HINTS
 	${PC_HIDAPI_LIBDIR}
 	${PC_HIDAPI_LIBRARY_DIRS})
