@@ -128,7 +128,7 @@ void GLView::paintGL()
   glClearColor(bgcol[0], bgcol[1], bgcol[2], 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  if(bgcol != bgstopcol){
+  if (bgcol != bgstopcol) {
     glDisable(GL_DEPTH_TEST);
 
     glMatrixMode(GL_PROJECTION);
@@ -137,16 +137,16 @@ void GLView::paintGL()
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    //draw screen aligned quad with color gradient 
-    glBegin(GL_QUADS);  
-    glColor3f(bgcol[0], bgcol[1], bgcol[2]);  
+    //draw screen aligned quad with color gradient
+    glBegin(GL_QUADS);
+    glColor3f(bgcol[0], bgcol[1], bgcol[2]);
     glVertex2f(-1.0f, +1.0f);
     glVertex2f(+1.0f, +1.0f);
 
-    glColor3f(bgstopcol[0], bgstopcol[1], bgstopcol[2]);  
+    glColor3f(bgstopcol[0], bgstopcol[1], bgstopcol[2]);
     glVertex2f(+1.0f, -1.0f);
     glVertex2f(-1.0f, -1.0f);
-    glEnd();  
+    glEnd();
     glEnable(GL_DEPTH_TEST);
   }
 
@@ -407,8 +407,8 @@ void GLView::showCrosshairs(const Color4f& col)
   glLineWidth(this->getDPI());
   glColor3f(col[0], col[1], col[2]);
   glBegin(GL_LINES);
-  for (double xf = -1; xf <= +1; xf += 2)
-    for (double yf = -1; yf <= +1; yf += 2) {
+  for (double xf : {-1.0, 1.0})
+    for (double yf : {-1.0, 1.0}) {
       auto vd = cam.zoomValue() / 8;
       glVertex3d(-xf * vd, -yf * vd, -vd);
       glVertex3d(+xf * vd, +yf * vd, +vd);
@@ -434,7 +434,10 @@ void GLView::showScalemarkers(const Color4f& col)
 
   const int size_div_sm = 60; // divisor for l to determine minor tick size
   int line_cnt = 0;
-  for (double i = 0; i < l; i += tick_width) { // i represents the position along the axis
+
+  size_t divs = l / tick_width;
+  for (auto div = 0; div < divs; ++div) {
+    double i = div * tick_width; // i represents the position along the axis
     int size_div;
     if (line_cnt > 0 && line_cnt % 10 == 0) { // major tick
       size_div = size_div_sm * .5; // resize to a major tick
@@ -462,7 +465,7 @@ void GLView::showScalemarkers(const Color4f& col)
 
     /*
      * The length of each tick is proportional to the length of the axis
-     * (which changes with the zoom value.)  l/size_div provides the
+     * (which changes with the zoom value.) l/size_div provides the
      * proportional length
      *
      * Commented glVertex3d lines provide additional 'arms' for the tick

@@ -161,8 +161,7 @@ void export_dxf(const Polygon2d& poly, std::ostream& output)
   xMin = yMin = std::numeric_limits<double>::max(),
   xMax = yMax = std::numeric_limits<double>::min();
   for (const auto& o : poly.outlines()) {
-    for (unsigned int i = 0; i < o.vertices.size(); ++i) {
-      const Vector2d& p = o.vertices[i];
+    for (const auto& p : o.vertices) {
       if (xMin > p[0]) xMin = p[0];
       if (xMax < p[0]) xMax = p[0];
       if (yMin > p[1]) yMin = p[1];
@@ -220,8 +219,7 @@ void export_dxf(const Polygon2d& poly, std::ostream& output)
              << "100\n" << "AcDbPolyline\n"
              << " 90\n" << o.vertices.size() << "\n" // number of vertices
              << " 70\n" << "1\n";         // closed = 1
-      for (unsigned int i = 0; i < o.vertices.size(); ++i) {
-        const Vector2d& p = o.vertices[i];
+      for (const auto& p : o.vertices) {
         output << " 10\n" << p[0] << "\n"
                << " 20\n" << p[1] << "\n";
       }

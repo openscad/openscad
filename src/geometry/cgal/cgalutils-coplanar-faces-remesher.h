@@ -47,17 +47,18 @@ bool contains(const Container& container, const Item& item) {
  */
 template <typename TriangleMesh>
 struct CoplanarFacesRemesher {
-  typedef boost::graph_traits<TriangleMesh> GT;
-  typedef typename GT::face_descriptor face_descriptor;
-  typedef typename GT::halfedge_descriptor halfedge_descriptor;
-  typedef typename GT::edge_descriptor edge_descriptor;
-  typedef typename GT::vertex_descriptor vertex_descriptor;
+  using GT = boost::graph_traits<TriangleMesh>;
+  using face_descriptor = typename GT::face_descriptor;
+  using halfedge_descriptor = typename GT::halfedge_descriptor;
+  using edge_descriptor = typename GT::edge_descriptor;
+  using vertex_descriptor = typename GT::vertex_descriptor;
 
   TriangleMesh& tm;
 
 public:
 
-  CoplanarFacesRemesher(TriangleMesh& mesh) : tm(mesh) {}
+  CoplanarFacesRemesher(TriangleMesh & mesh) : tm(mesh) {
+  }
 
   template <typename PatchId>
   void remesh(
@@ -290,7 +291,7 @@ public:
     }
   }
 
-  bool isEdgeBetweenCoplanarFaces(const halfedge_descriptor& h) const {
+  [[nodiscard]] bool isEdgeBetweenCoplanarFaces(const halfedge_descriptor& h) const {
     auto& p = tm.point(tm.source(h));
     auto& q = tm.point(tm.target(h));
     auto& r = tm.point(tm.target(tm.next(h)));

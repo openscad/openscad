@@ -30,6 +30,7 @@
 #include "printutils.h"
 #include "Grid.h"
 #include <Eigen/LU>
+#include <utility>
 
 /*! /class PolySet
 
@@ -49,11 +50,7 @@ PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(con
 {
 }
 
-PolySet::PolySet(const Polygon2d& origin) : polygon(origin), dim(2), convex(unknown), dirty(false)
-{
-}
-
-PolySet::~PolySet()
+PolySet::PolySet(Polygon2d origin) : polygon(std::move(origin)), dim(2), convex(unknown), dirty(false)
 {
 }
 
@@ -66,11 +63,9 @@ std::string PolySet::dump() const
       << "\n num polygons: " << polygons.size()
       << "\n num outlines: " << polygon.outlines().size()
       << "\n polygons data:";
-  for (size_t i = 0; i < polygons.size(); ++i) {
+  for (const auto& polygon : polygons) {
     out << "\n  polygon begin:";
-    const Polygon *poly = &polygons[i];
-    for (size_t j = 0; j < poly->size(); ++j) {
-      Vector3d v = poly->at(j);
+    for (auto v : polygon) {
       out << "\n   vertex:" << v.transpose();
     }
   }
@@ -211,7 +206,7 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
 {
   Grid3d<unsigned int> grid(GRID_FINE);
   std::vector<unsigned int> indices; // Vertex indices in one polygon
-  for (std::vector<Polygon>::iterator iter = this->polygons.begin(); iter != this->polygons.end();) {
+  for (auto iter = this->polygons.begin(); iter != this->polygons.end();) {
     Polygon& p = *iter;
     indices.resize(p.size());
     // Quantize all vertices. Build index list
@@ -222,7 +217,7 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
       }
     }
     // Remove consecutive duplicate vertices
-    Polygon::iterator currp = p.begin();
+    auto currp = p.begin();
     for (unsigned int i = 0; i < indices.size(); ++i) {
       if (indices[i] != indices[(i + 1) % indices.size()]) {
         (*currp++) = p[i];

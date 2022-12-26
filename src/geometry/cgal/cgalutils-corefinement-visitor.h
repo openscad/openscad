@@ -26,13 +26,13 @@ void forceExact(Pt& point)
 template <typename TriangleMesh>
 struct CorefinementVisitorDelegate_ {
 private:
-  typedef boost::graph_traits<TriangleMesh> GT;
-  typedef typename GT::face_descriptor face_descriptor;
-  typedef typename GT::halfedge_descriptor halfedge_descriptor;
-  typedef typename GT::edge_descriptor edge_descriptor;
-  typedef typename GT::vertex_descriptor vertex_descriptor;
+  using GT = boost::graph_traits<TriangleMesh>;
+  using face_descriptor = typename GT::face_descriptor;
+  using halfedge_descriptor = typename GT::halfedge_descriptor;
+  using edge_descriptor = typename GT::edge_descriptor;
+  using vertex_descriptor = typename GT::vertex_descriptor;
 
-  typedef size_t PatchId; // Starting from 1
+  using PatchId = size_t; // Starting from 1
 
   bool forceNewLazyNumbersToExact_;
   TriangleMesh *mesh1_, *mesh2_, *meshOut_;
@@ -67,7 +67,7 @@ private:
   }
 
 public:
-  CorefinementVisitorDelegate_(TriangleMesh& m1, TriangleMesh& m2, TriangleMesh& mout,
+  CorefinementVisitorDelegate_(TriangleMesh & m1, TriangleMesh & m2, TriangleMesh & mout,
                                bool forceNewLazyNumbersToExact)
     : forceNewLazyNumbersToExact_(forceNewLazyNumbersToExact), mesh1_(&m1), mesh2_(&m2), meshOut_(&mout)
   {
@@ -159,15 +159,15 @@ public:
  */
 template <typename TriangleMesh>
 struct CorefinementVisitor : public PMP::Corefinement::Default_visitor<TriangleMesh> {
-  typedef boost::graph_traits<TriangleMesh> GT;
-  typedef typename GT::face_descriptor face_descriptor;
-  typedef typename GT::vertex_descriptor vertex_descriptor;
+  using GT = boost::graph_traits<TriangleMesh>;
+  using face_descriptor = typename GT::face_descriptor;
+  using vertex_descriptor = typename GT::vertex_descriptor;
 
-  typedef internal::CorefinementVisitorDelegate_<TriangleMesh> Delegate;
+  using Delegate = internal::CorefinementVisitorDelegate_<TriangleMesh>;
 
   std::shared_ptr<Delegate> delegate_;
 
-  CorefinementVisitor(TriangleMesh& m1, TriangleMesh& m2, TriangleMesh& mout,
+  CorefinementVisitor(TriangleMesh & m1, TriangleMesh & m2, TriangleMesh & mout,
                       bool forceNewLazyNumbersToExact)
     : delegate_(std::make_shared<Delegate>(m1, m2, mout, forceNewLazyNumbersToExact))
   {

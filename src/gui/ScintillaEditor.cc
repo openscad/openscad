@@ -97,11 +97,6 @@ EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
   }
 }
 
-EditorColorScheme::~EditorColorScheme()
-{
-
-}
-
 bool EditorColorScheme::valid() const
 {
   return !_name.isEmpty();
@@ -401,7 +396,7 @@ QColor ScintillaEditor::readColor(const boost::property_tree::ptree& pt, const s
 {
   try {
     const auto val = pt.get<std::string>(name);
-    return QColor(val.c_str());
+    return {val.c_str()};
   } catch (const std::exception& e) {
     return defaultColor;
   }
@@ -915,15 +910,15 @@ QString ScintillaEditor::selectedText()
 
 bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
-  if(QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) || QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)){
-    if(!this->indicatorsActive){
-        this->indicatorsActive = true;
-        qsci->setIndicatorHoverStyle(QsciScintilla::PlainIndicator, hyperlinkIndicatorNumber);
+  if (QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) || QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)) {
+    if (!this->indicatorsActive) {
+      this->indicatorsActive = true;
+      qsci->setIndicatorHoverStyle(QsciScintilla::PlainIndicator, hyperlinkIndicatorNumber);
     }
-  }else{
-    if(this->indicatorsActive){
-        this->indicatorsActive = false;
-        qsci->setIndicatorHoverStyle(QsciScintilla::HiddenIndicator, hyperlinkIndicatorNumber);
+  } else {
+    if (this->indicatorsActive) {
+      this->indicatorsActive = false;
+      qsci->setIndicatorHoverStyle(QsciScintilla::HiddenIndicator, hyperlinkIndicatorNumber);
     }
   }
 
@@ -1197,7 +1192,7 @@ bool ScintillaEditor::modifyNumber(int key)
   qsci->SendScintilla(QsciScintilla::SCI_SETEMPTYSELECTION);
   qsci->setCursorPosition(line, index);
 
-  auto begin = QRegExp("[-+]?\\d*\\.?\\d*$").indexIn(text.left(index));
+  auto begin = QRegExp(R"([-+]?\d*\.?\d*$)").indexIn(text.left(index));
 
   QRegExp rx("[_a-zA-Z]");
   auto check = text.mid(begin - 1, 1);
@@ -1206,7 +1201,7 @@ bool ScintillaEditor::modifyNumber(int key)
   auto end = text.indexOf(QRegExp("[^0-9.]"), index);
   if (end < 0) end = text.length();
   auto nr = text.mid(begin, end - begin);
-  if (!(nr.contains(QRegExp("^[-+]?\\d*\\.?\\d+$")) && nr.contains(QRegExp("\\d"))) ) return false;
+  if (!(nr.contains(QRegExp(R"(^[-+]?\d*\.?\d+$)")) && nr.contains(QRegExp("\\d"))) ) return false;
   auto sign = nr[0] == '+'||nr[0] == '-';
   if (nr.endsWith('.')) nr = nr.left(nr.length() - 1);
   auto curpos = index - begin;
@@ -1335,7 +1330,7 @@ void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorDa
   int idx = 0;
   for (const auto& data : indicatorData) {
     int startPos = qsci->positionFromLineIndex(data.first_line - 1, data.first_col - 1);
-    int stopPos  = qsci->positionFromLineIndex(data.last_line - 1,  data.last_col  - 1);
+    int stopPos = qsci->positionFromLineIndex(data.last_line - 1, data.last_col - 1);
 
     int nrOfChars = stopPos - startPos;
     qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, idx + hyperlinkIndicatorOffset);

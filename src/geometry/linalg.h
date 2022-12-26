@@ -16,12 +16,12 @@ using Eigen::Vector3i;
   #if !EIGEN_HAS_CXX11_CONTAINERS
     #warning "Eigen has detected no support for CXX11 containers and has redefined std::vector"
   #endif
-typedef std::vector<Vector2d, Eigen::aligned_allocator<Vector2d>> VectorOfVector2d;
+using VectorOfVector2d = std::vector<Vector2d, Eigen::aligned_allocator<Vector2d>>;
 #else
-typedef std::vector<Vector2d> VectorOfVector2d;
+using VectorOfVector2d = std::vector<Vector2d>;
 #endif
 
-typedef Eigen::AlignedBox<double, 3> BoundingBox;
+using BoundingBox = Eigen::AlignedBox<double, 3>;
 using Eigen::Matrix3f;
 using Eigen::Matrix3d;
 using Eigen::Matrix4d;
@@ -48,7 +48,7 @@ BoundingBox operator*(const Transform3d& m, const BoundingBox& box);
 class Color4f : public Eigen::Matrix<float, 4, 1, Eigen::DontAlign>
 {
 public:
-  Color4f() { }
+  Color4f() = default;
   Color4f(int r, int g, int b, int a = 255) { setRgb(r, g, b, a); }
   Color4f(float r, float g, float b, float a = 1.0f) : Eigen::Matrix<float, 4, 1, Eigen::DontAlign>(r, g, b, a) { }
 
@@ -56,5 +56,5 @@ public:
     *this << r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f;
   }
 
-  bool isValid() const { return this->minCoeff() >= 0.0f; }
+  [[nodiscard]] bool isValid() const { return this->minCoeff() >= 0.0f; }
 };

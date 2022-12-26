@@ -1,5 +1,7 @@
 #pragma once
 
+#include <utility>
+#include <utility>
 #include <vector>
 #include <string>
 #include <deque>
@@ -8,10 +10,10 @@
 #include "ModuleInstantiation.h"
 
 extern int progress_report_count;
-extern void (*progress_report_f)(const std::shared_ptr<const AbstractNode> &, void *, int);
+extern void (*progress_report_f)(const std::shared_ptr<const AbstractNode>&, void *, int);
 extern void *progress_report_vp;
 
-void progress_report_prep(const std::shared_ptr<AbstractNode> &root, void (*f)(const std::shared_ptr<const AbstractNode> &node, void *vp, int mark), void *vp);
+void progress_report_prep(const std::shared_ptr<AbstractNode>& root, void (*f)(const std::shared_ptr<const AbstractNode>& node, void *vp, int mark), void *vp);
 void progress_report_fin();
 
 /*!
@@ -57,13 +59,13 @@ public:
 
   // progress_mark is a running number used for progress indication
   // FIXME: Make all progress handling external, put it in the traverser class?
-  int progress_mark;
+  int progress_mark{0};
   void progress_prepare();
   void progress_report() const;
 
   int idx; // Node index (unique per tree)
 
-  std::shared_ptr<const AbstractNode> getNodeByID(int idx, std::deque<std::shared_ptr<const AbstractNode> >& path) const;
+  std::shared_ptr<const AbstractNode> getNodeByID(int idx, std::deque<std::shared_ptr<const AbstractNode>>& path) const;
 };
 
 class AbstractIntersectionNode : public AbstractNode
@@ -107,7 +109,7 @@ class GroupNode : public AbstractNode
 {
 public:
   VISITABLE();
-  GroupNode(const ModuleInstantiation *mi, const std::string& name = "") : AbstractNode(mi), _name(name) { }
+  GroupNode(const ModuleInstantiation *mi, std::string name = "") : AbstractNode(mi), _name(std::move(name)) { }
   std::string name() const override;
   std::string verbose_name() const override;
 private:
@@ -136,4 +138,4 @@ public:
 };
 
 std::ostream& operator<<(std::ostream& stream, const AbstractNode& node);
-std::shared_ptr<AbstractNode> find_root_tag(const std::shared_ptr<AbstractNode> &node, const Location **nextLocation = nullptr);
+std::shared_ptr<AbstractNode> find_root_tag(const std::shared_ptr<AbstractNode>& node, const Location **nextLocation = nullptr);

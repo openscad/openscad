@@ -12,10 +12,10 @@ namespace CGALUtils {
 template <typename TriangleMesh>
 struct ExactLazyNumbersVisitor
   : public PMP::Corefinement::Default_visitor<TriangleMesh> {
-  typedef boost::graph_traits<TriangleMesh> GT;
-  typedef typename GT::face_descriptor face_descriptor;
-  typedef typename GT::halfedge_descriptor halfedge_descriptor;
-  typedef typename GT::vertex_descriptor vertex_descriptor;
+  using GT = boost::graph_traits<TriangleMesh>;
+  using face_descriptor = typename GT::face_descriptor;
+  using halfedge_descriptor = typename GT::halfedge_descriptor;
+  using vertex_descriptor = typename GT::vertex_descriptor;
 
 #if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 4, 0)
   void new_vertex_added(std::size_t i_id, vertex_descriptor v, const TriangleMesh& tm) {
@@ -55,24 +55,24 @@ struct ExactLazyNumbersVisitor
 #endif// FAST_CSG_KERNEL_IS_LAZY
 
 #define COREFINEMENT_FUNCTION(functionName, cgalFunctionName) \
-  template <class TriangleMesh> \
-  bool functionName(TriangleMesh & lhs, TriangleMesh & rhs, TriangleMesh & out) \
-  { \
-    auto remesh = Feature::ExperimentalFastCsgRemesh.is_enabled() || Feature::ExperimentalFastCsgRemeshPredictibly.is_enabled(); \
-    auto exactCallback = Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled(); \
-    if (exactCallback && !remesh) { \
-      auto param = PMP::parameters::visitor(ExactLazyNumbersVisitor<TriangleMesh>()); \
-      return cgalFunctionName(lhs, rhs, out, param, param); \
-    } else if (remesh) { \
-      CorefinementVisitor<TriangleMesh> visitor(lhs, rhs, out, exactCallback); \
-      auto param = PMP::parameters::visitor(visitor); \
-      auto result = cgalFunctionName(lhs, rhs, out, param, param, param); \
-      visitor.remeshSplitFaces(out); \
-      return result; \
-    } else { \
-      return cgalFunctionName(lhs, rhs, out); \
-    } \
-  }
+        template <class TriangleMesh> \
+        bool functionName(TriangleMesh &lhs, TriangleMesh &rhs, TriangleMesh &out) \
+        { \
+          auto remesh = Feature::ExperimentalFastCsgRemesh.is_enabled() || Feature::ExperimentalFastCsgRemeshPredictibly.is_enabled(); \
+          auto exactCallback = Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled(); \
+          if (exactCallback && !remesh) { \
+            auto param = PMP::parameters::visitor(ExactLazyNumbersVisitor<TriangleMesh>()); \
+            return cgalFunctionName(lhs, rhs, out, param, param); \
+          } else if (remesh) { \
+            CorefinementVisitor<TriangleMesh> visitor(lhs, rhs, out, exactCallback); \
+            auto param = PMP::parameters::visitor(visitor); \
+            auto result = cgalFunctionName(lhs, rhs, out, param, param, param); \
+            visitor.remeshSplitFaces(out); \
+            return result; \
+          } else { \
+            return cgalFunctionName(lhs, rhs, out); \
+          } \
+        }
 
 COREFINEMENT_FUNCTION(corefineAndComputeUnion, PMP::corefine_and_compute_union);
 COREFINEMENT_FUNCTION(corefineAndComputeIntersection, PMP::corefine_and_compute_intersection);

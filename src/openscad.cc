@@ -674,7 +674,9 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
   QFutureWatcher<void> futureWatcher;
   QObject::connect(&futureWatcher, SIGNAL(finished()), scadApp, SLOT(hideFontCacheDialog()));
 
-  auto future = QtConcurrent::run(boost::bind(dialogThreadFunc, initializer));
+  auto future = QtConcurrent::run([initializer] {
+    return dialogThreadFunc(initializer);
+  });
   futureWatcher.setFuture(future);
 
   // We don't always get the started() signal, so we start manually
@@ -751,7 +753,7 @@ int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, cha
 
   if (!inputFiles.size()) {
     noInputFiles = true;
-    inputFiles.push_back("");
+    inputFiles.emplace_back("");
   }
 
   auto showOnStartup = settings.value("launcher/showOnStartup");

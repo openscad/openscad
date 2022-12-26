@@ -1,14 +1,6 @@
 #include "WindowManager.h"
 #include "MainWindow.h"
 
-WindowManager::WindowManager()
-{
-}
-
-WindowManager::~WindowManager()
-{
-}
-
 void WindowManager::add(MainWindow *mainwin)
 {
   this->windows.insert(mainwin);

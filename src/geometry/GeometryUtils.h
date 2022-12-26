@@ -3,11 +3,11 @@
 #include "linalg.h"
 #include <vector>
 
-typedef std::vector<Vector3d> Polygon;
-typedef std::vector<Polygon> Polygons;
+using Polygon = std::vector<Vector3d>;
+using Polygons = std::vector<Polygon>;
 
-typedef std::vector<int> IndexedFace;
-typedef Vector3i IndexedTriangle;
+using IndexedFace = std::vector<int>;
+using IndexedTriangle = Vector3i;
 
 struct IndexedPolygons {
   std::vector<Vector3f> vertices;

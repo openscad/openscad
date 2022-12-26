@@ -42,7 +42,7 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps)
   PolySet ps_tri(3, psq.convexValue());
   PolySetUtils::tessellate_faces(psq, ps_tri);
   if (ps_tri.is_convex()) {
-    typedef CGAL::Epick K;
+    using K = CGAL::Epick;
     // Collect point cloud
     std::vector<K::Point_3> points(points3d.size());
     for (size_t i = 0, n = points3d.size(); i < n; i++) {
@@ -122,9 +122,8 @@ template CGAL_Iso_cuboid_3 boundingBox(const CGAL_Nef_polyhedron3& N);
 
 CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox& bbox)
 {
-  return CGAL_Iso_cuboid_3(
-    vector_convert<CGAL_Point_3>(bbox.min()),
-    vector_convert<CGAL_Point_3>(bbox.max()));
+  return {vector_convert<CGAL_Point_3>(bbox.min()),
+          vector_convert<CGAL_Point_3>(bbox.max())};
 }
 
 namespace {
@@ -159,14 +158,14 @@ bool is_approximately_convex(const PolySet& ps) {
 
   const double angle_threshold = cos_degrees(.1); // .1°
 
-  typedef CGAL::Simple_cartesian<double> K;
-  typedef K::Vector_3 Vector;
-  typedef K::Point_3 Point;
-  typedef K::Plane_3 Plane;
+  using K = CGAL::Simple_cartesian<double>;
+  using Vector = K::Vector_3;
+  using Point = K::Point_3;
+  using Plane = K::Plane_3;
 
   // compute edge to face relations and plane equations
-  typedef std::pair<Vector3d, Vector3d> Edge;
-  typedef std::map<Edge, int, VecPairCompare> Edge_to_facet_map;
+  using Edge = std::pair<Vector3d, Vector3d>;
+  using Edge_to_facet_map = std::map<Edge, int, VecPairCompare>;
   Edge_to_facet_map edge_to_facet_map;
   std::vector<Plane> facet_planes;
   facet_planes.reserve(ps.polygons.size());
@@ -269,7 +268,7 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
   // 4. Validate mesh (manifoldness)
   // 5. Create PolySet
 
-  typedef CGAL::Nef_polyhedron_3<K> Nef;
+  using Nef = CGAL::Nef_polyhedron_3<K>;
 
   bool err = false;
 
@@ -283,7 +282,7 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
     // Since we're downscaling to float, vertices might merge during this conversion.
     // To avoid passing equal vertices to the tessellator, we remove consecutively identical
     // vertices.
-    polygons.push_back(std::vector<IndexedFace>());
+    polygons.emplace_back();
     auto& faces = polygons.back();
     // the 0-mark-volume is the 'empty' volume of space. skip it.
     if (!hfaceti->incident_volume()->mark()) {
@@ -436,7 +435,7 @@ Transform3d computeResizeTransform(
   // Based on resize() in Giles Bathgate's RapCAD (but not exactly)
 
   // The numeric type is our kernel's field type.
-  typedef typename K::FT NT;
+  using NT = typename K::FT;
 
   std::vector<NT> scale, bbox_size;
   for (unsigned int i = 0; i < 3; ++i) {

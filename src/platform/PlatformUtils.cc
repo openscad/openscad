@@ -180,12 +180,12 @@ fs::path PlatformUtils::resourcePath(const std::string& resource)
 {
   fs::path base(resourceBasePath());
   if (!fs::is_directory(base)) {
-    return fs::path();
+    return {};
   }
 
   fs::path resource_dir = base / resource;
   if (!fs::is_directory(resource_dir)) {
-    return fs::path();
+    return {};
   }
 
   return resource_dir;

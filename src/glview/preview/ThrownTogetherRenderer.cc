@@ -25,6 +25,8 @@
  */
 
 #include "ThrownTogetherRenderer.h"
+
+#include <utility>
 #include "Feature.h"
 #include "PolySet.h"
 #include "printutils.h"
@@ -34,8 +36,7 @@
 ThrownTogetherRenderer::ThrownTogetherRenderer(shared_ptr<CSGProducts> root_products,
                                                shared_ptr<CSGProducts> highlight_products,
                                                shared_ptr<CSGProducts> background_products)
-  : root_products(root_products), highlight_products(highlight_products), background_products(background_products),
-  vertices_vbo(0), elements_vbo(0)
+  : root_products(std::move(root_products)), highlight_products(std::move(highlight_products)), background_products(std::move(background_products))
 {
 }
 
@@ -153,7 +154,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, boo
                                                bool fberror, OpenSCADOperator type) const
 {
   if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;
-  const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+  const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
   if (!ps) return;
 
   const Color4f& c = csgobj.leaf->color;
@@ -228,11 +229,11 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
 }
 
 void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
-                                               const class CSGChainObject& csgobj, bool highlight_mode,
-                                                 bool background_mode, OpenSCADOperator type)
+                                               const CSGChainObject& csgobj, bool highlight_mode,
+                                               bool background_mode, OpenSCADOperator type)
 {
   if (csgobj.leaf->geom) {
-    const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+    const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
     if (!ps) return;
 
     if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;

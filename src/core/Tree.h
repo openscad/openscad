@@ -2,6 +2,7 @@
 
 #include "NodeCache.h"
 #include <map>
+#include <utility>
 
 /*!
    For now, just an abstraction of the node tree which keeps a dump
@@ -12,10 +13,10 @@
 class Tree
 {
 public:
-  Tree(const std::shared_ptr<const AbstractNode> &root = nullptr, const std::string& path = {}) : root_node(root), document_path(path) {}
+  Tree(std::shared_ptr<const AbstractNode> root = nullptr, std::string path = {}) : root_node(std::move(root)), document_path(std::move(path)) {}
   ~Tree();
 
-  void setRoot(const std::shared_ptr<const AbstractNode> &root);
+  void setRoot(const std::shared_ptr<const AbstractNode>& root);
   void setDocumentPath(const std::string& path);
   const std::shared_ptr<const AbstractNode>& root() const { return this->root_node; }
 

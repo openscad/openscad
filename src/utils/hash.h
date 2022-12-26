@@ -2,7 +2,7 @@
 
 #include "linalg.h"
 
-typedef Eigen::Matrix<int64_t, 3, 1> Vector3l;
+using Vector3l = Eigen::Matrix<int64_t, 3, 1>;
 
 namespace std {
 template <> struct hash<Vector3f> { std::size_t operator()(const Vector3f& s) const; };

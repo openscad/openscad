@@ -53,17 +53,16 @@ private:
 
   InputEventMapper mapper;
 
-  MainWindow *currentWindow;
+  MainWindow *currentWindow{nullptr};
 
-  QTimer *timer;
+  QTimer *timer{nullptr};
 
   static InputDriverManager *self;
 
   void postEvent(InputEvent *event);
 
 public:
-  InputDriverManager(void);
-  virtual ~InputDriverManager(void);
+  InputDriverManager() = default;
 
   void sendEvent(InputEvent *event);
 

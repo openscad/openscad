@@ -17,7 +17,7 @@ public:
     if (qsettingsPointer.get() == nullptr) {
       std::lock_guard<std::mutex> lock{ctor_mutex};
       if (qsettingsPointer.get() == nullptr) {
-        qsettingsPointer.reset(new QSettings());
+        qsettingsPointer = std::make_unique<QSettings>();
       }
     }
   }

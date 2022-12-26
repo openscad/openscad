@@ -78,7 +78,7 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
   // See Pull Request #2343 for the initial reasons for making this not recursive.
 
   // stores current node and bool indicating if it was a left or right call;
-  typedef std::pair<shared_ptr<CSGOperation>, bool> stackframe_t;
+  using stackframe_t = std::pair<shared_ptr<CSGOperation>, bool>;
   std::stack<stackframe_t> callstack;
 
 entrypoint:
@@ -90,7 +90,7 @@ entrypoint:
     if (nodecount > this->limit) {
       LOG(message_group::Warning, Location::NONE, "", "Normalized tree is growing past %1$d elements. Aborting normalization.\n", this->limit);
       this->aborted = true;
-      return shared_ptr<CSGNode>();
+      return {};
     }
     if (!node || dynamic_pointer_cast<CSGLeaf>(node)) goto return_node;
     goto normalize_left_if_op;

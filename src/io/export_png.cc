@@ -3,6 +3,7 @@
 #include "OffscreenView.h"
 #include "CsgInfo.h"
 #include <cstdio>
+#include <memory>
 #include "RenderSettings.h"
 
 #ifndef NULLGL
@@ -57,10 +58,10 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
 
   std::unique_ptr<OffscreenView> glview;
   try {
-    glview.reset(new OffscreenView(camera.pixel_width, camera.pixel_height));
+    glview = std::make_unique<OffscreenView>(camera.pixel_width, camera.pixel_height);
   } catch (int error) {
     fprintf(stderr, "Can't create OpenGL OffscreenView. Code: %i.\n", error);
-    return 0;
+    return nullptr;
   }
 
 #ifdef ENABLE_OPENCSG

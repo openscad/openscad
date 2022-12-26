@@ -19,7 +19,7 @@ shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
   const Geometry::Geometries::const_iterator& chbegin,
   const Geometry::Geometries::const_iterator& chend)
 {
-  typedef std::pair<shared_ptr<CGALHybridPolyhedron>, int> QueueItem;
+  using QueueItem = std::pair<shared_ptr<CGALHybridPolyhedron>, int>;
   struct QueueItemGreater {
     // stable sort for priority_queue by facets, then progress mark
     bool operator()(const QueueItem& lhs, const QueueItem& rhs) const

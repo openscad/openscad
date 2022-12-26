@@ -32,7 +32,6 @@ private:
     shared_ptr<const Geometry> N;
     std::string msg;
     cache_entry(const shared_ptr<const Geometry>& N);
-    ~cache_entry() { }
   };
 
   Cache<std::string, cache_entry> cache;

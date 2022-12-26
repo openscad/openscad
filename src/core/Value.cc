@@ -26,6 +26,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <memory>
 #include <numeric>
 #include <sstream>
 /*Unicode support for string lengths and array accesses*/
@@ -197,7 +198,7 @@ std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
 
 Value Value::clone() const {
   switch (this->type()) {
-  case Type::UNDEFINED: return Value();
+  case Type::UNDEFINED: return {};
   case Type::BOOL:      return std::get<bool>(this->value);
   case Type::NUMBER:    return std::get<double>(this->value);
   case Type::STRING:    return std::get<str_utf8_wrapper>(this->value).clone();
@@ -205,7 +206,7 @@ Value Value::clone() const {
   case Type::VECTOR:    return std::get<VectorType>(this->value).clone();
   case Type::OBJECT:    return std::get<ObjectType>(this->value).clone();
   case Type::FUNCTION:  return std::get<FunctionPtr>(this->value).clone();
-  default: assert(false && "unknown Value variant type"); return Value();
+  default: assert(false && "unknown Value variant type"); return {};
   }
 }
 
@@ -289,8 +290,7 @@ bool Value::getUnsignedInt(unsigned int& v) const
 {
   double result;
   if (getFiniteDouble(result) &&
-      result >= 0.0 && result <= std::numeric_limits<unsigned int>::max())
-  {
+      result >= 0.0 && result <= std::numeric_limits<unsigned int>::max()) {
     v = result;
     return true;
   }
@@ -301,8 +301,7 @@ bool Value::getPositiveInt(unsigned int& v) const
 {
   double result;
   if (getFiniteDouble(result) &&
-      result >= 1 && result <= std::numeric_limits<unsigned int>::max())
-  {
+      result >= 1 && result <= std::numeric_limits<unsigned int>::max()) {
     v = result;
     return true;
   }
@@ -456,7 +455,7 @@ std::string Value::toEchoStringNoThrow() const
   try{
     ret = toEchoString();
   } catch (EvaluationException& e) {
-     ret = "...";
+    ret = "...";
   }
   return ret;
 }
@@ -509,7 +508,7 @@ public:
         g_unichar_to_utf8(c, buf);
       }
     }
-    return std::string(buf);
+    return {buf};
   }
 
   std::string operator()(const VectorType& v) const
@@ -1028,7 +1027,7 @@ Value multvecmat(const VectorType& vectorvec, const VectorType& matrixvec)
     }
     dstv.emplace_back(r_e);
   }
-  return Value(std::move(dstv));
+  return {std::move(dstv)};
 }
 
 Value multvecvec(const VectorType& vec1, const VectorType& vec2) {
@@ -1040,7 +1039,7 @@ Value multvecvec(const VectorType& vec1, const VectorType& vec2) {
     }
     r += vec1[i].toDouble() * vec2[i].toDouble();
   }
-  return Value(r);
+  return {r};
 }
 
 class multiply_visitor
@@ -1086,7 +1085,7 @@ public:
             }
             ++i;
           }
-          return Value(std::move(dstv));
+          return {std::move(dstv)};
         } else {
           return Value::undef(STR("matrix*matrix requires left operand column count to match right operand row count (", (*first1).toVector().size(), " != ", op2.size(), ')'));
         }
@@ -1132,7 +1131,7 @@ Value Value::operator%(const Value& v) const
 Value Value::operator-() const
 {
   if (this->type() == Type::NUMBER) {
-    return Value(-this->toDouble());
+    return {-this->toDouble()};
   } else if (this->type() == Type::VECTOR) {
     VectorType dstv(this->toVector().evaluation_session());
     for (const auto& vecval : this->toVector()) {
@@ -1300,7 +1299,7 @@ std::ostream& operator<<(std::ostream& stream, const RangeType& r)
                                                 DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
   return stream << "["
                 << DoubleConvert(r.begin_value(), buffer, builder, dc) << " : "
-                << DoubleConvert(r.step_value(),  buffer, builder, dc) << " : "
+                << DoubleConvert(r.step_value(), buffer, builder, dc) << " : "
                 << DoubleConvert(r.end_value(),   buffer, builder, dc) << "]";
 }
 
@@ -1326,7 +1325,7 @@ ObjectType::ObjectType(const shared_ptr<ObjectObject>& copy)
 }
 
 ObjectType::ObjectType(EvaluationSession *session) :
-  ptr(shared_ptr<ObjectObject>(new ObjectObject()))
+  ptr(std::make_shared<ObjectObject>())
 {
   ptr->evaluation_session = session;
 }

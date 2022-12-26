@@ -13,7 +13,7 @@ ParameterCheckBox::ParameterCheckBox(QWidget *parent, BoolParameter *parameter, 
   }
 
   connect(checkBox, SIGNAL(clicked()), this, SLOT(onChanged()));
-  setValue();
+  ParameterCheckBox::setValue();
 }
 
 void ParameterCheckBox::onChanged()

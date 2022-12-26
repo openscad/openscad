@@ -144,7 +144,7 @@ void Preferences::init() {
   this->defaultmap["editor/stepSize"] = 1;
 
   // Toolbar
-  QActionGroup *group = new QActionGroup(this);
+  auto *group = new QActionGroup(this);
   addPrefPage(group, prefsAction3DView, page3DView);
   addPrefPage(group, prefsActionEditor, pageEditor);
 #ifdef OPENSCAD_UPDATER
@@ -294,7 +294,7 @@ void Preferences::featuresCheckBoxToggled(bool state)
   if (!v.isValid()) {
     return;
   }
-  Feature *feature = v.value<Feature *>();
+  auto *feature = v.value<Feature *>();
   feature->enable(state);
   QSettingsCached settings;
   settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
@@ -311,7 +311,7 @@ void Preferences::featuresCheckBoxToggled(bool state)
 void Preferences::setupFeaturesPage()
 {
   int row = 0;
-  for (Feature::iterator it = Feature::begin(); it != Feature::end(); ++it) {
+  for (auto it = Feature::begin(); it != Feature::end(); ++it) {
     Feature *feature = *it;
 
     QString featurekey = QString("feature/%1").arg(QString::fromStdString(feature->get_name()));
@@ -321,7 +321,7 @@ void Preferences::setupFeaturesPage()
     gridLayoutExperimentalFeatures->addItem(new QSpacerItem(1, 8, QSizePolicy::Expanding, QSizePolicy::Fixed), row, 1, 1, 1, Qt::AlignCenter);
     row++;
 
-    QCheckBox *cb = new QCheckBox(QString::fromStdString(feature->get_name()), pageFeatures);
+    auto *cb = new QCheckBox(QString::fromStdString(feature->get_name()), pageFeatures);
     QFont bold_font(cb->font());
     bold_font.setBold(true);
     cb->setFont(bold_font);
@@ -334,7 +334,7 @@ void Preferences::setupFeaturesPage()
     gridLayoutExperimentalFeatures->addWidget(cb, row, 0, 1, 2, Qt::AlignLeading);
     row++;
 
-    QLabel *l = new QLabel(QString::fromStdString(feature->get_description()), pageFeatures);
+    auto *l = new QLabel(QString::fromStdString(feature->get_description()), pageFeatures);
     l->setTextFormat(Qt::RichText);
     gridLayoutExperimentalFeatures->addWidget(l, row, 1, 1, 1, Qt::AlignLeading);
     row++;

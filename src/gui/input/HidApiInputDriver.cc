@@ -123,14 +123,9 @@ static const device_id *match_device(const struct hid_device_info *info)
   return nullptr;
 }
 
-HidApiInputDriver::HidApiInputDriver() : buttons(0), hid_dev(0), dev(0)
+HidApiInputDriver::HidApiInputDriver()
 {
   name = "HidApiInputDriver";
-}
-
-HidApiInputDriver::~HidApiInputDriver()
-{
-
 }
 
 void HidApiInputDriver::run()
@@ -274,9 +269,9 @@ bool HidApiInputDriver::open()
 
   std::tie(this->hid_dev, this->dev) = enumerate();
   if (this->dev) {
-    name = STR(std::setfill('0'), std::setw(4), std::hex
-                                , "HidApiInputDriver (", dev->vendor_id, ":", dev->product_id
-                                , " - ", dev->name, ")");
+    name = STR(std::setfill('0'), std::setw(4), std::hex,
+               "HidApiInputDriver (", dev->vendor_id, ":", dev->product_id,
+               " - ", dev->name, ")");
     start();
     HIDAPI_LOGP("HidApiInputDriver::open(): %s", name);
     return true;

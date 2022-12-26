@@ -13,11 +13,6 @@ LibraryInfoDialog::LibraryInfoDialog(const QString& rendererInfo)
   update_library_info(rendererInfo);
 }
 
-LibraryInfoDialog::~LibraryInfoDialog()
-{
-
-}
-
 void LibraryInfoDialog::update_library_info(const QString& rendererInfo)
 {
   //Get library infos

@@ -14,5 +14,4 @@ public:
   std::string colorscheme;
 private:
   RenderSettings();
-  ~RenderSettings() {}
 };

@@ -75,12 +75,12 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
     return p.release();
   }
 
-  boost::regex ex_sfe("^\\s*solid|^\\s*facet|^\\s*endfacet");
+  boost::regex ex_sfe(R"(^\s*solid|^\s*facet|^\s*endfacet)");
   boost::regex ex_outer("^\\s*outer loop$");
   boost::regex ex_loopend("^\\s*endloop$");
   boost::regex ex_vertex("^\\s*vertex");
   boost::regex ex_vertices(
-    "^\\s*vertex\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s*$");
+    R"(^\s*vertex\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$)");
   boost::regex ex_endsolid("^\\s*endsolid");
 
   bool binary = false;

@@ -13,10 +13,6 @@ TabWidget::TabWidget(QWidget *parent) : QTabBar(parent)
   connect(this, SIGNAL(tabMoved(int,int)), this, SLOT(handleTabMoved(int,int)));
 }
 
-TabWidget::~TabWidget()
-{
-}
-
 QWidget *TabWidget::getContentWidget()
 {
   return stackWidget;

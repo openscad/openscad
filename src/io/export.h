@@ -157,7 +157,7 @@ struct Triangle {
 class ExportMesh
 {
 public:
-  typedef std::array<double, 3> Vertex;
+  using Vertex = std::array<double, 3>;
 
   ExportMesh(const PolySet& ps);
 

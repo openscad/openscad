@@ -36,10 +36,6 @@ transformation::transformation(const std::string op, const std::string name) : o
 {
 }
 
-transformation::~transformation()
-{
-}
-
 void
 transformation::add_arg(const std::string arg)
 {
@@ -61,10 +57,6 @@ matrix::matrix() : transformation("m", "matrix")
 {
 }
 
-matrix::~matrix()
-{
-}
-
 /**
  * matrix(<a> <b> <c> <d> <e> <f>), which specifies a transformation in
  * the form of a transformation matrix of six values. matrix(a,b,c,d,e,f)
@@ -75,7 +67,7 @@ matrix::get_matrices()
 {
   if (args.size() != 6) {
     std::cout << "invalid arguments for matrix" << std::endl;
-    return std::vector<Eigen::Matrix3d>();
+    return {};
   }
 
   Eigen::Matrix3d m;
@@ -93,10 +85,6 @@ translate::translate() : transformation("t", "translate")
 {
 }
 
-translate::~translate()
-{
-}
-
 /**
  * translate(<tx> [<ty>]), which specifies a translation by tx and ty.
  * If <ty> is not provided, it is assumed to be zero.
@@ -106,7 +94,7 @@ translate::get_matrices()
 {
   if ((args.size() < 1) || (args.size() > 2)) {
     std::cout << "invalid arguments for " << get_name() << std::endl;
-    return std::vector<Eigen::Matrix3d>();
+    return {};
   }
 
   double tx = args[0];
@@ -127,10 +115,6 @@ scale::scale() : transformation("s", "scale")
 {
 }
 
-scale::~scale()
-{
-}
-
 /**
  * scale(<sx> [<sy>]), which specifies a scale operation by sx and sy.
  * If <sy> is not provided, it is assumed to be equal to <sx>.
@@ -140,7 +124,7 @@ scale::get_matrices()
 {
   if ((args.size() < 1) || (args.size() > 2)) {
     std::cout << "invalid arguments for " << get_name() << std::endl;
-    return std::vector<Eigen::Matrix3d>();
+    return {};
   }
 
   double sx = args[0];
@@ -161,10 +145,6 @@ rotate::rotate() : transformation("r", "rotate")
 {
 }
 
-rotate::~rotate()
-{
-}
-
 /**
  * rotate(<rotate-angle> [<cx> <cy>]), which specifies a rotation by
  * <rotate-angle> degrees about a given point.
@@ -181,7 +161,7 @@ rotate::get_matrices()
 {
   if ((args.size() != 1) && (args.size() != 3)) {
     std::cout << "invalid arguments for " << get_name() << std::endl;
-    return std::vector<Eigen::Matrix3d>();
+    return {};
   }
 
   bool has_center = args.size() == 3;
@@ -219,10 +199,6 @@ skew_x::skew_x() : transformation("x", "skew_x")
 {
 }
 
-skew_x::~skew_x()
-{
-}
-
 /**
  * skewX(<skew-angle>), which specifies a skew transformation along the x-axis.
  */
@@ -231,7 +207,7 @@ skew_x::get_matrices()
 {
   if (args.size() != 1) {
     std::cout << "invalid arguments for " << get_name() << std::endl;
-    return std::vector<Eigen::Matrix3d>();
+    return {};
   }
 
   double angle = args[0];
@@ -251,10 +227,6 @@ skew_y::skew_y() : transformation("y", "skew_y")
 {
 }
 
-skew_y::~skew_y()
-{
-}
-
 /**
  * skewY(<skew-angle>), which specifies a skew transformation along the y-axis.
  */
@@ -263,7 +235,7 @@ skew_y::get_matrices()
 {
   if (args.size() != 1) {
     std::cout << "invalid arguments for " << get_name() << std::endl;
-    return std::vector<Eigen::Matrix3d>();
+    return {};
   }
 
   double angle = args[0];

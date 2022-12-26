@@ -34,10 +34,11 @@
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
 
-GeometryEvaluator::GeometryEvaluator(const class Tree& tree) :
-  tree(tree)
-{
-}
+class Geometry;
+class Polygon2d;
+class Tree;
+
+GeometryEvaluator::GeometryEvaluator(const Tree& tree) : tree(tree) { }
 
 /*!
    Set allownef to false to force the result to _not_ be a Nef polyhedron
@@ -102,9 +103,9 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
   for (const auto& item : this->visitedchildren[node.index()]) {
     if (!isValidDim(item, dim)) break;
   }
-  if (dim == 2) return ResultObject(applyToChildren2D(node, op));
+  if (dim == 2) return {applyToChildren2D(node, op)};
   else if (dim == 3) return applyToChildren3D(node, op);
-  return ResultObject();
+  return {};
 }
 
 /*!
@@ -115,26 +116,25 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const AbstractNode& node, OpenSCADOperator op)
 {
   Geometry::Geometries children = collectChildren3D(node);
-  if (children.size() == 0) return ResultObject();
+  if (children.size() == 0) return {};
 
   if (op == OpenSCADOperator::HULL) {
-    PolySet *ps = new PolySet(3, /* convex */ true);
+    auto *ps = new PolySet(3, /* convex */ true);
 
     if (CGALUtils::applyHull(children, *ps)) {
       return ps;
     }
 
     delete ps;
-    return ResultObject();
-  }
-  else if (op == OpenSCADOperator::FILL) {
+    return {};
+  } else if (op == OpenSCADOperator::FILL) {
     for (const auto& item : children) {
       LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(), "fill() not yet implemented for 3D");
     }
   }
 
   // Only one child -> this is a noop
-  if (children.size() == 1) return ResultObject(children.front().second);
+  if (children.size() == 1) return {children.front().second};
 
   switch (op) {
   case OpenSCADOperator::MINKOWSKI:
@@ -143,9 +143,9 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     for (const auto& item : children) {
       if (item.second && !item.second->isEmpty()) actualchildren.push_back(item);
     }
-    if (actualchildren.empty()) return ResultObject();
-    if (actualchildren.size() == 1) return ResultObject(actualchildren.front().second);
-    return ResultObject(CGALUtils::applyMinkowski(actualchildren));
+    if (actualchildren.empty()) return {};
+    if (actualchildren.size() == 1) return {actualchildren.front().second};
+    return {CGALUtils::applyMinkowski(actualchildren)};
     break;
   }
   case OpenSCADOperator::UNION:
@@ -154,14 +154,14 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     for (const auto& item : children) {
       if (item.second && !item.second->isEmpty()) actualchildren.push_back(item);
     }
-    if (actualchildren.empty()) return ResultObject();
-    if (actualchildren.size() == 1) return ResultObject(actualchildren.front().second);
-    return ResultObject(CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end()));
+    if (actualchildren.empty()) return {};
+    if (actualchildren.size() == 1) return {actualchildren.front().second};
+    return {CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())};
     break;
   }
   default:
   {
-    return ResultObject(CGALUtils::applyOperator3D(children, op));
+    return {CGALUtils::applyOperator3D(children, op)};
     break;
   }
   }
@@ -178,16 +178,16 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode& node)
 {
   std::vector<const Polygon2d *> children = collectChildren2D(node);
-  Polygon2d *geometry = new Polygon2d();
+  auto *geometry = new Polygon2d();
 
-  typedef CGAL::Point_2<CGAL::Cartesian<double>> CGALPoint2;
+  using CGALPoint2 = CGAL::Point_2<CGAL::Cartesian<double>>;
   // Collect point cloud
   std::list<CGALPoint2> points;
   for (const auto& p : children) {
     if (p) {
       for (const auto& o : p->outlines()) {
         for (const auto& v : o.vertices) {
-          points.push_back(CGALPoint2(v[0], v[1]));
+          points.emplace_back(v[0], v[1]);
         }
       }
     }
@@ -220,7 +220,7 @@ Polygon2d *GeometryEvaluator::applyFill2D(const AbstractNode& node)
   // Keep only the 'positive' outlines, eg: the outside edges
   for (const auto& outline : geometry_in->outlines()) {
     if (outline.positive) {
-      Polygon2d *poly = new Polygon2d();
+      auto *poly = new Polygon2d();
       poly->addOutline(outline);
       newchildren.push_back(poly);
     }
@@ -234,7 +234,7 @@ Geometry *GeometryEvaluator::applyHull3D(const AbstractNode& node)
 {
   Geometry::Geometries children = collectChildren3D(node);
 
-  PolySet *P = new PolySet(3);
+  auto *P = new PolySet(3);
   if (CGALUtils::applyHull(children, *P)) {
     return P;
   }
@@ -255,11 +255,11 @@ Polygon2d *GeometryEvaluator::applyMinkowski2D(const AbstractNode& node)
    Returns a list of Polygon2d children of the given node.
    May return empty Polygon2d object, but not nullptr objects
  */
-std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const AbstractNode& node)
+std::vector<const Polygon2d *> GeometryEvaluator::collectChildren2D(const AbstractNode& node)
 {
   std::vector<const Polygon2d *> children;
   for (const auto& item : this->visitedchildren[node.index()]) {
-    auto &chnode = item.first;
+    auto& chnode = item.first;
     const shared_ptr<const Geometry>& chgeom = item.second;
     if (chnode->modinst->isBackground()) continue;
 
@@ -277,7 +277,7 @@ std::vector<const class Polygon2d *> GeometryEvaluator::collectChildren2D(const 
         if (chgeom->isEmpty()) {
           children.push_back(nullptr);
         } else {
-          const Polygon2d *polygons = dynamic_cast<const Polygon2d *>(chgeom.get());
+          const auto *polygons = dynamic_cast<const Polygon2d *>(chgeom.get());
           assert(polygons);
           children.push_back(polygons);
         }
@@ -336,7 +336,7 @@ Geometry::Geometries GeometryEvaluator::collectChildren3D(const AbstractNode& no
 {
   Geometry::Geometries children;
   for (const auto& item : this->visitedchildren[node.index()]) {
-    auto &chnode = item.first;
+    auto& chnode = item.first;
     const shared_ptr<const Geometry>& chgeom = item.second;
     if (chnode->modinst->isBackground()) continue;
 
@@ -437,7 +437,7 @@ Response GeometryEvaluator::visit(State& state, const AbstractNode& node)
     state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
   }
   if (state.isPostfix()) {
-    shared_ptr<const class Geometry> geom;
+    shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
       geom = applyToChildren(node, OpenSCADOperator::UNION).constptr();
     } else {
@@ -456,14 +456,14 @@ Response GeometryEvaluator::visit(State& state, const ListNode& node)
 {
   if (state.parent()) {
     if (state.isPrefix() && node.modinst->isBackground()) {
-      if (node.modinst->isBackground()) state.isBackground();
+      if (node.modinst->isBackground()) state.setBackground(true);
       return Response::PruneTraversal;
     }
     if (state.isPostfix()) {
       unsigned int dim = 0;
       for (const auto& item : this->visitedchildren[node.index()]) {
         if (!isValidDim(item, dim)) break;
-        auto &chnode = item.first;
+        auto& chnode = item.first;
         const shared_ptr<const Geometry>& chgeom = item.second;
         addToParent(state, *chnode, chgeom);
       }
@@ -486,7 +486,7 @@ Response GeometryEvaluator::visit(State& state, const GroupNode& node)
 Response GeometryEvaluator::lazyEvaluateRootNode(State& state, const AbstractNode& node) {
   if (state.isPrefix()) {
     if (node.modinst->isBackground()) {
-      state.isBackground();
+      state.setBackground(true);
       return Response::PruneTraversal;
     }
     if (isSmartCached(node)) {
@@ -494,13 +494,13 @@ Response GeometryEvaluator::lazyEvaluateRootNode(State& state, const AbstractNod
     }
   }
   if (state.isPostfix()) {
-    shared_ptr<const class Geometry> geom;
+    shared_ptr<const Geometry> geom;
 
     unsigned int dim = 0;
     GeometryList::Geometries geometries;
     for (const auto& item : this->visitedchildren[node.index()]) {
       if (!isValidDim(item, dim)) break;
-      auto &chnode = item.first;
+      auto& chnode = item.first;
       const shared_ptr<const Geometry>& chgeom = item.second;
       if (chnode->modinst->isBackground()) continue;
       // NB! We insert into the cache here to ensure that all children of
@@ -543,7 +543,7 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
     if (!isSmartCached(node)) {
       const Geometry *geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       if (geometry) {
-        const Polygon2d *polygon = dynamic_cast<const Polygon2d *>(geometry);
+        const auto *polygon = dynamic_cast<const Polygon2d *>(geometry);
         // ClipperLib documentation: The formula for the number of steps in a full
         // circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
         double n = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
@@ -572,7 +572,7 @@ Response GeometryEvaluator::visit(State& state, const RenderNode& node)
     state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
   }
   if (state.isPostfix()) {
-    shared_ptr<const class Geometry> geom;
+    shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
       ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
       auto mutableGeom = res.asMutableGeometry();
@@ -600,7 +600,7 @@ Response GeometryEvaluator::visit(State& state, const LeafNode& node)
     if (!isSmartCached(node)) {
       const Geometry *geometry = node.createGeometry();
       assert(geometry);
-      if (const Polygon2d *polygon = dynamic_cast<const Polygon2d *>(geometry)) {
+      if (const auto *polygon = dynamic_cast<const Polygon2d *>(geometry)) {
         if (!polygon->isSanitized()) {
           Polygon2d *p = ClipperUtils::sanitize(*polygon);
           delete geometry;
@@ -623,7 +623,7 @@ Response GeometryEvaluator::visit(State& state, const TextNode& node)
       std::vector<const Geometry *> geometrylist = node.createGeometryList();
       std::vector<const Polygon2d *> polygonlist;
       for (const auto& geometry : geometrylist) {
-        const Polygon2d *polygon = dynamic_cast<const Polygon2d *>(geometry);
+        const auto *polygon = dynamic_cast<const Polygon2d *>(geometry);
         assert(polygon);
         polygonlist.push_back(polygon);
       }
@@ -672,7 +672,7 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
 {
   if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
   if (state.isPostfix()) {
-    shared_ptr<const class Geometry> geom;
+    shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
       if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
         // due to the way parse/eval works we can't currently distinguish between NaN and Inf
@@ -888,7 +888,7 @@ static Outline2d splitOutlineByFs(
         double edgelen = (trans * v1 - trans * v0).norm();
         max_edgelen = std::max(max_edgelen, edgelen);
       }
-      unsigned int edge_segments = static_cast<unsigned int>(std::ceil(max_edgelen / fs));
+      auto edge_segments = static_cast<unsigned int>(std::ceil(max_edgelen / fs));
       add_segmented_edge(o2, v0, v1, edge_segments);
       v0 = v1;
     }
@@ -915,12 +915,12 @@ static Outline2d splitOutlineByFn(
   struct segment_tracker {
     size_t edge_index;
     double max_edgelen;
-    unsigned int segment_count;
-    segment_tracker(size_t i, double len) : edge_index(i), max_edgelen(len), segment_count(1u)  { }
+    unsigned int segment_count{1u};
+    segment_tracker(size_t i, double len) : edge_index(i), max_edgelen(len) { }
     // metric for comparison: average between (max segment length, and max segment length after split)
-    double metric() const { return max_edgelen / (segment_count + 0.5); }
+    [[nodiscard]] double metric() const { return max_edgelen / (segment_count + 0.5); }
     bool operator<(const segment_tracker& rhs) const { return this->metric() < rhs.metric();  }
-    bool close_match(const segment_tracker& other) const {
+    [[nodiscard]] bool close_match(const segment_tracker& other) const {
       // Edges are grouped when metrics match by at least 99.9%
       constexpr double APPROX_EQ_RATIO = 0.999;
       double l1 = this->metric(), l2 = other.metric();
@@ -1018,7 +1018,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
   boost::tribool isConvex{poly.is_convex()};
   // Twist or non-uniform scale makes convex polygons into unknown polyhedrons
   if (isConvex && non_linear) isConvex = unknown;
-  PolySet *ps = new PolySet(3, isConvex);
+  auto *ps = new PolySet(3, isConvex);
   ps->setConvexity(node.convexity);
   if (node.height <= 0) return ps;
 
@@ -1034,11 +1034,11 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     // Calculate Helical curve length for Twist with no Scaling
     if (node.scale_x == 1.0 && node.scale_y == 1.0) {
       slices = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height, node.twist, node.fn, node.fs, node.fa);
-    } else if ( node.scale_x != node.scale_y) { // non uniform scaling with twist using max slices from twist and non uniform scale
+    } else if (node.scale_x != node.scale_y) {  // non uniform scaling with twist using max slices from twist and non uniform scale
       double max_delta_sqr = 0; // delta from before/after scaling
       Vector2d scale(node.scale_x, node.scale_y);
-      for (const auto& o : poly.outlines()){
-        for (const auto& v : o.vertices){
+      for (const auto& o : poly.outlines()) {
+        for (const auto& v : o.vertices) {
           max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
         }
       }
@@ -1046,7 +1046,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
       size_t slicesTwist;
       slicesNonUniScale = (unsigned int)Calc::get_diagonal_slices(max_delta_sqr, node.height, node.fn, node.fs);
       slicesTwist = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height, node.twist, node.fn, node.fs, node.fa);
-      slices = std::max(slicesNonUniScale,slicesTwist);
+      slices = std::max(slicesNonUniScale, slicesTwist);
     } else { // uniform scaling with twist, use conical helix calculation
       slices = (unsigned int)Calc::get_conical_helix_slices(max_r1_sqr, node.height, node.twist, node.scale_x, node.fn, node.fs, node.fa);
     }
@@ -1054,8 +1054,8 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     // Non uniform scaling, w/o twist
     double max_delta_sqr = 0; // delta from before/after scaling
     Vector2d scale(node.scale_x, node.scale_y);
-    for (const auto& o : poly.outlines()){
-      for (const auto& v : o.vertices){
+    for (const auto& o : poly.outlines()) {
+      for (const auto& v : o.vertices) {
         max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
       }
     }
@@ -1090,7 +1090,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
         }
       }
     } else { // $fs and $fa based segmentation
-      unsigned int fa_segs = static_cast<unsigned int>(std::ceil(360.0 / node.fa));
+      auto fa_segs = static_cast<unsigned int>(std::ceil(360.0 / node.fa));
       for (const auto& o : poly.outlines()) {
         if (o.vertices.size() >= fa_segs) {
           seg_poly.addOutline(o);
@@ -1181,7 +1181,7 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
         geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       }
       if (geometry) {
-        const Polygon2d *polygons = dynamic_cast<const Polygon2d *>(geometry);
+        const auto *polygons = dynamic_cast<const Polygon2d *>(geometry);
         Geometry *extruded = extrudePolygon(node, *polygons);
         assert(extruded);
         geom.reset(extruded);
@@ -1236,7 +1236,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
 {
   if (node.angle == 0) return nullptr;
 
-  PolySet *ps = new PolySet(3);
+  auto *ps = new PolySet(3);
   ps->setConvexity(node.convexity);
 
   double min_x = 0;
@@ -1334,7 +1334,7 @@ Response GeometryEvaluator::visit(State& state, const RotateExtrudeNode& node)
         geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       }
       if (geometry) {
-        const Polygon2d *polygons = dynamic_cast<const Polygon2d *>(geometry);
+        const auto *polygons = dynamic_cast<const Polygon2d *>(geometry);
         Geometry *rotated = rotatePolygon(node, *polygons);
         geom.reset(rotated);
         delete geometry;
@@ -1359,7 +1359,7 @@ Response GeometryEvaluator::visit(State& /*state*/, const AbstractPolyNode& /*no
 
 shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const ProjectionNode& node)
 {
-  shared_ptr<const class Geometry> geom;
+  shared_ptr<const Geometry> geom;
   shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
   if (newgeom) {
     auto Nptr = CGALUtils::getNefPolyhedronFromGeometry(newgeom);
@@ -1376,11 +1376,11 @@ shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const ProjectionNode
 
 shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const ProjectionNode& node)
 {
-  shared_ptr<const class Geometry> geom;
+  shared_ptr<const Geometry> geom;
   std::vector<const Polygon2d *> tmp_geom;
   BoundingBox bounds;
   for (const auto& item : this->visitedchildren[node.index()]) {
-    auto &chnode = item.first;
+    auto& chnode = item.first;
     const shared_ptr<const Geometry>& chgeom = item.second;
     if (chnode->modinst->isBackground()) continue;
 
@@ -1435,7 +1435,7 @@ Response GeometryEvaluator::visit(State& state, const ProjectionNode& node)
 {
   if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
   if (state.isPostfix()) {
-    shared_ptr<const class Geometry> geom;
+    shared_ptr<const Geometry> geom;
     if (isSmartCached(node)) {
       geom = smartCacheGet(node, false);
     } else {
@@ -1515,7 +1515,7 @@ Response GeometryEvaluator::visit(State& state, const AbstractIntersectionNode& 
     state.setPreferNef(true); // Improve quality of CSG by avoiding conversion loss
   }
   if (state.isPostfix()) {
-    shared_ptr<const class Geometry> geom;
+    shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
       geom = applyToChildren(node, OpenSCADOperator::INTERSECTION).constptr();
     } else {
@@ -1532,13 +1532,13 @@ static Geometry *roofOverPolygon(const RoofNode& node, const Polygon2d& poly)
   PolySet *roof;
   if (node.method == "voronoi") {
     roof = roof_vd::voronoi_diagram_roof(poly, node.fa, node.fs);
+    roof->setConvexity(node.convexity);
   } else if (node.method == "straight") {
     roof = roof_ss::straight_skeleton_roof(poly);
+    roof->setConvexity(node.convexity);
   } else {
     assert(false && "Invalid roof method");
   }
-
-  roof->setConvexity(node.convexity);
 
   return roof;
 }
