@@ -17,8 +17,6 @@ public:
   ApiFunc(const QString name, const QString param1, const QString param2) : name(name), params(QStringList(param1) << param2) { }
   ApiFunc(const QString name, const QStringList params) : name(name), params(params) { }
 
-  virtual ~ApiFunc() = default;
-
   const QString& get_name() const
   {
     return name;
@@ -48,7 +46,6 @@ public:
 
   ScadTemplate() : text(""), cursor_offset(0) { }
   ScadTemplate(const QString text, const int cursor_offset) : text(text), cursor_offset(cursor_offset) { }
-  virtual ~ScadTemplate() = default;
   const QString& get_text() const { return text; }
   int get_cursor_offset() const { return cursor_offset; }
 
