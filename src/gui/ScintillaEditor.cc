@@ -136,6 +136,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   // key bindings, as well as some minor scintilla bugs
   //
   QsciCommand *c;
+  // NOLINTBEGIN(bugprone-suspicious-enum-usage)
 #ifdef Q_OS_MAC
   // Alt-Backspace should delete left word (Alt-Delete already deletes right word)
   c = qsci->standardCommands()->find(QsciCommand::DeleteWordLeft);
@@ -169,6 +170,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   connect(shortcutAutocomplete, &QShortcut::activated, [ = ]() {
     qsci->autoCompleteFromAPIs();
   });
+  // NOLINTEND(bugprone-suspicious-enum-usage)
 
   scintillaLayout->setContentsMargins(0, 0, 0, 0);
   scintillaLayout->addWidget(qsci);
