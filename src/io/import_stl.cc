@@ -13,7 +13,7 @@
 #error Byte order undefined or unknown. Currently only BOOST_ENDIAN_BIG_BYTE and BOOST_ENDIAN_LITTLE_BYTE are supported.
 #endif
 
-#define STL_FACET_NUMBYTES 4 * 3 * 4 + 2
+inline constexpr size_t STL_FACET_NUMBYTES = 4ul * 3ul * 4ul + 2ul;
 // as there is no 'float32_t' standard, we assume the systems 'float'
 // is a 'binary32' aka 'single' standard IEEE 32-bit floating point type
 union stl_facet {
@@ -28,7 +28,7 @@ union stl_facet {
   } data;
 };
 
-static_assert(offsetof(stl_facet::facet_data, attribute_byte_count) == 4 * 3 * 4,
+static_assert(offsetof(stl_facet::facet_data, attribute_byte_count) == 4ul * 3ul * 4ul,
               "Invalid padding in stl_facet");
 
 #if BOOST_ENDIAN_BIG_BYTE
@@ -92,7 +92,7 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
 #if BOOST_ENDIAN_BIG_BYTE
     uint32_byte_swap(facenum);
 #endif
-    if (file_size == static_cast<std::streamoff>(80 + 4 + 50 * facenum)) {
+    if (file_size == static_cast<std::streamoff>(80ul + 4ul + 50ul * facenum)) {
       binary = true;
     }
   }

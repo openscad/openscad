@@ -1303,7 +1303,7 @@ void MainWindow::compileCSG()
     LOG(message_group::None, Location::NONE, "", "Compiling design (CSG Products normalization)...");
     this->processEvents();
 
-    size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+    size_t normalizelimit = 2ul * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
     CSGTreeNormalizer normalizer(normalizelimit);
 
     if (this->csgRoot) {
