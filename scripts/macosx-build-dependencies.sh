@@ -35,30 +35,30 @@ OPTION_ARM64=false
 OPTION_X86_64=false
 
 PACKAGES=(
-    "double_conversion 3.1.5"
-    "boost 1.74.0"
+    "double_conversion 3.2.1"
+    "boost 1.81.0"
     "eigen 3.4.0"
     "gmp 6.2.1"
-    "mpfr 4.0.2"
+    "mpfr 4.1.0"
     "glew 2.1.0"
-    "gettext 0.21"
+    "gettext 0.21.1"
     "libffi REMOVE"
-    "freetype 2.9.1"
+    "freetype 2.12.1"
     "ragel REMOVE"
-    "harfbuzz 2.8.2"
-    "libzip 1.8.0"
+    "harfbuzz 6.0.0"
+    "libzip 1.9.2"
     "libxml2 REMOVE"
     "libuuid 1.6.2"
-    "fontconfig 2.13.1"
-    "hidapi 0.11.0"
+    "fontconfig 2.14.1"
+    "hidapi 0.12.0"
     "lib3mf 1.8.1"
     "glib2 2.71.0"
-    "pixman 0.40.0"
+    "pixman 0.42.2"
     "cairo 1.16.0"
-    "cgal 5.3"
-    "qt5 5.15.2"
-    "opencsg 1.4.2"
-    "qscintilla 2.13.1"
+    "cgal 5.5"
+    "qt5 5.15.7"
+    "opencsg 1.5.1"
+    "qscintilla 2.13.3"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.27.1"
@@ -194,14 +194,12 @@ build_qt5()
   cd $BASEDIR/src
   v=(${version//./ }) # Split into array
   rm -rf qt-everywhere-src-$version
-  if [ ! -f qt-everywhere-src-$version.tar.xz ]; then
-    curl -LO --insecure https://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-src-$version.tar.xz
+  if [ ! -f qt-everywhere-opensource-src-$version.tar.xz ]; then
+    curl -LO --insecure https://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-opensource-src-$version.tar.xz
   fi
-  tar xzf qt-everywhere-src-$version.tar.xz
+  tar xzf qt-everywhere-opensource-src-$version.tar.xz
   cd qt-everywhere-src-$version
-  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15.2-macos-tabbar.patch
   patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-macos-CGColorSpace.patch
-  patch -d qtbase -p1 < $OPENSCADDIR/patches/qt5/qt-split-arch.patch
 
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
@@ -276,7 +274,8 @@ build_gmp()
   cd $BASEDIR/src
   rm -rf gmp-$version
   if [ ! -f gmp-$version.tar.bz2 ]; then
-    curl -O https://gmplib.org/download/gmp/gmp-$version.tar.bz2
+    # FIXME: -k is only to ignore libgmp's expired SSL certificate
+    curl -kO https://gmplib.org/download/gmp/gmp-$version.tar.bz2
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
@@ -382,15 +381,10 @@ build_cgal()
   cd $BASEDIR/src
   rm -rf CGAL-$version
   if [ ! -f CGAL-$version.tar.xz ]; then
-    if [[ ! $version =~ 4.* ]]; then
       curl -L https://github.com/CGAL/cgal/releases/download/v${version}/CGAL-${version}-library.tar.xz --output CGAL-${version}.tar.xz
-    else
-      curl -LO https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-$version/CGAL-$version.tar.xz
-    fi
   fi
   tar xzf CGAL-$version.tar.xz
   cd CGAL-$version
-  patch -p1 < $OPENSCADDIR/patches/CGAL-remove-demo-install.patch
   cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DGMP_INCLUDE_DIR=$DEPLOYDIR/include -DGMP_LIBRARIES=$DEPLOYDIR/lib/libgmp.dylib -DGMPXX_LIBRARIES=$DEPLOYDIR/lib/libgmpxx.dylib -DGMPXX_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_INCLUDE_DIR=$DEPLOYDIR/include -DMPFR_LIBRARIES=$DEPLOYDIR/lib/libmpfr.dylib -DWITH_CGAL_Qt5=OFF -DWITH_CGAL_ImageIO=OFF -DBUILD_SHARED_LIBS=TRUE -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install
@@ -641,7 +635,7 @@ build_fontconfig()
   fi
   tar xzf "fontconfig-$version.tar.gz"
   cd "fontconfig-$version"
-  patch -p1 < $OPENSCADDIR/patches/fontconfig-arm64.patch
+#  patch -p1 < $OPENSCADDIR/patches/fontconfig-arm64.patch
 
   # Build each arch separately
   for i in ${!ARCHS[@]}; do
@@ -695,7 +689,8 @@ build_gettext()
     arch=${ARCHS[$i]}
     mkdir build-$arch
     cd build-$arch
-    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" CXXFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib" --disable-shared --with-included-glib --disable-java --disable-csharp --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
+    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" CXXFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib" --disable-shared --with-included-glib --with-included-gettext --disable-java --disable-csharp --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
+    make -j"$NUMCPU"
     make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
@@ -733,7 +728,7 @@ build_glib2()
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt --force-fallback-for libpcre -Dgtk_doc=false -Dman=false -Ddtrace=false -Dtests=false build-$arch
+    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt --force-fallback-for libpcre,libpcre2-8 -Dgtk_doc=false -Dman=false -Ddtrace=false -Dtests=false build-$arch
     meson compile -C build-$arch
     DESTDIR=install/ meson install -C build-$arch
   done
@@ -879,7 +874,9 @@ build_pixman()
     mkdir build-$arch
     cd build-$arch
     # libpng is only used for tests, disabling to kill linker warnings since we don't build libpng ourselves
-    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --disable-libpng --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
+    # --disable-arm-a64-neon is due to https://gitlab.freedesktop.org/pixman/pixman/-/issues/59 and
+    #   https://gitlab.freedesktop.org/pixman/pixman/-/issues/69
+    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --disable-gtk --disable-libpng --disable-arm-a64-neon --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
     make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
