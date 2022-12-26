@@ -8,6 +8,7 @@
 #include <limits>
 #include <iostream>
 #include <memory>
+#include <type_traits>
 #include <variant>
 
 #include <glib.h>
@@ -554,12 +555,14 @@ public:
   Value(const char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!
   Value(char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!
                                                   // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0608r3.html
-  template <class T> Value(T&& val) : value(std::forward<T>(val)) { }
+  // Don't shadow move constructor
+  template <class T, class = std::enable_if_t<!std::is_same_v<std::decay_t<T>, Value>>>
+  Value(T&& val) : value(std::forward<T>(val)) { }
 
   static Value undef(const std::string& why); // creation of undef requires a reason!
 
   [[nodiscard]] const std::string typeName() const;
-  static std::string typeName(Type type);
+  [[nodiscard]] static std::string typeName(Type type);
   [[nodiscard]] Type type() const { return static_cast<Type>(this->value.index()); }
   [[nodiscard]] bool isDefinedAs(const Type type) const { return this->type() == type; }
   [[nodiscard]] bool isDefined()   const { return this->type() != Type::UNDEFINED; }
@@ -572,8 +575,8 @@ public:
   [[nodiscard]] const str_utf8_wrapper& toStrUtf8Wrapper() const;
   [[nodiscard]] const VectorType& toVector() const;
   [[nodiscard]] const EmbeddedVectorType& toEmbeddedVector() const;
-  VectorType& toVectorNonConst();
-  EmbeddedVectorType& toEmbeddedVectorNonConst();
+  [[nodiscard]] VectorType& toVectorNonConst();
+  [[nodiscard]] EmbeddedVectorType& toEmbeddedVectorNonConst();
   [[nodiscard]] const RangeType& toRange() const;
   [[nodiscard]] const FunctionType& toFunction() const;
   [[nodiscard]] const ObjectType& toObject() const;
