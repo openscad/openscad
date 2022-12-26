@@ -248,7 +248,7 @@ private:
 
   [[nodiscard]] glong get_utf8_strlen() const {
     if (str_ptr->u8len == str_utf8_t::LENGTH_UNKNOWN) {
-      str_ptr->u8len = g_utf8_strlen(str_ptr->u8str.c_str(), str_ptr->u8str.size());
+      str_ptr->u8len = g_utf8_strlen(str_ptr->u8str.c_str(), static_cast<gssize>(str_ptr->u8str.size()));
     }
     return str_ptr->u8len;
   }
@@ -452,7 +452,7 @@ public:
           }
           check_and_push();
         } else { // vo->vec is flat
-          it = vo->vec.begin() + index;
+          it = vo->vec.begin() + static_cast<vec_t::iterator::difference_type>(index);
         }
         return *this;
       }
