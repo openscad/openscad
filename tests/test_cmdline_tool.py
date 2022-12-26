@@ -228,6 +228,8 @@ def post_process_3mf(filename):
     from zipfile import ZipFile
     xml_content = ZipFile(filename).read("3D/3dmodel.model")
     xml_content = re.sub('UUID="[^"]*"', 'UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX"', xml_content.decode('utf-8'))
+    # ignore schema identifiers as they may differ between lib3MF versions
+    xml_content = re.sub('xmlns[^"]*\"[^"]*\"\ ?', '', xml_content)
     # add tag end whitespace for lib3mf 2.0 output files
     xml_content = re.sub('\"/>', '\" />', xml_content)
     with open(filename, 'wb') as xml_file:
