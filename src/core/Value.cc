@@ -1245,7 +1245,6 @@ RangeType::iterator::iterator(const RangeType& range, iter_state state) : range(
 {
   if (std::isnan(range.begin_val) || std::isnan(range.end_val) ||
       std::isnan(range.step_val) || range.step_val == 0) {
-    state = iter_state::RANGE_END;
     i_step = num_values;
   }
   update_state();
