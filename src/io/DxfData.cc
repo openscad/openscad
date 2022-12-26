@@ -93,7 +93,7 @@ DxfData::DxfData(double fn, double fs, double fa,
   std::string current_block;
 
 #define ADD_LINE(_x1, _y1, _x2, _y2) do {                   \
-          double _p1x = _x1, _p1y = _y1, _p2x = _x2, _p2y = _y2;  \
+          double _p1x = (_x1), _p1y = (_y1), _p2x = (_x2), _p2y = (_y2);\
           if (!in_entities_section && !in_blocks_section)         \
           break;                                                \
           if (in_entities_section &&                              \

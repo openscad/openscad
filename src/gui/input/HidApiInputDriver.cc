@@ -78,8 +78,8 @@ static const struct device_id device_ids[] = {
 };
 
 #define HIDAPI_LOG(f) hidapi_log(boost::format(f))
+// NOLINTNEXTLINE(*macro-parentheses)
 #define HIDAPI_LOGP(f, a) hidapi_log(boost::format(f) % a)
-
 static void hidapi_log(boost::format format) {
   if (logstream) {
     const ch::system_clock::duration time = ch::system_clock::now() - logtime;
