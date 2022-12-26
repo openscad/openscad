@@ -221,13 +221,13 @@ std::string vert_dump(CGAL_Nef_polyhedron3::Nef_polyhedron_S2::SVertex_const_han
 std::string sphere_map_dump(const CGAL_Nef_polyhedron3& N)
 {
   std::ostringstream out;
-  typedef CGAL_Nef_polyhedron3::Vertex_const_iterator Vertex_const_iterator;
-  typedef CGAL_Nef_polyhedron3::Nef_polyhedron_S2 Nef_polyhedron_S2;
-  typedef Nef_polyhedron_S2::SVertex_const_handle SVertex_const_handle;
-  typedef Nef_polyhedron_S2::SHalfedge_const_handle SHalfedge_const_handle;
-  typedef Nef_polyhedron_S2::SHalfloop_const_handle SHalfloop_const_handle;
-  typedef Nef_polyhedron_S2::SFace_const_iterator SFace_const_iterator;
-  typedef Nef_polyhedron_S2::SFace_cycle_const_iterator SFace_cycle_const_iterator;
+  using Vertex_const_iterator = CGAL_Nef_polyhedron3::Vertex_const_iterator;
+  using Nef_polyhedron_S2 = CGAL_Nef_polyhedron3::Nef_polyhedron_S2;
+  using SVertex_const_handle = Nef_polyhedron_S2::SVertex_const_handle;
+  using SHalfedge_const_handle = Nef_polyhedron_S2::SHalfedge_const_handle;
+  using SHalfloop_const_handle = Nef_polyhedron_S2::SHalfloop_const_handle;
+  using SFace_const_iterator = Nef_polyhedron_S2::SFace_const_iterator;
+  using SFace_cycle_const_iterator = Nef_polyhedron_S2::SFace_cycle_const_iterator;
   Vertex_const_iterator v;
   out << "<!-- sphere map begin -->\n";
   int counter = 0;

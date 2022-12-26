@@ -38,8 +38,8 @@ public:
   void viewAll();
 
 public slots:
-  void ZoomIn(void);
-  void ZoomOut(void);
+  void ZoomIn();
+  void ZoomOut();
   void setMouseCentricZoom(bool var){
     this->mouseCentricZoom = var;
   }
@@ -91,5 +91,5 @@ signals:
 };
 
 /* These are defined in QLGView2.cc.  See the commentary there. */
-QOpenGLContext *getGLContext(void);
+QOpenGLContext *getGLContext();
 void setGLContext(QOpenGLContext *);

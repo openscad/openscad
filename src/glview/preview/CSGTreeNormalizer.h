@@ -5,8 +5,7 @@
 class CSGTreeNormalizer
 {
 public:
-  CSGTreeNormalizer(size_t limit) : aborted(false), limit(limit), nodecount(0) {}
-  ~CSGTreeNormalizer() {}
+  CSGTreeNormalizer(size_t limit) : limit(limit) {}
 
   shared_ptr<class CSGNode> normalize(const shared_ptr<CSGNode>& term);
 
@@ -15,10 +14,10 @@ private:
   bool match_and_replace(shared_ptr<class CSGNode>& term);
   shared_ptr<CSGNode> collapse_null_terms(const shared_ptr<CSGNode>& term);
   shared_ptr<CSGNode> cleanup_term(shared_ptr<CSGNode>& t);
-  unsigned int count(const shared_ptr<CSGNode>& term) const;
+  [[nodiscard]] unsigned int count(const shared_ptr<CSGNode>& term) const;
 
-  bool aborted;
+  bool aborted{false};
   size_t limit;
-  size_t nodecount;
+  size_t nodecount{0};
   shared_ptr<class CSGNode> rootnode;
 };

@@ -16,7 +16,7 @@ class ScadLexer : public QsciLexerCPP
 {
 public:
   ScadLexer(QObject *parent);
-  virtual ~ScadLexer();
+  virtual ~ScadLexer() = default;
   const char *language() const override;
   const char *keywords(int set) const override;
 
@@ -63,7 +63,7 @@ public:
          ecustom1, ecustom2, ecustom3, ecustom4, ecustom5, ecustom6, ecustom7, ecustom8, ecustom9, ecustom10,
          evariable, especialVariable, ecomment, etext };
 
-  Lex();
+  Lex() = default;
 
   void default_rules();
   void defineRules(const std::string& keyword_list, int id);
@@ -104,7 +104,9 @@ public:
   Lex *my_lexer;
 
   ScadLexer2(QObject *parent);
-  virtual ~ScadLexer2();
+  ScadLexer2(const ScadLexer2&) = delete;
+  ScadLexer2& operator=(const ScadLexer2&) = delete;
+  ~ScadLexer2() override;
 
   const char *language() const override;
 
@@ -125,10 +127,6 @@ public:
   void finalizeLexer() {
     my_lexer->finalize_rules();
   }
-
-private:
-  ScadLexer2(const ScadLexer2&);
-  ScadLexer2& operator=(const ScadLexer2&);
 
 };
 

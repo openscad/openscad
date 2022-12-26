@@ -10,11 +10,14 @@
 #include <vector>
 #include <map>
 
+class CGAL_Nef_polyhedron;
+class Polygon2d;
+class Tree;
+
 class GeometryEvaluator : public NodeVisitor
 {
 public:
-  GeometryEvaluator(const class Tree& tree);
-  ~GeometryEvaluator() {}
+  GeometryEvaluator(const Tree& tree);
 
   shared_ptr<const Geometry> evaluateGeometry(const AbstractNode& node, bool allownef);
 
@@ -36,7 +39,7 @@ public:
   Response visit(State& state, const TextNode& node) override;
   Response visit(State& state, const OffsetNode& node) override;
 
-  const Tree& getTree() const { return this->tree; }
+  [[nodiscard]] const Tree& getTree() const { return this->tree; }
 
 private:
   class ResultObject
@@ -46,12 +49,12 @@ public:
     // for example union() with no children, etc.
     ResultObject() : is_const(true) {}
     ResultObject(const Geometry *g) : is_const(true), const_pointer(g) {}
-    ResultObject(shared_ptr<const Geometry> g) : is_const(true), const_pointer(g) {}
+    ResultObject(shared_ptr<const Geometry> g) : is_const(true), const_pointer(std::move(g)) {}
     ResultObject(Geometry *g) : is_const(false), pointer(g) {}
     ResultObject(shared_ptr<Geometry>& g) : is_const(false), pointer(g) {}
-    bool isConst() const { return is_const; }
+    [[nodiscard]] bool isConst() const { return is_const; }
     shared_ptr<Geometry> ptr() { assert(!is_const); return pointer; }
-    shared_ptr<const Geometry> constptr() const {
+    [[nodiscard]] shared_ptr<const Geometry> constptr() const {
       return is_const ? const_pointer : static_pointer_cast<const Geometry>(pointer);
     }
     shared_ptr<Geometry> asMutableGeometry() {
@@ -68,13 +71,13 @@ private:
   shared_ptr<const Geometry> smartCacheGet(const AbstractNode& node, bool preferNef);
   bool isSmartCached(const AbstractNode& node);
   bool isValidDim(const Geometry::GeometryItem& item, unsigned int& dim) const;
-  std::vector<const class Polygon2d *> collectChildren2D(const AbstractNode& node);
+  std::vector<const Polygon2d *> collectChildren2D(const AbstractNode& node);
   Geometry::Geometries collectChildren3D(const AbstractNode& node);
   Polygon2d *applyMinkowski2D(const AbstractNode& node);
   Polygon2d *applyHull2D(const AbstractNode& node);
   Polygon2d *applyFill2D(const AbstractNode& node);
   Geometry *applyHull3D(const AbstractNode& node);
-  void applyResize3D(class CGAL_Nef_polyhedron& N, const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize);
+  void applyResize3D(CGAL_Nef_polyhedron& N, const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize);
   Polygon2d *applyToChildren2D(const AbstractNode& node, OpenSCADOperator op);
   ResultObject applyToChildren3D(const AbstractNode& node, OpenSCADOperator op);
   ResultObject applyToChildren(const AbstractNode& node, OpenSCADOperator op);

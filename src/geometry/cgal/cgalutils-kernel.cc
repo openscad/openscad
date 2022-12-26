@@ -45,7 +45,7 @@ CGAL::Gmpq KernelConverter<CGAL_HybridKernel3, CGAL_Kernel3>::operator()(
   const CGAL_HybridKernel3::FT& n) const
 {
   auto& e = n.exact();
-  return CGAL::Gmpq(CGAL::Gmpz(e.get_num().get_mpz_t()), CGAL::Gmpz(e.get_den().get_mpz_t()));
+  return {CGAL::Gmpz(e.get_num().get_mpz_t()), CGAL::Gmpz(e.get_den().get_mpz_t())};
 }
 
 } // namespace CGALUtils

@@ -6,8 +6,7 @@
 static const double DEFAULT_DISTANCE = 140.0;
 static const double DEFAULT_FOV = 22.5;
 
-Camera::Camera() :
-  projection(ProjectionType::PERSPECTIVE), fov(DEFAULT_FOV), viewall(false), autocenter(false)
+Camera::Camera() : fov(DEFAULT_FOV)
 {
   PRINTD("Camera()");
 
@@ -162,7 +161,7 @@ static double wrap(double angle)
 
 Eigen::Vector3d Camera::getVpr() const
 {
-  return Eigen::Vector3d(wrap(90 - object_rot.x()), wrap(-object_rot.y()), wrap(-object_rot.z()));
+  return {wrap(90 - object_rot.x()), wrap(-object_rot.y()), wrap(-object_rot.z())};
 }
 
 void Camera::setVpr(double x, double y, double z)

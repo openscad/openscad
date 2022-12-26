@@ -226,7 +226,7 @@ void ParameterWidget::onSetDelete()
 
 void ParameterWidget::parameterModified(bool immediate)
 {
-  ParameterVirtualWidget *widget = (ParameterVirtualWidget *)sender();
+  auto *widget = (ParameterVirtualWidget *)sender();
   ParameterObject *parameter = widget->getParameter();
 
   // When attempting to modify the design default, create a new set to edit.
@@ -316,10 +316,10 @@ void ParameterWidget::rebuildWidgets()
     delete child;
   }
 
-  DescriptionStyle descriptionStyle = static_cast<DescriptionStyle>(comboBoxDetails->currentIndex());
+  auto descriptionStyle = static_cast<DescriptionStyle>(comboBoxDetails->currentIndex());
   std::vector<ParameterGroup> parameterGroups = getParameterGroups();
   for (const auto& group : parameterGroups) {
-    GroupWidget *groupWidget = new GroupWidget(group.name);
+    auto *groupWidget = new GroupWidget(group.name);
     for (ParameterObject *parameter : group.parameters) {
       ParameterVirtualWidget *parameterWidget = createParameterWidget(parameter, descriptionStyle);
       connect(parameterWidget, SIGNAL(changed(bool)), this, SLOT(parameterModified(bool)));
@@ -377,7 +377,7 @@ ParameterVirtualWidget *ParameterWidget::createParameterWidget(ParameterObject *
   } else if (parameter->type() == ParameterObject::ParameterType::String) {
     return new ParameterText(this, static_cast<StringParameter *>(parameter), descriptionStyle);
   } else if (parameter->type() == ParameterObject::ParameterType::Number) {
-    NumberParameter *numberParameter = static_cast<NumberParameter *>(parameter);
+    auto *numberParameter = static_cast<NumberParameter *>(parameter);
     if (numberParameter->minimum && numberParameter->maximum) {
       return new ParameterSlider(this, numberParameter, descriptionStyle);
     } else {

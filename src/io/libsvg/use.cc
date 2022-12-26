@@ -32,14 +32,6 @@ namespace libsvg {
 
 const std::string use::name("use");
 
-use::use()
-{
-}
-
-use::~use()
-{
-}
-
 void
 use::set_attrs(attr_map_t& attrs, void *context)
 {
@@ -74,7 +66,7 @@ const std::string
 use::get_href_id() const
 {
   if (href.rfind("#", 0) != 0) {
-    return nullptr;
+    return {};
   }
   return href.substr(1); //remove the #
 }

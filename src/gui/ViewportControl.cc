@@ -3,7 +3,7 @@
 #include "MainWindow.h"
 #include "QGLView.h"
 #include <boost/filesystem.hpp>
-#include "float.h"
+#include <cfloat>
 #include <QDoubleSpinBox>
 #include <QDesktopWidget>
 
@@ -39,7 +39,7 @@ void ViewportControl::setMainWindow(MainWindow *mainWindow)
 bool ViewportControl::isLightTheme()
 {
   bool ret = true;
-  if(mainWindow){
+  if (mainWindow) {
     ret = mainWindow->isLightTheme();
   } else {
     std::cout << "ViewportControl: You need to set the mainWindow before calling isLightTheme" << std::endl;
@@ -49,12 +49,12 @@ bool ViewportControl::isLightTheme()
 
 QString ViewportControl::yellowHintBackground()
 {
-  return QString (isLightTheme() ? "background-color:#ffffaa;" : "background-color:#30306;");
+  return {isLightTheme() ? "background-color:#ffffaa;" : "background-color:#30306;"};
 }
 
 QString ViewportControl::redHintBackground()
 {
-  return QString (isLightTheme() ? "background-color:#ffaaaa;" : "background-color:#502020;");
+  return {isLightTheme() ? "background-color:#ffaaaa;" : "background-color:#502020;"};
 }
 
 void ViewportControl::resizeEvent(QResizeEvent *event)
@@ -63,7 +63,7 @@ void ViewportControl::resizeEvent(QResizeEvent *event)
 }
 
 void ViewportControl::cameraChanged(){
-  if(!inputMutex.try_lock()) return;
+  if (!inputMutex.try_lock()) return;
 
   const auto vpt = qglview->cam.getVpt();
   doubleSpinBox_tx->setValue(vpt.x());
@@ -83,21 +83,21 @@ void ViewportControl::cameraChanged(){
 }
 
 void ViewportControl::updateCamera(){
-  if(!inputMutex.try_lock()) return;
+  if (!inputMutex.try_lock()) return;
 
   //viewport translation
   qglview->cam.setVpt(
     doubleSpinBox_tx->value(),
     doubleSpinBox_ty->value(),
     doubleSpinBox_tz->value()
-  );
+    );
 
   //viewport rotation angles in degrees
   qglview->cam.setVpr(
     doubleSpinBox_rx->value(),
     doubleSpinBox_ry->value(),
     doubleSpinBox_rz->value()
-  );
+    );
 
   //viewport camera field of view
   double fov = doubleSpinBox_fov->value();
@@ -115,86 +115,86 @@ void ViewportControl::updateCamera(){
 void ViewportControl::updateViewportControlHints(){
   //viewport camera field of view
   double fov = doubleSpinBox_fov->value();
-  if(fov < 0 || fov > 180){
+  if (fov < 0 || fov > 180) {
     doubleSpinBox_fov->setToolTip(_("extreme values might may lead to strange behavior"));
-    doubleSpinBox_fov->setStyleSheet(redHintBackground()); 
-  }else if(fov < 5 || fov > 175){
+    doubleSpinBox_fov->setStyleSheet(redHintBackground());
+  } else if (fov < 5 || fov > 175) {
     doubleSpinBox_fov->setToolTip(_("extreme values might may lead to strange behavior"));
-    doubleSpinBox_fov->setStyleSheet(yellowHintBackground()); 
+    doubleSpinBox_fov->setStyleSheet(yellowHintBackground());
   } else {
     doubleSpinBox_fov->setToolTip("");
-    doubleSpinBox_fov->setStyleSheet(""); 
+    doubleSpinBox_fov->setStyleSheet("");
   }
 
   //camera distance
   double d = doubleSpinBox_d->value();
-  if(d < 0){
+  if (d < 0) {
     doubleSpinBox_d->setToolTip(_("negative distances are not supported"));
-    doubleSpinBox_d->setStyleSheet(redHintBackground()); 
-  }else if(d < 5){
+    doubleSpinBox_d->setStyleSheet(redHintBackground());
+  } else if (d < 5) {
     doubleSpinBox_d->setToolTip(_("extreme values might may lead to strange behavior"));
-    doubleSpinBox_d->setStyleSheet(yellowHintBackground()); 
-  }else{
+    doubleSpinBox_d->setStyleSheet(yellowHintBackground());
+  } else {
     doubleSpinBox_d->setToolTip("");
-    doubleSpinBox_d->setStyleSheet(""); 
+    doubleSpinBox_d->setStyleSheet("");
   }
 
 }
 
 void ViewportControl::resizeToRatio(){
-    int w0 = spinBoxWidth->value();
-    int h0 = spinBoxHeight->value();
+  int w0 = spinBoxWidth->value();
+  int h0 = spinBoxHeight->value();
 
-    int w1 = this->maxW; 
-    int h1 = this->maxW * h0 / w0; 
-    int w2 = this->maxH * w0 / h0; 
-    int h2 = this->maxH;
-    if(h1 <= this->maxH){
-        qglview->resize(w1, h1);
-    } else {
-        qglview->resize(w2, h2);
-    } 
+  int w1 = this->maxW;
+  int h1 = this->maxW * h0 / w0;
+  int w2 = this->maxH * w0 / h0;
+  int h2 = this->maxH;
+  if (h1 <= this->maxH) {
+    qglview->resize(w1, h1);
+  } else {
+    qglview->resize(w2, h2);
+  }
 }
 
 void ViewportControl::viewResized(){
-  if(!resizeMutex.try_lock()) return;
+  if (!resizeMutex.try_lock()) return;
 
   this->maxW = qglview->size().rwidth();
   this->maxH = qglview->size().rheight();
-  
-  if(checkBoxAspecRatioLock->checkState() == Qt::Checked){
+
+  if (checkBoxAspecRatioLock->checkState() == Qt::Checked) {
     resizeToRatio();
   } else {
-    spinBoxWidth->setValue(this-> maxW);
-    spinBoxHeight->setValue(this-> maxH);
+    spinBoxWidth->setValue(this->maxW);
+    spinBoxHeight->setValue(this->maxH);
   }
   resizeMutex.unlock();
 }
 
 void ViewportControl::requestResize(){
-  if(!resizeMutex.try_lock()) return;
+  if (!resizeMutex.try_lock()) return;
 
   resizeToRatio();
-  
+
   resizeMutex.unlock();
 }
 
 bool ViewportControl::focusNextPrevChild(bool next){
-    QWidget::focusNextPrevChild(next); //tab order is set in the UI File
+  QWidget::focusNextPrevChild(next);   //tab order is set in the UI File
 
-    bool bChildHasFocus=false;
-    for(auto child : QObject::findChildren<QWidget*>()){
-        if(child->hasFocus()){
-            bChildHasFocus=true;
-        }
+  bool bChildHasFocus = false;
+  for (auto child : QObject::findChildren<QWidget *>()) {
+    if (child->hasFocus()) {
+      bChildHasFocus = true;
     }
-    //do not let the focus leave this widget
-    if(! bChildHasFocus){
-        if(next){
-            spinBoxWidth->setFocus();
-        }else{
-            doubleSpinBox_fov->setFocus();
-        }
+  }
+  //do not let the focus leave this widget
+  if (!bChildHasFocus) {
+    if (next) {
+      spinBoxWidth->setFocus();
+    } else {
+      doubleSpinBox_fov->setFocus();
     }
-    return true;
+  }
+  return true;
 }

@@ -33,6 +33,7 @@
 #include "printutils.h"
 #include "degree_trig.h"
 #include <sstream>
+#include <utility>
 #include <vector>
 #include <cassert>
 #include <boost/assign/std/vector.hpp>
@@ -241,10 +242,10 @@ std::string TransformNode::toString() const
   return stream.str();
 }
 
-TransformNode::TransformNode(const ModuleInstantiation *mi, const std::string& verbose_name) :
+TransformNode::TransformNode(const ModuleInstantiation *mi, std::string verbose_name) :
   AbstractNode(mi),
   matrix(Transform3d::Identity()),
-  _name(verbose_name)
+  _name(std::move(verbose_name))
 {
 }
 

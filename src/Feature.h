@@ -11,8 +11,8 @@
 class Feature
 {
 public:
-  typedef std::vector<Feature *> list_t;
-  typedef list_t::iterator iterator;
+  using list_t = std::vector<Feature *>;
+  using iterator = list_t::iterator;
 
   static const Feature ExperimentalFastCsg;
   static const Feature ExperimentalFastCsgTrustCorefinement;
@@ -32,10 +32,10 @@ public:
   static const Feature ExperimentalImportFunction;
   static const Feature ExperimentalSortStl;
 
-  const std::string& get_name() const;
-  const std::string& get_description() const;
+  [[nodiscard]] const std::string& get_name() const;
+  [[nodiscard]] const std::string& get_description() const;
 
-  bool is_enabled() const;
+  [[nodiscard]] bool is_enabled() const;
   void enable(bool status);
 
   static iterator begin();
@@ -46,24 +46,23 @@ public:
   static void enable_all(bool status = true);
 
 private:
-  bool enabled;
+  bool enabled{false};
 
   const std::string name;
   const std::string description;
 
-  typedef std::map<std::string, Feature *> map_t;
+  using map_t = std::map<std::string, Feature *>;
   static map_t feature_map;
   static list_t feature_list;
 
-  Feature(const std::string& name, const std::string& description);
-  virtual ~Feature();
+  Feature(const std::string& name, std::string description);
+  virtual ~Feature() = default;
 };
 
 class ExperimentalFeatureException : public EvaluationException
 {
 public:
   static void check(const Feature& feature);
-  ~ExperimentalFeatureException() throw();
 
 private:
   ExperimentalFeatureException(const std::string& what_arg);

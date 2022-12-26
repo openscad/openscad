@@ -46,7 +46,7 @@
  * - the use_count() of the shared object;
  * - the list of values stored, and contexts referenced.
  */
-typedef void *ValueIdentifier;
+using ValueIdentifier = void *;
 
 struct IdentifierVisitor
 {
@@ -357,7 +357,7 @@ ContextMemoryManager::~ContextMemoryManager()
 void ContextMemoryManager::addContext(std::shared_ptr<Context> context)
 {
   heapSizeAccounting.addContext();
-  context->setAccountingAdded();   // avoiding bad accounting when an exception threw in constructor  issue #3871
+  context->setAccountingAdded();   // avoiding bad accounting when an exception threw in constructor issue #3871
 
   /*
    * If we are holding the last copy to this context, no point in invoking

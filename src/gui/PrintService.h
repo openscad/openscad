@@ -51,7 +51,7 @@ public:
 
 private:
   PrintService();
-  virtual ~PrintService();
+  virtual ~PrintService() = default;
 
   void init();
   void initService(const QJsonObject& serviceObject);

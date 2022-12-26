@@ -34,7 +34,7 @@ private:
 
 public:
   EditorColorScheme(const fs::path path);
-  virtual ~EditorColorScheme();
+  virtual ~EditorColorScheme() = default;
 
   const QString& name() const;
   int index() const;
@@ -46,11 +46,10 @@ class ScintillaEditor : public EditorInterface
 {
   Q_OBJECT;
 
-  using colorscheme_set_t = std::multimap<int, shared_ptr<EditorColorScheme>, std::less<int>>;
+  using colorscheme_set_t = std::multimap<int, shared_ptr<EditorColorScheme>, std::less<>>;
 
 public:
   ScintillaEditor(QWidget *parent);
-  ~ScintillaEditor() {}
   QsciScintilla *qsci;
   QString toPlainText() override;
   void initMargin();
@@ -105,7 +104,7 @@ private:
   void findMarker(int, int, std::function<int(int)>);
 
 signals:
-  void previewRequest(void);
+  void previewRequest();
   void hyperlinkIndicatorClicked(int val);
   void uriDropped(const QUrl&);
 

@@ -1,3 +1,11 @@
-Checks:          '-*,modernize-use-nullptr'
+Checks: '
+  -*,
+  modernize-*,
+    -modernize-use-trailing-return-type,
+    -modernize-avoid-c-arrays,
+    -modernize-use-nodiscard,
+  clang-analyzer-*,
+    -clang-analyzer-cplusplus.NewDelete,
+    -clang-analyzer-cplusplus.NewDeleteLeaks,
+'
 WarningsAsErrors: ''
-AnalyzeTemporaryDtors: false

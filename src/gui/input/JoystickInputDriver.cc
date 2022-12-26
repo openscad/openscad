@@ -61,16 +61,6 @@ void JoystickInputDriver::run()
   ::close(fd);
 }
 
-JoystickInputDriver::JoystickInputDriver() : fd(-1), version(0), axes(0), buttons(0), stopRequest(false)
-{
-
-}
-
-JoystickInputDriver::~JoystickInputDriver()
-{
-
-}
-
 bool JoystickInputDriver::open()
 {
   stopRequest = false;
@@ -111,9 +101,9 @@ std::string JoystickInputDriver::get_info() const
 {
   return STR(
     get_name(), " ", (isOpen() ? "open" : "not open"), " ",
-      "Name: ", name, " ",
-      "Axis: ", (int) axes, " ",
-      "Buttons: ", (int) buttons, " "
+    "Name: ", name, " ",
+    "Axis: ", (int) axes, " ",
+    "Buttons: ", (int) buttons, " "
     );
 }
 

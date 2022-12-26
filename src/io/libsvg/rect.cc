@@ -35,14 +35,6 @@ namespace libsvg {
 
 const std::string rect::name("rect");
 
-rect::rect() : width(0), height(0), rx(0), ry(0)
-{
-}
-
-rect::~rect()
-{
-}
-
 /**
  * Let rx and ry be length values.
  *

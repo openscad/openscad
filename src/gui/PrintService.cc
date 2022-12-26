@@ -42,10 +42,6 @@ PrintService::PrintService()
   }
 }
 
-PrintService::~PrintService()
-{
-}
-
 PrintService *PrintService::inst()
 {
   static PrintService *instance = nullptr;

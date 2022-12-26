@@ -27,6 +27,8 @@
 #include "system-gl.h"
 #include "memory.h"
 #include "OpenCSGRenderer.h"
+
+#include <utility>
 #include "PolySet.h"
 #include "Feature.h"
 
@@ -37,10 +39,10 @@ class OpenCSGPrim : public OpenCSG::Primitive
 public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   OpenCSGPrim(OpenCSG::Operation operation, unsigned int convexity, const OpenCSGRenderer& renderer) :
-    OpenCSG::Primitive(operation, convexity), csgmode(Renderer::CSGMODE_NONE), renderer(renderer) { }
+    OpenCSG::Primitive(operation, convexity), renderer(renderer) { }
   std::shared_ptr<const PolySet> geom;
   Transform3d m;
-  Renderer::csgmode_e csgmode;
+  Renderer::csgmode_e csgmode{Renderer::CSGMODE_NONE};
 
   void render() override {
     if (geom) {
@@ -59,7 +61,7 @@ class OpenCSGVBOPrim : public OpenCSG::Primitive
 public:
   OpenCSGVBOPrim(OpenCSG::Operation operation, unsigned int convexity, std::unique_ptr<VertexState> vertex_state) :
     OpenCSG::Primitive(operation, convexity), vertex_state(std::move(vertex_state)) { }
-  virtual void render() {
+  void render() override {
     if (vertex_state != nullptr) {
       vertex_state->draw();
     } else {
@@ -75,9 +77,9 @@ private:
 OpenCSGRenderer::OpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,
                                  std::shared_ptr<CSGProducts> highlights_products,
                                  std::shared_ptr<CSGProducts> background_products)
-  : root_products(root_products),
-  highlights_products(highlights_products),
-  background_products(background_products)
+  : root_products(std::move(root_products)),
+  highlights_products(std::move(highlights_products)),
+  background_products(std::move(background_products))
 {
 }
 
@@ -118,7 +120,7 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const shaderinfo_
 // Primitive for rendering using OpenCSG
 OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject& csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const
 {
-  OpenCSGPrim *prim = new OpenCSGPrim(operation, csgobj.leaf->geom->getConvexity(), *this);
+  auto *prim = new OpenCSGPrim(operation, csgobj.leaf->geom->getConvexity(), *this);
   std::shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(csgobj.leaf->geom);
   if (ps) {
     prim->geom = ps;
@@ -209,7 +211,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
 
     for (const auto& csgobj : product.intersections) {
       if (csgobj.leaf->geom) {
-        const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+        const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
         if (!ps) continue;
 
         const Color4f& c = csgobj.leaf->color;
@@ -293,7 +295,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
 
     for (const auto& csgobj : product.subtractions) {
       if (csgobj.leaf->geom) {
-        const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+        const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
         if (!ps) continue;
         const Color4f& c = csgobj.leaf->color;
         csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
@@ -394,7 +396,7 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
       }
 
       for (const auto& csgobj : product.intersections) {
-        const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+        const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
         if (!ps) continue;
 
         if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
@@ -436,7 +438,7 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
         glPopMatrix();
       }
       for (const auto& csgobj : product.subtractions) {
-        const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+        const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
         if (!ps) continue;
 
         const Color4f& c = csgobj.leaf->color;

@@ -3,6 +3,7 @@
 #include <string>
 #include <unordered_map>
 #include <list>
+#include <utility>
 #include "NodeVisitor.h"
 #include "node.h"
 #include "NodeCache.h"
@@ -15,7 +16,7 @@
 class GroupNodeChecker : public NodeVisitor
 {
 public:
-  GroupNodeChecker(){}
+  GroupNodeChecker() = default;
 
   Response visit(State& state, const AbstractNode& node) override;
   Response visit(State& state, const GroupNode& node) override;
@@ -31,13 +32,12 @@ private:
 class NodeDumper : public NodeVisitor
 {
 public:
-  NodeDumper(NodeCache& cache, const std::shared_ptr<const AbstractNode> &root_node, const std::string& indent, bool idString) :
-    cache(cache), indent(indent), idString(idString), currindent(0), root(root_node) {
+  NodeDumper(NodeCache& cache, std::shared_ptr<const AbstractNode> root_node, std::string indent, bool idString) :
+    cache(cache), indent(std::move(indent)), idString(idString), root(std::move(root_node)) {
     if (idString) {
       groupChecker.traverse(*root);
     }
   }
-  ~NodeDumper() {}
 
   Response visit(State& state, const AbstractNode& node) override;
   Response visit(State& state, const GroupNode& node) override;
@@ -54,7 +54,7 @@ private:
   std::string indent;
   bool idString;
 
-  int currindent;
+  int currindent{0};
   std::shared_ptr<const AbstractNode> root;
   GroupNodeChecker groupChecker;
   std::ostringstream dumpstream;

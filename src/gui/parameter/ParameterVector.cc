@@ -32,16 +32,19 @@ ParameterVector::ParameterVector(QWidget *parent, VectorParameter *parameter, De
     doubleSpinBox4->hide();
   }
 
+  // clang generates a bogus warning that ignoreWheelWhenNotFocused may be leaked
+  // NOLINTBEGIN(*NewDeleteLeaks)
   if (spinboxes.size() > 0) { // only allocate if there are spinboxes to use the function
-    IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
+    // The parent (this) takes ownership of the object
+    auto *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
     for (auto spinbox : spinboxes) {
-      spinbox->installEventFilter(ignoreWheelWhenNotFocused); // this takes ownership of the ignoreWheelWhenNotFocused object
+      spinbox->installEventFilter(ignoreWheelWhenNotFocused);
     }
   }
-  // clang generates a bogus warning that ignoreWheelWhenNotFocused may be leaked
 
   int decimals = decimalsRequired(parameter->defaultValue);
   double minimum;
+  // NOLINTEND(*NewDeleteLeaks)
   if (parameter->minimum) {
     minimum = *parameter->minimum;
     decimals = std::max(decimals, decimalsRequired(minimum));
@@ -75,7 +78,7 @@ ParameterVector::ParameterVector(QWidget *parent, VectorParameter *parameter, De
     connect(spinbox, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
   }
 
-  setValue();
+  ParameterVector::setValue();
 }
 
 void ParameterVector::valueApplied() {

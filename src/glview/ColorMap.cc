@@ -70,9 +70,9 @@ RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
     addColor(RenderColor::CGAL_EDGE_2D_COLOR, "cgal-edge-2d");
     addColor(RenderColor::CROSSHAIR_COLOR, "crosshair");
     try{
-        addColor(RenderColor::BACKGROUND_STOP_COLOR, "background-stop");
-    }catch (const std::exception& e) {
-        addColor(RenderColor::BACKGROUND_STOP_COLOR, "background");
+      addColor(RenderColor::BACKGROUND_STOP_COLOR, "background-stop");
+    } catch (const std::exception& e) {
+      addColor(RenderColor::BACKGROUND_STOP_COLOR, "background");
     }
   } catch (const std::exception& e) {
     LOG(message_group::None, Location::NONE, "", "Error reading color scheme file: '%1$s': %2$s", path.generic_string().c_str(), e.what());
@@ -81,10 +81,6 @@ RenderColorScheme::RenderColorScheme(fs::path path) : _path(path)
     _index = 0;
     _show_in_gui = false;
   }
-}
-
-RenderColorScheme::~RenderColorScheme()
-{
 }
 
 bool RenderColorScheme::valid() const
@@ -130,7 +126,7 @@ const boost::property_tree::ptree& RenderColorScheme::propertyTree() const
 void RenderColorScheme::addColor(RenderColor colorKey, std::string key)
 {
   const boost::property_tree::ptree& colors = pt.get_child("colors");
-  std::string color = colors.get<std::string>(key);
+  auto color = colors.get<std::string>(key);
   if ((color.length() == 7) && (color.at(0) == '#')) {
     char *endptr;
     unsigned int val = strtol(color.substr(1).c_str(), &endptr, 16);
@@ -145,7 +141,7 @@ void RenderColorScheme::addColor(RenderColor colorKey, std::string key)
 
 ColorMap *ColorMap::inst(bool erase)
 {
-  static ColorMap *instance = new ColorMap;
+  static auto *instance = new ColorMap;
   if (erase) {
     delete instance;
     instance = nullptr;
@@ -157,10 +153,6 @@ ColorMap::ColorMap()
 {
   colorSchemeSet = enumerateColorSchemes();
   dump();
-}
-
-ColorMap::~ColorMap()
-{
 }
 
 const char *ColorMap::defaultColorSchemeName() const
@@ -223,14 +215,14 @@ Color4f ColorMap::getColor(const ColorScheme& cs, const RenderColor rc)
 {
   if (cs.count(rc)) return cs.at(rc);
   if (ColorMap::inst()->defaultColorScheme().count(rc)) return ColorMap::inst()->defaultColorScheme().at(rc);
-  return Color4f(0, 0, 0, 127);
+  return {0, 0, 0, 127};
 }
 
 Color4f ColorMap::getColorHSV(const Color4f& col)
 {
   float h, s, v;
   rgbtohsv(col[0], col[1], col[2], h, s, v);
-  return Color4f(h, s, v, col[3]);
+  return {h, s, v, col[3]};
 }
 
 /**
@@ -249,15 +241,15 @@ Color4f ColorMap::getContrastColor(const Color4f& col)
   if (S < 0.5) {
     // low saturation, choose between black / white based on luminance Y
     float val = Y > 0.5 ? 0.0f : 1.0f;
-    return Color4f(val, val, val, 1.0f);
+    return {val, val, val, 1.0f};
   } else {
     float H = 360 * hsv[0];
     if ((H < 60) || (H > 300)) {
-      return Color4f(0.0f, 1.0f, 1.0f, 1.0f); // red -> cyan
+      return {0.0f, 1.0f, 1.0f, 1.0f}; // red -> cyan
     } else if (H < 180) {
-      return Color4f(1.0f, 0.0f, 1.0f, 1.0f); // green -> magenta
+      return {1.0f, 0.0f, 1.0f, 1.0f}; // green -> magenta
     } else {
-      return Color4f(1.0f, 1.0f, 0.0f, 1.0f); // blue -> yellow
+      return {1.0f, 1.0f, 0.0f, 1.0f}; // blue -> yellow
     }
   }
 }
@@ -281,7 +273,7 @@ void ColorMap::enumerateColorSchemesInPath(colorscheme_set_t& result_set, const 
         continue;
       }
 
-      RenderColorScheme *colorScheme = new RenderColorScheme(path);
+      auto *colorScheme = new RenderColorScheme(path);
       if (colorScheme->valid() && (findColorScheme(colorScheme->name()) == nullptr)) {
         result_set.insert(colorscheme_set_t::value_type(colorScheme->index(), shared_ptr<RenderColorScheme>(colorScheme)));
         PRINTDB("Found file '%s' with color scheme '%s' and index %d",
@@ -298,7 +290,7 @@ ColorMap::colorscheme_set_t ColorMap::enumerateColorSchemes()
 {
   colorscheme_set_t result_set;
 
-  RenderColorScheme *defaultColorScheme = new RenderColorScheme();
+  auto *defaultColorScheme = new RenderColorScheme();
   result_set.insert(colorscheme_set_t::value_type(defaultColorScheme->index(),
                                                   shared_ptr<RenderColorScheme>(defaultColorScheme)));
   enumerateColorSchemesInPath(result_set, PlatformUtils::resourceBasePath());

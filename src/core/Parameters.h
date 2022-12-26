@@ -16,7 +16,7 @@
 class Parameters
 {
 private:
-  Parameters(ContextFrame&& frame, const Location& loc);
+  Parameters(ContextFrame&& frame, Location loc);
 
 public:
   Parameters(Parameters&& other);

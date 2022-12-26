@@ -33,7 +33,7 @@ bool ParameterSets::readFile(const std::string& filename)
   return true;
 }
 
-bool ParameterSets::writeFile(const std::string& filename) const
+void ParameterSets::writeFile(const std::string& filename) const
 {
   boost::property_tree::ptree sets;
   for (const auto& set : *this) {
@@ -52,7 +52,5 @@ bool ParameterSets::writeFile(const std::string& filename) const
     boost::property_tree::write_json(filename, root);
   } catch (const boost::property_tree::json_parser_error& e) {
     LOG(message_group::Error, Location::NONE, "", "Cannot write Parameter Set '%1$s': %2$s", filename, e.what());
-    return false;
   }
-  return true;
 }

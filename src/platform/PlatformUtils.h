@@ -108,7 +108,7 @@ std::string pathSeparatorChar();
 /* Provide stdout/stderr if not available.
  * Currently limited to MS Windows GUI application console only.
  */
-void ensureStdIO(void);
+void ensureStdIO();
 
 /**
  * Convert the number of bytes to a human readable string with

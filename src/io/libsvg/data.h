@@ -34,18 +34,17 @@ private:
   std::string text;
 
 public:
-  data();
-  ~data();
+  data() = default;
 
-  const std::string& get_text() const { return text; }
+  [[nodiscard]] const std::string& get_text() const { return text; }
 
   void set_attrs(attr_map_t& attrs, void *context) override;
-  const std::string dump() const override;
-  const std::string& get_name() const override { return data::name; }
+  [[nodiscard]] const std::string dump() const override;
+  [[nodiscard]] const std::string& get_name() const override { return data::name; }
 
   static const std::string name;
 
-  shape *clone() const override { return new data(*this); }
+  [[nodiscard]] shape *clone() const override { return new data(*this); }
 };
 
 }

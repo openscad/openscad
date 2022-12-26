@@ -34,14 +34,9 @@ void DBusInputDriver::run()
 
 }
 
-DBusInputDriver::DBusInputDriver() : is_open(false)
+DBusInputDriver::DBusInputDriver()
 {
   name = "DBusInputDriver";
-}
-
-DBusInputDriver::~DBusInputDriver()
-{
-
 }
 
 bool DBusInputDriver::openOnce() const

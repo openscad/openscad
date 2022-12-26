@@ -35,7 +35,7 @@
 #include <sstream>
 
 VBORenderer::VBORenderer()
-  : Renderer(), shader_attributes_index(0)
+  : Renderer()
 {
 }
 
@@ -95,7 +95,7 @@ size_t VBORenderer::getSurfaceBufferSize(const CSGChainObject& csgobj, bool high
   csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
 
   if (csgobj.leaf->geom) {
-    const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+    const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
     if (ps) {
       buffer_size += getSurfaceBufferSize(*ps, csgmode);
     }
@@ -156,7 +156,7 @@ size_t VBORenderer::getEdgeBufferSize(const CSGChainObject& csgobj, bool highlig
   csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
 
   if (csgobj.leaf->geom) {
-    const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+    const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
     if (ps) {
       buffer_size += getEdgeBufferSize(*ps, csgmode);
     }
@@ -363,8 +363,8 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
         triangle_count += 2;
       } else {
         Vector3d center = Vector3d::Zero();
-        for (size_t i = 0; i < poly.size(); i++) {
-          center += poly.at(i);
+        for (const auto& point : poly) {
+          center += point;
         }
         center /= poly.size();
         for (size_t i = 1; i <= poly.size(); i++) {
@@ -440,7 +440,7 @@ void VBORenderer::create_edges(const PolySet& ps,
         }
 
         // Render top+bottom outlines
-        for (double z = -zbase / 2; z < zbase; z += zbase) {
+        for (double z : {-zbase / 2, zbase / 2}) {
           for (const Vector2d& v : o.vertices) {
             Vector3d p0 = uniqueMultiply(vert_mult_map, mult_verts, Vector3d(v[0], v[1], z), m);
 
@@ -575,7 +575,7 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
       // Render 2D objects 1mm thick, but differences slightly larger
       double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0.0);
       // Render top+bottom
-      for (double z = -zbase / 2; z < zbase; z += zbase) {
+      for (double z : { -zbase / 2, zbase / 2}) {
         for (const auto& poly : ps.polygons) {
           if (poly.size() == 3) {
             Vector3d p0 = poly.at(0); p0[2] += z;

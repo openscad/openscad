@@ -33,8 +33,7 @@ class SpaceNavInputDriver : public InputDriver
   Q_OBJECT
 
 public:
-  SpaceNavInputDriver();
-  ~SpaceNavInputDriver();
+  SpaceNavInputDriver() = default;
   void run() override;
   bool open() override;
   void close() override;

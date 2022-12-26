@@ -37,8 +37,8 @@
 class OctoPrint
 {
 public:
-  OctoPrint();
-  virtual ~OctoPrint();
+  OctoPrint() = default;
+  virtual ~OctoPrint() = default;
 
   const QString url() const;
   const std::string apiKey() const;

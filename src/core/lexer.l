@@ -305,7 +305,7 @@ void lexer_set_parser_sourcefile(const fs::path& path)
 }
 
 // Filename of the source file currently being lexed.
-std::shared_ptr<fs::path>  sourcefile()
+std::shared_ptr<fs::path> sourcefile()
 {
   if (!filename_stack.empty()) return filename_stack.back();
 

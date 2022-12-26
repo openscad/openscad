@@ -28,14 +28,6 @@ namespace libsvg {
 
 const std::string data::name("data");
 
-data::data()
-{
-}
-
-data::~data()
-{
-}
-
 void
 data::set_attrs(attr_map_t& attrs, void *context)
 {

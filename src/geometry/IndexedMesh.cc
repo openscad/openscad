@@ -36,11 +36,6 @@
 
 #include "PolySet.h"
 
-IndexedMesh::IndexedMesh()
-  : numfaces(0)
-{
-}
-
 void IndexedMesh::append_geometry(const PolySet& ps)
 {
   IndexedMesh& mesh = *this;

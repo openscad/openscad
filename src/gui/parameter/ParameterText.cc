@@ -13,7 +13,7 @@ ParameterText::ParameterText(QWidget *parent, StringParameter *parameter, Descri
 
   connect(lineEdit, SIGNAL(textEdited(const QString&)), this, SLOT(onEdit(const QString&)));
   connect(lineEdit, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
-  setValue();
+  ParameterText::setValue();
 }
 
 void ParameterText::valueApplied() {

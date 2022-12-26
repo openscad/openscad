@@ -1,0 +1,6 @@
+# Disable all clang-tidy checks for external code.
+# clang-tidy errors if you remove all checks, so this is one workaround
+#   https://stackoverflow.com/a/58379342/251068
+Checks: '-*,misc-definitions-in-headers'
+CheckOptions:
+  - { key: HeaderFileExtensions,          value: "x" }

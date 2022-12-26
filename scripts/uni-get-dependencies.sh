@@ -57,7 +57,7 @@ get_netbsd_deps()
 
 get_opensuse_deps()
 {
- zypper install  mpfr-devel gmp-devel boost-devel \
+ zypper install mpfr-devel gmp-devel boost-devel \
   glew-devel cmake git bison flex cgal-devel curl \
   glib2-devel gettext freetype-devel harfbuzz-devel  \
   qscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
