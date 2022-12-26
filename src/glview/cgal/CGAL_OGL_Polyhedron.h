@@ -83,14 +83,14 @@ public:
     return c;
   }
 
-  // overrides function in O[[nodiscard]] GL_helper.h
+  // overrides function in OGL_helper.h
   [[nodiscard]] CGAL::Color getEdgeColor(Edge_iterator e) const override {
     PRINTD("getEdgeColor");
     CGAL::Color c = e->mark() ? colors[CGALColorIndex::UNMARKED_EDGE_COLOR] : colors[CGALColorIndex::MARKED_EDGE_COLOR];
     return c;
   }
 
-  // overrides[[nodiscard]]  function in OGL_helper.h
+  // overrides function in OGL_helper.h
   [[nodiscard]] CGAL::Color getFacetColor(Halffacet_iterator f, bool /*is_back_facing*/) const override {
     PRINTD("getFacetColor");
     CGAL::Color c = f->mark() ? colors[CGALColorIndex::UNMARKED_FACET_COLOR] : colors[CGALColorIndex::MARKED_FACET_COLOR];
