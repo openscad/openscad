@@ -213,9 +213,9 @@ uint64_t append_stl(const shared_ptr<const Geometry>& geom, std::ostream& output
     triangle_count += append_stl(*ps, output, binary);
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     triangle_count += append_stl(*hybrid, output, binary);
-  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
+  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { //NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
-  } else {
+  } else { //NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
   }
 

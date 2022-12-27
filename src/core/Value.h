@@ -8,6 +8,7 @@
 #include <limits>
 #include <iostream>
 #include <memory>
+#include <type_traits>
 #include <variant>
 
 #include <glib.h>
@@ -43,12 +44,11 @@ private:
   double begin_val;
   double step_val;
   double end_val;
+  enum class iter_state { RANGE_BEGIN, RANGE_RUNNING, RANGE_END };
 
 public:
   static constexpr uint32_t MAX_RANGE_STEPS = 10000;
   static const RangeType EMPTY;
-
-  enum class type_t { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END };
 
   class iterator
   {
@@ -59,7 +59,7 @@ public:
     using difference_type = void; // type used by operator-(iterator), not implemented for forward iterator
     using reference = value_type; // type used by operator*(), not actually a reference
     using pointer = void;     // type used by operator->(), not implemented
-    iterator(const RangeType& range, type_t type);
+    iterator(const RangeType& range, iter_state type);
     iterator& operator++();
     reference operator*();
     bool operator==(const iterator& other) const;
@@ -67,10 +67,10 @@ public:
 private:
     const RangeType& range;
     double val;
-    type_t type;
+    iter_state state;
     const uint32_t num_values;
     uint32_t i_step;
-    void update_type();
+    void update_state();
   };
 
   RangeType(const RangeType&) = delete;       // never copy, move instead
@@ -148,8 +148,8 @@ private:
   [[nodiscard]] double step_value() const { return step_val; }
   [[nodiscard]] double end_value() const { return end_val; }
 
-  [[nodiscard]] iterator begin() const { return {*this, type_t::RANGE_TYPE_BEGIN}; }
-  [[nodiscard]] iterator end() const { return {*this, type_t::RANGE_TYPE_END}; }
+  [[nodiscard]] iterator begin() const { return {*this, iter_state::RANGE_BEGIN}; }
+  [[nodiscard]] iterator end() const { return {*this, iter_state::RANGE_END}; }
 
   /// return number of values, max uint32_t value if step is 0 or range is infinite
   [[nodiscard]] uint32_t numValues() const;
@@ -248,7 +248,7 @@ private:
 
   [[nodiscard]] glong get_utf8_strlen() const {
     if (str_ptr->u8len == str_utf8_t::LENGTH_UNKNOWN) {
-      str_ptr->u8len = g_utf8_strlen(str_ptr->u8str.c_str(), str_ptr->u8str.size());
+      str_ptr->u8len = g_utf8_strlen(str_ptr->u8str.c_str(), static_cast<gssize>(str_ptr->u8str.size()));
     }
     return str_ptr->u8len;
   }
@@ -452,7 +452,7 @@ public:
           }
           check_and_push();
         } else { // vo->vec is flat
-          it = vo->vec.begin() + index;
+          it = vo->vec.begin() + static_cast<vec_t::iterator::difference_type>(index);
         }
         return *this;
       }
@@ -555,12 +555,14 @@ public:
   Value(const char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!
   Value(char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!
                                                   // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0608r3.html
-  template <class T> Value(T&& val) : value(std::forward<T>(val)) { }
+  // Don't shadow move constructor
+  template <class T, class = std::enable_if_t<!std::is_same_v<std::decay_t<T>, Value>>>
+  Value(T&& val) : value(std::forward<T>(val)) { }
 
   static Value undef(const std::string& why); // creation of undef requires a reason!
 
   [[nodiscard]] const std::string typeName() const;
-  static std::string typeName(Type type);
+  [[nodiscard]] static std::string typeName(Type type);
   [[nodiscard]] Type type() const { return static_cast<Type>(this->value.index()); }
   [[nodiscard]] bool isDefinedAs(const Type type) const { return this->type() == type; }
   [[nodiscard]] bool isDefined()   const { return this->type() != Type::UNDEFINED; }
@@ -573,8 +575,8 @@ public:
   [[nodiscard]] const str_utf8_wrapper& toStrUtf8Wrapper() const;
   [[nodiscard]] const VectorType& toVector() const;
   [[nodiscard]] const EmbeddedVectorType& toEmbeddedVector() const;
-  VectorType& toVectorNonConst();
-  EmbeddedVectorType& toEmbeddedVectorNonConst();
+  [[nodiscard]] VectorType& toVectorNonConst();
+  [[nodiscard]] EmbeddedVectorType& toEmbeddedVectorNonConst();
   [[nodiscard]] const RangeType& toRange() const;
   [[nodiscard]] const FunctionType& toFunction() const;
   [[nodiscard]] const ObjectType& toObject() const;
@@ -587,7 +589,7 @@ public:
   [[nodiscard]] std::string toString() const;
   [[nodiscard]] std::string toEchoString() const;
   [[nodiscard]] std::string toEchoStringNoThrow() const; //use this for warnings
-  const UndefType& toUndef();
+  [[nodiscard]] const UndefType& toUndef() const;
   [[nodiscard]] std::string toUndefString() const;
   [[nodiscard]] std::string chrString() const;
   bool getVec2(double& x, double& y, bool ignoreInfinite = false) const;

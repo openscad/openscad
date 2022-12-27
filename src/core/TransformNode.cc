@@ -89,19 +89,19 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
     switch (vec_a.size()) {
     default:
       ok &= false;
-    /* fallthrough */
+      [[fallthrough]];
     case 3:
       ok &= vec_a[2].getDouble(a);
       ok &= !std::isinf(a) && !std::isnan(a);
       sz = sin_degrees(a);
       cz = cos_degrees(a);
-    /* fallthrough */
+      [[fallthrough]];
     case 2:
       ok &= vec_a[1].getDouble(a);
       ok &= !std::isinf(a) && !std::isnan(a);
       sy = sin_degrees(a);
       cy = cos_degrees(a);
-    /* fallthrough */
+      [[fallthrough]];
     case 1:
       ok &= vec_a[0].getDouble(a);
       ok &= !std::isinf(a) && !std::isnan(a);

@@ -1,6 +1,4 @@
-#ifndef __openscad_qtgettext_h__
-#define __openscad_qtgettext_h__
-
+#pragma once
 // see doc/translation.txt
 
 // MinGW defines sprintf to libintl_sprintf which breaks usage of the
@@ -22,6 +20,3 @@ inline QString q_(const char *msgid, const char *msgctxt)
                            _(msgid)
                            );
 }
-
-#endif // ifndef __openscad_qtgettext_h__
-

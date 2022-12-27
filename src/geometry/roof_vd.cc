@@ -1,6 +1,7 @@
 // This file is a part of openscad. Everything implied is implied.
 // Author: Alexey Korepanov <kaikaikai@yandex.ru>
 
+// NOLINTNEXTLINE(bugprone-reserved-identifier)
 #define _USE_MATH_DEFINES
 #include <cmath>
 

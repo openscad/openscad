@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef __VERTEX_H__
-#define __VERTEX_H__
-
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
 
@@ -499,5 +496,3 @@ private:
   VertexData elements_;
   ElementsMap elements_map_;
 };
-
-#endif // __VERTEX_H__

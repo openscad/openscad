@@ -63,9 +63,9 @@ static size_t add_vertex(std::vector<vertex_str>& vertices, const Point& p) {
   if (vi == vertices.end()) {
     vertices.push_back(vs);
     return vertices.size() - 1;
-   } else {
+  } else {
     return std::distance(vertices.begin(), vi);
-   }
+  }
 }
 
 /*!
@@ -141,12 +141,12 @@ static void append_amf(const shared_ptr<const Geometry>& geom, std::ostream& out
     for (const auto& item : geomlist->getChildren()) {
       append_amf(item.second, output);
     }
-  } else if (geom->getDimension() != 3) {
-    assert(false && "Unsupported file format");
   } else if (auto N = CGALUtils::getNefPolyhedronFromGeometry(geom)) {
     // FIXME: Implement this without creating a Nef polyhedron
     if (!N->isEmpty()) append_amf(*N, output);
-  } else {
+  } else if (geom->getDimension() != 3) { // NOLINT(bugprone-branch-clone)
+    assert(false && "Unsupported file format");
+  } else { // NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
   }
 }

@@ -48,7 +48,8 @@ ClipperLib::Paths fromPolygon2d(const Polygon2d& poly, int pow2)
 AutoScaled<ClipperLib::Paths> fromPolygon2d(const Polygon2d& poly)
 {
   auto b = poly.getBoundingBox();
-  return {fromPolygon2d(poly, ClipperUtils::getScalePow2(b)), std::move(b)};
+  auto scale = ClipperUtils::getScalePow2(b);
+  return {fromPolygon2d(poly, scale), std::move(b)};
 }
 
 ClipperLib::PolyTree sanitize(const ClipperLib::Paths& paths)

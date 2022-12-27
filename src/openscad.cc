@@ -860,6 +860,7 @@ struct CommaSeparatedVector
   friend std::istream& operator>>(std::istream& in, CommaSeparatedVector& value) {
     std::string token;
     in >> token;
+    // NOLINTNEXTLINE(*NewDeleteLeaks) LLVM bug https://github.com/llvm/llvm-project/issues/40486
     boost::split(value.values, token, boost::is_any_of(","));
     return in;
   }

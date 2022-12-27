@@ -50,23 +50,23 @@ const VectorType VectorType::EMPTY(nullptr);
 const RangeType RangeType::EMPTY{0, 0, 0};
 
 /* Define values for double-conversion library. */
-#define DC_BUFFER_SIZE 128
+#define DC_BUFFER_SIZE (128)
 #define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO | double_conversion::DoubleToStringConverter::EMIT_POSITIVE_EXPONENT_SIGN)
 #define DC_INF "inf"
 #define DC_NAN "nan"
 #define DC_EXP 'e'
-#define DC_DECIMAL_LOW_EXP -6
-#define DC_DECIMAL_HIGH_EXP 21
-#define DC_MAX_LEADING_ZEROES 5
-#define DC_MAX_TRAILING_ZEROES 0
+#define DC_DECIMAL_LOW_EXP (-6)
+#define DC_DECIMAL_HIGH_EXP (21)
+#define DC_MAX_LEADING_ZEROES (5)
+#define DC_MAX_TRAILING_ZEROES (0)
 
 /* WARNING: using values > 8 will significantly slow double to string
  * conversion, defeating the purpose of using double-conversion library */
-#define DC_PRECISION_REQUESTED 6
+#define DC_PRECISION_REQUESTED (6)
 
 //private definitions used by trimTrailingZeroesHelper
-#define TRIM_TRAILINGZEROES_DONE 0
-#define TRIM_TRAILINGZEROES_CONTINUE 1
+#define TRIM_TRAILINGZEROES_DONE (0)
+#define TRIM_TRAILINGZEROES_CONTINUE (1)
 
 //process parameter buffer from the end to start to find out where the zeroes are located (if any).
 //parameter pos shall be the pos in buffer where '\0' is located.
@@ -247,6 +247,7 @@ std::string getTypeName(const FunctionPtr&) { return "function"; }
 
 bool Value::toBool() const
 {
+  // NOLINTBEGIN(bugprone-branch-clone)
   switch (this->type()) {
   case Type::UNDEFINED: return false;
   case Type::BOOL:      return std::get<bool>(this->value);
@@ -258,6 +259,7 @@ bool Value::toBool() const
   case Type::FUNCTION:  return true;
   default: assert(false && "unknown Value variant type"); return false;
   }
+  // NOLINTEND(bugprone-branch-clone)
 }
 
 double Value::toDouble() const
@@ -474,7 +476,7 @@ std::string UndefType::toString() const {
   return stream.str();
 }
 
-const UndefType& Value::toUndef()
+const UndefType& Value::toUndef() const
 {
   return std::get<UndefType>(this->value);
 }
@@ -1238,29 +1240,20 @@ uint32_t RangeType::numValues() const
   return (num_steps == max) ? max : num_steps + 1;
 }
 
-RangeType::iterator::iterator(const RangeType& range, type_t type) : range(range), val(range.begin_val), type(type),
-  num_values(range.numValues()), i_step(type == type_t::RANGE_TYPE_END ? num_values : 0)
+RangeType::iterator::iterator(const RangeType& range, iter_state state) : range(range), val(range.begin_val), state(state),
+  num_values(range.numValues()), i_step(state == iter_state::RANGE_END ? num_values : 0)
 {
-  update_type();
+  if (std::isnan(range.begin_val) || std::isnan(range.end_val) ||
+      std::isnan(range.step_val) || range.step_val == 0) {
+    i_step = num_values;
+  }
+  update_state();
 }
 
-void RangeType::iterator::update_type()
+void RangeType::iterator::update_state()
 {
-  if (range.step_val == 0) {
-    type = type_t::RANGE_TYPE_END;
-  } else if (range.step_val < 0) {
-    if (i_step >= num_values) {
-      type = type_t::RANGE_TYPE_END;
-    }
-  } else {
-    if (i_step >= num_values) {
-      type = type_t::RANGE_TYPE_END;
-    }
-  }
-
-  if (std::isnan(range.begin_val) || std::isnan(range.end_val) || std::isnan(range.step_val)) {
-    type = type_t::RANGE_TYPE_END;
-    i_step = num_values;
+  if (i_step >= num_values) {
+    state = iter_state::RANGE_END;
   }
 }
 
@@ -1272,17 +1265,14 @@ RangeType::iterator::reference RangeType::iterator::operator*()
 RangeType::iterator& RangeType::iterator::operator++()
 {
   val = range.begin_val + range.step_val * ++i_step;
-  update_type();
+  update_state();
   return *this;
 }
 
 bool RangeType::iterator::operator==(const iterator& other) const
 {
-  if (type == type_t::RANGE_TYPE_RUNNING) {
-    return (type == other.type) && (val == other.val) && (range == other.range);
-  } else {
-    return (type == other.type) && (range == other.range);
-  }
+  return (val == other.val || state != iter_state::RANGE_RUNNING) &&
+         state == other.state && range == other.range;
 }
 
 bool RangeType::iterator::operator!=(const iterator& other) const
@@ -1340,7 +1330,7 @@ const Value& ObjectType::get(const std::string& key) const
 
 void ObjectType::set(const std::string& key, Value&& value)
 {
-  ptr->map.emplace(key, std::move(value));
+  ptr->map.emplace(key, value.clone());
   ptr->keys.emplace_back(key);
   ptr->values.emplace_back(std::move(value));
 }

@@ -116,11 +116,11 @@ void Preferences::init() {
   // Setup default settings
   this->defaultmap["advanced/opencsg_show_warning"] = true;
   this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
-  this->defaultmap["advanced/polysetCacheSize"] = qulonglong(GeometryCache::instance()->maxSizeMB()) * 1024 * 1024;
-  this->defaultmap["advanced/polysetCacheSizeMB"] = getValue("advanced/polysetCacheSize").toULongLong() / (1024 * 1024); // carry over old settings if they exist
+  this->defaultmap["advanced/polysetCacheSize"] = qulonglong(GeometryCache::instance()->maxSizeMB()) * 1024ul * 1024ul;
+  this->defaultmap["advanced/polysetCacheSizeMB"] = getValue("advanced/polysetCacheSize").toULongLong() / (1024ul * 1024ul); // carry over old settings if they exist
 #ifdef ENABLE_CGAL
-  this->defaultmap["advanced/cgalCacheSize"] = qulonglong(CGALCache::instance()->maxSizeMB()) * 1024 * 1024;
-  this->defaultmap["advanced/cgalCacheSizeMB"] = getValue("advanced/cgalCacheSize").toULongLong() / (1024 * 1024); // carry over old settings if they exist
+  this->defaultmap["advanced/cgalCacheSize"] = qulonglong(CGALCache::instance()->maxSizeMB()) * 1024ul * 1024ul;
+  this->defaultmap["advanced/cgalCacheSizeMB"] = getValue("advanced/cgalCacheSize").toULongLong() / (1024ul * 1024ul); // carry over old settings if they exist
 #endif
   this->defaultmap["advanced/openCSGLimit"] = RenderSettings::inst()->openCSGTermLimit;
   this->defaultmap["advanced/forceGoldfeather"] = false;

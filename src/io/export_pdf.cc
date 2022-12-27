@@ -152,11 +152,11 @@ void draw_geom(const shared_ptr<const Geometry>& geom, cairo_t *cr, bool& inpape
     for (const auto& item : geomlist->getChildren()) {
       draw_geom(item.second, cr, inpaper, pos);
     }
-  } else if (dynamic_pointer_cast<const PolySet>(geom)) {
-    assert(false && "Unsupported file format");
   } else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
     draw_geom(*poly, cr, inpaper, pos);
-  } else {
+  } else if (dynamic_pointer_cast<const PolySet>(geom)) { //NOLINT(bugprone-branch-clone)
+    assert(false && "Unsupported file format");
+  } else { //NOLINT(bugprone-branch-clone)
     assert(false && "Export as PDF for this geometry type is not supported");
   }
 }
