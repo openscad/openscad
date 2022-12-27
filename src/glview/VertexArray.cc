@@ -132,6 +132,7 @@ void VertexState::draw(bool bind_buffers) const
                (draw_type_ == GL_UNSIGNED_SHORT ? "GL_UNSIGNED_SHORT" :
                 draw_type_ == GL_UNSIGNED_INT ? "GL_UNSIGNED_INT" :
                 "UNKNOWN") % element_offset_);
+      // NOLINTNEXTLINE(performance-no-int-to-ptr)
       glDrawElements(draw_mode_, draw_size_, draw_type_, (GLvoid *)element_offset_);
     } else {
       GL_TRACE("glDrawArrays(%s, 0, %d)",
@@ -419,9 +420,11 @@ void VertexArray::addAttributePointers(size_t start_offset)
   vs->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
     auto vs = vs_ptr.lock();
     if (vs) {
+      // NOLINTBEGIN(performance-no-int-to-ptr)
       GL_TRACE("glVertexPointer(%d, %d, %d, %p)",
                count % type % stride % (GLvoid *)(vs->drawOffset() + offset));
       glVertexPointer(count, type, stride, (GLvoid *)(vs->drawOffset() + offset));
+      // NOLINTEND(performance-no-int-to-ptr)
       GL_ERROR_CHECK();
     }
   });
@@ -438,8 +441,10 @@ void VertexArray::addAttributePointers(size_t start_offset)
     vs->glBegin().emplace_back([type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
       auto vs = vs_ptr.lock();
       if (vs) {
+        // NOLINTBEGIN(performance-no-int-to-ptr)
         GL_TRACE("glNormalPointer(%d, %d, %p)", type % stride % (GLvoid *)(vs->drawOffset() + offset));
         glNormalPointer(type, stride, (GLvoid *)(vs->drawOffset() + offset));
+        // NOLINTEND(performance-no-int-to-ptr)
         GL_ERROR_CHECK();
       }
     });
@@ -457,8 +462,10 @@ void VertexArray::addAttributePointers(size_t start_offset)
     vs->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
       auto vs = vs_ptr.lock();
       if (vs) {
+        // NOLINTBEGIN(performance-no-int-to-ptr)
         GL_TRACE("glColorPointer(%d, %d, %d, %p)", count % type % stride % (GLvoid *)(vs->drawOffset() + offset));
         glColorPointer(count, type, stride, (GLvoid *)(vs->drawOffset() + offset));
+        // NOLINTEND(performance-no-int-to-ptr)
         GL_ERROR_CHECK();
       }
     });
