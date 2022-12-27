@@ -37,7 +37,7 @@ void Camera::setup(std::vector<double> params)
     Eigen::Vector3d projection(dir[0], dir[1], 0);
     object_rot.x() = -atan2_degrees(dir[2], projection.norm());
   } else {
-    assert("Gimbal cam needs 7 numbers, Vector camera needs 6");
+    assert(false && "Gimbal cam needs 7 numbers, Vector camera needs 6");
   }
   locked = true;
 }

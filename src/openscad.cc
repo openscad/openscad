@@ -206,7 +206,9 @@ Camera get_camera(const po::variables_map& vm)
     boost::split(strs, vm["camera"].as<string>(), is_any_of(","));
     if (strs.size() == 6 || strs.size() == 7) {
       try {
-        for (const auto& s : strs) cam_parameters.push_back(lexical_cast<double>(s));
+        for (const auto& s : strs) {
+          cam_parameters.push_back(lexical_cast<double>(s));
+        }
         camera.setup(cam_parameters);
       } catch (bad_lexical_cast&) {
         LOG(message_group::None, Location::NONE, "", "Camera setup requires numbers as parameters");
