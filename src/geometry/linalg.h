@@ -33,7 +33,8 @@ bool matrix_contains_nan(const Transform3d& m);
 int32_t hash_floating_point(double v);
 
 template <typename Derived> bool is_finite(const Eigen::MatrixBase<Derived>& x) {
-  return ( (x - x).array() == (x - x).array()).all();
+  //infinity minus infinity is NaN, which never compares equal to itself
+  return ( (x - x).array() == (x - x).array()).all(); // NOLINT(misc-redundant-expression)
 }
 
 template <typename Derived> bool is_nan(const Eigen::MatrixBase<Derived>& x) {
