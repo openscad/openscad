@@ -18,7 +18,7 @@ struct ExactLazyNumbersVisitor
   using vertex_descriptor = typename GT::vertex_descriptor;
 
 #if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 4, 0)
-  void new_vertex_added(std::size_t i_id, vertex_descriptor v, const TriangleMesh& tm) {
+  void new_vertex_added(std::size_t /*i_id*/, vertex_descriptor v, const TriangleMesh& tm) {
     auto& pt = tm.point(v);
     CGAL::exact(pt.x());
     CGAL::exact(pt.y());

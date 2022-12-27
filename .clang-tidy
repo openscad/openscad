@@ -1,5 +1,6 @@
 Checks: '
   -*,
+  boost-*,
   bugprone-*,
     -bugprone-easily-swappable-parameters,
     -bugprone-exception-escape,
@@ -7,6 +8,10 @@ Checks: '
   clang-analyzer-*,
     -clang-analyzer-cplusplus.NewDelete,
     -clang-analyzer-cplusplus.NewDeleteLeaks,
+  misc-*,
+    -misc-definitions-in-headers,
+    -misc-no-recursion,
+    -misc-non-private-member-variables-in-classes,
   modernize-*,
     -modernize-avoid-c-arrays,
     -modernize-use-nodiscard,

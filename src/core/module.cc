@@ -43,7 +43,7 @@ BuiltinModule::BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const M
     };
 }
 
-std::shared_ptr<AbstractNode> BuiltinModule::instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
+std::shared_ptr<AbstractNode> BuiltinModule::instantiate(const std::shared_ptr<const Context>& /*defining_context*/, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
 {
   return do_instantiate(inst, context);
 }

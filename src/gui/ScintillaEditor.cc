@@ -1342,7 +1342,7 @@ void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorDa
   }
 }
 
-void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state)
+void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers /*state*/)
 {
   qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
 
@@ -1357,7 +1357,7 @@ void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifier
   }
 }
 
-void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state)
+void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifiers /*state*/)
 {
   qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
 

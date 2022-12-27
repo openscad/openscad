@@ -203,7 +203,7 @@ QAction *getExport2DAction(const MainWindow *mainWindow) {
   }
 }
 
-void removeExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *action) {
+void removeExportActions(QToolBar *toolbar, QAction *action) {
   int idx = toolbar->actions().indexOf(action);
   while (idx > 0) {
     QAction *a = toolbar->actions().at(idx - 1);
@@ -702,11 +702,11 @@ MainWindow::MainWindow(const QStringList& filenames)
 }
 
 void MainWindow::updateExportActions() {
-  removeExportActions(this, editortoolbar, this->designAction3DPrint);
+  removeExportActions(editortoolbar, this->designAction3DPrint);
   addExportActions(this, editortoolbar, this->designAction3DPrint);
 
   //handle the hide/show of export action in view toolbar according to the visibility of editor dock
-  removeExportActions(this, viewerToolBar, this->viewActionViewAll);
+  removeExportActions(viewerToolBar, this->viewActionViewAll);
   if (!editorDock->isVisible()) {
     addExportActions(this, viewerToolBar, this->viewActionViewAll);
   }

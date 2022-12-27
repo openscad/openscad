@@ -486,7 +486,7 @@ std::string Value::toUndefString() const
   return std::get<UndefType>(this->value).toString();
 }
 
-std::ostream& operator<<(std::ostream& stream, const UndefType& u)
+std::ostream& operator<<(std::ostream& stream, const UndefType& /*u*/)
 {
   stream << "undef";
   return stream;
@@ -725,48 +725,48 @@ Value FunctionType::operator==(const FunctionType& other) const {
 Value FunctionType::operator!=(const FunctionType& other) const {
   return this != &other;
 }
-Value FunctionType::operator<(const FunctionType& other) const {
+Value FunctionType::operator<(const FunctionType& /*other*/) const {
   return Value::undef("operation undefined (function < function)");
 }
-Value FunctionType::operator>(const FunctionType& other) const {
+Value FunctionType::operator>(const FunctionType& /*other*/) const {
   return Value::undef("operation undefined (function > function)");
 }
-Value FunctionType::operator<=(const FunctionType& other) const {
+Value FunctionType::operator<=(const FunctionType& /*other*/) const {
   return Value::undef("operation undefined (function <= function)");
 }
-Value FunctionType::operator>=(const FunctionType& other) const {
+Value FunctionType::operator>=(const FunctionType& /*other*/) const {
   return Value::undef("operation undefined (function >= function)");
 }
 
-Value UndefType::operator<(const UndefType& other) const {
+Value UndefType::operator<(const UndefType& /*other*/) const {
   return Value::undef("operation undefined (undefined < undefined)");
 }
-Value UndefType::operator>(const UndefType& other) const {
+Value UndefType::operator>(const UndefType& /*other*/) const {
   return Value::undef("operation undefined (undefined > undefined)");
 }
-Value UndefType::operator<=(const UndefType& other) const {
+Value UndefType::operator<=(const UndefType& /*other*/) const {
   return Value::undef("operation undefined (undefined <= undefined)");
 }
-Value UndefType::operator>=(const UndefType& other) const {
+Value UndefType::operator>=(const UndefType& /*other*/) const {
   return Value::undef("operation undefined (undefined >= undefined)");
 }
 
-Value ObjectType::operator==(const ObjectType& other) const {
+Value ObjectType::operator==(const ObjectType& /*other*/) const {
   return Value::undef("operation undefined (object == object)");
 }
-Value ObjectType::operator!=(const ObjectType& other) const {
+Value ObjectType::operator!=(const ObjectType& /*other*/) const {
   return Value::undef("operation undefined (object != object)");
 }
-Value ObjectType::operator<(const ObjectType& other) const {
+Value ObjectType::operator<(const ObjectType& /*other*/) const {
   return Value::undef("operation undefined (object < object)");
 }
-Value ObjectType::operator>(const ObjectType& other) const {
+Value ObjectType::operator>(const ObjectType& /*other*/) const {
   return Value::undef("operation undefined (object > object)");
 }
-Value ObjectType::operator<=(const ObjectType& other) const {
+Value ObjectType::operator<=(const ObjectType& /*other*/) const {
   return Value::undef("operation undefined (object <= object)");
 }
-Value ObjectType::operator>=(const ObjectType& other) const {
+Value ObjectType::operator>=(const ObjectType& /*other*/) const {
   return Value::undef("operation undefined (object >= object)");
 }
 
@@ -825,7 +825,7 @@ Value VectorType::operator>=(const VectorType& v) const {
 class notequal_visitor
 {
 public:
-  template <typename T, typename U> Value operator()(const T& op1, const U& op2) const { return true; }
+  template <typename T, typename U> Value operator()(const T& /*op1*/, const U& /*op2*/) const { return true; }
   template <typename T> Value operator()(const T& op1, const T& op2) const { return op1 != op2; }
   Value operator()(const UndefType&, const UndefType&) const { return false; }
   template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 != *op2; }
@@ -834,7 +834,7 @@ public:
 class equals_visitor
 {
 public:
-  template <typename T, typename U> Value operator()(const T& op1, const U& op2) const { return false; }
+  template <typename T, typename U> Value operator()(const T& /*op1*/, const U& /*op2*/) const { return false; }
   template <typename T> Value operator()(const T& op1, const T& op2) const { return op1 == op2; }
   Value operator()(const UndefType&, const UndefType&) const { return true; }
   template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 == *op2; }

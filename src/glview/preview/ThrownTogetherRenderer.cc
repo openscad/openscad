@@ -50,7 +50,7 @@ ThrownTogetherRenderer::~ThrownTogetherRenderer()
   }
 }
 
-void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool showedges, const Renderer::shaderinfo_t *shaderinfo)
+void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const Renderer::shaderinfo_t * /*shaderinfo*/)
 {
   PRINTD("Thrown prepare");
   if (Feature::ExperimentalVxORenderers.is_enabled() && !vertex_states.size()) {

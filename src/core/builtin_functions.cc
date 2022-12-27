@@ -376,7 +376,7 @@ Value builtin_ln(Arguments arguments, const Location& loc)
   return {log(arguments[0]->toDouble())};
 }
 
-Value builtin_str(Arguments arguments, const Location& loc)
+Value builtin_str(Arguments arguments, const Location& /*loc*/)
 {
   std::ostringstream stream;
   for (const auto& argument : arguments) {
@@ -385,7 +385,7 @@ Value builtin_str(Arguments arguments, const Location& loc)
   return {stream.str()};
 }
 
-Value builtin_chr(Arguments arguments, const Location& loc)
+Value builtin_chr(Arguments arguments, const Location& /*loc*/)
 {
   std::ostringstream stream;
   for (const auto& argument : arguments) {
@@ -414,7 +414,7 @@ Value builtin_ord(Arguments arguments, const Location& loc)
   return {(double)ch};
 }
 
-Value builtin_concat(Arguments arguments, const Location& loc)
+Value builtin_concat(Arguments arguments, const Location& /*loc*/)
 {
   VectorType result(arguments.session());
   for (auto& argument : arguments) {
@@ -676,7 +676,7 @@ Value builtin_search(Arguments arguments, const Location& loc)
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
-Value builtin_version(Arguments arguments, const Location& loc)
+Value builtin_version(Arguments arguments, const Location& /*loc*/)
 {
   VectorType vec(arguments.session());
   vec.emplace_back(double(OPENSCAD_YEAR));

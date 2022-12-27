@@ -83,7 +83,7 @@ OpenCSGRenderer::OpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,
 {
 }
 
-void OpenCSGRenderer::prepare(bool /*showfaces*/, bool showedges, const shaderinfo_t *shaderinfo)
+void OpenCSGRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const shaderinfo_t *shaderinfo)
 {
   if (Feature::ExperimentalVxORenderers.is_enabled() && !vbo_vertex_products.size()) {
     if (this->root_products) {
@@ -146,7 +146,7 @@ OpenCSGVBOPrim *OpenCSGRenderer::createVBOPrimitive(const std::shared_ptr<OpenCS
   return new OpenCSGVBOPrim(operation, convexity, std::move(opencsg_vs));
 }
 
-void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode)
+void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Renderer::shaderinfo_t * /*shaderinfo*/, bool highlight_mode, bool background_mode)
 {
   size_t vbo_count = products.products.size();
   if (vbo_count) {

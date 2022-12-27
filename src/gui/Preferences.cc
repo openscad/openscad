@@ -1054,7 +1054,7 @@ void Preferences::updateGUI()
   updateComboBox(this->comboBoxOctoPrintSlicingProfile, Settings::Settings::octoPrintSlicerProfile.value());
 }
 
-void Preferences::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum& entry)
+void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val, Settings::SettingsEntryEnum& entry)
 {
   entry.setIndex(val);
   writeSettings();
