@@ -172,7 +172,8 @@ static GroupInfo createGroup(std::string comment, int lineNo)
     if (finalGroupName.empty()) {
       finalGroupName = groupName;
     } else {
-      finalGroupName = finalGroupName + "-" + groupName;
+      finalGroupName.push_back('-');
+      finalGroupName.append(groupName);
     }
     groupName.clear();
     comment = match.suffix();
