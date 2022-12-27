@@ -9,6 +9,10 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+#ifndef _WIN32 // NOT _WIN32
+#include <sys/wait.h>
+#endif // NOT _WIN32
+
 std::unordered_set<std::string> dependencies;
 const char *make_command = nullptr;
 

@@ -4,17 +4,17 @@ ECHO: { position = [-116.212, -10.208]; size = [98.96, 20.416]; ascent = 20.1344
 ECHO: { nominal = { ascent = 12.5733; descent = -2.9433; }; max = { ascent = 13.6109; descent = -4.2114; }; interline = 15.9709; font = { family = "Liberation Sans"; style = "Regular"; }; }
 ECHO: { nominal = { ascent = 25.1466; descent = -5.8866; }; max = { ascent = 27.2218; descent = -8.4228; }; interline = 31.9418; font = { family = "Liberation Sans"; style = "Regular"; }; }
 ECHO: "Errors..."
-WARNING: textmetrics() parameter could not be converted: size: expected number, found vector ([]) in file text-metrics-test.scad, line 20
-WARNING: textmetrics() parameter could not be converted: text: expected string, found number (123) in file text-metrics-test.scad, line 20
-WARNING: textmetrics() parameter could not be converted: spacing: expected number, found string ("") in file text-metrics-test.scad, line 20
-WARNING: textmetrics() parameter could not be converted: font: expected string, found bool (true) in file text-metrics-test.scad, line 20
-WARNING: textmetrics() parameter could not be converted: direction: expected string, found number (0) in file text-metrics-test.scad, line 20
-WARNING: textmetrics() parameter could not be converted: language: expected string, found range ([0 : 1 : 10]) in file text-metrics-test.scad, line 20
-WARNING: textmetrics() parameter could not be converted: script: expected string, found number (0) in file text-metrics-test.scad, line 20
-WARNING: textmetrics() parameter could not be converted: halign: expected string, found number (0) in file text-metrics-test.scad, line 20
-WARNING: textmetrics() parameter could not be converted: valign: expected string, found number (0) in file text-metrics-test.scad, line 20
+WARNING: textmetrics(..., size=[]) Invalid type: expected number, found vector in file text-metrics-test.scad, line 20
+WARNING: textmetrics(..., text=123) Invalid type: expected string, found number in file text-metrics-test.scad, line 20
+WARNING: textmetrics(..., spacing="") Invalid type: expected number, found string in file text-metrics-test.scad, line 20
+WARNING: textmetrics(..., font=true) Invalid type: expected string, found bool in file text-metrics-test.scad, line 20
+WARNING: textmetrics(..., direction=0) Invalid type: expected string, found number in file text-metrics-test.scad, line 20
+WARNING: textmetrics(..., language=[0 : 1 : 10]) Invalid type: expected string, found range in file text-metrics-test.scad, line 20
+WARNING: textmetrics(..., script=0) Invalid type: expected string, found number in file text-metrics-test.scad, line 20
+WARNING: textmetrics(..., halign=0) Invalid type: expected string, found number in file text-metrics-test.scad, line 20
+WARNING: textmetrics(..., valign=0) Invalid type: expected string, found number in file text-metrics-test.scad, line 20
 ECHO: { position = [0, 0]; size = [0, 0]; ascent = 0; descent = 0; offset = [0, 0]; advance = [0, 0]; }
 WARNING: variable text not specified as parameter in file text-metrics-test.scad, line 25
-WARNING: fontmetrics() parameter could not be converted: size: expected number, found bool (true) in file text-metrics-test.scad, line 25
-WARNING: fontmetrics() parameter could not be converted: font: expected string, found number (0) in file text-metrics-test.scad, line 25
+WARNING: fontmetrics(..., size=true) Invalid type: expected number, found bool in file text-metrics-test.scad, line 25
+WARNING: fontmetrics(..., font=0) Invalid type: expected string, found number in file text-metrics-test.scad, line 25
 ECHO: { nominal = { ascent = 12.5733; descent = -2.9433; }; max = { ascent = 13.6109; descent = -4.2114; }; interline = 15.9709; font = { family = "Liberation Sans"; style = "Regular"; }; }

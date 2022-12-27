@@ -371,6 +371,7 @@ build_cgal()
   echo "Building CGAL" $version "..."
   cd $BASEDIR/src
   rm -rf CGAL-$version
+  ver5_5_1="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.5.1/CGAL-5.5.1-library.tar.xz --output CGAL-5.5.1.tar.xz"
   ver5_4="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.4/CGAL-5.4-library.tar.xz --output CGAL-5.4.tar.xz"
   ver5_3="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.3/CGAL-5.3-library.tar.xz --output CGAL-5.3.tar.xz"
   ver5_2="curl -L --insecure https://github.com/CGAL/cgal/releases/download/v5.2/CGAL-5.2-library.tar.xz --output CGAL-5.2.tar.xz"
@@ -780,7 +781,7 @@ if [ $1 ]; then
     exit $?
   fi
   if [ $1 = "cgal" ]; then
-    build_cgal ${CGAL_VERSION:-5.3} use-sys-libs
+    build_cgal ${CGAL_VERSION:-5.5.1} use-sys-libs
     exit $?
   fi
   if [ $1 = "opencsg" ]; then
@@ -808,7 +809,7 @@ if [ $1 ]; then
   fi
   if [ $1 = "harfbuzz" ]; then
     # debian 7 lacks only harfbuzz
-    build_harfbuzz 0.9.35 --with-glib=yes
+    build_harfbuzz 6.0.0 --with-glib=yes
     exit $?
   fi
   if [ $1 = "glib2" ]; then
@@ -816,7 +817,7 @@ if [ $1 ]; then
     build_pkgconfig 0.28
     build_libffi 3.0.13
     #build_gettext 0.18.3.1
-    build_glib2 2.38.2
+    build_glib2 2.75.0
     exit $?
   fi
 fi
@@ -834,19 +835,19 @@ fi
 build_eigen 3.3.7
 build_gmp 6.0.0
 build_mpfr 3.1.1
-build_boost 1.56.0
+build_boost 1.81.0
 # NB! For CGAL, also update the actual download URL in the function
-build_cgal 5.3
+build_cgal 5.5.1
 build_glew 1.9.0
 build_opencsg 1.4.2
 build_gettext 0.18.3.1
-build_glib2 2.38.2
+build_glib2 2.75.0
 
 # the following are only needed for text()
-build_freetype 2.6.1 --without-png
+build_freetype 2.12.1 --without-png
 build_libxml2 2.9.1
-build_fontconfig 2.11.0 --with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts
-build_ragel 6.9
-build_harfbuzz 0.9.35 --with-glib=yes
+build_fontconfig 2.14.1 --with-add-fonts=/usr/X11R6/lib/X11/fonts,/usr/local/share/fonts
+build_ragel 6.10
+build_harfbuzz 6.0.0 --with-glib=yes
 
 echo "OpenSCAD dependencies built and installed to " $BASEDIR
