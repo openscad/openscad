@@ -1,5 +1,6 @@
 Checks: '
   -*,
+  boost-*,
   bugprone-*,
     -bugprone-easily-swappable-parameters,
     -bugprone-exception-escape,
