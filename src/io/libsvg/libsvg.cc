@@ -27,7 +27,6 @@
 #include <vector>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <libxml/xmlreader.h>
 
@@ -35,8 +34,6 @@
 
 #include "shape.h"
 #include "use.h"
-
-namespace fs = boost::filesystem;
 
 namespace libsvg {
 

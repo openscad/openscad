@@ -27,8 +27,6 @@
 #include "Context.h"
 #include "function.h"
 #include "printutils.h"
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
 
 Context::Context(EvaluationSession *session) :
   ContextFrame(session),

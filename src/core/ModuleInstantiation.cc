@@ -4,8 +4,6 @@
 #include "Expression.h"
 #include "exceptions.h"
 #include "printutils.h"
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
 
 void ModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
 {
