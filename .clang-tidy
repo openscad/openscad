@@ -11,5 +11,7 @@ Checks: '
     -modernize-avoid-c-arrays,
     -modernize-use-nodiscard,
     -modernize-use-trailing-return-type,
+  performance-*,
+    -performance-no-int-to-ptr,
 '
 WarningsAsErrors: ''
