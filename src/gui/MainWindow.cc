@@ -1194,7 +1194,7 @@ void MainWindow::compileEnded()
 }
 
 
-void evaluatePython()
+void evaluatePython(const char *code)
 {
     wchar_t *program = Py_DecodeLocale("openscad", NULL);
     const char *prg="from time import time,ctime\n"
@@ -1205,7 +1205,7 @@ void evaluatePython()
     }
     Py_SetProgramName(program);  /* optional but recommended */
     Py_Initialize();
-    PyRun_SimpleString(prg);
+    PyRun_SimpleString(code);
     if (Py_FinalizeEx() < 0) {
         exit(120);
     }
@@ -1244,12 +1244,9 @@ void MainWindow::instantiateRoot()
 
     AbstractNode::resetIndexCounter();
 
-    printf("Before compile\n");
     EvaluationSession session{doc.parent_path().string()};
     ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
     setRenderVariables(builtin_context);
-    printf("After Compile\n");
-    evaluatePython();
 
     std::shared_ptr<const FileContext> file_context;
     this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
@@ -1816,8 +1813,11 @@ void MainWindow::parseTopLevelDocument()
   this->last_compiled_doc = activeEditor->toPlainText();
 
   auto fulltext =
-    std::string(this->last_compiled_doc.toUtf8().constData()) +
-    "\n\x03\n" + commandline_commands;
+    std::string(this->last_compiled_doc.toUtf8().constData());
+ // + "\n\x03\n" + commandline_commands;
+  evaluatePython(fulltext.c_str());
+
+  fulltext ="cube([10,10,10]);\n";
 
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
