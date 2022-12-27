@@ -41,7 +41,7 @@ protected:
   std::vector<double> args;
 
 public:
-  transformation(const std::string& op, const std::string& name);
+  transformation(std::string op, std::string name) : op(std::move(op)), name(std::move(name)) { }
   virtual ~transformation() = default;
 
   [[nodiscard]] const std::string& get_op() const { return op; }

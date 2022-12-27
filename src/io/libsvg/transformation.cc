@@ -32,10 +32,6 @@
 
 namespace libsvg {
 
-transformation::transformation(const std::string& op, const std::string& name) : op(op), name(name)
-{
-}
-
 void
 transformation::add_arg(const std::string& arg)
 {
