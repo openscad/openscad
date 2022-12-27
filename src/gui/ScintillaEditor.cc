@@ -84,7 +84,7 @@ QsciScintilla::WhitespaceVisibility SettingsConverter::toShowWhitespaces(const s
   }
 }
 
-EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
+EditorColorScheme::EditorColorScheme(const fs::path& path) : path(path)
 {
   try {
     boost::property_tree::read_json(path.generic_string(), pt);
@@ -240,12 +240,12 @@ void ScintillaEditor::addTemplate()
 {
   addTemplate(PlatformUtils::resourceBasePath());
   addTemplate(PlatformUtils::userConfigPath());
-  for (auto key: templateMap.keys()) {
+  for (const auto& key: templateMap.keys()) {
     userList.append(key);
   }
 }
 
-void ScintillaEditor::addTemplate(const fs::path path)
+void ScintillaEditor::addTemplate(const fs::path& path)
 {
   const auto template_path = path / "templates";
 
@@ -301,9 +301,9 @@ void ScintillaEditor::applySettings()
   qsci->setAutoIndent(Settings::Settings::autoIndent.value());
   qsci->setBackspaceUnindents(Settings::Settings::backspaceUnindents.value());
 
-  auto indentStyle = Settings::Settings::indentStyle.value();
+  const auto& indentStyle = Settings::Settings::indentStyle.value();
   qsci->setIndentationsUseTabs(indentStyle == "Tabs");
-  auto tabKeyFunction = Settings::Settings::tabKeyFunction.value();
+  const auto& tabKeyFunction = Settings::Settings::tabKeyFunction.value();
   qsci->setTabIndents(tabKeyFunction == "Indent");
 
   qsci->setBraceMatching(Settings::Settings::enableBraceMatching.value() ? QsciScintilla::SloppyBraceMatch : QsciScintilla::NoBraceMatch);
@@ -394,7 +394,7 @@ void ScintillaEditor::unhighlightLastError()
   updateSymbolMarginVisibility();
 }
 
-QColor ScintillaEditor::readColor(const boost::property_tree::ptree& pt, const std::string name, const QColor defaultColor)
+QColor ScintillaEditor::readColor(const boost::property_tree::ptree& pt, const std::string& name, const QColor& defaultColor)
 {
   try {
     const auto val = pt.get<std::string>(name);
@@ -404,17 +404,16 @@ QColor ScintillaEditor::readColor(const boost::property_tree::ptree& pt, const s
   }
 }
 
-std::string ScintillaEditor::readString(const boost::property_tree::ptree& pt, const std::string name, const std::string defaultValue)
+std::string ScintillaEditor::readString(const boost::property_tree::ptree& pt, const std::string& name, const std::string& defaultValue)
 {
   try {
-    const auto val = pt.get<std::string>(name);
-    return val;
+    return pt.get<std::string>(name);
   } catch (const std::exception& e) {
     return defaultValue;
   }
 }
 
-int ScintillaEditor::readInt(const boost::property_tree::ptree& pt, const std::string name, const int defaultValue)
+int ScintillaEditor::readInt(const boost::property_tree::ptree& pt, const std::string& name, const int defaultValue)
 {
   try {
     const auto val = pt.get<int>(name);
@@ -610,7 +609,7 @@ void ScintillaEditor::noColor()
   qsci->setEdgeColor(Qt::black);
 }
 
-void ScintillaEditor::enumerateColorSchemesInPath(ScintillaEditor::colorscheme_set_t& result_set, const fs::path path)
+void ScintillaEditor::enumerateColorSchemesInPath(ScintillaEditor::colorscheme_set_t& result_set, const fs::path& path)
 {
   const auto color_schemes = path / "color-schemes" / "editor";
 
@@ -1111,7 +1110,7 @@ bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
 
 bool ScintillaEditor::handleWheelEventNavigateNumber(QWheelEvent *wheelEvent)
 {
-  auto modifierNumberScrollWheel = Settings::Settings::modifierNumberScrollWheel.value();
+  const auto& modifierNumberScrollWheel = Settings::Settings::modifierNumberScrollWheel.value();
   bool modifier;
   static bool previewAfterUndo = false;
 
@@ -1405,7 +1404,7 @@ void ScintillaEditor::toggleBookmark()
   updateSymbolMarginVisibility();
 }
 
-void ScintillaEditor::findMarker(int findStartOffset, int wrapStart, std::function<int(int)> findMarkerFunc)
+void ScintillaEditor::findMarker(int findStartOffset, int wrapStart, const std::function<int(int)>& findMarkerFunc)
 {
   int line, index;
   qsci->getCursorPosition(&line, &index);

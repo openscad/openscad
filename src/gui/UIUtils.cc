@@ -64,7 +64,7 @@ QFileInfoList UIUtils::openFiles(QWidget *parent)
                                                             last_dirname, "OpenSCAD Designs (*.scad *.csg)");
 
   QFileInfoList fileInfoList;
-  for (QString filename: new_filenames) {
+  for (const QString& filename: new_filenames) {
     if (filename.isEmpty()) {
       continue;
     }
@@ -160,7 +160,7 @@ void UIUtils::openHomepageURL()
   QDesktopServices::openUrl(QUrl("https://www.openscad.org/"));
 }
 
-static void openVersionedURL(QString url)
+static void openVersionedURL(const QString& url)
 {
   QDesktopServices::openUrl(QUrl(url.arg(openscad_shortversionnumber.c_str())));
 }

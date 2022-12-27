@@ -29,7 +29,7 @@ std::string svg_label(const std::string& s)
   return out.str();
 }
 
-std::string svg_styleblock(std::string strokewidth)
+std::string svg_styleblock(const std::string& strokewidth)
 {
   std::ostringstream out;
   // halfedge: f1/f0 = face mark, b1/b0 = body or hole, m1/m0 = halfedge mark
@@ -72,7 +72,7 @@ std::string svg_axes()
   return out.str();
 }
 
-CGAL_Nef_polyhedron2::Explorer::Point project_svg_3to2(CGAL_Point_3 p, CGAL_Iso_cuboid_3 bbox)
+CGAL_Nef_polyhedron2::Explorer::Point project_svg_3to2(const CGAL_Point_3& p, const CGAL_Iso_cuboid_3& bbox)
 {
   CGAL_Kernel3::FT screenw(svg_px_width);
   CGAL_Kernel3::FT screenh(svg_px_height);
@@ -114,7 +114,7 @@ CGAL_Point_2e project_svg_2to2(const CGAL_Point_2e& p, const CGAL_Iso_rectangle_
 std::string dump_cgal_nef_polyhedron2_face_svg(
   CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c1,
   CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c2,
-  CGAL_Nef_polyhedron2::Explorer explorer,
+  const CGAL_Nef_polyhedron2::Explorer& explorer,
   bool facemark, bool body)
 {
   std::ostringstream style;
@@ -186,7 +186,7 @@ std::string dump_svg(const CGAL_Nef_polyhedron2& N)
   return tmp;
 }
 
-std::string point_dump(CGAL_Point_3 p)
+std::string point_dump(const CGAL_Point_3& p)
 {
   std::ostringstream out;
   out << CGAL::to_double(p.x()) << ","
@@ -195,7 +195,7 @@ std::string point_dump(CGAL_Point_3 p)
   return out.str();
 }
 
-std::string point_dump(CGAL::Sphere_point<CGAL_Kernel3> p)
+std::string point_dump(const CGAL::Sphere_point<CGAL_Kernel3>& p)
 {
   std::ostringstream out;
   out << CGAL::to_double(p.x()) << ","

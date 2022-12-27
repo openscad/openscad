@@ -11,5 +11,6 @@ Checks: '
     -modernize-avoid-c-arrays,
     -modernize-use-nodiscard,
     -modernize-use-trailing-return-type,
+  performance-*
 '
 WarningsAsErrors: ''

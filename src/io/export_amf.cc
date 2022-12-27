@@ -111,7 +111,7 @@ static void append_amf(const CGAL_Nef_polyhedron& root_N, std::ostream& output)
     output << " <object id=\"" << objectid++ << "\">\r\n"
            << "  <mesh>\r\n";
     output << "   <vertices>\r\n";
-    for (auto s : vertices) {
+    for (const auto& s : vertices) {
       output << "    <vertex><coordinates>\r\n";
       output << "     <x>" << s.x << "</x>\r\n";
       output << "     <y>" << s.y << "</y>\r\n";

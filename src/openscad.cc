@@ -267,7 +267,7 @@ Camera get_camera(const po::variables_map& vm)
 #include "QSettingsCached.h"
 #define OPENSCAD_QTGUI 1
 #endif
-static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
+static bool checkAndExport(const shared_ptr<const Geometry>& root_geom, unsigned nd,
                            FileFormat format, const bool is_stdout, const std::string& filename)
 {
   if (root_geom->getDimension() != nd) {
@@ -700,7 +700,7 @@ void registerDefaultIcon(QString applicationFilePath) {
   reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"), QVariant(appPath));
 }
 #else
-void registerDefaultIcon(QString) { }
+void registerDefaultIcon(const QString&) { }
 #endif
 
 int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, char **argv)
@@ -872,7 +872,7 @@ std::string str_join(const Seq& seq, const std::string& sep, const ToString& toS
   return boost::algorithm::join(boost::adaptors::transform(seq, toString), sep);
 }
 
-bool flagConvert(std::string str){
+bool flagConvert(const std::string& str){
   if (str == "1" || boost::iequals(str, "on") || boost::iequals(str, "true")) {
     return true;
   }
@@ -1018,7 +1018,7 @@ int main(int argc, char **argv)
   flags.insert(std::make_pair("trace-usermodule-parameters", &OpenSCAD::traceUsermoduleParameters));
   flags.insert(std::make_pair("check-parameters", &OpenSCAD::parameterCheck));
   flags.insert(std::make_pair("check-parameter-ranges", &OpenSCAD::rangeCheck));
-  for (auto flag : flags) {
+  for (const auto& flag : flags) {
     std::string name = flag.first;
     if (vm.count(name)) {
       std::string opt = vm[name].as<string>();
@@ -1193,7 +1193,7 @@ int main(int argc, char **argv)
 
     if (deps_output_file) {
       std::string deps_out(deps_output_file);
-      vector<std::string> geom_out(output_files);
+      const vector<std::string>& geom_out(output_files);
       int result = write_deps(deps_out, geom_out);
       if (!result) {
         LOG(message_group::None, Location::NONE, "", "Error writing deps");

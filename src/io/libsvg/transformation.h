@@ -41,14 +41,14 @@ protected:
   std::vector<double> args;
 
 public:
-  transformation(const std::string op, const std::string name);
+  transformation(std::string op, std::string name) : op(std::move(op)), name(std::move(name)) { }
   virtual ~transformation() = default;
 
   [[nodiscard]] const std::string& get_op() const { return op; }
   [[nodiscard]] const std::string& get_name() const { return name; }
   [[nodiscard]] const std::string get_args() const;
 
-  void add_arg(const std::string arg);
+  void add_arg(const std::string& arg);
   virtual std::vector<Eigen::Matrix3d> get_matrices() = 0;
 };
 

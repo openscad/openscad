@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <boost/format.hpp>
+#include <utility>
 
 #include "InputDriverManager.h"
 #include "JoystickInputDriver.h"
@@ -109,5 +110,5 @@ std::string JoystickInputDriver::get_info() const
 
 void JoystickInputDriver::setJoystickNr(std::string jnr)
 {
-  this->nr = jnr;
+  this->nr = std::move(jnr);
 }

@@ -16,7 +16,7 @@ public:
 
   virtual void print(std::ostream& stream, const std::string& indent, const bool inlined) const;
   void print(std::ostream& stream, const std::string& indent) const override { print(stream, indent, false); }
-  std::shared_ptr<AbstractNode> evaluate(const std::shared_ptr<const Context> context) const;
+  std::shared_ptr<AbstractNode> evaluate(const std::shared_ptr<const Context>& context) const;
 
   const std::string& name() const { return this->modname; }
   bool isBackground() const { return this->tag_background; }
@@ -37,7 +37,7 @@ class IfElseModuleInstantiation : public ModuleInstantiation
 {
 public:
   IfElseModuleInstantiation(shared_ptr<class Expression> expr, const Location& loc) :
-    ModuleInstantiation("if", AssignmentList{assignment("", expr)}, loc) { }
+    ModuleInstantiation("if", AssignmentList{assignment("", std::move(expr))}, loc) { }
 
   LocalScope *makeElseScope();
   LocalScope *getElseScope() const { return this->else_scope.get(); }

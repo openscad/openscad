@@ -49,7 +49,7 @@ public:
   /**
    * Constructor for reading external JSON files.
    */
-  RenderColorScheme(const fs::path path);
+  RenderColorScheme(const fs::path& path);
   virtual ~RenderColorScheme() = default;
 
   [[nodiscard]] const std::string& name() const;
@@ -62,7 +62,7 @@ public:
 private:
   [[nodiscard]] std::string path() const;
   [[nodiscard]] std::string error() const;
-  void addColor(RenderColor colorKey, std::string key);
+  void addColor(RenderColor colorKey, const std::string& key);
 
   friend class ColorMap;
 };
@@ -88,6 +88,6 @@ private:
   virtual ~ColorMap() = default;
   void dump() const;
   colorscheme_set_t enumerateColorSchemes();
-  void enumerateColorSchemesInPath(colorscheme_set_t& result_set, const fs::path path);
+  void enumerateColorSchemesInPath(colorscheme_set_t& result_set, const fs::path& path);
   colorscheme_set_t colorSchemeSet;
 };

@@ -27,6 +27,7 @@
 #include <string>
 #include <iostream>
 #include <cmath>
+#include <cctype>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -251,7 +252,7 @@ path::set_attrs(attr_map_t& attrs, void *context)
 
   bool negate = false;
   bool path_closed = false;
-  std::string exp;
+  std::string pre_exp;
   path_list.push_back(path_t());
   for (const auto& v : path_tokens) {
 
@@ -264,17 +265,17 @@ path::set_attrs(attr_map_t& attrs, void *context)
       point = -1;
       cmd = v[0];
     } else {
-      if (*v.rbegin() == 'e') {
-        exp = negate ? std::string("-") + v : v;
+      if (std::tolower(*v.rbegin()) == 'e') {
+        pre_exp = negate ? std::string("-").append(v) : v;
         negate = false;
         continue;
       }
-      if (exp.empty()) {
+      if (pre_exp.empty()) {
         p = parse_double(v);
         p = negate ? -p : p;
       } else {
-        p = parse_double(exp + (negate ? "-" : "") + v);
-        exp = "";
+        p = parse_double(pre_exp.append(negate ? "-" : "").append(v));
+        pre_exp = "";
       }
       negate = false;
     }

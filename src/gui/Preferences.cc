@@ -1066,7 +1066,7 @@ void Preferences::apply_win() const
   emit openCSGSettingsChanged();
 }
 
-void Preferences::create(QStringList colorSchemes)
+void Preferences::create(const QStringList& colorSchemes)
 {
   if (instance != nullptr) {
     return;

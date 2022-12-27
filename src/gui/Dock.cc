@@ -24,7 +24,7 @@ void Dock::setVisible(bool visible)
   QDockWidget::setVisible(visible);
 }
 
-void Dock::setConfigKey(const QString configKey)
+void Dock::setConfigKey(const QString& configKey)
 {
   this->configKey = configKey;
 }

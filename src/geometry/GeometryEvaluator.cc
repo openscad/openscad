@@ -980,14 +980,14 @@ static Outline2d splitOutlineByFn(
         ++current.segment_count;
         ++segment_counts[current.edge_index];
         ++seg_total;
-        q.push(std::move(current));
+        q.push(current);
       }
     } else {
       // fn too low to segment last group, push back onto queue without change.
       while (!tmp_q.empty()) {
         current = tmp_q.back();
         tmp_q.pop_back();
-        q.push(std::move(current));
+        q.push(current);
       }
       break;
     }

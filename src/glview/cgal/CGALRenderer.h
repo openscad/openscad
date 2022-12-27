@@ -7,7 +7,7 @@
 class CGALRenderer : public VBORenderer
 {
 public:
-  CGALRenderer(shared_ptr<const class Geometry> geom);
+  CGALRenderer(const shared_ptr<const class Geometry>& geom);
   ~CGALRenderer() override;
   void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) override;
   void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;

@@ -51,7 +51,7 @@ use::set_attrs(attr_map_t& attrs, void *context)
 
   if (this->href != temp_href) {
     this->href = temp_href;
-    if (href.rfind("#", 0) != 0) {
+    if (href.rfind('#', 0) != 0) {
       printf("<use> can only use references to ids in the href field (starting with #). Error in element type %s with id: %s\n", this->get_name().c_str(), this->get_id_or_default().c_str());
     }
   }
@@ -65,7 +65,7 @@ use::set_attrs(attr_map_t& attrs, void *context)
 const std::string
 use::get_href_id() const
 {
-  if (href.rfind("#", 0) != 0) {
+  if (href.rfind('#', 0) != 0) {
     return {};
   }
   return href.substr(1); //remove the #

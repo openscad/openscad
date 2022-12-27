@@ -868,7 +868,7 @@ static void doForEach(
   }
 }
 
-void LcFor::forEach(const AssignmentList& assignments, const Location& loc, const std::shared_ptr<const Context>& context, std::function<void(const std::shared_ptr<const Context>&)> operation)
+void LcFor::forEach(const AssignmentList& assignments, const Location& loc, const std::shared_ptr<const Context>& context, const std::function<void(const std::shared_ptr<const Context>&)>& operation)
 {
   doForEach(assignments, loc, operation, 0, context);
 }
