@@ -23,6 +23,9 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+
 #include <iostream>
 #include "boost-utils.h"
 #include "BuiltinContext.h"
@@ -125,6 +128,7 @@
 #include <cstdio>
 #include <memory>
 #include <QtNetwork>
+
 
 #include "qt-obsolete.h" // IWYU pragma: keep
 
@@ -1189,6 +1193,24 @@ void MainWindow::compileEnded()
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
+
+void evaluatePython()
+{
+    wchar_t *program = Py_DecodeLocale("openscad", NULL);
+    const char *prg="from time import time,ctime\n"
+                       "print('Today is', ctime(time()))\n";
+    if (program == NULL) {
+        fprintf(stderr, "Fatal error: cannot decode argv[0]\n");
+        exit(1);
+    }
+    Py_SetProgramName(program);  /* optional but recommended */
+    Py_Initialize();
+    PyRun_SimpleString(prg);
+    if (Py_FinalizeEx() < 0) {
+        exit(120);
+    }
+    PyMem_RawFree(program);
+}
 void MainWindow::instantiateRoot()
 {
   // Go on and instantiate root_node, then call the continuation slot
@@ -1222,9 +1244,12 @@ void MainWindow::instantiateRoot()
 
     AbstractNode::resetIndexCounter();
 
+    printf("Before compile\n");
     EvaluationSession session{doc.parent_path().string()};
     ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
     setRenderVariables(builtin_context);
+    printf("After Compile\n");
+    evaluatePython();
 
     std::shared_ptr<const FileContext> file_context;
     this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);

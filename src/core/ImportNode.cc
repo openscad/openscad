@@ -24,7 +24,7 @@
  *
  */
 
-#include "import.h"
+#include "ioimport.h"
 #include "ImportNode.h"
 
 #include "module.h"
@@ -39,7 +39,7 @@
 #include "DxfData.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include "fileutils.h"
+//#include "fileutils.h"
 #include "Feature.h"
 #include "handle_dep.h"
 #include "boost-utils.h"
@@ -71,13 +71,13 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   const auto& v = parameters["file"];
   std::string filename;
   if (v.isDefined()) {
-    filename = lookup_file(v.isUndefined() ? "" : v.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
+    filename = ""; // TODO fix lookup_file(v.isUndefined() ? "" : v.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
   } else {
     const auto& filename_val = parameters["filename"];
     if (!filename_val.isUndefined()) {
       LOG(message_group::Deprecated, Location::NONE, "", "filename= is deprecated. Please use file=");
     }
-    filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
+    filename = ""; // TODO fix lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
   }
   if (!filename.empty()) handle_dep(filename);
   ImportType actualtype = type;
@@ -177,11 +177,11 @@ const Geometry *ImportNode::createGeometry() const
 
   switch (this->type) {
   case ImportType::STL: {
-    g = import_stl(this->filename, loc);
+    // TODO fix g = import_stl(this->filename, loc);
     break;
   }
   case ImportType::AMF: {
-    g = import_amf(this->filename, loc);
+    // TODO fix g = import_amf(this->filename, loc);
     break;
   }
   case ImportType::_3MF: {
@@ -189,11 +189,11 @@ const Geometry *ImportNode::createGeometry() const
     break;
   }
   case ImportType::OFF: {
-    g = import_off(this->filename, loc);
+    // TODO fix g = import_off(this->filename, loc);
     break;
   }
   case ImportType::SVG: {
-    g = import_svg(this->fn, this->fs, this->fa, this->filename, this->id, this->layer, this->dpi, this->center, loc);
+    // TODO fix g = import_svg(this->fn, this->fs, this->fa, this->filename, this->id, this->layer, this->dpi, this->center, loc);
     break;
   }
   case ImportType::DXF: {
@@ -203,7 +203,7 @@ const Geometry *ImportNode::createGeometry() const
   }
 #ifdef ENABLE_CGAL
   case ImportType::NEF3: {
-    g = import_nef3(this->filename, loc);
+    // TODO fix g = import_nef3(this->filename, loc);
     break;
   }
 #endif

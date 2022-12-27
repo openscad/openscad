@@ -30,7 +30,7 @@
 #include "Children.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include "fileutils.h"
+//#include "fileutils.h"
 #include "Builtins.h"
 #include "handle_dep.h"
 #include <cmath>
@@ -56,7 +56,7 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
 
   if (!parameters["file"].isUndefined()) {
     LOG(message_group::Deprecated, Location::NONE, "", "Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-    auto filename = lookup_file(parameters["file"].toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
+    std::string  filename = ""; // lookup_file(parameters["file"].toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
     node->filename = filename;
     handle_dep(filename);
   }

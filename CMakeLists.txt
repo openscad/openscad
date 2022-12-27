@@ -80,6 +80,10 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang|GNU")
   set_property(TARGET OpenSCAD PROPERTY LINK_FLAGS -v)
 endif()
 
+  find_package (Python REQUIRED COMPONENTS Interpreter Development)
+  target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
+  target_link_directories(OpenSCAD PRIVATE ${Python_LIBRARY_DIRS})
+  target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
 set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
 set(STACKSIZE 8388608 CACHE STRING "Stack size (default is 8MB)")
 
@@ -210,6 +214,9 @@ if (MSVC)
 
   find_package(double-conversion CONFIG REQUIRED)
   target_link_libraries(OpenSCAD PRIVATE double-conversion::double-conversion)
+
+
+
 
   find_library(GETTEXT_LIBRARY libintl)
   target_link_libraries(OpenSCAD PRIVATE ${GETTEXT_LIBRARY})

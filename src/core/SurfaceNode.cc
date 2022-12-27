@@ -32,7 +32,7 @@
 #include "Children.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include "fileutils.h"
+//#include "fileutils.h"
 #include "handle_dep.h"
 #include "ext/lodepng/lodepng.h"
 
@@ -110,7 +110,7 @@ static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"file", "center", "convexity"}, {"invert"});
 
   std::string fileval = parameters["file"].isUndefined() ? "" : parameters["file"].toString();
-  auto filename = lookup_file(fileval, inst->location().filePath().parent_path().string(), parameters.documentRoot());
+  std::string filename = ""; // lookup_file(fileval, inst->location().filePath().parent_path().string(), parameters.documentRoot());
   node->filename = filename;
   handle_dep(fs::path(filename).generic_string());
 

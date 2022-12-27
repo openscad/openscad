@@ -34,8 +34,8 @@
 #include "degree_trig.h"
 #include "FreetypeRenderer.h"
 #include "Parameters.h"
-#include "import.h"
-#include "fileutils.h"
+#include "ioimport.h"
+//#include "fileutils.h"
 
 #include <cmath>
 #include <sstream>
@@ -954,7 +954,7 @@ Value builtin_import(Arguments arguments, const Location& loc)
 {
   const Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file"});
   std::string raw_filename = parameters.get("file", "");
-  std::string file = lookup_file(raw_filename, loc.filePath().parent_path().string(), parameters.documentRoot());
+  std::string file = ""; // TODO fixlookup_file(raw_filename, loc.filePath().parent_path().string(), parameters.documentRoot());
   return import_json(file, arguments.session(), loc);
 }
 
