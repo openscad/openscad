@@ -49,7 +49,7 @@ void export_obj(const shared_ptr<const Geometry>& geom, std::ostream& output)
 
     output << "f ";
 
-    while (1) {
+    while (true) {
       auto index = mesh.indices[i++];
       if (index < 0) {
         break;

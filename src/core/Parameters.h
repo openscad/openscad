@@ -16,10 +16,10 @@
 class Parameters
 {
 private:
-  Parameters(ContextFrame&& frame, const Location& loc);
+  Parameters(ContextFrame&& frame, Location loc);
 
 public:
-  Parameters(Parameters&& other);
+  Parameters(Parameters&& other) noexcept;
 
   /*
    * Matches arguments with parameters.
@@ -67,11 +67,11 @@ public:
   const Location& location() const { return loc; }
 
 private:
-  bool valid(const std::string& name, const Value& value, Value::Type type);
+  Location loc;
   ContextFrame frame;
   ContextFrameHandle handle;
+  bool valid(const std::string& name, const Value& value, Value::Type type);
   std::string caller = "";
-  Location loc;
 };
 
 // Silently clamp to the given range(defaults to numeric_limits)

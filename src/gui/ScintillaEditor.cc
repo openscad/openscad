@@ -84,7 +84,7 @@ QsciScintilla::WhitespaceVisibility SettingsConverter::toShowWhitespaces(const s
   }
 }
 
-EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
+EditorColorScheme::EditorColorScheme(const fs::path& path) : path(path)
 {
   try {
     boost::property_tree::read_json(path.generic_string(), pt);
@@ -95,11 +95,6 @@ EditorColorScheme::EditorColorScheme(fs::path path) : path(path)
     _name = "";
     _index = 0;
   }
-}
-
-EditorColorScheme::~EditorColorScheme()
-{
-
 }
 
 bool EditorColorScheme::valid() const
@@ -141,6 +136,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   // key bindings, as well as some minor scintilla bugs
   //
   QsciCommand *c;
+  // NOLINTBEGIN(bugprone-suspicious-enum-usage)
 #ifdef Q_OS_MAC
   // Alt-Backspace should delete left word (Alt-Delete already deletes right word)
   c = qsci->standardCommands()->find(QsciCommand::DeleteWordLeft);
@@ -174,6 +170,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   connect(shortcutAutocomplete, &QShortcut::activated, [ = ]() {
     qsci->autoCompleteFromAPIs();
   });
+  // NOLINTEND(bugprone-suspicious-enum-usage)
 
   scintillaLayout->setContentsMargins(0, 0, 0, 0);
   scintillaLayout->addWidget(qsci);
@@ -243,12 +240,12 @@ void ScintillaEditor::addTemplate()
 {
   addTemplate(PlatformUtils::resourceBasePath());
   addTemplate(PlatformUtils::userConfigPath());
-  for (auto key: templateMap.keys()) {
+  for (const auto& key: templateMap.keys()) {
     userList.append(key);
   }
 }
 
-void ScintillaEditor::addTemplate(const fs::path path)
+void ScintillaEditor::addTemplate(const fs::path& path)
 {
   const auto template_path = path / "templates";
 
@@ -304,9 +301,9 @@ void ScintillaEditor::applySettings()
   qsci->setAutoIndent(Settings::Settings::autoIndent.value());
   qsci->setBackspaceUnindents(Settings::Settings::backspaceUnindents.value());
 
-  auto indentStyle = Settings::Settings::indentStyle.value();
+  const auto& indentStyle = Settings::Settings::indentStyle.value();
   qsci->setIndentationsUseTabs(indentStyle == "Tabs");
-  auto tabKeyFunction = Settings::Settings::tabKeyFunction.value();
+  const auto& tabKeyFunction = Settings::Settings::tabKeyFunction.value();
   qsci->setTabIndents(tabKeyFunction == "Indent");
 
   qsci->setBraceMatching(Settings::Settings::enableBraceMatching.value() ? QsciScintilla::SloppyBraceMatch : QsciScintilla::NoBraceMatch);
@@ -397,27 +394,26 @@ void ScintillaEditor::unhighlightLastError()
   updateSymbolMarginVisibility();
 }
 
-QColor ScintillaEditor::readColor(const boost::property_tree::ptree& pt, const std::string name, const QColor defaultColor)
+QColor ScintillaEditor::readColor(const boost::property_tree::ptree& pt, const std::string& name, const QColor& defaultColor)
 {
   try {
     const auto val = pt.get<std::string>(name);
-    return QColor(val.c_str());
+    return {val.c_str()};
   } catch (const std::exception& e) {
     return defaultColor;
   }
 }
 
-std::string ScintillaEditor::readString(const boost::property_tree::ptree& pt, const std::string name, const std::string defaultValue)
+std::string ScintillaEditor::readString(const boost::property_tree::ptree& pt, const std::string& name, const std::string& defaultValue)
 {
   try {
-    const auto val = pt.get<std::string>(name);
-    return val;
+    return pt.get<std::string>(name);
   } catch (const std::exception& e) {
     return defaultValue;
   }
 }
 
-int ScintillaEditor::readInt(const boost::property_tree::ptree& pt, const std::string name, const int defaultValue)
+int ScintillaEditor::readInt(const boost::property_tree::ptree& pt, const std::string& name, const int defaultValue)
 {
   try {
     const auto val = pt.get<int>(name);
@@ -613,7 +609,7 @@ void ScintillaEditor::noColor()
   qsci->setEdgeColor(Qt::black);
 }
 
-void ScintillaEditor::enumerateColorSchemesInPath(ScintillaEditor::colorscheme_set_t& result_set, const fs::path path)
+void ScintillaEditor::enumerateColorSchemesInPath(ScintillaEditor::colorscheme_set_t& result_set, const fs::path& path)
 {
   const auto color_schemes = path / "color-schemes" / "editor";
 
@@ -915,15 +911,15 @@ QString ScintillaEditor::selectedText()
 
 bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
-  if(QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) || QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)){
-    if(!this->indicatorsActive){
-        this->indicatorsActive = true;
-        qsci->setIndicatorHoverStyle(QsciScintilla::PlainIndicator, hyperlinkIndicatorNumber);
+  if (QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) || QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)) {
+    if (!this->indicatorsActive) {
+      this->indicatorsActive = true;
+      qsci->setIndicatorHoverStyle(QsciScintilla::PlainIndicator, hyperlinkIndicatorNumber);
     }
-  }else{
-    if(this->indicatorsActive){
-        this->indicatorsActive = false;
-        qsci->setIndicatorHoverStyle(QsciScintilla::HiddenIndicator, hyperlinkIndicatorNumber);
+  } else {
+    if (this->indicatorsActive) {
+      this->indicatorsActive = false;
+      qsci->setIndicatorHoverStyle(QsciScintilla::HiddenIndicator, hyperlinkIndicatorNumber);
     }
   }
 
@@ -1114,7 +1110,7 @@ bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
 
 bool ScintillaEditor::handleWheelEventNavigateNumber(QWheelEvent *wheelEvent)
 {
-  auto modifierNumberScrollWheel = Settings::Settings::modifierNumberScrollWheel.value();
+  const auto& modifierNumberScrollWheel = Settings::Settings::modifierNumberScrollWheel.value();
   bool modifier;
   static bool previewAfterUndo = false;
 
@@ -1197,7 +1193,7 @@ bool ScintillaEditor::modifyNumber(int key)
   qsci->SendScintilla(QsciScintilla::SCI_SETEMPTYSELECTION);
   qsci->setCursorPosition(line, index);
 
-  auto begin = QRegExp("[-+]?\\d*\\.?\\d*$").indexIn(text.left(index));
+  auto begin = QRegExp(R"([-+]?\d*\.?\d*$)").indexIn(text.left(index));
 
   QRegExp rx("[_a-zA-Z]");
   auto check = text.mid(begin - 1, 1);
@@ -1206,7 +1202,7 @@ bool ScintillaEditor::modifyNumber(int key)
   auto end = text.indexOf(QRegExp("[^0-9.]"), index);
   if (end < 0) end = text.length();
   auto nr = text.mid(begin, end - begin);
-  if (!(nr.contains(QRegExp("^[-+]?\\d*\\.?\\d+$")) && nr.contains(QRegExp("\\d"))) ) return false;
+  if (!(nr.contains(QRegExp(R"(^[-+]?\d*\.?\d+$)")) && nr.contains(QRegExp("\\d"))) ) return false;
   auto sign = nr[0] == '+'||nr[0] == '-';
   if (nr.endsWith('.')) nr = nr.left(nr.length() - 1);
   auto curpos = index - begin;
@@ -1335,7 +1331,7 @@ void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorDa
   int idx = 0;
   for (const auto& data : indicatorData) {
     int startPos = qsci->positionFromLineIndex(data.first_line - 1, data.first_col - 1);
-    int stopPos  = qsci->positionFromLineIndex(data.last_line - 1,  data.last_col  - 1);
+    int stopPos = qsci->positionFromLineIndex(data.last_line - 1, data.last_col - 1);
 
     int nrOfChars = stopPos - startPos;
     qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORVALUE, idx + hyperlinkIndicatorOffset);
@@ -1346,7 +1342,7 @@ void ScintillaEditor::setIndicator(const std::vector<IndicatorData>& indicatorDa
   }
 }
 
-void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state)
+void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifiers /*state*/)
 {
   qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
 
@@ -1361,7 +1357,7 @@ void ScintillaEditor::onIndicatorClicked(int line, int col, Qt::KeyboardModifier
   }
 }
 
-void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state)
+void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifiers /*state*/)
 {
   qsci->SendScintilla(QsciScintilla::SCI_SETINDICATORCURRENT, hyperlinkIndicatorNumber);
 
@@ -1408,7 +1404,7 @@ void ScintillaEditor::toggleBookmark()
   updateSymbolMarginVisibility();
 }
 
-void ScintillaEditor::findMarker(int findStartOffset, int wrapStart, std::function<int(int)> findMarkerFunc)
+void ScintillaEditor::findMarker(int findStartOffset, int wrapStart, const std::function<int(int)>& findMarkerFunc)
 {
   int line, index;
   qsci->getCursorPosition(&line, &index);

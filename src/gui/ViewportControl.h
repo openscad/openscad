@@ -3,7 +3,7 @@
 #include "qtgettext.h"
 #include "ui_ViewportControl.h"
 #include <QStandardItemModel>
-#include <mutex> 
+#include <mutex>
 
 class MainWindow;
 class QGLView;
@@ -18,6 +18,7 @@ public:
   ViewportControl(ViewportControl&& source) = delete;
   ViewportControl& operator=(const ViewportControl& source) = delete;
   ViewportControl& operator=(ViewportControl&& source) = delete;
+  ~ViewportControl() override = default;
   void initGUI();
   void setMainWindow(MainWindow *mainWindow);
 

@@ -11,8 +11,8 @@ namespace CGALUtils {
 template <class TriangleMesh>
 bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
 {
-  typedef boost::graph_traits<TriangleMesh> GT;
-  typedef typename GT::vertex_descriptor vertex_descriptor;
+  using GT = boost::graph_traits<TriangleMesh>;
+  using vertex_descriptor = typename GT::vertex_descriptor;
 
   bool err = false;
   auto num_vertices = ps.numFacets() * 3;
@@ -71,8 +71,8 @@ void copyMesh(
   const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>& input,
   CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>>& output)
 {
-  typedef CGAL::Surface_mesh<CGAL::Point_3<InputKernel>> InputMesh;
-  typedef CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>> OutputMesh;
+  using InputMesh = CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>;
+  using OutputMesh = CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>>;
 
   auto converter = getCartesianConverter<InputKernel, OutputKernel>();
   output.reserve(output.number_of_vertices() + input.number_of_vertices(),

@@ -66,11 +66,6 @@ InputEventMapper::InputEventMapper()
   self = this;
 }
 
-InputEventMapper::~InputEventMapper()
-{
-
-}
-
 InputEventMapper *InputEventMapper::instance()
 {
   if (!self) {

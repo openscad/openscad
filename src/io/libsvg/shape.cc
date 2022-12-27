@@ -52,14 +52,6 @@
 
 namespace libsvg {
 
-shape::shape() : parent(nullptr), x(0), y(0), excluded(false), selected(false)
-{
-}
-
-shape::~shape()
-{
-}
-
 shape *
 shape::create_from_name(const char *name)
 {
@@ -108,7 +100,7 @@ shape::set_attrs(attr_map_t& attrs, void *context)
 
   std::string display = get_style("display");
   if (display.empty()) {
-    const attr_map_t::const_iterator it = attrs.find("display");
+    const auto it = attrs.find("display");
     if (it != attrs.end()) {
       display = it->second;
     }
@@ -122,7 +114,7 @@ shape::set_attrs(attr_map_t& attrs, void *context)
     this->layer = attrs["inkscape:label"];
   }
 
-  const fnContext *ctx = reinterpret_cast<const fnContext *>(context);
+  const auto *ctx = reinterpret_cast<const fnContext *>(context);
   selected = (ctx->selector) ? ctx->selector(this) : false;
 }
 
@@ -257,7 +249,7 @@ shape::collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape 
     transformations.push_back(t);
   }
 
-  for (std::vector<transformation *>::reverse_iterator it = transformations.rbegin(); it != transformations.rend(); ++it) {
+  for (auto it = transformations.rbegin(); it != transformations.rend(); ++it) {
     transformation *t = *it;
     std::vector<Eigen::Matrix3d> m = t->get_matrices();
     matrices.insert(matrices.begin(), m.rbegin(), m.rend());
@@ -288,7 +280,7 @@ shape::apply_transform()
     result_list.push_back(path_t());
     for (const auto& v : p) {
       Eigen::Vector3d result(v.x(), v.y(), 1);
-      for (std::vector<Eigen::Matrix3d>::reverse_iterator it3 = matrices.rbegin(); it3 != matrices.rend(); ++it3) {
+      for (auto it3 = matrices.rbegin(); it3 != matrices.rend(); ++it3) {
         result = *it3 * result;
       }
 
@@ -321,7 +313,7 @@ shape::offset_path(path_list_t& path_list, path_t& path, double stroke_width, Cl
 
 void
 shape::draw_ellipse(path_t& path, double x, double y, double rx, double ry, void *context) {
-  const fnContext *fValues = reinterpret_cast<const fnContext *>(context);
+  const auto *fValues = reinterpret_cast<const fnContext *>(context);
   double rmax = fmax(rx, ry);
   unsigned long fn = Calc::get_fragments_from_r(rmax, fValues->fn, fValues->fs, fValues->fa);
   if (fn < 40) fn = 40;   // preserve the old minimum value

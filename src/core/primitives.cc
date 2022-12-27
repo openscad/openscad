@@ -197,7 +197,7 @@ const Geometry *CubeNode::createGeometry() const
   return p;
 }
 
-static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<CubeNode>(inst);
 
@@ -328,7 +328,7 @@ sphere_next_r2:
   return p;
 }
 
-static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<SphereNode>(inst);
 
@@ -448,7 +448,7 @@ const Geometry *CylinderNode::createGeometry() const
   return p;
 }
 
-static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<CylinderNode>(inst);
 
@@ -570,7 +570,7 @@ const Geometry *PolyhedronNode::createGeometry() const
   return p;
 }
 
-static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<PolyhedronNode>(inst);
 
@@ -620,7 +620,7 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
         if (pointIndexValue.type() != Value::Type::NUMBER) {
           LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert faces[%1$d][%2$d] = %3$s to a number", faceIndex, pointIndexIndex, pointIndexValue.toEchoStringNoThrow());
         } else {
-          size_t pointIndex = (size_t)pointIndexValue.toDouble();
+          auto pointIndex = (size_t)pointIndexValue.toDouble();
           if (pointIndex < node->points.size()) {
             face.push_back(pointIndex);
           } else {
@@ -688,7 +688,7 @@ const Geometry *SquareNode::createGeometry() const
   return p;
 }
 
-static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<SquareNode>(inst);
 
@@ -767,7 +767,7 @@ const Geometry *CircleNode::createGeometry() const
   return p;
 }
 
-static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<CircleNode>(inst);
 
@@ -875,7 +875,7 @@ const Geometry *PolygonNode::createGeometry() const
   return p;
 }
 
-static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<PolygonNode>(inst);
 
@@ -914,7 +914,7 @@ static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *
           if (pointIndexValue.type() != Value::Type::NUMBER) {
             LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert paths[%1$d][%2$d] = %3$s to a number", pathIndex, pointIndexIndex, pointIndexValue.toEchoStringNoThrow());
           } else {
-            size_t pointIndex = (size_t)pointIndexValue.toDouble();
+            auto pointIndex = (size_t)pointIndexValue.toDouble();
             if (pointIndex < node->points.size()) {
               path.push_back(pointIndex);
             } else {

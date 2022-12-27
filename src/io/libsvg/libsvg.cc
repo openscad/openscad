@@ -27,7 +27,6 @@
 #include <vector>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <libxml/xmlreader.h>
 
@@ -35,8 +34,6 @@
 
 #include "shape.h"
 #include "use.h"
-
-namespace fs = boost::filesystem;
 
 namespace libsvg {
 
@@ -112,8 +109,9 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list, 
         //handle the "use" tag
         if (use::name == s->get_name()) {
           use *currentuse = dynamic_cast<use *>(s.get());
-          if (defs_lookup_list->find(currentuse->get_href_id()) != defs_lookup_list->end()) {
-            auto to_clone_child = (*defs_lookup_list)[currentuse->get_href_id()];
+          auto id = currentuse->get_href_id();
+          if (!id.empty() && defs_lookup_list->find(id) != defs_lookup_list->end()) {
+            auto to_clone_child = (*defs_lookup_list)[id];
             auto cloned_children = currentuse->set_clone_child(to_clone_child.get());
             shape_list->insert(shape_list->end(), cloned_children.begin(), cloned_children.end());
           }
@@ -139,11 +137,10 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list, 
       in_defs = false;
     }
 
-    if (std::string("g") == name || std::string("svg") == name) {
-      stack.pop_back();
-    } else if (std::string("tspan") == name) {
-      stack.pop_back();
-    } else if (std::string("text") == name) {
+    if (std::string("g") == name ||
+        std::string("svg") == name ||
+        std::string("tspan") == name ||
+        std::string("text") == name) {
       stack.pop_back();
     }
 #if SVG_DEBUG

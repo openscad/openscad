@@ -34,7 +34,6 @@ class QGamepadInputDriver : public InputDriver
 {
 public:
   QGamepadInputDriver();
-  ~QGamepadInputDriver();
   void run() override;
   bool open() override;
   void close() override;

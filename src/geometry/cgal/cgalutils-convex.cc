@@ -11,7 +11,7 @@ namespace CGALUtils {
 
 template <typename K>
 bool is_weakly_convex(const CGAL::Polyhedron_3<K>& p) {
-  typedef typename CGAL::Polyhedron_3<K> Polyhedron;
+  using Polyhedron = typename CGAL::Polyhedron_3<K>;
 
   for (typename Polyhedron::Edge_const_iterator i = p.edges_begin(); i != p.edges_end(); ++i) {
     typename Polyhedron::Plane_3 p(i->opposite()->vertex()->point(), i->vertex()->point(), i->next()->vertex()->point());
@@ -52,14 +52,14 @@ template bool is_weakly_convex(const CGAL::Polyhedron_3<CGAL_Kernel3>& p);
 
 template <typename K>
 bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m) {
-  typedef typename CGAL::Surface_mesh<CGAL::Point_3<K>> Mesh;
+  using Mesh = typename CGAL::Surface_mesh<CGAL::Point_3<K>>;
 
   for (auto i : m.halfedges()) {
     CGAL::Plane_3<K> p(
       m.point(m.target(m.opposite(i))),
       m.point(m.target(i)),
       m.point(m.target(m.next(i))));
-    auto pt = m.point(m.target(m.next(m.opposite(i))));
+    const auto& pt = m.point(m.target(m.next(m.opposite(i))));
     if (p.has_on_positive_side(pt) && CGAL::squared_distance(p, pt) > 1e-8) {
       return false;
     }

@@ -30,6 +30,7 @@ https://github.com/openscad/openscad/blob/master/COPYING
 
 #include <cassert>
 #include <cmath>
+#include <memory>
 #include <numeric>
 #include <sstream>
 /*Unicode support for string lengths and array accesses*/
@@ -54,23 +55,23 @@ const VectorType VectorType::EMPTY(nullptr);
 const RangeType RangeType::EMPTY{0, 0, 0};
 
 /* Define values for double-conversion library. */
-#define DC_BUFFER_SIZE 128
+#define DC_BUFFER_SIZE (128)
 #define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO | double_conversion::DoubleToStringConverter::EMIT_POSITIVE_EXPONENT_SIGN)
 #define DC_INF "inf"
 #define DC_NAN "nan"
 #define DC_EXP 'e'
-#define DC_DECIMAL_LOW_EXP -6
-#define DC_DECIMAL_HIGH_EXP 21
-#define DC_MAX_LEADING_ZEROES 5
-#define DC_MAX_TRAILING_ZEROES 0
+#define DC_DECIMAL_LOW_EXP (-6)
+#define DC_DECIMAL_HIGH_EXP (21)
+#define DC_MAX_LEADING_ZEROES (5)
+#define DC_MAX_TRAILING_ZEROES (0)
 
 /* WARNING: using values > 8 will significantly slow double to string
  * conversion, defeating the purpose of using double-conversion library */
-#define DC_PRECISION_REQUESTED 6
+#define DC_PRECISION_REQUESTED (6)
 
 //private definitions used by trimTrailingZeroesHelper
-#define TRIM_TRAILINGZEROES_DONE 0
-#define TRIM_TRAILINGZEROES_CONTINUE 1
+#define TRIM_TRAILINGZEROES_DONE (0)
+#define TRIM_TRAILINGZEROES_CONTINUE (1)
 
 //process parameter buffer from the end to start to find out where the zeroes are located (if any).
 //parameter pos shall be the pos in buffer where '\0' is located.
@@ -202,7 +203,7 @@ std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
 
 Value Value::clone() const {
   switch (this->type()) {
-  case Type::UNDEFINED: return Value();
+  case Type::UNDEFINED: return {};
   case Type::BOOL:      return std::get<bool>(this->value);
   case Type::NUMBER:    return std::get<double>(this->value);
   case Type::STRING:    return std::get<str_utf8_wrapper>(this->value).clone();
@@ -211,8 +212,7 @@ Value Value::clone() const {
   case Type::OBJECT:    return std::get<ObjectType>(this->value).clone();
   case Type::FUNCTION:  return std::get<FunctionPtr>(this->value).clone();
   case Type::MODULE :   return std::get<ModuleReferencePtr>(this->value).clone();
-
-  default: assert(false && "unknown Value variant type"); return Value();
+  default: assert(false && "unknown Value variant type"); return {};
   }
 }
 
@@ -255,6 +255,7 @@ std::string getTypeName(const ModuleReferencePtr&) { return "module"; }
 
 bool Value::toBool() const
 {
+  // NOLINTBEGIN(bugprone-branch-clone)
   switch (this->type()) {
   case Type::UNDEFINED: return false;
   case Type::BOOL:      return std::get<bool>(this->value);
@@ -267,6 +268,7 @@ bool Value::toBool() const
   case Type::MODULE:  return true;
   default: assert(false && "unknown Value variant type"); return false;
   }
+  // NOLINTEND(bugprone-branch-clone)
 }
 
 double Value::toDouble() const
@@ -299,8 +301,7 @@ bool Value::getUnsignedInt(unsigned int& v) const
 {
   double result;
   if (getFiniteDouble(result) &&
-      result >= 0.0 && result <= std::numeric_limits<unsigned int>::max())
-  {
+      result >= 0.0 && result <= std::numeric_limits<unsigned int>::max()) {
     v = result;
     return true;
   }
@@ -311,8 +312,7 @@ bool Value::getPositiveInt(unsigned int& v) const
 {
   double result;
   if (getFiniteDouble(result) &&
-      result >= 1 && result <= std::numeric_limits<unsigned int>::max())
-  {
+      result >= 1 && result <= std::numeric_limits<unsigned int>::max()) {
     v = result;
     return true;
   }
@@ -474,7 +474,7 @@ std::string Value::toEchoStringNoThrow() const
   try{
     ret = toEchoString();
   } catch (EvaluationException& e) {
-     ret = "...";
+    ret = "...";
   }
   return ret;
 }
@@ -493,7 +493,7 @@ std::string UndefType::toString() const {
   return stream.str();
 }
 
-const UndefType& Value::toUndef()
+const UndefType& Value::toUndef() const
 {
   return std::get<UndefType>(this->value);
 }
@@ -503,7 +503,7 @@ std::string Value::toUndefString() const
   return std::get<UndefType>(this->value).toString();
 }
 
-std::ostream& operator<<(std::ostream& stream, const UndefType& u)
+std::ostream& operator<<(std::ostream& stream, const UndefType& /*u*/)
 {
   stream << "undef";
   return stream;
@@ -527,7 +527,7 @@ public:
         g_unichar_to_utf8(c, buf);
       }
     }
-    return std::string(buf);
+    return {buf};
   }
 
   std::string operator()(const VectorType& v) const
@@ -742,48 +742,48 @@ Value FunctionType::operator==(const FunctionType& other) const {
 Value FunctionType::operator!=(const FunctionType& other) const {
   return this != &other;
 }
-Value FunctionType::operator<(const FunctionType& other) const {
+Value FunctionType::operator<(const FunctionType& /*other*/) const {
   return Value::undef("operation undefined (function < function)");
 }
-Value FunctionType::operator>(const FunctionType& other) const {
+Value FunctionType::operator>(const FunctionType& /*other*/) const {
   return Value::undef("operation undefined (function > function)");
 }
-Value FunctionType::operator<=(const FunctionType& other) const {
+Value FunctionType::operator<=(const FunctionType& /*other*/) const {
   return Value::undef("operation undefined (function <= function)");
 }
-Value FunctionType::operator>=(const FunctionType& other) const {
+Value FunctionType::operator>=(const FunctionType& /*other*/) const {
   return Value::undef("operation undefined (function >= function)");
 }
 
-Value UndefType::operator<(const UndefType& other) const {
+Value UndefType::operator<(const UndefType& /*other*/) const {
   return Value::undef("operation undefined (undefined < undefined)");
 }
-Value UndefType::operator>(const UndefType& other) const {
+Value UndefType::operator>(const UndefType& /*other*/) const {
   return Value::undef("operation undefined (undefined > undefined)");
 }
-Value UndefType::operator<=(const UndefType& other) const {
+Value UndefType::operator<=(const UndefType& /*other*/) const {
   return Value::undef("operation undefined (undefined <= undefined)");
 }
-Value UndefType::operator>=(const UndefType& other) const {
+Value UndefType::operator>=(const UndefType& /*other*/) const {
   return Value::undef("operation undefined (undefined >= undefined)");
 }
 
-Value ObjectType::operator==(const ObjectType& other) const {
+Value ObjectType::operator==(const ObjectType& /*other*/) const {
   return Value::undef("operation undefined (object == object)");
 }
-Value ObjectType::operator!=(const ObjectType& other) const {
+Value ObjectType::operator!=(const ObjectType& /*other*/) const {
   return Value::undef("operation undefined (object != object)");
 }
-Value ObjectType::operator<(const ObjectType& other) const {
+Value ObjectType::operator<(const ObjectType& /*other*/) const {
   return Value::undef("operation undefined (object < object)");
 }
-Value ObjectType::operator>(const ObjectType& other) const {
+Value ObjectType::operator>(const ObjectType& /*other*/) const {
   return Value::undef("operation undefined (object > object)");
 }
-Value ObjectType::operator<=(const ObjectType& other) const {
+Value ObjectType::operator<=(const ObjectType& /*other*/) const {
   return Value::undef("operation undefined (object <= object)");
 }
-Value ObjectType::operator>=(const ObjectType& other) const {
+Value ObjectType::operator>=(const ObjectType& /*other*/) const {
   return Value::undef("operation undefined (object >= object)");
 }
 
@@ -842,7 +842,7 @@ Value VectorType::operator>=(const VectorType& v) const {
 class notequal_visitor
 {
 public:
-  template <typename T, typename U> Value operator()(const T& op1, const U& op2) const { return true; }
+  template <typename T, typename U> Value operator()(const T& /*op1*/, const U& /*op2*/) const { return true; }
   template <typename T> Value operator()(const T& op1, const T& op2) const { return op1 != op2; }
   Value operator()(const UndefType&, const UndefType&) const { return false; }
   template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 != *op2; }
@@ -851,7 +851,7 @@ public:
 class equals_visitor
 {
 public:
-  template <typename T, typename U> Value operator()(const T& op1, const U& op2) const { return false; }
+  template <typename T, typename U> Value operator()(const T& /*op1*/, const U& /*op2*/) const { return false; }
   template <typename T> Value operator()(const T& op1, const T& op2) const { return op1 == op2; }
   Value operator()(const UndefType&, const UndefType&) const { return true; }
   template <typename T> Value operator()(const ValuePtr<T>& op1, const ValuePtr<T>& op2) const { return *op1 == *op2; }
@@ -1046,7 +1046,7 @@ Value multvecmat(const VectorType& vectorvec, const VectorType& matrixvec)
     }
     dstv.emplace_back(r_e);
   }
-  return Value(std::move(dstv));
+  return {std::move(dstv)};
 }
 
 Value multvecvec(const VectorType& vec1, const VectorType& vec2) {
@@ -1058,7 +1058,7 @@ Value multvecvec(const VectorType& vec1, const VectorType& vec2) {
     }
     r += vec1[i].toDouble() * vec2[i].toDouble();
   }
-  return Value(r);
+  return {r};
 }
 
 class multiply_visitor
@@ -1104,7 +1104,7 @@ public:
             }
             ++i;
           }
-          return Value(std::move(dstv));
+          return {std::move(dstv)};
         } else {
           return Value::undef(STR("matrix*matrix requires left operand column count to match right operand row count (", (*first1).toVector().size(), " != ", op2.size(), ')'));
         }
@@ -1150,7 +1150,7 @@ Value Value::operator%(const Value& v) const
 Value Value::operator-() const
 {
   if (this->type() == Type::NUMBER) {
-    return Value(-this->toDouble());
+    return {-this->toDouble()};
   } else if (this->type() == Type::VECTOR) {
     VectorType dstv(this->toVector().evaluation_session());
     for (const auto& vecval : this->toVector()) {
@@ -1257,29 +1257,20 @@ uint32_t RangeType::numValues() const
   return (num_steps == max) ? max : num_steps + 1;
 }
 
-RangeType::iterator::iterator(const RangeType& range, type_t type) : range(range), val(range.begin_val), type(type),
-  num_values(range.numValues()), i_step(type == type_t::RANGE_TYPE_END ? num_values : 0)
+RangeType::iterator::iterator(const RangeType& range, iter_state state) : range(range), val(range.begin_val), state(state),
+  num_values(range.numValues()), i_step(state == iter_state::RANGE_END ? num_values : 0)
 {
-  update_type();
+  if (std::isnan(range.begin_val) || std::isnan(range.end_val) ||
+      std::isnan(range.step_val) || range.step_val == 0) {
+    i_step = num_values;
+  }
+  update_state();
 }
 
-void RangeType::iterator::update_type()
+void RangeType::iterator::update_state()
 {
-  if (range.step_val == 0) {
-    type = type_t::RANGE_TYPE_END;
-  } else if (range.step_val < 0) {
-    if (i_step >= num_values) {
-      type = type_t::RANGE_TYPE_END;
-    }
-  } else {
-    if (i_step >= num_values) {
-      type = type_t::RANGE_TYPE_END;
-    }
-  }
-
-  if (std::isnan(range.begin_val) || std::isnan(range.end_val) || std::isnan(range.step_val)) {
-    type = type_t::RANGE_TYPE_END;
-    i_step = num_values;
+  if (i_step >= num_values) {
+    state = iter_state::RANGE_END;
   }
 }
 
@@ -1291,17 +1282,14 @@ RangeType::iterator::reference RangeType::iterator::operator*()
 RangeType::iterator& RangeType::iterator::operator++()
 {
   val = range.begin_val + range.step_val * ++i_step;
-  update_type();
+  update_state();
   return *this;
 }
 
 bool RangeType::iterator::operator==(const iterator& other) const
 {
-  if (type == type_t::RANGE_TYPE_RUNNING) {
-    return (type == other.type) && (val == other.val) && (range == other.range);
-  } else {
-    return (type == other.type) && (range == other.range);
-  }
+  return (val == other.val || state != iter_state::RANGE_RUNNING) &&
+         state == other.state && range == other.range;
 }
 
 bool RangeType::iterator::operator!=(const iterator& other) const
@@ -1318,7 +1306,7 @@ std::ostream& operator<<(std::ostream& stream, const RangeType& r)
                                                 DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
   return stream << "["
                 << DoubleConvert(r.begin_value(), buffer, builder, dc) << " : "
-                << DoubleConvert(r.step_value(),  buffer, builder, dc) << " : "
+                << DoubleConvert(r.step_value(), buffer, builder, dc) << " : "
                 << DoubleConvert(r.end_value(),   buffer, builder, dc) << "]";
 }
 
@@ -1344,7 +1332,7 @@ ObjectType::ObjectType(const shared_ptr<ObjectObject>& copy)
 }
 
 ObjectType::ObjectType(EvaluationSession *session) :
-  ptr(shared_ptr<ObjectObject>(new ObjectObject()))
+  ptr(std::make_shared<ObjectObject>())
 {
   ptr->evaluation_session = session;
 }
@@ -1359,7 +1347,7 @@ const Value& ObjectType::get(const std::string& key) const
 
 void ObjectType::set(const std::string& key, Value&& value)
 {
-  ptr->map.emplace(key, std::move(value));
+  ptr->map.emplace(key, value.clone());
   ptr->keys.emplace_back(key);
   ptr->values.emplace_back(std::move(value));
 }

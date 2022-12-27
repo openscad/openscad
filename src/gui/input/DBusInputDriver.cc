@@ -34,14 +34,9 @@ void DBusInputDriver::run()
 
 }
 
-DBusInputDriver::DBusInputDriver() : is_open(false)
+DBusInputDriver::DBusInputDriver()
 {
   name = "DBusInputDriver";
-}
-
-DBusInputDriver::~DBusInputDriver()
-{
-
 }
 
 bool DBusInputDriver::openOnce() const
@@ -116,7 +111,7 @@ void DBusInputDriver::translateTo(double x, double y, double z) const
   InputDriverManager::instance()->sendEvent(new InputEventTranslate(x, y, z, false, false, false));
 }
 
-void DBusInputDriver::action(QString name) const
+void DBusInputDriver::action(const QString& name) const
 {
   InputDriverManager::instance()->sendEvent(new InputEventAction(name.toStdString(), false));
 }

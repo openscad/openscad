@@ -2,7 +2,7 @@
 
 #include <QLineEdit>
 
-GroupWidget::GroupWidget(QString title, QWidget *parent) : QWidget(parent)
+GroupWidget::GroupWidget(const QString& title, QWidget *parent) : QWidget(parent)
 {
   this->toggleButton.setText(title);
   this->toggleButton.setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);

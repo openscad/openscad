@@ -3,6 +3,7 @@
 #include "input/InputEventMapper.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <utility>
 
 namespace Settings {
 
@@ -15,8 +16,8 @@ void Settings::visit(const SettingsVisitor& visitor)
   }
 }
 
-SettingsEntry::SettingsEntry(const std::string& category, const std::string& name) :
-  _category(category), _name(name)
+SettingsEntry::SettingsEntry(std::string category, std::string name) :
+  _category(std::move(category)), _name(std::move(name))
 {
   entries.push_back(this);
 }

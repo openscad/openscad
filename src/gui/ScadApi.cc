@@ -49,17 +49,13 @@ QStringList getSorted(const QFileInfoList& list, C cond) {
 
 ScadApi::ScadApi(ScintillaEditor *editor, QsciLexer *lexer) : QsciAbstractAPIs(lexer), editor(editor)
 {
-  for (auto iter = Builtins::keywordList.cbegin(); iter != Builtins::keywordList.cend(); ++iter) {
+  for (const auto& iter : Builtins::keywordList) {
     QStringList calltipList;
-    for (auto it = iter->second.cbegin(); it != iter->second.cend(); ++it)
-      calltipList.append(QString::fromStdString(*it));
+    for (const auto& it : iter.second)
+      calltipList.append(QString::fromStdString(it));
 
-    funcs.append(ApiFunc(QString::fromStdString(iter->first), calltipList));
+    funcs.append(ApiFunc(QString::fromStdString(iter.first), calltipList));
   }
-}
-
-ScadApi::~ScadApi()
-{
 }
 
 void ScadApi::updateAutoCompletionList(const QStringList& context, QStringList& list)
@@ -79,7 +75,7 @@ void ScadApi::updateAutoCompletionList(const QStringList& context, QStringList& 
 
 void ScadApi::autoCompleteFolder(const QStringList& context, const QString& text, const int col, QStringList& list)
 {
-  const QRegularExpression re("\\s*(use|include)\\s*<\\s*");
+  const QRegularExpression re(R"(\s*(use|include)\s*<\s*)");
   const auto useDir = QFileInfo{text.left(col).replace(re, "")}.dir().path();
 
   QFileInfoList dirs;
@@ -103,10 +99,10 @@ void ScadApi::autoCompleteFolder(const QStringList& context, const QString& text
       }
     }
 
-    list << getSorted(result, [](QFileInfo i){
+    list << getSorted(result, [](const QFileInfo& i){
       return i.isDir();
     });
-    list << getSorted(result, [](QFileInfo i){
+    list << getSorted(result, [](const QFileInfo& i){
       return i.isFile();
     });
     list.removeDuplicates();
@@ -115,14 +111,13 @@ void ScadApi::autoCompleteFolder(const QStringList& context, const QString& text
 
 void ScadApi::autoCompleteFunctions(const QStringList& context, QStringList& list)
 {
-  const QString c = context.last();
+  const QString& c = context.last();
   // for now we only auto-complete functions and modules
   if (c.isEmpty()) {
     return;
   }
 
-  for (int a = 0; a < funcs.size(); ++a) {
-    const ApiFunc& func = funcs.at(a);
+  for (const auto& func : funcs) {
     const QString& name = func.get_name();
     if (name.startsWith(c)) {
       if (!list.contains(name)) {
@@ -139,9 +134,9 @@ void ScadApi::autoCompletionSelected(const QString& /*selection*/)
 QStringList ScadApi::callTips(const QStringList& context, int /*commas*/, QsciScintilla::CallTipsStyle /*style*/, QList<int>& /*shifts*/)
 {
   QStringList callTips;
-  for (int a = 0; a < funcs.size(); ++a) {
-    if (funcs.at(a).get_name() == context.at(context.size() - 2)) {
-      callTips = funcs.at(a).get_params();
+  for (const auto& func : funcs) {
+    if (func.get_name() == context.at(context.size() - 2)) {
+      callTips = func.get_params();
       break;
     }
   }

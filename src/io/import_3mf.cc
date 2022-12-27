@@ -54,7 +54,7 @@ const std::string get_lib3mf_version() {
 #include "cgalutils.h"
 #endif
 
-typedef std::list<std::shared_ptr<PolySet>> polysets_t;
+using polysets_t = std::list<std::shared_ptr<PolySet>>;
 
 static Geometry *import_3mf_error(PLib3MFModel *model = nullptr, PLib3MFModelResourceIterator *object_it = nullptr, PolySet *mesh = nullptr, PolySet *mesh2 = nullptr)
 {
@@ -117,7 +117,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     return import_3mf_error(model);
   }
 
-  PolySet *first_mesh = 0;
+  PolySet *first_mesh = nullptr;
   polysets_t meshes;
   unsigned int mesh_idx = 0;
   while (true) {
@@ -149,7 +149,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
 
     PRINTDB("%s: mesh %d, vertex count: %lu, triangle count: %lu", filename.c_str() % mesh_idx % vertex_count % triangle_count);
 
-    PolySet *p = new PolySet(3);
+    auto *p = new PolySet(3);
     for (DWORD idx = 0; idx < triangle_count; ++idx) {
       MODELMESHTRIANGLE triangle;
       if (lib3mf_meshobject_gettriangle(object, idx, &triangle) != LIB3MF_OK) {
@@ -184,7 +184,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
   lib3mf_release(object_it);
   lib3mf_release(model);
 
-  if (first_mesh == 0) {
+  if (first_mesh == nullptr) {
     return new PolySet(3);
   } else if (meshes.empty()) {
     return first_mesh;
@@ -192,9 +192,9 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     PolySet *p = nullptr;
 #ifdef ENABLE_CGAL
     Geometry::Geometries children;
-    children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(),  shared_ptr<const Geometry>(first_mesh)));
-    for (polysets_t::iterator it = meshes.begin(); it != meshes.end(); ++it) {
-      children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(),  shared_ptr<const Geometry>(*it)));
+    children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(first_mesh)));
+    for (auto& meshe : meshes) {
+      children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(meshe)));
     }
     if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
       p = new PolySet(*ps);
@@ -237,7 +237,7 @@ const std::string get_lib3mf_version() {
 #include "cgalutils.h"
 #endif
 
-typedef std::list<std::shared_ptr<PolySet>> polysets_t;
+using polysets_t = std::list<std::shared_ptr<PolySet>>;
 
 static Geometry *import_3mf_error(PolySet *mesh = nullptr, PolySet *mesh2 = nullptr)
 {
@@ -369,9 +369,9 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     PolySet *p = nullptr;
 #ifdef ENABLE_CGAL
     Geometry::Geometries children;
-    children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(),  shared_ptr<const Geometry>(first_mesh)));
+    children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), shared_ptr<const Geometry>(first_mesh)));
     for (polysets_t::iterator it = meshes.begin(); it != meshes.end(); ++it) {
-      children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(),  shared_ptr<const Geometry>(*it)));
+      children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), shared_ptr<const Geometry>(*it)));
     }
     if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
       p = new PolySet(*ps);

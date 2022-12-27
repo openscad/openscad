@@ -5,6 +5,7 @@
 #include <map>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/range/adaptor/transformed.hpp>
+#include <utility>
 
 #include "Feature.h"
 #include "printutils.h"
@@ -51,15 +52,11 @@ const Feature Feature::ExperimentalImportFunction("import-function", "Enable imp
 const Feature Feature::ExperimentalSortStl("sort-stl", "Sort the STL output for predictable, diffable results.");
 const Feature Feature::ExperimentalModuleLiteral("module-literal", "Enable first class support for modules.");
 
-Feature::Feature(const std::string& name, const std::string& description)
-  : enabled(false), name(name), description(description)
+Feature::Feature(const std::string& name, std::string description)
+  : name(name), description(std::move(description))
 {
   feature_map[name] = this;
   feature_list.push_back(this);
-}
-
-Feature::~Feature()
-{
 }
 
 const std::string& Feature::get_name() const
@@ -125,11 +122,6 @@ std::string Feature::features()
 
 ExperimentalFeatureException::ExperimentalFeatureException(const std::string& what_arg)
   : EvaluationException(what_arg)
-{
-
-}
-
-ExperimentalFeatureException::~ExperimentalFeatureException() throw()
 {
 
 }

@@ -12,14 +12,14 @@ CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron3 *p)
 // Copy constructor only performs shallow copies, so all modifying functions
 // must reset p3 with a new CGAL_Nef_polyhedron3 object, to prevent cache corruption.
 // This is also partly enforced by p3 pointing to a const object.
-CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron& src)
+CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron& src) : Geometry(src)
 {
   if (src.p3) this->p3 = src.p3;
 }
 
 CGAL_Nef_polyhedron CGAL_Nef_polyhedron::operator+(const CGAL_Nef_polyhedron& other) const
 {
-  return CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3((*this->p3) + (*other.p3)));
+  return {new CGAL_Nef_polyhedron3((*this->p3) + (*other.p3))};
 }
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator+=(const CGAL_Nef_polyhedron& other)
@@ -70,7 +70,7 @@ bool CGAL_Nef_polyhedron::isEmpty() const
 BoundingBox CGAL_Nef_polyhedron::getBoundingBox() const
 {
   if (isEmpty()) {
-    return BoundingBox();
+    return {};
   }
   auto bb = CGALUtils::boundingBox(*this->p3).bbox();
 

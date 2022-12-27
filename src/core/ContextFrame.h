@@ -7,7 +7,7 @@ class ContextFrame
 {
 public:
   ContextFrame(EvaluationSession *session);
-  virtual ~ContextFrame() {}
+  virtual ~ContextFrame() = default;
 
   ContextFrame(ContextFrame&& other) = default;
 
@@ -70,7 +70,7 @@ public:
   ContextFrameHandle& operator=(const ContextFrameHandle&) = delete;
   ContextFrameHandle& operator=(ContextFrameHandle&&) = delete;
 
-  ContextFrameHandle(ContextFrameHandle&& other) :
+  ContextFrameHandle(ContextFrameHandle&& other) noexcept :
     session(other.session),
     frame_index(other.frame_index)
   {

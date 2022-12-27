@@ -10,7 +10,7 @@ class Geometry;
 class CGALCache
 {
 public:
-  CGALCache(size_t limit = 100 *1024 *1024);
+  CGALCache(size_t limit = 100ul *1024ul *1024ul);
 
   static CGALCache *instance() { if (!inst) inst = new CGALCache; return inst; }
   static bool acceptsGeometry(const shared_ptr<const Geometry>& geom);
@@ -32,7 +32,6 @@ private:
     shared_ptr<const Geometry> N;
     std::string msg;
     cache_entry(const shared_ptr<const Geometry>& N);
-    ~cache_entry() { }
   };
 
   Cache<std::string, cache_entry> cache;

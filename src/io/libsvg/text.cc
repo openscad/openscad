@@ -29,14 +29,6 @@ namespace libsvg {
 
 const std::string text::name("text");
 
-text::text() : dx(0), dy(0), rotate(0), text_length(0), font_size(0)
-{
-}
-
-text::~text()
-{
-}
-
 void
 text::set_attrs(attr_map_t& attrs, void *context)
 {

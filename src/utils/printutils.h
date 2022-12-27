@@ -18,9 +18,14 @@
 #undef vsnprintf
 #endif
 
-#include <locale.h>
+#include <clocale>
 #include "AST.h"
 #include <set>
+
+// It seems standard practice to use underscore for gettext, even though it is reserved.
+// Not wanting to risk breaking translations by changing every usage of this,
+// I've opted to just disable the check in this case. - Hans L
+// NOLINTBEGIN(bugprone-reserved-identifier)
 inline char *_(const char *msgid) { return gettext(msgid); }
 inline const char *_(const char *msgid, const char *msgctxt) {
   /* The separator between msgctxt and msgid in a .mo file.  */
@@ -29,13 +34,14 @@ inline const char *_(const char *msgid, const char *msgctxt) {
   std::string str = msgctxt;
   str += GETTEXT_CONTEXT_GLUE;
   str += msgid;
-  auto translation = dcgettext(NULL, str.c_str(), LC_MESSAGES);
+  auto translation = dcgettext(nullptr, str.c_str(), LC_MESSAGES);
   if (translation == str) {
     return gettext(msgid);
   } else {
     return translation;
   }
 }
+// NOLINTEND(bugprone-reserved-identifier)
 
 enum class message_group {
   Error, Warning, UI_Warning, Font_Warning, Export_Warning, Export_Error, UI_Error, Parser_Error, Trace, Deprecated, None, Echo
@@ -54,21 +60,23 @@ struct Message {
 
   Message()
     : msg(""), loc(Location::NONE), docPath(""), group(message_group::None)
-  { }
+  {
+  }
 
-  Message(const std::string& msg, const Location& loc, const std::string& docPath, const message_group& group)
-    : msg(msg), loc(loc), docPath(docPath), group(group)
-  { }
+  Message(std::string msg, Location loc, std::string docPath, message_group group)
+    : msg(std::move(msg)), loc(std::move(loc)), docPath(std::move(docPath)), group(group)
+  {
+  }
 
-  std::string str() const {
+  [[nodiscard]] std::string str() const {
     const auto g = group == message_group::None ? "" : getGroupName(group) + ": ";
     const auto l = loc.isNone() ? "" : " " + loc.toRelativeString(docPath);
     return g + msg + l;
   }
 };
 
-typedef void (OutputHandlerFunc)(const Message& msg, void *userdata);
-typedef void (OutputHandlerFunc2)(const Message& msg, void *userdata);
+using OutputHandlerFunc = void (const Message&, void *);
+using OutputHandlerFunc2 = void (const Message&, void *);
 
 extern OutputHandlerFunc *outputhandler;
 extern void *outputhandler_data;
@@ -116,8 +124,10 @@ void PRINT_NOCACHE(const Message& msgObj);
  */
 
 void PRINTDEBUG(const std::string& filename, const std::string& msg);
+// NOLINTBEGIN
 #define PRINTD(_arg) do { PRINTDEBUG(std::string(__FILE__), _arg); } while (0)
 #define PRINTDB(_fmt, _arg) do { try { PRINTDEBUG(std::string(__FILE__), str(boost::format(_fmt) % _arg)); } catch (const boost::io::format_error& e) { PRINTDEBUG(std::string(__FILE__), "bad PRINTDB usage"); } } while (0)
+// NOLINTEND
 
 std::string two_digit_exp_format(std::string doublestr);
 std::string two_digit_exp_format(double x);
@@ -145,10 +155,10 @@ public:
 };
 
 inline std::string STR(std::ostringstream& oss) {
-   auto s = oss.str();
-   oss.str(""); // clear the string buffer for next STR call
-   oss.clear(); // reset stream error state for next STR call
-   return s;
+  auto s = oss.str();
+  oss.str("");  // clear the string buffer for next STR call
+  oss.clear();  // reset stream error state for next STR call
+  return s;
 }
 
 template <typename T, typename ... Args>
@@ -172,7 +182,7 @@ private:
   std::string fmt;
   std::tuple<Ts...> args;
   template <std::size_t... Is>
-  std::string format(const std::index_sequence<Is...>) const
+  [[nodiscard]] std::string format(const std::index_sequence<Is...>) const
   {
 
     std::string s;
@@ -196,12 +206,7 @@ public:
   {
   }
 
-  template <typename ... Args>
-  MessageClass(const std::string& fmt, Args&&... args) : fmt(fmt), args(std::forward<Args>(args)...)
-  {
-  }
-
-  std::string format() const
+  [[nodiscard]] std::string format() const
   {
     return format(std::index_sequence_for<Ts...>{});
   }

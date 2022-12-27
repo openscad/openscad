@@ -8,8 +8,7 @@ class WindowManager : public QObject
   Q_OBJECT
 
 public:
-  WindowManager();
-  ~WindowManager();
+  WindowManager() = default;
 
   void add(class MainWindow *mainwin);
   void remove(class MainWindow *mainwin);

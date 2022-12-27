@@ -29,10 +29,12 @@
 #include <cstdint>
 #include <cmath>
 #include <cassert>
+#include <memory>
 #include <sstream>
 #include <algorithm>
 #include <typeinfo>
 #include <forward_list>
+#include <utility>
 #include <variant>
 #include "printutils.h"
 #include "StackCheck.h"
@@ -331,7 +333,7 @@ void Vector::print(std::ostream& stream, const std::string&) const
   stream << "]";
 }
 
-Lookup::Lookup(const std::string& name, const Location& loc) : Expression(loc), name(name)
+Lookup::Lookup(std::string name, const Location& loc) : Expression(loc), name(std::move(name))
 {
 }
 
@@ -345,17 +347,15 @@ void Lookup::print(std::ostream& stream, const std::string&) const
   stream << this->name;
 }
 
-FunctionDefinition::FunctionDefinition(Expression *expr, const AssignmentList& parameters, const Location& loc)
-  : Expression(loc), context(nullptr), parameters(parameters), expr(expr)
+FunctionDefinition::FunctionDefinition(Expression *expr, AssignmentList parameters, const Location& loc)
+  : Expression(loc), context(nullptr), parameters(std::move(parameters)), expr(expr)
 {
 }
 
 Value FunctionDefinition::evaluate(const std::shared_ptr<const Context>& context) const
 {
-  return FunctionPtr{FunctionType{context, expr, std::unique_ptr<AssignmentList>{new AssignmentList{parameters}}}};
+  return FunctionPtr{FunctionType{context, expr, std::make_unique<AssignmentList>(parameters)}};
 }
-
-
 
 void FunctionDefinition::print(std::ostream& stream, const std::string& indent) const
 {
@@ -393,8 +393,8 @@ static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<
   LOG(message_group::Trace, val->location(), context->documentRoot(), "called by '%1$s'", val->get_name());
 }
 
-FunctionCall::FunctionCall(Expression *expr, const AssignmentList& args, const Location& loc)
-  : Expression(loc), expr(expr), arguments(args)
+FunctionCall::FunctionCall(Expression *expr, AssignmentList args, const Location& loc)
+  : Expression(loc), expr(expr), arguments(std::move(args))
 {
   if (typeid(*expr) == typeid(Lookup)) {
     isLookup = true;
@@ -430,7 +430,7 @@ struct SimplifiedExpression {
   boost::optional<ContextHandle<Context>> new_context = boost::none;
   boost::optional<const FunctionCall *> new_active_function_call = boost::none;
 };
-typedef std::variant<SimplifiedExpression, Value> SimplificationResult;
+using SimplificationResult = std::variant<SimplifiedExpression, Value>;
 
 static SimplificationResult simplify_function_body(const Expression *expression, const std::shared_ptr<const Context>& context)
 {
@@ -439,10 +439,10 @@ static SimplificationResult simplify_function_body(const Expression *expression,
   } else {
     const auto& type = typeid(*expression);
     if (type == typeid(TernaryOp)) {
-      const TernaryOp *ternary = static_cast<const TernaryOp *>(expression);
+      const auto *ternary = static_cast<const TernaryOp *>(expression);
       return SimplifiedExpression{ternary->evaluateStep(context)};
     } else if (type == typeid(Assert)) {
-      const Assert *assertion = static_cast<const Assert *>(expression);
+      const auto *assertion = static_cast<const Assert *>(expression);
       return SimplifiedExpression{assertion->evaluateStep(context)};
     } else if (type == typeid(Echo)) {
       const Echo *echo = static_cast<const Echo *>(expression);
@@ -453,7 +453,7 @@ static SimplificationResult simplify_function_body(const Expression *expression,
       let_context->apply_config_variables(*context);
       return SimplifiedExpression{let->evaluateStep(let_context), std::move(let_context)};
     } else if (type == typeid(FunctionCall)) {
-      const FunctionCall *call = static_cast<const FunctionCall *>(expression);
+      const auto *call = static_cast<const FunctionCall *>(expression);
 
       const Expression *function_body;
       const AssignmentList *required_parameters;
@@ -465,14 +465,14 @@ static SimplificationResult simplify_function_body(const Expression *expression,
       } else {
         auto index = f->index();
         if (index == 0) {
-            return std::get<const BuiltinFunction *>(*f)->evaluate(context, call);
+          return std::get<const BuiltinFunction *>(*f)->evaluate(context, call);
         } else if (index == 1) {
-            CallableUserFunction callable = std::get<CallableUserFunction>(*f);
-            function_body = callable.function->expr.get();
-            required_parameters = &callable.function->parameters;
-            defining_context = callable.defining_context;
+          CallableUserFunction callable = std::get<CallableUserFunction>(*f);
+          function_body = callable.function->expr.get();
+          required_parameters = &callable.function->parameters;
+          defining_context = callable.defining_context;
         } else {
-          const FunctionType* function;
+          const FunctionType *function;
           if (index == 2) {
             function = &std::get<Value>(*f).toFunction();
           } else if (index == 3) {
@@ -565,8 +565,8 @@ Expression *FunctionCall::create(const std::string& funcname, const AssignmentLi
   //return new FunctionCall(funcname, arglist, loc);
 }
 
-Assert::Assert(const AssignmentList& args, Expression *expr, const Location& loc)
-  : Expression(loc), arguments(args), expr(expr)
+Assert::Assert(AssignmentList args, Expression *expr, const Location& loc)
+  : Expression(loc), arguments(std::move(args)), expr(expr)
 {
 
 }
@@ -608,8 +608,8 @@ void Assert::print(std::ostream& stream, const std::string&) const
   if (this->expr) stream << " " << *this->expr;
 }
 
-Echo::Echo(const AssignmentList& args, Expression *expr, const Location& loc)
-  : Expression(loc), arguments(args), expr(expr)
+Echo::Echo(AssignmentList args, Expression *expr, const Location& loc)
+  : Expression(loc), arguments(std::move(args)), expr(expr)
 {
 
 }
@@ -633,8 +633,8 @@ void Echo::print(std::ostream& stream, const std::string&) const
   if (this->expr) stream << " " << *this->expr;
 }
 
-Let::Let(const AssignmentList& args, Expression *expr, const Location& loc)
-  : Expression(loc), arguments(args), expr(expr)
+Let::Let(AssignmentList args, Expression *expr, const Location& loc)
+  : Expression(loc), arguments(std::move(args)), expr(expr)
 {
 }
 
@@ -721,22 +721,22 @@ Value LcEach::evalRecur(Value&& v, const std::shared_ptr<const Context>& context
     } else {
       EmbeddedVectorType vec(context->session());
       for (double d : range) vec.emplace_back(d);
-      return Value(std::move(vec));
+      return {std::move(vec)};
     }
   } else if (v.type() == Value::Type::VECTOR) {
     // Safe to move the overall vector ptr since we have a temporary value (could be a copy, or constructed just for us, doesn't matter)
     auto vec = EmbeddedVectorType(std::move(v.toVectorNonConst()));
-    return Value(std::move(vec));
+    return {std::move(vec)};
   } else if (v.type() == Value::Type::EMBEDDED_VECTOR) {
     EmbeddedVectorType vec(context->session());
     // Not safe to move values out of a vector, since it's shared_ptr maye be shared with another Value,
     // which should remain constant
     for (const auto& val : v.toEmbeddedVector()) vec.emplace_back(evalRecur(val.clone(), context) );
-    return Value(std::move(vec));
+    return {std::move(vec)};
   } else if (v.type() == Value::Type::STRING) {
     EmbeddedVectorType vec(context->session());
     for (auto ch : v.toStrUtf8Wrapper()) vec.emplace_back(std::move(ch));
-    return Value(std::move(vec));
+    return {std::move(vec)};
   } else if (v.type() != Value::Type::UNDEFINED) {
     return std::move(v);
   }
@@ -753,8 +753,8 @@ void LcEach::print(std::ostream& stream, const std::string&) const
   stream << "each (" << *this->expr << ")";
 }
 
-LcFor::LcFor(const AssignmentList& args, Expression *expr, const Location& loc)
-  : ListComprehension(loc), arguments(args), expr(expr)
+LcFor::LcFor(AssignmentList args, Expression *expr, const Location& loc)
+  : ListComprehension(loc), arguments(std::move(args)), expr(expr)
 {
 }
 
@@ -831,7 +831,7 @@ static void doForEach(
    }
 }
 
-void LcFor::forEach(const AssignmentList& assignments, const Location& loc, const std::shared_ptr<const Context>& context, std::function<void(const std::shared_ptr<const Context>&)> operation)
+void LcFor::forEach(const AssignmentList& assignments, const Location& loc, const std::shared_ptr<const Context>& context, const std::function<void(const std::shared_ptr<const Context>&)>& operation)
 {
   doForEach(assignments, loc, operation, 0, context);
 }
@@ -844,7 +844,7 @@ Value LcFor::evaluate(const std::shared_ptr<const Context>& context) const
     vec.emplace_back(expression->evaluate(iterationContext));
   }
           );
-  return Value(std::move(vec));
+  return {std::move(vec)};
 }
 
 void LcFor::print(std::ostream& stream, const std::string&) const
@@ -852,8 +852,8 @@ void LcFor::print(std::ostream& stream, const std::string&) const
   stream << "for(" << this->arguments << ") (" << *this->expr << ")";
 }
 
-LcForC::LcForC(const AssignmentList& args, const AssignmentList& incrargs, Expression *cond, Expression *expr, const Location& loc)
-  : ListComprehension(loc), arguments(args), incr_arguments(incrargs), cond(cond), expr(expr)
+LcForC::LcForC(AssignmentList args, AssignmentList incrargs, Expression *cond, Expression *expr, const Location& loc)
+  : ListComprehension(loc), arguments(std::move(args)), incr_arguments(std::move(incrargs)), cond(cond), expr(expr)
 {
 }
 
@@ -888,7 +888,7 @@ Value LcForC::evaluate(const std::shared_ptr<const Context>& context) const
     currentContext = std::move(nextContext);
     currentContext->setParent(*initialContext);
   }
-  return Value(std::move(output));
+  return {std::move(output)};
 }
 
 void LcForC::print(std::ostream& stream, const std::string&) const
@@ -900,8 +900,8 @@ void LcForC::print(std::ostream& stream, const std::string&) const
     << ") " << *this->expr;
 }
 
-LcLet::LcLet(const AssignmentList& args, Expression *expr, const Location& loc)
-  : ListComprehension(loc), arguments(args), expr(expr)
+LcLet::LcLet(AssignmentList args, Expression *expr, const Location& loc)
+  : ListComprehension(loc), arguments(std::move(args)), expr(expr)
 {
 }
 

@@ -4,6 +4,8 @@
 #include "node.h"
 #include "State.h"
 
+class State;
+
 class NodeVisitor :
   public BaseVisitor,
   public Visitor<class AbstractNode>,
@@ -28,69 +30,68 @@ class NodeVisitor :
   public Visitor<class OffsetNode>
 {
 public:
-  NodeVisitor() {}
-  ~NodeVisitor() {}
+  NodeVisitor() = default;
 
-  Response traverse(const AbstractNode& node, const class State& state = NodeVisitor::nullstate);
+  Response traverse(const AbstractNode& node, const State& state = NodeVisitor::nullstate);
 
-  Response visit(class State& state, const class AbstractNode& node) override = 0;
-  Response visit(class State& state, const class AbstractIntersectionNode& node) override {
-    return visit(state, (const class AbstractNode&)node);
+  Response visit(State& state, const AbstractNode& node) override = 0;
+  Response visit(State& state, const AbstractIntersectionNode& node) override {
+    return visit(state, (const AbstractNode&) node);
   }
-  Response visit(class State& state, const class AbstractPolyNode& node) override {
-    return visit(state, (const class AbstractNode&)node);
+  Response visit(State& state, const AbstractPolyNode& node) override {
+    return visit(state, (const AbstractNode&) node);
   }
-  Response visit(class State& state, const class ListNode& node) override {
-    return visit(state, (const class AbstractNode&)node);
+  Response visit(State& state, const ListNode& node) override {
+    return visit(state, (const AbstractNode&) node);
   }
 
-  Response visit(class State& state, const class GroupNode& node) override {
-    return visit(state, (const class AbstractNode&)node);
+  Response visit(State& state, const GroupNode& node) override {
+    return visit(state, (const AbstractNode&) node);
   }
-  Response visit(class State& state, const RootNode& node) override {
-    return visit(state, (const class GroupNode&)node);
+  Response visit(State& state, const RootNode& node) override {
+    return visit(state, (const GroupNode&) node);
   }
-  Response visit(class State& state, const class LeafNode& node) override {
-    return visit(state, (const class AbstractPolyNode&)node);
+  Response visit(State& state, const LeafNode& node) override {
+    return visit(state, (const AbstractPolyNode&) node);
   }
-  Response visit(class State& state, const class CgalAdvNode& node) override {
-    return visit(state, (const class AbstractNode&)node);
+  Response visit(State& state, const CgalAdvNode& node) override {
+    return visit(state, (const AbstractNode&) node);
   }
-  Response visit(class State& state, const class CsgOpNode& node) override {
-    return visit(state, (const class AbstractNode&)node);
+  Response visit(State& state, const CsgOpNode& node) override {
+    return visit(state, (const AbstractNode&) node);
   }
-  Response visit(class State& state, const class LinearExtrudeNode& node) override {
-    return visit(state, (const class AbstractPolyNode&)node);
+  Response visit(State& state, const LinearExtrudeNode& node) override {
+    return visit(state, (const AbstractPolyNode&) node);
   }
-  Response visit(class State& state, const class RotateExtrudeNode& node) override {
-    return visit(state, (const class AbstractPolyNode&)node);
+  Response visit(State& state, const RotateExtrudeNode& node) override {
+    return visit(state, (const AbstractPolyNode&) node);
   }
-  Response visit(class State& state, const class RoofNode& node) override {
-    return visit(state, (const class AbstractPolyNode&)node);
+  Response visit(State& state, const RoofNode& node) override {
+    return visit(state, (const AbstractPolyNode&) node);
   }
-  Response visit(class State& state, const class ImportNode& node) override {
-    return visit(state, (const class LeafNode&)node);
+  Response visit(State& state, const ImportNode& node) override {
+    return visit(state, (const LeafNode&) node);
   }
-  Response visit(class State& state, const class TextNode& node) override {
-    return visit(state, (const class AbstractPolyNode&)node);
+  Response visit(State& state, const TextNode& node) override {
+    return visit(state, (const AbstractPolyNode&) node);
   }
-  Response visit(class State& state, const class ProjectionNode& node) override {
-    return visit(state, (const class AbstractPolyNode&)node);
+  Response visit(State& state, const ProjectionNode& node) override {
+    return visit(state, (const AbstractPolyNode&) node);
   }
-  Response visit(class State& state, const class RenderNode& node) override {
-    return visit(state, (const class AbstractNode&)node);
+  Response visit(State& state, const RenderNode& node) override {
+    return visit(state, (const AbstractNode&) node);
   }
-  Response visit(class State& state, const class SurfaceNode& node) override {
-    return visit(state, (const class LeafNode&)node);
+  Response visit(State& state, const SurfaceNode& node) override {
+    return visit(state, (const LeafNode&) node);
   }
-  Response visit(class State& state, const class TransformNode& node) override {
-    return visit(state, (const class AbstractNode&)node);
+  Response visit(State& state, const TransformNode& node) override {
+    return visit(state, (const AbstractNode&) node);
   }
-  Response visit(class State& state, const class ColorNode& node) override {
-    return visit(state, (const class AbstractNode&)node);
+  Response visit(State& state, const ColorNode& node) override {
+    return visit(state, (const AbstractNode&) node);
   }
-  Response visit(class State& state, const class OffsetNode& node) override {
-    return visit(state, (const class AbstractPolyNode&)node);
+  Response visit(State& state, const OffsetNode& node) override {
+    return visit(state, (const AbstractPolyNode&) node);
   }
   // Add visit() methods for new visitable subtypes of AbstractNode here
 

@@ -13,7 +13,6 @@ class ModuleInstantiation;
 class AbstractModule
 {
 public:
-
    using abstractNodePtr = std::shared_ptr<AbstractNode>;
    using contextPtr = std::shared_ptr<const Context>;
    using ModInst = ModuleInstantiation;
@@ -21,13 +20,12 @@ public:
    AbstractModule() : feature(nullptr) {}
    AbstractModule(const Feature& feature) : feature(&feature) {}
    AbstractModule(const Feature *feature) : feature(feature) {}
-   virtual ~AbstractModule() {}
-
-   virtual bool is_experimental() const
+   virtual ~AbstractModule() = default;
+   [[nodiscard]] virtual bool is_experimental() const
    {
       return feature != nullptr;
    }
-   virtual bool is_enabled() const
+   [[nodiscard]] virtual bool is_enabled() const
    {
       return (feature == nullptr) || feature->is_enabled();
    }
@@ -38,6 +36,7 @@ public:
    ) const = 0;
 private:
    const Feature *feature;
+
 };
 
 class BuiltinModule : public AbstractModule
@@ -47,7 +46,7 @@ public:
    using fnContextInstantiate =
       abstractNodePtr(*)(ModInst const *, contextPtr const &);
    using fnArgsChildrenInstantiate =
-      abstractNodePtr (*) (ModInst const *, Arguments, Children);
+      abstractNodePtr (*) (ModInst const *, Arguments, const Children &);
 
    BuiltinModule(fnContextInstantiate,Feature const *feature = nullptr);
    BuiltinModule(fnArgsChildrenInstantiate,Feature const *feature = nullptr);
@@ -61,6 +60,7 @@ private:
   std::function<
     abstractNodePtr (ModInst const *, contextPtr const &)
   > do_instantiate;
+
 };
 
 struct InstantiableModule

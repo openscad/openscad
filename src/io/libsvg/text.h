@@ -31,33 +31,32 @@ namespace libsvg {
 class text : public shape
 {
 private:
-  double dx;
-  double dy;
-  double rotate;
-  double text_length;
+  double dx{0};
+  double dy{0};
+  double rotate{0};
+  double text_length{0};
   std::string font_family;
-  int font_size;
+  int font_size{0};
 
 public:
-  text();
-  ~text();
+  text() = default;
 
-  bool is_container() const override { return true; }
+  [[nodiscard]] bool is_container() const override { return true; }
 
-  double get_dx() const { return dx; }
-  double get_dy() const { return dy; }
-  double get_rotate() const { return rotate; }
-  double get_text_length() const { return text_length; }
-  const std::string& get_font_family() const { return font_family; }
-  int get_font_size() const { return font_size; }
+  [[nodiscard]] double get_dx() const { return dx; } // NOLINT(bugprone-virtual-near-miss)
+  [[nodiscard]] double get_dy() const { return dy; } // NOLINT(bugprone-virtual-near-miss)
+  [[nodiscard]] double get_rotate() const { return rotate; }
+  [[nodiscard]] double get_text_length() const { return text_length; }
+  [[nodiscard]] const std::string& get_font_family() const { return font_family; }
+  [[nodiscard]] int get_font_size() const { return font_size; }
 
   void set_attrs(attr_map_t& attrs, void *context) override;
-  const std::string dump() const override;
-  const std::string& get_name() const override { return text::name; }
+  [[nodiscard]] const std::string dump() const override;
+  [[nodiscard]] const std::string& get_name() const override { return text::name; }
 
   static const std::string name;
 
-  shape *clone() const override { return new text(*this); }
+  [[nodiscard]] shape *clone() const override { return new text(*this); }
 };
 
 } // namespace libsvg

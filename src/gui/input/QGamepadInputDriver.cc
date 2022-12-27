@@ -35,10 +35,6 @@ QGamepadInputDriver::QGamepadInputDriver() : gamepad(nullptr)
 {
 }
 
-QGamepadInputDriver::~QGamepadInputDriver()
-{
-}
-
 bool QGamepadInputDriver::open()
 {
   if (gamepad) {

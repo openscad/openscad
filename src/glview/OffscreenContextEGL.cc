@@ -73,9 +73,9 @@ std::string get_gl_info(EGLDisplay display)
   char const *vendor = eglQueryString(display, EGL_VENDOR);
   char const *version = eglQueryString(display, EGL_VERSION);
 
-  return STR("GL context creator: EGL\n"
-            , "EGL version: ", version, " (", vendor, ")", "\n"
-            , get_os_info());
+  return STR("GL context creator: EGL\n",
+             "EGL version: ", version, " (", vendor, ")", "\n",
+             get_os_info());
 }
 
 std::string offscreen_context_getinfo(OffscreenContext *ctx)
@@ -83,7 +83,7 @@ std::string offscreen_context_getinfo(OffscreenContext *ctx)
   assert(ctx);
 
   if (!ctx->context) {
-    return std::string("No GL Context initialized. No information to report\n");
+    return {"No GL Context initialized. No information to report\n"};
   }
 
   return get_gl_info(ctx->display);

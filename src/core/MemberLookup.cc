@@ -14,8 +14,10 @@ https://github.com/openscad/openscad/blob/master/COPYING
 #include "Arguments.h"
 #include "ScopeContext.h"
 
-MemberLookup::MemberLookup(Expression *expr, const std::string& member, const Location& loc)
-  : Expression(loc), expr(expr), member(member) {}
+MemberLookup::MemberLookup(Expression *expr, std::string member, const Location& loc)
+  : Expression(loc), expr(expr), member(std::move(member))
+{
+}
 
 Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) const
 {
@@ -33,7 +35,7 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
         case 'b': case 'z': ret.emplace_back(v[2]); break;
         case 'a': case 'w': ret.emplace_back(v[3]); break;
         }
-      return Value(std::move(ret));
+      return {std::move(ret)};
     }
     if (this->member == "x") return v[0];
     if (this->member == "y") return v[1];
@@ -51,9 +53,6 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
     break;
   case Value::Type::OBJECT:
     return v[this->member];
-  case Value::Type::MODULE:
-    LOG(message_group::Warning, loc, context->documentRoot(),"Member access not available for module reference");
-    break;
   default:
     break;
   }
