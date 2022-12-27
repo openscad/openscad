@@ -31,15 +31,15 @@
 #include "Parameters.h"
 
 Parameters::Parameters(ContextFrame&& frame, Location loc) :
+  loc(std::move(loc)),
   frame(std::move(frame)),
-  handle(&this->frame),
-  loc(std::move(loc))
+  handle(&this->frame)
 {}
 
 Parameters::Parameters(Parameters&& other) noexcept :
+  loc(std::move(other.loc)),
   frame(std::move(other).to_context_frame()),
-  handle(&this->frame),
-  loc(other.location())
+  handle(&this->frame)
 {}
 
 boost::optional<const Value&> Parameters::lookup(const std::string& name) const

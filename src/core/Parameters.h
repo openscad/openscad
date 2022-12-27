@@ -63,11 +63,11 @@ public:
   const Location& location() const { return loc; }
 
 private:
-  bool valid(const std::string& name, const Value& value, Value::Type type);
+  Location loc;
   ContextFrame frame;
   ContextFrameHandle handle;
+  bool valid(const std::string& name, const Value& value, Value::Type type);
   std::string caller = "";
-  Location loc;
 };
 
 void print_argCnt_warning(const std::string& name, int found,
