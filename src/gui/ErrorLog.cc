@@ -91,7 +91,7 @@ void ErrorLog::resize()
   logTable->resizeRowsToContents();
 }
 
-void ErrorLog::onSectionResized(int logicalIndex, int oldSize, int newSize){
+void ErrorLog::onSectionResized(int /*logicalIndex*/, int /*oldSize*/, int /*newSize*/){
   this->resize();
 }
 

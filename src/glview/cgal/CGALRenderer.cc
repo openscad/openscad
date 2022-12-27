@@ -235,7 +235,7 @@ void CGALRenderer::createPolySets()
   }
 }
 
-void CGALRenderer::prepare(bool showfaces, bool showedges, const shaderinfo_t * /*shaderinfo*/)
+void CGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const shaderinfo_t * /*shaderinfo*/)
 {
   PRINTD("prepare()");
   if (!polyset_states.size()) createPolySets();

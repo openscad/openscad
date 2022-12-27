@@ -182,12 +182,12 @@ size_t VBORenderer::getEdgeBufferSize(const PolySet& polyset, csgmode_e csgmode)
 
 void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
                                         const std::array<Vector3d, 3>& points,
-                                        const std::array<Vector3d, 3>& normals,
-                                        const Color4f& color,
+                                        const std::array<Vector3d, 3>& /*normals*/,
+                                        const Color4f& /*color*/,
                                         size_t active_point_index, size_t primitive_index,
-                                        double z_offset, size_t shape_size,
-                                        size_t shape_dimensions, bool outlines,
-                                        bool mirror) const
+                                        double /*z_offset*/, size_t shape_size,
+                                        size_t /*shape_dimensions*/, bool outlines,
+                                        bool /*mirror*/) const
 {
   if (!shader_attributes_index) return;
 
