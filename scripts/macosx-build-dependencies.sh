@@ -45,7 +45,7 @@ PACKAGES=(
     "libffi REMOVE"
     "freetype 2.9.1"
     "ragel REMOVE"
-    "harfbuzz 2.3.1"
+    "harfbuzz 2.8.2"
     "libzip 1.8.0"
     "libxml2 REMOVE"
     "libuuid 1.6.2"
@@ -571,7 +571,7 @@ build_libzip()
   fi
   tar xzf "libzip-$version.tar.gz"
   cd "libzip-$version"
-  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DENABLE_GNUTLS=OFF -DENABLE_ZSTD=OFF .
   make -j$NUMCPU
   make install
   install_name_tool -id @rpath/libzip.dylib $DEPLOYDIR/lib/libzip.dylib
@@ -767,10 +767,10 @@ build_harfbuzz()
   echo "Building harfbuzz $version..."
   cd "$BASEDIR"/src
   rm -rf "harfbuzz-$version"
-  if [ ! -f "harfbuzz-$version.tar.gz" ]; then
-    curl -LO "https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-$version.tar.bz2"
+  if [ ! -f "harfbuzz-$version.tar.xz" ]; then
+      curl -LO "https://github.com/harfbuzz/harfbuzz/releases/download/$version/harfbuzz-$version.tar.xz"
   fi
-  tar xzf "harfbuzz-$version.tar.bz2"
+  tar xzf "harfbuzz-$version.tar.xz"
   cd "harfbuzz-$version"
 
   # Build each arch separately
