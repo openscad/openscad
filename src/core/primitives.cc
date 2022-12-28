@@ -249,20 +249,27 @@ PyObject* openscad_cube(PyObject *self, PyObject *args)
 //  }
 
 //  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"size", "center"});
-    if(!PyArg_ParseTuple(args, ":numargs"))
-        return NULL;
+    //if(!PyArg_ParseTuple(args, ":numargs"))
+    //    return NULL;
+//    char * kwlist[] = {"center", NULL};
+    float size = 5; // TODO parameters["size"];
+	
+    
+    if (!PyArg_ParseTuple(args, "f", &size))
+   	return PyLong_FromLong(-1);
+    printf("size=%f\n",size);
 
 
-  double size = 5; // TODO parameters["size"];
+
 //  Parameters size;
 //  if (size.isDefined()) {
 //    bool converted = false;
 //    converted |= size.getDouble(node->x);
-      node->x=size*1;
+      node->x=size;
 //    converted |= size.getDouble(node->y);
-      node->y=size*2;
+      node->y=size;
 //    converted |= size.getDouble(node->z);
-      node->z=size*3;
+      node->z=size;
 //    converted |= size.getVec3(node->x, node->y, node->z);
 //    if (!converted) {
 //      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers", size.toEchoStringNoThrow());

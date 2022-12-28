@@ -162,7 +162,6 @@ private slots:
   void compileDone(bool didchange);
   void compileEnded();
   void evaluatePython(const char *code);
-
   void changeParameterWidget();
 
 private slots:

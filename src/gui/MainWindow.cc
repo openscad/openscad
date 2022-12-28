@@ -1834,9 +1834,6 @@ bool MainWindow::fileChangedOnDisk()
 /*!
    Returns true if anything was compiled.
  */
-
-extern std::shared_ptr<AbstractPolyNode> global_node;
-
 void MainWindow::parseTopLevelDocument()
 {
   resetSuppressedMessages();
@@ -1855,7 +1852,6 @@ void MainWindow::parseTopLevelDocument()
   evaluatePython(fulltext.c_str());
   fulltext ="cube([10,10,10]);\n";
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
-
   this->absolute_root_node = global_node;
   this->root_node = global_node;
 

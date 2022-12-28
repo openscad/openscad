@@ -177,11 +177,11 @@ const Geometry *ImportNode::createGeometry() const
 
   switch (this->type) {
   case ImportType::STL: {
-    // TODO fix g = import_stl(this->filename, loc);
+    g = import_stl(this->filename, loc);
     break;
   }
   case ImportType::AMF: {
-    // TODO fix g = import_amf(this->filename, loc);
+    g = import_amf(this->filename, loc);
     break;
   }
   case ImportType::_3MF: {
@@ -189,11 +189,11 @@ const Geometry *ImportNode::createGeometry() const
     break;
   }
   case ImportType::OFF: {
-    // TODO fix g = import_off(this->filename, loc);
+    g = import_off(this->filename, loc);
     break;
   }
   case ImportType::SVG: {
-    // TODO fix g = import_svg(this->fn, this->fs, this->fa, this->filename, this->id, this->layer, this->dpi, this->center, loc);
+    g = import_svg(this->fn, this->fs, this->fa, this->filename, this->id, this->layer, this->dpi, this->center, loc);
     break;
   }
   case ImportType::DXF: {
@@ -203,7 +203,7 @@ const Geometry *ImportNode::createGeometry() const
   }
 #ifdef ENABLE_CGAL
   case ImportType::NEF3: {
-    // TODO fix g = import_nef3(this->filename, loc);
+    g = import_nef3(this->filename, loc);
     break;
   }
 #endif
