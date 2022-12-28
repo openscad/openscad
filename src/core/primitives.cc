@@ -38,6 +38,7 @@
 #include <cassert>
 #include <cmath>
 #include <boost/assign/std/vector.hpp>
+#include <Python.h>
 #include "ModuleInstantiation.h"
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -231,6 +232,17 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
 
   return node;
 }
+
+
+PyObject* openscad_cube(PyObject *self, PyObject *args)
+{
+    if(!PyArg_ParseTuple(args, ":numargs"))
+        return NULL;
+    printf("Draw Cube\n");
+    return PyLong_FromLong(55);
+}
+
+
 
 
 

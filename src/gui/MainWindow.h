@@ -161,6 +161,8 @@ private slots:
   void instantiateRoot();
   void compileDone(bool didchange);
   void compileEnded();
+  void evaluatePython(const char *code);
+
   void changeParameterWidget();
 
 private slots:
