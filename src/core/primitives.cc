@@ -39,6 +39,7 @@
 #include <cmath>
 #include <boost/assign/std/vector.hpp>
 #include <Python.h>
+#include "pyopenscad.h"
 #include "ModuleInstantiation.h"
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -257,11 +258,11 @@ PyObject* openscad_cube(PyObject *self, PyObject *args)
 //  if (size.isDefined()) {
 //    bool converted = false;
 //    converted |= size.getDouble(node->x);
-      node->x=size;
+      node->x=size*1;
 //    converted |= size.getDouble(node->y);
-      node->y=size;
+      node->y=size*2;
 //    converted |= size.getDouble(node->z);
-      node->z=size;
+      node->z=size*3;
 //    converted |= size.getVec3(node->x, node->y, node->z);
 //    if (!converted) {
 //      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers", size.toEchoStringNoThrow());
@@ -280,6 +281,7 @@ PyObject* openscad_cube(PyObject *self, PyObject *args)
 //  return node;
    printf("Cube generated\n");
    global_node=node;
+//   return PyOpenSCADObject_new(node);
    return PyLong_FromLong(55);
 }
 

@@ -1238,6 +1238,7 @@ void MainWindow::evaluatePython(const char *code)
     }
     PyMem_RawFree(program);
 }
+extern std::shared_ptr<AbstractPolyNode> global_node;
 void MainWindow::instantiateRoot()
 {
   // Go on and instantiate root_node, then call the continuation slot
@@ -1286,7 +1287,7 @@ void MainWindow::instantiateRoot()
       // Do we have an explicit root node (! modifier)?
       const Location *nextLocation = nullptr;
       if (!(this->root_node = find_root_tag(this->absolute_root_node, &nextLocation))) {
-        this->root_node = this->absolute_root_node;
+        this->root_node = global_node; // this->absolute_root_node;
       }
       if (nextLocation) {
         LOG(message_group::None, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
@@ -1833,6 +1834,9 @@ bool MainWindow::fileChangedOnDisk()
 /*!
    Returns true if anything was compiled.
  */
+
+extern std::shared_ptr<AbstractPolyNode> global_node;
+
 void MainWindow::parseTopLevelDocument()
 {
   resetSuppressedMessages();
@@ -1851,6 +1855,9 @@ void MainWindow::parseTopLevelDocument()
   evaluatePython(fulltext.c_str());
   fulltext ="cube([10,10,10]);\n";
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
+
+  this->absolute_root_node = global_node;
+  this->root_node = global_node;
 
   this->activeEditor->resetHighlighting();
   if (this->root_file != nullptr) {

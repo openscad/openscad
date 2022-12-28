@@ -1,6 +1,8 @@
 #include <Python.h>
 #include "pyopenscad.h"
 
+// https://docs.python.it/html/ext/dnt-basics.html
+
 static PyTypeObject PyOpenSCADType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "PyOpenSCAD",             /* tp_name */
@@ -57,15 +59,18 @@ void PyOpenSCADObject_dealloc(PyOpenSCADObject * self)
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-PyObject * PyOpenSCADObject_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+PyObject * PyOpenSCADObject_new( std::shared_ptr<AbstractPolyNode> node)
 {
     PyOpenSCADObject *self;
-
-    self = (PyOpenSCADObject *)type->tp_alloc(type, 0);
+	printf("a\n");
+    self = (PyOpenSCADObject *)malloc(sizeof(PyOpenSCADObject));
+    printf("b self=%p %d\n",self,sizeof(PyOpenSCADObject));
     if (self != NULL) {
-        //self->number = 0;
+	self->node=node; // node;
     }
-
+	printf("C\n");
+    printf("Self=%p\n",self);
+    printf("b\n");
     return (PyObject *)self;
 }
 
