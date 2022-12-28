@@ -1193,8 +1193,29 @@ void MainWindow::compileEnded()
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
+static int numargs=0;
 
-void evaluatePython(const char *code)
+/* Return the number of arguments of the application command line */
+PyObject* openscad_cube(PyObject *self, PyObject *args);
+
+static PyMethodDef OpenSCADMethods[] = {
+    {"cube", openscad_cube, METH_VARARGS,
+     "Return the number of arguments received by the process."},
+    {NULL, NULL, 0, NULL}
+};
+
+static PyModuleDef OpenSCADModule = {
+    PyModuleDef_HEAD_INIT, "openscad", NULL, -1, OpenSCADMethods,
+    NULL, NULL, NULL, NULL
+};
+
+static PyObject* PyInit_openscad(void)
+{
+    return PyModule_Create(&OpenSCADModule);
+}
+
+
+void MainWindow::evaluatePython(const char *code)
 {
     wchar_t *program = Py_DecodeLocale("openscad", NULL);
     const char *prg="from time import time,ctime\n"
@@ -1204,6 +1225,10 @@ void evaluatePython(const char *code)
         exit(1);
     }
     Py_SetProgramName(program);  /* optional but recommended */
+
+    numargs = 5;
+    PyImport_AppendInittab("openscad", &PyInit_openscad);
+
     Py_Initialize();
     PyRun_SimpleString(code);
     if (Py_FinalizeEx() < 0) {
@@ -1815,15 +1840,14 @@ void MainWindow::parseTopLevelDocument()
   auto fulltext =
     std::string(this->last_compiled_doc.toUtf8().constData());
  // + "\n\x03\n" + commandline_commands;
-  evaluatePython(fulltext.c_str());
-
-  fulltext ="cube([10,10,10]);\n";
 
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
   delete this->parsed_file;
   this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
   this->root_file = nullptr;  // ditto
+  evaluatePython(fulltext.c_str());
+  fulltext ="cube([10,10,10]);\n";
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
 
   this->activeEditor->resetHighlighting();

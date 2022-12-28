@@ -233,13 +233,54 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
   return node;
 }
 
+std::shared_ptr<AbstractPolyNode> global_node;
 
 PyObject* openscad_cube(PyObject *self, PyObject *args)
 {
+  std::string name;
+  AssignmentList asslist;
+  ModuleInstantiation inst(name,asslist,Location::NONE);
+  auto node = std::make_shared<CubeNode>(&inst);
+//
+//  if (!children.empty()) {
+//    LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
+//        "module %1$s() does not support child modules", node->name());
+//  }
+
+//  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"size", "center"});
     if(!PyArg_ParseTuple(args, ":numargs"))
         return NULL;
-    printf("Draw Cube\n");
-    return PyLong_FromLong(55);
+
+
+  double size = 5; // TODO parameters["size"];
+//  Parameters size;
+//  if (size.isDefined()) {
+//    bool converted = false;
+//    converted |= size.getDouble(node->x);
+      node->x=size;
+//    converted |= size.getDouble(node->y);
+      node->y=size;
+//    converted |= size.getDouble(node->z);
+      node->z=size;
+//    converted |= size.getVec3(node->x, node->y, node->z);
+//    if (!converted) {
+//      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers", size.toEchoStringNoThrow());
+//    } else if (OpenSCAD::rangeCheck) {
+//      bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
+//      ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
+//      if (!ok) {
+//        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "cube(size=%1$s, ...)", size.toEchoStringNoThrow());
+//      }
+//    }
+//  }
+//  if (parameters["center"].type() == Value::Type::BOOL) {
+//    node->center = parameters["center"].toBool();
+//  }
+
+//  return node;
+   printf("Cube generated\n");
+   global_node=node;
+   return PyLong_FromLong(55);
 }
 
 
