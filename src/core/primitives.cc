@@ -283,6 +283,12 @@ PyObject* openscad_cube(PyObject *self, PyObject *args)
    return PyLong_FromLong(55);
 }
 
+PyObject* openscad_output(PyObject *self, PyObject *args)
+{
+   printf("Output\n");
+   return PyLong_FromLong(55);
+}
+
 
 
 

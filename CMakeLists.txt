@@ -610,6 +610,7 @@ set(CORE_SOURCES
   src/core/Tree.cc
   src/core/customizer/ParameterObject.cc
   src/core/customizer/ParameterSet.cc
+  src/core/pyopenscad.cc
   src/ext/lodepng/lodepng.cpp
   src/ext/polyclipping/clipper.cpp
   src/ext/libtess2/Source/bucketalloc.c

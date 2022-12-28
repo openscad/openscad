@@ -25,6 +25,7 @@
  */
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include "pyopenscad.h"
 
 #include <iostream>
 #include "boost-utils.h"
@@ -1195,12 +1196,12 @@ void MainWindow::compileEnded()
 
 static int numargs=0;
 
+
 /* Return the number of arguments of the application command line */
-PyObject* openscad_cube(PyObject *self, PyObject *args);
 
 static PyMethodDef OpenSCADMethods[] = {
-    {"cube", openscad_cube, METH_VARARGS,
-     "Return the number of arguments received by the process."},
+    {"cube", openscad_cube, METH_VARARGS, "Create Cube."},
+    {"output", openscad_output, METH_VARARGS, "Output the result."},
     {NULL, NULL, 0, NULL}
 };
 
@@ -1230,6 +1231,7 @@ void MainWindow::evaluatePython(const char *code)
     PyImport_AppendInittab("openscad", &PyInit_openscad);
 
     Py_Initialize();
+    PyInit_PyOpenSCAD();
     PyRun_SimpleString(code);
     if (Py_FinalizeEx() < 0) {
         exit(120);
