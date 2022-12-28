@@ -406,10 +406,10 @@ module_literal
        |   TOK_MODULE '(' parameters ')' TOK_ID '(' arguments ')'
            {
               std::string const modname = generateAnonymousModuleName();
-              UserModule *newmodule = new UserModule(modname.c_str(), LOCD("anonmodule", @$));
+              auto newmodule = std::make_shared<UserModule>(modname.c_str(), LOCD("anonmodule", @$));
               newmodule->parameters = *$3;
               delete $3;
-              scope_stack.top()->addModule(shared_ptr<UserModule>(newmodule));
+              scope_stack.top()->addModule(newmodule);
               scope_stack.push(&newmodule->body);
                  // body module instantiation
                  scope_stack.top()->addModuleInst(
@@ -422,15 +422,15 @@ module_literal
                  free($5);
                  delete($7);
               scope_stack.pop();
-              $$ = MakeModuleLiteral(modname,newmodule->parameters,AssignmentList{},LOCD("anonmodule", @$));
+              $$ = MakeModuleLiteral(newmodule->name,newmodule->parameters,AssignmentList{},LOCD("anonmodule", @$));
            }
         |  TOK_MODULE braced_parameters_or_empty '{'
           {
               std::string modname = generateAnonymousModuleName();
-              UserModule *newmodule = new UserModule(modname.c_str(), LOCD("anonmodule", @$));
+              auto newmodule = std::make_shared<UserModule>(modname.c_str(), LOCD("anonmodule", @$));
               newmodule->parameters = *$2;
               delete $2;
-              scope_stack.top()->addModule(shared_ptr<UserModule>(newmodule));
+              scope_stack.top()->addModule(newmodule);
               scope_stack.push(&newmodule->body);
               $<expr>$ = MakeModuleLiteral(newmodule->name,newmodule->parameters,AssignmentList{},LOCD("anonmodule", @$));
           }

@@ -13,7 +13,14 @@ https://github.com/openscad/openscad/blob/master/COPYING
 void ModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
 {
   if (!inlined) stream << indent;
-  stream << modname + "(";
+  if ( id_expr){
+    stream << "( ";
+    id_expr->print(stream,"");
+    stream << " )";
+  }else{
+     stream << modname;
+  }
+  stream <<  "(";
   for (size_t i = 0; i < this->arguments.size(); ++i) {
     const auto& arg = this->arguments[i];
     if (i > 0) stream << ", ";
