@@ -15,9 +15,16 @@ https://github.com/openscad/openscad/blob/master/COPYING
 #include "Feature.h"
 #include "ValueWrapper.h"
 
-extern std::stack<LocalScope *> scope_stack;
+namespace {
+  int32_t anonymousModuleNameCount = 0U;
+  char itoaArr[50] = {0};
+}
 
-int64_t ModuleReference::next_id = 0;
+void ResetModuleExpressions()
+{
+   anonymousModuleNameCount = 0U;
+   ModuleReference::next_id = 0;
+}
 
 Expression* MakeModuleLiteral(
    const std::string& moduleName,
@@ -34,28 +41,12 @@ Expression* MakeModuleLiteral(
    }
 }
 
-namespace {
-  int32_t anonymousModuleNameCount = 0U;
-  char itoaArr[50] = {0};
 
-  std::stack<std::string> anonModuleStack;
-}
+
 std::string generateAnonymousModuleName()
 {
    sprintf(itoaArr,"__&ML[%d]__",anonymousModuleNameCount++);
    return std::string(itoaArr);
-}
-
-void pushAnonymousModuleName(std::string const & name)
-{
-   anonModuleStack.push(name);
-}
-
-std::string popAnonymousModuleName()
-{
-   std::string name = anonModuleStack.top();
-   anonModuleStack.pop();
-   return name;
 }
 
 ModuleLiteral::ModuleLiteral(const std::string& mod_name, const AssignmentList &literal_params,

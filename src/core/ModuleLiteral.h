@@ -29,8 +29,6 @@ public:
 };
 
 std::string generateAnonymousModuleName();
-void pushAnonymousModuleName(std::string const & name);
-std::string popAnonymousModuleName();
 
 Expression* MakeModuleLiteral(
    const std::string& moduleName,  AssignmentList const & params,

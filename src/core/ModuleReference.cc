@@ -12,6 +12,8 @@ https://github.com/openscad/openscad/blob/master/COPYING
 #include "Expression.h"
 #include <set>
 
+int64_t ModuleReference::next_id = 0;
+
 Value ModuleReference::operator==(const ModuleReference& other) const {
   return this->getUniqueID() == other.getUniqueID();
 }

@@ -23,8 +23,12 @@ class Context;
 class Expression;
 class Value;
 
+// reset count and names ahead of a new parser run
+void ResetModuleExpressions();
+
 class ModuleReference
 {
+ friend void ResetModuleExpressions();
 public:
   ModuleReference(std::shared_ptr<const Context> context_in,
                   std::shared_ptr<AssignmentList> literal_params_in,
