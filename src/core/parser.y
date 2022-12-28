@@ -25,6 +25,8 @@
  */
 /*
 Copyright (C) Andy Little (kwikius@yahoo.com) 10/10/2022  add module_literal productions
+Copyright (C) Jordan Brown <github@jordan.maileater.net>, Andy Little (kwikius@yahoo.com) 28/12/2022
+   streamline module_literal productions, based on jordanbrowns modifications to the parser
 https://github.com/openscad/openscad/blob/master/COPYING
 */
 
@@ -407,39 +409,35 @@ module_literal
               UserModule *newmodule = new UserModule(modname.c_str(), LOCD("anonmodule", @$));
               newmodule->parameters = *$3;
               delete $3;
-              auto top = scope_stack.top();
+              scope_stack.top()->addModule(shared_ptr<UserModule>(newmodule));
               scope_stack.push(&newmodule->body);
-              top->addModule(shared_ptr<UserModule>(newmodule));
-              auto inst = new ModuleInstantiation($5, *$7, LOCD("modulecall", @$));
-              scope_stack.top()->addModuleInst(shared_ptr<ModuleInstantiation>(inst));
-              free($5);
-              delete($7);
+                 // body module instantiation
+                 scope_stack.top()->addModuleInst(
+                     std::move(
+                        std::make_shared<ModuleInstantiation>(
+                           $5, *$7, LOCD("modulecall", @$)
+                        )
+                     )
+                 );
+                 free($5);
+                 delete($7);
               scope_stack.pop();
-              AssignmentList args;
-              $$ = MakeModuleLiteral(modname,newmodule->parameters,args,LOCD("anonmodule", @$));
+              $$ = MakeModuleLiteral(modname,newmodule->parameters,AssignmentList{},LOCD("anonmodule", @$));
            }
         |  TOK_MODULE braced_parameters_or_empty '{'
           {
               std::string modname = generateAnonymousModuleName();
               UserModule *newmodule = new UserModule(modname.c_str(), LOCD("anonmodule", @$));
-              pushAnonymousModuleName(modname);
               newmodule->parameters = *$2;
               delete $2;
-              auto top = scope_stack.top();
+              scope_stack.top()->addModule(shared_ptr<UserModule>(newmodule));
               scope_stack.push(&newmodule->body);
-              top->addModule(shared_ptr<UserModule>(newmodule));
+              $<expr>$ = MakeModuleLiteral(newmodule->name,newmodule->parameters,AssignmentList{},LOCD("anonmodule", @$));
           }
             inner_input '}'
           {
               scope_stack.pop();
-              auto top = scope_stack.top();
-              std::string modname = popAnonymousModuleName();
-              auto it = top->modules.find(modname.c_str());
-              if( it != top->modules.end() ){
-                auto  m = it->second;
-                AssignmentList args;
-                $$ = MakeModuleLiteral(m->name,m->parameters,args,LOCD("anonmodule", @$));
-              }
+              $$ = $<expr>4;
           }
         ;
 
@@ -857,6 +855,9 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
   }
 
   parsingMainFile = mainFilePath == filepath;
+  if (parsingMainFile){
+    ResetModuleExpressions();
+  }
   fs::path parser_sourcefile = fs::path(filepath).generic_string();
   lexer_set_parser_sourcefile(parser_sourcefile);
 
