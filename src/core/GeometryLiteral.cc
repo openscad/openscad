@@ -122,10 +122,6 @@ GeometryInstantiation::GeometryInstantiation(shared_ptr<class Expression> expr, 
   this->expr = expr;
 }
 
-GeometryInstantiation::~GeometryInstantiation()
-{
-}
-
 std::shared_ptr<AbstractNode>
 GeometryInstantiation::evaluate(
   const std::shared_ptr<const Context>& context) const

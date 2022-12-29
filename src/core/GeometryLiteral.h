@@ -31,14 +31,11 @@ public:
   LocalScope body;
 };
 
-extern shared_ptr<AbstractNode> spliceGeometry(Arguments& args);
-
 class GeometryInstantiation : public ModuleInstantiation
 {
 public:
   GeometryInstantiation(shared_ptr<class Expression> expr, const Location& loc);
   virtual std::shared_ptr<AbstractNode> evaluate(const std::shared_ptr<const Context>& context) const override final;
-  ~GeometryInstantiation();
   void print(std::ostream& stream, const std::string& indent, const bool inlined) const final;
 
 private:
