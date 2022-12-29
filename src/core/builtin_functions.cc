@@ -38,7 +38,7 @@
 #include "io/fileutils.h"
 #include "GeometryEvaluator.h"
 #include "Reindexer.h"
-#include "polyset.h"
+#include "PolySet.h"
 #include "Tree.h"
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
