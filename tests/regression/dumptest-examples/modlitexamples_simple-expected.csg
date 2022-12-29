@@ -7,7 +7,9 @@ color([1, 0, 0, 1]) {
 }
 color([0, 0, 1, 1]) {
 	multmatrix([[1, 0, 0, 10], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-		cube(size = [10, 10, 10], center = true);
+		group() {
+			cube(size = [10, 10, 10], center = true);
+		}
 	}
 }
 

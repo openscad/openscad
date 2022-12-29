@@ -14,4 +14,4 @@ echo(r = lollipop.radius);
 echo(d = lollipop.diameter);
 echo(h = lollipop.height);
 
-import(lollipop);
+lollipop;

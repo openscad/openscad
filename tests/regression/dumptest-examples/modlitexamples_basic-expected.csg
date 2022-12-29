@@ -1,2 +1,4 @@
-cube(size = [10, 10, 20], center = true);
+group() {
+	cube(size = [10, 10, 20], center = true);
+}
 
