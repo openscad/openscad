@@ -1200,8 +1200,8 @@ static int numargs=0;
 /* Return the number of arguments of the application command line */
 
 static PyMethodDef OpenSCADMethods[] = {
-    {"cube", openscad_cube, METH_VARARGS, "Create Cube."},
-    {"output", openscad_output, METH_VARARGS, "Output the result."},
+    {"cube", (PyCFunction) openscad_cube, METH_VARARGS | METH_KEYWORDS, "Create Cube."},
+    {"output", (PyCFunction) openscad_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
     {NULL, NULL, 0, NULL}
 };
 
@@ -1225,7 +1225,7 @@ void MainWindow::evaluatePython(const char *code)
         fprintf(stderr, "Fatal error: cannot decode argv[0]\n");
         exit(1);
     }
-    Py_SetProgramName(program);  /* optional but recommended */
+//    Py_SetProgramName(program);  /* optional but recommended /
 
     numargs = 5;
     PyImport_AppendInittab("openscad", &PyInit_openscad);
