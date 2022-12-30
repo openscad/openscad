@@ -36,6 +36,9 @@
 #include <vector>
 #include <cassert>
 #include <boost/assign/std/vector.hpp>
+#include <Python.h>
+#include "pyopenscad.h"
+
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 enum class transform_type_e {
@@ -197,6 +200,52 @@ std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst,
   }
 
   return children.instantiate(node);
+}
+
+
+PyObject* openscad_translate(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  std::string name;
+  AssignmentList asslist;
+  ModuleInstantiation inst(name,asslist,Location::NONE);
+
+  char * kwlist[] ={"v",NULL};
+  PyObject *v = NULL; 
+  double x=0,y=0,z=0;
+
+
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, &PyList_Type,&v ))
+   	return NULL;
+
+    if(PyList_Size(v) == 3) {
+     	x=PyFloat_AsDouble(PyList_GetItem(v, 0));
+     	y=PyFloat_AsDouble(PyList_GetItem(v, 1));
+     	z=PyFloat_AsDouble(PyList_GetItem(v, 2));
+   }
+   printf("x %f y %f z %f\n",x,y,z);
+//   node->x=x;
+//   node->y=y;
+//   node->z=z;
+
+
+
+  /*
+  auto node = std::make_shared<TransformNode>(inst, "translate");
+
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"v"});
+
+  Vector3d translatevec(0, 0, 0);
+  bool ok = parameters["v"].getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0);
+  ok &= std::isfinite(translatevec[0]) && std::isfinite(translatevec[1]) && std::isfinite(translatevec[2]);
+  if (ok) {
+    node->matrix.translate(translatevec);
+  } else {
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert translate(%1$s) parameter to a vec3 or vec2 of numbers", parameters["v"].toEchoStringNoThrow());
+  }
+
+  return children.instantiate(node);
+  */
+   return PyLong_FromLong(55);
 }
 
 std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst, Arguments arguments, Children children)

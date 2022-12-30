@@ -234,7 +234,6 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
   return node;
 }
 
-std::shared_ptr<AbstractPolyNode> global_node;
 
 PyObject* openscad_cube(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -244,9 +243,8 @@ PyObject* openscad_cube(PyObject *self, PyObject *args, PyObject *kwargs)
   auto node = std::make_shared<CubeNode>(&inst);
 
   char * kwlist[] ={"dim", "center",NULL};
-  PyObject *dim = NULL; // TODO parameters["size"];
-  PyObject *pItem;
-			       //
+  PyObject *dim = NULL; 
+
   double x=1,y=1,z=1;
   char *center=NULL;
 	
@@ -265,15 +263,21 @@ PyObject* openscad_cube(PyObject *self, PyObject *args, PyObject *kwargs)
    if(center != NULL)
 	   if(!strcasecmp(center,"true")) node->center=1;
 
-   global_node=node;
+   result_node=node;
 //   return PyOpenSCADObject_new(node);
+//   node_stack.push_back(node);
    return PyLong_FromLong(55);
 }
 
 PyObject* openscad_output(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-   printf("Output\n");
+   if(node_stack.size() > 0)
+   {
+//	   result_node = node_stack.back();
+	   node_stack.pop_back();
+   }
    return PyLong_FromLong(55);
+//   return NULL;
 }
 
 

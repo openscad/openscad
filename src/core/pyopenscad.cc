@@ -3,6 +3,9 @@
 
 // https://docs.python.it/html/ext/dnt-basics.html
 
+std::shared_ptr<AbstractPolyNode> result_node;
+std::vector<std::shared_ptr<AbstractPolyNode>> node_stack;
+
 static PyTypeObject PyOpenSCADType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "PyOpenSCAD",             /* tp_name */

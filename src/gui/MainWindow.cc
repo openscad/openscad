@@ -1201,6 +1201,7 @@ static int numargs=0;
 
 static PyMethodDef OpenSCADMethods[] = {
     {"cube", (PyCFunction) openscad_cube, METH_VARARGS | METH_KEYWORDS, "Create Cube."},
+    {"translate", (PyCFunction) openscad_translate, METH_VARARGS | METH_KEYWORDS, "Create Cube."},
     {"output", (PyCFunction) openscad_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
     {NULL, NULL, 0, NULL}
 };
@@ -1238,7 +1239,6 @@ void MainWindow::evaluatePython(const char *code)
     }
     PyMem_RawFree(program);
 }
-extern std::shared_ptr<AbstractPolyNode> global_node;
 void MainWindow::instantiateRoot()
 {
   // Go on and instantiate root_node, then call the continuation slot
@@ -1287,7 +1287,7 @@ void MainWindow::instantiateRoot()
       // Do we have an explicit root node (! modifier)?
       const Location *nextLocation = nullptr;
       if (!(this->root_node = find_root_tag(this->absolute_root_node, &nextLocation))) {
-        this->root_node = global_node; // this->absolute_root_node;
+        this->root_node = result_node; // this->absolute_root_node;
       }
       if (nextLocation) {
         LOG(message_group::None, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
@@ -1852,8 +1852,8 @@ void MainWindow::parseTopLevelDocument()
   evaluatePython(fulltext.c_str());
   fulltext ="cube([10,10,10]);\n";
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
-  this->absolute_root_node = global_node;
-  this->root_node = global_node;
+  this->absolute_root_node = result_node;
+  this->root_node = result_node;
 
   this->activeEditor->resetHighlighting();
   if (this->root_file != nullptr) {
