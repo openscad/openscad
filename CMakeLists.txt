@@ -55,9 +55,14 @@ cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT 
 include(GNUInstallDirs)
 
 # Use clang-tidy if run with -DCLANG_TIDY=1
-find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 set(CLANG_TIDY ${CLANG_TIDY} CACHE BOOL "Enable clang-tidy")
-if(CLANG_TIDY AND CLANG_TIDY_EXE)
+if(CLANG_TIDY)
+  if(APPLE)
+    # clang-tidy isn't directly available on Homebrew, but exists inside the llvm package
+    set(CLANG_TIDY_HINTS "/opt/homebrew/opt/llvm/bin" "/usr/local/opt/llvm/bin")
+  endif()
+  find_program(CLANG_TIDY_EXE NAMES clang-tidy REQUIRED HINTS ${CLANG_TIDY_HINTS})
+  message(STATUS "Found clang-tidy: ${CLANG_TIDY_EXE}")
   include("cmake/Modules/RegexUtils.cmake")
   escape_string_as_regex(regex "${CMAKE_SOURCE_DIR}/src/")
   # /src/ext/.clang-tidy disables all checks for that dir.  Copy into build dir to ignore generated sources.
@@ -67,7 +72,7 @@ if(CLANG_TIDY AND CLANG_TIDY_EXE)
   # CMAKE_CXX_CLANG_TIDY must be set before target is created (with add_executable())
   set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};--header-filter=${regex}([^e]...|e[^x]..|ex[^t].|ext[^/]|.{0,3}$)")
   #  append ";--fix" to arguments above to apply automatic fix (if the given checks support it)
-endif()
+endif(CLANG_TIDY)
 
 add_executable(OpenSCAD)
 
