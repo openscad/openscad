@@ -3,8 +3,8 @@
 
 // https://docs.python.it/html/ext/dnt-basics.html
 
-std::shared_ptr<AbstractPolyNode> result_node=NULL;
-std::vector<std::shared_ptr<AbstractPolyNode>> node_stack;
+std::shared_ptr<AbstractNode> result_node=NULL;
+std::vector<std::shared_ptr<AbstractNode>> node_stack;
 
 static PyTypeObject PyOpenSCADType = {
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -62,7 +62,7 @@ void PyOpenSCADObject_dealloc(PyOpenSCADObject * self)
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-PyObject * PyOpenSCADObject_new( std::shared_ptr<AbstractPolyNode> node)
+PyObject * PyOpenSCADObject_new( std::shared_ptr<AbstractNode> node)
 {
     PyOpenSCADObject *self;
 	printf("a\n");

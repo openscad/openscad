@@ -202,52 +202,35 @@ std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst,
   return children.instantiate(node);
 }
 
+extern  ModuleInstantiation todo_fix_inst;
+
 PyObject* openscad_translate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  std::string name;
-  AssignmentList asslist;
-  ModuleInstantiation inst(name,asslist,Location::NONE);
+  std::shared_ptr<AbstractNode> child;
 
-  auto node = std::make_shared<TransformNode>(&inst, "translate");
+  if(node_stack.size() == 0) return NULL;
+  child = node_stack.back();
+  node_stack.pop_back();
+
+  auto node = std::make_shared<TransformNode>(&todo_fix_inst, "translate");
 
   char * kwlist[] ={"v",NULL};
   PyObject *v = NULL; 
   double x=0,y=0,z=0;
-
-
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, &PyList_Type,&v ))
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, &PyList_Type,&v ))
    	return NULL;
 
-    if(PyList_Size(v) == 3) {
+  if(PyList_Size(v) == 3) {
      	x=PyFloat_AsDouble(PyList_GetItem(v, 0));
      	y=PyFloat_AsDouble(PyList_GetItem(v, 1));
      	z=PyFloat_AsDouble(PyList_GetItem(v, 2));
    }
-   printf("x %f y %f z %f\n",x,y,z);
    Vector3d translatevec(x, y, z);
 
    node->matrix.translate(translatevec); // TODO fix this and use arguments!
-   node->children.push_back(result_node);
-//   result_node = node;
+   node->children.push_back(child);
+   node_stack.push_back(node);
 
-//  result_node = children.instantiate(node);
-
-
-  /*
-
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"v"});
-
-  Vector3d translatevec(0, 0, 0);
-  bool ok = parameters["v"].getVec3(translatevec[0], translatevec[1], translatevec[2], 0.0);
-  ok &= std::isfinite(translatevec[0]) && std::isfinite(translatevec[1]) && std::isfinite(translatevec[2]);
-  if (ok) {
-    node->matrix.translate(translatevec);
-  } else {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert translate(%1$s) parameter to a vec3 or vec2 of numbers", parameters["v"].toEchoStringNoThrow());
-  }
-
-  return children.instantiate(node);
-  */
    return PyLong_FromLong(55);
 }
 
