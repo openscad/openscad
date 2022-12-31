@@ -3,7 +3,7 @@
 
 // https://docs.python.it/html/ext/dnt-basics.html
 
-std::shared_ptr<AbstractPolyNode> result_node;
+std::shared_ptr<AbstractPolyNode> result_node=NULL;
 std::vector<std::shared_ptr<AbstractPolyNode>> node_stack;
 
 static PyTypeObject PyOpenSCADType = {

@@ -234,13 +234,13 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
   return node;
 }
 
+std::string todo_fix_name;
+AssignmentList todo_fix_asslist;
+ModuleInstantiation todo_fix_inst(todo_fix_name,todo_fix_asslist,Location::NONE);
 
 PyObject* openscad_cube(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  std::string name;
-  AssignmentList asslist;
-  ModuleInstantiation inst(name,asslist,Location::NONE);
-  auto node = std::make_shared<CubeNode>(&inst);
+  auto node = std::make_shared<CubeNode>(&todo_fix_inst);
 
   char * kwlist[] ={"dim", "center",NULL};
   PyObject *dim = NULL; 
@@ -263,9 +263,9 @@ PyObject* openscad_cube(PyObject *self, PyObject *args, PyObject *kwargs)
    if(center != NULL)
 	   if(!strcasecmp(center,"true")) node->center=1;
 
-   result_node=node;
+//   result_node=node;
 //   return PyOpenSCADObject_new(node);
-//   node_stack.push_back(node);
+   node_stack.push_back(node);
    return PyLong_FromLong(55);
 }
 
@@ -273,7 +273,8 @@ PyObject* openscad_output(PyObject *self, PyObject *args, PyObject *kwargs)
 {
    if(node_stack.size() > 0)
    {
-//	   result_node = node_stack.back();
+	   if(result_node != NULL) printf("Warninging: overwriting result\n");
+	   result_node = node_stack.back();
 	   node_stack.pop_back();
    }
    return PyLong_FromLong(55);

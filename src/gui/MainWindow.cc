@@ -1219,6 +1219,7 @@ static PyObject* PyInit_openscad(void)
 
 void MainWindow::evaluatePython(const char *code)
 {
+    result_node=NULL;
     wchar_t *program = Py_DecodeLocale("openscad", NULL);
     const char *prg="from time import time,ctime\n"
                        "print('Today is', ctime(time()))\n";
@@ -1277,7 +1278,8 @@ void MainWindow::instantiateRoot()
     setRenderVariables(builtin_context);
 
     std::shared_ptr<const FileContext> file_context;
-    this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
+    if(result_node != NULL) this->absolute_root_node = result_node;
+    else this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
       viewportControlWidget->cameraChanged();
@@ -1287,7 +1289,7 @@ void MainWindow::instantiateRoot()
       // Do we have an explicit root node (! modifier)?
       const Location *nextLocation = nullptr;
       if (!(this->root_node = find_root_tag(this->absolute_root_node, &nextLocation))) {
-        this->root_node = result_node; // this->absolute_root_node;
+        this->root_node = this->absolute_root_node;
       }
       if (nextLocation) {
         LOG(message_group::None, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
@@ -1852,8 +1854,6 @@ void MainWindow::parseTopLevelDocument()
   evaluatePython(fulltext.c_str());
   fulltext ="cube([10,10,10]);\n";
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
-  this->absolute_root_node = result_node;
-  this->root_node = result_node;
 
   this->activeEditor->resetHighlighting();
   if (this->root_file != nullptr) {

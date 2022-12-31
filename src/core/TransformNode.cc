@@ -202,12 +202,13 @@ std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst,
   return children.instantiate(node);
 }
 
-
 PyObject* openscad_translate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   std::string name;
   AssignmentList asslist;
   ModuleInstantiation inst(name,asslist,Location::NONE);
+
+  auto node = std::make_shared<TransformNode>(&inst, "translate");
 
   char * kwlist[] ={"v",NULL};
   PyObject *v = NULL; 
@@ -223,14 +224,16 @@ PyObject* openscad_translate(PyObject *self, PyObject *args, PyObject *kwargs)
      	z=PyFloat_AsDouble(PyList_GetItem(v, 2));
    }
    printf("x %f y %f z %f\n",x,y,z);
-//   node->x=x;
-//   node->y=y;
-//   node->z=z;
+   Vector3d translatevec(x, y, z);
 
+   node->matrix.translate(translatevec); // TODO fix this and use arguments!
+   node->children.push_back(result_node);
+//   result_node = node;
+
+//  result_node = children.instantiate(node);
 
 
   /*
-  auto node = std::make_shared<TransformNode>(inst, "translate");
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"v"});
 
