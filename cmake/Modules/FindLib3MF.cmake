@@ -7,7 +7,7 @@
 # LIB3MF_LIBDIR
 # LIB3MF_INCLUDE_DIRS
 # LIB3MF_LIBRARIES
-# 
+#
 
 # Don't specify REQUIRED here in case pkg-config fails.
 # We still fall back to the rest of detection code here.
@@ -27,7 +27,6 @@ set(LIB3MF_FOUND ${PC_LIB3MF_FOUND})
 find_path(LIB3MF_INCLUDE_DIRS
     NAMES Model/COM/NMR_DLLInterfaces.h lib3mf_implicit.hpp
     HINTS $ENV{LIB3MF_INCLUDEDIR}
-          ${PC_LIB3MF_INCLUDEDIR}
           ${PC_LIB3MF_INCLUDEDIR}
           ${PC_LIB3MF_INCLUDE_DIRS}
     PATH_SUFFIXES lib3mf Bindings/Cpp
