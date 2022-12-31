@@ -7,7 +7,7 @@
 # LIB3MF_LIBDIR
 # LIB3MF_INCLUDE_DIRS
 # LIB3MF_LIBRARIES
-# 
+#
 
 # Don't specify REQUIRED here in case pkg-config fails.
 # We still fall back to the rest of detection code here.
@@ -33,7 +33,7 @@ find_path(LIB3MF_INCLUDE_DIRS
     HINTS $ENV{LIB3MF_INCLUDEDIR}
           ${PC_LIB3MF_INCLUDEDIR}
           ${PC_LIB3MF_INCLUDE_DIRS}
-    PATH_SUFFIXES lib3mf
+    PATH_SUFFIXES lib3mf Bindings/Cpp
 )
 
 find_library(LIB3MF_LIBRARIES

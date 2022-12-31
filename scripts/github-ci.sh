@@ -31,7 +31,7 @@ do_test() {
 	(
 		# Use TESTDIR within BUILDDIR
 		cd "$BUILDDIR/$TESTDIR"
-		ctest $PARALLEL_CTEST -E nef3_broken
+		ctest $PARALLEL_CTEST
 		if [[ $? != 0 ]]; then
 			exit 1
 		fi
