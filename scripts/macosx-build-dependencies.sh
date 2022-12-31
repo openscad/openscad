@@ -40,7 +40,7 @@ PACKAGES=(
     "eigen 3.4.0"
     "gmp 6.2.1"
     "mpfr 4.1.0"
-    "glew 2.1.0"
+    "glew 2.2.0"
     "gettext 0.21.1"
     "libffi REMOVE"
     "freetype 2.12.1"
