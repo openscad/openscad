@@ -13,12 +13,16 @@
 # We still fall back to the rest of detection code here.
 # Travis CI Ubuntu Trusty environment has some issue with pkg-config
 # not finding the version.
-find_package(PkgConfig REQUIRED QUIET)
-pkg_check_modules(PC_LIB3MF lib3MF)
+if (Lib3MF_FIND_QUIETLY)
+  set(_quiet_arg QUIET)
+endif()
+
+find_package(PkgConfig REQUIRED ${_quiet_arg})
+pkg_check_modules(PC_LIB3MF lib3MF ${_quiet_arg})
 
 # Check for 2.0 version pc file if 1.0 was not found.
 if (NOT PC_LIB3MF_FOUND)
-  pkg_check_modules(PC_LIB3MF lib3mf)
+  pkg_check_modules(PC_LIB3MF lib3mf ${_quiet_arg})
 endif()
 
 set(LIB3MF_VERSION ${PC_LIB3MF_VERSION})
