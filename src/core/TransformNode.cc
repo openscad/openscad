@@ -153,6 +153,89 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
   return children.instantiate(node);
 }
 
+extern  ModuleInstantiation todo_fix_inst;
+
+PyObject* openscad_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  std::shared_ptr<AbstractNode> child;
+
+  if(node_stack.size() == 0) return NULL;
+  child = node_stack.back();
+  node_stack.pop_back();
+
+  auto node = std::make_shared<TransformNode>(&todo_fix_inst, "rotate");
+
+  char * kwlist[] ={"a","v",NULL};
+
+  PyObject *val_a = NULL; 
+  float *val_v=0;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|f", kwlist, &PyList_Type,&val_a,&val_v ))
+   	return NULL;
+
+  if(PyList_Size(val_a) > 0) {
+    double sx = 0, sy = 0, sz = 0;
+    double cx = 1, cy = 1, cz = 1;
+    double a = 0.0;
+    bool ok = true;
+//    const auto& vec_a = val_a.toVector();
+    switch (PyList_Size(val_a)) {
+    default:
+      ok &= false;
+    /* fallthrough */
+    case 3:
+      a = PyFloat_AsDouble(PyList_GetItem(val_a, 2));
+      sz = sin_degrees(a);
+      cz = cos_degrees(a);
+    /* fallthrough */
+    case 2:
+      a = PyFloat_AsDouble(PyList_GetItem(val_a, 1));
+      sy = sin_degrees(a);
+      cy = cos_degrees(a);
+    /* fallthrough */
+    case 1:
+      a = PyFloat_AsDouble(PyList_GetItem(val_a, 0));
+      sx = sin_degrees(a);
+      cx = cos_degrees(a);
+    /* fallthrough */
+    case 0:
+      break;
+
+    }
+    Matrix3d M;
+    M << cy * cz,  cz *sx *sy - cx * sz,   cx *cz *sy + sx * sz,
+      cy *sz,  cx *cz + sx * sy * sz,  -cz * sx + cx * sy * sz,
+      -sy,       cy *sx,                  cx *cy;
+    node->matrix.rotate(M);
+
+   } else {
+#if 0 
+// TODO activate this option (need better par parsing)	   
+    double a = 0.0;
+    bool aConverted = val_a.getDouble(a);
+    aConverted &= !std::isinf(a) && !std::isnan(a);
+
+    Vector3d v(0, 0, 1);
+    bool vConverted = val_v.getVec3(v[0], v[1], v[2], 0.0);
+    node->matrix.rotate(angle_axis_degrees(aConverted ? a : 0, v));
+    if (val_v.isDefined() && !vConverted) {
+      if (aConverted) {
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(..., v=%1$s) parameter", val_v.toEchoStringNoThrow());
+      } else {
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s, v=%2$s) parameter", val_a.toEchoStringNoThrow(), val_v.toEchoStringNoThrow());
+      }
+    } else if (!aConverted) {
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s) parameter", val_a.toEchoStringNoThrow());
+    }
+#endif
+ }
+   
+   node->children.push_back(child);
+   node_stack.push_back(node);
+
+   return PyLong_FromLong(55);
+}
+
+
 std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
   auto node = std::make_shared<TransformNode>(inst, "mirror");
@@ -202,7 +285,6 @@ std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst,
   return children.instantiate(node);
 }
 
-extern  ModuleInstantiation todo_fix_inst;
 
 PyObject* openscad_translate(PyObject *self, PyObject *args, PyObject *kwargs)
 {

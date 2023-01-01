@@ -1201,7 +1201,9 @@ static int numargs=0;
 
 static PyMethodDef OpenSCADMethods[] = {
     {"cube", (PyCFunction) openscad_cube, METH_VARARGS | METH_KEYWORDS, "Create Cube."},
-    {"translate", (PyCFunction) openscad_translate, METH_VARARGS | METH_KEYWORDS, "Create Cube."},
+    {"translate", (PyCFunction) openscad_translate, METH_VARARGS | METH_KEYWORDS, "Move  Object."},
+    {"rotate", (PyCFunction) openscad_rotate, METH_VARARGS | METH_KEYWORDS, "Rotate Object."},
+    {"union", (PyCFunction) openscad_union, METH_VARARGS | METH_KEYWORDS, "Union Object."},
     {"output", (PyCFunction) openscad_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
     {NULL, NULL, 0, NULL}
 };

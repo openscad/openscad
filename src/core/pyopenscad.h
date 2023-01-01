@@ -18,5 +18,7 @@ PyObject * PyOpenSCADObject_new( std::shared_ptr<AbstractNode> node);
 
 PyObject* openscad_cube(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* openscad_translate(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* openscad_rotate(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* openscad_union(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* openscad_output(PyObject *self, PyObject *args, PyObject *kwargs);
 

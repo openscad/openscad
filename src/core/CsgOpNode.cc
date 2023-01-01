@@ -33,6 +33,8 @@
 #include "Parameters.h"
 #include <sstream>
 #include <cassert>
+#include <Python.h>
+#include <pyopenscad.h>
 
 static std::shared_ptr<AbstractNode> builtin_union(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
@@ -45,6 +47,40 @@ static std::shared_ptr<AbstractNode> builtin_difference(const ModuleInstantiatio
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::DIFFERENCE));
 }
+
+
+extern  ModuleInstantiation todo_fix_inst;
+
+PyObject* openscad_union(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  std::shared_ptr<AbstractNode> child;
+  int i;
+
+  auto node = std::make_shared<CsgOpNode>(&todo_fix_inst, OpenSCADOperator::UNION);
+  char *kwlist[]= { "n",NULL };
+  char *s=NULL;
+
+  int n=2;
+  if (! PyArg_ParseTupleAndKeywords(args, kwargs, "|i", kwlist, &n)) {
+    printf("error duing parsing\n");
+    return NULL; 
+  }
+  if(node_stack.size() < n) {
+	  printf("Too few items on stack!\n");
+	  return NULL;
+  }
+  for(i=0;i<n;i++) {
+	
+	child = node_stack.back();
+	node_stack.pop_back();
+  	node->children.push_back(child);
+  }
+
+   node_stack.push_back(node);
+
+   return PyLong_FromLong(55);
+}
+
 
 static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiation *inst, Arguments arguments, Children children)
 {
