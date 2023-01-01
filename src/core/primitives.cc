@@ -404,6 +404,36 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
 }
 
 
+PyObject* openscad_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  auto node = std::make_shared<SphereNode>(&todo_fix_inst);
+
+  char * kwlist[] ={"r","d",NULL};
+  double r = -1; 
+  double d = -1; 
+
+  double vr=1;
+	
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|dd", kwlist, &r,&d)) {
+   	return NULL;
+   }
+
+   else if(r>= 0)  { vr=r; }
+   else if(d>= 0)  { vr=d/2.0; }
+
+
+   node->r=vr;
+   node->fn=10;
+   node->fs=10;
+   node->fa=10;
+
+
+//   return PyOpenSCADObject_new(node);
+   node_stack.push_back(node);
+   return PyLong_FromLong(55);
+}
+
+
 
 class CylinderNode : public LeafNode
 {
@@ -552,6 +582,50 @@ static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation 
   }
 
   return node;
+}
+
+PyObject* openscad_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  auto node = std::make_shared<CylinderNode>(&todo_fix_inst);
+
+  char * kwlist[] ={"h","r","r1","r2","d","d1","d2", "center",NULL};
+  double h = -1; 
+  double r = -1; 
+  double r1 = -1; 
+  double r2 = -1; 
+  double d = -1; 
+  double d1 = -1; 
+  double d2 = -1; 
+
+  char *center=NULL;
+  double vr1=1,vr2=1,vh=1;
+	
+   
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddddddds", kwlist, &h,&r,&r1,&r2,&d,&d1,&d2, &center)) {
+   	return NULL;
+   }
+
+   if(h>= 0)  vh=h;
+
+   if(r1 >= 0 && r2 >= 0 ) { vr1=r1; vr2=r2; }
+   else if(d1 >= 0 && d2 >= 0 ) { vr1=d1/2.0; vr2=d2/2.0; }
+   else if(r>= 0)  { vr1=r; vr2=r; }
+   else if(d>= 0)  { vr1=d/2.0; vr2=d/2.0; }
+
+
+   node->r1=vr1;
+   node->r2=vr2;
+   node->h=vh;
+   node->fn=10;
+   node->fs=10;
+   node->fa=10;
+
+   if(center != NULL)
+	   if(!strcasecmp(center,"true")) node->center=1;
+
+//   return PyOpenSCADObject_new(node);
+   node_stack.push_back(node);
+   return PyLong_FromLong(55);
 }
 
 

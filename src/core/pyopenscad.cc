@@ -15,6 +15,8 @@ std::vector<std::shared_ptr<AbstractNode>> node_stack;
 
 static PyMethodDef OpenSCADMethods[] = {
     {"cube", (PyCFunction) openscad_cube, METH_VARARGS | METH_KEYWORDS, "Create Cube."},
+    {"cylinder", (PyCFunction) openscad_cylinder, METH_VARARGS | METH_KEYWORDS, "Create Cylinder."},
+    {"sphere", (PyCFunction) openscad_sphere, METH_VARARGS | METH_KEYWORDS, "Create Sphere."},
 
     {"translate", (PyCFunction) openscad_translate, METH_VARARGS | METH_KEYWORDS, "Move  Object."},
     {"rotate", (PyCFunction) openscad_rotate, METH_VARARGS | METH_KEYWORDS, "Rotate Object."},
