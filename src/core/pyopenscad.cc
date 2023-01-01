@@ -1,3 +1,6 @@
+// Author: Sohler Guenther
+// Date: 2023-01-01
+// Purpose: Extend openscad with an python interpreter
 #include <Python.h>
 #include "pyopenscad.h"
 
@@ -5,6 +8,37 @@
 
 std::shared_ptr<AbstractNode> result_node=NULL;
 std::vector<std::shared_ptr<AbstractNode>> node_stack;
+
+
+
+/* Return the number of arguments of the application command line */
+
+static PyMethodDef OpenSCADMethods[] = {
+    {"cube", (PyCFunction) openscad_cube, METH_VARARGS | METH_KEYWORDS, "Create Cube."},
+
+    {"translate", (PyCFunction) openscad_translate, METH_VARARGS | METH_KEYWORDS, "Move  Object."},
+    {"rotate", (PyCFunction) openscad_rotate, METH_VARARGS | METH_KEYWORDS, "Rotate Object."},
+
+    {"union", (PyCFunction) openscad_union, METH_VARARGS | METH_KEYWORDS, "Union Object."},
+    {"difference", (PyCFunction) openscad_difference, METH_VARARGS | METH_KEYWORDS, "Difference Object."},
+    {"intersection", (PyCFunction) openscad_intersection, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
+
+    {"output", (PyCFunction) openscad_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
+    {NULL, NULL, 0, NULL}
+};
+
+static PyModuleDef OpenSCADModule = {
+    PyModuleDef_HEAD_INIT, "openscad", NULL, -1, OpenSCADMethods,
+    NULL, NULL, NULL, NULL
+};
+
+static PyObject* PyInit_openscad(void)
+{
+    return PyModule_Create(&OpenSCADModule);
+}
+
+
+
 
 static PyTypeObject PyOpenSCADType = {
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -77,4 +111,28 @@ PyObject * PyOpenSCADObject_new( std::shared_ptr<AbstractNode> node)
     return (PyObject *)self;
 }
 
+
+void evaluatePython(const char *code)
+{
+    result_node=NULL;
+    wchar_t *program = Py_DecodeLocale("openscad", NULL);
+    const char *prg="from time import time,ctime\n"
+                       "print('Today is', ctime(time()))\n";
+    if (program == NULL) {
+        fprintf(stderr, "Fatal error: cannot decode argv[0]\n");
+        exit(1);
+    }
+//    Py_SetProgramName(program);  /* optional but recommended /
+
+    PyImport_AppendInittab("openscad", &PyInit_openscad);
+
+    Py_Initialize();
+    PyInit_PyOpenSCAD();
+    PyRun_SimpleString("from openscad import *\n");
+    PyRun_SimpleString(code);
+    if (Py_FinalizeEx() < 0) {
+        exit(120);
+    }
+    PyMem_RawFree(program);
+}
 

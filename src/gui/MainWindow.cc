@@ -1194,54 +1194,6 @@ void MainWindow::compileEnded()
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
 
-static int numargs=0;
-
-
-/* Return the number of arguments of the application command line */
-
-static PyMethodDef OpenSCADMethods[] = {
-    {"cube", (PyCFunction) openscad_cube, METH_VARARGS | METH_KEYWORDS, "Create Cube."},
-    {"translate", (PyCFunction) openscad_translate, METH_VARARGS | METH_KEYWORDS, "Move  Object."},
-    {"rotate", (PyCFunction) openscad_rotate, METH_VARARGS | METH_KEYWORDS, "Rotate Object."},
-    {"union", (PyCFunction) openscad_union, METH_VARARGS | METH_KEYWORDS, "Union Object."},
-    {"output", (PyCFunction) openscad_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
-    {NULL, NULL, 0, NULL}
-};
-
-static PyModuleDef OpenSCADModule = {
-    PyModuleDef_HEAD_INIT, "openscad", NULL, -1, OpenSCADMethods,
-    NULL, NULL, NULL, NULL
-};
-
-static PyObject* PyInit_openscad(void)
-{
-    return PyModule_Create(&OpenSCADModule);
-}
-
-
-void MainWindow::evaluatePython(const char *code)
-{
-    result_node=NULL;
-    wchar_t *program = Py_DecodeLocale("openscad", NULL);
-    const char *prg="from time import time,ctime\n"
-                       "print('Today is', ctime(time()))\n";
-    if (program == NULL) {
-        fprintf(stderr, "Fatal error: cannot decode argv[0]\n");
-        exit(1);
-    }
-//    Py_SetProgramName(program);  /* optional but recommended /
-
-    numargs = 5;
-    PyImport_AppendInittab("openscad", &PyInit_openscad);
-
-    Py_Initialize();
-    PyInit_PyOpenSCAD();
-    PyRun_SimpleString(code);
-    if (Py_FinalizeEx() < 0) {
-        exit(120);
-    }
-    PyMem_RawFree(program);
-}
 void MainWindow::instantiateRoot()
 {
   // Go on and instantiate root_node, then call the continuation slot

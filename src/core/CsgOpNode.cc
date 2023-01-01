@@ -48,17 +48,22 @@ static std::shared_ptr<AbstractNode> builtin_difference(const ModuleInstantiatio
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::DIFFERENCE));
 }
 
+static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiation *inst, Arguments arguments, Children children)
+{
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
+  return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::INTERSECTION));
+}
 
 extern  ModuleInstantiation todo_fix_inst;
 
-PyObject* openscad_union(PyObject *self, PyObject *args, PyObject *kwargs)
+
+PyObject* openscad_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs,OpenSCADOperator mode)
 {
   std::shared_ptr<AbstractNode> child;
   int i;
 
-  auto node = std::make_shared<CsgOpNode>(&todo_fix_inst, OpenSCADOperator::UNION);
+  auto node = std::make_shared<CsgOpNode>(&todo_fix_inst, mode);
   char *kwlist[]= { "n",NULL };
-  char *s=NULL;
 
   int n=2;
   if (! PyArg_ParseTupleAndKeywords(args, kwargs, "|i", kwlist, &n)) {
@@ -77,15 +82,22 @@ PyObject* openscad_union(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
    node_stack.push_back(node);
-
    return PyLong_FromLong(55);
 }
 
-
-static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiation *inst, Arguments arguments, Children children)
+PyObject* openscad_union(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
-  return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::INTERSECTION));
+	return openscad_csg_sub(self,args,kwargs, OpenSCADOperator::UNION);
+}
+
+PyObject* openscad_difference(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	return openscad_csg_sub(self,args,kwargs, OpenSCADOperator::DIFFERENCE);
+}
+
+PyObject* openscad_intersection(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	return openscad_csg_sub(self,args,kwargs, OpenSCADOperator::INTERSECTION);
 }
 
 std::string CsgOpNode::toString() const

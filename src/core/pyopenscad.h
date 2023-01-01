@@ -17,8 +17,15 @@ void PyOpenSCADObject_dealloc(PyOpenSCADObject * self);
 PyObject * PyOpenSCADObject_new( std::shared_ptr<AbstractNode> node);
 
 PyObject* openscad_cube(PyObject *self, PyObject *args, PyObject *kwargs);
+
 PyObject* openscad_translate(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* openscad_rotate(PyObject *self, PyObject *args, PyObject *kwargs);
+
 PyObject* openscad_union(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* openscad_difference(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* openscad_intersection(PyObject *self, PyObject *args, PyObject *kwargs);
+
 PyObject* openscad_output(PyObject *self, PyObject *args, PyObject *kwargs);
+
+void evaluatePython(const char *code);
 
