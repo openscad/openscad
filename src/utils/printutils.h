@@ -215,16 +215,16 @@ public:
 extern std::set<std::string> printedDeprecations;
 
 template <typename F, typename ... Args>
-void LOG(const message_group& msg_grp, const Location& loc, const std::string& docPath, F&& f, Args&&... args)
+void LOG(const message_group& msg_grp, Location loc, std::string docPath, F&& f, Args&&... args)
 {
   const auto msg = MessageClass<Args...>(std::forward<F>(f), std::forward<Args>(args)...);
-  const auto formatted = msg.format();
+  auto formatted = msg.format();
 
   //check for deprecations
   if (msg_grp == message_group::Deprecated && printedDeprecations.find(formatted + loc.toRelativeString(docPath)) != printedDeprecations.end()) return;
   if (msg_grp == message_group::Deprecated) printedDeprecations.insert(formatted + loc.toRelativeString(docPath));
 
-  Message msgObj = {formatted, loc, docPath, msg_grp};
+  Message msgObj{std::move(formatted), std::move(loc), std::move(docPath), msg_grp};
 
   PRINT(msgObj);
 }
