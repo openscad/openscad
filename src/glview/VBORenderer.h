@@ -1,5 +1,4 @@
-#ifndef __VBORENDERER_H__
-#define __VBORENDERER_H__
+#pragma once
 
 #include "Renderer.h"
 #include "system-gl.h"
@@ -80,5 +79,3 @@ private:
     BARYCENTRIC_ATTRIB
   };
 };
-
-#endif // __VBORENDERER_H__

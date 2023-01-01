@@ -88,7 +88,7 @@ const std::string rect::name("rect");
 void
 rect::set_attrs(attr_map_t& attrs, void *context)
 {
-  shape::set_attrs(attrs, context);
+  shape::set_attrs(attrs, context); // NOLINT(bugprone-parent-virtual-call)
   this->x = parse_double(attrs["x"]);
   this->y = parse_double(attrs["y"]);
   this->width = parse_double(attrs["width"]);

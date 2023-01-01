@@ -141,7 +141,7 @@ public:
   }
 
   // Note: only called in CGAL 5.4+
-  void new_vertex_added(std::size_t node_id, vertex_descriptor vh, const TriangleMesh& tm)
+  void new_vertex_added(std::size_t /*node_id*/, vertex_descriptor vh, const TriangleMesh& tm)
   {
     if (forceNewLazyNumbersToExact_) {
       forceExact(tm.point(vh));

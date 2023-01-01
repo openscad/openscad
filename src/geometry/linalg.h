@@ -33,7 +33,8 @@ bool matrix_contains_nan(const Transform3d& m);
 int32_t hash_floating_point(double v);
 
 template <typename Derived> bool is_finite(const Eigen::MatrixBase<Derived>& x) {
-  return ( (x - x).array() == (x - x).array()).all();
+  //infinity minus infinity is NaN, which never compares equal to itself
+  return ( (x - x).array() == (x - x).array()).all(); // NOLINT(misc-redundant-expression)
 }
 
 template <typename Derived> bool is_nan(const Eigen::MatrixBase<Derived>& x) {
@@ -53,7 +54,10 @@ public:
   Color4f(float r, float g, float b, float a = 1.0f) : Eigen::Matrix<float, 4, 1, Eigen::DontAlign>(r, g, b, a) { }
 
   void setRgb(int r, int g, int b, int a = 255) {
-    *this << r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f;
+    *this << static_cast<float>(r) / 255.0f,
+             static_cast<float>(g) / 255.0f,
+             static_cast<float>(b) / 255.0f,
+             static_cast<float>(a) / 255.0f;
   }
 
   [[nodiscard]] bool isValid() const { return this->minCoeff() >= 0.0f; }

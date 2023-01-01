@@ -55,7 +55,7 @@ public slots:
   void rotateByVector(double x, double y, double z) const;
   void translate(double x, double y, double z) const;
   void translateTo(double x, double y, double z) const;
-  void action(QString action) const;
+  void action(const QString& action) const;
   void buttonPress(uint idx) const;
   const QList<double> getRotation() const;
   const QList<double> getTranslation() const;

@@ -26,7 +26,11 @@ endif()
 set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version")
 
 include("cmake/Modules/openscad_version.cmake")
-project(openscad LANGUAGES C CXX)
+project(OpenSCAD
+  VERSION ${PROJECT_VERSION}
+  DESCRIPTION "The Programmer's Solid 3D CAD Modeler"
+  LANGUAGES C CXX
+)
 
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
@@ -55,9 +59,14 @@ cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT 
 include(GNUInstallDirs)
 
 # Use clang-tidy if run with -DCLANG_TIDY=1
-find_program(CLANG_TIDY_EXE NAMES clang-tidy)
 set(CLANG_TIDY ${CLANG_TIDY} CACHE BOOL "Enable clang-tidy")
-if(CLANG_TIDY AND CLANG_TIDY_EXE)
+if(CLANG_TIDY)
+  if(APPLE)
+    # clang-tidy isn't directly available on Homebrew, but exists inside the llvm package
+    set(CLANG_TIDY_HINTS "/opt/homebrew/opt/llvm/bin" "/usr/local/opt/llvm/bin")
+  endif()
+  find_program(CLANG_TIDY_EXE NAMES clang-tidy REQUIRED HINTS ${CLANG_TIDY_HINTS})
+  message(STATUS "Found clang-tidy: ${CLANG_TIDY_EXE}")
   include("cmake/Modules/RegexUtils.cmake")
   escape_string_as_regex(regex "${CMAKE_SOURCE_DIR}/src/")
   # /src/ext/.clang-tidy disables all checks for that dir.  Copy into build dir to ignore generated sources.
@@ -67,7 +76,7 @@ if(CLANG_TIDY AND CLANG_TIDY_EXE)
   # CMAKE_CXX_CLANG_TIDY must be set before target is created (with add_executable())
   set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};--header-filter=${regex}([^e]...|e[^x]..|ex[^t].|ext[^/]|.{0,3}$)")
   #  append ";--fix" to arguments above to apply automatic fix (if the given checks support it)
-endif()
+endif(CLANG_TIDY)
 
 add_executable(OpenSCAD)
 
@@ -79,8 +88,9 @@ set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET OpenSCAD PROPERTY EXPORT_COMPILE_COMMANDS ON)
 set_property(TARGET OpenSCAD PROPERTY LINKER_LANGUAGE CXX)
 # Verbose link step
-if(CMAKE_CXX_COMPILER_ID MATCHES "AppleClang|Clang|GNU")
-  set_property(TARGET OpenSCAD PROPERTY LINK_FLAGS -v)
+if(("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU") OR 
+   ("${CMAKE_CXX_COMPILER_ID}" MATCHES "AppleClang|Clang|GNU"))
+  target_link_options(OpenSCAD BEFORE PRIVATE "-v")
 endif()
 
 set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
@@ -902,30 +912,81 @@ configure_file(${RESOURCE_DIR}/icons/openscad.desktop.in ${RESOURCE_DIR}/icons/o
 configure_file(${RESOURCE_DIR}/common.qrc.in ${RESOURCE_DIR}/common.qrc)
 configure_file(${RESOURCE_DIR}/mac.qrc.in ${RESOURCE_DIR}/mac.qrc)
 
-if(NOT APPLE OR APPLE_UNIX)
-set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
-install(TARGETS OpenSCAD RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(FILES ${CMAKE_CURRENT_LIST_DIR}/doc/openscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME openscad${SUFFIX_WITH_DASH}.1)
-install(FILES ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.openscad.OpenSCAD${SUFFIX_WITH_DASH}.appdata.xml)
-install(FILES ${RESOURCE_DIR}/icons/openscad.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications RENAME openscad${SUFFIX_WITH_DASH}.desktop)
-install(FILES ${RESOURCE_DIR}/icons/openscad.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mime/packages RENAME openscad${SUFFIX_WITH_DASH}.xml)
-install(FILES ${RESOURCE_DIR}/icons/openscad${SUFFIX_WITH_DASH}-48.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
-install(FILES ${RESOURCE_DIR}/icons/openscad${SUFFIX_WITH_DASH}-64.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/64x64/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
-install(FILES ${RESOURCE_DIR}/icons/openscad${SUFFIX_WITH_DASH}-128.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/128x128/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
-install(FILES ${RESOURCE_DIR}/icons/openscad${SUFFIX_WITH_DASH}-256.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/256x256/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
-install(FILES ${RESOURCE_DIR}/icons/openscad${SUFFIX_WITH_DASH}-512.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/512x512/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/color-schemes DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/fonts DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} PATTERN ".uuid" EXCLUDE)
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/libraries DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} PATTERN ".git*" EXCLUDE)
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/locale DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} FILES_MATCHING PATTERN "*/LC_MESSAGES/openscad.mo")
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/shaders DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/templates DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH} FILES_MATCHING PATTERN "*.json")
+# Installation
+if(WIN32)
+  set(OPENSCAD_BINDIR ".")
+  set(OPENSCAD_INSTALL_RESOURCEDIR ".")
+else()
+  set(OPENSCAD_BINDIR ${CMAKE_INSTALL_BINDIR})
+  set(OPENSCAD_INSTALL_RESOURCEDIR ${CMAKE_INSTALL_DATAROOTDIR}/openscad${SUFFIX_WITH_DASH})
 endif()
 
-if(INFO)
-  include(info)
+if(NOT APPLE OR APPLE_UNIX)
+  set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
+  install(TARGETS OpenSCAD RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
+  if(WIN32)
+    if(USE_MIMALLOC AND MI_LINK_SHARED)
+      if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect.dll DESTINATION ".")
+      elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect32.dll DESTINATION ".")
+      endif()
+      install(FILES ${CMAKE_BINARY_DIR}/submodules/mimalloc/mimalloc.dll DESTINATION ".")
+    endif()
+  else()
+    install(FILES ${CMAKE_CURRENT_LIST_DIR}/doc/openscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME openscad${SUFFIX_WITH_DASH}.1)
+    install(FILES ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.openscad.OpenSCAD${SUFFIX_WITH_DASH}.appdata.xml)
+    install(FILES ${RESOURCE_DIR}/icons/openscad.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications RENAME openscad${SUFFIX_WITH_DASH}.desktop)
+    install(FILES ${RESOURCE_DIR}/icons/openscad.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/mime/packages RENAME openscad${SUFFIX_WITH_DASH}.xml)
+    install(FILES ${RESOURCE_DIR}/icons/openscad${SUFFIX_WITH_DASH}-48.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/48x48/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
+    install(FILES ${RESOURCE_DIR}/icons/openscad${SUFFIX_WITH_DASH}-64.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/64x64/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
+    install(FILES ${RESOURCE_DIR}/icons/openscad${SUFFIX_WITH_DASH}-128.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/128x128/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
+    install(FILES ${RESOURCE_DIR}/icons/openscad${SUFFIX_WITH_DASH}-256.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/256x256/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
+    install(FILES ${RESOURCE_DIR}/icons/openscad${SUFFIX_WITH_DASH}-512.png DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/icons/hicolor/512x512/apps RENAME openscad${SUFFIX_WITH_DASH}.png)
+  endif()
+  install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/color-schemes DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}")
+  install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/examples DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}")
+  install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/fonts DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}" PATTERN ".uuid" EXCLUDE)
+  install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/libraries DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}" PATTERN ".git*" EXCLUDE)
+  install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/locale DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}" FILES_MATCHING PATTERN "*/LC_MESSAGES/openscad.mo")
+  install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/shaders DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}")
+  install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/templates DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}" FILES_MATCHING PATTERN "*.json")
 endif()
+
+# Packaging: CPACK_* settings should be configured before `include(CPack)`
+include(InstallRequiredSystemLibraries)
+set(CPACK_PACKAGE_NAME OpenSCAD)
+set(CPACK_PACKAGE_VERSION ${OPENSCAD_VERSION})
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Programmer's Solid 3D CAD Modeler")
+
+if(MXECROSS)
+  set(CPACK_GENERATOR ZIP;NSIS)
+  set(CPACK_SYSTEM_NAME ${PACKAGE_ARCH})
+  if("${CMAKE_VERSION}" VERSION_GREATER_EQUAL "3.22")
+    set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
+  else()
+    message(FATAL_ERROR "CPACK_NSIS_IGNORE_LICENSE_PAGE requires cmake 3.22")
+  endif()
+  set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "\
+    !include \\\"FileFunc.nsh\\\"\n\
+    !include \\\"${CMAKE_SOURCE_DIR}/scripts/mingw-file-association.nsh\\\"\
+  ")
+  set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "\
+    \\\${RegisterExtension} '$INSTDIR\\\\openscad.exe' '.scad' 'OpenSCAD_File'\n\
+    \\\${RefreshShellIcons}\
+  ")
+  set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "\
+    \\\${UnRegisterExtension} '.scad' 'OpenSCAD_File'\n\
+    \\\${RefreshShellIcons}\
+  ")
+endif()
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
+# None of config time variables are available for CPACK_PROJECT_CONFIG_FILE, so we configure it now with values.
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/openscad_cpack.cmake.in"
+               "${CMAKE_BINARY_DIR}/openscad_cpack.cmake" @ONLY)
+# CPACK_PROJECT_CONFIG_FILE is for configuring CPack-generator specific settings
+set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/openscad_cpack.cmake")
+set(CPACK_THREADS 0)
 
 if(ENABLE_TESTS)
   add_subdirectory(tests)
@@ -933,4 +994,10 @@ endif()
 
 if(OFFLINE_DOCS)
   add_subdirectory(resources)
+endif()
+
+include(CPack)
+
+if(INFO)
+  include("cmake/Modules/info.cmake")
 endif()

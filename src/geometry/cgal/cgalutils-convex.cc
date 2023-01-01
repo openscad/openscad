@@ -59,7 +59,7 @@ bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m) {
       m.point(m.target(m.opposite(i))),
       m.point(m.target(i)),
       m.point(m.target(m.next(i))));
-    auto pt = m.point(m.target(m.next(m.opposite(i))));
+    const auto& pt = m.point(m.target(m.next(m.opposite(i))));
     if (p.has_on_positive_side(pt) && CGAL::squared_distance(p, pt) > 1e-8) {
       return false;
     }

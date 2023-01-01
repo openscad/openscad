@@ -15,7 +15,7 @@ class Preferences : public QMainWindow, public Ui::Preferences, public InitConfi
 public:
   ~Preferences() override;
 
-  static void create(QStringList colorSchemes);
+  static void create(const QStringList& colorSchemes);
   static Preferences *inst();
 
   QVariant getValue(const QString& key) const;

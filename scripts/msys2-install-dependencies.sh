@@ -1,10 +1,19 @@
 #!/bin/bash
 
+if [ -z $MSYSTEM ]; then
+  MSYSTEM_DEFAULT=UCRT64
+  # Possible values: (MSYS|UCRT64|CLANG64|CLANGARM64|CLANG32|MINGW64|MINGW32)
+  # For explanation of options see: https://www.msys2.org/docs/environments/
+  echo "MSYSTEM is unset or blank, defaulting to '${MSYSTEM_DEFAULT}'";
+  export MSYSTEM=$MSYSTEM_DEFAULT
+else
+  echo "MSYSTEM is set to '$MSYSTEM'";
+fi
+
 date "+### %Y-%m-%d %T msys2-install-dependencies started"
 
 pacman --query --explicit
 
-export MINGW_PACKAGE_PREFIX=mingw-w64-ucrt-x86_64
 date "+### %Y-%m-%d %T install pactoys (for pacboy)"
 pacman --noconfirm --sync --needed pactoys
 # pacboy is a pacman wrapper for MSYS2 which handles the package prefixes automatically
@@ -26,7 +35,9 @@ pacboy --noconfirm --sync --needed \
     glew:p \
     qscintilla:p \
     opencsg:p \
+    lib3mf:p \
     libzip:p \
+    mimalloc:p \
     double-conversion:p \
     cairo:p \
     ghostscript:p \

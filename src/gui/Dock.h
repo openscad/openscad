@@ -10,7 +10,7 @@ class Dock : public QDockWidget
 
 public:
   Dock(QWidget *parent = nullptr);
-  void setConfigKey(const QString configKey);
+  void setConfigKey(const QString& configKey);
   void setAction(QAction *action);
   void disableSettingsUpdate();
 

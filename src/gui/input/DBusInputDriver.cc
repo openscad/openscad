@@ -111,7 +111,7 @@ void DBusInputDriver::translateTo(double x, double y, double z) const
   InputDriverManager::instance()->sendEvent(new InputEventTranslate(x, y, z, false, false, false));
 }
 
-void DBusInputDriver::action(QString name) const
+void DBusInputDriver::action(const QString& name) const
 {
   InputDriverManager::instance()->sendEvent(new InputEventAction(name.toStdString(), false));
 }

@@ -58,7 +58,7 @@ public:
   static shared_ptr<CSGNode> createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right);
 
 private:
-  CSGOperation(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right);
+  CSGOperation(OpenSCADOperator type, const shared_ptr<CSGNode>& left, const shared_ptr<CSGNode>& right);
   OpenSCADOperator type;
   std::vector<shared_ptr<CSGNode>> children;
 };

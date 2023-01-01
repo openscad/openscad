@@ -26,6 +26,8 @@
 
 #include "Settings.h"
 #include "OctoPrint.h"
+
+#include <utility>
 #include "printutils.h"
 #include "PlatformUtils.h"
 
@@ -39,7 +41,7 @@ const std::string OctoPrint::apiKey() const
   return Settings::Settings::octoPrintApiKey.value();
 }
 
-const QJsonDocument OctoPrint::getJsonData(const QString endpoint) const
+const QJsonDocument OctoPrint::getJsonData(const QString& endpoint) const
 {
   if (url().trimmed().isEmpty()) {
     throw NetworkException{QNetworkReply::ProtocolFailure, "OctoPrint URL not configured."};
@@ -56,11 +58,11 @@ const QJsonDocument OctoPrint::getJsonData(const QString endpoint) const
     return nam.get(request);
   },
     [](QNetworkReply *reply) -> const QJsonDocument {
-    const auto doc = QJsonDocument::fromJson(reply->readAll());
+    auto doc = QJsonDocument::fromJson(reply->readAll());
     PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
     return doc;
   }
-    );
+  );
 }
 
 const std::vector<std::pair<const QString, const QString>> OctoPrint::getSlicers() const
@@ -73,7 +75,7 @@ const std::vector<std::pair<const QString, const QString>> OctoPrint::getSlicers
   return slicers;
 }
 
-const std::vector<std::pair<const QString, const QString>> OctoPrint::getProfiles(const QString slicer) const
+const std::vector<std::pair<const QString, const QString>> OctoPrint::getProfiles(const QString& slicer) const
 {
   const auto obj = getJsonData("/slicing").object();
   std::vector<std::pair<const QString, const QString>> profiles;
@@ -102,7 +104,7 @@ const std::pair<const QString, const QString> OctoPrint::getVersion() const
   return result;
 }
 
-const QString OctoPrint::upload(const QString exportFileName, const QString fileName, network_progress_func_t progress_func) const {
+const QString OctoPrint::upload(const QString& exportFileName, const QString& fileName, const network_progress_func_t& progress_func) const {
 
   auto *multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
   QHttpPart filePart;
@@ -130,14 +132,14 @@ const QString OctoPrint::upload(const QString exportFileName, const QString file
     [](QNetworkReply *reply) -> const QString {
     const auto doc = QJsonDocument::fromJson(reply->readAll());
     PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
-    const auto location = reply->header(QNetworkRequest::LocationHeader).toString();
+    auto location = reply->header(QNetworkRequest::LocationHeader).toString();
     LOG(message_group::None, Location::NONE, "", "Uploaded successfully to %1$s", location.toStdString());
     return location;
   }
     );
 }
 
-void OctoPrint::slice(const QString fileUrl, const QString slicer, const QString profile, const bool select, const bool print) const
+void OctoPrint::slice(const QString& fileUrl, const QString& slicer, const QString& profile, const bool select, const bool print) const
 {
   QJsonObject jsonInput;
   jsonInput.insert("command", QString{"slice"});

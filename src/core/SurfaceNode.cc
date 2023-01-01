@@ -98,7 +98,7 @@ private:
   img_data_t read_png_or_dat(std::string filename) const;
 };
 
-static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
@@ -137,7 +137,7 @@ void SurfaceNode::convert_image(img_data_t& data, std::vector<uint8_t>& img, uns
   double min_val = 200;
   for (unsigned int y = 0; y < height; ++y) {
     for (unsigned int x = 0; x < width; ++x) {
-      long idx = 4 * (y * width + x);
+      long idx = 4l * (y * width + x);
       double pixel = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
       double z = 100.0 / 255 * (invert ? 1 - pixel : pixel);
       data[ x + (width * (height - 1 - y)) ] = z;

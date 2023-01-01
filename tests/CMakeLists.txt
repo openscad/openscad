@@ -8,10 +8,9 @@ if(POLICY CMP0017)
   # http://www.cmake.org/cmake/help/cmake-2-8-docs.html#policy:CMP0017
   cmake_policy(SET CMP0017 NEW)
 endif()
-# Interpret IN_LIST
-cmake_policy(SET CMP0057 NEW)
+cmake_policy(SET CMP0057 NEW) # Interpret IN_LIST
+cmake_policy(SET CMP0070 NEW) # Allow relative paths for file(GENERATE ...)
 
-project(openscad_tests)
 enable_testing()
 
 # Use variables for common paths, to reduce line lengths.
@@ -1284,8 +1283,106 @@ if (NOT LIB3MF_FOUND)
     throwntogethertest_import_3mf-tests
     3mfpngtest_cube10
     3mfexport_3mf-export
+    fastcsg-lazyunion-3mfpngtest_lazyunion-toplevel-objects
+    fastcsg-lazyunion-3mfpngtest_lazyunion-toplevel-for
+    fastcsg-lazyunion-3mfpngtest_lazyunion-nested-for
+    fastcsg-lazyunion-3mfpngtest_lazyunion-children
+    fastcsg-lazyunion-3mfpngtest_lazyunion-hull-for
+    fastcsg-lazyunion-3mfpngtest_lazyunion-root-for
+    fastcsg-lazyunion-3mfpngtest_lazyunion-intersection-for
+    fastcsg-lazyunion-3mfpngtest_lazyunion-difference-for
+    fastcsg-lazyunion-3mfpngtest_lazyunion-minkowski-for
+    fastcsg-lazyunion-3mfpngtest_lazyunion-transform-for
+    fastcsg-lazyunion-3mfpngtest_2d-3d
+    fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-1
+    fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-2
+    fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-3
+    fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-4
     PROPERTIES DISABLED TRUE
   )
+endif()
+
+list(APPEND NEF3_BROKEN_TESTS
+  cgalpngtest_nef3_broken
+  opencsgtest_nef3_broken
+  throwntogethertest_nef3_broken
+  csgpngtest_nef3_broken
+)
+
+# Platform specific test disable
+if(APPLE)
+  set_tests_properties(
+    ${NEF3_BROKEN_TESTS}
+    # Z issues specific to edge shader
+    openscad-viewoptions-edges_view-options-tests
+    openscad-viewoptions-axes-scales-edges_view-options-tests
+    PROPERTIES DISABLED TRUE
+  )
+elseif(UNIX)
+  set_tests_properties(
+    ${NEF3_BROKEN_TESTS}
+    PROPERTIES DISABLED TRUE
+  )
+elseif(WIN32 OR MXECROSS)
+  set_tests_properties(
+    # Z issues specific to edge shader
+    openscad-viewoptions-edges_view-options-tests
+    openscad-viewoptions-axes-scales-edges_view-options-tests
+    # Known UTF-8 issue on Windows
+    openscad-nonascii_sfære
+    # requires `gs` tool
+    pdfexporttest_centered
+    pdfexporttest_simple-pdf
+    PROPERTIES DISABLED TRUE
+  )
+endif()
+
+##############################################
+# Test Installation and Packaging (Win only) #
+##############################################
+
+# Package Tests with Windows (.zip archive only)
+if(MXECROSS AND EXPERIMENTAL)
+  set(CPACK_ARCHIVE_COMPONENT_INSTALL ON)
+
+  include(CPackComponent)
+  cpack_add_component(Tests ARCHIVE_FILE OpenSCAD-Tests-${CPACK_PACKAGE_VERSION})
+
+  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION tests
+    USE_SOURCE_PERMISSIONS
+    COMPONENT Tests
+    PATTERN ".git*" EXCLUDE
+    PATTERN "OpenSCAD_Test_Console.py" EXCLUDE
+    PATTERN "WinReadme.txt" EXCLUDE
+    PATTERN "mingw_convert_ctest.py" EXCLUDE
+    PATTERN "mingwcon.bat" EXCLUDE
+  )
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
+    DESTINATION tests-build
+    USE_SOURCE_PERMISSIONS
+    COMPONENT Tests
+    PATTERN "CMakeFiles" EXCLUDE
+    PATTERN "CMakeLists.txt" EXCLUDE
+    PATTERN "cmake_install.cmake" EXCLUDE
+  )
+
+  # Move files to top project dir for visibility
+  install(FILES OpenSCAD_Test_Console.py DESTINATION . COMPONENT Tests)
+  install(FILES WinReadme.txt DESTINATION . COMPONENT Tests RENAME "Windows_Test_Readme.txt")
+  # Move files to tests-build dir
+  install(FILES mingw_convert_ctest.py DESTINATION tests-build COMPONENT Tests)
+  install(FILES mingwcon.bat DESTINATION tests-build COMPONENT Tests)
+
+  file(GENERATE OUTPUT mingw_cross_info.py CONTENT
+"# created automatically during packaging by cmake from within linux
+linux_abs_basedir='${CMAKE_SOURCE_DIR}'
+linux_abs_builddir='${CMAKE_BINARY_DIR}'
+linux_python='${PYTHON_EXECUTABLE}'
+linux_convert='${IMAGE_COMPARE_EXE}'
+win_installdir='OpenSCAD-Tests-${CPACK_PACKAGE_VERSION}'
+" NEWLINE_STYLE WIN32)
+
 endif()
 
 ####################

@@ -177,12 +177,7 @@ Color4f Renderer::setColor(ColorMode colormode, const float color[4], const shad
   PRINTD("setColor b");
   Color4f basecol;
   if (getColor(colormode, basecol)) {
-    if (colormode == ColorMode::BACKGROUND) {
-      basecol = {color[0] >= 0 ? color[0] : basecol[0],
-                 color[1] >= 0 ? color[1] : basecol[1],
-                 color[2] >= 0 ? color[2] : basecol[2],
-                 color[3] >= 0 ? color[3] : basecol[3]};
-    } else if (colormode != ColorMode::HIGHLIGHT) {
+    if (colormode == ColorMode::BACKGROUND || colormode != ColorMode::HIGHLIGHT) {
       basecol = {color[0] >= 0 ? color[0] : basecol[0],
                  color[1] >= 0 ? color[1] : basecol[1],
                  color[2] >= 0 ? color[2] : basecol[2],

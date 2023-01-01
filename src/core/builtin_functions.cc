@@ -376,7 +376,7 @@ Value builtin_ln(Arguments arguments, const Location& loc)
   return {log(arguments[0]->toDouble())};
 }
 
-Value builtin_str(Arguments arguments, const Location& loc)
+Value builtin_str(Arguments arguments, const Location& /*loc*/)
 {
   std::ostringstream stream;
   for (const auto& argument : arguments) {
@@ -385,7 +385,7 @@ Value builtin_str(Arguments arguments, const Location& loc)
   return {stream.str()};
 }
 
-Value builtin_chr(Arguments arguments, const Location& loc)
+Value builtin_chr(Arguments arguments, const Location& /*loc*/)
 {
   std::ostringstream stream;
   for (const auto& argument : arguments) {
@@ -414,7 +414,7 @@ Value builtin_ord(Arguments arguments, const Location& loc)
   return {(double)ch};
 }
 
-Value builtin_concat(Arguments arguments, const Location& loc)
+Value builtin_concat(Arguments arguments, const Location& /*loc*/)
 {
   VectorType result(arguments.session());
   for (auto& argument : arguments) {
@@ -661,10 +661,9 @@ Value builtin_search(Arguments arguments, const Location& loc)
         }
         ++j;
       }
-      if (num_returns_per_match == 1 && matchCount == 0) {
-        returnvec.emplace_back(std::move(resultvec));
-      }
-      if (num_returns_per_match == 0 || num_returns_per_match > 1) {
+      if ((num_returns_per_match == 1 && matchCount == 0) ||
+          num_returns_per_match == 0 ||
+          num_returns_per_match > 1) {
         returnvec.emplace_back(std::move(resultvec));
       }
     }
@@ -677,7 +676,7 @@ Value builtin_search(Arguments arguments, const Location& loc)
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
-Value builtin_version(Arguments arguments, const Location& loc)
+Value builtin_version(Arguments arguments, const Location& /*loc*/)
 {
   VectorType vec(arguments.session());
   vec.emplace_back(double(OPENSCAD_YEAR));
@@ -801,6 +800,7 @@ Value builtin_cross(Arguments arguments, const Location& loc)
 
 Value builtin_textmetrics(Arguments arguments, const Location& loc)
 {
+  auto *session = arguments.session();
   Parameters parameters = Parameters::parse(std::move(arguments), loc,
                                             { "text", "size", "font" },
                                             { "direction", "language", "script", "halign", "valign", "spacing" }
@@ -809,7 +809,7 @@ Value builtin_textmetrics(Arguments arguments, const Location& loc)
 
   FreetypeRenderer::Params ftparams;
   ftparams.set_loc(loc);
-  ftparams.set_documentPath(arguments.documentRoot());
+  ftparams.set_documentPath(session->documentRoot());
   ftparams.set(parameters);
   ftparams.detect_properties();
 
@@ -820,25 +820,25 @@ Value builtin_textmetrics(Arguments arguments, const Location& loc)
 
   // The bounding box, ascent/descent, and offset values will be zero
   // if the text consists of nothing but whitespace.
-  VectorType bbox_pos(arguments.session());
+  VectorType bbox_pos(session);
   bbox_pos.emplace_back(metrics.bbox_x);
   bbox_pos.emplace_back(metrics.bbox_y);
 
-  VectorType bbox_dims(arguments.session());
+  VectorType bbox_dims(session);
   bbox_dims.emplace_back(metrics.bbox_w);
   bbox_dims.emplace_back(metrics.bbox_h);
 
-  VectorType offset(arguments.session());
+  VectorType offset(session);
   offset.emplace_back(metrics.x_offset);
   offset.emplace_back(metrics.y_offset);
 
   // The advance values are valid whether or not the text
   // is whitespace.
-  VectorType advance(arguments.session());
+  VectorType advance(session);
   advance.emplace_back(metrics.advance_x);
   advance.emplace_back(metrics.advance_y);
 
-  ObjectType text_metrics(arguments.session());
+  ObjectType text_metrics(session);
   text_metrics.set("position", std::move(bbox_pos));
   text_metrics.set("size", std::move(bbox_dims));
   text_metrics.set("ascent", metrics.ascent);
@@ -850,6 +850,7 @@ Value builtin_textmetrics(Arguments arguments, const Location& loc)
 
 Value builtin_fontmetrics(Arguments arguments, const Location& loc)
 {
+  auto *session = arguments.session();
   Parameters parameters = Parameters::parse(std::move(arguments), loc,
                                             { "size", "font" }
                                             );
@@ -857,7 +858,7 @@ Value builtin_fontmetrics(Arguments arguments, const Location& loc)
 
   FreetypeRenderer::Params ftparams;
   ftparams.set_loc(loc);
-  ftparams.set_documentPath(arguments.documentRoot());
+  ftparams.set_documentPath(session->documentRoot());
   ftparams.set(parameters);
   ftparams.detect_properties();
 
@@ -866,19 +867,19 @@ Value builtin_fontmetrics(Arguments arguments, const Location& loc)
     return Value::undefined.clone();
   }
 
-  ObjectType nominal(arguments.session());
+  ObjectType nominal(session);
   nominal.set("ascent", metrics.nominal_ascent);
   nominal.set("descent", metrics.nominal_descent);
 
-  ObjectType max(arguments.session());
+  ObjectType max(session);
   max.set("ascent", metrics.max_ascent);
   max.set("descent", metrics.max_descent);
 
-  ObjectType font(arguments.session());
+  ObjectType font(session);
   font.set("family", metrics.family_name);
   font.set("style", metrics.style_name);
 
-  ObjectType font_metrics(arguments.session());
+  ObjectType font_metrics(session);
   font_metrics.set("nominal", nominal);
   font_metrics.set("max", max);
   font_metrics.set("interline", metrics.interline);

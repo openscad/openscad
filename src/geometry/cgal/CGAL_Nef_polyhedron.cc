@@ -12,7 +12,7 @@ CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron3 *p)
 // Copy constructor only performs shallow copies, so all modifying functions
 // must reset p3 with a new CGAL_Nef_polyhedron3 object, to prevent cache corruption.
 // This is also partly enforced by p3 pointing to a const object.
-CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron& src)
+CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron& src) : Geometry(src)
 {
   if (src.p3) this->p3 = src.p3;
 }

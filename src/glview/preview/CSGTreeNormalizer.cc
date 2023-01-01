@@ -45,17 +45,17 @@ shared_ptr<CSGNode> CSGTreeNormalizer::cleanup_term(shared_ptr<CSGNode>& t)
   return t;
 }
 
-static bool isUnion(shared_ptr<CSGNode> node) {
+static bool isUnion(const shared_ptr<CSGNode>& node) {
   shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
   return op && op->getType() == OpenSCADOperator::UNION;
 }
 
-static bool hasRightNonLeaf(shared_ptr<CSGNode> node) {
+static bool hasRightNonLeaf(const shared_ptr<CSGNode>& node) {
   shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
   return op->right() && (dynamic_pointer_cast<CSGLeaf>(op->right()) == nullptr);
 }
 
-static bool hasLeftUnion(shared_ptr<CSGNode> node) {
+static bool hasLeftUnion(const shared_ptr<CSGNode>& node) {
   shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
   return op && isUnion(op->left());
 }

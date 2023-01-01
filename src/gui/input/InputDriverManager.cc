@@ -55,7 +55,7 @@ void InputDriverManager::unregisterDriver(InputDriver *driver)
   this->drivers.remove(driver);
 }
 
-void InputDriverManager::registerActions(const QList<QAction *>& actions, const QString parent, const QString target)
+void InputDriverManager::registerActions(const QList<QAction *>& actions, const QString& parent, const QString& target)
 {
   const QString emptyQString("");
   for (const auto action : actions) {

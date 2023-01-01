@@ -26,7 +26,7 @@ public:
   [[nodiscard]] int lastColumn() const { return last_col; }
   [[nodiscard]] bool isNone() const;
 
-  [[nodiscard]] std::string toRelativeString(std::string docPath) const;
+  [[nodiscard]] std::string toRelativeString(const std::string& docPath) const;
 
   bool operator==(Location const& rhs);
   bool operator!=(Location const& rhs);

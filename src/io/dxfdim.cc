@@ -142,6 +142,7 @@ Value builtin_dxf_dim(Arguments arguments, const Location& loc)
 
 Value builtin_dxf_cross(Arguments arguments, const Location& loc)
 {
+  auto *session = arguments.session();
   Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file", "layer", "origin", "scale", "name"});
 
   std::string rawFilename;
@@ -181,7 +182,7 @@ Value builtin_dxf_cross(Arguments arguments, const Location& loc)
 
   auto result = dxf_cross_cache.find(key);
   if (result != dxf_cross_cache.end()) {
-    VectorType ret(arguments.session());
+    VectorType ret(session);
     for (auto v : result->second) {
       ret.emplace_back(v);
     }
@@ -213,7 +214,7 @@ Value builtin_dxf_cross(Arguments arguments, const Location& loc)
 
       std::vector<double> value = {x, y};
       dxf_cross_cache.emplace(key, value);
-      VectorType ret(arguments.session());
+      VectorType ret(session);
       ret.emplace_back(x);
       ret.emplace_back(y);
       return {std::move(ret)};

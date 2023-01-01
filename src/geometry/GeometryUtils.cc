@@ -2,8 +2,8 @@
 #include "ext/libtess2/Include/tesselator.h"
 #include "printutils.h"
 #include "Reindexer.h"
-#include <boost/lexical_cast.hpp>
 #include <unordered_map>
+#include <string>
 #include <cmath>
 
 #include <boost/functional/hash.hpp>
@@ -94,7 +94,7 @@ public:
   void print() const {
     for (const auto& v : this->edges) {
       const auto& e = v.first;
-      PRINTDB("     (%d,%d)%s", e.first % e.second % ((v.second > 1) ? boost::lexical_cast<std::string>(v.second).c_str() : ""));
+      PRINTDB("     (%d,%d)%s", e.first % e.second % ((v.second > 1) ? std::to_string(v.second).c_str() : ""));
     }
   }
 

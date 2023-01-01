@@ -48,12 +48,7 @@ bool VBORenderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& c
 {
   Color4f basecol;
   if (Renderer::getColor(colormode, basecol)) {
-    if (colormode == ColorMode::BACKGROUND) {
-      basecol = Color4f(color[0] >= 0 ? color[0] : basecol[0],
-                        color[1] >= 0 ? color[1] : basecol[1],
-                        color[2] >= 0 ? color[2] : basecol[2],
-                        color[3] >= 0 ? color[3] : basecol[3]);
-    } else if (colormode != ColorMode::HIGHLIGHT) {
+    if (colormode == ColorMode::BACKGROUND || colormode != ColorMode::HIGHLIGHT) {
       basecol = Color4f(color[0] >= 0 ? color[0] : basecol[0],
                         color[1] >= 0 ? color[1] : basecol[1],
                         color[2] >= 0 ? color[2] : basecol[2],
@@ -187,12 +182,12 @@ size_t VBORenderer::getEdgeBufferSize(const PolySet& polyset, csgmode_e csgmode)
 
 void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
                                         const std::array<Vector3d, 3>& points,
-                                        const std::array<Vector3d, 3>& normals,
-                                        const Color4f& color,
+                                        const std::array<Vector3d, 3>& /*normals*/,
+                                        const Color4f& /*color*/,
                                         size_t active_point_index, size_t primitive_index,
-                                        double z_offset, size_t shape_size,
-                                        size_t shape_dimensions, bool outlines,
-                                        bool mirror) const
+                                        double /*z_offset*/, size_t shape_size,
+                                        size_t /*shape_dimensions*/, bool outlines,
+                                        bool /*mirror*/) const
 {
   if (!shader_attributes_index) return;
 
@@ -740,8 +735,10 @@ void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
     ss->glBegin().emplace_back([index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
       auto ss = ss_ptr.lock();
       if (ss) {
+        // NOLINTBEGIN(performance-no-int-to-ptr)
         GL_TRACE("glVertexAttribPointer(%d, %d, %d, %p)", count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
         glVertexAttribPointer(index, count, type, GL_FALSE, stride, (GLvoid *)(ss->drawOffset() + offset));
+        // NOLINTEND(performance-no-int-to-ptr)
         GL_ERROR_CHECK();
       }
     });

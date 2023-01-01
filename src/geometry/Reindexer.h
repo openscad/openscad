@@ -39,8 +39,8 @@ public:
   /*!
      Reserve the requested size for the new element map
    */
-  void reserve(std::size_t __n) {
-    return this->map.reserve(__n);
+  void reserve(std::size_t n) {
+    return this->map.reserve(n);
   }
 
   /*!

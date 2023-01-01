@@ -121,7 +121,7 @@ std::shared_ptr<AbstractNode> find_root_tag(const std::shared_ptr<AbstractNode>&
   std::shared_ptr<AbstractNode> rootTag;
 
   std::function<void (const std::shared_ptr<const AbstractNode>&)> recursive_find_tag = [&](const std::shared_ptr<const AbstractNode>& node) {
-      for (auto child : node->children) {
+      for (const auto& child : node->children) {
         if (child->modinst->tag_root) {
           if (!rootTag) {
             rootTag = child;

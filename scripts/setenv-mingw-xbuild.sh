@@ -77,7 +77,9 @@ PATH=$MXETARGETDIR/$MXEQTSUBDIR/bin:$PATH
 if [ "`echo $* | grep clean`" ]; then
   BASEDIR=
   MXEDIR=
+  MXE_TARGETS=
   MXETARGETDIR=
+  MXELIBTYPE=
   DEPLOYDIR=
   PATH=$MINGWX_SAVED_ORIGINAL_PATH
   MINGWX_SAVED_ORIGINAL_PATH=
@@ -103,6 +105,7 @@ export MXEQTSUBDIR
 echo OPENSCAD_LIBRARIES: $OPENSCAD_LIBRARIES
 echo BASEDIR: $BASEDIR
 echo MXEDIR: $MXEDIR
+echo MXE_TARGETS: $MXE_TARGETS
 echo MXETARGETDIR: $MXETARGETDIR
 echo MXELIBTYPE: $MXELIBTYPE
 echo DEPLOYDIR: $DEPLOYDIR
@@ -115,6 +118,6 @@ else
 fi
 
 if [ "`echo $PATH | grep anaconda.*bin`" ]; then
-  echo please remove pytho anaconda/bin from your PATH, exit, and rerun this
+  echo please remove python anaconda/bin from your PATH, exit, and rerun this
 fi
 

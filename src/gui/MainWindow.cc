@@ -126,6 +126,7 @@
 #include <cstdio>
 #include <memory>
 #include <QtNetwork>
+#include <utility>
 
 #include "qt-obsolete.h" // IWYU pragma: keep
 
@@ -202,7 +203,7 @@ QAction *getExport2DAction(const MainWindow *mainWindow) {
   }
 }
 
-void removeExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *action) {
+void removeExportActions(QToolBar *toolbar, QAction *action) {
   int idx = toolbar->actions().indexOf(action);
   while (idx > 0) {
     QAction *a = toolbar->actions().at(idx - 1);
@@ -701,17 +702,17 @@ MainWindow::MainWindow(const QStringList& filenames)
 }
 
 void MainWindow::updateExportActions() {
-  removeExportActions(this, editortoolbar, this->designAction3DPrint);
+  removeExportActions(editortoolbar, this->designAction3DPrint);
   addExportActions(this, editortoolbar, this->designAction3DPrint);
 
   //handle the hide/show of export action in view toolbar according to the visibility of editor dock
-  removeExportActions(this, viewerToolBar, this->viewActionViewAll);
+  removeExportActions(viewerToolBar, this->viewActionViewAll);
   if (!editorDock->isVisible()) {
     addExportActions(this, viewerToolBar, this->viewActionViewAll);
   }
 }
 
-void MainWindow::openFileFromPath(QString path, int line)
+void MainWindow::openFileFromPath(const QString& path, int line)
 {
   if (editorDock->isVisible()) {
     activeEditor->setFocus();
@@ -983,7 +984,7 @@ bool MainWindow::network_progress_func(const double permille)
   return (progresswidget && progresswidget->wasCanceled());
 }
 
-void MainWindow::updateRecentFiles(QString FileSavedOrOpened)
+void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
 {
   // Check that the canonical file path exists - only update recent files
   // if it does. Should prevent empty list items on initial open etc.
@@ -1303,7 +1304,7 @@ void MainWindow::compileCSG()
     LOG(message_group::None, Location::NONE, "", "Compiling design (CSG Products normalization)...");
     this->processEvents();
 
-    size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+    size_t normalizelimit = 2ul * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
     CSGTreeNormalizer normalizer(normalizelimit);
 
     if (this->csgRoot) {
@@ -1621,7 +1622,7 @@ void MainWindow::showFind()
   findInputField->selectAll();
 }
 
-void MainWindow::findString(QString textToFind)
+void MainWindow::findString(const QString& textToFind)
 {
   this->findInputField->setFindCount(activeEditor->updateFindIndicators(textToFind));
   this->processEvents();
@@ -1703,7 +1704,7 @@ void MainWindow::useSelectionForFind()
   findInputField->setText(activeEditor->selectedText());
 }
 
-void MainWindow::updateFindBuffer(QString s)
+void MainWindow::updateFindBuffer(const QString& s)
 {
   QApplication::clipboard()->setText(s, QClipboard::FindBuffer);
 }
@@ -2043,7 +2044,7 @@ void MainWindow::sendToOctoPrint()
       return network_progress_func(v);
     });
 
-    const std::string action = Settings::Settings::octoPrintAction.value();
+    const std::string& action = Settings::Settings::octoPrintAction.value();
     if (action == "upload") {
       return;
     }
@@ -2151,7 +2152,7 @@ void MainWindow::cgalRender()
   this->cgalworker->start(this->tree);
 }
 
-void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
+void MainWindow::actionRenderDone(const shared_ptr<const Geometry>& root_geom)
 {
   progress_report_fin();
   if (root_geom) {
@@ -2973,7 +2974,7 @@ void MainWindow::viewportControlTopLevelChanged(bool topLevel)
 
 void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel)
 {
-  QString title(prefix);
+  QString title(std::move(prefix));
   if (topLevel) {
     const QFileInfo fileInfo(activeEditor->filepath);
     QString fname = _("Untitled.scad");
@@ -3009,7 +3010,7 @@ void MainWindow::hide3DViewToolbar()
   }
 }
 
-void MainWindow::showLink(const QString link)
+void MainWindow::showLink(const QString& link)
 {
   if (link == "#console") {
     showConsole();
@@ -3201,7 +3202,7 @@ void MainWindow::activateWindow(int offset)
       if (widget == docks.at(idx).widget) {
         for (int o = 1; o < cnt; ++o) {
           const int target = (cnt + idx + o * offset) % cnt;
-          const auto dock = docks.at(target);
+          const auto& dock = docks.at(target);
           if (dock.widget->isVisible()) {
             dock.focus(this);
             return;

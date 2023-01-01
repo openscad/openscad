@@ -40,7 +40,7 @@
 #include "calc.h"
 
 #include FT_OUTLINE_H
-
+// NOLINTNEXTLINE(bugprone-macro-parentheses)
 #define SCRIPT_UNTAG(tag)   ((uint8_t)((tag) >> 24)) % ((uint8_t)((tag) >> 16)) % ((uint8_t)((tag) >> 8)) % ((uint8_t)(tag))
 
 static inline Vector2d get_scaled_vector(const FT_Vector *ft_vector, double scale) {
@@ -252,7 +252,7 @@ void FreetypeRenderer::Params::detect_properties()
   // by using a fraction of the number of full circle segments
   // the resolution will be better matching the detail level of
   // other objects.
-  auto text_segments = std::max(floor(segments / 8) + 1, 2.0);
+  auto text_segments = std::max(segments / 8 + 1, 2);
   set_segments(text_segments);
 }
 

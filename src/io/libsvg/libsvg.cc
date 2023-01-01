@@ -27,7 +27,6 @@
 #include <vector>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-#include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <libxml/xmlreader.h>
 
@@ -35,8 +34,6 @@
 
 #include "shape.h"
 #include "use.h"
-
-namespace fs = boost::filesystem;
 
 namespace libsvg {
 
@@ -140,11 +137,10 @@ void processNode(xmlTextReaderPtr reader, shapes_defs_list_t *defs_lookup_list, 
       in_defs = false;
     }
 
-    if (std::string("g") == name || std::string("svg") == name) {
-      stack.pop_back();
-    } else if (std::string("tspan") == name) {
-      stack.pop_back();
-    } else if (std::string("text") == name) {
+    if (std::string("g") == name ||
+        std::string("svg") == name ||
+        std::string("tspan") == name ||
+        std::string("text") == name) {
       stack.pop_back();
     }
 #if SVG_DEBUG

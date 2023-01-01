@@ -490,7 +490,7 @@ void AxisConfigWidget::on_checkBoxDBus_toggled(bool val)
   }
 }
 
-void AxisConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum& entry)
+void AxisConfigWidget::applyComboBox(QComboBox * /*comboBox*/, int val, Settings::SettingsEntryEnum& entry)
 {
   entry.setIndex(val);
   writeSettings();

@@ -21,6 +21,11 @@
 #include <clocale>
 #include "AST.h"
 #include <set>
+
+// It seems standard practice to use underscore for gettext, even though it is reserved.
+// Not wanting to risk breaking translations by changing every usage of this,
+// I've opted to just disable the check in this case. - Hans L
+// NOLINTBEGIN(bugprone-reserved-identifier)
 inline char *_(const char *msgid) { return gettext(msgid); }
 inline const char *_(const char *msgid, const char *msgctxt) {
   /* The separator between msgctxt and msgid in a .mo file.  */
@@ -36,6 +41,7 @@ inline const char *_(const char *msgid, const char *msgctxt) {
     return translation;
   }
 }
+// NOLINTEND(bugprone-reserved-identifier)
 
 enum class message_group {
   Error, Warning, UI_Warning, Font_Warning, Export_Warning, Export_Error, UI_Error, Parser_Error, Trace, Deprecated, None, Echo
@@ -118,8 +124,10 @@ void PRINT_NOCACHE(const Message& msgObj);
  */
 
 void PRINTDEBUG(const std::string& filename, const std::string& msg);
+// NOLINTBEGIN
 #define PRINTD(_arg) do { PRINTDEBUG(std::string(__FILE__), _arg); } while (0)
 #define PRINTDB(_fmt, _arg) do { try { PRINTDEBUG(std::string(__FILE__), str(boost::format(_fmt) % _arg)); } catch (const boost::io::format_error& e) { PRINTDEBUG(std::string(__FILE__), "bad PRINTDB usage"); } } while (0)
+// NOLINTEND
 
 std::string two_digit_exp_format(std::string doublestr);
 std::string two_digit_exp_format(double x);
@@ -207,16 +215,16 @@ public:
 extern std::set<std::string> printedDeprecations;
 
 template <typename F, typename ... Args>
-void LOG(const message_group& msg_grp, const Location& loc, const std::string& docPath, F&& f, Args&&... args)
+void LOG(const message_group& msg_grp, Location loc, std::string docPath, F&& f, Args&&... args)
 {
   const auto msg = MessageClass<Args...>(std::forward<F>(f), std::forward<Args>(args)...);
-  const auto formatted = msg.format();
+  auto formatted = msg.format();
 
   //check for deprecations
   if (msg_grp == message_group::Deprecated && printedDeprecations.find(formatted + loc.toRelativeString(docPath)) != printedDeprecations.end()) return;
   if (msg_grp == message_group::Deprecated) printedDeprecations.insert(formatted + loc.toRelativeString(docPath));
 
-  Message msgObj = {formatted, loc, docPath, msg_grp};
+  Message msgObj{std::move(formatted), std::move(loc), std::move(docPath), msg_grp};
 
   PRINT(msgObj);
 }

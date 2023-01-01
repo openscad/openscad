@@ -37,7 +37,7 @@ void Camera::setup(std::vector<double> params)
     Eigen::Vector3d projection(dir[0], dir[1], 0);
     object_rot.x() = -atan2_degrees(dir[2], projection.norm());
   } else {
-    assert("Gimbal cam needs 7 numbers, Vector camera needs 6");
+    assert(false && "Gimbal cam needs 7 numbers, Vector camera needs 6");
   }
   locked = true;
 }
@@ -91,7 +91,7 @@ void Camera::resetView()
  * are assigned on top-level, the values are used to change the camera
  * rotation, translation and distance.
  */
-void Camera::updateView(const std::shared_ptr<const FileContext> context, bool enableWarning)
+void Camera::updateView(const std::shared_ptr<const FileContext>& context, bool enableWarning)
 {
   if (locked) return;
 

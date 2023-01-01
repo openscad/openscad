@@ -218,7 +218,7 @@ public:
 
           // TODO(ochafik): Ensure collapse happens on both sides of the border! (e.g. count of patches around vertex == 2)
           // auto collapsed = TriangleMeshEdits<TriangleMesh>::collapsePathWithConsecutiveCollinearEdges(borderPathVertices, tm);
-          TriangleMeshEdits<TriangleMesh>::findCollapsibleVertices(patch.borderPathVertices, tm, [&](size_t index, vertex_descriptor v) {
+          TriangleMeshEdits<TriangleMesh>::findCollapsibleVertices(patch.borderPathVertices, tm, [&](size_t /*index*/, vertex_descriptor v) {
             collapsibleBorderVerticesMarks[v]++;
           });
 

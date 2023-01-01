@@ -980,14 +980,14 @@ static Outline2d splitOutlineByFn(
         ++current.segment_count;
         ++segment_counts[current.edge_index];
         ++seg_total;
-        q.push(std::move(current));
+        q.push(current);
       }
     } else {
       // fn too low to segment last group, push back onto queue without change.
       while (!tmp_q.empty()) {
         current = tmp_q.back();
         tmp_q.pop_back();
-        q.push(std::move(current));
+        q.push(current);
       }
       break;
     }
@@ -1529,7 +1529,7 @@ Response GeometryEvaluator::visit(State& state, const AbstractIntersectionNode& 
 
 static Geometry *roofOverPolygon(const RoofNode& node, const Polygon2d& poly)
 {
-  PolySet *roof;
+  PolySet *roof = nullptr;
   if (node.method == "voronoi") {
     roof = roof_vd::voronoi_diagram_roof(poly, node.fa, node.fs);
     roof->setConvexity(node.convexity);

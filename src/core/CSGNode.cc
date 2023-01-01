@@ -121,7 +121,7 @@ CSGLeaf::CSGLeaf(const shared_ptr<const Geometry>& geom, Transform3d matrix, Col
   CSGLeaf::initBoundingBox();
 }
 
-CSGOperation::CSGOperation(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
+CSGOperation::CSGOperation(OpenSCADOperator type, const shared_ptr<CSGNode>& left, const shared_ptr<CSGNode>& right)
   : type(type)
 {
   this->children.push_back(left);

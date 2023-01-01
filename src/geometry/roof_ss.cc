@@ -83,7 +83,7 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
   try {
     // roof
     std::vector<CGAL_Polygon_with_holes_2> shapes = polygons_with_holes(polytree, scale_pow2);
-    for (CGAL_Polygon_with_holes_2 shape : shapes) {
+    for (const CGAL_Polygon_with_holes_2& shape : shapes) {
       CGAL_SsPtr ss = CGAL::create_interior_straight_skeleton_2(shape);
       // store heights of vertices
       auto vector2d_comp = [](const Vector2d& a, const Vector2d& b) {
@@ -115,7 +115,7 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
         CGAL::approx_convex_partition_2(face.vertices_begin(), face.vertices_end(),
                                         std::back_inserter(facets));
 
-        for (auto facet : facets) {
+        for (const auto& facet : facets) {
           Polygon roof;
           for (auto v = facet.vertices_begin(); v != facet.vertices_end(); v++) {
             Vector2d vv(v->x(), v->y());
@@ -131,9 +131,9 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
       // poly has to go through clipper just as it does for the roof
       // because this may change coordinates
       PolySet *tess = poly_sanitized->tessellate();
-      for (std::vector<Vector3d> triangle : tess->polygons) {
+      for (const std::vector<Vector3d>& triangle : tess->polygons) {
         Polygon floor;
-        for (Vector3d tv : triangle) {
+        for (const Vector3d& tv : triangle) {
           floor.push_back(tv);
         }
         // floor has wrong orientation

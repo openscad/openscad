@@ -9,7 +9,7 @@
 class EvaluationException : public std::runtime_error
 {
 public:
-  EvaluationException(std::string what_arg) : std::runtime_error(std::move(what_arg)), traceDepth(OpenSCAD::traceDepth) {}
+  EvaluationException(const std::string& what_arg) : std::runtime_error(what_arg), traceDepth(OpenSCAD::traceDepth) {}
 
 public:
   int traceDepth = 0;
@@ -18,7 +18,7 @@ public:
 class AssertionFailedException : public EvaluationException
 {
 public:
-  AssertionFailedException(std::string what_arg, Location loc) : EvaluationException(std::move(what_arg)), loc(std::move(loc)) {}
+  AssertionFailedException(const std::string& what_arg, Location loc) : EvaluationException(what_arg), loc(std::move(loc)) {}
 
 public:
   Location loc;
@@ -27,8 +27,8 @@ public:
 class RecursionException : public EvaluationException
 {
 public:
-  static RecursionException create(std::string recursiontype, std::string name, const Location& loc) {
-    return RecursionException{STR("Recursion detected calling ", std::move(recursiontype), " '", std::move(name), "'"), loc};
+  static RecursionException create(const std::string& recursiontype, const std::string& name, const Location& loc) {
+    return RecursionException{STR("Recursion detected calling ", recursiontype, " '", name, "'"), loc};
   }
 
 public:

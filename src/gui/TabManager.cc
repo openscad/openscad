@@ -320,7 +320,7 @@ void TabManager::onHyperlinkIndicatorClicked(int val)
   this->open(filename);
 }
 
-void TabManager::applyAction(QObject *object, std::function<void(int, EditorInterface *)> func)
+void TabManager::applyAction(QObject *object, const std::function<void(int, EditorInterface *)>& func)
 {
   auto *action = dynamic_cast<QAction *>(object);
   if (action == nullptr) {
@@ -622,7 +622,7 @@ bool TabManager::shouldClose()
   return true;
 }
 
-void TabManager::saveError(const QIODevice& file, const std::string& msg, const QString filepath)
+void TabManager::saveError(const QIODevice& file, const std::string& msg, const QString& filepath)
 {
   const char *fileName = filepath.toLocal8Bit().constData();
   LOG(message_group::None, Location::NONE, "", "%1$s %2$s (%3$s)", msg.c_str(), fileName, file.errorString().toLocal8Bit().constData());
@@ -648,7 +648,7 @@ bool TabManager::save(EditorInterface *edt)
   }
 }
 
-bool TabManager::save(EditorInterface *edt, const QString path)
+bool TabManager::save(EditorInterface *edt, const QString& path)
 {
   par->setCurrentOutput();
 

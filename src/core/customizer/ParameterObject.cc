@@ -152,7 +152,8 @@ bool VectorParameter::importValue(boost::property_tree::ptree encodedValue, bool
 {
   std::vector<double> decoded;
 
-  std::string encoded = boost::algorithm::replace_all_copy(encodedValue.data(), " ", "");
+  // NOLINTBEGIN(*NewDeleteLeaks) LLVM bug https://github.com/llvm/llvm-project/issues/40486
+  std::string encoded = boost::algorithm::erase_all_copy(encodedValue.data(), " ");
   if (encoded.size() < 2 || encoded[0] != '[' || encoded[encoded.size() - 1] != ']') {
     return false;
   }
@@ -161,6 +162,7 @@ bool VectorParameter::importValue(boost::property_tree::ptree encodedValue, bool
 
   std::vector<std::string> items;
   boost::algorithm::split(items, encoded, boost::algorithm::is_any_of(","));
+  // NOLINTEND(*NewDeleteLeaks)
 
   for (const std::string& item : items) {
     std::stringstream stream(item);
@@ -302,7 +304,7 @@ struct EnumValues
   std::vector<EnumParameter::EnumItem> items;
   int defaultValueIndex;
 };
-static EnumValues parseEnumItems(const Expression *parameter, const std::string& defaultKey, EnumParameter::EnumValue defaultValue)
+static EnumValues parseEnumItems(const Expression *parameter, const std::string& defaultKey, const EnumParameter::EnumValue& defaultValue)
 {
   EnumValues output;
 

@@ -147,7 +147,7 @@ private:
 
 public slots:
   void updateExportActions();
-  void updateRecentFiles(QString FileSavedOrOpened);
+  void updateRecentFiles(const QString& FileSavedOrOpened);
   void updateRecentFileActions();
   void handleFileDrop(const QUrl& url);
 
@@ -179,7 +179,7 @@ private slots:
   void preferences();
   void hideEditorToolbar();
   void hide3DViewToolbar();
-  void showLink(const QString);
+  void showLink(const QString&);
   void showEditor();
   void hideEditor();
   void showConsole();
@@ -210,7 +210,7 @@ public slots:
 
 private slots:
   void selectFindType(int);
-  void findString(QString);
+  void findString(const QString&);
   void findNext();
   void findPrev();
   void useSelectionForFind();
@@ -219,7 +219,7 @@ private slots:
 
   // Mac OSX FindBuffer support
   void findBufferChanged();
-  void updateFindBuffer(QString);
+  void updateFindBuffer(const QString&);
   bool event(QEvent *event) override;
 protected:
   bool eventFilter(QObject *obj, QEvent *event) override;
@@ -234,7 +234,7 @@ private slots:
   void sendToPrintService();
 #ifdef ENABLE_CGAL
   void actionRender();
-  void actionRenderDone(shared_ptr<const Geometry>);
+  void actionRenderDone(const shared_ptr<const Geometry>&);
   void cgalRender();
 #endif
   void actionCheckValidity();
@@ -299,7 +299,7 @@ public slots:
   void viewportControlTopLevelChanged(bool);
   void processEvents();
   void jumpToLine(int, int);
-  void openFileFromPath(QString, int);
+  void openFileFromPath(const QString&, int);
 
 #ifdef ENABLE_OPENCSG
   void viewModePreview();
