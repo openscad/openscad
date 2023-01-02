@@ -39,9 +39,6 @@ namespace CGALUtils {
 
 shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op) {
     if (Feature::ExperimentalMulticore.is_enabled()) {
-        if (Feature::ExperimentalFastCsg.is_enabled()) {
-            return applyOperator3DMulticore<CGALHybridPolyhedron>(children, op);
-        }
         return applyOperator3DMulticore<const Geometry>(children, op);
     }
     if (Feature::ExperimentalFastCsg.is_enabled()) {
@@ -123,9 +120,6 @@ shared_ptr<const Geometry> applyUnion3D(
 		const Geometry::Geometries::const_iterator& chbegin, const Geometry::Geometries::const_iterator& chend)
 {
 	if (Feature::ExperimentalMulticore.is_enabled()) {
-        if (Feature::ExperimentalFastCsg.is_enabled()) {
-            return applyUnion3DMulticore<CGALHybridPolyhedron>(chbegin, chend);
-        }
 		return applyUnion3DMulticore<const Geometry>(chbegin, chend);
 	}
 	if (Feature::ExperimentalFastCsg.is_enabled()) {
@@ -262,12 +256,6 @@ bool applyBasicHull(const Geometry::Geometries& children, PolySet& result)
 
 shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 {
-	if (Feature::ExperimentalMulticore.is_enabled()) {
-        if (Feature::ExperimentalFastCsg.is_enabled()) {
-            return applyOperator3DMulticore<CGALHybridPolyhedron>(children, OpenSCADOperator::MINKOWSKI);
-        }
-		return applyOperator3DMulticore<const Geometry>(children, OpenSCADOperator::MINKOWSKI);
-	}
 	if (Feature::ExperimentalFastCsg.is_enabled()) {
 		return applyMinkowskiHybrid(children);
 	}

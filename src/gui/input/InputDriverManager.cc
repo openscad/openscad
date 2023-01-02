@@ -64,7 +64,7 @@ void InputDriverManager::registerActions(const QList<QAction *>& actions, const 
 {
   const QString emptyQString("");
   for (const auto action : actions) {
-    const auto description = ((parent == emptyQString) ? emptyQString : (parent + QString::fromUtf8(u8" \u2192 "))) + action->text();
+    const auto description = ((parent == emptyQString) ? emptyQString : (parent + QString::fromUtf8(" \u2192 "))) + action->text();
     if (!action->objectName().isEmpty()) {
       QString actionName = action->objectName();
       if("" != target){

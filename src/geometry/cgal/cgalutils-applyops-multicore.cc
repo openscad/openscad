@@ -13,11 +13,17 @@
 #include "node.h"
 #include "progress.h"
 
+#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+#include "Reindexer.h"
+#include <kigumi/Polygon_soup.h>
+#include <kigumi/boolean.h>
+
 #include <list>
 #include <thread>
 #include <chrono>
 
 using namespace std::chrono;
+using V = CGAL::Exact_predicates_exact_constructions_kernel;
 
 namespace CGALUtils {
 
@@ -27,8 +33,8 @@ uint64_t timeSinceEpochMs() {
 };
 
 // lamda type used in the threads operations
-typedef std::function<void(const Geometry::Geometries::const_iterator&, const Geometry::Geometries::const_iterator&, shared_ptr<const Geometry>&)> mtOperation;
-typedef std::function<void(const Geometry::Geometries::const_iterator&, const Geometry::Geometries::const_iterator&, shared_ptr<CGALHybridPolyhedron>&)> mtHybridOperation;
+typedef std::vector<kigumi::Polygon_soup<V>> PolygonList;
+typedef std::function<void(const PolygonList::const_iterator&, const PolygonList::const_iterator&, kigumi::Polygon_soup<V>&)> mtOperation;
 
 // special lambda type for hull operation
 typedef std::function<void(const Geometry::Geometries&, PolySet&, bool& )> mtHullOperation;
@@ -36,11 +42,14 @@ void applyMulticoreHullWorker( int index,
                                const Geometry::Geometries& children, PolySet& result, bool& stopFlag,
                                mtHullOperation operationFunc );
 
+kigumi::Polygon_soup<V> geometryToPolygonSoup(const shared_ptr<const Geometry>& geo);
+shared_ptr<const PolySet> polySoupToPolySet(const kigumi::Polygon_soup<V> set);
+
 template<class T, typename U>
 void applyMulticoreWorker( int index,
-                          const Geometry::Geometries::const_iterator& chbegin,
-                          const Geometry::Geometries::const_iterator& chend,
-                          shared_ptr<T>& partialResult,
+                          const PolygonList::const_iterator& chbegin,
+                          const PolygonList::const_iterator& chend,
+                          T& partialResult,
                           U operationFunc )
 {
     uint64_t start  = timeSinceEpochMs();
@@ -56,17 +65,18 @@ void applyMulticoreWorker( int index,
     }
 
     // re-order by facets so that there's some load balancing among threads
-    Geometry::Geometries balancedList( chbegin, chend );
-    balancedList.sort([](const Geometry::GeometryItem& poly1, const Geometry::GeometryItem& poly2)
-                      {
-                          return poly1.second->numFacets() >= poly2.second->numFacets();
-                      });
+    PolygonList balancedList( chbegin, chend );
+    std::sort(balancedList.begin(), balancedList.end(),
+              [](const kigumi::Polygon_soup<V>& poly1, const kigumi::Polygon_soup<V>& poly2)
+              {
+                  return poly1.num_faces() >= poly2.num_faces();
+              });
 
     // now we split the list in two and launch the threads
     // the facets number sum should be roughly the same on both
     // as the balanced list is in descending order
-    Geometry::Geometries listThreadLeft;
-    Geometry::Geometries listThreadRight;
+    PolygonList listThreadLeft;
+    PolygonList listThreadRight;
 
     int thElementindex = 0;
     for( auto ch : balancedList ) {
@@ -79,23 +89,21 @@ void applyMulticoreWorker( int index,
     }
 
     // launch the threads and wait termination
-    shared_ptr<T> partialResultLeft;
-    const Geometry::Geometries::const_iterator& leftItBegin = listThreadLeft.begin();
-    const Geometry::Geometries::const_iterator& leftItEnd = listThreadLeft.end();
+    T partialResultLeft;
+    const PolygonList::const_iterator& leftItBegin = listThreadLeft.begin();
+    const PolygonList::const_iterator& leftItEnd = listThreadLeft.end();
     std::thread threadLeft( applyMulticoreWorker<T, U>, index*2, std::ref(leftItBegin), std::ref(leftItEnd), std::ref(partialResultLeft), operationFunc );
 
-    shared_ptr<T> partialResultRight;
-    const Geometry::Geometries::const_iterator& rightItBegin = listThreadRight.begin();
-    const Geometry::Geometries::const_iterator& rightItEnd = listThreadRight.end();
+    T partialResultRight;
+    const PolygonList::const_iterator& rightItBegin = listThreadRight.begin();
+    const PolygonList::const_iterator& rightItEnd = listThreadRight.end();
     std::thread threadRight( applyMulticoreWorker<T, U>, index*2, std::ref(rightItBegin), std::ref(rightItEnd), std::ref(partialResultRight), operationFunc );
 
     threadLeft.join();
     threadRight.join();
 
     // union the two partial results and swap with the out pointer
-    Geometry::Geometries unionData;
-    unionData.push_back(std::make_pair(nullptr, partialResultLeft));
-    unionData.push_back(std::make_pair(nullptr, partialResultRight));
+    PolygonList unionData = { partialResultLeft, partialResultRight };
 
     operationFunc(unionData.begin(), unionData.end(), partialResult);
 }
@@ -108,38 +116,33 @@ shared_ptr<const Geometry> applyUnion3DMulticore<const Geometry>(
     uint64_t start  = timeSinceEpochMs();
     std::cout << timeSinceEpochMs() - start << " Start Union Multicore" << std::endl;
 
-    shared_ptr<const Geometry> result;
-    applyMulticoreWorker( 1, chbegin, chend, result,
-                          [](const Geometry::Geometries::const_iterator& itbegin, const Geometry::Geometries::const_iterator& itend,
-                             shared_ptr<const Geometry>& partialResult)
-                          {
-                              auto unionGeom = applyBasicUnion3D(itbegin, itend );
-                              partialResult.swap(unionGeom );
-                          } );
+    PolygonList polylist;
+    for( auto it = chbegin; it != chend; ++it ) {
+        auto g = geometryToPolygonSoup(it->second);
+        polylist.push_back(g);
+    }
+
+    kigumi::Polygon_soup<V> result;
+    applyMulticoreWorker( 1, polylist.begin(), polylist.end(), result,
+      [](const PolygonList::const_iterator& itbegin, const PolygonList::const_iterator& itend,
+         kigumi::Polygon_soup<V>& partialResult)
+      {
+        kigumi::Polygon_soup<V> prev;
+        for( auto c = itbegin; c != itend; ++c ) {
+            if( c == itbegin ) {
+                prev = *c;
+                continue;
+            }
+            auto results = kigumi::boolean( prev, *c, { kigumi::Operator::Union } );
+            prev = results[0];
+        }
+        partialResult = prev;
+      } );
 
     std::cout << timeSinceEpochMs() - start << "End Union Multicore " << std::endl;
-    return result;
-}
 
-template<>
-shared_ptr<const Geometry> applyUnion3DMulticore<CGALHybridPolyhedron>(
-        const Geometry::Geometries::const_iterator& chbegin,
-        const Geometry::Geometries::const_iterator& chend)
-{
-    uint64_t start  = timeSinceEpochMs();
-    std::cout << timeSinceEpochMs() - start << " Start Union Multicore" << std::endl;
-
-    shared_ptr<CGALHybridPolyhedron> result;
-    applyMulticoreWorker( 1, chbegin, chend, result,
-                          [](const Geometry::Geometries::const_iterator& itbegin, const Geometry::Geometries::const_iterator& itend,
-                             shared_ptr<CGALHybridPolyhedron>& partialResult)
-                          {
-                              auto unionGeom = applyUnion3DHybrid(itbegin, itend );
-                              partialResult.swap( unionGeom );
-                          } );
-
-    std::cout << timeSinceEpochMs() - start << "End Union Multicore " << std::endl;
-    return result;
+    shared_ptr<const Geometry> out_result = polySoupToPolySet(result);
+    return out_result;
 }
 
 template<>
@@ -148,8 +151,6 @@ shared_ptr<const Geometry> applyOperator3DMulticore<const Geometry>( const Geome
 {
     if( op == OpenSCADOperator::UNION ) // has a dedicated operation
         return nullptr;
-    if( op == OpenSCADOperator::DIFFERENCE ) // difference operator not serializable
-        return applyBasicOperator3D( children, op );
 
     uint64_t start  = timeSinceEpochMs();
     std::cout << timeSinceEpochMs() - start << " Start Operator Multicore" << std::endl;
@@ -163,31 +164,6 @@ shared_ptr<const Geometry> applyOperator3DMulticore<const Geometry>( const Geome
           auto operationGeom = applyBasicOperator3D(list, op );
           partialResult.swap(operationGeom );
       } );
-
-    std::cout << timeSinceEpochMs() - start << "End Operator Multicore " << std::endl;
-    return result;
-}
-
-template<>
-shared_ptr<const Geometry> applyOperator3DMulticore<CGALHybridPolyhedron>( const Geometry::Geometries& children,
-                                                                           OpenSCADOperator op )
-{
-    if( op == OpenSCADOperator::DIFFERENCE ) // difference operator not serializable
-        return applyOperator3DHybrid( children, op );
-
-    uint64_t start  = timeSinceEpochMs();
-    std::cout << timeSinceEpochMs() - start << " Start Operator Multicore" << std::endl;
-
-    shared_ptr<CGALHybridPolyhedron> result;
-
-    applyMulticoreWorker<CGALHybridPolyhedron, mtHybridOperation>( 1, children.begin(), children.end(), result,
-       [&](const Geometry::Geometries::const_iterator& itbegin, const Geometry::Geometries::const_iterator& itend,
-               shared_ptr<CGALHybridPolyhedron>& partialResult)
-       {
-           Geometry::Geometries list( itbegin, itend );
-           auto operationGeom = applyOperator3DHybrid(list, op );
-           partialResult.swap( operationGeom );
-       } );
 
     std::cout << timeSinceEpochMs() - start << "End Operator Multicore " << std::endl;
     return result;
@@ -274,6 +250,54 @@ void applyMulticoreHullWorker( int index,
     unionData.push_back(std::make_pair(nullptr, dxGeom));
 
     operationFunc(unionData, result, stopFlag);
+}
+
+// --- conversions --- //
+kigumi::Polygon_soup<V> geometryToPolygonSoup(const shared_ptr<const Geometry>& geo) {
+    Reindexer<V::Point_3> reindexer;
+    kigumi::Polygon_soup<V> result;
+
+    auto points = result.points();
+    auto faces = result.faces();
+
+    shared_ptr<const PolySet> ps = getGeometryAsPolySet(geo);
+    if (ps.get() == nullptr || ps->isEmpty()) {
+        return result;
+    }
+
+    points.reserve(points.size() + ps->polygons.size() * 3);
+    for (const auto& p : ps->polygons) {
+        int i = 0;
+        std::array<std::size_t, 3> tmpFace;
+        for( const auto& v : p ) {
+            auto point = vector_convert<V::Point_3>(v);
+
+            size_t s = reindexer.size();
+            size_t idx = reindexer.lookup(point);
+            if (idx == s) {
+                points.push_back(point);
+            }
+
+            tmpFace[i] = idx;
+        }
+        faces.push_back( tmpFace );
+    }
+    return result;
+}
+
+shared_ptr<const PolySet> polySoupToPolySet(const kigumi::Polygon_soup<V> set) {
+    PolySet s(3);
+    auto vec = set.points();
+    for( auto f : set.faces() ) {
+        Polygon p;
+        p[0] = vec[f[0]];
+        p[1] = vec[f[1]];
+        p[2] = vec[f[2]];
+        s->append_poly(p);
+    }
+
+    shared_ptr<const PolySet> shared_set = make_shared<const PolySet>(s);
+    return shared_set;
 }
 
 }  // namespace CGALUtils
