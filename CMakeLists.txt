@@ -327,6 +327,7 @@ endif()
 set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
 
 target_include_directories(OpenSCAD SYSTEM PRIVATE "/root/Desktop/kigumi/include/")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 
 find_package(LibZip REQUIRED QUIET)
 message(STATUS "libzip: ${LIBZIP_VERSION}")
