@@ -1,5 +1,5 @@
 <RCC>
   <qresource>
-    <file alias="icon-macos.png" >icons/openscad${SUFFIX_WITH_DASH}-macos.png</file>
+    <file alias="icon-macos.png" >icons/openscad${SNAPSHOT_SUFFIX}-macos.png</file>
   </qresource>
 </RCC>
