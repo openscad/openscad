@@ -334,7 +334,6 @@ case $OS in
         /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSIONDATE" OpenSCAD.app/Contents/Info.plist
         macdeployqt OpenSCAD.app -dmg -no-strip
         mv OpenSCAD.dmg OpenSCAD-$VERSION.dmg
-        hdiutil internet-enable -yes -quiet OpenSCAD-$VERSION.dmg
         echo "Binary created: OpenSCAD-$VERSION.dmg"
         cd $OPENSCADDIR
     ;;
