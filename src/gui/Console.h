@@ -51,7 +51,6 @@ private:
 
 public:
   Console(QWidget *parent = nullptr);
-  virtual ~Console();
   QString clickedAnchor;
   void contextMenuEvent(QContextMenuEvent *event) override;
 

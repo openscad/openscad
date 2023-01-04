@@ -191,7 +191,7 @@ Polygon2d *import_svg(double fn, double fs, double fa,
     std::vector<const Polygon2d *> polygons;
     for (const auto& shape_ptr : *shapes) {
       if (!shape_ptr->is_excluded()) {
-        Polygon2d *poly = new Polygon2d();
+        auto *poly = new Polygon2d();
         const auto& s = *shape_ptr;
         for (const auto& p : s.get_path_list()) {
           Outline2d outline;

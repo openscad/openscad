@@ -38,24 +38,23 @@ protected:
   double height;
 
 public:
-  use();
-  ~use();
+  use() = default;
 
-  bool is_container() const override { return false; }
+  [[nodiscard]] bool is_container() const override { return false; }
 
   void set_attrs(attr_map_t& attrs, void *context) override;
-  const std::string dump() const override;
-  const std::string& get_name() const override { return use::name; }
+  [[nodiscard]] const std::string dump() const override;
+  [[nodiscard]] const std::string& get_name() const override { return use::name; }
 
   static const std::string name;
 
-  const std::string get_href() const { return href; }
-  const std::string get_href_id() const;
+  [[nodiscard]] const std::string get_href() const { return href; }
+  [[nodiscard]] const std::string get_href_id() const;
 
   // I'm hoping here something else can find the href for us.
   std::vector<std::shared_ptr<shape>> set_clone_child(shape *child);
 
-  shape *clone() const override { return new use(*this); }
+  [[nodiscard]] shape *clone() const override { return new use(*this); }
 };
 
 } // namespace libsvg

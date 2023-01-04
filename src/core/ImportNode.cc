@@ -39,7 +39,7 @@
 #include "DxfData.h"
 #include "Parameters.h"
 #include "printutils.h"
-//#include "fileutils.h"
+#include "iofileutils.h"
 #include "Feature.h"
 #include "handle_dep.h"
 #include "boost-utils.h"
@@ -56,7 +56,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 extern PolySet *import_amf(const std::string&, const Location& loc);
 extern Geometry *import_3mf(const std::string&, const Location& loc);
 
-static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments, Children children, ImportType type)
+static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children, ImportType type)
 {
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
@@ -71,13 +71,13 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   const auto& v = parameters["file"];
   std::string filename;
   if (v.isDefined()) {
-    filename = ""; // TODO fix lookup_file(v.isUndefined() ? "" : v.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
+    filename = lookup_file(v.isUndefined() ? "" : v.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
   } else {
     const auto& filename_val = parameters["filename"];
     if (!filename_val.isUndefined()) {
       LOG(message_group::Deprecated, Location::NONE, "", "filename= is deprecated. Please use file=");
     }
-    filename = ""; // TODO fix lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
+    filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
   }
   if (!filename.empty()) handle_dep(filename);
   ImportType actualtype = type;
@@ -153,17 +153,17 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   return node;
 }
 
-static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *inst, Arguments arguments, Children children)
-{ return do_import(inst, std::move(arguments), std::move(children), ImportType::UNKNOWN); }
+static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+{ return do_import(inst, std::move(arguments), children, ImportType::UNKNOWN); }
 
-static std::shared_ptr<AbstractNode> builtin_import_stl(const ModuleInstantiation *inst, Arguments arguments, Children children)
-{ return do_import(inst, std::move(arguments), std::move(children), ImportType::STL); }
+static std::shared_ptr<AbstractNode> builtin_import_stl(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+{ return do_import(inst, std::move(arguments), children, ImportType::STL); }
 
-static std::shared_ptr<AbstractNode> builtin_import_off(const ModuleInstantiation *inst, Arguments arguments, Children children)
-{ return do_import(inst, std::move(arguments), std::move(children), ImportType::OFF); }
+static std::shared_ptr<AbstractNode> builtin_import_off(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+{ return do_import(inst, std::move(arguments), children, ImportType::OFF); }
 
-static std::shared_ptr<AbstractNode> builtin_import_dxf(const ModuleInstantiation *inst, Arguments arguments, Children children)
-{ return do_import(inst, std::move(arguments), std::move(children), ImportType::DXF); }
+static std::shared_ptr<AbstractNode> builtin_import_dxf(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+{ return do_import(inst, std::move(arguments), children, ImportType::DXF); }
 
 
 

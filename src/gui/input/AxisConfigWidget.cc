@@ -38,12 +38,8 @@ AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
   setupUi(this);
 }
 
-AxisConfigWidget::~AxisConfigWidget()
-{
-}
-
 void AxisConfigWidget::AxesChanged(int nr, double val) const {
-  QProgressBar *progressBar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(nr));
+  auto *progressBar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(nr));
   if (progressBar == nullptr) return;
 
   int value = val * 100;
@@ -57,7 +53,7 @@ void AxisConfigWidget::AxesChanged(int nr, double val) const {
   QString s = QString::number(val, 'f', 2);
   progressBar->setFormat(s);
 
-  QDoubleSpinBox *deadzone = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone%1").arg(nr));
+  auto *deadzone = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone%1").arg(nr));
   if (deadzone) {
     bool active = deadzone->value() < std::abs(val);
     QString style;
@@ -494,7 +490,7 @@ void AxisConfigWidget::on_checkBoxDBus_toggled(bool val)
   }
 }
 
-void AxisConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum& entry)
+void AxisConfigWidget::applyComboBox(QComboBox * /*comboBox*/, int val, Settings::SettingsEntryEnum& entry)
 {
   entry.setIndex(val);
   writeSettings();

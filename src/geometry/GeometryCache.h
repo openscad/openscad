@@ -7,7 +7,7 @@
 class GeometryCache
 {
 public:
-  GeometryCache(size_t memorylimit = 100 *1024 *1024) : cache(memorylimit) {}
+  GeometryCache(size_t memorylimit = 100ul * 1024ul * 1024ul) : cache(memorylimit) {}
 
   static GeometryCache *instance() { if (!inst) inst = new GeometryCache; return inst; }
 
@@ -28,7 +28,6 @@ private:
     shared_ptr<const class Geometry> geom;
     std::string msg;
     cache_entry(const shared_ptr<const Geometry>& geom);
-    ~cache_entry() { }
   };
 
   Cache<std::string, cache_entry> cache;

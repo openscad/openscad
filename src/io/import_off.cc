@@ -8,7 +8,7 @@
 
 PolySet *import_off(const std::string& filename, const Location& loc)
 {
-  PolySet *p = new PolySet(3);
+  auto *p = new PolySet(3);
 #ifdef ENABLE_CGAL
   CGAL_Polyhedron poly;
   std::ifstream file(filename.c_str(), std::ios::in | std::ios::binary);

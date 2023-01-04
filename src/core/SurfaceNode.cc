@@ -32,7 +32,7 @@
 #include "Children.h"
 #include "Parameters.h"
 #include "printutils.h"
-//#include "fileutils.h"
+#include "iofileutils.h"
 #include "handle_dep.h"
 #include "ext/lodepng/lodepng.h"
 
@@ -51,14 +51,14 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 namespace fs = boost::filesystem;
 
 
-typedef struct img_data_t
+struct img_data_t
 {
 public:
-  typedef double storage_type; // float could be enough here
+  using storage_type = double; // float could be enough here
 
   img_data_t() { min_val = 0; height = width = 0; }
 
-  void clear(void) { min_val = 0; height = width = 0; storage.clear(); }
+  void clear() { min_val = 0; height = width = 0; storage.clear(); }
 
   void reserve(size_t x) { storage.reserve(x); }
 
@@ -74,21 +74,21 @@ public:
   storage_type min_val;
   std::vector<storage_type> storage;
 
-} img_data_t;
+};
 
 
 class SurfaceNode : public LeafNode
 {
 public:
   VISITABLE();
-  SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi), center(false), invert(false), convexity(1) { }
+  SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi) { }
   std::string toString() const override;
   std::string name() const override { return "surface"; }
 
   Filename filename;
-  bool center;
-  bool invert;
-  int convexity;
+  bool center{false};
+  bool invert{false};
+  int convexity{1};
 
   const Geometry *createGeometry() const override;
 private:
@@ -98,7 +98,7 @@ private:
   img_data_t read_png_or_dat(std::string filename) const;
 };
 
-static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
@@ -110,7 +110,7 @@ static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"file", "center", "convexity"}, {"invert"});
 
   std::string fileval = parameters["file"].isUndefined() ? "" : parameters["file"].toString();
-  std::string filename = ""; // lookup_file(fileval, inst->location().filePath().parent_path().string(), parameters.documentRoot());
+  std::string filename = lookup_file(fileval, inst->location().filePath().parent_path().string(), parameters.documentRoot());
   node->filename = filename;
   handle_dep(fs::path(filename).generic_string());
 
@@ -137,7 +137,7 @@ void SurfaceNode::convert_image(img_data_t& data, std::vector<uint8_t>& img, uns
   double min_val = 200;
   for (unsigned int y = 0; y < height; ++y) {
     for (unsigned int x = 0; x < width; ++x) {
-      long idx = 4 * (y * width + x);
+      long idx = 4l * (y * width + x);
       double pixel = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
       double z = 100.0 / 255 * (invert ? 1 - pixel : pixel);
       data[ x + (width * (height - 1 - y)) ] = z;
@@ -204,12 +204,12 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
   int lines = 0, columns = 0;
   double min_val = 1; // this balances out with the (min_val-1) inside createGeometry, to match old behavior
 
-  typedef boost::tokenizer<boost::char_separator<char>> tokenizer;
+  using tokenizer = boost::tokenizer<boost::char_separator<char>>;
   boost::char_separator<char> sep(" \t");
 
   // We use an unordered map because the data file may not be rectangular,
   // and we may need to fill in some bits.
-  typedef std::unordered_map<std::pair<int, int>, double, boost::hash<std::pair<int, int>>> unordered_image_data_t;
+  using unordered_image_data_t = std::unordered_map<std::pair<int, int>, double, boost::hash<std::pair<int, int>>>;
   unordered_image_data_t unordered_data;
 
   while (!stream.eof()) {

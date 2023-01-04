@@ -16,11 +16,11 @@ class TriangleMeshEdits
 {
 
 private:
-  typedef boost::graph_traits<TriangleMesh> GT;
-  typedef typename GT::face_descriptor face_descriptor;
-  typedef typename GT::halfedge_descriptor halfedge_descriptor;
-  typedef typename GT::edge_descriptor edge_descriptor;
-  typedef typename GT::vertex_descriptor vertex_descriptor;
+  using GT = boost::graph_traits<TriangleMesh>;
+  using face_descriptor = typename GT::face_descriptor;
+  using halfedge_descriptor = typename GT::halfedge_descriptor;
+  using edge_descriptor = typename GT::edge_descriptor;
+  using vertex_descriptor = typename GT::vertex_descriptor;
 
   std::unordered_set<face_descriptor> facesToRemove;
   std::unordered_set<vertex_descriptor> verticesToRemove;

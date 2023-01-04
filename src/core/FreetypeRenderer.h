@@ -56,7 +56,7 @@ public:
     void set_fs(double fs) {
       this->fs = fs;
     }
-    void set_segments(double segments) {
+    void set_segments(unsigned int segments) {
       this->segments = segments;
     }
     void set_text(const std::string& text) {
@@ -87,7 +87,7 @@ public:
       this->documentPath = path;
     }
     void set(Parameters& parameters);
-    FT_Face get_font_face() const;
+    [[nodiscard]] FT_Face get_font_face() const;
     void detect_properties();
     friend std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params) {
       return stream
@@ -105,14 +105,15 @@ public:
              << ", $fs = " << params.fs;
     }
 private:
-    double size, spacing, fn, fa, fs, segments;
+    double size, spacing, fn, fa, fs;
+    unsigned int segments;
     std::string text, font, direction, language, script, halign, valign;
     Location loc = Location::NONE;
     std::string documentPath = "";
     static bool is_ignored_script(const hb_script_t script);
     hb_script_t detect_script(hb_glyph_info_t *glyph_info,
                               unsigned int glyph_count) const;
-    hb_direction_t detect_direction(const hb_script_t script) const;
+    [[nodiscard]] hb_direction_t detect_direction(const hb_script_t script) const;
 
     friend class FreetypeRenderer;
   };
@@ -153,9 +154,9 @@ public:
     FontMetrics(const FreetypeRenderer::Params& params);
   };
   FreetypeRenderer();
-  virtual ~FreetypeRenderer();
+  virtual ~FreetypeRenderer() = default;
 
-  std::vector<const class Geometry *> render(const FreetypeRenderer::Params& params) const;
+  [[nodiscard]] std::vector<const class Geometry *> render(const FreetypeRenderer::Params& params) const;
 private:
   const static double scale;
   FT_Outline_Funcs funcs;
@@ -168,12 +169,12 @@ private:
   {
 public:
     GlyphData(FT_Glyph glyph, unsigned int idx, hb_glyph_position_t *glyph_pos) : glyph(glyph), idx(idx), glyph_pos(glyph_pos) {}
-    unsigned int get_idx() const { return idx; }
-    FT_Glyph get_glyph() const { return glyph; }
-    double get_x_offset() const { return glyph_pos->x_offset / scale; }
-    double get_y_offset() const { return glyph_pos->y_offset / scale; }
-    double get_x_advance() const { return glyph_pos->x_advance / scale; }
-    double get_y_advance() const { return glyph_pos->y_advance / scale; }
+    [[nodiscard]] unsigned int get_idx() const { return idx; }
+    [[nodiscard]] FT_Glyph get_glyph() const { return glyph; }
+    [[nodiscard]] double get_x_offset() const { return glyph_pos->x_offset / scale; }
+    [[nodiscard]] double get_y_offset() const { return glyph_pos->y_offset / scale; }
+    [[nodiscard]] double get_x_advance() const { return glyph_pos->x_advance / scale; }
+    [[nodiscard]] double get_y_advance() const { return glyph_pos->y_advance / scale; }
     ~GlyphData() { FT_Done_Glyph(glyph); }
 private:
     FT_Glyph glyph;
@@ -184,7 +185,7 @@ private:
   class ShapeResults
   {
 public:
-    bool ok; // true if object is valid
+    bool ok{false}; // true if object is valid
     // The values here are all in fractions of the specified size.
     // They have been downscaled from the 1e+5 unit size used for
     // when rendering from Freetype, and have not yet been scaled
@@ -205,8 +206,8 @@ public:
 private:
     void calc_offsets_horiz(const FreetypeRenderer::Params& params);
     void calc_offsets_vert(const FreetypeRenderer::Params& params);
-    hb_font_t *hb_ft_font;
-    hb_buffer_t *hb_buf;
+    hb_font_t *hb_ft_font{nullptr};
+    hb_buffer_t *hb_buf{nullptr};
   };
 
   static int outline_move_to_func(const FT_Vector *to, void *user);

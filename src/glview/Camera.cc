@@ -6,8 +6,7 @@
 static const double DEFAULT_DISTANCE = 140.0;
 static const double DEFAULT_FOV = 22.5;
 
-Camera::Camera() :
-  projection(ProjectionType::PERSPECTIVE), fov(DEFAULT_FOV), viewall(false), autocenter(false)
+Camera::Camera() : fov(DEFAULT_FOV)
 {
   PRINTD("Camera()");
 
@@ -38,7 +37,7 @@ void Camera::setup(std::vector<double> params)
     Eigen::Vector3d projection(dir[0], dir[1], 0);
     object_rot.x() = -atan2_degrees(dir[2], projection.norm());
   } else {
-    assert("Gimbal cam needs 7 numbers, Vector camera needs 6");
+    assert(false && "Gimbal cam needs 7 numbers, Vector camera needs 6");
   }
   locked = true;
 }
@@ -92,7 +91,7 @@ void Camera::resetView()
  * are assigned on top-level, the values are used to change the camera
  * rotation, translation and distance.
  */
-void Camera::updateView(const std::shared_ptr<const FileContext> context, bool enableWarning)
+void Camera::updateView(const std::shared_ptr<const FileContext>& context, bool enableWarning)
 {
   if (locked) return;
 
@@ -162,7 +161,7 @@ static double wrap(double angle)
 
 Eigen::Vector3d Camera::getVpr() const
 {
-  return Eigen::Vector3d(wrap(90 - object_rot.x()), wrap(-object_rot.y()), wrap(-object_rot.z()));
+  return {wrap(90 - object_rot.x()), wrap(-object_rot.y()), wrap(-object_rot.z())};
 }
 
 void Camera::setVpr(double x, double y, double z)

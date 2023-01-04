@@ -47,12 +47,12 @@ size_t CGALCache::totalCost() const
 
 size_t CGALCache::maxSizeMB() const
 {
-  return this->cache.maxCost() / (1024 * 1024);
+  return this->cache.maxCost() / (1024ul * 1024ul);
 }
 
 void CGALCache::setMaxSizeMB(size_t limit)
 {
-  this->cache.setMaxCost(limit * 1024 * 1024);
+  this->cache.setMaxCost(limit * 1024ul * 1024ul);
 }
 
 void CGALCache::clear()

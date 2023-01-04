@@ -146,18 +146,18 @@ static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation 
   } else {
     // Invalid argument
     LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Bad parameter type (%1$s) for children, only accept: empty, number, vector, range", parameters["index"].toEchoStringNoThrow());
-    return std::shared_ptr<AbstractNode>();
+    return {};
   }
 }
 
-static std::shared_ptr<AbstractNode> builtin_echo(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_echo(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   LOG(message_group::Echo, Location::NONE, "", "%1$s", STR(arguments));
 
   auto node = children.instantiate(lazyUnionNode(inst));
   // echo without child geometries should not count as valid CSGNode
   if (node->children.empty()) {
-    return std::shared_ptr<AbstractNode>();
+    return {};
   }
   return node;
 }
@@ -169,7 +169,7 @@ static std::shared_ptr<AbstractNode> builtin_assert(const ModuleInstantiation *i
   auto node = Children(&inst->scope, context).instantiate(lazyUnionNode(inst));
   // assert without child geometries should not count as valid CSGNode
   if (node->children.empty()) {
-    return std::shared_ptr<AbstractNode>();
+    return {};
   }
   return node;
 }
@@ -228,7 +228,7 @@ static std::shared_ptr<AbstractNode> builtin_intersection_for(const ModuleInstan
 static std::shared_ptr<AbstractNode> builtin_if(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
   Arguments arguments{inst->arguments, context};
-  const IfElseModuleInstantiation *ifelse = dynamic_cast<const IfElseModuleInstantiation *>(inst);
+  const auto *ifelse = dynamic_cast<const IfElseModuleInstantiation *>(inst);
   if (arguments.size() > 0 && arguments[0]->toBool()) {
     return Children(&inst->scope, context).instantiate(lazyUnionNode(inst));
   } else if (ifelse->getElseScope()) {

@@ -31,21 +31,12 @@
 #include <QApplication>
 #include <QCoreApplication>
 
-InputDriverManager *InputDriverManager::self = 0;
+InputDriverManager *InputDriverManager::self = nullptr;
 
 /**
  * This can be called from non-GUI context, so no Qt initialization is done
  * at this point.
  */
-InputDriverManager::InputDriverManager(void) : currentWindow(nullptr), timer(nullptr)
-{
-}
-
-InputDriverManager::~InputDriverManager(void)
-{
-
-}
-
 InputDriverManager *InputDriverManager::instance()
 {
   if (!self) {
@@ -64,14 +55,14 @@ void InputDriverManager::unregisterDriver(InputDriver *driver)
   this->drivers.remove(driver);
 }
 
-void InputDriverManager::registerActions(const QList<QAction *>& actions, const QString parent, const QString target)
+void InputDriverManager::registerActions(const QList<QAction *>& actions, const QString& parent, const QString& target)
 {
   const QString emptyQString("");
   for (const auto action : actions) {
     const auto description = ((parent == emptyQString) ? emptyQString : (parent + QString::fromUtf8(u8" \u2192 "))) + action->text();
     if (!action->objectName().isEmpty()) {
       QString actionName = action->objectName();
-      if("" != target){
+      if ("" != target) {
         actionName = target + "::" + actionName;
       }
       this->actions.push_back({actionName, description, action->icon()});

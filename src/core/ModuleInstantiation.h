@@ -2,20 +2,21 @@
 
 #include "AST.h"
 #include "LocalScope.h"
+#include <utility>
+#include <utility>
 #include <vector>
 
-typedef std::vector<class ModuleInstantiation *> ModuleInstantiationList;
+using ModuleInstantiationList = std::vector<class ModuleInstantiation *>;
 
 class ModuleInstantiation : public ASTNode
 {
 public:
-  ModuleInstantiation(const std::string& name, const AssignmentList& args = AssignmentList(), const Location& loc = Location::NONE)
-    : ASTNode(loc), arguments(args), tag_root(false), tag_highlight(false), tag_background(false), modname(name) { }
-  ~ModuleInstantiation();
+  ModuleInstantiation(std::string name, AssignmentList args = AssignmentList(), const Location& loc = Location::NONE)
+    : ASTNode(loc), arguments(std::move(args)), modname(std::move(name)) { }
 
   virtual void print(std::ostream& stream, const std::string& indent, const bool inlined) const;
   void print(std::ostream& stream, const std::string& indent) const override { print(stream, indent, false); }
-  std::shared_ptr<AbstractNode> evaluate(const std::shared_ptr<const Context> context) const;
+  std::shared_ptr<AbstractNode> evaluate(const std::shared_ptr<const Context>& context) const;
 
   const std::string& name() const { return this->modname; }
   bool isBackground() const { return this->tag_background; }
@@ -25,9 +26,9 @@ public:
   AssignmentList arguments;
   LocalScope scope;
 
-  bool tag_root;
-  bool tag_highlight;
-  bool tag_background;
+  bool tag_root{false};
+  bool tag_highlight{false};
+  bool tag_background{false};
 protected:
   std::string modname;
 };
@@ -36,8 +37,8 @@ class IfElseModuleInstantiation : public ModuleInstantiation
 {
 public:
   IfElseModuleInstantiation(shared_ptr<class Expression> expr, const Location& loc) :
-    ModuleInstantiation("if", AssignmentList{assignment("", expr)}, loc) { }
-  ~IfElseModuleInstantiation();
+    ModuleInstantiation("if", AssignmentList{assignment("", std::move(expr))}, loc) { }
+
   LocalScope *makeElseScope();
   LocalScope *getElseScope() const { return this->else_scope.get(); }
   void print(std::ostream& stream, const std::string& indent, const bool inlined) const final;

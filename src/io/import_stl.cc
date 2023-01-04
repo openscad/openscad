@@ -13,7 +13,7 @@
 #error Byte order undefined or unknown. Currently only BOOST_ENDIAN_BIG_BYTE and BOOST_ENDIAN_LITTLE_BYTE are supported.
 #endif
 
-#define STL_FACET_NUMBYTES 4 * 3 * 4 + 2
+inline constexpr size_t STL_FACET_NUMBYTES = 4ul * 3ul * 4ul + 2ul;
 // as there is no 'float32_t' standard, we assume the systems 'float'
 // is a 'binary32' aka 'single' standard IEEE 32-bit floating point type
 union stl_facet {
@@ -28,7 +28,7 @@ union stl_facet {
   } data;
 };
 
-static_assert(offsetof(stl_facet::facet_data, attribute_byte_count) == 4 * 3 * 4,
+static_assert(offsetof(stl_facet::facet_data, attribute_byte_count) == 4ul * 3ul * 4ul,
               "Invalid padding in stl_facet");
 
 #if BOOST_ENDIAN_BIG_BYTE
@@ -75,12 +75,12 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
     return p.release();
   }
 
-  boost::regex ex_sfe("^\\s*solid|^\\s*facet|^\\s*endfacet");
+  boost::regex ex_sfe(R"(^\s*solid|^\s*facet|^\s*endfacet)");
   boost::regex ex_outer("^\\s*outer loop$");
   boost::regex ex_loopend("^\\s*endloop$");
   boost::regex ex_vertex("^\\s*vertex");
   boost::regex ex_vertices(
-    "^\\s*vertex\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s*$");
+    R"(^\s*vertex\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$)");
   boost::regex ex_endsolid("^\\s*endsolid");
 
   bool binary = false;
@@ -92,7 +92,7 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
 #if BOOST_ENDIAN_BIG_BYTE
     uint32_byte_swap(facenum);
 #endif
-    if (file_size == static_cast<std::streamoff>(80 + 4 + 50 * facenum)) {
+    if (file_size == static_cast<std::streamoff>(80ul + 4ul + 50ul * facenum)) {
       binary = true;
     }
   }
@@ -120,9 +120,7 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
       boost::trim(line);
       boost::smatch results;
 
-      if (line.length() == 0) {
-        continue;
-      } else if (boost::regex_search(line, ex_sfe)) {
+      if (line.length() == 0 || boost::regex_search(line, ex_sfe)) {
         continue;
       } else if (boost::regex_search(line, ex_outer)) {
         i = 0;

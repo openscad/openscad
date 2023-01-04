@@ -3,13 +3,15 @@
 #include <QString>
 #include <QObject>
 
+class QAction;
+class QMenu;
+
 class AutoUpdater : public QObject
 {
   Q_OBJECT;
 
 public:
-  AutoUpdater() : updateAction(nullptr), updateMenu(nullptr) {}
-  ~AutoUpdater() {}
+  AutoUpdater() = default;
 
   virtual void setAutomaticallyChecksForUpdates(bool on) = 0;
   virtual bool automaticallyChecksForUpdates() = 0;
@@ -26,8 +28,8 @@ public slots:
 
 
 public:
-  class QAction *updateAction;
-  class QMenu *updateMenu;
+  QAction *updateAction{nullptr};
+  QMenu *updateMenu{nullptr};
 
 protected:
   static AutoUpdater *updater_instance;

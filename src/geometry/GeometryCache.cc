@@ -45,12 +45,12 @@ size_t GeometryCache::totalCost() const
 
 size_t GeometryCache::maxSizeMB() const
 {
-  return this->cache.maxCost() / (1024 * 1024);
+  return this->cache.maxCost() / (1024ul * 1024ul);
 }
 
 void GeometryCache::setMaxSizeMB(size_t limit)
 {
-  this->cache.setMaxCost(limit * 1024 * 1024);
+  this->cache.setMaxCost(limit * 1024ul * 1024ul);
 }
 
 void GeometryCache::print()

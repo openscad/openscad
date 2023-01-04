@@ -14,12 +14,11 @@ class EditorInterface : public QWidget
   Q_OBJECT
 public:
   EditorInterface(QWidget *parent) : QWidget(parent) {}
-  ~EditorInterface() {}
-  virtual QSize sizeHint() const override { QSize size; return size;}
+  QSize sizeHint() const override { QSize size; return size;}
   virtual void setInitialSizeHint(const QSize&) { }
   void wheelEvent(QWheelEvent *) override;
   virtual QString toPlainText() = 0;
-  virtual QTextDocument *document(){QTextDocument *t = new QTextDocument; return t;}
+  virtual QTextDocument *document(){auto *t = new QTextDocument; return t;}
   virtual QString selectedText() = 0;
   virtual int updateFindIndicators(const QString& findText, bool visibility = true) = 0;
   virtual bool find(const QString&, bool findNext = false, bool findBackwards = false) = 0;

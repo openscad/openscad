@@ -132,6 +132,7 @@ void VertexState::draw(bool bind_buffers) const
                (draw_type_ == GL_UNSIGNED_SHORT ? "GL_UNSIGNED_SHORT" :
                 draw_type_ == GL_UNSIGNED_INT ? "GL_UNSIGNED_INT" :
                 "UNKNOWN") % element_offset_);
+      // NOLINTNEXTLINE(performance-no-int-to-ptr)
       glDrawElements(draw_mode_, draw_size_, draw_type_, (GLvoid *)element_offset_);
     } else {
       GL_TRACE("glDrawArrays(%s, 0, %d)",
@@ -208,7 +209,7 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
                                size_t active_point_index, size_t primitive_index,
                                double z_offset, size_t shape_size,
                                size_t shape_dimensions, bool outlines,
-                               bool mirror, CreateVertexCallback vertex_callback)
+                               bool mirror, const CreateVertexCallback& vertex_callback)
 {
   if (vertex_callback)
     vertex_callback(*this, points, normals, color, active_point_index,
@@ -269,19 +270,19 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
       addAttributeValues(*elementsData(), entry.first->second);
     } else {
       if (elementsData()->sizeofAttribute() == sizeof(GLubyte)) {
-        GLubyte index = (GLubyte)entry.first->second;
+        auto index = (GLubyte)entry.first->second;
         GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
                         elementsData()->sizeofAttribute(),
                         &index); GL_ERROR_CHECK();
       } else if (elementsData()->sizeofAttribute() == sizeof(GLushort)) {
-        GLushort index = (GLushort)entry.first->second;
+        auto index = (GLushort)entry.first->second;
         GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
                         elementsData()->sizeofAttribute(),
                         &index); GL_ERROR_CHECK();
       } else if (elementsData()->sizeofAttribute() == sizeof(GLuint)) {
-        GLuint index = (GLuint)entry.first->second;
+        auto index = (GLuint)entry.first->second;
         GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
                         elementsData()->sizeofAttribute(),
@@ -344,11 +345,11 @@ void VertexArray::createInterleavedVBOs()
     size_t dst_start = 0;
     for (const auto& vertex_data : vertices_) {
       // All attribute vectors need to be the same size to interleave
-      size_t idx = 0, last_size = 0, stride = vertex_data->stride(), dst = dst_start;
+      size_t idx = 0, last_size = 0, stride = vertex_data->stride();
       for (const auto& data : vertex_data->attributes()) {
         size_t size = data->sizeofAttribute();
         const GLbyte *src = data->toBytes();
-        dst = dst_start;
+        size_t dst = dst_start;
 
         if (src) {
           if (idx != 0) {
@@ -419,9 +420,11 @@ void VertexArray::addAttributePointers(size_t start_offset)
   vs->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
     auto vs = vs_ptr.lock();
     if (vs) {
+      // NOLINTBEGIN(performance-no-int-to-ptr)
       GL_TRACE("glVertexPointer(%d, %d, %d, %p)",
                count % type % stride % (GLvoid *)(vs->drawOffset() + offset));
       glVertexPointer(count, type, stride, (GLvoid *)(vs->drawOffset() + offset));
+      // NOLINTEND(performance-no-int-to-ptr)
       GL_ERROR_CHECK();
     }
   });
@@ -438,8 +441,10 @@ void VertexArray::addAttributePointers(size_t start_offset)
     vs->glBegin().emplace_back([type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
       auto vs = vs_ptr.lock();
       if (vs) {
+        // NOLINTBEGIN(performance-no-int-to-ptr)
         GL_TRACE("glNormalPointer(%d, %d, %p)", type % stride % (GLvoid *)(vs->drawOffset() + offset));
         glNormalPointer(type, stride, (GLvoid *)(vs->drawOffset() + offset));
+        // NOLINTEND(performance-no-int-to-ptr)
         GL_ERROR_CHECK();
       }
     });
@@ -457,8 +462,10 @@ void VertexArray::addAttributePointers(size_t start_offset)
     vs->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
       auto vs = vs_ptr.lock();
       if (vs) {
+        // NOLINTBEGIN(performance-no-int-to-ptr)
         GL_TRACE("glColorPointer(%d, %d, %d, %p)", count % type % stride % (GLvoid *)(vs->drawOffset() + offset));
         glColorPointer(count, type, stride, (GLvoid *)(vs->drawOffset() + offset));
+        // NOLINTEND(performance-no-int-to-ptr)
         GL_ERROR_CHECK();
       }
     });

@@ -39,12 +39,8 @@ using namespace CGAL::OGL;
 class VBOPolyhedron : public virtual Polyhedron
 {
 public:
-  VBOPolyhedron()
-    : Polyhedron(),
-    points_edges_vertices_vbo(0), points_edges_elements_vbo(0),
-    halffacets_vertices_vbo(0), halffacets_elements_vbo(0)
-  {}
-  virtual ~VBOPolyhedron()
+  VBOPolyhedron() : Polyhedron() {}
+  ~VBOPolyhedron() override
   {
     if (points_edges_vertices_vbo) glDeleteBuffers(1, &points_edges_vertices_vbo);
     if (points_edges_elements_vbo) glDeleteBuffers(1, &points_edges_elements_vbo);
@@ -80,7 +76,7 @@ public:
                               0, 1, 0.0, 1, 2, true);
   }
 
-  typedef struct _TessUserData {
+  struct TessUserData {
     GLenum which;
     GLdouble *normal;
     CGAL::Color color;
@@ -90,10 +86,10 @@ public:
     size_t draw_size;
     size_t elements_offset;
     VertexArray& vertex_array;
-  } TessUserData;
+  };
 
   static inline void CGAL_GLU_TESS_CALLBACK beginCallback(GLenum which, GLvoid *user) {
-    TessUserData *tess(static_cast<TessUserData *>(user));
+    auto *tess(static_cast<TessUserData *>(user));
     // Create separate vertex set since "which" could be different draw type
     tess->which = which;
     tess->draw_size = 0;
@@ -109,7 +105,7 @@ public:
   }
 
   static inline void CGAL_GLU_TESS_CALLBACK endCallback(GLvoid *user) {
-    TessUserData *tess(static_cast<TessUserData *>(user));
+    auto *tess(static_cast<TessUserData *>(user));
 
     GLenum elements_type = 0;
     if (tess->vertex_array.useElements()) elements_type = tess->vertex_array.elementsData()->glType();
@@ -129,8 +125,8 @@ public:
   }
 
   static inline void CGAL_GLU_TESS_CALLBACK vertexCallback(GLvoid *vertex, GLvoid *user) {
-    GLdouble *pc(static_cast<GLdouble *>(vertex));
-    TessUserData *tess(static_cast<TessUserData *>(user));
+    auto *pc(static_cast<GLdouble *>(vertex));
+    auto *tess(static_cast<TessUserData *>(user));
     size_t shape_size = 0;
 
     switch (tess->which) {
@@ -158,15 +154,15 @@ public:
   static inline void CGAL_GLU_TESS_CALLBACK combineCallback(GLdouble coords[3], GLvoid *[4], GLfloat [4], GLvoid **dataOut) {
     static std::list<GLdouble *> pcache;
     if (dataOut) {
-      GLdouble *n = new GLdouble[3];
+      auto *n = new GLdouble[3];
       n[0] = coords[0];
       n[1] = coords[1];
       n[2] = coords[2];
       pcache.push_back(n);
       *dataOut = n;
     } else {
-      for (std::list<GLdouble *>::const_iterator i = pcache.begin(); i != pcache.end(); i++)
-        delete[] *i;
+      for (auto& i : pcache)
+        delete[] i;
       pcache.clear();
     }
   }
@@ -207,7 +203,7 @@ public:
     }
     gluTessEndPolygon(tess_);
     gluDeleteTess(tess_);
-    combineCallback(NULL, NULL, NULL, NULL);
+    combineCallback(nullptr, nullptr, nullptr, nullptr);
   }
 
   void create_polyhedron() {
@@ -322,7 +318,6 @@ public:
     VertexArray halffacets_array(std::make_shared<VertexStateFactory>(), halffacets_states);
     halffacets_array.addSurfaceData();
     halffacets_array.writeSurface();
-    last_size = 0;
 
     settings = std::make_shared<VertexState>();
     settings->glBegin().emplace_back([]() {
@@ -384,10 +379,10 @@ public:
   }
 
 protected:
-  GLuint points_edges_vertices_vbo;
-  GLuint points_edges_elements_vbo;
-  GLuint halffacets_vertices_vbo;
-  GLuint halffacets_elements_vbo;
+  GLuint points_edges_vertices_vbo{0};
+  GLuint points_edges_elements_vbo{0};
+  GLuint halffacets_vertices_vbo{0};
+  GLuint halffacets_elements_vbo{0};
   VertexStates points_edges_states;
   VertexStates halffacets_states;
 }; // Polyhedron

@@ -20,8 +20,7 @@ const auto get_version_string = [](const library_version_number& header_version,
     if (!match) {
       version_stream << " (runtime: " << runtime_version.major << '.' << runtime_version.minor << '.' << runtime_version.micro << ')';
     }
-    const std::string version = version_stream.str();
-    return version;
+    return version_stream.str();
   };
 
 const auto get_version = [](const std::string& header_version, const std::string& runtime_version)
@@ -32,8 +31,7 @@ const auto get_version = [](const std::string& header_version, const std::string
     if (header_version != runtime_version) {
       version_stream << " (runtime: " << runtime_version << ')';
     }
-    const std::string version = version_stream.str();
-    return version;
+    return version_stream.str();
   };
 
 } // namespace OpenSCAD

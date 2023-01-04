@@ -35,7 +35,7 @@
 #include <QOpenGLContext>
 
 QOpenGLContext *
-getGLContext(void)
+getGLContext()
 {
   return (QOpenGLContext::currentContext());
 }

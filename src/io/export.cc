@@ -181,7 +181,7 @@ ExportMesh::ExportMesh(const PolySet& ps)
     });
 }
 
-bool ExportMesh::foreach_vertex(const std::function<bool(const Vertex&)> callback) const
+bool ExportMesh::foreach_vertex(const std::function<bool(const Vertex&)>& callback) const
 {
   for (const auto& v : vertices) {
     if (!callback(v)) {
@@ -191,7 +191,7 @@ bool ExportMesh::foreach_vertex(const std::function<bool(const Vertex&)> callbac
   return true;
 }
 
-bool ExportMesh::foreach_indexed_triangle(const std::function<bool(const std::array<int, 3>&)> callback) const
+bool ExportMesh::foreach_indexed_triangle(const std::function<bool(const std::array<int, 3>&)>& callback) const
 {
   for (const auto& t : triangles) {
     if (!callback(t.key)) {
@@ -201,7 +201,7 @@ bool ExportMesh::foreach_indexed_triangle(const std::function<bool(const std::ar
   return true;
 }
 
-bool ExportMesh::foreach_triangle(const std::function<bool(const std::array<std::array<double, 3>, 3>&)> callback) const
+bool ExportMesh::foreach_triangle(const std::function<bool(const std::array<std::array<double, 3>, 3>&)>& callback) const
 {
   for (const auto& t : triangles) {
     auto& v0 = vertices[t.key[0]];

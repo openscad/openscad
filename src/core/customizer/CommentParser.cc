@@ -14,7 +14,7 @@ struct GroupInfo {
   int lineNo;
 };
 
-typedef std::vector<GroupInfo> GroupList;
+using GroupList = std::vector<GroupInfo>;
 
 /*
    Finds line to break stop parsing parsing parameters
@@ -172,7 +172,8 @@ static GroupInfo createGroup(std::string comment, int lineNo)
     if (finalGroupName.empty()) {
       finalGroupName = groupName;
     } else {
-      finalGroupName = finalGroupName + "-" + groupName;
+      finalGroupName.push_back('-');
+      finalGroupName.append(groupName);
     }
     groupName.clear();
     comment = match.suffix();
@@ -266,9 +267,9 @@ void CommentParser::collectParameters(const std::string& fulltext, SourceFile *r
     if (!assignment->getExpr()->isLiteral()) continue; // Only consider literals
 
     // get location of assignment node
-    auto firstLocation     = assignment->location();
+    auto firstLocation = assignment->location();
     auto overwriteLocation = assignment->locationOfOverwrite();
-    auto location = overwriteLocation.isNone() ? firstLocation : overwriteLocation ;
+    auto location = overwriteLocation.isNone() ? firstLocation : overwriteLocation;
 
     int firstLine = location.firstLine();
     if (firstLine >= parseTill || (
@@ -279,7 +280,7 @@ void CommentParser::collectParameters(const std::string& fulltext, SourceFile *r
       continue;
     }
     // making list to add annotations
-    AnnotationList *annotationList = new AnnotationList();
+    auto *annotationList = new AnnotationList();
 
     // Extracting the parameter comment
     shared_ptr<Expression> params;
