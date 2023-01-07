@@ -263,10 +263,7 @@ PyObject* openscad_cube(PyObject *self, PyObject *args, PyObject *kwargs)
    if(center != NULL)
 	   if(!strcasecmp(center,"true")) node->center=1;
 
-//   result_node=node;
-   node_stack.push_back(node);
-   return PyOpenSCADObject_new2(&PyOpenSCADType,node);
-   //return PyLong_FromLong(55);
+   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
 
 PyObject* openscad_output(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -275,18 +272,8 @@ PyObject* openscad_output(PyObject *self, PyObject *args, PyObject *kwargs)
    char * kwlist[] ={"object",NULL};
    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O!", kwlist, &PyOpenSCADType,&object))
    	return NULL;
-   if(object != NULL)
-   {
-	   result_node=((PyOpenSCADObject *) object)->node; 
-//  	 if(node_stack.size() > 0)
- // 	 {
-//		   if(result_node != NULL) printf("Warninging: overwriting result\n");
-//		   result_node = node_stack.back();
-//		   node_stack.pop_back();
- // 	 }
-   }
+   if(object != NULL) result_node=PyOpenSCADObjectToNode(object);
    return PyLong_FromLong(55);
-//   return NULL;
 }
 
 
@@ -437,8 +424,7 @@ PyObject* openscad_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
 
 
 //   return PyOpenSCADObject_new(node);
-   node_stack.push_back(node);
-   return PyLong_FromLong(55);
+   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
 
 
@@ -631,9 +617,7 @@ PyObject* openscad_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
    if(center != NULL)
 	   if(!strcasecmp(center,"true")) node->center=1;
 
-//   return PyOpenSCADObject_new(node);
-   node_stack.push_back(node);
-   return PyLong_FromLong(55);
+   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
 
 

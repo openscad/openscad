@@ -13,10 +13,11 @@ PyMODINIT_FUNC PyInit_PyOpenSCAD(void);
 extern PyTypeObject PyOpenSCADType;
 
 extern std::shared_ptr<AbstractNode> result_node;
-extern std::vector<std::shared_ptr<AbstractNode>> node_stack;
 
 void PyOpenSCADObject_dealloc(PyOpenSCADObject * self);
-PyObject * PyOpenSCADObject_new2( PyTypeObject *type,std::shared_ptr<AbstractNode> node);
+
+PyObject * PyOpenSCADObjectFromNode( PyTypeObject *type,std::shared_ptr<AbstractNode> node);
+std::shared_ptr<AbstractNode> & PyOpenSCADObjectToNode(PyObject *object);
 
 PyObject* openscad_cube(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* openscad_cylinder(PyObject *self, PyObject *args, PyObject *kwargs);

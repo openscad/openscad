@@ -18,31 +18,26 @@ static PyObject * PyOpenSCADObject_new(PyTypeObject *type,PyObject *args,  PyObj
 {
     PyOpenSCADObject *self;
     self = (PyOpenSCADObject *)  type->tp_alloc(type,0);
-    printf("b self=%p %d\n",self,sizeof(PyOpenSCADObject));
-    if (self != NULL) {
-//	self->node=node; // node;
-    }
-	printf("C\n");
-    printf("Self=%p\n",self);
-    printf("b\n");
     return (PyObject *)self;
 }
 
-PyObject * PyOpenSCADObject_new2(PyTypeObject *type, std::shared_ptr<AbstractNode> node)
+PyObject * PyOpenSCADObjectFromNode(PyTypeObject *type, std::shared_ptr<AbstractNode> node)
 {
     PyOpenSCADObject *self;
-	printf("a\n");
     self = (PyOpenSCADObject *)  type->tp_alloc(type,0);
     if (self != NULL) {
-	self->node=node; // node;
+	self->node=node;
     }
-	printf("C\n");
-    printf("Self=%p\n",self);
-    printf("b\n");
+//    Py_XINCREF(self);
     return (PyObject *)self;
 }
 
 
+std::shared_ptr<AbstractNode> &PyOpenSCADObjectToNode(PyObject *obj)
+{
+//    Py_XDECREF(obj);
+    return ((PyOpenSCADObject *) obj)->node;
+}
 
 
 static int PyOpenSCADInit(PyOpenSCADObject *self, PyObject *arfs,PyObject *kwds)
@@ -139,7 +134,6 @@ PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
 }
 
 std::shared_ptr<AbstractNode> result_node=NULL;
-std::vector<std::shared_ptr<AbstractNode>> node_stack;
 
 //
 //

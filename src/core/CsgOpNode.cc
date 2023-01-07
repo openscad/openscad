@@ -61,28 +61,25 @@ PyObject* openscad_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs,Open
 {
   std::shared_ptr<AbstractNode> child;
   int i;
+  int n;
 
   auto node = std::make_shared<CsgOpNode>(&todo_fix_inst, mode);
-  char *kwlist[]= { "n",NULL };
+  char *kwlist[]= { "obj",NULL };
+  PyObject *objs = NULL;
+  PyObject *obj;
 
-  int n=2;
-  if (! PyArg_ParseTupleAndKeywords(args, kwargs, "|i", kwlist, &n)) {
+  if (! PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, &PyList_Type,&objs)) {
     printf("error duing parsing\n");
     return NULL; 
   }
-  if(node_stack.size() < n) {
-	  printf("Too few items on stack!\n");
-	  return NULL;
-  }
+  n = PyList_Size(objs);
   for(i=0;i<n;i++) {
-	
-	child = node_stack.back();
-	node_stack.pop_back();
-  	node->children.push_back(child);
+	obj = PyList_GetItem(objs,i);
+	child = PyOpenSCADObjectToNode(obj);
+        node->children.push_back(child);
   }
-
-   node_stack.push_back(node);
-   return PyLong_FromLong(55);
+  
+   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
 
 PyObject* openscad_union(PyObject *self, PyObject *args, PyObject *kwargs)

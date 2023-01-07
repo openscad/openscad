@@ -160,18 +160,17 @@ PyObject* openscad_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   std::shared_ptr<AbstractNode> child;
 
-  if(node_stack.size() == 0) return NULL;
-  child = node_stack.back();
-  node_stack.pop_back();
-
   auto node = std::make_shared<TransformNode>(&todo_fix_inst, "rotate");
 
-  char * kwlist[] ={"a","v",NULL};
+  char * kwlist[] ={"obj","a","v",NULL};
 
   PyObject *val_a = NULL; 
+  PyObject *obj=NULL;
   float *val_v=0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|f", kwlist, &PyList_Type,&val_a,&val_v ))
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!|f", kwlist, &PyOpenSCADType, &obj, &PyList_Type,&val_a, &val_v ))
    	return NULL;
+
+  child = PyOpenSCADObjectToNode(obj);
 
   if(PyList_Size(val_a) > 0) {
     double sx = 0, sy = 0, sz = 0;
@@ -231,9 +230,7 @@ PyObject* openscad_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
  }
    
    node->children.push_back(child);
-   node_stack.push_back(node);
-
-   return PyLong_FromLong(55);
+   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
 }
 
 
@@ -291,17 +288,21 @@ PyObject* openscad_translate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   std::shared_ptr<AbstractNode> child;
 
-  if(node_stack.size() == 0) return NULL;
-  child = node_stack.back();
-  node_stack.pop_back();
 
   auto node = std::make_shared<TransformNode>(&todo_fix_inst, "translate");
 
-  char * kwlist[] ={"v",NULL};
+  char * kwlist[] ={"obj","v",NULL};
   PyObject *v = NULL; 
+  PyObject *obj = NULL;
   double x=0,y=0,z=0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, &PyList_Type,&v ))
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
+			  &PyOpenSCADType,
+			  &obj,
+			  &PyList_Type,
+			  &v 
+			  ))
    	return NULL;
+  child = PyOpenSCADObjectToNode(obj);
 
   if(PyList_Size(v) == 3) {
      	x=PyFloat_AsDouble(PyList_GetItem(v, 0));
@@ -310,11 +311,9 @@ PyObject* openscad_translate(PyObject *self, PyObject *args, PyObject *kwargs)
    }
    Vector3d translatevec(x, y, z);
 
-   node->matrix.translate(translatevec); // TODO fix this and use arguments!
+   node->matrix.translate(translatevec);
    node->children.push_back(child);
-   node_stack.push_back(node);
-
-   return PyLong_FromLong(55);
+   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
 }
 
 std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
