@@ -2,18 +2,60 @@
 // Date: 2023-01-01
 // Purpose: Extend openscad with an python interpreter
 #include <Python.h>
+#include <structmember.h>
 #include "pyopenscad.h"
 
 // https://docs.python.it/html/ext/dnt-basics.html
 
-std::shared_ptr<AbstractNode> result_node=NULL;
-std::vector<std::shared_ptr<AbstractNode>> node_stack;
+void PyOpenSCADObject_dealloc(PyOpenSCADObject * self)
+{
+    //Py_XDECREF(self->first);
+    //Py_XDECREF(self->last);
+    Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
+static PyObject * PyOpenSCADObject_new(PyTypeObject *type,PyObject *args,  PyObject *kwds)
+{
+    PyOpenSCADObject *self;
+    self = (PyOpenSCADObject *)  type->tp_alloc(type,0);
+    printf("b self=%p %d\n",self,sizeof(PyOpenSCADObject));
+    if (self != NULL) {
+//	self->node=node; // node;
+    }
+	printf("C\n");
+    printf("Self=%p\n",self);
+    printf("b\n");
+    return (PyObject *)self;
+}
+
+PyObject * PyOpenSCADObject_new2(PyTypeObject *type, std::shared_ptr<AbstractNode> node)
+{
+    PyOpenSCADObject *self;
+	printf("a\n");
+    self = (PyOpenSCADObject *)  type->tp_alloc(type,0);
+    if (self != NULL) {
+	self->node=node; // node;
+    }
+	printf("C\n");
+    printf("Self=%p\n",self);
+    printf("b\n");
+    return (PyObject *)self;
+}
 
 
 
-/* Return the number of arguments of the application command line */
 
-static PyMethodDef OpenSCADMethods[] = {
+static int PyOpenSCADInit(PyOpenSCADObject *self, PyObject *arfs,PyObject *kwds)
+{
+	return 0;
+}
+
+
+static PyMemberDef PyOpenSCADMembers[] = {
+	{NULL}
+};
+
+static PyMethodDef PyOpenSCADMethods[] = {
     {"cube", (PyCFunction) openscad_cube, METH_VARARGS | METH_KEYWORDS, "Create Cube."},
     {"cylinder", (PyCFunction) openscad_cylinder, METH_VARARGS | METH_KEYWORDS, "Create Cylinder."},
     {"sphere", (PyCFunction) openscad_sphere, METH_VARARGS | METH_KEYWORDS, "Create Sphere."},
@@ -29,25 +71,13 @@ static PyMethodDef OpenSCADMethods[] = {
     {NULL, NULL, 0, NULL}
 };
 
-static PyModuleDef OpenSCADModule = {
-    PyModuleDef_HEAD_INIT, "openscad", NULL, -1, OpenSCADMethods,
-    NULL, NULL, NULL, NULL
-};
 
-static PyObject* PyInit_openscad(void)
-{
-    return PyModule_Create(&OpenSCADModule);
-}
-
-
-
-
-static PyTypeObject PyOpenSCADType = {
+PyTypeObject PyOpenSCADType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "PyOpenSCAD",             /* tp_name */
     sizeof(PyOpenSCADObject), /* tp_basicsize */
     0,                         /* tp_itemsize */
-    0,                         /* tp_dealloc */
+    (destructor) PyOpenSCADObject_dealloc ,                         /* tp_dealloc */
     0,                         /* tp_print */
     0,                         /* tp_getattr */
     0,                         /* tp_setattr */
@@ -62,55 +92,63 @@ static PyTypeObject PyOpenSCADType = {
     0,                         /* tp_getattro */
     0,                         /* tp_setattro */
     0,                         /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,        /* tp_flags */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,        /* tp_flags */
     "PyOpenSCAD objects",           /* tp_doc */
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    PyOpenSCADMethods,
+    PyOpenSCADMembers,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    (initproc) PyOpenSCADInit,
+    0,
+    PyOpenSCADObject_new,
 };
 
-static PyModuleDef OpenScadModule = {
+
+static PyModuleDef OpenSCADModule = {
     PyModuleDef_HEAD_INIT,
-    "PyOpenScadType",
+    "openscad",
     "Example module that creates an extension type.",
     -1,
-    NULL, NULL, NULL, NULL, NULL
+    PyOpenSCADMethods,
+    NULL, NULL, NULL, NULL
 };
 
 PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
 {
     PyObject* m;
 
-    PyOpenSCADType.tp_new = PyType_GenericNew;
-    if (PyType_Ready(&PyOpenSCADType) < 0)
-        return NULL;
-
-    m = PyModule_Create(&OpenScadModule);
+    if(PyType_Ready(&PyOpenSCADType) < 0)
+	    return NULL;
+    m = PyModule_Create(&OpenSCADModule);
     if (m == NULL)
         return NULL;
 
     Py_INCREF(&PyOpenSCADType);
-    PyModule_AddObject(m, "PyOpenSCADObject", (PyObject *)&PyOpenSCADType);
+    PyModule_AddObject(m, "openscad", (PyObject *)&PyOpenSCADType);
     return m;
 }
 
-void PyOpenSCADObject_dealloc(PyOpenSCADObject * self)
-{
-    //Py_XDECREF(self->first);
-    //Py_XDECREF(self->last);
-    Py_TYPE(self)->tp_free((PyObject*)self);
-}
+std::shared_ptr<AbstractNode> result_node=NULL;
+std::vector<std::shared_ptr<AbstractNode>> node_stack;
 
-PyObject * PyOpenSCADObject_new( std::shared_ptr<AbstractNode> node)
+//
+//
+//
+//
+//
+static PyObject* PyInit_openscad(void)
 {
-    PyOpenSCADObject *self;
-	printf("a\n");
-    self = (PyOpenSCADObject *)malloc(sizeof(PyOpenSCADObject));
-    printf("b self=%p %d\n",self,sizeof(PyOpenSCADObject));
-    if (self != NULL) {
-	self->node=node; // node;
-    }
-	printf("C\n");
-    printf("Self=%p\n",self);
-    printf("b\n");
-    return (PyObject *)self;
+    return PyModule_Create(&OpenSCADModule);
 }
 
 
