@@ -4,16 +4,6 @@
 #include "Expression.h"
 #include "exceptions.h"
 #include "printutils.h"
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
-
-ModuleInstantiation::~ModuleInstantiation()
-{
-}
-
-IfElseModuleInstantiation::~IfElseModuleInstantiation()
-{
-}
 
 void ModuleInstantiation::print(scad::ostringstream& stream, const std::string& indent, const bool inlined) const
 {
@@ -64,11 +54,11 @@ void IfElseModuleInstantiation::print(scad::ostringstream& stream, const std::st
  * noinline is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
  */
-static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<const Context> context){
+static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<const Context>& context){
   LOG(message_group::Trace, mod->location(), context->documentRoot(), "called by '%1$s'", mod->name());
 }
 
-std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_ptr<const Context> context) const
+std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_ptr<const Context>& context) const
 {
   boost::optional<InstantiableModule> module = context->lookup_module(this->name(), this->loc);
   if (!module) {

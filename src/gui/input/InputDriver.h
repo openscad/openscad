@@ -37,8 +37,7 @@ public:
   const static size_t max_buttons = 24;
 
 public:
-  InputDriver();
-  virtual ~InputDriver();
+  InputDriver() = default;
 
   virtual const std::string& get_name() const = 0;
   virtual std::string get_info() const = 0;

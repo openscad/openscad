@@ -8,8 +8,8 @@ class DxfData
 public:
   struct Path {
     std::vector<int> indices; // indices into DxfData::points
-    bool is_closed, is_inner;
-    Path() : is_closed(false), is_inner(false) { }
+    bool is_closed{false}, is_inner{false};
+    Path() = default;
   };
   struct Dim {
     unsigned int type;
@@ -18,9 +18,11 @@ public:
     double length;
     std::string name;
     Dim() {
-      for (int i = 0; i < 7; ++i)
-        for (int j = 0; j < 2; ++j)
-          coords[i][j] = 0;
+      for (auto& coord : coords) {
+        for (double& j : coord) {
+          j = 0;
+        }
+      }
       type = 0;
       angle = 0;
       length = 0;
@@ -31,7 +33,7 @@ public:
   std::vector<Path> paths;
   std::vector<Dim> dims;
 
-  DxfData();
+  DxfData() = default;
   DxfData(double fn, double fs, double fa,
           const std::string& filename, const std::string& layername = "",
           double xorigin = 0.0, double yorigin = 0.0, double scale = 1.0);
@@ -39,6 +41,6 @@ public:
   int addPoint(double x, double y);
 
   void fixup_path_direction();
-  std::string dump() const;
-  class Polygon2d *toPolygon2d() const;
+  [[nodiscard]] std::string dump() const;
+  [[nodiscard]] class Polygon2d *toPolygon2d() const;
 };

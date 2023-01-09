@@ -1,5 +1,4 @@
-#ifndef __VBORENDERER_H__
-#define __VBORENDERER_H__
+#pragma once
 
 #include "Renderer.h"
 #include "system-gl.h"
@@ -17,15 +16,13 @@ class VBOShaderVertexState : public VertexState
 public:
   VBOShaderVertexState(size_t draw_offset, size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo)
     : VertexState(0, 0, 0, draw_offset, element_offset, vertices_vbo, elements_vbo) {}
-  virtual ~VBOShaderVertexState() {}
 };
 
 class VBORenderer : public Renderer
 {
 public:
   VBORenderer();
-  virtual ~VBORenderer() {}
-  virtual void resize(int w, int h);
+  void resize(int w, int h) override;
   virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f& col, Color4f& outcolor) const;
   virtual size_t getSurfaceBufferSize(const std::shared_ptr<CSGProducts>& products, bool highlight_mode, bool background_mode, bool unique_geometry = false) const;
   virtual size_t getSurfaceBufferSize(const CSGChainObject& csgobj, bool highlight_mode, bool background_mode, const OpenSCADOperator type = OpenSCADOperator::UNION, bool unique_geometry = false) const;
@@ -77,10 +74,8 @@ private:
                              size_t shape_dimensions = 0, bool outlines = false,
                              bool mirror = false) const;
 
-  size_t shader_attributes_index;
+  size_t shader_attributes_index{0};
   enum ShaderAttribIndex {
     BARYCENTRIC_ATTRIB
   };
 };
-
-#endif // __VBORENDERER_H__

@@ -31,19 +31,10 @@
 
 #include "input/SpaceNavInputDriver.h"
 #include "input/InputDriverManager.h"
+#include "utils/printutils.h"
 
 #include <spnav.h>
 #include <unistd.h>
-
-SpaceNavInputDriver::SpaceNavInputDriver()
-{
-
-}
-
-SpaceNavInputDriver::~SpaceNavInputDriver()
-{
-
-}
 
 void SpaceNavInputDriver::run()
 {
@@ -58,7 +49,7 @@ void SpaceNavInputDriver::run()
  * one event is available and then processes all events until the queue is
  * empty.
  */
-bool SpaceNavInputDriver::spnav_input(void)
+bool SpaceNavInputDriver::spnav_input()
 {
   spnav_event ev;
 

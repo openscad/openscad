@@ -33,6 +33,7 @@
 #include "printutils.h"
 #include "degree_trig.h"
 #include <sstream>
+#include <utility>
 #include <vector>
 #include <cassert>
 #include <boost/assign/std/vector.hpp>
@@ -46,7 +47,7 @@ enum class transform_type_e {
   MULTMATRIX
 };
 
-std::shared_ptr<AbstractNode> builtin_scale(const ModuleInstantiation *inst, Arguments arguments, Children children)
+std::shared_ptr<AbstractNode> builtin_scale(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "scale");
 
@@ -71,7 +72,7 @@ std::shared_ptr<AbstractNode> builtin_scale(const ModuleInstantiation *inst, Arg
   return children.instantiate(node);
 }
 
-std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Arguments arguments, Children children)
+std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "rotate");
 
@@ -88,19 +89,19 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
     switch (vec_a.size()) {
     default:
       ok &= false;
-    /* fallthrough */
+      [[fallthrough]];
     case 3:
       ok &= vec_a[2].getDouble(a);
       ok &= !std::isinf(a) && !std::isnan(a);
       sz = sin_degrees(a);
       cz = cos_degrees(a);
-    /* fallthrough */
+      [[fallthrough]];
     case 2:
       ok &= vec_a[1].getDouble(a);
       ok &= !std::isinf(a) && !std::isnan(a);
       sy = sin_degrees(a);
       cy = cos_degrees(a);
-    /* fallthrough */
+      [[fallthrough]];
     case 1:
       ok &= vec_a[0].getDouble(a);
       ok &= !std::isinf(a) && !std::isnan(a);
@@ -150,7 +151,7 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
   return children.instantiate(node);
 }
 
-std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Arguments arguments, Children children)
+std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "mirror");
 
@@ -182,7 +183,7 @@ std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Ar
   return children.instantiate(node);
 }
 
-std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst, Arguments arguments, Children children)
+std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "translate");
 
@@ -200,7 +201,7 @@ std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst,
   return children.instantiate(node);
 }
 
-std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst, Arguments arguments, Children children)
+std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "multmatrix");
 
@@ -238,10 +239,10 @@ void TransformNode::print(scad::ostringstream& stream) const
   stream << "])";
 }
 
-TransformNode::TransformNode(const ModuleInstantiation *mi, const std::string& verbose_name) :
+TransformNode::TransformNode(const ModuleInstantiation *mi, std::string verbose_name) :
   AbstractNode(mi),
   matrix(Transform3d::Identity()),
-  _name(verbose_name)
+  _name(std::move(verbose_name))
 {
 }
 

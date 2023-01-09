@@ -65,7 +65,7 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
       continue;
     }
 
-    polygons.push_back({});
+    polygons.emplace_back();
     auto& faces = polygons.back();
     faces.push_back(IndexedFace());
     auto& currface = faces.back();

@@ -10,7 +10,7 @@
 
 CGAL_Nef_polyhedron *import_nef3(const std::string& filename, const Location& loc)
 {
-  CGAL_Nef_polyhedron *N = new CGAL_Nef_polyhedron;
+  auto *N = new CGAL_Nef_polyhedron;
 
   // Open file and position at the end
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary);

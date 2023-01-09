@@ -24,23 +24,23 @@
 class Camera
 {
 public:
-  enum class ProjectionType { ORTHOGONAL, PERSPECTIVE } projection;
+  enum class ProjectionType { ORTHOGONAL, PERSPECTIVE } projection{ProjectionType::PERSPECTIVE};
   Camera();
   void setup(std::vector<double> params);
   void gimbalDefaultTranslate();
   void setProjection(ProjectionType type);
   void zoom(int delta, bool relative);
-  double zoomValue() const;
-  double fovValue() const;
+  [[nodiscard]] double zoomValue() const;
+  [[nodiscard]] double fovValue() const;
   void resetView();
-  void updateView(const std::shared_ptr<const class FileContext> context, bool enableWarning);
+  void updateView(const std::shared_ptr<const class FileContext>& context, bool enableWarning);
   void viewAll(const BoundingBox& bbox);
-  std::string statusText() const;
+  [[nodiscard]] std::string statusText() const;
 
   // accessors to get and set camera settings in the user space format (different for historical reasons)
-  Eigen::Vector3d getVpt() const;
+  [[nodiscard]] Eigen::Vector3d getVpt() const;
   void setVpt(double x, double y, double z);
-  Eigen::Vector3d getVpr() const;
+  [[nodiscard]] Eigen::Vector3d getVpr() const;
   void setVpr(double x, double y, double z);
   void setVpd(double d);
   void setVpf(double d);
@@ -54,11 +54,11 @@ public:
 
   // true if camera should try to view everything in a given
   // bounding box.
-  bool viewall;
+  bool viewall{false};
 
   // true if camera should point at center of bounding box
   // (normally it points at 0,0,0 or at given coordinates)
-  bool autocenter;
+  bool autocenter{false};
 
   unsigned int pixel_width;
   unsigned int pixel_height;

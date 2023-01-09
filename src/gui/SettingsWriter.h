@@ -30,5 +30,5 @@
 class SettingsWriter : public Settings::SettingsVisitor
 {
 public:
-  virtual void handle(Settings::SettingsEntry& entry) const;
+  void handle(Settings::SettingsEntry& entry) const override;
 };

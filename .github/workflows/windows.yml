@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    name: windows-latest
     defaults:
       run:
         shell: msys2 {0}
@@ -18,24 +19,29 @@ jobs:
       - name: Setup MSYS2 Environment
         uses: msys2/setup-msys2@v2
         with:
-          msystem: MINGW64
-          #update: true
+          msystem: UCRT64
+          update: true
       - name: Install MSYS2 Dependencies
         run: |
           pwd
           ./scripts/msys2-install-dependencies.sh
+      - name: Install Mesa
+        uses: ssciwr/setup-mesa-dist-win@v1
+        with:
+          version: '22.1.7'
+          build-type: 'release-mingw'
       - name: Build OpenSCAD
         run: |
           git submodule update --init --recursive
           mkdir build && cd build
-          cmake .. -G"MSYS Makefiles" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON
-          mingw32-make.exe -j2
+          cmake .. -G"Ninja" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON
+          cmake --build . -j2
+          cmake --install . --prefix=.
       - name: Run Test Suite
         run: |
           cd build
-          cp -v "${RUNNER_TEMP}/msys64/mingw64/bin/opengl32.dll" .
           cd tests
-          ctest -j2 -E 'opencsgtest_issue1165|opencsgtest_issue1215|throwntogethertest_issue1089|throwntogethertest_issue1215|openscad-nonascii|import_3mf|3mfpngtest|3mfexport|pdfexporttest_centered'
+          ctest -j2
       - name: Upload Test Result Report
         uses: actions/upload-artifact@v3
         if: ${{ always() }}

@@ -50,7 +50,7 @@
 #  include <opencsg.h>
 #endif
 
-#include "qt-obsolete.h" 
+#include "qt-obsolete.h"
 
 QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent)
 {
@@ -355,12 +355,12 @@ void QGLView::wheelEvent(QWheelEvent *event)
   }
 }
 
-void QGLView::ZoomIn(void)
+void QGLView::ZoomIn()
 {
   zoom(120, true);
 }
 
-void QGLView::ZoomOut(void)
+void QGLView::ZoomOut()
 {
   zoom(-120, true);
 }

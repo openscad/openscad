@@ -26,7 +26,7 @@ enum class RenderColor {
   CROSSHAIR_COLOR
 };
 
-typedef std::map<RenderColor, Color4f> ColorScheme;
+using ColorScheme = std::map<RenderColor, Color4f>;
 
 class RenderColorScheme
 {
@@ -49,35 +49,35 @@ public:
   /**
    * Constructor for reading external JSON files.
    */
-  RenderColorScheme(const fs::path path);
-  virtual ~RenderColorScheme();
+  RenderColorScheme(const fs::path& path);
+  virtual ~RenderColorScheme() = default;
 
-  const std::string& name() const;
-  int index() const;
-  bool valid() const;
-  bool showInGui() const;
+  [[nodiscard]] const std::string& name() const;
+  [[nodiscard]] int index() const;
+  [[nodiscard]] bool valid() const;
+  [[nodiscard]] bool showInGui() const;
   ColorScheme& colorScheme();
-  const boost::property_tree::ptree& propertyTree() const;
+  [[nodiscard]] const boost::property_tree::ptree& propertyTree() const;
 
 private:
-  std::string path() const;
-  std::string error() const;
-  void addColor(RenderColor colorKey, std::string key);
+  [[nodiscard]] std::string path() const;
+  [[nodiscard]] std::string error() const;
+  void addColor(RenderColor colorKey, const std::string& key);
 
   friend class ColorMap;
 };
 
 class ColorMap
 {
-  typedef std::multimap<int, shared_ptr<RenderColorScheme>, std::less<int>> colorscheme_set_t;
+  using colorscheme_set_t = std::multimap<int, shared_ptr<RenderColorScheme>, std::less<>>;
 
 public:
   static ColorMap *inst(bool erase = false);
 
-  const char *defaultColorSchemeName() const;
-  const ColorScheme& defaultColorScheme() const;
-  const ColorScheme *findColorScheme(const std::string& name) const;
-  std::list<std::string> colorSchemeNames(bool guiOnly = false) const;
+  [[nodiscard]] const char *defaultColorSchemeName() const;
+  [[nodiscard]] const ColorScheme& defaultColorScheme() const;
+  [[nodiscard]] const ColorScheme *findColorScheme(const std::string& name) const;
+  [[nodiscard]] std::list<std::string> colorSchemeNames(bool guiOnly = false) const;
 
   static Color4f getColor(const ColorScheme& cs, const RenderColor rc);
   static Color4f getContrastColor(const Color4f& col);
@@ -85,9 +85,9 @@ public:
 
 private:
   ColorMap();
-  virtual ~ColorMap();
+  virtual ~ColorMap() = default;
   void dump() const;
   colorscheme_set_t enumerateColorSchemes();
-  void enumerateColorSchemesInPath(colorscheme_set_t& result_set, const fs::path path);
+  void enumerateColorSchemesInPath(colorscheme_set_t& result_set, const fs::path& path);
   colorscheme_set_t colorSchemeSet;
 };

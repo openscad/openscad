@@ -7,9 +7,9 @@ class RenderNode : public AbstractNode
 {
 public:
   VISITABLE();
-  RenderNode(const ModuleInstantiation *mi) : AbstractNode(mi), convexity(1) { }
+  RenderNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
   void print(scad::ostringstream& stream) const override final;
   std::string name() const override final { return "render"; }
 
-  int convexity;
+  int convexity{1};
 };

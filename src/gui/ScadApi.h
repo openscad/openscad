@@ -13,11 +13,9 @@ private:
   QStringList params;
 
 public:
-  ApiFunc(const QString name, const QString param) : name(name), params(QStringList(param)) { }
-  ApiFunc(const QString name, const QString param1, const QString param2) : name(name), params(QStringList(param1) << param2) { }
-  ApiFunc(const QString name, const QStringList params) : name(name), params(params) { }
-
-  virtual ~ApiFunc() { }
+  ApiFunc(QString name, QString param) : name(std::move(name)), params{std::move(param)} { }
+  ApiFunc(QString name, QString param1, QString param2) : name(std::move(name)), params{std::move(param1), std::move(param2)} { }
+  ApiFunc(QString name, QStringList params) : name(std::move(name)), params(std::move(params)) { }
 
   const QString& get_name() const
   {
@@ -47,8 +45,7 @@ private:
 public:
 
   ScadTemplate() : text(""), cursor_offset(0) { }
-  ScadTemplate(const QString text, const int cursor_offset) : text(text), cursor_offset(cursor_offset) { }
-  virtual ~ScadTemplate() { }
+  ScadTemplate(QString text, int cursor_offset) : text(std::move(text)), cursor_offset(cursor_offset) { }
   const QString& get_text() const { return text; }
   int get_cursor_offset() const { return cursor_offset; }
 
@@ -78,7 +75,6 @@ protected:
 
 public:
   ScadApi(ScintillaEditor *editor, QsciLexer *lexer);
-  virtual ~ScadApi();
 
   void updateAutoCompletionList(const QStringList& context, QStringList& list) override;
   void autoCompletionSelected(const QString& selection) override;

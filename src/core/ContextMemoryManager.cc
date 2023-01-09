@@ -46,9 +46,9 @@
  * - the use_count() of the shared object;
  * - the list of values stored, and contexts referenced.
  */
-typedef void *ValueIdentifier;
+using ValueIdentifier = void *;
 
-struct IdentifierVisitor : public boost::static_visitor<ValueIdentifier>
+struct IdentifierVisitor
 {
   ValueIdentifier operator()(const UndefType&) const { return nullptr; }
   ValueIdentifier operator()(bool) const { return nullptr; }
@@ -62,7 +62,7 @@ struct IdentifierVisitor : public boost::static_visitor<ValueIdentifier>
   ValueIdentifier operator()(const FunctionPtr& value) const { return value.get().get(); }
 };
 
-struct UseCountVisitor : public boost::static_visitor<int>
+struct UseCountVisitor
 {
   int operator()(const UndefType&) const { return 0; }
   int operator()(bool) const { return 0; }
@@ -76,7 +76,7 @@ struct UseCountVisitor : public boost::static_visitor<int>
   int operator()(const FunctionPtr& value) const { return value.get().use_count(); }
 };
 
-struct EmbeddedValuesVisitor : public boost::static_visitor<const std::vector<Value> *>
+struct EmbeddedValuesVisitor
 {
   const std::vector<Value> *operator()(const UndefType&) const { return nullptr; }
   const std::vector<Value> *operator()(bool) const { return nullptr; }
@@ -90,7 +90,7 @@ struct EmbeddedValuesVisitor : public boost::static_visitor<const std::vector<Va
   const std::vector<Value> *operator()(const FunctionPtr&) const { return nullptr; }
 };
 
-struct ReferencedContextVisitor : public boost::static_visitor<const std::shared_ptr<const Context> *>
+struct ReferencedContextVisitor
 {
   const std::shared_ptr<const Context> *operator()(const UndefType&) const { return nullptr; }
   const std::shared_ptr<const Context> *operator()(bool) const { return nullptr; }
@@ -129,7 +129,7 @@ static std::vector<Context *> findRootContexts(const std::vector<std::shared_ptr
   std::deque<const std::shared_ptr<const Context> *> contextQueue;
 
   auto visitValue = [&](const Value& value) {
-      ValueIdentifier identifier = boost::apply_visitor(IdentifierVisitor(), value.getVariant());
+      ValueIdentifier identifier = std::visit(IdentifierVisitor(), value.getVariant());
       if (!identifier) {
         return;
       }
@@ -138,17 +138,17 @@ static std::vector<Context *> findRootContexts(const std::vector<std::shared_ptr
         accountedValueReferences[identifier] = 0;
       }
       int accountedReferences = ++accountedValueReferences[identifier];
-      int requiredReferences = boost::apply_visitor(UseCountVisitor(), value.getVariant());
+      int requiredReferences = std::visit(UseCountVisitor(), value.getVariant());
       assert(accountedReferences <= requiredReferences);
       if (accountedReferences == requiredReferences) {
-        const std::vector<Value> *embeddedValues = boost::apply_visitor(EmbeddedValuesVisitor(), value.getVariant());
+        const std::vector<Value> *embeddedValues = std::visit(EmbeddedValuesVisitor(), value.getVariant());
         if (embeddedValues) {
           for (const Value& embeddedValue : *embeddedValues) {
             valueQueue.push_back(&embeddedValue);
           }
         }
 
-        const std::shared_ptr<const Context> *referencedContext = boost::apply_visitor(ReferencedContextVisitor(), value.getVariant());
+        const std::shared_ptr<const Context> *referencedContext = std::visit(ReferencedContextVisitor(), value.getVariant());
         if (referencedContext) {
           contextQueue.push_back(referencedContext);
         }
@@ -214,7 +214,7 @@ static std::unordered_set<const Context *> findReachableContexts(const std::vect
   std::deque<const Context *> contextQueue;
 
   auto visitValue = [&](const Value& value) {
-      ValueIdentifier identifier = boost::apply_visitor(IdentifierVisitor(), value.getVariant());
+      ValueIdentifier identifier = std::visit(IdentifierVisitor(), value.getVariant());
       if (!identifier) {
         return;
       }
@@ -237,14 +237,14 @@ static std::unordered_set<const Context *> findReachableContexts(const std::vect
       const Value *value = valueQueue.front();
       valueQueue.pop_front();
 
-      const std::vector<Value> *embeddedValues = boost::apply_visitor(EmbeddedValuesVisitor(), value->getVariant());
+      const std::vector<Value> *embeddedValues = std::visit(EmbeddedValuesVisitor(), value->getVariant());
       if (embeddedValues) {
         for (const Value& embeddedValue : *embeddedValues) {
           visitValue(embeddedValue);
         }
       }
 
-      const std::shared_ptr<const Context> *referencedContext = boost::apply_visitor(ReferencedContextVisitor(), value->getVariant());
+      const std::shared_ptr<const Context> *referencedContext = std::visit(ReferencedContextVisitor(), value->getVariant());
       if (referencedContext) {
         visitContext(referencedContext->get());
       }
@@ -354,10 +354,10 @@ ContextMemoryManager::~ContextMemoryManager()
   assert(heapSizeAccounting.size() == 0);
 }
 
-void ContextMemoryManager::addContext(std::shared_ptr<Context> context)
+void ContextMemoryManager::addContext(const std::shared_ptr<Context>& context)
 {
   heapSizeAccounting.addContext();
-  context->setAccountingAdded();   // avoiding bad accounting when an exception threw in constructor  issue #3871
+  context->setAccountingAdded();   // avoiding bad accounting when an exception threw in constructor issue #3871
 
   /*
    * If we are holding the last copy to this context, no point in invoking

@@ -24,7 +24,7 @@ public:
   void addVectorElement(size_t number = 1) { count += number; }
   void removeVectorElement(size_t number = 1) { count -= number; }
 
-  size_t size() const { return count; }
+  [[nodiscard]] size_t size() const { return count; }
 
 private:
   size_t count = 0;
@@ -35,7 +35,7 @@ class ContextMemoryManager
 public:
   ~ContextMemoryManager();
 
-  void addContext(std::shared_ptr<Context> context);
+  void addContext(const std::shared_ptr<Context>& context);
   void releaseContext() { heapSizeAccounting.removeContext(); }
 
   HeapSizeAccounting& accounting() { return heapSizeAccounting; }

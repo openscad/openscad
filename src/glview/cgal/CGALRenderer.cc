@@ -40,9 +40,8 @@
 
 //#include "Preferences.h"
 
-CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
-  : last_render_state(Feature::ExperimentalVxORenderers.is_enabled()), // FIXME: this is temporary to make switching between renderers seamless.
-  polyset_vertices_vbo(0), polyset_elements_vbo(0)
+CGALRenderer::CGALRenderer(const shared_ptr<const class Geometry>& geom)
+  : last_render_state(Feature::ExperimentalVxORenderers.is_enabled()) // FIXME: this is temporary to make switching between renderers seamless.
 {
   this->addGeometry(geom);
 }
@@ -236,7 +235,7 @@ void CGALRenderer::createPolySets()
   }
 }
 
-void CGALRenderer::prepare(bool showfaces, bool showedges, const shaderinfo_t * /*shaderinfo*/)
+void CGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const shaderinfo_t * /*shaderinfo*/)
 {
   PRINTD("prepare()");
   if (!polyset_states.size()) createPolySets();

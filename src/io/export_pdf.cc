@@ -152,18 +152,18 @@ void draw_geom(const shared_ptr<const Geometry>& geom, cairo_t *cr, bool& inpape
     for (const auto& item : geomlist->getChildren()) {
       draw_geom(item.second, cr, inpaper, pos);
     }
-  } else if (dynamic_pointer_cast<const PolySet>(geom)) {
-    assert(false && "Unsupported file format");
   } else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
     draw_geom(*poly, cr, inpaper, pos);
-  } else {
+  } else if (dynamic_pointer_cast<const PolySet>(geom)) { //NOLINT(bugprone-branch-clone)
+    assert(false && "Unsupported file format");
+  } else { //NOLINT(bugprone-branch-clone)
     assert(false && "Export as PDF for this geometry type is not supported");
   }
 }
 
 static cairo_status_t export_pdf_write(void *closure, const unsigned char *data, unsigned int length)
 {
-  std::ostream *stream = static_cast<std::ostream *>(closure);
+  auto *stream = static_cast<std::ostream *>(closure);
   stream->write(reinterpret_cast<const char *>(data), length);
   return !(*stream) ? CAIRO_STATUS_WRITE_ERROR : CAIRO_STATUS_SUCCESS;
 }

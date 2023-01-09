@@ -4,6 +4,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 
 #include "node.h"
 
@@ -22,7 +23,7 @@ public:
   class roof_exception : public std::exception
   {
 public:
-    roof_exception(const std::string& message) : m(message) {}
+    roof_exception(std::string message) : m(std::move(message)) {}
     std::string message() {return m;}
 private:
     std::string m;

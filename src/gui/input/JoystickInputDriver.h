@@ -30,8 +30,7 @@
 class JoystickInputDriver : public InputDriver
 {
 public:
-  JoystickInputDriver();
-  ~JoystickInputDriver();
+  JoystickInputDriver() = default;
   void run() override;
   bool open() override;
   void close() override;
@@ -47,11 +46,11 @@ public:
   }
 
 private:
-  int fd;
-  int version;
+  int fd{-1};
+  int version{0};
   std::string nr{"0"};
-  unsigned char axes;
-  unsigned char buttons;
+  unsigned char axes{0};
+  unsigned char buttons{0};
   char name[1024];
-  volatile bool stopRequest;
+  volatile bool stopRequest{false};
 };

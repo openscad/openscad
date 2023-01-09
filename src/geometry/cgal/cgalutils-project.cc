@@ -47,11 +47,11 @@ static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer& explorer,
 
 static Polygon2d *convertToPolygon2d(const CGAL_Nef_polyhedron2& p2)
 {
-  Polygon2d *poly = new Polygon2d;
+  auto *poly = new Polygon2d;
 
-  typedef CGAL_Nef_polyhedron2::Explorer Explorer;
-  typedef Explorer::Face_const_iterator fci_t;
-  typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
+  using Explorer = CGAL_Nef_polyhedron2::Explorer;
+  using fci_t = Explorer::Face_const_iterator;
+  using heafcc_t = Explorer::Halfedge_around_face_const_circulator;
   Explorer E = p2.explorer();
   for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit) {
     if (!fit->mark()) continue;
@@ -147,10 +147,10 @@ void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
       tmpnef2d.reset(new CGAL_Nef_polyhedron2(contour.begin(), contour.end(), boundary));
 
       if (contour_counter == 0) {
-        PRINTDB(" <!-- contour is a body. make union(). %i  points -->", contour.size());
+        PRINTDB(" <!-- contour is a body. make union(). %i points -->", contour.size());
         *(output_nefpoly2d) += *(tmpnef2d);
       } else {
-        PRINTDB(" <!-- contour is a hole. make intersection(). %i  points -->", contour.size());
+        PRINTDB(" <!-- contour is a hole. make intersection(). %i points -->", contour.size());
         *(output_nefpoly2d) *= *(tmpnef2d);
       }
 
@@ -193,7 +193,8 @@ Polygon2d *project(const CGAL_Nef_polyhedron& N, bool cut)
         CGAL_Point_3 minpt(-inf, -inf, -eps);
         CGAL_Point_3 maxpt(inf,  inf,  eps);
         CGAL_Iso_cuboid_3 bigcuboid(minpt, maxpt);
-        for (int i = 0; i < 8; ++i) pts.push_back(bigcuboid.vertex(i));
+        pts.reserve(8);
+for (int i = 0; i < 8; ++i) pts.push_back(bigcuboid.vertex(i));
         CGAL_Polyhedron bigbox;
         CGAL::convex_hull_3(pts.begin(), pts.end(), bigbox);
         CGAL_Nef_polyhedron3 nef_bigbox(bigbox);

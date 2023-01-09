@@ -90,6 +90,7 @@
 #include <QDockWidget>
 #include <QClipboard>
 #include <QDesktopWidget>
+#include <memory>
 #include <string>
 #include "QWordSearchField.h"
 #include <QSettings> //Include QSettings for direct operations on settings arrays
@@ -125,6 +126,7 @@
 #include <cstdio>
 #include <memory>
 #include <QtNetwork>
+#include <utility>
 
 #include "qt-obsolete.h" // IWYU pragma: keep
 
@@ -201,7 +203,7 @@ QAction *getExport2DAction(const MainWindow *mainWindow) {
   }
 }
 
-void removeExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *action) {
+void removeExportActions(QToolBar *toolbar, QAction *action) {
   int idx = toolbar->actions().indexOf(action);
   while (idx > 0) {
     QAction *a = toolbar->actions().at(idx - 1);
@@ -226,8 +228,6 @@ void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *
 } // namespace
 
 MainWindow::MainWindow(const QStringList& filenames)
-  : library_info_dialog(nullptr), font_list_dialog(nullptr),
-  procevents(false), tempFile(nullptr), progresswidget(nullptr), includes_mtime(0), deps_mtime(0), last_parser_error_pos(-1)
 {
   setupUi(this);
 
@@ -284,11 +284,11 @@ MainWindow::MainWindow(const QStringList& filenames)
   absolute_root_node = nullptr;
 
   // Open Recent
-  for (int i = 0; i < UIUtils::maxRecentFiles; ++i) {
-    this->actionRecentFile[i] = new QAction(this);
-    this->actionRecentFile[i]->setVisible(false);
-    this->menuOpenRecent->addAction(this->actionRecentFile[i]);
-    connect(this->actionRecentFile[i], SIGNAL(triggered()),
+  for (auto& recent : this->actionRecentFile) {
+    recent = new QAction(this);
+    recent->setVisible(false);
+    this->menuOpenRecent->addAction(recent);
+    connect(recent, SIGNAL(triggered()),
             this, SLOT(actionOpenRecent()));
   }
 
@@ -697,22 +697,22 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   updateExportActions();
 
-  this->selector = std::unique_ptr<MouseSelector>(new MouseSelector(this->qglview));
+  this->selector = std::make_unique<MouseSelector>(this->qglview);
   activeEditor->setFocus();
 }
 
 void MainWindow::updateExportActions() {
-  removeExportActions(this, editortoolbar, this->designAction3DPrint);
+  removeExportActions(editortoolbar, this->designAction3DPrint);
   addExportActions(this, editortoolbar, this->designAction3DPrint);
 
   //handle the hide/show of export action in view toolbar according to the visibility of editor dock
-  removeExportActions(this, viewerToolBar, this->viewActionViewAll);
+  removeExportActions(viewerToolBar, this->viewActionViewAll);
   if (!editorDock->isVisible()) {
     addExportActions(this, viewerToolBar, this->viewActionViewAll);
   }
 }
 
-void MainWindow::openFileFromPath(QString path, int line)
+void MainWindow::openFileFromPath(const QString& path, int line)
 {
   if (editorDock->isVisible()) {
     activeEditor->setFocus();
@@ -821,7 +821,7 @@ void MainWindow::onActionEvent(InputEventAction *event)
     }
   } else {
     std::string target = actionName.substr(0, actionName.find("::"));
-    if("animate" == target) {
+    if ("animate" == target) {
       this->animateWidget->onActionEvent(event);
     } else {
       std::cout << "unknown onActionEvent target: " << actionName << std::endl;
@@ -957,7 +957,7 @@ void MainWindow::showProgress()
   updateStatusBar(qobject_cast<ProgressWidget *>(sender()));
 }
 
-void MainWindow::report_func(const std::shared_ptr<const AbstractNode>& , void *vp, int mark)
+void MainWindow::report_func(const std::shared_ptr<const AbstractNode>&, void *vp, int mark)
 {
   // limit to progress bar update calls to 5 per second
   static const qint64 MIN_TIMEOUT = 200;
@@ -984,7 +984,7 @@ bool MainWindow::network_progress_func(const double permille)
   return (progresswidget && progresswidget->wasCanceled());
 }
 
-void MainWindow::updateRecentFiles(QString FileSavedOrOpened)
+void MainWindow::updateRecentFiles(const QString& FileSavedOrOpened)
 {
   // Check that the canonical file path exists - only update recent files
   // if it does. Should prevent empty list items on initial open etc.
@@ -1063,7 +1063,7 @@ void MainWindow::compile(bool reload, bool forcedone)
     no_exceptions_for_warnings();
     if (shouldcompiletoplevel) {
       this->errorLogWidget->clearModel();
-      if(Preferences::inst()->getValue("advanced/consoleAutoClear").toBool()){
+      if (Preferences::inst()->getValue("advanced/consoleAutoClear").toBool()) {
         this->console->actionClearConsole_triggered();
       }
       if (activeEditor->isContentModified()) saveBackup();
@@ -1157,7 +1157,7 @@ void MainWindow::updateCompileResult()
   toolButtonCompileResultIcon->setIconSize(QSize(sizeIcon, sizeIcon));
   toolButtonCompileResultClose->setIconSize(QSize(sizeClose, sizeClose));
 
-  msg += _(" For details see the <a href=\"#errorlog\">error log</a> and <a href=\"#console\">console window</a>.");
+  msg += _(R"( For details see the <a href="#errorlog">error log</a> and <a href="#console">console window</a>.)");
   labelCompileResultMessage->setText(msg);
   frameCompileResult->show();
 }
@@ -1304,7 +1304,7 @@ void MainWindow::compileCSG()
     LOG(message_group::None, Location::NONE, "", "Compiling design (CSG Products normalization)...");
     this->processEvents();
 
-    size_t normalizelimit = 2 * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
+    size_t normalizelimit = 2ul * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
     CSGTreeNormalizer normalizer(normalizelimit);
 
     if (this->csgRoot) {
@@ -1325,8 +1325,8 @@ void MainWindow::compileCSG()
       this->processEvents();
 
       this->highlights_products.reset(new CSGProducts());
-      for (unsigned int i = 0; i < highlight_terms.size(); ++i) {
-        auto nterm = normalizer.normalize(highlight_terms[i]);
+      for (const auto& highlight_term : highlight_terms) {
+        auto nterm = normalizer.normalize(highlight_term);
         if (nterm) {
           this->highlights_products->import(nterm);
         }
@@ -1341,8 +1341,8 @@ void MainWindow::compileCSG()
       this->processEvents();
 
       this->background_products.reset(new CSGProducts());
-      for (unsigned int i = 0; i < background_terms.size(); ++i) {
-        auto nterm = normalizer.normalize(background_terms[i]);
+      for (const auto& background_term : background_terms) {
+        auto nterm = normalizer.normalize(background_term);
         if (nterm) {
           this->background_products->import(nterm);
         }
@@ -1380,11 +1380,11 @@ void MainWindow::compileCSG()
 void MainWindow::actionOpen()
 {
   auto fileInfoList = UIUtils::openFiles(this);
-  for (int i = 0; i < fileInfoList.size(); ++i) {
-    if (!fileInfoList[i].exists()) {
+  for (auto& i : fileInfoList) {
+    if (!i.exists()) {
       return;
     }
-    tabManager->open(fileInfoList[i].filePath());
+    tabManager->open(i.filePath());
   }
 }
 
@@ -1396,11 +1396,11 @@ void MainWindow::actionNewWindow()
 void MainWindow::actionOpenWindow()
 {
   auto fileInfoList = UIUtils::openFiles(this);
-  for (int i = 0; i < fileInfoList.size(); ++i) {
-    if (!fileInfoList[i].exists()) {
+  for (auto& i : fileInfoList) {
+    if (!i.exists()) {
       return;
     }
-    new MainWindow(QStringList(fileInfoList[i].filePath()));
+    new MainWindow(QStringList(i.filePath()));
   }
 }
 
@@ -1622,7 +1622,7 @@ void MainWindow::showFind()
   findInputField->selectAll();
 }
 
-void MainWindow::findString(QString textToFind)
+void MainWindow::findString(const QString& textToFind)
 {
   this->findInputField->setFindCount(activeEditor->updateFindIndicators(textToFind));
   this->processEvents();
@@ -1673,8 +1673,7 @@ void MainWindow::convertTabsToSpaces()
   QString converted;
 
   int cnt = 4;
-  for (int idx = 0; idx < text.length(); ++idx) {
-    auto c = text.at(idx);
+  for (auto c : text) {
     if (c == '\t') {
       for (; cnt > 0; cnt--) {
         converted.append(' ');
@@ -1705,7 +1704,7 @@ void MainWindow::useSelectionForFind()
   findInputField->setText(activeEditor->selectedText());
 }
 
-void MainWindow::updateFindBuffer(QString s)
+void MainWindow::updateFindBuffer(const QString& s)
 {
   QApplication::clipboard()->setText(s, QClipboard::FindBuffer);
 }
@@ -1721,7 +1720,7 @@ void MainWindow::findBufferChanged()
 
 bool MainWindow::event(QEvent *event) {
   if (event->type() == InputEvent::eventType) {
-    InputEvent *inputEvent = dynamic_cast<InputEvent *>(event);
+    auto *inputEvent = dynamic_cast<InputEvent *>(event);
     if (inputEvent) {
       inputEvent->deliver(this);
     }
@@ -1927,11 +1926,11 @@ void MainWindow::csgRender()
 #endif
   }
 
-  if ( animateWidget->dumpPictures() ) {
-      int steps = animateWidget->nextFrame();
-      QImage img = this->qglview->grabFrame();
-      QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
-      img.save(filename, "PNG");
+  if (animateWidget->dumpPictures() ) {
+    int steps = animateWidget->nextFrame();
+    QImage img = this->qglview->grabFrame();
+    QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
+    img.save(filename, "PNG");
   }
 
   compileEnded();
@@ -2045,7 +2044,7 @@ void MainWindow::sendToOctoPrint()
       return network_progress_func(v);
     });
 
-    const std::string action = Settings::Settings::octoPrintAction.value();
+    const std::string& action = Settings::Settings::octoPrintAction.value();
     if (action == "upload") {
       return;
     }
@@ -2153,19 +2152,19 @@ void MainWindow::cgalRender()
   this->cgalworker->start(this->tree);
 }
 
-void MainWindow::actionRenderDone(shared_ptr<const Geometry> root_geom)
+void MainWindow::actionRenderDone(const shared_ptr<const Geometry>& root_geom)
 {
   progress_report_fin();
   if (root_geom) {
     std::vector<std::string> options;
     if (Settings::Settings::summaryCamera.value()) {
-      options.push_back(RenderStatistic::CAMERA);
+      options.emplace_back(RenderStatistic::CAMERA);
     }
     if (Settings::Settings::summaryArea.value()) {
-      options.push_back(RenderStatistic::AREA);
+      options.emplace_back(RenderStatistic::AREA);
     }
     if (Settings::Settings::summaryBoundingBox.value()) {
-      options.push_back(RenderStatistic::BOUNDING_BOX);
+      options.emplace_back(RenderStatistic::BOUNDING_BOX);
     }
     renderStatistic.printAll(root_geom, qglview->cam, options);
     LOG(message_group::None, Location::NONE, "", "Rendering finished.");
@@ -2230,7 +2229,7 @@ void MainWindow::selectObject(QPoint mouse)
     // Create context menu with the backtrace
     QMenu tracemenu(this);
     std::stringstream ss;
-    for (auto &step : path) {
+    for (auto& step : path) {
       // Skip certain node types
       if (step->name() == "root") {
         continue;
@@ -2276,7 +2275,7 @@ void MainWindow::selectObject(QPoint mouse)
  */
 void MainWindow::setCursor()
 {
-  QAction *action = qobject_cast<QAction *>(sender());
+  auto *action = qobject_cast<QAction *>(sender());
   if (!action || !action->property("file").isValid() || !action->property("line").isValid() ||
       !action->property("column").isValid()) {
     return;
@@ -2344,8 +2343,7 @@ void MainWindow::UnknownExceptionCleanup(std::string msg){
   setCurrentOutput(); // we need to show this error
   if (msg.size() == 0) {
     LOG(message_group::Error, Location::NONE, "", "Compilation aborted by unknown exception");
-  }
-  else {
+  } else {
     LOG(message_group::Error, Location::NONE, "", "Compilation aborted by exception: %1$s", msg);
   }
   LOG(message_group::None, Location::NONE, "", " ");
@@ -2614,7 +2612,7 @@ void MainWindow::actionExportImage()
   qglview->grabFrame();
   const auto suffix = ".png";
   auto img_filename = QFileDialog::getSaveFileName(this,
-                                                   _("Export Image"),  exportPath(suffix), _("PNG Files (*.png)"));
+                                                   _("Export Image"), exportPath(suffix), _("PNG Files (*.png)"));
   if (!img_filename.isEmpty()) {
     bool saveResult = qglview->save(img_filename.toLocal8Bit().constData());
     if (saveResult) {
@@ -2623,14 +2621,14 @@ void MainWindow::actionExportImage()
       fileExportedMessage("PNG", img_filename);
       clearCurrentOutput();
     } else {
-        LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
+      LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
     }
   }
 }
 
 void MainWindow::copyText()
 {
-  Console* c = dynamic_cast<Console *>(lastFocus);
+  auto *c = dynamic_cast<Console *>(lastFocus);
   if (c) {
     c->copy();
   } else {
@@ -2976,7 +2974,7 @@ void MainWindow::viewportControlTopLevelChanged(bool topLevel)
 
 void MainWindow::setDockWidgetTitle(QDockWidget *dockWidget, QString prefix, bool topLevel)
 {
-  QString title(prefix);
+  QString title(std::move(prefix));
   if (topLevel) {
     const QFileInfo fileInfo(activeEditor->filepath);
     QString fname = _("Untitled.scad");
@@ -3012,7 +3010,7 @@ void MainWindow::hide3DViewToolbar()
   }
 }
 
-void MainWindow::showLink(const QString link)
+void MainWindow::showLink(const QString& link)
 {
   if (link == "#console") {
     showConsole();
@@ -3204,7 +3202,7 @@ void MainWindow::activateWindow(int offset)
       if (widget == docks.at(idx).widget) {
         for (int o = 1; o < cnt; ++o) {
           const int target = (cnt + idx + o * offset) % cnt;
-          const auto dock = docks.at(target);
+          const auto& dock = docks.at(target);
           if (dock.widget->isVisible()) {
             dock.focus(this);
             return;
@@ -3226,8 +3224,8 @@ void MainWindow::dropEvent(QDropEvent *event)
 {
   setCurrentOutput();
   const QList<QUrl> urls = event->mimeData()->urls();
-  for (int i = 0; i < urls.size(); ++i) {
-    handleFileDrop(urls[i]);
+  for (const auto& url : urls) {
+    handleFileDrop(url);
   }
   clearCurrentOutput();
 }
@@ -3302,7 +3300,7 @@ void MainWindow::helpFontInfo()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
   if (tabManager->shouldClose()) {
-    isClosing=true;
+    isClosing = true;
     progress_report_fin();
     // Disable invokeMethod calls for consoleOutput during shutdown,
     // otherwise will segfault if echos are in progress.

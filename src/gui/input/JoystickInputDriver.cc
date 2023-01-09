@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <boost/format.hpp>
+#include <utility>
 
 #include "InputDriverManager.h"
 #include "JoystickInputDriver.h"
@@ -59,16 +60,6 @@ void JoystickInputDriver::run()
     }
   }
   ::close(fd);
-}
-
-JoystickInputDriver::JoystickInputDriver() : fd(-1), version(0), axes(0), buttons(0), stopRequest(false)
-{
-
-}
-
-JoystickInputDriver::~JoystickInputDriver()
-{
-
 }
 
 bool JoystickInputDriver::open()
@@ -111,13 +102,13 @@ std::string JoystickInputDriver::get_info() const
 {
   return STR(
     get_name(), " ", (isOpen() ? "open" : "not open"), " ",
-      "Name: ", name, " ",
-      "Axis: ", (int) axes, " ",
-      "Buttons: ", (int) buttons, " "
+    "Name: ", name, " ",
+    "Axis: ", (int) axes, " ",
+    "Buttons: ", (int) buttons, " "
     );
 }
 
 void JoystickInputDriver::setJoystickNr(std::string jnr)
 {
-  this->nr = jnr;
+  this->nr = std::move(jnr);
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility>
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -7,23 +8,23 @@
 #include <limits>
 #include <iostream>
 #include <memory>
+#include <type_traits>
+#include <variant>
 
-// Workaround for https://bugreports.qt-project.org/browse/QTBUG-22829
-#ifndef Q_MOC_RUN
-#include <boost/variant.hpp>
-#include <boost/lexical_cast.hpp>
 #include <glib.h>
-#endif
 
 #include "Assignment.h"
 #include "memory.h"
-#include "scadstream.h"
 
 class tostring_visitor;
 class tostream_visitor;
 class Context;
 class Expression;
 class Value;
+
+namespace scad {
+  class ostringstream;
+}
 
 class QuotedString : public std::string
 {
@@ -47,12 +48,11 @@ private:
   double begin_val;
   double step_val;
   double end_val;
+  enum class iter_state { RANGE_BEGIN, RANGE_RUNNING, RANGE_END };
 
 public:
   static constexpr uint32_t MAX_RANGE_STEPS = 10000;
   static const RangeType EMPTY;
-
-  enum class type_t { RANGE_TYPE_BEGIN, RANGE_TYPE_RUNNING, RANGE_TYPE_END };
 
   class iterator
   {
@@ -63,7 +63,7 @@ public:
     using difference_type = void; // type used by operator-(iterator), not implemented for forward iterator
     using reference = value_type; // type used by operator*(), not actually a reference
     using pointer = void;     // type used by operator->(), not implemented
-    iterator(const RangeType& range, type_t type);
+    iterator(const RangeType& range, iter_state type);
     iterator& operator++();
     reference operator*();
     bool operator==(const iterator& other) const;
@@ -71,16 +71,17 @@ public:
 private:
     const RangeType& range;
     double val;
-    type_t type;
+    iter_state state;
     const uint32_t num_values;
     uint32_t i_step;
-    void update_type();
+    void update_state();
   };
 
   RangeType(const RangeType&) = delete;       // never copy, move instead
   RangeType& operator=(const RangeType&) = delete; // never copy, move instead
   RangeType(RangeType&&) = default;
   RangeType& operator=(RangeType&&) = default;
+  ~RangeType() = default;
 
   explicit RangeType(double begin, double end)
     : begin_val(begin), step_val(1.0), end_val(end) {}
@@ -147,15 +148,15 @@ private:
            );
   }
 
-  double begin_value() const { return begin_val; }
-  double step_value() const { return step_val; }
-  double end_value() const { return end_val; }
+  [[nodiscard]] double begin_value() const { return begin_val; }
+  [[nodiscard]] double step_value() const { return step_val; }
+  [[nodiscard]] double end_value() const { return end_val; }
 
-  iterator begin() const { return iterator(*this, type_t::RANGE_TYPE_BEGIN); }
-  iterator end() const { return iterator(*this, type_t::RANGE_TYPE_END); }
+  [[nodiscard]] iterator begin() const { return {*this, iter_state::RANGE_BEGIN}; }
+  [[nodiscard]] iterator end() const { return {*this, iter_state::RANGE_END}; }
 
   /// return number of values, max uint32_t value if step is 0 or range is infinite
-  uint32_t numValues() const;
+  [[nodiscard]] uint32_t numValues() const;
 };
 scad::ostringstream& operator<<(scad::ostringstream& stream, const RangeType& r);
 
@@ -164,14 +165,14 @@ template <typename T>
 class ValuePtr
 {
 private:
-  explicit ValuePtr(const std::shared_ptr<T>& val_in) : value(val_in) { }
+  explicit ValuePtr(std::shared_ptr<T> val_in) : value(std::move(val_in)) { }
 public:
   ValuePtr(T&& value) : value(std::make_shared<T>(std::move(value))) { }
-  ValuePtr clone() const { return ValuePtr(value); }
+  [[nodiscard]] ValuePtr clone() const { return ValuePtr(value); }
 
   const T& operator*() const { return *value; }
   const T *operator->() const { return value.get(); }
-  const std::shared_ptr<T>& get() const { return value; }
+  [[nodiscard]] const std::shared_ptr<T>& get() const { return value; }
 
 private:
   std::shared_ptr<T> value;
@@ -185,10 +186,14 @@ private:
   // store the cached length in glong, paired with its string
   struct str_utf8_t {
     static constexpr glong LENGTH_UNKNOWN = -1;
-    str_utf8_t() : u8str(), u8len(0) { }
-    str_utf8_t(const std::string& s) : u8str(s) { }
-    str_utf8_t(const char *cstr) : u8str(cstr) { }
-    str_utf8_t(const char *cstr, size_t size, glong u8len) : u8str(cstr, size), u8len(u8len) { }
+    str_utf8_t() : u8str(), u8len(0) {
+    }
+    str_utf8_t(std::string s) : u8str(std::move(s)) {
+    }
+    str_utf8_t(const char *cstr) : u8str(cstr) {
+    }
+    str_utf8_t(const char *cstr, size_t size, glong u8len) : u8str(cstr, size), u8len(u8len) {
+    }
     const std::string u8str;
     glong u8len = LENGTH_UNKNOWN;
   };
@@ -220,8 +225,8 @@ private:
     size_t len = 0;
   };
 
-  iterator begin() const { return iterator(*this); }
-  iterator end() const { return iterator(*this, true); }
+  [[nodiscard]] iterator begin() const { return {*this}; }
+  [[nodiscard]] iterator end() const { return {*this, true}; }
   str_utf8_wrapper() : str_ptr(make_shared<str_utf8_t>()) { }
   str_utf8_wrapper(const std::string& s) : str_ptr(make_shared<str_utf8_t>(s)) { }
   str_utf8_wrapper(const char *cstr) : str_ptr(make_shared<str_utf8_t>(cstr)) { }
@@ -231,7 +236,8 @@ private:
   str_utf8_wrapper& operator=(const str_utf8_wrapper&) = delete; // never copy, move instead
   str_utf8_wrapper(str_utf8_wrapper&&) = default;
   str_utf8_wrapper& operator=(str_utf8_wrapper&&) = default;
-  str_utf8_wrapper clone() const { return str_utf8_wrapper(this->str_ptr); } // makes a copy of shared_ptr
+  ~str_utf8_wrapper() = default;
+  [[nodiscard]] str_utf8_wrapper clone() const { return str_utf8_wrapper(this->str_ptr); } // makes a copy of shared_ptr
 
   bool operator==(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str == rhs.str_ptr->u8str; }
   bool operator!=(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str != rhs.str_ptr->u8str; }
@@ -239,14 +245,14 @@ private:
   bool operator>(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str > rhs.str_ptr->u8str; }
   bool operator<=(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str <= rhs.str_ptr->u8str; }
   bool operator>=(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str >= rhs.str_ptr->u8str; }
-  bool empty() const { return this->str_ptr->u8str.empty(); }
-  const char *c_str() const { return this->str_ptr->u8str.c_str(); }
-  const std::string& toString() const { return this->str_ptr->u8str; }
-  size_t size() const { return this->str_ptr->u8str.size(); }
+  [[nodiscard]] bool empty() const { return this->str_ptr->u8str.empty(); }
+  [[nodiscard]] const char *c_str() const { return this->str_ptr->u8str.c_str(); }
+  [[nodiscard]] const std::string& toString() const { return this->str_ptr->u8str; }
+  [[nodiscard]] size_t size() const { return this->str_ptr->u8str.size(); }
 
-  glong get_utf8_strlen() const {
+  [[nodiscard]] glong get_utf8_strlen() const {
     if (str_ptr->u8len == str_utf8_t::LENGTH_UNKNOWN) {
-      str_ptr->u8len = g_utf8_strlen(str_ptr->u8str.c_str(), str_ptr->u8str.size());
+      str_ptr->u8len = g_utf8_strlen(str_ptr->u8str.c_str(), static_cast<gssize>(str_ptr->u8str.size()));
     }
     return str_ptr->u8len;
   }
@@ -259,7 +265,7 @@ class FunctionType
 {
 public:
   FunctionType(std::shared_ptr<const Context> context, std::shared_ptr<Expression> expr, std::shared_ptr<AssignmentList> parameters)
-    : context(context), expr(expr), parameters(parameters) { }
+    : context(std::move(context)), expr(std::move(expr)), parameters(std::move(parameters)) { }
   Value operator==(const FunctionType& other) const;
   Value operator!=(const FunctionType& other) const;
   Value operator<(const FunctionType& other) const;
@@ -267,9 +273,9 @@ public:
   Value operator<=(const FunctionType& other) const;
   Value operator>=(const FunctionType& other) const;
 
-  const std::shared_ptr<const Context>& getContext() const { return context; }
-  const std::shared_ptr<Expression>& getExpr() const { return expr; }
-  const std::shared_ptr<AssignmentList>& getParameters() const { return parameters; }
+  [[nodiscard]] const std::shared_ptr<const Context>& getContext() const { return context; }
+  [[nodiscard]] const std::shared_ptr<Expression>& getExpr() const { return expr; }
+  [[nodiscard]] const std::shared_ptr<AssignmentList>& getParameters() const { return parameters; }
 private:
   std::shared_ptr<const Context> context;
   std::shared_ptr<Expression> expr;
@@ -314,7 +320,7 @@ private:
 scad::ostringstream& operator<<(scad::ostringstream& stream, const UndefType& u);
 
 /**
- *  Value class encapsulates a boost::variant value which can represent any of the
+ *  Value class encapsulates a std::variant value which can represent any of the
  *  value types existing in the SCAD language.
  * -- As part of a refactoring effort which began as PR #2881 and continued as PR #3102,
  *    Value and its constituent types have been made (nominally) "move only".
@@ -345,7 +351,7 @@ public:
   static const Value undefined;
 
   /**
-   * VectorType is the underlying "BoundedType" of boost::variant for OpenSCAD vectors.
+   * VectorType is the underlying "BoundedType" of std::variant for OpenSCAD vectors.
    * It holds only a shared_ptr to its VectorObject type, and provides a convenient
    * interface for various operations needed on the vector.
    *
@@ -355,7 +361,7 @@ public:
    *    Eg "Lc*" Expressions return Embedded Vectors but they are necessarily child expressions of a Vector expression.
    * -- Any VectorType containing embedded elements will be forced to "flatten" upon usage of operator[],
    *    which is the only case of random-access.
-   * -- Any loops through VectorTypes should prefer automatic range-based for loops  eg: for(const auto& value : vec) { ... }
+   * -- Any loops through VectorTypes should prefer automatic range-based for loops eg: for(const auto& value : vec) { ... }
    *    which make use of begin() and end() iterators of VectorType.  https://en.cppreference.com/w/cpp/language/range-for
    * -- Moving a temporary Value of type VectorType or EmbeddedVectorType is always safe,
    *    since it just moves the shared_ptr in its possession (which might be a copy but that doesn't matter).
@@ -379,7 +385,7 @@ protected:
       vec_t vec;
       size_type embed_excess = 0; // Keep count of the number of embedded elements *excess of* vec.size()
       class EvaluationSession *evaluation_session = nullptr; // Used for heap size bookkeeping. May be null for vectors of known small maximum size.
-      size_type size() const { return vec.size() + embed_excess;  }
+      [[nodiscard]] size_type size() const { return vec.size() + embed_excess;  }
     };
     using vec_t = VectorObject::vec_t;
 public:
@@ -450,7 +456,7 @@ public:
           }
           check_and_push();
         } else { // vo->vec is flat
-          it = vo->vec.begin() + index;
+          it = vo->vec.begin() + static_cast<vec_t::iterator::difference_type>(index);
         }
         return *this;
       }
@@ -460,19 +466,20 @@ public:
       bool operator!=(const iterator& other) const { return this->vo != other.vo || this->index != other.index; }
     };
     using const_iterator = const iterator;
-    VectorType(class EvaluationSession *session); // : ptr(shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() )) {}
+    VectorType(class EvaluationSession *session);
     VectorType(class EvaluationSession *session, double x, double y, double z);
     VectorType(const VectorType&) = delete; // never copy, move instead
     VectorType& operator=(const VectorType&) = delete; // never copy, move instead
     VectorType(VectorType&&) = default;
     VectorType& operator=(VectorType&&) = default;
-    VectorType clone() const { return VectorType(this->ptr); } // Copy explicitly only when necessary
+    ~VectorType() = default;
+    [[nodiscard]] VectorType clone() const { return VectorType(this->ptr); } // Copy explicitly only when necessary
     static Value Empty() { return VectorType(nullptr); }
 
-    const_iterator begin() const { return iterator(ptr.get()); }
-    const_iterator   end() const { return iterator(ptr.get(), true); }
-    size_type size() const { return ptr->size(); }
-    bool empty() const { return ptr->vec.empty(); }
+    [[nodiscard]] const_iterator begin() const { return iterator(ptr.get()); }
+    [[nodiscard]] const_iterator   end() const { return iterator(ptr.get(), true); }
+    [[nodiscard]] size_type size() const { return ptr->size(); }
+    [[nodiscard]] bool empty() const { return ptr->vec.empty(); }
     // const accesses to VectorObject require .clone to be move-able
     const Value& operator[](size_t idx) const {
       if (idx < this->size()) {
@@ -488,7 +495,7 @@ public:
     Value operator!=(const VectorType& v) const;
     Value operator<=(const VectorType& v) const;
     Value operator>=(const VectorType& v) const;
-    class EvaluationSession *evaluation_session() const { return ptr->evaluation_session; }
+    [[nodiscard]] class EvaluationSession *evaluation_session() const { return ptr->evaluation_session; }
 
     void emplace_back(Value&& val);
     void emplace_back(EmbeddedVectorType&& mbed);
@@ -505,9 +512,9 @@ public:
     EmbeddedVectorType& operator=(const EmbeddedVectorType&) = delete;
     EmbeddedVectorType(EmbeddedVectorType&&) = default;
     EmbeddedVectorType& operator=(EmbeddedVectorType&&) = default;
-
+    ~EmbeddedVectorType() = default;
     EmbeddedVectorType(VectorType&& v) : VectorType(std::move(v)) {} // converting constructor
-    EmbeddedVectorType clone() const { return EmbeddedVectorType(this->ptr); }
+    [[nodiscard]] EmbeddedVectorType clone() const { return EmbeddedVectorType(this->ptr); }
     static Value Empty() { return EmbeddedVectorType(nullptr); }
   };
 
@@ -515,6 +522,9 @@ public:
   {
 protected:
     struct ObjectObject;
+    struct ObjectObjectDeleter {
+      void operator()(ObjectObject *obj);
+    };
 
 private:
     explicit ObjectType(const shared_ptr<ObjectObject>& copy);
@@ -522,8 +532,8 @@ private:
 public:
     shared_ptr<ObjectObject> ptr;
     ObjectType(class EvaluationSession *session);
-    ObjectType clone() const;
-    const Value& get(const std::string& key) const;
+    [[nodiscard]] ObjectType clone() const;
+    [[nodiscard]] const Value& get(const std::string& key) const;
     void set(const std::string& key, Value&& value);
     Value operator==(const ObjectType& v) const;
     Value operator<(const ObjectType& v) const;
@@ -532,7 +542,7 @@ public:
     Value operator<=(const ObjectType& v) const;
     Value operator>=(const ObjectType& v) const;
     const Value& operator[](const str_utf8_wrapper& v) const;
-    const std::vector<std::string>& keys() const;
+    [[nodiscard]] const std::vector<std::string>& keys() const;
   };
 
 private:
@@ -542,48 +552,51 @@ public:
   Value& operator=(const Value& v) = delete; // never copy, move instead
   Value(Value&&) = default;
   Value& operator=(Value&&) = default;
-  Value clone() const; // Use sparingly to explicitly copy a Value
+  [[nodiscard]] Value clone() const; // Use sparingly to explicitly copy a Value
+  ~Value() = default;
 
   Value(int v) : value(double(v)) { }
   Value(long double v) : value(double(v)) { }
   Value(const char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!
   Value(char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!
                                                   // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0608r3.html
-  template <class T> Value(T&& val) : value(std::forward<T>(val)) { }
+  // Don't shadow move constructor
+  template <class T, class = std::enable_if_t<!std::is_same_v<std::decay_t<T>, Value>>>
+  Value(T&& val) : value(std::forward<T>(val)) { }
 
   static Value undef(const std::string& why); // creation of undef requires a reason!
 
-  const std::string typeName() const;
-  static std::string typeName(Type type);
-  Type type() const { return static_cast<Type>(this->value.which()); }
-  bool isDefinedAs(const Type type) const { return this->type() == type; }
-  bool isDefined()   const { return this->type() != Type::UNDEFINED; }
-  bool isUndefined() const { return this->type() == Type::UNDEFINED; }
-  bool isUncheckedUndef() const;
+  [[nodiscard]] const std::string typeName() const;
+  [[nodiscard]] static std::string typeName(Type type);
+  [[nodiscard]] Type type() const { return static_cast<Type>(this->value.index()); }
+  [[nodiscard]] bool isDefinedAs(const Type type) const { return this->type() == type; }
+  [[nodiscard]] bool isDefined()   const { return this->type() != Type::UNDEFINED; }
+  [[nodiscard]] bool isUndefined() const { return this->type() == Type::UNDEFINED; }
+  [[nodiscard]] bool isUncheckedUndef() const;
 
-  // Conversion to boost::variant "BoundedType"s. const ref where appropriate.
-  bool toBool() const;
-  double toDouble() const;
-  const str_utf8_wrapper& toStrUtf8Wrapper() const;
-  const VectorType& toVector() const;
-  const EmbeddedVectorType& toEmbeddedVector() const;
-  VectorType& toVectorNonConst();
-  EmbeddedVectorType& toEmbeddedVectorNonConst();
-  const RangeType& toRange() const;
-  const FunctionType& toFunction() const;
-  const ObjectType& toObject() const;
+  // Conversion to std::variant "BoundedType"s. const ref where appropriate.
+  [[nodiscard]] bool toBool() const;
+  [[nodiscard]] double toDouble() const;
+  [[nodiscard]] const str_utf8_wrapper& toStrUtf8Wrapper() const;
+  [[nodiscard]] const VectorType& toVector() const;
+  [[nodiscard]] const EmbeddedVectorType& toEmbeddedVector() const;
+  [[nodiscard]] VectorType& toVectorNonConst();
+  [[nodiscard]] EmbeddedVectorType& toEmbeddedVectorNonConst();
+  [[nodiscard]] const RangeType& toRange() const;
+  [[nodiscard]] const FunctionType& toFunction() const;
+  [[nodiscard]] const ObjectType& toObject() const;
 
   // Other conversion utility functions
   bool getDouble(double& v) const;
   bool getFiniteDouble(double& v) const;
   bool getUnsignedInt(unsigned int& v) const;
   bool getPositiveInt(unsigned int& v) const;
-  std::string toString() const;
-  std::string toEchoString() const;
-  std::string toEchoStringNoThrow() const; //use this for warnings
-  const UndefType& toUndef();
-  std::string toUndefString() const;
-  std::string chrString() const;
+  [[nodiscard]] std::string toString() const;
+  [[nodiscard]] std::string toEchoString() const;
+  [[nodiscard]] std::string toEchoStringNoThrow() const; //use this for warnings
+  [[nodiscard]] const UndefType& toUndef() const;
+  [[nodiscard]] std::string toUndefString() const;
+  [[nodiscard]] std::string chrString() const;
   bool getVec2(double& x, double& y, bool ignoreInfinite = false) const;
   bool getVec3(double& x, double& y, double& z) const;
   bool getVec3(double& x, double& y, double& z, double defaultval) const;
@@ -610,10 +623,10 @@ public:
 
   friend scad::ostringstream& operator<<(scad::ostringstream& stream, const Value& value);
 
-  typedef boost::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType> Variant;
+  using Variant = std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType>;
 
   static_assert(sizeof(Value::Variant) <= 24, "Memory size of Value too big");
-  const Variant& getVariant() const { return value; }
+  [[nodiscard]] const Variant& getVariant() const { return value; }
 
 private:
   Variant value;

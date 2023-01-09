@@ -16,8 +16,7 @@ public:
   Polygons polygons;
 
   PolySet(unsigned int dim, boost::tribool convex = unknown);
-  PolySet(const Polygon2d& origin);
-  ~PolySet();
+  PolySet(Polygon2d origin);
 
   const Polygon2d& getPolygon() const { return polygon; }
 
@@ -41,8 +40,8 @@ public:
   void insert_vertex(const Vector3f& v);
   void append(const PolySet& ps);
 
-  virtual void transform(const Transform3d& mat) override;
-  virtual void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
+  void transform(const Transform3d& mat) override;
+  void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
   bool is_convex() const;
   boost::tribool convexValue() const { return this->convex; }

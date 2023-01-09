@@ -29,14 +29,6 @@ namespace libsvg {
 
 const std::string circle::name("circle");
 
-circle::circle() : r(0)
-{
-}
-
-circle::~circle()
-{
-}
-
 void
 circle::set_attrs(attr_map_t& attrs, void *context)
 {

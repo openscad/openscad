@@ -3,11 +3,7 @@
 
 #include "Dock.h"
 
-Dock::Dock(QWidget *parent) : QDockWidget(parent), action(nullptr), updateSettings(true)
-{
-}
-
-Dock::~Dock()
+Dock::Dock(QWidget *parent) : QDockWidget(parent)
 {
 }
 
@@ -28,7 +24,7 @@ void Dock::setVisible(bool visible)
   QDockWidget::setVisible(visible);
 }
 
-void Dock::setConfigKey(const QString configKey)
+void Dock::setConfigKey(const QString& configKey)
 {
   this->configKey = configKey;
 }

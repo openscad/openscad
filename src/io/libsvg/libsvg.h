@@ -24,6 +24,8 @@
  */
 #pragma once
 
+#include <utility>
+
 #include "shape.h"
 #include "memory.h"
 
@@ -32,10 +34,9 @@ namespace libsvg {
 class SvgException : public std::exception
 {
 public:
-  SvgException(const std::string& message) : message(message) { }
-  virtual ~SvgException() {}
+  SvgException(std::string message) : message(std::move(message)) { }
 
-  const char *what() const throw() override
+  [[nodiscard]] const char *what() const noexcept override
   {
     return message.c_str();
   }

@@ -5,8 +5,8 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-#define STACK_BUFFER_SIZE (128 * 1024)
-#define STACK_LIMIT_DEFAULT (STACKSIZE - STACK_BUFFER_SIZE)
+static constexpr size_t STACK_BUFFER_SIZE = 128ul * 1024ul;
+static constexpr size_t STACK_LIMIT_DEFAULT = size_t{STACKSIZE} - STACK_BUFFER_SIZE;
 
 namespace PlatformUtils {
 extern const char *OPENSCAD_FOLDER_NAME;
@@ -108,7 +108,7 @@ std::string pathSeparatorChar();
 /* Provide stdout/stderr if not available.
  * Currently limited to MS Windows GUI application console only.
  */
-void ensureStdIO(void);
+void ensureStdIO();
 
 /**
  * Convert the number of bytes to a human readable string with

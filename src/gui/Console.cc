@@ -46,19 +46,15 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
   this->appendCursor = this->textCursor();
 }
 
-Console::~Console()
-{
-}
-
-void Console::focusInEvent(QFocusEvent *event)
+void Console::focusInEvent(QFocusEvent * /*event*/)
 {
   QWidget *current = this;
   MainWindow *mw;
-  while(current && !(mw = dynamic_cast<MainWindow*>(current->window()))) {
+  while (current && !(mw = dynamic_cast<MainWindow *>(current->window()))) {
     current = current->parentWidget();
   }
   assert(mw);
-  mw->setLastFocus(this);
+  if (mw) mw->setLastFocus(this);
 }
 
 void Console::addMessage(const Message& msg)

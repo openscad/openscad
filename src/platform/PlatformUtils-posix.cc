@@ -7,7 +7,6 @@
 #include <sys/utsname.h>
 
 #include <boost/regex.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
@@ -253,7 +252,7 @@ const std::string PlatformUtils::sysinfo(bool extended)
     long numcpu = sysconf(_SC_NPROCESSORS_ONLN);
     if (numcpu > 0) {
       result += " ";
-      result += boost::lexical_cast<std::string>(numcpu);
+      result += std::to_string(numcpu);
       result += " CPU";
       if (numcpu > 1) {
         result += "s";
@@ -272,4 +271,4 @@ const std::string PlatformUtils::sysinfo(bool extended)
   return result;
 }
 
-void PlatformUtils::ensureStdIO(void) {}
+void PlatformUtils::ensureStdIO() {}

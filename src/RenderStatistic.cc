@@ -37,13 +37,15 @@
 
 #include "RenderStatistic.h"
 
+class GeometryList;
+
 namespace {
 
 struct StatisticVisitor : public GeometryVisitor
 {
   StatisticVisitor(const std::vector<std::string>& options)
-    : all(std::find(options.begin(), options.end(), "all") != options.end())
-    , options(options) { }
+    : all(std::find(options.begin(), options.end(), "all") != options.end()),
+    options(options) { }
   virtual void printCamera(const Camera& camera) = 0;
   virtual void printCacheStatistic() = 0;
   virtual void printRenderingTime(std::chrono::milliseconds) = 0;
@@ -60,12 +62,12 @@ private:
 struct LogVisitor : public StatisticVisitor
 {
   LogVisitor(const std::vector<std::string>& options) : StatisticVisitor(options) { }
-  void visit(const class GeometryList& node) override;
-  void visit(const class PolySet& node) override;
-  void visit(const class Polygon2d& node) override;
+  void visit(const GeometryList& node) override;
+  void visit(const PolySet& node) override;
+  void visit(const Polygon2d& node) override;
 #ifdef ENABLE_CGAL
-  void visit(const class CGAL_Nef_polyhedron& node) override;
-  void visit(const class CGALHybridPolyhedron& node) override;
+  void visit(const CGAL_Nef_polyhedron& node) override;
+  void visit(const CGALHybridPolyhedron& node) override;
 #endif // ENABLE_CGAL
   void printCamera(const Camera& camera) override;
   void printCacheStatistic() override;
@@ -79,15 +81,15 @@ struct StreamVisitor : public StatisticVisitor
 {
   StreamVisitor(const std::vector<std::string>& options, std::ostream& stream) : StatisticVisitor(options), stream(stream) {}
   StreamVisitor(const std::vector<std::string>& options, const std::string& filename) : StatisticVisitor(options), fstream(filename), stream(fstream) {}
-  ~StreamVisitor() {
+  ~StreamVisitor() override {
     if (fstream.is_open()) fstream.close();
   }
-  void visit(const class GeometryList& node) override;
-  void visit(const class PolySet& node) override;
-  void visit(const class Polygon2d& node) override;
+  void visit(const GeometryList& node) override;
+  void visit(const PolySet& node) override;
+  void visit(const Polygon2d& node) override;
 #ifdef ENABLE_CGAL
-  void visit(const class CGAL_Nef_polyhedron& node) override;
-  void visit(const class CGALHybridPolyhedron& node) override;
+  void visit(const CGAL_Nef_polyhedron& node) override;
+  void visit(const CGALHybridPolyhedron& node) override;
 #endif // ENABLE_CGAL
   void printCamera(const Camera& camera) override;
   void printCacheStatistic() override;
@@ -167,7 +169,7 @@ void RenderStatistic::printRenderingTime()
   visitor.printRenderingTime(ms());
 }
 
-void RenderStatistic::printAll(const shared_ptr<const Geometry> geom, const Camera& camera, const std::vector<std::string>& options, const std::string& filename)
+void RenderStatistic::printAll(const shared_ptr<const Geometry>& geom, const Camera& camera, const std::vector<std::string>& options, const std::string& filename)
 {
   //bool is_log = false;
   std::unique_ptr<StatisticVisitor> visitor;

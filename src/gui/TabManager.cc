@@ -106,7 +106,7 @@ void TabManager::closeTabRequested(int x)
   assert(tabWidget != nullptr);
   if (!maybeSave(x)) return;
 
-  EditorInterface *temp = (EditorInterface *)tabWidget->widget(x);
+  auto *temp = (EditorInterface *)tabWidget->widget(x);
   editorList.remove(temp);
   tabWidget->removeTab(x);
   tabWidget->fireTabCountChanged();
@@ -320,9 +320,9 @@ void TabManager::onHyperlinkIndicatorClicked(int val)
   this->open(filename);
 }
 
-void TabManager::applyAction(QObject *object, std::function<void(int, EditorInterface *)> func)
+void TabManager::applyAction(QObject *object, const std::function<void(int, EditorInterface *)>& func)
 {
-  QAction *action = dynamic_cast<QAction *>(object);
+  auto *action = dynamic_cast<QAction *>(object);
   if (action == nullptr) {
     return;
   }
@@ -332,7 +332,7 @@ void TabManager::applyAction(QObject *object, std::function<void(int, EditorInte
     return;
   }
 
-  EditorInterface *edt = (EditorInterface *)tabWidget->widget(idx);
+  auto *edt = (EditorInterface *)tabWidget->widget(idx);
   if (edt == nullptr) {
     return;
   }
@@ -396,27 +396,27 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
     return;
   }
 
-  EditorInterface *edt = (EditorInterface *)tabWidget->widget(idx);
+  auto *edt = (EditorInterface *)tabWidget->widget(idx);
 
-  QAction *copyFileNameAction = new QAction(tabWidget);
+  auto *copyFileNameAction = new QAction(tabWidget);
   copyFileNameAction->setData(idx);
   copyFileNameAction->setEnabled(!edt->filepath.isEmpty());
   copyFileNameAction->setText(_("Copy file name"));
   connect(copyFileNameAction, SIGNAL(triggered()), SLOT(copyFileName()));
 
-  QAction *copyFilePathAction = new QAction(tabWidget);
+  auto *copyFilePathAction = new QAction(tabWidget);
   copyFilePathAction->setData(idx);
   copyFilePathAction->setEnabled(!edt->filepath.isEmpty());
   copyFilePathAction->setText(_("Copy full path"));
   connect(copyFilePathAction, SIGNAL(triggered()), SLOT(copyFilePath()));
 
-  QAction *openFolderAction = new QAction(tabWidget);
+  auto *openFolderAction = new QAction(tabWidget);
   openFolderAction->setData(idx);
   openFolderAction->setEnabled(!edt->filepath.isEmpty());
   openFolderAction->setText(_("Open folder"));
   connect(openFolderAction, SIGNAL(triggered()), SLOT(openFolder()));
 
-  QAction *closeAction = new QAction(tabWidget);
+  auto *closeAction = new QAction(tabWidget);
   closeAction->setData(idx);
   closeAction->setText(_("Close Tab"));
   connect(closeAction, SIGNAL(triggered()), SLOT(closeTab()));
@@ -563,7 +563,7 @@ bool TabManager::refreshDocument()
 
 bool TabManager::maybeSave(int x)
 {
-  EditorInterface *edt = (EditorInterface *) tabWidget->widget(x);
+  auto *edt = (EditorInterface *) tabWidget->widget(x);
   if (edt->isContentModified() || edt->parameterWidget->isModified()) {
     QMessageBox box(par);
     box.setText(_("The document has been modified."));
@@ -622,7 +622,7 @@ bool TabManager::shouldClose()
   return true;
 }
 
-void TabManager::saveError(const QIODevice& file, const std::string& msg, const QString filepath)
+void TabManager::saveError(const QIODevice& file, const std::string& msg, const QString& filepath)
 {
   const char *fileName = filepath.toLocal8Bit().constData();
   LOG(message_group::None, Location::NONE, "", "%1$s %2$s (%3$s)", msg.c_str(), fileName, file.errorString().toLocal8Bit().constData());
@@ -648,7 +648,7 @@ bool TabManager::save(EditorInterface *edt)
   }
 }
 
-bool TabManager::save(EditorInterface *edt, const QString path)
+bool TabManager::save(EditorInterface *edt, const QString& path)
 {
   par->setCurrentOutput();
 
@@ -703,10 +703,10 @@ bool TabManager::saveAs(EditorInterface *edt)
     // defaultSuffix property
     const QFileInfo info(filename);
     if (info.exists()) {
-        const auto text = QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
-        if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
+      const auto text = QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
+      if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
         return false;
-        }
+      }
     }
   }
 

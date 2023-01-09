@@ -79,23 +79,13 @@ if [ "`git config --get remote.origin.url | grep github.com.openscad`" ]; then
  echo 'checkout openscad-snapshot-build branch'
  git checkout openscad-snapshot-build
 fi
-if [ "`echo $* | grep 64`" ]; then
- MXE_TARGETS='x86_64-w64-mingw32.static.posix'
- if [ "`echo $* | grep download`" ]; then
-  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-qtmultimedia download-glib download-libxml2 download-freetype download-fontconfig download-harfbuzz download-libzip download-lib3mf download-double-conversion'
- else
-  PACKAGES='qtbase qtmultimedia qscintilla2 mpfr eigen opencsg cgal glib libxml2 freetype fontconfig harfbuzz libzip lib3mf double-conversion'
- fi
+if [ "`echo $* | grep download`" ]; then
+PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-qtmultimedia download-ninja download-nsis download-glib download-libxml2 download-freetype download-fontconfig download-harfbuzz download-libzip download-lib3mf download-double-conversion download-zip'
 else
- MXE_TARGETS='i686-w64-mingw32.static.posix'
- if [ "`echo $* | grep download`" ]; then
-  PACKAGES='download-mpfr download-eigen download-opencsg download-cgal download-qtbase download-qtmultimedia download-nsis download-glib download-libxml2 download-freetype download-fontconfig download-harfbuzz download-libzip download-lib3mf download-double-conversion'
- else
-  PACKAGES='qtbase qtmultimedia qscintilla2 mpfr eigen opencsg cgal nsis glib libxml2 freetype fontconfig harfbuzz libzip lib3mf double-conversion'
- fi
+PACKAGES='qtbase qtmultimedia qscintilla2 mpfr eigen opencsg cgal ninja nsis glib libxml2 freetype fontconfig harfbuzz libzip lib3mf double-conversion zip'
 fi
-echo make MXE_PLUGIN_DIRS=plugins/gcc7 $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
-make MXE_PLUGIN_DIRS=plugins/gcc7 $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
+echo make MXE_PLUGIN_DIRS=plugins/gcc11 $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
+make MXE_PLUGIN_DIRS=plugins/gcc11 $PACKAGES MXE_TARGETS=$MXE_TARGETS -j $NUMCPU JOBS=$NUMJOBS
 
 echo "leaving" $MXEDIR
 

@@ -23,7 +23,7 @@ void LaunchingScreen::openFile(const QString& filename)
   this->done(QDialog::Accepted);
 }
 
-LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent), forceShowEditor(true)
+LaunchingScreen::LaunchingScreen(QWidget *parent) : QDialog(parent)
 {
   LaunchingScreen::inst = this;
   setupUi(this);

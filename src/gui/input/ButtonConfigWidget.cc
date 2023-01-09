@@ -36,10 +36,6 @@ ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)
   setupUi(this);
 }
 
-ButtonConfigWidget::~ButtonConfigWidget()
-{
-}
-
 void ButtonConfigWidget::updateButtonState(int nr, bool pressed) const {
   QString style = pressed ? ButtonConfigWidget::ActiveStyleString : ButtonConfigWidget::EmptyString;
 

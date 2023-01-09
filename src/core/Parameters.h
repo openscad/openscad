@@ -16,10 +16,10 @@
 class Parameters
 {
 private:
-  Parameters(ContextFrame&& frame, const Location& loc);
+  Parameters(ContextFrame&& frame, Location loc);
 
 public:
-  Parameters(Parameters&& other);
+  Parameters(Parameters&& other) noexcept;
 
   /*
    * Matches arguments with parameters.
@@ -56,6 +56,10 @@ public:
   const Value& operator[](const std::string& name) const { return get(name); }
   bool valid(const std::string& name, Value::Type type);
   bool valid_required(const std::string& name, Value::Type type);
+  bool validate_number(const std::string& name, double& out);
+  template <typename T> bool validate_integral(const std::string& name, T& out,
+                                               T lo = std::numeric_limits<T>::min(),
+                                               T hi = std::numeric_limits<T>::max());
 
   ContextFrame to_context_frame() &&;
 
@@ -63,16 +67,38 @@ public:
   const Location& location() const { return loc; }
 
 private:
-  bool valid(const std::string& name, const Value& value, Value::Type type);
+  Location loc;
   ContextFrame frame;
   ContextFrameHandle handle;
+  bool valid(const std::string& name, const Value& value, Value::Type type);
   std::string caller = "";
-  Location loc;
 };
+
+// Silently clamp to the given range(defaults to numeric_limits)
+// as long as param is a finite number.
+template <typename T>
+bool Parameters::validate_integral(const std::string& name, T& out, T lo, T hi)
+{
+  double temp;
+  if (validate_number(name, temp)) {
+    if (temp < lo) {
+      out = lo;
+    } else if (temp > hi) {
+      out = hi;
+    } else {
+      out = static_cast<T>(temp);
+    }
+    return true;
+  }
+  return false;
+}
 
 void print_argCnt_warning(const std::string& name, int found,
                           const std::string& expected, const Location& loc,
                           const std::string& documentRoot);
-void print_argConvert_warning(const std::string& name, const std::string& where,
+void print_argConvert_positioned_warning(const std::string& calledName, const std::string& where,
+                                         const Value& found, std::vector<Value::Type> expected,
+                                         const Location& loc, const std::string& documentRoot);
+void print_argConvert_warning(const std::string& calledName, const std::string& argName,
                               const Value& found, std::vector<Value::Type> expected,
                               const Location& loc, const std::string& documentRoot);

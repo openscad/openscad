@@ -37,7 +37,7 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
@@ -46,6 +46,7 @@ static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *ins
 
   auto node = std::make_shared<TextNode>(inst);
 
+  auto *session = arguments.session();
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"text", "size", "font"},
                                             {"direction", "language", "script", "halign", "valign", "spacing"}
@@ -53,8 +54,7 @@ static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *ins
   parameters.set_caller("text");
 
   node->params.set_loc(inst->location());
-  node->params.set_documentPath(arguments.documentRoot());
-
+  node->params.set_documentPath(session->documentRoot());
   node->params.set(parameters);
   node->params.detect_properties();
 
@@ -81,6 +81,6 @@ void register_builtin_text()
 {
   Builtins::init("text", new BuiltinModule(builtin_text),
   {
-    "text(text = \"\", size = 10, font = \"\", halign = \"left\", valign = \"baseline\", spacing = 1, direction = \"ltr\", language = \"en\", script = \"latin\"[, $fn])",
+    R"(text(text = "", size = 10, font = "", halign = "left", valign = "baseline", spacing = 1, direction = "ltr", language = "en", script = "latin"[, $fn]))",
   });
 }

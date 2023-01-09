@@ -110,7 +110,7 @@ shared_ptr<const Geometry> applyUnion3D(
     return applyUnion3DHybrid(chbegin, chend);
   }
 
-  typedef std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int> QueueConstItem;
+  using QueueConstItem = std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int>;
   struct QueueItemGreater {
     // stable sort for priority_queue by facets, then progress mark
     bool operator()(const QueueConstItem& lhs, const QueueConstItem& rhs) const
@@ -160,7 +160,7 @@ shared_ptr<const Geometry> applyUnion3D(
 
 bool applyHull(const Geometry::Geometries& children, PolySet& result)
 {
-  typedef CGAL::Epick K;
+  using K = CGAL::Epick;
   // Collect point cloud
   Reindexer<K::Point_3> reindexer;
   std::vector<K::Point_3> points;
@@ -192,7 +192,7 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
           return false;
         });
     } else {
-      const PolySet *ps = dynamic_cast<const PolySet *>(chgeom.get());
+      const auto *ps = dynamic_cast<const PolySet *>(chgeom.get());
       if (ps) {
         points.reserve(points.size() + ps->polygons.size() * 3);
         for (const auto& p : ps->polygons) {
@@ -235,14 +235,14 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
   }
   CGAL::Timer t, t_tot;
   assert(children.size() >= 2);
-  Geometry::Geometries::const_iterator it = children.begin();
+  auto it = children.begin();
   t_tot.start();
   shared_ptr<const Geometry> operands[2] = {it->second, shared_ptr<const Geometry>()};
   try {
     while (++it != children.end()) {
       operands[1] = it->second;
 
-      typedef CGAL::Epick Hull_kernel;
+      using Hull_kernel = CGAL::Epick;
 
       std::list<CGAL_Polyhedron> P[2];
       std::list<CGAL::Polyhedron_3<Hull_kernel>> result_parts;
@@ -308,7 +308,7 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
           points[1].clear();
 
           for (int k = 0; k < 2; ++k) {
-            std::list<CGAL_Polyhedron>::iterator it = P[k].begin();
+            auto it = P[k].begin();
             std::advance(it, k == 0?i:j);
 
             CGAL_Polyhedron const& poly = *it;
@@ -394,7 +394,7 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
       if (it != std::next(children.begin())) operands[0].reset();
 
       auto partToGeom = [&](auto& poly) -> shared_ptr<const Geometry> {
-          PolySet *ps = new PolySet(3, /* convex= */ true);
+          auto *ps = new PolySet(3, /* convex= */ true);
           createPolySetFromPolyhedron(poly, *ps);
           return shared_ptr<const Geometry>(ps);
         };

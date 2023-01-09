@@ -10,7 +10,7 @@
 #include "Children.h"
 #include "RoofNode.h"
 
-static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<RoofNode>(inst);
 

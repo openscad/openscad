@@ -44,8 +44,8 @@ void Animate::setMainWindow(MainWindow *mainWindow)
   updatePauseButtonIcon();
 }
 
-void Animate::createActionAndPrepareButton(const QIcon &icon, QString description, std::string actionName, QPushButton* button){
-  QAction *action = new QAction(icon, description, this);
+void Animate::createActionAndPrepareButton(const QIcon& icon, const QString& description, const std::string& actionName, QPushButton *button){
+  auto *action = new QAction(icon, description, this);
   action->setObjectName(QString::fromStdString(actionName));
 
   connect(action, SIGNAL(triggered()), button, SLOT(click()));
@@ -58,15 +58,15 @@ void Animate::createActionAndPrepareButton(const QIcon &icon, QString descriptio
 
 void Animate::initVCR(){
   QString suffix("");
-  if(!isLightTheme()){
+  if (!isLightTheme()) {
     suffix = QString("-white");
   }
-  static QIcon startIcon    = QIcon(":/icons/svg-default/vcr-control-start" + suffix + ".svg");
+  static QIcon startIcon = QIcon(":/icons/svg-default/vcr-control-start" + suffix + ".svg");
   static QIcon stepBackIcon = QIcon(":/icons/svg-default/vcr-control-step-back" + suffix + ".svg");
-  static QIcon playIcon     = QIcon(":/icons/svg-default/vcr-control-play" + suffix + ".svg");
-  static QIcon pauseIcon    = QIcon(":/icons/svg-default/vcr-control-pause" + suffix + ".svg");
+  static QIcon playIcon = QIcon(":/icons/svg-default/vcr-control-play" + suffix + ".svg");
+  static QIcon pauseIcon = QIcon(":/icons/svg-default/vcr-control-pause" + suffix + ".svg");
   static QIcon stepFwrdIcon = QIcon(":/icons/svg-default/vcr-control-step-forward" + suffix + ".svg");
-  static QIcon endIcon      = QIcon(":/icons/svg-default/vcr-control-end" + suffix + ".svg");
+  static QIcon endIcon = QIcon(":/icons/svg-default/vcr-control-end" + suffix + ".svg");
 
   createActionAndPrepareButton(
     startIcon, _("Move to beginning (first frame)"),
@@ -89,14 +89,14 @@ void Animate::initVCR(){
     "stepFwrd", pushButton_StepForward);
 
   createActionAndPrepareButton(
-    endIcon,_("Move to end (last frame)"),
+    endIcon, _("Move to end (last frame)"),
     "end", pushButton_MoveToEnd);
 }
 
 bool Animate::isLightTheme()
 {
   bool ret = true;
-  if(mainWindow){
+  if (mainWindow) {
     ret = mainWindow->isLightTheme();
   } else {
     std::cout << "Animate: You need to set the mainWindow before calling isLightTheme" << std::endl;
@@ -141,18 +141,18 @@ void Animate::updatedAnimFpsAndAnimSteps()
     animate_timer->start();
   }
 
-  QString redBackground = QString (isLightTheme() ? "background-color:#ffaaaa;" : "background-color:#502020;");
+  QString redBackground = QString(isLightTheme() ? "background-color:#ffaaaa;" : "background-color:#502020;");
 
-  if( this->steps_ok || this->e_fsteps->text()=="" ){
-    this->e_fsteps->setStyleSheet(""); 
+  if (this->steps_ok || this->e_fsteps->text() == "") {
+    this->e_fsteps->setStyleSheet("");
   } else {
-    this->e_fsteps->setStyleSheet(redBackground); 
+    this->e_fsteps->setStyleSheet(redBackground);
   }
 
-  if( this->fps_ok || this->e_fps->text()=="" ){
-    this->e_fps->setStyleSheet(""); 
+  if (this->fps_ok || this->e_fps->text() == "") {
+    this->e_fps->setStyleSheet("");
   } else {
-    this->e_fps->setStyleSheet(redBackground); 
+    this->e_fps->setStyleSheet(redBackground);
   }
 
   updatePauseButtonIcon();
@@ -193,13 +193,13 @@ void Animate::updateTVal()
 {
   if (this->anim_numsteps == 0) return;
 
-  if(this->anim_step < 0){
+  if (this->anim_step < 0) {
     this->anim_step = this->anim_numsteps - this->anim_step - 2;
   }
 
   if (this->anim_numsteps > 1) {
-    this->anim_step =      (this->anim_step) % this->anim_numsteps;
-    this->anim_tval = 1.0 * this->anim_step  / this->anim_numsteps;
+    this->anim_step = (this->anim_step) % this->anim_numsteps;
+    this->anim_tval = 1.0 * this->anim_step / this->anim_numsteps;
   } else if (this->anim_numsteps > 0) {
     this->anim_step = 0;
     this->anim_tval = 0.0;
@@ -238,15 +238,15 @@ void Animate::updatePauseButtonIcon()
   static QIcon disabledLight(":/icons/svg-default/animate_disabled-white.svg");
 
   if (animate_timer->isActive()) {
-    pauseButton->setIcon( this->isLightTheme() ? pauseDark : pauseLight );
-    pauseButton->setToolTip( _("press to pause animation") );
+    pauseButton->setIcon(this->isLightTheme() ? pauseDark : pauseLight);
+    pauseButton->setToolTip(_("press to pause animation") );
   } else {
-    if( this->fps_ok && this->steps_ok ){
-      pauseButton->setIcon( this->isLightTheme() ? runDark : runLight );
-      pauseButton->setToolTip( _("press to start animation") );
+    if (this->fps_ok && this->steps_ok) {
+      pauseButton->setIcon(this->isLightTheme() ? runDark : runLight);
+      pauseButton->setToolTip(_("press to start animation") );
     } else {
-      pauseButton->setIcon( this->isLightTheme() ? disabledDark : disabledLight );
-      pauseButton->setToolTip( _("incorrect values") );
+      pauseButton->setIcon(this->isLightTheme() ? disabledDark : disabledLight);
+      pauseButton->setToolTip(_("incorrect values") );
     }
   }
 }
@@ -259,7 +259,7 @@ void Animate::editorContentChanged(){
   this->animateUpdate(); //for now so that we do not change the behavior
 }
 
-void  Animate::animateUpdate()
+void Animate::animateUpdate()
 {
   if (mainWindow->animateDockContents->isVisible()) {
     double fps = this->e_fps->text().toDouble(&this->fps_ok);
@@ -278,36 +278,36 @@ bool Animate::dumpPictures(){
 
 int Animate::nextFrame(){
   if (anim_dumping && anim_dump_start_step == anim_step) {
-      anim_dumping = false;
-      e_dump->setChecked(false);
-    } else {
-      if (!anim_dumping) {
-        anim_dumping = true;
-        anim_dump_start_step = anim_step;
-      }
+    anim_dumping = false;
+    e_dump->setChecked(false);
+  } else {
+    if (!anim_dumping) {
+      anim_dumping = true;
+      anim_dump_start_step = anim_step;
+    }
   }
   return anim_step;
 }
 
 // Invalid minimumSizeHint means we accept any size.
-// This is not ideal, but  QT does not seam to have an
+// This is not ideal, but QT does not seam to have an
 // elegant way to handle widgets that can adapt
 // to horizontal and vertical layout
-QSize Animate::minimumSizeHint() const{
-    return QSize(-1,-1);
+QSize Animate::minimumSizeHint() const {
+  return {-1, -1};
 }
 
 void Animate::resizeEvent(QResizeEvent *event)
 {
   const QSize sizeEvent = size();
-  
+
   // QTDesigner does not make it obvious, but
   // QBoxLayout can be switch from vertical to horizontal.
   int iconSize = 16;
-  if(auto mainLayout = dynamic_cast<QBoxLayout *> (this->layout())){
-    if(sizeEvent.height() > 140){
+  if (auto mainLayout = dynamic_cast<QBoxLayout *>(this->layout())) {
+    if (sizeEvent.height() > 140) {
       mainLayout->setDirection(QBoxLayout::TopToBottom);
-      if(sizeEvent.height() > 250 && sizeEvent.width() > 200){
+      if (sizeEvent.height() > 250 && sizeEvent.width() > 200) {
         mainLayout->setMargin(10);
         mainLayout->setSpacing(10);
         iconSize = 32;
@@ -321,7 +321,7 @@ void Animate::resizeEvent(QResizeEvent *event)
 
       mainLayout->setMargin(0);
       mainLayout->setSpacing(0);
-      if(sizeEvent.width() > 720){
+      if (sizeEvent.width() > 720) {
         this->vcr_controls->show();
       } else {
         this->vcr_controls->hide();
@@ -329,7 +329,7 @@ void Animate::resizeEvent(QResizeEvent *event)
     }
   } else {
     static bool warnOnce = true;
-    if(warnOnce) {
+    if (warnOnce) {
       std::cout << "you should not see this message - "
                 << " if you work on the animate UI, you can consider removing this code"
                 << std::endl;
@@ -337,18 +337,18 @@ void Animate::resizeEvent(QResizeEvent *event)
     }
   }
 
-  auto qPushButtons = this->findChildren<QPushButton*>();
-  for(auto qPushButton : qPushButtons){
-      qPushButton->setIconSize(QSize(iconSize, iconSize));
+  auto qPushButtons = this->findChildren<QPushButton *>();
+  for (auto qPushButton : qPushButtons) {
+    qPushButton->setIconSize(QSize(iconSize, iconSize));
   }
-  
+
   QFormLayout::RowWrapPolicy policy = QFormLayout::RowWrapPolicy::DontWrapRows;
-  if(sizeEvent.width() < 150){
+  if (sizeEvent.width() < 150) {
     policy = QFormLayout::RowWrapPolicy::WrapAllRows;
   }
-  auto qFormLayouts = this->findChildren<QFormLayout*>();
-  for(auto qFormLayout : qFormLayouts){
-      qFormLayout->setRowWrapPolicy(policy);
+  auto qFormLayouts = this->findChildren<QFormLayout *>();
+  for (auto qFormLayout : qFormLayouts) {
+    qFormLayout->setRowWrapPolicy(policy);
   }
 
   QWidget::resizeEvent(event);
@@ -361,10 +361,10 @@ const QList<QAction *>& Animate::actions(){
 void Animate::onActionEvent(InputEventAction *event)
 {
   const std::string actionString = event->action;
-  const std::string actionName = actionString.substr(actionString.find("::")+2, std::string::npos);
-  for(auto action : action_list){
-    if(actionName == action->objectName().toStdString()){
-        action->trigger();
+  const std::string actionName = actionString.substr(actionString.find("::") + 2, std::string::npos);
+  for (auto action : action_list) {
+    if (actionName == action->objectName().toStdString()) {
+      action->trigger();
     }
   }
 }

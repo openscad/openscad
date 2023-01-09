@@ -17,6 +17,7 @@ public:
   Animate(Animate&& source) = delete;
   Animate& operator=(const Animate& source) = delete;
   Animate& operator=(Animate&& source) = delete;
+  ~Animate() override = default;
 
   void initGUI();
   bool dumpPictures();
@@ -61,14 +62,14 @@ private:
   int anim_numsteps;
 
   bool isLightTheme();
-  
+
   bool fps_ok;
   bool t_ok;
   bool steps_ok;
 
   QList<QAction *> action_list;
-  void createActionAndPrepareButton(const QIcon &icon, QString description, std::string actionName, QPushButton* button);
- 
+  void createActionAndPrepareButton(const QIcon& icon, const QString& description, const std::string& actionName, QPushButton *button);
+
 signals:
 
 private slots:

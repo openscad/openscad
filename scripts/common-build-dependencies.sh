@@ -142,10 +142,11 @@ build_glib2()
   cd "glib-$version"
 
   export PKG_CONFIG_PATH="$DEPLOYDIR/lib/pkgconfig"
-  ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
+  meson -Dprefix="$DEPLOYDIR" _build
+  ninja -C _build
+  ninja -C _build install
+  # ./configure --disable-gtk-doc --disable-man --prefix="$DEPLOYDIR" CFLAGS="-I$DEPLOYDIR/include" LDFLAGS="-L$DEPLOYDIR/lib"
   unset PKG_CONFIG_PATH
-  make -j$NUMCPU
-  make install
 }
 
 build_ragel()
@@ -184,15 +185,16 @@ build_harfbuzz()
   echo "Building harfbuzz $version..."
   cd "$BASEDIR"/src
   rm -rf "harfbuzz-$version"
-  if [ ! -f "harfbuzz-$version.tar.gz" ]; then
-    curl --insecure -LO "http://cgit.freedesktop.org/harfbuzz/snapshot/harfbuzz-$version.tar.gz"
+  if [ ! -f "harfbuzz-$version.zip" ]; then
+    curl --insecure -LO "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$version.zip"
+    mv $version.zip harfbuzz-$version.zip
   fi
-  tar xzf "harfbuzz-$version.tar.gz"
+  unzip "harfbuzz-$version.zip"
   cd "harfbuzz-$version"
   # we do not need gtkdocize
   sed -e "s/gtkdocize/echo/g" autogen.sh > autogen.sh.bak && mv autogen.sh.bak autogen.sh
   # disable doc directories as they make problems on Mac OS Build
-  sed -e "s/SUBDIRS = src util test docs/SUBDIRS = src util test/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
+  sed -e "s/SUBDIRS = \(.*\) docs$/SUBDIRS = \1/g" Makefile.am > Makefile.am.bak && mv Makefile.am.bak Makefile.am
   sed -e "s/^docs.*$//" configure.ac > configure.ac.bak && mv configure.ac.bak configure.ac
   sh ./autogen.sh --prefix="$DEPLOYDIR" --with-freetype=yes --with-gobject=no --with-cairo=no --with-icu=no $extra_config_flags
   make -j$NUMCPU

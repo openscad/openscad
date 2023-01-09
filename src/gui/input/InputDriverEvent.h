@@ -31,7 +31,7 @@ class InputEventHandler
 {
 public:
 
-  virtual ~InputEventHandler(void) { }
+  virtual ~InputEventHandler() = default;
 
   virtual void onAxisChanged(class InputEventAxisChanged *event) = 0;
   virtual void onButtonChanged(class InputEventButtonChanged *event) = 0;
@@ -50,8 +50,6 @@ public:
 
   InputEvent(const bool activeOnly = true);
 
-  virtual ~InputEvent(void);
-
   virtual void deliver(InputEventHandler *receiver) = 0;
 
   static const QEvent::Type eventType;
@@ -61,7 +59,6 @@ class GenericInputEvent : public InputEvent
 {
 public:
   GenericInputEvent(const bool activeOnly = true) : InputEvent(activeOnly) { }
-  ~GenericInputEvent() { }
 };
 
 /**
@@ -77,7 +74,7 @@ public:
 
   InputEventAxisChanged(const unsigned int axis, const double value, const bool activeOnly = true) : GenericInputEvent(activeOnly), axis(axis), value(value) { }
 
-  void deliver(InputEventHandler *receiver)
+  void deliver(InputEventHandler *receiver) override
   {
     receiver->onAxisChanged(this);
   }
@@ -95,7 +92,7 @@ public:
 
   InputEventButtonChanged(const unsigned int button, const bool down, const bool activeOnly = true) : GenericInputEvent(activeOnly), button(button), down(down) { }
 
-  void deliver(InputEventHandler *receiver)
+  void deliver(InputEventHandler *receiver) override
   {
     receiver->onButtonChanged(this);
   }
@@ -118,7 +115,7 @@ public:
   const bool viewPortRelative;
   InputEventTranslate(const double x, const double y, const double z, const bool relative = true, const bool viewPortRelative = false, const bool activeOnly = true) : InputEvent(activeOnly), x(x), y(y), z(z), relative(relative), viewPortRelative(viewPortRelative) { }
 
-  void deliver(InputEventHandler *receiver)
+  void deliver(InputEventHandler *receiver) override
   {
     receiver->onTranslateEvent(this);
   }
@@ -134,7 +131,7 @@ public:
 
   InputEventRotate(const double x, const double y, const double z, const bool relative = true, const bool activeOnly = true) : InputEvent(activeOnly), x(x), y(y), z(z), relative(relative) { }
 
-  void deliver(InputEventHandler *receiver)
+  void deliver(InputEventHandler *receiver) override
   {
     receiver->onRotateEvent(this);
   }
@@ -149,7 +146,7 @@ public:
 
   InputEventRotate2(const double x, const double y, const double z, const bool activeOnly = true) : InputEvent(activeOnly), x(x), y(y), z(z) { }
 
-  void deliver(InputEventHandler *receiver)
+  void deliver(InputEventHandler *receiver) override
   {
     receiver->onRotate2Event(this);
   }
@@ -163,7 +160,7 @@ public:
 
   InputEventZoom(const double zoom, const bool relative = true, const bool activeOnly = true) : InputEvent(activeOnly), zoom(zoom), relative(relative) { }
 
-  void deliver(InputEventHandler *receiver)
+  void deliver(InputEventHandler *receiver) override
   {
     receiver->onZoomEvent(this);
   }
@@ -174,9 +171,9 @@ class InputEventAction : public InputEvent
 public:
   const std::string action;
 
-  InputEventAction(const std::string action, const bool activeOnly = true) : InputEvent(activeOnly), action(action) { }
+  InputEventAction(std::string action, const bool activeOnly = true) : InputEvent(activeOnly), action(std::move(action)) { }
 
-  void deliver(InputEventHandler *receiver)
+  void deliver(InputEventHandler *receiver) override
   {
     receiver->onActionEvent(this);
   }

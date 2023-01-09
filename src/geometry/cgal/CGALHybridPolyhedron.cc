@@ -8,7 +8,7 @@
 #include <fstream>
 #include <sstream>
 #include <cstdio>
-
+#include <variant>
 
 CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<CGAL_HybridNef>& nef)
 {
@@ -20,16 +20,16 @@ CGALHybridPolyhedron::CGALHybridPolyhedron(const shared_ptr<CGAL_HybridMesh>& me
 {
   assert(mesh);
   data = mesh;
-
 }
 
-CGALHybridPolyhedron::CGALHybridPolyhedron(const CGALHybridPolyhedron& other)
+CGALHybridPolyhedron::CGALHybridPolyhedron(const CGALHybridPolyhedron& other) : Geometry(other)
 {
   *this = other;
 }
 
 CGALHybridPolyhedron& CGALHybridPolyhedron::operator=(const CGALHybridPolyhedron& other)
 {
+  Geometry::operator=(other);
   if (auto nef = other.getNefPolyhedron()) {
     data = make_shared<CGAL_HybridNef>(*nef);
   } else if (auto mesh = other.getMesh()) {
@@ -40,21 +40,23 @@ CGALHybridPolyhedron& CGALHybridPolyhedron::operator=(const CGALHybridPolyhedron
   return *this;
 }
 
-CGALHybridPolyhedron::CGALHybridPolyhedron()
+CGALHybridPolyhedron::CGALHybridPolyhedron() : Geometry()
 {
   data = make_shared<CGAL_HybridMesh>();
 }
 
 std::shared_ptr<CGAL_HybridNef> CGALHybridPolyhedron::getNefPolyhedron() const
 {
-  auto pp = boost::get<shared_ptr<CGAL_HybridNef>>(&data);
-  return pp ? *pp : nullptr;
+  return std::holds_alternative<shared_ptr<CGAL_HybridNef>>(data) ?
+         std::get<shared_ptr<CGAL_HybridNef>>(data) :
+         nullptr;
 }
 
 std::shared_ptr<CGAL_HybridMesh> CGALHybridPolyhedron::getMesh() const
 {
-  auto pp = boost::get<shared_ptr<CGAL_HybridMesh>>(&data);
-  return pp ? *pp : nullptr;
+  return std::holds_alternative<shared_ptr<CGAL_HybridMesh>>(data) ?
+         std::get<shared_ptr<CGAL_HybridMesh>>(data) :
+         nullptr;
 }
 
 bool CGALHybridPolyhedron::isEmpty() const
@@ -113,13 +115,17 @@ shared_ptr<const PolySet> CGALHybridPolyhedron::toPolySet() const
 {
   if (auto mesh = getMesh()) {
     auto ps = make_shared<PolySet>(3, /* convex */ unknown);
-    auto err = CGALUtils::createPolySetFromMesh(*mesh, *ps);
-    assert(!err);
+    if (CGALUtils::createPolySetFromMesh(*mesh, *ps)) {
+      assert(false && "Error from CGALUtils::createPolySetFromNefPolyhedron3");
+    }
+    ps->setConvexity(convexity);
     return ps;
   } else if (auto nef = getNefPolyhedron()) {
     auto ps = make_shared<PolySet>(3, /* convex */ unknown);
-    auto err = CGALUtils::createPolySetFromNefPolyhedron3(*nef, *ps);
-    assert(!err);
+    if (CGALUtils::createPolySetFromNefPolyhedron3(*nef, *ps)) {
+      assert(false && "Error from CGALUtils::createPolySetFromNefPolyhedron3");
+    }
+    ps->setConvexity(convexity);
     return ps;
   } else {
     assert(!"Bad hybrid polyhedron state");

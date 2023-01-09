@@ -27,8 +27,6 @@
 #include "Context.h"
 #include "function.h"
 #include "printutils.h"
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
 
 Context::Context(EvaluationSession *session) :
   ContextFrame(session),
@@ -42,8 +40,8 @@ Context::Context(const std::shared_ptr<const Context>& parent) :
 
 Context::~Context()
 {
-  clear();
-  if (accountingAdded)   // avoiding bad accounting where exception threw in constructor  issue #3871
+  Context::clear();
+  if (accountingAdded)   // avoiding bad accounting where exception threw in constructor issue #3871
     session()->contextMemoryManager().releaseContext();
 }
 
