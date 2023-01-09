@@ -423,7 +423,6 @@ PyObject* openscad_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
    node->fa=10;
 
 
-//   return PyOpenSCADObject_new(node);
    return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
 
@@ -840,6 +839,31 @@ static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *i
   return node;
 }
 
+PyObject* openscad_square(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  auto node = std::make_shared<SquareNode>(&todo_fix_inst);
+
+  char * kwlist[] ={"dim", "center",NULL};
+  PyObject *dim = NULL; 
+
+  double x=1,y=1;
+  char *center=NULL;
+	
+   
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|s", kwlist, &PyList_Type,&dim, &center))
+   	return NULL;
+
+   if(PyList_Size(dim) == 2) {
+     	x=PyFloat_AsDouble(PyList_GetItem(dim, 0));
+     	y=PyFloat_AsDouble(PyList_GetItem(dim, 1));
+   }
+   node->x=x;
+   node->y=y;
+   if(center != NULL)
+	   if(!strcasecmp(center,"true")) node->center=1;
+
+   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
+}
 
 
 
@@ -906,6 +930,34 @@ static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *i
   }
 
   return node;
+}
+
+
+PyObject* openscad_circle(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  auto node = std::make_shared<CircleNode>(&todo_fix_inst);
+
+  char * kwlist[] ={"r","d",NULL};
+  double r = -1; 
+  double d = -1; 
+
+  double vr=1;
+	
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|dd", kwlist, &r,&d)) {
+   	return NULL;
+   }
+
+   else if(r>= 0)  { vr=r; }
+   else if(d>= 0)  { vr=d/2.0; }
+
+
+   node->r=vr;
+   node->fn=10;
+   node->fs=10;
+   node->fa=10;
+
+
+   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
 
 

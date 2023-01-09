@@ -19,6 +19,9 @@ void PyOpenSCADObject_dealloc(PyOpenSCADObject * self);
 PyObject * PyOpenSCADObjectFromNode( PyTypeObject *type,std::shared_ptr<AbstractNode> node);
 std::shared_ptr<AbstractNode> & PyOpenSCADObjectToNode(PyObject *object);
 
+PyObject* openscad_square(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* openscad_circle(PyObject *self, PyObject *args, PyObject *kwargs);
+
 PyObject* openscad_cube(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* openscad_cylinder(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* openscad_sphere(PyObject *self, PyObject *args, PyObject *kwargs);
