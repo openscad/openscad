@@ -234,10 +234,6 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
   return node;
 }
 
-std::string todo_fix_name;
-AssignmentList todo_fix_asslist;
-ModuleInstantiation todo_fix_inst(todo_fix_name,todo_fix_asslist,Location::NONE);
-
 PyObject* openscad_cube(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   auto node = std::make_shared<CubeNode>(&todo_fix_inst);

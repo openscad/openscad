@@ -38,6 +38,9 @@
 #include <cmath>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
+#include <Python.h>
+#include "pyopenscad.h"
+
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <boost/filesystem.hpp>
@@ -134,6 +137,83 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
 
   return node;
 }
+
+PyObject* openscad_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  std::shared_ptr<AbstractNode> child;
+
+  auto node = std::make_shared<LinearExtrudeNode>(&todo_fix_inst);
+
+  PyObject *obj = NULL;
+  double height=1;
+  char *layer=NULL;
+  int convexity=1;
+  PyObject *origin=NULL;
+  PyObject *scale=NULL;
+  char *center=NULL;
+  int slices=1;
+  int segments=0;
+  double twist=0.0;
+
+  char * kwlist[] ={"obj","height","layer","convexity","origin","scale","center","slices","segments","twist",NULL};
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|dsiO!O!siid", kwlist, 
+                          &PyOpenSCADType,
+                          &obj,
+                          &height,
+			  &layer,
+			  &convexity,
+			  &PyList_Type,
+			  &origin,
+			  &PyList_Type,
+			  &scale,
+			  &center,
+			  &slices,
+			  &segments,
+			  &twist
+                          ))
+        return NULL;
+
+  child = PyOpenSCADObjectToNode(obj);
+
+  node->fn=10;
+  node->fs=10;
+  node->fa=10;
+
+   
+  node->height=height;
+  node->convexity=convexity;
+  if(layer != NULL) node->layername=layer;
+
+  node->origin_x=0.0; node->origin_y=0.0;
+  if(origin != NULL && PyList_Size(origin) == 2) {
+	  node->origin_x=PyFloat_AsDouble(PyList_GetItem(origin, 0));
+	  node->origin_y=PyFloat_AsDouble(PyList_GetItem(origin, 1));
+  }
+
+  node->scale_x=1.0; node->scale_y=1.0;
+  if(scale != NULL && PyList_Size(scale) == 2) {
+	  node->scale_x=PyFloat_AsDouble(PyList_GetItem(scale, 0));
+	  node->scale_y=PyFloat_AsDouble(PyList_GetItem(scale, 1));
+  }
+
+  if(center != NULL)
+           if(!strcasecmp(center,"true")) node->center=1;
+
+  node->slices=slices;
+  node->has_slices=slices != 1?1:0;
+
+  node->segments=segments;
+  node->has_segments=segments != 1?1:0;
+
+  node->twist=twist;
+  node->has_twist=twist != 1?1:0;
+
+  node->children.push_back(child);
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
+}
+
+
 
 std::string LinearExtrudeNode::toString() const
 {

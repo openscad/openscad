@@ -54,9 +54,6 @@ static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiat
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::INTERSECTION));
 }
 
-extern  ModuleInstantiation todo_fix_inst;
-
-
 PyObject* openscad_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs,OpenSCADOperator mode)
 {
   std::shared_ptr<AbstractNode> child;

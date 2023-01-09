@@ -61,6 +61,8 @@ static PyMethodDef PyOpenSCADMethods[] = {
     {"translate", (PyCFunction) openscad_translate, METH_VARARGS | METH_KEYWORDS, "Move  Object."},
     {"rotate", (PyCFunction) openscad_rotate, METH_VARARGS | METH_KEYWORDS, "Rotate Object."},
 
+    {"linear_extrude", (PyCFunction) openscad_linear_extrude, METH_VARARGS | METH_KEYWORDS, "Linear_extrude Object."},
+
     {"union", (PyCFunction) openscad_union, METH_VARARGS | METH_KEYWORDS, "Union Object."},
     {"difference", (PyCFunction) openscad_difference, METH_VARARGS | METH_KEYWORDS, "Difference Object."},
     {"intersection", (PyCFunction) openscad_intersection, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
@@ -138,16 +140,15 @@ PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
 
 std::shared_ptr<AbstractNode> result_node=NULL;
 
-//
-//
-//
-//
-//
 static PyObject* PyInit_openscad(void)
 {
     return PyModule_Create(&OpenSCADModule);
 }
 
+
+std::string todo_fix_name;
+AssignmentList todo_fix_asslist;
+ModuleInstantiation todo_fix_inst(todo_fix_name,todo_fix_asslist,Location::NONE);
 
 void evaluatePython(const char *code)
 {

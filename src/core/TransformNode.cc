@@ -154,8 +154,6 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
   return children.instantiate(node);
 }
 
-extern  ModuleInstantiation todo_fix_inst;
-
 PyObject* openscad_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   std::shared_ptr<AbstractNode> child;
