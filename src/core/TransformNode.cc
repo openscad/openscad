@@ -302,9 +302,11 @@ PyObject* openscad_translate(PyObject *self, PyObject *args, PyObject *kwargs)
    	return NULL;
   child = PyOpenSCADObjectToNode(obj);
 
-  if(PyList_Size(v) == 3) {
+  if(PyList_Size(v) >= 2) {
      	x=PyFloat_AsDouble(PyList_GetItem(v, 0));
      	y=PyFloat_AsDouble(PyList_GetItem(v, 1));
+  }
+  if(PyList_Size(v) >= 3) {
      	z=PyFloat_AsDouble(PyList_GetItem(v, 2));
    }
    Vector3d translatevec(x, y, z);

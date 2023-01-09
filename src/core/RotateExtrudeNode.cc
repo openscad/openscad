@@ -39,6 +39,9 @@
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <boost/filesystem.hpp>
+#include <Python.h>
+#include "pyopenscad.h"
+
 namespace fs = boost::filesystem;
 
 static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -87,6 +90,61 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
 
 
   return node;
+}
+
+PyObject* openscad_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  std::shared_ptr<AbstractNode> child;
+
+  auto node = std::make_shared<RotateExtrudeNode>(&todo_fix_inst);
+
+  PyObject *obj = NULL;
+
+  char *layer=NULL;
+  int convexity=1;
+  double scale=1.0;
+  double angle=360.0;
+  PyObject *origin=NULL;
+
+
+  char * kwlist[] ={"obj","layer","convexity","scale",NULL};
+
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|siddO!", kwlist, 
+                          &PyOpenSCADType,
+                          &obj,
+			  &layer,
+			  &convexity,
+			  &scale,
+			  &angle,
+			  &PyList_Type,
+			  &origin
+                          ))
+        return NULL;
+
+  child = PyOpenSCADObjectToNode(obj);
+
+  node->fn=10;
+  node->fs=10;
+  node->fa=10;
+
+  if(layer != NULL) node->layername = layer;
+  node->convexity = convexity;
+  node->scale = scale;
+  node->angle = angle;
+
+  if(origin != NULL && PyList_Size(origin) == 2) {
+	  node->origin_x=PyFloat_AsDouble(PyList_GetItem(origin, 0));
+	  node->origin_y=PyFloat_AsDouble(PyList_GetItem(origin, 1));
+  }
+
+
+
+  if (node->convexity <= 0) node->convexity = 2;
+  if (node->scale <= 0) node->scale = 1;
+  if ((node->angle <= -360) || (node->angle > 360)) node->angle = 360;
+
+  node->children.push_back(child);
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
 
 std::string RotateExtrudeNode::toString() const

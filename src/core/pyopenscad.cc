@@ -62,6 +62,7 @@ static PyMethodDef PyOpenSCADMethods[] = {
     {"rotate", (PyCFunction) openscad_rotate, METH_VARARGS | METH_KEYWORDS, "Rotate Object."},
 
     {"linear_extrude", (PyCFunction) openscad_linear_extrude, METH_VARARGS | METH_KEYWORDS, "Linear_extrude Object."},
+    {"rotate_extrude", (PyCFunction) openscad_rotate_extrude, METH_VARARGS | METH_KEYWORDS, "Rotate_extrude Object."},
 
     {"union", (PyCFunction) openscad_union, METH_VARARGS | METH_KEYWORDS, "Union Object."},
     {"difference", (PyCFunction) openscad_difference, METH_VARARGS | METH_KEYWORDS, "Difference Object."},

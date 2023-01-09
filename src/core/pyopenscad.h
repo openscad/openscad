@@ -30,6 +30,7 @@ PyObject* openscad_translate(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* openscad_rotate(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* openscad_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* openscad_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* openscad_union(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* openscad_difference(PyObject *self, PyObject *args, PyObject *kwargs);
