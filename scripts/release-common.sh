@@ -7,13 +7,12 @@
 # The script will create a file called openscad-<versionstring>.<extension> in
 # the current directory (or under ./mingw32 or ./mingw64)
 #
-# Usage: release-common.sh [-v <versionstring>] [-c] [-mingw[32|64]] [-tests]
+# Usage: release-common.sh [-v <versionstring>] [-c] [-mingw[32|64]]
 #  -v       Version string (e.g. -v 2010.01)
 #  -d       Version date (e.g. -d 2010.01.23)
-#  -mingw32 Cross-compile for win32 using MXE
-#  -mingw64 Cross-compile for win64 using MXE
-#  -snapshot Build a snapshot binary (make e.g. experimental features available, build with commit info)
-#  -tests   Build additional package containing the regression tests
+#  mingw32 Cross-compile for win32 using MXE
+#  mingw64 Cross-compile for win64 using MXE
+#  snapshot Build a snapshot binary (make e.g. experimental features available, build with commit info)
 #
 # If no version string or version date is given, today's date will be used (YYYY-MM-DD)
 # If only version date is given, it will be used also as version string.
@@ -47,9 +46,15 @@ lf2crlf()
 
 printUsage()
 {
-  echo "Usage: $0 -v <versionstring> -d <versiondate> -c -mingw32
+  echo "Usage: $0 -v <versionstring> -d <versiondate> [mingw32|mingw64] [shared] [snapshot]"
   echo
-  echo "  Example: $0 -v 2021.01
+  echo "  -d <versiondate>: YYYY.MM.DD format; defaults to today\'s date"
+  echo "  -v <versionstring>: YYYY.MM format; defaults to <versiondate>"
+  echo "  mingw32|mingw64: Override \$OSTYPE"
+  echo "  shared:          Use shared libraries for mingw build"
+  echo "  snapshot:        Build a development snapshot (-DSNAPSHOT=ON -DEXPERIMENTAL=ON)"
+  echo
+  echo "  Example: $0 -v 2021.01"
 }
 
 OPENSCADDIR=$PWD
@@ -129,12 +134,7 @@ else
   BUILD_TYPE="Release"
 fi
 
-BUILD_TESTS=
-if [ "`echo $* | grep tests`" ]; then
-  BUILD_TESTS=1
-fi
-
-while getopts 'v:d:c' c
+while getopts 'v:d:' c
 do
   case $c in
     v) VERSION=$OPTARG;;
@@ -181,14 +181,15 @@ if [ -d .git ]; then
   git submodule update
 fi
 
-echo "Building openscad-$VERSION ($VERSIONDATE) $CMAKE_CONFIG..."
-echo "DEPLOYDIR: " $DEPLOYDIR
+echo "Building openscad-$VERSION ($VERSIONDATE)"
+echo "  CMake args: $CMAKE_CONFIG"
+echo "  DEPLOYDIR: " $DEPLOYDIR
 
 if [ ! $NUMCPU ]; then
-  echo "note: you can 'export NUMCPU=x' for multi-core compiles (x=number)";
+  echo "  Note: you can 'export NUMCPU=x' for multi-core compiles (x=number)";
   NUMCPU=1
 fi
-echo "NUMCPU: " $NUMCPU
+echo "  NUMCPU: $NUMCPU"
 
 cd $DEPLOYDIR
 CMAKE_CONFIG="${CMAKE_CONFIG}\
@@ -196,7 +197,9 @@ CMAKE_CONFIG="${CMAKE_CONFIG}\
  -DOPENSCAD_VERSION=${VERSION}\
  -DOPENSCAD_COMMIT=${OPENSCAD_COMMIT}"
 
-echo -e "\nRUNNING CMAKE FROM ${DEPLOYDIR}\n${CMAKE} .. ${CMAKE_CONFIG}\n"
+echo "Running CMake from ${DEPLOYDIR}"
+echo "${CMAKE} .. ${CMAKE_CONFIG}"
+
 "${CMAKE}" .. ${CMAKE_CONFIG}
 cd $OPENSCADDIR
 
@@ -238,8 +241,6 @@ case $OS in
         cd $OPENSCADDIR
     ;;
 esac
-
-
 
 echo "Creating directory structure..."
 
@@ -334,7 +335,6 @@ case $OS in
         /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSIONDATE" OpenSCAD.app/Contents/Info.plist
         macdeployqt OpenSCAD.app -dmg -no-strip
         mv OpenSCAD.dmg OpenSCAD-$VERSION.dmg
-        hdiutil internet-enable -yes -quiet OpenSCAD-$VERSION.dmg
         echo "Binary created: OpenSCAD-$VERSION.dmg"
         cd $OPENSCADDIR
     ;;
