@@ -8,8 +8,8 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
-    name: macos-latest
+    runs-on: macos-11
+    name: macos-11
     steps:
     - name: Checkout
       uses: actions/checkout@v3
