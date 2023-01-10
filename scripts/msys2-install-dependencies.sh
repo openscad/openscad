@@ -26,11 +26,11 @@ pacboy --noconfirm --sync --needed \
     make: \
     bison: \
     flex: \
+    icu-devel: \
     toolchain:p \
     cmake:p \
     ninja:p \
     boost:p \
-    icu-devel:p \
     cgal:p \
     eigen3:p \
     glew:p \
