@@ -58,7 +58,12 @@ for formula in boost; do
   fi
 done
 
-for formula in pkg-config eigen cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 qscintilla2 lib3mf double-conversion imagemagick ccache ghostscript; do
+# Downgrade CGAL to 5.5 due to https://github.com/openscad/openscad/issues/4470
+brew tap-new $USER/local-cgal
+brew extract --version=5.5.0 cgal $USER/local-cgal
+brew install cgal@5.5.0
+
+for formula in pkg-config eigen glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 qscintilla2 lib3mf double-conversion imagemagick ccache ghostscript; do
   log "Installing formula $formula"
   brew ls --versions $formula
   time brew install $formula

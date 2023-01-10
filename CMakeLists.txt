@@ -280,9 +280,9 @@ set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 # Some older versions do not match with CGAL 5.0 REQUIRED, so we check after.
 find_package(CGAL REQUIRED COMPONENTS Core)
 if (${CGAL_MAJOR_VERSION} LESS 5)
-  message(FATAL_ERROR "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION} less than required minimum version 5.0")
+  message(FATAL_ERROR "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}.${CGAL_BUGFIX_VERSION} less than required minimum version 5.0")
 endif()
-message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
+message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}.${CGAL_BUGFIX_VERSION}")
 target_compile_definitions(OpenSCAD PRIVATE ENABLE_CGAL)
 # The macro `CGAL_DEBUG` allows to force CGAL assertions, even if `NDEBUG` is defined,
 # Enabling CGAL assertions is necessary for us to catch them before they cause a crash
