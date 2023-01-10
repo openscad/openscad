@@ -30,6 +30,7 @@ pacboy --noconfirm --sync --needed \
     cmake:p \
     ninja:p \
     boost:p \
+    icu-devel:p \
     cgal:p \
     eigen3:p \
     glew:p \
