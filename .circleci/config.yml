@@ -208,7 +208,7 @@ jobs:
           name: Build OpenSCAD
           command: |
             export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
-            time ./scripts/release-common.sh -snapshot
+            time ./scripts/release-common.sh snapshot
             cd build
             OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
             shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256

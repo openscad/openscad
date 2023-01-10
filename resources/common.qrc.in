@@ -21,7 +21,7 @@
     <file>icons/information-icons-info.png</file>
     <file>icons/information-icons-question.png</file>
     <file>icons/information-icons-warning.png</file>
-    <file alias="logo.png">icons/openscad${SUFFIX_WITH_DASH}.png</file>
+    <file alias="logo.png">icons/openscad${SNAPSHOT_SUFFIX}.png</file>
 
     <file>icons/button.png</file>
     <file>icons/background-welcome-screen.svg</file>
