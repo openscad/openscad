@@ -54,7 +54,7 @@ static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiat
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::INTERSECTION));
 }
 
-PyObject* openscad_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs,OpenSCADOperator mode)
+PyObject* python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs,OpenSCADOperator mode)
 {
   std::shared_ptr<AbstractNode> child;
   int i;
@@ -79,19 +79,19 @@ PyObject* openscad_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs,Open
    return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
 
-PyObject* openscad_union(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject* python_union(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-	return openscad_csg_sub(self,args,kwargs, OpenSCADOperator::UNION);
+	return python_csg_sub(self,args,kwargs, OpenSCADOperator::UNION);
 }
 
-PyObject* openscad_difference(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject* python_difference(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-	return openscad_csg_sub(self,args,kwargs, OpenSCADOperator::DIFFERENCE);
+	return python_csg_sub(self,args,kwargs, OpenSCADOperator::DIFFERENCE);
 }
 
-PyObject* openscad_intersection(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject* python_intersection(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-	return openscad_csg_sub(self,args,kwargs, OpenSCADOperator::INTERSECTION);
+	return python_csg_sub(self,args,kwargs, OpenSCADOperator::INTERSECTION);
 }
 
 std::string CsgOpNode::toString() const

@@ -92,7 +92,7 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
   return node;
 }
 
-PyObject* openscad_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject* python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   std::shared_ptr<AbstractNode> child;
 

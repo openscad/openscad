@@ -75,6 +75,45 @@ std::shared_ptr<AbstractNode> builtin_scale(const ModuleInstantiation *inst, Arg
   return children.instantiate(node);
 }
 
+PyObject* python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  std::shared_ptr<AbstractNode> child;
+
+  auto node = std::make_shared<TransformNode>(&todo_fix_inst, "scale");
+
+  char * kwlist[] ={"obj","v",NULL};
+  double x=1.0,y=1.0,z=1.0;
+
+  PyObject *obj=NULL;
+  PyObject *val_v = NULL; 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
+			  &PyOpenSCADType, &obj, 
+			  &PyList_Type,&val_v ))
+   	return NULL;
+
+  child = PyOpenSCADObjectToNode(obj);
+
+  if(PyList_Size(val_v) >= 2) {
+     	x=PyFloat_AsDouble(PyList_GetItem(val_v, 0));
+     	y=PyFloat_AsDouble(PyList_GetItem(val_v, 1));
+  }
+  if(PyList_Size(val_v) >= 3) {
+     	z=PyFloat_AsDouble(PyList_GetItem(val_v, 2));
+   }
+
+  Vector3d scalevec(x, y, z);
+
+  if (OpenSCAD::rangeCheck) {
+    if (scalevec[0] == 0 || scalevec[1] == 0 || scalevec[2] == 0 || !std::isfinite(scalevec[0])|| !std::isfinite(scalevec[1])|| !std::isfinite(scalevec[2])) {
+//      LOG(message_group::Warning, todo_fix_inst->location(), parameters.documentRoot(), "scale(%1$s)", parameters["v"].toEchoStringNoThrow());
+    }
+  }
+  node->matrix.scale(scalevec);
+
+  node->children.push_back(child);
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
+}
+
 std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "rotate");
@@ -154,7 +193,7 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
   return children.instantiate(node);
 }
 
-PyObject* openscad_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject* python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   std::shared_ptr<AbstractNode> child;
 
@@ -263,6 +302,54 @@ std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Ar
   return children.instantiate(node);
 }
 
+PyObject* python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  std::shared_ptr<AbstractNode> child;
+
+  auto node = std::make_shared<TransformNode>(&todo_fix_inst, "mirror");
+
+  char * kwlist[] ={"obj","v",NULL};
+  double x=1.0,y=1.0,z=1.0;
+
+  PyObject *obj=NULL;
+  PyObject *val_v = NULL; 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
+			  &PyOpenSCADType, &obj, 
+			  &PyList_Type,&val_v ))
+   	return NULL;
+
+  child = PyOpenSCADObjectToNode(obj);
+
+  if(PyList_Size(val_v) >= 2) {
+     	x=PyFloat_AsDouble(PyList_GetItem(val_v, 0));
+     	y=PyFloat_AsDouble(PyList_GetItem(val_v, 1));
+  }
+  if(PyList_Size(val_v) >= 3) {
+     	z=PyFloat_AsDouble(PyList_GetItem(val_v, 2));
+   }
+
+  // x /= sqrt(x*x + y*y + z*z)
+  // y /= sqrt(x*x + y*y + z*z)
+  // z /= sqrt(x*x + y*y + z*z)
+  if (x != 0.0 || y != 0.0 || z != 0.0) {
+    // skip using sqrt to normalize the vector since each element of matrix contributes it with two multiplied terms
+    // instead just divide directly within each matrix element
+    // simplified calculation leads to less float errors
+    double a = x * x + y * y + z * z;
+
+    Matrix4d m;
+    m << 1 - 2 * x * x / a, -2 * y * x / a, -2 * z * x / a, 0,
+      -2 * x * y / a, 1 - 2 * y * y / a, -2 * z * y / a, 0,
+      -2 * x * z / a, -2 * y * z / a, 1 - 2 * z * z / a, 0,
+      0, 0, 0, 1;
+    node->matrix = m;
+  }
+
+  node->children.push_back(child);
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
+}
+
+
 std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "translate");
@@ -282,7 +369,7 @@ std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst,
 }
 
 
-PyObject* openscad_translate(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject* python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   std::shared_ptr<AbstractNode> child;
 

@@ -234,7 +234,7 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
   return node;
 }
 
-PyObject* openscad_cube(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject* python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   auto node = std::make_shared<CubeNode>(&todo_fix_inst);
 
@@ -262,7 +262,7 @@ PyObject* openscad_cube(PyObject *self, PyObject *args, PyObject *kwargs)
    return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
 
-PyObject* openscad_output(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs)
 {
    PyObject *object=NULL;
    char * kwlist[] ={"object",NULL};
@@ -395,7 +395,7 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
 }
 
 
-PyObject* openscad_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject* python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   auto node = std::make_shared<SphereNode>(&todo_fix_inst);
 
@@ -573,7 +573,7 @@ static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation 
   return node;
 }
 
-PyObject* openscad_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject* python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   auto node = std::make_shared<CylinderNode>(&todo_fix_inst);
 
@@ -835,7 +835,7 @@ static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *i
   return node;
 }
 
-PyObject* openscad_square(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject* python_square(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   auto node = std::make_shared<SquareNode>(&todo_fix_inst);
 
@@ -929,7 +929,7 @@ static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *i
 }
 
 
-PyObject* openscad_circle(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject* python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   auto node = std::make_shared<CircleNode>(&todo_fix_inst);
 

@@ -51,24 +51,26 @@ static PyMemberDef PyOpenSCADMembers[] = {
 };
 
 static PyMethodDef PyOpenSCADMethods[] = {
-    {"square", (PyCFunction) openscad_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
-    {"circle", (PyCFunction) openscad_circle, METH_VARARGS | METH_KEYWORDS, "Create Circle."},
+    {"square", (PyCFunction) python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
+    {"circle", (PyCFunction) python_circle, METH_VARARGS | METH_KEYWORDS, "Create Circle."},
 
-    {"cube", (PyCFunction) openscad_cube, METH_VARARGS | METH_KEYWORDS, "Create Cube."},
-    {"cylinder", (PyCFunction) openscad_cylinder, METH_VARARGS | METH_KEYWORDS, "Create Cylinder."},
-    {"sphere", (PyCFunction) openscad_sphere, METH_VARARGS | METH_KEYWORDS, "Create Sphere."},
+    {"cube", (PyCFunction) python_cube, METH_VARARGS | METH_KEYWORDS, "Create Cube."},
+    {"cylinder", (PyCFunction) python_cylinder, METH_VARARGS | METH_KEYWORDS, "Create Cylinder."},
+    {"sphere", (PyCFunction) python_sphere, METH_VARARGS | METH_KEYWORDS, "Create Sphere."},
 
-    {"translate", (PyCFunction) openscad_translate, METH_VARARGS | METH_KEYWORDS, "Move  Object."},
-    {"rotate", (PyCFunction) openscad_rotate, METH_VARARGS | METH_KEYWORDS, "Rotate Object."},
+    {"translate", (PyCFunction) python_translate, METH_VARARGS | METH_KEYWORDS, "Move  Object."},
+    {"rotate", (PyCFunction) python_rotate, METH_VARARGS | METH_KEYWORDS, "Rotate Object."},
+    {"scale", (PyCFunction) python_scale, METH_VARARGS | METH_KEYWORDS, "Scale Object."},
+    {"mirror", (PyCFunction) python_mirror, METH_VARARGS | METH_KEYWORDS, "Mirror Object."},
 
-    {"linear_extrude", (PyCFunction) openscad_linear_extrude, METH_VARARGS | METH_KEYWORDS, "Linear_extrude Object."},
-    {"rotate_extrude", (PyCFunction) openscad_rotate_extrude, METH_VARARGS | METH_KEYWORDS, "Rotate_extrude Object."},
+    {"linear_extrude", (PyCFunction) python_linear_extrude, METH_VARARGS | METH_KEYWORDS, "Linear_extrude Object."},
+    {"rotate_extrude", (PyCFunction) python_rotate_extrude, METH_VARARGS | METH_KEYWORDS, "Rotate_extrude Object."},
 
-    {"union", (PyCFunction) openscad_union, METH_VARARGS | METH_KEYWORDS, "Union Object."},
-    {"difference", (PyCFunction) openscad_difference, METH_VARARGS | METH_KEYWORDS, "Difference Object."},
-    {"intersection", (PyCFunction) openscad_intersection, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
+    {"union", (PyCFunction) python_union, METH_VARARGS | METH_KEYWORDS, "Union Object."},
+    {"difference", (PyCFunction) python_difference, METH_VARARGS | METH_KEYWORDS, "Difference Object."},
+    {"intersection", (PyCFunction) python_intersection, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
 
-    {"output", (PyCFunction) openscad_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
+    {"output", (PyCFunction) python_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
     {NULL, NULL, 0, NULL}
 };
 

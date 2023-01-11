@@ -19,24 +19,26 @@ void PyOpenSCADObject_dealloc(PyOpenSCADObject * self);
 PyObject * PyOpenSCADObjectFromNode( PyTypeObject *type,std::shared_ptr<AbstractNode> node);
 std::shared_ptr<AbstractNode> & PyOpenSCADObjectToNode(PyObject *object);
 
-PyObject* openscad_square(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* openscad_circle(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_square(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_circle(PyObject *self, PyObject *args, PyObject *kwargs);
 
-PyObject* openscad_cube(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* openscad_cylinder(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* openscad_sphere(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_cube(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_sphere(PyObject *self, PyObject *args, PyObject *kwargs);
 
-PyObject* openscad_translate(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* openscad_rotate(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_translate(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_rotate(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_scale(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_mirror(PyObject *self, PyObject *args, PyObject *kwargs);
 
-PyObject* openscad_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* openscad_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs);
 
-PyObject* openscad_union(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* openscad_difference(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* openscad_intersection(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_union(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_difference(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_intersection(PyObject *self, PyObject *args, PyObject *kwargs);
 
-PyObject* openscad_output(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs);
 
 extern  ModuleInstantiation todo_fix_inst;
 

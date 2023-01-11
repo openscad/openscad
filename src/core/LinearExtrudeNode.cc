@@ -138,7 +138,7 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
   return node;
 }
 
-PyObject* openscad_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
+PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   std::shared_ptr<AbstractNode> child;
 
