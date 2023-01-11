@@ -53,6 +53,7 @@ static PyMemberDef PyOpenSCADMembers[] = {
 static PyMethodDef PyOpenSCADMethods[] = {
     {"square", (PyCFunction) python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
     {"circle", (PyCFunction) python_circle, METH_VARARGS | METH_KEYWORDS, "Create Circle."},
+    {"polygon", (PyCFunction) python_polygon, METH_VARARGS | METH_KEYWORDS, "Create Polygon."},
 
     {"cube", (PyCFunction) python_cube, METH_VARARGS | METH_KEYWORDS, "Create Cube."},
     {"cylinder", (PyCFunction) python_cylinder, METH_VARARGS | METH_KEYWORDS, "Create Cylinder."},

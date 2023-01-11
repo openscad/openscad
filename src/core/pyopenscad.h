@@ -21,6 +21,7 @@ std::shared_ptr<AbstractNode> & PyOpenSCADObjectToNode(PyObject *object);
 
 PyObject* python_square(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_circle(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_polygon(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* python_cube(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs);

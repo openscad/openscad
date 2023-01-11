@@ -1103,7 +1103,55 @@ static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *
   return node;
 }
 
+PyObject* python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  int i,j,pointIndex;
+  auto node = std::make_shared<PolygonNode>(&todo_fix_inst);
 
+  char * kwlist[] ={"points", "paths","convexity",NULL};
+  PyObject *points = NULL; 
+  PyObject *paths = NULL; 
+  int convexity = 2;
+
+  PyObject *element;
+  point2d point;
+
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!i", kwlist, 
+			   &PyList_Type,&points,
+			   &PyList_Type,&paths,
+			   &convexity
+			   ))
+   	return NULL;
+
+   if(points != NULL) {
+	   for(i=0;i<PyList_Size(points);i++) {
+		   element = PyList_GetItem(points,i);
+		   if(PyList_Size(element)  == 2) {
+     			point.x=PyFloat_AsDouble(PyList_GetItem(element, 0));
+		     	point.y=PyFloat_AsDouble(PyList_GetItem(element, 1));
+      			node->points.push_back(point);
+		   }
+
+	   }
+   }
+
+   if(paths != NULL) {
+	   for(i=0;i<PyList_Size(paths);i++) {
+		   element =  PyList_GetItem(paths,i);
+                   std::vector<size_t> path;
+		   for(j=0;j<PyList_Size(element);j++) {
+			pointIndex=PyLong_AsLong(PyList_GetItem(element, j));
+                        path.push_back(pointIndex);
+		   }
+        	   node->paths.push_back(std::move(path));
+	   }
+   }
+
+  node->convexity = convexity;
+  if (node->convexity < 1) node->convexity = 1;
+
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
+}
 
 void register_builtin_primitives()
 {
