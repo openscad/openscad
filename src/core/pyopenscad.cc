@@ -50,7 +50,7 @@ static PyMemberDef PyOpenSCADMembers[] = {
 	{NULL}
 };
 
-static PyMethodDef PyOpenSCADMethods[] = {
+static PyMethodDef PyOpenSCADFunctions[] = {
     {"square", (PyCFunction) python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
     {"circle", (PyCFunction) python_circle, METH_VARARGS | METH_KEYWORDS, "Create Circle."},
     {"polygon", (PyCFunction) python_polygon, METH_VARARGS | METH_KEYWORDS, "Create Polygon."},
@@ -77,6 +77,30 @@ static PyMethodDef PyOpenSCADMethods[] = {
     {NULL, NULL, 0, NULL}
 };
 
+PyObject *python_oo_args(PyObject *self, PyObject *args)
+{
+	int i;
+	PyObject *new_args = PyTuple_New(PyTuple_Size(args)+1);
+//	Py_INCREF(&new_args);
+	PyTuple_SetItem(new_args,0,self);
+	for(i=0;i<PyTuple_Size(args);i++)
+		PyTuple_SetItem(new_args,i+1,PyTuple_GetItem(args,i));
+	return new_args;
+}
+
+
+static PyMethodDef PyOpenSCADMethods[] = {
+    {"translate", (PyCFunction) python_translate_oo, METH_VARARGS | METH_KEYWORDS, "Move  Object."},
+    {"rotate", (PyCFunction) python_rotate_oo, METH_VARARGS | METH_KEYWORDS, "Rotate Object."},
+    {"scale", (PyCFunction) python_scale_oo, METH_VARARGS | METH_KEYWORDS, "Scale Object."},
+    {"mirror", (PyCFunction) python_mirror_oo, METH_VARARGS | METH_KEYWORDS, "Mirror Object."},
+    {"multmatrix", (PyCFunction) python_multmatrix_oo, METH_VARARGS | METH_KEYWORDS, "Multmatrix Object."},
+    {"linear_extrude", (PyCFunction) python_linear_extrude_oo, METH_VARARGS | METH_KEYWORDS, "Linear_extrude Object."},
+    {"rotate_extrude", (PyCFunction) python_rotate_extrude_oo, METH_VARARGS | METH_KEYWORDS, "Rotate_extrude Object."},
+    {"output", (PyCFunction) python_output_oo, METH_VARARGS | METH_KEYWORDS, "Output the result."},
+    {NULL, NULL, 0, NULL}
+};
+
 
 PyTypeObject PyOpenSCADType = {
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -100,23 +124,23 @@ PyTypeObject PyOpenSCADType = {
     0,                         /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,        /* tp_flags */
     "PyOpenSCAD objects",           /* tp_doc */
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    PyOpenSCADMethods,
-    PyOpenSCADMembers,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    (initproc) PyOpenSCADInit,
-    0,
-    PyOpenSCADObject_new,
+    0,				/* tp_traverse */
+    0,				/* tp_clear */
+    0,				/* tp_richcompare */
+    0,				/* tp_weaklistoffset */
+    0,				/* tp_iter */
+    0,				/* tp_iternext */
+    PyOpenSCADMethods,		/* tp_methods */
+    PyOpenSCADMembers,		/* tp_members */
+    0,				/* tp_getset */
+    0,				/* tp_base */
+    0,				/* tp_dict */
+    0,				/* tp_descr_get */
+    0,				/* tp_descr_set*/
+    0,				/* tp_dictoffset */
+    (initproc) PyOpenSCADInit,	/* tp_init */
+    0,				/* tp_alloc*/
+    PyOpenSCADObject_new,	/* tp_new */
 };
 
 
@@ -125,7 +149,7 @@ static PyModuleDef OpenSCADModule = {
     "openscad",
     "Example module that creates an extension type.",
     -1,
-    PyOpenSCADMethods,
+    PyOpenSCADFunctions,
     NULL, NULL, NULL, NULL
 };
 

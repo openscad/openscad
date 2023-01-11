@@ -272,6 +272,16 @@ PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs)
    return PyLong_FromLong(55);
 }
 
+PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	PyObject *new_args=python_oo_args(self,args);
+	PyObject *result = python_output(self,new_args,kwargs);
+//	Py_DECREF(&new_args);
+	return result;
+}
+
+
+
 
 
 

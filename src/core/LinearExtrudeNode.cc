@@ -213,6 +213,15 @@ PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
 
+PyObject* python_linear_extrude_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	PyObject *new_args=python_oo_args(self,args);
+	PyObject *result = python_linear_extrude(self,new_args,kwargs);
+//	Py_DECREF(&new_args);
+	return result;
+}
+
+
 
 
 std::string LinearExtrudeNode::toString() const

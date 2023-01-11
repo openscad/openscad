@@ -147,6 +147,15 @@ PyObject* python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
 
+PyObject* python_rotate_extrude_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	PyObject *new_args=python_oo_args(self,args);
+	PyObject *result = python_rotate_extrude(self,new_args,kwargs);
+//	Py_DECREF(&new_args);
+	return result;
+}
+
+
 std::string RotateExtrudeNode::toString() const
 {
   std::ostringstream stream;

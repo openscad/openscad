@@ -373,7 +373,6 @@ PyObject* python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   std::shared_ptr<AbstractNode> child;
 
-
   auto node = std::make_shared<TransformNode>(&todo_fix_inst, "translate");
 
   char * kwlist[] ={"obj","v",NULL};
@@ -381,10 +380,8 @@ PyObject* python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *obj = NULL;
   double x=0,y=0,z=0;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
-			  &PyOpenSCADType,
-			  &obj,
-			  &PyList_Type,
-			  &v 
+			  &PyOpenSCADType, &obj,
+			  &PyList_Type, &v 
 			  ))
    	return NULL;
   child = PyOpenSCADObjectToNode(obj);
@@ -402,6 +399,7 @@ PyObject* python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
    node->children.push_back(child);
    return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
 }
+
 
 std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
@@ -526,3 +524,45 @@ void register_builtin_transform()
     "multmatrix(matrix_4_by_4)",
   });
 }
+
+PyObject* python_translate_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	PyObject *new_args=python_oo_args(self,args);
+	PyObject *result = python_translate(self,new_args,kwargs);
+//	Py_DECREF(&new_args);
+	return result;
+}
+
+PyObject* python_rotate_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	PyObject *new_args=python_oo_args(self,args);
+	PyObject *result = python_rotate(self,new_args,kwargs);
+//	Py_DECREF(&new_args);
+	return result;
+}
+
+PyObject* python_scale_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	PyObject *new_args=python_oo_args(self,args);
+	PyObject *result = python_scale(self,new_args,kwargs);
+//	Py_DECREF(&new_args);
+	return result;
+}
+
+PyObject* python_mirror_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	PyObject *new_args=python_oo_args(self,args);
+	PyObject *result = python_mirror(self,new_args,kwargs);
+//	Py_DECREF(&new_args);
+	return result;
+}
+
+PyObject* python_multmatrix_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	PyObject *new_args=python_oo_args(self,args);
+	PyObject *result = python_multmatrix(self,new_args,kwargs);
+//	Py_DECREF(&new_args);
+	return result;
+}
+
+

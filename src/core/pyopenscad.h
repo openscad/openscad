@@ -43,6 +43,17 @@ PyObject* python_intersection(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs);
 
+PyObject *python_oo_args(PyObject *self, PyObject *args);
+
+PyObject* python_translate_oo(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_rotate_oo(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_scale_oo(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_mirror_oo(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_multmatrix_oo(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_linear_extrude_oo(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_rotate_extrude_oo(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs);
+
 extern  ModuleInstantiation todo_fix_inst;
 
 char *evaluatePython(const char *code);
