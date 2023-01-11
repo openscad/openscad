@@ -1804,7 +1804,8 @@ void MainWindow::parseTopLevelDocument()
   delete this->parsed_file;
   this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
   this->root_file = nullptr;  // ditto
-  evaluatePython(fulltext.c_str());
+  char *error  = evaluatePython(fulltext.c_str());
+  if(error != NULL) LOG(message_group::Error, Location::NONE, "", error);
   fulltext ="cube([10,10,10]);\n";
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
 

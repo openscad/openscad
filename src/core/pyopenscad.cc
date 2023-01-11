@@ -156,27 +156,42 @@ std::string todo_fix_name;
 AssignmentList todo_fix_asslist;
 ModuleInstantiation todo_fix_inst(todo_fix_name,todo_fix_asslist,Location::NONE);
 
-void evaluatePython(const char *code)
+char *evaluatePython(const char *code)
 {
+    char *error;
     result_node=NULL;
-    wchar_t *program = Py_DecodeLocale("openscad", NULL);
-    const char *prg="from time import time,ctime\n"
-                       "print('Today is', ctime(time()))\n";
-    if (program == NULL) {
-        fprintf(stderr, "Fatal error: cannot decode argv[0]\n");
-        exit(1);
-    }
-//    Py_SetProgramName(program);  /* optional but recommended /
+    PyObject *pyExcType;
+    PyObject *pyExcValue;
+    PyObject *pyExcTraceback;
 
     PyImport_AppendInittab("openscad", &PyInit_openscad);
-
     Py_Initialize();
+
+    PyObject *py_main = PyImport_AddModule("__main__");
+    PyObject *py_dict = PyModule_GetDict(py_main);
     PyInit_PyOpenSCAD();
-    PyRun_SimpleString("from openscad import *\n");
-    PyRun_SimpleString(code);
+    PyRun_String("from openscad import *\n", Py_file_input, py_dict, py_dict);
+    PyObject *result = PyRun_String(code, Py_file_input, py_dict, py_dict);
+
+    PyErr_Fetch(&pyExcType, &pyExcValue, &pyExcTraceback);
+    PyErr_NormalizeException(&pyExcType, &pyExcValue, &pyExcTraceback);
+
+    PyObject* str_exc_value = PyObject_Repr(pyExcValue);
+    PyObject* pyExcValueStr = PyUnicode_AsEncodedString(str_exc_value, "utf-8", "~");
+    const char *strExcValue =  PyBytes_AS_STRING(pyExcValueStr);
+    if(strExcValue != NULL  && !strcmp(strExcValue,"<NULL>")) error=NULL;
+    else error=strdup(strExcValue);
+
+    Py_XDECREF(pyExcType);
+    Py_XDECREF(pyExcValue);
+    Py_XDECREF(pyExcTraceback);
+
+    Py_XDECREF(str_exc_value);
+    Py_XDECREF(pyExcValueStr);
+
     if (Py_FinalizeEx() < 0) {
         exit(120);
     }
-    PyMem_RawFree(program);
+    return error;
 }
 

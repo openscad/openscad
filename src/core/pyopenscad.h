@@ -45,5 +45,5 @@ PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs);
 
 extern  ModuleInstantiation todo_fix_inst;
 
-void evaluatePython(const char *code);
+char *evaluatePython(const char *code);
 
