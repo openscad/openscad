@@ -93,11 +93,11 @@ PyObject* python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
 
   child = PyOpenSCADObjectToNode(obj);
 
-  if(PyList_Size(val_v) >= 2) {
+  if(PyList_Check(val_v) && PyList_Size(val_v) >= 2) {
      	x=PyFloat_AsDouble(PyList_GetItem(val_v, 0));
      	y=PyFloat_AsDouble(PyList_GetItem(val_v, 1));
   }
-  if(PyList_Size(val_v) >= 3) {
+  if(PyList_Check(val_v) && PyList_Size(val_v) >= 3) {
      	z=PyFloat_AsDouble(PyList_GetItem(val_v, 2));
    }
 
@@ -209,7 +209,7 @@ PyObject* python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
 
   child = PyOpenSCADObjectToNode(obj);
 
-  if(PyList_Size(val_a) > 0) {
+  if(PyList_Check(val_a) && PyList_Size(val_a) > 0) {
     double sx = 0, sy = 0, sz = 0;
     double cx = 1, cy = 1, cz = 1;
     double a = 0.0;
@@ -320,11 +320,11 @@ PyObject* python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
 
   child = PyOpenSCADObjectToNode(obj);
 
-  if(PyList_Size(val_v) >= 2) {
+  if(PyList_Check(val_v) && PyList_Size(val_v) >= 2) {
      	x=PyFloat_AsDouble(PyList_GetItem(val_v, 0));
      	y=PyFloat_AsDouble(PyList_GetItem(val_v, 1));
   }
-  if(PyList_Size(val_v) >= 3) {
+  if(PyList_Check(val_v) && PyList_Size(val_v) >= 3) {
      	z=PyFloat_AsDouble(PyList_GetItem(val_v, 2));
    }
 
@@ -386,11 +386,11 @@ PyObject* python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
    	return NULL;
   child = PyOpenSCADObjectToNode(obj);
 
-  if(PyList_Size(v) >= 2) {
+  if(PyList_Check(v) && PyList_Size(v) >= 2) {
      	x=PyFloat_AsDouble(PyList_GetItem(v, 0));
      	y=PyFloat_AsDouble(PyList_GetItem(v, 1));
   }
-  if(PyList_Size(v) >= 3) {
+  if(PyList_Check(v) && PyList_Size(v) >= 3) {
      	z=PyFloat_AsDouble(PyList_GetItem(v, 2));
    }
    Vector3d translatevec(x, y, z);

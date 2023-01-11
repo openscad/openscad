@@ -132,7 +132,7 @@ PyObject* python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   node->scale = scale;
   node->angle = angle;
 
-  if(origin != NULL && PyList_Size(origin) == 2) {
+  if(origin != NULL && PyList_Check(origin) && PyList_Size(origin) == 2) {
 	  node->origin_x=PyFloat_AsDouble(PyList_GetItem(origin, 0));
 	  node->origin_y=PyFloat_AsDouble(PyList_GetItem(origin, 1));
   }

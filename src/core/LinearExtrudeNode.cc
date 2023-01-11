@@ -186,13 +186,13 @@ PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   if(layer != NULL) node->layername=layer;
 
   node->origin_x=0.0; node->origin_y=0.0;
-  if(origin != NULL && PyList_Size(origin) == 2) {
+  if(origin != NULL && PyList_Check(origin) && PyList_Size(origin) == 2) {
 	  node->origin_x=PyFloat_AsDouble(PyList_GetItem(origin, 0));
 	  node->origin_y=PyFloat_AsDouble(PyList_GetItem(origin, 1));
   }
 
   node->scale_x=1.0; node->scale_y=1.0;
-  if(scale != NULL && PyList_Size(scale) == 2) {
+  if(scale != NULL && PyList_Check(scale) && PyList_Size(scale) == 2) {
 	  node->scale_x=PyFloat_AsDouble(PyList_GetItem(scale, 0));
 	  node->scale_y=PyFloat_AsDouble(PyList_GetItem(scale, 1));
   }

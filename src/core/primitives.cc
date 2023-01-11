@@ -245,10 +245,12 @@ PyObject* python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
   char *center=NULL;
 	
    
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|s", kwlist, &PyList_Type,&dim, &center))
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|s", kwlist, 
+			   &PyList_Type,&dim, 
+			   &center))
    	return NULL;
 
-   if(PyList_Size(dim) == 3) {
+   if(PyList_Check(dim) && PyList_Size(dim) == 3) {
      	x=PyFloat_AsDouble(PyList_GetItem(dim, 0));
      	y=PyFloat_AsDouble(PyList_GetItem(dim, 1));
      	z=PyFloat_AsDouble(PyList_GetItem(dim, 2));
@@ -266,7 +268,9 @@ PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs)
 {
    PyObject *object=NULL;
    char * kwlist[] ={"object",NULL};
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O!", kwlist, &PyOpenSCADType,&object))
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O!", kwlist, 
+			   &PyOpenSCADType,&object
+			   ))
    	return NULL;
    if(object != NULL) result_node=PyOpenSCADObjectToNode(object);
    return PyLong_FromLong(55);
@@ -415,7 +419,9 @@ PyObject* python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
 
   double vr=1;
 	
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|dd", kwlist, &r,&d)) {
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|dd", kwlist,
+			   &r,&d
+			   )) {
    	return NULL;
    }
 
@@ -787,10 +793,10 @@ PyObject* python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
 			   ))
    	return NULL;
 
-  if(points != NULL) {
+  if(points != NULL && PyList_Check(points)) {
 	   for(i=0;i<PyList_Size(points);i++) {
 		   element = PyList_GetItem(points,i);
-		   if(PyList_Size(element)  == 3) {
+		   if(PyList_Check(element) && PyList_Size(element)  == 3) {
      			point.x=PyFloat_AsDouble(PyList_GetItem(element, 0));
 		     	point.y=PyFloat_AsDouble(PyList_GetItem(element, 1));
 		     	point.z=PyFloat_AsDouble(PyList_GetItem(element, 2));
@@ -806,17 +812,19 @@ PyObject* python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
 //	LOG(message_group::Deprecated, inst->location(), parameters.documentRoot(), "polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
     }
 
-    if(faces != NULL) {
+    if(faces != NULL && PyList_Check(faces) ) {
 	   for(i=0;i<PyList_Size(faces);i++) {
 		   element =  PyList_GetItem(faces,i);
-                   std::vector<size_t> face;
-		   for(j=0;j<PyList_Size(element);j++) {
-			pointIndex=PyLong_AsLong(PyList_GetItem(element, j));
-                        face.push_back(pointIndex);
-		   }
-      		   if (face.size() >= 3) {
-			node->faces.push_back(std::move(face));
-      		   }
+		   if(PyList_Check(element)) {
+                   	std::vector<size_t> face;
+			   for(j=0;j<PyList_Size(element);j++) {
+				pointIndex=PyLong_AsLong(PyList_GetItem(element, j));
+       	                 face.push_back(pointIndex);
+			   }
+      			   if (face.size() >= 3) {
+				node->faces.push_back(std::move(face));
+      			   }
+		}
 	   }
    }
 
@@ -921,7 +929,7 @@ PyObject* python_square(PyObject *self, PyObject *args, PyObject *kwargs)
    if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|s", kwlist, &PyList_Type,&dim, &center))
    	return NULL;
 
-   if(PyList_Size(dim) == 2) {
+   if(PyList_Check(dim) && PyList_Size(dim) == 2) {
      	x=PyFloat_AsDouble(PyList_GetItem(dim, 0));
      	y=PyFloat_AsDouble(PyList_GetItem(dim, 1));
    }
@@ -1195,10 +1203,10 @@ PyObject* python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
 			   ))
    	return NULL;
 
-   if(points != NULL) {
+   if(points != NULL && PyList_Check(points) ) {
 	   for(i=0;i<PyList_Size(points);i++) {
 		   element = PyList_GetItem(points,i);
-		   if(PyList_Size(element)  == 2) {
+		   if(PyList_Check(element) && PyList_Size(element)  == 2) {
      			point.x=PyFloat_AsDouble(PyList_GetItem(element, 0));
 		     	point.y=PyFloat_AsDouble(PyList_GetItem(element, 1));
       			node->points.push_back(point);
@@ -1207,15 +1215,17 @@ PyObject* python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
 	   }
    }
 
-   if(paths != NULL) {
+   if(paths != NULL && PyList_Check(paths) ) {
 	   for(i=0;i<PyList_Size(paths);i++) {
 		   element =  PyList_GetItem(paths,i);
-                   std::vector<size_t> path;
-		   for(j=0;j<PyList_Size(element);j++) {
-			pointIndex=PyLong_AsLong(PyList_GetItem(element, j));
-                        path.push_back(pointIndex);
-		   }
-        	   node->paths.push_back(std::move(path));
+		   if(PyList_Check(element)) {
+	                   std::vector<size_t> path;
+			   for(j=0;j<PyList_Size(element);j++) {
+				pointIndex=PyLong_AsLong(PyList_GetItem(element, j));
+       	                 path.push_back(pointIndex);
+		   	}
+        	         node->paths.push_back(std::move(path));
+		}
 	   }
    }
 
