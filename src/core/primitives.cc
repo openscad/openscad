@@ -755,6 +755,68 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
 }
 
 
+PyObject* python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  int i,j,pointIndex;
+  auto node = std::make_shared<PolyhedronNode>(&todo_fix_inst);
+
+  char * kwlist[] ={"points", "faces","convexity","triangles",NULL};
+  PyObject *points = NULL; 
+  PyObject *faces = NULL; 
+  int convexity = 2;
+  PyObject *triangles = NULL; 
+
+  PyObject *element;
+  point3d point;
+
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!|iO!", kwlist, 
+			   &PyList_Type,&points,
+			   &PyList_Type,&faces,
+			   &convexity,
+			   &PyList_Type,&triangles
+			   ))
+   	return NULL;
+
+  if(points != NULL) {
+	   for(i=0;i<PyList_Size(points);i++) {
+		   element = PyList_GetItem(points,i);
+		   if(PyList_Size(element)  == 3) {
+     			point.x=PyFloat_AsDouble(PyList_GetItem(element, 0));
+		     	point.y=PyFloat_AsDouble(PyList_GetItem(element, 1));
+		     	point.z=PyFloat_AsDouble(PyList_GetItem(element, 2));
+      			node->points.push_back(point);
+		   }
+
+	   }
+   }
+
+   if(triangles != NULL)
+   {
+	faces=triangles;
+//	LOG(message_group::Deprecated, inst->location(), parameters.documentRoot(), "polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
+    }
+
+    if(faces != NULL) {
+	   for(i=0;i<PyList_Size(faces);i++) {
+		   element =  PyList_GetItem(faces,i);
+                   std::vector<size_t> face;
+		   for(j=0;j<PyList_Size(element);j++) {
+			pointIndex=PyLong_AsLong(PyList_GetItem(element, j));
+                        face.push_back(pointIndex);
+		   }
+      		   if (face.size() >= 3) {
+			node->faces.push_back(std::move(face));
+      		   }
+	   }
+   }
+
+  node->convexity = convexity;
+  if (node->convexity < 1) node->convexity = 1;
+
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
+}
+
+
 
 class SquareNode : public LeafNode
 {

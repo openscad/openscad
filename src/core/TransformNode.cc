@@ -426,6 +426,43 @@ std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst
   return children.instantiate(node);
 }
 
+
+PyObject* python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  std::shared_ptr<AbstractNode> child;
+  int i,j;
+
+  auto node = std::make_shared<TransformNode>(&todo_fix_inst, "multmatrix");
+
+  char * kwlist[] ={"obj","m",NULL};
+  PyObject *obj = NULL;
+  PyObject *mat = NULL; 
+  PyObject *element = NULL; 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
+			  &PyOpenSCADType, &obj,
+			  &PyList_Type, &mat 
+			  ))
+   	return NULL;
+
+  child = PyOpenSCADObjectToNode(obj);
+
+
+  if(mat != NULL) {
+    Matrix4d rawmatrix{Matrix4d::Identity()};
+    for(i=0;i<std::min(size_t(PyList_Size(mat)),size_t(4));i++) {
+      element = PyList_GetItem(mat,i);
+      for(j=0;j<std::min(size_t(PyList_Size(element)),size_t(4));j++) {
+        rawmatrix(i,j) = PyFloat_AsDouble(PyList_GetItem(element, j));
+      }
+    }
+    double w = rawmatrix(3, 3);
+    if (w != 1.0) node->matrix = rawmatrix / w;
+    else node->matrix = rawmatrix;
+   }
+   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
+
+}
+
 std::string TransformNode::toString() const
 {
   std::ostringstream stream;

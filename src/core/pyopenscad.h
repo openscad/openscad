@@ -26,11 +26,13 @@ PyObject* python_polygon(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_cube(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_sphere(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* python_translate(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_rotate(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_scale(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_mirror(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs);
