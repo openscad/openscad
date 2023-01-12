@@ -149,6 +149,7 @@ static char copyrighttext[] =
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
 const int MainWindow::tabStopWidth = 15;
+int MainWindow::python_active = 0;
 QElapsedTimer *MainWindow::progressThrottle = new QElapsedTimer();
 
 namespace {
@@ -282,6 +283,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   knownFileExtensions["png"] = surfaceStatement;
   knownFileExtensions["json"] = importFunction;
   knownFileExtensions["scad"] = "";
+  knownFileExtensions["py"] = "";
   knownFileExtensions["csg"] = "";
 
   root_file = nullptr;
@@ -1232,7 +1234,7 @@ void MainWindow::instantiateRoot()
     setRenderVariables(builtin_context);
 
     std::shared_ptr<const FileContext> file_context;
-    if(result_node != NULL) this->absolute_root_node = result_node;
+    if(result_node != NULL && this->python_active) this->absolute_root_node = result_node;
     else this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
@@ -1802,11 +1804,19 @@ void MainWindow::parseTopLevelDocument()
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
   delete this->parsed_file;
+  this->python_active = 0;
+  if(fname != NULL) {
+	  int len=strlen(fname);
+	  if(len >= 3 && ! strcmp(fname+len-3,".py")) this->python_active = 1;
+  }
+
   this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
   this->root_file = nullptr;  // ditto
-  char *error  = evaluatePython(fulltext.c_str());
-  if(error != NULL) LOG(message_group::Error, Location::NONE, "", error);
-  fulltext ="cube([10,10,10]);\n";
+  if(this->python_active) {
+    char *error  = evaluatePython(fulltext.c_str());
+    if(error != NULL) LOG(message_group::Error, Location::NONE, "", error);
+    fulltext ="cube([10,10,10]);\n";
+  }
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
 
   this->activeEditor->resetHighlighting();
