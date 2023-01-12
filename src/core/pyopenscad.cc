@@ -72,6 +72,10 @@ static PyMethodDef PyOpenSCADFunctions[] = {
     {"union", (PyCFunction) python_union, METH_VARARGS | METH_KEYWORDS, "Union Object."},
     {"difference", (PyCFunction) python_difference, METH_VARARGS | METH_KEYWORDS, "Difference Object."},
     {"intersection", (PyCFunction) python_intersection, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
+    {"hull", (PyCFunction) python_hull, METH_VARARGS | METH_KEYWORDS, "Hull Object."},
+    {"minkowski", (PyCFunction) python_minkowski, METH_VARARGS | METH_KEYWORDS, "Minkowski Object."},
+    {"fill", (PyCFunction) python_fill, METH_VARARGS | METH_KEYWORDS, "Fill Object."},
+    {"resize", (PyCFunction) python_resize, METH_VARARGS | METH_KEYWORDS, "Resize Object."},
 
     {"output", (PyCFunction) python_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
     {NULL, NULL, 0, NULL}

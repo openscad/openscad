@@ -65,7 +65,9 @@ PyObject* python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs,OpenSC
   PyObject *objs = NULL;
   PyObject *obj;
 
-  if (! PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, &PyList_Type,&objs)) {
+  if (! PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, 
+			  &PyList_Type,&objs
+			  )) {
     printf("error duing parsing\n");
     return NULL; 
   }

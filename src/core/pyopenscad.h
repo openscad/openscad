@@ -29,30 +29,34 @@ PyObject* python_sphere(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* python_translate(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_translate_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_rotate(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_rotate_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_scale(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_scale_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_mirror(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_mirror_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_multmatrix_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_linear_extrude_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_rotate_extrude_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* python_union(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_difference(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_intersection(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_hull(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_fill(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_resize(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject *python_oo_args(PyObject *self, PyObject *args);
 
-PyObject* python_translate_oo(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* python_rotate_oo(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* python_scale_oo(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* python_mirror_oo(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* python_multmatrix_oo(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* python_linear_extrude_oo(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* python_rotate_extrude_oo(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 
 extern  ModuleInstantiation todo_fix_inst;
 
