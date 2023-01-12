@@ -31,6 +31,8 @@
 #include "Children.h"
 #include "Parameters.h"
 #include "Builtins.h"
+#include "Python.h"
+#include "pyopenscad.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
@@ -64,6 +66,55 @@ static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *i
 
   return children.instantiate(node);
 }
+
+
+PyObject* python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  std::shared_ptr<AbstractNode> child;
+
+  auto node = std::make_shared<OffsetNode>(&todo_fix_inst);
+
+  char * kwlist[] ={"obj","r","delta","chamfer",NULL};
+  PyObject *obj = NULL;
+  double r=-1,delta=-1;
+  const char *chamfer=NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!d|ds", kwlist, 
+                          &PyOpenSCADType, &obj,
+			  &r,&delta,&chamfer
+                          ))
+        return NULL;
+  child = PyOpenSCADObjectToNode(obj);
+
+  node->fn=10;
+  node->fs=10;
+  node->fa=10;
+
+  node->delta = 1;
+  node->chamfer = false;
+  node->join_type = ClipperLib::jtRound;
+  if (r != -1) {
+    node->delta = r;
+  } else if (delta != -1) {
+    node->delta = delta;
+    node->join_type = ClipperLib::jtMiter;
+    if (chamfer != NULL && !strcasecmp(chamfer,"true"))  {
+      node->chamfer = true;
+      node->join_type = ClipperLib::jtSquare;
+    }
+  }
+  node->children.push_back(child);
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);   
+}
+
+PyObject* python_offset_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+        PyObject *new_args=python_oo_args(self,args);
+        PyObject *result = python_offset(self,new_args,kwargs);
+//      Py_DECREF(&new_args);
+        return result;
+}
+
+
 
 std::string OffsetNode::toString() const
 {

@@ -10,6 +10,9 @@
 #include "Children.h"
 #include "RoofNode.h"
 
+#include <Python.h>
+#include "pyopenscad.h"
+
 static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<RoofNode>(inst);
@@ -50,6 +53,64 @@ static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *ins
   children.instantiate(node);
 
   return node;
+}
+
+
+PyObject* python_roof(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  std::shared_ptr<AbstractNode> child;
+
+  auto node = std::make_shared<RoofNode>(&todo_fix_inst);
+
+  char * kwlist[] ={"obj","method","convexity",NULL};
+  PyObject *obj = NULL;
+  const char *method = NULL;
+  int convexity=2;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|sd", kwlist, 
+                          &PyOpenSCADType, &obj,
+			  &method, convexity
+                          ))
+        return NULL;
+  child = PyOpenSCADObjectToNode(obj);
+
+
+  node->fn=10;
+  node->fs=10;
+  node->fa=10;
+
+  node->fa = std::max(node->fa, 0.01);
+  node->fs = std::max(node->fs, 0.01);
+  if (node->fn > 0) {
+    node->fa = 360.0 / node->fn;
+    node->fs = 0.0;
+  }
+
+  if (method == NULL) {
+    node->method = "voronoi";
+  } else {
+    node->method = method;
+    // method can only be one of...
+    if (node->method != "voronoi" && node->method != "straight") {
+//      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+//          "Unknown roof method '" + node->method + "'. Using 'voronoi'.");
+      node->method = "voronoi";
+    }
+  }
+
+  double tmp_convexity = convexity;
+  node->convexity = static_cast<int>(tmp_convexity);
+  if (node->convexity <= 0) node->convexity = 1;
+
+  node->children.push_back(child);
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
+}
+
+PyObject* python_roof_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+        PyObject *new_args=python_oo_args(self,args);
+        PyObject *result = python_roof(self,new_args,kwargs);
+//      Py_DECREF(&new_args);
+        return result;
 }
 
 std::string RoofNode::toString() const

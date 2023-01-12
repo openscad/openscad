@@ -2,6 +2,8 @@
 #include <memory>
 #include "node.h"
 
+#pragma GCC diagnostic ignored "-Wwrite-strings"
+
 typedef struct {
     PyObject_HEAD
     std::shared_ptr<AbstractNode> node;
@@ -38,6 +40,10 @@ PyObject* python_mirror(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_mirror_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_multmatrix_oo(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_offset(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_offset_oo(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_roof(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_roof_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_linear_extrude_oo(PyObject *self, PyObject *args, PyObject *kwargs);
