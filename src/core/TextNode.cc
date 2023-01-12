@@ -68,21 +68,28 @@ PyObject* python_text(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   auto node = std::make_shared<TextNode>(&todo_fix_inst);
 
-  char * kwlist[] ={"text","size","font","spacing","direction","language","script","halign","valign",NULL};
+  char * kwlist[] ={"text","size","font","spacing","direction","language","script","halign","valign","fn","fa","fs",NULL};
 
   double size=1.0, spacing = 1.0 ;
+  double fn=-1,fa=-1,fs=-1;
+
+   get_fnas(fn,fa,fs);
 
   const char *text="", *font=NULL, *direction ="ltr", *language = "en", *script = "latin", *valign = "baseline", *halign = "left";
 
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|dsdsssss", kwlist, 
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|dsdsssssddd", kwlist, 
                            &text,&size, &font,
 			   &spacing, &direction,&language,
-			   &script, &valign, &halign
-                           ))
+			   &script, &valign, &halign,
+			   &fn,&fa,&fs
+                           )) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
         return NULL;
-  node->params.set_fn(20);
-  node->params.set_fa(20);
-  node->params.set_fs(20);
+  }
+
+  node->params.set_fn(fn);
+  node->params.set_fa(fa);
+  node->params.set_fs(fs);
   node->params.set_size(size);
   if(text != NULL) node->params.set_text(text);
   node->params.set_spacing(spacing);
@@ -118,8 +125,10 @@ PyObject* python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
                            &text,&size, &font,
 			   &spacing, &direction,&language,
 			   &script, &valign, &halign
-                           ))
+                           )) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
         return NULL;
+  }
 
   FreetypeRenderer::Params ftparams;
 
@@ -136,7 +145,7 @@ PyObject* python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
 
   FreetypeRenderer::TextMetrics metrics(ftparams);
   if (!metrics.ok) {
-    printf("Invalid Metric\n");
+    PyErr_SetString(PyExc_TypeError,"Invalid Metric\n");
     return NULL;
   }
   PyObject *offset = PyList_New(2);
