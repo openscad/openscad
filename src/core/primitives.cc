@@ -413,26 +413,29 @@ PyObject* python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   auto node = std::make_shared<SphereNode>(&todo_fix_inst);
 
-  char * kwlist[] ={"r","d",NULL};
+  char * kwlist[] ={"r","d","fn","fa","fs",NULL};
   double r = -1; 
   double d = -1; 
+  double fn=-1,fa=-1,fs=-1;
 
   double vr=1;
 	
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|dd", kwlist,
-			   &r,&d
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddddd", kwlist,
+			   &r,&d,&fn,&fa,&fs
 			   )) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
    }
 
    else if(r>= 0)  { vr=r; }
    else if(d>= 0)  { vr=d/2.0; }
 
+   get_fnas(node->fn,node->fa,node->fs);
+   if(fn != -1) node->fn=fn;
+   if(fa != -1) node->fa=fa;
+   if(fs != -1) node->fs=fs;
 
    node->r=vr;
-   node->fn=10;
-   node->fs=10;
-   node->fa=10;
 
 
    return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
@@ -593,7 +596,7 @@ PyObject* python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   auto node = std::make_shared<CylinderNode>(&todo_fix_inst);
 
-  char * kwlist[] ={"h","r","r1","r2","d","d1","d2", "center",NULL};
+  char * kwlist[] ={"h","r","r1","r2","d","d1","d2", "center","fn","fa","fs",NULL};
   double h = -1; 
   double r = -1; 
   double r1 = -1; 
@@ -602,11 +605,14 @@ PyObject* python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
   double d1 = -1; 
   double d2 = -1; 
 
+  double fn=-1,fa=-1,fs=-1;
+
   char *center=NULL;
   double vr1=1,vr2=1,vh=1;
 	
    
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddddddds", kwlist, &h,&r,&r1,&r2,&d,&d1,&d2, &center)) {
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddddddds", kwlist, &h,&r,&r1,&r2,&d,&d1,&d2, &center,&fn,&fa,&fs)) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
    }
 
@@ -617,13 +623,14 @@ PyObject* python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
    else if(r>= 0)  { vr1=r; vr2=r; }
    else if(d>= 0)  { vr1=d/2.0; vr2=d/2.0; }
 
+   get_fnas(node->fn,node->fa,node->fs);
+   if(fn != -1) node->fn=fn;
+   if(fa != -1) node->fa=fa;
+   if(fs != -1) node->fs=fs;
 
    node->r1=vr1;
    node->r2=vr2;
    node->h=vh;
-   node->fn=10;
-   node->fs=10;
-   node->fa=10;
 
    if(center != NULL)
 	   if(!strcasecmp(center,"true")) node->center=1;
@@ -791,6 +798,7 @@ PyObject* python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
 			   &convexity,
 			   &PyList_Type,&triangles
 			   ))
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
 
   if(points != NULL && PyList_Check(points)) {
@@ -926,8 +934,12 @@ PyObject* python_square(PyObject *self, PyObject *args, PyObject *kwargs)
   char *center=NULL;
 	
    
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|s", kwlist, &PyList_Type,&dim, &center))
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|s", kwlist, 
+			   &PyList_Type,&dim, 
+			   &center)) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
+   }
 
    if(PyList_Check(dim) && PyList_Size(dim) == 2) {
      	x=PyFloat_AsDouble(PyList_GetItem(dim, 0));
@@ -1008,29 +1020,32 @@ static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *i
   return node;
 }
 
-
 PyObject* python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   auto node = std::make_shared<CircleNode>(&todo_fix_inst);
 
-  char * kwlist[] ={"r","d",NULL};
+  char * kwlist[] ={"r","d","fn","fa","fs",NULL};
   double r = -1; 
   double d = -1; 
+  double fn=-1,fa=-1,fs=-1;
 
   double vr=1;
 	
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|dd", kwlist, &r,&d)) {
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddddd", kwlist, &r,&d,&fn,&fa,&fs)) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
    }
 
-   else if(r>= 0)  { vr=r; }
+   get_fnas(node->fn,node->fa,node->fs);
+   if(fn != -1) node->fn=fn;
+   if(fa != -1) node->fa=fa;
+   if(fs != -1) node->fs=fs;
+
+   if(r>= 0)  { vr=r; }
    else if(d>= 0)  { vr=d/2.0; }
 
 
    node->r=vr;
-   node->fn=10;
-   node->fs=10;
-   node->fa=10;
 
 
    return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);

@@ -67,8 +67,8 @@ PyObject* python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs,OpenSC
 
   if (! PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, 
 			  &PyList_Type,&objs
-			  )) {
-    printf("error duing parsing\n");
+			  )) { 
+    PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
     return NULL; 
   }
   n = PyList_Size(objs);

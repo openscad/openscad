@@ -66,6 +66,8 @@ PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject *python_oo_args(PyObject *self, PyObject *args);
 
+void get_fnas(double &fn, double &fa, double &fs);
+
 
 extern  ModuleInstantiation todo_fix_inst;
 

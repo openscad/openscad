@@ -154,10 +154,11 @@ PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   int slices=1;
   int segments=0;
   double twist=0.0;
+  double fn=-1, fa=-1, fs=-1;
 
-  char * kwlist[] ={"obj","height","layer","convexity","origin","scale","center","slices","segments","twist",NULL};
+  char * kwlist[] ={"obj","height","layer","convexity","origin","scale","center","slices","segments","twist","fn","fa","fs",NULL};
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|dsiO!O!siid", kwlist, 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|dsiO!O!siidddd", kwlist, 
                           &PyOpenSCADType,
                           &obj,
                           &height,
@@ -170,17 +171,19 @@ PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
 			  &center,
 			  &slices,
 			  &segments,
-			  &twist
+			  &twist,
+			  &fn,&fs,&fs
                           ))
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
         return NULL;
 
   child = PyOpenSCADObjectToNode(obj);
 
-  node->fn=10;
-  node->fs=10;
-  node->fa=10;
+   get_fnas(node->fn,node->fa,node->fs);
+   if(fn != -1) node->fn=fn;
+   if(fa != -1) node->fa=fa;
+   if(fs != -1) node->fs=fs;
 
-   
   node->height=height;
   node->convexity=convexity;
   if(layer != NULL) node->layername=layer;

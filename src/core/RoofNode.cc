@@ -61,22 +61,26 @@ PyObject* python_roof(PyObject *self, PyObject *args, PyObject *kwargs)
   std::shared_ptr<AbstractNode> child;
 
   auto node = std::make_shared<RoofNode>(&todo_fix_inst);
+  double fn=-1,fa=-1,fs=-1;
 
-  char * kwlist[] ={"obj","method","convexity",NULL};
+  char * kwlist[] ={"obj","method","convexity","fn","fa","fs",NULL};
   PyObject *obj = NULL;
   const char *method = NULL;
   int convexity=2;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|sd", kwlist, 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|sdddd", kwlist, 
                           &PyOpenSCADType, &obj,
-			  &method, convexity
-                          ))
+			  &method, convexity,
+			  &fn,&fa,&fs
+                          )) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
         return NULL;
+  }
   child = PyOpenSCADObjectToNode(obj);
 
-
-  node->fn=10;
-  node->fs=10;
-  node->fa=10;
+   get_fnas(node->fn,node->fa,node->fs);
+   if(fn != -1) node->fn=fn;
+   if(fa != -1) node->fa=fa;
+   if(fs != -1) node->fs=fs;
 
   node->fa = std::max(node->fa, 0.01);
   node->fs = std::max(node->fs, 0.01);

@@ -88,8 +88,10 @@ PyObject* python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *val_v = NULL; 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
 			  &PyOpenSCADType, &obj, 
-			  &PyList_Type,&val_v ))
+			  &PyList_Type,&val_v )) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
+  }
 
   child = PyOpenSCADObjectToNode(obj);
 
@@ -213,8 +215,10 @@ PyObject* python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *val_a = NULL; 
   PyObject *obj=NULL;
   float *val_v=0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!|f", kwlist, &PyOpenSCADType, &obj, &PyList_Type,&val_a, &val_v ))
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!|f", kwlist, &PyOpenSCADType, &obj, &PyList_Type,&val_a, &val_v )) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
+  }
 
   child = PyOpenSCADObjectToNode(obj);
 
@@ -332,8 +336,10 @@ PyObject* python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *val_v = NULL; 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
 			  &PyOpenSCADType, &obj, 
-			  &PyList_Type,&val_v ))
+			  &PyList_Type,&val_v )) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
+  }
 
   child = PyOpenSCADObjectToNode(obj);
 
@@ -407,8 +413,10 @@ PyObject* python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
 			  &PyOpenSCADType, &obj,
 			  &PyList_Type, &v 
-			  ))
+			  )) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
+  }
   child = PyOpenSCADObjectToNode(obj);
 
   if(PyList_Check(v) && PyList_Size(v) >= 2) {
@@ -471,8 +479,10 @@ PyObject* python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
 			  &PyOpenSCADType, &obj,
 			  &PyList_Type, &mat 
-			  ))
+			  )) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
+  }
 
   child = PyOpenSCADObjectToNode(obj);
 

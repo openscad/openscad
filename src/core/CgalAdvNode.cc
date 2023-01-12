@@ -52,7 +52,7 @@ PyObject* python_csg_adv_sub(PyObject *self, PyObject *args, PyObject *kwargs,Cg
   if (! PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, 
 			  &PyList_Type,&objs
 			  )) {
-    printf("error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
     return NULL; 
   }
   n = PyList_Size(objs);
@@ -91,7 +91,7 @@ PyObject* python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs)
 			  &PyList_Type,&objs,
 			  &convexity
 			  )) {
-    printf("error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
     return NULL; 
   }
   n = PyList_Size(objs);
@@ -180,7 +180,7 @@ PyObject* python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
 			  &PyList_Type,&autosize,
 			  &convexity
 			  )) {
-    printf("error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
     return NULL; 
   }
   child = PyOpenSCADObjectToNode(obj);

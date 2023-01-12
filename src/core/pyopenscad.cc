@@ -1,6 +1,7 @@
 // Author: Sohler Guenther
 // Date: 2023-01-01
 // Purpose: Extend openscad with an python interpreter
+
 #include <Python.h>
 #include <structmember.h>
 #include "pyopenscad.h"
@@ -95,6 +96,18 @@ PyObject *python_oo_args(PyObject *self, PyObject *args)
 		PyTuple_SetItem(new_args,i+1,PyTuple_GetItem(args,i));
 	return new_args;
 }
+
+void get_fnas(double &fn, double &fa, double &fs) {
+  PyObject *mainModule = PyImport_AddModule("__main__");
+  if(mainModule == NULL) return;
+  PyObject *varFn = PyObject_GetAttrString(mainModule, "fn");
+  PyObject *varFa = PyObject_GetAttrString(mainModule, "fa");
+  PyObject *varFs = PyObject_GetAttrString(mainModule, "fs");
+  if(varFn != NULL)  fn = PyFloat_AsDouble(varFn);
+  if(varFa != NULL)  fa = PyFloat_AsDouble(varFa);
+  if(varFs != NULL)  fs = PyFloat_AsDouble(varFs);
+}
+
 
 
 static PyMethodDef PyOpenSCADMethods[] = {
@@ -204,7 +217,7 @@ char *evaluatePython(const char *code)
     PyObject *py_main = PyImport_AddModule("__main__");
     PyObject *py_dict = PyModule_GetDict(py_main);
     PyInit_PyOpenSCAD();
-    PyRun_String("from openscad import *\n", Py_file_input, py_dict, py_dict);
+    PyRun_String("from openscad import *\nfa=12.0\nfn=0.0\nfs=2.0\n", Py_file_input, py_dict, py_dict);
     PyObject *result = PyRun_String(code, Py_file_input, py_dict, py_dict);
 
     PyErr_Fetch(&pyExcType, &pyExcValue, &pyExcTraceback);

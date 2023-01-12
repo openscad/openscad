@@ -74,20 +74,26 @@ PyObject* python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
 
   auto node = std::make_shared<OffsetNode>(&todo_fix_inst);
 
-  char * kwlist[] ={"obj","r","delta","chamfer",NULL};
+  char * kwlist[] ={"obj","r","delta","chamfer","fn","fa","fs",NULL};
   PyObject *obj = NULL;
   double r=-1,delta=-1;
   const char *chamfer=NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!d|ds", kwlist, 
+  double fn=-1, fa=-1, fs = -1;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!d|dsddd", kwlist, 
                           &PyOpenSCADType, &obj,
-			  &r,&delta,&chamfer
-                          ))
+			  &r,&delta,&chamfer,
+			  &fn, &fa, &fs
+                          )) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
         return NULL;
+  }
   child = PyOpenSCADObjectToNode(obj);
 
-  node->fn=10;
-  node->fs=10;
-  node->fa=10;
+   get_fnas(node->fn,node->fa,node->fs);
+   if(fn != -1) node->fn=fn;
+   if(fa != -1) node->fa=fa;
+   if(fs != -1) node->fs=fs;
+
 
   node->delta = 1;
   node->chamfer = false;
