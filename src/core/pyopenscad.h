@@ -24,11 +24,14 @@ std::shared_ptr<AbstractNode> & PyOpenSCADObjectToNode(PyObject *object);
 PyObject* python_square(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_circle(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_polygon(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_text(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* python_cube(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_sphere(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_text(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* python_translate(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_translate_oo(PyObject *self, PyObject *args, PyObject *kwargs);

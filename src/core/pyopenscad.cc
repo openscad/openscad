@@ -54,6 +54,8 @@ static PyMethodDef PyOpenSCADFunctions[] = {
     {"square", (PyCFunction) python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
     {"circle", (PyCFunction) python_circle, METH_VARARGS | METH_KEYWORDS, "Create Circle."},
     {"polygon", (PyCFunction) python_polygon, METH_VARARGS | METH_KEYWORDS, "Create Polygon."},
+    {"text", (PyCFunction) python_text, METH_VARARGS | METH_KEYWORDS, "Create Text."},
+    {"textmetrics", (PyCFunction) python_textmetrics, METH_VARARGS | METH_KEYWORDS, "Get textmetrics."},
 
     {"cube", (PyCFunction) python_cube, METH_VARARGS | METH_KEYWORDS, "Create Cube."},
     {"cylinder", (PyCFunction) python_cylinder, METH_VARARGS | METH_KEYWORDS, "Create Cylinder."},

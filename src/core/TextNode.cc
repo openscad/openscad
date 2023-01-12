@@ -34,6 +34,9 @@
 #include "TextNode.h"
 #include "FreetypeRenderer.h"
 
+#include <Python.h>
+#include <pyopenscad.h>
+
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -59,6 +62,108 @@ static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *ins
   node->params.detect_properties();
 
   return node;
+}
+
+PyObject* python_text(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  auto node = std::make_shared<TextNode>(&todo_fix_inst);
+
+  char * kwlist[] ={"text","size","font","spacing","direction","language","script","halign","valign",NULL};
+
+  double size=1.0, spacing = 1.0 ;
+
+  const char *text="", *font=NULL, *direction ="ltr", *language = "en", *script = "latin", *valign = "baseline", *halign = "left";
+
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|dsdsssss", kwlist, 
+                           &text,&size, &font,
+			   &spacing, &direction,&language,
+			   &script, &valign, &halign
+                           ))
+        return NULL;
+  node->params.set_fn(20);
+  node->params.set_fa(20);
+  node->params.set_fs(20);
+  node->params.set_size(size);
+  if(text != NULL) node->params.set_text(text);
+  node->params.set_spacing(spacing);
+  if(font != NULL) node->params.set_font(font);
+  if(direction != NULL) node->params.set_direction(direction);
+  if(language != NULL) node->params.set_language(language);
+  if(script != NULL) node->params.set_script(script);
+  if(valign != NULL) node->params.set_halign(halign);
+  if(halign != NULL) node->params.set_valign(valign);
+  node->params.set_loc(todo_fix_inst.location());
+
+/*
+  node->params.set_documentPath(session->documentRoot());
+  node->params.detect_properties();
+}
+*/
+
+	return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
+}
+
+
+PyObject* python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  auto node = std::make_shared<TextNode>(&todo_fix_inst);
+
+  char * kwlist[] ={"text","size","font","spacing","direction","language","script","halign","valign",NULL};
+
+  double size=1.0, spacing = 1.0 ;
+
+  const char *text="", *font=NULL, *direction ="ltr", *language = "en", *script = "latin", *valign = "baseline", *halign = "left";
+
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|dsdsssss", kwlist, 
+                           &text,&size, &font,
+			   &spacing, &direction,&language,
+			   &script, &valign, &halign
+                           ))
+        return NULL;
+
+  FreetypeRenderer::Params ftparams;
+
+  ftparams.set_size(size);
+  if(text != NULL) ftparams.set_text(text);
+  ftparams.set_spacing(spacing);
+  if(font != NULL) ftparams.set_font(font);
+  if(direction != NULL) ftparams.set_direction(direction);
+  if(language != NULL) ftparams.set_language(language);
+  if(script != NULL) ftparams.set_script(script);
+  if(valign != NULL) ftparams.set_halign(halign);
+  if(halign != NULL) ftparams.set_valign(valign);
+  ftparams.set_loc(todo_fix_inst.location());
+
+  FreetypeRenderer::TextMetrics metrics(ftparams);
+  if (!metrics.ok) {
+    printf("Invalid Metric\n");
+    return NULL;
+  }
+  PyObject *offset = PyList_New(2);
+  PyList_SetItem(offset,0,PyFloat_FromDouble(metrics.x_offset));
+  PyList_SetItem(offset,1,PyFloat_FromDouble(metrics.y_offset));
+
+  PyObject *advance = PyList_New(2);
+  PyList_SetItem(advance,0,PyFloat_FromDouble(metrics.advance_x));
+  PyList_SetItem(advance,1,PyFloat_FromDouble(metrics.advance_y));
+
+  PyObject *position = PyList_New(2);
+  PyList_SetItem(position,0,PyFloat_FromDouble(metrics.bbox_x));
+  PyList_SetItem(position,1,PyFloat_FromDouble(metrics.bbox_y));
+
+  PyObject *dims = PyList_New(2);
+  PyList_SetItem(dims,0,PyFloat_FromDouble(metrics.bbox_w));
+  PyList_SetItem(dims,1,PyFloat_FromDouble(metrics.bbox_h));
+
+  PyObject *dict;
+  dict = PyDict_New();
+  PyDict_SetItemString(dict,"ascent",PyFloat_FromDouble(metrics.ascent));
+  PyDict_SetItemString(dict,"descent",PyFloat_FromDouble(metrics.descent));
+  PyDict_SetItemString(dict,"offset",offset);
+  PyDict_SetItemString(dict,"advance",advance);
+  PyDict_SetItemString(dict,"position",position);
+  PyDict_SetItemString(dict,"size",dims);
+  return (PyObject *)dict;
 }
 
 std::vector<const Geometry *> TextNode::createGeometryList() const
