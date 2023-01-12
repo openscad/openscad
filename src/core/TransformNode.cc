@@ -114,6 +114,15 @@ PyObject* python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
 }
 
+PyObject* python_scale_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	PyObject *new_args=python_oo_args(self,args);
+	PyObject *result = python_scale(self,new_args,kwargs);
+//	Py_DECREF(&new_args);
+	return result;
+}
+
+
 std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "rotate");
@@ -270,6 +279,14 @@ PyObject* python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
    return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
 }
 
+PyObject* python_rotate_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	PyObject *new_args=python_oo_args(self,args);
+	PyObject *result = python_rotate(self,new_args,kwargs);
+//	Py_DECREF(&new_args);
+	return result;
+}
+
 
 std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
@@ -349,6 +366,14 @@ PyObject* python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
 }
 
+PyObject* python_mirror_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	PyObject *new_args=python_oo_args(self,args);
+	PyObject *result = python_mirror(self,new_args,kwargs);
+//	Py_DECREF(&new_args);
+	return result;
+}
+
 
 std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
@@ -400,6 +425,13 @@ PyObject* python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
    return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
 }
 
+PyObject* python_translate_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	PyObject *new_args=python_oo_args(self,args);
+	PyObject *result = python_translate(self,new_args,kwargs);
+//	Py_DECREF(&new_args);
+	return result;
+}
 
 std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
@@ -460,6 +492,15 @@ PyObject* python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
    return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
 
 }
+
+PyObject* python_multmatrix_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	PyObject *new_args=python_oo_args(self,args);
+	PyObject *result = python_multmatrix(self,new_args,kwargs);
+//	Py_DECREF(&new_args);
+	return result;
+}
+
 
 std::string TransformNode::toString() const
 {
@@ -525,44 +566,5 @@ void register_builtin_transform()
   });
 }
 
-PyObject* python_translate_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-	PyObject *new_args=python_oo_args(self,args);
-	PyObject *result = python_translate(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
-	return result;
-}
-
-PyObject* python_rotate_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-	PyObject *new_args=python_oo_args(self,args);
-	PyObject *result = python_rotate(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
-	return result;
-}
-
-PyObject* python_scale_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-	PyObject *new_args=python_oo_args(self,args);
-	PyObject *result = python_scale(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
-	return result;
-}
-
-PyObject* python_mirror_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-	PyObject *new_args=python_oo_args(self,args);
-	PyObject *result = python_mirror(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
-	return result;
-}
-
-PyObject* python_multmatrix_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-	PyObject *new_args=python_oo_args(self,args);
-	PyObject *result = python_multmatrix(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
-	return result;
-}
 
 
