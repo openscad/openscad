@@ -88,6 +88,8 @@ static PyMethodDef PyOpenSCADFunctions[] = {
     {"color", (PyCFunction) python_color, METH_VARARGS | METH_KEYWORDS, "Import Object."},
 
     {"output", (PyCFunction) python_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
+    {"version", (PyCFunction) python_version, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
+    {"version_num", (PyCFunction) python_version_num, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
     {NULL, NULL, 0, NULL}
 };
 // TODO missing 

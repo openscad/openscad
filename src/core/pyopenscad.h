@@ -47,6 +47,8 @@ PyObject* python_offset(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_offset_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_roof(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_roof_oo(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_color(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_color_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_linear_extrude_oo(PyObject *self, PyObject *args, PyObject *kwargs);
@@ -65,11 +67,12 @@ PyObject* python_projection(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_surface(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_import(PyObject *self, PyObject *args, PyObject *kwargs);
 
+PyObject* python_version(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_version_num(PyObject *self, PyObject *args, PyObject *kwargs);
+
 PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 
-PyObject* python_color(PyObject *self, PyObject *args, PyObject *kwargs);
-PyObject* python_color_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject *python_oo_args(PyObject *self, PyObject *args);
 

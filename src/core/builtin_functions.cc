@@ -61,6 +61,7 @@ int process_id = getpid();
 
 std::mt19937 deterministic_rng(std::time(nullptr) + process_id);
 #include <array>
+#include <Python.h>
 
 static inline bool check_arguments(const char *function_name, const Arguments& arguments, const Location& loc, unsigned int expected_count, bool warn = true)
 {
@@ -687,6 +688,27 @@ Value builtin_version(Arguments arguments, const Location& /*loc*/)
   return std::move(vec);
 }
 
+PyObject* python_version(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+
+  char * kwlist[] ={NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist )) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
+        return NULL;
+  }
+
+  PyObject *version = PyList_New(3);
+  PyList_SetItem(version,0,PyFloat_FromDouble(OPENSCAD_YEAR));
+  PyList_SetItem(version,1,PyFloat_FromDouble(OPENSCAD_MONTH));
+#ifdef OPENSCAD_DAY
+  PyList_SetItem(version,2,PyFloat_FromDouble(OPENSCAD_DAY));
+#else  
+  PyList_SetItem(version,2,PyFloat_FromDouble(0));
+#endif
+
+  return version;
+}
+
 Value builtin_version_num(Arguments arguments, const Location& loc)
 {
   Value val = (arguments.size() == 0) ? builtin_version(std::move(arguments), loc) : std::move(arguments[0].value);
@@ -695,6 +717,22 @@ Value builtin_version_num(Arguments arguments, const Location& loc)
     return Value::undefined.clone();
   }
   return {y * 10000 + m * 100 + d};
+}
+
+PyObject* python_version_num(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+
+  char * kwlist[] ={NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist )) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
+        return NULL;
+  }
+
+  double version = OPENSCAD_YEAR * 10000 + OPENSCAD_MONTH * 100;
+#ifdef OPENSCAD_DAY
+  version += OPENSCAD_DAY;
+#endif
+  return PyFloat_FromDouble(version);
 }
 
 Value builtin_parent_module(Arguments arguments, const Location& loc)
