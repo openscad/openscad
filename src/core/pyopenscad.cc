@@ -81,6 +81,8 @@ static PyMethodDef PyOpenSCADFunctions[] = {
     {"minkowski", (PyCFunction) python_minkowski, METH_VARARGS | METH_KEYWORDS, "Minkowski Object."},
     {"fill", (PyCFunction) python_fill, METH_VARARGS | METH_KEYWORDS, "Fill Object."},
     {"resize", (PyCFunction) python_resize, METH_VARARGS | METH_KEYWORDS, "Resize Object."},
+    {"render", (PyCFunction) python_render, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
+    {"group", (PyCFunction) python_group, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
 
     {"projection", (PyCFunction) python_projection, METH_VARARGS | METH_KEYWORDS, "Projection Object."},
     {"surface", (PyCFunction) python_surface, METH_VARARGS | METH_KEYWORDS, "Surface Object."},
@@ -95,15 +97,10 @@ static PyMethodDef PyOpenSCADFunctions[] = {
 // TODO missing 
 //  dxf_dim 
 //  dxf_cross 
-//  render 
 //  intersection_for 
 //  dxf_linear_extrude 
 //  dxf_rotate_extrude 
-//  group  
 //  fontmetrics 
-//  search 
-//  version 
-//  version_num 
 
 PyObject *python_oo_args(PyObject *self, PyObject *args)
 {
