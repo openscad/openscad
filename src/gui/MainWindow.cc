@@ -1799,7 +1799,6 @@ void MainWindow::parseTopLevelDocument()
 
   auto fulltext =
     std::string(this->last_compiled_doc.toUtf8().constData());
- // + "\n\x03\n" + commandline_commands;
 
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
@@ -1807,7 +1806,10 @@ void MainWindow::parseTopLevelDocument()
   this->python_active = 0;
   if(fname != NULL) {
 	  int len=strlen(fname);
-	  if(len >= 3 && ! strcmp(fname+len-3,".py")) this->python_active = 1;
+	  if(len >= 3 && ! strcmp(fname+len-3,".py")) {
+		  if(Feature::ExperimentalPythonEngine.is_enabled()) this->python_active = 1;
+		  else  LOG(message_group::Warning, Location::NONE, "","Python is not enabled");
+	  }
   }
 
   this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
@@ -1816,7 +1818,10 @@ void MainWindow::parseTopLevelDocument()
     char *error  = evaluatePython(fulltext.c_str());
     if(error != NULL) LOG(message_group::Error, Location::NONE, "", error);
     fulltext ="cube([10,10,10]);\n";
+  } else {
+	  fulltext = fulltext + "\n\x03\n" + commandline_commands;
   }
+
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
 
   this->activeEditor->resetHighlighting();
