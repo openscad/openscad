@@ -30,6 +30,8 @@
 #include "Children.h"
 #include "Parameters.h"
 #include "Builtins.h"
+#include <Python.h>
+#include "pyopenscad.h"
 
 #include <cassert>
 #include <boost/assign/std/vector.hpp>
@@ -47,6 +49,43 @@ static std::shared_ptr<AbstractNode> builtin_projection(const ModuleInstantiatio
 
   return children.instantiate(node);
 }
+
+
+PyObject* python_projection(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  std::shared_ptr<AbstractNode> child;
+
+  auto node = std::make_shared<ProjectionNode>(&todo_fix_inst);
+
+  char * kwlist[] ={"obj","cut","convexity",NULL};
+  PyObject *obj = NULL;
+  const char *cutmode = NULL;
+  long convexity = 2;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|sl", kwlist, 
+                          &PyOpenSCADType, &obj,
+			  &cutmode, &convexity
+                          )) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
+        return NULL;
+  }
+  child = PyOpenSCADObjectToNode(obj);
+
+  node->convexity = convexity;
+  node->cut_mode = 0;
+  if(cutmode != NULL && !strcasecmp(cutmode,"cut")) node->cut_mode=1;
+
+  node->children.push_back(child);
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);       
+}
+
+PyObject* python_projection_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+        PyObject *new_args=python_oo_args(self,args);
+        PyObject *result = python_projection(self,new_args,kwargs);
+//      Py_DECREF(&new_args);
+        return result;
+}
+  
 
 std::string ProjectionNode::toString() const
 {

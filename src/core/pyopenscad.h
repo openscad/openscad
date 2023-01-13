@@ -61,6 +61,10 @@ PyObject* python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_fill(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_resize(PyObject *self, PyObject *args, PyObject *kwargs);
 
+PyObject* python_projection(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_surface(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_import(PyObject *self, PyObject *args, PyObject *kwargs);
+
 PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 

@@ -157,7 +157,6 @@ PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   double fn=-1, fa=-1, fs=-1;
 
   char * kwlist[] ={"obj","height","layer","convexity","origin","scale","center","slices","segments","twist","fn","fa","fs",NULL};
-
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|dsiO!O!siidddd", kwlist, 
                           &PyOpenSCADType,
                           &obj,
@@ -173,9 +172,10 @@ PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
 			  &segments,
 			  &twist,
 			  &fn,&fs,&fs
-                          ))
+                          )) {
         PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
         return NULL;
+  }
 
   child = PyOpenSCADObjectToNode(obj);
 

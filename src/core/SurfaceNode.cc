@@ -45,6 +45,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/assign/std/vector.hpp>
+#include <Python.h>
+#include <pyopenscad.h>
+
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <boost/filesystem.hpp>
@@ -127,6 +130,37 @@ static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *
   }
 
   return node;
+}
+
+PyObject* python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  std::shared_ptr<AbstractNode> child;
+
+  auto node = std::make_shared<SurfaceNode>(&todo_fix_inst);
+
+  char * kwlist[] ={"file","center","convexity","invert",NULL};
+  const char *file = NULL;
+  const char *center = NULL;
+  const char *invert = NULL;
+  long convexity = 2;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|sls", kwlist, 
+			  &file,&center,&convexity
+                          )) {
+        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
+        return NULL;
+  }
+
+
+  std::string fileval = file == NULL ? "" : file;
+  std::string filename = lookup_file(fileval, todo_fix_inst.location().filePath().parent_path().string(), "");
+  node->filename = filename;
+  handle_dep(fs::path(filename).generic_string());
+
+  if(center != NULL && !strcasecmp(center,"true")) node->center=1;
+  node -> convexity = 2;
+  if(invert != NULL && !strcasecmp(invert,"true")) node->invert=1;
+
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
 
 void SurfaceNode::convert_image(img_data_t& data, std::vector<uint8_t>& img, unsigned int width, unsigned int height) const

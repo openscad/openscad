@@ -82,9 +82,15 @@ static PyMethodDef PyOpenSCADFunctions[] = {
     {"fill", (PyCFunction) python_fill, METH_VARARGS | METH_KEYWORDS, "Fill Object."},
     {"resize", (PyCFunction) python_resize, METH_VARARGS | METH_KEYWORDS, "Resize Object."},
 
+    {"projection", (PyCFunction) python_projection, METH_VARARGS | METH_KEYWORDS, "Projection Object."},
+    {"surface", (PyCFunction) python_surface, METH_VARARGS | METH_KEYWORDS, "Surface Object."},
+    {"osimport", (PyCFunction) python_import, METH_VARARGS | METH_KEYWORDS, "Import Object."},
+
     {"output", (PyCFunction) python_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
     {NULL, NULL, 0, NULL}
 };
+// TODO missing dxf_dim dxf_cross render child children intersection_for dxf_linear_extrude dxf_rotate_extrude group color
+// TODO missing fontmetrics concat lookup search version version_num norm cross parent_module projection surface
 
 PyObject *python_oo_args(PyObject *self, PyObject *args)
 {
