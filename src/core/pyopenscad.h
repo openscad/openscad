@@ -68,6 +68,9 @@ PyObject* python_import(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 
+PyObject* python_color(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_color_oo(PyObject *self, PyObject *args, PyObject *kwargs);
+
 PyObject *python_oo_args(PyObject *self, PyObject *args);
 
 void get_fnas(double &fn, double &fa, double &fs);

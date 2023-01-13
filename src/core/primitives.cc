@@ -245,12 +245,12 @@ PyObject* python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
   char *center=NULL;
 	
    
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|s", kwlist, 
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O!s", kwlist, 
 			   &PyList_Type,&dim, 
 			   &center))
    	return NULL;
 
-   if(PyList_Check(dim) && PyList_Size(dim) == 3) {
+   if(dim != NULL && PyList_Check(dim) && PyList_Size(dim) == 3) {
      	x=PyFloat_AsDouble(PyList_GetItem(dim, 0));
      	y=PyFloat_AsDouble(PyList_GetItem(dim, 1));
      	z=PyFloat_AsDouble(PyList_GetItem(dim, 2));
