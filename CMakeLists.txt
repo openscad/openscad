@@ -624,6 +624,7 @@ set(CORE_SOURCES
   src/core/customizer/ParameterObject.cc
   src/core/customizer/ParameterSet.cc
   src/core/pyopenscad.cc
+  src/core/pyfunctions.cc
   src/ext/lodepng/lodepng.cpp
   src/ext/polyclipping/clipper.cpp
   src/ext/libtess2/Source/bucketalloc.c

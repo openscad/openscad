@@ -41,17 +41,11 @@
 #include <Python.h>
 #include "pyopenscad.h"
 #include "ModuleInstantiation.h"
+#include "primitives.h"
+
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
-
-struct point2d {
-  double x, y;
-};
-
-struct point3d {
-  double x, y, z;
-};
 
 static void generate_circle(point2d *circle, double r, int fragments)
 {
@@ -112,27 +106,6 @@ static void set_fragments(const Parameters& parameters, const ModuleInstantiatio
 }
 
 
-
-class CubeNode : public LeafNode
-{
-public:
-  CubeNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
-  {
-    std::ostringstream stream;
-    stream << "cube(size = ["
-           << x << ", "
-           << y << ", "
-           << z << "], center = "
-           << (center ? "true" : "false") << ")";
-    return stream.str();
-  }
-  std::string name() const override { return "cube"; }
-  const Geometry *createGeometry() const override;
-
-  double x = 1, y = 1, z = 1;
-  bool center = false;
-};
 
 const Geometry *CubeNode::createGeometry() const
 {
@@ -234,83 +207,9 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
   return node;
 }
 
-PyObject* python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  auto node = std::make_shared<CubeNode>(&todo_fix_inst);
-
-  char * kwlist[] ={"dim", "center",NULL};
-  PyObject *dim = NULL; 
-
-  double x=1,y=1,z=1;
-  char *center=NULL;
-	
-   
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O!s", kwlist, 
-			   &PyList_Type,&dim, 
-			   &center))
-   	return NULL;
-
-   if(dim != NULL && PyList_Check(dim) && PyList_Size(dim) == 3) {
-     	x=PyFloat_AsDouble(PyList_GetItem(dim, 0));
-     	y=PyFloat_AsDouble(PyList_GetItem(dim, 1));
-     	z=PyFloat_AsDouble(PyList_GetItem(dim, 2));
-   }
-   node->x=x;
-   node->y=y;
-   node->z=z;
-   if(center != NULL)
-	   if(!strcasecmp(center,"true")) node->center=1;
-
-   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
-}
-
-PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-   PyObject *object=NULL;
-   char * kwlist[] ={"object",NULL};
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O!", kwlist, 
-			   &PyOpenSCADType,&object
-			   ))
-   	return NULL;
-   if(object != NULL) result_node=PyOpenSCADObjectToNode(object);
-   return PyLong_FromLong(55);
-}
-
-PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-	PyObject *new_args=python_oo_args(self,args);
-	PyObject *result = python_output(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
-	return result;
-}
 
 
 
-
-
-
-
-class SphereNode : public LeafNode
-{
-public:
-  SphereNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
-  {
-    std::ostringstream stream;
-    stream << "sphere"
-           << "($fn = " << fn
-           << ", $fa = " << fa
-           << ", $fs = " << fs
-           << ", r = " << r
-           << ")";
-    return stream.str();
-  }
-  std::string name() const override { return "sphere"; }
-  const Geometry *createGeometry() const override;
-
-  double fn, fs, fa;
-  double r = 1;
-};
 
 const Geometry *SphereNode::createGeometry() const
 {
@@ -409,65 +308,6 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
 }
 
 
-PyObject* python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  auto node = std::make_shared<SphereNode>(&todo_fix_inst);
-
-  char * kwlist[] ={"r","d","fn","fa","fs",NULL};
-  double r = -1; 
-  double d = -1; 
-  double fn=-1,fa=-1,fs=-1;
-
-  double vr=1;
-	
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddddd", kwlist,
-			   &r,&d,&fn,&fa,&fs
-			   )) {
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-   	return NULL;
-   }
-
-   else if(r>= 0)  { vr=r; }
-   else if(d>= 0)  { vr=d/2.0; }
-
-   get_fnas(node->fn,node->fa,node->fs);
-   if(fn != -1) node->fn=fn;
-   if(fa != -1) node->fa=fa;
-   if(fs != -1) node->fs=fs;
-
-   node->r=vr;
-
-
-   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
-}
-
-
-
-class CylinderNode : public LeafNode
-{
-public:
-  CylinderNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
-  {
-    std::ostringstream stream;
-    stream << "cylinder"
-           << "($fn = " << fn
-           << ", $fa = " << fa
-           << ", $fs = " << fs
-           << ", h = " << h
-           << ", r1 = " << r1
-           << ", r2 = " << r2
-           << ", center = " << (center ? "true" : "false")
-           << ")";
-    return stream.str();
-  }
-  std::string name() const override { return "cylinder"; }
-  const Geometry *createGeometry() const override;
-
-  double fn, fs, fa;
-  double r1 = 1, r2 = 1, h = 1;
-  bool center = false;
-};
 
 const Geometry *CylinderNode::createGeometry() const
 {
@@ -592,66 +432,6 @@ static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation 
   return node;
 }
 
-PyObject* python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  auto node = std::make_shared<CylinderNode>(&todo_fix_inst);
-
-  char * kwlist[] ={"h","r","r1","r2","d","d1","d2", "center","fn","fa","fs",NULL};
-  double h = -1; 
-  double r = -1; 
-  double r1 = -1; 
-  double r2 = -1; 
-  double d = -1; 
-  double d1 = -1; 
-  double d2 = -1; 
-
-  double fn=-1,fa=-1,fs=-1;
-
-  char *center=NULL;
-  double vr1=1,vr2=1,vh=1;
-	
-   
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddddddds", kwlist, &h,&r,&r1,&r2,&d,&d1,&d2, &center,&fn,&fa,&fs)) {
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-   	return NULL;
-   }
-
-   if(h>= 0)  vh=h;
-
-   if(r1 >= 0 && r2 >= 0 ) { vr1=r1; vr2=r2; }
-   else if(d1 >= 0 && d2 >= 0 ) { vr1=d1/2.0; vr2=d2/2.0; }
-   else if(r>= 0)  { vr1=r; vr2=r; }
-   else if(d>= 0)  { vr1=d/2.0; vr2=d/2.0; }
-
-   get_fnas(node->fn,node->fa,node->fs);
-   if(fn != -1) node->fn=fn;
-   if(fa != -1) node->fa=fa;
-   if(fs != -1) node->fs=fs;
-
-   node->r1=vr1;
-   node->r2=vr2;
-   node->h=vh;
-
-   if(center != NULL)
-	   if(!strcasecmp(center,"true")) node->center=1;
-
-   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
-}
-
-
-
-class PolyhedronNode : public LeafNode
-{
-public:
-  PolyhedronNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override;
-  std::string name() const override { return "polyhedron"; }
-  const Geometry *createGeometry() const override;
-
-  std::vector<point3d> points;
-  std::vector<std::vector<size_t>> faces;
-  int convexity = 1;
-};
 
 std::string PolyhedronNode::toString() const
 {
@@ -778,92 +558,6 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
 }
 
 
-PyObject* python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  int i,j,pointIndex;
-  auto node = std::make_shared<PolyhedronNode>(&todo_fix_inst);
-
-  char * kwlist[] ={"points", "faces","convexity","triangles",NULL};
-  PyObject *points = NULL; 
-  PyObject *faces = NULL; 
-  int convexity = 2;
-  PyObject *triangles = NULL; 
-
-  PyObject *element;
-  point3d point;
-
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!|iO!", kwlist, 
-			   &PyList_Type,&points,
-			   &PyList_Type,&faces,
-			   &convexity,
-			   &PyList_Type,&triangles
-			   ))
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-   	return NULL;
-
-  if(points != NULL && PyList_Check(points)) {
-	   for(i=0;i<PyList_Size(points);i++) {
-		   element = PyList_GetItem(points,i);
-		   if(PyList_Check(element) && PyList_Size(element)  == 3) {
-     			point.x=PyFloat_AsDouble(PyList_GetItem(element, 0));
-		     	point.y=PyFloat_AsDouble(PyList_GetItem(element, 1));
-		     	point.z=PyFloat_AsDouble(PyList_GetItem(element, 2));
-      			node->points.push_back(point);
-		   }
-
-	   }
-   }
-
-   if(triangles != NULL)
-   {
-	faces=triangles;
-//	LOG(message_group::Deprecated, inst->location(), parameters.documentRoot(), "polyhedron(triangles=[]) will be removed in future releases. Use polyhedron(faces=[]) instead.");
-    }
-
-    if(faces != NULL && PyList_Check(faces) ) {
-	   for(i=0;i<PyList_Size(faces);i++) {
-		   element =  PyList_GetItem(faces,i);
-		   if(PyList_Check(element)) {
-                   	std::vector<size_t> face;
-			   for(j=0;j<PyList_Size(element);j++) {
-				pointIndex=PyLong_AsLong(PyList_GetItem(element, j));
-       	                 face.push_back(pointIndex);
-			   }
-      			   if (face.size() >= 3) {
-				node->faces.push_back(std::move(face));
-      			   }
-		}
-	   }
-   }
-
-  node->convexity = convexity;
-  if (node->convexity < 1) node->convexity = 1;
-
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
-}
-
-
-
-class SquareNode : public LeafNode
-{
-public:
-  SquareNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
-  {
-    std::ostringstream stream;
-    stream << "square(size = ["
-           << x << ", "
-           << y << "], center = "
-           << (center ? "true" : "false") << ")";
-    return stream.str();
-  }
-  std::string name() const override { return "square"; }
-  const Geometry *createGeometry() const override;
-
-  double x = 1, y = 1;
-  bool center = false;
-};
-
 const Geometry *SquareNode::createGeometry() const
 {
   auto p = new Polygon2d();
@@ -923,60 +617,6 @@ static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *i
   return node;
 }
 
-PyObject* python_square(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  auto node = std::make_shared<SquareNode>(&todo_fix_inst);
-
-  char * kwlist[] ={"dim", "center",NULL};
-  PyObject *dim = NULL; 
-
-  double x=1,y=1;
-  char *center=NULL;
-	
-   
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|s", kwlist, 
-			   &PyList_Type,&dim, 
-			   &center)) {
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-   	return NULL;
-   }
-
-   if(PyList_Check(dim) && PyList_Size(dim) == 2) {
-     	x=PyFloat_AsDouble(PyList_GetItem(dim, 0));
-     	y=PyFloat_AsDouble(PyList_GetItem(dim, 1));
-   }
-   node->x=x;
-   node->y=y;
-   if(center != NULL)
-	   if(!strcasecmp(center,"true")) node->center=1;
-
-   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
-}
-
-
-
-class CircleNode : public LeafNode
-{
-public:
-  CircleNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
-  {
-    std::ostringstream stream;
-    stream << "circle"
-           << "($fn = " << fn
-           << ", $fa = " << fa
-           << ", $fs = " << fs
-           << ", r = " << r
-           << ")";
-    return stream.str();
-  }
-  std::string name() const override { return "circle"; }
-  const Geometry *createGeometry() const override;
-
-  double fn, fs, fa;
-  double r = 1;
-};
-
 const Geometry *CircleNode::createGeometry() const
 {
   auto p = new Polygon2d();
@@ -1020,51 +660,7 @@ static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *i
   return node;
 }
 
-PyObject* python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  auto node = std::make_shared<CircleNode>(&todo_fix_inst);
 
-  char * kwlist[] ={"r","d","fn","fa","fs",NULL};
-  double r = -1; 
-  double d = -1; 
-  double fn=-1,fa=-1,fs=-1;
-
-  double vr=1;
-	
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddddd", kwlist, &r,&d,&fn,&fa,&fs)) {
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-   	return NULL;
-   }
-
-   get_fnas(node->fn,node->fa,node->fs);
-   if(fn != -1) node->fn=fn;
-   if(fa != -1) node->fa=fa;
-   if(fs != -1) node->fs=fs;
-
-   if(r>= 0)  { vr=r; }
-   else if(d>= 0)  { vr=d/2.0; }
-
-
-   node->r=vr;
-
-
-   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
-}
-
-
-
-class PolygonNode : public LeafNode
-{
-public:
-  PolygonNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override;
-  std::string name() const override { return "polygon"; }
-  const Geometry *createGeometry() const override;
-
-  std::vector<point2d> points;
-  std::vector<std::vector<size_t>> paths;
-  int convexity = 1;
-};
 
 std::string PolygonNode::toString() const
 {
@@ -1197,59 +793,6 @@ static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *
 
   return node;
 }
-
-PyObject* python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  int i,j,pointIndex;
-  auto node = std::make_shared<PolygonNode>(&todo_fix_inst);
-
-  char * kwlist[] ={"points", "paths","convexity",NULL};
-  PyObject *points = NULL; 
-  PyObject *paths = NULL; 
-  int convexity = 2;
-
-  PyObject *element;
-  point2d point;
-
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!i", kwlist, 
-			   &PyList_Type,&points,
-			   &PyList_Type,&paths,
-			   &convexity
-			   ))
-   	return NULL;
-
-   if(points != NULL && PyList_Check(points) ) {
-	   for(i=0;i<PyList_Size(points);i++) {
-		   element = PyList_GetItem(points,i);
-		   if(PyList_Check(element) && PyList_Size(element)  == 2) {
-     			point.x=PyFloat_AsDouble(PyList_GetItem(element, 0));
-		     	point.y=PyFloat_AsDouble(PyList_GetItem(element, 1));
-      			node->points.push_back(point);
-		   }
-
-	   }
-   }
-
-   if(paths != NULL && PyList_Check(paths) ) {
-	   for(i=0;i<PyList_Size(paths);i++) {
-		   element =  PyList_GetItem(paths,i);
-		   if(PyList_Check(element)) {
-	                   std::vector<size_t> path;
-			   for(j=0;j<PyList_Size(element);j++) {
-				pointIndex=PyLong_AsLong(PyList_GetItem(element, j));
-       	                 path.push_back(pointIndex);
-		   	}
-        	         node->paths.push_back(std::move(path));
-		}
-	   }
-   }
-
-  node->convexity = convexity;
-  if (node->convexity < 1) node->convexity = 1;
-
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
-}
-
 void register_builtin_primitives()
 {
   Builtins::init("cube", new BuiltinModule(builtin_cube),

@@ -75,56 +75,6 @@ std::shared_ptr<AbstractNode> builtin_scale(const ModuleInstantiation *inst, Arg
   return children.instantiate(node);
 }
 
-PyObject* python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  std::shared_ptr<AbstractNode> child;
-
-  auto node = std::make_shared<TransformNode>(&todo_fix_inst, "scale");
-
-  char * kwlist[] ={"obj","v",NULL};
-  double x=1.0,y=1.0,z=1.0;
-
-  PyObject *obj=NULL;
-  PyObject *val_v = NULL; 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
-			  &PyOpenSCADType, &obj, 
-			  &PyList_Type,&val_v )) {
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-   	return NULL;
-  }
-
-  child = PyOpenSCADObjectToNode(obj);
-
-  if(PyList_Check(val_v) && PyList_Size(val_v) >= 2) {
-     	x=PyFloat_AsDouble(PyList_GetItem(val_v, 0));
-     	y=PyFloat_AsDouble(PyList_GetItem(val_v, 1));
-  }
-  if(PyList_Check(val_v) && PyList_Size(val_v) >= 3) {
-     	z=PyFloat_AsDouble(PyList_GetItem(val_v, 2));
-   }
-
-  Vector3d scalevec(x, y, z);
-
-  if (OpenSCAD::rangeCheck) {
-    if (scalevec[0] == 0 || scalevec[1] == 0 || scalevec[2] == 0 || !std::isfinite(scalevec[0])|| !std::isfinite(scalevec[1])|| !std::isfinite(scalevec[2])) {
-//      LOG(message_group::Warning, todo_fix_inst->location(), parameters.documentRoot(), "scale(%1$s)", parameters["v"].toEchoStringNoThrow());
-    }
-  }
-  node->matrix.scale(scalevec);
-
-  node->children.push_back(child);
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
-}
-
-PyObject* python_scale_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-	PyObject *new_args=python_oo_args(self,args);
-	PyObject *result = python_scale(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
-	return result;
-}
-
-
 std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "rotate");
@@ -204,94 +154,6 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
   return children.instantiate(node);
 }
 
-PyObject* python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  std::shared_ptr<AbstractNode> child;
-
-  auto node = std::make_shared<TransformNode>(&todo_fix_inst, "rotate");
-
-  char * kwlist[] ={"obj","a","v",NULL};
-
-  PyObject *val_a = NULL; 
-  PyObject *obj=NULL;
-  float *val_v=0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!|f", kwlist, &PyOpenSCADType, &obj, &PyList_Type,&val_a, &val_v )) {
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-   	return NULL;
-  }
-
-  child = PyOpenSCADObjectToNode(obj);
-
-  if(PyList_Check(val_a) && PyList_Size(val_a) > 0) {
-    double sx = 0, sy = 0, sz = 0;
-    double cx = 1, cy = 1, cz = 1;
-    double a = 0.0;
-    bool ok = true;
-//    const auto& vec_a = val_a.toVector();
-    switch (PyList_Size(val_a)) {
-    default:
-      ok &= false;
-    /* fallthrough */
-    case 3:
-      a = PyFloat_AsDouble(PyList_GetItem(val_a, 2));
-      sz = sin_degrees(a);
-      cz = cos_degrees(a);
-    /* fallthrough */
-    case 2:
-      a = PyFloat_AsDouble(PyList_GetItem(val_a, 1));
-      sy = sin_degrees(a);
-      cy = cos_degrees(a);
-    /* fallthrough */
-    case 1:
-      a = PyFloat_AsDouble(PyList_GetItem(val_a, 0));
-      sx = sin_degrees(a);
-      cx = cos_degrees(a);
-    /* fallthrough */
-    case 0:
-      break;
-
-    }
-    Matrix3d M;
-    M << cy * cz,  cz *sx *sy - cx * sz,   cx *cz *sy + sx * sz,
-      cy *sz,  cx *cz + sx * sy * sz,  -cz * sx + cx * sy * sz,
-      -sy,       cy *sx,                  cx *cy;
-    node->matrix.rotate(M);
-
-   } else {
-#if 0 
-// TODO activate this option (need better par parsing)	   
-    double a = 0.0;
-    bool aConverted = val_a.getDouble(a);
-    aConverted &= !std::isinf(a) && !std::isnan(a);
-
-    Vector3d v(0, 0, 1);
-    bool vConverted = val_v.getVec3(v[0], v[1], v[2], 0.0);
-    node->matrix.rotate(angle_axis_degrees(aConverted ? a : 0, v));
-    if (val_v.isDefined() && !vConverted) {
-      if (aConverted) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(..., v=%1$s) parameter", val_v.toEchoStringNoThrow());
-      } else {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s, v=%2$s) parameter", val_a.toEchoStringNoThrow(), val_v.toEchoStringNoThrow());
-      }
-    } else if (!aConverted) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s) parameter", val_a.toEchoStringNoThrow());
-    }
-#endif
- }
-   
-   node->children.push_back(child);
-   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
-}
-
-PyObject* python_rotate_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-	PyObject *new_args=python_oo_args(self,args);
-	PyObject *result = python_rotate(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
-	return result;
-}
-
-
 std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "mirror");
@@ -323,64 +185,6 @@ std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Ar
   return children.instantiate(node);
 }
 
-PyObject* python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  std::shared_ptr<AbstractNode> child;
-
-  auto node = std::make_shared<TransformNode>(&todo_fix_inst, "mirror");
-
-  char * kwlist[] ={"obj","v",NULL};
-  double x=1.0,y=1.0,z=1.0;
-
-  PyObject *obj=NULL;
-  PyObject *val_v = NULL; 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
-			  &PyOpenSCADType, &obj, 
-			  &PyList_Type,&val_v )) {
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-   	return NULL;
-  }
-
-  child = PyOpenSCADObjectToNode(obj);
-
-  if(PyList_Check(val_v) && PyList_Size(val_v) >= 2) {
-     	x=PyFloat_AsDouble(PyList_GetItem(val_v, 0));
-     	y=PyFloat_AsDouble(PyList_GetItem(val_v, 1));
-  }
-  if(PyList_Check(val_v) && PyList_Size(val_v) >= 3) {
-     	z=PyFloat_AsDouble(PyList_GetItem(val_v, 2));
-   }
-
-  // x /= sqrt(x*x + y*y + z*z)
-  // y /= sqrt(x*x + y*y + z*z)
-  // z /= sqrt(x*x + y*y + z*z)
-  if (x != 0.0 || y != 0.0 || z != 0.0) {
-    // skip using sqrt to normalize the vector since each element of matrix contributes it with two multiplied terms
-    // instead just divide directly within each matrix element
-    // simplified calculation leads to less float errors
-    double a = x * x + y * y + z * z;
-
-    Matrix4d m;
-    m << 1 - 2 * x * x / a, -2 * y * x / a, -2 * z * x / a, 0,
-      -2 * x * y / a, 1 - 2 * y * y / a, -2 * z * y / a, 0,
-      -2 * x * z / a, -2 * y * z / a, 1 - 2 * z * z / a, 0,
-      0, 0, 0, 1;
-    node->matrix = m;
-  }
-
-  node->children.push_back(child);
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
-}
-
-PyObject* python_mirror_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-	PyObject *new_args=python_oo_args(self,args);
-	PyObject *result = python_mirror(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
-	return result;
-}
-
-
 std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "translate");
@@ -397,48 +201,6 @@ std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst,
   }
 
   return children.instantiate(node);
-}
-
-
-PyObject* python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  std::shared_ptr<AbstractNode> child;
-
-  auto node = std::make_shared<TransformNode>(&todo_fix_inst, "translate");
-
-  char * kwlist[] ={"obj","v",NULL};
-  PyObject *v = NULL; 
-  PyObject *obj = NULL;
-  double x=0,y=0,z=0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
-			  &PyOpenSCADType, &obj,
-			  &PyList_Type, &v 
-			  )) {
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-   	return NULL;
-  }
-  child = PyOpenSCADObjectToNode(obj);
-
-  if(PyList_Check(v) && PyList_Size(v) >= 2) {
-     	x=PyFloat_AsDouble(PyList_GetItem(v, 0));
-     	y=PyFloat_AsDouble(PyList_GetItem(v, 1));
-  }
-  if(PyList_Check(v) && PyList_Size(v) >= 3) {
-     	z=PyFloat_AsDouble(PyList_GetItem(v, 2));
-   }
-   Vector3d translatevec(x, y, z);
-
-   node->matrix.translate(translatevec);
-   node->children.push_back(child);
-   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
-}
-
-PyObject* python_translate_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-	PyObject *new_args=python_oo_args(self,args);
-	PyObject *result = python_translate(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
-	return result;
 }
 
 std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -464,52 +226,6 @@ std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst
   return children.instantiate(node);
 }
 
-
-PyObject* python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  std::shared_ptr<AbstractNode> child;
-  int i,j;
-
-  auto node = std::make_shared<TransformNode>(&todo_fix_inst, "multmatrix");
-
-  char * kwlist[] ={"obj","m",NULL};
-  PyObject *obj = NULL;
-  PyObject *mat = NULL; 
-  PyObject *element = NULL; 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
-			  &PyOpenSCADType, &obj,
-			  &PyList_Type, &mat 
-			  )) {
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-   	return NULL;
-  }
-
-  child = PyOpenSCADObjectToNode(obj);
-
-
-  if(mat != NULL) {
-    Matrix4d rawmatrix{Matrix4d::Identity()};
-    for(i=0;i<std::min(size_t(PyList_Size(mat)),size_t(4));i++) {
-      element = PyList_GetItem(mat,i);
-      for(j=0;j<std::min(size_t(PyList_Size(element)),size_t(4));j++) {
-        rawmatrix(i,j) = PyFloat_AsDouble(PyList_GetItem(element, j));
-      }
-    }
-    double w = rawmatrix(3, 3);
-    if (w != 1.0) node->matrix = rawmatrix / w;
-    else node->matrix = rawmatrix;
-   }
-   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
-
-}
-
-PyObject* python_multmatrix_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-	PyObject *new_args=python_oo_args(self,args);
-	PyObject *result = python_multmatrix(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
-	return result;
-}
 
 
 std::string TransformNode::toString() const

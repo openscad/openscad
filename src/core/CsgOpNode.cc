@@ -54,47 +54,6 @@ static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiat
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::INTERSECTION));
 }
 
-PyObject* python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs,OpenSCADOperator mode)
-{
-  std::shared_ptr<AbstractNode> child;
-  int i;
-  int n;
-
-  auto node = std::make_shared<CsgOpNode>(&todo_fix_inst, mode);
-  char *kwlist[]= { "obj",NULL };
-  PyObject *objs = NULL;
-  PyObject *obj;
-
-  if (! PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, 
-			  &PyList_Type,&objs
-			  )) { 
-    PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-    return NULL; 
-  }
-  n = PyList_Size(objs);
-  for(i=0;i<n;i++) {
-	obj = PyList_GetItem(objs,i);
-	child = PyOpenSCADObjectToNode(obj);
-        node->children.push_back(child);
-  }
-  
-   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
-}
-
-PyObject* python_union(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-	return python_csg_sub(self,args,kwargs, OpenSCADOperator::UNION);
-}
-
-PyObject* python_difference(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-	return python_csg_sub(self,args,kwargs, OpenSCADOperator::DIFFERENCE);
-}
-
-PyObject* python_intersection(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-	return python_csg_sub(self,args,kwargs, OpenSCADOperator::INTERSECTION);
-}
 
 std::string CsgOpNode::toString() const
 {

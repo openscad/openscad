@@ -46,7 +46,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 
 // Colors extracted from https://drafts.csswg.org/css-color/ on 2015-08-02
 // CSS Color Module Level 4 - Editor’s Draft, 29 May 2015
-static std::unordered_map<std::string, Color4f> webcolors{
+std::unordered_map<std::string, Color4f> webcolors{
   {"aliceblue", {240, 248, 255}},
   {"antiquewhite", {250, 235, 215}},
   {"aqua", {0, 255, 255}},
@@ -207,7 +207,7 @@ static std::unordered_map<std::string, Color4f> webcolors{
 // * "#rrggbbaa"
 // * "#rgb"
 // * "#rgba"
-static boost::optional<Color4f> parse_hex_color(const std::string& hex) {
+boost::optional<Color4f> parse_hex_color(const std::string& hex) {
   // validate size. short syntax uses one hex digit per color channel instead of 2.
   const bool short_syntax = hex.size() == 4 || hex.size() == 5;
   const bool long_syntax = hex.size() == 7 || hex.size() == 9;
@@ -274,66 +274,6 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
 
   return children.instantiate(node);
 }
-
-PyObject* python_color(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  std::shared_ptr<AbstractNode> child;
-
-  auto node = std::make_shared<ColorNode>(&todo_fix_inst);
-
-  char * kwlist[] ={"obj","c","alpha",NULL};
-  PyObject *obj = NULL;
-  char *colorname=NULL;
-  double alpha=1.0;
-  double x=0,y=0,z=0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|sd", kwlist, 
-                          &PyOpenSCADType, &obj,
-			  &colorname,&alpha
-                          )) {
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-        return NULL;
-  }
-  child = PyOpenSCADObjectToNode(obj);
-
-  /*
-  if (parameters["c"].type() == Value::Type::VECTOR) {
-    const auto& vec = parameters["c"].toVector();
-    for (size_t i = 0; i < 4; ++i) {
-      node->color[i] = i < vec.size() ? (float)vec[i].toDouble() : 1.0f;
-      if (node->color[i] > 1 || node->color[i] < 0) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range", node->color[i]);
-      }
-    }
-  } else if (parameters["c"].type() == Value::Type::STRING) {
-*/  
-    boost::algorithm::to_lower(colorname);
-    if (webcolors.find(colorname) != webcolors.end()) {
-      node->color = webcolors.at(colorname);
-    } else {
-      // Try parsing it as a hex color such as "#rrggbb".
-      const auto hexColor = parse_hex_color(colorname);
-      if (hexColor) {
-        node->color = *hexColor;
-      } else {
-        PyErr_SetString(PyExc_TypeError,"Cannot parse color");
-//        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to parse color \"%1$s\"", colorname);
-//        LOG(message_group::None, Location::NONE, "", "Please see https://en.wikipedia.org/wiki/Web_colors");
-        return NULL;
-      }
-    }
-  node->color[3]=alpha;
-  node->children.push_back(child);
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);       
-}
-
-PyObject* python_color_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-        PyObject *new_args=python_oo_args(self,args);
-        PyObject *result = python_color(self,new_args,kwargs);
-//      Py_DECREF(&new_args);
-        return result;
-}
-
 
 std::string ColorNode::toString() const
 {
