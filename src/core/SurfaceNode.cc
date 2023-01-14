@@ -35,6 +35,7 @@
 #include "iofileutils.h"
 #include "handle_dep.h"
 #include "ext/lodepng/lodepng.h"
+#include "SurfaceNode.h"
 
 #include <cstdint>
 #include <sstream>
@@ -53,53 +54,6 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-
-struct img_data_t
-{
-public:
-  using storage_type = double; // float could be enough here
-
-  img_data_t() { min_val = 0; height = width = 0; }
-
-  void clear() { min_val = 0; height = width = 0; storage.clear(); }
-
-  void reserve(size_t x) { storage.reserve(x); }
-
-  void resize(size_t x) { storage.resize(x); }
-
-  storage_type& operator[](int x) { return storage[x]; }
-
-  storage_type min_value() { return min_val; } // *std::min_element(storage.begin(), storage.end());
-
-public:
-  unsigned int height; // rows
-  unsigned int width; // columns
-  storage_type min_val;
-  std::vector<storage_type> storage;
-
-};
-
-
-class SurfaceNode : public LeafNode
-{
-public:
-  VISITABLE();
-  SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi) { }
-  std::string toString() const override;
-  std::string name() const override { return "surface"; }
-
-  Filename filename;
-  bool center{false};
-  bool invert{false};
-  int convexity{1};
-
-  const Geometry *createGeometry() const override;
-private:
-  void convert_image(img_data_t& data, std::vector<uint8_t>& img, unsigned int width, unsigned int height) const;
-  bool is_png(std::vector<uint8_t>& img) const;
-  img_data_t read_dat(std::string filename) const;
-  img_data_t read_png_or_dat(std::string filename) const;
-};
 
 static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
@@ -132,36 +86,6 @@ static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *
   return node;
 }
 
-PyObject* python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  std::shared_ptr<AbstractNode> child;
-
-  auto node = std::make_shared<SurfaceNode>(&todo_fix_inst);
-
-  char * kwlist[] ={"file","center","convexity","invert",NULL};
-  const char *file = NULL;
-  const char *center = NULL;
-  const char *invert = NULL;
-  long convexity = 2;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|sls", kwlist, 
-			  &file,&center,&convexity
-                          )) {
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-        return NULL;
-  }
-
-
-  std::string fileval = file == NULL ? "" : file;
-  std::string filename = lookup_file(fileval, todo_fix_inst.location().filePath().parent_path().string(), "");
-  node->filename = filename;
-  handle_dep(fs::path(filename).generic_string());
-
-  if(center != NULL && !strcasecmp(center,"true")) node->center=1;
-  node -> convexity = 2;
-  if(invert != NULL && !strcasecmp(invert,"true")) node->invert=1;
-
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
-}
 
 void SurfaceNode::convert_image(img_data_t& data, std::vector<uint8_t>& img, unsigned int width, unsigned int height) const
 {

@@ -156,92 +156,6 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   return node;
 }
 
-PyObject* do_import_python(PyObject *self, PyObject *args, PyObject *kwargs,ImportType type)
-{
-  char * kwlist[] ={"file","layer","convexity","origin","scale","width","height","filename","center","dpi","id",NULL};
-  double fn=-1, fa=-1 ,fs=-1;
-
-  std::string filename;
-  const char *v = NULL, *layer = NULL, *center = NULL, *id = NULL ;
-  int convexity = 2;
-  double scale = 1.0,width=-1, height = -1, dpi = 1.0;
-  PyObject *origin = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|slO!dddsfsddd", kwlist, 
-			  &v,
-			  &layer,
-			  &convexity,
-			  &PyList_Type, origin,
-			  &scale,
-			  &width,&height,
-			  &center,&dpi,&id,
-			  &fn,&fa,&fs
-
-                          )) {
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-        return NULL;
-  }
-
-  filename = lookup_file(v == NULL ? "" : v, todo_fix_inst.location().filePath().parent_path().string(), "");
-  if (!filename.empty()) handle_dep(filename);
-  ImportType actualtype = type;
-  if (actualtype == ImportType::UNKNOWN) {
-    std::string extraw = fs::path(filename).extension().generic_string();
-    std::string ext = boost::algorithm::to_lower_copy(extraw);
-    if (ext == ".stl") actualtype = ImportType::STL;
-    else if (ext == ".off") actualtype = ImportType::OFF;
-    else if (ext == ".dxf") actualtype = ImportType::DXF;
-    else if (ext == ".nef3") actualtype = ImportType::NEF3;
-    else if (ext == ".3mf") actualtype = ImportType::_3MF;
-    else if (ext == ".amf") actualtype = ImportType::AMF;
-    else if (ext == ".svg") actualtype = ImportType::SVG;
-  }
-
-  auto node = std::make_shared<ImportNode>(&todo_fix_inst, actualtype);
-
-  get_fnas(node->fn,node->fa,node->fs);
-  if(fn != -1) node->fn=fn;
-  if(fa != -1) node->fa=fa;
-  if(fs != -1) node->fs=fs;
-
-  node->filename = filename;
-
-  if(layer != NULL) node->layer = layer;
-  if(id != NULL) node->id = id;
-  node->convexity = convexity;
-  if (node->convexity <= 0) node->convexity = 1;
-
-
-  if(origin != NULL && PyList_Check(origin) && PyList_Size(origin) == 2) {
-          node->origin_x=PyFloat_AsDouble(PyList_GetItem(origin, 0));
-          node->origin_y=PyFloat_AsDouble(PyList_GetItem(origin, 1));
-  }
-
-  node->center = 0;
-  if(center != NULL && !strcasecmp(center,"true")) node->center = 1;
-
-  node->scale = scale;
-  if (node->scale <= 0) node->scale = 1;
-
-  node->dpi = ImportNode::SVG_DEFAULT_DPI;
-  double val =dpi;
-  if (val < 0.001) {
-	PyErr_SetString(PyExc_TypeError,"Invalid dpi value giving");	  
-//      std::string filePath = boostfs_uncomplete(todo_fix_inst.location().filePath(), "");
-//      LOG(message_group::Warning, Location::NONE, "",
-//          "Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
-//          origin.toEchoStringNoThrow(), filePath, filePath, inst->location().firstLine()
-//          );
-	return NULL;
-    } else {
-      node->dpi = val;
-    }
-
-  node->width = width;
-  node->height = height;
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
-}
-
-
 
 static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 { return do_import(inst, std::move(arguments), children, ImportType::UNKNOWN); }
@@ -255,8 +169,6 @@ static std::shared_ptr<AbstractNode> builtin_import_off(const ModuleInstantiatio
 static std::shared_ptr<AbstractNode> builtin_import_dxf(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 { return do_import(inst, std::move(arguments), children, ImportType::DXF); }
 
-PyObject* python_import(PyObject *self, PyObject *args, PyObject *kwargs)
-{ return do_import_python(self, args, kwargs, ImportType::STL); }
 
 
 /*!

@@ -38,28 +38,6 @@ std::shared_ptr<AbstractNode> builtin_group(const ModuleInstantiation *inst, Arg
   return children.instantiate(std::make_shared<GroupNode>(inst));
 }
 
-PyObject* python_group(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  std::shared_ptr<AbstractNode> child;
-
-  auto node = std::make_shared<GroupNode>(&todo_fix_inst);
-
-  char * kwlist[] ={"obj",NULL};
-  PyObject *obj = NULL;
-  const char *cutmode = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist, 
-                          &PyOpenSCADType, &obj
-                          )) {
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-        return NULL;
-  }
-  child = PyOpenSCADObjectToNode(obj);
-
-  node->children.push_back(child);
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);       
-}
-
-
 void register_builtin_group()
 {
   Builtins::init("group", new BuiltinModule(builtin_group),

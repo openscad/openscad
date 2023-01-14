@@ -52,30 +52,6 @@ static std::shared_ptr<AbstractNode> builtin_render(const ModuleInstantiation *i
 }
 
 
-PyObject* python_render(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  std::shared_ptr<AbstractNode> child;
-
-  auto node = std::make_shared<RenderNode>(&todo_fix_inst);
-
-  char * kwlist[] ={"obj","convexity",NULL};
-  PyObject *obj = NULL;
-  const char *cutmode = NULL;
-  long convexity = 2;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|i", kwlist, 
-                          &PyOpenSCADType, &obj,
-			  &convexity
-                          )) {
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-        return NULL;
-  }
-  child = PyOpenSCADObjectToNode(obj);
-
-  node->convexity=convexity;
-  node->children.push_back(child);
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);       
-}
-
 
 std::string RenderNode::toString() const
 {
