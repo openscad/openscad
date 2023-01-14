@@ -46,9 +46,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/assign/std/vector.hpp>
-#include <Python.h>
-#include <pyopenscad.h>
-
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <boost/filesystem.hpp>
@@ -67,7 +64,7 @@ static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"file", "center", "convexity"}, {"invert"});
 
   std::string fileval = parameters["file"].isUndefined() ? "" : parameters["file"].toString();
-  std::string filename = lookup_file(fileval, inst->location().filePath().parent_path().string(), parameters.documentRoot());
+  auto filename = lookup_file(fileval, inst->location().filePath().parent_path().string(), parameters.documentRoot());
   node->filename = filename;
   handle_dep(fs::path(filename).generic_string());
 
@@ -85,7 +82,6 @@ static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *
 
   return node;
 }
-
 
 void SurfaceNode::convert_image(img_data_t& data, std::vector<uint8_t>& img, unsigned int width, unsigned int height) const
 {

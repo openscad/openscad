@@ -38,11 +38,8 @@
 #include <cassert>
 #include <cmath>
 #include <boost/assign/std/vector.hpp>
-#include <Python.h>
-#include "pyopenscad.h"
 #include "ModuleInstantiation.h"
 #include "primitives.h"
-
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
@@ -793,6 +790,9 @@ static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *
 
   return node;
 }
+
+
+
 void register_builtin_primitives()
 {
   Builtins::init("cube", new BuiltinModule(builtin_cube),

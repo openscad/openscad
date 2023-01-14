@@ -33,10 +33,6 @@
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
-#include <Python.h>
-#include "pyopenscad.h"
-
-
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 static std::shared_ptr<AbstractNode> builtin_render(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -50,8 +46,6 @@ static std::shared_ptr<AbstractNode> builtin_render(const ModuleInstantiation *i
 
   return children.instantiate(node);
 }
-
-
 
 std::string RenderNode::toString() const
 {

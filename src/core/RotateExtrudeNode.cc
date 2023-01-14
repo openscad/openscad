@@ -39,9 +39,6 @@
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <boost/filesystem.hpp>
-#include <Python.h>
-#include "pyopenscad.h"
-
 namespace fs = boost::filesystem;
 
 static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -59,7 +56,7 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
 
   if (!parameters["file"].isUndefined()) {
     LOG(message_group::Deprecated, Location::NONE, "", "Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
-    std::string  filename = lookup_file(parameters["file"].toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
+    auto filename = lookup_file(parameters["file"].toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
     node->filename = filename;
     handle_dep(filename);
   }

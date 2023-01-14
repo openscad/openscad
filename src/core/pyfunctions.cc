@@ -650,7 +650,7 @@ PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs)
 			   &PyOpenSCADType,&object
 			   ))
    	return NULL;
-   if(object != NULL) result_node=PyOpenSCADObjectToNode(object);
+   if(object != NULL) python_result_node=PyOpenSCADObjectToNode(object);
    return PyLong_FromLong(55);
 }
 

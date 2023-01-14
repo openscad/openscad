@@ -23,10 +23,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#define PY_SSIZE_T_CLEAN
-#include <Python.h>
-#include "pyopenscad.h"
-
 #include <iostream>
 #include "boost-utils.h"
 #include "BuiltinContext.h"
@@ -101,6 +97,9 @@
 #include "QSettingsCached.h"
 #include <QSound>
 
+extern std::shared_ptr<AbstractNode> python_result_node;
+char *evaluatePython(const char *code);
+
 #define ENABLE_3D_PRINTING
 #include "OctoPrint.h"
 #include "PrintService.h"
@@ -131,7 +130,6 @@
 #include <memory>
 #include <QtNetwork>
 #include <utility>
-
 
 #include "qt-obsolete.h" // IWYU pragma: keep
 
@@ -1234,7 +1232,7 @@ void MainWindow::instantiateRoot()
     setRenderVariables(builtin_context);
 
     std::shared_ptr<const FileContext> file_context;
-    if(result_node != NULL && this->python_active) this->absolute_root_node = result_node;
+    if(python_result_node != NULL && this->python_active) this->absolute_root_node = python_result_node;
     else this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);

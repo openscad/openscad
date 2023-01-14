@@ -33,9 +33,6 @@
 #include <sstream>
 #include <cassert>
 #include <boost/assign/std/vector.hpp>
-#include <Python.h>
-#include "pyopenscad.h"
-
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 static std::shared_ptr<AbstractNode> builtin_minkowski(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -47,6 +44,7 @@ static std::shared_ptr<AbstractNode> builtin_minkowski(const ModuleInstantiation
 
   return children.instantiate(node);
 }
+
 static std::shared_ptr<AbstractNode> builtin_hull(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::HULL);
@@ -56,6 +54,7 @@ static std::shared_ptr<AbstractNode> builtin_hull(const ModuleInstantiation *ins
 
   return children.instantiate(node);
 }
+
 static std::shared_ptr<AbstractNode> builtin_fill(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::FILL);
@@ -64,6 +63,7 @@ static std::shared_ptr<AbstractNode> builtin_fill(const ModuleInstantiation *ins
 
   return children.instantiate(node);
 }
+
 static std::shared_ptr<AbstractNode> builtin_resize(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::RESIZE);
@@ -90,6 +90,7 @@ static std::shared_ptr<AbstractNode> builtin_resize(const ModuleInstantiation *i
 
   return children.instantiate(node);
 }
+
 std::string CgalAdvNode::name() const
 {
   switch (this->type) {

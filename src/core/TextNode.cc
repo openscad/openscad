@@ -34,9 +34,6 @@
 #include "TextNode.h"
 #include "FreetypeRenderer.h"
 
-#include <Python.h>
-#include <pyopenscad.h>
-
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 

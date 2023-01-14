@@ -10,9 +10,6 @@
 #include "Children.h"
 #include "RoofNode.h"
 
-#include <Python.h>
-#include "pyopenscad.h"
-
 static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<RoofNode>(inst);
@@ -54,8 +51,6 @@ static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *ins
 
   return node;
 }
-
-
 
 std::string RoofNode::toString() const
 {

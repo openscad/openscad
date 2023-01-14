@@ -33,8 +33,6 @@
 #include "Parameters.h"
 #include <sstream>
 #include <cassert>
-#include <Python.h>
-#include <pyopenscad.h>
 
 static std::shared_ptr<AbstractNode> builtin_union(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
@@ -53,7 +51,6 @@ static std::shared_ptr<AbstractNode> builtin_intersection(const ModuleInstantiat
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
   return children.instantiate(std::make_shared<CsgOpNode>(inst, OpenSCADOperator::INTERSECTION));
 }
-
 
 std::string CsgOpNode::toString() const
 {

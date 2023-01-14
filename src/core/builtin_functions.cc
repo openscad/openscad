@@ -61,7 +61,6 @@ int process_id = getpid();
 
 std::mt19937 deterministic_rng(std::time(nullptr) + process_id);
 #include <array>
-#include <Python.h>
 
 static inline bool check_arguments(const char *function_name, const Arguments& arguments, const Location& loc, unsigned int expected_count, bool warn = true)
 {
@@ -688,7 +687,6 @@ Value builtin_version(Arguments arguments, const Location& /*loc*/)
   return std::move(vec);
 }
 
-
 Value builtin_version_num(Arguments arguments, const Location& loc)
 {
   Value val = (arguments.size() == 0) ? builtin_version(std::move(arguments), loc) : std::move(arguments[0].value);
@@ -698,6 +696,7 @@ Value builtin_version_num(Arguments arguments, const Location& loc)
   }
   return {y * 10000 + m * 100 + d};
 }
+
 Value builtin_parent_module(Arguments arguments, const Location& loc)
 {
   double d;

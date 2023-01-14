@@ -29,8 +29,6 @@
 #include "Builtins.h"
 #include "Children.h"
 #include "Parameters.h"
-#include <Python.h>
-#include "pyopenscad.h"
 
 std::shared_ptr<AbstractNode> builtin_group(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {

@@ -30,8 +30,6 @@
 #include "Children.h"
 #include "Parameters.h"
 #include "Builtins.h"
-#include <Python.h>
-#include "pyopenscad.h"
 
 #include <cassert>
 #include <boost/assign/std/vector.hpp>
@@ -49,7 +47,6 @@ static std::shared_ptr<AbstractNode> builtin_projection(const ModuleInstantiatio
 
   return children.instantiate(node);
 }
-
 
 std::string ProjectionNode::toString() const
 {

@@ -208,7 +208,7 @@ PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
     return m;
 }
 
-std::shared_ptr<AbstractNode> result_node=NULL;
+std::shared_ptr<AbstractNode> python_result_node=NULL;
 
 static PyObject* PyInit_openscad(void)
 {
@@ -223,7 +223,7 @@ ModuleInstantiation todo_fix_inst(todo_fix_name,todo_fix_asslist,Location::NONE)
 char *evaluatePython(const char *code)
 {
     char *error;
-    result_node=NULL;
+    python_result_node=NULL;
     PyObject *pyExcType;
     PyObject *pyExcValue;
     PyObject *pyExcTraceback;

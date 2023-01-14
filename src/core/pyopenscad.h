@@ -14,7 +14,7 @@ PyMODINIT_FUNC PyInit_PyOpenSCAD(void);
 
 extern PyTypeObject PyOpenSCADType;
 
-extern std::shared_ptr<AbstractNode> result_node;
+extern std::shared_ptr<AbstractNode> python_result_node;
 
 void PyOpenSCADObject_dealloc(PyOpenSCADObject * self);
 

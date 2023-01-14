@@ -38,9 +38,6 @@
 #include <cmath>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
-#include <Python.h>
-#include "pyopenscad.h"
-
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <boost/filesystem.hpp>
@@ -86,7 +83,7 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
 
   if (!parameters["file"].isUndefined() && parameters["file"].type() == Value::Type::STRING) {
     LOG(message_group::Deprecated, Location::NONE, "", "Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
-    std::string filename = lookup_file(parameters["file"].toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
+    auto filename = lookup_file(parameters["file"].toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
     node->filename = filename;
     handle_dep(filename);
   }
@@ -137,8 +134,6 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
 
   return node;
 }
-
-
 
 std::string LinearExtrudeNode::toString() const
 {

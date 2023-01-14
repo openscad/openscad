@@ -37,9 +37,6 @@
 #include <vector>
 #include <cassert>
 #include <boost/assign/std/vector.hpp>
-#include <Python.h>
-#include "pyopenscad.h"
-
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 enum class transform_type_e {
@@ -226,8 +223,6 @@ std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst
   return children.instantiate(node);
 }
 
-
-
 std::string TransformNode::toString() const
 {
   std::ostringstream stream;
@@ -291,6 +286,3 @@ void register_builtin_transform()
     "multmatrix(matrix_4_by_4)",
   });
 }
-
-
-

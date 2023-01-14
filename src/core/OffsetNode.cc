@@ -31,8 +31,6 @@
 #include "Children.h"
 #include "Parameters.h"
 #include "Builtins.h"
-#include "Python.h"
-#include "pyopenscad.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
@@ -66,7 +64,6 @@ static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *i
 
   return children.instantiate(node);
 }
-
 
 std::string OffsetNode::toString() const
 {

@@ -47,9 +47,6 @@
 #include <sstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
-#include <Python.h>
-#include "pyopenscad.h"
-
 namespace fs = boost::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
@@ -155,7 +152,6 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
 
   return node;
 }
-
 
 static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 { return do_import(inst, std::move(arguments), children, ImportType::UNKNOWN); }
