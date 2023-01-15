@@ -32,7 +32,7 @@
 #include "Children.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include "iofileutils.h"
+#include "io/fileutils.h"
 #include "handle_dep.h"
 #include "ext/lodepng/lodepng.h"
 #include "SurfaceNode.h"

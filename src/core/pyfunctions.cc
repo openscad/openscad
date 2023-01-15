@@ -48,7 +48,7 @@
 
 #include "degree_trig.h"
 #include "printutils.h"
-#include "iofileutils.h"
+#include "io/fileutils.h"
 #include "handle_dep.h"
 
 //using namespace boost::assign; // bring 'operator+=()' into scope
