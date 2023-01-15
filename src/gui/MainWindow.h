@@ -55,7 +55,7 @@ public:
   SourceFile *parsed_file; // Last parse for include list
   std::shared_ptr<AbstractNode> absolute_root_node; // Result of tree evaluation
   std::shared_ptr<AbstractNode> root_node; // Root if the root modifier (!) is used
-  static int python_active;					
+  int python_active;					
   Tree tree;
   EditorInterface *activeEditor;
   TabManager *tabManager;

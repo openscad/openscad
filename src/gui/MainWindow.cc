@@ -147,7 +147,6 @@ static char copyrighttext[] =
 bool MainWindow::undockMode = false;
 bool MainWindow::reorderMode = false;
 const int MainWindow::tabStopWidth = 15;
-int MainWindow::python_active = 0;
 QElapsedTimer *MainWindow::progressThrottle = new QElapsedTimer();
 
 namespace {
