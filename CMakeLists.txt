@@ -206,6 +206,7 @@ if (MSVC)
 
   find_package(Eigen3 CONFIG REQUIRED)
   target_link_libraries(OpenSCAD PRIVATE Eigen3::Eigen)
+  message(STATUS "Eigen: ${Eigen3_VERSION}")
 
   set(Boost_USE_STATIC_LIBS TRUE)
   find_package(Boost 1.56 REQUIRED COMPONENTS filesystem system regex program_options)
@@ -248,6 +249,7 @@ else()
   find_package(Eigen3 REQUIRED)
   target_include_directories(OpenSCAD SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIR})
   target_compile_definitions(OpenSCAD PRIVATE EIGEN_DONT_ALIGN)
+  message(STATUS "Eigen: ${Eigen3_VERSION}")
 
   find_package(Boost 1.56 REQUIRED COMPONENTS filesystem system regex program_options)
   message(STATUS "Boost: ${Boost_VERSION}")
@@ -287,9 +289,9 @@ set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
 # Some older versions do not match with CGAL 5.0 REQUIRED, so we check after.
 find_package(CGAL REQUIRED COMPONENTS Core)
 if (${CGAL_MAJOR_VERSION} LESS 5)
-  message(FATAL_ERROR "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION} less than required minimum version 5.0")
+  message(FATAL_ERROR "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}.${CGAL_BUGFIX_VERSION} less than required minimum version 5.0")
 endif()
-message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}")
+message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}.${CGAL_BUGFIX_VERSION}")
 target_compile_definitions(OpenSCAD PRIVATE ENABLE_CGAL)
 # The macro `CGAL_DEBUG` allows to force CGAL assertions, even if `NDEBUG` is defined,
 # Enabling CGAL assertions is necessary for us to catch them before they cause a crash
