@@ -19,7 +19,9 @@ extern std::shared_ptr<AbstractNode> python_result_node;
 void PyOpenSCADObject_dealloc(PyOpenSCADObject * self);
 
 PyObject * PyOpenSCADObjectFromNode( PyTypeObject *type,std::shared_ptr<AbstractNode> node);
-std::shared_ptr<AbstractNode> & PyOpenSCADObjectToNode(PyObject *object);
+std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *object);
+std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *object);
+int python_more_obj(std::vector<std::shared_ptr<AbstractNode>> &children,PyObject *more_obj);
 
 PyObject* python_square(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_circle(PyObject *self, PyObject *args, PyObject *kwargs);
@@ -56,8 +58,11 @@ PyObject* python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
 PyObject* python_rotate_extrude_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* python_union(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_union_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_difference(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_difference_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_intersection(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_intersection_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_hull(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_fill(PyObject *self, PyObject *args, PyObject *kwargs);

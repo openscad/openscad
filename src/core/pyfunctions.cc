@@ -362,14 +362,18 @@ PyObject* python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
 
   PyObject *obj=NULL;
   PyObject *val_v = NULL; 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
-			  &PyOpenSCADType, &obj, 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", kwlist, 
+			  &obj, 
 			  &PyList_Type,&val_v )) {
         PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
   }
 
-  child = PyOpenSCADObjectToNode(obj);
+  child = PyOpenSCADObjectToNodeMulti(obj);
+  if(child == NULL) {
+        PyErr_SetString(PyExc_TypeError,"Invalid type for  Object in scale\n");
+   	return NULL;
+  }
 
   if(PyList_Check(val_v) && PyList_Size(val_v) >= 2) {
      	x=PyFloat_AsDouble(PyList_GetItem(val_v, 0));
@@ -412,12 +416,18 @@ PyObject* python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *val_a = NULL; 
   PyObject *obj=NULL;
   float *val_v=0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!|f", kwlist, &PyOpenSCADType, &obj, &PyList_Type,&val_a, &val_v )) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!|f", kwlist, 
+			  &obj,
+			  &PyList_Type,&val_a, &val_v )) {
         PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
   }
 
-  child = PyOpenSCADObjectToNode(obj);
+  child = PyOpenSCADObjectToNodeMulti(obj);
+  if(child == NULL) {
+        PyErr_SetString(PyExc_TypeError,"Invalid type for  Object in rotate\n");
+   	return NULL;
+  }
 
   if(PyList_Check(val_a) && PyList_Size(val_a) > 0) {
     double sx = 0, sy = 0, sz = 0;
@@ -500,14 +510,18 @@ PyObject* python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
 
   PyObject *obj=NULL;
   PyObject *val_v = NULL; 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
-			  &PyOpenSCADType, &obj, 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", kwlist, 
+			  &obj, 
 			  &PyList_Type,&val_v )) {
         PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
   }
 
-  child = PyOpenSCADObjectToNode(obj);
+  child = PyOpenSCADObjectToNodeMulti(obj);
+  if(child == NULL) {
+        PyErr_SetString(PyExc_TypeError,"Invalid type for  Object in mirror\n");
+   	return NULL;
+  }
 
   if(PyList_Check(val_v) && PyList_Size(val_v) >= 2) {
      	x=PyFloat_AsDouble(PyList_GetItem(val_v, 0));
@@ -557,14 +571,18 @@ PyObject* python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *v = NULL; 
   PyObject *obj = NULL;
   double x=0,y=0,z=0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
-			  &PyOpenSCADType, &obj,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", kwlist, 
+			  &obj,
 			  &PyList_Type, &v 
 			  )) {
         PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
   }
-  child = PyOpenSCADObjectToNode(obj);
+  child = PyOpenSCADObjectToNodeMulti(obj);
+  if(child == NULL) {
+        PyErr_SetString(PyExc_TypeError,"Invalid type for  Object in translate\n");
+   	return NULL;
+  }
 
   if(PyList_Check(v) && PyList_Size(v) >= 2) {
      	x=PyFloat_AsDouble(PyList_GetItem(v, 0));
@@ -600,15 +618,19 @@ PyObject* python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *obj = NULL;
   PyObject *mat = NULL; 
   PyObject *element = NULL; 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!", kwlist, 
-			  &PyOpenSCADType, &obj,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", kwlist, 
+			  &obj,
 			  &PyList_Type, &mat 
 			  )) {
         PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
   }
 
-  child = PyOpenSCADObjectToNode(obj);
+  child = PyOpenSCADObjectToNodeMulti(obj);
+  if(child == NULL) {
+        PyErr_SetString(PyExc_TypeError,"Invalid type for  Object in multmatrix\n");
+   	return NULL;
+  }
 
 
   if(mat != NULL) {
@@ -644,14 +666,20 @@ PyObject* python_multmatrix_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-   PyObject *object=NULL;
-   char * kwlist[] ={"object",NULL};
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O!", kwlist, 
-			   &PyOpenSCADType,&object
+  PyObject *object=NULL;
+  char * kwlist[] ={"object",NULL};
+  std::shared_ptr<AbstractNode> child;
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, 
+			   &object
 			   ))
    	return NULL;
-   if(object != NULL) python_result_node=PyOpenSCADObjectToNode(object);
-   return PyLong_FromLong(55);
+  child=PyOpenSCADObjectToNodeMulti(object);
+  if(child == NULL) {
+        PyErr_SetString(PyExc_TypeError,"Invalid type for  Object in output\n");
+   	return NULL;
+  }
+  python_result_node = child;
+   return PyLong_FromLong(55); // TODO fix
 }
 
 PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -675,14 +703,18 @@ PyObject* python_color(PyObject *self, PyObject *args, PyObject *kwargs)
   char *colorname=NULL;
   double alpha=1.0;
   double x=0,y=0,z=0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|sd", kwlist, 
-                          &PyOpenSCADType, &obj,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sd", kwlist, 
+                          &obj,
 			  &colorname,&alpha
                           )) {
         PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
         return NULL;
   }
-  child = PyOpenSCADObjectToNode(obj);
+  child = PyOpenSCADObjectToNodeMulti(obj);
+  if(child == NULL) {
+        PyErr_SetString(PyExc_TypeError,"Invalid type for  Object in color\n");
+   	return NULL;
+  }
 
   /*
   if (parameters["c"].type() == Value::Type::VECTOR) {
@@ -743,8 +775,7 @@ PyObject* python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
 
   char * kwlist[] ={"obj","layer","convexity","scale","fn","fa","fs",NULL};
 
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|siddO!ddd", kwlist, 
-                          &PyOpenSCADType,
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|siddO!ddd", kwlist, 
                           &obj,
 			  &layer,
 			  &convexity,
@@ -759,7 +790,11 @@ PyObject* python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
         return NULL;
   }
 
-  child = PyOpenSCADObjectToNode(obj);
+  child = PyOpenSCADObjectToNodeMulti(obj);
+  if(child == NULL) {
+        PyErr_SetString(PyExc_TypeError,"Invalid type for  Object in rotate_extrude\n");
+   	return NULL;
+  }
 
    get_fnas(node->fn,node->fa,node->fs);
    if(fn != -1) node->fn=fn;
@@ -814,8 +849,7 @@ PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   double fn=-1, fa=-1, fs=-1;
 
   char * kwlist[] ={"obj","height","layer","convexity","origin","scale","center","slices","segments","twist","fn","fa","fs",NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|dsiO!O!siidddd", kwlist, 
-                          &PyOpenSCADType,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|dsiO!O!siidddd", kwlist, 
                           &obj,
                           &height,
 			  &layer,
@@ -834,7 +868,11 @@ PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
         return NULL;
   }
 
-  child = PyOpenSCADObjectToNode(obj);
+  child = PyOpenSCADObjectToNodeMulti(obj);
+  if(child == NULL) {
+        PyErr_SetString(PyExc_TypeError,"Invalid type for  Object in lienar_extrude\n");
+   	return NULL;
+  }
 
    get_fnas(node->fn,node->fa,node->fs);
    if(fn != -1) node->fn=fn;
@@ -923,6 +961,50 @@ PyObject* python_intersection(PyObject *self, PyObject *args, PyObject *kwargs)
 	return python_csg_sub(self,args,kwargs, OpenSCADOperator::INTERSECTION);
 }
 
+PyObject* python_csg_oo_sub(PyObject *self, PyObject *args, PyObject *kwargs,OpenSCADOperator mode)
+{
+  std::shared_ptr<AbstractNode> child;
+  int i;
+  int n;
+
+  auto node = std::make_shared<CsgOpNode>(&todo_fix_inst, mode );
+  char *kwlist[]= { "obj",NULL };
+  PyObject *more_obj = NULL;
+  PyObject *obj;
+
+  if (! PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist, 
+			  &more_obj
+			  )) { 
+    PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
+    return NULL; 
+  }
+
+  child = PyOpenSCADObjectToNode(self);
+  node->children.push_back(child);
+
+  if(python_more_obj(node->children,more_obj)) {
+    PyErr_SetString(PyExc_TypeError,"Unsupported  argument\n");
+    return NULL; 
+  }
+
+   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
+}
+
+PyObject* python_union_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	return python_csg_oo_sub(self,args,kwargs,OpenSCADOperator::UNION);
+}
+
+PyObject* python_difference_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	return python_csg_oo_sub(self,args,kwargs,OpenSCADOperator::DIFFERENCE);
+}
+
+PyObject* python_intersection_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+	return python_csg_oo_sub(self,args,kwargs,OpenSCADOperator::INTERSECTION);
+}
+
 
 PyObject* python_csg_adv_sub(PyObject *self, PyObject *args, PyObject *kwargs,CgalAdvType mode)
 {
@@ -1007,8 +1089,8 @@ PyObject* python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *newsize=NULL;
   PyObject *autosize=NULL;
 
-  if (! PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!O!i", kwlist, 
-			  &PyOpenSCADType,&obj,
+  if (! PyArg_ParseTupleAndKeywords(args, kwargs, "O|O!O!i", kwlist, 
+			  &obj,
 			  &PyList_Type,&newsize,
 			  &PyList_Type,&autosize,
 			  &convexity
@@ -1016,7 +1098,11 @@ PyObject* python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
     return NULL; 
   }
-  child = PyOpenSCADObjectToNode(obj);
+  child = PyOpenSCADObjectToNodeMulti(obj);
+  if(child == NULL) {
+        PyErr_SetString(PyExc_TypeError,"Invalid type for  Object in resize\n");
+   	return NULL;
+  }
 
   if(newsize != NULL && PyList_Check(newsize)) {
 	if(PyList_Size(newsize) >= 1) node->newsize[0] = PyFloat_AsDouble(PyList_GetItem(newsize, 0));
@@ -1054,15 +1140,19 @@ PyObject* python_roof(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *obj = NULL;
   const char *method = NULL;
   int convexity=2;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|sdddd", kwlist, 
-                          &PyOpenSCADType, &obj,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sdddd", kwlist, 
+                          &obj,
 			  &method, convexity,
 			  &fn,&fa,&fs
                           )) {
         PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
         return NULL;
   }
-  child = PyOpenSCADObjectToNode(obj);
+  child = PyOpenSCADObjectToNodeMulti(obj);
+  if(child == NULL) {
+        PyErr_SetString(PyExc_TypeError,"Invalid type for  Object in roof\n");
+   	return NULL;
+  }
 
    get_fnas(node->fn,node->fa,node->fs);
    if(fn != -1) node->fn=fn;
@@ -1320,15 +1410,19 @@ PyObject* python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
   double r=-1,delta=-1;
   const char *chamfer=NULL;
   double fn=-1, fa=-1, fs = -1;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!d|dsddd", kwlist, 
-                          &PyOpenSCADType, &obj,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Od|dsddd", kwlist, 
+                          &obj,
 			  &r,&delta,&chamfer,
 			  &fn, &fa, &fs
                           )) {
         PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
         return NULL;
   }
-  child = PyOpenSCADObjectToNode(obj);
+  child = PyOpenSCADObjectToNodeMulti(obj);
+  if(child == NULL) {
+        PyErr_SetString(PyExc_TypeError,"Invalid type for  Object in offset\n");
+   	return NULL;
+  }
 
    get_fnas(node->fn,node->fa,node->fs);
    if(fn != -1) node->fn=fn;
@@ -1373,14 +1467,18 @@ PyObject* python_projection(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *obj = NULL;
   const char *cutmode = NULL;
   long convexity = 2;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|sl", kwlist, 
-                          &PyOpenSCADType, &obj,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sl", kwlist, 
+                          &obj,
 			  &cutmode, &convexity
                           )) {
         PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
         return NULL;
   }
-  child = PyOpenSCADObjectToNode(obj);
+  child = PyOpenSCADObjectToNodeMulti(obj);
+  if(child == NULL) {
+        PyErr_SetString(PyExc_TypeError,"Invalid type for  Object in projection\n");
+   	return NULL;
+  }
 
   node->convexity = convexity;
   node->cut_mode = 0;

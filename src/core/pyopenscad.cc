@@ -5,6 +5,7 @@
 #include <Python.h>
 #include <structmember.h>
 #include "pyopenscad.h"
+#include "CsgOpNode.h"
 
 // https://docs.python.it/html/ext/dnt-basics.html
 
@@ -34,10 +35,47 @@ PyObject * PyOpenSCADObjectFromNode(PyTypeObject *type, std::shared_ptr<Abstract
 }
 
 
-std::shared_ptr<AbstractNode> &PyOpenSCADObjectToNode(PyObject *obj)
+int python_more_obj(std::vector<std::shared_ptr<AbstractNode>> &children,PyObject *more_obj) {
+  int i,n;
+  PyObject *obj;
+  std::shared_ptr<AbstractNode> child;
+  if(PyList_Check(more_obj))
+  {
+	  n = PyList_Size(more_obj);
+	  for(i=0;i<n;i++) {
+		obj = PyList_GetItem(more_obj,i);
+		child = PyOpenSCADObjectToNode(obj);
+	        children.push_back(child);
+	  }
+   } else if( Py_TYPE(more_obj) == &PyOpenSCADType) {
+	child = PyOpenSCADObjectToNode(more_obj);
+        children.push_back(child);
+   } else return 1;
+  return 0;
+}
+
+std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj)
 {
 //    Py_XDECREF(obj);
     return ((PyOpenSCADObject *) obj)->node;
+}
+
+std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
+{
+//    Py_XDECREF(obj);
+   if( Py_TYPE(objs) == &PyOpenSCADType) {
+    	return ((PyOpenSCADObject *) objs)->node;
+   } else if(PyList_Check(objs)) {
+	  auto node = std::make_shared<CsgOpNode>(&todo_fix_inst, OpenSCADOperator::UNION);
+
+	  int n = PyList_Size(objs);
+	  for(int i=0;i<n;i++) {
+		PyObject *obj = PyList_GetItem(objs,i);
+		std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj);
+		node->children.push_back(child);
+	  }
+	  return node;
+   } else return NULL;
 }
 
 
@@ -130,6 +168,9 @@ static PyMethodDef PyOpenSCADMethods[] = {
     {"translate", (PyCFunction) python_translate_oo, METH_VARARGS | METH_KEYWORDS, "Move  Object."},
     {"rotate", (PyCFunction) python_rotate_oo, METH_VARARGS | METH_KEYWORDS, "Rotate Object."},
     {"scale", (PyCFunction) python_scale_oo, METH_VARARGS | METH_KEYWORDS, "Scale Object."},
+    {"union", (PyCFunction) python_union_oo, METH_VARARGS | METH_KEYWORDS, "Union Object."},
+    {"difference", (PyCFunction) python_difference_oo, METH_VARARGS | METH_KEYWORDS, "Difference Object."},
+    {"intersection", (PyCFunction) python_intersection_oo, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
     {"mirror", (PyCFunction) python_mirror_oo, METH_VARARGS | METH_KEYWORDS, "Mirror Object."},
     {"multmatrix", (PyCFunction) python_multmatrix_oo, METH_VARARGS | METH_KEYWORDS, "Multmatrix Object."},
     {"linear_extrude", (PyCFunction) python_linear_extrude_oo, METH_VARARGS | METH_KEYWORDS, "Linear_extrude Object."},
