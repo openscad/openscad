@@ -8,8 +8,8 @@ on:
 
 jobs:
   build:
-    runs-on: macos-11
-    name: macos-11
+    runs-on: macos-latest
+    name: macos-latest
     # If it's not done in 60 minutes, something is wrong.
     # Default is 6 hours, which is a bit long to wait.
     timeout-minutes: 60
