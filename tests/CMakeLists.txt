@@ -13,6 +13,8 @@ cmake_policy(SET CMP0070 NEW) # Allow relative paths for file(GENERATE ...)
 
 enable_testing()
 
+option(USE_IMAGE_COMPARE_PY "Use built-in image_compare.py" ON)
+
 # Use variables for common paths, to reduce line lengths.
 
 # Very commonly used cmake-provided paths
@@ -52,50 +54,84 @@ find_package(PythonInterp 3.4 REQUIRED)
 
 # Image comparison - expected test image vs actual generated image
 
-# Imagemagick
-find_package(ImageMagick COMPONENTS convert)
-if (ImageMagick_convert_FOUND)
-  message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
-  set(IMAGE_COMPARE_EXE ${ImageMagick_convert_EXECUTABLE})
+if(USE_IMAGE_COMPARE_PY)
+  set(VENV_DIR "${CCBD}/venv")
+  message(STATUS "Using image_compare.py")
+  if(WIN32)
+    set(IMAGE_COMPARE_EXE "${VENV_DIR}/bin/python.exe")
+  else()
+    set(IMAGE_COMPARE_EXE "${VENV_DIR}/bin/python")
+  endif()
+  if(EXISTS "${IMAGE_COMPARE_EXE}")
+    message(STATUS "venv found, testing libraries")
+    execute_process(
+      COMMAND "${IMAGE_COMPARE_EXE}" "${CCSD}/image_compare.py" "--status"
+      WORKING_DIRECTORY "${CCSD}")
+    if(ret EQUAL 0)
+      message(STATUS "venv libraries complete")
+      set(BUILD_VENV FALSE)
+    else()
+      message(STATUS "venv libraries incomplete")
+      set(BUILD_VENV TRUE)
+    endif()
+  else()
+    message(STATUS "venv not found")
+    set(BUILD_VENV TRUE)
+  endif()
+  if(BUILD_VENV)
+    message(STATUS "Setting up testing venv for image comparison")
+    find_package(Python3 COMPONENTS Interpreter)
+    execute_process(
+      COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "venv"
+      WORKING_DIRECTORY "${CCBD}")
+    execute_process(
+      COMMAND "${IMAGE_COMPARE_EXE}" "-m" "pip" "install" "numpy" "Pillow"
+      WORKING_DIRECTORY "${CCBD}")
+  endif()
+  set(COMPARATOR "--comparator=image_compare")
+  message(STATUS "venv setup for ${IMAGE_COMPARE_EXE}")
 else()
-  message(STATUS "Couldn't find imagemagick 'convert' program")
-  set(DIFFPNG 1)
-endif()
+  # Imagemagick
+  find_package(ImageMagick COMPONENTS convert)
+  if(ImageMagick_convert_FOUND)
+    message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
+    set(IMAGE_COMPARE_EXE ${ImageMagick_convert_EXECUTABLE})
+    if ("${ImageMagick_VERSION_STRING}" VERSION_LESS "6.5.9.4")
+      message(STATUS "ImageMagick version less than 6.5.9.4, cannot use -morphology comparison")
+      message(STATUS "ImageMagick Using older image comparison method")
+      set(COMPARATOR "--comparator=old")
+    endif()
 
-if (ImageMagick_convert_FOUND)
-  if ("${ImageMagick_VERSION_STRING}" VERSION_LESS "6.5.9.4")
-    message(STATUS "ImageMagick version less than 6.5.9.4, cannot use -morphology comparison")
-    message(STATUS "ImageMagick Using older image comparison method")
-    set(COMPARATOR "--comparator=old")
-  endif()
+    execute_process(COMMAND ${IMAGE_COMPARE_EXE} --version OUTPUT_VARIABLE IM_OUT)
+    if (${IM_OUT} MATCHES "OpenMP")
+      # http://www.daniloaz.com/en/617/systems/high-cpu-load-when-converting-images-with-imagemagick
+      message(STATUS "ImageMagick: OpenMP bug workaround - setting MAGICK_THREAD_LIMIT=1")
+      list(APPEND CTEST_ENVIRONMENT "MAGICK_THREAD_LIMIT=1")
+    endif()
 
-  execute_process(COMMAND ${IMAGE_COMPARE_EXE} --version OUTPUT_VARIABLE IM_OUT)
-  if (${IM_OUT} MATCHES "OpenMP")
-    # http://www.daniloaz.com/en/617/systems/high-cpu-load-when-converting-images-with-imagemagick
-    message(STATUS "ImageMagick: OpenMP bug workaround - setting MAGICK_THREAD_LIMIT=1")
-    list(APPEND CTEST_ENVIRONMENT "MAGICK_THREAD_LIMIT=1")
-  endif()
-
-  message(STATUS "Comparing magicktest1.png with magicktest2.png")
-  set(IM_TEST_FILES "${CCSD}/magicktest1.png" "${CCSD}/magicktest2.png")
-  set(COMPARE_ARGS ${IMAGE_COMPARE_EXE} ${IM_TEST_FILES} -alpha On -compose difference -composite -threshold 10% -morphology Erode Square -format %[fx:w*h*mean] info:)
-  # compare arguments taken from test_cmdline_tool.py
-  message(STATUS "Running ImageMagick compare: ${COMPARE_ARGS}")
-  execute_process(COMMAND ${COMPARE_ARGS} RESULT_VARIABLE IM_RESULT OUTPUT_VARIABLE IM_OUT)
-  message(STATUS "Result: ${IM_RESULT}")
-  if (NOT ${IM_RESULT} STREQUAL "0")
-    message(STATUS "magicktest1.png and magicktest2.png were incorrectly detected as identical")
-    message(STATUS "Using alternative image comparison")
+    message(STATUS "Comparing magicktest1.png with magicktest2.png")
+    set(IM_TEST_FILES "${CCSD}/magicktest1.png" "${CCSD}/magicktest2.png")
+    set(COMPARE_ARGS ${IMAGE_COMPARE_EXE} ${IM_TEST_FILES} -alpha On -compose difference -composite -threshold 10% -morphology Erode Square -format %[fx:w*h*mean] info:)
+    # compare arguments taken from test_cmdline_tool.py
+    message(STATUS "Running ImageMagick compare: ${COMPARE_ARGS}")
+    execute_process(COMMAND ${COMPARE_ARGS} RESULT_VARIABLE IM_RESULT OUTPUT_VARIABLE IM_OUT)
+    message(STATUS "Result: ${IM_RESULT}")
+    if (NOT ${IM_RESULT} STREQUAL "0")
+      message(STATUS "magicktest1.png and magicktest2.png were incorrectly detected as identical")
+      message(STATUS "Using alternative image comparison")
+      set(DIFFPNG 1)
+    endif()
+  else()
+    message(STATUS "Couldn't find imagemagick 'convert' program")
     set(DIFFPNG 1)
   endif()
-endif()
-
-if (${DIFFPNG})
-  set(IMAGE_COMPARE_EXE ${CCBD}/diffpng)
-  set(COMPARATOR "--comparator=diffpng")
-  add_executable(diffpng diffpng.cpp ${CSD}/src/ext/lodepng/lodepng.cpp)
-  target_include_directories(diffpng PRIVATE ${CSD}/src/ext/lodepng)
-  message(STATUS "using diffpng for image comparison")
+  if (${DIFFPNG})
+    set(IMAGE_COMPARE_EXE ${CCBD}/diffpng)
+    set(COMPARATOR "--comparator=diffpng")
+    add_executable(diffpng diffpng.cpp ${CSD}/src/ext/lodepng/lodepng.cpp)
+    target_include_directories(diffpng PRIVATE ${CSD}/src/ext/lodepng)
+    message(STATUS "using diffpng for image comparison")
+  endif()
 endif()
 
 find_package(Lib3MF QUIET)
