@@ -194,7 +194,7 @@ def compare_png(resultfilename):
     # for systems with older imagemagick that doesn't support '-morphology'
     # http://www.imagemagick.org/Usage/morphology/#alturnative
     elif options.comparator == 'old':
-      args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-gaussian-blur","3x65535", "-threshold", "99.99%", "-format", "%[fx:w*h*mean]", "info:"]
+      args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "8%", "-gaussian-blur","3x65535", "-threshold", "99.99%", "-format", "%[fx:w*h*mean]", "info:"]
 
     elif options.comparator == 'ncc':
       # for systems where imagemagick crashes when using the above comparators
@@ -213,8 +213,7 @@ def compare_png(resultfilename):
 
     else:
       compare_method = 'pixel'
-      #args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-blur", "2", "-threshold", "30%", "-format", "%[fx:w*h*mean]", "info:"]
-      args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", options.kernel, "-format", "%[fx:w*h*mean]", "info:"]
+      args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "8%", "-morphology", "Erode", options.kernel, "-format", "%[fx:w*h*mean]", "info:"]
 
     print('Image comparison cmdline: ' + options.comparison_exec + ' ' + ' '.join(args), file=sys.stderr)
 
