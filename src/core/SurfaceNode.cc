@@ -26,7 +26,7 @@
 
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "node.h"
+#include "core/node.h"
 #include "PolySet.h"
 #include "Builtins.h"
 #include "Children.h"

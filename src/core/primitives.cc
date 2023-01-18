@@ -25,7 +25,7 @@
  */
 
 #include "module.h"
-#include "node.h"
+#include "core/node.h"
 #include "PolySet.h"
 #include "Children.h"
 #include "Polygon2d.h"
