@@ -988,6 +988,24 @@ PyObject* python_intersection(PyObject *self, PyObject *args, PyObject *kwargs)
 	return python_csg_sub(self,args,kwargs, OpenSCADOperator::INTERSECTION);
 }
 
+PyObject* python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
+{
+  std::shared_ptr<AbstractNode> child;
+
+  auto node = std::make_shared<CsgOpNode>(&todo_fix_inst, mode);
+
+  child = PyOpenSCADObjectToNode(arg1);
+  node->children.push_back(child);
+
+  child = PyOpenSCADObjectToNode(arg2);
+  node->children.push_back(child);
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
+}
+
+PyObject* python_nb_add(PyObject *arg1, PyObject *arg2) { return python_nb_sub(arg1, arg2,  OpenSCADOperator::UNION); }
+PyObject* python_nb_substract(PyObject *arg1, PyObject *arg2) { return python_nb_sub(arg1, arg2,  OpenSCADOperator::DIFFERENCE); }
+PyObject* python_nb_multiply(PyObject *arg1, PyObject *arg2) { return python_nb_sub(arg1, arg2,  OpenSCADOperator::INTERSECTION); }
+
 PyObject* python_csg_oo_sub(PyObject *self, PyObject *args, PyObject *kwargs,OpenSCADOperator mode)
 {
   std::shared_ptr<AbstractNode> child;

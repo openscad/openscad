@@ -79,9 +79,13 @@ PyObject* python_version(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_version_num(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs);
+
 PyObject* python__getitem__(PyObject *dict, PyObject *key);
 int       python__setitem__(PyObject *dict, PyObject *key,PyObject *v);
-PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python_nb_add(PyObject *arg1, PyObject *arg2);
+PyObject* python_nb_substract(PyObject *arg1, PyObject *arg2);
+PyObject* python_nb_multiply(PyObject *arg1, PyObject *arg2);
 
 
 PyObject *python_oo_args(PyObject *self, PyObject *args);

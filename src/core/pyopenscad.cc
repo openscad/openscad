@@ -181,18 +181,27 @@ static PyMethodDef PyOpenSCADMethods[] = {
     {NULL, NULL, 0, NULL}
 };
 
+PyNumberMethods PyOpenSCADNumbers =
+{
+	&python_nb_add,
+	&python_nb_substract,
+	&python_nb_multiply
+};
+
 PyMappingMethods PyOpenSCADMapping =
 {
 	0,
-	&python__getitem__ ,
-	&python__setitem__
+	python__getitem__ ,
+	python__setitem__
 };
+
 
 PyTypeObject PyOpenSCADType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     .tp_name			= "PyOpenSCAD", 
     .tp_basicsize		= sizeof(PyOpenSCADObject),
     .tp_dealloc			= (destructor) PyOpenSCADObject_dealloc ,
+    .tp_as_number		= &PyOpenSCADNumbers, 
     .tp_as_mapping		= &PyOpenSCADMapping, 
     .tp_flags			= Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     .tp_doc			= "PyOpenSCAD objects",
