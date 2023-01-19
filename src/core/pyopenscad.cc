@@ -3,7 +3,6 @@
 // Purpose: Extend openscad with an python interpreter
 
 #include <Python.h>
-#include <structmember.h>
 #include "pyopenscad.h"
 #include "CsgOpNode.h"
 
@@ -13,6 +12,7 @@ void PyOpenSCADObject_dealloc(PyOpenSCADObject * self)
 {
     //Py_XDECREF(self->first);
     //Py_XDECREF(self->last);
+//    Py_XDECREF(self->dict); // TODO
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -20,6 +20,8 @@ static PyObject * PyOpenSCADObject_new(PyTypeObject *type,PyObject *args,  PyObj
 {
     PyOpenSCADObject *self;
     self = (PyOpenSCADObject *)  type->tp_alloc(type,0);
+    self->node=NULL;
+    self->dict=PyDict_New();
     return (PyObject *)self;
 }
 
@@ -29,6 +31,7 @@ PyObject * PyOpenSCADObjectFromNode(PyTypeObject *type, std::shared_ptr<Abstract
     self = (PyOpenSCADObject *)  type->tp_alloc(type,0);
     if (self != NULL) {
 	self->node=node;
+	self->dict=PyDict_New();
     }
 //    Py_XINCREF(self);
     return (PyObject *)self;
@@ -78,16 +81,12 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
    } else return NULL;
 }
 
-
 static int PyOpenSCADInit(PyOpenSCADObject *self, PyObject *arfs,PyObject *kwds)
 {
 	return 0;
 }
 
 
-static PyMemberDef PyOpenSCADMembers[] = {
-	{NULL}
-};
 
 static PyMethodDef PyOpenSCADFunctions[] = {
     {"square", (PyCFunction) python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
@@ -182,46 +181,24 @@ static PyMethodDef PyOpenSCADMethods[] = {
     {NULL, NULL, 0, NULL}
 };
 
+PyMappingMethods PyOpenSCADMapping =
+{
+	0,
+	&python__getitem__ ,
+	&python__setitem__
+};
 
 PyTypeObject PyOpenSCADType = {
     PyVarObject_HEAD_INIT(NULL, 0)
-    "PyOpenSCAD",             /* tp_name */
-    sizeof(PyOpenSCADObject), /* tp_basicsize */
-    0,                         /* tp_itemsize */
-    (destructor) PyOpenSCADObject_dealloc ,                         /* tp_dealloc */
-    0,                         /* tp_print */
-    0,                         /* tp_getattr */
-    0,                         /* tp_setattr */
-    0,                         /* tp_reserved */
-    0,                         /* tp_repr */
-    0,                         /* tp_as_number */
-    0,                         /* tp_as_sequence */
-    0,                         /* tp_as_mapping */
-    0,                         /* tp_hash  */
-    0,                         /* tp_call */
-    0,                         /* tp_str */
-    0,                         /* tp_getattro */
-    0,                         /* tp_setattro */
-    0,                         /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,        /* tp_flags */
-    "PyOpenSCAD objects",           /* tp_doc */
-    0,				/* tp_traverse */
-    0,				/* tp_clear */
-    0,				/* tp_richcompare */
-    0,				/* tp_weaklistoffset */
-    0,				/* tp_iter */
-    0,				/* tp_iternext */
-    PyOpenSCADMethods,		/* tp_methods */
-    PyOpenSCADMembers,		/* tp_members */
-    0,				/* tp_getset */
-    0,				/* tp_base */
-    0,				/* tp_dict */
-    0,				/* tp_descr_get */
-    0,				/* tp_descr_set*/
-    0,				/* tp_dictoffset */
-    (initproc) PyOpenSCADInit,	/* tp_init */
-    0,				/* tp_alloc*/
-    PyOpenSCADObject_new,	/* tp_new */
+    .tp_name			= "PyOpenSCAD", 
+    .tp_basicsize		= sizeof(PyOpenSCADObject),
+    .tp_dealloc			= (destructor) PyOpenSCADObject_dealloc ,
+    .tp_as_mapping		= &PyOpenSCADMapping, 
+    .tp_flags			= Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc			= "PyOpenSCAD objects",
+    .tp_methods			= PyOpenSCADMethods,	
+    .tp_init			= (initproc) PyOpenSCADInit,
+    .tp_new			= PyOpenSCADObject_new
 };
 
 

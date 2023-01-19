@@ -7,6 +7,7 @@
 typedef struct {
     PyObject_HEAD
     std::shared_ptr<AbstractNode> node;
+    PyObject *dict;
     /* Type-specific fields go here. */
 } PyOpenSCADObject;
 
@@ -78,6 +79,8 @@ PyObject* python_version(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_version_num(PyObject *self, PyObject *args, PyObject *kwargs);
 
 PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs);
+PyObject* python__getitem__(PyObject *dict, PyObject *key);
+int       python__setitem__(PyObject *dict, PyObject *key,PyObject *v);
 PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs);
 
 

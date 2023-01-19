@@ -679,7 +679,7 @@ PyObject* python_output(PyObject *self, PyObject *args, PyObject *kwargs)
    	return NULL;
   }
   python_result_node = child;
-   return PyLong_FromLong(55); // TODO fix
+  return Py_None;
 }
 
 PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -689,6 +689,33 @@ PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 //	Py_DECREF(&new_args);
 	return result;
 }
+
+
+PyObject* python__getitem__(PyObject *dict, PyObject *key)
+{
+  PyOpenSCADObject *self = (PyOpenSCADObject *) dict;
+  if(self -> dict == NULL)
+  {
+	  printf("Dict not initialized!\n");
+	  return 0;
+  } 
+  PyObject *result =PyDict_GetItem(self->dict, key);
+  if(result == NULL) result=Py_None;
+  return result;
+}
+
+int python__setitem__(PyObject *dict, PyObject *key,PyObject *v)
+{
+  PyOpenSCADObject *self = (PyOpenSCADObject *) dict;
+  if(self -> dict == NULL)
+  {
+	  printf("Dict not initialized!\n");
+	  return 0;
+  } 
+  PyDict_SetItem(self ->dict, key,v);
+  return 0;
+}
+
 
 
 
