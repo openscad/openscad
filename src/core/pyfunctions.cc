@@ -60,7 +60,6 @@ extern  std::unordered_map<std::string, Color4f> webcolors;
 extern boost::optional<Color4f> parse_hex_color(const std::string& hex);
 
 
-
 PyObject* python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   auto node = std::make_shared<CubeNode>(&todo_fix_inst);
@@ -72,20 +71,19 @@ PyObject* python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
   char *center=NULL;
 	
    
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|O!s", kwlist, 
-			   &PyList_Type,&dim, 
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Os", kwlist, 
+			   &dim, 
 			   &center))
    	return NULL;
 
-   if(dim != NULL && PyList_Check(dim) && PyList_Size(dim) == 3) {
-     	x=PyFloat_AsDouble(PyList_GetItem(dim, 0));
-     	y=PyFloat_AsDouble(PyList_GetItem(dim, 1));
-     	z=PyFloat_AsDouble(PyList_GetItem(dim, 2));
-   }
-   node->x=x;
-   node->y=y;
-   node->z=z;
-   if(center != NULL)
+  if(dim != NULL) {
+    double x, y, z;
+    if(python_vectorval(dim,&(node->x),&(node->y),&(node->z))) {
+          PyErr_SetString(PyExc_TypeError,"Invalid Cube dimensions\n");
+     	return NULL;
+     }
+  }
+  if(center != NULL)
 	   if(!strcasecmp(center,"true")) node->center=1;
 
    return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
@@ -247,19 +245,19 @@ PyObject* python_square(PyObject *self, PyObject *args, PyObject *kwargs)
   char *center=NULL;
 	
    
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|s", kwlist, 
-			   &PyList_Type,&dim, 
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|s", kwlist, 
+			   &dim, 
 			   &center)) {
         PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
    }
-
-   if(PyList_Check(dim) && PyList_Size(dim) == 2) {
-     	x=PyFloat_AsDouble(PyList_GetItem(dim, 0));
-     	y=PyFloat_AsDouble(PyList_GetItem(dim, 1));
+   if(dim != NULL) {
+     double z;
+     if(python_vectorval(dim,&(node->x),&(node->y),&z)) {
+           PyErr_SetString(PyExc_TypeError,"Invalid Cube dimensions\n");
+      	return NULL;
+      }
    }
-   node->x=x;
-   node->y=y;
    if(center != NULL)
 	   if(!strcasecmp(center,"true")) node->center=1;
 
@@ -349,8 +347,6 @@ PyObject* python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
-
-
 PyObject* python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   std::shared_ptr<AbstractNode> child;
@@ -358,13 +354,12 @@ PyObject* python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
   auto node = std::make_shared<TransformNode>(&todo_fix_inst, "scale");
 
   char * kwlist[] ={"obj","v",NULL};
-  double x=1.0,y=1.0,z=1.0;
 
   PyObject *obj=NULL;
   PyObject *val_v = NULL; 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", kwlist, 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", kwlist, 
 			  &obj, 
-			  &PyList_Type,&val_v )) {
+			  &val_v )) {
         PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
   }
@@ -375,15 +370,12 @@ PyObject* python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
    	return NULL;
   }
 
-  if(PyList_Check(val_v) && PyList_Size(val_v) >= 2) {
-     	x=PyFloat_AsDouble(PyList_GetItem(val_v, 0));
-     	y=PyFloat_AsDouble(PyList_GetItem(val_v, 1));
+  double x,y,z;
+  if(python_vectorval(val_v,&x, &y, &z)) {
+        PyErr_SetString(PyExc_TypeError,"Invalid vector specifiaction in scale\n");
+   	return NULL;
   }
-  if(PyList_Check(val_v) && PyList_Size(val_v) >= 3) {
-     	z=PyFloat_AsDouble(PyList_GetItem(val_v, 2));
-   }
-
-  Vector3d scalevec(x, y, z);
+  Vector3d scalevec(x,y,z);
 
   if (OpenSCAD::rangeCheck) {
     if (scalevec[0] == 0 || scalevec[1] == 0 || scalevec[2] == 0 || !std::isfinite(scalevec[0])|| !std::isfinite(scalevec[1])|| !std::isfinite(scalevec[2])) {
@@ -510,9 +502,9 @@ PyObject* python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
 
   PyObject *obj=NULL;
   PyObject *val_v = NULL; 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", kwlist, 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", kwlist, 
 			  &obj, 
-			  &PyList_Type,&val_v )) {
+			  &val_v )) {
         PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
   }
@@ -523,14 +515,11 @@ PyObject* python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
    	return NULL;
   }
 
-  if(PyList_Check(val_v) && PyList_Size(val_v) >= 2) {
-     	x=PyFloat_AsDouble(PyList_GetItem(val_v, 0));
-     	y=PyFloat_AsDouble(PyList_GetItem(val_v, 1));
+  Vector3d mirrorvec;
+  if(python_vectorval(val_v,&x, &y, &z)) {
+        PyErr_SetString(PyExc_TypeError,"Invalid vector specifiaction in mirror\n");
+   	return NULL;
   }
-  if(PyList_Check(val_v) && PyList_Size(val_v) >= 3) {
-     	z=PyFloat_AsDouble(PyList_GetItem(val_v, 2));
-   }
-
   // x /= sqrt(x*x + y*y + z*z)
   // y /= sqrt(x*x + y*y + z*z)
   // z /= sqrt(x*x + y*y + z*z)
@@ -571,9 +560,9 @@ PyObject* python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *v = NULL; 
   PyObject *obj = NULL;
   double x=0,y=0,z=0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!", kwlist, 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", kwlist, 
 			  &obj,
-			  &PyList_Type, &v 
+			  &v 
 			  )) {
         PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
    	return NULL;
@@ -584,15 +573,11 @@ PyObject* python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
    	return NULL;
   }
 
-  if(PyList_Check(v) && PyList_Size(v) >= 2) {
-     	x=PyFloat_AsDouble(PyList_GetItem(v, 0));
-     	y=PyFloat_AsDouble(PyList_GetItem(v, 1));
+  if(python_vectorval(v,&x,&y, &z)) {
+        PyErr_SetString(PyExc_TypeError,"Invalid vector specifiaction in trans\n");
+   	return NULL;
   }
-  if(PyList_Check(v) && PyList_Size(v) >= 3) {
-     	z=PyFloat_AsDouble(PyList_GetItem(v, 2));
-   }
-   Vector3d translatevec(x, y, z);
-
+  Vector3d translatevec(x, y, z);
    node->matrix.translate(translatevec);
    node->children.push_back(child);
    return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
@@ -992,12 +977,33 @@ PyObject* python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
 {
   std::shared_ptr<AbstractNode> child;
 
+  double x, y, z;
+  if(mode == OpenSCADOperator::INTERSECTION &&  !python_vectorval(arg2,&x, &y, &z)) {
+        child = PyOpenSCADObjectToNodeMulti(arg1);
+        if(child == NULL) {
+          PyErr_SetString(PyExc_TypeError,"invalid argument left to operator\n");
+          return NULL; 
+        }
+  	auto node = std::make_shared<TransformNode>(&todo_fix_inst, "scale");
+  	Vector3d scalevec(x,y,z);
+  	node->matrix.scale(scalevec);
+  	node->children.push_back(child);
+	return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);	
+  }
+		  
   auto node = std::make_shared<CsgOpNode>(&todo_fix_inst, mode);
 
-  child = PyOpenSCADObjectToNode(arg1);
+  child = PyOpenSCADObjectToNodeMulti(arg1);
+  if(child == NULL) {
+    PyErr_SetString(PyExc_TypeError,"invalid argument left to operator\n");
+    return NULL; 
+  }
   node->children.push_back(child);
-
-  child = PyOpenSCADObjectToNode(arg2);
+  child = PyOpenSCADObjectToNodeMulti(arg2);
+  if(child == NULL) {
+    PyErr_SetString(PyExc_TypeError,"invalid argument right to operator\n");
+    return NULL; 
+  }
   node->children.push_back(child);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
@@ -1149,10 +1155,15 @@ PyObject* python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
    	return NULL;
   }
 
-  if(newsize != NULL && PyList_Check(newsize)) {
-	if(PyList_Size(newsize) >= 1) node->newsize[0] = PyFloat_AsDouble(PyList_GetItem(newsize, 0));
-	if(PyList_Size(newsize) >= 2) node->newsize[1] = PyFloat_AsDouble(PyList_GetItem(newsize, 1));
-	if(PyList_Size(newsize) >= 3) node->newsize[2] = PyFloat_AsDouble(PyList_GetItem(newsize, 2));
+  if(newsize != NULL) {
+    double x, y, z;
+    if(python_vectorval(newsize,&x, &y, &z)) {
+          PyErr_SetString(PyExc_TypeError,"Invalid resize dimensions\n");
+     	return NULL;
+     }
+     node->newsize[0] = x;
+     node->newsize[1] = y;
+     node->newsize[2] = z;
   }
 
   /* TODO what is that ?
