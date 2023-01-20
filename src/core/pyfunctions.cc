@@ -392,7 +392,6 @@ PyObject* python_scale_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 {
 	PyObject *new_args=python_oo_args(self,args);
 	PyObject *result = python_scale(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
 	return result;
 }
 
@@ -486,7 +485,6 @@ PyObject* python_rotate_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 {
 	PyObject *new_args=python_oo_args(self,args);
 	PyObject *result = python_rotate(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
 	return result;
 }
 
@@ -545,7 +543,6 @@ PyObject* python_mirror_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 {
 	PyObject *new_args=python_oo_args(self,args);
 	PyObject *result = python_mirror(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
 	return result;
 }
 
@@ -587,7 +584,6 @@ PyObject* python_translate_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 {
 	PyObject *new_args=python_oo_args(self,args);
 	PyObject *result = python_translate(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
 	return result;
 }
 
@@ -638,7 +634,6 @@ PyObject* python_multmatrix_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 {
 	PyObject *new_args=python_oo_args(self,args);
 	PyObject *result = python_multmatrix(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
 	return result;
 }
 
@@ -671,7 +666,6 @@ PyObject* python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 {
 	PyObject *new_args=python_oo_args(self,args);
 	PyObject *result = python_output(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
 	return result;
 }
 
@@ -765,7 +759,6 @@ PyObject* python_color_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 {
         PyObject *new_args=python_oo_args(self,args);
         PyObject *result = python_color(self,new_args,kwargs);
-//      Py_DECREF(&new_args);
         return result;
 }
 
@@ -839,7 +832,6 @@ PyObject* python_rotate_extrude_oo(PyObject *self, PyObject *args, PyObject *kwa
 {
 	PyObject *new_args=python_oo_args(self,args);
 	PyObject *result = python_rotate_extrude(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
 	return result;
 }
 
@@ -929,7 +921,6 @@ PyObject* python_linear_extrude_oo(PyObject *self, PyObject *args, PyObject *kwa
 {
 	PyObject *new_args=python_oo_args(self,args);
 	PyObject *result = python_linear_extrude(self,new_args,kwargs);
-//	Py_DECREF(&new_args);
 	return result;
 }
 
@@ -1248,7 +1239,6 @@ PyObject* python_roof_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 {
         PyObject *new_args=python_oo_args(self,args);
         PyObject *result = python_roof(self,new_args,kwargs);
-//      Py_DECREF(&new_args);
         return result;
 }
 
@@ -1509,7 +1499,6 @@ PyObject* python_offset_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 {
         PyObject *new_args=python_oo_args(self,args);
         PyObject *result = python_offset(self,new_args,kwargs);
-//      Py_DECREF(&new_args);
         return result;
 }
 
@@ -1550,7 +1539,6 @@ PyObject* python_projection_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 {
         PyObject *new_args=python_oo_args(self,args);
         PyObject *result = python_projection(self,new_args,kwargs);
-//      Py_DECREF(&new_args);
         return result;
 }
   

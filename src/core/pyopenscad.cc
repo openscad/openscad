@@ -183,7 +183,7 @@ PyObject *python_oo_args(PyObject *self, PyObject *args)
 	PyObject *item;
 	int n=PyTuple_Size(args);
 	PyObject *new_args = PyTuple_New(n+1);
-//	Py_INCREF(new_args);
+//	Py_INCREF(new_args); // dont decref either,  dont know why its not working
 
         Py_INCREF(self);
 	int ret=PyTuple_SetItem(new_args,0,self);
