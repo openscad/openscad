@@ -5,7 +5,7 @@ Running regression tests:
 
 Install the prerequisite helper programs on your system:
 
-    cmake, python3, python3-venv
+    cmake, python3, python3-venv, python3-pip
 
 There are binary installer packages of these tools available for Mac,
 Win, Linux, BSD, and other systems.
