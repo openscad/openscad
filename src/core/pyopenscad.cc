@@ -81,6 +81,43 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
    } else return NULL;
 }
 
+int python_numberval(PyObject *number, double *result)
+{
+	if(PyFloat_Check(number)) {
+		*result = PyFloat_AsDouble(number);
+		return 0;
+	}
+	if(PyLong_Check(number)) {
+		*result = PyLong_AsLong(number);
+		return 0;
+	}
+	return 1;
+}
+int python_vectorval(PyObject *vec, double *x, double *y, double *z)
+{
+  *x=1;
+  *y=1;
+  *z=1;
+  if(PyList_Check(vec)) {
+	if(PyList_Size(vec) >= 2) {
+		if(python_numberval(PyList_GetItem(vec, 0),x)) return 1;
+		if(python_numberval(PyList_GetItem(vec, 1),y)) return 1;
+	}
+	if(PyList_Check(vec) && PyList_Size(vec) >= 3) {
+		if(python_numberval(PyList_GetItem(vec, 2),z)) return 1;
+	}
+	return 0;
+  }
+  if(!python_numberval(vec, x))
+  {
+	*y=*x;
+	*z=*x;
+	return 0;
+  }
+  return 1;
+}
+
+
 static int PyOpenSCADInit(PyOpenSCADObject *self, PyObject *arfs,PyObject *kwds)
 {
 	return 0;
