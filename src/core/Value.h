@@ -14,6 +14,8 @@
 #include "FunctionType.h"
 #include "RangeType.h"
 #include "str_utf8_wrapper.h"
+#include "UndefType.h"
+
 #include "memory.h"
 
 class tostring_visitor;
@@ -56,39 +58,6 @@ private:
 
 using RangePtr = ValuePtr<RangeType>;
 using FunctionPtr = ValuePtr<FunctionType>;
-
-/*
-   Require a reason why (string), any time an undefined value is created/returned.
-   This allows for passing of "exception" information from low level functions (i.e. from value.cc)
-   up to Expression::evaluate() or other functions where a proper "WARNING: ..."
-   with ASTNode Location info (source file, line number) can be included.
- */
-class UndefType
-{
-public:
-  // TODO: eventually deprecate undef creation without a reason.
-  UndefType() : reasons{std::make_unique<std::vector<std::string>>()} { }
-  explicit UndefType(const std::string& why) : reasons{std::make_unique<std::vector<std::string>>(std::initializer_list<std::string>({why}))} { }
-
-  // Append another reason in case a chain of undefined operations are made before handling
-  const UndefType& append(const std::string& why) const { reasons->push_back(why); return *this; }
-
-  Value operator<(const UndefType& other) const;
-  Value operator>(const UndefType& other) const;
-  Value operator<=(const UndefType& other) const;
-  Value operator>=(const UndefType& other) const;
-  friend std::ostream& operator<<(std::ostream& stream, const ValuePtr<UndefType>& u);
-
-  std::string toString() const;
-  bool empty() const { return reasons->empty(); }
-private:
-  // using unique_ptr to keep the size small enough that the variant of
-  // all value types does not exceed the 24 bytes.
-  // mutable to allow clearing reasons, which should avoid duplication of warnings that have already been displayed.
-  mutable std::unique_ptr<std::vector<std::string>> reasons;
-};
-
-std::ostream& operator<<(std::ostream& stream, const UndefType& u);
 
 /**
  *  Value class encapsulates a std::variant value which can represent any of the
