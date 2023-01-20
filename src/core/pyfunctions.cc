@@ -686,6 +686,7 @@ PyObject* python__getitem__(PyObject *dict, PyObject *key)
   } 
   PyObject *result =PyDict_GetItem(self->dict, key);
   if(result == NULL) result=Py_None;
+  else Py_INCREF(result);
   return result;
 }
 
@@ -697,6 +698,7 @@ int python__setitem__(PyObject *dict, PyObject *key,PyObject *v)
 	  printf("Dict not initialized!\n");
 	  return 0;
   } 
+  Py_INCREF(v);
   PyDict_SetItem(self ->dict, key,v);
   return 0;
 }

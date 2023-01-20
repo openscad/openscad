@@ -10,9 +10,7 @@
 
 void PyOpenSCADObject_dealloc(PyOpenSCADObject * self)
 {
-    //Py_XDECREF(self->first);
-    //Py_XDECREF(self->last);
-//    Py_XDECREF(self->dict); // TODO
+    Py_XDECREF(self->dict);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -22,6 +20,7 @@ static PyObject * PyOpenSCADObject_new(PyTypeObject *type,PyObject *args,  PyObj
     self = (PyOpenSCADObject *)  type->tp_alloc(type,0);
     self->node=NULL;
     self->dict=PyDict_New();
+    Py_XINCREF(self->dict);
     return (PyObject *)self;
 }
 
@@ -32,8 +31,9 @@ PyObject * PyOpenSCADObjectFromNode(PyTypeObject *type, std::shared_ptr<Abstract
     if (self != NULL) {
 	self->node=node;
 	self->dict=PyDict_New();
+        Py_XINCREF(self->dict);
     }
-//    Py_XINCREF(self);
+    Py_XINCREF(self);
     return (PyObject *)self;
 }
 
@@ -59,16 +59,17 @@ int python_more_obj(std::vector<std::shared_ptr<AbstractNode>> &children,PyObjec
 
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj)
 {
-//    Py_XDECREF(obj);
+    Py_XDECREF(obj);
     return ((PyOpenSCADObject *) obj)->node;
 }
 
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
 {
-//    Py_XDECREF(obj);
+    Py_XDECREF(objs);
    if( Py_TYPE(objs) == &PyOpenSCADType) {
     	return ((PyOpenSCADObject *) objs)->node;
    } else if(PyList_Check(objs)) {
+	   // TODO also decref the list ?
 	  auto node = std::make_shared<CsgOpNode>(&todo_fix_inst, OpenSCADOperator::UNION);
 
 	  int n = PyList_Size(objs);
@@ -179,11 +180,21 @@ static PyMethodDef PyOpenSCADFunctions[] = {
 PyObject *python_oo_args(PyObject *self, PyObject *args)
 {
 	int i;
-	PyObject *new_args = PyTuple_New(PyTuple_Size(args)+1);
-//	Py_INCREF(&new_args);
-	PyTuple_SetItem(new_args,0,self);
+	PyObject *item;
+	int n=PyTuple_Size(args);
+	PyObject *new_args = PyTuple_New(n+1);
+//	Py_INCREF(new_args);
+
+        Py_INCREF(self);
+	int ret=PyTuple_SetItem(new_args,0,self);
+	item = PyTuple_GetItem(new_args,0);
+
 	for(i=0;i<PyTuple_Size(args);i++)
-		PyTuple_SetItem(new_args,i+1,PyTuple_GetItem(args,i));
+	{
+		item = PyTuple_GetItem(args,i);
+		Py_INCREF(item);
+		PyTuple_SetItem(new_args,i+1,item);
+	}
 	return new_args;
 }
 
