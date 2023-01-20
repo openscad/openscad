@@ -11,14 +11,13 @@
 #include <type_traits>
 #include <variant>
 
-#include "Assignment.h"
+#include "FunctionType.h"
 #include "RangeType.h"
 #include "str_utf8_wrapper.h"
 #include "memory.h"
 
 class tostring_visitor;
 class tostream_visitor;
-class Context;
 class Expression;
 class Value;
 
@@ -56,31 +55,7 @@ private:
 };
 
 using RangePtr = ValuePtr<RangeType>;
-
-class FunctionType
-{
-public:
-  FunctionType(std::shared_ptr<const Context> context, std::shared_ptr<Expression> expr, std::shared_ptr<AssignmentList> parameters)
-    : context(std::move(context)), expr(std::move(expr)), parameters(std::move(parameters)) { }
-  Value operator==(const FunctionType& other) const;
-  Value operator!=(const FunctionType& other) const;
-  Value operator<(const FunctionType& other) const;
-  Value operator>(const FunctionType& other) const;
-  Value operator<=(const FunctionType& other) const;
-  Value operator>=(const FunctionType& other) const;
-
-  [[nodiscard]] const std::shared_ptr<const Context>& getContext() const { return context; }
-  [[nodiscard]] const std::shared_ptr<Expression>& getExpr() const { return expr; }
-  [[nodiscard]] const std::shared_ptr<AssignmentList>& getParameters() const { return parameters; }
-private:
-  std::shared_ptr<const Context> context;
-  std::shared_ptr<Expression> expr;
-  std::shared_ptr<AssignmentList> parameters;
-};
-
 using FunctionPtr = ValuePtr<FunctionType>;
-
-std::ostream& operator<<(std::ostream& stream, const FunctionType& f);
 
 /*
    Require a reason why (string), any time an undefined value is created/returned.
