@@ -1828,7 +1828,7 @@ void MainWindow::parseTopLevelDocument()
 
     char *error  = evaluatePython(fulltext_py.c_str());
     if(error != NULL) LOG(message_group::Error, Location::NONE, "", error);
-    fulltext ="cube([10,10,10]);\n";
+    fulltext ="\n";
   }
 #endif	  
   this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
