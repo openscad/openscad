@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <limits>
-#include <iostream>
+#include <ostream>
 #include <memory>
 #include <type_traits>
 #include <variant>
@@ -367,7 +367,6 @@ public:
   }
 
   using Variant = std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType>;
-
 
   static_assert(sizeof(Value::Variant) <= 24, "Memory size of Value too big");
   [[nodiscard]] const Variant& getVariant() const { return value; }

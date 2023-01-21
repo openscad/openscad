@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ostream>
+#include <sstream>
 
 class Value;
 
@@ -25,7 +26,19 @@ public:
   Value operator<=(const UndefType& other) const;
   Value operator>=(const UndefType& other) const;
 
-  std::string toString() const;
+  std::string toString() const {
+    std::ostringstream stream;
+    if (!reasons->empty()) {
+      auto it = reasons->begin();
+      stream << *it;
+      for (++it; it != reasons->end(); ++it) {
+        stream << "\n\t" << *it;
+      }
+    }
+    // clear reasons so multiple same warnings are not given on the same value
+    reasons->clear();
+    return stream.str();
+  }
   bool empty() const { return reasons->empty(); }
 private:
   // using unique_ptr to keep the size small enough that the variant of
@@ -34,4 +47,9 @@ private:
   mutable std::unique_ptr<std::vector<std::string>> reasons;
 };
 
-std::ostream& operator<<(std::ostream& stream, const UndefType& u);
+
+inline std::ostream& operator<<(std::ostream& stream, const UndefType& /*u*/)
+{
+  stream << "undef";
+  return stream;
+}

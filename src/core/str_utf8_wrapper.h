@@ -42,7 +42,7 @@ public:
     bool operator==(const iterator& other) const { return ptr == other.ptr; }
     bool operator!=(const iterator& other) const { return ptr != other.ptr; }
 private:
-    size_t char_len();
+    size_t char_len() { return g_utf8_next_char(ptr) - ptr; };
     static const char nullterm = '\0';
     const char *ptr;
     size_t len = 0;
