@@ -30,8 +30,6 @@ jobs:
         with:
           version: '22.1.7'
           build-type: 'release-mingw'
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
       - name: Build OpenSCAD
         run: |
           git submodule update --init --recursive
