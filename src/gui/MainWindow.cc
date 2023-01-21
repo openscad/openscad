@@ -100,6 +100,7 @@
 #ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
 char *evaluatePython(const char *code);
+extern bool python_unlocked;
 #endif
 
 #define ENABLE_3D_PRINTING
@@ -1813,7 +1814,10 @@ void MainWindow::parseTopLevelDocument()
   if(fname != NULL) {
 	  int len=strlen(fname);
 	  if(len >= 3 && ! strcmp(fname+len-3,".py")) {
-		  if(Feature::ExperimentalPythonEngine.is_enabled()) this->python_active = 1;
+		  if(
+		     Feature::ExperimentalPythonEngine.is_enabled() &&
+		     python_unlocked == true)
+		       this->python_active = 1;
 		  else  LOG(message_group::Warning, Location::NONE, "","Python is not enabled");
 	  }
   }
