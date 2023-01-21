@@ -97,8 +97,10 @@
 #include "QSettingsCached.h"
 #include <QSound>
 
+#ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
 char *evaluatePython(const char *code);
+#endif
 
 #define ENABLE_3D_PRINTING
 #include "OctoPrint.h"
@@ -280,7 +282,9 @@ MainWindow::MainWindow(const QStringList& filenames)
   knownFileExtensions["png"] = surfaceStatement;
   knownFileExtensions["json"] = importFunction;
   knownFileExtensions["scad"] = "";
+#ifdef ENABLE_PYTHON
   knownFileExtensions["py"] = "";
+#endif
   knownFileExtensions["csg"] = "";
 
   root_file = nullptr;
@@ -1231,8 +1235,11 @@ void MainWindow::instantiateRoot()
     setRenderVariables(builtin_context);
 
     std::shared_ptr<const FileContext> file_context;
+#ifdef ENABLE_PYTHON    
     if(python_result_node != NULL && this->python_active) this->absolute_root_node = python_result_node;
-    else this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
+    else
+#endif	    
+    this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
       viewportControlWidget->cameraChanged();
@@ -1795,11 +1802,13 @@ void MainWindow::parseTopLevelDocument()
   this->last_compiled_doc = activeEditor->toPlainText();
 
   auto fulltext =
-    std::string(this->last_compiled_doc.toUtf8().constData());
+    std::string(this->last_compiled_doc.toUtf8().constData()) +
+    "\n\x03\n" + commandline_commands;
 
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
   delete this->parsed_file;
+#ifdef ENABLE_PYTHON  
   this->python_active = 0;
   if(fname != NULL) {
 	  int len=strlen(fname);
@@ -1809,16 +1818,17 @@ void MainWindow::parseTopLevelDocument()
 	  }
   }
 
-  this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
-  this->root_file = nullptr;  // ditto
   if(this->python_active) {
-    char *error  = evaluatePython(fulltext.c_str());
+    auto fulltext_py =
+    std::string(this->last_compiled_doc.toUtf8().constData());
+
+    char *error  = evaluatePython(fulltext_py.c_str());
     if(error != NULL) LOG(message_group::Error, Location::NONE, "", error);
     fulltext ="cube([10,10,10]);\n";
-  } else {
-	  fulltext = fulltext + "\n\x03\n" + commandline_commands;
   }
-
+#endif	  
+  this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
+  this->root_file = nullptr;  // ditto
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
 
   this->activeEditor->resetHighlighting();
