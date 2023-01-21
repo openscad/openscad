@@ -98,7 +98,9 @@ using boost::is_any_of;
 
 std::string commandline_commands;
 static bool arg_info = false;
+#ifdef ENABLE_PYTHON
 bool python_unlocked=false;
+#endif
 static std::string arg_colorscheme;
 
 class Echostream
