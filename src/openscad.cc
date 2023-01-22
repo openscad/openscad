@@ -26,7 +26,7 @@
 
 #include "openscad.h"
 #include "CommentParser.h"
-#include "node.h"
+#include "core/node.h"
 #include "SourceFile.h"
 #include "BuiltinContext.h"
 #include "Value.h"
@@ -98,6 +98,9 @@ using boost::is_any_of;
 
 std::string commandline_commands;
 static bool arg_info = false;
+#ifdef ENABLE_PYTHON
+bool python_unlocked=false;
+#endif
 static std::string arg_colorscheme;
 
 class Echostream
@@ -977,6 +980,9 @@ int main(int argc, char **argv)
     ("debug", po::value<string>(), "special debug info - specify 'all' or a set of source file names")
     ("s,s", po::value<string>(), "stl_file deprecated, use -o")
     ("x,x", po::value<string>(), "dxf_file deprecated, use -o")
+#ifdef ENABLE_PYTHON    
+    ("enable-python",  "Enable python")
+#endif    
   ;
 
   po::options_description hidden("Hidden options");
@@ -1005,6 +1011,12 @@ int main(int argc, char **argv)
     OpenSCAD::debug = vm["debug"].as<string>();
     LOG(message_group::None, Location::NONE, "", "Debug on. --debug=%1$s", OpenSCAD::debug);
   }
+#ifdef ENABLE_PYTHON  
+  if (vm.count("enable-python")) {
+    LOG(message_group::None, Location::NONE, "", "Python Engine enabled", OpenSCAD::debug);
+    python_unlocked=true;
+  }
+#endif  
   if (vm.count("quiet")) {
     OpenSCAD::quiet = true;
   }

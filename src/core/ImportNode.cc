@@ -24,7 +24,7 @@
  *
  */
 
-#include "import.h"
+#include "io/import.h"
 #include "ImportNode.h"
 
 #include "module.h"
@@ -39,7 +39,7 @@
 #include "DxfData.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include "fileutils.h"
+#include "io/fileutils.h"
 #include "Feature.h"
 #include "handle_dep.h"
 #include "boost-utils.h"

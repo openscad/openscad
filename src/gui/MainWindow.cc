@@ -36,7 +36,7 @@
 #include "RenderSettings.h"
 #include "Preferences.h"
 #include "printutils.h"
-#include "node.h"
+#include "core/node.h"
 #include "CSGNode.h"
 #include "memory.h"
 #include "Expression.h"
@@ -96,6 +96,12 @@
 #include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "QSettingsCached.h"
 #include <QSound>
+
+#ifdef ENABLE_PYTHON
+extern std::shared_ptr<AbstractNode> python_result_node;
+char *evaluatePython(const char *code);
+extern bool python_unlocked;
+#endif
 
 #define ENABLE_3D_PRINTING
 #include "OctoPrint.h"
@@ -277,6 +283,9 @@ MainWindow::MainWindow(const QStringList& filenames)
   knownFileExtensions["png"] = surfaceStatement;
   knownFileExtensions["json"] = importFunction;
   knownFileExtensions["scad"] = "";
+#ifdef ENABLE_PYTHON
+  knownFileExtensions["py"] = "";
+#endif
   knownFileExtensions["csg"] = "";
 
   root_file = nullptr;
@@ -1227,6 +1236,10 @@ void MainWindow::instantiateRoot()
     setRenderVariables(builtin_context);
 
     std::shared_ptr<const FileContext> file_context;
+#ifdef ENABLE_PYTHON    
+    if(python_result_node != NULL && this->python_active) this->absolute_root_node = python_result_node;
+    else
+#endif	    
     this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
@@ -1796,6 +1809,28 @@ void MainWindow::parseTopLevelDocument()
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
   delete this->parsed_file;
+#ifdef ENABLE_PYTHON  
+  this->python_active = 0;
+  if(fname != NULL) {
+	  int len=strlen(fname);
+	  if(len >= 3 && ! strcmp(fname+len-3,".py")) {
+		  if(
+		     Feature::ExperimentalPythonEngine.is_enabled() &&
+		     python_unlocked == true)
+		       this->python_active = 1;
+		  else  LOG(message_group::Warning, Location::NONE, "","Python is not enabled");
+	  }
+  }
+
+  if(this->python_active) {
+    auto fulltext_py =
+    std::string(this->last_compiled_doc.toUtf8().constData());
+
+    char *error  = evaluatePython(fulltext_py.c_str());
+    if(error != NULL) LOG(message_group::Error, Location::NONE, "", error);
+    fulltext ="\n";
+  }
+#endif	  
   this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
   this->root_file = nullptr;  // ditto
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;

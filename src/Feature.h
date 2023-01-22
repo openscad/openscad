@@ -31,6 +31,9 @@ public:
   static const Feature ExperimentalTextMetricsFunctions;
   static const Feature ExperimentalImportFunction;
   static const Feature ExperimentalSortStl;
+#ifdef ENABLE_PYTHON
+  static const Feature ExperimentalPythonEngine;
+#endif
 
   [[nodiscard]] const std::string& get_name() const;
   [[nodiscard]] const std::string& get_description() const;
