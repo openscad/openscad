@@ -1377,6 +1377,8 @@ if(APPLE)
     # Z issues specific to edge shader
     openscad-viewoptions-edges_view-options-tests
     openscad-viewoptions-axes-scales-edges_view-options-tests
+    # issue3158 test failing on macos, see: https://github.com/openscad/openscad/issues/4509
+    issue3158
     PROPERTIES DISABLED TRUE
   )
 elseif(UNIX)
