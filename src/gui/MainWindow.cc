@@ -1236,10 +1236,10 @@ void MainWindow::instantiateRoot()
     setRenderVariables(builtin_context);
 
     std::shared_ptr<const FileContext> file_context;
-#ifdef ENABLE_PYTHON    
-    if(python_result_node != NULL && this->python_active) this->absolute_root_node = python_result_node;
+#ifdef ENABLE_PYTHON
+    if (python_result_node != NULL && this->python_active) this->absolute_root_node = python_result_node;
     else
-#endif	    
+#endif
     this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
@@ -1809,28 +1809,27 @@ void MainWindow::parseTopLevelDocument()
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
   delete this->parsed_file;
-#ifdef ENABLE_PYTHON  
+#ifdef ENABLE_PYTHON
   this->python_active = 0;
-  if(fname != NULL) {
-	  int len=strlen(fname);
-	  if(len >= 3 && ! strcmp(fname+len-3,".py")) {
-		  if(
-		     Feature::ExperimentalPythonEngine.is_enabled() &&
-		     python_unlocked == true)
-		       this->python_active = 1;
-		  else  LOG(message_group::Warning, Location::NONE, "","Python is not enabled");
-	  }
+  if (fname != NULL) {
+    int len = strlen(fname);
+    if (len >= 3 && !strcmp(fname + len - 3, ".py")) {
+      if (
+        Feature::ExperimentalPythonEngine.is_enabled() &&
+        python_unlocked == true) this->python_active = 1;
+      else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
+    }
   }
 
-  if(this->python_active) {
+  if (this->python_active) {
     auto fulltext_py =
-    std::string(this->last_compiled_doc.toUtf8().constData());
+      std::string(this->last_compiled_doc.toUtf8().constData());
 
-    char *error  = evaluatePython(fulltext_py.c_str());
-    if(error != NULL) LOG(message_group::Error, Location::NONE, "", error);
-    fulltext ="\n";
+    char *error = evaluatePython(fulltext_py.c_str());
+    if (error != NULL) LOG(message_group::Error, Location::NONE, "", error);
+    fulltext = "\n";
   }
-#endif	  
+#endif // ifdef ENABLE_PYTHON
   this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
   this->root_file = nullptr;  // ditto
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
