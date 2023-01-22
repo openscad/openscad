@@ -6,17 +6,32 @@ import sys
 
 
 def Compare3x3(img1, img2):
+  '''Informally, this identifies image differences that are consistently
+     different in the same direction for each possible 3x3 pixel block.  It
+     zeros out all other differences.
+
+     More precisely, this checks all 3x3 pixel blocks (with overlap, meaning
+     012 123 234) for difference between the two images, and returns an array
+     of the geometric mean difference for any blocks that have like-signed
+     differences of magnitude 3 or greater in all 9 pixels.
+  '''
   a1 = np.array(img1, dtype=float)
   a2 = np.array(img2, dtype=float)
 
   d = a1-a2
+  # Truncate pixel-to-pixel differences less than 3 to 0.
   d[np.abs(d)<3] = 0
 
+  # Prepare a boolean mask of all 3x3 blocks that have all 9 pixels having
+  # a non-zero difference with the same sign.  i.e., the whole block is
+  # more, or the whole block is less.
   s = np.sign(d)
   s = s[0:-2] + s[1:-1] + s[2:]
   s = s[:,0:-2] + s[:,1:-1] + s[:,2:]
   s = np.abs(s)==9
 
+  # Calculate the geometric mean difference between the two images for each
+  # 3x3 block, and apply the boolean sign-consistency mask s.
   a = d[0:-2] * d[1:-1] * d[2:]
   a = a[:,0:-2] * a[:,1:-1] * a[:,2:]
   a = s * np.abs(a)**(1/9)
@@ -27,6 +42,8 @@ def CompareImageFiles(path1, path2):
   img1 = Image.open(path1)
   img2 = Image.open(path2)
 
+  # Obtains the 3x3 pixel block comparisons, flattens both image dimensions
+  # and color channels into a 1D array, and sorts in descending order.
   pixel_diffs = np.sort(Compare3x3(img1, img2).ravel())[::-1]
   pixel_cnt = pixel_diffs.shape[0]
 
@@ -37,6 +54,8 @@ def CompareImageFiles(path1, path2):
     print('3x3 image block comparison successfully passed.')
     return True
   else:
+    # Obtain the median reported geometric difference of the pixel blocks
+    # that are actually differing.
     med_diff = np.median(pixel_diffs[:diff_cnt])
     print(f'{perc_diff:0.8f}% of 3x3 blocks differ with median block diff: {med_diff:0.2f}')
     return False
@@ -50,5 +69,7 @@ if __name__ == '__main__':
     sys.exit(-1)
   else:
     outcome = CompareImageFiles(sys.argv[1], sys.argv[2])
+    # Return 0 if images compared equivalent, or 1 if a difference was
+    # identified.
     sys.exit(0 if outcome else 1)
 
