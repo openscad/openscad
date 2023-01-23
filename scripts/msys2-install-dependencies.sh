@@ -43,6 +43,8 @@ pacboy --noconfirm --sync --needed \
     ghostscript:p \
     imagemagick:p \
     qt5-svg:p \
-    qt5-multimedia:p
+    qt5-multimedia:p \
+    python:p \
+    python-pip:p
 
 date "+### %Y-%m-%d %T msys2-install-dependencies finished"
