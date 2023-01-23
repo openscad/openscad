@@ -779,16 +779,17 @@ PyObject* python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   PyObject *origin=NULL;
   double fn=-1, fa=-1,fs=-1;
 
+  get_fnas(fn,fa,fs);
+  printf("fn1=%f\n",fn);
 
-  char * kwlist[] ={"obj","layer","convexity","scale","fn","fa","fs",NULL};
+  char * kwlist[] ={"obj","layer","convexity","scale","angle","origin","fn","fa","fs",NULL};
 
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|siddO!ddd", kwlist, 
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|siddOddd", kwlist, 
                           &obj,
 			  &layer,
 			  &convexity,
 			  &scale,
 			  &angle,
-			  &PyList_Type,
 			  &origin,
 			  &fn,&fa,&fs
                           )) {
@@ -796,6 +797,7 @@ PyObject* python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
         PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
         return NULL;
   }
+  printf("fn2=%f\n",fn);
 
   if(obj->ob_type == &PyFunction_Type) {
 	node->profile_func = obj;
@@ -809,11 +811,10 @@ PyObject* python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   	}
   	node->children.push_back(child);
   }
-
-   get_fnas(node->fn,node->fa,node->fs);
-   if(fn != -1) node->fn=fn;
-   if(fa != -1) node->fa=fa;
-   if(fs != -1) node->fs=fs;
+   node->fn=fn;
+   node->fa=fa;
+   node->fs=fs;
+//   node->fn=20; // TODO fix
 
   if(layer != NULL) node->layername = layer;
   node->convexity = convexity;

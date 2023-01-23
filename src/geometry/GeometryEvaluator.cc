@@ -38,9 +38,9 @@
 #include <pyopenscad.h>
 #endif
 
-// rotate do
-// scale und twist
-//
+// TODO solve fn problem
+// TODO add angle paramter
+// TODO scale and twist it
 class Geometry;
 class Polygon2d;
 class Tree;
@@ -1014,6 +1014,24 @@ static Outline2d splitOutlineByFn(
   return o2;
 }
 
+void  append_linear_vertex(PolySet *ps,Outline2d *face, int index, double h)
+{
+	ps->append_vertex(
+			face->vertices[index][0],
+			face->vertices[index][1],
+			h);
+}
+
+void  append_rotary_vertex(PolySet *ps,Outline2d *face, int index, double ang)
+{
+	double a=ang*M_PI / 180.0;
+	ps->append_vertex(
+			face->vertices[index][0]*cos(a),
+			face->vertices[index][0]*sin(a),
+			face->vertices[index][1]);
+}
+
+
 /*!
    Input to extrude should be sanitized. This means non-intersecting, correct winding order
    etc., the input coming from a library like Clipper.
@@ -1157,14 +1175,14 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
 			unsigned int n=lowerFace.vertices.size();
 			for(unsigned int j=0;j<n;j++) {
 				ps->append_poly();
-				ps->append_vertex(lowerFace.vertices[(j+0)%n][0],lowerFace.vertices[(j+0)%n][1],lower_h);
-				ps->append_vertex(lowerFace.vertices[(j+1)%n][0],lowerFace.vertices[(j+1)%n][1],lower_h);
-				ps->append_vertex(upperFace.vertices[(j+1)%n][0],upperFace.vertices[(j+1)%n][1],upper_h);
+				append_linear_vertex(ps,&lowerFace,(j+0)%n, lower_h);
+				append_linear_vertex(ps,&lowerFace,(j+1)%n, lower_h);
+				append_linear_vertex(ps,&upperFace,(j+1)%n, upper_h);
 
 				ps->append_poly();
-				ps->append_vertex(lowerFace.vertices[(j+0)%n][0],lowerFace.vertices[(j+0)%n][1],lower_h);
-				ps->append_vertex(upperFace.vertices[(j+1)%n][0],upperFace.vertices[(j+1)%n][1],upper_h);
-				ps->append_vertex(upperFace.vertices[(j+0)%n][0],upperFace.vertices[(j+0)%n][1],upper_h);
+				append_linear_vertex(ps,&lowerFace,(j+0)%n, lower_h);
+				append_linear_vertex(ps,&upperFace,(j+1)%n, upper_h);
+				append_linear_vertex(ps,&upperFace,(j+0)%n, upper_h);
 			}
 		}
 
@@ -1278,7 +1296,6 @@ static void fill_ring(std::vector<Vector3d>& ring, const Outline2d& o, double a,
     }
   }
 }
-
 /*!
    Input to extrude should be clean. This means non-intersecting, correct winding order
    etc., the input coming from a library like Clipper.
@@ -1326,32 +1343,59 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
 #ifdef ENABLE_PYTHON  
   if(node.profile_func != NULL)
   {
-/*	  
-    for (const auto& o : poly.outlines()) {
-    std::vector<Vector3d> rings[2];
-    rings[0].resize(o.vertices.size());
-    rings[1].resize(o.vertices.size());
+	fragments=node.fn; // TODO fix
+	Outline2d lastFace;
+	Outline2d curFace;
+	double last_ang=0, cur_ang=0;
+	double last_rot=0.0, cur_rot=0.0;
 
-    fill_ring(rings[0], o, (node.angle == 360) ? -90 : 90, flip_faces); // first ring
-    for (unsigned int j = 0; j < fragments; ++j) {
-      double a;
-      if (node.angle == 360) a = -90 + ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
-      else a = 90 - (j + 1) * node.angle / fragments; // start on the X axis
-      fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
+	// Add Low angle face
+	lastFace = python_getprofile(node.profile_func, 0,1.0, 1.0,last_rot);
+	/*
+	Polygon2d botface;
+        botface.addOutline(lastFace);
+    	PolySet *ps_bot = botface.tessellate();
+	translate_PolySet(*ps_bot, Vector3d(0, 0, last_h));
+  	for (auto& p : ps_bot->polygons) {
+	    std::reverse(p.begin(), p.end());
+	}
+	ps->append(*ps_bot);
+	delete ps_bot;
+	*/
+	printf("fragments=%d\n",fragments);
+  	for (unsigned int i = 1; i <= fragments; i++) {
+		cur_ang=i*node.angle/fragments;
+		cur_rot=0; // TODO introduce paramter i*node.twist /fragments;
+		curFace = python_getprofile(node.profile_func, cur_ang, 1.0, 1.0 , cur_rot);
 
-      for (size_t i = 0; i < o.vertices.size(); ++i) {
-        ps->append_poly();
-        ps->insert_vertex(rings[j % 2][i]);
-        ps->insert_vertex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
-        ps->insert_vertex(rings[j % 2][(i + 1) % o.vertices.size()]);
-        ps->append_poly();
-        ps->insert_vertex(rings[j % 2][i]);
-        ps->insert_vertex(rings[(j + 1) % 2][i]);
-        ps->insert_vertex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
-      }
-    }
-  }
-*/  
+		if(lastFace.vertices.size() == curFace.vertices.size()) {
+			unsigned int n=lastFace.vertices.size();
+			for(unsigned int j=0;j<n;j++) {
+				ps->append_poly();
+				append_rotary_vertex(ps,&lastFace,(j+0)%n, last_ang);
+				append_rotary_vertex(ps,&lastFace,(j+1)%n, last_ang);
+				append_rotary_vertex(ps,&curFace,(j+1)%n, cur_ang);
+				ps->append_poly();
+				append_rotary_vertex(ps,&lastFace,(j+0)%n, last_ang);
+				append_rotary_vertex(ps,&curFace,(j+1)%n, cur_ang);
+				append_rotary_vertex(ps,&curFace,(j+0)%n, cur_ang);
+			}
+		}
+
+		lastFace = curFace;
+		last_ang = cur_ang;
+		last_rot = cur_rot;
+	}
+	/*
+	// Add Top face
+	Polygon2d topface;
+        topface.addOutline(upperFace);
+    	PolySet *ps_top = topface.tessellate();
+	translate_PolySet(*ps_top, Vector3d(0, 0, upper_h));
+	ps->append(*ps_top);
+	delete ps_top;
+	*/
+	  
 }
   else
 #endif
