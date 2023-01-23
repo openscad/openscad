@@ -1348,6 +1348,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
 	Outline2d curFace;
 	double last_ang=0, cur_ang=0;
 	double last_rot=0.0, cur_rot=0.0;
+	double last_twist=0.0, cur_twist=0.0;
 
 	// Add Low angle face
 	lastFace = python_getprofile(node.profile_func, 0,1.0, 1.0,last_rot);
@@ -1365,8 +1366,8 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
 	printf("fragments=%d\n",fragments);
   	for (unsigned int i = 1; i <= fragments; i++) {
 		cur_ang=i*node.angle/fragments;
-		cur_rot=0; // TODO introduce paramter i*node.twist /fragments;
-		curFace = python_getprofile(node.profile_func, cur_ang, 1.0, 1.0 , cur_rot);
+		cur_twist=i*node.twist /fragments;
+		curFace = python_getprofile(node.profile_func, cur_ang, 1.0, 1.0 , cur_twist);
 
 		if(lastFace.vertices.size() == curFace.vertices.size()) {
 			unsigned int n=lastFace.vertices.size();
@@ -1384,7 +1385,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
 
 		lastFace = curFace;
 		last_ang = cur_ang;
-		last_rot = cur_rot;
+		last_twist = cur_twist;
 	}
 	/*
 	// Add Top face
