@@ -861,14 +861,12 @@ PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   double fn=-1, fa=-1, fs=-1;
 
   char * kwlist[] ={"obj","height","layer","convexity","origin","scale","center","slices","segments","twist","fn","fa","fs",NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|dsiO!O!siidddd", kwlist, 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|dsiOOsiidddd", kwlist, 
                           &obj,
                           &height,
 			  &layer,
 			  &convexity,
-			  &PyList_Type,
 			  &origin,
-			  &PyList_Type,
 			  &scale,
 			  &center,
 			  &slices,
@@ -904,12 +902,23 @@ PyObject* python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   if(layer != NULL) node->layername=layer;
 
   node->origin_x=0.0; node->origin_y=0.0;
-  if(origin != NULL && PyList_Check(origin) && PyList_Size(origin) == 2) {
-	  node->origin_x=PyFloat_AsDouble(PyList_GetItem(origin, 0));
-	  node->origin_y=PyFloat_AsDouble(PyList_GetItem(origin, 1));
+  if(origin != NULL) {
+	  double dummy;
+	  if(python_vectorval(origin,&(node->origin_x), &(node->origin_y), &dummy)) {
+    		PyErr_SetString(PyExc_TypeError,"error in linear_extrude origin parameter\n");
+		return NULL;
+	  }
   }
 
   node->scale_x=1.0; node->scale_y=1.0;
+  if(scale != NULL) {
+	  double dummy;
+	  if(python_vectorval(scale,&(node->scale_x), &(node->scale_y), &dummy)) {
+    		PyErr_SetString(PyExc_TypeError,"error in linear_extrude scale parameter\n");
+		return NULL;
+	  }
+  }
+
   if(scale != NULL && PyList_Check(scale) && PyList_Size(scale) == 2) {
 	  node->scale_x=PyFloat_AsDouble(PyList_GetItem(scale, 0));
 	  node->scale_y=PyFloat_AsDouble(PyList_GetItem(scale, 1));

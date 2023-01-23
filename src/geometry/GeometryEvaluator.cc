@@ -1130,22 +1130,29 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
   {
 	Outline2d lowerFace;
 	Outline2d upperFace;
-	double lower_h=0, upper_h=0;
+	double lower_h=h1, upper_h=h2;
+	double lower_scalex=1.0, upper_scalex=1.0;
+	double lower_scaley=1.0, upper_scaley=1.0;
+	double lower_rot=0.0, upper_rot=0.0;
 
 	// Add Bottom face
-	lowerFace = python_getprofile(node.profile_func, 0);
+	lowerFace = python_getprofile(node.profile_func, 0,lower_scalex, lower_scaley,lower_rot);
 	Polygon2d botface;
         botface.addOutline(lowerFace);
     	PolySet *ps_bot = botface.tessellate();
+	translate_PolySet(*ps_bot, Vector3d(0, 0, lower_h));
   	for (auto& p : ps_bot->polygons) {
 	    std::reverse(p.begin(), p.end());
 	}
 	ps->append(*ps_bot);
 	delete ps_bot;
-
   	for (unsigned int i = 1; i <= slices; i++) {
-		upper_h=i*node.height/(slices);
-		upperFace = python_getprofile(node.profile_func, upper_h);
+		upper_h=i*node.height/slices;
+    		upper_scalex = 1 - i * (1 - node.scale_x) / slices,
+    		upper_scaley = 1 - i * (1 - node.scale_y) / slices,
+		upper_rot=i*node.twist /slices;
+		if(node.center) upper_h -= node.height/2;
+		upperFace = python_getprofile(node.profile_func, upper_h, upper_scalex, upper_scaley , upper_rot);
 		if(lowerFace.vertices.size() == upperFace.vertices.size()) {
 			unsigned int n=lowerFace.vertices.size();
 			for(unsigned int j=0;j<n;j++) {
@@ -1163,6 +1170,9 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
 
 		lowerFace = upperFace;
 		lower_h = upper_h;
+		lower_scalex = upper_scalex;
+		lower_scaley = upper_scaley;
+		lower_rot = upper_rot;
 	}
 	// Add Top face
 	Polygon2d topface;
