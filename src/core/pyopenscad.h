@@ -1,6 +1,7 @@
 #include <Python.h>
 #include <memory>
 #include "node.h"
+#include <geometry/Polygon2d.h>
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
@@ -23,6 +24,7 @@ PyObject * PyOpenSCADObjectFromNode( PyTypeObject *type,std::shared_ptr<Abstract
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *object);
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *object);
 int python_more_obj(std::vector<std::shared_ptr<AbstractNode>> &children,PyObject *more_obj);
+Outline2d python_getprofile(PyObject *cbfunc, double h);
 
 PyObject* python_square(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject* python_circle(PyObject *self, PyObject *args, PyObject *kwargs);

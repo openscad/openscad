@@ -34,6 +34,11 @@
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
 
+#ifdef ENABLE_PYTHON
+#include <pyopenscad.h>
+#endif
+
+// rotate do
 class Geometry;
 class Polygon2d;
 class Tree;
@@ -1006,27 +1011,6 @@ static Outline2d splitOutlineByFn(
   assert(o2.vertices.size() <= fn);
   return o2;
 }
-
-#ifdef ENABLE_PYTHON
-Outline2d python_getprofile(PyObject *cbfunc, double h)
-{
-	Outline2d result;
-	PyObject* args = PyTuple_Pack(1,PyFloat_FromDouble(h));
-	PyObject* polygon = PyObject_CallObject(cbfunc, args);
-	if(PyList_Check(polygon)) {
-		unsigned int n=PyList_Size(polygon);
-		for(unsigned int i=0;i < n;i++) {
-			PyObject *pypt = PyList_GetItem(polygon, i);
-			if(PyList_Check(pypt) && PyList_Size(pypt) == 2) {
-				double x=PyFloat_AsDouble(PyList_GetItem(pypt, 0));
-				double y=PyFloat_AsDouble(PyList_GetItem(pypt, 1));
-				result.vertices.push_back(Vector2d(x,y));
-			}
-		}
-	}
-	return result;
-}
-#endif
 
 /*!
    Input to extrude should be sanitized. This means non-intersecting, correct winding order

@@ -175,6 +175,11 @@ std::string LinearExtrudeNode::toString() const
   if (this->convexity > 1) {
     stream << ", convexity = " << this->convexity;
   }
+#ifdef ENABLE_PYTHON  
+ if(this->profile_func != NULL) {
+    stream << ", profile = " << rand() ;
+ }
+#endif  
   stream << ")";
   return stream.str();
 }

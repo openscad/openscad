@@ -295,6 +295,25 @@ std::string todo_fix_name;
 AssignmentList todo_fix_asslist;
 ModuleInstantiation todo_fix_inst(todo_fix_name,todo_fix_asslist,Location::NONE);
 
+Outline2d python_getprofile(PyObject *cbfunc, double h)
+{
+	Outline2d result;
+	PyObject* args = PyTuple_Pack(1,PyFloat_FromDouble(h));
+	PyObject* polygon = PyObject_CallObject(cbfunc, args);
+	if(PyList_Check(polygon)) {
+		unsigned int n=PyList_Size(polygon);
+		for(unsigned int i=0;i < n;i++) {
+			PyObject *pypt = PyList_GetItem(polygon, i);
+			if(PyList_Check(pypt) && PyList_Size(pypt) == 2) {
+				double x=PyFloat_AsDouble(PyList_GetItem(pypt, 0));
+				double y=PyFloat_AsDouble(PyList_GetItem(pypt, 1));
+				result.vertices.push_back(Vector2d(x,y));
+			}
+		}
+	}
+	return result;
+}
+
 static PyObject *pythonInitDict=NULL;
 
 char *evaluatePython(const char *code)
@@ -306,6 +325,10 @@ char *evaluatePython(const char *code)
     PyObject *pyExcTraceback;
 
     if(pythonInitDict) {
+      if (Py_FinalizeEx() < 0) {
+        exit(120);
+      }
+      pythonInitDict=NULL;
     }
 
     if(!pythonInitDict) {
@@ -335,11 +358,6 @@ char *evaluatePython(const char *code)
     Py_XDECREF(str_exc_value);
     Py_XDECREF(pyExcValueStr);
 
-/*    // TODO when to clean up python correctly
-    if (Py_FinalizeEx() < 0) {
-        exit(120);
-    }
-*/    
     return error;
 }
 
