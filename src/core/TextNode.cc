@@ -72,9 +72,9 @@ FreetypeRenderer::Params TextNode::get_params() const
   return params;
 }
 
-std::string TextNode::toString() const
+void TextNode::print(scad::ostringstream& stream) const
 {
-  return STR(name(), "(", this->params, ")");
+  stream << name() << "(" << this->params << ")";
 }
 
 void register_builtin_text()

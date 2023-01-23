@@ -27,15 +27,9 @@ std::string Location::toRelativeString(const std::string& docPath) const {
   return "in file " + boostfs_uncomplete((*path), docPath).generic_string() + ", " + "line " + std::to_string(this->firstLine());
 }
 
-std::ostream& operator<<(std::ostream& stream, const ASTNode& ast)
-{
-  ast.print(stream, "");
-  return stream;
-}
-
 std::string ASTNode::dump(const std::string& indent) const
 {
-  std::ostringstream stream;
+  scad::ostringstream stream;
   print(stream, indent);
   return stream.str();
 }

@@ -8,6 +8,7 @@
 #include "Assignment.h"
 #include "function.h"
 #include "memory.h"
+#include "scadstream.h"
 #include "Value.h"
 
 template <class T> class ContextHandle;
@@ -21,6 +22,12 @@ public:
   Value checkUndef(Value&& val, const std::shared_ptr<const Context>& context) const;
 };
 
+inline scad::ostringstream& operator<<(scad::ostringstream& stream, const Expression& expr)
+{
+  expr.print(stream, "");
+  return stream;
+}
+
 class UnaryOp : public Expression
 {
 public:
@@ -31,7 +38,7 @@ public:
   [[nodiscard]] bool isLiteral() const override;
   UnaryOp(Op op, Expression *expr, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
 
 private:
   [[nodiscard]] const char *opString() const;
@@ -62,7 +69,7 @@ public:
 
   BinaryOp(Expression *left, Op op, Expression *right, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
 
 private:
   [[nodiscard]] const char *opString() const;
@@ -78,7 +85,7 @@ public:
   TernaryOp(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location& loc);
   [[nodiscard]] const Expression *evaluateStep(const std::shared_ptr<const Context>& context) const;
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
 private:
   shared_ptr<Expression> cond;
   shared_ptr<Expression> ifexpr;
@@ -90,7 +97,7 @@ class ArrayLookup : public Expression
 public:
   ArrayLookup(Expression *array, Expression *index, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
 private:
   shared_ptr<Expression> array;
   shared_ptr<Expression> index;
@@ -110,7 +117,7 @@ public:
   [[nodiscard]] bool isUndefined() const { return value.type() == Value::Type::UNDEFINED; }
 
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
   [[nodiscard]] bool isLiteral() const override { return true; }
 private:
   const Value value;
@@ -125,7 +132,7 @@ public:
   [[nodiscard]] const Expression *getStep() const { return step.get(); }
   [[nodiscard]] const Expression *getEnd() const { return end.get(); }
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
   [[nodiscard]] bool isLiteral() const override;
 private:
   shared_ptr<Expression> begin;
@@ -139,7 +146,7 @@ public:
   Vector(const Location& loc);
   const std::vector<shared_ptr<Expression>>& getChildren() const { return children; }
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
   void emplace_back(Expression *expr);
   bool isLiteral() const override;
 private:
@@ -152,7 +159,7 @@ class Lookup : public Expression
 public:
   Lookup(std::string name, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
   [[nodiscard]] const std::string& get_name() const { return name; }
 private:
   std::string name;
@@ -163,7 +170,7 @@ class MemberLookup : public Expression
 public:
   MemberLookup(Expression *expr, std::string member, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
 private:
   shared_ptr<Expression> expr;
   std::string member;
@@ -175,7 +182,7 @@ public:
   FunctionCall(Expression *expr, AssignmentList arglist, const Location& loc);
   [[nodiscard]] boost::optional<CallableFunction> evaluate_function_expression(const std::shared_ptr<const Context>& context) const;
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
   [[nodiscard]] const std::string& get_name() const { return name; }
   static Expression *create(const std::string& funcname, const AssignmentList& arglist, Expression *expr, const Location& loc);
 public:
@@ -190,7 +197,7 @@ class FunctionDefinition : public Expression
 public:
   FunctionDefinition(Expression *expr, AssignmentList parameters, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
 public:
   shared_ptr<const Context> context;
   AssignmentList parameters;
@@ -204,7 +211,7 @@ public:
   static void performAssert(const AssignmentList& arguments, const Location& location, const std::shared_ptr<const Context>& context);
   [[nodiscard]] const Expression *evaluateStep(const std::shared_ptr<const Context>& context) const;
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
 private:
   AssignmentList arguments;
   shared_ptr<Expression> expr;
@@ -216,7 +223,7 @@ public:
   Echo(AssignmentList args, Expression *expr, const Location& loc);
   [[nodiscard]] const Expression *evaluateStep(const std::shared_ptr<const Context>& context) const;
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
 private:
   AssignmentList arguments;
   shared_ptr<Expression> expr;
@@ -230,7 +237,7 @@ public:
   static ContextHandle<Context> sequentialAssignmentContext(const AssignmentList& assignments, const Location& location, const std::shared_ptr<const Context>& context);
   const Expression *evaluateStep(ContextHandle<Context>& targetContext) const;
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
 private:
   AssignmentList arguments;
   shared_ptr<Expression> expr;
@@ -247,7 +254,7 @@ class LcIf : public ListComprehension
 public:
   LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
 private:
   shared_ptr<Expression> cond;
   shared_ptr<Expression> ifexpr;
@@ -260,7 +267,7 @@ public:
   LcFor(AssignmentList args, Expression *expr, const Location& loc);
   static void forEach(const AssignmentList& assignments, const Location& loc, const std::shared_ptr<const Context>& context, const std::function<void(const std::shared_ptr<const Context>&)>& operation);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
 private:
   AssignmentList arguments;
   shared_ptr<Expression> expr;
@@ -271,7 +278,7 @@ class LcForC : public ListComprehension
 public:
   LcForC(AssignmentList args, AssignmentList incrargs, Expression *cond, Expression *expr, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
 private:
   AssignmentList arguments;
   AssignmentList incr_arguments;
@@ -284,7 +291,7 @@ class LcEach : public ListComprehension
 public:
   LcEach(Expression *expr, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
 private:
   Value evalRecur(Value&& v, const std::shared_ptr<const Context>& context) const;
   shared_ptr<Expression> expr;
@@ -295,7 +302,7 @@ class LcLet : public ListComprehension
 public:
   LcLet(AssignmentList args, Expression *expr, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
 private:
   AssignmentList arguments;
   shared_ptr<Expression> expr;

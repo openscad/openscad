@@ -34,7 +34,7 @@ void LocalScope::addAssignment(const shared_ptr<Assignment>& assignment)
   this->assignments.push_back(assignment);
 }
 
-void LocalScope::print(std::ostream& stream, const std::string& indent, const bool inlined) const
+void LocalScope::print(scad::ostringstream& stream, const std::string& indent, const bool inlined) const
 {
   for (const auto& f : this->astFunctions) {
     f.second->print(stream, indent);

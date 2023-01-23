@@ -27,6 +27,7 @@
 #include "node.h"
 #include "ModuleInstantiation.h"
 #include "progress.h"
+#include "scadstream.h"
 #include <functional>
 #include <iostream>
 #include <algorithm>
@@ -39,9 +40,9 @@ AbstractNode::AbstractNode(const ModuleInstantiation *mi) :
 {
 }
 
-std::string AbstractNode::toString() const
+void AbstractNode::print(scad::ostringstream& stream) const
 {
-  return this->name() + "()";
+  stream << this->name() << "()";
 }
 
 std::shared_ptr<const AbstractNode> AbstractNode::getNodeByID(int idx, std::deque<std::shared_ptr<const AbstractNode>>& path) const
@@ -81,9 +82,9 @@ std::string RootNode::name() const
   return "root";
 }
 
-std::string AbstractIntersectionNode::toString() const
+void AbstractIntersectionNode::print(scad::ostringstream& stream) const
 {
-  return this->name() + "()";
+  stream << this->name() << "()";
 }
 
 std::string AbstractIntersectionNode::name() const
@@ -104,9 +105,15 @@ void AbstractNode::progress_report() const
   progress_update(shared_from_this(), this->progress_mark);
 }
 
-std::ostream& operator<<(std::ostream& stream, const AbstractNode& node)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const AbstractNode& node)
 {
-  stream << node.toString();
+  node.print(stream);
+  return stream;
+}
+
+scad::ostringstream& operator<<(scad::ostringstream& stream, const GroupNode& node)
+{
+  node.print(stream);
   return stream;
 }
 

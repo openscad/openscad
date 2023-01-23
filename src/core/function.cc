@@ -48,7 +48,7 @@ UserFunction::UserFunction(const char *name, AssignmentList& parameters, shared_
 {
 }
 
-void UserFunction::print(std::ostream& stream, const std::string& indent) const
+void UserFunction::print(scad::ostringstream& stream, const std::string& indent) const
 {
   stream << indent << "function " << name << "(";
   for (size_t i = 0; i < parameters.size(); ++i) {

@@ -22,13 +22,17 @@ class Context;
 class Expression;
 class Value;
 
+namespace scad {
+  class ostringstream;
+}
+
 class QuotedString : public std::string
 {
 public:
   QuotedString() : std::string() {}
   QuotedString(const std::string& s) : std::string(s) {}
 };
-std::ostream& operator<<(std::ostream& stream, const QuotedString& s);
+scad::ostringstream& operator<<(scad::ostringstream& stream, const QuotedString& s);
 
 class Filename : public QuotedString
 {
@@ -36,7 +40,7 @@ public:
   Filename() : QuotedString() {}
   Filename(const std::string& f) : QuotedString(f) {}
 };
-std::ostream& operator<<(std::ostream& stream, const Filename& filename);
+scad::ostringstream& operator<<(scad::ostringstream& stream, const Filename& filename);
 
 class RangeType
 {
@@ -154,7 +158,7 @@ private:
   /// return number of values, max uint32_t value if step is 0 or range is infinite
   [[nodiscard]] uint32_t numValues() const;
 };
-std::ostream& operator<<(std::ostream& stream, const RangeType& r);
+scad::ostringstream& operator<<(scad::ostringstream& stream, const RangeType& r);
 
 
 template <typename T>
@@ -280,7 +284,7 @@ private:
 
 using FunctionPtr = ValuePtr<FunctionType>;
 
-std::ostream& operator<<(std::ostream& stream, const FunctionType& f);
+scad::ostringstream& operator<<(scad::ostringstream& stream, const FunctionType& f);
 
 /*
    Require a reason why (string), any time an undefined value is created/returned.
@@ -302,7 +306,7 @@ public:
   Value operator>(const UndefType& other) const;
   Value operator<=(const UndefType& other) const;
   Value operator>=(const UndefType& other) const;
-  friend std::ostream& operator<<(std::ostream& stream, const ValuePtr<UndefType>& u);
+  friend scad::ostringstream& operator<<(scad::ostringstream& stream, const ValuePtr<UndefType>& u);
 
   std::string toString() const;
   bool empty() const { return reasons->empty(); }
@@ -313,7 +317,7 @@ private:
   mutable std::unique_ptr<std::vector<std::string>> reasons;
 };
 
-std::ostream& operator<<(std::ostream& stream, const UndefType& u);
+scad::ostringstream& operator<<(scad::ostringstream& stream, const UndefType& u);
 
 /**
  *  Value class encapsulates a std::variant value which can represent any of the
@@ -552,6 +556,7 @@ public:
   ~Value() = default;
 
   Value(int v) : value(double(v)) { }
+  Value(long double v) : value(double(v)) { }
   Value(const char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!
   Value(char *v) : value(str_utf8_wrapper(v)) { } // prevent insane implicit conversion to bool!
                                                   // http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2018/p0608r3.html
@@ -616,14 +621,9 @@ public:
 
   static bool cmp_less(const Value& v1, const Value& v2);
 
-  friend std::ostream& operator<<(std::ostream& stream, const Value& value) {
-    if (value.type() == Value::Type::STRING) stream << QuotedString(value.toString());
-    else stream << value.toString();
-    return stream;
-  }
+  friend scad::ostringstream& operator<<(scad::ostringstream& stream, const Value& value);
 
   using Variant = std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType>;
-
 
   static_assert(sizeof(Value::Variant) <= 24, "Memory size of Value too big");
   [[nodiscard]] const Variant& getVariant() const { return value; }
@@ -641,7 +641,7 @@ struct Value::ObjectType::ObjectObject {
   std::vector<Value> values;
 };
 
-std::ostream& operator<<(std::ostream& stream, const Value::ObjectType& u);
+scad::ostringstream& operator<<(scad::ostringstream& stream, const Value::ObjectType& u);
 
 using VectorType = Value::VectorType;
 using EmbeddedVectorType = Value::EmbeddedVectorType;

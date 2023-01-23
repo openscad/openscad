@@ -19,7 +19,7 @@ public:
              const Location& loc = Location::NONE)
     : ASTNode(loc), name(std::move(name)), expr(std::move(expr)), locOfOverwrite(Location::NONE){ }
 
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
   const std::string& getName() const { return name; }
   const shared_ptr<Expression>& getExpr() const { return expr; }
   const AnnotationMap& getAnnotations() const { return annotations; }
@@ -47,4 +47,4 @@ template <class ... Args> shared_ptr<Assignment> assignment(Args... args) {
 using AssignmentList = std::vector<shared_ptr<Assignment>>;
 using AssignmentMap = std::unordered_map<std::string, const Expression *>;
 
-std::ostream& operator<<(std::ostream& stream, const AssignmentList& assignments);
+scad::ostringstream& operator<<(scad::ostringstream& stream, const AssignmentList& assignments);

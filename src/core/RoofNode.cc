@@ -52,18 +52,14 @@ static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *ins
   return node;
 }
 
-std::string RoofNode::toString() const
+void RoofNode::print(scad::ostringstream& stream) const
 {
-  std::stringstream stream;
-
   stream << "roof(method = \"" << this->method << "\""
          << ", $fa = " << this->fa
          << ", $fs = " << this->fs
          << ", $fn = " << this->fn
          << ", convexity = " << this->convexity
          << ")";
-
-  return stream.str();
 }
 
 void register_builtin_roof()

@@ -3,10 +3,12 @@
 #include <string>
 #include <memory>
 #include <boost/filesystem.hpp>
-#include <utility>
+
 namespace fs = boost::filesystem;
 
-#include <string>
+namespace scad {
+  class ostringstream;
+}
 
 class Location
 {
@@ -46,7 +48,7 @@ public:
   ASTNode(Location loc) : loc(std::move(loc)) {}
   virtual ~ASTNode() = default;
 
-  virtual void print(std::ostream& stream, const std::string& indent) const = 0;
+  virtual void print(scad::ostringstream& stream, const std::string& indent) const = 0;
 
   [[nodiscard]] std::string dump(const std::string& indent) const;
   [[nodiscard]] const Location& location() const { return loc; }
@@ -56,4 +58,8 @@ protected:
   Location loc;
 };
 
-std::ostream& operator<<(std::ostream& stream, const ASTNode& ast);
+inline scad::ostringstream& operator<<(scad::ostringstream& stream, const ASTNode& ast)
+{
+  ast.print(stream, "");
+  return stream;
+}

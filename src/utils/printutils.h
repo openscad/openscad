@@ -5,8 +5,8 @@
 #include <iostream>
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
+#include <set>
 #include <utility>
-#include <sstream>
 
 #include <libintl.h>
 // Undefine some defines from libintl.h to presolve
@@ -20,7 +20,7 @@
 
 #include <clocale>
 #include "AST.h"
-#include <set>
+#include "scadstream.h"
 
 // It seems standard practice to use underscore for gettext, even though it is reserved.
 // Not wanting to risk breaking translations by changing every usage of this,
@@ -154,7 +154,7 @@ public:
   }
 };
 
-inline std::string STR(std::ostringstream& oss) {
+inline std::string STR(scad::ostringstream& oss) {
   auto s = oss.str();
   oss.str("");  // clear the string buffer for next STR call
   oss.clear();  // reset stream error state for next STR call
@@ -162,17 +162,15 @@ inline std::string STR(std::ostringstream& oss) {
 }
 
 template <typename T, typename ... Args>
-std::string STR(std::ostringstream& oss, T&& t, Args&& ... args) {
-  oss << t;
-  return STR(oss, std::forward<Args>(args)...);
+std::string STR(scad::ostringstream& oss, T&& t, Args&& ... args) {
+  return STR(oss << std::forward<T>(t), std::forward<Args>(args)...);
 }
 
 template <typename T, typename ... Args>
 std::string STR(T&& t, Args&& ... args) {
   // using thread_local here so that recursive template does not instantiate excessive ostringstreams
-  thread_local std::ostringstream oss;
-  oss << t;
-  return STR(oss, std::forward<Args>(args)...);
+  thread_local scad::ostringstream oss;
+  return STR(oss << std::forward<T>(t), std::forward<Args>(args)...);
 }
 
 template <typename ... Ts>

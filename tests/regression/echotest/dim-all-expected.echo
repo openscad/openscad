@@ -1,13 +1,13 @@
-WARNING: Unsupported DXF Entity 'LEADER' (1) in "dim-all.dxf".
-ECHO: linearX = 51.4496
-WARNING: Unsupported DXF Entity 'LEADER' (1) in "dim-all.dxf".
-ECHO: linearY = 29.1303
-WARNING: Unsupported DXF Entity 'LEADER' (1) in "dim-all.dxf".
-ECHO: aligned = 60
-WARNING: Unsupported DXF Entity 'LEADER' (1) in "dim-all.dxf".
-ECHO: ordinateX = -49.1754
-WARNING: Unsupported DXF Entity 'LEADER' (1) in "dim-all.dxf".
-ECHO: ordinateY = 30.8697
+WARNING: Unsupported DXF Entity 'LEADER' (1) in dim-all.dxf.
+ECHO: linearX = 51.449575542752655
+WARNING: Unsupported DXF Entity 'LEADER' (1) in dim-all.dxf.
+ECHO: linearY = 29.130254674348414
+WARNING: Unsupported DXF Entity 'LEADER' (1) in dim-all.dxf.
+ECHO: aligned = 60.00000000000001
+WARNING: Unsupported DXF Entity 'LEADER' (1) in dim-all.dxf.
+ECHO: ordinateX = -49.175424457247345
+WARNING: Unsupported DXF Entity 'LEADER' (1) in dim-all.dxf.
+ECHO: ordinateY = 30.869745325651586
 ECHO: radius = 60
-ECHO: diameter = 120
-ECHO: arc = 59.0362
+ECHO: diameter = 120.00000000000001
+ECHO: arc = 59.03624346792648

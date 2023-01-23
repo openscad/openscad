@@ -33,32 +33,22 @@
 
 #include "degree_trig.h"
 
-static inline double rad2deg(double x)
-{
-  return x * M_RAD2DEG;
-}
-
-static inline double deg2rad(double x)
-{
-  return x * M_DEG2RAD;
-}
-
 // this limit assumes 26+26=52 bits mantissa
 // comment/undefine it to disable domain check
-#define TRIG_HUGE_VAL ((1L << 26) * 360.0 * (1L << 26))
+#define TRIG_HUGE_VAL ((1L << 26) * 360.0L * (1L << 26))
 
-double sin_degrees(double x)
+long double sin_degrees(long double x)
 {
   // use positive tests because of possible Inf/NaN
-  if (x < 360.0 && x >= 0.0) {
+  if (x < 360.0L && x >= 0.0L) {
     // Ok for now
   } else
 #ifdef TRIG_HUGE_VAL
   if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
   {
-    double revolutions = floor(x / 360.0);
-    x -= 360.0 * revolutions;
+    long double revolutions = floorl(x / 360.0L);
+    x = std::fmal(-360.0L, revolutions, x);
   }
 #ifdef TRIG_HUGE_VAL
   else {
@@ -67,34 +57,34 @@ double sin_degrees(double x)
     return std::numeric_limits<double>::quiet_NaN();
   }
 #endif
-  bool oppose = x >= 180.0;
-  if (oppose) x -= 180.0;
-  if (x > 90.0) x = 180.0 - x;
-  if (x < 45.0) {
-    if (x == 30.0) x = 0.5;
-    else x = sin(deg2rad(x));
-  } else if (x == 45.0) {
-    x = M_SQRT1_2;
-  } else if (x == 60.0) {
-    x = M_SQRT3_4;
+  bool oppose = x >= 180.0L;
+  if (oppose) x -= 180.0L;
+  if (x > 90.0L) x = 180.0L - x;
+  if (x < 45.0L) {
+    if (x == 30.0L) x = 0.5L;
+    else x = sinl(deg2rad(x));
+  } else if (x == 45.0L) {
+    x = LM_SQRT1_2;
+  } else if (x == 60.0L) {
+    x = LM_SQRT3_4;
   } else { // Inf/Nan would fall here
-    x = cos(deg2rad(90.0 - x));
+    x = cos(deg2rad(90.0L - x));
   }
   return oppose ? -x : x;
 }
 
-double cos_degrees(double x)
+long double cos_degrees(long double x)
 {
   // use positive tests because of possible Inf/NaN
-  if (x < 360.0 && x >= 0.0) {
+  if (x < 360.0L && x >= 0.0L) {
     // Ok for now
   } else
 #ifdef TRIG_HUGE_VAL
   if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
   {
-    double revolutions = floor(x / 360.0);
-    x -= 360.0 * revolutions;
+    long double revolutions = floorl(x / 360.0L);
+    x = std::fmal(-360.0L, revolutions, x);
   }
 #ifdef TRIG_HUGE_VAL
   else {
@@ -103,37 +93,37 @@ double cos_degrees(double x)
     return std::numeric_limits<double>::quiet_NaN();
   }
 #endif
-  bool oppose = x >= 180.0;
-  if (oppose) x -= 180.0;
-  if (x > 90.0) {
-    x = 180.0 - x;
+  bool oppose = x >= 180.0L;
+  if (oppose) x -= 180.0L;
+  if (x > 90.0L) {
+    x = 180.0L - x;
     oppose = !oppose;
   }
-  if (x > 45.0) {
-    if (x == 60.0) x = 0.5;
-    else x = sin(deg2rad(90.0 - x));
-  } else if (x == 45.0) {
-    x = M_SQRT1_2;
-  } else if (x == 30.0) {
-    x = M_SQRT3_4;
+  if (x > 45.0L) {
+    if (x == 60.0L) x = 0.5L;
+    else x = sinl(deg2rad(90.0L - x));
+  } else if (x == 45.0L) {
+    x = LM_SQRT1_2;
+  } else if (x == 30.0L) {
+    x = LM_SQRT3_4;
   } else { // Inf/Nan would fall here
-    x = cos(deg2rad(x));
+    x = cosl(deg2rad(x));
   }
   return oppose ? -x : x;
 }
 
-double tan_degrees(double x)
+long double tan_degrees(long double x)
 {
-  int cycles = floor((x) / 180.0);
+  int cycles = floorl(x / 180.0L);
   // use positive tests because of possible Inf/NaN
-  if (x < 180.0 && x >= 0.0) {
+  if (x < 180.0L && x >= 0.0L) {
     // Ok for now
   } else
 #ifdef TRIG_HUGE_VAL
   if (x < TRIG_HUGE_VAL && x > -TRIG_HUGE_VAL)
 #endif
   {
-    x -= 180.0 * cycles;
+    x -= 180.0L * cycles;
   }
 #ifdef TRIG_HUGE_VAL
   else {
@@ -142,74 +132,72 @@ double tan_degrees(double x)
     return std::numeric_limits<double>::quiet_NaN();
   }
 #endif
-  bool oppose = x > 90.0;
-  if (oppose) x = 180.0 - x;
-  if (x == 0.0) {
-    x = (cycles % 2) == 0 ? 0.0 : -0.0;
-  } else if (x == 30.0) {
-    x = M_SQRT1_3;
-  } else if (x == 45.0) {
-    x = 1.0;
-  } else if (x == 60.0) {
-    x = M_SQRT3;
-  } else if (x == 90.0) {
+  bool oppose = x > 90.0L;
+  if (oppose) x = 180.0L - x;
+  if (x == 0.0L) {
+    x = (cycles % 2) == 0L ? 0.0L : -0.0L;
+  } else if (x == 30.0L) {
+    x = LM_SQRT1_3;
+  } else if (x == 45.0L) {
+    x = 1.0L;
+  } else if (x == 60.0L) {
+    x = LM_SQRT3;
+  } else if (x == 90.0L) {
     x = (cycles % 2) == 0 ?
       std::numeric_limits<double>::infinity() :
       -std::numeric_limits<double>::infinity();
   } else {
-    x = tan(deg2rad(x));
+    x = tanl(deg2rad(x));
   }
   return oppose ? -x : x;
 }
 //
 // Inverse trig
 //
-double asin_degrees(double x)
+long double asin_degrees(long double x)
 {
-  const auto degs = rad2deg(asin(x));
-  const auto whole = round(degs);
-  if (sin_degrees(whole) == x) return whole;
-  return degs;
+  const auto degs = rad2deg(asinl(x));
+  const auto whole = roundl(degs);
+  return (double(sin_degrees(whole)) == double(x)) ? whole : degs;
 }
-double acos_degrees(double x)
+long double acos_degrees(long double x)
 {
-  const auto degs = rad2deg(acos(x));
-  const auto whole = round(degs);
-  if (cos_degrees(whole) == x) return whole;
-  return degs;
+  const auto degs = rad2deg(acosl(x));
+  const auto whole = roundl(degs);
+  return (double(cos_degrees(whole)) == double(x)) ? whole : degs;
 }
-double atan_degrees(double x)
+long double atan_degrees(long double x)
 {
-  const auto degs = rad2deg(atan(x));
-  const auto whole = round(degs);
-  if (tan_degrees(whole) == x) return whole;
-  return degs;
+  const auto degs = rad2deg(atanl(x));
+  const auto whole = roundl(degs);
+  return (double(tan_degrees(whole)) == double(x)) ? whole : degs;
 }
-double atan2_degrees(double y, double x)
+long double atan2_degrees(long double y, long double x)
 {
-  const auto degs = rad2deg(atan2(y, x));
-  const auto whole = round(degs);
-  if (fabs(degs - whole) < 3.0E-14) return whole;
+  const auto degs = rad2deg(atan2l(y, x));
+  const auto whole = roundl(degs);
+  if (fabsl(degs - whole) < 3.0E-14L) return whole;
   return degs;
 }
 //
 // Rotation_matrix_from_axis_and_angle
 //
-Matrix3d angle_axis_degrees(double a, Vector3d v)
+Matrix3d angle_axis_degrees(double a, Vector3d _v)
 {
+  Vector3ld v = _v.cast<long double>();
   Matrix3d M{Matrix3d::Identity()};
   // Formula from https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
   // We avoid dividing by the square root of the magnitude as much as possible
   // to minimise rounding errors.
   const auto s = sin_degrees(a);
   const auto c = cos_degrees(a);
-  const auto m = v.squaredNorm();
+  const auto m = std::fmal(v[0], v[0], std::fmal(v[1], v[1], std::fmal(v[2], v[2], 0) ) );
   if (m > 0) {
-    const Vector3d Cv = v * ((1 - c) / m);
-    const Vector3d us = v.normalized() * s;
-    M << Cv[0] * v[0] + c,     Cv[1] * v[0] - us[2], Cv[2] * v[0] + us[1],
-      Cv[0] * v[1] + us[2], Cv[1] * v[1] + c,     Cv[2] * v[1] - us[0],
-      Cv[0] * v[2] - us[1], Cv[1] * v[2] + us[0], Cv[2] * v[2] + c;
+    const Vector3ld Cv = v * ((1.0L - c) / m);
+    const Vector3ld us = v.normalized() * s;
+    M << std::fmal(Cv[0], v[0],      c), std::fmal(Cv[1], v[0], -us[2]), std::fmal(Cv[2], v[0],  us[1]),
+         std::fmal(Cv[0], v[1],  us[2]), std::fmal(Cv[1], v[1],      c), std::fmal(Cv[2], v[1], -us[0]),
+         std::fmal(Cv[0], v[2], -us[1]), std::fmal(Cv[1], v[2],  us[0]), std::fmal(Cv[2], v[2],      c);
   }
   return M;
 }

@@ -1,7 +1,7 @@
 group() {
 	difference() {
 		multmatrix([[1, 0, 0, 0.6528], [0, 1, 0, -2.8864], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			square(size = [71.2506, 12.5888], center = false);
+			square(size = [71.25059999999999, 12.588799999999999], center = false);
 		}
 		group() {
 			text(text = "OpenSCAD", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "default", valign = "default", $fn = 0, $fa = 12, $fs = 2);
@@ -16,10 +16,10 @@ group() {
 					}
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
-					multmatrix([[1, 0, 0, 72.5639], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+					multmatrix([[1, 0, 0, 72.56389999999999], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 						group() {
 							multmatrix([[1, 0, 0, -0.1], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 								square(size = [0.2, 12.5888], center = false);
@@ -29,13 +29,13 @@ group() {
 				}
 				group() {
 					multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-						square(size = [72.5639, 0.2], center = false);
+						square(size = [72.56389999999999, 0.2], center = false);
 					}
 				}
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, 9.7024], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
@@ -44,46 +44,46 @@ group() {
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, 12.5733], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, -2.9433], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
 			}
 			color([0.564706, 0.933333, 0.564706, 1]) {
-				multmatrix([[1, 0, 0, 0], [0, 1, 0, 13.6109], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[1, 0, 0, 0], [0, 1, 0, 13.610899999999999], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, -4.2114], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
 			}
 			color([0, 0, 1, 1]) {
-				multmatrix([[1, 0, 0, 0], [0, 1, 0, -15.9709], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[1, 0, 0, 0], [0, 1, 0, -15.970899999999999], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
-				multmatrix([[1, 0, 0, 0], [0, 1, 0, 15.9709], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[1, 0, 0, 0], [0, 1, 0, 15.970899999999999], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
@@ -95,7 +95,7 @@ group() {
 			text(text = "OpenSCAD", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "default", valign = "default", $fn = 0, $fa = 12, $fs = 2);
 		}
 		multmatrix([[1, 0, 0, 0.6528], [0, 1, 0, -2.8864], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			square(size = [71.2506, 12.5888], center = false);
+			square(size = [71.25059999999999, 12.588799999999999], center = false);
 		}
 		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 			color([0, 0, 0, 1]) {
@@ -107,10 +107,10 @@ group() {
 					}
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
-					multmatrix([[1, 0, 0, 72.5639], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+					multmatrix([[1, 0, 0, 72.56389999999999], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 						group() {
 							multmatrix([[1, 0, 0, -0.1], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 								square(size = [0.2, 12.5888], center = false);
@@ -120,13 +120,13 @@ group() {
 				}
 				group() {
 					multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-						square(size = [72.5639, 0.2], center = false);
+						square(size = [72.56389999999999, 0.2], center = false);
 					}
 				}
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, 9.7024], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
@@ -135,46 +135,46 @@ group() {
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, 12.5733], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, -2.9433], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
 			}
 			color([0.564706, 0.933333, 0.564706, 1]) {
-				multmatrix([[1, 0, 0, 0], [0, 1, 0, 13.6109], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[1, 0, 0, 0], [0, 1, 0, 13.610899999999999], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, -4.2114], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
 			}
 			color([0, 0, 1, 1]) {
-				multmatrix([[1, 0, 0, 0], [0, 1, 0, -15.9709], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[1, 0, 0, 0], [0, 1, 0, -15.970899999999999], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
-				multmatrix([[1, 0, 0, 0], [0, 1, 0, 15.9709], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[1, 0, 0, 0], [0, 1, 0, 15.970899999999999], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
@@ -192,10 +192,10 @@ group() {
 					}
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
-					multmatrix([[1, 0, 0, 72.5639], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+					multmatrix([[1, 0, 0, 72.56389999999999], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 						group() {
 							multmatrix([[1, 0, 0, -0.1], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 								square(size = [0.2, 12.5888], center = false);
@@ -205,13 +205,13 @@ group() {
 				}
 				group() {
 					multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-						square(size = [72.5639, 0.2], center = false);
+						square(size = [72.56389999999999, 0.2], center = false);
 					}
 				}
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, 9.7024], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
@@ -220,53 +220,53 @@ group() {
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, 12.5733], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, -2.9433], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
 			}
 			color([0.564706, 0.933333, 0.564706, 1]) {
-				multmatrix([[1, 0, 0, 0], [0, 1, 0, 13.6109], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[1, 0, 0, 0], [0, 1, 0, 13.610899999999999], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
 				multmatrix([[1, 0, 0, 0], [0, 1, 0, -4.2114], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
 			}
 			color([0, 0, 1, 1]) {
-				multmatrix([[1, 0, 0, 0], [0, 1, 0, -15.9709], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[1, 0, 0, 0], [0, 1, 0, -15.970899999999999], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
-				multmatrix([[1, 0, 0, 0], [0, 1, 0, 15.9709], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				multmatrix([[1, 0, 0, 0], [0, 1, 0, 15.970899999999999], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 					group() {
 						multmatrix([[1, 0, 0, 0], [0, 1, 0, -0.1], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-							square(size = [72.5639, 0.2], center = false);
+							square(size = [72.56389999999999, 0.2], center = false);
 						}
 					}
 				}
 			}
 		}
 		multmatrix([[1, 0, 0, 0.6528], [0, 1, 0, -2.8864], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-			square(size = [71.2506, 12.5888], center = false);
+			square(size = [71.25059999999999, 12.588799999999999], center = false);
 		}
 		group() {
 			text(text = "OpenSCAD", size = 10, spacing = 1, font = "Liberation Sans", direction = "ltr", language = "en", script = "Latn", halign = "default", valign = "default", $fn = 0, $fa = 12, $fs = 2);

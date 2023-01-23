@@ -61,7 +61,7 @@ int Calc::get_fragments_from_r(double r, double fn, double fs, double fa)
    Where (twist*PI/180) is just twist in radians, aka "T"
  */
 static double helix_arc_length(double r_sqr, double height, double twist) {
-  double T = twist * M_DEG2RAD;
+  double T = deg2rad(twist);
   double c = height / T;
   return T * sqrt(r_sqr + c * c);
 }
@@ -129,7 +129,7 @@ int Calc::get_conical_helix_slices(double r_sqr, double height, double twist, do
      E = t*1/(1-0.66)=3t E = t*1.5/(1.5-1)  = 3t
      B = E - t            B = E - t
    */
-  double rads = twist * M_DEG2RAD;
+  double rads = deg2rad(twist);
   double angle_end;
   if (scale > 1) {
     angle_end = rads * scale / (scale - 1);

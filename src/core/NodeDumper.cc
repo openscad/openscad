@@ -151,7 +151,7 @@ Response NodeDumper::visit(State& state, const AbstractNode& node)
       static const boost::regex re(R"([^\s\"]+|\"(?:[^\"\\]|\\.)*\")");
       const auto name = STR(node);
       boost::sregex_token_iterator it(name.begin(), name.end(), re, 0);
-      std::copy(it, boost::sregex_token_iterator(), std::ostream_iterator<std::string>(this->dumpstream));
+      std::copy(it, boost::sregex_token_iterator(), this->dumpstream.get_os_iterator());
 
       if (node.getChildren().size() > 0) {
         this->dumpstream << "{";

@@ -65,10 +65,8 @@ static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *i
   return children.instantiate(node);
 }
 
-std::string OffsetNode::toString() const
+void OffsetNode::print(scad::ostringstream& stream) const
 {
-  std::ostringstream stream;
-
   bool isRadius = this->join_type == ClipperLib::jtRound;
   auto var = isRadius ? "(r = " : "(delta = ";
 
@@ -79,8 +77,6 @@ std::string OffsetNode::toString() const
   stream << ", $fn = " << this->fn
          << ", $fa = " << this->fa
          << ", $fs = " << this->fs << ")";
-
-  return stream.str();
 }
 
 void register_builtin_offset()

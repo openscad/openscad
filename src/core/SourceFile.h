@@ -15,7 +15,7 @@ public:
   SourceFile(std::string path, std::string filename);
 
   std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<const Context>& context, std::shared_ptr<const class FileContext> *resulting_file_context) const;
-  void print(std::ostream& stream, const std::string& indent) const override;
+  void print(scad::ostringstream& stream, const std::string& indent) const override;
 
   void setModulePath(const std::string& path) { this->path = path; }
   const std::string& modulePath() const { return this->path; }

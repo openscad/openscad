@@ -31,7 +31,6 @@
 #include <sstream>
 /*Unicode support for string lengths and array accesses*/
 #include <glib.h>
-#include <boost/lexical_cast.hpp>
 
 #include "Value.h"
 #include "Expression.h"
@@ -39,124 +38,13 @@
 #include "printutils.h"
 #include "StackCheck.h"
 #include "boost-utils.h"
-#include "double-conversion/double-conversion.h"
-#include "double-conversion/utils.h"
-#include "double-conversion/ieee.h"
+#include "scadstream.h"
 
 namespace fs = boost::filesystem;
 
 const Value Value::undefined;
 const VectorType VectorType::EMPTY(nullptr);
 const RangeType RangeType::EMPTY{0, 0, 0};
-
-/* Define values for double-conversion library. */
-#define DC_BUFFER_SIZE (128)
-#define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO | double_conversion::DoubleToStringConverter::EMIT_POSITIVE_EXPONENT_SIGN)
-#define DC_INF "inf"
-#define DC_NAN "nan"
-#define DC_EXP 'e'
-#define DC_DECIMAL_LOW_EXP (-6)
-#define DC_DECIMAL_HIGH_EXP (21)
-#define DC_MAX_LEADING_ZEROES (5)
-#define DC_MAX_TRAILING_ZEROES (0)
-
-/* WARNING: using values > 8 will significantly slow double to string
- * conversion, defeating the purpose of using double-conversion library */
-#define DC_PRECISION_REQUESTED (6)
-
-//private definitions used by trimTrailingZeroesHelper
-#define TRIM_TRAILINGZEROES_DONE (0)
-#define TRIM_TRAILINGZEROES_CONTINUE (1)
-
-//process parameter buffer from the end to start to find out where the zeroes are located (if any).
-//parameter pos shall be the pos in buffer where '\0' is located.
-//parameter currentpos shall be set to end of buffer (where '\0' is located).
-//set parameters exppos and decimalpos when needed.
-//leave parameter zeropos as is.
-inline int trimTrailingZeroesHelper(char *buffer, const int pos, char *currentpos = nullptr, char *exppos = nullptr, char *decimalpos = nullptr, char *zeropos = nullptr) {
-
-  int cont = TRIM_TRAILINGZEROES_CONTINUE;
-
-  //we have exhausted all positions from end to start
-  if (currentpos <= buffer) return TRIM_TRAILINGZEROES_DONE;
-
-  //we do no need to process the terminator of string
-  if (*currentpos == '\0') {
-    currentpos--;
-    cont = trimTrailingZeroesHelper(buffer, pos, currentpos, exppos, decimalpos, zeropos);
-  }
-
-  //we have an exponent and jumps to the position before the exponent - no need to process the characters belonging to the exponent
-  if (cont && exppos && currentpos >= exppos) {
-    currentpos = exppos;
-    currentpos--;
-    cont = trimTrailingZeroesHelper(buffer, pos, currentpos, exppos, decimalpos, zeropos);
-  }
-
-  //we are still on the right side of the decimal and still counting zeroes (keep track of) from the back to start
-  if (cont && currentpos && decimalpos < currentpos && *currentpos == '0') {
-    zeropos = currentpos;
-    currentpos--;
-    cont = trimTrailingZeroesHelper(buffer, pos, currentpos, exppos, decimalpos, zeropos);
-  }
-
-  //we have found the first occurrence of not a zero and have zeroes and exponent to take care of (move exponent to either the position of the zero or the decimal)
-  if (cont && zeropos && exppos) {
-    int count = &buffer[pos] - exppos + 1;
-    memmove(zeropos - 1 == decimalpos ? decimalpos : zeropos, exppos, count);
-    return TRIM_TRAILINGZEROES_DONE;
-  }
-
-  //we have found a zero and need to take care of (truncate the string to the position of either the zero or the decimal)
-  if (cont && zeropos) {
-    zeropos - 1 == decimalpos ? *decimalpos = '\0' : *zeropos = '\0';
-    return TRIM_TRAILINGZEROES_DONE;
-  }
-
-  //we have just another character (other than a zero) and are done
-  if (cont && !zeropos) return TRIM_TRAILINGZEROES_DONE;
-
-  return TRIM_TRAILINGZEROES_DONE;
-}
-
-inline void trimTrailingZeroes(char *buffer, const int pos) {
-  char *decimal = strchr(buffer, '.');
-  if (decimal) {
-    char *exppos = strchr(buffer, DC_EXP);
-    trimTrailingZeroesHelper(buffer, pos, &buffer[pos], exppos, decimal, nullptr);
-  }
-}
-
-inline bool HandleSpecialValues(const double& value, double_conversion::StringBuilder& builder) {
-  double_conversion::Double double_inspect(value);
-  if (double_inspect.IsInfinite()) {
-    if (value < 0) {
-      builder.AddCharacter('-');
-    }
-    builder.AddString(DC_INF);
-    return true;
-  }
-  if (double_inspect.IsNan()) {
-    builder.AddString(DC_NAN);
-    return true;
-  }
-  return false;
-}
-
-inline std::string DoubleConvert(const double& value, char *buffer,
-                                 double_conversion::StringBuilder& builder, const double_conversion::DoubleToStringConverter& dc) {
-  builder.Reset();
-  if (double_conversion::Double(value).IsSpecial()) {
-    HandleSpecialValues(value, builder);
-    builder.Finalize();
-    return buffer;
-  }
-  dc.ToPrecision(value, DC_PRECISION_REQUESTED, &builder);
-  int pos = builder.position(); // get position before Finalize destroys it
-  builder.Finalize();
-  trimTrailingZeroes(buffer, pos);
-  return buffer;
-}
 
 static uint32_t convert_to_uint32(const double d)
 {
@@ -171,7 +59,7 @@ static uint32_t convert_to_uint32(const double d)
   return ret;
 }
 
-std::ostream& operator<<(std::ostream& stream, const Filename& filename)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const Filename& filename)
 {
   fs::path fnpath{static_cast<std::string>(filename)}; // gcc-4.6
   auto fpath = boostfs_uncomplete(fnpath, fs::current_path());
@@ -180,7 +68,7 @@ std::ostream& operator<<(std::ostream& stream, const Filename& filename)
 }
 
 // FIXME: This could probably be done more elegantly using boost::regex
-std::ostream& operator<<(std::ostream& stream, const QuotedString& s)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const QuotedString& s)
 {
   stream << '"';
   for (char c : s) {
@@ -319,23 +207,16 @@ const str_utf8_wrapper& Value::toStrUtf8Wrapper() const {
 class tostream_visitor
 {
 public:
-  std::ostringstream& stream;
-  mutable char buffer[DC_BUFFER_SIZE];
-  mutable double_conversion::StringBuilder builder;
-  double_conversion::DoubleToStringConverter dc;
+  scad::ostringstream& stream;
 
-  tostream_visitor(std::ostringstream& stream)
-    : stream(stream), builder(buffer, DC_BUFFER_SIZE),
-    dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES)
-  {}
+  tostream_visitor(scad::ostringstream& stream) : stream(stream) {}
 
   template <typename T> void operator()(const T& op1) const {
-    //std::cout << "[generic tostream_visitor]\n";
-    stream << boost::lexical_cast<std::string>(op1);
+    stream << op1;
   }
 
   void operator()(const double& op1) const {
-    stream << DoubleConvert(op1, buffer, builder, dc);
+    stream << op1;
   }
 
   void operator()(const UndefType&) const {
@@ -367,7 +248,7 @@ public:
   }
 
   void operator()(const str_utf8_wrapper& v) const {
-    stream << '"' << v.toString() << '"';
+    stream << QuotedString(v.toString());
   }
 
   void operator()(const RangePtr& v) const {
@@ -378,6 +259,11 @@ public:
     stream << *v;
   }
 };
+
+scad::ostringstream& operator<<(scad::ostringstream& stream, const Value& value) {
+    std::visit(tostream_visitor(stream), value.getVariant());
+    return stream;
+}
 
 class tostring_visitor
 {
@@ -392,11 +278,9 @@ public:
   }
 
   std::string operator()(const double& op1) const {
-    char buffer[DC_BUFFER_SIZE];
-    double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
-    double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
-                                                  DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
-    return DoubleConvert(op1, buffer, builder, dc);
+    scad::ostringstream stream;
+    stream << op1;
+    return stream.str();
   }
 
   std::string operator()(const UndefType&) const {
@@ -414,7 +298,7 @@ public:
 
   std::string operator()(const VectorType& v) const {
     // Create a single stream and pass reference to it for list elements for optimization.
-    std::ostringstream stream;
+    scad::ostringstream stream;
     try {
       (tostream_visitor(stream))(v);
     } catch (EvaluationException& e) {
@@ -463,7 +347,7 @@ std::string Value::toEchoStringNoThrow() const
 }
 
 std::string UndefType::toString() const {
-  std::ostringstream stream;
+  scad::ostringstream stream;
   if (!reasons->empty()) {
     auto it = reasons->begin();
     stream << *it;
@@ -486,7 +370,7 @@ std::string Value::toUndefString() const
   return std::get<UndefType>(this->value).toString();
 }
 
-std::ostream& operator<<(std::ostream& stream, const UndefType& /*u*/)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const UndefType& /*u*/)
 {
   stream << "undef";
   return stream;
@@ -515,7 +399,7 @@ public:
 
   std::string operator()(const VectorType& v) const
   {
-    std::ostringstream stream;
+    scad::ostringstream stream;
     for (auto& val : v) {
       stream << val.chrString();
     }
@@ -530,7 +414,7 @@ public:
       return "";
     }
 
-    std::ostringstream stream;
+    scad::ostringstream stream;
     for (double d : *v) stream << Value(d).chrString();
     return stream.str();
   }
@@ -1280,20 +1164,15 @@ bool RangeType::iterator::operator!=(const iterator& other) const
   return !(*this == other);
 }
 
-std::ostream& operator<<(std::ostream& stream, const RangeType& r)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const RangeType& r)
 {
-  char buffer[DC_BUFFER_SIZE];
-  double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
-  double_conversion::DoubleToStringConverter dc(DC_FLAGS, DC_INF,
-                                                DC_NAN, DC_EXP, DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP,
-                                                DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES);
   return stream << "["
-                << DoubleConvert(r.begin_value(), buffer, builder, dc) << " : "
-                << DoubleConvert(r.step_value(), buffer, builder, dc) << " : "
-                << DoubleConvert(r.end_value(),   buffer, builder, dc) << "]";
+                << r.begin_value() << " : "
+                << r.step_value()  << " : "
+                << r.end_value()   << "]";
 }
 
-std::ostream& operator<<(std::ostream& stream, const FunctionType& f)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const FunctionType& f)
 {
   stream << "function(";
   bool first = true;
@@ -1351,7 +1230,7 @@ ObjectType ObjectType::clone() const
   return ObjectType(this->ptr);
 }
 
-std::ostream& operator<<(std::ostream& stream, const ObjectType& v)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const ObjectType& v)
 {
   stream << "{ ";
   auto iter = v.ptr->keys.begin();

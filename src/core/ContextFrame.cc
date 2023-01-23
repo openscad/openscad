@@ -138,7 +138,7 @@ bool ContextFrame::is_config_variable(const std::string& name)
 #ifdef DEBUG
 std::string ContextFrame::dumpFrame() const
 {
-  std::ostringstream s;
+  scad::ostringstream s;
   s << boost::format("ContextFrame %p:\n") % this;
   for (const auto& v : lexical_variables) {
     s << boost::format("    %s = %s\n") % v.first % v.second.toEchoString();

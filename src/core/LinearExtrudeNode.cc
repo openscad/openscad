@@ -135,10 +135,8 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
   return node;
 }
 
-std::string LinearExtrudeNode::toString() const
+void LinearExtrudeNode::print(scad::ostringstream& stream) const
 {
-  std::ostringstream stream;
-
   stream << this->name() << "(";
   if (!this->filename.empty()) { // Ignore deprecated parameters if empty
     fs::path path((std::string)this->filename);
@@ -176,7 +174,6 @@ std::string LinearExtrudeNode::toString() const
     stream << ", convexity = " << this->convexity;
   }
   stream << ")";
-  return stream.str();
 }
 
 void register_builtin_dxf_linear_extrude()

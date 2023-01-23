@@ -48,7 +48,7 @@ const Annotation *Assignment::annotation(const std::string& name) const
 }
 
 
-void Assignment::print(std::ostream& stream, const std::string& indent) const
+void Assignment::print(scad::ostringstream& stream, const std::string& indent) const
 {
   if (this->hasAnnotations()) {
     const Annotation *group = this->annotation("Group");
@@ -61,7 +61,7 @@ void Assignment::print(std::ostream& stream, const std::string& indent) const
   stream << indent << this->name << " = " << *this->expr << ";\n";
 }
 
-std::ostream& operator<<(std::ostream& stream, const AssignmentList& assignments)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const AssignmentList& assignments)
 {
   bool first = true;
   for (const auto& assignment : assignments) {

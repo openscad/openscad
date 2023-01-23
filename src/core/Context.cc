@@ -136,7 +136,7 @@ size_t Context::clear()
 #ifdef DEBUG
 std::string Context::dump() const
 {
-  std::ostringstream s;
+  scad::ostringstream s;
   s << boost::format("Context %p:\n") % this;
   Context const *context = this;
   while (context) {

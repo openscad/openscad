@@ -89,7 +89,7 @@ public:
     void set(Parameters& parameters);
     [[nodiscard]] FT_Face get_font_face() const;
     void detect_properties();
-    friend std::ostream& operator<<(std::ostream& stream, const FreetypeRenderer::Params& params) {
+    friend scad::ostringstream& operator<<(scad::ostringstream& stream, const FreetypeRenderer::Params& params) {
       return stream
              << "text = \"" << params.text
              << "\", size = " << params.size

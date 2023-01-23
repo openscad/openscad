@@ -82,15 +82,15 @@ class SurfaceNode : public LeafNode
 public:
   VISITABLE();
   SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi) { }
-  std::string toString() const override;
-  std::string name() const override { return "surface"; }
+  void print(scad::ostringstream& stream) const override final;
+  std::string name() const override final { return "surface"; }
 
   Filename filename;
   bool center{false};
   bool invert{false};
   int convexity{1};
 
-  const Geometry *createGeometry() const override;
+  const Geometry *createGeometry() const override final;
 private:
   void convert_image(img_data_t& data, std::vector<uint8_t>& img, unsigned int width, unsigned int height) const;
   bool is_png(std::vector<uint8_t>& img) const;
@@ -358,9 +358,8 @@ const Geometry *SurfaceNode::createGeometry() const
   return p;
 }
 
-std::string SurfaceNode::toString() const
+void SurfaceNode::print(scad::ostringstream& stream) const
 {
-  std::ostringstream stream;
   fs::path path{static_cast<std::string>(this->filename)}; // gcc-4.6
 
   stream << this->name() << "(file = " << this->filename
@@ -368,8 +367,6 @@ std::string SurfaceNode::toString() const
          << ", invert = " << (this->invert ? "true" : "false")
          << ", " "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
          << ")";
-
-  return stream.str();
 }
 
 void register_builtin_surface()

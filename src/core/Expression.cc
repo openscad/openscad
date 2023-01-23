@@ -87,7 +87,7 @@ bool UnaryOp::isLiteral() const {
   return this->expr->isLiteral();
 }
 
-void UnaryOp::print(std::ostream& stream, const std::string&) const
+void UnaryOp::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << opString() << *this->expr;
 }
@@ -157,7 +157,7 @@ const char *BinaryOp::opString() const
   }
 }
 
-void BinaryOp::print(std::ostream& stream, const std::string&) const
+void BinaryOp::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << "(" << *this->left << " " << opString() << " " << *this->right << ")";
 }
@@ -177,7 +177,7 @@ Value TernaryOp::evaluate(const std::shared_ptr<const Context>& context) const
   return evaluateStep(context)->evaluate(context);
 }
 
-void TernaryOp::print(std::ostream& stream, const std::string&) const
+void TernaryOp::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << "(" << *this->cond << " ? " << *this->ifexpr << " : " << *this->elseexpr << ")";
 }
@@ -191,7 +191,7 @@ Value ArrayLookup::evaluate(const std::shared_ptr<const Context>& context) const
   return this->array->evaluate(context)[this->index->evaluate(context)];
 }
 
-void ArrayLookup::print(std::ostream& stream, const std::string&) const
+void ArrayLookup::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << *array << "[" << *index << "]";
 }
@@ -201,7 +201,7 @@ Value Literal::evaluate(const std::shared_ptr<const Context>&) const
   return value.clone();
 }
 
-void Literal::print(std::ostream& stream, const std::string&) const
+void Literal::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << value;
 }
@@ -266,7 +266,7 @@ Value Range::evaluate(const std::shared_ptr<const Context>& context) const
   return Value::undefined.clone();
 }
 
-void Range::print(std::ostream& stream, const std::string&) const
+void Range::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << "[" << *this->begin;
   if (this->step) stream << " : " << *this->step;
@@ -323,7 +323,7 @@ Value Vector::evaluate(const std::shared_ptr<const Context>& context) const
   }
 }
 
-void Vector::print(std::ostream& stream, const std::string&) const
+void Vector::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << "[";
   for (size_t i = 0; i < this->children.size(); ++i) {
@@ -342,7 +342,7 @@ Value Lookup::evaluate(const std::shared_ptr<const Context>& context) const
   return context->lookup_variable(this->name, loc).clone();
 }
 
-void Lookup::print(std::ostream& stream, const std::string&) const
+void Lookup::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << this->name;
 }
@@ -392,7 +392,7 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
   return Value::undefined.clone();
 }
 
-void MemberLookup::print(std::ostream& stream, const std::string&) const
+void MemberLookup::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << *this->expr << "." << this->member;
 }
@@ -407,7 +407,7 @@ Value FunctionDefinition::evaluate(const std::shared_ptr<const Context>& context
   return FunctionPtr{FunctionType{context, expr, std::make_unique<AssignmentList>(parameters)}};
 }
 
-void FunctionDefinition::print(std::ostream& stream, const std::string& indent) const
+void FunctionDefinition::print(scad::ostringstream& stream, const std::string& indent) const
 {
   stream << indent << "function(";
   bool first = true;
@@ -452,7 +452,7 @@ FunctionCall::FunctionCall(Expression *expr, AssignmentList args, const Location
     name = lookup->get_name();
   } else {
     isLookup = false;
-    std::ostringstream s;
+    scad::ostringstream s;
     s << "(";
     expr->print(s, "");
     s << ")";
@@ -596,7 +596,7 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
   }
 }
 
-void FunctionCall::print(std::ostream& stream, const std::string&) const
+void FunctionCall::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << this->get_name() << "(" << this->arguments << ")";
 }
@@ -652,7 +652,7 @@ Value Assert::evaluate(const std::shared_ptr<const Context>& context) const
   return nextexpr ? nextexpr->evaluate(context) : Value::undefined.clone();
 }
 
-void Assert::print(std::ostream& stream, const std::string&) const
+void Assert::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << "assert(" << this->arguments << ")";
   if (this->expr) stream << " " << *this->expr;
@@ -677,7 +677,7 @@ Value Echo::evaluate(const std::shared_ptr<const Context>& context) const
   return nextexpr ? nextexpr->evaluate(context) : Value::undefined.clone();
 }
 
-void Echo::print(std::ostream& stream, const std::string&) const
+void Echo::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << "echo(" << this->arguments << ")";
   if (this->expr) stream << " " << *this->expr;
@@ -723,7 +723,7 @@ Value Let::evaluate(const std::shared_ptr<const Context>& context) const
   return evaluateStep(letContext)->evaluate(*letContext);
 }
 
-void Let::print(std::ostream& stream, const std::string&) const
+void Let::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << "let(" << this->arguments << ") " << *expr;
 }
@@ -747,7 +747,7 @@ Value LcIf::evaluate(const std::shared_ptr<const Context>& context) const
   }
 }
 
-void LcIf::print(std::ostream& stream, const std::string&) const
+void LcIf::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << "if(" << *this->cond << ") (" << *this->ifexpr << ")";
   if (this->elseexpr) {
@@ -798,7 +798,7 @@ Value LcEach::evaluate(const std::shared_ptr<const Context>& context) const
   return evalRecur(this->expr->evaluate(context), context);
 }
 
-void LcEach::print(std::ostream& stream, const std::string&) const
+void LcEach::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << "each (" << *this->expr << ")";
 }
@@ -884,7 +884,7 @@ Value LcFor::evaluate(const std::shared_ptr<const Context>& context) const
   return {std::move(vec)};
 }
 
-void LcFor::print(std::ostream& stream, const std::string&) const
+void LcFor::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << "for(" << this->arguments << ") (" << *this->expr << ")";
 }
@@ -928,7 +928,7 @@ Value LcForC::evaluate(const std::shared_ptr<const Context>& context) const
   return {std::move(output)};
 }
 
-void LcForC::print(std::ostream& stream, const std::string&) const
+void LcForC::print(scad::ostringstream& stream, const std::string&) const
 {
   stream
     << "for(" << this->arguments
@@ -947,7 +947,7 @@ Value LcLet::evaluate(const std::shared_ptr<const Context>& context) const
   return this->expr->evaluate(*Let::sequentialAssignmentContext(this->arguments, this->location(), context));
 }
 
-void LcLet::print(std::ostream& stream, const std::string&) const
+void LcLet::print(scad::ostringstream& stream, const std::string&) const
 {
   stream << "let(" << this->arguments << ") (" << *this->expr << ")";
 }

@@ -13,8 +13,8 @@ public:
     origin_x = origin_y = scale = 0;
     angle = 360;
   }
-  std::string toString() const override;
-  std::string name() const override { return "rotate_extrude"; }
+  void print(scad::ostringstream& stream) const override final;
+  std::string name() const override final { return "rotate_extrude"; }
 
   int convexity;
   double fn, fs, fa;

@@ -35,7 +35,7 @@ Annotation::Annotation(std::string name, shared_ptr<Expression> expr)
 {
 }
 
-void Annotation::print(std::ostream& stream, const std::string& indent) const
+void Annotation::print(scad::ostringstream& stream, const std::string& indent) const
 {
   stream << indent << "//" << name << "(" << *this->expr << ")" << std::endl;
 }

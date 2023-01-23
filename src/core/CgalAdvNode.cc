@@ -112,10 +112,8 @@ std::string CgalAdvNode::name() const
   return "internal_error";
 }
 
-std::string CgalAdvNode::toString() const
+void CgalAdvNode::print(scad::ostringstream& stream) const
 {
-  std::ostringstream stream;
-
   stream << this->name();
   switch (type) {
   case CgalAdvType::MINKOWSKI:
@@ -136,8 +134,6 @@ std::string CgalAdvNode::toString() const
   default:
     assert(false);
   }
-
-  return stream.str();
 }
 
 void register_builtin_cgaladv()

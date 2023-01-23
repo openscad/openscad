@@ -5,7 +5,7 @@
 #include "exceptions.h"
 #include "printutils.h"
 
-void ModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
+void ModuleInstantiation::print(scad::ostringstream& stream, const std::string& indent, const bool inlined) const
 {
   if (!inlined) stream << indent;
   stream << modname + "(";
@@ -27,7 +27,7 @@ void ModuleInstantiation::print(std::ostream& stream, const std::string& indent,
   }
 }
 
-void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
+void IfElseModuleInstantiation::print(scad::ostringstream& stream, const std::string& indent, const bool inlined) const
 {
   ModuleInstantiation::print(stream, indent, inlined);
   if (else_scope) {

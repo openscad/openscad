@@ -5,12 +5,16 @@
 #include <unordered_map>
 #include "memory.h"
 
+namespace scad {
+  class ostringstream;
+}
+
 class Annotation
 {
 public:
   Annotation(std::string name, shared_ptr<class Expression> expr);
 
-  void print(std::ostream& stream, const std::string& indent) const;
+  void print(scad::ostringstream& stream, const std::string& indent) const;
   [[nodiscard]] const std::string& getName() const { return name; }
   [[nodiscard]] const shared_ptr<Expression>& getExpr() const { return expr; }
 

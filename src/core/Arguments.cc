@@ -47,7 +47,7 @@ Arguments Arguments::clone() const
   return output;
 }
 
-std::ostream& operator<<(std::ostream& stream, const Argument& argument)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const Argument& argument)
 {
   if (argument.name) {
     stream << *argument.name << " = ";
@@ -56,7 +56,7 @@ std::ostream& operator<<(std::ostream& stream, const Argument& argument)
   return stream;
 }
 
-std::ostream& operator<<(std::ostream& stream, const Arguments& arguments)
+scad::ostringstream& operator<<(scad::ostringstream& stream, const Arguments& arguments)
 {
   bool first = true;
   for (const auto& argument : arguments) {

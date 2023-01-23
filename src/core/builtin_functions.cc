@@ -378,7 +378,7 @@ Value builtin_ln(Arguments arguments, const Location& loc)
 
 Value builtin_str(Arguments arguments, const Location& /*loc*/)
 {
-  std::ostringstream stream;
+  scad::ostringstream stream;
   for (const auto& argument : arguments) {
     stream << argument->toString();
   }
@@ -387,7 +387,7 @@ Value builtin_str(Arguments arguments, const Location& /*loc*/)
 
 Value builtin_chr(Arguments arguments, const Location& /*loc*/)
 {
-  std::ostringstream stream;
+  scad::ostringstream stream;
   for (const auto& argument : arguments) {
     stream << argument->chrString();
   }

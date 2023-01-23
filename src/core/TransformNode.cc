@@ -81,8 +81,8 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
   const auto& val_a = parameters["a"];
   const auto& val_v = parameters["v"];
   if (val_a.type() == Value::Type::VECTOR) {
-    double sx = 0, sy = 0, sz = 0;
-    double cx = 1, cy = 1, cz = 1;
+    long double sx = 0, sy = 0, sz = 0;
+    long double cx = 1, cy = 1, cz = 1;
     double a = 0.0;
     bool ok = true;
     const auto& vec_a = val_a.toVector();
@@ -125,9 +125,9 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
       }
     }
     Matrix3d M;
-    M << cy * cz,  cz *sx *sy - cx * sz,   cx *cz *sy + sx * sz,
-      cy *sz,  cx *cz + sx * sy * sz,  -cz * sx + cx * sy * sz,
-      -sy,       cy *sx,                  cx *cy;
+    M << cy * cz, cz * sx * sy - cx * sz,  cx * cz * sy + sx * sz,
+         cy * sz, cx * cz + sx * sy * sz, -cz * sx + cx * sy * sz,
+             -sy,                cy * sx,                 cx * cy;
     node->matrix.rotate(M);
   } else {
     double a = 0.0;
@@ -157,25 +157,26 @@ std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Ar
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"v"});
 
-  double x = 1.0, y = 0.0, z = 0.0;
-  if (!parameters["v"].getVec3(x, y, z, 0.0)) {
+  double xd = 1.0, yd = 0.0, zd = 0.0;
+  if (!parameters["v"].getVec3(xd, yd, zd, 0.0)) {
     LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert mirror(%1$s) parameter to a vec3 or vec2 of numbers", parameters["v"].toEchoStringNoThrow());
   }
 
   // x /= sqrt(x*x + y*y + z*z)
   // y /= sqrt(x*x + y*y + z*z)
   // z /= sqrt(x*x + y*y + z*z)
-  if (x != 0.0 || y != 0.0 || z != 0.0) {
+  if (xd != 0.0 || yd != 0.0 || zd != 0.0) {
     // skip using sqrt to normalize the vector since each element of matrix contributes it with two multiplied terms
     // instead just divide directly within each matrix element
     // simplified calculation leads to less float errors
-    double a = x * x + y * y + z * z;
+    long double x = xd, y = yd, z = zd;
+    long double a = std::fmal(x, x, std::fmal(y, y, std::fmal(z, z, 0.0L) ) );
 
     Matrix4d m;
-    m << 1 - 2 * x * x / a, -2 * y * x / a, -2 * z * x / a, 0,
-      -2 * x * y / a, 1 - 2 * y * y / a, -2 * z * y / a, 0,
-      -2 * x * z / a, -2 * y * z / a, 1 - 2 * z * z / a, 0,
-      0, 0, 0, 1;
+    m << 1.0L - 2.0L * x * x / a,       -2.0L * y * x / a,       -2.0L * z * x / a, 0.0,
+               -2.0L * x * y / a, 1.0L - 2.0L * y * y / a,       -2.0L * z * y / a, 0.0,
+               -2.0L * x * z / a,       -2.0L * y * z / a, 1.0L - 2.0L * z * z / a, 0.0,
+                             0.0,                     0.0,                     0.0, 1.0;
     node->matrix = m;
   }
 
@@ -223,10 +224,8 @@ std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst
   return children.instantiate(node);
 }
 
-std::string TransformNode::toString() const
+void TransformNode::print(scad::ostringstream& stream) const
 {
-  std::ostringstream stream;
-
   stream << "multmatrix([";
   for (int j = 0; j < 4; ++j) {
     stream << "[";
@@ -238,8 +237,6 @@ std::string TransformNode::toString() const
     if (j != 3) stream << ", ";
   }
   stream << "])";
-
-  return stream.str();
 }
 
 TransformNode::TransformNode(const ModuleInstantiation *mi, std::string verbose_name) :

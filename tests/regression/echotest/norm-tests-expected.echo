@@ -1,8 +1,8 @@
 ECHO: 0
 ECHO: 1
-ECHO: 2.23607
-ECHO: 3.74166
-ECHO: 5.47723
+ECHO: 2.23606797749979
+ECHO: 3.7416573867739413
+ECHO: 5.477225575051661
 WARNING: norm() number of parameters does not match: expected 1, found 0 in file norm-tests.scad, line 8
 ECHO: undef
 ECHO: nan

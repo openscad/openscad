@@ -115,18 +115,16 @@ class CubeNode : public LeafNode
 {
 public:
   CubeNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
+  void print(scad::ostringstream& stream) const override final
   {
-    std::ostringstream stream;
     stream << "cube(size = ["
            << x << ", "
            << y << ", "
            << z << "], center = "
            << (center ? "true" : "false") << ")";
-    return stream.str();
   }
-  std::string name() const override { return "cube"; }
-  const Geometry *createGeometry() const override;
+  std::string name() const override final { return "cube"; }
+  const Geometry *createGeometry() const override final;
 
   double x = 1, y = 1, z = 1;
   bool center = false;
@@ -238,19 +236,17 @@ class SphereNode : public LeafNode
 {
 public:
   SphereNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
+  void print(scad::ostringstream& stream) const override final
   {
-    std::ostringstream stream;
     stream << "sphere"
            << "($fn = " << fn
            << ", $fa = " << fa
            << ", $fs = " << fs
            << ", r = " << r
            << ")";
-    return stream.str();
   }
-  std::string name() const override { return "sphere"; }
-  const Geometry *createGeometry() const override;
+  std::string name() const override final { return "sphere"; }
+  const Geometry *createGeometry() const override final;
 
   double fn, fs, fa;
   double r = 1;
@@ -358,9 +354,8 @@ class CylinderNode : public LeafNode
 {
 public:
   CylinderNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
+  void print(scad::ostringstream& stream) const override final
   {
-    std::ostringstream stream;
     stream << "cylinder"
            << "($fn = " << fn
            << ", $fa = " << fa
@@ -370,10 +365,9 @@ public:
            << ", r2 = " << r2
            << ", center = " << (center ? "true" : "false")
            << ")";
-    return stream.str();
   }
-  std::string name() const override { return "cylinder"; }
-  const Geometry *createGeometry() const override;
+  std::string name() const override final { return "cylinder"; }
+  const Geometry *createGeometry() const override final;
 
   double fn, fs, fa;
   double r1 = 1, r2 = 1, h = 1;
@@ -509,18 +503,17 @@ class PolyhedronNode : public LeafNode
 {
 public:
   PolyhedronNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override;
-  std::string name() const override { return "polyhedron"; }
-  const Geometry *createGeometry() const override;
+  void print(scad::ostringstream& stream) const override final;
+  std::string name() const override final { return "polyhedron"; }
+  const Geometry *createGeometry() const override final;
 
   std::vector<point3d> points;
   std::vector<std::vector<size_t>> faces;
   int convexity = 1;
 };
 
-std::string PolyhedronNode::toString() const
+void PolyhedronNode::print(scad::ostringstream& stream) const
 {
-  std::ostringstream stream;
   stream << "polyhedron(points = [";
   bool firstPoint = true;
   for (const auto& point : this->points) {
@@ -552,7 +545,6 @@ std::string PolyhedronNode::toString() const
     stream << "]";
   }
   stream << "], convexity = " << this->convexity << ")";
-  return stream.str();
 }
 
 const Geometry *PolyhedronNode::createGeometry() const
@@ -648,17 +640,15 @@ class SquareNode : public LeafNode
 {
 public:
   SquareNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
+  void print(scad::ostringstream& stream) const override final
   {
-    std::ostringstream stream;
     stream << "square(size = ["
            << x << ", "
            << y << "], center = "
            << (center ? "true" : "false") << ")";
-    return stream.str();
   }
-  std::string name() const override { return "square"; }
-  const Geometry *createGeometry() const override;
+  std::string name() const override final { return "square"; }
+  const Geometry *createGeometry() const override final;
 
   double x = 1, y = 1;
   bool center = false;
@@ -730,19 +720,17 @@ class CircleNode : public LeafNode
 {
 public:
   CircleNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
+  void print(scad::ostringstream& stream) const override final
   {
-    std::ostringstream stream;
     stream << "circle"
            << "($fn = " << fn
            << ", $fa = " << fa
            << ", $fs = " << fs
            << ", r = " << r
            << ")";
-    return stream.str();
   }
-  std::string name() const override { return "circle"; }
-  const Geometry *createGeometry() const override;
+  std::string name() const override final { return "circle"; }
+  const Geometry *createGeometry() const override final;
 
   double fn, fs, fa;
   double r = 1;
@@ -797,18 +785,17 @@ class PolygonNode : public LeafNode
 {
 public:
   PolygonNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override;
-  std::string name() const override { return "polygon"; }
-  const Geometry *createGeometry() const override;
+  void print(scad::ostringstream& stream) const override final;
+  std::string name() const override final { return "polygon"; }
+  const Geometry *createGeometry() const override final;
 
   std::vector<point2d> points;
   std::vector<std::vector<size_t>> paths;
   int convexity = 1;
 };
 
-std::string PolygonNode::toString() const
+void PolygonNode::print(scad::ostringstream& stream) const
 {
-  std::ostringstream stream;
   stream << "polygon(points = [";
   bool firstPoint = true;
   for (const auto& point : this->points) {
@@ -846,7 +833,6 @@ std::string PolygonNode::toString() const
     stream << "]";
   }
   stream << ", convexity = " << this->convexity << ")";
-  return stream.str();
 }
 
 const Geometry *PolygonNode::createGeometry() const

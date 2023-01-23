@@ -32,8 +32,8 @@
 #include "ScopeContext.h"
 #include "Expression.h"
 #include "printutils.h"
+#include "scadstream.h"
 #include "compiler_specific.h"
-#include <sstream>
 
 std::vector<std::string> StaticModuleNameStack::stack;
 
@@ -42,7 +42,7 @@ static void NOINLINE print_err(std::string name, const Location& loc, const std:
 }
 
 static void NOINLINE print_trace(const UserModule *mod, const std::shared_ptr<const UserModuleContext>& context, const AssignmentList& parameters){
-  std::stringstream stream;
+  scad::ostringstream stream;
   if (parameters.size() == 0) {
     //nothing to do
   } else if (StackCheck::inst().check()) {
@@ -105,7 +105,7 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<cons
   return ret;
 }
 
-void UserModule::print(std::ostream& stream, const std::string& indent) const
+void UserModule::print(scad::ostringstream& stream, const std::string& indent) const
 {
   std::string tab;
   if (!this->name.empty()) {

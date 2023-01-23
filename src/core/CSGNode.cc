@@ -27,6 +27,7 @@
 #include "CSGNode.h"
 #include "Geometry.h"
 #include "linalg.h"
+#include "scadstream.h"
 
 #include <numeric>
 #include <sstream>
@@ -172,7 +173,7 @@ std::string CSGOperation::dump() const
   // tuple(node pointer, postfix string, ispostfix bool)
   std::stack<std::tuple<const CSGOperation *, std::string, bool>> callstack;
   callstack.emplace(this, "", false);
-  std::ostringstream out;
+  scad::ostringstream out;
   const CSGOperation *node;
   std::string postfixstr;
   bool ispostfix;
@@ -256,7 +257,7 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
 
 std::string CSGProduct::dump() const
 {
-  std::ostringstream dump;
+  scad::ostringstream dump;
   dump << this->intersections.front().leaf->label;
   for (const auto& csgobj :
        boost::make_iterator_range(this->intersections.begin() + 1,
@@ -306,7 +307,7 @@ BoundingBox CSGProduct::getBoundingBox(bool throwntogether) const
 
 std::string CSGProducts::dump() const
 {
-  std::ostringstream dump;
+  scad::ostringstream dump;
 
   for (const auto& product : this->products) {
     dump << "+" << product.dump() << "\n";
