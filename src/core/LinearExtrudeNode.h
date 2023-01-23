@@ -2,6 +2,9 @@
 
 #include "node.h"
 #include "Value.h"
+#ifdef ENABLE_PYTHON
+#include <Python.h>
+#endif
 
 class LinearExtrudeNode : public AbstractPolyNode
 {
@@ -21,6 +24,9 @@ public:
   unsigned int slices = 1u, segments = 0u;
   bool has_twist = false, has_slices = false, has_segments = false;
   bool center = false;
+ #ifdef ENABLE_PYTHON
+  PyObject *profile_func;
+ #endif  
 
   Filename filename;
   std::string layername;

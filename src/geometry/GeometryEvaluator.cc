@@ -1007,6 +1007,26 @@ static Outline2d splitOutlineByFn(
   return o2;
 }
 
+#ifdef ENABLE_PYTHON
+Outline2d python_getprofile(PyObject *cbfunc, double h)
+{
+	Outline2d result;
+	PyObject* args = PyTuple_Pack(1,PyFloat_FromDouble(h));
+	PyObject* polygon = PyObject_CallObject(cbfunc, args);
+	if(PyList_Check(polygon)) {
+		unsigned int n=PyList_Size(polygon);
+		for(unsigned int i=0;i < n;i++) {
+			PyObject *pypt = PyList_GetItem(polygon, i);
+			if(PyList_Check(pypt) && PyList_Size(pypt) == 2) {
+				double x=PyFloat_AsDouble(PyList_GetItem(pypt, 0));
+				double y=PyFloat_AsDouble(PyList_GetItem(pypt, 1));
+				result.vertices.push_back(Vector2d(x,y));
+			}
+		}
+	}
+	return result;
+}
+#endif
 
 /*!
    Input to extrude should be sanitized. This means non-intersecting, correct winding order
@@ -1119,7 +1139,56 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     h2 = node.height;
   }
 
-  // Create bottom face.
+#ifdef ENABLE_PYTHON  
+  if(node.profile_func != NULL)
+  {
+	Outline2d lowerFace;
+	Outline2d upperFace;
+	double lower_h=0, upper_h=0;
+
+	// Add Bottom face
+	lowerFace = python_getprofile(node.profile_func, 0);
+	Polygon2d botface;
+        botface.addOutline(lowerFace);
+    	PolySet *ps_bot = botface.tessellate();
+  	for (auto& p : ps_bot->polygons) {
+	    std::reverse(p.begin(), p.end());
+	}
+	ps->append(*ps_bot);
+	delete ps_bot;
+
+  	for (unsigned int i = 1; i <= slices; i++) {
+		upper_h=i*node.height/(slices);
+		upperFace = python_getprofile(node.profile_func, upper_h);
+		if(lowerFace.vertices.size() == upperFace.vertices.size()) {
+			unsigned int n=lowerFace.vertices.size();
+			for(unsigned int j=0;j<n;j++) {
+				ps->append_poly();
+				ps->append_vertex(lowerFace.vertices[(j+0)%n][0],lowerFace.vertices[(j+0)%n][1],lower_h);
+				ps->append_vertex(lowerFace.vertices[(j+1)%n][0],lowerFace.vertices[(j+1)%n][1],lower_h);
+				ps->append_vertex(upperFace.vertices[(j+1)%n][0],upperFace.vertices[(j+1)%n][1],upper_h);
+
+				ps->append_poly();
+				ps->append_vertex(lowerFace.vertices[(j+0)%n][0],lowerFace.vertices[(j+0)%n][1],lower_h);
+				ps->append_vertex(upperFace.vertices[(j+1)%n][0],upperFace.vertices[(j+1)%n][1],upper_h);
+				ps->append_vertex(upperFace.vertices[(j+0)%n][0],upperFace.vertices[(j+0)%n][1],upper_h);
+			}
+		}
+
+		lowerFace = upperFace;
+		lower_h = upper_h;
+	}
+	// Add Top face
+	Polygon2d topface;
+        topface.addOutline(upperFace);
+    	PolySet *ps_top = topface.tessellate();
+	translate_PolySet(*ps_top, Vector3d(0, 0, upper_h));
+	ps->append(*ps_top);
+	delete ps_top;
+  }
+  else
+#endif  
+{
   PolySet *ps_bottom = polyref.tessellate(); // bottom
   // Flip vertex ordering for bottom polygon
   for (auto& p : ps_bottom->polygons) {
@@ -1153,7 +1222,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     ps->append(*ps_top);
     delete ps_top;
   }
-
+}
   return ps;
 }
 

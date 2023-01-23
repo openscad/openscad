@@ -295,6 +295,8 @@ std::string todo_fix_name;
 AssignmentList todo_fix_asslist;
 ModuleInstantiation todo_fix_inst(todo_fix_name,todo_fix_asslist,Location::NONE);
 
+static PyObject *pythonInitDict=NULL;
+
 char *evaluatePython(const char *code)
 {
     char *error;
@@ -303,14 +305,19 @@ char *evaluatePython(const char *code)
     PyObject *pyExcValue;
     PyObject *pyExcTraceback;
 
-    PyImport_AppendInittab("openscad", &PyInit_openscad);
-    Py_Initialize();
+    if(pythonInitDict) {
+    }
 
-    PyObject *py_main = PyImport_AddModule("__main__");
-    PyObject *py_dict = PyModule_GetDict(py_main);
-    PyInit_PyOpenSCAD();
-    PyRun_String("from openscad import *\nfa=12.0\nfn=0.0\nfs=2.0\n", Py_file_input, py_dict, py_dict);
-    PyObject *result = PyRun_String(code, Py_file_input, py_dict, py_dict);
+    if(!pythonInitDict) {
+	    PyImport_AppendInittab("openscad", &PyInit_openscad);
+	    Py_Initialize();
+
+	    PyObject *py_main = PyImport_AddModule("__main__");
+	    pythonInitDict = PyModule_GetDict(py_main);
+	    PyInit_PyOpenSCAD();
+	    PyRun_String("from openscad import *\nfa=12.0\nfn=0.0\nfs=2.0\n", Py_file_input, pythonInitDict, pythonInitDict);
+    }
+    PyObject *result = PyRun_String(code, Py_file_input, pythonInitDict, pythonInitDict);
 
     PyErr_Fetch(&pyExcType, &pyExcValue, &pyExcTraceback);
     PyErr_NormalizeException(&pyExcType, &pyExcValue, &pyExcTraceback);
@@ -328,9 +335,11 @@ char *evaluatePython(const char *code)
     Py_XDECREF(str_exc_value);
     Py_XDECREF(pyExcValueStr);
 
+/*    // TODO when to clean up python correctly
     if (Py_FinalizeEx() < 0) {
         exit(120);
     }
+*/    
     return error;
 }
 
