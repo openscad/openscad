@@ -39,6 +39,8 @@
 #endif
 
 // rotate do
+// scale und twist
+//
 class Geometry;
 class Polygon2d;
 class Tree;
@@ -1311,6 +1313,39 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
 
   bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
 
+#ifdef ENABLE_PYTHON  
+  if(node.profile_func != NULL)
+  {
+/*	  
+    for (const auto& o : poly.outlines()) {
+    std::vector<Vector3d> rings[2];
+    rings[0].resize(o.vertices.size());
+    rings[1].resize(o.vertices.size());
+
+    fill_ring(rings[0], o, (node.angle == 360) ? -90 : 90, flip_faces); // first ring
+    for (unsigned int j = 0; j < fragments; ++j) {
+      double a;
+      if (node.angle == 360) a = -90 + ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
+      else a = 90 - (j + 1) * node.angle / fragments; // start on the X axis
+      fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
+
+      for (size_t i = 0; i < o.vertices.size(); ++i) {
+        ps->append_poly();
+        ps->insert_vertex(rings[j % 2][i]);
+        ps->insert_vertex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
+        ps->insert_vertex(rings[j % 2][(i + 1) % o.vertices.size()]);
+        ps->append_poly();
+        ps->insert_vertex(rings[j % 2][i]);
+        ps->insert_vertex(rings[(j + 1) % 2][i]);
+        ps->insert_vertex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
+      }
+    }
+  }
+*/  
+}
+  else
+#endif
+  {	  
   if (node.angle != 360) {
     PolySet *ps_start = poly.tessellate(); // starting face
     Transform3d rot(angle_axis_degrees(90, Vector3d::UnitX()));
@@ -1360,7 +1395,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
       }
     }
   }
-
+  }
   return ps;
 }
 

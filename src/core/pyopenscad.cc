@@ -300,7 +300,7 @@ Outline2d python_getprofile(PyObject *cbfunc, double h)
 	Outline2d result;
 	PyObject* args = PyTuple_Pack(1,PyFloat_FromDouble(h));
 	PyObject* polygon = PyObject_CallObject(cbfunc, args);
-	if(PyList_Check(polygon)) {
+	if(polygon && PyList_Check(polygon)) {
 		unsigned int n=PyList_Size(polygon);
 		for(unsigned int i=0;i < n;i++) {
 			PyObject *pypt = PyList_GetItem(polygon, i);
@@ -310,6 +310,14 @@ Outline2d python_getprofile(PyObject *cbfunc, double h)
 				result.vertices.push_back(Vector2d(x,y));
 			}
 		}
+	}
+	if(result.vertices.size() < 3)
+	{
+		Outline2d err;
+		err.vertices.push_back(Vector2d(0,0));
+		err.vertices.push_back(Vector2d(10,0));
+		err.vertices.push_back(Vector2d(10,10));
+		return err;
 	}
 	return result;
 }

@@ -106,8 +106,13 @@ std::string RotateExtrudeNode::toString() const
   }
   stream <<
     "angle = " << this->angle << ", "
-    "convexity = " << this->convexity << ", "
-    "$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
+    "convexity = " << this->convexity << ", ";
+#ifdef ENABLE_PYTHON  
+ if(this->profile_func != NULL) {
+    stream << ", profile = " << rand() ;
+ }
+#endif  
+    stream << "$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 
   return stream.str();
 }

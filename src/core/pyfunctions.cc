@@ -797,10 +797,17 @@ PyObject* python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
         return NULL;
   }
 
-  child = PyOpenSCADObjectToNodeMulti(obj);
-  if(child == NULL) {
-        PyErr_SetString(PyExc_TypeError,"Invalid type for  Object in rotate_extrude\n");
-   	return NULL;
+  if(obj->ob_type == &PyFunction_Type) {
+	node->profile_func = obj;
+  	auto dummy_node = std::make_shared<SquareNode>(&todo_fix_inst);
+	node->children.push_back(dummy_node);
+  } else {
+  	child = PyOpenSCADObjectToNodeMulti(obj);
+	if(child == NULL) {
+        	PyErr_SetString(PyExc_TypeError,"Invalid type for  Object in rotate_extrude\n");
+	   	return NULL;
+  	}
+  	node->children.push_back(child);
   }
 
    get_fnas(node->fn,node->fa,node->fs);
@@ -824,7 +831,6 @@ PyObject* python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   if (node->scale <= 0) node->scale = 1;
   if ((node->angle <= -360) || (node->angle > 360)) node->angle = 360;
 
-  node->children.push_back(child);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
 
