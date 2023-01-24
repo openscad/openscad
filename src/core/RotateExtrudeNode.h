@@ -23,6 +23,7 @@ public:
   int convexity;
   double fn, fs, fa;
   double origin_x, origin_y, scale, angle;
+  double twist;
   Filename filename;
   std::string layername;
  #ifdef ENABLE_PYTHON
