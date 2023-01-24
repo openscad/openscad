@@ -781,7 +781,6 @@ PyObject* python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   double fn=-1, fa=-1,fs=-1;
 
   get_fnas(fn,fa,fs);
-  printf("fn1=%f\n",fn);
 
   char * kwlist[] ={"obj","layer","convexity","scale","angle","twist","origin","fn","fa","fs",NULL};
 

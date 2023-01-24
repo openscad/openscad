@@ -295,7 +295,7 @@ std::string todo_fix_name;
 AssignmentList todo_fix_asslist;
 ModuleInstantiation todo_fix_inst(todo_fix_name,todo_fix_asslist,Location::NONE);
 
-Outline2d python_getprofile(PyObject *cbfunc, double h,double scalex, double scaley, double rot)
+Outline2d python_getprofile(PyObject *cbfunc, double h,double scalex, double scaley, double origin_x, double origin_y,double rot)
 {
 	Outline2d result;
 	double ang=rot*3.14/180.0;
@@ -308,10 +308,10 @@ Outline2d python_getprofile(PyObject *cbfunc, double h,double scalex, double sca
 		for(unsigned int i=0;i < n;i++) {
 			PyObject *pypt = PyList_GetItem(polygon, i);
 			if(PyList_Check(pypt) && PyList_Size(pypt) == 2) {
-				double x=PyFloat_AsDouble(PyList_GetItem(pypt, 0));
-				double y=PyFloat_AsDouble(PyList_GetItem(pypt, 1));
-				double xr = scalex*(x*c - y*s);
-				double yr = scaley*(y*c + s*s);
+				double x=PyFloat_AsDouble(PyList_GetItem(pypt, 0))-origin_x;
+				double y=PyFloat_AsDouble(PyList_GetItem(pypt, 1))-origin_y;
+				double xr = scalex*(x*c - y*s)+origin_x;
+				double yr = scaley*(y*c + x*s)+origin_y;
 				result.vertices.push_back(Vector2d(xr,yr));
 			}
 		}

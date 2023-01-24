@@ -1154,7 +1154,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
 	double lower_rot=0.0, upper_rot=0.0;
 
 	// Add Bottom face
-	lowerFace = python_getprofile(node.profile_func, 0,lower_scalex, lower_scaley,lower_rot);
+	lowerFace = python_getprofile(node.profile_func, 0,lower_scalex, lower_scaley,node.origin_x, node.origin_y, lower_rot);
 	Polygon2d botface;
         botface.addOutline(lowerFace);
     	PolySet *ps_bot = botface.tessellate();
@@ -1170,7 +1170,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     		upper_scaley = 1 - i * (1 - node.scale_y) / slices,
 		upper_rot=i*node.twist /slices;
 		if(node.center) upper_h -= node.height/2;
-		upperFace = python_getprofile(node.profile_func, upper_h, upper_scalex, upper_scaley , upper_rot);
+		upperFace = python_getprofile(node.profile_func, upper_h, upper_scalex, upper_scaley , node.origin_x, node.origin_y, upper_rot);
 		if(lowerFace.vertices.size() == upperFace.vertices.size()) {
 			unsigned int n=lowerFace.vertices.size();
 			for(unsigned int j=0;j<n;j++) {
@@ -1350,24 +1350,29 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
 	double last_rot=0.0, cur_rot=0.0;
 	double last_twist=0.0, cur_twist=0.0;
 
-	// Add Low angle face
-	lastFace = python_getprofile(node.profile_func, 0,1.0, 1.0,last_rot);
-	/*
-	Polygon2d botface;
-        botface.addOutline(lastFace);
-    	PolySet *ps_bot = botface.tessellate();
-	translate_PolySet(*ps_bot, Vector3d(0, 0, last_h));
-  	for (auto& p : ps_bot->polygons) {
-	    std::reverse(p.begin(), p.end());
+	if(node.angle != 360) {
+		// Add initial closing
+		lastFace = python_getprofile(node.profile_func, 0,1.0, 1.0,node.origin_x, node.origin_y, last_rot);
+		Polygon2d lastface;
+	        lastface.addOutline(lastFace);
+    		PolySet *ps_last = lastface.tessellate();
+
+		Transform3d rot(angle_axis_degrees(90, Vector3d::UnitX()));
+		ps_last->transform(rot);
+		// Flip vertex ordering
+		if (!flip_faces) {
+		for (auto& p : ps_last->polygons) {
+		std::reverse(p.begin(), p.end());
+		}
+		}
+		ps->append(*ps_last);
+		delete ps_last;
+
 	}
-	ps->append(*ps_bot);
-	delete ps_bot;
-	*/
-	printf("fragments=%d\n",fragments);
   	for (unsigned int i = 1; i <= fragments; i++) {
 		cur_ang=i*node.angle/fragments;
 		cur_twist=i*node.twist /fragments;
-		curFace = python_getprofile(node.profile_func, cur_ang, 1.0, 1.0 , cur_twist);
+		curFace = python_getprofile(node.profile_func, cur_ang, 1.0, 1.0 , node.origin_x, node.origin_y, cur_twist);
 
 		if(lastFace.vertices.size() == curFace.vertices.size()) {
 			unsigned int n=lastFace.vertices.size();
@@ -1387,15 +1392,20 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
 		last_ang = cur_ang;
 		last_twist = cur_twist;
 	}
-	/*
-	// Add Top face
-	Polygon2d topface;
-        topface.addOutline(upperFace);
-    	PolySet *ps_top = topface.tessellate();
-	translate_PolySet(*ps_top, Vector3d(0, 0, upper_h));
-	ps->append(*ps_top);
-	delete ps_top;
-	*/
+	if(node.angle != 360) {
+		Polygon2d curface;
+	        curface.addOutline(curFace);
+    		PolySet *ps_cur = curface.tessellate();
+		Transform3d rot2(angle_axis_degrees(node.angle, Vector3d::UnitZ()) * angle_axis_degrees(90, Vector3d::UnitX()));
+		ps_cur->transform(rot2);
+		if (flip_faces) {
+			for (auto& p : ps_cur->polygons) {
+				std::reverse(p.begin(), p.end());
+			}
+		}
+		ps->append(*ps_cur);
+		delete ps_cur;
+	}
 	  
 }
   else
