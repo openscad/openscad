@@ -87,6 +87,12 @@
 #define snprintf _snprintf
 #endif
 
+#ifdef ENABLE_PYTHON
+extern std::shared_ptr<AbstractNode> python_result_node;
+char *evaluatePython(const char *code);
+extern bool python_unlocked;
+int python_active = 0;
+#endif
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 using std::string;
@@ -392,6 +398,25 @@ int cmdline(const CommandLine& cmd)
     text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
   }
 
+#ifdef ENABLE_PYTHON  
+  python_active = 0;
+  if(cmd.filename.c_str() != NULL) {
+	  const char *fname = cmd.filename.c_str();
+	  int len=strlen(fname);
+	  if(len >= 3 && ! strcmp(fname+len-3,".py")) {
+		  if( python_unlocked == true) python_active = 1;
+		  else  LOG(message_group::Warning, Location::NONE, "","Python is not enabled");
+	  }
+  }
+
+  if(python_active) {
+    auto fulltext_py = text;
+
+    char *error  = evaluatePython(fulltext_py.c_str());
+    if(error != NULL) LOG(message_group::Error, Location::NONE, "", error);
+    text ="\n";
+  }
+#endif	  
   text += "\n\x03\n" + commandline_commands;
 
   SourceFile *root_file = nullptr;
@@ -476,7 +501,12 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
   AbstractNode::resetIndexCounter();
   std::shared_ptr<const FileContext> file_context;
-  auto absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
+  std::shared_ptr<AbstractNode> absolute_root_node;
+#ifdef ENABLE_PYTHON    
+    if(python_result_node != NULL && python_active) absolute_root_node = python_result_node;
+    else
+#endif	    
+  absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
   Camera camera = cmd.camera;
   if (file_context) {
     camera.updateView(file_context, true);
