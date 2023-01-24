@@ -25,16 +25,12 @@
  */
 
 #include <cassert>
-#include <cmath>
 #include <memory>
 #include <numeric>
 #include <sstream>
-/*Unicode support for string lengths and array accesses*/
-#include <glib.h>
 #include <boost/lexical_cast.hpp>
 
 #include "Value.h"
-#include "Expression.h"
 #include "EvaluationSession.h"
 #include "printutils.h"
 #include "StackCheck.h"
@@ -48,6 +44,7 @@ namespace fs = boost::filesystem;
 const Value Value::undefined;
 const VectorType VectorType::EMPTY(nullptr);
 const RangeType RangeType::EMPTY{0, 0, 0};
+
 
 /* Define values for double-conversion library. */
 #define DC_BUFFER_SIZE (128)
@@ -462,20 +459,6 @@ std::string Value::toEchoStringNoThrow() const
   return ret;
 }
 
-std::string UndefType::toString() const {
-  std::ostringstream stream;
-  if (!reasons->empty()) {
-    auto it = reasons->begin();
-    stream << *it;
-    for (++it; it != reasons->end(); ++it) {
-      stream << "\n\t" << *it;
-    }
-  }
-  // clear reasons so multiple same warnings are not given on the same value
-  reasons->clear();
-  return stream.str();
-}
-
 const UndefType& Value::toUndef() const
 {
   return std::get<UndefType>(this->value);
@@ -484,12 +467,6 @@ const UndefType& Value::toUndef() const
 std::string Value::toUndefString() const
 {
   return std::get<UndefType>(this->value).toString();
-}
-
-std::ostream& operator<<(std::ostream& stream, const UndefType& /*u*/)
-{
-  stream << "undef";
-  return stream;
 }
 
 class chr_visitor
@@ -717,38 +694,6 @@ const FunctionType& Value::toFunction() const
 bool Value::isUncheckedUndef() const
 {
   return this->type() == Type::UNDEFINED && !std::get<UndefType>(this->value).empty();
-}
-
-Value FunctionType::operator==(const FunctionType& other) const {
-  return this == &other;
-}
-Value FunctionType::operator!=(const FunctionType& other) const {
-  return this != &other;
-}
-Value FunctionType::operator<(const FunctionType& /*other*/) const {
-  return Value::undef("operation undefined (function < function)");
-}
-Value FunctionType::operator>(const FunctionType& /*other*/) const {
-  return Value::undef("operation undefined (function > function)");
-}
-Value FunctionType::operator<=(const FunctionType& /*other*/) const {
-  return Value::undef("operation undefined (function <= function)");
-}
-Value FunctionType::operator>=(const FunctionType& /*other*/) const {
-  return Value::undef("operation undefined (function >= function)");
-}
-
-Value UndefType::operator<(const UndefType& /*other*/) const {
-  return Value::undef("operation undefined (undefined < undefined)");
-}
-Value UndefType::operator>(const UndefType& /*other*/) const {
-  return Value::undef("operation undefined (undefined > undefined)");
-}
-Value UndefType::operator<=(const UndefType& /*other*/) const {
-  return Value::undef("operation undefined (undefined <= undefined)");
-}
-Value UndefType::operator>=(const UndefType& /*other*/) const {
-  return Value::undef("operation undefined (undefined >= undefined)");
 }
 
 Value ObjectType::operator==(const ObjectType& /*other*/) const {
@@ -1213,73 +1158,6 @@ Value Value::operator[](size_t idx) const
   return std::visit(bracket_visitor(), this->value, v.value);
 }
 
-size_t str_utf8_wrapper::iterator::char_len()
-{
-  return g_utf8_next_char(ptr) - ptr;
-}
-
-uint32_t RangeType::numValues() const
-{
-  if (std::isnan(begin_val) || std::isnan(end_val) || std::isnan(step_val)) {
-    return 0;
-  }
-  if (step_val < 0) {
-    if (begin_val < end_val) return 0;
-  } else {
-    if (begin_val > end_val) return 0;
-  }
-  if ((begin_val == end_val) || std::isinf(step_val)) {
-    return 1;
-  }
-  if (std::isinf(begin_val) || std::isinf(end_val) || step_val == 0) {
-    return std::numeric_limits<uint32_t>::max();
-  }
-  // Use nextafter to compensate for possible floating point inaccurary where result is just below a whole number.
-  const uint32_t max = std::numeric_limits<uint32_t>::max();
-  uint32_t num_steps = std::nextafter((end_val - begin_val) / step_val, max);
-  return (num_steps == max) ? max : num_steps + 1;
-}
-
-RangeType::iterator::iterator(const RangeType& range, iter_state state) : range(range), val(range.begin_val), state(state),
-  num_values(range.numValues()), i_step(state == iter_state::RANGE_END ? num_values : 0)
-{
-  if (std::isnan(range.begin_val) || std::isnan(range.end_val) ||
-      std::isnan(range.step_val) || range.step_val == 0) {
-    i_step = num_values;
-  }
-  update_state();
-}
-
-void RangeType::iterator::update_state()
-{
-  if (i_step >= num_values) {
-    state = iter_state::RANGE_END;
-  }
-}
-
-RangeType::iterator::reference RangeType::iterator::operator*()
-{
-  return val;
-}
-
-RangeType::iterator& RangeType::iterator::operator++()
-{
-  val = range.begin_val + range.step_val * ++i_step;
-  update_state();
-  return *this;
-}
-
-bool RangeType::iterator::operator==(const iterator& other) const
-{
-  return (val == other.val || state != iter_state::RANGE_RUNNING) &&
-         state == other.state && range == other.range;
-}
-
-bool RangeType::iterator::operator!=(const iterator& other) const
-{
-  return !(*this == other);
-}
-
 std::ostream& operator<<(std::ostream& stream, const RangeType& r)
 {
   char buffer[DC_BUFFER_SIZE];
@@ -1291,21 +1169,6 @@ std::ostream& operator<<(std::ostream& stream, const RangeType& r)
                 << DoubleConvert(r.begin_value(), buffer, builder, dc) << " : "
                 << DoubleConvert(r.step_value(), buffer, builder, dc) << " : "
                 << DoubleConvert(r.end_value(),   buffer, builder, dc) << "]";
-}
-
-std::ostream& operator<<(std::ostream& stream, const FunctionType& f)
-{
-  stream << "function(";
-  bool first = true;
-  for (const auto& parameter : *(f.getParameters())) {
-    stream << (first ? "" : ", ") << parameter->getName();
-    if (parameter->getExpr()) {
-      stream << " = " << *parameter->getExpr();
-    }
-    first = false;
-  }
-  stream << ") " << *f.getExpr();
-  return stream;
 }
 
 // called by clone()
