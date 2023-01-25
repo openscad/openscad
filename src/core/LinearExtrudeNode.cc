@@ -175,6 +175,13 @@ std::string LinearExtrudeNode::toString() const
   if (this->convexity > 1) {
     stream << ", convexity = " << this->convexity;
   }
+  if(this->path.size() > 0) {
+    stream << ", path = ";
+    for(int i=0;i<this->path.size();i++) {
+	    stream <<  this->path[i][0] << " " << this->path[i][1] << " " << this->path[i][2] << ", ";
+    }
+  }
+
 #ifdef ENABLE_PYTHON  
  if(this->profile_func != NULL) {
     stream << ", profile = " << rand() ;

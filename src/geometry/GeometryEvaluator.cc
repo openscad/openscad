@@ -1029,11 +1029,48 @@ void  append_rotary_vertex(PolySet *ps,const Outline2d *face, int index, double 
 
 std::vector<Vector3d> calculate_path_profile(const Outline2d *profile2d, Vector3d prevpt, Vector3d curpt,Vector3d nextpt) {
 	std::vector<Vector3d> result;
+	Vector3d diff1,diff2;
+	Vector3d vec_x, vec_y;
+	diff1 = curpt - prevpt;
+	diff2 = nextpt - curpt;
+	double xfac=1.0,yfac=1.0;
+	printf("profile %f/%f/%f %f/%f/%f %f/%f/%f\n",
+			prevpt[0],prevpt[1],prevpt[2],
+			curpt[0],curpt[1],curpt[2],
+			nextpt[0],nextpt[1],nextpt[2]);
+
+
+	if(diff1.norm() < 0.001 && diff2.norm() < 0.001) {
+		printf("User Error!\n");
+		return result;
+	} else if(diff1.norm() < 0.001 || diff2.norm() < 0.001) {
+		printf("A case\n");
+		Vector3d diff=diff1+diff2;
+		vec_x = Vector3d(1,0,0);
+		vec_y = diff.cross(vec_x);
+		if(vec_y.norm() >= 0.001) {
+			vec_y = Vector3d(0,1,0);
+			vec_x = vec_y.cross(diff).normalized();
+		} else vec_y.normalize();
+	} else {
+		printf("B case\n");
+		diff1.normalize();
+		diff2.normalize();
+		Vector3d diff=diff1+diff2;
+		vec_y = diff1.cross(diff).normalized();
+	 	vec_x = vec_y.cross(diff).normalized();
+		xfac=0.873; // cos(22.5)
+	}
+
+	printf("x=%f/%f/%f\n",vec_x[0],vec_x[1],vec_x[2]);
+	printf("y=%f/%f/%f\n",vec_y[0],vec_y[1],vec_y[2]);
+
+
 	for(int i=0;i<profile2d->vertices.size();i++) {
 		result.push_back( Vector3d(
-			profile2d->vertices[i][0]+curpt[0],
-			profile2d->vertices[i][1]+curpt[1],
-			curpt[2]
+			curpt[0]+vec_x[0]*profile2d->vertices[i][0]/xfac+vec_y[0]*profile2d->vertices[i][1]/yfac,
+			curpt[1]+vec_x[1]*profile2d->vertices[i][0]/xfac+vec_y[1]*profile2d->vertices[i][1]/yfac,
+			curpt[2]+vec_x[2]*profile2d->vertices[i][0]/xfac+vec_y[2]*profile2d->vertices[i][1]/yfac
 				));
 	}
 	return result;
@@ -1408,17 +1445,6 @@ static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon
 #endif  
 {
 
-  PolySet *ps_bottom = polyref.tessellate(); // bottom
-  // Flip vertex ordering for bottom polygon
-  for (Polygon & polygon : ps_bottom->polygons) {
-    printf("polygon\n");
-    std::reverse(polygon.begin(), polygon.end());
-    for(Vector3d &pt: polygon) {
-	    printf("pt %f %f %f\n",pt[0],pt[1],pt[2]);
-    }
-  }
-  ps->append(*ps_bottom);
-  delete ps_bottom;
   
   // Create slice sides.
   printf("Slices are %d\n",slices);
@@ -1427,15 +1453,12 @@ static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon
     Vector3d lastPt, curPt, nextPt;
     std::vector<Vector3d> lastProfile, curProfile;
   for(const Outline2d &profile2d: polyref.outlines()) {
-      printf("Adding Profile\n");
-    for(const Vector2d &pt: profile2d.vertices) {
-	    printf("pr %f %f \n",pt[0],pt[1]);
-    }
 
-    for (unsigned int j = 0; j <= slices; j++) {
-	if(j > 0) lastPt = node.path[j-1,0]; else lastPt = node.path[j,0]; 
+    for (unsigned int j = 0; j < node.path.size(); j++) {
+	printf("j=%d\n",j);
+	if(j > 0) lastPt = node.path[j-1]; else lastPt = node.path[j]; 
 	curPt = node.path[j];
-	if(j <= slices) nextPt = node.path[j+1];
+	if(j < node.path.size()-1 ) nextPt = node.path[j+1];  else  nextPt = node.path[j]; 
 	unsigned int n=profile2d.vertices.size();
 	curProfile = calculate_path_profile(&profile2d, lastPt, curPt,nextPt);
 	if(j > 0){
@@ -1449,7 +1472,22 @@ static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon
 			ps->append_vertex(  curProfile[(j+1)%n][0],  curProfile[(j+1)%n][1],  curProfile[(j+1)%n][2]);
 			ps->append_vertex(  curProfile[(j+0)%n][0],  curProfile[(j+0)%n][1],  curProfile[(j+0)%n][2]);
 		}
+	} else { // create bottom face
+    		Outline2d bot_poly_outline;
+		for(int i=0;i<curProfile.size();i++) {
+			bot_poly_outline.vertices.push_back(Vector2d(curProfile[i][0],curProfile[i][1]));
+		}
+		Polygon2d bot_poly;
+		bot_poly.addOutline(bot_poly_outline);
+		PolySet *ps_bottom = bot_poly.tessellate(); // bottom
+		// Flip vertex ordering for bottom polygon
+		for (Polygon & polygon : ps_bottom->polygons) {
+			std::reverse(polygon.begin(), polygon.end());
+		}
+		ps->append(*ps_bottom);
+		delete ps_bottom;
 	}
+	
 	lastProfile = curProfile;
     }
     printf("Top Face\n");
