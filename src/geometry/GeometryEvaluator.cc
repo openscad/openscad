@@ -1027,12 +1027,16 @@ void  append_rotary_vertex(PolySet *ps,const Outline2d *face, int index, double 
 			face->vertices[index][1]);
 }
 
-void  append_path_vertex(PolySet *ps,const Outline2d *profile, int index, Vector3d refpt)
-{
-	ps->append_vertex(
-			profile->vertices[index][0]+refpt[0],
-			profile->vertices[index][1]+refpt[1],
-			refpt[2]);
+std::vector<Vector3d> calculate_path_profile(const Outline2d *profile2d, Vector3d prevpt, Vector3d curpt,Vector3d nextpt) {
+	std::vector<Vector3d> result;
+	for(int i=0;i<profile2d->vertices.size();i++) {
+		result.push_back( Vector3d(
+			profile2d->vertices[i][0]+curpt[0],
+			profile2d->vertices[i][1]+curpt[1],
+			curpt[2]
+				));
+	}
+	return result;
 }
 
 /*!
@@ -1420,47 +1424,49 @@ static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon
   printf("Slices are %d\n",slices);
   slices =node.path.size()-1;
 
-    Vector3d lastPt, curPt;
+    Vector3d lastPt, curPt, nextPt;
+    std::vector<Vector3d> lastProfile, curProfile;
   for(const Outline2d &profile2d: polyref.outlines()) {
       printf("Adding Profile\n");
     for(const Vector2d &pt: profile2d.vertices) {
 	    printf("pr %f %f \n",pt[0],pt[1]);
     }
 
-    lastPt=node.path[0]; 
-    printf("Bottom face\n");
-    for (unsigned int j = 1; j <= slices; j++) {
+    for (unsigned int j = 0; j <= slices; j++) {
+	if(j > 0) lastPt = node.path[j-1,0]; else lastPt = node.path[j,0]; 
 	curPt = node.path[j];
-	printf("Stripe %d\n",j);
+	if(j <= slices) nextPt = node.path[j+1];
 	unsigned int n=profile2d.vertices.size();
-	for(unsigned int j=0;j<n;j++) {
-		ps->append_poly();
-		append_path_vertex(ps,&profile2d,(j+0)%n, lastPt);
-		append_path_vertex(ps,&profile2d,(j+1)%n, lastPt);
-		append_path_vertex(ps,&profile2d,(j+1)%n, curPt);
-		ps->append_poly();
-		append_path_vertex(ps,&profile2d,(j+0)%n, lastPt);
-		append_path_vertex(ps,&profile2d,(j+1)%n, curPt);
-		append_path_vertex(ps,&profile2d,(j+0)%n, curPt);
+	curProfile = calculate_path_profile(&profile2d, lastPt, curPt,nextPt);
+	if(j > 0){
+		for(unsigned int j=0;j<n;j++) {
+			ps->append_poly();
+			ps->append_vertex( lastProfile[(j+0)%n][0], lastProfile[(j+0)%n][1], lastProfile[(j+0)%n][2]);
+			ps->append_vertex( lastProfile[(j+1)%n][0], lastProfile[(j+1)%n][1], lastProfile[(j+1)%n][2]);
+			ps->append_vertex(  curProfile[(j+1)%n][0],  curProfile[(j+1)%n][1],  curProfile[(j+1)%n][2]);
+			ps->append_poly();
+			ps->append_vertex( lastProfile[(j+0)%n][0], lastProfile[(j+0)%n][1], lastProfile[(j+0)%n][2]);
+			ps->append_vertex(  curProfile[(j+1)%n][0],  curProfile[(j+1)%n][1],  curProfile[(j+1)%n][2]);
+			ps->append_vertex(  curProfile[(j+0)%n][0],  curProfile[(j+0)%n][1],  curProfile[(j+0)%n][2]);
+		}
 	}
-	lastPt = curPt;
+	lastProfile = curProfile;
     }
     printf("Top Face\n");
 
-  }
-
-  // Create top face.
-  // If either scale components are 0, then top will be zero-area, so skip it.
-  if (node.scale_x != 0 && node.scale_y != 0) {
-    Polygon2d top_poly(polyref);
-    Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) * Eigen::Affine2d(rotate_degrees(-node.twist)));
-    top_poly.transform(trans);
+    Outline2d top_poly_outline;
+    for(int i=0;i<curProfile.size();i++) {
+	    top_poly_outline.vertices.push_back(Vector2d(curProfile[i][0],curProfile[i][1])); // TODO create tricky mapping from 2d to 3d
+    }
+    Polygon2d top_poly;
+    top_poly.addOutline(top_poly_outline);
     PolySet *ps_top = top_poly.tessellate();
-    translate_PolySet(*ps_top, Vector3d(0, 0, lastPt[2]));
+    translate_PolySet(*ps_top, Vector3d(0, 0, curPt[2])); // TODO very bad!
     ps->append(*ps_top);
     delete ps_top;
+
   }
-}
+ }
   return ps;
 }
 
