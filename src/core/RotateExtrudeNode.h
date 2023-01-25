@@ -6,7 +6,6 @@
 #ifdef ENABLE_PYTHON
 #include <Python.h>
 #endif
-
 class RotateExtrudeNode : public AbstractPolyNode
 {
 public:

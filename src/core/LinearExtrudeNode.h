@@ -2,6 +2,7 @@
 
 #include "node.h"
 #include "Value.h"
+#include <linalg.h>
 #ifdef ENABLE_PYTHON
 #include <Python.h>
 #endif
@@ -24,6 +25,7 @@ public:
   unsigned int slices = 1u, segments = 0u;
   bool has_twist = false, has_slices = false, has_segments = false;
   bool center = false;
+  std::vector<Vector3d> path;
  #ifdef ENABLE_PYTHON
   PyObject *profile_func;
  #endif  
