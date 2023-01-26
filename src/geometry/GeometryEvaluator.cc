@@ -1031,31 +1031,27 @@ void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3
 	Vector3d diff1,diff2;
 	diff1 = curpt - prevpt;
 	diff2 = nextpt - curpt;
-	double xfac=1.0,yfac=1.0;
+	double xfac=1.0,yfac=1.0,beta;
 	printf("profile %g/%g/%g %g/%g/%g %g/%g/%g\n",
 			prevpt[0],prevpt[1],prevpt[2],
 			curpt[0],curpt[1],curpt[2],
 			nextpt[0],nextpt[1],nextpt[2]);
 
+	if(diff1.norm() > 0.001) diff1.normalize();
+	if(diff2.norm() > 0.001) diff2.normalize();
+	Vector3d diff=diff1+diff2;
 
-	if(diff1.norm() < 0.001 && diff2.norm() < 0.001) {
+	if(diff.norm() < 0.001) {
 		printf("User Error!\n");
 		return ;
-	} else if(diff1.norm() < 0.001 || diff2.norm() < 0.001) {
-		Vector3d diff=diff1+diff2;
-		*vec_x = Vector3d(1,0,0);
-		*vec_y = diff.cross(*vec_x);
-		if(vec_y->norm() >= 0.001) {
-			*vec_y = Vector3d(0,1,0);
-			*vec_x = vec_y->cross(diff).normalized();
-		} else vec_y->normalize();
-	} else {
-		diff1.normalize();
-		diff2.normalize();
-		Vector3d diff=diff1+diff2;
-		*vec_y = diff1.cross(diff).normalized();
-	 	*vec_x = vec_y->cross(diff).normalized();
-		xfac=0.924; // cos(22.5)
+	} 
+	diff=(diff1+diff2).normalized();
+	*vec_y = diff.cross(vec_x_last).normalized(); // TODO was ist wenn das 0 ist ?(vor normalized)
+ 	*vec_x = vec_y->cross(diff).normalized();
+	if(diff1.norm() > 0.001 && diff2.norm() > 0.001) {
+		beta = diff1.dot(diff);
+		xfac=beta; // TODO fix
+		yfac=1; // TODO fix
 	}
 	(*vec_x) /= xfac;
 	(*vec_y) /= yfac;
