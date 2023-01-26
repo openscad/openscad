@@ -101,5 +101,5 @@ void get_fnas(double& fn, double& fa, double& fs);
 
 extern ModuleInstantiation todo_fix_inst;
 
-char *evaluatePython(const char *code);
+char *evaluatePython(const char *code, double time);
 

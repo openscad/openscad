@@ -324,7 +324,7 @@ Outline2d python_getprofile(PyObject *cbfunc, double h,double scalex, double sca
 
 static PyObject *pythonInitDict=NULL;
 
-char *evaluatePython(const char *code)
+char *evaluatePython(const char *code, double time)
 {
   char *error;
   python_result_node = NULL;
@@ -340,13 +340,15 @@ char *evaluatePython(const char *code)
     }
 
     if(!pythonInitDict) {
+	    char run_str[80];
 	    PyImport_AppendInittab("openscad", &PyInit_openscad);
 	    Py_Initialize();
 
 	    PyObject *py_main = PyImport_AddModule("__main__");
 	    pythonInitDict = PyModule_GetDict(py_main);
 	    PyInit_PyOpenSCAD();
-	    PyRun_String("from openscad import *\nfa=12.0\nfn=0.0\nfs=2.0\n", Py_file_input, pythonInitDict, pythonInitDict);
+	    sprintf(run_str,"from openscad import *\nfa=12.0\nfn=0.0\nfs=2.0\nt=%g",time);
+	    PyRun_String(run_str, Py_file_input, pythonInitDict, pythonInitDict);
     }
     PyObject *result = PyRun_String(code, Py_file_input, pythonInitDict, pythonInitDict);
 

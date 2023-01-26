@@ -89,7 +89,7 @@
 
 #ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
-char *evaluatePython(const char *code);
+char *evaluatePython(const char *code, double time);
 extern bool python_unlocked;
 int python_active = 0;
 #endif
@@ -412,7 +412,7 @@ int cmdline(const CommandLine& cmd)
   if(python_active) {
     auto fulltext_py = text;
 
-    char *error  = evaluatePython(fulltext_py.c_str());
+    char *error  = evaluatePython(fulltext_py.c_str(), 0.0);
     if(error != NULL) LOG(message_group::Error, Location::NONE, "", error);
     text ="\n";
   }
