@@ -1031,11 +1031,7 @@ void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3
 	Vector3d diff1,diff2;
 	diff1 = curpt - prevpt;
 	diff2 = nextpt - curpt;
-	double xfac=1.0,yfac=1.0,beta;
-	printf("profile %g/%g/%g %g/%g/%g %g/%g/%g\n",
-			prevpt[0],prevpt[1],prevpt[2],
-			curpt[0],curpt[1],curpt[2],
-			nextpt[0],nextpt[1],nextpt[2]);
+	double xfac=1.0,yfac=1.0,beta, beta2;
 
 	if(diff1.norm() > 0.001) diff1.normalize();
 	if(diff2.norm() > 0.001) diff2.normalize();
@@ -1046,18 +1042,28 @@ void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3
 		return ;
 	} 
 	diff=(diff1+diff2).normalized();
-	*vec_y = diff.cross(vec_x_last).normalized(); // TODO was ist wenn das 0 ist ?(vor normalized)
+	*vec_y = diff.cross(vec_x_last);
+	if(vec_y->norm() < 0.001) { vec_x_last[0]=1; vec_x_last[1]=0; vec_x_last[2]=0; *vec_y = diff.cross(vec_x_last); }
+	if(vec_y->norm() < 0.001) { vec_x_last[0]=0; vec_x_last[1]=1; vec_x_last[2]=0; *vec_y = diff.cross(vec_x_last); }
+	if(vec_y->norm() < 0.001) { vec_x_last[0]=0; vec_x_last[1]=0; vec_x_last[2]=1; *vec_y = diff.cross(vec_x_last); }
+	vec_y->normalize(); 
  	*vec_x = vec_y->cross(diff).normalized();
 	if(diff1.norm() > 0.001 && diff2.norm() > 0.001) {
-		beta = diff1.dot(diff);
-		xfac=beta; // TODO fix
-		yfac=1; // TODO fix
+
+		Vector3d crs = diff.cross(*vec_x);
+
+		beta = (*vec_x).dot(diff1); // TODO can it be improved ?
+		xfac=sqrt(1-beta*beta);
+		beta = (*vec_y).dot(diff1);
+		yfac=sqrt(1-beta*beta);
+
+//		printf("xfac=%g yfa%g\n",xfac,yfac);
 	}
 	(*vec_x) /= xfac;
 	(*vec_y) /= yfac;
 
-	printf("x=%g/%g/%g\n",(*vec_x)[0],(*vec_x)[1],(*vec_x)[2]);
-	printf("y=%g/%g/%g\n",(*vec_y)[0],(*vec_y)[1],(*vec_y)[2]);
+//	printf("x=%g/%g/%g\n",(*vec_x)[0],(*vec_x)[1],(*vec_x)[2]);
+//	printf("y=%g/%g/%g\n",(*vec_y)[0],(*vec_y)[1],(*vec_y)[2]);
 }
 
 std::vector<Vector3d> calculate_path_profile(Vector3d *vec_x, Vector3d *vec_y,Vector3d curpt, const std::vector<Vector2d> &profile) {
@@ -1297,11 +1303,11 @@ static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon
   Vector3d vec_x_last(node.xdir_x,node.xdir_y,node.xdir_z);
   vec_x_last.normalize();
 
-  std::vector<Vector3d> lastProfile, curProfile; // TODO move scope
   for(const Outline2d &profile2d: poly.outlines()) {
-
+  
+    std::vector<Vector3d> lastProfile;
     for (unsigned int j = 0; j < node.path.size(); j++) {
-	printf("j=%d\n",j);
+        std::vector<Vector3d> curProfile; 
 	if(j > 0) lastPt = node.path[j-1]; else lastPt = node.path[j]; 
 	curPt = node.path[j];
 	if(j < node.path.size()-1 ) nextPt = node.path[j+1];  else  nextPt = node.path[j]; 
