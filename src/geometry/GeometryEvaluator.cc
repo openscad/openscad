@@ -1027,14 +1027,12 @@ void  append_rotary_vertex(PolySet *ps,const Outline2d *face, int index, double 
 			face->vertices[index][1]);
 }
 
-std::vector<Vector3d> calculate_path_profile(const Outline2d *profile2d, Vector3d prevpt, Vector3d curpt,Vector3d nextpt) {
-	std::vector<Vector3d> result;
+void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3d vec_x_last, Vector3d *vec_x, Vector3d *vec_y) {
 	Vector3d diff1,diff2;
-	Vector3d vec_x, vec_y;
 	diff1 = curpt - prevpt;
 	diff2 = nextpt - curpt;
 	double xfac=1.0,yfac=1.0;
-	printf("profile %f/%f/%f %f/%f/%f %f/%f/%f\n",
+	printf("profile %g/%g/%g %g/%g/%g %g/%g/%g\n",
 			prevpt[0],prevpt[1],prevpt[2],
 			curpt[0],curpt[1],curpt[2],
 			nextpt[0],nextpt[1],nextpt[2]);
@@ -1042,35 +1040,38 @@ std::vector<Vector3d> calculate_path_profile(const Outline2d *profile2d, Vector3
 
 	if(diff1.norm() < 0.001 && diff2.norm() < 0.001) {
 		printf("User Error!\n");
-		return result;
+		return ;
 	} else if(diff1.norm() < 0.001 || diff2.norm() < 0.001) {
-		printf("A case\n");
 		Vector3d diff=diff1+diff2;
-		vec_x = Vector3d(1,0,0);
-		vec_y = diff.cross(vec_x);
-		if(vec_y.norm() >= 0.001) {
-			vec_y = Vector3d(0,1,0);
-			vec_x = vec_y.cross(diff).normalized();
-		} else vec_y.normalize();
+		*vec_x = Vector3d(1,0,0);
+		*vec_y = diff.cross(*vec_x);
+		if(vec_y->norm() >= 0.001) {
+			*vec_y = Vector3d(0,1,0);
+			*vec_x = vec_y->cross(diff).normalized();
+		} else vec_y->normalize();
 	} else {
-		printf("B case\n");
 		diff1.normalize();
 		diff2.normalize();
 		Vector3d diff=diff1+diff2;
-		vec_y = diff1.cross(diff).normalized();
-	 	vec_x = vec_y.cross(diff).normalized();
-		xfac=0.873; // cos(22.5)
+		*vec_y = diff1.cross(diff).normalized();
+	 	*vec_x = vec_y->cross(diff).normalized();
+		xfac=0.924; // cos(22.5)
 	}
+	(*vec_x) /= xfac;
+	(*vec_y) /= yfac;
 
-	printf("x=%f/%f/%f\n",vec_x[0],vec_x[1],vec_x[2]);
-	printf("y=%f/%f/%f\n",vec_y[0],vec_y[1],vec_y[2]);
+	printf("x=%g/%g/%g\n",(*vec_x)[0],(*vec_x)[1],(*vec_x)[2]);
+	printf("y=%g/%g/%g\n",(*vec_y)[0],(*vec_y)[1],(*vec_y)[2]);
+}
 
+std::vector<Vector3d> calculate_path_profile(Vector3d *vec_x, Vector3d *vec_y,Vector3d curpt, const std::vector<Vector2d> &profile) {
 
-	for(int i=0;i<profile2d->vertices.size();i++) {
+	std::vector<Vector3d> result;
+	for(int i=0;i<profile.size();i++) {
 		result.push_back( Vector3d(
-			curpt[0]+vec_x[0]*profile2d->vertices[i][0]/xfac+vec_y[0]*profile2d->vertices[i][1]/yfac,
-			curpt[1]+vec_x[1]*profile2d->vertices[i][0]/xfac+vec_y[1]*profile2d->vertices[i][1]/yfac,
-			curpt[2]+vec_x[2]*profile2d->vertices[i][0]/xfac+vec_y[2]*profile2d->vertices[i][1]/yfac
+			curpt[0]+(*vec_x)[0]*profile[i][0]+(*vec_y)[0]*profile[i][1],
+			curpt[1]+(*vec_x)[1]*profile[i][0]+(*vec_y)[1]*profile[i][1],
+			curpt[2]+(*vec_x)[2]*profile[i][0]+(*vec_y)[2]*profile[i][1]
 				));
 	}
 	return result;
@@ -1286,173 +1287,21 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
 
 static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon2d& poly)
 {
-  bool non_linear = node.twist != 0 || node.scale_x != node.scale_y;
-  boost::tribool isConvex{poly.is_convex()};
-  // Twist or non-uniform scale makes convex polygons into unknown polyhedrons
-  if (isConvex && non_linear) isConvex = unknown;
-  printf("Special Path Vartiant\n");
-  auto *ps = new PolySet(3, isConvex);
+  auto *ps = new PolySet(3, true);
   ps->setConvexity(node.convexity);
-  if (node.height <= 0) return ps;
-
-  size_t slices;
-  if (node.has_slices) {
-    slices = node.slices;
-  } else if (node.has_twist) {
-    double max_r1_sqr = 0; // r1 is before scaling
-    Vector2d scale(node.scale_x, node.scale_y);
-    for (const auto& o : poly.outlines())
-      for (const auto& v : o.vertices)
-        max_r1_sqr = fmax(max_r1_sqr, v.squaredNorm());
-    // Calculate Helical curve length for Twist with no Scaling
-    if (node.scale_x == 1.0 && node.scale_y == 1.0) {
-      slices = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height, node.twist, node.fn, node.fs, node.fa);
-    } else if (node.scale_x != node.scale_y) {  // non uniform scaling with twist using max slices from twist and non uniform scale
-      double max_delta_sqr = 0; // delta from before/after scaling
-      Vector2d scale(node.scale_x, node.scale_y);
-      for (const auto& o : poly.outlines()) {
-        for (const auto& v : o.vertices) {
-          max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
-        }
-      }
-      size_t slicesNonUniScale;
-      size_t slicesTwist;
-      slicesNonUniScale = (unsigned int)Calc::get_diagonal_slices(max_delta_sqr, node.height, node.fn, node.fs);
-      slicesTwist = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height, node.twist, node.fn, node.fs, node.fa);
-      slices = std::max(slicesNonUniScale, slicesTwist);
-    } else { // uniform scaling with twist, use conical helix calculation
-      slices = (unsigned int)Calc::get_conical_helix_slices(max_r1_sqr, node.height, node.twist, node.scale_x, node.fn, node.fs, node.fa);
-    }
-  } else if (node.scale_x != node.scale_y) {
-    // Non uniform scaling, w/o twist
-    double max_delta_sqr = 0; // delta from before/after scaling
-    Vector2d scale(node.scale_x, node.scale_y);
-    for (const auto& o : poly.outlines()) {
-      for (const auto& v : o.vertices) {
-        max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
-      }
-    }
-    slices = Calc::get_diagonal_slices(max_delta_sqr, node.height, node.fn, node.fs);
-  } else {
-    // uniform or [1,1] scaling w/o twist needs only one slice
-    slices = 1;
-  }
-
-  // Calculate outline segments if appropriate.
-  Polygon2d seg_poly;
-  bool is_segmented = false;
-  if (node.has_segments) {
-    // Set segments = 0 to disable
-    if (node.segments > 0) {
-      for (const auto& o : poly.outlines()) {
-        if (o.vertices.size() >= node.segments) {
-          seg_poly.addOutline(o);
-        } else {
-          seg_poly.addOutline(splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, node.segments, slices));
-        }
-      }
-      is_segmented = true;
-    }
-  } else if (non_linear) {
-    if (node.fn > 0.0) {
-      for (const auto& o : poly.outlines()) {
-        if (o.vertices.size() >= node.fn) {
-          seg_poly.addOutline(o);
-        } else {
-          seg_poly.addOutline(splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, node.fn, slices));
-        }
-      }
-    } else { // $fs and $fa based segmentation
-      auto fa_segs = static_cast<unsigned int>(std::ceil(360.0 / node.fa));
-      for (const auto& o : poly.outlines()) {
-        if (o.vertices.size() >= fa_segs) {
-          seg_poly.addOutline(o);
-        } else {
-          // try splitting by $fs, then check if $fa results in less segments
-          auto fsOutline = splitOutlineByFs(o, node.twist, node.scale_x, node.scale_y, node.fs, slices);
-          if (fsOutline.vertices.size() >= fa_segs) {
-            seg_poly.addOutline(splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, fa_segs, slices));
-          } else {
-            seg_poly.addOutline(std::move(fsOutline));
-          }
-        }
-      }
-    }
-    is_segmented = false;
-  }
-
-  const Polygon2d& polyref = is_segmented ? seg_poly : poly;
-
-
 #ifdef ENABLE_PYTHON  
   if(node.profile_func != NULL)
   {
-	Outline2d lowerFace;
-	Outline2d upperFace;
-	double lower_h=0, upper_h=node.height;
-	double lower_scalex=1.0, upper_scalex=1.0;
-	double lower_scaley=1.0, upper_scaley=1.0;
-	double lower_rot=0.0, upper_rot=0.0;
-
-	// Add Bottom face
-	lowerFace = python_getprofile(node.profile_func, 0,lower_scalex, lower_scaley,node.origin_x, node.origin_y, lower_rot);
-	Polygon2d botface;
-        botface.addOutline(lowerFace);
-    	PolySet *ps_bot = botface.tessellate();
-	translate_PolySet(*ps_bot, Vector3d(0, 0, lower_h));
-  	for (auto& p : ps_bot->polygons) {
-	    std::reverse(p.begin(), p.end());
-	}
-	ps->append(*ps_bot);
-	delete ps_bot;
-  	for (unsigned int i = 1; i <= slices; i++) {
-		upper_h=i*node.height/slices;
-    		upper_scalex = 1 - i * (1 - node.scale_x) / slices,
-    		upper_scaley = 1 - i * (1 - node.scale_y) / slices,
-		upper_rot=i*node.twist /slices;
-		if(node.center) upper_h -= node.height/2;
-		upperFace = python_getprofile(node.profile_func, upper_h, upper_scalex, upper_scaley , node.origin_x, node.origin_y, upper_rot);
-		if(lowerFace.vertices.size() == upperFace.vertices.size()) {
-			unsigned int n=lowerFace.vertices.size();
-			for(unsigned int j=0;j<n;j++) {
-				ps->append_poly();
-				append_linear_vertex(ps,&lowerFace,(j+0)%n, lower_h);
-				append_linear_vertex(ps,&lowerFace,(j+1)%n, lower_h);
-				append_linear_vertex(ps,&upperFace,(j+1)%n, upper_h);
-
-				ps->append_poly();
-				append_linear_vertex(ps,&lowerFace,(j+0)%n, lower_h);
-				append_linear_vertex(ps,&upperFace,(j+1)%n, upper_h);
-				append_linear_vertex(ps,&upperFace,(j+0)%n, upper_h);
-			}
-		}
-
-		lowerFace = upperFace;
-		lower_h = upper_h;
-		lower_scalex = upper_scalex;
-		lower_scaley = upper_scaley;
-		lower_rot = upper_rot;
-	}
-	// Add Top face
-	Polygon2d topface;
-        topface.addOutline(upperFace);
-    	PolySet *ps_top = topface.tessellate();
-	translate_PolySet(*ps_top, Vector3d(0, 0, upper_h));
-	ps->append(*ps_top);
-	delete ps_top;
+	// TODO fix
   }
   else
 #endif  
 {
 
-  
-  // Create slice sides.
-  printf("Slices are %d\n",slices);
-  slices =node.path.size()-1;
-
-    Vector3d lastPt, curPt, nextPt;
-    std::vector<Vector3d> lastProfile, curProfile;
-  for(const Outline2d &profile2d: polyref.outlines()) {
+  Vector3d lastPt, curPt, nextPt;
+  Vector3d vec_x_last(1,0,0); // TODO should be parameter
+  std::vector<Vector3d> lastProfile, curProfile; // TODO move scope
+  for(const Outline2d &profile2d: poly.outlines()) {
 
     for (unsigned int j = 0; j < node.path.size(); j++) {
 	printf("j=%d\n",j);
@@ -1460,8 +1309,10 @@ static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon
 	curPt = node.path[j];
 	if(j < node.path.size()-1 ) nextPt = node.path[j+1];  else  nextPt = node.path[j]; 
 	unsigned int n=profile2d.vertices.size();
-	curProfile = calculate_path_profile(&profile2d, lastPt, curPt,nextPt);
-	if(j > 0){
+  	Vector3d vec_x, vec_y;
+	calculate_path_dirs(lastPt, curPt,nextPt,vec_x_last, &vec_x, &vec_y);
+	curProfile = calculate_path_profile(&vec_x, &vec_y,curPt,  profile2d.vertices);
+	if(j > 0){ // create ring
 		for(unsigned int j=0;j<n;j++) {
 			ps->append_poly();
 			ps->append_vertex( lastProfile[(j+0)%n][0], lastProfile[(j+0)%n][1], lastProfile[(j+0)%n][2]);
@@ -1472,36 +1323,32 @@ static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon
 			ps->append_vertex(  curProfile[(j+1)%n][0],  curProfile[(j+1)%n][1],  curProfile[(j+1)%n][2]);
 			ps->append_vertex(  curProfile[(j+0)%n][0],  curProfile[(j+0)%n][1],  curProfile[(j+0)%n][2]);
 		}
-	} else { // create bottom face
-    		Outline2d bot_poly_outline;
-		for(int i=0;i<curProfile.size();i++) {
-			bot_poly_outline.vertices.push_back(Vector2d(curProfile[i][0],curProfile[i][1]));
-		}
-		Polygon2d bot_poly;
-		bot_poly.addOutline(bot_poly_outline);
-		PolySet *ps_bottom = bot_poly.tessellate(); // bottom
-		// Flip vertex ordering for bottom polygon
-		for (Polygon & polygon : ps_bottom->polygons) {
-			std::reverse(polygon.begin(), polygon.end());
-		}
-		ps->append(*ps_bottom);
-		delete ps_bottom;
 	}
+       if(j == 0 || j == node.path.size()-1) {
+		Polygon2d face_poly;
+		face_poly.addOutline(profile2d);
+		PolySet *ps_face = face_poly.tessellate(); 
+
+		if(j == 0) {
+			// Flip vertex ordering for bottom polygon
+			for (Polygon & polygon : ps_face->polygons) {
+				std::reverse(polygon.begin(), polygon.end());
+			}
+		}
+		for (Polygon &p3d : ps_face -> polygons) {
+			std::vector<Vector2d> p2d;
+			for(int i=0;i<p3d.size();i++) 
+				p2d.push_back(Vector2d(p3d[i][0],p3d[i][1]));
+			p3d = calculate_path_profile(&vec_x, &vec_y,(j == 0)?curPt:nextPt,  p2d);
+		}
+		ps->append(*ps_face);
+		delete ps_face;
+	}
+
+	vec_x_last = vec_x;
 	
 	lastProfile = curProfile;
     }
-    printf("Top Face\n");
-
-    Outline2d top_poly_outline;
-    for(int i=0;i<curProfile.size();i++) {
-	    top_poly_outline.vertices.push_back(Vector2d(curProfile[i][0],curProfile[i][1])); // TODO create tricky mapping from 2d to 3d
-    }
-    Polygon2d top_poly;
-    top_poly.addOutline(top_poly_outline);
-    PolySet *ps_top = top_poly.tessellate();
-    translate_PolySet(*ps_top, Vector3d(0, 0, curPt[2])); // TODO very bad!
-    ps->append(*ps_top);
-    delete ps_top;
 
   }
  }

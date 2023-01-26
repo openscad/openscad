@@ -952,24 +952,20 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 
   PyObject *obj = NULL;
   double height=1;
-  char *layer=NULL;
   int convexity=1;
   PyObject *origin=NULL;
   PyObject *scale=NULL;
   PyObject *path=NULL;
   double twist=0.0;
-  double slices=1;
   double fn=-1, fa=-1, fs=-1;
 
-  char * kwlist[] ={"obj","path","height","convexity","origin","scale","slices","twist","fn","fa","fs",NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!|diOOddddd", kwlist, 
+  char * kwlist[] ={"obj","path","convexity","origin","scale","twist","fn","fa","fs",NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!|iOOdddd", kwlist, 
                           &obj,
 			  &PyList_Type, &path,
-                          &height,
 			  &convexity,
 			  &origin,
 			  &scale,
-			  &slices,
 			  &twist,
 			  &fn,&fs,&fs
                           )) {
@@ -1009,9 +1005,7 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
    if(fa != -1) node->fa=fa;
    if(fs != -1) node->fs=fs;
 
-  node->height=height;
   node->convexity=convexity;
-  if(layer != NULL) node->layername=layer;
 
   node->origin_x=0.0; node->origin_y=0.0;
   if(origin != NULL) {
@@ -1035,12 +1029,6 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 	  node->scale_x=PyFloat_AsDouble(PyList_GetItem(scale, 0));
 	  node->scale_y=PyFloat_AsDouble(PyList_GetItem(scale, 1));
   }
-
-  node->slices=slices;
-  node->has_slices=1;
-
-  node->segments=0;
-  node->has_segments=0;
 
   node->twist=twist;
   node->has_twist=twist != 1?1:0;
