@@ -181,6 +181,7 @@ std::string LinearExtrudeNode::toString() const
 	    stream <<  this->path[i][0] << " " << this->path[i][1] << " " << this->path[i][2] << ", ";
     }
   }
+  stream << ", xdir = " << this->xdir_x << " " << this->xdir_y << " " << this->xdir_z ;
 
 #ifdef ENABLE_PYTHON  
  if(this->profile_func != NULL) {

@@ -1293,9 +1293,10 @@ static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon
   else
 #endif  
 {
-
   Vector3d lastPt, curPt, nextPt;
-  Vector3d vec_x_last(1,0,0); // TODO should be parameter
+  Vector3d vec_x_last(node.xdir_x,node.xdir_y,node.xdir_z);
+  vec_x_last.normalize();
+
   std::vector<Vector3d> lastProfile, curProfile; // TODO move scope
   for(const Outline2d &profile2d: poly.outlines()) {
 

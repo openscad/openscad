@@ -956,13 +956,15 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *origin=NULL;
   PyObject *scale=NULL;
   PyObject *path=NULL;
+  PyObject *xdir=NULL;
   double twist=0.0;
   double fn=-1, fa=-1, fs=-1;
 
-  char * kwlist[] ={"obj","path","convexity","origin","scale","twist","fn","fa","fs",NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!|iOOdddd", kwlist, 
+  char * kwlist[] ={"obj","path","xdir","convexity","origin","scale","twist","fn","fa","fs",NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!|O!iOOdddd", kwlist, 
                           &obj,
 			  &PyList_Type, &path,
+			  &PyList_Type,&xdir,
 			  &convexity,
 			  &origin,
 			  &scale,
@@ -998,6 +1000,19 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 		Vector3d pt3d(x,y,z);
 		node ->path.push_back(pt3d);
 	   }
+   }
+   node->xdir_x=1;
+   node->xdir_y=0;
+   node->xdir_z=0;
+   if(xdir != NULL) {
+	   if(python_vectorval(xdir,&(node->xdir_x), &(node->xdir_y),&(node->xdir_z))) {
+    		PyErr_SetString(PyExc_TypeError,"error in path_extrude xdir parameter\n");
+		return NULL;
+	   }
+   }
+   if(fabs(node->xdir_x) < 0.001 && fabs(node->xdir_y) < 0.001 && fabs(node->xdir_z) < 0.001) {
+    		PyErr_SetString(PyExc_TypeError,"error in path_extrude xdir parameter has zero size\n");
+		return NULL;
    }
 
    get_fnas(node->fn,node->fa,node->fs);
