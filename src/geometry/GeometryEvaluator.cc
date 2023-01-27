@@ -1044,30 +1044,17 @@ void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3
 	if(vec_y_last.norm() < 0.001)  { // Needed in first step only
 		vec_y_last = diff2.cross(vec_x_last);
 	} else {
-		printf("diff1   %g/%g/%g\n",diff1[0],diff1[1],diff1[2]);
-		// TODO vec_x_last und vec_y_last an diff1 aufrichten
 		// make vec_last normal to diff1
-		Vector3d xn= diff1.cross(vec_x_last.cross(diff1)).normalized();
-		Vector3d yn= diff1.cross(vec_y_last.cross(diff1)).normalized();
+		Vector3d xn= vec_y_last.cross(diff1).normalized();
+		Vector3d yn= diff1.cross(vec_x_last).normalized();
 
-		// now fix the angle between them
-		printf("testvec x  %g/%g/%g\n",xn[0],xn[1],xn[2]);
-//		Vector3d yn = diff1.cross(xn).normalized();
-		printf("testvec y  %g/%g/%g\n",yn[0],yn[1],yn[2]);
+		// now fix the angle between xn and yn
 		Vector3d vec_xy_ = (xn + yn).normalized();
-		printf("testvecxy_  %g/%g/%g\n",vec_xy_[0],vec_xy_[1],vec_xy_[2]);
 		Vector3d vec_xy = vec_xy_.cross(diff1).normalized();
-		printf("testvecxy  %g/%g/%g\n",vec_xy[0],vec_xy[1],vec_xy[2]);
-		xn = (vec_xy_ + vec_xy).normalized();
-		printf("testvec x2  %g/%g/%g\n",xn[0],xn[1],xn[2]);
-		yn = diff1.cross(xn).normalized();
-		printf("testvec y2  %g/%g/%g\n",yn[0],yn[1],yn[2]);
-		vec_x_last = xn;
-		vec_y_last = yn;
+		vec_x_last = (vec_xy_ + vec_xy).normalized();
+		vec_y_last = diff1.cross(xn).normalized();
 	}
 
-	printf("last X %g/%g/%g\n",vec_x_last[0],vec_x_last[1],vec_x_last[2]);
-	printf("last Y %g/%g/%g\n",vec_y_last[0],vec_y_last[1],vec_y_last[2]);
 	diff=(diff1+diff2).normalized();
 
 	*vec_y = diff.cross(vec_x_last);
@@ -1090,20 +1077,15 @@ void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3
 		beta = (*vec_y).dot(diff1);
 		yfac=sqrt(1-beta*beta);
 
-//		printf("xfac=%g yfa%g\n",xfac,yfac);
 	}
 	(*vec_x) /= xfac;
 	(*vec_y) /= yfac;
 
-//	printf("x=%g/%g/%g\n",(*vec_x)[0],(*vec_x)[1],(*vec_x)[2]);
-//	printf("y=%g/%g/%g\n",(*vec_y)[0],(*vec_y)[1],(*vec_y)[2]);
 }
 
 std::vector<Vector3d> calculate_path_profile(Vector3d *vec_x, Vector3d *vec_y,Vector3d curpt, const std::vector<Vector2d> &profile) {
 
 	std::vector<Vector3d> result;
-	printf("Calculate Profile\n");
-	printf("xvec is %g/%g/%g yvec is %g/%g/%f\n",(*vec_x)[0],(*vec_x)[1],(*vec_x)[2], (*vec_y)[0], (*vec_y)[1], (*vec_y)[2]);
 	for(int i=0;i<profile.size();i++) {
 		result.push_back( Vector3d(
 			curpt[0]+(*vec_x)[0]*profile[i][0]+(*vec_y)[0]*profile[i][1],
@@ -1111,45 +1093,6 @@ std::vector<Vector3d> calculate_path_profile(Vector3d *vec_x, Vector3d *vec_y,Ve
 			curpt[2]+(*vec_x)[2]*profile[i][0]+(*vec_y)[2]*profile[i][1]
 				));
 	}
-	for(int i=0;i<result.size();i++) {
-		printf("Point %g/%g/%g\n",result[i][0],result[i][1], result[i][2]);
-	}
-/*
- Current Points
-
-Base
-
-xvec = 0.707/0.707/0  yvec = -0.707/0.707/0  base 0/0/0
-
-0		/-7.07107	/0 (-5/-5)
-7.07107		/0		/0 ( 5/-5)
-0		/7.07107	/0 ( 5/ 5)
--7.07107	/0		/0 (-5/ 5)
-
-
-Mid1 correct	xvec=0.707/0.707/-0.707	yvec=-0.707/0.707/0.707  base = (0 0 10)
-
-0		/-7.07		/10		(-5/-5)
-7.07		/0		/10-7.07	( 5/-5) 
-0		/7.07		/10		( 5/ 5)
--7.07		/0		/10+7.07        (-5/ 5)
-
-
-Mid2 wrong:  xvec is 0.44723/0.894419/-0.44723 yvec is -0.447197/0.894435/0.447197
-
-Point 10	/-4.47214	/10		(-5/-5)
-Point 12.2361	/-4.14359e-05	/7.76393	( 5/-5)
-Point 10	/4.47214	/10		( 5/ 5)
-Point 7.76393	/4.14359e-05	/12.2361	(-5/ 5)
-
-Mid2 corect     xvec=-0.707/-0.707/0.707	yvec=-0.707/0.707/0.707  base = (10 0 10)
-
-10		/-7.07		/10		(-5/-5)
-17.07		/0		/10-7.07	( 5/-5) 
-10		/7.07		/10		( 5/ 5)
-10-7.07		/0		/10+7.07        (-5/ 5)
-
- */
 	return result;
 }
 
@@ -1388,7 +1331,6 @@ static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon
 	if(j < node.path.size()-1 ) nextPt = node.path[j+1];  else  nextPt = node.path[j]; 
 	unsigned int n=profile2d.vertices.size();
   	Vector3d vec_x, vec_y;
-	printf("=========================\n");
 	calculate_path_dirs(lastPt, curPt,nextPt,vec_x_last, vec_y_last, &vec_x, &vec_y);
 	curProfile = calculate_path_profile(&vec_x, &vec_y,curPt,  profile2d.vertices);
 	if(j > 0){ // create ring
