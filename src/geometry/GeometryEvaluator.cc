@@ -1027,7 +1027,7 @@ void  append_rotary_vertex(PolySet *ps,const Outline2d *face, int index, double 
 			face->vertices[index][1]);
 }
 
-void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3d vec_x_last, Vector3d *vec_x, Vector3d *vec_y) {
+void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3d vec_x_last, Vector3d vec_y_last, Vector3d *vec_x, Vector3d *vec_y) {
 	Vector3d diff1,diff2;
 	diff1 = curpt - prevpt;
 	diff2 = nextpt - curpt;
@@ -1041,16 +1041,49 @@ void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3
 		printf("User Error!\n");
 		return ;
 	} 
+	if(vec_y_last.norm() < 0.001)  { // Needed in first step only
+		vec_y_last = diff2.cross(vec_x_last);
+	} else {
+		printf("diff1   %g/%g/%g\n",diff1[0],diff1[1],diff1[2]);
+		// TODO vec_x_last und vec_y_last an diff1 aufrichten
+		// make vec_last normal to diff1
+		Vector3d xn= diff1.cross(vec_x_last.cross(diff1)).normalized();
+		Vector3d yn= diff1.cross(vec_y_last.cross(diff1)).normalized();
+
+		// now fix the angle between them
+		printf("testvec x  %g/%g/%g\n",xn[0],xn[1],xn[2]);
+//		Vector3d yn = diff1.cross(xn).normalized();
+		printf("testvec y  %g/%g/%g\n",yn[0],yn[1],yn[2]);
+		Vector3d vec_xy_ = (xn + yn).normalized();
+		printf("testvecxy_  %g/%g/%g\n",vec_xy_[0],vec_xy_[1],vec_xy_[2]);
+		Vector3d vec_xy = vec_xy_.cross(diff1).normalized();
+		printf("testvecxy  %g/%g/%g\n",vec_xy[0],vec_xy[1],vec_xy[2]);
+		xn = (vec_xy_ + vec_xy).normalized();
+		printf("testvec x2  %g/%g/%g\n",xn[0],xn[1],xn[2]);
+		yn = diff1.cross(xn).normalized();
+		printf("testvec y2  %g/%g/%g\n",yn[0],yn[1],yn[2]);
+		vec_x_last = xn;
+		vec_y_last = yn;
+	}
+
+	printf("last X %g/%g/%g\n",vec_x_last[0],vec_x_last[1],vec_x_last[2]);
+	printf("last Y %g/%g/%g\n",vec_y_last[0],vec_y_last[1],vec_y_last[2]);
 	diff=(diff1+diff2).normalized();
+
 	*vec_y = diff.cross(vec_x_last);
 	if(vec_y->norm() < 0.001) { vec_x_last[0]=1; vec_x_last[1]=0; vec_x_last[2]=0; *vec_y = diff.cross(vec_x_last); }
 	if(vec_y->norm() < 0.001) { vec_x_last[0]=0; vec_x_last[1]=1; vec_x_last[2]=0; *vec_y = diff.cross(vec_x_last); }
 	if(vec_y->norm() < 0.001) { vec_x_last[0]=0; vec_x_last[1]=0; vec_x_last[2]=1; *vec_y = diff.cross(vec_x_last); }
 	vec_y->normalize(); 
- 	*vec_x = vec_y->cross(diff).normalized();
+
+	*vec_x = vec_y_last.cross(diff);
+	if(vec_x->norm() < 0.001) { vec_y_last[0]=1; vec_y_last[1]=0; vec_y_last[2]=0; *vec_x = vec_y_last.cross(diff); }
+	if(vec_x->norm() < 0.001) { vec_y_last[0]=0; vec_y_last[1]=1; vec_y_last[2]=0; *vec_x = vec_y_last.cross(diff); }
+	if(vec_x->norm() < 0.001) { vec_y_last[0]=0; vec_y_last[1]=0; vec_y_last[2]=1; *vec_x = vec_y_last.cross(diff); }
+	vec_x->normalize(); 
+
 	if(diff1.norm() > 0.001 && diff2.norm() > 0.001) {
 
-		Vector3d crs = diff.cross(*vec_x);
 
 		beta = (*vec_x).dot(diff1); // TODO can it be improved ?
 		xfac=sqrt(1-beta*beta);
@@ -1069,6 +1102,8 @@ void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3
 std::vector<Vector3d> calculate_path_profile(Vector3d *vec_x, Vector3d *vec_y,Vector3d curpt, const std::vector<Vector2d> &profile) {
 
 	std::vector<Vector3d> result;
+	printf("Calculate Profile\n");
+	printf("xvec is %g/%g/%g yvec is %g/%g/%f\n",(*vec_x)[0],(*vec_x)[1],(*vec_x)[2], (*vec_y)[0], (*vec_y)[1], (*vec_y)[2]);
 	for(int i=0;i<profile.size();i++) {
 		result.push_back( Vector3d(
 			curpt[0]+(*vec_x)[0]*profile[i][0]+(*vec_y)[0]*profile[i][1],
@@ -1076,6 +1111,45 @@ std::vector<Vector3d> calculate_path_profile(Vector3d *vec_x, Vector3d *vec_y,Ve
 			curpt[2]+(*vec_x)[2]*profile[i][0]+(*vec_y)[2]*profile[i][1]
 				));
 	}
+	for(int i=0;i<result.size();i++) {
+		printf("Point %g/%g/%g\n",result[i][0],result[i][1], result[i][2]);
+	}
+/*
+ Current Points
+
+Base
+
+xvec = 0.707/0.707/0  yvec = -0.707/0.707/0  base 0/0/0
+
+0		/-7.07107	/0 (-5/-5)
+7.07107		/0		/0 ( 5/-5)
+0		/7.07107	/0 ( 5/ 5)
+-7.07107	/0		/0 (-5/ 5)
+
+
+Mid1 correct	xvec=0.707/0.707/-0.707	yvec=-0.707/0.707/0.707  base = (0 0 10)
+
+0		/-7.07		/10		(-5/-5)
+7.07		/0		/10-7.07	( 5/-5) 
+0		/7.07		/10		( 5/ 5)
+-7.07		/0		/10+7.07        (-5/ 5)
+
+
+Mid2 wrong:  xvec is 0.44723/0.894419/-0.44723 yvec is -0.447197/0.894435/0.447197
+
+Point 10	/-4.47214	/10		(-5/-5)
+Point 12.2361	/-4.14359e-05	/7.76393	( 5/-5)
+Point 10	/4.47214	/10		( 5/ 5)
+Point 7.76393	/4.14359e-05	/12.2361	(-5/ 5)
+
+Mid2 corect     xvec=-0.707/-0.707/0.707	yvec=-0.707/0.707/0.707  base = (10 0 10)
+
+10		/-7.07		/10		(-5/-5)
+17.07		/0		/10-7.07	( 5/-5) 
+10		/7.07		/10		( 5/ 5)
+10-7.07		/0		/10+7.07        (-5/ 5)
+
+ */
 	return result;
 }
 
@@ -1301,6 +1375,7 @@ static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon
 {
   Vector3d lastPt, curPt, nextPt;
   Vector3d vec_x_last(node.xdir_x,node.xdir_y,node.xdir_z);
+  Vector3d vec_y_last(0,0,0);
   vec_x_last.normalize();
 
   for(const Outline2d &profile2d: poly.outlines()) {
@@ -1313,7 +1388,8 @@ static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon
 	if(j < node.path.size()-1 ) nextPt = node.path[j+1];  else  nextPt = node.path[j]; 
 	unsigned int n=profile2d.vertices.size();
   	Vector3d vec_x, vec_y;
-	calculate_path_dirs(lastPt, curPt,nextPt,vec_x_last, &vec_x, &vec_y);
+	printf("=========================\n");
+	calculate_path_dirs(lastPt, curPt,nextPt,vec_x_last, vec_y_last, &vec_x, &vec_y);
 	curProfile = calculate_path_profile(&vec_x, &vec_y,curPt,  profile2d.vertices);
 	if(j > 0){ // create ring
 		for(unsigned int j=0;j<n;j++) {
@@ -1348,7 +1424,8 @@ static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon
 		delete ps_face;
 	}
 
-	vec_x_last = vec_x;
+	vec_x_last = vec_x.normalized();
+	vec_y_last = vec_y.normalized();
 	
 	lastProfile = curProfile;
     }
