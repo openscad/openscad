@@ -878,7 +878,7 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
 
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in lienar_extrude\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in linear_extrude\n");
     return NULL;
   }
 
