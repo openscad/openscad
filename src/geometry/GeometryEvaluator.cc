@@ -33,6 +33,14 @@
 
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
+//
+	// TODO clsoed property
+	// TODO PAthExttide NODE
+	// TODO profile function
+	// TODO openscad module
+	// TODO check colinear points
+	// TODO rotate, mag time 0-1-2-3, fa
+	// TODO xdir tests 3x2
 
 #ifdef ENABLE_PYTHON
 #include <pyopenscad.h>
@@ -1324,16 +1332,27 @@ static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon
   for(const Outline2d &profile2d: poly.outlines()) {
   
     std::vector<Vector3d> lastProfile;
-    for (unsigned int j = 0; j < node.path.size(); j++) {
+    std::vector<Vector3d> startProfile; 
+    unsigned int m=node.path.size();
+    int mfinal=(node.closed == true)?m+1:m-1;
+    for (unsigned int i = 0; i <= mfinal; i++) {
         std::vector<Vector3d> curProfile; 
-	if(j > 0) lastPt = node.path[j-1]; else lastPt = node.path[j]; 
-	curPt = node.path[j];
-	if(j < node.path.size()-1 ) nextPt = node.path[j+1];  else  nextPt = node.path[j]; 
 	unsigned int n=profile2d.vertices.size();
+	curPt = node.path[i%m];
+	if(i > 0) lastPt = node.path[(i-1)%m]; else lastPt = node.path[i%m]; 
+	if(node.closed == true) {
+		nextPt = node.path[(i+1)%m];
+	} else {
+		if(i < m-1 ) nextPt = node.path[(i+1)%m];  else  nextPt = node.path[i%m]; 
+	}
   	Vector3d vec_x, vec_y;
-	calculate_path_dirs(lastPt, curPt,nextPt,vec_x_last, vec_y_last, &vec_x, &vec_y);
-	curProfile = calculate_path_profile(&vec_x, &vec_y,curPt,  profile2d.vertices);
-	if(j > 0){ // create ring
+	if(i != m+1) {
+		calculate_path_dirs(lastPt, curPt,nextPt,vec_x_last, vec_y_last, &vec_x, &vec_y);
+		curProfile = calculate_path_profile(&vec_x, &vec_y,curPt,  profile2d.vertices);
+	} else 	curProfile = startProfile;
+	if(i == 1 && node.closed == true) startProfile=curProfile;
+
+	if((node.closed == false && i == 1) || ( i >= 2)){ // create ring
 		for(unsigned int j=0;j<n;j++) {
 			ps->append_poly();
 			ps->append_vertex( lastProfile[(j+0)%n][0], lastProfile[(j+0)%n][1], lastProfile[(j+0)%n][2]);
@@ -1345,12 +1364,12 @@ static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon
 			ps->append_vertex(  curProfile[(j+0)%n][0],  curProfile[(j+0)%n][1],  curProfile[(j+0)%n][2]);
 		}
 	}
-       if(j == 0 || j == node.path.size()-1) {
+       if(node.closed == false && (i == 0 || i == m-1)) {
 		Polygon2d face_poly;
 		face_poly.addOutline(profile2d);
 		PolySet *ps_face = face_poly.tessellate(); 
 
-		if(j == 0) {
+		if(i == 0) {
 			// Flip vertex ordering for bottom polygon
 			for (Polygon & polygon : ps_face->polygons) {
 				std::reverse(polygon.begin(), polygon.end());
@@ -1360,7 +1379,7 @@ static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon
 			std::vector<Vector2d> p2d;
 			for(int i=0;i<p3d.size();i++) 
 				p2d.push_back(Vector2d(p3d[i][0],p3d[i][1]));
-			p3d = calculate_path_profile(&vec_x, &vec_y,(j == 0)?curPt:nextPt,  p2d);
+			p3d = calculate_path_profile(&vec_x, &vec_y,(i == 0)?curPt:nextPt,  p2d);
 		}
 		ps->append(*ps_face);
 		delete ps_face;

@@ -957,11 +957,12 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *scale=NULL;
   PyObject *path=NULL;
   PyObject *xdir=NULL;
+  const char *closed=NULL;
   double twist=0.0;
   double fn=-1, fa=-1, fs=-1;
 
-  char * kwlist[] ={"obj","path","xdir","convexity","origin","scale","twist","fn","fa","fs",NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!|O!iOOdddd", kwlist, 
+  char * kwlist[] ={"obj","path","xdir","convexity","origin","scale","twist","closed","fn","fa","fs",NULL};
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!|O!iOOdsddd", kwlist, 
                           &obj,
 			  &PyList_Type, &path,
 			  &PyList_Type,&xdir,
@@ -969,6 +970,7 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 			  &origin,
 			  &scale,
 			  &twist,
+			  &closed,
 			  &fn,&fs,&fs
                           )) {
         PyErr_SetString(PyExc_TypeError,"error during parsing\n");
@@ -1004,6 +1006,8 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
    node->xdir_x=1;
    node->xdir_y=0;
    node->xdir_z=0;
+   node->closed=false;
+   if (closed != NULL && !strcasecmp(closed, "true")) node->closed = true;
    if(xdir != NULL) {
 	   if(python_vectorval(xdir,&(node->xdir_x), &(node->xdir_y),&(node->xdir_z))) {
     		PyErr_SetString(PyExc_TypeError,"error in path_extrude xdir parameter\n");

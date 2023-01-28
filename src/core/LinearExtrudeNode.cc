@@ -182,6 +182,7 @@ std::string LinearExtrudeNode::toString() const
     }
   }
   stream << ", xdir = " << this->xdir_x << " " << this->xdir_y << " " << this->xdir_z ;
+  stream << ", closed = " << this->closed; //
 
 #ifdef ENABLE_PYTHON  
  if(this->profile_func != NULL) {

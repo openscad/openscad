@@ -27,6 +27,7 @@ public:
   bool center = false;
   double xdir_x=1.0, xdir_y=0.0, xdir_z=0.0;
   std::vector<Vector3d> path;
+  bool closed=false;
  #ifdef ENABLE_PYTHON
   PyObject *profile_func;
  #endif  
