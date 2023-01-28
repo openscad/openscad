@@ -35,6 +35,7 @@
 #include "TransformNode.h"
 #include "RotateExtrudeNode.h"
 #include "LinearExtrudeNode.h"
+#include "PathExtrudeNode.h"
 #include "CgalAdvNode.h"
 #include "CsgOpNode.h"
 #include "ColorNode.h"
@@ -948,7 +949,7 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   std::shared_ptr<AbstractNode> child;
 
-  auto node = std::make_shared<LinearExtrudeNode>(&todo_fix_inst);
+  auto node = std::make_shared<PathExtrudeNode>(&todo_fix_inst);
 
   PyObject *obj = NULL;
   double height=1;

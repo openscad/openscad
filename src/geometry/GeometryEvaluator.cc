@@ -8,6 +8,7 @@
 #include "OffsetNode.h"
 #include "TransformNode.h"
 #include "LinearExtrudeNode.h"
+#include "PathExtrudeNode.h"
 #include "RoofNode.h"
 #include "roof_ss.h"
 #include "roof_vd.h"
@@ -34,8 +35,6 @@
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
 //
-	// TODO clsoed property
-	// TODO PAthExttide NODE
 	// TODO profile function
 	// TODO openscad module
 	// TODO check colinear points
@@ -1275,6 +1274,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
   else
 #endif  
 {
+  // Create bottom face.
   PolySet *ps_bottom = polyref.tessellate(); // bottom
   // Flip vertex ordering for bottom polygon
   for (auto& p : ps_bottom->polygons) {
@@ -1312,7 +1312,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
   return ps;
 }
 
-static Geometry *extrudePolygonPath(const LinearExtrudeNode& node, const Polygon2d& poly)
+static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& poly)
 {
   auto *ps = new PolySet(3, true);
   ps->setConvexity(node.convexity);
@@ -1421,9 +1421,39 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
       }
       if (geometry) {
         const auto *polygons = dynamic_cast<const Polygon2d *>(geometry);
-        Geometry *extruded;
-	if(node.path.size() > 0) extruded= extrudePolygonPath(node, *polygons);
-	else extruded= extrudePolygon(node, *polygons);
+        Geometry *extruded = extrudePolygon(node, *polygons);
+        assert(extruded);
+        geom.reset(extruded);
+        delete geometry;
+      }
+    } else {
+      geom = smartCacheGet(node, false);
+    }
+    addToParent(state, node, geom);
+    node.progress_report();
+  }
+  return Response::ContinueTraversal;
+}
+
+Response GeometryEvaluator::visit(State& state, const PathExtrudeNode& node)
+{
+  if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
+  if (state.isPostfix()) {
+    shared_ptr<const Geometry> geom;
+    if (!isSmartCached(node)) {
+      const Geometry *geometry = nullptr;
+      if (!node.filename.empty()) {
+        DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale_x);
+
+        Polygon2d *p2d = dxf.toPolygon2d();
+        if (p2d) geometry = ClipperUtils::sanitize(*p2d);
+        delete p2d;
+      } else {
+        geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
+      }
+      if (geometry) {
+        const auto *polygons = dynamic_cast<const Polygon2d *>(geometry);
+        Geometry *extruded = extrudePolygon(node, *polygons);
         assert(extruded);
         geom.reset(extruded);
         delete geometry;
@@ -1454,6 +1484,7 @@ static void fill_ring(std::vector<Vector3d>& ring, const Outline2d& o, double a,
     }
   }
 }
+
 /*!
    Input to extrude should be clean. This means non-intersecting, correct winding order
    etc., the input coming from a library like Clipper.

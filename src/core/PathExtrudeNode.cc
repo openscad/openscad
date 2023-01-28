@@ -24,7 +24,7 @@
  *
  */
 
-#include "LinearExtrudeNode.h"
+#include "PathExtrudeNode.h"
 
 #include "module.h"
 #include "ModuleInstantiation.h"
@@ -44,52 +44,43 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 namespace fs = boost::filesystem;
 
 /*
- * Historic linear_extrude argument parsing is quirky. To remain bug-compatible,
+ * Historic path_extrude argument parsing is quirky. To remain bug-compatible,
  * try two different parses depending on conditions.
  */
-Parameters parse_parameters(Arguments arguments, const Location& location)
+Parameters parse_parameters_path(Arguments arguments, const Location& location)
 {
   {
     Parameters normal_parse = Parameters::parse(arguments.clone(), location,
-                                                {"file", "layer", "height", "origin", "scale", "center", "twist", "slices", "segments"},
+                                                {"file", "layer",  "origin", "scale", "center", "twist", "slices", "segments"},
                                                 {"convexity"}
                                                 );
-    if (normal_parse["height"].isDefined()) {
-      return normal_parse;
-    }
     if (!(arguments.size() > 0 && !arguments[0].name && arguments[0]->type() == Value::Type::NUMBER)) {
       return normal_parse;
     }
   }
 
-  // if height not given, and first argument is a number,
-  // then assume it should be the height.
   return Parameters::parse(std::move(arguments), location,
-                           {"height", "file", "layer", "origin", "scale", "center", "twist", "slices", "segments"},
+                           {"file", "layer", "origin", "scale", "center", "twist", "slices", "segments"},
                            {"convexity"}
                            );
 }
 
-static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_path_extrude(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
-  auto node = std::make_shared<LinearExtrudeNode>(inst);
+  auto node = std::make_shared<PathExtrudeNode>(inst);
 
-  Parameters parameters = parse_parameters(std::move(arguments), inst->location());
-  parameters.set_caller("linear_extrude");
+  Parameters parameters = parse_parameters_path(std::move(arguments), inst->location());
+  parameters.set_caller("path_extrude");
 
   node->fn = parameters["$fn"].toDouble();
   node->fs = parameters["$fs"].toDouble();
   node->fa = parameters["$fa"].toDouble();
 
   if (!parameters["file"].isUndefined() && parameters["file"].type() == Value::Type::STRING) {
-    LOG(message_group::Deprecated, Location::NONE, "", "Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
+    LOG(message_group::Deprecated, Location::NONE, "", "Support for reading files in path_extrude will be removed in future releases. Use a child import() instead.");
     auto filename = lookup_file(parameters["file"].toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
     node->filename = filename;
     handle_dep(filename);
-  }
-
-  if (parameters["height"].isDefined()) {
-    parameters["height"].getFiniteDouble(node->height);
   }
 
   node->layername = parameters["layer"].isUndefined() ? "" : parameters["layer"].toString();
@@ -99,19 +90,17 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
   bool originOk = parameters["origin"].getVec2(node->origin_x, node->origin_y);
   originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
   if (parameters["origin"].isDefined() && !originOk) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "linear_extrude(..., origin=%1$s) could not be converted", parameters["origin"].toEchoStringNoThrow());
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "path_extrude(..., origin=%1$s) could not be converted", parameters["origin"].toEchoStringNoThrow());
   }
   node->scale_x = node->scale_y = 1;
   bool scaleOK = parameters["scale"].getFiniteDouble(node->scale_x);
   scaleOK &= parameters["scale"].getFiniteDouble(node->scale_y);
   scaleOK |= parameters["scale"].getVec2(node->scale_x, node->scale_y, true);
   if ((parameters["scale"].isDefined()) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "linear_extrude(..., scale=%1$s) could not be converted", parameters["scale"].toEchoStringNoThrow());
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "path_extrude(..., scale=%1$s) could not be converted", parameters["scale"].toEchoStringNoThrow());
   }
 
   if (parameters["center"].type() == Value::Type::BOOL) node->center = parameters["center"].toBool();
-
-  if (node->height <= 0) node->height = 0;
 
   if (node->scale_x < 0) node->scale_x = 0;
   if (node->scale_y < 0) node->scale_y = 0;
@@ -135,7 +124,7 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
   return node;
 }
 
-std::string LinearExtrudeNode::toString() const
+std::string PathExtrudeNode::toString() const
 {
   std::ostringstream stream;
 
@@ -149,7 +138,6 @@ std::string LinearExtrudeNode::toString() const
            << "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
     ;
   }
-  stream << "height = " << std::dec << this->height;
   if (this->center) {
     stream << ", center = true";
   }
@@ -175,6 +163,15 @@ std::string LinearExtrudeNode::toString() const
   if (this->convexity > 1) {
     stream << ", convexity = " << this->convexity;
   }
+  if(this->path.size() > 0) {
+    stream << ", path = ";
+    for(int i=0;i<this->path.size();i++) {
+	    stream <<  this->path[i][0] << " " << this->path[i][1] << " " << this->path[i][2] << ", ";
+    }
+  }
+  stream << ", xdir = " << this->xdir_x << " " << this->xdir_y << " " << this->xdir_z ;
+  stream << ", closed = " << this->closed; //
+
 #ifdef ENABLE_PYTHON  
  if(this->profile_func != NULL) {
     stream << ", profile = " << rand() ;
@@ -184,12 +181,10 @@ std::string LinearExtrudeNode::toString() const
   return stream.str();
 }
 
-void register_builtin_dxf_linear_extrude()
+void register_builtin_path_extrude()
 {
-  Builtins::init("dxf_linear_extrude", new BuiltinModule(builtin_linear_extrude));
-
-  Builtins::init("linear_extrude", new BuiltinModule(builtin_linear_extrude),
+  Builtins::init("path_extrude", new BuiltinModule(builtin_path_extrude),
   {
-    "linear_extrude(height = 100, center = false, convexity = 1, twist = 0, scale = 1.0, [slices, segments, $fn, $fs, $fa])",
+    "path_extrude(profile,path)",
   });
 }
