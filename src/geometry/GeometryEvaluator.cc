@@ -37,8 +37,7 @@
 //
 	// TODO profile function
 	// TODO openscad module
-	// TODO check colinear points
-	// TODO rotate, mag time 0-1-2-3, fa
+	// TODO fs parameter richtig
 	// TODO xdir tests 3x2
 
 #ifdef ENABLE_PYTHON
@@ -1017,6 +1016,23 @@ static Outline2d splitOutlineByFn(
   return o2;
 }
 
+Outline2d alterprofile(Outline2d profile,double scalex, double scaley, double origin_x, double origin_y,double rot)
+{
+	Outline2d result;
+	double ang=rot*3.14/180.0;
+	double c=cos(ang);
+	double s=sin(ang);
+	int n=profile.vertices.size();
+	for(int i=0;i<n;i++) {
+		double x=profile.vertices[i][0]-origin_x;
+		double y=profile.vertices[i][1]-origin_y;
+		double xr = scalex*(x*c - y*s)+origin_x;
+		double yr = scaley*(y*c + x*s)+origin_y;
+		result.vertices.push_back(Vector2d(xr,yr));
+	}
+	return result;
+}
+
 void  append_linear_vertex(PolySet *ps,const Outline2d *face, int index, double h)
 {
 	ps->append_vertex(
@@ -1077,9 +1093,7 @@ void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3
 	vec_x->normalize(); 
 
 	if(diff1.norm() > 0.001 && diff2.norm() > 0.001) {
-
-
-		beta = (*vec_x).dot(diff1); // TODO can it be improved ?
+		beta = (*vec_x).dot(diff1); 
 		xfac=sqrt(1-beta*beta);
 		beta = (*vec_y).dot(diff1);
 		yfac=sqrt(1-beta*beta);
@@ -1225,7 +1239,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
 	double lower_rot=0.0, upper_rot=0.0;
 
 	// Add Bottom face
-	lowerFace = python_getprofile(node.profile_func, 0,lower_scalex, lower_scaley,node.origin_x, node.origin_y, lower_rot);
+	lowerFace = alterprofile(python_getprofile(node.profile_func, 0),lower_scalex, lower_scaley,node.origin_x, node.origin_y, lower_rot);
 	Polygon2d botface;
         botface.addOutline(lowerFace);
     	PolySet *ps_bot = botface.tessellate();
@@ -1241,7 +1255,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     		upper_scaley = 1 - i * (1 - node.scale_y) / slices,
 		upper_rot=i*node.twist /slices;
 		if(node.center) upper_h -= node.height/2;
-		upperFace = python_getprofile(node.profile_func, upper_h, upper_scalex, upper_scaley , node.origin_x, node.origin_y, upper_rot);
+		upperFace = alterprofile(python_getprofile(node.profile_func, upper_h), upper_scalex, upper_scaley , node.origin_x, node.origin_y, upper_rot);
 		if(lowerFace.vertices.size() == upperFace.vertices.size()) {
 			unsigned int n=lowerFace.vertices.size();
 			for(unsigned int j=0;j<n;j++) {
@@ -1312,10 +1326,32 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
   return ps;
 }
 
+// TODO ctest
+// TODO doppelpunkte
+// TODO True
+// TODO fa nur fuer  rotate enablen
 static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& poly)
 {
   auto *ps = new PolySet(3, true);
   ps->setConvexity(node.convexity);
+  std::vector<Vector3d> path_os;
+  std::vector<double> length_os;
+  double fa=2.0;
+
+  // Create oversampled path with fs. TODO auch fuer closed (+1, -1)
+  path_os.push_back(node.path[0]);
+  length_os.push_back(0);
+  for(int i=1;i<node.path.size();i++) {
+	  Vector3d seg=node.path[i]-node.path[i-1];
+	  double length_seg = seg.norm();
+	  int split=ceil(length_seg/fa);
+	  for(int j=1;j<=split;j++) {
+		double ratio=(double)j/(double)split;
+	  	path_os.push_back(node.path[i-1]+seg*ratio);
+	  	length_os.push_back((i-1+(double)j/(double)split)/(double) (node.path.size()-1));
+	  }
+  }
+
 #ifdef ENABLE_PYTHON  
   if(node.profile_func != NULL)
   {
@@ -1333,22 +1369,26 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
   
     std::vector<Vector3d> lastProfile;
     std::vector<Vector3d> startProfile; 
-    unsigned int m=node.path.size();
+    unsigned int m=path_os.size();
     int mfinal=(node.closed == true)?m+1:m-1;
     for (unsigned int i = 0; i <= mfinal; i++) {
         std::vector<Vector3d> curProfile; 
-	unsigned int n=profile2d.vertices.size();
-	curPt = node.path[i%m];
-	if(i > 0) lastPt = node.path[(i-1)%m]; else lastPt = node.path[i%m]; 
+	double cur_ang=node.twist *length_os[i];
+	double cur_scalex=1.0+(node.scale_x-1.0)*length_os[i];
+	double cur_scaley=1.0+(node.scale_y-1.0)*length_os[i];
+	Outline2d profilemod = alterprofile(profile2d,cur_scalex,cur_scaley,node.origin_x, node.origin_y,cur_ang);
+	unsigned int n=profilemod.vertices.size();
+	curPt = path_os[i%m];
+	if(i > 0) lastPt = path_os[(i-1)%m]; else lastPt = path_os[i%m]; 
 	if(node.closed == true) {
-		nextPt = node.path[(i+1)%m];
+		nextPt = path_os[(i+1)%m];
 	} else {
-		if(i < m-1 ) nextPt = node.path[(i+1)%m];  else  nextPt = node.path[i%m]; 
+		if(i < m-1 ) nextPt = path_os[(i+1)%m];  else  nextPt = path_os[i%m]; 
 	}
   	Vector3d vec_x, vec_y;
 	if(i != m+1) {
 		calculate_path_dirs(lastPt, curPt,nextPt,vec_x_last, vec_y_last, &vec_x, &vec_y);
-		curProfile = calculate_path_profile(&vec_x, &vec_y,curPt,  profile2d.vertices);
+		curProfile = calculate_path_profile(&vec_x, &vec_y,curPt,  profilemod.vertices);
 	} else 	curProfile = startProfile;
 	if(i == 1 && node.closed == true) startProfile=curProfile;
 
@@ -1366,7 +1406,7 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 	}
        if(node.closed == false && (i == 0 || i == m-1)) {
 		Polygon2d face_poly;
-		face_poly.addOutline(profile2d);
+		face_poly.addOutline(profilemod);
 		PolySet *ps_face = face_poly.tessellate(); 
 
 		if(i == 0) {
@@ -1541,7 +1581,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
 
 	if(node.angle != 360) {
 		// Add initial closing
-		lastFace = python_getprofile(node.profile_func, 0,1.0, 1.0,node.origin_x, node.origin_y, last_rot);
+		lastFace = alterprofile(python_getprofile(node.profile_func, 0),1.0, 1.0,node.origin_x, node.origin_y, last_rot);
 		Polygon2d lastface;
 	        lastface.addOutline(lastFace);
     		PolySet *ps_last = lastface.tessellate();
@@ -1561,7 +1601,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
   	for (unsigned int i = 1; i <= fragments; i++) {
 		cur_ang=i*node.angle/fragments;
 		cur_twist=i*node.twist /fragments;
-		curFace = python_getprofile(node.profile_func, cur_ang, 1.0, 1.0 , node.origin_x, node.origin_y, cur_twist);
+		curFace = alterprofile(python_getprofile(node.profile_func, cur_ang), 1.0, 1.0 , node.origin_x, node.origin_y, cur_twist);
 
 		if(lastFace.vertices.size() == curFace.vertices.size()) {
 			unsigned int n=lastFace.vertices.size();
