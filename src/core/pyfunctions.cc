@@ -997,6 +997,7 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 			return NULL;
 		}
 		Vector3d pt3d(x,y,z);
+		if(i > 0 &&  node->path[i-1] == pt3d) continue; //  prevent double pts
 		node ->path.push_back(pt3d);
 	   }
    }

@@ -37,7 +37,6 @@
 //
 	// TODO profile function
 	// TODO openscad module
-	// TODO xdir tests 3x2
 
 #ifdef ENABLE_PYTHON
 #include <pyopenscad.h>
@@ -1065,6 +1064,9 @@ void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3
 	} 
 	if(vec_y_last.norm() < 0.001)  { // Needed in first step only
 		vec_y_last = diff2.cross(vec_x_last);
+		if(vec_y_last.norm() < 0.001) { vec_x_last[0]=1; vec_x_last[1]=0; vec_x_last[2]=0; vec_y_last = diff.cross(vec_x_last); }
+		if(vec_y_last.norm() < 0.001) { vec_x_last[0]=0; vec_x_last[1]=1; vec_x_last[2]=0; vec_y_last = diff.cross(vec_x_last); }
+		if(vec_y_last.norm() < 0.001) { vec_x_last[0]=0; vec_x_last[1]=0; vec_x_last[2]=1; vec_y_last = diff.cross(vec_x_last); }
 	} else {
 		// make vec_last normal to diff1
 		Vector3d xn= vec_y_last.cross(diff1).normalized();
@@ -1326,8 +1328,6 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
 }
 
 // TODO ctest
-// TODO doppelpunkte
-// TODO True
 static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& poly)
 {
   auto *ps = new PolySet(3, true);
@@ -1345,7 +1345,7 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 	  Vector3d seg=node.path[i%m]-node.path[(i-1)%m];
 	  double length_seg = seg.norm();
 	  int split=ceil(length_seg/node.fs);
-	  if(node.twist == 0 && node.scale_x == 1.0 && node.scale_y == 1.0) split=1;
+	  if(node.twist == 0 && node.scale_x == 1.0 && node.scale_y == 1.0 && node.profile_func == NULL) split=1;
 	  for(int j=1;j<=split;j++) {
 		double ratio=(double)j/(double)split;
 	  	path_os.push_back(node.path[i-1]+seg*ratio);
@@ -1357,19 +1357,12 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 	  length_os.pop_back();
   }
 
-#ifdef ENABLE_PYTHON  
-  if(node.profile_func != NULL)
-  {
-	// TODO fix
-  }
-  else
-#endif  
-{
   Vector3d lastPt, curPt, nextPt;
   Vector3d vec_x_last(node.xdir_x,node.xdir_y,node.xdir_z);
   Vector3d vec_y_last(0,0,0);
   vec_x_last.normalize();
 
+  // in case of custom profile,poly shall exactly have one dummy outline,will be replaced
   for(const Outline2d &profile2d: poly.outlines()) {
   
     std::vector<Vector3d> lastProfile;
@@ -1381,7 +1374,17 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 	double cur_ang=node.twist *length_os[i];
 	double cur_scalex=1.0+(node.scale_x-1.0)*length_os[i];
 	double cur_scaley=1.0+(node.scale_y-1.0)*length_os[i];
-	Outline2d profilemod = alterprofile(profile2d,cur_scalex,cur_scaley,node.origin_x, node.origin_y,cur_ang);
+	Outline2d profilemod;
+	#ifdef ENABLE_PYTHON  
+	if(node.profile_func != NULL)
+	{
+		Outline2d tmpx=python_getprofile(node.profile_func, length_os[i%m]);
+        	profilemod = alterprofile(tmpx,cur_scalex,cur_scaley,node.origin_x, node.origin_y,cur_ang);
+	}
+	else
+	#endif  
+        profilemod = alterprofile(profile2d,cur_scalex,cur_scaley,node.origin_x, node.origin_y,cur_ang);
+
 	unsigned int n=profilemod.vertices.size();
 	curPt = path_os[i%m];
 	if(i > 0) lastPt = path_os[(i-1)%m]; else lastPt = path_os[i%m]; 
@@ -1437,7 +1440,6 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
     }
 
   }
- }
   return ps;
 }
 
