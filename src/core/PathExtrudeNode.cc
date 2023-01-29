@@ -35,6 +35,8 @@
 #include "Builtins.h"
 #include "handle_dep.h"
 
+
+
 #include <cmath>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
@@ -51,7 +53,7 @@ Parameters parse_parameters_path(Arguments arguments, const Location& location)
 {
   {
     Parameters normal_parse = Parameters::parse(arguments.clone(), location,
-                                                {"file", "layer",  "origin", "scale", "center", "twist", "slices", "segments"},
+                                                {"points", "file",   "origin", "scale", "center", "twist", "slices", "segments"},
                                                 {"convexity"}
                                                 );
     if (!(arguments.size() > 0 && !arguments[0].name && arguments[0]->type() == Value::Type::NUMBER)) {
@@ -60,7 +62,7 @@ Parameters parse_parameters_path(Arguments arguments, const Location& location)
   }
 
   return Parameters::parse(std::move(arguments), location,
-                           {"file", "layer", "origin", "scale", "center", "twist", "slices", "segments"},
+                           {"origin", "scale", "center", "twist", "slices", "segments"},
                            {"convexity"}
                            );
 }
@@ -72,18 +74,26 @@ static std::shared_ptr<AbstractNode> builtin_path_extrude(const ModuleInstantiat
   Parameters parameters = parse_parameters_path(std::move(arguments), inst->location());
   parameters.set_caller("path_extrude");
 
+  if (parameters["points"].type() != Value::Type::VECTOR) {
+    LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert points = %1$s to a vector of coordinates", parameters["points"].toEchoStringNoThrow());
+    return node;
+  }
+  for (const Value& pointValue : parameters["points"].toVector()) {
+	  Vector3d point;
+    if (!pointValue.getVec3(point[0], point[1], point[2]) ||
+        !std::isfinite(point[0]) || !std::isfinite(point[1] )  || !std::isfinite(point[2] ) 
+
+        ) {
+      LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert points[%1$d] = %2$s to a vec2 of numbers", node->path.size(), pointValue.toEchoStringNoThrow());
+      node->path.push_back({0, 0});
+    } else {
+      node->path.push_back(point);
+    }
+  }
+
   node->fn = parameters["$fn"].toDouble();
   node->fs = parameters["$fs"].toDouble();
   node->fa = parameters["$fa"].toDouble();
-
-  if (!parameters["file"].isUndefined() && parameters["file"].type() == Value::Type::STRING) {
-    LOG(message_group::Deprecated, Location::NONE, "", "Support for reading files in path_extrude will be removed in future releases. Use a child import() instead.");
-    auto filename = lookup_file(parameters["file"].toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
-    node->filename = filename;
-    handle_dep(filename);
-  }
-
-  node->layername = parameters["layer"].isUndefined() ? "" : parameters["layer"].toString();
 
   parameters["convexity"].getPositiveInt(node->convexity);
 
@@ -114,12 +124,7 @@ static std::shared_ptr<AbstractNode> builtin_path_extrude(const ModuleInstantiat
     node->has_twist = true;
   }
 
-  if (node->filename.empty()) {
-    children.instantiate(node);
-  } else if (!children.empty()) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-        "module %1$s() does not support child modules when importing a file", inst->name());
-  }
+  children.instantiate(node);
 
   return node;
 }
@@ -129,15 +134,6 @@ std::string PathExtrudeNode::toString() const
   std::ostringstream stream;
 
   stream << this->name() << "(";
-  if (!this->filename.empty()) { // Ignore deprecated parameters if empty
-    fs::path path((std::string)this->filename);
-    stream <<
-      "file = " << this->filename << ", "
-      "layer = " << QuotedString(this->layername) << ", "
-      "origin = [" << this->origin_x << ", " << this->origin_y << "], "
-           << "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
-    ;
-  }
   if (this->center) {
     stream << ", center = true";
   }

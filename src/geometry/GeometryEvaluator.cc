@@ -35,7 +35,6 @@
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
 //
-	// TODO profile function
 	// TODO openscad module
 
 #ifdef ENABLE_PYTHON
@@ -1489,15 +1488,7 @@ Response GeometryEvaluator::visit(State& state, const PathExtrudeNode& node)
     shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
       const Geometry *geometry = nullptr;
-      if (!node.filename.empty()) {
-        DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale_x);
-
-        Polygon2d *p2d = dxf.toPolygon2d();
-        if (p2d) geometry = ClipperUtils::sanitize(*p2d);
-        delete p2d;
-      } else {
-        geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
-      }
+      geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       if (geometry) {
         const auto *polygons = dynamic_cast<const Polygon2d *>(geometry);
         Geometry *extruded = extrudePolygon(node, *polygons);

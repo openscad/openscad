@@ -31,6 +31,4 @@ public:
   PyObject *profile_func;
  #endif  
 
-  Filename filename;
-  std::string layername;
 };
