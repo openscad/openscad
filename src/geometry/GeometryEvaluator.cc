@@ -37,7 +37,6 @@
 //
 	// TODO profile function
 	// TODO openscad module
-	// TODO fs parameter richtig
 	// TODO xdir tests 3x2
 
 #ifdef ENABLE_PYTHON
@@ -1329,27 +1328,33 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
 // TODO ctest
 // TODO doppelpunkte
 // TODO True
-// TODO fa nur fuer  rotate enablen
 static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& poly)
 {
   auto *ps = new PolySet(3, true);
   ps->setConvexity(node.convexity);
   std::vector<Vector3d> path_os;
   std::vector<double> length_os;
-  double fa=2.0;
 
-  // Create oversampled path with fs. TODO auch fuer closed (+1, -1)
+  // Create oversampled path with fs.
   path_os.push_back(node.path[0]);
   length_os.push_back(0);
-  for(int i=1;i<node.path.size();i++) {
-	  Vector3d seg=node.path[i]-node.path[i-1];
+  int m=node.path.size();
+  int ifinal=node.closed?m:m-1;
+
+  for(int i=1;i<=ifinal;i++) {
+	  Vector3d seg=node.path[i%m]-node.path[(i-1)%m];
 	  double length_seg = seg.norm();
-	  int split=ceil(length_seg/fa);
+	  int split=ceil(length_seg/node.fs);
+	  if(node.twist == 0 && node.scale_x == 1.0 && node.scale_y == 1.0) split=1;
 	  for(int j=1;j<=split;j++) {
 		double ratio=(double)j/(double)split;
 	  	path_os.push_back(node.path[i-1]+seg*ratio);
 	  	length_os.push_back((i-1+(double)j/(double)split)/(double) (node.path.size()-1));
 	  }
+  }
+  if(node.closed) { // let close do its last pt itself
+	  path_os.pop_back();
+	  length_os.pop_back();
   }
 
 #ifdef ENABLE_PYTHON  
