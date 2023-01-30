@@ -8,6 +8,7 @@
 #include "OffsetNode.h"
 #include "TransformNode.h"
 #include "LinearExtrudeNode.h"
+#include "PathExtrudeNode.h"
 #include "RoofNode.h"
 #include "roof_ss.h"
 #include "roof_vd.h"
@@ -1007,6 +1008,109 @@ static Outline2d splitOutlineByFn(
   return o2;
 }
 
+static Outline2d alterprofile(Outline2d profile,double scalex, double scaley, double origin_x, double origin_y,double rot)
+{
+	Outline2d result;
+	double ang=rot*3.14/180.0;
+	double c=cos(ang);
+	double s=sin(ang);
+	int n=profile.vertices.size();
+	for(int i=0;i<n;i++) {
+		double x=profile.vertices[i][0]-origin_x;
+		double y=profile.vertices[i][1]-origin_y;
+		double xr = scalex*(x*c - y*s)+origin_x;
+		double yr = scaley*(y*c + x*s)+origin_y;
+		result.vertices.push_back(Vector2d(xr,yr));
+	}
+	return result;
+}
+
+static void  append_linear_vertex(PolySet *ps,const Outline2d *face, int index, double h)
+{
+	ps->append_vertex(
+			face->vertices[index][0],
+			face->vertices[index][1],
+			h);
+}
+
+static void  append_rotary_vertex(PolySet *ps,const Outline2d *face, int index, double ang)
+{
+	double a=ang*M_PI / 180.0;
+	ps->append_vertex(
+			face->vertices[index][0]*cos(a),
+			face->vertices[index][0]*sin(a),
+			face->vertices[index][1]);
+}
+
+void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3d vec_x_last, Vector3d vec_y_last, Vector3d *vec_x, Vector3d *vec_y) {
+	Vector3d diff1,diff2;
+	diff1 = curpt - prevpt;
+	diff2 = nextpt - curpt;
+	double xfac=1.0,yfac=1.0,beta, beta2;
+
+	if(diff1.norm() > 0.001) diff1.normalize();
+	if(diff2.norm() > 0.001) diff2.normalize();
+	Vector3d diff=diff1+diff2;
+
+	if(diff.norm() < 0.001) {
+		printf("User Error!\n");
+		return ;
+	} 
+	if(vec_y_last.norm() < 0.001)  { // Needed in first step only
+		vec_y_last = diff2.cross(vec_x_last);
+		if(vec_y_last.norm() < 0.001) { vec_x_last[0]=1; vec_x_last[1]=0; vec_x_last[2]=0; vec_y_last = diff.cross(vec_x_last); }
+		if(vec_y_last.norm() < 0.001) { vec_x_last[0]=0; vec_x_last[1]=1; vec_x_last[2]=0; vec_y_last = diff.cross(vec_x_last); }
+		if(vec_y_last.norm() < 0.001) { vec_x_last[0]=0; vec_x_last[1]=0; vec_x_last[2]=1; vec_y_last = diff.cross(vec_x_last); }
+	} else {
+		// make vec_last normal to diff1
+		Vector3d xn= vec_y_last.cross(diff1).normalized();
+		Vector3d yn= diff1.cross(vec_x_last).normalized();
+
+		// now fix the angle between xn and yn
+		Vector3d vec_xy_ = (xn + yn).normalized();
+		Vector3d vec_xy = vec_xy_.cross(diff1).normalized();
+		vec_x_last = (vec_xy_ + vec_xy).normalized();
+		vec_y_last = diff1.cross(xn).normalized();
+	}
+
+	diff=(diff1+diff2).normalized();
+
+	*vec_y = diff.cross(vec_x_last);
+	if(vec_y->norm() < 0.001) { vec_x_last[0]=1; vec_x_last[1]=0; vec_x_last[2]=0; *vec_y = diff.cross(vec_x_last); }
+	if(vec_y->norm() < 0.001) { vec_x_last[0]=0; vec_x_last[1]=1; vec_x_last[2]=0; *vec_y = diff.cross(vec_x_last); }
+	if(vec_y->norm() < 0.001) { vec_x_last[0]=0; vec_x_last[1]=0; vec_x_last[2]=1; *vec_y = diff.cross(vec_x_last); }
+	vec_y->normalize(); 
+
+	*vec_x = vec_y_last.cross(diff);
+	if(vec_x->norm() < 0.001) { vec_y_last[0]=1; vec_y_last[1]=0; vec_y_last[2]=0; *vec_x = vec_y_last.cross(diff); }
+	if(vec_x->norm() < 0.001) { vec_y_last[0]=0; vec_y_last[1]=1; vec_y_last[2]=0; *vec_x = vec_y_last.cross(diff); }
+	if(vec_x->norm() < 0.001) { vec_y_last[0]=0; vec_y_last[1]=0; vec_y_last[2]=1; *vec_x = vec_y_last.cross(diff); }
+	vec_x->normalize(); 
+
+	if(diff1.norm() > 0.001 && diff2.norm() > 0.001) {
+		beta = (*vec_x).dot(diff1); 
+		xfac=sqrt(1-beta*beta);
+		beta = (*vec_y).dot(diff1);
+		yfac=sqrt(1-beta*beta);
+
+	}
+	(*vec_x) /= xfac;
+	(*vec_y) /= yfac;
+
+}
+
+std::vector<Vector3d> calculate_path_profile(Vector3d *vec_x, Vector3d *vec_y,Vector3d curpt, const std::vector<Vector2d> &profile) {
+
+	std::vector<Vector3d> result;
+	for(int i=0;i<profile.size();i++) {
+		result.push_back( Vector3d(
+			curpt[0]+(*vec_x)[0]*profile[i][0]+(*vec_y)[0]*profile[i][1],
+			curpt[1]+(*vec_x)[1]*profile[i][0]+(*vec_y)[1]*profile[i][1],
+			curpt[2]+(*vec_x)[2]*profile[i][0]+(*vec_y)[2]*profile[i][1]
+				));
+	}
+	return result;
+}
 
 /*!
    Input to extrude should be sanitized. This means non-intersecting, correct winding order
@@ -1154,6 +1258,122 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     delete ps_top;
   }
 
+  return ps;
+}
+
+static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& poly)
+{
+  auto *ps = new PolySet(3, true);
+  ps->setConvexity(node.convexity);
+  std::vector<Vector3d> path_os;
+  std::vector<double> length_os;
+
+  // Create oversampled path with fs.
+  path_os.push_back(node.path[0]);
+  length_os.push_back(0);
+  int m=node.path.size();
+  int ifinal=node.closed?m:m-1;
+
+  for(int i=1;i<=ifinal;i++) {
+	  Vector3d seg=node.path[i%m]-node.path[(i-1)%m];
+	  double length_seg = seg.norm();
+	  int split=ceil(length_seg/node.fs);
+	  if(node.twist == 0 && node.scale_x == 1.0 && node.scale_y == 1.0
+			  ) split=1;
+	  for(int j=1;j<=split;j++) {
+		double ratio=(double)j/(double)split;
+	  	path_os.push_back(node.path[i-1]+seg*ratio);
+	  	length_os.push_back((i-1+(double)j/(double)split)/(double) (node.path.size()-1));
+	  }
+  }
+  if(node.closed) { // let close do its last pt itself
+	  path_os.pop_back();
+	  length_os.pop_back();
+  }
+
+  Vector3d lastPt, curPt, nextPt;
+  Vector3d vec_x_last(node.xdir_x,node.xdir_y,node.xdir_z);
+  Vector3d vec_y_last(0,0,0);
+  vec_x_last.normalize();
+
+  // in case of custom profile,poly shall exactly have one dummy outline,will be replaced
+  for(const Outline2d &profile2d: poly.outlines()) {
+  
+    std::vector<Vector3d> lastProfile;
+    std::vector<Vector3d> startProfile; 
+    unsigned int m=path_os.size();
+    int mfinal=(node.closed == true)?m+1:m-1;
+    for (unsigned int i = 0; i <= mfinal; i++) {
+        std::vector<Vector3d> curProfile; 
+	double cur_ang=node.twist *length_os[i];
+	double cur_scalex=1.0+(node.scale_x-1.0)*length_os[i];
+	double cur_scaley=1.0+(node.scale_y-1.0)*length_os[i];
+	Outline2d profilemod;
+	#ifdef ENABLE_PYTHON  
+	if(node.profile_func != NULL)
+	{
+		Outline2d tmpx=python_getprofile(node.profile_func, length_os[i%m]);
+        	profilemod = alterprofile(tmpx,cur_scalex,cur_scaley,node.origin_x, node.origin_y,cur_ang);
+	}
+	else
+	#endif  
+        profilemod = alterprofile(profile2d,cur_scalex,cur_scaley,node.origin_x, node.origin_y,cur_ang);
+
+	unsigned int n=profilemod.vertices.size();
+	curPt = path_os[i%m];
+	if(i > 0) lastPt = path_os[(i-1)%m]; else lastPt = path_os[i%m]; 
+	if(node.closed == true) {
+		nextPt = path_os[(i+1)%m];
+	} else {
+		if(i < m-1 ) nextPt = path_os[(i+1)%m];  else  nextPt = path_os[i%m]; 
+	}
+  	Vector3d vec_x, vec_y;
+	if(i != m+1) {
+		calculate_path_dirs(lastPt, curPt,nextPt,vec_x_last, vec_y_last, &vec_x, &vec_y);
+		curProfile = calculate_path_profile(&vec_x, &vec_y,curPt,  profilemod.vertices);
+	} else 	curProfile = startProfile;
+	if(i == 1 && node.closed == true) startProfile=curProfile;
+
+	if((node.closed == false && i == 1) || ( i >= 2)){ // create ring
+		for(unsigned int j=0;j<n;j++) {
+			ps->append_poly();
+			ps->append_vertex( lastProfile[(j+0)%n][0], lastProfile[(j+0)%n][1], lastProfile[(j+0)%n][2]);
+			ps->append_vertex( lastProfile[(j+1)%n][0], lastProfile[(j+1)%n][1], lastProfile[(j+1)%n][2]);
+			ps->append_vertex(  curProfile[(j+1)%n][0],  curProfile[(j+1)%n][1],  curProfile[(j+1)%n][2]);
+			ps->append_poly();
+			ps->append_vertex( lastProfile[(j+0)%n][0], lastProfile[(j+0)%n][1], lastProfile[(j+0)%n][2]);
+			ps->append_vertex(  curProfile[(j+1)%n][0],  curProfile[(j+1)%n][1],  curProfile[(j+1)%n][2]);
+			ps->append_vertex(  curProfile[(j+0)%n][0],  curProfile[(j+0)%n][1],  curProfile[(j+0)%n][2]);
+		}
+	}
+       if(node.closed == false && (i == 0 || i == m-1)) {
+		Polygon2d face_poly;
+		face_poly.addOutline(profilemod);
+		PolySet *ps_face = face_poly.tessellate(); 
+
+		if(i == 0) {
+			// Flip vertex ordering for bottom polygon
+			for (Polygon & polygon : ps_face->polygons) {
+				std::reverse(polygon.begin(), polygon.end());
+			}
+		}
+		for (Polygon &p3d : ps_face -> polygons) {
+			std::vector<Vector2d> p2d;
+			for(int i=0;i<p3d.size();i++) 
+				p2d.push_back(Vector2d(p3d[i][0],p3d[i][1]));
+			p3d = calculate_path_profile(&vec_x, &vec_y,(i == 0)?curPt:nextPt,  p2d);
+		}
+		ps->append(*ps_face);
+		delete ps_face;
+	}
+
+	vec_x_last = vec_x.normalized();
+	vec_y_last = vec_y.normalized();
+	
+	lastProfile = curProfile;
+    }
+
+  }
   return ps;
 }
 
