@@ -1025,23 +1025,6 @@ static Outline2d alterprofile(Outline2d profile,double scalex, double scaley, do
 	return result;
 }
 
-static void  append_linear_vertex(PolySet *ps,const Outline2d *face, int index, double h)
-{
-	ps->append_vertex(
-			face->vertices[index][0],
-			face->vertices[index][1],
-			h);
-}
-
-static void  append_rotary_vertex(PolySet *ps,const Outline2d *face, int index, double ang)
-{
-	double a=ang*M_PI / 180.0;
-	ps->append_vertex(
-			face->vertices[index][0]*cos(a),
-			face->vertices[index][0]*sin(a),
-			face->vertices[index][1]);
-}
-
 void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3d vec_x_last, Vector3d vec_y_last, Vector3d *vec_x, Vector3d *vec_y) {
 	Vector3d diff1,diff2;
 	diff1 = curpt - prevpt;
@@ -1400,6 +1383,30 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
       } else {
         geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       }
+      if (geometry) {
+        const auto *polygons = dynamic_cast<const Polygon2d *>(geometry);
+        Geometry *extruded = extrudePolygon(node, *polygons);
+        assert(extruded);
+        geom.reset(extruded);
+        delete geometry;
+      }
+    } else {
+      geom = smartCacheGet(node, false);
+    }
+    addToParent(state, node, geom);
+    node.progress_report();
+  }
+  return Response::ContinueTraversal;
+}
+
+Response GeometryEvaluator::visit(State& state, const PathExtrudeNode& node)
+{
+  if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
+  if (state.isPostfix()) {
+    shared_ptr<const Geometry> geom;
+    if (!isSmartCached(node)) {
+      const Geometry *geometry = nullptr;
+      geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       if (geometry) {
         const auto *polygons = dynamic_cast<const Polygon2d *>(geometry);
         Geometry *extruded = extrudePolygon(node, *polygons);
