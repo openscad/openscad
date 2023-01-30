@@ -1344,7 +1344,11 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 	  Vector3d seg=node.path[i%m]-node.path[(i-1)%m];
 	  double length_seg = seg.norm();
 	  int split=ceil(length_seg/node.fs);
-	  if(node.twist == 0 && node.scale_x == 1.0 && node.scale_y == 1.0 && node.profile_func == NULL) split=1;
+	  if(node.twist == 0 && node.scale_x == 1.0 && node.scale_y == 1.0
+#ifdef ENABLE_PYTHON			  
+			  && node.profile_func == NULL
+#endif			  
+			  ) split=1;
 	  for(int j=1;j<=split;j++) {
 		double ratio=(double)j/(double)split;
 	  	path_os.push_back(node.path[i-1]+seg*ratio);
