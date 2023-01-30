@@ -35,8 +35,8 @@
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
 //
-	// TODO runde ecken,auch closed, fn,fa,fs
-	// TODO openscad xdir und path
+	// TODO runde ecken,auch closed
+	// TODO openscad xdir und 
 	// TODO wann intersect ? wenn it gets sliced,then slice width must be > profile width/2*sin(angle)
 
 #ifdef ENABLE_PYTHON
@@ -1347,14 +1347,20 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 	Vector3d prev=node.path[i-1].head<3>();
 	Vector3d cur=node.path[i].head<3>();
 	Vector3d next=node.path[i+1].head<3>();
-	Vector3d diff1, diff2,center,arcpt;
+	Vector3d diff1, diff2,center,arcpt, start, end;
 	diff1=(prev-cur).normalized();
 	diff2=(next-cur).normalized();
+	Vector3d diff=(diff1+diff2).normalized();
+	printf("diffx %g/%g/%g\n",diff[0], diff[1],diff[2]);
 
-	center=cur+r*diff1+r*diff2;
-
-	double ang=acos(diff1.dot(diff2));
+	double ang=acos(diff1.dot(-diff2));
+//	ang=M_PI/2.0;
 	double arclen=ang*r;
+
+	center=cur+(r/cos(ang/2.0))*diff;
+	start=cur+r*diff1;
+	end=cur+r*diff2;
+
 
 	int secs=node.fn;
 	int secs_a,secs_s;
@@ -1364,19 +1370,23 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 	secs_s=(int) ceil(arclen/node.fs);
 	if(secs_s > secs) secs=secs_s;
 
+
 	if(r == 0) secs=0;
 	
-//	printf("Calculate Path round %f ang=%f arclen=%f secs=%d\n",r,ang,arclen,secs);
-//	printf("start %g/%g/%g\n",start[0], start[1],start[2]);
-//	printf("center %g/%g/%g\n",center[0], center[1],center[2]);
-//	printf("end %g/%g/%g\n",end[0], end[1],end[2]);
+	printf("Calculate Path round %f ang=%f arclen=%f secs=%d\n",r,ang,arclen,secs);
+	printf("start %g/%g/%g\n",start[0], start[1],start[2]);
+	printf("center %g/%g/%g\n",center[0], center[1],center[2]);
+	printf("end %g/%g/%g\n",end[0], end[1],end[2]);
 	if(secs  == 0) path_round.push_back(cur); else {
+		printf("diff1 %g/%g/%g\n",diff1[0], diff1[1],diff1[2]);
+		printf("diff2 %g/%g/%g\n",diff2[0], diff2[1],diff2[2]);
 		Vector3d diff1n=diff1.cross(diff1.cross(diff2)).normalized();
+		printf("diff1n %g/%g/%g\n",diff1n[0], diff1n[1],diff1n[2]);
 		for(int j=0;j<=secs;j++) {
 			printf("angle %f\n",180.0*ang*j/(3.14*(double) secs));
 			arcpt=center
 				-diff1*r*sin(ang*j/(double) secs)
-				-diff2*r*cos(ang*j/(double) secs);
+				+diff1n*r*cos(ang*j/(double) secs);
 			printf("arcpt %g/%g/%g\n",arcpt[0], arcpt[1],arcpt[2]);
   			path_round.push_back(arcpt);
 		}
