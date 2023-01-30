@@ -1,0 +1,186 @@
+/*
+ *  OpenSCAD (www.openscad.org)
+ *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *                          Marius Kintel <marius@kintel.net>
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  As a special exception, you have permission to link this program
+ *  with the CGAL library and distribute executables, as long as you
+ *  follow the requirements of the GNU GPL in regard to all of the
+ *  software in the executable aside from CGAL.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
+
+#include "PathExtrudeNode.h"
+
+#include "module.h"
+#include "ModuleInstantiation.h"
+#include "Children.h"
+#include "Parameters.h"
+#include "printutils.h"
+#include "io/fileutils.h"
+#include "Builtins.h"
+#include "handle_dep.h"
+
+
+
+#include <cmath>
+#include <sstream>
+#include <boost/assign/std/vector.hpp>
+using namespace boost::assign; // bring 'operator+=()' into scope
+
+#include <boost/filesystem.hpp>
+namespace fs = boost::filesystem;
+
+/*
+ * Historic path_extrude argument parsing is quirky. To remain bug-compatible,
+ * try two different parses depending on conditions.
+ */
+Parameters parse_parameters_path(Arguments arguments, const Location& location)
+{
+  {
+    Parameters normal_parse = Parameters::parse(arguments.clone(), location,
+                                                {"points", "file",   "origin", "scale", "center", "twist", "slices", "segments"},
+                                                {"convexity"}
+                                                );
+    if (!(arguments.size() > 0 && !arguments[0].name && arguments[0]->type() == Value::Type::NUMBER)) {
+      return normal_parse;
+    }
+  }
+
+  return Parameters::parse(std::move(arguments), location,
+                           {"origin", "scale", "center", "twist", "slices", "segments"},
+                           {"convexity"}
+                           );
+}
+
+static std::shared_ptr<AbstractNode> builtin_path_extrude(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+{
+  auto node = std::make_shared<PathExtrudeNode>(inst);
+
+  Parameters parameters = parse_parameters_path(std::move(arguments), inst->location());
+  parameters.set_caller("path_extrude");
+
+  if (parameters["points"].type() != Value::Type::VECTOR) {
+    LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert points = %1$s to a vector of coordinates", parameters["points"].toEchoStringNoThrow());
+    return node;
+  }
+  for (const Value& pointValue : parameters["points"].toVector()) {
+	  Vector3d point;
+    if (!pointValue.getVec3(point[0], point[1], point[2]) ||
+        !std::isfinite(point[0]) || !std::isfinite(point[1] )  || !std::isfinite(point[2] ) 
+
+        ) {
+      LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert points[%1$d] = %2$s to a vec2 of numbers", node->path.size(), pointValue.toEchoStringNoThrow());
+      node->path.push_back({0, 0});
+    } else {
+      node->path.push_back(point);
+    }
+  }
+
+  node->fn = parameters["$fn"].toDouble();
+  node->fs = parameters["$fs"].toDouble();
+  node->fa = parameters["$fa"].toDouble();
+
+  parameters["convexity"].getPositiveInt(node->convexity);
+
+  bool originOk = parameters["origin"].getVec2(node->origin_x, node->origin_y);
+  originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
+  if (parameters["origin"].isDefined() && !originOk) {
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "path_extrude(..., origin=%1$s) could not be converted", parameters["origin"].toEchoStringNoThrow());
+  }
+  node->scale_x = node->scale_y = 1;
+  bool scaleOK = parameters["scale"].getFiniteDouble(node->scale_x);
+  scaleOK &= parameters["scale"].getFiniteDouble(node->scale_y);
+  scaleOK |= parameters["scale"].getVec2(node->scale_x, node->scale_y, true);
+  if ((parameters["scale"].isDefined()) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "path_extrude(..., scale=%1$s) could not be converted", parameters["scale"].toEchoStringNoThrow());
+  }
+
+  if (parameters["center"].type() == Value::Type::BOOL) node->center = parameters["center"].toBool();
+
+  if (node->scale_x < 0) node->scale_x = 0;
+  if (node->scale_y < 0) node->scale_y = 0;
+
+  node->has_slices = parameters.validate_integral("slices", node->slices, 1u);
+  node->has_segments = parameters.validate_integral("segments", node->segments, 0u);
+
+  node->twist = 0.0;
+  parameters["twist"].getFiniteDouble(node->twist);
+  if (node->twist != 0.0) {
+    node->has_twist = true;
+  }
+
+  children.instantiate(node);
+
+  return node;
+}
+
+std::string PathExtrudeNode::toString() const
+{
+  std::ostringstream stream;
+
+  stream << this->name() << "(";
+  if (this->center) {
+    stream << ", center = true";
+  }
+  if (this->has_twist) {
+    stream << ", twist = " << this->twist;
+  }
+  if (this->has_slices) {
+    stream << ", slices = " << this->slices;
+  }
+  if (this->has_segments) {
+    stream << ", segments = " << this->segments;
+  }
+
+  if (this->scale_x != this->scale_y) {
+    stream << ", scale = [" << this->scale_x << ", " << this->scale_y << "]";
+  } else if (this->scale_x != 1.0) {
+    stream << ", scale = " << this->scale_x;
+  }
+
+  if (!(this->has_slices && this->has_segments)) {
+    stream << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs;
+  }
+  if (this->convexity > 1) {
+    stream << ", convexity = " << this->convexity;
+  }
+  if(this->path.size() > 0) {
+    stream << ", path = ";
+    for(int i=0;i<this->path.size();i++) {
+	    stream <<  this->path[i][0] << " " << this->path[i][1] << " " << this->path[i][2] << ", ";
+    }
+  }
+  stream << ", xdir = " << this->xdir_x << " " << this->xdir_y << " " << this->xdir_z ;
+  stream << ", closed = " << this->closed; //
+
+#ifdef ENABLE_PYTHON  
+ if(this->profile_func != NULL) {
+    stream << ", profile = " << rand() ;
+ }
+#endif  
+  stream << ")";
+  return stream.str();
+}
+
+void register_builtin_path_extrude()
+{
+  Builtins::init("path_extrude", new BuiltinModule(builtin_path_extrude),
+  {
+    "path_extrude(profile,path)",
+  });
+}
