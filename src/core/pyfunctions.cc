@@ -68,10 +68,10 @@ PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *dim = NULL;
 
   double x = 1, y = 1, z = 1;
-  char *center = NULL;
+  PyObject *center = NULL;
 
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|Os", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OO", kwlist,
                                    &dim,
                                    &center)) return NULL;
 
@@ -82,8 +82,7 @@ PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
       return NULL;
     }
   }
-  if (center != NULL)
-    if (!strcasecmp(center, "true")) node->center = 1;
+  if (center == Py_True)  node->center = 1;
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
@@ -137,11 +136,11 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
 
   double fn = -1, fa = -1, fs = -1;
 
-  char *center = NULL;
+  PyObject *center = NULL;
   double vr1 = 1, vr2 = 1, vh = 1;
 
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddddddds", kwlist, &h, &r, &r1, &r2, &d, &d1, &d2, &center, &fn, &fa, &fs)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|dddddddOddd", kwlist, &h, &r, &r1, &r2, &d, &d1, &d2, &center, &fn, &fa, &fs)) {
     PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
     return NULL;
   }
@@ -167,8 +166,7 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
   node->r2 = vr2;
   node->h = vh;
 
-  if (center != NULL)
-    if (!strcasecmp(center, "true")) node->center = 1;
+  if (center == Py_True) node->center = 1;
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
@@ -245,10 +243,10 @@ PyObject *python_square(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *dim = NULL;
 
   double x = 1, y = 1;
-  char *center = NULL;
+  PyObject *center = NULL;
 
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|s", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist,
                                    &dim,
                                    &center)) {
     PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
@@ -261,8 +259,7 @@ PyObject *python_square(PyObject *self, PyObject *args, PyObject *kwargs)
       return NULL;
     }
   }
-  if (center != NULL)
-    if (!strcasecmp(center, "true")) node->center = 1;
+  if (center == Py_True) node->center = 1;
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
@@ -850,14 +847,14 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   int convexity = 1;
   PyObject *origin = NULL;
   PyObject *scale = NULL;
-  char *center = NULL;
+  PyObject *center = NULL;
   int slices = 1;
   int segments = 0;
   double twist = 0.0;
   double fn = -1, fa = -1, fs = -1;
 
   char *kwlist[] = {"obj", "height", "layer", "convexity", "origin", "scale", "center", "slices", "segments", "twist", "fn", "fa", "fs", NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|dsiO!O!siidddd", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|dsiO!O!Oiidddd", kwlist,
                                    &obj,
                                    &height,
                                    &layer,
@@ -903,8 +900,7 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
     node->scale_y = PyFloat_AsDouble(PyList_GetItem(scale, 1));
   }
 
-  if (center != NULL)
-    if (!strcasecmp(center, "true")) node->center = 1;
+  if (center == Py_True) node->center = 1;
 
   node->slices = slices;
   node->has_slices = slices != 1?1:0;
@@ -1276,10 +1272,10 @@ PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
   char *kwlist[] = {"file", "center", "convexity", "invert", NULL};
   const char *file = NULL;
-  const char *center = NULL;
-  const char *invert = NULL;
+  PyObject *center = NULL;
+  PyObject *invert = NULL;
   long convexity = 2;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|sls", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|OlO", kwlist,
                                    &file, &center, &convexity
                                    )) {
     PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
@@ -1292,9 +1288,9 @@ PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
   node->filename = filename;
   handle_dep(fs::path(filename).generic_string());
 
-  if (center != NULL && !strcasecmp(center, "true")) node->center = 1;
+  if (center == Py_True) node->center = 1;
   node->convexity = 2;
-  if (invert != NULL && !strcasecmp(invert, "true")) node->invert = 1;
+  if (invert  == Py_True)  node->invert = 1;
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
@@ -1458,9 +1454,9 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
   char *kwlist[] = {"obj", "r", "delta", "chamfer", "fn", "fa", "fs", NULL};
   PyObject *obj = NULL;
   double r = -1, delta = -1;
-  const char *chamfer = NULL;
+  PyObject *chamfer = NULL;
   double fn = -1, fa = -1, fs = -1;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Od|dsddd", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "Od|dOddd", kwlist,
                                    &obj,
                                    &r, &delta, &chamfer,
                                    &fn, &fa, &fs
@@ -1488,7 +1484,7 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
   } else if (delta != -1) {
     node->delta = delta;
     node->join_type = ClipperLib::jtMiter;
-    if (chamfer != NULL && !strcasecmp(chamfer, "true")) {
+    if (chamfer == Py_True) {
       node->chamfer = true;
       node->join_type = ClipperLib::jtSquare;
     }
@@ -1572,11 +1568,12 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
   double fn = -1, fa = -1, fs = -1;
 
   std::string filename;
-  const char *v = NULL, *layer = NULL, *center = NULL, *id = NULL;
+  const char *v = NULL, *layer = NULL,  *id = NULL;
+  PyObject *center = NULL;
   int convexity = 2;
   double scale = 1.0, width = -1, height = -1, dpi = 1.0;
   PyObject *origin = NULL;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|slO!dddsfsddd", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|slO!dddsfOddd", kwlist,
                                    &v,
                                    &layer,
                                    &convexity,
@@ -1627,7 +1624,7 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
   }
 
   node->center = 0;
-  if (center != NULL && !strcasecmp(center, "true")) node->center = 1;
+  if (center == Py_True) node->center = 1;
 
   node->scale = scale;
   if (node->scale <= 0) node->scale = 1;
