@@ -53,7 +53,7 @@ Parameters parse_parameters_path(Arguments arguments, const Location& location)
 {
   {
     Parameters normal_parse = Parameters::parse(arguments.clone(), location,
-                                                {"points", "file",   "origin", "scale", "center", "twist", "slices", "segments"},
+                                                {"path", "file",   "origin", "scale", "center", "twist", "slices", "segments"},
                                                 {"convexity"}
                                                 );
     if (!(arguments.size() > 0 && !arguments[0].name && arguments[0]->type() == Value::Type::NUMBER)) {
@@ -74,20 +74,20 @@ static std::shared_ptr<AbstractNode> builtin_path_extrude(const ModuleInstantiat
   Parameters parameters = parse_parameters_path(std::move(arguments), inst->location());
   parameters.set_caller("path_extrude");
 
-  if (parameters["points"].type() != Value::Type::VECTOR) {
-    LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert points = %1$s to a vector of coordinates", parameters["points"].toEchoStringNoThrow());
+  if (parameters["path"].type() != Value::Type::VECTOR) {
+    LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert path = %1$s to a vector of coordinates", parameters["path"].toEchoStringNoThrow());
     return node;
   }
-  for (const Value& pointValue : parameters["points"].toVector()) {
-	  Vector3d point;
-    if (!pointValue.getVec3(point[0], point[1], point[2]) ||
-        !std::isfinite(point[0]) || !std::isfinite(point[1] )  || !std::isfinite(point[2] ) 
-
-        ) {
-      LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert points[%1$d] = %2$s to a vec2 of numbers", node->path.size(), pointValue.toEchoStringNoThrow());
-      node->path.push_back({0, 0});
-    } else {
+  for (const Value& pointValue : parameters["path"].toVector()) {
+	  Vector4d point;
+    if (pointValue.getVec3(point[0], point[1], point[2]) || !std::isfinite(point[0]) || !std::isfinite(point[1] )  || !std::isfinite(point[2] ) ) {
+      point[3]=0.0;
       node->path.push_back(point);
+    } else if (pointValue.getVec4(point[0], point[1], point[2], point[3]) || !std::isfinite(point[0]) || !std::isfinite(point[1] )  || !std::isfinite(point[2] )|| !std::isfinite(point[3] ) ) {
+      node->path.push_back(point);
+    } else {
+      LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert path[%1$d] = %2$s to a vec3 or vec4 of numbers", node->path.size(), pointValue.toEchoStringNoThrow());
+      node->path.push_back({0, 0, 0, 0});
     }
   }
 
@@ -162,7 +162,7 @@ std::string PathExtrudeNode::toString() const
   if(this->path.size() > 0) {
     stream << ", path = ";
     for(int i=0;i<this->path.size();i++) {
-	    stream <<  this->path[i][0] << " " << this->path[i][1] << " " << this->path[i][2] << ", ";
+	    stream <<  this->path[i][0] << " " << this->path[i][1] << " " << this->path[i][2] <<  " " << this->path[i][3] << ", "  ;
     }
   }
   stream << ", xdir = " << this->xdir_x << " " << this->xdir_y << " " << this->xdir_z ;
@@ -179,8 +179,5 @@ std::string PathExtrudeNode::toString() const
 
 void register_builtin_path_extrude()
 {
-  Builtins::init("path_extrude", new BuiltinModule(builtin_path_extrude),
-  {
-    "path_extrude(profile,path)",
-  });
+  Builtins::init("path_extrude", new BuiltinModule(builtin_path_extrude,&Feature::ExperimentalPathExtrude), { "path_extrude(profile,path)", });
 }

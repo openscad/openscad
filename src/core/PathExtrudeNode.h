@@ -25,7 +25,7 @@ public:
   bool has_twist = false, has_slices = false, has_segments = false;
   bool center = false;
   double xdir_x=1.0, xdir_y=0.0, xdir_z=0.0;
-  std::vector<Vector3d> path;
+  std::vector<Vector4d> path;
   bool closed=false;
  #ifdef ENABLE_PYTHON
   PyObject *profile_func;

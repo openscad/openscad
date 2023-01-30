@@ -35,7 +35,9 @@
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
 //
-	// TODO openscad module
+	// TODO runde ecken,auch closed, fn,fa,fs
+	// TODO openscad xdir und path
+	// TODO wann intersect ? wenn it gets sliced,then slice width must be > profile width/2*sin(angle)
 
 #ifdef ENABLE_PYTHON
 #include <pyopenscad.h>
@@ -1329,19 +1331,74 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
 // TODO ctest
 static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& poly)
 {
+  int i;
   auto *ps = new PolySet(3, true);
   ps->setConvexity(node.convexity);
   std::vector<Vector3d> path_os;
   std::vector<double> length_os;
 
-  // Create oversampled path with fs.
-  path_os.push_back(node.path[0]);
+  // Round the corners with radius
+  printf("start\n");
+  std::vector<Vector3d> path_round; // TODO angles > 180 ?
+  path_round.push_back(node.path[0].head<3>());
+  for(i=1;i<node.path.size()-1;i++)
+  {
+	double r=node.path[i][3];
+	Vector3d prev=node.path[i-1].head<3>();
+	Vector3d cur=node.path[i].head<3>();
+	Vector3d next=node.path[i+1].head<3>();
+	Vector3d diff1, diff2,center,arcpt;
+	diff1=(prev-cur).normalized();
+	diff2=(next-cur).normalized();
+
+	center=cur+r*diff1+r*diff2;
+
+	double ang=acos(diff1.dot(diff2));
+	double arclen=ang*r;
+
+	int secs=node.fn;
+	int secs_a,secs_s;
+	secs_a=(int) ceil(180.0*ang/(M_PI*node.fa));
+	if(secs_a > secs) secs=secs_a;
+
+	secs_s=(int) ceil(arclen/node.fs);
+	if(secs_s > secs) secs=secs_s;
+
+	if(r == 0) secs=0;
+	
+//	printf("Calculate Path round %f ang=%f arclen=%f secs=%d\n",r,ang,arclen,secs);
+//	printf("start %g/%g/%g\n",start[0], start[1],start[2]);
+//	printf("center %g/%g/%g\n",center[0], center[1],center[2]);
+//	printf("end %g/%g/%g\n",end[0], end[1],end[2]);
+	if(secs  == 0) path_round.push_back(cur); else {
+		Vector3d diff1n=diff1.cross(diff1.cross(diff2)).normalized();
+		for(int j=0;j<=secs;j++) {
+			printf("angle %f\n",180.0*ang*j/(3.14*(double) secs));
+			arcpt=center
+				-diff1*r*sin(ang*j/(double) secs)
+				-diff2*r*cos(ang*j/(double) secs);
+			printf("arcpt %g/%g/%g\n",arcpt[0], arcpt[1],arcpt[2]);
+  			path_round.push_back(arcpt);
+		}
+	}
+
+  }
+  path_round.push_back(node.path[node.path.size()-1].head<3>());
+  printf("path_round is\n");
+  for(i=0;i<path_round.size();i++) {
+	printf("pt %g/%g/%g\n",path_round[i][0], path_round[i][1],path_round[i][2]);
+  }
+
+  // Create oversampled path with fs. for streights
+  path_os.push_back(path_round[0]);
   length_os.push_back(0);
-  int m=node.path.size();
+  int m=path_round.size();
   int ifinal=node.closed?m:m-1;
 
   for(int i=1;i<=ifinal;i++) {
-	  Vector3d seg=node.path[i%m]-node.path[(i-1)%m];
+	  Vector3d prevPt = path_round[(i-1)%m];
+	  Vector3d curPt = path_round[i%m];
+	  Vector3d seg=curPt - prevPt;
 	  double length_seg = seg.norm();
 	  int split=ceil(length_seg/node.fs);
 	  if(node.twist == 0 && node.scale_x == 1.0 && node.scale_y == 1.0
@@ -1351,8 +1408,8 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 			  ) split=1;
 	  for(int j=1;j<=split;j++) {
 		double ratio=(double)j/(double)split;
-	  	path_os.push_back(node.path[i-1]+seg*ratio);
-	  	length_os.push_back((i-1+(double)j/(double)split)/(double) (node.path.size()-1));
+	  	path_os.push_back(prevPt+seg*ratio);
+	  	length_os.push_back((i-1+(double)j/(double)split)/(double) (path_round.size()-1));
 	  }
   }
   if(node.closed) { // let close do its last pt itself

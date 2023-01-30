@@ -53,6 +53,7 @@ const Feature Feature::ExperimentalSortStl("sort-stl", "Sort the STL output for 
 #ifdef ENABLE_PYTHON
 const Feature Feature::ExperimentalPythonEngine("python-engine", "Enable experimental Python Engine (implies risk of malicious scripts downloaded).");
 #endif
+const Feature Feature::ExperimentalPathExtrude("path-extrude", "Enable experimental <code> path_extrude </code> functions analogue to linear_extrude and rotate_extrude.");
 
 Feature::Feature(const std::string& name, std::string description)
   : name(name), description(std::move(description))
