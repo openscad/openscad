@@ -31,7 +31,6 @@
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
 #include "boost-utils.h"
-#include <math.h>
 
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
@@ -1283,7 +1282,7 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 
 		secs=node.fn;
 		int secs_a,secs_s;
-		secs_a=(int) ceil(180.0*ang/(M_PI*node.fa));
+		secs_a=(int) ceil(180.0*ang/(G_PI*node.fa));
 		if(secs_a > secs) secs=secs_a;
 
 		secs_s=(int) ceil(arclen/node.fs);
