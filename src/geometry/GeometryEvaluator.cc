@@ -1333,6 +1333,7 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
   ps->setConvexity(node.convexity);
   std::vector<Vector3d> path_os;
   std::vector<double> length_os;
+  gboolean intersect=false;
 
   // Round the corners with radius
   int xdir_offset = 0; // offset in point list to apply the xdir
@@ -1463,7 +1464,14 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 	if(i == 1 && node.closed == true) startProfile=curProfile;
 
 	if((node.closed == false && i == 1) || ( i >= 2)){ // create ring
-		// TODO collision detection
+		// collision detection
+		Vector3d vec_z_last = vec_x_last.cross(vec_y_last);
+		// check that all new points are above old plane lastPt, vec_z_last
+		for(unsigned int j=0;j<n;j++) {
+			double dist=(curProfile[j]-lastPt).dot(vec_z_last);
+			if(dist < 0) intersect=true;
+		}
+		
 		for(unsigned int j=0;j<n;j++) {
 			ps->append_poly();
 			ps->append_vertex( lastProfile[(j+0)%n][0], lastProfile[(j+0)%n][1], lastProfile[(j+0)%n][2]);
@@ -1501,6 +1509,10 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 	
 	lastProfile = curProfile;
     }
+
+  }
+  if(intersect == true && node.allow_intersect == false) {
+	  ps->polygons.clear();
 
   }
   return ps;

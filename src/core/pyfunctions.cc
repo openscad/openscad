@@ -955,11 +955,12 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *path=NULL;
   PyObject *xdir=NULL;
   PyObject *closed=NULL;
+  PyObject *allow_intersect=NULL;
   double twist=0.0;
   double fn=-1, fa=-1, fs=-1;
 
   char * kwlist[] ={"obj","path","xdir","convexity","origin","scale","twist","closed","fn","fa","fs",NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!|O!iOOdOddd", kwlist, 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!|O!iOOdOOddd", kwlist, 
                           &obj,
 			  &PyList_Type, &path,
 			  &PyList_Type,&xdir,
@@ -968,6 +969,7 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 			  &scale,
 			  &twist,
 			  &closed,
+			  &allow_intersect,
 			  &fn,&fs,&fs
                           )) {
         PyErr_SetString(PyExc_TypeError,"error during parsing\n");
@@ -991,12 +993,14 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 	   int n=PyList_Size(path);
 	   for(int i=0;i<n;i++) {
 	  	PyObject *point=PyList_GetItem(path, i);
-		double x,y,z;
+		double x,y,z,w=0;
 	  	if(python_vectorval(point,&x,&y,&z)){
-    			PyErr_SetString(PyExc_TypeError,"Cannot parse vector in path_extrude path\n");
-			return NULL;
+	  		if(python_vectorval(point,&x,&y,&z,&w )){
+    				PyErr_SetString(PyExc_TypeError,"Cannot parse vector in path_extrude path\n");
+				return NULL;
+			}
 		}
-		Vector4d pt3d(x,y,z,0); // TODO use radius in python, too
+		Vector4d pt3d(x,y,z,w);
 		if(i > 0 &&  node->path[i-1] == pt3d) continue; //  prevent double pts
 		node ->path.push_back(pt3d);
 	   }
@@ -1006,6 +1010,7 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
    node->xdir_z=0;
    node->closed=false;
    if (closed == Py_True) node->closed = true;
+   if (allow_intersect == Py_True) node->allow_intersect = true;
    if(xdir != NULL) {
 	   if(python_vectorval(xdir,&(node->xdir_x), &(node->xdir_y),&(node->xdir_z))) {
     		PyErr_SetString(PyExc_TypeError,"error in path_extrude xdir parameter\n");

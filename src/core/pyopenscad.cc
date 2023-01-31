@@ -93,11 +93,12 @@ int python_numberval(PyObject *number, double *result)
   }
   return 1;
 }
-int python_vectorval(PyObject *vec, double *x, double *y, double *z)
+int python_vectorval(PyObject *vec, double *x, double *y, double *z, double *w)
 {
   *x = 1;
   *y = 1;
   *z = 1;
+  if(w != NULL ) *w = 0;
   if (PyList_Check(vec)) {
     if (PyList_Size(vec) >= 2) {
       if (python_numberval(PyList_GetItem(vec, 0), x)) return 1;
@@ -106,11 +107,15 @@ int python_vectorval(PyObject *vec, double *x, double *y, double *z)
     if (PyList_Check(vec) && PyList_Size(vec) >= 3) {
       if (python_numberval(PyList_GetItem(vec, 2), z)) return 1;
     }
+    if (PyList_Check(vec) && PyList_Size(vec) >= 4 && w != NULL) {
+      if (python_numberval(PyList_GetItem(vec, 3), w)) return 1;
+    }
     return 0;
   }
   if (!python_numberval(vec, x)) {
     *y = *x;
     *z = *x;
+    if(w != NULL) *w = *x;
     return 0;
   }
   return 1;

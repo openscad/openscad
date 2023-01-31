@@ -26,6 +26,7 @@ public:
   double xdir_x=1.0, xdir_y=0.0, xdir_z=0.0;
   std::vector<Vector4d> path;
   bool closed=false;
+  bool allow_intersect=false;
  #ifdef ENABLE_PYTHON
   PyObject *profile_func;
  #endif  

@@ -93,7 +93,7 @@ PyObject *python_nb_multiply(PyObject *arg1, PyObject *arg2);
 
 
 PyObject *python_oo_args(PyObject *self, PyObject *args);
-int python_vectorval(PyObject *vec, double *x, double *y, double *z);
+int python_vectorval(PyObject *vec, double *x, double *y, double *z, double *w=NULL);
 int python_numberval(PyObject *number, double *result);
 
 void get_fnas(double& fn, double& fa, double& fs);

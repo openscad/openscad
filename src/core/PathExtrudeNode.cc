@@ -53,7 +53,7 @@ Parameters parse_parameters_path(Arguments arguments, const Location& location)
 {
   {
     Parameters normal_parse = Parameters::parse(arguments.clone(), location,
-                                                {"path", "file",   "origin", "scale", "closed", "twist", "slices", "segments","xdir"},
+                                                {"path", "file",   "origin", "scale", "closed", "allow_intersect", "twist", "slices", "segments","xdir"},
                                                 {"convexity"}
                                                 );
     if (!(arguments.size() > 0 && !arguments[0].name && arguments[0]->type() == Value::Type::NUMBER)) {
@@ -62,7 +62,7 @@ Parameters parse_parameters_path(Arguments arguments, const Location& location)
   }
 
   return Parameters::parse(std::move(arguments), location,
-                           {"origin", "scale", "closed", "twist", "slices", "segments"},
+                           {"origin", "scale", "closed", "allow_intersect", "twist", "slices", "segments"},
                            {"convexity"}
                            );
 }
@@ -111,6 +111,7 @@ static std::shared_ptr<AbstractNode> builtin_path_extrude(const ModuleInstantiat
   }
 
   if (parameters["closed"].type() == Value::Type::BOOL) node->closed = parameters["closed"].toBool();
+  if (parameters["allow_intersect"].type() == Value::Type::BOOL) node->allow_intersect = parameters["allow_intersect"].toBool();
   
   if (node->scale_x < 0) node->scale_x = 0;
   if (node->scale_y < 0) node->scale_y = 0;
@@ -168,7 +169,8 @@ std::string PathExtrudeNode::toString() const
     }
   }
   stream << ", xdir = " << this->xdir_x << " " << this->xdir_y << " " << this->xdir_z ;
-  stream << ", closed = " << this->closed; //
+  stream << ", closed = " << this->closed;
+  stream << ", allow_intersect = " << this->allow_intersect;
 
 #ifdef ENABLE_PYTHON  
  if(this->profile_func != NULL) {
