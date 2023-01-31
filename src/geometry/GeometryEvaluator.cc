@@ -31,6 +31,7 @@
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
 #include "boost-utils.h"
+#include <math.h>
 
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
