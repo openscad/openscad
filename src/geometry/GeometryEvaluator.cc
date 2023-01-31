@@ -1024,7 +1024,6 @@ static Outline2d alterprofile(Outline2d profile,double scalex, double scaley, do
 	}
 	return result;
 }
-
 void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3d vec_x_last, Vector3d vec_y_last, Vector3d *vec_x, Vector3d *vec_y) {
 	Vector3d diff1,diff2;
 	diff1 = curpt - prevpt;
@@ -1079,7 +1078,6 @@ void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3
 	}
 	(*vec_x) /= xfac;
 	(*vec_y) /= yfac;
-
 }
 
 std::vector<Vector3d> calculate_path_profile(Vector3d *vec_x, Vector3d *vec_y,Vector3d curpt, const std::vector<Vector2d> &profile) {
