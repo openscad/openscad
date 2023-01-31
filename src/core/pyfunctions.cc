@@ -996,7 +996,7 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
     			PyErr_SetString(PyExc_TypeError,"Cannot parse vector in path_extrude path\n");
 			return NULL;
 		}
-		Vector3d pt3d(x,y,z);
+		Vector4d pt3d(x,y,z,0); // TODO use radius in python, too
 		if(i > 0 &&  node->path[i-1] == pt3d) continue; //  prevent double pts
 		node ->path.push_back(pt3d);
 	   }

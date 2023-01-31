@@ -53,7 +53,7 @@ Parameters parse_parameters_path(Arguments arguments, const Location& location)
 {
   {
     Parameters normal_parse = Parameters::parse(arguments.clone(), location,
-                                                {"path", "file",   "origin", "scale", "center", "twist", "slices", "segments"},
+                                                {"path", "file",   "origin", "scale", "closed", "twist", "slices", "segments","xdir"},
                                                 {"convexity"}
                                                 );
     if (!(arguments.size() > 0 && !arguments[0].name && arguments[0]->type() == Value::Type::NUMBER)) {
@@ -62,7 +62,7 @@ Parameters parse_parameters_path(Arguments arguments, const Location& location)
   }
 
   return Parameters::parse(std::move(arguments), location,
-                           {"origin", "scale", "center", "twist", "slices", "segments"},
+                           {"origin", "scale", "closed", "twist", "slices", "segments"},
                            {"convexity"}
                            );
 }
@@ -110,11 +110,16 @@ static std::shared_ptr<AbstractNode> builtin_path_extrude(const ModuleInstantiat
     LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "path_extrude(..., scale=%1$s) could not be converted", parameters["scale"].toEchoStringNoThrow());
   }
 
-  if (parameters["center"].type() == Value::Type::BOOL) node->center = parameters["center"].toBool();
-
+  if (parameters["closed"].type() == Value::Type::BOOL) node->closed = parameters["closed"].toBool();
+  
   if (node->scale_x < 0) node->scale_x = 0;
   if (node->scale_y < 0) node->scale_y = 0;
 
+  node->xdir_x=1.0; node->xdir_y=0.0; node->xdir_z=0.0;
+  bool xdirOK = parameters["xdir"].getVec3(node->xdir_x, node->xdir_y, node->xdir_z, true);
+  if ((parameters["xdir"].isDefined()) && (!xdirOK || !std::isfinite(node->xdir_x) || !std::isfinite(node->xdir_y) || !std::isfinite(node->xdir_z)    )) {
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "path_extrude(..., xdir=%1$s) could not be converted", parameters["xdir"].toEchoStringNoThrow());
+  }
   node->has_slices = parameters.validate_integral("slices", node->slices, 1u);
   node->has_segments = parameters.validate_integral("segments", node->segments, 0u);
 
@@ -134,9 +139,6 @@ std::string PathExtrudeNode::toString() const
   std::ostringstream stream;
 
   stream << this->name() << "(";
-  if (this->center) {
-    stream << ", center = true";
-  }
   if (this->has_twist) {
     stream << ", twist = " << this->twist;
   }

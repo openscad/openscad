@@ -23,7 +23,6 @@ public:
   unsigned int convexity = 1u;
   unsigned int slices = 1u, segments = 0u;
   bool has_twist = false, has_slices = false, has_segments = false;
-  bool center = false;
   double xdir_x=1.0, xdir_y=0.0, xdir_z=0.0;
   std::vector<Vector4d> path;
   bool closed=false;

@@ -35,9 +35,6 @@
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
 //
-	// TODO runde ecken,auch closed
-	// TODO openscad xdir und 
-	// TODO wann intersect ? wenn it gets sliced,then slice width must be > profile width/2*sin(angle)
 
 #ifdef ENABLE_PYTHON
 #include <pyopenscad.h>
@@ -1338,76 +1335,71 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
   std::vector<double> length_os;
 
   // Round the corners with radius
-  printf("start\n");
-  std::vector<Vector3d> path_round; // TODO angles > 180 ?
-  path_round.push_back(node.path[0].head<3>());
-  for(i=1;i<node.path.size()-1;i++)
+  int xdir_offset = 0; // offset in point list to apply the xdir
+  std::vector<Vector3d> path_round; 
+  int m = node.path.size();
+  for(i=0;i<node.path.size();i++)
   {
-	double r=node.path[i][3];
-	Vector3d prev=node.path[i-1].head<3>();
+	int draw_arcs=0;
+	Vector3d diff1, diff2,center,arcpt;
+	int secs;
+	double ang;
 	Vector3d cur=node.path[i].head<3>();
-	Vector3d next=node.path[i+1].head<3>();
-	Vector3d diff1, diff2,center,arcpt, start, end;
-	diff1=(prev-cur).normalized();
-	diff2=(next-cur).normalized();
-	Vector3d diff=(diff1+diff2).normalized();
-	printf("diffx %g/%g/%g\n",diff[0], diff[1],diff[2]);
+	double r=node.path[i][3];
+	do
+	{
+		if(i == 0 && node.closed == 0) break;
+		if(i == m-1 && node.closed == 0) break;
 
-	double ang=acos(diff1.dot(-diff2));
-//	ang=M_PI/2.0;
-	double arclen=ang*r;
-
-	center=cur+(r/cos(ang/2.0))*diff;
-	start=cur+r*diff1;
-	end=cur+r*diff2;
-
-
-	int secs=node.fn;
-	int secs_a,secs_s;
-	secs_a=(int) ceil(180.0*ang/(M_PI*node.fa));
-	if(secs_a > secs) secs=secs_a;
-
-	secs_s=(int) ceil(arclen/node.fs);
-	if(secs_s > secs) secs=secs_s;
-
-
-	if(r == 0) secs=0;
+		Vector3d prev=node.path[(i+m-1)%m].head<3>();
+		Vector3d next=node.path[(i+1)%m].head<3>();
+		diff1=(prev-cur).normalized();
+		diff2=(next-cur).normalized();
+		Vector3d diff=(diff1+diff2).normalized();
 	
-	printf("Calculate Path round %f ang=%f arclen=%f secs=%d\n",r,ang,arclen,secs);
-	printf("start %g/%g/%g\n",start[0], start[1],start[2]);
-	printf("center %g/%g/%g\n",center[0], center[1],center[2]);
-	printf("end %g/%g/%g\n",end[0], end[1],end[2]);
-	if(secs  == 0) path_round.push_back(cur); else {
-		printf("diff1 %g/%g/%g\n",diff1[0], diff1[1],diff1[2]);
-		printf("diff2 %g/%g/%g\n",diff2[0], diff2[1],diff2[2]);
-		Vector3d diff1n=diff1.cross(diff1.cross(diff2)).normalized();
-		printf("diff1n %g/%g/%g\n",diff1n[0], diff1n[1],diff1n[2]);
+		ang=acos(diff1.dot(-diff2));
+		double arclen=ang*r;
+		center=cur+(r/cos(ang/2.0))*diff;
+
+		secs=node.fn;
+		int secs_a,secs_s;
+		secs_a=(int) ceil(180.0*ang/(M_PI*node.fa));
+		if(secs_a > secs) secs=secs_a;
+
+		secs_s=(int) ceil(arclen/node.fs);
+		if(secs_s > secs) secs=secs_s;
+
+
+		if(r == 0) break;
+		if(secs  == 0)  break;
+		draw_arcs=1;
+	}
+	while(false);
+	if(draw_arcs) {
+		draw_arcs=1;
+		Vector3d diff1n=diff1.cross(diff2.cross(diff1)).normalized();
 		for(int j=0;j<=secs;j++) {
-			printf("angle %f\n",180.0*ang*j/(3.14*(double) secs));
 			arcpt=center
 				-diff1*r*sin(ang*j/(double) secs)
-				+diff1n*r*cos(ang*j/(double) secs);
-			printf("arcpt %g/%g/%g\n",arcpt[0], arcpt[1],arcpt[2]);
+				-diff1n*r*cos(ang*j/(double) secs);
   			path_round.push_back(arcpt);
 		}
-	}
+		if(node.closed > 0 && i == 0) xdir_offset=secs; // user wants to apply xdir on this point
+	} else path_round.push_back(cur);
 
   }
-  path_round.push_back(node.path[node.path.size()-1].head<3>());
-  printf("path_round is\n");
-  for(i=0;i<path_round.size();i++) {
-	printf("pt %g/%g/%g\n",path_round[i][0], path_round[i][1],path_round[i][2]);
-  }
 
+  // xdir_offset is claculated in in next step automatically
+  //
   // Create oversampled path with fs. for streights
-  path_os.push_back(path_round[0]);
+  path_os.push_back(path_round[xdir_offset]);
   length_os.push_back(0);
-  int m=path_round.size();
+  m = path_round.size();
   int ifinal=node.closed?m:m-1;
 
   for(int i=1;i<=ifinal;i++) {
-	  Vector3d prevPt = path_round[(i-1)%m];
-	  Vector3d curPt = path_round[i%m];
+	  Vector3d prevPt = path_round[(i+xdir_offset-1)%m];
+	  Vector3d curPt = path_round[(i+xdir_offset)%m];
 	  Vector3d seg=curPt - prevPt;
 	  double length_seg = seg.norm();
 	  int split=ceil(length_seg/node.fs);
@@ -1471,6 +1463,7 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 	if(i == 1 && node.closed == true) startProfile=curProfile;
 
 	if((node.closed == false && i == 1) || ( i >= 2)){ // create ring
+		// TODO collision detection
 		for(unsigned int j=0;j<n;j++) {
 			ps->append_poly();
 			ps->append_vertex( lastProfile[(j+0)%n][0], lastProfile[(j+0)%n][1], lastProfile[(j+0)%n][2]);
