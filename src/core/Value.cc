@@ -664,6 +664,14 @@ bool Value::getVec3(double& x, double& y, double& z) const
   return (v[0].getDouble(x) && v[1].getDouble(y) && v[2].getDouble(z));
 }
 
+bool Value::getVec4(double& x, double& y, double& z, double &w) const
+{
+  if (this->type() != Type::VECTOR) return false;
+  const VectorType& v = this->toVector();
+  if (v.size() != 4) return false;
+  return (v[0].getDouble(x) && v[1].getDouble(y) && v[2].getDouble(z) && v[3].getDouble(w)  );
+}
+
 bool Value::getVec3(double& x, double& y, double& z, double defaultval) const
 {
   if (this->type() != Type::VECTOR) return false;

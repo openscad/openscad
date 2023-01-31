@@ -53,7 +53,7 @@ Parameters parse_parameters_path(Arguments arguments, const Location& location)
 {
   {
     Parameters normal_parse = Parameters::parse(arguments.clone(), location,
-                                                {"points", "file",   "origin", "scale", "center", "twist", "slices", "segments"},
+                                                {"path", "file",   "origin", "scale", "closed", "allow_intersect", "twist", "slices", "segments","xdir"},
                                                 {"convexity"}
                                                 );
     if (!(arguments.size() > 0 && !arguments[0].name && arguments[0]->type() == Value::Type::NUMBER)) {
@@ -62,7 +62,7 @@ Parameters parse_parameters_path(Arguments arguments, const Location& location)
   }
 
   return Parameters::parse(std::move(arguments), location,
-                           {"origin", "scale", "center", "twist", "slices", "segments"},
+                           {"origin", "scale", "closed", "allow_intersect", "twist", "slices", "segments"},
                            {"convexity"}
                            );
 }
@@ -74,20 +74,20 @@ static std::shared_ptr<AbstractNode> builtin_path_extrude(const ModuleInstantiat
   Parameters parameters = parse_parameters_path(std::move(arguments), inst->location());
   parameters.set_caller("path_extrude");
 
-  if (parameters["points"].type() != Value::Type::VECTOR) {
-    LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert points = %1$s to a vector of coordinates", parameters["points"].toEchoStringNoThrow());
+  if (parameters["path"].type() != Value::Type::VECTOR) {
+    LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert path = %1$s to a vector of coordinates", parameters["path"].toEchoStringNoThrow());
     return node;
   }
-  for (const Value& pointValue : parameters["points"].toVector()) {
-	  Vector3d point;
-    if (!pointValue.getVec3(point[0], point[1], point[2]) ||
-        !std::isfinite(point[0]) || !std::isfinite(point[1] )  || !std::isfinite(point[2] ) 
-
-        ) {
-      LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert points[%1$d] = %2$s to a vec2 of numbers", node->path.size(), pointValue.toEchoStringNoThrow());
-      node->path.push_back({0, 0});
-    } else {
+  for (const Value& pointValue : parameters["path"].toVector()) {
+	  Vector4d point;
+    if (pointValue.getVec3(point[0], point[1], point[2]) || !std::isfinite(point[0]) || !std::isfinite(point[1] )  || !std::isfinite(point[2] ) ) {
+      point[3]=0.0;
       node->path.push_back(point);
+    } else if (pointValue.getVec4(point[0], point[1], point[2], point[3]) || !std::isfinite(point[0]) || !std::isfinite(point[1] )  || !std::isfinite(point[2] )|| !std::isfinite(point[3] ) ) {
+      node->path.push_back(point);
+    } else {
+      LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert path[%1$d] = %2$s to a vec3 or vec4 of numbers", node->path.size(), pointValue.toEchoStringNoThrow());
+      node->path.push_back({0, 0, 0, 0});
     }
   }
 
@@ -110,11 +110,17 @@ static std::shared_ptr<AbstractNode> builtin_path_extrude(const ModuleInstantiat
     LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "path_extrude(..., scale=%1$s) could not be converted", parameters["scale"].toEchoStringNoThrow());
   }
 
-  if (parameters["center"].type() == Value::Type::BOOL) node->center = parameters["center"].toBool();
-
+  if (parameters["closed"].type() == Value::Type::BOOL) node->closed = parameters["closed"].toBool();
+  if (parameters["allow_intersect"].type() == Value::Type::BOOL) node->allow_intersect = parameters["allow_intersect"].toBool();
+  
   if (node->scale_x < 0) node->scale_x = 0;
   if (node->scale_y < 0) node->scale_y = 0;
 
+  node->xdir_x=1.0; node->xdir_y=0.0; node->xdir_z=0.0;
+  bool xdirOK = parameters["xdir"].getVec3(node->xdir_x, node->xdir_y, node->xdir_z, true);
+  if ((parameters["xdir"].isDefined()) && (!xdirOK || !std::isfinite(node->xdir_x) || !std::isfinite(node->xdir_y) || !std::isfinite(node->xdir_z)    )) {
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "path_extrude(..., xdir=%1$s) could not be converted", parameters["xdir"].toEchoStringNoThrow());
+  }
   node->has_slices = parameters.validate_integral("slices", node->slices, 1u);
   node->has_segments = parameters.validate_integral("segments", node->segments, 0u);
 
@@ -134,9 +140,6 @@ std::string PathExtrudeNode::toString() const
   std::ostringstream stream;
 
   stream << this->name() << "(";
-  if (this->center) {
-    stream << ", center = true";
-  }
   if (this->has_twist) {
     stream << ", twist = " << this->twist;
   }
@@ -162,11 +165,12 @@ std::string PathExtrudeNode::toString() const
   if(this->path.size() > 0) {
     stream << ", path = ";
     for(int i=0;i<this->path.size();i++) {
-	    stream <<  this->path[i][0] << " " << this->path[i][1] << " " << this->path[i][2] << ", ";
+	    stream <<  this->path[i][0] << " " << this->path[i][1] << " " << this->path[i][2] <<  " " << this->path[i][3] << ", "  ;
     }
   }
   stream << ", xdir = " << this->xdir_x << " " << this->xdir_y << " " << this->xdir_z ;
-  stream << ", closed = " << this->closed; //
+  stream << ", closed = " << this->closed;
+  stream << ", allow_intersect = " << this->allow_intersect;
 
 #ifdef ENABLE_PYTHON  
  if(this->profile_func != NULL) {

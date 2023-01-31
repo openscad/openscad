@@ -1246,27 +1246,88 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
 
 static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& poly)
 {
+  int i;
   auto *ps = new PolySet(3, true);
   ps->setConvexity(node.convexity);
   std::vector<Vector3d> path_os;
   std::vector<double> length_os;
+  gboolean intersect=false;
 
-  // Create oversampled path with fs.
-  path_os.push_back(node.path[0]);
+  // Round the corners with radius
+  int xdir_offset = 0; // offset in point list to apply the xdir
+  std::vector<Vector3d> path_round; 
+  int m = node.path.size();
+  for(i=0;i<node.path.size();i++)
+  {
+	int draw_arcs=0;
+	Vector3d diff1, diff2,center,arcpt;
+	int secs;
+	double ang;
+	Vector3d cur=node.path[i].head<3>();
+	double r=node.path[i][3];
+	do
+	{
+		if(i == 0 && node.closed == 0) break;
+		if(i == m-1 && node.closed == 0) break;
+
+		Vector3d prev=node.path[(i+m-1)%m].head<3>();
+		Vector3d next=node.path[(i+1)%m].head<3>();
+		diff1=(prev-cur).normalized();
+		diff2=(next-cur).normalized();
+		Vector3d diff=(diff1+diff2).normalized();
+	
+		ang=acos(diff1.dot(-diff2));
+		double arclen=ang*r;
+		center=cur+(r/cos(ang/2.0))*diff;
+
+		secs=node.fn;
+		int secs_a,secs_s;
+		secs_a=(int) ceil(180.0*ang/(M_PI*node.fa));
+		if(secs_a > secs) secs=secs_a;
+
+		secs_s=(int) ceil(arclen/node.fs);
+		if(secs_s > secs) secs=secs_s;
+
+
+		if(r == 0) break;
+		if(secs  == 0)  break;
+		draw_arcs=1;
+	}
+	while(false);
+	if(draw_arcs) {
+		draw_arcs=1;
+		Vector3d diff1n=diff1.cross(diff2.cross(diff1)).normalized();
+		for(int j=0;j<=secs;j++) {
+			arcpt=center
+				-diff1*r*sin(ang*j/(double) secs)
+				-diff1n*r*cos(ang*j/(double) secs);
+  			path_round.push_back(arcpt);
+		}
+		if(node.closed > 0 && i == 0) xdir_offset=secs; // user wants to apply xdir on this point
+	} else path_round.push_back(cur);
+
+  }
+
+  // xdir_offset is claculated in in next step automatically
+  //
+  // Create oversampled path with fs. for streights
+  path_os.push_back(path_round[xdir_offset]);
   length_os.push_back(0);
-  int m=node.path.size();
+  m = path_round.size();
   int ifinal=node.closed?m:m-1;
 
   for(int i=1;i<=ifinal;i++) {
-	  Vector3d seg=node.path[i%m]-node.path[(i-1)%m];
+	  Vector3d prevPt = path_round[(i+xdir_offset-1)%m];
+	  Vector3d curPt = path_round[(i+xdir_offset)%m];
+	  Vector3d seg=curPt - prevPt;
 	  double length_seg = seg.norm();
 	  int split=ceil(length_seg/node.fs);
 	  if(node.twist == 0 && node.scale_x == 1.0 && node.scale_y == 1.0
 			  ) split=1;
 	  for(int j=1;j<=split;j++) {
 		double ratio=(double)j/(double)split;
-	  	path_os.push_back(node.path[i-1]+seg*ratio);
-	  	length_os.push_back((i-1+(double)j/(double)split)/(double) (node.path.size()-1));
+	  	path_os.push_back(prevPt+seg*ratio);
+	  	length_os.push_back((i-1+(double)j/(double)split)/(double) (path_round.size()-1));
 	  }
   }
   if(node.closed) { // let close do its last pt itself
@@ -1318,6 +1379,14 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 	if(i == 1 && node.closed == true) startProfile=curProfile;
 
 	if((node.closed == false && i == 1) || ( i >= 2)){ // create ring
+		// collision detection
+		Vector3d vec_z_last = vec_x_last.cross(vec_y_last);
+		// check that all new points are above old plane lastPt, vec_z_last
+		for(unsigned int j=0;j<n;j++) {
+			double dist=(curProfile[j]-lastPt).dot(vec_z_last);
+			if(dist < 0) intersect=true;
+		}
+		
 		for(unsigned int j=0;j<n;j++) {
 			ps->append_poly();
 			ps->append_vertex( lastProfile[(j+0)%n][0], lastProfile[(j+0)%n][1], lastProfile[(j+0)%n][2]);
@@ -1355,6 +1424,10 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 	
 	lastProfile = curProfile;
     }
+
+  }
+  if(intersect == true && node.allow_intersect == false) {
+	  ps->polygons.clear();
 
   }
   return ps;

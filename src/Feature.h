@@ -31,6 +31,7 @@ public:
   static const Feature ExperimentalTextMetricsFunctions;
   static const Feature ExperimentalImportFunction;
   static const Feature ExperimentalSortStl;
+  static const Feature ExperimentalPathExtrude;
 
   [[nodiscard]] const std::string& get_name() const;
   [[nodiscard]] const std::string& get_description() const;
