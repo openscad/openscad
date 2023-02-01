@@ -34,7 +34,6 @@
 
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
-//
 
 #ifdef ENABLE_PYTHON
 #include <pyopenscad.h>
@@ -1012,7 +1011,7 @@ static Outline2d splitOutlineByFn(
   return o2;
 }
 
-Outline2d alterprofile(Outline2d profile,double scalex, double scaley, double origin_x, double origin_y,double rot)
+static Outline2d alterprofile(Outline2d profile,double scalex, double scaley, double origin_x, double origin_y,double rot)
 {
 	Outline2d result;
 	double ang=rot*3.14/180.0;
@@ -1020,10 +1019,10 @@ Outline2d alterprofile(Outline2d profile,double scalex, double scaley, double or
 	double s=sin(ang);
 	int n=profile.vertices.size();
 	for(int i=0;i<n;i++) {
-		double x=profile.vertices[i][0]-origin_x;
-		double y=profile.vertices[i][1]-origin_y;
-		double xr = scalex*(x*c - y*s)+origin_x;
-		double yr = scaley*(y*c + x*s)+origin_y;
+		double x=(profile.vertices[i][0]-origin_x)*scalex;
+		double y=(profile.vertices[i][1]-origin_y)*scaley;
+		double xr = (x*c - y*s)+origin_x;
+		double yr = (y*c + x*s)+origin_y;
 		result.vertices.push_back(Vector2d(xr,yr));
 	}
 	return result;
@@ -1100,7 +1099,6 @@ void calculate_path_dirs(Vector3d prevpt, Vector3d curpt,Vector3d nextpt,Vector3
 	}
 	(*vec_x) /= xfac;
 	(*vec_y) /= yfac;
-
 }
 
 std::vector<Vector3d> calculate_path_profile(Vector3d *vec_x, Vector3d *vec_y,Vector3d curpt, const std::vector<Vector2d> &profile) {
@@ -1325,7 +1323,6 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
   return ps;
 }
 
-// TODO ctest
 static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& poly)
 {
   int i;
@@ -1364,7 +1361,7 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 
 		secs=node.fn;
 		int secs_a,secs_s;
-		secs_a=(int) ceil(180.0*ang/(M_PI*node.fa));
+		secs_a=(int) ceil(180.0*ang/(G_PI*node.fa));
 		if(secs_a > secs) secs=secs_a;
 
 		secs_s=(int) ceil(arclen/node.fs);
@@ -1405,9 +1402,6 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 	  double length_seg = seg.norm();
 	  int split=ceil(length_seg/node.fs);
 	  if(node.twist == 0 && node.scale_x == 1.0 && node.scale_y == 1.0
-#ifdef ENABLE_PYTHON			  
-			  && node.profile_func == NULL
-#endif			  
 			  ) split=1;
 	  for(int j=1;j<=split;j++) {
 		double ratio=(double)j/(double)split;
