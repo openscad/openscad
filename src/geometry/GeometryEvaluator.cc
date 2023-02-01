@@ -30,6 +30,7 @@
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
 #include "boost-utils.h"
+#include <hash.h>
 
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
@@ -535,6 +536,42 @@ Response GeometryEvaluator::visit(State& state, const RootNode& node)
   return lazyEvaluateRootNode(state, node);
 }
 
+typedef std::vector<int> intList;
+
+
+void offset3D(const PolySet *ps) {
+	std::vector<Vector3d>  faceNormal;
+	std::unordered_map<Vector3d, intList, boost::hash<Vector3d> > pointMap;
+	for(int i=0;i<ps->polygons.size();i++) {
+		printf("%d: ",i);
+		Polygon pol = ps->polygons[i]; // TODO check that 3 pts
+		Vector3d diff1=pol[1] -pol[0];
+		Vector3d diff2=pol[2] - pol[1];
+		faceNormal.push_back(diff1.cross(diff2).normalized()); // TODO could go wrong
+		for(int j=0;j<pol.size(); j++) {
+			Vector3d  pt=pol[j];
+			printf("(%g/%g/%g) ",pt[0],pt[1],pt[2]);
+			if(!pointMap.count(pt))
+			{
+				intList newList;
+				newList.push_back(i);
+				pointMap[pt]=newList;
+			}
+			else {
+				pointMap[pt].push_back(i);
+			}
+		}
+		printf("\n");
+	}
+
+	for( const auto& [key, value] : pointMap ) {
+		printf("Pt %g/%g/%g cnt is %d\n",key[0],key[1], key[2], value.size());
+	}
+	//
+	// TODO assoc-array pt-> polyidnex aufbauen
+	// TODO punkte umrechnen
+}
+
 Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
 {
   if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
@@ -543,6 +580,7 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
     if (!isSmartCached(node)) {
       const Geometry *geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       if (geometry) {
+	      printf("2d offset\n");
         const auto *polygon = dynamic_cast<const Polygon2d *>(geometry);
         // ClipperLib documentation: The formula for the number of steps in a full
         // circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
@@ -552,6 +590,12 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
         assert(result);
         geom.reset(result);
         delete geometry;
+      } else {
+        printf("3d\n");
+	geom = applyToChildren(node, OpenSCADOperator::UNION).constptr();
+        const PolySet *ps = dynamic_pointer_cast<const PolySet>(geom).get();
+	offset3D(ps);
+
       }
     } else {
       geom = smartCacheGet(node, false);
