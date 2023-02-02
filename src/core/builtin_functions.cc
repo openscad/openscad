@@ -721,25 +721,6 @@ Value builtin_parent_module(Arguments arguments, const Location& loc)
   return {UserModule::stack_element(s - 1 - n)};
 }
 
-Value builtin_evalstring(const std::shared_ptr<const Context>& context, const FunctionCall * func_call)
-{
-  Arguments arguments(func_call->arguments, context);
-  Location loc = Location::NONE;
-  std::string parname;
-  if (arguments.size() == 0) {
-  } else if (!check_arguments("evalstring", arguments, loc, { Value::Type::STRING })) {
-    return Value::undefined.clone();
-  } else {
-    parname = arguments[0]->toString();
-  }
-
-  boost::optional<const Value&> result = context->try_lookup_variable(parname);
-  if (!result) {
-    return Value::undefined.clone();
-  }
-  return result->clone();
-}
-
 Value builtin_norm(Arguments arguments, const Location& loc)
 {
   if (!check_arguments("norm", arguments, loc, { Value::Type::VECTOR })) {
