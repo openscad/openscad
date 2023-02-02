@@ -537,7 +537,6 @@ Response GeometryEvaluator::visit(State& state, const RootNode& node)
 }
 
 typedef std::vector<int> intList;
-
 static int linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,double *detptr=NULL)
 {
         float det,ad11,ad12,ad13,ad21,ad22,ad23,ad31,ad32,ad33;
@@ -578,8 +577,6 @@ static int cut_face_face_face(Vector3d p1, Vector3d n1, Vector3d p2,Vector3d n2,
         return linsystem( vec1,vec2,vec3,sum,res,detptr);
 }
 
-      std::vector<const Polygon2d *> polygonlist;
-
 PolySet *offset3D(const PolySet *ps,double off) {
 	std::vector<Vector3d>  faceNormal;
 	std::unordered_map<Vector3d, intList, boost::hash<Vector3d> > pointInds;
@@ -607,63 +604,69 @@ PolySet *offset3D(const PolySet *ps,double off) {
 	}
 
 	for( const auto& [pt, indexes] : pointInds ) {
-//		printf("Pt %g/%g/%g cnt is %d\n",pt[0],pt[1], pt[2], indexes.size());
-		
-		double xmax=-1, ymax=-1, zmax=-1;
-		int xind=-1, yind=-1, zind=-1;
-		//
-		// find closest  normal to xdir
-		for(int i=0;i<indexes.size();i++) {
-			if(fabs(faceNormal[indexes[i]][0]) > xmax) {
-				xmax=fabs(faceNormal[indexes[i]][0]);
-				xind=indexes[i];
-			}
-		}
-		// find closest  normal to ydir
-		for(int i=0;i<indexes.size();i++) {
-			if(fabs(faceNormal[indexes[i]][1]) > ymax && indexes[i] != xind) {
-				ymax=fabs(faceNormal[indexes[i]][1]);
-				yind=indexes[i];
-			}
-		}
-		// find closest  normal to zdir
-		for(int i=0;i<indexes.size();i++) {
-			if(fabs(faceNormal[indexes[i]][2]) > zmax && indexes[i] != xind && indexes[i] != yind) {
-				zmax=fabs(faceNormal[indexes[i]][2]);
-				zind=indexes[i];
-			}
-		}
-//		printf("%d %d %d\n",xind, yind, zind);
-		assert(xind != -1);
-		assert(yind != -1);
-		assert(zind != -1);
 		Vector3d newpt;
-		// now calculate the new pt
-		cut_face_face_face(
-					pt+faceNormal[xind]*off, faceNormal[xind], 
-					pt+faceNormal[yind]*off, faceNormal[yind], 
-					pt+faceNormal[zind]*off, faceNormal[zind], 
-					newpt);
-	//	printf("newpt is %g/%g/%g\n",newpt[0],newpt[1],newpt[2]);
+		int valid;
+		do
+		{
+			valid=0;
+			double xmax=-1, ymax=-1, zmax=-1;
+			int xind=-1, yind=-1, zind=-1;
+			
+			// find closest  normal to xdir
+			for(int i=0;i<indexes.size();i++) {
+				if(fabs(faceNormal[indexes[i]][0]) > xmax) {
+					xmax=fabs(faceNormal[indexes[i]][0]);
+					xind=indexes[i];
+				}
+			}
+			if(xind == -1) break;
+
+			// find closest  normal to ydir
+			for(int i=0;i<indexes.size();i++) {
+				if(fabs(faceNormal[indexes[i]][1]) > ymax && faceNormal[indexes[i]].dot(faceNormal[xind]) < 0.999) {
+					ymax=fabs(faceNormal[indexes[i]][1]);
+					yind=indexes[i];
+				}
+			}
+			if(yind == -1) break;
+
+			// find closest  normal to zdir
+			for(int i=0;i<indexes.size();i++) {
+				if(fabs(faceNormal[indexes[i]][2]) > zmax && faceNormal[indexes[i]].dot(faceNormal[xind]) < 0.999 && faceNormal[indexes[i]].dot(faceNormal[yind]) < 0.999 ) {
+					zmax=fabs(faceNormal[indexes[i]][2]);
+					zind=indexes[i];
+				}
+			}
+			if(zind == -1) break;
+			
+			// now calculate the new pt
+			if(cut_face_face_face(
+						pt  +faceNormal[xind]*off  , faceNormal[xind], 
+						pt  +faceNormal[yind]*off  , faceNormal[yind], 
+						pt  +faceNormal[zind]*off  , faceNormal[zind], 
+						newpt)) break;
+			valid=1;
+		} while(0);
+		if(!valid)
+		{
+			Vector3d dir={0,0,0};
+			for(int j=0;j<indexes.size();j++)
+				dir += faceNormal[j];
+			newpt  = pt + off* dir.normalized();
+		}
 		pointMap[pt]=newpt;
 	}
 
-	//
-	// Map all points
-	// Finally print result
+	// Map all points and assemble
 	PolySet *offset_result = new PolySet(3, /* convex */ true);
 
 	for(int i=0;i<ps->polygons.size();i++) {
 		Polygon offset_polygon;
 		Polygon pol = ps->polygons[i];
-		printf("%d: ",i);
 		for(int j=0;j<pol.size(); j++) {
 			Vector3d pt =  pointMap[pol[j]];
-			printf("(%g/%g/%g) ",pt[0],pt[1],pt[2]);
 			offset_polygon.push_back(pt);
 		}
-		printf("\n");
-//		offset_result.push_back(offset_polygon); TODO fix
   		offset_result->polygons.push_back(offset_polygon);
 	}
 	return offset_result;
@@ -690,9 +693,7 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
 	geom = applyToChildren(node, OpenSCADOperator::UNION).constptr();
         const PolySet *ps = dynamic_pointer_cast<const PolySet>(geom).get();
 	PolySet *ps_offset =  offset3D(ps,node.delta);
-//	ps_offset->setConvexity(node.convexity);
 	geom.reset(ps_offset);
-//	delete ps_offset;
       }
     } else {
       geom = smartCacheGet(node, false);
