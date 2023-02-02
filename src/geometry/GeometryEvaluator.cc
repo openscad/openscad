@@ -538,38 +538,135 @@ Response GeometryEvaluator::visit(State& state, const RootNode& node)
 
 typedef std::vector<int> intList;
 
+static int linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,double *detptr=NULL)
+{
+        float det,ad11,ad12,ad13,ad21,ad22,ad23,ad31,ad32,ad33;
+        det=v1[0]*(v2[1]*v3[2]-v3[1]*v2[2])-v1[1]*(v2[0]*v3[2]-v3[0]*v2[2])+v1[2]*(v2[0]*v3[1]-v3[0]*v2[1]);
+        if(detptr != NULL) *detptr=det;
+        ad11=v2[1]*v3[2]-v3[1]*v2[2];
+        ad12=v3[0]*v2[2]-v2[0]*v3[2];
+        ad13=v2[0]*v3[1]-v3[0]*v2[1];
+        ad21=v3[1]*v1[2]-v1[1]*v3[2];
+        ad22=v1[0]*v3[2]-v3[0]*v1[2];
+        ad23=v3[0]*v1[1]-v1[0]*v3[1];
+        ad31=v1[1]*v2[2]-v2[1]*v1[2];
+        ad32=v2[0]*v1[2]-v1[0]*v2[2];
+        ad33=v1[0]*v2[1]-v2[0]*v1[1];
 
-void offset3D(const PolySet *ps) {
+        if(fabs(det) < 0.00001)
+                return 1;
+        
+        res[0] = (ad11*pt[0]+ad12*pt[1]+ad13*pt[2])/det;
+        res[1] = (ad21*pt[0]+ad22*pt[1]+ad23*pt[2])/det;
+        res[2] = (ad31*pt[0]+ad32*pt[1]+ad33*pt[2])/det;
+        return 0;
+}
+
+static int cut_face_face_face(Vector3d p1, Vector3d n1, Vector3d p2,Vector3d n2, Vector3d p3, Vector3d n3, Vector3d &res,double *detptr=NULL)
+{
+        //   vec1     vec2     vec3
+        // x*dirx + y*diry + z*dirz =( posx*dirx + posy*diry + posz*dirz )
+        // x*dirx + y*diry + z*dirz =( posx*dirx + posy*diry + posz*dirz )
+        // x*dirx + y*diry + z*dirz =( posx*dirx + posy*diry + posz*dirz )
+        Vector3d vec1,vec2,vec3,sum;
+        vec1[0]=n1[0]; vec1[1]= n2[0] ; vec1[2] = n3[0];
+        vec2[0]=n1[1]; vec2[1]= n2[1] ; vec2[2] = n3[1];
+        vec3[0]=n1[2]; vec3[1]= n2[2] ; vec3[2] = n3[2];
+        sum[0]=p1.dot(n1);
+        sum[1]=p2.dot(n2);
+        sum[2]=p3.dot(n3);
+        return linsystem( vec1,vec2,vec3,sum,res,detptr);
+}
+
+      std::vector<const Polygon2d *> polygonlist;
+
+PolySet *offset3D(const PolySet *ps,double off) {
 	std::vector<Vector3d>  faceNormal;
-	std::unordered_map<Vector3d, intList, boost::hash<Vector3d> > pointMap;
+	std::unordered_map<Vector3d, intList, boost::hash<Vector3d> > pointInds;
+	std::unordered_map<Vector3d, Vector3d, boost::hash<Vector3d> > pointMap;
 	for(int i=0;i<ps->polygons.size();i++) {
-		printf("%d: ",i);
-		Polygon pol = ps->polygons[i]; // TODO check that 3 pts
-		Vector3d diff1=pol[1] -pol[0];
+		Polygon pol = ps->polygons[i];
+		assert (pol.size() >= 3);
+		Vector3d diff1=pol[1] - pol[0];
 		Vector3d diff2=pol[2] - pol[1];
-		faceNormal.push_back(diff1.cross(diff2).normalized()); // TODO could go wrong
+		Vector3d norm = diff1.cross(diff2);
+		assert(norm.norm() > 0.0001);
+		faceNormal.push_back(norm.normalized());
 		for(int j=0;j<pol.size(); j++) {
 			Vector3d  pt=pol[j];
-			printf("(%g/%g/%g) ",pt[0],pt[1],pt[2]);
-			if(!pointMap.count(pt))
+			if(!pointInds.count(pt))
 			{
 				intList newList;
 				newList.push_back(i);
-				pointMap[pt]=newList;
+				pointInds[pt]=newList;
 			}
 			else {
-				pointMap[pt].push_back(i);
+				pointInds[pt].push_back(i);
 			}
 		}
-		printf("\n");
 	}
 
-	for( const auto& [key, value] : pointMap ) {
-		printf("Pt %g/%g/%g cnt is %d\n",key[0],key[1], key[2], value.size());
+	for( const auto& [pt, indexes] : pointInds ) {
+//		printf("Pt %g/%g/%g cnt is %d\n",pt[0],pt[1], pt[2], indexes.size());
+		
+		double xmax=-1, ymax=-1, zmax=-1;
+		int xind=-1, yind=-1, zind=-1;
+		//
+		// find closest  normal to xdir
+		for(int i=0;i<indexes.size();i++) {
+			if(fabs(faceNormal[indexes[i]][0]) > xmax) {
+				xmax=fabs(faceNormal[indexes[i]][0]);
+				xind=indexes[i];
+			}
+		}
+		// find closest  normal to ydir
+		for(int i=0;i<indexes.size();i++) {
+			if(fabs(faceNormal[indexes[i]][1]) > ymax && indexes[i] != xind) {
+				ymax=fabs(faceNormal[indexes[i]][1]);
+				yind=indexes[i];
+			}
+		}
+		// find closest  normal to zdir
+		for(int i=0;i<indexes.size();i++) {
+			if(fabs(faceNormal[indexes[i]][2]) > zmax && indexes[i] != xind && indexes[i] != yind) {
+				zmax=fabs(faceNormal[indexes[i]][2]);
+				zind=indexes[i];
+			}
+		}
+//		printf("%d %d %d\n",xind, yind, zind);
+		assert(xind != -1);
+		assert(yind != -1);
+		assert(zind != -1);
+		Vector3d newpt;
+		// now calculate the new pt
+		cut_face_face_face(
+					pt+faceNormal[xind]*off, faceNormal[xind], 
+					pt+faceNormal[yind]*off, faceNormal[yind], 
+					pt+faceNormal[zind]*off, faceNormal[zind], 
+					newpt);
+	//	printf("newpt is %g/%g/%g\n",newpt[0],newpt[1],newpt[2]);
+		pointMap[pt]=newpt;
 	}
+
 	//
-	// TODO assoc-array pt-> polyidnex aufbauen
-	// TODO punkte umrechnen
+	// Map all points
+	// Finally print result
+	PolySet *offset_result = new PolySet(3, /* convex */ true);
+
+	for(int i=0;i<ps->polygons.size();i++) {
+		Polygon offset_polygon;
+		Polygon pol = ps->polygons[i];
+		printf("%d: ",i);
+		for(int j=0;j<pol.size(); j++) {
+			Vector3d pt =  pointMap[pol[j]];
+			printf("(%g/%g/%g) ",pt[0],pt[1],pt[2]);
+			offset_polygon.push_back(pt);
+		}
+		printf("\n");
+//		offset_result.push_back(offset_polygon); TODO fix
+  		offset_result->polygons.push_back(offset_polygon);
+	}
+	return offset_result;
 }
 
 Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
@@ -580,7 +677,6 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
     if (!isSmartCached(node)) {
       const Geometry *geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       if (geometry) {
-	      printf("2d offset\n");
         const auto *polygon = dynamic_cast<const Polygon2d *>(geometry);
         // ClipperLib documentation: The formula for the number of steps in a full
         // circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
@@ -591,11 +687,12 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
         geom.reset(result);
         delete geometry;
       } else {
-        printf("3d\n");
 	geom = applyToChildren(node, OpenSCADOperator::UNION).constptr();
         const PolySet *ps = dynamic_pointer_cast<const PolySet>(geom).get();
-	offset3D(ps);
-
+	PolySet *ps_offset =  offset3D(ps,node.delta);
+//	ps_offset->setConvexity(node.convexity);
+	geom.reset(ps_offset);
+//	delete ps_offset;
       }
     } else {
       geom = smartCacheGet(node, false);
