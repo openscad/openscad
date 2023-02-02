@@ -31,6 +31,7 @@
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
 #include "boost-utils.h"
+#include <hash.h>
 
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
@@ -539,6 +540,142 @@ Response GeometryEvaluator::visit(State& state, const RootNode& node)
   return lazyEvaluateRootNode(state, node);
 }
 
+typedef std::vector<int> intList;
+static int linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,double *detptr=NULL)
+{
+        float det,ad11,ad12,ad13,ad21,ad22,ad23,ad31,ad32,ad33;
+        det=v1[0]*(v2[1]*v3[2]-v3[1]*v2[2])-v1[1]*(v2[0]*v3[2]-v3[0]*v2[2])+v1[2]*(v2[0]*v3[1]-v3[0]*v2[1]);
+        if(detptr != NULL) *detptr=det;
+        ad11=v2[1]*v3[2]-v3[1]*v2[2];
+        ad12=v3[0]*v2[2]-v2[0]*v3[2];
+        ad13=v2[0]*v3[1]-v3[0]*v2[1];
+        ad21=v3[1]*v1[2]-v1[1]*v3[2];
+        ad22=v1[0]*v3[2]-v3[0]*v1[2];
+        ad23=v3[0]*v1[1]-v1[0]*v3[1];
+        ad31=v1[1]*v2[2]-v2[1]*v1[2];
+        ad32=v2[0]*v1[2]-v1[0]*v2[2];
+        ad33=v1[0]*v2[1]-v2[0]*v1[1];
+
+        if(fabs(det) < 0.00001)
+                return 1;
+        
+        res[0] = (ad11*pt[0]+ad12*pt[1]+ad13*pt[2])/det;
+        res[1] = (ad21*pt[0]+ad22*pt[1]+ad23*pt[2])/det;
+        res[2] = (ad31*pt[0]+ad32*pt[1]+ad33*pt[2])/det;
+        return 0;
+}
+
+static int cut_face_face_face(Vector3d p1, Vector3d n1, Vector3d p2,Vector3d n2, Vector3d p3, Vector3d n3, Vector3d &res,double *detptr=NULL)
+{
+        //   vec1     vec2     vec3
+        // x*dirx + y*diry + z*dirz =( posx*dirx + posy*diry + posz*dirz )
+        // x*dirx + y*diry + z*dirz =( posx*dirx + posy*diry + posz*dirz )
+        // x*dirx + y*diry + z*dirz =( posx*dirx + posy*diry + posz*dirz )
+        Vector3d vec1,vec2,vec3,sum;
+        vec1[0]=n1[0]; vec1[1]= n2[0] ; vec1[2] = n3[0];
+        vec2[0]=n1[1]; vec2[1]= n2[1] ; vec2[2] = n3[1];
+        vec3[0]=n1[2]; vec3[1]= n2[2] ; vec3[2] = n3[2];
+        sum[0]=p1.dot(n1);
+        sum[1]=p2.dot(n2);
+        sum[2]=p3.dot(n3);
+        return linsystem( vec1,vec2,vec3,sum,res,detptr);
+}
+
+PolySet *offset3D(const PolySet *ps,double off) {
+	std::vector<Vector3d>  faceNormal;
+	std::unordered_map<Vector3d, intList, boost::hash<Vector3d> > pointInds;
+	std::unordered_map<Vector3d, Vector3d, boost::hash<Vector3d> > pointMap;
+	for(int i=0;i<ps->polygons.size();i++) {
+		Polygon pol = ps->polygons[i];
+		assert (pol.size() >= 3);
+		Vector3d diff1=pol[1] - pol[0];
+		Vector3d diff2=pol[2] - pol[1];
+		Vector3d norm = diff1.cross(diff2);
+		assert(norm.norm() > 0.0001);
+		faceNormal.push_back(norm.normalized());
+		for(int j=0;j<pol.size(); j++) {
+			Vector3d  pt=pol[j];
+			if(!pointInds.count(pt))
+			{
+				intList newList;
+				newList.push_back(i);
+				pointInds[pt]=newList;
+			}
+			else {
+				pointInds[pt].push_back(i);
+			}
+		}
+	}
+
+	for( const auto& [pt, indexes] : pointInds ) {
+		Vector3d newpt;
+		int valid;
+		do
+		{
+			valid=0;
+			double xmax=-1, ymax=-1, zmax=-1;
+			int xind=-1, yind=-1, zind=-1;
+			
+			// find closest  normal to xdir
+			for(int i=0;i<indexes.size();i++) {
+				if(fabs(faceNormal[indexes[i]][0]) > xmax) {
+					xmax=fabs(faceNormal[indexes[i]][0]);
+					xind=indexes[i];
+				}
+			}
+			if(xind == -1) break;
+
+			// find closest  normal to ydir
+			for(int i=0;i<indexes.size();i++) {
+				if(fabs(faceNormal[indexes[i]][1]) > ymax && faceNormal[indexes[i]].dot(faceNormal[xind]) < 0.999) {
+					ymax=fabs(faceNormal[indexes[i]][1]);
+					yind=indexes[i];
+				}
+			}
+			if(yind == -1) break;
+
+			// find closest  normal to zdir
+			for(int i=0;i<indexes.size();i++) {
+				if(fabs(faceNormal[indexes[i]][2]) > zmax && faceNormal[indexes[i]].dot(faceNormal[xind]) < 0.999 && faceNormal[indexes[i]].dot(faceNormal[yind]) < 0.999 ) {
+					zmax=fabs(faceNormal[indexes[i]][2]);
+					zind=indexes[i];
+				}
+			}
+			if(zind == -1) break;
+			
+			// now calculate the new pt
+			if(cut_face_face_face(
+						pt  +faceNormal[xind]*off  , faceNormal[xind], 
+						pt  +faceNormal[yind]*off  , faceNormal[yind], 
+						pt  +faceNormal[zind]*off  , faceNormal[zind], 
+						newpt)) break;
+			valid=1;
+		} while(0);
+		if(!valid)
+		{
+			Vector3d dir={0,0,0};
+			for(int j=0;j<indexes.size();j++)
+				dir += faceNormal[j];
+			newpt  = pt + off* dir.normalized();
+		}
+		pointMap[pt]=newpt;
+	}
+
+	// Map all points and assemble
+	PolySet *offset_result = new PolySet(3, /* convex */ true);
+
+	for(int i=0;i<ps->polygons.size();i++) {
+		Polygon offset_polygon;
+		Polygon pol = ps->polygons[i];
+		for(int j=0;j<pol.size(); j++) {
+			Vector3d pt =  pointMap[pol[j]];
+			offset_polygon.push_back(pt);
+		}
+  		offset_result->polygons.push_back(offset_polygon);
+	}
+	return offset_result;
+}
+
 Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
 {
   if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
@@ -556,6 +693,11 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
         assert(result);
         geom.reset(result);
         delete geometry;
+      } else {
+	geom = applyToChildren(node, OpenSCADOperator::UNION).constptr();
+        const PolySet *ps = dynamic_pointer_cast<const PolySet>(geom).get();
+	PolySet *ps_offset =  offset3D(ps,node.delta);
+	geom.reset(ps_offset);
       }
     } else {
       geom = smartCacheGet(node, false);
