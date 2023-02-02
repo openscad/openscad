@@ -690,10 +690,12 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
         geom.reset(result);
         delete geometry;
       } else {
-	geom = applyToChildren(node, OpenSCADOperator::UNION).constptr();
-        const PolySet *ps = dynamic_pointer_cast<const PolySet>(geom).get();
-	PolySet *ps_offset =  offset3D(ps,node.delta);
-	geom.reset(ps_offset);
+	std::shared_ptr<const Geometry> geometry = applyToChildren(node, OpenSCADOperator::UNION).constptr();
+	if(geometry) {
+          const PolySet *ps = dynamic_pointer_cast<const PolySet>(geometry).get();
+          PolySet *ps_offset =  offset3D(ps,node.delta);
+          geom.reset(ps_offset);
+	}
       }
     } else {
       geom = smartCacheGet(node, false);
