@@ -587,8 +587,8 @@ PolySet *offset3D(const PolySet *ps,double off) {
 		Vector3d diff1=pol[1] - pol[0];
 		Vector3d diff2=pol[2] - pol[1];
 		Vector3d norm = diff1.cross(diff2);
-		assert(norm.norm() > 0.0001);
-		faceNormal.push_back(norm.normalized());
+		if(norm.norm() > 0.0001) norm.normalize();
+		faceNormal.push_back(norm);
 		for(int j=0;j<pol.size(); j++) {
 			Vector3d  pt=pol[j];
 			if(!pointInds.count(pt))
@@ -651,8 +651,11 @@ PolySet *offset3D(const PolySet *ps,double off) {
 		{
 			Vector3d dir={0,0,0};
 			for(int j=0;j<indexes.size();j++)
-				dir += faceNormal[j];
-			newpt  = pt + off* dir.normalized();
+			{
+				if(faceNormal[indexes[j]].norm() > 0.999) dir += faceNormal[indexes[j]];
+			}
+			dir.normalize();
+			newpt  = pt + off* dir;
 		}
 		pointMap[pt]=newpt;
 	}
@@ -678,6 +681,17 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
   if (state.isPostfix()) {
     shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
+//   unsigned int dim = 0;
+//   int index = node.index();
+//   printf("visited is %p\n",this->visitedchildren);
+//   if(this != NULL) {
+//   for (const auto& item : this->visitedchildren[index]) {
+//      if (!item) {
+//		int   f=item.first();
+//	      printf("t %d %d\n",item.first.getDimension(), item.second.getDimension());
+//      }
+//      }
+//    }
       const Geometry *geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       if (geometry) {
         const auto *polygon = dynamic_cast<const Polygon2d *>(geometry);
