@@ -800,6 +800,7 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   node->profile_func = NULL;
   node->twist_func = NULL;
   if(obj->ob_type == &PyFunction_Type) {
+	Py_XINCREF(obj); // TODO there to decref it ?
 	node->profile_func = obj;
   	auto dummy_node = std::make_shared<SquareNode>(&todo_fix_inst);
 	node->children.push_back(dummy_node);
@@ -821,7 +822,10 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   node->scale = scale;
   node->angle = angle;
   if(twist!= NULL) {
-       if(twist->ob_type == &PyFunction_Type) node->twist_func = twist;
+  if(twist->ob_type == &PyFunction_Type) {
+       	       Py_XINCREF(twist); // TODO there to decref it ?
+	       node->twist_func = twist;
+       }
        else node->twist=PyFloat_AsDouble(twist);
   }
 
@@ -886,6 +890,7 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   node->profile_func = NULL;
   node->twist_func = NULL;
   if(obj->ob_type == &PyFunction_Type) {
+        Py_XINCREF(obj); // TODO there to decref it ?
 	node->profile_func = obj;
   	auto dummy_node = std::make_shared<SquareNode>(&todo_fix_inst);
 	node->children.push_back(dummy_node);
@@ -935,11 +940,13 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   node->has_segments = segments != 1?1:0;
 
   if(twist!= NULL) {
-	if(twist->ob_type == &PyFunction_Type) node->twist_func = twist;
+	if(twist->ob_type == &PyFunction_Type){
+                Py_XINCREF(twist); // TODO there to decref it ?
+	       	node->twist_func = twist;
+	}
 	else node->twist=PyFloat_AsDouble(twist);
 	node->has_twist = 1;
   } else  node->has_twist=0;
-
   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
 
@@ -988,6 +995,7 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
   node->profile_func = NULL;
   node->twist_func = NULL;
   if(obj->ob_type == &PyFunction_Type) {
+        Py_XINCREF(obj); // TODO there to decref it ?
 	node->profile_func = obj;
   	auto dummy_node = std::make_shared<SquareNode>(&todo_fix_inst);
 	node->children.push_back(dummy_node);
@@ -1062,7 +1070,10 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 	  node->scale_y=PyFloat_AsDouble(PyList_GetItem(scale, 1));
   }
   if(twist!= NULL) {
-       if(twist->ob_type == &PyFunction_Type) node->twist_func = twist;
+       if(twist->ob_type == &PyFunction_Type){
+                Py_XINCREF(twist); // TODO there to decref it ?
+	        node->twist_func = twist;
+	}
        else node->twist=PyFloat_AsDouble(twist);
        node->has_twist = 1;
   } else  node->has_twist=0;
