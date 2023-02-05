@@ -176,6 +176,9 @@ std::string PathExtrudeNode::toString() const
  if(this->profile_func != NULL) {
     stream << ", profile = " << rand() ;
  }
+ if(this->twist_func != NULL) {
+    stream << ", twist_func = " << rand() ;
+ }
 #endif  
   stream << ")";
   return stream.str();

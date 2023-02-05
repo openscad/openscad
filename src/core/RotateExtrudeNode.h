@@ -27,5 +27,6 @@ public:
   std::string layername;
  #ifdef ENABLE_PYTHON
   PyObject *profile_func;
+  PyObject *twist_func;
  #endif  
 };

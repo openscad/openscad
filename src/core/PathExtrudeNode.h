@@ -29,6 +29,7 @@ public:
   bool allow_intersect=false;
  #ifdef ENABLE_PYTHON
   PyObject *profile_func;
+  PyObject *twist_func;
  #endif  
 
 };

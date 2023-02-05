@@ -25,6 +25,7 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *object);
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *object);
 int python_more_obj(std::vector<std::shared_ptr<AbstractNode>>& children, PyObject *more_obj);
 Outline2d python_getprofile(PyObject *cbfunc, double arg);
+double python_doublefunc(PyObject *cbfunc, double arg);
 
 PyObject *python_square(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs);

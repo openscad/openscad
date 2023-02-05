@@ -26,6 +26,7 @@ public:
   bool center = false;
  #ifdef ENABLE_PYTHON
   PyObject *profile_func;
+  PyObject *twist_func;
  #endif  
 
   Filename filename;

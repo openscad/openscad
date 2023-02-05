@@ -774,7 +774,7 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   int convexity = 1;
   double scale = 1.0;
   double angle = 360.0;
-  double twist=0.0;
+  PyObject *twist=NULL;
   PyObject *origin = NULL;
   double fn = -1, fa = -1, fs = -1;
 
@@ -782,7 +782,7 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
 
   char * kwlist[] = {"obj", "layer", "convexity", "scale", "angle", "twist", "origin", "fn", "fa", "fs", NULL};
 
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sidddOddd", kwlist, 
+   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|siddOOddd", kwlist, 
                           &obj,
 			  &layer,
 			  &convexity,
@@ -797,6 +797,8 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
     return NULL;
   }
 
+  node->profile_func = NULL;
+  node->twist_func = NULL;
   if(obj->ob_type == &PyFunction_Type) {
 	node->profile_func = obj;
   	auto dummy_node = std::make_shared<SquareNode>(&todo_fix_inst);
@@ -818,7 +820,10 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   node->convexity = convexity;
   node->scale = scale;
   node->angle = angle;
-  node->twist = twist;
+  if(twist!= NULL) {
+       if(twist->ob_type == &PyFunction_Type) node->twist_func = twist;
+       else node->twist=PyFloat_AsDouble(twist);
+  }
 
   if (origin != NULL && PyList_Check(origin) && PyList_Size(origin) == 2) {
     node->origin_x = PyFloat_AsDouble(PyList_GetItem(origin, 0));
@@ -857,11 +862,11 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   PyObject *center = NULL;
   int slices = 1;
   int segments = 0;
-  double twist = 0.0;
+  PyObject *twist = NULL;
   double fn = -1, fa = -1, fs = -1;
 
   char * kwlist[] ={"obj","height","layer","convexity","origin","scale","center","slices","segments","twist","fn","fa","fs",NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|dsiOOOiidddd", kwlist, 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|dsiOOOiiOddd", kwlist, 
                           &obj,
                           &height,
 			  &layer,
@@ -879,6 +884,7 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   }
 
   node->profile_func = NULL;
+  node->twist_func = NULL;
   if(obj->ob_type == &PyFunction_Type) {
 	node->profile_func = obj;
   	auto dummy_node = std::make_shared<SquareNode>(&todo_fix_inst);
@@ -928,8 +934,11 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   node->segments = segments;
   node->has_segments = segments != 1?1:0;
 
-  node->twist = twist;
-  node->has_twist = twist != 1?1:0;
+  if(twist!= NULL) {
+	if(twist->ob_type == &PyFunction_Type) node->twist_func = twist;
+	else node->twist=PyFloat_AsDouble(twist);
+	node->has_twist = 1;
+  } else  node->has_twist=0;
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }
@@ -956,11 +965,11 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *xdir=NULL;
   PyObject *closed=NULL;
   PyObject *allow_intersect=NULL;
-  double twist=0.0;
+  PyObject *twist=NULL;
   double fn=-1, fa=-1, fs=-1;
 
   char * kwlist[] ={"obj","path","xdir","convexity","origin","scale","twist","closed","fn","fa","fs",NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!|O!iOOdOOddd", kwlist, 
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!|O!iOOOOOddd", kwlist, 
                           &obj,
 			  &PyList_Type, &path,
 			  &PyList_Type,&xdir,
@@ -977,6 +986,7 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
   node->profile_func = NULL;
+  node->twist_func = NULL;
   if(obj->ob_type == &PyFunction_Type) {
 	node->profile_func = obj;
   	auto dummy_node = std::make_shared<SquareNode>(&todo_fix_inst);
@@ -1051,9 +1061,11 @@ PyObject* python_path_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 	  node->scale_x=PyFloat_AsDouble(PyList_GetItem(scale, 0));
 	  node->scale_y=PyFloat_AsDouble(PyList_GetItem(scale, 1));
   }
-
-  node->twist=twist;
-  node->has_twist=twist != 1?1:0;
+  if(twist!= NULL) {
+       if(twist->ob_type == &PyFunction_Type) node->twist_func = twist;
+       else node->twist=PyFloat_AsDouble(twist);
+       node->has_twist = 1;
+  } else  node->has_twist=0;
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType,node);
 }

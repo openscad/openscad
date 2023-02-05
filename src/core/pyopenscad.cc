@@ -322,6 +322,16 @@ Outline2d python_getprofile(PyObject *cbfunc, double arg)
 	return result;
 }
 
+double python_doublefunc(PyObject *cbfunc, double arg)
+{
+	double result=0;
+	PyObject* args = PyTuple_Pack(1,PyFloat_FromDouble(arg));
+	PyObject* funcresult = PyObject_CallObject(cbfunc, args);
+	if(funcresult)
+		result=PyFloat_AsDouble(funcresult);
+	return result;
+}
+
 static PyObject *pythonInitDict=NULL;
 
 char *evaluatePython(const char *code, double time)

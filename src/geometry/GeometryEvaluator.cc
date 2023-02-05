@@ -1376,6 +1376,9 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
 	double lower_scalex=1.0, upper_scalex=1.0;
 	double lower_scaley=1.0, upper_scaley=1.0;
 	double lower_rot=0.0, upper_rot=0.0;
+        if(node.twist_func != NULL) {
+          lower_rot = python_doublefunc(node.twist_func, 0);
+        } else lower_rot=0;
 
 	// Add Bottom face
 	lowerFace = alterprofile(python_getprofile(node.profile_func, 0),lower_scalex, lower_scaley,node.origin_x, node.origin_y, lower_rot);
@@ -1390,9 +1393,11 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
 	delete ps_bot;
   	for (unsigned int i = 1; i <= slices; i++) {
 		upper_h=i*node.height/slices;
-    		upper_scalex = 1 - i * (1 - node.scale_x) / slices,
-    		upper_scaley = 1 - i * (1 - node.scale_y) / slices,
-		upper_rot=i*node.twist /slices;
+    		upper_scalex = 1 - i * (1 - node.scale_x) / slices;
+    		upper_scaley = 1 - i * (1 - node.scale_y) / slices;
+        	if(node.twist_func != NULL) {
+	          upper_rot = python_doublefunc(node.twist_func, i/(double)slices);
+        	} else upper_rot=i*node.twist /slices;
 		if(node.center) upper_h -= node.height/2;
 		upperFace = alterprofile(python_getprofile(node.profile_func, upper_h), upper_scalex, upper_scaley , node.origin_x, node.origin_y, upper_rot);
 		if(lowerFace.vertices.size() == upperFace.vertices.size()) {
@@ -1438,9 +1443,20 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
   delete ps_bottom;
 
   // Create slice sides.
+  double rot1, rot2;
+#ifdef ENABLE_PYTHON  
+    if(node.twist_func != NULL) {
+      rot1 = python_doublefunc(node.twist_func, 0);
+    } else
+#endif
+  rot1=0;
   for (unsigned int j = 0; j < slices; j++) {
-    double rot1 = node.twist * j / slices;
-    double rot2 = node.twist * (j + 1) / slices;
+#ifdef ENABLE_PYTHON	  
+    if(node.twist_func != NULL) {
+      rot2 = python_doublefunc(node.twist_func, (double)(j+1.0)/(double) slices);
+    } else
+#endif
+    rot2 = node.twist * (j + 1) / slices;
     double height1 = h1 + (h2 - h1) * j / slices;
     double height2 = h1 + (h2 - h1) * (j + 1) / slices;
     Vector2d scale1(1 - (1 - node.scale_x) * j / slices,
@@ -1448,13 +1464,14 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     Vector2d scale2(1 - (1 - node.scale_x) * (j + 1) / slices,
                     1 - (1 - node.scale_y) * (j + 1) / slices);
     add_slice(ps, polyref, rot1, rot2, height1, height2, scale1, scale2);
+    rot1=rot2;
   }
 
   // Create top face.
   // If either scale components are 0, then top will be zero-area, so skip it.
   if (node.scale_x != 0 && node.scale_y != 0) {
     Polygon2d top_poly(polyref);
-    Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) * Eigen::Affine2d(rotate_degrees(-node.twist)));
+    Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) * Eigen::Affine2d(rotate_degrees(-rot2)));
     top_poly.transform(trans);
     PolySet *ps_top = top_poly.tessellate();
     translate_PolySet(*ps_top, Vector3d(0, 0, h2));
@@ -1570,7 +1587,15 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
     int mfinal=(node.closed == true)?m+1:m-1;
     for (unsigned int i = 0; i <= mfinal; i++) {
         std::vector<Vector3d> curProfile; 
-	double cur_ang=node.twist *length_os[i];
+	double cur_twist;
+
+#ifdef ENABLE_PYTHON
+        if(node.twist_func != NULL) {
+          cur_twist = python_doublefunc(node.twist_func, length_os[i]);
+        } else 
+#endif	
+	cur_twist=node.twist *length_os[i];
+
 	double cur_scalex=1.0+(node.scale_x-1.0)*length_os[i];
 	double cur_scaley=1.0+(node.scale_y-1.0)*length_os[i];
 	Outline2d profilemod;
@@ -1578,11 +1603,11 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 	if(node.profile_func != NULL)
 	{
 		Outline2d tmpx=python_getprofile(node.profile_func, length_os[i%m]);
-        	profilemod = alterprofile(tmpx,cur_scalex,cur_scaley,node.origin_x, node.origin_y,cur_ang);
+        	profilemod = alterprofile(tmpx,cur_scalex,cur_scaley,node.origin_x, node.origin_y,cur_twist);
 	}
 	else
 	#endif  
-        profilemod = alterprofile(profile2d,cur_scalex,cur_scaley,node.origin_x, node.origin_y,cur_ang);
+        profilemod = alterprofile(profile2d,cur_scalex,cur_scaley,node.origin_x, node.origin_y,cur_twist);
 
 	unsigned int n=profilemod.vertices.size();
 	curPt = path_os[i%m];
@@ -1786,12 +1811,18 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
 	Outline2d lastFace;
 	Outline2d curFace;
 	double last_ang=0, cur_ang=0;
-	double last_rot=0.0, cur_rot=0.0;
 	double last_twist=0.0, cur_twist=0.0;
+
+#ifdef ENABLE_PYTHON
+        if(node.twist_func != NULL) {
+          last_twist = python_doublefunc(node.twist_func, 0);
+        } else last_twist=0;
+#endif	
+	
 
 	if(node.angle != 360) {
 		// Add initial closing
-		lastFace = alterprofile(python_getprofile(node.profile_func, 0),1.0, 1.0,node.origin_x, node.origin_y, last_rot);
+		lastFace = alterprofile(python_getprofile(node.profile_func, 0),1.0, 1.0,node.origin_x, node.origin_y, last_twist);
 		Polygon2d lastface;
 	        lastface.addOutline(lastFace);
     		PolySet *ps_last = lastface.tessellate();
@@ -1810,7 +1841,12 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
 	}
   	for (unsigned int i = 1; i <= fragments; i++) {
 		cur_ang=i*node.angle/fragments;
+
+		if(node.twist_func != NULL) {
+		  cur_twist = python_doublefunc(node.twist_func, i/(double) fragments);
+		} else
 		cur_twist=i*node.twist /fragments;
+
 		curFace = alterprofile(python_getprofile(node.profile_func, cur_ang), 1.0, 1.0 , node.origin_x, node.origin_y, cur_twist);
 
 		if(lastFace.vertices.size() == curFace.vertices.size()) {
@@ -1835,7 +1871,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
 		Polygon2d curface;
 	        curface.addOutline(curFace);
     		PolySet *ps_cur = curface.tessellate();
-		Transform3d rot2(angle_axis_degrees(node.angle, Vector3d::UnitZ()) * angle_axis_degrees(90, Vector3d::UnitX()));
+		Transform3d rot2(angle_axis_degrees(cur_ang, Vector3d::UnitZ()) * angle_axis_degrees(90, Vector3d::UnitX()));
 		ps_cur->transform(rot2);
 		if (flip_faces) {
 			for (auto& p : ps_cur->polygons) {
@@ -1879,7 +1915,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
     std::vector<Vector3d> rings[2];
     rings[0].resize(o.vertices.size());
     rings[1].resize(o.vertices.size());
-
+// TODO add twist
     fill_ring(rings[0], o, (node.angle == 360) ? -90 : 90, flip_faces); // first ring
     for (unsigned int j = 0; j < fragments; ++j) {
       double a;

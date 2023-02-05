@@ -111,6 +111,9 @@ std::string RotateExtrudeNode::toString() const
  if(this->profile_func != NULL) {
     stream << ", profile = " << rand() ;
  }
+ if(this->twist_func != NULL) {
+    stream << ", twist_func = " << rand() ;
+ }
 #endif  
     stream << "$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 
