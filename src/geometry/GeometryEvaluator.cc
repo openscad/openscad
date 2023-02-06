@@ -154,6 +154,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     break;
   }
   case OpenSCADOperator::UNION:
+  case OpenSCADOperator::OFFSET:
   {
     Geometry::Geometries actualchildren;
     for (const auto& item : children) {
@@ -392,6 +393,7 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode& node, OpenSC
   ClipperLib::ClipType clipType;
   switch (op) {
   case OpenSCADOperator::UNION:
+  case OpenSCADOperator::OFFSET:
     clipType = ClipperLib::ctUnion;
     break;
   case OpenSCADOperator::INTERSECTION:
@@ -662,7 +664,7 @@ PolySet *offset3D(const PolySet *ps,double off) {
 	}
 
 	// Map all points and assemble
-	PolySet *offset_result = new PolySet(3, /* convex */ true);
+	PolySet *offset_result = new PolySet(3, /* convex */ false);
 
 	for(int i=0;i<ps->polygons.size();i++) {
 		Polygon offset_polygon;
@@ -682,8 +684,7 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
   if (state.isPostfix()) {
     shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      const Geometry *geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
-      if (geometry) {
+      if(const Geometry *geometry = applyToChildren2D(node, OpenSCADOperator::OFFSET)) {
         const auto *polygon = dynamic_cast<const Polygon2d *>(geometry);
         // ClipperLib documentation: The formula for the number of steps in a full
         // circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
@@ -694,10 +695,26 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
         geom.reset(result);
         delete geometry;
       } else {
-	geom = applyToChildren(node, OpenSCADOperator::UNION).constptr();
-        const PolySet *ps = dynamic_pointer_cast<const PolySet>(geom).get();
-	PolySet *ps_offset =  offset3D(ps,node.delta);
-	geom.reset(ps_offset);
+	geom = applyToChildren(node, OpenSCADOperator::OFFSET).constptr();
+        if(std::shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(geom)) {
+		PolySet *ps_offset =  offset3D(ps.get(),node.delta);
+		geom.reset(ps_offset);
+	} else if(const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom).get()) {
+		for (const Geometry::GeometryItem& item : geomlist->getChildren()) { // TODO
+		}
+
+	} else if (std::shared_ptr<const CGAL_Nef_polyhedron> nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+		const CGAL_Nef_polyhedron nefcont=*(nef.get());
+		PolySet ps(3);
+		if (!CGALUtils::createPolySetFromNefPolyhedron3(*(nefcont.p3), ps)) {
+			PolySet *ps_offset =  offset3D(&ps,node.delta);
+			geom.reset(ps_offset);
+		} else {
+			LOG(message_group::Export_Error, Location::NONE, "", "Nef->PolySet failed");
+		}
+		
+	} else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) { // TODO
+	} 
       }
     } else {
       geom = smartCacheGet(node, false);
