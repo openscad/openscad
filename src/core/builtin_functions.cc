@@ -1122,11 +1122,6 @@ void register_builtin_functions()
     "parent_module(number) -> string",
   });
 
-  Builtins::init("evalstring", new BuiltinFunction(&builtin_evalstring),
-  {
-    "evalstring(string) -> expression",
-  });
-
   Builtins::init("is_undef", new BuiltinFunction(&builtin_is_undef),
   {
     "is_undef(arg) -> boolean",
