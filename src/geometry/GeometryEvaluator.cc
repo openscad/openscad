@@ -113,7 +113,6 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
   return {};
 }
 
-typedef std::vector<int> intList;
 static int linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,double *detptr=NULL)
 {
         float det,ad11,ad12,ad13,ad21,ad22,ad23,ad31,ad32,ad33;
@@ -153,36 +152,342 @@ static int cut_face_face_face(Vector3d p1, Vector3d n1, Vector3d p2,Vector3d n2,
         sum[2]=p3.dot(n3);
         return linsystem( vec1,vec2,vec3,sum,res,detptr);
 }
+typedef std::vector<int> intList;
+typedef std::vector<intList> intListList;
 
-PolySet *offset3D(const PolySet *ps,double off) {
-	std::vector<Vector3d>  faceNormal;
-	std::unordered_map<Vector3d, intList, boost::hash<Vector3d> > pointInds;
-	std::unordered_map<Vector3d, Vector3d, boost::hash<Vector3d> > pointMap;
-	for(int i=0;i<ps->polygons.size();i++) {
-		Polygon pol = ps->polygons[i];
-		assert (pol.size() >= 3);
-		Vector3d diff1=pol[1] - pol[0];
-		Vector3d diff2=pol[2] - pol[1];
-		Vector3d norm = diff1.cross(diff2);
-		assert(norm.norm() > 0.0001);
-		faceNormal.push_back(norm.normalized());
-		for(int j=0;j<pol.size(); j++) {
-			Vector3d  pt=pol[j];
-			if(!pointInds.count(pt))
+class TriCombineStub
+{
+	public:
+		int begin, end;
+		int operator==(const TriCombineStub ref)
+		{
+			if(this->begin == ref.begin && this->end == ref.end) return 1;
+			return 0;
+		}
+};
+
+unsigned int hash_value(const TriCombineStub& r) {
+	unsigned int i;
+	i=r.begin |(r.end<<16);
+        return i;
+}
+
+int operator==(const TriCombineStub &t1, const TriCombineStub &t2) 
+{
+	if(t1.begin == t2.begin && t1.end == t2.end) return 1;
+	return 0;
+}
+//
+// combine all tringles into polygons where applicable
+static std::vector<intList> stl_tricombine(const std::vector<intList> &triangles)
+{
+	int i,j,n;
+	int ind1, ind2;
+	std::unordered_set<TriCombineStub, boost::hash<TriCombineStub> > stubs_pos;
+	std::unordered_set<TriCombineStub, boost::hash<TriCombineStub> > stubs_neg;
+
+	TriCombineStub e;
+	for(i=0;i<triangles.size();i++)
+	{
+		n=triangles[i].size();
+		for(j=0;j<n;j++)
+		{
+			ind1=triangles[i][j];
+			ind2=triangles[i][(j+1)%n];
+			if(ind2 > ind1) // positive edge
 			{
-				intList newList;
-				newList.push_back(i);
-				pointInds[pt]=newList;
+				e.begin=ind1;
+				e.end=ind2;
+				if(stubs_neg.find(e) != stubs_neg.end()) stubs_neg.erase(e);
+				else if(stubs_pos.find(e) != stubs_pos.end()) printf("Duplicate Edge %d->%d \n",ind1,ind2);
+				else stubs_pos.insert(e);
 			}
-			else {
-				pointInds[pt].push_back(i);
+			if(ind2 < ind1) // negative edge
+			{
+				e.begin=ind2;
+				e.end=ind1;
+				if(stubs_pos.find(e) != stubs_pos.end() ) stubs_pos.erase(e);
+				else if(stubs_neg.find(e) != stubs_neg.end() ) printf("Duplicate Edge %d->%d \n",ind2,ind1);
+				else stubs_neg.insert(e);
 			}
+		}
+	}	
+
+	// now chain everything
+	std::unordered_map<int,int> stubs_chain;
+	std::vector<TriCombineStub> stubs;
+	std::vector<TriCombineStub> stubs_bak;
+	for( const auto& stubs : stubs_pos ) {
+		if(stubs_chain.count(stubs.begin) > 0)
+		{
+			stubs_bak.push_back(stubs);
+		} else stubs_chain[stubs.begin]=stubs.end;
+	}
+
+	for( const auto& stubs : stubs_neg ) {
+		if(stubs_chain.count(stubs.end) > 0)
+		{
+			TriCombineStub ts;
+			ts.begin=stubs.end;
+			ts.end=stubs.begin;
+			stubs_bak.push_back(ts);
+		} else stubs_chain[stubs.end]=stubs.begin;
+	}
+	std::vector<intList> result;
+
+	while(stubs_chain.size() > 0)
+	{
+		int ind,ind_new;
+		auto [ind_start,dummy]  = *(stubs_chain.begin());
+		ind=ind_start;
+		intList poly;
+		while(1)
+		{
+			if(stubs_chain.count(ind) > 0)
+			{
+				ind_new=stubs_chain[ind];
+				stubs_chain.erase(ind);
+			}
+			else
+			{
+				ind_new=-1;
+				for(i=0;ind_new == -1 && i<stubs_bak.size();i++)
+				{
+					if(stubs_bak[i].begin == ind)
+					{
+						ind_new=stubs_bak[i].end;
+						// stubs_bak.erase(i); TODO fix
+						break;
+					}
+				}
+				if(ind_new == -1) break;
+			}
+			poly.push_back(ind_new);
+			if(ind_new == ind_start) break; // chain closed
+			ind=ind_new;
+		}
+
+		// spitz-an-spitz loesen, in einzelketten trennen 
+		int beg,end,dist,distbest,begbest,repeat;
+		do
+		{
+			repeat=0;
+			std::unordered_map<int,int> value_pos;
+			distbest=-1;
+			n=poly.size();
+			for(i=0;i<n;i++)
+			{
+				ind=poly[i];
+				if(value_pos.count(ind) > 0)
+				{
+					beg=value_pos[ind];
+					end=i;
+					dist=end-beg;
+					std::unordered_map<int,int> value_pos2;
+					int doubles=0;
+					for(j=beg;j<end;j++)
+					{
+						if(value_pos2.count(poly[j]) > 0)
+							doubles=1;
+						value_pos2[poly[j]],j;
+					}
+
+					if(dist > distbest && doubles == 0) // es duerfen sich keine doppelten zahlen drinnen befinden
+					{
+						distbest=dist;
+						begbest=beg;
+					}
+					if(end-beg == 2)
+					{
+						std::vector<int>::iterator it;
+						for(int i=0;i<2;i++) { // TODO make more efficient
+							it=poly.begin();
+							std::advance(it,beg);
+							poly.erase(it);
+						}
+						repeat=1;
+						distbest=-1;
+						break;
+					}
+					if(beg+n-end == 2)
+					{
+						intList polynew;
+						for(j=beg;j<end;j++)
+							polynew.push_back(poly[j]);
+						poly=polynew;
+						repeat=1;
+						distbest=-1;
+						break;
+					}
+				}
+				value_pos[ind]=i;
+			}
+			if(distbest  != -1)
+			{
+				intList polynew;
+				for(i=begbest;i<begbest+distbest;i++)
+				{
+					polynew.push_back(poly[i]);
+				}
+				if(polynew.size() >= 3) result.push_back(polynew);
+				std::vector<int>::iterator it;
+				for(int i=0;i<distbest;i++) { // TODO make more efficient
+					it=poly.begin();
+					std::advance(it,begbest);
+					poly.erase(it);
+				}
+				repeat=1;
+			}
+		}
+		while(repeat);
+		
+		if(poly.size() > 2) result.push_back(poly);
+	}
+	return result;
+}
+
+std::vector<intList> mergetriangles(const std::vector<intList> triangles,const std::vector<Vector3d> &pointList)
+{
+	int i,j,k;
+	int n;
+	intListList emptyList;
+	std::vector<intList> polygons;
+	std::unordered_map<Vector3d,intListList>  triangles_sorted;
+	printf("Faces before Mergetri: %d\n",triangles.size());
+	// sort triangles into buckets of same orientation
+	for(int i=0;i<triangles.size();i++) {
+		Vector3d p1=pointList[triangles[i][0]];
+		Vector3d p2=pointList[triangles[i][1]];
+		Vector3d p3=pointList[triangles[i][2]];
+		Vector3d norm=(p2-p1).cross(p3-p1).normalized();
+		if(triangles_sorted.count(norm) == 0) {
+			triangles_sorted[norm] = emptyList;
+		}
+		triangles_sorted[norm].push_back(triangles[i]);
+	}
+
+	// now merge the triangles in all buckets independly
+	for( const auto& [vecnom, tri_list] : triangles_sorted ) {
+		printf("trilist size is %d\n",tri_list.size());
+		intListList polygons_sub = stl_tricombine(tri_list);
+		printf("combined is %d\n",polygons_sub.size());
+		for(int i=0;i<polygons_sub.size();i++) {
+			polygons.push_back(polygons_sub[i]);
 		}
 	}
 
-	for( const auto& [pt, indexes] : pointInds ) {
+	return polygons;
+}
+
+PolySet *offset3D(const PolySet *ps,double off) {
+	PolySet ps_org = *ps; // TODO weg
+	printf("Running offset3D %d polygons\n",ps->polygons.size());
+	// diverging point is pol/pt 4/1, 5/0, 7/0, 134/1, 139/0, coord is 1.5/7.86328/1.99493, ptind=35
+	// TODO find out flat triangle left to it
+
+	// ----------------------------------------------------------
+	// create a point database and use it. and form polygons
+	// ----------------------------------------------------------
+
+	std::unordered_map<Vector3d, int, boost::hash<Vector3d> > pointIntMap;
+	std::vector<Vector3d> pointList; // list of all the points in the object
+	std::vector<Vector3d> pointListNew; // list of all the points in the object
+	std::vector<intList> polygons; // list polygons represented by indexes
+	std::vector<intList>  pointToFaceInds; //  mapping pt_ind -> list of polygon inds which use it
+	intList emptyList;
+	printf("polygons\n");
+	for(int i=0;i<ps->polygons.size();i++) {
+		Polygon pol = ps->polygons[i];
+		intList polygon;
+		for(int j=0;j<pol.size(); j++) {
+			int ptind=0;
+			Vector3d  pt=pol[j];
+			if(!pointIntMap.count(pt)) {
+				pointList.push_back(pt);
+				pointToFaceInds.push_back(emptyList);
+				ptind=pointList.size()-1;
+				pointIntMap[pt]=ptind;
+			} else ptind=pointIntMap[pt];
+			polygon.push_back(ptind);
+			printf("%d ",ptind);
+		}
+		printf("\n");
+		polygons.push_back(polygon);
+	}
+	printf("test mergetriangles\n");
+	std::vector<intList> polygons_merged = mergetriangles(polygons,pointList); // TODO sind es immer dreiecke ?
+	printf("end mergetriangles\n");
+// TODO normalen uebernehmen und gleich wieder zurueck geben										  
+	printf("points\n");
+	for(int i=0;i<pointList.size();i++) {
+		printf("%d %g/%g/%g\n",i,pointList[i][0], pointList[i][1], pointList[i][2]);
+	}
+	//
+	// TODO combine triangles to polygons as much as possible first	
+	// -------------------------------
+	// Calculating face normals
+	// -------------------------------
+	std::vector<Vector3d>  faceNormal;
+	for(int i=0;i<polygons.size();i++) {
+		intList pol = polygons[i];
+		assert (pol.size() >= 3);
+		Vector3d diff1=pointList[pol[1]] - pointList[pol[0]];
+		Vector3d diff2=pointList[pol[2]] - pointList[pol[1]];
+		Vector3d norm = diff1.cross(diff2);
+		assert(norm.norm() > 0.0001);
+		norm.normalize();
+//		printf("Face %d norm is %g/%g/%g\n",i,norm[0], norm[1], norm[2]);
+		faceNormal.push_back(norm);
+		for(int j=0;j<pol.size(); j++) {
+			pointToFaceInds[pol[j]].push_back(i);
+		}
+	}
+	printf("%d points\n",pointList.size());
+	// -------------------------------
+	// Check, for all points, that the related face build a closed corner
+	// -------------------------------
+	printf("Check for closed corners\n");
+	for( int i=0;i<pointToFaceInds.size();i++ ) {
+		intList indexes = pointToFaceInds[i];
+		printf("Pt %g/%g/%g\n",pointList[i][0], pointList[i][1], pointList[i][2]);
+		std::unordered_map<int, int>  pointSum;
+		for(int j=0;j<indexes.size();j++) {
+			int faceind=indexes[j];
+			// search for pt
+			int off=-1;
+			int ptaltind;
+			intList pol = polygons[faceind];
+			int n=pol.size();
+			for(int k=0;k<n;k++) {
+				if(pol[k] == i) off=k;
+			}
+			ptaltind=pol[(off+1)%n];
+			if(!pointSum.count(ptaltind)) pointSum[ptaltind]=0;
+			pointSum[ptaltind]++;
+
+			ptaltind=pol[(off+n-1)%n];
+			if(!pointSum.count(ptaltind)) pointSum[ptaltind]=0;
+			pointSum[ptaltind]--;
+		}
+		// now check for opened corners
+		for( const auto& [ptaltind, sum] : pointSum ) {
+			if(sum != 0)
+			{
+				printf("Edge from %g/%g/%g to %g/%g/%g is open\n",pointList[i][0],pointList[i][2],pointList[i][2],pointList[ptaltind][0],pointList[ptaltind][1],pointList[ptaltind][2]);
+			}
+		}
+	}	
+	
+	// ---------------------------------------
+	// Calculate offset position to each point
+	// ---------------------------------------
+	for( int i = 0; i< pointToFaceInds.size();i++ ) {
 		Vector3d newpt;
+		intList indexes = pointToFaceInds[i];
+		int debug=0;
+		if(i == 35) debug=1;
 		int valid;
+		if(debug) printf("ind %d pt: %g/%g/%g %d connected facdes\n",i, pointList[i][0],pointList[i][1], pointList[i][2],indexes.size());
 		do
 		{
 			valid=0;
@@ -196,56 +501,181 @@ PolySet *offset3D(const PolySet *ps,double off) {
 					xind=indexes[i];
 				}
 			}
-			if(xind == -1) break;
+			if(xind == -1) { printf("a\n"); break; }
 
 			// find closest  normal to ydir
 			for(int i=0;i<indexes.size();i++) {
-				if(fabs(faceNormal[indexes[i]][1]) > ymax && faceNormal[indexes[i]].dot(faceNormal[xind]) < 0.999) {
+				if(fabs(faceNormal[indexes[i]][1]) > ymax && faceNormal[indexes[i]].dot(faceNormal[xind]) < 0.99999) {
 					ymax=fabs(faceNormal[indexes[i]][1]);
 					yind=indexes[i];
 				}
 			}
-			if(yind == -1) break;
+			if(yind == -1) { printf("b\n"); break; }
 
 			// find closest  normal to zdir
 			for(int i=0;i<indexes.size();i++) {
-				if(fabs(faceNormal[indexes[i]][2]) > zmax && faceNormal[indexes[i]].dot(faceNormal[xind]) < 0.999 && faceNormal[indexes[i]].dot(faceNormal[yind]) < 0.999 ) {
+				if(fabs(faceNormal[indexes[i]][2]) > zmax && faceNormal[indexes[i]].dot(faceNormal[xind]) < 0.99999 && faceNormal[indexes[i]].dot(faceNormal[yind]) < 0.99999 ) {
 					zmax=fabs(faceNormal[indexes[i]][2]);
 					zind=indexes[i];
 				}
 			}
-			if(zind == -1) break;
+			if(zind == -1) { printf("c\n"); break; }
 			
 			// now calculate the new pt
 			if(cut_face_face_face(
-						pt  +faceNormal[xind]*off  , faceNormal[xind], 
-						pt  +faceNormal[yind]*off  , faceNormal[yind], 
-						pt  +faceNormal[zind]*off  , faceNormal[zind], 
-						newpt)) break;
+						pointList[i]  +faceNormal[xind]*off  , faceNormal[xind], 
+						pointList[i]  +faceNormal[yind]*off  , faceNormal[yind], 
+						pointList[i]  +faceNormal[zind]*off  , faceNormal[zind], 
+						newpt)){ printf("d\n");  break; }
+//			if(debug) printf("x y z ind is %d/%d/%d\n",xind, yind, zind);
 			valid=1;
 		} while(0);
 		if(!valid)
 		{
 			Vector3d dir={0,0,0};
+			printf("Emergency cut calculation for %g/%g/%g\n",pointList[i][0],pointList[i][1],pointList[i][2]);
 			for(int j=0;j<indexes.size();j++)
 				dir += faceNormal[j];
-			newpt  = pt + off* dir.normalized();
+			newpt  = pointList[i] + off* dir.normalized();
 		}
-		pointMap[pt]=newpt;
+		pointListNew.push_back(newpt);
 	}
 
+	// -------------------------------
 	// Map all points and assemble
+	// -------------------------------
 	PolySet *offset_result = new PolySet(3, /* convex */ false);
 
-	for(int i=0;i<ps->polygons.size();i++) {
+	for(int i=0;i<polygons.size();i++) {
 		Polygon offset_polygon;
-		Polygon pol = ps->polygons[i];
+		intList pol = polygons[i];
+		int output=0;
+		int lv1cnt=0,lv2cnt=0;
 		for(int j=0;j<pol.size(); j++) {
-			Vector3d pt =  pointMap[pol[j]];
+/*			
+			if(
+					fabs(pol[j][0]-1.5) < 0.001 &&
+					fabs(pol[j][1]-7.863) < 0.001 &&
+					fabs(pol[j][2]-1.99493) < 0.001
+			  ) {
+				printf("point identified\n");
+			}
+*/			
+
+			Vector3d pt =  pointListNew[pol[j]];
+			if(pt[2] < -off+0.001) lv1cnt++;
+			if(pt[2] < -off-0.001) lv2cnt++;
 			offset_polygon.push_back(pt);
+			if(pt[1] > 9 && pt[2] > 0.2) {
+				printf("evil point %g/%g/%g pol %d pt %d\n",pt[0], pt[1],pt[2],i,j);
+				printf("org pt is %g/%g/%g\n",pointList[pol[j]][0],pointList[pol[j]][1], pointList[pol[j]][2]);
+			}
+
 		}
-  		offset_result->polygons.push_back(offset_polygon);
+		if(faceNormal[i][0] > 0.9) output=1;
+		if(faceNormal[i][1] > 0.9) output=1;
+		if(faceNormal[i][2] > 0.9) output=1;
+		if(lv1cnt == 3) output=1; // base 
+		if(lv2cnt > 0) output=1; // wrong
+//		if((i %3) <= 1) output=1;
+//
+  		if(output) offset_result->polygons.push_back(offset_polygon);
+//		else offset_result->polygons.push_back(pol);
 	}
+	//
+	// -------------------------------
+	// Normal of result must be same as orginal
+	// -------------------------------
+	for(int i=0;i<polygons.size();i++) {
+		intList pol = polygons[i];
+		Vector3d diff1=pointList[pol[1]] - pointList[pol[0]];
+		Vector3d diff2=pointList[pol[2]] - pointList[pol[1]];
+		Vector3d norm = diff1.cross(diff2).normalized();
+		double sp = norm.dot(faceNormal[i]);
+		if(sp  >=1 && sp < 1.0001) sp=1.0;
+		double ang=acos(sp)*180.0/3.14;
+		if(fabs(ang) > 0.3) {
+			printf("Face %d  error ang=%g\n",i,ang*180.0/3.14);
+		}
+	}
+
+	// -------------------------------
+	// distance of all points to its base normals need to be offset
+	// -------------------------------
+	
+	for( int i=0;i<pointToFaceInds.size();i++ ) {
+		intList indexes = pointToFaceInds[i];
+		int debug=0;
+		Vector3d oldpt =pointList[i];
+		Vector3d newpt =pointListNew[i];
+		int error=0;
+		for(int j=0;j<indexes.size();j++) {
+			Vector3d n=faceNormal[indexes[j]];
+			// dist = (pt - refpt).normvect
+			double dist = (newpt-oldpt).dot(n);
+			if(fabs(dist-off) > 0.01) error=1;
+		}
+		if(error) {
+			printf("%g/%g/%g -> %g/%g/%g dists are ",oldpt[0],oldpt[1],oldpt[2],newpt[0],newpt[1],newpt[2]);
+			for(int j=0;j<indexes.size();j++) {
+				Vector3d n=faceNormal[indexes[j]];
+				// dist = (pt - refpt).normvect
+				double dist = (newpt-oldpt).dot(n);
+				printf("%f ",dist);
+
+			}
+			printf("\n");
+		}
+	}
+	// -------------------------------
+	//  output debug certain points
+	// -------------------------------
+
+	for( int i=0; i<pointToFaceInds.size();i++ )
+	{
+		Vector3d oldpt=pointList[i];
+		Vector3d newpt=pointListNew[i];
+		intList indexes = pointToFaceInds[i];
+		int debug=0;
+		if(newpt[2] < -1) debug=1;
+		if(debug) {
+			printf("debug ptind is %d\n",i);
+	       		printf("old pt is %g/%g/%g => %g/%g/%g\n",oldpt[0], oldpt[1],oldpt[2] ,newpt[0], newpt[1],newpt[2]);
+			printf("related polygons: \n");
+			for(int i=0;i<indexes.size();i++) {
+				int ind=indexes[i];
+				Polygon pol = ps_org.polygons[ind];
+				printf("ind: %d ",ind);
+				for(int j=0;j<pol.size();j++) {
+					printf("(%g/%g/%g) ",pol[j][0],pol[j][1],pol[j][2]);
+//					pol[j][0] += 20;// offset fopr debug
+				}
+				printf("norm =( %g/%g/%g)\n",faceNormal[ind][0],faceNormal[ind][1],faceNormal[ind][2]);
+			}
+			for(int i=0;i<indexes.size()-2;i++) {
+				int xind=indexes[i];
+				for(int j=i+1;j<indexes.size()-1;j++)  {
+					int yind=indexes[j];
+					for(int k=j+1;k<indexes.size();k++) {
+						int zind=indexes[k];
+						printf("inds=%d/%d/%d",indexes[i],indexes[j],indexes[k]);
+						if(cut_face_face_face(
+							oldpt  +faceNormal[xind]*off  , faceNormal[xind], 
+							oldpt  +faceNormal[yind]*off  , faceNormal[yind], 
+							oldpt  +faceNormal[zind]*off  , faceNormal[zind], 
+							newpt)){ printf(" error");  }
+						else {
+							printf("(%g/%g/%g) ",newpt[0],newpt[1], newpt[2]);
+						}
+						printf("\n");
+					}
+				}
+			}
+
+		}
+	}
+	
+	printf("End of Report!\n");
 	return offset_result;
 }
 /*!
