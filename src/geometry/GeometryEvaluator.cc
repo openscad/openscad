@@ -256,7 +256,9 @@ static std::vector<intList> stl_tricombine(const std::vector<intList> &triangles
 					if(stubs_bak[i].begin == ind)
 					{
 						ind_new=stubs_bak[i].end;
-						// stubs_bak.erase(i); TODO fix
+						std::vector<TriCombineStub>::iterator it=stubs_bak.begin();
+						std::advance(it,i);
+						stubs_bak.erase(it);
 						break;
 					}
 				}
@@ -346,7 +348,7 @@ static std::vector<intList> stl_tricombine(const std::vector<intList> &triangles
 	return result;
 }
 
-std::vector<intList> mergetriangles(const std::vector<intList> triangles,const std::vector<Vector3d> &pointList)
+std::vector<intList> mergetriangles(const std::vector<intList> triangles,const std::vector<Vector3d> normals,std::vector<Vector3d> &newNormals)
 {
 	int i,j,k;
 	int n;
@@ -356,10 +358,7 @@ std::vector<intList> mergetriangles(const std::vector<intList> triangles,const s
 	printf("Faces before Mergetri: %d\n",triangles.size());
 	// sort triangles into buckets of same orientation
 	for(int i=0;i<triangles.size();i++) {
-		Vector3d p1=pointList[triangles[i][0]];
-		Vector3d p2=pointList[triangles[i][1]];
-		Vector3d p3=pointList[triangles[i][2]];
-		Vector3d norm=(p2-p1).cross(p3-p1).normalized();
+		Vector3d norm=normals[i];
 		if(triangles_sorted.count(norm) == 0) {
 			triangles_sorted[norm] = emptyList;
 		}
@@ -373,6 +372,7 @@ std::vector<intList> mergetriangles(const std::vector<intList> triangles,const s
 		printf("combined is %d\n",polygons_sub.size());
 		for(int i=0;i<polygons_sub.size();i++) {
 			polygons.push_back(polygons_sub[i]);
+			newNormals.push_back(vecnom);
 		}
 	}
 
@@ -414,16 +414,11 @@ PolySet *offset3D(const PolySet *ps,double off) {
 		printf("\n");
 		polygons.push_back(polygon);
 	}
-	printf("test mergetriangles\n");
-	std::vector<intList> polygons_merged = mergetriangles(polygons,pointList); // TODO sind es immer dreiecke ?
-	printf("end mergetriangles\n");
-// TODO normalen uebernehmen und gleich wieder zurueck geben										  
 	printf("points\n");
 	for(int i=0;i<pointList.size();i++) {
 		printf("%d %g/%g/%g\n",i,pointList[i][0], pointList[i][1], pointList[i][2]);
 	}
-	//
-	// TODO combine triangles to polygons as much as possible first	
+	
 	// -------------------------------
 	// Calculating face normals
 	// -------------------------------
@@ -438,6 +433,23 @@ PolySet *offset3D(const PolySet *ps,double off) {
 		norm.normalize();
 //		printf("Face %d norm is %g/%g/%g\n",i,norm[0], norm[1], norm[2]);
 		faceNormal.push_back(norm);
+	}
+	//
+	// TODO combine triangles to polygons as much as possible first	
+
+	printf("test mergetriangles\n");
+	std::vector<Vector3d> newNormals;
+	std::vector<intList> polygons_merged = mergetriangles(polygons,faceNormal,newNormals); // TODO sind es immer dreiecke ?
+	printf("end mergetriangles\n");
+	faceNormal=newNormals;
+	polygons=polygons_merged;
+
+	// -------------------------------
+	// calculate point-to-polygon relation
+	// -------------------------------
+	for(int i=0;i<polygons.size();i++) {
+		intList pol = polygons[i];
+		printf("size is %d\n",pol.size());
 		for(int j=0;j<pol.size(); j++) {
 			pointToFaceInds[pol[j]].push_back(i);
 		}
