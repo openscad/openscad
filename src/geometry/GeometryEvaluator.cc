@@ -149,35 +149,319 @@ static int cut_face_face_face(Vector3d p1, Vector3d n1, Vector3d p2,Vector3d n2,
         sum[2]=p3.dot(n3);
         return linsystem( vec1,vec2,vec3,sum,res,detptr);
 }
+typedef std::vector<int> intList;
+typedef std::vector<intList> intListList;
 
-PolySet *offset3D(const PolySet *ps,double off) {
-	std::vector<Vector3d>  faceNormal;
-	std::unordered_map<Vector3d, intList, boost::hash<Vector3d> > pointInds;
-	std::unordered_map<Vector3d, Vector3d, boost::hash<Vector3d> > pointMap;
-	for(int i=0;i<ps->polygons.size();i++) {
-		Polygon pol = ps->polygons[i];
-		assert (pol.size() >= 3);
-		Vector3d diff1=pol[1] - pol[0];
-		Vector3d diff2=pol[2] - pol[1];
-		Vector3d norm = diff1.cross(diff2);
-		assert(norm.norm() > 0.0001);
-		faceNormal.push_back(norm.normalized());
-		for(int j=0;j<pol.size(); j++) {
-			Vector3d  pt=pol[j];
-			if(!pointInds.count(pt))
+class TriCombineStub
+{
+	public:
+		int begin, end;
+		int operator==(const TriCombineStub ref)
+		{
+			if(this->begin == ref.begin && this->end == ref.end) return 1;
+			return 0;
+		}
+};
+
+unsigned int hash_value(const TriCombineStub& r) {
+	unsigned int i;
+	i=r.begin |(r.end<<16);
+        return i;
+}
+
+int operator==(const TriCombineStub &t1, const TriCombineStub &t2) 
+{
+	if(t1.begin == t2.begin && t1.end == t2.end) return 1;
+	return 0;
+}
+//
+// combine all tringles into polygons where applicable
+static std::vector<intList> stl_tricombine(const std::vector<intList> &triangles)
+{
+	int i,j,n;
+	int ind1, ind2;
+	std::unordered_set<TriCombineStub, boost::hash<TriCombineStub> > stubs_pos;
+	std::unordered_set<TriCombineStub, boost::hash<TriCombineStub> > stubs_neg;
+
+	TriCombineStub e;
+	for(i=0;i<triangles.size();i++)
+	{
+		n=triangles[i].size();
+		for(j=0;j<n;j++)
+		{
+			ind1=triangles[i][j];
+			ind2=triangles[i][(j+1)%n];
+			if(ind2 > ind1) // positive edge
 			{
-				intList newList;
-				newList.push_back(i);
-				pointInds[pt]=newList;
+				e.begin=ind1;
+				e.end=ind2;
+				if(stubs_neg.find(e) != stubs_neg.end()) stubs_neg.erase(e);
+				else if(stubs_pos.find(e) != stubs_pos.end()) printf("Duplicate Edge %d->%d \n",ind1,ind2);
+				else stubs_pos.insert(e);
 			}
-			else {
-				pointInds[pt].push_back(i);
+			if(ind2 < ind1) // negative edge
+			{
+				e.begin=ind2;
+				e.end=ind1;
+				if(stubs_pos.find(e) != stubs_pos.end() ) stubs_pos.erase(e);
+				else if(stubs_neg.find(e) != stubs_neg.end() ) printf("Duplicate Edge %d->%d \n",ind2,ind1);
+				else stubs_neg.insert(e);
 			}
+		}
+	}	
+
+	// now chain everything
+	std::unordered_map<int,int> stubs_chain;
+	std::vector<TriCombineStub> stubs;
+	std::vector<TriCombineStub> stubs_bak;
+	for( const auto& stubs : stubs_pos ) {
+		if(stubs_chain.count(stubs.begin) > 0)
+		{
+			stubs_bak.push_back(stubs);
+		} else stubs_chain[stubs.begin]=stubs.end;
+	}
+
+	for( const auto& stubs : stubs_neg ) {
+		if(stubs_chain.count(stubs.end) > 0)
+		{
+			TriCombineStub ts;
+			ts.begin=stubs.end;
+			ts.end=stubs.begin;
+			stubs_bak.push_back(ts);
+		} else stubs_chain[stubs.end]=stubs.begin;
+	}
+	std::vector<intList> result;
+
+	while(stubs_chain.size() > 0)
+	{
+		int ind,ind_new;
+		auto [ind_start,dummy]  = *(stubs_chain.begin());
+		ind=ind_start;
+		intList poly;
+		while(1)
+		{
+			if(stubs_chain.count(ind) > 0)
+			{
+				ind_new=stubs_chain[ind];
+				stubs_chain.erase(ind);
+			}
+			else
+			{
+				ind_new=-1;
+				for(i=0;ind_new == -1 && i<stubs_bak.size();i++)
+				{
+					if(stubs_bak[i].begin == ind)
+					{
+						ind_new=stubs_bak[i].end;
+						std::vector<TriCombineStub>::iterator it=stubs_bak.begin();
+						std::advance(it,i);
+						stubs_bak.erase(it);
+						break;
+					}
+				}
+				if(ind_new == -1) break;
+			}
+			poly.push_back(ind_new);
+			if(ind_new == ind_start) break; // chain closed
+			ind=ind_new;
+		}
+
+		// spitz-an-spitz loesen, in einzelketten trennen 
+		int beg,end,dist,distbest,begbest,repeat;
+		do
+		{
+			repeat=0;
+			std::unordered_map<int,int> value_pos;
+			distbest=-1;
+			n=poly.size();
+			for(i=0;i<n;i++)
+			{
+				ind=poly[i];
+				if(value_pos.count(ind) > 0)
+				{
+					beg=value_pos[ind];
+					end=i;
+					dist=end-beg;
+					std::unordered_map<int,int> value_pos2;
+					int doubles=0;
+					for(j=beg;j<end;j++)
+					{
+						if(value_pos2.count(poly[j]) > 0)
+							doubles=1;
+						value_pos2[poly[j]],j;
+					}
+
+					if(dist > distbest && doubles == 0) // es duerfen sich keine doppelten zahlen drinnen befinden
+					{
+						distbest=dist;
+						begbest=beg;
+					}
+					if(end-beg == 2)
+					{
+						std::vector<int>::iterator it;
+						for(int i=0;i<2;i++) { // TODO make more efficient
+							it=poly.begin();
+							std::advance(it,beg);
+							poly.erase(it);
+						}
+						repeat=1;
+						distbest=-1;
+						break;
+					}
+					if(beg+n-end == 2)
+					{
+						intList polynew;
+						for(j=beg;j<end;j++)
+							polynew.push_back(poly[j]);
+						poly=polynew;
+						repeat=1;
+						distbest=-1;
+						break;
+					}
+				}
+				value_pos[ind]=i;
+			}
+			if(distbest  != -1)
+			{
+				intList polynew;
+				for(i=begbest;i<begbest+distbest;i++)
+				{
+					polynew.push_back(poly[i]);
+				}
+				if(polynew.size() >= 3) result.push_back(polynew);
+				std::vector<int>::iterator it;
+				for(int i=0;i<distbest;i++) { // TODO make more efficient
+					it=poly.begin();
+					std::advance(it,begbest);
+					poly.erase(it);
+				}
+				repeat=1;
+			}
+		}
+		while(repeat);
+		
+		if(poly.size() > 2) result.push_back(poly);
+	}
+	return result;
+}
+
+std::vector<intList> mergetriangles(const std::vector<intList> triangles,const std::vector<Vector3d> normals,std::vector<Vector3d> &newNormals)
+{
+	int i,j,k;
+	int n;
+	intListList emptyList;
+	std::vector<intList> polygons;
+	std::unordered_map<Vector3d,int>  norm_map;
+	std::vector<Vector3d> norm_list;
+	std::vector<intListList>  triangles_sorted;
+	// sort triangles into buckets of same orientation
+	for(int i=0;i<triangles.size();i++) {
+		Vector3d norm=normals[i];
+		int norm_ind;
+		if(norm_map.count(norm) == 0) {
+			norm_ind=norm_list.size();
+
+			norm_list.push_back(norm);
+			triangles_sorted.push_back(emptyList);
+
+			norm_map[norm]=norm_ind;
+		} else norm_ind = norm_map[norm];
+		triangles_sorted[norm_ind].push_back(triangles[i]);
+	}
+
+	// now merge the triangles in all buckets independly
+	for(int i=0;i<triangles_sorted.size();i++ ) {
+		intListList polygons_sub = stl_tricombine(triangles_sorted[i]);
+		for(int j=0;j<polygons_sub.size();j++) {
+			polygons.push_back(polygons_sub[j]);
+			newNormals.push_back(norm_list[i]);
 		}
 	}
 
-	for( const auto& [pt, indexes] : pointInds ) {
+	return polygons;
+}
+
+void roundNumber(double &x)
+{
+	int i;
+	if(x > 0) {
+		i=x*100000.0+0.5;
+		x=(double)i/100000.0;
+	}
+	if(x < 0) {
+		i=-x*100000.0+0.5;
+		x=-(double)i/100000.0;
+	}
+}
+PolySet *offset3D(const PolySet *ps,double off) {
+
+	// ----------------------------------------------------------
+	// create a point database and use it and form polygons
+	// ----------------------------------------------------------
+
+	std::unordered_map<Vector3d, int, boost::hash<Vector3d> > pointIntMap;
+	std::vector<Vector3d> pointList; // list of all the points in the object
+	std::vector<Vector3d> pointListNew; // list of all the points in the object
+	std::vector<intList> polygons; // list polygons represented by indexes
+	std::vector<intList>  pointToFaceInds; //  mapping pt_ind -> list of polygon inds which use it
+	intList emptyList;
+	for(int i=0;i<ps->polygons.size();i++) {
+		Polygon pol = ps->polygons[i];
+		intList polygon;
+		for(int j=0;j<pol.size(); j++) {
+			int ptind=0;
+			Vector3d  pt=pol[j];
+			if(!pointIntMap.count(pt)) {
+				pointList.push_back(pt);
+				pointToFaceInds.push_back(emptyList);
+				ptind=pointList.size()-1;
+				pointIntMap[pt]=ptind;
+			} else ptind=pointIntMap[pt];
+			polygon.push_back(ptind);
+		}
+		polygons.push_back(polygon);
+	}
+	
+	// -------------------------------
+	// Calculating face normals
+	// -------------------------------
+	std::vector<Vector3d>  faceNormal;
+	for(int i=0;i<polygons.size();i++) {
+		intList pol = polygons[i];
+		assert (pol.size() >= 3);
+		Vector3d diff1=pointList[pol[1]] - pointList[pol[0]];
+		Vector3d diff2=pointList[pol[2]] - pointList[pol[1]];
+		Vector3d norm = diff1.cross(diff2);
+		assert(norm.norm() > 0.0001);
+		norm.normalize();
+		roundNumber(norm[0]);
+		roundNumber(norm[1]);
+		roundNumber(norm[2]);
+		norm.normalize();
+		faceNormal.push_back(norm);
+	}
+
+	std::vector<Vector3d> newNormals;
+	std::vector<intList> polygons_merged = mergetriangles(polygons,faceNormal,newNormals); // TODO sind es immer dreiecke ?
+	faceNormal=newNormals;
+	polygons=polygons_merged;
+
+	// -------------------------------
+	// calculate point-to-polygon relation
+	// -------------------------------
+	for(int i=0;i<polygons.size();i++) {
+		intList pol = polygons[i];
+		for(int j=0;j<pol.size(); j++) {
+			pointToFaceInds[pol[j]].push_back(i);
+		}
+	}
+	
+	// ---------------------------------------
+	// Calculate offset position to each point
+	// ---------------------------------------
+	for( int i = 0; i< pointToFaceInds.size();i++ ) {
 		Vector3d newpt;
+		intList indexes = pointToFaceInds[i];
 		int valid;
 		do
 		{
@@ -192,20 +476,20 @@ PolySet *offset3D(const PolySet *ps,double off) {
 					xind=indexes[i];
 				}
 			}
-			if(xind == -1) break;
+			if(xind == -1)  break;
 
 			// find closest  normal to ydir
 			for(int i=0;i<indexes.size();i++) {
-				if(fabs(faceNormal[indexes[i]][1]) > ymax && faceNormal[indexes[i]].dot(faceNormal[xind]) < 0.999) {
+				if(fabs(faceNormal[indexes[i]][1]) > ymax && faceNormal[indexes[i]].dot(faceNormal[xind]) < 0.99999) {
 					ymax=fabs(faceNormal[indexes[i]][1]);
 					yind=indexes[i];
 				}
 			}
-			if(yind == -1) break;
+			if(yind == -1)  break; 
 
 			// find closest  normal to zdir
 			for(int i=0;i<indexes.size();i++) {
-				if(fabs(faceNormal[indexes[i]][2]) > zmax && faceNormal[indexes[i]].dot(faceNormal[xind]) < 0.999 && faceNormal[indexes[i]].dot(faceNormal[yind]) < 0.999 ) {
+				if(fabs(faceNormal[indexes[i]][2]) > zmax && faceNormal[indexes[i]].dot(faceNormal[xind]) < 0.99999 && faceNormal[indexes[i]].dot(faceNormal[yind]) < 0.99999 ) {
 					zmax=fabs(faceNormal[indexes[i]][2]);
 					zind=indexes[i];
 				}
@@ -214,9 +498,9 @@ PolySet *offset3D(const PolySet *ps,double off) {
 			
 			// now calculate the new pt
 			if(cut_face_face_face(
-						pt  +faceNormal[xind]*off  , faceNormal[xind], 
-						pt  +faceNormal[yind]*off  , faceNormal[yind], 
-						pt  +faceNormal[zind]*off  , faceNormal[zind], 
+						pointList[i]  +faceNormal[xind]*off  , faceNormal[xind], 
+						pointList[i]  +faceNormal[yind]*off  , faceNormal[yind], 
+						pointList[i]  +faceNormal[zind]*off  , faceNormal[zind], 
 						newpt)) break;
 			valid=1;
 		} while(0);
@@ -225,20 +509,23 @@ PolySet *offset3D(const PolySet *ps,double off) {
 			Vector3d dir={0,0,0};
 			for(int j=0;j<indexes.size();j++)
 				dir += faceNormal[j];
-			newpt  = pt + off* dir.normalized();
+			newpt  = pointList[i] + off* dir.normalized();
 		}
-		pointMap[pt]=newpt;
+		pointListNew.push_back(newpt);
 	}
 
+	// -------------------------------
 	// Map all points and assemble
+	// -------------------------------
 	PolySet *offset_result = new PolySet(3, /* convex */ false);
 
-	for(int i=0;i<ps->polygons.size();i++) {
+	for(int i=0;i<polygons.size();i++) {
 		Polygon offset_polygon;
-		Polygon pol = ps->polygons[i];
+		intList pol = polygons[i];
 		for(int j=0;j<pol.size(); j++) {
-			Vector3d pt =  pointMap[pol[j]];
+			Vector3d pt =  pointListNew[pol[j]];
 			offset_polygon.push_back(pt);
+
 		}
   		offset_result->polygons.push_back(offset_polygon);
 	}
