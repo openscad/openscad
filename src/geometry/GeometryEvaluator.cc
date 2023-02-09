@@ -354,35 +354,56 @@ std::vector<intList> mergetriangles(const std::vector<intList> triangles,const s
 	int n;
 	intListList emptyList;
 	std::vector<intList> polygons;
-	std::unordered_map<Vector3d,intListList>  triangles_sorted;
+	std::unordered_map<Vector3d,int>  norm_map;
+	std::vector<Vector3d> norm_list;
+	std::vector<intListList>  triangles_sorted;
 	printf("Faces before Mergetri: %d\n",triangles.size());
 	// sort triangles into buckets of same orientation
 	for(int i=0;i<triangles.size();i++) {
 		Vector3d norm=normals[i];
-		if(triangles_sorted.count(norm) == 0) {
-			triangles_sorted[norm] = emptyList;
-		}
-		triangles_sorted[norm].push_back(triangles[i]);
+		int norm_ind;
+		if(norm_map.count(norm) == 0) {
+			norm_ind=norm_list.size();
+
+			norm_list.push_back(norm);
+			triangles_sorted.push_back(emptyList);
+
+			norm_map[norm]=norm_ind;
+		} else norm_ind = norm_map[norm];
+//		printf("polygon %d push to %d\n",i,norm_ind);
+		triangles_sorted[norm_ind].push_back(triangles[i]);
 	}
 
 	// now merge the triangles in all buckets independly
-	for( const auto& [vecnom, tri_list] : triangles_sorted ) {
-		printf("trilist size is %d\n",tri_list.size());
-		intListList polygons_sub = stl_tricombine(tri_list);
-		printf("combined is %d\n",polygons_sub.size());
-		for(int i=0;i<polygons_sub.size();i++) {
-			polygons.push_back(polygons_sub[i]);
-			newNormals.push_back(vecnom);
+	printf("sets are \n");
+	for(int i=0;i<triangles_sorted.size();i++ ) {
+		intListList polygons_sub = stl_tricombine(triangles_sorted[i]);
+		for(int j=0;j<polygons_sub.size();j++) {
+			polygons.push_back(polygons_sub[j]);
+			newNormals.push_back(norm_list[i]);
 		}
 	}
 
+	printf("Faces after Mergetri: %d\n",polygons.size());
 	return polygons;
 }
 
+void roundNumber(double &x)
+{
+	int i;
+	if(x > 0) {
+		i=x*100000.0+0.5;
+		x=(double)i/100000.0;
+	}
+	if(x < 0) {
+		i=-x*100000.0+0.5;
+		x=-(double)i/100000.0;
+	}
+}
 PolySet *offset3D(const PolySet *ps,double off) {
 	PolySet ps_org = *ps; // TODO weg
 	printf("Running offset3D %d polygons\n",ps->polygons.size());
-	// diverging point is pol/pt 4/1, 5/0, 7/0, 134/1, 139/0, coord is 1.5/7.86328/1.99493, ptind=35
+	// diverging point is pol/pt 4/1, 5/0, 7/0, 134/1, 139/0, coord is 1.5/7.86328/1.99493, ptind=9
 	// TODO find out flat triangle left to it
 
 	// ----------------------------------------------------------
@@ -406,6 +427,14 @@ PolySet *offset3D(const PolySet *ps,double off) {
 				pointList.push_back(pt);
 				pointToFaceInds.push_back(emptyList);
 				ptind=pointList.size()-1;
+//				printf("new pt %d %g/%g/%g\n",ptind, pt[0], pt[1], pt[2]);
+			if(
+					fabs(pt[0]-1.5) < 0.01 &&
+					fabs(pt[1]-7.863) < 0.01 &&
+					fabs(pt[2]-1.99493) < 0.01
+			  ) {
+				printf("point identified as %d\n",ptind);
+			}
 				pointIntMap[pt]=ptind;
 			} else ptind=pointIntMap[pt];
 			polygon.push_back(ptind);
@@ -416,7 +445,7 @@ PolySet *offset3D(const PolySet *ps,double off) {
 	}
 	printf("points\n");
 	for(int i=0;i<pointList.size();i++) {
-		printf("%d %g/%g/%g\n",i,pointList[i][0], pointList[i][1], pointList[i][2]);
+		printf("%d\t%g\t%g\t%g\n",i,pointList[i][0], pointList[i][1], pointList[i][2]);
 	}
 	
 	// -------------------------------
@@ -431,16 +460,18 @@ PolySet *offset3D(const PolySet *ps,double off) {
 		Vector3d norm = diff1.cross(diff2);
 		assert(norm.norm() > 0.0001);
 		norm.normalize();
+		roundNumber(norm[0]);
+		roundNumber(norm[1]);
+		roundNumber(norm[2]);
+		norm.normalize();
 //		printf("Face %d norm is %g/%g/%g\n",i,norm[0], norm[1], norm[2]);
 		faceNormal.push_back(norm);
 	}
 	//
 	// TODO combine triangles to polygons as much as possible first	
 
-	printf("test mergetriangles\n");
 	std::vector<Vector3d> newNormals;
 	std::vector<intList> polygons_merged = mergetriangles(polygons,faceNormal,newNormals); // TODO sind es immer dreiecke ?
-	printf("end mergetriangles\n");
 	faceNormal=newNormals;
 	polygons=polygons_merged;
 
@@ -449,7 +480,6 @@ PolySet *offset3D(const PolySet *ps,double off) {
 	// -------------------------------
 	for(int i=0;i<polygons.size();i++) {
 		intList pol = polygons[i];
-		printf("size is %d\n",pol.size());
 		for(int j=0;j<pol.size(); j++) {
 			pointToFaceInds[pol[j]].push_back(i);
 		}
@@ -461,7 +491,6 @@ PolySet *offset3D(const PolySet *ps,double off) {
 	printf("Check for closed corners\n");
 	for( int i=0;i<pointToFaceInds.size();i++ ) {
 		intList indexes = pointToFaceInds[i];
-		printf("Pt %g/%g/%g\n",pointList[i][0], pointList[i][1], pointList[i][2]);
 		std::unordered_map<int, int>  pointSum;
 		for(int j=0;j<indexes.size();j++) {
 			int faceind=indexes[j];
@@ -497,9 +526,21 @@ PolySet *offset3D(const PolySet *ps,double off) {
 		Vector3d newpt;
 		intList indexes = pointToFaceInds[i];
 		int debug=0;
-		if(i == 35) debug=1;
+		if(i == 9) debug=1;
 		int valid;
-		if(debug) printf("ind %d pt: %g/%g/%g %d connected facdes\n",i, pointList[i][0],pointList[i][1], pointList[i][2],indexes.size());
+		if(debug) {
+			printf("ind %d pt: %g/%g/%g %d connected faces\n",i, pointList[i][0],pointList[i][1], pointList[i][2],indexes.size());
+			for(int i=0;i<indexes.size();i++) {
+				int faceind=indexes[i];
+				intList pol=polygons[faceind];
+				printf("Face %d pts are ",faceind);
+				for(int j=0;j<polygons[faceind].size();j++) {
+					Vector3d px=pointList[pol[j]];
+					printf("(%g/%g/%g) ",px[0],px[1],px[2]);
+				}
+				printf("norm (%g/%g/%g)\n",faceNormal[faceind][0], faceNormal[faceind][1], faceNormal[faceind][2]);
+			}
+		}			
 		do
 		{
 			valid=0;
@@ -561,18 +602,9 @@ PolySet *offset3D(const PolySet *ps,double off) {
 	for(int i=0;i<polygons.size();i++) {
 		Polygon offset_polygon;
 		intList pol = polygons[i];
-		int output=0;
+		int output=1;
 		int lv1cnt=0,lv2cnt=0;
 		for(int j=0;j<pol.size(); j++) {
-/*			
-			if(
-					fabs(pol[j][0]-1.5) < 0.001 &&
-					fabs(pol[j][1]-7.863) < 0.001 &&
-					fabs(pol[j][2]-1.99493) < 0.001
-			  ) {
-				printf("point identified\n");
-			}
-*/			
 
 			Vector3d pt =  pointListNew[pol[j]];
 			if(pt[2] < -off+0.001) lv1cnt++;
@@ -584,11 +616,14 @@ PolySet *offset3D(const PolySet *ps,double off) {
 			}
 
 		}
-		if(faceNormal[i][0] > 0.9) output=1;
-		if(faceNormal[i][1] > 0.9) output=1;
-		if(faceNormal[i][2] > 0.9) output=1;
-		if(lv1cnt == 3) output=1; // base 
-		if(lv2cnt > 0) output=1; // wrong
+//		if(faceNormal[i][0] > 0.9) output=1;
+//		if(faceNormal[i][1] > 0.9) output=1;
+//		if(faceNormal[i][2] > 0.9) output=1;
+		if(i == 2) output=1;
+		if(i == 4) output=1;
+		if(i == 62) output=1;
+//		if(lv1cnt == 3) output=1; // base 
+//		if(lv2cnt > 0) output=1; // wrong
 //		if((i %3) <= 1) output=1;
 //
   		if(output) offset_result->polygons.push_back(offset_polygon);
