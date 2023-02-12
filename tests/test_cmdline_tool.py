@@ -186,23 +186,21 @@ def compare_default(resultfilename):
     return True
 
 def compare_png(resultfilename):
-    if options.comparator == 'image_compare':
-      compare_method = 'image_compare'
-      args = [os.path.join(get_runtime_to_test_sources(), 'image_compare.py'),
-              expectedfilename, resultfilename]
+    compare_method = 'pixel'
+    args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "8%", "-morphology", "Erode", options.kernel, "-format", "%[fx:w*h*mean]", "info:"]
 
     # for systems with older imagemagick that doesn't support '-morphology'
     # http://www.imagemagick.org/Usage/morphology/#alturnative
-    elif options.comparator == 'old':
+    if options.comparator == 'old':
       args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "8%", "-gaussian-blur","3x65535", "-threshold", "99.99%", "-format", "%[fx:w*h*mean]", "info:"]
 
-    elif options.comparator == 'ncc':
+    if options.comparator == 'ncc':
       # for systems where imagemagick crashes when using the above comparators
       args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-metric", "NCC", "tmp.png"]
       options.comparison_exec = 'compare'
       compare_method = 'NCC'
 
-    elif options.comparator == 'diffpng':
+    if options.comparator == 'diffpng':
       # alternative to imagemagick based on Yee's algorithm
 
       # Writing the 'difference image' with --output is very useful for debugging but takes a long time
@@ -210,10 +208,6 @@ def compare_png(resultfilename):
 
       args = [expectedfilename, resultfilename]
       compare_method = 'diffpng'
-
-    else:
-      compare_method = 'pixel'
-      args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "8%", "-morphology", "Erode", options.kernel, "-format", "%[fx:w*h*mean]", "info:"]
 
     print('Image comparison cmdline: ' + options.comparison_exec + ' ' + ' '.join(args), file=sys.stderr)
 
@@ -240,8 +234,6 @@ def compare_png(resultfilename):
         elif compare_method=='diffpng':
             if 'MATCHES:' in output: return True
             if 'DIFFERS:' in output: return False
-        elif compare_method=='image_compare':
-            return True
     return False
 
 def compare_with_expected(resultfilename):

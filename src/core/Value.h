@@ -6,20 +6,19 @@
 #include <algorithm>
 #include <cstdint>
 #include <limits>
-#include <ostream>
+#include <iostream>
 #include <memory>
 #include <type_traits>
 #include <variant>
 
-#include "FunctionType.h"
-#include "RangeType.h"
-#include "str_utf8_wrapper.h"
-#include "UndefType.h"
+#include <glib.h>
 
+#include "Assignment.h"
 #include "memory.h"
 
 class tostring_visitor;
 class tostream_visitor;
+class Context;
 class Expression;
 class Value;
 
@@ -39,6 +38,125 @@ public:
 };
 std::ostream& operator<<(std::ostream& stream, const Filename& filename);
 
+class RangeType
+{
+private:
+  double begin_val;
+  double step_val;
+  double end_val;
+  enum class iter_state { RANGE_BEGIN, RANGE_RUNNING, RANGE_END };
+
+public:
+  static constexpr uint32_t MAX_RANGE_STEPS = 10000;
+  static const RangeType EMPTY;
+
+  class iterator
+  {
+public:
+    // iterator_traits required types:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = double;
+    using difference_type = void; // type used by operator-(iterator), not implemented for forward iterator
+    using reference = value_type; // type used by operator*(), not actually a reference
+    using pointer = void;     // type used by operator->(), not implemented
+    iterator(const RangeType& range, iter_state type);
+    iterator& operator++();
+    reference operator*();
+    bool operator==(const iterator& other) const;
+    bool operator!=(const iterator& other) const;
+private:
+    const RangeType& range;
+    double val;
+    iter_state state;
+    const uint32_t num_values;
+    uint32_t i_step;
+    void update_state();
+  };
+
+  RangeType(const RangeType&) = delete;       // never copy, move instead
+  RangeType& operator=(const RangeType&) = delete; // never copy, move instead
+  RangeType(RangeType&&) = default;
+  RangeType& operator=(RangeType&&) = default;
+  ~RangeType() = default;
+
+  explicit RangeType(double begin, double end)
+    : begin_val(begin), step_val(1.0), end_val(end) {}
+
+  explicit RangeType(double begin, double step, double end)
+    : begin_val(begin), step_val(step), end_val(end) {}
+
+  bool operator==(const RangeType& other) const {
+    auto n1 = this->numValues();
+    auto n2 = other.numValues();
+    if (n1 == 0) return n2 == 0;
+    if (n2 == 0) return false;
+    return this == &other ||
+           (this->begin_val == other.begin_val &&
+            this->step_val == other.step_val &&
+            n1 == n2);
+  }
+
+  bool operator!=(const RangeType& other) const {
+    return !(*this == other);
+  }
+
+  bool operator<(const RangeType& other) const {
+    auto n1 = this->numValues();
+    auto n2 = other.numValues();
+    if (n1 == 0) return 0 < n2;
+    if (n2 == 0) return false;
+    return this->begin_val < other.begin_val ||
+           (this->begin_val == other.begin_val &&
+            (this->step_val < other.step_val || (this->step_val == other.step_val && n1 < n2))
+           );
+  }
+
+  bool operator<=(const RangeType& other) const {
+    auto n1 = this->numValues();
+    auto n2 = other.numValues();
+    if (n1 == 0) return true; // (0 <= n2) is always true
+    if (n2 == 0) return false;
+    return this->begin_val < other.begin_val ||
+           (this->begin_val == other.begin_val &&
+            (this->step_val < other.step_val || (this->step_val == other.step_val && n1 <= n2))
+           );
+  }
+
+  bool operator>(const RangeType& other) const {
+    auto n1 = this->numValues();
+    auto n2 = other.numValues();
+    if (n2 == 0) return n1 > 0;
+    if (n1 == 0) return false;
+    return this->begin_val > other.begin_val ||
+           (this->begin_val == other.begin_val &&
+            (this->step_val > other.step_val || (this->step_val == other.step_val && n1 > n2))
+           );
+  }
+
+  bool operator>=(const RangeType& other) const {
+    auto n1 = this->numValues();
+    auto n2 = other.numValues();
+    if (n2 == 0) return true; // (n1 >= 0) is always true
+    if (n1 == 0) return false;
+    return this->begin_val > other.begin_val ||
+           (this->begin_val == other.begin_val &&
+            (this->step_val > other.step_val || (this->step_val == other.step_val && n1 >= n2))
+           );
+  }
+
+  [[nodiscard]] double begin_value() const { return begin_val; }
+  [[nodiscard]] double step_value() const { return step_val; }
+  [[nodiscard]] double end_value() const { return end_val; }
+
+  [[nodiscard]] iterator begin() const { return {*this, iter_state::RANGE_BEGIN}; }
+  [[nodiscard]] iterator end() const { return {*this, iter_state::RANGE_END}; }
+
+  /// return number of values, max uint32_t value if step is 0 or range is infinite
+  [[nodiscard]] uint32_t numValues() const;
+};
+std::ostream& operator<<(std::ostream& stream, const RangeType& r);
+
+
 template <typename T>
 class ValuePtr
 {
@@ -57,7 +175,145 @@ private:
 };
 
 using RangePtr = ValuePtr<RangeType>;
+
+class str_utf8_wrapper
+{
+private:
+  // store the cached length in glong, paired with its string
+  struct str_utf8_t {
+    static constexpr glong LENGTH_UNKNOWN = -1;
+    str_utf8_t() : u8str(), u8len(0) {
+    }
+    str_utf8_t(std::string s) : u8str(std::move(s)) {
+    }
+    str_utf8_t(const char *cstr) : u8str(cstr) {
+    }
+    str_utf8_t(const char *cstr, size_t size, glong u8len) : u8str(cstr, size), u8len(u8len) {
+    }
+    const std::string u8str;
+    glong u8len = LENGTH_UNKNOWN;
+  };
+  // private constructor for copying members
+  explicit str_utf8_wrapper(const shared_ptr<str_utf8_t>& str_in) : str_ptr(str_in) { }
+
+public:
+  class iterator
+  {
+public:
+    // iterator_traits required types:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = str_utf8_wrapper;
+    using difference_type = void;
+    using reference = value_type; // type used by operator*(), not actually a reference
+    using pointer = void;
+    iterator() : ptr(&nullterm) {} // DefaultConstructible
+    iterator(const str_utf8_wrapper& str) : ptr(str.c_str()), len(char_len()) { }
+    iterator(const str_utf8_wrapper& str, bool /*end*/) : ptr(str.c_str() + str.size()) { }
+
+    iterator& operator++() { ptr += len; len = char_len(); return *this; }
+    reference operator*() { return {ptr, len}; } // Note: returns a new str_utf8_wrapper **by value**, representing a single UTF8 character.
+    bool operator==(const iterator& other) const { return ptr == other.ptr; }
+    bool operator!=(const iterator& other) const { return ptr != other.ptr; }
+private:
+    size_t char_len();
+    static const char nullterm = '\0';
+    const char *ptr;
+    size_t len = 0;
+  };
+
+  [[nodiscard]] iterator begin() const { return {*this}; }
+  [[nodiscard]] iterator end() const { return {*this, true}; }
+  str_utf8_wrapper() : str_ptr(make_shared<str_utf8_t>()) { }
+  str_utf8_wrapper(const std::string& s) : str_ptr(make_shared<str_utf8_t>(s)) { }
+  str_utf8_wrapper(const char *cstr) : str_ptr(make_shared<str_utf8_t>(cstr)) { }
+  // for enumerating single utf8 chars from iterator
+  str_utf8_wrapper(const char *cstr, size_t clen) : str_ptr(make_shared<str_utf8_t>(cstr, clen, 1)) { }
+  str_utf8_wrapper(const str_utf8_wrapper&) = delete; // never copy, move instead
+  str_utf8_wrapper& operator=(const str_utf8_wrapper&) = delete; // never copy, move instead
+  str_utf8_wrapper(str_utf8_wrapper&&) = default;
+  str_utf8_wrapper& operator=(str_utf8_wrapper&&) = default;
+  ~str_utf8_wrapper() = default;
+  [[nodiscard]] str_utf8_wrapper clone() const { return str_utf8_wrapper(this->str_ptr); } // makes a copy of shared_ptr
+
+  bool operator==(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str == rhs.str_ptr->u8str; }
+  bool operator!=(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str != rhs.str_ptr->u8str; }
+  bool operator<(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str < rhs.str_ptr->u8str; }
+  bool operator>(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str > rhs.str_ptr->u8str; }
+  bool operator<=(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str <= rhs.str_ptr->u8str; }
+  bool operator>=(const str_utf8_wrapper& rhs) const { return this->str_ptr->u8str >= rhs.str_ptr->u8str; }
+  [[nodiscard]] bool empty() const { return this->str_ptr->u8str.empty(); }
+  [[nodiscard]] const char *c_str() const { return this->str_ptr->u8str.c_str(); }
+  [[nodiscard]] const std::string& toString() const { return this->str_ptr->u8str; }
+  [[nodiscard]] size_t size() const { return this->str_ptr->u8str.size(); }
+
+  [[nodiscard]] glong get_utf8_strlen() const {
+    if (str_ptr->u8len == str_utf8_t::LENGTH_UNKNOWN) {
+      str_ptr->u8len = g_utf8_strlen(str_ptr->u8str.c_str(), static_cast<gssize>(str_ptr->u8str.size()));
+    }
+    return str_ptr->u8len;
+  }
+
+private:
+  shared_ptr<str_utf8_t> str_ptr;
+};
+
+class FunctionType
+{
+public:
+  FunctionType(std::shared_ptr<const Context> context, std::shared_ptr<Expression> expr, std::shared_ptr<AssignmentList> parameters)
+    : context(std::move(context)), expr(std::move(expr)), parameters(std::move(parameters)) { }
+  Value operator==(const FunctionType& other) const;
+  Value operator!=(const FunctionType& other) const;
+  Value operator<(const FunctionType& other) const;
+  Value operator>(const FunctionType& other) const;
+  Value operator<=(const FunctionType& other) const;
+  Value operator>=(const FunctionType& other) const;
+
+  [[nodiscard]] const std::shared_ptr<const Context>& getContext() const { return context; }
+  [[nodiscard]] const std::shared_ptr<Expression>& getExpr() const { return expr; }
+  [[nodiscard]] const std::shared_ptr<AssignmentList>& getParameters() const { return parameters; }
+private:
+  std::shared_ptr<const Context> context;
+  std::shared_ptr<Expression> expr;
+  std::shared_ptr<AssignmentList> parameters;
+};
+
 using FunctionPtr = ValuePtr<FunctionType>;
+
+std::ostream& operator<<(std::ostream& stream, const FunctionType& f);
+
+/*
+   Require a reason why (string), any time an undefined value is created/returned.
+   This allows for passing of "exception" information from low level functions (i.e. from value.cc)
+   up to Expression::evaluate() or other functions where a proper "WARNING: ..."
+   with ASTNode Location info (source file, line number) can be included.
+ */
+class UndefType
+{
+public:
+  // TODO: eventually deprecate undef creation without a reason.
+  UndefType() : reasons{std::make_unique<std::vector<std::string>>()} { }
+  explicit UndefType(const std::string& why) : reasons{std::make_unique<std::vector<std::string>>(std::initializer_list<std::string>({why}))} { }
+
+  // Append another reason in case a chain of undefined operations are made before handling
+  const UndefType& append(const std::string& why) const { reasons->push_back(why); return *this; }
+
+  Value operator<(const UndefType& other) const;
+  Value operator>(const UndefType& other) const;
+  Value operator<=(const UndefType& other) const;
+  Value operator>=(const UndefType& other) const;
+  friend std::ostream& operator<<(std::ostream& stream, const ValuePtr<UndefType>& u);
+
+  std::string toString() const;
+  bool empty() const { return reasons->empty(); }
+private:
+  // using unique_ptr to keep the size small enough that the variant of
+  // all value types does not exceed the 24 bytes.
+  // mutable to allow clearing reasons, which should avoid duplication of warnings that have already been displayed.
+  mutable std::unique_ptr<std::vector<std::string>> reasons;
+};
+
+std::ostream& operator<<(std::ostream& stream, const UndefType& u);
 
 /**
  *  Value class encapsulates a std::variant value which can represent any of the
@@ -367,6 +623,7 @@ public:
   }
 
   using Variant = std::variant<UndefType, bool, double, str_utf8_wrapper, VectorType, EmbeddedVectorType, RangePtr, FunctionPtr, ObjectType>;
+
 
   static_assert(sizeof(Value::Variant) <= 24, "Memory size of Value too big");
   [[nodiscard]] const Variant& getVariant() const { return value; }
