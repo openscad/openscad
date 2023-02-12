@@ -242,17 +242,44 @@ PyMappingMethods PyOpenSCADMapping =
 
 
 PyTypeObject PyOpenSCADType = {
-  PyVarObject_HEAD_INIT(NULL, 0)
-  .tp_name = "PyOpenSCAD",
-  .tp_basicsize = sizeof(PyOpenSCADObject),
-  .tp_dealloc = (destructor) PyOpenSCADObject_dealloc,
-  .tp_as_number = &PyOpenSCADNumbers,
-  .tp_as_mapping = &PyOpenSCADMapping,
-  .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-  .tp_doc = "PyOpenSCAD objects",
-  .tp_methods = PyOpenSCADMethods,
-  .tp_init = (initproc) PyOpenSCADInit,
-  .tp_new = PyOpenSCADObject_new
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "PyOpenSCAD",             			/* tp_name */
+    sizeof(PyOpenSCADObject), 			/* tp_basicsize */
+    0,                         			/* tp_itemsize */
+    (destructor) PyOpenSCADObject_dealloc,	/* tp_dealloc */
+    0,                         			/* tp_print */
+    0,                         			/* tp_getattr */
+    0,                         			/* tp_setattr */
+    0,                         			/* tp_reserved */
+    0,                         			/* tp_repr */
+    &PyOpenSCADNumbers,        			/* tp_as_number */
+    0,                         			/* tp_as_sequence */
+    &PyOpenSCADMapping,        			/* tp_as_mapping */
+    0,                         			/* tp_hash  */
+    0,                         			/* tp_call */
+    0,                         			/* tp_str */
+    0,                         			/* tp_getattro */
+    0,                         			/* tp_setattro */
+    0,                         			/* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,	/* tp_flags */
+    "PyOpenSCAD Object",          		/* tp_doc */
+    0,                         			/* tp_traverse */
+    0,                         			/* tp_clear */
+    0,                         			/* tp_richcompare */
+    0,                         			/* tp_weaklistoffset */
+    0,                         			/* tp_iter */
+    0,                         			/* tp_iternext */
+    PyOpenSCADMethods,             		/* tp_methods */
+    0,             				/* tp_members */
+    0,                         			/* tp_getset */
+    0,                         			/* tp_base */
+    0,                         			/* tp_dict */
+    0,                         			/* tp_descr_get */
+    0,                         			/* tp_descr_set */
+    0,                         			/* tp_dictoffset */
+    (initproc) PyOpenSCADInit,      		/* tp_init */
+    0,                         			/* tp_alloc */
+    PyOpenSCADObject_new,                	/* tp_new */
 };
 
 
@@ -290,7 +317,9 @@ std::string todo_fix_name;
 AssignmentList todo_fix_asslist;
 ModuleInstantiation todo_fix_inst(todo_fix_name, todo_fix_asslist, Location::NONE);
 
-char *evaluatePython(const char *code)
+static PyObject *pythonInitDict=NULL;
+
+char *evaluatePython(const char *code, double time)
 {
   char *error;
   python_result_node = NULL;
@@ -298,34 +327,42 @@ char *evaluatePython(const char *code)
   PyObject *pyExcValue;
   PyObject *pyExcTraceback;
 
-  PyImport_AppendInittab("openscad", &PyInit_openscad);
-  Py_Initialize();
+    if(pythonInitDict) {
+      if (Py_FinalizeEx() < 0) {
+        exit(120);
+      }
+      pythonInitDict=NULL;
+    }
 
-  PyObject *py_main = PyImport_AddModule("__main__");
-  PyObject *py_dict = PyModule_GetDict(py_main);
-  PyInit_PyOpenSCAD();
-  PyRun_String("from openscad import *\nfa=12.0\nfn=0.0\nfs=2.0\n", Py_file_input, py_dict, py_dict);
-  PyObject *result = PyRun_String(code, Py_file_input, py_dict, py_dict);
+    if(!pythonInitDict) {
+	    char run_str[80];
+	    PyImport_AppendInittab("openscad", &PyInit_openscad);
+	    Py_Initialize();
 
-  PyErr_Fetch(&pyExcType, &pyExcValue, &pyExcTraceback);
-  PyErr_NormalizeException(&pyExcType, &pyExcValue, &pyExcTraceback);
+	    PyObject *py_main = PyImport_AddModule("__main__");
+	    pythonInitDict = PyModule_GetDict(py_main);
+	    PyInit_PyOpenSCAD();
+	    sprintf(run_str,"from openscad import *\nfa=12.0\nfn=0.0\nfs=2.0\nt=%g",time);
+	    PyRun_String(run_str, Py_file_input, pythonInitDict, pythonInitDict);
+    }
+    PyObject *result = PyRun_String(code, Py_file_input, pythonInitDict, pythonInitDict);
 
-  PyObject *str_exc_value = PyObject_Repr(pyExcValue);
-  PyObject *pyExcValueStr = PyUnicode_AsEncodedString(str_exc_value, "utf-8", "~");
-  const char *strExcValue = PyBytes_AS_STRING(pyExcValueStr);
-  if (strExcValue != NULL  && !strcmp(strExcValue, "<NULL>")) error = NULL;
-  else error = strdup(strExcValue);
+    PyErr_Fetch(&pyExcType, &pyExcValue, &pyExcTraceback);
+    PyErr_NormalizeException(&pyExcType, &pyExcValue, &pyExcTraceback);
 
-  Py_XDECREF(pyExcType);
-  Py_XDECREF(pyExcValue);
-  Py_XDECREF(pyExcTraceback);
+    PyObject* str_exc_value = PyObject_Repr(pyExcValue);
+    PyObject* pyExcValueStr = PyUnicode_AsEncodedString(str_exc_value, "utf-8", "~");
+    const char *strExcValue =  PyBytes_AS_STRING(pyExcValueStr);
+    if(strExcValue != NULL  && !strcmp(strExcValue,"<NULL>")) error=NULL;
+    else error=strdup(strExcValue);
 
-  Py_XDECREF(str_exc_value);
-  Py_XDECREF(pyExcValueStr);
+    Py_XDECREF(pyExcType);
+    Py_XDECREF(pyExcValue);
+    Py_XDECREF(pyExcTraceback);
 
-  if (Py_FinalizeEx() < 0) {
-    exit(120);
-  }
-  return error;
+    Py_XDECREF(str_exc_value);
+    Py_XDECREF(pyExcValueStr);
+
+    return error;
 }
 

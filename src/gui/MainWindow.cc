@@ -99,7 +99,7 @@
 
 #ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
-char *evaluatePython(const char *code);
+char *evaluatePython(const char *code, double time);
 extern bool python_unlocked;
 #endif
 
@@ -1825,7 +1825,7 @@ void MainWindow::parseTopLevelDocument()
     auto fulltext_py =
       std::string(this->last_compiled_doc.toUtf8().constData());
 
-    char *error = evaluatePython(fulltext_py.c_str());
+    char *error = evaluatePython(fulltext_py.c_str(),this->animateWidget->getAnim_tval());
     if (error != NULL) LOG(message_group::Error, Location::NONE, "", error);
     fulltext = "\n";
   }
