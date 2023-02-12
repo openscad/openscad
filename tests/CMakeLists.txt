@@ -1351,9 +1351,9 @@ elseif(WIN32 OR MXECROSS)
     # requires `gs` tool
     pdfexporttest_centered
     pdfexporttest_simple-pdf
-    PROPERTIES DISABLED TRUE
     # Python not enabled in windows
     cgalpngtest_python_primitives
+    PROPERTIES DISABLED TRUE
   )
 endif()
 
