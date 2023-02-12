@@ -9,7 +9,7 @@ cube3 = cube([5,1,1],center=True)
 sphere1 = sphere(r=2,fn=6)
 sphere2 = sphere(d=4,fn=20)
 cylinder1 = cylinder(r=2,h=4)
-cylinder2 = cylinder(r=1,h=8,center=True)
+cylinder2 = cylinder(r=1,h=9,center=True)
 
 output([
         cube1.translate([0,1,0]),
