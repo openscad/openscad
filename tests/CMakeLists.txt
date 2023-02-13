@@ -303,6 +303,9 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (NOT SCADFILE IN_LIST FAST_CSG_TRUST_FAILING_SCADFILES)
         set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg-trust-corefinement")
       endif()
+      if (SCADFILE IN_LIST FEATURES_PYTHON_FILES)
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=python-engine")
+      endif()
     endif()
 
     # 2D tests should be viewed from the top, not an angle.
