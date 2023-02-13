@@ -274,24 +274,26 @@ PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
   double d = -1;
   double fn = -1, fa = -1, fs = -1;
 
-  double vr=1;
-	
-   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddddd", kwlist, &r,&d,&fn,&fa,&fs)) {
-        PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
-   	return NULL;
-   }
+  double vr = 1;
 
-   get_fnas(node->fn,node->fa,node->fs);
-   if(fn != -1) node->fn=fn;
-   if(fa != -1) node->fa=fa;
-   if(fs != -1) node->fs=fs;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddddd", kwlist, &r, &d, &fn, &fa, &fs)) {
+    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    return NULL;
+  }
 
-   if(r>= 0)  { vr=r; }
-   else if(d>= 0)  { vr=d/2.0; }
+  get_fnas(node->fn, node->fa, node->fs);
+  if (fn != -1) node->fn = fn;
+  if (fa != -1) node->fa = fa;
+  if (fs != -1) node->fs = fs;
+
+  if (r >= 0) {
+    vr = r;
+  } else if (d >= 0)                        {
+    vr = d / 2.0;
+  }
 
 
-   node->r=vr;
-
+  node->r = vr;
 
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);

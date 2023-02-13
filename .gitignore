@@ -74,7 +74,6 @@ src/*.debug
 /release
 tests/DartConfiguration.tcl
 tests/__pycache__/
-tests/venv
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
