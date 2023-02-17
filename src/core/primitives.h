@@ -179,11 +179,3 @@ public:
   int convexity = 1;
 };
 
-
-
-
-
-
-
-
-
