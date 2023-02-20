@@ -3,6 +3,7 @@
 #include "Editor.h"
 #include "Geometry.h"
 #include "export.h"
+#include "ExportPdfDialog.h"
 #include "memory.h"
 #include "RenderStatistic.h"
 #include "TabManager.h"
@@ -243,6 +244,7 @@ private slots:
   void actionDisplayCSGProducts();
   bool canExport(unsigned int dim);
   void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim);
+  void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim, ExportPdfOptions *options);
   void actionExportSTL();
   void actionExport3MF();
   void actionExportOBJ();

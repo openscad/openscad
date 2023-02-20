@@ -33,6 +33,35 @@ enum class FileFormat {
   PARAM
 };
 
+
+// Paper Data
+enum class paperSizes {
+ A4,A3,LETTER,LEGAL,TABLOID
+};
+// rows map to paperSizes enums
+// columns are Width, Height
+const int paperDimensions[5][2]={
+{595,842},
+{842,1190},
+{612,792},
+{612,1008},
+{792,1224}
+}; 
+
+enum class paperOrientations {
+PORTRAIT,LANDSCAPE,AUTO
+};
+
+struct ExportPdfOptions {
+    bool showScale;
+    bool showScaleMsg;
+    bool showGrid;
+    double gridSize;
+    bool showDsgnFN;
+    paperOrientations Orientation;
+    paperSizes paperSize;
+};
+
 struct ExportInfo {
   FileFormat format;
   std::string name2display;
@@ -40,7 +69,9 @@ struct ExportInfo {
   std::string sourceFilePath;
   std::string sourceFileName;
   bool useStdOut;
+  ExportPdfOptions *options;
 };
+
 
 bool canPreview(const FileFormat format);
 bool exportFileByName(const shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);
@@ -58,8 +89,6 @@ void export_pdf(const shared_ptr<const Geometry>& geom, std::ostream& output, co
 void export_nefdbg(const shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_nef3(const shared_ptr<const Geometry>& geom, std::ostream& output);
 
-
-// void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
 
 enum class Previewer { OPENCSG, THROWNTOGETHER };
 enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };

@@ -121,6 +121,7 @@
 #endif // ENABLE_CGAL
 
 #include "PrintInitDialog.h"
+//#include "ExportPdfDialog.h"
 #include "input/InputDriverEvent.h"
 #include "input/InputDriverManager.h"
 #include <cstdio>
@@ -1987,6 +1988,7 @@ ExportInfo createExportInfo(FileFormat format, const QString& exportFilename, co
   exportInfo.sourceFilePath = sourceFilePath.toUtf8().toStdString();
   exportInfo.sourceFileName = info.fileName().toUtf8().toStdString();
   exportInfo.useStdOut = false;
+  exportInfo.options = nullptr;
   return exportInfo;
 }
 
@@ -2495,20 +2497,27 @@ bool MainWindow::canExport(unsigned int dim)
 }
 
 #ifdef ENABLE_CGAL
-void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim)
+void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim){
+ExportPdfOptions* empty = nullptr;
+actionExport(format, type_name, suffix, dim, empty);
+};
+
+void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim, ExportPdfOptions *options)
 #else
 void MainWindow::actionExport(FileFormat, QString, QString, unsigned int, QString)
 #endif
 {
   //Setting filename skips the file selection dialog and uses the path provided instead.
-
   if (GuiLocker::isLocked()) return;
   GuiLocker lock;
 #ifdef ENABLE_CGAL
+
+
   setCurrentOutput();
 
   //Return if something is wrong and we can't export.
   if (!canExport(dim)) return;
+  
   auto title = QString(_("Export %1 File")).arg(type_name);
   auto filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
   auto exportFilename = QFileDialog::getSaveFileName(this, title, exportPath(suffix), filter);
@@ -2519,6 +2528,22 @@ void MainWindow::actionExport(FileFormat, QString, QString, unsigned int, QStrin
   this->export_paths[suffix] = exportFilename;
 
   ExportInfo exportInfo = createExportInfo(format, exportFilename, activeEditor->filepath);
+  // Add options
+  // exportInfo.options=options;
+    /* Temporary:  setup the options.
+  ExportPdfOptions myOptions;
+
+myOptions.showScale=TRUE;
+myOptions.showScaleMsg=FALSE;
+myOptions.showDsgnFN=FALSE;
+myOptions.showGrid=TRUE;
+myOptions.gridSize=2.;
+myOptions.Orientation=paperOrientations::AUTO;
+myOptions.paperSize=paperSizes::LETTER;
+*/
+
+exportInfo.options=options;
+  
   bool exportResult = exportFileByName(this->root_geom, exportInfo);
 
   if (exportResult) fileExportedMessage(type_name, exportFilename);
@@ -2572,7 +2597,33 @@ void MainWindow::actionExportSVG()
 
 void MainWindow::actionExportPDF()
 {
-  actionExport(FileFormat::PDF, "PDF", ".pdf", 2);
+static  ExportPdfOptions exportPdfOptions;
+
+auto exportPdfDialog = new ExportPdfDialog();
+
+exportPdfDialog->setPaperSize(exportPdfOptions.paperSize);
+exportPdfDialog->setOrientation(exportPdfOptions.Orientation);
+exportPdfDialog->setShowDsnFn(exportPdfOptions.showDsgnFN);
+exportPdfDialog->setShowScale(exportPdfOptions.showScale);
+exportPdfDialog->setShowScaleMsg(exportPdfOptions.showScaleMsg);
+exportPdfDialog->setShowGrid(exportPdfOptions.showGrid);
+exportPdfDialog->setGridSize(exportPdfOptions.gridSize);
+
+
+if (exportPdfDialog->exec() == QDialog::Rejected) {
+  return;
+}; 
+
+exportPdfOptions.paperSize=exportPdfDialog->getPaperSize();
+exportPdfOptions.Orientation=exportPdfDialog->getOrientation();
+exportPdfOptions.showDsgnFN=exportPdfDialog->getShowDsnFn();
+exportPdfOptions.showScale=exportPdfDialog->getShowScale();
+exportPdfOptions.showScaleMsg=exportPdfDialog->getShowScaleMsg();
+exportPdfOptions.showGrid=exportPdfDialog->getShowGrid();
+exportPdfOptions.gridSize=exportPdfDialog->getGridSize();
+
+actionExport(FileFormat::PDF, "PDF", ".pdf", 2, &exportPdfOptions);
+
 }
 
 void MainWindow::actionExportCSG()
