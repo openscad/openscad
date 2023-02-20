@@ -37,7 +37,6 @@ PyObject *PyOpenSCADObjectFromNode(PyTypeObject *type, std::shared_ptr<AbstractN
   return (PyObject *)self;
 }
 
-
 int python_more_obj(std::vector<std::shared_ptr<AbstractNode>>& children, PyObject *more_obj) {
   int i, n;
   PyObject *obj;
@@ -93,6 +92,7 @@ int python_numberval(PyObject *number, double *result)
   }
   return 1;
 }
+
 int python_vectorval(PyObject *vec, double *x, double *y, double *z)
 {
   *x = 1;
@@ -116,13 +116,10 @@ int python_vectorval(PyObject *vec, double *x, double *y, double *z)
   return 1;
 }
 
-
 static int PyOpenSCADInit(PyOpenSCADObject *self, PyObject *arfs, PyObject *kwds)
 {
   return 0;
 }
-
-
 
 static PyMethodDef PyOpenSCADFunctions[] = {
   {"square", (PyCFunction) python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
@@ -206,8 +203,6 @@ void get_fnas(double& fn, double& fa, double& fs) {
   if (varFs != NULL) fs = PyFloat_AsDouble(varFs);
 }
 
-
-
 static PyMethodDef PyOpenSCADMethods[] = {
   {"translate", (PyCFunction) python_translate_oo, METH_VARARGS | METH_KEYWORDS, "Move  Object."},
   {"rotate", (PyCFunction) python_rotate_oo, METH_VARARGS | METH_KEYWORDS, "Rotate Object."},
@@ -239,7 +234,6 @@ PyMappingMethods PyOpenSCADMapping =
   python__getitem__,
   python__setitem__
 };
-
 
 PyTypeObject PyOpenSCADType = {
     PyVarObject_HEAD_INIT(NULL, 0)
@@ -311,7 +305,6 @@ static PyObject *PyInit_openscad(void)
 {
   return PyModule_Create(&OpenSCADModule);
 }
-
 
 std::string todo_fix_name;
 AssignmentList todo_fix_asslist;

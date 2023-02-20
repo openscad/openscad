@@ -1329,7 +1329,7 @@ list(APPEND NEF3_BROKEN_TESTS
 if(APPLE)
   set_tests_properties(
     ${NEF3_BROKEN_TESTS}
-    # Python not enabled in windows
+    # Python not enabled for MAC yet
     cgalpngtest_python_primitives
     # Z issues specific to edge shader
     openscad-viewoptions-edges_view-options-tests
