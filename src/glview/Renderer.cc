@@ -113,10 +113,6 @@ Renderer::Renderer()
   renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
   renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
   renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
-  printf("x %d %d %d\n",
-		  	renderer_shader.data.csg_rendering.color_area, 
-			renderer_shader.data.csg_rendering.color_edge , 
-			renderer_shader.data.csg_rendering.barycentric);
 
   PRINTD("Renderer() end");
 }
@@ -171,7 +167,7 @@ void Renderer::setColor(const float color[4],const int &textureind, const shader
   // TODO use textureind
 #ifdef ENABLE_OPENCSG
   if (shaderinfo) {
-    glUniform4f(shaderinfo->data.csg_rendering.color_area, 0 /* c[0] */, c[1], 1/* c[2] */ , c[3]); // TODO
+    glUniform4f(shaderinfo->data.csg_rendering.color_area, c[0], c[1], c[2], c[3]);
     glUniform4f(shaderinfo->data.csg_rendering.color_edge, (c[0] + 1) / 2, (c[1] + 1) / 2, (c[2] + 1) / 2, 1.0);
   }
 #endif

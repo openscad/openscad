@@ -292,7 +292,6 @@ void GLView::initializeGL()
 #ifdef ENABLE_OPENCSG
   enable_opencsg_shaders();
 #endif
-// TODO enable textures
 // Create one OpenGL texture
   glEnable(GL_TEXTURE_2D);
   GLuint textureID;

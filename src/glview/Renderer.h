@@ -29,7 +29,6 @@ public:
         int color_edge;
         // barycentric coordinates of the current vertex
         int barycentric;
-	int uv; // UV coordinates
       } csg_rendering;
       struct {
         int identifier;
