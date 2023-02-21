@@ -706,14 +706,16 @@ PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
 
   auto node = std::make_shared<ColorNode>(&todo_fix_inst);
 
-  char *kwlist[] = {"obj", "c", "alpha", NULL};
+  char *kwlist[] = {"obj", "c", "alpha", "texture",NULL};
   PyObject *obj = NULL;
   char *colorname = NULL;
   double alpha = 1.0;
+  int textureind=0;
   double x = 0, y = 0, z = 0;
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sd", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sdi", kwlist,
                                    &obj,
-                                   &colorname, &alpha
+                                   &colorname, &alpha,
+				   &textureind
                                    )) {
     PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
     return NULL;
@@ -737,12 +739,12 @@ PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
    */
   boost::algorithm::to_lower(colorname);
   if (webcolors.find(colorname) != webcolors.end()) {
-    node->color1 = webcolors.at(colorname);
+    node->color = webcolors.at(colorname);
   } else {
     // Try parsing it as a hex color such as "#rrggbb".
     const auto hexColor = parse_hex_color(colorname);
     if (hexColor) {
-      node->color1 = *hexColor;
+      node->color = *hexColor;
     } else {
       PyErr_SetString(PyExc_TypeError, "Cannot parse color");
 //        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to parse color \"%1$s\"", colorname);
@@ -750,7 +752,7 @@ PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
       return NULL;
     }
   }
-  node->color1[3] = alpha;
+  node->color[3] = alpha;
   node->children.push_back(child);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }

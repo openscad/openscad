@@ -153,7 +153,7 @@ Renderer::csgmode_e Renderer::get_csgmode(const bool highlight_mode, const bool 
   return csgmode_e(csgmode);
 }
 
-void Renderer::setColor1(const float color[4], const shaderinfo_t *shaderinfo) const
+void Renderer::setColor(const float color[4],const int &textureind, const shaderinfo_t *shaderinfo) const
 {
   if (shaderinfo && shaderinfo->type != EDGE_RENDERING) {
     return;
@@ -168,7 +168,7 @@ void Renderer::setColor1(const float color[4], const shaderinfo_t *shaderinfo) c
   if (c[2] < 0) c[2] = col[2];
   if (c[3] < 0) c[3] = col[3];
   glColor4fv(c);
-  // TODO hier textur setzen
+  // TODO use textureind
 #ifdef ENABLE_OPENCSG
   if (shaderinfo) {
     glUniform4f(shaderinfo->data.csg_rendering.color_area, 0 /* c[0] */, c[1], 1/* c[2] */ , c[3]); // TODO
@@ -178,7 +178,7 @@ void Renderer::setColor1(const float color[4], const shaderinfo_t *shaderinfo) c
 }
 
 // returns the color which has been set, which may differ from the color input parameter
-Color4f Renderer::setColor1(ColorMode colormode, const float color[4], const shaderinfo_t *shaderinfo) const
+Color4f Renderer::setColor(ColorMode colormode, const float color[4], const int &textureind, const shaderinfo_t *shaderinfo) const
 {
   PRINTD("setColor b");
   Color4f basecol;
@@ -189,16 +189,16 @@ Color4f Renderer::setColor1(ColorMode colormode, const float color[4], const sha
                  color[2] >= 0 ? color[2] : basecol[2],
                  color[3] >= 0 ? color[3] : basecol[3]};
     }
-    setColor1(basecol.data(), shaderinfo);
+    setColor(basecol.data(), textureind, shaderinfo);
   }
   return basecol;
 }
 
-void Renderer::setColor1(ColorMode colormode, const shaderinfo_t *shaderinfo) const
+void Renderer::setColor(ColorMode colormode, const shaderinfo_t *shaderinfo) const
 {
   PRINTD("setColor c");
   float c[4] = {-1, -1, -1, -1};
-  setColor1(colormode, c, shaderinfo);
+  setColor(colormode, c, 0, shaderinfo);
 }
 
 /* fill this->colormap with matching entries from the colorscheme. note
@@ -230,7 +230,7 @@ static void draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector
   double d1 = e1 ? 0.0 : 1.0;
   double d2 = e2 ? 0.0 : 1.0;
 
-  double tf=1.0;
+  double tf=1.0; // TODO besser
 
   switch (type) {
   case Renderer::EDGE_RENDERING:
@@ -459,9 +459,9 @@ void Renderer::resize(int /*w*/, int /*h*/) {}
 bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const { return false; }
 std::string Renderer::loadShaderSource(const std::string& name) { return ""; }
 Renderer::csgmode_e Renderer::get_csgmode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type) const { return {}; }
-void Renderer::setColor1(const float color[4], const shaderinfo_t *shaderinfo) const {}
-Color4f Renderer::setColor1(ColorMode colormode, const float color[4], const shaderinfo_t *shaderinfo) const { return {}; }
-void Renderer::setColor1(ColorMode colormode, const shaderinfo_t *shaderinfo) const {}
+void Renderer::setColor(const float color[4], const int &textureInd, const shaderinfo_t *shaderinfo) const {}
+Color4f Renderer::setColor(ColorMode colormode, const float color[4], const int &textureInd, const shaderinfo_t *shaderinfo) const { return {}; }
+void Renderer::setColor(ColorMode colormode, const shaderinfo_t *shaderinfo) const {}
 void Renderer::setColorScheme(const ColorScheme& cs) {}
 void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transform3d& m, const shaderinfo_t *shaderinfo) const {}
 void Renderer::render_edges(const PolySet& ps, csgmode_e csgmode) const {}

@@ -13,7 +13,8 @@ public:
   State(std::shared_ptr<const AbstractNode> parent)
     : parentnode(std::move(parent)) {
     this->matrix_ = Transform3d::Identity();
-    this->color1_.fill(-1.0f);
+    this->color_.fill(-1.0f);
+    this->textureind_=0;
   }
 
   void setPrefix(bool on) { FLAG(this->flags, PREFIX, on); }
@@ -23,7 +24,7 @@ public:
   void setNumChildren(unsigned int numc) { this->numchildren = numc; }
   void setParent(const std::shared_ptr<const AbstractNode>& parent) { this->parentnode = parent; }
   void setMatrix(const Transform3d& m) { this->matrix_ = m; }
-  void setColor1(const Color4f& c1) { this->color1_ = c1; }
+  void setColor(const Color4f& c, int textureind) { this->color_ = c; this->textureind_ = textureind; }
   void setPreferNef(bool on) { FLAG(this->flags, PREFERNEF, on); }
   [[nodiscard]] bool preferNef() const { return this->flags & PREFERNEF; }
 
@@ -34,7 +35,8 @@ public:
   [[nodiscard]] unsigned int numChildren() const { return this->numchildren; }
   [[nodiscard]] std::shared_ptr<const AbstractNode> parent() const { return this->parentnode; }
   [[nodiscard]] const Transform3d& matrix() const { return this->matrix_; }
-  [[nodiscard]] const Color4f& color1() const { return this->color1_; }
+  [[nodiscard]] const Color4f& color() const { return this->color_; }
+  [[nodiscard]] const int& textureind() const { return this->textureind_; }
 
 private:
   enum StateFlags : unsigned int {
@@ -60,5 +62,6 @@ private:
 
   // Transformation matrix and color. FIXME: Generalize such state variables?
   Transform3d matrix_;
-  Color4f color1_;
+  Color4f color_;
+  int textureind_;
 };

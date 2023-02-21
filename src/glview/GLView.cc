@@ -256,8 +256,6 @@ void GLView::initializeGL()
   char textureHeight=4;
   GLubyte textureBitmap[4*4*4];
   for(i=0;i<4*4*4;i++) textureBitmap[i]=i*i*i;
-
-
 #ifdef DEBUG
 /*
    // Requires OpenGL 4.3+
@@ -302,12 +300,6 @@ void GLView::initializeGL()
 
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, textureBitmap);
   // http://www.csc.villanova.edu/~mdamian/Past/graphicssp13/notes/GLTextures/
-
-//  // "Bind" the newly created texture : all future texture functions will modify this texture
-//  glBindTexture(GL_TEXTURE_2D, textureID);
-
-  // Give the image to OpenGL
-//  glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, textureWidth, textureHeight, 0, GL_BGR, GL_UNSIGNED_BYTE, textureBitmap);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
