@@ -255,7 +255,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
       if (polyset->getDimension() == 2) {
         // Draw 2D polygons
         glDisable(GL_LIGHTING);
-        setColor(ColorMode::CGAL_FACE_2D_COLOR);
+        setColor1(ColorMode::CGAL_FACE_2D_COLOR);
 
         for (const auto& polygon : polyset->polygons) {
           glBegin(GL_POLYGON);
@@ -269,12 +269,12 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
         glDisable(GL_DEPTH_TEST);
 
         glLineWidth(2);
-        setColor(ColorMode::CGAL_EDGE_2D_COLOR);
+        setColor1(ColorMode::CGAL_EDGE_2D_COLOR);
         this->render_edges(*polyset, CSGMODE_NONE);
         glEnable(GL_DEPTH_TEST);
       } else {
         // Draw 3D polygons
-        setColor(ColorMode::MATERIAL);
+        setColor1(ColorMode::MATERIAL);
         this->render_surface(*polyset, CSGMODE_NORMAL, Transform3d::Identity(), nullptr);
       }
     }

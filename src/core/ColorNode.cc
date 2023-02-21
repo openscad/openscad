@@ -243,21 +243,21 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
   if (parameters["c"].type() == Value::Type::VECTOR) {
     const auto& vec = parameters["c"].toVector();
     for (size_t i = 0; i < 4; ++i) {
-      node->color[i] = i < vec.size() ? (float)vec[i].toDouble() : 1.0f;
-      if (node->color[i] > 1 || node->color[i] < 0) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range", node->color[i]);
+      node->color1[i] = i < vec.size() ? (float)vec[i].toDouble() : 1.0f;
+      if (node->color1[i] > 1 || node->color1[i] < 0) {
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range", node->color1[i]);
       }
     }
   } else if (parameters["c"].type() == Value::Type::STRING) {
     auto colorname = parameters["c"].toString();
     boost::algorithm::to_lower(colorname);
     if (webcolors.find(colorname) != webcolors.end()) {
-      node->color = webcolors.at(colorname);
+      node->color1 = webcolors.at(colorname);
     } else {
       // Try parsing it as a hex color such as "#rrggbb".
       const auto hexColor = parse_hex_color(colorname);
       if (hexColor) {
-        node->color = *hexColor;
+        node->color1 = *hexColor;
       } else {
         LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to parse color \"%1$s\"", colorname);
         LOG(message_group::None, Location::NONE, "", "Please see https://en.wikipedia.org/wiki/Web_colors");
@@ -265,7 +265,7 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
     }
   }
   if (parameters["alpha"].type() == Value::Type::NUMBER) {
-    node->color[3] = parameters["alpha"].toDouble();
+    node->color1[3] = parameters["alpha"].toDouble();
   }
 
   return children.instantiate(node);
@@ -273,7 +273,7 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
 
 std::string ColorNode::toString() const
 {
-  return STR("color([", this->color[0], ", ", this->color[1], ", ", this->color[2], ", ", this->color[3], "])");
+  return STR("color([", this->color1[0], ", ", this->color1[1], ", ", this->color1[2], ", ", this->color1[3], "])");
 }
 
 std::string ColorNode::name() const

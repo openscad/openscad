@@ -157,7 +157,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, boo
   const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
   if (!ps) return;
 
-  const Color4f& c = csgobj.leaf->color;
+  const Color4f& c = csgobj.leaf->color1;
   csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
   ColorMode colormode = ColorMode::NONE;
   ColorMode edge_colormode = ColorMode::NONE;
@@ -170,7 +170,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, boo
     glUniform3f(shaderinfo->data.select_rendering.identifier, ((identifier >> 0) & 0xff) / 255.0f,
                 ((identifier >> 8) & 0xff) / 255.0f, ((identifier >> 16) & 0xff) / 255.0f);
   } else {
-    setColor(colormode, c.data());
+    setColor1(colormode, c.data());
   }
   glPushMatrix();
   glMultMatrixd(m.data());
@@ -178,7 +178,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, boo
   // only use old render_edges if there is no shader progid
   if (showedges && (shaderinfo && shaderinfo->progid == 0)) {
     // FIXME? glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
-    setColor(edge_colormode);
+    setColor1(edge_colormode);
     render_edges(*ps, csgmode);
   }
   glPopMatrix();
@@ -239,7 +239,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
     if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;
 
     Color4f color;
-    Color4f& leaf_color = csgobj.leaf->color;
+    Color4f& leaf_color = csgobj.leaf->color1;
     csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
 
     vertex_array.writeSurface();

@@ -737,12 +737,12 @@ PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
    */
   boost::algorithm::to_lower(colorname);
   if (webcolors.find(colorname) != webcolors.end()) {
-    node->color = webcolors.at(colorname);
+    node->color1 = webcolors.at(colorname);
   } else {
     // Try parsing it as a hex color such as "#rrggbb".
     const auto hexColor = parse_hex_color(colorname);
     if (hexColor) {
-      node->color = *hexColor;
+      node->color1 = *hexColor;
     } else {
       PyErr_SetString(PyExc_TypeError, "Cannot parse color");
 //        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to parse color \"%1$s\"", colorname);
@@ -750,7 +750,7 @@ PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
       return NULL;
     }
   }
-  node->color[3] = alpha;
+  node->color1[3] = alpha;
   node->children.push_back(child);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
