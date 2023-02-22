@@ -248,20 +248,23 @@ void GLView::enable_opencsg_shaders()
    //*/
 #endif
 
+#define TEXTURE_SIZE	512
+
+void loadTexture(unsigned char *textptr, const char *filename)
+{
+	FILE *in;
+	in=fopen(filename,"rb");
+	if(in == NULL) { printf("Cannot load %s\n",filename); return; }
+	fread(textptr,sizeof(char),3*TEXTURE_SIZE*TEXTURE_SIZE, in);
+	fclose(in);
+}
+
 void GLView::initializeGL()
 {
 	// https://www.opengl-tutorial.org/beginners-tutorials/tutorial-5-a-textured-cube/
   int i,j;
-  char textureWidth=4;
-  char textureHeight=4;
-  GLubyte textureBitmap[4*4*3];
-  for(j=0;j<4;j++) {
-    for(i=0;i<4;i++) {
-    	textureBitmap[j*12+i*3+0]=42*(i+j);
-    	textureBitmap[j*12+i*3+1]=42*(i+j);
-    	textureBitmap[j*12+i*3+2]=42*(i+j);
-    }
-  }
+  GLubyte textureBitmap[TEXTURE_SIZE*TEXTURE_SIZE*3];
+  loadTexture(textureBitmap,"/home/gsohler/git/openscad/textureCreate/rock.out");
 #ifdef DEBUG
 /*
    // Requires OpenGL 4.3+
@@ -304,7 +307,7 @@ void GLView::initializeGL()
   GLuint textureID;
   glGenTextures(1, &textureID); // 1= how many
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureWidth, textureHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, textureBitmap);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, textureBitmap);
   // http://www.csc.villanova.edu/~mdamian/Past/graphicssp13/notes/GLTextures/
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
