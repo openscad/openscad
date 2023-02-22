@@ -170,7 +170,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, boo
     glUniform3f(shaderinfo->data.select_rendering.identifier, ((identifier >> 0) & 0xff) / 255.0f,
                 ((identifier >> 8) & 0xff) / 255.0f, ((identifier >> 16) & 0xff) / 255.0f);
   } else {
-    setColor(colormode, c.data(),0);
+    setColor(colormode, c.data(), 0);
   }
   glPushMatrix();
   glMultMatrixd(m.data());

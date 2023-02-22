@@ -47,7 +47,7 @@ Renderer::Renderer()
   glCompileShader(vs);
   err = glGetError();
   if (err != GL_NO_ERROR) {
-    printf("OpenGL Error: %s\n", gluErrorString(err));
+    PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
     return;
   }
   glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
@@ -55,7 +55,7 @@ Renderer::Renderer()
     int loglen;
     char logbuffer[1000];
     glGetShaderInfoLog(vs, sizeof(logbuffer), &loglen, logbuffer);
-    printf("OpenGL Program Compile Vertex Shader Error:\n%s", logbuffer);
+    PRINTDB("OpenGL Program Compile Vertex Shader Error:\n%s", logbuffer);
     return;
   }
 
@@ -64,7 +64,7 @@ Renderer::Renderer()
   glCompileShader(fs);
   err = glGetError();
   if (err != GL_NO_ERROR) {
-    printf("OpenGL Error: %s\n", gluErrorString(err));
+    PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
     return;
   }
   glGetShaderiv(fs, GL_COMPILE_STATUS, &status);
@@ -72,7 +72,7 @@ Renderer::Renderer()
     int loglen;
     char logbuffer[1000];
     glGetShaderInfoLog(fs, sizeof(logbuffer), &loglen, logbuffer);
-    printf("OpenGL Program Compile Fragment Shader Error:\n%s", logbuffer);
+    PRINTDB("OpenGL Program Compile Fragment Shader Error:\n%s", logbuffer);
     return;
   }
 
@@ -83,7 +83,7 @@ Renderer::Renderer()
 
   err = glGetError();
   if (err != GL_NO_ERROR) {
-    printf("OpenGL Error: %s\n", gluErrorString(err));
+    PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
     return;
   }
 
@@ -92,7 +92,7 @@ Renderer::Renderer()
     int loglen;
     char logbuffer[1000];
     glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-    printf("OpenGL Program Linker Error:\n%s", logbuffer);
+    PRINTDB("OpenGL Program Linker Error:\n%s", logbuffer);
     return;
   }
 
@@ -100,12 +100,12 @@ Renderer::Renderer()
   char logbuffer[1000];
   glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
   if (loglen > 0) {
-    printf("OpenGL Program Link OK:\n%s", logbuffer);
+    PRINTDB("OpenGL Program Link OK:\n%s", logbuffer);
   }
   glValidateProgram(edgeshader_prog);
   glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
   if (loglen > 0) {
-    printf("OpenGL Program Validation results:\n%s", logbuffer);
+    PRINTDB("OpenGL Program Validation results:\n%s", logbuffer);
   }
 
   renderer_shader.progid = edgeshader_prog; // 0
@@ -215,9 +215,16 @@ void Renderer::setColorScheme(const ColorScheme& cs) {
 static void set_texture_coord(const Vector3d &pt,const Vector3d &norm, double tf)
 {
       double xt, yt; 
-      xt=pt[0]*tf; // TODO bnesser
-      yt=pt[1]*tf;
-      glTexCoord2f(xt, yt);
+
+      if(fabs(norm[0]) > 0.1) xt=pt[0]/norm[0];
+      else if(fabs(norm[1]) > 0.1) xt=pt[0]/norm[1];
+      else if(fabs(norm[2]) > 0.1) xt=pt[0]/norm[2];
+
+      if(fabs(norm[2]) > 0.1) yt=pt[2]/norm[2];
+      else if(fabs(norm[0]) > 0.1) yt=pt[2]/norm[0];
+      else if(fabs(norm[1]) > 0.1) yt=pt[2]/norm[1];
+
+      glTexCoord2f(xt/tf, yt/tf);
 }
 
 static void draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector3d& p0, const Vector3d& p1, const Vector3d& p2,
@@ -225,7 +232,7 @@ static void draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector
 {
   Renderer::shader_type_t type =
     (shaderinfo) ? shaderinfo->type : Renderer::NONE;
-  double tf=0.1; // TODO besser
+  double tf=10.0; // TODO besser
 
   // e0,e1,e2 are used to disable some edges from display.
   // Edges are numbered to correspond with the vertex opposite of them.

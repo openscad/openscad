@@ -229,7 +229,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
 
         Color4f color;
         if (getShaderColor(colormode, c, color)) {
-          last_color = color; // TODO hier last ind ?
+          last_color = color;
         }
 
         add_shader_pointers(vertex_array);
@@ -313,7 +313,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
 
         Color4f color;
         if (getShaderColor(colormode, c, color)) {
-          last_color = color; // TODO hier ti ?
+          last_color = color;
         }
 
         add_shader_pointers(vertex_array);

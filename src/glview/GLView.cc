@@ -257,9 +257,9 @@ void GLView::initializeGL()
   GLubyte textureBitmap[4*4*3];
   for(j=0;j<4;j++) {
     for(i=0;i<4;i++) {
-    	textureBitmap[j*12+i*3+0]=63*j;
-    	textureBitmap[j*12+i*3+1]=63*i;
-    	textureBitmap[j*12+i*3+2]=0;
+    	textureBitmap[j*12+i*3+0]=42*(i+j);
+    	textureBitmap[j*12+i*3+1]=42*(i+j);
+    	textureBitmap[j*12+i*3+2]=42*(i+j);
     }
   }
 #ifdef DEBUG
@@ -300,6 +300,7 @@ void GLView::initializeGL()
 #endif
 // Create one OpenGL texture
   glEnable(GL_TEXTURE_2D);
+  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
   GLuint textureID;
   glGenTextures(1, &textureID); // 1= how many
 

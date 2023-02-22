@@ -239,7 +239,7 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
 {
   auto node = std::make_shared<ColorNode>(inst);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"c", "alpha","texture"});
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"c", "alpha", "texture"});
   if (parameters["c"].type() == Value::Type::VECTOR) {
     const auto& vec = parameters["c"].toVector();
     for (size_t i = 0; i < 4; ++i) {
