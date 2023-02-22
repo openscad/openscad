@@ -251,11 +251,17 @@ void GLView::enable_opencsg_shaders()
 void GLView::initializeGL()
 {
 	// https://www.opengl-tutorial.org/beginners-tutorials/tutorial-5-a-textured-cube/
-  int i;
+  int i,j;
   char textureWidth=4;
   char textureHeight=4;
-  GLubyte textureBitmap[4*4*4];
-  for(i=0;i<4*4*4;i++) textureBitmap[i]=i*i*i;
+  GLubyte textureBitmap[4*4*3];
+  for(j=0;j<4;j++) {
+    for(i=0;i<4;i++) {
+    	textureBitmap[j*12+i*3+0]=63*j;
+    	textureBitmap[j*12+i*3+1]=63*i;
+    	textureBitmap[j*12+i*3+2]=0;
+    }
+  }
 #ifdef DEBUG
 /*
    // Requires OpenGL 4.3+

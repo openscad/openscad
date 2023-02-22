@@ -212,11 +212,20 @@ void Renderer::setColorScheme(const ColorScheme& cs) {
 }
 
 #ifdef ENABLE_OPENCSG
+static void set_texture_coord(const Vector3d &pt,const Vector3d &norm, double tf)
+{
+      double xt, yt; 
+      xt=pt[0]*tf; // TODO bnesser
+      yt=pt[1]*tf;
+      glTexCoord2f(xt, yt);
+}
+
 static void draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector3d& p0, const Vector3d& p1, const Vector3d& p2,
                           bool e0, bool e1, bool e2, double z, bool mirror)
 {
   Renderer::shader_type_t type =
     (shaderinfo) ? shaderinfo->type : Renderer::NONE;
+  double tf=0.1; // TODO besser
 
   // e0,e1,e2 are used to disable some edges from display.
   // Edges are numbered to correspond with the vertex opposite of them.
@@ -226,38 +235,41 @@ static void draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector
   double d1 = e1 ? 0.0 : 1.0;
   double d2 = e2 ? 0.0 : 1.0;
 
-  double tf=1.0; // TODO besser
 
   switch (type) {
   case Renderer::EDGE_RENDERING:
     if (mirror) {
+      Vector3d norm=(p1-p0).cross(p2-p0).normalized();
       glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, 1.0, d1, d2);
+      set_texture_coord(p0,norm,tf);
       glVertex3f(p0[0], p0[1], p0[2] + z);
       glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, d1, 1.0);
+      set_texture_coord(p2,norm,tf);
       glVertex3f(p2[0], p2[1], p2[2] + z);
       glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, 1.0, d2);
+      set_texture_coord(p1,norm,tf);
       glVertex3f(p1[0], p1[1], p1[2] + z);
     } else {
+      Vector3d norm=(p1-p0).cross(p2-p0).normalized();
       glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, 1.0, d1, d2);
+      set_texture_coord(p0,norm,tf);
       glVertex3f(p0[0], p0[1], p0[2] + z);
       glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, 1.0, d2);
+      set_texture_coord(p1,norm,tf);
       glVertex3f(p1[0], p1[1], p1[2] + z);
       glVertexAttrib3f(shaderinfo->data.csg_rendering.barycentric, d0, d1, 1.0);
+      set_texture_coord(p2,norm,tf);
       glVertex3f(p2[0], p2[1], p2[2] + z);
     }
     break;
   default:
   case Renderer::SELECT_RENDERING:
     glVertex3d(p0[0], p0[1], p0[2] + z);
-    glTexCoord2f(p0[0]*tf, p0[1]*tf);
     if (!mirror) {
-      glTexCoord2f(p1[0]*tf, p1[1]*tf);
       glVertex3d(p1[0], p1[1], p1[2] + z);
     }
-    glTexCoord2f(p2[0]*tf, p2[1]*tf);
     glVertex3d(p2[0], p2[1], p2[2] + z);
     if (mirror) {
-      glTexCoord2f(p1[0]*tf, p1[1]*tf);
       glVertex3d(p1[0], p1[1], p1[2] + z);
     }
   }
