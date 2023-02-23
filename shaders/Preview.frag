@@ -28,11 +28,7 @@ float edgeFactor() {
 void main(void) {
   vec4 facecolor = color1;
 
-  if(textureTrans > 1.5 ) {
-    vec4 texel = texture2D(tex2,gl_TexCoord[1].st);
-    vec4 gray; gray.r=0.5; gray.g=0.5; gray.b=0.5;
-    facecolor.rgb = facecolor.rgb + texel.rgb - gray.rgb;
-  } else if(textureTrans > 0.5 ) {
+  if(textureTrans > 0.5 ) {
     vec4 texel = texture2D(tex1,gl_TexCoord[0].st);
     vec4 gray; gray.r=0.5; gray.g=0.5; gray.b=0.5;
     facecolor.rgb = facecolor.rgb + texel.rgb - gray.rgb;

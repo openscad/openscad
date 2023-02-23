@@ -249,9 +249,9 @@ void GLView::enable_opencsg_shaders()
 #endif
 
 #define TEXTURE_SIZE	512
-#define TEXTURES_NUM	2
+#define TEXTURES_NUM	7
 
-char textures[TEXTURES_NUM][10]={"wall","rock"};
+char textures[TEXTURES_NUM][10]={"wall","grass","bamboo","metal","water","jeans","rock"};
 
 void loadTexture(unsigned char *textptr, const char *item)
 {
@@ -263,6 +263,8 @@ void loadTexture(unsigned char *textptr, const char *item)
 	fread(textptr,sizeof(char),3*TEXTURE_SIZE*TEXTURE_SIZE, in);
 	fclose(in);
 }
+
+GLuint textureIDs[8];
 
 void GLView::initializeGL()
 {
@@ -308,7 +310,6 @@ void GLView::initializeGL()
   glEnable(GL_TEXTURE_2D);
   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-  GLuint textureIDs[TEXTURES_NUM];
 
   glGenTextures(TEXTURES_NUM, textureIDs); 
   printf("initialize texture\n"); for(int i=0;i<TEXTURES_NUM;i++) printf("%d ",textureIDs[i]); printf("\n");
@@ -316,25 +317,19 @@ void GLView::initializeGL()
   GLubyte textureBitmap[TEXTURE_SIZE*TEXTURE_SIZE*3];
 
 //  https://stackoverflow.com/questions/51923159/how-to-load-multiple-texture-using-opengl-and-c
-  glBindTexture(GL_TEXTURE_2D, textureIDs[0]);
-  glActiveTexture(GL_TEXTURE0);
-  loadTexture(textureBitmap,textures[0]);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, textureBitmap);
+  for(i=0;i<TEXTURES_NUM;i++) {
+//	  if(i == 0) glActiveTexture(GL_TEXTURE0);
+//	  if(i == 1) glActiveTexture(GL_TEXTURE1);
+	  glBindTexture(GL_TEXTURE_2D, textureIDs[i]);
+	  loadTexture(textureBitmap,textures[i]);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
+	  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, textureBitmap);
+  }
 
-  glBindTexture(GL_TEXTURE_2D, textureIDs[1]);
-  glActiveTexture(GL_TEXTURE1);
-  loadTexture(textureBitmap,textures[1]);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, textureBitmap);
-
-  glActiveTexture(GL_TEXTURE0);
+//  glActiveTexture(GL_TEXTURE0);
 
   // http://www.csc.villanova.edu/~mdamian/Past/graphicssp13/notes/GLTextures/
 

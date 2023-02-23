@@ -159,6 +159,8 @@ Renderer::csgmode_e Renderer::get_csgmode(const bool highlight_mode, const bool 
   return csgmode_e(csgmode);
 }
 
+extern GLubyte  textureIDs[8];
+
 void Renderer::setColor(const float color[4],const int &textureind, const shaderinfo_t *shaderinfo) const
 {
   if (shaderinfo && shaderinfo->type != EDGE_RENDERING) {
@@ -184,23 +186,10 @@ void Renderer::setColor(const float color[4],const int &textureind, const shader
     printf("Setting ind %d\n",textureind);
     if(textureind == 0){
     	    glVertexAttrib1f(shaderinfo->data.csg_rendering.textureind, 0.0);
+    } else {
+            glBindTexture(GL_TEXTURE_2D, textureind); // TODO array verwenden
+    	    glVertexAttrib1f(shaderinfo->data.csg_rendering.textureind, 1.0); // TODO parameter besser benennen
     }
-    if(textureind == 1){
-	    glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, 1);	   // 1=steine, 0=fels  1->1 2->0
-    	    glVertexAttrib1f(shaderinfo->data.csg_rendering.textureind, 1.0);
-    }
-    if(textureind == 2){
-	    glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, 0);	   // 1=steine, 0=fels  1->1 2->0
-    	    glVertexAttrib1f(shaderinfo->data.csg_rendering.textureind, 1.0);
-    }
-//    if(textureind == 2) {
-//	    glActiveTexture(GL_TEXTURE1);
-//            glBindTexture(GL_TEXTURE_2D, 1);	    
-//    	    glVertexAttrib1f(shaderinfo->data.csg_rendering.textureind, 2.0);
-//    }
-
   }
 #endif
 }
