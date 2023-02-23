@@ -5,11 +5,18 @@ uniform vec4 color1;        // face color
 uniform vec4 color2;        // edge color
 attribute vec3 barycentric; // barycentric form of vertex coord
                             // either [1,0,0], [0,1,0] or [0,0,1] under normal circumstances (no edges disabled)
+attribute float marked;
 varying vec3 vBC;           // varying barycentric coords
 varying float shading;      // multiplied by color1. color2 is without lighting
+varying vec4 drawColor;
 
 void main(void) {
   gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+  if(marked < 0.5) {
+    drawColor = color1;
+  } else {
+    drawColor = color1;
+  }
   gl_TexCoord[0] = gl_MultiTexCoord0;
   vBC = barycentric;
   vec3 normal, lightDir;

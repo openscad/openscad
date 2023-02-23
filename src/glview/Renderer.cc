@@ -112,7 +112,15 @@ Renderer::Renderer()
   renderer_shader.type = EDGE_RENDERING;
   renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
   renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
+  renderer_shader.data.csg_rendering.draw_edges = glGetUniformLocation(edgeshader_prog, "drawEdges");
+  renderer_shader.data.csg_rendering.textureind = glGetUniformLocation(edgeshader_prog, "textureInd"); // 4
   renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
+  printf("\nx %d %d %d %d %d\n",	
+			renderer_shader.data.csg_rendering.color_area ,  
+			renderer_shader.data.csg_rendering.color_edge  , 	 
+			renderer_shader.data.csg_rendering.barycentric ,  
+			renderer_shader.data.csg_rendering.draw_edges ,  
+			renderer_shader.data.csg_rendering.textureind );
 
   printf("Renderer() end");
 }
@@ -169,6 +177,8 @@ void Renderer::setColor(const float color[4],const int &textureind, const shader
   if (shaderinfo) {
     glUniform4f(shaderinfo->data.csg_rendering.color_area, c[0], c[1], c[2], c[3]);
     glUniform4f(shaderinfo->data.csg_rendering.color_edge, (c[0] + 1) / 2, (c[1] + 1) / 2, (c[2] + 1) / 2, 1.0);
+    printf("Setting ind %d\n",textureind);
+    glUniform1i(shaderinfo->data.csg_rendering.textureind, textureind);
   }
 #endif
 }
@@ -367,7 +377,6 @@ void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transf
     if (ps.getPolygon().outlines().size() > 0) {
       for (const Outline2d& o : ps.getPolygon().outlines()) {
         for (size_t j = 1; j <= o.vertices.size(); ++j) {
-
           Vector3d p1(o.vertices[j - 1][0], o.vertices[j - 1][1], -zbase / 2);
           Vector3d p2(o.vertices[j - 1][0], o.vertices[j - 1][1], zbase / 2);
           Vector3d p3(o.vertices[j % o.vertices.size()][0], o.vertices[j % o.vertices.size()][1], -zbase / 2);
@@ -425,7 +434,6 @@ void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transf
  */
 void Renderer::render_edges(const PolySet& ps, csgmode_e csgmode) const
 {
-	printf("rend endge\n");
   glDisable(GL_LIGHTING);
   if (ps.getDimension() == 2) {
     if (csgmode == Renderer::CSGMODE_NONE) {

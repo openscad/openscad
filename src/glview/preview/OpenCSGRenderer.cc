@@ -120,7 +120,7 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const shaderinfo_
 // Primitive for rendering using OpenCSG
 OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject& csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const
 {
-  auto *prim = new OpenCSGPrim(operation, csgobj.leaf->geom->getConvexity(), *this);
+  OpenCSGPrim *prim = new OpenCSGPrim(operation, csgobj.leaf->geom->getConvexity(), *this);
   std::shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(csgobj.leaf->geom);
   if (ps) {
     prim->geom = ps;
@@ -211,7 +211,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
 
     for (const auto& csgobj : product.intersections) {
       if (csgobj.leaf->geom) {
-        const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+        const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
         if (!ps) continue;
 
         const Color4f& c = csgobj.leaf->color;
@@ -296,7 +296,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
 
     for (const auto& csgobj : product.subtractions) {
       if (csgobj.leaf->geom) {
-        const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+        const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
         if (!ps) continue;
         const Color4f& c = csgobj.leaf->color;
         const int& ti = csgobj.leaf->textureind;
@@ -392,13 +392,17 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
       }
 
       if (shaderinfo && shaderinfo->progid) {
-        if (shaderinfo->type != EDGE_RENDERING || (shaderinfo->type == EDGE_RENDERING && showedges)) {
-          glUseProgram(shaderinfo->progid); GL_ERROR_CHECK();
-        }
+        if (shaderinfo->type != EDGE_RENDERING ||
+            (shaderinfo->type == EDGE_RENDERING && showedges)) {
+              glUseProgram(shaderinfo->progid);
+              GL_ERROR_CHECK();
+              glUniform1i(shaderinfo->data.csg_rendering.draw_edges, 1);
+              GL_ERROR_CHECK();
+            }
       }
 
       for (const auto& csgobj : product.intersections) {
-        const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+        const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
         if (!ps) continue;
 
         if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
@@ -441,7 +445,7 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
         glPopMatrix();
       }
       for (const auto& csgobj : product.subtractions) {
-        const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+        const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
         if (!ps) continue;
 
         const Color4f& c = csgobj.leaf->color;
@@ -457,7 +461,7 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
           colormode = ColorMode::CUTOUT;
         }
 
-        (void) setColor(colormode, c.data(), ti, shaderinfo);
+        const Color4f color = setColor(colormode, c.data(), ti, shaderinfo);
         glPushMatrix();
         glMultMatrixd(csgobj.leaf->matrix.data());
         // negative objects should only render rear faces
@@ -487,6 +491,10 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
 
         if (shaderinfo->type == EDGE_RENDERING && showedges) {
           shader_attribs_enable();
+          glUniform1i(shaderinfo->data.csg_rendering.draw_edges, 1);
+        }
+        else {
+          glUniform1i(shaderinfo->data.csg_rendering.draw_edges, 0);
         }
       }
 
