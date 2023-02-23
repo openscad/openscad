@@ -2,11 +2,10 @@
 // https://www.lighthouse3d.com/tutorials/glsl-12-tutorial/
 uniform vec4 color1, color2;
 uniform int drawEdges;
-uniform int textureInd;
 varying vec3 vBC;
 uniform sampler2D tex;
 varying float shading;
-varying vec4 drawColor;
+varying float textureTrans;
 
 vec3 smoothstep3f(vec3 edge0, vec3 edge1, vec3 x) {
   vec3 t;
@@ -26,9 +25,9 @@ float edgeFactor() {
 }
 
 void main(void) {
-  vec4 facecolor = drawColor;
+  vec4 facecolor = color1;
 
-  if(textureInd > 0 ) {
+  if(textureTrans > 0.5 ) {
     vec4 texel = texture2D(tex,gl_TexCoord[0].st);
     vec4 gray; gray.r=0.5; gray.g=0.5; gray.b=0.5;
     facecolor.rgb = facecolor.rgb + texel.rgb - gray.rgb;

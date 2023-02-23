@@ -113,9 +113,9 @@ Renderer::Renderer()
   renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
   renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
   renderer_shader.data.csg_rendering.draw_edges = glGetUniformLocation(edgeshader_prog, "drawEdges");
-  renderer_shader.data.csg_rendering.textureind = glGetUniformLocation(edgeshader_prog, "textureInd"); // 4
+  renderer_shader.data.csg_rendering.textureind = glGetAttribLocation(edgeshader_prog, "textureInd"); // 4
   renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
-  printf("\nx %d %d %d %d %d\n",	
+  printf("\nx %d %d %d %d %d\n",
 			renderer_shader.data.csg_rendering.color_area ,  
 			renderer_shader.data.csg_rendering.color_edge  , 	 
 			renderer_shader.data.csg_rendering.barycentric ,  
@@ -178,7 +178,7 @@ void Renderer::setColor(const float color[4],const int &textureind, const shader
     glUniform4f(shaderinfo->data.csg_rendering.color_area, c[0], c[1], c[2], c[3]);
     glUniform4f(shaderinfo->data.csg_rendering.color_edge, (c[0] + 1) / 2, (c[1] + 1) / 2, (c[2] + 1) / 2, 1.0);
     printf("Setting ind %d\n",textureind);
-    glUniform1i(shaderinfo->data.csg_rendering.textureind, textureind);
+    glVertexAttrib1f(shaderinfo->data.csg_rendering.textureind, textureind);
   }
 #endif
 }
