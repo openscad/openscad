@@ -211,8 +211,8 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
     indices.resize(p.size());
     // Quantize all vertices. Build index list
     for (unsigned int i = 0; i < p.size(); ++i) {
-      auto index = indices[i] = grid.align(p[i]);
-      if (pPointsOut && index == grid.db.size() - 1) {
+      indices[i] = grid.align(p[i]);
+      if (pPointsOut && pPointsOut->size() < grid.db.size()) {
         pPointsOut->push_back(p[i]);
       }
     }
