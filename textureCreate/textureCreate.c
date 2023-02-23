@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
 	// now output the image
 	out =fopen(argv[2],"w");
 	for(j=0;j<outsize;j++) {
-		ypos=cinfo.output_width*j/outsize;
+		ypos=cinfo.output_height*j/outsize;
 		for(i=0;i<outsize;i++)
 		{
 			xpos=cinfo.output_width*i/outsize;

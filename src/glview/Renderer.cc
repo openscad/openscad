@@ -113,6 +113,8 @@ Renderer::Renderer()
   renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
   renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
   renderer_shader.data.csg_rendering.draw_edges = glGetUniformLocation(edgeshader_prog, "drawEdges");
+  renderer_shader.data.csg_rendering.tex1 = glGetUniformLocation(edgeshader_prog, "tex1");
+  renderer_shader.data.csg_rendering.tex2 = glGetUniformLocation(edgeshader_prog, "tex2");
   renderer_shader.data.csg_rendering.textureind = glGetAttribLocation(edgeshader_prog, "textureInd"); // 4
   renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
   printf("\nx %d %d %d %d %d\n",
@@ -177,8 +179,28 @@ void Renderer::setColor(const float color[4],const int &textureind, const shader
   if (shaderinfo) {
     glUniform4f(shaderinfo->data.csg_rendering.color_area, c[0], c[1], c[2], c[3]);
     glUniform4f(shaderinfo->data.csg_rendering.color_edge, (c[0] + 1) / 2, (c[1] + 1) / 2, (c[2] + 1) / 2, 1.0);
+    glUniform1i(shaderinfo->data.csg_rendering.tex1, 0);
+    glUniform1i(shaderinfo->data.csg_rendering.tex2, 1);
     printf("Setting ind %d\n",textureind);
-    glVertexAttrib1f(shaderinfo->data.csg_rendering.textureind, textureind);
+    if(textureind == 0){
+    	    glVertexAttrib1f(shaderinfo->data.csg_rendering.textureind, 0.0);
+    }
+    if(textureind == 1){
+	    glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, 1);	   // 1=steine, 0=fels  1->1 2->0
+    	    glVertexAttrib1f(shaderinfo->data.csg_rendering.textureind, 1.0);
+    }
+    if(textureind == 2){
+	    glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, 0);	   // 1=steine, 0=fels  1->1 2->0
+    	    glVertexAttrib1f(shaderinfo->data.csg_rendering.textureind, 1.0);
+    }
+//    if(textureind == 2) {
+//	    glActiveTexture(GL_TEXTURE1);
+//            glBindTexture(GL_TEXTURE_2D, 1);	    
+//    	    glVertexAttrib1f(shaderinfo->data.csg_rendering.textureind, 2.0);
+//    }
+
   }
 #endif
 }

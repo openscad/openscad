@@ -3,7 +3,8 @@
 uniform vec4 color1, color2;
 uniform int drawEdges;
 varying vec3 vBC;
-uniform sampler2D tex;
+uniform sampler2D tex1;
+uniform sampler2D tex2;
 varying float shading;
 varying float textureTrans;
 
@@ -27,8 +28,12 @@ float edgeFactor() {
 void main(void) {
   vec4 facecolor = color1;
 
-  if(textureTrans > 0.5 ) {
-    vec4 texel = texture2D(tex,gl_TexCoord[0].st);
+  if(textureTrans > 1.5 ) {
+    vec4 texel = texture2D(tex2,gl_TexCoord[1].st);
+    vec4 gray; gray.r=0.5; gray.g=0.5; gray.b=0.5;
+    facecolor.rgb = facecolor.rgb + texel.rgb - gray.rgb;
+  } else if(textureTrans > 0.5 ) {
+    vec4 texel = texture2D(tex1,gl_TexCoord[0].st);
     vec4 gray; gray.r=0.5; gray.g=0.5; gray.b=0.5;
     facecolor.rgb = facecolor.rgb + texel.rgb - gray.rgb;
   } 

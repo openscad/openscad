@@ -31,6 +31,8 @@ public:
         int barycentric;
         int draw_edges;
 	int textureind;
+	int tex1;
+	int tex2;
       } csg_rendering;
       struct {
         int identifier;

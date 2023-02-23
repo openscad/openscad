@@ -13,11 +13,9 @@ varying float textureTrans;
 void main(void) {
   gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
   textureTrans=textureInd;
-//  if(textureInd < 0.5) {}
-// else if(textureInd < 1.5) { gl_TexCoord[0] = gl_MultiTexCoord0; }
-// else if(textureInd < 2.5) { gl_TexCoord[1] = gl_MultiTexCoord1; }
-  gl_TexCoord[0] = gl_MultiTexCoord0; 
-  gl_TexCoord[1] = gl_MultiTexCoord1;
+  if(textureInd < 0.5) {}
+ else if(textureInd < 1.5) { gl_TexCoord[0] = gl_MultiTexCoord0; }
+ else if(textureInd < 2.5) { gl_TexCoord[1] = gl_MultiTexCoord1; }
   vBC = barycentric;
   vec3 normal, lightDir;
   normal = normalize(gl_NormalMatrix * gl_Normal);
