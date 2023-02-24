@@ -11,10 +11,9 @@
 
 #ifndef NULLGL
 
-// https://www.lighthouse3d.com/tutorials/glsl-12-tutorial/
 Renderer::Renderer()
 {
-  printf("Renderer() start");
+  PRINTD("Renderer() start");
 
   renderer_shader.progid = 0;
 
@@ -47,7 +46,7 @@ Renderer::Renderer()
   glCompileShader(vs);
   err = glGetError();
   if (err != GL_NO_ERROR) {
-    printf("OpenGL Error: %s\n", gluErrorString(err));
+    PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
     return;
   }
   glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
@@ -55,7 +54,7 @@ Renderer::Renderer()
     int loglen;
     char logbuffer[1000];
     glGetShaderInfoLog(vs, sizeof(logbuffer), &loglen, logbuffer);
-    printf("OpenGL Program Compile Vertex Shader Error:\n%s", logbuffer);
+    PRINTDB("OpenGL Program Compile Vertex Shader Error:\n%s", logbuffer);
     return;
   }
 
@@ -64,7 +63,7 @@ Renderer::Renderer()
   glCompileShader(fs);
   err = glGetError();
   if (err != GL_NO_ERROR) {
-    printf("OpenGL Error: %s\n", gluErrorString(err));
+    PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
     return;
   }
   glGetShaderiv(fs, GL_COMPILE_STATUS, &status);
@@ -72,7 +71,7 @@ Renderer::Renderer()
     int loglen;
     char logbuffer[1000];
     glGetShaderInfoLog(fs, sizeof(logbuffer), &loglen, logbuffer);
-    printf("OpenGL Program Compile Fragment Shader Error:\n%s", logbuffer);
+    PRINTDB("OpenGL Program Compile Fragment Shader Error:\n%s", logbuffer);
     return;
   }
 
@@ -83,7 +82,7 @@ Renderer::Renderer()
 
   err = glGetError();
   if (err != GL_NO_ERROR) {
-    printf("OpenGL Error: %s\n", gluErrorString(err));
+    PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
     return;
   }
 
@@ -92,7 +91,7 @@ Renderer::Renderer()
     int loglen;
     char logbuffer[1000];
     glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-    printf("OpenGL Program Linker Error:\n%s", logbuffer);
+    PRINTDB("OpenGL Program Linker Error:\n%s", logbuffer);
     return;
   }
 
@@ -100,31 +99,24 @@ Renderer::Renderer()
   char logbuffer[1000];
   glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
   if (loglen > 0) {
-    printf("OpenGL Program Link OK:\n%s", logbuffer);
+    PRINTDB("OpenGL Program Link OK:\n%s", logbuffer);
   }
   glValidateProgram(edgeshader_prog);
   glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
   if (loglen > 0) {
-    printf("OpenGL Program Validation results:\n%s", logbuffer);
+    PRINTDB("OpenGL Program Validation results:\n%s", logbuffer);
   }
 
   renderer_shader.progid = edgeshader_prog; // 0
   renderer_shader.type = EDGE_RENDERING;
   renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
   renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
-  renderer_shader.data.csg_rendering.draw_edges = glGetUniformLocation(edgeshader_prog, "drawEdges");
-  renderer_shader.data.csg_rendering.tex1 = glGetUniformLocation(edgeshader_prog, "tex1");
-  renderer_shader.data.csg_rendering.tex2 = glGetUniformLocation(edgeshader_prog, "tex2");
-  renderer_shader.data.csg_rendering.textureind = glGetAttribLocation(edgeshader_prog, "textureInd"); // 4
-  renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
-  printf("\nx %d %d %d %d %d\n",
-			renderer_shader.data.csg_rendering.color_area ,  
-			renderer_shader.data.csg_rendering.color_edge  , 	 
-			renderer_shader.data.csg_rendering.barycentric ,  
-			renderer_shader.data.csg_rendering.draw_edges ,  
-			renderer_shader.data.csg_rendering.textureind );
+  renderer_shader.data.csg_rendering.draw_edges = glGetUniformLocation(edgeshader_prog, "drawEdges"); // 3
+  renderer_shader.data.csg_rendering.tex1 = glGetUniformLocation(edgeshader_prog, "tex1"); //4 
+  renderer_shader.data.csg_rendering.textureenable = glGetAttribLocation(edgeshader_prog, "textureEnable"); // 5
+  renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 6
 
-  printf("Renderer() end");
+  PRINTD("Renderer() end");
 }
 
 void Renderer::resize(int /*w*/, int /*h*/)
@@ -159,15 +151,14 @@ Renderer::csgmode_e Renderer::get_csgmode(const bool highlight_mode, const bool 
   return csgmode_e(csgmode);
 }
 
-extern GLubyte  textureIDs[8];
-
+extern GLuint  textureIDs[8];
 void Renderer::setColor(const float color[4],const int &textureind, const shaderinfo_t *shaderinfo) const
 {
   if (shaderinfo && shaderinfo->type != EDGE_RENDERING) {
     return;
   }
 
-  printf("setColor a");
+  PRINTD("setColor a");
   Color4f col;
   getColor(ColorMode::MATERIAL, col);
   float c[4] = {color[0], color[1], color[2], color[3]};
@@ -176,19 +167,15 @@ void Renderer::setColor(const float color[4],const int &textureind, const shader
   if (c[2] < 0) c[2] = col[2];
   if (c[3] < 0) c[3] = col[3];
   glColor4fv(c);
-  // TODO use textureind
 #ifdef ENABLE_OPENCSG
   if (shaderinfo) {
     glUniform4f(shaderinfo->data.csg_rendering.color_area, c[0], c[1], c[2], c[3]);
     glUniform4f(shaderinfo->data.csg_rendering.color_edge, (c[0] + 1) / 2, (c[1] + 1) / 2, (c[2] + 1) / 2, 1.0);
-    glUniform1i(shaderinfo->data.csg_rendering.tex1, 0);
-    glUniform1i(shaderinfo->data.csg_rendering.tex2, 1);
-    printf("Setting ind %d\n",textureind);
     if(textureind == 0){
-    	    glVertexAttrib1f(shaderinfo->data.csg_rendering.textureind, 0.0);
+    	    glVertexAttrib1f(shaderinfo->data.csg_rendering.textureenable, 0.0);
     } else {
-            glBindTexture(GL_TEXTURE_2D, textureind); // TODO array verwenden
-    	    glVertexAttrib1f(shaderinfo->data.csg_rendering.textureind, 1.0); // TODO parameter besser benennen
+            glBindTexture(GL_TEXTURE_2D, textureIDs[textureind-1]);
+    	    glVertexAttrib1f(shaderinfo->data.csg_rendering.textureenable, 1.0);
     }
   }
 #endif
@@ -197,7 +184,7 @@ void Renderer::setColor(const float color[4],const int &textureind, const shader
 // returns the color which has been set, which may differ from the color input parameter
 Color4f Renderer::setColor(ColorMode colormode, const float color[4], const int &textureind, const shaderinfo_t *shaderinfo) const
 {
-  printf("setColor b");
+  PRINTD("setColor b");
   Color4f basecol;
   if (getColor(colormode, basecol)) {
     if (colormode == ColorMode::BACKGROUND || colormode != ColorMode::HIGHLIGHT) {
@@ -213,7 +200,7 @@ Color4f Renderer::setColor(ColorMode colormode, const float color[4], const int 
 
 void Renderer::setColor(ColorMode colormode, const shaderinfo_t *shaderinfo) const
 {
-  printf("setColor c");
+  PRINTD("setColor c");
   float c[4] = {-1, -1, -1, -1};
   setColor(colormode, c, 0, shaderinfo);
 }
@@ -223,7 +210,7 @@ void Renderer::setColor(ColorMode colormode, const shaderinfo_t *shaderinfo) con
    represented in the colorscheme (yet). Also edgecolors are currently the
    same for CGAL & OpenCSG */
 void Renderer::setColorScheme(const ColorScheme& cs) {
-  printf("setColorScheme");
+  PRINTD("setColorScheme");
   colormap[ColorMode::MATERIAL] = ColorMap::getColor(cs, RenderColor::OPENCSG_FACE_FRONT_COLOR);
   colormap[ColorMode::CUTOUT] = ColorMap::getColor(cs, RenderColor::OPENCSG_FACE_BACK_COLOR);
   colormap[ColorMode::MATERIAL_EDGES] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_FRONT_COLOR);
@@ -339,7 +326,7 @@ static void gl_draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vec
 
 void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transform3d& m, const shaderinfo_t *shaderinfo) const
 {
-  printf("Renderer render");
+  PRINTD("Renderer render");
   bool mirrored = m.matrix().determinant() < 0;
 
   if (ps.getDimension() == 2) {

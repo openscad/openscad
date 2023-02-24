@@ -30,9 +30,8 @@ public:
         // barycentric coordinates of the current vertex
         int barycentric;
         int draw_edges;
-	int textureind;
+	int textureenable;
 	int tex1;
-	int tex2;
       } csg_rendering;
       struct {
         int identifier;

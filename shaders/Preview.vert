@@ -1,18 +1,17 @@
 #version 110
-// https://www.lighthouse3d.com/tutorials/glsl-12-tutorial/
 
 uniform vec4 color1;        // face color
 uniform vec4 color2;        // edge color
-attribute float textureInd;
+attribute float textureEnable;
 attribute vec3 barycentric; // barycentric form of vertex coord
                             // either [1,0,0], [0,1,0] or [0,0,1] under normal circumstances (no edges disabled)
 varying vec3 vBC;           // varying barycentric coords
 varying float shading;      // multiplied by color1. color2 is without lighting
-varying float textureTrans;
+varying float textureEnableTrans;
 
 void main(void) {
   gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-  textureTrans=textureInd;
+  textureEnableTrans=textureEnable;
   gl_TexCoord[0] = gl_MultiTexCoord0;
   vBC = barycentric;
   vec3 normal, lightDir;
