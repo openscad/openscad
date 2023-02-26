@@ -616,6 +616,7 @@ set(CORE_SOURCES
   src/core/SourceFile.cc
   src/core/SourceFileCache.cc
   src/core/StatCache.cc
+  src/core/TreeFlattener.cc
   src/core/UserModule.cc
   src/core/Tree.cc
   src/core/customizer/ParameterObject.cc

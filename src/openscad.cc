@@ -59,6 +59,7 @@
 
 #include "CSGNode.h"
 #include "CSGTreeEvaluator.h"
+#include "TreeFlattener.h"
 
 #include "Camera.h"
 #include <chrono>
@@ -492,6 +493,11 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     LOG(message_group::Warning, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
   }
   Tree tree(root_node, fparent.string());
+
+  if (Feature::ExperimentalFlattenTree.is_enabled()) {
+    flattenTree(tree);
+    root_node = tree.root();
+  }
 
   if (curFormat == FileFormat::CSG) {
     // https://github.com/openscad/openscad/issues/128
