@@ -37,7 +37,7 @@ bool isAssociativeFlattenable(OpenSCADOperator op) {
   return
     // op == OpenSCADOperator::HULL ||
     op == OpenSCADOperator::UNION ||
-    op == OpenSCADOperator::INTERSECTION ||
+    op == OpenSCADOperator::INTERSECTION;
 }
 
 
@@ -90,15 +90,10 @@ class TransformsPusher
     std::optional<Color4f> color;
   };
   std::unordered_set<const AbstractNode*>& repeatedNodes;
-  bool traverseHulls;
 
 public:
   TransformsPusher(std::unordered_set<const AbstractNode*>& repeatedNodes)
-    : repeatedNodes(repeatedNodes), traverseHulls(false) {}
-
-  void setTraverseHulls(bool value) {
-    traverseHulls = value;
-  }
+    : repeatedNodes(repeatedNodes) {}
 
   shared_ptr<const AbstractNode> transform(const shared_ptr<const AbstractNode>& node, const State &state = State {}) {
     if (!node) return node;
@@ -162,7 +157,9 @@ private:
         case OpenSCADOperator::DIFFERENCE:
           return true;
         case OpenSCADOperator::HULL:
-          return traverseHulls;
+          // Not pushing transforms through hulls as this would apply
+          // them to potentially many more points. It could however
+          // improve overall accurracy when using Manifold geometry.
         default:
           return false;
       }
@@ -269,9 +266,9 @@ private:
         if (auto csgNode = dynamic_pointer_cast<const CsgOpNode>(child)) {
           if (allowedOp && csgNode->type == *allowedOp && isAssociativeFlattenable(*allowedOp)) {
             flattenChildren(csgNode, out, allowedOp);
+            continue;
           }
-        // }
-           ||         continue;
+        }
       }
       out.push_back(flatten(child));
     }
@@ -298,7 +295,7 @@ void printTreeDebug(const AbstractNode& node, const std::string& indent = "") {
   if (hasChildren) LOG(message_group::None,Location::NONE,"", "%1$s", (indent + "}").c_str());
 }
 
-void flattenTree(Tree& tree, bool traverseHulls) {
+void flattenTree(Tree& tree) {
   NodesGroupedByContent nodesByContent;
   {
     RepeatedNodesDetector detector(tree, nodesByContent);
@@ -313,7 +310,6 @@ void flattenTree(Tree& tree, bool traverseHulls) {
 #endif
 
   TransformsPusher pusher(repeatedNodes);
-  pusher.setTraverseHulls(traverseHulls);
   auto pushedRoot = pusher.transform(tree.root());
 
 #ifdef DEBUG
