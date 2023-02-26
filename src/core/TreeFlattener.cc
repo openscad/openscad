@@ -99,15 +99,17 @@ public:
     if (!node) return node;
 
     if (auto transformNode = dynamic_pointer_cast<const TransformNode>(node)) {
+      State newState = state;
+      if (auto transform = state.transform) {
+        newState.transform = *transform * transformNode->matrix;
+      } else {
+        newState.transform = transformNode->matrix;
+      }
+
       if (node->children.size() > 1 ||
-          node->children.size() == 1 && canPushThrough(node->children[0])) {
-        
-        State newState = state;
-        if (auto transform = state.transform) {
-          newState.transform = *transform * transformNode->matrix;
-        } else {
-          newState.transform = transformNode->matrix;
-        }
+          (node->children.size() == 1 && (
+            dynamic_pointer_cast<const TransformNode>(node->children[0]) ||
+            canPushThrough(node->children[0])))) {
 
         Children children = node->children;
         for (auto &child : children) {
@@ -117,6 +119,8 @@ public:
         auto newUnion = lazyUnionNode(node->modinst);
         newUnion->children = children;
         return newUnion;
+      } else if (node->children.size() == 1) {
+        return wrapWithState(node->children[0], newState);
       }
     }
 
