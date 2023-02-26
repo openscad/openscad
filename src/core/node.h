@@ -13,7 +13,7 @@ extern int progress_report_count;
 extern void (*progress_report_f)(const std::shared_ptr<const AbstractNode>&, void *, int);
 extern void *progress_report_vp;
 
-void progress_report_prep(const std::shared_ptr<AbstractNode>& root, void (*f)(const std::shared_ptr<const AbstractNode>& node, void *vp, int mark), void *vp);
+void progress_report_prep(const std::shared_ptr<const AbstractNode>& root, void (*f)(const std::shared_ptr<const AbstractNode>& node, void *vp, int mark), void *vp);
 void progress_report_fin();
 
 /*!
@@ -46,7 +46,7 @@ public:
      are inserted into the cache*/
   virtual class Geometry *evaluate_geometry(class PolySetEvaluator *) const { return nullptr; }
 
-  const std::vector<std::shared_ptr<AbstractNode>>& getChildren() const {
+  const std::vector<std::shared_ptr<const AbstractNode>>& getChildren() const {
     return this->children;
   }
   size_t index() const { return this->idx; }
@@ -54,13 +54,15 @@ public:
   static void resetIndexCounter() { idx_counter = 1; }
 
   // FIXME: Make protected
-  std::vector<std::shared_ptr<AbstractNode>> children;
+  std::vector<std::shared_ptr<const AbstractNode>> children;
   const ModuleInstantiation *modinst;
 
   // progress_mark is a running number used for progress indication
   // FIXME: Make all progress handling external, put it in the traverser class?
-  int progress_mark{0};
-  void progress_prepare();
+  // Mutable only so progress_prepare can set it sneakily. This allows us to
+  // store shared_ptr<const AbstractNode> in many places.
+  mutable int progress_mark{0};
+  void progress_prepare() const;
   void progress_report() const;
 
   int idx; // Node index (unique per tree)
@@ -138,4 +140,4 @@ public:
 };
 
 std::ostream& operator<<(std::ostream& stream, const AbstractNode& node);
-std::shared_ptr<AbstractNode> find_root_tag(const std::shared_ptr<AbstractNode>& node, const Location **nextLocation = nullptr);
+std::shared_ptr<const AbstractNode> find_root_tag(const std::shared_ptr<const AbstractNode>& node, const Location **nextLocation = nullptr);

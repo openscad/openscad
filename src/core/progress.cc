@@ -6,7 +6,7 @@ int progress_mark_;
 void (*progress_report_f)(const std::shared_ptr<const AbstractNode> &, void *, int);
 void *progress_report_userdata;
 
-void progress_report_prep(const std::shared_ptr<AbstractNode> &root, void (*f)(const std::shared_ptr<const AbstractNode> &node, void *userdata, int mark), void *userdata)
+void progress_report_prep(const std::shared_ptr<const AbstractNode> &root, void (*f)(const std::shared_ptr<const AbstractNode> &node, void *userdata, int mark), void *userdata)
 {
   progress_report_count = 0;
   progress_report_f = f;

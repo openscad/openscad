@@ -93,7 +93,7 @@ std::string AbstractIntersectionNode::name() const
   return "intersection";
 }
 
-void AbstractNode::progress_prepare()
+void AbstractNode::progress_prepare() const
 {
   std::for_each(this->children.begin(), this->children.end(), std::mem_fn(&AbstractNode::progress_prepare));
   this->progress_mark = ++progress_report_count;
@@ -116,9 +116,9 @@ std::ostream& operator<<(std::ostream& stream, const AbstractNode& node)
    If a second root modifier was found, nextLocation (if non-zero) will be set to point to
    the location of that second modifier.
  */
-std::shared_ptr<AbstractNode> find_root_tag(const std::shared_ptr<AbstractNode>& node, const Location **nextLocation)
+std::shared_ptr<const AbstractNode> find_root_tag(const std::shared_ptr<const AbstractNode>& node, const Location **nextLocation)
 {
-  std::shared_ptr<AbstractNode> rootTag;
+  std::shared_ptr<const AbstractNode> rootTag;
 
   std::function<void (const std::shared_ptr<const AbstractNode>&)> recursive_find_tag = [&](const std::shared_ptr<const AbstractNode>& node) {
       for (const auto& child : node->children) {

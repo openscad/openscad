@@ -53,8 +53,8 @@ public:
 
   SourceFile *root_file; // Result of parsing
   SourceFile *parsed_file; // Last parse for include list
-  std::shared_ptr<AbstractNode> absolute_root_node; // Result of tree evaluation
-  std::shared_ptr<AbstractNode> root_node; // Root if the root modifier (!) is used
+  std::shared_ptr<const AbstractNode> absolute_root_node; // Result of tree evaluation
+  std::shared_ptr<const AbstractNode> root_node; // Root if the root modifier (!) is used
   Tree tree;
   EditorInterface *activeEditor;
   TabManager *tabManager;
