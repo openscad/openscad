@@ -51,8 +51,11 @@ bool isAssociativeFlattenable(OpenSCADOperator op) {
 }
 
 bool isFakeRepetition(const AbstractNode& node) {
+  static bool flattenEvenRepetitions = getenv("FLATTEN_EVEN_REPETITIONS");
+  if (flattenEvenRepetitions) return true;
+  
   // The id string of `group() X();` is the same as `X();`.
-  return dynamic_cast<const GroupNode*>(&node) && node.children.size() == 1;
+  return (dynamic_cast<const ColorNode*>(&node) || dynamic_cast<const GroupNode*>(&node)) && node.children.size() == 1;
 }
 
 /** Groups all the nodes in the by their textual representation.
@@ -124,19 +127,15 @@ public:
         } else {
           newState.transform = transformNode->matrix;
         }
-
-        Children children = node->children;
-        for (auto &child : children) {
-          child = transform(child, newState);
-        }
-        if (children.size() == 1) {
-          return children[0];
-        } else {
-          auto newUnion = lazyUnionNode(node->modinst);
-          newUnion->children = children;
-          return newUnion;
-        }
+        
+        return transformChildrenAsUnion(node, newState);
       }
+      // else if (auto colorNode = dynamic_pointer_cast<const ColorNode>(node)) {
+      //   State newState;
+      //   newState.color = colorNode->color;
+        
+      //   return transformChildrenAsUnion(node, newState);
+      // }
     }
 
     if ((state.transform || state.color) && !canPushThrough(node)) {
@@ -147,6 +146,19 @@ public:
   }
 
 private:
+  shared_ptr<const AbstractNode> transformChildrenAsUnion(const shared_ptr<const AbstractNode>& node, const State &state) {
+    Children children = node->children;
+    for (auto &child : children) {
+      child = transform(child, state);
+    }
+    if (children.size() == 1) {
+      return children[0];
+    } else {
+      auto newUnion = lazyUnionNode(node->modinst);
+      newUnion->children = children;
+      return newUnion;
+    }
+  }
 
   shared_ptr<const AbstractNode> transformChildren(const shared_ptr<const AbstractNode>& node, const State &state) {
     Children children = node->children;
@@ -195,6 +207,8 @@ private:
       }
     }
     return
+        dynamic_pointer_cast<const ColorNode>(node) ||
+        // dynamic_pointer_cast<const TransformNode>(node) ||
         dynamic_pointer_cast<const ListNode>(node) ||
         dynamic_pointer_cast<const GroupNode>(node);
   }
@@ -256,14 +270,14 @@ public:
       if (dynamic_pointer_cast<const ListNode>(node) || 
           dynamic_pointer_cast<const GroupNode>(node)) {
         Children children;
-        flattenChildren(node, children, OpenSCADOperator::UNION);
+        flattenChildren(node->children, children, OpenSCADOperator::UNION);
         if (children != node->children) {
           return makeOp(OpenSCADOperator::UNION, children);
         }
       } else if (dynamic_pointer_cast<const TransformNode>(node) ||
                  dynamic_pointer_cast<const ColorNode>(node)) {
         Children children;
-        flattenChildren(node, children, OpenSCADOperator::UNION);
+        flattenChildren(node->children, children, OpenSCADOperator::UNION);
         if (children != node->children) {
           if (auto clone = cloneWithoutChildren(node)) {
             clone->children = children;
@@ -273,7 +287,7 @@ public:
       } else if (auto csgOpNode = dynamic_pointer_cast<const CsgOpNode>(node)) {
         if (isAssociativeFlattenable(csgOpNode->type)) {
           Children children;
-          flattenChildren(csgOpNode, children, csgOpNode->type);
+          flattenChildren(csgOpNode->children, children, csgOpNode->type);
           if (children != node->children) {
             return makeOp(csgOpNode->type, children);
           }
@@ -296,19 +310,16 @@ public:
 
 private:
 
-  void flattenChildren(const shared_ptr<const AbstractNode>& node, std::vector<shared_ptr<const AbstractNode>> &out, const std::optional<OpenSCADOperator> allowedOp) {
-    if (!node) {
-      return;
-    }
-    for (auto child : node->children) {
+  void flattenChildren(const std::vector<shared_ptr<const AbstractNode>>& in, std::vector<shared_ptr<const AbstractNode>> &out, const std::optional<OpenSCADOperator> allowedOp) {
+    for (auto child : in) {
       if (canInline(child)) {
         if (dynamic_pointer_cast<const ListNode>(child) || dynamic_pointer_cast<const GroupNode>(child)) {
-          flattenChildren(child, out, allowedOp);
+          flattenChildren(child->children, out, allowedOp);
           continue;
         }
         if (auto csgNode = dynamic_pointer_cast<const CsgOpNode>(child)) {
           if (allowedOp && csgNode->type == *allowedOp && isAssociativeFlattenable(*allowedOp)) {
-            flattenChildren(csgNode, out, allowedOp);
+            flattenChildren(csgNode->children, out, allowedOp);
             continue;
           }
         }
