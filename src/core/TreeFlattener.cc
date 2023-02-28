@@ -291,6 +291,16 @@ public:
           if (children != node->children) {
             return makeOp(csgOpNode->type, children);
           }
+        } else if (csgOpNode->type == OpenSCADOperator::DIFFERENCE && node->children.size() > 1) {
+          // difference() { A(); union() { B(); C(); } } -> difference() { A(); B(); C(); }
+          auto firstChild = node->children[0];
+          auto otherChildren = node->children;
+          otherChildren.erase(otherChildren.begin());
+          Children children = {firstChild};
+          flattenChildren(otherChildren, children, OpenSCADOperator::UNION);
+          if (children != node->children) {
+            return makeOp(OpenSCADOperator::DIFFERENCE, children);
+          }
         }
       } else {
         Children children = node->children;
