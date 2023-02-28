@@ -11,7 +11,8 @@
 #include <unordered_map>
 #include <stack>
 
-using NodesGroupedByContent = std::unordered_map<std::string, std::unordered_set<const AbstractNode*>>;
+using NodeSet = std::unordered_set<std::shared_ptr<const AbstractNode>>;
+using NodesGroupedByContent = std::unordered_map<std::string, NodeSet>;
 
 /** Best effort cloning of known tree types. */
 shared_ptr<AbstractNode> cloneWithoutChildren(const shared_ptr<const AbstractNode>& node) {
@@ -51,14 +52,21 @@ public:
   RepeatedNodesDetector(const Tree& tree, NodesGroupedByContent& out) : tree(tree), out(out) {}
 
   Response visit(State& state, const AbstractNode& node) override {
-    if (state.isPrefix()) {
-      auto key = this->tree.getIdString(node);
-      out[key].insert(&node);
+    if (state.isPostfix()) {
+      if (!isFakeRepetition(node)) {
+        auto key = this->tree.getIdString(node);
+        out[key].insert(node.shared_from_this());
+      }
     }
     return Response::ContinueTraversal;
   }
 
 private:
+  bool isFakeRepetition(const AbstractNode& node) {
+    // The id string of `group() X();` is the same as `X();`.
+    return dynamic_cast<const GroupNode*>(&node) && node.children.size() == 1;
+  }
+
   const Tree& tree;
   NodesGroupedByContent& out;
 };
@@ -66,11 +74,12 @@ private:
 /** Get the set of nodes which content occurred more than once.
  * These are nodes for which caching would be important during rendering.
  */
-std::unordered_set<const AbstractNode*> getRepeatedNodes(const NodesGroupedByContent &group) {
-  std::unordered_set<const AbstractNode*> nodes;
+NodeSet getRepeatedNodes(const NodesGroupedByContent &group) {
+  NodeSet nodes;
   for (auto &pair : group) {
-    if (pair.second.size() > 1) {
-      for (auto node : pair.second) {
+    auto &set = pair.second;
+    if (set.size() > 1) {
+      for (auto node : set) {
         nodes.insert(node);
       }
     }
@@ -89,10 +98,10 @@ class TransformsPusher
     std::optional<Transform3d> transform;
     std::optional<Color4f> color;
   };
-  std::unordered_set<const AbstractNode*>& repeatedNodes;
+  NodeSet& repeatedNodes;
 
 public:
-  TransformsPusher(std::unordered_set<const AbstractNode*>& repeatedNodes)
+  TransformsPusher(NodeSet& repeatedNodes)
     : repeatedNodes(repeatedNodes) {}
 
   shared_ptr<const AbstractNode> transform(const shared_ptr<const AbstractNode>& node, const State &state = State {}) {
@@ -196,10 +205,10 @@ private:
  */
 class TreeFlattener
 {
-  std::unordered_set<const AbstractNode*>& repeatedNodes;
+  NodeSet& repeatedNodes;
 
 public:
-  TreeFlattener(std::unordered_set<const AbstractNode*>& repeatedNodes)
+  TreeFlattener(NodeSet& repeatedNodes)
     : repeatedNodes(repeatedNodes) {}
   
   shared_ptr<const AbstractNode> flatten(const shared_ptr<const AbstractNode>& node) {
@@ -233,10 +242,9 @@ public:
         return makeOp(OpenSCADOperator::UNION, children);
       } else if (auto csgOpNode = dynamic_pointer_cast<const CsgOpNode>(node)) {
         if (isAssociativeFlattenable(csgOpNode->type)) {
-          Children
-          // return makeOp(csgOpNode->type || children);
-          children;
+          Children children;
           flattenChildren(csgOpNode, children, csgOpNode->type);
+          return makeOp(csgOpNode->type, children);
         }
       } else {
         Children children = node->children;
@@ -282,7 +290,7 @@ private:
     if (!node || hasFlagsPreventingInlining(node)) {
       return false;
     }
-    if (repeatedNodes.find(node.get()) != repeatedNodes.end()) {
+    if (repeatedNodes.find(node) != repeatedNodes.end()) {
       return false;
     }
     return true;
@@ -300,34 +308,35 @@ void printTreeDebug(const AbstractNode& node, const std::string& indent = "") {
 }
 
 void flattenTree(Tree& tree) {
-  NodesGroupedByContent nodesByContent;
-  {
-    RepeatedNodesDetector detector(tree, nodesByContent);
-    detector.traverse(*tree.root());
+  if (!tree.root()) {
+    return;
   }
+  NodesGroupedByContent nodesByContent;
+  RepeatedNodesDetector detector(tree, nodesByContent);
+  detector.traverse(*tree.root());
 
-  std::unordered_set<const AbstractNode*> repeatedNodes = getRepeatedNodes(nodesByContent);
+  NodeSet repeatedNodes = getRepeatedNodes(nodesByContent);
 
-#ifdef DEBUG
-    LOG(message_group::None,Location::NONE,"","[flatten] BEFORE:");
-    printTreeDebug(*tree.root());
-#endif
+// #ifdef DEBUG
+//     LOG(message_group::None,Location::NONE,"","[flatten] BEFORE:");
+//     printTreeDebug(*tree.root());
+// #endif
 
   TransformsPusher pusher(repeatedNodes);
   auto pushedRoot = pusher.transform(tree.root());
 
-#ifdef DEBUG
-    LOG(message_group::None,Location::NONE,"","[flatten] AFTER PUSH DOWN:");
-    printTreeDebug(*pushedRoot);
-#endif
+// #ifdef DEBUG
+//     LOG(message_group::None,Location::NONE,"","[flatten] AFTER PUSH DOWN:");
+//     printTreeDebug(*pushedRoot);
+// #endif
 
   TreeFlattener flattener(repeatedNodes);
   auto flattenedRoot = flattener.flatten(pushedRoot);
 
-#ifdef DEBUG
-    LOG(message_group::None,Location::NONE,"","[flatten] AFTER FLATTEN:");
-    printTreeDebug(*flattenedRoot);
-#endif
+// #ifdef DEBUG
+//     LOG(message_group::None,Location::NONE,"","[flatten] AFTER FLATTEN:");
+//     printTreeDebug(*flattenedRoot);
+// #endif
 
   tree.setRoot(flattenedRoot);
 }
