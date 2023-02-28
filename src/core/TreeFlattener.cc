@@ -257,12 +257,26 @@ public:
           dynamic_pointer_cast<const GroupNode>(node)) {
         Children children;
         flattenChildren(node, children, OpenSCADOperator::UNION);
-        return makeOp(OpenSCADOperator::UNION, children);
+        if (children != node->children) {
+          return makeOp(OpenSCADOperator::UNION, children);
+        }
+      } else if (dynamic_pointer_cast<const TransformNode>(node) ||
+                 dynamic_pointer_cast<const ColorNode>(node)) {
+        Children children;
+        flattenChildren(node, children, OpenSCADOperator::UNION);
+        if (children != node->children) {
+          if (auto clone = cloneWithoutChildren(node)) {
+            clone->children = children;
+            return clone;
+          }
+        }
       } else if (auto csgOpNode = dynamic_pointer_cast<const CsgOpNode>(node)) {
         if (isAssociativeFlattenable(csgOpNode->type)) {
           Children children;
           flattenChildren(csgOpNode, children, csgOpNode->type);
-          return makeOp(csgOpNode->type, children);
+          if (children != node->children) {
+            return makeOp(csgOpNode->type, children);
+          }
         }
       } else {
         Children children = node->children;
@@ -270,8 +284,7 @@ public:
           child = flatten(child);
         }
         if (children != node->children) {
-          auto clone = cloneWithoutChildren(node);
-          if (clone) {
+          if (auto clone = cloneWithoutChildren(node)) {
             clone->children = children;
             return clone;
           }
