@@ -474,7 +474,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
   AbstractNode::resetIndexCounter();
   std::shared_ptr<const FileContext> file_context;
-  auto absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
+  std::shared_ptr<const AbstractNode> absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
   Camera camera = cmd.camera;
   if (file_context) {
     camera.updateView(file_context, true);
@@ -483,20 +483,22 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   // restore CWD after module instantiation finished
   fs::current_path(cmd.original_path);
 
+  Tree tree(absolute_root_node, fparent.string());
+
+  if (Feature::ExperimentalFlattenTree.is_enabled()) {
+    flattenTree(tree);
+    absolute_root_node = tree.root();
+  }
+
   // Do we have an explicit root node (! modifier)?
   std::shared_ptr<const AbstractNode> root_node;
   const Location *nextLocation = nullptr;
   if (!(root_node = find_root_tag(absolute_root_node, &nextLocation))) {
-    root_node = absolute_root_node;
+    tree.setRoot(root_node = absolute_root_node);
   }
+
   if (nextLocation) {
     LOG(message_group::Warning, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
-  }
-  Tree tree(root_node, fparent.string());
-
-  if (Feature::ExperimentalFlattenTree.is_enabled()) {
-    flattenTree(tree);
-    root_node = tree.root();
   }
 
   if (curFormat == FileFormat::CSG) {

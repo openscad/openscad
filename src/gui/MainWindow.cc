@@ -120,6 +120,7 @@
 
 #endif // ENABLE_CGAL
 
+#include "TreeFlattener.h"
 #include "PrintInitDialog.h"
 #include "input/InputDriverEvent.h"
 #include "input/InputDriverManager.h"
@@ -1228,6 +1229,11 @@ void MainWindow::instantiateRoot()
 
     std::shared_ptr<const FileContext> file_context;
     this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
+    if (Feature::ExperimentalFlattenTree.is_enabled()) {
+      this->tree.setRoot(this->absolute_root_node);
+      flattenTree(this->tree);
+      this->absolute_root_node = tree.root();
+    }
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
       viewportControlWidget->cameraChanged();
