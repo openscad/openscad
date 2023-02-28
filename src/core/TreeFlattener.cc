@@ -21,8 +21,16 @@ shared_ptr<AbstractNode> cloneWithoutChildren(const shared_ptr<const AbstractNod
   else if (dynamic_pointer_cast<const ListNode>(node)) return make_shared<ListNode>(node->modinst);
   else if (auto groupNode = dynamic_pointer_cast<const GroupNode>(node)) return make_shared<GroupNode>(node->modinst, groupNode->verbose_name());
   else if (auto csgOpNode = dynamic_pointer_cast<const CsgOpNode>(node)) return make_shared<CsgOpNode>(node->modinst, csgOpNode->type);
-  // else if (auto transformNode = dynamic_pointer_cast<const TransformNode>(node)) return make_shared<TransformNode>(node->modinst, transformNode->matrix);
-  // else if (auto colodNode = dynamic_pointer_cast<const ColorNode>(node)) return make_shared<ColorNode>(node->modinst, colorNode->color);
+  else if (auto transformNode = dynamic_pointer_cast<const TransformNode>(node)) {
+    auto ret = make_shared<TransformNode>(node->modinst, transformNode->verbose_name());
+    ret->matrix = transformNode->matrix;
+    return ret;
+  }
+  else if (auto colorNode = dynamic_pointer_cast<const ColorNode>(node)) {
+    auto ret = make_shared<ColorNode>(node->modinst);
+    ret->color = colorNode->color;
+    return ret;
+  }
   else return nullptr;
 }
 
@@ -42,6 +50,10 @@ bool isAssociativeFlattenable(OpenSCADOperator op) {
     op == OpenSCADOperator::INTERSECTION;
 }
 
+bool isFakeRepetition(const AbstractNode& node) {
+  // The id string of `group() X();` is the same as `X();`.
+  return dynamic_cast<const GroupNode*>(&node) && node.children.size() == 1;
+}
 
 /** Groups all the nodes in the by their textual representation.
  * Adds to out, so can be called on multiple trees to, say, detect identical
@@ -65,10 +77,6 @@ public:
   }
 
 private:
-  bool isFakeRepetition(const AbstractNode& node) {
-    // The id string of `group() X();` is the same as `X();`.
-    return dynamic_cast<const GroupNode*>(&node) && node.children.size() == 1;
-  }
 
   const Tree& tree;
   NodeIdOccurrences& occurrences;
@@ -108,8 +116,8 @@ public:
   shared_ptr<const AbstractNode> transform(const shared_ptr<const AbstractNode>& node, const State &state = State {}) {
     if (!node) return node;
 
-    if (auto transformNode = dynamic_pointer_cast<const TransformNode>(node)) {
-      if (canInline(node)) {
+    if (canInline(node)) {
+      if (auto transformNode = dynamic_pointer_cast<const TransformNode>(node)) {
         State newState = state;
         if (auto transform = state.transform) {
           newState.transform = *transform * transformNode->matrix;
@@ -117,27 +125,22 @@ public:
           newState.transform = transformNode->matrix;
         }
 
-        if (node->children.size() > 1 ||
-            (node->children.size() == 1 && (
-              dynamic_pointer_cast<const TransformNode>(node->children[0]) ||
-              canPushThrough(node->children[0])))) {
-
-          Children children = node->children;
-          for (auto &child : children) {
-            child = transform(child, newState);
-          }
-          assert(children != node->children);
+        Children children = node->children;
+        for (auto &child : children) {
+          child = transform(child, newState);
+        }
+        if (children.size() == 1) {
+          return children[0];
+        } else {
           auto newUnion = lazyUnionNode(node->modinst);
           newUnion->children = children;
           return newUnion;
-        } else if (node->children.size() == 1) {
-          return wrapWithState(node->children[0], newState);
         }
       }
     }
 
     if ((state.transform || state.color) && !canPushThrough(node)) {
-      return wrapWithState(transformChildren(node, State {}), state);
+      return wrapWithState(transformChildren(node, State {}), state, node->modinst);
     } else {
       return transformChildren(node, state);
     }
@@ -154,7 +157,7 @@ private:
       auto clone = cloneWithoutChildren(node);
       assert(clone);
       if (!clone) {
-        return wrapWithState(node, state);
+        return wrapWithState(node, state, node->modinst);
       }
       clone->children = children;
       return clone;
@@ -167,7 +170,7 @@ private:
       return false;
     }
     auto id = tree.getIdString(*node);
-    if (repeatedNodeIds.find(id) != repeatedNodeIds.end()) {
+    if (!isFakeRepetition(*node) && repeatedNodeIds.find(id) != repeatedNodeIds.end()) {
       return false;
     }
     return true;
@@ -175,10 +178,6 @@ private:
 
   bool canPushThrough(const shared_ptr<const AbstractNode>& node) const {
     if (!canInline(node)) {
-      return false;
-    }
-    auto id = tree.getIdString(*node);
-    if (repeatedNodeIds.find(id) != repeatedNodeIds.end()) {
       return false;
     }
     if (auto csgOpNode = dynamic_pointer_cast<const CsgOpNode>(node)) {
@@ -200,16 +199,16 @@ private:
         dynamic_pointer_cast<const GroupNode>(node);
   }
   
-  shared_ptr<const AbstractNode> wrapWithState(const shared_ptr<const AbstractNode>& node, const State &state) const {
+  shared_ptr<const AbstractNode> wrapWithState(const shared_ptr<const AbstractNode>& node, const State &state, const ModuleInstantiation *modinst) const {
     auto res = node;
     if (auto transform = state.transform) {
-      auto transformNode = make_shared<TransformNode>(node->modinst, "??");
+      auto transformNode = make_shared<TransformNode>(modinst, "??");
       transformNode->children.push_back(res);
       transformNode->matrix = *transform;
       res = transformNode;
     }
     if (auto color = state.color) {
-      auto colorNode = make_shared<ColorNode>(node->modinst);
+      auto colorNode = make_shared<ColorNode>(modinst);
       colorNode->children.push_back(res);
       colorNode->color = *color;
       res = colorNode;
@@ -310,7 +309,7 @@ private:
       return false;
     }
     auto id = tree.getIdString(*node);
-    if (repeatedNodeIds.find(id) != repeatedNodeIds.end()) {
+    if (!isFakeRepetition(*node) && repeatedNodeIds.find(id) != repeatedNodeIds.end()) {
       return false;
     }
     return true;
@@ -337,27 +336,27 @@ void flattenTree(Tree& tree) {
 
   NodeIds repeatedNodeIds = getRepeatedNodeIds(occurrences);
 
-  for (const auto &id : repeatedNodeIds) {
-    LOG(message_group::None,Location::NONE,"","[flatten] REPEATED: %1$s", id.c_str());
-  }
-#ifdef DEBUG
-    LOG(message_group::None,Location::NONE,"","[flatten] BEFORE:");
-    printTreeDebug(*tree.root());
-#endif
+// #ifdef DEBUG
+//   for (const auto &id : repeatedNodeIds) {
+//     LOG(message_group::None,Location::NONE,"","[flatten] REPEATED: %1$s", id.c_str());
+//   }
+//     LOG(message_group::None,Location::NONE,"","[flatten] BEFORE:");
+//     printTreeDebug(*tree.root());
+// #endif
 
   TransformsPusher pusher(tree, repeatedNodeIds);
   tree.setRoot(pusher.transform(tree.root()));
 
-#ifdef DEBUG
-    LOG(message_group::None,Location::NONE,"","[flatten] AFTER PUSH DOWN:");
-    printTreeDebug(*tree.root());
-#endif
+// #ifdef DEBUG
+//     LOG(message_group::None,Location::NONE,"","[flatten] AFTER PUSH DOWN:");
+//     printTreeDebug(*tree.root());
+// #endif
 
   TreeFlattener flattener(tree, repeatedNodeIds);
   tree.setRoot(flattener.flatten(tree.root()));
 
-#ifdef DEBUG
-    LOG(message_group::None,Location::NONE,"","[flatten] AFTER FLATTEN:");
-    printTreeDebug(*tree.root());
-#endif
+// #ifdef DEBUG
+//     LOG(message_group::None,Location::NONE,"","[flatten] AFTER FLATTEN:");
+//     printTreeDebug(*tree.root());
+// #endif
 }
