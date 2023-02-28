@@ -11,8 +11,9 @@
 #include <unordered_map>
 #include <stack>
 
-using NodeSet = std::unordered_set<std::shared_ptr<const AbstractNode>>;
-using NodesGroupedByContent = std::unordered_map<std::string, NodeSet>;
+using NodeIds = std::unordered_set<std::string>;
+// using NodesGroupedByContent = std::unordered_map<std::string, std::shared_ptr<const AbstractNode>>;
+using NodeIdOccurrences = std::unordered_map<std::string, size_t>;
 
 /** Best effort cloning of known tree types. */
 shared_ptr<AbstractNode> cloneWithoutChildren(const shared_ptr<const AbstractNode>& node) {
@@ -49,13 +50,15 @@ bool isAssociativeFlattenable(OpenSCADOperator op) {
 class RepeatedNodesDetector : public NodeVisitor
 {
 public:
-  RepeatedNodesDetector(const Tree& tree, NodesGroupedByContent& out) : tree(tree), out(out) {}
+  RepeatedNodesDetector(const Tree& tree, NodeIdOccurrences& occurrences) : tree(tree), occurrences(occurrences) {}
 
   Response visit(State& state, const AbstractNode& node) override {
-    if (state.isPostfix()) {
+    if (state.isPrefix()) {
       if (!isFakeRepetition(node)) {
         auto key = this->tree.getIdString(node);
-        out[key].insert(node.shared_from_this());
+        if (++occurrences[key] > 1) {
+          return Response::PruneTraversal;      
+        }
       }
     }
     return Response::ContinueTraversal;
@@ -68,20 +71,17 @@ private:
   }
 
   const Tree& tree;
-  NodesGroupedByContent& out;
+  NodeIdOccurrences& occurrences;
 };
 
 /** Get the set of nodes which content occurred more than once.
  * These are nodes for which caching would be important during rendering.
  */
-NodeSet getRepeatedNodes(const NodesGroupedByContent &group) {
-  NodeSet nodes;
-  for (auto &pair : group) {
-    auto &set = pair.second;
-    if (set.size() > 1) {
-      for (auto node : set) {
-        nodes.insert(node);
-      }
+NodeIds getRepeatedNodeIds(const NodeIdOccurrences &occurrences) {
+  NodeIds nodes;
+  for (auto &pair : occurrences) {
+    if (pair.second > 1) {
+      nodes.insert(pair.first);
     }
   }
   return std::move(nodes);
@@ -98,38 +98,41 @@ class TransformsPusher
     std::optional<Transform3d> transform;
     std::optional<Color4f> color;
   };
-  NodeSet& repeatedNodes;
+  NodeIds& repeatedNodeIds;
+  const Tree &tree;
 
 public:
-  TransformsPusher(NodeSet& repeatedNodes)
-    : repeatedNodes(repeatedNodes) {}
+  TransformsPusher(const Tree &tree, NodeIds& repeatedNodeIds)
+    : tree(tree), repeatedNodeIds(repeatedNodeIds) {}
 
   shared_ptr<const AbstractNode> transform(const shared_ptr<const AbstractNode>& node, const State &state = State {}) {
     if (!node) return node;
 
     if (auto transformNode = dynamic_pointer_cast<const TransformNode>(node)) {
-      State newState = state;
-      if (auto transform = state.transform) {
-        newState.transform = *transform * transformNode->matrix;
-      } else {
-        newState.transform = transformNode->matrix;
-      }
-
-      if (node->children.size() > 1 ||
-          (node->children.size() == 1 && (
-            dynamic_pointer_cast<const TransformNode>(node->children[0]) ||
-            canPushThrough(node->children[0])))) {
-
-        Children children = node->children;
-        for (auto &child : children) {
-          child = transform(child, newState);
+      if (canInline(node)) {
+        State newState = state;
+        if (auto transform = state.transform) {
+          newState.transform = *transform * transformNode->matrix;
+        } else {
+          newState.transform = transformNode->matrix;
         }
-        assert(children != node->children);
-        auto newUnion = lazyUnionNode(node->modinst);
-        newUnion->children = children;
-        return newUnion;
-      } else if (node->children.size() == 1) {
-        return wrapWithState(node->children[0], newState);
+
+        if (node->children.size() > 1 ||
+            (node->children.size() == 1 && (
+              dynamic_pointer_cast<const TransformNode>(node->children[0]) ||
+              canPushThrough(node->children[0])))) {
+
+          Children children = node->children;
+          for (auto &child : children) {
+            child = transform(child, newState);
+          }
+          assert(children != node->children);
+          auto newUnion = lazyUnionNode(node->modinst);
+          newUnion->children = children;
+          return newUnion;
+        } else if (node->children.size() == 1) {
+          return wrapWithState(node->children[0], newState);
+        }
       }
     }
 
@@ -159,8 +162,23 @@ private:
     return node;
   }
 
+  bool canInline(const shared_ptr<const AbstractNode>& node) const {
+    if (!node || hasFlagsPreventingInlining(node)) {
+      return false;
+    }
+    auto id = tree.getIdString(*node);
+    if (repeatedNodeIds.find(id) != repeatedNodeIds.end()) {
+      return false;
+    }
+    return true;
+  }
+
   bool canPushThrough(const shared_ptr<const AbstractNode>& node) const {
-    if (hasFlagsPreventingInlining(node)) {
+    if (!canInline(node)) {
+      return false;
+    }
+    auto id = tree.getIdString(*node);
+    if (repeatedNodeIds.find(id) != repeatedNodeIds.end()) {
       return false;
     }
     if (auto csgOpNode = dynamic_pointer_cast<const CsgOpNode>(node)) {
@@ -205,11 +223,12 @@ private:
  */
 class TreeFlattener
 {
-  NodeSet& repeatedNodes;
+  const Tree &tree;
+  NodeIds& repeatedNodeIds;
 
 public:
-  TreeFlattener(NodeSet& repeatedNodes)
-    : repeatedNodes(repeatedNodes) {}
+  TreeFlattener(const Tree &tree, NodeIds& repeatedNodeIds)
+    : tree(tree), repeatedNodeIds(repeatedNodeIds) {}
   
   shared_ptr<const AbstractNode> flatten(const shared_ptr<const AbstractNode>& node) {
     if (!node) return node;
@@ -290,7 +309,8 @@ private:
     if (!node || hasFlagsPreventingInlining(node)) {
       return false;
     }
-    if (repeatedNodes.find(node) != repeatedNodes.end()) {
+    auto id = tree.getIdString(*node);
+    if (repeatedNodeIds.find(id) != repeatedNodeIds.end()) {
       return false;
     }
     return true;
@@ -311,32 +331,33 @@ void flattenTree(Tree& tree) {
   if (!tree.root()) {
     return;
   }
-  NodesGroupedByContent nodesByContent;
-  RepeatedNodesDetector detector(tree, nodesByContent);
+  NodeIdOccurrences occurrences;
+  RepeatedNodesDetector detector(tree, occurrences);
   detector.traverse(*tree.root());
 
-  NodeSet repeatedNodes = getRepeatedNodes(nodesByContent);
+  NodeIds repeatedNodeIds = getRepeatedNodeIds(occurrences);
 
-// #ifdef DEBUG
-//     LOG(message_group::None,Location::NONE,"","[flatten] BEFORE:");
-//     printTreeDebug(*tree.root());
-// #endif
+  for (const auto &id : repeatedNodeIds) {
+    LOG(message_group::None,Location::NONE,"","[flatten] REPEATED: %1$s", id.c_str());
+  }
+#ifdef DEBUG
+    LOG(message_group::None,Location::NONE,"","[flatten] BEFORE:");
+    printTreeDebug(*tree.root());
+#endif
 
-  TransformsPusher pusher(repeatedNodes);
-  auto pushedRoot = pusher.transform(tree.root());
+  TransformsPusher pusher(tree, repeatedNodeIds);
+  tree.setRoot(pusher.transform(tree.root()));
 
-// #ifdef DEBUG
-//     LOG(message_group::None,Location::NONE,"","[flatten] AFTER PUSH DOWN:");
-//     printTreeDebug(*pushedRoot);
-// #endif
+#ifdef DEBUG
+    LOG(message_group::None,Location::NONE,"","[flatten] AFTER PUSH DOWN:");
+    printTreeDebug(*tree.root());
+#endif
 
-  TreeFlattener flattener(repeatedNodes);
-  auto flattenedRoot = flattener.flatten(pushedRoot);
+  TreeFlattener flattener(tree, repeatedNodeIds);
+  tree.setRoot(flattener.flatten(tree.root()));
 
-// #ifdef DEBUG
-//     LOG(message_group::None,Location::NONE,"","[flatten] AFTER FLATTEN:");
-//     printTreeDebug(*flattenedRoot);
-// #endif
-
-  tree.setRoot(flattenedRoot);
+#ifdef DEBUG
+    LOG(message_group::None,Location::NONE,"","[flatten] AFTER FLATTEN:");
+    printTreeDebug(*tree.root());
+#endif
 }
