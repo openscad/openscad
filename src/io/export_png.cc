@@ -41,6 +41,7 @@ bool export_png(const shared_ptr<const Geometry>& root_geom, const ViewOptions& 
   glview->setShowEdges(options["edges"]);
   glview->paintGL();
   glview->save(output);
+  delete glview;
   return true;
 }
 
