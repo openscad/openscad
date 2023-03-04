@@ -2529,19 +2529,6 @@ void MainWindow::actionExport(FileFormat, QString, QString, unsigned int, QStrin
 
   ExportInfo exportInfo = createExportInfo(format, exportFilename, activeEditor->filepath);
   // Add options
-  // exportInfo.options=options;
-    /* Temporary:  setup the options.
-  ExportPdfOptions myOptions;
-
-myOptions.showScale=TRUE;
-myOptions.showScaleMsg=FALSE;
-myOptions.showDsgnFN=FALSE;
-myOptions.showGrid=TRUE;
-myOptions.gridSize=2.;
-myOptions.Orientation=paperOrientations::AUTO;
-myOptions.paperSize=paperSizes::LETTER;
-*/
-
 exportInfo.options=options;
   
   bool exportResult = exportFileByName(this->root_geom, exportInfo);
@@ -2597,17 +2584,24 @@ void MainWindow::actionExportSVG()
 
 void MainWindow::actionExportPDF()
 {
-static  ExportPdfOptions exportPdfOptions;
 
+ExportPdfOptions exportPdfOptions;
+QSettingsCached settings;
+
+// Prepopulated with default values in export.h
 auto exportPdfDialog = new ExportPdfDialog();
 
-exportPdfDialog->setPaperSize(exportPdfOptions.paperSize);
-exportPdfDialog->setOrientation(exportPdfOptions.Orientation);
-exportPdfDialog->setShowDsnFn(exportPdfOptions.showDsgnFN);
-exportPdfDialog->setShowScale(exportPdfOptions.showScale);
-exportPdfDialog->setShowScaleMsg(exportPdfOptions.showScaleMsg);
-exportPdfDialog->setShowGrid(exportPdfOptions.showGrid);
-exportPdfDialog->setGridSize(exportPdfOptions.gridSize);
+// Get current settings or defaults
+//  modify the two enums (next two rows) to explicitly use default by lookup to string (see the later set methods).
+exportPdfDialog->setPaperSize(sizeString2Enum(settings.value("exportPdfOpts/paperSize",
+	QString::fromStdString(paperSizeStrings[static_cast<int>(exportPdfOptions.paperSize)])).toString()));  // enum map
+exportPdfDialog->setOrientation(orientationsString2Enum(settings.value("exportPdfOpts/orientation",
+	QString::fromStdString(paperOrientationsStrings[static_cast<int>(exportPdfOptions.Orientation)])).toString()));  // enum map
+exportPdfDialog->setShowDsnFn(settings.value("exportPdfOpts/showDsgnFN",exportPdfOptions.showDsgnFN).toBool());
+exportPdfDialog->setShowScale(settings.value("exportPdfOpts/showScale",exportPdfOptions.showScale).toBool());
+exportPdfDialog->setShowScaleMsg(settings.value("exportPdfOpts/showScaleMsg",exportPdfOptions.showScaleMsg).toBool());
+exportPdfDialog->setShowGrid(settings.value("exportPdfOpts/showGrid",exportPdfOptions.showGrid).toBool());
+exportPdfDialog->setGridSize(settings.value("exportPdfOpts/gridSize",exportPdfOptions.gridSize).toDouble());
 
 
 if (exportPdfDialog->exec() == QDialog::Rejected) {
@@ -2621,6 +2615,14 @@ exportPdfOptions.showScale=exportPdfDialog->getShowScale();
 exportPdfOptions.showScaleMsg=exportPdfDialog->getShowScaleMsg();
 exportPdfOptions.showGrid=exportPdfDialog->getShowGrid();
 exportPdfOptions.gridSize=exportPdfDialog->getGridSize();
+
+settings.setValue("exportPdfOpts/paperSize",QString::fromStdString(paperSizeStrings[static_cast<int>( exportPdfDialog->getPaperSize())]));
+settings.setValue("exportPdfOpts/orientation",QString::fromStdString(paperOrientationsStrings[static_cast<int>(exportPdfDialog->getOrientation())]));
+settings.setValue("exportPdfOpts/showDsgnFN",exportPdfDialog->getShowDsnFn());
+settings.setValue("exportPdfOpts/showScale",exportPdfDialog->getShowScale());
+settings.setValue("exportPdfOpts/showScaleMsg",exportPdfDialog->getShowScaleMsg());
+settings.setValue("exportPdfOpts/showGrid",exportPdfDialog->getShowGrid());
+settings.setValue("exportPdfOpts/gridSize",exportPdfDialog->getGridSize());
 
 actionExport(FileFormat::PDF, "PDF", ".pdf", 2, &exportPdfOptions);
 
@@ -3499,3 +3501,18 @@ void MainWindow::jumpToLine(int line, int col)
 {
   this->activeEditor->setCursorPosition(line, col);
 }
+
+paperSizes MainWindow::sizeString2Enum(QString current){
+   for(int i = 0; i < paperSizeStrings.size(); i++){
+       if (current.toStdString()==paperSizeStrings[i]) return static_cast<paperSizes>(i);
+   };
+   return paperSizes::A4;
+};
+
+paperOrientations MainWindow::orientationsString2Enum(QString current){
+   for(int i = 0; i < paperOrientationsStrings.size(); i++){
+       if (current.toStdString()==paperOrientationsStrings[i]) return static_cast<paperOrientations>(i);
+   };
+   return paperOrientations::PORTRAIT;
+};
+

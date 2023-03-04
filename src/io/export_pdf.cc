@@ -189,27 +189,7 @@ static cairo_status_t export_pdf_write(void *closure, const unsigned char *data,
   return !(*stream) ? CAIRO_STATUS_WRITE_ERROR : CAIRO_STATUS_SUCCESS;
 }
 
-/*
-void export_pdf_a(const shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 
-void export_pdf(const shared_ptr<const Geometry>& geom, std::ostream& output, ExportInfo& exportInfo)
-{
-ExportPdfOptions myOptions;
-
-myOptions.showScale=TRUE;
-myOptions.showScaleMsg=FALSE;
-myOptions.showDsgnFN=FALSE;
-myOptions.showGrid=TRUE;
-myOptions.gridSize=2.;
-myOptions.Orientation=paperOrientations::AUTO;
-myOptions.paperSize=paperSizes::LETTER;
-
-exportInfo.options=&myOptions;
-
-export_pdf_a(geom, output, exportInfo);
-}
-*/
-// void export_pdf(const shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo, const ExportPdfOptions exportPdfOptions)
 void export_pdf(const shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
 {
 // Extract the options.  This will change when options becomes a variant.

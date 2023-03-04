@@ -58,24 +58,6 @@ public slots:
   void on_okButton_clicked();
   void on_cancelButton_clicked();
 
-
-
-private:
-  //static std::map<paperOrientations, int> orientations2buttons;
-  //static std::map<int, paperOrientations> buttons2orientations;
-  //const std::map<paperSizes, int> paper2buttons;
-  //const std::map<int, paperSizes> buttons2paper;  
-
-  /*
-  enum class gridSizes;
-  const std::map<gridSizes, int> grid2buttons;
-  const std::map<int, gridSizes> buttons2grid;
-
-  const std::map<gridSizes, double> gridEnum2double;
-  const std::map<double, gridSizes> double2gridEnum;
-
-  void setButtonInGroup(QButtonGroup* theGroup, int _id);
- */
 };
 
 

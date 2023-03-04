@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <functional>
+#include <array>
 
 #include <boost/range/algorithm.hpp>
 #include <boost/range/adaptor/map.hpp>
@@ -38,6 +39,17 @@ enum class FileFormat {
 enum class paperSizes {
  A4,A3,LETTER,LEGAL,TABLOID
 };
+// Note:  the enum could be moved to GUI, which would pass the dimensions.
+
+// for gui, but declared here to keep it aligned with the enum.
+// can't use Qt mechanism in the IO code.
+// needs to match number of sizes
+const std::array<std::string,5> paperSizeStrings{  
+"A4","A3","Letter","Legal","Tabloid"
+};
+
+
+// Dimensions in pts per PDF standard.
 // rows map to paperSizes enums
 // columns are Width, Height
 const int paperDimensions[5][2]={
@@ -52,14 +64,23 @@ enum class paperOrientations {
 PORTRAIT,LANDSCAPE,AUTO
 };
 
+// for gui, but declared here to keep it aligned with the enum.
+// can't use Qt mechanism in the IO code.
+// needs to match number of orientations
+const std::array<std::string,3> paperOrientationsStrings{  
+"Portrait","Landscape","Auto"
+};
+
+// include defaults to use without dialog or direction.
+// Defaults match values used prior to incorporation of options.
 struct ExportPdfOptions {
-    bool showScale;
-    bool showScaleMsg;
-    bool showGrid;
-    double gridSize;
-    bool showDsgnFN;
-    paperOrientations Orientation;
-    paperSizes paperSize;
+    bool showScale=TRUE;
+    bool showScaleMsg=TRUE;
+    bool showGrid=FALSE;
+    double gridSize=10.; // New
+    bool showDsgnFN=TRUE; 
+    paperOrientations Orientation=paperOrientations::PORTRAIT;
+    paperSizes paperSize=paperSizes::A3;
 };
 
 struct ExportInfo {
