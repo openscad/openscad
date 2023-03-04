@@ -661,6 +661,7 @@ set(CORE_SOURCES
   src/io/import_3mf.cc
   src/io/import_amf.cc
   src/io/import_stl.cc
+  src/io/import_obj.cc
   src/io/import_off.cc
   src/io/import_svg.cc
   src/io/import_json.cc

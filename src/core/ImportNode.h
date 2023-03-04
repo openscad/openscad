@@ -14,6 +14,7 @@ enum class ImportType {
   SVG,
   DXF,
   NEF3,
+  OBJ,
 };
 
 class ImportNode : public LeafNode
