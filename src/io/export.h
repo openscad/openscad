@@ -80,7 +80,7 @@ struct ExportPdfOptions {
     double gridSize=10.; // New
     bool showDsgnFN=TRUE; 
     paperOrientations Orientation=paperOrientations::PORTRAIT;
-    paperSizes paperSize=paperSizes::A3;
+    paperSizes paperSize=paperSizes::A4;
 };
 
 struct ExportInfo {
