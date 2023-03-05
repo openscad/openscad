@@ -35,7 +35,7 @@ enum class FileFormat {
 };
 
 
-// Paper Data
+// Paper Data used by ExportPDF
 enum class paperSizes {
  A4,A3,LETTER,LEGAL,TABLOID
 };
@@ -49,7 +49,7 @@ const std::array<std::string,5> paperSizeStrings{
 };
 
 
-// Dimensions in pts per PDF standard.
+// Dimensions in pts per PDF standard, used by ExportPDF
 // rows map to paperSizes enums
 // columns are Width, Height
 const int paperDimensions[5][2]={
@@ -90,7 +90,7 @@ struct ExportInfo {
   std::string sourceFilePath;
   std::string sourceFileName;
   bool useStdOut;
-  ExportPdfOptions *options;
+  ExportPdfOptions *options=nullptr;
 };
 
 

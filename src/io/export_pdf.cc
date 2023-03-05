@@ -47,7 +47,7 @@ double points_to_mm(double pts){
 void draw_grid(cairo_t *cr, double left, double right, double bottom, double top, double gridSize ){
   // gridSize>1.
   if (gridSize<1.) gridSize=2.;
-  double boldLine=0.48;
+  double darkerLine=0.36;
   double lightLine=0.24;
   int major = (gridSize>10.? gridSize: int(10./gridSize));
 
@@ -62,10 +62,10 @@ void draw_grid(cairo_t *cr, double left, double right, double bottom, double top
    for (int i = Xstart; i < Xstop+1; i++) {
       if (i%major)  { 
       	cairo_set_line_width(cr, lightLine);
-      	cairo_set_source_rgba(cr, 0., 0., 0., 0.4);
+      	cairo_set_source_rgba(cr, 0., 0., 0., 0.48);
       	}
       else  { 
-      	cairo_set_line_width(cr, boldLine);
+      	cairo_set_line_width(cr, darkerLine);
 	cairo_set_source_rgba(cr, 0., 0., 0., 0.6);
 	}
       pts=mm_to_points(i*gridSize);
@@ -83,7 +83,7 @@ void draw_grid(cairo_t *cr, double left, double right, double bottom, double top
       	cairo_set_source_rgba(cr, 0., 0., 0., 0.4);
       	}
       else  { 
-      	cairo_set_line_width(cr, boldLine);
+      	cairo_set_line_width(cr, darkerLine);
 	cairo_set_source_rgba(cr, 0., 0., 0., 0.6);
 	}
       pts=mm_to_points(i*gridSize);
@@ -93,28 +93,29 @@ void draw_grid(cairo_t *cr, double left, double right, double bottom, double top
   };
 }  
 
-// New draw_axis  
-void draw_axis(cairo_t *cr, double left, double right, double bottom, double top){
-  double boldLine=0.48;
+// New draw_axes (renamed from axis since it draws both).  
+void draw_axes(cairo_t *cr, double left, double right, double bottom, double top){
+  double darkerLine=0.36;
+  double faintLine=0.24;
   double offset = mm_to_points(5.);
   double pts=0.;  // for iteration across page
   
-       	cairo_set_line_width(cr, boldLine);
+       	cairo_set_line_width(cr, darkerLine);
 	cairo_set_source_rgba(cr, 0., 0., 0., 0.6);
   
-  // borders
-  // Left
+  // Axes proper
+  // Left axis
      cairo_move_to(cr, left, top);
      cairo_line_to(cr, left, bottom);
      cairo_stroke(cr);
-  // Bottom
+  // Bottom axis
      cairo_move_to(cr, left, bottom);
      cairo_line_to(cr, right, bottom);
      cairo_stroke(cr);
   
   // tics and labels
   // bounds are margins in points.
-  // compute Xrange in 10mm
+  	// compute Xrange in 10mm
   int Xstart=ceil(points_to_mm(left)/10.);
   int Xstop=floor(points_to_mm(right)/10.);
    for (int i = Xstart; i < Xstop+1; i++) {
@@ -127,7 +128,7 @@ void draw_axis(cairo_t *cr, double left, double right, double bottom, double top
             draw_text(num.c_str(), cr, pts+1, bottom+offset-2, 6.);
       }
   };
-  // compute Yrange in 10mm
+  	// compute Yrange in 10mm
   int Ystart=ceil(points_to_mm(top)/10.);
   int Ystop=floor(points_to_mm(bottom)/10.);
    for (int i = Ystart; i < Ystop+1; i++) {
@@ -194,7 +195,13 @@ void export_pdf(const shared_ptr<const Geometry>& geom, std::ostream& output, co
 {
 // Extract the options.  This will change when options becomes a variant.
 ExportPdfOptions *exportPdfOptions;
-exportPdfOptions=exportInfo.options;
+ExportPdfOptions defaultPdfOptions;
+// could use short-circuit short-form, but will need to grow.
+if (exportInfo.options==nullptr) {
+	exportPdfOptions=&defaultPdfOptions;
+} else {
+	exportPdfOptions=exportInfo.options;
+};
 
   int pdfX,pdfY;  // selected paper size for export.
   // Fit geometry to page
@@ -224,6 +231,9 @@ exportPdfOptions=exportInfo.options;
   
   // Does it fit? (in points)	
   bool inpaper = (spanX<=pdfX-MARGIN)&&(spanY<=pdfY-MARGIN);
+  if (!inpaper) {
+    LOG(message_group::Export_Warning, Location::NONE, "", "Geometry is too large to fit into selected size.");
+  }
   //      LOG(message_group::Export_Warning, Location::NONE, "", "pdfX, pdfY %1$6d %2$6d ", pdfX, pdfY);
         
   //  Center on page.  Still in points.
@@ -265,20 +275,17 @@ exportPdfOptions=exportInfo.options;
     
     // Set Annotations
       std::string about = "Scale is to calibrate actual printed dimension. Check both X and Y. Measure between tick 0 and last tick";
-    cairo_set_source_rgba(cr, 0., 0., 0., 0.4);
+    cairo_set_source_rgba(cr, 0., 0., 0., 0.48);
     // Design Filename
     if (exportPdfOptions->showDsgnFN) draw_text(exportInfo.sourceFilePath.c_str(), cr, Mlx, Mby, 10.);
     // Scale
     if (exportPdfOptions->showScale) {
-    	draw_axis(cr, Mlx,Mrx,Mty,Mby);
+    	draw_axes(cr, Mlx,Mrx,Mty,Mby);
     	// Scale Message
     	if (exportPdfOptions->showScaleMsg) draw_text(about.c_str(), cr, Mlx+1, Mty-1, 5.);
     }
+    // Grid
     if (exportPdfOptions->showGrid) draw_grid(cr, Mlx,Mrx,Mty,Mby, exportPdfOptions->gridSize);
-
-  if (!inpaper) {
-    LOG(message_group::Export_Warning, Location::NONE, "", "Geometry is too large to fit into selected size.");
-  }
 
   cairo_show_page(cr);
   cairo_surface_destroy(surface);

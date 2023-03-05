@@ -54,10 +54,6 @@ public:
   void setOrientation(paperOrientations orient);  
   void setGridSize(double value);
   
-public slots:
-  void on_okButton_clicked();
-  void on_cancelButton_clicked();
-
 };
 
 

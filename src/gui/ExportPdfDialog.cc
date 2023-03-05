@@ -193,12 +193,5 @@ ExportPdfDialog::ExportPdfDialog()
 	};
   }
  
-void ExportPdfDialog::on_okButton_clicked()
-{
-  accept();
-}
 
-void ExportPdfDialog::on_cancelButton_clicked()
-{
-  reject();
-}
+
