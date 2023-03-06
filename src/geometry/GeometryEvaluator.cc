@@ -1265,14 +1265,15 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
     for (const auto& v : o.vertices) {
       min_x = fmin(min_x, v[0]);
       max_x = fmax(max_x, v[0]);
-
-      if ((max_x - min_x) > max_x && (max_x - min_x) > fabs(min_x)) {
-        LOG(message_group::Error, "all points for rotate_extrude() must have the same X coordinate sign (range is %1$.2f -> %2$.2f)", min_x, max_x);
-        delete ps;
-        return nullptr;
-      }
     }
   }
+
+  if ((max_x - min_x) > max_x && (max_x - min_x) > fabs(min_x)) {
+    LOG(message_group::Error, "all points for rotate_extrude() must have the same X coordinate sign (range is %1$.2f -> %2$.2f)", min_x, max_x);
+    delete ps;
+    return nullptr;
+  }
+
   fragments = (unsigned int)fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1);
 
   bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
