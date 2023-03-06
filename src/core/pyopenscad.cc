@@ -68,7 +68,8 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
     return ((PyOpenSCADObject *) objs)->node;
   } else if (PyList_Check(objs)) {
     // TODO also decref the list ?
-    auto node = std::make_shared<CsgOpNode>(&todo_fix_inst, OpenSCADOperator::UNION);
+    DECLARE_INSTANCE
+    auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
 
     int n = PyList_Size(objs);
     for (int i = 0; i < n; i++) {
@@ -305,10 +306,6 @@ static PyObject *PyInit_openscad(void)
 {
   return PyModule_Create(&OpenSCADModule);
 }
-
-std::string todo_fix_name;
-AssignmentList todo_fix_asslist;
-ModuleInstantiation todo_fix_inst(todo_fix_name, todo_fix_asslist, Location::NONE);
 
 static PyObject *pythonInitDict=NULL;
 

@@ -62,7 +62,8 @@ extern boost::optional<Color4f> parse_hex_color(const std::string& hex);
 
 PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  auto node = std::make_shared<CubeNode>(&todo_fix_inst);
+  DECLARE_INSTANCE
+  auto node = std::make_shared<CubeNode>(instance);
 
   char *kwlist[] = {"dim", "center", NULL};
   PyObject *dim = NULL;
@@ -90,7 +91,8 @@ PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  auto node = std::make_shared<SphereNode>(&todo_fix_inst);
+  DECLARE_INSTANCE
+  auto node = std::make_shared<SphereNode>(instance);
 
   char *kwlist[] = {"r", "d", "fn", "fa", "fs", NULL};
   double r = -1;
@@ -123,7 +125,8 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  auto node = std::make_shared<CylinderNode>(&todo_fix_inst);
+  DECLARE_INSTANCE
+  auto node = std::make_shared<CylinderNode>(instance);
 
   char *kwlist[] = {"h", "r", "r1", "r2", "d", "d1", "d2", "center", "fn", "fa", "fs", NULL};
   double h = -1;
@@ -174,8 +177,9 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   int i, j, pointIndex;
-  auto node = std::make_shared<PolyhedronNode>(&todo_fix_inst);
+  auto node = std::make_shared<PolyhedronNode>(instance);
 
   char *kwlist[] = {"points", "faces", "convexity", "triangles", NULL};
   PyObject *points = NULL;
@@ -237,7 +241,8 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_square(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  auto node = std::make_shared<SquareNode>(&todo_fix_inst);
+  DECLARE_INSTANCE
+  auto node = std::make_shared<SquareNode>(instance);
 
   char *kwlist[] = {"dim", "center", NULL};
   PyObject *dim = NULL;
@@ -266,7 +271,8 @@ PyObject *python_square(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  auto node = std::make_shared<CircleNode>(&todo_fix_inst);
+  DECLARE_INSTANCE
+  auto node = std::make_shared<CircleNode>(instance);
 
   char *kwlist[] = {"r", "d", "fn", "fa", "fs", NULL};
   double r = -1;
@@ -301,8 +307,9 @@ PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   int i, j, pointIndex;
-  auto node = std::make_shared<PolygonNode>(&todo_fix_inst);
+  auto node = std::make_shared<PolygonNode>(instance);
 
   char *kwlist[] = {"points", "paths", "convexity", NULL};
   PyObject *points = NULL;
@@ -351,9 +358,10 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
 }
 PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
 
-  auto node = std::make_shared<TransformNode>(&todo_fix_inst, "scale");
+  auto node = std::make_shared<TransformNode>(instance, "scale");
 
   char *kwlist[] = {"obj", "v", NULL};
 
@@ -381,7 +389,7 @@ PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
 
   if (OpenSCAD::rangeCheck) {
     if (scalevec[0] == 0 || scalevec[1] == 0 || scalevec[2] == 0 || !std::isfinite(scalevec[0])|| !std::isfinite(scalevec[1])|| !std::isfinite(scalevec[2])) {
-//      LOG(message_group::Warning, todo_fix_inst->location(), parameters.documentRoot(), "scale(%1$s)", parameters["v"].toEchoStringNoThrow());
+//      LOG(message_group::Warning, instance->location(), parameters.documentRoot(), "scale(%1$s)", parameters["v"].toEchoStringNoThrow());
     }
   }
   node->matrix.scale(scalevec);
@@ -400,9 +408,10 @@ PyObject *python_scale_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
 
-  auto node = std::make_shared<TransformNode>(&todo_fix_inst, "rotate");
+  auto node = std::make_shared<TransformNode>(instance, "rotate");
 
   char *kwlist[] = {"obj", "a", "v", NULL};
 
@@ -493,9 +502,10 @@ PyObject *python_rotate_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
 
-  auto node = std::make_shared<TransformNode>(&todo_fix_inst, "mirror");
+  auto node = std::make_shared<TransformNode>(instance, "mirror");
 
   char *kwlist[] = {"obj", "v", NULL};
   double x = 1.0, y = 1.0, z = 1.0;
@@ -551,9 +561,10 @@ PyObject *python_mirror_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
 
-  auto node = std::make_shared<TransformNode>(&todo_fix_inst, "translate");
+  auto node = std::make_shared<TransformNode>(instance, "translate");
 
   char *kwlist[] = {"obj", "v", NULL};
   PyObject *v = NULL;
@@ -592,10 +603,11 @@ PyObject *python_translate_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
   int i, j;
 
-  auto node = std::make_shared<TransformNode>(&todo_fix_inst, "multmatrix");
+  auto node = std::make_shared<TransformNode>(instance, "multmatrix");
 
   char *kwlist[] = {"obj", "m", NULL};
   PyObject *obj = NULL;
@@ -701,9 +713,10 @@ int python__setitem__(PyObject *dict, PyObject *key, PyObject *v)
 
 PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
 
-  auto node = std::make_shared<ColorNode>(&todo_fix_inst);
+  auto node = std::make_shared<ColorNode>(instance);
 
   char *kwlist[] = {"obj", "c", "alpha", NULL};
   PyObject *obj = NULL;
@@ -765,9 +778,10 @@ PyObject *python_color_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
 
-  auto node = std::make_shared<RotateExtrudeNode>(&todo_fix_inst);
+  auto node = std::make_shared<RotateExtrudeNode>(instance);
 
   PyObject *obj = NULL;
 
@@ -837,9 +851,10 @@ PyObject *python_rotate_extrude_oo(PyObject *self, PyObject *args, PyObject *kwa
 
 PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
 
-  auto node = std::make_shared<LinearExtrudeNode>(&todo_fix_inst);
+  auto node = std::make_shared<LinearExtrudeNode>(instance);
 
   PyObject *obj = NULL;
   double height = 1;
@@ -924,11 +939,12 @@ PyObject *python_linear_extrude_oo(PyObject *self, PyObject *args, PyObject *kwa
 
 PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenSCADOperator mode)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
   int i;
   int n;
 
-  auto node = std::make_shared<CsgOpNode>(&todo_fix_inst, mode);
+  auto node = std::make_shared<CsgOpNode>(instance, mode);
   char *kwlist[] = { "obj", NULL };
   PyObject *objs = NULL;
   PyObject *obj;
@@ -966,6 +982,7 @@ PyObject *python_intersection(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
 
   double x, y, z;
@@ -975,14 +992,14 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
       PyErr_SetString(PyExc_TypeError, "invalid argument left to operator\n");
       return NULL;
     }
-    auto node = std::make_shared<TransformNode>(&todo_fix_inst, "scale");
+    auto node = std::make_shared<TransformNode>(instance, "scale");
     Vector3d scalevec(x, y, z);
     node->matrix.scale(scalevec);
     node->children.push_back(child);
     return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
   }
 
-  auto node = std::make_shared<CsgOpNode>(&todo_fix_inst, mode);
+  auto node = std::make_shared<CsgOpNode>(instance, mode);
 
   child = PyOpenSCADObjectToNodeMulti(arg1);
   if (child == NULL) {
@@ -1005,11 +1022,12 @@ PyObject *python_nb_multiply(PyObject *arg1, PyObject *arg2) { return python_nb_
 
 PyObject *python_csg_oo_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenSCADOperator mode)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
   int i;
   int n;
 
-  auto node = std::make_shared<CsgOpNode>(&todo_fix_inst, mode);
+  auto node = std::make_shared<CsgOpNode>(instance, mode);
   char *kwlist[] = { "obj", NULL };
   PyObject *more_obj = NULL;
   PyObject *obj;
@@ -1050,11 +1068,12 @@ PyObject *python_intersection_oo(PyObject *self, PyObject *args, PyObject *kwarg
 
 PyObject *python_csg_adv_sub(PyObject *self, PyObject *args, PyObject *kwargs, CgalAdvType mode)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
   int i;
   int n;
 
-  auto node = std::make_shared<CgalAdvNode>(&todo_fix_inst, mode);
+  auto node = std::make_shared<CgalAdvNode>(instance, mode);
   char *kwlist[] = { "obj", NULL };
   PyObject *objs = NULL;
   PyObject *obj;
@@ -1077,12 +1096,13 @@ PyObject *python_csg_adv_sub(PyObject *self, PyObject *args, PyObject *kwargs, C
 
 PyObject *python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
   int i;
   int n;
   int convexity = 2;
 
-  auto node = std::make_shared<CgalAdvNode>(&todo_fix_inst, CgalAdvType::MINKOWSKI);
+  auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::MINKOWSKI);
   char *kwlist[] = { "obj", "convexity", NULL };
   PyObject *objs = NULL;
   PyObject *obj;
@@ -1120,12 +1140,13 @@ PyObject *python_fill(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
   int i;
   int n;
   int convexity = 2;
 
-  auto node = std::make_shared<CgalAdvNode>(&todo_fix_inst, CgalAdvType::RESIZE);
+  auto node = std::make_shared<CgalAdvNode>(instance, CgalAdvType::RESIZE);
   char *kwlist[] = { "obj", "newsize", "auto", "convexity", NULL };
   PyObject *obj;
   PyObject *newsize = NULL;
@@ -1178,9 +1199,10 @@ PyObject *python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_roof(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
 
-  auto node = std::make_shared<RoofNode>(&todo_fix_inst);
+  auto node = std::make_shared<RoofNode>(instance);
   double fn = -1, fa = -1, fs = -1;
 
   char *kwlist[] = {"obj", "method", "convexity", "fn", "fa", "fs", NULL};
@@ -1242,9 +1264,10 @@ PyObject *python_roof_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_render(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
 
-  auto node = std::make_shared<RenderNode>(&todo_fix_inst);
+  auto node = std::make_shared<RenderNode>(instance);
 
   char *kwlist[] = {"obj", "convexity", NULL};
   PyObject *obj = NULL;
@@ -1266,9 +1289,10 @@ PyObject *python_render(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
 
-  auto node = std::make_shared<SurfaceNode>(&todo_fix_inst);
+  auto node = std::make_shared<SurfaceNode>(instance);
 
   char *kwlist[] = {"file", "center", "convexity", "invert", NULL};
   const char *file = NULL;
@@ -1284,7 +1308,7 @@ PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
 
   std::string fileval = file == NULL ? "" : file;
-  std::string filename = lookup_file(fileval, todo_fix_inst.location().filePath().parent_path().string(), "");
+  std::string filename = lookup_file(fileval, instance->location().filePath().parent_path().string(), "");
   node->filename = filename;
   handle_dep(fs::path(filename).generic_string());
 
@@ -1297,7 +1321,8 @@ PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  auto node = std::make_shared<TextNode>(&todo_fix_inst);
+  DECLARE_INSTANCE
+  auto node = std::make_shared<TextNode>(instance);
 
   char *kwlist[] = {"text", "size", "font", "spacing", "direction", "language", "script", "halign", "valign", "fn", "fa", "fs", NULL};
 
@@ -1330,7 +1355,7 @@ PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
   if (script != NULL) node->params.set_script(script);
   if (valign != NULL) node->params.set_halign(halign);
   if (halign != NULL) node->params.set_valign(valign);
-  node->params.set_loc(todo_fix_inst.location());
+  node->params.set_loc(instance->location());
 
 /*
    node->params.set_documentPath(session->documentRoot());
@@ -1344,7 +1369,8 @@ PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
 {
-  auto node = std::make_shared<TextNode>(&todo_fix_inst);
+  DECLARE_INSTANCE
+  auto node = std::make_shared<TextNode>(instance);
 
   char *kwlist[] = {"text", "size", "font", "spacing", "direction", "language", "script", "halign", "valign", NULL};
 
@@ -1372,7 +1398,7 @@ PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
   if (script != NULL) ftparams.set_script(script);
   if (valign != NULL) ftparams.set_halign(halign);
   if (halign != NULL) ftparams.set_valign(valign);
-  ftparams.set_loc(todo_fix_inst.location());
+  ftparams.set_loc(instance->location());
 
   FreetypeRenderer::TextMetrics metrics(ftparams);
   if (!metrics.ok) {
@@ -1447,9 +1473,10 @@ PyObject *python_version_num(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
 
-  auto node = std::make_shared<OffsetNode>(&todo_fix_inst);
+  auto node = std::make_shared<OffsetNode>(instance);
 
   char *kwlist[] = {"obj", "r", "delta", "chamfer", "fn", "fa", "fs", NULL};
   PyObject *obj = NULL;
@@ -1504,9 +1531,10 @@ PyObject *python_offset_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_projection(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
 
-  auto node = std::make_shared<ProjectionNode>(&todo_fix_inst);
+  auto node = std::make_shared<ProjectionNode>(instance);
 
   char *kwlist[] = {"obj", "cut", "convexity", NULL};
   PyObject *obj = NULL;
@@ -1543,9 +1571,10 @@ PyObject *python_projection_oo(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *python_group(PyObject *self, PyObject *args, PyObject *kwargs)
 {
+  DECLARE_INSTANCE
   std::shared_ptr<AbstractNode> child;
 
-  auto node = std::make_shared<GroupNode>(&todo_fix_inst);
+  auto node = std::make_shared<GroupNode>(instance);
 
   char *kwlist[] = {"obj", NULL};
   PyObject *obj = NULL;
@@ -1564,6 +1593,7 @@ PyObject *python_group(PyObject *self, PyObject *args, PyObject *kwargs)
 
 PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, ImportType type)
 {
+  DECLARE_INSTANCE
   char *kwlist[] = {"file", "layer", "convexity", "origin", "scale", "width", "height", "filename", "center", "dpi", "id", NULL};
   double fn = -1, fa = -1, fs = -1;
 
@@ -1588,7 +1618,7 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
     return NULL;
   }
 
-  filename = lookup_file(v == NULL ? "" : v, todo_fix_inst.location().filePath().parent_path().string(), "");
+  filename = lookup_file(v == NULL ? "" : v, instance->location().filePath().parent_path().string(), "");
   if (!filename.empty()) handle_dep(filename);
   ImportType actualtype = type;
   if (actualtype == ImportType::UNKNOWN) {
@@ -1603,7 +1633,7 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
     else if (ext == ".svg") actualtype = ImportType::SVG;
   }
 
-  auto node = std::make_shared<ImportNode>(&todo_fix_inst, actualtype);
+  auto node = std::make_shared<ImportNode>(instance, actualtype);
 
   get_fnas(node->fn, node->fa, node->fs);
   if (fn != -1) node->fn = fn;
@@ -1633,7 +1663,7 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
   double val = dpi;
   if (val < 0.001) {
     PyErr_SetString(PyExc_TypeError, "Invalid dpi value giving");
-//      std::string filePath = boostfs_uncomplete(todo_fix_inst.location().filePath(), "");
+//      std::string filePath = boostfs_uncomplete(instance->location().filePath(), "");
 //      LOG(message_group::Warning, Location::NONE, "",
 //          "Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
 //          origin.toEchoStringNoThrow(), filePath, filePath, inst->location().firstLine()
