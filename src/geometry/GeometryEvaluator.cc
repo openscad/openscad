@@ -1255,26 +1255,36 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
   PolySetBuilder builder;
   builder.setConvexity(node.convexity);
 
-  double min_x = 0;
-  double max_x = 0;
+  double min_x = INFINITY;
+  double max_x = -INFINITY;
+  double min_y = INFINITY;
+  double max_y = -INFINITY;
   unsigned int fragments = 0;
   for (const auto& o : poly.outlines()) {
     for (const auto& v : o.vertices) {
       min_x = fmin(min_x, v[0]);
       max_x = fmax(max_x, v[0]);
-      min_x = fmin(min_x, v[0] * node.scale_x + node.trans_x);
-      max_x = fmax(max_x, v[0] * node.scale_x + node.trans_x);
+      min_y = fmin(min_y, v[1]);
+      max_y = fmax(max_y, v[1]);
     }
   }
+  double width_x = (max_x - min_x) * fmax(1, node.scale_x);
+  double width_y = (max_y - min_y) * fmax(1, node.scale_y);
+  min_x = fmin(min_x, min_x * node.scale_x + node.trans_x);
+  max_x = fmax(max_x, max_x * node.scale_x + node.trans_x);
 
   if ((max_x - min_x) > max_x && (max_x - min_x) > fabs(min_x)) {
     LOG(message_group::Error, "all points for rotate_extrude() must have the same X coordinate sign (range is %1$.2f -> %2$.2f)", min_x, max_x);
     return nullptr;
   }
 
-  fragments = (unsigned int)std::ceil(fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1));
-
   bool full_loop = node.angle == 360 && node.scale_x == 1 && node.scale_y == 1 && node.trans_x == 0 && node.trans_y == 0;
+
+  if (!full_loop && fabs(node.angle) >= 360 && width_x >= node.trans_x / node.angle * 360 && width_y >= node.trans_y / node.angle * 360) {
+    LOG(message_group::Warning, "maximum width of base object is greater or equal than translation per spin for rotate_extrude() for x (%1$.2f >= %2$.2f) and y (%3$.2f >= %4$.2f) axis, which might result in non-manifold structure", width_x, node.trans_x / node.angle * 360, width_y, node.trans_y / node.angle * 360);
+  }
+
+  fragments = (unsigned int)std::ceil(fmax(Calc::get_fragments_from_r(fmax(max_x, -min_x), node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1));
 
   bool flip_faces = (min_x >= 0 && node.angle > 0 && !full_loop) || (min_x < 0 && (node.angle < 0 || full_loop));
 
