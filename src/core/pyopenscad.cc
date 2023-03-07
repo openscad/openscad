@@ -63,9 +63,11 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj)
 
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
 {
-  Py_XDECREF(objs);
+  std::shared_ptr<AbstractNode> result;
   if (Py_TYPE(objs) == &PyOpenSCADType) {
-    return ((PyOpenSCADObject *) objs)->node;
+    result = ((PyOpenSCADObject *) objs)->node;
+    //Py_XDECREF(objs); // TODO cannot activate
+    return result;
   } else if (PyList_Check(objs)) {
     // TODO also decref the list ?
     DECLARE_INSTANCE
@@ -77,6 +79,7 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
       std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj);
       node->children.push_back(child);
     }
+    Py_XDECREF(objs);
     return node;
   } else return NULL;
 }
