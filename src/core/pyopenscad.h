@@ -4,6 +4,11 @@
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
+#define DECLARE_INSTANCE	std::string instance_name; \
+	AssignmentList inst_asslist;\
+	ModuleInstantiation *instance = new ModuleInstantiation(instance_name,inst_asslist, Location::NONE);
+
+
 typedef struct {
   PyObject_HEAD
   std::shared_ptr<AbstractNode> node;
@@ -93,9 +98,6 @@ int python_vectorval(PyObject *vec, double *x, double *y, double *z);
 int python_numberval(PyObject *number, double *result);
 
 void get_fnas(double& fn, double& fa, double& fs);
-
-
-extern ModuleInstantiation todo_fix_inst;
 
 char *evaluatePython(const char *code);
 

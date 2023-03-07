@@ -63,12 +63,15 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj)
 
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
 {
-  Py_XDECREF(objs);
+  std::shared_ptr<AbstractNode> result;
   if (Py_TYPE(objs) == &PyOpenSCADType) {
-    return ((PyOpenSCADObject *) objs)->node;
+    result = ((PyOpenSCADObject *) objs)->node;
+    //Py_XDECREF(objs); // TODO cannot activate
+    return result;
   } else if (PyList_Check(objs)) {
     // TODO also decref the list ?
-    auto node = std::make_shared<CsgOpNode>(&todo_fix_inst, OpenSCADOperator::UNION);
+    DECLARE_INSTANCE
+    auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
 
     int n = PyList_Size(objs);
     for (int i = 0; i < n; i++) {
@@ -76,6 +79,7 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
       std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj);
       node->children.push_back(child);
     }
+    Py_XDECREF(objs);
     return node;
   } else return NULL;
 }
@@ -305,10 +309,6 @@ static PyObject *PyInit_openscad(void)
 {
   return PyModule_Create(&OpenSCADModule);
 }
-
-std::string todo_fix_name;
-AssignmentList todo_fix_asslist;
-ModuleInstantiation todo_fix_inst(todo_fix_name, todo_fix_asslist, Location::NONE);
 
 static PyObject *pythonInitDict=NULL;
 
