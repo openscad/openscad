@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <functional>
+#include <array>
 
 #include <boost/range/algorithm.hpp>
 #include <boost/range/adaptor/map.hpp>
@@ -33,6 +34,55 @@ enum class FileFormat {
   PARAM
 };
 
+
+// Paper Data used by ExportPDF
+enum class paperSizes {
+ A4,A3,LETTER,LEGAL,TABLOID
+};
+// Note:  the enum could be moved to GUI, which would pass the dimensions.
+
+// for gui, but declared here to keep it aligned with the enum.
+// can't use Qt mechanism in the IO code.
+// needs to match number of sizes
+const std::array<std::string,5> paperSizeStrings{  
+"A4","A3","Letter","Legal","Tabloid"
+};
+
+
+// Dimensions in pts per PDF standard, used by ExportPDF
+// rows map to paperSizes enums
+// columns are Width, Height
+const int paperDimensions[5][2]={
+{595,842},
+{842,1190},
+{612,792},
+{612,1008},
+{792,1224}
+}; 
+
+enum class paperOrientations {
+PORTRAIT,LANDSCAPE,AUTO
+};
+
+// for gui, but declared here to keep it aligned with the enum.
+// can't use Qt mechanism in the IO code.
+// needs to match number of orientations
+const std::array<std::string,3> paperOrientationsStrings{  
+"Portrait","Landscape","Auto"
+};
+
+// include defaults to use without dialog or direction.
+// Defaults match values used prior to incorporation of options.
+struct ExportPdfOptions {
+    bool showScale=TRUE;
+    bool showScaleMsg=TRUE;
+    bool showGrid=FALSE;
+    double gridSize=10.; // New
+    bool showDsgnFN=TRUE; 
+    paperOrientations Orientation=paperOrientations::PORTRAIT;
+    paperSizes paperSize=paperSizes::A4;
+};
+
 struct ExportInfo {
   FileFormat format;
   std::string name2display;
@@ -40,7 +90,9 @@ struct ExportInfo {
   std::string sourceFilePath;
   std::string sourceFileName;
   bool useStdOut;
+  ExportPdfOptions *options=nullptr;
 };
+
 
 bool canPreview(const FileFormat format);
 bool exportFileByName(const shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);
@@ -58,8 +110,6 @@ void export_pdf(const shared_ptr<const Geometry>& geom, std::ostream& output, co
 void export_nefdbg(const shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_nef3(const shared_ptr<const Geometry>& geom, std::ostream& output);
 
-
-// void exportFile(const class Geometry *root_geom, std::ostream &output, FileFormat format);
 
 enum class Previewer { OPENCSG, THROWNTOGETHER };
 enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };
