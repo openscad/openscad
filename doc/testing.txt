@@ -19,8 +19,8 @@ Windows builds are a special case, since they are cross-compiled from a linux
 system.  The automated build servers package up the tests alongside the binary
 if you download a .ZIP Development Snapshot from: http://openscad.org/downloads.html#snapshots
 NOTE: **ONLY THE ZIP VERSION** of the download contains the tests.
-  They would not run properly using an intaller to place under "C:\Program Files"
-  since that would require elevated priviledges to write the test output files.
+  They would not run properly using an installer to place under "C:\Program Files"
+  since that would require elevated privileges to write the test output files.
 
 B) Running tests
 
