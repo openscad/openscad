@@ -19,7 +19,7 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
   char line[80];
   char *ptr, *ptr1, *ptr2;
   in=fopen(filename.c_str(),"r");
-  if(in == NULL) return NULL;
+  if(in == NULL) return p.release();
   std::vector<Vector3d> pts;
 
 
