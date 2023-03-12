@@ -1488,7 +1488,7 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
 
 	Eigen::VectorXi J;
 	if((FORG.rows()) > 0) {
-		igl::copyleft::cgal::mesh_boolean(VORG,FORG,VDUM,FDUM,igl::MESH_BOOLEAN_TYPE_ADDUNION,VNEW,FNEW,J);
+		igl::copyleft::cgal::mesh_boolean(VORG,FORG,VDUM,FDUM,igl::MESH_BOOLEAN_TYPE_RESOLVE,VNEW,FNEW,J);
 	 } else {
 	 	FNEW=FORG;
 		VNEW=VORG;
