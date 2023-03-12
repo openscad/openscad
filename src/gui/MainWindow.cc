@@ -269,6 +269,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   const QString surfaceStatement = "surface(\"%1\");\n";
   const QString importFunction = "data = import(\"%1\");\n";
   knownFileExtensions["stl"] = importStatement;
+  knownFileExtensions["obj"] = importStatement;
   knownFileExtensions["3mf"] = importStatement;
   knownFileExtensions["off"] = importStatement;
   knownFileExtensions["dxf"] = importStatement;
