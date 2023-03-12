@@ -31,7 +31,7 @@
 #include "Children.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include "io/fileutils.h"
+#include "fileutils.h"
 #include "Builtins.h"
 #include "handle_dep.h"
 
@@ -175,14 +175,6 @@ std::string LinearExtrudeNode::toString() const
   if (this->convexity > 1) {
     stream << ", convexity = " << this->convexity;
   }
-#ifdef ENABLE_PYTHON  
- if(this->profile_func != NULL) {
-    stream << ", profile = " << rand() ;
- }
- if(this->twist_func != NULL) {
-    stream << ", twist_func = " << rand() ;
- }
-#endif  
   stream << ")";
   return stream.str();
 }

@@ -42,7 +42,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 
 // Colors extracted from https://drafts.csswg.org/css-color/ on 2015-08-02
 // CSS Color Module Level 4 - Editor’s Draft, 29 May 2015
-std::unordered_map<std::string, Color4f> webcolors{
+static std::unordered_map<std::string, Color4f> webcolors{
   {"aliceblue", {240, 248, 255}},
   {"antiquewhite", {250, 235, 215}},
   {"aqua", {0, 255, 255}},
@@ -203,7 +203,7 @@ std::unordered_map<std::string, Color4f> webcolors{
 // * "#rrggbbaa"
 // * "#rgb"
 // * "#rgba"
-boost::optional<Color4f> parse_hex_color(const std::string& hex) {
+static boost::optional<Color4f> parse_hex_color(const std::string& hex) {
   // validate size. short syntax uses one hex digit per color channel instead of 2.
   const bool short_syntax = hex.size() == 4 || hex.size() == 5;
   const bool long_syntax = hex.size() == 7 || hex.size() == 9;

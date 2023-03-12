@@ -13,6 +13,8 @@ cmake_policy(SET CMP0070 NEW) # Allow relative paths for file(GENERATE ...)
 
 enable_testing()
 
+option(USE_IMAGE_COMPARE_PY "Use built-in image_compare.py" ON)
+
 # Use variables for common paths, to reduce line lengths.
 
 # Very commonly used cmake-provided paths
@@ -52,54 +54,103 @@ find_package(PythonInterp 3.4 REQUIRED)
 
 # Image comparison - expected test image vs actual generated image
 
-# Imagemagick
-find_package(ImageMagick COMPONENTS convert)
-if (ImageMagick_convert_FOUND)
-  message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
-  set(IMAGE_COMPARE_EXE ${ImageMagick_convert_EXECUTABLE})
-else()
-  message(STATUS "Couldn't find imagemagick 'convert' program")
-  set(DIFFPNG 1)
-endif()
-
-if (ImageMagick_convert_FOUND)
-  if ("${ImageMagick_VERSION_STRING}" VERSION_LESS "6.5.9.4")
-    message(STATUS "ImageMagick version less than 6.5.9.4, cannot use -morphology comparison")
-    message(STATUS "ImageMagick Using older image comparison method")
-    set(COMPARATOR "--comparator=old")
-  endif()
-
-  execute_process(COMMAND ${IMAGE_COMPARE_EXE} --version OUTPUT_VARIABLE IM_OUT)
-  if (${IM_OUT} MATCHES "OpenMP")
-    # http://www.daniloaz.com/en/617/systems/high-cpu-load-when-converting-images-with-imagemagick
-    message(STATUS "ImageMagick: OpenMP bug workaround - setting MAGICK_THREAD_LIMIT=1")
-    list(APPEND CTEST_ENVIRONMENT "MAGICK_THREAD_LIMIT=1")
-  endif()
-
-  message(STATUS "Comparing magicktest1.png with magicktest2.png")
-  set(IM_TEST_FILES "${CCSD}/magicktest1.png" "${CCSD}/magicktest2.png")
-  set(COMPARE_ARGS ${IMAGE_COMPARE_EXE} ${IM_TEST_FILES} -alpha On -compose difference -composite -threshold 8% -morphology Erode Square -format %[fx:w*h*mean] info:)
-  # compare arguments taken from test_cmdline_tool.py
-  execute_process(COMMAND ${COMPARE_ARGS} RESULT_VARIABLE IM_RESULT OUTPUT_VARIABLE IM_OUT)
-  if (IM_RESULT)
-    message(STATUS "ImageMagick failed to run")
-    message(STATUS "Using alternative image comparison")
-    set(DIFFPNG 1)
-  elif (${IM_OUT} STREQUAL "0")
-     message(STATUS "magicktest1.png and magicktest2.png were incorrectly detected as identical")
-     message(STATUS "Using alternative image comparison")
-     set(DIFFPNG 1)
+if(USE_IMAGE_COMPARE_PY)
+  set(VENV_DIR "${CCBD}/venv")
+  message(STATUS "Preparing image_compare.py for test suite image comparison")
+  if(WIN32)
+    set(IMAGE_COMPARE_EXE "${VENV_DIR}/Scripts/python.exe")
   else()
-    message(STATUS "ImageMagick OK: Detected pixel difference of ${IM_OUT}")
+    set(IMAGE_COMPARE_EXE "${VENV_DIR}/bin/python")
   endif()
-endif()
+  if(EXISTS "${IMAGE_COMPARE_EXE}")
+    message(STATUS "venv found, testing libraries")
+    execute_process(
+      COMMAND "${IMAGE_COMPARE_EXE}" "${CCSD}/image_compare.py" "--status"
+      WORKING_DIRECTORY "${CCSD}" ERROR_QUIET RESULT_VARIABLE ret)
+    if(ret AND NOT ret EQUAL 0)
+      message(STATUS "venv libraries incomplete")
+      set(BUILD_VENV TRUE)
+    else()
+      message(STATUS "venv libraries complete")
+      set(BUILD_VENV FALSE)
+    endif()
+  else()
+    message(STATUS "venv not found")
+    set(BUILD_VENV TRUE)
+  endif()
+  if(BUILD_VENV)
+    message(STATUS "Setting up testing venv for image comparison")
+    find_package(Python3 COMPONENTS Interpreter)
+    execute_process(
+      COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "venv" "--without-pip"
+      WORKING_DIRECTORY "${CCBD}")
+    execute_process(
+      COMMAND "${IMAGE_COMPARE_EXE}" "-m" "ensurepip"
+      WORKING_DIRECTORY "${CCBD}")
+    execute_process(
+      COMMAND "${IMAGE_COMPARE_EXE}" "-m" "pip" "install" "numpy" "Pillow"
+      WORKING_DIRECTORY "${CCBD}")
+  endif()
+  set(COMPARATOR "--comparator=image_compare")
+  if(BUILD_VENV)
+    execute_process(
+      COMMAND "${IMAGE_COMPARE_EXE}" "${CCSD}/image_compare.py" "--status"
+      WORKING_DIRECTORY "${CCSD}" RESULT_VARIABLE ret)
+    if(ret AND NOT ret EQUAL 0)
+      message(WARNING "Failed to setup the test suite venv for ${IMAGE_COMPARE_EXE}  See doc/testing.txt for dependency information.")
+    else()
+      message(STATUS "venv setup for ${IMAGE_COMPARE_EXE}")
+    endif()
+  else()
+    message(STATUS "venv already setup for ${IMAGE_COMPARE_EXE}")
+  endif()
+else()
+  # Imagemagick
+  find_package(ImageMagick COMPONENTS convert)
+  if(ImageMagick_convert_FOUND)
+    message(STATUS "ImageMagick convert executable found: " ${ImageMagick_convert_EXECUTABLE})
+    set(IMAGE_COMPARE_EXE ${ImageMagick_convert_EXECUTABLE})
+    if ("${ImageMagick_VERSION_STRING}" VERSION_LESS "6.5.9.4")
+      message(STATUS "ImageMagick version less than 6.5.9.4, cannot use -morphology comparison")
+      message(STATUS "ImageMagick Using older image comparison method")
+      set(COMPARATOR "--comparator=old")
+    endif()
 
-if (${DIFFPNG})
-  set(IMAGE_COMPARE_EXE ${CCBD}/diffpng)
-  set(COMPARATOR "--comparator=diffpng")
-  add_executable(diffpng diffpng.cpp ${CSD}/src/ext/lodepng/lodepng.cpp)
-  target_include_directories(diffpng PRIVATE ${CSD}/src/ext/lodepng)
-  message(STATUS "using diffpng for image comparison")
+    execute_process(COMMAND ${IMAGE_COMPARE_EXE} --version OUTPUT_VARIABLE IM_OUT)
+    if (${IM_OUT} MATCHES "OpenMP")
+      # http://www.daniloaz.com/en/617/systems/high-cpu-load-when-converting-images-with-imagemagick
+      message(STATUS "ImageMagick: OpenMP bug workaround - setting MAGICK_THREAD_LIMIT=1")
+      list(APPEND CTEST_ENVIRONMENT "MAGICK_THREAD_LIMIT=1")
+    endif()
+
+    message(STATUS "Comparing magicktest1.png with magicktest2.png")
+    set(IM_TEST_FILES "${CCSD}/magicktest1.png" "${CCSD}/magicktest2.png")
+    set(COMPARE_ARGS ${IMAGE_COMPARE_EXE} ${IM_TEST_FILES} -alpha On -compose difference -composite -threshold 8% -morphology Erode Square -format %[fx:w*h*mean] info:)
+    # compare arguments taken from test_cmdline_tool.py
+    message(STATUS "Running ImageMagick compare: ${COMPARE_ARGS}")
+    execute_process(COMMAND ${COMPARE_ARGS} RESULT_VARIABLE IM_RESULT OUTPUT_VARIABLE IM_OUT)
+    if (IM_RESULT)
+      message(STATUS "ImageMagick failed to run")
+      message(STATUS "Using alternative image comparison")
+      set(DIFFPNG 1)
+    elif (${IM_OUT} STREQUAL "0")
+       message(STATUS "magicktest1.png and magicktest2.png were incorrectly detected as identical")
+       message(STATUS "Using alternative image comparison")
+       set(DIFFPNG 1)
+    else()
+      message(STATUS "ImageMagick OK: Detected pixel difference of ${IM_OUT}")
+    endif()
+  else()
+    message(STATUS "Couldn't find imagemagick 'convert' program")
+    set(DIFFPNG 1)
+  endif()
+  if (${DIFFPNG})
+    set(IMAGE_COMPARE_EXE ${CCBD}/diffpng)
+    set(COMPARATOR "--comparator=diffpng")
+    add_executable(diffpng diffpng.cpp ${CSD}/src/ext/lodepng/lodepng.cpp)
+    target_include_directories(diffpng PRIVATE ${CSD}/src/ext/lodepng)
+    message(STATUS "using diffpng for image comparison")
+  endif()
 endif()
 
 find_package(Lib3MF QUIET)
@@ -303,9 +354,6 @@ function(add_cmdline_test TESTCMD_BASENAME)
       if (NOT SCADFILE IN_LIST FAST_CSG_TRUST_FAILING_SCADFILES)
         set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg-trust-corefinement")
       endif()
-      if (SCADFILE IN_LIST FEATURES_PYTHON_FILES)
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=python-engine")
-      endif()
     endif()
 
     # 2D tests should be viewed from the top, not an angle.
@@ -482,7 +530,6 @@ file(GLOB REDEFINITION_FILES       ${TEST_SCAD_DIR}/redefinition/*.scad)
 file(GLOB_RECURSE BUGS_FILES       ${TEST_SCAD_DIR}/bugs/*.scad)
 file(GLOB_RECURSE BUGS_2D_FILES    ${TEST_SCAD_DIR}/bugs2D/*.scad)
 file(GLOB_RECURSE EXAMPLE_3D_FILES ${EXAMPLES_DIR}/*.scad)
-file(GLOB FEATURES_PYTHON_FILES    ${TEST_PYTHON_DIR}/language/*.py)
 
 list(REMOVE_ITEM EXAMPLE_3D_FILES
   ${EXAMPLES_DIR}/Old/example015.scad
@@ -643,7 +690,6 @@ list(APPEND CGALPNGTEST_3D_FILES
   ${TEST_SCAD_DIR}/misc/preview_variable.scad
 )
 
-list(APPEND CGALPNGTEST_PYTHON_FILES ${FEATURES_PYTHON_FILES} )
 # test importing unparseable files, result will be an empty image
 list(APPEND STL_IMPORT_FILES
   ${TEST_SCAD_DIR}/stl/stl-import-invalidvertex.scad
@@ -1059,7 +1105,6 @@ add_cmdline_test(csgpngtest         SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES 
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest  SCRIPT ${CGALSTLSANITYTEST_PY} SUFFIX txt FILES ${CGALSTLSANITYTEST_FILES} ARGS ${OPENSCAD_BINPATH})
-add_cmdline_test(cgalpngtest_python  OPENSCAD FILES ${CGALPNGTEST_PYTHON_FILES} SUFFIX png ARGS --enable-python --render)
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
 foreach(TEST ${SVG_VIEWBOX_TESTS})
@@ -1329,11 +1374,11 @@ list(APPEND NEF3_BROKEN_TESTS
 if(APPLE)
   set_tests_properties(
     ${NEF3_BROKEN_TESTS}
-    # Python not enabled in mac
-    cgalpngtest_python_primitives
     # Z issues specific to edge shader
     openscad-viewoptions-edges_view-options-tests
     openscad-viewoptions-axes-scales-edges_view-options-tests
+    # issue3158 test failing on macos, see: https://github.com/openscad/openscad/issues/4509
+    opencsgtest_issue3158
     PROPERTIES DISABLED TRUE
   )
 elseif(UNIX)
@@ -1351,8 +1396,6 @@ elseif(WIN32 OR MXECROSS)
     # requires `gs` tool
     pdfexporttest_centered
     pdfexporttest_simple-pdf
-    # Python not enabled in windows
-    cgalpngtest_python_primitives
     PROPERTIES DISABLED TRUE
   )
 endif()

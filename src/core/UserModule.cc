@@ -26,7 +26,7 @@
 
 #include "UserModule.h"
 #include "ModuleInstantiation.h"
-#include "core/node.h"
+#include "node.h"
 #include "exceptions.h"
 #include "StackCheck.h"
 #include "ScopeContext.h"

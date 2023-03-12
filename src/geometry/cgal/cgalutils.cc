@@ -9,7 +9,7 @@
 #include "printutils.h"
 #include "Polygon2d.h"
 #include "PolySetUtils.h"
-#include "core/node.h"
+#include "node.h"
 #include "degree_trig.h"
 
 #include <CGAL/Aff_transformation_3.h>

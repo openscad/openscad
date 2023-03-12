@@ -1,28 +1,27 @@
-# French translations for OpenSCAD package.
-# Copyright (C) 2013 THE OpenSCAD'S COPYRIGHT HOLDER
+# #-#-#-#-#  openscad-tmp.pot (OpenSCAD 2022.03.05)  #-#-#-#-#
+# Georgian translation for OpenSCAD.
+# Copyright (C) 2023, OpenSCAD's authors.
 # This file is distributed under the same license as the OpenSCAD package.
-# don <hugh.m.bright@gmail.com>, 2013.
+# Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2023.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: OpenSCAD 2013.02.07\n"
+"Project-Id-Version: OpenSCAD 2022.03.05\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-05 18:18-0600\n"
-"PO-Revision-Date: 2019-09-17 \n"
-"Last-Translator: Pierre ROUZEAU <github.com/PRouzeau>\n"
-"Language-Team: French\n"
-"Language: fr\n"
+"POT-Creation-Date: 2022-03-05 18:43-0600\n"
+"PO-Revision-Date: 2023-02-14 16:47+0100\n"
+"Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
+"Language-Team: Georgian <(nothing)>\n"
+"Language: ka\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Translator: Keven Villeneuve <keven.villeneuve@gmail.com>\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Poedit-SourceCharset: utf-8\n"
-"X-Generator: Poedit 2.2.1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.2.2\n"
 
 #: build/OpenSCAD_autogen/include/ui_AboutDialog.h:100 src/gui/AboutDialog.h:13
 msgid "About OpenSCAD"
-msgstr "À propos d'OpenSCAD"
+msgstr "OpenSCAD-ის შესახებ"
 
 #: build/OpenSCAD_autogen/include/ui_AboutDialog.h:102
 #: build/OpenSCAD_autogen/include/ui_LaunchingScreen.h:306
@@ -44,20 +43,20 @@ msgstr ""
 "style=\"color: green;\">Open</span>SCAD</p>\n"
 "<p style=\"font-family: 'Open Sans', 'Droid Sans', 'sans-serif'; font-"
 "weight: normal; font-size: 14pt; padding-top: 0; margin-top: 0; margin-left: "
-"2em;\">Le modeleur CAO 3D des programmeurs</p>\n"
+"2em;\">პროგრამისტის Solid 3D CAD მოდელერი</p>\n"
 "</body></html>\n"
 "\n"
 "\n"
 
 #: build/OpenSCAD_autogen/include/ui_AboutDialog.h:109
 msgid "OK"
-msgstr "OK"
+msgstr "დიახ"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:853
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:362
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1773
 msgid "Preferences"
-msgstr "Préférences"
+msgstr "პარამეტრები"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:854
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:855
@@ -69,11 +68,11 @@ msgstr "Préférences"
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:871
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:882
 msgid "Trim"
-msgstr "'Trim'(Rognage)"
+msgstr "დაჭრა"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:856
 msgid "Reset Trim"
-msgstr "Réinitialise le \"Trim\""
+msgstr "წაჭრის დაბრუნება"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:857
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:860
@@ -85,55 +84,55 @@ msgstr "Réinitialise le \"Trim\""
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:870
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:881
 msgid "DeadZone"
-msgstr "Zone morte"
+msgstr "მკვდარიზონა"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:858
 msgid "Auto Trim Axes"
-msgstr "Ajuste automatiquement les axes"
+msgstr "ღერძების ავტომატური წაჭრა"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:872
 msgid "Axis 2"
-msgstr "Axe 2"
+msgstr "ღერძი 2"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:873
 msgid "Axis 0"
-msgstr "Axe 0"
+msgstr "ღერძი 0"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:874
 msgid "Axis 3"
-msgstr "Axe 3"
+msgstr "ღერძი 3"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:875
 msgid "Axis 6"
-msgstr "Axe 6"
+msgstr "ღერძი 6"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:876
 msgid "Axis 8"
-msgstr "Axe 8"
+msgstr "ღერძი 8"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:877
 msgid "Axis 7"
-msgstr "Axe 7"
+msgstr "ღერძი 7"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:878
 msgid "Axis 5"
-msgstr "Axe 5"
+msgstr "ღერძი 5"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:879
 msgid "Axis 1"
-msgstr "Axe 1"
+msgstr "ღერძი 1"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:880
 msgid "Axis 4"
-msgstr "Axe 4"
+msgstr "ღერძი 4"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:883
 msgid "Rotation"
-msgstr "Rotation"
+msgstr "შემობრუნება"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:884
 msgid "Zoom"
-msgstr "Zoom"
+msgstr "გადიდება"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:885
 msgid "X"
@@ -141,7 +140,7 @@ msgstr "X"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:886
 msgid "Gain"
-msgstr "Gain"
+msgstr "გაძლიერება"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:887
 msgid "Y"
@@ -149,27 +148,29 @@ msgstr "Y"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:888
 msgid "Z"
-msgstr "Z"
+msgstr "ზ"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:889
 msgid "Translation"
-msgstr "Translation"
+msgstr "თარგმანი"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:890
 msgid "ViewPort rel.<br/>Translation"
-msgstr "Translation<br/>relative à la vue"
+msgstr "ვიუპორტის <br/>წანაცვლება"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:891
 msgid "ViewPort rel.<br />Rotation"
-msgstr "Rotation<br/>relative à la vue"
+msgstr "ვიუპორტის <br/>მობრუნება"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:892
 msgid "Axis Setup:"
-msgstr "Paramètres des axes:"
+msgstr "ღერძების მორგება:"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:893
 msgid "<b>Driver selection:</b> <i>(changes requires restarting OpenSCAD)</i>"
-msgstr "<b>Choix du pilote :</b> <i>(nécessite un redémarrage d’OpenSCAD)</i>"
+msgstr ""
+"<b>დრაივერის არჩევანი:</b> <i>(ცვლილებისთვის აუცილებელია OpenSCAD-ის "
+"გადატვირთვა)</i>"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:894
 msgid "SpaceNav"
@@ -185,7 +186,7 @@ msgstr "QGamepad"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:897
 msgid "Joystick"
-msgstr "Joystick"
+msgstr "ჯოისტიკი"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:898
 msgid "DBus"
@@ -193,215 +194,203 @@ msgstr "DBus"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:899
 msgid "Axes Mapping:"
-msgstr "Association des axes:"
+msgstr "ღერძების მიბმა:"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:900
 msgid "Status:"
-msgstr ""
+msgstr "მდგომარეობა:"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:901
-#, fuzzy
 msgid "TextLabel"
-msgstr "Texte"
+msgstr "ტექსტური ჭდე"
 
 #: build/OpenSCAD_autogen/include/ui_AxisConfigWidget.h:902
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1777
 msgid "Update"
-msgstr "Mettre à jour"
+msgstr "განახლება"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:363
-#, fuzzy
 msgid "Button 19"
-msgstr "Bouton 1"
+msgstr "ღილაკი 19"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:364
 msgid "Button 5"
-msgstr "Bouton 5"
+msgstr "ღილაკი 5"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:365
 msgid "Button 14"
-msgstr "Bouton 14"
+msgstr "ღილაკი 14"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:366
 msgid "Button 7"
-msgstr "Bouton 7"
+msgstr "ღილაკი 7"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:367
-#, fuzzy
 msgid "Button 16"
-msgstr "Bouton 1"
+msgstr "ღილაკი 16"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:368
-#, fuzzy
 msgid "Button 20"
-msgstr "Bouton 2"
+msgstr "ღილაკი 20"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:369
 msgid "Button 1"
-msgstr "Bouton 1"
+msgstr "ღილაკი 1"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:370
-#, fuzzy
 msgid "Button 21"
-msgstr "Bouton 2"
+msgstr "ღილაკი 21"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:371
-#, fuzzy
 msgid "Button 18"
-msgstr "Bouton 1"
+msgstr "ღილაკი 18"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:372
 msgid "Button 0"
-msgstr "Bouton 0"
+msgstr "ღილაკი 0"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:373
 msgid "Button 4"
-msgstr "Bouton 4"
+msgstr "ღილაკი 4"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:374
 msgid "Button 10"
-msgstr "Bouton 10"
+msgstr "ღილაკი 10"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:375
 msgid "Button 6"
-msgstr "Bouton 6"
+msgstr "ღილაკი 6"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:376
 msgid "Button 8"
-msgstr "Bouton 8"
+msgstr "ღილაკი 8"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:377
 msgid "Button 15"
-msgstr "Bouton 15"
+msgstr "ღილაკი 15"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:378
 msgid "Button 11"
-msgstr "Bouton 11"
+msgstr "ღილაკი 11"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:379
 msgid "Button 3"
-msgstr "Bouton 3"
+msgstr "ღილაკი 3"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:380
-#, fuzzy
 msgid "Button 23"
-msgstr "Bouton 2"
+msgstr "ღილაკი 23"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:381
 msgid "Button 9"
-msgstr "Bouton 9"
+msgstr "ღილაკი 9"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:382
 msgid "Button 2"
-msgstr "Bouton 2"
+msgstr "ღილაკი 2"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:383
 msgid "Button 13"
-msgstr "Bouton 13"
+msgstr "ღილაკი 13"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:384
 msgid "Button 12"
-msgstr "Bouton 12"
+msgstr "ღილაკი 12"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:385
-#, fuzzy
 msgid "Button 17"
-msgstr "Bouton 1"
+msgstr "ღილაკი 17"
 
 #: build/OpenSCAD_autogen/include/ui_ButtonConfigWidget.h:386
-#, fuzzy
 msgid "Button 22"
-msgstr "Bouton 2"
+msgstr "ღილაკი 22"
 
 #: build/OpenSCAD_autogen/include/ui_Console.h:42
 msgid "Clear"
-msgstr "Effacer"
+msgstr "გასუფთავება"
 
 #: build/OpenSCAD_autogen/include/ui_Console.h:44
 msgid "Clear console"
-msgstr "Effacer la console"
+msgstr "კონსოლის გასუფთავება"
 
 #: build/OpenSCAD_autogen/include/ui_Console.h:46
-#, fuzzy
 msgid "Save As..."
-msgstr "Enregistrer &sous..."
+msgstr "შენახვა, როგორც..."
 
 #: build/OpenSCAD_autogen/include/ui_Console.h:48
 msgid "Save console content to file"
-msgstr "Enregistrer le contenu de la console dans un fichier"
+msgstr "კონსოლის შემცველობის ფაილში ჩაწერა"
 
 #: build/OpenSCAD_autogen/include/ui_ErrorLog.h:93
-#, fuzzy
 msgid "Error Log"
-msgstr "Erreur"
+msgstr "შეცდომების ჟურნალი"
 
 #: build/OpenSCAD_autogen/include/ui_ErrorLog.h:94
 msgid "RowSelected"
-msgstr ""
+msgstr "არჩეულიმწკრივი"
 
 #: build/OpenSCAD_autogen/include/ui_ErrorLog.h:96
 msgid "Return"
-msgstr ""
+msgstr "Enter"
 
 #: build/OpenSCAD_autogen/include/ui_ErrorLog.h:98
-#, fuzzy
 msgid "&Show"
-msgstr "Montre"
+msgstr "&ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_ErrorLog.h:99
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1222
 msgid "All"
-msgstr "Tout"
+msgstr "ყველა"
 
 #: build/OpenSCAD_autogen/include/ui_ErrorLog.h:100
 msgid "ERROR"
-msgstr ""
+msgstr "შეცდომა"
 
 #: build/OpenSCAD_autogen/include/ui_ErrorLog.h:101
 msgid "WARNING"
-msgstr ""
+msgstr "გაფრთხილება"
 
 #: build/OpenSCAD_autogen/include/ui_ErrorLog.h:102
 msgid "UI-WARNING"
-msgstr ""
+msgstr "ინტ-გაფრთხლება"
 
 #: build/OpenSCAD_autogen/include/ui_ErrorLog.h:103
 msgid "FONT-WARNING"
-msgstr ""
+msgstr "ფონტი-გაფრთხილება"
 
 #: build/OpenSCAD_autogen/include/ui_ErrorLog.h:104
 msgid "EXPORT-WARNING"
-msgstr ""
+msgstr "გატანა-გაფრთხილება"
 
 #: build/OpenSCAD_autogen/include/ui_ErrorLog.h:105
 msgid "EXPORT-ERROR"
-msgstr ""
+msgstr "გატა-შეცდომა"
 
 #: build/OpenSCAD_autogen/include/ui_ErrorLog.h:106
 msgid "TRACE"
-msgstr ""
+msgstr "ტრეისი"
 
 #: build/OpenSCAD_autogen/include/ui_ErrorLog.h:107
 msgid "DEPRECATED"
-msgstr ""
+msgstr "მოძველებული"
 
 #: build/OpenSCAD_autogen/include/ui_FontListDialog.h:103
 msgid "OpenSCAD Font List"
-msgstr "Liste des polices OpenSCAD"
+msgstr "OpenSCAD-ის ფონტების სია"
 
 #: build/OpenSCAD_autogen/include/ui_FontListDialog.h:104
 #: build/OpenSCAD_autogen/include/ui_LibraryInfoDialog.h:74
 #: build/OpenSCAD_autogen/include/ui_PrintInitDialog.h:110
 msgid "&OK"
-msgstr "&OK"
+msgstr "&დიახ"
 
 #: build/OpenSCAD_autogen/include/ui_FontListDialog.h:105
 msgid "Copy to Clipboard"
-msgstr "Copier dans le presse-papier"
+msgstr "გაცვლის ბუფერში კოპირება"
 
 #: build/OpenSCAD_autogen/include/ui_FontListDialog.h:106
 msgid "Filter:"
-msgstr "Filtre:"
+msgstr "ფილტრი:"
 
 #: build/OpenSCAD_autogen/include/ui_FontListDialog.h:107
 msgid ""
@@ -415,8 +404,8 @@ msgid ""
 "family:'Courier New,courier';\">  text(&quot;OpenSCAD&quot;, font = &quot;"
 "Liberation Sans:style=Italic&quot;);</span></pre></body></html>"
 msgstr ""
-"<html><head/><body><p>Cette liste affiche les polices actuellement déclarées "
-"dans OpenSCAD</p><p>Exemple:</p><pre style=\" margin-top:12px; margin-"
+"<html><head/><body><p>ეს სია OpenSCAD-ში დარეგისტრირებული ფონტების სიას "
+"აჩვენებს.</p><p>მაგალითად:</p><pre style=\" margin-top:12px; margin-"
 "bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-"
 "indent:0px;\"><span style=\" font-family:'Courier New,courier';\">  "
 "text(&quot;OpenSCAD&quot;, font = &quot;DejaVu Sans&quot;);</span></pre><pre "
@@ -427,71 +416,68 @@ msgstr ""
 
 #: build/OpenSCAD_autogen/include/ui_LaunchingScreen.h:295
 msgid "Welcome to OpenSCAD"
-msgstr "Bienvenue dans OpenSCAD"
+msgstr "მოგესალმებათ OpenSCAD"
 
 #: build/OpenSCAD_autogen/include/ui_LaunchingScreen.h:296
 msgid "New"
-msgstr "Nouveau"
+msgstr "ახალი"
 
 #: build/OpenSCAD_autogen/include/ui_LaunchingScreen.h:297
 msgid "Open"
-msgstr "Ouvrir"
+msgstr "გახსნა"
 
 #: build/OpenSCAD_autogen/include/ui_LaunchingScreen.h:298
 msgid "Help"
-msgstr "Aide"
+msgstr "დახმარება"
 
 #: build/OpenSCAD_autogen/include/ui_LaunchingScreen.h:299
 msgid "Recents"
-msgstr "Récents"
+msgstr "უახლესები"
 
 #: build/OpenSCAD_autogen/include/ui_LaunchingScreen.h:300
 msgid "Open Recent"
-msgstr "Ouvrir un fichier récent"
+msgstr "ბოლოს გახსნილი ფაილების გახსნა"
 
 #: build/OpenSCAD_autogen/include/ui_LaunchingScreen.h:301
 #: build/OpenSCAD_autogen/include/ui_LaunchingScreen.h:303
 msgid "Examples"
-msgstr "Exemples"
+msgstr "მაგალითები"
 
 #: build/OpenSCAD_autogen/include/ui_LaunchingScreen.h:304
 msgid "Open Example"
-msgstr "&Ouvrir un exemple"
+msgstr "მაგალითის გახსნა"
 
 #: build/OpenSCAD_autogen/include/ui_LaunchingScreen.h:313
 msgid "Don't show again"
-msgstr "Ne plus afficher"
+msgstr "მეორედ არ მაჩვენო"
 
 #: build/OpenSCAD_autogen/include/ui_LaunchingScreen.h:314
 msgid "Version"
-msgstr "Version"
+msgstr "ვერსია"
 
 #: build/OpenSCAD_autogen/include/ui_LibraryInfoDialog.h:72
 msgid "Lib & Build Info"
-msgstr "Bibliothèques et Infos de la version"
+msgstr "ბიბლიოთეკის და აგების ინფორმაცია"
 
 #: build/OpenSCAD_autogen/include/ui_LibraryInfoDialog.h:73
 msgid "OpenSCAD Detailed Library and Build Information"
-msgstr "Informations détaillées des bibliothèques et de la version d'OpenSCAD"
+msgstr "OpenSCAD-ის ბიბლიოთეკისა და აგების დეტალური ინფორმაცია"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:920
-#, fuzzy
 msgid "&New File"
-msgstr "&Fichier"
+msgstr "&ახალი ფაილი"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:922
 msgid "Ctrl+N"
 msgstr "Ctrl+N"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:924
-#, fuzzy
 msgid "New Window"
-msgstr "Rechercher &Précédent"
+msgstr "ახალი ფანჯარა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:925
-#, fuzzy
 msgid "&Open File"
-msgstr "&Fichier"
+msgstr "&ფაილის გახსნა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:927
 msgid "Ctrl+O"
@@ -499,11 +485,11 @@ msgstr "Ctrl+O"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:929
 msgid "Open in New Window"
-msgstr ""
+msgstr "ახალ ფანჯარაში გახსნა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:930
 msgid "&Save"
-msgstr "Enregi&strer"
+msgstr "&შენახვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:932
 msgid "Ctrl+S"
@@ -511,20 +497,19 @@ msgstr "Ctrl+S"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:934
 msgid "Save &As..."
-msgstr "Enregistrer &sous..."
+msgstr "შეინახვა &როგორც..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:936
 msgid "Ctrl+Shift+S"
-msgstr "Ctrl+Maj+S"
+msgstr "Ctrl+Shift+S"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:938
-#, fuzzy
 msgid "Save All"
-msgstr "Enregistrer &sous..."
+msgstr "ყველას შენახვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:939
 msgid "&Reload"
-msgstr "&Recharger"
+msgstr "თავიდან ჩატვირთვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:941
 msgid "Ctrl+R"
@@ -532,7 +517,7 @@ msgstr "Ctrl+R"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:943
 msgid "&Quit"
-msgstr "&Quitter"
+msgstr "&გასვლა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:945
 msgid "Ctrl+Q"
@@ -540,7 +525,7 @@ msgstr "Ctrl+Q"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:947
 msgid "&Undo"
-msgstr "Ann&uler"
+msgstr "დაბრუნება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:949
 msgid "Ctrl+Z"
@@ -548,11 +533,11 @@ msgstr "Ctrl+Z"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:951
 msgid "&Redo"
-msgstr "&Répéter"
+msgstr "&გამეორება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:953
 msgid "Ctrl+Shift+Z"
-msgstr "Ctrl+Maj+Z"
+msgstr "Ctrl+Shift+Z"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:956
 msgid "Ctrl+Y"
@@ -560,7 +545,7 @@ msgstr "Ctrl+Y"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:958
 msgid "Cu&t"
-msgstr "Co&uper"
+msgstr "ამ&ოჭრა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:960
 msgid "Ctrl+X"
@@ -568,7 +553,7 @@ msgstr "Ctrl+X"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:962
 msgid "&Copy"
-msgstr "&Copier"
+msgstr "&კოპირება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:964
 msgid "Ctrl+C"
@@ -576,7 +561,7 @@ msgstr "Ctrl+C"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:966
 msgid "&Paste"
-msgstr "&Coller"
+msgstr "&ჩასმა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:968
 msgid "Ctrl+V"
@@ -584,7 +569,7 @@ msgstr "Ctrl+V"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:970
 msgid "&Indent"
-msgstr "&Indenter"
+msgstr "&შეწევა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:972
 msgid "Ctrl+I"
@@ -592,7 +577,7 @@ msgstr "Ctrl+I"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:974
 msgid "C&omment"
-msgstr "C&ommenter"
+msgstr "&კომენტარი"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:976
 msgid "Ctrl+D"
@@ -600,67 +585,59 @@ msgstr "Ctrl+D"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:978
 msgid "Unco&mment"
-msgstr "Déco&mmenter"
+msgstr "&კომენტარის მოხსნა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:980
 msgid "Ctrl+Shift+D"
-msgstr "Ctrl+Maj+D"
+msgstr "Ctrl+Shift+D"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:982
-#, fuzzy
 msgid "Show Next Tab"
-msgstr "Afficher les détails"
+msgstr "შემდეგი ჩანართის ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:984
-#, fuzzy
 msgid "Ctrl+Tab"
-msgstr "Ctrl+T"
+msgstr "Ctrl+Tab"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:986
-#, fuzzy
 msgid "Show Previous Tab"
-msgstr "Afficher les détails"
+msgstr "წინა ჩანართის ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:988
-#, fuzzy
 msgid "Ctrl+Shift+Tab"
-msgstr "Ctrl+Maj+S"
+msgstr "Ctrl+Shift+Tab"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:990
 msgid "Copy viewport ima&ge"
-msgstr "Copier l'ima&ge d'aperçu"
+msgstr "&ვიუპორტის შემცველობის კოპირება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:992
 msgid "Ctrl+Shift+C"
-msgstr "Ctrl+Maj+C"
+msgstr "Ctrl+Shift+C"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:994
-#, fuzzy
 msgid "Copy viewport transl&ation"
-msgstr "Copie la translation de la fenêtre de rendu"
+msgstr "ვიუპორტის გაატანითი მოძრაობის &კოპირება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:996
 msgid "Ctrl+T"
 msgstr "Ctrl+T"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:998
-#, fuzzy
 msgid "Cop&y viewport rotation"
-msgstr "Copie la rotation de la fenêtre de rendu"
+msgstr "ვიუპორტის &მობრუნების კოპირება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:999
-#, fuzzy
 msgid "Copy vie&wport distance"
-msgstr "Copie la distance de la fenêtre de rendu"
+msgstr "&ვიუპორტის მანძილის კოპირება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1000
-#, fuzzy
 msgid "Copy vie&wport fov"
-msgstr "Copier l'ima&ge d'aperçu"
+msgstr "&ვიუპორტის მხედველობის ველის კოპირება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1001
 msgid "Increase Font &Size"
-msgstr "&Agrandir la police"
+msgstr "ფონტის ზომის &გაზრდა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1003
 msgid "Ctrl++"
@@ -668,20 +645,19 @@ msgstr "Ctrl++"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1005
 msgid "Decrease Font Si&ze"
-msgstr "&Réduire la police"
+msgstr "ფონტის ზომის &შემცირება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1007
 msgid "Ctrl+-"
 msgstr "Ctrl+-"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1009
-#, fuzzy
 msgid "Hide Editor"
-msgstr "&Cacher l'éditeur"
+msgstr "რედაქტორის დამალვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1010
 msgid "&Reload and Preview"
-msgstr "&Recharger et Aperçu"
+msgstr "&თავიდან ჩატვირთვა და გადახედვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1012
 msgid "F4"
@@ -689,7 +665,7 @@ msgstr "F4"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1014
 msgid "&Preview"
-msgstr "Calculer l’&aperçu"
+msgstr "&გადახედვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1016
 msgid "F5"
@@ -697,7 +673,7 @@ msgstr "F5"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1018
 msgid "R&ender"
-msgstr "Calculer le r&endu"
+msgstr "&რენდერი"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1020
 msgid "F6"
@@ -705,7 +681,7 @@ msgstr "F6"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1022
 msgid "&3D Print"
-msgstr "Impression &3D"
+msgstr "&3D ბეჭდვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1024
 msgid "F8"
@@ -713,23 +689,23 @@ msgstr "F8"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1026
 msgid "&Check Validity"
-msgstr "&Vérifier la validité"
+msgstr "&სისწორის გადამოწმება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1027
 msgid "Display A&ST..."
-msgstr "Afficher A&ST..."
+msgstr "A&ST-ის ჩვენება..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1028
 msgid "Display CSG &Tree..."
-msgstr "Afficher l’&arbre CSG..."
+msgstr "CSG-ის ხის ჩვენება..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1029
 msgid "Display CSG Pr&oducts..."
-msgstr "Afficher les &produits CSG..."
+msgstr "CSG-ის &პროდუქტების ჩვენება..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1030
 msgid "Export as &STL..."
-msgstr "Exporter comme &STL..."
+msgstr "&STL-ის სახით გატანა..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1032
 msgid "F7"
@@ -737,16 +713,15 @@ msgstr "F7"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1034
 msgid "Export as &OFF..."
-msgstr "Exporter comme &OFF..."
+msgstr "&OFF-ის სახით გატანა..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1035
-#, fuzzy
 msgid "Export as &WRL..."
-msgstr "Exporter comme &STL..."
+msgstr "&WRL-ის სახით გატანა..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1036
 msgid "Preview"
-msgstr "Aperçu"
+msgstr "მინიატურა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1038
 msgid "F9"
@@ -754,7 +729,7 @@ msgstr "F9"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1040
 msgid "Surfaces"
-msgstr "Surfaces"
+msgstr "ზედაპირები"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1042
 msgid "F10"
@@ -762,7 +737,7 @@ msgstr "F10"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1044
 msgid "Wireframe"
-msgstr "Fil de fer"
+msgstr "მოდელი"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1046
 msgid "F11"
@@ -770,7 +745,7 @@ msgstr "F11"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1048
 msgid "Thrown Together"
-msgstr "Jeté ensemble"
+msgstr "ყველაფერი ერთად"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1050
 msgid "F12"
@@ -778,7 +753,7 @@ msgstr "F12"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1052
 msgid "Show Edges"
-msgstr "Afficher les arêtes"
+msgstr "კიდეების ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1054
 msgid "Ctrl+1"
@@ -786,7 +761,7 @@ msgstr "Ctrl+1"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1056
 msgid "Show Axes"
-msgstr "Afficher les axes"
+msgstr "ღერძების ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1058
 msgid "Ctrl+2"
@@ -794,7 +769,7 @@ msgstr "Ctrl+2"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1060
 msgid "Show Crosshairs"
-msgstr "Afficher la mire"
+msgstr "გადაჯვარედინებების ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1062
 msgid "Ctrl+3"
@@ -802,15 +777,15 @@ msgstr "Ctrl+3"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1064
 msgid "Show Scale Markers"
-msgstr "Afficher les graduations"
+msgstr "მასშტაბის ჭდეების ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1065
 msgid "Animate"
-msgstr "Animer"
+msgstr "ან_იმაცია"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1066
 msgid "&Top"
-msgstr "&Vue de dessus"
+msgstr "&ზედა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1068
 msgid "Ctrl+4"
@@ -818,7 +793,7 @@ msgstr "Ctrl+4"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1070
 msgid "&Bottom"
-msgstr "Vue de dessous"
+msgstr "ქ&ვედა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1072
 msgid "Ctrl+5"
@@ -826,7 +801,7 @@ msgstr "Ctrl+5"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1074
 msgid "&Left"
-msgstr "Vue de gauche"
+msgstr "&მარცხენა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1076
 msgid "Ctrl+6"
@@ -834,7 +809,7 @@ msgstr "Ctrl+6"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1078
 msgid "&Right"
-msgstr "Vue de droite"
+msgstr "მ&არჯვენა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1080
 msgid "Ctrl+7"
@@ -842,7 +817,7 @@ msgstr "Ctrl+7"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1082
 msgid "&Front"
-msgstr "Vue de face"
+msgstr "&წინა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1084
 msgid "Ctrl+8"
@@ -850,7 +825,7 @@ msgstr "Ctrl+8"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1086
 msgid "Bac&k"
-msgstr "Vue de dos"
+msgstr "&უკან"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1088
 msgid "Ctrl+9"
@@ -858,7 +833,7 @@ msgstr "Ctrl+9"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1090
 msgid "&Diagonal"
-msgstr "&Diagonale"
+msgstr "&დიაგონალური"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1092
 msgid "Ctrl+0"
@@ -866,55 +841,51 @@ msgstr "Ctrl+0"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1094
 msgid "Ce&nter"
-msgstr "Ce&ntre"
+msgstr "&ცენტრი"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1096
-#, fuzzy
 msgid "Ctrl+Shift+0"
-msgstr "Ctrl+Maj+S"
+msgstr "Ctrl+Shift+0"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1098
 msgid "&Perspective"
-msgstr "&Perspective normale"
+msgstr "&პერსპექტივა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1099
 msgid "&Orthogonal"
-msgstr "&Perspective cavalière"
+msgstr "&ორთოგონალური"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1100
-#, fuzzy
 msgid "Hide Console"
-msgstr "&Cacher la console"
+msgstr "კონსოლის დამალვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1101
 msgid "&About"
-msgstr "&À propos"
+msgstr "შ&ესახებ"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1102
 msgid "&Documentation"
-msgstr "&Documentation"
+msgstr "&დოკუმენტაცია"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1103
-#, fuzzy
 msgid "&Offline Documentation"
-msgstr "&Documentation"
+msgstr "&ავტონომიური დოკუმენტაცია"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1104
-#, fuzzy
 msgid "&Offline Cheat Sheet"
-msgstr "&Aide-mémoire"
+msgstr "&ავტონომიური მინიშნებები"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1105
 msgid "Clear Recent"
-msgstr "Effacer Récents"
+msgstr "უახლესების გასუფავება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1106
 msgid "Export as &DXF..."
-msgstr "Exporter comme &DXF..."
+msgstr "&DXF-ის სახით გატანა..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1107
 msgid "&Close"
-msgstr "&Fermer"
+msgstr "&დახურვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1109
 msgid "Ctrl+W"
@@ -922,11 +893,11 @@ msgstr "Ctrl+W"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1111
 msgid "&Preferences"
-msgstr "&Préférences"
+msgstr "&გამართვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1112
 msgid "&Find..."
-msgstr "&Rechercher..."
+msgstr "&პოვნა..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1114
 msgid "Ctrl+F"
@@ -934,7 +905,7 @@ msgstr "Ctrl+F"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1116
 msgid "Fin&d and Replace..."
-msgstr "&Rechercher et remplacer..."
+msgstr "&ძებნა და ჩანაცვლება..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1118
 msgid "Ctrl+Alt+F"
@@ -942,7 +913,7 @@ msgstr "Ctrl+Alt+F"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1120
 msgid "Find Ne&xt"
-msgstr "Rechercher &Suivant"
+msgstr "&შემდეგის პოვნა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1122
 msgid "Ctrl+G"
@@ -950,15 +921,15 @@ msgstr "Ctrl+G"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1124
 msgid "Find Pre&vious"
-msgstr "Rechercher &Précédent"
+msgstr "&წინას მოძებნა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1126
 msgid "Ctrl+Shift+G"
-msgstr "Ctrl+Maj+G"
+msgstr "Ctrl+Shift+G"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1128
 msgid "Use Se&lection for Find"
-msgstr "Utiliser la sé&lection pour Rechercher"
+msgstr "&მონიშნულის მოძებნა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1130
 msgid "Ctrl+E"
@@ -966,64 +937,63 @@ msgstr "Ctrl+E"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1132
 msgid "Jump to next error"
-msgstr ""
+msgstr "შემდეგ შეცდომაზე გადასვლა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1134
-#, fuzzy
 msgid "Ctrl+Alt+E"
-msgstr "Ctrl+Alt+F"
+msgstr "Ctrl+Alt+E"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1136
 msgid "&Flush Caches"
-msgstr "&Vider les caches"
+msgstr "&კეშის გასუფთავება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1137
 msgid "&OpenSCAD Homepage"
-msgstr "Page d'accueil &OpenSCAD"
+msgstr "&OpenSCAD-ის საწყისი გვერდი"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1138
 msgid "&Automatic Reload and Preview"
-msgstr "Rechargement et aperçu &Automatique"
+msgstr "&თავიდან ჩატვირთვა და გადახედვა&"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1139
 msgid "Export as &Image..."
-msgstr "Exporter comme &Image..."
+msgstr "&გამოსახულების სახით გატანა..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1140
 msgid "Export as &CSG..."
-msgstr "Exporter comme &CSG..."
+msgstr "&CSG-ის სახით გატანა..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1141
 msgid "&Library info"
-msgstr "Informations &Bibliothèques"
+msgstr "&ბიბლიოთეკის ინფორმაცია"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1142
 msgid "Show &Library Folder..."
-msgstr "Afficher le dossier des &bibliothèques..."
+msgstr "&ბიბლიოთეკის საქაღალდის ჩვენება..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1143
 msgid "Reset View"
-msgstr "Réinitialiser la vue"
+msgstr "ხედის საწყის მნიშვნელობაზე დაბრუნება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1144
 msgid "&Font List"
-msgstr "Liste des &polices"
+msgstr "&ფონტების სია"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1145
 msgid "Export as S&VG..."
-msgstr "Exporter comme S&VG..."
+msgstr "S&VG-ის სახით გატანა..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1146
 msgid "Export as &AMF..."
-msgstr "Exporter comme &AMF..."
+msgstr "&AMF-ის სახით გატანა..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1147
 msgid "Export as &3MF..."
-msgstr "Exporter comme &3MF..."
+msgstr "&3MF-ის სახით გატანა..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1148
 msgid "Zoom In"
-msgstr "Zoom avant"
+msgstr "გადიდება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1150
 msgid "Ctrl+]"
@@ -1031,7 +1001,7 @@ msgstr "Ctrl+]"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1152
 msgid "Zoom Out"
-msgstr "Zoom arrière"
+msgstr "და_პატარავება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1154
 msgid "Ctrl+["
@@ -1039,229 +1009,212 @@ msgstr "Ctrl+["
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1156
 msgid "View All"
-msgstr "&Voir Tout"
+msgstr "ყველას ნახვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1158
 msgid "Ctrl+Shift+V"
-msgstr "Ctrl+Maj+S"
+msgstr "Ctrl+Shift+V"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1160
 msgid "Conv&ert Tabs to Spaces"
-msgstr "Conv&ertir les tabulations en espaces"
+msgstr "&ტაბულაციის გამოტოვებებით შეცვლა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1161
 msgid "Toggle Bookmark"
-msgstr ""
+msgstr "სანიშნის გადართვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1163
-#, fuzzy
 msgid "Ctrl+F2"
-msgstr "Ctrl+F"
+msgstr "Ctrl+F2"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1165
 msgid "Jump to next bookmark"
-msgstr ""
+msgstr "შემდეგ სანიშნზე გადასვლა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1167
-#, fuzzy
 msgid "F2"
-msgstr "F12"
+msgstr "F2"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1169
 msgid "Jump to previous bookmark"
-msgstr ""
+msgstr "წინა სანიშნზე გადასვლა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1171
-#, fuzzy
 msgid "Shift+F2"
-msgstr "Ctrl+Maj+S"
+msgstr "Shift+F2"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1173
-#, fuzzy
 msgid "Hide Editor toolbar"
-msgstr "Cacher les boîtes à outils"
+msgstr "რედაქტორის პანელის დამალვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1174
 msgid "U&nindent"
-msgstr "Dési&ndenter"
+msgstr "&შეწევების გაუქმება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1176
 msgid "Ctrl+Shift+I"
-msgstr "Ctrl+Maj+I"
+msgstr "Ctrl+Shift+I"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1178
 msgid "&Cheat Sheet"
-msgstr "&Aide-mémoire"
+msgstr "&მინიშნებები"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1179
 msgid "Hide Customizer"
-msgstr "Cacher panneau de personnalisation"
+msgstr "მომრგების დამალვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1180
-#, fuzzy
 msgid "Export as PDF..."
-msgstr "Exporter comme &DXF..."
+msgstr "PDF-ად გატანა..."
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1181
-#, fuzzy
 msgid "Hide 3D View toolbar"
-msgstr "Cacher les boîtes à outils"
+msgstr "3D ხელსაწყოთა ზოლის დამალვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1182
-#, fuzzy
 msgid "Hide Error Log"
-msgstr "Cacher les boîtes à outils"
+msgstr "შეცდომების ჟურნალის დამალვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1184
-#, fuzzy
 msgid "Hide ErrorLog"
-msgstr "Cacher les boîtes à outils"
+msgstr "შეცდომების ჟურნალის დამალვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1186
-#, fuzzy
 msgid "&Editor"
-msgstr "Éditeur"
+msgstr "&რედაქტორი"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1187
-#, fuzzy
 msgid "&Console"
-msgstr "Console"
+msgstr "&კონსოლი"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1188
-#, fuzzy
 msgid "C&ustomizer"
-msgstr "Panneau de personnalisation"
+msgstr "&მომრგები"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1189
-#, fuzzy
 msgid "Error &Log"
-msgstr "Erreur"
+msgstr "შეცდომების &ჟურნალი"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1190
-#, fuzzy
 msgid "&Next Window"
-msgstr "Rechercher &Précédent"
+msgstr "&შემდეგი ფანჯარა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1191
-#, fuzzy
 msgid "&Previous Window"
-msgstr "Rechercher &Précédent"
+msgstr "&წინა ფანჯარა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1192
-#, fuzzy
 msgid "Insert Template"
-msgstr "Insérer une Tabulation"
+msgstr "შაბლონის ჩასმა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1194
 msgid "Alt+Ins"
-msgstr ""
+msgstr "Alt+Ins"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1196
 msgid "Message"
-msgstr "Message"
+msgstr "შეტყობინება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1199
 msgid "Time:"
-msgstr "Temps:"
+msgstr "დრო:"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1200
 msgid "FPS:"
-msgstr "FPS:"
+msgstr "კადრი/წმ:"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1201
 msgid "Steps:"
-msgstr "Étapes:"
+msgstr "ნაბიჯები:"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1202
 msgid "Dump Pictures"
-msgstr "Exporter images"
+msgstr "კადრების შენახვა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1203
 msgid "&File"
-msgstr "&Fichier"
+msgstr "&ფაილი"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1204
 msgid "Recen&t Files"
-msgstr "Fichiers Récen&ts"
+msgstr "&უახლესი ფაილები"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1205
 msgid "&Examples"
-msgstr "&Exemples"
+msgstr "&მაგალითები"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1206
 msgid "E&xport"
-msgstr "E&xporter"
+msgstr "&გატანა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1207
 msgid "&Edit"
-msgstr "&Édition"
+msgstr "&ჩასწორება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1208
 msgid "&Design"
-msgstr "Conception"
+msgstr "&დიზაინი"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1209
 msgid "&View"
-msgstr "&Vue"
+msgstr "_ხედი"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1210
 msgid "&Help"
-msgstr "&Aide"
+msgstr "&დახმარება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1211
-#, fuzzy
 msgid "&Window"
-msgstr "Rechercher &Précédent"
+msgstr "&ფანჯარა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1212
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1843 src/gui/Settings.cc:107
 msgid "Tabs"
-msgstr "Tabulations"
+msgstr "დაფები"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1213
 msgid "Find"
-msgstr "Rechercher"
+msgstr "მოძებნა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1214
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1221
 msgid "Replace"
-msgstr "Remplacer"
+msgstr "ჩანაცვლება"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1216
 msgid "Search string"
-msgstr "Rechercher une chaîne de caractères"
+msgstr "საძებნი სტრიქონი"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1217
-#, fuzzy
 msgid "Previous"
-msgstr "Rechercher &Précédent"
+msgstr "წინა"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1218
 msgid "Next"
-msgstr "Suivant"
+msgstr "შემდეგი"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1219
 msgid "Done"
-msgstr "Terminer"
+msgstr "დასრულებულია"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1220
 msgid "Replacement string"
-msgstr "Chaîne de remplacement"
+msgstr "ჩასანაცვლებელი სტრიქონი"
 
 #: build/OpenSCAD_autogen/include/ui_MainWindow.h:1223
 msgid "Customizer Widget"
-msgstr "Panneau de personnalisation"
+msgstr "მომრგების ვიჯეტი"
 
 #: build/OpenSCAD_autogen/include/ui_OpenCSGWarningDialog.h:83
 msgid "OpenGL Warning"
-msgstr "Avertissements OpenGL"
+msgstr "OpenGL-ის გაფრთხილება"
 
 #: build/OpenSCAD_autogen/include/ui_OpenCSGWarningDialog.h:84
 msgid ""
 "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/"
 "REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css"
-"\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/"
+"css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; "
 "font-weight:400; font-style:normal;\">\n"
@@ -1271,8 +1224,8 @@ msgid ""
 msgstr ""
 "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/"
 "REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css"
-"\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/"
+"css\">\n"
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-family:'Lucida Grande'; font-size:13pt; "
 "font-weight:400; font-style:normal;\">\n"
@@ -1282,15 +1235,15 @@ msgstr ""
 
 #: build/OpenSCAD_autogen/include/ui_OpenCSGWarningDialog.h:89
 msgid "Enable OpenCSG"
-msgstr "Activer OpenCSG"
+msgstr "OpenCSG-ის ჩართვა"
 
 #: build/OpenSCAD_autogen/include/ui_OpenCSGWarningDialog.h:90
 msgid "Show this message again"
-msgstr "Affiche ce message à nouveau"
+msgstr "ამ შეტყობინების კიდევ ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_OpenCSGWarningDialog.h:91
 msgid "Close"
-msgstr "Fermer"
+msgstr "დახურვა"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterCheckBox.h:60
 #: build/OpenSCAD_autogen/include/ui_ParameterComboBox.h:55
@@ -1301,59 +1254,56 @@ msgstr "Fermer"
 #: build/OpenSCAD_autogen/include/ui_ParameterVector.h:108
 #: build/OpenSCAD_autogen/include/ui_ParameterWidget.h:141
 msgid "Form"
-msgstr "Formulaire"
+msgstr "ფორმა"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterDescriptionWidget.h:100
 msgid "Parameter"
-msgstr "Paramètre"
+msgstr "პარამეტრი"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterDescriptionWidget.h:101
 #: build/OpenSCAD_autogen/include/ui_ParameterDescriptionWidget.h:102
 msgid "Description"
-msgstr "Description"
+msgstr "აღწერა"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterWidget.h:142
 msgid "Automatic Preview"
-msgstr "Aperçu automatique"
+msgstr "ავტომატური მინიატურა"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterWidget.h:143
 msgid "Show Details"
-msgstr "Afficher les détails"
+msgstr "დეტალების ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterWidget.h:144
 msgid "Inline Details"
-msgstr "Détails sur la même ligne"
+msgstr "დეტალები ერთ ხაზში"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterWidget.h:145
 msgid "Hide Details"
-msgstr "Cacher les détails"
+msgstr "დეტალების დამალვა"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterWidget.h:146
 msgid "Description Only"
-msgstr "Description seulement"
+msgstr "მხოლოდ აღწერა"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterWidget.h:148
-#, fuzzy
 msgid "<design default>"
-msgstr "valeurs de conception par défaut"
+msgstr "<დიზაინის ნაგულისხმები>"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterWidget.h:151
 msgid "preset selection"
-msgstr "Sélection d'un jeu de paramètres"
+msgstr "პრესეტის არჩევანი"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterWidget.h:154
-#, fuzzy
 msgid "Add new preset"
-msgstr "Ajouter un nouveau jeu de paramètres"
+msgstr "ახალი პრესეტის დამატება"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterWidget.h:156
 msgid "+"
 msgstr "+"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterWidget.h:158
-#, fuzzy
 msgid "Remove current preset"
-msgstr "supprimer le jeu de paramètres courant"
+msgstr "მიმდინარე პრესეტის წაშლა"
 
 #: build/OpenSCAD_autogen/include/ui_ParameterWidget.h:160
 msgid "-"
@@ -1361,106 +1311,104 @@ msgstr "-"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1774
 msgid "3D View"
-msgstr "&Vue 3D"
+msgstr "3D ხედი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1775
 msgctxt "preferences"
 msgid "Advanced"
-msgstr "Avancé"
+msgstr "დაწინაურებული"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1776
 #: src/gui/MainWindow.cc:2894 src/gui/MainWindow.cc:2899
 msgid "Editor"
-msgstr "Éditeur"
+msgstr "რედაქტორი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1778
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1861
 msgid "Features"
-msgstr "Fonctionnalités"
+msgstr "თვისებები"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1780
 msgid "Enable/Disable experimental features"
-msgstr "Activer/Désactiver les fonctionnalités expérimentales"
+msgstr "ექსპერიმენტალური თვისებების ჩართვა/გამორთვა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1782
 msgid "Axes"
-msgstr "Axes"
+msgstr "ღერძები"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1784
 msgid "Input driver configuration and Axis mapping"
-msgstr "Configuration des pilotes et de l'association des axes"
+msgstr "შეყვანის დრაივერის მორგება და ღერძების მიბმა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1786
 msgid "Buttons"
-msgstr "Boutons"
+msgstr "ღილაკები"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1787
 #: build/OpenSCAD_autogen/include/ui_PrintInitDialog.h:109
 msgid "3D Print"
-msgstr "Impression 3D"
+msgstr "3D ბეჭდვა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1789
 msgid "3D Printing Services"
-msgstr "Services d'impression 3D"
+msgstr "3D ბეჭდვის სერვისები"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1791
 msgid "Color scheme:"
-msgstr "Palette de couleurs:"
+msgstr "ფერების სქემა:"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1792
 msgid "Show Warnings and Errors in 3D View"
-msgstr "Afficher les Avertissements et les Erreurs dans la fenêtre de rendu"
+msgstr "3 ხედში გაფრთხილებებისა და შეცდომების ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1793
 msgid "mouse centric zoom"
-msgstr "Zoom centré sur le pointeur"
+msgstr "თაგუნას მდებარეობით გადიდება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1794
 msgid "Number Scroll"
-msgstr ""
+msgstr "ციფრების გადახვევა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1795 src/gui/Settings.cc:113
-#, fuzzy
 msgid "Alt"
-msgstr "Tout"
+msgstr "Alt"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1796 src/gui/Settings.cc:113
 msgid "Left Mouse Button"
-msgstr ""
+msgstr "თაგუნას მარცხენა ღილაკი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1797 src/gui/Settings.cc:113
 msgid "Either"
-msgstr ""
+msgstr "ან"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1799
-#, fuzzy
 msgid "Step Size"
-msgstr "Taille"
+msgstr "ბიჯის ზომა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1800
 msgid "Number Scroll Via Mouse Wheel"
-msgstr ""
+msgstr "რიცხვების თაგუნას ბორბლით გადახვევა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1801
 msgid "Modifier For Wheel Scroll "
-msgstr ""
+msgstr "თაგუნას ბორბლით მოდიფიკატორი "
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1802
 msgid "Autocomplete"
-msgstr ""
+msgstr "ავტო შევსება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1803
 msgid "Enable Autocompletion"
-msgstr ""
+msgstr "ავტომატური დასრულების ჩართვა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1804
 msgid "Character Threshold"
-msgstr ""
+msgstr "სიმბოლოების ზღვარი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1805
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1830
 msgid "Line wrap"
-msgstr "Retour à la ligne automatique"
+msgstr "ხაზების გადატანა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1806
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1819
@@ -1468,171 +1416,171 @@ msgstr "Retour à la ligne automatique"
 #: src/gui/Settings.cc:98 src/gui/Settings.cc:101 src/gui/Settings.cc:102
 #: src/gui/input/ButtonConfigWidget.cc:249
 msgid "None"
-msgstr "Aucun"
+msgstr "None"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1807 src/gui/Settings.cc:98
 msgid "Wrap at character boundaries"
-msgstr "Coupure au caractère"
+msgstr "სიმბოლოს საზღვრიდან გადატანა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1808 src/gui/Settings.cc:98
 msgid "Wrap at word boundaries"
-msgstr "Coupure au mot"
+msgstr "სიტყვის ბოლოდან გადატანა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1810
 msgid "Line wrap indentation"
-msgstr "Indentation des retours à la ligne"
+msgstr "სწორება გადატანისას"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1811
 msgid "Line wrap visualization"
-msgstr "Visualisation des retours à la ligne"
+msgstr "ხაზის გადატანის ვიზუალიზაცია"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1812
 msgid "Style"
-msgstr "Style"
+msgstr "სტილი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1813 src/gui/Settings.cc:99
 msgid "Fixed"
-msgstr "Fixé"
+msgstr "ფიქსირებული"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1814 src/gui/Settings.cc:99
 msgid "Same"
-msgstr "Identique"
+msgstr "იგივე"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1815 src/gui/Settings.cc:99
 msgid "Indented"
-msgstr "Indenté"
+msgstr "შეწევით"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1817
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1848 src/gui/Settings.cc:108
 msgid "Indent"
-msgstr "Indenter"
+msgstr "შეწევა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1818
 msgid "Start"
-msgstr "Début"
+msgstr "გაშვება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1820
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1826 src/gui/Settings.cc:101
 #: src/gui/Settings.cc:102
 msgid "Text"
-msgstr "Texte"
+msgstr "ტექსტი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1821
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1827 src/gui/Settings.cc:101
 #: src/gui/Settings.cc:102
 msgid "Border"
-msgstr "Bordure"
+msgstr "საზღვარი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1822
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1828 src/gui/Settings.cc:101
 #: src/gui/Settings.cc:102
 msgid "Margin"
-msgstr "Marge"
+msgstr "ზღვარი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1824
 msgid "End"
-msgstr "Fin"
+msgstr "დასასრული"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1831
 msgid "Display"
-msgstr "Afficher"
+msgstr "დროის ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1832
 msgid "Highlight current line"
-msgstr "Surligner la ligne courante"
+msgstr "მიმდინარე ხაზის გამოკვეთა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1833
 msgid "Display Line Numbers"
-msgstr "Afficher les numéros de ligne"
+msgstr "ხაზების ნომრების ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1834
 msgid "Enable brace matching"
-msgstr "Activer la correspondance d'accolades"
+msgstr "ბრჭყალის წყვილების გამოკვეთა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1835
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1900
 msgid "Font"
-msgstr "Police"
+msgstr "ფონტი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1836
 msgid "Color syntax highlighting"
-msgstr "Utiliser la coloration syntaxique"
+msgstr "ფერადი სინტაქსის გამოკვეთა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1837
 msgid "Ctrl/Cmd-Mouse-wheel zooms text"
-msgstr "Ctrl/Cmd-Roulette-Souris agrandit le texte"
+msgstr "Ctrl/Cmd-თაგუნას-ბორბალი ტექსტს გაადიდებს"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1838
 msgid "Indentation"
-msgstr "Indentation"
+msgstr "სწორება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1839
 msgid "Auto Indent"
-msgstr "Indentation automatique"
+msgstr "ავტომატური სწორება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1840
 msgid "Backspace unindents"
-msgstr "La touche \"effacement\" retire l'indentation"
+msgstr "Backspace აუქმებს სწორებას"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1841
 msgid "Indent using"
-msgstr "Indenter en utilisant"
+msgstr "სწორება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1842 src/gui/Settings.cc:107
 msgid "Spaces"
-msgstr "Espaces"
+msgstr "სივრცეები"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1845
 msgid "Indentation width"
-msgstr "Largeur d'Indentation"
+msgstr "სწორების სიგანე"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1846
 msgid "Tab width"
-msgstr "Largeur des tabulations"
+msgstr "ტაბულაციის სიგანე"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1847
 msgid "Tab key function"
-msgstr "Fonction de la touche Tab"
+msgstr "ტაბულაციის ღილაკის ფუნქცია"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1849 src/gui/Settings.cc:108
 msgid "Insert Tab"
-msgstr "Insérer une Tabulation"
+msgstr "ტაბულაციის სიმბოლოს ჩასმა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1851
 msgid "Show whitespace"
-msgstr "Afficher les espaces blancs"
+msgstr "გამოტოვების ინდიკატორების ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1852 src/gui/Settings.cc:103
 msgid "Never"
-msgstr "Jamais"
+msgstr "არასდროს"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1853 src/gui/Settings.cc:103
 msgid "Always"
-msgstr "Toujours"
+msgstr "ყოველთვის"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1854
 msgid "Only after indentation"
-msgstr "Seulement après indentation"
+msgstr "მხოლოდ სწორების შემდეგ"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1856
 msgid "Size"
-msgstr "Taille"
+msgstr "SIZE"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1857
 msgid "Automatically check for updates"
-msgstr "Vérifier les mises à jour automatiquement"
+msgstr "განახლების ავტომატური შემოწმება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1858
 msgid "Include development snapshots"
-msgstr "Inclure les versions de développement"
+msgstr "სატესტო ვერსიების ჩათვლით"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1859
 msgid "Check Now"
-msgstr "Vérifier Maintenant"
+msgstr "ახლა შემოწმება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1860
 msgid "Last checked: "
-msgstr "Dernière vérification: "
+msgstr "ბოლო შემოწმება: "
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1862
 #: build/OpenSCAD_autogen/include/ui_PrintInitDialog.h:114
@@ -1645,41 +1593,40 @@ msgstr "URL"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1864
 msgid "API Key"
-msgstr "Clé API"
+msgstr "API-ის გასაღები"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1865
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1866
 msgid "Load"
-msgstr "Charge"
+msgstr "ჩატვირთვა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1868
 msgid "Check"
-msgstr "Vérifie"
+msgstr "შემოწმება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1869
 msgid "Slicing Profile"
-msgstr "Profil de tranchage"
+msgstr "სლაისერის პროფილი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1870
 msgid "Slicing Engine"
-msgstr "Trancheur"
+msgstr "სლაისერის ძრავა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1871
 msgid "File Format"
-msgstr "Format de fichier"
+msgstr "ფაილის ფორმატი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1872
 msgid "Action"
-msgstr "Action"
+msgstr "პარამეტრები"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1873
 msgid "Show"
-msgstr "Montre"
+msgstr "ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1874
 msgid "Note: The API key is stored unencrypted in the application settings."
-msgstr ""
-"Note: La clé API n'est pas chiffrée dans l'enregistrement des préférences"
+msgstr "შენიშვნა: API-ის გასაღები აპლიკაციის პარამეტრებში დაუშიფრავად ინახება."
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1875
 msgid "OpenCSG"
@@ -1687,23 +1634,23 @@ msgstr "OpenCSG"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1876
 msgid "Show capability warning"
-msgstr "Afficher les avertissements de fonctionnalité"
+msgstr "შესაძლებლობების გაფრთხილებების ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1877
 msgid "Enable for OpenGL 1.x"
-msgstr "Activer pour OpenGL 1.x"
+msgstr "ჩართეთ OpenGL 1.x-სთვის"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1878
 msgid "Turn off rendering at "
-msgstr "Désactiver le rendu à "
+msgstr "რენდერის გაჩერება "
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1879
 msgid "elements"
-msgstr "éléments"
+msgstr "ელემენტები"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1880
 msgid "Force Goldfeather"
-msgstr "Forcer Goldfeather"
+msgstr "ნაძალადევი Goldfeather"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1881
 msgid "CGAL"
@@ -1711,181 +1658,173 @@ msgstr "CGAL"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1882
 msgid "CGAL Cache size"
-msgstr "Taille du Cache de CGAL"
+msgstr "CGAL-ის კეშის ზომა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1883
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1885
 msgid "MB"
-msgstr "Mo"
+msgstr "მბ"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1884
 msgid "PolySet Cache size"
-msgstr "Taille du Cache PolySet"
+msgstr "PolySet-ის კეშის ზომა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1886
 msgid "User Interface"
-msgstr "Interface utilisateur"
+msgstr "სამომხმარებლო ინტერფეისი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1887
 msgid "Enable docking of Editor and Console in different places"
-msgstr "Activer l'ancrage de l'Éditeur et de la Console à différents endroits"
+msgstr "კონსოლისა და რედაქტორის სხვადასხვა ადგილებზე მიმაგრების ჩართვა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1888
 msgid "Enable undocking of Editor and Console to separate windows"
-msgstr ""
-"Activer désancrage de l'Éditeur et de la Console dans des fenêtres séparés"
+msgstr "კონსოლისა და რედაქტორის ცალ-ცალკე ფანჯრებში გატანის ჩართვა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1889
 msgid "Show Welcome Screen"
-msgstr "Affiche l'écran d'accueil"
+msgstr "საწყისი ეკრანის ჩვენება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1890
 msgid "Enable user interface localization (requires restart of OpenSCAD)"
 msgstr ""
-"Activer la localisation de l'interface utilisateur (Nécessite un redémarrage "
-"d'OpenSCAD)"
+"მომხმარებლის ინტერფეისის ლოკალიზაციის ჩართვა (აუცილებელია OpenSCAD-ის "
+"გადატვირთვა)"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1891
 msgid "Bring window to front after automatic reload"
-msgstr "Afficher la fenêtre en premier plan après un rechargement automatique"
+msgstr "ავტომატური თავიდან ჩატვირთვის შემდეგ ფანჯრის წინ გამოტანა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1892
 msgid "Play sound notification on render complete"
-msgstr "Jouer un son de notification lorsque le rendu est terminé"
+msgstr "რენდერის დასრულებისას ხმის დაკვრა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1893
-#, fuzzy
 msgid "Play sound when render completion time is at least"
-msgstr "Jouer un son de notification lorsque le rendu est terminé"
+msgstr "ხმის დაკვრა, როცა რენდერის დასრულებამდე დარჩენილია არა ნაკლებ"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1894
 msgid "sec"
-msgstr ""
+msgstr "წმ"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1895
 msgid "Toolbar Export 3D"
-msgstr ""
+msgstr "3D გატანის პანელი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1896
 msgid "Toolbar Export 2D"
-msgstr ""
+msgstr "2D გატანის პანელი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1897
 #: src/gui/MainWindow.cc:2912 src/gui/MainWindow.cc:2917
 msgid "Console"
-msgstr "Console"
+msgstr "კონსოლი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1898
 msgid "Maximum lines for Console to keep:"
-msgstr ""
+msgstr "კონსოლის ხაზების მაქსიმალური რიცხვი:"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1899
 msgid "(0 for unlimited)"
-msgstr ""
+msgstr "(0 შეუზღუდავისთვის)"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1901
 msgid "Toolbar Export Format 3D"
-msgstr ""
+msgstr "3D გატანის ფორმატის პანელი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1902
 msgid "STL"
-msgstr ""
+msgstr "STL"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1903
 msgid "OFF"
-msgstr ""
+msgstr "გამორთული"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1904
-#, fuzzy
 msgid "WRL"
-msgstr "URL"
+msgstr "WRL"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1905
 msgid "AMF"
-msgstr ""
+msgstr "AMF"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1906
 msgid "3MF"
-msgstr ""
+msgstr "3MF"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1908
 msgid "Toolbar Export Format 2D"
-msgstr ""
+msgstr "2D გატანის ფორმატის პანელი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1909
 msgid "none"
-msgstr ""
+msgstr "არა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1910
 msgid "DXF"
-msgstr ""
+msgstr "DXF"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1911
 msgid "SVG"
-msgstr ""
+msgstr "SVG"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1912
 msgid "PDF"
-msgstr ""
+msgstr "PDF"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1914
 msgid "OpenSCAD Language Features"
-msgstr "Fonctionnalités du langage OpenSCAD"
+msgstr "OpenSCAD-ის ენის შესაძლებლობები"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1915
 msgid "Warn when there is a parameter mismatch in user module calls"
 msgstr ""
-"Alerter lorsqu'il y des paramètres incompatibles dans les appels de modules "
-"utilisateurs"
+"მომხმარებლის მოდულის გამოძახებებში პარამეტრების არ-დამთხვევის შეტყობინება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1916
 msgid "Stop on the first warning"
-msgstr "Arrêter après la première alerte"
+msgstr "პრველ გაფრთხილებაზე შეჩერება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1917
-#, fuzzy
 msgid "Check the parameter range for builtin modules"
-msgstr "Vérifier la plage de paramètre(s) pour les modules incorporés"
+msgstr "შეამოწმეთ ჩაშენებული მოდულების პარამეტრების დიაპაზონი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1918
 msgid "Render Summary"
-msgstr ""
+msgstr "რენდერის შეჯამება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1919
 msgid "Camera"
-msgstr ""
+msgstr "კამერა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1920
 msgid "Bounding Box"
-msgstr ""
+msgstr "შემზღუდავი ოთხკუთხედი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1921
 msgid "Measurements: Area"
-msgstr ""
+msgstr "გაბარიტები: ფართობი"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1922
-#, fuzzy
 msgid "Export Features"
-msgstr "Fonctionnalités"
+msgstr "გატანის მორგება"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1923
 msgid "Default to ASCII STL export"
-msgstr ""
+msgstr "ნაგულისხმებად ASCII STL-ში გატანა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1924
 msgid "Debugging"
-msgstr ""
+msgstr "გამართვა"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1925
-#, fuzzy
 msgid "Enable tracing of HIDAPI events (requires restart of OpenSCAD)"
 msgstr ""
-"Activer la localisation de l'interface utilisateur (Nécessite un redémarrage "
-"d'OpenSCAD)"
+"HIDAPI მოვლენების ტრეისინგის ჩართვა (OpenSCAD-ის გადატვირთვა აუცილებელია)"
 
 #: build/OpenSCAD_autogen/include/ui_PrintInitDialog.h:111
 msgid "Cancel"
-msgstr "Annuler"
+msgstr "გაუქმება"
 
 #: build/OpenSCAD_autogen/include/ui_PrintInitDialog.h:113
 msgid "%1"
@@ -1896,106 +1835,105 @@ msgid "%v / %m"
 msgstr "%v / %m"
 
 #: src/Camera.cc:197
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Viewport: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
 "distance = %.2f, fov = %.2f"
 msgstr ""
-"Fenêtre de rendu: translation = [ %.2f %.2f %.2f ], rotation = [ %.2f %.2f "
-"%.2f ], distance = %.2f"
+"ვიუპორტი: translate = [ %.2f %.2f %.2f ], rotate = [ %.2f %.2f %.2f ], "
+"distance = %.2f, fov = %.2f"
 
 #: src/export.cc:108
-#, fuzzy, c-format
+#, c-format
 msgid "Can't open file \"%1$s\" for export"
-msgstr "Ne peut pas ouvrir le fichier \"%1$s\" pour exportation"
+msgstr "გასატანად \"%1$s\"-ის გახსნა შეუძლებელია"
 
 #: src/export.cc:123
-#, fuzzy, c-format
+#, c-format
 msgid "\"%1$s\" write error. (Disk full?)"
-msgstr "ERREUR: \"%1$s\" erreur d'écriture. (Disque plein?)"
+msgstr "\"%1$s\"-ის ჩაწერის შეცდოა. (დისკი გადაივსო?)"
 
 #: src/gui/Network.h:116
 msgid "Timeout error"
-msgstr "Dépassement du temps alloué"
+msgstr "დროის გასვლის შეცდომა"
 
 #: src/gui/Console.cc:125
 msgid "Save console content"
-msgstr "Enregistrer le contenu de la console"
+msgstr "კონსოლის შემცველობის შებახვა"
 
 #: src/gui/MainWindow.cc:1154
 msgid "Compile error."
-msgstr "Erreur de compilation."
+msgstr "აგების შეცდომა."
 
 #: src/gui/MainWindow.cc:1157
 msgid "Error while compiling '%1'."
-msgstr "Erreur lors de la compilation de '%1'."
+msgstr "შეცდომა '%1'-ის აგებისას."
 
 #: src/gui/MainWindow.cc:1161
 msgid "Compilation generated %1 warning."
 msgid_plural "Compilation generated %1 warnings."
-msgstr[0] "La compilation a généré %1 avertissement."
-msgstr[1] "La compilation a généré %1 avertissements."
+msgstr[0] "აგებისას ნაპოვნია %1 გაფრთხილება."
+msgstr[1] "აგებისას ნაპოვნია %1 გაფრთხილება."
 
 #: src/gui/MainWindow.cc:1171
-#, fuzzy
 msgid ""
-" For details see the <a href=\"#errorlog\">error log</a> and <a href="
-"\"#console\">console window</a>."
-msgstr " Pour les détails voir <a href=\"#console\">fenêtre de la Console</a>."
+" For details see the <a href=\"#errorlog\">error log</a> and <a "
+"href=\"#console\">console window</a>."
+msgstr ""
+" დეტალებისთვის იხილეთ <a href=\"#errorlog\">შეცდომების ჟურნალი</a> და <a "
+"href=\"#console\">კონსოლის ფანჯარა</a>."
 
 #: src/gui/MainWindow.cc:1846
 msgid "Application"
-msgstr "Application"
+msgstr "აპლიკაცია"
 
 #: src/gui/MainWindow.cc:1847
 msgid ""
 "The document has been modified.\n"
 "Do you really want to reload the file?"
 msgstr ""
-"Ce document a été modifié.\n"
-"Voulez-vous vraiment recharger le fichier?"
+"დოკუმენტი შეიცვალა.\n"
+"მართლა გნებავთ ფაილის თავიდან ჩატვირთვა?"
 
 #: src/gui/MainWindow.cc:2109
 msgid "Exported design exceeds the service upload limit of (%1 MB)."
-msgstr ""
-"L'export de la conception dépasse la limite de téléversement de (%1 Mo)."
+msgstr "გატანილი დიზაინის ზომა ატვირთვის ზღვარს (%1 მბ) სცდება."
 
 #: src/gui/MainWindow.cc:2110
 msgid "Upload Error"
-msgstr "Erreur de téléversement"
+msgstr "ატვირთვის შეცდომა"
 
 #: src/gui/MainWindow.cc:2515
 msgid "Export %1 File"
-msgstr "Exporter le fichier %1"
+msgstr "%1 ფაილის გატანა"
 
 #: src/gui/MainWindow.cc:2516
 msgid "%1 Files (*%2)"
-msgstr "%1 Fichiers (*%2)"
+msgstr "%1 ფაილი (*%2)"
 
 #: src/gui/MainWindow.cc:2587
 msgid "Export CSG File"
-msgstr "Exporter un fichier CSG"
+msgstr "CSG ფაილის გატანა"
 
 #: src/gui/MainWindow.cc:2587
 msgid "CSG Files (*.csg)"
-msgstr "Fichiers CSG (*.csg)"
+msgstr "CSG ფაილები (*.csg)"
 
 #: src/gui/MainWindow.cc:2613
 msgid "Export Image"
-msgstr "Exporter une Image"
+msgstr "გამოსახულების გატანა"
 
 #: src/gui/MainWindow.cc:2613
 msgid "PNG Files (*.png)"
-msgstr "Fichiers PNG (*.png)"
+msgstr "PNG ფაილები (*.png)"
 
 #: src/gui/MainWindow.cc:2928
 msgid "Customizer"
-msgstr "Panneau de personnalisation"
+msgstr "მომრგები"
 
 #: src/gui/MainWindow.cc:2933 src/gui/MainWindow.cc:2938
-#, fuzzy
 msgid "Error-Log"
-msgstr "Erreur"
+msgstr "შეცდომების-ჟურნალი"
 
 #: src/gui/MainWindow.cc:2952 src/gui/TabManager.cc:213
 #: src/gui/TabManager.cc:458 src/gui/TabManager.cc:520
@@ -2004,24 +1942,23 @@ msgid "Untitled.scad"
 msgstr "Untitled.scad"
 
 #: src/gui/MainWindow.cc:3353 src/gui/MainWindow.cc:3356
-#, fuzzy
 msgid "Untitled"
-msgstr "Sans Titre"
+msgstr "უსახელო"
 
 #: src/gui/OpenSCADApp.cc:61
 msgid "Unknown error"
-msgstr "Erreur inconnue"
+msgstr "უცნობი შეცდომა"
 
 #: src/gui/OpenSCADApp.cc:64
 msgid "Critical Error"
-msgstr "Erreur critique"
+msgstr "კრიტიკული შეცდომა"
 
 #: src/gui/OpenSCADApp.cc:64
 msgid ""
 "A critical error was caught. The application may have become unstable:\n"
 "%1"
 msgstr ""
-"Erreur critique. L'application peut être devenue instable:\n"
+"აღოჩენილია კრიტიკული შეცდომა. აპლიკაციამ შეიძლება არასტაბილურად იმუშაოს:\n"
 "%1"
 
 #: src/gui/OpenSCADApp.cc:88
@@ -2029,34 +1966,33 @@ msgid ""
 "Fontconfig needs to update its font cache.\n"
 "This can take up to a couple of minutes."
 msgstr ""
-"Fontconfig a besoin de mettre à jour son cache de polices.\n"
-"Celà peut prendre quelques minutes."
+"Fontconfig-ს ფონტების კეშის განახლება ესაჭიროება.\n"
+"ამას რამდენიმე წუთი შეიძლება დასჭირდეს."
 
 #: src/gui/Preferences.cc:209 src/gui/Preferences.cc:214
 #: src/gui/Preferences.cc:781 src/gui/Preferences.cc:817
-#, fuzzy
 msgid "<Default>"
-msgstr "valeurs de conception par défaut"
+msgstr "<ნაგულისხმები>"
 
 #: src/gui/Preferences.cc:765
 msgid "Success: Server Version = %2, API Version = %1"
-msgstr "Succès: Version serveur = %2, Version API = %1"
+msgstr "წარმატება: სერვერის ვერსია = %2, API-ის ვერსია = %1"
 
 #: src/gui/Preferences.cc:767 src/gui/Preferences.cc:791
 #: src/gui/Preferences.cc:827
 msgid "Error"
-msgstr "Erreur"
+msgstr "შეცდომა"
 
 #: src/gui/PrintInitDialog.cc:44
 msgid "Print Service not available"
-msgstr "Service d'impression non disponible"
+msgstr "ბეჭდვის სერვისი მიუწვდომელია"
 
 #: src/gui/QGLView.cc:151
 msgid ""
 "Warning: You may experience OpenCSG rendering errors.\n"
 "\n"
 msgstr ""
-"Avertissement: Vous pourriez avoir des erreurs de rendu OpenCSG\n"
+"გაფრთხილება: შეიძლება OpenCSG-ის რენდერის შეცდომები მიიღოთ.\n"
 "\n"
 
 #: src/gui/QGLView.cc:153
@@ -2065,8 +2001,8 @@ msgid ""
 "disabled.\n"
 "\n"
 msgstr ""
-"Avertissement: Fonctionnalités OpenGL manquantes pour OpenCSG - OpenCSG a "
-"été désactivé.\n"
+"გაფრთხილება: OpenCSG-ის OpenGL-ის ფუნქციები ვერ ვიპოვე - OpenCSG-ის "
+"მხარდაჭერა გათიშულია.\n"
 "\n"
 
 #: src/gui/QGLView.cc:156
@@ -2075,9 +2011,9 @@ msgid ""
 "later.\n"
 "Your renderer information is as follows:\n"
 msgstr ""
-"Il est vivement recommandé d'utiliser OpenSCAD sur un système compatible "
-"OpenGL 2.0 ou ultérieur.\n"
-"Voici les informations de votre moteur de rendu:\n"
+"რეკომენდებულია OpenSCAD-ი OpenGL 2.0-ის ან უფრო ახალი ვერსიის მქონე "
+"სისტემაზე გაუშვათ.\n"
+"რენდერერის ინფორმაცია:\n"
 
 #: src/gui/QGLView.cc:159
 msgid ""
@@ -2085,188 +2021,184 @@ msgid ""
 "%2 (%3)\n"
 "OpenGL version %4\n"
 msgstr ""
-"Version GLEW %s\n"
-"%s (%s)\n"
-"Version OpenGL %s\n"
+"GLEW ვერსია %1\n"
+"%2 (%3)\n"
+"OpenGL ვერსია %4\n"
 
 #: src/gui/Settings.cc:84
 #, c-format
 msgid "Axis %d"
-msgstr "Axe %d"
+msgstr "ღერძი %d"
 
 #: src/gui/Settings.cc:88
 #, c-format
 msgid "Axis %d (inverted)"
-msgstr "Axe %d (inversé)"
+msgstr "ღერძი %d (ინვერსია)"
 
 #: src/gui/Settings.cc:103
 msgid "After indentation"
-msgstr "Après indentation"
+msgstr "მხოლოდ შეწევის შემდეგ"
 
 #: src/gui/Settings.cc:119
 msgid "Upload only"
-msgstr "Téléversement seul"
+msgstr "მხოლოდ ატვირთვა"
 
 #: src/gui/Settings.cc:119
 msgid "Upload & Slice"
-msgstr "Téleverse et tranche"
+msgstr "ატვირთვა და დაჭრა"
 
 #: src/gui/Settings.cc:119
 msgid "Upload, Slice & Select for printing"
-msgstr "Téléverse, tranche et sélectionne pour l'impression"
+msgstr "ატვირთვა, დაჭრა და დაბეჭდვისთვის მონიშვნა"
 
 #: src/gui/Settings.cc:119
 msgid "Upload, Slice & Start printing"
-msgstr "Télméverse, tranche et démarre l'impression"
+msgstr "ატვირთვა, დაჭრა და ბეჭდვის დაწყება"
 
 #: src/gui/TabManager.cc:403
 msgid "Copy file name"
-msgstr ""
+msgstr "ფაილის სახელის კოპირება"
 
 #: src/gui/TabManager.cc:409
 msgid "Copy full path"
-msgstr ""
+msgstr "სრული ბილიკის კოპირება"
 
 #: src/gui/TabManager.cc:415
-#, fuzzy
 msgid "Open folder"
-msgstr "&Fichier"
+msgstr "საქაღალდის გახსნა"
 
 #: src/gui/TabManager.cc:420
-#, fuzzy
 msgid "Close Tab"
-msgstr "Fermer"
+msgstr "ჩანართის დახურვა"
 
 #: src/gui/TabManager.cc:567
 msgid "The document has been modified."
-msgstr "Ce document a été modifié."
+msgstr "დოკუმენტი შეცვლილია."
 
 #: src/gui/TabManager.cc:568
 msgid "Do you want to save your changes?"
-msgstr "Voulez-vous enregistrer vos changements?"
+msgstr "გნებავთ შეინახოთ თქვენი ცვლილებები?"
 
 #: src/gui/TabManager.cc:599
 msgid "Some tabs have unsaved changes."
-msgstr ""
+msgstr "ზოგიერთ ჩანართში შეუნახავი ცვლილებებია."
 
 #: src/gui/TabManager.cc:600
-#, fuzzy
 msgid "Do you want to save all your changes?"
-msgstr "Voulez-vous enregistrer vos changements?"
+msgstr "გნებავთ ყველა თქვენი ცვლილებების შენახვა?"
 
 #: src/gui/TabManager.cc:661
 msgid "Failed to open file for writing"
-msgstr "Échec d'ouverture de fichier en écriture"
+msgstr "ფაილის ჩასაწერად გახსნის შეცდომა"
 
 #: src/gui/TabManager.cc:682
 msgid "Error saving design"
-msgstr "Erreur lors de l'enregistrement de la conception"
+msgstr "დიზაინის შენახვის შეცდომა"
 
 #: src/gui/TabManager.cc:692
 msgid "Save File"
-msgstr "Enregistrer le Fichier"
+msgstr "ფაილის შენახვა"
 
 #: src/gui/TabManager.cc:692
 msgid "OpenSCAD Designs (*.scad)"
-msgstr "Conceptions OpenSCAD (*.scad)"
+msgstr "OpenSCAD-ის დიზაინები(*.scad)"
 
 #: src/gui/TabManager.cc:705
 msgid ""
 "%1 already exists.\n"
 "Do you want to replace it?"
 msgstr ""
-"%1 existe déjà.\n"
-"Voulez-vous le remplacer?"
+"%1 უკვე არსებობს\n"
+"გნებავთ გადააწეროთ?"
 
 #: src/gui/input/AxisConfigWidget.h:84
 msgid ""
 "This driver was not enabled during build time and is thus not available."
-msgstr ""
-"Ce pilote n'était pas activé lors de la compilation et n'est pas disponible."
+msgstr "დრაივერი აგების დროს იყო გამორთული და ხელმიუწვდომელია."
 
 #: src/gui/input/AxisConfigWidget.h:86
 msgid ""
 "The DBUS driver is not for actual devices but for remote control, Linux only."
 msgstr ""
-"Le pilote DBUS n'est pas pour des appareils mais pour un contrôle distant, "
-"Linux uniquement."
+"DBus-ის დრაივერი არა ფიზიკური მოწყობილობებსთვისაა, არამედ დაშორებულად "
+"სამართავად, მხოლოდ ლინუქსიდან."
 
 #: src/gui/input/AxisConfigWidget.h:87
 msgid ""
 "The HIDAPI driver communicates directly with the 3D mice, Windows and macOS."
 msgstr ""
-"Le pilote HIDAPI communique directement avec la souris 3D, Windows et macOS."
+"HIDAPI-ის დრაივერი პირდაპირ ესაუბრება 3D თაგუნებს. Windows-ზე და macOS-ზე."
 
 #: src/gui/input/AxisConfigWidget.h:88
 msgid ""
 "The SpaceNav driver enables 3D-input-devices using the spacenavd daemon, "
 "Linux only."
 msgstr ""
-"Le pilote SpaceNav permet l'usage d'équipement de saisie 3D avec le démon "
-"spacenavd, Linux seulement."
+"SpaceNav-ის დრაივერი 3D-შეყვანის-მოწყობილობების მხარდაჭერისთვისაა spacenavd "
+"დემონის გამოყენებით. მხოლოდ ლინუქსზე."
 
 #: src/gui/input/AxisConfigWidget.h:89
 msgid ""
 "The Joystick driver uses the Linux joystick device (fixed to /dev/input/"
 "js0), Linux only."
 msgstr ""
-"Le pilote de Joystick utilise le 'device' Linux (imposé comme /dev/input/"
-"js0), Linux seulement."
+"ჯოისტიკის დრაივერი ლინუქსის ჯოისტიკის ინტერფეისს იყენებს (მოწყობილობა /dev/"
+"input/js0)."
 
 #: src/gui/input/AxisConfigWidget.h:90
 msgid "The QGAMEPAD driver is for multiplattform Gamepad Support."
-msgstr ""
-"Le pilote QGAMEPAD est prévu pour le support des plateformes multiples "
-"Gamepad."
+msgstr "QGAMEPAD მრავალპლატფორმული გეიმპედის მხარდაჭერსთვისაა."
 
 #: src/gui/input/ButtonConfigWidget.cc:250
 msgid "Toggle Perspective"
-msgstr "Basculer la perspective"
+msgstr "პერსპექტივის გადართვა"
 
 #: src/gui/parameter/ParameterWidget.cc:94
 msgid "Saving presets"
-msgstr "Sauvegarde des jeux de paramètres"
+msgstr "პრესეტების შენახვა"
 
 #: src/gui/parameter/ParameterWidget.cc:95
 msgid "%1 was found, but was unreadable. Do you want to overwrite %1?"
-msgstr "%1 existe mais est illisible. Voulez-vous écraser %1?"
+msgstr ""
+"%1 არსებობს, მაგრამ მისი წაკითხვა შეუძლებელია. გნებავთ, %1-ის თავზე "
+"გადავაწერო?"
 
 #: src/gui/parameter/ParameterWidget.cc:195
 msgid "Create new set of parameter"
-msgstr "Créer un nouveau jeu de paramètres"
+msgstr "პარამეტრების ახალი სეტის შექმნა"
 
 #: src/gui/parameter/ParameterWidget.cc:196
 msgid "Enter name of the parameter set"
-msgstr "Entrer le nom du jeu de paramètres"
+msgstr "შეიყვანეთ პარამეტრების სეტის სახელი"
 
 #: src/gui/parameter/ParameterWidget.cc:241
 msgid "New set "
-msgstr ""
+msgstr "ახალი სეტი "
 
 #: examples/examples.json:2
 msgid "Basics"
-msgstr "Bases"
+msgstr "საწყისები"
 
 #: examples/examples.json:14
 msgid "Functions"
-msgstr "Fonctions"
+msgstr "ფუნქციები"
 
 #: examples/examples.json:21
 msgid "Advanced"
-msgstr "Avancé"
+msgstr "დაწინაურებული"
 
 #: examples/examples.json:31
 msgid "Parametric"
-msgstr "Paramétrique"
+msgstr "პარამეტრული"
 
 #: examples/examples.json:35
 msgid "Old"
-msgstr "Ancien"
+msgstr "ძველი"
 
 #. (itstool) path: component/summary
 #: openscad.appdata.xml.in:6
 msgid "The Programmers Solid 3D CAD Modeller"
-msgstr "Le modeleur CAO 3D des programmeurs"
+msgstr "Solid 3D CAD მოდელერი პროგრამისტებისთვის"
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:20
@@ -2278,13 +2210,12 @@ msgid ""
 "3D models of machine parts but pretty sure is not what you are looking for "
 "when you are more interested in creating computer-animated movies."
 msgstr ""
-"OpenSCAD est un logiciel pour créer des modèles 3D (CAD). Contrairement à la "
-"plupart des logiciels libres de modélisation 3D (comme Blender) il ne se "
-"focalise pas sur l'aspect artistique de la modélisation mais plutôt sur les "
-"aspects de conception (CAD). Par conséquent, il peut être l'outil que vous "
-"recherchez lorsque vous voulez créer des modèles 3D pour des pièces de "
-"machines, mais il n'est certainement pas adapté si vous êtes intéressé par "
-"la création de films d'animation 3D."
+"OpenSCAD მყარი 3D CAD მოდელების შექმნის პროგრამაა. სხვა 3D მოდელების შექმნის "
+"პროგრამებისგან განსხვავებით (მაგ: Blender), მისი ფოკუსი ხელოვნის 3D "
+"მოდელირების მაგიერ CAD-ის ასპექტებზეა. ამიტომ ის შეიძლება იყოს ის აპლიკაცია, "
+"რომელსაც ეძებთ, როცა გეგმავთ შექმნათ 3D მოდელები მანქანის ნაწილებისთვის, "
+"მაგრამ დარწმუნებული ბრძანდებოდეთ, რომ ეს ის არაა, რასაც ეძებთ, თუ "
+"კომპიუტერით ანიმაციური ფილმების შექმნა გნებავთ."
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:21
@@ -2296,12 +2227,10 @@ msgid ""
 "in the modelling process or make designs that are defined by configurable "
 "parameters."
 msgstr ""
-"OpenSCAD n'est pas un modeleur interactif. Au contraire, il s'agit d'un "
-"genre de compilateur 3D, qui lit un script décrivant l'objet à modéliser et "
-"qui construit un modèle 3D à partir de ce script. Cela vous donne (en tant "
-"que concepteur) un contrôle total du processus de modélisation et vous "
-"permet de modifier facilement n'importe quelle étape de la modélisation ou "
-"de produire des conceptions qui sont définies selon des paramètres éditables."
+"OpenSCAD -ი ინტერაქტიურ მოდელერს არ წარმოადგენს. ის უფრო 3D კომპილატორის "
+"მსგავსი პროგრამაა, რომელიც ობიექტის აღწერის სკრიპტის ფაილების კითხულობს და "
+"მათგან 3D მოდელებს გენერირებს. ეს თქვენ (დიზაინერს) მოდელირების პროცეზე სრულ "
+"კონტროლს და მოდელირების ნებისმიერ საფეხურზე ჩარევის საშუალებას გაძლევთ."
 
 #. (itstool) path: description/p
 #: openscad.appdata.xml.in:22
@@ -2313,169 +2242,3 @@ msgid ""
 "parameters from DXF files. Besides DXF files OpenSCAD can read and create 3D "
 "models in the STL and OFF file formats."
 msgstr ""
-"OpenSCAD permet deux techniques principales de modélisation: D'abord il y a "
-"la construction de solides géométriques \"constructive solid geometry"
-"\" (CSG) et ensuite l'extrusion des schémas 2D. Le format d'échange de ces "
-"schémas 2D est le format de fichier Autocad DXF. En complément aux schémas "
-"2D pour l'extrusion il est aussi possible de lire les paramètres des "
-"fichiers DXF. En sus des fichiers DXF, OpenSCAD peut lire et créer des "
-"modèles 3D aux formats STL et OFF."
-
-#~ msgid "save preset"
-#~ msgstr "Enregistrer jeu param."
-
-#~ msgid "delete current preset"
-#~ msgstr "Supprimer jeu de paramètres courant"
-
-#~ msgid "add new preset"
-#~ msgstr "Ajouter un nouveau jeu de paramètres"
-
-#~ msgid "reset all parameters to the currently selected preset"
-#~ msgstr ""
-#~ "Réinitialiser paramètres aux valeurs initiales du jeu sélectionné courant"
-
-#~ msgid "Reset"
-#~ msgstr "Réinitialiser"
-
-#, fuzzy
-#~ msgid "Search"
-#~ msgstr "Rechercher une chaîne de caractères"
-
-#~ msgid "changes on current preset not saved"
-#~ msgstr "changements du jeu de paramètres courant non enregistrés"
-
-#~ msgid ""
-#~ "The changes on the current preset %1 are not saved yet. Do you really "
-#~ "want to reset this preset and lose your changes?"
-#~ msgstr ""
-#~ "Les changements du jeu de paramètre %1 ne sont pas enregistrés. Voulez "
-#~ "vous vraiment réinitialiser ce jeu de paramètres et perdre vos changements"
-
-#, fuzzy
-#~ msgid "Save current preset"
-#~ msgstr "enregistrer le jeu de paramètres courant"
-
-#~ msgid "JSON file read only"
-#~ msgstr "fichier JSON en lecture seule"
-
-#~ msgid ""
-#~ "The current preset %1 contains changes, but is not saved yet. Do you "
-#~ "really want to change the preset and lose your changes?"
-#~ msgstr ""
-#~ "Le jeu de paramètres courant %1 a été modifié, mais pas enregistré. "
-#~ "Voulez-vous réellement modifier les paramètres et perdre vos changements?"
-
-#~ msgid "Do you want to delete the current preset?"
-#~ msgstr "Voulez-vous supprimer le jeu de paramètres courant ?"
-
-#~ msgid "Do you want to delete the current preset '%1'?"
-#~ msgstr "Voulez-vous supprimer le jeu de paramètres courant \"%1\" ?"
-
-#~ msgid "Set Name %1 already exists"
-#~ msgstr "Le jeu de paramètres \"%1\" existe déjà"
-
-#~ msgid "The set name  %1 already exists. Do you want overwrite it?"
-#~ msgstr ""
-#~ "Le jeu de paramètres \"%1\" existe déjà.\n"
-#~ "Voulez-vous le remplacer?"
-
-#~ msgid "(not supported)"
-#~ msgstr "(non supporté)"
-
-#, fuzzy
-#~ msgid "ErrorLog"
-#~ msgstr "Erreur"
-
-#, fuzzy
-#~ msgid "Find Next"
-#~ msgstr "Rechercher &Suivant"
-
-#, fuzzy
-#~ msgid "Find Previous"
-#~ msgstr "Rechercher &Précédent"
-
-#, fuzzy
-#~ msgid "Some of the tabs are modified."
-#~ msgstr "Ce document a été modifié."
-
-#~ msgid "Saved design '%s'."
-#~ msgstr "Conception '%s' enregistrée."
-
-#~ msgid "Save As"
-#~ msgstr "Enregistrer &sous..."
-
-#~ msgid "Prev."
-#~ msgstr "Précédent"
-
-#~ msgid "&New"
-#~ msgstr "&Nouveau"
-
-#~ msgid "&Open..."
-#~ msgstr "&Ouvrir..."
-
-#~ msgid "Editor Type"
-#~ msgstr "Type d'éditeur"
-
-#~ msgid "Simple Editor"
-#~ msgstr "Éditeur Simple"
-
-#~ msgid "QScintilla Editor"
-#~ msgstr "Éditeur QScintilla"
-
-#~ msgid "(requires restart)"
-#~ msgstr "(nécessite un redémarrage)"
-
-#~ msgid "Allow opening multiple documents"
-#~ msgstr "Autoriser l'ouverture de plusieurs documents"
-
-#~ msgid "Untitled.csg"
-#~ msgstr "SansTitre.csg"
-
-#, fuzzy
-#~ msgid "Untitled.png"
-#~ msgstr "SansTitre.csg"
-
-#~ msgid "<"
-#~ msgstr "<"
-
-#~ msgid ">"
-#~ msgstr ">"
-
-#~ msgid "Shapes"
-#~ msgstr "Formes"
-
-#~ msgid "Extrusion"
-#~ msgstr "Extrusion"
-
-#~ msgid "Untitled%1"
-#~ msgstr "Sans Titre%1"
-
-#~ msgid "Top"
-#~ msgstr "Dessus"
-
-#~ msgid "Back"
-#~ msgstr "Arrière"
-
-#~ msgid "toolBar"
-#~ msgstr "boîte à outils"
-
-#~ msgid ""
-#~ "\n"
-#~ "Using QGLWidget\n"
-#~ "\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Utilise QGLWidget\n"
-#~ "\n"
-
-#~ msgid "Paste font selector to Editor Window"
-#~ msgstr "Coller le sélecteur de polices dans la fenêtre d'édition"
-
-#~ msgid "About OpenSCAD "
-#~ msgstr "À propos d'OpenSCAD "
-
-#~ msgid "Check for Update.."
-#~ msgstr "Vérifier les mises à jour.."
-
-#~ msgid "OpenGL Info"
-#~ msgstr "Information OpenGL"

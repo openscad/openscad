@@ -24,7 +24,7 @@
  *
  */
 
-#include "core/node.h"
+#include "node.h"
 #include "ModuleInstantiation.h"
 #include "progress.h"
 #include <functional>

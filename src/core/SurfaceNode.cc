@@ -26,16 +26,15 @@
 
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "core/node.h"
+#include "node.h"
 #include "PolySet.h"
 #include "Builtins.h"
 #include "Children.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include "io/fileutils.h"
+#include "fileutils.h"
 #include "handle_dep.h"
 #include "ext/lodepng/lodepng.h"
-#include "SurfaceNode.h"
 
 #include <cstdint>
 #include <sstream>
@@ -51,6 +50,53 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+
+struct img_data_t
+{
+public:
+  using storage_type = double; // float could be enough here
+
+  img_data_t() { min_val = 0; height = width = 0; }
+
+  void clear() { min_val = 0; height = width = 0; storage.clear(); }
+
+  void reserve(size_t x) { storage.reserve(x); }
+
+  void resize(size_t x) { storage.resize(x); }
+
+  storage_type& operator[](int x) { return storage[x]; }
+
+  storage_type min_value() { return min_val; } // *std::min_element(storage.begin(), storage.end());
+
+public:
+  unsigned int height; // rows
+  unsigned int width; // columns
+  storage_type min_val;
+  std::vector<storage_type> storage;
+
+};
+
+
+class SurfaceNode : public LeafNode
+{
+public:
+  VISITABLE();
+  SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi) { }
+  std::string toString() const override;
+  std::string name() const override { return "surface"; }
+
+  Filename filename;
+  bool center{false};
+  bool invert{false};
+  int convexity{1};
+
+  const Geometry *createGeometry() const override;
+private:
+  void convert_image(img_data_t& data, std::vector<uint8_t>& img, unsigned int width, unsigned int height) const;
+  bool is_png(std::vector<uint8_t>& img) const;
+  img_data_t read_dat(std::string filename) const;
+  img_data_t read_png_or_dat(std::string filename) const;
+};
 
 static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {

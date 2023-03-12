@@ -36,7 +36,7 @@
 #include "RenderSettings.h"
 #include "Preferences.h"
 #include "printutils.h"
-#include "core/node.h"
+#include "node.h"
 #include "CSGNode.h"
 #include "memory.h"
 #include "Expression.h"
@@ -97,12 +97,6 @@
 #include "QSettingsCached.h"
 #include <QSound>
 
-#ifdef ENABLE_PYTHON
-extern std::shared_ptr<AbstractNode> python_result_node;
-char *evaluatePython(const char *code, double time);
-extern bool python_unlocked;
-#endif
-
 #define ENABLE_3D_PRINTING
 #include "OctoPrint.h"
 #include "PrintService.h"
@@ -127,6 +121,7 @@ extern bool python_unlocked;
 #endif // ENABLE_CGAL
 
 #include "PrintInitDialog.h"
+//#include "ExportPdfDialog.h"
 #include "input/InputDriverEvent.h"
 #include "input/InputDriverManager.h"
 #include <cstdio>
@@ -274,6 +269,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   const QString surfaceStatement = "surface(\"%1\");\n";
   const QString importFunction = "data = import(\"%1\");\n";
   knownFileExtensions["stl"] = importStatement;
+  knownFileExtensions["obj"] = importStatement;
   knownFileExtensions["3mf"] = importStatement;
   knownFileExtensions["off"] = importStatement;
   knownFileExtensions["dxf"] = importStatement;
@@ -283,9 +279,6 @@ MainWindow::MainWindow(const QStringList& filenames)
   knownFileExtensions["png"] = surfaceStatement;
   knownFileExtensions["json"] = importFunction;
   knownFileExtensions["scad"] = "";
-#ifdef ENABLE_PYTHON
-  knownFileExtensions["py"] = "";
-#endif
   knownFileExtensions["csg"] = "";
 
   root_file = nullptr;
@@ -1236,10 +1229,6 @@ void MainWindow::instantiateRoot()
     setRenderVariables(builtin_context);
 
     std::shared_ptr<const FileContext> file_context;
-#ifdef ENABLE_PYTHON
-    if (python_result_node != NULL && this->python_active) this->absolute_root_node = python_result_node;
-    else
-#endif
     this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
@@ -1809,27 +1798,6 @@ void MainWindow::parseTopLevelDocument()
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
   delete this->parsed_file;
-#ifdef ENABLE_PYTHON
-  this->python_active = 0;
-  if (fname != NULL) {
-    int len = strlen(fname);
-    if (len >= 3 && !strcmp(fname + len - 3, ".py")) {
-      if (
-        Feature::ExperimentalPythonEngine.is_enabled() &&
-        python_unlocked == true) this->python_active = 1;
-      else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
-    }
-  }
-
-  if (this->python_active) {
-    auto fulltext_py =
-      std::string(this->last_compiled_doc.toUtf8().constData());
-
-    char *error = evaluatePython(fulltext_py.c_str(),this->animateWidget->getAnim_tval());
-    if (error != NULL) LOG(message_group::Error, Location::NONE, "", error);
-    fulltext = "\n";
-  }
-#endif // ifdef ENABLE_PYTHON
   this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
   this->root_file = nullptr;  // ditto
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
@@ -2529,20 +2497,27 @@ bool MainWindow::canExport(unsigned int dim)
 }
 
 #ifdef ENABLE_CGAL
-void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim)
+void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim){
+ExportPdfOptions* empty = nullptr;
+actionExport(format, type_name, suffix, dim, empty);
+};
+
+void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim, ExportPdfOptions *options)
 #else
 void MainWindow::actionExport(FileFormat, QString, QString, unsigned int, QString)
 #endif
 {
   //Setting filename skips the file selection dialog and uses the path provided instead.
-
   if (GuiLocker::isLocked()) return;
   GuiLocker lock;
 #ifdef ENABLE_CGAL
+
+
   setCurrentOutput();
 
   //Return if something is wrong and we can't export.
   if (!canExport(dim)) return;
+  
   auto title = QString(_("Export %1 File")).arg(type_name);
   auto filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
   auto exportFilename = QFileDialog::getSaveFileName(this, title, exportPath(suffix), filter);
@@ -2553,6 +2528,9 @@ void MainWindow::actionExport(FileFormat, QString, QString, unsigned int, QStrin
   this->export_paths[suffix] = exportFilename;
 
   ExportInfo exportInfo = createExportInfo(format, exportFilename, activeEditor->filepath);
+  // Add options
+exportInfo.options=options;
+  
   bool exportResult = exportFileByName(this->root_geom, exportInfo);
 
   if (exportResult) fileExportedMessage(type_name, exportFilename);
@@ -2606,7 +2584,48 @@ void MainWindow::actionExportSVG()
 
 void MainWindow::actionExportPDF()
 {
-  actionExport(FileFormat::PDF, "PDF", ".pdf", 2);
+
+ExportPdfOptions exportPdfOptions;
+QSettingsCached settings;
+
+// Prepopulated with default values in export.h
+auto exportPdfDialog = new ExportPdfDialog();
+
+// Get current settings or defaults
+//  modify the two enums (next two rows) to explicitly use default by lookup to string (see the later set methods).
+exportPdfDialog->setPaperSize(sizeString2Enum(settings.value("exportPdfOpts/paperSize",
+	QString::fromStdString(paperSizeStrings[static_cast<int>(exportPdfOptions.paperSize)])).toString()));  // enum map
+exportPdfDialog->setOrientation(orientationsString2Enum(settings.value("exportPdfOpts/orientation",
+	QString::fromStdString(paperOrientationsStrings[static_cast<int>(exportPdfOptions.Orientation)])).toString()));  // enum map
+exportPdfDialog->setShowDsnFn(settings.value("exportPdfOpts/showDsgnFN",exportPdfOptions.showDsgnFN).toBool());
+exportPdfDialog->setShowScale(settings.value("exportPdfOpts/showScale",exportPdfOptions.showScale).toBool());
+exportPdfDialog->setShowScaleMsg(settings.value("exportPdfOpts/showScaleMsg",exportPdfOptions.showScaleMsg).toBool());
+exportPdfDialog->setShowGrid(settings.value("exportPdfOpts/showGrid",exportPdfOptions.showGrid).toBool());
+exportPdfDialog->setGridSize(settings.value("exportPdfOpts/gridSize",exportPdfOptions.gridSize).toDouble());
+
+
+if (exportPdfDialog->exec() == QDialog::Rejected) {
+  return;
+}; 
+
+exportPdfOptions.paperSize=exportPdfDialog->getPaperSize();
+exportPdfOptions.Orientation=exportPdfDialog->getOrientation();
+exportPdfOptions.showDsgnFN=exportPdfDialog->getShowDsnFn();
+exportPdfOptions.showScale=exportPdfDialog->getShowScale();
+exportPdfOptions.showScaleMsg=exportPdfDialog->getShowScaleMsg();
+exportPdfOptions.showGrid=exportPdfDialog->getShowGrid();
+exportPdfOptions.gridSize=exportPdfDialog->getGridSize();
+
+settings.setValue("exportPdfOpts/paperSize",QString::fromStdString(paperSizeStrings[static_cast<int>( exportPdfDialog->getPaperSize())]));
+settings.setValue("exportPdfOpts/orientation",QString::fromStdString(paperOrientationsStrings[static_cast<int>(exportPdfDialog->getOrientation())]));
+settings.setValue("exportPdfOpts/showDsgnFN",exportPdfDialog->getShowDsnFn());
+settings.setValue("exportPdfOpts/showScale",exportPdfDialog->getShowScale());
+settings.setValue("exportPdfOpts/showScaleMsg",exportPdfDialog->getShowScaleMsg());
+settings.setValue("exportPdfOpts/showGrid",exportPdfDialog->getShowGrid());
+settings.setValue("exportPdfOpts/gridSize",exportPdfDialog->getGridSize());
+
+actionExport(FileFormat::PDF, "PDF", ".pdf", 2, &exportPdfOptions);
+
 }
 
 void MainWindow::actionExportCSG()
@@ -3482,3 +3501,18 @@ void MainWindow::jumpToLine(int line, int col)
 {
   this->activeEditor->setCursorPosition(line, col);
 }
+
+paperSizes MainWindow::sizeString2Enum(QString current){
+   for(int i = 0; i < paperSizeStrings.size(); i++){
+       if (current.toStdString()==paperSizeStrings[i]) return static_cast<paperSizes>(i);
+   };
+   return paperSizes::A4;
+};
+
+paperOrientations MainWindow::orientationsString2Enum(QString current){
+   for(int i = 0; i < paperOrientationsStrings.size(); i++){
+       if (current.toStdString()==paperOrientationsStrings[i]) return static_cast<paperOrientations>(i);
+   };
+   return paperOrientations::PORTRAIT;
+};
+

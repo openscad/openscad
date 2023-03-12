@@ -8,7 +8,6 @@
 
 using Eigen::Vector2d;
 using Eigen::Vector3d;
-using Eigen::Vector4d;
 using Eigen::Vector3f;
 using Eigen::Vector3i;
 

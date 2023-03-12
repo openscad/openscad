@@ -1,6 +1,6 @@
 /*
  *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
+ *  Copyright (C) 2009-2019 Clifford Wolf <clifford@clifford.at> and
  *                          Marius Kintel <marius@kintel.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -24,22 +24,39 @@
  *
  */
 
-#include "ModuleInstantiation.h"
-#include "node.h"
-#include "Builtins.h"
-#include "Children.h"
-#include "Parameters.h"
+#pragma once
 
-std::shared_ptr<AbstractNode> builtin_group(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
-{
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
-  return children.instantiate(std::make_shared<GroupNode>(inst));
-}
+#include "qtgettext.h"
+#include "export.h"
+#include "ui_ExportPdfDialog.h"
 
-void register_builtin_group()
+class ExportPdfDialog : public QDialog, public Ui::ExportPdfDialog
 {
-  Builtins::init("group", new BuiltinModule(builtin_group),
-  {
-    "group",
-  });
-}
+  Q_OBJECT;
+
+public:
+  ExportPdfDialog();
+  
+  double getGridSize();
+  paperSizes getPaperSize();
+  paperOrientations getOrientation();
+  bool getShowScale();
+  bool getShowScaleMsg();
+  bool getShowDsnFn();
+  bool getShowGrid();
+  
+  void setShowScale(bool state);
+  void setShowScaleMsg(bool state); 
+  void setShowDsnFn(bool state); 
+  void setShowGrid(bool state);
+  
+  void setPaperSize(paperSizes paper);  
+  void setOrientation(paperOrientations orient);  
+  void setGridSize(double value);
+  
+};
+
+
+
+
+

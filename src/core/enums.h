@@ -8,6 +8,5 @@ enum class OpenSCADOperator {
   MINKOWSKI,
   HULL,
   FILL,
-  RESIZE,
-  OFFSET
+  RESIZE
 };

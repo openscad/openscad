@@ -26,7 +26,7 @@
 
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "core/node.h"
+#include "node.h"
 #include "Arguments.h"
 #include "Children.h"
 #include "Expression.h"

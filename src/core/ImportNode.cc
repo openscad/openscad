@@ -24,7 +24,7 @@
  *
  */
 
-#include "io/import.h"
+#include "import.h"
 #include "ImportNode.h"
 
 #include "module.h"
@@ -39,7 +39,7 @@
 #include "DxfData.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include "io/fileutils.h"
+#include "fileutils.h"
 #include "Feature.h"
 #include "handle_dep.h"
 #include "boost-utils.h"
@@ -91,6 +91,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     else if (ext == ".3mf") actualtype = ImportType::_3MF;
     else if (ext == ".amf") actualtype = ImportType::AMF;
     else if (ext == ".svg") actualtype = ImportType::SVG;
+    else if (ext == ".obj") actualtype = ImportType::OBJ;
   }
 
   auto node = std::make_shared<ImportNode>(inst, actualtype);
@@ -190,6 +191,10 @@ const Geometry *ImportNode::createGeometry() const
   }
   case ImportType::OFF: {
     g = import_off(this->filename, loc);
+    break;
+  }
+  case ImportType::OBJ: {
+    g = import_obj(this->filename, loc);
     break;
   }
   case ImportType::SVG: {
