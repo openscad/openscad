@@ -31,6 +31,7 @@
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
 #include "boost-utils.h"
+#include <hash.h>
 
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
@@ -113,6 +114,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
   return {};
 }
 
+typedef std::vector<int> intList;
 /*!
    Applies the operator to all child nodes of the given node.
 
@@ -1428,11 +1430,89 @@ static Geometry *extrudePolygon(const PathExtrudeNode& node, const Polygon2d& po
     }
 
   }
-  if(intersect == true && node.allow_intersect == false) {
-	  ps->polygons.clear();
 
-  }
-  return ps;
+  std::vector<intList> polygons; // list polygons represented by indexes
+  std::vector<Vector3d> pointList;
+  std::unordered_map<Vector3d, int, boost::hash<Vector3d> > pointIntMap;
+  for(int i=0;i<ps->polygons.size();i++) {
+    Polygon pol = ps->polygons[i];
+    intList polygon;
+    for(int j=0;j<pol.size(); j++) {
+      int ptind=0;
+      Vector3d  pt=pol[j];
+      if(!pointIntMap.count(pt)) {
+        pointList.push_back(pt);
+        ptind=pointList.size()-1;
+        pointIntMap[pt]=ptind;
+      } else ptind=pointIntMap[pt];
+        polygon.push_back(ptind);
+      }
+      polygons.push_back(polygon);
+    }
+    // convert to Eigen for resolving
+
+	Eigen::MatrixXd VORG, VDUM,VNEW;
+	Eigen::MatrixXi FORG,FDUM,FNEW;
+
+	// convert points for tesselation
+	std::vector<Vector3f> tesselVert(pointList.size());
+		Eigen::Matrix3Xf::Map(tesselVert[0].data(), 3, tesselVert.size())
+  = Eigen::Matrix3Xd::Map(pointList[0].data(), 3, pointList.size()).cast<float>();
+
+
+
+	// do tessellaton now
+	std::vector<IndexedTriangle> tesselTri;
+	Vector3f normal;
+	for(int  i=0;i<polygons.size();i++) {
+		Vector3f p1=tesselVert[polygons[i][0]];
+		Vector3f p2=tesselVert[polygons[i][1]];
+		Vector3f p3=tesselVert[polygons[i][2]];
+		normal=(p3-p1).cross(p2-p1);
+		std::vector<IndexedTriangle> tesselTriSub;
+		std::vector<intList> pc;
+		pc.push_back(polygons[i]);
+		int err = GeometryUtils::tessellatePolygonWithHoles(tesselVert, pc, tesselTriSub, &normal);
+		for(const auto &t : tesselTriSub) {
+			tesselTri.push_back(t);
+		}
+
+	}
+	// copy verts for Resolving
+	FORG=Eigen::MatrixXi::Zero(tesselTri.size(),3);
+	for(int i=0;i<tesselTri.size();i++) FORG.row(i) = tesselTri[i];
+
+	// copy points for Resolving
+	VORG=Eigen::MatrixXd::Zero(pointList.size(),3);
+	for(int i=0;i<pointList.size();i++) VORG.row(i) = pointList[i];
+
+	Eigen::VectorXi J;
+	if((FORG.rows()) > 0) {
+		igl::copyleft::cgal::mesh_boolean(VORG,FORG,VDUM,FDUM,igl::MESH_BOOLEAN_TYPE_ADDUNION,VNEW,FNEW,J);
+	 } else {
+	 	FNEW=FORG;
+		VNEW=VORG;
+	}
+
+
+	
+	// -------------------------------
+	// Map all points and assemble
+	// -------------------------------
+	PolySet *extrude_result = new PolySet(3, /* convex */ false);
+
+	int ind;
+	for(int i=0;i<FNEW.rows();i++) {
+		Polygon offset_polygon;
+		Eigen::Vector3i  pol=FNEW.row(i);
+		for(int j=0;j<3; j++) {
+			ind=pol[j];
+			Vector3d pt =  VNEW.row(ind);
+			offset_polygon.push_back(pt);
+		}
+  		extrude_result->polygons.push_back(offset_polygon);
+	}
+	return extrude_result;
 }
 
 /*!
