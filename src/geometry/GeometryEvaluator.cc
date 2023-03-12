@@ -34,6 +34,10 @@
 
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
+#include <igl/readOBJ.h>
+#include <igl/copyleft/cgal/mesh_boolean.h>
+#include <igl/readOFF.h>
+#include <igl/readOBJ.h>
 
 class Geometry;
 class Polygon2d;

@@ -269,6 +269,20 @@ else()
   find_graphics()
 endif()
 
+find_package(LIBIGL REQUIRED )
+
+message("libigl includes: ${LIBIGL_INCLUDE_DIRS}")
+message("libigl libraries: ${LIBIGL_LIBRARIES}")
+message("libigl extra sources: ${LIBIGL_EXTRA_SOURCES}")
+message("libigl extra libraries: ${LIBIGL_EXTRA_LIBRARIES}")
+message("libigl definitions: ${LIBIGL_DEFINITIONS}")
+
+## Prepare the build environment
+include_directories(${LIBIGL_INCLUDE_DIRS})
+add_definitions(${LIBIGL_DEFINITIONS})
+#add_executable(${PROJECT_NAME} "main.cpp" ${LIBIGL_EXTRA_SOURCES} Colorizer.h Colorizer.cpp EdgeLeveler.cpp EdgeLeveler.h SawToothCleaner.cpp SawToothCleaner.h Utilities.cpp Utilities.h)  
+target_link_libraries(OpenSCAD  PRIVATE ${LIBIGL_LIBRARIES} ${LIBIGL_EXTRA_LIBRARIES})
+
 if (("${Boost_VERSION}" VERSION_GREATER "1.72") AND ("${Boost_VERSION}" VERSION_LESS "1.76"))
   # Avoid warning messages from boost which are also caused by boost's code.
   #   https://github.com/boostorg/property_tree/issues/51
@@ -662,6 +676,7 @@ set(CORE_SOURCES
   src/io/import_3mf.cc
   src/io/import_amf.cc
   src/io/import_stl.cc
+  src/io/import_obj.cc
   src/io/import_off.cc
   src/io/import_svg.cc
   src/io/import_json.cc
@@ -775,6 +790,7 @@ set(GUI_SOURCES
   src/gui/Editor.cc
   src/gui/ErrorLog.cc
   src/gui/EventFilter.h
+  src/gui/ExportPdfDialog.cc
   src/gui/FontListDialog.cc
   src/gui/FontListTableView.cc
   src/gui/InitConfigurator.cc
