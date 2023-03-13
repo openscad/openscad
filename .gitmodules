@@ -4,3 +4,6 @@
 [submodule "mimalloc"]
 	path = submodules/mimalloc
 	url = https://github.com/microsoft/mimalloc.git
+[submodule "libigl"]
+	path = submodules/libigl
+	url = https://github.com/libigl/libigl.git
