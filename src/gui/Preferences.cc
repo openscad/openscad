@@ -115,7 +115,6 @@ void Preferences::init() {
 
   // Setup default settings
   this->defaultmap["advanced/opencsg_show_warning"] = true;
-  this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
   this->defaultmap["advanced/polysetCacheSize"] = qulonglong(GeometryCache::instance()->maxSizeMB()) * 1024ul * 1024ul;
   this->defaultmap["advanced/polysetCacheSizeMB"] = getValue("advanced/polysetCacheSize").toULongLong() / (1024ul * 1024ul); // carry over old settings if they exist
 #ifdef ENABLE_CGAL
@@ -435,13 +434,6 @@ Preferences::on_openCSGWarningBox_toggled(bool state)
 {
   QSettingsCached settings;
   settings.setValue("advanced/opencsg_show_warning", state);
-}
-
-void
-Preferences::on_enableOpenCSGBox_toggled(bool state)
-{
-  QSettingsCached settings;
-  settings.setValue("advanced/enable_opencsg_opengl1x", state);
 }
 
 void Preferences::on_cgalCacheSizeMBEdit_textChanged(const QString& text)
@@ -963,7 +955,6 @@ void Preferences::updateGUI()
   }
 
   BlockSignals<QCheckBox *>(this->openCSGWarningBox)->setChecked(getValue("advanced/opencsg_show_warning").toBool());
-  BlockSignals<QCheckBox *>(this->enableOpenCSGBox)->setChecked(getValue("advanced/enable_opencsg_opengl1x").toBool());
   BlockSignals<QLineEdit *>(this->cgalCacheSizeMBEdit)->setText(getValue("advanced/cgalCacheSizeMB").toString());
   BlockSignals<QLineEdit *>(this->polysetCacheSizeMBEdit)->setText(getValue("advanced/polysetCacheSizeMB").toString());
   BlockSignals<QLineEdit *>(this->opencsgLimitEdit)->setText(getValue("advanced/openCSGLimit").toString());

@@ -121,13 +121,7 @@ void QGLView::display_opencsg_warning_dialog()
 {
   auto dialog = new OpenCSGWarningDialog(this);
 
-  QString message;
-  if (this->is_opencsg_capable) {
-    message += _("Warning: You may experience OpenCSG rendering errors.\n\n");
-  } else {
-    message += _("Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n");
-    dialog->enableOpenCSGBox->hide();
-  }
+  QString message = _("Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n");
   message += _("It is highly recommended to use OpenSCAD on a system with "
                "OpenGL 2.0 or later.\n"
                "Your renderer information is as follows:\n");
@@ -138,10 +132,7 @@ void QGLView::display_opencsg_warning_dialog()
                               (const char *)glGetString(GL_VERSION));
 
   dialog->setText(message);
-  dialog->enableOpenCSGBox->setChecked(Preferences::inst()->getValue("advanced/enable_opencsg_opengl1x").toBool());
   dialog->exec();
-
-  opencsg_support = this->is_opencsg_capable && Preferences::inst()->getValue("advanced/enable_opencsg_opengl1x").toBool();
 }
 #endif // ifdef ENABLE_OPENCSG
 
