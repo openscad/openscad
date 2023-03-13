@@ -17,7 +17,8 @@ do_build() {
 	mkdir "$BUILDDIR"
 	(
 		cd "$BUILDDIR"
-		cmake -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DPROFILE=ON .. && make $PARALLEL_MAKE
+		cmake -GNinja -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DPROFILE=ON ..
+		time cmake --build .
 	)
 	if [[ $? != 0 ]]; then
 		echo "Build failure"
