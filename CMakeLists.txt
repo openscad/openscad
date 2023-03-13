@@ -269,6 +269,20 @@ else()
   find_graphics()
 endif()
 
+find_package(LIBIGL REQUIRED )
+
+message("libigl includes: ${LIBIGL_INCLUDE_DIRS}")
+message("libigl libraries: ${LIBIGL_LIBRARIES}")
+message("libigl extra sources: ${LIBIGL_EXTRA_SOURCES}")
+message("libigl extra libraries: ${LIBIGL_EXTRA_LIBRARIES}")
+message("libigl definitions: ${LIBIGL_DEFINITIONS}")
+
+## Prepare the build environment
+include_directories(${LIBIGL_INCLUDE_DIRS})
+add_definitions(${LIBIGL_DEFINITIONS})
+#add_executable(${PROJECT_NAME} "main.cpp" ${LIBIGL_EXTRA_SOURCES} Colorizer.h Colorizer.cpp EdgeLeveler.cpp EdgeLeveler.h SawToothCleaner.cpp SawToothCleaner.h Utilities.cpp Utilities.h)  
+target_link_libraries(OpenSCAD  PRIVATE ${LIBIGL_LIBRARIES} ${LIBIGL_EXTRA_LIBRARIES})
+
 if (("${Boost_VERSION}" VERSION_GREATER "1.72") AND ("${Boost_VERSION}" VERSION_LESS "1.76"))
   # Avoid warning messages from boost which are also caused by boost's code.
   #   https://github.com/boostorg/property_tree/issues/51
@@ -587,6 +601,7 @@ set(CORE_SOURCES
   src/core/FunctionType.cc
   src/core/ImportNode.cc
   src/core/LinearExtrudeNode.cc
+  src/core/PathExtrudeNode.cc
   src/core/LocalScope.cc
   src/core/ScopeContext.cc
   src/core/module.cc

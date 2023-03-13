@@ -50,6 +50,7 @@ const Feature Feature::ExperimentalVxORenderersPrealloc("vertex-object-renderers
 const Feature Feature::ExperimentalTextMetricsFunctions("textmetrics", "Enable the <code>textmetrics()</code> and <code>fontmetrics()</code> functions.");
 const Feature Feature::ExperimentalImportFunction("import-function", "Enable import function returning data instead of geometry.");
 const Feature Feature::ExperimentalSortStl("sort-stl", "Sort the STL output for predictable, diffable results.");
+const Feature Feature::ExperimentalPathExtrude("path-extrude", "Enable experimental <code> path_extrude </code> functions analogue to linear_extrude and rotate_extrude.");
 
 Feature::Feature(const std::string& name, std::string description)
   : name(name), description(std::move(description))
