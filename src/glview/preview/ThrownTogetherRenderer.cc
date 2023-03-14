@@ -174,7 +174,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, boo
   }
   glPushMatrix();
   glMultMatrixd(m.data());
-  render_surface(*ps, csgmode, m, shaderinfo);
+  render_surface(*ps, csgmode, m, 0, shaderinfo);
   // only use old render_edges if there is no shader progid
   if (showedges && (shaderinfo && shaderinfo->progid == 0)) {
     // FIXME? glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);

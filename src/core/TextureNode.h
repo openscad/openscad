@@ -12,7 +12,7 @@
 class TextureUV
 {
 	public:
-		TextureUV(std::string filepath);
+		TextureUV(std::string filepath, double uv);
 		std::string filepath;
 		float uvscale;
 };

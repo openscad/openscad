@@ -689,7 +689,7 @@ void Echo::print(std::ostream& stream, const std::string&) const
 const Expression *Texture::evaluateStep(const std::shared_ptr<const Context>& context) const
 {
   Arguments arguments{this->arguments, context};
-  LOG(message_group::Echo, Location::NONE, "", "%1$s", STR(arguments));
+//  LOG(message_group::Echo, Location::NONE, "", "%1$s", STR(arguments));
   return expr.get();
 }
 

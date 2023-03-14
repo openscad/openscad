@@ -48,7 +48,7 @@ public:
     if (geom) {
       glPushMatrix();
       glMultMatrixd(m.data());
-      renderer.render_surface(*geom, csgmode, m);
+      renderer.render_surface(*geom, csgmode, m,0);
       glPopMatrix();
     }
   }
@@ -431,14 +431,14 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
         const Color4f color = setColor(colormode, c.data(),ti, shaderinfo);
         if (color[3] == 1.0f) {
           // object is opaque, draw normally
-          render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
+          render_surface(*ps, csgmode, csgobj.leaf->matrix, ti, shaderinfo);
         } else {
           // object is transparent, so draw rear faces first.  Issue #1496
           glEnable(GL_CULL_FACE);
           glCullFace(GL_FRONT);
-          render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
+          render_surface(*ps, csgmode, csgobj.leaf->matrix, ti, shaderinfo);
           glCullFace(GL_BACK);
-          render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
+          render_surface(*ps, csgmode, csgobj.leaf->matrix, ti, shaderinfo);
           glDisable(GL_CULL_FACE);
         }
 
@@ -467,7 +467,7 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
         // negative objects should only render rear faces
         glEnable(GL_CULL_FACE);
         glCullFace(GL_FRONT);
-        render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
+        render_surface(*ps, csgmode, csgobj.leaf->matrix, ti, shaderinfo);
         glDisable(GL_CULL_FACE);
 
         glPopMatrix();

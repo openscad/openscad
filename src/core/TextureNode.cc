@@ -51,9 +51,10 @@ typedef struct my_error_mgr *my_error_ptr;
 std::vector<class TextureUV> textures;
 GLuint textureIDs[TEXTURES_NUM];
 
-TextureUV::TextureUV(std::string filepath)
+TextureUV::TextureUV(std::string filepath, double uvscale)
 {
 	this->filepath = filepath;
+	this->uvscale = uvscale;
 }
 
 
@@ -130,17 +131,21 @@ static std::shared_ptr<AbstractNode> builtin_texture(const ModuleInstantiation *
   Location loc = Location::NONE;
   LOG(message_group::Echo, Location::NONE, "", "%1$s", STR(arguments));
   auto session = arguments.session();
-  const Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file"});
+  const Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file","uv" });
   std::string raw_filename = parameters.get("file", "");
   std::string file = lookup_file(raw_filename, loc.filePath().parent_path().string(), parameters.documentRoot());
-  TextureUV txt(file); 
+  double uv=10;
+  if (!parameters["uv"].isUndefined()) {
+  	uv= parameters["uv"].toDouble();
+ }
+
+  TextureUV txt(file,uv); 
   textures.push_back(txt);
   return {};
 }
 
 void register_builtin_texture()
 {
-	printf("a\n");
   Builtins::init("texture", new BuiltinModule(builtin_texture),
   {
     "texture(arg, ...)",

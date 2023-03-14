@@ -308,7 +308,6 @@ void GLView::loadTextures(void)
 	  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, textureBitmap);
   }
-  textures.clear();
 }
 
 void GLView::showSmallaxes(const Color4f& col)
