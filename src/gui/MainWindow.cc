@@ -1989,6 +1989,7 @@ ExportInfo createExportInfo(FileFormat format, const QString& exportFilename, co
   exportInfo.sourceFilePath = sourceFilePath.toUtf8().toStdString();
   exportInfo.sourceFileName = info.fileName().toUtf8().toStdString();
   exportInfo.useStdOut = false;
+  exportInfo.options = nullptr;
   return exportInfo;
 }
 
