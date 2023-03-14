@@ -7,7 +7,7 @@
 #include "degree_trig.h"
 #include <cmath>
 #include <cstdio>
-#include "PlatformUtils.h"
+#include "TextureNode.h"
 #ifdef _WIN32
 #include <GL/wglew.h>
 #elif !defined(__APPLE__)
@@ -51,6 +51,7 @@ void GLView::setRenderer(Renderer *r)
    to match the colorscheme of this GLView.*/
 void GLView::updateColorScheme()
 {
+  loadTextures();
   if (this->renderer) this->renderer->setColorScheme(*this->colorscheme);
 }
 
@@ -252,22 +253,8 @@ void GLView::enable_opencsg_shaders()
 #define TEXTURE_SIZE	512
 #define TEXTURES_NUM	7
 
-char textures[TEXTURES_NUM][10]={"wall","grass","bamboo","metal","water","jeans","rock"}; // TODO user configureable
+char texturenames[TEXTURES_NUM][10]={"wall","grass","bamboo","metal","water","jeans","rock"}; // TODO user configureable
 
-int loadTexture(unsigned char *textptr, const char *item)
-{
-  FILE *in;
-  char filename[20];
-  sprintf(filename,"%s.tex",item);
-  std::string texturePath = (PlatformUtils::resourcePath("textures") / filename).string();
-  in=fopen(texturePath.c_str(),"rb");
-  if(in == NULL) { printf("Cannot load %s\n",texturePath.c_str()); return 1; }
-  fread(textptr,sizeof(char),3*TEXTURE_SIZE*TEXTURE_SIZE, in);
-  fclose(in);
-  return 0;
-}
-
-GLuint textureIDs[8];
 void GLView::initializeGL()
 {
 #ifdef DEBUG
@@ -277,7 +264,7 @@ void GLView::initializeGL()
    glDebugMessageCallback( MessageCallback, 0 );
    //*/
 #endif
-
+printf("init gl\n");
   glEnable(GL_DEPTH_TEST);
   glDepthRange(-far_far_away, +far_far_away);
 
@@ -306,17 +293,20 @@ void GLView::initializeGL()
 #ifdef ENABLE_OPENCSG
   enable_opencsg_shaders();
 #endif
-// Create OpenGL textures
-  int i;
+
   glEnable(GL_TEXTURE_2D);
-  //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
   glGenTextures(TEXTURES_NUM, textureIDs); 
+}
 
+void GLView::loadTextures(void)
+{
+  int i;
+  int len=textures.size();
+  if(len >  TEXTURES_NUM) len=TEXTURES_NUM;
   GLubyte textureBitmap[TEXTURE_SIZE*TEXTURE_SIZE*3];
-
-  for(i=0;i<TEXTURES_NUM;i++) {
-	  if(loadTexture(textureBitmap,textures[i])) continue;
+  //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  for(i=0;i<len;i++) {
+	  if(loadTexture(textureBitmap,textures[i].filepath.c_str())) continue;
 	  glBindTexture(GL_TEXTURE_2D, textureIDs[i]);
 	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -324,6 +314,7 @@ void GLView::initializeGL()
 	  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, textureBitmap);
   }
+  textures.clear();
 }
 
 void GLView::showSmallaxes(const Color4f& col)

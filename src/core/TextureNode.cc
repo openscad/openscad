@@ -36,23 +36,114 @@
 #include "Parameters.h"
 #include "import.h"
 #include "fileutils.h"
+#include "jpeglib.h"
+#include "TextureNode.h"
+#include "PlatformUtils.h"
 
-Value builtin_texture(Arguments arguments, const Location& loc)
+struct my_error_mgr {
+	struct jpeg_error_mgr pub;
+	
+	jmp_buf setjmp_buffer;
+};
+
+typedef struct my_error_mgr *my_error_ptr;
+
+std::vector<class TextureUV> textures;
+GLuint textureIDs[TEXTURES_NUM];
+
+TextureUV::TextureUV(std::string filepath)
 {
-	printf("b\n");
+	this->filepath = filepath;
+}
+
+
+static void my_error_exit (j_common_ptr cinfo)
+{
+	my_error_ptr myerr = (my_error_ptr) cinfo->err;
+	
+	longjmp(myerr->setjmp_buffer, 1);
+}
+
+struct jpeg_decompress_struct cinfo;
+unsigned char *img_buf=NULL;
+
+GLOBAL(int) read_JPEG_file (const char * filename)
+{
+  struct my_error_mgr jerr;
+  FILE * infile;		/* source file */
+  JSAMPARRAY buffer;		/* Output row buffer */
+  int row_stride;		/* physical row width in output buffer */
+  if ((infile = fopen(filename, "rb")) == NULL) {
+    fprintf(stderr, "can't open %s\n", filename);
+    return 0;
+  }
+  cinfo.err = jpeg_std_error(&jerr.pub);
+  jerr.pub.error_exit = my_error_exit;
+  if (setjmp(jerr.setjmp_buffer)) {
+    jpeg_destroy_decompress(&cinfo);
+    fclose(infile);
+    return 0;
+  }
+  jpeg_create_decompress(&cinfo);
+  jpeg_stdio_src(&cinfo, infile);
+  (void) jpeg_read_header(&cinfo, TRUE);
+  (void) jpeg_start_decompress(&cinfo);
+  row_stride = cinfo.output_width * cinfo.output_components;
+  img_buf=(unsigned char *) malloc(cinfo.output_width*cinfo.output_height*cinfo.output_components);
+  /* Make a one-row-high sample array that will go away when done with image */
+  buffer = (*cinfo.mem->alloc_sarray)
+		((j_common_ptr) &cinfo, JPOOL_IMAGE, row_stride, 1);
+
+  while (cinfo.output_scanline < cinfo.output_height) {
+    (void) jpeg_read_scanlines(&cinfo, buffer, 1);
+    memcpy(img_buf+(cinfo.output_scanline-1)*row_stride, buffer[0],row_stride);
+  }
+  (void) jpeg_finish_decompress(&cinfo);
+  jpeg_destroy_decompress(&cinfo);
+  fclose(infile);
+  return 1;
+}
+
+int loadTexture(unsigned char *textureptr, const char *path)
+{
+  int i,j;
+  int xpos,ypos;
+  // TODO cache feature
+  if(!read_JPEG_file(path)) return 1;
+  for(j=0;j<TEXTURE_SIZE;j++) {
+    ypos=cinfo.output_height*j/TEXTURE_SIZE;
+    for(i=0;i<TEXTURE_SIZE;i++)
+    {
+      xpos=cinfo.output_width*i/TEXTURE_SIZE;
+      *(textureptr++) = img_buf[3*(cinfo.output_width*ypos+xpos)+0];
+      *(textureptr++) = img_buf[3*(cinfo.output_width*ypos+xpos)+1];
+      *(textureptr++) = img_buf[3*(cinfo.output_width*ypos+xpos)+2];
+    }
+  }
+  if(img_buf != NULL) free(img_buf);
+  return 0;
+}
+
+
+static std::shared_ptr<AbstractNode> builtin_texture(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+{
+  Location loc = Location::NONE;
+  LOG(message_group::Echo, Location::NONE, "", "%1$s", STR(arguments));
   auto session = arguments.session();
   const Parameters parameters = Parameters::parse(std::move(arguments), loc, {}, {"file"});
   std::string raw_filename = parameters.get("file", "");
   std::string file = lookup_file(raw_filename, loc.filePath().parent_path().string(), parameters.documentRoot());
-  printf("texture is %s\n",file.c_str());
-  return {std::fabs(1.0)};
+  TextureUV txt(file); 
+  textures.push_back(txt);
+  return {};
 }
 
 void register_builtin_texture()
 {
 	printf("a\n");
-  Builtins::init("texture", new BuiltinFunction(&builtin_texture),
+  Builtins::init("texture", new BuiltinModule(builtin_texture),
   {
-    "is_object(arg) -> boolean",
+    "texture(arg, ...)",
   });
+	
 }
