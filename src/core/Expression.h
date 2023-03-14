@@ -233,7 +233,6 @@ private:
   AssignmentList arguments;
   shared_ptr<Expression> expr;
 };
-
 class Let : public Expression
 {
 public:

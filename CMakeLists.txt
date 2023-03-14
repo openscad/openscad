@@ -380,7 +380,6 @@ find_package(JPEG REQUIRED QUIET)
 target_include_directories(OpenSCAD SYSTEM PRIVATE ${JPEG_INCLUDE_DIRS})
 target_link_libraries(OpenSCAD PRIVATE ${JPEG_LIBRARIES})
 
-
 if(NOT MSVC)
   find_package(Lib3MF QUIET)
   if (LIB3MF_FOUND)

@@ -250,11 +250,6 @@ void GLView::enable_opencsg_shaders()
    //*/
 #endif
 
-#define TEXTURE_SIZE	512
-#define TEXTURES_NUM	7
-
-char texturenames[TEXTURES_NUM][10]={"wall","grass","bamboo","metal","water","jeans","rock"}; // TODO user configureable
-
 void GLView::initializeGL()
 {
 #ifdef DEBUG
@@ -264,7 +259,7 @@ void GLView::initializeGL()
    glDebugMessageCallback( MessageCallback, 0 );
    //*/
 #endif
-printf("init gl\n");
+
   glEnable(GL_DEPTH_TEST);
   glDepthRange(-far_far_away, +far_far_away);
 
@@ -293,7 +288,6 @@ printf("init gl\n");
 #ifdef ENABLE_OPENCSG
   enable_opencsg_shaders();
 #endif
-
   glEnable(GL_TEXTURE_2D);
   glGenTextures(TEXTURES_NUM, textureIDs); 
 }
