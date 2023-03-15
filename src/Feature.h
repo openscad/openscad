@@ -15,12 +15,8 @@ public:
   using iterator = list_t::iterator;
 
   static const Feature ExperimentalFastCsg;
-  static const Feature ExperimentalFastCsgTrustCorefinement;
+  static const Feature ExperimentalFastCsgSafer;
   static const Feature ExperimentalFastCsgDebug;
-  static const Feature ExperimentalFastCsgExact;
-  static const Feature ExperimentalFastCsgExactCorefinementCallback;
-  static const Feature ExperimentalFastCsgRemesh;
-  static const Feature ExperimentalFastCsgRemeshPredictibly;
   static const Feature ExperimentalManifold;
   static const Feature ExperimentalRoof;
   static const Feature ExperimentalInputDriverDBus;
@@ -31,7 +27,7 @@ public:
   static const Feature ExperimentalVxORenderersPrealloc;
   static const Feature ExperimentalTextMetricsFunctions;
   static const Feature ExperimentalImportFunction;
-  static const Feature ExperimentalSortStl;
+  static const Feature ExperimentalPredictibleOutput;
 
   [[nodiscard]] const std::string& get_name() const;
   [[nodiscard]] const std::string& get_description() const;

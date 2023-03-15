@@ -69,7 +69,7 @@ public:
 
     auto facesBefore = tm.number_of_faces();
     auto verbose = Feature::ExperimentalFastCsgDebug.is_enabled();
-    auto predictibleRemesh = Feature::ExperimentalFastCsgRemeshPredictibly.is_enabled();
+    auto predictibleRemesh = Feature::ExperimentalPredictibleOutput.is_enabled();
 
     class PatchData
     {

@@ -142,7 +142,7 @@ uint64_t append_stl(const PolySet& ps, std::ostream& output, bool binary)
       }
     };
 
-  if (Feature::ExperimentalSortStl.is_enabled()) {
+  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
     Export::ExportMesh exportMesh { triangulated };
     exportMesh.foreach_triangle([&](const auto& pts) {
         processTriangle({ toVector(pts[0]), toVector(pts[1]), toVector(pts[2]) });

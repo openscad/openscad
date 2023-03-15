@@ -21,7 +21,7 @@ void forceExact(Pt& point)
  * - Track the ancestors of all resulting faces in the original meshes, and
  *   remesh those descendants with their neighbouring coplanar faces. All
  *   original faces have a patch id, which is inherited by copy or splitting.
- * - Make any new numbers exact (if forceNewLazyNumbersToExact set)
+ * - Make any new numbers exact
  */
 template <typename TriangleMesh>
 struct CorefinementVisitorDelegate_ {
@@ -34,7 +34,6 @@ private:
 
   using PatchId = size_t; // Starting from 1
 
-  bool forceNewLazyNumbersToExact_;
   TriangleMesh *mesh1_, *mesh2_, *meshOut_;
 
   // The following fields are scoped by mesh ([mesh1_, mesh2_, meshOut_]).
@@ -67,9 +66,8 @@ private:
   }
 
 public:
-  CorefinementVisitorDelegate_(TriangleMesh & m1, TriangleMesh & m2, TriangleMesh & mout,
-                               bool forceNewLazyNumbersToExact)
-    : forceNewLazyNumbersToExact_(forceNewLazyNumbersToExact), mesh1_(&m1), mesh2_(&m2), meshOut_(&mout)
+  CorefinementVisitorDelegate_(TriangleMesh & m1, TriangleMesh & m2, TriangleMesh & mout)
+    : mesh1_(&m1), mesh2_(&m2), meshOut_(&mout)
   {
     TriangleMesh *meshes[3] = {&m1, &m2, &mout};
 
@@ -114,9 +112,7 @@ public:
     setPatchId(fi, tm, id);
 
 #if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 4, 0)
-    if (forceNewLazyNumbersToExact_) {
-      facesBeingCreated_[mi].push_back(fi);
-    }
+    facesBeingCreated_[mi].push_back(fi);
 #endif
   }
 
@@ -128,13 +124,11 @@ public:
 
     // From CGAL 5.4 on we rely on new_vertex_added instead.
 #if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 4, 0)
-    if (forceNewLazyNumbersToExact_) {
-      for (auto& fi : facesBeingCreated_[mi]) {
-        CGAL::Vertex_around_face_iterator<TriangleMesh> vbegin, vend;
-        for (boost::tie(vbegin, vend) = vertices_around_face(tm.halfedge(fi), tm); vbegin != vend;
-             ++vbegin) {
-          forceExact(tm.point(*vbegin));
-        }
+    for (auto& fi : facesBeingCreated_[mi]) {
+      CGAL::Vertex_around_face_iterator<TriangleMesh> vbegin, vend;
+      for (boost::tie(vbegin, vend) = vertices_around_face(tm.halfedge(fi), tm); vbegin != vend;
+            ++vbegin) {
+        forceExact(tm.point(*vbegin));
       }
     }
 #endif // if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(5, 4, 0)
@@ -143,9 +137,7 @@ public:
   // Note: only called in CGAL 5.4+
   void new_vertex_added(std::size_t /*node_id*/, vertex_descriptor vh, const TriangleMesh& tm)
   {
-    if (forceNewLazyNumbersToExact_) {
-      forceExact(tm.point(vh));
-    }
+    forceExact(tm.point(vh));
   }
 
 };
@@ -167,9 +159,8 @@ struct CorefinementVisitor : public PMP::Corefinement::Default_visitor<TriangleM
 
   std::shared_ptr<Delegate> delegate_;
 
-  CorefinementVisitor(TriangleMesh & m1, TriangleMesh & m2, TriangleMesh & mout,
-                      bool forceNewLazyNumbersToExact)
-    : delegate_(std::make_shared<Delegate>(m1, m2, mout, forceNewLazyNumbersToExact))
+  CorefinementVisitor(TriangleMesh & m1, TriangleMesh & m2, TriangleMesh & mout)
+    : delegate_(std::make_shared<Delegate>(m1, m2, mout))
   {
   }
 
