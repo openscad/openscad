@@ -67,6 +67,12 @@ jobs:
       - store_artifacts:
           path: /tmp/out
           destination: 64-bit
+      - irc/notify:
+          server: irc.libera.chat
+          port: 6697
+          channel: #openscad
+          nick: openscad-ci-bot
+          message: AppImage Build complete! ${CIRCLE_BRANCH}
   openscad-appimage-64bit:
     working_directory: ~/workspace
     docker:
