@@ -71,4 +71,8 @@ using CGAL_HybridPoint = CGAL::Point_3<CGAL_HybridKernel3>;
 using CGAL_HybridNef = CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>;
 using CGAL_HybridMesh = CGAL::Surface_mesh<CGAL_HybridPoint>;
 
+using CGAL_DoubleKernel = CGAL::Cartesian<double>;
+using CGAL_DoublePoint3 = CGAL_DoubleKernel::Point_3;
+using CGAL_DoubleMesh = CGAL::Surface_mesh<CGAL_DoublePoint3>;
+
 #endif /* ENABLE_CGAL */

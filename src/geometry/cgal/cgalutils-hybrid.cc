@@ -11,6 +11,9 @@
 
 #include "CGAL_Nef_polyhedron.h"
 #include "PolySetUtils.h"
+#if ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#endif
 
 namespace CGALUtils {
 
@@ -103,6 +106,10 @@ std::shared_ptr<CGALHybridPolyhedron> createMutableHybridPolyhedronFromGeometry(
     return createHybridPolyhedronFromPolySet(*ps);
   } else if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     return createHybridPolyhedronFromNefPolyhedron(*nef);
+#if ENABLE_MANIFOLD
+  } else if (auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    return createHybridPolyhedronFromPolySet(*mani->toPolySet());
+#endif
   } else {
     LOG(message_group::Warning, Location::NONE, "", "Unsupported geometry format.");
     return nullptr;

@@ -22,8 +22,9 @@ endif()
 if(POLICY CMP0082) # Install rules from add_subdirectory() calls are interleaved with those in caller.
   cmake_policy(SET CMP0082 NEW)
 endif()
-
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version")
+if(POLICY CMP0077) # Let parent project set child project options (used to skip python lookup from manifold & force TBB)
+  cmake_policy(SET CMP0079 NEW)
+endif()
 
 include("cmake/Modules/openscad_version.cmake")
 project(OpenSCAD
@@ -49,11 +50,20 @@ option(USE_CCACHE "Use ccache to speed up compilation." ON)
 option(ENABLE_CAIRO "Enable support for cairo vector graphics library." ON)
 option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
 option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
+option(ENABLE_MANIFOLD "Enable support for Manifold library for CSG." ON)
+option(ENABLE_TBB "Enable support for oneAPI Threading Building Blocks." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON "NOT HEADLESS" OFF)
 cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS" OFF)
+
+if(ENABLE_MANIFOLD)
+  # Requirement from TBB 2021.8.0
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14" CACHE STRING "Minimum OS X deployment version")
+else()
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version")
+endif()
 
 # GNUInstallDirs must be done before BuildParameters
 include(GNUInstallDirs)
@@ -400,6 +410,7 @@ target_include_directories(OpenSCAD PRIVATE
   "src/ext/libtess2/Include"
   "src/geometry"
   "src/geometry/cgal"
+  "src/geometry/manifold"
   "src/glview"
   "src/glview/preview"
   "src/glview/cgal"
@@ -723,6 +734,38 @@ set(CGAL_SOURCES
   src/io/export_nef.cc
   src/io/import_nef.cc
 )
+
+set(MANIFOLD_SOURCES
+  src/geometry/manifold/ManifoldGeometry.cc
+  src/geometry/manifold/manifoldutils.cc
+  src/geometry/manifold/manifold-applyops.cc
+  src/geometry/manifold/manifold-applyops-minkowski.cc
+)
+
+if(ENABLE_TBB AND ENABLE_MANIFOLD)
+  # Note: currently only Manifold-related code makes use of TBB parallelization
+  # ("exact" CGAL numerics are not thread-safe)
+  target_compile_options(OpenSCAD PRIVATE 
+    -DENABLE_TBB
+    -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_TBB
+  )
+endif()
+
+if(ENABLE_MANIFOLD)
+
+  if(NOT DEFINED MANIFOLD_PAR)
+    set(MANIFOLD_PAR TBB CACHE STRING "Parallel backend, either \"TBB\" or \"OpenMP\" or \"NONE\"" FORCE)
+  endif()
+
+  set(PYBIND11_FINDPYTHON OFF)
+  set(MANIFOLD_PYBIND OFF)
+
+  add_subdirectory(submodules/manifold)
+  target_link_libraries(OpenSCAD PRIVATE manifold)
+  
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
+  list(APPEND Sources ${MANIFOLD_SOURCES})
+endif()
 
 #
 # Offscreen OpenGL context source code
