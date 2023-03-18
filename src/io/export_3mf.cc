@@ -29,6 +29,9 @@
 #include "PolySetUtils.h"
 #include "printutils.h"
 #include "CGALHybridPolyhedron.h"
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#endif
 
 #ifdef ENABLE_LIB3MF
 
@@ -143,6 +146,10 @@ static bool append_3mf(const shared_ptr<const Geometry>& geom, PLib3MFModelMeshO
     return append_nef(*N, model);
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return append_polyset(*hybrid->toPolySet(), model);
+#ifdef ENABLE_MANIFOLD
+  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    return append_polyset(*mani->toPolySet(), model);
+#endif
   } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
     PolySet triangulated(3);
     PolySetUtils::tessellate_faces(*ps, triangulated);
@@ -310,6 +317,10 @@ static bool append_3mf(const shared_ptr<const Geometry>& geom, Lib3MF::PWrapper&
     return append_nef(*N, wrapper, model);
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return append_polyset(*hybrid->toPolySet(), wrapper, model);
+#ifdef ENABLE_MANIFOLD
+  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    return append_polyset(*mani->toPolySet(), wrapper, model);
+#endif
   } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
     PolySet triangulated(3);
     PolySetUtils::tessellate_faces(*ps, triangulated);

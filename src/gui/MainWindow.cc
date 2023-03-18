@@ -120,6 +120,10 @@
 
 #endif // ENABLE_CGAL
 
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#endif // ENABLE_MANIFOLD
+
 #include "PrintInitDialog.h"
 //#include "ExportPdfDialog.h"
 #include "input/InputDriverEvent.h"
@@ -2437,6 +2441,10 @@ void MainWindow::actionCheckValidity()
   bool valid = false;
   if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root_geom)) {
     valid = hybrid->isValid();
+#ifdef ENABLE_MANIFOLD
+  } else if (auto mani = dynamic_pointer_cast<const ManifoldGeometry>(this->root_geom)) {
+    valid = mani->isValid();
+#endif
   } else if (auto N = CGALUtils::getNefPolyhedronFromGeometry(this->root_geom)) {
     valid = N->p3 ? const_cast<CGAL_Nef_polyhedron3&>(*N->p3).is_valid() : false;
   }

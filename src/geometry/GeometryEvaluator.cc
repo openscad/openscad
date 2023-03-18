@@ -30,6 +30,9 @@
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
 #include "boost-utils.h"
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#endif
 
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
@@ -63,6 +66,11 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
     if (dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root)) {
       this->root = CGALUtils::getGeometryAsPolySet(this->root);
     }
+#ifdef ENABLE_MANIFOLD
+    if (dynamic_pointer_cast<const ManifoldGeometry>(this->root)) {
+      this->root = CGALUtils::getGeometryAsPolySet(this->root);
+    }
+#endif
 
     if (!allownef) {
       // We cannot render concave polygons, so tessellate any 3D PolySets

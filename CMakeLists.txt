@@ -410,6 +410,7 @@ target_include_directories(OpenSCAD PRIVATE
   "src/ext/libtess2/Include"
   "src/geometry"
   "src/geometry/cgal"
+  "src/geometry/manifold"
   "src/glview"
   "src/glview/preview"
   "src/glview/cgal"
@@ -734,6 +735,10 @@ set(CGAL_SOURCES
   src/io/import_nef.cc
 )
 
+set(MANIFOLD_SOURCES
+  src/geometry/manifold/ManifoldGeometry.cc
+)
+
 if(ENABLE_TBB AND ENABLE_MANIFOLD)
   # Note: currently only Manifold-related code makes use of TBB parallelization
   # ("exact" CGAL numerics are not thread-safe)
@@ -756,6 +761,7 @@ if(ENABLE_MANIFOLD)
   target_link_libraries(OpenSCAD PRIVATE manifold)
   
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
+  list(APPEND Sources ${MANIFOLD_SOURCES})
 endif()
 
 #

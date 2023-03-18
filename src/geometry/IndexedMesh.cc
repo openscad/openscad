@@ -27,6 +27,10 @@
 
 #include "IndexedMesh.h"
 
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#endif
+
 #ifdef ENABLE_CGAL
 
 #include "cgal.h"
@@ -68,6 +72,10 @@ void IndexedMesh::append_geometry(const shared_ptr<const Geometry>& geom)
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement append_geometry(Surface_mesh) instead of converting to PolySet
     mesh.append_geometry(hybrid->toPolySet());
+#ifdef ENABLE_MANIFOLD
+  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    mesh.append_geometry(mani->toPolySet());
+#endif
   } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
   } else { // NOLINT(bugprone-branch-clone)
