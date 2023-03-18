@@ -22,8 +22,9 @@ endif()
 if(POLICY CMP0082) # Install rules from add_subdirectory() calls are interleaved with those in caller.
   cmake_policy(SET CMP0082 NEW)
 endif()
-
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version")
+if(POLICY CMP0077) # Let parent project set child project options (used to skip python lookup from manifold & force TBB)
+  cmake_policy(SET CMP0079 NEW)
+endif()
 
 include("cmake/Modules/openscad_version.cmake")
 project(OpenSCAD
@@ -49,6 +50,7 @@ option(USE_CCACHE "Use ccache to speed up compilation." ON)
 option(ENABLE_CAIRO "Enable support for cairo vector graphics library." ON)
 option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
 option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
+option(ENABLE_MANIFOLD "Enable support for Manifold library for CSG." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
@@ -731,6 +733,20 @@ set(CGAL_SOURCES
   src/io/import_nef.cc
 )
 
+if(ENABLE_MANIFOLD)
+
+  if(NOT DEFINED MANIFOLD_PAR)
+    set(MANIFOLD_PAR TBB CACHE STRING "Parallel backend, either \"TBB\" or \"OpenMP\" or \"NONE\"" FORCE)
+  endif()
+
+  set(PYBIND11_FINDPYTHON OFF)
+  set(MANIFOLD_PYBIND OFF)
+
+  add_subdirectory(submodules/manifold)
+  target_link_libraries(OpenSCAD PRIVATE manifold)
+  
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
+endif()
 #
 # Offscreen OpenGL context source code
 #

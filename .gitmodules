@@ -4,3 +4,6 @@
 [submodule "mimalloc"]
 	path = submodules/mimalloc
 	url = https://github.com/microsoft/mimalloc.git
+[submodule "submodules/manifold"]
+	path = submodules/manifold
+	url = https://github.com/elalish/manifold

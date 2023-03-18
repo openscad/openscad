@@ -169,17 +169,8 @@ esac
 
 echo "Checking pre-requisites..."
 
-if [ ! -e $OPENSCADDIR/libraries/MCAD/__init__.py ]; then
-  echo "Downloading MCAD"
-  git submodule init
-  git submodule update
-else
-  echo "MCAD found:" $OPENSCADDIR/libraries/MCAD
-fi
-
-if [ -d .git ]; then
-  git submodule update
-fi
+git submodule update --init --recursive
+( cd submodules/manifold ; git apply thrust.diff || true )
 
 echo "Building openscad-$VERSION ($VERSIONDATE)"
 echo "  CMake args: $CMAKE_CONFIG"
