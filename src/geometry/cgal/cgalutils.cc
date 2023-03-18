@@ -32,7 +32,10 @@
 #include <map>
 #include <queue>
 
-static CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps)
+
+namespace CGALUtils {
+
+CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps)
 {
   if (ps.isEmpty()) return new CGAL_Nef_polyhedron();
   assert(ps.getDimension() == 3);
@@ -107,8 +110,6 @@ static CGAL_Nef_polyhedron *createNefPolyhedronFromPolygon2d(const Polygon2d& po
   shared_ptr<PolySet> ps(polygon.tessellate());
   return createNefPolyhedronFromPolySet(*ps);
 }
-
-namespace CGALUtils {
 
 template <typename K>
 CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K>& N)

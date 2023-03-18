@@ -89,6 +89,52 @@ std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   return ps;
 }
 
+template <typename Polyhedron>
+class CGALPolyhedronBuilderFromManifold : public CGAL::Modifier_base<typename Polyhedron::HalfedgeDS>
+{
+  using HDS = typename Polyhedron::HalfedgeDS;
+  using CGAL_Polybuilder = CGAL::Polyhedron_incremental_builder_3<typename Polyhedron::HalfedgeDS>;
+public:
+  using CGALPoint = typename CGAL_Polybuilder::Point_3;
+
+  const manifold::Mesh& mesh;
+  CGALPolyhedronBuilderFromManifold(const manifold::Mesh& mesh) : mesh(mesh) { }
+
+  void operator()(HDS& hds) override {
+    CGAL_Polybuilder B(hds, true);
+  
+    B.begin_surface(mesh.vertPos.size(), mesh.triVerts.size());
+    for (const auto &v : mesh.vertPos) {
+      B.add_vertex(vector_convert<CGALPoint>(v));
+    }
+
+    for (const auto &tv : mesh.triVerts) {
+      B.begin_facet();
+      for (const int j : {0, 1, 2}) {
+        B.add_vertex_to_facet(tv[j]);
+      }
+      B.end_facet();
+    }
+    B.end_surface();
+  }
+};
+
+template <class Polyhedron>
+shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
+{
+  auto p = make_shared<Polyhedron>();
+  try {
+    manifold::Mesh mesh = getManifold().GetMesh();
+    CGALPolyhedronBuilderFromManifold<Polyhedron> builder(mesh);
+    p->delegate(builder);
+  } catch (const CGAL::Assertion_exception& e) {
+    LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
+  }
+  return p;
+}
+
+template shared_ptr<CGAL::Polyhedron_3<CGAL_Kernel3>> ManifoldGeometry::toPolyhedron() const;
+
 shared_ptr<manifold::Manifold> binOp(ManifoldGeometry& lhs, ManifoldGeometry& rhs, manifold::OpType opType) {
   return make_shared<manifold::Manifold>(std::move(lhs.getManifold().Boolean(rhs.getManifold(), opType)));
 }
@@ -103,6 +149,22 @@ void ManifoldGeometry::operator*=(ManifoldGeometry& other) {
 
 void ManifoldGeometry::operator-=(ManifoldGeometry& other) {
   manifold_ = binOp(*this, other, manifold::OpType::Subtract);
+}
+
+void ManifoldGeometry::minkowski(ManifoldGeometry& other) {
+  auto lhs = shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*this->toPolySet()));
+  auto rhs = shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*other.toPolySet()));
+  if (lhs->isEmpty() || rhs->isEmpty()) {
+    clear();
+    return;
+  }
+  lhs->minkowski(*rhs);
+
+  auto ps = CGALUtils::getGeometryAsPolySet(lhs);
+  if (!ps) clear();
+  else {
+    manifold_ = ManifoldUtils::trustedPolySetToManifold(*ps);
+  }
 }
 
 void ManifoldGeometry::transform(const Transform3d& mat) {

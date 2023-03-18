@@ -36,12 +36,17 @@ public:
 
   [[nodiscard]] std::shared_ptr<const PolySet> toPolySet() const;
 
+  template <class Polyhedron>
+  [[nodiscard]] std::shared_ptr<Polyhedron> toPolyhedron() const;
+
   /*! In-place union. */
   void operator+=(ManifoldGeometry& other);
   /*! In-place intersection. */
   void operator*=(ManifoldGeometry& other);
   /*! In-place difference. */
   void operator-=(ManifoldGeometry& other);
+  /*! In-place minkowksi operation. */
+  void minkowski(ManifoldGeometry& other);
   void transform(const Transform3d& mat) override;
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
