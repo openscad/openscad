@@ -32,6 +32,7 @@
 #include "boost-utils.h"
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
+#include "manifoldutils.h"
 #endif
 
 #include <CGAL/convex_hull_2.h>
@@ -164,11 +165,21 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     }
     if (actualchildren.empty()) return {};
     if (actualchildren.size() == 1) return {actualchildren.front().second};
+#ifdef ENABLE_MANIFOLD
+    if (Feature::ExperimentalManifold.is_enabled()) {
+      return {ManifoldUtils::applyOperator3DManifold(actualchildren, op)};
+    }
+#endif
     return {CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())};
     break;
   }
   default:
   {
+#ifdef ENABLE_MANIFOLD
+    if (Feature::ExperimentalManifold.is_enabled()) {
+      return {ManifoldUtils::applyOperator3DManifold(children, op)};
+    }
+#endif
     return {CGALUtils::applyOperator3D(children, op)};
     break;
   }
