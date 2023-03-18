@@ -6,7 +6,10 @@
 # Distribute under GPL-2.0 or ask.
 
 test -d openscad || git clone --depth=50 --branch=master https://github.com/openscad/openscad.git openscad
-(cd openscad; git submodule update --init --recursive)
+( cd openscad; \
+  git submodule update --init --recursive; \
+  cd submodules/manifold; \
+  git apply thrust.diff )
 
 mkdir -p docker
 cat <<'EOF'> docker/Dockerfile

@@ -44,6 +44,7 @@ pacboy --noconfirm --sync --needed \
     imagemagick:p \
     qt5-svg:p \
     qt5-multimedia:p \
+    tbb:p \
     python:p \
     python-pip:p
 

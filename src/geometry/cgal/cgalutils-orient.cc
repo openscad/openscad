@@ -18,6 +18,7 @@ void reverseFaceOrientations(Polyhedron& polyhedron)
   CGAL::Polygon_mesh_processing::reverse_face_orientations(polyhedron);
 }
 
+template void orientToBoundAVolume(CGAL_DoubleMesh& polyhedron);
 template void orientToBoundAVolume(CGAL_HybridMesh& polyhedron);
 template void reverseFaceOrientations(CGAL_HybridMesh& polyhedron);
 

@@ -40,6 +40,7 @@ const Feature Feature::ExperimentalFastCsgExactCorefinementCallback("fast-csg-ex
 #endif // FAST_CSG_KERNEL_IS_LAZY
 const Feature Feature::ExperimentalFastCsgRemesh("fast-csg-remesh", "Simplify results of fast-csg to avoid explosively slow renders (adds a bit of overhead as uses corefinement callbacks)");
 const Feature Feature::ExperimentalFastCsgRemeshPredictibly("fast-csg-remesh-predictibly", "Same as fast-csg-remesh but ensuring it remeshes faces starting from a predictable vertex. Slower but good for tests.");
+const Feature Feature::ExperimentalManifold("manifold", "Use the Manifold library (https://github.com/elalish/manifold) for CSG operations instead of CGAL.");
 const Feature Feature::ExperimentalRoof("roof", "Enable <code>roof</code>");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
