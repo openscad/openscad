@@ -346,6 +346,18 @@ function(add_cmdline_test TESTCMD_BASENAME)
       set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=roof" "--enable=lazy-union" "--enable=textmetrics" "--enable=import-function")
     endif()
 
+    # Enable manifold for all tests except those marked as skipped
+    if (ENABLE_MANIFOLD
+        AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
+        AND NOT SCADFILE IN_LIST SCADFILES_FAILING_WITH_MANIFOLD
+        AND NOT TEST_FULLNAME IN_LIST TESTS_FAILING_WITH_MANIFOLD
+        AND NOT TESTCMD_BASENAME MATCHES "^(stlexport|objexport)$"
+        AND NOT TESTCMD_BASENAME MATCHES "^openscad-viewoptions-.*"
+        AND NOT TESTCMD_BASENAME MATCHES "^fastcsg-.*"
+        AND NOT TESTCMD_BASENAME MATCHES "^remesh-.*")
+      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=manifold")
+    endif()
+    
     # Enable fast-csg for all tests but those that have different expectations or fail for other reasons.
     if (NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
         AND NOT SCADFILE IN_LIST SCADFILES_FAILING_WITH_FAST_CSG
@@ -821,17 +833,7 @@ list(APPEND FAST_CSG_TRUST_FAILING_SCADFILES
   ${TEST_SCAD_DIR}/3D/features/edge-cases.scad
 )
 
-# Tests for which fast-csg works but produces different expectation files.
-# These tests are run twice (w/ and without fast-csg).
-list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
-  # This one no longer crashes, yay!
-  ${TEST_SCAD_DIR}/bugs/issue1455.scad
-  # These are less broken than before:
-  ${TEST_SCAD_DIR}/bugs/issue791.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1138.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
-
-  # No more green faces from differences.
+list(APPEND SCADFILES_WITH_GREEN_FACES
   ${EXAMPLES_DIR}/Basics/CSG-modules.scad
   ${EXAMPLES_DIR}/Basics/CSG.scad
   ${EXAMPLES_DIR}/Basics/logo.scad
@@ -844,7 +846,6 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${EXAMPLES_DIR}/Old/example012.scad
   ${EXAMPLES_DIR}/Old/example016.scad
   ${EXAMPLES_DIR}/Old/example024.scad
-  ${TEST_SCAD_DIR}/2D/features/highlight-modifier-2d.scad
   ${TEST_SCAD_DIR}/3D/features/difference-tests.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
@@ -866,8 +867,53 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${TEST_SCAD_DIR}/misc/let-module-tests.scad
   ${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
   ${TEST_SCAD_DIR}/misc/rotate-empty-bbox.scad
+)
+
+# Tests for which fast-csg works but produces different expectation files.
+# These tests are run twice (w/ and without fast-csg).
+list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
+  # No more green faces from differences.
+  ${SCADFILES_WITH_GREEN_FACES}
+
+  # This one no longer crashes, yay!
+  ${TEST_SCAD_DIR}/bugs/issue1455.scad
+  # These are less broken than before:
+  ${TEST_SCAD_DIR}/bugs/issue791.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1138.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
+
   # Less broken and no green faces
   ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
+
+  # Misc
+  ${TEST_SCAD_DIR}/2D/features/highlight-modifier-2d.scad
+)
+
+list(APPEND SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
+  # No more green faces from differences.
+  ${SCADFILES_WITH_GREEN_FACES}
+
+  # Different vertex order
+  ${TEST_SCAD_DIR}/3mf/3mf-export.scad
+)
+
+list(APPEND SCADFILES_FAILING_WITH_MANIFOLD
+  # Crashes with Input mesh not closed! / NoManifold
+  ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
+
+  # Resize issues!
+  ${TEST_SCAD_DIR}/3D/features/resize-convexity-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
+
+  # Misc
+  ${TEST_SCAD_DIR}/misc/normal-nan.scad
+)
+
+list(APPEND TESTS_FAILING_WITH_MANIFOLD
+  # Need to flip faces if transform determinant is < 0
+  cgalstlcgalpngtest_mirror-tests
+  cgalbinstlcgalpngtest_mirror-tests
 )
 
 ###################################
@@ -1126,6 +1172,7 @@ add_cmdline_test(lazyunion-offpngtest  SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FIL
 add_cmdline_test(lazyunion-dxfpngtest  SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=DXF --enable=lazy-union --render=cgal)
 add_cmdline_test(lazyunion-svgpngtest  SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=SVG --enable=lazy-union --render=cgal)
 
+add_cmdline_test(manifold-cgalpng             OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS} ARGS --enable=manifold --render)
 add_cmdline_test(fastcsg-cgalpng              OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS} ARGS --enable=fast-csg --enable=fast-csg-remesh --enable=fast-csg-trust-corefinement --render)
 add_cmdline_test(fastcsg-lazyunion-cgalpng    OPENSCAD SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} ARGS --enable=lazy-union --render)
 add_cmdline_test(fastcsg-lazyunion-amfpngtest SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union ${OPENSCAD_ARG} --format=AMF)
@@ -1162,6 +1209,7 @@ add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SC
 # Corner-case Export/Import tests
 add_cmdline_test(monotonepngtest OPENSCAD SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES} ${EXPORT3D_CGALCGAL_TEST_FILES} ARGS --colorscheme=Monotone --render)
 add_cmdline_test(stlexport             OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=sort-stl --render)
+add_cmdline_test(manifold-stlexport    OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=sort-stl --enable=manifold --render)
 add_cmdline_test(objexport             OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render)
 add_cmdline_test(3mfexport             OPENSCAD ARGS SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES})
 
