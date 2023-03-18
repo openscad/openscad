@@ -3,6 +3,7 @@
 #include "manifold.h"
 #include "IndexedMesh.h"
 #include "cgalutils.h"
+#include "manifoldutils.h"
 
 ManifoldGeometry::ManifoldGeometry() : manifold_(make_shared<manifold::Manifold>()) {}
 
@@ -57,6 +58,7 @@ std::string ManifoldGeometry::dump() const {
   auto &manifold = getManifold();
   auto mesh = manifold.GetMesh();
   out << "Manifold:"
+      << "\n status: " << ManifoldUtils::statusToString(manifold.Status())
       << "\n genus: " << manifold.Genus()
       << "\n num vertices: " << mesh.vertPos.size()
       << "\n num polygons: " << mesh.triVerts.size()

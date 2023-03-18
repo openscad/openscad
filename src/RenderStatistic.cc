@@ -38,6 +38,7 @@
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
 #include "manifold.h"
+#include "manifoldutils.h"
 #endif // ENABLE_MANIFOLD
 
 #include "RenderStatistic.h"
@@ -284,6 +285,7 @@ void LogVisitor::visit(const ManifoldGeometry& mani_geom)
   auto &mani = mani_geom.getManifold();
   auto bbox = mani.BoundingBox();
   
+  LOG(message_group::None, Location::NONE, "", "   Status:     %1$s", ManifoldUtils::statusToString(mani.Status()));
   LOG(message_group::None, Location::NONE, "", "   Genus:      %1$d", mani.Genus());
   LOG(message_group::None, Location::NONE, "", "   Vertices:   %1$6d", mani.NumVert());
   LOG(message_group::None, Location::NONE, "", "   Facets:     %1$6d", mani.NumTri());

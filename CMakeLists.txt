@@ -737,6 +737,7 @@ set(CGAL_SOURCES
 
 set(MANIFOLD_SOURCES
   src/geometry/manifold/ManifoldGeometry.cc
+  src/geometry/manifold/manifoldutils.cc
 )
 
 if(ENABLE_TBB AND ENABLE_MANIFOLD)
