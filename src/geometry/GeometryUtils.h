@@ -36,4 +36,6 @@ bool tessellatePolygonWithHoles(const std::vector<Vector3f>& vertices,
 
 int findUnconnectedEdges(const std::vector<std::vector<IndexedFace>>& polygons);
 int findUnconnectedEdges(const std::vector<IndexedTriangle>& triangles);
+
+Transform3d getResizeTransform(const BoundingBox &bbox, const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize);
 }

@@ -131,10 +131,11 @@ Install git (https://git-scm.com/) onto your system. Then run a clone:
 
 This will download the latest sources into a directory named `openscad`.
 
-To pull the MCAD library (https://github.com/openscad/MCAD), do the following:
+To pull the various submodules (incl. the [MCAD library](https://github.com/openscad/MCAD)), do the following:
 
     cd openscad
-    git submodule update --init
+    git submodule update --init --recursive
+    ( cd submodules/manifold && git apply thrust.diff )
 
 ### Building for macOS
 
@@ -234,7 +235,7 @@ For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions.
 
 First, run `mkdir build && cd build && cmake .. -DEXPERIMENTAL=1` to generate a Makefile.
 
-Then run `make -j`. Finally, on Linux you might run `make install` as root.
+Then run `make`. Finally, on Linux you might run `make install` as root.
 
 If you had problems compiling from source, raise a new issue in the
 [issue tracker on the github page](https://github.com/openscad/openscad/issues).
@@ -242,7 +243,7 @@ If you had problems compiling from source, raise a new issue in the
 This site and it's subpages can also be helpful:
 https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_OpenSCAD_from_Sources
 
-Once built, you can run tests with `cd build/tests && ctest -j`.
+Once built, you can run tests with `cd build/tests && ctest`.
 
 ### Running CI workflows locally
 
