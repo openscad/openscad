@@ -45,3 +45,5 @@ public:
 private:
   std::unique_ptr<LocalScope> else_scope;
 };
+
+std::shared_ptr<AbstractNode> lazyUnionNode(const ModuleInstantiation *inst);

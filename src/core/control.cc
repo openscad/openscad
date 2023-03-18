@@ -35,7 +35,7 @@
 #include "printutils.h"
 #include <cstdint>
 
-static std::shared_ptr<AbstractNode> lazyUnionNode(const ModuleInstantiation *inst)
+std::shared_ptr<AbstractNode> lazyUnionNode(const ModuleInstantiation *inst)
 {
   if (Feature::ExperimentalLazyUnion.is_enabled()) {
     return std::make_shared<ListNode>(inst);
