@@ -1679,7 +1679,7 @@ msgstr "Montre"
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1874
 msgid "Note: The API key is stored unencrypted in the application settings."
 msgstr ""
-"Note: La clé API n'est pas encryptée dans l'enregistrement des préférences"
+"Note: La clé API n'est pas chiffrée dans l'enregistrement des préférences"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1875
 msgid "OpenCSG"
