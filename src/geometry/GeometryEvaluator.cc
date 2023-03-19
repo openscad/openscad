@@ -30,6 +30,10 @@
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
 #include "boost-utils.h"
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#include "manifoldutils.h"
+#endif
 
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
@@ -63,6 +67,11 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
     if (dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root)) {
       this->root = CGALUtils::getGeometryAsPolySet(this->root);
     }
+#ifdef ENABLE_MANIFOLD
+    if (dynamic_pointer_cast<const ManifoldGeometry>(this->root)) {
+      this->root = CGALUtils::getGeometryAsPolySet(this->root);
+    }
+#endif
 
     if (!allownef) {
       // We cannot render concave polygons, so tessellate any 3D PolySets
@@ -156,11 +165,21 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     }
     if (actualchildren.empty()) return {};
     if (actualchildren.size() == 1) return {actualchildren.front().second};
+#ifdef ENABLE_MANIFOLD
+    if (Feature::ExperimentalManifold.is_enabled()) {
+      return {ManifoldUtils::applyOperator3DManifold(actualchildren, op)};
+    }
+#endif
     return {CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())};
     break;
   }
   default:
   {
+#ifdef ENABLE_MANIFOLD
+    if (Feature::ExperimentalManifold.is_enabled()) {
+      return {ManifoldUtils::applyOperator3DManifold(children, op)};
+    }
+#endif
     return {CGALUtils::applyOperator3D(children, op)};
     break;
   }

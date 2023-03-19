@@ -10,6 +10,10 @@
 #include "printutils.h"
 #include "progress.h"
 #include "CGALHybridPolyhedron.h"
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#include "manifoldutils.h"
+#endif
 #include "core/node.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -191,6 +195,14 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
           addPoint(vector_convert<K::Point_3>(p));
           return false;
         });
+#ifdef ENABLE_MANIFOLD
+    } else if (auto mani = dynamic_pointer_cast<const ManifoldGeometry>(chgeom)) {
+      points.reserve(points.size() + mani->numVertices());
+      mani->foreachVertexUntilTrue([&](auto& p) {
+          addPoint(vector_convert<K::Point_3>(p));
+          return false;
+        });
+#endif
     } else {
       const auto *ps = dynamic_cast<const PolySet *>(chgeom.get());
       if (ps) {
@@ -230,6 +242,11 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
  */
 shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 {
+#if ENABLE_MANIFOLD
+  if (Feature::ExperimentalManifold.is_enabled()) {
+    return ManifoldUtils::applyMinkowskiManifold(children);
+  }
+#endif
   if (Feature::ExperimentalFastCsg.is_enabled()) {
     return applyMinkowskiHybrid(children);
   }
@@ -252,8 +269,9 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 
         auto ps = dynamic_pointer_cast<const PolySet>(operands[i]);
         auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(operands[i]);
-        if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(operands[i])) {
-          nef = CGALUtils::createNefPolyhedronFromHybrid(*hybrid);
+
+        if (!nef) {
+          nef = CGALUtils::getNefPolyhedronFromGeometry(operands[i]);
         }
 
         if (ps) CGALUtils::createPolyhedronFromPolySet(*ps, poly);

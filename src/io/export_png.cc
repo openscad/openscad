@@ -19,9 +19,9 @@ static void setupCamera(Camera& cam, const BoundingBox& bbox)
 bool export_png(const shared_ptr<const Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output)
 {
   PRINTD("export_png geom");
-  OffscreenView *glview;
+  std::unique_ptr<OffscreenView> glview;
   try {
-    glview = new OffscreenView(camera.pixel_width, camera.pixel_height);
+    glview = std::make_unique<OffscreenView>(camera.pixel_width, camera.pixel_height);
   } catch (int error) {
     fprintf(stderr, "Can't create OpenGL OffscreenView. Code: %i.\n", error);
     return false;

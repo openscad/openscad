@@ -126,7 +126,12 @@ extern bool python_unlocked;
 
 #endif // ENABLE_CGAL
 
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#endif // ENABLE_MANIFOLD
+
 #include "PrintInitDialog.h"
+//#include "ExportPdfDialog.h"
 #include "input/InputDriverEvent.h"
 #include "input/InputDriverManager.h"
 #include <cstdio>
@@ -274,6 +279,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   const QString surfaceStatement = "surface(\"%1\");\n";
   const QString importFunction = "data = import(\"%1\");\n";
   knownFileExtensions["stl"] = importStatement;
+  knownFileExtensions["obj"] = importStatement;
   knownFileExtensions["3mf"] = importStatement;
   knownFileExtensions["off"] = importStatement;
   knownFileExtensions["dxf"] = importStatement;
@@ -2021,6 +2027,7 @@ ExportInfo createExportInfo(FileFormat format, const QString& exportFilename, co
   exportInfo.sourceFilePath = sourceFilePath.toUtf8().toStdString();
   exportInfo.sourceFileName = info.fileName().toUtf8().toStdString();
   exportInfo.useStdOut = false;
+  exportInfo.options = nullptr;
   return exportInfo;
 }
 
@@ -2175,7 +2182,9 @@ void MainWindow::cgalRender()
   this->cgalRenderer = nullptr;
   this->root_geom.reset();
 
-  LOG(message_group::None, Location::NONE, "", "Rendering Polygon Mesh using CGAL...");
+  LOG(message_group::None, Location::NONE, "",
+      "Rendering Polygon Mesh using %1$s...",
+      Feature::ExperimentalManifold.is_enabled() ? "Manifold" : "CGAL");
 
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
@@ -2468,6 +2477,10 @@ void MainWindow::actionCheckValidity()
   bool valid = false;
   if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root_geom)) {
     valid = hybrid->isValid();
+#ifdef ENABLE_MANIFOLD
+  } else if (auto mani = dynamic_pointer_cast<const ManifoldGeometry>(this->root_geom)) {
+    valid = mani->isValid();
+#endif
   } else if (auto N = CGALUtils::getNefPolyhedronFromGeometry(this->root_geom)) {
     valid = N->p3 ? const_cast<CGAL_Nef_polyhedron3&>(*N->p3).is_valid() : false;
   }
@@ -2529,20 +2542,27 @@ bool MainWindow::canExport(unsigned int dim)
 }
 
 #ifdef ENABLE_CGAL
-void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim)
+void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim){
+ExportPdfOptions* empty = nullptr;
+actionExport(format, type_name, suffix, dim, empty);
+};
+
+void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim, ExportPdfOptions *options)
 #else
 void MainWindow::actionExport(FileFormat, QString, QString, unsigned int, QString)
 #endif
 {
   //Setting filename skips the file selection dialog and uses the path provided instead.
-
   if (GuiLocker::isLocked()) return;
   GuiLocker lock;
 #ifdef ENABLE_CGAL
+
+
   setCurrentOutput();
 
   //Return if something is wrong and we can't export.
   if (!canExport(dim)) return;
+  
   auto title = QString(_("Export %1 File")).arg(type_name);
   auto filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
   auto exportFilename = QFileDialog::getSaveFileName(this, title, exportPath(suffix), filter);
@@ -2553,6 +2573,9 @@ void MainWindow::actionExport(FileFormat, QString, QString, unsigned int, QStrin
   this->export_paths[suffix] = exportFilename;
 
   ExportInfo exportInfo = createExportInfo(format, exportFilename, activeEditor->filepath);
+  // Add options
+exportInfo.options=options;
+  
   bool exportResult = exportFileByName(this->root_geom, exportInfo);
 
   if (exportResult) fileExportedMessage(type_name, exportFilename);
@@ -2606,7 +2629,48 @@ void MainWindow::actionExportSVG()
 
 void MainWindow::actionExportPDF()
 {
-  actionExport(FileFormat::PDF, "PDF", ".pdf", 2);
+
+ExportPdfOptions exportPdfOptions;
+QSettingsCached settings;
+
+// Prepopulated with default values in export.h
+auto exportPdfDialog = new ExportPdfDialog();
+
+// Get current settings or defaults
+//  modify the two enums (next two rows) to explicitly use default by lookup to string (see the later set methods).
+exportPdfDialog->setPaperSize(sizeString2Enum(settings.value("exportPdfOpts/paperSize",
+	QString::fromStdString(paperSizeStrings[static_cast<int>(exportPdfOptions.paperSize)])).toString()));  // enum map
+exportPdfDialog->setOrientation(orientationsString2Enum(settings.value("exportPdfOpts/orientation",
+	QString::fromStdString(paperOrientationsStrings[static_cast<int>(exportPdfOptions.Orientation)])).toString()));  // enum map
+exportPdfDialog->setShowDsnFn(settings.value("exportPdfOpts/showDsgnFN",exportPdfOptions.showDsgnFN).toBool());
+exportPdfDialog->setShowScale(settings.value("exportPdfOpts/showScale",exportPdfOptions.showScale).toBool());
+exportPdfDialog->setShowScaleMsg(settings.value("exportPdfOpts/showScaleMsg",exportPdfOptions.showScaleMsg).toBool());
+exportPdfDialog->setShowGrid(settings.value("exportPdfOpts/showGrid",exportPdfOptions.showGrid).toBool());
+exportPdfDialog->setGridSize(settings.value("exportPdfOpts/gridSize",exportPdfOptions.gridSize).toDouble());
+
+
+if (exportPdfDialog->exec() == QDialog::Rejected) {
+  return;
+}; 
+
+exportPdfOptions.paperSize=exportPdfDialog->getPaperSize();
+exportPdfOptions.Orientation=exportPdfDialog->getOrientation();
+exportPdfOptions.showDsgnFN=exportPdfDialog->getShowDsnFn();
+exportPdfOptions.showScale=exportPdfDialog->getShowScale();
+exportPdfOptions.showScaleMsg=exportPdfDialog->getShowScaleMsg();
+exportPdfOptions.showGrid=exportPdfDialog->getShowGrid();
+exportPdfOptions.gridSize=exportPdfDialog->getGridSize();
+
+settings.setValue("exportPdfOpts/paperSize",QString::fromStdString(paperSizeStrings[static_cast<int>( exportPdfDialog->getPaperSize())]));
+settings.setValue("exportPdfOpts/orientation",QString::fromStdString(paperOrientationsStrings[static_cast<int>(exportPdfDialog->getOrientation())]));
+settings.setValue("exportPdfOpts/showDsgnFN",exportPdfDialog->getShowDsnFn());
+settings.setValue("exportPdfOpts/showScale",exportPdfDialog->getShowScale());
+settings.setValue("exportPdfOpts/showScaleMsg",exportPdfDialog->getShowScaleMsg());
+settings.setValue("exportPdfOpts/showGrid",exportPdfDialog->getShowGrid());
+settings.setValue("exportPdfOpts/gridSize",exportPdfDialog->getGridSize());
+
+actionExport(FileFormat::PDF, "PDF", ".pdf", 2, &exportPdfOptions);
+
 }
 
 void MainWindow::actionExportCSG()
@@ -3482,3 +3546,18 @@ void MainWindow::jumpToLine(int line, int col)
 {
   this->activeEditor->setCursorPosition(line, col);
 }
+
+paperSizes MainWindow::sizeString2Enum(QString current){
+   for(int i = 0; i < paperSizeStrings.size(); i++){
+       if (current.toStdString()==paperSizeStrings[i]) return static_cast<paperSizes>(i);
+   };
+   return paperSizes::A4;
+};
+
+paperOrientations MainWindow::orientationsString2Enum(QString current){
+   for(int i = 0; i < paperOrientationsStrings.size(); i++){
+       if (current.toStdString()==paperOrientationsStrings[i]) return static_cast<paperOrientations>(i);
+   };
+   return paperOrientations::PORTRAIT;
+};
+

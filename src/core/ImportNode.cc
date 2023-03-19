@@ -193,6 +193,10 @@ const Geometry *ImportNode::createGeometry() const
     g = import_off(this->filename, loc);
     break;
   }
+  case ImportType::OBJ: {
+    g = import_obj(this->filename, loc);
+    break;
+  }
   case ImportType::SVG: {
     g = import_svg(this->fn, this->fs, this->fa, this->filename, this->id, this->layer, this->dpi, this->center, loc);
     break;

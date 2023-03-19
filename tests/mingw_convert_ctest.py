@@ -211,7 +211,7 @@ def find_single_file(name, path):
 def run():
     winconv = find_imagemagick()
     if winconv=='':
-        print('error, cant find convert.exe')
+        print('error, cannot find convert.exe')
 
     if True:
         print(thisfile_abspath)
