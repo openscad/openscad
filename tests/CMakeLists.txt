@@ -1465,7 +1465,6 @@ if(MXECROSS AND EXPERIMENTAL)
     USE_SOURCE_PERMISSIONS
     COMPONENT Tests
     PATTERN ".git*" EXCLUDE
-    PATTERN "venv" EXCLUDE
     PATTERN "OpenSCAD_Test_Console.py" EXCLUDE
     PATTERN "WinReadme.txt" EXCLUDE
     PATTERN "mingw_convert_ctest.py" EXCLUDE
@@ -1475,6 +1474,7 @@ if(MXECROSS AND EXPERIMENTAL)
     DESTINATION tests-build
     USE_SOURCE_PERMISSIONS
     COMPONENT Tests
+    PATTERN "venv" EXCLUDE
     PATTERN "CMakeFiles" EXCLUDE
     PATTERN "CMakeLists.txt" EXCLUDE
     PATTERN "cmake_install.cmake" EXCLUDE
