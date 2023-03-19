@@ -1474,6 +1474,7 @@ if(MXECROSS AND EXPERIMENTAL)
     DESTINATION tests-build
     USE_SOURCE_PERMISSIONS
     COMPONENT Tests
+    PATTERN "venv" EXCLUDE
     PATTERN "CMakeFiles" EXCLUDE
     PATTERN "CMakeLists.txt" EXCLUDE
     PATTERN "cmake_install.cmake" EXCLUDE

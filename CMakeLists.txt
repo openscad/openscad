@@ -760,7 +760,7 @@ if(ENABLE_MANIFOLD)
   set(PYBIND11_FINDPYTHON OFF)
   set(MANIFOLD_PYBIND OFF)
 
-  add_subdirectory(submodules/manifold)
+  add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
   target_link_libraries(OpenSCAD PRIVATE manifold)
   
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
