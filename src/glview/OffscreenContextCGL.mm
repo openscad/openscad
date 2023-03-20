@@ -77,26 +77,13 @@ OffscreenContext *create_offscreen_context(int w, int h)
 
   [ctx->openGLContext makeCurrentContext];
   
-  // glewInit must come after Context creation and before FBO calls.
-  GLenum err = glewInit();
-  if (GLEW_OK != err) {
-    std::cerr << "Unable to init GLEW: " << glewGetErrorString(err) << std::endl;
+  auto *returnCtx = create_offscreen_context_common(ctx);
+  if (!returnCtx) {
     [ctx->openGLContext release];
     [ctx->pool release];
     delete ctx;
-    return nullptr;
   }
-  glew_dump();
-
-  ctx->fbo = fbo_new();
-  if (!fbo_init(ctx->fbo, w, h)) {
-    [ctx->openGLContext release];
-    [ctx->pool release];
-    delete ctx;
-    return nullptr;
-  }
-
-  return ctx;
+  return returnCtx;
 }
 
 bool teardown_offscreen_context(OffscreenContext *ctx)
