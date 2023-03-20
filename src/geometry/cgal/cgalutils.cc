@@ -85,7 +85,7 @@ CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps)
          std::string(e.what()).find("has_on") != std::string::npos) ||
         std::string(e.what()).find("ss_plane.has_on(sv_prev->point())") != std::string::npos ||
         std::string(e.what()).find("ss_circle.has_on(sp)") != std::string::npos) {
-      LOG(message_group::None, Location::NONE, "", "PolySet has nonplanar faces. Attempting alternate construction");
+      LOG("PolySet has nonplanar faces. Attempting alternate construction");
       plane_error = true;
     } else {
       LOG(message_group::Error, Location::NONE, "", "CGAL error in CGAL_Nef_polyhedron3(): %1$s", e.what());

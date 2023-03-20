@@ -63,7 +63,7 @@ struct Message {
   {
   }
 
-  Message(std::string msg, Location loc, std::string docPath, message_group group)
+  Message(std::string msg, Location loc = Location::NONE, std::string docPath = "", message_group group = message_group::None)
     : msg(std::move(msg)), loc(std::move(loc)), docPath(std::move(docPath)), group(group)
   {
   }
@@ -202,7 +202,7 @@ private:
 
 public:
   template <typename ... Args>
-  MessageClass(std::string&& fmt, Args&&... args) : fmt(std::forward<std::string>(fmt)), args(std::forward<Args>(args)...)
+  MessageClass(std::string&& fmt, Args&&... args) : fmt(fmt), args(std::forward<Args>(args)...)
   {
   }
 
@@ -214,10 +214,10 @@ public:
 
 extern std::set<std::string> printedDeprecations;
 
-template <typename F, typename ... Args>
-void LOG(const message_group& msg_grp, Location loc, std::string docPath, F&& f, Args&&... args)
+template <typename ... Args>
+void LOG(const message_group& msg_grp, Location loc, std::string docPath, std::string&& f, Args&&... args)
 {
-  const auto msg = MessageClass<Args...>(std::forward<F>(f), std::forward<Args>(args)...);
+  const auto msg = MessageClass<Args...>(std::move(f), std::forward<Args>(args)...);
   auto formatted = msg.format();
 
   //check for deprecations
@@ -227,4 +227,11 @@ void LOG(const message_group& msg_grp, Location loc, std::string docPath, F&& f,
   Message msgObj{std::move(formatted), std::move(loc), std::move(docPath), msg_grp};
 
   PRINT(msgObj);
+}
+
+template <typename ... Args>
+void LOG(std::string&& f, Args&&... args)
+{
+  const auto msg = MessageClass<Args...>(std::move(f), std::forward<Args>(args)...);
+  PRINT(Message{msg.format()});
 }

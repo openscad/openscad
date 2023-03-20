@@ -109,7 +109,7 @@ bool exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const E
   }
   std::ofstream fstream(exportInfo.name2open, mode);
   if (!fstream.is_open()) {
-    LOG(message_group::None, Location::NONE, "", _("Can't open file \"%1$s\" for export"), exportInfo.name2display);
+    LOG(_("Can't open file \"%1$s\" for export"), exportInfo.name2display);
     return false;
   } else {
     bool onerror = false;

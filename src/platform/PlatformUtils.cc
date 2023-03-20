@@ -97,7 +97,7 @@ bool PlatformUtils::createUserLibraryPath()
   bool OK = false;
   try {
     if (!fs::exists(fs::path(path))) {
-      LOG(message_group::None, Location::NONE, "", "Creating library folder %1$s", path);
+      LOG("Creating library folder %1$s", path);
       OK = fs::create_directories(path);
     }
     if (!OK) {

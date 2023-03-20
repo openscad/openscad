@@ -407,7 +407,7 @@ void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output)
 
 void export_3mf(const shared_ptr<const Geometry>&, std::ostream&)
 {
-  LOG(message_group::None, Location::NONE, "", "Export to 3MF format was not enabled when building the application.");
+  LOG("Export to 3MF format was not enabled when building the application.");
 }
 
 #endif // ENABLE_LIB3MF

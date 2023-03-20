@@ -173,7 +173,7 @@ QAction *findAction(const QList<QAction *>& actions, const std::string& name)
 }
 
 void fileExportedMessage(const char *format, const QString& filename) {
-  LOG(message_group::None, Location::NONE, "", "%1$s export finished: %2$s", format, filename.toUtf8().constData());
+  LOG("%1$s export finished: %2$s", format, filename.toUtf8().constData());
 }
 
 QAction *getExport3DAction(const MainWindow *mainWindow) {
@@ -1087,7 +1087,7 @@ void MainWindow::compile(bool reload, bool forcedone)
       auto mtime = this->root_file->handleDependencies();
       if (mtime > this->deps_mtime) {
         this->deps_mtime = mtime;
-        LOG(message_group::None, Location::NONE, "", "Used file cache size: %1$d files", SourceFileCache::instance()->size());
+        LOG("Used file cache size: %1$d files", SourceFileCache::instance()->size());
         didcompile = true;
       }
     }
@@ -1223,7 +1223,7 @@ void MainWindow::instantiateRoot()
 
   if (this->root_file) {
     // Evaluate CSG tree
-    LOG(message_group::None, Location::NONE, "", "Compiling design (CSG Tree generation)...");
+    LOG("Compiling design (CSG Tree generation)...");
     this->processEvents();
 
     AbstractNode::resetIndexCounter();
@@ -1260,7 +1260,7 @@ void MainWindow::instantiateRoot()
     } else {
       LOG(message_group::Error, Location::NONE, "", "Compilation failed!");
     }
-    LOG(message_group::None, Location::NONE, "", " ");
+    LOG(" ");
     this->processEvents();
   }
 }
@@ -1274,7 +1274,7 @@ void MainWindow::compileCSG()
   OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
   try{
     assert(this->root_node);
-    LOG(message_group::None, Location::NONE, "", "Compiling design (CSG Products generation)...");
+    LOG("Compiling design (CSG Products generation)...");
     this->processEvents();
 
     // Main CSG evaluation
@@ -1300,14 +1300,14 @@ void MainWindow::compileCSG()
       renderStatistic.printCacheStatistic();
       this->processEvents();
     } catch (const ProgressCancelException&) {
-      LOG(message_group::None, Location::NONE, "", "CSG generation cancelled.");
+      LOG("CSG generation cancelled.");
     } catch (const HardWarningException&) {
-      LOG(message_group::None, Location::NONE, "", "CSG generation cancelled due to hardwarning being enabled.");
+      LOG("CSG generation cancelled due to hardwarning being enabled.");
     }
     progress_report_fin();
     updateStatusBar(nullptr);
 
-    LOG(message_group::None, Location::NONE, "", "Compiling design (CSG Products normalization)...");
+    LOG("Compiling design (CSG Products normalization)...");
     this->processEvents();
 
     size_t normalizelimit = 2ul * Preferences::inst()->getValue("advanced/openCSGLimit").toUInt();
@@ -1327,7 +1327,7 @@ void MainWindow::compileCSG()
 
     const std::vector<shared_ptr<CSGNode>>& highlight_terms = csgrenderer.getHighlightNodes();
     if (highlight_terms.size() > 0) {
-      LOG(message_group::None, Location::NONE, "", "Compiling highlights (%1$d CSG Trees)...", highlight_terms.size());
+      LOG("Compiling highlights (%1$d CSG Trees)...", highlight_terms.size());
       this->processEvents();
 
       this->highlights_products.reset(new CSGProducts());
@@ -1343,7 +1343,7 @@ void MainWindow::compileCSG()
 
     const auto& background_terms = csgrenderer.getBackgroundNodes();
     if (background_terms.size() > 0) {
-      LOG(message_group::None, Location::NONE, "", "Compiling background (%1$d CSG Trees)...", background_terms.size());
+      LOG("Compiling background (%1$d CSG Trees)...", background_terms.size());
       this->processEvents();
 
       this->background_products.reset(new CSGProducts());
@@ -1365,7 +1365,7 @@ void MainWindow::compileCSG()
     }
 #ifdef ENABLE_OPENCSG
     else {
-      LOG(message_group::None, Location::NONE, "", "Normalized tree has %1$d elements!",
+      LOG("Normalized tree has %1$d elements!",
           (this->root_products ? this->root_products->size() : 0));
       this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
                                                   this->highlights_products,
@@ -1375,7 +1375,7 @@ void MainWindow::compileCSG()
     this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
                                                               this->highlights_products,
                                                               this->background_products);
-    LOG(message_group::None, Location::NONE, "", "Compile and preview finished.");
+    LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
     this->processEvents();
   } catch (const HardWarningException&) {
@@ -1480,7 +1480,7 @@ void MainWindow::writeBackup(QFile *file)
   writer << activeEditor->toPlainText();
   this->activeEditor->parameterWidget->saveBackupFile(file->fileName());
 
-  LOG(message_group::None, Location::NONE, "", "Saved backup file: %1$s", file->fileName().toUtf8().constData());
+  LOG("Saved backup file: %1$s", file->fileName().toUtf8().constData());
 }
 
 void MainWindow::saveBackup()
@@ -1536,7 +1536,7 @@ void MainWindow::actionShowLibraryFolder()
     }
   }
   auto url = QString::fromStdString(path);
-  LOG(message_group::None, Location::NONE, "", "Opening file browser for %1$s", url.toStdString());
+  LOG("Opening file browser for %1$s", url.toStdString());
   QDesktopServices::openUrl(QUrl::fromLocalFile(url));
 }
 
@@ -1890,8 +1890,8 @@ void MainWindow::prepareCompile(const char *afterCompileSlot, bool procevents, b
 {
   autoReloadTimer->stop();
   setCurrentOutput();
-  LOG(message_group::None, Location::NONE, "", " ");
-  LOG(message_group::None, Location::NONE, "", "Parsing design (AST generation)...");
+  LOG(" ");
+  LOG("Parsing design (AST generation)...");
   this->processEvents();
   this->afterCompileSlot = afterCompileSlot;
   this->procevents = procevents;
@@ -1967,11 +1967,11 @@ void MainWindow::action3DPrint()
 
   switch (selectedService) {
   case print_service_t::PRINT_SERVICE:
-    LOG(message_group::None, Location::NONE, "", "Sending design to print service %1$s...", printService->getDisplayName().toStdString());
+    LOG("Sending design to print service %1$s...", printService->getDisplayName().toStdString());
     sendToPrintService();
     break;
   case print_service_t::OCTOPRINT:
-    LOG(message_group::None, Location::NONE, "", "Sending design to OctoPrint...");
+    LOG("Sending design to OctoPrint...");
     sendToOctoPrint();
     break;
   default:
@@ -2027,7 +2027,7 @@ void MainWindow::sendToOctoPrint()
 
   QTemporaryFile exportFile{QDir::temp().filePath("OpenSCAD.XXXXXX." + fileFormat.toLower())};
   if (!exportFile.open()) {
-    LOG(message_group::None, Location::NONE, "", "Could not open temporary file.");
+    LOG("Could not open temporary file.");
     return;
   }
   const QString exportFileName = exportFile.fileName();
@@ -2176,7 +2176,7 @@ void MainWindow::actionRenderDone(const shared_ptr<const Geometry>& root_geom)
       options.emplace_back(RenderStatistic::BOUNDING_BOX);
     }
     renderStatistic.printAll(root_geom, qglview->cam, options);
-    LOG(message_group::None, Location::NONE, "", "Rendering finished.");
+    LOG("Rendering finished.");
 
     this->root_geom = root_geom;
     this->cgalRenderer = new CGALRenderer(root_geom);
@@ -2342,8 +2342,8 @@ void MainWindow::updateStatusBar(ProgressWidget *progressWidget)
 }
 
 void MainWindow::exceptionCleanup(){
-  LOG(message_group::None, Location::NONE, "", "Execution aborted");
-  LOG(message_group::None, Location::NONE, "", " ");
+  LOG("Execution aborted");
+  LOG(" ");
   GuiLocker::unlock();
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
@@ -2355,7 +2355,7 @@ void MainWindow::UnknownExceptionCleanup(std::string msg){
   } else {
     LOG(message_group::Error, Location::NONE, "", "Compilation aborted by exception: %1$s", msg);
   }
-  LOG(message_group::None, Location::NONE, "", " ");
+  LOG(" ");
   GuiLocker::unlock();
   if (designActionAutoReload->isChecked()) autoReloadTimer->start();
 }
@@ -2429,13 +2429,13 @@ void MainWindow::actionCheckValidity()
   setCurrentOutput();
 
   if (!this->root_geom) {
-    LOG(message_group::None, Location::NONE, "", "Nothing to validate! Try building first (press F6).");
+    LOG("Nothing to validate! Try building first (press F6).");
     clearCurrentOutput();
     return;
   }
 
   if (this->root_geom->getDimension() != 3) {
-    LOG(message_group::None, Location::NONE, "", "Current top level object is not a 3D object.");
+    LOG("Current top level object is not a 3D object.");
     clearCurrentOutput();
     return;
   }
@@ -2450,7 +2450,7 @@ void MainWindow::actionCheckValidity()
   } else if (auto N = CGALUtils::getNefPolyhedronFromGeometry(this->root_geom)) {
     valid = N->p3 ? const_cast<CGAL_Nef_polyhedron3&>(*N->p3).is_valid() : false;
   }
-  LOG(message_group::None, Location::NONE, "", "Valid:      %1$6s", (valid ? "yes" : "no"));
+  LOG("Valid:      %1$6s", (valid ? "yes" : "no"));
   clearCurrentOutput();
 #endif /* ENABLE_CGAL */
 }
@@ -2659,7 +2659,7 @@ void MainWindow::actionExportCSG()
 
   std::ofstream fstream(csg_filename.toLocal8Bit());
   if (!fstream.is_open()) {
-    LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export", csg_filename.toLocal8Bit().constData());
+    LOG("Can't open file \"%1$s\" for export", csg_filename.toLocal8Bit().constData());
   } else {
     fstream << this->tree.getString(*this->root_node, "\t") << "\n";
     fstream.close();
@@ -2685,7 +2685,7 @@ void MainWindow::actionExportImage()
       fileExportedMessage("PNG", img_filename);
       clearCurrentOutput();
     } else {
-      LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
+      LOG("Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
     }
   }
 }
@@ -2718,7 +2718,7 @@ void MainWindow::actionFlushCaches()
   SourceFileCache::instance()->clear();
 
   setCurrentOutput();
-  LOG(message_group::None, Location::NONE, "", "Caches Flushed");
+  LOG("Caches Flushed");
 }
 
 void MainWindow::viewModeActionsUncheck()
