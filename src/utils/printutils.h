@@ -44,7 +44,7 @@ inline const char *_(const char *msgid, const char *msgctxt) {
 // NOLINTEND(bugprone-reserved-identifier)
 
 enum class message_group {
-  Error, Warning, UI_Warning, Font_Warning, Export_Warning, Export_Error, UI_Error, Parser_Error, Trace, Deprecated, None, Echo
+  NONE, Error, Warning, UI_Warning, Font_Warning, Export_Warning, Export_Error, UI_Error, Parser_Error, Trace, Deprecated, Echo
 };
 
 
@@ -59,17 +59,17 @@ struct Message {
   enum message_group group;
 
   Message()
-    : msg(""), loc(Location::NONE), docPath(""), group(message_group::None)
+    : msg(""), loc(Location::NONE), docPath(""), group(message_group::NONE)
   {
   }
 
-  Message(std::string msg, Location loc = Location::NONE, std::string docPath = "", message_group group = message_group::None)
+  Message(std::string msg, Location loc = Location::NONE, std::string docPath = "", message_group group = message_group::NONE)
     : msg(std::move(msg)), loc(std::move(loc)), docPath(std::move(docPath)), group(group)
   {
   }
 
   [[nodiscard]] std::string str() const {
-    const auto g = group == message_group::None ? "" : getGroupName(group) + ": ";
+    const auto g = group == message_group::NONE ? "" : getGroupName(group) + ": ";
     const auto l = loc.isNone() ? "" : " " + loc.toRelativeString(docPath);
     return g + msg + l;
   }

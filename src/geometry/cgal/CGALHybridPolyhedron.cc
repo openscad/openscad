@@ -194,7 +194,7 @@ bool CGALHybridPolyhedron::canCorefineWith(const CGALHybridPolyhedron& other) co
     reasonWontCorefine = "non manifoldness detected";
   }
   if (reasonWontCorefine) {
-    LOG(message_group::None, Location::NONE, "",
+    LOG(message_group::NONE, Location::NONE, "",
         "[fast-csg] Performing safer but slower nef operation instead of corefinement because %1$s. "
         "(can override with fast-csg-trust-corefinement)",
         reasonWontCorefine);
@@ -321,7 +321,7 @@ void CGALHybridPolyhedron::nefPolyBinOp(
   auto& rhs = *other.convertToNef();
 
   if (Feature::ExperimentalFastCsgDebug.is_enabled()) {
-    LOG(message_group::None, Location::NONE, "",
+    LOG(message_group::NONE, Location::NONE, "",
         "[fast-csg] %1$s: %2$s vs. %3$s",
         opName.c_str(), describeForDebug(lhs), describeForDebug(rhs));
   }
@@ -356,7 +356,7 @@ bool CGALHybridPolyhedron::meshBinOp(
     auto& rhs = *other.convertToMesh();
 
     if (debug) {
-      LOG(message_group::None, Location::NONE, "",
+      LOG(message_group::NONE, Location::NONE, "",
           "[fast-csg] %1$s #%2$lu: %3$s vs. %4$s",
           opName.c_str(), opNumber, describeForDebug(lhs), describeForDebug(rhs));
 

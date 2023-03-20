@@ -1246,7 +1246,7 @@ void MainWindow::instantiateRoot()
         this->root_node = this->absolute_root_node;
       }
       if (nextLocation) {
-        LOG(message_group::None, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
+        LOG(message_group::NONE, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
       }
 
       // FIXME: Consider giving away ownership of root_node to the Tree, or use reference counted pointers
@@ -2148,7 +2148,7 @@ void MainWindow::cgalRender()
   this->cgalRenderer = nullptr;
   this->root_geom.reset();
 
-  LOG(message_group::None, Location::NONE, "",
+  LOG(message_group::NONE, Location::NONE, "",
       "Rendering Polygon Mesh using %1$s...",
       Feature::ExperimentalManifold.is_enabled() ? "Manifold" : "CGAL");
 

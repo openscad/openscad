@@ -75,7 +75,7 @@ std::time_t SourceFileCache::evaluate(const std::string& mainFile, const std::st
 
 #ifdef DEBUG
   // Causes too much debug output
-  //if (!shouldCompile) LOG(message_group::None,Location::NONE,"","Using cached library: %1$s (%2$p)",filename,file);
+  //if (!shouldCompile) LOG(message_group::NONE,Location::NONE,"","Using cached library: %1$s (%2$p)",filename,file);
 #endif
 
   // If cache lookup failed (non-existing or old timestamp), compile file
