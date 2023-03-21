@@ -233,8 +233,7 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
 
   glGetError(); // clear error state so we don't pick up previous errors
   glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
-  auto glError = glGetError();
-  if (glError != GL_NO_ERROR) {
+  if (const auto glError = glGetError(); glError != GL_NO_ERROR) {
     if (statusLabel) {
       auto status = QString("Center View: OpenGL Error reading Pixel: %s")
         .arg(QString::fromLocal8Bit((const char *)gluErrorString(glError)));

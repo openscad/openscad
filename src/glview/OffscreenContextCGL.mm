@@ -8,8 +8,6 @@
 #include <CoreServices/CoreServices.h>
 #include <sys/utsname.h>
 
-#define REPORTGLERROR(task) { GLenum tGLErr = glGetError(); if (tGLErr != GL_NO_ERROR) { std::cout << "OpenGL error " << tGLErr << " while " << task << "\n"; } }
-
 struct OffscreenContext
 {
   NSOpenGLContext *openGLContext;
@@ -115,10 +113,9 @@ bool save_framebuffer(const OffscreenContext *ctx, std::ostream &output)
     std::cerr << "Unable to allocate buffer for image extraction.";
     return 1;
   }
-  glReadPixels(0, 0, ctx->width, ctx->height, GL_RGBA, GL_UNSIGNED_BYTE, 
-               bufferData);
-  REPORTGLERROR("reading pixels from framebuffer");
-  
+  GL_CHECKD(glReadPixels(0, 0, ctx->width, ctx->height, GL_RGBA, GL_UNSIGNED_BYTE,
+			 bufferData));
+
   // Flip it vertically - images read from OpenGL buffers are upside-down
   unsigned char *flippedBuffer = (unsigned char *)malloc(rowBytes * ctx->height);
   if (!flippedBuffer) {

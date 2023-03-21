@@ -182,13 +182,6 @@ void GLView::paintGL()
 
 #ifdef ENABLE_OPENCSG
 
-void glErrorCheck() {
-  GLenum err = glGetError();
-  if (err != GL_NO_ERROR) {
-    fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
-  }
-}
-
 void glCompileCheck(GLuint shader) {
   GLint status;
   glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
