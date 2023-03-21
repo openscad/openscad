@@ -223,7 +223,7 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode& node)
       }
       geometry->addOutline(outline);
     } catch (const CGAL::Failure_exception& e) {
-      LOG(message_group::Warning, Location::NONE, "", "GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %1$s", e.what());
+      LOG(message_group::Warning, "GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %1$s", e.what());
     }
   }
   return geometry;
@@ -323,7 +323,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode& node,
   } else {
     if (!GeometryCache::instance()->contains(key)) {
       if (!GeometryCache::instance()->insert(key, geom)) {
-        LOG(message_group::Warning, Location::NONE, "", "GeometryEvaluator: Node didn't fit into cache.");
+        LOG(message_group::Warning, "GeometryEvaluator: Node didn't fit into cache.");
       }
     }
   }
@@ -415,7 +415,7 @@ Polygon2d *GeometryEvaluator::applyToChildren2D(const AbstractNode& node, OpenSC
     clipType = ClipperLib::ctDifference;
     break;
   default:
-    LOG(message_group::Error, Location::NONE, "", "Unknown boolean operation %1$d", int(op));
+    LOG(message_group::Error, "Unknown boolean operation %1$d", int(op));
     return nullptr;
     break;
   }
@@ -1267,7 +1267,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
       max_x = fmax(max_x, v[0]);
 
       if ((max_x - min_x) > max_x && (max_x - min_x) > fabs(min_x)) {
-        LOG(message_group::Error, Location::NONE, "", "all points for rotate_extrude() must have the same X coordinate sign (range is %1$.2f -> %2$.2f)", min_x, max_x);
+        LOG(message_group::Error, "all points for rotate_extrude() must have the same X coordinate sign (range is %1$.2f -> %2$.2f)", min_x, max_x);
         delete ps;
         return nullptr;
       }

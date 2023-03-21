@@ -138,7 +138,7 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet
     if (CGALUtils::isClosed(m)) {
       CGALUtils::orientToBoundAVolume(m);
     } else {
-      LOG(message_group::Error, Location::NONE, "", "[manifold] Input mesh is not closed!");
+      LOG(message_group::Error, "[manifold] Input mesh is not closed!");
     }
   }
 

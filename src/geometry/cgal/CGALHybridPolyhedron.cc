@@ -214,7 +214,7 @@ void CGALHybridPolyhedron::transform(const Transform3d& mat)
 {
   auto det = mat.matrix().determinant();
   if (det == 0) {
-    LOG(message_group::Warning, Location::NONE, "", "Scaling a 3D object with 0 - removing object");
+    LOG(message_group::Warning, "Scaling a 3D object with 0 - removing object");
     clear();
   } else {
     auto t = CGALUtils::createAffineTransformFromMatrix<CGAL_HybridKernel3>(mat);
@@ -378,7 +378,7 @@ bool CGALHybridPolyhedron::meshBinOp(
         remove(rhsDebugDumpFile.c_str());
       }
     } else {
-      LOG(message_group::Warning, Location::NONE, "", "[fast-csg] Corefinement %1$s #%2$lu failed",
+      LOG(message_group::Warning, "[fast-csg] Corefinement %1$s #%2$lu failed",
           opName.c_str(), opNumber);
     }
     if (debug) {

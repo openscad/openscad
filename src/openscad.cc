@@ -836,7 +836,7 @@ int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, cha
 bool QtUseGUI() { return false; }
 int gui(const vector<string>& inputFiles, const fs::path& original_path, int argc, char **argv)
 {
-  LOG(message_group::Error, Location::NONE, "", "Compiled without QT, but trying to run GUI\n");
+  LOG(message_group::Error, "Compiled without QT, but trying to run GUI\n");
   return 1;
 }
 #endif // OPENSCAD_QTGUI
@@ -1064,11 +1064,11 @@ int main(int argc, char **argv)
     output_files = vm["o"].as<vector<string>>();
   }
   if (vm.count("s")) {
-    LOG(message_group::Deprecated, Location::NONE, "", "The -s option is deprecated. Use -o instead.\n");
+    LOG(message_group::Deprecated, "The -s option is deprecated. Use -o instead.\n");
     output_files.push_back(vm["s"].as<string>());
   }
   if (vm.count("x")) {
-    LOG(message_group::Deprecated, Location::NONE, "", "The -x option is deprecated. Use -o instead.\n");
+    LOG(message_group::Deprecated, "The -x option is deprecated. Use -o instead.\n");
     output_files.push_back(vm["x"].as<string>());
   }
   if (vm.count("d")) {

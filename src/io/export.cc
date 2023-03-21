@@ -125,7 +125,7 @@ bool exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const E
       onerror = true;
     }
     if (onerror) {
-      LOG(message_group::Error, Location::NONE, "", _("\"%1$s\" write error. (Disk full?)"), exportInfo.name2display);
+      LOG(message_group::Error, _("\"%1$s\" write error. (Disk full?)"), exportInfo.name2display);
     }
     return !onerror;
   }

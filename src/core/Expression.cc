@@ -667,7 +667,7 @@ Echo::Echo(AssignmentList args, Expression *expr, const Location& loc)
 const Expression *Echo::evaluateStep(const std::shared_ptr<const Context>& context) const
 {
   Arguments arguments{this->arguments, context};
-  LOG(message_group::Echo, Location::NONE, "", "%1$s", STR(arguments));
+  LOG(message_group::Echo, "%1$s", STR(arguments));
   return expr.get();
 }
 

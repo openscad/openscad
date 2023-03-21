@@ -82,7 +82,7 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
   node->fa = parameters["$fa"].toDouble();
 
   if (!parameters["file"].isUndefined() && parameters["file"].type() == Value::Type::STRING) {
-    LOG(message_group::Deprecated, Location::NONE, "", "Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
+    LOG(message_group::Deprecated, "Support for reading files in linear_extrude will be removed in future releases. Use a child import() instead.");
     auto filename = lookup_file(parameters["file"].toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
     node->filename = filename;
     handle_dep(filename);

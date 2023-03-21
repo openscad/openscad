@@ -287,7 +287,7 @@ public:
             (facesBefore - facesAfter) * 100 / facesBefore);
       }
     } catch (const CGAL::Assertion_exception& e) {
-      LOG(message_group::Error, Location::NONE, "", "CGAL error in remeshSplitFaces: %1$s", e.what());
+      LOG(message_group::Error, "CGAL error in remeshSplitFaces: %1$s", e.what());
     }
   }
 

@@ -63,7 +63,7 @@ void SourceFile::registerUse(const std::string& path, const Location& loc)
     if (fs::is_regular_file(path)) {
       FontCache::instance()->register_font_file(path);
     } else {
-      LOG(message_group::Error, Location::NONE, "", "Can't read font with path '%1$s'", path);
+      LOG(message_group::Error, "Can't read font with path '%1$s'", path);
     }
   } else {
     auto pos = std::find(usedlibs.begin(), usedlibs.end(), path);

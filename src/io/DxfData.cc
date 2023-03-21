@@ -81,7 +81,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 {
   std::ifstream stream(filename.c_str());
   if (!stream.good()) {
-    LOG(message_group::Warning, Location::NONE, "", "Can't open DXF file '%1$s'.", filename);
+    LOG(message_group::Warning, "Can't open DXF file '%1$s'.", filename);
     return;
   }
 
@@ -145,7 +145,7 @@ DxfData::DxfData(double fn, double fs, double fa,
       id = boost::lexical_cast<int>(id_str);
     } catch (const boost::bad_lexical_cast& blc) {
       if (!stream.eof()) {
-        LOG(message_group::Warning, Location::NONE, "", "Illegal ID '%1$s' in `%2$s'", id_str, filename);
+        LOG(message_group::Warning, "Illegal ID '%1$s' in `%2$s'", id_str, filename);
       }
       break;
     }
@@ -370,9 +370,9 @@ DxfData::DxfData(double fn, double fs, double fa,
         break;
       }
     } catch (boost::bad_lexical_cast& blc) {
-      LOG(message_group::Warning, Location::NONE, "", "Illegal value '%1$s'in `%2$s'", data, filename);
+      LOG(message_group::Warning, "Illegal value '%1$s'in `%2$s'", data, filename);
     } catch (const std::out_of_range& oor) {
-      LOG(message_group::Warning, Location::NONE, "", "Not enough input values for %1$s. in '%2$s'", data, filename);
+      LOG(message_group::Warning, "Not enough input values for %1$s. in '%2$s'", data, filename);
     }
   }
 

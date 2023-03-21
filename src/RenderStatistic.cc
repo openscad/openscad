@@ -259,7 +259,7 @@ void LogVisitor::visit(const CGAL_Nef_polyhedron& nef)
     LOG("   Facets:     %1$6d", nef.p3->number_of_facets());
     LOG("   Volumes:    %1$6d", nef.p3->number_of_volumes());
     if (!simple) {
-      LOG(message_group::UI_Warning, Location::NONE, "", "Object may not be a valid 2-manifold and may need repair!");
+      LOG(message_group::UI_Warning, "Object may not be a valid 2-manifold and may need repair!");
     }
     printBoundingBox3(nef.getBoundingBox());
   }
@@ -272,7 +272,7 @@ void LogVisitor::visit(const CGALHybridPolyhedron& poly)
   LOG("   Vertices:   %1$6d", poly.numVertices());
   LOG("   Facets:     %1$6d", poly.numFacets());
   if (!simple) {
-    LOG(message_group::UI_Warning, Location::NONE, "", "Object may not be a valid 2-manifold and may need repair!");
+    LOG(message_group::UI_Warning, "Object may not be a valid 2-manifold and may need repair!");
   }
   printBoundingBox3(poly.getBoundingBox());
 }

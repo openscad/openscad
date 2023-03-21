@@ -37,7 +37,7 @@ public:
         LOG("Normalized CSG tree has %1$d elements", int(this->root_products->size()));
       } else {
         this->root_products.reset();
-        LOG(message_group::Warning, Location::NONE, "", "CSG normalization resulted in an empty tree");
+        LOG(message_group::Warning, "CSG normalization resulted in an empty tree");
       }
     }
 

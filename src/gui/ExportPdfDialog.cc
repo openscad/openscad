@@ -155,7 +155,7 @@ ExportPdfDialog::ExportPdfDialog()
 		break;
 	default:   // provide a sane default.  Shouldn't execute, but needed at least to compile.
 		rbS_A4->setChecked(TRUE);
-		//  LOG(message_group::Export_Warning, Location::NONE, "", "Export Paper Size Unknon( %1$8c )", paper);
+		//  LOG(message_group::Export_Warning, "Export Paper Size Unknon( %1$8c )", paper);
   	}	
   }
 
@@ -171,7 +171,7 @@ ExportPdfDialog::ExportPdfDialog()
 		rbOAuto->setChecked(TRUE);
 		break;
 	default:   // provide a sane default.  Shouldn't execute, but needed at least to compile.
-		//  LOG(message_group::Export_Warning, Location::NONE, "", "Export Paper Size Unknon( %1$8c )", paper);
+		//  LOG(message_group::Export_Warning, "Export Paper Size Unknon( %1$8c )", paper);
 		rbOAuto->setChecked(TRUE);
 		break;
   	}	

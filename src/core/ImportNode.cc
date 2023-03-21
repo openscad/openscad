@@ -75,7 +75,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   } else {
     const auto& filename_val = parameters["filename"];
     if (!filename_val.isUndefined()) {
-      LOG(message_group::Deprecated, Location::NONE, "", "filename= is deprecated. Please use file=");
+      LOG(message_group::Deprecated, "filename= is deprecated. Please use file=");
     }
     filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
   }
@@ -107,7 +107,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   } else {
     const auto& layername = parameters["layername"];
     if (layername.isDefined()) {
-      LOG(message_group::Deprecated, Location::NONE, "", "layername= is deprecated. Please use layer=");
+      LOG(message_group::Deprecated, "layername= is deprecated. Please use layer=");
       node->layer = layername.toString();
     }
   }
@@ -213,7 +213,7 @@ const Geometry *ImportNode::createGeometry() const
   }
 #endif
   default:
-    LOG(message_group::Error, Location::NONE, "", "Unsupported file format while trying to import file '%1$s', import() at line %2$d", this->filename, loc.firstLine());
+    LOG(message_group::Error, "Unsupported file format while trying to import file '%1$s', import() at line %2$d", this->filename, loc.firstLine());
     g = new PolySet(3);
   }
 

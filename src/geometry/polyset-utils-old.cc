@@ -238,6 +238,6 @@ void tessellate_faces(const PolySet& inps, PolySet& outps) {
       outps.append_vertex(t[2].x(), t[2].y(), t[2].z());
     }
   }
-  if (degeneratePolygons > 0) LOG(message_group::Warning, Location::NONE, "", "PolySet has degenerate polygons");
+  if (degeneratePolygons > 0) LOG(message_group::Warning, "PolySet has degenerate polygons");
 }
 } // namespace PolySetUtils

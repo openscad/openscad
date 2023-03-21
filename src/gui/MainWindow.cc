@@ -1256,9 +1256,9 @@ void MainWindow::instantiateRoot()
 
   if (!this->root_node) {
     if (parser_error_pos < 0) {
-      LOG(message_group::Error, Location::NONE, "", "Compilation failed! (no top level object found)");
+      LOG(message_group::Error, "Compilation failed! (no top level object found)");
     } else {
-      LOG(message_group::Error, Location::NONE, "", "Compilation failed!");
+      LOG(message_group::Error, "Compilation failed!");
     }
     LOG(" ");
     this->processEvents();
@@ -1320,7 +1320,7 @@ void MainWindow::compileCSG()
         this->root_products->import(this->normalizedRoot);
       } else {
         this->root_products.reset();
-        LOG(message_group::Warning, Location::NONE, "", "CSG normalization resulted in an empty tree");
+        LOG(message_group::Warning, "CSG normalization resulted in an empty tree");
         this->processEvents();
       }
     }
@@ -1360,8 +1360,8 @@ void MainWindow::compileCSG()
     if (this->root_products &&
         (this->root_products->size() >
          Preferences::inst()->getValue("advanced/openCSGLimit").toUInt())) {
-      LOG(message_group::UI_Warning, Location::NONE, "", "Normalized tree has %1$d elements!", this->root_products->size());
-      LOG(message_group::UI_Warning, Location::NONE, "", "OpenCSG rendering has been disabled.");
+      LOG(message_group::UI_Warning, "Normalized tree has %1$d elements!", this->root_products->size());
+      LOG(message_group::UI_Warning, "OpenCSG rendering has been disabled.");
     }
 #ifdef ENABLE_OPENCSG
     else {
@@ -1487,7 +1487,7 @@ void MainWindow::saveBackup()
 {
   auto path = PlatformUtils::backupPath();
   if ((!fs::exists(path)) && (!PlatformUtils::createBackupPath())) {
-    LOG(message_group::UI_Warning, Location::NONE, "", "Cannot create backup path: %1$s", path);
+    LOG(message_group::UI_Warning, "Cannot create backup path: %1$s", path);
     return;
   }
 
@@ -1505,7 +1505,7 @@ void MainWindow::saveBackup()
   }
 
   if ((!this->tempFile->isOpen()) && (!this->tempFile->open())) {
-    LOG(message_group::UI_Warning, Location::NONE, "", "Failed to create backup file");
+    LOG(message_group::UI_Warning, "Failed to create backup file");
     return;
   }
   return writeBackup(this->tempFile);
@@ -1530,9 +1530,9 @@ void MainWindow::actionShowLibraryFolder()
 {
   auto path = PlatformUtils::userLibraryPath();
   if (!fs::exists(path)) {
-    LOG(message_group::UI_Warning, Location::NONE, "", "Library path %1$s doesn't exist. Creating", path);
+    LOG(message_group::UI_Warning, "Library path %1$s doesn't exist. Creating", path);
     if (!PlatformUtils::createUserLibraryPath()) {
-      LOG(message_group::UI_Error, Location::NONE, "", "Cannot create library path: %1$s", path);
+      LOG(message_group::UI_Error, "Cannot create library path: %1$s", path);
     }
   }
   auto url = QString::fromStdString(path);
@@ -2005,7 +2005,7 @@ void MainWindow::sendToOctoPrint()
   OctoPrint octoPrint;
 
   if (octoPrint.url().trimmed().isEmpty()) {
-    LOG(message_group::Error, Location::NONE, "", "OctoPrint connection not configured. Please check preferences.");
+    LOG(message_group::Error, "OctoPrint connection not configured. Please check preferences.");
     return;
   }
 
@@ -2060,7 +2060,7 @@ void MainWindow::sendToOctoPrint()
     const QString profile = QString::fromStdString(Settings::Settings::octoPrintSlicerProfile.value());
     octoPrint.slice(fileUrl, slicer, profile, action != "slice", action == "print");
   } catch (const NetworkException& e) {
-    LOG(message_group::Error, Location::NONE, "", "%1$s", e.getErrorMessage());
+    LOG(message_group::Error, "%1$s", e.getErrorMessage());
   }
 
   updateStatusBar(nullptr);
@@ -2077,7 +2077,7 @@ void MainWindow::sendToPrintService()
 
   QTemporaryFile exportFile;
   if (!exportFile.open()) {
-    LOG(message_group::Error, Location::NONE, "", "Could not open temporary file.");
+    LOG(message_group::Error, "Could not open temporary file.");
     return;
   }
   const QString exportFilename = exportFile.fileName();
@@ -2095,7 +2095,7 @@ void MainWindow::sendToPrintService()
 
   QFile file(exportFilename);
   if (!file.open(QIODevice::ReadOnly)) {
-    LOG(message_group::Error, Location::NONE, "", "Unable to open exported STL file.");
+    LOG(message_group::Error, "Unable to open exported STL file.");
     return;
   }
   const QString fileContentBase64 = file.readAll().toBase64();
@@ -2103,7 +2103,7 @@ void MainWindow::sendToPrintService()
   if (fileContentBase64.length() > PrintService::inst()->getFileSizeLimit()) {
     const auto msg = QString{_("Exported design exceeds the service upload limit of (%1 MB).")}.arg(PrintService::inst()->getFileSizeLimitMB());
     QMessageBox::warning(this, _("Upload Error"), msg, QMessageBox::Ok);
-    LOG(message_group::Error, Location::NONE, "", "%1$s", msg.toStdString());
+    LOG(message_group::Error, "%1$s", msg.toStdString());
     return;
   }
 
@@ -2118,7 +2118,7 @@ void MainWindow::sendToPrintService()
     });
     QDesktopServices::openUrl(QUrl{partUrl});
   } catch (const NetworkException& e) {
-    LOG(message_group::Error, Location::NONE, "", "%1$s", e.getErrorMessage());
+    LOG(message_group::Error, "%1$s", e.getErrorMessage());
   }
 
   updateStatusBar(nullptr);
@@ -2184,7 +2184,7 @@ void MainWindow::actionRenderDone(const shared_ptr<const Geometry>& root_geom)
     if (viewActionWireframe->isChecked()) viewModeWireframe();
     else viewModeSurface();
   } else {
-    LOG(message_group::UI_Warning, Location::NONE, "", "No top level geometry to render");
+    LOG(message_group::UI_Warning, "No top level geometry to render");
   }
 
   updateStatusBar(nullptr);
@@ -2351,9 +2351,9 @@ void MainWindow::exceptionCleanup(){
 void MainWindow::UnknownExceptionCleanup(std::string msg){
   setCurrentOutput(); // we need to show this error
   if (msg.size() == 0) {
-    LOG(message_group::Error, Location::NONE, "", "Compilation aborted by unknown exception");
+    LOG(message_group::Error, "Compilation aborted by unknown exception");
   } else {
-    LOG(message_group::Error, Location::NONE, "", "Compilation aborted by exception: %1$s", msg);
+    LOG(message_group::Error, "Compilation aborted by exception: %1$s", msg);
   }
   LOG(" ");
   GuiLocker::unlock();
@@ -2460,7 +2460,7 @@ void MainWindow::actionCheckValidity()
 bool MainWindow::canExport(unsigned int dim)
 {
   if (!this->root_geom) {
-    LOG(message_group::Error, Location::NONE, "", "Nothing to export! Try rendering first (press F6)");
+    LOG(message_group::Error, "Nothing to export! Try rendering first (press F6)");
     clearCurrentOutput();
     return false;
   }
@@ -2488,20 +2488,20 @@ bool MainWindow::canExport(unsigned int dim)
   }
 
   if (this->root_geom->getDimension() != dim) {
-    LOG(message_group::UI_Error, Location::NONE, "", "Current top level object is not a %1$dD object.", dim);
+    LOG(message_group::UI_Error, "Current top level object is not a %1$dD object.", dim);
     clearCurrentOutput();
     return false;
   }
 
   if (this->root_geom->isEmpty()) {
-    LOG(message_group::UI_Error, Location::NONE, "", "Current top level object is empty.");
+    LOG(message_group::UI_Error, "Current top level object is empty.");
     clearCurrentOutput();
     return false;
   }
 
   auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
   if (N && !N->p3->is_simple()) {
-    LOG(message_group::UI_Warning, Location::NONE, "", "Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+    LOG(message_group::UI_Warning, "Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
   }
 
   return true;
@@ -2644,7 +2644,7 @@ void MainWindow::actionExportCSG()
   setCurrentOutput();
 
   if (!this->root_node) {
-    LOG(message_group::Error, Location::NONE, "", "Nothing to export. Please try compiling first.");
+    LOG(message_group::Error, "Nothing to export. Please try compiling first.");
     clearCurrentOutput();
     return;
   }

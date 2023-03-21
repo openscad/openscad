@@ -35,7 +35,7 @@ PrintService::PrintService()
   try {
     init();
   } catch (const NetworkException& e) {
-    LOG(message_group::Error, Location::NONE, "", "%1$s", e.getErrorMessage());
+    LOG(message_group::Error, "%1$s", e.getErrorMessage());
   }
   if (enabled) {
     LOG("External print service available: %1$s (upload limit = %2$d MB)", displayName.toStdString(), fileSizeLimitMB);

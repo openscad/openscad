@@ -39,9 +39,9 @@ void CGALWorker::work()
   } catch (const HardWarningException& e) {
     LOG("Rendering cancelled on first warning.");
   } catch (const std::exception& e) {
-    LOG(message_group::Error, Location::NONE, "", "Rendering cancelled by exception %1$s", e.what());
+    LOG(message_group::Error, "Rendering cancelled by exception %1$s", e.what());
   } catch (...) {
-    LOG(message_group::Error, Location::NONE, "", "Rendering cancelled by unknown exception.");
+    LOG(message_group::Error, "Rendering cancelled by unknown exception.");
   }
 
   emit done(root_geom);
