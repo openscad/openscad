@@ -98,6 +98,9 @@ case $OS in
     MACOSX)
         . ./scripts/setenv-macos.sh
         CMAKE_CONFIG="$CMAKE_CONFIG -DCMAKE_OSX_ARCHITECTURES=x86_64;arm64"
+        if [[ -n "$PYTHON_EXECUTABLE" ]]; then
+          CMAKE_CONFIG="$CMAKE_CONFIG -DPYTHON_EXECUTABLE=$PYTHON_EXECUTABLE"
+        fi
     ;;
     LINUX)
         TARGET=

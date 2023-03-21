@@ -182,7 +182,7 @@ jobs:
           name: Install Homebrew packages
           command: |
             brew update
-            brew install automake libtool cmake pkg-config wget meson
+            brew install automake libtool cmake pkg-config wget meson python@3.11
       - restore_cache:
           keys:
             # CircleCI library caching. If we ever need invalidate the cache (e.g. to remove any old files 
@@ -214,6 +214,7 @@ jobs:
           name: Build OpenSCAD
           command: |
             export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
+            export PYTHON_EXECUTABLE=/opt/homebrew/bin/python3.11
             time ./scripts/release-common.sh snapshot
             cd build
             OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
