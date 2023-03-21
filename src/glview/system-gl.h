@@ -10,12 +10,6 @@
  #include <GL/glu.h>
 #endif
 
-#else // NULLGL
-#define GLint int
-#define GLuint unsigned int
-inline void glColor4fv(float *c) {}
-#endif // NULLGL
-
 #include <string>
 #include "printutils.h"
 
@@ -87,6 +81,14 @@ bool glCheckd(const char *stmt, const char *file, int line)
 #define GL_CHECKD_ONLY(stmt) stmt; glCheckd(#stmt, __FILE__, __LINE__)
 #define GL_CHECKD_ERR(stmt, onerror) stmt; if (!glCheckd(#stmt, __FILE__, __LINE__)) { onerror; }
 #define GL_CHECKD(...) GET_GL_CHECKD(__VA_ARGS__, GL_CHECKD_ERR, GL_CHECKD_ONLY)(__VA_ARGS__)
+
+#else // NULLGL
+
+#define GLint int
+#define GLuint unsigned int
+inline void glColor4fv(float *c) {}
+
+#endif // NULLGL
 
 std::string glew_dump();
 std::string glew_extensions_dump();
