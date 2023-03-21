@@ -132,6 +132,7 @@
 #include <memory>
 #include <QtNetwork>
 #include <utility>
+#include <TextureNode.h>
 
 #include "qt-obsolete.h" // IWYU pragma: keep
 
@@ -1804,6 +1805,7 @@ void MainWindow::parseTopLevelDocument()
   delete this->parsed_file;
   this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
   this->root_file = nullptr;  // ditto
+  textures.clear();
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
 
   this->activeEditor->resetHighlighting();

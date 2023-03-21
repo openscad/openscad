@@ -65,7 +65,7 @@
  */
 
 shared_ptr<CSGNode> CSGNode::createEmptySet() {
-  return shared_ptr<CSGNode>(new CSGLeaf(nullptr, Transform3d(), Color4f(), "empty()", 0));
+  return shared_ptr<CSGNode>(new CSGLeaf(nullptr, Transform3d(), Color4f(), 0, "empty()", 0));
 }
 
 shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
@@ -114,8 +114,8 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
   return {new CSGOperation(type, left, right), CSGOperationDeleter()};
 }
 
-CSGLeaf::CSGLeaf(const shared_ptr<const Geometry>& geom, Transform3d matrix, Color4f color, std::string label, const int index)
-  : label(std::move(label)), matrix(std::move(matrix)), color(std::move(color)), index(index)
+CSGLeaf::CSGLeaf(const shared_ptr<const Geometry>& geom, Transform3d matrix, Color4f color,int textureind, std::string label, const int index)
+  : label(std::move(label)), matrix(std::move(matrix)), color(std::move(color)),textureind(textureind), index(index)
 {
   if (geom && !geom->isEmpty()) this->geom = geom;
   CSGLeaf::initBoundingBox();

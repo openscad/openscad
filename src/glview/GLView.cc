@@ -7,6 +7,7 @@
 #include "degree_trig.h"
 #include <cmath>
 #include <cstdio>
+#include "TextureNode.h"
 #ifdef _WIN32
 #include <GL/wglew.h>
 #elif !defined(__APPLE__)
@@ -50,6 +51,7 @@ void GLView::setRenderer(Renderer *r)
    to match the colorscheme of this GLView.*/
 void GLView::updateColorScheme()
 {
+  loadTextures();
   if (this->renderer) this->renderer->setColorScheme(*this->colorscheme);
 }
 
@@ -286,6 +288,26 @@ void GLView::initializeGL()
 #ifdef ENABLE_OPENCSG
   enable_opencsg_shaders();
 #endif
+  glEnable(GL_TEXTURE_2D);
+  glGenTextures(TEXTURES_NUM, textureIDs); 
+}
+
+void GLView::loadTextures(void)
+{
+  int i;
+  int len=textures.size();
+  if(len >  TEXTURES_NUM) len=TEXTURES_NUM;
+  GLubyte textureBitmap[TEXTURE_SIZE*TEXTURE_SIZE*3];
+  //glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  for(i=0;i<len;i++) {
+	  if(loadTexture(textureBitmap,textures[i].filepath.c_str())) continue;
+	  glBindTexture(GL_TEXTURE_2D, textureIDs[i]);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); 
+	  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGB, GL_UNSIGNED_BYTE, textureBitmap);
+  }
 }
 
 void GLView::showSmallaxes(const Color4f& col)

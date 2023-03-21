@@ -607,6 +607,8 @@ Expression *FunctionCall::create(const std::string& funcname, const AssignmentLi
     return new Assert(arglist, expr, loc);
   } else if (funcname == "echo") {
     return new Echo(arglist, expr, loc);
+  } else if (funcname == "texture") {
+    return new Texture(arglist, expr, loc);
   } else if (funcname == "let") {
     return new Let(arglist, expr, loc);
   }
@@ -680,6 +682,32 @@ Value Echo::evaluate(const std::shared_ptr<const Context>& context) const
 void Echo::print(std::ostream& stream, const std::string&) const
 {
   stream << "echo(" << this->arguments << ")";
+  if (this->expr) stream << " " << *this->expr;
+}
+
+
+const Expression *Texture::evaluateStep(const std::shared_ptr<const Context>& context) const
+{
+  Arguments arguments{this->arguments, context};
+//  LOG(message_group::Echo, Location::NONE, "", "%1$s", STR(arguments));
+  return expr.get();
+}
+
+
+Texture::Texture(AssignmentList args, Expression *expr, const Location& loc)
+  : Expression(loc), arguments(std::move(args)), expr(expr)
+{
+
+}
+Value Texture::evaluate(const std::shared_ptr<const Context>& context) const
+{
+  const Expression *nextexpr = evaluateStep(context);
+  return nextexpr ? nextexpr->evaluate(context) : Value::undefined.clone();
+}
+
+void Texture::print(std::ostream& stream, const std::string&) const
+{
+  stream << "tex2(" << this->arguments << ")";
   if (this->expr) stream << " " << *this->expr;
 }
 

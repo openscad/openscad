@@ -284,7 +284,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
       } else {
         // Draw 3D polygons
         setColor(ColorMode::MATERIAL);
-        this->render_surface(*polyset, CSGMODE_NORMAL, Transform3d::Identity(), nullptr);
+        this->render_surface(*polyset, CSGMODE_NORMAL, Transform3d::Identity(), 0,nullptr);
       }
     }
   } else {

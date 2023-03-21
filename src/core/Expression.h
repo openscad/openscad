@@ -222,6 +222,17 @@ private:
   shared_ptr<Expression> expr;
 };
 
+class Texture : public Expression
+{
+public:
+  Texture(AssignmentList args, Expression *expr, const Location& loc);
+  [[nodiscard]] const Expression *evaluateStep(const std::shared_ptr<const Context>& context) const;
+  [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
+  void print(std::ostream& stream, const std::string& indent) const override;
+private:
+  AssignmentList arguments;
+  shared_ptr<Expression> expr;
+};
 class Let : public Expression
 {
 public:
