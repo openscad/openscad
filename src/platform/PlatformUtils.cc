@@ -118,13 +118,13 @@ std::string PlatformUtils::userLibraryPath()
     path = fs::path(pathstr);
     if (!fs::exists(path)) return "";
     path = fs::canonical(path);
-    // LOG(message_group::NONE,Location::NONE,"","path size %1$i",fs::stringy(path).size());
-    // LOG(message_group::NONE,Location::NONE,"","lib path found: [%1$s]",path);
+    // LOG(message_group::NONE,,"path size %1$i",fs::stringy(path).size());
+    // LOG(message_group::NONE,,"lib path found: [%1$s]",path);
     if (path.empty()) return "";
     path /= OPENSCAD_FOLDER_NAME;
     path /= "libraries";
-    // LOG(message_group::NONE,Location::NONE,"","Appended path %1$s",path);
-    // LOG(message_group::NONE,Location::NONE,"","Exists: %1$i",fs::exists(path));
+    // LOG(message_group::NONE,,"Appended path %1$s",path);
+    // LOG(message_group::NONE,,"Exists: %1$i",fs::exists(path));
   } catch (const fs::filesystem_error& ex) {
     LOG(message_group::Error, "%1$s", ex.what());
   }

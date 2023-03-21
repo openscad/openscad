@@ -231,11 +231,11 @@ void LOG(const message_group& msgGroup, Location loc, std::string docPath, std::
 template <typename ... Args>
 void LOG(const message_group& msgGroup, std::string&& f, Args&&... args)
 {
-	LOG(msgGroup, Location::NONE, "", std::move(f), std::forward<Args>(args)...);
+  LOG(msgGroup, Location::NONE, "", std::move(f), std::forward<Args>(args)...);
 }
 
 template <typename ... Args>
 void LOG(std::string&& f, Args&&... args)
 {
-	LOG(message_group::NONE, Location::NONE, "", std::move(f), std::forward<Args>(args)...);
+  LOG(message_group::NONE, Location::NONE, "", std::move(f), std::forward<Args>(args)...);
 }

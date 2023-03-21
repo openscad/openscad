@@ -139,7 +139,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     double val = dpi.toDouble();
     if (val < 0.001) {
       std::string filePath = boostfs_uncomplete(inst->location().filePath(), parameters.documentRoot()).generic_string();
-      LOG(message_group::Warning, Location::NONE, "",
+      LOG(message_group::Warning,
           "Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
           origin.toEchoStringNoThrow(), filePath, filePath, inst->location().firstLine()
           );

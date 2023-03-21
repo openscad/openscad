@@ -176,7 +176,7 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(const std::shared_ptr<cons
   } catch (HardWarningException& e) {
     throw;
   } catch (EvaluationException& e) {
-    // LOG(message_group::NONE,Location::NONE,"",e.what()); //please output the message before throwing the exception
+    // LOG(message_group::NONE,,e.what()); //please output the message before throwing the exception
     *resulting_file_context = nullptr;
   }
   return node;

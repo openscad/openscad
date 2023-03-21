@@ -13,7 +13,7 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
   
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary );
   if (!f.good()) {
-    LOG(message_group::Warning, Location::NONE, "",
+    LOG(message_group::Warning,
         "Can't open import file '%1$s', import() at line %2$d",
         filename, loc.firstLine());
     return p.release();

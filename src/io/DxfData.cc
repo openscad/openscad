@@ -378,10 +378,10 @@ DxfData::DxfData(double fn, double fs, double fa,
 
   for (const auto& i : unsupported_entities_list) {
     if (layername.empty()) {
-      LOG(message_group::Warning, Location::NONE, "",
+      LOG(message_group::Warning,
           "Unsupported DXF Entity '%1$s' (%2$x) in %3$s.", i.first, i.second, QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
     } else {
-      LOG(message_group::Warning, Location::NONE, "",
+      LOG(message_group::Warning,
           "Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s' of %4$s", i.first, i.second, layername, boostfs_uncomplete(filename, fs::current_path()).generic_string());
     }
   }
@@ -404,7 +404,7 @@ DxfData::DxfData(double fn, double fs, double fa,
         auto lv = grid.data(this->points[lines[idx].idx[j]][0], this->points[lines[idx].idx[j]][1]);
         for (int k : lv) {
           if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
-            LOG(message_group::Warning, Location::NONE, "",
+            LOG(message_group::Warning,
                 "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
             continue;
           }
@@ -433,7 +433,7 @@ create_open_path:
       auto lv = grid.data(ref_point[0], ref_point[1]);
       for (int k : lv) {
         if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
-          LOG(message_group::Warning, Location::NONE, "",
+          LOG(message_group::Warning,
               "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
           continue;
         }
@@ -474,7 +474,7 @@ found_next_line_in_open_path:;
       auto lv = grid.data(ref_point[0], ref_point[1]);
       for (int k : lv) {
         if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
-          LOG(message_group::Warning, Location::NONE, "",
+          LOG(message_group::Warning,
               "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
           continue;
         }

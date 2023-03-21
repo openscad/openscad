@@ -184,7 +184,7 @@ public:
           }
 
           if (!walkAroundPatch(borderEdge, isFaceOnPatch, patch.borderPath)) {
-            LOG(message_group::Error, Location::NONE, "",
+            LOG(message_group::Error,
                 "[fast-csg-remesh] Failed to collect path around patch faces, invalid mesh!");
             return false;
           }
@@ -210,8 +210,7 @@ public:
           }
           if (hasHoles) {
             if (verbose) {
-              LOG(message_group::NONE, Location::NONE, "",
-                  "[fast-csg-remesh] Skipping remeshing of patch with %1$lu faces as it seems to have holes.", patch.borderPathEdges.size());
+              LOG("[fast-csg-remesh] Skipping remeshing of patch with %1$lu faces as it seems to have holes.", patch.borderPathEdges.size());
             }
             return false;
           }
@@ -282,8 +281,7 @@ public:
 
       auto facesAfter = tm.number_of_faces();
       if (verbose && facesBefore != facesAfter) {
-        LOG(message_group::NONE, Location::NONE, "",
-            "[fast-csg-remesh] Remeshed from %1$lu to %2$lu faces (%3$lu % improvement)", facesBefore, facesAfter,
+        LOG("[fast-csg-remesh] Remeshed from %1$lu to %2$lu faces (%3$lu % improvement)", facesBefore, facesAfter,
             (facesBefore - facesAfter) * 100 / facesBefore);
       }
     } catch (const CGAL::Assertion_exception& e) {
