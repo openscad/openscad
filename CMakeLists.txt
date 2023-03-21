@@ -753,7 +753,7 @@ endif()
 
 if(ENABLE_MANIFOLD)
 
-  if(NOT DEFINED MANIFOLD_PAR)
+  if(NOT DEFINED MANIFOLD_PAR AND ENABLE_TBB)
     set(MANIFOLD_PAR TBB CACHE STRING "Parallel backend, either \"TBB\" or \"OpenMP\" or \"NONE\"" FORCE)
   endif()
 
