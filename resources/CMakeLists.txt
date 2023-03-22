@@ -24,7 +24,7 @@ if(NOT NO_CONNECTION EQUAL 0)
 else()
     set(CMAKE_DOCS_DIRECTORY "${CMAKE_SOURCE_DIR}/resources/docs/OpenSCADUserDocs")
     make_directory(${CMAKE_DOCS_DIRECTORY})
-    include(FindPythonInterp)
+    find_package(Python3)
     add_custom_target(
         offline_documentation ALL
         DEPENDS ${CMAKE_DOCS_DIRECTORY}/openscad_docs
