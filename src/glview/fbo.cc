@@ -33,9 +33,9 @@ bool check_fbo_status()
   GLenum status;
   auto result = false;
   if (use_ext()) {
-    status = GL_CHECK(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT), return false);
+    IF_GL_CHECK(status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT)) return false;
   } else {
-    status = GL_CHECK(glCheckFramebufferStatus(GL_FRAMEBUFFER), return false);
+    IF_GL_CHECK(status = glCheckFramebufferStatus(GL_FRAMEBUFFER)) return false;
   }
 
   if (status == GL_FRAMEBUFFER_COMPLETE) {
@@ -65,8 +65,8 @@ bool check_fbo_status()
 bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
 {
   // Generate and bind FBO
-  GL_CHECK(glGenFramebuffersEXT(1, &fbo->fbo_id), return false);
-	GL_CHECK(glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo->fbo_id), return false);
+  IF_GL_CHECK(glGenFramebuffersEXT(1, &fbo->fbo_id)) return false;
+  IF_GL_CHECK(glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo->fbo_id)) return false;
 
   // Generate depth and render buffers
   glGenRenderbuffersEXT(1, &fbo->depthbuf_id);
@@ -76,9 +76,8 @@ bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
   if (!fbo_resize(fbo, width, height)) return false;
 
   // Attach render and depth buffers
-	GL_CHECK(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-																				GL_RENDERBUFFER_EXT, fbo->renderbuf_id),
-					 return false);
+  IF_GL_CHECK(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
+                                        GL_RENDERBUFFER_EXT, fbo->renderbuf_id)) return false;
 
   if (!check_fbo_status()) {
     cerr << "Problem with OpenGL EXT framebuffer after specifying color render buffer.\n";
@@ -86,13 +85,13 @@ bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
   }
 
   if (glewIsSupported("GL_EXT_packed_depth_stencil")) {
-    GL_CHECK(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-																					GL_RENDERBUFFER_EXT, fbo->depthbuf_id),
-						 return false);
+    IF_GL_CHECK(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                                             GL_RENDERBUFFER_EXT, fbo->depthbuf_id))
+      return false;
 
-		GL_CHECK(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-																					GL_RENDERBUFFER_EXT, fbo->depthbuf_id),
-						 return false);
+    IF_GL_CHECK(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
+                                             GL_RENDERBUFFER_EXT, fbo->depthbuf_id))
+      return false;
 
     if (!check_fbo_status()) {
       cerr << "Problem with OpenGL EXT framebuffer after specifying depth render buffer.\n";
@@ -100,9 +99,9 @@ bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
     }
   } else {
     cerr << "Warning: Cannot create stencil buffer (GL_EXT_packed_depth_stencil not supported)\n";
-		GL_CHECK(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-																					GL_RENDERBUFFER_EXT, fbo->depthbuf_id),
-						 return false);
+    IF_GL_CHECK(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                                             GL_RENDERBUFFER_EXT, fbo->depthbuf_id))
+      return false;
 
     if (!check_fbo_status()) {
       cerr << "Problem with OpenGL EXT framebuffer after specifying depth stencil render buffer.\n";
@@ -116,8 +115,8 @@ bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
 bool fbo_arb_init(fbo_t *fbo, size_t width, size_t height)
 {
   // Generate and bind FBO
-	GL_CHECK(glGenFramebuffers(1, &fbo->fbo_id), return false);
-	GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo_id), return false);
+  IF_GL_CHECK(glGenFramebuffers(1, &fbo->fbo_id)) return false;
+  IF_GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, fbo->fbo_id)) return false;
 
   // Generate depth and render buffers
   glGenRenderbuffers(1, &fbo->depthbuf_id);
@@ -127,9 +126,9 @@ bool fbo_arb_init(fbo_t *fbo, size_t width, size_t height)
   if (!fbo_resize(fbo, width, height)) return false;
 
   // Attach render and depth buffers
-	GL_CHECK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-																		 GL_RENDERBUFFER, fbo->renderbuf_id),
-					 return false);
+  IF_GL_CHECK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                        GL_RENDERBUFFER, fbo->renderbuf_id))
+    return false;
 
   if (!check_fbo_status()) {
     cerr << "Problem with OpenGL framebuffer after specifying color render buffer.\n";
@@ -141,9 +140,9 @@ bool fbo_arb_init(fbo_t *fbo, size_t width, size_t height)
   // ie. instead of using GL_DEPTH_STENCIL_ATTACHMENT, do DEPTH then STENCIL.
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                             GL_RENDERBUFFER, fbo->depthbuf_id);
-	GL_CHECK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-																		 GL_RENDERBUFFER, fbo->depthbuf_id),
-					 return false);
+  IF_GL_CHECK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
+                                        GL_RENDERBUFFER, fbo->depthbuf_id))
+    return false;
 
   if (!check_fbo_status()) {
     cerr << "Problem with OpenGL framebuffer after specifying depth render buffer.\n";
@@ -182,24 +181,24 @@ bool fbo_resize(fbo_t *fbo, size_t width, size_t height)
   if (use_ext()) {
     glBindRenderbufferEXT(GL_RENDERBUFFER, fbo->depthbuf_id);
     if (glewIsSupported("GL_EXT_packed_depth_stencil")) {
-			GL_CHECK(glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height),
-							 return false);
+      IF_GL_CHECK(glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height))
+        return false;
     } else {
-			GL_CHECK(glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height),
-							 return false);
+      IF_GL_CHECK(glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height))
+        return false;
     }
 
     glBindRenderbufferEXT(GL_RENDERBUFFER, fbo->renderbuf_id);
-		GL_CHECK(glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_RGBA8, width, height),
-						 return false);
+    IF_GL_CHECK(glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_RGBA8, width, height))
+      return false;
   } else {
     glBindRenderbuffer(GL_RENDERBUFFER, fbo->renderbuf_id);
-		GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, width, height),
-						 return false);
+    IF_GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, width, height))
+      return false;
 
     glBindRenderbuffer(GL_RENDERBUFFER, fbo->depthbuf_id);
-		GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height),
-						 return false);
+    IF_GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height))
+      return false;
 
   }
 
