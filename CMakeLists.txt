@@ -27,11 +27,6 @@ if(POLICY CMP0077) # Let parent project set child project options (used to skip 
 endif()
 
 include("cmake/Modules/openscad_version.cmake")
-project(OpenSCAD
-  VERSION ${PROJECT_VERSION}
-  DESCRIPTION "The Programmer's Solid 3D CAD Modeler"
-  LANGUAGES C CXX
-)
 
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
@@ -60,10 +55,19 @@ cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT 
 
 if(ENABLE_MANIFOLD)
   # Requirement from TBB 2021.8.0
-  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14" CACHE STRING "Minimum OS X deployment version")
+  set(DEPLOYMENT_TARGET "10.14")
 else()
-  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version")
+  set(DEPLOYMENT_TARGET "10.13")
 endif()
+
+# Note: CMAKE_OSX_DEPLOYMENT_TARGET must be set before the project() invocation
+set(CMAKE_OSX_DEPLOYMENT_TARGET ${DEPLOYMENT_TARGET} CACHE STRING "Minimum OS X deployment version")
+
+project(OpenSCAD
+  VERSION ${PROJECT_VERSION}
+  DESCRIPTION "The Programmer's Solid 3D CAD Modeler"
+  LANGUAGES C CXX
+)
 
 # GNUInstallDirs must be done before BuildParameters
 include(GNUInstallDirs)
