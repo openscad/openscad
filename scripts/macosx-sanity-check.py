@@ -2,7 +2,7 @@
 
 #
 # This is used to verify that all the dependent libraries of a Mac OS X executable
-# are present and that they are backwards compatible with at least 10.13.
+# are present and that they are backwards compatible with at least 10.14.
 # Run with an executable as parameter
 # Will return 0 if the executable an all libraries are OK
 # Returns != 0 and prints some textural description on error
@@ -29,7 +29,7 @@ DEBUG = False
 
 cxxlib = None
 
-macos_version_min = '10.13'
+macos_version_min = '10.14'
 
 def usage():
     print("Usage: " + sys.argv[0] + " <executable>", sys.stderr)
