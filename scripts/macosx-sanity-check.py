@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #
 # This is used to verify that all the dependent libraries of a Mac OS X executable
