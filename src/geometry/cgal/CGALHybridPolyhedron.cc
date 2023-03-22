@@ -184,7 +184,7 @@ void CGALHybridPolyhedron::operator-=(CGALHybridPolyhedron& other)
 
 bool CGALHybridPolyhedron::canCorefineWith(const CGALHybridPolyhedron& other) const
 {
-  if (Feature::ExperimentalFastCsgTrustCorefinement.is_enabled()) {
+  if (!Feature::ExperimentalFastCsgSafer.is_enabled()) {
     return true;
   }
   const char *reasonWontCorefine = nullptr;
@@ -194,8 +194,7 @@ bool CGALHybridPolyhedron::canCorefineWith(const CGALHybridPolyhedron& other) co
     reasonWontCorefine = "non manifoldness detected";
   }
   if (reasonWontCorefine) {
-    LOG("[fast-csg] Performing safer but slower nef operation instead of corefinement because %1$s. "
-        "(can override with fast-csg-trust-corefinement)",
+    LOG("[fast-csg] Performing safer but slower nef operation instead of corefinement because %1$s.",
         reasonWontCorefine);
   }
   return !reasonWontCorefine;
