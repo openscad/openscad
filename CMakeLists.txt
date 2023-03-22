@@ -757,6 +757,9 @@ endif()
 
 if(ENABLE_MANIFOLD)
 
+  # Hack to find our wanted version of Python before Manifold's included googletest finds Python2
+  find_package(PythonInterp 3.4 REQUIRED)
+
   if(NOT DEFINED MANIFOLD_PAR AND ENABLE_TBB)
     set(MANIFOLD_PAR TBB CACHE STRING "Parallel backend, either \"TBB\" or \"OpenMP\" or \"NONE\"" FORCE)
   endif()
