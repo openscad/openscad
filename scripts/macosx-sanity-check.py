@@ -24,7 +24,6 @@ import sys
 import os
 import subprocess
 import re
-from distutils.version import StrictVersion
 
 DEBUG = False
 
@@ -94,6 +93,9 @@ def find_dependencies(file):
             libs.append(dep)
     return libs
 
+def version_larger_than(a,b):
+    return list(map(int, a.split('.'))) > list(map(int, b.split('.')))
+
 def validate_lib(lib):
     p  = subprocess.Popen(["otool", "-l", lib], stdout=subprocess.PIPE, universal_newlines=True)
     output = p.communicate()[0]
@@ -110,7 +112,7 @@ def validate_lib(lib):
     if deploymenttarget is None:
         print("Error: Neither LC_VERSION_MIN_MACOSX nor LC_BUILD_VERSION found in " + lib)
         return False
-    if StrictVersion(deploymenttarget) > StrictVersion(macos_version_min):
+    if version_larger_than(deploymenttarget, macos_version_min):
         print("Error: Unsupported deployment target " + m.group(2) + " found: " + lib)
         return False
 
