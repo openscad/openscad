@@ -209,7 +209,7 @@ Polygon2d *import_svg(double fn, double fs, double fa,
     libsvg_free(shapes);
     return ClipperUtils::apply(polygons, ClipperLib::ctUnion);
   } catch (const std::exception& e) {
-    LOG(message_group::Error, Location::NONE, "", "%1$s, import() at line %2$d", e.what(), loc.firstLine());
+    LOG(message_group::Error, "%1$s, import() at line %2$d", e.what(), loc.firstLine());
     return new Polygon2d();
   }
 }

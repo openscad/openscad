@@ -222,7 +222,7 @@ int AmfImporter::streamFile(const char *filename)
   xmlTextReaderPtr reader = createXmlReader(filename);
 
   if (reader == nullptr) {
-    LOG(message_group::Warning, Location::NONE, "", "Can't open import file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
+    LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
     return 1;
   }
 
@@ -238,7 +238,7 @@ int AmfImporter::streamFile(const char *filename)
     ret = -1;
   }
   if (ret != 0) {
-    LOG(message_group::Warning, Location::NONE, "", "Failed to parse file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
+    LOG(message_group::Warning, "Failed to parse file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
   }
   return ret;
 }
@@ -272,7 +272,7 @@ PolySet *AmfImporter::read(const std::string& filename)
     if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
       p = new PolySet(*ps);
     } else {
-      LOG(message_group::Error, Location::NONE, "", "Error importing multi-object AMF file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
+      LOG(message_group::Error, "Error importing multi-object AMF file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
       p = new PolySet(3);
     }
   }
@@ -330,10 +330,10 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
     const char *filename = last_slash ? last_slash + 1 : filepath;
     zipfile = zip_fopen(archive, filename, ZIP_FL_NODIR);
     if (zipfile == nullptr) {
-      LOG(message_group::Warning, Location::NONE, "", "Can't read file '%1$s' from zipped AMF '%2$s', import() at line %3$d", filename, filepath, this->loc.firstLine());
+      LOG(message_group::Warning, "Can't read file '%1$s' from zipped AMF '%2$s', import() at line %3$d", filename, filepath, this->loc.firstLine());
     }
     if ((zipfile == nullptr) && (zip_get_num_files(archive) == 1)) {
-      LOG(message_group::Warning, Location::NONE, "", "Trying to read single entry '%1$s'", zip_get_name(archive, 0, 0));
+      LOG(message_group::Warning, "Trying to read single entry '%1$s'", zip_get_name(archive, 0, 0));
       zipfile = zip_fopen_index(archive, 0, 0);
     }
     if (zipfile) {

@@ -266,7 +266,7 @@ bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p)
     CGAL_Build_PolySet<Polyhedron> builder(ps);
     p.delegate(builder);
   } catch (const CGAL::Assertion_exception& e) {
-    LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
+    LOG(message_group::Error, "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
     err = true;
   }
   return err;

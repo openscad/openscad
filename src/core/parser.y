@@ -764,7 +764,7 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
     mainFilePath = fs::absolute(fs::path(mainFile));
   } catch (...) {
     // yyerror tries to print the file path, which throws again, and we can't do that
-	LOG(message_group::Error, Location::NONE, "", "Parser error: file access denied");
+	LOG(message_group::Error, "Parser error: file access denied");
     return false;
   }
 

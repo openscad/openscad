@@ -76,7 +76,7 @@ RenderColorScheme::RenderColorScheme(const fs::path& path) : _path(path)
       addColor(RenderColor::BACKGROUND_STOP_COLOR, "background");
     }
   } catch (const std::exception& e) {
-    LOG(message_group::None, Location::NONE, "", "Error reading color scheme file: '%1$s': %2$s", path.generic_string().c_str(), e.what());
+    LOG("Error reading color scheme file: '%1$s': %2$s", path.generic_string().c_str(), e.what());
     _error = e.what();
     _name = "";
     _index = 0;

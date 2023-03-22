@@ -13,7 +13,7 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
   
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary );
   if (!f.good()) {
-    LOG(message_group::Warning, Location::NONE, "",
+    LOG(message_group::Warning,
         "Can't open import file '%1$s', import() at line %2$d",
         filename, loc.firstLine());
     return p.release();
@@ -67,7 +67,7 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
         if(ind >= 1 && ind  <= pts.size())
           p->append_vertex(pts[ind-1][0], pts[ind-1][1], pts[ind-1][2]);
         else
-          LOG(message_group::Warning, Location::NONE, "", "Index %1$d out of range in Line %2$d", filename, lineno);
+          LOG(message_group::Warning, "Index %1$d out of range in Line %2$d", filename, lineno);
       }
 
     } else if (boost::regex_search(line, results, ex_vt)) { // ignore texture coords
@@ -78,7 +78,7 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
     } else if (boost::regex_search(line, results, ex_s)) { // ignore smooting
     } else if (boost::regex_search(line, results, ex_g)) { // ignore group name
     } else {
-      LOG(message_group::Warning, Location::NONE, "", "Unrecognized Line  %1$s in line Line %2$d", line, lineno);
+      LOG(message_group::Warning, "Unrecognized Line  %1$s in line Line %2$d", line, lineno);
     }
   }
   return p.release();

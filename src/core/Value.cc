@@ -415,7 +415,7 @@ public:
     try {
       (tostream_visitor(stream))(v);
     } catch (EvaluationException& e) {
-      LOG(message_group::Error, Location::NONE, "", e.what());
+      LOG(message_group::Error, e.what());
       throw;
     }
     return stream.str();
@@ -503,7 +503,7 @@ public:
   {
     const uint32_t steps = v->numValues();
     if (steps >= RangeType::MAX_RANGE_STEPS) {
-      LOG(message_group::Warning, Location::NONE, "", "Bad range parameter in for statement: too many elements (%1$lu).", steps);
+      LOG(message_group::Warning, "Bad range parameter in for statement: too many elements (%1$lu).", steps);
       return "";
     }
 
@@ -959,15 +959,15 @@ Value multvecmat(const VectorType& vectorvec, const VectorType& matrixvec)
     for (size_t j = 0; j < vectorvec.size(); ++j) {
       if (matrixvec[j].type() != Value::Type::VECTOR ||
           matrixvec[j].toVector().size() != firstRowSize) {
-        LOG(message_group::Warning, Location::NONE, "", "Matrix must be rectangular. Problem at row %1$lu", j);
+        LOG(message_group::Warning, "Matrix must be rectangular. Problem at row %1$lu", j);
         return Value::undef(STR("Matrix must be rectangular. Problem at row ", j));
       }
       if (vectorvec[j].type() != Value::Type::NUMBER) {
-        LOG(message_group::Warning, Location::NONE, "", "Vector must contain only numbers. Problem at index %1$lu", j);
+        LOG(message_group::Warning, "Vector must contain only numbers. Problem at index %1$lu", j);
         return Value::undef(STR("Vector must contain only numbers. Problem at index ", j));
       }
       if (matrixvec[j].toVector()[i].type() != Value::Type::NUMBER) {
-        LOG(message_group::Warning, Location::NONE, "", "Matrix must contain only numbers. Problem at row %1$lu, col %2$lu", j, i);
+        LOG(message_group::Warning, "Matrix must contain only numbers. Problem at row %1$lu, col %2$lu", j, i);
         return Value::undef(STR("Matrix must contain only numbers. Problem at row ", j, ", col ", i));
       }
       r_e += vectorvec[j].toDouble() * matrixvec[j].toVector()[i].toDouble();

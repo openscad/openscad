@@ -117,7 +117,7 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
   }
 
   if (degeneratePolygons > 0) {
-    LOG(message_group::Warning, Location::NONE, "", "PolySet has degenerate polygons");
+    LOG(message_group::Warning, "PolySet has degenerate polygons");
   }
 }
 

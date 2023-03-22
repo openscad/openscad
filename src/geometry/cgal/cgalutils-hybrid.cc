@@ -78,7 +78,7 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const Po
       // PMP::orient_to_bound_a_volume seems just fine.
       orientToBoundAVolume(*mesh);
     } else {
-      LOG(message_group::Warning, Location::NONE, "", "Warning: mesh is not closed!");
+      LOG(message_group::Warning, "Warning: mesh is not closed!");
     }
   }
 
@@ -111,7 +111,7 @@ std::shared_ptr<CGALHybridPolyhedron> createMutableHybridPolyhedronFromGeometry(
     return createHybridPolyhedronFromPolySet(*mani->toPolySet());
 #endif
   } else {
-    LOG(message_group::Warning, Location::NONE, "", "Unsupported geometry format.");
+    LOG(message_group::Warning, "Unsupported geometry format.");
     return nullptr;
   }
 }
