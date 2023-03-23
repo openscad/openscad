@@ -182,13 +182,6 @@ void GLView::paintGL()
 
 #ifdef ENABLE_OPENCSG
 
-void glErrorCheck() {
-  GLenum err = glGetError();
-  if (err != GL_NO_ERROR) {
-    fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
-  }
-}
-
 void glCompileCheck(GLuint shader) {
   GLint status;
   glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
@@ -220,10 +213,10 @@ void GLView::enable_opencsg_shaders()
 #ifdef _WIN32
            || (WGLEW_ARB_pbuffer && WGLEW_ARB_pixel_format)
 #elif !defined(__APPLE__)
-          // not supported by GLEW when built with EGL
+           // not supported by GLEW when built with EGL
            || (GLXEW_SGIX_pbuffer && GLXEW_SGIX_fbconfig)
 #endif
-  ) {
+           ) {
     this->is_opencsg_capable = true;
   }
 #endif // ifndef GLEW_EGL

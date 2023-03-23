@@ -9,14 +9,6 @@
 #include "linalg.h"
 #include "Feature.h"
 
-#define GL_ERROR_CHECK() \
-        do { \
-          auto err = glGetError(); \
-          if (err != GL_NO_ERROR) { \
-            PRINTDB("%d : OpenGL error: %s\n", __LINE__ % gluErrorString(err)); \
-          } \
-        } while (0)
-
 //#define GL_TRACE_ENABLE
 #ifdef GL_TRACE_ENABLE
 #define GL_TRACE(fmt_, args) do { \

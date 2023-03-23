@@ -79,14 +79,14 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
       vertex_array.verticesSize(vertices_size);
 
       GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertex_array.verticesVBO());
-      glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO()); GL_ERROR_CHECK();
+      GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO()));
       GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
-      glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
+      GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW));
       if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
         GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertex_array.elementsVBO());
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO()); GL_ERROR_CHECK();
+        GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO()));
         GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
+        GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW));
       }
     } else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
       vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
@@ -99,10 +99,10 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
     if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
       if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
         GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
+        GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
       }
       GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-      glBindBuffer(GL_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
+      GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
     }
 
     vertex_array.createInterleavedVBOs();
@@ -213,10 +213,10 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
                      (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
                      (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
                      (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-            glUniform3f(shaderinfo->data.select_rendering.identifier,
-                        ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-                        ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-                        ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f); GL_ERROR_CHECK();
+            GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
+                                  ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
+                                  ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
+                                  ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
           }
         }
         std::shared_ptr<VBOShaderVertexState> shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
@@ -253,9 +253,9 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
       color_state->glBegin().emplace_back([shader_info, color]() {
         GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % color[0] % color[1] % color[2] % color[3]);
-        glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]); GL_ERROR_CHECK();
-        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % (color[0] + 1) / 2 % (color[1] + 1) / 2 % (color[2] + 1) / 2);
-        glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0); GL_ERROR_CHECK();
+        GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]));
+        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % ((color[0] + 1) / 2) % ((color[1] + 1) / 2) % ((color[2] + 1) / 2));
+        GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0));
       });
       vertex_states.emplace_back(std::move(color_state));
 
@@ -272,18 +272,20 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
       color_state->glBegin().emplace_back([shader_info, color]() {
         GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % color[0] % color[1] % color[2] % color[3]);
-        glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]); GL_ERROR_CHECK();
-        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % (color[0] + 1) / 2 % (color[1] + 1) / 2 % (color[2] + 1) / 2);
-        glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0); GL_ERROR_CHECK();
+        GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]));
+        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % ((color[0] + 1) / 2) % ((color[1] + 1) / 2) % ((color[2] + 1) / 2));
+        GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0));
       });
       vertex_states.emplace_back(std::move(color_state));
 
       std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();
       cull->glBegin().emplace_back([]() {
-        GL_TRACE0("glEnable(GL_CULL_FACE)"); glEnable(GL_CULL_FACE); GL_ERROR_CHECK();
+        GL_TRACE0("glEnable(GL_CULL_FACE)");
+        GL_CHECKD(glEnable(GL_CULL_FACE));
       });
       cull->glBegin().emplace_back([]() {
-        GL_TRACE0("glCullFace(GL_BACK)"); glCullFace(GL_BACK); GL_ERROR_CHECK();
+        GL_TRACE0("glCullFace(GL_BACK)");
+        GL_CHECKD(glCullFace(GL_BACK));
       });
       vertex_states.emplace_back(std::move(cull));
 
@@ -302,15 +304,16 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
       color_state->glBegin().emplace_back([shader_info, color]() {
         GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % color[0] % color[1] % color[2] % color[3]);
-        glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]); GL_ERROR_CHECK();
-        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % (color[0] + 1) / 2 % (color[1] + 1) / 2 % (color[2] + 1) / 2);
-        glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0); GL_ERROR_CHECK();
+        GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]));
+        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % ((color[0] + 1) / 2) % ((color[1] + 1) / 2) % ((color[2] + 1) / 2));
+        GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0));
       });
       vertex_states.emplace_back(std::move(color_state));
 
       cull = std::make_shared<VertexState>();
       cull->glBegin().emplace_back([]() {
-        GL_TRACE0("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); GL_ERROR_CHECK();
+        GL_TRACE0("glCullFace(GL_FRONT)");
+        GL_CHECKD(glCullFace(GL_FRONT));
       });
       vertex_states.emplace_back(std::move(cull));
 
@@ -321,7 +324,8 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       }
 
       vertex_states.back()->glEnd().emplace_back([]() {
-        GL_TRACE0("glDisable(GL_CULL_FACE)"); glDisable(GL_CULL_FACE); GL_ERROR_CHECK();
+        GL_TRACE0("glDisable(GL_CULL_FACE)");
+        GL_CHECKD(glDisable(GL_CULL_FACE));
       });
     }
   }
