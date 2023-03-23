@@ -51,7 +51,7 @@ void MouseSelector::init_shader() {
   int shaderstatus;
 
   // Compile the shaders
-  GL_DEBUG_CHECKD(auto vs = glCreateShader(GL_VERTEX_SHADER));
+  GL_CHECKD(auto vs = glCreateShader(GL_VERTEX_SHADER));
   glShaderSource(vs, 1, (const GLchar **)&vs_source, nullptr);
   glCompileShader(vs);
   glGetShaderiv(vs, GL_COMPILE_STATUS, &shaderstatus);
@@ -62,7 +62,7 @@ void MouseSelector::init_shader() {
     fprintf(stderr, __FILE__ ": OpenGL vertex shader Error:\n%.*s\n\n", loglen, logbuffer);
   }
 
-  GL_DEBUG_CHECKD(auto fs = glCreateShader(GL_FRAGMENT_SHADER));
+  GL_CHECKD(auto fs = glCreateShader(GL_FRAGMENT_SHADER));
   glShaderSource(fs, 1, (const GLchar **)&fs_source, nullptr);
   glCompileShader(fs);
   glGetShaderiv(fs, GL_COMPILE_STATUS, &shaderstatus);
@@ -77,7 +77,7 @@ void MouseSelector::init_shader() {
   auto selecthader_prog = glCreateProgram();
   glAttachShader(selecthader_prog, vs);
   glAttachShader(selecthader_prog, fs);
-  GL_DEBUG_CHECKD(glLinkProgram(selecthader_prog));
+  GL_CHECKD(glLinkProgram(selecthader_prog));
 
   GLint status;
   glGetProgramiv(selecthader_prog, GL_LINK_STATUS, &status);
@@ -147,7 +147,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   // of the currently selected frame.
   // For now, i will use a texture the same size as the normal viewport
   // and select the identifier at the mouse coordinates
-  GL_DEBUG_CHECKD(this->framebuffer->bind());
+  GL_CHECKD(this->framebuffer->bind());
 
   glClearColor(0, 0, 0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -165,7 +165,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   glEnable(GL_DEPTH_TEST);
 
   // call the renderer with the selector shader
-  GL_DEBUG_CHECKD(renderer->draw(true, false, &this->shaderinfo));
+  GL_CHECKD(renderer->draw(true, false, &this->shaderinfo));
 
   // Not strictly necessary, but a nop if not required.
   glFlush();
@@ -173,7 +173,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
 
   // Grab the color from the framebuffer and convert it back to an identifier
   GLubyte color[3] = { 0 };
-  GL_DEBUG_CHECKD(glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color));
+  GL_CHECKD(glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color));
   glDisable(GL_DEPTH_TEST);
 
   int index = (uint32_t)color[0] | ((uint32_t)color[1] << 8) | ((uint32_t)color[2] << 16);
