@@ -27,7 +27,6 @@
 #include "printutils.h"
 #include "imageutils.h"
 #include "system-gl.h"
-#include "fbo.h"
 
 #include <GL/gl.h>
 #include <EGL/egl.h>
@@ -42,7 +41,7 @@
 
 struct OffscreenContext {
 
-  OffscreenContext(int width, int height) : context(nullptr), display(nullptr), width(width), height(height), fbo(nullptr)
+  OffscreenContext(int width, int height) : context(nullptr), display(nullptr), width(width), height(height)
   {
   }
 
@@ -50,7 +49,6 @@ struct OffscreenContext {
   EGLDisplay display;
   int width;
   int height;
-  fbo_t *fbo;
 };
 
 #include "OffscreenContextAll.hpp"
@@ -206,8 +204,6 @@ OffscreenContext *create_offscreen_context(int w, int h)
 bool teardown_offscreen_context(OffscreenContext *ctx)
 {
   if (ctx) {
-    fbo_unbind(ctx->fbo);
-    fbo_delete(ctx->fbo);
     eglTerminate(ctx->display);
     return true;
   }
