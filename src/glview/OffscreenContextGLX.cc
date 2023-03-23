@@ -38,6 +38,7 @@
 #include "OffscreenContext.h"
 #include "printutils.h"
 
+#include "system-gl.h"
 #include <GL/gl.h>
 #include <GL/glx.h>
 
