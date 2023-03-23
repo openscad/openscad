@@ -69,7 +69,7 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
   // Open file and position at the end
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   if (!f.good()) {
-    LOG(message_group::Warning, Location::NONE, "",
+    LOG(message_group::Warning,
         "Can't open import file '%1$s', import() at line %2$d",
         filename, loc.firstLine());
     return p.release();

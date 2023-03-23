@@ -362,9 +362,9 @@ function(add_cmdline_test TESTCMD_BASENAME)
     if (NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
         AND NOT SCADFILE IN_LIST SCADFILES_FAILING_WITH_FAST_CSG
         AND NOT TEST_FULLNAME IN_LIST TESTS_FAILING_WITH_FAST_CSG)
-      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg" "--enable=fast-csg-remesh")
-      if (NOT SCADFILE IN_LIST FAST_CSG_TRUST_FAILING_SCADFILES)
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg-trust-corefinement")
+      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
+      if (SCADFILE IN_LIST FAST_CSG_SAFER_NEEDED)
+        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg-safer")
       endif()
     endif()
 
@@ -829,7 +829,7 @@ list(APPEND SCADFILES_FAILING_WITH_FAST_CSG
   # Needs investigation:
   ${TEST_SCAD_DIR}/3D/issues/issue1246.scad
 )
-list(APPEND FAST_CSG_TRUST_FAILING_SCADFILES
+list(APPEND FAST_CSG_SAFER_NEEDED
   ${TEST_SCAD_DIR}/3D/features/edge-cases.scad
 )
 
@@ -1173,7 +1173,7 @@ add_cmdline_test(lazyunion-dxfpngtest  SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FIL
 add_cmdline_test(lazyunion-svgpngtest  SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=SVG --enable=lazy-union --render=cgal)
 
 add_cmdline_test(manifold-cgalpng             OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS} ARGS --enable=manifold --render)
-add_cmdline_test(fastcsg-cgalpng              OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS} ARGS --enable=fast-csg --enable=fast-csg-remesh --enable=fast-csg-trust-corefinement --render)
+add_cmdline_test(fastcsg-cgalpng              OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS} ARGS --enable=fast-csg --render)
 add_cmdline_test(fastcsg-lazyunion-cgalpng    OPENSCAD SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} ARGS --enable=lazy-union --render)
 add_cmdline_test(fastcsg-lazyunion-amfpngtest SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union ${OPENSCAD_ARG} --format=AMF)
 add_cmdline_test(fastcsg-lazyunion-3mfpngtest SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union ${OPENSCAD_ARG} --format=3MF)
@@ -1190,8 +1190,8 @@ list(APPEND FASTCSG_REMESH_FILES
   ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cube-2.scad
 )
 
-add_cmdline_test(remesh-cgalpng OPENSCAD SUFFIX png FILES ${FASTCSG_REMESH_FILES} ARGS --enable=fast-csg --enable=fast-csg-remesh --enable=fast-csg-trust-corefinement --render)
-add_cmdline_test(remesh-stl     OPENSCAD SUFFIX stl FILES ${FASTCSG_REMESH_FILES} ARGS --enable=sort-stl --enable=fast-csg --enable=fast-csg-remesh-predictibly --enable=fast-csg-trust-corefinement --render)
+add_cmdline_test(remesh-cgalpng OPENSCAD SUFFIX png FILES ${FASTCSG_REMESH_FILES} ARGS --enable=fast-csg --render)
+add_cmdline_test(remesh-stl     OPENSCAD SUFFIX stl FILES ${FASTCSG_REMESH_FILES} ARGS --enable=predictible-output --enable=fast-csg --render)
 
 # Trivial Export/Import files
 # This sanity-checks bidirectional file format import/export
@@ -1208,8 +1208,8 @@ add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SC
 
 # Corner-case Export/Import tests
 add_cmdline_test(monotonepngtest OPENSCAD SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES} ${EXPORT3D_CGALCGAL_TEST_FILES} ARGS --colorscheme=Monotone --render)
-add_cmdline_test(stlexport             OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=sort-stl --render)
-add_cmdline_test(manifold-stlexport    OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=sort-stl --enable=manifold --render)
+add_cmdline_test(stlexport             OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
+add_cmdline_test(manifold-stlexport    OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --enable=manifold --render)
 add_cmdline_test(objexport             OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render)
 add_cmdline_test(3mfexport             OPENSCAD ARGS SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES})
 
@@ -1474,6 +1474,7 @@ if(MXECROSS AND EXPERIMENTAL)
     DESTINATION tests-build
     USE_SOURCE_PERMISSIONS
     COMPONENT Tests
+    PATTERN "venv" EXCLUDE
     PATTERN "CMakeFiles" EXCLUDE
     PATTERN "CMakeLists.txt" EXCLUDE
     PATTERN "cmake_install.cmake" EXCLUDE

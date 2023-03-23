@@ -260,7 +260,7 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
         node->color = *hexColor;
       } else {
         LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to parse color \"%1$s\"", colorname);
-        LOG(message_group::None, Location::NONE, "", "Please see https://en.wikipedia.org/wiki/Web_colors");
+        LOG("Please see https://en.wikipedia.org/wiki/Web_colors");
       }
     }
   }

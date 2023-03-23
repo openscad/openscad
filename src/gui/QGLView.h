@@ -22,7 +22,7 @@ class QGLView : public QOpenGLWidget, public GLView
 public:
   QGLView(QWidget *parent = nullptr);
 #ifdef ENABLE_OPENCSG
-  bool hasOpenCSGSupport() { return this->opencsg_support; }
+  bool hasOpenCSGSupport() { return this->is_opencsg_capable; }
 #endif
   // Properties
   bool orthoMode() const { return (this->cam.projection == Camera::ProjectionType::ORTHOGONAL); }

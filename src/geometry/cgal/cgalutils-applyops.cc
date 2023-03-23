@@ -89,7 +89,7 @@ shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children,
         N->minkowski(*chN);
         break;
       default:
-        LOG(message_group::Error, Location::NONE, "", "Unsupported CGAL operator: %1$d", static_cast<int>(op));
+        LOG(message_group::Error, "Unsupported CGAL operator: %1$d", static_cast<int>(op));
       }
       if (item.first) item.first->progress_report();
     }
@@ -97,12 +97,12 @@ shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children,
   // union && difference assert triggered by tests/data/scad/bugs/rotate-diff-nonmanifold-crash.scad and tests/data/scad/bugs/issue204.scad
   catch (const CGAL::Failure_exception& e) {
     std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
-    LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::applyBinaryOperator %1$s: %2$s", opstr, e.what());
+    LOG(message_group::Error, "CGAL error in CGALUtils::applyBinaryOperator %1$s: %2$s", opstr, e.what());
   }
   // boost any_cast throws exceptions inside CGAL code, ending here https://github.com/openscad/openscad/issues/3756
   catch (const std::exception& e) {
     std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
-    LOG(message_group::Error, Location::NONE, "", "exception in CGALUtils::applyBinaryOperator %1$s: %2$s", opstr, e.what());
+    LOG(message_group::Error, "exception in CGALUtils::applyBinaryOperator %1$s: %2$s", opstr, e.what());
   }
   return shared_ptr<Geometry>(N);
 }
@@ -155,7 +155,7 @@ shared_ptr<const Geometry> applyUnion3D(
       return nullptr;
     }
   } catch (const CGAL::Failure_exception& e) {
-    LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::applyUnion3D: %1$s", e.what());
+    LOG(message_group::Error, "CGAL error in CGALUtils::applyUnion3D: %1$s", e.what());
   }
   return nullptr;
 }
@@ -230,7 +230,7 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
       PRINTDB("After hull valid: %d", r.is_valid());
       success = !createPolySetFromPolyhedron(r, result);
     } catch (const CGAL::Failure_exception& e) {
-      LOG(message_group::Error, Location::NONE, "", "CGAL error in applyHull(): %1$s", e.what());
+      LOG(message_group::Error, "CGAL error in applyHull(): %1$s", e.what());
     }
   }
   return success;

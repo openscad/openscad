@@ -75,7 +75,7 @@ static size_t add_vertex(std::vector<vertex_str>& vertices, const Point& p) {
 static void append_amf(const CGAL_Nef_polyhedron& root_N, std::ostream& output)
 {
   if (!root_N.p3->is_simple()) {
-    LOG(message_group::Export_Warning, Location::NONE, "", "Export failed, the object isn't a valid 2-manifold.");
+    LOG(message_group::Export_Warning, "Export failed, the object isn't a valid 2-manifold.");
     return;
   }
   try {
@@ -131,7 +131,7 @@ static void append_amf(const CGAL_Nef_polyhedron& root_N, std::ostream& output)
     output << "  </mesh>\r\n"
            << " </object>\r\n";
   } catch (CGAL::Assertion_exception& e) {
-    LOG(message_group::Export_Error, Location::NONE, "", "CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %1$s", e.what());
+    LOG(message_group::Export_Error, "CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %1$s", e.what());
   }
 }
 

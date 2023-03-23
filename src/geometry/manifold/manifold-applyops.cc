@@ -65,7 +65,7 @@ shared_ptr<const ManifoldGeometry> applyOperator3DManifold(const Geometry::Geome
       N->minkowski(*chN);
       break;
     default:
-      LOG(message_group::Error, Location::NONE, "", "Unsupported CGAL operator: %1$d", static_cast<int>(op));
+      LOG(message_group::Error, "Unsupported CGAL operator: %1$d", static_cast<int>(op));
     }
     if (item.first) item.first->progress_report();
   }

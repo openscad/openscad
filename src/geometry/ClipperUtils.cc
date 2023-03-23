@@ -62,7 +62,7 @@ ClipperLib::PolyTree sanitize(const ClipperLib::Paths& paths)
     // Most likely caught a RangeTest exception from clipper
     // Note that Clipper up to v6.2.1 incorrectly throws
     // an exception of type char* rather than a clipperException()
-    LOG(message_group::Warning, Location::NONE, "", "Range check failed for polygon. skipping");
+    LOG(message_group::Warning, "Range check failed for polygon. skipping");
   }
   clipper.Execute(ClipperLib::ctUnion, result, ClipperLib::pftEvenOdd);
   return result;

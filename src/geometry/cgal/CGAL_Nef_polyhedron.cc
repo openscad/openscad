@@ -101,7 +101,7 @@ void CGAL_Nef_polyhedron::transform(const Transform3d& matrix)
 {
   if (!this->isEmpty()) {
     if (matrix.matrix().determinant() == 0) {
-      LOG(message_group::Warning, Location::NONE, "", "Scaling a 3D object with 0 - removing object");
+      LOG(message_group::Warning, "Scaling a 3D object with 0 - removing object");
       this->reset();
     } else {
       auto N = new CGAL_Nef_polyhedron3(*this->p3);

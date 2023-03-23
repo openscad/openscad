@@ -27,11 +27,6 @@ if(POLICY CMP0077) # Let parent project set child project options (used to skip 
 endif()
 
 include("cmake/Modules/openscad_version.cmake")
-project(OpenSCAD
-  VERSION ${PROJECT_VERSION}
-  DESCRIPTION "The Programmer's Solid 3D CAD Modeler"
-  LANGUAGES C CXX
-)
 
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
@@ -60,10 +55,19 @@ cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT 
 
 if(ENABLE_MANIFOLD)
   # Requirement from TBB 2021.8.0
-  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14" CACHE STRING "Minimum OS X deployment version")
+  set(DEPLOYMENT_TARGET "10.14")
 else()
-  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version")
+  set(DEPLOYMENT_TARGET "10.13")
 endif()
+
+# Note: CMAKE_OSX_DEPLOYMENT_TARGET must be set before the project() invocation
+set(CMAKE_OSX_DEPLOYMENT_TARGET ${DEPLOYMENT_TARGET} CACHE STRING "Minimum OS X deployment version")
+
+project(OpenSCAD
+  VERSION ${PROJECT_VERSION}
+  DESCRIPTION "The Programmer's Solid 3D CAD Modeler"
+  LANGUAGES C CXX
+)
 
 # GNUInstallDirs must be done before BuildParameters
 include(GNUInstallDirs)
@@ -753,14 +757,17 @@ endif()
 
 if(ENABLE_MANIFOLD)
 
-  if(NOT DEFINED MANIFOLD_PAR)
+  # Hack to find our wanted version of Python before Manifold's included googletest finds Python2
+  find_package(PythonInterp 3.4 REQUIRED)
+
+  if(NOT DEFINED MANIFOLD_PAR AND ENABLE_TBB)
     set(MANIFOLD_PAR TBB CACHE STRING "Parallel backend, either \"TBB\" or \"OpenMP\" or \"NONE\"" FORCE)
   endif()
 
   set(PYBIND11_FINDPYTHON OFF)
   set(MANIFOLD_PYBIND OFF)
 
-  add_subdirectory(submodules/manifold)
+  add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
   target_link_libraries(OpenSCAD PRIVATE manifold)
   
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)

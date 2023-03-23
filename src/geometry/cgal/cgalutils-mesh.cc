@@ -124,13 +124,8 @@ void cleanupMesh(CGAL_HybridMesh& mesh, bool is_corefinement_result)
 {
   mesh.collect_garbage();
 #if FAST_CSG_KERNEL_IS_LAZY
-  // If exact corefinement callbacks are enabled, no need to make numbers exact here again.
-  auto make_exact =
-    Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()
-      ? !is_corefinement_result
-      : Feature::ExperimentalFastCsgExact.is_enabled();
-
-  if (make_exact) {
+  // Don't make exact again if exact corefinement callbacks already did the job.
+  if (!is_corefinement_result) {
     for (auto v : mesh.vertices()) {
       auto& pt = mesh.point(v);
       CGAL::exact(pt.x());

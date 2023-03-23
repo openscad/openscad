@@ -7,11 +7,6 @@
 #include "degree_trig.h"
 #include <cmath>
 #include <cstdio>
-#ifdef _WIN32
-#include <GL/wglew.h>
-#elif !defined(__APPLE__)
-#include <GL/glxew.h>
-#endif
 
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
@@ -32,7 +27,6 @@ GLView::GLView()
 #ifdef ENABLE_OPENCSG
   is_opencsg_capable = false;
   has_shaders = false;
-  opencsg_support = true;
   static int sId = 0;
   this->opencsg_id = sId++;
 #endif
@@ -67,7 +61,7 @@ void GLView::setColorScheme(const std::string& cs)
   if (colorscheme) {
     setColorScheme(*colorscheme);
   } else {
-    LOG(message_group::UI_Warning, Location::NONE, "", "GLView: unknown colorscheme %1$s", cs);
+    LOG(message_group::UI_Warning, "GLView: unknown colorscheme %1$s", cs);
   }
 }
 
@@ -182,13 +176,6 @@ void GLView::paintGL()
 
 #ifdef ENABLE_OPENCSG
 
-void glErrorCheck() {
-  GLenum err = glGetError();
-  if (err != GL_NO_ERROR) {
-    fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
-  }
-}
-
 void glCompileCheck(GLuint shader) {
   GLint status;
   glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
@@ -202,33 +189,12 @@ void glCompileCheck(GLuint shader) {
 
 void GLView::enable_opencsg_shaders()
 {
-  const char *openscad_disable_gl20_env = getenv("OPENSCAD_DISABLE_GL20");
-  if (openscad_disable_gl20_env && !strcmp(openscad_disable_gl20_env, "0")) {
-    openscad_disable_gl20_env = nullptr;
-  }
-
   // All OpenGL 2 contexts are OpenCSG capable
   if (GLEW_VERSION_2_0) {
-    if (!openscad_disable_gl20_env) {
-      this->is_opencsg_capable = true;
-      this->has_shaders = true;
-    }
+		this->is_opencsg_capable = true;
+		this->has_shaders = true;
   }
-#ifndef GLEW_EGL
-  // If OpenGL < 2, check for extensions
-  else if (GLEW_ARB_framebuffer_object || (GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil)
-#ifdef _WIN32
-           || (WGLEW_ARB_pbuffer && WGLEW_ARB_pixel_format)
-#elif !defined(__APPLE__)
-          // not supported by GLEW when built with EGL
-           || (GLXEW_SGIX_pbuffer && GLXEW_SGIX_fbconfig)
-#endif
-  ) {
-    this->is_opencsg_capable = true;
-  }
-#endif // ifndef GLEW_EGL
-
-  if (!GLEW_VERSION_2_0 || !this->is_opencsg_capable) {
+  else {
     display_opencsg_warning();
   }
 }

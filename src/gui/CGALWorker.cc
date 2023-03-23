@@ -35,13 +35,13 @@ void CGALWorker::work()
     GeometryEvaluator evaluator(*this->tree);
     root_geom = evaluator.evaluateGeometry(*this->tree->root(), true);
   } catch (const ProgressCancelException& e) {
-    LOG(message_group::None, Location::NONE, "", "Rendering cancelled.");
+    LOG("Rendering cancelled.");
   } catch (const HardWarningException& e) {
-    LOG(message_group::None, Location::NONE, "", "Rendering cancelled on first warning.");
+    LOG("Rendering cancelled on first warning.");
   } catch (const std::exception& e) {
-    LOG(message_group::Error, Location::NONE, "", "Rendering cancelled by exception %1$s", e.what());
+    LOG(message_group::Error, "Rendering cancelled by exception %1$s", e.what());
   } catch (...) {
-    LOG(message_group::Error, Location::NONE, "", "Rendering cancelled by unknown exception.");
+    LOG(message_group::Error, "Rendering cancelled by unknown exception.");
   }
 
   emit done(root_geom);

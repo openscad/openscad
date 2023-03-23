@@ -154,12 +154,12 @@ void draw_geom(const Polygon2d& poly, cairo_t *cr ){
     const Eigen::Vector2d& p0 = o.vertices[0];
     // Move to the first vertice.  Note Y is inverted in Cairo.
     cairo_move_to(cr, mm_to_points(p0.x()), mm_to_points(-p0.y()));
-    // LOG(message_group::Export_Warning, Location::NONE, "", "DRAW VERTICE %1$8.4f %2$8.4f", mm_to_points(p0.x()),mm_to_points(p0.y()));
+    // LOG(message_group::Export_Warning, "DRAW VERTICE %1$8.4f %2$8.4f", mm_to_points(p0.x()),mm_to_points(p0.y()));
     // iterate across the remaining vertices, drawing a line to each.
     for (unsigned int idx = 1; idx < o.vertices.size(); idx++) {
       const Eigen::Vector2d& p = o.vertices[idx];
       cairo_line_to(cr, mm_to_points(p.x()), mm_to_points(-p.y()));
-      // LOG(message_group::Export_Warning, Location::NONE, "", "DRAW VERTICE %1$8.4f %2$8.4f", mm_to_points(p.x()),mm_to_points(p.y()));
+      // LOG(message_group::Export_Warning, "DRAW VERTICE %1$8.4f %2$8.4f", mm_to_points(p.x()),mm_to_points(p.y()));
     }
     // Draw a line from the last vertice to the first vertice.
     cairo_line_to(cr, mm_to_points(p0.x()), mm_to_points(-p0.y()));
@@ -217,8 +217,8 @@ if (exportInfo.options==nullptr) {
   int centerX = mm_to_points(minx)+spanX/2;
   int centerY = mm_to_points(miny)+spanY/2;
   // Temporary Log
-//  LOG(message_group::Export_Warning, Location::NONE, "", "min( %1$6d , %2$6d ), max( %3$6d , %4$6d )", minx, miny, maxx, maxy);
-//  LOG(message_group::Export_Warning, Location::NONE, "", "span( %1$6d , %2$6d ), center ( %3$6d , %4$6d )", spanX, spanY,  centerX, centerY);
+//  LOG(message_group::Export_Warning, "min( %1$6d , %2$6d ), max( %3$6d , %4$6d )", minx, miny, maxx, maxy);
+//  LOG(message_group::Export_Warning, "span( %1$6d , %2$6d ), center ( %3$6d , %4$6d )", spanX, spanY,  centerX, centerY);
   
   // Set orientation and paper size
   if ((exportPdfOptions->Orientation==paperOrientations::AUTO && spanX>spanY)||(exportPdfOptions->Orientation==paperOrientations::LANDSCAPE)) {
@@ -232,9 +232,9 @@ if (exportInfo.options==nullptr) {
   // Does it fit? (in points)	
   bool inpaper = (spanX<=pdfX-MARGIN)&&(spanY<=pdfY-MARGIN);
   if (!inpaper) {
-    LOG(message_group::Export_Warning, Location::NONE, "", "Geometry is too large to fit into selected size.");
+    LOG(message_group::Export_Warning, "Geometry is too large to fit into selected size.");
   }
-  //      LOG(message_group::Export_Warning, Location::NONE, "", "pdfX, pdfY %1$6d %2$6d ", pdfX, pdfY);
+  //      LOG(message_group::Export_Warning, "pdfX, pdfY %1$6d %2$6d ", pdfX, pdfY);
         
   //  Center on page.  Still in points.
   // Note Cairo inverts the Y axis, with zero at the top, positive going down.
@@ -247,8 +247,8 @@ if (exportInfo.options==nullptr) {
   double Mty=-(centerY-pdfY/2+MARGIN);  // INVERTED Top margin, Y axis
   double Mby=-(centerY+pdfY/2-MARGIN);  // INVERTED Bottom margin, Y axis
     // Temporary Log
-    // LOG(message_group::Export_Warning, Location::NONE, "", "tcX, tcY %1$6d , %2$6d", tcX, tcY);
-    // LOG(message_group::Export_Warning, Location::NONE, "", "Mlx, Mry %1$6d %2$6d Mtx, Mty %3$6d %4$6d", Mlx, Mrx, Mty, Mby);
+    // LOG(message_group::Export_Warning, "tcX, tcY %1$6d , %2$6d", tcX, tcY);
+    // LOG(message_group::Export_Warning, "Mlx, Mry %1$6d %2$6d Mtx, Mty %3$6d %4$6d", Mlx, Mrx, Mty, Mby);
   
   // Initialize Cairo Surface and PDF
   cairo_surface_t *surface = cairo_pdf_surface_create_for_stream(export_pdf_write, &output, pdfX, pdfY);
@@ -301,7 +301,7 @@ const std::string get_cairo_version() {
 
 void export_pdf(const shared_ptr<const Geometry>&, std::ostream&, const ExportInfo&) {
 
-  LOG(message_group::Error, Location::NONE, "", "Export to PDF format was not enabled when building the application.");
+  LOG(message_group::Error, "Export to PDF format was not enabled when building the application.");
 
 }
 
