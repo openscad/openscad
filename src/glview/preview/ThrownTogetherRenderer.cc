@@ -254,7 +254,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       color_state->glBegin().emplace_back([shader_info, color]() {
         GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % color[0] % color[1] % color[2] % color[3]);
         GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]));
-        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % (color[0] + 1) / 2 % (color[1] + 1) / 2 % (color[2] + 1) / 2);
+        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % ((color[0] + 1) / 2) % ((color[1] + 1) / 2) % ((color[2] + 1) / 2));
         GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0));
       });
       vertex_states.emplace_back(std::move(color_state));
@@ -273,7 +273,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       color_state->glBegin().emplace_back([shader_info, color]() {
         GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % color[0] % color[1] % color[2] % color[3]);
         GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]));
-        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % (color[0] + 1) / 2 % (color[1] + 1) / 2 % (color[2] + 1) / 2);
+        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % ((color[0] + 1) / 2) % ((color[1] + 1) / 2) % ((color[2] + 1) / 2));
         GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0));
       });
       vertex_states.emplace_back(std::move(color_state));
@@ -305,7 +305,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       color_state->glBegin().emplace_back([shader_info, color]() {
         GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % color[0] % color[1] % color[2] % color[3]);
         GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]));
-        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % (color[0] + 1) / 2 % (color[1] + 1) / 2 % (color[2] + 1) / 2);
+        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % ((color[0] + 1) / 2) % ((color[1] + 1) / 2) % ((color[2] + 1) / 2));
         GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0));
       });
       vertex_states.emplace_back(std::move(color_state));
