@@ -20,8 +20,8 @@ bool glCheck(const char *stmt, const char *file, int line)
 {
   if (const auto err = glGetError(); err != GL_NO_ERROR) {
     LOG(message_group::Error, Location::NONE, "",
-	"OpenGL error: %1$s (0x%2$04x) in %3$s:%4$d\n"
-	"              %5$s\n", gluErrorString(err), err, file, line, stmt);
+        "OpenGL error: %1$s (0x%2$04x) in %3$s:%4$d\n"
+        "              %5$s\n", gluErrorString(err), err, file, line, stmt);
     return false;
   }
   return true;
@@ -32,7 +32,7 @@ bool glCheckd(const char *stmt, const char *file, int line)
 {
   if (const auto err = glGetError(); err != GL_NO_ERROR) {
     PRINTDB("OpenGL error: %s (0x%04x) in %s:%d\n"
-	    "              %s\n", gluErrorString(err) % err % file % line % stmt);
+            "              %s\n", gluErrorString(err) % err % file % line % stmt);
     return false;
   }
   return true;

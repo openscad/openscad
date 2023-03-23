@@ -147,7 +147,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   // of the currently selected frame.
   // For now, i will use a texture the same size as the normal viewport
   // and select the identifier at the mouse coordinates
-	GL_DEBUG_CHECKD(this->framebuffer->bind());
+  GL_DEBUG_CHECKD(this->framebuffer->bind());
 
   glClearColor(0, 0, 0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);

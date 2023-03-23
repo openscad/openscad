@@ -77,7 +77,9 @@ bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
 
   // Attach render and depth buffers
   IF_GL_CHECK(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT,
-                                        GL_RENDERBUFFER_EXT, fbo->renderbuf_id)) return false;
+                                           GL_RENDERBUFFER_EXT, fbo->renderbuf_id)) {
+    return false;
+  }
 
   if (!check_fbo_status()) {
     cerr << "Problem with OpenGL EXT framebuffer after specifying color render buffer.\n";
@@ -86,12 +88,14 @@ bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
 
   if (glewIsSupported("GL_EXT_packed_depth_stencil")) {
     IF_GL_CHECK(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                             GL_RENDERBUFFER_EXT, fbo->depthbuf_id))
+                                             GL_RENDERBUFFER_EXT, fbo->depthbuf_id)) {
       return false;
+    }
 
     IF_GL_CHECK(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-                                             GL_RENDERBUFFER_EXT, fbo->depthbuf_id))
+                                             GL_RENDERBUFFER_EXT, fbo->depthbuf_id)) {
       return false;
+    }
 
     if (!check_fbo_status()) {
       cerr << "Problem with OpenGL EXT framebuffer after specifying depth render buffer.\n";
@@ -100,8 +104,9 @@ bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
   } else {
     cerr << "Warning: Cannot create stencil buffer (GL_EXT_packed_depth_stencil not supported)\n";
     IF_GL_CHECK(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                             GL_RENDERBUFFER_EXT, fbo->depthbuf_id))
+                                             GL_RENDERBUFFER_EXT, fbo->depthbuf_id)) {
       return false;
+    }
 
     if (!check_fbo_status()) {
       cerr << "Problem with OpenGL EXT framebuffer after specifying depth stencil render buffer.\n";
@@ -127,8 +132,9 @@ bool fbo_arb_init(fbo_t *fbo, size_t width, size_t height)
 
   // Attach render and depth buffers
   IF_GL_CHECK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                                        GL_RENDERBUFFER, fbo->renderbuf_id))
+                                        GL_RENDERBUFFER, fbo->renderbuf_id)) {
     return false;
+  }
 
   if (!check_fbo_status()) {
     cerr << "Problem with OpenGL framebuffer after specifying color render buffer.\n";
@@ -141,8 +147,9 @@ bool fbo_arb_init(fbo_t *fbo, size_t width, size_t height)
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
                             GL_RENDERBUFFER, fbo->depthbuf_id);
   IF_GL_CHECK(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
-                                        GL_RENDERBUFFER, fbo->depthbuf_id))
+                                        GL_RENDERBUFFER, fbo->depthbuf_id)) {
     return false;
+  }
 
   if (!check_fbo_status()) {
     cerr << "Problem with OpenGL framebuffer after specifying depth render buffer.\n";
@@ -181,25 +188,29 @@ bool fbo_resize(fbo_t *fbo, size_t width, size_t height)
   if (use_ext()) {
     glBindRenderbufferEXT(GL_RENDERBUFFER, fbo->depthbuf_id);
     if (glewIsSupported("GL_EXT_packed_depth_stencil")) {
-      IF_GL_CHECK(glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height))
-        return false;
+      IF_GL_CHECK(glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height)) {
+	return false;
+      }
     } else {
-      IF_GL_CHECK(glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height))
-        return false;
+      IF_GL_CHECK(glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height)) {
+	return false;
+      }
     }
 
     glBindRenderbufferEXT(GL_RENDERBUFFER, fbo->renderbuf_id);
-    IF_GL_CHECK(glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_RGBA8, width, height))
+    IF_GL_CHECK(glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_RGBA8, width, height)) {
       return false;
+    }
   } else {
     glBindRenderbuffer(GL_RENDERBUFFER, fbo->renderbuf_id);
-    IF_GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, width, height))
+    IF_GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, width, height)) {
       return false;
+    }
 
     glBindRenderbuffer(GL_RENDERBUFFER, fbo->depthbuf_id);
-    IF_GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height))
+    IF_GL_CHECK(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height)) {
       return false;
-
+    }
   }
 
   return true;

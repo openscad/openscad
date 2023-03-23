@@ -272,20 +272,20 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
         auto index = (GLubyte)entry.first->second;
         GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
         GL_CHECKD(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
-																	elementsData()->sizeofAttribute(),
-																	&index));
+                                  elementsData()->sizeofAttribute(),
+                                  &index));
       } else if (elementsData()->sizeofAttribute() == sizeof(GLushort)) {
         auto index = (GLushort)entry.first->second;
         GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
         GL_CHECKD(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
-																	elementsData()->sizeofAttribute(),
-																	&index));
+                                  elementsData()->sizeofAttribute(),
+                                  &index));
       } else if (elementsData()->sizeofAttribute() == sizeof(GLuint)) {
         auto index = (GLuint)entry.first->second;
         GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
         GL_CHECKD(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
-																	elementsData()->sizeofAttribute(),
-																	&index));
+                                  elementsData()->sizeofAttribute(),
+                                  &index));
       } else {
         assert(false && "create_vertex invalid index attribute size");
       }
@@ -414,7 +414,7 @@ void VertexArray::addAttributePointers(size_t start_offset)
   size_t offset = start_offset + vertex_data->interleavedOffset(vertex_data->positionIndex());
   vs->glBegin().emplace_back([]() {
     GL_TRACE0("glEnableClientState(GL_VERTEX_ARRAY)");
-		GL_CHECKD(glEnableClientState(GL_VERTEX_ARRAY));
+    GL_CHECKD(glEnableClientState(GL_VERTEX_ARRAY));
   });
   vs->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
     auto vs = vs_ptr.lock();
@@ -428,7 +428,7 @@ void VertexArray::addAttributePointers(size_t start_offset)
   });
   vs->glEnd().emplace_back([]() {
     GL_TRACE0("glDisableClientState(GL_VERTEX_ARRAY)");
-		GL_CHECKD(glDisableClientState(GL_VERTEX_ARRAY));
+    GL_CHECKD(glDisableClientState(GL_VERTEX_ARRAY));
   });
 
   if (vertex_data->hasNormalData()) {
@@ -436,7 +436,7 @@ void VertexArray::addAttributePointers(size_t start_offset)
     size_t offset = start_offset + vertex_data->interleavedOffset(vertex_data->normalIndex());
     vs->glBegin().emplace_back([]() {
       GL_TRACE0("glEnableClientState(GL_NORMAL_ARRAY)");
-			GL_CHECKD(glEnableClientState(GL_NORMAL_ARRAY));
+      GL_CHECKD(glEnableClientState(GL_NORMAL_ARRAY));
     });
     vs->glBegin().emplace_back([type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
       auto vs = vs_ptr.lock();
@@ -449,7 +449,7 @@ void VertexArray::addAttributePointers(size_t start_offset)
     });
     vs->glEnd().emplace_back([]() {
       GL_TRACE0("glDisableClientState(GL_NORMAL_ARRAY)");
-			GL_CHECKD(glDisableClientState(GL_NORMAL_ARRAY));
+      GL_CHECKD(glDisableClientState(GL_NORMAL_ARRAY));
     });
   }
   if (vertex_data->hasColorData()) {
@@ -458,7 +458,7 @@ void VertexArray::addAttributePointers(size_t start_offset)
     size_t offset = start_offset + vertex_data->interleavedOffset(vertex_data->colorIndex());
     vs->glBegin().emplace_back([]() {
       GL_TRACE0("glEnableClientState(GL_COLOR_ARRAY)");
-			GL_CHECKD(glEnableClientState(GL_COLOR_ARRAY));
+      GL_CHECKD(glEnableClientState(GL_COLOR_ARRAY));
     });
     vs->glBegin().emplace_back([count, type, stride, offset, vs_ptr = std::weak_ptr<VertexState>(vs)]() {
       auto vs = vs_ptr.lock();
@@ -471,7 +471,7 @@ void VertexArray::addAttributePointers(size_t start_offset)
     });
     vs->glEnd().emplace_back([]() {
       GL_TRACE0("glDisableClientState(GL_COLOR_ARRAY)");
-			GL_CHECKD(glDisableClientState(GL_COLOR_ARRAY));
+      GL_CHECKD(glDisableClientState(GL_COLOR_ARRAY));
     });
   }
 }

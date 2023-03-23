@@ -214,9 +214,9 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
                      (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
                      (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
             GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
-																	((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-																	((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-																	((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+                                  ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
+                                  ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
+                                  ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
           }
         }
         std::shared_ptr<VBOShaderVertexState> shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
@@ -281,11 +281,11 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();
       cull->glBegin().emplace_back([]() {
         GL_TRACE0("glEnable(GL_CULL_FACE)");
-				GL_CHECKD(glEnable(GL_CULL_FACE));
+        GL_CHECKD(glEnable(GL_CULL_FACE));
       });
       cull->glBegin().emplace_back([]() {
         GL_TRACE0("glCullFace(GL_BACK)");
-				GL_CHECKD(glCullFace(GL_BACK));
+        GL_CHECKD(glCullFace(GL_BACK));
       });
       vertex_states.emplace_back(std::move(cull));
 
@@ -313,7 +313,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       cull = std::make_shared<VertexState>();
       cull->glBegin().emplace_back([]() {
         GL_TRACE0("glCullFace(GL_FRONT)");
-				GL_CHECKD(glCullFace(GL_FRONT));
+        GL_CHECKD(glCullFace(GL_FRONT));
       });
       vertex_states.emplace_back(std::move(cull));
 
@@ -325,7 +325,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
 
       vertex_states.back()->glEnd().emplace_back([]() {
         GL_TRACE0("glDisable(GL_CULL_FACE)");
-				GL_CHECKD(glDisable(GL_CULL_FACE));
+        GL_CHECKD(glDisable(GL_CULL_FACE));
       });
     }
   }

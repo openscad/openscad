@@ -254,11 +254,11 @@ public:
     std::shared_ptr<VertexState> settings = std::make_shared<VertexState>();
     settings->glBegin().emplace_back([]() {
       GL_TRACE0("glDisable(GL_LIGHTING)");
-			GL_CHECKD(glDisable(GL_LIGHTING));
+      GL_CHECKD(glDisable(GL_LIGHTING));
     });
     settings->glBegin().emplace_back([]() {
       GL_TRACE0("glPointSize(10.0f)");
-			GL_CHECKD(glPointSize(10.0f));
+      GL_CHECKD(glPointSize(10.0f));
     });
     points_edges_states.emplace_back(std::move(settings));
 
@@ -285,11 +285,11 @@ public:
     settings = std::make_shared<VertexState>();
     settings->glBegin().emplace_back([]() {
       GL_TRACE0("glDisable(GL_LIGHTING)");
-			GL_CHECKD(glDisable(GL_LIGHTING));
+      GL_CHECKD(glDisable(GL_LIGHTING));
     });
     settings->glBegin().emplace_back([]() {
       GL_TRACE0("glLineWidth(5.0f)");
-			GL_CHECKD(glLineWidth(5.0f));
+      GL_CHECKD(glLineWidth(5.0f));
     });
     points_edges_states.emplace_back(std::move(settings));
 
@@ -326,20 +326,20 @@ public:
     settings = std::make_shared<VertexState>();
     settings->glBegin().emplace_back([]() {
       GL_TRACE0("glEnable(GL_LIGHTING)");
-			GL_CHECKD(glEnable(GL_LIGHTING));
+      GL_CHECKD(glEnable(GL_LIGHTING));
     });
     settings->glBegin().emplace_back([]() {
       GL_TRACE0("glLineWidth(5.0f)");
-			GL_CHECKD(glLineWidth(5.0f));
+      GL_CHECKD(glLineWidth(5.0f));
     });
     if (cull_backfaces || color_backfaces) {
       settings->glBegin().emplace_back([]() {
         GL_TRACE0("glEnable(GL_CULL_FACE)");
-				GL_CHECKD(glEnable(GL_CULL_FACE));
+        GL_CHECKD(glEnable(GL_CULL_FACE));
       });
       settings->glBegin().emplace_back([]() {
         GL_TRACE0("glCullFace(GL_BACK)");
-				GL_CHECKD(glCullFace(GL_BACK));
+        GL_CHECKD(glCullFace(GL_BACK));
       });
     }
     halffacets_states.emplace_back(std::move(settings));
@@ -354,7 +354,7 @@ public:
         settings = std::make_shared<VertexState>();
         settings->glBegin().emplace_back([]() {
           GL_TRACE0("glCullFace(GL_FRONT)");
-					GL_CHECKD(glCullFace(GL_FRONT));
+          GL_CHECKD(glCullFace(GL_FRONT));
         });
         halffacets_states.emplace_back(std::move(settings));
       }
@@ -364,11 +364,11 @@ public:
       settings = std::make_shared<VertexState>();
       settings->glBegin().emplace_back([]() {
         GL_TRACE0("glCullFace(GL_BACK)");
-				GL_CHECKD(glCullFace(GL_BACK));
+        GL_CHECKD(glCullFace(GL_BACK));
       });
       settings->glBegin().emplace_back([]() {
         GL_TRACE0("glDisable(GL_CULL_FACE)");
-				GL_CHECKD(glDisable(GL_CULL_FACE));
+        GL_CHECKD(glDisable(GL_CULL_FACE));
       });
       halffacets_states.emplace_back(std::move(settings));
     }
