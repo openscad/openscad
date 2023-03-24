@@ -5,11 +5,6 @@
 #include <ostream>
 #include "imageutils.h"
 
-void bind_offscreen_context(OffscreenContext *ctx)
-{
-  if (ctx) fbo_bind(ctx->fbo);
-}
-
 /*
    Capture framebuffer from OpenGL and write it to the given filename as PNG.
  */
@@ -60,11 +55,6 @@ OffscreenContext *create_offscreen_context_common(OffscreenContext *ctx)
   GLenum err = glewInit(); // must come after Context creation and before FBO c$
   if (GLEW_OK != err) {
     std::cerr << "Unable to init GLEW: " << glewGetErrorString(err) << "\n";
-    return nullptr;
-  }
-
-  ctx->fbo = fbo_new();
-  if (!fbo_init(ctx->fbo, ctx->width, ctx->height)) {
     return nullptr;
   }
 
