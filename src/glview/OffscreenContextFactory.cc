@@ -13,7 +13,7 @@
 #include "offscreen-old/OffscreenContextEGL.h"
 #endif
 #ifdef ENABLE_GLX
-#include "OffscreenContextGLX.h"
+#include "offscreen-old/OffscreenContextGLX.h"
 #endif
 
 namespace OffscreenContextFactory {
@@ -56,8 +56,8 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider, const Offscre
 #endif
 #ifdef ENABLE_GLX
   if (provider == "glx") {
-   return OffscreenContextGLX::create(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion, 
-                                      attrib.gles, attrib.compatibilityProfile);
+   return CreateOffscreenContextGLX(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion, 
+                                    attrib.gles, attrib.compatibilityProfile);
   }
 #endif
 #ifdef _WIN32
