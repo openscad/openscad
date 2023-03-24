@@ -23,15 +23,15 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "OffscreenContext.h"
+#include "OffscreenContextFunctions.h"
 #include "printutils.h"
 #include "imageutils.h"
-#include "system-gl.h"
 
-#include <GL/gl.h>
 #include <EGL/egl.h>
 #define EGL_EGLEXT_PROTOTYPES
 #include <EGL/eglext.h>
+
+#include "system-gl.h"
 
 #include <cassert>
 #include <sstream>
@@ -39,16 +39,24 @@
 
 #include <sys/utsname.h> // for uname
 
-struct OffscreenContext {
+#include "OffscreenContext.h"
 
-  OffscreenContext(int width, int height) : context(nullptr), display(nullptr), width(width), height(height)
+class OffscreenContextEGL : public OffscreenContext {
+public:
+  OffscreenContextEGL(int width, int height) : OffscreenContext(width, height), context(nullptr), display(nullptr)
   {
   }
 
+  ~OffscreenContextEGL() {
+    if (this->display != nullptr) {
+      eglTerminate(this->display);
+    }
+  }
+
+  std::string getInfo() const override;
+  
   EGLContext context;
   EGLDisplay display;
-  int width;
-  int height;
 };
 
 #include "OffscreenContextAll.hpp"
@@ -67,18 +75,15 @@ std::string get_gl_info(EGLDisplay display)
   return result.str();
 }
 
-std::string offscreen_context_getinfo(OffscreenContext *ctx)
-{
-  assert(ctx);
-
-  if (!ctx->context) {
+std::string OffscreenContextEGL::getInfo() const {
+  if (!this->context) {
     return {"No GL Context initialized. No information to report\n"};
   }
 
-  return get_gl_info(ctx->display);
+  return get_gl_info(this->display);
 }
 
-static bool create_egl_dummy_context(OffscreenContext& ctx)
+static bool create_egl_dummy_context(OffscreenContextEGL& ctx)
 {
   static const EGLint configAttribs[] = {
     EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
@@ -92,8 +97,8 @@ static bool create_egl_dummy_context(OffscreenContext& ctx)
   };
 
   const EGLint pbufferAttribs[] = {
-    EGL_WIDTH, ctx.width,
-    EGL_HEIGHT, ctx.height,
+    EGL_WIDTH, ctx.width(),
+    EGL_HEIGHT, ctx.height(),
     EGL_NONE,
   };
 
@@ -176,12 +181,14 @@ static bool create_egl_dummy_context(OffscreenContext& ctx)
   return true;
 }
 
-OffscreenContext *create_offscreen_context(int w, int h)
+std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(
+    unsigned int width, unsigned int height, unsigned int majorGLVersion, 
+    unsigned int minorGLVersion, bool gles, bool compatibilityProfile,
+    const std::string& drmNode = "")
 {
-  auto ctx = new OffscreenContext(w, h);
+  auto ctx = std::make_shared<OffscreenContextEGL>(width, height);
 
   if (!create_egl_dummy_context(*ctx)) {
-    delete ctx;
     return nullptr;
   }
 
@@ -190,18 +197,4 @@ OffscreenContext *create_offscreen_context(int w, int h)
   PRINTDB("OpenGL Version: %s (%s)", getString(GL_VERSION) % getString(GL_VENDOR));
 
   return create_offscreen_context_common(ctx);
-}
-
-bool teardown_offscreen_context(OffscreenContext *ctx)
-{
-  if (ctx) {
-    eglTerminate(ctx->display);
-    return true;
-  }
-  return false;
-}
-
-bool save_framebuffer(const OffscreenContext *ctx, std::ostream& output)
-{
-  return save_framebuffer_common(ctx, output);
 }

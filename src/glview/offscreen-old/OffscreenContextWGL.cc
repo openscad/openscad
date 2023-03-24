@@ -15,7 +15,7 @@
 #include <windows.h>
 #include <vector>
 
-#include "OffscreenContext.h"
+#include "OffscreenContextFunctions.h"
 #include "printutils.h"
 #include "system-gl.h"
 
