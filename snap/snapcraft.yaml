@@ -48,7 +48,7 @@ apps:
 parts:
   opencsg:
     disable-parallel: true
-    source: http://www.opencsg.org/OpenCSG-1.4.2.tar.gz
+    source: https://www.opencsg.org/OpenCSG-1.5.1.tar.gz
     plugin: make
     override-build: |
       ( cd src && qmake INSTALLDIR=/usr && sed -i 's,-isystem /usr/include,,' Makefile )
