@@ -83,6 +83,7 @@ parts:
 
   openscad-nightly:
     source: .
+    build-snaps: [cmake]
     plugin: cmake
     cmake-parameters: [
         "-DCMAKE_PREFIX_PATH=${SNAPCRAFT_STAGE}/usr",
@@ -123,7 +124,6 @@ parts:
     - libmpfr-dev
     - libcairo2-dev
     - python
-    - cmake
     - libboost-dev
     - libboost-regex-dev
     - libboost-system-dev
