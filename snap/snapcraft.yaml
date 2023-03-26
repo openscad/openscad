@@ -94,6 +94,7 @@ parts:
         "-DSNAPSHOT=ON"
     ]
     override-build: |
+        git -C "${SNAPCRAFT_PART_SRC}" submodule update --init --recursive
         cmake ${SNAPCRAFT_PART_SRC} \
             -G 'Unix Makefiles' \
             -DCMAKE_PREFIX_PATH="${SNAPCRAFT_STAGE}/usr" \
