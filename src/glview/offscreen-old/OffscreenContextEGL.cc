@@ -43,10 +43,7 @@
 
 class OffscreenContextEGL : public OffscreenContext {
 public:
-  OffscreenContextEGL(int width, int height) : OffscreenContext(width, height), context(nullptr), display(nullptr)
-  {
-  }
-
+  OffscreenContextEGL(int width, int height) : OffscreenContext(width, height) {}
   ~OffscreenContextEGL() {
     if (this->display != nullptr) {
       eglTerminate(this->display);
@@ -55,8 +52,8 @@ public:
 
   std::string getInfo() const override;
   
-  EGLContext context;
-  EGLDisplay display;
+  EGLContext context{nullptr};
+  EGLDisplay display{nullptr};
 };
 
 #include "OffscreenContextAll.hpp"
