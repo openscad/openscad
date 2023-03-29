@@ -3,7 +3,6 @@
 #include <iostream>
 
 #ifdef __APPLE__
-#include "offscreen-old/OffscreenContextNSOpenGL.h"
 #include "offscreen-old/OffscreenContextCGL.h"
 #endif
 #ifdef _WIN32
