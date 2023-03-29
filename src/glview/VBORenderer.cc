@@ -737,9 +737,8 @@ void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
       if (ss) {
         // NOLINTBEGIN(performance-no-int-to-ptr)
         GL_TRACE("glVertexAttribPointer(%d, %d, %d, %p)", count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
-        glVertexAttribPointer(index, count, type, GL_FALSE, stride, (GLvoid *)(ss->drawOffset() + offset));
+        GL_CHECKD(glVertexAttribPointer(index, count, type, GL_FALSE, stride, (GLvoid *)(ss->drawOffset() + offset)));
         // NOLINTEND(performance-no-int-to-ptr)
-        GL_ERROR_CHECK();
       }
     });
   }
@@ -750,10 +749,10 @@ void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
 void VBORenderer::shader_attribs_enable() const
 {
   GL_TRACE("glEnableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
-  glEnableVertexAttribArray(getShader().data.csg_rendering.barycentric); GL_ERROR_CHECK();
+  GL_CHECKD(glEnableVertexAttribArray(getShader().data.csg_rendering.barycentric));
 }
 void VBORenderer::shader_attribs_disable() const
 {
   GL_TRACE("glDisableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
-  glDisableVertexAttribArray(getShader().data.csg_rendering.barycentric); GL_ERROR_CHECK();
+  GL_CHECKD(glDisableVertexAttribArray(getShader().data.csg_rendering.barycentric));
 }

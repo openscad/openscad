@@ -11,19 +11,25 @@ OffscreenView::OffscreenView(int width, int height)
 {
   this->ctx = create_offscreen_context(width, height);
   if (this->ctx == nullptr) throw -1;
+
+  this->fbo = fbo_new();
+  if (!fbo_init(this->fbo, width, height)) throw -1;
+
   GLView::initializeGL();
   GLView::resizeGL(width, height);
 }
 
 OffscreenView::~OffscreenView()
 {
+  fbo_unbind(this->fbo);
+  fbo_delete(this->fbo);
   teardown_offscreen_context(this->ctx);
 }
 
 #ifdef ENABLE_OPENCSG
 void OffscreenView::display_opencsg_warning()
 {
-  LOG(message_group::None, Location::NONE, "", "OpenSCAD recommended OpenGL version is 2.0.");
+  LOG("OpenSCAD recommended OpenGL version is 2.0.");
 }
 #endif
 

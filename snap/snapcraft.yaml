@@ -48,7 +48,7 @@ apps:
 parts:
   opencsg:
     disable-parallel: true
-    source: http://www.opencsg.org/OpenCSG-1.4.2.tar.gz
+    source: https://www.opencsg.org/OpenCSG-1.5.1.tar.gz
     plugin: make
     override-build: |
       ( cd src && qmake INSTALLDIR=/usr && sed -i 's,-isystem /usr/include,,' Makefile )
@@ -61,7 +61,7 @@ parts:
     - libglew2.1
 
   cgal:
-    source: https://github.com/CGAL/cgal/releases/download/v5.4/CGAL-5.4-library.tar.xz
+    source: https://github.com/CGAL/cgal/releases/download/v5.5.2/CGAL-5.5.2-library.tar.xz
     plugin: cmake
     cmake-parameters: [ "-DCMAKE_BUILD_TYPE=Release", "-DCMAKE_INSTALL_PREFIX=/usr" ]
     after: [ patches ]
@@ -83,6 +83,7 @@ parts:
 
   openscad-nightly:
     source: .
+    build-snaps: [cmake]
     plugin: cmake
     cmake-parameters: [
         "-DCMAKE_PREFIX_PATH=${SNAPCRAFT_STAGE}/usr",
@@ -93,7 +94,8 @@ parts:
         "-DSNAPSHOT=ON"
     ]
     override-build: |
-        cmake ${SNAPCRAFT_PART_SRC} \
+        git -C "${SNAPCRAFT_PART_SRC}" submodule update --init --recursive
+        CC=clang CXX=clang++ cmake ${SNAPCRAFT_PART_SRC} \
             -G 'Unix Makefiles' \
             -DCMAKE_PREFIX_PATH="${SNAPCRAFT_STAGE}/usr" \
             -DCMAKE_INSTALL_PREFIX=/usr \
@@ -106,13 +108,13 @@ parts:
     after: [ desktop-qt5, opencsg, cgal, lib3mf ]
     build-packages:
     - git
+    - clang
     - qt5-default
     - qtbase5-dev
     - qtmultimedia5-dev
     - libqt5svg5-dev
     - libqt5opengl5-dev
     - libqt5gamepad5-dev
-    - qt5-qmake
     - libeigen3-dev
     - libglib2.0-dev
     - bison
@@ -123,7 +125,6 @@ parts:
     - libmpfr-dev
     - libcairo2-dev
     - python
-    - cmake
     - libboost-dev
     - libboost-regex-dev
     - libboost-system-dev
@@ -134,6 +135,7 @@ parts:
     - gettext
     - pkg-config
     - imagemagick
+    - libtbb-dev
     - libzip-dev
     - libgl-dev
     - libxml2-dev
@@ -155,10 +157,13 @@ parts:
     - libglvnd0
     - libopengl0
     - libmpfr6
+    - libgmpxx4ldbl
     - libogg0
     - libpulse0
     - libqt5svg5
+    - libqt5opengl5
     - libqt5gamepad5
+    - libqt5concurrent5
     - libqt5multimedia5
     - libqt5printsupport5
     - libqscintilla2-qt5-15
@@ -166,6 +171,8 @@ parts:
     - libvorbis0a
     - libvorbisenc2
     - libzip5
+    - libtbb2
+    - libatomic1
 
   # https://github.com/ubuntu/snapcraft-desktop-helpers/blob/master/snapcraft.yaml
   desktop-qt5:

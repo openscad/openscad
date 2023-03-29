@@ -75,7 +75,6 @@ public:
   bool has_shaders;
   void enable_opencsg_shaders();
   virtual void display_opencsg_warning() = 0;
-  bool opencsg_support;
   int opencsg_id;
 #endif
 private:

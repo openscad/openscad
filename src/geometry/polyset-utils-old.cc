@@ -199,7 +199,7 @@ bool triangulate_polygon(const PolySet::Polygon& pgon, std::vector<PolySet::Poly
   } catch (const CGAL::Failure_exception& e) {
     // Using failure exception to catch precondition errors for malformed polygons
     // in e.g. CGAL::orientation_2().
-    LOG(message_group::None, Location::NONE, "", "CGAL error in triangulate_polygon(): %1$s", e.what());
+    LOG("CGAL error in triangulate_polygon(): %1$s", e.what());
     err = true;
   }
   return err;
@@ -238,6 +238,6 @@ void tessellate_faces(const PolySet& inps, PolySet& outps) {
       outps.append_vertex(t[2].x(), t[2].y(), t[2].z());
     }
   }
-  if (degeneratePolygons > 0) LOG(message_group::Warning, Location::NONE, "", "PolySet has degenerate polygons");
+  if (degeneratePolygons > 0) LOG(message_group::Warning, "PolySet has degenerate polygons");
 }
 } // namespace PolySetUtils

@@ -97,14 +97,14 @@ bool PlatformUtils::createUserLibraryPath()
   bool OK = false;
   try {
     if (!fs::exists(fs::path(path))) {
-      LOG(message_group::None, Location::NONE, "", "Creating library folder %1$s", path);
+      LOG("Creating library folder %1$s", path);
       OK = fs::create_directories(path);
     }
     if (!OK) {
-      LOG(message_group::Error, Location::NONE, "", "Cannot create %1$s", path);
+      LOG(message_group::Error, "Cannot create %1$s", path);
     }
   } catch (const fs::filesystem_error& ex) {
-    LOG(message_group::Error, Location::NONE, "", "%1$s", ex.what());
+    LOG(message_group::Error, "%1$s", ex.what());
   }
   return OK;
 }
@@ -118,15 +118,15 @@ std::string PlatformUtils::userLibraryPath()
     path = fs::path(pathstr);
     if (!fs::exists(path)) return "";
     path = fs::canonical(path);
-    // LOG(message_group::None,Location::NONE,"","path size %1$i",fs::stringy(path).size());
-    // LOG(message_group::None,Location::NONE,"","lib path found: [%1$s]",path);
+    // LOG(message_group::NONE,,"path size %1$i",fs::stringy(path).size());
+    // LOG(message_group::NONE,,"lib path found: [%1$s]",path);
     if (path.empty()) return "";
     path /= OPENSCAD_FOLDER_NAME;
     path /= "libraries";
-    // LOG(message_group::None,Location::NONE,"","Appended path %1$s",path);
-    // LOG(message_group::None,Location::NONE,"","Exists: %1$i",fs::exists(path));
+    // LOG(message_group::NONE,,"Appended path %1$s",path);
+    // LOG(message_group::NONE,,"Exists: %1$i",fs::exists(path));
   } catch (const fs::filesystem_error& ex) {
-    LOG(message_group::Error, Location::NONE, "", "%1$s", ex.what());
+    LOG(message_group::Error, "%1$s", ex.what());
   }
   return path.generic_string();
 }
@@ -145,7 +145,7 @@ std::string PlatformUtils::backupPath()
     path /= OPENSCAD_FOLDER_NAME;
     path /= "backups";
   } catch (const fs::filesystem_error& ex) {
-    LOG(message_group::Error, Location::NONE, "", "%1$s", ex.what());
+    LOG(message_group::Error, "%1$s", ex.what());
   }
   return path.generic_string();
 }
@@ -159,10 +159,10 @@ bool PlatformUtils::createBackupPath()
       OK = fs::create_directories(path);
     }
     if (!OK) {
-      LOG(message_group::Error, Location::NONE, "", "Cannot create %1$s", path);
+      LOG(message_group::Error, "Cannot create %1$s", path);
     }
   } catch (const fs::filesystem_error& ex) {
-    LOG(message_group::Error, Location::NONE, "", "%1$s", ex.what());
+    LOG(message_group::Error, "%1$s", ex.what());
   }
   return OK;
 }

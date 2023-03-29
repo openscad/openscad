@@ -210,12 +210,12 @@ shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometries& ch
     t_tot.reset();
     return operands[0];
   } catch (const std::exception& e) {
-    LOG(message_group::Warning, Location::NONE, "",
+    LOG(message_group::Warning,
         "[manifold] Minkowski failed with error, falling back to Nef operation: %1$s\n", e.what());
 
     return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::MINKOWSKI);
   } catch (...) {
-    LOG(message_group::Warning, Location::NONE, "",
+    LOG(message_group::Warning,
         "[manifold] Minkowski hard-crashed, falling back to Nef operation.");
 
     return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::MINKOWSKI);

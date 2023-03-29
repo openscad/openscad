@@ -97,7 +97,7 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromSurfaceMesh(const Tri
 
   auto mani = std::make_shared<manifold::Manifold>(std::move(mesh));
   if (mani->Status() != Error::NoError) {
-    LOG(message_group::Error, Location::NONE, "",
+    LOG(message_group::Error,
         "[manifold] Surface_mesh -> Manifold conversion failed: %1$s", 
         ManifoldUtils::statusToString(mani->Status()));
   }
@@ -138,7 +138,7 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet
     if (CGALUtils::isClosed(m)) {
       CGALUtils::orientToBoundAVolume(m);
     } else {
-      LOG(message_group::Error, Location::NONE, "", "[manifold] Input mesh is not closed!");
+      LOG(message_group::Error, "[manifold] Input mesh is not closed!");
     }
   }
 

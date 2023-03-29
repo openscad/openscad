@@ -131,7 +131,7 @@ jobs:
                   -DWASM=ON \
                   -DSNAPSHOT=ON \
                   -DEXPERIMENTAL=ON \
-                  -DENABLE_MANIFOLD=OFF \
+                  -DENABLE_TBB=OFF \
                   -DENABLE_CAIRO=OFF \
                   -DUSE_MIMALLOC=OFF \
                   -DBoost_USE_STATIC_RUNTIME=ON \

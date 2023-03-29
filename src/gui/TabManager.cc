@@ -543,13 +543,13 @@ bool TabManager::refreshDocument()
   if (!editor->filepath.isEmpty()) {
     QFile file(editor->filepath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      LOG(message_group::None, Location::NONE, "", "Failed to open file %1$s: %2$s",
+      LOG("Failed to open file %1$s: %2$s",
           editor->filepath.toLocal8Bit().constData(), file.errorString().toLocal8Bit().constData());
     } else {
       QTextStream reader(&file);
       reader.setCodec("UTF-8");
       auto text = reader.readAll();
-      LOG(message_group::None, Location::NONE, "", "Loaded design '%1$s'.", editor->filepath.toLocal8Bit().constData());
+      LOG("Loaded design '%1$s'.", editor->filepath.toLocal8Bit().constData());
       if (editor->toPlainText() != text) {
         editor->setPlainText(text);
         setContentRenderState(); // since last render
@@ -625,7 +625,7 @@ bool TabManager::shouldClose()
 void TabManager::saveError(const QIODevice& file, const std::string& msg, const QString& filepath)
 {
   const char *fileName = filepath.toLocal8Bit().constData();
-  LOG(message_group::None, Location::NONE, "", "%1$s %2$s (%3$s)", msg.c_str(), fileName, file.errorString().toLocal8Bit().constData());
+  LOG("%1$s %2$s (%3$s)", msg.c_str(), fileName, file.errorString().toLocal8Bit().constData());
 
   const std::string dialogFormatStr = msg + "\n\"%1\"\n(%2)";
   const QString dialogFormat(dialogFormatStr.c_str());
@@ -675,7 +675,7 @@ bool TabManager::save(EditorInterface *edt, const QString& path)
     file.cancelWriting();
   }
   if (saveOk) {
-    LOG(message_group::None, Location::NONE, "", "Saved design '%1$s'.", path.toLocal8Bit().constData());
+    LOG("Saved design '%1$s'.", path.toLocal8Bit().constData());
     edt->parameterWidget->saveFile(path);
     edt->setContentModified(false);
     edt->parameterWidget->setModified(false);

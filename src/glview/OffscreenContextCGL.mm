@@ -1,6 +1,7 @@
 #include "OffscreenContext.h"
 #include "imageutils.h"
-#include "fbo.h"
+#include "system-gl.h"
+
 #include <iostream>
 #include <sstream>
 
@@ -8,15 +9,12 @@
 #include <CoreServices/CoreServices.h>
 #include <sys/utsname.h>
 
-#define REPORTGLERROR(task) { GLenum tGLErr = glGetError(); if (tGLErr != GL_NO_ERROR) { std::cout << "OpenGL error " << tGLErr << " while " << task << "\n"; } }
-
 struct OffscreenContext
 {
   NSOpenGLContext *openGLContext;
   NSAutoreleasePool *pool;
   int width;
   int height;
-  fbo_t *fbo;
 };
 
 #include "OffscreenContextAll.hpp"
@@ -77,33 +75,17 @@ OffscreenContext *create_offscreen_context(int w, int h)
 
   [ctx->openGLContext makeCurrentContext];
   
-  // glewInit must come after Context creation and before FBO calls.
-  GLenum err = glewInit();
-  if (GLEW_OK != err) {
-    std::cerr << "Unable to init GLEW: " << glewGetErrorString(err) << std::endl;
+  auto *returnCtx = create_offscreen_context_common(ctx);
+  if (!returnCtx) {
     [ctx->openGLContext release];
     [ctx->pool release];
     delete ctx;
-    return nullptr;
   }
-  glew_dump();
-
-  ctx->fbo = fbo_new();
-  if (!fbo_init(ctx->fbo, w, h)) {
-    [ctx->openGLContext release];
-    [ctx->pool release];
-    delete ctx;
-    return nullptr;
-  }
-
-  return ctx;
+  return returnCtx;
 }
 
 bool teardown_offscreen_context(OffscreenContext *ctx)
 {
-  fbo_unbind(ctx->fbo);
-  fbo_delete(ctx->fbo);
-
   /*
    * Cleanup
    */
@@ -128,10 +110,9 @@ bool save_framebuffer(const OffscreenContext *ctx, std::ostream &output)
     std::cerr << "Unable to allocate buffer for image extraction.";
     return 1;
   }
-  glReadPixels(0, 0, ctx->width, ctx->height, GL_RGBA, GL_UNSIGNED_BYTE, 
-               bufferData);
-  REPORTGLERROR("reading pixels from framebuffer");
-  
+  GL_CHECKD(glReadPixels(0, 0, ctx->width, ctx->height, GL_RGBA, GL_UNSIGNED_BYTE,
+			 bufferData));
+
   // Flip it vertically - images read from OpenGL buffers are upside-down
   unsigned char *flippedBuffer = (unsigned char *)malloc(rowBytes * ctx->height);
   if (!flippedBuffer) {

@@ -137,14 +137,14 @@ Value builtin_rands(Arguments arguments, const Location& loc)
   if (std::isinf(min) || std::isnan(min)) {
     LOG(message_group::Warning, loc, arguments.documentRoot(), "rands() range min cannot be infinite");
     min = -std::numeric_limits<double>::max() / 2;
-    LOG(message_group::Warning, Location::NONE, "", "resetting to %1f", min);
+    LOG(message_group::Warning, "resetting to %1f", min);
   }
 
   double max = arguments[1]->toDouble();
   if (std::isinf(max)  || std::isnan(max)) {
     LOG(message_group::Warning, loc, arguments.documentRoot(), "rands() range max cannot be infinite");
     max = std::numeric_limits<double>::max() / 2;
-    LOG(message_group::Warning, Location::NONE, "", "resetting to %1f", max);
+    LOG(message_group::Warning, "resetting to %1f", max);
   }
   if (max < min) {
     double tmp = min; min = max; max = tmp;
@@ -153,7 +153,7 @@ Value builtin_rands(Arguments arguments, const Location& loc)
   double numresultsd = std::abs(arguments[2]->toDouble() );
   if (std::isinf(numresultsd) || std::isnan(numresultsd)) {
     LOG(message_group::Warning, loc, arguments.documentRoot(), "rands() cannot create an infinite number of results");
-    LOG(message_group::Warning, Location::NONE, "", "resetting number of results to 1");
+    LOG(message_group::Warning, "resetting number of results to 1");
     numresultsd = 1;
   }
   auto numresults = boost_numeric_cast<size_t, double>(numresultsd);

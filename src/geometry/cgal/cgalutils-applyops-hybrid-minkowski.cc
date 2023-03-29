@@ -231,7 +231,7 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
     t_tot.reset();
     return operands[0];
   } catch (const std::exception& e) {
-    LOG(message_group::Warning, Location::NONE, "",
+    LOG(message_group::Warning,
         "[fast-csg] Minkowski failed with error, falling back to Nef operation: %1$s\n", e.what());
 
     auto N = shared_ptr<const Geometry>(applyOperator3D(children, OpenSCADOperator::MINKOWSKI));
