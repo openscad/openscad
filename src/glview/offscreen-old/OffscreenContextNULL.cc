@@ -16,50 +16,19 @@
 
 using namespace std;
 
-struct OffscreenContext
-{
-  int width;
-  int height;
+class OffscreenContextNULL : public OffscreenContext {
+public:
+  OffscreenContextNULL() : OffscreenContext(0, 0) {}
+  std::string getInfo() const override;
 };
-
-void offscreen_context_init(OffscreenContext& ctx, int width, int height)
-{
-  ctx.width = width;
-  ctx.height = height;
-}
 
 string offscreen_context_getinfo(OffscreenContext *ctx)
 {
   return "";
 }
 
-OffscreenContext *create_offscreen_context(int w, int h)
+std::shared_ptr<OffscreenContext> CreateOffscreenContextNULL()
 {
-  OffscreenContext *ctx = new OffscreenContext;
-  offscreen_context_init(*ctx, w, h);
+  auto ctx = std::make_shared<OffscreenContextNULL>();
   return ctx;
-}
-
-bool teardown_offscreen_context(OffscreenContext *ctx)
-{
-  return true;
-}
-
-bool save_framebuffer(const OffscreenContext *ctx, char const *filename)
-{
-  std::ofstream fstream(filename, std::ios::out | std::ios::binary);
-  if (!fstream.is_open()) {
-    std::cerr << "Can't open file " << filename << " for writing";
-    return false;
-  } else {
-    save_framebuffer(ctx, fstream);
-    fstream.close();
-  }
-  return true;
-}
-
-bool save_framebuffer(const OffscreenContext *ctx, std::ostream& output)
-{
-  output << "NULLGL framebuffer";
-  return true;
 }

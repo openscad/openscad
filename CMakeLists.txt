@@ -657,7 +657,6 @@ set(CORE_SOURCES
   src/geometry/PolySetUtils.cc
   src/geometry/roof_ss.cc
   src/geometry/roof_vd.cc
-  src/glview/OpenGLContext.cc
   src/glview/OffscreenContextFactory.cc
   src/glview/RenderSettings.cc
   src/glview/Camera.cc
@@ -793,6 +792,7 @@ if(NULLGL)
     ${OFFSCREEN_IMGUTILS_SOURCE})
 else()
   set(OFFSCREEN_SOURCES
+    src/glview/OpenGLContext.cc
     src/glview/fbo.cc
     src/glview/Renderer.cc
     src/glview/system-gl.cc
