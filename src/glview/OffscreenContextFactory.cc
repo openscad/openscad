@@ -62,8 +62,8 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider, const Offscre
 #endif
 #ifdef _WIN32
   if (provider == "wgl") {
-    return OffscreenContextWGL::create(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion,
-                                       attrib.compatibilityProfile);
+    return CreateOffscreenContextWGL(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion,
+                                     attrib.compatibilityProfile);
   }
   else
 #endif
