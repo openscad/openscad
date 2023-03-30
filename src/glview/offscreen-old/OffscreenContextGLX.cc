@@ -72,7 +72,7 @@ std::string OffscreenContextGLX::getInfo() const {
     return {"No GL Context initialized. No information to report\n"};
   }
 
-  std::stringstream result;
+  std::ostringstream result;
 
   int major, minor;
   glXQueryVersion(this->xdisplay, &major, &minor);

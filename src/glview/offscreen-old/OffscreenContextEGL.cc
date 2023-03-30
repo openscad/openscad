@@ -58,7 +58,7 @@ public:
 
 std::string get_gl_info(EGLDisplay display)
 {
-  std::stringstream result;
+  std::ostringstream result;
 
   const char *vendor = eglQueryString(display, EGL_VENDOR);
   const char *version = eglQueryString(display, EGL_VERSION);
