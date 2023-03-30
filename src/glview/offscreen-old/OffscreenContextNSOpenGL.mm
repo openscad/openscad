@@ -21,8 +21,6 @@ public:
   
   NSOpenGLContext *openGLContext;
   NSAutoreleasePool *pool;
-  int width;
-  int height;
 };
 
 std::string OffscreenContextNSOpenGL::getInfo() const {
