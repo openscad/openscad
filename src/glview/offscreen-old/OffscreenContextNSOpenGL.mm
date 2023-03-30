@@ -24,8 +24,6 @@ public:
   int height;
 };
 
-#include "OffscreenContextAll.hpp"
-
 std::string OffscreenContextNSOpenGL::getInfo() const {
   std::ostringstream out;
   out << "GL context creator: NSOpenGL\n"
@@ -66,7 +64,6 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextNSOpenGL(
 
   [ctx->openGLContext makeCurrentContext];
   
-  auto returnCtx = create_offscreen_context_common(ctx);
-  return returnCtx;
+  return ctx;
 }
 

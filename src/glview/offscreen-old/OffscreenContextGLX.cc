@@ -66,8 +66,6 @@ public:
   Window xwindow{0};
 };
 
-#include "OffscreenContextAll.hpp"
-
 std::string OffscreenContextGLX::getInfo() const {
   if (!this->xdisplay) {
     return {"No GL Context initialized. No information to report\n"};
@@ -246,5 +244,5 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextGLX(
     return nullptr;
   }
 
-  return create_offscreen_context_common(ctx);
+  return ctx;
 }

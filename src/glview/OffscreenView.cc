@@ -9,6 +9,7 @@
 #include "imageutils.h"
 #include "printutils.h"
 #include "OffscreenContextFactory.h"
+#include "glew-utils.h"
 
 OffscreenView::OffscreenView(unsigned int width, unsigned int height)
 {
@@ -20,6 +21,19 @@ OffscreenView::OffscreenView(unsigned int width, unsigned int height)
   };
   this->ctx = OffscreenContextFactory::create(OffscreenContextFactory::defaultProvider(), attrib);
   if (!this->ctx) throw -1;
+
+  if (!initializeGlew()) throw -1;
+#ifdef USE_GLAD
+  // FIXME: We could ask for gladLoaderLoadGLES2() here instead
+  const auto version = gladLoaderLoadGL();
+  if (version == 0) {
+    // FIXME: Can we figure out why?
+    std::cerr << "Unable to init GLAD" << std::endl;
+    throw -1;
+  }
+  // FIXME: Only if verbose
+  LOG("GLAD: Loaded OpenGL %1$d.%2$d", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
+#endif
 
   this->fbo = fbo_new();
   if (!fbo_init(this->fbo, width, height)) throw -1;

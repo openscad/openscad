@@ -56,8 +56,6 @@ public:
   EGLDisplay display{nullptr};
 };
 
-#include "OffscreenContextAll.hpp"
-
 std::string get_gl_info(EGLDisplay display)
 {
   std::stringstream result;
@@ -193,5 +191,5 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(
   PFNGLGETSTRINGPROC getString = (PFNGLGETSTRINGPROC) eglGetProcAddress("glGetString");
   PRINTDB("OpenGL Version: %s (%s)", getString(GL_VERSION) % getString(GL_VENDOR));
 
-  return create_offscreen_context_common(ctx);
+  return ctx;
 }

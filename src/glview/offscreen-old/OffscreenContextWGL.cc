@@ -41,8 +41,6 @@ public:
   HGLRC openGLContext{nullptr};
 };
 
-#include "OffscreenContextAll.hpp"
-
 std::string OffscreenContextWGL::getInfo() const {
   // should probably get some info from WGL context here?
   result << "GL context creator: WGL\n"
@@ -175,5 +173,5 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextWGL(
     return nullptr;
   }
 
-  return create_offscreen_context_common(ctx);
+  return ctx;
 }
