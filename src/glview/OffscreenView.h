@@ -1,16 +1,11 @@
 #pragma once
 
-#include "offscreen-old/OffscreenContextFunctions.h"
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-
 #include <memory>
 #include <string>
-#include <iostream>
+#include <ostream>
 
 #include "GLView.h"
 #include "OpenGLContext.h"
-
 #include "fbo.h"
 
 class OffscreenView : public GLView

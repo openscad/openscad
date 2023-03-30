@@ -10,6 +10,7 @@
     ( which includes robot.cc by Steven Billington )
    http://blogs.msdn.com/b/oldnewthing/archive/2006/12/04/1205831.aspx by Tom
  */
+#include "OffscreenContextWGL.h"
 
 #undef NOGDI
 #include <windows.h>

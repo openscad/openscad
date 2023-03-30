@@ -6,7 +6,7 @@
 #ifdef __APPLE__
  #include <OpenGL/OpenGL.h>
 #elif defined(_WIN32)
- #include <windef.h> 
+ #include <windef.h> // for APIENTRY
  #include <GL/glu.h>
 #else
  #include <GL/glu.h>

@@ -1,3 +1,4 @@
+#include "OffscreenContextNSOpenGL.h"
 #include "OffscreenContext.h"
 #include "imageutils.h"
 #include "system-gl.h"

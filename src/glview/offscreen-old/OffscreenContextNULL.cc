@@ -1,20 +1,12 @@
 ﻿/*
-
    Create an NULL OpenGL context that doesn't actually use any OpenGL code,
    and can be compiled on a system without OpenGL.
-
  */
+#include "OffscreenContextNULL.h"
 
-#include <vector>
+#include <string>
 
 #include "OffscreenContext.h"
-#include "printutils.h"
-
-#include <map>
-#include <string>
-#include <sstream>
-
-using namespace std;
 
 class OffscreenContextNULL : public OffscreenContext {
 public:
@@ -29,6 +21,5 @@ string offscreen_context_getinfo(OffscreenContext *ctx)
 
 std::shared_ptr<OffscreenContext> CreateOffscreenContextNULL()
 {
-  auto ctx = std::make_shared<OffscreenContextNULL>();
-  return ctx;
+  return std::make_shared<OffscreenContextNULL>();
 }
