@@ -5,6 +5,7 @@
 #include <string>
 #include <cstdlib>
 #include <sstream>
+#include <fstream>
 
 #include "imageutils.h"
 #include "printutils.h"
