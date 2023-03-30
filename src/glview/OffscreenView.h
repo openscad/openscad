@@ -7,6 +7,8 @@
 #include <iostream>
 #include "GLView.h"
 
+#include "fbo.h"
+
 class OffscreenView : public GLView
 {
 public:
@@ -14,6 +16,7 @@ public:
   ~OffscreenView() override;
   bool save(std::ostream& output) const;
   OffscreenContext *ctx;
+  fbo_t *fbo;
 
   // overrides
   bool save(const char *filename) const override;

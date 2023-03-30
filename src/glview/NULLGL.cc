@@ -19,3 +19,9 @@ std::string glew_dump() { return std::string("GL Renderer: NULLGL Glew\n"); }
 std::string glew_extensions_dump() { return std::string("NULLGL Glew Extensions"); }
 bool report_glerror(const char *function) { return false; }
 
+#include "fbo.h"
+
+fbo_t *fbo_new() { return nullptr; }
+void fbo_unbind(fbo_t *fbo) {}
+void fbo_delete(fbo_t *fbo) {}
+bool fbo_init(fbo_t *fbo, size_t width, size_t height) { return false; }

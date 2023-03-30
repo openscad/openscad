@@ -1,6 +1,7 @@
 #include "OffscreenContext.h"
 #include "imageutils.h"
-#include "fbo.h"
+#include "system-gl.h"
+
 #include <iostream>
 #include <sstream>
 
@@ -14,7 +15,6 @@ struct OffscreenContext
   NSAutoreleasePool *pool;
   int width;
   int height;
-  fbo_t *fbo;
 };
 
 #include "OffscreenContextAll.hpp"
@@ -86,9 +86,6 @@ OffscreenContext *create_offscreen_context(int w, int h)
 
 bool teardown_offscreen_context(OffscreenContext *ctx)
 {
-  fbo_unbind(ctx->fbo);
-  fbo_delete(ctx->fbo);
-
   /*
    * Cleanup
    */

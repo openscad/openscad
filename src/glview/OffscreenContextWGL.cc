@@ -17,7 +17,7 @@
 
 #include "OffscreenContext.h"
 #include "printutils.h"
-#include "fbo.h"
+#include "system-gl.h"
 
 #include <GL/gl.h> // must be included after glew.h
 
@@ -32,7 +32,6 @@ struct OffscreenContext
   HGLRC openGLContext;
   int width;
   int height;
-  fbo_t *fbo;
 };
 
 #include "OffscreenContextAll.hpp"
@@ -44,7 +43,6 @@ void offscreen_context_init(OffscreenContext& ctx, int width, int height)
   ctx.openGLContext = (HGLRC)nullptr;
   ctx.width = width;
   ctx.height = height;
-  ctx.fbo = nullptr;
 }
 
 std::string get_os_info()
@@ -214,9 +212,6 @@ OffscreenContext *create_offscreen_context(int w, int h)
 bool teardown_offscreen_context(OffscreenContext *ctx)
 {
   if (ctx) {
-    fbo_unbind(ctx->fbo);
-    fbo_delete(ctx->fbo);
-
     wglMakeCurrent(nullptr, nullptr);
     wglDeleteContext(ctx->openGLContext);
     ReleaseDC(ctx->window, ctx->dev_context);

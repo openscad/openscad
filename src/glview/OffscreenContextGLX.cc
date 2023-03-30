@@ -37,8 +37,8 @@
 
 #include "OffscreenContext.h"
 #include "printutils.h"
-#include "fbo.h"
 
+#include "system-gl.h"
 #include <GL/gl.h>
 #include <GL/glx.h>
 
@@ -56,7 +56,6 @@ struct OffscreenContext
   Window xwindow{0};
   int width;
   int height;
-  fbo_t *fbo{nullptr};
 };
 
 #include "OffscreenContextAll.hpp"
@@ -227,8 +226,6 @@ OffscreenContext *create_offscreen_context(int w, int h)
 bool teardown_offscreen_context(OffscreenContext *ctx)
 {
   if (ctx) {
-    fbo_unbind(ctx->fbo);
-    fbo_delete(ctx->fbo);
     XDestroyWindow(ctx->xdisplay, ctx->xwindow);
     glXDestroyContext(ctx->xdisplay, ctx->openGLContext);
     XCloseDisplay(ctx->xdisplay);
