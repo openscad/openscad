@@ -14,7 +14,7 @@ public:
   std::string getInfo() const override;
 };
 
-string offscreen_context_getinfo(OffscreenContext *ctx)
+std::string offscreen_context_getinfo(OffscreenContext *ctx)
 {
   return "";
 }
