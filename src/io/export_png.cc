@@ -22,8 +22,8 @@ bool export_png(const shared_ptr<const Geometry>& root_geom, const ViewOptions& 
   std::unique_ptr<OffscreenView> glview;
   try {
     glview = std::make_unique<OffscreenView>(camera.pixel_width, camera.pixel_height);
-  } catch (int error) {
-    fprintf(stderr, "Can't create OpenGL OffscreenView. Code: %i.\n", error);
+  } catch (const OffscreenViewException &ex) {
+    fprintf(stderr, "Can't create OffscreenView: %s.\n", ex.what());
     return false;
   }
   CGALRenderer cgalRenderer(root_geom);
@@ -59,8 +59,8 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
   std::unique_ptr<OffscreenView> glview;
   try {
     glview = std::make_unique<OffscreenView>(camera.pixel_width, camera.pixel_height);
-  } catch (int error) {
-    fprintf(stderr, "Can't create OpenGL OffscreenView. Code: %i.\n", error);
+  } catch (const OffscreenViewException &ex) {
+    fprintf(stderr, "Can't create OffscreenView: %s.\n", ex.what());
     return nullptr;
   }
 

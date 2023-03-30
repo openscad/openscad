@@ -34,6 +34,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+#include "OffscreenContextGLX.h"
 
 #include "OffscreenContext.h"
 #include "printutils.h"
@@ -54,9 +55,9 @@ class OffscreenContextGLX : public OffscreenContext {
 public:
   OffscreenContextGLX(int width, int height) : OffscreenContext(width, height) {}
   ~OffscreenContextGLX() {
-    XDestroyWindow(this->xdisplay, this->xwindow);
-    glXDestroyContext(this->xdisplay, this->openGLContext);
-    XCloseDisplay(this->xdisplay);
+    if (this->xwindow) XDestroyWindow(this->xdisplay, this->xwindow);
+    if (this->openGLContext) (this->xdisplay, this->openGLContext);
+    if (this->xdisplay) (this->xdisplay);
   }
 
   std::string getInfo() const override;

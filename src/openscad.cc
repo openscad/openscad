@@ -147,8 +147,8 @@ static int info()
   try {
     OffscreenView glview(512, 512);
     std::cout << glview.getRendererInfo() << "\n";
-  } catch (int error) {
-    LOG("Can't create OpenGL OffscreenView. Code: %1$i. Exiting.\n", error);
+  } catch (const OffscreenViewException &ex) {
+    LOG("Can't create OpenGL OffscreenView: %1$s. Exiting.\n", ex.what());
     return 1;
   }
 
@@ -537,6 +537,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     if ((curFormat == FileFormat::ECHO || curFormat == FileFormat::PNG) && (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)) {
       // OpenCSG or throwntogether png -> just render a preview
       glview = prepare_preview(tree, cmd.viewOptions, camera);
+      if (!glview) return 1;
     } else {
       // Force creation of CGAL objects (for testing)
       root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
@@ -559,7 +560,6 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
         root_geom.reset(new CGAL_Nef_polyhedron());
       }
     }
-
     if (curFormat == FileFormat::ASCIISTL ||
         curFormat == FileFormat::STL ||
         curFormat == FileFormat::OBJ ||

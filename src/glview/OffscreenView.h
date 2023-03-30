@@ -8,6 +8,12 @@
 #include "OpenGLContext.h"
 #include "fbo.h"
 
+class OffscreenViewException : public std::runtime_error
+{
+public:
+  OffscreenViewException(const std::string& what_arg) : std::runtime_error(what_arg) {}
+};
+
 class OffscreenView : public GLView
 {
 public:

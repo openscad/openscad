@@ -13,7 +13,6 @@ public:
   virtual ~OpenGLContext() = default;
   int width() const { return this->width_; }
   int height() const { return this->height_; }
-  virtual bool makeCurrent() = 0;
   virtual std::string getInfo() const = 0;
   std::vector<uint8_t> getFramebuffer() const;
 };

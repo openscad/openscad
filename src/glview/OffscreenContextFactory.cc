@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "printutils.h"
+
 #ifdef __APPLE__
 #include "offscreen-old/OffscreenContextNSOpenGL.h"
 #endif
@@ -35,8 +37,8 @@ const char *defaultProvider() {
 #endif
 }
 
-std::shared_ptr<OpenGLContext> create(const std::string& provider, const OffscreenContextFactory::ContextAttributes& attrib) {
-
+std::shared_ptr<OpenGLContext> create(const std::string& provider, const OffscreenContextFactory::ContextAttributes& attrib)
+{
   // FIXME: We could log an error if the chosen provider doesn't support all our attribs.
 #ifdef __APPLE__
   if (provider == "nsopengl") {
@@ -69,7 +71,7 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider, const Offscre
                                attrib.invisible);
   }
 #endif
-  std::cerr << "Context provider '" << provider << "' not found" << std::endl;
+  LOG("GL context provider '%1$s' not found", provider);
   return {};
 }
 
