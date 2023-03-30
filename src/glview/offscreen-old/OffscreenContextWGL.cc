@@ -43,9 +43,10 @@ public:
 };
 
 std::string OffscreenContextWGL::getInfo() const {
+  std::stringstream result;
   // should probably get some info from WGL context here?
   result << "GL context creator: WGL\n"
-	 << "PNG generator: lodepng\n";
+      	 << "PNG generator: lodepng\n";
 
   return result.str();
 }
