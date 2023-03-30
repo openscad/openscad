@@ -3,7 +3,7 @@
 #include <iostream>
 
 #ifdef __APPLE__
-#include "offscreen-old/OffscreenContextCGL.h"
+#include "offscreen-old/OffscreenContextNSOpenGL.h"
 #endif
 #ifdef _WIN32
 #include "offscreen-old/OffscreenContextWGL.h"
@@ -19,7 +19,7 @@ namespace OffscreenContextFactory {
 
 const char *defaultProvider() {
 #ifdef __APPLE__
-  return "cgl";
+  return "nsopengl";
 #endif
 #ifdef ENABLE_EGL
   return "egl";
@@ -40,10 +40,7 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider, const Offscre
   // FIXME: We could log an error if the chosen provider doesn't support all our attribs.
 #ifdef __APPLE__
   if (provider == "nsopengl") {
-    return OffscreenContextNSOpenGL::create(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion);
-  }
-  if (provider == "cgl") {
-    return = OffscreenContextCGL::create(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion);
+    return CreateOffscreenContextNSOpenGL(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion);
   }
 #endif
 #if ENABLE_EGL
