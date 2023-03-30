@@ -35,7 +35,6 @@
 
 #include <cassert>
 #include <sstream>
-#include <strstream>
 #include <string>
 
 #include <sys/utsname.h> // for uname
@@ -56,7 +55,7 @@ struct OffscreenContext {
 
 std::string get_gl_info(EGLDisplay display)
 {
-  std::ostrstream result;
+  std::stringstream result;
 
   const char *vendor = eglQueryString(display, EGL_VENDOR);
   const char *version = eglQueryString(display, EGL_VERSION);

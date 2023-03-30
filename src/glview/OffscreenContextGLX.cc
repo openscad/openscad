@@ -44,7 +44,6 @@
 
 #include <cassert>
 #include <sstream>
-#include <strstream>
 #include <string>
 
 #include <sys/utsname.h> // for uname
@@ -69,7 +68,7 @@ std::string offscreen_context_getinfo(OffscreenContext *ctx)
     return {"No GL Context initialized. No information to report\n"};
   }
 
-  std::ostrstream result;
+  std::stringstream result;
 
   int major, minor;
   glXQueryVersion(ctx->xdisplay, &major, &minor);

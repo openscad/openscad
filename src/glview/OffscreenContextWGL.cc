@@ -24,7 +24,6 @@
 #include <map>
 #include <string>
 #include <sstream>
-#include <strstream>
 
 struct OffscreenContext
 {
@@ -48,7 +47,7 @@ void offscreen_context_init(OffscreenContext& ctx, int width, int height)
 
 std::string offscreen_context_getinfo(OffscreenContext * /*ctx*/)
 {
-  std::ostrstream result;
+  std::stringstream result;
   // should probably get some info from WGL context here?
   result << "GL context creator: WGL\n"
 	 << "PNG generator: lodepng\n";

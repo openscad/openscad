@@ -1,6 +1,6 @@
 #include "PlatformUtils.h"
 
-#include <strstream>
+#include <sstream>
 
 #include <sys/types.h>
 #include <sys/sysctl.h>
@@ -55,7 +55,7 @@ unsigned long PlatformUtils::stackLimit()
 
 const std::string PlatformUtils::user_agent()
 {
-  std::strstream result;
+  std::stringstream result;
 
   result << "OpenSCAD/" << openscad_detailedversionnumber
          << " (" << sysinfo(false) << ")";
@@ -65,7 +65,7 @@ const std::string PlatformUtils::user_agent()
 
 const std::string PlatformUtils::sysinfo(bool extended)
 {
-  std::strstream result;
+  std::stringstream result;
   
   NSOperatingSystemVersion version = [[NSProcessInfo processInfo] operatingSystemVersion];
   struct utsname name;
