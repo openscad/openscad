@@ -1,4 +1,7 @@
 #include "PlatformUtils.h"
+
+#include <map>
+
 #include "printutils.h"
 #include "findversion.h"
 #ifndef _WIN32_WINNT
@@ -170,7 +173,7 @@ const std::string PlatformUtils::sysinfo(bool extended)
       majorVersion = 11;
     }
     boost::format fmt("Microsoft Windows %d (%d.%d.%d) %s");
-    fmt % majorVersion % osinfo.dwMajorVersion % osinfo.dwMinorVersion % osinfo.dwBuildNumber % archs[si.wProcessorArchitecture]
+    fmt % majorVersion % osinfo.dwMajorVersion % osinfo.dwMinorVersion % osinfo.dwBuildNumber % archs[si.wProcessorArchitecture];
     result += fmt.str();
   }
 
