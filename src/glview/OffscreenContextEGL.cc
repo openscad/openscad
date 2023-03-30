@@ -35,7 +35,6 @@
 
 #include <cassert>
 #include <sstream>
-#include <strstream>
 #include <string>
 
 #include <sys/utsname.h> // for uname
