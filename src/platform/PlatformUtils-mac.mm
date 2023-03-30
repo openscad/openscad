@@ -1,6 +1,10 @@
 #include "PlatformUtils.h"
 
+<<<<<<< HEAD
 #include <sstream>
+=======
+#include <strstream>
+>>>>>>> 27ea4abb4 (Removed duplicate machine info which is already provided by PlatformUtils)
 
 #include <sys/types.h>
 #include <sys/sysctl.h>
@@ -55,7 +59,11 @@ unsigned long PlatformUtils::stackLimit()
 
 const std::string PlatformUtils::user_agent()
 {
+<<<<<<< HEAD
   std::stringstream result;
+=======
+  std::strstream result;
+>>>>>>> 27ea4abb4 (Removed duplicate machine info which is already provided by PlatformUtils)
 
   result << "OpenSCAD/" << openscad_detailedversionnumber
          << " (" << sysinfo(false) << ")";
@@ -65,7 +73,11 @@ const std::string PlatformUtils::user_agent()
 
 const std::string PlatformUtils::sysinfo(bool extended)
 {
+<<<<<<< HEAD
   std::stringstream result;
+=======
+  std::strstream result;
+>>>>>>> 27ea4abb4 (Removed duplicate machine info which is already provided by PlatformUtils)
   
   NSOperatingSystemVersion version = [[NSProcessInfo processInfo] operatingSystemVersion];
   struct utsname name;
