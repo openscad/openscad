@@ -46,6 +46,8 @@ pacboy --noconfirm --sync --needed \
     qt5-multimedia:p \
     tbb:p \
     python:p \
-    python-pip:p
+    python-pip:p \
+    python-numpy:p \
+    python-pillow:p
 
 date "+### %Y-%m-%d %T msys2-install-dependencies finished"

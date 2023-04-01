@@ -48,7 +48,7 @@ if(NOT EXISTS ${LIBRARIES_DIR}/MCAD/__init__.py)
 endif()
 list(APPEND CTEST_ENVIRONMENT "OPENSCADPATH=${LIBRARIES_DIR}")
 
-find_package(PythonInterp 3.4 REQUIRED)
+find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
 
 # Image comparison - expected test image vs actual generated image
 
@@ -78,9 +78,8 @@ if(USE_IMAGE_COMPARE_PY)
   endif()
   if(BUILD_VENV)
     message(STATUS "Setting up testing venv for image comparison")
-#    find_package(Python3 COMPONENTS Interpreter)
     execute_process(
-      COMMAND "${PYTHON_EXECUTABLE}" "-m" "venv" "venv" "--without-pip"
+      COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "venv" "--system-site-packages" "--without-pip"
       WORKING_DIRECTORY "${CCBD}")
     execute_process(
       COMMAND "${IMAGE_COMPARE_EXE}" "-m" "ensurepip"
