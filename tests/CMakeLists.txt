@@ -49,6 +49,7 @@ endif()
 list(APPEND CTEST_ENVIRONMENT "OPENSCADPATH=${LIBRARIES_DIR}")
 
 find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
+message(STATUS "Found Python at ${Python3_EXECUTABLE}")
 
 # Image comparison - expected test image vs actual generated image
 
@@ -311,9 +312,9 @@ function(add_cmdline_test TESTCMD_BASENAME)
     message(FATAL_ERROR "add_cmdline_test() does not allow OPENSCAD flag alongside EXE or SCRIPT values")
   endif()
 
-  # python script implies PYTHON_EXECUTABLE
+  # python script implies Python3_EXECUTABLE
   if (TESTCMD_SCRIPT MATCHES \\.[Pp][Yy]$)
-    set(TESTCMD_EXE ${PYTHON_EXECUTABLE})
+    set(TESTCMD_EXE ${Python3_EXECUTABLE})
   endif()
   if (TESTCMD_OPENSCAD)
     set(TESTCMD_EXE ${OPENSCAD_BINPATH})
@@ -389,7 +390,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
     string(JOIN " " DBG_COMMAND_STR
       "add_test(" ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-      COMMAND ${PYTHON_EXECUTABLE}
+      COMMAND ${Python3_EXECUTABLE}
       ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
       -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
       ${TESTCMD_EXE} ${TESTCMD_SCRIPT} ${SCADFILE} ${CAMERA_OPTION}
@@ -405,7 +406,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(EXPERIMENTAL_OPTION "")
       endif()
       add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-        COMMAND ${PYTHON_EXECUTABLE}
+        COMMAND ${Python3_EXECUTABLE}
         ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
         -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
         ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION}
@@ -426,7 +427,7 @@ function(add_failing_test TESTCMD_BASENAME)
     message(FATAL_ERROR "add_failing_test() requires SUFFIX to be set" )
   endif()
   if (NOT TESTCMD_EXE)
-    set(TESTCMD_EXE ${PYTHON_EXECUTABLE})
+    set(TESTCMD_EXE ${Python3_EXECUTABLE})
   endif()
   if (NOT TESTCMD_SCRIPT)
     set(TESTCMD_SCRIPT ${SHOULDFAIL_PY})
@@ -493,12 +494,12 @@ configure_file(${CCSD}/CTestCustom.template ${CBD}/CTestCustom.cmake @ONLY)
 # generate a very large scad file which we would rather not commit to the source tree
 # this is for stress-testing the parser
 add_custom_target(issue2342 ALL
-  COMMAND ${PYTHON_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_issue2342.py ">${TEST_SCAD_DIR}/issues/issue2342.scad"
+  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_issue2342.py ">${TEST_SCAD_DIR}/issues/issue2342.scad"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating issue2342.scad"
 )
 add_custom_target(svg_viewbox_tests ALL
-  COMMAND ${PYTHON_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py "${TEST_DATA_DIR}/svg/viewbox" "${TEST_SCAD_DIR}/svg/extruded"
+  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py "${TEST_DATA_DIR}/svg/viewbox" "${TEST_SCAD_DIR}/svg/extruded"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating svg viewbox tests"
 )
@@ -1357,7 +1358,7 @@ if(MXECROSS AND EXPERIMENTAL)
 "# created automatically during packaging by cmake from within linux
 linux_abs_basedir='${CMAKE_SOURCE_DIR}'
 linux_abs_builddir='${CMAKE_BINARY_DIR}'
-linux_python='${PYTHON_EXECUTABLE}'
+linux_python='${Python3_EXECUTABLE}'
 linux_convert='${IMAGE_COMPARE_EXE}'
 win_installdir='OpenSCAD-Tests-${CPACK_PACKAGE_VERSION}'
 " NEWLINE_STYLE WIN32)
