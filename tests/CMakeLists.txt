@@ -78,9 +78,9 @@ if(USE_IMAGE_COMPARE_PY)
   endif()
   if(BUILD_VENV)
     message(STATUS "Setting up testing venv for image comparison")
-    find_package(Python3 COMPONENTS Interpreter)
+#    find_package(Python3 COMPONENTS Interpreter)
     execute_process(
-      COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "venv" "--without-pip"
+      COMMAND "${PYTHON_EXECUTABLE}" "-m" "venv" "venv" "--without-pip"
       WORKING_DIRECTORY "${CCBD}")
     execute_process(
       COMMAND "${IMAGE_COMPARE_EXE}" "-m" "ensurepip"
