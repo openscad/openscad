@@ -64,11 +64,11 @@ class SdfNode : public LeafNode
 {
 public:
   VISITABLE();
-  SdfNode(const ModuleInstantiation *mi) : LeafNode(mi) { }
+  SdfNode(const ModuleInstantiation *mi, Arguments arguments) : LeafNode(mi), parameters(Parameters::parse(std::move(arguments), mi->location(), {"sdf", "bounding_box", "resolution"}, {})) { }
   std::string toString() const override;
   std::string name() const override { return "sdf"; }
 
-  Parameters *parameters;
+  Parameters parameters;
   const Geometry *createGeometry() const override;
 private:
 };
@@ -80,11 +80,7 @@ static std::shared_ptr<AbstractNode> builtin_sdf(const ModuleInstantiation *inst
         "module %1$s() does not support child modules", inst->name());
   }
 
-  auto node = std::make_shared<SdfNode>(inst);
-
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"sdf", "bounding_box", "resolution"}, {});
-  node->parameters = &parameters;
-
+  auto node = std::make_shared<SdfNode>(inst, std::move(arguments));
   return node;
 }
 
@@ -97,8 +93,9 @@ static std::shared_ptr<AbstractNode> builtin_sdf(const ModuleInstantiation *inst
 //
 struct OpenSCADOracle : public libfive::OracleStorage<LIBFIVE_EVAL_ARRAY_SIZE>
 {
-    Parameters *parameters_;
-    OpenSCADOracle(Parameters *parameters) : parameters_(parameters) {}
+    EvaluationSession session{"/"};
+    const Parameters& parameters_;
+    OpenSCADOracle(const Parameters& parameters) : parameters_(parameters) {}
 
     void evalInterval(libfive::Interval& out) override
     {
@@ -128,15 +125,14 @@ struct OpenSCADOracle : public libfive::OracleStorage<LIBFIVE_EVAL_ARRAY_SIZE>
     }
     void evalPoint(float& out, size_t index=0) override
     {
-        const auto pt = points.col(index);
-        const auto &sdf = parameters_->get("sdf").toFunction();
-        auto expr = sdf.getExpr().get();
+        const auto& pt = points.col(index);
         AssignmentList al = AssignmentList();
         al.push_back(std::shared_ptr<Assignment>(new Assignment("x", std::shared_ptr<Expression>(new Literal(pt.x())))));
         al.push_back(std::shared_ptr<Assignment>(new Assignment("y", std::shared_ptr<Expression>(new Literal(pt.y())))));
         al.push_back(std::shared_ptr<Assignment>(new Assignment("z", std::shared_ptr<Expression>(new Literal(pt.z())))));
-        auto fc = FunctionCall(expr, al, Location::NONE);
-        auto val = fc.evaluate(sdf.getContext());
+        auto fc = new FunctionCall(new Literal(parameters_.get("sdf").clone()), al, Location::NONE);
+        ContextHandle<BuiltinContext> context{Context::create<BuiltinContext>(&session)};
+        auto val = fc->evaluate(*context);
         out = val.toDouble();
     }
     void checkAmbiguous(Eigen::Block<
@@ -150,7 +146,7 @@ struct OpenSCADOracle : public libfive::OracleStorage<LIBFIVE_EVAL_ARRAY_SIZE>
     override {
         // Find one derivative with partial differences.
 
-        auto resolution = parameters_->get("resolution").toDouble();
+        auto resolution = parameters_.get("resolution").toDouble();
 
         float centre, dx, dy, dz;
         Eigen::Vector3f before = points.col(0);
@@ -175,8 +171,8 @@ struct OpenSCADOracle : public libfive::OracleStorage<LIBFIVE_EVAL_ARRAY_SIZE>
 
 struct OpenSCADOracleClause : public libfive::OracleClause
 {
-    Parameters *parameters_;
-    OpenSCADOracleClause(Parameters *parameters) : parameters_(parameters)
+    const Parameters& parameters_;
+    OpenSCADOracleClause(const Parameters& parameters) : parameters_(parameters)
     {}
     std::unique_ptr<libfive::Oracle> getOracle() const override
     {
@@ -188,9 +184,9 @@ struct OpenSCADOracleClause : public libfive::OracleClause
 
 const Geometry *SdfNode::createGeometry() const
 {
-  double resolution = this->parameters->get("resolution").toDouble();
+  double resolution = this->parameters.get("resolution").toDouble();
 
-  const auto &bounding_box_tmp = this->parameters->get("bounding_box").toVector();
+  const auto &bounding_box_tmp = this->parameters.get("bounding_box").toVector();
   std::vector<double> bounding_box;
   for(const auto &val : bounding_box_tmp) {
     bounding_box.push_back(val.toDouble());
@@ -208,7 +204,7 @@ const Geometry *SdfNode::createGeometry() const
 
   libfive::BRepSettings settings;
   settings.min_feature = resolution;
-  settings.workers = std::thread::hardware_concurrency();
+  settings.workers = 1; // std::thread::hardware_concurrency();
   settings.alg = libfive::DUAL_CONTOURING;
   std::unique_ptr<libfive::Mesh> mesh = libfive::Mesh::render(tree, region, settings);
 
