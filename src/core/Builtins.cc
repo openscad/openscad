@@ -48,6 +48,7 @@ extern void register_builtin_transform();
 extern void register_builtin_color();
 extern void register_builtin_primitives();
 extern void register_builtin_surface();
+extern void register_builtin_sdf();
 extern void register_builtin_control();
 extern void register_builtin_render();
 extern void register_builtin_import();
@@ -77,6 +78,7 @@ void Builtins::initialize()
   register_builtin_color();
   register_builtin_primitives();
   register_builtin_surface();
+  register_builtin_sdf();
   register_builtin_control();
   register_builtin_render();
   register_builtin_import();

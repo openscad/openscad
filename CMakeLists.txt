@@ -618,6 +618,7 @@ set(CORE_SOURCES
   src/core/DrawingCallback.cc
   src/core/RotateExtrudeNode.cc
   src/core/SurfaceNode.cc
+  src/core/SdfNode.cc
   src/core/TextNode.cc
   src/core/TransformNode.cc
   src/core/UndefType.cc
@@ -773,6 +774,10 @@ if(ENABLE_MANIFOLD)
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
   list(APPEND Sources ${MANIFOLD_SOURCES})
 endif()
+
+
+# TODO: PROPER LIBFIVE INCLUSION
+target_link_libraries(OpenSCAD PRIVATE five)
 
 #
 # Offscreen OpenGL context source code
