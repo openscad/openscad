@@ -31,6 +31,7 @@
 #include "Builtins.h"
 #include "BuiltinContext.h"
 #include "Children.h"
+#include "Expression.h"
 #include "FunctionType.h"
 #include "Parameters.h"
 #include "printutils.h"
@@ -128,8 +129,15 @@ struct OpenSCADOracle : public libfive::OracleStorage<LIBFIVE_EVAL_ARRAY_SIZE>
     void evalPoint(float& out, size_t index=0) override
     {
         const auto pt = points.col(index);
-        // Use parameters_->get("sdf").toFunction(); and evaluate pt.x(), pt.y() and pt.z().
-        out = 0.0;
+        const auto &sdf = parameters_->get("sdf").toFunction();
+        auto expr = sdf.getExpr().get();
+        AssignmentList al = AssignmentList();
+        al.push_back(std::shared_ptr<Assignment>(new Assignment("x", std::shared_ptr<Expression>(new Literal(pt.x())))));
+        al.push_back(std::shared_ptr<Assignment>(new Assignment("y", std::shared_ptr<Expression>(new Literal(pt.y())))));
+        al.push_back(std::shared_ptr<Assignment>(new Assignment("z", std::shared_ptr<Expression>(new Literal(pt.z())))));
+        auto fc = FunctionCall(expr, al, Location::NONE);
+        auto val = fc.evaluate(sdf.getContext());
+        out = val.toDouble();
     }
     void checkAmbiguous(Eigen::Block<
         Eigen::Array<bool, 1, LIBFIVE_EVAL_ARRAY_SIZE>,
