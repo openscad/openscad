@@ -56,6 +56,9 @@ message(STATUS "Found Python at ${Python3_EXECUTABLE}")
 if(USE_IMAGE_COMPARE_PY)
   set(VENV_DIR "${CCBD}/venv")
   message(STATUS "Preparing image_compare.py for test suite image comparison")
+  # FIXME: bin/ vs. Scripts/ is a function of which Python interpreter was used to initialize the
+  # venv, not which platform CMake is executed on. We may want to simply search for the correct location
+  # instead.
   if(WIN32 AND NOT MINGW)
     set(IMAGE_COMPARE_EXE "${VENV_DIR}/Scripts/python.exe")
   else()
