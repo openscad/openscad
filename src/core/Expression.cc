@@ -551,10 +551,10 @@ static SimplificationResult simplify_function_body(const Expression *expression,
 Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) const
 {
   const auto& name = get_name();
-  if (StackCheck::inst().check()) {
-    print_err(name.c_str(), loc, context);
-    throw RecursionException::create("function", name, this->loc);
-  }
+//  if (StackCheck::inst().check()) {
+//    print_err(name.c_str(), loc, context);
+//    throw RecursionException::create("function", name, this->loc);
+//  }
 
   // Repeatedly simplify expr until it reduces to either a tail call,
   // or an expression that cannot be simplified in-place. If the latter,
