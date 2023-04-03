@@ -34,6 +34,7 @@ option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
 option(ENABLE_EGL "Enable EGL instead of GLX support if available" OFF)
+option(USE_GLAD "Use GLAD instead of glew" OFF)
 option(WASM "Build WebAssembly, (implies NULLGL=ON) " OFF)
 option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
@@ -128,6 +129,13 @@ if(WASM)
   target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
 endif()
 
+if(USE_GLAD)
+  target_compile_definitions(OpenSCAD PRIVATE USE_GLAD)
+  target_link_libraries(OpenSCAD PRIVATE ${CMAKE_DL_LIBS})
+else()
+  target_compile_definitions(OpenSCAD PRIVATE USE_GLEW)
+endif()
+
 if(NULLGL)
   set(HEADLESS ON CACHE BOOL "" FORCE)
 endif()
@@ -177,6 +185,7 @@ add_subdirectory(submodules)
 
 if (MXECROSS)
   target_compile_definitions(OpenSCAD PRIVATE GLEW_STATIC LIBXML_STATIC STATIC_QT_SVG_PLUGIN)
+  target_compile_definitions(OpenSCAD PRIVATE GLEW_STATIC)
   target_link_libraries(OpenSCAD PRIVATE bcrypt)
 endif()
 
@@ -208,11 +217,19 @@ macro(find_graphics)
     target_link_libraries(OpenSCAD PRIVATE GLEW::glew)
 
     if(MSVC)
+      find_package(GLEW CONFIG REQUIRED QUIET)
+      message(STATUS "GLEW: Using target GLEW::GLEW")
+      target_link_libraries(OpenSCAD PRIVATE GLEW::GLEW)
       find_path(OPENCSG_INCLUDE_DIRS opencsg/opencsg.h)
       target_include_directories(OpenSCAD SYSTEM PRIVATE "${OPENCSG_INCLUDE_DIRS}/opencsg")
     else()
-      find_path(OPENCSG_INCLUDE_DIRS opencsg.h)
+      find_package(GLEW REQUIRED)
+      message(STATUS "GLEW_INCLUDE_DIR: ${GLEW_INCLUDE_DIR}")
+      message(STATUS "GLEW_LIBRARY: ${GLEW_LIBRARY}")
+      target_include_directories(OpenSCAD SYSTEM PRIVATE ${GLEW_INCLUDE_DIR})
+      target_link_libraries(OpenSCAD PRIVATE ${GLEW_LIBRARY})
       target_include_directories(OpenSCAD SYSTEM PRIVATE ${OPENCSG_INCLUDE_DIRS})
+      find_path(OPENCSG_INCLUDE_DIRS opencsg.h)
     endif()
 
     find_package(OpenGL REQUIRED QUIET)
@@ -436,6 +453,7 @@ target_include_directories(OpenSCAD PRIVATE
   "src/ext/json"
   "src/ext/lexertl/include"
   "src/ext/libtess2/Include"
+  "src/ext"
   "src/geometry"
   "src/geometry/cgal"
   "src/geometry/manifold"
@@ -574,7 +592,9 @@ elseif(UNIX)
       set(OFFSCREEN_METHOD "Unix EGL")
       message(STATUS "Offscreen OpenGL Context - using Unix EGL")
       set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextEGL.cc)
-      target_compile_definitions(OpenSCAD PRIVATE GLEW_EGL)
+      if (NOT USE_GLAD)
+        target_compile_definitions(OpenSCAD PRIVATE GLEW_EGL)
+      endif()
       target_link_libraries(OpenSCAD PRIVATE OpenGL::EGL)
     else()
       target_compile_definitions(OpenSCAD PRIVATE ENABLE_GLX)

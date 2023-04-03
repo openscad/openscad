@@ -91,12 +91,6 @@ bool OffscreenView::save(std::ostream& output) const
 std::string OffscreenView::getRendererInfo() const
 {
   std::ostringstream result;
-
-#ifndef NULLGL
-  result << glewInfo() << "\n";
-#endif
-	result << this->ctx->getInfo() << "\n"
-         << gl_dump();
-
+  result << this->ctx->getInfo() << "\n" << gl_dump();
   return result.str();
 }

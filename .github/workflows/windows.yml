@@ -34,7 +34,7 @@ jobs:
         run: |
           git submodule update --init --recursive
           mkdir build && cd build
-          cmake .. -G"Ninja" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON
+          cmake .. -G"Ninja" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DUSE_GLAD=1
           cmake --build . -j2
           cmake --install . --prefix=.
       - name: Run Test Suite

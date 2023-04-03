@@ -16,7 +16,7 @@ void GLView::setColorScheme(const std::string& cs) {assert(false && "not impleme
 
 double gl_version() { return -1; }
 std::string gl_dump() { return std::string("GL Renderer: NULLGL\n"); }
-std::string glew_extensions_dump() { return std::string("NULLGL Glew Extensions"); }
+std::string gl_extensions_dump() { return std::string("NULLGL Extensions"); }
 bool report_glerror(const char *function) { return false; }
 
 #include "OpenGLContext.h"

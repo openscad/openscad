@@ -1,13 +1,19 @@
 #pragma once
 
 #ifndef NULLGL
+
+#ifdef USE_GLEW
 #include <GL/glew.h>
+#endif
+#ifdef USE_GLAD
+  #ifdef _WIN32
+  #include <windows.h>
+  #endif
+#include "glad/gl.h"
+#endif
 
 #ifdef __APPLE__
- #include <OpenGL/OpenGL.h>
-#elif defined(_WIN32)
- #include <windef.h> // for APIENTRY
- #include <GL/glu.h>
+ #include <OpenGL/glu.h>
 #else
  #include <GL/glu.h>
 #endif
@@ -100,5 +106,12 @@ inline void glColor4fv(float *c) {}
 
 #endif // NULLGL
 
+#ifdef USE_GLEW
+#define hasGLExtension(ext) glewIsSupported(#ext)
+#endif
+#ifdef USE_GLAD
+#define hasGLExtension(ext) GLAD_ ## ext
+#endif
+
 std::string gl_dump();
-std::string glew_extensions_dump();
+std::string gl_extensions_dump();
