@@ -35,6 +35,12 @@
 #include "CGALHybridPolyhedron.h"
 #endif // ENABLE_CGAL
 
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#include "manifold.h"
+#include "manifoldutils.h"
+#endif // ENABLE_MANIFOLD
+
 #include "RenderStatistic.h"
 
 class GeometryList;
@@ -69,6 +75,9 @@ struct LogVisitor : public StatisticVisitor
   void visit(const CGAL_Nef_polyhedron& node) override;
   void visit(const CGALHybridPolyhedron& node) override;
 #endif // ENABLE_CGAL
+#ifdef ENABLE_MANIFOLD
+  void visit(const ManifoldGeometry& node) override;
+#endif // ENABLE_MANIFOLD
   void printCamera(const Camera& camera) override;
   void printCacheStatistic() override;
   void printRenderingTime(std::chrono::milliseconds) override;
@@ -91,6 +100,9 @@ struct StreamVisitor : public StatisticVisitor
   void visit(const CGAL_Nef_polyhedron& node) override;
   void visit(const CGALHybridPolyhedron& node) override;
 #endif // ENABLE_CGAL
+#ifdef ENABLE_MANIFOLD
+  void visit(const ManifoldGeometry& node) override;
+#endif // ENABLE_MANIFOLD
   void printCamera(const Camera& camera) override;
   void printCacheStatistic() override;
   void printRenderingTime(std::chrono::milliseconds) override;
@@ -239,7 +251,7 @@ void LogVisitor::visit(const CGAL_Nef_polyhedron& nef)
   if (nef.getDimension() == 3) {
     bool simple = nef.p3->is_simple();
     LOG(message_group::None, Location::NONE, "", "Top level object is a 3D object:");
-    LOG(message_group::None, Location::NONE, "", "   Simple:     %6s", (simple ? "yes" : "no"));
+    LOG(message_group::None, Location::NONE, "", "   Simple:     %1$s", (simple ? "yes" : "no"));
     LOG(message_group::None, Location::NONE, "", "   Vertices:   %1$6d", nef.p3->number_of_vertices());
     LOG(message_group::None, Location::NONE, "", "   Halfedges:  %1$6d", nef.p3->number_of_halfedges());
     LOG(message_group::None, Location::NONE, "", "   Edges:      %1$6d", nef.p3->number_of_edges());
@@ -256,7 +268,7 @@ void LogVisitor::visit(const CGALHybridPolyhedron& poly)
 {
   bool simple = poly.isManifold();
   LOG(message_group::None, Location::NONE, "", "   Top level object is a 3D object (fast-csg):");
-  LOG(message_group::None, Location::NONE, "", "   Simple:     %6s", (simple ? "yes" : "no"));
+  LOG(message_group::None, Location::NONE, "", "   Simple:     %1$s", (simple ? "yes" : "no"));
   LOG(message_group::None, Location::NONE, "", "   Vertices:   %1$6d", poly.numVertices());
   LOG(message_group::None, Location::NONE, "", "   Facets:     %1$6d", poly.numFacets());
   if (!simple) {
@@ -265,6 +277,24 @@ void LogVisitor::visit(const CGALHybridPolyhedron& poly)
   printBoundingBox3(poly.getBoundingBox());
 }
 #endif // ENABLE_CGAL
+
+#ifdef ENABLE_MANIFOLD
+void LogVisitor::visit(const ManifoldGeometry& mani_geom)
+{
+  LOG(message_group::None, Location::NONE, "", "   Top level object is a 3D object (manifold):");
+  auto &mani = mani_geom.getManifold();
+  auto bbox = mani.BoundingBox();
+  
+  LOG(message_group::None, Location::NONE, "", "   Status:     %1$s", ManifoldUtils::statusToString(mani.Status()));
+  LOG(message_group::None, Location::NONE, "", "   Genus:      %1$d", mani.Genus());
+  LOG(message_group::None, Location::NONE, "", "   Vertices:   %1$6d", mani.NumVert());
+  LOG(message_group::None, Location::NONE, "", "   Facets:     %1$6d", mani.NumTri());
+  LOG(message_group::None, Location::NONE, "", "   BBox.min:   %1$f, %2$f, %3$f", bbox.min.x, bbox.min.y, bbox.min.z);
+  LOG(message_group::None, Location::NONE, "", "   BBox.max:   %1$f, %2$f, %3$f", bbox.max.x, bbox.max.y, bbox.max.z);
+  
+  assert(false && "not implemented");
+}
+#endif // ENABLE_MANIFOLD
 
 void LogVisitor::printCamera(const Camera& camera)
 {
@@ -365,6 +395,23 @@ void StreamVisitor::visit(const CGALHybridPolyhedron& poly)
   }
 }
 #endif // ENABLE_CGAL
+
+#ifdef ENABLE_MANIFOLD
+void StreamVisitor::visit(const ManifoldGeometry& mani)
+{
+  if (is_enabled(RenderStatistic::GEOMETRY)) {
+    nlohmann::json geometryJson;
+    geometryJson["dimensions"] = 3;
+    geometryJson["simple"] = mani.isManifold();
+    geometryJson["vertices"] = mani.numVertices();
+    geometryJson["facets"] = mani.numFacets();
+    if (is_enabled(RenderStatistic::BOUNDING_BOX)) {
+      geometryJson["bounding_box"] = getBoundingBox3(mani);
+    }
+    json["geometry"] = geometryJson;
+  }
+}
+#endif // ENABLE_MANIFOLD
 
 void StreamVisitor::printCamera(const Camera& camera)
 {

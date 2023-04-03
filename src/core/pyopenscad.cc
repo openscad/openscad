@@ -10,8 +10,8 @@
 
 void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
 {
-  Py_XDECREF(self->dict);
-  Py_TYPE(self)->tp_free((PyObject *)self);
+//  Py_XDECREF(self->dict);
+//  Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static PyObject *PyOpenSCADObject_new(PyTypeObject *type, PyObject *args,  PyObject *kwds)
@@ -21,6 +21,7 @@ static PyObject *PyOpenSCADObject_new(PyTypeObject *type, PyObject *args,  PyObj
   self->node = NULL;
   self->dict = PyDict_New();
   Py_XINCREF(self->dict);
+  Py_XINCREF(self);
   return (PyObject *)self;
 }
 
@@ -32,9 +33,10 @@ PyObject *PyOpenSCADObjectFromNode(PyTypeObject *type, std::shared_ptr<AbstractN
     self->node = node;
     self->dict = PyDict_New();
     Py_XINCREF(self->dict);
+    Py_XINCREF(self);
+    return (PyObject *)self;
   }
-  Py_XINCREF(self);
-  return (PyObject *)self;
+  return NULL;
 }
 
 int python_more_obj(std::vector<std::shared_ptr<AbstractNode>>& children, PyObject *more_obj) {
@@ -57,8 +59,9 @@ int python_more_obj(std::vector<std::shared_ptr<AbstractNode>>& children, PyObje
 
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj)
 {
-  Py_XDECREF(obj);
-  return ((PyOpenSCADObject *) obj)->node;
+  std::shared_ptr<AbstractNode> result = ((PyOpenSCADObject *) obj)->node;
+//  Py_XDECREF(obj); TODO cannot activate
+  return result;
 }
 
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
@@ -66,8 +69,6 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
   std::shared_ptr<AbstractNode> result;
   if (Py_TYPE(objs) == &PyOpenSCADType) {
     result = ((PyOpenSCADObject *) objs)->node;
-    //Py_XDECREF(objs); // TODO cannot activate
-    return result;
   } else if (PyList_Check(objs)) {
     // TODO also decref the list ?
     DECLARE_INSTANCE
@@ -79,9 +80,10 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
       std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj);
       node->children.push_back(child);
     }
-    Py_XDECREF(objs);
-    return node;
-  } else return NULL;
+    result=node;
+  } else result=NULL;
+//  Py_XDECREF(objs); // TODO cannot activate
+  return result;
 }
 
 int python_numberval(PyObject *number, double *result)

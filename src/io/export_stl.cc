@@ -27,6 +27,9 @@
 #include "export.h"
 #include "PolySet.h"
 #include "PolySetUtils.h"
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#endif
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
@@ -199,6 +202,31 @@ uint64_t append_stl(const CGALHybridPolyhedron& hybrid, std::ostream& output,
   return triangle_count;
 }
 
+#ifdef ENABLE_MANIFOLD
+/*!
+   Saves the current 3D Manifold geometry as STL to the given file.
+   The file must be open.
+ */
+uint64_t append_stl(const ManifoldGeometry& mani, std::ostream& output,
+                    bool binary)
+{
+  uint64_t triangle_count = 0;
+  if (!mani.isManifold()) {
+    LOG(message_group::Export_Warning, Location::NONE, "", "Exported object may not be a valid 2-manifold and may need repair");
+  }
+
+  auto ps = mani.toPolySet();
+  if (ps) {
+    triangle_count += append_stl(*ps, output, binary);
+  } else {
+    LOG(message_group::Export_Error, Location::NONE, "", "Manifold->PolySet failed");
+  }
+
+  return triangle_count;
+}
+#endif
+
+
 uint64_t append_stl(const shared_ptr<const Geometry>& geom, std::ostream& output,
                     bool binary)
 {
@@ -213,6 +241,10 @@ uint64_t append_stl(const shared_ptr<const Geometry>& geom, std::ostream& output
     triangle_count += append_stl(*ps, output, binary);
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     triangle_count += append_stl(*hybrid, output, binary);
+#ifdef ENABLE_MANIFOLD
+  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    triangle_count += append_stl(*mani, output, binary);
+#endif
   } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { //NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
   } else { //NOLINT(bugprone-branch-clone)

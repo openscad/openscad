@@ -14,6 +14,7 @@ class GeometryList;
 class GeometryVisitor;
 class Polygon2d;
 class PolySet;
+class ManifoldGeometry;
 
 class Geometry
 {
@@ -61,6 +62,9 @@ public:
 #ifdef ENABLE_CGAL
   virtual void visit(const CGAL_Nef_polyhedron& node) = 0;
   virtual void visit(const CGALHybridPolyhedron& node) = 0;
+#endif
+#ifdef ENABLE_MANIFOLD
+  virtual void visit(const ManifoldGeometry& node) = 0;
 #endif
   virtual ~GeometryVisitor() = default;
 };

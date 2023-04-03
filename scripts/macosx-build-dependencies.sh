@@ -59,6 +59,7 @@ PACKAGES=(
     "qt5 5.15.7"
     "opencsg 1.5.1"
     "qscintilla 2.13.3"
+    "onetbb 2021.8.0"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.27.1"
@@ -394,6 +395,26 @@ build_cgal()
     install_name_tool -change libCGAL.11.dylib @rpath/libCGAL.dylib $DEPLOYDIR/lib/libCGAL_Core.dylib
   fi
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/cgal.version
+}
+
+build_onetbb()
+{
+  version=$1
+
+  echo "Building oneTBB" $version "..."
+  cd $BASEDIR/src
+  rm -rf oneTBB-$version
+  if [ ! -f oneTBB-$version.tar.gz ]; then
+      curl -L https://github.com/oneapi-src/oneTBB/archive/refs/tags/v${version}.tar.gz --output oneTBB-$version.tar.gz
+  fi
+  tar xzf oneTBB-$version.tar.gz
+  cd oneTBB-$version
+  cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DTBB_TEST=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
+  make -j"$NUMCPU" install
+  make install  
+  # install_name_tool -id @rpath/libtbb.dylib $DEPLOYDIR/lib/libtbb.dylib
+  # install_name_tool -id @rpath/libtbbmalloc.dylib $DEPLOYDIR/lib/libtbbmalloc.dylib
+  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/onetbb.version
 }
 
 build_glew()

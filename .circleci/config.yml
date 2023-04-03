@@ -14,8 +14,9 @@ jobs:
               export NUMCPU=4
               export LC_ALL=C.UTF-8
               export MXEDIR=/mxe
-              export LIB3MF_INCLUDEDIR=/mxe/usr/i686-w64-mingw32.static.posix/include/lib3mf
-              export LIB3MF_LIBDIR=/mxe/usr/i686-w64-mingw32.static.posix/lib
+              export PKG_CONFIG_PATH=/mxe/usr/i686-w64-mingw32.static.posix/lib/pkgconfig
+              ln -sf $PKG_CONFIG_PATH/{intel-,}tbb.pc
+              ln -sf /usr/bin/python{3,}
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
               ./scripts/release-common.sh snapshot mingw32 -v "$OPENSCAD_VERSION"
@@ -47,8 +48,9 @@ jobs:
               export NUMCPU=4
               export LC_ALL=C.UTF-8
               export MXEDIR=/mxe
-              export LIB3MF_INCLUDEDIR=/mxe/usr/x86_64-w64-mingw32.static.posix/include/lib3mf
-              export LIB3MF_LIBDIR=/mxe/usr/x86_64-w64-mingw32.static.posix/lib
+              export PKG_CONFIG_PATH=/mxe/usr/x86_64-w64-mingw32.static.posix/lib/pkgconfig
+              ln -sf $PKG_CONFIG_PATH/{intel-,}tbb.pc
+              ln -sf /usr/bin/python{3,}
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
               
@@ -84,7 +86,8 @@ jobs:
               export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ai${CIRCLE_BUILD_NUM}"
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
-              git submodule update --init
+              git submodule update --init --recursive
+              ( cd submodules/manifold && git apply thrust.diff )
               mkdir build && cd build
               cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DOPENSCAD_VERSION="$OPENSCAD_VERSION" -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT"
               make -j4
@@ -122,11 +125,13 @@ jobs:
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).wasm${CIRCLE_BUILD_NUM}"
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               export PKG_CONFIG_PATH="/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig"
-              git submodule update --init
+              git submodule update --init --recursive
+              ( cd submodules/manifold && git apply thrust.diff )
               emcmake cmake -B ../build . \
                   -DWASM=ON \
                   -DSNAPSHOT=ON \
                   -DEXPERIMENTAL=ON \
+                  -DENABLE_MANIFOLD=OFF \
                   -DENABLE_CAIRO=OFF \
                   -DUSE_MIMALLOC=OFF \
                   -DBoost_USE_STATIC_RUNTIME=ON \
@@ -167,7 +172,8 @@ jobs:
       DYLD_FRAMEWORK_PATH: /Users/distiller/libraries/install/lib
     steps:
       - checkout
-      - run: git submodule update --init
+      - run: git submodule update --init --recursive
+      - run: ( cd submodules/manifold && git apply thrust.diff )
       - run:
           name: System Info
           command: |
@@ -191,7 +197,7 @@ jobs:
             # Pick up our own Qt
             export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
             # Build universal binaries and limit to 30 minutes
-            ./scripts/macosx-build-dependencies.sh -l 30 -x -a -d double_conversion eigen gmp mpfr glew gettext libffi freetype ragel harfbuzz libzip libxml2 libuuid fontconfig hidapi lib3mf pixman cairo glib2 boost cgal qt5 opencsg qscintilla sparkle
+            ./scripts/macosx-build-dependencies.sh -l 30 -x -a -d double_conversion eigen gmp mpfr glew gettext libffi freetype ragel harfbuzz libzip libxml2 libuuid fontconfig hidapi lib3mf pixman cairo glib2 boost cgal qt5 opencsg qscintilla sparkle onetbb
       - run:
           name: Package Dependencies as an artifact
           command: |

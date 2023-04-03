@@ -6,6 +6,7 @@
 #include "AST.h"
 
 class PolySet *import_stl(const std::string& filename, const Location& loc);
+class PolySet *import_obj(const std::string& filename, const Location& loc);
 
 PolySet *import_off(const std::string& filename, const Location& loc);
 

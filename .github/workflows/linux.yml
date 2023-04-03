@@ -32,6 +32,8 @@ jobs:
       uses: actions/checkout@v3
     - name: Submodules
       run: git submodule update --init --recursive
+    - name: Manifold patches
+      run: ( cd submodules/manifold && git apply thrust.diff )
     - name: Install dependencies
       run: ./scripts/travis-ci-before-install-linux.sh ${{ matrix.distro }}
     - name: Dependency fixup
@@ -39,6 +41,10 @@ jobs:
     - name: Make Qt5 the default
       if: ${{ matrix.qt5default }}
       run: sudo apt-get install qt5-default
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.11
     - name: Build and test
       run: ./scripts/github-ci.sh enable_python build test coverage
     - name: Upload Test Result Report

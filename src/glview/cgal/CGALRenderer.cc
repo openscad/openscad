@@ -37,6 +37,9 @@
 #include "CGALRenderer.h"
 #include "CGAL_OGL_VBOPolyhedron.h"
 #include "CGALHybridPolyhedron.h"
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#endif
 
 //#include "Preferences.h"
 
@@ -70,6 +73,12 @@ void CGALRenderer::addGeometry(const shared_ptr<const Geometry>& geom)
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement rendering of CGAL_HybridMesh (CGAL::Surface_mesh) instead.
     this->polysets.push_back(hybrid->toPolySet());
+#ifdef ENABLE_MANIFOLD
+  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    this->polysets.push_back(mani->toPolySet());
+#endif
+  } else {
+    assert(false && "unsupported geom in CGALRenderer");
   }
 
   if (!this->nefPolyhedrons.empty() && this->polyhedrons.empty()) createPolyhedrons();
