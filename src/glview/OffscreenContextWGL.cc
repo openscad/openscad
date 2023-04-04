@@ -45,41 +45,14 @@ void offscreen_context_init(OffscreenContext& ctx, int width, int height)
   ctx.height = height;
 }
 
-std::string get_os_info()
-{
-  OSVERSIONINFO osvi;
-
-  ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
-  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-  GetVersionEx(&osvi);
-
-  SYSTEM_INFO si;
-  GetSystemInfo(&si);
-  std::map<WORD, const char *> archs;
-  archs[PROCESSOR_ARCHITECTURE_AMD64] = "amd64";
-  archs[PROCESSOR_ARCHITECTURE_IA64] = "itanium";
-  archs[PROCESSOR_ARCHITECTURE_INTEL] = "x86";
-  archs[PROCESSOR_ARCHITECTURE_UNKNOWN] = "unknown";
-
-  std::ostringstream out;
-  out << "OS info: "
-      << "Microsoft(TM) Windows(TM) " << osvi.dwMajorVersion << " "
-      << osvi.dwMinorVersion << " " << osvi.dwBuildNumber << " "
-      << osvi.szCSDVersion;
-  if (archs.find(si.wProcessorArchitecture) != archs.end()) out << " " << archs[si.wProcessorArchitecture];
-  out << "\n";
-
-  out << "Machine: " << si.dwProcessorType;
-
-  return out.str();
-}
-
 std::string offscreen_context_getinfo(OffscreenContext * /*ctx*/)
 {
+  std::stringstream result;
   // should probably get some info from WGL context here?
-  return STR("GL context creator: WGL\n",
-             "PNG generator: lodepng\n",
-             get_os_info());
+  result << "GL context creator: WGL\n"
+	 << "PNG generator: lodepng\n";
+
+  return result.str();
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)

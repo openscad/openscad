@@ -6,8 +6,6 @@
 #include <sstream>
 
 #import <AppKit/AppKit.h>   // for NSOpenGL...
-#include <CoreServices/CoreServices.h>
-#include <sys/utsname.h>
 
 struct OffscreenContext
 {
@@ -21,22 +19,9 @@ struct OffscreenContext
 
 std::string offscreen_context_getinfo(OffscreenContext *)
 {
-  struct utsname name;
-  uname(&name);
-
-  SInt32 majorVersion,minorVersion,bugFixVersion;
-  
-  std::string osVersion = [[[NSProcessInfo processInfo] operatingSystemVersionString] UTF8String];
-
-  const char *arch = "unknown";
-  if (sizeof(int*) == 4) arch = "32-bit";
-  else if (sizeof(int*) == 8) arch = "64-bit";
-
   std::ostringstream out;
   out << "GL context creator: Cocoa / CGL\n"
-      << "PNG generator: Core Foundation\n"
-      << "OS info: Mac OS X " << osVersion << " (" << name.machine << " kernel)\n"
-      << "Machine: " << arch << "\n";
+      << "PNG generator: Core Foundation\n";
   return out.str();
 }
 
