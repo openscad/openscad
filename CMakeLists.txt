@@ -131,7 +131,6 @@ endif()
 
 if(USE_GLAD)
   target_compile_definitions(OpenSCAD PRIVATE USE_GLAD)
-  target_link_libraries(OpenSCAD PRIVATE ${CMAKE_DL_LIBS})
 else()
   target_compile_definitions(OpenSCAD PRIVATE USE_GLEW)
 endif()
@@ -182,6 +181,13 @@ endif()
 find_package(PkgConfig)
 
 add_subdirectory(submodules)
+
+# The submodules will set up mimalloc if needed, and we need to defer any 
+# target_link_libraries() calls until after that.
+
+if(USE_GLAD)
+  target_link_libraries(OpenSCAD PRIVATE ${CMAKE_DL_LIBS})
+endif()
 
 if (MXECROSS)
   target_compile_definitions(OpenSCAD PRIVATE GLEW_STATIC LIBXML_STATIC STATIC_QT_SVG_PLUGIN)
