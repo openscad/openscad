@@ -84,11 +84,11 @@ std::string gl_dump()
       << boost::format("\nRGBA(%d%d%d%d), depth(%d), stencil(%d)") %
     rbits % gbits % bbits % abits % dbits % sbits;
   out << "\nGL_ARB_framebuffer_object: "
-      << (hasGLExtension(GL_ARB_framebuffer_object) ? "yes" : "no")
+      << (hasGLExtension(ARB_framebuffer_object) ? "yes" : "no")
       << "\nGL_EXT_framebuffer_object: "
-      << (hasGLExtension(GL_EXT_framebuffer_object) ? "yes" : "no")
+      << (hasGLExtension(EXT_framebuffer_object) ? "yes" : "no")
       << "\nGL_EXT_packed_depth_stencil: "
-      << (hasGLExtension(GL_EXT_packed_depth_stencil) ? "yes" : "no")
+      << (hasGLExtension(EXT_packed_depth_stencil) ? "yes" : "no")
       << "\n";
   return out.str();
 }

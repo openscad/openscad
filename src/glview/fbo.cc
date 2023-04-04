@@ -18,7 +18,7 @@ fbo_t *fbo_new()
 bool use_ext()
 {
   // do we need to use the EXT or ARB version?
-  if (!hasGLExtension(GL_ARB_framebuffer_object) && hasGLExtension(GL_EXT_framebuffer_object)) {
+  if (!hasGLExtension(ARB_framebuffer_object) && hasGLExtension(EXT_framebuffer_object)) {
     return true;
   } else {
     return false;
@@ -86,7 +86,7 @@ bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
     return false;
   }
 
-  if (hasGLExtension(GL_EXT_packed_depth_stencil)) {
+  if (hasGLExtension(EXT_packed_depth_stencil)) {
     IF_GL_CHECK(glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
                                              GL_RENDERBUFFER_EXT, fbo->depthbuf_id)) {
       return false;
@@ -173,7 +173,7 @@ bool fbo_init(fbo_t *fbo, size_t width, size_t height)
    */
 
   auto result = false;
-  if (hasGLExtension(GL_ARB_framebuffer_object)) {
+  if (hasGLExtension(ARB_framebuffer_object)) {
     result = fbo_arb_init(fbo, width, height);
   } else if (use_ext()) {
     result = fbo_ext_init(fbo, width, height);
@@ -187,7 +187,7 @@ bool fbo_resize(fbo_t *fbo, size_t width, size_t height)
 {
   if (use_ext()) {
     glBindRenderbufferEXT(GL_RENDERBUFFER, fbo->depthbuf_id);
-    if (hasGLExtension(GL_EXT_packed_depth_stencil)) {
+    if (hasGLExtension(EXT_packed_depth_stencil)) {
       IF_GL_CHECK(glRenderbufferStorageEXT(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height)) {
         return false;
       }
