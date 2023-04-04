@@ -25,7 +25,7 @@
  */
 
 #include "module.h"
-#include "node.h"
+#include "core/node.h"
 #include "PolySet.h"
 #include "Children.h"
 #include "Polygon2d.h"
@@ -39,17 +39,10 @@
 #include <cmath>
 #include <boost/assign/std/vector.hpp>
 #include "ModuleInstantiation.h"
+#include "primitives.h"
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
-
-struct point2d {
-  double x, y;
-};
-
-struct point3d {
-  double x, y, z;
-};
 
 static void generate_circle(point2d *circle, double r, int fragments)
 {
@@ -110,27 +103,6 @@ static void set_fragments(const Parameters& parameters, const ModuleInstantiatio
 }
 
 
-
-class CubeNode : public LeafNode
-{
-public:
-  CubeNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
-  {
-    std::ostringstream stream;
-    stream << "cube(size = ["
-           << x << ", "
-           << y << ", "
-           << z << "], center = "
-           << (center ? "true" : "false") << ")";
-    return stream.str();
-  }
-  std::string name() const override { return "cube"; }
-  const Geometry *createGeometry() const override;
-
-  double x = 1, y = 1, z = 1;
-  bool center = false;
-};
 
 const Geometry *CubeNode::createGeometry() const
 {
@@ -234,27 +206,7 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
 
 
 
-class SphereNode : public LeafNode
-{
-public:
-  SphereNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
-  {
-    std::ostringstream stream;
-    stream << "sphere"
-           << "($fn = " << fn
-           << ", $fa = " << fa
-           << ", $fs = " << fs
-           << ", r = " << r
-           << ")";
-    return stream.str();
-  }
-  std::string name() const override { return "sphere"; }
-  const Geometry *createGeometry() const override;
 
-  double fn, fs, fa;
-  double r = 1;
-};
 
 const Geometry *SphereNode::createGeometry() const
 {
@@ -353,32 +305,6 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
 }
 
 
-
-class CylinderNode : public LeafNode
-{
-public:
-  CylinderNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
-  {
-    std::ostringstream stream;
-    stream << "cylinder"
-           << "($fn = " << fn
-           << ", $fa = " << fa
-           << ", $fs = " << fs
-           << ", h = " << h
-           << ", r1 = " << r1
-           << ", r2 = " << r2
-           << ", center = " << (center ? "true" : "false")
-           << ")";
-    return stream.str();
-  }
-  std::string name() const override { return "cylinder"; }
-  const Geometry *createGeometry() const override;
-
-  double fn, fs, fa;
-  double r1 = 1, r2 = 1, h = 1;
-  bool center = false;
-};
 
 const Geometry *CylinderNode::createGeometry() const
 {
@@ -503,20 +429,6 @@ static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation 
   return node;
 }
 
-
-
-class PolyhedronNode : public LeafNode
-{
-public:
-  PolyhedronNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override;
-  std::string name() const override { return "polyhedron"; }
-  const Geometry *createGeometry() const override;
-
-  std::vector<point3d> points;
-  std::vector<std::vector<size_t>> faces;
-  int convexity = 1;
-};
 
 std::string PolyhedronNode::toString() const
 {
@@ -643,27 +555,6 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
 }
 
 
-
-class SquareNode : public LeafNode
-{
-public:
-  SquareNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
-  {
-    std::ostringstream stream;
-    stream << "square(size = ["
-           << x << ", "
-           << y << "], center = "
-           << (center ? "true" : "false") << ")";
-    return stream.str();
-  }
-  std::string name() const override { return "square"; }
-  const Geometry *createGeometry() const override;
-
-  double x = 1, y = 1;
-  bool center = false;
-};
-
 const Geometry *SquareNode::createGeometry() const
 {
   auto p = new Polygon2d();
@@ -723,31 +614,6 @@ static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *i
   return node;
 }
 
-
-
-
-class CircleNode : public LeafNode
-{
-public:
-  CircleNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override
-  {
-    std::ostringstream stream;
-    stream << "circle"
-           << "($fn = " << fn
-           << ", $fa = " << fa
-           << ", $fs = " << fs
-           << ", r = " << r
-           << ")";
-    return stream.str();
-  }
-  std::string name() const override { return "circle"; }
-  const Geometry *createGeometry() const override;
-
-  double fn, fs, fa;
-  double r = 1;
-};
-
 const Geometry *CircleNode::createGeometry() const
 {
   auto p = new Polygon2d();
@@ -792,19 +658,6 @@ static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *i
 }
 
 
-
-class PolygonNode : public LeafNode
-{
-public:
-  PolygonNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
-  std::string toString() const override;
-  std::string name() const override { return "polygon"; }
-  const Geometry *createGeometry() const override;
-
-  std::vector<point2d> points;
-  std::vector<std::vector<size_t>> paths;
-  int convexity = 1;
-};
 
 std::string PolygonNode::toString() const
 {
