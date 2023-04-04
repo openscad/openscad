@@ -53,27 +53,18 @@ struct OffscreenContext {
 
 #include "OffscreenContextAll.hpp"
 
-std::string get_os_info()
-{
-  struct utsname u;
-
-  if (uname(&u) < 0) {
-    return STR("OS info: unknown, uname() error\n");
-  } else {
-    return STR("OS info: ", u.sysname, " ", u.release, " ", u.version, "\n",
-               "Machine: ", u.machine);
-  }
-  return "";
-}
-
 std::string get_gl_info(EGLDisplay display)
 {
-  char const *vendor = eglQueryString(display, EGL_VENDOR);
-  char const *version = eglQueryString(display, EGL_VERSION);
+  std::stringstream result;
 
-  return STR("GL context creator: EGL\n",
-             "EGL version: ", version, " (", vendor, ")", "\n",
-             get_os_info());
+  const char *vendor = eglQueryString(display, EGL_VENDOR);
+  const char *version = eglQueryString(display, EGL_VERSION);
+
+  result << "GL context creator: EGL\n"
+	 << "EGL version: " << version << " (" << vendor << ")\n"
+	 << "PNG generator: lodepng\n";
+
+  return result.str();
 }
 
 std::string offscreen_context_getinfo(OffscreenContext *ctx)

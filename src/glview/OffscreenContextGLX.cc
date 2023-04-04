@@ -60,19 +60,6 @@ struct OffscreenContext
 
 #include "OffscreenContextAll.hpp"
 
-std::string get_os_info()
-{
-  struct utsname u;
-
-  if (uname(&u) < 0) {
-    return STR("OS info: unknown, uname() error\n");
-  } else {
-    return STR("OS info: ", u.sysname, " ", u.release, " ", u.version, "\n",
-               "Machine: ", u.machine);
-  }
-  return "";
-}
-
 std::string offscreen_context_getinfo(OffscreenContext *ctx)
 {
   assert(ctx);
@@ -81,13 +68,16 @@ std::string offscreen_context_getinfo(OffscreenContext *ctx)
     return {"No GL Context initialized. No information to report\n"};
   }
 
+  std::stringstream result;
+
   int major, minor;
   glXQueryVersion(ctx->xdisplay, &major, &minor);
 
-  return STR("GL context creator: GLX\n",
-             "PNG generator: lodepng\n",
-             "GLX version: ", major, ".", minor, "\n",
-             get_os_info());
+  result << "GL context creator: GLX\n"
+	 << "GLX version: " << major << "." << minor << "\n"
+	 << "PNG generator: lodepng\n";
+
+  return result.str();
 }
 
 static XErrorHandler original_xlib_handler = nullptr;
