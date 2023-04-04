@@ -49,6 +49,7 @@ option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
 option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
 option(ENABLE_TBB "Enable support for oneAPI Threading Building Blocks." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
+option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON "NOT HEADLESS" OFF)
@@ -360,6 +361,17 @@ find_package(LibXml2 2.9 REQUIRED QUIET)
 message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
+
+if(ENABLE_PYTHON)
+  find_package (Python REQUIRED COMPONENTS Interpreter Development)
+  message(STATUS "Python enabled" )
+  target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
+  target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
+  target_link_libraries(OpenSCAD PRIVATE  "${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp/libcryptopp.a")
+  target_include_directories(OpenSCAD PRIVATE "./submodules/cryptopp/")
+  add_custom_command(OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp/libcryptopp.a" COMMAND make WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp)
+  set_property(SOURCE "src/core/pyopenscad.cc" APPEND PROPERTY OBJECT_DEPENDS  "${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp/libcryptopp.a")
+endif()
 
 if(ENABLE_HIDAPI)
   find_package(HidAPI 0.10 QUIET)
@@ -748,6 +760,11 @@ set(CORE_SOURCES
   ${BISON_openscad_parser_OUTPUTS}
   ${FLEX_comment_lexer_OUTPUTS}
   ${BISON_comment_parser_OUTPUTS})
+if(ENABLE_PYTHON)
+	list(APPEND CORE_SOURCES
+		    src/core/pyopenscad.cc )
+	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
+endif()
 
 set(CGAL_SOURCES
   src/geometry/GeometryEvaluator.cc
