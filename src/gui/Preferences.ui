@@ -1581,6 +1581,39 @@
          </widget>
         </item>
         <item>
+         <widget class="QGroupBox" name="groupBox">
+          <property name="title">
+           <string>Command</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_10">
+           <item row="0" column="0">
+            <widget class="QLabel" name="labelCmdPrintCmd">
+             <property name="text">
+              <string>Command</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLineEdit" name="lineEditCmdPrintCmd">
+             <property name="placeholderText">
+              <string notr="true">prusa-slicer #1</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QLabel" name="labelOctoPrintApiKeyNote">
+             <property name="text">
+              <string>Note: This cmd is executed on print. Use #1 which will be replaced by the path to the STL file.</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
          <spacer name="verticalSpacer3DPrint">
           <property name="orientation">
            <enum>Qt::Vertical</enum>

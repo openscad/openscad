@@ -60,6 +60,13 @@ void PrintInitDialog::on_octoPrintButton_clicked()
   this->okButton->setEnabled(true);
 }
 
+void PrintInitDialog::on_cmdPrintButton_clicked()
+{
+  this->textBrowser->setSource(QUrl{"qrc:/html/CmdPrintInfo.html"});
+  this->result = print_service_t::CMD;
+  this->okButton->setEnabled(true);
+}
+
 void PrintInitDialog::on_okButton_clicked()
 {
   accept();

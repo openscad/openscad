@@ -109,6 +109,7 @@ public slots:
   void on_lineEditOctoPrintURL_editingFinished();
   void on_lineEditOctoPrintApiKey_editingFinished();
   void on_pushButtonOctoPrintApiKey_clicked();
+  void on_lineEditCmdPrintCmd_editingFinished();
 
 signals:
   void requestRedraw() const;

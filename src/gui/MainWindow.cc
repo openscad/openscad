@@ -84,6 +84,7 @@
 #include <QTimer>
 #include <QMessageBox>
 #include <QDesktopServices>
+#include <QProcess>
 #include <QProgressDialog>
 #include <QMutexLocker>
 #include <QTemporaryFile>
@@ -129,6 +130,7 @@
 #include "input/InputDriverEvent.h"
 #include "input/InputDriverManager.h"
 #include <cstdio>
+#include <cstdlib>
 #include <memory>
 #include <QtNetwork>
 #include <utility>
@@ -1974,6 +1976,10 @@ void MainWindow::action3DPrint()
     LOG(message_group::None, Location::NONE, "", "Sending design to OctoPrint...");
     sendToOctoPrint();
     break;
+  case print_service_t::CMD:
+    LOG(message_group::None, Location::NONE, "", "Sending design to Cmd...");
+    sendToCmd();
+    break;
   default:
     break;
   }
@@ -2122,6 +2128,40 @@ void MainWindow::sendToPrintService()
   }
 
   updateStatusBar(nullptr);
+#endif // ifdef ENABLE_3D_PRINTING
+}
+
+void MainWindow::sendToCmd()
+{
+#ifdef ENABLE_3D_PRINTING
+  QString cmd = QString::fromStdString(Settings::Settings::cmdPrintCmd.value());
+
+  if (cmd.trimmed().isEmpty()) {
+    LOG(message_group::Error, Location::NONE, "", "Print cmd connection not configured. Please check preferences.");
+    return;
+  }
+
+  static QTemporaryFile exportFile{QDir::temp().filePath("OpenSCAD.XXXXXX.stl")};
+  if (!exportFile.open()) {
+    LOG(message_group::Error, Location::NONE, "", "Could not open temporary file.");
+    return;
+  }
+  const QString exportFilename = exportFile.fileName();
+
+  //Render the stl to a temporary file:
+  ExportInfo exportInfo = createExportInfo(FileFormat::STL, exportFilename, activeEditor->filepath);
+  exportFileByName(this->root_geom, exportInfo);
+
+  // Run cmd in background
+  LOG(message_group::None, Location::NONE, "", qPrintable(cmd));
+  QProcess cmd_process;
+  QStringList args = QProcess::splitCommand(cmd);
+  int var_idx = args.indexOf("#1");
+  if (var_idx >= 0) {
+    args.replace(var_idx, exportFilename);
+  }
+  QString pgrm = args.takeFirst();
+  cmd_process.startDetached(pgrm, args);
 #endif // ifdef ENABLE_3D_PRINTING
 }
 

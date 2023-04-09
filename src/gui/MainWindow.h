@@ -231,6 +231,7 @@ private slots:
   void csgRender();
   void csgReloadRender();
   void action3DPrint();
+  void sendToCmd();
   void sendToOctoPrint();
   void sendToPrintService();
 #ifdef ENABLE_CGAL

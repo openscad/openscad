@@ -182,6 +182,7 @@ public:
   static SettingsEntryString octoPrintApiKey;
   static SettingsEntryEnum octoPrintFileFormat;
   static SettingsEntryEnum octoPrintAction;
+  static SettingsEntryString cmdPrintCmd;
   static SettingsEntryString octoPrintSlicerEngine;
   static SettingsEntryString octoPrintSlicerEngineDesc;
   static SettingsEntryString octoPrintSlicerProfile;

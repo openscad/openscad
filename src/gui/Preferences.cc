@@ -869,6 +869,12 @@ void Preferences::on_comboBoxOctoPrintSlicingProfile_activated(int val)
   writeSettings();
 }
 
+void Preferences::on_lineEditCmdPrintCmd_editingFinished()
+{
+  Settings::Settings::cmdPrintCmd.setValue(this->lineEditCmdPrintCmd->text().toStdString());
+  writeSettings();
+}
+
 void Preferences::writeSettings()
 {
   Settings::Settings::visit(SettingsWriter());
@@ -1052,6 +1058,8 @@ void Preferences::updateGUI()
   updateComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
   updateComboBox(this->comboBoxOctoPrintSlicingEngine, Settings::Settings::octoPrintSlicerEngine.value());
   updateComboBox(this->comboBoxOctoPrintSlicingProfile, Settings::Settings::octoPrintSlicerProfile.value());
+
+  BlockSignals<QLineEdit *>(this->lineEditCmdPrintCmd)->setText(QString::fromStdString(Settings::Settings::cmdPrintCmd.value()));
 }
 
 void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val, Settings::SettingsEntryEnum& entry)

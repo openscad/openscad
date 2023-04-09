@@ -29,7 +29,7 @@
 #include "qtgettext.h"
 #include "ui_PrintInitDialog.h"
 
-enum class print_service_t { PRINT_SERVICE, OCTOPRINT };
+enum class print_service_t { PRINT_SERVICE, OCTOPRINT, CMD };
 
 class PrintInitDialog : public QDialog, public Ui::PrintInitDialog
 {
@@ -41,6 +41,7 @@ public:
 public slots:
   void on_printServiceButton_clicked();
   void on_octoPrintButton_clicked();
+  void on_cmdPrintButton_clicked();
   void on_okButton_clicked();
   void on_cancelButton_clicked();
 private:
