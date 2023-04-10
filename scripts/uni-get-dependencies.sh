@@ -65,7 +65,7 @@ get_opensuse_deps()
   qscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
   xvfb-run libzip-devel libqt5-qtmultimedia-devel libqt5-qtsvg-devel \
   double-conversion-devel libboost_filesystem-devel libboost_regex-devel \
-  libboost_program_options-devel tbb
+  libboost_program_options-devel tbb-devel
  # qscintilla-qt5-devel replaces libqscintilla_qt5-devel
  # but openscad compiles with both
  zypper install libeigen3-devel

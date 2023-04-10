@@ -34,8 +34,8 @@
 #include "degree_trig.h"
 #include "FreetypeRenderer.h"
 #include "Parameters.h"
-#include "import.h"
-#include "fileutils.h"
+#include "io/import.h"
+#include "io/fileutils.h"
 
 #include <cmath>
 #include <sstream>
