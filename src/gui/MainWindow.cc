@@ -36,7 +36,7 @@
 #include "RenderSettings.h"
 #include "Preferences.h"
 #include "printutils.h"
-#include "node.h"
+#include "core/node.h"
 #include "CSGNode.h"
 #include "memory.h"
 #include "Expression.h"
