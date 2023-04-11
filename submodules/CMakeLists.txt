@@ -67,3 +67,30 @@ if(USE_MIMALLOC)
     endif()
   endif()
 endif()
+
+if(USE_BUILTIN_OPENCSG)
+  message(STATUS "Using built-in OpenCSG")
+
+  target_include_directories(OpenSCAD PRIVATE submodules/OpenCSG)
+
+  set(OPENCSG_SOURCES
+  submodules/OpenCSG/src/area.cpp
+  submodules/OpenCSG/src/batch.cpp
+  submodules/OpenCSG/src/context.cpp
+  submodules/OpenCSG/src/channelManager.cpp
+  submodules/OpenCSG/src/frameBufferObject.cpp
+  submodules/OpenCSG/src/frameBufferObjectExt.cpp
+  submodules/OpenCSG/src/occlusionQuery.cpp
+  submodules/OpenCSG/src/opencsgRender.cpp
+  submodules/OpenCSG/src/openglHelper.cpp
+  submodules/OpenCSG/src/primitive.cpp
+  submodules/OpenCSG/src/primitiveHelper.cpp
+  submodules/OpenCSG/src/renderGoldfeather.cpp
+  submodules/OpenCSG/src/renderSCS.cpp
+  submodules/OpenCSG/src/scissorMemo.cpp
+  submodules/OpenCSG/src/settings.cpp
+  submodules/OpenCSG/src/stencilManager.cpp
+  PARENT_SCOPE
+  )
+
+endif()
