@@ -71,8 +71,18 @@ endif()
 if(USE_BUILTIN_OPENCSG)
   message(STATUS "Using built-in OpenCSG")
 
-  target_include_directories(OpenSCAD PRIVATE submodules/OpenCSG)
+  set(USE_PBUFFER 1)
+  if (USE_PBUFFER)
+    find_package(X11 REQUIRED)
+    target_link_libraries(OpenSCAD PRIVATE X11::X11)
 
+    set(PBUFFER_SOURCES
+    submodules/OpenCSG/src/pBufferTexture.cpp
+    submodules/OpenCSG/RenderTexture/RenderTexture.cpp
+    )
+  endif(USE_PBUFFER)    
+  
+  target_include_directories(OpenSCAD PRIVATE OpenCSG)
   set(OPENCSG_SOURCES
   submodules/OpenCSG/src/area.cpp
   submodules/OpenCSG/src/batch.cpp
@@ -90,7 +100,7 @@ if(USE_BUILTIN_OPENCSG)
   submodules/OpenCSG/src/scissorMemo.cpp
   submodules/OpenCSG/src/settings.cpp
   submodules/OpenCSG/src/stencilManager.cpp
-  submodules/OpenCSG/RenderTexture/RenderTexture.cpp
+  ${PBUFFER_SOURCES}
   PARENT_SCOPE
   )
 
