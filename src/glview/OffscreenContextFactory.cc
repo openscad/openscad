@@ -1,7 +1,5 @@
 #include "OffscreenContextFactory.h"
 
-#include <iostream>
-
 #include "printutils.h"
 
 #ifdef __APPLE__
@@ -42,6 +40,12 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider, const Offscre
   // FIXME: We could log an error if the chosen provider doesn't support all our attribs.
 #ifdef __APPLE__
   if (provider == "nsopengl") {
+    if (attrib.gles) {
+      LOG("GLES is not supported on macOS");
+    }
+    if (attrib.compatibilityContext) {
+      LOG("Compatibility context is not available on macOS");
+    }
     return CreateOffscreenContextNSOpenGL(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion);
   }
 #endif
@@ -60,19 +64,16 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider, const Offscre
 #endif
 #ifdef _WIN32
   if (provider == "wgl") {
+    if (attrib.gles) {
+      LOG("GLES is not supported on Windows");
+    }
     return CreateOffscreenContextWGL(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion,
                                      attrib.compatibilityProfile);
   }
   else
 #endif
-#ifdef ENABLE_GLFW
-  if (provider == "glfw") {
-    return GLFWContext::create(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion,
-                               attrib.invisible);
-  }
-#endif
   LOG("GL context provider '%1$s' not found", provider);
-  return {};
+  return nullptr;
 }
 
 }  // namespace OffscreenContextFactory

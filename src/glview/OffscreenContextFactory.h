@@ -8,14 +8,13 @@
 namespace OffscreenContextFactory {
 
 struct ContextAttributes {
-  unsigned int width;
+  unsigned int width;           // Context size in pixels
   unsigned int height;
-  unsigned int majorGLVersion;
-  unsigned int minorGLVersion;
-  bool gles;
-  bool compatibilityProfile;
-  std::string gpu;
-  bool invisible;
+  unsigned int majorGLVersion;  // Minimum OpenGL or GLES major version
+  unsigned int minorGLVersion;  // Minimum OpenGL or GLES minor version
+  bool gles;                    // Request a GLES context
+  bool compatibilityProfile;    // Request a compatibility context (to support legacy OpenGL calls)
+  std::string gpu;              // Request a specific GPU (for supported providers)
 };
 
 const char *defaultProvider();
