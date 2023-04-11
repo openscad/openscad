@@ -1423,7 +1423,7 @@ list(APPEND NEF3_BROKEN_TESTS
 if(APPLE)
   set_tests_properties(
     ${NEF3_BROKEN_TESTS}
-    # Z issues specific to edge shader
+    # Z issues specific to edge shader: https://github.com/openscad/openscad/issues/4595
     openscad-viewoptions-edges_view-options-tests
     openscad-viewoptions-axes-scales-edges_view-options-tests
     # issue3158 test failing on macos, see: https://github.com/openscad/openscad/issues/4509
@@ -1437,7 +1437,7 @@ elseif(UNIX)
   )
 elseif(WIN32 OR MXECROSS)
   set_tests_properties(
-    # Z issues specific to edge shader
+    # Z issues specific to edge shader: https://github.com/openscad/openscad/issues/4595
     openscad-viewoptions-edges_view-options-tests
     openscad-viewoptions-axes-scales-edges_view-options-tests
     # Known UTF-8 issue on Windows
