@@ -43,7 +43,7 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider, const Offscre
     if (attrib.gles) {
       LOG("GLES is not supported on macOS");
     }
-    if (attrib.compatibilityContext) {
+    if (attrib.compatibilityProfile) {
       LOG("Compatibility context is not available on macOS");
     }
     return CreateOffscreenContextNSOpenGL(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion);
