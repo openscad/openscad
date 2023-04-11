@@ -27,7 +27,7 @@ bool save_framebuffer(const OpenGLContext *ctx, std::ostream& output)
 
   const size_t samplesPerPixel = 4; // R, G, B and A
   // Flip it vertically - images read from OpenGL buffers are upside-down
-  std::vector<uint8_t> flippedBuffer(ctx->height() * ctx->width() * samplesPerPixel);
+  std::vector<uint8_t> flippedBuffer(samplesPerPixel * ctx->height() * ctx->width());
   flip_image(&pixels[0], flippedBuffer.data(), samplesPerPixel, ctx->width(), ctx->height());
 
   return write_png(output, flippedBuffer.data(), ctx->width(), ctx->height());
