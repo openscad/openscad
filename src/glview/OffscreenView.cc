@@ -12,7 +12,7 @@
 #include "OffscreenContextFactory.h"
 #include "glew-utils.h"
 
-OffscreenView::OffscreenView(unsigned int width, unsigned int height)
+OffscreenView::OffscreenView(uint32_t width, uint32_t height)
 {
   OffscreenContextFactory::ContextAttributes attrib = {
     .width = width,

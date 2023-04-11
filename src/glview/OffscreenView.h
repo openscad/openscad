@@ -17,7 +17,7 @@ public:
 class OffscreenView : public GLView
 {
 public:
-  OffscreenView(unsigned int width, unsigned int height);
+  OffscreenView(uint32_t width, uint32_t height);
   ~OffscreenView() override;
   bool save(std::ostream& output) const;
   std::shared_ptr<OpenGLContext> ctx;

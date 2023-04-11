@@ -31,8 +31,8 @@ std::string OffscreenContextNSOpenGL::getInfo() const {
 }
 
 std::shared_ptr<OffscreenContext> CreateOffscreenContextNSOpenGL(
-  unsigned int width, unsigned int height, unsigned int majorGLVersion, 
-  unsigned int minorGLVersion)   
+  uint32_t width, uint32_t height, uint32_t majorGLVersion, 
+  uint32_t minorGLVersion)   
 {
   auto ctx = std::make_shared<OffscreenContextNSOpenGL>(width, height);
 

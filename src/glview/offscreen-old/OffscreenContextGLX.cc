@@ -233,8 +233,8 @@ bool create_glx_dummy_context(OffscreenContextGLX& ctx)
 }
 
 std::shared_ptr<OffscreenContext> CreateOffscreenContextGLX(
-  unsigned int width, unsigned int height, unsigned int majorGLVersion, 
-  unsigned int minorGLVersion, bool gles, bool compatibilityProfile)   
+  uint32_t width, uint32_t height, uint32_t majorGLVersion, 
+  uint32_t minorGLVersion, bool gles, bool compatibilityProfile)   
 {
   auto ctx = std::make_shared<OffscreenContextGLX>(width, height);
 
