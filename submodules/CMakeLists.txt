@@ -90,6 +90,7 @@ if(USE_BUILTIN_OPENCSG)
   submodules/OpenCSG/src/scissorMemo.cpp
   submodules/OpenCSG/src/settings.cpp
   submodules/OpenCSG/src/stencilManager.cpp
+  submodules/OpenCSG/RenderTexture/RenderTexture.cpp
   PARENT_SCOPE
   )
 
