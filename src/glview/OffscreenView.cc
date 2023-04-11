@@ -6,11 +6,34 @@
 #include <cstdlib>
 #include <sstream>
 #include <fstream>
+#include <vector>
 
 #include "imageutils.h"
 #include "printutils.h"
 #include "OffscreenContextFactory.h"
 #include "glew-utils.h"
+
+namespace {
+
+  /*!
+   Capture framebuffer from OpenGL and write it to the given ostream.
+   Called by save_framebuffer() from platform-specific code.
+ */
+bool save_framebuffer(const OpenGLContext *ctx, std::ostream& output)
+{
+  if (!ctx) return false;
+
+  const auto pixels = ctx->getFramebuffer();
+
+  const size_t samplesPerPixel = 4; // R, G, B and A
+  // Flip it vertically - images read from OpenGL buffers are upside-down
+  std::vector<uint8_t> flippedBuffer(ctx->height() * ctx->width() * samplesPerPixel);
+  flip_image(&pixels[0], flippedBuffer.data(), samplesPerPixel, ctx->width(), ctx->height());
+
+  return write_png(output, flippedBuffer.data(), ctx->width(), ctx->height());
+}
+
+}  // namespace
 
 OffscreenView::OffscreenView(uint32_t width, uint32_t height)
 {
@@ -25,16 +48,6 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
 
 #ifndef NULLGL
   if (!initializeGlew()) throw OffscreenViewException("Unable to initialize Glew");
-#ifdef USE_GLAD
-  // FIXME: We could ask for gladLoaderLoadGLES2() here instead
-  const auto version = gladLoaderLoadGL();
-  if (version == 0) {
-    // FIXME: Can we figure out why?
-    throw OffscreenViewException("Unable to initialize GLAD");
-  }
-  // FIXME: Only if verbose
-  LOG("GLAD: Loaded OpenGL %1$d.%2$d", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
-#endif // USE_GLAD
 #endif // NULLGL
 
   this->fbo = fbo_new();
@@ -55,33 +68,6 @@ void OffscreenView::display_opencsg_warning()
   LOG("OpenSCAD recommended OpenGL version is 2.0.");
 }
 #endif
-
-/*!
-   Capture framebuffer from OpenGL and write it to the given ostream.
-   Called by save_framebuffer() from platform-specific code.
- */
-bool save_framebuffer(const OpenGLContext *ctx, std::ostream& output)
-{
-  if (!ctx) return false;
-
-  const auto pixels = ctx->getFramebuffer();
-
-  const size_t samplesPerPixel = 4; // R, G, B and A
-  // Flip it vertically - images read from OpenGL buffers are upside-down
-  const size_t rowBytes = samplesPerPixel * ctx->width();
-  auto *flippedBuffer = (unsigned char *)malloc(rowBytes * ctx->height());
-  if (!flippedBuffer) {
-    std::cerr << "Unable to allocate flipped buffer for corrected image.";
-    return true;
-  }
-  flip_image(&pixels[0], flippedBuffer, samplesPerPixel, ctx->width(), ctx->height());
-
-  bool writeok = write_png(output, flippedBuffer, ctx->width(), ctx->height());
-
-  free(flippedBuffer);
-
-  return writeok;
-}
 
 bool OffscreenView::save(const char *filename) const
 {

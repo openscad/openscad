@@ -1,17 +1,16 @@
 #include "OffscreenContextNSOpenGL.h"
-#include "OffscreenContext.h"
-#include "imageutils.h"
-#include "system-gl.h"
 
 #include <iostream>
 #include <sstream>
 
+#include "imageutils.h"
+#include "system-gl.h"
 #import <AppKit/AppKit.h>   // for NSOpenGL...
 
 class OffscreenContextNSOpenGL : public OffscreenContext
 {
 public:
-  OffscreenContextNSOpenGL(int width, int height) : OffscreenContext(width, height) {}
+  OffscreenContextNSOpenGL(uint32_t width, uint32_t height) : OffscreenContext(width, height) {}
   ~OffscreenContextNSOpenGL() {
     [this->openGLContext clearDrawable];
     [this->openGLContext release];

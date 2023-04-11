@@ -36,8 +36,6 @@
  */
 #include "OffscreenContextGLX.h"
 
-#include "OffscreenContext.h"
-#include "printutils.h"
 
 #include "system-gl.h"
 #include <GL/gl.h>
@@ -46,14 +44,13 @@
 #include <cassert>
 #include <sstream>
 #include <string>
-
 #include <sys/utsname.h> // for uname
 
-// FIXME: Must we glXSwapBuffers() before obtaining a framebuffer for export?
+#include "printutils.h"
 
 class OffscreenContextGLX : public OffscreenContext {
 public:
-  OffscreenContextGLX(int width, int height) : OffscreenContext(width, height) {}
+  OffscreenContextGLX(uint32_t width, uint32_t height) : OffscreenContext(width, height) {}
   ~OffscreenContextGLX() {
     if (this->xwindow) XDestroyWindow(this->xdisplay, this->xwindow);
     if (this->openGLContext) (this->xdisplay, this->openGLContext);

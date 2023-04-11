@@ -14,21 +14,19 @@
 
 #undef NOGDI
 #include <windows.h>
+
 #include <vector>
-
-#include "OffscreenContext.h"
-#include "printutils.h"
-#include "system-gl.h"
-
-#include <GL/gl.h> // must be included after glew.h
-
 #include <map>
 #include <string>
 #include <sstream>
 
+#include "printutils.h"
+#include "system-gl.h"
+#include <GL/gl.h> // must be included after glew.h
+
 class OffscreenContextWGL : public OffscreenContext {
 public:
-  OffscreenContextWGL(int width, int height) : OffscreenContext(width, height) {}
+  OffscreenContextWGL(uint32_t width, uint32_t height) : OffscreenContext(width, height) {}
   ~OffscreenContextWGL() {
     wglMakeCurrent(nullptr, nullptr);
     wglDeleteContext(this->openGLContext);

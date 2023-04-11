@@ -6,8 +6,6 @@
 
 #include <string>
 
-#include "OffscreenContext.h"
-
 class OffscreenContextNULL : public OffscreenContext {
 public:
   OffscreenContextNULL() : OffscreenContext(0, 0) {}

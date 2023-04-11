@@ -24,8 +24,6 @@
  *
  */
 #include "OffscreenContextEGL.h"
-#include "printutils.h"
-#include "imageutils.h"
 
 #include <EGL/egl.h>
 #define EGL_EGLEXT_PROTOTYPES
@@ -36,14 +34,14 @@
 #include <cassert>
 #include <sstream>
 #include <string>
-
 #include <sys/utsname.h> // for uname
 
-#include "OffscreenContext.h"
+#include "printutils.h"
+#include "imageutils.h"
 
 class OffscreenContextEGL : public OffscreenContext {
 public:
-  OffscreenContextEGL(int width, int height) : OffscreenContext(width, height) {}
+  OffscreenContextEGL(uint32_t width, uint32_t height) : OffscreenContext(width, height) {}
   ~OffscreenContextEGL() {
     if (this->display != nullptr) {
       eglTerminate(this->display);
