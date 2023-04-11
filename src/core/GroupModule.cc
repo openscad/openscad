@@ -25,7 +25,7 @@
  */
 
 #include "ModuleInstantiation.h"
-#include "node.h"
+#include "core/node.h"
 #include "Builtins.h"
 #include "Children.h"
 #include "Parameters.h"

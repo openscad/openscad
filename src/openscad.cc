@@ -26,7 +26,7 @@
 
 #include "openscad.h"
 #include "CommentParser.h"
-#include "node.h"
+#include "core/node.h"
 #include "SourceFile.h"
 #include "BuiltinContext.h"
 #include "Value.h"
