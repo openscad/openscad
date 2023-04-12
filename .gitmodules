@@ -10,6 +10,6 @@
 [submodule "sanitizers-cmake"]
 	path = submodules/sanitizers-cmake
 	url = https://github.com/arsenm/sanitizers-cmake.git
-[submodule "submodules/OpenCSG"]
+[submodule "OpenCSG"]
 	path = submodules/OpenCSG
-	url = git@github.com:kintel/OpenCSG.git
+	url = https://github.com/openscad/OpenCSG.git
