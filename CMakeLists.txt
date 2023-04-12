@@ -529,15 +529,15 @@ else()
 endif()
 if(APPLE)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_OS="Mac OS X")
-  message(STATUS "Offscreen OpenGL Context - using Apple CGL")
+  message(STATUS "Offscreen OpenGL Context - using Apple NSOpenGL")
   set(PLATFORM_SOURCES src/platform/PlatformUtils-mac.mm src/io/imageutils-macosx.cc src/platform/CocoaUtils.mm)
   if(NOT HEADLESS)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/gui/AppleEvents.cc)
   endif()
   if(NOT NULLGL)
     target_compile_definitions(OpenSCAD PRIVATE GL_SILENCE_DEPRECATION)
-    set(OFFSCREEN_METHOD "Apple CGL")
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextCGL.mm)
+    set(OFFSCREEN_METHOD "Apple NSOpenGL")
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextNSOpenGL.mm)
   endif()
   find_library(COCOA_LIBRARY Cocoa)
   target_link_libraries(OpenSCAD PRIVATE ${COCOA_LIBRARY})
@@ -546,15 +546,17 @@ elseif(UNIX)
   set(PLATFORM_SOURCES src/io/imageutils-lodepng.cc src/platform/PlatformUtils-posix.cc)
   if(NOT NULLGL)
     if(ENABLE_EGL AND OpenGL_EGL_FOUND)
+      target_compile_definitions(OpenSCAD PRIVATE ENABLE_EGL)
       set(OFFSCREEN_METHOD "Unix EGL")
       message(STATUS "Offscreen OpenGL Context - using Unix EGL")
-      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextEGL.cc)
+      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextEGL.cc)
       target_compile_definitions(OpenSCAD PRIVATE GLEW_EGL)
       target_link_libraries(OpenSCAD PRIVATE OpenGL::EGL)
     else()
+      target_compile_definitions(OpenSCAD PRIVATE ENABLE_GLX)
       set(OFFSCREEN_METHOD "Unix GLX on X11")
       message(STATUS "Offscreen OpenGL Context - using Unix GLX on X11")
-      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextGLX.cc)
+      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextGLX.cc)
       find_library(X11_LIBRARY X11)
       target_link_libraries(OpenSCAD PRIVATE ${X11_LIBRARY})
     endif()
@@ -567,7 +569,7 @@ elseif(WIN32)
   if(NOT NULLGL)
     set(OFFSCREEN_METHOD "Windows WGL")
     message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextWGL.cc)
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextWGL.cc)
   endif()
 endif()
 
@@ -655,6 +657,7 @@ set(CORE_SOURCES
   src/geometry/PolySetUtils.cc
   src/geometry/roof_ss.cc
   src/geometry/roof_vd.cc
+  src/glview/OffscreenContextFactory.cc
   src/glview/RenderSettings.cc
   src/glview/Camera.cc
   src/glview/ColorMap.cc
@@ -783,18 +786,20 @@ if(NULLGL)
     src/glview/Renderer.cc
     src/glview/NULLGL.cc # contains several 'nullified' versions of above .cc files
     src/glview/OffscreenView.cc
-    src/glview/OffscreenContextNULL.cc
+    src/glview/offscreen-old/OffscreenContextNULL.cc
     src/io/export_png.cc
     src/io/imageutils.cc
     ${OFFSCREEN_IMGUTILS_SOURCE})
 else()
   set(OFFSCREEN_SOURCES
+    src/glview/OpenGLContext.cc
     src/glview/fbo.cc
     src/glview/Renderer.cc
     src/glview/system-gl.cc
     src/glview/VertexArray.cc
     src/glview/VBORenderer.cc
     src/glview/GLView.cc
+    src/glview/glew-utils.cc
     src/glview/OffscreenView.cc
     src/glview/cgal/CGALRenderer.cc
     src/glview/preview/OpenCSGRenderer.cc
