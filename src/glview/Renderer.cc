@@ -132,7 +132,7 @@ bool Renderer::getColor(Renderer::ColorMode colormode, Color4f& col) const
 
 std::string Renderer::loadShaderSource(const std::string& name) {
   std::string shaderPath = (PlatformUtils::resourcePath("shaders") / name).string();
-  std::stringstream buffer;
+  std::ostringstream buffer;
   std::ifstream f(shaderPath);
   if (f.is_open()) {
     buffer << f.rdbuf();
