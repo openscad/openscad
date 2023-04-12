@@ -71,12 +71,9 @@ endif()
 if(USE_BUILTIN_OPENCSG)
   set(USE_PBUFFER 1)
   if (USE_PBUFFER)
-    find_package(X11 REQUIRED)
-    target_link_libraries(OpenSCAD PRIVATE X11::X11)
-
     set(PBUFFER_SOURCES
-    submodules/OpenCSG/src/pBufferTexture.cpp
-    submodules/OpenCSG/RenderTexture/RenderTexture.cpp
+      submodules/OpenCSG/src/pBufferTexture.cpp
+      submodules/OpenCSG/RenderTexture/RenderTexture.cpp
     )
   endif(USE_PBUFFER)    
   
