@@ -1,4 +1,5 @@
 name: linux
+run-name: Testing concurrency...
 
 on:
   push:
