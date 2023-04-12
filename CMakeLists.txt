@@ -197,7 +197,7 @@ macro(find_graphics)
         target_include_directories(OpenSCAD SYSTEM PRIVATE ${OPENCSG_INCLUDE_DIRS})
       endif()
     else()
-      list(APPEND Sources ${OPENCSG_SOURCES})
+      target_link_libraries(OpenSCAD PRIVATE OpenCSG)
     endif()
     target_compile_definitions(OpenSCAD PRIVATE ENABLE_OPENCSG)
 

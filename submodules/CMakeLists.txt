@@ -72,30 +72,35 @@ if(USE_BUILTIN_OPENCSG)
   set(USE_PBUFFER 1)
   if (USE_PBUFFER)
     set(PBUFFER_SOURCES
-      submodules/OpenCSG/src/pBufferTexture.cpp
-      submodules/OpenCSG/RenderTexture/RenderTexture.cpp
+      OpenCSG/src/pBufferTexture.cpp
+      OpenCSG/RenderTexture/RenderTexture.cpp
     )
   endif(USE_PBUFFER)    
   
-  target_include_directories(OpenSCAD PRIVATE OpenCSG)
   set(OPENCSG_SOURCES
-    submodules/OpenCSG/src/area.cpp
-    submodules/OpenCSG/src/batch.cpp
-    submodules/OpenCSG/src/context.cpp
-    submodules/OpenCSG/src/channelManager.cpp
-    submodules/OpenCSG/src/frameBufferObject.cpp
-    submodules/OpenCSG/src/frameBufferObjectExt.cpp
-    submodules/OpenCSG/src/occlusionQuery.cpp
-    submodules/OpenCSG/src/opencsgRender.cpp
-    submodules/OpenCSG/src/openglHelper.cpp
-    submodules/OpenCSG/src/primitive.cpp
-    submodules/OpenCSG/src/primitiveHelper.cpp
-    submodules/OpenCSG/src/renderGoldfeather.cpp
-    submodules/OpenCSG/src/renderSCS.cpp
-    submodules/OpenCSG/src/scissorMemo.cpp
-    submodules/OpenCSG/src/settings.cpp
-    submodules/OpenCSG/src/stencilManager.cpp
+    OpenCSG/src/area.cpp
+    OpenCSG/src/batch.cpp
+    OpenCSG/src/context.cpp
+    OpenCSG/src/channelManager.cpp
+    OpenCSG/src/frameBufferObject.cpp
+    OpenCSG/src/frameBufferObjectExt.cpp
+    OpenCSG/src/occlusionQuery.cpp
+    OpenCSG/src/opencsgRender.cpp
+    OpenCSG/src/openglHelper.cpp
+    OpenCSG/src/primitive.cpp
+    OpenCSG/src/primitiveHelper.cpp
+    OpenCSG/src/renderGoldfeather.cpp
+    OpenCSG/src/renderSCS.cpp
+    OpenCSG/src/scissorMemo.cpp
+    OpenCSG/src/settings.cpp
+    OpenCSG/src/stencilManager.cpp
     ${PBUFFER_SOURCES}
-    PARENT_SCOPE
   )
+
+  add_library(OpenCSGObjects OBJECT ${OPENCSG_SOURCES})
+  target_include_directories(OpenCSGObjects PRIVATE OpenCSG OpenCSG/include)
+
+  add_library(OpenCSG INTERFACE)
+  target_include_directories(OpenCSG INTERFACE OpenCSG/include)
+  target_sources(OpenCSG INTERFACE $<TARGET_OBJECTS:OpenCSGObjects>)
 endif(USE_BUILTIN_OPENCSG)
