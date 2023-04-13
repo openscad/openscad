@@ -135,7 +135,6 @@ To pull the various submodules (incl. the [MCAD library](https://github.com/open
 
     cd openscad
     git submodule update --init --recursive
-    ( cd submodules/manifold && git apply thrust.diff )
 
 ### Building for macOS
 

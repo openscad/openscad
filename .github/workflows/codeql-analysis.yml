@@ -38,9 +38,6 @@ jobs:
     - name: Submodules
       run: git submodule update --init --recursive
 
-    - name: Manifold patches
-      run: ( cd submodules/manifold && git apply thrust.diff )
-
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
