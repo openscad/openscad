@@ -434,7 +434,7 @@ build_glew()
   for arch in ${ARCHS[*]}; do
     ARCH_FLAGS+=(-arch $arch)
   done
-  make GLEW_DEST=$DEPLOYDIR CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN ${ARCH_FLAGS[*]}" LDFLAGS.EXTRA="-install_name @rpath/libGLEW.dylib -mmacosx-version-min=$MAC_OSX_VERSION_MIN ${ARCH_FLAGS[*]}" POPT="-Os" STRIP= install
+  make GLEW_PREFIX=$DEPLOYDIR GLEW_DEST=$DEPLOYDIR CFLAGS.EXTRA="-no-cpp-precomp -dynamic -fno-common -mmacosx-version-min=$MAC_OSX_VERSION_MIN ${ARCH_FLAGS[*]}" LDFLAGS.EXTRA="-install_name @rpath/libGLEW.dylib -mmacosx-version-min=$MAC_OSX_VERSION_MIN ${ARCH_FLAGS[*]}" POPT="-Os" STRIP= install
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/glew.version
 }
 
