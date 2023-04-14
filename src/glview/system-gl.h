@@ -5,8 +5,10 @@
 
 #ifdef __APPLE__
  #include <OpenGL/OpenGL.h>
+#elif defined(_WIN32)
+ #include <windef.h> // for APIENTRY
+ #include <GL/glu.h>
 #else
- #include <GL/gl.h>
  #include <GL/glu.h>
 #endif
 

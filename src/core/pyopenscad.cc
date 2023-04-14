@@ -5,13 +5,19 @@
 #include <Python.h>
 #include "pyopenscad.h"
 #include "CsgOpNode.h"
+#include "PlatformUtils.h"
 
-// https://docs.python.it/html/ext/dnt-basics.html
+// https://docs.python.org/3.10/extending/newtypes.html 
 
-void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
+static void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
 {
-//  Py_XDECREF(self->dict);
+  Py_XDECREF(self->dict);
 //  Py_TYPE(self)->tp_free((PyObject *)self);
+}
+
+PyObject *PyOpenSCADObject_alloc(PyTypeObject *cls, Py_ssize_t nitems)
+{
+  return PyType_GenericAlloc(cls, nitems);
 }
 
 static PyObject *PyOpenSCADObject_new(PyTypeObject *type, PyObject *args,  PyObject *kwds)
@@ -60,7 +66,7 @@ int python_more_obj(std::vector<std::shared_ptr<AbstractNode>>& children, PyObje
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj)
 {
   std::shared_ptr<AbstractNode> result = ((PyOpenSCADObject *) obj)->node;
-//  Py_XDECREF(obj); TODO cannot activate
+  Py_XDECREF(obj); 
   return result;
 }
 
@@ -70,7 +76,7 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
   if (Py_TYPE(objs) == &PyOpenSCADType) {
     result = ((PyOpenSCADObject *) objs)->node;
   } else if (PyList_Check(objs)) {
-    // TODO also decref the list ?
+
     DECLARE_INSTANCE
     auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
 
@@ -79,10 +85,11 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
       PyObject *obj = PyList_GetItem(objs, i);
       std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj);
       node->children.push_back(child);
+      Py_XDECREF(obj);
     }
     result=node;
   } else result=NULL;
-//  Py_XDECREF(objs); // TODO cannot activate
+  Py_XDECREF(objs);
   return result;
 }
 
@@ -247,10 +254,10 @@ PyTypeObject PyOpenSCADType = {
     sizeof(PyOpenSCADObject), 			/* tp_basicsize */
     0,                         			/* tp_itemsize */
     (destructor) PyOpenSCADObject_dealloc,	/* tp_dealloc */
-    0,                         			/* tp_print */
+    0,                         			/* vectorcall_offset */
     0,                         			/* tp_getattr */
     0,                         			/* tp_setattr */
-    0,                         			/* tp_reserved */
+    0,                         			/* tp_as_async */
     0,                         			/* tp_repr */
     &PyOpenSCADNumbers,        			/* tp_as_number */
     0,                         			/* tp_as_sequence */
@@ -278,7 +285,7 @@ PyTypeObject PyOpenSCADType = {
     0,                         			/* tp_descr_set */
     0,                         			/* tp_dictoffset */
     (initproc) PyOpenSCADInit,      		/* tp_init */
-    0,                         			/* tp_alloc */
+    PyOpenSCADObject_alloc,    			/* tp_alloc */
     PyOpenSCADObject_new,                	/* tp_new */
 };
 
@@ -332,7 +339,15 @@ char *evaluatePython(const char *code, double time)
     if(!pythonInitDict) {
 	    char run_str[80];
 	    PyImport_AppendInittab("openscad", &PyInit_openscad);
-	    Py_Initialize();
+	    PyImport_AppendInittab("libfive", &PyInit_libfive);
+	    PyConfig config;
+            PyConfig_InitPythonConfig(&config);
+	    wchar_t libdir[256];
+	    swprintf(libdir, 256, L"%s/../lib/pylib/",PlatformUtils::applicationPath().c_str());
+	    PyConfig_SetString(&config, &config.pythonpath_env, libdir);
+	    // Py_Initialize();
+            Py_InitializeFromConfig(&config);
+            PyConfig_Clear(&config);
 
 	    PyObject *py_main = PyImport_AddModule("__main__");
 	    pythonInitDict = PyModule_GetDict(py_main);

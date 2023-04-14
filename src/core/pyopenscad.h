@@ -22,7 +22,6 @@ extern PyTypeObject PyOpenSCADType;
 
 extern std::shared_ptr<AbstractNode> python_result_node;
 
-void PyOpenSCADObject_dealloc(PyOpenSCADObject *self);
 
 PyObject *PyOpenSCADObjectFromNode(PyTypeObject *type, std::shared_ptr<AbstractNode> node);
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *object);
