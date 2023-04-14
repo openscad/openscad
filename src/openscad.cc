@@ -407,7 +407,6 @@ int cmdline(const CommandLine& cmd)
 
   if(python_active) {
     auto fulltext_py = text;
-
     auto error  = evaluatePython(fulltext_py, 0.0);
     if(error.size() > 0) LOG(error.c_str());
     text ="\n";
