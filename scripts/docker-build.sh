@@ -7,9 +7,7 @@
 
 test -d openscad || git clone --depth=50 --branch=master https://github.com/openscad/openscad.git openscad
 ( cd openscad; \
-  git submodule update --init --recursive; \
-  cd submodules/manifold; \
-  git apply thrust.diff )
+  git submodule update --init --recursive; )
 
 mkdir -p docker
 cat <<'EOF'> docker/Dockerfile
