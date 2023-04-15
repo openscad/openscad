@@ -188,7 +188,8 @@ macro(find_graphics)
     message(STATUS "OpenCSG: ${OPENCSG_VERSION_STRING}")
     target_compile_definitions(OpenSCAD PRIVATE ENABLE_OPENCSG)
 
-    find_package(GLEW REQUIRED QUIET)
+#    find_package(GLEW REQUIRED QUIET)
+    find_package(GLEW REQUIRED)
     message(STATUS "GLEW: ${GLEW_VERSION}")
     target_link_libraries(OpenSCAD PRIVATE GLEW::glew)
 
