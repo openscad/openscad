@@ -10,76 +10,43 @@
     ( which includes robot.cc by Steven Billington )
    http://blogs.msdn.com/b/oldnewthing/archive/2006/12/04/1205831.aspx by Tom
  */
+#include "OffscreenContextWGL.h"
 
 #undef NOGDI
 #include <windows.h>
+
 #include <vector>
-
-#include "OffscreenContext.h"
-#include "printutils.h"
-#include "system-gl.h"
-
-#include <GL/gl.h> // must be included after glew.h
-
 #include <map>
 #include <string>
 #include <sstream>
 
-struct OffscreenContext
-{
-  HWND window;
-  HDC dev_context;
-  HGLRC openGLContext;
-  int width;
-  int height;
+#include "printutils.h"
+#include "system-gl.h"
+#include <GL/gl.h> // must be included after glew.h
+
+class OffscreenContextWGL : public OffscreenContext {
+public:
+  OffscreenContextWGL(uint32_t width, uint32_t height) : OffscreenContext(width, height) {}
+  ~OffscreenContextWGL() {
+    wglMakeCurrent(nullptr, nullptr);
+    wglDeleteContext(this->openGLContext);
+    ReleaseDC(this->window, this->dev_context);
+  }
+
+  std::string getInfo() const override;
+
+  HWND window{nullptr};
+  HDC dev_context{nullptr};
+  HGLRC openGLContext{nullptr};
 };
 
-#include "OffscreenContextAll.hpp"
-
-void offscreen_context_init(OffscreenContext& ctx, int width, int height)
-{
-  ctx.window = (HWND)nullptr;
-  ctx.dev_context = (HDC)nullptr;
-  ctx.openGLContext = (HGLRC)nullptr;
-  ctx.width = width;
-  ctx.height = height;
-}
-
-std::string get_os_info()
-{
-  OSVERSIONINFO osvi;
-
-  ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
-  osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-  GetVersionEx(&osvi);
-
-  SYSTEM_INFO si;
-  GetSystemInfo(&si);
-  std::map<WORD, const char *> archs;
-  archs[PROCESSOR_ARCHITECTURE_AMD64] = "amd64";
-  archs[PROCESSOR_ARCHITECTURE_IA64] = "itanium";
-  archs[PROCESSOR_ARCHITECTURE_INTEL] = "x86";
-  archs[PROCESSOR_ARCHITECTURE_UNKNOWN] = "unknown";
-
-  std::ostringstream out;
-  out << "OS info: "
-      << "Microsoft(TM) Windows(TM) " << osvi.dwMajorVersion << " "
-      << osvi.dwMinorVersion << " " << osvi.dwBuildNumber << " "
-      << osvi.szCSDVersion;
-  if (archs.find(si.wProcessorArchitecture) != archs.end()) out << " " << archs[si.wProcessorArchitecture];
-  out << "\n";
-
-  out << "Machine: " << si.dwProcessorType;
-
-  return out.str();
-}
-
-std::string offscreen_context_getinfo(OffscreenContext * /*ctx*/)
-{
+std::string OffscreenContextWGL::getInfo() const {
+  std::stringstream result;
   // should probably get some info from WGL context here?
-  return STR("GL context creator: WGL\n",
-             "PNG generator: lodepng\n",
-             get_os_info());
+  result << "GL context creator: WGL\n"
+      	 << "PNG generator: lodepng\n";
+
+  return result.str();
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
@@ -87,7 +54,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
   return DefWindowProc(hwnd, message, wparam, lparam);
 }
 
-bool create_wgl_dummy_context(OffscreenContext& ctx)
+bool create_wgl_dummy_context(OffscreenContextWGL& ctx)
 {
   // this function alters ctx->window and ctx->openGLContext
   //  and ctx->dev_context if successful
@@ -117,8 +84,8 @@ bool create_wgl_dummy_context(OffscreenContext& ctx)
   DWORD dwStyle = WS_CAPTION | WS_POPUPWINDOW; // | WS_VISIBLE
   int x = 0;
   int y = 0;
-  int nWidth = ctx.width;
-  int nHeight = ctx.height;
+  int nWidth = ctx.width();
+  int nHeight = ctx.height();
   HWND hWndParent = nullptr;
   HMENU hMenu = nullptr;
   HINSTANCE hInstance = inst;
@@ -193,38 +160,18 @@ bool create_wgl_dummy_context(OffscreenContext& ctx)
 }
 
 
-OffscreenContext *create_offscreen_context(int w, int h)
+std::shared_ptr<OffscreenContext> CreateOffscreenContextWGL(
+  uint32_t width, uint32_t height, uint32_t majorGLVersion, 
+  uint32_t minorGLVersion, bool compatibilityProfile)   
 {
-  OffscreenContext *ctx = new OffscreenContext;
-  offscreen_context_init(*ctx, w, h);
+  auto ctx = std::make_shared<OffscreenContextWGL>(width, height);
 
   // Before an FBO can be setup, a WGL context must be created.
   // This call alters ctx->window and ctx->openGLContext
   //  and ctx->dev_context if successful
   if (!create_wgl_dummy_context(*ctx)) {
-    delete ctx;
     return nullptr;
   }
 
-  return create_offscreen_context_common(ctx);
+  return ctx;
 }
-
-bool teardown_offscreen_context(OffscreenContext *ctx)
-{
-  if (ctx) {
-    wglMakeCurrent(nullptr, nullptr);
-    wglDeleteContext(ctx->openGLContext);
-    ReleaseDC(ctx->window, ctx->dev_context);
-
-    return true;
-  }
-  return false;
-}
-
-bool save_framebuffer(const OffscreenContext *ctx, std::ostream& output)
-{
-  if (!ctx) return false;
-  wglSwapLayerBuffers(ctx->dev_context, WGL_SWAP_MAIN_PLANE);
-  return save_framebuffer_common(ctx, output);
-}
-

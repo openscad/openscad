@@ -23,71 +23,60 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "OffscreenContext.h"
-#include "printutils.h"
-#include "imageutils.h"
-#include "system-gl.h"
+#include "OffscreenContextEGL.h"
 
-#include <GL/gl.h>
 #include <EGL/egl.h>
 #define EGL_EGLEXT_PROTOTYPES
 #include <EGL/eglext.h>
 
+#include "system-gl.h"
+
 #include <cassert>
 #include <sstream>
 #include <string>
-
 #include <sys/utsname.h> // for uname
 
-struct OffscreenContext {
+#include "printutils.h"
+#include "imageutils.h"
 
-  OffscreenContext(int width, int height) : context(nullptr), display(nullptr), width(width), height(height)
-  {
+class OffscreenContextEGL : public OffscreenContext {
+public:
+  OffscreenContextEGL(uint32_t width, uint32_t height) : OffscreenContext(width, height) {}
+  ~OffscreenContextEGL() {
+    if (this->display != nullptr) {
+      eglTerminate(this->display);
+    }
   }
 
-  EGLContext context;
-  EGLDisplay display;
-  int width;
-  int height;
+  std::string getInfo() const override;
+  
+  EGLContext context{nullptr};
+  EGLDisplay display{nullptr};
 };
-
-#include "OffscreenContextAll.hpp"
-
-std::string get_os_info()
-{
-  struct utsname u;
-
-  if (uname(&u) < 0) {
-    return STR("OS info: unknown, uname() error\n");
-  } else {
-    return STR("OS info: ", u.sysname, " ", u.release, " ", u.version, "\n",
-               "Machine: ", u.machine);
-  }
-  return "";
-}
 
 std::string get_gl_info(EGLDisplay display)
 {
-  char const *vendor = eglQueryString(display, EGL_VENDOR);
-  char const *version = eglQueryString(display, EGL_VERSION);
+  std::ostringstream result;
 
-  return STR("GL context creator: EGL\n",
-             "EGL version: ", version, " (", vendor, ")", "\n",
-             get_os_info());
+  const char *vendor = eglQueryString(display, EGL_VENDOR);
+  const char *version = eglQueryString(display, EGL_VERSION);
+
+  result << "GL context creator: EGL\n"
+	 << "EGL version: " << version << " (" << vendor << ")\n"
+	 << "PNG generator: lodepng\n";
+
+  return result.str();
 }
 
-std::string offscreen_context_getinfo(OffscreenContext *ctx)
-{
-  assert(ctx);
-
-  if (!ctx->context) {
+std::string OffscreenContextEGL::getInfo() const {
+  if (!this->context) {
     return {"No GL Context initialized. No information to report\n"};
   }
 
-  return get_gl_info(ctx->display);
+  return get_gl_info(this->display);
 }
 
-static bool create_egl_dummy_context(OffscreenContext& ctx)
+static bool create_egl_dummy_context(OffscreenContextEGL& ctx)
 {
   static const EGLint configAttribs[] = {
     EGL_SURFACE_TYPE, EGL_PBUFFER_BIT,
@@ -101,8 +90,8 @@ static bool create_egl_dummy_context(OffscreenContext& ctx)
   };
 
   const EGLint pbufferAttribs[] = {
-    EGL_WIDTH, ctx.width,
-    EGL_HEIGHT, ctx.height,
+    EGL_WIDTH, ctx.width(),
+    EGL_HEIGHT, ctx.height(),
     EGL_NONE,
   };
 
@@ -185,12 +174,14 @@ static bool create_egl_dummy_context(OffscreenContext& ctx)
   return true;
 }
 
-OffscreenContext *create_offscreen_context(int w, int h)
+std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(
+    uint32_t width, uint32_t height, uint32_t majorGLVersion, 
+    uint32_t minorGLVersion, bool gles, bool compatibilityProfile,
+    const std::string& drmNode = "")
 {
-  auto ctx = new OffscreenContext(w, h);
+  auto ctx = std::make_shared<OffscreenContextEGL>(width, height);
 
   if (!create_egl_dummy_context(*ctx)) {
-    delete ctx;
     return nullptr;
   }
 
@@ -198,19 +189,5 @@ OffscreenContext *create_offscreen_context(int w, int h)
   PFNGLGETSTRINGPROC getString = (PFNGLGETSTRINGPROC) eglGetProcAddress("glGetString");
   PRINTDB("OpenGL Version: %s (%s)", getString(GL_VERSION) % getString(GL_VENDOR));
 
-  return create_offscreen_context_common(ctx);
-}
-
-bool teardown_offscreen_context(OffscreenContext *ctx)
-{
-  if (ctx) {
-    eglTerminate(ctx->display);
-    return true;
-  }
-  return false;
-}
-
-bool save_framebuffer(const OffscreenContext *ctx, std::ostream& output)
-{
-  return save_framebuffer_common(ctx, output);
+  return ctx;
 }
