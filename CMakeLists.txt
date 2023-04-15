@@ -45,7 +45,6 @@ option(USE_CCACHE "Use ccache to speed up compilation." ON)
 option(ENABLE_CAIRO "Enable support for cairo vector graphics library." ON)
 option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
 option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
-option(ENABLE_MANIFOLD "Enable support for Manifold library for CSG." ON)
 option(ENABLE_TBB "Enable support for oneAPI Threading Building Blocks." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 include(CMakeDependentOption)
@@ -53,7 +52,7 @@ cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instea
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON "NOT HEADLESS" OFF)
 cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS" OFF)
 
-if(ENABLE_MANIFOLD)
+if(EXPERIMENTAL AND ENABLE_TBB)
   # Requirement from TBB 2021.8.0
   set(DEPLOYMENT_TARGET "10.14")
 else()
@@ -749,7 +748,7 @@ set(MANIFOLD_SOURCES
   src/geometry/manifold/manifold-applyops-minkowski.cc
 )
 
-if(ENABLE_TBB AND ENABLE_MANIFOLD)
+if(EXPERIMENTAL AND ENABLE_TBB)
   # Note: currently only Manifold-related code makes use of TBB parallelization
   # ("exact" CGAL numerics are not thread-safe)
   target_compile_options(OpenSCAD PRIVATE 
@@ -758,7 +757,7 @@ if(ENABLE_TBB AND ENABLE_MANIFOLD)
   )
 endif()
 
-if(ENABLE_MANIFOLD)
+if(EXPERIMENTAL)
 
   # Hack to find our wanted version of Python before Manifold's included googletest finds Python2
   find_package(PythonInterp 3.4 REQUIRED)
