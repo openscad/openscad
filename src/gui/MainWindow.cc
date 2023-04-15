@@ -101,6 +101,23 @@
 extern std::shared_ptr<AbstractNode> python_result_node;
 std::string evaluatePython(const std::string &code, double time);
 extern bool python_trusted;
+
+#include "sha.h"
+#include "filters.h"
+#include "base64.h"
+
+std::string SHA256HashString(std::string aString){
+    std::string digest;
+    CryptoPP::SHA256 hash;
+
+    CryptoPP::StringSource foo(aString, true,
+    new CryptoPP::HashFilter(hash,
+      new CryptoPP::Base64Encoder (
+         new CryptoPP::StringSink(digest))));
+
+    return digest;
+}
+
 #endif
 
 #define ENABLE_3D_PRINTING
@@ -1804,42 +1821,38 @@ bool MainWindow::fileChangedOnDisk()
  */
 
 #ifdef ENABLE_PYTHON
-bool MainWindow::trust_python_file(const std::string &file) {
-  std::list<std::string>::iterator found;
+bool MainWindow::trust_python_file(const std::string &file,  const std::string &content) {
+  QSettingsCached settings;
+  char setting_key[256];
   if(python_trusted) return true;
-  if(std::filesystem::exists(file)  && !std::filesystem::is_empty(file)) {
 
-    found = std::find( // check blacklist
-      this->untrusted_python_file_list.begin(), 
-      this->untrusted_python_file_list.end(), file);
-    if(found != this->untrusted_python_file_list.end()) {
-      return false;
-    }
-
-    found = std::find( // check not on whitelist
-      this->trusted_python_file_list.begin(), 
-      this->trusted_python_file_list.end(), file);
-    if(found == this->trusted_python_file_list.end()) {
-      auto ret = QMessageBox::warning(this, "Application",
-        _( "Python files can potentially contain harumful stuff.\n"
-        "Do you trust this file ?\n"), QMessageBox::Yes  | QMessageBox::YesAll | QMessageBox::No);
-      if (ret == QMessageBox::No) {
-        this->untrusted_python_file_list.push_back(file);
-        return false;
-      }
-      if (ret == QMessageBox::YesAll)  {
-        python_trusted = true;
-        return true;
-      }
-    }
-    this->trusted_python_file_list.push_back(file);
-  } else {
-    std::list<std::string>::iterator found = std::find(
-      this->trusted_python_file_list.begin(), 
-      this->trusted_python_file_list.end(), file);
-    if(found == this->trusted_python_file_list.end()) this->trusted_python_file_list.push_back(file);
+  std::string act_hash, ref_hash;
+  snprintf(setting_key,sizeof(setting_key)-1,"python_hash/%s",file.c_str());
+  act_hash = SHA256HashString(content);
+  if(settings.contains(setting_key)) {
+    QString str=settings.value(setting_key).toString();
+    QByteArray ba = str.toLocal8Bit();
+    ref_hash = std::string(ba.data());
   }
-  return true;
+ 
+  if(act_hash == ref_hash) return true;
+
+  auto ret = QMessageBox::warning(this, "Application",
+    _( "Python files can potentially contain harumful stuff.\n"
+    "Do you trust this file ?\n"), QMessageBox::Yes  | QMessageBox::YesAll | QMessageBox::No);
+  if (ret == QMessageBox::YesAll)  {
+    python_trusted = true;
+    return true;
+  }
+  if (ret == QMessageBox::Yes)  {
+    settings.setValue(setting_key,act_hash.c_str());
+    return true;
+  }
+
+  if (ret == QMessageBox::No) {
+    return false;
+  }
+  return false;
 }
 #endif
 	
@@ -1860,9 +1873,10 @@ void MainWindow::parseTopLevelDocument()
   this->python_active = false;
   if (fname != NULL) {
     if(boost::algorithm::ends_with(fname, ".py")) {
+	    std::string content = std::string(this->last_compiled_doc.toUtf8().constData());
       if (
         Feature::ExperimentalPythonEngine.is_enabled() 
-		&& trust_python_file(std::string(fname))) this->python_active = true;
+		&& trust_python_file(std::string(fname), content)) this->python_active = true;
       else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
     }
   }
