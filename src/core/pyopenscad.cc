@@ -321,9 +321,9 @@ static PyObject *PyInit_openscad(void)
 
 static PyObject *pythonInitDict=NULL;
 
-char *evaluatePython(const char *code, double time)
+std::string evaluatePython(const std::string & code, double time)
 {
-  char *error;
+  std::string error;
   python_result_node = NULL;
   PyObject *pyExcType;
   PyObject *pyExcValue;
@@ -339,7 +339,6 @@ char *evaluatePython(const char *code, double time)
     if(!pythonInitDict) {
 	    char run_str[80];
 	    PyImport_AppendInittab("openscad", &PyInit_openscad);
-	    PyImport_AppendInittab("libfive", &PyInit_libfive);
 	    PyConfig config;
             PyConfig_InitPythonConfig(&config);
 	    wchar_t libdir[256];
@@ -355,7 +354,7 @@ char *evaluatePython(const char *code, double time)
 	    sprintf(run_str,"from openscad import *\nfa=12.0\nfn=0.0\nfs=2.0\nt=%g",time);
 	    PyRun_String(run_str, Py_file_input, pythonInitDict, pythonInitDict);
     }
-    PyObject *result = PyRun_String(code, Py_file_input, pythonInitDict, pythonInitDict);
+    PyObject *result = PyRun_String(code.c_str(), Py_file_input, pythonInitDict, pythonInitDict);
 
     PyErr_Fetch(&pyExcType, &pyExcValue, &pyExcTraceback);
     PyErr_NormalizeException(&pyExcType, &pyExcValue, &pyExcTraceback);
@@ -363,7 +362,7 @@ char *evaluatePython(const char *code, double time)
     PyObject* str_exc_value = PyObject_Repr(pyExcValue);
     PyObject* pyExcValueStr = PyUnicode_AsEncodedString(str_exc_value, "utf-8", "~");
     const char *strExcValue =  PyBytes_AS_STRING(pyExcValueStr);
-    if(strExcValue != NULL  && !strcmp(strExcValue,"<NULL>")) error=NULL;
+    if(strExcValue != NULL  && !strcmp(strExcValue,"<NULL>")) error="";
     else error=strdup(strExcValue);
 
     Py_XDECREF(pyExcType);

@@ -1154,7 +1154,7 @@ add_cmdline_test(csgpngtest         SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES 
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest  SCRIPT ${CGALSTLSANITYTEST_PY} SUFFIX txt FILES ${CGALSTLSANITYTEST_FILES} ARGS ${OPENSCAD_BINPATH})
-add_cmdline_test(cgalpngtest_python  OPENSCAD FILES ${CGALPNGTEST_PYTHON_FILES} SUFFIX png ARGS --enable-python --render)
+add_cmdline_test(cgalpngtest_python  OPENSCAD FILES ${CGALPNGTEST_PYTHON_FILES} SUFFIX png ARGS --trust-python --render)
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
 foreach(TEST ${SVG_VIEWBOX_TESTS})

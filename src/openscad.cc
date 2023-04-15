@@ -89,10 +89,9 @@
 
 #ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
-char *evaluatePython(const char *code, double time);
-extern bool python_unlocked;
-int python_active = 0;
-bool python_unlocked = false;
+std::string evaluatePython(const std::string &code, double time);
+bool python_active = false;
+bool python_trusted = false;
 #endif
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -397,21 +396,18 @@ int cmdline(const CommandLine& cmd)
   }
 
 #ifdef ENABLE_PYTHON  
-  python_active = 0;
+  python_active = false;
   if(cmd.filename.c_str() != NULL) {
-	  const char *fname = cmd.filename.c_str();
-	  int len=strlen(fname);
-	  if(len >= 3 && ! strcmp(fname+len-3,".py")) {
-		  if( python_unlocked == true) python_active = 1;
+	  if(boost::algorithm::ends_with(cmd.filename, ".py")) {
+		  if( python_trusted == true) python_active = true;
 		  else  LOG("Python is not enabled");
 	  }
   }
 
   if(python_active) {
     auto fulltext_py = text;
-
-    char *error  = evaluatePython(fulltext_py.c_str(), 0.0);
-    if(error != NULL) LOG(error);
+    auto error  = evaluatePython(fulltext_py, 0.0);
+    if(error.size() > 0) LOG(error.c_str());
     text ="\n";
   }
 #endif	  
@@ -1009,7 +1005,7 @@ int main(int argc, char **argv)
     ("s,s", po::value<string>(), "stl_file deprecated, use -o")
     ("x,x", po::value<string>(), "dxf_file deprecated, use -o")
 #ifdef ENABLE_PYTHON
-  ("enable-python",  "Enable python")
+  ("trust-python",  "Trust python")
 #endif
   ;
 
@@ -1042,7 +1038,7 @@ int main(int argc, char **argv)
 #ifdef ENABLE_PYTHON
   if (vm.count("enable-python")) {
     LOG("Python Engine enabled", OpenSCAD::debug);
-    python_unlocked = true;
+    python_trusted = true;
   }
 #endif
   if (vm.count("quiet")) {

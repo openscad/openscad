@@ -337,7 +337,7 @@ target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
 if(ENABLE_PYTHON)
   find_package (Python REQUIRED COMPONENTS Interpreter Development)
-  message(STATUS "PYTHION" )
+  message(STATUS "PYTHON" )
   if(MXECROSS)
     target_include_directories(OpenSCAD PRIVATE "/home/gsohler/openscad_deps/mxe/usr/x86_64-w64-mingw32.static.posix/include/python3.10")
     target_link_libraries(OpenSCAD PRIVATE  "${CMAKE_SOURCE_DIR}/libpython3.10.dll.a")

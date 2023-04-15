@@ -57,7 +57,10 @@ public:
   std::shared_ptr<AbstractNode> absolute_root_node; // Result of tree evaluation
   std::shared_ptr<AbstractNode> root_node; // Root if the root modifier (!) is used
 #ifdef ENABLE_PYTHON
-  int python_active;
+  bool python_active;
+  std::list<std::string> trusted_python_file_list;
+  std::list<std::string> untrusted_python_file_list;
+  bool trust_python_file(const std::string &file);
 #endif
   Tree tree;
   EditorInterface *activeEditor;
