@@ -100,7 +100,7 @@
 #ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
 std::string evaluatePython(const std::string &code, double time);
-extern bool python_unlocked;
+extern bool python_trusted;
 #endif
 
 #define ENABLE_3D_PRINTING
@@ -1802,6 +1802,47 @@ bool MainWindow::fileChangedOnDisk()
 /*!
    Returns true if anything was compiled.
  */
+
+#ifdef ENABLE_PYTHON
+bool MainWindow::trust_python_file(const std::string &file) {
+  std::list<std::string>::iterator found;
+  if(python_trusted) return true;
+  if(std::filesystem::exists(file)  && !std::filesystem::is_empty(file)) {
+
+    found = std::find( // check blacklist
+      this->untrusted_python_file_list.begin(), 
+      this->untrusted_python_file_list.end(), file);
+    if(found != this->untrusted_python_file_list.end()) {
+      return false;
+    }
+
+    found = std::find( // check not on whitelist
+      this->trusted_python_file_list.begin(), 
+      this->trusted_python_file_list.end(), file);
+    if(found == this->trusted_python_file_list.end()) {
+      auto ret = QMessageBox::warning(this, "Application",
+        _( "Python files can potentially contain harumful stuff.\n"
+        "Do you trust this file ?\n"), QMessageBox::Yes  | QMessageBox::YesAll | QMessageBox::No);
+      if (ret == QMessageBox::No) {
+        this->untrusted_python_file_list.push_back(file);
+        return false;
+      }
+      if (ret == QMessageBox::YesAll)  {
+        python_trusted = true;
+        return true;
+      }
+    }
+    this->trusted_python_file_list.push_back(file);
+  } else {
+    std::list<std::string>::iterator found = std::find(
+      this->trusted_python_file_list.begin(), 
+      this->trusted_python_file_list.end(), file);
+    if(found == this->trusted_python_file_list.end()) this->trusted_python_file_list.push_back(file);
+  }
+  return true;
+}
+#endif
+	
 void MainWindow::parseTopLevelDocument()
 {
   resetSuppressedMessages();
@@ -1820,8 +1861,8 @@ void MainWindow::parseTopLevelDocument()
   if (fname != NULL) {
     if(boost::algorithm::ends_with(fname, ".py")) {
       if (
-        Feature::ExperimentalPythonEngine.is_enabled() &&
-        python_unlocked == true) this->python_active = true;
+        Feature::ExperimentalPythonEngine.is_enabled() 
+		&& trust_python_file(std::string(fname))) this->python_active = true;
       else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
     }
   }
