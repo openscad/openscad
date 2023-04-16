@@ -616,13 +616,11 @@ Response GeometryEvaluator::visit(State& state, const LeafNode& node)
 {
   if (state.isPrefix()) {
     shared_ptr<const Geometry> geom;
+    if (
 #ifdef ENABLE_PYTHON
-    if (1) { /* Smart cache for Primitives does not work with python, the user can resuse a
-sub CSG tree several times and openscad applies transformation direct onto the  points in CGAL
-False duplicates will happen */
-#else
-    if (!isSmartCached(node)) {
+      python_active ||
 #endif
+       !isSmartCached(node)) {
       const Geometry *geometry = node.createGeometry();
       assert(geometry);
       if (const auto *polygon = dynamic_cast<const Polygon2d *>(geometry)) {

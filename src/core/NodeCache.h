@@ -12,6 +12,9 @@
    every time a new tree is generated.
  */
 
+#ifdef ENABLE_PYTHON
+extern bool python_active;
+#endif
 class NodeCache
 {
 public:
@@ -32,25 +35,31 @@ public:
 
   void insertStart(const size_t nodeidx, const long startindex) {
 #ifdef ENABLE_PYTHON
-    if(this->cache.count(nodeidx) == 0) // with python it can happen that nodes get dumped several times,
+    if(python_active) {
+      if(this->cache.count(nodeidx) == 0) // with python it can happen that nodes get dumped several times,
 	// but its understood that the dump will always be identical
       this->cache.emplace(nodeidx, std::make_pair(startindex, -1L));
-#else
+    } else
+#endif
+    {
     assert(this->cache.count(nodeidx) == 0 && "start index inserted twice");
     this->cache.emplace(nodeidx, std::make_pair(startindex, -1L));
-#endif
+    }
   }
 
   void insertEnd(const size_t nodeidx, const long endindex) {
     // throws std::out_of_range on miss
     auto indexpair = this->cache.at(nodeidx);
 #ifdef ENABLE_PYTHON
-  if(indexpair.second == -1L)
-    this->cache[nodeidx] = std::make_pair(indexpair.first, endindex);
-#else
+  if(python_active) {
+    if(indexpair.second == -1L)
+      this->cache[nodeidx] = std::make_pair(indexpair.first, endindex); 
+  } else
+#endif
+    {
     assert(indexpair.second == -1L && "end index inserted twice");
     this->cache[nodeidx] = std::make_pair(indexpair.first, endindex);
-#endif
+    }
 #ifdef DEBUG
     PRINTDB("NodeCache insert {%i,[%d:%d]}", nodeidx % indexpair.first % endindex);
 #endif
