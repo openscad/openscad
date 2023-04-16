@@ -11,8 +11,6 @@ endif()
 cmake_policy(SET CMP0057 NEW) # Interpret IN_LIST
 cmake_policy(SET CMP0070 NEW) # Allow relative paths for file(GENERATE ...)
 
-enable_testing()
-
 option(USE_IMAGE_COMPARE_PY "Use built-in image_compare.py" ON)
 
 # Use variables for common paths, to reduce line lengths.
