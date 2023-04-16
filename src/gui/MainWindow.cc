@@ -1829,13 +1829,29 @@ bool MainWindow::trust_python_file(const std::string &file,  const std::string &
   std::string act_hash, ref_hash;
   snprintf(setting_key,sizeof(setting_key)-1,"python_hash/%s",file.c_str());
   act_hash = SHA256HashString(content);
+
+  if(file == this->untrusted_edit_document_name) return false;
+  
+  if(file == this->trusted_edit_document_name) {
+    settings.setValue(setting_key,act_hash.c_str());
+    return true;
+  }
+
+  if(content.size() <= 1) { // 1st character already typed
+    this->trusted_edit_document_name=file;
+    return true;
+  }
+
   if(settings.contains(setting_key)) {
     QString str=settings.value(setting_key).toString();
     QByteArray ba = str.toLocal8Bit();
     ref_hash = std::string(ba.data());
   }
  
-  if(act_hash == ref_hash) return true;
+  if(act_hash == ref_hash) {
+	  this->trusted_edit_document_name=file;
+	  return true;
+  }
 
   auto ret = QMessageBox::warning(this, "Application",
     _( "Python files can potentially contain harumful stuff.\n"
@@ -1845,11 +1861,13 @@ bool MainWindow::trust_python_file(const std::string &file,  const std::string &
     return true;
   }
   if (ret == QMessageBox::Yes)  {
+    this->trusted_edit_document_name=file;
     settings.setValue(setting_key,act_hash.c_str());
     return true;
   }
 
   if (ret == QMessageBox::No) {
+    this->untrusted_edit_document_name=file;
     return false;
   }
   return false;
