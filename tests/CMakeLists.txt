@@ -497,7 +497,7 @@ set(UPLOADARG "")
 if ($ENV{OPENSCAD_UPLOAD_TESTS})
   set(UPLOADARG "--upload")
 endif()
-configure_file(${CCSD}/CTestCustom.template ${CCBD}/CTestCustom.cmake @ONLY)
+configure_file(${CCSD}/CTestCustom.template ${CBD}/CTestCustom.cmake @ONLY)
 
 # generate a very large scad file which we would rather not commit to the source tree
 # this is for stress-testing the parser

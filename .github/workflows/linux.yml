@@ -48,8 +48,8 @@ jobs:
       with:
         name: Test Result Report (${{ matrix.os }})
         path: |
-          b/tests/Testing/Temporary/*_report.html
-          b/tests/Testing/Temporary/LastTest.log
+          b/Testing/Temporary/*_report.html
+          b/Testing/Temporary/LastTest.log
     - name: Upload Code Coverage Report
       uses: actions/upload-artifact@v3
       with:
