@@ -142,6 +142,7 @@ Prerequisites:
 
 * Xcode
 * automake, libtool, cmake, pkg-config, wget (we recommend installing these using Homebrew)
+* meson and ninja (can be installed with `pip3 install --user meson ninja`)
 
 Install Dependencies:
 
