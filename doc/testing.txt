@@ -27,8 +27,7 @@ B) Running tests
 Linux, Mac:
 
 From your build directory
-$ make test           Runs tests enabled by default
-$ ctest               Runs tests enabled by default (same as make test)
+$ ctest -j8           Runs tests enabled by default using 8 parallel processes.
 $ ctest -R <regex>    Runs only matching tests, e.g. ctest -R dxf
 $ ctest -C <configs>  Adds extended tests belonging to configs.
                       Valid configs:
