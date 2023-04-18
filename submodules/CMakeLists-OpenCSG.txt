@@ -27,7 +27,7 @@ set(OPENCSG_SOURCES
 )
 
 add_library(OpenCSGObjects OBJECT ${OPENCSG_SOURCES})
-target_include_directories(OpenCSGObjects PRIVATE OpenCSG submodules/OpenCSG/include)
+target_include_directories(OpenCSGObjects PRIVATE OpenCSG submodules/OpenCSG submodules/OpenCSG/include)
 target_link_libraries(OpenCSGObjects PRIVATE GLEW::glew)
 
 add_library(OpenCSG INTERFACE)
