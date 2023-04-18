@@ -420,6 +420,10 @@ if(NOT MSVC)
   endif()
 endif()
 
+if(USE_BUILTIN_OPENCSG)
+  include("submodules/CMakeLists-OpenCSG.txt")
+endif(USE_BUILTIN_OPENCSG)
+
 # Automatically add the current source and build directories to the include path.
 set(CMAKE_INCLUDE_CURRENT_DIR ON) # (does not propagate down to subdirectories)
 
