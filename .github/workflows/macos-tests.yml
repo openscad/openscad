@@ -36,7 +36,7 @@ jobs:
         make -j$NUMCPU
     - name: Run Test Suite
       run: |
-        cd build/tests
+        cd build
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
         ctest -j$NUMCPU
     - name: Upload Test Result Report
@@ -45,5 +45,5 @@ jobs:
       with:
         name: Test Result Report (MacOS)
         path: |
-          build/tests/Testing/Temporary/*_report.html
-          build/tests/Testing/Temporary/LastTest.log
+          build/Testing/Temporary/*_report.html
+          build/Testing/Temporary/LastTest.log

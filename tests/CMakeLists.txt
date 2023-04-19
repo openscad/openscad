@@ -11,8 +11,6 @@ endif()
 cmake_policy(SET CMP0057 NEW) # Interpret IN_LIST
 cmake_policy(SET CMP0070 NEW) # Allow relative paths for file(GENERATE ...)
 
-enable_testing()
-
 option(USE_IMAGE_COMPARE_PY "Use built-in image_compare.py" ON)
 
 # Use variables for common paths, to reduce line lengths.
@@ -499,7 +497,7 @@ set(UPLOADARG "")
 if ($ENV{OPENSCAD_UPLOAD_TESTS})
   set(UPLOADARG "--upload")
 endif()
-configure_file(${CCSD}/CTestCustom.template ${CCBD}/CTestCustom.cmake @ONLY)
+configure_file(${CCSD}/CTestCustom.template ${CBD}/CTestCustom.cmake @ONLY)
 
 # generate a very large scad file which we would rather not commit to the source tree
 # this is for stress-testing the parser

@@ -8,7 +8,6 @@ PARALLEL_CTEST=-j"$PARALLEL"
 
 BUILDDIR=b
 GCOVRDIR=c
-TESTDIR=tests
 
 do_build() {
 	echo "do_build()"
@@ -29,13 +28,12 @@ do_test() {
 	echo "do_test()"
 
 	(
-		# Use TESTDIR within BUILDDIR
-		cd "$BUILDDIR/$TESTDIR"
+		cd "$BUILDDIR"
 		ctest $PARALLEL_CTEST
 		if [[ $? != 0 ]]; then
 			exit 1
 		fi
-		tar -C .gcov -c -f - . | tar -C ../ -x -f -
+		tar -C tests/.gcov -c -f - . | tar -x -f -
 	)
 	if [[ $? != 0 ]]; then
 		echo "Test failure"
