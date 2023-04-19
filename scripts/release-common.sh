@@ -63,7 +63,7 @@ if [ ! -f $OPENSCADDIR/src/openscad.cc ]; then
   exit 1
 fi
 
-CMAKE_CONFIG=-DUSE_BUILTIN_OPENCSG=ON
+CMAKE_CONFIG=
 
 if [[ "$OSTYPE" =~ "darwin" ]]; then
   OS=MACOSX

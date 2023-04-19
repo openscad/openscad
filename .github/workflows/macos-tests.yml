@@ -31,7 +31,7 @@ jobs:
       run: |
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DUSE_BUILTIN_OPENCSG=ON
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
         make -j$NUMCPU
     - name: Run Test Suite
