@@ -198,6 +198,7 @@ macro(find_graphics)
       endif()
     else()
       target_link_libraries(OpenSCAD PRIVATE OpenCSG)
+      message(STATUS "OpenCSG: <submodule>")
     endif()
     target_compile_definitions(OpenSCAD PRIVATE ENABLE_OPENCSG)
 
