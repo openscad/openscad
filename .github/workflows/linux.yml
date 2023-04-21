@@ -47,6 +47,9 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: 3.11
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.enable_ssh }}
     - name: Build and test
       run: ./scripts/github-ci.sh build test coverage
     - name: Upload Test Result Report
