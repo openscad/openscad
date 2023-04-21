@@ -5,6 +5,13 @@ on:
     branches:
       - master
   pull_request:
+  workflow_dispatch:
+    inputs:
+      enable_ssh:
+        type: boolean
+        description: 'Enable ssh'
+        required: false
+        default: false
 
 jobs:
   build:
