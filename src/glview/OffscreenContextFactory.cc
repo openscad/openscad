@@ -56,7 +56,6 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider, const Offscre
       LOG("Compatibility context is not available on macOS");
     }
     return offscreen_old::CreateOffscreenContextNSOpenGL(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion);
-  } else if (provider == "cgl") {
   }
 #endif
 #if ENABLE_EGL
@@ -64,17 +63,12 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider, const Offscre
     return offscreen_old::CreateOffscreenContextEGL(attrib.width, attrib.height,
                                                     attrib.majorGLVersion, attrib.minorGLVersion,
                                                     attrib.gles, attrib.compatibilityProfile, attrib.gpu);
-  } else if (provider == "egl") {
-                                     attrib.gles, attrib.compatibilityProfile, attrib.gpu);
   }
   else
 #endif
 #ifdef ENABLE_GLX
   if (provider == "glx-old") {
    return offscreen_old::CreateOffscreenContextGLX(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion, 
-                                    attrib.gles, attrib.compatibilityProfile);
-  } else if (provider == "glx") {
-   return CreateOffscreenContextGLX(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion, 
                                     attrib.gles, attrib.compatibilityProfile);
   }
 #endif
@@ -86,8 +80,6 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider, const Offscre
     return offscreen_old::CreateOffscreenContextWGL(attrib.width, attrib.height,
 						    attrib.majorGLVersion, attrib.minorGLVersion,
 						    attrib.compatibilityProfile);
-  } else if (provider == "wgl") {
-                                     attrib.compatibilityProfile);
   }
   else
 #endif
