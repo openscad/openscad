@@ -4,17 +4,8 @@ on:
   push:
     branches:
       - master
-  pull_request:
-    # The branches below must be a subset of the branches above
-    branches:
-      - master
-    paths:
-      - '**.h'
-      - '**.hpp'
-      - '**.c'
-      - '**.cc'
-      - '**.cpp'
   schedule:
+    # Sunday 09:00
     - cron: '0 9 * * 0'
 
 jobs:
@@ -28,15 +19,12 @@ jobs:
         language: ['cpp']
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
       with:
+        submodules: 'recursive'
         # We must fetch at least the immediate parents so that if this is
         # a pull request then we can checkout the head.
         fetch-depth: 2
-
-    - name: Submodules
-      run: git submodule update --init --recursive
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
@@ -49,7 +37,7 @@ jobs:
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
     - name: Install dependencies
-      run: ./scripts/travis-ci-before-install-linux.sh bionic
+      run: ./scripts/github-ci-linux-get-dependencies.sh bionic
     - name: Dependency fixup
       run: sudo apt-get install gettext
     - name: Build
