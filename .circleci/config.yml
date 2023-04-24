@@ -87,7 +87,6 @@ jobs:
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).ai${CIRCLE_BUILD_NUM}"
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               git submodule update --init --recursive
-              ( cd submodules/manifold && git apply thrust.diff )
               mkdir build && cd build
               cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DOPENSCAD_VERSION="$OPENSCAD_VERSION" -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT"
               make -j4
@@ -126,7 +125,6 @@ jobs:
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,')"; fi
               export PKG_CONFIG_PATH="/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig"
               git submodule update --init --recursive
-              ( cd submodules/manifold && git apply thrust.diff )
               emcmake cmake -B ../build . \
                   -DWASM=ON \
                   -DSNAPSHOT=ON \
@@ -173,7 +171,6 @@ jobs:
     steps:
       - checkout
       - run: git submodule update --init --recursive
-      - run: ( cd submodules/manifold && git apply thrust.diff )
       - run:
           name: System Info
           command: |

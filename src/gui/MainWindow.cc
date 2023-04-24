@@ -416,6 +416,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->fileActionSaveACopy, SIGNAL(triggered()), this, SLOT(actionSaveACopy()));
   connect(this->fileActionSaveAll, SIGNAL(triggered()), tabManager, SLOT(saveAll()));
   connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
+  connect(this->fileActionRevoke, SIGNAL(triggered()), this, SLOT(actionRevokeTrustedFiles()));
   connect(this->fileActionClose, SIGNAL(triggered()), tabManager, SLOT(closeCurrentTab()));
   connect(this->fileActionQuit, SIGNAL(triggered()), this, SLOT(quit()));
   connect(this->fileShowLibraryFolder, SIGNAL(triggered()), this, SLOT(actionShowLibraryFolder()));
@@ -1549,6 +1550,18 @@ void MainWindow::actionSave()
 void MainWindow::actionSaveAs()
 {
   tabManager->saveAs(activeEditor);
+}
+
+void MainWindow::actionRevokeTrustedFiles()
+{
+  QSettingsCached settings;
+#ifdef ENABLE_PYTHON  
+  python_trusted = false;
+  this->trusted_edit_document_name="";
+#endif  
+  settings.remove("python_hash");
+  QMessageBox::information(this, _("Trusted Files"), "All trusted files python revoked", QMessageBox::Ok);
+
 }
 
 void MainWindow::actionSaveACopy()

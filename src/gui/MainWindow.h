@@ -167,6 +167,7 @@ private slots:
   void clearRecentFiles();
   void actionSave();
   void actionSaveAs();
+  void actionRevokeTrustedFiles();
   void actionSaveACopy();
   void actionReload();
   void actionShowLibraryFolder();
