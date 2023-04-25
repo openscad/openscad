@@ -177,7 +177,7 @@ static bool create_egl_dummy_context(OffscreenContextEGL& ctx)
 std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(
     uint32_t width, uint32_t height, uint32_t majorGLVersion, 
     uint32_t minorGLVersion, bool gles, bool compatibilityProfile,
-    const std::string& drmNode = "")
+    const std::string& drmNode)
 {
   auto ctx = std::make_shared<OffscreenContextEGL>(width, height);
 
