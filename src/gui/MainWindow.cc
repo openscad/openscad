@@ -1560,7 +1560,7 @@ void MainWindow::actionRevokeTrustedFiles()
   this->trusted_edit_document_name="";
 #endif  
   settings.remove("python_hash");
-  QMessageBox::information(this, _("Trusted Files"), "All trusted files python revoked", QMessageBox::Ok);
+  QMessageBox::information(this, _("Trusted Files"), "All trusted python files revoked", QMessageBox::Ok);
 
 }
 

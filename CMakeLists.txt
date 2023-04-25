@@ -347,7 +347,6 @@ if(ENABLE_PYTHON)
   target_link_libraries(OpenSCAD PRIVATE  "${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp/libcryptopp.a")
   target_include_directories(OpenSCAD PRIVATE "./submodules/cryptopp/")
   add_custom_command(OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp/libcryptopp.a" COMMAND make WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp)
-  #  add_custom_target(OpenSCAD_libcryptpp COMMAND make WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp)" )
   set_property(SOURCE "src/core/pyopenscad.cc" APPEND PROPERTY OBJECT_DEPENDS  "${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp/libcryptopp.a")
 endif()
 

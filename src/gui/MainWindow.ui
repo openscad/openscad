@@ -1237,7 +1237,7 @@
   </action>
   <action name="fileActionRevoke">
    <property name="text">
-    <string>Revoke trusted Files</string>
+    <string>Revoke trusted python Files</string>
    </property>
   </action>
   <action name="fileActionClose">
