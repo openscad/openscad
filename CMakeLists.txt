@@ -796,8 +796,7 @@ if(NULLGL)
     src/glview/OffscreenView.cc
     src/glview/offscreen-old/OffscreenContextNULL.cc
     src/io/export_png.cc
-    src/io/imageutils.cc
-    ${OFFSCREEN_IMGUTILS_SOURCE})
+    src/io/imageutils.cc)
 else()
   set(OFFSCREEN_SOURCES
     src/glview/OpenGLContext.cc
