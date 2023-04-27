@@ -65,6 +65,7 @@ jobs:
         cmake --build b -j 2
     - name: Test and Coverage
       run: ./scripts/github-ci.sh test coverage
+      if: ${{ ! inputs.enable_wasm }} 
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v3
       if: ${{ always() }}
