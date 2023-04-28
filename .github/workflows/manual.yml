@@ -1,0 +1,10 @@
+name: manual
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    steps:
+    - uses: actions/checkout@v3
+
