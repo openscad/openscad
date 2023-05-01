@@ -71,7 +71,7 @@ jobs:
         python-version: '3.11'
     - name: Build
       run: |
-        CC=clang CXX=clang++ cmake -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DWASM=${{ inputs.enable_wasm }} -DSANITIZE_MEMORY=${{ inputs.enable_msan }} -DSANITIZE_ADDRESS=${{ inputs.enable_asan }} -DSANITIZE_THREAD=${{ inputs.enable_tsan }} -DSANITIZE_UNDEFINED=${{ inputs.enable_ubsan }} -B b .
+        CC=clang CXX=clang++ LD=lld cmake -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DWASM=${{ inputs.enable_wasm }} -DSANITIZE_MEMORY=${{ inputs.enable_msan }} -DSANITIZE_ADDRESS=${{ inputs.enable_asan }} -DSANITIZE_THREAD=${{ inputs.enable_tsan }} -DSANITIZE_UNDEFINED=${{ inputs.enable_ubsan }} -B b .
         cmake --build b -j 2
         echo "Build exit code: $?"
     - name: Test and Coverage
