@@ -15,6 +15,14 @@ on:
         - Debug
         required: true
         default: Release
+      compiler:
+        type: choice
+        description: 'Compiler'
+        options:
+        - gcc
+        - clang
+        required: true
+        default: gcc
       enable_experimental:
         type: boolean
         description: 'Experimental'
@@ -49,6 +57,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - name: Inputs
+      run: echo "${{ toJSON(inputs) }}"
     - uses: actions/checkout@v3
       with:
         submodules: 'recursive'
