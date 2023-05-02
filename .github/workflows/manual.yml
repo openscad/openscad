@@ -15,6 +15,16 @@ on:
         - Debug
         required: true
         default: Release
+      variant:
+        type: choice
+        description: 'Variant'
+        options:
+        - GUI
+        - Headless
+        - NULLGL
+        - WASM
+        required: true
+        default: GUI
       compiler:
         type: choice
         description: 'Compiler'
@@ -28,11 +38,6 @@ on:
         description: 'Experimental'
         required: false
         default: true
-      enable_wasm:
-        type: boolean
-        description: 'WASM'
-        required: false
-        default: false
       enable_msan:
         type: boolean
         description: 'Enable MSAN'
@@ -59,6 +64,19 @@ jobs:
     steps:
     - name: Inputs
       run: echo "${{ toJSON(inputs) }}"
+    - name: Select compiler
+      run: |
+        echo "CC=clang" >> $GITHUB_ENV
+        echo "CXX=clang++" >> $GITHUB_ENV
+        echo "LD=lld" >> $GITHUB_ENV
+      if: ${{ inputs.compiler == 'clang' }}
+    - name: Select variant
+      run: |
+        case ${{ inputs.variant }} in
+        Headless) echo "CMAKE_EXTRA=-DHEADLESS=1" >> $GITHUB_ENV ;;
+        NULLGL) echo "CMAKE_EXTRA=-DNULLGL=1" >> $GITHUB_ENV ;;
+        WASM) echo "CMAKE_EXTRA=-DWASM=1" >> $GITHUB_ENV ;;
+        esac
     - uses: actions/checkout@v3
       with:
         submodules: 'recursive'
@@ -69,15 +87,9 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-    - name: Select compiler
-      run: |
-        echo "CC=clang" >> $GITHUB_ENV
-        echo "CXX=clang++" >> $GITHUB_ENV
-        echo "LD=lld" >> $GITHUB_ENV
-      if: ${{ inputs.compiler == 'clang' }}
     - name: Build
       run: |
-        cmake -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DWASM=${{ inputs.enable_wasm }} -DSANITIZE_MEMORY=${{ inputs.enable_msan }} -DSANITIZE_ADDRESS=${{ inputs.enable_asan }} -DSANITIZE_THREAD=${{ inputs.enable_tsan }} -DSANITIZE_UNDEFINED=${{ inputs.enable_ubsan }} -B b .
+        cmake ${CMAKE_EXTRA} -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DSANITIZE_MEMORY=${{ inputs.enable_msan }} -DSANITIZE_ADDRESS=${{ inputs.enable_asan }} -DSANITIZE_THREAD=${{ inputs.enable_tsan }} -DSANITIZE_UNDEFINED=${{ inputs.enable_ubsan }} -B b .
         cmake --build b -j 2
         echo "Build exit code: $?"
     - name: Test and Coverage
