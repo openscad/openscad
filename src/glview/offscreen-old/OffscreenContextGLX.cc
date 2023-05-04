@@ -48,6 +48,8 @@
 
 #include "printutils.h"
 
+namespace {
+
 class OffscreenContextGLX : public OffscreenContext {
 public:
   OffscreenContextGLX(uint32_t width, uint32_t height) : OffscreenContext(width, height) {}
@@ -57,29 +59,31 @@ public:
     if (this->xdisplay) (this->xdisplay);
   }
 
-  std::string getInfo() const override;
+  std::string getInfo() const override {
+    if (!this->xdisplay) {
+      return {"No GL Context initialized. No information to report\n"};
+    }
+
+    std::ostringstream result;
+
+    int major, minor;
+    glXQueryVersion(this->xdisplay, &major, &minor);
+
+    result << "GL context creator: GLX (old)\n"
+    << "GLX version: " << major << "." << minor << "\n"
+    << "PNG generator: lodepng\n";
+
+    return result.str();
+  }
+
+  bool makeCurrent() const override {
+    return glXMakeContextCurrent(this->xdisplay, this->xwindow, this->xwindow, this->openGLContext);
+  }
 
   GLXContext openGLContext{nullptr};
   Display *xdisplay{nullptr};
   Window xwindow{0};
 };
-
-std::string OffscreenContextGLX::getInfo() const {
-  if (!this->xdisplay) {
-    return {"No GL Context initialized. No information to report\n"};
-  }
-
-  std::ostringstream result;
-
-  int major, minor;
-  glXQueryVersion(this->xdisplay, &major, &minor);
-
-  result << "GL context creator: GLX\n"
-	 << "GLX version: " << major << "." << minor << "\n"
-	 << "PNG generator: lodepng\n";
-
-  return result.str();
-}
 
 static XErrorHandler original_xlib_handler = nullptr;
 static auto XCreateWindow_failed = false;
@@ -178,16 +182,6 @@ bool create_glx_dummy_window(OffscreenContextGLX& ctx)
 
   //GLXWindow glxWin = glXCreateWindow( dpy, fbconfigs[0], xWin, nullptr );
 
-  if (!glXMakeContextCurrent(dpy, xWin, xWin, context)) {
-    //if (!glXMakeContextCurrent( dpy, glxWin, glxWin, context )) {
-    std::cerr << "glXMakeContextCurrent failed\n";
-    glXDestroyContext(dpy, context);
-    XDestroyWindow(dpy, xWin);
-    XFree(visinfo);
-    XFree(fbconfigs);
-    return false;
-  }
-
   ctx.openGLContext = context;
   ctx.xwindow = xWin;
 
@@ -229,6 +223,10 @@ bool create_glx_dummy_context(OffscreenContextGLX& ctx)
   return result;
 }
 
+}  // namespace
+
+namespace offscreen_old {
+
 std::shared_ptr<OffscreenContext> CreateOffscreenContextGLX(
   uint32_t width, uint32_t height, uint32_t majorGLVersion, 
   uint32_t minorGLVersion, bool gles, bool compatibilityProfile)   
@@ -244,3 +242,5 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextGLX(
 
   return ctx;
 }
+
+}  // namespace offscreen_old
