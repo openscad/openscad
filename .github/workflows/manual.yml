@@ -1,0 +1,106 @@
+name: manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        type: choice
+        description: 'Build type'
+        options:
+        - Release
+        - Debug
+        required: true
+        default: Release
+      variant:
+        type: choice
+        description: 'Variant'
+        options:
+        - GUI
+        - Headless
+        - NULLGL
+        - WASM
+        required: true
+        default: GUI
+      compiler:
+        type: choice
+        description: 'Compiler'
+        options:
+        - gcc
+        - clang
+        required: true
+        default: gcc
+      enable_experimental:
+        type: boolean
+        description: 'Experimental'
+        required: false
+        default: true
+      enable_msan:
+        type: boolean
+        description: 'Enable MSAN'
+        required: false
+        default: false
+      enable_asan:
+        type: boolean
+        description: 'Enable ASAN'
+        required: false
+        default: false
+      enable_tsan:
+        type: boolean
+        description: 'Enable TSAN'
+        required: false
+        default: false
+      enable_ubsan:
+        type: boolean
+        description: 'Enable UBSAN'
+        required: false
+        default: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Inputs
+      run: echo "${{ toJSON(inputs) }}"
+    - name: Select compiler
+      run: |
+        echo "CC=clang" >> $GITHUB_ENV
+        echo "CXX=clang++" >> $GITHUB_ENV
+        echo "LD=lld" >> $GITHUB_ENV
+      if: ${{ inputs.compiler == 'clang' }}
+    - name: Select variant
+      run: |
+        case ${{ inputs.variant }} in
+        Headless) echo "CMAKE_EXTRA=-DHEADLESS=1" >> $GITHUB_ENV ;;
+        NULLGL) echo "CMAKE_EXTRA=-DNULLGL=1" >> $GITHUB_ENV ;;
+        WASM) echo "CMAKE_EXTRA=-DWASM=1" >> $GITHUB_ENV ;;
+        esac
+    - uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
+    - name: Install dependencies
+      run: ./scripts/github-ci-linux-get-dependencies.sh kinetic
+    - name: Dependency fixup
+      run: sudo apt-get install gettext
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    - name: Build
+      run: |
+        cmake ${CMAKE_EXTRA} -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DSANITIZE_MEMORY=${{ inputs.enable_msan }} -DSANITIZE_ADDRESS=${{ inputs.enable_asan }} -DSANITIZE_THREAD=${{ inputs.enable_tsan }} -DSANITIZE_UNDEFINED=${{ inputs.enable_ubsan }} -B b .
+        cmake --build b -j 2
+        echo "Build exit code: $?"
+    - name: Test and Coverage
+      run: ./scripts/github-ci.sh test coverage
+      if: ${{ ! inputs.enable_wasm }} 
+    - name: Upload Test Result Report
+      uses: actions/upload-artifact@v3
+      if: ${{ always() }}
+      with:
+        name: Test Result Report (${{ matrix.os }})
+        path: |
+          b/Testing/Temporary/*_report.html
+          b/Testing/Temporary/LastTest.log
+    - name: Upload Code Coverage Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: Code Coverage Report (${{ matrix.os }})
+        path: c/coverage*.html
