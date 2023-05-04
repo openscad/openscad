@@ -93,6 +93,9 @@ endif(CLANG_TIDY)
 
 add_executable(OpenSCAD)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/submodules/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
+find_package(Sanitizers)
+
 # Strict c++17, e.g. no GNU extensions
 set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD 17)
 set_property(TARGET OpenSCAD PROPERTY CXX_EXTENSIONS OFF)
@@ -776,7 +779,8 @@ if(EXPERIMENTAL)
 
   add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
   target_link_libraries(OpenSCAD PRIVATE manifold)
-  
+  add_sanitizers(manifold)
+
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
   list(APPEND Sources ${MANIFOLD_SOURCES})
 endif()
@@ -792,8 +796,7 @@ if(NULLGL)
     src/glview/OffscreenView.cc
     src/glview/offscreen-old/OffscreenContextNULL.cc
     src/io/export_png.cc
-    src/io/imageutils.cc
-    ${OFFSCREEN_IMGUTILS_SOURCE})
+    src/io/imageutils.cc)
 else()
   set(OFFSCREEN_SOURCES
     src/glview/OpenGLContext.cc
@@ -1061,6 +1064,8 @@ if(OFFLINE_DOCS)
 endif()
 
 include(CPack)
+
+add_sanitizers(OpenSCAD)
 
 if(INFO)
   include("cmake/Modules/info.cmake")
