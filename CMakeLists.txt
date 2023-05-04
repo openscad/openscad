@@ -94,6 +94,9 @@ endif(CLANG_TIDY)
 
 add_executable(OpenSCAD)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/submodules/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
+find_package(Sanitizers)
+
 # Strict c++17, e.g. no GNU extensions
 set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD 17)
 set_property(TARGET OpenSCAD PROPERTY CXX_EXTENSIONS OFF)
@@ -341,18 +344,18 @@ target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
 if(ENABLE_PYTHON)
   message(STATUS "Python enabled" )
-  find_package (Python REQUIRED COMPONENTS Interpreter Development)
   if(MXECROSS)
     target_include_directories(OpenSCAD PRIVATE "/home/gsohler/openscad_deps/mxe/usr/x86_64-w64-mingw32.static.posix/include/python3.10")
     target_link_libraries(OpenSCAD PRIVATE  "${CMAKE_SOURCE_DIR}/libpython3.10.dll.a")
   else()
+     find_package (Python REQUIRED COMPONENTS Interpreter Development)
     target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
     target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
     target_link_libraries(OpenSCAD PRIVATE  "${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp/libcryptopp.a")
-    target_include_directories(OpenSCAD PRIVATE "./submodules/cryptopp/")
-    add_custom_command(OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp/libcryptopp.a" COMMAND make WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp)
-    set_property(SOURCE "src/core/pyopenscad.cc" APPEND PROPERTY OBJECT_DEPENDS  "${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp/libcryptopp.a")
   endif()
+  target_include_directories(OpenSCAD PRIVATE "./submodules/cryptopp/")
+  add_custom_command(OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp/libcryptopp.a" COMMAND make WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp)
+  set_property(SOURCE "src/core/pyopenscad.cc" APPEND PROPERTY OBJECT_DEPENDS  "${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp/libcryptopp.a")
 endif()
 
 if(ENABLE_HIDAPI)
@@ -799,7 +802,8 @@ if(EXPERIMENTAL)
 
   add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
   target_link_libraries(OpenSCAD PRIVATE manifold)
-  
+  add_sanitizers(manifold)
+
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
   list(APPEND Sources ${MANIFOLD_SOURCES})
 endif()
@@ -815,8 +819,7 @@ if(NULLGL)
     src/glview/OffscreenView.cc
     src/glview/offscreen-old/OffscreenContextNULL.cc
     src/io/export_png.cc
-    src/io/imageutils.cc
-    ${OFFSCREEN_IMGUTILS_SOURCE})
+    src/io/imageutils.cc)
 else()
   set(OFFSCREEN_SOURCES
     src/glview/OpenGLContext.cc
@@ -1075,6 +1078,7 @@ set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/openscad_cpack.cmake")
 set(CPACK_THREADS 0)
 
 if(ENABLE_TESTS)
+  enable_testing()
   add_subdirectory(tests)
 endif()
 
@@ -1083,6 +1087,8 @@ if(OFFLINE_DOCS)
 endif()
 
 include(CPack)
+
+add_sanitizers(OpenSCAD)
 
 if(INFO)
   include("cmake/Modules/info.cmake")

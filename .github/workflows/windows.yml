@@ -40,7 +40,6 @@ jobs:
       - name: Run Test Suite
         run: |
           cd build
-          cd tests
           ctest -j2
       - name: Upload Test Result Report
         uses: actions/upload-artifact@v3
@@ -48,5 +47,5 @@ jobs:
         with:
           name: Test Result Report (Windows)
           path: |
-            build/tests/Testing/Temporary/*_report.html
-            build/tests/Testing/Temporary/LastTest.log
+            build/Testing/Temporary/*_report.html
+            build/Testing/Temporary/LastTest.log

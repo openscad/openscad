@@ -27,8 +27,7 @@ B) Running tests
 Linux, Mac:
 
 From your build directory
-$ cd tests
-$ ctest               Runs tests enabled by default
+$ ctest -j8           Runs tests enabled by default using 8 parallel processes.
 $ ctest -R <regex>    Runs only matching tests, e.g. ctest -R dxf
 $ ctest -C <configs>  Adds extended tests belonging to configs.
                       Valid configs:
@@ -119,10 +118,9 @@ Some versions of Xvfb may fail, however.
 
 2. Location of logs
  
-Logs of test runs are found in tests/build/Testing/Temporary
-A pretty-printed index.html is in a subdir of tests/build/Testing/Temporary
+Logs of test runs and a pretty-printed index.html are found in build/Testing/Temporary
 Expected results are found in tests/regression/*
-Actual results are found in tests/build/testname-output/*
+Actual results are found in build/tests/output/*
 
 3. Alternatives to the image_compare.py image comparison script:
 
