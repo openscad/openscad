@@ -25,6 +25,11 @@ extern std::shared_ptr<AbstractNode> python_result_node;
 
 void PyOpenSCADObject_dealloc(PyOpenSCADObject *self);
 
+extern bool python_active;
+extern std::string trusted_edit_document_name;
+extern std::string untrusted_edit_document_name;
+bool trust_python_file(const std::string &file, const std::string &content);
+
 PyObject *PyOpenSCADObjectFromNode(PyTypeObject *type, std::shared_ptr<AbstractNode> node);
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *object);
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *object);

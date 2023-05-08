@@ -13,6 +13,9 @@
 
 static PyObject *pythonInitDict=NULL;
 static PyObject *pythonMainModule = NULL ;
+bool python_active;
+bool python_trusted;
+
 void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
 {
   Py_XDECREF(self->dict);
