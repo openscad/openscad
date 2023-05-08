@@ -1,6 +1,7 @@
 #include <Python.h>
 #include <memory>
 #include "node.h"
+#include "src/core/function.h"
 
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 
@@ -101,5 +102,5 @@ int python_numberval(PyObject *number, double *result);
 
 void get_fnas(double& fn, double& fa, double& fs);
 
-char *evaluatePython(const char *code);
+std::string evaluatePython(const std::string &code, double time);
 

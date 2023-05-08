@@ -11,7 +11,9 @@
 
 // https://docs.python.org/3.10/extending/newtypes.html 
 
-static void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
+static PyObject *pythonInitDict=NULL;
+static PyObject *pythonMainModule = NULL ;
+void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
 {
   Py_XDECREF(self->dict);
 //  Py_TYPE(self)->tp_free((PyObject *)self);
@@ -400,7 +402,11 @@ std::shared_ptr<AbstractNode> python_modulefunc(const ModuleInstantiation *op_mo
 	const char *errorstr = NULL;
 	do {
 		PyObject *funcresult = python_callfunction(op_module->name(),op_module->arguments, errorstr);
-		if (errorstr != NULL) PyErr_SetString(PyExc_TypeError, errorstr);
+		if (errorstr != NULL){
+			PyErr_SetString(PyExc_TypeError, errorstr);
+			return NULL;
+		}
+		if(funcresult == NULL) return NULL;
 
 		if(funcresult->ob_type == &PyOpenSCADType) result=PyOpenSCADObjectToNode(funcresult);
 		else {
@@ -435,7 +441,13 @@ Value python_functionfunc(const FunctionCall *call )
 {
 	const char *errorstr = NULL;
 	PyObject *funcresult = python_callfunction(call->name, call->arguments, errorstr);
-	if (errorstr != NULL) PyErr_SetString(PyExc_TypeError, errorstr);
+	if (errorstr != NULL)
+	{
+		PyErr_SetString(PyExc_TypeError, errorstr);
+		return Value::undefined.clone();
+	}
+	if(funcresult == NULL) return Value::undefined.clone();
+
 	return  python_convertresult(funcresult);
 }
 
@@ -443,9 +455,9 @@ extern PyObject *PyInit_libfive(void);
 
 PyMODINIT_FUNC PyInit_PyLibFive(void);
 
-char *evaluatePython(const char *code, double time)
+std::string evaluatePython(const std::string & code, double time)
 {
-  char *error;
+  std::string error;
   python_result_node = NULL;
   PyObject *pyExcType;
   PyObject *pyExcValue;
@@ -457,7 +469,6 @@ char *evaluatePython(const char *code, double time)
       }
       pythonInitDict=NULL;
     }
-
     if(!pythonInitDict) {
 	    char run_str[80];
 	    PyImport_AppendInittab("openscad", &PyInit_openscad);
@@ -470,8 +481,8 @@ char *evaluatePython(const char *code, double time)
             Py_InitializeFromConfig(&config);
             PyConfig_Clear(&config);
 
-	    PyObject *py_main = PyImport_AddModule("__main__");
-	    pythonInitDict = PyModule_GetDict(py_main);
+	    pythonMainModule =  PyImport_AddModule("__main__");
+	    pythonInitDict = PyModule_GetDict(pythonMainModule);
 	    PyInit_PyOpenSCAD();
 	    sprintf(run_str,"from openscad import *\nfa=12.0\nfn=0.0\nfs=2.0\nt=%g",time);
 	    PyRun_String(run_str, Py_file_input, pythonInitDict, pythonInitDict);
@@ -484,7 +495,7 @@ char *evaluatePython(const char *code, double time)
     PyObject* str_exc_value = PyObject_Repr(pyExcValue);
     PyObject* pyExcValueStr = PyUnicode_AsEncodedString(str_exc_value, "utf-8", "~");
     const char *strExcValue =  PyBytes_AS_STRING(pyExcValueStr);
-    if(strExcValue != NULL  && !strcmp(strExcValue,"<NULL>")) error=NULL;
+    if(strExcValue != NULL  && !strcmp(strExcValue,"<NULL>")) error="";
     else error=strdup(strExcValue);
 
     Py_XDECREF(pyExcType);
@@ -493,7 +504,6 @@ char *evaluatePython(const char *code, double time)
 
     Py_XDECREF(str_exc_value);
     Py_XDECREF(pyExcValueStr);
-
     return error;
 }
 
