@@ -35,6 +35,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <utility>
+#include <fstream>
+#include <streambuf>
 namespace fs = boost::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
