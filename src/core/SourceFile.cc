@@ -66,7 +66,7 @@ void SourceFile::registerUse(const std::string& path, const Location& loc)
     if (fs::is_regular_file(path)) {
 
       bool trusted=false;
-      if(outputhandler) { // Check if openscad is run in GUI mode
+      if(!is_cmdline_mode()) { 
         std::ifstream fh(path, std::ios::in | std::ios::binary);
         std::string content{std::istreambuf_iterator<char>(fh), std::istreambuf_iterator<char>()};
         if(trust_python_file(path, content)) trusted=true;
