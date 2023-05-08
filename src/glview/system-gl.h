@@ -100,5 +100,5 @@ inline void glColor4fv(float *c) {}
 
 #endif // NULLGL
 
-std::string glew_dump();
+std::string gl_dump();
 std::string glew_extensions_dump();
