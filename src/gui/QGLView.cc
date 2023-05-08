@@ -29,6 +29,7 @@
 #include "Preferences.h"
 #include "Renderer.h"
 #include "degree_trig.h"
+#include "glew-utils.h"
 
 #include <QApplication>
 #include <QWheelEvent>
@@ -93,7 +94,8 @@ void QGLView::initializeGL()
 std::string QGLView::getRendererInfo() const
 {
   std::ostringstream info;
-  info << glew_dump();
+  info << glewInfo() << "\n";
+  info << gl_dump() << "\n";
   // Don't translate as translated text in the Library Info dialog is not wanted
   info << "\nQt graphics widget: QOpenGLWidget";
   auto qsf = this->format();

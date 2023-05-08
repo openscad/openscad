@@ -11,8 +11,9 @@ public:
   OffscreenContextNULL() : OffscreenContext(0, 0) {}
   ~OffscreenContextNULL() {}
   std::string getInfo() const override {
-    return "";
-  };
+    return "GL context creator: NULLGL";
+  }
+  bool makeCurrent() const override { return true; }
 };
 
 std::shared_ptr<OffscreenContext> CreateOffscreenContextNULL()
