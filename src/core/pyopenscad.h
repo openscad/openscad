@@ -22,11 +22,14 @@ extern PyTypeObject PyOpenSCADType;
 
 extern std::shared_ptr<AbstractNode> python_result_node;
 
+void PyOpenSCADObject_dealloc(PyOpenSCADObject *self);
 
 PyObject *PyOpenSCADObjectFromNode(PyTypeObject *type, std::shared_ptr<AbstractNode> node);
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *object);
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *object);
 int python_more_obj(std::vector<std::shared_ptr<AbstractNode>>& children, PyObject *more_obj);
+std::shared_ptr<AbstractNode> python_modulefunc(const ModuleInstantiation *module);
+Value python_functionfunc(const FunctionCall *call);
 
 PyObject *python_square(PyObject *self, PyObject *args, PyObject *kwargs);
 PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs);

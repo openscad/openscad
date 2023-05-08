@@ -1,32 +1,12 @@
-/*
- *  OpenSCAD (www.openscad.org)
- *  Copyright (C) 2009-2011 Clifford Wolf <clifford@clifford.at> and
- *                          Marius Kintel <marius@kintel.net>
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  As a special exception, you have permission to link this program
- *  with the CGAL library and distribute executables, as long as you
- *  follow the requirements of the GNU GPL in regard to all of the
- *  software in the executable aside from CGAL.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- */
+// Author: Sohler Guenther
+// Date: 2023-01-01
+// Purpose: Extend openscad with an python interpreter
 
 #include <Python.h>
 #include "pyopenscad.h"
 #include "CsgOpNode.h"
+#include "Value.h"
+#include "Expression.h"
 #include "PlatformUtils.h"
 
 // https://docs.python.org/3.10/extending/newtypes.html 
@@ -341,11 +321,131 @@ static PyObject *PyInit_openscad(void)
   return PyModule_Create(&OpenSCADModule);
 }
 
-static PyObject *pythonInitDict=NULL;
-
-std::string evaluatePython(const std::string & code, double time)
+PyObject *python_callfunction(const std::string &name, const std::vector<std::shared_ptr<Assignment> > &op_args, const char *&errorstr)
 {
-  std::string error;
+	PyObject *pFunc = NULL;
+	if(!pythonMainModule){
+		printf("Python not initialized!\n");
+		return NULL;
+	}
+	PyObject *maindict = PyModule_GetDict(pythonMainModule);
+
+	// search the function in all modules
+	PyObject *key, *value;
+	Py_ssize_t pos = 0;
+
+	while (PyDict_Next(maindict, &pos, &key, &value)) {
+		PyObject *module = PyObject_GetAttrString(pythonMainModule, PyUnicode_AsUTF8(key));
+		if(module == NULL) continue;
+		PyObject *moduledict = PyModule_GetDict(module);
+		if(moduledict == NULL) continue;
+        	pFunc = PyDict_GetItemString(moduledict, name.c_str());
+		if(pFunc == NULL) continue;
+		break;
+	}
+	if (!pFunc) {
+		printf("Function not found!\n");
+		return NULL;
+	}
+	if (!PyCallable_Check(pFunc)) {
+		printf("Function not callable!\n");
+		return NULL;
+	}
+	
+	// TODO childs,
+	PyObject *args = PyTuple_New(op_args.size());
+	for(int i=0;i<op_args.size();i++)
+	{
+		Assignment *op_arg=op_args[i].get();
+		shared_ptr<Expression> expr=op_arg->getExpr();
+		Value val = expr.get()->evaluate(NULL);
+		switch(val.type())
+		{
+			case Value::Type::NUMBER:
+				PyTuple_SetItem(args, i, PyFloat_FromDouble(val.toDouble()));
+				break;
+			case Value::Type::STRING:
+				PyTuple_SetItem(args, i, PyUnicode_FromString(val.toString().c_str()));
+				break;
+//TODO  more types RANGE, VECTOR, OBEJCT, FUNCTION
+			default:
+				printf("other\n");
+				PyTuple_SetItem(args, i, PyLong_FromLong(-1));
+				break;
+		}
+	}
+	PyObject* funcresult = PyObject_CallObject(pFunc, args);
+
+	if(funcresult == NULL) {
+		PyObject *pyExcType;
+		PyObject *pyExcValue;
+		PyObject *pyExcTraceback;
+		PyErr_Fetch(&pyExcType, &pyExcValue, &pyExcTraceback);
+		PyErr_NormalizeException(&pyExcType, &pyExcValue, &pyExcTraceback);
+
+		PyObject* str_exc_value = PyObject_Repr(pyExcValue);
+		PyObject* pyExcValueStr = PyUnicode_AsEncodedString(str_exc_value, "utf-8", "~");
+		errorstr =  PyBytes_AS_STRING(pyExcValueStr);
+		Py_XDECREF(pyExcType);
+		Py_XDECREF(pyExcValue);
+		Py_XDECREF(pyExcTraceback);
+		return NULL;
+	}
+	return funcresult;
+}
+
+std::shared_ptr<AbstractNode> python_modulefunc(const ModuleInstantiation *op_module)
+{
+	std::shared_ptr<AbstractNode> result=NULL;
+	const char *errorstr = NULL;
+	do {
+		PyObject *funcresult = python_callfunction(op_module->name(),op_module->arguments, errorstr);
+		if (errorstr != NULL) PyErr_SetString(PyExc_TypeError, errorstr);
+
+		if(funcresult->ob_type == &PyOpenSCADType) result=PyOpenSCADObjectToNode(funcresult);
+		else {
+			PyErr_SetString(PyExc_TypeError, "Python function result is  not a solid\n");
+			break;
+		}
+	} while(0);
+	return result;
+}
+Value python_convertresult(PyObject *arg)
+{
+	if(arg == NULL) return Value::undefined.clone();
+	if(PyList_Check(arg)) {
+		VectorType vec(NULL);
+		for(int i=0;i<PyList_Size(arg);i++) {
+			PyObject *item=PyList_GetItem(arg,i);
+			vec.emplace_back(python_convertresult(item));
+		}
+		return std::move(vec);
+	} else if(PyFloat_Check(arg)) { return { PyFloat_AsDouble(arg) }; }
+	else if(PyUnicode_Check(arg)) {
+		PyObject* repr = PyObject_Repr(arg);
+		PyObject* strobj = PyUnicode_AsEncodedString(repr, "utf-8", "~");
+		const char *chars =  PyBytes_AS_STRING(strobj);
+		return { std::string(chars) } ;
+	} else {
+		PyErr_SetString(PyExc_TypeError, "Unsupported function result\n");
+		return Value::undefined.clone();
+	}
+}
+Value python_functionfunc(const FunctionCall *call )
+{
+	const char *errorstr = NULL;
+	PyObject *funcresult = python_callfunction(call->name, call->arguments, errorstr);
+	if (errorstr != NULL) PyErr_SetString(PyExc_TypeError, errorstr);
+	return  python_convertresult(funcresult);
+}
+
+extern PyObject *PyInit_libfive(void);
+
+PyMODINIT_FUNC PyInit_PyLibFive(void);
+
+char *evaluatePython(const char *code, double time)
+{
+  char *error;
   python_result_node = NULL;
   PyObject *pyExcType;
   PyObject *pyExcValue;
@@ -384,7 +484,7 @@ std::string evaluatePython(const std::string & code, double time)
     PyObject* str_exc_value = PyObject_Repr(pyExcValue);
     PyObject* pyExcValueStr = PyUnicode_AsEncodedString(str_exc_value, "utf-8", "~");
     const char *strExcValue =  PyBytes_AS_STRING(pyExcValueStr);
-    if(strExcValue != NULL  && !strcmp(strExcValue,"<NULL>")) error="";
+    if(strExcValue != NULL  && !strcmp(strExcValue,"<NULL>")) error=NULL;
     else error=strdup(strExcValue);
 
     Py_XDECREF(pyExcType);
