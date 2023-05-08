@@ -62,6 +62,7 @@ void SourceFile::registerUse(const std::string& path, const Location& loc)
           path);
 
   auto ext = fs::path(path).extension().generic_string();
+#ifdef ENABLE_PYTHON  
   if (boost::iequals(ext, ".py")) {
     if (fs::is_regular_file(path)) {
 
@@ -82,7 +83,9 @@ void SourceFile::registerUse(const std::string& path, const Location& loc)
     } else { // is_regular
       LOG(message_group::Error, "Can't read python with path '%1$s'", path);
     }
-  } else if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
+  } else 
+#endif	  
+    if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
     if (fs::is_regular_file(path)) {
       FontCache::instance()->register_font_file(path);
     } else {
