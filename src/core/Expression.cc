@@ -514,7 +514,11 @@ static SimplificationResult simplify_function_body(const Expression *expression,
 
       auto f = call->evaluate_function_expression(context);
 #ifdef ENABLE_PYTHON    
-      if(f == boost::none) return  python_functionfunc(call);
+      if(f == boost::none)
+      {
+	      Value v=python_functionfunc(call);
+	      if(!v.isUndefined()) return v;
+      }
 #endif    
       if (!f) {
 	LOG(message_group::Warning, call->location(), context->documentRoot(), "Ignoring unknown function '%1$s'", call->name);

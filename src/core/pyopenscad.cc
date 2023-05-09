@@ -330,7 +330,6 @@ PyObject *python_callfunction(const std::string &name, const std::vector<std::sh
 {
 	PyObject *pFunc = NULL;
 	if(!pythonMainModule){
-		printf("Python not initialized!\n");
 		return NULL;
 	}
 	PyObject *maindict = PyModule_GetDict(pythonMainModule);
@@ -349,11 +348,9 @@ PyObject *python_callfunction(const std::string &name, const std::vector<std::sh
 		break;
 	}
 	if (!pFunc) {
-		printf("Function not found!\n");
 		return NULL;
 	}
 	if (!PyCallable_Check(pFunc)) {
-		printf("Function not callable!\n");
 		return NULL;
 	}
 	
