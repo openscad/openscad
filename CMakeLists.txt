@@ -86,7 +86,7 @@ if(CLANG_TIDY)
   configure_file(${CMAKE_SOURCE_DIR}/src/ext/.clang-tidy ${CMAKE_BINARY_DIR} COPYONLY)
   # Regex hack below since negative lookahead is not supported (POSIX regex only)
   #  (?!ext/) becomes ([^e]...|e[^x]..|ex[^t].|ext[^/]|.{0,3}$)
-  # CMAKE_CXX_CLANG_TIDY must be set before target is created (with add_executable())
+  # CMAKE_CXX_CLANG_TIDY must be set before target is created (with cutable())
   set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE};--header-filter=${regex}([^e]...|e[^x]..|ex[^t].|ext[^/]|.{0,3}$)")
   #  append ";--fix" to arguments above to apply automatic fix (if the given checks support it)
 endif(CLANG_TIDY)
@@ -891,6 +891,33 @@ set(GUI_HEADERS
   src/gui/NetworkSignal.h
   )
 
+set(GUI_UIS
+    ${GUI_UIS}
+    src/gui/AboutDialog.ui
+    src/gui/Animate.ui
+    src/gui/Console.ui
+    src/gui/ErrorLog.ui
+    src/gui/ExportPdfDialog.ui
+    src/gui/FontListDialog.ui
+    src/gui/LaunchingScreen.ui
+    src/gui/LibraryInfoDialog.ui
+    src/gui/MainWindow.ui
+    src/gui/OpenCSGWarningDialog.ui
+    src/gui/Preferences.ui
+    src/gui/PrintInitDialog.ui
+    src/gui/ProgressWidget.ui
+    src/gui/ViewportControl.ui
+    src/gui/input/AxisConfigWidget.ui
+    src/gui/input/ButtonConfigWidget.ui
+    src/gui/parameter/ParameterCheckBox.ui
+    src/gui/parameter/ParameterComboBox.ui
+    src/gui/parameter/ParameterDescriptionWidget.ui
+    src/gui/parameter/ParameterSlider.ui
+    src/gui/parameter/ParameterSpinBox.ui
+    src/gui/parameter/ParameterText.ui
+    src/gui/parameter/ParameterVector.ui
+    src/gui/parameter/ParameterWidget.ui
+)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   # Ignore specific warning on external lib
@@ -904,7 +931,8 @@ if(HEADLESS)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_NOGUI)
 else()
   list(APPEND RESOURCE_FILES ${RESOURCE_DIR}/common.qrc)
-  list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADERS})
+  # GUI_UIS for .ui files to be indexed by Qt Creator despite AUTOUIC usage
+  list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADERS} ${GUI_UIS})
 endif()
 
 if (SNAPSHOT)
