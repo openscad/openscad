@@ -885,11 +885,67 @@ set(GUI_SOURCES
   )
 
 # header-only code
-set(GUI_HEADERS
+set(GUI_HEADER_ONLY
   src/gui/AboutDialog.h
   src/gui/Network.h
   src/gui/NetworkSignal.h
-  )
+)
+
+# To be added in Source for QtCreator to show them in project tree
+set(GUI_HEADERS
+    src/gui/Animate.h
+    src/gui/AppleEvents.h
+    src/gui/AutoUpdater.h
+    src/gui/CGALWorker.h
+    src/gui/Console.h
+    src/gui/Dock.h
+    src/gui/Editor.h
+    src/gui/ErrorLog.h
+    src/gui/EventFilter.h
+    src/gui/ExportPdfDialog.h
+    src/gui/FontListDialog.h
+    src/gui/FontListTableView.h
+    src/gui/IgnoreWheelWhenNotFocused.h
+    src/gui/InitConfigurator.h
+    src/gui/LaunchingScreen.h
+    src/gui/LibraryInfoDialog.h
+    src/gui/MainWindow.h
+    src/gui/MouseSelector.h
+    src/gui/Network.h
+    src/gui/NetworkSignal.h
+    src/gui/OctoPrint.h
+    src/gui/OpenCSGWarningDialog.h
+    src/gui/OpenSCADApp.h
+    src/gui/Preferences.h
+    src/gui/PrintInitDialog.h
+    src/gui/PrintService.h
+    src/gui/ProgressWidget.h
+    src/gui/QGLView.h
+    src/gui/QSettingsCached.h
+    src/gui/QWordSearchField.h
+    src/gui/ScadApi.h
+    src/gui/ScadLexer.h
+    src/gui/ScintillaEditor.h
+    src/gui/Settings.h
+    src/gui/SettingsWriter.h
+    src/gui/TabManager.h
+    src/gui/TabWidget.h
+    src/gui/UIUtils.h
+    src/gui/ViewportControl.h
+    src/gui/WindowManager.h
+    src/gui/qt-obsolete.h
+    src/gui/qtgettext.h
+    src/gui/AboutDialog.h
+    src/gui/parameter/GroupWidget.h
+    src/gui/parameter/ParameterCheckBox.h
+    src/gui/parameter/ParameterComboBox.h
+    src/gui/parameter/ParameterSlider.h
+    src/gui/parameter/ParameterSpinBox.h
+    src/gui/parameter/ParameterText.h
+    src/gui/parameter/ParameterVector.h
+    src/gui/parameter/ParameterVirtualWidget.h
+    src/gui/parameter/ParameterWidget.h
+)
 
 # To be added in Source for QtCreator to show them in project tree
 set(GUI_UIS
@@ -933,7 +989,8 @@ if(HEADLESS)
 else()
   list(APPEND RESOURCE_FILES ${RESOURCE_DIR}/common.qrc)
   # GUI_UIS for .ui files to be indexed by Qt Creator despite AUTOUIC usage
-  list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADERS} ${GUI_UIS})
+  # GUI_HEADERS for .h files to be indexed by Qt Creator despite AUTOUIC usage
+  list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADER_ONLY} ${GUI_UIS} ${GUI_HEADERS})
 endif()
 
 if (SNAPSHOT)
