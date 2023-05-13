@@ -891,6 +891,7 @@ set(GUI_HEADERS
   src/gui/NetworkSignal.h
   )
 
+# To be added in Source for QtCreator to show them in project tree
 set(GUI_UIS
     ${GUI_UIS}
     src/gui/AboutDialog.ui
