@@ -79,7 +79,7 @@ PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
   if (dim != NULL) {
     double x, y, z;
     if (python_vectorval(dim, &(node->x), &(node->y), &(node->z))) {
-      PyErr_SetString(PyExc_TypeError, "Invalid Cube dimensions\n");
+      PyErr_SetString(PyExc_TypeError, "Invalid Cube dimensions");
       return NULL;
     }
   }
@@ -104,7 +104,7 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddddd", kwlist,
                                    &r, &d, &fn, &fa, &fs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   } else if (r >= 0)     {
     vr = r;
@@ -144,7 +144,7 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
 
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|dddddddOddd", kwlist, &h, &r, &r1, &r2, &d, &d1, &d2, &center, &fn, &fa, &fs)) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
 
@@ -195,7 +195,7 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &PyList_Type, &faces,
                                    &convexity,
                                    &PyList_Type, &triangles
-                                   )) PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+                                   )) PyErr_SetString(PyExc_TypeError, "error duing parsing");
   return NULL;
 
   if (points != NULL && PyList_Check(points)) {
@@ -254,13 +254,13 @@ PyObject *python_square(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist,
                                    &dim,
                                    &center)) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
   if (dim != NULL) {
     double z;
     if (python_vectorval(dim, &(node->x), &(node->y), &z)) {
-      PyErr_SetString(PyExc_TypeError, "Invalid Cube dimensions\n");
+      PyErr_SetString(PyExc_TypeError, "Invalid Cube dimensions");
       return NULL;
     }
   }
@@ -282,7 +282,7 @@ PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
   double vr = 1;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddddd", kwlist, &r, &d, &fn, &fa, &fs)) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
 
@@ -370,19 +370,19 @@ PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", kwlist,
                                    &obj,
                                    &val_v)) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
 
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in scale\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in scale");
     return NULL;
   }
 
   double x, y, z;
   if (python_vectorval(val_v, &x, &y, &z)) {
-    PyErr_SetString(PyExc_TypeError, "Invalid vector specifiaction in scale\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid vector specifiaction in scale");
     return NULL;
   }
   Vector3d scalevec(x, y, z);
@@ -421,13 +421,13 @@ PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!|f", kwlist,
                                    &obj,
                                    &PyList_Type, &val_a, &val_v)) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
 
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in rotate\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in rotate");
     return NULL;
   }
 
@@ -515,19 +515,19 @@ PyObject *python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", kwlist,
                                    &obj,
                                    &val_v)) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
 
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in mirror\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in mirror");
     return NULL;
   }
 
   Vector3d mirrorvec;
   if (python_vectorval(val_v, &x, &y, &z)) {
-    PyErr_SetString(PyExc_TypeError, "Invalid vector specifiaction in mirror\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid vector specifiaction in mirror");
     return NULL;
   }
   // x /= sqrt(x*x + y*y + z*z)
@@ -574,17 +574,17 @@ PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &obj,
                                    &v
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in translate\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in translate");
     return NULL;
   }
 
   if (python_vectorval(v, &x, &y, &z)) {
-    PyErr_SetString(PyExc_TypeError, "Invalid vector specifiaction in trans\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid vector specifiaction in trans");
     return NULL;
   }
   Vector3d translatevec(x, y, z);
@@ -617,13 +617,13 @@ PyObject *python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &obj,
                                    &PyList_Type, &mat
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
 
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in multmatrix\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in multmatrix");
     return NULL;
   }
 
@@ -668,7 +668,7 @@ PyObject *python_output(PyObject *self, PyObject *args, PyObject *kwargs)
                                    )) return NULL;
   child = PyOpenSCADObjectToNodeMulti(object);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in output\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in output");
     return NULL;
   }
   python_result_node = child;
@@ -727,12 +727,12 @@ PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &obj,
                                    &colorname, &alpha
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in color\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in color");
     return NULL;
   }
 
@@ -806,13 +806,13 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
                                    &fn, &fa, &fs
                                    )) {
 
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
 
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in rotate_extrude\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in rotate_extrude");
     return NULL;
   }
 
@@ -884,7 +884,7 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
                                    &twist,
                                    &fn, &fs, &fs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
 
@@ -952,7 +952,7 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist,
                                    &PyList_Type, &objs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
   n = PyList_Size(objs);
@@ -989,7 +989,7 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
   if (mode == OpenSCADOperator::INTERSECTION &&  !python_vectorval(arg2, &x, &y, &z)) {
     child = PyOpenSCADObjectToNodeMulti(arg1);
     if (child == NULL) {
-      PyErr_SetString(PyExc_TypeError, "invalid argument left to operator\n");
+      PyErr_SetString(PyExc_TypeError, "invalid argument left to operator");
       return NULL;
     }
     auto node = std::make_shared<TransformNode>(instance, "scale");
@@ -1003,13 +1003,13 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
 
   child = PyOpenSCADObjectToNodeMulti(arg1);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "invalid argument left to operator\n");
+    PyErr_SetString(PyExc_TypeError, "invalid argument left to operator");
     return NULL;
   }
   node->children.push_back(child);
   child = PyOpenSCADObjectToNodeMulti(arg2);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "invalid argument right to operator\n");
+    PyErr_SetString(PyExc_TypeError, "invalid argument right to operator");
     return NULL;
   }
   node->children.push_back(child);
@@ -1035,7 +1035,7 @@ PyObject *python_csg_oo_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist,
                                    &more_obj
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
 
@@ -1043,7 +1043,7 @@ PyObject *python_csg_oo_sub(PyObject *self, PyObject *args, PyObject *kwargs, Op
   node->children.push_back(child);
 
   if (python_more_obj(node->children, more_obj)) {
-    PyErr_SetString(PyExc_TypeError, "Unsupported  argument\n");
+    PyErr_SetString(PyExc_TypeError, "Unsupported  argument");
     return NULL;
   }
 
@@ -1081,7 +1081,7 @@ PyObject *python_csg_adv_sub(PyObject *self, PyObject *args, PyObject *kwargs, C
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist,
                                    &PyList_Type, &objs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
   n = PyList_Size(objs);
@@ -1111,7 +1111,7 @@ PyObject *python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &PyList_Type, &objs,
                                    &convexity
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
   n = PyList_Size(objs);
@@ -1158,19 +1158,19 @@ PyObject *python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &PyList_Type, &autosize,
                                    &convexity
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in resize\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in resize");
     return NULL;
   }
 
   if (newsize != NULL) {
     double x, y, z;
     if (python_vectorval(newsize, &x, &y, &z)) {
-      PyErr_SetString(PyExc_TypeError, "Invalid resize dimensions\n");
+      PyErr_SetString(PyExc_TypeError, "Invalid resize dimensions");
       return NULL;
     }
     node->newsize[0] = x;
@@ -1214,12 +1214,12 @@ PyObject *python_roof(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &method, convexity,
                                    &fn, &fa, &fs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in roof\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in roof");
     return NULL;
   }
 
@@ -1277,7 +1277,7 @@ PyObject *python_render(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &PyOpenSCADType, &obj,
                                    &convexity
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
   child = PyOpenSCADObjectToNode(obj);
@@ -1302,7 +1302,7 @@ PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|OlO", kwlist,
                                    &file, &center, &convexity
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
 
@@ -1339,7 +1339,7 @@ PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &script, &valign, &halign,
                                    &fn, &fa, &fs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
 
@@ -1383,7 +1383,7 @@ PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &spacing, &direction, &language,
                                    &script, &valign, &halign
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
 
@@ -1402,7 +1402,7 @@ PyObject *python_textmetrics(PyObject *self, PyObject *args, PyObject *kwargs)
 
   FreetypeRenderer::TextMetrics metrics(ftparams);
   if (!metrics.ok) {
-    PyErr_SetString(PyExc_TypeError, "Invalid Metric\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid Metric");
     return NULL;
   }
   PyObject *offset = PyList_New(2);
@@ -1437,7 +1437,7 @@ PyObject *python_version(PyObject *self, PyObject *args, PyObject *kwargs)
 
   char *kwlist[] = {NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
 
@@ -1459,7 +1459,7 @@ PyObject *python_version_num(PyObject *self, PyObject *args, PyObject *kwargs)
 
   char *kwlist[] = {NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
 
@@ -1488,12 +1488,12 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &r, &delta, &chamfer,
                                    &fn, &fa, &fs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in offset\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in offset");
     return NULL;
   }
 
@@ -1544,12 +1544,12 @@ PyObject *python_projection(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &obj,
                                    &cutmode, &convexity
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in projection\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in projection");
     return NULL;
   }
 
@@ -1582,7 +1582,7 @@ PyObject *python_group(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist,
                                    &PyOpenSCADType, &obj
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
   child = PyOpenSCADObjectToNode(obj);
@@ -1614,7 +1614,7 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
                                    &fn, &fa, &fs
 
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "error duing parsing");
     return NULL;
   }
 

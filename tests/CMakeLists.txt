@@ -540,7 +540,7 @@ file(GLOB REDEFINITION_FILES       ${TEST_SCAD_DIR}/redefinition/*.scad)
 file(GLOB_RECURSE BUGS_FILES       ${TEST_SCAD_DIR}/bugs/*.scad)
 file(GLOB_RECURSE BUGS_2D_FILES    ${TEST_SCAD_DIR}/bugs2D/*.scad)
 file(GLOB_RECURSE EXAMPLE_3D_FILES ${EXAMPLES_DIR}/*.scad)
-file(GLOB FEATURES_PYTHON_FILES    ${TEST_PYTHON_DIR}/language/*.py)
+file(GLOB FEATURES_PYTHON_FILES    ${TEST_PYTHON_DIR}/language/primitives.py)
 
 list(REMOVE_ITEM EXAMPLE_3D_FILES
   ${EXAMPLES_DIR}/Old/example015.scad
@@ -661,6 +661,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/json/import-json-relative-path.scad
   ${TEST_SCAD_DIR}/misc/vector-swizzling.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
+  ${TEST_PYTHON_DIR}/language/abuse.py
 )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -1130,7 +1131,7 @@ add_cmdline_test(csgtermtest      OPENSCAD SUFFIX term FILES
   ${TEST_SCAD_DIR}/misc/allmodules.scad
 )
 
-add_cmdline_test(echotest         OPENSCAD SUFFIX echo FILES ${ECHO_FILES})
+add_cmdline_test(echotest         OPENSCAD SUFFIX echo ARGS --trust-python FILES ${ECHO_FILES})
 # trace-usermodule-parameters is on by default,
 # but can generate very long outputs and potentially
 # unstable outputs, when combined with recursive tests.
