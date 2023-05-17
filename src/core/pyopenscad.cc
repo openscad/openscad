@@ -490,13 +490,20 @@ std::string evaluatePython(const std::string & code, double time)
     PyObject *result = PyRun_String(code.c_str(), Py_file_input, pythonInitDict, pythonInitDict);
 
     PyErr_Fetch(&pyExcType, &pyExcValue, &pyExcTraceback);
-    PyErr_NormalizeException(&pyExcType, &pyExcValue, &pyExcTraceback);
-
+//    PyErr_NormalizeException(&pyExcType, &pyExcValue, &pyExcTraceback);
     PyObject* str_exc_value = PyObject_Repr(pyExcValue);
     PyObject* pyExcValueStr = PyUnicode_AsEncodedString(str_exc_value, "utf-8", "~");
     const char *strExcValue =  PyBytes_AS_STRING(pyExcValueStr);
     if(strExcValue != NULL  && !strcmp(strExcValue,"<NULL>")) error="";
-    else error=strdup(strExcValue);
+    else{
+      error=strExcValue;
+      if(pyExcTraceback != NULL) {
+        PyTracebackObject *tb_o = (PyTracebackObject *)pyExcTraceback;
+        int line_num = tb_o->tb_lineno;
+        error += " in line ";
+        error += std::to_string(line_num);
+      }
+    }
 
     Py_XDECREF(pyExcType);
     Py_XDECREF(pyExcValue);
