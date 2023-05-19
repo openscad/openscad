@@ -32,15 +32,6 @@ bool matrix_contains_infinity(const Transform3d& m);
 bool matrix_contains_nan(const Transform3d& m);
 int32_t hash_floating_point(double v);
 
-template <typename Derived> bool is_finite(const Eigen::MatrixBase<Derived>& x) {
-  //infinity minus infinity is NaN, which never compares equal to itself
-  return ( (x - x).array() == (x - x).array()).all(); // NOLINT(misc-redundant-expression)
-}
-
-template <typename Derived> bool is_nan(const Eigen::MatrixBase<Derived>& x) {
-  return !((x.array() == x.array())).all();
-}
-
 BoundingBox operator*(const Transform3d& m, const BoundingBox& box);
 
 // Vector4f is fixed-size vectorizable
