@@ -12,6 +12,7 @@
 #include "memory.h"
 
 class PolySet;
+class IndexedTriangleMesh;
 
 enum class FileFormat {
   ASCIISTL,
@@ -210,10 +211,13 @@ public:
   using Vertex = std::array<double, 3>;
 
   ExportMesh(const PolySet& ps);
+  ExportMesh(const IndexedTriangleMesh& mesh);
 
   bool foreach_vertex(const std::function<bool(const Vertex&)>& callback) const;
   bool foreach_indexed_triangle(const std::function<bool(const std::array<int, 3>&)>& callback) const;
   bool foreach_triangle(const std::function<bool(const std::array<Vertex, 3>&)>& callback) const;
+
+  void export_indexed(IndexedTriangleMesh &out);
 
 private:
   std::vector<Vertex> vertices;
