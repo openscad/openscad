@@ -287,7 +287,7 @@ bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps)
   for (FCI fi = p.facets_begin(); fi != p.facets_end(); ++fi) {
     HFCC hc = fi->facet_begin();
     HFCC hc_end = hc;
-    ps.append_poly();
+    ps.append_poly(fi->facet_degree());
     do {
       Vertex const& v = *((hc++)->vertex());
       double x = CGAL::to_double(v.point().x());

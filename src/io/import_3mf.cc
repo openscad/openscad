@@ -167,7 +167,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
         return import_3mf_error(model, object_it, first_mesh, p);
       }
 
-      p->append_poly();
+      p->append_poly(3);
       p->append_vertex(vertex1.m_fPosition[0], vertex1.m_fPosition[1], vertex1.m_fPosition[2]);
       p->append_vertex(vertex2.m_fPosition[0], vertex2.m_fPosition[1], vertex2.m_fPosition[2]);
       p->append_vertex(vertex3.m_fPosition[0], vertex3.m_fPosition[1], vertex3.m_fPosition[2]);
@@ -346,7 +346,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
       vertex2 = object->GetVertex(triangle.m_Indices[1]);
       vertex3 = object->GetVertex(triangle.m_Indices[2]);
 
-      p->append_poly();
+      p->append_poly(3);
       p->append_vertex(vertex1.m_Coordinates[0], vertex1.m_Coordinates[1], vertex1.m_Coordinates[2]);
       p->append_vertex(vertex2.m_Coordinates[0], vertex2.m_Coordinates[1], vertex2.m_Coordinates[2]);
       p->append_vertex(vertex3.m_Coordinates[0], vertex3.m_Coordinates[1], vertex3.m_Coordinates[2]);

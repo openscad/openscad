@@ -821,19 +821,19 @@ static void add_slice(PolySet *ps, const Polygon2d& poly,
         //Vector2d mid_prev = trans3 * (prev1 +curr1+curr2)/4;
         Vector2d mid = trans_mid * (o.vertices[(i - 1) % o.vertices.size()] + o.vertices[i % o.vertices.size()]) / 2;
         double h_mid = (h1 + h2) / 2;
-        ps->append_poly();
+        ps->append_poly(3);
         ps->insert_vertex(prev1[0], prev1[1], h1);
         ps->insert_vertex(mid[0],   mid[1], h_mid);
         ps->insert_vertex(curr1[0], curr1[1], h1);
-        ps->append_poly();
+        ps->append_poly(3);
         ps->insert_vertex(curr1[0], curr1[1], h1);
         ps->insert_vertex(mid[0],   mid[1], h_mid);
         ps->insert_vertex(curr2[0], curr2[1], h2);
-        ps->append_poly();
+        ps->append_poly(3);
         ps->insert_vertex(curr2[0], curr2[1], h2);
         ps->insert_vertex(mid[0],   mid[1], h_mid);
         ps->insert_vertex(prev2[0], prev2[1], h2);
-        ps->append_poly();
+        ps->append_poly(3);
         ps->insert_vertex(prev2[0], prev2[1], h2);
         ps->insert_vertex(mid[0],   mid[1], h_mid);
         ps->insert_vertex(prev1[0], prev1[1], h1);
@@ -842,23 +842,23 @@ static void add_slice(PolySet *ps, const Polygon2d& poly,
       // Split along shortest diagonal,
       // unless at top for a 0-scaled axis (which can create 0 thickness "ears")
       if (splitfirst xor any_zero) {
-        ps->append_poly();
+        ps->append_poly(3);
         ps->insert_vertex(prev1[0], prev1[1], h1);
         ps->insert_vertex(curr2[0], curr2[1], h2);
         ps->insert_vertex(curr1[0], curr1[1], h1);
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          ps->append_poly();
+          ps->append_poly(3);
           ps->insert_vertex(curr2[0], curr2[1], h2);
           ps->insert_vertex(prev1[0], prev1[1], h1);
           ps->insert_vertex(prev2[0], prev2[1], h2);
         }
       } else {
-        ps->append_poly();
+        ps->append_poly(3);
         ps->insert_vertex(prev1[0], prev1[1], h1);
         ps->insert_vertex(prev2[0], prev2[1], h2);
         ps->insert_vertex(curr1[0], curr1[1], h1);
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          ps->append_poly();
+          ps->append_poly(3);
           ps->insert_vertex(prev2[0], prev2[1], h2);
           ps->insert_vertex(curr2[0], curr2[1], h2);
           ps->insert_vertex(curr1[0], curr1[1], h1);
@@ -1316,11 +1316,11 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
       fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
 
       for (size_t i = 0; i < o.vertices.size(); ++i) {
-        ps->append_poly();
+        ps->append_poly(3);
         ps->insert_vertex(rings[j % 2][i]);
         ps->insert_vertex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
         ps->insert_vertex(rings[j % 2][(i + 1) % o.vertices.size()]);
-        ps->append_poly();
+        ps->append_poly(3);
         ps->insert_vertex(rings[j % 2][i]);
         ps->insert_vertex(rings[(j + 1) % 2][i]);
         ps->insert_vertex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
