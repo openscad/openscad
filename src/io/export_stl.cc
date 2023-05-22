@@ -40,10 +40,28 @@
 
 namespace {
 
+#define TO_STRING_BUFFER_SIZE (128)
+
 template <class T>
 std::string toString(const T& v)
 {
-  return STR(v[0], " ", v[1], " ", v[2]);
+  // We format single precision floats to string w/ a 9 digits precision.
+  // This is to guarantee parsing the string to float would yield the exact
+  // same value back.
+  //
+  // Paraphrasing section 5.12.2 of the IEEE 754-2008 spec for the float32 case:
+  //  "Conversions from a [float32] to an external character sequence and back again
+  //   results in a copy of the original number so long as there are at least [9] significant
+  //   digits specified [...]"
+  //
+  // It seems some implementations (e.g. MacOS's stdlib) use a default precision of 9
+  // anyway for float (instead of 6 as mandated by the C99 spec, see printf doc in section
+  // 7.19.6.1), but we specify it explicitly in case other implementations don't.
+  //
+  // See more discussion in https://github.com/openscad/openscad/issues/2651
+  char output[TO_STRING_BUFFER_SIZE];
+  snprintf(output, TO_STRING_BUFFER_SIZE, "%.9g %.9g %.9g", v[0], v[1], v[2]);
+  return output;
 }
 
 Vector3d toVector(const std::array<double, 3>& pt) {
@@ -86,30 +104,30 @@ uint64_t append_stl(const IndexedTriangleMesh& mesh, std::ostream& output, bool 
 {
   uint64_t triangle_count = 0;
   
-  // For each vertex, contains its string conversion and the conversion
-  // from string again. Only built in ascii case, not binary.
-  std::vector<std::pair<std::string, Vector3f>> stringifiedVertices;
+  // In ASCII mode only, convert each vertex to string.
+  std::vector<std::string> vertexStrings;
   if (!binary) {
-    stringifiedVertices.reserve(mesh.vertices.size());
-    for (const auto & p : mesh.vertices) {
-      auto s = toString(p);
-      stringifiedVertices.emplace_back(s, fromString(s));
-    }
+    vertexStrings.resize(mesh.vertices.size());
+    std::transform(mesh.vertices.begin(), mesh.vertices.end(), vertexStrings.begin(), [](auto &p) {
+      assert(p == fromString(toString(p)));
+      return toString(p);
+    });
   }
 
   for (const auto &t : mesh.triangles) {
+    const auto &p0 = mesh.vertices[t[0]];
+    const auto &p1 = mesh.vertices[t[1]];
+    const auto &p2 = mesh.vertices[t[2]];
+
+    // Tessellation already eliminated these cases.
+    assert(p0 != p1 && p0 != p2 && p1 != p2);
+
+    auto normal = (p1 - p0).cross(p2 - p0);
+    if (!normal.isZero()) {
+      normal.normalize();
+    }
+
     if (binary) {
-      const Vector3f &p0 = mesh.vertices[t[0]];
-      const Vector3f &p1 = mesh.vertices[t[1]];
-      const Vector3f &p2 = mesh.vertices[t[2]];
-
-      // Tessellation already eliminated these cases.
-      assert(p0 != p1 && p0 != p2 && p1 != p2);
-
-      auto normal = (p1 - p0).cross(p2 - p0);
-      if (!normal.isZero()) {
-        normal.normalize();
-      }
       write_vector(output, normal);
       write_vector(output, p0);
       write_vector(output, p1);
@@ -117,29 +135,21 @@ uint64_t append_stl(const IndexedTriangleMesh& mesh, std::ostream& output, bool 
       char attrib[2] = {0, 0};
       output.write(attrib, 2);
     } else {
-      const auto &transformed0 = stringifiedVertices[t[0]];
-      const auto &transformed1 = stringifiedVertices[t[1]];
-      const auto &transformed2 = stringifiedVertices[t[2]];
+      const auto &s0 = vertexStrings[t[0]];
+      const auto &s1 = vertexStrings[t[1]];
+      const auto &s2 = vertexStrings[t[2]];
 
-      const auto &p0 = transformed0.second;
-      const auto &p1 = transformed1.second;
-      const auto &p2 = transformed2.second;
-
-      // Tessellation already eliminated these cases.
-      assert(p0 != p1 && p0 != p2 && p1 != p2);
-
-      auto normal = (p1 - p0).cross(p2 - p0);
-      if (!normal.isZero()) {
-        normal.normalize();
-      }
+      // Since the points are different, the precision we use to 
+      // format them to string should guarantee the strings are 
+      // different too.
+      assert(s0 != s1 && s0 != s2 && s1 != s2);
       
       output << "  facet normal ";
-      output << normalize(normal[0]) << " " << normalize(normal[1]) << " " << normalize(normal[2])
-              << "\n";
+      output << toString(normal) << "\n";
       output << "    outer loop\n";
-      output << "      vertex " << transformed0.first << "\n";
-      output << "      vertex " << transformed1.first << "\n";
-      output << "      vertex " << transformed2.first << "\n";
+      output << "      vertex " << s0 << "\n";
+      output << "      vertex " << s1 << "\n";
+      output << "      vertex " << s2 << "\n";
       output << "    endloop\n";
       output << "  endfacet\n";
     }
