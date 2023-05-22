@@ -28,6 +28,7 @@
 #include "PolySet.h"
 #include "PolySetUtils.h"
 #include "Reindexer.h"
+#include "double-conversion/double-conversion.h"
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
 #endif
@@ -40,47 +41,35 @@
 
 namespace {
 
-#define TO_STRING_BUFFER_SIZE (128)
+/* Define values for double-conversion library. */
+#define DC_BUFFER_SIZE (128)
+#define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO | double_conversion::DoubleToStringConverter::EMIT_POSITIVE_EXPONENT_SIGN)
+#define DC_INF NULL // Only finite values in STL outputs!
+#define DC_NAN NULL
+#define DC_EXP 'e'
+#define DC_DECIMAL_LOW_EXP (-6)
+#define DC_DECIMAL_HIGH_EXP (21)
+#define DC_MAX_LEADING_ZEROES (5)
+#define DC_MAX_TRAILING_ZEROES (0)
 
-template <class T>
-std::string toString(const T& v)
+std::string toString(const Vector3f& v)
 {
-  // We format single precision floats to string w/ a 9 digits precision.
-  // This is to guarantee parsing the string to float would yield the exact
-  // same value back.
-  //
-  // Paraphrasing section 5.12.2 of the IEEE 754-2008 spec for the float32 case:
-  //  "Conversions from a [float32] to an external character sequence and back again
-  //   results in a copy of the original number so long as there are at least [9] significant
-  //   digits specified [...]"
-  //
-  // It seems some implementations (e.g. MacOS's stdlib) use a default precision of 9
-  // anyway for float (instead of 6 as mandated by the C99 spec, see printf doc in section
-  // 7.19.6.1), but we specify it explicitly in case other implementations don't.
-  //
-  // See more discussion in https://github.com/openscad/openscad/issues/2651
-  char output[TO_STRING_BUFFER_SIZE];
-  snprintf(output, TO_STRING_BUFFER_SIZE, "%.9g %.9g %.9g", v[0], v[1], v[2]);
-  return output;
-}
+  double_conversion::DoubleToStringConverter dc(
+    DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
+    DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES
+  );
 
-Vector3d toVector(const std::array<double, 3>& pt) {
-  return {pt[0], pt[1], pt[2]};
-}
+  char buffer[DC_BUFFER_SIZE];
 
-Vector3f fromString(const std::string& vertexString)
-{
-  auto cstr = vertexString.c_str();
-  return {
-    strtof(cstr, (char**)&cstr), 
-    strtof(cstr, (char**)&cstr), 
-    strtof(cstr, (char**)&cstr)
-  };
-}
+  double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
+  dc.ToShortestSingle(v[0], &builder);
+  builder.AddCharacter(' ');
+  dc.ToShortestSingle(v[1], &builder);
+  builder.AddCharacter(' ');
+  dc.ToShortestSingle(v[2], &builder);
+  builder.Finalize();
 
-template <class T>
-T normalize(T x) {
-  return x == -0 ? 0 : x;
+  return buffer;
 }
 
 void write_vector(std::ostream& output, const Vector3f& v) {
@@ -108,10 +97,8 @@ uint64_t append_stl(const IndexedTriangleMesh& mesh, std::ostream& output, bool 
   std::vector<std::string> vertexStrings;
   if (!binary) {
     vertexStrings.resize(mesh.vertices.size());
-    std::transform(mesh.vertices.begin(), mesh.vertices.end(), vertexStrings.begin(), [](auto &p) {
-      assert(p == fromString(toString(p)));
-      return toString(p);
-    });
+    std::transform(mesh.vertices.begin(), mesh.vertices.end(), vertexStrings.begin(),
+      [](auto &p) { return toString(p); });
   }
 
   for (const auto &t : mesh.triangles) {
