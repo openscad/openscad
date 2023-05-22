@@ -99,6 +99,8 @@ void write_floats(std::ostream& output, const std::array<float, N>& data) {
 
 uint64_t append_stl(const IndexedTriangleMesh& mesh, std::ostream& output, bool binary)
 {
+  static_assert(sizeof(float) == 4, "Need 32 bit float");
+
   uint64_t triangle_count = 0;
   
   // In ASCII mode only, convert each vertex to string.
