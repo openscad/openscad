@@ -9,6 +9,12 @@
 #include "Expression.h"
 #include "PlatformUtils.h"
 
+extern "C" {
+	float __flt_rounds(float f) {
+		return f;
+	}
+}	
+
 // https://docs.python.org/3.10/extending/newtypes.html 
 
 static PyObject *pythonInitDict=NULL;
@@ -499,10 +505,11 @@ sys.stderr = stderr_bak\n\
 	    wchar_t libdir[256];
 	    swprintf(libdir, 256, L"%s/../lib/pylib/",PlatformUtils::applicationPath().c_str());
 	    PyConfig_SetString(&config, &config.pythonpath_env, libdir);
-	    // Py_Initialize();
-            Py_InitializeFromConfig(&config);
+	    Py_Initialize();
+            //Py_InitializeFromConfig(&config);
             PyConfig_Clear(&config);
 
+            Py_InitializeFromConfig(&config);
 	    pythonMainModule =  PyImport_AddModule("__main__");
 	    pythonInitDict = PyModule_GetDict(pythonMainModule);
 	    PyInit_PyOpenSCAD();
