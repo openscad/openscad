@@ -459,9 +459,29 @@ std::string evaluatePython(const std::string & code, double time)
 {
   std::string error;
   python_result_node = NULL;
-  PyObject *pyExcType;
-  PyObject *pyExcValue;
-  PyObject *pyExcTraceback;
+  PyObject *pyExcType = NULL;
+  PyObject *pyExcValue = NULL;
+  PyObject *pyExcTraceback = NULL;
+  const char *python_init_code="\
+import sys\n\
+class OutputCatcher:\n\
+   def __init__(self):\n\
+      self.data = ''\n\
+   def write(self, stuff):\n\
+      self.data = self.data + stuff\n\
+   def flush(self):\n\
+      pass\n\
+catcher_out = OutputCatcher()\n\
+catcher_err = OutputCatcher()\n\
+stdout_bak=sys.stdout\n\
+stderr_bak=sys.stderr\n\
+sys.stdout = catcher_out\n\
+sys.stderr = catcher_err\n\
+";
+  const char *python_exit_code="\
+sys.stdout = stdout_bak\n\
+sys.stderr = stderr_bak\n\
+";
 
     if(pythonInitDict) {
       if (Py_FinalizeEx() < 0) {
@@ -487,30 +507,39 @@ std::string evaluatePython(const std::string & code, double time)
 	    sprintf(run_str,"from openscad import *\nfa=12.0\nfn=0.0\nfs=2.0\nt=%g",time);
 	    PyRun_String(run_str, Py_file_input, pythonInitDict, pythonInitDict);
     }
+    PyRun_SimpleString(python_init_code);
     PyObject *result = PyRun_String(code.c_str(), Py_file_input, pythonInitDict, pythonInitDict);
+    if(result  == NULL) PyErr_Print();
+    PyRun_SimpleString(python_exit_code);
+    for(int i=0;i<2;i++)
+    {
+      PyObject* catcher = PyObject_GetAttrString(pythonMainModule, i==1?"catcher_err":"catcher_out");
+      PyObject* command_output = PyObject_GetAttrString(catcher, "data");
+      PyObject* command_output_value = PyUnicode_AsEncodedString(command_output, "utf-8", "~");
+      const char *command_output_bytes =  PyBytes_AS_STRING(command_output_value);
+      if(command_output_bytes == NULL || *command_output_bytes == '\0') continue;
+      if(i ==1) error += command_output_bytes;
+      else LOG(command_output_bytes);
+    }
 
     PyErr_Fetch(&pyExcType, &pyExcValue, &pyExcTraceback);
 //    PyErr_NormalizeException(&pyExcType, &pyExcValue, &pyExcTraceback);
     PyObject* str_exc_value = PyObject_Repr(pyExcValue);
     PyObject* pyExcValueStr = PyUnicode_AsEncodedString(str_exc_value, "utf-8", "~");
+    if(str_exc_value != NULL) Py_XDECREF(str_exc_value);
     const char *strExcValue =  PyBytes_AS_STRING(pyExcValueStr);
-    if(strExcValue != NULL  && !strcmp(strExcValue,"<NULL>")) error="";
-    else{
-      error=strExcValue;
-      if(pyExcTraceback != NULL) {
-        PyTracebackObject *tb_o = (PyTracebackObject *)pyExcTraceback;
-        int line_num = tb_o->tb_lineno;
-        error += " in line ";
-        error += std::to_string(line_num);
-      }
+    if(pyExcValueStr != NULL) Py_XDECREF(pyExcValueStr);
+    if(strExcValue != NULL && strcmp(strExcValue,"<NULL>")) error += strExcValue;
+    if(pyExcTraceback != NULL) {
+      PyTracebackObject *tb_o = (PyTracebackObject *)pyExcTraceback;
+      int line_num = tb_o->tb_lineno;
+      error += " in line ";
+      error += std::to_string(line_num);
+      Py_XDECREF(pyExcTraceback);
     }
 
-    Py_XDECREF(pyExcType);
-    Py_XDECREF(pyExcValue);
-    Py_XDECREF(pyExcTraceback);
-
-    Py_XDECREF(str_exc_value);
-    Py_XDECREF(pyExcValueStr);
+    if(pyExcType != NULL) Py_XDECREF(pyExcType);
+    if(pyExcValue != NULL) Py_XDECREF(pyExcValue);
     return error;
 }
 
