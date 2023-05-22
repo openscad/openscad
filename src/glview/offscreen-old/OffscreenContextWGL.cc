@@ -19,10 +19,12 @@
 #include <map>
 #include <string>
 #include <sstream>
-
 #include "printutils.h"
 #include "system-gl.h"
 #include <GL/gl.h> // must be included after glew.h
+
+
+namespace {
 
 class OffscreenContextWGL : public OffscreenContext {
 public:
@@ -33,21 +35,23 @@ public:
     ReleaseDC(this->window, this->dev_context);
   }
 
-  std::string getInfo() const override;
+  std::string getInfo() const override {
+  std::stringstream result;
+  // should probably get some info from WGL context here?
+  result << "GL context creator: WGL (old)\n"
+      	 << "PNG generator: lodepng\n";
+
+  return result.str();
+}
+
+  bool makeCurrent() const override {
+    return wglMakeCurrent(this->dev_context, this->openGLContext);
+  }
 
   HWND window{nullptr};
   HDC dev_context{nullptr};
   HGLRC openGLContext{nullptr};
 };
-
-std::string OffscreenContextWGL::getInfo() const {
-  std::stringstream result;
-  // should probably get some info from WGL context here?
-  result << "GL context creator: WGL\n"
-      	 << "PNG generator: lodepng\n";
-
-  return result.str();
-}
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
@@ -145,13 +149,6 @@ bool create_wgl_dummy_context(OffscreenContextWGL& ctx)
     return false;
   }
 
-  bool mcok = wglMakeCurrent(dev_context, gl_render_context);
-  if (!mcok) {
-    std::cerr << "MS WGL - wglMakeCurrent failed\n";
-    std::cerr << "last-error code: " << GetLastError() << "\n";
-    return false;
-  }
-
   ctx.window = window;
   ctx.dev_context = dev_context;
   ctx.openGLContext = gl_render_context;
@@ -159,6 +156,9 @@ bool create_wgl_dummy_context(OffscreenContextWGL& ctx)
   return true;
 }
 
+}  // namespace
+
+namespace offscreen_old {
 
 std::shared_ptr<OffscreenContext> CreateOffscreenContextWGL(
   uint32_t width, uint32_t height, uint32_t majorGLVersion, 
@@ -175,3 +175,5 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextWGL(
 
   return ctx;
 }
+
+}  // namespace offscreen_old

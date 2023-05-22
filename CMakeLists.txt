@@ -812,7 +812,7 @@ if(NULLGL)
     src/glview/Renderer.cc
     src/glview/NULLGL.cc # contains several 'nullified' versions of above .cc files
     src/glview/OffscreenView.cc
-    src/glview/offscreen-old/OffscreenContextNULL.cc
+    src/glview/OffscreenContextNULL.cc
     src/io/export_png.cc
     src/io/imageutils.cc)
 else()

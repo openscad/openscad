@@ -52,7 +52,7 @@ PACKAGES=(
     "fontconfig 2.14.1"
     "hidapi 0.12.0"
     "lib3mf 1.8.1"
-    "glib2 2.75.0"
+    "glib2 2.71.0"
     "pixman 0.42.2"
     "cairo 1.16.0"
     "cgal 5.5"
