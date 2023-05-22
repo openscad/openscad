@@ -72,20 +72,28 @@ std::string toString(const Vector3f& v)
   return buffer;
 }
 
-void write_vector(std::ostream& output, const Vector3f& v) {
-  for (int i = 0; i < 3; ++i) {
-    static_assert(sizeof(float) == 4, "Need 32 bit float");
-    float f = v[i];
-    char *fbeg = reinterpret_cast<char *>(&f);
-    char data[4];
+int32_t flipEndianness(int32_t x) {
+  return 
+    ((x << 24) & 0xff000000) | ((x >> 24) & 0xff) |
+    ((x << 8) & 0xff0000) | ((x >> 8) & 0xff00);
+}
 
-    uint16_t test = 0x0001;
-    if (*reinterpret_cast<char *>(&test) == 1) {
-      std::copy(fbeg, fbeg + 4, data);
-    } else {
-      std::reverse_copy(fbeg, fbeg + 4, data);
+template <size_t N>
+void write_floats(std::ostream& output, const std::array<float, N>& data) {
+  static uint16_t test = 0x0001;
+  static bool isLittleEndian = *reinterpret_cast<char *>(&test) == 1;
+
+  if (isLittleEndian) {
+    output.write(reinterpret_cast<char *>(const_cast<float *>(&data[0])), N * sizeof(float));
+  } else {
+    std::array<float, N> copy(data);
+    
+    int32_t *ints = reinterpret_cast<int32_t *>(&copy[0]);
+    for (size_t i = 0; i < N; i++) {
+      ints[i] = flipEndianness(ints[i]);
     }
-    output.write(data, 4);
+
+    output.write(reinterpret_cast<char *>(&copy[0]), N * sizeof(float));
   }
 }
 
@@ -101,6 +109,9 @@ uint64_t append_stl(const IndexedTriangleMesh& mesh, std::ostream& output, bool 
       [](auto &p) { return toString(p); });
   }
 
+  // Used for binary mode only
+  std::array<float, 4 * 3> coords;
+
   for (const auto &t : mesh.triangles) {
     const auto &p0 = mesh.vertices[t[0]];
     const auto &p1 = mesh.vertices[t[1]];
@@ -115,10 +126,17 @@ uint64_t append_stl(const IndexedTriangleMesh& mesh, std::ostream& output, bool 
     }
 
     if (binary) {
-      write_vector(output, normal);
-      write_vector(output, p0);
-      write_vector(output, p1);
-      write_vector(output, p2);
+      auto coords_offset = 0;
+      auto addCoords = [&](auto v) {
+        for (auto i : {0, 1, 2})
+          coords[coords_offset++] = v[i];
+      };
+      addCoords(normal);
+      addCoords(p0);
+      addCoords(p1);
+      addCoords(p2);
+      assert(coords_offset == 4 * 3);
+      write_floats(output, coords);
       char attrib[2] = {0, 0};
       output.write(attrib, 2);
     } else {
