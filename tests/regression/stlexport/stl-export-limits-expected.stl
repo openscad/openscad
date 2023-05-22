@@ -1,0 +1,86 @@
+solid OpenSCAD_Model
+  facet normal -1 0 0
+    outer loop
+      vertex 0 0 0
+      vertex 0 0 1.23457
+      vertex 0 1.23457 1.23457
+    endloop
+  endfacet
+  facet normal 0 0 -1.47172e-07
+    outer loop
+      vertex 0 0 0
+      vertex 0 1.23457 0
+      vertex 1.19209e-07 1.23457 0
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 0 0 0
+      vertex 0 1.23457 1.23457
+      vertex 0 1.23457 0
+    endloop
+  endfacet
+  facet normal 0 -1.47172e-07 0
+    outer loop
+      vertex 0 0 0
+      vertex 1.19209e-07 0 0
+      vertex 1.19209e-07 0 1.23457
+    endloop
+  endfacet
+  facet normal 0 -1.47172e-07 0
+    outer loop
+      vertex 0 0 0
+      vertex 1.19209e-07 0 1.23457
+      vertex 0 0 1.23457
+    endloop
+  endfacet
+  facet normal 0 0 -1.47172e-07
+    outer loop
+      vertex 0 0 0
+      vertex 1.19209e-07 1.23457 0
+      vertex 1.19209e-07 0 0
+    endloop
+  endfacet
+  facet normal 0 0 1.47172e-07
+    outer loop
+      vertex 0 0 1.23457
+      vertex 1.19209e-07 0 1.23457
+      vertex 0 1.23457 1.23457
+    endloop
+  endfacet
+  facet normal 0 1.47172e-07 0
+    outer loop
+      vertex 0 1.23457 0
+      vertex 0 1.23457 1.23457
+      vertex 1.19209e-07 1.23457 0
+    endloop
+  endfacet
+  facet normal 0 0 1.47172e-07
+    outer loop
+      vertex 0 1.23457 1.23457
+      vertex 1.19209e-07 0 1.23457
+      vertex 1.19209e-07 1.23457 1.23457
+    endloop
+  endfacet
+  facet normal 0 1.47172e-07 0
+    outer loop
+      vertex 0 1.23457 1.23457
+      vertex 1.19209e-07 1.23457 1.23457
+      vertex 1.19209e-07 1.23457 0
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 1.19209e-07 0 0
+      vertex 1.19209e-07 1.23457 0
+      vertex 1.19209e-07 0 1.23457
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 1.19209e-07 0 1.23457
+      vertex 1.19209e-07 1.23457 0
+      vertex 1.19209e-07 1.23457 1.23457
+    endloop
+  endfacet
+endsolid OpenSCAD_Model

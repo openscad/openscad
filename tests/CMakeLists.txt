@@ -716,6 +716,8 @@ list(APPEND THROWNTOGETHERTEST_FILES ${CGALPNGTEST_FILES} ${PRUNE_TEST})
 list(APPEND CGALSTLSANITYTEST_FILES ${TEST_SCAD_DIR}/misc/normal-nan.scad)
 
 list(APPEND EXPORT_STL_TEST_FILES ${TEST_SCAD_DIR}/stl/stl-export.scad)
+list(APPEND EXPORT_STL_TEST_FILES ${TEST_SCAD_DIR}/stl/stl-export-limits.scad)
+list(APPEND EXPORT_STL_TEST_FILES ${TEST_SCAD_DIR}/stl/stl-export-mild-degeneracies.scad)
 
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-export.scad)
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-import-export.scad)
