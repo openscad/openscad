@@ -216,6 +216,10 @@ public:
     [[nodiscard]] VectorType clone() const { return VectorType(this->ptr); } // Copy explicitly only when necessary
     static Value Empty() { return VectorType(nullptr); }
 
+    void reserve(size_t size) {
+      ptr->vec.reserve(size);
+    }
+
     [[nodiscard]] const_iterator begin() const { return iterator(ptr.get()); }
     [[nodiscard]] const_iterator   end() const { return iterator(ptr.get(), true); }
     [[nodiscard]] size_type size() const { return ptr->size(); }

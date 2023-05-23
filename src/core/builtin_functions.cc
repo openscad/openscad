@@ -164,6 +164,7 @@ Value builtin_rands(Arguments arguments, const Location& loc)
   }
 
   VectorType vec(arguments.session());
+  vec.reserve(numresults);
   if (min >= max) { // uniform_real_distribution doesn't allow min == max
     for (size_t i = 0; i < numresults; ++i)
       vec.emplace_back(min);
@@ -417,6 +418,7 @@ Value builtin_ord(Arguments arguments, const Location& loc)
 Value builtin_concat(Arguments arguments, const Location& /*loc*/)
 {
   VectorType result(arguments.session());
+  result.reserve(arguments.size());
   for (auto& argument : arguments) {
     if (argument->type() == Value::Type::VECTOR) {
       result.emplace_back(EmbeddedVectorType(std::move(argument->toVectorNonConst())));
@@ -802,20 +804,24 @@ Value builtin_textmetrics(Arguments arguments, const Location& loc)
   // The bounding box, ascent/descent, and offset values will be zero
   // if the text consists of nothing but whitespace.
   VectorType bbox_pos(session);
+  bbox_pos.reserve(2);
   bbox_pos.emplace_back(metrics.bbox_x);
   bbox_pos.emplace_back(metrics.bbox_y);
 
   VectorType bbox_dims(session);
+  bbox_dims.reserve(2);
   bbox_dims.emplace_back(metrics.bbox_w);
   bbox_dims.emplace_back(metrics.bbox_h);
 
   VectorType offset(session);
+  offset.reserve(2);
   offset.emplace_back(metrics.x_offset);
   offset.emplace_back(metrics.y_offset);
 
   // The advance values are valid whether or not the text
   // is whitespace.
   VectorType advance(session);
+  advance.reserve(2);
   advance.emplace_back(metrics.advance_x);
   advance.emplace_back(metrics.advance_y);
 
