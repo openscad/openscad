@@ -87,7 +87,7 @@ PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
     }
   }
   if(node->x <= 0 || node->y <= 0 || node ->z <= 0) {
-      PyErr_SetString(PyExc_TypeError, "Cube Dimensions must not be negative");
+      PyErr_SetString(PyExc_TypeError, "Cube Dimensions must be positive");
       return NULL;
   }
   if (center == Py_True)  node->center = 1;
@@ -105,7 +105,6 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
   auto node = std::make_shared<SphereNode>(instance);
-  printf("sphere\n");
 
   char *kwlist[] = {"r", "d", "fn", "fa", "fs", NULL};
   double r = NAN;
@@ -122,7 +121,7 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
   } 
   if (!isnan(r)) {
     if(r <= 0) {
-      PyErr_SetString(PyExc_TypeError, "r must be  positive");
+      PyErr_SetString(PyExc_TypeError, "r must be positive");
       return NULL;
     }	    
     vr = r;

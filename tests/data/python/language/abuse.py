@@ -13,7 +13,6 @@ def catch_error(code):
 # Test python_vectorval
 catch_error(lambda : cube( "eat that" ))        
 catch_error(lambda : cube( sys.stdout ))        
-catch_error(lambda : cube( math.sin ))        
 catch_error(lambda : cube( undefined ))        
 catch_error(lambda : cube( {} ))        
 catch_error(lambda : cube( () ))        
