@@ -126,6 +126,7 @@ protected:
       size_type embed_excess = 0; // Keep count of the number of embedded elements *excess of* vec.size()
       class EvaluationSession *evaluation_session = nullptr; // Used for heap size bookkeeping. May be null for vectors of known small maximum size.
       [[nodiscard]] size_type size() const { return vec.size() + embed_excess;  }
+      [[nodiscard]] bool empty() const { return vec.empty() && embed_excess == 0;  }
     };
     using vec_t = VectorObject::vec_t;
 public:
@@ -223,7 +224,7 @@ public:
     [[nodiscard]] const_iterator begin() const { return iterator(ptr.get()); }
     [[nodiscard]] const_iterator   end() const { return iterator(ptr.get(), true); }
     [[nodiscard]] size_type size() const { return ptr->size(); }
-    [[nodiscard]] bool empty() const { return ptr->vec.empty(); }
+    [[nodiscard]] bool empty() const { return ptr->empty(); }
     // const accesses to VectorObject require .clone to be move-able
     const Value& operator[](size_t idx) const {
       if (idx < this->size()) {
