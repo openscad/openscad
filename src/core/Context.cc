@@ -89,13 +89,27 @@ const Value& Context::lookup_variable(const Identifier& name, const Location& lo
 
 boost::optional<CallableFunction> Context::lookup_function(const Identifier& name, const Location& loc) const
 {
+  if (name.resolved_builtin_function) {
+    return CallableFunction{*name.resolved_builtin_function};
+  }
+
+  auto addToCache = [&](boost::optional<CallableFunction>&& result) {
+    if (result) {
+      // TODO: cache other types of functions if possible.
+      if (auto callable = std::get_if<const BuiltinFunction *>(&*result)) {
+        name.resolved_builtin_function = *callable;
+      }
+    }
+    return std::move(result);
+  };
+
   if (is_config_variable(name)) {
-    return session()->lookup_special_function(name, loc);
+    return addToCache(session()->lookup_special_function(name, loc));
   }
   for (const Context *context = this; context != nullptr; context = context->getParent().get()) {
     boost::optional<CallableFunction> result = context->lookup_local_function(name, loc);
     if (result) {
-      return result;
+      return addToCache(std::move(result));
     }
   }
   LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown function '%1$s'", name);

@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include <boost/optional.hpp>
+class BuiltinFunction;
 
 class Identifier
 {
@@ -44,6 +46,10 @@ public:
   }
 
 private:
+
+  friend class Context;
+
+  mutable boost::optional<const BuiltinFunction *> resolved_builtin_function;
 
   void update_hash() {
     hash = std::hash<std::string>()(name);
