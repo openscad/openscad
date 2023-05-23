@@ -43,7 +43,7 @@ namespace {
 
 /* Define values for double-conversion library. */
 #define DC_BUFFER_SIZE (128)
-#define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO | double_conversion::DoubleToStringConverter::EMIT_POSITIVE_EXPONENT_SIGN)
+#define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO)
 #define DC_INF NULL // Only finite values in STL outputs!
 #define DC_NAN NULL
 #define DC_EXP 'e'
