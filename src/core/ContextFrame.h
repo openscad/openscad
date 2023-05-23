@@ -11,14 +11,14 @@ public:
 
   ContextFrame(ContextFrame&& other) = default;
 
-  virtual boost::optional<const Value&> lookup_local_variable(const std::string& name) const;
-  virtual boost::optional<CallableFunction> lookup_local_function(const std::string& name, const Location& loc) const;
-  virtual boost::optional<InstantiableModule> lookup_local_module(const std::string& name, const Location& loc) const;
+  virtual boost::optional<const Value&> lookup_local_variable(const Identifier& name) const;
+  virtual boost::optional<CallableFunction> lookup_local_function(const Identifier& name, const Location& loc) const;
+  virtual boost::optional<InstantiableModule> lookup_local_module(const Identifier& name, const Location& loc) const;
 
   virtual std::vector<const Value *> list_embedded_values() const;
   virtual size_t clear();
 
-  virtual bool set_variable(const std::string& name, Value&& value);
+  virtual bool set_variable(const Identifier& name, Value&& value);
 
   void apply_variables(const ValueMap& variables);
   void apply_lexical_variables(const ContextFrame& other);
@@ -33,7 +33,7 @@ public:
   void apply_config_variables(ContextFrame&& other);
   void apply_variables(ContextFrame&& other);
 
-  static bool is_config_variable(const std::string& name);
+  static bool is_config_variable(const Identifier& name);
 
   EvaluationSession *session() const { return evaluation_session; }
   const std::string& documentRoot() const { return evaluation_session->documentRoot(); }

@@ -814,7 +814,7 @@ LcFor::LcFor(AssignmentList args, Expression *expr, const Location& loc)
 {
 }
 
-static inline ContextHandle<Context> forContext(const std::shared_ptr<const Context>& context, const std::string& name, Value value)
+static inline ContextHandle<Context> forContext(const std::shared_ptr<const Context>& context, const Identifier& name, Value value)
 {
   ContextHandle<Context> innerContext{Context::create<Context>(context)};
   innerContext->set_variable(name, std::move(value));
@@ -834,7 +834,7 @@ static void doForEach(
     return;
   }
 
-  const std::string& variable_name = assignments[assignment_index]->getName();
+  const auto& variable_name = assignments[assignment_index]->getName();
   Value variable_values = assignments[assignment_index]->getExpr()->evaluate(context);
 
   if (variable_values.type() == Value::Type::RANGE) {

@@ -137,13 +137,13 @@ static ContextFrame parse_without_defaults(
   ) {
   ContextFrame output{arguments.session()};
 
-  std::set<std::string> named_arguments;
+  std::set<Identifier> named_arguments;
 
   size_t parameter_position = 0;
   bool warned_for_extra_arguments = false;
 
   for (auto& argument : arguments) {
-    std::string name;
+    Identifier name;
     if (argument.name) {
       name = *argument.name;
       if (named_arguments.count(name)) {
@@ -171,7 +171,7 @@ static ContextFrame parse_without_defaults(
       named_arguments.insert(name);
     } else {
       while (parameter_position < required_parameters.size() + optional_parameters.size()) {
-        std::string candidate_name = (parameter_position < required_parameters.size())
+        auto &candidate_name = (parameter_position < required_parameters.size())
     ? parameter_name(required_parameters[parameter_position])
     : parameter_name(optional_parameters[parameter_position - required_parameters.size()])
         ;
@@ -198,11 +198,11 @@ static ContextFrame parse_without_defaults(
 Parameters Parameters::parse(
   Arguments arguments,
   const Location& loc,
-  const std::vector<std::string>& required_parameters,
-  const std::vector<std::string>& optional_parameters
+  const std::vector<Identifier>& required_parameters,
+  const std::vector<Identifier>& optional_parameters
   ) {
   ContextFrame frame{parse_without_defaults(std::move(arguments), loc, required_parameters, optional_parameters, true,
-                                            [](const std::string& s) -> std::string {
+                                            [](const Identifier& s) -> const Identifier& {
       return s;
     }
                                             )};
@@ -223,7 +223,7 @@ Parameters Parameters::parse(
   const std::shared_ptr<const Context>& defining_context
   ) {
   ContextFrame frame{parse_without_defaults(std::move(arguments), loc, required_parameters, {}, OpenSCAD::parameterCheck,
-                                            [](const std::shared_ptr<Assignment>& assignment) {
+                                            [](const std::shared_ptr<Assignment>& assignment) -> const Identifier& {
       return assignment->getName();
     }
                                             )};

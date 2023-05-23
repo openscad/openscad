@@ -8,6 +8,7 @@
 #include "AST.h"
 #include "memory.h"
 #include "Annotation.h"
+#include "Identifier.h"
 
 class Assignment : public ASTNode
 {
@@ -20,7 +21,7 @@ public:
     : ASTNode(loc), name(std::move(name)), expr(std::move(expr)), locOfOverwrite(Location::NONE){ }
 
   void print(std::ostream& stream, const std::string& indent) const override;
-  const std::string& getName() const { return name; }
+  const Identifier& getName() const { return name; }
   const shared_ptr<Expression>& getExpr() const { return expr; }
   const AnnotationMap& getAnnotations() const { return annotations; }
   // setExpr used by customizer ParameterObject etc.
@@ -34,7 +35,7 @@ public:
   void setLocationOfOverwrite(const Location& locOfOverwrite) { this->locOfOverwrite = locOfOverwrite; }
 
 protected:
-  const std::string name;
+  const Identifier name;
   shared_ptr<class Expression> expr;
   AnnotationMap annotations;
   Location locOfOverwrite;
