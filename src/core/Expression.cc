@@ -34,6 +34,7 @@
 #include <algorithm>
 #include <typeinfo>
 #include <forward_list>
+#include <unordered_set>
 #include <utility>
 #include <variant>
 #include "printutils.h"
@@ -690,7 +691,9 @@ Let::Let(AssignmentList args, Expression *expr, const Location& loc)
 
 void Let::doSequentialAssignment(const AssignmentList& assignments, const Location& location, ContextHandle<Context>& targetContext)
 {
-  std::set<std::string> seen;
+  std::unordered_set<Identifier> seen;
+  seen.reserve(assignments.size());
+
   for (const auto& assignment : assignments) {
     Value value = assignment->getExpr()->evaluate(*targetContext);
     if (assignment->getName().empty()) {
