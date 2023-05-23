@@ -91,7 +91,7 @@ PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
       return NULL;
   }
   if (center == Py_True)  node->center = 1;
-  else if (center == Py_False)  node->center = 0;
+  else if (center == Py_False || center == NULL )  node->center = 0;
   else {
       PyErr_SetString(PyExc_TypeError, "Unknown Value for Cube center parameter");
       return NULL;
@@ -105,6 +105,7 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
   auto node = std::make_shared<SphereNode>(instance);
+  printf("sphere\n");
 
   char *kwlist[] = {"r", "d", "fn", "fa", "fs", NULL};
   double r = NAN;
@@ -119,29 +120,29 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "error duing parsing sphere");
     return NULL;
   } 
-  if (r != NAN) {
+  if (!isnan(r)) {
     if(r <= 0) {
-      PyErr_SetString(PyExc_TypeError, "r cannot be negative");
+      PyErr_SetString(PyExc_TypeError, "r must be  positive");
       return NULL;
     }	    
     vr = r;
-    if(d != NAN) {
+    if(!isnan(d)) {
       PyErr_SetString(PyExc_TypeError, "Cant specify r and d at the same time for sphere");
       return NULL;
     }
   } 
-  if (d != NAN) {
+  if (!isnan(d)) {
     if(d <= 0) {
-      PyErr_SetString(PyExc_TypeError, "d cannot be negative");
+      PyErr_SetString(PyExc_TypeError, "d must be positive");
       return NULL;
     }	    
     vr = d / 2.0;
   }
 
   get_fnas(node->fn, node->fa, node->fs);
-  if (fn != NAN) node->fn = fn;
-  if (fa != NAN) node->fa = fa;
-  if (fs != NAN) node->fs = fs;
+  if (!isnan(fn)) node->fn = fn;
+  if (!isnan(fa)) node->fa = fa;
+  if (!isnan(fs)) node->fs = fs;
 
   node->r = vr;
 
@@ -175,20 +176,20 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
 
   if (h >= 0) vh = h;
 
-  if (r1 != NAN && r2 != NAN) {
+  if (!isnan(r1) && !isnan(r2)) {
     vr1 = r1; vr2 = r2;
-  } else if (d1 != NAN && d2 != NAN) {
+  } else if (!isnan(d1) && !isnan(d2)) {
     vr1 = d1 / 2.0; vr2 = d2 / 2.0;
-  } else if (r != NAN)                                                                                                                {
+  } else if (!isnan(r))                                                                                                                {
     vr1 = r; vr2 = r;
-  } else if (d != NAN) {
+  } else if (!isnan(d)) {
     vr1 = d / 2.0; vr2 = d / 2.0;
   }
 
   get_fnas(node->fn, node->fa, node->fs);
-  if (fn != NAN) node->fn = fn;
-  if (fa != NAN) node->fa = fa;
-  if (fs != NAN) node->fs = fs;
+  if (!isnan(fn)) node->fn = fn;
+  if (!isnan(fa)) node->fa = fa;
+  if (!isnan(fs)) node->fs = fs;
 
   node->r1 = vr1;
   node->r2 = vr2;
@@ -312,13 +313,13 @@ PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
   get_fnas(node->fn, node->fa, node->fs);
-  if (fn != NAN) node->fn = fn;
-  if (fa != NAN) node->fa = fa;
-  if (fs != NAN) node->fs = fs;
+  if (!isnan(fn)) node->fn = fn;
+  if (!isnan(fa)) node->fa = fa;
+  if (!isnan(fs)) node->fs = fs;
 
-  if (r != NAN) {
+  if (!isnan(r)) {
     vr = r;
-  } else if (d != NAN){
+  } else if (!isnan(d)){
     vr = d / 2.0;
   }
 
@@ -841,9 +842,9 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   }
 
   get_fnas(node->fn, node->fa, node->fs);
-  if (fn != NAN) node->fn = fn;
-  if (fa != NAN) node->fa = fa;
-  if (fs != NAN) node->fs = fs;
+  if (!isnan(fn)) node->fn = fn;
+  if (!isnan(fa)) node->fa = fa;
+  if (!isnan(fs)) node->fs = fs;
 
   if (layer != NULL) node->layername = layer;
   node->convexity = convexity;
@@ -919,9 +920,9 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   }
 
   get_fnas(node->fn, node->fa, node->fs);
-  if (fn != NAN) node->fn = fn;
-  if (fa != NAN) node->fa = fa;
-  if (fs != NAN) node->fs = fs;
+  if (!isnan(fn)) node->fn = fn;
+  if (!isnan(fa)) node->fa = fa;
+  if (!isnan(fs)) node->fs = fs;
 
   node->height = height;
   node->convexity = convexity;
@@ -1248,9 +1249,9 @@ PyObject *python_roof(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
   get_fnas(node->fn, node->fa, node->fs);
-  if (fn != NAN) node->fn = fn;
-  if (fa != NAN) node->fa = fa;
-  if (fs != NAN) node->fs = fs;
+  if (!isnan(fn)) node->fn = fn;
+  if (!isnan(fa)) node->fa = fa;
+  if (!isnan(fs)) node->fs = fs;
 
   node->fa = std::max(node->fa, 0.01);
   node->fs = std::max(node->fs, 0.01);
@@ -1522,17 +1523,17 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
   get_fnas(node->fn, node->fa, node->fs);
-  if (fn != NAN) node->fn = fn;
-  if (fa != NAN) node->fa = fa;
-  if (fs != NAN) node->fs = fs;
+  if (!isnan(fn)) node->fn = fn;
+  if (!isnan(fa)) node->fa = fa;
+  if (!isnan(fs)) node->fs = fs;
 
 
   node->delta = 1;
   node->chamfer = false;
   node->join_type = ClipperLib::jtRound;
-  if (r != NAN) {
+  if (!isnan(r)) {
     node->delta = r;
-  } else if (delta != NAN) {
+  } else if (!isnan(delta)) {
     node->delta = delta;
     node->join_type = ClipperLib::jtMiter;
     if (chamfer == Py_True) {
@@ -1660,9 +1661,9 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
   auto node = std::make_shared<ImportNode>(instance, actualtype);
 
   get_fnas(node->fn, node->fa, node->fs);
-  if (fn != NAN) node->fn = fn;
-  if (fa != NAN) node->fa = fa;
-  if (fs != NAN) node->fs = fs;
+  if (!isnan(fn)) node->fn = fn;
+  if (!isnan(fa)) node->fa = fa;
+  if (!isnan(fs)) node->fs = fs;
 
   node->filename = filename;
 
