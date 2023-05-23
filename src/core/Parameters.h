@@ -30,8 +30,8 @@ public:
   static Parameters parse(
     Arguments arguments,
     const Location& loc,
-    const std::vector<std::string>& required_parameters,
-    const std::vector<std::string>& optional_parameters = {}
+    const std::vector<Identifier>& required_parameters,
+    const std::vector<Identifier>& optional_parameters = {}
     );
   /*
    * Matches arguments with parameters.

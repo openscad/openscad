@@ -47,7 +47,7 @@ void EvaluationSession::pop_frame(size_t index)
   assert(stack.size() == index);
 }
 
-boost::optional<const Value&> EvaluationSession::try_lookup_special_variable(const std::string& name) const
+boost::optional<const Value&> EvaluationSession::try_lookup_special_variable(const Identifier& name) const
 {
   for (auto it = stack.crbegin(); it != stack.crend(); ++it) {
     boost::optional<const Value&> result = (*it)->lookup_local_variable(name);
@@ -58,7 +58,7 @@ boost::optional<const Value&> EvaluationSession::try_lookup_special_variable(con
   return boost::none;
 }
 
-const Value& EvaluationSession::lookup_special_variable(const std::string& name, const Location& loc) const
+const Value& EvaluationSession::lookup_special_variable(const Identifier& name, const Location& loc) const
 {
   boost::optional<const Value&> result = try_lookup_special_variable(name);
   if (!result) {
@@ -68,9 +68,10 @@ const Value& EvaluationSession::lookup_special_variable(const std::string& name,
   return *result;
 }
 
-boost::optional<CallableFunction> EvaluationSession::lookup_special_function(const std::string& name, const Location& loc) const
+boost::optional<CallableFunction> EvaluationSession::lookup_special_function(const Identifier& name, const Location& loc) const
 {
   for (auto it = stack.crbegin(); it != stack.crend(); ++it) {
+    // TODO: point to stack inside identifier!
     boost::optional<CallableFunction> result = (*it)->lookup_local_function(name, loc);
     if (result) {
       return result;
@@ -80,7 +81,7 @@ boost::optional<CallableFunction> EvaluationSession::lookup_special_function(con
   return boost::none;
 }
 
-boost::optional<InstantiableModule> EvaluationSession::lookup_special_module(const std::string& name, const Location& loc) const
+boost::optional<InstantiableModule> EvaluationSession::lookup_special_module(const Identifier& name, const Location& loc) const
 {
   for (auto it = stack.crbegin(); it != stack.crend(); ++it) {
     boost::optional<InstantiableModule> result = (*it)->lookup_local_module(name, loc);

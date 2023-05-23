@@ -718,7 +718,7 @@ Value builtin_parent_module(Arguments arguments, const Location& loc)
     LOG(message_group::Warning, loc, arguments.documentRoot(), "Parent module index (%1$d) greater than the number of modules on the stack", n);
     return Value::undefined.clone();
   }
-  return {UserModule::stack_element(s - 1 - n)};
+  return {UserModule::stack_element(s - 1 - n).getName()};
 }
 
 Value builtin_norm(Arguments arguments, const Location& loc)
