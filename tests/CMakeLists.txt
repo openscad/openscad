@@ -540,7 +540,8 @@ file(GLOB REDEFINITION_FILES       ${TEST_SCAD_DIR}/redefinition/*.scad)
 file(GLOB_RECURSE BUGS_FILES       ${TEST_SCAD_DIR}/bugs/*.scad)
 file(GLOB_RECURSE BUGS_2D_FILES    ${TEST_SCAD_DIR}/bugs2D/*.scad)
 file(GLOB_RECURSE EXAMPLE_3D_FILES ${EXAMPLES_DIR}/*.scad)
-file(GLOB FEATURES_PYTHON_FILES    ${TEST_PYTHON_DIR}/language/primitives.py)
+list(APPEND CGALPNGTEST_PYTHON_FILES  ${TEST_PYTHON_DIR}/language/primitives.py )
+list(APPEND ECHO_PYTHON_FILES         ${TEST_PYTHON_DIR}/language/abuse.py )
 
 list(REMOVE_ITEM EXAMPLE_3D_FILES
   ${EXAMPLES_DIR}/Old/example015.scad
@@ -661,7 +662,6 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/json/import-json-relative-path.scad
   ${TEST_SCAD_DIR}/misc/vector-swizzling.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
-  ${TEST_PYTHON_DIR}/language/abuse.py
 )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -702,7 +702,6 @@ list(APPEND CGALPNGTEST_3D_FILES
   ${TEST_SCAD_DIR}/misc/preview_variable.scad
 )
 
-list(APPEND CGALPNGTEST_PYTHON_FILES ${FEATURES_PYTHON_FILES} )
 # test importing unparseable files, result will be an empty image
 list(APPEND STL_IMPORT_FILES
   ${TEST_SCAD_DIR}/stl/stl-import-invalidvertex.scad
@@ -1131,7 +1130,7 @@ add_cmdline_test(csgtermtest      OPENSCAD SUFFIX term FILES
   ${TEST_SCAD_DIR}/misc/allmodules.scad
 )
 
-add_cmdline_test(echotest         OPENSCAD SUFFIX echo ARGS --trust-python FILES ${ECHO_FILES})
+add_cmdline_test(echotest         OPENSCAD SUFFIX echo FILES ${ECHO_FILES})
 # trace-usermodule-parameters is on by default,
 # but can generate very long outputs and potentially
 # unstable outputs, when combined with recursive tests.
@@ -1153,7 +1152,8 @@ add_cmdline_test(csgpngtest         SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES 
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest  SCRIPT ${CGALSTLSANITYTEST_PY} SUFFIX txt FILES ${CGALSTLSANITYTEST_FILES} ARGS ${OPENSCAD_BINPATH})
-add_cmdline_test(cgalpngtest_python  OPENSCAD FILES ${CGALPNGTEST_PYTHON_FILES} SUFFIX png ARGS --trust-python --render)
+add_cmdline_test(cgalpngtest_python  OPENSCAD FILES ${CGALPNGTEST_PYTHON_FILES} SUFFIX png  ARGS --trust-python --render)
+add_cmdline_test(echotest_python     OPENSCAD FILES ${ECHO_PYTHON_FILES}        SUFFIX echo ARGS --trust-python )
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
 foreach(TEST ${SVG_VIEWBOX_TESTS})
@@ -1432,9 +1432,7 @@ if(APPLE)
     ${NEF3_BROKEN_TESTS}
     # Python not enabled for MAC yet
     cgalpngtest_python_primitives
-    # Z issues specific to edge shader: https://github.com/openscad/openscad/issues/4595
-    openscad-viewoptions-edges_view-options-tests
-    openscad-viewoptions-axes-scales-edges_view-options-tests
+    echotest_python_abuse
     # issue3158 test failing on macos, see: https://github.com/openscad/openscad/issues/4509
     opencsgtest_issue3158
     PROPERTIES DISABLED TRUE
@@ -1451,8 +1449,9 @@ elseif(WIN32 OR MXECROSS)
     # requires `gs` tool
     pdfexporttest_centered
     pdfexporttest_simple-pdf
-    # Python not enabled in windows
+    # Python not enabled in windows yet
     cgalpngtest_python_primitives
+    echotest_python_abuse
     PROPERTIES DISABLED TRUE
   )
 endif()
