@@ -9,11 +9,13 @@
 #include "Expression.h"
 #include "PlatformUtils.h"
 
+#ifdef ENABLE_PYTHON_STATIC
 extern "C" {
 	float __flt_rounds(float f) {
 		return f;
 	}
 }	
+#endif
 
 // https://docs.python.org/3.10/extending/newtypes.html 
 
