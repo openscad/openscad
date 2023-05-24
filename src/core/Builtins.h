@@ -13,11 +13,11 @@ class Builtins
 {
 public:
   static Builtins *instance(bool erase = false);
-  static void init(const std::string& name, AbstractModule *module);
-  static void init(const std::string& name, AbstractModule *module, const std::vector<std::string>& calltipList);
-  static void init(const std::string& name, BuiltinFunction *function, const std::vector<std::string>& calltipList);
+  static void init(const Identifier& name, AbstractModule *module);
+  static void init(const Identifier& name, AbstractModule *module, const std::vector<std::string>& calltipList);
+  static void init(const Identifier& name, BuiltinFunction *function, const std::vector<std::string>& calltipList);
   void initialize();
-  std::string isDeprecated(const std::string& name) const;
+  std::string isDeprecated(const Identifier& name) const;
 
   const auto& getAssignments() const { return this->assignments; }
   const auto& getFunctions() const { return this->functions; }

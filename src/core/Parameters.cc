@@ -42,7 +42,7 @@ Parameters::Parameters(Parameters&& other) noexcept :
   handle(&this->frame)
 {}
 
-boost::optional<const Value&> Parameters::lookup(const std::string& name) const
+boost::optional<const Value&> Parameters::lookup(const Identifier& name) const
 {
   if (ContextFrame::is_config_variable(name)) {
     return frame.session()->try_lookup_special_variable(name);
@@ -51,7 +51,7 @@ boost::optional<const Value&> Parameters::lookup(const std::string& name) const
   }
 }
 
-const Value& Parameters::get(const std::string& name) const
+const Value& Parameters::get(const Identifier& name) const
 {
   boost::optional<const Value&> value = lookup(name);
   if (!value) {
@@ -60,19 +60,19 @@ const Value& Parameters::get(const std::string& name) const
   return *value;
 }
 
-double Parameters::get(const std::string& name, double default_value) const
+double Parameters::get(const Identifier& name, double default_value) const
 {
   boost::optional<const Value&> value = lookup(name);
   return (value && value->type() == Value::Type::NUMBER) ? value->toDouble() : default_value;
 }
 
-const std::string& Parameters::get(const std::string& name, const std::string& default_value) const
+const std::string& Parameters::get(const Identifier& name, const std::string& default_value) const
 {
   boost::optional<const Value&> value = lookup(name);
   return (value && value->type() == Value::Type::STRING) ? value->toStrUtf8Wrapper().toString() : default_value;
 }
 
-bool Parameters::valid(const std::string& name, const Value& value,
+bool Parameters::valid(const Identifier& name, const Value& value,
                        Value::Type type)
 {
   if (value.type() == type) {
@@ -83,7 +83,7 @@ bool Parameters::valid(const std::string& name, const Value& value,
   return false;
 }
 
-bool Parameters::valid_required(const std::string& name, Value::Type type)
+bool Parameters::valid_required(const Identifier& name, Value::Type type)
 {
   boost::optional<const Value&> value = lookup(name);
   if (!value) {
@@ -94,7 +94,7 @@ bool Parameters::valid_required(const std::string& name, Value::Type type)
   return valid(name, *value, type);
 }
 
-bool Parameters::valid(const std::string& name, Value::Type type)
+bool Parameters::valid(const Identifier& name, Value::Type type)
 {
   boost::optional<const Value&> value = lookup(name);
   if (!value || value->isUndefined()) {
@@ -104,7 +104,7 @@ bool Parameters::valid(const std::string& name, Value::Type type)
 }
 
 // Handle all general warnings and return true if a valid number is found.
-bool Parameters::validate_number(const std::string& name, double& out)
+bool Parameters::validate_number(const Identifier& name, double& out)
 {
   boost::optional<const Value&> value = lookup(name);
   if (!value || value->isUndefined()) {
@@ -247,7 +247,7 @@ void Parameters::set_caller(const std::string& caller)
 }
 
 void print_argCnt_warning(
-  const std::string& name,
+  const Identifier& name,
   int found,
   const std::string& expected,
   const Location& loc,
