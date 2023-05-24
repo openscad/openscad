@@ -14,11 +14,11 @@ class Assignment : public ASTNode
 {
 public:
   Assignment(std::string name, const Location& loc)
-    : ASTNode(loc), name(std::move(name)), locOfOverwrite(Location::NONE) { }
+    : ASTNode(loc), name(std::move(name), loc), locOfOverwrite(Location::NONE) { }
   Assignment(std::string name,
              shared_ptr<class Expression> expr = shared_ptr<class Expression>(),
              const Location& loc = Location::NONE)
-    : ASTNode(loc), name(std::move(name)), expr(std::move(expr)), locOfOverwrite(Location::NONE){ }
+    : ASTNode(loc), name(std::move(name), loc), expr(std::move(expr)), locOfOverwrite(Location::NONE){ }
 
   void print(std::ostream& stream, const std::string& indent) const override;
   const Identifier& getName() const { return name; }

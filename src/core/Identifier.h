@@ -1,21 +1,23 @@
 #pragma once
 #include <string>
 #include <boost/optional.hpp>
+#include "AST.h"
+
 class BuiltinFunction;
 
 class Identifier
 {
 public:
-  Identifier() : name("") {
+  Identifier() : name(""), loc(Location::NONE) {
     update_hash();
   }
-  Identifier(const std::string &name) : name(name) {
+  Identifier(const std::string &name, const Location &loc) : name(name), loc(loc) {
     update_hash();
   }
-  Identifier(const char *name) : name(name) {
+  Identifier(const char *name, const Location &loc = Location::NONE) : name(name), loc(loc) {
     update_hash();
   }
-  explicit Identifier(std::string &&name) : name(std::move(name)) {
+  explicit Identifier(std::string &&name, const Location &loc) : name(std::move(name)), loc(loc) {
     update_hash();
   }
   
@@ -33,6 +35,9 @@ public:
   bool operator== (const char *other) const {
     return name == other;
   }
+  bool operator== (const std::string &other) const {
+    return name == other;
+  }
   operator const std::string&() const { return name; }
   const std::string &getName() const { return name; }
   size_t getHash() const { return hash; }
@@ -42,6 +47,9 @@ public:
   }
   bool empty() const {
     return name.empty();
+  }
+  const Location &location() const {
+    return loc;
   }
 
 private:
@@ -55,6 +63,7 @@ private:
   }
   std::string name;
   size_t hash;
+  Location loc;
 };
 
 inline std::ostream& operator<<(std::ostream& stream, const Identifier& id) {
