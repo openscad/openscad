@@ -15,7 +15,7 @@ Builtins *Builtins::instance(bool erase)
   return builtins;
 }
 
-void Builtins::init(const std::string& name, class AbstractModule *module)
+void Builtins::init(const Identifier& name, class AbstractModule *module)
 {
 #ifndef ENABLE_EXPERIMENTAL
   if (module->is_experimental()) return;
@@ -23,7 +23,7 @@ void Builtins::init(const std::string& name, class AbstractModule *module)
   Builtins::instance()->modules.emplace(name, module);
 }
 
-void Builtins::init(const std::string& name, AbstractModule *module, const std::vector<std::string>& calltipList)
+void Builtins::init(const Identifier& name, AbstractModule *module, const std::vector<std::string>& calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL
   if (module->is_experimental()) return;
@@ -32,7 +32,7 @@ void Builtins::init(const std::string& name, AbstractModule *module, const std::
   Builtins::keywordList.insert({name, calltipList});
 }
 
-void Builtins::init(const std::string& name, BuiltinFunction *function, const std::vector<std::string>& calltipList)
+void Builtins::init(const Identifier& name, BuiltinFunction *function, const std::vector<std::string>& calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL
   if (function->is_experimental()) return;
@@ -96,7 +96,7 @@ void Builtins::initialize()
   this->deprecations.emplace("assign", "a regular assignment");
 }
 
-std::string Builtins::isDeprecated(const std::string& name) const
+std::string Builtins::isDeprecated(const Identifier& name) const
 {
   if (this->deprecations.find(name) != this->deprecations.end()) {
     return this->deprecations.at(name);
