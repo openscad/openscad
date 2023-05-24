@@ -335,7 +335,7 @@ void Vector::print(std::ostream& stream, const std::string&) const
   stream << "]";
 }
 
-Lookup::Lookup(std::string name, const Location& loc) : Expression(loc), name(std::move(name))
+Lookup::Lookup(std::string name, const Location& loc) : Expression(loc), name(std::move(name), loc)
 {
 }
 
