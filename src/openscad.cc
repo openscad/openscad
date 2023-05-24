@@ -1036,7 +1036,7 @@ int main(int argc, char **argv)
     LOG("Debug on. --debug=%1$s", OpenSCAD::debug);
   }
 #ifdef ENABLE_PYTHON
-  if (vm.count("enable-python")) {
+  if (vm.count("trust-python")) {
     LOG("Python Engine enabled", OpenSCAD::debug);
     python_trusted = true;
   }
