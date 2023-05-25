@@ -176,7 +176,9 @@ static std::shared_ptr<AbstractNode> builtin_assert(const ModuleInstantiation *i
 
 static std::shared_ptr<AbstractNode> builtin_let(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
-  return Children(&inst->scope, *Let::sequentialAssignmentContext(inst->arguments, inst->location(), context)).instantiate(lazyUnionNode(inst));
+  AssignmentList arguments;
+  removeDuplicateVariableAssignments(inst->arguments, arguments, inst->location());
+  return Children(&inst->scope, *Let::sequentialAssignmentContext(arguments, inst->location(), context)).instantiate(lazyUnionNode(inst));
 }
 
 static std::shared_ptr<AbstractNode> builtin_assign(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)

@@ -683,23 +683,34 @@ void Echo::print(std::ostream& stream, const std::string&) const
   if (this->expr) stream << " " << *this->expr;
 }
 
+void removeDuplicateVariableAssignments(const AssignmentList& assignments, AssignmentList &out, const Location& loc) {
+  std::unordered_set<Identifier> seen;
+  seen.reserve(assignments.size());
+
+  for (const auto& assignment : assignments) {
+    if (seen.find(assignment->getName()) != seen.end()) {
+      LOG(message_group::Warning, loc, "", "Ignoring duplicate variable assignment %1$s", assignment->getName());
+    } else {
+      out.push_back(assignment);
+      seen.insert(assignment->getName());
+    }
+  }
+}
+
 Let::Let(AssignmentList args, Expression *expr, const Location& loc)
-  : Expression(loc), arguments(std::move(args)), expr(expr)
+  : Expression(loc), expr(expr)
 {
+  removeDuplicateVariableAssignments(std::move(args), this->arguments, loc);
 }
 
 void Let::doSequentialAssignment(const AssignmentList& assignments, const Location& location, ContextHandle<Context>& targetContext)
 {
-  std::set<std::string> seen;
   for (const auto& assignment : assignments) {
     Value value = assignment->getExpr()->evaluate(*targetContext);
     if (assignment->getName().empty()) {
       LOG(message_group::Warning, location, targetContext->documentRoot(), "Assignment without variable name %1$s", value.toEchoStringNoThrow());
-    } else if (seen.find(assignment->getName()) != seen.end()) {
-      LOG(message_group::Warning, location, targetContext->documentRoot(), "Ignoring duplicate variable assignment %1$s = %2$s", assignment->getName(), value.toEchoStringNoThrow());
     } else {
       targetContext->set_variable(assignment->getName(), std::move(value));
-      seen.insert(assignment->getName());
     }
   }
 }
@@ -890,8 +901,10 @@ void LcFor::print(std::ostream& stream, const std::string&) const
 }
 
 LcForC::LcForC(AssignmentList args, AssignmentList incrargs, Expression *cond, Expression *expr, const Location& loc)
-  : ListComprehension(loc), arguments(std::move(args)), incr_arguments(std::move(incrargs)), cond(cond), expr(expr)
+  : ListComprehension(loc), cond(cond), expr(expr)
 {
+  removeDuplicateVariableAssignments(std::move(args), arguments, loc);
+  removeDuplicateVariableAssignments(std::move(incrargs), incr_arguments, loc);
 }
 
 Value LcForC::evaluate(const std::shared_ptr<const Context>& context) const
@@ -938,8 +951,9 @@ void LcForC::print(std::ostream& stream, const std::string&) const
 }
 
 LcLet::LcLet(AssignmentList args, Expression *expr, const Location& loc)
-  : ListComprehension(loc), arguments(std::move(args)), expr(expr)
+  : ListComprehension(loc), expr(expr)
 {
+  removeDuplicateVariableAssignments(std::move(args), this->arguments, loc);
 }
 
 Value LcLet::evaluate(const std::shared_ptr<const Context>& context) const
