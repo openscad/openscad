@@ -18,6 +18,8 @@ public:
 // Gotta have C++20 for this beast
   bool contains(const Identifier& name) const { return map.count(name); }
 
+  void reserve(size_t count) { map.reserve(count); }
+
 // Directly wrapped calls
   const_iterator find(const Identifier& name) const {  return map.find(name); }
   const_iterator begin() const {  return map.cbegin(); }

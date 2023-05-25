@@ -703,6 +703,8 @@ Let::Let(AssignmentList args, Expression *expr, const Location& loc)
 
 void Let::doSequentialAssignment(const AssignmentList& assignments, const Location& location, ContextHandle<Context>& targetContext)
 {
+  targetContext->reserve_additional_lexical_variables(assignments.size()); // TODO: count lex vs config vars
+  
   for (const auto& assignment : assignments) {
     Value value = assignment->getExpr()->evaluate(*targetContext);
     if (assignment->getName().empty()) {
