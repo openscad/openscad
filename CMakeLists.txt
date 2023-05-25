@@ -609,6 +609,7 @@ set(CORE_SOURCES
   src/core/builtin_functions.cc
   src/core/function.cc
   src/core/FunctionType.cc
+  src/core/Identifier.cc
   src/core/ImportNode.cc
   src/core/LinearExtrudeNode.cc
   src/core/LocalScope.cc

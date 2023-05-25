@@ -33,8 +33,6 @@ public:
   void apply_config_variables(ContextFrame&& other);
   void apply_variables(ContextFrame&& other);
 
-  static bool is_config_variable(const Identifier& name);
-
   EvaluationSession *session() const { return evaluation_session; }
   const std::string& documentRoot() const { return evaluation_session->documentRoot(); }
 

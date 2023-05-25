@@ -65,7 +65,7 @@ std::vector<const std::shared_ptr<const Context> *> Context::list_referenced_con
 
 boost::optional<const Value&> Context::try_lookup_variable(const Identifier& name) const
 {
-  if (is_config_variable(name)) {
+  if (name.is_config_variable()) {
     return session()->try_lookup_special_variable(name);
   }
   for (const Context *context = this; context != nullptr; context = context->getParent().get()) {
@@ -103,7 +103,7 @@ boost::optional<CallableFunction> Context::lookup_function(const Identifier& nam
     return std::move(result);
   };
 
-  if (is_config_variable(name)) {
+  if (name.is_config_variable()) {
     return addToCache(session()->lookup_special_function(name, loc));
   }
   for (const Context *context = this; context != nullptr; context = context->getParent().get()) {
@@ -118,7 +118,7 @@ boost::optional<CallableFunction> Context::lookup_function(const Identifier& nam
 
 boost::optional<InstantiableModule> Context::lookup_module(const Identifier& name, const Location& loc) const
 {
-  if (is_config_variable(name)) {
+  if (name.is_config_variable()) {
     return session()->lookup_special_module(name, loc);
   }
   for (const Context *context = this; context != nullptr; context = context->getParent().get()) {
