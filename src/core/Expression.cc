@@ -35,6 +35,7 @@
 #include <typeinfo>
 #include <forward_list>
 #include <utility>
+#include <unordered_set>
 #include <variant>
 #include "printutils.h"
 #include "StackCheck.h"
@@ -684,7 +685,7 @@ void Echo::print(std::ostream& stream, const std::string&) const
 }
 
 void removeDuplicateVariableAssignments(const AssignmentList& assignments, AssignmentList &out, const Location& loc) {
-  std::unordered_set<Identifier> seen;
+  std::unordered_set<std::string> seen;
   seen.reserve(assignments.size());
 
   for (const auto& assignment : assignments) {
