@@ -383,6 +383,7 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
     LOG(message_group::Error, "Non-manifold mesh created: %1$d unconnected edges", unconnected2);
   }
 
+  ps.reserve(allTriangles.size());
   for (const auto& t : allTriangles) {
     ps.append_poly(3);
     ps.append_vertex(verts[t[0]]);

@@ -130,6 +130,8 @@ const Geometry *CubeNode::createGeometry() const
     z2 = this->z;
   }
 
+  p->reserve(6);
+
   p->append_poly(4); // top
   p->append_vertex(x1, y1, z2);
   p->append_vertex(x2, y1, z2);
@@ -237,6 +239,8 @@ const Geometry *SphereNode::createGeometry() const
     generate_circle(ring[i].points.data(), radius, fragments);
   }
 
+  p->reserve(rings * fragments + 2);
+
   p->append_poly(fragments);
   for (int i = 0; i < fragments; ++i)
     p->append_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
@@ -335,6 +339,8 @@ const Geometry *CylinderNode::createGeometry() const
   generate_circle(circle1.data(), r1, fragments);
   generate_circle(circle2.data(), r2, fragments);
 
+  p->reserve(fragments * 2 + 2);
+  
   for (int i = 0; i < fragments; ++i) {
     int j = (i + 1) % fragments;
     if (r1 == r2) {
@@ -471,6 +477,7 @@ const Geometry *PolyhedronNode::createGeometry() const
 {
   auto p = new PolySet(3);
   p->setConvexity(this->convexity);
+  p->reserve(this->faces.size());
   for (const auto& face : this->faces) {
     p->append_poly(face.size());
     for (const auto& index : face) {
@@ -497,6 +504,7 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
     LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert points = %1$s to a vector of coordinates", parameters["points"].toEchoStringNoThrow());
     return node;
   }
+  node->points.reserve(parameters["points"].toVector().size());
   for (const Value& pointValue : parameters["points"].toVector()) {
     point3d point;
     if (!pointValue.getVec3(point.x, point.y, point.z, 0.0) ||
@@ -522,6 +530,7 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
     return node;
   }
   size_t faceIndex = 0;
+  node->faces.reserve(faces->toVector().size());
   for (const Value& faceValue : faces->toVector()) {
     if (faceValue.type() != Value::Type::VECTOR) {
       LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert faces[%1$d] = %2$s to a vector of numbers", faceIndex, faceValue.toEchoStringNoThrow());
