@@ -94,6 +94,7 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
 #endif
     if (file_size == static_cast<std::streamoff>(80ul + 4ul + 50ul * facenum)) {
       binary = true;
+      p->reserve(facenum);
     }
   }
   f.seekg(0);

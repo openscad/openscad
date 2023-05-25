@@ -130,6 +130,8 @@ const Geometry *CubeNode::createGeometry() const
     z2 = this->z;
   }
 
+  p->reserve(6);
+
   p->append_poly(4); // top
   p->append_vertex(x1, y1, z2);
   p->append_vertex(x2, y1, z2);
@@ -237,6 +239,8 @@ const Geometry *SphereNode::createGeometry() const
     generate_circle(ring[i].points.data(), radius, fragments);
   }
 
+  p->reserve(rings * fragments + 2);
+
   p->append_poly(fragments);
   for (int i = 0; i < fragments; ++i)
     p->append_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
@@ -335,6 +339,8 @@ const Geometry *CylinderNode::createGeometry() const
   generate_circle(circle1.data(), r1, fragments);
   generate_circle(circle2.data(), r2, fragments);
 
+  p->reserve(fragments * 2 + 2);
+  
   for (int i = 0; i < fragments; ++i) {
     int j = (i + 1) % fragments;
     if (r1 == r2) {
