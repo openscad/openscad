@@ -477,6 +477,7 @@ const Geometry *PolyhedronNode::createGeometry() const
 {
   auto p = new PolySet(3);
   p->setConvexity(this->convexity);
+  p->reserve(this->faces.size());
   for (const auto& face : this->faces) {
     p->append_poly(face.size());
     for (const auto& index : face) {
@@ -503,6 +504,7 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
     LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert points = %1$s to a vector of coordinates", parameters["points"].toEchoStringNoThrow());
     return node;
   }
+  node->points.reserve(parameters["points"].toVector().size());
   for (const Value& pointValue : parameters["points"].toVector()) {
     point3d point;
     if (!pointValue.getVec3(point.x, point.y, point.z, 0.0) ||
@@ -528,6 +530,7 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
     return node;
   }
   size_t faceIndex = 0;
+  node->faces.reserve(faces->toVector().size());
   for (const Value& faceValue : faces->toVector()) {
     if (faceValue.type() != Value::Type::VECTOR) {
       LOG(message_group::Error, inst->location(), parameters.documentRoot(), "Unable to convert faces[%1$d] = %2$s to a vector of numbers", faceIndex, faceValue.toEchoStringNoThrow());
