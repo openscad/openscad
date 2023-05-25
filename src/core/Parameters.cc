@@ -44,7 +44,7 @@ Parameters::Parameters(Parameters&& other) noexcept :
 
 boost::optional<const Value&> Parameters::lookup(const Identifier& name) const
 {
-  if (ContextFrame::is_config_variable(name)) {
+  if (name.is_config_variable()) {
     return frame.session()->try_lookup_special_variable(name);
   } else {
     return frame.lookup_local_variable(name);
@@ -150,7 +150,7 @@ static ContextFrame parse_without_defaults(
         LOG(message_group::Warning, loc, arguments.documentRoot(), "argument %1$s supplied more than once", name);
       } else if (output.lookup_local_variable(name)) {
         LOG(message_group::Warning, loc, arguments.documentRoot(), "argument %1$s overrides positional argument", name);
-      } else if (warn_for_unexpected_arguments && !ContextFrame::is_config_variable(name)) {
+      } else if (warn_for_unexpected_arguments && !name.is_config_variable()) {
         bool found = false;
         for (const auto& parameter : required_parameters) {
           if (parameter_name(parameter) == name) {

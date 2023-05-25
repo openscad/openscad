@@ -9,21 +9,21 @@ class Identifier
 {
 public:
   Identifier() : name(""), loc(Location::NONE) {
-    update_hash();
+    update();
   }
   Identifier(const std::string &name, const Location &loc) : name(name), loc(loc) {
-    update_hash();
+    update();
   }
   Identifier(const char *name, const Location &loc = Location::NONE) : name(name), loc(loc) {
-    update_hash();
+    update();
   }
   explicit Identifier(std::string &&name, const Location &loc) : name(std::move(name)), loc(loc) {
-    update_hash();
+    update();
   }
   
   Identifier &operator=(const std::string& v) {
     name = v;
-    update_hash();
+    update();
     return *this;
   }
   bool operator== (const Identifier& other) const {
@@ -51,6 +51,9 @@ public:
   const Location &location() const {
     return loc;
   }
+  bool is_config_variable() const {
+    return is_config_variable_;
+  }
 
 private:
 
@@ -58,9 +61,11 @@ private:
 
   mutable boost::optional<const BuiltinFunction *> resolved_builtin_function;
 
-  void update_hash() {
+  void update() {
     hash = std::hash<std::string>()(name);
+    is_config_variable_ = name[0] == '$' && name != "$children";
   }
+  bool is_config_variable_;
   std::string name;
   size_t hash;
   Location loc;
