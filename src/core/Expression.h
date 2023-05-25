@@ -301,3 +301,5 @@ private:
   AssignmentList arguments;
   shared_ptr<Expression> expr;
 };
+
+void removeDuplicateVariableAssignments(const AssignmentList& assignments, AssignmentList &out, const Location &loc);
