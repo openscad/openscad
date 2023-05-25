@@ -35,9 +35,9 @@
 #include "compiler_specific.h"
 #include <sstream>
 
-std::vector<std::string> StaticModuleNameStack::stack;
+std::vector<Identifier> StaticModuleNameStack::stack;
 
-static void NOINLINE print_err(std::string name, const Location& loc, const std::shared_ptr<const Context>& context){
+static void NOINLINE print_err(const Identifier &name, const Location& loc, const std::shared_ptr<const Context>& context){
   LOG(message_group::Error, loc, context->documentRoot(), "Recursion detected calling module '%1$s'", name);
 }
 
@@ -94,7 +94,7 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<cons
 
   std::shared_ptr<AbstractNode> ret;
   try{
-    ret = this->body.instantiateModules(*module_context, std::make_shared<GroupNode>(inst, std::string("module ") + this->name));
+    ret = this->body.instantiateModules(*module_context, std::make_shared<GroupNode>(inst, std::string("module ") + this->name.getName()));
   } catch (EvaluationException& e) {
     if (OpenSCAD::traceUsermoduleParameters && e.traceDepth > 0) {
       print_trace(this, *module_context, this->parameters);

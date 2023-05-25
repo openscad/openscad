@@ -34,6 +34,7 @@
 #include <algorithm>
 #include <typeinfo>
 #include <forward_list>
+#include <unordered_set>
 #include <utility>
 #include <variant>
 #include "printutils.h"
@@ -333,7 +334,7 @@ void Vector::print(std::ostream& stream, const std::string&) const
   stream << "]";
 }
 
-Lookup::Lookup(std::string name, const Location& loc) : Expression(loc), name(std::move(name))
+Lookup::Lookup(std::string name, const Location& loc) : Expression(loc), name(std::move(name), loc)
 {
 }
 
@@ -690,7 +691,9 @@ Let::Let(AssignmentList args, Expression *expr, const Location& loc)
 
 void Let::doSequentialAssignment(const AssignmentList& assignments, const Location& location, ContextHandle<Context>& targetContext)
 {
-  std::set<std::string> seen;
+  std::unordered_set<Identifier> seen;
+  seen.reserve(assignments.size());
+
   for (const auto& assignment : assignments) {
     Value value = assignment->getExpr()->evaluate(*targetContext);
     if (assignment->getName().empty()) {
@@ -808,7 +811,7 @@ LcFor::LcFor(AssignmentList args, Expression *expr, const Location& loc)
 {
 }
 
-static inline ContextHandle<Context> forContext(const std::shared_ptr<const Context>& context, const std::string& name, Value value)
+static inline ContextHandle<Context> forContext(const std::shared_ptr<const Context>& context, const Identifier& name, Value value)
 {
   ContextHandle<Context> innerContext{Context::create<Context>(context)};
   innerContext->set_variable(name, std::move(value));
@@ -827,7 +830,7 @@ static void doForEach(
     return;
   }
 
-  const std::string& variable_name = assignments[assignment_index]->getName();
+  const auto& variable_name = assignments[assignment_index]->getName();
   Value variable_values = assignments[assignment_index]->getExpr()->evaluate(context);
 
   if (variable_values.type() == Value::Type::RANGE) {

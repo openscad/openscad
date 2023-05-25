@@ -72,7 +72,7 @@ static std::shared_ptr<AbstractNode> builtin_child(const ModuleInstantiation *in
   }
 
   Arguments arguments{inst->arguments, context};
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, {"index"});
   const Children *children = context->user_module_children();
   if (!children) {
     // child() called outside any user module
@@ -99,7 +99,7 @@ static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation 
   }
 
   Arguments arguments{inst->arguments, context};
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, {"index"});
   const Children *children = context->user_module_children();
   if (!children) {
     // children() called outside any user module

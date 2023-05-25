@@ -79,11 +79,11 @@ public:
   virtual const class Children *user_module_children() const;
   virtual std::vector<const std::shared_ptr<const Context> *> list_referenced_contexts() const;
 
-  boost::optional<const Value&> try_lookup_variable(const std::string& name) const;
-  const Value& lookup_variable(const std::string& name, const Location& loc) const;
-  boost::optional<CallableFunction> lookup_function(const std::string& name, const Location& loc) const;
-  boost::optional<InstantiableModule> lookup_module(const std::string& name, const Location& loc) const;
-  bool set_variable(const std::string& name, Value&& value) override;
+  boost::optional<const Value&> try_lookup_variable(const Identifier& name) const;
+  const Value& lookup_variable(const Identifier& name, const Location& loc) const;
+  boost::optional<CallableFunction> lookup_function(const Identifier& name, const Location& loc) const;
+  boost::optional<InstantiableModule> lookup_module(const Identifier& name, const Location& loc) const;
+  bool set_variable(const Identifier& name, Value&& value) override;
   size_t clear() override;
 
   const std::shared_ptr<const Context>& getParent() const { return this->parent; }
