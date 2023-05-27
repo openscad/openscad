@@ -73,16 +73,20 @@ def initialize_environment():
 def init_expected_filename():
     global expecteddir, expectedfilename # fixme - globals are hard to use
 
-    expected_testname = options.testname
+    if options.expectedfile != "":
+        expectedfilename = options.expectedfile
+        expecteddir = os.path.dirname(expectedfilename)
+    else:
+        expected_testname = options.testname
 
-    try:
-        expected_dirname = options.expecteddir
-    except:
-        expected_dirname = expected_testname
+        try:
+            expected_dirname = options.expecteddir
+        except:
+            expected_dirname = expected_testname
 
-    expecteddir = os.path.join(options.regressiondir, expected_dirname)
-    expectedfilename = os.path.join(expecteddir, options.filename + "-expected." + options.suffix)
-    expectedfilename = os.path.normpath(expectedfilename)
+        expecteddir = os.path.join(options.regressiondir, expected_dirname)
+        expectedfilename = os.path.join(expecteddir, options.filename + "-expected." + options.suffix)
+        expectedfilename = os.path.normpath(expectedfilename)
 
 def init_actual_filename():
     global actualdir, actualfilename # fixme - globals are hard to use
@@ -348,6 +352,7 @@ def usage():
     print("  -s, --suffix=<suffix>    Write -expected and -actual files with the given suffix instead of .txt", file=sys.stderr)
     print("  -k, --kernel=<name[:n]>  Define kernel name and optionally size for morphology processing, default is Square:1", file=sys.stderr)
     print("  -e, --expected-dir=<dir> Use -expected files from the given dir (to share files between test drivers)", file=sys.stderr)
+    print("      --expected-file=file Use single expected file for all tests.", file=sys.stderr)
     print("  -t, --test=<name>        Specify test name instead of deducting it from the argument (defaults to basename <exe>)", file=sys.stderr)
     print("  -f, --file=<name>        Specify test file instead of deducting it from the argument (default to basename <first arg>)", file=sys.stderr)
     print("  -c, --convexec=<name>    Path to ImageMagick 'convert' executable", file=sys.stderr)
@@ -358,7 +363,7 @@ if __name__ == '__main__':
     # Handle command-line arguments
     try:
         debug('args:'+str(sys.argv))
-        opts, args = getopt.getopt(sys.argv[1:], "gs:k:e:c:t:f:m", ["generate", "convexec=", "suffix=", "kernel=", "expected_dir=", "test=", "file=", "comparator=", "stdin", "stdout"])
+        opts, args = getopt.getopt(sys.argv[1:], "gs:k:e:c:t:f:m", ["generate", "convexec=", "suffix=", "kernel=", "expected-dir=", "expected-file=", "test=", "file=", "comparator=", "stdin", "stdout"])
         debug('getopt args:'+str(sys.argv))
     except (getopt.GetoptError) as err:
         usage()
@@ -371,6 +376,7 @@ if __name__ == '__main__':
     options.suffix = "txt"
     options.kernel = "Square:1"
     options.comparator = ""
+    options.expectedfile = ""
     options.stdin = False
     options.stdout = False
 
@@ -383,6 +389,8 @@ if __name__ == '__main__':
             options.kernel = a
         elif o in ("-e", "--expected-dir"):
             options.expecteddir = a
+        elif o == "--expected-file":
+            options.expectedfile = a
         elif o in ("-t", "--test"):
             options.testname = a
         elif o in ("-f", "--file"):

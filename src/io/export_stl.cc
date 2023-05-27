@@ -123,7 +123,7 @@ uint64_t append_stl(const IndexedTriangleMesh& mesh, std::ostream& output, bool 
     assert(p0 != p1 && p0 != p2 && p1 != p2);
 
     auto normal = (p1 - p0).cross(p2 - p0);
-    if (!normal.isZero()) {
+    if (!normal.isZero(0)) {
       normal.normalize();
     }
 

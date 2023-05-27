@@ -294,13 +294,17 @@ endfunction()
 #                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>)
 #
 function(add_cmdline_test TESTCMD_BASENAME)
-  cmake_parse_arguments(TESTCMD "OPENSCAD;STDIO" "EXE;SCRIPT;SUFFIX;KERNEL;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
+  cmake_parse_arguments(TESTCMD "OPENSCAD;STDIO" "EXE;SCRIPT;SUFFIX;KERNEL;EXPECTEDDIR;EXPECTEDFILE" "FILES;ARGS" ${ARGN})
 
   set(EXTRA_OPTIONS "")
 
   # If sharing results with another test, pass on this to the python script
   if (TESTCMD_EXPECTEDDIR)
     list(APPEND EXTRA_OPTIONS -e ${TESTCMD_EXPECTEDDIR})
+  endif()
+
+  if (TESTCMD_EXPECTEDFILE)
+    list(APPEND EXTRA_OPTIONS --expected-file=${TESTCMD_EXPECTEDFILE})
   endif()
 
   if (TESTCMD_KERNEL)
@@ -716,7 +720,6 @@ list(APPEND THROWNTOGETHERTEST_FILES ${CGALPNGTEST_FILES} ${PRUNE_TEST})
 list(APPEND CGALSTLSANITYTEST_FILES ${TEST_SCAD_DIR}/misc/normal-nan.scad)
 
 list(APPEND EXPORT_STL_TEST_FILES ${TEST_SCAD_DIR}/stl/stl-export.scad)
-list(APPEND EXPORT_STL_TEST_FILES ${TEST_SCAD_DIR}/stl/stl-export-limits.scad)
 list(APPEND EXPORT_STL_TEST_FILES ${TEST_SCAD_DIR}/stl/stl-export-mild-degeneracies.scad)
 
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-export.scad)
@@ -1209,6 +1212,10 @@ add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SC
 # Corner-case Export/Import tests
 add_cmdline_test(monotonepngtest OPENSCAD SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES} ${EXPORT3D_CGALCGAL_TEST_FILES} ARGS --colorscheme=Monotone --render)
 add_cmdline_test(stlexport             OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
+add_cmdline_test(stlexport             OPENSCAD SUFFIX stl
+  FILES ${TEST_SCAD_DIR}/stl/stl-import-export-limits.scad
+  EXPECTEDFILE tests/regression/stlexport/stl-export-limits-expected.stl
+  ARGS --enable=predictible-output --render)
 add_cmdline_test(manifold-stlexport    OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --enable=manifold --render)
 add_cmdline_test(objexport             OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render)
 add_cmdline_test(3mfexport             OPENSCAD ARGS SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES})
