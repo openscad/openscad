@@ -41,23 +41,31 @@
 
 namespace {
 
-/* Define values for double-conversion library. */
 #define DC_BUFFER_SIZE (128)
-#define DC_FLAGS (double_conversion::DoubleToStringConverter::UNIQUE_ZERO)
-#define DC_INF NULL // Only finite values in STL outputs!
-#define DC_NAN NULL
-#define DC_EXP 'e'
-#define DC_DECIMAL_LOW_EXP (-6)
-#define DC_DECIMAL_HIGH_EXP (21)
-#define DC_MAX_LEADING_ZEROES (5)
-#define DC_MAX_TRAILING_ZEROES (0)
+
+/* Define values for double-conversion library. */
+static constexpr auto dc_flags = double_conversion::DoubleToStringConverter::Flags::UNIQUE_ZERO;
+static constexpr size_t dc_buffer_size = 128;
+// Only finite values in STL outputs!
+static constexpr const char * dc_inf = NULL;
+static constexpr const char * dc_nan = NULL;
+static constexpr char dc_exp = 'e';
+static constexpr int dc_decimal_low_exp = -5;
+static constexpr int dc_decimal_high_exp = 6;
+static constexpr int dc_max_leading_zeros = 5;
+static constexpr int dc_max_trailing_zeros = 0;
 
 std::string toString(const Vector3f& v)
 {
+#if 0
+  char output[DC_BUFFER_SIZE]0
+  snprintf(output, DC_BUFFER_SIZE, "%.9g %.9g %.9g", v[0], v[1], v[2]);
+  return output;
+#else
   double_conversion::DoubleToStringConverter dc(
-    DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
-    DC_DECIMAL_LOW_EXP, DC_DECIMAL_HIGH_EXP, DC_MAX_LEADING_ZEROES, DC_MAX_TRAILING_ZEROES
-  );
+    dc_flags, dc_inf, dc_nan, dc_exp,
+    dc_decimal_low_exp, dc_decimal_high_exp,
+    dc_max_leading_zeros, dc_max_trailing_zeros);
 
   char buffer[DC_BUFFER_SIZE];
 
@@ -70,6 +78,7 @@ std::string toString(const Vector3f& v)
   builder.Finalize();
 
   return buffer;
+#endif
 }
 
 int32_t flipEndianness(int32_t x) {

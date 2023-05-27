@@ -872,6 +872,7 @@ public:
 
   Value operator()(const VectorType& op1, const VectorType& op2) const {
     VectorType sum(op1.evaluation_session());
+    sum.reserve(op1.size());
     // FIXME: should we really truncate to shortest vector here?
     //   Maybe better to either "add zeroes" and return longest
     //   and/or issue an warning/error about length mismatch.
@@ -902,6 +903,7 @@ public:
 
   Value operator()(const VectorType& op1, const VectorType& op2) const {
     VectorType sum(op1.evaluation_session());
+    sum.reserve(op1.size());
     for (size_t i = 0; i < op1.size() && i < op2.size(); ++i) {
       sum.emplace_back(op1[i] - op2[i]);
     }
@@ -918,6 +920,7 @@ Value multvecnum(const VectorType& vecval, const Value& numval)
 {
   // Vector * Number
   VectorType dstv(vecval.evaluation_session());
+  dstv.reserve(vecval.size());
   for (const auto& val : vecval) {
     dstv.emplace_back(val * numval);
   }
@@ -928,6 +931,7 @@ Value multmatvec(const VectorType& matrixvec, const VectorType& vectorvec)
 {
   // Matrix * Vector
   VectorType dstv(matrixvec.evaluation_session());
+  dstv.reserve(matrixvec.size());
   for (size_t i = 0; i < matrixvec.size(); ++i) {
     if (matrixvec[i].type() != Value::Type::VECTOR ||
         matrixvec[i].toVector().size() != vectorvec.size()) {
@@ -954,6 +958,7 @@ Value multvecmat(const VectorType& vectorvec, const VectorType& matrixvec)
   // Vector * Matrix
   VectorType dstv(matrixvec[0].toVector().evaluation_session());
   size_t firstRowSize = matrixvec[0].toVector().size();
+  dstv.reserve(firstRowSize);
   for (size_t i = 0; i < firstRowSize; ++i) {
     double r_e = 0.0;
     for (size_t j = 0; j < vectorvec.size(); ++j) {
@@ -1019,6 +1024,7 @@ public:
         if ((*first1).toVector().size() == op2.size()) {
           // Matrix * Matrix
           VectorType dstv(op1.evaluation_session());
+          dstv.reserve(op1.size());
           size_t i = 0;
           for (const auto& srcrow : op1) {
             const auto& srcrowvec = srcrow.toVector();
@@ -1053,12 +1059,14 @@ Value Value::operator/(const Value& v) const
     return this->toDouble() / v.toDouble();
   } else if (this->type() == Type::VECTOR && v.type() == Type::NUMBER) {
     VectorType dstv(this->toVector().evaluation_session());
+    dstv.reserve(this->toVector().size());
     for (const auto& vecval : this->toVector()) {
       dstv.emplace_back(vecval / v);
     }
     return std::move(dstv);
   } else if (this->type() == Type::NUMBER && v.type() == Type::VECTOR) {
     VectorType dstv(v.toVector().evaluation_session());
+    dstv.reserve(v.toVector().size());
     for (const auto& vecval : v.toVector()) {
       dstv.emplace_back(*this / vecval);
     }
@@ -1081,6 +1089,7 @@ Value Value::operator-() const
     return {-this->toDouble()};
   } else if (this->type() == Type::VECTOR) {
     VectorType dstv(this->toVector().evaluation_session());
+    dstv.reserve(this->toVector().size());
     for (const auto& vecval : this->toVector()) {
       dstv.emplace_back(-vecval);
     }

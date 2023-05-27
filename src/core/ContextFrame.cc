@@ -30,9 +30,9 @@ ContextFrame::ContextFrame(EvaluationSession *session) :
   evaluation_session(session)
 {}
 
-boost::optional<const Value&> ContextFrame::lookup_local_variable(const std::string& name) const
+boost::optional<const Value&> ContextFrame::lookup_local_variable(const Identifier& name) const
 {
-  if (is_config_variable(name)) {
+  if (name.is_config_variable()) {
     auto result = config_variables.find(name);
     if (result != config_variables.end()) {
       return result->second;
@@ -46,7 +46,7 @@ boost::optional<const Value&> ContextFrame::lookup_local_variable(const std::str
   return boost::none;
 }
 
-boost::optional<CallableFunction> ContextFrame::lookup_local_function(const std::string& name, const Location& /*loc*/) const
+boost::optional<CallableFunction> ContextFrame::lookup_local_function(const Identifier& name, const Location& /*loc*/) const
 {
   boost::optional<const Value&> value = lookup_local_variable(name);
   if (value && value->type() == Value::Type::FUNCTION) {
@@ -55,7 +55,7 @@ boost::optional<CallableFunction> ContextFrame::lookup_local_function(const std:
   return boost::none;
 }
 
-boost::optional<InstantiableModule> ContextFrame::lookup_local_module(const std::string& /*name*/, const Location& /*loc*/) const
+boost::optional<InstantiableModule> ContextFrame::lookup_local_module(const Identifier& /*name*/, const Location& /*loc*/) const
 {
   return boost::none;
 }
@@ -80,9 +80,9 @@ size_t ContextFrame::clear()
   return removed;
 }
 
-bool ContextFrame::set_variable(const std::string& name, Value&& value)
+bool ContextFrame::set_variable(const Identifier& name, Value&& value)
 {
-  if (is_config_variable(name)) {
+  if (name.is_config_variable()) {
     return config_variables.insert_or_assign(name, std::move(value)).second;
   } else {
     return lexical_variables.insert_or_assign(name, std::move(value)).second;
@@ -91,6 +91,8 @@ bool ContextFrame::set_variable(const std::string& name, Value&& value)
 
 void ContextFrame::apply_variables(const ValueMap& variables)
 {
+  reserve_additional_lexical_variables(variables.size());
+
   for (const auto& variable : variables) {
     set_variable(variable.first, variable.second.clone());
   }
@@ -98,16 +100,26 @@ void ContextFrame::apply_variables(const ValueMap& variables)
 
 void ContextFrame::apply_lexical_variables(const ContextFrame& other)
 {
-  apply_variables(other.lexical_variables);
+  reserve_additional_lexical_variables(other.lexical_variables.size());
+  for (auto& [name, value] : other.lexical_variables) {
+    assert(!name.is_config_variable());
+    lexical_variables.insert_or_assign(name, value.clone());
+  }
 }
 
 void ContextFrame::apply_config_variables(const ContextFrame& other)
 {
-  apply_variables(other.config_variables);
+  reserve_additional_config_variables(other.config_variables.size());
+  for (auto& [name, value] : other.config_variables) {
+    assert(name.is_config_variable());
+    config_variables.insert_or_assign(name, value.clone());
+  }
 }
 
 void ContextFrame::apply_variables(ValueMap&& variables)
 {
+  reserve_additional_lexical_variables(variables.size());
+
   for (auto& variable : variables) {
     set_variable(variable.first, std::move(variable.second));
   }
@@ -128,11 +140,6 @@ void ContextFrame::apply_variables(ContextFrame&& other)
 {
   apply_variables(std::move(other.lexical_variables));
   apply_variables(std::move(other.config_variables));
-}
-
-bool ContextFrame::is_config_variable(const std::string& name)
-{
-  return name[0] == '$' && name != "$children";
 }
 
 #ifdef DEBUG

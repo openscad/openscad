@@ -34,6 +34,7 @@
 #include <algorithm>
 #include <typeinfo>
 #include <forward_list>
+#include <unordered_set>
 #include <utility>
 #include <variant>
 #include "printutils.h"
@@ -318,6 +319,7 @@ Value Vector::evaluate(const std::shared_ptr<const Context>& context) const
     }
   } else {
     VectorType vec(context->session());
+    vec.reserve(this->children.size());
     for (const auto& e : this->children) vec.emplace_back(e->evaluate(context));
     return std::move(vec);
   }
@@ -333,7 +335,7 @@ void Vector::print(std::ostream& stream, const std::string&) const
   stream << "]";
 }
 
-Lookup::Lookup(std::string name, const Location& loc) : Expression(loc), name(std::move(name))
+Lookup::Lookup(std::string name, const Location& loc) : Expression(loc), name(std::move(name), loc)
 {
 }
 
@@ -361,6 +363,7 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
   case Value::Type::VECTOR:
     if (this->member.length() > 1 && boost::regex_match(this->member, re_swizzle_validation)) {
       VectorType ret(context->session());
+      ret.reserve(this->member.length());
       for (const char& ch : this->member)
         switch (ch) {
         case 'r': case 'x': ret.emplace_back(v[0]); break;
@@ -475,77 +478,74 @@ boost::optional<CallableFunction> FunctionCall::evaluate_function_expression(con
   }
 }
 
-struct SimplifiedExpression {
-  const Expression *expression;
-  boost::optional<ContextHandle<Context>> new_context = boost::none;
-  boost::optional<const FunctionCall *> new_active_function_call = boost::none;
-};
-using SimplificationResult = std::variant<SimplifiedExpression, Value>;
-
-static SimplificationResult simplify_function_body(const Expression *expression, const std::shared_ptr<const Context>& context)
+SimplificationResult TernaryOp::simplify_function_body(const std::shared_ptr<const Context>& context) const
 {
-  if (!expression) {
+  return SimplifiedExpression{evaluateStep(context)};
+}
+
+SimplificationResult Assert::simplify_function_body(const std::shared_ptr<const Context>& context) const
+{
+  return SimplifiedExpression{evaluateStep(context)};
+}
+
+SimplificationResult Echo::simplify_function_body(const std::shared_ptr<const Context>& context) const
+{
+  return SimplifiedExpression{evaluateStep(context)};
+}
+
+SimplificationResult Let::simplify_function_body(const std::shared_ptr<const Context>& context) const
+{
+  ContextHandle<Context> let_context{Context::create<Context>(context)};
+  let_context->apply_config_variables(*context);
+  return SimplifiedExpression{evaluateStep(let_context), std::move(let_context)};
+}
+
+SimplificationResult FunctionCall::simplify_function_body(const std::shared_ptr<const Context>& context) const
+{
+  const auto *call = this;
+
+  const Expression *function_body;
+  const AssignmentList *required_parameters;
+  std::shared_ptr<const Context> defining_context;
+
+  auto f = call->evaluate_function_expression(context);
+  if (!f) {
     return Value::undefined.clone();
   } else {
-    const auto& type = typeid(*expression);
-    if (type == typeid(TernaryOp)) {
-      const auto *ternary = static_cast<const TernaryOp *>(expression);
-      return SimplifiedExpression{ternary->evaluateStep(context)};
-    } else if (type == typeid(Assert)) {
-      const auto *assertion = static_cast<const Assert *>(expression);
-      return SimplifiedExpression{assertion->evaluateStep(context)};
-    } else if (type == typeid(Echo)) {
-      const Echo *echo = static_cast<const Echo *>(expression);
-      return SimplifiedExpression{echo->evaluateStep(context)};
-    } else if (type == typeid(Let)) {
-      const Let *let = static_cast<const Let *>(expression);
-      ContextHandle<Context> let_context{Context::create<Context>(context)};
-      let_context->apply_config_variables(*context);
-      return SimplifiedExpression{let->evaluateStep(let_context), std::move(let_context)};
-    } else if (type == typeid(FunctionCall)) {
-      const auto *call = static_cast<const FunctionCall *>(expression);
-
-      const Expression *function_body;
-      const AssignmentList *required_parameters;
-      std::shared_ptr<const Context> defining_context;
-
-      auto f = call->evaluate_function_expression(context);
-      if (!f) {
-        return Value::undefined.clone();
-      } else {
-        auto index = f->index();
-        if (index == 0) {
-          return std::get<const BuiltinFunction *>(*f)->evaluate(context, call);
-        } else if (index == 1) {
-          CallableUserFunction callable = std::get<CallableUserFunction>(*f);
-          function_body = callable.function->expr.get();
-          required_parameters = &callable.function->parameters;
-          defining_context = callable.defining_context;
-        } else {
-          const FunctionType *function;
-          if (index == 2) {
-            function = &std::get<Value>(*f).toFunction();
-          } else if (index == 3) {
-            function = &std::get<const Value *>(*f)->toFunction();
-          } else {
-            assert(false);
-          }
-          function_body = function->getExpr().get();
-          required_parameters = function->getParameters().get();
-          defining_context = function->getContext();
-        }
-      }
-      ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
-      body_context->apply_config_variables(*context);
-      Arguments arguments{call->arguments, context};
-      Parameters parameters = Parameters::parse(std::move(arguments), call->location(), *required_parameters, defining_context);
-      body_context->apply_variables(std::move(parameters).to_context_frame());
-
-      return SimplifiedExpression{function_body, std::move(body_context), call};
+    auto index = f->index();
+    if (index == 0) {
+      return std::get<const BuiltinFunction *>(*f)->evaluate(context, call);
+    } else if (index == 1) {
+      CallableUserFunction callable = std::get<CallableUserFunction>(*f);
+      function_body = callable.function->expr.get();
+      required_parameters = &callable.function->parameters;
+      defining_context = callable.defining_context;
     } else {
-      return expression->evaluate(context);
+      const FunctionType *function;
+      if (index == 2) {
+        function = &std::get<Value>(*f).toFunction();
+      } else if (index == 3) {
+        function = &std::get<const Value *>(*f)->toFunction();
+      } else {
+        assert(false);
+      }
+      function_body = function->getExpr().get();
+      required_parameters = function->getParameters().get();
+      defining_context = function->getContext();
     }
   }
+  ContextHandle<Context> body_context{Context::create<Context>(defining_context)};
+  body_context->apply_config_variables(*context);
+  Arguments arguments{call->arguments, context};
+  Parameters parameters = Parameters::parse(std::move(arguments), call->location(), *required_parameters, defining_context);
+  body_context->apply_variables(std::move(parameters).to_context_frame());
+
+  return SimplifiedExpression{function_body, std::move(body_context), call};
+}
+
+SimplificationResult Expression::simplify_function_body(const std::shared_ptr<const Context>& context) const
+{
+  return evaluate(context);
 }
 
 Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) const
@@ -567,7 +567,7 @@ Value FunctionCall::evaluate(const std::shared_ptr<const Context>& context) cons
   const Expression *expression = this;
   while (true) {
     try {
-      auto result = simplify_function_body(expression, *expression_context);
+      auto result = expression->simplify_function_body(*expression_context); // || Value::undefined.clone()
       if (Value *value = std::get_if<Value>(&result)) {
         return std::move(*value);
       }
@@ -683,23 +683,36 @@ void Echo::print(std::ostream& stream, const std::string&) const
   if (this->expr) stream << " " << *this->expr;
 }
 
+void removeDuplicateVariableAssignments(const AssignmentList& assignments, AssignmentList &out, const Location& loc) {
+  std::unordered_set<Identifier> seen;
+  seen.reserve(assignments.size());
+
+  for (const auto& assignment : assignments) {
+    if (seen.find(assignment->getName()) != seen.end()) {
+      LOG(message_group::Warning, loc, "", "Ignoring duplicate variable assignment %1$s", assignment->getName());
+    } else {
+      out.push_back(assignment);
+      seen.insert(assignment->getName());
+    }
+  }
+}
+
 Let::Let(AssignmentList args, Expression *expr, const Location& loc)
-  : Expression(loc), arguments(std::move(args)), expr(expr)
+  : Expression(loc), expr(expr)
 {
+  removeDuplicateVariableAssignments(std::move(args), this->arguments, loc);
 }
 
 void Let::doSequentialAssignment(const AssignmentList& assignments, const Location& location, ContextHandle<Context>& targetContext)
 {
-  std::set<std::string> seen;
+  targetContext->reserve_additional_lexical_variables(assignments.size()); // TODO: count lex vs config vars
+  
   for (const auto& assignment : assignments) {
     Value value = assignment->getExpr()->evaluate(*targetContext);
     if (assignment->getName().empty()) {
       LOG(message_group::Warning, location, targetContext->documentRoot(), "Assignment without variable name %1$s", value.toEchoStringNoThrow());
-    } else if (seen.find(assignment->getName()) != seen.end()) {
-      LOG(message_group::Warning, location, targetContext->documentRoot(), "Ignoring duplicate variable assignment %1$s = %2$s", assignment->getName(), value.toEchoStringNoThrow());
     } else {
       targetContext->set_variable(assignment->getName(), std::move(value));
-      seen.insert(assignment->getName());
     }
   }
 }
@@ -770,6 +783,7 @@ Value LcEach::evalRecur(Value&& v, const std::shared_ptr<const Context>& context
       LOG(message_group::Warning, loc, context->documentRoot(), "Bad range parameter in for statement: too many elements (%1$lu)", steps);
     } else {
       EmbeddedVectorType vec(context->session());
+      vec.reserve(range.numValues());
       for (double d : range) vec.emplace_back(d);
       return {std::move(vec)};
     }
@@ -779,13 +793,16 @@ Value LcEach::evalRecur(Value&& v, const std::shared_ptr<const Context>& context
     return {std::move(vec)};
   } else if (v.type() == Value::Type::EMBEDDED_VECTOR) {
     EmbeddedVectorType vec(context->session());
+    vec.reserve(v.toEmbeddedVector().size());
     // Not safe to move values out of a vector, since it's shared_ptr maye be shared with another Value,
     // which should remain constant
     for (const auto& val : v.toEmbeddedVector()) vec.emplace_back(evalRecur(val.clone(), context) );
     return {std::move(vec)};
   } else if (v.type() == Value::Type::STRING) {
     EmbeddedVectorType vec(context->session());
-    for (auto ch : v.toStrUtf8Wrapper()) vec.emplace_back(std::move(ch));
+    auto &wrapper = v.toStrUtf8Wrapper();
+    vec.reserve(wrapper.size());
+    for (auto ch : wrapper) vec.emplace_back(std::move(ch));
     return {std::move(vec)};
   } else if (v.type() != Value::Type::UNDEFINED) {
     return std::move(v);
@@ -808,7 +825,7 @@ LcFor::LcFor(AssignmentList args, Expression *expr, const Location& loc)
 {
 }
 
-static inline ContextHandle<Context> forContext(const std::shared_ptr<const Context>& context, const std::string& name, Value value)
+static inline ContextHandle<Context> forContext(const std::shared_ptr<const Context>& context, const Identifier& name, Value value)
 {
   ContextHandle<Context> innerContext{Context::create<Context>(context)};
   innerContext->set_variable(name, std::move(value));
@@ -820,14 +837,15 @@ static void doForEach(
   const Location& location,
   const std::function<void(const std::shared_ptr<const Context>&)>& operation,
   size_t assignment_index,
-  const std::shared_ptr<const Context>& context
+  const std::shared_ptr<const Context>& context,
+  const std::function<void(size_t)> *pReserve = nullptr
   ) {
   if (assignment_index >= assignments.size()) {
     operation(context);
     return;
   }
 
-  const std::string& variable_name = assignments[assignment_index]->getName();
+  const auto& variable_name = assignments[assignment_index]->getName();
   Value variable_values = assignments[assignment_index]->getExpr()->evaluate(context);
 
   if (variable_values.type() == Value::Type::RANGE) {
@@ -837,6 +855,9 @@ static void doForEach(
       LOG(message_group::Warning, location, context->documentRoot(),
           "Bad range parameter in for statement: too many elements (%1$lu)", steps);
     } else {
+      if (pReserve) {
+        (*pReserve)(steps);
+      }
       for (double value : range) {
         doForEach(assignments, location, operation, assignment_index + 1,
                   *forContext(context, variable_name, value)
@@ -844,19 +865,31 @@ static void doForEach(
       }
     }
   } else if (variable_values.type() == Value::Type::VECTOR) {
-    for (const auto& value : variable_values.toVector()) {
+    auto &vec = variable_values.toVector();
+    if (pReserve) {
+      (*pReserve)(vec.size());
+    }
+    for (const auto& value : vec) {
       doForEach(assignments, location, operation, assignment_index + 1,
                 *forContext(context, variable_name, value.clone())
                 );
     }
   } else if (variable_values.type() == Value::Type::OBJECT) {
-    for (auto key : variable_values.toObject().keys()) {
+    auto &keys = variable_values.toObject().keys();
+    if (pReserve) {
+      (*pReserve)(keys.size());
+    }
+    for (auto key : keys) {
       doForEach(assignments, location, operation, assignment_index + 1,
                 *forContext(context, variable_name, key)
                 );
     }
   } else if (variable_values.type() == Value::Type::STRING) {
-    for (auto value : variable_values.toStrUtf8Wrapper()) {
+    auto &wrapper = variable_values.toStrUtf8Wrapper();
+    if (pReserve) {
+      (*pReserve)(wrapper.size());
+    }
+    for (auto value : wrapper) {
       doForEach(assignments, location, operation, assignment_index + 1,
                 *forContext(context, variable_name, Value(std::move(value)))
                 );
@@ -868,19 +901,21 @@ static void doForEach(
   }
 }
 
-void LcFor::forEach(const AssignmentList& assignments, const Location& loc, const std::shared_ptr<const Context>& context, const std::function<void(const std::shared_ptr<const Context>&)>& operation)
+void LcFor::forEach(const AssignmentList& assignments, const Location& loc, const std::shared_ptr<const Context>& context, const std::function<void(const std::shared_ptr<const Context>&)>& operation, const std::function<void(size_t)>* pReserve)
 {
-  doForEach(assignments, loc, operation, 0, context);
+  doForEach(assignments, loc, operation, 0, context, pReserve);
 }
 
 Value LcFor::evaluate(const std::shared_ptr<const Context>& context) const
 {
   EmbeddedVectorType vec(context->session());
+  std::function<void(size_t)> reserve = [&vec](size_t capacity) {
+    vec.reserve(capacity);
+  };
   forEach(this->arguments, this->loc, context,
           [&vec, expression = expr.get()] (const std::shared_ptr<const Context>& iterationContext) {
     vec.emplace_back(expression->evaluate(iterationContext));
-  }
-          );
+  }, &reserve);
   return {std::move(vec)};
 }
 
@@ -890,8 +925,10 @@ void LcFor::print(std::ostream& stream, const std::string&) const
 }
 
 LcForC::LcForC(AssignmentList args, AssignmentList incrargs, Expression *cond, Expression *expr, const Location& loc)
-  : ListComprehension(loc), arguments(std::move(args)), incr_arguments(std::move(incrargs)), cond(cond), expr(expr)
+  : ListComprehension(loc), cond(cond), expr(expr)
 {
+  removeDuplicateVariableAssignments(std::move(args), arguments, loc);
+  removeDuplicateVariableAssignments(std::move(incrargs), incr_arguments, loc);
 }
 
 Value LcForC::evaluate(const std::shared_ptr<const Context>& context) const
@@ -938,8 +975,9 @@ void LcForC::print(std::ostream& stream, const std::string&) const
 }
 
 LcLet::LcLet(AssignmentList args, Expression *expr, const Location& loc)
-  : ListComprehension(loc), arguments(std::move(args)), expr(expr)
+  : ListComprehension(loc), expr(expr)
 {
+  removeDuplicateVariableAssignments(std::move(args), this->arguments, loc);
 }
 
 Value LcLet::evaluate(const std::shared_ptr<const Context>& context) const

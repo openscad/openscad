@@ -31,17 +31,13 @@ const char* statusToString(Error status) {
   }
 }
 
-std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) {
-  IndexedMesh im;
-  {
-    PolySet triangulated(3);
-    PolySetUtils::tessellate_faces(ps, triangulated);
-    im.append_geometry(triangulated);
-  }
+std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps)
+{
+  IndexedTriangleMesh im;
+  PolySetUtils::tessellate_faces(ps, im);
 
-  auto numfaces = im.numfaces;
-  const auto &vertices = im.vertices.getArray();
-  const auto &indices = im.indices;
+  auto numfaces = im.triangles.size();
+  const auto &vertices = im.vertices;
 
   manifold::Mesh mesh;
   mesh.vertPos.resize(vertices.size());
@@ -51,19 +47,14 @@ std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) 
     mesh.vertPos[i] = glm::vec3((float) v.x(), (float) v.y(), (float) v.z());
   }
   const auto vertexCount = mesh.vertPos.size();
-  assert(indices.size() == numfaces * 4);
-  for (size_t i = 0; i < numfaces; i++) {
-    auto offset = i * 4; // 3 indices of triangle then -1.
-    auto i0 = indices[offset];
-    auto i1 = indices[offset + 1];
-    auto i2 = indices[offset + 2];
-    assert(indices[offset + 3] == -1);
-    assert(i0 >= 0 && i0 < vertexCount &&
-           i1 >= 0 && i1 < vertexCount &&
-           i2 >= 0 && i2 < vertexCount);
-    assert(i0 != i1 && i0 != i2 && i1 != i2);
-    mesh.triVerts[i] = {i0, i1, i2};
-  }
+  std::transform(im.triangles.begin(), im.triangles.end(), mesh.triVerts.begin(),
+    [&](const auto &t) -> glm::ivec3 {
+      assert(t[0] >= 0 && t[0] < vertexCount &&
+            t[1] >= 0 && t[1] < vertexCount &&
+            t[2] >= 0 && t[2] < vertexCount);
+      assert(t[0] != t[1] && t[0] != t[2] && t[1] != t[2]);
+      return {t[0], t[1], t[2]};
+    });
   return make_shared<manifold::Manifold>(std::move(mesh));
 }
 

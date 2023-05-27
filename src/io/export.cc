@@ -144,12 +144,42 @@ bool exportFileByName(const shared_ptr<const Geometry>& root_geom, const ExportI
 
 namespace Export {
 
-double normalize(double x) {
+template <class T>
+T normalize(T x) {
   return x == -0 ? 0 : x;
 }
 
-ExportMesh::Vertex vectorToVertex(const Vector3d& pt) {
+template <class T>
+ExportMesh::Vertex vectorToVertex(const T& pt) {
   return {normalize(pt.x()), normalize(pt.y()), normalize(pt.z())};
+}
+
+ExportMesh::ExportMesh(const IndexedTriangleMesh& mesh)
+{
+  std::map<Vertex, int> vertexMap;
+  std::vector<std::array<int, 3>> triangleIndices;
+
+  for (size_t i = 0, n = mesh.vertices.size(); i < n; i++) {
+    const auto &pt = mesh.vertices[i];
+    auto pos = vertexMap.emplace(std::make_pair(vectorToVertex(pt), vertexMap.size()));
+  }
+
+  std::vector<size_t> indexTranslationMap(vertexMap.size());
+  vertices.reserve(vertexMap.size());
+
+  size_t index = 0;
+  for (const auto& e : vertexMap) {
+    vertices.push_back(e.first);
+    indexTranslationMap[e.second] = index++;
+  }
+
+  for (const auto &t : mesh.triangles) {
+    triangles.emplace_back(indexTranslationMap[t[0]], indexTranslationMap[t[1]], indexTranslationMap[t[2]]);
+  }
+
+  std::sort(triangles.begin(), triangles.end(), [](const Triangle& t1, const Triangle& t2) -> bool {
+      return t1.key < t2.key;
+    });
 }
 
 ExportMesh::ExportMesh(const PolySet& ps)
@@ -178,6 +208,21 @@ ExportMesh::ExportMesh(const PolySet& ps)
   }
   std::sort(triangles.begin(), triangles.end(), [](const Triangle& t1, const Triangle& t2) -> bool {
       return t1.key < t2.key;
+    });
+}
+
+
+void ExportMesh::export_indexed(IndexedTriangleMesh &out)
+{
+  out.vertices.reserve(out.vertices.size() + vertices.size());
+  for (const auto &v : vertices) {
+    out.vertices.emplace_back(v[0], v[1], v[2]);
+  }
+  
+  out.triangles.reserve(out.triangles.size() + triangles.size());
+  foreach_indexed_triangle([&](const auto& pts) {
+    out.triangles.emplace_back(pts[0], pts[1], pts[2]);
+    return true;
     });
 }
 

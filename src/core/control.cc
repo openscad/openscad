@@ -72,7 +72,7 @@ static std::shared_ptr<AbstractNode> builtin_child(const ModuleInstantiation *in
   }
 
   Arguments arguments{inst->arguments, context};
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, {"index"});
   const Children *children = context->user_module_children();
   if (!children) {
     // child() called outside any user module
@@ -99,7 +99,7 @@ static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation 
   }
 
   Arguments arguments{inst->arguments, context};
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, std::vector<std::string>{"index"});
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {}, {"index"});
   const Children *children = context->user_module_children();
   if (!children) {
     // children() called outside any user module
@@ -176,7 +176,9 @@ static std::shared_ptr<AbstractNode> builtin_assert(const ModuleInstantiation *i
 
 static std::shared_ptr<AbstractNode> builtin_let(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
-  return Children(&inst->scope, *Let::sequentialAssignmentContext(inst->arguments, inst->location(), context)).instantiate(lazyUnionNode(inst));
+  AssignmentList arguments;
+  removeDuplicateVariableAssignments(inst->arguments, arguments, inst->location());
+  return Children(&inst->scope, *Let::sequentialAssignmentContext(arguments, inst->location(), context)).instantiate(lazyUnionNode(inst));
 }
 
 static std::shared_ptr<AbstractNode> builtin_assign(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
@@ -185,6 +187,7 @@ static std::shared_ptr<AbstractNode> builtin_assign(const ModuleInstantiation *i
   // -> parallel evaluation. This is to be backwards compatible.
   Arguments arguments{inst->arguments, context};
   ContextHandle<Context> assignContext{Context::create<Context>(context)};
+  assignContext->reserve_additional_lexical_variables(arguments.size()); // TODO: count lex vs config vars
   for (auto& argument : arguments) {
     if (!argument.name) {
       LOG(message_group::Warning, inst->location(), context->documentRoot(), "Assignment without variable name %1$s", argument->toEchoStringNoThrow());

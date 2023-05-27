@@ -77,7 +77,7 @@ void ScopeContext::init()
 //	evaluateAssignments(module.scope.assignments);
 }
 
-boost::optional<CallableFunction> ScopeContext::lookup_local_function(const std::string& name, const Location& loc) const
+boost::optional<CallableFunction> ScopeContext::lookup_local_function(const Identifier& name, const Location& loc) const
 {
   const auto& search = scope->functions.find(name);
   if (search != scope->functions.end()) {
@@ -86,7 +86,7 @@ boost::optional<CallableFunction> ScopeContext::lookup_local_function(const std:
   return Context::lookup_local_function(name, loc);
 }
 
-boost::optional<InstantiableModule> ScopeContext::lookup_local_module(const std::string& name, const Location& loc) const
+boost::optional<InstantiableModule> ScopeContext::lookup_local_module(const Identifier& name, const Location& loc) const
 {
   const auto& search = scope->modules.find(name);
   if (search != scope->modules.end()) {
@@ -111,7 +111,7 @@ std::vector<const std::shared_ptr<const Context> *> UserModuleContext::list_refe
   return output;
 }
 
-boost::optional<CallableFunction> FileContext::lookup_local_function(const std::string& name, const Location& loc) const
+boost::optional<CallableFunction> FileContext::lookup_local_function(const Identifier& name, const Location& loc) const
 {
   auto result = ScopeContext::lookup_local_function(name, loc);
   if (result) {
@@ -133,7 +133,7 @@ boost::optional<CallableFunction> FileContext::lookup_local_function(const std::
   return boost::none;
 }
 
-boost::optional<InstantiableModule> FileContext::lookup_local_module(const std::string& name, const Location& loc) const
+boost::optional<InstantiableModule> FileContext::lookup_local_module(const Identifier& name, const Location& loc) const
 {
   auto result = ScopeContext::lookup_local_module(name, loc);
   if (result) {

@@ -234,22 +234,22 @@ const Geometry *SurfaceNode::createGeometry() const
 
       double vx = (v1 + v2 + v3 + v4) / 4;
 
-      p->append_poly();
+      p->append_poly(3);
       p->append_vertex(ox + j - 1, oy + i - 1, v1);
       p->append_vertex(ox + j, oy + i - 1, v2);
       p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
 
-      p->append_poly();
+      p->append_poly(3);
       p->append_vertex(ox + j, oy + i - 1, v2);
       p->append_vertex(ox + j, oy + i, v4);
       p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
 
-      p->append_poly();
+      p->append_poly(3);
       p->append_vertex(ox + j, oy + i, v4);
       p->append_vertex(ox + j - 1, oy + i, v3);
       p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
 
-      p->append_poly();
+      p->append_poly(3);
       p->append_vertex(ox + j - 1, oy + i, v3);
       p->append_vertex(ox + j - 1, oy + i - 1, v1);
       p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
@@ -262,13 +262,13 @@ const Geometry *SurfaceNode::createGeometry() const
     double v3 = data[ (columns - 1) + (i - 1) * columns ];
     double v4 = data[ (columns - 1) + (i) * columns ];
 
-    p->append_poly();
+    p->append_poly(4);
     p->append_vertex(ox + 0, oy + i - 1, min_val);
     p->append_vertex(ox + 0, oy + i - 1, v1);
     p->append_vertex(ox + 0, oy + i, v2);
     p->append_vertex(ox + 0, oy + i, min_val);
 
-    p->append_poly();
+    p->append_poly(4);
     p->insert_vertex(ox + columns - 1, oy + i - 1, min_val);
     p->insert_vertex(ox + columns - 1, oy + i - 1, v3);
     p->insert_vertex(ox + columns - 1, oy + i, v4);
@@ -282,13 +282,13 @@ const Geometry *SurfaceNode::createGeometry() const
     double v3 = data[ (i - 1) + (lines - 1) * columns ];
     double v4 = data[ (i) + (lines - 1) * columns ];
 
-    p->append_poly();
+    p->append_poly(4);
     p->insert_vertex(ox + i - 1, oy + 0, min_val);
     p->insert_vertex(ox + i - 1, oy + 0, v1);
     p->insert_vertex(ox + i, oy + 0, v2);
     p->insert_vertex(ox + i, oy + 0, min_val);
 
-    p->append_poly();
+    p->append_poly(4);
     p->append_vertex(ox + i - 1, oy + lines - 1, min_val);
     p->append_vertex(ox + i - 1, oy + lines - 1, v3);
     p->append_vertex(ox + i, oy + lines - 1, v4);
@@ -297,8 +297,7 @@ const Geometry *SurfaceNode::createGeometry() const
 
   // the bottom of the shape (one less than the real minimum value), making it a solid volume
   if (columns > 1 && lines > 1) {
-    p->append_poly();
-    p->polygons.back().reserve(2 * (columns - 1) + 2 * (lines - 1) ); // inelegant, could vertex count be argument to append_poly?  or separate call poly_reserve(x)?
+    p->append_poly(2 * (columns - 1) + 2 * (lines - 1) );
     for (int i = 0; i < columns - 1; ++i)
       p->insert_vertex(ox + i, oy + 0, min_val);
     for (int i = 0; i < lines - 1; ++i)
