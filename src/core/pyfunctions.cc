@@ -220,8 +220,10 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &PyList_Type, &faces,
                                    &convexity,
                                    &PyList_Type, &triangles
-                                   )) PyErr_SetString(PyExc_TypeError, "error duing parsing polyhedron");
-  return NULL;
+                                   )) {
+	  PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+	  return NULL;
+  } 
 
   if (points != NULL && PyList_Check(points)) {
     for (i = 0; i < PyList_Size(points); i++) {
@@ -816,6 +818,7 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   PyObject *origin = NULL;
   double fn = NAN, fa = NAN, fs = NAN;
 
+  get_fnas(fn,fa,fs);
 
   char *kwlist[] = {"obj", "layer", "convexity", "scale", "fn", "fa", "fs", NULL};
 
@@ -1022,6 +1025,10 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
     node->children.push_back(child);
     return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
   }
+
+  if(arg1 == Py_None && mode == OpenSCADOperator::UNION) return arg2;
+  if(arg2 == Py_None && mode == OpenSCADOperator::UNION) return arg1;
+  if(arg2 == Py_None && mode == OpenSCADOperator::DIFFERENCE) return arg1;
 
   auto node = std::make_shared<CsgOpNode>(instance, mode);
 
