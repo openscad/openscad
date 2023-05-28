@@ -284,10 +284,12 @@ bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps)
   using FCI = typename Polyhedron::Facet_const_iterator;
   using HFCC = typename Polyhedron::Halfedge_around_facet_const_circulator;
 
+  ps.reserve(p.size_of_facets());
+
   for (FCI fi = p.facets_begin(); fi != p.facets_end(); ++fi) {
     HFCC hc = fi->facet_begin();
     HFCC hc_end = hc;
-    ps.append_poly();
+    ps.append_poly(fi->facet_degree());
     do {
       Vertex const& v = *((hc++)->vertex());
       double x = CGAL::to_double(v.point().x());
