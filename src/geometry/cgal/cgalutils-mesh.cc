@@ -49,7 +49,7 @@ bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
   bool err = false;
   ps.reserve(ps.numFacets() + mesh.number_of_faces());
   for (auto& f : mesh.faces()) {
-    ps.append_poly();
+    ps.append_poly(mesh.degree(f));
 
     CGAL::Vertex_around_face_iterator<TriangleMesh> vbegin, vend;
     for (boost::tie(vbegin, vend) = vertices_around_face(mesh.halfedge(f), mesh); vbegin != vend;

@@ -58,10 +58,10 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
         return new PolySet(3);
       }
     } else if (boost::regex_search(line, results, ex_f) && results.size() >= 2) {
-      p->append_poly();
       std::string args=results[1];
       std::vector<std::string> words;
       boost::split(words, results[1], boost::is_any_of(" \t"));
+      p->append_poly(words.size());
       for (const std::string& word : words) {
 	int ind=boost::lexical_cast<int>(word);
         if(ind >= 1 && ind  <= pts.size())

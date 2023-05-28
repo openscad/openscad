@@ -95,7 +95,7 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
   for (const auto& faces : polygons) {
     if (faces[0].size() == 3) {
       // trivial case - triangles cannot be concave or have holes
-      outps.append_poly();
+      outps.append_poly(3);
       outps.append_vertex(verts[faces[0][0]]);
       outps.append_vertex(verts[faces[0][1]]);
       outps.append_vertex(verts[faces[0][2]]);
@@ -107,7 +107,7 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
       auto err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
       if (!err) {
         for (const auto& t : triangles) {
-          outps.append_poly();
+          outps.append_poly(3);
           outps.append_vertex(verts[t[0]]);
           outps.append_vertex(verts[t[1]]);
           outps.append_vertex(verts[t[2]]);
