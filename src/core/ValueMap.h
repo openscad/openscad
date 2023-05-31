@@ -26,6 +26,7 @@ public:
   iterator end() {  return map.end(); }
   void clear() { map.clear(); }
   size_t size() const { return map.size(); }
+  bool empty() const { return map.empty(); }
   template <typename ... Args> std::pair<iterator, bool> emplace(Args&&... args) {
     return map.emplace(std::forward<Args>(args)...);
   }

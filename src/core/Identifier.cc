@@ -1,4 +1,3 @@
-#pragma once
 #include "Identifier.h"
 
 std::unordered_map<std::string, std::string> Identifier::interned_names;

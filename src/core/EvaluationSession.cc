@@ -50,6 +50,9 @@ void EvaluationSession::pop_frame(size_t index)
 boost::optional<const Value&> EvaluationSession::try_lookup_special_variable(const Identifier& name) const
 {
   for (auto it = stack.crbegin(); it != stack.crend(); ++it) {
+    if ((*it)->empty()) {
+      continue;
+    }
     boost::optional<const Value&> result = (*it)->lookup_local_variable(name);
     if (result) {
       return result;
@@ -71,7 +74,9 @@ const Value& EvaluationSession::lookup_special_variable(const Identifier& name, 
 boost::optional<CallableFunction> EvaluationSession::lookup_special_function(const Identifier& name, const Location& loc) const
 {
   for (auto it = stack.crbegin(); it != stack.crend(); ++it) {
-    // TODO: point to stack inside identifier!
+    if ((*it)->empty()) {
+      continue;
+    }
     boost::optional<CallableFunction> result = (*it)->lookup_local_function(name, loc);
     if (result) {
       return result;
@@ -84,6 +89,9 @@ boost::optional<CallableFunction> EvaluationSession::lookup_special_function(con
 boost::optional<InstantiableModule> EvaluationSession::lookup_special_module(const Identifier& name, const Location& loc) const
 {
   for (auto it = stack.crbegin(); it != stack.crend(); ++it) {
+    if ((*it)->empty()) {
+      continue;
+    }
     boost::optional<InstantiableModule> result = (*it)->lookup_local_module(name, loc);
     if (result) {
       return result;

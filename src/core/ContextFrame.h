@@ -17,6 +17,7 @@ public:
 
   virtual std::vector<const Value *> list_embedded_values() const;
   virtual size_t clear();
+  bool empty() const { return lexical_variables.empty() && config_variables.empty(); }
 
   virtual bool set_variable(const Identifier& name, Value&& value);
 
