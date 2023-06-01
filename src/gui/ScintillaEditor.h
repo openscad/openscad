@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -26,14 +27,14 @@ class ScadLexer2;
 class EditorColorScheme
 {
 private:
-  const fs::path path;
+  const boost::filesystem::path path;
 
   boost::property_tree::ptree pt;
   QString _name;
   int _index;
 
 public:
-  EditorColorScheme(const fs::path& path);
+  EditorColorScheme(const boost::filesystem::path& path);
   virtual ~EditorColorScheme() = default;
 
   const QString& name() const;
@@ -81,7 +82,7 @@ private:
                          const std::string& defaultValue);
   QColor readColor(const boost::property_tree::ptree& pt, const std::string& name,
                    const QColor& defaultColor);
-  void enumerateColorSchemesInPath(colorscheme_set_t& result_set, const fs::path& path);
+  void enumerateColorSchemesInPath(colorscheme_set_t& result_set, const boost::filesystem::path& path);
   colorscheme_set_t enumerateColorSchemes();
 
   bool eventFilter(QObject *obj, QEvent *event) override;
@@ -99,7 +100,7 @@ private:
   void setLexer(ScadLexer *lexer);
 #endif
   void replaceSelectedText(QString&);
-  void addTemplate(const fs::path& path);
+  void addTemplate(const boost::filesystem::path& path);
   void updateSymbolMarginVisibility();
   void findMarker(int, int, const std::function<int(int)>&);
 

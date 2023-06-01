@@ -41,7 +41,7 @@ PACKAGES=(
     "gmp 6.2.1"
     "mpfr 4.2.0"
     "glew 2.2.0"
-    "gettext 0.21.1"
+    "gettext REMOVE"
     "libffi REMOVE"
     "freetype 2.12.1"
     "ragel REMOVE"
@@ -690,6 +690,12 @@ remove_libffi()
 {
   echo "Removing libffi..."
   find $DEPLOYDIR -type f -name "ffi*" -o -name "libffi*" -exec rm -f {} \;
+}
+
+remove_gettext()
+{
+  echo "Removing gettext..."
+  find $DEPLOYDIR -type f -name "libintl.*" -o -name "libintl.h" -exec rm -f {} \;
 }
 
 build_gettext()

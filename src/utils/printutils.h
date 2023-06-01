@@ -8,7 +8,7 @@
 #include <utility>
 #include <sstream>
 
-#include <libintl.h>
+#include <glib/gi18n.h>
 // Undefine some defines from libintl.h to presolve
 // some collisions in boost headers later
 #if defined snprintf
@@ -21,27 +21,6 @@
 #include <clocale>
 #include "AST.h"
 #include <set>
-
-// It seems standard practice to use underscore for gettext, even though it is reserved.
-// Not wanting to risk breaking translations by changing every usage of this,
-// I've opted to just disable the check in this case. - Hans L
-// NOLINTBEGIN(bugprone-reserved-identifier)
-inline char *_(const char *msgid) { return gettext(msgid); }
-inline const char *_(const char *msgid, const char *msgctxt) {
-  /* The separator between msgctxt and msgid in a .mo file.  */
-  const char *GETTEXT_CONTEXT_GLUE = "\004";
-
-  std::string str = msgctxt;
-  str += GETTEXT_CONTEXT_GLUE;
-  str += msgid;
-  auto translation = dcgettext(nullptr, str.c_str(), LC_MESSAGES);
-  if (translation == str) {
-    return gettext(msgid);
-  } else {
-    return translation;
-  }
-}
-// NOLINTEND(bugprone-reserved-identifier)
 
 enum class message_group {
   NONE, Error, Warning, UI_Warning, Font_Warning, Export_Warning, Export_Error, UI_Error, Parser_Error, Trace, Deprecated, Echo

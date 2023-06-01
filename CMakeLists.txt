@@ -238,9 +238,6 @@ if (MSVC)
   find_package(double-conversion CONFIG REQUIRED)
   target_link_libraries(OpenSCAD PRIVATE double-conversion::double-conversion)
 
-  find_library(GETTEXT_LIBRARY libintl)
-  target_link_libraries(OpenSCAD PRIVATE ${GETTEXT_LIBRARY})
-
   # call before setting local CMAKE_MODULE_PATH so we use VCPKG version of FindGLEW
   find_graphics()
 

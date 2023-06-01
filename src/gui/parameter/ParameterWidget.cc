@@ -27,6 +27,9 @@
 
 #include "ParameterWidget.h"
 
+#include <set>
+#include <string>
+
 #include "GroupWidget.h"
 #include "ParameterSpinBox.h"
 #include "ParameterComboBox.h"
