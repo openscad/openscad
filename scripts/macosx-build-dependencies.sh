@@ -41,7 +41,7 @@ PACKAGES=(
     "gmp 6.2.1"
     "mpfr 4.2.0"
     "glew 2.2.0"
-    "gettext 0.21.1"
+    "gettext REMOVE"
     "libffi REMOVE"
     "freetype 2.12.1"
     "ragel REMOVE"
@@ -692,43 +692,10 @@ remove_libffi()
   find $DEPLOYDIR -type f -name "ffi*" -o -name "libffi*" -exec rm -f {} \;
 }
 
-build_gettext()
+remove_gettext()
 {
-  version="$1"
-
-  echo "Building gettext $version..."
-  cd "$BASEDIR"/src
-  rm -rf "gettext-$version"
-  if [ ! -f "gettext-$version.tar.gz" ]; then
-    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
-  fi
-  tar xzf "gettext-$version.tar.gz"
-  cd "gettext-$version"
-
-  # Build each arch separately
-  for i in ${!ARCHS[@]}; do
-    arch=${ARCHS[$i]}
-    mkdir build-$arch
-    cd build-$arch
-    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" CXXFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN -Wl,-rpath,$DEPLOYDIR/lib" --disable-shared --with-included-glib --with-included-gettext --with-included-libunistring --disable-java --disable-csharp --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
-    make -j"$NUMCPU"
-    make -j"$NUMCPU" install DESTDIR=$PWD/install/
-    cd ..
-  done
-
-  # Install the first arch
-  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
-
-  # If we're building for multiple archs, create fat binaries
-  if (( ${#ARCHS[@]} > 1 )); then
-    LIBS=()
-    for arch in ${ARCHS[*]}; do
-      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libintl.a)
-    done
-    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libintl.a
-  fi
-
-  echo $version > $DEPLOYDIR/share/macosx-build-dependencies/gettext.version
+  echo "Removing gettext..."
+  find $DEPLOYDIR -type f -name "libintl.*" -o -name "libintl.h" -exec rm -f {} \;
 }
 
 build_glib2()

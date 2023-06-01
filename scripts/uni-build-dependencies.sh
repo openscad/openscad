@@ -34,11 +34,10 @@
 #   ./scripts/uni-build-dependencies.sh qt5
 #   . ./scripts/setenv-unibuild.sh #(Rerun to re-detect qt5)
 #
-# If your system lacks glu, gettext, or glib2, you can build them as well:
+# If your system lacks glu, or glib2, you can build them as well:
 #
 #   ./scripts/uni-build-dependencies.sh glu
 #   ./scripts/uni-build-dependencies.sh glib2
-#   ./scripts/uni-build-dependencies.sh gettext
 #
 # If you want to try Clang compiler (experimental, only works on linux):
 #
@@ -615,30 +614,6 @@ build_eigen()
 
 # glib2 and dependencies
 
-#build_gettext()
-#{
-#  version=$1
-#  ls -l $DEPLOYDIR/include/gettext-po.h
-#  if [ -e $DEPLOYDIR/include/gettext-po.h ]; then
-#    echo "gettext already installed. not building"
-#    return
-#  fi
-#
-#  echo "Building gettext $version..."
-#
-#  cd "$BASEDIR"/src
-#  rm -rf "gettext-$version"
-#  if [ ! -f "glib-$version.tar.gz" ]; then
-#    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
-#  fi
-#  tar xzf "gettext-$version.tar.gz"
-#  cd "gettext-$version"
-#
-#  ./configure --prefix="$DEPLOYDIR"
-#  make -j$NUMCPU
-#  make install
-#}
-
 build_pkgconfig()
 {
   if [ "`command -v pkg-config`" ]; then
@@ -802,11 +777,6 @@ if [ $1 ]; then
     build_glu 9.0.0
     exit $?
   fi
-  if [ $1 = "gettext" ]; then
-    # such a huge build, put here by itself
-    build_gettext 0.18.3.1
-    exit $?
-  fi
   if [ $1 = "harfbuzz" ]; then
     # debian 7 lacks only harfbuzz
     build_harfbuzz 6.0.0 --with-glib=yes
@@ -816,7 +786,6 @@ if [ $1 ]; then
     # such a huge build, put here by itself
     build_pkgconfig 0.28
     build_libffi 3.0.13
-    #build_gettext 0.18.3.1
     build_glib2 2.75.0
     exit $?
   fi
@@ -840,7 +809,6 @@ build_boost 1.81.0
 build_cgal 5.5.1
 build_glew 1.9.0
 build_opencsg 1.4.2
-build_gettext 0.18.3.1
 build_glib2 2.75.0
 
 # the following are only needed for text()

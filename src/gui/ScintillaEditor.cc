@@ -14,6 +14,7 @@
 #include "PlatformUtils.h"
 #include "Settings.h"
 #include "ScadLexer.h"
+#include "printutils.h"
 
 #include <QWheelEvent>
 #include <QPoint>

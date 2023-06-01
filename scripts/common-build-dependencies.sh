@@ -99,29 +99,6 @@ build_libffi()
   make install
 }
 
-build_gettext()
-{
-  version="$1"
-
-  if [ -f "$DEPLOYDIR"/lib/libgettextpo.a ]; then
-    echo "gettext already installed. not building"
-    return
-  fi
-
-  echo "Building gettext $version..."
-  cd "$BASEDIR"/src
-  rm -rf "gettext-$version"
-  if [ ! -f "gettext-$version.tar.gz" ]; then
-    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
-  fi
-  tar xzf "gettext-$version.tar.gz"
-  cd "gettext-$version"
-
-  ./configure --prefix="$DEPLOYDIR" --disable-java --disable-native-java
-  make -j$NUMCPU
-  make install
-}
-
 build_glib2()
 {
   version="$1"

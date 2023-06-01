@@ -70,7 +70,7 @@ for formula in libzip opencsg; do
   time brew link $formula
 done
 
-for formula in gettext qt5 qscintilla2; do
+for formula in qt5 qscintilla2; do
   log "Linking formula $formula"
   time brew link --force $formula
 done

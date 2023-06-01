@@ -11,12 +11,13 @@
 #endif
 
 #include <QString>
-#include "printutils.h"
+#include <glib/gi18n.h>
+#include <libintl.h>
 
 inline QString q_(const char *msgid, const char *msgctxt)
 {
   return QString::fromUtf8(msgctxt ?
-                           _(msgid, msgctxt):
-                           _(msgid)
+                           g_dpgettext(nullptr, (std::string(msgctxt) + "\004" + msgid).c_str(), strlen(msgctxt) + 1):
+                           gettext(msgid)
                            );
 }
