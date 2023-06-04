@@ -30,14 +30,18 @@ catch_error(lambda : cube(center=5) )
 catch_error(lambda : cube(parx=4) )        
 
 # Test python_sphere
-catch_error(lambda : sphere(r="Radius") )        
-catch_error(lambda : sphere(d="Diameter") )        
 catch_error(lambda : sphere(r=1,d=3) )        
 catch_error(lambda : sphere(r=-2) )        
-catch_error(lambda : sphere(d=0) )        # error d and r at the same time ?
+catch_error(lambda : sphere(d=0) )
+catch_error(lambda : sphere(r=2,d=5) )
 catch_error(lambda : sphere(parx=4) )        
 
 # Test python_cylinder
+catch_error(lambda : cylinder(r="Radius",h=2) )        
+catch_error(lambda : cylinder(d="Diameter",h=2) )        
+catch_error(lambda : cylinder(r=0,h=2) )        
+catch_error(lambda : cylinder(d=-1,h=2) )        
+catch_error(lambda : cylinder(3,h=-5) )        
 catch_error(lambda : cylinder(parx=4) )        
 
 # Test python_polyhedron

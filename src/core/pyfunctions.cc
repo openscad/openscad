@@ -173,13 +173,42 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
     return NULL;
   }
 
-  if (h >= 0) vh = h;
+  if(h <= 0) {
+    PyErr_SetString(PyExc_TypeError, "cylinder height must be positive");
+    return NULL;
+  }
+  vh = h;
+
+  if(!isnan(r) && r <= 0) {
+    PyErr_SetString(PyExc_TypeError, "cylinder r must be positive");
+    return NULL;
+  }
+  if(!isnan(d) && d <= 0) {
+    PyErr_SetString(PyExc_TypeError, "cylinder r must be positive");
+    return NULL;
+  }
+  if(!isnan(r1) && r1 < 0) {
+    PyErr_SetString(PyExc_TypeError, "cylinder r1 must not be negative");
+    return NULL;
+  }
+  if(!isnan(r2) && r2 < 0) {
+    PyErr_SetString(PyExc_TypeError, "cylinder r2 must not be negative");
+    return NULL;
+  }
+  if(!isnan(d1) && d1 < 0) {
+    PyErr_SetString(PyExc_TypeError, "cylinder d1 must not be negative");
+    return NULL;
+  }
+  if(!isnan(d2) && d2 < 0) {
+    PyErr_SetString(PyExc_TypeError, "cylinder d2 must not be negative");
+    return NULL;
+  }
 
   if (!isnan(r1) && !isnan(r2)) {
     vr1 = r1; vr2 = r2;
   } else if (!isnan(d1) && !isnan(d2)) {
     vr1 = d1 / 2.0; vr2 = d2 / 2.0;
-  } else if (!isnan(r))                                                                                                                {
+  } else if (!isnan(r)) {
     vr1 = r; vr2 = r;
   } else if (!isnan(d)) {
     vr1 = d / 2.0; vr2 = d / 2.0;
@@ -221,7 +250,7 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &convexity,
                                    &PyList_Type, &triangles
                                    )) {
-	  PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+	  PyErr_SetString(PyExc_TypeError, "error duing parsing polyhedron");
 	  return NULL;
   } 
 
