@@ -118,7 +118,7 @@ GETTEXT_PATH=""
 
 SCRIPTDIR="`dirname \"$0\"`"
 TOPDIR="`dirname \"$SCRIPTDIR\"`"
-CURDIR="`python -c "import os; print(os.path.relpath(os.path.realpath('$BASEDIR'), '$TOPDIR'))"`"
+CURDIR="`python3 -c "import os; print(os.path.relpath(os.path.realpath('$BASEDIR'), '$TOPDIR'))"`"
 
 cd "$TOPDIR" || exit 1
 
