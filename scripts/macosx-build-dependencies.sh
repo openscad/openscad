@@ -726,14 +726,19 @@ build_glib2()
 
   # If we're building for multiple archs, create fat binaries
   if (( ${#ARCHS[@]} > 1 )); then
-    LIBS=()
+    GLIBLIBS=()
+    INTLLIBS=()
     for arch in ${ARCHS[*]}; do
-      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libglib-2.0.dylib)
+      GLIBLIBS+=(build-$arch/install/$DEPLOYDIR/lib/libglib-2.0.dylib)
+      INTLLIBS+=(build-$arch/install/$DEPLOYDIR/lib/libintl.dylib)
     done
-    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libglib-2.0.dylib
+    lipo -create ${GLIBLIBS[@]} -output $DEPLOYDIR/lib/libglib-2.0.dylib
+    lipo -create ${INTLLIBS[@]} -output $DEPLOYDIR/lib/libintl.dylib
   fi
 
   install_name_tool -id @rpath/libglib-2.0.dylib $DEPLOYDIR/lib/libglib-2.0.dylib
+  install_name_tool -id @rpath/libintl.dylib $DEPLOYDIR/lib/libintl.dylib
+  install_name_tool -change $DEPLOYDIR/lib/libintl.8.dylib @rpath/libintl.dylib $DEPLOYDIR/lib/libglib-2.0.dylib
   echo $version > $DEPLOYDIR/share/macosx-build-dependencies/glib2.version
 }
 
