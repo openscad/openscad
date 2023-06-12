@@ -1116,18 +1116,11 @@ class bracket_visitor
 public:
   Value operator()(const str_utf8_wrapper& str, const double& idx) const {
     const auto i = convert_to_uint32(idx);
-    if (i < str.size()) {
-      // Ensure character (not byte) index is inside the character/glyph array
-      if (glong(i) < str.get_utf8_strlen()) {
-        gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
-        auto ptr = g_utf8_offset_to_pointer(str.c_str(), i);
-        if (ptr) {
-          g_utf8_strncpy(utf8_of_cp, ptr, 1);
-        }
-        return std::string(utf8_of_cp);
-      }
+    auto unichar = str[i];
+    if (unichar.empty()) {
+      return Value::undefined.clone();
     }
-    return Value::undefined.clone();
+    return unichar;
   }
 
   Value operator()(const VectorType& vec, const double& idx) const {
