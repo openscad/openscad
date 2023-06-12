@@ -549,10 +549,6 @@ static VectorType search(
         }
       }
     }
-    if (matchCount == 0) {
-      gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
-      if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
-    }
     if (num_returns_per_match == 0 || num_returns_per_match > 1) {
       returnvec.emplace_back(std::move(resultvec));
     }
@@ -595,11 +591,6 @@ static VectorType search(
           break;
         }
       }
-    }
-    if (matchCount == 0) {
-      gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
-      if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
-      LOG(message_group::Warning, loc, session->documentRoot(), "search term not found: \"%1$s\"", utf8_of_cp);
     }
     if (num_returns_per_match == 0 || num_returns_per_match > 1) {
       returnvec.emplace_back(std::move(resultvec));
