@@ -45,8 +45,6 @@
 #include <random>
 
 #include "boost-utils.h"
-/*Unicode support for string lengths and array accesses*/
-#include <glib.h>
 // hash double
 #include "linalg.h"
 
@@ -402,7 +400,7 @@ Value builtin_ord(Arguments arguments, const Location& loc)
   }
   const str_utf8_wrapper& arg_str = arguments[0]->toStrUtf8Wrapper();
   const char *ptr = arg_str.c_str();
-  if (!g_utf8_validate(ptr, -1, nullptr)) {
+  if (!arg_str.utf8_validate()) {
     LOG(message_group::Warning, loc, arguments.documentRoot(), "ord() argument '%1$s' is not a valid utf8 string", arg_str.toString());
     return Value::undefined.clone();
   }
@@ -411,8 +409,7 @@ Value builtin_ord(Arguments arguments, const Location& loc)
     return Value::undefined.clone();
   }
 
-  const gunichar ch = g_utf8_get_char(ptr);
-  return {(double)ch};
+  return {(double)arg_str.get_utf8_char()};
 }
 
 Value builtin_concat(Arguments arguments, const Location& /*loc*/)
@@ -533,10 +530,10 @@ static VectorType search(
   for (size_t i = 0; i < findThisSize; ++i) {
     unsigned int matchCount = 0;
     VectorType resultvec(session);
-    const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
+    const auto ft = find[i];
     for (size_t j = 0; j < searchTableSize; ++j) {
-      const gchar *ptr_st = g_utf8_offset_to_pointer(table.c_str(), j);
-      if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
+      const auto st = table[j];
+      if (!ft.empty() && !st.empty() && ft.get_utf8_char() == st.get_utf8_char()) {
         matchCount++;
         if (num_returns_per_match == 1) {
           returnvec.emplace_back(double(j));
@@ -548,10 +545,6 @@ static VectorType search(
           break;
         }
       }
-    }
-    if (matchCount == 0) {
-      gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
-      if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
     }
     if (num_returns_per_match == 0 || num_returns_per_match > 1) {
       returnvec.emplace_back(std::move(resultvec));
@@ -575,15 +568,14 @@ static VectorType search(
   for (size_t i = 0; i < findThisSize; ++i) {
     unsigned int matchCount = 0;
     VectorType resultvec(session);
-    const gchar *ptr_ft = g_utf8_offset_to_pointer(find.c_str(), i);
+    const auto ft = find[i];
     for (size_t j = 0; j < searchTableSize; ++j) {
       const auto& entryVec = table[j].toVector();
       if (entryVec.size() <= index_col_num) {
         LOG(message_group::Warning, loc, session->documentRoot(), "Invalid entry in search vector at index %1$d, required number of values in the entry: %2$d. Invalid entry: %3$s", j, (index_col_num + 1), table[j].toEchoStringNoThrow());
         return {session};
       }
-      const gchar *ptr_st = g_utf8_offset_to_pointer(entryVec[index_col_num].toString().c_str(), 0);
-      if (ptr_ft && ptr_st && (g_utf8_get_char(ptr_ft) == g_utf8_get_char(ptr_st)) ) {
+      if (!ft.empty() && ft.get_utf8_char() == entryVec[index_col_num].toStrUtf8Wrapper().get_utf8_char()) {
         matchCount++;
         if (num_returns_per_match == 1) {
           returnvec.emplace_back(double(j));
@@ -595,11 +587,6 @@ static VectorType search(
           break;
         }
       }
-    }
-    if (matchCount == 0) {
-      gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
-      if (ptr_ft) g_utf8_strncpy(utf8_of_cp, ptr_ft, 1);
-      LOG(message_group::Warning, loc, session->documentRoot(), "search term not found: \"%1$s\"", utf8_of_cp);
     }
     if (num_returns_per_match == 0 || num_returns_per_match > 1) {
       returnvec.emplace_back(std::move(resultvec));
