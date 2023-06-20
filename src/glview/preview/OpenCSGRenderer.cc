@@ -31,6 +31,7 @@
 #include <utility>
 #include "PolySet.h"
 #include "Feature.h"
+#include "VertexStateManager.h"
 
 #ifdef ENABLE_OPENCSG
 
@@ -165,49 +166,24 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
     std::unique_ptr<VertexStates> vertex_states = std::make_unique<VertexStates>();
     VertexArray vertex_array(std::make_shared<OpenCSGVertexStateFactory>(), *(vertex_states.get()),
                              all_vbos_[vbo_index++]);
+    VertexStateManager vsm(&(*vertex_states), &vertex_array);
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
     add_shader_data(vertex_array);
 
-    if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-      size_t vertices_size = 0, elements_size = 0;
-      for (const auto& csgobj : product.intersections) {
-        if (csgobj.leaf->geom) {
-          vertices_size += getSurfaceBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION);
-        }
+    size_t vertices_size = 0;
+    for (const auto& csgobj : product.intersections) {
+      if (csgobj.leaf->geom) {
+        vertices_size += getSurfaceBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION);
       }
-      for (const auto& csgobj : product.subtractions) {
-        if (csgobj.leaf->geom) {
-          vertices_size += getSurfaceBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
-        }
-      }
-
-      if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-        vertex_array.elementsVBO() = all_vbos_[vbo_index++];
-        if (vertices_size <= 0xff) {
-          vertex_array.addElementsData(std::make_shared<AttributeData<GLubyte, 1, GL_UNSIGNED_BYTE>>());
-        } else if (vertices_size <= 0xffff) {
-          vertex_array.addElementsData(std::make_shared<AttributeData<GLushort, 1, GL_UNSIGNED_SHORT>>());
-        } else {
-          vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
-        }
-        elements_size = vertices_size * vertex_array.elements().stride();
-        vertex_array.elementsSize(elements_size);
-      }
-
-      vertices_size *= vertex_array.stride();
-      vertex_array.verticesSize(vertices_size);
-
-      GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO()));
-      GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW));
-      if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-        GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO()));
-        GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW));
-      }
-    } else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      vertex_array.elementsVBO() = all_vbos_[vbo_index++];
-      vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
     }
+    for (const auto& csgobj : product.subtractions) {
+      if (csgobj.leaf->geom) {
+        vertices_size += getSurfaceBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
+      }
+    }
+
+    vsm.initializeSize(vertices_size, true, all_vbos_.begin() + vbo_index);
 
     for (const auto& csgobj : product.intersections) {
       if (csgobj.leaf->geom) {
