@@ -1,12 +1,21 @@
 #include "VertexStateManager.h"
 
-void VertexStateManager::initializeSize(size_t vertices_size, bool multiple_vbo, std::vector<GLuint>::iterator current_vbo) {
+void VertexStateManager::initializeSize(size_t vertices_size) {
+  std::vector<GLuint> placeholder = std::vector<GLuint>();
+  size_t placeholder_index = 0;
+  initializeSizeHelper(vertices_size, false, placeholder, placeholder_index);
+}
+
+void VertexStateManager::initializeSize(size_t vertices_size, std::vector<GLuint> & vbos, size_t & vbo_index) {
+  initializeSizeHelper(vertices_size, true, vbos, vbo_index);
+}
+
+void VertexStateManager::initializeSizeHelper(size_t vertices_size, bool multiple_vbo, std::vector<GLuint> & vbos, size_t & vbo_index) {
   if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
     size_t elements_size = 0;
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
       if (multiple_vbo) {
-        vertex_array->elementsVBO() = *current_vbo;
-        current_vbo = current_vbo.next();
+        vertex_array->elementsVBO() = vbos[vbo_index++];
       }
       if (vertices_size <= 0xff) {
           vertex_array->addElementsData(std::make_shared<AttributeData<GLubyte, 1, GL_UNSIGNED_BYTE>>());
@@ -33,8 +42,7 @@ void VertexStateManager::initializeSize(size_t vertices_size, bool multiple_vbo,
     }
   } else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
     if (multiple_vbo) {
-      vertex_array->elementsVBO() = *current_vbo;
-      current_vbo = current_vbo.next();
+      vertex_array->elementsVBO() = vbos[vbo_index++];
     }
     vertex_array->addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
   }

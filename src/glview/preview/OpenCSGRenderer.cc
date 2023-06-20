@@ -31,7 +31,6 @@
 #include <utility>
 #include "PolySet.h"
 #include "Feature.h"
-#include "VertexStateManager.h"
 
 #ifdef ENABLE_OPENCSG
 
@@ -183,7 +182,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
       }
     }
 
-    vsm.initializeSize(vertices_size, true, all_vbos_.begin() + vbo_index);
+    vsm.initializeSize(vertices_size, all_vbos_, vbo_index);
 
     for (const auto& csgobj : product.intersections) {
       if (csgobj.leaf->geom) {
