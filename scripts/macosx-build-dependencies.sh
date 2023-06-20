@@ -52,6 +52,7 @@ PACKAGES=(
     "fontconfig 2.14.1"
     "hidapi 0.12.0"
     "lib3mf 1.8.1"
+    # FIXME: Re-evaluate patches if bumping glib past 2.76.3
     "glib2 2.76.3"
     "pixman 0.42.2"
     "cairo 1.16.0"
@@ -745,6 +746,7 @@ build_glib2()
   fi
   tar xJf "glib-$version.tar.xz"
   cd "glib-$version"
+  # FIXME: Once bumping past glib-2.76.3, we may not need these patches
   patch -p1 < $OPENSCADDIR/patches/glib-iconv-macos.patch
   patch -p1 < $OPENSCADDIR/patches/glib-pcre-macos.patch
 
