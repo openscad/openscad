@@ -3,6 +3,7 @@
 #include "VBORenderer.h"
 #include "CGAL_OGL_Polyhedron.h"
 #include "CGAL_Nef_polyhedron.h"
+#include "VertexStateManager.h"
 
 class CGALRenderer : public VBORenderer
 {

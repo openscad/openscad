@@ -165,7 +165,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
     std::unique_ptr<VertexStates> vertex_states = std::make_unique<VertexStates>();
     VertexArray vertex_array(std::make_shared<OpenCSGVertexStateFactory>(), *(vertex_states.get()),
                              all_vbos_[vbo_index++]);
-    VertexStateManager vsm(&(*vertex_states), &vertex_array);
+    VertexStateManager vsm(&(*vertex_states), &vertex_array);  // TODO Might be considered bad practice. But with smart pointers, then VSM could de-allocate these stack objects.
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
     add_shader_data(vertex_array);
