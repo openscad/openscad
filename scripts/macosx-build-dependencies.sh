@@ -52,7 +52,8 @@ PACKAGES=(
     "fontconfig 2.14.1"
     "hidapi 0.12.0"
     "lib3mf 1.8.1"
-    "glib2 2.71.0"
+    # FIXME: Re-evaluate patches if bumping glib past 2.76.3
+    "glib2 2.76.3"
     "pixman 0.42.2"
     "cairo 1.16.0"
     "cgal 5.5"
@@ -745,11 +746,14 @@ build_glib2()
   fi
   tar xJf "glib-$version.tar.xz"
   cd "glib-$version"
+  # FIXME: Once bumping past glib-2.76.3, we may not need these patches
+  patch -p1 < $OPENSCADDIR/patches/glib-iconv-macos.patch
+  patch -p1 < $OPENSCADDIR/patches/glib-pcre-macos.patch
 
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt --force-fallback-for libpcre,libpcre2-8 -Dgtk_doc=false -Dman=false -Ddtrace=false -Dtests=false build-$arch
+    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt --force-fallback-for libpcre2-8 -Dgtk_doc=false -Dman=false -Ddtrace=false -Dtests=false build-$arch
     meson compile -C build-$arch
     DESTDIR=install/ meson install -C build-$arch
   done
