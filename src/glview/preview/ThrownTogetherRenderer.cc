@@ -58,39 +58,15 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
     vertex_array.addSurfaceData();
     add_shader_data(vertex_array);
 
-    if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-      size_t vertices_size = 0, elements_size = 0;
-      if (this->root_products) vertices_size += (getSurfaceBufferSize(this->root_products, false, false, true) * 2);
-      if (this->background_products) vertices_size += getSurfaceBufferSize(this->background_products, false, true, true);
-      if (this->highlight_products) vertices_size += getSurfaceBufferSize(this->highlight_products, true, false, true);
+    VertexStateManager vsm(&vertex_states, &vertex_array);
 
-      if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-        if (vertices_size <= 0xff) {
-          vertex_array.addElementsData(std::make_shared<AttributeData<GLubyte, 1, GL_UNSIGNED_BYTE>>());
-        } else if (vertices_size <= 0xffff) {
-          vertex_array.addElementsData(std::make_shared<AttributeData<GLushort, 1, GL_UNSIGNED_SHORT>>());
-        } else {
-          vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
-        }
-        elements_size = vertices_size * vertex_array.elements().stride();
-        vertex_array.elementsSize(elements_size);
-      }
-      vertices_size *= vertex_array.stride();
-      vertex_array.verticesSize(vertices_size);
+    
+    size_t vertices_size = 0;
+    if (this->root_products) vertices_size += (getSurfaceBufferSize(this->root_products, false, false, true) * 2);
+    if (this->background_products) vertices_size += getSurfaceBufferSize(this->background_products, false, true, true);
+    if (this->highlight_products) vertices_size += getSurfaceBufferSize(this->highlight_products, true, false, true);
 
-      GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertex_array.verticesVBO());
-      GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO()));
-      GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
-      GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW));
-      if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-        GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertex_array.elementsVBO());
-        GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO()));
-        GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
-        GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW));
-      }
-    } else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
-    }
+    vsm.initializeSize(vertices_size);
 
     if (this->root_products) createCSGProducts(*this->root_products, vertex_array, false, false);
     if (this->background_products) createCSGProducts(*this->background_products, vertex_array, false, true);

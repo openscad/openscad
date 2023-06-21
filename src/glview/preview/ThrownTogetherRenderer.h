@@ -4,6 +4,7 @@
 #include "CSGNode.h"
 
 #include "VBORenderer.h"
+#include "VertexStateManager.h"
 
 class CSGProducts;
 class CSGChainObject;
