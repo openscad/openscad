@@ -281,6 +281,7 @@ build_gmp()
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
+  patch -p1 < $OPENSCADDIR/patches/gmp-macos-x18.patch
 
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
