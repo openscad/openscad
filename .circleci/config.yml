@@ -162,7 +162,7 @@ jobs:
           destination: wasm
   openscad-macos:
     macos:
-      xcode: 13.2.1
+      xcode: 14.3.1
     environment:
       OPENSCAD_LIBRARIES: /Users/distiller/libraries/install
       PKG_CONFIG_PATH: /Users/distiller/libraries/install/lib/pkgconfig
