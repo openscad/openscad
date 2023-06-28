@@ -64,7 +64,7 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
       p->append_poly(words.size());
       for (const std::string& word : words) {
         std::vector<std::string> wordindex;
-        boost::split(wordindex, word, boost::is_any_of("\/"));
+        boost::split(wordindex, word, boost::is_any_of("/"));
 	if(wordindex.size() < 1)
           LOG(message_group::Warning, "Invalid Face index in File %1$s in Line %2$d", filename, lineno);
 	else {
