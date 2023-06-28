@@ -41,6 +41,7 @@ option(PROFILE "Enable compiling with profiling / test coverage instrumentation"
 option(MXECROSS "Enable setup for MXE cross platform build" OFF)
 option(OFFLINE_DOCS "Download Documentation for offline usage" OFF)
 option(USE_MIMALLOC "Use mimalloc as malloc replacement." ON)
+option(USE_BUILTIN_OPENCSG "Use OpenCSG from submodule." OFF)
 option(USE_CCACHE "Use ccache to speed up compilation." ON)
 option(ENABLE_CAIRO "Enable support for cairo vector graphics library." ON)
 option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
