@@ -34,6 +34,11 @@ on:
         description: 'Experimental'
         required: false
         default: true
+      use_mimalloc:
+        type: boolean
+        description: 'Use mimalloc'
+        required: false
+        default: true
       enable_msan:
         type: boolean
         description: 'Enable MSAN'
@@ -85,7 +90,7 @@ jobs:
         python-version: '3.11'
     - name: Build
       run: |
-        cmake ${CMAKE_EXTRA} -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DSANITIZE_MEMORY=${{ inputs.enable_msan }} -DSANITIZE_ADDRESS=${{ inputs.enable_asan }} -DSANITIZE_THREAD=${{ inputs.enable_tsan }} -DSANITIZE_UNDEFINED=${{ inputs.enable_ubsan }} -B b .
+        cmake ${CMAKE_EXTRA} -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DUSE_MIMALLOC=${{ inputs.use_mimalloc }} -DSANITIZE_MEMORY=${{ inputs.enable_msan }} -DSANITIZE_ADDRESS=${{ inputs.enable_asan }} -DSANITIZE_THREAD=${{ inputs.enable_tsan }} -DSANITIZE_UNDEFINED=${{ inputs.enable_ubsan }} -B b .
         cmake --build b -j 2
         echo "Build exit code: $?"
     - name: Test and Coverage
