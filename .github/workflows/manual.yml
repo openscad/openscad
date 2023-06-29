@@ -78,6 +78,8 @@ jobs:
         NULLGL) echo "CMAKE_EXTRA=-DNULLGL=1" >> $GITHUB_ENV ;;
         WASM) echo "CMAKE_EXTRA=-DWASM=1" >> $GITHUB_ENV ;;
         esac
+    - uses: kenchan0130/actions-system-info@master
+      id: system-info
     - uses: actions/checkout@v3
       with:
         submodules: 'recursive'
