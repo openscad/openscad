@@ -93,8 +93,8 @@ jobs:
         cmake ${CMAKE_EXTRA} -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DUSE_MIMALLOC=${{ inputs.use_mimalloc }} -DSANITIZE_MEMORY=${{ inputs.enable_msan }} -DSANITIZE_ADDRESS=${{ inputs.enable_asan }} -DSANITIZE_THREAD=${{ inputs.enable_tsan }} -DSANITIZE_UNDEFINED=${{ inputs.enable_ubsan }} -B b .
         cmake --build b -j 2
         echo "Build exit code: $?"
-    - name: Test and Coverage
-      run: ./scripts/github-ci.sh test coverage
+    - name: Test
+      run: ./scripts/github-ci.sh test
       if: ${{ ! inputs.enable_wasm }} 
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v3
@@ -104,8 +104,3 @@ jobs:
         path: |
           b/Testing/Temporary/*_report.html
           b/Testing/Temporary/LastTest.log
-    - name: Upload Code Coverage Report
-      uses: actions/upload-artifact@v3
-      with:
-        name: Code Coverage Report (${{ matrix.os }})
-        path: c/coverage*.html
