@@ -33,7 +33,9 @@ do_test() {
 		if [[ $? != 0 ]]; then
 			exit 1
 		fi
-		tar -C tests/.gcov -c -f - . | tar -x -f -
+		if [ -d tests/.gcov ]; then
+			tar -C tests/.gcov -c -f - . | tar -x -f -
+		fi
 	)
 	if [[ $? != 0 ]]; then
 		echo "Test failure"
