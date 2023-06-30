@@ -80,6 +80,22 @@ jobs:
         esac
     - uses: kenchan0130/actions-system-info@master
       id: system-info
+    - name: Print System Info
+      run: |
+        OUTPUTS=(
+          "CPU Core: ${{ steps.system-info.outputs.cpu-core }}"
+          "CPU Model: ${{ steps.system-info.outputs.cpu-model }}"
+          "Hostname: ${{ steps.system-info.outputs.hostname }}"
+          "Kernel release: ${{ steps.system-info.outputs.kernel-release }}"
+          "Kernel version: ${{ steps.system-info.outputs.kernel-version }}"
+          "Name: ${{ steps.system-info.outputs.name }}"
+          "Platform: ${{ steps.system-info.outputs.platform }}"
+          "Release: ${{ steps.system-info.outputs.release }}"
+          "Total memory bytes: ${{ steps.system-info.outputs.totalmem }}"
+        )
+        for OUTPUT in "${OUTPUTS[@]}";do
+          echo "${OUTPUT}"
+        done
     - uses: actions/checkout@v3
       with:
         submodules: 'recursive'
