@@ -59,6 +59,11 @@ on:
         description: 'Enable UBSAN'
         required: false
         default: false
+      use_builtin_opencsg:
+        type: boolean
+        description: 'Use built-in OpenCSG'
+        required: false
+        default: false
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -108,7 +113,7 @@ jobs:
         python-version: '3.11'
     - name: Build
       run: |
-        cmake ${CMAKE_EXTRA} -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DUSE_MIMALLOC=${{ inputs.use_mimalloc }} -DSANITIZE_MEMORY=${{ inputs.enable_msan }} -DSANITIZE_ADDRESS=${{ inputs.enable_asan }} -DSANITIZE_THREAD=${{ inputs.enable_tsan }} -DSANITIZE_UNDEFINED=${{ inputs.enable_ubsan }} -B b .
+        cmake ${CMAKE_EXTRA} -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DUSE_MIMALLOC=${{ inputs.use_mimalloc }} -DSANITIZE_MEMORY=${{ inputs.enable_msan }} -DSANITIZE_ADDRESS=${{ inputs.enable_asan }} -DSANITIZE_THREAD=${{ inputs.enable_tsan }} -DSANITIZE_UNDEFINED=${{ inputs.enable_ubsan }} -DUSE_BUILTIN_OPENCSG=${{ inputs.use_builtin_opencsg }} -B b .
         cmake --build b -j 2
         echo "Build exit code: $?"
     - name: Test
