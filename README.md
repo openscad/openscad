@@ -141,7 +141,7 @@ To pull the various submodules (incl. the [MCAD library](https://github.com/open
 Prerequisites:
 
 * Xcode
-* automake, libtool, cmake, pkg-config, wget (we recommend installing these using Homebrew)
+* automake, libtool, cmake, pkg-config, wget, meson (we recommend installing these using Homebrew)
 
 Install Dependencies:
 
