@@ -51,6 +51,18 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
   if (!initializeGlew()) {
     throw OffscreenViewException("Unable to initialize Glew");
   }
+
+#ifdef USE_GLAD
+  // FIXME: We could ask for gladLoaderLoadGLES2() here instead
+  const auto version = gladLoaderLoadGL();
+  if (version == 0) {
+    // FIXME: Can we figure out why?
+    throw OffscreenViewException("Unable to initialize GLAD");
+  }
+  // FIXME: Only if verbose
+  LOG("GLAD: Loaded OpenGL %1$d.%2$d", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
+#endif
+
 #endif // NULLGL
 
   this->fbo = fbo_new();
