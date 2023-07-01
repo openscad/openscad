@@ -48,11 +48,15 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
   if (!this->ctx->makeCurrent()) throw OffscreenViewException("Unable to make GL context current");
 
 #ifndef NULLGL
-  if (!initializeGlew()) throw OffscreenViewException("Unable to initialize Glew");
+  if (!initializeGlew()) {
+    throw OffscreenViewException("Unable to initialize Glew");
+  }
 #endif // NULLGL
 
   this->fbo = fbo_new();
-  if (!fbo_init(this->fbo, width, height)) OffscreenViewException("Unable to create FBO");
+  if (!fbo_init(this->fbo, width, height)) {
+    throw OffscreenViewException("Unable to create FBO");
+  }
   GLView::initializeGL();
   GLView::resizeGL(width, height);
 }

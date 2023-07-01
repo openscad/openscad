@@ -178,7 +178,7 @@ bool fbo_init(fbo_t *fbo, size_t width, size_t height)
   } else if (use_ext()) {
     result = fbo_ext_init(fbo, width, height);
   } else {
-    cerr << "Framebuffer Object extension not found by GLEW\n";
+    cerr << "Framebuffer Object extension not found\n";
   }
   return result;
 }
