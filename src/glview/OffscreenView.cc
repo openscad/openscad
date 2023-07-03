@@ -53,14 +53,12 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
   }
 
 #ifdef USE_GLAD
-  // FIXME: We could ask for gladLoaderLoadGLES2() here instead
+  // We could ask for gladLoadGLES2UserPtr() here if we want to use GLES2+
   const auto version = gladLoaderLoadGL();
   if (version == 0) {
-    // FIXME: Can we figure out why?
     throw OffscreenViewException("Unable to initialize GLAD");
   }
-  // FIXME: Only if verbose
-  LOG("GLAD: Loaded OpenGL %1$d.%2$d", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
+  PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
 #endif
 
 #endif // NULLGL

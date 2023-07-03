@@ -90,17 +90,15 @@ void QGLView::initializeGL()
   // ..in a separate compilation unit to avoid duplicate symbols with GLAD.
   initializeGlew();
 #ifdef USE_GLAD
-  // FIXME: We could ask for gladLoadGLES2UserPtr() here instead
+  // We could ask for gladLoadGLES2UserPtr() here if we want to use GLES2+
   const auto version = gladLoadGLUserPtr([](void *ctx, const char *name) -> GLADapiproc {
     return reinterpret_cast<QOpenGLContext *>(ctx)->getProcAddress(name);
   }, this->context());
   if (version == 0) {
-    // FIXME: Can we figure out why?
     std::cerr << "Unable to init GLAD" << std::endl;
     return;
   }
-  // FIXME: Only if verbose
-  std::cout << "GLAD: Loaded OpenGL " << GLAD_VERSION_MAJOR(version) << "." << GLAD_VERSION_MINOR(version) << std::endl;
+  PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
 #endif // ifdef USE_GLAD
   GLView::initializeGL();
 }
