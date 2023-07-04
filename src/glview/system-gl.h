@@ -7,6 +7,7 @@
 #endif
 #ifdef USE_GLAD
   #ifdef _WIN32
+  #define NORESOURCE // To avoid picking up DIFFERENCE from winuser.h, conflicting with OpenSCADOperator::DIFFERENCE
   #include <windows.h>
   #endif
 #include "glad/gl.h"
