@@ -108,7 +108,7 @@ inline void glColor4fv(float *c) {}
 #endif // NULLGL
 
 #ifdef USE_GLEW
-#define hasGLExtension(ext) glewIsSupported(#ext)
+#define hasGLExtension(ext) glewIsSupported("GL_" #ext)
 #endif
 #ifdef USE_GLAD
 #define hasGLExtension(ext) GLAD_GL_## ext
