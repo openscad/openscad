@@ -85,8 +85,11 @@ if(USE_IMAGE_COMPARE_PY)
     execute_process(
       COMMAND "${IMAGE_COMPARE_EXE}" "-m" "ensurepip"
       WORKING_DIRECTORY "${CCBD}")
+    # Tying Pillow to 9.5.0 as we're unable to download wheels for Pillow 10 under Windows.
+    # This may be a temporary issue and we should be able to revert this once wheels
+    # are generally available.
     execute_process(
-      COMMAND "${IMAGE_COMPARE_EXE}" "-m" "pip" "install" "numpy" "Pillow"
+      COMMAND "${IMAGE_COMPARE_EXE}" "-m" "pip" "install" "numpy" "Pillow==9.5.0"
       WORKING_DIRECTORY "${CCBD}")
   endif()
   set(COMPARATOR "--comparator=image_compare")
