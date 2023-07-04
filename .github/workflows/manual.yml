@@ -64,6 +64,14 @@ on:
         description: 'Use built-in OpenCSG'
         required: false
         default: false
+      gl_wrangler:
+        type: choice
+        description: 'OpenGL Wrangler'
+        options:
+        - GLEW
+        - GLAD
+        required: true
+        default: GLEW
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -83,6 +91,10 @@ jobs:
         NULLGL) echo "CMAKE_EXTRA=-DNULLGL=1" >> $GITHUB_ENV ;;
         WASM) echo "CMAKE_EXTRA=-DWASM=1" >> $GITHUB_ENV ;;
         esac
+    - name: Select OpenGL wrangler
+      run: |
+        echo "CMAKE_EXTRA=-DUSE_GLAD=1" >> $GITHUB_ENV ;;
+      if: ${{ inputs.gl_wrangler == 'GLAD' }}
     - uses: kenchan0130/actions-system-info@master
       id: system-info
     - name: Print System Info
