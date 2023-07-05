@@ -48,11 +48,25 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
   if (!this->ctx->makeCurrent()) throw OffscreenViewException("Unable to make GL context current");
 
 #ifndef NULLGL
-  if (!initializeGlew()) throw OffscreenViewException("Unable to initialize Glew");
+  if (!initializeGlew()) {
+    throw OffscreenViewException("Unable to initialize Glew");
+  }
+
+#ifdef USE_GLAD
+  // We could ask for gladLoadGLES2UserPtr() here if we want to use GLES2+
+  const auto version = gladLoaderLoadGL();
+  if (version == 0) {
+    throw OffscreenViewException("Unable to initialize GLAD");
+  }
+  PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
+#endif
+
 #endif // NULLGL
 
   this->fbo = fbo_new();
-  if (!fbo_init(this->fbo, width, height)) OffscreenViewException("Unable to create FBO");
+  if (!fbo_init(this->fbo, width, height)) {
+    throw OffscreenViewException("Unable to create FBO");
+  }
   GLView::initializeGL();
   GLView::resizeGL(width, height);
 }
@@ -91,12 +105,6 @@ bool OffscreenView::save(std::ostream& output) const
 std::string OffscreenView::getRendererInfo() const
 {
   std::ostringstream result;
-
-#ifndef NULLGL
-  result << glewInfo() << "\n";
-#endif
-	result << this->ctx->getInfo() << "\n"
-         << gl_dump();
-
+  result << this->ctx->getInfo() << "\n" << gl_dump();
   return result.str();
 }
