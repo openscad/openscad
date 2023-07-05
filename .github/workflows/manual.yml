@@ -34,6 +34,11 @@ on:
         description: 'Experimental'
         required: false
         default: true
+      use_mimalloc:
+        type: boolean
+        description: 'Use mimalloc'
+        required: false
+        default: true
       enable_msan:
         type: boolean
         description: 'Enable MSAN'
@@ -54,6 +59,19 @@ on:
         description: 'Enable UBSAN'
         required: false
         default: false
+      use_builtin_opencsg:
+        type: boolean
+        description: 'Use built-in OpenCSG'
+        required: false
+        default: false
+      gl_wrangler:
+        type: choice
+        description: 'OpenGL Wrangler'
+        options:
+        - GLEW
+        - GLAD
+        required: true
+        default: GLEW
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -73,6 +91,28 @@ jobs:
         NULLGL) echo "CMAKE_EXTRA=-DNULLGL=1" >> $GITHUB_ENV ;;
         WASM) echo "CMAKE_EXTRA=-DWASM=1" >> $GITHUB_ENV ;;
         esac
+    - name: Select OpenGL wrangler
+      run: |
+        echo "CMAKE_EXTRA=-DUSE_GLAD=1" >> $GITHUB_ENV ;;
+      if: ${{ inputs.gl_wrangler == 'GLAD' }}
+    - uses: kenchan0130/actions-system-info@master
+      id: system-info
+    - name: Print System Info
+      run: |
+        OUTPUTS=(
+          "CPU Core: ${{ steps.system-info.outputs.cpu-core }}"
+          "CPU Model: ${{ steps.system-info.outputs.cpu-model }}"
+          "Hostname: ${{ steps.system-info.outputs.hostname }}"
+          "Kernel release: ${{ steps.system-info.outputs.kernel-release }}"
+          "Kernel version: ${{ steps.system-info.outputs.kernel-version }}"
+          "Name: ${{ steps.system-info.outputs.name }}"
+          "Platform: ${{ steps.system-info.outputs.platform }}"
+          "Release: ${{ steps.system-info.outputs.release }}"
+          "Total memory bytes: ${{ steps.system-info.outputs.totalmem }}"
+        )
+        for OUTPUT in "${OUTPUTS[@]}";do
+          echo "${OUTPUT}"
+        done
     - uses: actions/checkout@v3
       with:
         submodules: 'recursive'
@@ -85,11 +125,11 @@ jobs:
         python-version: '3.11'
     - name: Build
       run: |
-        cmake ${CMAKE_EXTRA} -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DSANITIZE_MEMORY=${{ inputs.enable_msan }} -DSANITIZE_ADDRESS=${{ inputs.enable_asan }} -DSANITIZE_THREAD=${{ inputs.enable_tsan }} -DSANITIZE_UNDEFINED=${{ inputs.enable_ubsan }} -B b .
+        cmake ${CMAKE_EXTRA} -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DUSE_MIMALLOC=${{ inputs.use_mimalloc }} -DSANITIZE_MEMORY=${{ inputs.enable_msan }} -DSANITIZE_ADDRESS=${{ inputs.enable_asan }} -DSANITIZE_THREAD=${{ inputs.enable_tsan }} -DSANITIZE_UNDEFINED=${{ inputs.enable_ubsan }} -DUSE_BUILTIN_OPENCSG=${{ inputs.use_builtin_opencsg }} -B b .
         cmake --build b -j 2
         echo "Build exit code: $?"
-    - name: Test and Coverage
-      run: ./scripts/github-ci.sh test coverage
+    - name: Test
+      run: ./scripts/github-ci.sh test
       if: ${{ ! inputs.enable_wasm }} 
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v3
@@ -99,8 +139,3 @@ jobs:
         path: |
           b/Testing/Temporary/*_report.html
           b/Testing/Temporary/LastTest.log
-    - name: Upload Code Coverage Report
-      uses: actions/upload-artifact@v3
-      with:
-        name: Code Coverage Report (${{ matrix.os }})
-        path: c/coverage*.html

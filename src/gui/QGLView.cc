@@ -26,6 +26,7 @@
 
 #include "qtgettext.h"
 #include "QGLView.h"
+#include "glew-utils.h"
 #include "Preferences.h"
 #include "Renderer.h"
 #include "degree_trig.h"
@@ -84,18 +85,27 @@ void QGLView::viewAll()
 
 void QGLView::initializeGL()
 {
-  auto err = glewInit();
-  if (err != GLEW_OK) {
-    fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
+  // Since OpenCSG requires glew, we need to initialize it.
+  // ..in a separate compilation unit to avoid duplicate symbols with GLAD.
+  initializeGlew();
+#ifdef USE_GLAD
+  // We could ask for gladLoadGLES2UserPtr() here if we want to use GLES2+
+  const auto version = gladLoadGLUserPtr([](void *ctx, const char *name) -> GLADapiproc {
+    return reinterpret_cast<QOpenGLContext *>(ctx)->getProcAddress(name);
+  }, this->context());
+  if (version == 0) {
+    std::cerr << "Unable to init GLAD" << std::endl;
+    return;
   }
+  PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
+#endif // ifdef USE_GLAD
   GLView::initializeGL();
 }
 
 std::string QGLView::getRendererInfo() const
 {
   std::ostringstream info;
-  info << glewInfo() << "\n";
-  info << gl_dump() << "\n";
+  info << gl_dump();
   // Don't translate as translated text in the Library Info dialog is not wanted
   info << "\nQt graphics widget: QOpenGLWidget";
   auto qsf = this->format();
@@ -107,7 +117,7 @@ std::string QGLView::getRendererInfo() const
   auto sbits = qsf.stencilBufferSize();
   info << boost::format("\nQSurfaceFormat: RGBA(%d%d%d%d), depth(%d), stencil(%d)\n\n") %
     rbits % gbits % bbits % abits % dbits % sbits;
-  info << glew_extensions_dump();
+  info << gl_extensions_dump();
   return info.str();
 }
 
@@ -127,12 +137,20 @@ void QGLView::display_opencsg_warning_dialog()
   message += _("It is highly recommended to use OpenSCAD on a system with "
                "OpenGL 2.0 or later.\n"
                "Your renderer information is as follows:\n");
+#ifdef USE_GLEW
   QString rendererinfo(_("GLEW version %1\n%2 (%3)\nOpenGL version %4\n"));
   message += rendererinfo.arg((const char *)glewGetString(GLEW_VERSION),
                               (const char *)glGetString(GL_RENDERER),
                               (const char *)glGetString(GL_VENDOR),
                               (const char *)glGetString(GL_VERSION));
-
+#endif
+#ifdef USE_GLAD
+  QString rendererinfo(_("GLAD version %1\n%2 (%3)\nOpenGL version %4\n"));
+  message += rendererinfo.arg(GLAD_GENERATOR_VERSION,
+                              (const char *)glGetString(GL_RENDERER),
+                              (const char *)glGetString(GL_VENDOR),
+                              (const char *)glGetString(GL_VERSION));
+#endif
   dialog->setText(message);
   dialog->exec();
 }
