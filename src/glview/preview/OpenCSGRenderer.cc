@@ -165,7 +165,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
     std::unique_ptr<VertexStates> vertex_states = std::make_unique<VertexStates>();
     VertexArray vertex_array(std::make_shared<OpenCSGVertexStateFactory>(), *(vertex_states.get()),
                              all_vbos_[vbo_index++]);
-    VertexStateManager vsm(&(*vertex_states), &vertex_array);  // TODO Might be considered bad practice. But with smart pointers, then VSM could de-allocate these stack objects.
+    VertexStateManager vsm(this, &(*vertex_states), &vertex_array);  // TODO Might be considered bad practice. But with smart pointers, then VSM could de-allocate these stack objects.
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
     add_shader_data(vertex_array);
@@ -206,16 +206,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
           last_color = color;
         }
 
-        add_shader_pointers(vertex_array);
-        shaderinfo_t shader_info = this->getShader();
-        std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
-        color_state->glBegin().emplace_back([shader_info, last_color]() {
-          GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % last_color[0] % last_color[1] % last_color[2] % last_color[3]);
-          GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, last_color[0], last_color[1], last_color[2], last_color[3]));
-          GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % ((last_color[0] + 1) / 2) % ((last_color[1] + 1) / 2) % ((last_color[2] + 1) / 2));
-          GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (last_color[0] + 1) / 2, (last_color[1] + 1) / 2, (last_color[2] + 1) / 2, 1.0));
-        });
-        vertex_states->emplace_back(std::move(color_state));
+        vsm.addColor(last_color);
 
         if (color[3] == 1.0f) {
           // object is opaque, draw normally
@@ -289,16 +280,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
           last_color = color;
         }
 
-        add_shader_pointers(vertex_array);
-        shaderinfo_t shader_info = this->getShader();
-        std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
-        color_state->glBegin().emplace_back([shader_info, last_color]() {
-          GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % last_color[0] % last_color[1] % last_color[2] % last_color[3]);
-          GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, last_color[0], last_color[1], last_color[2], last_color[3]));
-          GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % ((last_color[0] + 1) / 2) % ((last_color[1] + 1) / 2) % ((last_color[2] + 1) / 2));
-          GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (last_color[0] + 1) / 2, (last_color[1] + 1) / 2, (last_color[2] + 1) / 2, 1.0));
-        });
-        vertex_states->emplace_back(std::move(color_state));
+        vsm.addColor(last_color);
 
         // negative objects should only render rear faces
         std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();
