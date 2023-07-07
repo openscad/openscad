@@ -1,7 +1,7 @@
 #include "VertexStateManager.h"
 
 void VertexStateManager::initializeSize(size_t vertices_size) {
-  std::vector<GLuint> placeholder = std::vector<GLuint>();
+  std::vector<GLuint> placeholder;
   size_t placeholder_index = 0;
   initializeSizeHelper(vertices_size, false, placeholder, placeholder_index);
 }
@@ -48,8 +48,8 @@ void VertexStateManager::initializeSizeHelper(size_t vertices_size, bool multipl
   }
 }
 void VertexStateManager::addColor(Color4f last_color) {
-  renderer->add_shader_pointers(vertex_array);
-  shaderinfo_t shader_info = renderer->getShader();
+  renderer->add_shader_pointers(*vertex_array);
+  Renderer::shaderinfo_t shader_info = renderer->getShader();
   std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array->verticesVBO(), vertex_array->elementsVBO());
   color_state->glBegin().emplace_back([shader_info, last_color]() {
     GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % last_color[0] % last_color[1] % last_color[2] % last_color[3]);

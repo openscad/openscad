@@ -8,7 +8,7 @@
 
 class VertexStateManager {
 public:
-  VertexStateManager(Renderer* r, VertexStates* v_s, VertexArray* v_a) : vertex_states(v_s), vertex_array(v_a), renderer(r) {}
+  VertexStateManager(VBORenderer* r, VertexStates* v_s, VertexArray* v_a) : vertex_states(v_s), vertex_array(v_a), renderer(r) {}
   void initializeSize(size_t vertices_size);
   void initializeSize(size_t vertices_size, std::vector<GLuint> & vbos, size_t & vbo_index);
   void addColorState(Color4f color);
