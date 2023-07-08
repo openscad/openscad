@@ -166,7 +166,7 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
 {
   using K = CGAL::Epick;
   // Collect point cloud
-  Reindexer<K::Point_3> reindexer;
+  Reindexer<K::Point_3> reindexer; // TODO improve here ?
 
   auto addCapacity = [&](const auto n) {
     reindexer.reserve(reindexer.size() + n);
@@ -200,16 +200,16 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
         });
 #endif
     } else if (const auto *ps = dynamic_cast<const PolySet*>(chgeom.get())) {
-      addCapacity(ps->polygons.size() * 3);
-      for (const auto& p : ps->polygons) {
+      addCapacity(ps->polygons_ind.size() * 3);
+      for (const auto& p : ps->polygons_ind) {
         for (const auto& v : p) {
-          addPoint(vector_convert<K::Point_3>(v));
+          addPoint(vector_convert<K::Point_3>(ps->points[v]));
         }
       }
     }
   }
 
-  const auto &points = reindexer.getArray();
+  const auto &points = reindexer.getArray(); // TODO fix
   if (points.size() <= 3) return false;
 
   // Apply hull

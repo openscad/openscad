@@ -219,7 +219,7 @@ const Geometry *SurfaceNode::createGeometry() const
   double min_val = data.min_value() - 1; // make the bottom solid, and match old code
 
   // reserve the polygon vector size so we don't have to reallocate as often
-  p->polygons.reserve( (lines - 1) * (columns - 1) * 4 + (lines - 1) * 2 + (columns - 1) * 2 + 1);
+  p->polygons_ind.reserve( (lines - 1) * (columns - 1) * 4 + (lines - 1) * 2 + (columns - 1) * 2 + 1);
 
   double ox = center ? -(columns - 1) / 2.0 : 0;
   double oy = center ? -(lines - 1) / 2.0 : 0;

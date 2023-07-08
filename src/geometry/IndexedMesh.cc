@@ -40,12 +40,12 @@
 
 #include "PolySet.h"
 
-void IndexedMesh::append_geometry(const PolySet& ps)
+void IndexedMesh::append_geometry(const PolySet& ps) // TODO remove this func?
 {
-  IndexedMesh& mesh = *this;
-  for (const auto& p : ps.polygons) {
+  IndexedMesh& mesh = *this; 
+  for (const auto& p : ps.polygons_ind) {
     for (const auto& v : p) {
-      mesh.indices.push_back(mesh.vertices.lookup(v));
+      mesh.indices.push_back(mesh.vertices.lookup(ps.points[v]));
     }
     mesh.numfaces++;
     mesh.indices.push_back(-1);

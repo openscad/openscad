@@ -737,12 +737,10 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
   return Response::ContinueTraversal;
 }
 
-static void translate_PolySet(PolySet& ps, const Vector3d& translation)
+static void translate_PolySet(PolySet& ps, const Vector3d& translation) // TODO duplicate with CGALutils ?
 {
-  for (auto& p : ps.polygons) {
-    for (auto& v : p) {
+  for (auto& v : ps.points) {
       v += translation;
-    }
   }
 }
 
@@ -1141,7 +1139,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
   // Create bottom face.
   PolySet *ps_bottom = polyref.tessellate(); // bottom
   // Flip vertex ordering for bottom polygon
-  for (auto& p : ps_bottom->polygons) {
+  for (auto& p : ps_bottom->polygons_ind) {
     std::reverse(p.begin(), p.end());
   }
   translate_PolySet(*ps_bottom, Vector3d(0, 0, h1));
@@ -1284,7 +1282,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
     ps_start->transform(rot);
     // Flip vertex ordering
     if (!flip_faces) {
-      for (auto& p : ps_start->polygons) {
+      for (auto& p : ps_start->polygons_ind) {
         std::reverse(p.begin(), p.end());
       }
     }
@@ -1295,7 +1293,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
     Transform3d rot2(angle_axis_degrees(node.angle, Vector3d::UnitZ()) * angle_axis_degrees(90, Vector3d::UnitX()));
     ps_end->transform(rot2);
     if (flip_faces) {
-      for (auto& p : ps_end->polygons) {
+      for (auto& p : ps_end->polygons_ind) {
         std::reverse(p.begin(), p.end());
       }
     }

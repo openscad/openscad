@@ -266,9 +266,10 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
         glDisable(GL_LIGHTING);
         setColor(ColorMode::CGAL_FACE_2D_COLOR);
 
-        for (const auto& polygon : polyset->polygons) {
+        for (const auto& polygon : polyset->polygons_ind) {
           glBegin(GL_POLYGON);
-          for (const auto& p : polygon) {
+          for (const auto& ind : polygon) {
+            Vector3d p=polyset->points[ind];		  
             glVertex3d(p[0], p[1], 0);
           }
           glEnd();

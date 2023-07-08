@@ -46,11 +46,12 @@ public:
     std::vector<std::vector<size_t>> indices;
 
     // Align all vertices to grid and build vertex array in vertices
-    for (const auto& p : ps.polygons) {
+    for (const auto& p : ps.polygons_ind) {
       indices.emplace_back();
       indices.back().reserve(p.size());
-      for (auto v : boost::adaptors::reverse(p)) {
+      for (auto ind : boost::adaptors::reverse(p)) {
         // align v to the grid; the CGALPoint will receive the aligned vertex
+	Vector3d v=ps.points[ind];
         size_t idx = grid.align(v);
         if (idx == vertices.size()) {
           CGALPoint p(v[0], v[1], v[2]);
@@ -64,7 +65,7 @@ public:
     printf("polyhedron(faces=[");
     int pidx = 0;
 #endif
-    B.begin_surface(vertices.size(), ps.polygons.size());
+    B.begin_surface(vertices.size(), ps.polygons_ind.size());
     for (const auto& p : vertices) {
       B.add_vertex(p);
     }

@@ -172,16 +172,16 @@ bool is_approximately_convex(const PolySet& ps) {
   using Edge_to_facet_map = std::map<Edge, int, VecPairCompare>;
   Edge_to_facet_map edge_to_facet_map;
   std::vector<Plane> facet_planes;
-  facet_planes.reserve(ps.polygons.size());
+  facet_planes.reserve(ps.polygons_ind.size());
 
-  for (size_t i = 0; i < ps.polygons.size(); ++i) {
+  for (size_t i = 0; i < ps.polygons_ind.size(); ++i) {
     Plane plane;
-    auto N = ps.polygons[i].size();
+    auto N = ps.polygons_ind[i].size();
     if (N >= 3) {
       std::vector<Point> v(N);
       for (size_t j = 0; j < N; ++j) {
-        v[j] = vector_convert<Point>(ps.polygons[i][j]);
-        Edge edge(ps.polygons[i][j], ps.polygons[i][(j + 1) % N]);
+        v[j] = vector_convert<Point>(ps.points[ps.polygons_ind[i][j]]);
+        Edge edge(ps.polygons_ind[i][j], ps.polygons_ind[i][(j + 1) % N]);
         if (edge_to_facet_map.count(edge)) return false; // edge already exists: nonmanifold
         edge_to_facet_map[edge] = i;
       }
@@ -192,18 +192,18 @@ bool is_approximately_convex(const PolySet& ps) {
     facet_planes.push_back(plane);
   }
 
-  for (size_t i = 0; i < ps.polygons.size(); ++i) {
-    auto N = ps.polygons[i].size();
+  for (size_t i = 0; i < ps.polygons_ind.size(); ++i) {
+    auto N = ps.polygons_ind[i].size();
     if (N < 3) continue;
     for (size_t j = 0; j < N; ++j) {
-      Edge other_edge(ps.polygons[i][(j + 1) % N], ps.polygons[i][j]);
+      Edge other_edge(ps.polygons_ind[i][(j + 1) % N], ps.polygons_ind[i][j]);
       if (edge_to_facet_map.count(other_edge) == 0) return false; //
       //Edge_to_facet_map::const_iterator it = edge_to_facet_map.find(other_edge);
       //if (it == edge_to_facet_map.end()) return false; // not a closed manifold
       //int other_facet = it->second;
       int other_facet = edge_to_facet_map[other_edge];
 
-      auto p = vector_convert<Point>(ps.polygons[i][(j + 2) % N]);
+      auto p = vector_convert<Point>(ps.points[ps.polygons_ind[i][(j + 2) % N]]);
 
       if (facet_planes[other_facet].has_on_positive_side(p)) {
         // Check angle
@@ -226,9 +226,9 @@ bool is_approximately_convex(const PolySet& ps) {
   while (!facets_to_visit.empty()) {
     int f = facets_to_visit.front(); facets_to_visit.pop();
 
-    for (size_t i = 0; i < ps.polygons[f].size(); ++i) {
-      int j = (i + 1) % ps.polygons[f].size();
-      auto it = edge_to_facet_map.find(Edge(ps.polygons[f][j], ps.polygons[f][i]));
+    for (size_t i = 0; i < ps.polygons_ind[f].size(); ++i) { // TODO map stuff
+      int j = (i + 1) % ps.polygons_ind[f].size();
+      auto it = edge_to_facet_map.find(Edge(ps.polygons_ind[f][j], ps.polygons_ind[f][i]));
       if (it == edge_to_facet_map.end()) return false; // Nonmanifold
       if (!explored_facets.count(it->second)) {
         explored_facets.insert(it->second);
@@ -238,7 +238,7 @@ bool is_approximately_convex(const PolySet& ps) {
   }
 
   // Make sure that we were able to reach all polygons during our visit
-  return explored_facets.size() == ps.polygons.size();
+  return explored_facets.size() == ps.polygons_ind.size();
 }
 
 shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const shared_ptr<const Geometry>& geom)

@@ -106,6 +106,7 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
   scaleOK &= parameters["scale"].getFiniteDouble(node->scale_y);
   scaleOK |= parameters["scale"].getVec2(node->scale_x, node->scale_y, true);
   if ((parameters["scale"].isDefined()) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
+	  printf("error %f %f\n",node->scale_x, node->scale_y);
     LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "linear_extrude(..., scale=%1$s) could not be converted", parameters["scale"].toEchoStringNoThrow());
   }
 

@@ -8,15 +8,22 @@
 
 #include <vector>
 #include <string>
+#include <unordered_map>
+#include <hash.h>
+
+int operator==(const Vector3d &a, const Vector3d &b);
 
 class PolySet : public Geometry
 {
 public:
   VISITABLE_GEOMETRY();
-  Polygons polygons;
+  PolygonsInd polygons_ind;
+  std::vector<Vector3d> points;
+  std::unordered_map<Vector3d, int> pointMap;
 
   PolySet(unsigned int dim, boost::tribool convex = unknown);
   PolySet(Polygon2d origin);
+  int pointIndex(const Vector3d &pt);
 
   const Polygon2d& getPolygon() const { return polygon; }
 
@@ -24,20 +31,26 @@ public:
   BoundingBox getBoundingBox() const override;
   std::string dump() const override;
   unsigned int getDimension() const override { return this->dim; }
-  bool isEmpty() const override { return polygons.size() == 0; }
+  bool isEmpty() const override { return polygons_ind.size() == 0; }
   Geometry *copy() const override { return new PolySet(*this); }
 
   void quantizeVertices(std::vector<Vector3d> *pPointsOut = nullptr);
-  size_t numFacets() const override { return polygons.size(); }
-  void reserve(size_t numFacets) { polygons.reserve(numFacets); }
+  size_t numFacets() const override { return polygons_ind.size(); }
+  void reserve(size_t numFacets) { polygons_ind.reserve(numFacets); }
+  void append_coord(const Vector3d &coord);
   void append_poly(size_t expected_vertex_count);
-  void append_poly(const Polygon& poly);
-  void append_vertex(double x, double y, double z = 0.0);
-  void append_vertex(const Vector3d& v);
-  void append_vertex(const Vector3f& v);
-  void insert_vertex(double x, double y, double z = 0.0);
-  void insert_vertex(const Vector3d& v);
-  void insert_vertex(const Vector3f& v);
+  void append_poly(const Polygon& poly); // DEPRECATED
+  void append_poly(const IndexedFace& poly);
+
+  void append_vertex(double x, double y, double z = 0.0); // DEPRECATED
+  void append_vertex(const Vector3d& v); // DEPRECATED
+  void append_vertex(const Vector3f& v); // DEPRECATED
+  void append_vertex(int ind);
+
+  void insert_vertex(double x, double y, double z = 0.0); // DEPRECATED
+  void insert_vertex(const Vector3d& v); // DEPRECATED
+  void insert_vertex(const Vector3f& v); // DEPRECATED
+  void insert_vertex(int ind); 
   void append(const PolySet& ps);
 
   void transform(const Transform3d& mat) override;

@@ -15,11 +15,13 @@ namespace PolySetUtils {
 // will trigger floating point incertainties and cause problems later.
 Polygon2d *project(const PolySet& ps) {
   auto poly = new Polygon2d;
+  Vector3d pt;
 
-  for (const auto& p : ps.polygons) {
+  for (const auto& p : ps.polygons_ind) {
     Outline2d outline;
     for (const auto& v : p) {
-      outline.vertices.emplace_back(v[0], v[1]);
+      pt=ps.points[v];	    
+      outline.vertices.emplace_back(pt[0], pt[1]);
     }
     poly->addOutline(outline);
   }
@@ -45,7 +47,7 @@ Polygon2d *project(const PolySet& ps) {
    polyset has simple polygon faces with no holes.
    The tessellation will be robust wrt. degenerate and self-intersecting
  */
-void tessellate_faces(const PolySet& inps, PolySet& outps)
+void tessellate_faces(const PolySet& inps, PolySet& outps) // TODO use indexed version instead ?
 {
   int degeneratePolygons = 0;
 
@@ -54,12 +56,12 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
   std::vector<std::vector<IndexedFace>> polygons;
 
   // best estimate without iterating all polygons, to reduce reallocations
-  polygons.reserve(inps.polygons.size() );
+  polygons.reserve(inps.polygons_ind.size() );
 
   // minimum estimate without iterating all polygons, to reduce reallocation and rehashing
-  allVertices.reserve(3 * inps.polygons.size() );
+  allVertices.reserve(3 * inps.polygons_ind.size() );
 
-  for (const auto& pgon : inps.polygons) {
+  for (const auto& pgon : inps.polygons_ind) {
     if (pgon.size() < 3) {
       degeneratePolygons++;
       continue;
@@ -69,7 +71,8 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
     auto& faces = polygons.back();
     faces.push_back(IndexedFace());
     auto& currface = faces.back();
-    for (const auto& v : pgon) {
+    for (const auto& ind : pgon) {
+      const Vector3d v=inps.points[ind];
       // Create vertex indices and remove consecutive duplicate vertices
       // NOTE: a lot of time is spent here (cast+hash+lookup+insert+rehash)
       auto idx = allVertices.lookup(v.cast<float>());
@@ -90,7 +93,7 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
 
   // Estimate how many polygons we will need and preallocate.
   // This is usually an undercount, but still prevents a lot of reallocations.
-  outps.polygons.reserve(polygons.size() );
+  outps.polygons_ind.reserve(polygons.size() );
 
   for (const auto& faces : polygons) {
     if (faces[0].size() == 3) {

@@ -157,10 +157,10 @@ ExportMesh::ExportMesh(const PolySet& ps)
   std::map<Vertex, int> vertexMap;
   std::vector<std::array<int, 3>> triangleIndices;
 
-  for (const auto& pts : ps.polygons) {
-    auto pos1 = vertexMap.emplace(std::make_pair(vectorToVertex(pts[0]), vertexMap.size()));
-    auto pos2 = vertexMap.emplace(std::make_pair(vectorToVertex(pts[1]), vertexMap.size()));
-    auto pos3 = vertexMap.emplace(std::make_pair(vectorToVertex(pts[2]), vertexMap.size()));
+  for (const auto& pts : ps.polygons_ind) {
+    auto pos1 = vertexMap.emplace(std::make_pair(vectorToVertex(ps.points[pts[0]]), vertexMap.size()));
+    auto pos2 = vertexMap.emplace(std::make_pair(vectorToVertex(ps.points[pts[1]]), vertexMap.size()));
+    auto pos3 = vertexMap.emplace(std::make_pair(vectorToVertex(ps.points[pts[2]]), vertexMap.size()));
     triangleIndices.push_back({pos1.first->second, pos2.first->second, pos3.first->second});
   }
 
@@ -173,7 +173,7 @@ ExportMesh::ExportMesh(const PolySet& ps)
     indexTranslationMap[e.second] = index++;
   }
 
-  for (const auto& i : triangleIndices) {
+  for (const auto& i : triangleIndices) { // TODO make use of  indexed nature
     triangles.emplace_back(indexTranslationMap[i[0]], indexTranslationMap[i[1]], indexTranslationMap[i[2]]);
   }
   std::sort(triangles.begin(), triangles.end(), [](const Triangle& t1, const Triangle& t2) -> bool {

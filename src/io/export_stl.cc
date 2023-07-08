@@ -144,14 +144,16 @@ uint64_t append_stl(const PolySet& ps, std::ostream& output, bool binary)
 
   if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
     Export::ExportMesh exportMesh { triangulated };
-    exportMesh.foreach_triangle([&](const auto& pts) {
-        processTriangle({ toVector(pts[0]), toVector(pts[1]), toVector(pts[2]) });
+/*
+    exportMesh.foreach_indexed_triangle([&](IndexedFace& pts) {
+        processTriangle({ ps.points[toVector(pts[0])], ps.points[toVector(pts[1])], ps.points[toVector(pts[2])] });
         return true;
       });
+*/      
   } else {
-    for (const auto& p : triangulated.polygons) {
+    for (const IndexedFace& p : triangulated.polygons_ind) {
       assert(p.size() == 3); // STL only allows triangles
-      processTriangle({ p[0], p[1], p[2] });
+      processTriangle({ ps.points[p[0]], ps.points[p[1]], ps.points[p[2]] });
     }
   }
 
