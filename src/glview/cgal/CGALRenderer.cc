@@ -140,7 +140,7 @@ void CGALRenderer::createPolySets()
 
   VertexArray vertex_array(std::make_shared<VertexStateFactory>(), polyset_states);
 
-  VertexStateManager vsm(this, &polyset_states, &vertex_array);
+  VertexStateManager vsm(*this, vertex_array);
 
   vertex_array.addEdgeData();
   vertex_array.addSurfaceData();

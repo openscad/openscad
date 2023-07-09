@@ -58,7 +58,7 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
     vertex_array.addSurfaceData();
     add_shader_data(vertex_array);
 
-    VertexStateManager vsm(this, &vertex_states, &vertex_array);
+    VertexStateManager vsm(*this, vertex_array);
 
     
     size_t vertices_size = 0;
@@ -220,7 +220,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
 
     vertex_array.writeSurface();
 
-    VertexStateManager vsm(this, &vertex_states, &vertex_array); // Currently, choosing to create a new object instead of trying to reuse the one from ThrownTogetherRenderer::prepare
+    VertexStateManager vsm(*this, vertex_array); // Currently, choosing to create a new VSM instead of trying to reuse the one from ThrownTogetherRenderer::prepare
 
     if (highlight_mode || background_mode) {
       const ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
