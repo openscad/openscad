@@ -13,6 +13,3 @@
 [submodule "OpenCSG"]
 	path = submodules/OpenCSG
 	url = https://github.com/openscad/OpenCSG.git
-[submodule "submodules/cryptopp"]
-	path = submodules/cryptopp
-	url = https://github.com/weidai11/cryptopp.git
