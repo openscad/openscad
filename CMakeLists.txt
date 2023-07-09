@@ -50,7 +50,6 @@ option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
 option(ENABLE_TBB "Enable support for oneAPI Threading Building Blocks." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
-option(ENABLE_PYTHON_STATIC "Static Python interpreter" OFF)
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON "NOT HEADLESS" OFF)
@@ -364,35 +363,13 @@ target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
 if(ENABLE_PYTHON)
-  message(STATUS "Python enabled" )
-  if(ENABLE_PYTHON_STATIC)
-    set(PYSTATIC_TEMPDIR ${CMAKE_SOURCE_DIR}/src/ext/python)
-    set(PYTHON_VERSION 3.10.11)		    
-    set(PYTHON_PREFIX ${PYSTATIC_TEMPDIR}/python)		    
-    set(PYTHON_LIBA "${PYTHON_PREFIX}/lib/libpython3.10.a")
-    add_custom_command(OUTPUT "${PYTHON_LIBA}" COMMAND 
-      mkdir -p ${PYSTATIC_TEMPDIR} &&
-      cd "${PYSTATIC_TEMPDIR}" &&
-      wget -O "Python-${PYTHON_VERSION}.tar.xz" "https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tar.xz" &&
-      tar -xJf Python-${PYTHON_VERSION}.tar.xz &&
-      cd Python-${PYTHON_VERSION} &&
-      ./configure --prefix="${PYTHON_PREFIX}" --enable-optimizations --disable-shared  --disable-test-modules --with-pymalloc=false LDFLAGS="-static"  &&
-      FLT_ROUNDS=1 make install 2>/dev/zero || echo done
-    )	    
-    set_property(SOURCE "${CMAKE_SOURCE_DIR}/src/core/pyopenscad.cc" APPEND PROPERTY OBJECT_DEPENDS  ${PYTHON_LIBA})
-
-    target_include_directories(OpenSCAD PRIVATE ${PYTHON_PREFIX}/include/python3.10/)
-    target_link_libraries(OpenSCAD PRIVATE ${PYTHON_LIBA} )
-
-  else()	  
-    find_package (Python REQUIRED COMPONENTS Interpreter Development)
-    target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
-    target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
-  endif()  
-  target_link_libraries(OpenSCAD PRIVATE  "${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp/libcryptopp.a")
-  target_include_directories(OpenSCAD PRIVATE "./submodules/cryptopp/")
-  add_custom_command(OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp/libcryptopp.a" COMMAND make WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp)
-  set_property(SOURCE "src/core/pyopenscad.cc" APPEND PROPERTY OBJECT_DEPENDS  "${CMAKE_CURRENT_SOURCE_DIR}/submodules/cryptopp/libcryptopp.a")
+  find_package(Python REQUIRED COMPONENTS Interpreter Development)
+  find_package(CryptoPP REQUIRED)
+  message(STATUS "Python enabled, using Crypto++ ${PC_CRYPTOPP_VERSION}")
+  target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
+  target_include_directories(OpenSCAD PRIVATE ${CRYPTOPP_INCLUDE_DIRS})
+  target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
+  target_link_libraries(OpenSCAD PRIVATE ${CRYPTOPP_LIBRARIES})
 endif()
 
 if(ENABLE_HIDAPI)
@@ -784,13 +761,10 @@ set(CORE_SOURCES
   ${BISON_comment_parser_OUTPUTS})
 if(ENABLE_PYTHON)
 	list(APPEND CORE_SOURCES
-		    src/core/pyopenscad.cc
+		    src/core/pyopenscad.cc 
 		    src/core/pyfunctions.cc)
 	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
 endif()
-if(ENABLE_PYTHON_STATIC)
-	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON_STATIC)
-endif()	
 
 set(CGAL_SOURCES
   src/geometry/GeometryEvaluator.cc

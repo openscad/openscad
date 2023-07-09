@@ -103,11 +103,10 @@ std::string untrusted_edit_document_name;
 std::string trusted_edit_document_name;
 std::string evaluatePython(const std::string &code, double time);
 extern bool python_trusted;
-extern bool python_active;
 
-#include "sha.h"
-#include "filters.h"
-#include "base64.h"
+#include "cryptopp/sha.h"
+#include "cryptopp/filters.h"
+#include "cryptopp/base64.h"
 
 std::string SHA256HashString(std::string aString){
     std::string digest;
@@ -120,7 +119,6 @@ std::string SHA256HashString(std::string aString){
 
     return digest;
 }
-
 
 #endif
 
@@ -1265,7 +1263,7 @@ void MainWindow::instantiateRoot()
 
     std::shared_ptr<const FileContext> file_context;
 #ifdef ENABLE_PYTHON
-    if (python_result_node != NULL && python_active) this->absolute_root_node = python_result_node;
+    if (python_result_node != NULL && this->python_active) this->absolute_root_node = python_result_node;
     else
 #endif
     this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
@@ -1561,7 +1559,7 @@ void MainWindow::actionRevokeTrustedFiles()
   QSettingsCached settings;
 #ifdef ENABLE_PYTHON  
   python_trusted = false;
-  trusted_edit_document_name="";
+  this->trusted_edit_document_name="";
 #endif  
   settings.remove("python_hash");
   QMessageBox::information(this, _("Trusted Files"), "All trusted python files revoked", QMessageBox::Ok);
@@ -1838,7 +1836,7 @@ bool MainWindow::fileChangedOnDisk()
  */
 
 #ifdef ENABLE_PYTHON
-bool trust_python_file(const std::string &file,  const std::string &content) {
+bool MainWindow::trust_python_file(const std::string &file,  const std::string &content) {
   QSettingsCached settings;
   char setting_key[256];
   if(python_trusted) return true;
@@ -1847,15 +1845,15 @@ bool trust_python_file(const std::string &file,  const std::string &content) {
   snprintf(setting_key,sizeof(setting_key)-1,"python_hash/%s",file.c_str());
   act_hash = SHA256HashString(content);
 
-  if(file == untrusted_edit_document_name) return false;
+  if(file == this->untrusted_edit_document_name) return false;
   
-  if(file == trusted_edit_document_name) {
+  if(file == this->trusted_edit_document_name) {
     settings.setValue(setting_key,act_hash.c_str());
     return true;
   }
 
   if(content.size() <= 1) { // 1st character already typed
-    trusted_edit_document_name=file;
+    this->trusted_edit_document_name=file;
     return true;
   }
 
@@ -1866,11 +1864,11 @@ bool trust_python_file(const std::string &file,  const std::string &content) {
   }
  
   if(act_hash == ref_hash) {
-	  trusted_edit_document_name=file;
+	  this->trusted_edit_document_name=file;
 	  return true;
   }
 
-  auto ret = QMessageBox::warning(NULL, file.c_str(),
+  auto ret = QMessageBox::warning(this, "Application",
     _( "Python files can potentially contain harumful stuff.\n"
     "Do you trust this file ?\n"), QMessageBox::Yes  | QMessageBox::YesAll | QMessageBox::No);
   if (ret == QMessageBox::YesAll)  {
@@ -1878,13 +1876,13 @@ bool trust_python_file(const std::string &file,  const std::string &content) {
     return true;
   }
   if (ret == QMessageBox::Yes)  {
-    trusted_edit_document_name=file;
+    this->trusted_edit_document_name=file;
     settings.setValue(setting_key,act_hash.c_str());
     return true;
   }
 
   if (ret == QMessageBox::No) {
-    untrusted_edit_document_name=file;
+    this->untrusted_edit_document_name=file;
     return false;
   }
   return false;
@@ -1905,18 +1903,18 @@ void MainWindow::parseTopLevelDocument()
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
   delete this->parsed_file;
 #ifdef ENABLE_PYTHON
-  python_active = false;
+  this->python_active = false;
   if (fname != NULL) {
     if(boost::algorithm::ends_with(fname, ".py")) {
 	    std::string content = std::string(this->last_compiled_doc.toUtf8().constData());
       if (
         Feature::ExperimentalPythonEngine.is_enabled() 
-		&& trust_python_file(std::string(fname), content)) python_active = true;
+		&& trust_python_file(std::string(fname), content)) this->python_active = true;
       else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
     }
   }
 
-  if (python_active) {
+  if (this->python_active) {
     auto fulltext_py =
       std::string(this->last_compiled_doc.toUtf8().constData());
 
