@@ -181,7 +181,7 @@ bool is_approximately_convex(const PolySet& ps) {
       std::vector<Point> v(N);
       for (size_t j = 0; j < N; ++j) {
         v[j] = vector_convert<Point>(ps.points[ps.polygons_ind[i][j]]);
-        Edge edge(ps.polygons_ind[i][j], ps.polygons_ind[i][(j + 1) % N]);
+        Edge edge(ps.points[ps.polygons_ind[i][j]], ps.points[ps.polygons_ind[i][(j + 1) % N]]);
         if (edge_to_facet_map.count(edge)) return false; // edge already exists: nonmanifold
         edge_to_facet_map[edge] = i;
       }
@@ -196,7 +196,7 @@ bool is_approximately_convex(const PolySet& ps) {
     auto N = ps.polygons_ind[i].size();
     if (N < 3) continue;
     for (size_t j = 0; j < N; ++j) {
-      Edge other_edge(ps.polygons_ind[i][(j + 1) % N], ps.polygons_ind[i][j]);
+      Edge other_edge(ps.points[ps.polygons_ind[i][(j + 1) % N]], ps.points[ps.polygons_ind[i][j]]);
       if (edge_to_facet_map.count(other_edge) == 0) return false; //
       //Edge_to_facet_map::const_iterator it = edge_to_facet_map.find(other_edge);
       //if (it == edge_to_facet_map.end()) return false; // not a closed manifold
@@ -228,7 +228,7 @@ bool is_approximately_convex(const PolySet& ps) {
 
     for (size_t i = 0; i < ps.polygons_ind[f].size(); ++i) { // TODO map stuff
       int j = (i + 1) % ps.polygons_ind[f].size();
-      auto it = edge_to_facet_map.find(Edge(ps.polygons_ind[f][j], ps.polygons_ind[f][i]));
+      auto it = edge_to_facet_map.find(Edge(ps.points[ps.polygons_ind[f][j]], ps.points[ps.polygons_ind[f][i]]));
       if (it == edge_to_facet_map.end()) return false; // Nonmanifold
       if (!explored_facets.count(it->second)) {
         explored_facets.insert(it->second);
