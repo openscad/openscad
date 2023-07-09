@@ -9,6 +9,10 @@ PARALLEL_CTEST=-j"$PARALLEL"
 BUILDDIR=b
 GCOVRDIR=c
 
+do_enable_python() {
+	echo "do_enable_python()"
+	PYTHON_DEFINE="-DENABLE_PYTHON=ON"
+}
 do_build() {
 	echo "do_build()"
 
@@ -16,7 +20,7 @@ do_build() {
 	mkdir "$BUILDDIR"
 	(
 		cd "$BUILDDIR"
-		cmake -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DPROFILE=ON .. && make $PARALLEL_MAKE
+		cmake -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DPROFILE=ON ${PYTHON_DEFINE} .. && make $PARALLEL_MAKE
 	)
 	if [[ $? != 0 ]]; then
 		echo "Build failure"

@@ -3,7 +3,7 @@
 DIST="$1"
 
 PACKAGES1="build-essential bison cmake curl flex git-core imagemagick ghostscript"
-PACKAGES2="libboost-all-dev libboost-dev libeigen3-dev libzip-dev"
+PACKAGES2="libboost-all-dev libboost-dev libeigen3-dev libzip-dev libcrypto++-dev"
 PACKAGES3="libxi-dev libxmu-dev qtbase5-dev qtmultimedia5-dev libqt5opengl5-dev libqt5svg5-dev libqt5scintilla2-dev"
 PACKAGES4="libcgal-dev libglew-dev libgmp3-dev libgmp-dev libmpfr-dev"
 PACKAGES5="libdouble-conversion-dev libfontconfig-dev libharfbuzz-dev libopencsg-dev lib3mf-dev libtbb-dev"
