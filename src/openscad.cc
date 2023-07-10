@@ -90,8 +90,8 @@
 #ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
 std::string evaluatePython(const std::string &code, double time);
-bool python_active = false;
-bool python_trusted = false;
+extern bool python_active;
+extern bool python_trusted;
 #endif
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -1037,7 +1037,7 @@ int main(int argc, char **argv)
   }
 #ifdef ENABLE_PYTHON
   if (vm.count("trust-python")) {
-    LOG("Python Engine enabled", OpenSCAD::debug);
+    LOG("Python Code globally trusted", OpenSCAD::debug);
     python_trusted = true;
   }
 #endif

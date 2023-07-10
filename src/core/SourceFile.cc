@@ -35,9 +35,15 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <utility>
+#include <fstream>
+#include <streambuf>
 namespace fs = boost::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
+#ifdef ENABLE_PYTHON
+#include "pyopenscad.h"
+extern bool python_trusted;
+#endif
 
 SourceFile::SourceFile(std::string path, std::string filename)
   : ASTNode(Location::NONE), path(std::move(path)), filename(std::move(filename))
@@ -58,8 +64,33 @@ void SourceFile::registerUse(const std::string& path, const Location& loc)
           path);
 
   auto ext = fs::path(path).extension().generic_string();
+#ifdef ENABLE_PYTHON  
+  if (boost::iequals(ext, ".py")) {
+    if (fs::is_regular_file(path)) {
 
-  if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
+      bool trusted=python_trusted;
+/*      
+      if(!is_cmdline_mode()) { 
+        std::ifstream fh(path, std::ios::in | std::ios::binary);
+        std::string content{std::istreambuf_iterator<char>(fh), std::istreambuf_iterator<char>()};
+	if(python_trusted) trusted=true;
+        if(trust_python_file(path, content)) trusted=true;
+        fh.close();
+      }	else trusted =  python_trusted;
+*/      
+      if(trusted) {
+        boost::filesystem::path boost_path(path); 
+        std::string cmd = "import sys\nsys.path.append('"+boost_path.parent_path().string()+"')\nimport "+boost_path.stem().string();
+        std::string error=evaluatePython(cmd,0); 
+        if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
+      } else LOG(message_group::Error, "File not trusted '%1$s'", path);
+
+    } else { // is_regular
+      LOG(message_group::Error, "Can't read python with path '%1$s'", path);
+    }
+  } else 
+#endif	  
+    if (boost::iequals(ext, ".otf") || boost::iequals(ext, ".ttf")) {
     if (fs::is_regular_file(path)) {
       FontCache::instance()->register_font_file(path);
     } else {

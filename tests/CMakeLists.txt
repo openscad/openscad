@@ -543,6 +543,8 @@ file(GLOB REDEFINITION_FILES       ${TEST_SCAD_DIR}/redefinition/*.scad)
 file(GLOB_RECURSE BUGS_FILES       ${TEST_SCAD_DIR}/bugs/*.scad)
 file(GLOB_RECURSE BUGS_2D_FILES    ${TEST_SCAD_DIR}/bugs2D/*.scad)
 file(GLOB_RECURSE EXAMPLE_3D_FILES ${EXAMPLES_DIR}/*.scad)
+list(APPEND CGALPNGTEST_PYTHON_FILES  ${TEST_PYTHON_DIR}/language/primitives.py )
+list(APPEND ECHO_PYTHON_FILES         ${TEST_PYTHON_DIR}/language/abuse.py )
 
 list(REMOVE_ITEM EXAMPLE_3D_FILES
   ${EXAMPLES_DIR}/Old/example015.scad
@@ -1154,6 +1156,8 @@ add_cmdline_test(csgpngtest         SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES 
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest  SCRIPT ${CGALSTLSANITYTEST_PY} SUFFIX txt FILES ${CGALSTLSANITYTEST_FILES} ARGS ${OPENSCAD_BINPATH})
+add_cmdline_test(cgalpngtest_python  OPENSCAD FILES ${CGALPNGTEST_PYTHON_FILES} SUFFIX png  ARGS --trust-python --render)
+add_cmdline_test(echotest_python     OPENSCAD FILES ${ECHO_PYTHON_FILES}        SUFFIX echo ARGS --trust-python )
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
 foreach(TEST ${SVG_VIEWBOX_TESTS})
@@ -1468,6 +1472,9 @@ list(APPEND NEF3_BROKEN_TESTS
 if(APPLE)
   set_tests_properties(
     ${NEF3_BROKEN_TESTS}
+    # Python not enabled for MAC yet
+    cgalpngtest_python_primitives
+    echotest_python_abuse
     # issue3158 test failing on macos, see: https://github.com/openscad/openscad/issues/4509
     opencsgtest_issue3158
     PROPERTIES DISABLED TRUE
@@ -1484,6 +1491,9 @@ elseif(WIN32 OR MXECROSS)
     # requires `gs` tool
     pdfexporttest_centered
     pdfexporttest_simple-pdf
+    # Python not enabled in windows yet
+    cgalpngtest_python_primitives
+    echotest_python_abuse
     PROPERTIES DISABLED TRUE
   )
 endif()

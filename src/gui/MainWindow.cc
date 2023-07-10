@@ -102,9 +102,9 @@ extern std::shared_ptr<AbstractNode> python_result_node;
 std::string evaluatePython(const std::string &code, double time);
 extern bool python_trusted;
 
-#include "crypto++/sha.h"
-#include "crypto++/filters.h"
-#include "crypto++/base64.h"
+#include "cryptopp/sha.h"
+#include "cryptopp/filters.h"
+#include "cryptopp/base64.h"
 
 std::string SHA256HashString(std::string aString){
     std::string digest;

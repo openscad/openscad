@@ -17,6 +17,8 @@ find_library(CRYPTOPP_LIBRARIES NAMES crypto++
 )
 
 set(CRYPTOPP_VERSION ${PC_CRYPTOPP_VERSION})
+set(CryptoPP_LIBRARIES ${PC_CRYPTOPP_LIBRARIES})
+set(CryptoPP_INCLUDE_DIRS ${PC_CRYPTOPP_INCLUDE_DIRS})
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(CryptoPP DEFAULT_MSG CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIBRARIES)
+find_package_handle_standard_args(CryptoPP DEFAULT_MSG CRYPTOPP_INCLUDE_DIRS CryptoPP_LIBRARIES)
