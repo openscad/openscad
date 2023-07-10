@@ -246,6 +246,7 @@
     <addaction name="separator"/>
     <addaction name="fileActionNewWindow"/>
     <addaction name="fileActionOpenWindow"/>
+    <addaction name="fileActionRevoke"/>
     <addaction name="fileActionClose"/>
     <addaction name="separator"/>
     <addaction name="fileActionSave"/>
@@ -1232,6 +1233,11 @@
   <action name="fileActionExportDXF">
    <property name="text">
     <string>Export as &amp;DXF...</string>
+   </property>
+  </action>
+  <action name="fileActionRevoke">
+   <property name="text">
+    <string>Revoke trusted python Files</string>
    </property>
   </action>
   <action name="fileActionClose">
