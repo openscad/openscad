@@ -1,0 +1,58 @@
+Invalid Cube dimensions in line 14
+Invalid Cube dimensions in line 15
+name 'undefined' is not defined in line 16
+Invalid Cube dimensions in line 17
+Invalid Cube dimensions in line 18
+Invalid Cube dimensions in line 19
+Invalid Cube dimensions in line 20
+Invalid Cube dimensions in line 21
+name 'unknownfunc' is not defined in line 23
+Cube Dimensions must be positive in line 26
+Cube Dimensions must be positive in line 27
+Cube Dimensions must be positive in line 28
+Unknown Value for Cube center parameter in line 29
+error duing parsing cube in line 30
+Cant specify r and d at the same time for sphere in line 33
+r must be positive in line 34
+d must be positive in line 35
+Cant specify r and d at the same time for sphere in line 36
+error duing parsing sphere in line 37
+error duing parsing cylinder in line 40
+error duing parsing cylinder in line 41
+cylinder r must be positive in line 42
+cylinder r must be positive in line 43
+error duing parsing cylinder in line 44
+error duing parsing cylinder in line 45
+error duing parsing polyhedron in line 48
+error duing parsing square in line 51
+error duing parsing circle in line 54
+error duing parsing polygon in line 57
+error duing parsing scale in line 60
+error duing parsing rotate in line 66
+error duing parsing mirror in line 72
+error duing parsing translate in line 78
+error duing parsing multmatrix in line 84
+error duing parsing output in line 90
+error duing parsing cube in line 96
+error duing parsing cube in line 99
+error duing parsing cube in line 102
+error duing parsing rotate_extrude in line 108
+error duing parsing linear_extrude in line 114
+error duing parsing cube in line 120
+error duing parsing cube in line 126
+error duing parsing cube in line 129
+error duing parsing minkowski in line 132
+error duing parsing resize in line 135
+error duing parsing roof in line 138
+error duing parsing cube in line 141
+error duing parsing render in line 144
+error duing parsing surface in line 150
+error duing parsing text in line 153
+error duing parsing textmetrics in line 156
+error duing parsing version in line 159
+error duing parsing version_num in line 162
+error duing parsing offset in line 165
+error duing parsing projection in line 171
+error duing parsing group in line 177
+error duing parsing osimport in line 180
+
