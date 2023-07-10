@@ -29,6 +29,8 @@ WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" 
 WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "URLUpdateInfo" "https://openscad.org/downloads.html"
 WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "HelpLink" "https://forum.openscad.org/"
 WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "UninstallString" "$INSTDIR\Uninstall.exe"
+WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "DisplayIcon" "$INSTDIR\openscad.exe"
+WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSCAD" "EstimatedSize" "68750"
 WriteRegStr HKCR ".scad" "PerceivedType" "text"
 SectionEnd
 Section "Uninstall"
