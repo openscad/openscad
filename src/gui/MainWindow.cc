@@ -99,8 +99,6 @@
 
 #ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
-std::string untrusted_edit_document_name;
-std::string trusted_edit_document_name;
 std::string evaluatePython(const std::string &code, double time);
 extern bool python_trusted;
 

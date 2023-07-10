@@ -9,8 +9,6 @@
 #include "LocalScope.h"
 #include "IndicatorData.h"
 
-bool is_cmdline_mode(int hidden=-1);
-
 class SourceFile : public ASTNode
 {
 public:

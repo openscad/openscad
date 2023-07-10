@@ -4,9 +4,9 @@
 # CRYPTOPP_INCLUDE_DIRS - containing the Crypto++ headers
 # CRYPTOPP_LIBRARIES - containing the Crypto++ library
 
-find_package(PkgConfig REQUIRED)
+find_package(PkgConfig REQUIRED QUIET)
 
-pkg_check_modules(PC_CRYPTOPP  libcryptopp>=5.6.0)
+# pkg_check_modules(PC_CRYPTOPP QUIET libcrypto++>=5.6.0) works (only and even ) without this
 
 find_path(CRYPTOPP_INCLUDE_DIRS NAMES crypto++/sha.h
   HINTS ${PC_CRYPTOPP_INCLUDE_DIRS} ${PC_CRYPTOPP_INCLUDEDIR}
