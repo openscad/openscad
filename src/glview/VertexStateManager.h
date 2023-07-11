@@ -11,8 +11,7 @@ public:
   VertexStateManager(VBORenderer& r, VertexArray& v_a) : vertex_array(v_a), renderer(r) {}
   void initializeSize(size_t vertices_size);
   void initializeSize(size_t vertices_size, std::vector<GLuint> & vbos, size_t & vbo_index);
-  void addColorState(Color4f color);
-  void addColor(Color4f last_color);
+  void addColor(const Color4f& last_color);
 private:
   VBORenderer& renderer;
   VertexArray& vertex_array;
