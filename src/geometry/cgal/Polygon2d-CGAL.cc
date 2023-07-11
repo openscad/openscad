@@ -142,9 +142,7 @@ PolySet *Polygon2d::tessellate() const
     if (fit->info().in_domain()) {
       polyset->append_poly(3);
       for (int i = 0; i < 3; ++i) {
-        polyset->append_vertex(fit->vertex(i)->point()[0],
-                               fit->vertex(i)->point()[1],
-                               0);
+        polyset->append_vertex(polyset->pointIndex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0)));
       }
     }
   }

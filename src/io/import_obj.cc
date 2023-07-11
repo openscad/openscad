@@ -18,7 +18,6 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
         filename, loc.firstLine());
     return p.release();
   }
-  std::vector<Vector3d> pts;
   boost::regex ex_comment(R"(^\s*#)");
   boost::regex ex_v( R"(^\s*v\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$)");
   boost::regex ex_f( R"(^\s*f\s+(.*)$)");
@@ -52,7 +51,7 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
         for (int i = 0; i < 3; i++) {
           v[i]= boost::lexical_cast<double>(results[i + 1]); 
         }
-        pts.push_back(v);
+        p->append_coord(v);
       } catch (const boost::bad_lexical_cast& blc) {
         AsciiError("can't parse vertex");
         return new PolySet(3);
@@ -69,8 +68,8 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
           LOG(message_group::Warning, "Invalid Face index in File %1$s in Line %2$d", filename, lineno);
 	else {
 	  int ind=boost::lexical_cast<int>(wordindex[0]);
-          if(ind >= 1 && ind  <= pts.size()) {
-            p->append_vertex(pts[ind-1][0], pts[ind-1][1], pts[ind-1][2]);
+          if(ind >= 1 && ind  <= p->points.size()) {
+            p->append_vertex(ind-1);
 	  } else {  
             LOG(message_group::Warning, "Index %1$d out of range in Line %2$d", filename, lineno);
 	  }

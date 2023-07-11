@@ -368,7 +368,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
       face_poly.addOutline(outline);
       PolySet *tess = face_poly.tessellate();
       for (const IndexedFace& triangle : tess->polygons_ind) {
-        Polygon roof;
+        std::vector<int> roof;
         for (int tvind : triangle) {
 	  Vector3d tv=tess->points[tvind];
           Vector2d v;
@@ -376,7 +376,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
           if (!(inner_faces.heights.find(v) != inner_faces.heights.end())) {
             RAISE_ROOF_EXCEPTION("Voronoi error");
           }
-          roof.push_back(Vector3d(v[0] / scale, v[1] / scale, inner_faces.heights[v] / scale));
+          roof.push_back(hat->pointIndex(Vector3d(v[0] / scale, v[1] / scale, inner_faces.heights[v] / scale)));
         }
         hat->append_poly(roof);
       }
@@ -397,9 +397,9 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
       }
       PolySet *tess = poly_floor.tessellate();
       for (const IndexedFace & triangle : tess->polygons_ind) {
-        Polygon floor;
+        std::vector<int> floor;
         for (const int  tv : triangle) {
-          floor.push_back(tess->points[tv]);
+          floor.push_back(hat->pointIndex(tess->points[tv]));
         }
         // floor has reverse orientation
         std::reverse(floor.begin(), floor.end());

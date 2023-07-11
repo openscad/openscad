@@ -116,10 +116,10 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
                                         std::back_inserter(facets));
 
         for (const auto& facet : facets) {
-          Polygon roof;
+          std::vector<int> roof;
           for (auto v = facet.vertices_begin(); v != facet.vertices_end(); v++) {
             Vector2d vv(v->x(), v->y());
-            roof.push_back({v->x(), v->y(), heights[vv]});
+            roof.push_back(hat->pointIndex(Vector3d(v->x(), v->y(), heights[vv])));
           }
           hat->append_poly(roof);
         }
@@ -132,9 +132,9 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
       // because this may change coordinates
       PolySet *tess = poly_sanitized->tessellate();
       for (const IndexedFace& triangle : tess->polygons_ind) {
-        Polygon floor;
+        std::vector<int> floor;
         for (const int tv : triangle) {
-          floor.push_back(tess->points[tv]);
+          floor.push_back(hat->pointIndex(tess->points[tv]));
         }
         // floor has wrong orientation
         std::reverse(floor.begin(), floor.end());

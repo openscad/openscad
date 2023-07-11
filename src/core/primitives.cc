@@ -131,43 +131,16 @@ const Geometry *CubeNode::createGeometry() const
   }
 
   p->reserve(6);
+  int corner[8];
+  for(int i=0;i<8;i++)
+    corner[i]=p->append_coord(Vector3d(i&1?x2:x1,i&2?y2:y1,i&4?z2:z1));
 
-  p->append_poly(4); // top
-  p->append_vertex(x1, y1, z2);
-  p->append_vertex(x2, y1, z2);
-  p->append_vertex(x2, y2, z2);
-  p->append_vertex(x1, y2, z2);
-
-  p->append_poly(4); // bottom
-  p->append_vertex(x1, y2, z1);
-  p->append_vertex(x2, y2, z1);
-  p->append_vertex(x2, y1, z1);
-  p->append_vertex(x1, y1, z1);
-
-  p->append_poly(4); // side1
-  p->append_vertex(x1, y1, z1);
-  p->append_vertex(x2, y1, z1);
-  p->append_vertex(x2, y1, z2);
-  p->append_vertex(x1, y1, z2);
-
-  p->append_poly(4); // side2
-  p->append_vertex(x2, y1, z1);
-  p->append_vertex(x2, y2, z1);
-  p->append_vertex(x2, y2, z2);
-  p->append_vertex(x2, y1, z2);
-
-  p->append_poly(4); // side3
-  p->append_vertex(x2, y2, z1);
-  p->append_vertex(x1, y2, z1);
-  p->append_vertex(x1, y2, z2);
-  p->append_vertex(x2, y2, z2);
-
-  p->append_poly(4); // side4
-  p->append_vertex(x1, y2, z1);
-  p->append_vertex(x1, y1, z1);
-  p->append_vertex(x1, y1, z2);
-  p->append_vertex(x1, y2, z2);
-
+  p->append_poly(std::vector{corner[4],corner[5],corner[7], corner[6]}); // top
+  p->append_poly(std::vector{corner[2],corner[3],corner[1], corner[0]}); // bottom
+  p->append_poly(std::vector{corner[0],corner[1],corner[5], corner[4]}); // front
+  p->append_poly(std::vector{corner[1],corner[3],corner[7], corner[5]}); // right
+  p->append_poly(std::vector{corner[3],corner[2],corner[6], corner[7]}); // back
+  p->append_poly(std::vector{corner[2],corner[0],corner[4], corner[6]}); // left
   return p;
 }
 
@@ -243,7 +216,7 @@ const Geometry *SphereNode::createGeometry() const
 
   p->append_poly(fragments);
   for (int i = 0; i < fragments; ++i)
-    p->append_vertex(ring[0].points[i].x, ring[0].points[i].y, ring[0].z);
+    p->append_vertex(p->pointIndex(Vector3d(ring[0].points[i].x, ring[0].points[i].y, ring[0].z)));
 
   for (int i = 0; i < rings - 1; ++i) {
     auto r1 = &ring[i];
@@ -256,17 +229,17 @@ const Geometry *SphereNode::createGeometry() const
 sphere_next_r1:
         p->append_poly(3);
         int r1j = (r1i + 1) % fragments;
-        p->insert_vertex(r1->points[r1i].x, r1->points[r1i].y, r1->z);
-        p->insert_vertex(r1->points[r1j].x, r1->points[r1j].y, r1->z);
-        p->insert_vertex(r2->points[r2i % fragments].x, r2->points[r2i % fragments].y, r2->z);
+        p->insert_vertex(p->pointIndex(Vector3d(r1->points[r1i].x, r1->points[r1i].y, r1->z)));
+        p->insert_vertex(p->pointIndex(Vector3d(r1->points[r1j].x, r1->points[r1j].y, r1->z)));
+        p->insert_vertex(p->pointIndex(Vector3d(r2->points[r2i % fragments].x, r2->points[r2i % fragments].y, r2->z)));
         r1i++;
       } else {
 sphere_next_r2:
         p->append_poly(3);
         int r2j = (r2i + 1) % fragments;
-        p->append_vertex(r2->points[r2i].x, r2->points[r2i].y, r2->z);
-        p->append_vertex(r2->points[r2j].x, r2->points[r2j].y, r2->z);
-        p->append_vertex(r1->points[r1i % fragments].x, r1->points[r1i % fragments].y, r1->z);
+        p->append_vertex(p->pointIndex(Vector3d(r2->points[r2i].x, r2->points[r2i].y, r2->z)));
+        p->append_vertex(p->pointIndex(Vector3d(r2->points[r2j].x, r2->points[r2j].y, r2->z)));
+        p->append_vertex(p->pointIndex(Vector3d(r1->points[r1i % fragments].x, r1->points[r1i % fragments].y, r1->z)));
         r2i++;
       }
     }
@@ -275,10 +248,10 @@ sphere_next_r2:
   p->append_poly(fragments);
   for (int i = 0; i < fragments; ++i) {
     p->insert_vertex(
-      ring[rings - 1].points[i].x,
+      p->pointIndex(Vector3d(ring[rings - 1].points[i].x,
       ring[rings - 1].points[i].y,
       ring[rings - 1].z
-      );
+      )));
   }
 
   return p;
@@ -345,22 +318,22 @@ const Geometry *CylinderNode::createGeometry() const
     int j = (i + 1) % fragments;
     if (r1 == r2) {
       p->append_poly(4);
-      p->insert_vertex(circle1[i].x, circle1[i].y, z1);
-      p->insert_vertex(circle2[i].x, circle2[i].y, z2);
-      p->insert_vertex(circle2[j].x, circle2[j].y, z2);
-      p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+      p->insert_vertex(p->pointIndex(Vector3d(circle1[i].x, circle1[i].y, z1)));
+      p->insert_vertex(p->pointIndex(Vector3d(circle2[i].x, circle2[i].y, z2)));
+      p->insert_vertex(p->pointIndex(Vector3d(circle2[j].x, circle2[j].y, z2)));
+      p->insert_vertex(p->pointIndex(Vector3d(circle1[j].x, circle1[j].y, z1)));
     } else {
       if (r1 > 0) {
         p->append_poly(3);
-        p->insert_vertex(circle1[i].x, circle1[i].y, z1);
-        p->insert_vertex(circle2[i].x, circle2[i].y, z2);
-        p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+        p->insert_vertex(p->pointIndex(Vector3d(circle1[i].x, circle1[i].y, z1)));
+        p->insert_vertex(p->pointIndex(Vector3d(circle2[i].x, circle2[i].y, z2)));
+        p->insert_vertex(p->pointIndex(Vector3d(circle1[j].x, circle1[j].y, z1)));
       }
       if (r2 > 0) {
         p->append_poly(3);
-        p->insert_vertex(circle2[i].x, circle2[i].y, z2);
-        p->insert_vertex(circle2[j].x, circle2[j].y, z2);
-        p->insert_vertex(circle1[j].x, circle1[j].y, z1);
+        p->insert_vertex(p->pointIndex(Vector3d(circle2[i].x, circle2[i].y, z2)));
+        p->insert_vertex(p->pointIndex(Vector3d(circle2[j].x, circle2[j].y, z2)));
+        p->insert_vertex(p->pointIndex(Vector3d(circle1[j].x, circle1[j].y, z1)));
       }
     }
   }
@@ -368,13 +341,13 @@ const Geometry *CylinderNode::createGeometry() const
   if (this->r1 > 0) {
     p->append_poly(fragments);
     for (int i = 0; i < fragments; ++i)
-      p->insert_vertex(circle1[i].x, circle1[i].y, z1);
+      p->insert_vertex(p->pointIndex(Vector3d(circle1[i].x, circle1[i].y, z1)));
   }
 
   if (this->r2 > 0) {
     p->append_poly(fragments);
     for (int i = 0; i < fragments; ++i)
-      p->append_vertex(circle2[i].x, circle2[i].y, z2);
+      p->append_vertex(p->pointIndex(Vector3d(circle2[i].x, circle2[i].y, z2)));
   }
 
   return p;
@@ -483,7 +456,7 @@ const Geometry *PolyhedronNode::createGeometry() const
     for (const auto& index : face) {
       assert(index < this->points.size());
       const auto& point = points[index];
-      p->insert_vertex(point.x, point.y, point.z);
+      p->insert_vertex(p->pointIndex(Vector3d(point.x, point.y, point.z)));
     }
   }
   return p;

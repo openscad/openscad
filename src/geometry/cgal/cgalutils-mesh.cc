@@ -59,7 +59,7 @@ bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
       double x = CGAL::to_double(v.x());
       double y = CGAL::to_double(v.y());
       double z = CGAL::to_double(v.z());
-      ps.append_vertex(x, y, z);
+      ps.append_vertex(ps.pointIndex(Vector3d(x, y, z)));
     }
   }
   return err;

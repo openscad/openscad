@@ -161,9 +161,9 @@ void AmfImporter::end_triangle(AmfImporter *importer, const xmlChar *)
   std::vector<Eigen::Vector3d>& v = importer->vertex_list;
 
   importer->polySet->append_poly(3);
-  importer->polySet->append_vertex(v[idx_v1].x(), v[idx_v1].y(), v[idx_v1].z());
-  importer->polySet->append_vertex(v[idx_v2].x(), v[idx_v2].y(), v[idx_v2].z());
-  importer->polySet->append_vertex(v[idx_v3].x(), v[idx_v3].y(), v[idx_v3].z());
+  importer->polySet->append_vertex(importer->polySet->pointIndex(Vector3d(v[idx_v1].x(), v[idx_v1].y(), v[idx_v1].z())));
+  importer->polySet->append_vertex(importer->polySet->pointIndex(Vector3d(v[idx_v2].x(), v[idx_v2].y(), v[idx_v2].z())));
+  importer->polySet->append_vertex(importer->polySet->pointIndex(Vector3d(v[idx_v3].x(), v[idx_v3].y(), v[idx_v3].z())));
 }
 
 void AmfImporter::processNode(xmlTextReaderPtr reader)

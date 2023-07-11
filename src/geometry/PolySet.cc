@@ -80,6 +80,18 @@ void PolySet::append_poly(size_t expected_vertex_count)
   polygons_ind.emplace_back().reserve(expected_vertex_count);
 }
 
+int PolySet::pointIndex(const Vector3f &ptx)
+{
+  int ind;
+  Vector3d pt{ptx[0],ptx[1],ptx[2]};
+  if(pointMap.count(pt) == 0) {
+    ind=this->points.size();
+    this->points.push_back(pt);
+    pointMap[pt]=ind;
+  } else ind=pointMap[pt];
+  return ind;
+}
+
 int PolySet::pointIndex(const Vector3d &pt)
 {
   int ind;
@@ -90,45 +102,30 @@ int PolySet::pointIndex(const Vector3d &pt)
   } else ind=pointMap[pt];
   return ind;
 }
-void PolySet::append_poly(const Polygon& poly) // TODO remove
+
+
+int PolySet::append_coord(const Vector3d &coord)
 {
-  IndexedFace poly_ind;
-  for(auto pt:poly)
-    poly_ind.push_back(pointIndex(pt));  
-  polygons_ind.push_back(poly_ind);
+  this->points.push_back(coord);
+  return this->points.size()-1;
+}
+
+void PolySet::append_poly(const std::vector<int> &inds)
+{
+  this->polygons_ind.push_back(inds);	
   this->dirty = true;
 }
 
-void PolySet::append_vertex(double x, double y, double z)
+void PolySet::append_vertex(const int ind)
 {
-  append_vertex(Vector3d(x, y, z));
-}
-
-void PolySet::append_vertex(const Vector3d& v) // TODO remove
-{
-  polygons_ind.back().push_back(pointIndex(v));
+  polygons_ind.back().push_back(ind);
   this->dirty = true;
 }
 
-void PolySet::append_vertex(const Vector3f& v)
+void PolySet::insert_vertex(int ind)
 {
-  append_vertex((const Vector3d&)v.cast<double>());
-}
-
-void PolySet::insert_vertex(double x, double y, double z)
-{
-  insert_vertex(Vector3d(x, y, z));
-}
-
-void PolySet::insert_vertex(const Vector3d& v) // TODO remove
-{
-  polygons_ind.back().insert(polygons_ind.back().begin(), pointIndex(v));
+  polygons_ind.back().insert(polygons_ind.back().begin(), ind);
   this->dirty = true;
-}
-
-void PolySet::insert_vertex(const Vector3f& v)
-{
-  insert_vertex((const Vector3d&)v.cast<double>());
 }
 
 BoundingBox PolySet::getBoundingBox() const
@@ -161,7 +158,7 @@ void PolySet::append(const PolySet& ps)
   {
 	  this->append_poly(pol.size());
 	  for(auto ind: pol)
-		  this->append_vertex(ps.points[ind]);
+		  this->append_vertex(this->pointIndex(ps.points[ind]));
   }	  
   if (!dirty && !this->bbox.isNull()) {
     this->bbox.extend(ps.getBoundingBox());

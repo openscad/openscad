@@ -20,10 +20,11 @@ public:
   PolygonsInd polygons_ind;
   std::vector<Vector3d> points;
   std::unordered_map<Vector3d, int> pointMap;
+  int pointIndex(const Vector3d &pt);
+  int pointIndex(const Vector3f &pt);
 
   PolySet(unsigned int dim, boost::tribool convex = unknown);
   PolySet(Polygon2d origin);
-  int pointIndex(const Vector3d &pt);
 
   const Polygon2d& getPolygon() const { return polygon; }
 
@@ -37,10 +38,10 @@ public:
   void quantizeVertices(std::vector<Vector3d> *pPointsOut = nullptr);
   size_t numFacets() const override { return polygons_ind.size(); }
   void reserve(size_t numFacets) { polygons_ind.reserve(numFacets); }
-  void append_coord(const Vector3d &coord);
+  int append_coord(const Vector3d &coord);
   void append_poly(size_t expected_vertex_count);
   void append_poly(const Polygon& poly); // DEPRECATED
-  void append_poly(const IndexedFace& poly);
+  void append_poly(const std::vector<int> &inds);
 
   void append_vertex(double x, double y, double z = 0.0); // DEPRECATED
   void append_vertex(const Vector3d& v); // DEPRECATED

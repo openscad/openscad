@@ -386,9 +386,9 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
   ps.reserve(allTriangles.size());
   for (const auto& t : allTriangles) {
     ps.append_poly(3);
-    ps.append_vertex(verts[t[0]]);
-    ps.append_vertex(verts[t[1]]);
-    ps.append_vertex(verts[t[2]]);
+    ps.append_vertex(ps.pointIndex(verts[t[0]]));
+    ps.append_vertex(ps.pointIndex(verts[t[1]]));
+    ps.append_vertex(ps.pointIndex(verts[t[2]]));
   }
 
 #if 0 // For debugging

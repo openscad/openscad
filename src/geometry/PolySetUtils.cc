@@ -99,9 +99,9 @@ void tessellate_faces(const PolySet& inps, PolySet& outps) // TODO use indexed v
     if (faces[0].size() == 3) {
       // trivial case - triangles cannot be concave or have holes
       outps.append_poly(3);
-      outps.append_vertex(verts[faces[0][0]]);
-      outps.append_vertex(verts[faces[0][1]]);
-      outps.append_vertex(verts[faces[0][2]]);
+      outps.append_vertex(outps.pointIndex(verts[faces[0][0]]));
+      outps.append_vertex(outps.pointIndex(verts[faces[0][1]]));
+      outps.append_vertex(outps.pointIndex(verts[faces[0][2]]));
     }
     // Quads seem trivial, but can be concave, and can have degenerate cases.
     // So everything more complex than triangles goes into the general case.
@@ -111,9 +111,9 @@ void tessellate_faces(const PolySet& inps, PolySet& outps) // TODO use indexed v
       if (!err) {
         for (const auto& t : triangles) {
           outps.append_poly(3);
-          outps.append_vertex(verts[t[0]]);
-          outps.append_vertex(verts[t[1]]);
-          outps.append_vertex(verts[t[2]]);
+          outps.append_vertex(outps.pointIndex(verts[t[0]]));
+          outps.append_vertex(outps.pointIndex(verts[t[1]]));
+          outps.append_vertex(outps.pointIndex(verts[t[2]]));
         }
       }
     }
