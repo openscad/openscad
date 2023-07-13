@@ -145,10 +145,10 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
               boost::lexical_cast<double>(results[v + 1]);
           }
           if (++i == 3) {
-            p->append_poly(3);
-            p->append_vertex(p->pointIndex(Vector3d(vdata[0][0], vdata[0][1], vdata[0][2])));
-            p->append_vertex(p->pointIndex(Vector3d(vdata[1][0], vdata[1][1], vdata[1][2])));
-            p->append_vertex(p->pointIndex(Vector3d(vdata[2][0], vdata[2][1], vdata[2][2])));
+	    int ind[3];
+	    for(int i=0;i<3;i++)
+	            ind[i]=p->pointIndex(Vector3d(vdata[i][0], vdata[i][1], vdata[i][2]));
+            p->append_poly({ind[0],ind[1],ind[2]});
           }
         } catch (const boost::bad_lexical_cast& blc) {
           AsciiError("can't parse vertex");
@@ -170,10 +170,11 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
           if (f.eof()) break;
           throw;
         }
-        p->append_poly(3);
-        p->append_vertex(p->pointIndex(Vector3d(facet.data.x1, facet.data.y1, facet.data.z1)));
-        p->append_vertex(p->pointIndex(Vector3d(facet.data.x2, facet.data.y2, facet.data.z2)));
-        p->append_vertex(p->pointIndex(Vector3d(facet.data.x3, facet.data.y3, facet.data.z3)));
+	int ind1,ind2,ind3;
+        ind1=p->pointIndex(Vector3d(facet.data.x1, facet.data.y1, facet.data.z1));
+        ind2=p->pointIndex(Vector3d(facet.data.x2, facet.data.y2, facet.data.z2));
+        ind3=p->pointIndex(Vector3d(facet.data.x3, facet.data.y3, facet.data.z3));
+        p->append_poly({ind1, ind2, ind3});
       }
     } catch (const std::ios_base::failure& ex) {
       int64_t offset = -1;
