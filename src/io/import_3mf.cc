@@ -157,21 +157,15 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
         return import_3mf_error(model, object_it, first_mesh, p);
       }
 
-      MODELMESHVERTEX vertex1, vertex2, vertex3;
-      if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[0], &vertex1) != LIB3MF_OK) {
-        return import_3mf_error(model, object_it, first_mesh, p);
-      }
-      if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[1], &vertex2) != LIB3MF_OK) {
-        return import_3mf_error(model, object_it, first_mesh, p);
-      }
-      if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[2], &vertex3) != LIB3MF_OK) {
-        return import_3mf_error(model, object_it, first_mesh, p);
-      }
+      MODELMESHVERTEX vertex;
 
       p->append_poly(3);
-      p->append_vertex(vertex1.m_fPosition[0], vertex1.m_fPosition[1], vertex1.m_fPosition[2]);
-      p->append_vertex(vertex2.m_fPosition[0], vertex2.m_fPosition[1], vertex2.m_fPosition[2]);
-      p->append_vertex(vertex3.m_fPosition[0], vertex3.m_fPosition[1], vertex3.m_fPosition[2]);
+      for(int i=0;i<3;i++) {
+        if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[i], &vertex) != LIB3MF_OK) {
+          return import_3mf_error(model, object_it, first_mesh, p);
+        }
+        p->append_vertex(p->pointIndex(Vector3d(vertex.m_fPosition[0], vertex1.m_fPosition[1], vertex1.m_fPosition[2])));
+      }
     }
 
     if (first_mesh) {
@@ -342,16 +336,13 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     p->reserve(triangle_count);
     for (Lib3MF_uint64 idx = 0; idx < triangle_count; ++idx) {
       Lib3MF::sTriangle triangle = object->GetTriangle(idx);
-      Lib3MF::sPosition vertex1, vertex2, vertex3;
-
-      vertex1 = object->GetVertex(triangle.m_Indices[0]);
-      vertex2 = object->GetVertex(triangle.m_Indices[1]);
-      vertex3 = object->GetVertex(triangle.m_Indices[2]);
 
       p->append_poly(3);
-      p->append_vertex(vertex1.m_Coordinates[0], vertex1.m_Coordinates[1], vertex1.m_Coordinates[2]);
-      p->append_vertex(vertex2.m_Coordinates[0], vertex2.m_Coordinates[1], vertex2.m_Coordinates[2]);
-      p->append_vertex(vertex3.m_Coordinates[0], vertex3.m_Coordinates[1], vertex3.m_Coordinates[2]);
+
+      for(int i=0;i<3;i++) {
+        Lib3MF::sPosition vertex = object->GetVertex(triangle.m_Indices[i]);
+        p->append_vertex(p->pointIndex(Vector3d(vertex.m_Coordinates[0], vertex.m_Coordinates[1], vertex.m_Coordinates[2])));
+      }
     }
 
     if (first_mesh) {

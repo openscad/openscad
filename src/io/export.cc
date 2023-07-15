@@ -173,7 +173,7 @@ ExportMesh::ExportMesh(const PolySet& ps)
     indexTranslationMap[e.second] = index++;
   }
 
-  for (const auto& i : triangleIndices) { // TODO make use of  indexed nature
+  for (const auto& i : triangleIndices) {
     triangles.emplace_back(indexTranslationMap[i[0]], indexTranslationMap[i[1]], indexTranslationMap[i[2]]);
   }
   std::sort(triangles.begin(), triangles.end(), [](const Triangle& t1, const Triangle& t2) -> bool {

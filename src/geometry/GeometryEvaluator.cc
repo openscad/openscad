@@ -839,27 +839,28 @@ static void add_slice(PolySet *ps, const Polygon2d& poly,
 #endif // ifdef LINEXT_4WAY
       // Split along shortest diagonal,
       // unless at top for a 0-scaled axis (which can create 0 thickness "ears")
+      int ind1,ind2,ind3;
       if (splitfirst xor any_zero) {
-        ps->append_poly(3);
-        ps->insert_vertex(ps->pointIndex(Vector3d(prev1[0], prev1[1], h1)));
-        ps->insert_vertex(ps->pointIndex(Vector3d(curr2[0], curr2[1], h2)));
-        ps->insert_vertex(ps->pointIndex(Vector3d(curr1[0], curr1[1], h1)));
+        ind1=ps->pointIndex(Vector3d(prev1[0], prev1[1], h1));
+        ind2=ps->pointIndex(Vector3d(curr2[0], curr2[1], h2));
+        ind3=ps->pointIndex(Vector3d(curr1[0], curr1[1], h1));
+        ps->append_poly({ind3,ind2,ind1});
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          ps->append_poly(3);
-          ps->insert_vertex(ps->pointIndex(Vector3d(curr2[0], curr2[1], h2)));
-          ps->insert_vertex(ps->pointIndex(Vector3d(prev1[0], prev1[1], h1)));
-          ps->insert_vertex(ps->pointIndex(Vector3d(prev2[0], prev2[1], h2)));
+          ind1=ps->pointIndex(Vector3d(curr2[0], curr2[1], h2));
+          ind2=ps->pointIndex(Vector3d(prev1[0], prev1[1], h1));
+          ind3=ps->pointIndex(Vector3d(prev2[0], prev2[1], h2));
+          ps->append_poly({ind3,ind2,ind1});
         }
       } else {
-        ps->append_poly(3);
-        ps->insert_vertex(ps->pointIndex(Vector3d(prev1[0], prev1[1], h1)));
-        ps->insert_vertex(ps->pointIndex(Vector3d(prev2[0], prev2[1], h2)));
-        ps->insert_vertex(ps->pointIndex(Vector3d(curr1[0], curr1[1], h1)));
+        ind1=ps->pointIndex(Vector3d(prev1[0], prev1[1], h1));
+        ind2=ps->pointIndex(Vector3d(prev2[0], prev2[1], h2));
+        ind3=ps->pointIndex(Vector3d(curr1[0], curr1[1], h1));
+        ps->append_poly({ind3,ind2,ind1});
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          ps->append_poly(3);
-          ps->insert_vertex(ps->pointIndex(Vector3d(prev2[0], prev2[1], h2)));
-          ps->insert_vertex(ps->pointIndex(Vector3d(curr2[0], curr2[1], h2)));
-          ps->insert_vertex(ps->pointIndex(Vector3d(curr1[0], curr1[1], h1)));
+          ind1=ps->pointIndex(Vector3d(prev2[0], prev2[1], h2));
+          ind2=ps->pointIndex(Vector3d(curr2[0], curr2[1], h2));
+          ind3=ps->pointIndex(Vector3d(curr1[0], curr1[1], h1));
+          ps->append_poly({ind3,ind2,ind1});
         }
       }
       prev1 = curr1;
@@ -1301,6 +1302,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
     delete ps_end;
   }
 
+  int ind1, ind2, ind3;
   for (const auto& o : poly.outlines()) {
     std::vector<Vector3d> rings[2];
     rings[0].resize(o.vertices.size());
@@ -1314,14 +1316,15 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
       fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
 
       for (size_t i = 0; i < o.vertices.size(); ++i) {
+        ind1=ps->pointIndex(rings[j % 2][i]);
+        ind2=ps->pointIndex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
+        ind3=ps->pointIndex(rings[j % 2][(i + 1) % o.vertices.size()]);
+        ps->append_poly({ind3,ind2,ind1});
         ps->append_poly(3);
-        ps->insert_vertex(ps->pointIndex(rings[j % 2][i]));
-        ps->insert_vertex(ps->pointIndex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]));
-        ps->insert_vertex(ps->pointIndex(rings[j % 2][(i + 1) % o.vertices.size()]));
-        ps->append_poly(3);
-        ps->insert_vertex(ps->pointIndex(rings[j % 2][i]));
-        ps->insert_vertex(ps->pointIndex(rings[(j + 1) % 2][i]));
-        ps->insert_vertex(ps->pointIndex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]));
+        ind1=ps->pointIndex(rings[j % 2][i]);
+        ind2=ps->pointIndex(rings[(j + 1) % 2][i]);
+        ind3=ps->pointIndex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
+        ps->append_poly({ind3,ind2,ind1});
       }
     }
   }

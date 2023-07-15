@@ -40,17 +40,8 @@ public:
   void reserve(size_t numFacets) { polygons_ind.reserve(numFacets); }
   int append_coord(const Vector3d &coord);
   void append_poly(size_t expected_vertex_count);
-  void append_poly(const Polygon& poly); // DEPRECATED
   void append_poly(const std::vector<int> &inds);
-
-  void append_vertex(double x, double y, double z = 0.0); // DEPRECATED
-  void append_vertex(const Vector3d& v); // DEPRECATED
-  void append_vertex(const Vector3f& v); // DEPRECATED
   void append_vertex(int ind);
-
-  void insert_vertex(double x, double y, double z = 0.0); // DEPRECATED
-  void insert_vertex(const Vector3d& v); // DEPRECATED
-  void insert_vertex(const Vector3f& v); // DEPRECATED
   void insert_vertex(int ind); 
   void append(const PolySet& ps);
 

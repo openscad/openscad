@@ -29,31 +29,25 @@
 
 #ifdef ENABLE_CGAL
 
-#include "IndexedMesh.h"
+#include "PolySetUtils.h"
+#include "PolySet.h"
 
 void export_obj(const shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  IndexedMesh mesh;
-  mesh.append_geometry(geom);
+  PolySet ps = PolySetUtils::convert_polyset(geom);
 
   output << "# OpenSCAD obj exporter\n";
 
-  size_t numverts = mesh.vertices.size();
-  const auto& v = mesh.vertices.getArray();
-  for (size_t i = 0; i < numverts; ++i) {
-    output << "v " << v[i][0] << " " << v[i][1] << " " << v[i][2] << "\n";
+  for (size_t i = 0; i < ps.points.size(); ++i) {
+    output << "v " << ps.points[i][0] << " " << ps.points[i][1] << " " << ps.points[i][2] << "\n";
   }
 
-  size_t i = 0;
-  for (size_t j = 0; j < mesh.numfaces; ++j) {
+  for (int i = 0; i < ps.polygons_ind.size(); i++) {
 
     output << "f ";
 
-    while (true) {
-      auto index = mesh.indices[i++];
-      if (index < 0) {
-        break;
-      }
+    for(int j=0;j<ps.polygons_ind[i].size();j++) {
+      auto index = ps.polygons_ind[i][j];
       output << " " << (1 + index);
     }
     output << "\n";

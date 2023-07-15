@@ -1,7 +1,8 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #include "ManifoldGeometry.h"
 #include "manifold.h"
-#include "IndexedMesh.h"
+#include "PolySet.h"
+#include "PolySetUtils.h"
 #include "cgalutils.h"
 #include "manifoldutils.h"
 
@@ -78,13 +79,11 @@ std::string ManifoldGeometry::dump() const {
 std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   auto ps = std::make_shared<PolySet>(3);
   manifold::Mesh mesh = getManifold().GetMesh();
-  ps->reserve(mesh.triVerts.size());
-  for (const auto &tv : mesh.triVerts) {
-    ps->append_poly(3);
-    for (const int j : {0, 1, 2}) {
-      ps->append_vertex(ps->pointIndex(vector_convert<Vector3d>(mesh.vertPos[tv[j]])));
-    }
-  }
+  ps->points.reserve(mesh.vertPos.size());
+  for(const auto &pt :mesh.vertPos)  
+    ps->append_coord({pt[0],pt[1],pt[2]});
+  for (const auto &tv : mesh.triVerts) 
+      ps->append_poly({tv[0],tv[1],tv[2]});
   return ps;
 }
 

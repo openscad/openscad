@@ -695,7 +695,6 @@ set(CORE_SOURCES
   src/geometry/Geometry.cc
   src/geometry/GeometryCache.cc
   src/geometry/GeometryUtils.cc
-  src/geometry/IndexedMesh.cc
   src/geometry/Polygon2d.cc
   src/geometry/linalg.cc
   src/geometry/PolySet.cc

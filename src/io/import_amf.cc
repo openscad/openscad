@@ -153,17 +153,14 @@ void AmfImporter::end_vertex(AmfImporter *importer, const xmlChar *)
 
 void AmfImporter::end_triangle(AmfImporter *importer, const xmlChar *)
 {
-  int idx_v1 = importer->idx_v1;
-  int idx_v2 = importer->idx_v2;
-  int idx_v3 = importer->idx_v3;
-  PRINTDB("AMF: add triangle %d - (%.2f, %.2f, %.2f)", importer->vertex_list.size() % idx_v1 % idx_v2 % idx_v3);
+  int idx[3]= {importer->idx_v1,importer->idx_v2,importer->idx_v3};
+  PRINTDB("AMF: add triangle %d - (%.2f, %.2f, %.2f)", importer->vertex_list.size() % idx[0] % idx[1] % idx[2]);
 
   std::vector<Eigen::Vector3d>& v = importer->vertex_list;
 
   importer->polySet->append_poly(3);
-  importer->polySet->append_vertex(importer->polySet->pointIndex(Vector3d(v[idx_v1].x(), v[idx_v1].y(), v[idx_v1].z())));
-  importer->polySet->append_vertex(importer->polySet->pointIndex(Vector3d(v[idx_v2].x(), v[idx_v2].y(), v[idx_v2].z())));
-  importer->polySet->append_vertex(importer->polySet->pointIndex(Vector3d(v[idx_v3].x(), v[idx_v3].y(), v[idx_v3].z())));
+  for(int i=0;i<3;i++) // TODO set vertex array first
+	  importer->polySet->append_vertex(importer->polySet->pointIndex(Vector3d(v[idx[i]].x(), v[idx[i]].y(), v[idx[i]].z())));
 }
 
 void AmfImporter::processNode(xmlTextReaderPtr reader)

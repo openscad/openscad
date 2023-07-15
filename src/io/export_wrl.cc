@@ -26,14 +26,14 @@
 #include "export.h"
 
 #ifdef ENABLE_CGAL
+#include "PolySet.h"
+#include "PolySetUtils.h"
 
-#include "IndexedMesh.h"
 
 void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  IndexedMesh mesh;
-  mesh.append_geometry(geom);
-
+  PolySet ps = PolySetUtils::convert_polyset(geom);
+  	
   output << "#VRML V2.0 utf8\n\n";
 
   output << "Shape {\n\n";
@@ -50,8 +50,8 @@ void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output)
   output << "creaseAngle 0.5\n\n";
 
   output << "coord Coordinate { point [\n";
-  const auto& v = mesh.vertices.getArray();
-  const size_t numverts = mesh.vertices.size();
+  const auto& v = ps.points;
+  const size_t numverts = v.size();
   for (size_t i = 0; i < numverts; ++i) {
     output << v[i][0] << " " << v[i][1] << " " << v[i][2];
     if (i < numverts - 1) {
@@ -62,15 +62,14 @@ void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output)
   output << "] }\n\n";
 
   output << "coordIndex [\n";
-  const size_t numindices = mesh.indices.size();
+  const size_t numindices = ps.polygons_ind.size();
   for (size_t i = 0; i < numindices; ++i) {
-    output << mesh.indices[i];
-    if (i < numindices - 1) {
-      output << ",";
-    }
-    if (mesh.indices[i] == -1) {
-      output << "\n";
-    }
+     const auto &poly=ps.polygons_ind[i];	  
+     for(int j=0;j<poly.size();j++) {
+       output << poly[i];
+       if (i < poly.size() - 1) output << ",";
+       output << "\n";
+     }	     
   }
   output << "]\n\n";
 
