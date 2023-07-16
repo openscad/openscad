@@ -164,7 +164,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
         if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[i], &vertex) != LIB3MF_OK) {
           return import_3mf_error(model, object_it, first_mesh, p);
         }
-        p->append_vertex(p->pointIndex(Vector3d(vertex.m_fPosition[0], vertex1.m_fPosition[1], vertex1.m_fPosition[2])));
+        p->append_vertex(p->pointIndex(Vector3d(vertex.m_fPosition[0], vertex.m_fPosition[1], vertex.m_fPosition[2])));
       }
     }
 

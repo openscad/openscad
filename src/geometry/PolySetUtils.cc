@@ -147,7 +147,8 @@ PolySet  convert_polyset(const shared_ptr<const Geometry>& geom)
   PolySet ps(3);
   if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const Geometry::GeometryItem& item : geomlist->getChildren()) {
-      return convert_polyset(item.second);
+      PolySet ps_sub = convert_polyset(item.second);
+      ps.append(ps_sub);
     }
   } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
