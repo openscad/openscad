@@ -131,10 +131,10 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
       // poly has to go through clipper just as it does for the roof
       // because this may change coordinates
       PolySet *tess = poly_sanitized->tessellate();
-      for (const IndexedFace& triangle : tess->polygons_ind) {
+      for (const IndexedFace& triangle : tess->indices) {
         std::vector<int> floor;
         for (const int tv : triangle) {
-          floor.push_back(hat->pointIndex(tess->points[tv]));
+          floor.push_back(hat->pointIndex(tess->vertices[tv]));
         }
         // floor has wrong orientation
         std::reverse(floor.begin(), floor.end());

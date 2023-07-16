@@ -79,7 +79,7 @@ std::string ManifoldGeometry::dump() const {
 std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   auto ps = std::make_shared<PolySet>(3);
   manifold::Mesh mesh = getManifold().GetMesh();
-  ps->points.reserve(mesh.vertPos.size());
+  ps->vertices.reserve(mesh.vertPos.size());
   for(const auto &pt :mesh.vertPos)  
     ps->append_coord({pt[0],pt[1],pt[2]});
   for (const auto &tv : mesh.triVerts) 

@@ -11,14 +11,13 @@
 #include <unordered_map>
 #include <hash.h>
 
-int operator==(const Vector3d &a, const Vector3d &b);
 
 class PolySet : public Geometry
 {
 public:
   VISITABLE_GEOMETRY();
-  PolygonsInd polygons_ind;
-  std::vector<Vector3d> points;
+  PolygonIndices indices;
+  std::vector<Vector3d> vertices;
   std::unordered_map<Vector3d, int> pointMap;
   int pointIndex(const Vector3d &pt);
   int pointIndex(const Vector3f &pt);
@@ -32,12 +31,12 @@ public:
   BoundingBox getBoundingBox() const override;
   std::string dump() const override;
   unsigned int getDimension() const override { return this->dim; }
-  bool isEmpty() const override { return polygons_ind.size() == 0; }
+  bool isEmpty() const override { return indices.size() == 0; }
   Geometry *copy() const override { return new PolySet(*this); }
 
   void quantizeVertices(std::vector<Vector3d> *pPointsOut = nullptr);
-  size_t numFacets() const override { return polygons_ind.size(); }
-  void reserve(size_t numFacets) { polygons_ind.reserve(numFacets); }
+  size_t numFacets() const override { return indices.size(); }
+  void reserve(size_t numFacets) { indices.reserve(numFacets); }
   int append_coord(const Vector3d &coord);
   void append_poly(size_t expected_vertex_count);
   void append_poly(const std::vector<int> &inds);

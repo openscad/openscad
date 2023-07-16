@@ -68,7 +68,7 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
           LOG(message_group::Warning, "Invalid Face index in File %1$s in Line %2$d", filename, lineno);
 	else {
 	  int ind=boost::lexical_cast<int>(wordindex[0]);
-          if(ind >= 1 && ind  <= p->points.size()) {
+          if(ind >= 1 && ind  <= p->vertices.size()) {
             p->append_vertex(ind-1);
 	  } else {  
             LOG(message_group::Warning, "Index %1$d out of range in Line %2$d", filename, lineno);

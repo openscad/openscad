@@ -25,13 +25,13 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh) // TODO is thi
 
   std::unordered_map<Vector3d, vertex_descriptor> indices; // TODO remove this ?
 
-  for (const auto& p : ps.polygons_ind) {
+  for (const auto& p : ps.indices) {
     polygon.clear();
     for (auto& v : p) {
       auto size_before = indices.size();
-      auto& index = indices[ps.points[v]];
+      auto& index = indices[ps.vertices[v]];
       if (size_before != indices.size()) {
-        index = mesh.add_vertex(vector_convert<typename TriangleMesh::Point>(ps.points[v]));
+        index = mesh.add_vertex(vector_convert<typename TriangleMesh::Point>(ps.vertices[v]));
       }
       polygon.push_back(index);
     }

@@ -35,9 +35,9 @@ std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) 
   PolySet triangulated(3);
   PolySetUtils::tessellate_faces(ps, triangulated);
 
-  auto numfaces = triangulated.polygons_ind.size();
-  const auto &vertices = triangulated.points;
-  const auto &indices = triangulated.polygons_ind;
+  auto numfaces = triangulated.indices.size();
+  const auto &vertices = triangulated.vertices;
+  const auto &indices = triangulated.indices;
 
   mesh.vertPos.resize(vertices.size());
   mesh.triVerts.resize(numfaces);

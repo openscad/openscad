@@ -26,10 +26,10 @@ Polygon2d *project(const PolySet& ps) {
   auto poly = new Polygon2d;
   Vector3d pt;
 
-  for (const auto& p : ps.polygons_ind) {
+  for (const auto& p : ps.indices) {
     Outline2d outline;
     for (const auto& v : p) {
-      pt=ps.points[v];	    
+      pt=ps.vertices[v];	    
       outline.vertices.emplace_back(pt[0], pt[1]);
     }
     poly->addOutline(outline);
@@ -65,12 +65,12 @@ void tessellate_faces(const PolySet& inps, PolySet& outps) // TODO use indexed v
   std::vector<std::vector<IndexedFace>> polygons;
 
   // best estimate without iterating all polygons, to reduce reallocations
-  polygons.reserve(inps.polygons_ind.size() );
+  polygons.reserve(inps.indices.size() );
 
   // minimum estimate without iterating all polygons, to reduce reallocation and rehashing
-  allVertices.reserve(3 * inps.polygons_ind.size() );
+  allVertices.reserve(3 * inps.indices.size() );
 
-  for (const auto& pgon : inps.polygons_ind) {
+  for (const auto& pgon : inps.indices) {
     if (pgon.size() < 3) {
       degeneratePolygons++;
       continue;
@@ -81,7 +81,7 @@ void tessellate_faces(const PolySet& inps, PolySet& outps) // TODO use indexed v
     faces.push_back(IndexedFace());
     auto& currface = faces.back();
     for (const auto& ind : pgon) {
-      const Vector3d v=inps.points[ind];
+      const Vector3d v=inps.vertices[ind];
       // Create vertex indices and remove consecutive duplicate vertices
       // NOTE: a lot of time is spent here (cast+hash+lookup+insert+rehash)
       auto idx = allVertices.lookup(v.cast<float>());
@@ -103,11 +103,11 @@ void tessellate_faces(const PolySet& inps, PolySet& outps) // TODO use indexed v
   // Estimate how many polygons we will need and preallocate.
   // This is usually an undercount, but still prevents a lot of reallocations.
 
-  outps.points.reserve(verts.size());
+  outps.vertices.reserve(verts.size());
   for(int i=0;i<verts.size();i++)
     outps.append_coord({verts[i][0],verts[i][1],verts[i][2]});
 
-  outps.polygons_ind.reserve(polygons.size() );
+  outps.indices.reserve(polygons.size() );
 
   for (const auto& faces : polygons) {
     if (faces[0].size() == 3) {
@@ -169,7 +169,7 @@ PolySet  convert_polyset(const shared_ptr<const Geometry>& geom)
     return *psp;
 #endif
   } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
-    assert(false && "Unsupported file format");
+    assert(false && "PolySet doesn't support 2D");
   } else { // NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
   }

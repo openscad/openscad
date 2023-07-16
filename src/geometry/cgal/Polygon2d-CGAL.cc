@@ -93,10 +93,10 @@ double Polygon2d::area() const
   }
 
   double area = 0.0;
-  for (const auto& poly : p->polygons_ind) {
-    const auto& v1 = p->points[poly[0]];
-    const auto& v2 = p->points[poly[1]];
-    const auto& v3 = p->points[poly[2]];
+  for (const auto& poly : p->indices) {
+    const auto& v1 = p->vertices[poly[0]];
+    const auto& v2 = p->vertices[poly[1]];
+    const auto& v3 = p->vertices[poly[2]];
     area += 0.5 * (
       v1.x() * (v2.y() - v3.y())
       + v2.x() * (v3.y() - v1.y())

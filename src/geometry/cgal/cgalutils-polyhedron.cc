@@ -46,12 +46,12 @@ public:
     std::vector<std::vector<size_t>> indices;
 
     // Align all vertices to grid and build vertex array in vertices
-    for (const auto& p : ps.polygons_ind) {
+    for (const auto& p : ps.indices) {
       indices.emplace_back();
       indices.back().reserve(p.size());
       for (auto ind : boost::adaptors::reverse(p)) {
         // align v to the grid; the CGALPoint will receive the aligned vertex
-	Vector3d v=ps.points[ind];
+	Vector3d v=ps.vertices[ind];
         size_t idx = grid.align(v);
         if (idx == vertices.size()) {
           CGALPoint p(v[0], v[1], v[2]);
@@ -65,7 +65,7 @@ public:
     printf("polyhedron(faces=[");
     int pidx = 0;
 #endif
-    B.begin_surface(vertices.size(), ps.polygons_ind.size());
+    B.begin_surface(vertices.size(), ps.indices.size());
     for (const auto& p : vertices) {
       B.add_vertex(p);
     }
@@ -114,13 +114,13 @@ public:
     Reindexer<Vector3d> vertices;
     std::vector<size_t> indices(3);
 
-    // Estimating same # of vertices as polygons (very rough)
-    B.begin_surface(ps.polygons.size(), ps.polygons.size());
+    // Estimating same # of vertices as indices (very rough)
+    B.begin_surface(ps.indices.size(), ps.indices.size());
     int pidx = 0;
 #ifdef GEN_SURFACE_DEBUG
     printf("polyhedron(faces=[");
 #endif
-    for (const auto& p : ps.polygons) {
+    for (const auto& p : ps.indices) {
 #ifdef GEN_SURFACE_DEBUG
       if (pidx++ > 0) printf(",");
 #endif

@@ -445,9 +445,9 @@ const Geometry *PolyhedronNode::createGeometry() const
 {
   auto p = new PolySet(3);
   p->setConvexity(this->convexity);
-  p->points=this->points;
-  p->polygons_ind=this->faces;
-  for (auto &poly : p->polygons_ind) 
+  p->vertices=this->points;
+  p->indices=this->faces;
+  for (auto &poly : p->indices) 
     std::reverse(poly.begin(),poly.end());
   return p;
 }
