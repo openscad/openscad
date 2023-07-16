@@ -11,9 +11,11 @@
 #include <unordered_map>
 #include <hash.h>
 
+class PolySetBuilder;
 
 class PolySet : public Geometry
 {
+  friend class PolySetBuilder;	
 public:
   VISITABLE_GEOMETRY();
   PolygonIndices indices;

@@ -698,6 +698,7 @@ set(CORE_SOURCES
   src/geometry/Polygon2d.cc
   src/geometry/linalg.cc
   src/geometry/PolySet.cc
+  src/geometry/PolySetBuilder.cc
   src/geometry/PolySetUtils.cc
   src/geometry/roof_ss.cc
   src/geometry/roof_vd.cc

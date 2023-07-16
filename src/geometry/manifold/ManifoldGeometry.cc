@@ -2,6 +2,7 @@
 #include "ManifoldGeometry.h"
 #include "manifold.h"
 #include "PolySet.h"
+//#include "PolySetBuilder.h"
 #include "PolySetUtils.h"
 #include "cgalutils.h"
 #include "manifoldutils.h"

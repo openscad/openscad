@@ -27,6 +27,7 @@
 #include "module.h"
 #include "core/node.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "Children.h"
 #include "Polygon2d.h"
 #include "Builtins.h"
@@ -106,13 +107,12 @@ static void set_fragments(const Parameters& parameters, const ModuleInstantiatio
 
 const Geometry *CubeNode::createGeometry() const
 {
-  auto p = new PolySet(3, true);
   if (
     this->x <= 0 || !std::isfinite(this->x)
     || this->y <= 0 || !std::isfinite(this->y)
     || this->z <= 0 || !std::isfinite(this->z)
     ) {
-    return p;
+    return new PolySet(3, true);
   }
 
   double x1, x2, y1, y2, z1, z2;
@@ -130,18 +130,18 @@ const Geometry *CubeNode::createGeometry() const
     z2 = this->z;
   }
 
-  p->reserve(6);
+  PolySetBuilder builder(3,6);
   int corner[8];
   for(int i=0;i<8;i++)
-    corner[i]=p->append_coord(Vector3d(i&1?x2:x1,i&2?y2:y1,i&4?z2:z1));
+    corner[i]=builder.vertexIndex(Vector3d(i&1?x2:x1,i&2?y2:y1,i&4?z2:z1));
 
-  p->append_poly({corner[4],corner[5],corner[7], corner[6]}); // top
-  p->append_poly({corner[2],corner[3],corner[1], corner[0]}); // bottom
-  p->append_poly({corner[0],corner[1],corner[5], corner[4]}); // front
-  p->append_poly({corner[1],corner[3],corner[7], corner[5]}); // right
-  p->append_poly({corner[3],corner[2],corner[6], corner[7]}); // back
-  p->append_poly({corner[2],corner[0],corner[4], corner[6]}); // left
-  return p;
+  builder.append_poly({corner[4],corner[5],corner[7], corner[6]}); // top
+  builder.append_poly({corner[2],corner[3],corner[1], corner[0]}); // bottom
+  builder.append_poly({corner[0],corner[1],corner[5], corner[4]}); // front
+  builder.append_poly({corner[1],corner[3],corner[7], corner[5]}); // right
+  builder.append_poly({corner[3],corner[2],corner[6], corner[7]}); // back
+  builder.append_poly({corner[2],corner[0],corner[4], corner[6]}); // left
+  return builder.result();									   
 }
 
 static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
