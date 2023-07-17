@@ -30,6 +30,7 @@
 #include "Feature.h"
 #include "PolySet.h"
 #include "printutils.h"
+#include "VertexStateManager.h"
 
 #include "system-gl.h"
 

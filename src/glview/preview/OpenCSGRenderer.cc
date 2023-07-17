@@ -31,6 +31,7 @@
 #include <utility>
 #include "PolySet.h"
 #include "Feature.h"
+#include "VertexStateManager.h"
 
 #ifdef ENABLE_OPENCSG
 

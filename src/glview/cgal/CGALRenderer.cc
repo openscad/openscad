@@ -37,6 +37,7 @@
 #include "CGALRenderer.h"
 #include "CGAL_OGL_VBOPolyhedron.h"
 #include "CGALHybridPolyhedron.h"
+#include "VertexStateManager.h"
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
 #endif
