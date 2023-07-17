@@ -1,5 +1,6 @@
 #include "PolySetUtils.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "Polygon2d.h"
 #include "printutils.h"
 #include "GeometryUtils.h"
@@ -103,16 +104,15 @@ void tessellate_faces(const PolySet& inps, PolySet& outps) // TODO use indexed v
   // Estimate how many polygons we will need and preallocate.
   // This is usually an undercount, but still prevents a lot of reallocations.
 
-  outps.vertices.reserve(verts.size());
+  PolySetBuilder builder(verts.size(),polygons.size());
   for(int i=0;i<verts.size();i++)
-    outps.append_coord({verts[i][0],verts[i][1],verts[i][2]});
+    builder.vertexIndex({verts[i][0],verts[i][1],verts[i][2]});
 
-  outps.indices.reserve(polygons.size() );
 
   for (const auto& faces : polygons) {
     if (faces[0].size() == 3) {
       // trivial case - triangles cannot be concave or have holes
-       outps.append_poly({faces[0][0],faces[0][1],faces[0][2]});
+       builder.append_poly({faces[0][0],faces[0][1],faces[0][2]});
 
     }
     // Quads seem trivial, but can be concave, and can have degenerate cases.
@@ -122,12 +122,12 @@ void tessellate_faces(const PolySet& inps, PolySet& outps) // TODO use indexed v
       auto err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
       if (!err) {
         for (const auto& t : triangles) {
-       	  outps.append_poly({t[0],t[1],t[2]});
+       	  builder.append_poly({t[0],t[1],t[2]});
         }
       }
     }
   }
-
+  outps=*(builder.result().get());
   if (degeneratePolygons > 0) {
     LOG(message_group::Warning, "PolySet has degenerate polygons");
   }
@@ -141,39 +141,44 @@ bool is_approximately_convex(const PolySet& ps) {
 #endif
 }
 
-
-PolySet  convert_polyset(const shared_ptr<const Geometry>& geom)
+std::shared_ptr<PolySet> convert_polyset(const shared_ptr<const Geometry>& geom)
 {
-  PolySet ps(3);
   if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+    PolySetBuilder builder;
     for (const Geometry::GeometryItem& item : geomlist->getChildren()) {
-      PolySet ps_sub = convert_polyset(item.second);
-      ps.append(ps_sub);
+      auto ps_sub = convert_polyset(item.second);
+      builder.append(ps_sub.get());
     }
+    PolySet *ps=(builder.result().get());
   } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-    bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
+    PolySet *ps = new PolySet(3);
+    bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), *ps);
     if (err) {
       LOG(message_group::Error, "Nef->PolySet failed");
     } else {
-     return ps;
+     return std::shared_ptr<PolySet>(ps);
     }
   } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
-    return *ps;
+     PolySet *psp = new PolySet(*ps);	  
+     return std::shared_ptr<PolySet>(psp);
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement append_geometry(Surface_mesh) instead of converting to PolySet
     const PolySet *psp =hybrid->toPolySet().get();
-    return *psp;
+    PolySet *ps = new PolySet(*psp);
+    return std::shared_ptr<PolySet>(ps);
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     const PolySet *psp = mani->toPolySet().get();
-    return *psp;
+    PolySet *ps = new PolySet(*psp);
+    return std::shared_ptr<PolySet>(ps);
 #endif
   } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
     assert(false && "PolySet doesn't support 2D");
   } else { // NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
   }
-  return ps;
+  PolySet *ps = new PolySet(3);
+  return std::shared_ptr<PolySet>(ps);
 }
 
 } // namespace PolySetUtils

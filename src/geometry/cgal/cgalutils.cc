@@ -6,6 +6,7 @@
 #include "cgal.h"
 #include "cgalutils.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "printutils.h"
 #include "Polygon2d.h"
 #include "PolySetUtils.h"
@@ -383,15 +384,15 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
     LOG(message_group::Error, "Non-manifold mesh created: %1$d unconnected edges", unconnected2);
   }
 
-  ps.vertices.reserve(verts.size());
+  PolySetBuilder builder(verts.size(),allTriangles.size());
   for(int i=0;i<verts.size();i++)
-    ps.append_coord({verts[i][0],verts[i][1],verts[i][2]});
+    builder.vertexIndex({verts[i][0],verts[i][1],verts[i][2]});
 
-  ps.indices.reserve(allTriangles.size());
   for(int i=0;i<allTriangles.size();i++)  {
 	const auto &tri=allTriangles[i];
-	ps.append_poly({tri[0],tri[1],tri[2]});
+	builder.append_poly({tri[0],tri[1],tri[2]});
   }
+  ps=*(builder.result().get());
 
 #if 0 // For debugging
   std::cerr.precision(20);

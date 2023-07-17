@@ -6,6 +6,7 @@
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Surface_mesh.h>
+#include "PolySetBuilder.h"
 namespace CGALUtils {
 
 template <class TriangleMesh>
@@ -47,9 +48,9 @@ template <class TriangleMesh>
 bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
 {
   bool err = false;
-  ps.reserve(ps.numFacets() + mesh.number_of_faces());
+  PolySetBuilder builder(0,mesh.number_of_faces());
   for (auto& f : mesh.faces()) {
-    ps.append_poly(mesh.degree(f));
+    builder.append_poly(mesh.degree(f));
 
     CGAL::Vertex_around_face_iterator<TriangleMesh> vbegin, vend;
     for (boost::tie(vbegin, vend) = vertices_around_face(mesh.halfedge(f), mesh); vbegin != vend;
@@ -59,9 +60,11 @@ bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
       double x = CGAL::to_double(v.x());
       double y = CGAL::to_double(v.y());
       double z = CGAL::to_double(v.z());
-      ps.append_vertex(ps.pointIndex(Vector3d(x, y, z)));
+      builder.append_vertex(builder.vertexIndex(Vector3d(x, y, z)));
     }
   }
+  builder.append(&ps);
+  ps=*(builder.result().get());
   return err;
 }
 

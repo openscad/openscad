@@ -16,6 +16,7 @@
 #include "ClipperUtils.h"
 #include "RoofNode.h"
 #include "roof_ss.h"
+#include "PolySetBuilder.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
         throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
@@ -73,7 +74,7 @@ std::vector<CGAL_Polygon_with_holes_2> polygons_with_holes(const ClipperLib::Pol
 
 PolySet *straight_skeleton_roof(const Polygon2d& poly)
 {
-  auto *hat = new PolySet(3);
+  PolySetBuilder hatbuilder;
 
   int scale_pow2 = ClipperUtils::getScalePow2(poly.getBoundingBox(), 32);
   ClipperLib::Paths paths = ClipperUtils::fromPolygon2d(poly, scale_pow2);
@@ -119,9 +120,9 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
           std::vector<int> roof;
           for (auto v = facet.vertices_begin(); v != facet.vertices_end(); v++) {
             Vector2d vv(v->x(), v->y());
-            roof.push_back(hat->pointIndex(Vector3d(v->x(), v->y(), heights[vv])));
+            roof.push_back(hatbuilder.vertexIndex(Vector3d(v->x(), v->y(), heights[vv])));
           }
-          hat->append_poly(roof);
+          hatbuilder.append_poly(roof);
         }
       }
     }
@@ -134,20 +135,19 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
       for (const IndexedFace& triangle : tess->indices) {
         std::vector<int> floor;
         for (const int tv : triangle) {
-          floor.push_back(hat->pointIndex(tess->vertices[tv]));
+          floor.push_back(hatbuilder.vertexIndex(tess->vertices[tv]));
         }
         // floor has wrong orientation
         std::reverse(floor.begin(), floor.end());
-        hat->append_poly(floor);
+        hatbuilder.append_poly(floor);
       }
       delete tess;
     }
 
     delete poly_sanitized;
 
-    return hat;
+    return hatbuilder.result().get();
   } catch (RoofNode::roof_exception& e) {
-    delete hat;
     throw;
   }
 }

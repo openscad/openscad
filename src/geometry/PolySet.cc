@@ -74,60 +74,6 @@ std::string PolySet::dump() const
   out << "\nPolySet end";
   return out.str();
 }
-
-void PolySet::append_poly(size_t expected_vertex_count)
-{
-  indices.emplace_back().reserve(expected_vertex_count);
-}
-
-int PolySet::pointIndex(const Vector3f &ptx)
-{
-  int ind;
-  Vector3d pt{ptx[0],ptx[1],ptx[2]};
-  if(pointMap.count(pt) == 0) {
-    ind=this->vertices.size();
-    this->vertices.push_back(pt);
-    pointMap[pt]=ind;
-  } else ind=pointMap[pt];
-  return ind;
-}
-
-int PolySet::pointIndex(const Vector3d &pt)
-{
-  int ind;
-  if(pointMap.count(pt) == 0) {
-    ind=this->vertices.size();
-    this->vertices.push_back(pt);
-    pointMap[pt]=ind;
-  } else ind=pointMap[pt];
-  return ind;
-}
-
-
-int PolySet::append_coord(const Vector3d &coord)
-{
-  this->vertices.push_back(coord);
-  return this->vertices.size()-1;
-}
-
-void PolySet::append_poly(const std::vector<int> &inds)
-{
-  this->indices.push_back(inds);	
-  this->dirty = true;
-}
-
-void PolySet::append_vertex(const int ind)
-{
-  indices.back().push_back(ind);
-  this->dirty = true;
-}
-
-void PolySet::insert_vertex(int ind)
-{
-  indices.back().insert(indices.back().begin(), ind);
-  this->dirty = true;
-}
-
 BoundingBox PolySet::getBoundingBox() const
 {
   if (this->dirty) {
@@ -151,21 +97,6 @@ size_t PolySet::memsize() const
   mem += sizeof(PolySet);
   return mem;
 }
-
-void PolySet::append(const PolySet& ps)
-{
-  for(auto pol: ps.indices)
-  {
-	  this->append_poly(pol.size());
-	  for(auto ind: pol)
-		  this->append_vertex(this->pointIndex(ps.vertices[ind]));
-  }	  
-  if (!dirty && !this->bbox.isNull()) {
-    this->bbox.extend(ps.getBoundingBox());
-  }
-  if (convex) convex = unknown;
-}
-
 void PolySet::transform(const Transform3d& mat)
 {
   // If mirroring transform, flip faces to avoid the object to end up being inside-out

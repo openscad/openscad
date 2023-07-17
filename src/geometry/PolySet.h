@@ -21,8 +21,6 @@ public:
   PolygonIndices indices;
   std::vector<Vector3d> vertices;
   std::unordered_map<Vector3d, int> pointMap;
-  int pointIndex(const Vector3d &pt);
-  int pointIndex(const Vector3f &pt);
 
   PolySet(unsigned int dim, boost::tribool convex = unknown);
   PolySet(Polygon2d origin);
@@ -38,14 +36,6 @@ public:
 
   void quantizeVertices(std::vector<Vector3d> *pPointsOut = nullptr);
   size_t numFacets() const override { return indices.size(); }
-  void reserve(size_t numFacets) { indices.reserve(numFacets); }
-  int append_coord(const Vector3d &coord);
-  void append_poly(size_t expected_vertex_count);
-  void append_poly(const std::vector<int> &inds);
-  void append_vertex(int ind);
-  void insert_vertex(int ind); 
-  void append(const PolySet& ps);
-
   void transform(const Transform3d& mat) override;
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 

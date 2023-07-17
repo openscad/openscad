@@ -141,7 +141,7 @@ const Geometry *CubeNode::createGeometry() const
   builder.append_poly({corner[1],corner[3],corner[7], corner[5]}); // right
   builder.append_poly({corner[3],corner[2],corner[6], corner[7]}); // back
   builder.append_poly({corner[2],corner[0],corner[4], corner[6]}); // left
-  return builder.result();									   
+  return builder.result().get();									   
 }
 
 static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -185,9 +185,8 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
 
 const Geometry *SphereNode::createGeometry() const
 {
-  auto p = new PolySet(3, true);
   if (this->r <= 0 || !std::isfinite(this->r)) {
-    return p;
+    return  new PolySet(3, true);
   }
 
   struct ring_s {
@@ -197,6 +196,7 @@ const Geometry *SphereNode::createGeometry() const
 
   auto fragments = Calc::get_fragments_from_r(r, fn, fs, fa);
   int rings = (fragments + 1) / 2;
+  PolySetBuilder builder(0,rings * fragments + 2);
 // Uncomment the following three lines to enable experimental sphere tessellation
 //	if (rings % 2 == 0) rings++; // To ensure that the middle ring is at phi == 0 degrees
 
@@ -212,11 +212,9 @@ const Geometry *SphereNode::createGeometry() const
     generate_circle(ring[i].points.data(), radius, fragments);
   }
 
-  p->reserve(rings * fragments + 2);
-
-  p->append_poly(fragments);
+  builder.append_poly(fragments);
   for (int i = 0; i < fragments; ++i)
-    p->append_vertex(p->pointIndex(Vector3d(ring[0].points[i][0], ring[0].points[i][1], ring[0].z)));
+    builder.append_vertex(builder.vertexIndex(Vector3d(ring[0].points[i][0], ring[0].points[i][1], ring[0].z)));
 
   int ind1,ind2,ind3;
   for (int i = 0; i < rings - 1; ++i) {
@@ -229,29 +227,29 @@ const Geometry *SphereNode::createGeometry() const
       if ((double)r1i / fragments < (double)r2i / fragments) {
 sphere_next_r1:
         int r1j = (r1i + 1) % fragments;
-	ind1=p->pointIndex(Vector3d(r2->points[r2i % fragments][0], r2->points[r2i % fragments][1], r2->z));
-	ind2=p->pointIndex(Vector3d(r1->points[r1j][0], r1->points[r1j][1], r1->z));
-	ind3=p->pointIndex(Vector3d(r1->points[r1i][0], r1->points[r1i][1], r1->z));
-        p->append_poly({ind1,ind2,ind3});
+	ind1=builder.vertexIndex(Vector3d(r2->points[r2i % fragments][0], r2->points[r2i % fragments][1], r2->z));
+	ind2=builder.vertexIndex(Vector3d(r1->points[r1j][0], r1->points[r1j][1], r1->z));
+	ind3=builder.vertexIndex(Vector3d(r1->points[r1i][0], r1->points[r1i][1], r1->z));
+        builder.append_poly({ind1,ind2,ind3});
         r1i++;
       } else {
 sphere_next_r2:
         int r2j = (r2i + 1) % fragments;
-	ind1=p->pointIndex(Vector3d(r2->points[r2i][0], r2->points[r2i][1], r2->z));
-	ind2=p->pointIndex(Vector3d(r2->points[r2j][0], r2->points[r2j][1], r2->z));
-	ind3=p->pointIndex(Vector3d(r1->points[r1i % fragments][0], r1->points[r1i % fragments][1], r1->z));
-        p->append_poly({ind1,ind2,ind3});
+	ind1=builder.vertexIndex(Vector3d(r2->points[r2i][0], r2->points[r2i][1], r2->z));
+	ind2=builder.vertexIndex(Vector3d(r2->points[r2j][0], r2->points[r2j][1], r2->z));
+	ind3=builder.vertexIndex(Vector3d(r1->points[r1i % fragments][0], r1->points[r1i % fragments][1], r1->z));
+        builder.append_poly({ind1,ind2,ind3});
         r2i++;
       }
     }
   }
 
-  p->append_poly(fragments);
+  builder.append_poly(fragments);
   for (int i = 0; i < fragments; ++i) {
-    p->insert_vertex( p->pointIndex(Vector3d(ring[rings - 1].points[i][0], ring[rings - 1].points[i][1], ring[rings - 1].z)));
+    builder.prepend_vertex( builder.vertexIndex(Vector3d(ring[rings - 1].points[i][0], ring[rings - 1].points[i][1], ring[rings - 1].z)));
   }
 
-  return p;
+  return builder.result().get();
 }
 
 static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -282,14 +280,13 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
 
 const Geometry *CylinderNode::createGeometry() const
 {
-  auto p = new PolySet(3, true);
   if (
     this->h <= 0 || !std::isfinite(this->h)
     || this->r1 < 0 || !std::isfinite(this->r1)
     || this->r2 < 0 || !std::isfinite(this->r2)
     || (this->r1 <= 0 && this->r2 <= 0)
     ) {
-    return p;
+    return  new PolySet(3, true);
   }
 
   auto fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
@@ -309,43 +306,43 @@ const Geometry *CylinderNode::createGeometry() const
   generate_circle(circle1.data(), r1, fragments);
   generate_circle(circle2.data(), r2, fragments);
 
-  p->reserve(fragments * 2 + 2);
+  PolySetBuilder builder(0,fragments * 2 + 2);
   
   int ind,ind1,ind2,ind3;
   for (int i = 0; i < fragments; ++i) {
     int j = (i + 1) % fragments;
     if (r1 == r2) {
-      p->append_poly(4);
+      builder.append_poly(4);
       for(int k=0;k<4;k++)     		      
-        p->insert_vertex(p->pointIndex(Vector3d(circle1[k&2?j:i][0], circle1[k&2?j:i][1], (k+1)&2?z2:z1)));
+        builder.prepend_vertex(builder.vertexIndex(Vector3d(circle1[k&2?j:i][0], circle1[k&2?j:i][1], (k+1)&2?z2:z1)));
     } else {
-      ind1=p->pointIndex(Vector3d(circle1[j][0], circle1[j][1], z1));
+      ind1=builder.vertexIndex(Vector3d(circle1[j][0], circle1[j][1], z1));
       if (r1 > 0) {
-	ind2=p->pointIndex(Vector3d(circle2[i][0], circle2[i][1], z2));
-	ind3=p->pointIndex(Vector3d(circle1[i][0], circle1[i][1], z1));
-        p->append_poly({ind1,ind2,ind3});
+	ind2=builder.vertexIndex(Vector3d(circle2[i][0], circle2[i][1], z2));
+	ind3=builder.vertexIndex(Vector3d(circle1[i][0], circle1[i][1], z1));
+        builder.append_poly({ind1,ind2,ind3});
       }
       if (r2 > 0) {
-	ind2=p->pointIndex(Vector3d(circle2[j][0], circle2[j][1], z2));
-	ind3=p->pointIndex(Vector3d(circle2[i][0], circle2[i][1], z2));
-        p->append_poly({ind1,ind2,ind3});
+	ind2=builder.vertexIndex(Vector3d(circle2[j][0], circle2[j][1], z2));
+	ind3=builder.vertexIndex(Vector3d(circle2[i][0], circle2[i][1], z2));
+        builder.append_poly({ind1,ind2,ind3});
       }
     }
   }
 
   if (this->r1 > 0) {
-    p->append_poly(fragments);
+    builder.append_poly(fragments);
     for (int i = 0; i < fragments; ++i)
-      p->insert_vertex(p->pointIndex(Vector3d(circle1[i][0], circle1[i][1], z1)));
+      builder.prepend_vertex(builder.vertexIndex(Vector3d(circle1[i][0], circle1[i][1], z1)));
   }
 
   if (this->r2 > 0) {
-    p->append_poly(fragments);
+    builder.append_poly(fragments);
     for (int i = 0; i < fragments; ++i)
-      p->append_vertex(p->pointIndex(Vector3d(circle2[i][0], circle2[i][1], z2)));
+      builder.append_vertex(builder.vertexIndex(Vector3d(circle2[i][0], circle2[i][1], z2)));
   }
 
-  return p;
+  return builder.result().get();
 }
 
 static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst, Arguments arguments, const Children& children)

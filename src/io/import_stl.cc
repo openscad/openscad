@@ -1,5 +1,6 @@
 #include "import.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "printutils.h"
 #include "AST.h"
 
@@ -64,7 +65,7 @@ static void read_stl_facet(std::ifstream& f, stl_facet& facet) {
 }
 
 PolySet *import_stl(const std::string& filename, const Location& loc) {
-  std::unique_ptr<PolySet> p = std::make_unique<PolySet>(3);
+//  std::unique_ptr<PolySet> p = std::make_unique<PolySet>(3);
 
   // Open file and position at the end
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -72,9 +73,10 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
     LOG(message_group::Warning,
         "Can't open import file '%1$s', import() at line %2$d",
         filename, loc.firstLine());
-    return p.release();
+    return new PolySet(3);
   }
 
+  uint32_t facenum = 0;
   boost::regex ex_sfe(R"(^\s*solid|^\s*facet|^\s*endfacet)");
   boost::regex ex_outer("^\\s*outer loop$");
   boost::regex ex_loopend("^\\s*endloop$");
@@ -87,16 +89,15 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
   std::streampos file_size = f.tellg();
   f.seekg(80);
   if (f.good() && !f.eof()) {
-    uint32_t facenum = 0;
     f.read((char *)&facenum, sizeof(uint32_t));
 #if BOOST_ENDIAN_BIG_BYTE
     uint32_byte_swap(facenum);
 #endif
     if (file_size == static_cast<std::streamoff>(80ul + 4ul + 50ul * facenum)) {
       binary = true;
-      p->reserve(facenum);
     }
   }
+  PolySetBuilder builder(0,facenum);
   f.seekg(0);
 
   char data[5];
@@ -147,8 +148,8 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
           if (++i == 3) {
 	    int ind[3];
 	    for(int i=0;i<3;i++)
-	            ind[i]=p->pointIndex(Vector3d(vdata[i][0], vdata[i][1], vdata[i][2]));
-            p->append_poly({ind[0],ind[1],ind[2]});
+	            ind[i]=builder.vertexIndex(Vector3d(vdata[i][0], vdata[i][1], vdata[i][2]));
+            builder.append_poly({ind[0],ind[1],ind[2]});
           }
         } catch (const boost::bad_lexical_cast& blc) {
           AsciiError("can't parse vertex");
@@ -171,10 +172,10 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
           throw;
         }
 	int ind1,ind2,ind3;
-        ind1=p->pointIndex(Vector3d(facet.data.x1, facet.data.y1, facet.data.z1));
-        ind2=p->pointIndex(Vector3d(facet.data.x2, facet.data.y2, facet.data.z2));
-        ind3=p->pointIndex(Vector3d(facet.data.x3, facet.data.y3, facet.data.z3));
-        p->append_poly({ind1, ind2, ind3});
+        ind1=builder.vertexIndex(Vector3d(facet.data.x1, facet.data.y1, facet.data.z1));
+        ind2=builder.vertexIndex(Vector3d(facet.data.x2, facet.data.y2, facet.data.z2));
+        ind3=builder.vertexIndex(Vector3d(facet.data.x3, facet.data.y3, facet.data.z3));
+        builder.append_poly({ind1, ind2, ind3});
       }
     } catch (const std::ios_base::failure& ex) {
       int64_t offset = -1;
@@ -195,5 +196,5 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
         "STL format not recognized in '%1$s'.", filename);
     return new PolySet(3);
   }
-  return p.release();
+  return builder.result().get();
 }

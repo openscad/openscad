@@ -25,6 +25,7 @@
  */
 
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "printutils.h"
 #include "AST.h"
 
@@ -57,7 +58,8 @@ private:
 
   using cb_func = void (*)(AmfImporter *, const xmlChar *);
 
-  PolySet *polySet{nullptr};
+//  PolySet *polySet{nullptr};
+  PolySetBuilder builder;
   std::vector<PolySet *> polySets;
 
   double x{0}, y{0}, z{0};
@@ -99,7 +101,7 @@ AmfImporter::AmfImporter(const Location& loc) : loc(loc)
 
 AmfImporter::~AmfImporter()
 {
-  delete polySet;
+//  delete polySet;
 }
 
 void AmfImporter::set_x(AmfImporter *importer, const xmlChar *value)
@@ -134,15 +136,15 @@ void AmfImporter::set_v3(AmfImporter *importer, const xmlChar *value)
 
 void AmfImporter::start_object(AmfImporter *importer, const xmlChar *)
 {
-  importer->polySet = new PolySet(3);
+//  importer->polySet = new PolySet(3);
 }
 
 void AmfImporter::end_object(AmfImporter *importer, const xmlChar *)
 {
   PRINTDB("AMF: add object %d", importer->polySets.size());
-  importer->polySets.push_back(importer->polySet);
+  importer->polySets.push_back(importer->builder.result().get());
   importer->vertex_list.clear();
-  importer->polySet = nullptr;
+  importer->builder.reset();
 }
 
 void AmfImporter::end_vertex(AmfImporter *importer, const xmlChar *)
@@ -158,9 +160,9 @@ void AmfImporter::end_triangle(AmfImporter *importer, const xmlChar *)
 
   std::vector<Eigen::Vector3d>& v = importer->vertex_list;
 
-  importer->polySet->append_poly(3);
+  importer->builder.append_poly(3);
   for(int i=0;i<3;i++) // TODO set vertex array first
-	  importer->polySet->append_vertex(importer->polySet->pointIndex(Vector3d(v[idx[i]].x(), v[idx[i]].y(), v[idx[i]].z())));
+	  importer->builder.append_vertex(importer->builder.vertexIndex(Vector3d(v[idx[i]].x(), v[idx[i]].y(), v[idx[i]].z())));
 }
 
 void AmfImporter::processNode(xmlTextReaderPtr reader)

@@ -25,6 +25,7 @@
  */
 
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "Geometry.h"
 #include "printutils.h"
 #include "version_helper.h"
@@ -332,23 +333,22 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
 
     PRINTDB("%s: mesh %d, vertex count: %lu, triangle count: %lu", filename.c_str() % mesh_idx % vertex_count % triangle_count);
 
-    PolySet *p = new PolySet(3);
-    p->reserve(triangle_count);
+    PolySetBuilder builder(0,triangle_count);
     for (Lib3MF_uint64 idx = 0; idx < triangle_count; ++idx) {
       Lib3MF::sTriangle triangle = object->GetTriangle(idx);
 
-      p->append_poly(3);
+      builder.append_poly(3);
 
       for(int i=0;i<3;i++) {
         Lib3MF::sPosition vertex = object->GetVertex(triangle.m_Indices[i]);
-        p->append_vertex(p->pointIndex(Vector3d(vertex.m_Coordinates[0], vertex.m_Coordinates[1], vertex.m_Coordinates[2])));
+        builder.append_vertex(builder.vertexIndex(Vector3d(vertex.m_Coordinates[0], vertex.m_Coordinates[1], vertex.m_Coordinates[2])));
       }
     }
 
     if (first_mesh) {
-      meshes.push_back(std::shared_ptr<PolySet>(p));
+      meshes.push_back(builder.result());
     } else {
-      first_mesh = p;
+      first_mesh = builder.result().get();
     }
     mesh_idx++;
     has_next = object_it->MoveNext();

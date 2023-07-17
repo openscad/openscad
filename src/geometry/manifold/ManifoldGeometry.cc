@@ -2,7 +2,7 @@
 #include "ManifoldGeometry.h"
 #include "manifold.h"
 #include "PolySet.h"
-//#include "PolySetBuilder.h"
+#include "PolySetBuilder.h"
 #include "PolySetUtils.h"
 #include "cgalutils.h"
 #include "manifoldutils.h"
@@ -78,14 +78,13 @@ std::string ManifoldGeometry::dump() const {
 }
 
 std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
-  auto ps = std::make_shared<PolySet>(3);
   manifold::Mesh mesh = getManifold().GetMesh();
-  ps->vertices.reserve(mesh.vertPos.size());
+  PolySetBuilder builder(mesh.vertPos.size(),mesh.triVerts.size());	
   for(const auto &pt :mesh.vertPos)  
-    ps->append_coord({pt[0],pt[1],pt[2]});
+    builder.vertexIndex({pt[0],pt[1],pt[2]}); // assuming here, that Reindexer will return counting up int numbers
   for (const auto &tv : mesh.triVerts) 
-      ps->append_poly({tv[0],tv[1],tv[2]});
-  return ps;
+      builder.append_poly({tv[0],tv[1],tv[2]});
+  return builder.result();
 }
 
 template <typename Polyhedron>

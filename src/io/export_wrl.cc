@@ -32,7 +32,7 @@
 
 void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  PolySet ps = PolySetUtils::convert_polyset(geom);
+  auto ps = PolySetUtils::convert_polyset(geom);
   	
   output << "#VRML V2.0 utf8\n\n";
 
@@ -50,7 +50,7 @@ void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output)
   output << "creaseAngle 0.5\n\n";
 
   output << "coord Coordinate { point [\n";
-  const auto& v = ps.vertices;
+  const auto& v = ps->vertices;
   const size_t numverts = v.size();
   for (size_t i = 0; i < numverts; ++i) {
     output << v[i][0] << " " << v[i][1] << " " << v[i][2];
@@ -62,9 +62,9 @@ void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output)
   output << "] }\n\n";
 
   output << "coordIndex [\n";
-  const size_t numindices = ps.indices.size();
+  const size_t numindices = ps->indices.size();
   for (size_t i = 0; i < numindices; ++i) {
-     const auto &poly=ps.indices[i];	  
+     const auto &poly=ps->indices[i];	  
      for(int j=0;j<poly.size();j++) {
        output << poly[i];
        if (i < poly.size() - 1) output << ",";

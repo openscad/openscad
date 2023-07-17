@@ -30,9 +30,10 @@
 
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, bool convex)
 {
-	ps= new PolySet(dim, convex);
-	if(vertices_count != 0) ps->vertices.reserve(vertices_count);
-	if(indices_count != 0) ps->indices.reserve(indices_count);
+  ps= std::make_shared<PolySet>(dim);
+  ps->convex=convex;
+  if(vertices_count != 0) ps->vertices.reserve(vertices_count);
+  if(indices_count != 0) ps->indices.reserve(indices_count);
 }
 
 int PolySetBuilder::vertexIndex(const Vector3d &pt)
@@ -55,9 +56,42 @@ void PolySetBuilder::append_poly(const std::vector<Vector3d> &v)
   ps->dirty = true;
 }
 
-PolySet *PolySetBuilder::result(void)
+void PolySetBuilder::append_poly(int nvertices){
+  ps->indices.emplace_back().reserve(nvertices);
+}
+
+void PolySetBuilder::append_vertex(int ind){
+  ps->indices.back().push_back(ind);
+  ps->dirty = true;
+}
+
+void PolySetBuilder::prepend_vertex(int ind){
+  ps->indices.back().insert(ps->indices.back().begin(), ind);
+  ps->dirty = true;
+}
+
+int PolySetBuilder::numVertices(void) {
+	return allVertices.size();
+}
+
+void PolySetBuilder::append(PolySet *ps)
 {
-	ps->vertices = allVertices.getArray();
-	return ps;
+  for(const auto &poly : ps->indices) {
+    append_poly(poly.size());
+    for(const auto &ind: poly) {
+      append_vertex(vertexIndex(ps->vertices[ind]));
+    }
+  }
+}
+void PolySetBuilder::reset(void) {
+}
+std::shared_ptr<PolySet> PolySetBuilder::result(void)
+{
+  ps->vertices = allVertices.getArray();
+  return ps;
+}
+
+void PolySetBuilder::setConvexity(int conv){
+	ps->convex=conv;
 }
 
