@@ -1,33 +1,33 @@
 #include "VertexStateManager.h"
 
-void VertexStateManager::initializeSize(size_t vertices_size) {
+void VertexStateManager::initializeSize(size_t num_vertices) {
   std::vector<GLuint> placeholder;
   size_t placeholder_index = 0;
-  initializeSizeHelper(vertices_size, false, placeholder, placeholder_index);
+  initializeSizeHelper(num_vertices, false, placeholder, placeholder_index);
 }
 
-void VertexStateManager::initializeSize(size_t vertices_size, std::vector<GLuint> & vbos, size_t & vbo_index) {
-  initializeSizeHelper(vertices_size, true, vbos, vbo_index);
+void VertexStateManager::initializeSize(size_t num_vertices, std::vector<GLuint> & vbos, size_t & vbo_index) {
+  initializeSizeHelper(num_vertices, true, vbos, vbo_index);
 }
 
-void VertexStateManager::initializeSizeHelper(size_t vertices_size, bool multiple_vbo, std::vector<GLuint> & vbos, size_t & vbo_index) {
+void VertexStateManager::initializeSizeHelper(size_t num_vertices, bool multiple_vbo, std::vector<GLuint> & vbos, size_t & vbo_index) {
   if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-    size_t elements_size = 0;
+    size_t vertices_size = 0, elements_size = 0;
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
       if (multiple_vbo) {
         vertex_array.elementsVBO() = vbos[vbo_index++];
       }
-      if (vertices_size <= 0xff) {
+      if (num_vertices <= 0xff) {
           vertex_array.addElementsData(std::make_shared<AttributeData<GLubyte, 1, GL_UNSIGNED_BYTE>>());
-      } else if (vertices_size <= 0xffff) {
+      } else if (num_vertices <= 0xffff) {
           vertex_array.addElementsData(std::make_shared<AttributeData<GLushort, 1, GL_UNSIGNED_SHORT>>());
       } else {
           vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
       }
-      elements_size = vertices_size * vertex_array.elements().stride();
+      elements_size = num_vertices * vertex_array.elements().stride();
       vertex_array.elementsSize(elements_size);
     }
-    vertices_size *= vertex_array.stride();
+    vertices_size = num_vertices * vertex_array.stride();
     vertex_array.verticesSize(vertices_size);
 
     GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertex_array.verticesVBO());
