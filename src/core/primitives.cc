@@ -130,7 +130,7 @@ const Geometry *CubeNode::createGeometry() const
     z2 = this->z;
   }
 
-  PolySetBuilder builder(3,6);
+  PolySetBuilder builder(8,6);
   int corner[8];
   for(int i=0;i<8;i++)
     corner[i]=builder.vertexIndex(Vector3d(i&1?x2:x1,i&2?y2:y1,i&4?z2:z1));

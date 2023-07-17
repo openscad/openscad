@@ -28,31 +28,36 @@
 #include <PolySet.h>
 
 
-// https://hackernoon.com/design-patterns-builder-pattern-in-modern-c-x1283uy3
-PolySetBuilder::PolySetBuilder(int dim, int vertices_count)
+PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, bool convex)
 {
-	ps= new PolySet(dim, true);
-	ps->indices.reserve(vertices_count);
+	ps= new PolySet(dim, convex);
+	if(vertices_count != 0) ps->vertices.reserve(vertices_count);
+	if(indices_count != 0) ps->indices.reserve(indices_count);
 }
 
 int PolySetBuilder::vertexIndex(const Vector3d &pt)
 {
-  int ind;
-  if(pointMap.count(pt) == 0) {
-    ind=ps->vertices.size();
-    ps->vertices.push_back(pt);
-    pointMap[pt]=ind;
-  } else ind=pointMap[pt];
-  return ind;
+  return allVertices.lookup(pt);
 }
+
 void PolySetBuilder::append_poly(const std::vector<int> &inds)
 {
   ps->indices.push_back(inds);        
   ps->dirty = true;
-
 }
+
+void PolySetBuilder::append_poly(const std::vector<Vector3d> &v)
+{
+  std::vector<int> inds;
+  for(const auto &pt: v)
+    inds.push_back(vertexIndex(pt));  
+  ps->indices.push_back(inds);        
+  ps->dirty = true;
+}
+
 PolySet *PolySetBuilder::result(void)
 {
+	ps->vertices = allVertices.getArray();
 	return ps;
 }
 

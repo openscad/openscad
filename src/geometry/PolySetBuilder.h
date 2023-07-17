@@ -1,25 +1,16 @@
 #pragma once
 
-
-#include "Geometry.h"
-#include "linalg.h"
-#include "GeometryUtils.h"
-#include "Polygon2d.h"
-#include "boost-utils.h"
-
-#include <vector>
-#include <string>
-#include <unordered_map>
-#include <hash.h>
+#include <Reindexer.h>
 class PolySet;
 
 class PolySetBuilder
 {
   PolySet *ps;
-  std::unordered_map<Vector3d, int> pointMap;
+  Reindexer<Vector3d> allVertices;
 public:
-  PolySetBuilder(int dim,int vertices_count);
+  PolySetBuilder(int vertices_count, int indices_count, int dim=3, bool convex=true);
   int vertexIndex(const Vector3d &coord);
   void append_poly(const std::vector<int> &inds);
+  void append_poly(const std::vector<Vector3d> &v);
   PolySet *result(void);
 };
