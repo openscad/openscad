@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Reindexer.h>
+#include "Polygon2d.h"
 #include <memory>
 class PolySet;
 
@@ -10,6 +11,7 @@ class PolySetBuilder
   Reindexer<Vector3d> allVertices;
 public:
   PolySetBuilder(int vertices_count=0, int indices_count=0, int dim=3, bool convex=true);
+  PolySetBuilder(const Polygon2d pol);
   void reset(void);
   void setConvexity(int n);
   int vertexIndex(const Vector3d &coord);

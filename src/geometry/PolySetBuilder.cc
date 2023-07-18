@@ -35,6 +35,13 @@ PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, b
   if(indices_count != 0) ps->indices.reserve(indices_count);
 }
 
+PolySetBuilder::PolySetBuilder(const Polygon2d pol)
+{
+  ps= new PolySet(2, unknown);
+  ps->polygon=std::move(pol);   
+  ps->dirty=false;
+}
+
 int PolySetBuilder::vertexIndex(const Vector3d &pt)
 {
   return allVertices.lookup(pt);
