@@ -112,7 +112,7 @@ double Polygon2d::area() const
 PolySet *Polygon2d::tessellate() const
 {
   PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
-  PolySetBuilder builder;
+  PolySetBuilder builder(0,0,this->getDimension());
   Polygon2DCGAL::CDT cdt; // Uses a constrained Delaunay triangulator.
 
   try {
