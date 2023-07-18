@@ -58,7 +58,6 @@ private:
 
   using cb_func = void (*)(AmfImporter *, const xmlChar *);
 
-//  PolySet *polySet{nullptr};
   PolySetBuilder builder;
   std::vector<PolySet *> polySets;
 
@@ -136,13 +135,12 @@ void AmfImporter::set_v3(AmfImporter *importer, const xmlChar *value)
 
 void AmfImporter::start_object(AmfImporter *importer, const xmlChar *)
 {
-//  importer->polySet = new PolySet(3);
 }
 
 void AmfImporter::end_object(AmfImporter *importer, const xmlChar *)
 {
   PRINTDB("AMF: add object %d", importer->polySets.size());
-  importer->polySets.push_back(importer->builder.result().get());
+  importer->polySets.push_back(importer->builder.result());
   importer->vertex_list.clear();
   importer->builder.reset();
 }

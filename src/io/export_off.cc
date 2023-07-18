@@ -37,16 +37,16 @@ void export_off(const shared_ptr<const Geometry>& geom, std::ostream& output)
   auto ps = PolySetUtils::convert_polyset(geom);
 
 
-  output << "OFF " << ps->vertices.size() << " " << ps->indices.size() << " 0\n";
-  const auto& v = ps->vertices;
+  output << "OFF " << ps.vertices.size() << " " << ps.indices.size() << " 0\n";
+  const auto& v = ps.vertices;
   size_t numverts = v.size();
   for (size_t i = 0; i < numverts; ++i) {
     output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
   }
-  for (size_t i = 0; i < ps->indices.size(); ++i) {
-    int nverts = ps->indices[i].size();
+  for (size_t i = 0; i < ps.indices.size(); ++i) {
+    int nverts = ps.indices[i].size();
     output << nverts;
-    for (size_t n = 0; n < nverts; ++n) output << " " << ps->indices[i][n];
+    for (size_t n = 0; n < nverts; ++n) output << " " << ps.indices[i][n];
     output << "\n";
   }
 

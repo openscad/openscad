@@ -141,7 +141,7 @@ const Geometry *CubeNode::createGeometry() const
   builder.append_poly({corner[1],corner[3],corner[7], corner[5]}); // right
   builder.append_poly({corner[3],corner[2],corner[6], corner[7]}); // back
   builder.append_poly({corner[2],corner[0],corner[4], corner[6]}); // left
-  return builder.result().get();									   
+  return builder.result();									   
 }
 
 static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -249,7 +249,7 @@ sphere_next_r2:
     builder.prepend_vertex( builder.vertexIndex(Vector3d(ring[rings - 1].points[i][0], ring[rings - 1].points[i][1], ring[rings - 1].z)));
   }
 
-  return builder.result().get();
+  return builder.result();
 }
 
 static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -342,7 +342,7 @@ const Geometry *CylinderNode::createGeometry() const
       builder.append_vertex(builder.vertexIndex(Vector3d(circle2[i][0], circle2[i][1], z2)));
   }
 
-  return builder.result().get();
+  return builder.result();
 }
 
 static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst, Arguments arguments, const Children& children)

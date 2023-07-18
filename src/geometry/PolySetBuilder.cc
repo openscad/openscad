@@ -30,8 +30,7 @@
 
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, bool convex)
 {
-  ps= std::make_shared<PolySet>(dim);
-  ps->convex=convex;
+  ps= new PolySet(dim, convex);
   if(vertices_count != 0) ps->vertices.reserve(vertices_count);
   if(indices_count != 0) ps->indices.reserve(indices_count);
 }
@@ -85,7 +84,7 @@ void PolySetBuilder::append(PolySet *ps)
 }
 void PolySetBuilder::reset(void) {
 }
-std::shared_ptr<PolySet> PolySetBuilder::result(void)
+PolySet *PolySetBuilder::result(void)
 {
   ps->vertices = allVertices.getArray();
   return ps;

@@ -310,7 +310,7 @@ const Geometry *SurfaceNode::createGeometry() const
       builder.prepend_vertex(builder.vertexIndex(Vector3d(ox + 0, oy + i, min_val)));
   }
 
-  return builder.result().get();
+  return builder.result();
 }
 
 std::string SurfaceNode::toString() const

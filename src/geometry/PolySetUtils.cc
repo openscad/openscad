@@ -127,7 +127,7 @@ void tessellate_faces(const PolySet& inps, PolySet& outps) // TODO use indexed v
       }
     }
   }
-  outps=*(builder.result().get());
+  outps=*(builder.result());
   if (degeneratePolygons > 0) {
     LOG(message_group::Warning, "PolySet has degenerate polygons");
   }
@@ -141,44 +141,40 @@ bool is_approximately_convex(const PolySet& ps) {
 #endif
 }
 
-std::shared_ptr<PolySet> convert_polyset(const shared_ptr<const Geometry>& geom)
+PolySet  convert_polyset(const shared_ptr<const Geometry>& geom)
 {
   if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
-    PolySetBuilder builder;
+  PolySetBuilder builder;
     for (const Geometry::GeometryItem& item : geomlist->getChildren()) {
-      auto ps_sub = convert_polyset(item.second);
-      builder.append(ps_sub.get());
+      PolySet ps_sub = convert_polyset(item.second);
+      builder.append(&ps_sub);
     }
-    PolySet *ps=(builder.result().get());
+    return *(builder.result());
   } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-    PolySet *ps = new PolySet(3);
-    bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), *ps);
+    PolySet ps(3);
+    bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
     if (err) {
       LOG(message_group::Error, "Nef->PolySet failed");
     } else {
-     return std::shared_ptr<PolySet>(ps);
+     return ps;
     }
   } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
-     PolySet *psp = new PolySet(*ps);	  
-     return std::shared_ptr<PolySet>(psp);
+    return *ps;
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement append_geometry(Surface_mesh) instead of converting to PolySet
     const PolySet *psp =hybrid->toPolySet().get();
-    PolySet *ps = new PolySet(*psp);
-    return std::shared_ptr<PolySet>(ps);
+    return *psp;
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     const PolySet *psp = mani->toPolySet().get();
-    PolySet *ps = new PolySet(*psp);
-    return std::shared_ptr<PolySet>(ps);
+    return *psp;
 #endif
   } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
     assert(false && "PolySet doesn't support 2D");
   } else { // NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
   }
-  PolySet *ps = new PolySet(3);
-  return std::shared_ptr<PolySet>(ps);
+  return PolySet(3);
 }
 
 } // namespace PolySetUtils

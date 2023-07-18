@@ -346,9 +346,9 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     }
 
     if (first_mesh) {
-      meshes.push_back(builder.result());
+      meshes.push_back(std::shared_ptr<PolySet>(builder.result()));
     } else {
-      first_mesh = builder.result().get();
+      first_mesh = builder.result();
     }
     mesh_idx++;
     has_next = object_it->MoveNext();

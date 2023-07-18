@@ -6,7 +6,7 @@ class PolySet;
 
 class PolySetBuilder
 {
-  std::shared_ptr<PolySet> ps;
+  PolySet *ps;
   Reindexer<Vector3d> allVertices;
 public:
   PolySetBuilder(int vertices_count=0, int indices_count=0, int dim=3, bool convex=true);
@@ -20,5 +20,5 @@ public:
   void append_poly(const std::vector<Vector3d> &v);
   void append_vertex(int n);
   void prepend_vertex(int n);
-  std::shared_ptr<PolySet> result(void);
+  PolySet *result(void);
 };

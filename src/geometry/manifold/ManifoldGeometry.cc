@@ -84,7 +84,7 @@ std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
     builder.vertexIndex({pt[0],pt[1],pt[2]}); // assuming here, that Reindexer will return counting up int numbers
   for (const auto &tv : mesh.triVerts) 
       builder.append_poly({tv[0],tv[1],tv[2]});
-  return builder.result();
+  return std::shared_ptr<PolySet>(builder.result());
 }
 
 template <typename Polyhedron>

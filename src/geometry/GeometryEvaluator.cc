@@ -1173,7 +1173,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     delete ps_top;
   }
 
-  return builder.result().get();
+  return builder.result();
 }
 
 /*!
@@ -1329,7 +1329,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
     }
   }
 
-  return builder.result().get();
+  return builder.result();
 }
 
 /*!
