@@ -3,6 +3,7 @@
 #include <Reindexer.h>
 #include "Polygon2d.h"
 #include <memory>
+#include "boost-utils.h"
 class PolySet;
 
 class PolySetBuilder
@@ -10,7 +11,7 @@ class PolySetBuilder
   PolySet *ps;
   Reindexer<Vector3d> allVertices;
 public:
-  PolySetBuilder(int vertices_count=0, int indices_count=0, int dim=3, bool convex=true);
+  PolySetBuilder(int vertices_count=0, int indices_count=0, int dim=3, boost::tribool convex=unknown);
   PolySetBuilder(const Polygon2d pol);
   void reset(void);
   void setConvexity(int n);
