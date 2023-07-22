@@ -38,16 +38,16 @@ void export_obj(const shared_ptr<const Geometry>& geom, std::ostream& output)
 
   output << "# OpenSCAD obj exporter\n";
 
-  for (size_t i = 0; i < ps.vertices.size(); ++i) {
-    output << "v " << ps.vertices[i][0] << " " << ps.vertices[i][1] << " " << ps.vertices[i][2] << "\n";
+  for (size_t i = 0; i < ps->vertices.size(); ++i) {
+    output << "v " << ps->vertices[i][0] << " " << ps->vertices[i][1] << " " << ps->vertices[i][2] << "\n";
   }
 
-  for (int i = 0; i < ps.indices.size(); i++) {
+  for (int i = 0; i < ps->indices.size(); i++) {
 
     output << "f ";
 
-    for(int j=0;j<ps.indices[i].size();j++) {
-      auto index = ps.indices[i][j];
+    for(int j=0;j<ps->indices[i].size();j++) {
+      auto index = ps->indices[i][j];
       output << " " << (1 + index);
     }
     output << "\n";

@@ -30,7 +30,6 @@
 
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
 {
-  printf("constructor\n");	
   ps= new PolySet(dim, convex);
 //  if(vertices_count != 0) ps->vertices.reserve(vertices_count);
 //  if(indices_count != 0) ps->indices.reserve(indices_count);
