@@ -1037,7 +1037,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
   boost::tribool isConvex{poly.is_convex()};
   // Twist or non-uniform scale makes convex polygons into unknown polyhedrons
   if (isConvex && non_linear) isConvex = unknown;
-  PolySetBuilder builder;
+  PolySetBuilder builder(0,0,3,isConvex);
   builder.setConvexity(node.convexity);
   if (node.height <= 0) return new PolySet(3);
 

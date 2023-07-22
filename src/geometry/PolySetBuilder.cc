@@ -31,8 +31,8 @@
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
 {
   ps= new PolySet(dim, convex);
-//  if(vertices_count != 0) ps->vertices.reserve(vertices_count);
-//  if(indices_count != 0) ps->indices.reserve(indices_count);
+  if(vertices_count != 0) ps->vertices.reserve(vertices_count);
+  if(indices_count != 0) ps->indices.reserve(indices_count);
 }
 
 PolySetBuilder::PolySetBuilder(const Polygon2d pol)
@@ -97,7 +97,7 @@ PolySet *PolySetBuilder::result(void)
   return ps;
 }
 
-void PolySetBuilder::setConvexity(int conv){
-	ps->convex=conv;
+void PolySetBuilder::setConvexity(int convexity){
+	ps->convexity=convexity;
 }
 
