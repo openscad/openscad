@@ -127,7 +127,7 @@ void tessellate_faces(const PolySet& inps, PolySet& outps) // TODO use indexed v
       }
     }
   }
-  outps=*(builder.result());
+  outps.reset(builder.result());
   if (degeneratePolygons > 0) {
     LOG(message_group::Warning, "PolySet has degenerate polygons");
   }

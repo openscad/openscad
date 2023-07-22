@@ -41,6 +41,7 @@ public:
 
   bool is_convex() const;
   boost::tribool convexValue() const { return this->convex; }
+  void reset(const PolySet *ps);
 
 private:
   Polygon2d polygon;
