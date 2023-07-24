@@ -130,7 +130,7 @@ const Geometry *CubeNode::createGeometry() const
     z2 = this->z;
   }
 
-  PolySetBuilder builder(8,6);
+  PolySetBuilder builder(8,6,3,true);
   int corner[8];
   for(int i=0;i<8;i++)
     corner[i]=builder.vertexIndex(Vector3d(i&1?x2:x1,i&2?y2:y1,i&4?z2:z1));
@@ -196,7 +196,7 @@ const Geometry *SphereNode::createGeometry() const
 
   auto fragments = Calc::get_fragments_from_r(r, fn, fs, fa);
   int rings = (fragments + 1) / 2;
-  PolySetBuilder builder(0,rings * fragments + 2);
+  PolySetBuilder builder(0,rings * fragments + 2,3,true);
 // Uncomment the following three lines to enable experimental sphere tessellation
 //	if (rings % 2 == 0) rings++; // To ensure that the middle ring is at phi == 0 degrees
 
@@ -306,7 +306,7 @@ const Geometry *CylinderNode::createGeometry() const
   generate_circle(circle1.data(), r1, fragments);
   generate_circle(circle2.data(), r2, fragments);
 
-  PolySetBuilder builder(0,fragments * 2 + 2);
+  PolySetBuilder builder(0,fragments * 2 + 2,3,true);
   
   int ind,ind1,ind2,ind3;
   for (int i = 0; i < fragments; ++i) {
