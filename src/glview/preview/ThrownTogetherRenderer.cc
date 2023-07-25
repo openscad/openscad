@@ -30,6 +30,7 @@
 #include "Feature.h"
 #include "PolySet.h"
 #include "printutils.h"
+#include "VertexStateManager.h"
 
 #include "system-gl.h"
 
@@ -58,39 +59,15 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
     vertex_array.addSurfaceData();
     add_shader_data(vertex_array);
 
-    if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-      size_t vertices_size = 0, elements_size = 0;
-      if (this->root_products) vertices_size += (getSurfaceBufferSize(this->root_products, false, false, true) * 2);
-      if (this->background_products) vertices_size += getSurfaceBufferSize(this->background_products, false, true, true);
-      if (this->highlight_products) vertices_size += getSurfaceBufferSize(this->highlight_products, true, false, true);
+    VertexStateManager vsm(*this, vertex_array);
 
-      if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-        if (vertices_size <= 0xff) {
-          vertex_array.addElementsData(std::make_shared<AttributeData<GLubyte, 1, GL_UNSIGNED_BYTE>>());
-        } else if (vertices_size <= 0xffff) {
-          vertex_array.addElementsData(std::make_shared<AttributeData<GLushort, 1, GL_UNSIGNED_SHORT>>());
-        } else {
-          vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
-        }
-        elements_size = vertices_size * vertex_array.elements().stride();
-        vertex_array.elementsSize(elements_size);
-      }
-      vertices_size *= vertex_array.stride();
-      vertex_array.verticesSize(vertices_size);
+    
+    size_t vertices_size = 0;
+    if (this->root_products) vertices_size += (getSurfaceBufferSize(this->root_products, false, false, true) * 2);
+    if (this->background_products) vertices_size += getSurfaceBufferSize(this->background_products, false, true, true);
+    if (this->highlight_products) vertices_size += getSurfaceBufferSize(this->highlight_products, true, false, true);
 
-      GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertex_array.verticesVBO());
-      GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO()));
-      GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
-      GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW));
-      if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-        GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertex_array.elementsVBO());
-        GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO()));
-        GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
-        GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW));
-      }
-    } else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
-    }
+    vsm.initializeSize(vertices_size);
 
     if (this->root_products) createCSGProducts(*this->root_products, vertex_array, false, false);
     if (this->background_products) createCSGProducts(*this->background_products, vertex_array, false, true);
@@ -243,21 +220,14 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
     csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
 
     vertex_array.writeSurface();
-    add_shader_pointers(vertex_array);
+
+    VertexStateManager vsm(*this, vertex_array); // Currently, choosing to create a new VSM instead of trying to reuse the one from ThrownTogetherRenderer::prepare
 
     if (highlight_mode || background_mode) {
       const ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
       getShaderColor(colormode, leaf_color, color);
 
-      shaderinfo_t shader_info = this->getShader();
-      std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
-      color_state->glBegin().emplace_back([shader_info, color]() {
-        GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % color[0] % color[1] % color[2] % color[3]);
-        GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]));
-        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % ((color[0] + 1) / 2) % ((color[1] + 1) / 2) % ((color[2] + 1) / 2));
-        GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0));
-      });
-      vertex_states.emplace_back(std::move(color_state));
+      vsm.addColor(color);
 
       create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
       std::shared_ptr<TTRVertexState> vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
@@ -268,15 +238,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
       getShaderColor(colormode, leaf_color, color);
 
-      shaderinfo_t shader_info = this->getShader();
-      std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
-      color_state->glBegin().emplace_back([shader_info, color]() {
-        GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % color[0] % color[1] % color[2] % color[3]);
-        GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]));
-        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % ((color[0] + 1) / 2) % ((color[1] + 1) / 2) % ((color[2] + 1) / 2));
-        GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0));
-      });
-      vertex_states.emplace_back(std::move(color_state));
+      vsm.addColor(color);
 
       std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();
       cull->glBegin().emplace_back([]() {
@@ -300,15 +262,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, true, type);
       getShaderColor(colormode, leaf_color, color);
 
-      shader_info = this->getShader();
-      color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
-      color_state->glBegin().emplace_back([shader_info, color]() {
-        GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % color[0] % color[1] % color[2] % color[3]);
-        GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]));
-        GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % ((color[0] + 1) / 2) % ((color[1] + 1) / 2) % ((color[2] + 1) / 2));
-        GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0));
-      });
-      vertex_states.emplace_back(std::move(color_state));
+      vsm.addColor(color);
 
       cull = std::make_shared<VertexState>();
       cull->glBegin().emplace_back([]() {
