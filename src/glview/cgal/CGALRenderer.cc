@@ -37,6 +37,7 @@
 #include "CGALRenderer.h"
 #include "CGAL_OGL_VBOPolyhedron.h"
 #include "CGALHybridPolyhedron.h"
+#include "VertexStateManager.h"
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
 #endif
@@ -139,44 +140,22 @@ void CGALRenderer::createPolySets()
   polyset_states.clear();
 
   VertexArray vertex_array(std::make_shared<VertexStateFactory>(), polyset_states);
+
+  VertexStateManager vsm(*this, vertex_array);
+
   vertex_array.addEdgeData();
   vertex_array.addSurfaceData();
 
-  if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-    size_t vertices_size = 0, elements_size = 0;
-    if (this->polysets.size()) {
-      for (const auto& polyset : this->polysets) {
-        vertices_size += getSurfaceBufferSize(*polyset);
-        vertices_size += getEdgeBufferSize(*polyset);
-      }
-    }
-    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      if (vertices_size <= 0xff) {
-        vertex_array.addElementsData(std::make_shared<AttributeData<GLubyte, 1, GL_UNSIGNED_BYTE>>());
-      } else if (vertices_size <= 0xffff) {
-        vertex_array.addElementsData(std::make_shared<AttributeData<GLushort, 1, GL_UNSIGNED_SHORT>>());
-      } else {
-        vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
-      }
-      elements_size = vertices_size * vertex_array.elements().stride();
-      vertex_array.elementsSize(elements_size);
-    }
-    vertices_size *= vertex_array.stride();
-    vertex_array.verticesSize(vertices_size);
 
-    GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertex_array.verticesVBO());
-    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO()));
-    GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
-    GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW));
-    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertex_array.elementsVBO());
-      GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO()));
-      GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
-      GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW));
+  size_t vertices_size = 0;
+  if (this->polysets.size()) {
+    for (const auto& polyset : this->polysets) {
+      vertices_size += getSurfaceBufferSize(*polyset);
+      vertices_size += getEdgeBufferSize(*polyset);
     }
-  } else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-    vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
   }
+
+  vsm.initializeSize(vertices_size);
 
   for (const auto& polyset : this->polysets) {
     Color4f color;
