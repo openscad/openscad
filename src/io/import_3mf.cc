@@ -154,7 +154,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     for (DWORD idx = 0; idx < triangle_count; ++idx) {
       MODELMESHTRIANGLE triangle;
       if (lib3mf_meshobject_gettriangle(object, idx, &triangle) != LIB3MF_OK) {
-        return import_3mf_error(model, object_it, first_mesh, p);
+        return import_3mf_error(model, object_it, first_mesh);
       }
 
       MODELMESHVERTEX vertex;
@@ -162,9 +162,9 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
       builder.append_poly(3);
       for(int i=0;i<3;i++) {
         if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[i], &vertex) != LIB3MF_OK) {
-          return import_3mf_error(model, object_it, first_mesh, p);
+          return import_3mf_error(model, object_it, first_mesh);
         }
-        builder.append_vertex(builder.vertexIndex(Vector3d(vertex.m_fPosition[0], vertex.m_fPosition[1], vertex.fPosition[2])));
+        builder.append_vertex(builder.vertexIndex(Vector3d(vertex.m_fPosition[0], vertex.m_fPosition[1], vertex.f_Position[2])));
       }
     }
 
