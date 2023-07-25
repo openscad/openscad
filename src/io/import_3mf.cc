@@ -150,8 +150,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
 
     PRINTDB("%s: mesh %d, vertex count: %lu, triangle count: %lu", filename.c_str() % mesh_idx % vertex_count % triangle_count);
 
-    auto *p = new PolySet(3);
-    p->reserve(triangle_count);
+    PolySetBuilder builder(0,triangle_count);
     for (DWORD idx = 0; idx < triangle_count; ++idx) {
       MODELMESHTRIANGLE triangle;
       if (lib3mf_meshobject_gettriangle(object, idx, &triangle) != LIB3MF_OK) {
@@ -160,19 +159,19 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
 
       MODELMESHVERTEX vertex;
 
-      p->append_poly(3);
+      builder.append_poly(3);
       for(int i=0;i<3;i++) {
         if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[i], &vertex) != LIB3MF_OK) {
           return import_3mf_error(model, object_it, first_mesh, p);
         }
-        p->append_vertex(p->pointIndex(Vector3d(vertex.m_fPosition[0], vertex.m_fPosition[1], vertex.m_fPosition[2])));
+        builder.append_vertex(builder.vertexIndex(Vector3d(vertex.m_fPosition[0], vertex.m_fPosition[1], vertex.fPosition[2])));
       }
     }
 
     if (first_mesh) {
-      meshes.push_back(std::shared_ptr<PolySet>(p));
+      meshes.push_back(std::shared_ptr<PolySet>(builder.result()));
     } else {
-      first_mesh = p;
+      first_mesh = builder.result();
     }
     mesh_idx++;
   }

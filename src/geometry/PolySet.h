@@ -8,9 +8,6 @@
 
 #include <vector>
 #include <string>
-#include <unordered_map>
-#include <hash.h>
-
 class PolySetBuilder;
 
 class PolySet : public Geometry
@@ -20,7 +17,6 @@ public:
   VISITABLE_GEOMETRY();
   PolygonIndices indices;
   std::vector<Vector3d> vertices;
-  std::unordered_map<Vector3d, int> pointMap;
 
   PolySet(unsigned int dim, boost::tribool convex = unknown);
   PolySet(Polygon2d origin);
