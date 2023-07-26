@@ -43,13 +43,13 @@ void VertexStateManager::initializeSizeHelper(size_t num_vertices, bool multiple
     vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
   }
 }
-void VertexStateManager::addColor(const Color4f& last_color) {
+void VertexStateManager::addColor(const Color4f& color) {
   renderer.add_shader_pointers(vertex_array);
   Renderer::shaderinfo_t shader_info = renderer.getShader();
   std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
-  color_state->glBegin().emplace_back([shader_info, last_color]() {
-    GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, last_color[0], last_color[1], last_color[2], last_color[3]));
-    GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (last_color[0] + 1) / 2, (last_color[1] + 1) / 2, (last_color[2] + 1) / 2, 1.0));
+  color_state->glBegin().emplace_back([shader_info, color]() {
+    GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]));
+    GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0));
   });
   vertex_array.states().emplace_back(std::move(color_state));
 }
