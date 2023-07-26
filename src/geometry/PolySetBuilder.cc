@@ -26,7 +26,19 @@
 
 #include "PolySetBuilder.h"
 #include <PolySet.h>
+#include "Geometry.h"
+#include "cgalutils.h"
 
+
+#include <memory>
+
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#endif
+
+
+#include "CGAL_Nef_polyhedron.h"
+#include "CGALHybridPolyhedron.h"
 
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
 {
@@ -52,6 +64,38 @@ void PolySetBuilder::append_poly(const std::vector<int> &inds)
   ps->indices.push_back(inds);        
   ps->dirty = true;
 }
+
+void PolySetBuilder::append_geometry(const shared_ptr<const Geometry>& geom)
+{
+  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+    for (const Geometry::GeometryItem& item : geomlist->getChildren()) {
+      append_geometry(item.second);
+    }
+  } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+    PolySet ps(3);
+    bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
+    if (err) {
+      LOG(message_group::Error, "Nef->PolySet failed");
+    } else {
+      append(&ps);
+    }
+  } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+    append(ps.get());
+  } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+    // TODO(ochafik): Implement append_geometry(Surface_mesh) instead of converting to PolySet
+    append(hybrid->toPolySet().get());
+#ifdef ENABLE_MANIFOLD
+  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+   append(mani->toPolySet().get());
+#endif
+  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
+    assert(false && "Unsupported file format");
+  } else { // NOLINT(bugprone-branch-clone)
+    assert(false && "Not implemented");
+  }
+
+}
+
 
 void PolySetBuilder::append_poly(const std::vector<Vector3d> &v)
 {
@@ -80,7 +124,7 @@ int PolySetBuilder::numVertices(void) {
 	return allVertices.size();
 }
 
-void PolySetBuilder::append(PolySet *ps)
+void PolySetBuilder::append(const PolySet *ps)
 {
   for(const auto &poly : ps->indices) {
     append_poly(poly.size());

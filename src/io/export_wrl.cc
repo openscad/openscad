@@ -27,13 +27,15 @@
 
 #ifdef ENABLE_CGAL
 #include "PolySet.h"
-#include "PolySetUtils.h"
+#include "PolySetBuilder.h"
 
 
 void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  auto ps = PolySetUtils::convert_polyset(geom);
-
+  PolySetBuilder builder;
+  builder.append_geometry(geom);
+  auto *ps = builder.result();
+	
   output << "#VRML V2.0 utf8\n\n";
 
   output << "Shape {\n\n";

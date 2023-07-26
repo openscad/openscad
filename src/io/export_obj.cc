@@ -29,12 +29,14 @@
 
 #ifdef ENABLE_CGAL
 
-#include "PolySetUtils.h"
+#include "PolySetBuilder.h"
 #include "PolySet.h"
 
 void export_obj(const shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  auto  ps = PolySetUtils::convert_polyset(geom);
+  PolySetBuilder builder;
+  builder.append_geometry(geom);
+  auto *ps = builder.result();
 
   output << "# OpenSCAD obj exporter\n";
 

@@ -30,12 +30,13 @@
 #ifdef ENABLE_CGAL
 
 #include "PolySet.h"
-#include "PolySetUtils.h"
+#include "PolySetBuilder.h"
 
 void export_off(const shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  auto ps = PolySetUtils::convert_polyset(geom);
-
+  PolySetBuilder builder;
+  builder.append_geometry(geom);
+  auto *ps = builder.result();
 
   output << "OFF " << ps->vertices.size() << " " << ps->indices.size() << " 0\n";
   const auto& v = ps->vertices;

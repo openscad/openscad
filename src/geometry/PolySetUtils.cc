@@ -8,15 +8,6 @@
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #endif
-#include <memory>
-
-#ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
-#endif
-
-
-#include "CGAL_Nef_polyhedron.h"
-#include "CGALHybridPolyhedron.h"
 
 namespace PolySetUtils {
 
@@ -138,49 +129,5 @@ bool is_approximately_convex(const PolySet& ps) {
   return false;
 #endif
 }
-PolySet  convert_polyset_sub(const shared_ptr<const Geometry>& geom)
-{
-  PolySet ps(3);
-  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
-    PolySetBuilder builder;
-    for (const Geometry::GeometryItem& item : geomlist->getChildren()) {
-      PolySet ps_sub = convert_polyset_sub(item.second);
-      builder.append(&ps_sub);
-    }
-    ps.reset(builder.result());
-    return ps;
-  } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-    bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
-    if (err) {
-      LOG(message_group::Error, "Nef->PolySet failed");
-    } else {
-     return ps;
-    }
-  } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
-    return *ps;
-  } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    // TODO(ochafik): Implement append_geometry(Surface_mesh) instead of converting to PolySet
-    const PolySet *psp =hybrid->toPolySet().get();
-    return *psp;
-#ifdef ENABLE_MANIFOLD
-  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-    const PolySet *psp = mani->toPolySet().get();
-    return *psp;
-#endif
-  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
-    assert(false && "PolySet doesn't support 2D");
-  } else { // NOLINT(bugprone-branch-clone)
-    assert(false && "Not implemented");
-  }
-  return ps;
-}
-
-
-std::shared_ptr<PolySet>  convert_polyset(const shared_ptr<const Geometry>& geom)
-{
-	PolySet ps=convert_polyset_sub(geom);
-	return std::make_shared<PolySet>(ps);
-}
-
 
 } // namespace PolySetUtils
