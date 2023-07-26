@@ -227,7 +227,7 @@ bool is_approximately_convex(const PolySet& ps) {
   while (!facets_to_visit.empty()) {
     int f = facets_to_visit.front(); facets_to_visit.pop();
 
-    for (size_t i = 0; i < ps.indices[f].size(); ++i) { // TODO map stuff
+    for (size_t i = 0; i < ps.indices[f].size(); ++i) {
       int j = (i + 1) % ps.indices[f].size();
       auto it = edge_to_facet_map.find(Edge(ps.vertices[ps.indices[f][j]], ps.vertices[ps.indices[f][i]]));
       if (it == edge_to_facet_map.end()) return false; // Nonmanifold

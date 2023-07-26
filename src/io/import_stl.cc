@@ -65,7 +65,6 @@ static void read_stl_facet(std::ifstream& f, stl_facet& facet) {
 }
 
 PolySet *import_stl(const std::string& filename, const Location& loc) {
-//  std::unique_ptr<PolySet> p = std::make_unique<PolySet>(3);
 
   // Open file and position at the end
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -171,7 +170,7 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
           if (f.eof()) break;
           throw;
         }
-	int ind1,ind2,ind3;
+        int ind1,ind2,ind3;
         ind1=builder.vertexIndex(Vector3d(facet.data.x1, facet.data.y1, facet.data.z1));
         ind2=builder.vertexIndex(Vector3d(facet.data.x2, facet.data.y2, facet.data.z2));
         ind3=builder.vertexIndex(Vector3d(facet.data.x3, facet.data.y3, facet.data.z3));

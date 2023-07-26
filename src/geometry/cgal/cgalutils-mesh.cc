@@ -10,7 +10,7 @@
 namespace CGALUtils {
 
 template <class TriangleMesh>
-bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh) // TODO is this used ?
+bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
 {
   using GT = boost::graph_traits<TriangleMesh>;
   using vertex_descriptor = typename GT::vertex_descriptor;
@@ -24,17 +24,15 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh) // TODO is thi
 
   std::vector<vertex_descriptor> polygon;
 
-  std::unordered_map<Vector3d, vertex_descriptor> indices; // TODO remove this ?
+  std::vector<vertex_descriptor> indices;
+
+  for (const auto& p : ps.vertices) 
+        indices.push_back(mesh.add_vertex(vector_convert<typename TriangleMesh::Point>(p)));
 
   for (const auto& p : ps.indices) {
     polygon.clear();
-    for (auto& v : p) {
-      auto size_before = indices.size();
-      auto& index = indices[ps.vertices[v]];
-      if (size_before != indices.size()) {
-        index = mesh.add_vertex(vector_convert<typename TriangleMesh::Point>(ps.vertices[v]));
-      }
-      polygon.push_back(index);
+    for(const auto &i: p) {
+      polygon.push_back(indices[i]);	 
     }
     mesh.add_face(polygon);
   }
@@ -84,7 +82,7 @@ void copyMesh(
                  output.number_of_faces() + input.number_of_faces());
 
   std::vector<typename CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>>::Vertex_index> polygon;
-  std::unordered_map<typename InputMesh::Vertex_index, typename OutputMesh::Vertex_index> reindexer; // TODO remove this ?
+  std::unordered_map<typename InputMesh::Vertex_index, typename OutputMesh::Vertex_index> reindexer;
   for (auto face : input.faces()) {
     polygon.clear();
 

@@ -91,6 +91,7 @@ void PolySetBuilder::append(PolySet *ps)
 }
 void PolySetBuilder::reset(void) {
 }
+
 PolySet *PolySetBuilder::result(void)
 {
   ps->vertices = allVertices.getArray();

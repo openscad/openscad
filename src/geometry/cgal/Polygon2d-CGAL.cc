@@ -113,6 +113,7 @@ PolySet *Polygon2d::tessellate() const
 {
   PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
   PolySetBuilder builder(*this);
+
   Polygon2DCGAL::CDT cdt; // Uses a constrained Delaunay triangulator.
 
   try {

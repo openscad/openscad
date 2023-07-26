@@ -33,7 +33,7 @@
 void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   auto ps = PolySetUtils::convert_polyset(geom);
-  	
+
   output << "#VRML V2.0 utf8\n\n";
 
   output << "Shape {\n\n";
@@ -64,12 +64,12 @@ void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output)
   output << "coordIndex [\n";
   const size_t numindices = ps->indices.size();
   for (size_t i = 0; i < numindices; ++i) {
-     const auto &poly=ps->indices[i];	  
-     for(int j=0;j<poly.size();j++) {
-       output << poly[i];
-       if (i < poly.size() - 1) output << ",";
-       output << "\n";
-     }	     
+    const auto &poly=ps->indices[i];
+    for(int j=0;j<poly.size();j++) {
+      output << poly[i];
+        if (i < poly.size() - 1) output << ",";
+      output << "\n";
+    }
   }
   output << "]\n\n";
 

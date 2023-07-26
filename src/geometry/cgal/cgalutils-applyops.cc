@@ -166,7 +166,7 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
 {
   using K = CGAL::Epick;
   // Collect point cloud
-  Reindexer<K::Point_3> reindexer; // TODO improve here ?
+  Reindexer<K::Point_3> reindexer;
 
   auto addCapacity = [&](const auto n) {
     reindexer.reserve(reindexer.size() + n);
@@ -209,7 +209,7 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
     }
   }
 
-  const auto &points = reindexer.getArray(); // TODO fix
+  const auto &points = reindexer.getArray();
   if (points.size() <= 3) return false;
 
   // Apply hull

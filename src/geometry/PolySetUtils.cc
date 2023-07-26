@@ -57,7 +57,7 @@ Polygon2d *project(const PolySet& ps) {
    polyset has simple polygon faces with no holes.
    The tessellation will be robust wrt. degenerate and self-intersecting
  */
-void tessellate_faces(const PolySet& inps, PolySet& outps) // TODO use indexed version instead ?
+void tessellate_faces(const PolySet& inps, PolySet& outps)
 {
   int degeneratePolygons = 0;
 
@@ -103,7 +103,6 @@ void tessellate_faces(const PolySet& inps, PolySet& outps) // TODO use indexed v
 
   // Estimate how many polygons we will need and preallocate.
   // This is usually an undercount, but still prevents a lot of reallocations.
-
   PolySetBuilder builder(verts.size(),polygons.size());
   for(int i=0;i<verts.size();i++)
     builder.vertexIndex({verts[i][0],verts[i][1],verts[i][2]});
@@ -113,7 +112,6 @@ void tessellate_faces(const PolySet& inps, PolySet& outps) // TODO use indexed v
     if (faces[0].size() == 3) {
       // trivial case - triangles cannot be concave or have holes
        builder.append_poly({faces[0][0],faces[0][1],faces[0][2]});
-
     }
     // Quads seem trivial, but can be concave, and can have degenerate cases.
     // So everything more complex than triangles goes into the general case.
@@ -140,8 +138,6 @@ bool is_approximately_convex(const PolySet& ps) {
   return false;
 #endif
 }
-
-
 PolySet  convert_polyset_sub(const shared_ptr<const Geometry>& geom)
 {
   PolySet ps(3);

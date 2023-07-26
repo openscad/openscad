@@ -115,7 +115,7 @@ public:
     Reindexer<Vector3d> vertices;
     std::vector<size_t> indices(3);
 
-    // Estimating same # of vertices as indices (very rough)
+    // Estimating same # of vertices as polygons (very rough)
     B.begin_surface(ps.indices.size(), ps.indices.size());
     int pidx = 0;
 #ifdef GEN_SURFACE_DEBUG
@@ -285,6 +285,7 @@ bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps)
   using Vertex = typename Polyhedron::Vertex;
   using FCI = typename Polyhedron::Facet_const_iterator;
   using HFCC = typename Polyhedron::Halfedge_around_facet_const_circulator;
+
   PolySetBuilder builder(0,p.size_of_facets());
 
   for (FCI fi = p.facets_begin(); fi != p.facets_end(); ++fi) {

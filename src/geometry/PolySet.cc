@@ -127,7 +127,7 @@ void PolySet::resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& a
    neighboring grids.
    May reduce the number of polygons if polygons collapse into < 3 vertices.
  */
-void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut) // TODO is this needed ?
+void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
 {
   Grid3d<unsigned int> grid(GRID_FINE);
   std::vector<unsigned int> indices; // Vertex indices in one polygon
