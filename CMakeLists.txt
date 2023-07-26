@@ -850,6 +850,7 @@ else()
     src/glview/VertexArray.cc
     src/glview/VBORenderer.cc
     src/glview/GLView.cc
+    src/glview/VertexStateManager.cc
     src/glview/glew-utils.cc
     src/glview/OffscreenView.cc
     src/glview/cgal/CGALRenderer.cc

@@ -54,10 +54,10 @@ public:
                              double z_offset = 0, size_t shape_size = 0,
                              size_t shape_dimensions = 0, bool outlines = false,
                              bool mirror = false) const;
+  void add_shader_pointers(VertexArray& vertex_array); // This could stay protected, were it not for VertexStateManager
 
 protected:
   void add_shader_data(VertexArray& vertex_array);
-  void add_shader_pointers(VertexArray& vertex_array);
   void shader_attribs_enable() const;
   void shader_attribs_disable() const;
 
