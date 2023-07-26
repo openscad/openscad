@@ -147,15 +147,15 @@ void CGALRenderer::createPolySets()
   vertex_array.addSurfaceData();
 
 
-  size_t vertices_size = 0;
+  size_t num_vertices = 0;
   if (this->polysets.size()) {
     for (const auto& polyset : this->polysets) {
-      vertices_size += getSurfaceBufferSize(*polyset);
-      vertices_size += getEdgeBufferSize(*polyset);
+      num_vertices += getSurfaceBufferSize(*polyset);
+      num_vertices += getEdgeBufferSize(*polyset);
     }
   }
 
-  vsm.initializeSize(vertices_size);
+  vsm.initializeSize(num_vertices);
 
   for (const auto& polyset : this->polysets) {
     Color4f color;
