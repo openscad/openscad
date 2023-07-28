@@ -6,13 +6,13 @@
 
 find_package(PkgConfig REQUIRED QUIET)
 
-pkg_check_modules(PC_CRYPTOPP QUIET libcrypto++>=5.6.0)
+pkg_check_modules(PC_CRYPTOPP cryptopp>=5.6.0) 
 
-find_path(CRYPTOPP_INCLUDE_DIRS NAMES crypto++/sha.h
+find_path(CRYPTOPP_INCLUDE_DIRS NAMES cryptopp/sha.h
   HINTS ${PC_CRYPTOPP_INCLUDE_DIRS} ${PC_CRYPTOPP_INCLUDEDIR}
 )
 
-find_library(CRYPTOPP_LIBRARIES NAMES crypto++
+find_library(CRYPTOPP_LIBRARIES NAMES cryptopp
   HINTS ${PC_CRYPTOPP_LIBRARY_DIRS} ${PC_CRYPTOPP_LIBDIR}
 )
 
@@ -21,4 +21,4 @@ set(CryptoPP_LIBRARIES ${PC_CRYPTOPP_LIBRARIES})
 set(CryptoPP_INCLUDE_DIRS ${PC_CRYPTOPP_INCLUDE_DIRS})
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(CryptoPP DEFAULT_MSG CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIBRARIES)
+find_package_handle_standard_args(CryptoPP DEFAULT_MSG CRYPTOPP_INCLUDE_DIRS CryptoPP_LIBRARIES)
