@@ -691,13 +691,21 @@ bool TabManager::saveAs(EditorInterface *edt)
   assert(edt != nullptr);
 
   const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
-  auto filename = QFileDialog::getSaveFileName(par, _("Save File"), dir, QString("%1;;%2").arg(_("OpenSCAD Designs (*.scad *.csg)"), _("Python OpenSCAD Designs (*.py)")));
+  QString selectedFilter;
+  QString pythonFilter = _("Python OpenSCAD Designs (*.py)");
+  auto filename = QFileDialog::getSaveFileName(par, _("Save File"), dir, QString("%1;;%2").arg(_("OpenSCAD Designs (*.scad *.csg)"), pythonFilter), &selectedFilter);
   if (filename.isEmpty()) {
     return false;
   }
 
   if (QFileInfo(filename).suffix().isEmpty()) {
-    filename.append(".scad");
+    // Check if the user selected the Python filter
+    if (selectedFilter == pythonFilter) {
+        filename.append(".py");
+    } else {
+        // For other cases, use .scad as the default extension
+        filename.append(".scad");
+    }
 
     // Manual overwrite check since Qt doesn't do it, when using the
     // defaultSuffix property
@@ -722,13 +730,19 @@ bool TabManager::saveACopy(EditorInterface *edt)
   assert(edt != nullptr);
 
   const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
-  auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, QString("%1;;%2").arg(_("OpenSCAD Designs (*.scad *.csg)"), _("Python OpenSCAD Designs (*.py)")));
+  QString selectedFilter;
+  QString pythonFilter = _("Python OpenSCAD Designs (*.py)");
+  auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, QString("%1;;%2").arg(_("OpenSCAD Designs (*.scad *.csg)"), pythonFilter), &selectedFilter);
   if (filename.isEmpty()) {
     return false;
   }
 
   if (QFileInfo(filename).suffix().isEmpty()) {
-    filename.append(".scad");
+      if (selectedFilter == pythonFilter) {
+          filename.append(".py");
+      } else {
+          filename.append(".scad");
+      }
   }
 
   return save(edt, filename);
