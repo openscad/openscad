@@ -368,7 +368,7 @@ int cmdline(const CommandLine& cmd)
   auto output_dir = fs::path(cmd.output_file).parent_path();
   if (output_dir.empty()) {
     // If output_file_str has no directory prefix, set output directory to current directory.
-      output_dir = fs::current_path();
+    output_dir = fs::current_path();
   }
   if (!fs::is_directory(output_dir)) {
     LOG("\n'%1$s' is not a directory for output file %2$s - Skipping\n", output_dir.generic_string(), cmd.output_file);
@@ -732,6 +732,20 @@ void registerDefaultIcon(QString applicationFilePath) {
 void registerDefaultIcon(const QString&) { }
 #endif
 
+void assertValidPath()
+{
+#ifndef __WIN32
+  boost::system::error_code ec{};
+  auto current_path = fs::current_path(ec);
+
+  while(ec.value() != 0)
+  {
+      fs::current_path(fs::path(".."));
+      current_path = fs::current_path(ec);
+  }
+#endif
+}
+
 int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, char **argv)
 {
   OpenSCADApp app(argc, argv);
@@ -920,30 +934,20 @@ int main(int argc, char **argv)
   init_mimalloc();
 #endif
 
+  assertValidPath();
+
   int rc = 0;
   StackCheck::inst();
-  std::cout << "Before crash\n";
-  boost::system::error_code ec{};
-  auto current_path = fs::current_path(ec);
-
-  while(ec.value() != 0)
-  {
-      fs::current_path(fs::path(".."));
-      current_path = fs::current_path(ec);
-      std::cout <<"Path: " <<  current_path.string() << " -- Error code: " << ec << "\n";
-  }
-
 
 #ifdef OPENSCAD_QTGUI
   { // Need a dummy app instance to get the application path but it needs to be destroyed before the GUI is launched.
     QCoreApplication app(argc, argv);
-
     PlatformUtils::registerApplicationPath(app.applicationDirPath().toLocal8Bit().constData());
   }
 #else
   PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
 #endif
-std::cout << "Opening 1\n";
+
 #ifdef Q_OS_MAC
   bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
   auto nslog = [](const Message& msg, void *userdata) {
