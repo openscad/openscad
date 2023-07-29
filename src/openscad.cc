@@ -732,7 +732,7 @@ void registerDefaultIcon(QString applicationFilePath) {
 void registerDefaultIcon(const QString&) { }
 #endif
 
-void assertValidPath()
+static void assertValidPath()
 {
 #ifndef __WIN32
   boost::system::error_code ec{};
