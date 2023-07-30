@@ -741,7 +741,7 @@ bool TabManager::saveACopy(EditorInterface *edt)
 #ifdef ENABLE_PYTHON
   QString selectedFilter;
   QString pythonFilter = _("Python OpenSCAD Designs (*.py)");
-  auto filename = QFileDialog::getSaveFileName(par, _("Save File"), dir, QString("%1;;%2").arg(_("OpenSCAD Designs (*.scad *.csg)"), pythonFilter), &selectedFilter);
+  auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, QString("%1;;%2").arg(_("OpenSCAD Designs (*.scad *.csg)"), pythonFilter), &selectedFilter);
 #else
   auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, _("OpenSCAD Designs (*.scad)"));
 #endif
