@@ -62,12 +62,12 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
     VertexStateManager vsm(*this, vertex_array);
 
     
-    size_t vertices_size = 0;
-    if (this->root_products) vertices_size += (getSurfaceBufferSize(this->root_products, false, false, true) * 2);
-    if (this->background_products) vertices_size += getSurfaceBufferSize(this->background_products, false, true, true);
-    if (this->highlight_products) vertices_size += getSurfaceBufferSize(this->highlight_products, true, false, true);
+    size_t num_vertices = 0;
+    if (this->root_products) num_vertices += (getSurfaceBufferSize(this->root_products, false, false, true) * 2);
+    if (this->background_products) num_vertices += getSurfaceBufferSize(this->background_products, false, true, true);
+    if (this->highlight_products) num_vertices += getSurfaceBufferSize(this->highlight_products, true, false, true);
 
-    vsm.initializeSize(vertices_size);
+    vsm.initializeSize(num_vertices);
 
     if (this->root_products) createCSGProducts(*this->root_products, vertex_array, false, false);
     if (this->background_products) createCSGProducts(*this->background_products, vertex_array, false, true);

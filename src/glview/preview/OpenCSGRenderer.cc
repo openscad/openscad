@@ -171,19 +171,19 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
     vertex_array.writeSurface();
     add_shader_data(vertex_array);
 
-    size_t vertices_size = 0;
+    size_t num_vertices = 0;
     for (const auto& csgobj : product.intersections) {
       if (csgobj.leaf->geom) {
-        vertices_size += getSurfaceBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION);
+        num_vertices += getSurfaceBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION);
       }
     }
     for (const auto& csgobj : product.subtractions) {
       if (csgobj.leaf->geom) {
-        vertices_size += getSurfaceBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
+        num_vertices += getSurfaceBufferSize(csgobj, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
       }
     }
 
-    vsm.initializeSize(vertices_size, all_vbos_, vbo_index);
+    vsm.initializeSize(num_vertices, all_vbos_, vbo_index);
 
     for (const auto& csgobj : product.intersections) {
       if (csgobj.leaf->geom) {
