@@ -908,6 +908,11 @@ void ScintillaEditor::uncommentSelection()
       qsci->setSelection(line, 0, line, 2);
       qsci->removeSelectedText();
     }
+    // Handles the case where there's a comment without space
+    else if (commentString == "# " && lineText.startsWith("#")) {
+      qsci->setSelection(line, 0, line, 1);
+      qsci->removeSelectedText();
+    }
   }
   if (hasSelection) {
     qsci->setSelection(lineFrom, 0, lineTo, std::max(0, qsci->lineLength(lineTo) - 1));
