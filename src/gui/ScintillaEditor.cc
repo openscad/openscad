@@ -873,11 +873,10 @@ void ScintillaEditor::unindentSelection()
 
 void ScintillaEditor::commentSelection()
 {
-  auto commentString = "//";
   #ifdef ENABLE_PYTHON
-  if (mainWindow.python_active) {
-    commentString = "#";
-  }
+  const auto commentString = mainWindow.python_active ? "#" : "//";
+  #else
+  const auto commentString = "//";
   #endif
   auto hasSelection = qsci->hasSelectedText();
 
@@ -894,11 +893,10 @@ void ScintillaEditor::commentSelection()
 
 void ScintillaEditor::uncommentSelection()
 {
-  auto commentString = "//";
   #ifdef ENABLE_PYTHON
-  if (mainWindow.python_active) {
-    commentString = "#";
-  }
+  const auto commentString = mainWindow.python_active ? "#" : "//";
+  #else
+  const auto commentString = "//";
   #endif
   auto hasSelection = qsci->hasSelectedText();
 
