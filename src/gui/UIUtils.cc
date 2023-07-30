@@ -42,8 +42,13 @@ QFileInfo UIUtils::openFile(QWidget *parent)
 {
   QSettingsCached settings;
   QString last_dirname = settings.value("lastOpenDirName").toString();
+#ifdef ENABLE_PYTHON
   QString new_filename = QFileDialog::getOpenFileName(parent, "Open File",
                                                       last_dirname, "OpenSCAD Designs (*.scad *.csg);;Python OpenSCAD Designs (*.py)");
+#else
+  QString new_filename = QFileDialog::getOpenFileName(parent, "Open File",
+                                                      last_dirname, "OpenSCAD Designs (*.scad *.csg)");
+#endif
 
   if (new_filename.isEmpty()) {
     return {};
@@ -60,8 +65,13 @@ QFileInfoList UIUtils::openFiles(QWidget *parent)
 {
   QSettingsCached settings;
   QString last_dirname = settings.value("lastOpenDirName").toString();
+#ifdef ENABLE_PYTHON
   QStringList new_filenames = QFileDialog::getOpenFileNames(parent, "Open File",
                                                             last_dirname, "OpenSCAD Designs (*.scad *.csg);;Python OpenSCAD Designs (*.py)");
+#else
+  QStringList new_filenames = QFileDialog::getOpenFileNames(parent, "Open File",
+                                                            last_dirname, "OpenSCAD Designs (*.scad *.csg)");
+#endif
 
   QFileInfoList fileInfoList;
   for (const QString& filename: new_filenames) {

@@ -691,7 +691,11 @@ bool TabManager::saveAs(EditorInterface *edt)
   assert(edt != nullptr);
 
   const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
+#ifdef ENABLE_PYTHON
   auto filename = QFileDialog::getSaveFileName(par, _("Save File"), dir, QString(_("OpenSCAD Designs (*.scad *.csg)"))+";;"+QString(_("Python OpenSCAD Designs (*.py)")));
+#else
+  auto filename = QFileDialog::getSaveFileName(par, _("Save File"), dir, _("OpenSCAD Designs (*.scad)"));
+#endif
   if (filename.isEmpty()) {
     return false;
   }
@@ -722,7 +726,11 @@ bool TabManager::saveACopy(EditorInterface *edt)
   assert(edt != nullptr);
 
   const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
+#ifdef ENABLE_PYTHON
   auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, QString(_("OpenSCAD Designs (*.scad *.csg)"))+";;"+QString(_("Python OpenSCAD Designs (*.py)")));
+#else
+  auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, _("OpenSCAD Designs (*.scad)"));
+#endif
   if (filename.isEmpty()) {
     return false;
   }
