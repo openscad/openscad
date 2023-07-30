@@ -874,7 +874,7 @@ void ScintillaEditor::unindentSelection()
 void ScintillaEditor::commentSelection()
 {
   #ifdef ENABLE_PYTHON
-  const auto commentString = mainWindow.python_active ? "#" : "//";
+  const auto commentString = mainWindow.python_active ? "# " : "//";
   #else
   const auto commentString = "//";
   #endif
@@ -894,7 +894,7 @@ void ScintillaEditor::commentSelection()
 void ScintillaEditor::uncommentSelection()
 {
   #ifdef ENABLE_PYTHON
-  const auto commentString = mainWindow.python_active ? "#" : "//";
+  const auto commentString = mainWindow.python_active ? "# " : "//";
   #else
   const auto commentString = "//";
   #endif
