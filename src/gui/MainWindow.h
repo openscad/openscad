@@ -386,6 +386,9 @@ private:
 signals:
   void highlightError(int);
   void unhighlightLastError();
+  #ifdef ENABLE_PYTHON
+  void pythonActiveChanged(bool pythonActive);
+  #endif
 };
 
 class GuiLocker

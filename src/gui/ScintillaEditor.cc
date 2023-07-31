@@ -224,6 +224,10 @@ ScintillaEditor::ScintillaEditor(QWidget *parent, MainWindow &mainWindow) : Edit
 
   // Disabling buffered drawing resolves non-integer HiDPI scaling.
   qsci->SendScintilla(QsciScintillaBase::SCI_SETBUFFEREDDRAW, false);
+
+#ifdef ENABLE_PYTHON
+  connect(&this->mainWindow, &MainWindow::pythonActiveChanged, this, &ScintillaEditor::onPythonActiveChanged);
+#endif
 }
 
 QPoint ScintillaEditor::mapToGlobal(const QPoint& pos)
@@ -481,6 +485,11 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     newLexer->setFont(font);
     newLexer->setColor(textColor);
     newLexer->setPaper(paperColor);
+#ifdef ENABLE_PYTHON
+    this->pythonLexer->setFont(font);
+    this->pythonLexer->setColor(textColor);
+    this->pythonLexer->setPaper(paperColor);
+#endif
 
     const auto& colors = pt.get_child("colors");
 
@@ -530,6 +539,11 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     newLexer->setFont(font);
     newLexer->setColor(textColor);
     newLexer->setPaper(paperColor);
+#ifdef ENABLE_PYTHON
+    this->pythonLexer->setFont(font);
+    this->pythonLexer->setColor(textColor);
+    this->pythonLexer->setPaper(paperColor);
+#endif
 
     const auto& colors = pt.get_child("colors");
     newLexer->setColor(readColor(colors, "keyword1", textColor), QsciLexerCPP::Keyword);
@@ -584,6 +598,10 @@ void ScintillaEditor::noColor()
 {
   this->lexer->setPaper(Qt::white);
   this->lexer->setColor(Qt::black);
+#ifdef ENABLE_PYTHON
+  this->pythonLexer->setPaper(Qt::white);
+  this->pythonLexer->setColor(Qt::black);
+#endif
   qsci->setCaretWidth(2);
   qsci->setCaretForegroundColor(Qt::black);
   qsci->setMarkerBackgroundColor(QColor(255, 0, 0, 100), errMarkerNumber);
@@ -718,6 +736,9 @@ void ScintillaEditor::initFont(const QString& fontName, uint size)
   this->currentFont = QFont(fontName, size);
   this->currentFont.setFixedPitch(true);
   this->lexer->setFont(this->currentFont);
+#ifdef ENABLE_PYTHON
+  this->pythonLexer->setFont(this->currentFont);
+#endif
   qsci->setMarginsFont(this->currentFont);
   onTextChanged(); // Update margin width
 }
@@ -1388,6 +1409,16 @@ void ScintillaEditor::onIndicatorReleased(int line, int col, Qt::KeyboardModifie
     }
   }
 }
+
+#ifdef ENABLE_PYTHON
+void ScintillaEditor::onPythonActiveChanged(bool pythonActive) {
+    if (pythonActive) {
+        this->qsci->setLexer(this->pythonLexer);
+    } else {
+        this->qsci->setLexer(this->lexer);
+    }
+}
+#endif
 
 void ScintillaEditor::setCursorPosition(int line, int col)
 {

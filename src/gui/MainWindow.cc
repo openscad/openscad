@@ -1901,6 +1901,7 @@ void MainWindow::parseTopLevelDocument()
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
   delete this->parsed_file;
 #ifdef ENABLE_PYTHON
+  bool oldPythonActive = this->python_active;
   this->python_active = false;
   if (fname != NULL) {
     if(boost::algorithm::ends_with(fname, ".py")) {
@@ -1910,6 +1911,10 @@ void MainWindow::parseTopLevelDocument()
 		&& trust_python_file(std::string(fname), content)) this->python_active = true;
       else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
     }
+  }
+
+  if (oldPythonActive != this->python_active) {
+    emit this->pythonActiveChanged(this->python_active);
   }
 
   if (this->python_active) {
