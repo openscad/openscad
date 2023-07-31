@@ -873,11 +873,10 @@ void ScintillaEditor::unindentSelection()
 
 void ScintillaEditor::commentSelection()
 {
-  auto commentString = "//";
   #ifdef ENABLE_PYTHON
-  if (mainWindow.python_active) {
-    commentString = "#";
-  }
+  const auto commentString = mainWindow.python_active ? "# " : "//";
+  #else
+  const auto commentString = "//";
   #endif
   auto hasSelection = qsci->hasSelectedText();
 
@@ -894,11 +893,10 @@ void ScintillaEditor::commentSelection()
 
 void ScintillaEditor::uncommentSelection()
 {
-  auto commentString = "//";
   #ifdef ENABLE_PYTHON
-  if (mainWindow.python_active) {
-    commentString = "#";
-  }
+  const auto commentString = mainWindow.python_active ? "# " : "//";
+  #else
+  const auto commentString = "//";
   #endif
   auto hasSelection = qsci->hasSelectedText();
 
@@ -908,6 +906,11 @@ void ScintillaEditor::uncommentSelection()
     QString lineText = qsci->text(line);
     if (lineText.startsWith(commentString)) {
       qsci->setSelection(line, 0, line, 2);
+      qsci->removeSelectedText();
+    }
+    // Handles the case where there's a comment without space
+    else if (commentString == "# " && lineText.startsWith("#")) {
+      qsci->setSelection(line, 0, line, 1);
       qsci->removeSelectedText();
     }
   }
