@@ -1886,21 +1886,13 @@ bool MainWindow::trust_python_file(const std::string &file,  const std::string &
   return false;
 }
 #endif
-	
-void MainWindow::parseTopLevelDocument()
+
+#ifdef ENABLE_PYTHON
+void MainWindow::recomputePythonActive()
 {
-  resetSuppressedMessages();
-
-  this->last_compiled_doc = activeEditor->toPlainText();
-
-  auto fulltext =
-    std::string(this->last_compiled_doc.toUtf8().constData()) +
-    "\n\x03\n" + commandline_commands;
-
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
-  delete this->parsed_file;
-#ifdef ENABLE_PYTHON
+
   bool oldPythonActive = this->python_active;
   this->python_active = false;
   if (fname != NULL) {
@@ -1916,7 +1908,24 @@ void MainWindow::parseTopLevelDocument()
   if (oldPythonActive != this->python_active) {
     emit this->pythonActiveChanged(this->python_active);
   }
+}
+#endif
 
+void MainWindow::parseTopLevelDocument()
+{
+  resetSuppressedMessages();
+
+  this->last_compiled_doc = activeEditor->toPlainText();
+
+  auto fulltext =
+    std::string(this->last_compiled_doc.toUtf8().constData()) +
+    "\n\x03\n" + commandline_commands;
+
+  auto fnameba = activeEditor->filepath.toLocal8Bit();
+  const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
+  delete this->parsed_file;
+#ifdef ENABLE_PYTHON
+  recomputePythonActive();
   if (this->python_active) {
     auto fulltext_py =
       std::string(this->last_compiled_doc.toUtf8().constData());
