@@ -849,17 +849,17 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
 
   get_fnas(fn,fa,fs);
 
-  char *kwlist[] = {"obj", "layer", "convexity", "scale", "fn", "fa", "fs", NULL};
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|siddO!ddd", kwlist,
+  char *kwlist[] = {"obj", "layer", "convexity", "scale", "angle", "fn", "fa", "fs", "origin", NULL};
+
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|sidddddO", kwlist,
                                    &obj,
                                    &layer,
                                    &convexity,
                                    &scale,
                                    &angle,
-                                   &PyList_Type,
-                                   &origin,
-                                   &fn, &fa, &fs
+                                   &fn, &fa, &fs,
+                                   &origin
                                    )) {
 
     PyErr_SetString(PyExc_TypeError, "error duing parsing rotate_extrude");
@@ -876,6 +876,7 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   if (!isnan(fn)) node->fn = fn;
   if (!isnan(fa)) node->fa = fa;
   if (!isnan(fs)) node->fs = fs;
+  printf("t %f\n",fn);
 
   if (layer != NULL) node->layername = layer;
   node->convexity = convexity;
