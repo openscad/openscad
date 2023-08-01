@@ -488,6 +488,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
   #ifdef ENABLE_PYTHON
     this->pythonLexer->setFont(font);
     this->pythonLexer->setColor(textColor);
+    this->pythonLexer->setDefaultPaper(paperColor);
     this->pythonLexer->setPaper(paperColor);
   #endif
 
@@ -561,7 +562,7 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
 #endif  // ENABLE_LEXERTL
 
 #ifdef ENABLE_PYTHON
-  // colors is garanteed to have been defined earlier
+  // colors is guaranteed to have been defined earlier
 
   this->pythonLexer->setColor(readColor(colors, "comment", textColor), QsciLexerPython::Comment);
   this->pythonLexer->setColor(readColor(colors, "number", textColor), QsciLexerPython::Number);
