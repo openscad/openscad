@@ -478,7 +478,13 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     }
 
     newLexer->finalizeLexer();
+  #ifdef ENABLE_PYTHON
+  if (!mainWindow.python_active) {
     setLexer(newLexer);
+  }
+  #else
+    setLexer(newLexer);
+  #endif
 
     // All other properties must be set after attaching to QSCintilla so
     // the editor gets the change events and updates itself to match
@@ -533,7 +539,13 @@ void ScintillaEditor::setColormap(const EditorColorScheme *colorScheme)
     // See https://github.com/openscad/openscad/issues/1172 for details about why we can't do syntax coloring with # lines
     newLexer->setStylePreprocessor(true); // does not work on first word, but allows remaining words to be syntax colored
 
+  #ifdef ENABLE_PYTHON
+  if (!mainWindow.python_active) {
     setLexer(newLexer);
+  }
+  #else
+    setLexer(newLexer);
+  #endif
 
     // All other properties must be set after attaching to QSCintilla so
     // the editor gets the change events and updates itself to match
