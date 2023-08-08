@@ -23,36 +23,48 @@ cylinder r must be positive in line 42
 cylinder r must be positive in line 43
 error duing parsing cylinder in line 44
 error duing parsing cylinder in line 45
-error duing parsing polyhedron in line 48
-error duing parsing square in line 51
-error duing parsing circle in line 54
-error duing parsing polygon in line 57
-error duing parsing scale in line 60
-error duing parsing rotate in line 66
-error duing parsing mirror in line 72
-error duing parsing translate in line 78
-error duing parsing multmatrix in line 84
-error duing parsing output in line 90
-error duing parsing cube in line 96
-error duing parsing cube in line 99
-error duing parsing cube in line 102
-error duing parsing rotate_extrude in line 108
-error duing parsing linear_extrude in line 114
-error duing parsing cube in line 120
-error duing parsing cube in line 126
-error duing parsing cube in line 129
-error duing parsing minkowski in line 132
-error duing parsing resize in line 135
-error duing parsing roof in line 138
+error duing parsing polyhedron, please specify at least points and faces lists in line 48
+error duing parsing polyhedron, please specify at least points and faces lists in line 49
+error duing parsing polyhedron, please specify at least points and faces lists in line 50
+there must at least be one point in line 51
+Coordinate must exactly contain 3 numbers in line 52
+Coordinate must exactly contain 3 numbers in line 53
+Coordinate must exactly contain 3 numbers in line 54
+error duing parsing polyhedron, please specify at least points and faces lists in line 55
+error duing parsing polyhedron, please specify at least points and faces lists in line 56
+must specify at least 1 face in line 57
+face must be a list of indices in line 58
+face must sepcify at least 3 indices in line 59
+error duing parsing polyhedron, please specify at least points and faces lists in line 60
+error duing parsing square in line 63
+error duing parsing circle in line 66
+error duing parsing polygon in line 69
+error duing parsing scale in line 72
+error duing parsing rotate in line 78
+error duing parsing mirror in line 84
+error duing parsing translate in line 90
+error duing parsing multmatrix in line 96
+error duing parsing output in line 102
+error duing parsing cube in line 108
+error duing parsing cube in line 111
+error duing parsing cube in line 114
+error duing parsing rotate_extrude in line 120
+error duing parsing linear_extrude in line 126
+error duing parsing cube in line 132
+error duing parsing cube in line 138
 error duing parsing cube in line 141
-error duing parsing render in line 144
-error duing parsing surface in line 150
-error duing parsing text in line 153
-error duing parsing textmetrics in line 156
-error duing parsing version in line 159
-error duing parsing version_num in line 162
-error duing parsing offset in line 165
-error duing parsing projection in line 171
-error duing parsing group in line 177
-error duing parsing osimport in line 180
+error duing parsing minkowski in line 144
+error duing parsing resize in line 147
+error duing parsing roof in line 150
+error duing parsing cube in line 153
+error duing parsing render in line 156
+error duing parsing surface in line 162
+error duing parsing text in line 165
+error duing parsing textmetrics in line 168
+error duing parsing version in line 171
+error duing parsing version_num in line 174
+error duing parsing offset in line 177
+error duing parsing projection in line 183
+error duing parsing group in line 189
+error duing parsing osimport in line 192
 

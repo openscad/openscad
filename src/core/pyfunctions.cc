@@ -250,11 +250,15 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &convexity,
                                    &PyList_Type, &triangles
                                    )) {
-	  PyErr_SetString(PyExc_TypeError, "error duing parsing polyhedron");
+	  PyErr_SetString(PyExc_TypeError, "error duing parsing polyhedron, please specify at least points and faces lists");
 	  return NULL;
   } 
 
   if (points != NULL && PyList_Check(points)) {
+    if(PyList_Size(points) == 0) {
+      PyErr_SetString(PyExc_TypeError, "there must at least be one point");
+      return NULL;
+    }
     for (i = 0; i < PyList_Size(points); i++) {
       element = PyList_GetItem(points, i);
       if (PyList_Check(element) && PyList_Size(element) == 3) {
@@ -262,9 +266,15 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
         point.y = PyFloat_AsDouble(PyList_GetItem(element, 1));
         point.z = PyFloat_AsDouble(PyList_GetItem(element, 2));
         node->points.push_back(point);
+      } else {
+        PyErr_SetString(PyExc_TypeError, "Coordinate must exactly contain 3 numbers");
+        return NULL;
       }
 
     }
+  } else {
+    PyErr_SetString(PyExc_TypeError, "points must be a list of coordinates");
+    return NULL;
   }
 
   if (triangles != NULL) {
@@ -273,20 +283,39 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
   if (faces != NULL && PyList_Check(faces) ) {
+    if(PyList_Size(faces) == 0) {
+      PyErr_SetString(PyExc_TypeError, "must specify at least 1 face");
+      return NULL;
+    }
     for (i = 0; i < PyList_Size(faces); i++) {
       element = PyList_GetItem(faces, i);
       if (PyList_Check(element)) {
         std::vector<size_t> face;
         for (j = 0; j < PyList_Size(element); j++) {
           pointIndex = PyLong_AsLong(PyList_GetItem(element, j));
+	  if(pointIndex < 0 || pointIndex >= node->points.size()) {
+    		PyErr_SetString(PyExc_TypeError, "point Index out of range");
+		    return NULL;
+	  }
           face.push_back(pointIndex);
         }
         if (face.size() >= 3) {
           node->faces.push_back(std::move(face));
-        }
+        } else {
+    	  PyErr_SetString(PyExc_TypeError, "face must sepcify at least 3 indices");
+  	  return NULL;
+	}
+
+      } else {
+    	PyErr_SetString(PyExc_TypeError, "face must be a list of indices");
+	return NULL;
       }
     }
+  } else {
+    PyErr_SetString(PyExc_TypeError, "faces must be a list of indices");
+    return NULL;
   }
+
 
   node->convexity = convexity;
   if (node->convexity < 1) node->convexity = 1;
