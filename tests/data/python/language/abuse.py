@@ -45,6 +45,18 @@ catch_error(lambda : cylinder(3,h=-5) )
 catch_error(lambda : cylinder(parx=4) )        
 
 # Test python_polyhedron
+catch_error(lambda : polyhedron(points="points", faces=[[1,2,3]]) )        
+catch_error(lambda : polyhedron(points=True, faces=[[1,2,3]]) )        
+catch_error(lambda : polyhedron(points=17, faces=[[1,2,3]]) )        
+catch_error(lambda : polyhedron(points=[], faces=[[1,2,3]]) )        
+catch_error(lambda : polyhedron(points=[1], faces=[[1,2,3]]) )        
+catch_error(lambda : polyhedron(points=[[1,2]], faces=[[1,2,3]]) )        
+catch_error(lambda : polyhedron(points=[[1,2,4,6]], faces=[[1,2,3]]) )        
+catch_error(lambda : polyhedron(faces=True, points=[[1,2,3]]) )        
+catch_error(lambda : polyhedron(faces=17, points=[[1,2,3]]) )        
+catch_error(lambda : polyhedron(faces=[], points=[[1,2,3]]) )        
+catch_error(lambda : polyhedron(faces=[0], points=[[1,2,3]]) )        
+catch_error(lambda : polyhedron(faces=[[0,0]], points=[[1,2,3]]) )        
 catch_error(lambda : polyhedron(parx=4) )        
 
 # Test python_square
