@@ -878,17 +878,16 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
 
   get_fnas(fn,fa,fs);
 
-  char *kwlist[] = {"obj", "layer", "convexity", "scale", "fn", "fa", "fs", NULL};
+  char *kwlist[] = {"obj", "layer", "convexity", "scale", "angle", "origin", "fn", "fa", "fs", NULL};
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|siddO!ddd", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|siddOddd", kwlist, 
                                    &obj,
                                    &layer,
                                    &convexity,
                                    &scale,
                                    &angle,
-                                   &PyList_Type,
                                    &origin,
-                                   &fn, &fa, &fs
+                                   &fn,&fa,&fs
                                    )) {
 
     PyErr_SetString(PyExc_TypeError, "error duing parsing rotate_extrude");
