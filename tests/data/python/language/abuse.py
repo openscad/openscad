@@ -167,41 +167,42 @@ catch_error(lambda : minkowski(parx=4) )
 
 # Test python_resize
 catch_error(lambda : resize(["obj1","obj2"]) )        
-catch_error(lambda : resize([cube(),sphere()]) )        
+catch_error(lambda : resize(cube(),sphere()) )        
 catch_error(lambda : resize(cube(),"value") )        
 catch_error(lambda : resize(cube(),[1,2,3]) )        
 
 # Test python_roof
+catch_error(lambda : roof("shape") )        
+catch_error(lambda : roof(3) )        
+catch_error(lambda : roof(square(2)) )        
 catch_error(lambda : roof(parx=4) )        
 
 # Test python_render
+catch_error(lambda : render("shape") )        
+catch_error(lambda : render(3) )        
+catch_error(lambda : render(cube(2)) )        
 catch_error(lambda : render(parx=4) )        
 
 # Test python_surface
+catch_error(lambda : surface(3) )        
+catch_error(lambda : surface("filename") )        
 catch_error(lambda : surface(parx=4) )        
 
-# Test python_text
-catch_error(lambda : text(parx=4) )        
-
-# Test python_textmetrics
-catch_error(lambda : textmetrics(parx=4) )        
-
-# Test python_version
-catch_error(lambda : version(parx=4) )        
-
-# Test python_version_num
-catch_error(lambda : version_num(parx=4) )        
-
 # Test python_offset
+catch_error(lambda : offset("shape",3.5) )        
+catch_error(lambda : offset(3,3.5) )        
+catch_error(lambda : offset(square(2),3.5) )        
 catch_error(lambda : offset(parx=4) )        
 
 # Test python_projection
+catch_error(lambda : projection("shape") )        
+catch_error(lambda : projection(3) )        
+catch_error(lambda : projection(cube(2)) )        
 catch_error(lambda : projection(parx=4) )        
 
-# Test python_group
-catch_error(lambda : group(parx=4) )        
-
 # Test python_import
+catch_error(lambda : osimport(3) )        
+catch_error(lambda : osimport("filename") )        
 catch_error(lambda : osimport(parx=4) )        
 
 

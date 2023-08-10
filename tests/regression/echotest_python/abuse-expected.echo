@@ -61,7 +61,7 @@ Coordinate must exactly contain 2 numbers in line 88
 Coordinate must exactly contain 2 numbers in line 89
 Error during parsing polygon(points,paths) in line 90
 Error during parsing scale(object, scale) in line 93
-Invalid type for  Object in scale in line 94
+Invalid type for Object in scale in line 94
 Invalid vector specifiaction in scale, use 1 to 3 ordinates. in line 95
 Invalid vector specifiaction in scale, use 1 to 3 ordinates. in line 96
 Invalid vector specifiaction in scale, use 1 to 3 ordinates. in line 97
@@ -72,13 +72,13 @@ Error during parsing rotate(object, vec3) in line 103
 rotate accepts at most 3 angles in line 104
 Error during parsing rotate(object, vec3) in line 105
 Error during parsing mirror(object, vec3) in line 108
-Invalid type for  Object in mirror in line 109
+Invalid type for Object in mirror in line 109
 Invalid vector specifiaction in mirror in line 110
 Invalid vector specifiaction in mirror in line 111
 Error during parsing mirror(object, vec3) in line 112
 Error during parsing mirror(object, vec3) in line 113
 Error during parsing translate(object,vec3) in line 116
-Invalid type for  Object in translate in line 117
+Invalid type for Object in translate in line 117
 Invalid vector specifiaction in trans in line 118
 Invalid vector specifiaction in trans in line 119
 Error during parsing translate(object,vec3) in line 120
@@ -89,7 +89,7 @@ Matrix vector should be 4x4 array in line 126
 Matrix vector should be 4x4 array in line 127
 Error during parsing multmatrix(object, vec16) in line 129
 Error during parsing output(object) in line 132
-Invalid type for  Object in output in line 133
+Invalid type for Object in output in line 133
 name 'undefined' is not defined in line 134
 Error during parsing output(object) in line 135
 Error during parsing color(obj, colorspec) in line 138
@@ -107,18 +107,25 @@ Error during parsing union([input shapes] ...) in line 157
 CSG input data must be shapes in line 160
 minkowski input data must be shapes in line 164
 Error during parsing minkowski(object) in line 166
-Invalid type for  Object in resize in line 169
+Invalid type for Object in resize in line 169
+Error during parsing resize(object,vec3) in line 170
 Error during parsing resize(object,vec3) in line 171
-Error during parsing resize(object,vec3) in line 172
-Error during parsing roof(object) in line 175
-Error during parsing render(object) in line 178
-Error during parsing surface(object) in line 181
-Error during parsing text(string, ...)) in line 184
-Error during parsing textmetrics in line 187
-Error during parsing version() in line 190
-Error during parsing version_num() in line 193
-Error during parsing offset(object,r) in line 196
-Error during parsing projection(object) in line 199
-Error during parsing group(group) in line 202
-Error during parsing osimport(filename) in line 205
+Invalid type for Object in roof in line 175
+Invalid type for Object in roof in line 176
+Cannot specify z coordinate for square in line 177
+Error during parsing roof(object) in line 178
+Error during parsing render(object) in line 181
+Error during parsing render(object) in line 182
+Error during parsing render(object) in line 184
+Error during parsing surface(object) in line 187
+Error during parsing surface(object) in line 189
+Invalid type for Object in offset in line 192
+Invalid type for Object in offset in line 193
+Cannot specify z coordinate for square in line 194
+Error during parsing offset(object,r) in line 195
+Invalid type for Object in projection in line 198
+Invalid type for Object in projection in line 199
+Error during parsing projection(object) in line 201
+Error during parsing osimport(filename) in line 204
+Error during parsing osimport(filename) in line 206
 

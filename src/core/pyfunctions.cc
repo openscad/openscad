@@ -511,10 +511,10 @@ PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Error during parsing scale(object, scale)");
     return NULL;
   }
-// TODO syntax angeben bei fehler
+  
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in scale");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in scale");
     return NULL;
   }
 
@@ -566,7 +566,7 @@ PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
 
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in rotate");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in rotate");
     return NULL;
   }
 
@@ -661,7 +661,7 @@ PyObject *python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
 
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in mirror");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in mirror");
     return NULL;
   }
 
@@ -719,7 +719,7 @@ PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in translate");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in translate");
     return NULL;
   }
 
@@ -763,7 +763,7 @@ PyObject *python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
 
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in multmatrix");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in multmatrix");
     return NULL;
   }
 
@@ -813,7 +813,7 @@ PyObject *python_output(PyObject *self, PyObject *args, PyObject *kwargs)
   }
   child = PyOpenSCADObjectToNodeMulti(object);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in output");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in output");
     return NULL;
   }
   python_result_node = child;
@@ -878,7 +878,7 @@ PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in color");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in color");
     return NULL;
   }
 
@@ -958,7 +958,7 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
 
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in rotate_extrude");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in rotate_extrude");
     return NULL;
   }
 
@@ -1036,7 +1036,7 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
 
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in linear_extrude\n");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in linear_extrude\n");
     return NULL;
   }
 
@@ -1350,7 +1350,7 @@ PyObject *python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in resize");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in resize");
     return NULL;
   }
 
@@ -1406,7 +1406,7 @@ PyObject *python_roof(PyObject *self, PyObject *args, PyObject *kwargs)
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in roof");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in roof");
     return NULL;
   }
 
@@ -1690,7 +1690,7 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in offset");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in offset");
     return NULL;
   }
 
@@ -1751,7 +1751,7 @@ PyObject *python_projection(PyObject *self, PyObject *args, PyObject *kwargs)
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in projection");
+    PyErr_SetString(PyExc_TypeError, "Invalid type for Object in projection");
     return NULL;
   }
 
