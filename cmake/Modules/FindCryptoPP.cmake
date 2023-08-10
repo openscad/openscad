@@ -1,24 +1,31 @@
-# Try to find CryptoPP include and library directories.
-#
-# After successful discovery, this will set for inclusion where needed:
-# CRYPTOPP_INCLUDE_DIRS - containing the Crypto++ headers
-# CRYPTOPP_LIBRARIES - containing the Crypto++ library
+find_path(CryptoPP_INCLUDE_DIR NAMES cryptopp/config.h DOC "CryptoPP include directory")
+find_library(CryptoPP_LIBRARY NAMES cryptopp DOC "CryptoPP library")
 
-find_package(PkgConfig REQUIRED QUIET)
-
-pkg_check_modules(PC_CRYPTOPP QUIET libcrypto++>=5.6.0)
-
-find_path(CRYPTOPP_INCLUDE_DIRS NAMES crypto++/sha.h
-  HINTS ${PC_CRYPTOPP_INCLUDE_DIRS} ${PC_CRYPTOPP_INCLUDEDIR}
-)
-
-find_library(CRYPTOPP_LIBRARIES NAMES crypto++
-  HINTS ${PC_CRYPTOPP_LIBRARY_DIRS} ${PC_CRYPTOPP_LIBDIR}
-)
-
-set(CRYPTOPP_VERSION ${PC_CRYPTOPP_VERSION})
-set(CryptoPP_LIBRARIES ${PC_CRYPTOPP_LIBRARIES})
-set(CryptoPP_INCLUDE_DIRS ${PC_CRYPTOPP_INCLUDE_DIRS})
+if(CryptoPP_INCLUDE_DIR)
+    # CRYPTOPP_VERSION has been moved to config_ver.h starting with Crypto++ 8.3
+    if(EXISTS ${CryptoPP_INCLUDE_DIR}/cryptopp/config_ver.h)
+        set(CryptoPP_VERSION_HEADER "config_ver.h")
+    else()
+        set(CryptoPP_VERSION_HEADER "config.h")
+    endif()
+    file(STRINGS ${CryptoPP_INCLUDE_DIR}/cryptopp/${CryptoPP_VERSION_HEADER} _config_version REGEX "CRYPTOPP_VERSION")
+    string(REGEX MATCH "([0-9])([0-9])([0-9])" _match_version "${_config_version}")
+    set(CryptoPP_VERSION_STRING "${CMAKE_MATCH_1}.${CMAKE_MATCH_2}.${CMAKE_MATCH_3}")
+endif()
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(CryptoPP DEFAULT_MSG CRYPTOPP_INCLUDE_DIRS CRYPTOPP_LIBRARIES)
+find_package_handle_standard_args(CryptoPP
+    REQUIRED_VARS CryptoPP_INCLUDE_DIR CryptoPP_LIBRARY
+    FOUND_VAR CryptoPP_FOUND
+    VERSION_VAR CryptoPP_VERSION_STRING)
+
+if(CryptoPP_FOUND AND NOT TARGET CryptoPP::CryptoPP)
+    add_library(CryptoPP::CryptoPP UNKNOWN IMPORTED)
+    set_target_properties(CryptoPP::CryptoPP PROPERTIES
+        IMPORTED_LOCATION "${CryptoPP_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${CryptoPP_INCLUDE_DIR}")
+endif()
+
+mark_as_advanced(CryptoPP_INCLUDE_DIR CryptoPP_LIBRARY)
+set(CryptoPP_INCLUDE_DIRS ${CryptoPP_INCLUDE_DIR})
+set(CryptoPP_LIBRARIES ${CryptoPP_LIBRARY})
