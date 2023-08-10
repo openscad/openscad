@@ -512,13 +512,11 @@ PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
     return NULL;
   }
 // TODO syntax angeben bei fehler
-  printf("a\n");
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
     PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in scale");
     return NULL;
   }
-  printf("b\n");
 
   double x, y, z;
   if (python_vectorval(val_v, &x, &y, &z)) {
@@ -770,17 +768,26 @@ PyObject *python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
   }
 
 
-  if (mat != NULL) {
-    Matrix4d rawmatrix{Matrix4d::Identity()};
-    for (i = 0; i < std::min(size_t(PyList_Size(mat)), size_t(4)); i++) {
+  bool valid=1;
+  Matrix4d rawmatrix{Matrix4d::Identity()};
+  if (mat != NULL && PyList_Check(mat)) {
+    if(PyList_Size(mat) != 4) valid=0;
+    for (i = 0; valid && i < std::min(size_t(PyList_Size(mat)), size_t(4)); i++) {
       element = PyList_GetItem(mat, i);
-      for (j = 0; j < std::min(size_t(PyList_Size(element)), size_t(4)); j++) {
-        rawmatrix(i, j) = PyFloat_AsDouble(PyList_GetItem(element, j));
+      if(PyList_Check(element)) {
+        if(PyList_Size(element) != 4) valid=0;
+        for (j = 0; valid && j < std::min(size_t(PyList_Size(element)), size_t(4)); j++) {
+          rawmatrix(i, j) = PyFloat_AsDouble(PyList_GetItem(element, j));
+        }
       }
     }
     double w = rawmatrix(3, 3);
     if (w != 1.0) node->matrix = rawmatrix / w;
     else node->matrix = rawmatrix;
+  } else valid=0;
+  if(!valid) {
+    PyErr_SetString(PyExc_TypeError, "Matrix vector should be 4x4 array");
+    return NULL;
   }
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 
@@ -810,6 +817,7 @@ PyObject *python_output(PyObject *self, PyObject *args, PyObject *kwargs)
     return NULL;
   }
   python_result_node = child;
+  printf("c\n");
   return Py_None;
 }
 
@@ -865,7 +873,7 @@ PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &obj,
                                    &colorname, &alpha
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing color(obj, string)");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing color(obj, colorspec)");
     return NULL;
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
@@ -1095,14 +1103,29 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist,
                                    &PyList_Type, &objs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing csg");
+    switch(mode) {
+      case OpenSCADOperator::UNION:	    
+        PyErr_SetString(PyExc_TypeError, "Error during parsing union([input shapes] ...)");
+	break;
+      case OpenSCADOperator::DIFFERENCE:	    
+        PyErr_SetString(PyExc_TypeError, "Error during parsing difference([input shapes] ...)");
+	break;
+      case OpenSCADOperator::INTERSECTION:	    
+        PyErr_SetString(PyExc_TypeError, "Error during parsing intersection([input shapes] ...)");
+	break;
+    }
     return NULL;
   }
   n = PyList_Size(objs);
   for (i = 0; i < n; i++) {
     obj = PyList_GetItem(objs, i);
-    child = PyOpenSCADObjectToNode(obj);
-    node->children.push_back(child);
+    if (Py_TYPE(obj) == &PyOpenSCADType) {
+      child = PyOpenSCADObjectToNode(obj);
+      node->children.push_back(child);
+    } else {
+        PyErr_SetString(PyExc_TypeError, "CSG input data must be shapes");
+	return NULL;
+    }
   }
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
@@ -1228,14 +1251,26 @@ PyObject *python_csg_adv_sub(PyObject *self, PyObject *args, PyObject *kwargs, C
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist,
                                    &PyList_Type, &objs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing advanced csg");
+    switch(mode) {
+      case CgalAdvType::HULL:	    
+        PyErr_SetString(PyExc_TypeError, "Error during parsing hull([input shapes] ...)");
+	break;
+      case CgalAdvType::FILL:	    
+        PyErr_SetString(PyExc_TypeError, "Error during parsing fill([input shapes] ...)");
+	break;
+    }
     return NULL;
   }
   n = PyList_Size(objs);
   for (i = 0; i < n; i++) {
     obj = PyList_GetItem(objs, i);
-    child = PyOpenSCADObjectToNode(obj);
-    node->children.push_back(child);
+    if (Py_TYPE(obj) == &PyOpenSCADType) {
+    	child = PyOpenSCADObjectToNode(obj);
+	    node->children.push_back(child);
+    } else {
+      PyErr_SetString(PyExc_TypeError, "CSG input data must be shapes");
+      return NULL;
+    }
   }
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
@@ -1264,8 +1299,13 @@ PyObject *python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs)
   n = PyList_Size(objs);
   for (i = 0; i < n; i++) {
     obj = PyList_GetItem(objs, i);
-    child = PyOpenSCADObjectToNode(obj);
-    node->children.push_back(child);
+    if (Py_TYPE(obj) == &PyOpenSCADType) {
+     child = PyOpenSCADObjectToNode(obj);
+     node->children.push_back(child);
+    } else {
+      PyErr_SetString(PyExc_TypeError, "minkowski input data must be shapes");
+      return NULL;
+    }
   }
   node->convexity = convexity;
 

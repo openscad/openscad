@@ -121,40 +121,55 @@ catch_error(lambda : translate(cube(), parx=4) )
 catch_error(lambda : translate(parx=4) )        
 
 # Test python_multmatrix
+catch_error(lambda : multmatrix(cube(),True) )
+catch_error(lambda : multmatrix(cube(),[]) )
+catch_error(lambda : multmatrix(cube(),[1]) )
+catch_error(lambda : multmatrix(cube(),[[1,2]]) )
+catch_error(lambda : multmatrix(cube(),[[0,1,2,3],[4,5,6,7],[8,9,10,11],[12,13,14,15]]) )
 catch_error(lambda : multmatrix(parx=4) )        
 
 # Test python_output
+catch_error(lambda : output() )        
+catch_error(lambda : output("shape") )        
+catch_error(lambda : output(undefined) )        
 catch_error(lambda : output(parx=4) )        
 
-# Test python_getitem
-catch_error(lambda : cube(parx=4) )        
-
-# Test python_setitem
-catch_error(lambda : cube(parx=4) )        
-
 # Test python_color
-catch_error(lambda : cube(parx=4) )        
+catch_error(lambda : color(cube(),4) )        
+catch_error(lambda : color(cube(),[0.5,0.5]) )        
+catch_error(lambda : color(cube(),False) )        
+catch_error(lambda : color(cube(),"green") )        
+catch_error(lambda : color(parx=4) )        
 
 # Test python_rotate_extrude
+catch_error(lambda : rotate_extrude(sphere(),angle="angle") )        
+catch_error(lambda : rotate_extrude(sphere(),angle=[1,2]) )        
 catch_error(lambda : rotate_extrude(parx=4) )        
 
 # Test python_linear_extrude
+catch_error(lambda : linear_extrude(sphere(),h="height") )        
+catch_error(lambda : linear_extrude(sphere(),h=[1,2]) )        
 catch_error(lambda : linear_extrude(parx=4) )        
 
 # Test python_csg_sub
-catch_error(lambda : cube(parx=4) )        
-
-# Test python_nb_sub
-catch_error(lambda : cube(parx=4) )        
+catch_error(lambda : difference(["obj1","obj2"]) )        
+catch_error(lambda : intersection([cube(),sphere()]) )        
+catch_error(lambda : union(3) )        
 
 # Test python_adv_sub
-catch_error(lambda : cube(parx=4) )        
+catch_error(lambda : hull(["obj1","obj2"]) )        
+catch_error(lambda : fill([cube(),sphere()]) )        
 
 # Test python_minkowski
+catch_error(lambda : minkowski(["obj1","obj2"]) )        
+catch_error(lambda : minkowski([cube(),sphere()]) )        
 catch_error(lambda : minkowski(parx=4) )        
 
 # Test python_resize
-catch_error(lambda : resize(parx=4) )        
+catch_error(lambda : resize(["obj1","obj2"]) )        
+catch_error(lambda : resize([cube(),sphere()]) )        
+catch_error(lambda : resize(cube(),"value") )        
+catch_error(lambda : resize(cube(),[1,2,3]) )        
 
 # Test python_roof
 catch_error(lambda : roof(parx=4) )        

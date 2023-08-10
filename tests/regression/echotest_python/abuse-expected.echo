@@ -84,26 +84,41 @@ Invalid vector specifiaction in trans in line 119
 Error during parsing translate(object,vec3) in line 120
 Error during parsing translate(object,vec3) in line 121
 Error during parsing multmatrix(object, vec16) in line 124
-Error during parsing output(object) in line 127
-Error during parsing cube(dim) in line 130
-Error during parsing cube(dim) in line 133
-Error during parsing cube(dim) in line 136
-Error during parsing rotate_extrude(object,...) in line 139
-Error during parsing linear_extrude(object, ...) in line 142
-Error during parsing cube(dim) in line 145
-Error during parsing cube(dim) in line 148
-Error during parsing cube(dim) in line 151
-Error during parsing minkowski(object) in line 154
-Error during parsing resize(object,vec3) in line 157
-Error during parsing roof(object) in line 160
-Error during parsing render(object) in line 163
-Error during parsing surface(object) in line 166
-Error during parsing text(string, ...)) in line 169
-Error during parsing textmetrics in line 172
-Error during parsing version() in line 175
-Error during parsing version_num() in line 178
-Error during parsing offset(object,r) in line 181
-Error during parsing projection(object) in line 184
-Error during parsing group(group) in line 187
-Error during parsing osimport(filename) in line 190
+Matrix vector should be 4x4 array in line 125
+Matrix vector should be 4x4 array in line 126
+Matrix vector should be 4x4 array in line 127
+Error during parsing multmatrix(object, vec16) in line 129
+Error during parsing output(object) in line 132
+Invalid type for  Object in output in line 133
+name 'undefined' is not defined in line 134
+Error during parsing output(object) in line 135
+Error during parsing color(obj, colorspec) in line 138
+Error during parsing color(obj, colorspec) in line 139
+Error during parsing color(obj, colorspec) in line 140
+Error during parsing color(obj, colorspec) in line 142
+Error during parsing rotate_extrude(object,...) in line 145
+Error during parsing rotate_extrude(object,...) in line 146
+Error during parsing rotate_extrude(object,...) in line 147
+Error during parsing linear_extrude(object, ...) in line 150
+Error during parsing linear_extrude(object, ...) in line 151
+Error during parsing linear_extrude(object, ...) in line 152
+CSG input data must be shapes in line 155
+Error during parsing union([input shapes] ...) in line 157
+CSG input data must be shapes in line 160
+minkowski input data must be shapes in line 164
+Error during parsing minkowski(object) in line 166
+Invalid type for  Object in resize in line 169
+Error during parsing resize(object,vec3) in line 171
+Error during parsing resize(object,vec3) in line 172
+Error during parsing roof(object) in line 175
+Error during parsing render(object) in line 178
+Error during parsing surface(object) in line 181
+Error during parsing text(string, ...)) in line 184
+Error during parsing textmetrics in line 187
+Error during parsing version() in line 190
+Error during parsing version_num() in line 193
+Error during parsing offset(object,r) in line 196
+Error during parsing projection(object) in line 199
+Error during parsing group(group) in line 202
+Error during parsing osimport(filename) in line 205
 
