@@ -523,7 +523,6 @@ PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Invalid vector specifiaction in scale, use 1 to 3 ordinates.");
     return NULL;
   }
-  printf("c\n");
   Vector3d scalevec(x, y, z);
 
   if (OpenSCAD::rangeCheck) {
@@ -817,7 +816,6 @@ PyObject *python_output(PyObject *self, PyObject *args, PyObject *kwargs)
     return NULL;
   }
   python_result_node = child;
-  printf("c\n");
   return Py_None;
 }
 
@@ -833,7 +831,6 @@ PyObject *python__getitem__(PyObject *dict, PyObject *key)
 {
   PyOpenSCADObject *self = (PyOpenSCADObject *) dict;
   if (self->dict == NULL) {
-    printf("Dict not initialized!\n");
     return 0;
   }
   PyObject *result = PyDict_GetItem(self->dict, key);
@@ -846,7 +843,6 @@ int python__setitem__(PyObject *dict, PyObject *key, PyObject *v)
 {
   PyOpenSCADObject *self = (PyOpenSCADObject *) dict;
   if (self->dict == NULL) {
-    printf("Dict not initialized!\n");
     return 0;
   }
   Py_INCREF(v);

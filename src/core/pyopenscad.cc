@@ -294,7 +294,6 @@ PyObject *python_callfunction(const std::string &name, const std::vector<std::sh
 				break;
 //TODO  more types RANGE, VECTOR, OBEJCT, FUNCTION
 			default:
-				printf("other\n");
 				PyTuple_SetItem(args, i, PyLong_FromLong(-1));
 				break;
 		}
