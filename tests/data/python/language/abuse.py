@@ -60,13 +60,34 @@ catch_error(lambda : polyhedron(faces=[[0,0]], points=[[1,2,3]]) )
 catch_error(lambda : polyhedron(parx=4) )        
 
 # Test python_square
+catch_error(lambda : square("Hallo") )        
+catch_error(lambda : square(False) )        
+catch_error(lambda : square([1,2,3]) )        
+catch_error(lambda : square([1,2],center="hallo") )        
 catch_error(lambda : square(parx=4) )        
 
 # Test python_circle
+catch_error(lambda : circle("Hallo") )        
+catch_error(lambda : circle([1,2]) )        
+catch_error(lambda : circle(2,center=True) )        
+catch_error(lambda : circle(r=1,d=2) )        
+catch_error(lambda : circle(r=-1) )        
+catch_error(lambda : circle(d=0) )        
 catch_error(lambda : circle(parx=4) )        
 
 # Test python_polygon
-catch_error(lambda : polygon(parx=4) )        
+catch_error(lambda : polygon(points=True,paths=[1,2,3]))
+catch_error(lambda : polygon(points=17,paths=[1,2,3]))
+catch_error(lambda : polygon(points=[],paths=[1,2,3]))
+catch_error(lambda : polygon(points=[1],paths=[1,2,3]))
+catch_error(lambda : polygon(points=[[1,2]],paths=[1,2,3]))
+catch_error(lambda : polygon(points=[[1,2,4,6]],paths=[1,2,3]))
+catch_error(lambda : polygon(paths=True, points=[[1,2,3]]) )        
+catch_error(lambda : polygon(paths=17, points=[[1,2,3]]) )        
+catch_error(lambda : polygon(paths=[], points=[[1,2,3]]) )        
+catch_error(lambda : polygon(paths=[0], points=[[1,2,3]]) )        
+catch_error(lambda : polygon(paths=[[0,0]], points=[[1,2,3]]) )        
+catch_error(lambda : polygon(parx=4) ) 
 
 # Test python_scale
 catch_error(lambda : scale(parx=4) )        

@@ -123,6 +123,9 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
 
 int python_numberval(PyObject *number, double *result)
 {
+  if(number == Py_False) return 1;	
+  if(number == Py_True) return 1;	
+  if(number == Py_None) return 1;	
   if (PyFloat_Check(number)) {
     *result = PyFloat_AsDouble(number);
     return 0;
@@ -138,7 +141,6 @@ int python_vectorval(PyObject *vec, double *x, double *y, double *z)
 {
   *x = 1;
   *y = 1;
-  *z = 1;
   if (PyList_Check(vec)) {
     if (PyList_Size(vec) >= 1) {
       if (python_numberval(PyList_GetItem(vec, 0), x)) return 1;
