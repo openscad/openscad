@@ -111,9 +111,11 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
     int n = PyList_Size(objs);
     for (int i = 0; i < n; i++) {
       PyObject *obj = PyList_GetItem(objs, i);
-      std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj);
-      node->children.push_back(child);
-      Py_XDECREF(obj);
+      if(Py_TYPE(obj) ==  &PyOpenSCADType) {
+        std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj);
+        node->children.push_back(child);
+        Py_XDECREF(obj);
+      } else return NULL;
     }
     result=node;
   } else result=NULL;
@@ -151,6 +153,7 @@ int python_vectorval(PyObject *vec, double *x, double *y, double *z)
     if (PyList_Check(vec) && PyList_Size(vec) >= 3) {
       if (python_numberval(PyList_GetItem(vec, 2), z)) return 1;
     }
+    if(PyList_Size(vec) < 1 ||  PyList_Size(vec) > 3) return 1;
     return 0;
   }
   if (!python_numberval(vec, x)) {

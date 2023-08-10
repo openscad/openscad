@@ -11,81 +11,99 @@ Cube Dimensions must be positive in line 26
 Cube Dimensions must be positive in line 27
 Cube Dimensions must be positive in line 28
 Unknown Value for center parameter in line 29
-Error during parsing cube in line 30
+Error during parsing cube(dim) in line 30
 Cant specify r and d at the same time for sphere in line 33
 Parameter r must be positive in line 34
 Parameter d must be positive in line 35
 Cant specify r and d at the same time for sphere in line 36
-Error during parsing sphere in line 37
-Error during parsing cylinder in line 40
-Error during parsing cylinder in line 41
+Error during parsing sphere(r|d) in line 37
+Error during parsing cylinder(h,r|r1+r2|d1+d2) in line 40
+Error during parsing cylinder(h,r|r1+r2|d1+d2) in line 41
 Cylinder r must be positive in line 42
 Cylinder r must be positive in line 43
-Error during parsing cylinder in line 44
-Error during parsing cylinder in line 45
-Error during parsing polyhedron, please specify at least points and faces lists in line 48
-Error during parsing polyhedron, please specify at least points and faces lists in line 49
-Error during parsing polyhedron, please specify at least points and faces lists in line 50
+Error during parsing cylinder(h,r|r1+r2|d1+d2) in line 44
+Error during parsing cylinder(h,r|r1+r2|d1+d2) in line 45
+Error during parsing polyhedron(points, faces) in line 48
+Error during parsing polyhedron(points, faces) in line 49
+Error during parsing polyhedron(points, faces) in line 50
 There must at least be one point in the polyhedron in line 51
 Coordinate must exactly contain 3 numbers in line 52
 Coordinate must exactly contain 3 numbers in line 53
 Coordinate must exactly contain 3 numbers in line 54
-Error during parsing polyhedron, please specify at least points and faces lists in line 55
-Error during parsing polyhedron, please specify at least points and faces lists in line 56
+Error during parsing polyhedron(points, faces) in line 55
+Error during parsing polyhedron(points, faces) in line 56
 must specify at least 1 face in line 57
 Polyhedron Face must be a list of indices in line 58
 Polyhedron Face must sepcify at least 3 indices in line 59
-Error during parsing polyhedron, please specify at least points and faces lists in line 60
+Error during parsing polyhedron(points, faces) in line 60
 Invalid Square dimensions in line 63
 Invalid Square dimensions in line 64
 Cannot specify z coordinate for square in line 65
 Unknown Value for center parameter in line 66
-Error during parsing square in line 67
-Error during parsing circle in line 70
-Error during parsing circle in line 71
-Error during parsing circle in line 72
+Error during parsing square(dim) in line 67
+Error during parsing circle(r|d) in line 70
+Error during parsing circle(r|d) in line 71
+Error during parsing circle(r|d) in line 72
 Cant specify r and d at the same time for circle in line 73
 Parameter r must be positive in line 74
 Parameter d must be positive in line 75
-Error during parsing circle in line 76
-Error during parsing polygon in line 79
-Error during parsing polygon in line 80
-There must at least be one point in the polyhedron in line 81
+Error during parsing circle(r|d) in line 76
+Error during parsing polygon(points,paths) in line 79
+Error during parsing polygon(points,paths) in line 80
+There must at least be one point in the polygon in line 81
 Coordinate must exactly contain 2 numbers in line 82
 Polygon path must be a list of indices in line 83
 Coordinate must exactly contain 2 numbers in line 84
-Error during parsing polygon in line 85
-Error during parsing polygon in line 86
+Error during parsing polygon(points,paths) in line 85
+Error during parsing polygon(points,paths) in line 86
 Coordinate must exactly contain 2 numbers in line 87
 Coordinate must exactly contain 2 numbers in line 88
 Coordinate must exactly contain 2 numbers in line 89
-Error during parsing polygon in line 90
-Error during parsing scale in line 93
-Error during parsing rotate in line 99
-Error during parsing mirror in line 105
-Error during parsing translate in line 111
-Error during parsing multmatrix in line 117
-Error during parsing output in line 123
-Error during parsing cube in line 129
-Error during parsing cube in line 132
-Error during parsing cube in line 135
-Error during parsing rotate_extrude in line 141
-Error during parsing linear_extrude in line 147
-Error during parsing cube in line 153
-Error during parsing cube in line 159
-Error during parsing cube in line 162
-Error during parsing minkowski in line 165
-Error during parsing resize in line 168
-Error during parsing roof in line 171
-Error during parsing cube in line 174
-Error during parsing render in line 177
-Error during parsing surface in line 183
-Error during parsing text in line 186
-Error during parsing textmetrics in line 189
-Error during parsing version in line 192
-Error during parsing version_num in line 195
-Error during parsing offset in line 198
-Error during parsing projection in line 204
-Error during parsing group in line 210
-Error during parsing osimport in line 213
+Error during parsing polygon(points,paths) in line 90
+Error during parsing scale(object, scale) in line 93
+Invalid type for  Object in scale in line 94
+Invalid vector specifiaction in scale, use 1 to 3 ordinates. in line 95
+Invalid vector specifiaction in scale, use 1 to 3 ordinates. in line 96
+Invalid vector specifiaction in scale, use 1 to 3 ordinates. in line 97
+Error during parsing scale(object, scale) in line 98
+Error during parsing rotate(object, vec3) in line 101
+Error during parsing rotate(object, vec3) in line 102
+Error during parsing rotate(object, vec3) in line 103
+rotate accepts at most 3 angles in line 104
+Error during parsing rotate(object, vec3) in line 105
+Error during parsing mirror(object, vec3) in line 108
+Invalid type for  Object in mirror in line 109
+Invalid vector specifiaction in mirror in line 110
+Invalid vector specifiaction in mirror in line 111
+Error during parsing mirror(object, vec3) in line 112
+Error during parsing mirror(object, vec3) in line 113
+Error during parsing translate(object,vec3) in line 116
+Invalid type for  Object in translate in line 117
+Invalid vector specifiaction in trans in line 118
+Invalid vector specifiaction in trans in line 119
+Error during parsing translate(object,vec3) in line 120
+Error during parsing translate(object,vec3) in line 121
+Error during parsing multmatrix(object, vec16) in line 124
+Error during parsing output(object) in line 127
+Error during parsing cube(dim) in line 130
+Error during parsing cube(dim) in line 133
+Error during parsing cube(dim) in line 136
+Error during parsing rotate_extrude(object,...) in line 139
+Error during parsing linear_extrude(object, ...) in line 142
+Error during parsing cube(dim) in line 145
+Error during parsing cube(dim) in line 148
+Error during parsing cube(dim) in line 151
+Error during parsing minkowski(object) in line 154
+Error during parsing resize(object,vec3) in line 157
+Error during parsing roof(object) in line 160
+Error during parsing render(object) in line 163
+Error during parsing surface(object) in line 166
+Error during parsing text(string, ...)) in line 169
+Error during parsing textmetrics in line 172
+Error during parsing version() in line 175
+Error during parsing version_num() in line 178
+Error during parsing offset(object,r) in line 181
+Error during parsing projection(object) in line 184
+Error during parsing group(group) in line 187
+Error during parsing osimport(filename) in line 190
 

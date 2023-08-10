@@ -90,40 +90,41 @@ catch_error(lambda : polygon(paths=[[0,0]], points=[[1,2,3]]) )
 catch_error(lambda : polygon(parx=4) ) 
 
 # Test python_scale
-catch_error(lambda : scale(parx=4) )        
-
-# Test python_scale_oo
-#catch_error(lambda : cube(parx=4) )        
+catch_error(lambda : scale("hello") )        
+catch_error(lambda : scale([1,"string"],1) )        
+catch_error(lambda : scale(cube(), "hello") )        
+catch_error(lambda : scale(cube(), []) )        
+catch_error(lambda : scale(cube(), [1,2,3,4]) )        
+catch_error(lambda : scale(cube(), parx=4) )        
 
 # Test python_rotate
-catch_error(lambda : rotate(parx=4) )        
-
-# Test python_rotate_oo
-#catch_error(lambda : cube(parx=4) )        
+catch_error(lambda : rotate("hello") )        
+catch_error(lambda : rotate([1,"string"],1) )        
+catch_error(lambda : rotate(cube(), "hello") )        
+catch_error(lambda : rotate(cube(), [1,2,3,4]) )        
+catch_error(lambda : rotate(cube(), parx=4) )        
 
 # Test python_mirror
+catch_error(lambda : mirror("hello") )        
+catch_error(lambda : mirror([1,"string"],1) )        
+catch_error(lambda : mirror(cube(), "hello") )        
+catch_error(lambda : mirror(cube(), [1,2,3,4]) )        
+catch_error(lambda : mirror(cube(), parx=4) )        
 catch_error(lambda : mirror(parx=4) )        
 
-# Test python_mirror_oo
-#catch_error(lambda : cube(parx=4) )        
-
 # Test python_translate
+catch_error(lambda : translate("hello") )        
+catch_error(lambda : translate([1,"string"],1) )        
+catch_error(lambda : translate(cube(), "hello") )        
+catch_error(lambda : translate(cube(), [1,2,3,4]) )        
+catch_error(lambda : translate(cube(), parx=4) )        
 catch_error(lambda : translate(parx=4) )        
-
-# Test python_translate_oo
-#catch_error(lambda : cube(parx=4) )        
 
 # Test python_multmatrix
 catch_error(lambda : multmatrix(parx=4) )        
 
-# Test python_multmatrix_oo
-#catch_error(lambda : cube(parx=4) )        
-
 # Test python_output
 catch_error(lambda : output(parx=4) )        
-
-# Test python_output_oo
-#catch_error(lambda : cube(parx=4) )        
 
 # Test python_getitem
 catch_error(lambda : cube(parx=4) )        
@@ -134,26 +135,14 @@ catch_error(lambda : cube(parx=4) )
 # Test python_color
 catch_error(lambda : cube(parx=4) )        
 
-# Test python_color_oo
-#catch_error(lambda : cube(parx=4) )        
-
 # Test python_rotate_extrude
 catch_error(lambda : rotate_extrude(parx=4) )        
-
-# Test python_rotate_extrude_oo
-#catch_error(lambda : cube(parx=4) )        
 
 # Test python_linear_extrude
 catch_error(lambda : linear_extrude(parx=4) )        
 
-# Test python_linear_extrude_oo
-#catch_error(lambda : cube(parx=4) )        
-
 # Test python_csg_sub
 catch_error(lambda : cube(parx=4) )        
-
-# Test python_csg_oo_sub
-#catch_error(lambda : cube(parx=4) )        
 
 # Test python_nb_sub
 catch_error(lambda : cube(parx=4) )        
@@ -170,14 +159,8 @@ catch_error(lambda : resize(parx=4) )
 # Test python_roof
 catch_error(lambda : roof(parx=4) )        
 
-# Test python_roof_oo
-catch_error(lambda : cube(parx=4) )        
-
 # Test python_render
 catch_error(lambda : render(parx=4) )        
-
-# Test python_render_oo
-#catch_error(lambda : cube(parx=4) )        
 
 # Test python_surface
 catch_error(lambda : surface(parx=4) )        
@@ -197,14 +180,8 @@ catch_error(lambda : version_num(parx=4) )
 # Test python_offset
 catch_error(lambda : offset(parx=4) )        
 
-# Test python_offset_oo
-#catch_error(lambda : cube(parx=4) )        
-
 # Test python_projection
 catch_error(lambda : projection(parx=4) )        
-
-# Test python_projection_oo
-#catch_error(lambda : cube(parx=4) )        
 
 # Test python_group
 catch_error(lambda : group(parx=4) )        

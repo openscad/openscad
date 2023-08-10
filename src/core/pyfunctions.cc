@@ -75,7 +75,7 @@ PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OO", kwlist,
                                    &dim,
                                    &center)){
-    PyErr_SetString(PyExc_TypeError, "Error during parsing cube");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing cube(dim)");
     return NULL;
   }	  
 
@@ -116,7 +116,7 @@ PyObject *python_sphere(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddddd", kwlist,
                                    &r, &d, &fn, &fa, &fs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing sphere");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing sphere(r|d)");
     return NULL;
   } 
   if (!isnan(r)) {
@@ -169,7 +169,7 @@ PyObject *python_cylinder(PyObject *self, PyObject *args, PyObject *kwargs)
 
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|dddddddOddd", kwlist, &h, &r, &r1, &r2, &d, &d1, &d2, &center, &fn, &fa, &fs)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing cylinder");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing cylinder(h,r|r1+r2|d1+d2)");
     return NULL;
   }
 
@@ -255,7 +255,7 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &convexity,
                                    &PyList_Type, &triangles
                                    )) {
-	  PyErr_SetString(PyExc_TypeError, "Error during parsing polyhedron, please specify at least points and faces lists");
+	  PyErr_SetString(PyExc_TypeError, "Error during parsing polyhedron(points, faces)");
 	  return NULL;
   } 
 
@@ -344,7 +344,7 @@ PyObject *python_square(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist,
                                    &dim,
                                    &center)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing square");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing square(dim)");
     return NULL;
   }
   if (dim != NULL) {
@@ -381,7 +381,7 @@ PyObject *python_circle(PyObject *self, PyObject *args, PyObject *kwargs)
   double vr = 1;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|ddddd", kwlist, &r, &d, &fn, &fa, &fs)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing circle");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing circle(r|d)");
     return NULL;
   }
 
@@ -435,7 +435,7 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &PyList_Type, &paths,
                                    &convexity
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing polygon");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing polygon(points,paths)");
     return NULL;
   }
 
@@ -508,21 +508,24 @@ PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", kwlist,
                                    &obj,
                                    &val_v)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing scale");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing scale(object, scale)");
     return NULL;
   }
-
+// TODO syntax angeben bei fehler
+  printf("a\n");
   child = PyOpenSCADObjectToNodeMulti(obj);
   if (child == NULL) {
     PyErr_SetString(PyExc_TypeError, "Invalid type for  Object in scale");
     return NULL;
   }
+  printf("b\n");
 
   double x, y, z;
   if (python_vectorval(val_v, &x, &y, &z)) {
-    PyErr_SetString(PyExc_TypeError, "Invalid vector specifiaction in scale");
+    PyErr_SetString(PyExc_TypeError, "Invalid vector specifiaction in scale, use 1 to 3 ordinates.");
     return NULL;
   }
+  printf("c\n");
   Vector3d scalevec(x, y, z);
 
   if (OpenSCAD::rangeCheck) {
@@ -559,7 +562,7 @@ PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO!|f", kwlist,
                                    &obj,
                                    &PyList_Type, &val_a, &val_v)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing rotate");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing rotate(object, vec3)");
     return NULL;
   }
 
@@ -576,9 +579,6 @@ PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
     bool ok = true;
 //    const auto& vec_a = val_a.toVector();
     switch (PyList_Size(val_a)) {
-    default:
-      ok &= false;
-    /* fallthrough */
     case 3:
       a = PyFloat_AsDouble(PyList_GetItem(val_a, 2));
       sz = sin_degrees(a);
@@ -595,6 +595,10 @@ PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
       cx = cos_degrees(a);
     /* fallthrough */
     case 0:
+      break;
+    default:
+      PyErr_SetString(PyExc_TypeError, "rotate accepts at most 3 angles");
+      return NULL;
       break;
 
     }
@@ -653,7 +657,7 @@ PyObject *python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "OO", kwlist,
                                    &obj,
                                    &val_v)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing mirror");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing mirror(object, vec3)");
     return NULL;
   }
 
@@ -712,7 +716,7 @@ PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &obj,
                                    &v
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing translate");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing translate(object,vec3)");
     return NULL;
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
@@ -755,7 +759,7 @@ PyObject *python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &obj,
                                    &PyList_Type, &mat
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing multmatrix");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing multmatrix(object, vec16)");
     return NULL;
   }
 
@@ -797,7 +801,7 @@ PyObject *python_output(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist,
                                    &object
                                    ))  {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing output");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing output(object)");
     return NULL;
   }
   child = PyOpenSCADObjectToNodeMulti(object);
@@ -861,7 +865,7 @@ PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &obj,
                                    &colorname, &alpha
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing color");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing color(obj, string)");
     return NULL;
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
@@ -940,7 +944,7 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
                                    &fn,&fa,&fs
                                    )) {
 
-    PyErr_SetString(PyExc_TypeError, "Error during parsing rotate_extrude");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing rotate_extrude(object,...)");
     return NULL;
   }
 
@@ -1018,7 +1022,7 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
                                    &twist,
                                    &fn, &fs, &fs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing linear_extrude");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing linear_extrude(object, ...)");
     return NULL;
   }
 
@@ -1254,7 +1258,7 @@ PyObject *python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &PyList_Type, &objs,
                                    &convexity
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing minkowski");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing minkowski(object)");
     return NULL;
   }
   n = PyList_Size(objs);
@@ -1301,7 +1305,7 @@ PyObject *python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &PyList_Type, &autosize,
                                    &convexity
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing resize");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing resize(object,vec3)");
     return NULL;
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
@@ -1357,7 +1361,7 @@ PyObject *python_roof(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &method, convexity,
                                    &fn, &fa, &fs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing roof");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing roof(object)");
     return NULL;
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
@@ -1420,7 +1424,7 @@ PyObject *python_render(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &PyOpenSCADType, &obj,
                                    &convexity
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing render");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing render(object)");
     return NULL;
   }
   child = PyOpenSCADObjectToNode(obj);
@@ -1445,7 +1449,7 @@ PyObject *python_surface(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s|OlO", kwlist,
                                    &file, &center, &convexity
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing surface");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing surface(object)");
     return NULL;
   }
 
@@ -1492,7 +1496,7 @@ PyObject *python_text(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &script, &valign, &halign,
                                    &fn, &fa, &fs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing text");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing text(string, ...))");
     return NULL;
   }
 
@@ -1590,7 +1594,7 @@ PyObject *python_version(PyObject *self, PyObject *args, PyObject *kwargs)
 
   char *kwlist[] = {NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing version");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing version()");
     return NULL;
   }
 
@@ -1612,7 +1616,7 @@ PyObject *python_version_num(PyObject *self, PyObject *args, PyObject *kwargs)
 
   char *kwlist[] = {NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist)) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing version_num");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing version_num()");
     return NULL;
   }
 
@@ -1641,7 +1645,7 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &r, &delta, &chamfer,
                                    &fn, &fa, &fs
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing offset");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing offset(object,r)");
     return NULL;
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
@@ -1702,7 +1706,7 @@ PyObject *python_projection(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &obj,
                                    &cutmode, &convexity
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing projection");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing projection(object)");
     return NULL;
   }
   child = PyOpenSCADObjectToNodeMulti(obj);
@@ -1740,7 +1744,7 @@ PyObject *python_group(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist,
                                    &PyOpenSCADType, &obj
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing group");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing group(group)");
     return NULL;
   }
   child = PyOpenSCADObjectToNode(obj);
@@ -1772,7 +1776,7 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
                                    &fn, &fa, &fs
 
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing osimport");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing osimport(filename)");
     return NULL;
   }
 
