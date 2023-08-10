@@ -631,7 +631,6 @@ namespace OGL {
   class Nef3_Converter { 
     typedef typename Nef_polyhedron::SNC_structure           SNC_structure;
     typedef CGAL::SNC_decorator<SNC_structure>               Base;
-    typedef CGAL::SNC_FM_decorator<SNC_structure>            FM_decorator;
     
     public:
     typedef typename SNC_structure::Vertex_const_iterator Vertex_const_iterator; 

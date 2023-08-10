@@ -46,7 +46,7 @@ template <class TriangleMesh>
 bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
 {
   bool err = false;
-  PolySetBuilder builder(0,mesh.number_of_faces());
+  PolySetBuilder builder(0,mesh.number_of_faces()+ mesh.number_of_faces());
   for (auto& f : mesh.faces()) {
     builder.append_poly(mesh.degree(f));
 
