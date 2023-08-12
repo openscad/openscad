@@ -15,7 +15,7 @@ date "+### %Y-%m-%d %T msys2-install-dependencies started"
 pacman --query --explicit
 
 date "+### %Y-%m-%d %T install pactoys (for pacboy)"
-pacman --noconfirm --sync --needed pactoys
+pacman --noconfirm --sync --needed pactoys libxml2
 # pacboy is a pacman wrapper for MSYS2 which handles the package prefixes automatically
 #            name:p means MINGW_PACKAGE_PREFIX-only
 #            name:  disables any translation for name
