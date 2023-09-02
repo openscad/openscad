@@ -51,6 +51,7 @@ public:
   QLabel *statusLabel;
 
   void zoom(double v, bool relative);
+  void zoomFov(double v);
   void zoomCursor(int x, int y, int zoom);
   void rotate(double x, double y, double z, bool relative);
   void rotate2(double x, double y, double z);
