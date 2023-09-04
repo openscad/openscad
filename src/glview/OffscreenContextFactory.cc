@@ -4,6 +4,7 @@
 
 #ifdef __APPLE__
 #include "offscreen-old/OffscreenContextNSOpenGL.h"
+#include "OffscreenContextCGL.h"
 #endif
 #ifdef _WIN32
 #include "offscreen-old/OffscreenContextWGL.h"
@@ -25,7 +26,7 @@ const char *defaultProvider() {
   return "nullgl";
 #else
 #ifdef __APPLE__
-  return "nsopengl-old";
+  return "cgl";
 #endif
 #ifdef ENABLE_EGL
   return "egl-old";
@@ -56,6 +57,8 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider, const Offscre
       LOG("Compatibility context is not available on macOS");
     }
     return offscreen_old::CreateOffscreenContextNSOpenGL(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion);
+  } else if (provider == "cgl") {
+    return CreateOffscreenContextCGL(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion);
   }
 #endif
 #if ENABLE_EGL
