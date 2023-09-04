@@ -426,9 +426,9 @@ sys.stderr = stderr_bak\n\
 	    PyImport_AppendInittab("openscad", &PyInit_openscad);
 	    PyConfig config;
             PyConfig_InitPythonConfig(&config);
-	    wchar_t libdir[256];
-	    swprintf(libdir, 256, L"%s/../libraries/python/",PlatformUtils::applicationPath().c_str()); /* add libraries/python to python search path */
-	    PyConfig_SetString(&config, &config.pythonpath_env, libdir);
+	    char libdir[256];
+	    snprintf(libdir, 256, "%s/../libraries/python/",PlatformUtils::applicationPath().c_str()); /* add libraries/python to python search path */
+	    PyConfig_SetBytesString(&config, &config.pythonpath_env, libdir);
 	    Py_Initialize();
             Py_InitializeFromConfig(&config);
             PyConfig_Clear(&config);
