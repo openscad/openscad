@@ -42,7 +42,11 @@ const char *defaultProvider() {
 
 std::shared_ptr<OpenGLContext> create(const std::string& provider, const OffscreenContextFactory::ContextAttributes& attrib)
 {
-  // FIXME: We could log an error if the chosen provider doesn't support all our attribs.
+  PRINTDB("Creating OpenGL context with the %1s provider:", provider);
+  PRINTDB("  Size: %d x %d", attrib.width % attrib.height);
+  PRINTDB("  Version: %s %d.%d %s", (attrib.gles ? "OpenGL ES" : "OpenGL") % attrib.majorGLVersion % attrib.minorGLVersion %
+	  (attrib.compatibilityProfile ? "(compatibility profile requested)" : ""));
+  // FIXME: We should log an error if the chosen provider doesn't support all our attribs.
 #ifdef NULLGL
   if (provider == "nullgl") {
     return CreateOffscreenContextNULL();
