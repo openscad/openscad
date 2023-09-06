@@ -63,6 +63,8 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
 
 #endif // NULLGL
 
+  PRINTD(gl_dump());
+
   this->fbo = fbo_new();
   if (!fbo_init(this->fbo, width, height)) {
     throw OffscreenViewException("Unable to create FBO");

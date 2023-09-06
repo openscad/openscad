@@ -43,6 +43,9 @@
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QErrorMessage>
+#ifdef USE_GLAD
+#include <QOpenGLContext>
+#endif
 #include "OpenCSGWarningDialog.h"
 
 #include <cstdio>
