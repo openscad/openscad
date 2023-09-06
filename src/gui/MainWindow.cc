@@ -1886,7 +1886,31 @@ bool MainWindow::trust_python_file(const std::string &file,  const std::string &
   return false;
 }
 #endif
-	
+
+#ifdef ENABLE_PYTHON
+void MainWindow::recomputePythonActive()
+{
+  auto fnameba = activeEditor->filepath.toLocal8Bit();
+  const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
+
+  bool oldPythonActive = this->python_active;
+  this->python_active = false;
+  if (fname != NULL) {
+    if(boost::algorithm::ends_with(fname, ".py")) {
+	    std::string content = std::string(this->last_compiled_doc.toUtf8().constData());
+      if (
+        Feature::ExperimentalPythonEngine.is_enabled() 
+		&& trust_python_file(std::string(fname), content)) this->python_active = true;
+      else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
+    }
+  }
+
+  if (oldPythonActive != this->python_active) {
+    emit this->pythonActiveChanged(this->python_active);
+  }
+}
+#endif
+
 void MainWindow::parseTopLevelDocument()
 {
   resetSuppressedMessages();
@@ -1901,17 +1925,7 @@ void MainWindow::parseTopLevelDocument()
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
   delete this->parsed_file;
 #ifdef ENABLE_PYTHON
-  this->python_active = false;
-  if (fname != NULL) {
-    if(boost::algorithm::ends_with(fname, ".py")) {
-	    std::string content = std::string(this->last_compiled_doc.toUtf8().constData());
-      if (
-        Feature::ExperimentalPythonEngine.is_enabled() 
-		&& trust_python_file(std::string(fname), content)) this->python_active = true;
-      else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
-    }
-  }
-
+  recomputePythonActive();
   if (this->python_active) {
     auto fulltext_py =
       std::string(this->last_compiled_doc.toUtf8().constData());

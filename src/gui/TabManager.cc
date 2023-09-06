@@ -90,6 +90,10 @@ void TabManager::tabSwitched(int x)
       button->setVisible(idx == x);
     }
   }
+
+#ifdef ENABLE_PYTHON
+  par->recomputePythonActive();
+#endif
 }
 
 void TabManager::middleMouseClicked(int x)
