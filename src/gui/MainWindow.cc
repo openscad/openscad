@@ -128,6 +128,7 @@ std::string SHA256HashString(std::string aString){
 
 #include <algorithm>
 #include <boost/version.hpp>
+#include <boost/regex.hpp>
 #include <sys/stat.h>
 
 #ifdef ENABLE_CGAL
@@ -1920,16 +1921,55 @@ void MainWindow::parseTopLevelDocument()
   auto fulltext =
     std::string(this->last_compiled_doc.toUtf8().constData()) +
     "\n\x03\n" + commandline_commands;
+  auto fulltext_py =
+      std::string(this->last_compiled_doc.toUtf8().constData());
 
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
   delete this->parsed_file;
 #ifdef ENABLE_PYTHON
   recomputePythonActive();
+  boost::regex ex_number( R"(^(\w+)\s*=\s*(-?[\d.]+))");
+//  boost::regex ex_string( R"(^(\w+)\s*=\s*\"(-?[^\"+)\")");
   if (this->python_active) {
-    auto fulltext_py =
-      std::string(this->last_compiled_doc.toUtf8().constData());
+/*
+    if(root_file != NULL) {
+      printf("pars size is %d\n",root_file->scope.assignments.size());
+    }
+    // now insert all new variables
+    std::istringstream iss(fulltext_py);
+    boost::smatch results;
+    std::string fulltext_py_eval="";
+    for (std::string line; std::getline(iss, line); ) {
+      bool found=false;
+      if(root_file != NULL) {
+        if (boost::regex_search(line, results, ex_number) && results.size() >= 3) {
+           printf("gound var (%s)\n",results[1].str().c_str());		
+	  for (auto& assignment : root_file->scope.assignments) {
+//            if (!assignment->getExpr()->isLiteral()) continue; // Only consider literals
+	    printf("name is %s\n",assignment->getName().c_str());          
+            if(assignment->getName() == results[1]) {
+                printf("found %s\n",assignment->getName().c_str() );		    
+//              const std::shared_ptr<Expression> &expr = assignment->getExpr();
+//                if(expr->isLiteral()) {
+//                  const std::shared_ptr<Literal> &lit=dynamic_pointer_cast<Literal>(expr);
+//                fulltext_py_eval.append(results[1]);
+//                fulltext_py_eval.append("=");
+//                fulltext_py_eval.append(std::to_string(3.4));
+//                found=true;
+//              break;
+//              }
+            } 
+          }
+        }
+      }
+      if(!found) fulltext_py_eval.append(line);
+      fulltext_py_eval.append("\r\n");
 
+    }
+
+    auto error = evaluatePython(fulltext_py_eval,this->animateWidget->getAnim_tval());
+*/
     auto error = evaluatePython(fulltext_py,this->animateWidget->getAnim_tval());
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     fulltext = "\n";
@@ -1942,6 +1982,29 @@ void MainWindow::parseTopLevelDocument()
   this->activeEditor->resetHighlighting();
   if (this->root_file != nullptr) {
     //add parameters as annotation in AST
+/*
+#ifdef ENABLE_PYTHON
+  if (this->python_active) {
+    //openscad parser is not used so need to extract assignments manually	  
+    std::istringstream iss(fulltext_py);
+    boost::smatch results;
+
+    root_file->scope.assignments.clear();	  
+    for (std::string line; std::getline(iss, line); ) {
+      if (boost::regex_search(line, results, ex_number) && results.size() >= 3) {
+        std::shared_ptr<Literal> l = std::make_shared<Literal>(boost::lexical_cast<double>(results[2]),Location::NONE);
+        root_file->scope.assignments.push_back(std::make_shared<Assignment>(results[1].str(),l));
+      }
+//      if (boost::regex_search(line, results, ex_string) && results.size() >= 3) {
+//	std::string value(results[2]);
+//        std::shared_ptr<Literal> l = std::make_shared<Literal>(value,Location::NONE);
+//        root_file->scope.assignments.push_back(std::make_shared<Assignment>(results[1],l));
+//      }
+    }
+    fulltext = fulltext_py;	 
+  }
+#endif      	  
+*/
     CommentParser::collectParameters(fulltext, this->root_file);
     this->activeEditor->parameterWidget->setParameters(this->root_file, fulltext);
     this->activeEditor->parameterWidget->applyParameters(this->root_file);
