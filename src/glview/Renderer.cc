@@ -153,7 +153,7 @@ void Renderer::setColor(const float color[4], const shaderinfo_t *shaderinfo) co
   if (shaderinfo && shaderinfo->type != EDGE_RENDERING) {
     return;
   }
-
+#ifndef DISABLE_FIXEDFUNCTION_GL
   PRINTD("setColor a");
   Color4f col;
   getColor(ColorMode::MATERIAL, col);
@@ -168,6 +168,7 @@ void Renderer::setColor(const float color[4], const shaderinfo_t *shaderinfo) co
     glUniform4f(shaderinfo->data.csg_rendering.color_area, c[0], c[1], c[2], c[3]);
     glUniform4f(shaderinfo->data.csg_rendering.color_edge, (c[0] + 1) / 2, (c[1] + 1) / 2, (c[2] + 1) / 2, 1.0);
   }
+#endif
 #endif
 }
 
@@ -209,6 +210,7 @@ void Renderer::setColorScheme(const ColorScheme& cs) {
   this->colorscheme = &cs;
 }
 
+#ifndef DISABLE_FIXEDFUNCTION_GL
 #ifdef ENABLE_OPENCSG
 static void draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector3d& p0, const Vector3d& p1, const Vector3d& p2,
                           bool e0, bool e1, bool e2, double z, bool mirror)
@@ -440,6 +442,7 @@ void Renderer::render_edges(const PolySet& ps, csgmode_e csgmode) const
   glEnable(GL_LIGHTING);
 }
 
+#endif // ifndef DISABLE_FIXEDFUNCTION_GL
 #else //NULLGL
 
 Renderer::Renderer() : colorscheme(nullptr) {}

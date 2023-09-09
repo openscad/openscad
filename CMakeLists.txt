@@ -212,6 +212,7 @@ macro(find_graphics)
     endif(NOT USE_BUILTIN_OPENCSG)
 
     target_compile_definitions(OpenSCAD PRIVATE ENABLE_OPENCSG)
+    target_compile_definitions(OpenSCAD PRIVATE DISABLE_FIXEDFUNCTION_GL)
 
     if (${OPENCSG_VERSION_STRING} VERSION_LESS "1.6.0")
       set(OPENCSG_GLEW ON)
