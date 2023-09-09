@@ -152,21 +152,21 @@ catch_error(lambda : linear_extrude(sphere(),h=[1,2]) )
 catch_error(lambda : linear_extrude(parx=4) )        
 
 # Test python_csg_sub
-catch_error(lambda : difference(["obj1","obj2"]) )        
+catch_error(lambda : difference("obj1","obj2") )        
 catch_error(lambda : intersection([cube(),sphere()]) )        
 catch_error(lambda : union(3) )        
 
 # Test python_adv_sub
-catch_error(lambda : hull(["obj1","obj2"]) )        
-catch_error(lambda : fill([cube(),sphere()]) )        
+catch_error(lambda : hull("obj1","obj2") )        
+catch_error(lambda : fill(cube(),sphere()) )        
 
 # Test python_minkowski
-catch_error(lambda : minkowski(["obj1","obj2"]) )        
+catch_error(lambda : minkowski("obj1","obj2") )        
 catch_error(lambda : minkowski([cube(),sphere()]) )        
 catch_error(lambda : minkowski(parx=4) )        
 
 # Test python_resize
-catch_error(lambda : resize(["obj1","obj2"]) )        
+catch_error(lambda : resize("obj1","obj2") )        
 catch_error(lambda : resize(cube(),sphere()) )        
 catch_error(lambda : resize(cube(),"value") )        
 catch_error(lambda : resize(cube(),[1,2,3]) )        

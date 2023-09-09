@@ -1096,32 +1096,24 @@ PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenS
   char *kwlist[] = { "obj", NULL };
   PyObject *objs = NULL;
   PyObject *obj;
-
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist,
-                                   &PyList_Type, &objs
-                                   )) {
-    switch(mode) {
-      case OpenSCADOperator::UNION:	    
-        PyErr_SetString(PyExc_TypeError, "Error during parsing union([input shapes] ...)");
-	break;
-      case OpenSCADOperator::DIFFERENCE:	    
-        PyErr_SetString(PyExc_TypeError, "Error during parsing difference([input shapes] ...)");
-	break;
-      case OpenSCADOperator::INTERSECTION:	    
-        PyErr_SetString(PyExc_TypeError, "Error during parsing intersection([input shapes] ...)");
-	break;
-    }
-    return NULL;
-  }
-  n = PyList_Size(objs);
-  for (i = 0; i < n; i++) {
-    obj = PyList_GetItem(objs, i);
-    if (Py_TYPE(obj) == &PyOpenSCADType) {
-      child = PyOpenSCADObjectToNode(obj);
+  for (i = 0; i < PyTuple_Size(args);i++) {
+    obj = PyTuple_GetItem(args, i);
+    child = PyOpenSCADObjectToNodeMulti(obj);
+    if(child != NULL) {
       node->children.push_back(child);
     } else {
-        PyErr_SetString(PyExc_TypeError, "CSG input data must be shapes");
-	return NULL;
+      switch(mode) {
+        case OpenSCADOperator::UNION:	    
+          PyErr_SetString(PyExc_TypeError, "Error during parsing union. arguments must be solids or arrays.");
+  	break;
+        case OpenSCADOperator::DIFFERENCE:	    
+          PyErr_SetString(PyExc_TypeError, "Error during parsing difference. arguments must be solids or arrays.");
+  	break;
+        case OpenSCADOperator::INTERSECTION:	    
+          PyErr_SetString(PyExc_TypeError, "Error during parsing intersection. arguments must be solids or arrays.");
+	  break;
+      }
+      return NULL;
     }
   }
 
@@ -1189,32 +1181,8 @@ PyObject *python_nb_multiply(PyObject *arg1, PyObject *arg2) { return python_nb_
 
 PyObject *python_csg_oo_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenSCADOperator mode)
 {
-  DECLARE_INSTANCE
-  std::shared_ptr<AbstractNode> child;
-  int i;
-  int n;
-
-  auto node = std::make_shared<CsgOpNode>(instance, mode);
-  char *kwlist[] = { "obj", NULL };
-  PyObject *more_obj = NULL;
-  PyObject *obj;
-
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist,
-                                   &more_obj
-                                   )) {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing csg_oo");
-    return NULL;
-  }
-
-  child = PyOpenSCADObjectToNode(self);
-  node->children.push_back(child);
-
-  if (python_more_obj(node->children, more_obj)) {
-    PyErr_SetString(PyExc_TypeError, "Unsupported  argument");
-    return NULL;
-  }
-
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+  PyObject *new_args = python_oo_args(self, args);
+  return python_csg_sub(self, new_args, kwargs, mode);
 }
 
 PyObject *python_union_oo(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -1244,33 +1212,41 @@ PyObject *python_csg_adv_sub(PyObject *self, PyObject *args, PyObject *kwargs, C
   char *kwlist[] = { "obj", NULL };
   PyObject *objs = NULL;
   PyObject *obj;
-
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist,
-                                   &PyList_Type, &objs
-                                   )) {
-    switch(mode) {
-      case CgalAdvType::HULL:	    
-        PyErr_SetString(PyExc_TypeError, "Error during parsing hull([input shapes] ...)");
-	break;
-      case CgalAdvType::FILL:	    
-        PyErr_SetString(PyExc_TypeError, "Error during parsing fill([input shapes] ...)");
-	break;
-    }
-    return NULL;
-  }
-  n = PyList_Size(objs);
-  for (i = 0; i < n; i++) {
-    obj = PyList_GetItem(objs, i);
-    if (Py_TYPE(obj) == &PyOpenSCADType) {
-    	child = PyOpenSCADObjectToNode(obj);
-	    node->children.push_back(child);
+  for (i = 0; i < PyTuple_Size(args);i++) {
+    obj = PyTuple_GetItem(args, i);
+    child = PyOpenSCADObjectToNodeMulti(obj);
+    if(child != NULL) {
+      node->children.push_back(child);
     } else {
-      PyErr_SetString(PyExc_TypeError, "CSG input data must be shapes");
+      switch(mode) {
+        case CgalAdvType::HULL:	    
+          PyErr_SetString(PyExc_TypeError, "Error during parsing hull. arguments must be solids or arrays.");
+  	  break;
+        case CgalAdvType::FILL:	    
+          PyErr_SetString(PyExc_TypeError, "Error during parsing fill. arguments must be solids or arrays.");
+	  break;
+      }
       return NULL;
     }
   }
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+}
+
+PyObject *python_csg_adv_oo_sub(PyObject *self, PyObject *args, PyObject *kwargs, CgalAdvType mode)
+{
+  PyObject *new_args = python_oo_args(self, args);
+  return python_csg_adv_sub(self, new_args, kwargs, mode);
+}
+
+PyObject *python_hull_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  return python_csg_adv_oo_sub(self, args, kwargs, CgalAdvType::HULL);
+}
+
+PyObject *python_fill_oo(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  return python_csg_adv_oo_sub(self, args, kwargs, CgalAdvType::FILL);
 }
 
 PyObject *python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -1933,6 +1909,8 @@ PyMethodDef PyOpenSCADMethods[] = {
   {"union", (PyCFunction) python_union_oo, METH_VARARGS | METH_KEYWORDS, "Union Object."},
   {"difference", (PyCFunction) python_difference_oo, METH_VARARGS | METH_KEYWORDS, "Difference Object."},
   {"intersection", (PyCFunction) python_intersection_oo, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
+  {"hull", (PyCFunction) python_hull_oo, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
+  {"fill", (PyCFunction) python_fill_oo, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
   {"mirror", (PyCFunction) python_mirror_oo, METH_VARARGS | METH_KEYWORDS, "Mirror Object."},
   {"multmatrix", (PyCFunction) python_multmatrix_oo, METH_VARARGS | METH_KEYWORDS, "Multmatrix Object."},
   {"linear_extrude", (PyCFunction) python_linear_extrude_oo, METH_VARARGS | METH_KEYWORDS, "Linear_extrude Object."},
