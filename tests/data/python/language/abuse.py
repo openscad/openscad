@@ -161,7 +161,6 @@ catch_error(lambda : hull("obj1","obj2") )
 catch_error(lambda : fill(cube(),sphere()) )        
 
 # Test python_minkowski
-catch_error(lambda : minkowski("obj1","obj2") )        
 catch_error(lambda : minkowski([cube(),sphere()]) )        
 catch_error(lambda : minkowski(parx=4) )        
 

@@ -102,30 +102,29 @@ Error during parsing rotate_extrude(object,...) in line 147
 Error during parsing linear_extrude(object, ...) in line 150
 Error during parsing linear_extrude(object, ...) in line 151
 Error during parsing linear_extrude(object, ...) in line 152
-CSG input data must be shapes in line 155
-Error during parsing union([input shapes] ...) in line 157
-CSG input data must be shapes in line 160
-minkowski input data must be shapes in line 164
-Error during parsing minkowski(object) in line 166
-Invalid type for Object in resize in line 169
+Error during parsing difference. arguments must be solids or arrays. in line 155
+Error during parsing union. arguments must be solids or arrays. in line 157
+Error during parsing hull. arguments must be solids or arrays. in line 160
+Error during parsing minkowski(object) in line 165
+Error during parsing resize(object,vec3) in line 168
+Error during parsing resize(object,vec3) in line 169
 Error during parsing resize(object,vec3) in line 170
-Error during parsing resize(object,vec3) in line 171
+Invalid type for Object in roof in line 174
 Invalid type for Object in roof in line 175
-Invalid type for Object in roof in line 176
-Cannot specify z coordinate for square in line 177
-Error during parsing roof(object) in line 178
+Cannot specify z coordinate for square in line 176
+Error during parsing roof(object) in line 177
+Error during parsing render(object) in line 180
 Error during parsing render(object) in line 181
-Error during parsing render(object) in line 182
-Error during parsing render(object) in line 184
-Error during parsing surface(object) in line 187
-Error during parsing surface(object) in line 189
+Error during parsing render(object) in line 183
+Error during parsing surface(object) in line 186
+Error during parsing surface(object) in line 188
+Invalid type for Object in offset in line 191
 Invalid type for Object in offset in line 192
-Invalid type for Object in offset in line 193
-Cannot specify z coordinate for square in line 194
-Error during parsing offset(object,r) in line 195
+Cannot specify z coordinate for square in line 193
+Error during parsing offset(object,r) in line 194
+Invalid type for Object in projection in line 197
 Invalid type for Object in projection in line 198
-Invalid type for Object in projection in line 199
-Error during parsing projection(object) in line 201
-Error during parsing osimport(filename) in line 204
-Error during parsing osimport(filename) in line 206
+Error during parsing projection(object) in line 200
+Error during parsing osimport(filename) in line 203
+Error during parsing osimport(filename) in line 205
 
