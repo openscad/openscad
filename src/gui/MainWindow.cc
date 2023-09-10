@@ -1932,7 +1932,6 @@ void MainWindow::parseTopLevelDocument()
   boost::regex ex_number( R"(^(\w+)\s*=\s*(-?[\d.]+))");
 //  boost::regex ex_string( R"(^(\w+)\s*=\s*\"(-?[^\"+)\")");
   if (this->python_active) {
-/*
     if(root_file != NULL) {
       printf("pars size is %d\n",root_file->scope.assignments.size());
     }
@@ -1969,8 +1968,6 @@ void MainWindow::parseTopLevelDocument()
     }
 
     auto error = evaluatePython(fulltext_py_eval,this->animateWidget->getAnim_tval());
-*/
-    auto error = evaluatePython(fulltext_py,this->animateWidget->getAnim_tval());
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     fulltext = "\n";
   }
@@ -1982,7 +1979,6 @@ void MainWindow::parseTopLevelDocument()
   this->activeEditor->resetHighlighting();
   if (this->root_file != nullptr) {
     //add parameters as annotation in AST
-/*
 #ifdef ENABLE_PYTHON
   if (this->python_active) {
     //openscad parser is not used so need to extract assignments manually	  
@@ -2004,7 +2000,6 @@ void MainWindow::parseTopLevelDocument()
     fulltext = fulltext_py;	 
   }
 #endif      	  
-*/
     CommentParser::collectParameters(fulltext, this->root_file);
     this->activeEditor->parameterWidget->setParameters(this->root_file, fulltext);
     this->activeEditor->parameterWidget->applyParameters(this->root_file);
