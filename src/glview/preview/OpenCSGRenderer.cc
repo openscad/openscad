@@ -46,12 +46,14 @@ public:
   Renderer::csgmode_e csgmode{Renderer::CSGMODE_NONE};
 
   void render() override {
+    #ifndef DISABLE_FIXEDFUNCTION_GL
     if (geom) {
       glPushMatrix();
       glMultMatrixd(m.data());
       renderer.render_surface(*geom, csgmode, m);
       glPopMatrix();
     }
+    #endif
   }
 private:
   const OpenCSGRenderer& renderer;
@@ -337,6 +339,7 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
 {
 #ifdef ENABLE_OPENCSG
   if (!Feature::ExperimentalVxORenderers.is_enabled()) {
+    #ifndef DISABLE_FIXEDFUNCTION_GL
     for (const auto& product : products->products) {
       std::vector<OpenCSG::Primitive *> primitives;
       for (const auto& csgobj : product.intersections) {
@@ -430,6 +433,7 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
       for (auto& p : primitives) delete p;
       glDepthFunc(GL_LEQUAL);
     }
+    #endif //DISABLE_FIXEDFUNCTION_GL
   } else {
     for (const auto& product : vbo_vertex_products) {
       if (product->primitives().size() > 1) {

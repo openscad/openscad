@@ -238,6 +238,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
 {
   PRINTD("draw()");
   if (!Feature::ExperimentalVxORenderers.is_enabled()) {
+    #ifndef DISABLE_FIXEDFUNCTION_GL
     for (const auto& polyset : this->polysets) {
       PRINTD("draw() polyset");
       if (polyset->getDimension() == 2) {
@@ -266,6 +267,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
         this->render_surface(*polyset, CSGMODE_NORMAL, Transform3d::Identity(), nullptr);
       }
     }
+    #endif //DISABLE_FIXEDFUNCTION_GL
   } else {
     // grab current state to restore after
     GLfloat current_point_size, current_line_width;

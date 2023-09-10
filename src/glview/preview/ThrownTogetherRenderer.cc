@@ -130,6 +130,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, boo
                                                bool highlight_mode, bool background_mode,
                                                bool fberror, OpenSCADOperator type) const
 {
+  #ifndef DISABLE_FIXEDFUNCTION_GL
   if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;
   const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
   if (!ps) return;
@@ -159,6 +160,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, boo
     render_edges(*ps, csgmode);
   }
   glPopMatrix();
+  #endif //DISABLE_FIXEDFUNCTION_GL
 }
 
 void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges,

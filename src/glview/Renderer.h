@@ -80,8 +80,10 @@ public:
   virtual void setColorScheme(const ColorScheme& cs);
 
   [[nodiscard]] virtual csgmode_e get_csgmode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type = OpenSCADOperator::UNION) const;
+  #ifndef DISABLE_FIXEDFUNCTION_GL
   virtual void render_surface(const PolySet& geom, csgmode_e csgmode, const Transform3d& m, const shaderinfo_t *shaderinfo = nullptr) const;
   virtual void render_edges(const PolySet& geom, csgmode_e csgmode) const;
+  #endif
 
 protected:
   std::map<ColorMode, Color4f> colormap;
