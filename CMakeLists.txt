@@ -604,9 +604,11 @@ elseif(UNIX)
       target_compile_definitions(OpenSCAD PRIVATE ENABLE_GLX)
       set(OFFSCREEN_METHOD "Unix GLX on X11")
       message(STATUS "Offscreen OpenGL Context - using Unix GLX on X11")
-      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextGLX.cc)
+      set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
+          src/glview/offscreen-old/OffscreenContextGLX.cc
+          src/glview/OffscreenContextGLX.cc)
       find_package(X11 REQUIRED)
-      target_link_libraries(OpenSCAD PRIVATE X11::X11)
+      target_link_libraries(OpenSCAD PRIVATE X11::X11 ${CMAKE_DL_LIBS})
     endif()
   endif()
 elseif(WIN32)
