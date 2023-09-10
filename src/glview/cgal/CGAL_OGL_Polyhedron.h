@@ -38,7 +38,7 @@ using CGAL::OGL::SNC_SKELETON;
 class CGAL_OGL_Polyhedron : public virtual CGAL::OGL::Polyhedron
 {
 public:
-
+  
   enum CGALColorIndex {
     MARKED_VERTEX_COLOR = 0,
     MARKED_EDGE_COLOR,
@@ -60,6 +60,7 @@ public:
   }
 
   void draw(bool showedges) const override {
+    #ifndef DISABLE_FIXEDFUNCTION_GL
     PRINTD("draw()");
     if (this->style == SNC_BOUNDARY) {
       glCallList(this->object_list_ + 2);
@@ -74,6 +75,7 @@ public:
       glCallList(this->object_list_);
     }
     PRINTD("draw() end");
+    #endif //DISABLE_FIXEDFUNCTION_GL
   }
 
   // overrides function in OGL_helper.h

@@ -45,6 +45,7 @@ public:
 
   using VBOPolyhedron::draw; // draw()
   void draw(bool showedges) const override {
+    #ifndef DISABLE_FIXEDFUNCTION_GL
     PRINTDB("VBO draw(showedges = %d)", showedges);
     // grab current state to restore after
     GLfloat current_point_size, current_line_width;
@@ -78,6 +79,7 @@ public:
     if (!origColorArrayState) glDisableClientState(GL_COLOR_ARRAY);
 
     PRINTD("VBO draw() end");
+    #endif //DISABLE_FIXEDFUNCTION_GL
   }
 }; // CGAL_OGL_Polyhedron
 

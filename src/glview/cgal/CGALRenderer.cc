@@ -160,6 +160,7 @@ void CGALRenderer::createPolySets()
   for (const auto& polyset : this->polysets) {
     Color4f color;
 
+    #ifndef DISABLE_FIXEDFUNCTION_GL
     PRINTD("polysets");
     if (polyset->getDimension() == 2) {
       PRINTD("2d polysets");
@@ -205,6 +206,7 @@ void CGALRenderer::createPolySets()
       getColor(ColorMode::MATERIAL, color);
       this->create_surface(*polyset, vertex_array, CSGMODE_NORMAL, Transform3d::Identity(), color);
     }
+    #endif //DISABLE_FIXEDFUNCTION_GL
   }
 
   if (this->polysets.size()) {
@@ -271,9 +273,11 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
   } else {
     // grab current state to restore after
     GLfloat current_point_size, current_line_width;
+    #ifndef DISABLE_FIXEDFUNCTION_GL
     GLboolean origVertexArrayState = glIsEnabled(GL_VERTEX_ARRAY);
     GLboolean origNormalArrayState = glIsEnabled(GL_NORMAL_ARRAY);
     GLboolean origColorArrayState = glIsEnabled(GL_COLOR_ARRAY);
+    #endif //DISABLE_FIXEDFUNCTION_GL
 
     GL_CHECKD(glGetFloatv(GL_POINT_SIZE, &current_point_size));
     GL_CHECKD(glGetFloatv(GL_LINE_WIDTH, &current_line_width));
@@ -287,10 +291,11 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
     GL_CHECKD(glPointSize(current_point_size));
     GL_TRACE("glLineWidth(%d)", current_line_width);
     GL_CHECKD(glLineWidth(current_line_width));
-
+    #ifndef DISABLE_FIXEDFUNCTION_GL
     if (!origVertexArrayState) glDisableClientState(GL_VERTEX_ARRAY);
     if (!origNormalArrayState) glDisableClientState(GL_NORMAL_ARRAY);
     if (!origColorArrayState) glDisableClientState(GL_COLOR_ARRAY);
+    #endif //DISABLE_FIXEDFUNCTION_GL
   }
 
   for (const auto& p : this->getPolyhedrons()) {

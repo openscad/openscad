@@ -154,6 +154,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
 
   glViewport(0, 0, this->view->cam.pixel_width, this->view->cam.pixel_height);
   this->view->setupCamera();
+  #ifndef DISABLE_FIXEDFUNCTION_GL
   glTranslated(this->view->cam.object_trans.x(),
                this->view->cam.object_trans.y(),
                this->view->cam.object_trans.z());
@@ -163,10 +164,10 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   glCullFace(GL_BACK);
   glDisable(GL_CULL_FACE);
   glEnable(GL_DEPTH_TEST);
+  #endif //DISABLE_FIXEDFUNCTION_GL
 
   // call the renderer with the selector shader
   GL_CHECKD(renderer->draw(true, false, &this->shaderinfo));
-
   // Not strictly necessary, but a nop if not required.
   glFlush();
   glFinish();
@@ -174,8 +175,9 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   // Grab the color from the framebuffer and convert it back to an identifier
   GLubyte color[3] = { 0 };
   GL_CHECKD(glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color));
+  #ifndef DISABLE_FIXEDFUNCTION_GL
   glDisable(GL_DEPTH_TEST);
-
+  #endif //DISABLE_FIXEDFUNCTION_GL
   int index = (uint32_t)color[0] | ((uint32_t)color[1] << 8) | ((uint32_t)color[2] << 16);
 
   // Switch the active framebuffer back to the default

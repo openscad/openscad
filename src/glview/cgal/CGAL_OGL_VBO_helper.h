@@ -250,7 +250,7 @@ public:
       elements_offset = points_edges_array.elementsOffset();
       points_edges_array.elementsMap().clear();
     }
-
+    #ifndef DISABLE_FIXEDFUNCTION_GL
     std::shared_ptr<VertexState> settings = std::make_shared<VertexState>();
     settings->glBegin().emplace_back([]() {
       GL_TRACE0("glDisable(GL_LIGHTING)");
@@ -304,7 +304,7 @@ public:
       points_edges_array.writeIndex(), elements_offset);
     points_edges_states.emplace_back(std::move(vs));
     points_edges_array.addAttributePointers(last_size);
-
+    #endif //DISABLE_FIXEDFUNCTION_GL
     if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
       if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
         GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
@@ -322,7 +322,7 @@ public:
     VertexArray halffacets_array(std::make_shared<VertexStateFactory>(), halffacets_states);
     halffacets_array.addSurfaceData();
     halffacets_array.writeSurface();
-
+    #ifndef DISABLE_FIXEDFUNCTION_GL
     settings = std::make_shared<VertexState>();
     settings->glBegin().emplace_back([]() {
       GL_TRACE0("glEnable(GL_LIGHTING)");
@@ -376,6 +376,7 @@ public:
     halffacets_array.createInterleavedVBOs();
     halffacets_vertices_vbo = halffacets_array.verticesVBO();
     halffacets_elements_vbo = halffacets_array.elementsVBO();
+    #endif
   }
 
   void init() override {
