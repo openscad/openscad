@@ -59,7 +59,7 @@ public:
   //  This function will alter ctx.openGLContext and ctx.xwindow if successful
   bool createGLXContext(size_t majorGLVersion, size_t minorGLVersion, bool compatibilityProfile) {
     const int attributes[] = {
-      GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT | GLX_PIXMAP_BIT | GLX_PBUFFER_BIT, //support all 3, for OpenCSG
+      GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT | GLX_PIXMAP_BIT,
       GLX_RENDER_TYPE, GLX_RGBA_BIT,
       GLX_RED_SIZE, 8,
       GLX_GREEN_SIZE, 8,
@@ -67,25 +67,24 @@ public:
       GLX_ALPHA_SIZE, 8,
       GLX_DEPTH_SIZE, 24, // depth-stencil for OpenCSG
       GLX_STENCIL_SIZE, 8,
-      GLX_DOUBLEBUFFER, true, // FIXME: Do we need this?
       None
     };
 
     int numConfigs = 0;
     GLXFBConfig *fbconfigs = nullptr;
     XVisualInfo *visinfo = nullptr;
-    auto guard = sg::make_scope_guard([fbconfigs, visinfo]() {
+    auto guard = sg::make_scope_guard([&fbconfigs, &visinfo]() {
       if (fbconfigs) XFree(fbconfigs);
-      if (visinfo)XFree(visinfo);
+      if (visinfo) XFree(visinfo);
     });
-      fbconfigs = glXChooseFBConfig(this->display, DefaultScreen(this->display), attributes, &numConfigs);
+    fbconfigs = glXChooseFBConfig(this->display, DefaultScreen(this->display), attributes, &numConfigs);
     if (fbconfigs == nullptr) {
-      std::cerr << "glXChooseFBConfig() failed" << std::endl;
+      LOG("glXChooseFBConfig() failed");
       return false;
     }
     visinfo = glXGetVisualFromFBConfig(this->display, fbconfigs[0]);
     if (visinfo == nullptr) {
-      std::cerr << "glXGetVisualFromFBConfig failed" << std::endl;
+      LOG("glXGetVisualFromFBConfig failed");
       return false;
     }
 
@@ -109,10 +108,9 @@ public:
     if (xlibLastError != Success) {
       char description[1024];
       XGetErrorText(this->display, xlibLastError, description, 1023);
-      std::cerr << "XCreateWindow() failed: " << description << std::endl;
+      LOG("XCreateWindow() failed: %1$s", description);
       return false;
     }
-
 
     GLint context_attributes[] = {
       GLX_CONTEXT_MAJOR_VERSION_ARB, static_cast<GLint>(majorGLVersion),
@@ -124,13 +122,13 @@ public:
     if (glXCreateContextAttribsARB) {
       this->glxContext = glXCreateContextAttribsARB(this->display, fbconfigs[0], nullptr, 1, context_attributes);
       if (!this->glxContext) {
-        std::cerr << "Unable to create GLX context using glXCreateContextAttribsARB()" << std::endl;
+        LOG("Unable to create GLX context using glXCreateContextAttribsARB()");
       }
     }
     if (!this->glxContext) {
       this->glxContext = glXCreateNewContext(this->display, fbconfigs[0], GLX_RGBA_TYPE, nullptr, 1);
       if (!this->glxContext) {
-        std::cerr << "Unable to create GLX context using glXCreateNewContext()" << std::endl;
+        LOG("Unable to create GLX context using glXCreateNewContext()");
         return false;
       }
     }
@@ -156,15 +154,15 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextGLX(size_t width, size_t
 
   ctx->display = XOpenDisplay(nullptr);
   if (ctx->display == nullptr) {
-    std::cerr << "Unable to open a connection to the X server." << std::endl;
-    auto dpyenv = getenv("DISPLAY");
-    std::cerr << "DISPLAY=" << (dpyenv?dpyenv:"") << std::endl;
+    LOG("Unable to open a connection to the X server.");
+    char *dpyenv = getenv("DISPLAY");
+    LOG("  DISPLAY=%1$s", (dpyenv?dpyenv:""));
     return nullptr;
   }
 
   int glxVersion = gladLoaderLoadGLX(ctx->display, DefaultScreen(ctx->display));
   if (!glxVersion) {
-      std::cerr << "GLAD: Unable to load GLX" << std::endl;
+      LOG("GLAD: Unable to load GLX");
       return nullptr;
   }
   int glxMajor = GLAD_VERSION_MAJOR(glxVersion);
@@ -176,8 +174,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextGLX(size_t width, size_t
   // we also accept GLX < 1.3 as long as glXGetVisualFromFBConfig() exists.
   // FIXME: Figure out if this is still relevant with GLAD, as we may want to check functions anyway?
   if (glxMajor == 1 && glxMinor <= 2 && glXGetVisualFromFBConfig == nullptr) {
-    std::cerr << "Error: GLX version 1.3 functions missing. "
-              << "Your GLX version: " << glxMajor << "." << glxMinor << std::endl;
+    LOG("Error: GLX version 1.3 functions missing. Your GLX version: %1$d.%2$d", glxMajor, glxMinor);
     return nullptr;
   }
   
