@@ -442,6 +442,28 @@ sys.stderr = stderr_bak\n\
 	    PyInit_PyOpenSCAD();
 	    sprintf(run_str,"from openscad import *\nfa=12.0\nfn=0.0\nfs=2.0\nt=%g",time); /* set default fn,fa,fs and time */
 	    PyRun_String(run_str, Py_file_input, pythonInitDict, pythonInitDict);
+	     PyObject *maindict = PyModule_GetDict(pythonMainModule);
+
+	     PyObject *keys =  PyDict_Values(maindict);
+	    	Py_XINCREF(keys);
+	     for(int i=0;i<PyList_Size(keys);i++) {
+               PyObject *module = PyList_GetItem(keys, i);		     
+		if(module == NULL) continue;
+	    	Py_XINCREF(module);
+//		printf("%s\n",PyModule_GetName(module));
+//		PyObject *moduledict = PyModule_GetDict(module);
+//	    	Py_XINCREF(moduledict);
+
+//	    	PyObject *keys1 =  PyDict_Keys(moduledict);
+//		for(int i=0;i<PyList_Size(keys1);i++) {
+//		  PyObject *item=PyList_GetItem(keys1,i);
+//	          PyObject* item1 = PyUnicode_AsEncodedString(item, "utf-8", "~");
+//	          const char *item2 =  PyBytes_AS_STRING(item1);
+//		  printf("t %d %s\n",i,item2);
+//		}
+//	    	Py_XDECREF(keys1);
+//		printf("-------\n");
+	    }
     }
     PyRun_SimpleString(python_init_code);
     PyObject *result = PyRun_String(code.c_str(), Py_file_input, pythonInitDict, pythonInitDict); /* actual code is run here */
