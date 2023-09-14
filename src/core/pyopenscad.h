@@ -48,5 +48,5 @@ extern PyMappingMethods PyOpenSCADMapping;
 extern PyMethodDef PyOpenSCADFunctions[];
 extern PyMethodDef PyOpenSCADMethods[];
 
-std::string evaluatePython(const std::string &code, double time);
+std::string evaluatePython(const std::string &code, double time,AssignmentList &assignments);
 
