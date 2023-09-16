@@ -81,7 +81,8 @@ void SourceFile::registerUse(const std::string& path, const Location& loc)
       if(trusted) {
         boost::filesystem::path boost_path(path); 
         std::string cmd = "import sys\nsys.path.append('"+boost_path.parent_path().string()+"')\nimport "+boost_path.stem().string();
-        std::string error=evaluatePython(cmd,0); 
+	AssignmentList dummy_assignment;
+        std::string error=evaluatePython(cmd,0,dummy_assignment); 
         if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
       } else LOG(message_group::Error, "File not trusted '%1$s'", path);
 

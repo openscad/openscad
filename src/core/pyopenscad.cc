@@ -390,7 +390,7 @@ Value python_functionfunc(const FunctionCall *call )
  * Main python evaluation entry
  */
 
-std::string evaluatePython(const std::string & code, double time)
+std::string evaluatePython(const std::string & code, double time,AssignmentList &assignments)
 {
   std::string error;
   python_result_node = NULL;
@@ -445,6 +445,50 @@ sys.stderr = stderr_bak\n\
     }
     PyRun_SimpleString(python_init_code);
     PyObject *result = PyRun_String(code.c_str(), Py_file_input, pythonInitDict, pythonInitDict); /* actual code is run here */
+
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    PyObject *pFunc;
+
+    PyObject *maindict = PyModule_GetDict(pythonMainModule);
+    assignments.clear();
+    while (PyDict_Next(maindict, &pos, &key, &value)) {
+      PyObject* key1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
+      const char *key_str =  PyBytes_AS_STRING(key1);
+      if(key_str == NULL) continue;
+      if(strcmp(key_str,"fn") == 0) continue;
+      if(strcmp(key_str,"fa") == 0) continue;
+      if(strcmp(key_str,"fs") == 0) continue;
+      if(strcmp(key_str,"t") == 0) continue;
+      if(strcmp(key_str,"__name__") == 0) continue;
+      // annotation "Parameter" missing
+      std::shared_ptr<Literal> lit;
+      bool found=false;
+      if(PyFloat_Check(value)) {
+        lit  = std::make_shared<Literal>(PyFloat_AsDouble(value),Location::NONE);
+        found=true;
+      }
+      else if(PyLong_Check(value)){
+        lit = std::make_shared<Literal>(PyLong_AsLong(value)*1.0,Location::NONE);
+        found=true;
+      }
+      else if(PyUnicode_Check(value)){
+        PyObject* value1 = PyUnicode_AsEncodedString(value, "utf-8", "~");
+        const char *value_str =  PyBytes_AS_STRING(value1);
+        lit = std::make_shared<Literal>(value_str,Location::NONE);
+        found=true;
+      }
+      if(found == true) {
+        AnnotationList annotationList;
+        annotationList.push_back(Annotation("Parameter",std::make_shared<Literal>("Parameter")));
+        annotationList.push_back(Annotation("Description",std::make_shared<Literal>("Description")));
+        annotationList.push_back(Annotation("Group",std::make_shared<Literal>("Group")));
+        auto assignment = std::make_shared<Assignment>(key_str,lit);
+        assignment->addAnnotations(&annotationList);
+        assignments.push_back(assignment);
+      }
+    }
+
     if(result  == NULL) PyErr_Print();
     PyRun_SimpleString(python_exit_code);
 

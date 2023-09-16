@@ -99,7 +99,7 @@
 
 #ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
-std::string evaluatePython(const std::string &code, double time);
+std::string evaluatePython(const std::string &code, double time,AssignmentList &assignments);
 extern bool python_trusted;
 
 #include "cryptopp/sha.h"
@@ -1930,13 +1930,78 @@ void MainWindow::parseTopLevelDocument()
 #ifdef ENABLE_PYTHON
   recomputePythonActive();
   boost::regex ex_number( R"(^(\w+)\s*=\s*(-?[\d.]+))");
-//  boost::regex ex_string( R"(^(\w+)\s*=\s*\"(-?[^\"+)\")");
+  boost::regex ex_string( R"(^(\w+)\s*=\s*\"([^\"]*)\")");
   if (this->python_active) {
-    auto error = evaluatePython(fulltext_py,this->animateWidget->getAnim_tval());
+    // now replace all new variables
+
+    this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
+    this->root_file = nullptr;  // ditto
+    fs::path parser_sourcefile = fs::path(fname).generic_string();				
+    this->root_file =new SourceFile(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
+    this->parsed_file = this->root_file;
+
+    std::istringstream iss(fulltext_py);
+    boost::smatch results;
+    std::string fulltext_py_eval="";
+    for (std::string line; std::getline(iss, line); ) {
+      bool found=false;
+
+      if (boost::regex_search(line, results, ex_number) && results.size() >= 3) {
+	for (auto par: this->assignments_last) {
+          const std::shared_ptr<Expression> &expr = par->getExpr();
+          if (!expr->isLiteral()) continue; // Only consider literals
+            if(par->getName() == results[1]) {
+              const std::shared_ptr<Literal> &lit=dynamic_pointer_cast<Literal>(expr);
+	      if(lit->isDouble()) {
+                fulltext_py_eval.append(results[1]);
+                fulltext_py_eval.append("=");
+                fulltext_py_eval.append(std::to_string(lit->toDouble()));
+                found=true;
+	      }
+          } 
+        }
+      }
+      if (boost::regex_search(line, results, ex_string) && results.size() >= 3) {
+	for (auto par: this->assignments_last) {
+          const std::shared_ptr<Expression> &expr = par->getExpr();
+          if (!expr->isLiteral()) continue; // Only consider literals
+            if(par->getName() == results[1]) {
+              const std::shared_ptr<Literal> &lit=dynamic_pointer_cast<Literal>(expr);
+	      if(lit->isString()) {
+                fulltext_py_eval.append(results[1]);
+                fulltext_py_eval.append("=\"");
+                fulltext_py_eval.append(lit->toString());
+                fulltext_py_eval.append("\"");
+                found=true;
+	      }
+          } 
+        }
+      }
+
+      if(!found) fulltext_py_eval.append(line);
+      fulltext_py_eval.append("\r\n");
+
+    }
+
+    auto error = evaluatePython(fulltext_py_eval,this->animateWidget->getAnim_tval(),root_file->scope.assignments);
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
-    fulltext = "\n";
-  }
+
+    this->activeEditor->resetHighlighting();
+    if (this->root_file != nullptr) {
+      //add parameters as annotation in AST
+//      CommentParser::collectParameters("\n", this->root_file);
+      this->activeEditor->parameterWidget->setParameters(this->root_file, "\n");
+      this->activeEditor->parameterWidget->applyParameters(this->root_file);
+      this->activeEditor->parameterWidget->setEnabled(true);
+      this->activeEditor->setIndicator(this->root_file->indicatorData);
+      this->assignments_last = root_file->scope.assignments;
+    } else {
+      this->activeEditor->parameterWidget->setEnabled(false);
+    }
+
+  } else // python not enabled
 #endif // ifdef ENABLE_PYTHON
+{
   this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
   this->root_file = nullptr;  // ditto
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
@@ -1952,6 +2017,7 @@ void MainWindow::parseTopLevelDocument()
   } else {
     this->activeEditor->parameterWidget->setEnabled(false);
   }
+}
 }
 
 void MainWindow::changeParameterWidget()
