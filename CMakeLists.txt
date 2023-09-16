@@ -451,6 +451,7 @@ target_include_directories(OpenSCAD PRIVATE
   "src"
   "src/core"
   "src/core/customizer"
+  "src/ext"
   "src/ext/json"
   "src/ext/lexertl/include"
   "src/ext/libtess2/Include"
@@ -572,15 +573,17 @@ else()
 endif()
 if(APPLE)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_OS="Mac OS X")
-  message(STATUS "Offscreen OpenGL Context - using Apple NSOpenGL")
+  message(STATUS "Offscreen OpenGL Context - using Apple CGL/NSOpenGL")
   set(PLATFORM_SOURCES src/platform/PlatformUtils-mac.mm src/io/imageutils-macosx.cc src/platform/CocoaUtils.mm)
   if(NOT HEADLESS)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/gui/AppleEvents.cc)
   endif()
   if(NOT NULLGL)
     target_compile_definitions(OpenSCAD PRIVATE GL_SILENCE_DEPRECATION)
-    set(OFFSCREEN_METHOD "Apple NSOpenGL")
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextNSOpenGL.mm)
+    set(OFFSCREEN_METHOD "Apple CGL/NSOpenGL")
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
+        src/glview/offscreen-old/OffscreenContextNSOpenGL.mm
+        src/glview/OffscreenContextCGL.cc)
   endif()
   find_library(COCOA_LIBRARY Cocoa)
   target_link_libraries(OpenSCAD PRIVATE ${COCOA_LIBRARY})
@@ -601,9 +604,11 @@ elseif(UNIX)
       target_compile_definitions(OpenSCAD PRIVATE ENABLE_GLX)
       set(OFFSCREEN_METHOD "Unix GLX on X11")
       message(STATUS "Offscreen OpenGL Context - using Unix GLX on X11")
-      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextGLX.cc)
+      set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
+          src/glview/offscreen-old/OffscreenContextGLX.cc
+          src/glview/OffscreenContextGLX.cc)
       find_package(X11 REQUIRED)
-      target_link_libraries(OpenSCAD PRIVATE X11::X11)
+      target_link_libraries(OpenSCAD PRIVATE X11::X11 ${CMAKE_DL_LIBS})
     endif()
   endif()
 elseif(WIN32)
