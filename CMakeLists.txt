@@ -328,8 +328,6 @@ if(USE_GLAD)
   target_link_libraries(OpenSCAD PRIVATE ${CMAKE_DL_LIBS})
 endif()
 
-
-
 if (("${Boost_VERSION}" VERSION_GREATER "1.72") AND ("${Boost_VERSION}" VERSION_LESS "1.76"))
   # Avoid warning messages from boost which are also caused by boost's code.
   #   https://github.com/boostorg/property_tree/issues/51
