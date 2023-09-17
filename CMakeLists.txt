@@ -229,6 +229,12 @@ macro(find_graphics)
       message(STATUS "USE_GLAD/USE_GLEW not specified: Defaulting to ${WRANGLER}")
     endif()
 
+    if (USE_GLEW OR OPENCSG_GLEW)
+      find_package(GLEW REQUIRED QUIET)
+      message(STATUS "GLEW: ${GLEW_VERSION}")
+      target_link_libraries(OpenSCAD PRIVATE GLEW::glew)
+    endif()
+
     find_package(OpenGL REQUIRED QUIET)
     target_link_libraries(OpenSCAD PRIVATE ${OPENGL_LIBRARIES})
     message(STATUS "OpenGL: ${OPENGL_LIBRARIES}")
