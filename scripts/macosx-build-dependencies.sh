@@ -58,7 +58,7 @@ PACKAGES=(
     "cairo 1.16.0"
     "cgal 5.5"
     "qt5 5.15.7"
-    "opencsg 1.5.1"
+    "opencsg 1.6.0"
     "qscintilla 2.13.3"
     "onetbb 2021.8.0"
 )

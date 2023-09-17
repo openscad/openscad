@@ -2,7 +2,7 @@
 
 #ifndef NULLGL
 
-#ifdef USE_GLEW
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
 #include <GL/glew.h>
 #endif
 #ifdef USE_GLAD
