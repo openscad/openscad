@@ -94,7 +94,6 @@ public:
   void findPlatformDisplay() {
     std::set<std::string> clientExtensions;
     std::string ext = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-    std::cout << ext << std::endl;
     std::istringstream iss(ext);
     while (iss) {
       std::string extension;
@@ -106,7 +105,6 @@ public:
       return;
     }
 
-    std::cout << "Trying Platform display..." << std::endl;
     if (eglQueryDevicesEXT && eglGetPlatformDisplayEXT) {
       EGLDeviceEXT eglDevice;
       EGLint numDevices = 0;
@@ -161,8 +159,8 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
     LOG("gladLoaderLoadEGL(NULL): Unable to load EGL");
     return nullptr;
   }
-  std::cout << "Loaded EGL " << GLAD_VERSION_MAJOR(initialEglVersion) << "."
-    << GLAD_VERSION_MINOR(initialEglVersion) << " on first load." << std::endl;
+  PRINTDB("GLAD: Loaded EGL %d.%d on first load",
+	  GLAD_VERSION_MAJOR(initialEglVersion) % GLAD_VERSION_MINOR(initialEglVersion));
   
   EGLint conformant;
   if (!gles) conformant = EGL_OPENGL_BIT;
@@ -187,7 +185,6 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
 
   if (!drmNode.empty()) {
 #ifdef HAS_GBM
-    std::cout << "Using GBM..." << std::endl;
     ctx->getDisplayFromDrmNode(drmNode);
 #endif
   } else {
@@ -195,7 +192,6 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
     // If so, we also have to try initializing it
     ctx->findPlatformDisplay();
     if (ctx->eglDisplay == EGL_NO_DISPLAY) {
-      std::cout << "Trying default EGL display..." << std::endl;
       ctx->eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY);
     }
   }
@@ -211,21 +207,21 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
     return nullptr;
   }
 
-  std::cout << "EGL Version: " << major << "." << minor << " (" << eglQueryString(ctx->eglDisplay, EGL_VENDOR) << ")" << std::endl;
+  PRINTDB("Initialized EGL version: %d.%d (%s)", major % minor % eglQueryString(ctx->eglDisplay, EGL_VENDOR));
 
   const auto eglVersion = gladLoaderLoadEGL(ctx->eglDisplay);
   if (!eglVersion) {
     LOG("gladLoaderLoadEGL(eglDisplay): Unable to reload EGL");
     return nullptr;
   }
-  std::cout << "Loaded EGL " << GLAD_VERSION_MAJOR(eglVersion) << "." << GLAD_VERSION_MINOR(eglVersion) << " after reload" << std::endl;
+  PRINTDB("GLAD: Loaded EGL %d.%d after reload", GLAD_VERSION_MAJOR(eglVersion) %GLAD_VERSION_MINOR(eglVersion));
 
-  if (eglGetDisplayDriverName) {
-    const char *name = eglGetDisplayDriverName(ctx->eglDisplay);
-    if (name) {
-      std::cout << "Got EGL display with driver name: " << name << std::endl;
-    }
-  }
+  // if (eglGetDisplayDriverName) {
+  //   const char *name = eglGetDisplayDriverName(ctx->eglDisplay);
+  //   if (name) {
+  //     std::cout << "Got EGL display with driver name: " << name << std::endl;
+  //   }
+  // }
 
   EGLint numConfigs;
   EGLConfig config;
