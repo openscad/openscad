@@ -76,13 +76,13 @@ public:
     this->eglDisplay = EGL_NO_DISPLAY;
     const int fd = open(drmNode.c_str(), O_RDWR);
     if (fd < 0) {
-      std::cerr << "Unable to open DRM node " << drmNode << std::endl;
+      LOG("Unable to open DRM node %1$s", drmNode);
       return;
     }
 
     this->gbmDevice = gbm_create_device(fd);
     if (!this->gbmDevice) {
-      std::cerr << "Unable to create GDM device" << std::endl;
+      LOG("Unable to create GDM device");
       return;
     }
 
@@ -127,7 +127,7 @@ public:
                            GBM_FORMAT_ARGB8888, 
                            0); // GBM_BO_USE_RENDERING
       if (!gbmSurface) {
-        std::cerr << "Unable to create GBM surface" << std::endl;
+        LOG("Unable to create GBM surface");
         this->eglSurface = EGL_NO_SURFACE;
         return;
       }
@@ -158,7 +158,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
 
   int initialEglVersion = gladLoaderLoadEGL(NULL);
   if (!initialEglVersion) {
-    std::cerr << "gladLoaderLoadEGL(NULL): Unable to load EGL" << std::endl;
+    LOG("gladLoaderLoadEGL(NULL): Unable to load EGL");
     return nullptr;
   }
   std::cout << "Loaded EGL " << GLAD_VERSION_MAJOR(initialEglVersion) << "."
@@ -201,13 +201,13 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
   }
 
   if (ctx->eglDisplay == EGL_NO_DISPLAY) {
-    std::cerr << "No EGL display found" << std::endl;
+    LOG("No EGL display found");
     return nullptr;
   }
 
   EGLint major, minor;
   if (!eglInitialize(ctx->eglDisplay, &major, &minor)) {
-    std::cerr << "Unable to initialize EGL: " << eglGetErrorString(eglGetError()) << std::endl;
+    LOG("Unable to initialize EGL: %1$s", eglGetErrorString(eglGetError()));
     return nullptr;
   }
 
@@ -215,7 +215,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
 
   const auto eglVersion = gladLoaderLoadEGL(ctx->eglDisplay);
   if (!eglVersion) {
-    std::cerr << "gladLoaderLoadEGL(eglDisplay): Unable to reload EGL" << std::endl;
+    LOG("gladLoaderLoadEGL(eglDisplay): Unable to reload EGL");
     return nullptr;
   }
   std::cout << "Loaded EGL " << GLAD_VERSION_MAJOR(eglVersion) << "." << GLAD_VERSION_MINOR(eglVersion) << " after reload" << std::endl;
@@ -231,17 +231,17 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
   EGLConfig config;
   bool gotConfig = eglChooseConfig(ctx->eglDisplay, configAttribs, &config, 1, &numConfigs);
   if (!gotConfig || numConfigs == 0) {
-    std::cerr << "Failed to choose config (eglError: " << std::hex << eglGetError() << ")" << std::endl;
+    LOG("Failed to choose config (eglError: %1$x)", eglGetError());
     return nullptr;
   }
   if (!eglBindAPI(gles ? EGL_OPENGL_ES_API : EGL_OPENGL_API)) {
-    std::cerr << "eglBindAPI() failed!" << std::endl;
+    LOG("eglBindAPI() failed!");
     return nullptr;
   }
 
   ctx->createSurface(config, width, height);    
   if (ctx->eglSurface == EGL_NO_SURFACE) {
-    std::cerr << "Unable to create EGL surface (eglError: " << eglGetError() << ")" << std::endl;
+    LOG("Unable to create EGL surface (eglError: %1$x)", eglGetError());
     return nullptr;
   }
 
@@ -256,7 +256,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
   ctxattr.push_back(EGL_NONE);
   ctx->eglContext = eglCreateContext(ctx->eglDisplay, config, EGL_NO_CONTEXT, ctxattr.data());
   if (ctx->eglContext == EGL_NO_CONTEXT) {
-    std::cerr << "Unable to create EGL context (eglError: " << eglGetError() << ")" << std::endl;
+    LOG("Unable to create EGL context (eglError: %1$x)", eglGetError());
     return nullptr;
   }
 
