@@ -26,11 +26,12 @@
 
 #include "qtgettext.h"
 #include "QGLView.h"
-#include "glew-utils.h"
 #include "Preferences.h"
 #include "Renderer.h"
 #include "degree_trig.h"
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
 #include "glew-utils.h"
+#endif
 
 #include <QApplication>
 #include <QWheelEvent>
@@ -88,9 +89,11 @@ void QGLView::viewAll()
 
 void QGLView::initializeGL()
 {
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
   // Since OpenCSG requires glew, we need to initialize it.
   // ..in a separate compilation unit to avoid duplicate symbols with GLAD.
   initializeGlew();
+#endif
 #ifdef USE_GLAD
   // We could ask for gladLoadGLES2UserPtr() here if we want to use GLES2+
   const auto version = gladLoadGLUserPtr([](void *ctx, const char *name) -> GLADapiproc {
@@ -140,7 +143,7 @@ void QGLView::display_opencsg_warning_dialog()
   message += _("It is highly recommended to use OpenSCAD on a system with "
                "OpenGL 2.0 or later.\n"
                "Your renderer information is as follows:\n");
-#ifdef USE_GLEW
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
   QString rendererinfo(_("GLEW version %1\n%2 (%3)\nOpenGL version %4\n"));
   message += rendererinfo.arg((const char *)glewGetString(GLEW_VERSION),
                               (const char *)glGetString(GL_RENDERER),
