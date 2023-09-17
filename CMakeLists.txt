@@ -233,6 +233,7 @@ macro(find_graphics)
       find_package(GLEW REQUIRED QUIET)
       message(STATUS "GLEW: ${GLEW_VERSION}")
       target_link_libraries(OpenSCAD PRIVATE GLEW::glew)
+      set(GLEW_SOURCES src/glview/glew-utils.cc)
     endif()
 
     find_package(OpenGL REQUIRED QUIET)
