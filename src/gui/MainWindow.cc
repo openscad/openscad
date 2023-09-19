@@ -1428,7 +1428,7 @@ void MainWindow::actionOpen()
 }
 
 void MainWindow::useShader(const std::string& shaderLocation) {
-  LOG(message_group::None, Location::NONE, "", "User selected shader location: %1$s", shaderLocation);
+  LOG(message_group::Trace, Location::NONE, "", "User selected shader location: %1$s", shaderLocation);
   this->shader_directory_path = shaderLocation;
   if(this->qglview->renderer) {
     const std::string result = this->qglview->renderer->setShader(shaderLocation);

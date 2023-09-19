@@ -79,7 +79,7 @@ std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   auto ps = std::make_shared<PolySet>(3);
   manifold::Mesh mesh = getManifold().GetMesh();
   ps->reserve(mesh.triVerts.size());
-  Polygon poly(3);
+  Polygon poly{3};
   for (const auto &tv : mesh.triVerts) {
     for (const int j : {0, 1, 2}) {
       poly[j] = vector_convert<Vector3d>(mesh.vertPos[tv[j]]);

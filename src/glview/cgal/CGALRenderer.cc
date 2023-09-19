@@ -44,7 +44,7 @@
 
 //#include "Preferences.h"
 
-CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom, const std::string& shaderDirectoryPath)
+CGALRenderer::CGALRenderer(const shared_ptr<const Geometry> geom, const std::string& shaderDirectoryPath)
   : VBORenderer(shaderDirectoryPath), last_render_state(Feature::ExperimentalVxORenderers.is_enabled()), // FIXME: this is temporary to make switching between renderers seamless.
   polyset_vertices_vbo(0), polyset_elements_vbo(0)
 {
@@ -178,6 +178,7 @@ void CGALRenderer::createPolySets(bool showfaces)
     bool was_2d;
     if (polyset->getDimension() == 2 /*&& !Feature::ExperimentalVxORenderers.is_enabled()*/) {
       PRINTD("2d polysets");
+      #ifndef DISABLE_FIXEDFUNCTION_GL
       vertex_array.writeEdge();
 
       std::shared_ptr<VertexState> init_state = std::make_shared<VertexState>();
@@ -213,6 +214,7 @@ void CGALRenderer::createPolySets(bool showfaces)
       });
       polyset_states.emplace_back(std::move(end_state));
       was_2d = true;
+      #endif //DISABLE_FIXEDFUNCTION_GL
     } else {
       PRINTD("3d polysets");
       if(!shader_data_created) {
@@ -232,12 +234,9 @@ void CGALRenderer::createPolySets(bool showfaces)
         glUniform1i(shader_info.data.csg_rendering.draw_edges, 0);
         std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
         color_state->glBegin().emplace_back([shader_info, last_color, marked_color]() {
-          GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_area % last_color[0] % last_color[1] % last_color[2] % last_color[3]);
-          glUniform4f(shader_info.data.csg_rendering.color_area, last_color[0], last_color[1], last_color[2], last_color[3]); GL_ERROR_CHECK();
-          GL_TRACE("glUniform4f(%d, %f, %f, %f, 1.0)", shader_info.data.csg_rendering.color_edge % ((last_color[0] + 1) / 2) % ((last_color[1] + 1) / 2) % ((last_color[2] + 1) / 2));
-          glUniform4f(shader_info.data.csg_rendering.color_edge, (last_color[0] + 1) / 2, (last_color[1] + 1) / 2, (last_color[2] + 1) / 2, 1.0); GL_ERROR_CHECK();
-          GL_TRACE("glUniform4f(%d, %f, %f, %f, %f)", shader_info.data.csg_rendering.color_marked % marked_color[0] % marked_color[1] % marked_color[2] % marked_color[3]);
-          glUniform4f(shader_info.data.csg_rendering.color_marked, marked_color[0], marked_color[1], marked_color[2], marked_color[3]); GL_ERROR_CHECK();
+          GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, last_color[0], last_color[1], last_color[2], last_color[3]));
+          GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (last_color[0] + 1) / 2, (last_color[1] + 1) / 2, (last_color[2] + 1) / 2, 1.0));
+          GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_marked, marked_color[0], marked_color[1], marked_color[2], marked_color[3]));
         });
         polyset_states.emplace_back(std::move(color_state));
       }
@@ -266,7 +265,7 @@ void CGALRenderer::createPolySets(bool showfaces)
   }
 }
 
-void CGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const shaderinfo_t * /*shaderinfo*/)
+void CGALRenderer::prepare(bool showfaces, bool /*showedges*/, const shaderinfo_t * /*shaderinfo*/)
 {
   PRINTD("prepare()");
   if (!polyset_states.size()) createPolySets(showfaces);
@@ -319,8 +318,7 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * sha
       PRINTD("Fetching shaderinfo\n");
       shaderinfo = &getShader();
     }
-    glUseProgram(shaderinfo->progid);
-    GL_ERROR_CHECK();
+    GL_CHECKD(glUseProgram(shaderinfo->progid));
     GLint new_id;
     glGetIntegerv(GL_CURRENT_PROGRAM, &new_id);
     PRINTDB("Now, using shader ID: %d\n", new_id);
@@ -340,11 +338,9 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * sha
     for (const auto& polyset : polyset_states) {
       if (polyset) {
         if(polyset_2d_locations[i++]) {
-          glUseProgram(prev_id);
-          GL_ERROR_CHECK();
+          GL_CHECKD(glUseProgram(prev_id));
         } else {
-          glUseProgram(new_id);
-          GL_ERROR_CHECK();
+          GL_CHECKD(glUseProgram(new_id));
         }
         polyset->draw();
       }

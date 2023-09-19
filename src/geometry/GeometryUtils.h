@@ -5,6 +5,7 @@
 
 class Polygon : public std::vector<Vector3d>  {
 public:
+  using std::vector<Vector3d>::vector;
   bool marked = false;
 };
 typedef std::vector<Polygon> Polygons;

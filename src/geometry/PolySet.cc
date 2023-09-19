@@ -85,7 +85,7 @@ void PolySet::append_poly(const Polygon& poly)
   polygons.push_back(poly);
   this->dirty = true;
 }
-void PolySet::append_poly(bool marked) {
+void PolySet::append_poly_bool(bool marked) {
   Polygon poly = Polygon();
   poly.marked = marked;
   polygons.push_back(poly);

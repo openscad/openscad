@@ -212,11 +212,7 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
                                size_t active_point_index, size_t primitive_index,
                                double z_offset, size_t shape_size,
                                size_t shape_dimensions, bool outlines,
-<<<<<<< HEAD
-                               bool mirror, const CreateVertexCallback& vertex_callback)
-=======
-                               bool mirror, bool marked, CreateVertexCallback vertex_callback)
->>>>>>> 0d873ce2d (Fix compile errors)
+                               bool mirror, bool marked, const CreateVertexCallback& vertex_callback)
 {
   if (vertex_callback)
     vertex_callback(*this, points, normals, color, active_point_index,
