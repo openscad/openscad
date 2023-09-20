@@ -46,7 +46,7 @@ public:
 
   OffscreenContextEGL(int width, int height) : OffscreenContext(width, height) {}
   ~OffscreenContextEGL() {
-    if (this->eglSurface) eglDestroySurface(this->eglSurface);
+    if (this->eglSurface) eglDestroySurface(this->eglDisplay, this->eglSurface);
     if (this->eglDisplay) eglTerminate(this->eglDisplay);
   }
 
