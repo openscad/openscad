@@ -20,7 +20,7 @@ set(ENV{OPENSCADPATH} "@CMAKE_SOURCE_DIR@/libraries")
 
 set(debug_openscad_template 1)
 
-if(@CMAKE_SYSTEM_NAME@ MATCHES "Linux|BSD")
+if(@CMAKE_SYSTEM_NAME@ MATCHES "Linux|BSD" AND NOT @ENABLE_EGL@)
  set(DISPLAY_ENV $ENV{DISPLAY})
  if(DISPLAY_ENV)
   message("X11 DISPLAY environment variable found.")
