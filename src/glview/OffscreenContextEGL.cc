@@ -5,6 +5,8 @@
 #include <sstream>
 #include <set>
 #include <vector>
+
+#include "printutils.h"
 #define GLAD_EGL_IMPLEMENTATION
 #include "glad/egl.h"
 #include "GL/gl.h"
