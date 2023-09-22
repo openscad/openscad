@@ -26,16 +26,4 @@
 
 #pragma once
 
-#include <boost/filesystem.hpp>
-
-class SourceFile;
-
-extern bool parse(SourceFile *& file, const std::string& text, const std::string& filename, const std::string& mainFile, int debug);
-
-#include <string>
-extern std::string commandline_commands;
-
-// Custom argument parser
-std::pair<std::string, std::string> customSyntax(const std::string& s);
-
-int launch_openscad(int argc, char **argv);
+extern int launch_openscad(int argc, char **argv);

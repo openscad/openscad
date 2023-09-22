@@ -23,19 +23,9 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "openscad.h"
 
-#pragma once
-
-#include <boost/filesystem.hpp>
-
-class SourceFile;
-
-extern bool parse(SourceFile *& file, const std::string& text, const std::string& filename, const std::string& mainFile, int debug);
-
-#include <string>
-extern std::string commandline_commands;
-
-// Custom argument parser
-std::pair<std::string, std::string> customSyntax(const std::string& s);
-
-int launch_openscad(int argc, char **argv);
+int main(int argc, char **argv)
+{
+    return launch_openscad(argc, argv);
+}

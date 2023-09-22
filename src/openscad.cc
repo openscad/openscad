@@ -913,7 +913,7 @@ bool flagConvert(const std::string& str){
 }
 
 // OpenSCAD
-int main(int argc, char **argv)
+int launch_openscad(int argc, char **argv)
 {
 #if defined(ENABLE_CGAL) && defined(USE_MIMALLOC)
   // call init_mimalloc before any GMP variables are initialized. (defined in src/openscad_mimalloc.h)

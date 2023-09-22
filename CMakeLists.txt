@@ -96,22 +96,25 @@ if(CLANG_TIDY)
   #  append ";--fix" to arguments above to apply automatic fix (if the given checks support it)
 endif(CLANG_TIDY)
 
+add_library(OpenSCADLib SHARED)
 add_executable(OpenSCAD)
+
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/submodules/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
 find_package(Sanitizers)
 
 # Strict c++17, e.g. no GNU extensions
-set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD 17)
-set_property(TARGET OpenSCAD PROPERTY CXX_EXTENSIONS OFF)
-set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property(TARGET OpenSCAD OpenSCADLib PROPERTY CXX_STANDARD 17)
+set_property(TARGET OpenSCAD OpenSCADLib PROPERTY CXX_EXTENSIONS OFF)
+set_property(TARGET OpenSCAD OpenSCADLib PROPERTY CXX_STANDARD_REQUIRED ON)
 # Output compilation database (compile_commands.json), so we can e.g. run clang-tidy or other tools separately
-set_property(TARGET OpenSCAD PROPERTY EXPORT_COMPILE_COMMANDS ON)
-set_property(TARGET OpenSCAD PROPERTY LINKER_LANGUAGE CXX)
+set_property(TARGET OpenSCAD OpenSCADLib PROPERTY EXPORT_COMPILE_COMMANDS ON)
+set_property(TARGET OpenSCAD OpenSCADLib PROPERTY LINKER_LANGUAGE CXX)
 # Verbose link step
 if(("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU") OR 
    ("${CMAKE_CXX_COMPILER_ID}" MATCHES "AppleClang|Clang|GNU"))
   target_link_options(OpenSCAD BEFORE PRIVATE "-v")
+  target_link_options(OpenSCADLib BEFORE PRIVATE "-v")
 endif()
 
 set(SUFFIX "" CACHE STRING "Installation suffix for binary (e.g. 'nightly')")
@@ -129,7 +132,7 @@ endif()
 if(WASM)
   set(NULLGL ON CACHE BOOL "" FORCE)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
-  target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
+  target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK) #revisit wasm
 endif()
 
 if(NULLGL)
@@ -137,19 +140,22 @@ if(NULLGL)
 endif()
 if(EXPERIMENTAL)
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_EXPERIMENTAL)
+  target_compile_definitions(OpenSCADLib PRIVATE ENABLE_EXPERIMENTAL)
 endif()
 if(IDPREFIX)
   target_compile_definitions(OpenSCAD PRIVATE IDPREFIX)
+  target_compile_definitions(OpenSCADLib PRIVATE IDPREFIX)
 endif()
 
 if (NOT "${SUFFIX}" STREQUAL "")
   set(SUFFIX_WITH_DASH "-${SUFFIX}")
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_SUFFIX="${SUFFIX_WITH_DASH}")
+  target_compile_definitions(OpenSCADLib PRIVATE OPENSCAD_SUFFIX="${SUFFIX_WITH_DASH}")
 endif()
 
 if (MXECROSS OR WIN32)
   add_subdirectory(winconsole)
-  set_property(TARGET OpenSCAD PROPERTY WIN32_EXECUTABLE ON)
+  set_property(TARGET OpenSCAD OpenSCADLib PROPERTY WIN32_EXECUTABLE ON)
 endif()
 
 set(OPENSCAD_LIB_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/objects")
@@ -165,8 +171,10 @@ file(MAKE_DIRECTORY ${OPENSCAD_LIB_OUTPUT_DIR})
 #endif()
 
 target_compile_options(OpenSCAD PRIVATE "$<$<CONFIG:DEBUG>:-DDEBUG>")
+target_compile_options(OpenSCADLib PRIVATE "$<$<CONFIG:DEBUG>:-DDEBUG>")
 
 target_compile_definitions(OpenSCAD PRIVATE _REENTRANT UNICODE _UNICODE)
+target_compile_definitions(OpenSCADLib PRIVATE _REENTRANT UNICODE _UNICODE)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
@@ -183,39 +191,43 @@ add_subdirectory(submodules)
 # target_link_libraries() calls until after that.
 
 if (MXECROSS)
-  target_compile_definitions(OpenSCAD PRIVATE LIBXML_STATIC STATIC_QT_SVG_PLUGIN)
-  target_compile_definitions(OpenSCAD PRIVATE GLEW_STATIC)
-  target_link_libraries(OpenSCAD PRIVATE bcrypt)
+  # TODO: revisit if both are needed
+  # target_compile_definitions(OpenSCAD PRIVATE LIBXML_STATIC STATIC_QT_SVG_PLUGIN)
+  # target_compile_definitions(OpenSCAD PRIVATE GLEW_STATIC)
+  # target_link_libraries(OpenSCAD PRIVATE bcrypt)
+  target_compile_definitions(OpenSCADLib PRIVATE LIBXML_STATIC STATIC_QT_SVG_PLUGIN)
+  target_compile_definitions(OpenSCADLib PRIVATE GLEW_STATIC)
+  target_link_libraries(OpenSCADLib PRIVATE bcrypt)
 endif()
 
 macro(find_graphics)
   # NULLGL - Allow us to build without OpenGL(TM). run 'cmake .. -DNULLGL=1'
   # Most tests will fail, but it can be used for testing/experiments
   if(NULLGL)
-    target_compile_definitions(OpenSCAD PRIVATE NULLGL)
+    target_compile_definitions(OpenSCADLib PRIVATE NULLGL)
   else()
     if(NOT USE_BUILTIN_OPENCSG)
       find_package(OpenCSG REQUIRED QUIET)
-      target_link_libraries(OpenSCAD PRIVATE ${OPENCSG_LIBRARY})
+      target_link_libraries(OpenSCADLib PRIVATE ${OPENCSG_LIBRARY})
       message(STATUS "OpenCSG: ${OPENCSG_VERSION_STRING}")
       if(MSVC)
         find_path(OPENCSG_INCLUDE_DIRS opencsg/opencsg.h)
-        target_include_directories(OpenSCAD SYSTEM PRIVATE "${OPENCSG_INCLUDE_DIRS}/opencsg")
+        target_include_directories(OpenSCADLib SYSTEM PRIVATE "${OPENCSG_INCLUDE_DIRS}/opencsg")
       else()
         find_path(OPENCSG_INCLUDE_DIRS opencsg.h)
-        target_include_directories(OpenSCAD SYSTEM PRIVATE ${OPENCSG_INCLUDE_DIRS})
+        target_include_directories(OpenSCADLib SYSTEM PRIVATE ${OPENCSG_INCLUDE_DIRS})
       endif()
     else()
       include("submodules/CMakeLists-OpenCSG.txt")
-      target_link_libraries(OpenSCAD PRIVATE OpenCSG)
+      target_link_libraries(OpenSCADLib PRIVATE OpenCSG)
       message(STATUS "OpenCSG submodule: ${OPENCSG_VERSION_STRING}")
     endif(NOT USE_BUILTIN_OPENCSG)
 
-    target_compile_definitions(OpenSCAD PRIVATE ENABLE_OPENCSG)
+    target_compile_definitions(OpenSCADLib PRIVATE ENABLE_OPENCSG)
 
     if (${OPENCSG_VERSION_STRING} VERSION_LESS "1.6.0")
       set(OPENCSG_GLEW ON)
-      target_compile_definitions(OpenSCAD PRIVATE OPENCSG_GLEW)
+      target_compile_definitions(OpenSCADLib PRIVATE OPENCSG_GLEW)
     endif()
 
     if (NOT USE_GLAD AND NOT USE_GLEW)
@@ -232,12 +244,12 @@ macro(find_graphics)
     if (USE_GLEW OR OPENCSG_GLEW)
       find_package(GLEW REQUIRED QUIET)
       message(STATUS "GLEW: ${GLEW_VERSION}")
-      target_link_libraries(OpenSCAD PRIVATE GLEW::glew)
+      target_link_libraries(OpenSCADLib PRIVATE GLEW::glew)
       set(GLEW_SOURCES src/glview/glew-utils.cc)
     endif()
 
     find_package(OpenGL REQUIRED QUIET)
-    target_link_libraries(OpenSCAD PRIVATE ${OPENGL_LIBRARIES})
+    target_link_libraries(OpenSCADLib PRIVATE ${OPENGL_LIBRARIES})
     message(STATUS "OpenGL: ${OPENGL_LIBRARIES}")
   endif()
 endmacro(find_graphics)
@@ -245,35 +257,36 @@ endmacro(find_graphics)
 if (MSVC)
   # Flex lexer options
   set(WINCOMPAT "--wincompat --nounistd")
-  target_compile_definitions(OpenSCAD PRIVATE _USE_MATH_DEFINES)
+  target_compile_definitions(OpenSCADLib PRIVATE _USE_MATH_DEFINES)
 
   find_package(Eigen3 CONFIG REQUIRED)
-  target_link_libraries(OpenSCAD PRIVATE Eigen3::Eigen)
+  target_link_libraries(OpenSCADLib PRIVATE Eigen3::Eigen)
   message(STATUS "Eigen: ${Eigen3_VERSION}")
 
   set(Boost_USE_STATIC_LIBS TRUE)
   find_package(Boost 1.56 REQUIRED COMPONENTS filesystem system regex program_options)
   message(STATUS "Boost: ${Boost_VERSION}")
   target_include_directories(OpenSCAD SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
-  target_link_libraries(OpenSCAD PRIVATE ${Boost_LIBRARIES})
+  target_include_directories(OpenSCADLib SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+  target_link_libraries(OpenSCADLib PRIVATE ${Boost_LIBRARIES})
 
   find_package(harfbuzz CONFIG REQUIRED)
   find_path(HARFBUZZ_INCLUDE_DIRS harfbuzz)
-  target_include_directories(OpenSCAD SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
-  target_link_libraries(OpenSCAD PRIVATE harfbuzz::harfbuzz)
+  target_include_directories(OpenSCADLib SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
+  target_link_libraries(OpenSCADLib PRIVATE harfbuzz::harfbuzz)
 
   find_package(unofficial-fontconfig CONFIG REQUIRED)
-  target_link_libraries(OpenSCAD PRIVATE unofficial::fontconfig::fontconfig)
+  target_link_libraries(OpenSCADLib PRIVATE unofficial::fontconfig::fontconfig)
 
   find_package(unofficial-glib CONFIG REQUIRED)
-  target_include_directories(OpenSCAD SYSTEM PRIVATE ${GLIB2_INCLUDE_DIRS})
-  target_link_libraries(OpenSCAD PRIVATE unofficial::glib::gio unofficial::glib::glib unofficial::glib::gmodule unofficial::glib::gobject)
+  target_include_directories(OpenSCADLib SYSTEM PRIVATE ${GLIB2_INCLUDE_DIRS})
+  target_link_libraries(OpenSCADLib PRIVATE unofficial::glib::gio unofficial::glib::glib unofficial::glib::gmodule unofficial::glib::gobject)
 
   find_package(double-conversion CONFIG REQUIRED)
-  target_link_libraries(OpenSCAD PRIVATE double-conversion::double-conversion)
+  target_link_libraries(OpenSCADLib PRIVATE double-conversion::double-conversion)
 
   find_library(GETTEXT_LIBRARY libintl)
-  target_link_libraries(OpenSCAD PRIVATE ${GETTEXT_LIBRARY})
+  target_link_libraries(OpenSCADLib PRIVATE ${GETTEXT_LIBRARY})
 
   # call before setting local CMAKE_MODULE_PATH so we use VCPKG version of FindGLEW
   find_graphics()
@@ -295,43 +308,44 @@ else()
   endif()
 
   find_package(Eigen3 REQUIRED)
-  target_include_directories(OpenSCAD SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIR})
-  target_compile_definitions(OpenSCAD PRIVATE EIGEN_DONT_ALIGN)
+  target_include_directories(OpenSCADLib SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIR})
+  target_compile_definitions(OpenSCADLib PRIVATE EIGEN_DONT_ALIGN)
   message(STATUS "Eigen: ${Eigen3_VERSION}")
 
   find_package(Boost 1.56 REQUIRED COMPONENTS filesystem system regex program_options)
   message(STATUS "Boost: ${Boost_VERSION}")
   target_include_directories(OpenSCAD SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
-  target_link_libraries(OpenSCAD PRIVATE ${Boost_LIBRARIES})
+  target_include_directories(OpenSCADLib SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+  target_link_libraries(OpenSCADLib PRIVATE ${Boost_LIBRARIES})
 
   find_package(HarfBuzz 0.9.19 REQUIRED QUIET)
   message(STATUS "Harfbuzz: ${HARFBUZZ_VERSION}")
-  target_include_directories(OpenSCAD SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
-  target_link_libraries(OpenSCAD PRIVATE ${HARFBUZZ_LIBRARIES})
+  target_include_directories(OpenSCADLib SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
+  target_link_libraries(OpenSCADLib PRIVATE ${HARFBUZZ_LIBRARIES})
 
   find_package(FontConfig 2.8.0 REQUIRED QUIET)
   message(STATUS "Fontconfig: ${FONTCONFIG_VERSION}")
-  target_link_libraries(OpenSCAD PRIVATE ${FONTCONFIG_LIBRARIES})
+  target_link_libraries(OpenSCADLib PRIVATE ${FONTCONFIG_LIBRARIES})
 
   find_package(GLIB2 2.26 REQUIRED QUIET)
   message(STATUS "Glib: ${GLIB2_VERSION}")
-  target_include_directories(OpenSCAD SYSTEM PRIVATE ${GLIB2_INCLUDE_DIRS})
-  target_link_libraries(OpenSCAD PRIVATE ${GLIB2_LIBRARIES})
+  target_include_directories(OpenSCADLib SYSTEM PRIVATE ${GLIB2_INCLUDE_DIRS})
+  target_link_libraries(OpenSCADLib PRIVATE ${GLIB2_LIBRARIES})
 
   find_package(DoubleConversion REQUIRED QUIET)
-  target_link_libraries(OpenSCAD PRIVATE ${DoubleConversion_LIBRARIES})
+  target_link_libraries(OpenSCADLib PRIVATE ${DoubleConversion_LIBRARIES})
 
   find_graphics()
 endif()
 
 if(USE_GLAD)
-  target_link_libraries(OpenSCAD PRIVATE ${CMAKE_DL_LIBS})
+  target_link_libraries(OpenSCADLib PRIVATE ${CMAKE_DL_LIBS})
 endif()
 
 if (("${Boost_VERSION}" VERSION_GREATER "1.72") AND ("${Boost_VERSION}" VERSION_LESS "1.76"))
   # Avoid warning messages from boost which are also caused by boost's code.
   #   https://github.com/boostorg/property_tree/issues/51
-  target_compile_definitions(OpenSCAD PUBLIC BOOST_BIND_GLOBAL_PLACEHOLDERS)
+  target_compile_definitions(OpenSCADLib PUBLIC BOOST_BIND_GLOBAL_PLACEHOLDERS)
 endif()
 
 # Note: Saving CMAKE_MODULE_PATH as CGAL will overwrite it.
@@ -344,17 +358,17 @@ if (${CGAL_MAJOR_VERSION} LESS 5)
   message(FATAL_ERROR "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}.${CGAL_BUGFIX_VERSION} less than required minimum version 5.0")
 endif()
 message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}.${CGAL_BUGFIX_VERSION}")
-target_compile_definitions(OpenSCAD PRIVATE ENABLE_CGAL)
+target_compile_definitions(OpenSCADLib PRIVATE ENABLE_CGAL)
 # The macro `CGAL_DEBUG` allows to force CGAL assertions, even if `NDEBUG` is defined,
 # Enabling CGAL assertions is necessary for us to catch them before they cause a crash
 # on bad geometry input.
-target_compile_definitions(OpenSCAD PRIVATE CGAL_DEBUG)
-target_compile_definitions(OpenSCAD PRIVATE CGAL_USE_GMPXX)
+target_compile_definitions(OpenSCADLib PRIVATE CGAL_DEBUG)
+target_compile_definitions(OpenSCADLib PRIVATE CGAL_USE_GMPXX)
 if(TARGET CGAL::CGAL)
-  target_link_libraries(OpenSCAD PRIVATE CGAL::CGAL CGAL::CGAL_Core)
+  target_link_libraries(OpenSCADLib PRIVATE CGAL::CGAL CGAL::CGAL_Core)
   message(STATUS "CGAL: Using target CGAL::CGAL CGAL::CGAL_Core")
 else()
-  target_link_libraries(OpenSCAD PRIVATE ${CGAL_LIBRARY} ${GMP_LIBRARIES} ${MPFR_LIBRARIES})
+  target_link_libraries(OpenSCADLib PRIVATE ${CGAL_LIBRARY} ${GMP_LIBRARIES} ${MPFR_LIBRARIES})
 endif()
 # revert any changes to module path from CGAL_Macros.cmake; see note above
 # Commented out code should work in CGAL>= 5.4
@@ -365,45 +379,45 @@ set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
 
 find_package(LibZip REQUIRED QUIET)
 message(STATUS "libzip: ${LIBZIP_VERSION}")
-target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBZIP_INCLUDE_DIR_ZIP} ${LIBZIP_INCLUDE_DIR_ZIPCONF})
-target_link_libraries(OpenSCAD PRIVATE ${LIBZIP_LIBRARY})
-target_compile_definitions(OpenSCAD PRIVATE ENABLE_LIBZIP)
+target_include_directories(OpenSCADLib SYSTEM PRIVATE ${LIBZIP_INCLUDE_DIR_ZIP} ${LIBZIP_INCLUDE_DIR_ZIPCONF})
+target_link_libraries(OpenSCADLib PRIVATE ${LIBZIP_LIBRARY})
+target_compile_definitions(OpenSCADLib PRIVATE ENABLE_LIBZIP)
 
 find_package(Freetype 2.4.9 REQUIRED QUIET)
 message(STATUS "Freetype: ${FREETYPE_VERSION_STRING}")
-target_include_directories(OpenSCAD SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
-target_link_libraries(OpenSCAD PRIVATE ${FREETYPE_LIBRARIES})
+target_include_directories(OpenSCADLib SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
+target_link_libraries(OpenSCADLib PRIVATE ${FREETYPE_LIBRARIES})
 
 find_package(LibXml2 2.9 REQUIRED QUIET)
 message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
-target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
-target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
+target_include_directories(OpenSCADLib SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
+target_link_libraries(OpenSCADLib PRIVATE ${LIBXML2_LIBRARIES})
 
 if(ENABLE_PYTHON)
   find_package(Python REQUIRED COMPONENTS Interpreter Development)
   find_package(CryptoPP REQUIRED)
   message(STATUS "Python enabled, using Crypto++ ${PC_CRYPTOPP_VERSION}")
-  target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
-  target_include_directories(OpenSCAD PRIVATE ${CRYPTOPP_INCLUDE_DIRS})
-  target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
-  target_link_libraries(OpenSCAD PRIVATE ${CRYPTOPP_LIBRARIES})
+  target_include_directories(OpenSCADLib PRIVATE ${Python_INCLUDE_DIRS})
+  target_include_directories(OpenSCADLib PRIVATE ${CRYPTOPP_INCLUDE_DIRS})
+  target_link_libraries(OpenSCADLib PRIVATE ${Python_LIBRARIES})
+  target_link_libraries(OpenSCADLib PRIVATE ${CRYPTOPP_LIBRARIES})
 endif()
 
 if(ENABLE_HIDAPI)
   find_package(HidAPI 0.10 QUIET)
   if(HIDAPI_FOUND)
     set(INPUT_DRIVER_HIDAPI_SOURCES src/gui/input/HidApiInputDriver.cc)
-    target_include_directories(OpenSCAD SYSTEM PRIVATE ${HIDAPI_INCLUDE_DIR})
-    target_link_libraries(OpenSCAD PRIVATE ${HIDAPI_LIBRARY})
-    target_compile_definitions(OpenSCAD PRIVATE ENABLE_HIDAPI)
+    target_include_directories(OpenSCADLib SYSTEM PRIVATE ${HIDAPI_INCLUDE_DIR})
+    target_link_libraries(OpenSCADLib PRIVATE ${HIDAPI_LIBRARY})
+    target_compile_definitions(OpenSCADLib PRIVATE ENABLE_HIDAPI)
     message(STATUS "HidAPI: ${HIDAPI_VERSION_STRING}")
   elseif(ALLOW_BUNDLED_HIDAPI)
     set(HIDAPI_SRC_DIR "src/ext/hidapi")
     file(STRINGS "${HIDAPI_SRC_DIR}/VERSION" HIDAPI_VERSION_STRING)
-    target_include_directories(OpenSCAD SYSTEM PRIVATE "${HIDAPI_SRC_DIR}")
+    target_include_directories(OpenSCADLib SYSTEM PRIVATE "${HIDAPI_SRC_DIR}")
     set(INPUT_DRIVER_HIDAPI_SOURCES "${HIDAPI_SRC_DIR}/hid.c" src/gui/input/HidApiInputDriver.cc)
-    target_compile_definitions(OpenSCAD PRIVATE ENABLE_HIDAPI)
-    target_link_libraries(OpenSCAD PRIVATE setupapi hid)
+    target_compile_definitions(OpenSCADLib PRIVATE ENABLE_HIDAPI)
+    target_link_libraries(OpenSCADLib PRIVATE setupapi hid)
     message(STATUS "HidAPI: ${HIDAPI_VERSION_STRING} (bundled)")
   else()
     message(STATUS "HIDAPI: disabled")
@@ -417,9 +431,9 @@ if(ENABLE_SPNAV)
   if(SPNAV_FOUND)
     message(STATUS "SpNav: found")
     set(INPUT_DRIVER_SPNAV_SOURCES src/gui/input/SpaceNavInputDriver.cc)
-    target_include_directories(OpenSCAD SYSTEM PRIVATE ${SPNAV_INCLUDE_DIR})
-    target_link_libraries(OpenSCAD PRIVATE ${SPNAV_LIBRARY})
-    target_compile_definitions(OpenSCAD PRIVATE ENABLE_SPNAV)
+    target_include_directories(OpenSCADLib SYSTEM PRIVATE ${SPNAV_INCLUDE_DIR})
+    target_link_libraries(OpenSCADLib PRIVATE ${SPNAV_LIBRARY})
+    target_compile_definitions(OpenSCADLib PRIVATE ENABLE_SPNAV)
   else()
     message(STATUS "SpNav: disabled")
   endif()
@@ -429,9 +443,9 @@ if(ENABLE_CAIRO)
   find_package(Cairo 1.14 QUIET)
   if (CAIRO_VERSION)
     message(STATUS "Cairo: ${CAIRO_VERSION}")
-    target_include_directories(OpenSCAD SYSTEM PRIVATE ${CAIRO_INCLUDE_DIRS})
-    target_link_libraries(OpenSCAD PRIVATE ${CAIRO_LIBRARIES})
-    target_compile_definitions(OpenSCAD PRIVATE ENABLE_CAIRO)
+    target_include_directories(OpenSCADLib SYSTEM PRIVATE ${CAIRO_INCLUDE_DIRS})
+    target_link_libraries(OpenSCADLib PRIVATE ${CAIRO_LIBRARIES})
+    target_compile_definitions(OpenSCADLib PRIVATE ENABLE_CAIRO)
   else()
     message(STATUS "Cairo: disabled")
   endif()
@@ -449,9 +463,9 @@ if(NOT MSVC)
   find_package(Lib3MF QUIET)
   if (LIB3MF_FOUND)
     message(STATUS "lib3mf: ${LIB3MF_VERSION}")
-    target_compile_definitions(OpenSCAD PRIVATE ${LIB3MF_DEFINITIONS})
-    target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIB3MF_INCLUDE_DIRS})
-    target_link_libraries(OpenSCAD PRIVATE ${LIB3MF_LIBRARIES})
+    target_compile_definitions(OpenSCADLib PRIVATE ${LIB3MF_DEFINITIONS})
+    target_include_directories(OpenSCADLib SYSTEM PRIVATE ${LIB3MF_INCLUDE_DIRS})
+    target_link_libraries(OpenSCADLib PRIVATE ${LIB3MF_LIBRARIES})
   else()
     message(STATUS "lib3mf: disabled")
   endif()
@@ -461,10 +475,31 @@ endif()
 set(CMAKE_INCLUDE_CURRENT_DIR ON) # (does not propagate down to subdirectories)
 
 if(USE_GLAD)
-  target_compile_definitions(OpenSCAD PRIVATE USE_GLAD)
+  target_compile_definitions(OpenSCADLib PRIVATE USE_GLAD)
 else()
-  target_compile_definitions(OpenSCAD PRIVATE USE_GLEW)
+  target_compile_definitions(OpenSCADLib PRIVATE USE_GLEW)
 endif()
+
+target_include_directories(OpenSCADLib PRIVATE
+  "src"
+  "src/core"
+  "src/core/customizer"
+  "src/ext"
+  "src/ext/json"
+  "src/ext/lexertl/include"
+  "src/ext/libtess2/Include"
+  "src/ext"
+  "src/geometry"
+  "src/geometry/cgal"
+  "src/geometry/manifold"
+  "src/glview"
+  "src/glview/preview"
+  "src/glview/cgal"
+  "src/gui"
+  "src/io"
+  "src/platform"
+  "src/utils"
+)
 
 target_include_directories(OpenSCAD PRIVATE
   "src"
@@ -487,6 +522,7 @@ target_include_directories(OpenSCAD PRIVATE
   "src/utils"
 )
 
+
 FLEX_TARGET(openscad_lexer src/core/lexer.l ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
 BISON_TARGET(openscad_parser src/core/parser.y ${OPENSCAD_LIB_OUTPUT_DIR}/parser.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/parser.hxx COMPILE_FLAGS "-d -p parser")
 ADD_FLEX_BISON_DEPENDENCY(openscad_lexer openscad_parser)
@@ -507,22 +543,22 @@ if(NOT HEADLESS)
   endif()
 
   if("${CMAKE_VERSION}" VERSION_GREATER_EQUAL "3.14")
-    set_property(TARGET OpenSCAD PROPERTY AUTOGEN_ORIGIN_DEPENDS OFF)
+    set_property(TARGET OpenSCAD OpenSCADLib PROPERTY AUTOGEN_ORIGIN_DEPENDS OFF)
   endif()
-  set_property(TARGET OpenSCAD PROPERTY AUTOMOC ON)
-  set_property(TARGET OpenSCAD PROPERTY AUTOUIC ON)
-  set_property(TARGET OpenSCAD PROPERTY AUTORCC ON)
-  set_property(TARGET OpenSCAD PROPERTY AUTOUIC_OPTIONS --tr q_)
-  set_property(TARGET OpenSCAD PROPERTY AUTORCC_OPTIONS --threshold 10 --compress 9)
+  set_property(TARGET OpenSCAD OpenSCADLib PROPERTY AUTOMOC ON)
+  set_property(TARGET OpenSCAD OpenSCADLib PROPERTY AUTOUIC ON)
+  set_property(TARGET OpenSCAD OpenSCADLib PROPERTY AUTORCC ON)
+  set_property(TARGET OpenSCAD OpenSCADLib PROPERTY AUTOUIC_OPTIONS --tr q_)
+  set_property(TARGET OpenSCAD OpenSCADLib PROPERTY AUTORCC_OPTIONS --threshold 10 --compress 9)
   find_package(Qt5 5.4 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network Svg REQUIRED QUIET)
   message(STATUS "Qt5: ${Qt5_VERSION}")
 
   if (Qt5_POSITION_INDEPENDENT_CODE)
-    set_property(TARGET OpenSCAD PROPERTY POSITION_INDEPENDENT_CODE ON)
+    set_property(TARGET OpenSCAD OpenSCADLib PROPERTY POSITION_INDEPENDENT_CODE ON)
   endif()
 
   if (("${Qt5_VERSION}" VERSION_GREATER_EQUAL "5.4"))
-    target_compile_definitions(OpenSCAD PRIVATE USE_QOPENGLWIDGET)
+    target_compile_definitions(OpenSCADLib PRIVATE USE_QOPENGLWIDGET)
   endif()
 
   find_package(Qt5QScintilla 2.8.0 REQUIRED QUIET)
@@ -532,7 +568,7 @@ if(NOT HEADLESS)
     find_package(Qt5DBus QUIET)
     if (Qt5DBus_FOUND)
       message(STATUS "DBus input driver enabled")
-      target_compile_definitions(OpenSCAD PRIVATE ENABLE_DBUS)
+      target_compile_definitions(OpenSCADLib PRIVATE ENABLE_DBUS)
       set(INPUT_DRIVER_DBUS_SOURCES src/gui/input/DBusInputDriver.cc)
       qt5_add_dbus_interface(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml openscad_interface)
       qt5_add_dbus_adaptor(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml gui/input/DBusInputDriver.h DBusInputDriver openscad_adaptor)
@@ -548,7 +584,7 @@ if(NOT HEADLESS)
     if (Qt5Gamepad_FOUND)
       message(STATUS "Qt5Gamepad input driver enabled")
       set(GUI_SOURCES ${GUI_SOURCES} src/gui/input/QGamepadInputDriver.cc)
-      target_compile_definitions(OpenSCAD PRIVATE ENABLE_QGAMEPAD)
+      target_compile_definitions(OpenSCADLib PRIVATE ENABLE_QGAMEPAD)
     else()
       message(STATUS "Qt5Gamepad input driver disabled as the Qt5Gamepad module could not be found.")
     endif()
@@ -570,11 +606,14 @@ if(USE_CCACHE)
 endif()
 
 target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_VERSION=${OPENSCAD_VERSION} OPENSCAD_SHORTVERSION=${OPENSCAD_SHORTVERSION} OPENSCAD_YEAR=${OPENSCAD_YEAR} OPENSCAD_MONTH=${OPENSCAD_MONTH})
+target_compile_definitions(OpenSCADLib PRIVATE OPENSCAD_VERSION=${OPENSCAD_VERSION} OPENSCAD_SHORTVERSION=${OPENSCAD_SHORTVERSION} OPENSCAD_YEAR=${OPENSCAD_YEAR} OPENSCAD_MONTH=${OPENSCAD_MONTH})
 if (DEFINED OPENSCAD_DAY)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_DAY=${OPENSCAD_DAY})
+  target_compile_definitions(OpenSCADLib PRIVATE OPENSCAD_DAY=${OPENSCAD_DAY})
 endif()
 if(DEFINED OPENSCAD_COMMIT)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_COMMIT=${OPENSCAD_COMMIT})
+  target_compile_definitions(OpenSCADLib PRIVATE OPENSCAD_COMMIT=${OPENSCAD_COMMIT})
 endif()
 
 #
@@ -582,7 +621,7 @@ endif()
 #
 
 # Stack size 8MB; github issue 116
-target_compile_definitions(OpenSCAD PRIVATE "STACKSIZE=${STACKSIZE}") # used as default in src/platform/PlatformUtils.h
+target_compile_definitions(OpenSCADLib PRIVATE "STACKSIZE=${STACKSIZE}") # used as default in src/platform/PlatformUtils.h
 
 if(NULLGL)
   set(OFFSCREEN_METHOD "NULLGL")
@@ -591,48 +630,48 @@ else()
   SET(OFFSCREEN_METHOD "<undefined>")
 endif()
 if(APPLE)
-  target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_OS="Mac OS X")
+  target_compile_definitions(OpenSCADLib PRIVATE OPENSCAD_OS="Mac OS X")
   message(STATUS "Offscreen OpenGL Context - using Apple CGL/NSOpenGL")
   set(PLATFORM_SOURCES src/platform/PlatformUtils-mac.mm src/io/imageutils-macosx.cc src/platform/CocoaUtils.mm)
   if(NOT HEADLESS)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/gui/AppleEvents.cc)
   endif()
   if(NOT NULLGL)
-    target_compile_definitions(OpenSCAD PRIVATE GL_SILENCE_DEPRECATION)
+    target_compile_definitions(OpenSCADLib PRIVATE GL_SILENCE_DEPRECATION)
     set(OFFSCREEN_METHOD "Apple CGL/NSOpenGL")
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
         src/glview/offscreen-old/OffscreenContextNSOpenGL.mm
         src/glview/OffscreenContextCGL.cc)
   endif()
   find_library(COCOA_LIBRARY Cocoa)
-  target_link_libraries(OpenSCAD PRIVATE ${COCOA_LIBRARY})
+  target_link_libraries(OpenSCADLib PRIVATE ${COCOA_LIBRARY})
 elseif(UNIX)
-  target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_OS="Unix")
+  target_compile_definitions(OpenSCADLib PRIVATE OPENSCAD_OS="Unix")
   set(PLATFORM_SOURCES src/io/imageutils-lodepng.cc src/platform/PlatformUtils-posix.cc)
   if(NOT NULLGL)
     if(ENABLE_EGL AND OpenGL_EGL_FOUND)
-      target_compile_definitions(OpenSCAD PRIVATE ENABLE_EGL)
+      target_compile_definitions(OpenSCADLib PRIVATE ENABLE_EGL)
       set(OFFSCREEN_METHOD "Unix EGL")
       message(STATUS "Offscreen OpenGL Context - using Unix EGL")
       set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextEGL.cc)
       if (NOT USE_GLAD)
-        target_compile_definitions(OpenSCAD PRIVATE GLEW_EGL)
+        target_compile_definitions(OpenSCADLib PRIVATE GLEW_EGL)
       endif()
-      target_link_libraries(OpenSCAD PRIVATE OpenGL::EGL)
+      target_link_libraries(OpenSCADLib PRIVATE OpenGL::EGL)
     else()
-      target_compile_definitions(OpenSCAD PRIVATE ENABLE_GLX)
+      target_compile_definitions(OpenSCADLib PRIVATE ENABLE_GLX)
       set(OFFSCREEN_METHOD "Unix GLX on X11")
       message(STATUS "Offscreen OpenGL Context - using Unix GLX on X11")
       set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
           src/glview/offscreen-old/OffscreenContextGLX.cc
           src/glview/OffscreenContextGLX.cc)
       find_package(X11 REQUIRED)
-      target_link_libraries(OpenSCAD PRIVATE X11::X11 ${CMAKE_DL_LIBS})
+      target_link_libraries(OpenSCADLib PRIVATE X11::X11 ${CMAKE_DL_LIBS})
     endif()
   endif()
 elseif(WIN32)
-  target_compile_definitions(OpenSCAD PRIVATE NOGDI)
-  target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_OS="Windows")
+  target_compile_definitions(OpenSCADLib PRIVATE NOGDI)
+  target_compile_definitions(OpenSCADLib PRIVATE OPENSCAD_OS="Windows")
   message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
   set(PLATFORM_SOURCES src/io/imageutils-lodepng.cc src/platform/PlatformUtils-win.cc)
   if(NOT NULLGL)
@@ -786,7 +825,7 @@ set(CORE_SOURCES
 if(ENABLE_PYTHON)
 	list(APPEND CORE_SOURCES
 		    src/core/pyopenscad.cc )
-	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
+	target_compile_definitions(OpenSCADLib PRIVATE ENABLE_PYTHON)
 endif()
 
 set(CGAL_SOURCES
@@ -826,7 +865,7 @@ set(MANIFOLD_SOURCES
 if(EXPERIMENTAL AND ENABLE_TBB)
   # Note: currently only Manifold-related code makes use of TBB parallelization
   # ("exact" CGAL numerics are not thread-safe)
-  target_compile_options(OpenSCAD PRIVATE 
+  target_compile_options(OpenSCADLib PRIVATE 
     -DENABLE_TBB
     -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_TBB
   )
@@ -845,10 +884,10 @@ if(EXPERIMENTAL)
   set(MANIFOLD_PYBIND OFF)
 
   add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
-  target_link_libraries(OpenSCAD PRIVATE manifold)
+  target_link_libraries(OpenSCADLib PRIVATE manifold)
   add_sanitizers(manifold)
 
-  target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
+  target_compile_definitions(OpenSCADLib PRIVATE ENABLE_MANIFOLD)
   list(APPEND Sources ${MANIFOLD_SOURCES})
 endif()
 
@@ -886,7 +925,7 @@ endif()
 
 if(UNIX AND (NOT APPLE) AND (NOT HEADLESS))
   set(PLATFORM_INPUT_DRIVER_SOURCES src/gui/input/JoystickInputDriver.cc)
-  target_compile_definitions(OpenSCAD PRIVATE ENABLE_JOYSTICK)
+  target_compile_definitions(OpenSCADLib PRIVATE ENABLE_JOYSTICK)
 endif()
 
 set(INPUT_DRIVER_SOURCES
@@ -1050,10 +1089,11 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 endif()
 
 list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES})
+list(APPEND WrapperSources src/openscad_wrapper.cc)
 
 set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 if(HEADLESS)
-  target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_NOGUI)
+  target_compile_definitions(OpenSCADLib PRIVATE OPENSCAD_NOGUI)
 else()
   list(APPEND RESOURCE_FILES ${RESOURCE_DIR}/common.qrc)
   # GUI_UIS for .ui files to be indexed by Qt Creator despite AUTOUIC usage
@@ -1063,7 +1103,7 @@ endif()
 
 if (SNAPSHOT)
   set(SNAPSHOT_SUFFIX "-nightly")
-  target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_SNAPSHOT)
+  target_compile_definitions(OpenSCADLib PRIVATE OPENSCAD_SNAPSHOT)
 endif()
 set(WINDOWS_RESOURCE_PATH ${RESOURCE_DIR}/openscad_win32${SNAPSHOT_SUFFIX}.rc)
 set(MACOSX_BUNDLE_ICON_FILE icon${SNAPSHOT_SUFFIX}.icns)
@@ -1082,9 +1122,10 @@ if (SORT_BUILD)
     OUTPUT_VARIABLE Sources)
 endif()
 
-target_sources(OpenSCAD PRIVATE ${Sources} ${RESOURCE_FILES})
+target_sources(OpenSCAD PRIVATE ${WrapperSources})
+target_sources(OpenSCADLib PRIVATE ${Sources} ${RESOURCE_FILES})
 find_program(SHELL_EXE NAMES sh bash $ENV{SHELL})
-add_custom_command(TARGET OpenSCAD POST_BUILD
+add_custom_command(TARGET OpenSCADLib POST_BUILD
     COMMAND "${SHELL_EXE}"
     ARGS "${CMAKE_CURRENT_LIST_DIR}/scripts/translation-make.sh" "${SUFFIX_WITH_DASH}"
     COMMENT "Compiling language files")
@@ -1098,6 +1139,8 @@ if(APPLE AND NOT APPLE_UNIX)
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${OPENSCAD_YEAR}.${OPENSCAD_MONTH}
     RESOURCE "${RESOURCE_FILES}"
   )
+  set(BUNDLE_FRAMEWORKS_DIR ${CMAKE_CURRENT_BINARY_DIR}/OpenSCAD.app/Contents/Frameworks)
+  install(TARGETS OpenSCADLib DESTINATION "${BUNDLE_FRAMEWORKS_DIR}")
   set(BUNDLE_RESOURCES_DIR ${CMAKE_CURRENT_BINARY_DIR}/OpenSCAD.app/Contents/Resources)
   file(COPY ${CMAKE_SOURCE_DIR}/color-schemes DESTINATION ${BUNDLE_RESOURCES_DIR})
   file(COPY ${CMAKE_SOURCE_DIR}/examples DESTINATION ${BUNDLE_RESOURCES_DIR})
@@ -1117,14 +1160,16 @@ elseif(MSVC)
 endif()
 
 if(NOT HEADLESS)
-  target_link_libraries(OpenSCAD PRIVATE
+  target_link_libraries(OpenSCADLib PRIVATE
     Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network Qt5::Svg
     ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES}
   )
 endif()
 if(MXECROSS)
-  target_link_libraries(OpenSCAD PRIVATE Qt5::QSvgPlugin)
+  target_link_libraries(OpenSCADLib PRIVATE Qt5::QSvgPlugin)
 endif()
+
+target_link_libraries(OpenSCAD PRIVATE OpenSCADLib)
 
 # Configure icon-related files, for release vs nightly
 configure_file(${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml.in ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml.in2)
@@ -1220,6 +1265,7 @@ endif()
 include(CPack)
 
 add_sanitizers(OpenSCAD)
+add_sanitizers(OpenSCADLib)
 
 if(INFO)
   include("cmake/Modules/info.cmake")
