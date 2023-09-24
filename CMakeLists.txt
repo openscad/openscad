@@ -614,7 +614,9 @@ elseif(UNIX)
       target_compile_definitions(OpenSCAD PRIVATE ENABLE_EGL)
       set(OFFSCREEN_METHOD "Unix EGL")
       message(STATUS "Offscreen OpenGL Context - using Unix EGL")
-      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextEGL.cc)
+      set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
+	src/glview/offscreen-old/OffscreenContextEGL.cc
+        src/glview/OffscreenContextEGL.cc)
       if (NOT USE_GLAD)
         target_compile_definitions(OpenSCAD PRIVATE GLEW_EGL)
       endif()
