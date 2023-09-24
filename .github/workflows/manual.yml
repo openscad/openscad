@@ -64,6 +64,14 @@ on:
         - GLAD
         required: true
         default: Default
+      gl_interface:
+        type: choice
+        description: 'OpenGL Interface'
+        options:
+        - GLX
+        - EGL
+        required: true
+        default: GLX
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -96,6 +104,11 @@ jobs:
         case ${{ inputs.gl_wrangler }} in
         GLAD) echo "CMAKE_EXTRA=-DUSE_GLAD=1" >> $GITHUB_ENV ;;
         GLEW) echo "CMAKE_EXTRA=-DUSE_GLEW=1" >> $GITHUB_ENV ;;
+        esac
+    - name: Select OpenGL interface
+      run: |
+        case ${{ inputs.gl_interface }} in
+        EGL) echo "CMAKE_EXTRA=-DENABLE_EGL=1" >> $GITHUB_ENV ;;
         esac
     - uses: kenchan0130/actions-system-info@master
       id: system-info
