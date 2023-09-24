@@ -17,6 +17,7 @@
 #include "ScintillaEditor.h"
 #include "Preferences.h"
 #include "MainWindow.h"
+#include "UIUtils.h"
 
 TabManager::TabManager(MainWindow *o, const QString& filename)
 {
@@ -691,13 +692,15 @@ bool TabManager::saveAs(EditorInterface *edt)
   assert(edt != nullptr);
 
   const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
-  auto filename = QFileDialog::getSaveFileName(par, _("Save File"), dir, _("OpenSCAD Designs (*.scad)"));
+  QString fileFilters = UIUtils::fileFilters();
+  auto filename = QFileDialog::getSaveFileName(par, _("Save File"), dir, fileFilters);
   if (filename.isEmpty()) {
     return false;
   }
 
   if (QFileInfo(filename).suffix().isEmpty()) {
-    filename.append(".scad");
+    auto fileext = par->getCurrentLanguageExt();
+    filename.append(fileext);
 
     // Manual overwrite check since Qt doesn't do it, when using the
     // defaultSuffix property
@@ -722,13 +725,15 @@ bool TabManager::saveACopy(EditorInterface *edt)
   assert(edt != nullptr);
 
   const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
-  auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, _("OpenSCAD Designs (*.scad)"));
+  QString fileFilters = UIUtils::fileFilters();
+  auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, fileFilters);
   if (filename.isEmpty()) {
     return false;
   }
 
   if (QFileInfo(filename).suffix().isEmpty()) {
-    filename.append(".scad");
+    auto fileext = par->getCurrentLanguageExt();
+    filename.append(fileext);
   }
 
   return save(edt, filename);

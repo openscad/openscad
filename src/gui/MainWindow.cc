@@ -306,10 +306,10 @@ MainWindow::MainWindow(const QStringList& filenames)
   knownFileExtensions["png"] = surfaceStatement;
   knownFileExtensions["json"] = importFunction;
   knownFileExtensions["scad"] = "";
-#ifdef ENABLE_PYTHON
-  knownFileExtensions["py"] = "";
-#endif
   knownFileExtensions["csg"] = "";
+
+  for(auto& e: LanguageRegistry::instance()->fileExtensions())
+    knownFileExtensions[QString::fromStdString(e)] = "";
 
   root_file = nullptr;
   parsed_file = nullptr;
@@ -324,9 +324,14 @@ MainWindow::MainWindow(const QStringList& filenames)
             this, SLOT(actionOpenRecent()));
   }
 
+  QString filename = filenames.isEmpty() ? QString() : filenames[0];
+  this->currentLanguageRuntime = 
+    LanguageRegistry::instance()->getRuntimeForFilename(filename.toStdString());
+
   // Preferences initialization happens on first tab creation, and depends on colorschemes from editor.
   // Any code dependent on Preferences must come after the TabManager instantiation
-  tabManager = new TabManager(this, filenames.isEmpty() ? QString() : filenames[0]);
+
+  tabManager = new TabManager(this, filename);
   connect(tabManager, SIGNAL(tabCountChanged(int)), this, SLOT(setTabToolBarVisible(int)));
   this->setTabToolBarVisible(tabManager->count());
   tabToolBarContents->layout()->addWidget(tabManager->getTabHeader());
@@ -758,6 +763,11 @@ void MainWindow::openFileFromPath(const QString& path, int line)
 bool MainWindow::isLightTheme(){
   int defaultcolor = viewerToolBar->palette().window().color().lightness();
   return (defaultcolor > 165);
+}
+
+const char* MainWindow::getCurrentLanguageExt()
+{
+  return currentLanguageRuntime->getFileExtension();
 }
 
 void MainWindow::initActionIcon(QAction *action, const char *darkResource, const char *lightResource)

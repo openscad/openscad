@@ -34,17 +34,24 @@
 #include "UIUtils.h"
 #include "PlatformUtils.h"
 #include "QSettingsCached.h"
+#include "LanguageRegistry.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+
+QString UIUtils::fileFilters() 
+{
+  auto fileFilters = LanguageRegistry::instance()->formatFileFilters(";;");
+  return QString::fromStdString(fileFilters);
+}
 
 QFileInfo UIUtils::openFile(QWidget *parent)
 {
   QSettingsCached settings;
   QString last_dirname = settings.value("lastOpenDirName").toString();
+  QString fileFilters = UIUtils::fileFilters();
   QString new_filename = QFileDialog::getOpenFileName(parent, "Open File",
-                                                      last_dirname, "OpenSCAD Designs (*.scad *.csg)");
-
+                                                      last_dirname, fileFilters);//"OpenSCAD Designs (*.scad *.csg)");
   if (new_filename.isEmpty()) {
     return {};
   }
@@ -60,9 +67,9 @@ QFileInfoList UIUtils::openFiles(QWidget *parent)
 {
   QSettingsCached settings;
   QString last_dirname = settings.value("lastOpenDirName").toString();
+  QString fileFilters = UIUtils::fileFilters();
   QStringList new_filenames = QFileDialog::getOpenFileNames(parent, "Open File",
-                                                            last_dirname, "OpenSCAD Designs (*.scad *.csg)");
-
+                                                            last_dirname, fileFilters);//"OpenSCAD Designs (*.scad *.csg)");
   QFileInfoList fileInfoList;
   for (const QString& filename: new_filenames) {
     if (filename.isEmpty()) {

@@ -11,6 +11,8 @@
 #include "UIUtils.h"
 #include "qtgettext.h" // IWYU pragma: keep
 #include "ui_MainWindow.h"
+#include "LanguageRegistry.h"
+#include "LanguageRuntime.h"
 
 #include <memory>
 #include <string>
@@ -62,6 +64,7 @@ public:
   std::string untrusted_edit_document_name;
   bool trust_python_file(const std::string &file, const std::string &content);
 #endif
+  LanguageRuntime *currentLanguageRuntime;
   Tree tree;
   EditorInterface *activeEditor;
   TabManager *tabManager;
@@ -127,6 +130,8 @@ public:
   void UnknownExceptionCleanup(std::string msg = "");
 
   bool isLightTheme();
+
+  const char* getCurrentLanguageExt();
 
 private:
   void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);

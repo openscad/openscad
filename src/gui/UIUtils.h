@@ -33,6 +33,8 @@ namespace fs = boost::filesystem;
 namespace UIUtils {
 static const int maxRecentFiles = 10;
 
+QString fileFilters();
+
 QFileInfo openFile(QWidget *parent = nullptr);
 
 QFileInfoList openFiles(QWidget *parent = nullptr);
