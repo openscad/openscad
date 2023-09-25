@@ -17,6 +17,7 @@
 #include "MainWindow.h"
 #include "memory.h"
 #include "ScadApi.h"
+#include "MainWindow.h"
 
 // don't need the full definition, because it confuses Qt
 class ScadLexer;

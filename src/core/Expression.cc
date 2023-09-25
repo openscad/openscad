@@ -518,7 +518,7 @@ static SimplificationResult simplify_function_body(const Expression *expression,
 #ifdef ENABLE_PYTHON    
       if(f == boost::none)
       {
-	      Value v=python_functionfunc(call);
+	      Value v=python_functionfunc(call,context);
 	      if(!v.isUndefined()) return v;
       }
 #endif    
