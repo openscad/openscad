@@ -1,6 +1,7 @@
 #include "Editor.h"
 #include "Preferences.h"
 #include "QSettingsCached.h"
+#include "LanguageRegistry.h"
 
 void EditorInterface::wheelEvent(QWheelEvent *event)
 {
@@ -12,4 +13,22 @@ void EditorInterface::wheelEvent(QWheelEvent *event)
   } else {
     QWidget::wheelEvent(event);
   }
+}
+
+QString EditorInterface::getFileExtension()
+{
+  return languageRuntime->getFileExtension();
+}
+
+QString EditorInterface::getCommentString()
+{
+  if(commentString.isEmpty())
+    commentString = languageRuntime->getCommentString();
+  return commentString;
+}
+
+void EditorInterface::setLanguageRuntime(std::string suffix)
+{
+  languageRuntime = 
+    LanguageRegistry::instance()->getRuntimeForFileSuffix(suffix);
 }

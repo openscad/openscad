@@ -22,7 +22,6 @@
 TabManager::TabManager(MainWindow *o, const QString& filename)
 {
   par = o;
-
   tabWidget = new TabWidget();
   tabWidget->setAutoHide(true);
   tabWidget->setExpanding(false);
@@ -164,7 +163,6 @@ void TabManager::open(const QString& filename)
 void TabManager::createTab(const QString& filename)
 {
   assert(par != nullptr);
-
   editor = new ScintillaEditor(tabWidget);
   par->activeEditor = editor;
   editor->parameterWidget = new ParameterWidget(par->parameterDock);
@@ -523,6 +521,7 @@ void TabManager::setTabName(const QString& filename, EditorInterface *edt)
     fname = _("Untitled.scad");
     tabWidget->setTabText(tabWidget->indexOf(edt), fname);
     tabWidget->setTabToolTip(tabWidget->indexOf(edt), fname);
+    editor->setLanguageRuntime("scad");
   } else {
     QFileInfo fileinfo(filename);
     edt->filepath = fileinfo.absoluteFilePath();
@@ -530,6 +529,8 @@ void TabManager::setTabName(const QString& filename, EditorInterface *edt)
     tabWidget->setTabText(tabWidget->indexOf(edt), QString(fname).replace("&", "&&"));
     tabWidget->setTabToolTip(tabWidget->indexOf(edt), fileinfo.filePath());
     QDir::setCurrent(fileinfo.dir().absolutePath());
+    QString suffix = fileinfo.suffix();
+    editor->setLanguageRuntime(suffix.toStdString());
   }
   par->editorTopLevelChanged(par->editorDock->isFloating());
   par->changedTopLevelConsole(par->consoleDock->isFloating());
@@ -699,7 +700,7 @@ bool TabManager::saveAs(EditorInterface *edt)
   }
 
   if (QFileInfo(filename).suffix().isEmpty()) {
-    auto fileext = par->getCurrentLanguageExt();
+    auto fileext = edt->getFileExtension();
     filename.append(fileext);
 
     // Manual overwrite check since Qt doesn't do it, when using the
@@ -732,7 +733,7 @@ bool TabManager::saveACopy(EditorInterface *edt)
   }
 
   if (QFileInfo(filename).suffix().isEmpty()) {
-    auto fileext = par->getCurrentLanguageExt();
+    auto fileext = edt->getFileExtension();
     filename.append(fileext);
   }
 

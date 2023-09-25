@@ -14,6 +14,7 @@ public:
   virtual const char* getTrustFlag() = 0;
   virtual const char* getCommentString() = 0;
   virtual const char* getFileExtension() = 0;
+  const char* getFileSuffix();
   virtual const char* getFileFilter() = 0;
   virtual bool evaluate() = 0;
 };

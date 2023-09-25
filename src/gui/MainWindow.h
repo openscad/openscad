@@ -64,7 +64,6 @@ public:
   std::string untrusted_edit_document_name;
   bool trust_python_file(const std::string &file, const std::string &content);
 #endif
-  LanguageRuntime *currentLanguageRuntime;
   Tree tree;
   EditorInterface *activeEditor;
   TabManager *tabManager;
@@ -131,7 +130,8 @@ public:
 
   bool isLightTheme();
 
-  const char* getCurrentLanguageExt();
+  // const char* getFileExtension();
+  // const char* getCommentString();
 
 private:
   void initActionIcon(QAction *action, const char *darkResource, const char *lightResource);

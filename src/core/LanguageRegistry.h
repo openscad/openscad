@@ -33,10 +33,12 @@ public:
 
    bool registerRuntime(std::string id, LanguageRuntime* runtime);
    LanguageRuntime* getRuntime(std::string id);
-   LanguageRuntime* getRuntimeForFilename(std::string filename);
+   LanguageRuntime* getRuntimeForFileName(std::string filename);
+   LanguageRuntime* getRuntimeForFileSuffix(std::string filename);
    bool isActive(std::string id);
    std::vector<LanguageRuntime*> activeRuntimes();
    std::vector<std::string> fileExtensions();
+   std::vector<std::string> fileSuffixes();
    std::vector<std::string> fileFilters();
    std::string formatFileFilters(std::string seperator);
    // std::vector<LanguageRuntime> all_runtimes();

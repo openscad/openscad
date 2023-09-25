@@ -8,6 +8,7 @@
 #include <QTextEdit>
 #include "IndicatorData.h"
 #include "parameter/ParameterWidget.h"
+#include "LanguageRuntime.h"
 
 class EditorInterface : public QWidget
 {
@@ -33,6 +34,9 @@ public:
   virtual QPoint mapToGlobal(const QPoint&) = 0;
   virtual void setCursorPosition(int /*line*/, int /*col*/) {}
   virtual void setFocus() = 0;
+  void setLanguageRuntime(std::string suffix);
+  QString getCommentString();
+  QString getFileExtension();
 
 signals:
   void contentsChanged();
@@ -70,6 +74,7 @@ public slots:
 
 private:
   QSize initialSizeHint;
+  LanguageRuntime* languageRuntime;
 
 public:
   bool contentsRendered; // Set if the source code has changes since the last render (F6)
@@ -78,4 +83,6 @@ public:
   std::string autoReloadId;
   std::vector<IndicatorData> indicatorData;
   ParameterWidget *parameterWidget;
+  QString commentString;
+
 };

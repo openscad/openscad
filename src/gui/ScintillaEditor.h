@@ -15,6 +15,8 @@
 #include "Editor.h"
 #include "memory.h"
 #include "ScadApi.h"
+#include "LanguageRegistry.h"
+#include "LanguageRuntime.h"
 
 // don't need the full definition, because it confuses Qt
 class ScadLexer;
@@ -71,6 +73,8 @@ public:
   void setCursorPosition(int line, int col) override;
   void setFocus() override;
   void setupAutoComplete(const bool forceOff = false);
+  // void setCommentString(std::string string);
+
 
 private:
   void getRange(int *lineFrom, int *lineTo);
@@ -172,4 +176,7 @@ private:
   QStringList userList;
   QMap<QString, ScadTemplate> templateMap;
   static const QString cursorPlaceHolder;
+  // QString commentString;
+  // LanguageRuntime *currentLanguageRuntime;
+
 };

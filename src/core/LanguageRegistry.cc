@@ -36,7 +36,7 @@ LanguageRuntime* LanguageRegistry::getRuntime(std::string id) {
   return it != this->entries.end() ? it->second.runtime : nullptr;
 }
 
-LanguageRuntime* LanguageRegistry::getRuntimeForFilename(std::string filename) { 
+LanguageRuntime* LanguageRegistry::getRuntimeForFileName(std::string filename) { 
   std::string extension = boost::filesystem::path(filename).extension().string();
   if(extension.empty()) return getRuntime("scad");
   for (const auto& [k, e] : this->entries)
@@ -47,6 +47,18 @@ LanguageRuntime* LanguageRegistry::getRuntimeForFilename(std::string filename) {
   }
   return getRuntime("scad");
 }
+
+LanguageRuntime* LanguageRegistry::getRuntimeForFileSuffix(std::string suffix) { 
+  if(suffix.empty()) return getRuntime("scad");
+  for (const auto& [k, e] : this->entries)
+  {
+    if (boost::iequals(e.runtime->getFileSuffix(), suffix)) {
+      e.active ? e.runtime : getRuntime("scad");
+    }
+  }
+  return getRuntime("scad");
+}
+
 
 bool LanguageRegistry::isActive(std::string id) {
   auto it = this->entries.find(id); 
@@ -70,6 +82,16 @@ std::vector<std::string> LanguageRegistry::fileExtensions() {
     }
   return extensions;
 }
+
+std::vector<std::string> LanguageRegistry::fileSuffixes() {
+  std::vector<std::string> extensions;
+  for (const auto& [k, e] : this->entries)
+    if (e.active) {
+     extensions.push_back(e.runtime->getFileSuffix());
+    }
+  return extensions;
+}
+
 
 std::vector<std::string> LanguageRegistry::fileFilters() {
   std::vector<std::string> filters;

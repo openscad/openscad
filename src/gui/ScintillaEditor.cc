@@ -226,6 +226,11 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   qsci->SendScintilla(QsciScintillaBase::SCI_SETBUFFEREDDRAW, false);
 }
 
+// void ScintillaEditor::setCommentString(std::string string)
+// {
+//   commentString = QString::fromStdString(string);
+// }
+
 QPoint ScintillaEditor::mapToGlobal(const QPoint& pos)
 {
   return qsci->mapToGlobal(pos);
@@ -874,11 +879,10 @@ void ScintillaEditor::unindentSelection()
 void ScintillaEditor::commentSelection()
 {
   auto hasSelection = qsci->hasSelectedText();
-
   int lineFrom, lineTo;
   getRange(&lineFrom, &lineTo);
   for (int line = lineFrom; line <= lineTo; ++line) {
-    qsci->insertAt("//", line, 0);
+    qsci->insertAt(commentString, line, 0);
   }
 
   if (hasSelection) {
@@ -894,7 +898,7 @@ void ScintillaEditor::uncommentSelection()
   getRange(&lineFrom, &lineTo);
   for (int line = lineFrom; line <= lineTo; ++line) {
     QString lineText = qsci->text(line);
-    if (lineText.startsWith("//")) {
+    if (lineText.startsWith(commentString)) {
       qsci->setSelection(line, 0, line, 2);
       qsci->removeSelectedText();
     }
