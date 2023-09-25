@@ -69,7 +69,7 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_pt
 #ifdef ENABLE_PYTHON
     int modulefound;
     result = python_modulefunc(this, context,&modulefound);
-    if(result == NULL && modulefound) {
+    if(result == NULL && modulefound && pythonMainModule != NULL) {
 	return result;
     }
 #endif	  

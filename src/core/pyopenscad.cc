@@ -36,7 +36,7 @@ static PyObject *PyInit_openscad(void);
 // https://docs.python.org/3.10/extending/newtypes.html 
 
 static PyObject *pythonInitDict=NULL;
-static PyObject *pythonMainModule = NULL ;
+PyObject *pythonMainModule = NULL ;
 std::shared_ptr<AbstractNode> python_result_node = NULL; /* global result veriable containing the python created result */
 bool python_active;  /* if python is actually used during evaluation */
 bool python_trusted; /* global Python trust flag */

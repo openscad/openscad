@@ -16,6 +16,6 @@ output([
         cube2.translate([4,0,0]),
         sphere1.translate([0,5,0]),
         sphere2.translate([4,5,0]),
-        (cylinder1 + cube3 -cylinder2).translate([0,10,0]),
+        ((cylinder1 | cube3) -cylinder2).translate([0,10,0]),
     ])
 

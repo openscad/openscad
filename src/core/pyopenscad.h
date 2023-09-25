@@ -29,6 +29,7 @@ extern bool python_active;
 extern std::string trusted_edit_document_name;
 extern std::string untrusted_edit_document_name;
 bool trust_python_file(const std::string &file, const std::string &content);
+extern PyObject *pythonMainModule;
 
 PyObject *PyOpenSCADObjectFromNode(PyTypeObject *type, std::shared_ptr<AbstractNode> node);
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *object);

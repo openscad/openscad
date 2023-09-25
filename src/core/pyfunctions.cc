@@ -1141,18 +1141,6 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
   std::shared_ptr<AbstractNode> child;
 
   double x, y, z;
-  if (mode == OpenSCADOperator::INTERSECTION &&  !python_vectorval(arg2, &x, &y, &z)) {
-    child = PyOpenSCADObjectToNodeMulti(arg1);
-    if (child == NULL) {
-      PyErr_SetString(PyExc_TypeError, "invalid argument left to operator");
-      return NULL;
-    }
-    auto node = std::make_shared<TransformNode>(instance, "scale");
-    Vector3d scalevec(x, y, z);
-    node->matrix.scale(scalevec);
-    node->children.push_back(child);
-    return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
-  }
 
   if(arg1 == Py_None && mode == OpenSCADOperator::UNION) return arg2;
   if(arg2 == Py_None && mode == OpenSCADOperator::UNION) return arg1;
@@ -1175,9 +1163,42 @@ PyObject *python_nb_sub(PyObject *arg1, PyObject *arg2, OpenSCADOperator mode)
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
-PyObject *python_nb_add(PyObject *arg1, PyObject *arg2) { return python_nb_sub(arg1, arg2,  OpenSCADOperator::UNION); }
-PyObject *python_nb_substract(PyObject *arg1, PyObject *arg2) { return python_nb_sub(arg1, arg2,  OpenSCADOperator::DIFFERENCE); }
-PyObject *python_nb_multiply(PyObject *arg1, PyObject *arg2) { return python_nb_sub(arg1, arg2,  OpenSCADOperator::INTERSECTION); }
+PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: translate, 1: scale
+{
+  DECLARE_INSTANCE
+  std::shared_ptr<AbstractNode> child;
+
+  double x, y, z;
+  if (!python_vectorval(arg2, &x, &y, &z)) {
+    child = PyOpenSCADObjectToNodeMulti(arg1);
+    if (child == NULL) {
+      PyErr_SetString(PyExc_TypeError, "invalid argument left to operator");
+      return NULL;
+    }
+    if(mode == 0) {
+	    auto node = std::make_shared<TransformNode>(instance, "translate");
+	    Vector3d transvec(x, y, z);
+	    node->matrix.translate(transvec);
+	    node->children.push_back(child);
+	    return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+    }
+    if(mode == 1) {
+	    auto node = std::make_shared<TransformNode>(instance, "scale"); 
+	    Vector3d scalevec(x, y, z);
+	    node->matrix.scale(scalevec);
+	    node->children.push_back(child);
+	    return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+    }
+  }
+  PyErr_SetString(PyExc_TypeError, "invalid argument right to operator");
+  return NULL;
+}
+
+PyObject *python_nb_add(PyObject *arg1, PyObject *arg2) { return python_nb_sub_vec3(arg1, arg2, 0); } 
+PyObject *python_nb_mul(PyObject *arg1, PyObject *arg2) { return python_nb_sub_vec3(arg1, arg2, 1); }
+PyObject *python_nb_or(PyObject *arg1, PyObject *arg2) { return python_nb_sub(arg1, arg2,  OpenSCADOperator::UNION); }
+PyObject *python_nb_andnot(PyObject *arg1, PyObject *arg2) { return python_nb_sub(arg1, arg2,  OpenSCADOperator::DIFFERENCE); }
+PyObject *python_nb_and(PyObject *arg1, PyObject *arg2) { return python_nb_sub(arg1, arg2,  OpenSCADOperator::INTERSECTION); }
 
 PyObject *python_csg_oo_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenSCADOperator mode)
 {
@@ -1924,9 +1945,46 @@ PyMethodDef PyOpenSCADMethods[] = {
 
 PyNumberMethods PyOpenSCADNumbers =
 {
-  &python_nb_add,
-  &python_nb_substract,
-  &python_nb_multiply
+     python_nb_add,	//binaryfunc nb_add
+     python_nb_andnot,	//binaryfunc nb_subtract
+     python_nb_mul,	//binaryfunc nb_multiply
+     0,			//binaryfunc nb_remainder
+     0,			//binaryfunc nb_divmod
+     0,			//ternaryfunc nb_power
+     0,			//unaryfunc nb_negative
+     0,			//unaryfunc nb_positive
+     0,			//unaryfunc nb_absolute
+     0,			//inquiry nb_bool
+     0,			//unaryfunc nb_invert
+     0,			//binaryfunc nb_lshift
+     0,			//binaryfunc nb_rshift
+     python_nb_and,	//binaryfunc nb_and 
+     0,			//binaryfunc nb_xor
+     python_nb_or,	//binaryfunc nb_or 
+     0,			//unaryfunc nb_int
+     0,			//void *nb_reserved
+     0,			//unaryfunc nb_float
+
+     0,			//binaryfunc nb_inplace_add
+     0,			//binaryfunc nb_inplace_subtract
+     0,			//binaryfunc nb_inplace_multiply
+     0,			//binaryfunc nb_inplace_remainder
+     0,			//ternaryfunc nb_inplace_power
+     0,			//binaryfunc nb_inplace_lshift
+     0,			//binaryfunc nb_inplace_rshift
+     0,			//binaryfunc nb_inplace_and
+     0,			//binaryfunc nb_inplace_xor
+     0,			//binaryfunc nb_inplace_or
+
+     0,			//binaryfunc nb_floor_divide
+     0,			//binaryfunc nb_true_divide
+     0,			//binaryfunc nb_inplace_floor_divide
+     0,			//binaryfunc nb_inplace_true_divide
+
+     0,			//unaryfunc nb_index
+
+     0,			//binaryfunc nb_matrix_multiply
+     0			//binaryfunc nb_inplace_matrix_multiply
 };
 
 PyMappingMethods PyOpenSCADMapping =
