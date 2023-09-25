@@ -1007,6 +1007,10 @@ int launch_openscad(int argc, char **argv)
 #ifdef ENABLE_PYTHON
   ("trust-python",  "Trust python")
 #endif
+#ifdef ENABLE_LANG_RT
+  ("enable-language-runtimes",  "Enable Language Runtimes")
+  ("trust-file", "Trust file")
+#endif
   ;
 
   po::options_description hidden("Hidden options");

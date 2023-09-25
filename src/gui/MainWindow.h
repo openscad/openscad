@@ -64,6 +64,9 @@ public:
   std::string untrusted_edit_document_name;
   bool trust_python_file(const std::string &file, const std::string &content);
 #endif
+#ifdef ENABLE_LANG_EXT
+
+#endif
   Tree tree;
   EditorInterface *activeEditor;
   TabManager *tabManager;

@@ -48,6 +48,9 @@ const Feature Feature::ExperimentalPredictibleOutput("predictible-output", "Atte
 #ifdef ENABLE_PYTHON
 const Feature Feature::ExperimentalPythonEngine("python-engine", "Enable experimental Python Engine (implies risk of malicious scripts downloaded).");
 #endif
+#ifdef ENABLE_LANG_RT
+const Feature Feature::ExperimentalLanguageRuntimes("language-runtimes", "Enable experimental language runtimes.");
+#endif
 
 Feature::Feature(const std::string& name, std::string description)
   : name(name), description(std::move(description))

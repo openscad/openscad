@@ -20,15 +20,17 @@ QString EditorInterface::getFileExtension()
   return languageRuntime->getFileExtension();
 }
 
-QString EditorInterface::getCommentString()
-{
-  if(commentString.isEmpty())
-    commentString = languageRuntime->getCommentString();
-  return commentString;
-}
+// void EditorInterface::setCommentString()
+// {
+//   commentString = languageRuntime->getCommentString();
+// }
 
 void EditorInterface::setLanguageRuntime(std::string suffix)
 {
+  LOG(message_group::Error, "EditorInterface::setLanguageRuntime suffix- %1$s", suffix);
   languageRuntime = 
     LanguageRegistry::instance()->getRuntimeForFileSuffix(suffix);
+  commentString = languageRuntime->getCommentString();
+  LOG(message_group::Error, "EditorInterface::commentString runtime -  %1$s", languageRuntime->getId());
+  LOG(message_group::Error, "EditorInterface::commentString %1$s", commentString.toStdString());
 }

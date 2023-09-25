@@ -28,6 +28,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem.hpp>
+#include "printutils.h"
 
 LanguageRegistry *LanguageRegistry::inst = nullptr;
 
@@ -53,7 +54,13 @@ LanguageRuntime* LanguageRegistry::getRuntimeForFileSuffix(std::string suffix) {
   for (const auto& [k, e] : this->entries)
   {
     if (boost::iequals(e.runtime->getFileSuffix(), suffix)) {
-      e.active ? e.runtime : getRuntime("scad");
+      LOG("LanguageRegistry::getRuntimeForFileSuffix - %1$s", e.runtime->getId());
+      LOG("LanguageRegistry::getRuntimeForFileSuffix - %1$s", e.active);
+      // e.active ? e.runtime : getRuntime("scad");
+      if (e.active) 
+        return e.runtime;
+      else
+        return getRuntime("scad");
     }
   }
   return getRuntime("scad");

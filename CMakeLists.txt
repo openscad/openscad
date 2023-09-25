@@ -52,6 +52,7 @@ option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
 option(ENABLE_TBB "Enable support for oneAPI Threading Building Blocks." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
+option(ENABLE_LANG_RT "Enable experimental language runtimes" OFF)
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON "NOT HEADLESS" OFF)
@@ -830,6 +831,9 @@ if(ENABLE_PYTHON)
 	list(APPEND CORE_SOURCES
 		    src/core/pyopenscad.cc )
 	target_compile_definitions(OpenSCADLib PRIVATE ENABLE_PYTHON)
+endif()
+if(ENABLE_LANG_RT)
+  target_compile_definitions(OpenSCADLib PRIVATE ENABLE_LANG_RT)
 endif()
 
 set(CGAL_SOURCES

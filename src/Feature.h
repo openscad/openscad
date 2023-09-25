@@ -31,6 +31,9 @@ public:
 #ifdef ENABLE_PYTHON
   static const Feature ExperimentalPythonEngine;
 #endif
+#ifdef ENABLE_LANG_RT
+  static const Feature ExperimentalLanguageRuntimes;
+#endif
 
   [[nodiscard]] const std::string& get_name() const;
   [[nodiscard]] const std::string& get_description() const;
