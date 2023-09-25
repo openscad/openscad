@@ -28,9 +28,15 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem.hpp>
-#include "printutils.h"
 
 LanguageRegistry *LanguageRegistry::inst = nullptr;
+
+void LanguageRegistry::setDefaultRuntime(LanguageRuntime* runtime)
+{
+  defaultRuntime = runtime;
+}
+
+LanguageRuntime* LanguageRegistry::getDefaultRuntime() { return defaultRuntime; }
 
 LanguageRuntime* LanguageRegistry::getRuntime(std::string id) { 
   auto it = this->entries.find(id); 
@@ -39,31 +45,31 @@ LanguageRuntime* LanguageRegistry::getRuntime(std::string id) {
 
 LanguageRuntime* LanguageRegistry::getRuntimeForFileName(std::string filename) { 
   std::string extension = boost::filesystem::path(filename).extension().string();
-  if(extension.empty()) return getRuntime("scad");
+  if(extension.empty()) return getDefaultRuntime();
   for (const auto& [k, e] : this->entries)
   {
     if (boost::iequals(e.runtime->getFileExtension(), extension)) {
-      e.active ? e.runtime : getRuntime("scad");
-    }
-  }
-  return getRuntime("scad");
-}
-
-LanguageRuntime* LanguageRegistry::getRuntimeForFileSuffix(std::string suffix) { 
-  if(suffix.empty()) return getRuntime("scad");
-  for (const auto& [k, e] : this->entries)
-  {
-    if (boost::iequals(e.runtime->getFileSuffix(), suffix)) {
-      LOG("LanguageRegistry::getRuntimeForFileSuffix - %1$s", e.runtime->getId());
-      LOG("LanguageRegistry::getRuntimeForFileSuffix - %1$s", e.active);
-      // e.active ? e.runtime : getRuntime("scad");
       if (e.active) 
         return e.runtime;
       else
-        return getRuntime("scad");
+        return getDefaultRuntime();
     }
   }
-  return getRuntime("scad");
+  return getDefaultRuntime();
+}
+
+LanguageRuntime* LanguageRegistry::getRuntimeForFileSuffix(std::string suffix) { 
+  if(suffix.empty()) return getDefaultRuntime();
+  for (const auto& [k, e] : this->entries)
+  {
+    if (boost::iequals(e.runtime->getFileSuffix(), suffix)) {
+      if (e.active) 
+        return e.runtime;
+      else
+        return getDefaultRuntime();
+    }
+  }
+  return getDefaultRuntime();
 }
 
 
@@ -98,7 +104,6 @@ std::vector<std::string> LanguageRegistry::fileSuffixes() {
     }
   return extensions;
 }
-
 
 std::vector<std::string> LanguageRegistry::fileFilters() {
   std::vector<std::string> filters;

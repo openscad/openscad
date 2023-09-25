@@ -27,10 +27,7 @@ QString EditorInterface::getFileExtension()
 
 void EditorInterface::setLanguageRuntime(std::string suffix)
 {
-  LOG(message_group::Error, "EditorInterface::setLanguageRuntime suffix- %1$s", suffix);
   languageRuntime = 
     LanguageRegistry::instance()->getRuntimeForFileSuffix(suffix);
   commentString = languageRuntime->getCommentString();
-  LOG(message_group::Error, "EditorInterface::commentString runtime -  %1$s", languageRuntime->getId());
-  LOG(message_group::Error, "EditorInterface::commentString %1$s", commentString.toStdString());
 }

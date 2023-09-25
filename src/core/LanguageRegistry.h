@@ -21,6 +21,7 @@ public:
          true
        };
        inst->entries.insert({runtime->getId(), entry});
+       inst->setDefaultRuntime(runtime);
        LanguageRuntime* py_runtime = new PythonLanguageRuntime();
        struct runtime_entry py_entry = {
          py_runtime,
@@ -32,6 +33,8 @@ public:
    }
 
    bool registerRuntime(std::string id, LanguageRuntime* runtime);
+   void setDefaultRuntime(LanguageRuntime* runtime);
+   LanguageRuntime* getDefaultRuntime();
    LanguageRuntime* getRuntime(std::string id);
    LanguageRuntime* getRuntimeForFileName(std::string filename);
    LanguageRuntime* getRuntimeForFileSuffix(std::string filename);
@@ -51,4 +54,5 @@ private:
     bool active;
   };
   std::unordered_map<std::string, runtime_entry> entries;
+  LanguageRuntime* defaultRuntime;
 };
