@@ -11,7 +11,9 @@
 #include "imageutils.h"
 #include "printutils.h"
 #include "OffscreenContextFactory.h"
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
 #include "glew-utils.h"
+#endif
 
 namespace {
 
@@ -48,10 +50,11 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
   if (!this->ctx->makeCurrent()) throw OffscreenViewException("Unable to make GL context current");
 
 #ifndef NULLGL
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
   if (!initializeGlew()) {
     throw OffscreenViewException("Unable to initialize Glew");
   }
-
+#endif // USE_GLEW
 #ifdef USE_GLAD
   // We could ask for gladLoadGLES2UserPtr() here if we want to use GLES2+
   const auto version = gladLoaderLoadGL();
@@ -59,7 +62,7 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
     throw OffscreenViewException("Unable to initialize GLAD");
   }
   PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
-#endif
+#endif // USE_GLAD
 
 #endif // NULLGL
 
