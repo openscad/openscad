@@ -12,6 +12,10 @@
 
 # Part 0. Finding MCAD
 
+if(POLICY CMP0012) # Allow ON/OFF in if statements
+  cmake_policy(SET CMP0012 NEW)
+endif()
+
 set(ENV{OPENSCADPATH} "@CMAKE_SOURCE_DIR@/libraries")
 
 # Part 1. X11 and Virtual Framebuffer, for headless Linux/BSD systems. 
