@@ -25,6 +25,7 @@ set(ENV{OPENSCADPATH} "@CMAKE_SOURCE_DIR@/libraries")
 set(debug_openscad_template 1)
 
 if(@CMAKE_SYSTEM_NAME@ MATCHES "Linux|BSD")
+  # Try EGL first, if we're unable to use EGL, start a virtual X11 server and use GLX
   if (@ENABLE_EGL@)
     message("running '@OPENSCAD_BINPATH@ --info' to detect EGL")
     execute_process(COMMAND @OPENSCAD_BINPATH@ --info RESULT_VARIABLE INFO_RESULT)

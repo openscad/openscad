@@ -48,6 +48,7 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
   const auto provider = OffscreenContextFactory::defaultProvider();
   this->ctx = OffscreenContextFactory::create(provider, attrib);
   if (!this->ctx) {
+    // If the provider defaulted to EGL, fall back to GLX if EGL failed
     if (provider == "egl") {
       this->ctx = OffscreenContextFactory::create("glx", attrib);
     }
