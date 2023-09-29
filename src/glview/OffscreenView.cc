@@ -45,8 +45,17 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
     .majorGLVersion = 2,
     .minorGLVersion = 0,
   };
-  this->ctx = OffscreenContextFactory::create(OffscreenContextFactory::defaultProvider(), attrib);
-  if (!this->ctx) throw OffscreenViewException("Unable to obtain GL Context");
+  const auto provider = OffscreenContextFactory::defaultProvider();
+  this->ctx = OffscreenContextFactory::create(provider, attrib);
+  if (!this->ctx) {
+    // If the provider defaulted to EGL, fall back to GLX if EGL failed
+    if (provider == "egl") {
+      this->ctx = OffscreenContextFactory::create("glx", attrib);
+    }
+    if (!this->ctx) {
+      throw OffscreenViewException("Unable to obtain GL Context");
+    }
+  }
   if (!this->ctx->makeCurrent()) throw OffscreenViewException("Unable to make GL context current");
 
 #ifndef NULLGL
