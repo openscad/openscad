@@ -89,8 +89,8 @@ static bool create_egl_dummy_context(OffscreenContextEGL& ctx)
   };
 
   const EGLint pbufferAttribs[] = {
-    EGL_WIDTH, ctx.width(),
-    EGL_HEIGHT, ctx.height(),
+    EGL_WIDTH, static_cast<EGLint>(ctx.width()),
+    EGL_HEIGHT, static_cast<EGLint>(ctx.height()),
     EGL_NONE,
   };
 

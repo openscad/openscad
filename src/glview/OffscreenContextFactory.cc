@@ -70,12 +70,12 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider, const Offscre
 #if ENABLE_EGL
   if (provider == "egl-old") {
     return offscreen_old::CreateOffscreenContextEGL(attrib.width, attrib.height,
-                                                    attrib.majorGLVersion, attrib.minorGLVersion,
-                                                    attrib.gles, attrib.compatibilityProfile);
+						    attrib.majorGLVersion, attrib.minorGLVersion,
+						    attrib.gles, attrib.compatibilityProfile);
   } else if (provider == "egl") {
     return CreateOffscreenContextEGL(attrib.width, attrib.height,
-                                     attrib.majorGLVersion, attrib.minorGLVersion,
-                                     attrib.gles, attrib.compatibilityProfile);
+				     attrib.majorGLVersion, attrib.minorGLVersion,
+				     attrib.gles, attrib.compatibilityProfile);
   }
   else
 #endif
