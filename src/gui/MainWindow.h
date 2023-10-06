@@ -56,7 +56,7 @@ public:
   SourceFile *parsed_file; // Last parse for include list
   std::shared_ptr<AbstractNode> absolute_root_node; // Result of tree evaluation
   std::shared_ptr<AbstractNode> root_node; // Root if the root modifier (!) is used
-  AssignmentList assignments_last;
+  AssignmentList assignments_save;
 #ifdef ENABLE_PYTHON
   bool python_active;
   std::string trusted_edit_document_name;
