@@ -863,7 +863,13 @@ if(EXPERIMENTAL)
   set(PYBIND11_FINDPYTHON OFF)
   set(MANIFOLD_PYBIND OFF)
 
-  add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
+  if(CMAKE_UNITY_BUILD)
+    set(CMAKE_UNITY_BUILD OFF)
+    add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
+    set(CMAKE_UNITY_BUILD ON)
+  else()
+    add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
+  endif()
   target_link_libraries(OpenSCAD PRIVATE manifold)
   add_sanitizers(manifold)
 
@@ -1075,6 +1081,20 @@ if (ENABLE_CGAL)
   list(APPEND Sources ${CGAL_SOURCES})
 endif()
 list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${OFFSCREEN_SOURCES})
+
+set_source_files_properties(
+  ${OFFSCREEN_SOURCES}
+  ${PLATFORM_SOURCES}
+  ${FLEX_openscad_lexer_OUTPUTS}
+  ${BISON_openscad_parser_OUTPUTS}
+  ${FLEX_comment_lexer_OUTPUTS}
+  ${BISON_comment_parser_OUTPUTS}
+  src/glview/OffscreenContextFactory.cc
+  src/glview/RenderSettings.cc
+  src/glview/Camera.cc
+  src/glview/ColorMap.cc
+  src/glview/preview/CSGTreeNormalizer.cc
+  PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 
 set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 if(HEADLESS)
