@@ -28,10 +28,12 @@
 #include <QWidget>
 #include <QThread>
 #include <QTimer>
+#include <QIcon>
 
 #include "InputDriver.h"
 #include "InputEventMapper.h"
-#include "MainWindow.h"
+
+class MainWindow;
 
 struct ActionStruct {
   QString name;
@@ -51,17 +53,16 @@ private:
 
   InputEventMapper mapper;
 
-  MainWindow *currentWindow;
+  MainWindow *currentWindow{nullptr};
 
-  QTimer *timer;
+  QTimer *timer{nullptr};
 
   static InputDriverManager *self;
 
   void postEvent(InputEvent *event);
 
 public:
-  InputDriverManager(void);
-  virtual ~InputDriverManager(void);
+  InputDriverManager() = default;
 
   void sendEvent(InputEvent *event);
 
@@ -71,7 +72,7 @@ public:
   void registerDriver(InputDriver *driver);
   void unregisterDriver(InputDriver *driver);
   void closeDrivers();
-  void registerActions(const QList<QAction *>& actions, const QString parent = QString(""), const QString target = QString(""));
+  void registerActions(const QList<QAction *>& actions, const QString& parent = QString(""), const QString& target = QString(""));
 
   static InputDriverManager *instance();
 
@@ -79,8 +80,8 @@ public:
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
 
-  int getButtonCount();
-  int getAxisCount();
+  size_t getButtonCount() const;
+  size_t getAxisCount() const;
 
 public slots:
   void onInputMappingUpdated();

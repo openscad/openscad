@@ -25,12 +25,12 @@
  */
 
 #include "ModuleInstantiation.h"
-#include "node.h"
+#include "core/node.h"
 #include "Builtins.h"
 #include "Children.h"
 #include "Parameters.h"
 
-std::shared_ptr<AbstractNode> builtin_group(const ModuleInstantiation *inst, Arguments arguments, Children children)
+std::shared_ptr<AbstractNode> builtin_group(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {});
   return children.instantiate(std::make_shared<GroupNode>(inst));

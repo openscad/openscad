@@ -1,26 +1,20 @@
+#include "system-gl.h"
 #include "MouseSelector.h"
 
 #include <QOpenGLFramebufferObject>
+#include <memory>
 /**
  * The selection is making use of a special shader, that renders each object in a color
  * that is derived from its index(), by using the first 24 bits of the identifier as a
  * 3-tuple for color.
  *
- * roghly at most 1/3rd of the index()-es are rendered, therefore exhausting the keyspace
+ * Roughly at most 1/3rd of the index()-es are rendered, therefore exhausting the keyspace
  * faster than expected.
  * If this ever becomes a problem, the index-mapping can be adjusted to use 10 up to 16 bit
  * per color channel to store the identifier.
  * Increasing this should be done carefully while testing on older graphics cards, they
  * might do "fancy" optimization.
  */
-
-#define OPENGL_TEST(place) \
-  do { \
-    auto err = glGetError(); \
-    if (err != GL_NO_ERROR) { \
-      fprintf(stderr, "OpenGL error " __FILE__ ":%i:" place ":\n %s\n\n", __LINE__, gluErrorString(err)); \
-    } \
-  } while (false)
 
 MouseSelector::MouseSelector(GLView *view) {
   this->view = view;
@@ -57,8 +51,7 @@ void MouseSelector::init_shader() {
   int shaderstatus;
 
   // Compile the shaders
-  auto vs = glCreateShader(GL_VERTEX_SHADER);
-  OPENGL_TEST("Vertex Shader");
+  GL_CHECKD(auto vs = glCreateShader(GL_VERTEX_SHADER));
   glShaderSource(vs, 1, (const GLchar **)&vs_source, nullptr);
   glCompileShader(vs);
   glGetShaderiv(vs, GL_COMPILE_STATUS, &shaderstatus);
@@ -69,8 +62,7 @@ void MouseSelector::init_shader() {
     fprintf(stderr, __FILE__ ": OpenGL vertex shader Error:\n%.*s\n\n", loglen, logbuffer);
   }
 
-  auto fs = glCreateShader(GL_FRAGMENT_SHADER);
-  OPENGL_TEST("Fragment Shader");
+  GL_CHECKD(auto fs = glCreateShader(GL_FRAGMENT_SHADER));
   glShaderSource(fs, 1, (const GLchar **)&fs_source, nullptr);
   glCompileShader(fs);
   glGetShaderiv(fs, GL_COMPILE_STATUS, &shaderstatus);
@@ -85,8 +77,7 @@ void MouseSelector::init_shader() {
   auto selecthader_prog = glCreateProgram();
   glAttachShader(selecthader_prog, vs);
   glAttachShader(selecthader_prog, fs);
-  glLinkProgram(selecthader_prog);
-  OPENGL_TEST("Linking Shader");
+  GL_CHECKD(glLinkProgram(selecthader_prog));
 
   GLint status;
   glGetProgramiv(selecthader_prog, GL_LINK_STATUS, &status);
@@ -125,13 +116,12 @@ void MouseSelector::init_shader() {
  */
 void MouseSelector::setup_framebuffer(const GLView *view) {
   if (!this->framebuffer ||
-      this->framebuffer->width() != view->cam.pixel_width ||
-      this->framebuffer->height() != view->cam.pixel_height) {
-    this->framebuffer.reset(
-      new QOpenGLFramebufferObject(
-        view->cam.pixel_width,
-        view->cam.pixel_width,
-        QOpenGLFramebufferObject::Depth));
+      static_cast<unsigned int>(this->framebuffer->width()) != view->cam.pixel_width ||
+      static_cast<unsigned int>(this->framebuffer->height()) != view->cam.pixel_height) {
+    this->framebuffer = std::make_unique<QOpenGLFramebufferObject>(
+      view->cam.pixel_width,
+      view->cam.pixel_width,
+      QOpenGLFramebufferObject::Depth);
     this->framebuffer->release();
   }
 }
@@ -139,7 +129,7 @@ void MouseSelector::setup_framebuffer(const GLView *view) {
 /**
  * Setup the shaders, Projection and Model matrix and call the given renderer.
  * The renderer has to make sure, that the colors are defined accordingly, or
- * the selection wont work.
+ * the selection won't work.
  *
  * returns 0 if no object was found
  */
@@ -147,8 +137,8 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   // x/y is originated topleft, so turn y around
   y = this->view->cam.pixel_height - y;
 
-  if (x > this->view->cam.pixel_width || x < 0 ||
-      y > this->view->cam.pixel_height || y < 0) {
+  if (x > static_cast<int>(this->view->cam.pixel_width) || x < 0 ||
+      y > static_cast<int>(this->view->cam.pixel_height) || y < 0) {
     return -1;
   }
 
@@ -157,8 +147,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   // of the currently selected frame.
   // For now, i will use a texture the same size as the normal viewport
   // and select the identifier at the mouse coordinates
-  this->framebuffer->bind();
-  OPENGL_TEST("switch FBO");
+  GL_CHECKD(this->framebuffer->bind());
 
   glClearColor(0, 0, 0, 1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
@@ -176,8 +165,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
   glEnable(GL_DEPTH_TEST);
 
   // call the renderer with the selector shader
-  renderer->draw(true, false, &this->shaderinfo);
-  OPENGL_TEST("renderer->draw");
+  GL_CHECKD(renderer->draw(true, false, &this->shaderinfo));
 
   // Not strictly necessary, but a nop if not required.
   glFlush();
@@ -185,8 +173,7 @@ int MouseSelector::select(const Renderer *renderer, int x, int y) {
 
   // Grab the color from the framebuffer and convert it back to an identifier
   GLubyte color[3] = { 0 };
-  glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color);
-  OPENGL_TEST("glReadPixels");
+  GL_CHECKD(glReadPixels(x, y, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, color));
   glDisable(GL_DEPTH_TEST);
 
   int index = (uint32_t)color[0] | ((uint32_t)color[1] << 8) | ((uint32_t)color[2] << 16);

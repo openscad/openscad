@@ -1,5 +1,5 @@
 #include "boost-utils.h"
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 
 namespace fs = boost::filesystem;
@@ -53,7 +53,7 @@ fs::path boostfs_normalize(const fs::path& path)
  *   write to output, the remaining elements in path
  */
 fs::path
-boostfs_uncomplete(fs::path const p, fs::path const base)
+boostfs_uncomplete(fs::path const& p, fs::path const& base)
 {
   if (p == base) return "./";
   /*!! this breaks stuff if path is a filename rather than a directory,
@@ -97,9 +97,7 @@ boostfs_uncomplete(fs::path const p, fs::path const base)
       // write to output, ../ times the number of remaining elements in base;
       // this is how far we've had to come down the tree from base to get to the common root
       for (; base_it != base_end; ++base_it) {
-        if (*base_it == _dot) continue;
-        else if (*base_it == _sep) continue;
-
+        if (*base_it == _dot || *base_it == _sep) continue;
         output /= "../";
       }
 
@@ -108,8 +106,7 @@ boostfs_uncomplete(fs::path const p, fs::path const base)
       fs::path::iterator path_it_start = path_it;
       for (; path_it != path_end; ++path_it) {
         if (path_it != path_it_start) output /= "/";
-        if (*path_it == _dot) continue;
-        if (*path_it == _sep) continue;
+        if (*path_it == _dot || *path_it == _sep) continue;
         output /= *path_it;
       }
       break;

@@ -25,11 +25,13 @@
  */
 
 %option prefix="lexer"
+%option nounput
+%option noinput
 
 %{
 
-#include <glib.h>
 #include "handle_dep.h"
+#include "str_utf8_wrapper.h"
 #include "printutils.h"
 #include "parsersettings.h"
 #include "Assignment.h"
@@ -38,7 +40,7 @@
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
-#include "boost-utils.h"
+//#include "boost-utils.h"
 namespace fs = boost::filesystem;
 
 //isatty for visual c++ and mingw-cross-env
@@ -54,9 +56,6 @@ extern "C" int __cdecl _isatty(int _FileHandle);
 
 std::string stringcontents;
 int lexerget_lineno(void);
-#ifdef __GNUC__
-static void yyunput(int, char*) __attribute__((unused));
-#endif
 extern const char *parser_input_buffer;
 extern SourceFile *rootfile;
 
@@ -193,7 +192,7 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
 \\\"					{ stringcontents += '"'; }
 {UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ stringcontents += lexertext; }
 \\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
-\\u{H}{4}|\\U{H}{6}     { char buf[8]; to_utf8(lexertext + 2, buf); stringcontents += buf; }
+\\u{H}{4}|\\U{H}{6}     { const auto c = strtoul(lexertext + 2, NULL, 16); stringcontents += str_utf8_wrapper(c).toString(); }
 [^\\\n\"]				{ stringcontents += lexertext; }
 [\n\r]					{ LOCATION_ADD_LINES(parserlloc, yyleng); }
 \"						{ BEGIN(INITIAL); parserlval.text = strdup(stringcontents.c_str()); return TOK_STRING; }
@@ -276,7 +275,7 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
 "<="	return LE;
 ">="	return GE;
 "=="	return EQ;
-"!="	return NE;
+"!="	return NEQ;
 "&&"	return AND;
 "||"	return OR;
 
@@ -284,29 +283,13 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
 
 %%
 
-/*!
- * Convert unicode codepoint given in hex notation
- * into UTF8 encoding. The output buffer must be 8
- * characters long.
- */
-void to_utf8(const char *str, char *out)
-{
-    memset(out, 0, 8);
-    const gunichar c = strtoul(str, NULL, 16);
-    if (g_unichar_validate(c) && (c != 0)) {
-        g_unichar_to_utf8(c, out);
-    } else {
-        out[0] = ' ';
-    }
-}
-
 void lexer_set_parser_sourcefile(const fs::path& path)
 {
     parser_sourcefile = std::make_shared<fs::path>(path);
 }
 
 // Filename of the source file currently being lexed.
-std::shared_ptr<fs::path>  sourcefile()
+std::shared_ptr<fs::path> sourcefile()
 {
   if (!filename_stack.empty()) return filename_stack.back();
 

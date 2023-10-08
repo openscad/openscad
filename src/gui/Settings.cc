@@ -3,6 +3,7 @@
 #include "input/InputEventMapper.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <utility>
 
 namespace Settings {
 
@@ -15,8 +16,8 @@ void Settings::visit(const SettingsVisitor& visitor)
   }
 }
 
-SettingsEntry::SettingsEntry(const std::string& category, const std::string& name) :
-  _category(category), _name(name)
+SettingsEntry::SettingsEntry(std::string category, std::string name) :
+  _category(std::move(category)), _name(std::move(name))
 {
   entries.push_back(this);
 }
@@ -79,7 +80,7 @@ void SettingsEntryEnum::setValue(const std::string& value)
 static std::vector<SettingsEntryEnum::Item> axisValues() {
   std::vector<SettingsEntryEnum::Item> output;
   output.push_back({"None", _("None")});
-  for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
+  for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     const auto userData = (boost::format("+%d") % (i + 1)).str();
     const auto text = (boost::format(_("Axis %d")) % i).str();
     output.push_back({userData, text});
@@ -205,7 +206,7 @@ SettingsEntryDouble Settings::axisDeadzone8("input", "axisDeadzone8", 0.0, 0.01,
 SettingsEntryInt Settings::joystickNr("input", "joystickNr", 0, 9, 0);
 
 
-SettingsEntryString& Settings::inputButton(int id)
+SettingsEntryString& Settings::inputButton(size_t id)
 {
   const std::array<SettingsEntryString *, InputDriver::max_buttons> entries {
     &inputButton0,  &inputButton1,  &inputButton2,  &inputButton3,
@@ -219,7 +220,7 @@ SettingsEntryString& Settings::inputButton(int id)
   return *entries[id];
 }
 
-SettingsEntryDouble& Settings::axisTrim(int id)
+SettingsEntryDouble& Settings::axisTrim(size_t id)
 {
   const std::array<SettingsEntryDouble *, InputDriver::max_axis> entries {
     &axisTrim0, &axisTrim1, &axisTrim2,
@@ -230,7 +231,7 @@ SettingsEntryDouble& Settings::axisTrim(int id)
   return *entries[id];
 }
 
-SettingsEntryDouble& Settings::axisDeadzone(int id)
+SettingsEntryDouble& Settings::axisDeadzone(size_t id)
 {
   const std::array<SettingsEntryDouble *, InputDriver::max_axis> entries {
     &axisDeadzone0, &axisDeadzone1, &axisDeadzone2,

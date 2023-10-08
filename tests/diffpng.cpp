@@ -65,12 +65,11 @@ LodePNG Examples
 #define DIFFPNG_HPP
 
 #include "lodepng.h"
-#include <assert.h>
-#include <cstdlib>
 #include <cassert>
+#include <cstdlib>
 #include <cmath>
 #include <iostream>
-#include <stdint.h>
+#include <cstdint>
 #include <sstream>
 #include <string>
 #include <vector>

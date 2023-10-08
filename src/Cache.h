@@ -45,25 +45,26 @@
 #pragma once
 
 #include <unordered_map>
-#include <boost/format.hpp>
 #include "printutils.h"
 
 template <class Key, class T>
 class Cache
 {
   struct Node {
-    inline Node() : keyPtr(nullptr), t(nullptr), c(0), p(nullptr), n(nullptr) {}
-    inline Node(T *data, size_t cost) : keyPtr(nullptr), t(data), c(cost), p(nullptr), n(nullptr) {}
+    inline Node() : keyPtr(nullptr), t(nullptr), c(0), p(nullptr), n(nullptr) {
+    }
+    inline Node(T * data, size_t cost) : keyPtr(nullptr), t(data), c(cost), p(nullptr), n(nullptr) {
+    }
     const Key *keyPtr; T *t; size_t c; Node *p, *n;
   };
-  typedef typename std::unordered_map<Key, Node> map_type;
-  typedef typename map_type::iterator iterator_type;
-  typedef typename map_type::value_type value_type;
+  using map_type = typename std::unordered_map<Key, Node>;
+  using iterator_type = typename map_type::iterator;
+  using value_type = typename map_type::value_type;
 
   std::unordered_map<Key, Node> hash;
   Node *f, *l;
-  void *unused;
-  size_t mx, total;
+  void *unused{nullptr};
+  size_t mx, total{0};
 
   inline void unlink(Node& n) {
     if (n.p) n.p->n = n.n;
@@ -76,7 +77,7 @@ class Cache
     delete obj;
   }
   inline T *relink(const Key& key) {
-    iterator_type i = hash.find(key);
+    auto i = hash.find(key);
     if (i == hash.end()) return nullptr;
 
     Node& n = i->second;
@@ -94,21 +95,23 @@ class Cache
 
 public:
   inline explicit Cache(size_t maxCost = 100)
-    : f(nullptr), l(nullptr), unused(nullptr), mx(maxCost), total(0) { }
+    : f(nullptr), l(nullptr), mx(maxCost) { }
   inline ~Cache() { clear(); }
 
-  inline size_t maxCost() const { return mx; }
+  [[nodiscard]] inline size_t maxCost() const { return mx; }
   void setMaxCost(size_t m) { mx = m; trim(mx); }
-  inline size_t totalCost() const { return total; }
+  [[nodiscard]] inline size_t totalCost() const { return total; }
 
-  inline size_t size() const { return hash.size(); }
-  inline bool empty() const { return hash.empty(); }
+  [[nodiscard]] inline size_t size() const { return hash.size(); }
+  [[nodiscard]] inline bool empty() const { return hash.empty(); }
 
   void clear() {
     while (f) {
       delete f->t; f = f->n;
     }
-    hash.clear(); l = nullptr; total = 0;
+    hash.clear();
+    l = nullptr;
+    total = 0;
   }
 
   bool insert(const Key& key, T *object, size_t cost);
@@ -126,7 +129,7 @@ private:
 template <class Key, class T>
 inline bool Cache<Key, T>::remove(const Key& key)
 {
-  iterator_type i = hash.find(key);
+  auto i = hash.find(key);
   if (i == hash.end()) {
     return false;
   } else {
@@ -159,7 +162,7 @@ bool Cache<Key, T>::insert(const Key& akey, T *aobject, size_t acost)
   trim(mx - acost);
   Node node(aobject, acost);
   hash[akey] = node;
-  iterator_type i = hash.find(akey);
+  auto i = hash.find(akey);
   total += acost;
   Node *n = &i->second;
   n->keyPtr = &i->first;
@@ -178,7 +181,7 @@ void Cache<Key, T>::trim(size_t m)
     Node *u = n;
     n = n->p;
 #ifdef DEBUG
-    LOG(message_group::None, Location::NONE, "", "Trimming cache: %1$s (%2$d bytes)", u->keyPtr->substr(0, 40), u->c);
+    LOG("Trimming cache: %1$s (%2$d bytes)", u->keyPtr->substr(0, 40), u->c);
 #endif
     unlink(*u);
   }

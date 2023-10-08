@@ -3,16 +3,18 @@
 #include <string>
 #include <unordered_map>
 #include "module.h"
-#include "LocalScope.h"
 #include "Assignment.h"
+
+class AbstractModule;
+class BuiltinFunction;
 
 class Builtins
 {
 public:
   static Builtins *instance(bool erase = false);
-  static void init(const std::string& name, class AbstractModule *module);
-  static void init(const std::string& name, class AbstractModule *module, const std::vector<std::string>& calltipList);
-  static void init(const std::string& name, class BuiltinFunction *function, const std::vector<std::string>& calltipList);
+  static void init(const std::string& name, AbstractModule *module);
+  static void init(const std::string& name, AbstractModule *module, const std::vector<std::string>& calltipList);
+  static void init(const std::string& name, BuiltinFunction *function, const std::vector<std::string>& calltipList);
   void initialize();
   std::string isDeprecated(const std::string& name) const;
 
@@ -24,13 +26,13 @@ public:
 
 private:
   Builtins();
-  ~Builtins() = default;
+  virtual ~Builtins() = default;
 
   static void initKeywordList();
 
   AssignmentList assignments;
-  std::unordered_map<std::string, class BuiltinFunction *> functions;
-  std::unordered_map<std::string, class AbstractModule *> modules;
+  std::unordered_map<std::string, BuiltinFunction *> functions;
+  std::unordered_map<std::string, AbstractModule *> modules;
 
   std::unordered_map<std::string, std::string> deprecations;
 };

@@ -2,8 +2,8 @@
 #include "ext/libtess2/Include/tesselator.h"
 #include "printutils.h"
 #include "Reindexer.h"
-#include <boost/lexical_cast.hpp>
 #include <unordered_map>
+#include <string>
 #include <cmath>
 
 #include <boost/functional/hash.hpp>
@@ -18,7 +18,7 @@ static void stdFree(void *userData, void *ptr) {
   free(ptr);
 }
 
-typedef std::pair<int, int> IndexedEdge;
+using IndexedEdge = std::pair<int, int>;
 
 /*!
    Helper class for keeping track of edges in a mesh.
@@ -28,9 +28,9 @@ class EdgeDict
 {
 public:
 // Counts occurrences of edges
-  typedef std::unordered_map<IndexedEdge, int, boost::hash<IndexedEdge>> IndexedEdgeDict;
+  using IndexedEdgeDict = std::unordered_map<IndexedEdge, int, boost::hash<IndexedEdge>>;
 
-  EdgeDict() { }
+  EdgeDict() = default;
 
   void add(const IndexedFace& face) {
     for (size_t i = 0; i < face.size(); ++i) {
@@ -94,7 +94,7 @@ public:
   void print() const {
     for (const auto& v : this->edges) {
       const auto& e = v.first;
-      PRINTDB("     (%d,%d)%s", e.first % e.second % ((v.second > 1) ? boost::lexical_cast<std::string>(v.second).c_str() : ""));
+      PRINTDB("     (%d,%d)%s", e.first % e.second % ((v.second > 1) ? std::to_string(v.second).c_str() : ""));
     }
   }
 
@@ -472,4 +472,29 @@ int GeometryUtils::findUnconnectedEdges(const std::vector<IndexedTriangle>& tria
 #endif
 
   return edges.size();
+}
+
+Transform3d GeometryUtils::getResizeTransform(const BoundingBox &bbox, const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize)
+{
+  // Find largest dimension
+  int maxdim = 0;
+  for (int i = 1; i < 3; ++i) if (newsize[i] > newsize[maxdim]) maxdim = i;
+
+  // Default scale (scale with 1 if the new size is 0)
+  Vector3d scale(1, 1, 1);
+  for (int i = 0; i < 3; ++i) if (newsize[i] > 0) scale[i] = newsize[i] / bbox.sizes()[i];
+
+  // Autoscale where applicable
+  double autoscale = scale[maxdim];
+  Vector3d newscale;
+  for (int i = 0; i < 3; ++i) newscale[i] = !autosize[i] || (newsize[i] > 0) ? scale[i] : autoscale;
+
+  Transform3d t;
+  t.matrix() <<
+    newscale[0], 0, 0, 0,
+    0, newscale[1], 0, 0,
+    0, 0, newscale[2], 0,
+    0, 0, 0, 1;
+
+  return t;
 }

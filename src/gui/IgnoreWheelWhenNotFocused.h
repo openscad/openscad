@@ -24,6 +24,6 @@ public:
   IgnoreWheelWhenNotFocused(QWidget *parent);
 
 protected:
-  bool eventFilter(QObject *obj, QEvent *event);
+  bool eventFilter(QObject *obj, QEvent *event) override;
 };
 

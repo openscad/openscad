@@ -7,10 +7,6 @@
 #include "cgalutils.h"
 #include "PolySet.h"
 #include "printutils.h"
-#include "progress.h"
-#include "Polygon2d.h"
-#include "PolySetUtils.h"
-#include "Grid.h"
 #include "CGALHybridPolyhedron.h"
 #include "node.h"
 
@@ -25,8 +21,6 @@
 #include <CGAL/convex_hull_3.h>
 
 #include "memory.h"
-#include "Reindexer.h"
-#include "GeometryUtils.h"
 
 #include <map>
 #include <queue>
@@ -40,14 +34,14 @@ namespace CGALUtils {
 shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& children)
 {
   // TODO: use Surface_mesh everywhere!!!
-  typedef CGAL::Epick Hull_kernel;
-  typedef CGAL::Polyhedron_3<CGAL_HybridKernel3> Hybrid_Polyhedron;
-  typedef CGAL::Polyhedron_3<Hull_kernel> Hull_Polyhedron;
-  typedef CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> Hybrid_Nef;
+  using Hull_kernel = CGAL::Epick;
+  using Hybrid_Polyhedron = CGAL::Polyhedron_3<CGAL_HybridKernel3>;
+  using Hull_Polyhedron = CGAL::Polyhedron_3<Hull_kernel>;
+  using Hybrid_Nef = CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>;
 
   CGAL::Timer t, t_tot;
   assert(children.size() >= 2);
-  Geometry::Geometries::const_iterator it = children.begin();
+  auto it = children.begin();
   t_tot.start();
   shared_ptr<const Geometry> operands[2] = {it->second, shared_ptr<const Geometry>()};
   try {
@@ -237,7 +231,7 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
     t_tot.reset();
     return operands[0];
   } catch (const std::exception& e) {
-    LOG(message_group::Warning, Location::NONE, "",
+    LOG(message_group::Warning,
         "[fast-csg] Minkowski failed with error, falling back to Nef operation: %1$s\n", e.what());
 
     auto N = shared_ptr<const Geometry>(applyOperator3D(children, OpenSCADOperator::MINKOWSKI));

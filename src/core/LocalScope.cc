@@ -1,12 +1,9 @@
-#include "Annotation.h"
-#include "Expression.h"
+#include "Assignment.h"
 #include "LocalScope.h"
 #include "ModuleInstantiation.h"
-#include "ScopeContext.h"
 #include "UserModule.h"
 #include "function.h"
-#include "module.h"
-#include "node.h"
+#include "core/node.h"
 
 void LocalScope::addModuleInst(const shared_ptr<ModuleInstantiation>& modinst)
 {

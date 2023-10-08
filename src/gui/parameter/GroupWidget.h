@@ -5,8 +5,6 @@
 #include <QVBoxLayout>
 #include <QWidget>
 
-#include "qtgettext.h"
-
 class GroupWidget : public QWidget
 {
   Q_OBJECT
@@ -17,7 +15,7 @@ private:
   QVBoxLayout contentLayout;
 
 public:
-  GroupWidget(QString title, QWidget *parent = nullptr);
+  GroupWidget(const QString& title, QWidget *parent = nullptr);
   void addWidget(QWidget *widget);
 
   bool isExpanded() const { return toggleButton.isChecked(); }

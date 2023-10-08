@@ -30,6 +30,7 @@
 #include "printutils.h"
 #include "Grid.h"
 #include <Eigen/LU>
+#include <utility>
 
 /*! /class PolySet
 
@@ -49,11 +50,7 @@ PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(con
 {
 }
 
-PolySet::PolySet(const Polygon2d& origin) : polygon(origin), dim(2), convex(unknown), dirty(false)
-{
-}
-
-PolySet::~PolySet()
+PolySet::PolySet(Polygon2d origin) : polygon(std::move(origin)), dim(2), convex(unknown), dirty(false)
 {
 }
 
@@ -66,11 +63,9 @@ std::string PolySet::dump() const
       << "\n num polygons: " << polygons.size()
       << "\n num outlines: " << polygon.outlines().size()
       << "\n polygons data:";
-  for (size_t i = 0; i < polygons.size(); ++i) {
+  for (const auto& polygon : polygons) {
     out << "\n  polygon begin:";
-    const Polygon *poly = &polygons[i];
-    for (size_t j = 0; j < poly->size(); ++j) {
-      Vector3d v = poly->at(j);
+    for (auto v : polygon) {
       out << "\n   vertex:" << v.transpose();
     }
   }
@@ -80,9 +75,9 @@ std::string PolySet::dump() const
   return out.str();
 }
 
-void PolySet::append_poly()
+void PolySet::append_poly(size_t expected_vertex_count)
 {
-  polygons.push_back(Polygon());
+  polygons.emplace_back().reserve(expected_vertex_count);
 }
 
 void PolySet::append_poly(const Polygon& poly)
@@ -177,29 +172,7 @@ bool PolySet::is_convex() const {
 
 void PolySet::resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize)
 {
-  BoundingBox bbox = this->getBoundingBox();
-
-  // Find largest dimension
-  int maxdim = 0;
-  for (int i = 1; i < 3; ++i) if (newsize[i] > newsize[maxdim]) maxdim = i;
-
-  // Default scale (scale with 1 if the new size is 0)
-  Vector3d scale(1, 1, 1);
-  for (int i = 0; i < 3; ++i) if (newsize[i] > 0) scale[i] = newsize[i] / bbox.sizes()[i];
-
-  // Autoscale where applicable
-  double autoscale = scale[maxdim];
-  Vector3d newscale;
-  for (int i = 0; i < 3; ++i) newscale[i] = !autosize[i] || (newsize[i] > 0) ? scale[i] : autoscale;
-
-  Transform3d t;
-  t.matrix() <<
-    newscale[0], 0, 0, 0,
-    0, newscale[1], 0, 0,
-    0, 0, newscale[2], 0,
-    0, 0, 0, 1;
-
-  this->transform(t);
+  this->transform(GeometryUtils::getResizeTransform(this->getBoundingBox(), newsize, autosize));
 }
 
 /*!
@@ -209,20 +182,20 @@ void PolySet::resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& a
  */
 void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
 {
-  Grid3d<int> grid(GRID_FINE);
-  std::vector<int> indices; // Vertex indices in one polygon
-  for (std::vector<Polygon>::iterator iter = this->polygons.begin(); iter != this->polygons.end();) {
+  Grid3d<unsigned int> grid(GRID_FINE);
+  std::vector<unsigned int> indices; // Vertex indices in one polygon
+  for (auto iter = this->polygons.begin(); iter != this->polygons.end();) {
     Polygon& p = *iter;
     indices.resize(p.size());
     // Quantize all vertices. Build index list
     for (unsigned int i = 0; i < p.size(); ++i) {
-      auto index = indices[i] = grid.align(p[i]);
-      if (pPointsOut && index == grid.db.size() - 1) {
+      indices[i] = grid.align(p[i]);
+      if (pPointsOut && pPointsOut->size() < grid.db.size()) {
         pPointsOut->push_back(p[i]);
       }
     }
     // Remove consecutive duplicate vertices
-    Polygon::iterator currp = p.begin();
+    auto currp = p.begin();
     for (unsigned int i = 0; i < indices.size(); ++i) {
       if (indices[i] != indices[(i + 1) % indices.size()]) {
         (*currp++) = p[i];

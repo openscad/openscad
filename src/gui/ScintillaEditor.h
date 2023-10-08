@@ -15,8 +15,6 @@
 #include "Editor.h"
 #include "memory.h"
 #include "ScadApi.h"
-#include "parsersettings.h"
-
 
 // don't need the full definition, because it confuses Qt
 class ScadLexer;
@@ -35,8 +33,8 @@ private:
   int _index;
 
 public:
-  EditorColorScheme(const fs::path path);
-  virtual ~EditorColorScheme();
+  EditorColorScheme(const fs::path& path);
+  virtual ~EditorColorScheme() = default;
 
   const QString& name() const;
   int index() const;
@@ -48,11 +46,10 @@ class ScintillaEditor : public EditorInterface
 {
   Q_OBJECT;
 
-  using colorscheme_set_t = std::multimap<int, shared_ptr<EditorColorScheme>, std::less<int>>;
+  using colorscheme_set_t = std::multimap<int, shared_ptr<EditorColorScheme>, std::less<>>;
 
 public:
   ScintillaEditor(QWidget *parent);
-  ~ScintillaEditor() {}
   QsciScintilla *qsci;
   QString toPlainText() override;
   void initMargin();
@@ -78,13 +75,13 @@ public:
 private:
   void getRange(int *lineFrom, int *lineTo);
   void setColormap(const EditorColorScheme *colorScheme);
-  int readInt(const boost::property_tree::ptree& pt, const std::string name,
+  int readInt(const boost::property_tree::ptree& pt, const std::string& name,
               const int defaultValue);
-  std::string readString(const boost::property_tree::ptree& pt, const std::string name,
-                         const std::string defaultValue);
-  QColor readColor(const boost::property_tree::ptree& pt, const std::string name,
-                   const QColor defaultColor);
-  void enumerateColorSchemesInPath(colorscheme_set_t& result_set, const fs::path path);
+  std::string readString(const boost::property_tree::ptree& pt, const std::string& name,
+                         const std::string& defaultValue);
+  QColor readColor(const boost::property_tree::ptree& pt, const std::string& name,
+                   const QColor& defaultColor);
+  void enumerateColorSchemesInPath(colorscheme_set_t& result_set, const fs::path& path);
   colorscheme_set_t enumerateColorSchemes();
 
   bool eventFilter(QObject *obj, QEvent *event) override;
@@ -102,12 +99,12 @@ private:
   void setLexer(ScadLexer *lexer);
 #endif
   void replaceSelectedText(QString&);
-  void addTemplate(const fs::path path);
+  void addTemplate(const fs::path& path);
   void updateSymbolMarginVisibility();
-  void findMarker(int, int, std::function<int(int)>);
+  void findMarker(int, int, const std::function<int(int)>&);
 
 signals:
-  void previewRequest(void);
+  void previewRequest();
   void hyperlinkIndicatorClicked(int val);
   void uriDropped(const QUrl&);
 

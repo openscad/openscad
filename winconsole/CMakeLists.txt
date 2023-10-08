@@ -8,4 +8,4 @@ add_executable(winconsole winconsole.c)
 
 set_target_properties(winconsole PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
 
-install(TARGETS winconsole RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS winconsole RUNTIME DESTINATION ".")

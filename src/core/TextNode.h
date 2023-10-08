@@ -1,8 +1,6 @@
 #pragma once
 
 #include "node.h"
-#include "Value.h"
-
 #include "FreetypeRenderer.h"
 
 class TextModule;

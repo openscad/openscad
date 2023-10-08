@@ -61,14 +61,17 @@ winosng=winbuild + '\\' + executable
 
 linconv=mingw_cross_info.linux_convert #'/usr/bin/convert'
 
-linoslib='OPENSCADPATH='+linbase+'/tests/../libraries'
-winoslib='OPENSCADPATH='+winbase+'/tests/../libraries'
+linoslib='OPENSCADPATH='+linbase+'/libraries'
+winoslib='OPENSCADPATH='+winbase+'/libraries'
+
+lintestdeploy=linbuild+'/tests'
+wintestdeploy=winbuild+'/tests-build'
 
 lintestdata=linbase+'/tests/data'
 wintestdata=winbase+'/tests/data'
 
-linexamples=linbase+'/tests/../examples'
-winexamples=winbase+'/tests/../examples'
+linexamples=linbase+'/examples'
+winexamples=winbase+'/examples'
 
 def find_imagemagick():
     # Find imagemagick's convert.exe
@@ -137,7 +140,7 @@ def processfile(infilename, winconv):
     lines=fin.readlines()
     fout=open(outfilename,'w')
     fout.write('#'+os.linesep)
-    fout.write('# modified by mingw_x_testfile.py'+os.linesep)
+    fout.write('# modified by mingw_convert_ctest.py'+os.linesep)
     fout.write('#'+os.linesep)
 
     debug('inputname',infilename)
@@ -152,10 +155,11 @@ def processfile(infilename, winconv):
         line=re.sub('--builddir=[^ "]*', '', line)
 
         line=line.replace(linosng,winosng)
+        line=line.replace(lintestdeploy,wintestdeploy) # this should fix path of diffpng.  must come before linbuild replacement
         line=line.replace(linbuild,winbuild)
         line=line.replace(lintct,wintct)
         line=line.replace(linpy,winpy)
-        line=line.replace(linconv,winconv)
+        #line=line.replace(linconv,winconv)
         line=line.replace(linoslib,winoslib)
         line=line.replace(lintestdata,wintestdata)
         line=line.replace(linexamples,winexamples)
@@ -207,12 +211,14 @@ def find_single_file(name, path):
 def run():
     winconv = find_imagemagick()
     if winconv=='':
-        print('error, cant find convert.exe')
+        print('error, cannot find convert.exe')
 
     if True:
         print(thisfile_abspath)
         print('linbase ' + linbase)
         print('winbase ' + winbase)
+        print('lintestdeploy ' + lintestdeploy)
+        print('wintestdeploy ' + wintestdeploy)
         print('linbuild ' + linbuild)
         print('winbuild ' + winbuild)
         print('lintct ' + lintct)
@@ -221,8 +227,8 @@ def run():
         print('winpy ' + winpy)
         print('linosng ' + linosng)
         print('winosng ' + winosng)
-        print('linconv ' + linconv)
-        print('winconv ' + winconv)
+        #print('linconv ' + linconv) # use diffpng, included in archive, as opposed to ImageMagick
+        #print('winconv ' + winconv)
         print('linoslib ' + linoslib)
         print('winoslib ' + winoslib)
         print('lintestdata ' + lintestdata)

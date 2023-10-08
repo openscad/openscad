@@ -1,9 +1,6 @@
 #pragma once
 
-#include "GLView.h"
-#include "system-gl.h"
 #include "linalg.h"
-#include "memory.h"
 #include "ColorMap.h"
 #include "enums.h"
 #include "PolySet.h"
@@ -41,14 +38,14 @@ public:
 
 
   Renderer();
-  virtual ~Renderer() {}
+  virtual ~Renderer() = default;
   virtual void resize(int w, int h);
-  virtual inline const Renderer::shaderinfo_t& getShader() const { return renderer_shader; }
+  [[nodiscard]] virtual inline const Renderer::shaderinfo_t& getShader() const { return renderer_shader; }
 
   static std::string loadShaderSource(const std::string& name);
   virtual void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) {}
   virtual void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const = 0;
-  virtual BoundingBox getBoundingBox() const = 0;
+  [[nodiscard]] virtual BoundingBox getBoundingBox() const = 0;
 
 #define CSGMODE_DIFFERENCE_FLAG 0x10
   enum csgmode_e {
@@ -82,13 +79,13 @@ public:
   virtual Color4f setColor(ColorMode colormode, const float color[4], const shaderinfo_t *shaderinfo = nullptr) const;
   virtual void setColorScheme(const ColorScheme& cs);
 
-  virtual csgmode_e get_csgmode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type = OpenSCADOperator::UNION) const;
+  [[nodiscard]] virtual csgmode_e get_csgmode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type = OpenSCADOperator::UNION) const;
   virtual void render_surface(const PolySet& geom, csgmode_e csgmode, const Transform3d& m, const shaderinfo_t *shaderinfo = nullptr) const;
   virtual void render_edges(const PolySet& geom, csgmode_e csgmode) const;
 
 protected:
   std::map<ColorMode, Color4f> colormap;
-  const ColorScheme *colorscheme;
+  const ColorScheme *colorscheme{nullptr};
 
 private:
   shaderinfo_t renderer_shader;

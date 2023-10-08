@@ -7,10 +7,10 @@
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
-typedef CGAL::Epick K;
-typedef CGAL::Point_3<K> Vertex3K;
-typedef std::vector<Vertex3K> PolygonK;
-typedef std::vector<PolygonK> PolyholeK;
+using K = CGAL::Epick;
+using Vertex3K = CGAL::Point_3<K>;
+using PolygonK = std::vector<Vertex3K>;
+using PolyholeK = std::vector<PolygonK>;
 
 class CGALHybridPolyhedron;
 
@@ -30,6 +30,7 @@ Result vector_convert(V const& v) {
 
 namespace CGALUtils {
 
+CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps);
 bool applyHull(const Geometry::Geometries& children, PolySet& P);
 template <typename K>
 bool is_weakly_convex(const CGAL::Polyhedron_3<K>& p);
@@ -80,7 +81,7 @@ template <typename K>
 void transform(CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh, const Transform3d& matrix);
 template <typename K>
 Transform3d computeResizeTransform(
-  const CGAL::Iso_cuboid_3<K>& bb, int dimension, const Vector3d& newsize,
+  const CGAL::Iso_cuboid_3<K>& bb, unsigned int dimension, const Vector3d& newsize,
   const Eigen::Matrix<bool, 3, 1>& autosize);
 bool tessellatePolygon(const PolygonK& polygon,
                        Polygons& triangles,
@@ -106,6 +107,7 @@ getCartesianConverter()
     FromKernel, ToKernel, KernelConverter<FromKernel, ToKernel>>();
 }
 shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron& hybrid);
+std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const PolySet& ps);
 std::shared_ptr<CGALHybridPolyhedron> createMutableHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
 std::shared_ptr<const CGALHybridPolyhedron> getHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
 template <typename K>

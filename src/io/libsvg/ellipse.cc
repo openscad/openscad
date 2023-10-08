@@ -22,22 +22,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <stdlib.h>
+#include <cstdlib>
 #include <iostream>
 
 #include "ellipse.h"
+#include "util.h"
 
 namespace libsvg {
 
 const std::string ellipse::name("ellipse");
-
-ellipse::ellipse() : rx(0), ry(0)
-{
-}
-
-ellipse::~ellipse()
-{
-}
 
 void
 ellipse::set_attrs(attr_map_t& attrs, void *context)

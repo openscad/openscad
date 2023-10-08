@@ -1,17 +1,18 @@
 #include "cgalutils.h"
+#include "Feature.h"
+#include "linalg.h"
+#include "hash.h"
 
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Surface_mesh.h>
-#include "Reindexer.h"
-
 namespace CGALUtils {
 
 template <class TriangleMesh>
 bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
 {
-  typedef boost::graph_traits<TriangleMesh> GT;
-  typedef typename GT::vertex_descriptor vertex_descriptor;
+  using GT = boost::graph_traits<TriangleMesh>;
+  using vertex_descriptor = typename GT::vertex_descriptor;
 
   bool err = false;
   auto num_vertices = ps.numFacets() * 3;
@@ -40,14 +41,15 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
 }
 
 template bool createMeshFromPolySet(const PolySet& ps, CGAL_HybridMesh& mesh);
+template bool createMeshFromPolySet(const PolySet& ps, CGAL_DoubleMesh& mesh);
 
 template <class TriangleMesh>
 bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
 {
   bool err = false;
   ps.reserve(ps.numFacets() + mesh.number_of_faces());
-  for (auto& f : mesh.faces()) {
-    ps.append_poly();
+  for (const auto& f : mesh.faces()) {
+    ps.append_poly(mesh.degree(f));
 
     CGAL::Vertex_around_face_iterator<TriangleMesh> vbegin, vend;
     for (boost::tie(vbegin, vend) = vertices_around_face(mesh.halfedge(f), mesh); vbegin != vend;
@@ -70,8 +72,8 @@ void copyMesh(
   const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>& input,
   CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>>& output)
 {
-  typedef CGAL::Surface_mesh<CGAL::Point_3<InputKernel>> InputMesh;
-  typedef CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>> OutputMesh;
+  using InputMesh = CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>;
+  using OutputMesh = CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>>;
 
   auto converter = getCartesianConverter<InputKernel, OutputKernel>();
   output.reserve(output.number_of_vertices() + input.number_of_vertices(),
@@ -103,6 +105,7 @@ template void copyMesh(const CGAL_HybridMesh& input, CGAL_HybridMesh& output);
 template void copyMesh(const CGAL::Surface_mesh<CGAL_Point_3>& input, CGAL_HybridMesh& output);
 template void copyMesh(const CGAL_HybridMesh& input, CGAL::Surface_mesh<CGAL_Point_3>& output);
 template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& input, CGAL_HybridMesh& output);
+template void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& input, CGAL_DoubleMesh& output);
 
 template <typename K>
 void convertNefPolyhedronToTriangleMesh(const CGAL::Nef_polyhedron_3<K>& nef, CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh)
@@ -121,13 +124,8 @@ void cleanupMesh(CGAL_HybridMesh& mesh, bool is_corefinement_result)
 {
   mesh.collect_garbage();
 #if FAST_CSG_KERNEL_IS_LAZY
-  // If exact corefinement callbacks are enabled, no need to make numbers exact here again.
-  auto make_exact =
-    Feature::ExperimentalFastCsgExactCorefinementCallback.is_enabled()
-      ? !is_corefinement_result
-      : Feature::ExperimentalFastCsgExact.is_enabled();
-
-  if (make_exact) {
+  // Don't make exact again if exact corefinement callbacks already did the job.
+  if (!is_corefinement_result) {
     for (auto v : mesh.vertices()) {
       auto& pt = mesh.point(v);
       CGAL::exact(pt.x());

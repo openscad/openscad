@@ -3,7 +3,7 @@
 #include <QDialog>
 #include <QString>
 
-#include "qtgettext.h"
+#include "qtgettext.h" // IWYU pragma: keep
 #include "ui_LibraryInfoDialog.h"
 
 class LibraryInfoDialog : public QDialog, public Ui::LibraryInfoDialog
@@ -12,7 +12,6 @@ class LibraryInfoDialog : public QDialog, public Ui::LibraryInfoDialog
 
 public:
   LibraryInfoDialog(const QString& rendererInfo);
-  ~LibraryInfoDialog();
 
   void update_library_info(const QString& rendererInfo);
 };

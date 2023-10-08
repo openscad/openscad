@@ -1,4 +1,7 @@
 #include "PlatformUtils.h"
+
+#include <map>
+
 #include "printutils.h"
 #include "findversion.h"
 #ifndef _WIN32_WINNT
@@ -38,7 +41,7 @@ std::string winapi_wstr_to_utf8(std::wstring wstr)
   int numbytes = WideCharToMultiByte(CodePage, dwFlags, lpWideCharStr,
                                      cchWideChar, lpMultiByteStr, cbMultiByte, lpDefaultChar, lpUsedDefaultChar);
 
-  // LOG(message_group::None,Location::NONE,"","utf16 to utf8 conversion: numbytes %1$i",numbytes);
+  // LOG(message_group::NONE,,"utf16 to utf8 conversion: numbytes %1$i",numbytes);
 
   std::string utf8_str(numbytes, 0);
   lpMultiByteStr = &utf8_str[0];
@@ -49,8 +52,8 @@ std::string winapi_wstr_to_utf8(std::wstring wstr)
 
   if (result != numbytes) {
     DWORD errcode = GetLastError();
-    LOG(message_group::Error, Location::NONE, "", "Error converting w_char str to utf8 string");
-    LOG(message_group::Error, Location::NONE, "", "error code %1$i", errcode);
+    LOG(message_group::Error, "Error converting w_char str to utf8 string");
+    LOG(message_group::Error, "error code %1$i", errcode);
   }
 
   return utf8_str;
@@ -93,7 +96,7 @@ std::string PlatformUtils::documentsPath()
 {
   const std::string retval = getFolderPath(CSIDL_PERSONAL);
   if (retval.empty()) {
-    LOG(message_group::Error, Location::NONE, "", "Could not find My Documents location");
+    LOG(message_group::Error, "Could not find My Documents location");
   }
   return retval;
 }
@@ -102,7 +105,7 @@ std::string PlatformUtils::userConfigPath()
 {
   const std::string retval = getFolderPath(CSIDL_LOCAL_APPDATA);
   if (retval.empty()) {
-    LOG(message_group::Error, Location::NONE, "", "Could not find Local AppData location");
+    LOG(message_group::Error, "Could not find Local AppData location");
   }
   return retval + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }
@@ -149,16 +152,28 @@ const std::string PlatformUtils::sysinfo(bool extended)
 {
   std::string result;
 
+  SYSTEM_INFO si;
+  GetSystemInfo(&si);
+  std::map<WORD, const char *> archs;
+  archs[PROCESSOR_ARCHITECTURE_AMD64] = "x86_64";
+  archs[PROCESSOR_ARCHITECTURE_ARM] = "arm";
+  archs[PROCESSOR_ARCHITECTURE_ARM64] = "arm64";
+  archs[PROCESSOR_ARCHITECTURE_IA64] = "itanium";
+  archs[PROCESSOR_ARCHITECTURE_INTEL] = "x86";
+  archs[PROCESSOR_ARCHITECTURE_UNKNOWN] = "unknown";
+
   OSVERSIONINFOEX osinfo;
   osinfo.dwOSVersionInfoSize = sizeof(osinfo);
 
   if (GetVersionExEx(&osinfo) == 0) {
-    result += "Unknown Windows(TM)";
+    result += "Microsoft Windows Unknown Version";
   } else {
-    boost::format fmt("Windows(TM) %d.%d SP %d.%d NTW %i MSDN 724833");
-    fmt % osinfo.dwMajorVersion % osinfo.dwMinorVersion
-    % osinfo.wServicePackMajor % osinfo.wServicePackMinor
-    % (osinfo.wProductType == VER_NT_WORKSTATION);
+    int majorVersion = osinfo.dwMajorVersion;
+    if (majorVersion == 10 && osinfo.dwBuildNumber >= 22000) {
+      majorVersion = 11;
+    }
+    boost::format fmt("Microsoft Windows %d (%d.%d.%d) %s");
+    fmt % majorVersion % osinfo.dwMajorVersion % osinfo.dwMinorVersion % osinfo.dwBuildNumber % archs[si.wProcessorArchitecture];
     result += fmt.str();
   }
 
@@ -189,7 +204,7 @@ const std::string PlatformUtils::sysinfo(bool extended)
 }
 
 #include <io.h>
-#include <stdio.h>
+#include <cstdio>
 #include <fstream>
 
 #ifdef USE_MIMALLOC

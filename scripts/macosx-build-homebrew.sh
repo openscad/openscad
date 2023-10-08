@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This script builds  library dependencies of OpenSCAD for Mac OS X using Homebrew.
+# This script builds library dependencies of OpenSCAD for Mac OS X using Homebrew.
 # 
 # This script must be run from the OpenSCAD source root directory
 #
@@ -58,7 +58,7 @@ for formula in boost; do
   fi
 done
 
-for formula in pkg-config eigen cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 qscintilla2 lib3mf double-conversion imagemagick ccache ghostscript; do
+for formula in pkg-config eigen cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 qscintilla2 lib3mf double-conversion imagemagick ccache ghostscript tbb; do
   log "Installing formula $formula"
   brew ls --versions $formula
   time brew install $formula

@@ -8,7 +8,7 @@ ParameterSpinBox::ParameterSpinBox(QWidget *parent, NumberParameter *parameter, 
   setupUi(this);
   descriptionWidget->setDescription(parameter, descriptionStyle);
 
-  IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
+  auto *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
   doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
   doubleSpinBox->setKeyboardTracking(true);
 
@@ -44,7 +44,7 @@ ParameterSpinBox::ParameterSpinBox(QWidget *parent, NumberParameter *parameter, 
 
   connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onChanged(double)));
   connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
-  setValue();
+  ParameterSpinBox::setValue();
 }
 
 void ParameterSpinBox::valueApplied() {
@@ -54,7 +54,7 @@ void ParameterSpinBox::valueApplied() {
 void ParameterSpinBox::onChanged(double value)
 {
 #ifdef DEBUG
-  PRINTD(STR("[changed] value=" << value << ", parameter->value=" << parameter->value << ", lastSent=" << lastSent << ", lastApplied=" << lastApplied));
+  PRINTD(STR("[changed] value=", value, ", parameter->value=", parameter->value, ", lastSent=", lastSent, ", lastApplied=", lastApplied));
 #endif
   parameter->value = value;
   if (lastSent != value) {
@@ -66,7 +66,7 @@ void ParameterSpinBox::onChanged(double value)
 void ParameterSpinBox::onEditingFinished()
 {
 #ifdef DEBUG
-  PRINTD(STR("[finished] parameter->value=" << parameter->value << ", lastSent=" << lastSent << ", lastApplied=" << lastApplied));
+  PRINTD(STR("[finished] parameter->value=", parameter->value, ", lastSent=", lastSent, ", lastApplied=", lastApplied));
 #endif
   if (lastApplied != parameter->value) {
     lastSent = parameter->value;

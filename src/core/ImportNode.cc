@@ -24,7 +24,7 @@
  *
  */
 
-#include "import.h"
+#include "io/import.h"
 #include "ImportNode.h"
 
 #include "module.h"
@@ -39,7 +39,7 @@
 #include "DxfData.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include "fileutils.h"
+#include "io/fileutils.h"
 #include "Feature.h"
 #include "handle_dep.h"
 #include "boost-utils.h"
@@ -56,7 +56,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 extern PolySet *import_amf(const std::string&, const Location& loc);
 extern Geometry *import_3mf(const std::string&, const Location& loc);
 
-static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments, Children children, ImportType type)
+static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children, ImportType type)
 {
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
@@ -65,7 +65,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"file", "layer", "convexity", "origin", "scale"},
-                                            {"width", "height", "filename", "layername", "center", "dpi"}
+                                            {"width", "height", "filename", "layername", "center", "dpi", "id"}
                                             );
 
   const auto& v = parameters["file"];
@@ -75,7 +75,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   } else {
     const auto& filename_val = parameters["filename"];
     if (!filename_val.isUndefined()) {
-      LOG(message_group::Deprecated, Location::NONE, "", "filename= is deprecated. Please use file=");
+      LOG(message_group::Deprecated, "filename= is deprecated. Please use file=");
     }
     filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
   }
@@ -91,6 +91,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     else if (ext == ".3mf") actualtype = ImportType::_3MF;
     else if (ext == ".amf") actualtype = ImportType::AMF;
     else if (ext == ".svg") actualtype = ImportType::SVG;
+    else if (ext == ".obj") actualtype = ImportType::OBJ;
   }
 
   auto node = std::make_shared<ImportNode>(inst, actualtype);
@@ -102,15 +103,17 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   node->filename = filename;
   const auto& layerval = parameters["layer"];
   if (layerval.isDefined()) {
-    node->layername = layerval.toString();
+    node->layer = layerval.toString();
   } else {
     const auto& layername = parameters["layername"];
     if (layername.isDefined()) {
-      LOG(message_group::Deprecated, Location::NONE, "", "layername= is deprecated. Please use layer=");
-      node->layername = layername.toString();
-    } else {
-      node->layername = "";
+      LOG(message_group::Deprecated, "layername= is deprecated. Please use layer=");
+      node->layer = layername.toString();
     }
+  }
+  const auto& idval = parameters["id"];
+  if (idval.isDefined()) {
+    node->id = idval.toString();
   }
   node->convexity = (int)parameters["convexity"].toDouble();
 
@@ -136,7 +139,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     double val = dpi.toDouble();
     if (val < 0.001) {
       std::string filePath = boostfs_uncomplete(inst->location().filePath(), parameters.documentRoot()).generic_string();
-      LOG(message_group::Warning, Location::NONE, "",
+      LOG(message_group::Warning,
           "Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
           origin.toEchoStringNoThrow(), filePath, filePath, inst->location().firstLine()
           );
@@ -151,17 +154,17 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   return node;
 }
 
-static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *inst, Arguments arguments, Children children)
-{ return do_import(inst, std::move(arguments), std::move(children), ImportType::UNKNOWN); }
+static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+{ return do_import(inst, std::move(arguments), children, ImportType::UNKNOWN); }
 
-static std::shared_ptr<AbstractNode> builtin_import_stl(const ModuleInstantiation *inst, Arguments arguments, Children children)
-{ return do_import(inst, std::move(arguments), std::move(children), ImportType::STL); }
+static std::shared_ptr<AbstractNode> builtin_import_stl(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+{ return do_import(inst, std::move(arguments), children, ImportType::STL); }
 
-static std::shared_ptr<AbstractNode> builtin_import_off(const ModuleInstantiation *inst, Arguments arguments, Children children)
-{ return do_import(inst, std::move(arguments), std::move(children), ImportType::OFF); }
+static std::shared_ptr<AbstractNode> builtin_import_off(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+{ return do_import(inst, std::move(arguments), children, ImportType::OFF); }
 
-static std::shared_ptr<AbstractNode> builtin_import_dxf(const ModuleInstantiation *inst, Arguments arguments, Children children)
-{ return do_import(inst, std::move(arguments), std::move(children), ImportType::DXF); }
+static std::shared_ptr<AbstractNode> builtin_import_dxf(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+{ return do_import(inst, std::move(arguments), children, ImportType::DXF); }
 
 
 
@@ -190,12 +193,16 @@ const Geometry *ImportNode::createGeometry() const
     g = import_off(this->filename, loc);
     break;
   }
+  case ImportType::OBJ: {
+    g = import_obj(this->filename, loc);
+    break;
+  }
   case ImportType::SVG: {
-    g = import_svg(this->fn, this->fs, this->fa, this->filename, this->dpi, this->center, loc);
+    g = import_svg(this->fn, this->fs, this->fa, this->filename, this->id, this->layer, this->dpi, this->center, loc);
     break;
   }
   case ImportType::DXF: {
-    DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layername, this->origin_x, this->origin_y, this->scale);
+    DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layer.value_or(""), this->origin_x, this->origin_y, this->scale);
     g = dd.toPolygon2d();
     break;
   }
@@ -206,7 +213,7 @@ const Geometry *ImportNode::createGeometry() const
   }
 #endif
   default:
-    LOG(message_group::Error, Location::NONE, "", "Unsupported file format while trying to import file '%1$s', import() at line %2$d", this->filename, loc.firstLine());
+    LOG(message_group::Error, "Unsupported file format while trying to import file '%1$s', import() at line %2$d", this->filename, loc.firstLine());
     g = new PolySet(3);
   }
 
@@ -220,9 +227,14 @@ std::string ImportNode::toString() const
   fs::path path((std::string)this->filename);
 
   stream << this->name();
-  stream << "(file = " << this->filename
-         << ", layer = " << QuotedString(this->layername)
-         << ", origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "]";
+  stream << "(file = " << this->filename;
+  if (this->id) {
+    stream << ", id = " << QuotedString(this->id.get());
+  }
+  if (this->layer) {
+    stream << ", layer = " << QuotedString(this->layer.get());
+  }
+  stream << ", origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "]";
   if (this->type == ImportType::SVG) {
     stream << ", center = " << (this->center ? "true" : "false")
            << ", dpi = " << this->dpi;

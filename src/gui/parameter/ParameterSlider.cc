@@ -8,7 +8,7 @@ ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter, De
   setupUi(this);
   descriptionWidget->setDescription(parameter, descriptionStyle);
 
-  IgnoreWheelWhenNotFocused *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
+  auto *ignoreWheelWhenNotFocused = new IgnoreWheelWhenNotFocused(this);
   slider->installEventFilter(ignoreWheelWhenNotFocused);
   doubleSpinBox->installEventFilter(ignoreWheelWhenNotFocused);
   doubleSpinBox->setKeyboardTracking(true);
@@ -33,7 +33,7 @@ ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter, De
     this->step = pow(0.1, decimals);
   }
 
-  static constexpr double maxSteps = static_cast<double>(std::numeric_limits<int>::max());
+  static constexpr auto maxSteps = static_cast<double>(std::numeric_limits<int>::max());
   // Use nextafter to compensate for possible floating point inaccurary where result is just below a whole number.
   double tempSteps = std::nextafter((*parameter->maximum - this->minimum) / this->step, maxSteps) + 1.0;
   int numSteps = tempSteps >= maxSteps ? std::numeric_limits<int>::max() : static_cast<int>(tempSteps);
@@ -56,7 +56,7 @@ ParameterSlider::ParameterSlider(QWidget *parent, NumberParameter *parameter, De
   connect(doubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onSpinBoxChanged(double)));
   connect(doubleSpinBox, SIGNAL(editingFinished()), this, SLOT(onSpinBoxEditingFinished()));
 
-  setValue();
+  ParameterSlider::setValue();
 }
 
 void ParameterSlider::valueApplied() {
@@ -113,7 +113,7 @@ void ParameterSlider::onSpinBoxEditingFinished()
 void ParameterSlider::commitChange(bool immediate) {
   double value = parameterValue(slider->sliderPosition());
 #ifdef DEBUG
-  PRINTD(STR("[commit] value=" << value << ", parameter->value=" << parameter->value << ", lastSent=" << lastSent << ", lastApplied=" << lastApplied));
+  PRINTD(STR("[commit] value=", value, ", parameter->value=", parameter->value, ", lastSent=", lastSent, ", lastApplied=", lastApplied));
 #endif
   if ((immediate && lastApplied != value) || (!immediate && lastSent != value) ) {
     lastSent = parameter->value = value;
@@ -125,7 +125,7 @@ void ParameterSlider::commitChange(bool immediate) {
 void ParameterSlider::setValue()
 {
 #ifdef DEBUG
-  PRINTD(STR("[setValue] parameter->value=" << parameter->value << ", lastSent=" << lastSent << ", lastApplied=" << lastApplied));
+  PRINTD(STR("[setValue] parameter->value=", parameter->value, ", lastSent=", lastSent, ", lastApplied=", lastApplied));
 #endif
   int position = sliderPosition(parameter->value);
   lastApplied = lastSent = parameter->value;

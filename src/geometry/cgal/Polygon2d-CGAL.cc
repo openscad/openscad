@@ -1,32 +1,33 @@
-#include "Polygon2d-CGAL.h"
+#include "Polygon2d.h"
 #include "PolySet.h"
 #include "printutils.h"
-#include "boost-utils.h"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
 #include <CGAL/Polygon_2.h>
+#include <CGAL/exceptions.h>
+
 #include <iostream>
 
 namespace Polygon2DCGAL {
 
 struct FaceInfo
 {
-  FaceInfo() : nesting_level(42) {}
-  int nesting_level;
-  bool in_domain() const { return nesting_level % 2 == 1; }
+  FaceInfo() = default;
+  int nesting_level{42};
+  [[nodiscard]] bool in_domain() const { return nesting_level % 2 == 1; }
 };
 
 
-typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
-typedef CGAL::Triangulation_vertex_base_2<K> Vb;
-typedef CGAL::Triangulation_face_base_with_info_2<FaceInfo, K> Fbb;
-typedef CGAL::Constrained_triangulation_face_base_2<K, Fbb> Fb;
-typedef CGAL::Triangulation_data_structure_2<Vb, Fb> TDS;
-typedef CGAL::Exact_predicates_tag Itag;
-typedef CGAL::Constrained_Delaunay_triangulation_2<K, TDS, Itag> CDT;
-typedef CDT::Point Point;
-typedef CGAL::Polygon_2<K> Polygon_2;
+using K = CGAL::Exact_predicates_inexact_constructions_kernel;
+using Vb = CGAL::Triangulation_vertex_base_2<K>;
+using Fbb = CGAL::Triangulation_face_base_with_info_2<FaceInfo, K>;
+using Fb = CGAL::Constrained_triangulation_face_base_2<K, Fbb>;
+using TDS = CGAL::Triangulation_data_structure_2<Vb, Fb>;
+using Itag = CGAL::Exact_predicates_tag;
+using CDT = CGAL::Constrained_Delaunay_triangulation_2<K, TDS, Itag>;
+using Point = CDT::Point;
+using Polygon_2 = CGAL::Polygon_2<K>;
 
 void
 mark_domains(CDT& ct,
@@ -130,7 +131,7 @@ PolySet *Polygon2d::tessellate() const
     }
 
   } catch (const CGAL::Precondition_exception& e) {
-    LOG(message_group::None, Location::NONE, "", "CGAL error in Polygon2d::tesselate(): %1$s", e.what());
+    LOG("CGAL error in Polygon2d::tesselate(): %1$s", e.what());
     return nullptr;
   }
 
@@ -139,7 +140,7 @@ PolySet *Polygon2d::tessellate() const
   mark_domains(cdt);
   for (auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
     if (fit->info().in_domain()) {
-      polyset->append_poly();
+      polyset->append_poly(3);
       for (int i = 0; i < 3; ++i) {
         polyset->append_vertex(fit->vertex(i)->point()[0],
                                fit->vertex(i)->point()[1],

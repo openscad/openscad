@@ -3,7 +3,7 @@
 #include <QMainWindow>
 #include <QSettings>
 
-#include "qtgettext.h"
+#include "qtgettext.h" // IWYU pragma: keep
 #include "ui_Preferences.h"
 #include "Settings.h"
 #include "InitConfigurator.h"
@@ -13,9 +13,9 @@ class Preferences : public QMainWindow, public Ui::Preferences, public InitConfi
   Q_OBJECT;
 
 public:
-  ~Preferences();
+  ~Preferences() override;
 
-  static void create(QStringList colorSchemes);
+  static void create(const QStringList& colorSchemes);
   static Preferences *inst();
 
   QVariant getValue(const QString& key) const;
@@ -33,7 +33,6 @@ public slots:
   void on_fontSize_currentIndexChanged(const QString&);
   void on_syntaxHighlight_activated(const QString&);
   void on_openCSGWarningBox_toggled(bool);
-  void on_enableOpenCSGBox_toggled(bool);
   void on_cgalCacheSizeMBEdit_textChanged(const QString&);
   void on_polysetCacheSizeMBEdit_textChanged(const QString&);
   void on_opencsgLimitEdit_textChanged(const QString&);

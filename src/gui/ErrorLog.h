@@ -4,7 +4,6 @@
 #include "ui_ErrorLog.h"
 #include "printutils.h"
 #include <QStandardItemModel>
-#include "Editor.h"
 
 enum errorLog_column {
   group = 0, file, lineNo, message
@@ -20,6 +19,7 @@ public:
   ErrorLog(ErrorLog&& source) = delete;
   ErrorLog& operator=(const ErrorLog& source) = delete;
   ErrorLog& operator=(ErrorLog&& source) = delete;
+  ~ErrorLog() override = default;
   void initGUI();
   void toErrorLog(const Message& log_msg);
   void showtheErrorInGUI(const Message& log_msg);
@@ -46,5 +46,5 @@ private slots:
   void on_logTable_doubleClicked(const QModelIndex& index);
   void on_errorLogComboBox_currentIndexChanged(const QString& arg1);
   void on_actionRowSelected_triggered(bool);
-  void onSectionResized(int,int,int);
+  void onSectionResized(int, int, int);
 };

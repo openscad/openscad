@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Assignment.h"
 #include "ContextFrame.h"
 #include "ContextMemoryManager.h"
 
@@ -35,11 +34,10 @@ public:
 
   ContextHandle(const ContextHandle&) = delete;
   ContextHandle& operator=(const ContextHandle&) = delete;
-  ContextHandle(ContextHandle&& other) = default;
+  ContextHandle(ContextHandle&& other) noexcept = default;
 
   // Valid only if $other is on the top of the stack.
-  ContextHandle& operator=(ContextHandle&& other)
-  {
+  ContextHandle& operator=(ContextHandle&& other) noexcept {
     assert(session);
     assert(context);
     assert(other.context);
@@ -68,7 +66,7 @@ protected:
   Context(const std::shared_ptr<const Context>& parent);
 
 public:
-  ~Context();
+  ~Context() override;
 
   template <typename C, typename ... T>
   static ContextHandle<C> create(T&& ... t) {
@@ -97,7 +95,7 @@ public:
 protected:
   std::shared_ptr<const Context> parent;
 
-  bool accountingAdded = false;   // avoiding bad accounting when exception threw in constructor  issue #3871
+  bool accountingAdded = false;   // avoiding bad accounting when exception threw in constructor issue #3871
 
 public:
 #ifdef DEBUG

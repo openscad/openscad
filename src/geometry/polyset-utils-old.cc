@@ -12,20 +12,20 @@
 #include <CGAL/Delaunay_mesh_criteria_2.h>
 #include <CGAL/Mesh_2/Face_badness.h>
 
-typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
-typedef CGAL::Triangulation_vertex_base_2<K> Vb;
-typedef CGAL::Delaunay_mesh_face_base_2<K> Fb;
-typedef CGAL::Triangulation_data_structure_2<Vb, Fb> Tds;
-typedef CGAL::Constrained_Delaunay_triangulation_2<K, Tds, CGAL::Exact_predicates_tag> CDT;
-//typedef CGAL::Delaunay_mesh_criteria_2<CDT> Criteria;
+using K = CGAL::Exact_predicates_inexact_constructions_kernel;
+using Vb = CGAL::Triangulation_vertex_base_2<K>;
+using Fb = CGAL::Delaunay_mesh_face_base_2<K>;
+using Tds = CGAL::Triangulation_data_structure_2<Vb, Fb>;
+using CDT = CGAL::Constrained_Delaunay_triangulation_2<K, Tds, CGAL::Exact_predicates_tag>;
+using Criteria = CGAL::Delaunay_mesh_criteria_2<CDT>;
 
-typedef CDT::Vertex_handle Vertex_handle;
-typedef CDT::Point CDTPoint;
+using Vertex_handle = CDT::Vertex_handle;
+using CDTPoint = CDT::Point;
 
 template <class T> class DummyCriteria
 {
 public:
-  typedef double Quality;
+  using Quality = double;
   class Is_bad
   {
 public:
@@ -85,7 +85,7 @@ Polygon2d *project(const PolySet& ps) {
    the polyhedron() input.
  */
 
-typedef enum { XYPLANE, YZPLANE, XZPLANE, NONE } projection_t;
+using projection_t = enum { XYPLANE, YZPLANE, XZPLANE, NONE };
 
 // this is how we make 3d points appear as though they were 2d points to
 //the tessellation algorithm.
@@ -199,7 +199,7 @@ bool triangulate_polygon(const PolySet::Polygon& pgon, std::vector<PolySet::Poly
   } catch (const CGAL::Failure_exception& e) {
     // Using failure exception to catch precondition errors for malformed polygons
     // in e.g. CGAL::orientation_2().
-    LOG(message_group::None, Location::NONE, "", "CGAL error in triangulate_polygon(): %1$s", e.what());
+    LOG("CGAL error in triangulate_polygon(): %1$s", e.what());
     err = true;
   }
   return err;
@@ -238,6 +238,6 @@ void tessellate_faces(const PolySet& inps, PolySet& outps) {
       outps.append_vertex(t[2].x(), t[2].y(), t[2].z());
     }
   }
-  if (degeneratePolygons > 0) LOG(message_group::Warning, Location::NONE, "", "PolySet has degenerate polygons");
+  if (degeneratePolygons > 0) LOG(message_group::Warning, "PolySet has degenerate polygons");
 }
 } // namespace PolySetUtils

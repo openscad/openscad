@@ -2,10 +2,12 @@
 
 #ifdef USE_MIMALLOC
 
-#ifdef MI_OVERRIDE
-  #include <mimalloc.h>
-#else
+#if 0 // defined(_WIN32) && defined(MI_LINK_SHARED)
+  // mimalloc doesn't support static override of malloc on Windows.
+  // This include causes crashes if mimalloc is statically linked.
   #include <mimalloc-new-delete.h>
+#else
+  #include <mimalloc.h>
 #endif
 
 #if defined(ENABLE_CGAL)

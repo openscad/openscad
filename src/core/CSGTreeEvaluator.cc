@@ -1,7 +1,6 @@
 #include "CSGTreeEvaluator.h"
 #include "State.h"
 #include "CsgOpNode.h"
-#include "module.h"
 #include "ModuleInstantiation.h"
 #include "CSGNode.h"
 #include "TransformNode.h"
@@ -11,12 +10,11 @@
 #include "printutils.h"
 #include "GeometryEvaluator.h"
 #include "PolySet.h"
-#include "PolySetUtils.h"
 
 #include <string>
 #include <map>
 #include <list>
-#include <assert.h>
+#include <cassert>
 #include <cstddef>
 
 /*!
@@ -118,6 +116,7 @@ void CSGTreeEvaluator::applyToChildren(State& state, const AbstractNode& node, O
         break;
       case OpenSCADOperator::MINKOWSKI:
       case OpenSCADOperator::HULL:
+      case OpenSCADOperator::FILL:
       case OpenSCADOperator::RESIZE:
         break;
       }
@@ -183,7 +182,7 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
     // 3D PolySets are tessellated before inserting into Geometry cache, inside GeometryEvaluator::evaluateGeometry
   }
 
-  shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), STR(node.name() << node.index()), node.index()));
+  shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), STR(node.name(), node.index()), node.index()));
   if (modinst->isHighlight() || state.isHighlight()) t->setHighlight(true);
   if (modinst->isBackground() || state.isBackground()) t->setBackground(true);
   return t;
@@ -221,7 +220,7 @@ Response CSGTreeEvaluator::visit(State& state, const TransformNode& node)
 {
   if (state.isPrefix()) {
     if (matrix_contains_infinity(node.matrix) || matrix_contains_nan(node.matrix)) {
-      LOG(message_group::Warning, Location::NONE, "", "Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
+      LOG(message_group::Warning, "Transformation matrix contains Not-a-Number and/or Infinity - removing object.");
       return Response::PruneTraversal;
     }
     state.setMatrix(state.matrix() * node.matrix);

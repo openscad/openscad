@@ -31,9 +31,9 @@
 #include "Polygon2d.h"
 #include "printutils.h"
 #include "libsvg/libsvg.h"
+#include "libsvg/svgpage.h"
 #include "ClipperUtils.h"
 #include "AST.h"
-#include "boost-utils.h"
 
 namespace {
 
@@ -84,12 +84,50 @@ double calc_alignment(const libsvg::align_t alignment, double page_mm, double sc
 
 
 Polygon2d *import_svg(double fn, double fs, double fa,
-                      const std::string& filename, const double dpi, const bool center, const Location& loc)
+                      const std::string& filename,
+                      const boost::optional<std::string>& id, const boost::optional<std::string>& layer,
+                      const double dpi, const bool center, const Location& loc)
 {
   try {
     fnContext scadContext(fn, fs, fa);
+    if (id) {
+      scadContext.selector = [&scadContext, id, layer](const libsvg::shape *s) {
+          bool layer_match = true;
+          if (layer) {
+            layer_match = false;
+            for (const libsvg::shape *shape = s; shape->get_parent() != nullptr; shape = shape->get_parent()) {
+              if (shape->has_layer() && shape->get_layer() == layer.get()) {
+                layer_match = true;
+                break;
+              }
+            }
+          }
+          return scadContext.match(layer_match && s->has_id() && s->get_id() == id.get());
+        };
+    } else if (layer) {
+      scadContext.selector = [&scadContext, layer](const libsvg::shape *s) {
+          return scadContext.match(s->has_layer() && s->get_layer() == layer.get());
+        };
+    } else {
+      // no selection means selecting the root
+      scadContext.selector = [&scadContext](const libsvg::shape *s) {
+          return scadContext.match(s->get_parent() == nullptr);
+        };
+    }
+
+    std::string match_args;
+    if (id) {
+      match_args += "id = \"" + id.get() + "\"";
+    }
+    if (layer) {
+      if (id) match_args += ", ";
+      match_args += "layer = \"" + layer.get() + "\"";
+    }
 
     const auto shapes = libsvg::libsvg_read_file(filename.c_str(), (void *) &scadContext);
+    if (!match_args.empty() && !scadContext.has_matches()) {
+      LOG(message_group::Warning, loc, "", "import() filter %2$s did not match anything", filename, match_args);
+    }
 
     double width_mm = 0.0;
     double height_mm = 0.0;
@@ -114,7 +152,7 @@ Polygon2d *import_svg(double fn, double fs, double fa,
         if (viewbox_valid) {
           double px = w.unit == libsvg::unit_t::PERCENT ? w.number / 100.0 : 1.0;
           double py = h.unit == libsvg::unit_t::PERCENT ? h.number / 100.0 : 1.0;
-          viewbox << px * page->get_viewbox().x, py * page->get_viewbox().y;
+          viewbox << px * page->get_viewbox().x, py *page->get_viewbox().y;
 
           scale << width_mm / page->get_viewbox().width,
             height_mm / page->get_viewbox().height;
@@ -153,7 +191,7 @@ Polygon2d *import_svg(double fn, double fs, double fa,
     std::vector<const Polygon2d *> polygons;
     for (const auto& shape_ptr : *shapes) {
       if (!shape_ptr->is_excluded()) {
-        Polygon2d *poly = new Polygon2d();
+        auto *poly = new Polygon2d();
         const auto& s = *shape_ptr;
         for (const auto& p : s.get_path_list()) {
           Outline2d outline;
@@ -171,7 +209,7 @@ Polygon2d *import_svg(double fn, double fs, double fa,
     libsvg_free(shapes);
     return ClipperUtils::apply(polygons, ClipperLib::ctUnion);
   } catch (const std::exception& e) {
-    LOG(message_group::Error, Location::NONE, "", "%1$s, import() at line %2$d", e.what(), loc.firstLine());
+    LOG(message_group::Error, "%1$s, import() at line %2$d", e.what(), loc.firstLine());
     return new Polygon2d();
   }
 }

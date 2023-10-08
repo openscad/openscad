@@ -29,7 +29,6 @@
 #ifndef NULLGL
 
 #include "ColorMap.h"
-#include "RenderSettings.h"
 #include "ext/CGAL/OGL_helper.h"
 #include "printutils.h"
 
@@ -78,21 +77,21 @@ public:
   }
 
   // overrides function in OGL_helper.h
-  CGAL::Color getVertexColor(Vertex_iterator v) const override {
+  [[nodiscard]] CGAL::Color getVertexColor(Vertex_iterator v) const override {
     PRINTD("getVertexColor");
     CGAL::Color c = v->mark() ? colors[CGALColorIndex::UNMARKED_VERTEX_COLOR] : colors[CGALColorIndex::MARKED_VERTEX_COLOR];
     return c;
   }
 
   // overrides function in OGL_helper.h
-  CGAL::Color getEdgeColor(Edge_iterator e) const override {
+  [[nodiscard]] CGAL::Color getEdgeColor(Edge_iterator e) const override {
     PRINTD("getEdgeColor");
     CGAL::Color c = e->mark() ? colors[CGALColorIndex::UNMARKED_EDGE_COLOR] : colors[CGALColorIndex::MARKED_EDGE_COLOR];
     return c;
   }
 
   // overrides function in OGL_helper.h
-  CGAL::Color getFacetColor(Halffacet_iterator f, bool /*is_back_facing*/) const override {
+  [[nodiscard]] CGAL::Color getFacetColor(Halffacet_iterator f, bool /*is_back_facing*/) const override {
     PRINTD("getFacetColor");
     CGAL::Color c = f->mark() ? colors[CGALColorIndex::UNMARKED_FACET_COLOR] : colors[CGALColorIndex::MARKED_FACET_COLOR];
     return c;

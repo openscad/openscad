@@ -35,40 +35,44 @@
 #include <CGAL/assertions_behaviour.h>
 #include <CGAL/exceptions.h>
 
-typedef CGAL::Gmpq NT2;
-typedef CGAL::Extended_cartesian<NT2> CGAL_Kernel2;
-typedef CGAL::Nef_polyhedron_2<CGAL_Kernel2> CGAL_Nef_polyhedron2;
-typedef CGAL_Kernel2::Aff_transformation_2 CGAL_Aff_transformation2;
+using NT2 = CGAL::Gmpq;
+using CGAL_Kernel2 = CGAL::Extended_cartesian<NT2>;
+using CGAL_Nef_polyhedron2 = CGAL::Nef_polyhedron_2<CGAL_Kernel2>;
+using CGAL_Aff_transformation2 = CGAL_Kernel2::Aff_transformation_2;
 
-typedef CGAL::Exact_predicates_exact_constructions_kernel CGAL_ExactKernel2;
-typedef CGAL::Polygon_2<CGAL_ExactKernel2> CGAL_Poly2;
-typedef CGAL::Polygon_with_holes_2<CGAL_ExactKernel2> CGAL_Poly2h;
+using CGAL_ExactKernel2 = CGAL::Exact_predicates_exact_constructions_kernel;
+using CGAL_Poly2 = CGAL::Polygon_2<CGAL_ExactKernel2>;
+using CGAL_Poly2h = CGAL::Polygon_with_holes_2<CGAL_ExactKernel2>;
 
-typedef CGAL::Gmpq NT3;
-typedef CGAL::Cartesian<NT3> CGAL_Kernel3;
-//typedef CGAL::Exact_predicates_exact_constructions_kernel::FT NT3;
-//typedef CGAL::Exact_predicates_exact_constructions_kernel CGAL_Kernel3;
-typedef CGAL::Nef_polyhedron_3<CGAL_Kernel3> CGAL_Nef_polyhedron3;
-typedef CGAL_Nef_polyhedron3::Aff_transformation_3 CGAL_Aff_transformation;
+using NT3 = CGAL::Gmpq;
+using CGAL_Kernel3 = CGAL::Cartesian<NT3>;
+//using NT3 = CGAL::Exact_predicates_exact_constructions_kernel::FT;
+//using CGAL_Kernel3 = CGAL::Exact_predicates_exact_constructions_kernel;
+using CGAL_Nef_polyhedron3 = CGAL::Nef_polyhedron_3<CGAL_Kernel3>;
+using CGAL_Aff_transformation = CGAL_Nef_polyhedron3::Aff_transformation_3;
 
-typedef CGAL::Polyhedron_3<CGAL_Kernel3> CGAL_Polyhedron;
+using CGAL_Polyhedron = CGAL::Polyhedron_3<CGAL_Kernel3>;
 
-typedef CGAL::Point_3<CGAL_Kernel3> CGAL_Point_3;
-typedef CGAL::Triangle_3<CGAL_Kernel3> CGAL_Triangle_3;
-typedef CGAL::Iso_cuboid_3<CGAL_Kernel3> CGAL_Iso_cuboid_3;
-typedef std::vector<CGAL_Point_3> CGAL_Polygon_3;
+using CGAL_Point_3 = CGAL::Point_3<CGAL_Kernel3>;
+using CGAL_Triangle_3 = CGAL::Triangle_3<CGAL_Kernel3>;
+using CGAL_Iso_cuboid_3 = CGAL::Iso_cuboid_3<CGAL_Kernel3>;
+using CGAL_Polygon_3 = std::vector<CGAL_Point_3>;
 
 // CGAL_Nef_polyhedron2 uses CGAL_Kernel2, but Iso_rectangle_2 needs to match
 // CGAL_Nef_polyhedron2::Explorer::Point which is different than
 // CGAL_Kernel2::Point. Hence the suffix 'e'
-typedef CGAL_Nef_polyhedron2::Explorer::Point CGAL_Point_2e;
-typedef CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>> CGAL_Iso_rectangle_2e;
+using CGAL_Point_2e = CGAL_Nef_polyhedron2::Explorer::Point;
+using CGAL_Iso_rectangle_2e = CGAL::Iso_rectangle_2<CGAL::Simple_cartesian<NT2>>;
 
 #define FAST_CSG_KERNEL_IS_LAZY 1
-typedef CGAL::Epeck CGAL_HybridKernel3;
+using CGAL_HybridKernel3 = CGAL::Epeck;
 
-typedef CGAL::Point_3<CGAL_HybridKernel3> CGAL_HybridPoint;
-typedef CGAL::Nef_polyhedron_3<CGAL_HybridKernel3> CGAL_HybridNef;
-typedef CGAL::Surface_mesh<CGAL_HybridPoint> CGAL_HybridMesh;
+using CGAL_HybridPoint = CGAL::Point_3<CGAL_HybridKernel3>;
+using CGAL_HybridNef = CGAL::Nef_polyhedron_3<CGAL_HybridKernel3>;
+using CGAL_HybridMesh = CGAL::Surface_mesh<CGAL_HybridPoint>;
+
+using CGAL_DoubleKernel = CGAL::Cartesian<double>;
+using CGAL_DoublePoint3 = CGAL_DoubleKernel::Point_3;
+using CGAL_DoubleMesh = CGAL::Surface_mesh<CGAL_DoublePoint3>;
 
 #endif /* ENABLE_CGAL */

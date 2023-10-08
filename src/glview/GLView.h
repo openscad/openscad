@@ -20,7 +20,6 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <string>
-#include "system-gl.h"
 #include <iostream>
 #include "Camera.h"
 #include "ColorMap.h"
@@ -30,7 +29,7 @@ class GLView
 public:
   GLView();
   void setRenderer(class Renderer *r);
-  Renderer *getRenderer() const { return this->renderer; }
+  [[nodiscard]] Renderer *getRenderer() const { return this->renderer; }
 
   void initializeGL();
   void resizeGL(int w, int h);
@@ -43,22 +42,22 @@ public:
   void setColorScheme(const std::string& cs);
   void updateColorScheme();
 
-  bool showAxes() const { return this->showaxes; }
+  [[nodiscard]] bool showAxes() const { return this->showaxes; }
   void setShowAxes(bool enabled) { this->showaxes = enabled; }
-  bool showScaleProportional() const { return this->showscale; }
+  [[nodiscard]] bool showScaleProportional() const { return this->showscale; }
   void setShowScaleProportional(bool enabled) { this->showscale = enabled; }
-  bool showEdges() const { return this->showedges; }
+  [[nodiscard]] bool showEdges() const { return this->showedges; }
   void setShowEdges(bool enabled) { this->showedges = enabled; }
-  bool showFaces() const { return this->showfaces; }
+  [[nodiscard]] bool showFaces() const { return this->showfaces; }
   void setShowFaces(bool enabled) { this->showfaces = enabled; }
-  bool showCrosshairs() const { return this->showcrosshairs; }
+  [[nodiscard]] bool showCrosshairs() const { return this->showcrosshairs; }
   void setShowCrosshairs(bool enabled) { this->showcrosshairs = enabled; }
 
   virtual bool save(const char *filename) const = 0;
-  virtual std::string getRendererInfo() const = 0;
+  [[nodiscard]] virtual std::string getRendererInfo() const = 0;
   virtual float getDPI() { return 1.0f; }
 
-  virtual ~GLView(){}
+  virtual ~GLView() = default;
 
   Renderer *renderer;
   const ColorScheme *colorscheme;
@@ -76,7 +75,6 @@ public:
   bool has_shaders;
   void enable_opencsg_shaders();
   virtual void display_opencsg_warning() = 0;
-  bool opencsg_support;
   int opencsg_id;
 #endif
 private:

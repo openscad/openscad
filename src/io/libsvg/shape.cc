@@ -22,8 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <stdio.h>
-#include <math.h>
+#include <cstdio>
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -51,14 +51,6 @@
 #include "calc.h"
 
 namespace libsvg {
-
-shape::shape() : parent(nullptr), x(0), y(0), excluded(false)
-{
-}
-
-shape::~shape()
-{
-}
 
 shape *
 shape::create_from_name(const char *name)
@@ -97,7 +89,9 @@ shape::create_from_name(const char *name)
 void
 shape::set_attrs(attr_map_t& attrs, void *context)
 {
-  this->id = attrs["id"];
+  if (attrs.find("id") != attrs.end()) {
+    this->id = attrs["id"];
+  }
   this->transform = attrs["transform"];
   this->stroke_width = attrs["stroke-width"];
   this->stroke_linecap = attrs["stroke-linecap"];
@@ -106,7 +100,7 @@ shape::set_attrs(attr_map_t& attrs, void *context)
 
   std::string display = get_style("display");
   if (display.empty()) {
-    attr_map_t::const_iterator it = attrs.find("display");
+    const auto it = attrs.find("display");
     if (it != attrs.end()) {
       display = it->second;
     }
@@ -114,6 +108,14 @@ shape::set_attrs(attr_map_t& attrs, void *context)
   if (display == "none") {
     excluded = true;
   }
+
+  const std::string inkscape_groupmode = attrs["inkscape:groupmode"];
+  if (inkscape_groupmode == "layer" && attrs.find("inkscape:label") != attrs.end()) {
+    this->layer = attrs["inkscape:label"];
+  }
+
+  const auto *ctx = reinterpret_cast<const fnContext *>(context);
+  selected = (ctx->selector) ? ctx->selector(this) : false;
 }
 
 const std::string
@@ -247,7 +249,7 @@ shape::collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape 
     transformations.push_back(t);
   }
 
-  for (std::vector<transformation *>::reverse_iterator it = transformations.rbegin(); it != transformations.rend(); ++it) {
+  for (auto it = transformations.rbegin(); it != transformations.rend(); ++it) {
     transformation *t = *it;
     std::vector<Eigen::Matrix3d> m = t->get_matrices();
     matrices.insert(matrices.begin(), m.rbegin(), m.rend());
@@ -259,9 +261,10 @@ bool
 shape::is_excluded() const
 {
   for (const shape *s = this; s != nullptr; s = s->get_parent()) {
+    if (s->selected) return false;
     if (s->excluded) return true;
   }
-  return false;
+  return true;
 }
 
 void
@@ -277,7 +280,7 @@ shape::apply_transform()
     result_list.push_back(path_t());
     for (const auto& v : p) {
       Eigen::Vector3d result(v.x(), v.y(), 1);
-      for (std::vector<Eigen::Matrix3d>::reverse_iterator it3 = matrices.rbegin(); it3 != matrices.rend(); ++it3) {
+      for (auto it3 = matrices.rbegin(); it3 != matrices.rend(); ++it3) {
         result = *it3 * result;
       }
 
@@ -310,7 +313,7 @@ shape::offset_path(path_list_t& path_list, path_t& path, double stroke_width, Cl
 
 void
 shape::draw_ellipse(path_t& path, double x, double y, double rx, double ry, void *context) {
-  const fnContext *fValues = reinterpret_cast<const fnContext *>(context);
+  const auto *fValues = reinterpret_cast<const fnContext *>(context);
   double rmax = fmax(rx, ry);
   unsigned long fn = Calc::get_fragments_from_r(rmax, fValues->fn, fValues->fs, fValues->fa);
   if (fn < 40) fn = 40;   // preserve the old minimum value
@@ -339,7 +342,7 @@ shape::clone_children() {
 
 std::ostream& operator<<(std::ostream& os, const shape& s)
 {
-  return os << s.dump() << " | id = '" << s.id << "', transform = '" << s.transform << "'";
+  return os << s.dump() << " | id = '" << s.id.value_or("") << "', transform = '" << s.transform << "'";
 }
 
 } // namespace libsvg

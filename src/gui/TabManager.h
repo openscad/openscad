@@ -26,8 +26,9 @@ public:
   bool shouldClose();
   bool save(EditorInterface *edt);
   bool saveAs(EditorInterface *edt);
+  bool saveACopy(EditorInterface *edt);
   void open(const QString& filename);
-  int count();
+  size_t count();
 
 public:
   static constexpr const int FIND_HIDDEN = 0;
@@ -42,9 +43,9 @@ private:
   TabWidget *tabWidget;
 
   bool maybeSave(int);
-  bool save(EditorInterface *edt, const QString path);
-  void saveError(const QIODevice& file, const std::string& msg, const QString filepath);
-  void applyAction(QObject *object, std::function<void(int, EditorInterface *)> func);
+  bool save(EditorInterface *edt, const QString& path);
+  void saveError(const QIODevice& file, const std::string& msg, const QString& filepath);
+  void applyAction(QObject *object, const std::function<void(int, EditorInterface *)>& func);
 
 private slots:
   void tabSwitched(int);
@@ -57,7 +58,6 @@ private slots:
   void undo();
   void redo();
   void cut();
-  void copy();
   void paste();
   void indentSelection();
   void unindentSelection();
@@ -82,6 +82,7 @@ private slots:
 
 public slots:
   void actionNew();
+  void copy();
   void setContentRenderState(); // since last render
   void setTabModified(EditorInterface *);
   bool saveAll();

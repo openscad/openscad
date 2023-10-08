@@ -27,7 +27,9 @@
 #include "export.h"
 #include "PolySet.h"
 #include "PolySetUtils.h"
-#include "DxfData.h"
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#endif
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
@@ -39,11 +41,11 @@ namespace {
 
 std::string toString(const Vector3d& v)
 {
-  return STR(v[0] << " " << v[1] << " " << v[2]);
+  return STR(v[0], " ", v[1], " ", v[2]);
 }
 
 Vector3d toVector(const std::array<double, 3>& pt) {
-  return Vector3d(pt[0], pt[1], pt[2]);
+  return {pt[0], pt[1], pt[2]};
 }
 
 Vector3d fromString(const std::string& vertexString)
@@ -79,68 +81,68 @@ uint64_t append_stl(const PolySet& ps, std::ostream& output, bool binary)
   PolySetUtils::tessellate_faces(ps, triangulated);
 
   auto processTriangle = [&](const std::array<Vector3d, 3>& p) {
-    triangle_count++;
+      triangle_count++;
 
-    if (binary) {
-      Vector3f p0 = p[0].cast<float>();
-      Vector3f p1 = p[1].cast<float>();
-      Vector3f p2 = p[2].cast<float>();
+      if (binary) {
+        Vector3f p0 = p[0].cast<float>();
+        Vector3f p1 = p[1].cast<float>();
+        Vector3f p2 = p[2].cast<float>();
 
-      // Ensure 3 distinct vertices.
-      if ((p0 != p1) && (p0 != p2) && (p1 != p2)) {
-        Vector3f normal = (p1 - p0).cross(p2 - p0);
-        normal.normalize();
-        if (!is_finite(normal) || is_nan(normal)) {
-          // Collinear vertices.
-          normal << 0, 0, 0;
+        // Ensure 3 distinct vertices.
+        if ((p0 != p1) && (p0 != p2) && (p1 != p2)) {
+          Vector3f normal = (p1 - p0).cross(p2 - p0);
+          normal.normalize();
+          if (!is_finite(normal) || is_nan(normal)) {
+            // Collinear vertices.
+            normal << 0, 0, 0;
+          }
+          write_vector(output, normal);
         }
-        write_vector(output, normal);
+        write_vector(output, p0);
+        write_vector(output, p1);
+        write_vector(output, p2);
+        char attrib[2] = {0, 0};
+        output.write(attrib, 2);
+      } else { // ascii
+        std::array<std::string, 3> vertexStrings;
+        std::transform(p.cbegin(), p.cend(), vertexStrings.begin(),
+                       toString);
+
+        if (vertexStrings[0] != vertexStrings[1] &&
+            vertexStrings[0] != vertexStrings[2] &&
+            vertexStrings[1] != vertexStrings[2]) {
+
+          // The above condition ensures that there are 3 distinct
+          // vertices, but they may be collinear. If they are, the unit
+          // normal is meaningless so the default value of "0 0 0" can
+          // be used. If the vertices are not collinear then the unit
+          // normal must be calculated from the components.
+          output << "  facet normal ";
+
+          Vector3d p0 = fromString(vertexStrings[0]);
+          Vector3d p1 = fromString(vertexStrings[1]);
+          Vector3d p2 = fromString(vertexStrings[2]);
+
+          Vector3d normal = (p1 - p0).cross(p2 - p0);
+          normal.normalize();
+          if (is_finite(normal) && !is_nan(normal)) {
+            output << normal[0] << " " << normal[1] << " " << normal[2]
+                   << "\n";
+          } else {
+            output << "0 0 0\n";
+          }
+          output << "    outer loop\n";
+
+          for (const auto& vertexString : vertexStrings) {
+            output << "      vertex " << vertexString << "\n";
+          }
+          output << "    endloop\n";
+          output << "  endfacet\n";
+        }
       }
-      write_vector(output, p0);
-      write_vector(output, p1);
-      write_vector(output, p2);
-      char attrib[2] = {0, 0};
-      output.write(attrib, 2);
-    } else { // ascii
-      std::array<std::string, 3> vertexStrings;
-      std::transform(p.cbegin(), p.cend(), vertexStrings.begin(),
-                     toString);
+    };
 
-      if (vertexStrings[0] != vertexStrings[1] &&
-          vertexStrings[0] != vertexStrings[2] &&
-          vertexStrings[1] != vertexStrings[2]) {
-
-        // The above condition ensures that there are 3 distinct
-        // vertices, but they may be collinear. If they are, the unit
-        // normal is meaningless so the default value of "0 0 0" can
-        // be used. If the vertices are not collinear then the unit
-        // normal must be calculated from the components.
-        output << "  facet normal ";
-
-        Vector3d p0 = fromString(vertexStrings[0]);
-        Vector3d p1 = fromString(vertexStrings[1]);
-        Vector3d p2 = fromString(vertexStrings[2]);
-
-        Vector3d normal = (p1 - p0).cross(p2 - p0);
-        normal.normalize();
-        if (is_finite(normal) && !is_nan(normal)) {
-          output << normal[0] << " " << normal[1] << " " << normal[2]
-                 << "\n";
-        } else {
-          output << "0 0 0\n";
-        }
-        output << "    outer loop\n";
-
-        for (const auto& vertexString : vertexStrings) {
-          output << "      vertex " << vertexString << "\n";
-        }
-        output << "    endloop\n";
-        output << "  endfacet\n";
-      }
-    }
-  };
-
-  if (Feature::ExperimentalSortStl.is_enabled()) {
+  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
     Export::ExportMesh exportMesh { triangulated };
     exportMesh.foreach_triangle([&](const auto& pts) {
         processTriangle({ toVector(pts[0]), toVector(pts[1]), toVector(pts[2]) });
@@ -165,14 +167,14 @@ uint64_t append_stl(const CGAL_Nef_polyhedron& root_N, std::ostream& output,
 {
   uint64_t triangle_count = 0;
   if (!root_N.p3->is_simple()) {
-    LOG(message_group::Export_Warning, Location::NONE, "", "Exported object may not be a valid 2-manifold and may need repair");
+    LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
   }
 
   PolySet ps(3);
   if (!CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3), ps)) {
     triangle_count += append_stl(ps, output, binary);
   } else {
-    LOG(message_group::Export_Error, Location::NONE, "", "Nef->PolySet failed");
+    LOG(message_group::Export_Error, "Nef->PolySet failed");
   }
 
   return triangle_count;
@@ -187,18 +189,43 @@ uint64_t append_stl(const CGALHybridPolyhedron& hybrid, std::ostream& output,
 {
   uint64_t triangle_count = 0;
   if (!hybrid.isManifold()) {
-    LOG(message_group::Export_Warning, Location::NONE, "", "Exported object may not be a valid 2-manifold and may need repair");
+    LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
   }
 
   auto ps = hybrid.toPolySet();
   if (ps) {
     triangle_count += append_stl(*ps, output, binary);
   } else {
-    LOG(message_group::Export_Error, Location::NONE, "", "Nef->PolySet failed");
+    LOG(message_group::Export_Error, "Nef->PolySet failed");
   }
 
   return triangle_count;
 }
+
+#ifdef ENABLE_MANIFOLD
+/*!
+   Saves the current 3D Manifold geometry as STL to the given file.
+   The file must be open.
+ */
+uint64_t append_stl(const ManifoldGeometry& mani, std::ostream& output,
+                    bool binary)
+{
+  uint64_t triangle_count = 0;
+  if (!mani.isManifold()) {
+    LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
+  }
+
+  auto ps = mani.toPolySet();
+  if (ps) {
+    triangle_count += append_stl(*ps, output, binary);
+  } else {
+    LOG(message_group::Export_Error, "Manifold->PolySet failed");
+  }
+
+  return triangle_count;
+}
+#endif
+
 
 uint64_t append_stl(const shared_ptr<const Geometry>& geom, std::ostream& output,
                     bool binary)
@@ -214,9 +241,13 @@ uint64_t append_stl(const shared_ptr<const Geometry>& geom, std::ostream& output
     triangle_count += append_stl(*ps, output, binary);
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     triangle_count += append_stl(*hybrid, output, binary);
-  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
+#ifdef ENABLE_MANIFOLD
+  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    triangle_count += append_stl(*mani, output, binary);
+#endif
+  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { //NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
-  } else {
+  } else { //NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
   }
 
@@ -248,7 +279,7 @@ void export_stl(const shared_ptr<const Geometry>& geom, std::ostream& output,
     output.put((triangle_count >> 16) & 0xff);
     output.put((triangle_count >> 24) & 0xff);
     if (triangle_count > 4294967295) {
-      LOG(message_group::Export_Error, Location::NONE, "", "Triangle count exceeded 4294967295, so the stl file is not valid");
+      LOG(message_group::Export_Error, "Triangle count exceeded 4294967295, so the stl file is not valid");
     }
   } else {
     output << "endsolid OpenSCAD_Model\n";

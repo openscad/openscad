@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <QTreeWidgetItem>
 
-#include "qtgettext.h"
+#include "qtgettext.h" // IWYU pragma: keep
 #include "ui_LaunchingScreen.h"
 
 class LaunchingScreen : public QDialog, public Ui::LaunchingScreen
@@ -14,7 +14,7 @@ class LaunchingScreen : public QDialog, public Ui::LaunchingScreen
 public:
   static LaunchingScreen *getDialog();
   explicit LaunchingScreen(QWidget *parent = nullptr);
-  ~LaunchingScreen();
+  ~LaunchingScreen() override;
   QStringList selectedFiles() const;
   bool isForceShowEditor() const;
 
@@ -34,6 +34,6 @@ private:
   void checkOpen(const QVariant& data, bool forceShowEditor);
 
   QStringList files;
-  bool forceShowEditor;
+  bool forceShowEditor{true};
   static LaunchingScreen *inst;
 };

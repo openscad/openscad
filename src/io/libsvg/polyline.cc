@@ -25,18 +25,11 @@
 #include <boost/tokenizer.hpp>
 
 #include "polyline.h"
+#include "util.h"
 
 namespace libsvg {
 
 const std::string polyline::name("polyline");
-
-polyline::polyline()
-{
-}
-
-polyline::~polyline()
-{
-}
 
 void
 polyline::set_attrs(attr_map_t& attrs, void *context)

@@ -6,6 +6,7 @@
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
 #include <utility>
+#include <sstream>
 
 #include <libintl.h>
 // Undefine some defines from libintl.h to presolve
@@ -17,9 +18,14 @@
 #undef vsnprintf
 #endif
 
-#include <locale.h>
+#include <clocale>
 #include "AST.h"
 #include <set>
+
+// It seems standard practice to use underscore for gettext, even though it is reserved.
+// Not wanting to risk breaking translations by changing every usage of this,
+// I've opted to just disable the check in this case. - Hans L
+// NOLINTBEGIN(bugprone-reserved-identifier)
 inline char *_(const char *msgid) { return gettext(msgid); }
 inline const char *_(const char *msgid, const char *msgctxt) {
   /* The separator between msgctxt and msgid in a .mo file.  */
@@ -28,16 +34,17 @@ inline const char *_(const char *msgid, const char *msgctxt) {
   std::string str = msgctxt;
   str += GETTEXT_CONTEXT_GLUE;
   str += msgid;
-  auto translation = dcgettext(NULL, str.c_str(), LC_MESSAGES);
+  auto translation = dcgettext(nullptr, str.c_str(), LC_MESSAGES);
   if (translation == str) {
     return gettext(msgid);
   } else {
     return translation;
   }
 }
+// NOLINTEND(bugprone-reserved-identifier)
 
 enum class message_group {
-  Error, Warning, UI_Warning, Font_Warning, Export_Warning, Export_Error, UI_Error, Parser_Error, Trace, Deprecated, None, Echo
+  NONE, Error, Warning, UI_Warning, Font_Warning, Export_Warning, Export_Error, UI_Error, Parser_Error, Trace, Deprecated, Echo
 };
 
 
@@ -52,22 +59,24 @@ struct Message {
   enum message_group group;
 
   Message()
-    : msg(""), loc(Location::NONE), docPath(""), group(message_group::None)
-  { }
+    : msg(""), loc(Location::NONE), docPath(""), group(message_group::NONE)
+  {
+  }
 
-  Message(const std::string& msg, const Location& loc, const std::string& docPath, const message_group& group)
-    : msg(msg), loc(loc), docPath(docPath), group(group)
-  { }
+  Message(std::string msg, message_group group = message_group::NONE, Location loc = Location::NONE, std::string docPath = "")
+    : msg(std::move(msg)), loc(std::move(loc)), docPath(std::move(docPath)), group(group)
+  {
+  }
 
-  std::string str() const {
-    const auto g = group == message_group::None ? "" : getGroupName(group) + ": ";
+  [[nodiscard]] std::string str() const {
+    const auto g = group == message_group::NONE ? "" : getGroupName(group) + ": ";
     const auto l = loc.isNone() ? "" : " " + loc.toRelativeString(docPath);
     return g + msg + l;
   }
 };
 
-typedef void (OutputHandlerFunc)(const Message& msg, void *userdata);
-typedef void (OutputHandlerFunc2)(const Message& msg, void *userdata);
+using OutputHandlerFunc = void (const Message&, void *);
+using OutputHandlerFunc2 = void (const Message&, void *);
 
 extern OutputHandlerFunc *outputhandler;
 extern void *outputhandler_data;
@@ -115,8 +124,10 @@ void PRINT_NOCACHE(const Message& msgObj);
  */
 
 void PRINTDEBUG(const std::string& filename, const std::string& msg);
+// NOLINTBEGIN
 #define PRINTD(_arg) do { PRINTDEBUG(std::string(__FILE__), _arg); } while (0)
 #define PRINTDB(_fmt, _arg) do { try { PRINTDEBUG(std::string(__FILE__), str(boost::format(_fmt) % _arg)); } catch (const boost::io::format_error& e) { PRINTDEBUG(std::string(__FILE__), "bad PRINTDB usage"); } } while (0)
+// NOLINTEND
 
 std::string two_digit_exp_format(std::string doublestr);
 std::string two_digit_exp_format(double x);
@@ -143,7 +154,26 @@ public:
   }
 };
 
-#define STR(s) static_cast<std::ostringstream&&>(std::ostringstream() << s).str()
+inline std::string STR(std::ostringstream& oss) {
+  auto s = oss.str();
+  oss.str("");  // clear the string buffer for next STR call
+  oss.clear();  // reset stream error state for next STR call
+  return s;
+}
+
+template <typename T, typename ... Args>
+std::string STR(std::ostringstream& oss, T&& t, Args&& ... args) {
+  oss << t;
+  return STR(oss, std::forward<Args>(args)...);
+}
+
+template <typename T, typename ... Args>
+std::string STR(T&& t, Args&& ... args) {
+  // using thread_local here so that recursive template does not instantiate excessive ostringstreams
+  thread_local std::ostringstream oss;
+  oss << t;
+  return STR(oss, std::forward<Args>(args)...);
+}
 
 template <typename ... Ts>
 class MessageClass
@@ -152,7 +182,7 @@ private:
   std::string fmt;
   std::tuple<Ts...> args;
   template <std::size_t... Is>
-  std::string format(const std::index_sequence<Is...>) const
+  [[nodiscard]] std::string format(const std::index_sequence<Is...>) const
   {
 
     std::string s;
@@ -172,16 +202,11 @@ private:
 
 public:
   template <typename ... Args>
-  MessageClass(std::string&& fmt, Args&&... args) : fmt(std::forward<std::string>(fmt)), args(std::forward<Args>(args)...)
+  MessageClass(std::string&& fmt, Args&&... args) : fmt(fmt), args(std::forward<Args>(args)...)
   {
   }
 
-  template <typename ... Args>
-  MessageClass(const std::string& fmt, Args&&... args) : fmt(fmt), args(std::forward<Args>(args)...)
-  {
-  }
-
-  std::string format() const
+  [[nodiscard]] std::string format() const
   {
     return format(std::index_sequence_for<Ts...>{});
   }
@@ -189,17 +214,28 @@ public:
 
 extern std::set<std::string> printedDeprecations;
 
-template <typename F, typename ... Args>
-void LOG(const message_group& msg_grp, const Location& loc, const std::string& docPath, F&& f, Args&&... args)
+template <typename ... Args>
+void LOG(const message_group& msgGroup, Location loc, std::string docPath, std::string&& f, Args&&... args)
 {
-  const auto msg = MessageClass<Args...>(std::forward<F>(f), std::forward<Args>(args)...);
-  const auto formatted = msg.format();
+  auto formatted = MessageClass<Args...>{std::move(f), std::forward<Args>(args)...}.format();
 
   //check for deprecations
-  if (msg_grp == message_group::Deprecated && printedDeprecations.find(formatted + loc.toRelativeString(docPath)) != printedDeprecations.end()) return;
-  if (msg_grp == message_group::Deprecated) printedDeprecations.insert(formatted + loc.toRelativeString(docPath));
+  if (msgGroup == message_group::Deprecated && printedDeprecations.find(formatted + loc.toRelativeString(docPath)) != printedDeprecations.end()) return;
+  if (msgGroup == message_group::Deprecated) printedDeprecations.insert(formatted + loc.toRelativeString(docPath));
 
-  Message msgObj = {formatted, loc, docPath, msg_grp};
+  Message msgObj{std::move(formatted), msgGroup, std::move(loc), std::move(docPath)};
 
   PRINT(msgObj);
+}
+
+template <typename ... Args>
+void LOG(const message_group& msgGroup, std::string&& f, Args&&... args)
+{
+  LOG(msgGroup, Location::NONE, "", std::move(f), std::forward<Args>(args)...);
+}
+
+template <typename ... Args>
+void LOG(std::string&& f, Args&&... args)
+{
+  LOG(message_group::NONE, Location::NONE, "", std::move(f), std::forward<Args>(args)...);
 }

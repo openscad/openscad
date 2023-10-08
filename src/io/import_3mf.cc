@@ -24,14 +24,11 @@
  *
  */
 
-#include "ImportNode.h"
-
 #include "PolySet.h"
 #include "Geometry.h"
 #include "printutils.h"
 #include "version_helper.h"
 #include "AST.h"
-#include "boost-utils.h"
 
 #ifdef ENABLE_LIB3MF
 #ifndef LIB3MF_API_2
@@ -57,7 +54,7 @@ const std::string get_lib3mf_version() {
 #include "cgalutils.h"
 #endif
 
-typedef std::list<std::shared_ptr<PolySet>> polysets_t;
+using polysets_t = std::list<std::shared_ptr<PolySet>>;
 
 static Geometry *import_3mf_error(PLib3MFModel *model = nullptr, PLib3MFModelResourceIterator *object_it = nullptr, PolySet *mesh = nullptr, PolySet *mesh2 = nullptr)
 {
@@ -82,12 +79,12 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
   DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
   HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
   if (result != LIB3MF_OK) {
-    LOG(message_group::Error, Location::NONE, "", "Error reading 3MF library version");
+    LOG(message_group::Error, "Error reading 3MF library version");
     return new PolySet(3);
   }
 
   if ((interfaceVersionMajor != NMR_APIVERSION_INTERFACE_MAJOR)) {
-    LOG(message_group::Error, Location::NONE, "", "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
+    LOG(message_group::Error, "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
         interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro,
         NMR_APIVERSION_INTERFACE_MAJOR, NMR_APIVERSION_INTERFACE_MINOR, NMR_APIVERSION_INTERFACE_MICRO);
     return new PolySet(3);
@@ -96,21 +93,21 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
   PLib3MFModel *model;
   result = lib3mf_createmodel(&model);
   if (result != LIB3MF_OK) {
-    LOG(message_group::Error, Location::NONE, "", "Could not create model: %1$08lx", result);
+    LOG(message_group::Error, "Could not create model: %1$08lx", result);
     return import_3mf_error();
   }
 
   PLib3MFModelReader *reader;
   result = lib3mf_model_queryreader(model, "3mf", &reader);
   if (result != LIB3MF_OK) {
-    LOG(message_group::Error, Location::NONE, "", "Could not create 3MF reader: %1$08lx", result);
+    LOG(message_group::Error, "Could not create 3MF reader: %1$08lx", result);
     return import_3mf_error(model);
   }
 
   result = lib3mf_reader_readfromfileutf8(reader, filename.c_str());
   lib3mf_release(reader);
   if (result != LIB3MF_OK) {
-    LOG(message_group::Warning, Location::NONE, "", "Could not read file '%1$s', import() at line %2$d", filename.c_str(), loc.firstLine());
+    LOG(message_group::Warning, "Could not read file '%1$s', import() at line %2$d", filename.c_str(), loc.firstLine());
     return import_3mf_error(model);
   }
 
@@ -120,7 +117,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     return import_3mf_error(model);
   }
 
-  PolySet *first_mesh = 0;
+  PolySet *first_mesh = nullptr;
   polysets_t meshes;
   unsigned int mesh_idx = 0;
   while (true) {
@@ -152,7 +149,8 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
 
     PRINTDB("%s: mesh %d, vertex count: %lu, triangle count: %lu", filename.c_str() % mesh_idx % vertex_count % triangle_count);
 
-    PolySet *p = new PolySet(3);
+    auto *p = new PolySet(3);
+    p->reserve(triangle_count);
     for (DWORD idx = 0; idx < triangle_count; ++idx) {
       MODELMESHTRIANGLE triangle;
       if (lib3mf_meshobject_gettriangle(object, idx, &triangle) != LIB3MF_OK) {
@@ -170,7 +168,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
         return import_3mf_error(model, object_it, first_mesh, p);
       }
 
-      p->append_poly();
+      p->append_poly(3);
       p->append_vertex(vertex1.m_fPosition[0], vertex1.m_fPosition[1], vertex1.m_fPosition[2]);
       p->append_vertex(vertex2.m_fPosition[0], vertex2.m_fPosition[1], vertex2.m_fPosition[2]);
       p->append_vertex(vertex3.m_fPosition[0], vertex3.m_fPosition[1], vertex3.m_fPosition[2]);
@@ -187,7 +185,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
   lib3mf_release(object_it);
   lib3mf_release(model);
 
-  if (first_mesh == 0) {
+  if (first_mesh == nullptr) {
     return new PolySet(3);
   } else if (meshes.empty()) {
     return first_mesh;
@@ -195,9 +193,9 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     PolySet *p = nullptr;
 #ifdef ENABLE_CGAL
     Geometry::Geometries children;
-    children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(),  shared_ptr<const Geometry>(first_mesh)));
-    for (polysets_t::iterator it = meshes.begin(); it != meshes.end(); ++it) {
-      children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(),  shared_ptr<const Geometry>(*it)));
+    children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(first_mesh)));
+    for (auto& meshe : meshes) {
+      children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(meshe)));
     }
     if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
       p = new PolySet(*ps);
@@ -227,8 +225,8 @@ const std::string get_lib3mf_version() {
   try {
     wrapper = Lib3MF::CWrapper::loadLibrary();
     wrapper->GetLibraryVersion(interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro);
-  } catch (Lib3MF::ELib3MFException& e) {
-    LOG(message_group::Export_Error, Location::NONE, "", e.what());
+  } catch (const Lib3MF::ELib3MFException& e) {
+    LOG(message_group::Export_Error, e.what());
   }
 
   const OpenSCAD::library_version_number header_version{LIB3MF_VERSION_MAJOR, LIB3MF_VERSION_MINOR, LIB3MF_VERSION_MICRO};
@@ -240,7 +238,7 @@ const std::string get_lib3mf_version() {
 #include "cgalutils.h"
 #endif
 
-typedef std::list<std::shared_ptr<PolySet>> polysets_t;
+using polysets_t = std::list<std::shared_ptr<PolySet>>;
 
 static Geometry *import_3mf_error(PolySet *mesh = nullptr, PolySet *mesh2 = nullptr)
 {
@@ -262,13 +260,13 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     wrapper = Lib3MF::CWrapper::loadLibrary();
     wrapper->GetLibraryVersion(interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro);
     if (interfaceVersionMajor != LIB3MF_VERSION_MAJOR) {
-      LOG(message_group::Error, Location::NONE, "", "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
+      LOG(message_group::Error, "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
           interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro,
           LIB3MF_VERSION_MAJOR, LIB3MF_VERSION_MINOR, LIB3MF_VERSION_MICRO);
       return new PolySet(3);
     }
-  } catch (Lib3MF::ELib3MFException& e) {
-    LOG(message_group::Export_Error, Location::NONE, "", e.what());
+  } catch (const Lib3MF::ELib3MFException& e) {
+    LOG(message_group::Export_Error, e.what());
     return new PolySet(3);
   }
 
@@ -276,11 +274,11 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
   try {
     model = wrapper->CreateModel();
     if (!model) {
-      LOG(message_group::Error, Location::NONE, "", "Could not create model");
+      LOG(message_group::Error, "Could not create model");
       return new PolySet(3);
     }
-  } catch (Lib3MF::ELib3MFException& e) {
-    LOG(message_group::Export_Error, Location::NONE, "", e.what());
+  } catch (const Lib3MF::ELib3MFException& e) {
+    LOG(message_group::Export_Error, e.what());
     return new PolySet(3);
   }
 
@@ -288,22 +286,18 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
   try {
     reader = model->QueryReader("3mf");
     if (!reader) {
-      LOG(message_group::Error, Location::NONE, "", "Could not create 3MF reader");
+      LOG(message_group::Error, "Could not create 3MF reader");
       return new PolySet(3);
     }
-  } catch (Lib3MF::ELib3MFException& e) {
-    LOG(message_group::Export_Error, Location::NONE, "", e.what());
+  } catch (const Lib3MF::ELib3MFException& e) {
+    LOG(message_group::Export_Error, "Could create 3MF reader, import() at line %1$d: %2$s", loc.firstLine(), e.what());
     return new PolySet(3);
   }
 
-  bool read_error = false;
   try {
     reader->ReadFromFile(filename);
-  } catch (Lib3MF::ELib3MFException& e) {
-    read_error = true;
-  }
-  if (!reader || read_error) {
-    LOG(message_group::Warning, Location::NONE, "", "Could not read file '%1$s', import() at line %2$d", filename.c_str(), loc.firstLine());
+  } catch (const Lib3MF::ELib3MFException& e) {
+    LOG(message_group::Warning, "Could not read file '%1$s', import() at line %2$d: %3$s", filename.c_str(), loc.firstLine(), e.what());
     return new PolySet(3);
   }
 
@@ -324,8 +318,8 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
       if (!object) {
         return import_3mf_error(first_mesh);
       }
-    } catch (Lib3MF::ELib3MFException& e) {
-      LOG(message_group::Error, Location::NONE, "", e.what());
+    } catch (const Lib3MF::ELib3MFException& e) {
+      LOG(message_group::Error, e.what());
       return import_3mf_error(first_mesh);
     }
 
@@ -341,6 +335,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     PRINTDB("%s: mesh %d, vertex count: %lu, triangle count: %lu", filename.c_str() % mesh_idx % vertex_count % triangle_count);
 
     PolySet *p = new PolySet(3);
+    p->reserve(triangle_count);
     for (Lib3MF_uint64 idx = 0; idx < triangle_count; ++idx) {
       Lib3MF::sTriangle triangle = object->GetTriangle(idx);
       Lib3MF::sPosition vertex1, vertex2, vertex3;
@@ -349,7 +344,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
       vertex2 = object->GetVertex(triangle.m_Indices[1]);
       vertex3 = object->GetVertex(triangle.m_Indices[2]);
 
-      p->append_poly();
+      p->append_poly(3);
       p->append_vertex(vertex1.m_Coordinates[0], vertex1.m_Coordinates[1], vertex1.m_Coordinates[2]);
       p->append_vertex(vertex2.m_Coordinates[0], vertex2.m_Coordinates[1], vertex2.m_Coordinates[2]);
       p->append_vertex(vertex3.m_Coordinates[0], vertex3.m_Coordinates[1], vertex3.m_Coordinates[2]);
@@ -372,9 +367,9 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     PolySet *p = nullptr;
 #ifdef ENABLE_CGAL
     Geometry::Geometries children;
-    children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(),  shared_ptr<const Geometry>(first_mesh)));
+    children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), shared_ptr<const Geometry>(first_mesh)));
     for (polysets_t::iterator it = meshes.begin(); it != meshes.end(); ++it) {
-      children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(),  shared_ptr<const Geometry>(*it)));
+      children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), shared_ptr<const Geometry>(*it)));
     }
     if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
       p = new PolySet(*ps);
@@ -399,7 +394,7 @@ const std::string get_lib3mf_version() {
 
 Geometry *import_3mf(const std::string&, const Location& loc)
 {
-  LOG(message_group::Warning, Location::NONE, "", "Import from 3MF format was not enabled when building the application, import() at line %1$d", loc.firstLine());
+  LOG(message_group::Warning, "Import from 3MF format was not enabled when building the application, import() at line %1$d", loc.firstLine());
   return new PolySet(3);
 }
 

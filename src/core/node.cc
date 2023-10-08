@@ -24,11 +24,9 @@
  *
  */
 
-#include "node.h"
-#include "module.h"
+#include "core/node.h"
 #include "ModuleInstantiation.h"
 #include "progress.h"
-#include "printutils.h"
 #include <functional>
 #include <iostream>
 #include <algorithm>
@@ -37,7 +35,6 @@ size_t AbstractNode::idx_counter;
 
 AbstractNode::AbstractNode(const ModuleInstantiation *mi) :
   modinst(mi),
-  progress_mark(0),
   idx(idx_counter++)
 {
 }
@@ -47,7 +44,7 @@ std::string AbstractNode::toString() const
   return this->name() + "()";
 }
 
-std::shared_ptr<const AbstractNode> AbstractNode::getNodeByID(int idx, std::deque<std::shared_ptr<const AbstractNode> >& path) const
+std::shared_ptr<const AbstractNode> AbstractNode::getNodeByID(int idx, std::deque<std::shared_ptr<const AbstractNode>>& path) const
 {
   auto self = shared_from_this();
   if (this->idx == idx) {
@@ -119,12 +116,12 @@ std::ostream& operator<<(std::ostream& stream, const AbstractNode& node)
    If a second root modifier was found, nextLocation (if non-zero) will be set to point to
    the location of that second modifier.
  */
-std::shared_ptr<AbstractNode> find_root_tag(const std::shared_ptr<AbstractNode> &node, const Location **nextLocation)
+std::shared_ptr<AbstractNode> find_root_tag(const std::shared_ptr<AbstractNode>& node, const Location **nextLocation)
 {
   std::shared_ptr<AbstractNode> rootTag;
 
-  std::function<void (const std::shared_ptr<const AbstractNode> &)> recursive_find_tag = [&](const std::shared_ptr<const AbstractNode> &node) {
-      for (auto child : node->children) {
+  std::function<void (const std::shared_ptr<const AbstractNode>&)> recursive_find_tag = [&](const std::shared_ptr<const AbstractNode>& node) {
+      for (const auto& child : node->children) {
         if (child->modinst->tag_root) {
           if (!rootTag) {
             rootTag = child;

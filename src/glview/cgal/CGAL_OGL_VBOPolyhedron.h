@@ -29,7 +29,6 @@
 #ifndef NULLGL
 
 #include "ColorMap.h"
-#include "RenderSettings.h"
 #include "CGAL_OGL_Polyhedron.h"
 #include "CGAL_OGL_VBO_helper.h"
 #include "printutils.h"
@@ -44,6 +43,7 @@ public:
     PRINTD("CGAL_OGL_VBOPolyhedron() end");
   }
 
+  using VBOPolyhedron::draw; // draw()
   void draw(bool showedges) const override {
     PRINTDB("VBO draw(showedges = %d)", showedges);
     // grab current state to restore after
@@ -52,8 +52,8 @@ public:
     GLboolean origNormalArrayState = glIsEnabled(GL_NORMAL_ARRAY);
     GLboolean origColorArrayState = glIsEnabled(GL_COLOR_ARRAY);
 
-    glGetFloatv(GL_POINT_SIZE, &current_point_size); GL_ERROR_CHECK();
-    glGetFloatv(GL_LINE_WIDTH, &current_line_width); GL_ERROR_CHECK();
+    GL_CHECKD(glGetFloatv(GL_POINT_SIZE, &current_point_size));
+    GL_CHECKD(glGetFloatv(GL_LINE_WIDTH, &current_line_width));
 
     if (this->style == SNC_BOUNDARY) {
       for (const auto& halffacet : this->halffacets_states) {
@@ -69,9 +69,9 @@ public:
 
     // restore states
     GL_TRACE("glPointSize(%d)", current_point_size);
-    glPointSize(current_point_size); GL_ERROR_CHECK();
+    GL_CHECKD(glPointSize(current_point_size));
     GL_TRACE("glLineWidth(%d)", current_line_width);
-    glLineWidth(current_line_width); GL_ERROR_CHECK();
+    GL_CHECKD(glLineWidth(current_line_width));
 
     if (!origVertexArrayState) glDisableClientState(GL_VERTEX_ARRAY);
     if (!origNormalArrayState) glDisableClientState(GL_NORMAL_ARRAY);

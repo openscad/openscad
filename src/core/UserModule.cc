@@ -26,7 +26,7 @@
 
 #include "UserModule.h"
 #include "ModuleInstantiation.h"
-#include "node.h"
+#include "core/node.h"
 #include "exceptions.h"
 #include "StackCheck.h"
 #include "ScopeContext.h"
@@ -34,19 +34,18 @@
 #include "printutils.h"
 #include "compiler_specific.h"
 #include <sstream>
-#include "boost-utils.h"
 
 std::vector<std::string> StaticModuleNameStack::stack;
 
-static void NOINLINE print_err(std::string name, const Location& loc, const std::shared_ptr<const Context> context){
+static void NOINLINE print_err(std::string name, const Location& loc, const std::shared_ptr<const Context>& context){
   LOG(message_group::Error, loc, context->documentRoot(), "Recursion detected calling module '%1$s'", name);
 }
 
-static void NOINLINE print_trace(const UserModule *mod,std::shared_ptr<const UserModuleContext> context, const AssignmentList& parameters){
-  std::stringstream stream ;
-  if (parameters.size() == 0){
-      //nothing to do
-  } else if (StackCheck::inst().check()) { 
+static void NOINLINE print_trace(const UserModule *mod, const std::shared_ptr<const UserModuleContext>& context, const AssignmentList& parameters){
+  std::stringstream stream;
+  if (parameters.size() == 0) {
+    //nothing to do
+  } else if (StackCheck::inst().check()) {
     stream << "...";
   } else {
     bool first = true;
@@ -61,15 +60,15 @@ static void NOINLINE print_trace(const UserModule *mod,std::shared_ptr<const Use
         stream << " = ";
       }
       try {
-        stream << context->lookup_variable(assignment->getName(),Location::NONE);
+        stream << context->lookup_variable(assignment->getName(), Location::NONE);
       } catch (EvaluationException& e) {
         stream << "...";
       }
+    }
   }
-}
   LOG(message_group::Trace, mod->location(), context->documentRoot(), "call of '%1$s(%2$s)'",
-     mod->name, stream.str()
-  );
+      mod->name, stream.str()
+      );
 }
 
 std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
@@ -95,7 +94,7 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<cons
 
   std::shared_ptr<AbstractNode> ret;
   try{
-     ret = this->body.instantiateModules(*module_context, std::make_shared<GroupNode>(inst, std::string("module ") + this->name));
+    ret = this->body.instantiateModules(*module_context, std::make_shared<GroupNode>(inst, std::string("module ") + this->name));
   } catch (EvaluationException& e) {
     if (OpenSCAD::traceUsermoduleParameters && e.traceDepth > 0) {
       print_trace(this, *module_context, this->parameters);

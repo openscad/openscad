@@ -246,10 +246,12 @@
     <addaction name="separator"/>
     <addaction name="fileActionNewWindow"/>
     <addaction name="fileActionOpenWindow"/>
+    <addaction name="fileActionRevoke"/>
     <addaction name="fileActionClose"/>
     <addaction name="separator"/>
     <addaction name="fileActionSave"/>
     <addaction name="fileActionSaveAs"/>
+    <addaction name="fileActionSaveACopy"/>
     <addaction name="fileActionSaveAll"/>
     <addaction name="separator"/>
     <addaction name="menuExport"/>
@@ -759,6 +761,11 @@
     <string>Ctrl+Shift+S</string>
    </property>
   </action>
+  <action name="fileActionSaveACopy">
+   <property name="text">
+    <string>Save a Copy</string>
+   </property>
+  </action>
   <action name="fileActionSaveAll">
    <property name="text">
     <string>Save All</string>
@@ -1226,6 +1233,11 @@
   <action name="fileActionExportDXF">
    <property name="text">
     <string>Export as &amp;DXF...</string>
+   </property>
+  </action>
+  <action name="fileActionRevoke">
+   <property name="text">
+    <string>Revoke trusted python Files</string>
    </property>
   </action>
   <action name="fileActionClose">

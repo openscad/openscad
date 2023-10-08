@@ -26,9 +26,8 @@
 
 #include "openscad.h"
 #include "CommentParser.h"
-#include "node.h"
+#include "core/node.h"
 #include "SourceFile.h"
-#include "ModuleInstantiation.h"
 #include "BuiltinContext.h"
 #include "Value.h"
 #include "export.h"
@@ -40,14 +39,11 @@
 #include "RenderSettings.h"
 #include "PlatformUtils.h"
 #include "LibraryInfo.h"
-#include "NodeDumper.h"
 #include "StackCheck.h"
-#include "CocoaUtils.h"
 #include "FontCache.h"
 #include "OffscreenView.h"
 #include "GeometryEvaluator.h"
 #include "RenderStatistic.h"
-#include "boost-utils.h"
 #include "ParameterObject.h"
 #include "ParameterSet.h"
 #include "openscad_mimalloc.h"
@@ -68,6 +64,7 @@
 #include <chrono>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
@@ -79,6 +76,7 @@
 #endif
 
 #ifdef __APPLE__
+#include "CocoaUtils.h"
 #include "AppleEvents.h"
   #ifdef OPENSCAD_UPDATER
     #include "SparkleAutoUpdater.h"
@@ -89,6 +87,12 @@
 #define snprintf _snprintf
 #endif
 
+#ifdef ENABLE_PYTHON
+extern std::shared_ptr<AbstractNode> python_result_node;
+std::string evaluatePython(const std::string &code, double time);
+bool python_active = false;
+bool python_trusted = false;
+#endif
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 using std::string;
@@ -130,7 +134,7 @@ private:
 static void help(const char *arg0, const po::options_description& desc, bool failure = false)
 {
   const fs::path progpath(arg0);
-  LOG(message_group::None, Location::NONE, "", "Usage: %1$s [options] file.scad\n%2$s", progpath.filename().string(), STR(desc));
+  LOG("Usage: %1$s [options] file.scad\n%2$s", progpath.filename().string(), desc);
   exit(failure ? 1 : 0);
 }
 
@@ -138,7 +142,7 @@ static void help(const char *arg0, const po::options_description& desc, bool fai
 #define TOSTRING(x) STRINGIFY(x)
 static void version()
 {
-  LOG(message_group::None, Location::NONE, "", "OpenSCAD version %1$s", TOSTRING(OPENSCAD_VERSION));
+  LOG("OpenSCAD version %1$s", TOSTRING(OPENSCAD_VERSION));
   exit(0);
 }
 
@@ -149,8 +153,8 @@ static int info()
   try {
     OffscreenView glview(512, 512);
     std::cout << glview.getRendererInfo() << "\n";
-  } catch (int error) {
-    LOG(message_group::None, Location::NONE, "", "Can't create OpenGL OffscreenView. Code: %1$i. Exiting.\n", error);
+  } catch (const OffscreenViewException &ex) {
+    LOG("Can't create OpenGL OffscreenView: %1$s. Exiting.\n", ex.what());
     return 1;
   }
 
@@ -171,7 +175,7 @@ static bool with_output(const bool is_stdout, const std::string& filename, F f, 
   }
   std::ofstream fstream(filename, mode);
   if (!fstream.is_open()) {
-    LOG(message_group::None, Location::NONE, "", "Can't open file \"%1$s\" for export", filename);
+    LOG("Can't open file \"%1$s\" for export", filename);
     return false;
   } else {
     f(fstream);
@@ -194,7 +198,7 @@ void localization_init() {
     bind_textdomain_codeset("openscad", "UTF-8");
     textdomain("openscad");
   } else {
-    LOG(message_group::None, Location::NONE, "", "Could not initialize localization.");
+    LOG("Could not initialize localization.");
   }
 }
 
@@ -208,13 +212,15 @@ Camera get_camera(const po::variables_map& vm)
     boost::split(strs, vm["camera"].as<string>(), is_any_of(","));
     if (strs.size() == 6 || strs.size() == 7) {
       try {
-        for (const auto& s : strs) cam_parameters.push_back(lexical_cast<double>(s));
+        for (const auto& s : strs) {
+          cam_parameters.push_back(lexical_cast<double>(s));
+        }
         camera.setup(cam_parameters);
       } catch (bad_lexical_cast&) {
-        LOG(message_group::None, Location::NONE, "", "Camera setup requires numbers as parameters");
+        LOG("Camera setup requires numbers as parameters");
       }
     } else {
-      LOG(message_group::None, Location::NONE, "", "Camera setup requires either 7 numbers for Gimbal Camera or 6 numbers for Vector Camera");
+      LOG("Camera setup requires either 7 numbers for Gimbal Camera or 6 numbers for Vector Camera");
       exit(1);
     }
   } else {
@@ -237,7 +243,7 @@ Camera get_camera(const po::variables_map& vm)
     } else if (proj == "p" || proj == "perspective") {
       camera.projection = Camera::ProjectionType::PERSPECTIVE;
     } else {
-      LOG(message_group::None, Location::NONE, "", "projection needs to be 'o' or 'p' for ortho or perspective\n");
+      LOG("projection needs to be 'o' or 'p' for ortho or perspective\n");
       exit(1);
     }
   }
@@ -248,14 +254,14 @@ Camera get_camera(const po::variables_map& vm)
     vector<string> strs;
     boost::split(strs, vm["imgsize"].as<string>(), is_any_of(","));
     if (strs.size() != 2) {
-      LOG(message_group::None, Location::NONE, "", "Need 2 numbers for imgsize");
+      LOG("Need 2 numbers for imgsize");
       exit(1);
     } else {
       try {
         w = lexical_cast<int>(strs[0]);
         h = lexical_cast<int>(strs[1]);
       } catch (bad_lexical_cast&) {
-        LOG(message_group::None, Location::NONE, "", "Need 2 numbers for imgsize");
+        LOG("Need 2 numbers for imgsize");
       }
     }
   }
@@ -269,15 +275,15 @@ Camera get_camera(const po::variables_map& vm)
 #include "QSettingsCached.h"
 #define OPENSCAD_QTGUI 1
 #endif
-static bool checkAndExport(shared_ptr<const Geometry> root_geom, unsigned nd,
+static bool checkAndExport(const shared_ptr<const Geometry>& root_geom, unsigned nd,
                            FileFormat format, const bool is_stdout, const std::string& filename)
 {
   if (root_geom->getDimension() != nd) {
-    LOG(message_group::None, Location::NONE, "", "Current top level object is not a %1$dD object.", nd);
+    LOG("Current top level object is not a %1$dD object.", nd);
     return false;
   }
   if (root_geom->isEmpty()) {
-    LOG(message_group::None, Location::NONE, "", "Current top level object is empty.");
+    LOG("Current top level object is empty.");
     return false;
   }
 
@@ -303,11 +309,11 @@ void set_render_color_scheme(const std::string& color_scheme, const bool exit_if
   }
 
   if (exit_if_not_found) {
-    LOG(message_group::None, Location::NONE, "", (boost::algorithm::join(ColorMap::inst()->colorSchemeNames(), "\n")));
+    LOG((boost::algorithm::join(ColorMap::inst()->colorSchemeNames(), "\n")));
 
     exit(1);
   } else {
-    LOG(message_group::None, Location::NONE, "", "Unknown color scheme '%1$s', using default '%2$s'.", arg_colorscheme, ColorMap::inst()->defaultColorSchemeName());
+    LOG("Unknown color scheme '%1$s', using default '%2$s'.", arg_colorscheme, ColorMap::inst()->defaultColorSchemeName());
   }
 }
 
@@ -353,7 +359,7 @@ int cmdline(const CommandLine& cmd)
     if (format_iter != exportFileFormatOptions.exportFileFormats.end()) {
       export_format = format_iter->second;
     } else {
-      LOG(message_group::None, Location::NONE, "", "Either add a valid suffix or specify one using the --export-format option.");
+      LOG("Either add a valid suffix or specify one using the --export-format option.");
       return 1;
     }
   }
@@ -365,7 +371,7 @@ int cmdline(const CommandLine& cmd)
     output_dir = fs::current_path();
   }
   if (!fs::is_directory(output_dir)) {
-    LOG(message_group::None, Location::NONE, "", "\n'%1$s' is not a directory for output file %2$s - Skipping\n", output_dir.generic_string(), cmd.output_file);
+    LOG("\n'%1$s' is not a directory for output file %2$s - Skipping\n", output_dir.generic_string(), cmd.output_file);
     return 1;
   }
 
@@ -382,13 +388,29 @@ int cmdline(const CommandLine& cmd)
   } else {
     std::ifstream ifs(cmd.filename);
     if (!ifs.is_open()) {
-      LOG(message_group::None, Location::NONE, "", "Can't open input file '%1$s'!\n", cmd.filename);
+      LOG("Can't open input file '%1$s'!\n", cmd.filename);
       return 1;
     }
     handle_dep(cmd.filename);
     text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
   }
 
+#ifdef ENABLE_PYTHON  
+  python_active = false;
+  if(cmd.filename.c_str() != NULL) {
+	  if(boost::algorithm::ends_with(cmd.filename, ".py")) {
+		  if( python_trusted == true) python_active = true;
+		  else  LOG("Python is not enabled");
+	  }
+  }
+
+  if(python_active) {
+    auto fulltext_py = text;
+    auto error  = evaluatePython(fulltext_py, 0.0);
+    if(error.size() > 0) LOG(error.c_str());
+    text ="\n";
+  }
+#endif	  
   text += "\n\x03\n" + commandline_commands;
 
   SourceFile *root_file = nullptr;
@@ -397,7 +419,7 @@ int cmdline(const CommandLine& cmd)
     root_file = nullptr;
   }
   if (!root_file) {
-    LOG(message_group::None, Location::NONE, "", "Can't parse file '%1$s'!\n", cmd.filename);
+    LOG("Can't parse file '%1$s'!\n", cmd.filename);
     return 1;
   }
 
@@ -439,7 +461,7 @@ int cmdline(const CommandLine& cmd)
       frame_file.replace_extension(extension);
       string frame_str = frame_file.generic_string();
 
-      LOG(message_group::None, Location::NONE, "", "Exporting %1$s...", cmd.filename);
+      LOG("Exporting %1$s...", cmd.filename);
 
       CommandLine frame_cmd = cmd;
       frame_cmd.output_file = frame_str;
@@ -473,7 +495,12 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
   AbstractNode::resetIndexCounter();
   std::shared_ptr<const FileContext> file_context;
-  auto absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
+  std::shared_ptr<AbstractNode> absolute_root_node;
+#ifdef ENABLE_PYTHON    
+    if(python_result_node != NULL && python_active) absolute_root_node = python_result_node;
+    else
+#endif	    
+  absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
   Camera camera = cmd.camera;
   if (file_context) {
     camera.updateView(file_context, true);
@@ -537,6 +564,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     if ((curFormat == FileFormat::ECHO || curFormat == FileFormat::PNG) && (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)) {
       // OpenCSG or throwntogether png -> just render a preview
       glview = prepare_preview(tree, cmd.viewOptions, camera);
+      if (!glview) return 1;
     } else {
       // Force creation of CGAL objects (for testing)
       root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
@@ -553,13 +581,12 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
           } else {
             root_geom = CGALUtils::getNefPolyhedronFromGeometry(root_geom);
           }
-          LOG(message_group::None, Location::NONE, "", "Converted to Nef polyhedron");
+          LOG("Converted to Nef polyhedron");
         }
       } else {
         root_geom.reset(new CGAL_Nef_polyhedron());
       }
     }
-
     if (curFormat == FileFormat::ASCIISTL ||
         curFormat == FileFormat::STL ||
         curFormat == FileFormat::OBJ ||
@@ -596,7 +623,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
     renderStatistic.printAll(root_geom, camera, cmd.summaryOptions, cmd.summaryFile);
 #else
-    LOG(message_group::None, Location::NONE, "", "OpenSCAD has been compiled without CGAL support!\n");
+    LOG("OpenSCAD has been compiled without CGAL support!\n");
     return 1;
 #endif // ifdef ENABLE_CGAL
 
@@ -676,7 +703,9 @@ void dialogInitHandler(FontCacheInitializer *initializer, void *)
   QFutureWatcher<void> futureWatcher;
   QObject::connect(&futureWatcher, SIGNAL(finished()), scadApp, SLOT(hideFontCacheDialog()));
 
-  auto future = QtConcurrent::run(boost::bind(dialogThreadFunc, initializer));
+  auto future = QtConcurrent::run([initializer] {
+    return dialogThreadFunc(initializer);
+  });
   futureWatcher.setFuture(future);
 
   // We don't always get the started() signal, so we start manually
@@ -700,7 +729,7 @@ void registerDefaultIcon(QString applicationFilePath) {
   reg_setting.setValue(QLatin1String("Software/Classes/OpenSCAD_File/DefaultIcon/Default"), QVariant(appPath));
 }
 #else
-void registerDefaultIcon(QString) { }
+void registerDefaultIcon(const QString&) { }
 #endif
 
 int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, char **argv)
@@ -753,7 +782,7 @@ int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, cha
 
   if (!inputFiles.size()) {
     noInputFiles = true;
-    inputFiles.push_back("");
+    inputFiles.emplace_back("");
   }
 
   auto showOnStartup = settings.value("launcher/showOnStartup");
@@ -834,7 +863,7 @@ int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, cha
 bool QtUseGUI() { return false; }
 int gui(const vector<string>& inputFiles, const fs::path& original_path, int argc, char **argv)
 {
-  LOG(message_group::Error, Location::NONE, "", "Compiled without QT, but trying to run GUI\n");
+  LOG(message_group::Error, "Compiled without QT, but trying to run GUI\n");
   return 1;
 }
 #endif // OPENSCAD_QTGUI
@@ -860,6 +889,7 @@ struct CommaSeparatedVector
   friend std::istream& operator>>(std::istream& in, CommaSeparatedVector& value) {
     std::string token;
     in >> token;
+    // NOLINTNEXTLINE(*NewDeleteLeaks) LLVM bug https://github.com/llvm/llvm-project/issues/40486
     boost::split(value.values, token, boost::is_any_of(","));
     return in;
   }
@@ -871,7 +901,7 @@ std::string str_join(const Seq& seq, const std::string& sep, const ToString& toS
   return boost::algorithm::join(boost::adaptors::transform(seq, toString), sep);
 }
 
-bool flagConvert(std::string str){
+bool flagConvert(const std::string& str){
   if (str == "1" || boost::iequals(str, "on") || boost::iequals(str, "true")) {
     return true;
   }
@@ -968,12 +998,15 @@ int main(int argc, char **argv)
     ("quiet,q", "quiet mode (don't print anything *except* errors)")
     ("hardwarnings", "Stop on the first warning")
     ("trace-depth", po::value<unsigned int>(), "=n, maximum number of trace messages")
-    ("trace-usermodule-parameters", po::value<string>(), "=true/false, configure the output of user modul parameters in a trace")
+    ("trace-usermodule-parameters", po::value<string>(), "=true/false, configure the output of user module parameters in a trace")
     ("check-parameters", po::value<string>(), "=true/false, configure the parameter check for user modules and functions")
     ("check-parameter-ranges", po::value<string>(), "=true/false, configure the parameter range check for builtin modules")
     ("debug", po::value<string>(), "special debug info - specify 'all' or a set of source file names")
     ("s,s", po::value<string>(), "stl_file deprecated, use -o")
     ("x,x", po::value<string>(), "dxf_file deprecated, use -o")
+#ifdef ENABLE_PYTHON
+  ("trust-python",  "Trust python")
+#endif
   ;
 
   po::options_description hidden("Hidden options");
@@ -993,15 +1026,21 @@ int main(int argc, char **argv)
   try {
     po::store(po::command_line_parser(argc, argv).options(all_options).positional(p).extra_parser(customSyntax).run(), vm);
   } catch (const std::exception& e) { // Catches e.g. unknown options
-    LOG(message_group::None, Location::NONE, "", "%1$s\n", e.what());
+    LOG("%1$s\n", e.what());
     help(argv[0], desc, true);
   }
 
   OpenSCAD::debug = "";
   if (vm.count("debug")) {
     OpenSCAD::debug = vm["debug"].as<string>();
-    LOG(message_group::None, Location::NONE, "", "Debug on. --debug=%1$s", OpenSCAD::debug);
+    LOG("Debug on. --debug=%1$s", OpenSCAD::debug);
   }
+#ifdef ENABLE_PYTHON
+  if (vm.count("trust-python")) {
+    LOG("Python Engine enabled", OpenSCAD::debug);
+    python_trusted = true;
+  }
+#endif
   if (vm.count("quiet")) {
     OpenSCAD::quiet = true;
   }
@@ -1017,14 +1056,14 @@ int main(int argc, char **argv)
   flags.insert(std::make_pair("trace-usermodule-parameters", &OpenSCAD::traceUsermoduleParameters));
   flags.insert(std::make_pair("check-parameters", &OpenSCAD::parameterCheck));
   flags.insert(std::make_pair("check-parameter-ranges", &OpenSCAD::rangeCheck));
-  for (auto flag : flags) {
+  for (const auto& flag : flags) {
     std::string name = flag.first;
     if (vm.count(name)) {
       std::string opt = vm[name].as<string>();
       try {
         (*(flag.second) = flagConvert(opt));
       } catch (const std::runtime_error& e) {
-        LOG(message_group::None, Location::NONE, "", "Could not parse '--%1$s %2$s' as flag", name, opt);
+        LOG("Could not parse '--%1$s %2$s' as flag", name, opt);
       }
     }
   }
@@ -1048,7 +1087,7 @@ int main(int argc, char **argv)
       try {
         viewOptions[option] = true;
       } catch (const std::out_of_range& e) {
-        LOG(message_group::None, Location::NONE, "", "Unknown --view option '%1$s' ignored. Use -h to list available options.", option);
+        LOG("Unknown --view option '%1$s' ignored. Use -h to list available options.", option);
       }
     }
   }
@@ -1061,11 +1100,11 @@ int main(int argc, char **argv)
     output_files = vm["o"].as<vector<string>>();
   }
   if (vm.count("s")) {
-    LOG(message_group::Deprecated, Location::NONE, "", "The -s option is deprecated. Use -o instead.\n");
+    LOG(message_group::Deprecated, "The -s option is deprecated. Use -o instead.\n");
     output_files.push_back(vm["s"].as<string>());
   }
   if (vm.count("x")) {
-    LOG(message_group::Deprecated, Location::NONE, "", "The -x option is deprecated. Use -o instead.\n");
+    LOG(message_group::Deprecated, "The -x option is deprecated. Use -o instead.\n");
     output_files.push_back(vm["x"].as<string>());
   }
   if (vm.count("d")) {
@@ -1125,7 +1164,7 @@ int main(int argc, char **argv)
     if (format_iter != exportFileFormatOptions.exportFileFormats.end()) {
       export_format.emplace(format_iter->second);
     } else {
-      LOG(message_group::None, Location::NONE, "", "Unknown --export-format option '%1$s'.  Use -h to list available options.", format);
+      LOG("Unknown --export-format option '%1$s'.  Use -h to list available options.", format);
       return 1;
     }
   }
@@ -1140,7 +1179,7 @@ int main(int argc, char **argv)
   if (animate_frames) {
     for (const auto& filename : output_files) {
       if (filename == "-") {
-        LOG(message_group::None, Location::NONE, "", "Option --animate is not supported when exporting to stdout.");
+        LOG("Option --animate is not supported when exporting to stdout.");
         return 1;
       }
     }
@@ -1192,20 +1231,20 @@ int main(int argc, char **argv)
 
     if (deps_output_file) {
       std::string deps_out(deps_output_file);
-      vector<std::string> geom_out(output_files);
+      const vector<std::string>& geom_out(output_files);
       int result = write_deps(deps_out, geom_out);
       if (!result) {
-        LOG(message_group::None, Location::NONE, "", "Error writing deps");
+        LOG("Error writing deps");
         return 1;
       }
     }
   } else if (QtUseGUI()) {
     if (vm.count("export-format")) {
-      LOG(message_group::None, Location::NONE, "", "Ignoring --export-format option");
+      LOG("Ignoring --export-format option");
     }
     rc = gui(inputFiles, original_path, argc, argv);
   } else {
-    LOG(message_group::None, Location::NONE, "", "Requested GUI mode but can't open display!\n");
+    LOG("Requested GUI mode but can't open display!\n");
     return 1;
   }
 

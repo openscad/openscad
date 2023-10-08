@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <string>
+#include <variant>
 #include <vector>
 
 class Arguments;
@@ -24,8 +25,8 @@ public:
   BuiltinFunction(Value(*f)(const std::shared_ptr<const Context>&, const FunctionCall *), const Feature *feature = nullptr);
   BuiltinFunction(Value(*f)(Arguments, const Location&), const Feature *feature = nullptr);
 
-  bool is_experimental() const { return feature != nullptr; }
-  bool is_enabled() const { return (feature == nullptr) || feature->is_enabled(); }
+  [[nodiscard]] bool is_experimental() const { return feature != nullptr; }
+  [[nodiscard]] bool is_enabled() const { return (feature == nullptr) || feature->is_enabled(); }
 };
 
 class UserFunction : public ASTNode
@@ -46,4 +47,4 @@ struct CallableUserFunction
   std::shared_ptr<const Context> defining_context;
   const UserFunction *function;
 };
-typedef boost::variant<const BuiltinFunction *, CallableUserFunction, Value, const Value *> CallableFunction;
+using CallableFunction = std::variant<const BuiltinFunction *, CallableUserFunction, Value, const Value *>;

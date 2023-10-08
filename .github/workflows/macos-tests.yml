@@ -9,11 +9,19 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+    name: macos-latest
+    # If it's not done in 60 minutes, something is wrong.
+    # Default is 6 hours, which is a bit long to wait.
+    timeout-minutes: 60
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         submodules: 'recursive'
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.11
     - name: Install Homebrew packages
       env:
         HOMEBREW_NO_AUTO_UPDATE: 1
@@ -28,13 +36,14 @@ jobs:
         make -j$NUMCPU
     - name: Run Test Suite
       run: |
-        cd build/tests
+        cd build
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
-        ctest -j$NUMCPU -E 'edges_view-options-tests|nef3_broken'
+        ctest -j$NUMCPU
     - name: Upload Test Result Report
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
+      if: ${{ always() }}
       with:
         name: Test Result Report (MacOS)
         path: |
-          build/tests/Testing/Temporary/*_report.html
-          build/tests/Testing/Temporary/LastTest.log
+          build/Testing/Temporary/*_report.html
+          build/Testing/Temporary/LastTest.log

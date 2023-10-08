@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <stdlib.h>
+#include <cstdlib>
 #include <iostream>
 
 #include "svgpage.h"
@@ -35,10 +35,6 @@ svgpage::svgpage() : width({0.0, unit_t::UNDEFINED}), height({0.0, unit_t::UNDEF
 {
 }
 
-svgpage::~svgpage()
-{
-}
-
 void
 svgpage::set_attrs(attr_map_t& attrs, void *context)
 {
@@ -48,6 +44,9 @@ svgpage::set_attrs(attr_map_t& attrs, void *context)
   this->height = parse_length(attrs["height"]);
   this->viewbox = parse_viewbox(attrs["viewBox"]);
   this->alignment = parse_alignment(attrs["preserveAspectRatio"]);
+
+  const auto *ctx = reinterpret_cast<const fnContext *>(context);
+  selected = (ctx->selector) ? ctx->selector(this) : false;
 }
 
 const std::string

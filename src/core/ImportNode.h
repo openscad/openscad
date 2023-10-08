@@ -1,5 +1,7 @@
 #pragma once
 
+#include <boost/optional.hpp>
+
 #include "node.h"
 #include "Value.h"
 
@@ -12,6 +14,7 @@ enum class ImportType {
   SVG,
   DXF,
   NEF3,
+  OBJ,
 };
 
 class ImportNode : public LeafNode
@@ -26,7 +29,8 @@ public:
 
   ImportType type;
   Filename filename;
-  std::string layername;
+  boost::optional<std::string> id;
+  boost::optional<std::string> layer;
   int convexity;
   bool center;
   double dpi;

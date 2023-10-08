@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "cgalutils-mesh-edits.h"
+#include "Feature.h"
 
 namespace CGALUtils {
 
@@ -46,17 +47,18 @@ bool contains(const Container& container, const Item& item) {
  */
 template <typename TriangleMesh>
 struct CoplanarFacesRemesher {
-  typedef boost::graph_traits<TriangleMesh> GT;
-  typedef typename GT::face_descriptor face_descriptor;
-  typedef typename GT::halfedge_descriptor halfedge_descriptor;
-  typedef typename GT::edge_descriptor edge_descriptor;
-  typedef typename GT::vertex_descriptor vertex_descriptor;
+  using GT = boost::graph_traits<TriangleMesh>;
+  using face_descriptor = typename GT::face_descriptor;
+  using halfedge_descriptor = typename GT::halfedge_descriptor;
+  using edge_descriptor = typename GT::edge_descriptor;
+  using vertex_descriptor = typename GT::vertex_descriptor;
 
   TriangleMesh& tm;
 
 public:
 
-  CoplanarFacesRemesher(TriangleMesh& mesh) : tm(mesh) {}
+  CoplanarFacesRemesher(TriangleMesh & mesh) : tm(mesh) {
+  }
 
   template <typename PatchId>
   void remesh(
@@ -67,7 +69,7 @@ public:
 
     auto facesBefore = tm.number_of_faces();
     auto verbose = Feature::ExperimentalFastCsgDebug.is_enabled();
-    auto predictibleRemesh = Feature::ExperimentalFastCsgRemeshPredictibly.is_enabled();
+    auto predictibleRemesh = Feature::ExperimentalPredictibleOutput.is_enabled();
 
     class PatchData
     {
@@ -182,7 +184,7 @@ public:
           }
 
           if (!walkAroundPatch(borderEdge, isFaceOnPatch, patch.borderPath)) {
-            LOG(message_group::Error, Location::NONE, "",
+            LOG(message_group::Error,
                 "[fast-csg-remesh] Failed to collect path around patch faces, invalid mesh!");
             return false;
           }
@@ -208,15 +210,14 @@ public:
           }
           if (hasHoles) {
             if (verbose) {
-              LOG(message_group::None, Location::NONE, "",
-                  "[fast-csg-remesh] Skipping remeshing of patch with %1$lu faces as it seems to have holes.", patch.borderPathEdges.size());
+              LOG("[fast-csg-remesh] Skipping remeshing of patch with %1$lu faces as it seems to have holes.", patch.borderPathEdges.size());
             }
             return false;
           }
 
           // TODO(ochafik): Ensure collapse happens on both sides of the border! (e.g. count of patches around vertex == 2)
           // auto collapsed = TriangleMeshEdits<TriangleMesh>::collapsePathWithConsecutiveCollinearEdges(borderPathVertices, tm);
-          TriangleMeshEdits<TriangleMesh>::findCollapsibleVertices(patch.borderPathVertices, tm, [&](size_t index, vertex_descriptor v) {
+          TriangleMeshEdits<TriangleMesh>::findCollapsibleVertices(patch.borderPathVertices, tm, [&](size_t /*index*/, vertex_descriptor v) {
             collapsibleBorderVerticesMarks[v]++;
           });
 
@@ -280,16 +281,15 @@ public:
 
       auto facesAfter = tm.number_of_faces();
       if (verbose && facesBefore != facesAfter) {
-        LOG(message_group::None, Location::NONE, "",
-            "[fast-csg-remesh] Remeshed from %1$lu to %2$lu faces (%3$lu % improvement)", facesBefore, facesAfter,
+        LOG("[fast-csg-remesh] Remeshed from %1$lu to %2$lu faces (%3$lu % improvement)", facesBefore, facesAfter,
             (facesBefore - facesAfter) * 100 / facesBefore);
       }
     } catch (const CGAL::Assertion_exception& e) {
-      LOG(message_group::Error, Location::NONE, "", "CGAL error in remeshSplitFaces: %1$s", e.what());
+      LOG(message_group::Error, "CGAL error in remeshSplitFaces: %1$s", e.what());
     }
   }
 
-  bool isEdgeBetweenCoplanarFaces(const halfedge_descriptor& h) const {
+  [[nodiscard]] bool isEdgeBetweenCoplanarFaces(const halfedge_descriptor& h) const {
     auto& p = tm.point(tm.source(h));
     auto& q = tm.point(tm.target(h));
     auto& r = tm.point(tm.target(tm.next(h)));

@@ -2,7 +2,6 @@
 #include "PolySet.h"
 #include "printutils.h"
 #include "AST.h"
-#include "boost-utils.h"
 
 #include <fstream>
 #include <boost/predef.h>
@@ -14,7 +13,7 @@
 #error Byte order undefined or unknown. Currently only BOOST_ENDIAN_BIG_BYTE and BOOST_ENDIAN_LITTLE_BYTE are supported.
 #endif
 
-#define STL_FACET_NUMBYTES 4 * 3 * 4 + 2
+inline constexpr size_t STL_FACET_NUMBYTES = 4ul * 3ul * 4ul + 2ul;
 // as there is no 'float32_t' standard, we assume the systems 'float'
 // is a 'binary32' aka 'single' standard IEEE 32-bit floating point type
 union stl_facet {
@@ -29,7 +28,7 @@ union stl_facet {
   } data;
 };
 
-static_assert(offsetof(stl_facet::facet_data, attribute_byte_count) == 4 * 3 * 4,
+static_assert(offsetof(stl_facet::facet_data, attribute_byte_count) == 4ul * 3ul * 4ul,
               "Invalid padding in stl_facet");
 
 #if BOOST_ENDIAN_BIG_BYTE
@@ -70,18 +69,18 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
   // Open file and position at the end
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   if (!f.good()) {
-    LOG(message_group::Warning, Location::NONE, "",
+    LOG(message_group::Warning,
         "Can't open import file '%1$s', import() at line %2$d",
         filename, loc.firstLine());
     return p.release();
   }
 
-  boost::regex ex_sfe("^\\s*solid|^\\s*facet|^\\s*endfacet");
+  boost::regex ex_sfe(R"(^\s*solid|^\s*facet|^\s*endfacet)");
   boost::regex ex_outer("^\\s*outer loop$");
   boost::regex ex_loopend("^\\s*endloop$");
   boost::regex ex_vertex("^\\s*vertex");
   boost::regex ex_vertices(
-    "^\\s*vertex\\s+([^\\s]+)\\s+([^\\s]+)\\s+([^\\s]+)\\s*$");
+    R"(^\s*vertex\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$)");
   boost::regex ex_endsolid("^\\s*endsolid");
 
   bool binary = false;
@@ -93,8 +92,9 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
 #if BOOST_ENDIAN_BIG_BYTE
     uint32_byte_swap(facenum);
 #endif
-    if (file_size == static_cast<std::streamoff>(80 + 4 + 50 * facenum)) {
+    if (file_size == static_cast<std::streamoff>(80ul + 4ul + 50ul * facenum)) {
       binary = true;
+      p->reserve(facenum);
     }
   }
   f.seekg(0);
@@ -121,9 +121,7 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
       boost::trim(line);
       boost::smatch results;
 
-      if (line.length() == 0) {
-        continue;
-      } else if (boost::regex_search(line, ex_sfe)) {
+      if (line.length() == 0 || boost::regex_search(line, ex_sfe)) {
         continue;
       } else if (boost::regex_search(line, ex_outer)) {
         i = 0;
@@ -147,7 +145,7 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
               boost::lexical_cast<double>(results[v + 1]);
           }
           if (++i == 3) {
-            p->append_poly();
+            p->append_poly(3);
             p->append_vertex(vdata[0][0], vdata[0][1], vdata[0][2]);
             p->append_vertex(vdata[1][0], vdata[1][1], vdata[1][2]);
             p->append_vertex(vdata[2][0], vdata[2][1], vdata[2][2]);
@@ -172,7 +170,7 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
           if (f.eof()) break;
           throw;
         }
-        p->append_poly();
+        p->append_poly(3);
         p->append_vertex(facet.data.x1, facet.data.y1, facet.data.z1);
         p->append_vertex(facet.data.x2, facet.data.y2, facet.data.z2);
         p->append_vertex(facet.data.x3, facet.data.y3, facet.data.z3);

@@ -25,6 +25,7 @@
 #pragma once
 
 #include "shape.h"
+#include "util.h"
 
 namespace libsvg {
 
@@ -38,21 +39,20 @@ protected:
 
 public:
   svgpage();
-  ~svgpage() override;
 
-  const length_t& get_width() const { return width; }
-  const length_t& get_height() const { return height; }
-  const viewbox_t& get_viewbox() const { return viewbox; }
-  const alignment_t& get_alignment() const { return alignment; }
-  bool is_container() const override { return true; }
+  [[nodiscard]] const length_t& get_width() const { return width; }
+  [[nodiscard]] const length_t& get_height() const { return height; }
+  [[nodiscard]] const viewbox_t& get_viewbox() const { return viewbox; }
+  [[nodiscard]] const alignment_t& get_alignment() const { return alignment; }
+  [[nodiscard]] bool is_container() const override { return true; }
 
   void set_attrs(attr_map_t& attrs, void *context) override;
-  const std::string dump() const override;
-  const std::string& get_name() const override { return svgpage::name; }
+  [[nodiscard]] const std::string dump() const override;
+  [[nodiscard]] const std::string& get_name() const override { return svgpage::name; }
 
   static const std::string name;
 
-  shape *clone() const override { return new svgpage(*this); }
+  [[nodiscard]] shape *clone() const override { return new svgpage(*this); }
 };
 
 }

@@ -38,6 +38,27 @@ import difflib
 #_debug_tcct = True
 _debug_tcct = False
 
+# Path from the build/tests to the tests source dir
+build_to_test_sources = "../../tests"
+
+def get_runtime_to_test_sources():
+    """Path from the tests install/working dir to the tests source dir.
+       Tests are usually run from the build dir so no issue, however with mingw cross builds,
+       the tests are installed to openscad/tests-build which is only one directory deeper than the top level.
+       Expected outputs that reference use/include files will need their relative paths adjusted."""
+    cwd = os.getcwd()
+    up_one = os.path.normpath(os.path.join(cwd, ".."))
+    parent_dir = os.path.basename(up_one)
+    if (parent_dir != "build"):
+        # only check binary path if NOT within a build tree.
+        OPENSCAD_BINARY = os.getenv('OPENSCAD_BINARY')
+        if (OPENSCAD_BINARY is not None):
+            project_dir = os.path.dirname(OPENSCAD_BINARY)
+            test_cmake_dir = os.path.join(project_dir, "CMakeFiles")
+            if (not os.path.exists(test_cmake_dir)):
+                return os.path.relpath(project_dir, cwd) + "/tests"
+    return build_to_test_sources
+
 def debug(*args):
     global _debug_tcct
     if _debug_tcct:
@@ -123,31 +144,35 @@ def normalize_string(s):
 
     return s
 
-def get_normalized_text(filename):
-    try: 
+def get_normalized_text(filename, replace_paths=False):
+    try:
         f = open(filename)
         text = f.read()
-    except: 
+    except:
       try:
         # 'ord-tests.scad' contains some invalid UTF-8 chars.
         # latin-1 is for "files in an ASCII compatible encoding,
         # best effort is acceptable".
         f = open(filename, encoding="latin-1")
         text = f.read()
-      except: 
-        # do not fail silenty
-        text = "could not read " + "\n" + filename + "\n" + repr(err) 
-    text = normalize_string(text)
-    return text.strip("\r\n").replace("\r\n", "\n") + "\n"
-
-def compare_text(expected, actual):
-    return get_normalized_text(expected) == get_normalized_text(actual)
+      except:
+        # do not fail silently
+        text = "could not read " + "\n" + filename + "\n" + repr(err)
+    text = normalize_string(text).strip("\r\n").replace("\r\n", "\n") + "\n"
+    if replace_paths:
+        runtime_to_test_sources = get_runtime_to_test_sources()
+        if runtime_to_test_sources != build_to_test_sources:
+            return text.replace(build_to_test_sources, runtime_to_test_sources)
+        else:
+            return text
+    else:
+        return text
 
 def compare_default(resultfilename):
     print('text comparison: ', file=sys.stderr)
     print(' expected textfile: ', expectedfilename, file=sys.stderr)
     print(' actual textfile: ', resultfilename, file=sys.stderr)
-    expected_text = get_normalized_text(expectedfilename)
+    expected_text = get_normalized_text(expectedfilename, True)
     actual_text = get_normalized_text(resultfilename)
     if not expected_text == actual_text:
         if resultfilename:
@@ -161,22 +186,23 @@ def compare_default(resultfilename):
     return True
 
 def compare_png(resultfilename):
-    compare_method = 'pixel'
-    #args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-blur", "2", "-threshold", "30%", "-format", "%[fx:w*h*mean]", "info:"]
-    args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "10%", "-morphology", "Erode", options.kernel, "-format", "%[fx:w*h*mean]", "info:"]
+    if options.comparator == 'image_compare':
+      compare_method = 'image_compare'
+      args = [os.path.join(get_runtime_to_test_sources(), 'image_compare.py'),
+              expectedfilename, resultfilename]
 
     # for systems with older imagemagick that doesn't support '-morphology'
     # http://www.imagemagick.org/Usage/morphology/#alturnative
-    if options.comparator == 'old':
-      args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "10%", "-gaussian-blur","3x65535", "-threshold", "99.99%", "-format", "%[fx:w*h*mean]", "info:"]
+    elif options.comparator == 'old':
+      args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-composite", "-threshold", "8%", "-gaussian-blur","3x65535", "-threshold", "99.99%", "-format", "%[fx:w*h*mean]", "info:"]
 
-    if options.comparator == 'ncc':
+    elif options.comparator == 'ncc':
       # for systems where imagemagick crashes when using the above comparators
       args = [expectedfilename, resultfilename, "-alpha", "Off", "-compose", "difference", "-metric", "NCC", "tmp.png"]
       options.comparison_exec = 'compare'
       compare_method = 'NCC'
 
-    if options.comparator == 'diffpng':
+    elif options.comparator == 'diffpng':
       # alternative to imagemagick based on Yee's algorithm
 
       # Writing the 'difference image' with --output is very useful for debugging but takes a long time
@@ -184,6 +210,10 @@ def compare_png(resultfilename):
 
       args = [expectedfilename, resultfilename]
       compare_method = 'diffpng'
+
+    else:
+      compare_method = 'pixel'
+      args = [expectedfilename, resultfilename, "-alpha", "On", "-compose", "difference", "-composite", "-threshold", "8%", "-morphology", "Erode", options.kernel, "-format", "%[fx:w*h*mean]", "info:"]
 
     print('Image comparison cmdline: ' + options.comparison_exec + ' ' + ' '.join(args), file=sys.stderr)
 
@@ -210,6 +240,8 @@ def compare_png(resultfilename):
         elif compare_method=='diffpng':
             if 'MATCHES:' in output: return True
             if 'DIFFERS:' in output: return False
+        elif compare_method=='image_compare':
+            return True
     return False
 
 def compare_with_expected(resultfilename):
@@ -228,6 +260,9 @@ def post_process_3mf(filename):
     from zipfile import ZipFile
     xml_content = ZipFile(filename).read("3D/3dmodel.model")
     xml_content = re.sub('UUID="[^"]*"', 'UUID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX"', xml_content.decode('utf-8'))
+    # lib3mf v2 has an additional <model> attribute compared to v1
+    sc = ' xmlns:sc="http://schemas.microsoft.com/3dmanufacturing/securecontent/2019/04"'
+    xml_content = xml_content.replace(sc, '')
     # add tag end whitespace for lib3mf 2.0 output files
     xml_content = re.sub('\"/>', '\" />', xml_content)
     with open(filename, 'wb') as xml_file:

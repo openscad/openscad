@@ -24,11 +24,9 @@
  *
  */
 #include <cmath>
-#include <stdio.h>
+#include <cstdio>
 
 #include <iostream>
-
-#include <glib.h>
 
 #include <fontconfig/fontconfig.h>
 
@@ -40,11 +38,11 @@
 #include "calc.h"
 
 #include FT_OUTLINE_H
-
+// NOLINTNEXTLINE(bugprone-macro-parentheses)
 #define SCRIPT_UNTAG(tag)   ((uint8_t)((tag) >> 24)) % ((uint8_t)((tag) >> 16)) % ((uint8_t)((tag) >> 8)) % ((uint8_t)(tag))
 
 static inline Vector2d get_scaled_vector(const FT_Vector *ft_vector, double scale) {
-  return Vector2d(ft_vector->x / scale, ft_vector->y / scale);
+  return {ft_vector->x / scale, ft_vector->y / scale};
 }
 
 const double FreetypeRenderer::scale = 1e5;
@@ -59,13 +57,9 @@ FreetypeRenderer::FreetypeRenderer()
   funcs.shift = 0;
 }
 
-FreetypeRenderer::~FreetypeRenderer()
-{
-}
-
 int FreetypeRenderer::outline_move_to_func(const FT_Vector *to, void *user)
 {
-  DrawingCallback *cb = reinterpret_cast<DrawingCallback *>(user);
+  auto *cb = reinterpret_cast<DrawingCallback *>(user);
 
   cb->move_to(get_scaled_vector(to, scale));
   return 0;
@@ -73,7 +67,7 @@ int FreetypeRenderer::outline_move_to_func(const FT_Vector *to, void *user)
 
 int FreetypeRenderer::outline_line_to_func(const FT_Vector *to, void *user)
 {
-  DrawingCallback *cb = reinterpret_cast<DrawingCallback *>(user);
+  auto *cb = reinterpret_cast<DrawingCallback *>(user);
 
   cb->line_to(get_scaled_vector(to, scale));
   return 0;
@@ -81,7 +75,7 @@ int FreetypeRenderer::outline_line_to_func(const FT_Vector *to, void *user)
 
 int FreetypeRenderer::outline_conic_to_func(const FT_Vector *c1, const FT_Vector *to, void *user)
 {
-  DrawingCallback *cb = reinterpret_cast<DrawingCallback *>(user);
+  auto *cb = reinterpret_cast<DrawingCallback *>(user);
 
   cb->curve_to(get_scaled_vector(c1, scale), get_scaled_vector(to, scale));
   return 0;
@@ -89,7 +83,7 @@ int FreetypeRenderer::outline_conic_to_func(const FT_Vector *c1, const FT_Vector
 
 int FreetypeRenderer::outline_cubic_to_func(const FT_Vector *c1, const FT_Vector *c2, const FT_Vector *to, void *user)
 {
-  DrawingCallback *cb = reinterpret_cast<DrawingCallback *>(user);
+  auto *cb = reinterpret_cast<DrawingCallback *>(user);
 
   cb->curve_to(get_scaled_vector(c1, scale), get_scaled_vector(c2, scale), get_scaled_vector(to, scale));
   return 0;
@@ -256,7 +250,7 @@ void FreetypeRenderer::Params::detect_properties()
   // by using a fraction of the number of full circle segments
   // the resolution will be better matching the detail level of
   // other objects.
-  auto text_segments = std::max(floor(segments / 8) + 1, 2.0);
+  auto text_segments = std::max(segments / 8 + 1, 2);
   set_segments(text_segments);
 }
 
@@ -321,7 +315,6 @@ void FreetypeRenderer::Params::set(Parameters& parameters)
 
 FreetypeRenderer::ShapeResults::ShapeResults(
   const FreetypeRenderer::Params& params)
-  : ok(false), hb_ft_font(nullptr), hb_buf(nullptr)
 {
   FT_Face face = params.get_font_face();
   if (face == nullptr) {
@@ -343,16 +336,13 @@ FreetypeRenderer::ShapeResults::ShapeResults(
     // to the 0xf000 page (Private Use Area of Unicode). All other
     // values are untouched, so using the correct codepoint directly
     // (e.g. \uf021 for the spider in Webdings) still works.
+    str_utf8_wrapper utf8_str{params.text};
     const char *p = params.text.c_str();
-    if (g_utf8_validate(p, -1, nullptr)) {
-      char buf[8];
-      while (*p != 0) {
-        memset(buf, 0, 8);
-        gunichar c = g_utf8_get_char(p);
+    if (utf8_str.utf8_validate()) {
+      for (auto ch : utf8_str) {
+        gunichar c = ch.get_utf8_char();
         c = (c < 0x0100) ? 0xf000 + c : c;
-        g_unichar_to_utf8(c, buf);
-        hb_buffer_add_utf8(hb_buf, buf, strlen(buf), 0, strlen(buf));
-        p = g_utf8_next_char(p);
+        hb_buffer_add_utf32(hb_buf, &c, 1, 0, 1);
       }
     } else {
       LOG(message_group::Warning, params.loc, params.documentPath,
@@ -368,6 +358,7 @@ FreetypeRenderer::ShapeResults::ShapeResults(
   hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(hb_buf, &glyph_count);
   hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(hb_buf, &glyph_count);
 
+  glyph_array.reserve(glyph_count);
   for (unsigned int idx = 0; idx < glyph_count; ++idx) {
     FT_Error error;
     FT_UInt glyph_index = glyph_info[idx].codepoint;
@@ -389,8 +380,8 @@ FreetypeRenderer::ShapeResults::ShapeResults(
           glyph_index, idx, params.text);
       continue;
     }
-    const GlyphData *glyph_data = new GlyphData(glyph, idx, &glyph_pos[idx]);
-    glyph_array.push_back(glyph_data);
+
+    glyph_array.emplace_back(glyph, idx, &glyph_pos[idx]);
   }
 
   ascent = std::numeric_limits<double>::lowest();
@@ -402,9 +393,9 @@ FreetypeRenderer::ShapeResults::ShapeResults(
   bottom = std::numeric_limits<double>::max();
   top = std::numeric_limits<double>::lowest();
 
-  for (const auto glyph : glyph_array) {
+  for (const auto& glyph : glyph_array) {
     FT_BBox bbox;
-    FT_Glyph_Get_CBox(glyph->get_glyph(), FT_GLYPH_BBOX_GRIDFIT, &bbox);
+    FT_Glyph_Get_CBox(glyph.get_glyph(), FT_GLYPH_BBOX_GRIDFIT, &bbox);
 
     // Note that glyphs can extend left of their origin
     // and right of their advance-width, into the next
@@ -419,8 +410,8 @@ FreetypeRenderer::ShapeResults::ShapeResults(
       ascent = std::max(ascent, bbox.yMax / scale);
       descent = std::min(descent, bbox.yMin / scale);
 
-      double gxoff = glyph->get_x_offset();
-      double gyoff = glyph->get_y_offset();
+      const double gxoff = glyph.get_x_offset();
+      const double gyoff = glyph.get_y_offset();
 
       left = std::min(left,
                       advance_x + gxoff + bbox.xMin / scale);
@@ -433,8 +424,8 @@ FreetypeRenderer::ShapeResults::ShapeResults(
                         advance_y + gyoff + bbox.yMin / scale);
     }
 
-    advance_x += glyph->get_x_advance() * params.spacing;
-    advance_y += glyph->get_y_advance() * params.spacing;
+    advance_x += glyph.get_x_advance() * params.spacing;
+    advance_y += glyph.get_y_advance() * params.spacing;
   }
 
   // Right and left start out reversed.  If any ink is ever
@@ -556,20 +547,20 @@ std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::P
   ShapeResults sr(params);
 
   if (!sr.ok) {
-    return std::vector<const Geometry *>();
+    return {};
   }
 
   DrawingCallback callback(params.segments, params.size);
-  for (const auto glyph : sr.glyph_array) {
+  for (const auto& glyph : sr.glyph_array) {
     callback.start_glyph();
     callback.set_glyph_offset(
-      sr.x_offset + glyph->get_x_offset(),
-      sr.y_offset + glyph->get_y_offset());
-    FT_Outline outline = reinterpret_cast<FT_OutlineGlyph>(glyph->get_glyph())->outline;
+      sr.x_offset + glyph.get_x_offset(),
+      sr.y_offset + glyph.get_y_offset());
+    FT_Outline outline = reinterpret_cast<FT_OutlineGlyph>(glyph.get_glyph())->outline;
     FT_Outline_Decompose(&outline, &funcs, &callback);
 
-    double adv_x = glyph->get_x_advance() * params.spacing;
-    double adv_y = glyph->get_y_advance() * params.spacing;
+    double adv_x = glyph.get_x_advance() * params.spacing;
+    double adv_y = glyph.get_y_advance() * params.spacing;
     callback.add_glyph_advance(adv_x, adv_y);
     callback.finish_glyph();
   }

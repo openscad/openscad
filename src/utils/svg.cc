@@ -29,7 +29,7 @@ std::string svg_label(const std::string& s)
   return out.str();
 }
 
-std::string svg_styleblock(std::string strokewidth)
+std::string svg_styleblock(const std::string& strokewidth)
 {
   std::ostringstream out;
   // halfedge: f1/f0 = face mark, b1/b0 = body or hole, m1/m0 = halfedge mark
@@ -72,7 +72,7 @@ std::string svg_axes()
   return out.str();
 }
 
-CGAL_Nef_polyhedron2::Explorer::Point project_svg_3to2(CGAL_Point_3 p, CGAL_Iso_cuboid_3 bbox)
+CGAL_Nef_polyhedron2::Explorer::Point project_svg_3to2(const CGAL_Point_3& p, const CGAL_Iso_cuboid_3& bbox)
 {
   CGAL_Kernel3::FT screenw(svg_px_width);
   CGAL_Kernel3::FT screenh(svg_px_height);
@@ -114,7 +114,7 @@ CGAL_Point_2e project_svg_2to2(const CGAL_Point_2e& p, const CGAL_Iso_rectangle_
 std::string dump_cgal_nef_polyhedron2_face_svg(
   CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c1,
   CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator c2,
-  CGAL_Nef_polyhedron2::Explorer explorer,
+  const CGAL_Nef_polyhedron2::Explorer& explorer,
   bool facemark, bool body)
 {
   std::ostringstream style;
@@ -186,7 +186,7 @@ std::string dump_svg(const CGAL_Nef_polyhedron2& N)
   return tmp;
 }
 
-std::string point_dump(CGAL_Point_3 p)
+std::string point_dump(const CGAL_Point_3& p)
 {
   std::ostringstream out;
   out << CGAL::to_double(p.x()) << ","
@@ -195,7 +195,7 @@ std::string point_dump(CGAL_Point_3 p)
   return out.str();
 }
 
-std::string point_dump(CGAL::Sphere_point<CGAL_Kernel3> p)
+std::string point_dump(const CGAL::Sphere_point<CGAL_Kernel3>& p)
 {
   std::ostringstream out;
   out << CGAL::to_double(p.x()) << ","
@@ -221,13 +221,13 @@ std::string vert_dump(CGAL_Nef_polyhedron3::Nef_polyhedron_S2::SVertex_const_han
 std::string sphere_map_dump(const CGAL_Nef_polyhedron3& N)
 {
   std::ostringstream out;
-  typedef CGAL_Nef_polyhedron3::Vertex_const_iterator Vertex_const_iterator;
-  typedef CGAL_Nef_polyhedron3::Nef_polyhedron_S2 Nef_polyhedron_S2;
-  typedef Nef_polyhedron_S2::SVertex_const_handle SVertex_const_handle;
-  typedef Nef_polyhedron_S2::SHalfedge_const_handle SHalfedge_const_handle;
-  typedef Nef_polyhedron_S2::SHalfloop_const_handle SHalfloop_const_handle;
-  typedef Nef_polyhedron_S2::SFace_const_iterator SFace_const_iterator;
-  typedef Nef_polyhedron_S2::SFace_cycle_const_iterator SFace_cycle_const_iterator;
+  using Vertex_const_iterator = CGAL_Nef_polyhedron3::Vertex_const_iterator;
+  using Nef_polyhedron_S2 = CGAL_Nef_polyhedron3::Nef_polyhedron_S2;
+  using SVertex_const_handle = Nef_polyhedron_S2::SVertex_const_handle;
+  using SHalfedge_const_handle = Nef_polyhedron_S2::SHalfedge_const_handle;
+  using SHalfloop_const_handle = Nef_polyhedron_S2::SHalfloop_const_handle;
+  using SFace_const_iterator = Nef_polyhedron_S2::SFace_const_iterator;
+  using SFace_cycle_const_iterator = Nef_polyhedron_S2::SFace_cycle_const_iterator;
   Vertex_const_iterator v;
   out << "<!-- sphere map begin -->\n";
   int counter = 0;

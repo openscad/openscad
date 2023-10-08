@@ -13,7 +13,7 @@ shared_ptr<const Geometry> CGALCache::get(const std::string& id) const
 {
   const auto& N = this->cache[id]->N;
 #ifdef DEBUG
-  LOG(message_group::None, Location::NONE, "", "CGAL Cache hit: %1$s (%2$d bytes)", id.substr(0, 40), N ? N->memsize() : 0);
+  LOG("CGAL Cache hit: %1$s (%2$d bytes)", id.substr(0, 40), N ? N->memsize() : 0);
 #endif
   return N;
 }
@@ -29,8 +29,8 @@ bool CGALCache::insert(const std::string& id, const shared_ptr<const Geometry>& 
   assert(acceptsGeometry(N));
   auto inserted = this->cache.insert(id, new cache_entry(N), N ? N->memsize() : 0);
 #ifdef DEBUG
-  if (inserted) LOG(message_group::None, Location::NONE, "", "CGAL Cache insert: %1$s (%2$d bytes)", id.substr(0, 40), (N ? N->memsize() : 0));
-  else LOG(message_group::None, Location::NONE, "", "CGAL Cache insert failed: %1$s (%2$d bytes)", id.substr(0, 40), (N ? N->memsize() : 0));
+  if (inserted) LOG("CGAL Cache insert: %1$s (%2$d bytes)", id.substr(0, 40), (N ? N->memsize() : 0));
+  else LOG("CGAL Cache insert failed: %1$s (%2$d bytes)", id.substr(0, 40), (N ? N->memsize() : 0));
 #endif
   return inserted;
 }
@@ -47,12 +47,12 @@ size_t CGALCache::totalCost() const
 
 size_t CGALCache::maxSizeMB() const
 {
-  return this->cache.maxCost() / (1024 * 1024);
+  return this->cache.maxCost() / (1024ul * 1024ul);
 }
 
 void CGALCache::setMaxSizeMB(size_t limit)
 {
-  this->cache.setMaxCost(limit * 1024 * 1024);
+  this->cache.setMaxCost(limit * 1024ul * 1024ul);
 }
 
 void CGALCache::clear()
@@ -62,8 +62,8 @@ void CGALCache::clear()
 
 void CGALCache::print()
 {
-  LOG(message_group::None, Location::NONE, "", "CGAL Polyhedrons in cache: %1$d", this->cache.size());
-  LOG(message_group::None, Location::NONE, "", "CGAL cache size in bytes: %1$d", this->cache.totalCost());
+  LOG("CGAL Polyhedrons in cache: %1$d", this->cache.size());
+  LOG("CGAL cache size in bytes: %1$d", this->cache.totalCost());
 }
 
 CGALCache::cache_entry::cache_entry(const shared_ptr<const Geometry>& N)

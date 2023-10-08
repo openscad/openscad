@@ -27,7 +27,6 @@
 #include "CSGNode.h"
 #include "Geometry.h"
 #include "linalg.h"
-#include "printutils.h"
 
 #include <numeric>
 #include <sstream>
@@ -35,6 +34,7 @@
 #include <tuple>
 
 #include <boost/range/iterator_range.hpp>
+#include <utility>
 
 /*!
    \class CSGNode
@@ -111,22 +111,22 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
     }
   }
 
-  return shared_ptr<CSGNode>(new CSGOperation(type, left, right), CSGOperationDeleter());
+  return {new CSGOperation(type, left, right), CSGOperationDeleter()};
 }
 
-CSGLeaf::CSGLeaf(const shared_ptr<const Geometry>& geom, const Transform3d& matrix, const Color4f& color, const std::string& label, const int index)
-  : label(label), matrix(matrix), color(color), index(index)
+CSGLeaf::CSGLeaf(const shared_ptr<const Geometry>& geom, Transform3d matrix, Color4f color, std::string label, const int index)
+  : label(std::move(label)), matrix(std::move(matrix)), color(std::move(color)), index(index)
 {
   if (geom && !geom->isEmpty()) this->geom = geom;
-  initBoundingBox();
+  CSGLeaf::initBoundingBox();
 }
 
-CSGOperation::CSGOperation(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
+CSGOperation::CSGOperation(OpenSCADOperator type, const shared_ptr<CSGNode>& left, const shared_ptr<CSGNode>& right)
   : type(type)
 {
   this->children.push_back(left);
   this->children.push_back(right);
-  initBoundingBox();
+  CSGOperation::initBoundingBox();
 }
 
 void CSGLeaf::initBoundingBox()
@@ -153,6 +153,11 @@ void CSGOperation::initBoundingBox()
   default:
     assert(false);
   }
+}
+
+bool CSGLeaf::isEmptySet() const
+{
+  return geom == nullptr || geom->isEmpty();
 }
 
 std::string CSGLeaf::dump() const
@@ -214,7 +219,7 @@ std::string CSGOperation::dump() const
       out << postfixstr;
     }
 
-  } while(!callstack.empty());
+  } while (!callstack.empty());
   return out.str();
 }
 
@@ -246,7 +251,7 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
       callstack.emplace(op->right(), op->getType(), newflags);
       callstack.emplace(op->left(), type, newflags);
     }
-  } while(!callstack.empty());
+  } while (!callstack.empty());
 }
 
 std::string CSGProduct::dump() const

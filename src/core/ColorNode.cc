@@ -42,7 +42,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 
 // Colors extracted from https://drafts.csswg.org/css-color/ on 2015-08-02
 // CSS Color Module Level 4 - Editor’s Draft, 29 May 2015
-static std::unordered_map<std::string, Color4f> webcolors{
+std::unordered_map<std::string, Color4f> webcolors{
   {"aliceblue", {240, 248, 255}},
   {"antiquewhite", {250, 235, 215}},
   {"aqua", {0, 255, 255}},
@@ -203,7 +203,7 @@ static std::unordered_map<std::string, Color4f> webcolors{
 // * "#rrggbbaa"
 // * "#rgb"
 // * "#rgba"
-static boost::optional<Color4f> parse_hex_color(const std::string& hex) {
+boost::optional<Color4f> parse_hex_color(const std::string& hex) {
   // validate size. short syntax uses one hex digit per color channel instead of 2.
   const bool short_syntax = hex.size() == 4 || hex.size() == 5;
   const bool long_syntax = hex.size() == 7 || hex.size() == 9;
@@ -235,7 +235,7 @@ static boost::optional<Color4f> parse_hex_color(const std::string& hex) {
   return rgba;
 }
 
-static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<ColorNode>(inst);
 
@@ -260,7 +260,7 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
         node->color = *hexColor;
       } else {
         LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to parse color \"%1$s\"", colorname);
-        LOG(message_group::None, Location::NONE, "", "Please see https://en.wikipedia.org/wiki/Web_colors");
+        LOG("Please see https://en.wikipedia.org/wiki/Web_colors");
       }
     }
   }
@@ -273,7 +273,7 @@ static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *in
 
 std::string ColorNode::toString() const
 {
-  return STR("color([" << this->color[0] << ", " << this->color[1] << ", " << this->color[2] << ", " << this->color[3] << "])");
+  return STR("color([", this->color[0], ", ", this->color[1], ", ", this->color[2], ", ", this->color[3], "])");
 }
 
 std::string ColorNode::name() const

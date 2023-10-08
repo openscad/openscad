@@ -23,18 +23,11 @@
  * THE SOFTWARE.
  */
 #include "tspan.h"
+#include "util.h"
 
 namespace libsvg {
 
 const std::string tspan::name("tspan");
-
-tspan::tspan() : dx(0), dy(0), rotate(0), text_length(0), font_size(0)
-{
-}
-
-tspan::~tspan()
-{
-}
 
 void
 tspan::set_attrs(attr_map_t& attrs, void *context)

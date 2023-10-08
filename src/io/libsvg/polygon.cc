@@ -25,18 +25,11 @@
 #include <boost/tokenizer.hpp>
 
 #include "polygon.h"
+#include "util.h"
 
 namespace libsvg {
 
 const std::string polygon::name("polygon");
-
-polygon::polygon()
-{
-}
-
-polygon::~polygon()
-{
-}
 
 void
 polygon::set_attrs(attr_map_t& attrs, void *context)

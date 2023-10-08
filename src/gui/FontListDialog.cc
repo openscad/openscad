@@ -27,7 +27,6 @@
 #include <QClipboard>
 #include <QSortFilterProxyModel>
 
-#include "qtgettext.h"
 #include "FontListDialog.h"
 #include "FontCache.h"
 
@@ -37,10 +36,6 @@ FontListDialog::FontListDialog()
   proxy = nullptr;
   setupUi(this);
   connect(this->okButton, SIGNAL(clicked()), this, SLOT(accept()));
-}
-
-FontListDialog::~FontListDialog()
-{
 }
 
 void FontListDialog::on_copyButton_clicked()
@@ -87,20 +82,20 @@ void FontListDialog::update_font_list()
 
   FontInfoList *list = FontCache::instance()->list_fonts();
   model = new QStandardItemModel(list->size(), 3, this);
-  model->setHorizontalHeaderItem(0, new QStandardItem(QString("Font name")));
-  model->setHorizontalHeaderItem(1, new QStandardItem(QString("Font style")));
-  model->setHorizontalHeaderItem(2, new QStandardItem(QString("Filename")));
+  model->setHorizontalHeaderItem(0, new QStandardItem(_("Font name")));
+  model->setHorizontalHeaderItem(1, new QStandardItem(_("Font style")));
+  model->setHorizontalHeaderItem(2, new QStandardItem(_("Filename")));
 
   int idx = 0;
-  for (FontInfoList::iterator it = list->begin(); it != list->end(); it++, idx++) {
+  for (auto it = list->begin(); it != list->end(); it++, idx++) {
     FontInfo font_info = (*it);
-    QStandardItem *family = new QStandardItem(QString(font_info.get_family().c_str()));
+    auto *family = new QStandardItem(QString(font_info.get_family().c_str()));
     family->setEditable(false);
     model->setItem(idx, 0, family);
-    QStandardItem *style = new QStandardItem(QString(font_info.get_style().c_str()));
+    auto *style = new QStandardItem(QString(font_info.get_style().c_str()));
     style->setEditable(false);
     model->setItem(idx, 1, style);
-    QStandardItem *file = new QStandardItem(QString(font_info.get_file().c_str()));
+    auto *file = new QStandardItem(QString(font_info.get_file().c_str()));
     file->setEditable(false);
     model->setItem(idx, 2, file);
   }
@@ -136,7 +131,7 @@ void FontListDialog::update_font_list()
 QString FontListDialog::quote(const QString& text)
 {
   QString result = text;
-  result.replace('\\', "\\\\\\\\")
+  result.replace('\\', R"(\\\\)")
   .replace('-', "\\\\-")
   .replace(':', "\\\\:")
   .replace(',', "\\\\,")

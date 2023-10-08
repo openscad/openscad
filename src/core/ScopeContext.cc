@@ -1,15 +1,10 @@
 #include "ScopeContext.h"
-#include "ModuleInstantiation.h"
 #include "Expression.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include "Builtins.h"
 #include "SourceFileCache.h"
+#include "UserModule.h"
 #include <cmath>
-#include "boost-utils.h"
-#ifdef DEBUG
-#include <boost/format.hpp>
-#endif
 
 // Experimental code. See issue #399
 #if 0
@@ -100,7 +95,7 @@ boost::optional<InstantiableModule> ScopeContext::lookup_local_module(const std:
   return Context::lookup_local_module(name, loc);
 }
 
-UserModuleContext::UserModuleContext(const std::shared_ptr<const Context> parent, const UserModule *module, const Location& loc, Arguments arguments, Children children) :
+UserModuleContext::UserModuleContext(const std::shared_ptr<const Context>& parent, const UserModule *module, const Location& loc, Arguments arguments, Children children) :
   ScopeContext(parent, &module->body),
   children(std::move(children))
 {

@@ -1,0 +1,1 @@
+import("../../obj/dodecahedron.obj");

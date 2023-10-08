@@ -5,7 +5,7 @@
 namespace fs = boost::filesystem;
 
 fs::path boostfs_normalize(const fs::path& path);
-fs::path boostfs_uncomplete(fs::path const p, fs::path const base);
+fs::path boostfs_uncomplete(fs::path const& p, fs::path const& base);
 
 #include <boost/cast.hpp>
 #include <sstream>
@@ -38,9 +38,9 @@ template <class Tout, class Tin> Tout boost_numeric_cast(Tin input)
     result = 0;
   }
   if (status.str() != "ok") {
-    LOG(message_group::Warning, Location::NONE, "", "Problem converting this number: %1$s", std::to_string(input));
-    LOG(message_group::Warning, Location::NONE, "", "%1$s", status.str());
-    LOG(message_group::Warning, Location::NONE, "", "setting result to %1$u", result);
+    LOG(message_group::Warning, "Problem converting this number: %1$s", std::to_string(input));
+    LOG(message_group::Warning, "%1$s", status.str());
+    LOG(message_group::Warning, "setting result to %1$u", result);
   }
   return result;
 }

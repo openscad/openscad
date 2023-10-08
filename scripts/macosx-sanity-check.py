@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #
 # This is used to verify that all the dependent libraries of a Mac OS X executable
-# are present and that they are backwards compatible with at least 10.13.
+# are present and that they are backwards compatible with at least 10.14.
 # Run with an executable as parameter
 # Will return 0 if the executable an all libraries are OK
 # Returns != 0 and prints some textural description on error
@@ -24,13 +24,12 @@ import sys
 import os
 import subprocess
 import re
-from distutils.version import StrictVersion
 
 DEBUG = False
 
 cxxlib = None
 
-macos_version_min = '10.13'
+macos_version_min = '10.14'
 
 def usage():
     print("Usage: " + sys.argv[0] + " <executable>", sys.stderr)
@@ -94,6 +93,9 @@ def find_dependencies(file):
             libs.append(dep)
     return libs
 
+def version_larger_than(a,b):
+    return list(map(int, a.split('.'))) > list(map(int, b.split('.')))
+
 def validate_lib(lib):
     p  = subprocess.Popen(["otool", "-l", lib], stdout=subprocess.PIPE, universal_newlines=True)
     output = p.communicate()[0]
@@ -110,7 +112,7 @@ def validate_lib(lib):
     if deploymenttarget is None:
         print("Error: Neither LC_VERSION_MIN_MACOSX nor LC_BUILD_VERSION found in " + lib)
         return False
-    if StrictVersion(deploymenttarget) > StrictVersion(macos_version_min):
+    if version_larger_than(deploymenttarget, macos_version_min):
         print("Error: Unsupported deployment target " + m.group(2) + " found: " + lib)
         return False
 

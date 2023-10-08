@@ -28,7 +28,7 @@
 #include <QTimer>
 #include <map>
 
-#include "qtgettext.h"
+#include "qtgettext.h" // IWYU pragma: keep
 #include "ui_ParameterWidget.h"
 #include "ParameterObject.h"
 #include "ParameterSet.h"
@@ -49,9 +49,9 @@ private:
 
 public:
   ParameterWidget(QWidget *parent = nullptr);
-  void readFile(QString scadFile);
-  void saveFile(QString scadFile);
-  void saveBackupFile(QString scadFile);
+  void readFile(const QString& scadFile);
+  void saveFile(const QString& scadFile);
+  void saveBackupFile(const QString& scadFile);
   void setParameters(const SourceFile *sourceFile, const std::string& source);
   void applyParameters(SourceFile *sourceFile);
   bool childHasFocus();
@@ -68,8 +68,8 @@ protected slots:
   void onSetAdd();
   void onSetDelete();
   void parameterModified(bool immediate);
-  void loadSet(int index);
-  void createSet(QString name);
+  void loadSet(size_t index);
+  void createSet(const QString& name);
   void updateSetEditability();
   void rebuildWidgets();
 
@@ -89,6 +89,6 @@ protected:
   };
   std::vector<ParameterGroup> getParameterGroups();
   ParameterVirtualWidget *createParameterWidget(ParameterObject *parameter, DescriptionStyle descriptionStyle);
-  QString getJsonFile(QString scadFile);
+  QString getJsonFile(const QString& scadFile);
   void cleanSets();
 };

@@ -29,6 +29,9 @@
 #include "PolySetUtils.h"
 #include "printutils.h"
 #include "CGALHybridPolyhedron.h"
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#endif
 
 #ifdef ENABLE_LIB3MF
 
@@ -57,9 +60,9 @@ using namespace NMR;
 #include "cgalutils.h"
 #include "CGAL_Nef_polyhedron.h"
 
-static void export_3mf_error(const std::string& msg, PLib3MFModel *& model)
+static void export_3mf_error(std::string msg, PLib3MFModel *& model)
 {
-  LOG(message_group::Export_Error, Location::NONE, "", msg);
+  LOG(message_group::Export_Error, std::move(msg));
   if (model) {
     lib3mf_release(model);
     model = nullptr;
@@ -115,12 +118,12 @@ static bool append_polyset(const PolySet& ps, PLib3MFModelMeshObject *& model)
 static bool append_nef(const CGAL_Nef_polyhedron& root_N, PLib3MFModelMeshObject *& model)
 {
   if (!root_N.p3) {
-    LOG(message_group::Export_Error, Location::NONE, "", "Export failed, empty geometry.");
+    LOG(message_group::Export_Error, "Export failed, empty geometry.");
     return false;
   }
 
   if (!root_N.p3->is_simple()) {
-    LOG(message_group::Export_Warning, Location::NONE, "", "Exported object may not be a valid 2-manifold and may need repair");
+    LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
   }
 
   PolySet ps{3};
@@ -143,13 +146,17 @@ static bool append_3mf(const shared_ptr<const Geometry>& geom, PLib3MFModelMeshO
     return append_nef(*N, model);
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return append_polyset(*hybrid->toPolySet(), model);
+#ifdef ENABLE_MANIFOLD
+  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    return append_polyset(*mani->toPolySet(), model);
+#endif
   } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
     PolySet triangulated(3);
     PolySetUtils::tessellate_faces(*ps, triangulated);
     return append_polyset(triangulated, model);
-  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
+  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
-  } else {
+  } else { // NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
   }
 
@@ -165,19 +172,19 @@ void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output)
   DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
   HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
   if (result != LIB3MF_OK) {
-    LOG(message_group::Export_Error, Location::NONE, "", "Error reading 3MF library version");
+    LOG(message_group::Export_Error, "Error reading 3MF library version");
     return;
   }
 
   if ((interfaceVersionMajor != NMR_APIVERSION_INTERFACE_MAJOR)) {
-    LOG(message_group::Export_Error, Location::NONE, "", "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d", interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro, NMR_APIVERSION_INTERFACE_MAJOR, NMR_APIVERSION_INTERFACE_MINOR, NMR_APIVERSION_INTERFACE_MICRO);
+    LOG(message_group::Export_Error, "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d", interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro, NMR_APIVERSION_INTERFACE_MAJOR, NMR_APIVERSION_INTERFACE_MINOR, NMR_APIVERSION_INTERFACE_MICRO);
     return;
   }
 
   PLib3MFModel *model;
   result = lib3mf_createmodel(&model);
   if (result != LIB3MF_OK) {
-    LOG(message_group::Export_Error, Location::NONE, "", "Can't create 3MF model.");
+    LOG(message_group::Export_Error, "Can't create 3MF model.");
     return;
   }
 
@@ -197,7 +204,7 @@ void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output)
   lib3mf_release(writer);
   lib3mf_release(model);
   if (result != LIB3MF_OK) {
-    LOG(message_group::Export_Error, Location::NONE, "", "Error writing 3MF model.");
+    LOG(message_group::Export_Error, "Error writing 3MF model.");
   }
 
 
@@ -217,9 +224,9 @@ void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output)
 #include "cgalutils.h"
 #include "CGAL_Nef_polyhedron.h"
 
-static void export_3mf_error(const std::string& msg)
+static void export_3mf_error(std::string msg)
 {
-  LOG(message_group::Export_Error, Location::NONE, "", msg);
+  LOG(message_group::Export_Error, std::move(msg));
 }
 
 /*
@@ -282,12 +289,12 @@ static bool append_polyset(const PolySet& ps, Lib3MF::PWrapper& wrapper, Lib3MF:
 static bool append_nef(const CGAL_Nef_polyhedron& root_N, Lib3MF::PWrapper& wrapper, Lib3MF::PModel& model)
 {
   if (!root_N.p3) {
-    LOG(message_group::Export_Error, Location::NONE, "", "Export failed, empty geometry.");
+    LOG(message_group::Export_Error, "Export failed, empty geometry.");
     return false;
   }
 
   if (!root_N.p3->is_simple()) {
-    LOG(message_group::Export_Warning, Location::NONE, "", "Exported object may not be a valid 2-manifold and may need repair");
+    LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
   }
 
   PolySet ps{3};
@@ -310,6 +317,10 @@ static bool append_3mf(const shared_ptr<const Geometry>& geom, Lib3MF::PWrapper&
     return append_nef(*N, wrapper, model);
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return append_polyset(*hybrid->toPolySet(), wrapper, model);
+#ifdef ENABLE_MANIFOLD
+  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    return append_polyset(*mani->toPolySet(), wrapper, model);
+#endif
   } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
     PolySet triangulated(3);
     PolySetUtils::tessellate_faces(*ps, triangulated);
@@ -337,18 +348,18 @@ void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output)
     wrapper = Lib3MF::CWrapper::loadLibrary();
     wrapper->GetLibraryVersion(interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro);
     if (interfaceVersionMajor != LIB3MF_VERSION_MAJOR) {
-      LOG(message_group::Error, Location::NONE, "", "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
+      LOG(message_group::Error, "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
           interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro,
           LIB3MF_VERSION_MAJOR, LIB3MF_VERSION_MINOR, LIB3MF_VERSION_MICRO);
       return;
     }
   } catch (Lib3MF::ELib3MFException& e) {
-    LOG(message_group::Export_Error, Location::NONE, "", e.what());
+    LOG(message_group::Export_Error, e.what());
     return;
   }
 
   if ((interfaceVersionMajor != LIB3MF_VERSION_MAJOR)) {
-    LOG(message_group::Export_Error, Location::NONE, "", "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d", interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro, LIB3MF_VERSION_MAJOR, LIB3MF_VERSION_MINOR, LIB3MF_VERSION_MICRO);
+    LOG(message_group::Export_Error, "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d", interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro, LIB3MF_VERSION_MAJOR, LIB3MF_VERSION_MINOR, LIB3MF_VERSION_MICRO);
     return;
   }
 
@@ -356,11 +367,11 @@ void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output)
   try {
     model = wrapper->CreateModel();
     if (!model) {
-      LOG(message_group::Export_Error, Location::NONE, "", "Can't create 3MF model.");
+      LOG(message_group::Export_Error, "Can't create 3MF model.");
       return;
     }
   } catch (Lib3MF::ELib3MFException& e) {
-    LOG(message_group::Export_Error, Location::NONE, "", e.what());
+    LOG(message_group::Export_Error, e.what());
     return;
   }
 
@@ -383,7 +394,7 @@ void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output)
   try {
     writer->WriteToCallback((Lib3MF::WriteCallback)lib3mf_write_callback, (Lib3MF::SeekCallback)lib3mf_seek_callback, &output);
   } catch (Lib3MF::ELib3MFException& e) {
-    LOG(message_group::Export_Error, Location::NONE, "", e.what());
+    LOG(message_group::Export_Error, e.what());
   }
   output.flush();
 }
@@ -396,7 +407,7 @@ void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output)
 
 void export_3mf(const shared_ptr<const Geometry>&, std::ostream&)
 {
-  LOG(message_group::None, Location::NONE, "", "Export to 3MF format was not enabled when building the application.");
+  LOG("Export to 3MF format was not enabled when building the application.");
 }
 
 #endif // ENABLE_LIB3MF

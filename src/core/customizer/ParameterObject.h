@@ -1,36 +1,37 @@
 #pragma once
 
 #include <json.hpp>
+#include <utility>
+#include <variant>
 
-#include "Assignment.h"
-#include "Expression.h"
-#include "SourceFile.h"
 #include "ParameterSet.h"
-
 using json = nlohmann::json;
+
+class SourceFile;
+class Assignment;
 
 class ParameterObject
 {
 public:
   enum class ParameterType { Bool, String, Number, Vector, Enum };
 
-  virtual ~ParameterObject() {}
+  virtual ~ParameterObject() = default;
   static std::unique_ptr<ParameterObject> fromAssignment(const Assignment *assignment);
 
-  ParameterType type() const { return type_; }
-  const std::string& name() const { return name_; }
-  const std::string& description() const { return description_; }
-  const std::string& group() const { return group_; }
+  [[nodiscard]] ParameterType type() const { return type_; }
+  [[nodiscard]] const std::string& name() const { return name_; }
+  [[nodiscard]] const std::string& description() const { return description_; }
+  [[nodiscard]] const std::string& group() const { return group_; }
 
   virtual void reset() = 0;
   virtual bool importValue(boost::property_tree::ptree encodedValue, bool store) = 0;
-  virtual boost::property_tree::ptree exportValue() const = 0;
-  virtual json jsonValue() const = 0;
+  [[nodiscard]] virtual boost::property_tree::ptree exportValue() const = 0;
+  [[nodiscard]] virtual json jsonValue() const = 0;
   virtual void apply(Assignment *assignment) const = 0;
 
 protected:
-  ParameterObject(const std::string& name, const std::string& description, const std::string& group, ParameterType type) :
-    type_(type), name_(name), description_(description), group_(group) {}
+  ParameterObject(std::string name, std::string description, std::string group, ParameterType type) :
+    type_(type), name_(std::move(name)), description_(std::move(description)), group_(std::move(group)) {}
 
   ParameterType type_;
   std::string name_;
@@ -51,8 +52,8 @@ public:
 
   void reset() override { value = defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
-  boost::property_tree::ptree exportValue() const override;
-  json jsonValue() const override;
+  [[nodiscard]] boost::property_tree::ptree exportValue() const override;
+  [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
 
   bool value;
@@ -70,8 +71,8 @@ public:
 
   void reset() override { value = defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
-  boost::property_tree::ptree exportValue() const override;
-  json jsonValue() const override;
+  [[nodiscard]] boost::property_tree::ptree exportValue() const override;
+  [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
 
   std::string value;
@@ -94,8 +95,8 @@ public:
 
   void reset() override { value = defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
-  boost::property_tree::ptree exportValue() const override;
-  json jsonValue() const override;
+  [[nodiscard]] boost::property_tree::ptree exportValue() const override;
+  [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
 
   double value;
@@ -120,8 +121,8 @@ public:
 
   void reset() override { value = defaultValue; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
-  boost::property_tree::ptree exportValue() const override;
-  json jsonValue() const override;
+  [[nodiscard]] boost::property_tree::ptree exportValue() const override;
+  [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
 
   std::vector<double> value;
@@ -134,7 +135,7 @@ public:
 class EnumParameter : public ParameterObject
 {
 public:
-  typedef boost::variant<double, std::string> EnumValue;
+  using EnumValue = std::variant<double, std::string>;
   struct EnumItem {
     std::string key;
     EnumValue value;
@@ -143,17 +144,17 @@ public:
   EnumParameter(
     const std::string& name, const std::string& description, const std::string& group,
     int defaultValueIndex,
-    const std::vector<EnumItem>& items
+    std::vector<EnumItem> items
     ) :
     ParameterObject(name, description, group, ParameterObject::ParameterType::Enum),
     valueIndex(defaultValueIndex), defaultValueIndex(defaultValueIndex),
-    items(items)
+    items(std::move(items))
   {}
 
   void reset() override { valueIndex = defaultValueIndex; }
   bool importValue(boost::property_tree::ptree encodedValue, bool store) override;
-  boost::property_tree::ptree exportValue() const override;
-  json jsonValue() const override;
+  [[nodiscard]] boost::property_tree::ptree exportValue() const override;
+  [[nodiscard]] json jsonValue() const override;
   void apply(Assignment *assignment) const override;
 
   int valueIndex;

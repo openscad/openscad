@@ -1,9 +1,9 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #pragma once
 
-#include "cgal.h"
+#include <variant>
 
-#include <boost/variant.hpp>
+#include "cgal.h"
 #include "Geometry.h"
 
 class CGAL_Nef_polyhedron;
@@ -35,34 +35,34 @@ class CGALHybridPolyhedron : public Geometry
 public:
   VISITABLE_GEOMETRY();
 
-  typedef CGAL::Point_3<CGAL_HybridKernel3> point_t;
-  typedef CGAL::Iso_cuboid_3<CGAL_HybridKernel3> bbox_t;
+  using point_t = CGAL::Point_3<CGAL_HybridKernel3>;
+  using bbox_t = CGAL::Iso_cuboid_3<CGAL_HybridKernel3>;
 
+  CGALHybridPolyhedron();
   CGALHybridPolyhedron(const shared_ptr<CGAL_HybridNef>& nef);
   CGALHybridPolyhedron(const shared_ptr<CGAL_HybridMesh>& mesh);
   CGALHybridPolyhedron(const CGALHybridPolyhedron& other);
-  CGALHybridPolyhedron();
   CGALHybridPolyhedron& operator=(const CGALHybridPolyhedron& other);
 
-  bool isEmpty() const override;
-  size_t numFacets() const override;
-  size_t numVertices() const;
-  bool isManifold() const;
-  bool isValid() const;
+  [[nodiscard]] bool isEmpty() const override;
+  [[nodiscard]] size_t numFacets() const override;
+  [[nodiscard]] size_t numVertices() const;
+  [[nodiscard]] bool isManifold() const;
+  [[nodiscard]] bool isValid() const;
   void clear();
 
-  size_t memsize() const override;
-  BoundingBox getBoundingBox() const override
+  [[nodiscard]] size_t memsize() const override;
+  [[nodiscard]] BoundingBox getBoundingBox() const override
   {
     assert(false && "not implemented");
-    return BoundingBox();
+    return {};
   }
 
-  std::string dump() const override;
-  unsigned int getDimension() const override { return 3; }
-  Geometry *copy() const override { return new CGALHybridPolyhedron(*this); }
+  [[nodiscard]] std::string dump() const override;
+  [[nodiscard]] unsigned int getDimension() const override { return 3; }
+  [[nodiscard]] Geometry *copy() const override { return new CGALHybridPolyhedron(*this); }
 
-  std::shared_ptr<const PolySet> toPolySet() const;
+  [[nodiscard]] std::shared_ptr<const PolySet> toPolySet() const;
 
   /*! In-place union (this may also mutate/corefine the other polyhedron). */
   void operator+=(CGALHybridPolyhedron& other);
@@ -74,8 +74,8 @@ public:
    * it is also modified during the computation, i.e., it is decomposed into convex pieces.
    */
   void minkowski(CGALHybridPolyhedron& other);
-  virtual void transform(const Transform3d& mat) override;
-  virtual void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
+  void transform(const Transform3d& mat) override;
+  void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
   /*! Iterate over all vertices' points until the function returns true (for done). */
   void foreachVertexUntilTrue(const std::function<bool(const point_t& pt)>& f) const;
@@ -108,23 +108,23 @@ private:
     const std::string& opName, CGALHybridPolyhedron& other,
     const std::function<bool(CGAL_HybridMesh& lhs, CGAL_HybridMesh& rhs, CGAL_HybridMesh& out)>& operation);
 
-  bool sharesAnyVertexWith(const CGALHybridPolyhedron& other) const;
+  [[nodiscard]] bool sharesAnyVertexWith(const CGALHybridPolyhedron& other) const;
 
-  bool canCorefineWith(const CGALHybridPolyhedron& other) const;
+  [[nodiscard]] bool canCorefineWith(const CGALHybridPolyhedron& other) const;
 
   /*! Returns the mesh if that's what's in the current data, or else nullptr.
    * Do NOT make this public. */
-  std::shared_ptr<CGAL_HybridMesh> getMesh() const;
+  [[nodiscard]] std::shared_ptr<CGAL_HybridMesh> getMesh() const;
   /*! Returns the nef polyhedron if that's what's in the current data, or else nullptr.
    * Do NOT make this public. */
-  std::shared_ptr<CGAL_HybridNef> getNefPolyhedron() const;
+  [[nodiscard]] std::shared_ptr<CGAL_HybridNef> getNefPolyhedron() const;
 
-  bbox_t getExactBoundingBox() const;
+  [[nodiscard]] bbox_t getExactBoundingBox() const;
 
   // This contains data either as a polyhedron, or as a nef polyhedron.
   //
   // We stick to nef polyhedra in presence of non-manifold geometry or literal
   // edge-cases of the Polygon Mesh Processing corefinement functions (e.g. it
   // does not like shared edges, but tells us so politely).
-  boost::variant<std::shared_ptr<CGAL_HybridMesh>, std::shared_ptr<CGAL_HybridNef>> data;
+  std::variant<std::shared_ptr<CGAL_HybridMesh>, std::shared_ptr<CGAL_HybridNef>> data;
 };

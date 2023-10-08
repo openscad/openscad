@@ -4,7 +4,6 @@
 
 #include "version_check.h"
 #include "PlatformUtils.h"
-#include "openscad.h"
 #include "version.h"
 #include "Feature.h"
 
@@ -23,7 +22,7 @@
 #define GCC_INT_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100)
 #if GCC_INT_VERSION > 40600 || defined(__clang__)
 #include <cxxabi.h>
-#define __openscad_info_demangle__ 1
+#define openscad_info_demangle_ 1
 #endif // GCC_INT_VERSION
 #endif // GNUG
 #endif // ENABLE_CGAL
@@ -98,7 +97,7 @@ std::string LibraryInfo::info()
   std::string cgal_3d_kernel = typeid(CGAL_Kernel3).name();
   std::string cgal_2d_kernel = typeid(CGAL_Kernel2).name();
   std::string cgal_2d_kernelEx = typeid(CGAL_ExactKernel2).name();
-#if defined(__openscad_info_demangle__)
+#if defined(openscad_info_demangle_)
   int status;
   cgal_3d_kernel = std::string(abi::__cxa_demangle(cgal_3d_kernel.c_str(), nullptr, nullptr, &status) );
   cgal_2d_kernel = std::string(abi::__cxa_demangle(cgal_2d_kernel.c_str(), nullptr, nullptr, &status) );

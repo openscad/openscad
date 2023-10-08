@@ -1,6 +1,5 @@
 #include "ErrorLog.h"
 #include "printutils.h"
-#include "MainWindow.h"
 #include <boost/filesystem.hpp>
 
 ErrorLog::ErrorLog(QWidget *parent) : QWidget(parent)
@@ -44,7 +43,7 @@ void ErrorLog::toErrorLog(const Message& log_msg)
 
 void ErrorLog::showtheErrorInGUI(const Message& log_msg)
 {
-  QStandardItem *groupName = new QStandardItem(QString::fromStdString(getGroupName(log_msg.group)));
+  auto *groupName = new QStandardItem(QString::fromStdString(getGroupName(log_msg.group)));
   groupName->setEditable(false);
 
   if (log_msg.group == message_group::Error) groupName->setForeground(QColor::fromRgb(255, 0, 0)); //make this item red.
@@ -75,7 +74,7 @@ void ErrorLog::showtheErrorInGUI(const Message& log_msg)
   errorLogModel->setItem(row, errorLog_column::file, fileName);
   errorLogModel->setItem(row, errorLog_column::lineNo, lineNo);
 
-  QStandardItem *msg = new QStandardItem(QString::fromStdString(log_msg.msg));
+  auto *msg = new QStandardItem(QString::fromStdString(log_msg.msg));
   msg->setEditable(false);
   errorLogModel->setItem(row, errorLog_column::message, msg);
   errorLogModel->setRowCount(++row);
@@ -92,7 +91,7 @@ void ErrorLog::resize()
   logTable->resizeRowsToContents();
 }
 
-void ErrorLog::onSectionResized(int logicalIndex, int oldSize, int newSize){
+void ErrorLog::onSectionResized(int /*logicalIndex*/, int /*oldSize*/, int /*newSize*/){
   this->resize();
 }
 
@@ -118,10 +117,10 @@ void ErrorLog::on_errorLogComboBox_currentIndexChanged(const QString& group)
 {
   errorLogModel->clear();
   initGUI();
-  for (auto itr = lastMessages.begin(); itr != lastMessages.end(); itr++) {
-    if (group == QString::fromStdString("All")) showtheErrorInGUI(*itr);
-    else if (group == QString::fromStdString(getGroupName(itr->group))) {
-      showtheErrorInGUI(*itr);
+  for (auto& lastMessage : lastMessages) {
+    if (group == QString::fromStdString("All") ||
+        group == QString::fromStdString(getGroupName(lastMessage.group))) {
+      showtheErrorInGUI(lastMessage);
     }
   }
 }

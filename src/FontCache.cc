@@ -28,11 +28,12 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
+#include <utility>
 
 #include "FontCache.h"
 #include "PlatformUtils.h"
-#include "parsersettings.h"
 #include "printutils.h"
+#include "version_helper.h"
 
 extern std::vector<std::string> librarypath;
 
@@ -64,11 +65,7 @@ const std::string get_freetype_version()
   return FontCache::instance()->get_freetype_version();
 }
 
-FontInfo::FontInfo(const std::string& family, const std::string& style, const std::string& file) : family(family), style(style), file(file)
-{
-}
-
-FontInfo::~FontInfo()
+FontInfo::FontInfo(std::string family, std::string style, std::string file) : family(std::move(family)), style(std::move(style)), file(std::move(file))
 {
 }
 
@@ -129,7 +126,7 @@ FontCache::FontCache()
   // Just load the configs. We'll build the fonts once all configs are loaded
   this->config = FcInitLoadConfig();
   if (!this->config) {
-    LOG(message_group::Font_Warning, Location::NONE, "", "Can't initialize fontconfig library, text() objects will not be rendered");
+    LOG(message_group::Font_Warning, "Can't initialize fontconfig library, text() objects will not be rendered");
     return;
   }
 
@@ -152,7 +149,7 @@ FontCache::FontCache()
   if (env_font_path != nullptr) {
     std::string paths(env_font_path);
     const std::string sep = PlatformUtils::pathSeparatorChar();
-    typedef boost::split_iterator<std::string::iterator> string_split_iterator;
+    using string_split_iterator = boost::split_iterator<std::string::iterator>;
     for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal())); it != string_split_iterator(); ++it) {
       const fs::path p(boost::copy_range<std::string>(*it));
       if (fs::exists(p) && fs::is_directory(p)) {
@@ -168,21 +165,17 @@ FontCache::FontCache()
   // For use by LibraryInfo
   FcStrList *dirs = FcConfigGetFontDirs(this->config);
   while (FcChar8 *dir = FcStrListNext(dirs)) {
-    fontpath.push_back(std::string((const char *)dir));
+    fontpath.emplace_back((const char *)dir);
   }
   FcStrListDone(dirs);
 
   const FT_Error error = FT_Init_FreeType(&this->library);
   if (error) {
-    LOG(message_group::Font_Warning, Location::NONE, "", "Can't initialize freetype library, text() objects will not be rendered");
+    LOG(message_group::Font_Warning, "Can't initialize freetype library, text() objects will not be rendered");
     return;
   }
 
   this->init_ok = true;
-}
-
-FontCache::~FontCache()
-{
 }
 
 FontCache *FontCache::instance()
@@ -216,7 +209,7 @@ void FontCache::registerProgressHandler(InitHandlerFunc *handler, void *userdata
 void FontCache::register_font_file(const std::string& path)
 {
   if (!FcConfigAppFontAddFile(this->config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
-    LOG(message_group::None, Location::NONE, "", "Can't register font '%1$s'", path);
+    LOG("Can't register font '%1$s'", path);
   }
 }
 
@@ -226,7 +219,7 @@ void FontCache::add_font_dir(const std::string& path)
     return;
   }
   if (!FcConfigAppFontAddDir(this->config, reinterpret_cast<const FcChar8 *>(path.c_str()))) {
-    LOG(message_group::None, Location::NONE, "", "Can't register font directory '%1$s'", path);
+    LOG("Can't register font directory '%1$s'", path);
   }
 }
 
@@ -239,7 +232,7 @@ FontInfoList *FontCache::list_fonts() const
   FcObjectSetDestroy(object_set);
   FcPatternDestroy(pattern);
 
-  FontInfoList *list = new FontInfoList();
+  auto *list = new FontInfoList();
   for (int a = 0; a < font_set->nfont; ++a) {
     FcValue file_value;
     FcPatternGet(font_set->fonts[a], FC_FILE, 0, &file_value);
@@ -286,8 +279,8 @@ void FontCache::check_cleanup()
     return;
   }
 
-  cache_t::iterator pos = this->cache.begin()++;
-  for (cache_t::iterator it = this->cache.begin(); it != this->cache.end(); ++it) {
+  auto pos = this->cache.begin()++;
+  for (auto it = this->cache.begin(); it != this->cache.end(); ++it) {
     if ((*pos).second.second > (*it).second.second) {
       pos = it;
     }
@@ -299,7 +292,7 @@ void FontCache::check_cleanup()
 FT_Face FontCache::get_font(const std::string& font)
 {
   FT_Face face;
-  cache_t::iterator it = this->cache.find(font);
+  auto it = this->cache.find(font);
   if (it == this->cache.end()) {
     face = find_face(font);
     if (!face) {
@@ -383,7 +376,7 @@ FT_Face FontCache::find_face_fontconfig(const std::string& font) const
     if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_MACINTOSH, TT_MAC_ID_ROMAN);
     if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_8859_1);
     if (!charmap_set) charmap_set = try_charmap(face, TT_PLATFORM_ISO, TT_ISO_ID_7BIT_ASCII);
-    if (!charmap_set) LOG(message_group::Font_Warning, Location::NONE, "", "Could not select a char map for font %1$s/%2$s'", face->family_name, face->style_name);
+    if (!charmap_set) LOG(message_group::Font_Warning, "Could not select a char map for font %1$s/%2$s'", face->family_name, face->style_name);
   }
 
   return error ? nullptr : face;

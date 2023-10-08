@@ -15,7 +15,6 @@
 #include "TabManager.h"
 #include "TabWidget.h"
 #include "ScintillaEditor.h"
-#include "QSettingsCached.h"
 #include "Preferences.h"
 #include "MainWindow.h"
 
@@ -47,7 +46,6 @@ TabManager::TabManager(MainWindow *o, const QString& filename)
   connect(par->editActionRedo, SIGNAL(triggered()), this, SLOT(redo()));
   connect(par->editActionRedo_2, SIGNAL(triggered()), this, SLOT(redo()));
   connect(par->editActionCut, SIGNAL(triggered()), this, SLOT(cut()));
-  connect(par->editActionCopy, SIGNAL(triggered()), this, SLOT(copy()));
   connect(par->editActionPaste, SIGNAL(triggered()), this, SLOT(paste()));
 
   connect(par->editActionIndent, SIGNAL(triggered()), this, SLOT(indentSelection()));
@@ -108,7 +106,7 @@ void TabManager::closeTabRequested(int x)
   assert(tabWidget != nullptr);
   if (!maybeSave(x)) return;
 
-  EditorInterface *temp = (EditorInterface *)tabWidget->widget(x);
+  auto *temp = (EditorInterface *)tabWidget->widget(x);
   editorList.remove(temp);
   tabWidget->removeTab(x);
   tabWidget->fireTabCountChanged();
@@ -184,6 +182,8 @@ void TabManager::createTab(const QString& filename)
   connect(editor, SIGNAL(uriDropped(const QUrl&)), par, SLOT(handleFileDrop(const QUrl&)));
   connect(editor, SIGNAL(previewRequest()), par, SLOT(actionRenderPreview()));
   connect(editor, SIGNAL(showContextMenuEvent(const QPoint&)), this, SLOT(showContextMenuEvent(const QPoint&)));
+  connect(editor, &EditorInterface::focusIn, this, [=]() { par->setLastFocus(editor); });
+
   connect(Preferences::inst(), SIGNAL(editorConfigChanged()), editor, SLOT(applySettings()));
   connect(Preferences::inst(), SIGNAL(autocompleteChanged(bool)), editor, SLOT(onAutocompleteChanged(bool)));
   connect(Preferences::inst(), SIGNAL(characterThresholdChanged(int)), editor, SLOT(onCharacterThresholdChanged(int)));
@@ -224,7 +224,7 @@ void TabManager::createTab(const QString& filename)
   par->updateRecentFileActions();
 }
 
-int TabManager::count()
+size_t TabManager::count()
 {
   return tabWidget->count();
 }
@@ -320,9 +320,9 @@ void TabManager::onHyperlinkIndicatorClicked(int val)
   this->open(filename);
 }
 
-void TabManager::applyAction(QObject *object, std::function<void(int, EditorInterface *)> func)
+void TabManager::applyAction(QObject *object, const std::function<void(int, EditorInterface *)>& func)
 {
-  QAction *action = dynamic_cast<QAction *>(object);
+  auto *action = dynamic_cast<QAction *>(object);
   if (action == nullptr) {
     return;
   }
@@ -332,7 +332,7 @@ void TabManager::applyAction(QObject *object, std::function<void(int, EditorInte
     return;
   }
 
-  EditorInterface *edt = (EditorInterface *)tabWidget->widget(idx);
+  auto *edt = (EditorInterface *)tabWidget->widget(idx);
   if (edt == nullptr) {
     return;
   }
@@ -396,27 +396,27 @@ void TabManager::showTabHeaderContextMenu(const QPoint& pos)
     return;
   }
 
-  EditorInterface *edt = (EditorInterface *)tabWidget->widget(idx);
+  auto *edt = (EditorInterface *)tabWidget->widget(idx);
 
-  QAction *copyFileNameAction = new QAction(tabWidget);
+  auto *copyFileNameAction = new QAction(tabWidget);
   copyFileNameAction->setData(idx);
   copyFileNameAction->setEnabled(!edt->filepath.isEmpty());
   copyFileNameAction->setText(_("Copy file name"));
   connect(copyFileNameAction, SIGNAL(triggered()), SLOT(copyFileName()));
 
-  QAction *copyFilePathAction = new QAction(tabWidget);
+  auto *copyFilePathAction = new QAction(tabWidget);
   copyFilePathAction->setData(idx);
   copyFilePathAction->setEnabled(!edt->filepath.isEmpty());
   copyFilePathAction->setText(_("Copy full path"));
   connect(copyFilePathAction, SIGNAL(triggered()), SLOT(copyFilePath()));
 
-  QAction *openFolderAction = new QAction(tabWidget);
+  auto *openFolderAction = new QAction(tabWidget);
   openFolderAction->setData(idx);
   openFolderAction->setEnabled(!edt->filepath.isEmpty());
   openFolderAction->setText(_("Open folder"));
   connect(openFolderAction, SIGNAL(triggered()), SLOT(openFolder()));
 
-  QAction *closeAction = new QAction(tabWidget);
+  auto *closeAction = new QAction(tabWidget);
   closeAction->setData(idx);
   closeAction->setText(_("Close Tab"));
   connect(closeAction, SIGNAL(triggered()), SLOT(closeTab()));
@@ -486,7 +486,7 @@ void TabManager::openTabFile(const QString& filename)
   if (knownFileType && cmd.isEmpty()) {
     setTabName(filename);
     editor->parameterWidget->readFile(fileinfo.absoluteFilePath());
-    par->updateRecentFiles(editor);
+    par->updateRecentFiles(filename);
   } else {
     setTabName(nullptr);
     editor->setPlainText(cmd.arg(filename));
@@ -500,6 +500,8 @@ void TabManager::openTabFile(const QString& filename)
       par->parseTopLevelDocument();
     } catch (const HardWarningException&) {
       par->exceptionCleanup();
+    } catch (const std::exception& ex) {
+      par->UnknownExceptionCleanup(ex.what());
     } catch (...) {
       par->UnknownExceptionCleanup();
     }
@@ -541,13 +543,13 @@ bool TabManager::refreshDocument()
   if (!editor->filepath.isEmpty()) {
     QFile file(editor->filepath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-      LOG(message_group::None, Location::NONE, "", "Failed to open file %1$s: %2$s",
+      LOG("Failed to open file %1$s: %2$s",
           editor->filepath.toLocal8Bit().constData(), file.errorString().toLocal8Bit().constData());
     } else {
       QTextStream reader(&file);
       reader.setCodec("UTF-8");
       auto text = reader.readAll();
-      LOG(message_group::None, Location::NONE, "", "Loaded design '%1$s'.", editor->filepath.toLocal8Bit().constData());
+      LOG("Loaded design '%1$s'.", editor->filepath.toLocal8Bit().constData());
       if (editor->toPlainText() != text) {
         editor->setPlainText(text);
         setContentRenderState(); // since last render
@@ -561,7 +563,7 @@ bool TabManager::refreshDocument()
 
 bool TabManager::maybeSave(int x)
 {
-  EditorInterface *edt = (EditorInterface *) tabWidget->widget(x);
+  auto *edt = (EditorInterface *) tabWidget->widget(x);
   if (edt->isContentModified() || edt->parameterWidget->isModified()) {
     QMessageBox box(par);
     box.setText(_("The document has been modified."));
@@ -620,10 +622,10 @@ bool TabManager::shouldClose()
   return true;
 }
 
-void TabManager::saveError(const QIODevice& file, const std::string& msg, const QString filepath)
+void TabManager::saveError(const QIODevice& file, const std::string& msg, const QString& filepath)
 {
   const char *fileName = filepath.toLocal8Bit().constData();
-  LOG(message_group::None, Location::NONE, "", "%1$s %2$s (%3$s)", msg.c_str(), fileName, file.errorString().toLocal8Bit().constData());
+  LOG("%1$s %2$s (%3$s)", msg.c_str(), fileName, file.errorString().toLocal8Bit().constData());
 
   const std::string dialogFormatStr = msg + "\n\"%1\"\n(%2)";
   const QString dialogFormat(dialogFormatStr.c_str());
@@ -646,7 +648,7 @@ bool TabManager::save(EditorInterface *edt)
   }
 }
 
-bool TabManager::save(EditorInterface *edt, const QString path)
+bool TabManager::save(EditorInterface *edt, const QString& path)
 {
   par->setCurrentOutput();
 
@@ -673,11 +675,11 @@ bool TabManager::save(EditorInterface *edt, const QString path)
     file.cancelWriting();
   }
   if (saveOk) {
-    LOG(message_group::None, Location::NONE, "", "Saved design '%1$s'.", path.toLocal8Bit().constData());
+    LOG("Saved design '%1$s'.", path.toLocal8Bit().constData());
     edt->parameterWidget->saveFile(path);
     edt->setContentModified(false);
     edt->parameterWidget->setModified(false);
-    par->updateRecentFiles(edt);
+    par->updateRecentFiles(path);
   } else {
     saveError(file, _("Error saving design"), path);
   }
@@ -701,10 +703,10 @@ bool TabManager::saveAs(EditorInterface *edt)
     // defaultSuffix property
     const QFileInfo info(filename);
     if (info.exists()) {
-        const auto text = QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
-        if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
+      const auto text = QString(_("%1 already exists.\nDo you want to replace it?")).arg(info.fileName());
+      if (QMessageBox::warning(par, par->windowTitle(), text, QMessageBox::Yes | QMessageBox::No, QMessageBox::No) != QMessageBox::Yes) {
         return false;
-        }
+      }
     }
   }
 
@@ -713,6 +715,23 @@ bool TabManager::saveAs(EditorInterface *edt)
     setTabName(filename, edt);
   }
   return saveOk;
+}
+
+bool TabManager::saveACopy(EditorInterface *edt)
+{
+  assert(edt != nullptr);
+
+  const auto dir = edt->filepath.isEmpty() ? _("Untitled.scad") : edt->filepath;
+  auto filename = QFileDialog::getSaveFileName(par, _("Save a Copy"), dir, _("OpenSCAD Designs (*.scad)"));
+  if (filename.isEmpty()) {
+    return false;
+  }
+
+  if (QFileInfo(filename).suffix().isEmpty()) {
+    filename.append(".scad");
+  }
+
+  return save(edt, filename);
 }
 
 bool TabManager::saveAll()

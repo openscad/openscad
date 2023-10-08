@@ -9,8 +9,6 @@
 #include "printutils.h"
 #include "Polygon2d.h"
 #include "PolySetUtils.h"
-#include "Grid.h"
-#include "node.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
@@ -22,7 +20,6 @@
 #include <CGAL/convex_hull_3.h>
 
 #include "svg.h"
-#include "GeometryUtils.h"
 
 #include <map>
 #include <queue>
@@ -50,11 +47,11 @@ static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer& explorer,
 
 static Polygon2d *convertToPolygon2d(const CGAL_Nef_polyhedron2& p2)
 {
-  Polygon2d *poly = new Polygon2d;
+  auto *poly = new Polygon2d;
 
-  typedef CGAL_Nef_polyhedron2::Explorer Explorer;
-  typedef Explorer::Face_const_iterator fci_t;
-  typedef Explorer::Halfedge_around_face_const_circulator heafcc_t;
+  using Explorer = CGAL_Nef_polyhedron2::Explorer;
+  using fci_t = Explorer::Face_const_iterator;
+  using heafcc_t = Explorer::Halfedge_around_face_const_circulator;
   Explorer E = p2.explorer();
   for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit) {
     if (!fit->mark()) continue;
@@ -150,10 +147,10 @@ void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
       tmpnef2d.reset(new CGAL_Nef_polyhedron2(contour.begin(), contour.end(), boundary));
 
       if (contour_counter == 0) {
-        PRINTDB(" <!-- contour is a body. make union(). %i  points -->", contour.size());
+        PRINTDB(" <!-- contour is a body. make union(). %i points -->", contour.size());
         *(output_nefpoly2d) += *(tmpnef2d);
       } else {
-        PRINTDB(" <!-- contour is a hole. make intersection(). %i  points -->", contour.size());
+        PRINTDB(" <!-- contour is a hole. make intersection(). %i points -->", contour.size());
         *(output_nefpoly2d) *= *(tmpnef2d);
       }
 
@@ -196,19 +193,20 @@ Polygon2d *project(const CGAL_Nef_polyhedron& N, bool cut)
         CGAL_Point_3 minpt(-inf, -inf, -eps);
         CGAL_Point_3 maxpt(inf,  inf,  eps);
         CGAL_Iso_cuboid_3 bigcuboid(minpt, maxpt);
-        for (int i = 0; i < 8; ++i) pts.push_back(bigcuboid.vertex(i));
+        pts.reserve(8);
+for (int i = 0; i < 8; ++i) pts.push_back(bigcuboid.vertex(i));
         CGAL_Polyhedron bigbox;
         CGAL::convex_hull_3(pts.begin(), pts.end(), bigbox);
         CGAL_Nef_polyhedron3 nef_bigbox(bigbox);
         newN.p3.reset(new CGAL_Nef_polyhedron3(nef_bigbox.intersection(*N.p3)));
       } catch (const CGAL::Failure_exception& e) {
-        LOG(message_group::Error, Location::NONE, "", " CGAL error in CGALUtils::project during bigbox intersection: %1$s", e.what());
+        LOG(message_group::Error, " CGAL error in CGALUtils::project during bigbox intersection: %1$s", e.what());
 
       }
     }
 
     if (!newN.p3 || newN.p3->is_empty()) {
-      LOG(message_group::Warning, Location::NONE, "", "Projection() failed.");
+      LOG(message_group::Warning, "Projection() failed.");
       return poly;
     }
 
@@ -230,7 +228,7 @@ Polygon2d *project(const CGAL_Nef_polyhedron& N, bool cut)
       }
       poly = convertToPolygon2d(*zremover.output_nefpoly2d);
     } catch (const CGAL::Failure_exception& e) {
-      LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::project while flattening: %1$s", e.what());
+      LOG(message_group::Error, "CGAL error in CGALUtils::project while flattening: %1$s", e.what());
     }
     PRINTD("</svg>");
 
@@ -240,7 +238,7 @@ Polygon2d *project(const CGAL_Nef_polyhedron& N, bool cut)
     PolySet ps(3);
     bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N.p3, ps);
     if (err) {
-      LOG(message_group::Error, Location::NONE, "", "Nef->PolySet failed");
+      LOG(message_group::Error, "Nef->PolySet failed");
       return poly;
     }
     poly = PolySetUtils::project(ps);

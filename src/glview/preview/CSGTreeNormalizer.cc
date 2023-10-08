@@ -45,17 +45,17 @@ shared_ptr<CSGNode> CSGTreeNormalizer::cleanup_term(shared_ptr<CSGNode>& t)
   return t;
 }
 
-static bool isUnion(shared_ptr<CSGNode> node) {
+static bool isUnion(const shared_ptr<CSGNode>& node) {
   shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
   return op && op->getType() == OpenSCADOperator::UNION;
 }
 
-static bool hasRightNonLeaf(shared_ptr<CSGNode> node) {
+static bool hasRightNonLeaf(const shared_ptr<CSGNode>& node) {
   shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
   return op->right() && (dynamic_pointer_cast<CSGLeaf>(op->right()) == nullptr);
 }
 
-static bool hasLeftUnion(shared_ptr<CSGNode> node) {
+static bool hasLeftUnion(const shared_ptr<CSGNode>& node) {
   shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
   return op && isUnion(op->left());
 }
@@ -78,7 +78,7 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
   // See Pull Request #2343 for the initial reasons for making this not recursive.
 
   // stores current node and bool indicating if it was a left or right call;
-  typedef std::pair<shared_ptr<CSGOperation>, bool> stackframe_t;
+  using stackframe_t = std::pair<shared_ptr<CSGOperation>, bool>;
   std::stack<stackframe_t> callstack;
 
 entrypoint:
@@ -88,9 +88,9 @@ entrypoint:
     }
     this->nodecount++;
     if (nodecount > this->limit) {
-      LOG(message_group::Warning, Location::NONE, "", "Normalized tree is growing past %1$d elements. Aborting normalization.\n", this->limit);
+      LOG(message_group::Warning, "Normalized tree is growing past %1$d elements. Aborting normalization.\n", this->limit);
       this->aborted = true;
-      return shared_ptr<CSGNode>();
+      return {};
     }
     if (!node || dynamic_pointer_cast<CSGLeaf>(node)) goto return_node;
     goto normalize_left_if_op;

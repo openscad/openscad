@@ -1,6 +1,10 @@
 #include "PlatformUtils.h"
+
+#include <sstream>
+
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#include <sys/utsname.h>
 #include <boost/lexical_cast.hpp>
 
 #import <Foundation/Foundation.h>
@@ -9,12 +13,12 @@
 
 std::string PlatformUtils::pathSeparatorChar()
 {
-	return ":";
+  return ":";
 }
 
 std::string PlatformUtils::userDocumentsPath()
 {
-	return documentsPath();
+  return documentsPath();
 }
 
 std::string PlatformUtils::documentsPath()
@@ -24,12 +28,12 @@ std::string PlatformUtils::documentsPath()
 
 std::string PlatformUtils::userConfigPath()
 {
-	NSError *error;
-	NSURL *appSupportDir = [[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error];
-	if (error) {
-		return "";
-	}
-	return std::string([[appSupportDir path] UTF8String]) + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
+  NSError *error;
+  NSURL *appSupportDir = [[NSFileManager defaultManager] URLForDirectory:NSApplicationSupportDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:YES error:&error];
+  if (error) {
+    return "";
+  }
+  return std::string([[appSupportDir path] UTF8String]) + std::string("/") + PlatformUtils::OPENSCAD_FOLDER_NAME;
 }
 
 unsigned long PlatformUtils::stackLimit()
@@ -51,55 +55,47 @@ unsigned long PlatformUtils::stackLimit()
 
 const std::string PlatformUtils::user_agent()
 {
-	std::string result;
+  std::ostringstream result;
 
-	result += "OpenSCAD/";
-	result += openscad_detailedversionnumber;
-	result += " (";
-	result += sysinfo(false);
-	result += ")";
+  result << "OpenSCAD/" << openscad_detailedversionnumber
+         << " (" << sysinfo(false) << ")";
 
-	return result;
+  return result.str();
 }
 
 const std::string PlatformUtils::sysinfo(bool extended)
 {
-  std::string result;
+  std::ostringstream result;
   
-  result += "Mac OS X ";
-  result += [[[NSProcessInfo processInfo] operatingSystemVersionString] UTF8String];
+  NSOperatingSystemVersion version = [[NSProcessInfo processInfo] operatingSystemVersion];
+  struct utsname name;
+  uname(&name);
+  result << "macOS " << version.majorVersion << "." << version.minorVersion << "." << version.patchVersion
+	 << " " << name.machine;
 
-  int64_t physical_memory;
-  int32_t numcpu;
-  size_t length64 = sizeof(int64_t);
-  size_t length32 = sizeof(int32_t);;
-  
-  sysctlbyname("hw.memsize", &physical_memory, &length64, nullptr, 0);
-  sysctlbyname("hw.physicalcpu", &numcpu, &length32, nullptr, 0);
-  
   size_t modellen = 0;
   sysctlbyname("hw.model", nullptr, &modellen, nullptr, 0);
-  if (modellen) {
-    char *model = (char *)malloc(modellen*sizeof(char));
-    sysctlbyname("hw.model", model, &modellen, nullptr, 0);
-    result += " ";
-    result += model;
-    free(model);
+  std::string model;
+  if (modellen > 0) {
+    model.resize(modellen - 1);
+    sysctlbyname("hw.model", model.data(), &modellen, nullptr, 0);
+    result << " " << model;
   }
 
   if (extended) {
-    result += " ";
-    result += boost::lexical_cast<std::string>(numcpu);
-    result += " CPU";
-    if (numcpu > 1) result += "s";
+    int32_t numcpu;
+    size_t length32 = sizeof(int32_t);;
+    sysctlbyname("hw.physicalcpu", &numcpu, &length32, nullptr, 0);
+    int64_t physical_memory;
+    size_t length64 = sizeof(int64_t);
+    sysctlbyname("hw.memsize", &physical_memory, &length64, nullptr, 0);
   
-    result += " ";
-    result += PlatformUtils::toMemorySizeString(physical_memory, 2);
-    result += " RAM ";
+    result << " " << numcpu << " CPU";
+    if (numcpu > 1) result << "s"; 
+    result << " " << PlatformUtils::toMemorySizeString(physical_memory, 2) << " RAM ";
   }
 
-  return result;
+  return result.str();
 }
 
 void PlatformUtils::ensureStdIO(void) {}
-

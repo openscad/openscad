@@ -46,10 +46,6 @@ PrintInitDialog::PrintInitDialog()
   }
 }
 
-PrintInitDialog::~PrintInitDialog()
-{
-}
-
 void PrintInitDialog::on_printServiceButton_clicked()
 {
   this->textBrowser->setHtml(PrintService::inst()->getInfoHtml());

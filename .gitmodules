@@ -4,3 +4,12 @@
 [submodule "mimalloc"]
 	path = submodules/mimalloc
 	url = https://github.com/microsoft/mimalloc.git
+[submodule "submodules/manifold"]
+	path = submodules/manifold
+	url = https://github.com/elalish/manifold
+[submodule "sanitizers-cmake"]
+	path = submodules/sanitizers-cmake
+	url = https://github.com/arsenm/sanitizers-cmake.git
+[submodule "OpenCSG"]
+	path = submodules/OpenCSG
+	url = https://github.com/openscad/OpenCSG.git

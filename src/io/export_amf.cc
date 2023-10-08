@@ -25,9 +25,6 @@
  */
 
 #include "export.h"
-#include "PolySet.h"
-#include "PolySetUtils.h"
-#include "DxfData.h"
 
 #ifdef ENABLE_CGAL
 #include "cgal.h"
@@ -37,13 +34,39 @@
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
+struct vertex_str {
+  std::string x, y, z;
+  bool operator==(const vertex_str& rhs) {
+    return x == rhs.x && y == rhs.y && z == rhs.z;
+  }
+};
+
+using Vertex = CGAL_Polyhedron::Vertex;
+using Point = Vertex::Point;
+using VCI = CGAL_Polyhedron::Vertex_const_iterator;
+using FCI = CGAL_Polyhedron::Facet_const_iterator;
+using HFCC = CGAL_Polyhedron::Halfedge_around_facet_const_circulator;
+using vertex_vec = std::vector<vertex_str>;
+
 struct triangle {
-  std::string vs1;
-  std::string vs2;
-  std::string vs3;
+  size_t vi1, vi2, vi3;
 };
 
 static int objectid;
+
+static size_t add_vertex(std::vector<vertex_str>& vertices, const Point& p) {
+  double x = CGAL::to_double(p.x());
+  double y = CGAL::to_double(p.y());
+  double z = CGAL::to_double(p.z());
+  vertex_str vs{STR(x), STR(y), STR(z)};
+  auto vi = std::find(vertices.begin(), vertices.end(), vs);
+  if (vi == vertices.end()) {
+    vertices.push_back(vs);
+    return vertices.size() - 1;
+  } else {
+    return std::distance(vertices.begin(), vi);
+  }
+}
 
 /*!
     Saves the current 3D CGAL Nef polyhedron as AMF to the given file.
@@ -52,19 +75,14 @@ static int objectid;
 static void append_amf(const CGAL_Nef_polyhedron& root_N, std::ostream& output)
 {
   if (!root_N.p3->is_simple()) {
-    LOG(message_group::Export_Warning, Location::NONE, "", "Export failed, the object isn't a valid 2-manifold.");
+    LOG(message_group::Export_Warning, "Export failed, the object isn't a valid 2-manifold.");
     return;
   }
   try {
     CGAL_Polyhedron P;
     CGALUtils::convertNefToPolyhedron(*root_N.p3, P);
 
-    typedef CGAL_Polyhedron::Vertex Vertex;
-    typedef CGAL_Polyhedron::Vertex_const_iterator VCI;
-    typedef CGAL_Polyhedron::Facet_const_iterator FCI;
-    typedef CGAL_Polyhedron::Halfedge_around_facet_const_circulator HFCC;
-
-    std::vector<std::string> vertices;
+    vertex_vec vertices;
     std::vector<triangle> triangles;
 
     for (FCI fi = P.facets_begin(); fi != P.facets_end(); ++fi) {
@@ -76,30 +94,16 @@ static void append_amf(const CGAL_Nef_polyhedron& root_N, std::ostream& output)
       do {
         v2 = v3;
         v3 = *VCI((hc++)->vertex());
-        double x1 = CGAL::to_double(v1.point().x());
-        double y1 = CGAL::to_double(v1.point().y());
-        double z1 = CGAL::to_double(v1.point().z());
-        double x2 = CGAL::to_double(v2.point().x());
-        double y2 = CGAL::to_double(v2.point().y());
-        double z2 = CGAL::to_double(v2.point().z());
-        double x3 = CGAL::to_double(v3.point().x());
-        double y3 = CGAL::to_double(v3.point().y());
-        double z3 = CGAL::to_double(v3.point().z());
-        std::string vs1{STR(x1 << " " << y1 << " " << z1)};
-        std::string vs2{STR(x2 << " " << y2 << " " << z2)};
-        std::string vs3{STR(x3 << " " << y3 << " " << z3)};
-        if (std::find(vertices.begin(), vertices.end(), vs1) == vertices.end()) vertices.push_back(vs1);
-        if (std::find(vertices.begin(), vertices.end(), vs2) == vertices.end()) vertices.push_back(vs2);
-        if (std::find(vertices.begin(), vertices.end(), vs3) == vertices.end()) vertices.push_back(vs3);
-
-        if (vs1 != vs2 && vs1 != vs3 && vs2 != vs3) {
+        auto vi1 = add_vertex(vertices, v1.point());
+        auto vi2 = add_vertex(vertices, v2.point());
+        auto vi3 = add_vertex(vertices, v3.point());
+        if (vi1 != vi2 && vi1 != vi3 && vi2 != vi3) {
           // The above condition ensures that there are 3 distinct vertices, but
           // they may be collinear. If they are, the unit normal is meaningless
           // so the default value of "1 0 0" can be used. If the vertices are not
           // collinear then the unit normal must be calculated from the
           // components.
-          triangle tri = {vs1, vs2, vs3};
-          triangles.push_back(tri);
+          triangles.push_back({vi1, vi2, vi3});
         }
       } while (hc != hc_end);
     }
@@ -107,39 +111,27 @@ static void append_amf(const CGAL_Nef_polyhedron& root_N, std::ostream& output)
     output << " <object id=\"" << objectid++ << "\">\r\n"
            << "  <mesh>\r\n";
     output << "   <vertices>\r\n";
-    for (size_t i = 0; i < vertices.size(); ++i) {
-      std::string s = vertices[i];
+    for (const auto& s : vertices) {
       output << "    <vertex><coordinates>\r\n";
-      char *chrs = new char[s.length() + 1];
-      strcpy(chrs, s.c_str());
-      std::string coords = strtok(chrs, " ");
-      output << "     <x>" << coords << "</x>\r\n";
-      coords = strtok(nullptr, " ");
-      output << "     <y>" << coords << "</y>\r\n";
-      coords = strtok(nullptr, " ");
-      output << "     <z>" << coords << "</z>\r\n";
+      output << "     <x>" << s.x << "</x>\r\n";
+      output << "     <y>" << s.y << "</y>\r\n";
+      output << "     <z>" << s.z << "</z>\r\n";
       output << "    </coordinates></vertex>\r\n";
-      delete[] chrs;
     }
     output << "   </vertices>\r\n";
     output << "   <volume>\r\n";
-    for (size_t i = 0; i < triangles.size(); ++i) {
-      triangle t = triangles[i];
+    for (auto t : triangles) {
       output << "    <triangle>\r\n";
-      size_t index;
-      index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs1));
-      output << "     <v1>" << index << "</v1>\r\n";
-      index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs2));
-      output << "     <v2>" << index << "</v2>\r\n";
-      index = std::distance(vertices.begin(), std::find(vertices.begin(), vertices.end(), t.vs3));
-      output << "     <v3>" << index << "</v3>\r\n";
+      output << "     <v1>" << t.vi1 << "</v1>\r\n";
+      output << "     <v2>" << t.vi2 << "</v2>\r\n";
+      output << "     <v3>" << t.vi3 << "</v3>\r\n";
       output << "    </triangle>\r\n";
     }
     output << "   </volume>\r\n";
     output << "  </mesh>\r\n"
            << " </object>\r\n";
   } catch (CGAL::Assertion_exception& e) {
-    LOG(message_group::Export_Error, Location::NONE, "", "CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %1$s", e.what());
+    LOG(message_group::Export_Error, "CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %1$s", e.what());
   }
 }
 
@@ -149,12 +141,12 @@ static void append_amf(const shared_ptr<const Geometry>& geom, std::ostream& out
     for (const auto& item : geomlist->getChildren()) {
       append_amf(item.second, output);
     }
-  } else if (geom->getDimension() != 3) {
-    assert(false && "Unsupported file format");
   } else if (auto N = CGALUtils::getNefPolyhedronFromGeometry(geom)) {
     // FIXME: Implement this without creating a Nef polyhedron
     if (!N->isEmpty()) append_amf(*N, output);
-  } else {
+  } else if (geom->getDimension() != 3) { // NOLINT(bugprone-branch-clone)
+    assert(false && "Unsupported file format");
+  } else { // NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
   }
 }

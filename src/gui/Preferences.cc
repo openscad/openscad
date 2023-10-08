@@ -31,6 +31,7 @@
 #include <QKeyEvent>
 #include <QStatusBar>
 #include <QSettings>
+#include <QTextDocument>
 #include <boost/algorithm/string.hpp>
 #include "GeometryCache.h"
 #include "AutoUpdater.h"
@@ -41,7 +42,6 @@
 #include "ColorMap.h"
 #include "RenderSettings.h"
 #include "QSettingsCached.h"
-#include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
 #include "OctoPrint.h"
 #include "IgnoreWheelWhenNotFocused.h"
@@ -115,12 +115,11 @@ void Preferences::init() {
 
   // Setup default settings
   this->defaultmap["advanced/opencsg_show_warning"] = true;
-  this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
-  this->defaultmap["advanced/polysetCacheSize"] = qulonglong(GeometryCache::instance()->maxSizeMB()) * 1024 * 1024;
-  this->defaultmap["advanced/polysetCacheSizeMB"] = getValue("advanced/polysetCacheSize").toULongLong() / (1024 * 1024); // carry over old settings if they exist
+  this->defaultmap["advanced/polysetCacheSize"] = qulonglong(GeometryCache::instance()->maxSizeMB()) * 1024ul * 1024ul;
+  this->defaultmap["advanced/polysetCacheSizeMB"] = getValue("advanced/polysetCacheSize").toULongLong() / (1024ul * 1024ul); // carry over old settings if they exist
 #ifdef ENABLE_CGAL
-  this->defaultmap["advanced/cgalCacheSize"] = qulonglong(CGALCache::instance()->maxSizeMB()) * 1024 * 1024;
-  this->defaultmap["advanced/cgalCacheSizeMB"] = getValue("advanced/cgalCacheSize").toULongLong() / (1024 * 1024); // carry over old settings if they exist
+  this->defaultmap["advanced/cgalCacheSize"] = qulonglong(CGALCache::instance()->maxSizeMB()) * 1024ul * 1024ul;
+  this->defaultmap["advanced/cgalCacheSizeMB"] = getValue("advanced/cgalCacheSize").toULongLong() / (1024ul * 1024ul); // carry over old settings if they exist
 #endif
   this->defaultmap["advanced/openCSGLimit"] = RenderSettings::inst()->openCSGTermLimit;
   this->defaultmap["advanced/forceGoldfeather"] = false;
@@ -144,7 +143,7 @@ void Preferences::init() {
   this->defaultmap["editor/stepSize"] = 1;
 
   // Toolbar
-  QActionGroup *group = new QActionGroup(this);
+  auto *group = new QActionGroup(this);
   addPrefPage(group, prefsAction3DView, page3DView);
   addPrefPage(group, prefsActionEditor, pageEditor);
 #ifdef OPENSCAD_UPDATER
@@ -294,7 +293,7 @@ void Preferences::featuresCheckBoxToggled(bool state)
   if (!v.isValid()) {
     return;
   }
-  Feature *feature = v.value<Feature *>();
+  auto *feature = v.value<Feature *>();
   feature->enable(state);
   QSettingsCached settings;
   settings.setValue(QString("feature/%1").arg(QString::fromStdString(feature->get_name())), state);
@@ -311,7 +310,7 @@ void Preferences::featuresCheckBoxToggled(bool state)
 void Preferences::setupFeaturesPage()
 {
   int row = 0;
-  for (Feature::iterator it = Feature::begin(); it != Feature::end(); ++it) {
+  for (auto it = Feature::begin(); it != Feature::end(); ++it) {
     Feature *feature = *it;
 
     QString featurekey = QString("feature/%1").arg(QString::fromStdString(feature->get_name()));
@@ -321,7 +320,7 @@ void Preferences::setupFeaturesPage()
     gridLayoutExperimentalFeatures->addItem(new QSpacerItem(1, 8, QSizePolicy::Expanding, QSizePolicy::Fixed), row, 1, 1, 1, Qt::AlignCenter);
     row++;
 
-    QCheckBox *cb = new QCheckBox(QString::fromStdString(feature->get_name()), pageFeatures);
+    auto *cb = new QCheckBox(QString::fromStdString(feature->get_name()), pageFeatures);
     QFont bold_font(cb->font());
     bold_font.setBold(true);
     cb->setFont(bold_font);
@@ -334,7 +333,7 @@ void Preferences::setupFeaturesPage()
     gridLayoutExperimentalFeatures->addWidget(cb, row, 0, 1, 2, Qt::AlignLeading);
     row++;
 
-    QLabel *l = new QLabel(QString::fromStdString(feature->get_description()), pageFeatures);
+    auto *l = new QLabel(QString::fromStdString(feature->get_description()), pageFeatures);
     l->setTextFormat(Qt::RichText);
     gridLayoutExperimentalFeatures->addWidget(l, row, 1, 1, 1, Qt::AlignLeading);
     row++;
@@ -435,13 +434,6 @@ Preferences::on_openCSGWarningBox_toggled(bool state)
 {
   QSettingsCached settings;
   settings.setValue("advanced/opencsg_show_warning", state);
-}
-
-void
-Preferences::on_enableOpenCSGBox_toggled(bool state)
-{
-  QSettingsCached settings;
-  settings.setValue("advanced/enable_opencsg_opengl1x", state);
 }
 
 void Preferences::on_cgalCacheSizeMBEdit_textChanged(const QString& text)
@@ -963,7 +955,6 @@ void Preferences::updateGUI()
   }
 
   BlockSignals<QCheckBox *>(this->openCSGWarningBox)->setChecked(getValue("advanced/opencsg_show_warning").toBool());
-  BlockSignals<QCheckBox *>(this->enableOpenCSGBox)->setChecked(getValue("advanced/enable_opencsg_opengl1x").toBool());
   BlockSignals<QLineEdit *>(this->cgalCacheSizeMBEdit)->setText(getValue("advanced/cgalCacheSizeMB").toString());
   BlockSignals<QLineEdit *>(this->polysetCacheSizeMBEdit)->setText(getValue("advanced/polysetCacheSizeMB").toString());
   BlockSignals<QLineEdit *>(this->opencsgLimitEdit)->setText(getValue("advanced/openCSGLimit").toString());
@@ -1054,7 +1045,7 @@ void Preferences::updateGUI()
   updateComboBox(this->comboBoxOctoPrintSlicingProfile, Settings::Settings::octoPrintSlicerProfile.value());
 }
 
-void Preferences::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum& entry)
+void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val, Settings::SettingsEntryEnum& entry)
 {
   entry.setIndex(val);
   writeSettings();
@@ -1066,7 +1057,7 @@ void Preferences::apply_win() const
   emit openCSGSettingsChanged();
 }
 
-void Preferences::create(QStringList colorSchemes)
+void Preferences::create(const QStringList& colorSchemes)
 {
   if (instance != nullptr) {
     return;

@@ -2,7 +2,6 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
 #include "printutils.h"
-#include "PolySet.h"
 #include "svg.h"
 
 CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron3 *p)
@@ -13,14 +12,14 @@ CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron3 *p)
 // Copy constructor only performs shallow copies, so all modifying functions
 // must reset p3 with a new CGAL_Nef_polyhedron3 object, to prevent cache corruption.
 // This is also partly enforced by p3 pointing to a const object.
-CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron& src)
+CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron& src) : Geometry(src)
 {
   if (src.p3) this->p3 = src.p3;
 }
 
 CGAL_Nef_polyhedron CGAL_Nef_polyhedron::operator+(const CGAL_Nef_polyhedron& other) const
 {
-  return CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3((*this->p3) + (*other.p3)));
+  return {new CGAL_Nef_polyhedron3((*this->p3) + (*other.p3))};
 }
 
 CGAL_Nef_polyhedron& CGAL_Nef_polyhedron::operator+=(const CGAL_Nef_polyhedron& other)
@@ -71,7 +70,7 @@ bool CGAL_Nef_polyhedron::isEmpty() const
 BoundingBox CGAL_Nef_polyhedron::getBoundingBox() const
 {
   if (isEmpty()) {
-    return BoundingBox();
+    return {};
   }
   auto bb = CGALUtils::boundingBox(*this->p3).bbox();
 
@@ -102,7 +101,7 @@ void CGAL_Nef_polyhedron::transform(const Transform3d& matrix)
 {
   if (!this->isEmpty()) {
     if (matrix.matrix().determinant() == 0) {
-      LOG(message_group::Warning, Location::NONE, "", "Scaling a 3D object with 0 - removing object");
+      LOG(message_group::Warning, "Scaling a 3D object with 0 - removing object");
       this->reset();
     } else {
       auto N = new CGAL_Nef_polyhedron3(*this->p3);

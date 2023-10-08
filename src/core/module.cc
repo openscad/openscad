@@ -29,22 +29,21 @@
 #include "Context.h"
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "Value.h"
 
-BuiltinModule::BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const class ModuleInstantiation *, const std::shared_ptr<const Context>&), const Feature *feature) :
+BuiltinModule::BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const ModuleInstantiation *, const std::shared_ptr<const Context>&), const Feature *feature) :
   AbstractModule(feature),
   do_instantiate(instantiate)
 {}
 
-BuiltinModule::BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const class ModuleInstantiation *, Arguments, Children), const Feature *feature) :
+BuiltinModule::BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const ModuleInstantiation *, Arguments, const Children&), const Feature *feature) :
   AbstractModule(feature)
 {
-  do_instantiate = [instantiate](const class ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) {
+  do_instantiate = [instantiate](const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) {
       return instantiate(inst, Arguments(inst->arguments, context), Children(&inst->scope, context));
     };
 }
 
-std::shared_ptr<AbstractNode> BuiltinModule::instantiate(const std::shared_ptr<const Context>& defining_context, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
+std::shared_ptr<AbstractNode> BuiltinModule::instantiate(const std::shared_ptr<const Context>& /*defining_context*/, const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context) const
 {
   return do_instantiate(inst, context);
 }

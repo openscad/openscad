@@ -4,8 +4,8 @@
 #include "linalg.h"
 #include "GeometryUtils.h"
 #include "Polygon2d.h"
-#include "GLView.h"
 #include "boost-utils.h"
+
 #include <vector>
 #include <string>
 
@@ -16,8 +16,7 @@ public:
   Polygons polygons;
 
   PolySet(unsigned int dim, boost::tribool convex = unknown);
-  PolySet(const Polygon2d& origin);
-  ~PolySet();
+  PolySet(Polygon2d origin);
 
   const Polygon2d& getPolygon() const { return polygon; }
 
@@ -31,7 +30,7 @@ public:
   void quantizeVertices(std::vector<Vector3d> *pPointsOut = nullptr);
   size_t numFacets() const override { return polygons.size(); }
   void reserve(size_t numFacets) { polygons.reserve(numFacets); }
-  void append_poly();
+  void append_poly(size_t expected_vertex_count);
   void append_poly(const Polygon& poly);
   void append_vertex(double x, double y, double z = 0.0);
   void append_vertex(const Vector3d& v);
@@ -41,8 +40,8 @@ public:
   void insert_vertex(const Vector3f& v);
   void append(const PolySet& ps);
 
-  virtual void transform(const Transform3d& mat) override;
-  virtual void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
+  void transform(const Transform3d& mat) override;
+  void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
   bool is_convex() const;
   boost::tribool convexValue() const { return this->convex; }

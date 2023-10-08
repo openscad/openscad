@@ -7,7 +7,7 @@ std::unordered_map<std::string, const std::vector<std::string>> Builtins::keywor
 
 Builtins *Builtins::instance(bool erase)
 {
-  static Builtins *builtins = new Builtins;
+  static auto *builtins = new Builtins;
   if (erase) {
     delete builtins;
     builtins = nullptr;
@@ -23,7 +23,7 @@ void Builtins::init(const std::string& name, class AbstractModule *module)
   Builtins::instance()->modules.emplace(name, module);
 }
 
-void Builtins::init(const std::string& name, class AbstractModule *module, const std::vector<std::string>& calltipList)
+void Builtins::init(const std::string& name, AbstractModule *module, const std::vector<std::string>& calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL
   if (module->is_experimental()) return;
@@ -32,7 +32,7 @@ void Builtins::init(const std::string& name, class AbstractModule *module, const
   Builtins::keywordList.insert({name, calltipList});
 }
 
-void Builtins::init(const std::string& name, class BuiltinFunction *function, const std::vector<std::string>& calltipList)
+void Builtins::init(const std::string& name, BuiltinFunction *function, const std::vector<std::string>& calltipList)
 {
 #ifndef ENABLE_EXPERIMENTAL
   if (function->is_experimental()) return;
@@ -110,7 +110,7 @@ Builtins::Builtins()
   this->assignments.emplace_back(new Assignment("$fs", make_shared<Literal>(2.0)) );
   this->assignments.emplace_back(new Assignment("$fa", make_shared<Literal>(12.0)) );
   this->assignments.emplace_back(new Assignment("$t", make_shared<Literal>(0.0)) );
-  this->assignments.emplace_back(new Assignment("$preview", make_shared<Literal>(boost::none)) ); //undef as should always be overwritten.
+  this->assignments.emplace_back(new Assignment("$preview", make_shared<Literal>()) ); //undef as should always be overwritten.
   auto zeroVector = make_shared<Vector>(Location::NONE);
   zeroVector->emplace_back(new Literal(0.0));
   zeroVector->emplace_back(new Literal(0.0));

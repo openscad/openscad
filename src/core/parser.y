@@ -48,7 +48,6 @@
 #include <stack>
 #include <boost/filesystem.hpp>
 #include "boost-utils.h"
-#include "Feature.h"
 
 namespace fs = boost::filesystem;
 
@@ -128,7 +127,7 @@ bool fileEnded=false;
 %token TOK_FALSE
 %token TOK_UNDEF
 
-%token LE GE EQ NE AND OR
+%token LE GE EQ NEQ AND OR
 
 %nonassoc NO_ELSE
 %nonassoc TOK_ELSE
@@ -379,7 +378,7 @@ equality
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Equal, $3, LOCD("equal", @$));
             }
-        | equality NE comparison
+        | equality NEQ comparison
             {
               $$ = new BinaryOp($1, BinaryOp::Op::NotEqual, $3, LOCD("notequal", @$));
             }
@@ -444,7 +443,7 @@ unary
             {
               Literal* argument = dynamic_cast<Literal*>($2);
               if (argument && argument->isDouble()) {
-                double value = *argument->toDouble();
+                double value = argument->toDouble();
                 delete $2;
                 $$ = new Literal(-value, LOCD("literal", @$));
               } else {
@@ -494,7 +493,7 @@ primary
             }
         | TOK_UNDEF
             {
-              $$ = new Literal(boost::none, LOCD("literal", @$));
+              $$ = new Literal(LOCD("literal", @$));
             }
         | TOK_NUMBER
             {
@@ -765,7 +764,7 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
     mainFilePath = fs::absolute(fs::path(mainFile));
   } catch (...) {
     // yyerror tries to print the file path, which throws again, and we can't do that
-	LOG(message_group::Error, Location::NONE, "", "Parser error: file access denied");
+	LOG(message_group::Error, "Parser error: file access denied");
     return false;
   }
 

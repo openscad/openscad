@@ -24,6 +24,7 @@
  *
  */
 
+// NOLINTNEXTLINE(bugprone-reserved-identifier)
 #define _USE_MATH_DEFINES
 #include <cmath>
 #include <cassert>
@@ -125,7 +126,7 @@ int Calc::get_conical_helix_slices(double r_sqr, double height, double twist, do
    |___|_\  1x (Z=0)   |/ 0x           S is angle_start
          t
 
-     E = t*1/(1-0.66)=3t  E = t*1.5/(1.5-1)  = 3t
+     E = t*1/(1-0.66)=3t E = t*1.5/(1.5-1)  = 3t
      B = E - t            B = E - t
    */
   double rads = twist * M_DEG2RAD;

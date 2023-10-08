@@ -30,11 +30,10 @@
 #include "Children.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include "fileutils.h"
+#include "io/fileutils.h"
 #include "Builtins.h"
-#include "PolySet.h"
 #include "handle_dep.h"
-#include "boost-utils.h"
+#include <cmath>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
@@ -42,7 +41,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<RotateExtrudeNode>(inst);
 
@@ -56,7 +55,7 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
   node->fa = parameters["$fa"].toDouble();
 
   if (!parameters["file"].isUndefined()) {
-    LOG(message_group::Deprecated, Location::NONE, "", "Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
+    LOG(message_group::Deprecated, "Support for reading files in rotate_extrude will be removed in future releases. Use a child import() instead.");
     auto filename = lookup_file(parameters["file"].toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
     node->filename = filename;
     handle_dep(filename);

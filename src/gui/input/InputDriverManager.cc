@@ -23,25 +23,20 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "InputDriverEvent.h"
 #include "InputDriverManager.h"
+#include "MainWindow.h"
+#include <QAction>
+#include <QMenu>
+#include <QApplication>
+#include <QCoreApplication>
 
-#include "printutils.h"
-
-InputDriverManager *InputDriverManager::self = 0;
+InputDriverManager *InputDriverManager::self = nullptr;
 
 /**
  * This can be called from non-GUI context, so no Qt initialization is done
  * at this point.
  */
-InputDriverManager::InputDriverManager(void) : currentWindow(nullptr), timer(nullptr)
-{
-}
-
-InputDriverManager::~InputDriverManager(void)
-{
-
-}
-
 InputDriverManager *InputDriverManager::instance()
 {
   if (!self) {
@@ -60,14 +55,14 @@ void InputDriverManager::unregisterDriver(InputDriver *driver)
   this->drivers.remove(driver);
 }
 
-void InputDriverManager::registerActions(const QList<QAction *>& actions, const QString parent, const QString target)
+void InputDriverManager::registerActions(const QList<QAction *>& actions, const QString& parent, const QString& target)
 {
   const QString emptyQString("");
   for (const auto action : actions) {
     const auto description = ((parent == emptyQString) ? emptyQString : (parent + QString::fromUtf8(u8" \u2192 "))) + action->text();
     if (!action->objectName().isEmpty()) {
       QString actionName = action->objectName();
-      if("" != target){
+      if ("" != target) {
         actionName = target + "::" + actionName;
       }
       this->actions.push_back({actionName, description, action->icon()});
@@ -216,8 +211,8 @@ void InputDriverManager::onInputGainUpdated()
   mapper.onInputGainUpdated();
 }
 
-int InputDriverManager::getButtonCount(){
-  int max = 0;
+size_t InputDriverManager::getButtonCount() const {
+  size_t max = 0;
   for (auto driver : drivers) {
     if (driver->isOpen()) {
       max = std::max(max, driver->getButtonCount());
@@ -226,8 +221,8 @@ int InputDriverManager::getButtonCount(){
   return max;
 }
 
-int InputDriverManager::getAxisCount(){
-  int max = 0;
+size_t InputDriverManager::getAxisCount() const {
+  size_t max = 0;
   for (auto driver : drivers) {
     if (driver->isOpen()) {
       max = std::max(max, driver->getAxisCount());

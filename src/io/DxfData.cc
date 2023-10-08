@@ -24,6 +24,7 @@
  *
  */
 
+// NOLINTNEXTLINE(bugprone-reserved-identifier)
 #define _USE_MATH_DEFINES
 #include <cmath>
 
@@ -33,7 +34,7 @@
 #include "calc.h"
 
 #include <fstream>
-#include <assert.h>
+#include <cassert>
 #include <unordered_map>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -59,7 +60,7 @@ namespace fs = boost::filesystem;
    1) Read DXF file from disk
    2) Store contents of DXF files as points, paths and dims
    3) Store 2D polygons, both from the polygon() module and from 2D CSG operations.
-     Used for tesselation into triangles
+     Used for tessellation into triangles
    4) Store 2D polygons before exporting to DXF
 
 
@@ -67,13 +68,9 @@ namespace fs = boost::filesystem;
 
 struct Line {
   int idx[2]; // indices into DxfData::points
-  bool disabled;
-  Line(int i1 = -1, int i2 = -1) : idx{i1, i2}, disabled(false) { }
+  bool disabled{false};
+  Line(int i1 = -1, int i2 = -1) : idx{i1, i2} { }
 };
-
-DxfData::DxfData()
-{
-}
 
 /*!
    Reads a layer from the given file, or all layers if layername.empty()
@@ -84,7 +81,7 @@ DxfData::DxfData(double fn, double fs, double fa,
 {
   std::ifstream stream(filename.c_str());
   if (!stream.good()) {
-    LOG(message_group::Warning, Location::NONE, "", "Can't open DXF file '%1$s'.", filename);
+    LOG(message_group::Warning, "Can't open DXF file '%1$s'.", filename);
     return;
   }
 
@@ -97,22 +94,22 @@ DxfData::DxfData(double fn, double fs, double fa,
   std::string current_block;
 
 #define ADD_LINE(_x1, _y1, _x2, _y2) do {                   \
-    double _p1x = _x1, _p1y = _y1, _p2x = _x2, _p2y = _y2;  \
-    if (!in_entities_section && !in_blocks_section)         \
-    break;                                                \
-    if (in_entities_section &&                              \
-        !(layername.empty() || layername == layer))         \
-    break;                                                \
-    grid.align(_p1x, _p1y);                                 \
-    grid.align(_p2x, _p2y);                                 \
-    grid.data(_p1x, _p1y).push_back(lines.size());          \
-    grid.data(_p2x, _p2y).push_back(lines.size());          \
-    if (in_entities_section)                                \
-    lines.emplace_back(                                   \
-      addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));        \
-    if (in_blocks_section && !current_block.empty())        \
-    blockdata[current_block].emplace_back(                \
-      addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));        \
+          double _p1x = (_x1), _p1y = (_y1), _p2x = (_x2), _p2y = (_y2);\
+          if (!in_entities_section && !in_blocks_section)         \
+          break;                                                \
+          if (in_entities_section &&                              \
+              !(layername.empty() || layername == layer))         \
+          break;                                                \
+          grid.align(_p1x, _p1y);                                 \
+          grid.align(_p2x, _p2y);                                 \
+          grid.data(_p1x, _p1y).push_back(lines.size());          \
+          grid.data(_p2x, _p2y).push_back(lines.size());          \
+          if (in_entities_section)                                \
+          lines.emplace_back(                                   \
+            addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));        \
+          if (in_blocks_section && !current_block.empty())        \
+          blockdata[current_block].emplace_back(                \
+            addPoint(_p1x, _p1y), addPoint(_p2x, _p2y));        \
 } while (0)
 
   std::string mode, layer, name, iddata;
@@ -124,13 +121,13 @@ DxfData::DxfData(double fn, double fs, double fa,
   double arc_start_angle = 0, arc_stop_angle = 0;
   double ellipse_start_angle = 0, ellipse_stop_angle = 0;
 
-  for (int i = 0; i < 7; ++i) {
-    for (int j = 0; j < 2; ++j) {
-      coords[i][j] = 0;
+  for (auto& coord : coords) {
+    for (double& j : coord) {
+      j = 0;
     }
   }
 
-  typedef std::unordered_map<std::string, int> EntityList;
+  using EntityList = std::unordered_map<std::string, int>;
   EntityList unsupported_entities_list;
 
   //
@@ -148,7 +145,7 @@ DxfData::DxfData(double fn, double fs, double fa,
       id = boost::lexical_cast<int>(id_str);
     } catch (const boost::bad_lexical_cast& blc) {
       if (!stream.eof()) {
-        LOG(message_group::Warning, Location::NONE, "", "Illegal ID '%1$s' in `%2$s'", id_str, filename);
+        LOG(message_group::Warning, "Illegal ID '%1$s' in `%2$s'", id_str, filename);
       }
       break;
     }
@@ -278,7 +275,7 @@ DxfData::DxfData(double fn, double fs, double fa,
           }
         } else if (mode == "DIMENSION" &&
                    (layername.empty() || layername == layer)) {
-          this->dims.push_back(Dim());
+          this->dims.emplace_back();
           this->dims.back().type = dimtype;
           for (int i = 0; i < 7; ++i) {
             for (int j = 0; j < 2; ++j) {
@@ -302,9 +299,9 @@ DxfData::DxfData(double fn, double fs, double fa,
         name.erase();
         iddata.erase();
         dimtype = 0;
-        for (int i = 0; i < 7; ++i) {
-          for (int j = 0; j < 2; ++j) {
-            coords[i][j] = 0;
+        for (auto& coord : coords) {
+          for (double& j : coord) {
+            j = 0;
           }
         }
         xverts.clear();
@@ -324,13 +321,7 @@ DxfData::DxfData(double fn, double fs, double fa,
       case 8:
         layer = data;
         break;
-      case 10:
-        if (in_blocks_section) {
-          xverts.push_back((boost::lexical_cast<double>(data)));
-        } else {
-          xverts.push_back((boost::lexical_cast<double>(data) - xorigin) * scale);
-        }
-        break;
+      case 10: [[fallthrough]];
       case 11:
         if (in_blocks_section) {
           xverts.push_back((boost::lexical_cast<double>(data)));
@@ -338,13 +329,7 @@ DxfData::DxfData(double fn, double fs, double fa,
           xverts.push_back((boost::lexical_cast<double>(data) - xorigin) * scale);
         }
         break;
-      case 20:
-        if (in_blocks_section) {
-          yverts.push_back((boost::lexical_cast<double>(data)));
-        } else {
-          yverts.push_back((boost::lexical_cast<double>(data) - yorigin) * scale);
-        }
-        break;
+      case 20: [[fallthrough]];
       case 21:
         if (in_blocks_section) {
           yverts.push_back((boost::lexical_cast<double>(data)));
@@ -385,25 +370,25 @@ DxfData::DxfData(double fn, double fs, double fa,
         break;
       }
     } catch (boost::bad_lexical_cast& blc) {
-      LOG(message_group::Warning, Location::NONE, "", "Illegal value '%1$s'in `%2$s'", data, filename);
+      LOG(message_group::Warning, "Illegal value '%1$s'in `%2$s'", data, filename);
     } catch (const std::out_of_range& oor) {
-      LOG(message_group::Warning, Location::NONE, "", "Not enough input values for %1$s. in '%2$s'", data, filename);
+      LOG(message_group::Warning, "Not enough input values for %1$s. in '%2$s'", data, filename);
     }
   }
 
   for (const auto& i : unsupported_entities_list) {
     if (layername.empty()) {
-      LOG(message_group::Warning, Location::NONE, "",
+      LOG(message_group::Warning,
           "Unsupported DXF Entity '%1$s' (%2$x) in %3$s.", i.first, i.second, QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
     } else {
-      LOG(message_group::Warning, Location::NONE, "",
+      LOG(message_group::Warning,
           "Unsupported DXF Entity '%1$s' (%2$x) in layer '%3$s' of %4$s", i.first, i.second, layername, boostfs_uncomplete(filename, fs::current_path()).generic_string());
     }
   }
 
   // Extract paths from parsed data
 
-  typedef std::map<int, int> LineMap;
+  using LineMap = std::map<int, int>;
   LineMap enabled_lines;
   for (size_t i = 0; i < lines.size(); ++i) {
     enabled_lines[i] = i;
@@ -417,10 +402,9 @@ DxfData::DxfData(double fn, double fs, double fa,
       int idx = l.second;
       for (int j = 0; j < 2; ++j) {
         auto lv = grid.data(this->points[lines[idx].idx[j]][0], this->points[lines[idx].idx[j]][1]);
-        for (size_t ki = 0; ki < lv.size(); ++ki) {
-          int k = lv.at(ki);
-          if (k < 0 || k >= lines.size()) {
-            LOG(message_group::Warning, Location::NONE, "",
+        for (int k : lv) {
+          if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
+            LOG(message_group::Warning,
                 "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
             continue;
           }
@@ -437,20 +421,19 @@ next_open_path_j:;
     break;
 
 create_open_path:
-    this->paths.push_back(Path());
+    this->paths.emplace_back();
     Path *this_path = &this->paths.back();
 
     this_path->indices.push_back(lines[current_line].idx[current_point]);
-    while (1) {
+    while (true) {
       this_path->indices.push_back(lines[current_line].idx[!current_point]);
       const auto& ref_point = this->points[lines[current_line].idx[!current_point]];
       lines[current_line].disabled = true;
       enabled_lines.erase(current_line);
       auto lv = grid.data(ref_point[0], ref_point[1]);
-      for (size_t ki = 0; ki < lv.size(); ++ki) {
-        int k = lv.at(ki);
-        if (k < 0 || k >= lines.size()) {
-          LOG(message_group::Warning, Location::NONE, "",
+      for (int k : lv) {
+        if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
+          LOG(message_group::Warning,
               "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
           continue;
         }
@@ -478,21 +461,20 @@ found_next_line_in_open_path:;
     int current_line = enabled_lines.begin()->second;
     int current_point = 0;
 
-    this->paths.push_back(Path());
+    this->paths.emplace_back();
     auto& this_path = this->paths.back();
     this_path.is_closed = true;
 
     this_path.indices.push_back(lines[current_line].idx[current_point]);
-    while (1) {
+    while (true) {
       this_path.indices.push_back(lines[current_line].idx[!current_point]);
       const auto& ref_point = this->points[lines[current_line].idx[!current_point]];
       lines[current_line].disabled = true;
       enabled_lines.erase(current_line);
       auto lv = grid.data(ref_point[0], ref_point[1]);
-      for (size_t ki = 0; ki < lv.size(); ++ki) {
-        int k = lv.at(ki);
-        if (k < 0 || k >= lines.size()) {
-          LOG(message_group::Warning, Location::NONE, "",
+      for (int k : lv) {
+        if (k < 0 || static_cast<unsigned int>(k) >= lines.size()) {
+          LOG(message_group::Warning,
               "Bad DXF line index in %1$s.", QuotedString(boostfs_uncomplete(filename, fs::current_path()).generic_string()));
           continue;
         }
@@ -535,25 +517,25 @@ found_next_line_in_closed_path:;
  */
 void DxfData::fixup_path_direction()
 {
-  for (size_t i = 0; i < this->paths.size(); ++i) {
-    if (!this->paths[i].is_closed) break;
-    this->paths[i].is_inner = true;
-    double min_x = this->points[this->paths[i].indices[0]][0];
+  for (auto& path : this->paths) {
+    if (!path.is_closed) break;
+    path.is_inner = true;
+    double min_x = this->points[path.indices[0]][0];
     size_t min_x_point = 0;
-    for (size_t j = 1; j < this->paths[i].indices.size(); ++j) {
-      if (this->points[this->paths[i].indices[j]][0] < min_x) {
-        min_x = this->points[this->paths[i].indices[j]][0];
+    for (size_t j = 1; j < path.indices.size(); ++j) {
+      if (this->points[path.indices[j]][0] < min_x) {
+        min_x = this->points[path.indices[j]][0];
         min_x_point = j;
       }
     }
     // rotate points if the path is in non-standard rotation
     size_t b = min_x_point;
-    size_t a = b == 0 ? this->paths[i].indices.size() - 2 : b - 1;
-    size_t c = b == this->paths[i].indices.size() - 1 ? 1 : b + 1;
-    double ax = this->points[this->paths[i].indices[a]][0] - this->points[this->paths[i].indices[b]][0];
-    double ay = this->points[this->paths[i].indices[a]][1] - this->points[this->paths[i].indices[b]][1];
-    double cx = this->points[this->paths[i].indices[c]][0] - this->points[this->paths[i].indices[b]][0];
-    double cy = this->points[this->paths[i].indices[c]][1] - this->points[this->paths[i].indices[b]][1];
+    size_t a = b == 0 ? path.indices.size() - 2 : b - 1;
+    size_t c = b == path.indices.size() - 1 ? 1 : b + 1;
+    double ax = this->points[path.indices[a]][0] - this->points[path.indices[b]][0];
+    double ay = this->points[path.indices[a]][1] - this->points[path.indices[b]][1];
+    double cx = this->points[path.indices[c]][0] - this->points[path.indices[b]][0];
+    double cy = this->points[path.indices[c]][1] - this->points[path.indices[b]][1];
 #if 0
     printf("Rotate check:\n");
     printf("  a/b/c indices = %d %d %d\n", a, b, c);
@@ -562,7 +544,7 @@ void DxfData::fixup_path_direction()
 #endif
     // FIXME: atan2() usually takes y,x. This variant probably makes the path clockwise..
     if (atan2(ax, ay) < atan2(cx, cy)) {
-      std::reverse(this->paths[i].indices.begin(), this->paths[i].indices.end());
+      std::reverse(path.indices.begin(), path.indices.end());
     }
   }
 }
@@ -584,8 +566,8 @@ std::string DxfData::dump() const
       << "\n num paths: " << paths.size()
       << "\n num dims: " << dims.size()
       << "\n points: ";
-  for (size_t k = 0; k < points.size(); ++k) {
-    out << "\n  x y: " << points[k].transpose();
+  for (const auto& point : points) {
+    out << "\n  x y: " << point.transpose();
   }
   out << "\n paths: ";
   for (size_t i = 0; i < paths.size(); ++i) {
@@ -607,8 +589,7 @@ std::string DxfData::dump() const
 Polygon2d *DxfData::toPolygon2d() const
 {
   auto poly = new Polygon2d();
-  for (size_t i = 0; i < this->paths.size(); ++i) {
-    const auto& path = this->paths[i];
+  for (const auto& path : this->paths) {
     Outline2d outline;
     size_t endidx = path.indices.size();
     // We don't support open paths; closing them to be compatible with existing behavior

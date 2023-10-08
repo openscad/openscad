@@ -17,7 +17,7 @@ int getScalePow2(const BoundingBox& bounds, int bits)
   return (_bits - 1) - exp;
 }
 
-VectorOfVector2d fromPath(ClipperLib::Path path, int pow2)
+VectorOfVector2d fromPath(const ClipperLib::Path& path, int pow2)
 {
   double scale = std::ldexp(1.0, -pow2);
   VectorOfVector2d ret;
@@ -48,7 +48,8 @@ ClipperLib::Paths fromPolygon2d(const Polygon2d& poly, int pow2)
 AutoScaled<ClipperLib::Paths> fromPolygon2d(const Polygon2d& poly)
 {
   auto b = poly.getBoundingBox();
-  return {fromPolygon2d(poly, ClipperUtils::getScalePow2(b)), std::move(b)};
+  auto scale = ClipperUtils::getScalePow2(b);
+  return {fromPolygon2d(poly, scale), b};
 }
 
 ClipperLib::PolyTree sanitize(const ClipperLib::Paths& paths)
@@ -61,7 +62,7 @@ ClipperLib::PolyTree sanitize(const ClipperLib::Paths& paths)
     // Most likely caught a RangeTest exception from clipper
     // Note that Clipper up to v6.2.1 incorrectly throws
     // an exception of type char* rather than a clipperException()
-    LOG(message_group::Warning, Location::NONE, "", "Range check failed for polygon. skipping");
+    LOG(message_group::Warning, "Range check failed for polygon. skipping");
   }
   clipper.Execute(ClipperLib::ctUnion, result, ClipperLib::pftEvenOdd);
   return result;
@@ -178,7 +179,7 @@ Polygon2d *apply(const std::vector<const Polygon2d *>& polygons,
       if (!polygon->isSanitized()) ClipperLib::PolyTreeToPaths(sanitize(polypaths), polypaths);
       pathsvector.push_back(polypaths);
     } else {
-      pathsvector.push_back(ClipperLib::Paths());
+      pathsvector.emplace_back();
     }
   }
   auto res = apply(pathsvector, clipType, pow2);
@@ -202,16 +203,16 @@ static void minkowski_outline(const ClipperLib::Path& poly, const ClipperLib::Pa
     for (size_t i = 0; i < pathCnt; ++i) {
       ClipperLib::Path p;
       p.reserve(polyCnt);
-      for (size_t j = 0; j < poly.size(); ++j)
-        p.push_back(ClipperLib::IntPoint(path[i].X + poly[j].X, path[i].Y + poly[j].Y));
+      for (auto point : poly)
+        p.push_back(ClipperLib::IntPoint(path[i].X + point.X, path[i].Y + point.Y));
       pp.push_back(p);
     }
   else
     for (size_t i = 0; i < pathCnt; ++i) {
       ClipperLib::Path p;
       p.reserve(polyCnt);
-      for (size_t j = 0; j < poly.size(); ++j)
-        p.push_back(ClipperLib::IntPoint(path[i].X - poly[j].X, path[i].Y - poly[j].Y));
+      for (auto point : poly)
+        p.push_back(ClipperLib::IntPoint(path[i].X - point.X, path[i].Y - point.Y));
       pp.push_back(p);
     }
 

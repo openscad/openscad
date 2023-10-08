@@ -25,19 +25,17 @@
  */
 
 #include "VBORenderer.h"
-#include "Feature.h"
 #include "PolySet.h"
-#include "PolySetUtils.h"
 #include "CSGNode.h"
 #include "printutils.h"
-#include "hash.h"
+#include "hash.h" // IWYU pragma: keep
 
 #include <cstddef>
 #include <iomanip>
 #include <sstream>
 
 VBORenderer::VBORenderer()
-  : Renderer(), shader_attributes_index(0)
+  : Renderer()
 {
 }
 
@@ -50,12 +48,7 @@ bool VBORenderer::getShaderColor(Renderer::ColorMode colormode, const Color4f& c
 {
   Color4f basecol;
   if (Renderer::getColor(colormode, basecol)) {
-    if (colormode == ColorMode::BACKGROUND) {
-      basecol = Color4f(color[0] >= 0 ? color[0] : basecol[0],
-                        color[1] >= 0 ? color[1] : basecol[1],
-                        color[2] >= 0 ? color[2] : basecol[2],
-                        color[3] >= 0 ? color[3] : basecol[3]);
-    } else if (colormode != ColorMode::HIGHLIGHT) {
+    if (colormode == ColorMode::BACKGROUND || colormode != ColorMode::HIGHLIGHT) {
       basecol = Color4f(color[0] >= 0 ? color[0] : basecol[0],
                         color[1] >= 0 ? color[1] : basecol[1],
                         color[2] >= 0 ? color[2] : basecol[2],
@@ -97,7 +90,7 @@ size_t VBORenderer::getSurfaceBufferSize(const CSGChainObject& csgobj, bool high
   csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
 
   if (csgobj.leaf->geom) {
-    const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+    const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
     if (ps) {
       buffer_size += getSurfaceBufferSize(*ps, csgmode);
     }
@@ -158,7 +151,7 @@ size_t VBORenderer::getEdgeBufferSize(const CSGChainObject& csgobj, bool highlig
   csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
 
   if (csgobj.leaf->geom) {
-    const PolySet *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+    const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
     if (ps) {
       buffer_size += getEdgeBufferSize(*ps, csgmode);
     }
@@ -189,12 +182,12 @@ size_t VBORenderer::getEdgeBufferSize(const PolySet& polyset, csgmode_e csgmode)
 
 void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
                                         const std::array<Vector3d, 3>& points,
-                                        const std::array<Vector3d, 3>& normals,
-                                        const Color4f& color,
+                                        const std::array<Vector3d, 3>& /*normals*/,
+                                        const Color4f& /*color*/,
                                         size_t active_point_index, size_t primitive_index,
-                                        double z_offset, size_t shape_size,
-                                        size_t shape_dimensions, bool outlines,
-                                        bool mirror) const
+                                        double /*z_offset*/, size_t shape_size,
+                                        size_t /*shape_dimensions*/, bool outlines,
+                                        bool /*mirror*/) const
 {
   if (!shader_attributes_index) return;
 
@@ -365,8 +358,8 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
         triangle_count += 2;
       } else {
         Vector3d center = Vector3d::Zero();
-        for (size_t i = 0; i < poly.size(); i++) {
-          center += poly.at(i);
+        for (const auto& point : poly) {
+          center += point;
         }
         center /= poly.size();
         for (size_t i = 1; i <= poly.size(); i++) {
@@ -442,7 +435,7 @@ void VBORenderer::create_edges(const PolySet& ps,
         }
 
         // Render top+bottom outlines
-        for (double z = -zbase / 2; z < zbase; z += zbase) {
+        for (double z : {-zbase / 2, zbase / 2}) {
           for (const Vector2d& v : o.vertices) {
             Vector3d p0 = uniqueMultiply(vert_mult_map, mult_verts, Vector3d(v[0], v[1], z), m);
 
@@ -577,7 +570,7 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
       // Render 2D objects 1mm thick, but differences slightly larger
       double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0.0);
       // Render top+bottom
-      for (double z = -zbase / 2; z < zbase; z += zbase) {
+      for (double z : { -zbase / 2, zbase / 2}) {
         for (const auto& poly : ps.polygons) {
           if (poly.size() == 3) {
             Vector3d p0 = poly.at(0); p0[2] += z;
@@ -742,9 +735,10 @@ void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
     ss->glBegin().emplace_back([index, count, type, stride, offset, ss_ptr = std::weak_ptr<VertexState>(ss)]() {
       auto ss = ss_ptr.lock();
       if (ss) {
+        // NOLINTBEGIN(performance-no-int-to-ptr)
         GL_TRACE("glVertexAttribPointer(%d, %d, %d, %p)", count % type % stride % (GLvoid *)(ss->drawOffset() + offset));
-        glVertexAttribPointer(index, count, type, GL_FALSE, stride, (GLvoid *)(ss->drawOffset() + offset));
-        GL_ERROR_CHECK();
+        GL_CHECKD(glVertexAttribPointer(index, count, type, GL_FALSE, stride, (GLvoid *)(ss->drawOffset() + offset)));
+        // NOLINTEND(performance-no-int-to-ptr)
       }
     });
   }
@@ -755,10 +749,10 @@ void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
 void VBORenderer::shader_attribs_enable() const
 {
   GL_TRACE("glEnableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
-  glEnableVertexAttribArray(getShader().data.csg_rendering.barycentric); GL_ERROR_CHECK();
+  GL_CHECKD(glEnableVertexAttribArray(getShader().data.csg_rendering.barycentric));
 }
 void VBORenderer::shader_attribs_disable() const
 {
   GL_TRACE("glDisableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
-  glDisableVertexAttribArray(getShader().data.csg_rendering.barycentric); GL_ERROR_CHECK();
+  GL_CHECKD(glDisableVertexAttribArray(getShader().data.csg_rendering.barycentric));
 }

@@ -1,4 +1,5 @@
 .uuid
+.cache/
 .vs/
 .vscode/
 /*.scad
@@ -73,6 +74,7 @@ src/*.debug
 /release
 tests/DartConfiguration.tcl
 tests/__pycache__/
+tests/venv
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
@@ -91,3 +93,5 @@ tests/data/scad/issues/issue2342.scad
 tests/data/scad/misc/include-tests.scad
 tests/data/scad/misc/use-tests.scad
 tests/data/svg/viewbox/viewbox_*.svg
+tests/regression/pdfexporttest/centered.pdf
+tests/regression/pdfexporttest/simple-pdf.pdf

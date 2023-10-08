@@ -23,13 +23,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include <string>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <boost/format.hpp>
+#include <utility>
 
 #include "InputDriverManager.h"
 #include "JoystickInputDriver.h"
+#include "printutils.h"
 
+#include <unistd.h>
 #include <linux/input.h>
 #include <linux/joystick.h>
 
@@ -55,16 +60,6 @@ void JoystickInputDriver::run()
     }
   }
   ::close(fd);
-}
-
-JoystickInputDriver::JoystickInputDriver() : fd(-1), version(0), axes(0), buttons(0), stopRequest(false)
-{
-
-}
-
-JoystickInputDriver::~JoystickInputDriver()
-{
-
 }
 
 bool JoystickInputDriver::open()
@@ -106,14 +101,14 @@ const std::string& JoystickInputDriver::get_name() const
 std::string JoystickInputDriver::get_info() const
 {
   return STR(
-    get_name() << " " << (isOpen() ? "open" : "not open") << " " <<
-      "Name: " << name << " " <<
-      "Axis: " << (int) axes << " " <<
-      "Buttons: " << (int) buttons << " "
+    get_name(), " ", (isOpen() ? "open" : "not open"), " ",
+    "Name: ", name, " ",
+    "Axis: ", (int) axes, " ",
+    "Buttons: ", (int) buttons, " "
     );
 }
 
 void JoystickInputDriver::setJoystickNr(std::string jnr)
 {
-  this->nr = jnr;
+  this->nr = std::move(jnr);
 }

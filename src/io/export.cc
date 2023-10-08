@@ -109,7 +109,7 @@ bool exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const E
   }
   std::ofstream fstream(exportInfo.name2open, mode);
   if (!fstream.is_open()) {
-    LOG(message_group::None, Location::NONE, "", _("Can't open file \"%1$s\" for export"), exportInfo.name2display);
+    LOG(_("Can't open file \"%1$s\" for export"), exportInfo.name2display);
     return false;
   } else {
     bool onerror = false;
@@ -125,7 +125,7 @@ bool exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const E
       onerror = true;
     }
     if (onerror) {
-      LOG(message_group::Error, Location::NONE, "", _("\"%1$s\" write error. (Disk full?)"), exportInfo.name2display);
+      LOG(message_group::Error, _("\"%1$s\" write error. (Disk full?)"), exportInfo.name2display);
     }
     return !onerror;
   }
@@ -181,7 +181,7 @@ ExportMesh::ExportMesh(const PolySet& ps)
     });
 }
 
-bool ExportMesh::foreach_vertex(const std::function<bool(const Vertex&)> callback) const
+bool ExportMesh::foreach_vertex(const std::function<bool(const Vertex&)>& callback) const
 {
   for (const auto& v : vertices) {
     if (!callback(v)) {
@@ -191,7 +191,7 @@ bool ExportMesh::foreach_vertex(const std::function<bool(const Vertex&)> callbac
   return true;
 }
 
-bool ExportMesh::foreach_indexed_triangle(const std::function<bool(const std::array<int, 3>&)> callback) const
+bool ExportMesh::foreach_indexed_triangle(const std::function<bool(const std::array<int, 3>&)>& callback) const
 {
   for (const auto& t : triangles) {
     if (!callback(t.key)) {
@@ -201,7 +201,7 @@ bool ExportMesh::foreach_indexed_triangle(const std::function<bool(const std::ar
   return true;
 }
 
-bool ExportMesh::foreach_triangle(const std::function<bool(const std::array<std::array<double, 3>, 3>&)> callback) const
+bool ExportMesh::foreach_triangle(const std::function<bool(const std::array<std::array<double, 3>, 3>&)>& callback) const
 {
   for (const auto& t : triangles) {
     auto& v0 = vertices[t.key[0]];

@@ -22,25 +22,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <stdlib.h>
+#include <cstdlib>
 #include <iostream>
 #include <cmath>
 
 #include <boost/format.hpp>
 
 #include "rect.h"
+#include "util.h"
 
 namespace libsvg {
 
 const std::string rect::name("rect");
-
-rect::rect() : width(0), height(0), rx(0), ry(0)
-{
-}
-
-rect::~rect()
-{
-}
 
 /**
  * Let rx and ry be length values.
@@ -95,7 +88,7 @@ rect::~rect()
 void
 rect::set_attrs(attr_map_t& attrs, void *context)
 {
-  shape::set_attrs(attrs, context);
+  shape::set_attrs(attrs, context); // NOLINT(bugprone-parent-virtual-call)
   this->x = parse_double(attrs["x"]);
   this->y = parse_double(attrs["y"]);
   this->width = parse_double(attrs["width"]);

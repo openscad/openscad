@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SourceFile.h"
-#include "Assignment.h"
 
 namespace CommentParser {
 

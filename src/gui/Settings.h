@@ -3,6 +3,7 @@
 #include <map>
 #include <list>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace Settings {
@@ -18,8 +19,8 @@ public:
   virtual void decode(const std::string& encoded) = 0;
 
 protected:
-  SettingsEntry(const std::string& category, const std::string& name);
-  virtual ~SettingsEntry() {}
+  SettingsEntry(std::string category, std::string name);
+  virtual ~SettingsEntry() = default;
 
 private:
   std::string _category;
@@ -128,11 +129,10 @@ public:
     std::string value;
     std::string description;
   };
-  SettingsEntryEnum(const std::string& category, const std::string& name, const std::vector<Item>& items, const std::string& defaultValue) :
+  SettingsEntryEnum(const std::string& category, const std::string& name, std::vector<Item> items, std::string defaultValue) :
     SettingsEntry(category, name),
-    _items(items),
-    _index(0),
-    _defaultValue(defaultValue)
+    _items(std::move(items)),
+    _defaultValue(std::move(defaultValue))
   {
     setValue(_defaultValue);
   }
@@ -148,10 +148,11 @@ public:
 
 private:
   std::vector<Item> _items;
-  size_t _index;
+  size_t _index{0};
   std::string _defaultValue;
 };
 
+class SettingsVisitor;
 
 class Settings
 {
@@ -264,18 +265,18 @@ public:
   static SettingsEntryDouble axisDeadzone8;
   static SettingsEntryInt joystickNr;
 
-  static SettingsEntryString& inputButton(int id);
-  static SettingsEntryDouble& axisTrim(int id);
-  static SettingsEntryDouble& axisDeadzone(int id);
+  static SettingsEntryString& inputButton(size_t id);
+  static SettingsEntryDouble& axisTrim(size_t id);
+  static SettingsEntryDouble& axisDeadzone(size_t id);
 
-  static void visit(const class SettingsVisitor& visitor);
+  static void visit(const SettingsVisitor& visitor);
 };
 
 class SettingsVisitor
 {
 public:
-  SettingsVisitor() {}
-  virtual ~SettingsVisitor() {}
+  SettingsVisitor() = default;
+  virtual ~SettingsVisitor() = default;
 
   virtual void handle(SettingsEntry& entry) const = 0;
 };

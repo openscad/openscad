@@ -31,6 +31,7 @@
 #include <QRegularExpression>
 #include <QString>
 #include "Console.h"
+#include "MainWindow.h"
 #include "printutils.h"
 #include "Preferences.h"
 #include "UIUtils.h"
@@ -45,8 +46,15 @@ Console::Console(QWidget *parent) : QPlainTextEdit(parent)
   this->appendCursor = this->textCursor();
 }
 
-Console::~Console()
+void Console::focusInEvent(QFocusEvent * /*event*/)
 {
+  QWidget *current = this;
+  MainWindow *mw;
+  while (current && !(mw = dynamic_cast<MainWindow *>(current->window()))) {
+    current = current->parentWidget();
+  }
+  assert(mw);
+  if (mw) mw->setLastFocus(this);
 }
 
 void Console::addMessage(const Message& msg)
@@ -54,7 +62,7 @@ void Console::addMessage(const Message& msg)
   // Messages with links to source must be inserted separately,
   // since anchor href is set via the "format" argument of:
   //    QTextCursor::insertText(const QString &text, const QTextCharFormat &format)
-  // But if no link, and matching colors, then concat message strings with newline inbetween.
+  // But if no link, and matching colors, then concat message strings with newline in between.
   // This results in less calls to insertText in Console::update(), and much better performance.
   if (!this->msgBuffer.empty() && msg.loc.isNone() && this->msgBuffer.back().link.isEmpty() &&
       (getGroupColor(msg.group) == getGroupColor(this->msgBuffer.back().group)) ) {
@@ -92,7 +100,7 @@ void Console::update()
   this->setMaximumBlockCount(0);
   for (const auto& line : this->msgBuffer) {
     QTextCharFormat charFormat;
-    if (line.group != message_group::None && line.group != message_group::Echo) charFormat.setForeground(QBrush(QColor("#000000")));
+    if (line.group != message_group::NONE && line.group != message_group::Echo) charFormat.setForeground(QBrush(QColor("#000000")));
     charFormat.setBackground(QBrush(QColor(getGroupColor(line.group).c_str())));
     if (!line.link.isEmpty()) {
       charFormat.setAnchor(true);
@@ -128,7 +136,7 @@ void Console::actionSaveAs_triggered()
     QTextStream stream(&file);
     stream << text;
     stream.flush();
-    LOG(message_group::None, Location::NONE, "", "Console content saved to '%1$s'.", fileName.toStdString());
+    LOG("Console content saved to '%1$s'.", fileName.toStdString());
   }
 }
 

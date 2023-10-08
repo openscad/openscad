@@ -6,8 +6,7 @@
 static const double DEFAULT_DISTANCE = 140.0;
 static const double DEFAULT_FOV = 22.5;
 
-Camera::Camera() :
-  projection(ProjectionType::PERSPECTIVE), fov(DEFAULT_FOV), viewall(false), autocenter(false)
+Camera::Camera() : fov(DEFAULT_FOV)
 {
   PRINTD("Camera()");
 
@@ -38,7 +37,7 @@ void Camera::setup(std::vector<double> params)
     Eigen::Vector3d projection(dir[0], dir[1], 0);
     object_rot.x() = -atan2_degrees(dir[2], projection.norm());
   } else {
-    assert("Gimbal cam needs 7 numbers, Vector camera needs 6");
+    assert(false && "Gimbal cam needs 7 numbers, Vector camera needs 6");
   }
   locked = true;
 }
@@ -92,7 +91,7 @@ void Camera::resetView()
  * are assigned on top-level, the values are used to change the camera
  * rotation, translation and distance.
  */
-void Camera::updateView(const std::shared_ptr<const FileContext> context, bool enableWarning)
+void Camera::updateView(const std::shared_ptr<const FileContext>& context, bool enableWarning)
 {
   if (locked) return;
 
@@ -104,7 +103,7 @@ void Camera::updateView(const std::shared_ptr<const FileContext> context, bool e
       setVpr(x, y, z);
       noauto = true;
     } else {
-      LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpr=%1$s to a vec3 or vec2 of numbers", vpr->toEchoString());
+      LOG(message_group::Warning, "Unable to convert $vpr=%1$s to a vec3 or vec2 of numbers", vpr->toEchoString());
     }
   }
 
@@ -114,7 +113,7 @@ void Camera::updateView(const std::shared_ptr<const FileContext> context, bool e
       setVpt(x, y, z);
       noauto = true;
     } else {
-      LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpt=%1$s to a vec3 or vec2 of numbers", vpt->toEchoString());
+      LOG(message_group::Warning, "Unable to convert $vpt=%1$s to a vec3 or vec2 of numbers", vpt->toEchoString());
     }
   }
 
@@ -124,7 +123,7 @@ void Camera::updateView(const std::shared_ptr<const FileContext> context, bool e
       setVpd(vpd->toDouble());
       noauto = true;
     } else {
-      LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpd=%1$s to a number", vpd->toEchoString());
+      LOG(message_group::Warning, "Unable to convert $vpd=%1$s to a number", vpd->toEchoString());
     }
   }
 
@@ -134,12 +133,12 @@ void Camera::updateView(const std::shared_ptr<const FileContext> context, bool e
       setVpf(vpf->toDouble());
       noauto = true;
     } else {
-      LOG(message_group::Warning, Location::NONE, "", "Unable to convert $vpf=%1$s to a number", vpf->toEchoString());
+      LOG(message_group::Warning, "Unable to convert $vpf=%1$s to a number", vpf->toEchoString());
     }
   }
 
   if (enableWarning && (viewall || autocenter) && noauto) {
-    LOG(message_group::UI_Warning, Location::NONE, "", "Viewall and autocenter disabled in favor of $vp*");
+    LOG(message_group::UI_Warning, "Viewall and autocenter disabled in favor of $vp*");
     viewall = false;
     autocenter = false;
   }
@@ -162,7 +161,7 @@ static double wrap(double angle)
 
 Eigen::Vector3d Camera::getVpr() const
 {
-  return Eigen::Vector3d(wrap(90 - object_rot.x()), wrap(-object_rot.y()), wrap(-object_rot.z()));
+  return {wrap(90 - object_rot.x()), wrap(-object_rot.y()), wrap(-object_rot.z())};
 }
 
 void Camera::setVpr(double x, double y, double z)

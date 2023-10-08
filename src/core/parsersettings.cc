@@ -29,7 +29,7 @@ fs::path search_libs(const fs::path& localpath)
       return usepath.string();
     }
   }
-  return fs::path();
+  return {};
 }
 
 // files must be 'ordinary' - they must exist and be non-directories
@@ -38,27 +38,27 @@ fs::path search_libs(const fs::path& localpath)
 static bool check_valid(const fs::path& p, const std::vector<std::string> *openfilenames)
 {
   if (p.empty()) {
-    // LOG(message_group::Warning,Location::NONE,"","File path is blank: %1$s",p);
+    // LOG(message_group::Warning,,"File path is blank: %1$s",p);
     return false;
   }
   if (!p.has_parent_path()) {
-    // LOG(message_group::Warning,Location::NONE,"","No parent path: %1$s",p);
+    // LOG(message_group::Warning,,"No parent path: %1$s",p);
     return false;
   }
   if (!fs::exists(p)) {
-    // LOG(message_group::Warning,Location::NONE,"","File not found: %1$s",p);
+    // LOG(message_group::Warning,,"File not found: %1$s",p);
     return false;
   }
   if (fs::is_directory(p)) {
-    // LOG(message_group::Warning,Location::NONE,"","%1$s invalid - points to a directory",p);
+    // LOG(message_group::Warning,,"%1$s invalid - points to a directory",p);
     return false;
   }
-  std::string fullname = p.generic_string();
+  const std::string& fullname = p.generic_string();
   // Detect circular includes
   if (openfilenames) {
     for (const auto& s : *openfilenames) {
       if (s == fullname) {
-        // LOG(message_group::Warning,Location::NONE,"","circular include file %1$s",fullname);
+        // LOG(message_group::Warning,,"circular include file %1$s",fullname);
         return false;
       }
     }
@@ -75,7 +75,7 @@ static bool check_valid(const fs::path& p, const std::vector<std::string> *openf
    Returns the absolute path to a valid file, or an empty path if no
    valid files could be found.
  */
-fs::path _find_valid_path(const fs::path& sourcepath,
+inline fs::path find_valid_path_(const fs::path& sourcepath,
                           const fs::path& localpath,
                           const std::vector<std::string> *openfilenames)
 {
@@ -88,14 +88,14 @@ fs::path _find_valid_path(const fs::path& sourcepath,
     fpath = search_libs(localpath);
     if (!fpath.empty() && check_valid(fpath, openfilenames)) return fpath;
   }
-  return fs::path();
+  return {};
 }
 
 fs::path find_valid_path(const fs::path& sourcepath,
                          const fs::path& localpath,
                          const std::vector<std::string> *openfilenames)
 {
-  return fs::path(_find_valid_path(sourcepath, localpath, openfilenames).generic_string());
+  return {find_valid_path_(sourcepath, localpath, openfilenames).generic_string()};
 }
 
 
@@ -128,7 +128,7 @@ fs::path get_library_for_path(const fs::path& localpath)
       return libpath;
     }
   }
-  return fs::path();
+  return {};
 }
 
 
@@ -139,7 +139,7 @@ void parser_init()
   if (openscadpaths) {
     std::string paths(openscadpaths);
     std::string sep = PlatformUtils::pathSeparatorChar();
-    typedef boost::split_iterator<std::string::iterator> string_split_iterator;
+    using string_split_iterator = boost::split_iterator<std::string::iterator>;
     for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal())); it != string_split_iterator(); ++it) {
       add_librarydir(fs::absolute(fs::path(boost::copy_range<std::string>(*it))).generic_string());
     }

@@ -31,19 +31,10 @@
 
 #include "input/SpaceNavInputDriver.h"
 #include "input/InputDriverManager.h"
+#include "utils/printutils.h"
 
 #include <spnav.h>
 #include <unistd.h>
-
-SpaceNavInputDriver::SpaceNavInputDriver()
-{
-
-}
-
-SpaceNavInputDriver::~SpaceNavInputDriver()
-{
-
-}
 
 void SpaceNavInputDriver::run()
 {
@@ -58,7 +49,7 @@ void SpaceNavInputDriver::run()
  * one event is available and then processes all events until the queue is
  * empty.
  */
-bool SpaceNavInputDriver::spnav_input(void)
+bool SpaceNavInputDriver::spnav_input()
 {
   spnav_event ev;
 
@@ -180,5 +171,5 @@ const std::string& SpaceNavInputDriver::get_name() const
 
 std::string SpaceNavInputDriver::get_info() const
 {
-  return STR(get_name() << " " << (isOpen() ? "open" : "not open") << " ");
+  return STR(get_name(), " ", (isOpen() ? "open" : "not open"), " ");
 }

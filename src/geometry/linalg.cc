@@ -17,10 +17,10 @@ BoundingBox operator*(const Transform3d& m, const BoundingBox& box)
   if (box.isEmpty()) return box;
   BoundingBox newbox;
   Vector3d boxvec[2] = { box.min(), box.max() };
-  for (int k = 0; k < 2; ++k) {
-    for (int j = 0; j < 2; ++j) {
-      for (int i = 0; i < 2; ++i) {
-        newbox.extend(m * Vector3d(boxvec[i][0], boxvec[j][1], boxvec[k][2]));
+  for (auto& k : boxvec) {
+    for (auto& j : boxvec) {
+      for (auto& i : boxvec) {
+        newbox.extend(m * Vector3d(i[0], j[1], k[2]));
       }
     }
   }
@@ -63,25 +63,25 @@ bool matrix_contains_nan(const Transform3d& m)
    http://stackoverflow.com/questions/4238122/hash-function-for-floats
    http://betterexplained.com/articles/fun-with-modular-arithmetic/
  */
-typedef int32_t Py_hash_t;
-typedef uint32_t Py_uhash_t;
-typedef double Float_t;
+using Py_hash_t = int32_t;
+using Py_uhash_t = uint32_t;
+using Float_t = double;
 Py_hash_t hash_floating_point(Float_t v)
 {
-  int _PyHASH_BITS = 31;
-  //if (sizeof(Py_uhash_t)==8) _PyHASH_BITS=61;
+  static constexpr int PyHASH_BITS = 31;
+  //if (sizeof(Py_uhash_t)==8) PyHASH_BITS=61;
 
-  Py_uhash_t _PyHASH_MODULUS = (((Py_uhash_t)1 << _PyHASH_BITS) - 1);
-  Py_uhash_t _PyHASH_INF = 314159;
-  Py_uhash_t _PyHASH_NAN = 0;
+  static constexpr Py_uhash_t PyHASH_MODULUS = (((Py_uhash_t)1 << PyHASH_BITS) - 1);
+  static constexpr Py_uhash_t PyHASH_INF = 314159;
+  static constexpr Py_uhash_t PyHASH_NAN = 0;
 
   int e, sign;
   Float_t m;
   Py_uhash_t x, y;
 
   if (!std::isfinite(v)) {
-    if (std::isinf(v)) return v > 0 ? _PyHASH_INF : -_PyHASH_INF;
-    else return _PyHASH_NAN;
+    if (std::isinf(v)) return v > 0 ? PyHASH_INF : -PyHASH_INF;
+    else return PyHASH_NAN;
   }
 
   m = frexp(v, &e);
@@ -96,18 +96,18 @@ Py_hash_t hash_floating_point(Float_t v)
      and hexadecimal floating point. */
   x = 0;
   while (m) {
-    x = ((x << 28) & _PyHASH_MODULUS) | x >> (_PyHASH_BITS - 28);
+    x = ((x << 28) & PyHASH_MODULUS) | x >> (PyHASH_BITS - 28);
     m *= 268435456.0; // 2**28
     e -= 28;
     y = (Py_uhash_t)m; /* pull out integer part */
     m -= y;
     x += y;
-    if (x >= _PyHASH_MODULUS) x -= _PyHASH_MODULUS;
+    if (x >= PyHASH_MODULUS) x -= PyHASH_MODULUS;
   }
 
-  /* adjust for the exponent;  first reduce it modulo _PyHASH_BITS */
-  e = e >= 0 ? e % _PyHASH_BITS : _PyHASH_BITS - 1 - ((-1 - e) % _PyHASH_BITS);
-  x = ((x << e) & _PyHASH_MODULUS) | x >> (_PyHASH_BITS - e);
+  /* adjust for the exponent;  first reduce it modulo PyHASH_BITS */
+  e = e >= 0 ? e % PyHASH_BITS : PyHASH_BITS - 1 - ((-1 - e) % PyHASH_BITS);
+  x = ((x << e) & PyHASH_MODULUS) | x >> (PyHASH_BITS - e);
 
   x = x * sign;
   return (Py_hash_t)x;

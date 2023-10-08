@@ -13,6 +13,7 @@ void triangulateFaces(Polyhedron& polyhedron)
 }
 
 template void triangulateFaces(CGAL_HybridMesh& polyhedron);
+template void triangulateFaces(CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& polyhedron);
 
 } // namespace CGALUtils
 

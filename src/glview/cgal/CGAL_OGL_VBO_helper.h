@@ -27,7 +27,7 @@
 #pragma once
 
 #include "system-gl.h"
-#include "VBORenderer.h"
+#include "VertexArray.h"
 #include "ext/CGAL/OGL_helper.h"
 #include <cstdlib>
 
@@ -39,12 +39,8 @@ using namespace CGAL::OGL;
 class VBOPolyhedron : public virtual Polyhedron
 {
 public:
-  VBOPolyhedron()
-    : Polyhedron(),
-    points_edges_vertices_vbo(0), points_edges_elements_vbo(0),
-    halffacets_vertices_vbo(0), halffacets_elements_vbo(0)
-  {}
-  virtual ~VBOPolyhedron()
+  VBOPolyhedron() : Polyhedron() {}
+  ~VBOPolyhedron() override
   {
     if (points_edges_vertices_vbo) glDeleteBuffers(1, &points_edges_vertices_vbo);
     if (points_edges_elements_vbo) glDeleteBuffers(1, &points_edges_elements_vbo);
@@ -52,6 +48,7 @@ public:
     if (halffacets_elements_vbo) glDeleteBuffers(1, &halffacets_elements_vbo);
   }
 
+  using CGAL::OGL::Polyhedron::draw;
   void draw(Vertex_iterator v, VertexArray& vertex_array) const {
     PRINTD("draw(Vertex_iterator)");
 
@@ -79,7 +76,7 @@ public:
                               0, 1, 0.0, 1, 2, true);
   }
 
-  typedef struct _TessUserData {
+  struct TessUserData {
     GLenum which;
     GLdouble *normal;
     CGAL::Color color;
@@ -89,10 +86,10 @@ public:
     size_t draw_size;
     size_t elements_offset;
     VertexArray& vertex_array;
-  } TessUserData;
+  };
 
   static inline void CGAL_GLU_TESS_CALLBACK beginCallback(GLenum which, GLvoid *user) {
-    TessUserData *tess(static_cast<TessUserData *>(user));
+    auto *tess(static_cast<TessUserData *>(user));
     // Create separate vertex set since "which" could be different draw type
     tess->which = which;
     tess->draw_size = 0;
@@ -108,7 +105,7 @@ public:
   }
 
   static inline void CGAL_GLU_TESS_CALLBACK endCallback(GLvoid *user) {
-    TessUserData *tess(static_cast<TessUserData *>(user));
+    auto *tess(static_cast<TessUserData *>(user));
 
     GLenum elements_type = 0;
     if (tess->vertex_array.useElements()) elements_type = tess->vertex_array.elementsData()->glType();
@@ -128,8 +125,8 @@ public:
   }
 
   static inline void CGAL_GLU_TESS_CALLBACK vertexCallback(GLvoid *vertex, GLvoid *user) {
-    GLdouble *pc(static_cast<GLdouble *>(vertex));
-    TessUserData *tess(static_cast<TessUserData *>(user));
+    auto *pc(static_cast<GLdouble *>(vertex));
+    auto *tess(static_cast<TessUserData *>(user));
     size_t shape_size = 0;
 
     switch (tess->which) {
@@ -157,15 +154,15 @@ public:
   static inline void CGAL_GLU_TESS_CALLBACK combineCallback(GLdouble coords[3], GLvoid *[4], GLfloat [4], GLvoid **dataOut) {
     static std::list<GLdouble *> pcache;
     if (dataOut) {
-      GLdouble *n = new GLdouble[3];
+      auto *n = new GLdouble[3];
       n[0] = coords[0];
       n[1] = coords[1];
       n[2] = coords[2];
       pcache.push_back(n);
       *dataOut = n;
     } else {
-      for (std::list<GLdouble *>::const_iterator i = pcache.begin(); i != pcache.end(); i++)
-        delete[] *i;
+      for (auto& i : pcache)
+        delete[] i;
       pcache.clear();
     }
   }
@@ -206,7 +203,7 @@ public:
     }
     gluTessEndPolygon(tess_);
     gluDeleteTess(tess_);
-    combineCallback(NULL, NULL, NULL, NULL);
+    combineCallback(nullptr, nullptr, nullptr, nullptr);
   }
 
   void create_polyhedron() {
@@ -236,14 +233,14 @@ public:
       points_edges_array.elementsSize(elements_size);
 
       GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", points_edges_array.verticesVBO());
-      glBindBuffer(GL_ARRAY_BUFFER, points_edges_array.verticesVBO()); GL_ERROR_CHECK();
+      GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, points_edges_array.verticesVBO()));
       GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
-      glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
+      GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW));
       if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
         GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", points_edges_array.elementsVBO());
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, points_edges_array.elementsVBO()); GL_ERROR_CHECK();
+        GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, points_edges_array.elementsVBO()));
         GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
+        GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW));
       }
     }
 
@@ -256,10 +253,12 @@ public:
 
     std::shared_ptr<VertexState> settings = std::make_shared<VertexState>();
     settings->glBegin().emplace_back([]() {
-      GL_TRACE0("glDisable(GL_LIGHTING)"); glDisable(GL_LIGHTING); GL_ERROR_CHECK();
+      GL_TRACE0("glDisable(GL_LIGHTING)");
+      GL_CHECKD(glDisable(GL_LIGHTING));
     });
     settings->glBegin().emplace_back([]() {
-      GL_TRACE0("glPointSize(10.0f)"); glPointSize(10.0f); GL_ERROR_CHECK();
+      GL_TRACE0("glPointSize(10.0f)");
+      GL_CHECKD(glPointSize(10.0f));
     });
     points_edges_states.emplace_back(std::move(settings));
 
@@ -285,10 +284,12 @@ public:
 
     settings = std::make_shared<VertexState>();
     settings->glBegin().emplace_back([]() {
-      GL_TRACE0("glDisable(GL_LIGHTING)"); glDisable(GL_LIGHTING); GL_ERROR_CHECK();
+      GL_TRACE0("glDisable(GL_LIGHTING)");
+      GL_CHECKD(glDisable(GL_LIGHTING));
     });
     settings->glBegin().emplace_back([]() {
-      GL_TRACE0("glLineWidth(5.0f)"); glLineWidth(5.0f); GL_ERROR_CHECK();
+      GL_TRACE0("glLineWidth(5.0f)");
+      GL_CHECKD(glLineWidth(5.0f));
     });
     points_edges_states.emplace_back(std::move(settings));
 
@@ -307,10 +308,10 @@ public:
     if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
       if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
         GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
+        GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
       }
       GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-      glBindBuffer(GL_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
+      GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
     }
 
     points_edges_array.createInterleavedVBOs();
@@ -321,21 +322,24 @@ public:
     VertexArray halffacets_array(std::make_shared<VertexStateFactory>(), halffacets_states);
     halffacets_array.addSurfaceData();
     halffacets_array.writeSurface();
-    last_size = 0;
 
     settings = std::make_shared<VertexState>();
     settings->glBegin().emplace_back([]() {
-      GL_TRACE0("glEnable(GL_LIGHTING)"); glEnable(GL_LIGHTING); GL_ERROR_CHECK();
+      GL_TRACE0("glEnable(GL_LIGHTING)");
+      GL_CHECKD(glEnable(GL_LIGHTING));
     });
     settings->glBegin().emplace_back([]() {
-      GL_TRACE0("glLineWidth(5.0f)"); glLineWidth(5.0f); GL_ERROR_CHECK();
+      GL_TRACE0("glLineWidth(5.0f)");
+      GL_CHECKD(glLineWidth(5.0f));
     });
     if (cull_backfaces || color_backfaces) {
       settings->glBegin().emplace_back([]() {
-        GL_TRACE0("glEnable(GL_CULL_FACE)"); glEnable(GL_CULL_FACE); GL_ERROR_CHECK();
+        GL_TRACE0("glEnable(GL_CULL_FACE)");
+        GL_CHECKD(glEnable(GL_CULL_FACE));
       });
       settings->glBegin().emplace_back([]() {
-        GL_TRACE0("glCullFace(GL_BACK)"); glCullFace(GL_BACK); GL_ERROR_CHECK();
+        GL_TRACE0("glCullFace(GL_BACK)");
+        GL_CHECKD(glCullFace(GL_BACK));
       });
     }
     halffacets_states.emplace_back(std::move(settings));
@@ -349,7 +353,8 @@ public:
       if (color_backfaces) {
         settings = std::make_shared<VertexState>();
         settings->glBegin().emplace_back([]() {
-          GL_TRACE0("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); GL_ERROR_CHECK();
+          GL_TRACE0("glCullFace(GL_FRONT)");
+          GL_CHECKD(glCullFace(GL_FRONT));
         });
         halffacets_states.emplace_back(std::move(settings));
       }
@@ -358,10 +363,12 @@ public:
     if (cull_backfaces || color_backfaces) {
       settings = std::make_shared<VertexState>();
       settings->glBegin().emplace_back([]() {
-        GL_TRACE0("glCullFace(GL_BACK)"); glCullFace(GL_BACK); GL_ERROR_CHECK();
+        GL_TRACE0("glCullFace(GL_BACK)");
+        GL_CHECKD(glCullFace(GL_BACK));
       });
       settings->glBegin().emplace_back([]() {
-        GL_TRACE0("glDisable(GL_CULL_FACE)"); glDisable(GL_CULL_FACE); GL_ERROR_CHECK();
+        GL_TRACE0("glDisable(GL_CULL_FACE)");
+        GL_CHECKD(glDisable(GL_CULL_FACE));
       });
       halffacets_states.emplace_back(std::move(settings));
     }
@@ -383,10 +390,10 @@ public:
   }
 
 protected:
-  GLuint points_edges_vertices_vbo;
-  GLuint points_edges_elements_vbo;
-  GLuint halffacets_vertices_vbo;
-  GLuint halffacets_elements_vbo;
+  GLuint points_edges_vertices_vbo{0};
+  GLuint points_edges_elements_vbo{0};
+  GLuint halffacets_vertices_vbo{0};
+  GLuint halffacets_elements_vbo{0};
   VertexStates points_edges_states;
   VertexStates halffacets_states;
 }; // Polyhedron

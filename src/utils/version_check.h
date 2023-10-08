@@ -18,7 +18,7 @@
 
 #ifndef OPENSCAD_SKIP_VERSION_CHECK
 
-#include <stddef.h> // Needed by gmp.h under OS X 10.10
+#include <cstddef> // Needed by gmp.h under OS X 10.10
 #include <gmp.h>
 // set minimum numbers here.
 #define GMPMAJOR 5
@@ -58,7 +58,7 @@
 #else
 
 
-#ifdef ENABLE_OPENCSG
+#if defined(ENABLE_OPENCSG) && defined(OPENCSG_GLEW)
 #include <GL/glew.h>
 // kludge - GLEW doesn't have compiler-accessible version numbering
 #ifndef GLEW_ARB_occlusion_query2

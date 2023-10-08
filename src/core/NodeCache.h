@@ -2,7 +2,7 @@
 
 #include <string>
 #include <unordered_map>
-#include <assert.h>
+#include <cassert>
 #include "node.h"
 #include "printutils.h"
 
@@ -15,8 +15,7 @@
 class NodeCache
 {
 public:
-  NodeCache() { }
-  virtual ~NodeCache() { }
+  NodeCache() = default;
 
   bool contains(const AbstractNode& node) const {
     auto result = this->cache.find(node.index());

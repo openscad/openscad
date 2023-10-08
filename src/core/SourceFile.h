@@ -6,15 +6,13 @@
 #include <ctime>
 
 #include "module.h"
-#include "Value.h"
 #include "LocalScope.h"
 #include "IndicatorData.h"
 
 class SourceFile : public ASTNode
 {
 public:
-  SourceFile(const std::string& path, const std::string& filename);
-  ~SourceFile();
+  SourceFile(std::string path, std::string filename);
 
   std::shared_ptr<AbstractNode> instantiate(const std::shared_ptr<const Context>& context, std::shared_ptr<const class FileContext> *resulting_file_context) const;
   void print(std::ostream& stream, const std::string& indent) const override;
@@ -42,7 +40,7 @@ private:
   std::time_t include_modified(const std::string& filename) const;
 
   std::unordered_map<std::string, std::string> includes;
-  bool is_handling_dependencies;
+  bool is_handling_dependencies{false};
 
   std::string path;
   std::string filename;

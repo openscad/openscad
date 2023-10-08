@@ -25,20 +25,21 @@
  */
 
 #include <set>
+#include <utility>
 
 #include "Expression.h"
 #include "Parameters.h"
 
-Parameters::Parameters(ContextFrame&& frame, const Location& loc) :
+Parameters::Parameters(ContextFrame&& frame, Location loc) :
+  loc(std::move(loc)),
   frame(std::move(frame)),
-  handle(&this->frame),
-  loc(loc)
+  handle(&this->frame)
 {}
 
-Parameters::Parameters(Parameters&& other) :
+Parameters::Parameters(Parameters&& other) noexcept :
+  loc(std::move(other.loc)),
   frame(std::move(other).to_context_frame()),
-  handle(&this->frame),
-  loc(other.location())
+  handle(&this->frame)
 {}
 
 boost::optional<const Value&> Parameters::lookup(const std::string& name) const
@@ -100,6 +101,23 @@ bool Parameters::valid(const std::string& name, Value::Type type)
     return true;
   }
   return valid(name, *value, type);
+}
+
+// Handle all general warnings and return true if a valid number is found.
+bool Parameters::validate_number(const std::string& name, double& out)
+{
+  boost::optional<const Value&> value = lookup(name);
+  if (!value || value->isUndefined()) {
+    return false;
+  } else if (valid(name, *value, Value::Type::NUMBER)) {
+    if (value->getFiniteDouble(out)) {
+      return true;
+    } else {
+      LOG(message_group::Warning, loc, documentRoot(), "%1$s(..., %2$s=%3$s) argument cannot be infinite or nan", caller, name, value->toString());
+      return false;
+    }
+  }
+  return false;
 }
 
 ContextFrame Parameters::to_context_frame() &&
@@ -234,12 +252,12 @@ void print_argCnt_warning(
   const std::string& expected,
   const Location& loc,
   const std::string& documentRoot
-  ){
-  LOG(message_group::Warning, loc, documentRoot, "%1$s() number of parameters does not match: expected " + expected + ", found " + STR(found), name);
+  ) {
+  LOG(message_group::Warning, loc, documentRoot, "%1$s() number of parameters does not match: expected %2$s, found %3$i", name, expected, found);
 }
 
-void print_argConvert_warning(
-  const std::string& name,
+void print_argConvert_positioned_warning(
+  const std::string& calledName,
   const std::string& where,
   const Value& found,
   std::vector<Value::Type> expected,
@@ -247,7 +265,7 @@ void print_argConvert_warning(
   const std::string& documentRoot
   ){
   std::stringstream message;
-  message << name << "() parameter could not be converted: " << where << ": expected ";
+  message << calledName << "() parameter could not be converted: " << where << ": expected ";
   if (expected.size() == 1) {
     message << Value::typeName(expected[0]);
   } else {
@@ -258,6 +276,30 @@ void print_argConvert_warning(
     }
     message << ")";
   }
-  message << ", found " << Value::typeName(found.type()) << " " << "(" << found.toEchoStringNoThrow() << ")";
+  message << ", found " << found.typeName() << " " << "(" << found.toEchoStringNoThrow() << ")";
+  LOG(message_group::Warning, loc, documentRoot, "%1$s", message.str());
+}
+
+void print_argConvert_warning(
+  const std::string& calledName,
+  const std::string& argName,
+  const Value& found,
+  std::vector<Value::Type> expected,
+  const Location& loc,
+  const std::string& documentRoot
+  ) {
+  std::stringstream message;
+  message << calledName << "(..., " << argName << "=" << found.toEchoStringNoThrow() << ") Invalid type: expected ";
+  if (expected.size() == 1) {
+    message << Value::typeName(expected[0]);
+  } else {
+    assert(expected.size() > 0);
+    message << "one of (" << Value::typeName(expected[0]);
+    for (size_t i = 1; i < expected.size(); i++) {
+      message << ", " << Value::typeName(expected[i]);
+    }
+    message << ")";
+  }
+  message << ", found " << found.typeName();
   LOG(message_group::Warning, loc, documentRoot, "%1$s", message.str());
 }

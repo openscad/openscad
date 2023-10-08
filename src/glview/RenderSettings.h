@@ -1,7 +1,6 @@
 #pragma once
 
-#include <map>
-#include "linalg.h"
+#include <string>
 
 class RenderSettings
 {
@@ -15,5 +14,4 @@ public:
   std::string colorscheme;
 private:
   RenderSettings();
-  ~RenderSettings() {}
 };

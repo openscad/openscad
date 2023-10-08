@@ -10,7 +10,6 @@ class TabWidget : public QTabBar
 
 public:
   TabWidget(QWidget *parent = nullptr);
-  ~TabWidget();
   QWidget *getContentWidget();
 
   int addTab(QWidget *w, const QString& label);
@@ -19,7 +18,7 @@ public:
   void removeTab(int index);
   void setCurrentWidget(int index);
   void fireTabCountChanged();
-  void mouseReleaseEvent(QMouseEvent *event);
+  void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
   QList<QWidget *> tabContent;

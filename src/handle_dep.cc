@@ -2,12 +2,16 @@
 #include "printutils.h"
 #include <string>
 #include <sstream>
-#include <stdlib.h> // for system()
+#include <cstdlib> // for system()
 #include <unordered_set>
 #include <vector>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
+
+#ifndef _WIN32 // NOT _WIN32
+#include <sys/wait.h>
+#endif // NOT _WIN32
 
 std::unordered_set<std::string> dependencies;
 const char *make_command = nullptr;
@@ -24,7 +28,7 @@ void handle_dep(const std::string& filename)
   if (make_command && !fs::exists(filepath)) {
     // This should only happen from command-line execution.
     // If changed, add an alternate error-reporting process.
-    auto cmd = STR(make_command << " '" << boost::regex_replace(filename, boost::regex("'"), "'\\''") << "'");
+    auto cmd = STR(make_command, " '", boost::regex_replace(filename, boost::regex("'"), "'\\''"), "'");
     errno = 0;
     int res = system(cmd.c_str());
 

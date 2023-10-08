@@ -34,7 +34,6 @@ class QGamepadInputDriver : public InputDriver
 {
 public:
   QGamepadInputDriver();
-  ~QGamepadInputDriver();
   void run() override;
   bool open() override;
   void close() override;
@@ -43,10 +42,10 @@ public:
   const std::string& get_name() const override;
   std::string get_info() const override;
 
-  int getButtonCount() const override {
+  size_t getButtonCount() const override {
     return InputDriver::max_buttons;
   }
-  int getAxisCount() const override {
+  size_t getAxisCount() const override {
     return InputDriver::max_axis;
   }
 

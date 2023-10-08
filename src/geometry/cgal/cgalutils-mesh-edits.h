@@ -16,11 +16,11 @@ class TriangleMeshEdits
 {
 
 private:
-  typedef boost::graph_traits<TriangleMesh> GT;
-  typedef typename GT::face_descriptor face_descriptor;
-  typedef typename GT::halfedge_descriptor halfedge_descriptor;
-  typedef typename GT::edge_descriptor edge_descriptor;
-  typedef typename GT::vertex_descriptor vertex_descriptor;
+  using GT = boost::graph_traits<TriangleMesh>;
+  using face_descriptor = typename GT::face_descriptor;
+  using halfedge_descriptor = typename GT::halfedge_descriptor;
+  using edge_descriptor = typename GT::edge_descriptor;
+  using vertex_descriptor = typename GT::vertex_descriptor;
 
   std::unordered_set<face_descriptor> facesToRemove;
   std::unordered_set<vertex_descriptor> verticesToRemove;
@@ -124,7 +124,7 @@ public:
           }
           return true;
         } else {
-          LOG(message_group::Warning, Location::NONE, "", "Failed to add face with %1$lu vertices!", polygon.size());
+          LOG(message_group::Warning, "Failed to add face with %1$lu vertices!", polygon.size());
           return false;
         }
       };
@@ -140,7 +140,7 @@ public:
           polygon.push_back(getDestinationVertex(v));
         }
         if (polygon.size() < 3) {
-          LOG(message_group::Warning, Location::NONE, "", "Attempted to remove too many vertices around this copied face, remesh aborted!");
+          LOG(message_group::Warning, "Attempted to remove too many vertices around this copied face, remesh aborted!");
           return false;
         }
 
@@ -169,7 +169,7 @@ public:
         polygon.push_back(getDestinationVertex(v));
       }
       if (polygon.size() < 3) {
-        LOG(message_group::Warning, Location::NONE, "", "Attempted to remove too many vertices around this added face, remesh aborted!");
+        LOG(message_group::Warning, "Attempted to remove too many vertices around this added face, remesh aborted!");
         return false;
       }
       if (!addFace(polygon)) {
@@ -178,11 +178,11 @@ public:
     }
 
     if (wasValid && !CGAL::is_valid_polygon_mesh(copy)) {
-      LOG(message_group::Warning, Location::NONE, "", "Remeshing output isn't valid");
+      LOG(message_group::Warning, "Remeshing output isn't valid");
       return false;
     }
     if (wasClosed && !CGAL::is_closed(copy)) {
-      LOG(message_group::Warning, Location::NONE, "", "Remeshing output isn't closed");
+      LOG(message_group::Warning, "Remeshing output isn't closed");
       return false;
     }
 

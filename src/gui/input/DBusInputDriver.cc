@@ -25,7 +25,7 @@
  */
 #include "DBusInputDriver.h"
 #include "InputDriverManager.h"
-
+#include "printutils.h"
 #include "openscad_adaptor.h"
 #include "openscad_interface.h"
 
@@ -34,14 +34,9 @@ void DBusInputDriver::run()
 
 }
 
-DBusInputDriver::DBusInputDriver() : is_open(false)
+DBusInputDriver::DBusInputDriver()
 {
   name = "DBusInputDriver";
-}
-
-DBusInputDriver::~DBusInputDriver()
-{
-
 }
 
 bool DBusInputDriver::openOnce() const
@@ -116,7 +111,7 @@ void DBusInputDriver::translateTo(double x, double y, double z) const
   InputDriverManager::instance()->sendEvent(new InputEventTranslate(x, y, z, false, false, false));
 }
 
-void DBusInputDriver::action(QString name) const
+void DBusInputDriver::action(const QString& name) const
 {
   InputDriverManager::instance()->sendEvent(new InputEventAction(name.toStdString(), false));
 }
@@ -153,5 +148,5 @@ const std::string& DBusInputDriver::get_name() const
 
 std::string DBusInputDriver::get_info() const
 {
-  return STR(get_name() << " " << (isOpen() ? "open" : "not open"));
+  return STR(get_name(), " ", (isOpen() ? "open" : "not open"));
 }

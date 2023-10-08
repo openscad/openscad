@@ -1,6 +1,6 @@
 #include "printutils.h"
 #include <sstream>
-#include <stdio.h>
+#include <cstdio>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/circular_buffer.hpp>
@@ -57,7 +57,7 @@ bool would_have_thrown()
 
 void print_messages_push()
 {
-  print_messages_stack.push_back(std::string());
+  print_messages_stack.emplace_back();
 }
 
 void print_messages_pop()
@@ -87,7 +87,7 @@ void PRINT(const Message& msgObj)
 
   //to error log
   if (outputhandler2 &&
-      !(msgObj.group == message_group::None || msgObj.group == message_group::Echo || msgObj.group == message_group::Trace)) {
+      !(msgObj.group == message_group::NONE || msgObj.group == message_group::Echo || msgObj.group == message_group::Trace)) {
 
     outputhandler2(msgObj, outputhandler_data);
   }
@@ -134,7 +134,7 @@ void PRINTDEBUG(const std::string& filename, const std::string& msg)
   boost::algorithm::to_lower(lowdebug);
   if (OpenSCAD::debug == "all" ||
       lowdebug.find(lowshortfname) != std::string::npos) {
-    Message msgObj = {shortfname + ": " + msg, Location::NONE, "", message_group::None, };
+    Message msgObj{shortfname + ": " + msg, message_group::NONE, Location::NONE, ""};
     PRINT_NOCACHE(msgObj);
   }
 }
@@ -173,7 +173,7 @@ void resetSuppressedMessages()
 std::string getGroupName(const enum message_group& group)
 {
   switch (group) {
-  case message_group::None:
+  case message_group::NONE:
   case message_group::Warning:
   case message_group::UI_Warning:
     return "WARNING";
@@ -222,5 +222,5 @@ std::string getGroupColor(const enum message_group& group)
 
 bool getGroupTextPlain(const enum message_group& group)
 {
-  return group == message_group::None || group == message_group::Echo;
+  return group == message_group::NONE || group == message_group::Echo;
 }

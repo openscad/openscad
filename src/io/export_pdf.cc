@@ -1,8 +1,8 @@
 #include "export.h"
 #include "PolySet.h"
-#include "PolySetUtils.h"
+// #include "PolySetUtils.h"
 #include "printutils.h"
-#include "version.h"
+// #include "version.h"
 #include "version_helper.h"
 
 #include <string>
@@ -14,21 +14,16 @@
 #include <cairo-pdf.h>
 
 
-// A4 Size Paper
-#define WPOINTS 595.
-#define HPOINTS 842.
-#define MARGIN 30.
-
 #define FONT "Liberation Sans"
 
+
+#define MARGIN 30.
+
+// void export_pdf(const shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo, const ExportPdfOptions  exportPdfOptions);
+ 
 const std::string get_cairo_version() {
   return OpenSCAD::get_version(CAIRO_VERSION_STRING, cairo_version_string());
 }
-
-enum class OriginPosition {
-  BUTTOMLEFT,
-  CENTER
-};
 
 void draw_text(const char *text, cairo_t *cr, double x, double y, double fontSize){
 
@@ -39,125 +34,150 @@ void draw_text(const char *text, cairo_t *cr, double x, double y, double fontSiz
 
 }
 
+#define PTS_IN_MM 2.834645656693;
+
 double mm_to_points(double mm){
-  return mm * 2.8346;
+  return mm * PTS_IN_MM;
 }
 
-void draw_axis(cairo_t *cr, OriginPosition pos){
-  cairo_select_font_face(cr, FONT, CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
-  cairo_set_font_size(cr, 6.);
-  cairo_set_line_width(cr, 0.4);
-  double offset = mm_to_points(10.);
-
-  if (pos == OriginPosition::CENTER) {
-
-    for (int i = 0; i < 10; i++) {
-      cairo_move_to(cr, i * offset, (HPOINTS / 2.));
-      cairo_line_to(cr, i * offset, (HPOINTS / 2.) - mm_to_points(12));
-      cairo_stroke(cr);
-      cairo_move_to(cr, (i * offset) + 1.5, (HPOINTS / 2.) - mm_to_points(8));
-      if (i % 2 == 0) {
-        std::string num = std::to_string(i * 10);
-        cairo_show_text(cr, num.c_str());
-      }
-    }
-    for (int i = 1; i < 10; i++) {
-      cairo_move_to(cr, -i * offset, (HPOINTS / 2.));
-      cairo_line_to(cr, -i * offset, (HPOINTS / 2.) - mm_to_points(12));
-      cairo_stroke(cr);
-      cairo_move_to(cr, (-i * offset) + 1.5, (HPOINTS / 2.) - mm_to_points(8));
-      if (i % 2 == 0) {
-        std::string num = std::to_string(-i * 10);
-        cairo_show_text(cr, num.c_str());
-      }
-    }
-
-    for (int i = 0; i < 15; i++) {
-      cairo_move_to(cr, -(WPOINTS / 2.), -i * offset);
-      cairo_line_to(cr, -(WPOINTS / 2.) + mm_to_points(12), -i * offset);
-      cairo_stroke(cr);
-      cairo_move_to(cr, -(WPOINTS / 2.) + mm_to_points(8), (-i * offset) - 1.5);
-      if (i % 2 == 0) {
-        std::string num = std::to_string(i * 10);
-        cairo_show_text(cr, num.c_str());
-      }
-    }
-    for (int i = 1; i < 15; i++) {
-      cairo_move_to(cr, -(WPOINTS / 2.), i * offset);
-      cairo_line_to(cr, -(WPOINTS / 2.) + mm_to_points(12), i * offset);
-      cairo_stroke(cr);
-      cairo_move_to(cr, -(WPOINTS / 2.) + mm_to_points(8), (i * offset) - 1.5);
-      if (i % 2 == 0) {
-        std::string num = std::to_string(-i * 10);
-        cairo_show_text(cr, num.c_str());
-      }
-    }
-    cairo_set_source_rgba(cr, 0., 0., 0., 1.0);
-    cairo_move_to(cr, 0., (HPOINTS / 2.));
-    cairo_line_to(cr, 0., (HPOINTS / 2.) - mm_to_points(12));
-    cairo_move_to(cr, -(WPOINTS / 2.), 0.);
-    cairo_line_to(cr, -(WPOINTS / 2.) + mm_to_points(12), 0.);
-    cairo_stroke(cr);
-
-  } else {
-
-    for (int i = 1; i < 20; i++) {
-      cairo_move_to(cr, i * offset, 0.0);
-      cairo_line_to(cr, i * offset, -mm_to_points(12));
-      cairo_stroke(cr);
-      cairo_move_to(cr, (i * offset) + 1.5, -mm_to_points(8));
-      if ((i - 1) % 2 == 0) {
-        std::string num = std::to_string((i - 1) * 10);
-        cairo_show_text(cr, num.c_str());
-      }
-    }
-    for (int i = 1; i < 30; i++) {
-      cairo_move_to(cr, 0., -i * offset);
-      cairo_line_to(cr, mm_to_points(12), -i * offset);
-      cairo_stroke(cr);
-      cairo_move_to(cr, mm_to_points(8), (-i * offset) - 1.5);
-      if ((i - 1) % 2 == 0) {
-        std::string num = std::to_string((i - 1) * 10);
-        cairo_show_text(cr, num.c_str());
-      }
-    }
-  }
+double points_to_mm(double pts){
+  return pts / PTS_IN_MM;
 }
 
-void draw_geom(const Polygon2d& poly, cairo_t *cr, bool& inpaper, OriginPosition pos){
+void draw_grid(cairo_t *cr, double left, double right, double bottom, double top, double gridSize ){
+  // gridSize>1.
+  if (gridSize<1.) gridSize=2.;
+  double darkerLine=0.36;
+  double lightLine=0.24;
+  int major = (gridSize>10.? gridSize: int(10./gridSize));
+
+  double offset = mm_to_points(gridSize);
+  double pts=0.;  // for iteration across page
+  
+  // bounds are margins in points.
+  // compute Xrange in units of gridSize
+  int Xstart=ceil(points_to_mm(left)/gridSize);
+  int Xstop=floor(points_to_mm(right)/gridSize);
+  // draw Horizontal lines
+   for (int i = Xstart; i < Xstop+1; i++) {
+      if (i%major)  { 
+      	cairo_set_line_width(cr, lightLine);
+      	cairo_set_source_rgba(cr, 0., 0., 0., 0.48);
+      	}
+      else  { 
+      	cairo_set_line_width(cr, darkerLine);
+	cairo_set_source_rgba(cr, 0., 0., 0., 0.6);
+	}
+      pts=mm_to_points(i*gridSize);
+      cairo_move_to(cr, pts, top);
+      cairo_line_to(cr, pts, bottom);
+      cairo_stroke(cr);
+  };
+  // compute Yrange in units of gridSize
+  int Ystart=ceil(points_to_mm(top)/gridSize);
+  int Ystop=floor(points_to_mm(bottom)/gridSize);
+  // draw vertical lines
+   for (int i = Ystart; i < Ystop+1; i++) {
+         if (i%major)  { 
+      	cairo_set_line_width(cr, lightLine);
+      	cairo_set_source_rgba(cr, 0., 0., 0., 0.4);
+      	}
+      else  { 
+      	cairo_set_line_width(cr, darkerLine);
+	cairo_set_source_rgba(cr, 0., 0., 0., 0.6);
+	}
+      pts=mm_to_points(i*gridSize);
+      cairo_move_to(cr, left, pts);
+      cairo_line_to(cr, right, pts);
+      cairo_stroke(cr);
+  };
+}  
+
+// New draw_axes (renamed from axis since it draws both).  
+void draw_axes(cairo_t *cr, double left, double right, double bottom, double top){
+  double darkerLine=0.36;
+  double faintLine=0.24;
+  double offset = mm_to_points(5.);
+  double pts=0.;  // for iteration across page
+  
+       	cairo_set_line_width(cr, darkerLine);
+	cairo_set_source_rgba(cr, 0., 0., 0., 0.6);
+  
+  // Axes proper
+  // Left axis
+     cairo_move_to(cr, left, top);
+     cairo_line_to(cr, left, bottom);
+     cairo_stroke(cr);
+  // Bottom axis
+     cairo_move_to(cr, left, bottom);
+     cairo_line_to(cr, right, bottom);
+     cairo_stroke(cr);
+  
+  // tics and labels
+  // bounds are margins in points.
+  	// compute Xrange in 10mm
+  int Xstart=ceil(points_to_mm(left)/10.);
+  int Xstop=floor(points_to_mm(right)/10.);
+   for (int i = Xstart; i < Xstop+1; i++) {
+      pts=mm_to_points(i*10.);
+      cairo_move_to(cr, pts, bottom);
+      cairo_line_to(cr, pts, bottom + offset);
+      cairo_stroke(cr);
+      if (i % 2 == 0) {
+            std::string num = std::to_string(i * 10);
+            draw_text(num.c_str(), cr, pts+1, bottom+offset-2, 6.);
+      }
+  };
+  	// compute Yrange in 10mm
+  int Ystart=ceil(points_to_mm(top)/10.);
+  int Ystop=floor(points_to_mm(bottom)/10.);
+   for (int i = Ystart; i < Ystop+1; i++) {
+      pts=mm_to_points(i*10.);
+      cairo_move_to(cr, left, pts);
+      cairo_line_to(cr, left-offset, pts);
+      cairo_stroke(cr);
+      if (i % 2 == 0) {
+            std::string num = std::to_string(-i * 10);
+            draw_text(num.c_str(), cr, left-offset, pts - 3, 6.);
+      }
+  };
+}  
+  
+
+
+// Draws a single 2D polygon.
+void draw_geom(const Polygon2d& poly, cairo_t *cr ){
   for (const auto& o : poly.outlines()) {
     if (o.vertices.empty()) {
       continue;
     }
     const Eigen::Vector2d& p0 = o.vertices[0];
+    // Move to the first vertice.  Note Y is inverted in Cairo.
     cairo_move_to(cr, mm_to_points(p0.x()), mm_to_points(-p0.y()));
+    // LOG(message_group::Export_Warning, "DRAW VERTICE %1$8.4f %2$8.4f", mm_to_points(p0.x()),mm_to_points(p0.y()));
+    // iterate across the remaining vertices, drawing a line to each.
     for (unsigned int idx = 1; idx < o.vertices.size(); idx++) {
       const Eigen::Vector2d& p = o.vertices[idx];
       cairo_line_to(cr, mm_to_points(p.x()), mm_to_points(-p.y()));
-      if (pos == OriginPosition::CENTER) {
-        if (abs((int)mm_to_points(p.x())) > (WPOINTS / 2) || abs((int)mm_to_points(p.y())) > (HPOINTS / 2)) {
-          inpaper = false;
-        }
-      } else {
-        if (abs((int)mm_to_points(p.x())) > WPOINTS || abs((int)mm_to_points(p.y())) > HPOINTS) {
-          inpaper = false;
-        }
-      }
+      // LOG(message_group::Export_Warning, "DRAW VERTICE %1$8.4f %2$8.4f", mm_to_points(p.x()),mm_to_points(p.y()));
     }
+    // Draw a line from the last vertice to the first vertice.
     cairo_line_to(cr, mm_to_points(p0.x()), mm_to_points(-p0.y()));
 
   }
 }
 
-void draw_geom(const shared_ptr<const Geometry>& geom, cairo_t *cr, bool& inpaper, OriginPosition pos){
-  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+
+// Main entry:  draw geometry that consists of 2D polygons.  Walks the tree...
+void draw_geom(const shared_ptr<const Geometry>& geom, cairo_t *cr){
+  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) { // iterate
     for (const auto& item : geomlist->getChildren()) {
-      draw_geom(item.second, cr, inpaper, pos);
+      draw_geom(item.second, cr);
     }
-  } else if (dynamic_pointer_cast<const PolySet>(geom)) {
+  } else if (dynamic_pointer_cast<const PolySet>(geom)) {  
     assert(false && "Unsupported file format");
-  } else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
-    draw_geom(*poly, cr, inpaper, pos);
+  } else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) { // geometry that can be drawn.
+    draw_geom(*poly, cr);
   } else {
     assert(false && "Export as PDF for this geometry type is not supported");
   }
@@ -170,9 +190,68 @@ static cairo_status_t export_pdf_write(void *closure, const unsigned char *data,
   return !(*stream) ? CAIRO_STATUS_WRITE_ERROR : CAIRO_STATUS_SUCCESS;
 }
 
+
 void export_pdf(const shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
 {
-  cairo_surface_t *surface = cairo_pdf_surface_create_for_stream(export_pdf_write, &output, WPOINTS, HPOINTS);
+// Extract the options.  This will change when options becomes a variant.
+ExportPdfOptions *exportPdfOptions;
+ExportPdfOptions defaultPdfOptions;
+// could use short-circuit short-form, but will need to grow.
+if (exportInfo.options==nullptr) {
+	exportPdfOptions=&defaultPdfOptions;
+} else {
+	exportPdfOptions=exportInfo.options;
+};
+
+  int pdfX,pdfY;  // selected paper size for export.
+  // Fit geometry to page
+  // Get dims in mm.
+  BoundingBox bbox = geom->getBoundingBox();
+  int minx = (int)floor(bbox.min().x());
+  int maxy = (int)floor(bbox.max().y());
+  int maxx = (int)ceil(bbox.max().x());
+  int miny = (int)ceil(bbox.min().y());
+  // compute page attributes in points
+  int spanX = mm_to_points(maxx-minx);
+  int spanY = mm_to_points(maxy-miny);
+  int centerX = mm_to_points(minx)+spanX/2;
+  int centerY = mm_to_points(miny)+spanY/2;
+  // Temporary Log
+//  LOG(message_group::Export_Warning, "min( %1$6d , %2$6d ), max( %3$6d , %4$6d )", minx, miny, maxx, maxy);
+//  LOG(message_group::Export_Warning, "span( %1$6d , %2$6d ), center ( %3$6d , %4$6d )", spanX, spanY,  centerX, centerY);
+  
+  // Set orientation and paper size
+  if ((exportPdfOptions->Orientation==paperOrientations::AUTO && spanX>spanY)||(exportPdfOptions->Orientation==paperOrientations::LANDSCAPE)) {
+  	pdfX=paperDimensions[static_cast<int>(exportPdfOptions->paperSize)][1];
+  	pdfY=paperDimensions[static_cast<int>(exportPdfOptions->paperSize)][0];
+  } else {
+    	pdfX=paperDimensions[static_cast<int>(exportPdfOptions->paperSize)][0];
+    	pdfY=paperDimensions[static_cast<int>(exportPdfOptions->paperSize)][1];
+  }; 
+  
+  // Does it fit? (in points)	
+  bool inpaper = (spanX<=pdfX-MARGIN)&&(spanY<=pdfY-MARGIN);
+  if (!inpaper) {
+    LOG(message_group::Export_Warning, "Geometry is too large to fit into selected size.");
+  }
+  //      LOG(message_group::Export_Warning, "pdfX, pdfY %1$6d %2$6d ", pdfX, pdfY);
+        
+  //  Center on page.  Still in points.
+  // Note Cairo inverts the Y axis, with zero at the top, positive going down.
+  // Compute translation and auxiliary numbers in lieu of transform matrices.
+  double tcX=pdfX/2-centerX;
+  double tcY=(pdfY/2+centerY); // Note Geometry Y will still need to be inverted.
+  // Shifted exact margins
+  double Mlx=centerX-pdfX/2+MARGIN;  // Left margin, X axis
+  double Mrx=centerX+pdfX/2-MARGIN;  // Right margin, X axis
+  double Mty=-(centerY-pdfY/2+MARGIN);  // INVERTED Top margin, Y axis
+  double Mby=-(centerY+pdfY/2-MARGIN);  // INVERTED Bottom margin, Y axis
+    // Temporary Log
+    // LOG(message_group::Export_Warning, "tcX, tcY %1$6d , %2$6d", tcX, tcY);
+    // LOG(message_group::Export_Warning, "Mlx, Mry %1$6d %2$6d Mtx, Mty %3$6d %4$6d", Mlx, Mrx, Mty, Mby);
+  
+  // Initialize Cairo Surface and PDF
+  cairo_surface_t *surface = cairo_pdf_surface_create_for_stream(export_pdf_write, &output, pdfX, pdfY);
   if (cairo_surface_status(surface) == cairo_status_t::CAIRO_STATUS_NULL_POINTER) {
     cairo_surface_destroy(surface);
     return;
@@ -186,46 +265,27 @@ void export_pdf(const shared_ptr<const Geometry>& geom, std::ostream& output, co
 #endif
 
   cairo_t *cr = cairo_create(surface);
+  // Note Y axis + is DOWN.  Drawings have to invert Y, but these translations account for that.
+  cairo_translate(cr, tcX, tcY);  // Center page on geometry;
 
-  cairo_set_source_rgba(cr, 0., 0., 0., 1.0);
-  cairo_set_line_width(cr, 1);
-
-  BoundingBox bbox = geom->getBoundingBox();
-  int minx = (int)floor(bbox.min().x());
-  int maxy = (int)floor(bbox.max().y());
-  int maxx = (int)ceil(bbox.max().x());
-  int miny = (int)ceil(bbox.min().y());
-
-  bool inpaper = true;
-  std::string about = "Scale is to calibrate actual printed dimension. Check both X and Y. Measure between tick 0 and last tick";
-
-  if (minx >= 0 && miny >= 0 && maxx >= 0 && maxy >= 0) {
-
-    cairo_translate(cr, MARGIN, HPOINTS - MARGIN);
-    draw_geom(geom, cr, inpaper, OriginPosition::BUTTOMLEFT);
-    cairo_stroke(cr);
-    cairo_set_source_rgba(cr, 0., 0., 0., 0.4);
-    draw_text(exportInfo.sourceFilePath.c_str(), cr, 0., -HPOINTS + (2. * MARGIN), 10.);
-    cairo_translate(cr, -MARGIN, MARGIN);
-    draw_axis(cr, OriginPosition::BUTTOMLEFT);
-    draw_text(about.c_str(), cr, mm_to_points(13), -mm_to_points(6), 5.);
-
-  } else {
-
-    cairo_translate(cr, WPOINTS / 2., HPOINTS / 2.);
-    draw_geom(geom, cr, inpaper, OriginPosition::CENTER);
-    cairo_stroke(cr);
-    cairo_set_source_rgba(cr, 0., 0., 0., 0.4);
-    draw_text(exportInfo.sourceFilePath.c_str(), cr, -(WPOINTS / 2.) + MARGIN, -(HPOINTS / 2.) + MARGIN, 10.);
-    draw_axis(cr, OriginPosition::CENTER);
-    cairo_set_source_rgba(cr, 0., 0., 0., 0.4);
-    draw_text(about.c_str(), cr, -(WPOINTS / 2.) + mm_to_points(13), (HPOINTS / 2.) - mm_to_points(6), 5.);
-
-  }
-
-  if (!inpaper) {
-    LOG(message_group::Export_Warning, Location::NONE, "", "Geometry is too large to fit into A4 size.");
-  }
+  cairo_set_source_rgba(cr, 0., 0., 0., 1.0); // Set black line, opaque
+  cairo_set_line_width(cr, 1);  // 1 point width.
+  draw_geom(geom, cr);
+  cairo_stroke(cr);
+    
+    // Set Annotations
+      std::string about = "Scale is to calibrate actual printed dimension. Check both X and Y. Measure between tick 0 and last tick";
+    cairo_set_source_rgba(cr, 0., 0., 0., 0.48);
+    // Design Filename
+    if (exportPdfOptions->showDsgnFN) draw_text(exportInfo.sourceFilePath.c_str(), cr, Mlx, Mby, 10.);
+    // Scale
+    if (exportPdfOptions->showScale) {
+    	draw_axes(cr, Mlx,Mrx,Mty,Mby);
+    	// Scale Message
+    	if (exportPdfOptions->showScaleMsg) draw_text(about.c_str(), cr, Mlx+1, Mty-1, 5.);
+    }
+    // Grid
+    if (exportPdfOptions->showGrid) draw_grid(cr, Mlx,Mrx,Mty,Mby, exportPdfOptions->gridSize);
 
   cairo_show_page(cr);
   cairo_surface_destroy(surface);
@@ -241,7 +301,7 @@ const std::string get_cairo_version() {
 
 void export_pdf(const shared_ptr<const Geometry>&, std::ostream&, const ExportInfo&) {
 
-  LOG(message_group::Error, Location::NONE, "", "Export to PDF format was not enabled when building the application.");
+  LOG(message_group::Error, "Export to PDF format was not enabled when building the application.");
 
 }
 

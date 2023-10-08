@@ -39,6 +39,7 @@
 
 #include <QInputDialog>
 #include <QMessageBox>
+#include <utility>
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {
@@ -60,16 +61,14 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 }
 
 // Can only be called before the initial setParameters().
-void ParameterWidget::readFile(QString scadFile)
+void ParameterWidget::readFile(const QString& scadFile)
 {
   assert(sets.empty());
   assert(parameters.empty());
   assert(widgets.empty());
 
   QString jsonFile = getJsonFile(scadFile);
-  if (!boost::filesystem::exists(jsonFile.toStdString())) {
-    this->invalidJsonFile = QString();
-  } else if (this->sets.readFile(jsonFile.toStdString())) {
+  if (!boost::filesystem::exists(jsonFile.toStdString()) || this->sets.readFile(jsonFile.toStdString())) {
     this->invalidJsonFile = QString();
   } else {
     this->invalidJsonFile = jsonFile;
@@ -82,7 +81,7 @@ void ParameterWidget::readFile(QString scadFile)
 
 // Write the json file if the parameter sets are not empty.
 // This prevents creating unnecessary json files.
-void ParameterWidget::saveFile(QString scadFile)
+void ParameterWidget::saveFile(const QString& scadFile)
 {
   if (sets.empty()) {
     return;
@@ -104,7 +103,7 @@ void ParameterWidget::saveFile(QString scadFile)
   sets.writeFile(jsonFile.toStdString());
 }
 
-void ParameterWidget::saveBackupFile(QString scadFile)
+void ParameterWidget::saveBackupFile(const QString& scadFile)
 {
   if (sets.empty()) {
     return;
@@ -181,7 +180,7 @@ void ParameterWidget::onSetChanged(int index)
 
 void ParameterWidget::onSetNameChanged()
 {
-  assert(comboBoxPreset->count() == sets.size() + 1);
+  assert(static_cast<size_t>(comboBoxPreset->count()) == sets.size() + 1);
   comboBoxPreset->setItemText(comboBoxPreset->currentIndex(), comboBoxPreset->lineEdit()->text());
   sets[comboBoxPreset->currentIndex() - 1].setName(comboBoxPreset->currentText().toStdString());
   setModified();
@@ -226,7 +225,7 @@ void ParameterWidget::onSetDelete()
 
 void ParameterWidget::parameterModified(bool immediate)
 {
-  ParameterVirtualWidget *widget = (ParameterVirtualWidget *)sender();
+  auto *widget = (ParameterVirtualWidget *)sender();
   ParameterObject *parameter = widget->getParameter();
 
   // When attempting to modify the design default, create a new set to edit.
@@ -261,7 +260,7 @@ void ParameterWidget::parameterModified(bool immediate)
   autoPreview(immediate);
 }
 
-void ParameterWidget::loadSet(int index)
+void ParameterWidget::loadSet(size_t index)
 {
   assert(index <= sets.size());
   if (index == 0) {
@@ -279,7 +278,7 @@ void ParameterWidget::loadSet(int index)
   }
 }
 
-void ParameterWidget::createSet(QString name)
+void ParameterWidget::createSet(const QString& name)
 {
   sets.push_back(parameters.exportValues(name.toStdString()));
   comboBoxPreset->addItem(name);
@@ -316,10 +315,10 @@ void ParameterWidget::rebuildWidgets()
     delete child;
   }
 
-  DescriptionStyle descriptionStyle = static_cast<DescriptionStyle>(comboBoxDetails->currentIndex());
+  auto descriptionStyle = static_cast<DescriptionStyle>(comboBoxDetails->currentIndex());
   std::vector<ParameterGroup> parameterGroups = getParameterGroups();
   for (const auto& group : parameterGroups) {
-    GroupWidget *groupWidget = new GroupWidget(group.name);
+    auto *groupWidget = new GroupWidget(group.name);
     for (ParameterObject *parameter : group.parameters) {
       ParameterVirtualWidget *parameterWidget = createParameterWidget(parameter, descriptionStyle);
       connect(parameterWidget, SIGNAL(changed(bool)), this, SLOT(parameterModified(bool)));
@@ -377,7 +376,7 @@ ParameterVirtualWidget *ParameterWidget::createParameterWidget(ParameterObject *
   } else if (parameter->type() == ParameterObject::ParameterType::String) {
     return new ParameterText(this, static_cast<StringParameter *>(parameter), descriptionStyle);
   } else if (parameter->type() == ParameterObject::ParameterType::Number) {
-    NumberParameter *numberParameter = static_cast<NumberParameter *>(parameter);
+    auto *numberParameter = static_cast<NumberParameter *>(parameter);
     if (numberParameter->minimum && numberParameter->maximum) {
       return new ParameterSlider(this, numberParameter, descriptionStyle);
     } else {
@@ -393,7 +392,7 @@ ParameterVirtualWidget *ParameterWidget::createParameterWidget(ParameterObject *
   }
 }
 
-QString ParameterWidget::getJsonFile(QString scadFile)
+QString ParameterWidget::getJsonFile(const QString& scadFile)
 {
   boost::filesystem::path p = scadFile.toStdString();
   return QString::fromStdString(p.replace_extension(".json").string());

@@ -25,7 +25,6 @@
  */
 
 #include "printutils.h"
-#include "boost-utils.h"
 #include "PrintService.h"
 
 std::mutex PrintService::printServiceMutex;
@@ -36,15 +35,11 @@ PrintService::PrintService()
   try {
     init();
   } catch (const NetworkException& e) {
-    LOG(message_group::Error, Location::NONE, "", "%1$s", e.getErrorMessage());
+    LOG(message_group::Error, "%1$s", e.getErrorMessage());
   }
   if (enabled) {
-    LOG(message_group::None, Location::NONE, "", "External print service available: %1$s (upload limit = %2$d MB)", displayName.toStdString(), fileSizeLimitMB);
+    LOG("External print service available: %1$s (upload limit = %2$d MB)", displayName.toStdString(), fileSizeLimitMB);
   }
-}
-
-PrintService::~PrintService()
-{
 }
 
 PrintService *PrintService::inst()
@@ -106,7 +101,7 @@ void PrintService::initService(const QJsonObject& serviceObject)
  * Outputs:
  *    The resulting url to go to next to continue the order process.
  */
-const QString PrintService::upload(const QString& fileName, const QString& contentBase64, network_progress_func_t progress_func)
+const QString PrintService::upload(const QString& fileName, const QString& contentBase64, const network_progress_func_t& progress_func)
 {
   QJsonObject jsonInput;
   jsonInput.insert("fileName", fileName);
@@ -126,24 +121,24 @@ const QString PrintService::upload(const QString& fileName, const QString& conte
   networkRequest.set_progress_func(progress_func);
   return networkRequest.execute(
     [](QNetworkRequest& request) {
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-  },
+      request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+    },
     [&](QNetworkAccessManager& nam, QNetworkRequest& request) {
-    return nam.post(request, QJsonDocument(jsonInput).toJson());
-  },
+      return nam.post(request, QJsonDocument(jsonInput).toJson());
+    },
     [](QNetworkReply *reply) {
-    const auto doc = QJsonDocument::fromJson(reply->readAll());
-    PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
+      const auto doc = QJsonDocument::fromJson(reply->readAll());
+      PRINTDB("Response: %s", QString{doc.toJson()}.toStdString());
 
-    // Extract cartUrl which gives the page to open in a webbrowser to view uploaded part
-    const auto cartUrlValue = doc.object().value("data").toObject().value("cartUrl");
-    const auto cartUrl = cartUrlValue.toString();
-    if ((cartUrlValue == QJsonValue::Undefined) || (cartUrl.isEmpty())) {
-      const QString msg = "Could not get data.cartUrl field from response.";
-      throw NetworkException(QNetworkReply::ProtocolFailure, msg);
+      // Extract cartUrl which gives the page to open in a webbrowser to view uploaded part
+      auto cartUrlValue = doc.object().value("data").toObject().value("cartUrl");
+      auto cartUrl = cartUrlValue.toString();
+      if ((cartUrlValue == QJsonValue::Undefined) || (cartUrl.isEmpty())) {
+        const QString msg = "Could not get data.cartUrl field from response.";
+        throw NetworkException(QNetworkReply::ProtocolFailure, msg);
+      }
+      LOG("Upload finished, opening URL %1$s.", cartUrl.toStdString());
+      return cartUrl;
     }
-    LOG(message_group::None, Location::NONE, "", "Upload finished, opening URL %1$s.", cartUrl.toStdString());
-    return cartUrl;
-  }
-    );
+  );
 }

@@ -2,7 +2,7 @@
 #include "node.h"
 
 int progress_report_count;
-int _progress_mark;
+int progress_mark_;
 void (*progress_report_f)(const std::shared_ptr<const AbstractNode> &, void *, int);
 void *progress_report_userdata;
 
@@ -24,12 +24,12 @@ void progress_report_fin()
 void progress_update(const std::shared_ptr<const AbstractNode> &node, int mark)
 {
   if (progress_report_f) {
-    _progress_mark = mark;
-    progress_report_f(node, progress_report_userdata, _progress_mark);
+    progress_mark_ = mark;
+    progress_report_f(node, progress_report_userdata, progress_mark_);
   }
 }
 
 void progress_tick()
 {
-  if (progress_report_f) progress_report_f(std::shared_ptr<const AbstractNode>(), progress_report_userdata, ++_progress_mark);
+  if (progress_report_f) progress_report_f(std::shared_ptr<const AbstractNode>(), progress_report_userdata, ++progress_mark_);
 }

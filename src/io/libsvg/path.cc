@@ -22,11 +22,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <stdlib.h>
+#include <cstdlib>
 
 #include <string>
 #include <iostream>
 #include <cmath>
+#include <cctype>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -37,6 +38,7 @@
 #include "path.h"
 #include "degree_trig.h"
 #include "calc.h"
+#include "util.h"
 
 namespace libsvg {
 
@@ -66,14 +68,6 @@ const std::string path::name("path");
    PATHSEG_CURVETO_QUADRATIC_SMOOTH_REL t
  */
 
-path::path()
-{
-}
-
-path::~path()
-{
-}
-
 static double
 vector_angle(double ux, double uy, double vx, double vy)
 {
@@ -96,7 +90,7 @@ unsigned long CalcFn(double fn, unsigned long minimum) {
 void
 path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2, double y2, double angle, bool large, bool sweep, void *context)
 {
-  const fnContext *fValues = reinterpret_cast<const fnContext *>(context);
+  const auto *fValues = reinterpret_cast<const fnContext *>(context);
 
   // http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
 
@@ -147,10 +141,10 @@ path::arc_to(path_t& path, double x1, double y1, double rx, double ry, double x2
   double rmax = fmax(rx, ry);
   unsigned long fn = Calc::get_fragments_from_r(rmax, fValues->fn, fValues->fs, fValues->fa);
   fn = (unsigned long) ceil(fn * fabs(delta) / 360.0); // because we are creating a section of an ellipse, not the full ellipse
-  int steps = (std::fabs(delta) * 10.0 / 180) + 4;
+  unsigned int steps = (std::fabs(delta) * 10.0 / 180) + 4;
   if (steps < fn) // use the maximum of calculated steps and user specified steps
     steps = fn;
-  for (int a = 0; a <= steps; ++a) {
+  for (unsigned int a = 0; a <= steps; ++a) {
     double phi = theta + delta * a / steps;
 
     double xx = cos_rad * cos_degrees(phi) * rx - sin_rad * sin_degrees(phi) * ry;
@@ -165,7 +159,7 @@ void
 path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double x2, double y2, void *context)
 {
   // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa (lot of work, little gain)
-  const fnContext *fValues = reinterpret_cast<const fnContext *>(context);
+  const auto *fValues = reinterpret_cast<const fnContext *>(context);
   unsigned long fn = CalcFn(fValues->fn, 20); // preserve the old minimum
   for (unsigned long idx = 1; idx <= fn; ++idx) {
     const double a = idx * (1.0 / (double)fn);
@@ -179,7 +173,7 @@ void
 path::curve_to(path_t& path, double x, double y, double cx1, double cy1, double cx2, double cy2, double x2, double y2, void *context)
 {
   // NOTE - this could be done better using a chord length iteration (uniform in space) to implement $fa (lot of work, little gain)
-  const fnContext *fValues = reinterpret_cast<const fnContext *>(context);
+  const auto *fValues = reinterpret_cast<const fnContext *>(context);
   unsigned long fn = CalcFn(fValues->fn, 20); // preserve the old minimum
   for (unsigned long idx = 1; idx <= fn; ++idx) {
     const double a = idx * (1.0 / (double)fn);
@@ -258,7 +252,7 @@ path::set_attrs(attr_map_t& attrs, void *context)
 
   bool negate = false;
   bool path_closed = false;
-  std::string exp;
+  std::string pre_exp;
   path_list.push_back(path_t());
   for (const auto& v : path_tokens) {
 
@@ -271,17 +265,17 @@ path::set_attrs(attr_map_t& attrs, void *context)
       point = -1;
       cmd = v[0];
     } else {
-      if (*v.rbegin() == 'e') {
-        exp = negate ? std::string("-") + v : v;
+      if (std::tolower(*v.rbegin()) == 'e') {
+        pre_exp = negate ? std::string("-").append(v) : v;
         negate = false;
         continue;
       }
-      if (exp.empty()) {
+      if (pre_exp.empty()) {
         p = parse_double(v);
         p = negate ? -p : p;
       } else {
-        p = parse_double(exp + (negate ? "-" : "") + v);
-        exp = "";
+        p = parse_double(pre_exp.append(negate ? "-" : "").append(v));
+        pre_exp = "";
       }
       negate = false;
     }

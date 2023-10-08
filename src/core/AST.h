@@ -1,8 +1,9 @@
 #pragma once
 
 #include <string>
-#include <memory.h>
+#include <memory>
 #include <boost/filesystem.hpp>
+#include <utility>
 namespace fs = boost::filesystem;
 
 #include <string>
@@ -17,15 +18,15 @@ public:
     last_col(lastCol), path(std::move(path)) {
   }
 
-  std::string fileName() const { return path ? path->generic_string() : ""; }
-  const fs::path& filePath() const { return *path; }
-  int firstLine() const { return first_line; }
-  int firstColumn() const { return first_col; }
-  int lastLine() const { return last_line; }
-  int lastColumn() const { return last_col; }
-  bool isNone() const;
+  [[nodiscard]] std::string fileName() const { return path ? path->generic_string() : ""; }
+  [[nodiscard]] const fs::path& filePath() const { return *path; }
+  [[nodiscard]] int firstLine() const { return first_line; }
+  [[nodiscard]] int firstColumn() const { return first_col; }
+  [[nodiscard]] int lastLine() const { return last_line; }
+  [[nodiscard]] int lastColumn() const { return last_col; }
+  [[nodiscard]] bool isNone() const;
 
-  std::string toRelativeString(const std::string& docPath) const;
+  [[nodiscard]] std::string toRelativeString(const std::string& docPath) const;
 
   bool operator==(Location const& rhs);
   bool operator!=(Location const& rhs);
@@ -42,13 +43,13 @@ private:
 class ASTNode
 {
 public:
-  ASTNode(const Location& loc) : loc(loc) {}
-  virtual ~ASTNode() {}
+  ASTNode(Location loc) : loc(std::move(loc)) {}
+  virtual ~ASTNode() = default;
 
   virtual void print(std::ostream& stream, const std::string& indent) const = 0;
 
-  std::string dump(const std::string& indent) const;
-  const Location& location() const { return loc; }
+  [[nodiscard]] std::string dump(const std::string& indent) const;
+  [[nodiscard]] const Location& location() const { return loc; }
   void setLocation(const Location& loc) { this->loc = loc; }
 
 protected:

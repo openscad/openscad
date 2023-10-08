@@ -30,13 +30,12 @@
 #include "Builtins.h"
 #include "Children.h"
 #include "Parameters.h"
-#include "PolySet.h"
 
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-static std::shared_ptr<AbstractNode> builtin_render(const ModuleInstantiation *inst, Arguments arguments, Children children)
+static std::shared_ptr<AbstractNode> builtin_render(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<RenderNode>(inst);
 
@@ -50,7 +49,7 @@ static std::shared_ptr<AbstractNode> builtin_render(const ModuleInstantiation *i
 
 std::string RenderNode::toString() const
 {
-  return STR(this->name() << "(convexity = " << convexity << ")");
+  return STR(this->name(), "(convexity = ", convexity, ")");
 }
 
 void register_builtin_render()

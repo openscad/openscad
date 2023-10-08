@@ -28,7 +28,6 @@
 #include "AxisConfigWidget.h"
 
 #include "Settings.h"
-#include "QSettingsCached.h"
 #include "input/InputDriverManager.h"
 #include "SettingsWriter.h"
 #include "IgnoreWheelWhenNotFocused.h"
@@ -39,12 +38,8 @@ AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
   setupUi(this);
 }
 
-AxisConfigWidget::~AxisConfigWidget()
-{
-}
-
 void AxisConfigWidget::AxesChanged(int nr, double val) const {
-  QProgressBar *progressBar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(nr));
+  auto *progressBar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(nr));
   if (progressBar == nullptr) return;
 
   int value = val * 100;
@@ -58,7 +53,7 @@ void AxisConfigWidget::AxesChanged(int nr, double val) const {
   QString s = QString::number(val, 'f', 2);
   progressBar->setFormat(s);
 
-  QDoubleSpinBox *deadzone = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone%1").arg(nr));
+  auto *deadzone = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxDeadzone%1").arg(nr));
   if (deadzone) {
     bool active = deadzone->value() < std::abs(val);
     QString style;
@@ -134,7 +129,7 @@ void AxisConfigWidget::init() {
 
   installIgnoreWheelWhenNotFocused(this);
 
-  for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
+  for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     auto spinTrim = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
     if (spinTrim) {
       initUpdateDoubleSpinBox(spinTrim, Settings::Settings::axisTrim(i));
@@ -415,7 +410,7 @@ void AxisConfigWidget::on_AxisTrim()
 {
   InputEventMapper::instance()->onAxisAutoTrim();
 
-  for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
+  for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
     if (spin) {
       spin->setValue(Settings::Settings::axisTrim(i).value());
@@ -428,7 +423,7 @@ void AxisConfigWidget::on_AxisTrim()
 void AxisConfigWidget::on_AxisTrimReset()
 {
   InputEventMapper::instance()->onAxisTrimReset();
-  for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
+  for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     auto spin = this->findChild<QDoubleSpinBox *>(QString("doubleSpinBoxTrim%1").arg(i));
     if (spin) {
       Settings::Settings::axisTrim(i).setValue(0.00);
@@ -495,7 +490,7 @@ void AxisConfigWidget::on_checkBoxDBus_toggled(bool val)
   }
 }
 
-void AxisConfigWidget::applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum& entry)
+void AxisConfigWidget::applyComboBox(QComboBox * /*comboBox*/, int val, Settings::SettingsEntryEnum& entry)
 {
   entry.setIndex(val);
   writeSettings();
@@ -510,8 +505,8 @@ void AxisConfigWidget::writeSettings()
 void AxisConfigWidget::updateStates(){
   if (!initialized) return;
 
-  int cnt = InputDriverManager::instance()->getAxisCount();
-  for (int i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
+  size_t cnt = InputDriverManager::instance()->getAxisCount();
+  for (size_t i = 0; i < InputEventMapper::getMaxAxis(); ++i) {
     auto progressbar = this->findChild<QProgressBar *>(QString("progressBarAxis%1").arg(i));
     if (progressbar) {
       if (cnt <= i) {

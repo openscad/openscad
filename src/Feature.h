@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdio.h>
+#include <cstdio>
 #include <iostream>
 #include <string>
 #include <map>
@@ -11,16 +11,13 @@
 class Feature
 {
 public:
-  typedef std::vector<Feature *> list_t;
-  typedef list_t::iterator iterator;
+  using list_t = std::vector<Feature *>;
+  using iterator = list_t::iterator;
 
   static const Feature ExperimentalFastCsg;
-  static const Feature ExperimentalFastCsgTrustCorefinement;
+  static const Feature ExperimentalFastCsgSafer;
   static const Feature ExperimentalFastCsgDebug;
-  static const Feature ExperimentalFastCsgExact;
-  static const Feature ExperimentalFastCsgExactCorefinementCallback;
-  static const Feature ExperimentalFastCsgRemesh;
-  static const Feature ExperimentalFastCsgRemeshPredictibly;
+  static const Feature ExperimentalManifold;
   static const Feature ExperimentalRoof;
   static const Feature ExperimentalInputDriverDBus;
   static const Feature ExperimentalLazyUnion;
@@ -31,12 +28,15 @@ public:
   static const Feature ExperimentalTextMetricsFunctions;
   static const Feature ExperimentalImportFunction;
   static const Feature ExperimentalObjectFunction;
-  static const Feature ExperimentalSortStl;
+  static const Feature ExperimentalPredictibleOutput;
+#ifdef ENABLE_PYTHON
+  static const Feature ExperimentalPythonEngine;
+#endif
 
-  const std::string& get_name() const;
-  const std::string& get_description() const;
+  [[nodiscard]] const std::string& get_name() const;
+  [[nodiscard]] const std::string& get_description() const;
 
-  bool is_enabled() const;
+  [[nodiscard]] bool is_enabled() const;
   void enable(bool status);
 
   static iterator begin();
@@ -47,24 +47,23 @@ public:
   static void enable_all(bool status = true);
 
 private:
-  bool enabled;
+  bool enabled{false};
 
   const std::string name;
   const std::string description;
 
-  typedef std::map<std::string, Feature *> map_t;
+  using map_t = std::map<std::string, Feature *>;
   static map_t feature_map;
   static list_t feature_list;
 
-  Feature(const std::string& name, const std::string& description);
-  virtual ~Feature();
+  Feature(const std::string& name, std::string description);
+  virtual ~Feature() = default;
 };
 
 class ExperimentalFeatureException : public EvaluationException
 {
 public:
   static void check(const Feature& feature);
-  ~ExperimentalFeatureException() throw();
 
 private:
   ExperimentalFeatureException(const std::string& what_arg);

@@ -7,7 +7,7 @@ namespace ClipperUtils {
 
 template <typename T>
 struct AutoScaled {
-  AutoScaled(T&& geom, BoundingBox b) : geometry(std::move(geom)), bounds(std::move(b)) {}
+  AutoScaled(T&& geom, const BoundingBox& b) : geometry(std::move(geom)), bounds(b) {}
   T geometry;
   BoundingBox bounds;
 };
@@ -15,7 +15,7 @@ struct AutoScaled {
 int getScalePow2(const BoundingBox& bounds, int bits = 0);
 ClipperLib::Paths fromPolygon2d(const Polygon2d& poly, int pow2);
 ClipperLib::PolyTree sanitize(const ClipperLib::Paths& paths);
-VectorOfVector2d fromPath(ClipperLib::Path path, int pow2);
+VectorOfVector2d fromPath(const ClipperLib::Path& path, int pow2);
 Polygon2d *sanitize(const Polygon2d& poly);
 Polygon2d *toPolygon2d(const ClipperLib::PolyTree& poly, int pow2);
 ClipperLib::Paths process(const ClipperLib::Paths& polygons,

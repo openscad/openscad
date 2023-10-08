@@ -5,6 +5,9 @@
 
 #include "VBORenderer.h"
 
+class CSGProducts;
+class CSGChainObject;
+
 class TTRVertexState : public VertexState
 {
 public:
@@ -19,9 +22,8 @@ public:
                  size_t csg_object_index = 0)
     : VertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo), csg_object_index_(csg_object_index)
   {}
-  virtual ~TTRVertexState() {}
 
-  size_t csgObjectIndex() const { return csg_object_index_; }
+  [[nodiscard]] size_t csgObjectIndex() const { return csg_object_index_; }
   void csgObjectIndex(size_t csg_object_index) { csg_object_index_ = csg_object_index; }
 
 private:
@@ -31,12 +33,11 @@ private:
 class TTRVertexStateFactory : public VertexStateFactory
 {
 public:
-  TTRVertexStateFactory() {}
-  virtual ~TTRVertexStateFactory() {}
+  TTRVertexStateFactory() = default;
 
-  std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type,
-                                                 size_t draw_offset, size_t element_offset,
-                                                 GLuint vertices_vbo, GLuint elements_vbo) const override {
+  [[nodiscard]] std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type,
+                                                               size_t draw_offset, size_t element_offset,
+                                                               GLuint vertices_vbo, GLuint elements_vbo) const override {
     return std::make_shared<TTRVertexState>(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo, elements_vbo);
   }
 };
@@ -44,10 +45,10 @@ public:
 class ThrownTogetherRenderer : public VBORenderer
 {
 public:
-  ThrownTogetherRenderer(shared_ptr<class CSGProducts> root_products,
+  ThrownTogetherRenderer(shared_ptr<CSGProducts> root_products,
                          shared_ptr<CSGProducts> highlight_products,
                          shared_ptr<CSGProducts> background_products);
-  virtual ~ThrownTogetherRenderer();
+  ~ThrownTogetherRenderer() override;
   void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) override;
   void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
 
@@ -57,15 +58,15 @@ private:
                          const Renderer::shaderinfo_t *shaderinfo = nullptr,
                          bool highlight_mode = false, bool background_mode = false,
                          bool fberror = false) const;
-  void renderChainObject(const class CSGChainObject& csgobj, bool showedges,
-                           const Renderer::shaderinfo_t *, bool highlight_mode,
-                           bool background_mode, bool fberror, OpenSCADOperator type) const;
+  void renderChainObject(const CSGChainObject& csgobj, bool showedges,
+                         const Renderer::shaderinfo_t *, bool highlight_mode,
+                         bool background_mode, bool fberror, OpenSCADOperator type) const;
 
   void createCSGProducts(const CSGProducts& products, VertexArray& vertex_array,
                          bool highlight_mode, bool background_mode);
-  void createChainObject(VertexArray& vertex_array, const class CSGChainObject& csgobj,
-                           bool highlight_mode, bool background_mode,
-                           OpenSCADOperator type);
+  void createChainObject(VertexArray& vertex_array, const CSGChainObject& csgobj,
+                         bool highlight_mode, bool background_mode,
+                         OpenSCADOperator type);
 
   Renderer::ColorMode getColorMode(const CSGNode::Flag& flags, bool highlight_mode,
                                    bool background_mode, bool fberror, OpenSCADOperator type) const;
@@ -74,6 +75,6 @@ private:
   shared_ptr<CSGProducts> root_products;
   shared_ptr<CSGProducts> highlight_products;
   shared_ptr<CSGProducts> background_products;
-  GLuint vertices_vbo;
-  GLuint elements_vbo;
+  GLuint vertices_vbo{0};
+  GLuint elements_vbo{0};
 };

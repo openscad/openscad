@@ -25,31 +25,40 @@
 #pragma once
 
 #include <map>
+#include <atomic>
 #include <string>
 #include <vector>
 #include <memory>
+#include <functional>
 
 #include <iostream>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include "util.h"
+#include <boost/optional.hpp>
+
 #include "ext/polyclipping/clipper.hpp"
 
+namespace libsvg {
+class shape;
+}
 
 // ccox - I don't like putting this here, but the svg library code did not plan ahead for app customization.
 // And this is one of the few sensible places to put it without adding new header files.
-typedef struct fnContext {
-public:
-  fnContext(double fNN, double fSS, double fAA) : fn(fNN), fs(fSS), fa(fAA) {}
+struct fnContext {
+  fnContext(double fNN, double fSS, double fAA) : fn(fNN), fs(fSS), fa(fAA) {
+  }
+  bool match(bool val) { if (val) matches++; return val; }
+  bool has_matches() { return matches.load() > 0; }
 
-public:
   double fn;
   double fs;
   double fa;
-} fnContext;
-
+  std::function<bool (const libsvg::shape *)> selector;
+private:
+  std::atomic<int> matches{0};
+};
 
 namespace libsvg {
 
@@ -60,56 +69,62 @@ using attr_map_t = std::map<std::string, std::string>;
 class shape
 {
 private:
-  shape *parent;
+  shape *parent{nullptr};
   std::vector<shape *> children;
 
 protected:
-  std::string id;
-  double x;
-  double y;
+  boost::optional<std::string> id;
+  boost::optional<std::string> layer;
+  double x{0};
+  double y{0};
   path_list_t path_list;
   std::string transform;
   std::string stroke_width;
   std::string stroke_linecap;
   std::string stroke_linejoin;
   std::string style;
-  bool excluded;
+  bool excluded{false};
+  bool selected{false};
 
-  double get_stroke_width() const;
-  ClipperLib::EndType get_stroke_linecap() const;
-  ClipperLib::JoinType get_stroke_linejoin() const;
-  const std::string get_style(const std::string& name) const;
+  [[nodiscard]] double get_stroke_width() const;
+  [[nodiscard]] ClipperLib::EndType get_stroke_linecap() const;
+  [[nodiscard]] ClipperLib::JoinType get_stroke_linejoin() const;
+  [[nodiscard]] const std::string get_style(const std::string& name) const;
   void draw_ellipse(path_t& path, double x, double y, double rx, double ry, void *context);
   void offset_path(path_list_t& path_list, path_t& path, double stroke_width, ClipperLib::EndType stroke_linecap);
   void collect_transform_matrices(std::vector<Eigen::Matrix3d>& matrices, shape *s);
 
 public:
-  shape();
-  virtual ~shape();
+  shape() = default;
+  virtual ~shape() = default;
 
-  virtual shape *get_parent() const { return parent; }
+  [[nodiscard]] virtual shape *get_parent() const { return parent; }
   virtual void set_parent(shape *s) { parent = s; }
   virtual void add_child(shape *s) { children.push_back(s); s->set_parent(this); }
-  virtual const std::vector<shape *>& get_children() const { return children; }
+  [[nodiscard]] virtual const std::vector<shape *>& get_children() const { return children; }
 
-  virtual const std::string& get_id() const { return id; }
-  virtual double get_x() const { return x; }
-  virtual double get_y() const { return y; }
+  [[nodiscard]] virtual bool has_id() const { return id.is_initialized(); }
+  [[nodiscard]] virtual const std::string& get_id() const { return id.get(); }
+  [[nodiscard]] virtual const std::string get_id_or_default(const std::string& def = "") const { return id.get_value_or(def); }
+  [[nodiscard]] virtual bool has_layer() const { return layer.is_initialized(); }
+  [[nodiscard]] virtual const std::string& get_layer() const { return layer.get(); }
+  [[nodiscard]] virtual double get_x() const { return x; }
+  [[nodiscard]] virtual double get_y() const { return y; }
 
-  virtual const path_list_t& get_path_list() const { return path_list; }
+  [[nodiscard]] virtual const path_list_t& get_path_list() const { return path_list; }
 
-  virtual bool is_excluded() const;
-  virtual bool is_container() const { return false; }
+  [[nodiscard]] virtual bool is_excluded() const;
+  [[nodiscard]] virtual bool is_container() const { return false; }
 
   virtual void apply_transform();
 
-  virtual const std::string& get_name() const = 0;
+  [[nodiscard]] virtual const std::string& get_name() const = 0;
   virtual void set_attrs(attr_map_t& attrs, void *context);
-  virtual const std::string dump() const { return ""; }
+  [[nodiscard]] virtual const std::string dump() const { return ""; }
 
   static shape *create_from_name(const char *name);
 
-  virtual shape *clone() const = 0;
+  [[nodiscard]] virtual shape *clone() const = 0;
   std::vector<std::shared_ptr<shape>> clone_children();
 
 private:

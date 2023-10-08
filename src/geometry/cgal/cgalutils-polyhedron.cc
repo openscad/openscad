@@ -1,10 +1,8 @@
 #ifdef ENABLE_CGAL
 
-#include "cgal.h"
 #include "cgalutils.h"
 #include "PolySet.h"
 #include "printutils.h"
-#include "PolySetUtils.h"
 #include "Grid.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
@@ -17,10 +15,10 @@ namespace /* anonymous */ {
 template <typename Polyhedron>
 class CGAL_Build_PolySet : public CGAL::Modifier_base<typename Polyhedron::HalfedgeDS>
 {
-  typedef typename Polyhedron::HalfedgeDS HDS;
-  typedef CGAL::Polyhedron_incremental_builder_3<typename Polyhedron::HalfedgeDS> CGAL_Polybuilder;
+  using HDS = typename Polyhedron::HalfedgeDS;
+  using CGAL_Polybuilder = CGAL::Polyhedron_incremental_builder_3<typename Polyhedron::HalfedgeDS>;
 public:
-  typedef typename CGAL_Polybuilder::Point_3 CGALPoint;
+  using CGALPoint = typename CGAL_Polybuilder::Point_3;
 
   const PolySet& ps;
   CGAL_Build_PolySet(const PolySet& ps) : ps(ps) { }
@@ -49,7 +47,7 @@ public:
 
     // Align all vertices to grid and build vertex array in vertices
     for (const auto& p : ps.polygons) {
-      indices.push_back(std::vector<size_t>());
+      indices.emplace_back();
       indices.back().reserve(p.size());
       for (auto v : boost::adaptors::reverse(p)) {
         // align v to the grid; the CGALPoint will receive the aligned vertex
@@ -77,7 +75,7 @@ public:
 
       // We remove duplicate indices since there is a bug in CGAL's
       // Polyhedron_incremental_builder_3::test_facet() which fails to detect this
-      std::vector<size_t>::iterator last = std::unique(pindices.begin(), pindices.end());
+      auto last = std::unique(pindices.begin(), pindices.end());
       std::advance(last, -1);
       if (*last != pindices.front()) last++; // In case the first & last are equal
       pindices.erase(last, pindices.end());
@@ -178,20 +176,20 @@ public:
 template <class InputKernel, class OutputKernel>
 struct Copy_polyhedron_to : public CGAL::Modifier_base<typename CGAL::Polyhedron_3<OutputKernel>::HalfedgeDS>
 {
-  typedef CGAL::Polyhedron_3<OutputKernel> Polyhedron_output;
-  typedef CGAL::Polyhedron_3<InputKernel> Polyhedron_input;
+  using Polyhedron_output = CGAL::Polyhedron_3<OutputKernel>;
+  using Polyhedron_input = CGAL::Polyhedron_3<InputKernel>;
 
   Copy_polyhedron_to(const Polyhedron_input& in_poly) : in_poly(in_poly) {}
 
   void operator()(typename Polyhedron_output::HalfedgeDS& out_hds) override
   {
-    typedef typename Polyhedron_output::HalfedgeDS Output_HDS;
+    using Output_HDS = typename Polyhedron_output::HalfedgeDS;
 
     CGAL::Polyhedron_incremental_builder_3<Output_HDS> builder(out_hds);
 
-    typedef typename Polyhedron_input::Vertex_const_iterator Vertex_const_iterator;
-    typedef typename Polyhedron_input::Facet_const_iterator Facet_const_iterator;
-    typedef typename Polyhedron_input::Halfedge_around_facet_const_circulator HFCC;
+    using Vertex_const_iterator = typename Polyhedron_input::Vertex_const_iterator;
+    using Facet_const_iterator = typename Polyhedron_input::Facet_const_iterator;
+    using HFCC = typename Polyhedron_input::Halfedge_around_facet_const_circulator;
 
     builder.begin_surface(in_poly.size_of_vertices(),
                           in_poly.size_of_facets(),
@@ -207,7 +205,7 @@ struct Copy_polyhedron_to : public CGAL::Modifier_base<typename CGAL::Polyhedron
       builder.add_vertex(p);
     }
 
-    typedef CGAL::Inverse_index<Vertex_const_iterator> Index;
+    using Index = CGAL::Inverse_index<Vertex_const_iterator>;
     Index index(in_poly.vertices_begin(), in_poly.vertices_end());
 
     for (Facet_const_iterator
@@ -268,7 +266,7 @@ bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p)
     CGAL_Build_PolySet<Polyhedron> builder(ps);
     p.delegate(builder);
   } catch (const CGAL::Assertion_exception& e) {
-    LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
+    LOG(message_group::Error, "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
     err = true;
   }
   return err;
@@ -282,14 +280,16 @@ template <typename Polyhedron>
 bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps)
 {
   bool err = false;
-  typedef typename Polyhedron::Vertex Vertex;
-  typedef typename Polyhedron::Facet_const_iterator FCI;
-  typedef typename Polyhedron::Halfedge_around_facet_const_circulator HFCC;
+  using Vertex = typename Polyhedron::Vertex;
+  using FCI = typename Polyhedron::Facet_const_iterator;
+  using HFCC = typename Polyhedron::Halfedge_around_facet_const_circulator;
+
+  ps.reserve(p.size_of_facets());
 
   for (FCI fi = p.facets_begin(); fi != p.facets_end(); ++fi) {
     HFCC hc = fi->facet_begin();
     HFCC hc_end = hc;
-    ps.append_poly();
+    ps.append_poly(fi->facet_degree());
     do {
       Vertex const& v = *((hc++)->vertex());
       double x = CGAL::to_double(v.point().x());
@@ -307,11 +307,11 @@ template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_
 
 class Polyhedron_writer
 {
-  std::ostream *out;
-  bool firstv;
+  std::ostream *out{nullptr};
+  bool firstv{true};
   std::vector<int> indices;
 public:
-  Polyhedron_writer() : out(nullptr), firstv(true) {}
+  Polyhedron_writer() = default;
   void write_header(std::ostream& stream,
                     std::size_t /*vertices*/,
                     std::size_t /*halfedges*/,

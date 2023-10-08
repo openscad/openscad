@@ -33,12 +33,12 @@ ContextFrame::ContextFrame(EvaluationSession *session) :
 boost::optional<const Value&> ContextFrame::lookup_local_variable(const std::string& name) const
 {
   if (is_config_variable(name)) {
-    ValueMap::const_iterator result = config_variables.find(name);
+    auto result = config_variables.find(name);
     if (result != config_variables.end()) {
       return result->second;
     }
   } else {
-    ValueMap::const_iterator result = lexical_variables.find(name);
+    auto result = lexical_variables.find(name);
     if (result != lexical_variables.end()) {
       return result->second;
     }
@@ -46,7 +46,7 @@ boost::optional<const Value&> ContextFrame::lookup_local_variable(const std::str
   return boost::none;
 }
 
-boost::optional<CallableFunction> ContextFrame::lookup_local_function(const std::string& name, const Location& loc) const
+boost::optional<CallableFunction> ContextFrame::lookup_local_function(const std::string& name, const Location& /*loc*/) const
 {
   boost::optional<const Value&> value = lookup_local_variable(name);
   if (value && value->type() == Value::Type::FUNCTION) {
@@ -55,7 +55,7 @@ boost::optional<CallableFunction> ContextFrame::lookup_local_function(const std:
   return boost::none;
 }
 
-boost::optional<InstantiableModule> ContextFrame::lookup_local_module(const std::string& name, const Location& loc) const
+boost::optional<InstantiableModule> ContextFrame::lookup_local_module(const std::string& /*name*/, const Location& /*loc*/) const
 {
   return boost::none;
 }
@@ -83,9 +83,9 @@ size_t ContextFrame::clear()
 bool ContextFrame::set_variable(const std::string& name, Value&& value)
 {
   if (is_config_variable(name)) {
-    return config_variables.insert_or_assign(name, std::move(value));
+    return config_variables.insert_or_assign(name, std::move(value)).second;
   } else {
-    return lexical_variables.insert_or_assign(name, std::move(value));
+    return lexical_variables.insert_or_assign(name, std::move(value)).second;
   }
 }
 

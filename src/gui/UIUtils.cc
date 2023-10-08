@@ -32,11 +32,8 @@
 
 #include "version.h"
 #include "UIUtils.h"
-#include "qtgettext.h"
 #include "PlatformUtils.h"
 #include "QSettingsCached.h"
-#include "boost-utils.h"
-
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -49,7 +46,7 @@ QFileInfo UIUtils::openFile(QWidget *parent)
                                                       last_dirname, "OpenSCAD Designs (*.scad *.csg)");
 
   if (new_filename.isEmpty()) {
-    return QFileInfo();
+    return {};
   }
 
   QFileInfo fileInfo(new_filename);
@@ -67,7 +64,7 @@ QFileInfoList UIUtils::openFiles(QWidget *parent)
                                                             last_dirname, "OpenSCAD Designs (*.scad *.csg)");
 
   QFileInfoList fileInfoList;
-  for (QString filename: new_filenames) {
+  for (const QString& filename: new_filenames) {
     if (filename.isEmpty()) {
       continue;
     }
@@ -116,7 +113,7 @@ static ptree *examplesTree()
       examples_tree = new ptree;
       read_json(path, *examples_tree);
     } catch (const std::exception& e) {
-      LOG(message_group::None, Location::NONE, "", "Error reading examples.json: %1$s", e.what());
+      LOG("Error reading examples.json: %1$s", e.what());
       delete examples_tree;
       examples_tree = nullptr;
     }
@@ -163,7 +160,7 @@ void UIUtils::openHomepageURL()
   QDesktopServices::openUrl(QUrl("https://www.openscad.org/"));
 }
 
-static void openVersionedURL(QString url)
+static void openVersionedURL(const QString& url)
 {
   QDesktopServices::openUrl(QUrl(url.arg(openscad_shortversionnumber.c_str())));
 }

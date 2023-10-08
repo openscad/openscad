@@ -14,30 +14,29 @@
 
 #include "GeometryUtils.h"
 #include "ClipperUtils.h"
-#include "printutils.h"
 #include "RoofNode.h"
 #include "roof_ss.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
-  throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
+        throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
 
 namespace roof_ss {
 
-typedef CGAL::Exact_predicates_inexact_constructions_kernel CGAL_KERNEL;
-typedef CGAL_KERNEL::Point_2 CGAL_Point_2;
-typedef CGAL::Polygon_2<CGAL_KERNEL> CGAL_Polygon_2;
-typedef CGAL::Vector_2<CGAL_KERNEL> CGAL_Vector_2;
-typedef CGAL::Line_2<CGAL_KERNEL> CGAL_Line_2;
-typedef CGAL::Segment_2<CGAL_KERNEL> CGAL_Segment_2;
-typedef CGAL::Polygon_with_holes_2<CGAL_KERNEL> CGAL_Polygon_with_holes_2;
-typedef CGAL::Straight_skeleton_2<CGAL_KERNEL> CGAL_Ss;
+using CGAL_KERNEL = CGAL::Exact_predicates_inexact_constructions_kernel;
+using CGAL_Point_2 = CGAL_KERNEL::Point_2;
+using CGAL_Polygon_2 = CGAL::Polygon_2<CGAL_KERNEL>;
+using CGAL_Vector_2 = CGAL::Vector_2<CGAL_KERNEL>;
+using CGAL_Line_2 = CGAL::Line_2<CGAL_KERNEL>;
+using CGAL_Segment_2 = CGAL::Segment_2<CGAL_KERNEL>;
+using CGAL_Polygon_with_holes_2 = CGAL::Polygon_with_holes_2<CGAL_KERNEL>;
+using CGAL_Ss = CGAL::Straight_skeleton_2<CGAL_KERNEL>;
 
-typedef CGAL::Partition_traits_2<CGAL_KERNEL> CGAL_PT;
+using CGAL_PT = CGAL::Partition_traits_2<CGAL_KERNEL>;
 
-typedef boost::shared_ptr<CGAL_Ss> CGAL_SsPtr;
+using CGAL_SsPtr = boost::shared_ptr<CGAL_Ss>;
 
-typedef ClipperLib::PolyTree PolyTree;
-typedef ClipperLib::PolyNode PolyNode;
+using PolyTree = ClipperLib::PolyTree;
+using PolyNode = ClipperLib::PolyNode;
 
 CGAL_Polygon_2 to_cgal_polygon_2(const VectorOfVector2d& points)
 {
@@ -74,7 +73,7 @@ std::vector<CGAL_Polygon_with_holes_2> polygons_with_holes(const ClipperLib::Pol
 
 PolySet *straight_skeleton_roof(const Polygon2d& poly)
 {
-  PolySet *hat = new PolySet(3);
+  auto *hat = new PolySet(3);
 
   int scale_pow2 = ClipperUtils::getScalePow2(poly.getBoundingBox(), 32);
   ClipperLib::Paths paths = ClipperUtils::fromPolygon2d(poly, scale_pow2);
@@ -84,7 +83,7 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
   try {
     // roof
     std::vector<CGAL_Polygon_with_holes_2> shapes = polygons_with_holes(polytree, scale_pow2);
-    for (CGAL_Polygon_with_holes_2 shape : shapes) {
+    for (const CGAL_Polygon_with_holes_2& shape : shapes) {
       CGAL_SsPtr ss = CGAL::create_interior_straight_skeleton_2(shape);
       // store heights of vertices
       auto vector2d_comp = [](const Vector2d& a, const Vector2d& b) {
@@ -116,7 +115,7 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
         CGAL::approx_convex_partition_2(face.vertices_begin(), face.vertices_end(),
                                         std::back_inserter(facets));
 
-        for (auto facet : facets) {
+        for (const auto& facet : facets) {
           Polygon roof;
           for (auto v = facet.vertices_begin(); v != facet.vertices_end(); v++) {
             Vector2d vv(v->x(), v->y());
@@ -132,9 +131,9 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
       // poly has to go through clipper just as it does for the roof
       // because this may change coordinates
       PolySet *tess = poly_sanitized->tessellate();
-      for (std::vector<Vector3d> triangle : tess->polygons) {
+      for (const std::vector<Vector3d>& triangle : tess->polygons) {
         Polygon floor;
-        for (Vector3d tv : triangle) {
+        for (const Vector3d& tv : triangle) {
           floor.push_back(tv);
         }
         // floor has wrong orientation

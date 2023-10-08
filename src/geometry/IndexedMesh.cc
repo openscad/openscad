@@ -27,9 +27,9 @@
 
 #include "IndexedMesh.h"
 
-#include "export.h"
-#include "PolySetUtils.h"
-#include "DxfData.h"
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#endif
 
 #ifdef ENABLE_CGAL
 
@@ -38,12 +38,7 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "CGALHybridPolyhedron.h"
 
-#include "Grid.h"
-
-IndexedMesh::IndexedMesh()
-  : numfaces(0)
-{
-}
+#include "PolySet.h"
 
 void IndexedMesh::append_geometry(const PolySet& ps)
 {
@@ -68,7 +63,7 @@ void IndexedMesh::append_geometry(const shared_ptr<const Geometry>& geom)
     PolySet ps(3);
     bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
     if (err) {
-      LOG(message_group::Error, Location::NONE, "", "Nef->PolySet failed");
+      LOG(message_group::Error, "Nef->PolySet failed");
     } else {
       mesh.append_geometry(ps);
     }
@@ -77,9 +72,13 @@ void IndexedMesh::append_geometry(const shared_ptr<const Geometry>& geom)
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement append_geometry(Surface_mesh) instead of converting to PolySet
     mesh.append_geometry(hybrid->toPolySet());
-  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
+#ifdef ENABLE_MANIFOLD
+  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    mesh.append_geometry(mani->toPolySet());
+#endif
+  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
-  } else {
+  } else { // NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
   }
 }

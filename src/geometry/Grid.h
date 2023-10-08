@@ -35,8 +35,8 @@ public:
      if not.
    */
   T& align(double& x, double& y) {
-    int64_t ix = (int64_t)std::round(x / res);
-    int64_t iy = (int64_t)std::round(y / res);
+    auto ix = (int64_t)std::round(x / res);
+    auto iy = (int64_t)std::round(y / res);
     if (db.find(std::make_pair(ix, iy)) == db.end()) {
       int dist = 10;
       for (int64_t jx = ix - 1; jx <= ix + 1; ++jx) {
@@ -55,9 +55,9 @@ public:
     return db[std::make_pair(ix, iy)];
   }
 
-  bool has(double x, double y) const {
-    int64_t ix = (int64_t)std::round(x / res);
-    int64_t iy = (int64_t)std::round(y / res);
+  [[nodiscard]] bool has(double x, double y) const {
+    auto ix = (int64_t)std::round(x / res);
+    auto iy = (int64_t)std::round(y / res);
     if (db.find(std::make_pair(ix, iy)) != db.end()) return true;
     for (int64_t jx = ix - 1; jx <= ix + 1; ++jx)
       for (int64_t jy = iy - 1; jy <= iy + 1; ++jy) {
@@ -85,8 +85,8 @@ class Grid3d
 {
 public:
   double res;
-  typedef Vector3l Key;
-  typedef std::unordered_map<Key, T> GridContainer;
+  using Key = Vector3l;
+  using GridContainer = std::unordered_map<Key, T>;
   GridContainer db;
 
   Grid3d(double resolution) {
@@ -104,14 +104,14 @@ public:
   T align(Vector3d& v) {
     Vector3l key;
     createGridVertex(v, key);
-    typename GridContainer::iterator iter = db.find(key);
+    auto iter = db.find(key);
     if (iter == db.end()) {
       float dist = 10.0f; // > max possible distance
       for (int64_t jx = key[0] - 1; jx <= key[0] + 1; ++jx) {
         for (int64_t jy = key[1] - 1; jy <= key[1] + 1; ++jy) {
           for (int64_t jz = key[2] - 1; jz <= key[2] + 1; ++jz) {
             Vector3l k(jx, jy, jz);
-            typename GridContainer::iterator tmpiter = db.find(k);
+            auto tmpiter = db.find(k);
             if (tmpiter == db.end()) continue;
             float d = sqrt((key - k).squaredNorm());
             if (d < dist) {

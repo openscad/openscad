@@ -5,49 +5,29 @@ Running regression tests:
 
 Install the prerequisite helper programs on your system:
 
-     cmake, python3 (not 2), ImageMagick 6.5.9.3 or newer, diff
+    cmake, python3, python3-venv, python3-pip
 
-There are binary installer packages of these tools available for Mac, 
-Win, Linux, BSD, and other systems. (except maybe diff for Win)
+There are binary installer packages of these tools available for Mac,
+Win, Linux, BSD, and other systems.
 
-Next, get a working qmake GUI build of the main openscad binary working. 
-For Windows(TM) this means get a cross-build working from within linux. 
-See README.md for how to do this.
+A) Building Test environment
+Test files will be automatically configured and built (but not ran) as part
+of the main openscad build.  See README.md for how to get a build of the main
+openscad binary working.
 
-Then, install MCAD under openscad/libraries.
-
-$ cd openscad
-$ git submodule update --init
-
-A) Building test environment
-
-NOTE: If cmake was used to build openscad itself (as opposed to the qmake build),
-      then the "cmake" and "make" commands are already automatically run for tests.
-      Only "cd tests" is needed to begin running ctest in that case.
-
-Linux, Mac:
-
-    $ cd tests
-    $ cmake .
-    $ make
-
-Windows(TM):
-
-Cross-build from within linux:
-
-64-bit:
-    $ ./scripts/release-common.sh mingw64 tests
-    $ # result is .zip file under ./mingw64/
-
-32-bit: 
-    $ ./scripts/release-common.sh mingw32 tests
-    $ # result is .zip file under ./mingw32/
+Windows builds are a special case, since they are cross-compiled from a linux
+system.  The automated build servers package up the tests alongside the binary
+if you download a .ZIP Development Snapshot from: http://openscad.org/downloads.html#snapshots
+NOTE: **ONLY THE ZIP VERSION** of the download contains the tests.
+  They would not run properly using an installer to place under "C:\Program Files"
+  since that would require elevated privileges to write the test output files.
 
 B) Running tests
 
 Linux, Mac:
 
-$ ctest               Runs tests enabled by default
+From your build directory
+$ ctest -j8           Runs tests enabled by default using 8 parallel processes.
 $ ctest -R <regex>    Runs only matching tests, e.g. ctest -R dxf
 $ ctest -C <configs>  Adds extended tests belonging to configs.
                       Valid configs:
@@ -138,25 +118,25 @@ Some versions of Xvfb may fail, however.
 
 2. Location of logs
  
-Logs of test runs are found in tests/build/Testing/Temporary
-A pretty-printed index.html is in a subdir of tests/build/Testing/Temporary
+Logs of test runs and a pretty-printed index.html are found in build/Testing/Temporary
 Expected results are found in tests/regression/*
-Actual results are found in tests/build/testname-output/*
+Actual results are found in build/tests/output/*
 
-3. Image-based tests takes a long time, they fail, and the log says 'return -11'
+3. Alternatives to the image_compare.py image comparison script:
 
-Imagemagick may have crashed while comparing the expected images to the 
-test-run generated (actual) images. You can try using the alternate 
-ImageMagick comparison method by by erasing CMakeCache, and re-running 
-cmake with -DCOMPARATOR=ncc. This will enable the Normalized Cross 
-Comparison method which is less accurate but won't usually crash.
+If cmake is given the option -DUSE_IMAGE_COMPARE_PY=OFF then ImageMagick
+comparison and fallback to diffpng are available.  Note that ImageMagick
+tests are less sensitive because they are pixel-based with a large threshold
+while image_compare.py checks for any 3x3 blocks (with overlap) that have
+non-zero differences of the same sign.
 
-4. Testing images fails with 'morphology not found" for ImageMagick in the log
+With -DUSE_IMAGE_COMPARE_PY=OFF additional options are available:
+ : -DCOMPARATOR=ncc Normalized Cross Comparison which is less accurate but
+   more runtime stable on some ImageMagick versions.
+ : -DCOMPARATOR=old Lowered reliability test that works on older
+   ImageMagick versions.  Use this with "morphology not found" in the log.
 
-Your version of imagemagick is old. Upgrade, or pass -DCOMPARATOR=old to 
-cmake. The comparison will be of lowered reliability.
-
-5. Locale errors
+4. Locale errors
 
 "terminate called after throwing an instance of 'std::runtime_error'
   what():  locale::facet::_S_create_c_locale name not valid" 
@@ -165,7 +145,7 @@ Is a boost/libstdc++ bug. Fix like so before running:
 
   $ export LC_MESSAGES=
 
-6. I want to build without OpenGL
+5. I want to build without OpenGL
 
  There is an unsupported way to do this, by defining NULLGL to Cmake:
 
@@ -176,13 +156,13 @@ Is a boost/libstdc++ bug. Fix like so before running:
  useful for debugging and outputting 3d-formats like STL on systems without GL.
  This option may break in the future and require tweaking to get working again.
 
-7. Proprietary GL driver issues
+6. Proprietary GL driver issues
 
 There are sporadic reports of problems running on remote machines with
 proprietary GL drivers. Try doing a web search for your exact error
 message to see solutions and workarounds that others have found.
 
-8. Windows + MSVC: 
+7. Windows + MSVC: 
 
 The MSVC build was last tested circa 2012. The last time it worked,
 these were the necessary commands to run.
@@ -195,7 +175,7 @@ these were the necessary commands to run.
 > cmake .
 > nmake -f Makefile
 
-9. Other issues
+8. Other issues
 
 The OpenSCAD User Manual Wiki has a section on buildling. Please check 
 there for possible updates and workarounds:

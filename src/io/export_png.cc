@@ -2,16 +2,13 @@
 #include "printutils.h"
 #include "OffscreenView.h"
 #include "CsgInfo.h"
-#include <stdio.h>
-#include "PolySet.h"
+#include <cstdio>
+#include <memory>
 #include "RenderSettings.h"
 
 #ifndef NULLGL
 
 #ifdef ENABLE_CGAL
-#include "cgal.h"
-#include "cgalutils.h"
-#include "CGAL_Nef_polyhedron.h"
 #include "CGALRenderer.h"
 
 static void setupCamera(Camera& cam, const BoundingBox& bbox)
@@ -22,11 +19,11 @@ static void setupCamera(Camera& cam, const BoundingBox& bbox)
 bool export_png(const shared_ptr<const Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output)
 {
   PRINTD("export_png geom");
-  OffscreenView *glview;
+  std::unique_ptr<OffscreenView> glview;
   try {
-    glview = new OffscreenView(camera.pixel_width, camera.pixel_height);
-  } catch (int error) {
-    fprintf(stderr, "Can't create OpenGL OffscreenView. Code: %i.\n", error);
+    glview = std::make_unique<OffscreenView>(camera.pixel_width, camera.pixel_height);
+  } catch (const OffscreenViewException &ex) {
+    fprintf(stderr, "Can't create OffscreenView: %s.\n", ex.what());
     return false;
   }
   CGALRenderer cgalRenderer(root_geom);
@@ -61,10 +58,10 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
 
   std::unique_ptr<OffscreenView> glview;
   try {
-    glview.reset(new OffscreenView(camera.pixel_width, camera.pixel_height));
-  } catch (int error) {
-    fprintf(stderr, "Can't create OpenGL OffscreenView. Code: %i.\n", error);
-    return 0;
+    glview = std::make_unique<OffscreenView>(camera.pixel_width, camera.pixel_height);
+  } catch (const OffscreenViewException &ex) {
+    LOG("Can't create OffscreenView: %1$s.", ex.what());
+    return nullptr;
   }
 
 #ifdef ENABLE_OPENCSG

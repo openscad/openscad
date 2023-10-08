@@ -30,7 +30,8 @@
 #include <QMouseEvent>
 #include <QString>
 #include <vector>
-#include "qtgettext.h"
+#include "printutils.h"
+#include "qtgettext.h" // IWYU pragma: keep
 #include "ui_Console.h"
 
 struct ConsoleMessageBlock {
@@ -50,7 +51,6 @@ private:
 
 public:
   Console(QWidget *parent = nullptr);
-  virtual ~Console();
   QString clickedAnchor;
   void contextMenuEvent(QContextMenuEvent *event) override;
 
@@ -70,6 +70,7 @@ public:
     QPlainTextEdit::mouseReleaseEvent(e);
   }
 
+  void focusInEvent(QFocusEvent *event) override;
   void addMessage(const Message& msg);
   void addHtml(const QString& html);
 

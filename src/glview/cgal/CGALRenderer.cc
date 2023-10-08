@@ -29,21 +29,23 @@
 #include <mpfr.h>
 #endif
 
-// DxfData.h must come first for Eigen SIMD alignment issues
-#include "DxfData.h"
 #include "PolySet.h"
 #include "PolySetUtils.h"
 #include "printutils.h"
 #include "Feature.h"
 
 #include "CGALRenderer.h"
+#include "CGAL_OGL_VBOPolyhedron.h"
 #include "CGALHybridPolyhedron.h"
+#include "VertexStateManager.h"
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
+#endif
 
 //#include "Preferences.h"
 
-CGALRenderer::CGALRenderer(shared_ptr<const class Geometry> geom)
-  : last_render_state(Feature::ExperimentalVxORenderers.is_enabled()), // FIXME: this is temporary to make switching between renderers seamless.
-  polyset_vertices_vbo(0), polyset_elements_vbo(0)
+CGALRenderer::CGALRenderer(const shared_ptr<const class Geometry>& geom)
+  : last_render_state(Feature::ExperimentalVxORenderers.is_enabled()) // FIXME: this is temporary to make switching between renderers seamless.
 {
   this->addGeometry(geom);
 }
@@ -72,6 +74,12 @@ void CGALRenderer::addGeometry(const shared_ptr<const Geometry>& geom)
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement rendering of CGAL_HybridMesh (CGAL::Surface_mesh) instead.
     this->polysets.push_back(hybrid->toPolySet());
+#ifdef ENABLE_MANIFOLD
+  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    this->polysets.push_back(mani->toPolySet());
+#endif
+  } else {
+    assert(false && "unsupported geom in CGALRenderer");
   }
 
   if (!this->nefPolyhedrons.empty() && this->polyhedrons.empty()) createPolyhedrons();
@@ -132,44 +140,22 @@ void CGALRenderer::createPolySets()
   polyset_states.clear();
 
   VertexArray vertex_array(std::make_shared<VertexStateFactory>(), polyset_states);
+
+  VertexStateManager vsm(*this, vertex_array);
+
   vertex_array.addEdgeData();
   vertex_array.addSurfaceData();
 
-  if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-    size_t vertices_size = 0, elements_size = 0;
-    if (this->polysets.size()) {
-      for (const auto& polyset : this->polysets) {
-        vertices_size += getSurfaceBufferSize(*polyset);
-        vertices_size += getEdgeBufferSize(*polyset);
-      }
-    }
-    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      if (vertices_size <= 0xff) {
-        vertex_array.addElementsData(std::make_shared<AttributeData<GLubyte, 1, GL_UNSIGNED_BYTE>>());
-      } else if (vertices_size <= 0xffff) {
-        vertex_array.addElementsData(std::make_shared<AttributeData<GLushort, 1, GL_UNSIGNED_SHORT>>());
-      } else {
-        vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
-      }
-      elements_size = vertices_size * vertex_array.elements().stride();
-      vertex_array.elementsSize(elements_size);
-    }
-    vertices_size *= vertex_array.stride();
-    vertex_array.verticesSize(vertices_size);
 
-    GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertex_array.verticesVBO());
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO()); GL_ERROR_CHECK();
-    GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
-    glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
-    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertex_array.elementsVBO());
-      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO()); GL_ERROR_CHECK();
-      GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
-      glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
+  size_t num_vertices = 0;
+  if (this->polysets.size()) {
+    for (const auto& polyset : this->polysets) {
+      num_vertices += getSurfaceBufferSize(*polyset);
+      num_vertices += getEdgeBufferSize(*polyset);
     }
-  } else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-    vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
   }
+
+  vsm.initializeSize(num_vertices);
 
   for (const auto& polyset : this->polysets) {
     Color4f color;
@@ -182,7 +168,7 @@ void CGALRenderer::createPolySets()
       std::shared_ptr<VertexState> init_state = std::make_shared<VertexState>();
       init_state->glEnd().emplace_back([]() {
         GL_TRACE0("glDisable(GL_LIGHTING)");
-        glDisable(GL_LIGHTING); GL_ERROR_CHECK();
+        GL_CHECKD(glDisable(GL_LIGHTING));
       });
       polyset_states.emplace_back(std::move(init_state));
 
@@ -193,11 +179,11 @@ void CGALRenderer::createPolySets()
       std::shared_ptr<VertexState> edge_state = std::make_shared<VertexState>();
       edge_state->glBegin().emplace_back([]() {
         GL_TRACE0("glDisable(GL_DEPTH_TEST)");
-        glDisable(GL_DEPTH_TEST); GL_ERROR_CHECK();
+        GL_CHECKD(glDisable(GL_DEPTH_TEST));
       });
       edge_state->glBegin().emplace_back([]() {
         GL_TRACE0("glLineWidth(2)");
-        glLineWidth(2); GL_ERROR_CHECK();
+        GL_CHECKD(glLineWidth(2));
       });
       polyset_states.emplace_back(std::move(edge_state));
 
@@ -208,7 +194,7 @@ void CGALRenderer::createPolySets()
       std::shared_ptr<VertexState> end_state = std::make_shared<VertexState>();
       end_state->glBegin().emplace_back([]() {
         GL_TRACE0("glEnable(GL_DEPTH_TEST)");
-        glEnable(GL_DEPTH_TEST); GL_ERROR_CHECK();
+        GL_CHECKD(glEnable(GL_DEPTH_TEST));
       });
       polyset_states.emplace_back(std::move(end_state));
     } else {
@@ -225,10 +211,10 @@ void CGALRenderer::createPolySets()
     if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
       if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
         GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
+        GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
       }
       GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-      glBindBuffer(GL_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
+      GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
     }
 
     vertex_array.createInterleavedVBOs();
@@ -237,7 +223,7 @@ void CGALRenderer::createPolySets()
   }
 }
 
-void CGALRenderer::prepare(bool showfaces, bool showedges, const shaderinfo_t * /*shaderinfo*/)
+void CGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const shaderinfo_t * /*shaderinfo*/)
 {
   PRINTD("prepare()");
   if (!polyset_states.size()) createPolySets();
@@ -287,8 +273,8 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
     GLboolean origNormalArrayState = glIsEnabled(GL_NORMAL_ARRAY);
     GLboolean origColorArrayState = glIsEnabled(GL_COLOR_ARRAY);
 
-    glGetFloatv(GL_POINT_SIZE, &current_point_size); GL_ERROR_CHECK();
-    glGetFloatv(GL_LINE_WIDTH, &current_line_width); GL_ERROR_CHECK();
+    GL_CHECKD(glGetFloatv(GL_POINT_SIZE, &current_point_size));
+    GL_CHECKD(glGetFloatv(GL_LINE_WIDTH, &current_line_width));
 
     for (const auto& polyset : polyset_states) {
       if (polyset) polyset->draw();
@@ -296,9 +282,9 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
 
     // restore states
     GL_TRACE("glPointSize(%d)", current_point_size);
-    glPointSize(current_point_size); GL_ERROR_CHECK();
+    GL_CHECKD(glPointSize(current_point_size));
     GL_TRACE("glLineWidth(%d)", current_line_width);
-    glLineWidth(current_line_width); GL_ERROR_CHECK();
+    GL_CHECKD(glLineWidth(current_line_width));
 
     if (!origVertexArrayState) glDisableClientState(GL_VERTEX_ARRAY);
     if (!origNormalArrayState) glDisableClientState(GL_NORMAL_ARRAY);

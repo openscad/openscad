@@ -26,8 +26,6 @@
 
 #include "export.h"
 #include "PolySet.h"
-#include "PolySetUtils.h"
-#include "DxfData.h"
 
 /*!
     Saves the current Polygon2d as DXF to the given absolute filename.
@@ -163,8 +161,7 @@ void export_dxf(const Polygon2d& poly, std::ostream& output)
   xMin = yMin = std::numeric_limits<double>::max(),
   xMax = yMax = std::numeric_limits<double>::min();
   for (const auto& o : poly.outlines()) {
-    for (unsigned int i = 0; i < o.vertices.size(); ++i) {
-      const Vector2d& p = o.vertices[i];
+    for (const auto& p : o.vertices) {
       if (xMin > p[0]) xMin = p[0];
       if (xMax < p[0]) xMax = p[0];
       if (yMin > p[1]) yMin = p[1];
@@ -222,8 +219,7 @@ void export_dxf(const Polygon2d& poly, std::ostream& output)
              << "100\n" << "AcDbPolyline\n"
              << " 90\n" << o.vertices.size() << "\n" // number of vertices
              << " 70\n" << "1\n";         // closed = 1
-      for (unsigned int i = 0; i < o.vertices.size(); ++i) {
-        const Vector2d& p = o.vertices[i];
+      for (const auto& p : o.vertices) {
         output << " 10\n" << p[0] << "\n"
                << " 20\n" << p[1] << "\n";
       }
@@ -243,11 +239,11 @@ void export_dxf(const shared_ptr<const Geometry>& geom, std::ostream& output)
     for (const auto& item : geomlist->getChildren()) {
       export_dxf(item.second, output);
     }
-  } else if (dynamic_pointer_cast<const PolySet>(geom)) {
-    assert(false && "Unsupported file format");
   } else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
     export_dxf(*poly, output);
-  } else {
+  } else if (dynamic_pointer_cast<const PolySet>(geom)) { // NOLINT(bugprone-branch-clone)
+    assert(false && "Unsupported file format");
+  } else { // NOLINT(bugprone-branch-clone)
     assert(false && "Export as DXF for this geometry type is not supported");
   }
 }

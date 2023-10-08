@@ -6,7 +6,16 @@
 #include <vector>
 #include <sstream>
 #include <string>
+
+#ifdef USE_GLAD
+#define GLAD_GL_IMPLEMENTATION
+#define GLAD_EGL_IMPLEMENTATION
+#ifdef _WIN32
+#define GLAD_WGL_IMPLEMENTATION
+#endif
+#endif
 #include "system-gl.h"
+
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 
@@ -28,7 +37,7 @@ double gl_version()
   return d;
 }
 
-std::string glew_extensions_dump()
+std::string gl_extensions_dump()
 {
   std::string tmp;
   if (gl_version() >= 3.0) {
@@ -46,13 +55,13 @@ std::string glew_extensions_dump()
   std::sort(extensions.begin(), extensions.end());
   std::ostringstream out;
   out << "GL Extensions:";
-  for (unsigned int i = 0; i < extensions.size(); ++i) {
-    out << extensions[i] << "\n";
+  for (auto& extension : extensions) {
+    out << extension << "\n";
   }
   return out.str();
 }
 
-std::string glew_dump()
+std::string gl_dump()
 {
   GLint rbits, gbits, bbits, abits, dbits, sbits;
   glGetIntegerv(GL_RED_BITS, &rbits);
@@ -63,29 +72,23 @@ std::string glew_dump()
   glGetIntegerv(GL_STENCIL_BITS, &sbits);
 
   std::ostringstream out;
-  out << "GLEW version: " << glewGetString(GLEW_VERSION)
-      << "\nOpenGL Version: " << (const char *)glGetString(GL_VERSION)
+#ifdef USE_GLEW
+  out << "GLEW version: " << glewGetString(GLEW_VERSION);
+#endif
+#ifdef USE_GLAD
+  out << "GLAD version: " << GLAD_GENERATOR_VERSION;
+#endif
+  out << "\nOpenGL Version: " << (const char *)glGetString(GL_VERSION)
       << "\nGL Renderer: " << (const char *)glGetString(GL_RENDERER)
       << "\nGL Vendor: " << (const char *)glGetString(GL_VENDOR)
       << boost::format("\nRGBA(%d%d%d%d), depth(%d), stencil(%d)") %
     rbits % gbits % bbits % abits % dbits % sbits;
   out << "\nGL_ARB_framebuffer_object: "
-      << (glewIsSupported("GL_ARB_framebuffer_object") ? "yes" : "no")
+      << (hasGLExtension(ARB_framebuffer_object) ? "yes" : "no")
       << "\nGL_EXT_framebuffer_object: "
-      << (glewIsSupported("GL_EXT_framebuffer_object") ? "yes" : "no")
+      << (hasGLExtension(EXT_framebuffer_object) ? "yes" : "no")
       << "\nGL_EXT_packed_depth_stencil: "
-      << (glewIsSupported("GL_EXT_packed_depth_stencil") ? "yes" : "no")
+      << (hasGLExtension(EXT_packed_depth_stencil) ? "yes" : "no")
       << "\n";
   return out.str();
 }
-
-bool report_glerror(const char *function)
-{
-  GLenum tGLErr = glGetError();
-  if (tGLErr != GL_NO_ERROR) {
-    std::cerr << "OpenGL error 0x" << STR(std::hex << tGLErr) << ": " << gluErrorString(tGLErr) << " after " << function << std::endl;
-    return true;
-  }
-  return false;
-}
-

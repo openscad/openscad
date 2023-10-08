@@ -1,6 +1,7 @@
 // This file is a part of openscad. Everything implied is implied.
 // Author: Alexey Korepanov <kaikaikai@yandex.ru>
 
+// NOLINTNEXTLINE(bugprone-reserved-identifier)
 #define _USE_MATH_DEFINES
 #include <cmath>
 
@@ -10,18 +11,17 @@
 
 #include "GeometryUtils.h"
 #include "ClipperUtils.h"
-#include "printutils.h"
 #include "RoofNode.h"
 #include "roof_vd.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
-  throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
+        throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
 
 namespace roof_vd {
 
-typedef int32_t VD_int;
+using VD_int = int32_t;
 
-typedef ::boost::polygon::voronoi_diagram<double> voronoi_diagram;
+using voronoi_diagram = ::boost::polygon::voronoi_diagram<double>;
 
 struct Point {
   VD_int a;
@@ -44,36 +44,34 @@ struct Segment {
 } // roof_vd
 
 // pass our Point and Segment structures to boost::polygon
-namespace boost {
-namespace polygon {
+namespace boost::polygon {
 template <>
 struct geometry_concept<roof_vd::Point> {
-  typedef point_concept type;
+  using type = point_concept;
 };
 template <>
 struct point_traits<roof_vd::Point> {
-  typedef roof_vd::VD_int coordinate_type;
+  using coordinate_type = roof_vd::VD_int;
 
   static inline coordinate_type get(
-    const roof_vd::Point& point, orientation_2d orient) {
+    const roof_vd::Point& point, const orientation_2d& orient) {
     return (orient == HORIZONTAL) ? point.a : point.b;
   }
 };
 template <>
 struct geometry_concept<roof_vd::Segment> {
-  typedef segment_concept type;
+  using type = segment_concept;
 };
 template <>
 struct segment_traits<roof_vd::Segment> {
-  typedef roof_vd::VD_int coordinate_type;
-  typedef roof_vd::Point point_type;
+  using coordinate_type = roof_vd::VD_int;
+  using point_type = roof_vd::Point;
 
-  static inline point_type get(const roof_vd::Segment& segment, direction_1d dir) {
+  static inline point_type get(const roof_vd::Segment& segment, const direction_1d& dir) {
     return dir.to_int() ? segment.p1 : segment.p0;
   }
 };
-}  // polygon
-}  // boost
+}  // boost::polygon
 
 
 namespace roof_vd {
@@ -130,7 +128,7 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
 
   // an orthogonal affine transformation which maps point to zero and
   // segment parallel to the x axes on the negative side
-  //     a_point ->  A(a_point - point)
+  //     a_point -> A(a_point - point)
   Eigen::Matrix2d A, Ai;
   Ai << point_direction.y(), point_direction.x(), -point_direction.x(), point_direction.y();
   A = Ai.inverse();
@@ -187,7 +185,7 @@ std::vector<Vector2d> discretize_arc(const Point& point, const Segment& segment,
     } else if (x == transformed_v1_x) {
       ret.push_back(v1);
     } else {
-      ret.push_back(p + Ai * Vector2d(x, y(x)));
+      ret.emplace_back(p + Ai * Vector2d(x, y(x)));
     }
   }
 
@@ -210,8 +208,8 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
                               double fa, double fs) {
   Faces_2_plus_1 ret;
 
-  auto cell_contains_boundary_point = [&vd, &segments](const voronoi_diagram::cell_type *cell,
-                                                       const Point& point) {
+  auto cell_contains_boundary_point = [&segments](const voronoi_diagram::cell_type *cell,
+                                                  const Point& point) {
       Segment segment = segments[cell->source_index()];
       return (cell->contains_segment() && segment_has_endpoint(segment, point) )
              || (cell->source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT
@@ -220,24 +218,24 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
                  && segment.p1 == point);
     };
 
-  for (voronoi_diagram::const_cell_iterator cell = vd.cells().begin(); cell != vd.cells().end(); cell++) {
+  for (const auto& cell : vd.cells()) {
 
-    std::size_t cell_index = cell->source_index();
-    if (cell->is_degenerate()) {
+    std::size_t cell_index = cell.source_index();
+    if (cell.is_degenerate()) {
       RAISE_ROOF_EXCEPTION("Voronoi error");
     }
     const Segment& segment = segments[cell_index];
 
-    if (cell->contains_segment()) {
+    if (cell.contains_segment()) {
       // walk around the cell, find edge starting from segment.p1 or passing through it
-      const voronoi_diagram::edge_type *edge = cell->incident_edge();
+      const voronoi_diagram::edge_type *edge = cell.incident_edge();
       for (;;) {
         if (cell_contains_boundary_point(edge->twin()->cell(), segment.p1)
             && !cell_contains_boundary_point(edge->next()->twin()->cell(), segment.p1)) {
           break;
         }
         edge = edge->next();
-        if (edge == cell->incident_edge()) {
+        if (edge == cell.incident_edge()) {
           RAISE_ROOF_EXCEPTION("Voronoi error");
         }
       }
@@ -279,12 +277,12 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
         ret.heights[p] = 0.0;
       }
     } else { // point cell
-      const voronoi_diagram::edge_type *edge = cell->incident_edge();
-      const Point point = (cell->source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT) ?
+      const voronoi_diagram::edge_type *edge = cell.incident_edge();
+      const Point point = (cell.source_category() == ::boost::polygon::SOURCE_CATEGORY_SEGMENT_START_POINT) ?
         segment.p0 : segment.p1;
       while (!(edge->is_secondary() && edge->prev()->is_secondary() )) {
         edge = edge->next();
-        if (edge == cell->incident_edge()) {
+        if (edge == cell.incident_edge()) {
           RAISE_ROOF_EXCEPTION("Voronoi error");
         }
       }
@@ -333,7 +331,7 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
 
 PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
 {
-  PolySet *hat = new PolySet(3);
+  auto *hat = new PolySet(3);
 
   try {
 
@@ -349,7 +347,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
     for (auto path : paths) {
       auto prev = path.back();
       for (auto p : path) {
-        segments.push_back(Segment(prev.X, prev.Y, p.X, p.Y));
+        segments.emplace_back(prev.X, prev.Y, p.X, p.Y);
         prev = p;
       }
     }
@@ -359,7 +357,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
     Faces_2_plus_1 inner_faces = vd_inner_faces(vd, segments, fa, scale * fs);
 
     // roof
-    for (std::vector<Vector2d> face : inner_faces.faces) {
+    for (const std::vector<Vector2d>& face : inner_faces.faces) {
       if (!(face.size() >= 3)) {
         RAISE_ROOF_EXCEPTION("Voronoi error");
       }
@@ -369,7 +367,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
       outline.vertices = face;
       face_poly.addOutline(outline);
       PolySet *tess = face_poly.tessellate();
-      for (std::vector<Vector3d> triangle : tess->polygons) {
+      for (const std::vector<Vector3d>& triangle : tess->polygons) {
         Polygon roof;
         for (Vector3d tv : triangle) {
           Vector2d v;
@@ -389,7 +387,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
       // poly has to go through clipper just as it does for the roof
       // because this may change coordinates
       Polygon2d poly_floor;
-      for (auto path : paths) {
+      for (const auto& path : paths) {
         Outline2d o;
         for (auto p : path) {
           o.vertices.push_back({p.X / scale, p.Y / scale});
@@ -397,9 +395,9 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
         poly_floor.addOutline(o);
       }
       PolySet *tess = poly_floor.tessellate();
-      for (std::vector<Vector3d> triangle : tess->polygons) {
+      for (const std::vector<Vector3d>& triangle : tess->polygons) {
         Polygon floor;
-        for (Vector3d tv : triangle) {
+        for (const Vector3d& tv : triangle) {
           floor.push_back(tv);
         }
         // floor has reverse orientation

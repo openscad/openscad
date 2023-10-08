@@ -1,16 +1,9 @@
 #include "Geometry.h"
 #include "printutils.h"
 #include <boost/foreach.hpp>
+#include <utility>
 
-GeometryList::GeometryList()
-{
-}
-
-GeometryList::GeometryList(const Geometry::Geometries& geometries) : children(geometries)
-{
-}
-
-GeometryList::~GeometryList()
+GeometryList::GeometryList(Geometry::Geometries geometries) : children(std::move(geometries))
 {
 }
 
@@ -47,7 +40,7 @@ unsigned int GeometryList::getDimension() const
   for (const auto& item : this->children) {
     if (!dim) dim = item.second->getDimension();
     else if (dim != item.second->getDimension()) {
-      LOG(message_group::Warning, Location::NONE, "", "Mixing 2D and 3D objects is not supported.");
+      LOG(message_group::Warning, "Mixing 2D and 3D objects is not supported.");
       break;
     }
   }
