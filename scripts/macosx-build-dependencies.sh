@@ -57,7 +57,7 @@ PACKAGES=(
     "pixman 0.42.2"
     "cairo 1.16.0"
     "cgal 5.5"
-    "qt5 5.15.7"
+    "qt5 5.15.7 patch"
     "opencsg 1.6.0"
     "qscintilla 2.13.3"
     "onetbb 2021.8.0"
@@ -218,7 +218,7 @@ build_qt5()
 		-no-feature-assistant -no-feature-designer -no-feature-distancefieldgenerator -no-feature-kmap2qmap \
 		-no-feature-linguist -no-feature-makeqpf -no-feature-qev -no-feature-qtattributionsscanner \
 		-no-feature-qtdiag -no-feature-qtpaths -no-feature-qtplugininfo \
-		-no-feature-openal -no-feature-avfoundation -no-feature-gstreamer \
+		-no-feature-openal -no-feature-avfoundation -no-feature-gstreamer -no-feature-qdoc \
 		-device-option QMAKE_APPLE_DEVICE_ARCHS=$arch
     make -j"$NUMCPU"
     make -j"$NUMCPU" install INSTALL_ROOT=$PWD/install/
@@ -929,8 +929,10 @@ OPTION_PACKAGES="${@:$OPTIND}"
 
 OSX_MAJOR_VERSION=`sw_vers -productVersion | cut -d. -f1`
 OSX_VERSION=`sw_vers -productVersion | cut -d. -f2`
-if (( $OSX_MAJOR_VERSION >= 12 )); then
-  echo "Detected Monterey (12.x) or later"
+if (( $OSX_MAJOR_VERSION >= 14 )); then
+  echo "Detected Sonoma (14.x) or later"
+elif (( $OSX_MAJOR_VERSION >= 13 )); then
+  echo "Detected Ventura (13.x) or later"
 elif (( $OSX_MAJOR_VERSION >= 11 )); then
   echo "Detected BigSur (11.x) or later"
 elif (( $OSX_VERSION >= 15 )); then
