@@ -125,7 +125,7 @@ std::shared_ptr<AbstractNode> AbstractNode::clone() const {
   std::shared_ptr<AbstractNode> n = this->cloneOne();
   n->children.clear();
   n->idx = idx_counter++;
-  for (auto child : children) {
+  for (const auto& child : children) {
     n->children.push_back(child->clone());
   }
   return n;
