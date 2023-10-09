@@ -198,6 +198,9 @@ macro(find_graphics)
   if(NULLGL)
     target_compile_definitions(OpenSCAD PRIVATE NULLGL)
   else()
+
+    set(OPENSCAD_UNITY_BUILD ${CMAKE_UNITY_BUILD})
+    set(CMAKE_UNITY_BUILD OFF)
     if(NOT USE_BUILTIN_OPENCSG)
       find_package(OpenCSG REQUIRED QUIET)
       target_link_libraries(OpenSCAD PRIVATE ${OPENCSG_LIBRARY})
@@ -214,6 +217,7 @@ macro(find_graphics)
       target_link_libraries(OpenSCAD PRIVATE OpenCSG)
       message(STATUS "OpenCSG submodule: ${OPENCSG_VERSION_STRING}")
     endif(NOT USE_BUILTIN_OPENCSG)
+    set(CMAKE_UNITY_BUILD ${OPENSCAD_UNITY_BUILD})
 
     target_compile_definitions(OpenSCAD PRIVATE ENABLE_OPENCSG)
 
@@ -1089,6 +1093,7 @@ set_source_files_properties(
   ${BISON_openscad_parser_OUTPUTS}
   ${FLEX_comment_lexer_OUTPUTS}
   ${BISON_comment_parser_OUTPUTS}
+  ${MANIFOLD_SOURCES}
   src/glview/OffscreenContextFactory.cc
   src/glview/RenderSettings.cc
   src/glview/Camera.cc
