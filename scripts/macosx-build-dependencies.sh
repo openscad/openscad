@@ -55,7 +55,7 @@ PACKAGES=(
     # FIXME: Re-evaluate patches if bumping glib past 2.76.3
     "glib2 2.76.3"
     "pixman 0.42.2"
-    "cairo 1.16.0"
+    "cairo 1.18.0"
     "cgal 5.5"
     "qt5 5.15.7 patch"
     "opencsg 1.6.0"
@@ -871,20 +871,15 @@ build_cairo()
   tar xzf "${CAIRO_FILENAME}"
   cd "$CAIRO_DIR"
 
+  # FIXME: Cairo cannot disable lzo2, so we patch it
+  patch -p1 < $OPENSCADDIR/patches/cairo-lzo2-macos.patch
+
   # Build each arch separately
-  for i in ${!ARCHS[@]}; do
-    arch=${ARCHS[$i]}
-    mkdir build-$arch
-    cd build-$arch
-    ../configure --prefix=$DEPLOYDIR \
-        CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" \
-        --enable-xlib=no --enable-xlib-xrender=no --enable-xcb=no \
-        --enable-xlib-xcb=no --enable-xcb-shm=no --enable-win32=no \
-        --enable-win32-font=no --enable-png=no --enable-ps=no \
-        --enable-svg=no --enable-gobject=no \
-        --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0
-    make -j"$NUMCPU" install DESTDIR=$PWD/install/
-    cd ..
+  for arch in ${ARCHS[*]}; do
+    sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
+    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt -Dfreetype=enabled -Dfontconfig=enabled -Dxlib=disabled -Dxcb=disabled -Dpng=disabled -Dglib=disabled -Dtests=disabled -Dquartz=disabled build-$arch
+    meson compile -C build-$arch
+    DESTDIR=install/ meson install -C build-$arch
   done
 
   # Install the first arch
