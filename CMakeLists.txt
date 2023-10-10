@@ -180,6 +180,11 @@ find_package(PkgConfig)
 
 add_subdirectory(submodules)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules" ${CMAKE_MODULE_PATH})
+find_package(BREAKPAD REQUIRED )
+target_include_directories(OpenSCAD SYSTEM PRIVATE ${BREAKPAD_INCLUDE_DIRS})
+target_link_libraries(OpenSCAD PRIVATE ${BREAKPAD_LIBS})
+
 # The submodules will set up mimalloc if needed, and we need to defer any 
 # target_link_libraries() calls until after that.
 

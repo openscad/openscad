@@ -69,6 +69,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
+#include "client/linux/handler/exception_handler.h"
 
 #ifdef _WIN32
 #include <io.h>
@@ -912,6 +913,12 @@ bool flagConvert(const std::string& str){
   return false;
 }
 
+static bool crashDumpCallback(const google_breakpad::MinidumpDescriptor& descriptor,
+void* context, bool succeeded) {
+  printf("Dump path: %s\n", descriptor.path());
+  return succeeded;
+}
+
 // OpenSCAD
 int main(int argc, char **argv)
 {
@@ -922,6 +929,10 @@ int main(int argc, char **argv)
 
   int rc = 0;
   StackCheck::inst();
+
+  google_breakpad::MinidumpDescriptor descriptor("/tmp");
+  google_breakpad::ExceptionHandler eh(descriptor, NULL, crashDumpCallback, NULL, true, -1);
+
 
 #ifdef OPENSCAD_QTGUI
   { // Need a dummy app instance to get the application path but it needs to be destroyed before the GUI is launched.
