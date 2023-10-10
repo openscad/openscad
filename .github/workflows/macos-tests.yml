@@ -35,10 +35,12 @@ jobs:
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
         make -j$NUMCPU
     - name: Run Test Suite
+      # Disable pdf export test on macOS because Cairo >= 1.18 on Homebrew uses the
+      # Quartz backend which doesn't have the Liberation Sans font we use.
       run: |
         cd build
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
-        ctest -j$NUMCPU
+        ctest -j$NUMCPU -E pdfexporttest
     - name: Upload Test Result Report
       uses: actions/upload-artifact@v3
       if: ${{ always() }}
