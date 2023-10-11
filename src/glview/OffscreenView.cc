@@ -45,7 +45,15 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
     .majorGLVersion = 2,
     .minorGLVersion = 0,
   };
-  const auto provider = OffscreenContextFactory::defaultProvider();
+  auto provider = OffscreenContextFactory::defaultProvider();
+  // We cannot initialize GLX GLEW with an EGL context:
+  // https://github.com/nigels-com/glew/issues/273
+  // ..so if we're using GLEW, default to creating a GLX context.
+  // FIXME: It's possible that GLEW was built using EGL, in which case this
+  // logic isn't correct, but we don't have a good way of determining how GLEW was built.
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
+  provider = provider == "egl" ? "glx" : provider;
+#endif
   this->ctx = OffscreenContextFactory::create(provider, attrib);
   if (!this->ctx) {
     // If the provider defaulted to EGL, fall back to GLX if EGL failed
