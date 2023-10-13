@@ -394,7 +394,7 @@ Value python_functionfunc(const FunctionCall *call,const std::shared_ptr<const C
  * Main python evaluation entry
  */
 
-void initPython(void)
+void initPython(double time)
 {
     if(pythonInitDict) { /* If already initialized, undo to reinitialize after */
       finishPython();
@@ -433,7 +433,7 @@ void finishPython(void)
       pythonInitDict=NULL;
 }
 
-std::string evaluatePython(const std::string & code, double time,AssignmentList &assignments)
+std::string evaluatePython(const std::string & code, AssignmentList &assignments)
 {
   std::string error;
   python_result_node = NULL;

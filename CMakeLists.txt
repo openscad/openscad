@@ -382,7 +382,7 @@ target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
 if(ENABLE_PYTHON)
   find_package(Python REQUIRED COMPONENTS Interpreter Development)
-  find_package(NETTLE REQUIRED)
+  find_package(Nettle REQUIRED)
   message(STATUS "Python enabled, using Nettle ")
   message(STATUS ${NETTLE_INCLUDE_DIR})
   message(STATUS ${NETTLE_LIBRARIES})

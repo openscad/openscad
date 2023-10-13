@@ -89,9 +89,9 @@
 
 #ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
-void initPython(void);
+void initPython(double time);
 void finishPython(void);
-std::string evaluatePython(const std::string &code, double timem,AssignmentList &assignments);
+std::string evaluatePython(const std::string &code, AssignmentList &assignments);
 extern bool python_active;
 extern bool python_trusted;
 #endif
@@ -409,8 +409,8 @@ int cmdline(const CommandLine& cmd)
   if(python_active) {
     auto fulltext_py = text;
     AssignmentList dummy_assignments;
-    initPython();
-    auto error  = evaluatePython(fulltext_py, 0.0, dummy_assignments);
+    initPython(0.0 );
+    auto error  = evaluatePython(fulltext_py,  dummy_assignments);
     if(error.size() > 0) LOG(error.c_str());
     text ="\n";
     finishPython();

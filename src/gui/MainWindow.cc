@@ -99,9 +99,9 @@
 
 #ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
-void initPython(void);
+void initPython(double time );
 void finishPython(void);
-std::string evaluatePython(const std::string &code, double time,AssignmentList &assignments);
+std::string evaluatePython(const std::string &code, AssignmentList &assignments);
 extern bool python_trusted;
 
 #include "nettle/sha2.h"
@@ -1946,12 +1946,12 @@ void MainWindow::parseTopLevelDocument()
     this->root_file =new SourceFile(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
     this->parsed_file = this->root_file;
 
-    initPython();
+    initPython(this->animateWidget->getAnim_tval());
     this->activeEditor->resetHighlighting();
     if (this->root_file != nullptr) {
       //add parameters as annotation in AST
       if(this->assignments_save.size() == 0) {
-        auto error = evaluatePython(fulltext_py,0,this->assignments_save); // add assignments
+        auto error = evaluatePython(fulltext_py,this->assignments_save); // add assignments
         if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
       }
       this->root_file->scope.assignments = this->assignments_save;
@@ -2013,8 +2013,7 @@ void MainWindow::parseTopLevelDocument()
       fulltext_py_eval.append("\r\n");
 
     }
-
-    auto error = evaluatePython(fulltext_py_eval,this->animateWidget->getAnim_tval(),this->assignments_save); // add assignments
+    auto error = evaluatePython(fulltext_py_eval,this->assignments_save); // add assignments
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     finishPython();
 
