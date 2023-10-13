@@ -6,7 +6,7 @@
 
 find_package(PkgConfig REQUIRED QUIET)
 
-pkg_check_modules(PC_NETTLE nettle>=3.8) 
+pkg_check_modules(PC_NETTLE nettle>=0.1) 
 
 find_path(NETTLE_INCLUDE_DIRS NAMES nettle/sha2.h
 	HINTS ${PC_NETTLE_INCLUDE_DIRS} ${PC_NETTLE_INCLUDEDIR}
