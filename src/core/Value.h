@@ -327,6 +327,7 @@ public:
     [[nodiscard]] const Value& get(const std::string& key) const;
     void set(const std::string& key, Value&& value);
     void del(const std::string& key);
+    void merge(Value&& value, const Location& loc);
     bool contains(const std::string& key) const;
     bool empty() const;
     Value operator==(const ObjectType& v) const;

@@ -84,6 +84,7 @@ static fs::path mainFilePath;
 static bool parsingMainFile;
 
 bool fileEnded=false;
+
 %}
 
 %initial-action
@@ -147,6 +148,9 @@ bool fileEnded=false;
 %type <expr> primary
 %type <vec> vector_elements
 %type <obj> object_elements
+%type <obj> object_element
+%type <obj> object_comprehension_elements
+%type <expr> object_comprehension_each_arg;
 %type <expr> list_comprehension_elements
 %type <expr> list_comprehension_elements_p
 %type <expr> vector_element
@@ -169,7 +173,7 @@ bool fileEnded=false;
 %type <expr> ref
 %type <text> reserved_but_allowed_in_module_name
 %type <text> reserved_but_allowed_in_object_key
-%type <text> object_key
+%type <expr> object_key
 
 %debug
 %locations
@@ -634,17 +638,17 @@ primary
               scope_stack.pop();
               $$ = $<expr>3;
             }
-        | '{' '('
-            {
-              HybridLiteral *gl = new HybridLiteral(LOCD("literal", @$));
-              scope_stack.push(&gl->body);
-              $<expr>$ = gl;
-            }
-          inner_input ')' '}'
-            {
-              scope_stack.pop();
-              $$ = $<expr>3;
-            }
+//        | '{' '('
+//            {
+//              HybridLiteral *gl = new HybridLiteral(LOCD("literal", @$));
+//              scope_stack.push(&gl->body);
+//              $<expr>$ = gl;
+//            }
+//          inner_input ')' '}'
+//            {
+//              scope_stack.pop();
+//              $$ = $<expr>3;
+//            }
             ;
 
 expr_or_empty
@@ -727,14 +731,77 @@ object_elements
         : object_key ':' expr
             {
               $$ = new Object(LOCD("object", @$));
-              $$->set($1, $3);
-              free($1);
+              $$->addSetOp($1, $3);
+            }
+        | object_comprehension_elements
+            {
+              $$ = new Object(LOCD("object", @$));
+              $$->addIncludeOp($1);
             }
         | object_elements ',' object_key ':' expr
             {
               $$ = $1;
-              $$->set($3, $5);
-              free($3);
+              $$->addSetOp($3, $5);
+            }
+        | object_elements ',' object_comprehension_elements
+            {
+              $$ = $1;
+              $$->addIncludeOp($3);
+            }
+        ;
+
+object_element
+        : object_key ':' expr
+            {
+              $$ = new Object(LOCD("object", @$));
+              $$->addSetOp($1, $3);
+            }
+        | object_comprehension_elements
+        ;
+
+object_comprehension_each_arg
+        : object_comprehension_elements // NEEDSWORK not sure this is meaningful
+            {
+              $$ = $1;
+            }
+        | expr
+            {
+              $$ = $1;
+            }
+        ;
+
+object_comprehension_elements
+        : TOK_LET '(' arguments ')' object_element
+            {
+              $$ = new OcLet(*$3, $5, LOCD("oclet", @$));
+              delete $3;
+            }
+        | TOK_EACH object_comprehension_each_arg
+            {
+              $$ = new OcEach($2, LOCD("oceach", @$));
+            }
+        | TOK_FOR '(' arguments ')' object_element
+            {
+              $$ = new OcFor(*$3, $5, LOCD("ocfor", @$));
+              delete $3;
+            }
+        | TOK_FOR '(' arguments ';' expr ';' arguments ')' object_element
+            {
+              $$ = new OcForC(*$3, *$7, $5, $9, LOCD("ocforc", @$));
+              delete $3;
+              delete $7;
+            }
+        | TOK_IF '(' expr ')' object_element %prec NO_ELSE
+            {
+              $$ = new OcIf($3, $5, 0, LOCD("ocif", @$));
+            }
+        | TOK_IF '(' expr ')' object_element TOK_ELSE object_element
+            {
+              $$ = new OcIf($3, $5, $7, LOCD("ocifelse", @$));
+            }
+        | '(' object_comprehension_elements ')'
+            {
+              $$ = $2;
             }
         ;
 
@@ -754,8 +821,24 @@ reserved_but_allowed_in_object_key
 
 object_key
         : TOK_STRING
+            {
+              $$ = new Literal(std::string($1), LOCD("string", @$));
+              free($1);
+            }
         | TOK_ID
+            {
+              $$ = new Literal(std::string($1), LOCD("string", @$));
+              free($1);
+            }
         | reserved_but_allowed_in_object_key
+            {
+              $$ = new Literal(std::string($1), LOCD("string", @$));
+              free($1);
+            }
+        | '(' expr ')'
+            {
+              $$ = $2;
+            }
         ;
 
 parameters

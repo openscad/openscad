@@ -353,17 +353,51 @@ bool Object::isLiteral() const {
   }
 }
 
-void Object::set(const char *key, Expression *expr)
+void Object::addSetOp(shared_ptr<Expression> key, shared_ptr<Expression> expr)
 {
   this->keys.emplace_back(key);
   this->values.emplace_back(expr);
+}
+
+void Object::addSetOp(Expression *key, Expression *expr)
+{
+  this->keys.emplace_back(key);
+  this->values.emplace_back(expr);
+}
+
+void Object::addIncludeOp(Object *obj)
+{
+  this->keys.emplace_back(nullptr);
+  this->values.emplace_back(obj);
+}
+
+// NEEDSWORK this should probably record the location of the keys and values being merged,
+// so that if there is a problem evaluating them it can point at the right place.
+// NEEDSWORK unused?
+void Object::mergeSetOps(Object *obj)
+{
+  for (size_t i = 0; i < obj->keys.size(); i++) {
+    this->addSetOp(obj->keys[i], obj->values[i]);
+  }
 }
 
 Value Object::evaluate(const std::shared_ptr<const Context>& context) const
 {
   ObjectType obj(context->session());
   for (size_t i = 0; i < this->keys.size(); i++) {
-    obj.set(this->keys[i], this->values[i]->evaluate(context));
+    shared_ptr<Expression> keyExpr = this->keys[i];
+    if (keyExpr) {
+      Value key = this->keys[i]->evaluate(context);
+      if (key.type() == Value::Type::STRING) {
+        obj.set(key.toString(), this->values[i]->evaluate(context));
+      } else {
+        std::stringstream message;
+        message << "Key is " << key.typeName() << ", must be string.";
+        LOG(message_group::Warning, loc, context->documentRoot(), "%1$s", message.str());
+      }
+    } else {
+      obj.merge(this->values[i]->evaluate(context), loc);
+    }
   }
   return std::move(obj);
 }
@@ -377,7 +411,7 @@ void Object::print(std::ostream& stream, const std::string&) const
     if (first) first = false;
     else stream << ", ";
     // NEEDSWORK does not handle special characters in the key
-    stream << Value(this->keys[i]) << ":" << *this->values[i];
+    stream << *this->keys[i] << ":" << *this->values[i];
   }
   stream << "}";
 }
@@ -1035,6 +1069,143 @@ Value LcLet::evaluate(const std::shared_ptr<const Context>& context) const
 }
 
 void LcLet::print(std::ostream& stream, const std::string&) const
+{
+  stream << "let(" << this->arguments << ") (" << *this->expr << ")";
+}
+
+
+ObjectComprehension::ObjectComprehension(const Location& loc) : Object(loc)
+{
+}
+
+OcIf::OcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Location& loc)
+  : ObjectComprehension(loc), cond(cond), ifexpr(ifexpr), elseexpr(elseexpr)
+{
+}
+
+Value OcIf::evaluate(const std::shared_ptr<const Context>& context) const
+{
+  const shared_ptr<Expression>& expr = this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
+  if (expr) {
+    return expr->evaluate(context);
+  } else {
+    return ObjectType(nullptr); // NEEDSWORK should have ObjectType::Empty();
+  }
+}
+
+void OcIf::print(std::ostream& stream, const std::string&) const
+{
+  stream << "if(" << *this->cond << ") (" << *this->ifexpr << ")";
+  if (this->elseexpr) {
+    stream << " else (" << *this->elseexpr << ")";
+  }
+}
+
+OcEach::OcEach(Expression *expr, const Location& loc) : ObjectComprehension(loc), expr(expr)
+{
+}
+
+Value OcEach::evaluate(const std::shared_ptr<const Context>& context) const
+{
+  Value v = this->expr->evaluate(context);
+  if (v.type() == Value::Type::OBJECT) {
+    ObjectType obj = v.toObject();
+    return {std::move(obj)};
+  }
+  return Value::undefined.clone();
+}
+
+void OcEach::print(std::ostream& stream, const std::string&) const
+{
+  stream << "each (" << *this->expr << ")";
+}
+
+OcFor::OcFor(AssignmentList args, Expression *expr, const Location& loc)
+  : ObjectComprehension(loc), arguments(std::move(args)), expr(expr)
+{
+}
+
+void OcFor::forEach(const AssignmentList& assignments, const Location& loc, const std::shared_ptr<const Context>& context, const std::function<void(const std::shared_ptr<const Context>&)>& operation)
+{
+  doForEach(assignments, loc, operation, 0, context);
+}
+
+Value OcFor::evaluate(const std::shared_ptr<const Context>& context) const
+{
+  ObjectType obj(context->session());
+  forEach(this->arguments, this->loc, context,
+    [this, &obj, expression = expr.get()]
+      (const std::shared_ptr<const Context>& iterationContext) {
+        obj.merge(expression->evaluate(iterationContext), loc);
+      }
+  );
+  return {std::move(obj)};
+}
+
+void OcFor::print(std::ostream& stream, const std::string&) const
+{
+  stream << "for(" << this->arguments << ") (" << *this->expr << ")";
+}
+
+OcForC::OcForC(AssignmentList args, AssignmentList incrargs, Expression *cond, Expression *expr, const Location& loc)
+  : ObjectComprehension(loc), arguments(std::move(args)), incr_arguments(std::move(incrargs)), cond(cond), expr(expr)
+{
+}
+
+Value OcForC::evaluate(const std::shared_ptr<const Context>& context) const
+{
+  ObjectType output(context->session());
+
+  ContextHandle<Context> initialContext{Let::sequentialAssignmentContext(this->arguments, this->location(), context)};
+  ContextHandle<Context> currentContext{Context::create<Context>(*initialContext)};
+
+  unsigned int counter = 0;
+  while (this->cond->evaluate(*currentContext).toBool()) {
+    output.merge(this->expr->evaluate(*currentContext), loc);
+
+    if (counter++ == 1000000) {
+      LOG(message_group::Error, loc, context->documentRoot(), "For loop counter exceeded limit");
+      throw LoopCntException::create("for", loc);
+    }
+
+    /*
+     * The next context should be evaluated in the current context,
+     * and replace the current context; but there is no reason for
+     * it to _parent_ the current context, for the next context
+     * replaces every variable in it. Keeping the next context
+     * parented to the current context would keep the current in
+     * memory unnecessarily, and greatly slow down variable lookup.
+     * However, we can't just use apply_variables(), as this breaks
+     * captured context references in lambda functions.
+     * So, we reparent the next context to the initial context.
+     */
+    ContextHandle<Context> nextContext{Let::sequentialAssignmentContext(this->incr_arguments, this->location(), *currentContext)};
+    currentContext = std::move(nextContext);
+    currentContext->setParent(*initialContext);
+  }
+  return {std::move(output)};
+}
+
+void OcForC::print(std::ostream& stream, const std::string&) const
+{
+  stream
+    << "for(" << this->arguments
+    << ";" << *this->cond
+    << ";" << this->incr_arguments
+    << ") " << *this->expr;
+}
+
+OcLet::OcLet(AssignmentList args, Expression *expr, const Location& loc)
+  : ObjectComprehension(loc), arguments(std::move(args)), expr(expr)
+{
+}
+
+Value OcLet::evaluate(const std::shared_ptr<const Context>& context) const
+{
+  return this->expr->evaluate(*Let::sequentialAssignmentContext(this->arguments, this->location(), context));
+}
+
+void OcLet::print(std::ostream& stream, const std::string&) const
 {
   stream << "let(" << this->arguments << ") (" << *this->expr << ")";
 }

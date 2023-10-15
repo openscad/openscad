@@ -1279,6 +1279,22 @@ void ObjectType::set(const std::string& key, Value&& value)
   }
 }
 
+void ObjectType::merge(Value&& value, const Location& loc)
+{
+      if (value.type() != Value::Type::OBJECT) {
+        std::stringstream message;
+        message << "inclusion is " << value.typeName() << ", must be object.";
+        LOG(message_group::Warning, loc, "", "%1$s", message.str());
+        return;
+      }
+
+      ObjectType o = value.toObject();
+      for (auto iter = o.ptr->keys.begin(); iter != o.ptr->keys.end(); ++iter) {
+        const auto& k = *iter;
+        this->set(k, o[k].clone());
+      }
+}
+
 void ObjectType::del(const std::string& key)
 {
   if (ptr->map.find(key) != ptr->map.end()) {
