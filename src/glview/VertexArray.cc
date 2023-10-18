@@ -51,26 +51,26 @@ void VertexData::remove(size_t count)
   }
 }
 
-void VertexData::createInterleavedVBO(GLuint& vbo) const
-{
-  size_t total_bytes = this->sizeInBytes();
-  if (total_bytes) {
-    std::vector<GLbyte> interleaved_buffer;
-    interleaved_buffer.resize(total_bytes);
-    fillInterleavedBuffer(interleaved_buffer.data());
+// void VertexData::createInterleavedVBO(GLuint& vbo) const
+// {
+//   size_t total_bytes = this->sizeInBytes();
+//   if (total_bytes) {
+//     std::vector<GLbyte> interleaved_buffer;
+//     interleaved_buffer.resize(total_bytes);
+//     fillInterleavedBuffer(interleaved_buffer.data());
 
-    if (vbo == 0) {
-      glGenBuffers(1, &vbo);
-    }
+//     if (vbo == 0) {
+//       glGenBuffers(1, &vbo);
+//     }
 
-    GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vbo);
-    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vbo));
-    GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", total_bytes % (void *)interleaved_buffer.data());
-    GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, total_bytes, interleaved_buffer.data(), GL_STATIC_DRAW));
-    GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
-  }
-}
+//     GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vbo);
+//     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vbo));
+//     GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", total_bytes % (void *)interleaved_buffer.data());
+//     GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, total_bytes, interleaved_buffer.data(), GL_STATIC_DRAW));
+//     GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+//     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
+//   }
+// }
 
 std::shared_ptr<VertexData> VertexData::create() const
 {
@@ -224,7 +224,7 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
     addAttributeValues(*(data()->colorData()), color[0], color[1], color[2], color[3]);
   }
 
-  if (use_elements_) {
+  if (useElements()) {
     std::vector<GLbyte> interleaved_vertex;
     interleaved_vertex.resize(data()->stride());
     data()->getLastVertex(interleaved_vertex);
@@ -291,7 +291,7 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
       }
     }
     elements_offset_ += elementsData()->sizeofAttribute();
-  } else {
+  } else { // !useElements()
     if (!vertices_size_) {
       vertices_offset_ = sizeInBytes();
     } else {
@@ -382,8 +382,8 @@ void VertexArray::createInterleavedVBOs()
     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
   }
 
-  PRINTDB("use_elements_ = %d, elements_size_ = %d", use_elements_ % elements_size_);
-  if (use_elements_ && (!elements_size_ || Feature::ExperimentalVxORenderersPrealloc.is_enabled())) {
+  PRINTDB("useElements() = %d, elements_size_ = %d", useElements() % elements_size_);
+  if (useElements() && (!elements_size_ || Feature::ExperimentalVxORenderersPrealloc.is_enabled())) {
     GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", elements_vbo_);
     GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_vbo_));
     if (!Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {

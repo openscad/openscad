@@ -15,7 +15,7 @@ void VertexStateManager::initializeSizeHelper(size_t num_vertices, bool multiple
     size_t vertices_size = 0, elements_size = 0;
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
       if (multiple_vbo) {
-        vertex_array.elementsVBO() = vbos[vbo_index++];
+        vertex_array.elementsVBO(vbos[vbo_index++]);
       }
       if (num_vertices <= 0xff) {
           vertex_array.addElementsData(std::make_shared<AttributeData<GLubyte, 1, GL_UNSIGNED_BYTE>>());
@@ -42,7 +42,7 @@ void VertexStateManager::initializeSizeHelper(size_t num_vertices, bool multiple
     }
   } else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
     if (multiple_vbo) {
-      vertex_array.elementsVBO() = vbos[vbo_index++];
+      vertex_array.elementsVBO(vbos[vbo_index++]);
     }
     vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
   }

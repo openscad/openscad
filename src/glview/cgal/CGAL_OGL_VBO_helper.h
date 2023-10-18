@@ -230,13 +230,12 @@ public:
 
     if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
       points_edges_array.verticesSize(vertices_size);
-      points_edges_array.elementsSize(elements_size);
-
       GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", points_edges_array.verticesVBO());
       GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, points_edges_array.verticesVBO()));
       GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
       GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW));
       if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+	points_edges_array.elementsSize(elements_size);
         GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", points_edges_array.elementsVBO());
         GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, points_edges_array.elementsVBO()));
         GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);

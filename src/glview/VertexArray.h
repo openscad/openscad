@@ -232,7 +232,7 @@ public:
   void getLastVertex(std::vector<GLbyte>& interleaved_buffer) const;
   // Create an interleaved buffer in the provided vbo.
   // If the vbo does not exist it will be created and returned.
-  void createInterleavedVBO(GLuint& vbo) const;
+  // void createInterleavedVBO(GLuint& vbo) const;
 
   // Create an empty copy of the this vertex data
   [[nodiscard]] std::shared_ptr<VertexData> create() const;
@@ -249,6 +249,8 @@ private:
 };
 
 // Storage for minimum state information necessary to draw VBO.
+// This class is also used to encapsulate other state;
+// Example: VBOShaderVertexState will not render anything, but will use glBegin() to e.g. manage shader uniforms.
 class VertexState
 {
 public:
@@ -290,8 +292,10 @@ public:
   inline std::vector<std::function<void()>>& glBegin() { return gl_begin_; }
   inline std::vector<std::function<void()>>& glEnd() { return gl_end_; }
 
-  inline GLuint& verticesVBO() { return vertices_vbo_; }
-  inline GLuint& elementsVBO() { return elements_vbo_; }
+  [[nodiscard]] inline GLuint verticesVBO() const { return vertices_vbo_; }
+  inline void verticesVBO(GLuint vbo) { vertices_vbo_ = vbo; }
+  [[nodiscard]] inline GLuint elementsVBO() const { return elements_vbo_; }
+  inline void elementsVBO(GLuint vbo) { elements_vbo_ = vbo; }
 
 private:
   GLenum draw_mode_;
@@ -344,9 +348,6 @@ public:
     if (!vertices_vbo_) {
       glGenBuffers(1, &vertices_vbo_);
     }
-    if (elements_vbo_) {
-      use_elements_ = true;
-    }
   }
   virtual ~VertexArray() = default;
 
@@ -361,7 +362,6 @@ public:
     if (!elements_vbo_) {
       glGenBuffers(1, &elements_vbo_);
     }
-    use_elements_ = true;
     elements_.addAttributeData(std::move(data));
   }
 
@@ -440,7 +440,7 @@ public:
   void addAttributePointers(size_t start_offset = 0);
 
   // Return whether this Vertex Array uses elements
-  inline bool useElements() const { return use_elements_; }
+  inline bool useElements() const { return elements_vbo_ != 0; }
 
   // Return the initial buffer size allocated by Vertex Array
   inline size_t verticesSize() const { return vertices_size_; }
@@ -456,10 +456,10 @@ public:
   // Set the elements buffer size allocated by VertexArray
   inline void elementsSize(size_t elements_size) { elements_size_ = elements_size; }
 
-  // Return reference to vertices VBO
-  inline GLuint& verticesVBO() { return vertices_vbo_; }
-  // Return reference to elements VBO
-  inline GLuint& elementsVBO() { return elements_vbo_; }
+  inline GLuint verticesVBO() const { return vertices_vbo_; }
+  inline void verticesVBO(GLuint vbo) { vertices_vbo_ = vbo; }
+  inline GLuint elementsVBO() const { return elements_vbo_; }
+  inline void elementsVBO(GLuint vbo) { elements_vbo_ = vbo; }
 
   // Return the internal unique vertex/element map
   inline ElementsMap& elementsMap() { return elements_map_; }
@@ -480,7 +480,6 @@ private:
   size_t write_index_{0};
   size_t surface_index_{0};
   size_t edge_index_{0};
-  bool use_elements_{false};
   std::vector<std::shared_ptr<VertexData>> vertices_;
   std::vector<GLbyte> interleaved_buffer_;
   GLuint vertices_vbo_, elements_vbo_;

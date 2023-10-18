@@ -54,14 +54,13 @@ ThrownTogetherRenderer::~ThrownTogetherRenderer()
 void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const Renderer::shaderinfo_t * /*shaderinfo*/)
 {
   PRINTD("Thrown prepare");
-  if (Feature::ExperimentalVxORenderers.is_enabled() && !vertex_states.size()) {
+  if (Feature::ExperimentalVxORenderers.is_enabled() && vertex_states.empty()) {
     VertexArray vertex_array(std::make_shared<TTRVertexStateFactory>(), vertex_states);
     vertex_array.addSurfaceData();
     add_shader_data(vertex_array);
 
     VertexStateManager vsm(*this, vertex_array);
 
-    
     size_t num_vertices = 0;
     if (this->root_products) num_vertices += (getSurfaceBufferSize(this->root_products, false, false, true) * 2);
     if (this->background_products) num_vertices += getSurfaceBufferSize(this->background_products, false, true, true);
