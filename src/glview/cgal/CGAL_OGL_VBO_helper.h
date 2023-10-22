@@ -28,6 +28,7 @@
 
 #include "system-gl.h"
 #include "VertexArray.h"
+#include "VertexStateManager.h"
 #include "ext/CGAL/OGL_helper.h"
 #include <cstdlib>
 
@@ -215,38 +216,15 @@ public:
     }
 
     VertexArray points_edges_array(std::make_unique<VertexStateFactory>(), points_edges_states, points_edges_vertices_vbo, points_edges_elements_vbo);
+    VertexStateManager vsm(points_edges_array);
+
     points_edges_array.addEdgeData();
     points_edges_array.writeEdge();
     size_t last_size = 0;
     size_t elements_offset = 0;
 
-    size_t vertices_size = vertices_.size() + edges_.size() * 2, elements_size = 0;
-    vertices_size *= points_edges_array.stride();
-    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      if (vertices_size <= 0xff) {
-        points_edges_array.addElementsData(std::make_shared<AttributeData<GLubyte, 1, GL_UNSIGNED_BYTE>>());
-      } else if (vertices_size <= 0xffff) {
-        points_edges_array.addElementsData(std::make_shared<AttributeData<GLushort, 1, GL_UNSIGNED_SHORT>>());
-      } else {
-        points_edges_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
-      }
-      elements_size = vertices_size * points_edges_array.elements().stride();
-    }
-
-    if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-      points_edges_array.verticesSize(vertices_size);
-      GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", points_edges_array.verticesVBO());
-      GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, points_edges_array.verticesVBO()));
-      GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
-      GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW));
-      if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-	points_edges_array.elementsSize(elements_size);
-        GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", points_edges_array.elementsVBO());
-        GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, points_edges_array.elementsVBO()));
-        GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
-        GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW));
-      }
-    }
+    size_t num_vertices = vertices_.size() + edges_.size() * 2, elements_size = 0;
+    vsm.initializeSize(num_vertices);
 
     // Points
     Vertex_iterator v;
