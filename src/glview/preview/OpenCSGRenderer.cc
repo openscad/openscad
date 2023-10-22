@@ -132,6 +132,7 @@ OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject& csgobj, O
 }
 
 // Primitive for drawing using OpenCSG
+// Makes a copy of the given VertexState enabling just unlit/uncolored vertex rendering
 OpenCSGVBOPrim *OpenCSGRenderer::createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState>& vertex_state,
                                                     const OpenCSG::Operation operation, const unsigned int convexity) const
 {
@@ -147,8 +148,16 @@ OpenCSGVBOPrim *OpenCSGRenderer::createVBOPrimitive(const std::shared_ptr<OpenCS
   return new OpenCSGVBOPrim(operation, convexity, std::move(opencsg_vs));
 }
 
+// Turn the CSGProducts into VBOs
+// Will create one (temporary) VertexArray and one VBO(+EBO) per product
+// The VBO will be utilized to render multiple objects with correct state management.
+// In the future, we could use a VBO per primitive and potentially reuse VBOs, but that requires
+// some more careful state management.
 void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Renderer::shaderinfo_t * /*shaderinfo*/, bool highlight_mode, bool background_mode)
 {
+  // We need to manage buffers here since we don't have another suitable container for
+  // managing the life cycle of VBOs.
+  // We're creating one VBO(+EBO) per product.
   size_t vbo_count = products.products.size();
   if (vbo_count) {
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {

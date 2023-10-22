@@ -378,6 +378,8 @@ void VertexArray::addAttributePointers(size_t start_offset)
   GLenum type = vertex_data->positionData()->glType();
   GLsizei stride = vertex_data->stride();
   size_t offset = start_offset + vertex_data->interleavedOffset(vertex_data->positionIndex());
+  // Note: Some code, like OpenCSGRenderer::createVBOPrimitive() relies on this order of
+  // glBegin/glEnd functions for unlit/uncolored vertex rendering.
   vs->glBegin().emplace_back([]() {
     GL_TRACE0("glEnableClientState(GL_VERTEX_ARRAY)");
     GL_CHECKD(glEnableClientState(GL_VERTEX_ARRAY));

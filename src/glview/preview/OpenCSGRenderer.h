@@ -66,6 +66,9 @@ public:
   [[nodiscard]] const VertexStates& states() const { return *(states_.get()); }
 
 private:
+  // primitives_ is used to create the OpenCSG depth buffer (unlit rendering).
+  // states_ is used for color rendering (using GL_EQUAL).
+  // Both may use the same underlying VBOs
   const std::vector<OpenCSG::Primitive *> primitives_;
   const std::unique_ptr<VertexStates> states_;
 };
