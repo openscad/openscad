@@ -334,10 +334,10 @@ public:
                                                    bool mirror)>;
 
 
-  VertexArray(std::shared_ptr<VertexStateFactory> factory, VertexStates& states,
+  VertexArray(std::unique_ptr<VertexStateFactory> factory, VertexStates& states,
               GLuint vertices_vbo = 0, GLuint elements_vbo = 0)
     : factory_(std::move(factory)), states_(states),
-    vertices_vbo_(vertices_vbo)
+      vertices_vbo_(vertices_vbo), elements_vbo_(elements_vbo)
   {
     if (!vertices_vbo_) {
       glGenBuffers(1, &vertices_vbo_);
@@ -467,7 +467,7 @@ public:
   inline void elementsOffset(size_t offset) { elements_offset_ = offset; }
 
 private:
-  std::shared_ptr<VertexStateFactory> factory_;
+  std::unique_ptr<VertexStateFactory> factory_;
   VertexStates& states_;
   size_t write_index_{0};
   size_t surface_index_{0};

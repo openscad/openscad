@@ -55,7 +55,7 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
 {
   PRINTD("Thrown prepare");
   if (Feature::ExperimentalVxORenderers.is_enabled() && vertex_states.empty()) {
-    VertexArray vertex_array(std::make_shared<TTRVertexStateFactory>(), vertex_states);
+    VertexArray vertex_array(std::make_unique<TTRVertexStateFactory>(), vertex_states);
     vertex_array.addSurfaceData();
     add_shader_data(vertex_array);
 

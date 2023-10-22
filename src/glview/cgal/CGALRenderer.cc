@@ -139,7 +139,7 @@ void CGALRenderer::createPolySets()
 
   polyset_states.clear();
 
-  VertexArray vertex_array(std::make_shared<VertexStateFactory>(), polyset_states);
+  VertexArray vertex_array(std::make_unique<VertexStateFactory>(), polyset_states);
 
   VertexStateManager vsm(*this, vertex_array);
 

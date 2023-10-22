@@ -209,7 +209,7 @@ public:
   void create_polyhedron() {
     PRINTD("create_polyhedron");
 
-    VertexArray points_edges_array(std::make_shared<VertexStateFactory>(), points_edges_states);
+    VertexArray points_edges_array(std::make_unique<VertexStateFactory>(), points_edges_states);
     points_edges_array.addEdgeData();
     points_edges_array.writeEdge();
     size_t last_size = 0;
@@ -318,7 +318,7 @@ public:
     points_edges_elements_vbo = points_edges_array.elementsVBO();
 
     // Halffacets
-    VertexArray halffacets_array(std::make_shared<VertexStateFactory>(), halffacets_states);
+    VertexArray halffacets_array(std::make_unique<VertexStateFactory>(), halffacets_states);
     halffacets_array.addSurfaceData();
     halffacets_array.writeSurface();
 
