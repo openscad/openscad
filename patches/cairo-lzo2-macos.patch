@@ -1,0 +1,13 @@
+diff: cairo-1.18.0/build-x86_64/util/cairo-script/libcairo-script-interpreter.dylib: No such file or directory
+diff --color -ur cairo-1.18.0/meson.build cairo-1.18.0-macos/meson.build
+--- cairo-1.18.0/meson.build	2023-09-23 10:18:32
++++ cairo-1.18.0-macos/meson.build	2023-10-08 16:13:55
+@@ -195,7 +195,7 @@
+   endif
+ endif
+ 
+-lzo_dep = dependency('lzo2', required: false)
++lzo_dep = dependency('', required: false)
+ if lzo_dep.found()
+   conf.set('HAVE_LZO', 1)
+ endif

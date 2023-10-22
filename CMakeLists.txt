@@ -33,8 +33,11 @@ option(ENABLE_TESTS "Run testsuite after building." ON)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
-option(ENABLE_EGL "Enable EGL instead of GLX support if available" OFF)
-option(USE_GLAD "Use GLAD instead of glew" OFF)
+option(ENABLE_EGL "Enable EGL support if available" ON)
+option(ENABLE_GLX "Enable GLX support if available" ON)
+# For now, we'll default to whatever OpenCSG uses (>=1.6 -> GLAD, <1.6 -> GLEW)
+option(USE_GLAD "Use GLAD. Mutually exclusive from USE_GLEW" OFF)
+option(USE_GLEW "Use GLEW. Mutually exclusive from USE_GLEW" OFF)
 option(WASM "Build WebAssembly, (implies NULLGL=ON) " OFF)
 option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
@@ -56,7 +59,9 @@ cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON "NOT
 cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS" OFF)
 
 if(EXPERIMENTAL AND ENABLE_TBB)
-  # Requirement from TBB 2021.8.0
+  # TBB 2021.8.0 uses aligned memory deallocation.
+  # While this is technically supported in macOS 10.13, an LLVM bug used to limit this to macOS 10.14+.
+  # The bug was fixed in LLVM 15.0.0 (https://reviews.llvm.org/D129198), but was still present in Xcode 14.3.1a.
   set(DEPLOYMENT_TARGET "10.14")
 else()
   set(DEPLOYMENT_TARGET "10.13")
@@ -130,12 +135,6 @@ if(WASM)
   target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
 endif()
 
-if(USE_GLAD)
-  target_compile_definitions(OpenSCAD PRIVATE USE_GLAD)
-else()
-  target_compile_definitions(OpenSCAD PRIVATE USE_GLEW)
-endif()
-
 if(NULLGL)
   set(HEADLESS ON CACHE BOOL "" FORCE)
 endif()
@@ -186,10 +185,6 @@ add_subdirectory(submodules)
 # The submodules will set up mimalloc if needed, and we need to defer any 
 # target_link_libraries() calls until after that.
 
-if(USE_GLAD)
-  target_link_libraries(OpenSCAD PRIVATE ${CMAKE_DL_LIBS})
-endif()
-
 if (MXECROSS)
   target_compile_definitions(OpenSCAD PRIVATE LIBXML_STATIC STATIC_QT_SVG_PLUGIN)
   target_compile_definitions(OpenSCAD PRIVATE GLEW_STATIC)
@@ -214,14 +209,35 @@ macro(find_graphics)
         target_include_directories(OpenSCAD SYSTEM PRIVATE ${OPENCSG_INCLUDE_DIRS})
       endif()
     else()
+      include("submodules/CMakeLists-OpenCSG.txt")
       target_link_libraries(OpenSCAD PRIVATE OpenCSG)
-      message(STATUS "OpenCSG: <submodule>")
-    endif()
+      message(STATUS "OpenCSG submodule: ${OPENCSG_VERSION_STRING}")
+    endif(NOT USE_BUILTIN_OPENCSG)
+
     target_compile_definitions(OpenSCAD PRIVATE ENABLE_OPENCSG)
 
-    find_package(GLEW REQUIRED QUIET)
-    message(STATUS "GLEW: ${GLEW_VERSION}")
-    target_link_libraries(OpenSCAD PRIVATE GLEW::glew)
+    if (${OPENCSG_VERSION_STRING} VERSION_LESS "1.6.0")
+      set(OPENCSG_GLEW ON)
+      target_compile_definitions(OpenSCAD PRIVATE OPENCSG_GLEW)
+    endif()
+
+    if (NOT USE_GLAD AND NOT USE_GLEW)
+      if (OPENCSG_GLEW)
+        set(USE_GLEW ON)
+        set(WRANGLER "glew")
+      else()
+	set(USE_GLAD ON)
+        set(WRANGLER "GLAD")
+      endif()
+      message(STATUS "USE_GLAD/USE_GLEW not specified: Defaulting to ${WRANGLER}")
+    endif()
+
+    if (USE_GLEW OR OPENCSG_GLEW)
+      find_package(GLEW REQUIRED QUIET)
+      message(STATUS "GLEW: ${GLEW_VERSION}")
+      target_link_libraries(OpenSCAD PRIVATE GLEW::glew)
+      set(GLEW_SOURCES src/glview/glew-utils.cc)
+    endif()
 
     find_package(OpenGL REQUIRED QUIET)
     target_link_libraries(OpenSCAD PRIVATE ${OPENGL_LIBRARIES})
@@ -309,6 +325,10 @@ else()
   target_link_libraries(OpenSCAD PRIVATE ${DoubleConversion_LIBRARIES})
 
   find_graphics()
+endif()
+
+if(USE_GLAD)
+  target_link_libraries(OpenSCAD PRIVATE ${CMAKE_DL_LIBS})
 endif()
 
 if (("${Boost_VERSION}" VERSION_GREATER "1.72") AND ("${Boost_VERSION}" VERSION_LESS "1.76"))
@@ -440,17 +460,20 @@ if(NOT MSVC)
   endif()
 endif()
 
-if(USE_BUILTIN_OPENCSG)
-  include("submodules/CMakeLists-OpenCSG.txt")
-endif(USE_BUILTIN_OPENCSG)
-
 # Automatically add the current source and build directories to the include path.
 set(CMAKE_INCLUDE_CURRENT_DIR ON) # (does not propagate down to subdirectories)
+
+if(USE_GLAD)
+  target_compile_definitions(OpenSCAD PRIVATE USE_GLAD)
+else()
+  target_compile_definitions(OpenSCAD PRIVATE USE_GLEW)
+endif()
 
 target_include_directories(OpenSCAD PRIVATE
   "src"
   "src/core"
   "src/core/customizer"
+  "src/ext"
   "src/ext/json"
   "src/ext/lexertl/include"
   "src/ext/libtess2/Include"
@@ -572,15 +595,17 @@ else()
 endif()
 if(APPLE)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_OS="Mac OS X")
-  message(STATUS "Offscreen OpenGL Context - using Apple NSOpenGL")
+  message(STATUS "Offscreen OpenGL Context - using Apple CGL/NSOpenGL")
   set(PLATFORM_SOURCES src/platform/PlatformUtils-mac.mm src/io/imageutils-macosx.cc src/platform/CocoaUtils.mm)
   if(NOT HEADLESS)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/gui/AppleEvents.cc)
   endif()
   if(NOT NULLGL)
     target_compile_definitions(OpenSCAD PRIVATE GL_SILENCE_DEPRECATION)
-    set(OFFSCREEN_METHOD "Apple NSOpenGL")
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextNSOpenGL.mm)
+    set(OFFSCREEN_METHOD "Apple CGL/NSOpenGL")
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
+        src/glview/offscreen-old/OffscreenContextNSOpenGL.mm
+        src/glview/OffscreenContextCGL.cc)
   endif()
   find_library(COCOA_LIBRARY Cocoa)
   target_link_libraries(OpenSCAD PRIVATE ${COCOA_LIBRARY})
@@ -588,23 +613,28 @@ elseif(UNIX)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_OS="Unix")
   set(PLATFORM_SOURCES src/io/imageutils-lodepng.cc src/platform/PlatformUtils-posix.cc)
   if(NOT NULLGL)
+    set(OFFSCREEN_METHOD "Unix")
     if(ENABLE_EGL AND OpenGL_EGL_FOUND)
       target_compile_definitions(OpenSCAD PRIVATE ENABLE_EGL)
-      set(OFFSCREEN_METHOD "Unix EGL")
-      message(STATUS "Offscreen OpenGL Context - using Unix EGL")
-      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextEGL.cc)
+      set(OFFSCREEN_METHOD "${OFFSCREEN_METHOD} EGL")
+      set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
+	src/glview/offscreen-old/OffscreenContextEGL.cc
+        src/glview/OffscreenContextEGL.cc)
       if (NOT USE_GLAD)
         target_compile_definitions(OpenSCAD PRIVATE GLEW_EGL)
       endif()
       target_link_libraries(OpenSCAD PRIVATE OpenGL::EGL)
-    else()
-      target_compile_definitions(OpenSCAD PRIVATE ENABLE_GLX)
-      set(OFFSCREEN_METHOD "Unix GLX on X11")
-      message(STATUS "Offscreen OpenGL Context - using Unix GLX on X11")
-      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextGLX.cc)
-      find_package(X11 REQUIRED)
-      target_link_libraries(OpenSCAD PRIVATE X11::X11)
     endif()
+    if(ENABLE_GLX AND OpenGL_GLX_FOUND)
+      target_compile_definitions(OpenSCAD PRIVATE ENABLE_GLX)
+      set(OFFSCREEN_METHOD "${OFFSCREEN_METHOD} GLX")
+      set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
+          src/glview/offscreen-old/OffscreenContextGLX.cc
+          src/glview/OffscreenContextGLX.cc)
+      find_package(X11 REQUIRED)
+      target_link_libraries(OpenSCAD PRIVATE X11::X11 ${CMAKE_DL_LIBS})
+    endif()
+    message(STATUS "Offscreen OpenGL Context - using ${OFFSCREEN_METHOD}")
   endif()
 elseif(WIN32)
   target_compile_definitions(OpenSCAD PRIVATE NOGDI)
@@ -850,13 +880,13 @@ else()
     src/glview/VBORenderer.cc
     src/glview/GLView.cc
     src/glview/VertexStateManager.cc
-    src/glview/glew-utils.cc
     src/glview/OffscreenView.cc
     src/glview/cgal/CGALRenderer.cc
     src/glview/preview/OpenCSGRenderer.cc
     src/glview/preview/ThrownTogetherRenderer.cc
     src/io/export_png.cc
-    src/io/imageutils.cc)
+    src/io/imageutils.cc
+    ${GLEW_SOURCES})
 endif()
 
 

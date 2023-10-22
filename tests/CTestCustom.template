@@ -12,6 +12,10 @@
 
 # Part 0. Finding MCAD
 
+if(POLICY CMP0012) # Allow ON/OFF in if statements
+  cmake_policy(SET CMP0012 NEW)
+endif()
+
 set(ENV{OPENSCADPATH} "@CMAKE_SOURCE_DIR@/libraries")
 
 # Part 1. X11 and Virtual Framebuffer, for headless Linux/BSD systems. 
@@ -21,44 +25,55 @@ set(ENV{OPENSCADPATH} "@CMAKE_SOURCE_DIR@/libraries")
 set(debug_openscad_template 1)
 
 if(@CMAKE_SYSTEM_NAME@ MATCHES "Linux|BSD")
- set(DISPLAY_ENV $ENV{DISPLAY})
- if(DISPLAY_ENV)
-  message("X11 DISPLAY environment variable found.")
-  message("Assuming framebuffer exists at DISPLAY=${DISPLAY_ENV}")
- else()
-  message("X11 DISPLAY environment variable not found. Calling virtualfb.sh")
-  execute_process(
-   COMMAND @CMAKE_CURRENT_SOURCE_DIR@/virtualfb.sh OUTPUT_VARIABLE SVFB_OUT)
-  string(REGEX MATCH "DISPLAY=:[0-9.]*" VFB_DISPLAY_STR "${SVFB_OUT}")
-  string(REGEX MATCH ":[0-9.]*" VFB_DISPLAY "${VFB_DISPLAY_STR}")
-  string(REGEX MATCH "PID=[0-9.]*" VFB_PID_STR "${SVFB_OUT}")
-  string(REPLACE "PID=" "" VFB_PID "${VFB_PID_STR}")
-
-  if (debug_openscad_template)
-    message("Output from virtualfb.sh script: ${SVFB_OUT}")
-    message("Display: ${VFB_DISPLAY}")
-    message("Process ID of vfb: ${VFB_PID}")
-  endif()
-  if ("${VFB_DISPLAY}" STREQUAL "" OR "${VFB_PID}" STREQUAL "")
-    set(VFBLOG "virtualfb.log")
-    message("Virtual framebuffer had a problem starting. Printing ${VFBLOG}")
-    execute_process(COMMAND cat virtualfb.log OUTPUT_VARIABLE VFBLOGTXT)
-    message("Log: ${VFBLOGTXT}")
+  # Try EGL first, if we're unable to use EGL, start a virtual X11 server and use GLX
+  if (@ENABLE_EGL@)
+    message("running '@OPENSCAD_BINPATH@ --info' to detect EGL")
+    execute_process(COMMAND @OPENSCAD_BINPATH@ --info RESULT_VARIABLE INFO_RESULT)
+    if(INFO_RESULT)
+      set(USE_X11 TRUE)
+    endif()
   else()
-    message("Virtual framebuffer started. DISPLAY=${VFB_DISPLAY}, PID=${VFB_PID}")
+    set(USE_X11 TRUE)
   endif()
-
-
-  # This line is the heart of the mechanism by which ctest is able to take 
-  # the DISPLAY env variable of the Virtual Framebuffer it just started, and 
-  # pass it on to its child processes (the tests from CTestTestfile.cmake 
-  # in the build directory).
-  set(ENV{DISPLAY} "${VFB_DISPLAY}")
-
-  set(CTEST_CUSTOM_POST_TEST "@CMAKE_CURRENT_SOURCE_DIR@/virtualfb.sh")
- endif()
+  if(USE_X11)
+   set(DISPLAY_ENV $ENV{DISPLAY})
+   if(DISPLAY_ENV)
+    message("X11 DISPLAY environment variable found.")
+    message("Assuming framebuffer exists at DISPLAY=${DISPLAY_ENV}")
+   else()
+    message("X11 DISPLAY environment variable not found. Calling virtualfb.sh")
+    execute_process(
+     COMMAND @CMAKE_CURRENT_SOURCE_DIR@/virtualfb.sh OUTPUT_VARIABLE SVFB_OUT)
+    string(REGEX MATCH "DISPLAY=:[0-9.]*" VFB_DISPLAY_STR "${SVFB_OUT}")
+    string(REGEX MATCH ":[0-9.]*" VFB_DISPLAY "${VFB_DISPLAY_STR}")
+    string(REGEX MATCH "PID=[0-9.]*" VFB_PID_STR "${SVFB_OUT}")
+    string(REPLACE "PID=" "" VFB_PID "${VFB_PID_STR}")
+  
+    if (debug_openscad_template)
+      message("Output from virtualfb.sh script: ${SVFB_OUT}")
+      message("Display: ${VFB_DISPLAY}")
+      message("Process ID of vfb: ${VFB_PID}")
+    endif()
+    if ("${VFB_DISPLAY}" STREQUAL "" OR "${VFB_PID}" STREQUAL "")
+      set(VFBLOG "virtualfb.log")
+      message("Virtual framebuffer had a problem starting. Printing ${VFBLOG}")
+      execute_process(COMMAND cat virtualfb.log OUTPUT_VARIABLE VFBLOGTXT)
+      message("Log: ${VFBLOGTXT}")
+    else()
+      message("Virtual framebuffer started. DISPLAY=${VFB_DISPLAY}, PID=${VFB_PID}")
+    endif()
+  
+  
+    # This line is the heart of the mechanism by which ctest is able to take 
+    # the DISPLAY env variable of the Virtual Framebuffer it just started, and 
+    # pass it on to its child processes (the tests from CTestTestfile.cmake 
+    # in the build directory).
+    set(ENV{DISPLAY} "${VFB_DISPLAY}")
+  
+    set(CTEST_CUSTOM_POST_TEST "@CMAKE_CURRENT_SOURCE_DIR@/virtualfb.sh")
+   endif()
+  endif()
 endif()
-
 # Part 2. Pretty Printing
 
 message("running '@OPENSCAD_BINPATH@ --info' to generate sysinfo.txt")

@@ -1,11 +1,3 @@
-set(USE_PBUFFER 1)
-if (USE_PBUFFER)
-  set(PBUFFER_SOURCES
-    submodules/OpenCSG/src/pBufferTexture.cpp
-    submodules/OpenCSG/RenderTexture/RenderTexture.cpp
-  )
-endif(USE_PBUFFER)    
-
 set(OPENCSG_SOURCES
   submodules/OpenCSG/src/area.cpp
   submodules/OpenCSG/src/batch.cpp
@@ -22,14 +14,21 @@ set(OPENCSG_SOURCES
   submodules/OpenCSG/src/renderSCS.cpp
   submodules/OpenCSG/src/scissorMemo.cpp
   submodules/OpenCSG/src/settings.cpp
-  submodules/OpenCSG/src/stencilManager.cpp
-  ${PBUFFER_SOURCES}
+  submodules/OpenCSG/src/glad/src/gl.cpp
 )
 
 add_library(OpenCSGObjects OBJECT ${OPENCSG_SOURCES})
 target_include_directories(OpenCSGObjects PRIVATE OpenCSG submodules/OpenCSG submodules/OpenCSG/include)
-target_link_libraries(OpenCSGObjects PRIVATE GLEW::glew)
 
 add_library(OpenCSG INTERFACE)
 target_include_directories(OpenCSG INTERFACE submodules/OpenCSG/include)
 target_sources(OpenCSG INTERFACE $<TARGET_OBJECTS:OpenCSGObjects>)
+
+set(_VERSION_FILE ${CMAKE_SOURCE_DIR}/submodules/OpenCSG/include/opencsg.h)
+if(EXISTS ${_VERSION_FILE})
+  file(STRINGS ${_VERSION_FILE} _VERSION_LINE REGEX "define[ ]+OPENCSG_VERSION_STRING" )
+  if(_VERSION_LINE)
+    string (REGEX REPLACE ".*define[ ]+OPENCSG_VERSION_STRING[ ]+\".*\ (.*)\".*" "\\1" VERSION_STRING "${_VERSION_LINE}")
+    set(OPENCSG_VERSION_STRING ${VERSION_STRING} CACHE STRING "OpenCSG version string")
+  endif()
+endif()

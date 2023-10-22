@@ -291,8 +291,6 @@ void LogVisitor::visit(const ManifoldGeometry& mani_geom)
   LOG("   Facets:     %1$6d", mani.NumTri());
   LOG("   BBox.min:   %1$f, %2$f, %3$f", bbox.min.x, bbox.min.y, bbox.min.z);
   LOG("   BBox.max:   %1$f, %2$f, %3$f", bbox.max.x, bbox.max.y, bbox.max.z);
-  
-  assert(false && "not implemented");
 }
 #endif // ENABLE_MANIFOLD
 

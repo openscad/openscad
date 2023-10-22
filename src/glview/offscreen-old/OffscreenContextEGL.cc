@@ -89,8 +89,8 @@ static bool create_egl_dummy_context(OffscreenContextEGL& ctx)
   };
 
   const EGLint pbufferAttribs[] = {
-    EGL_WIDTH, ctx.width(),
-    EGL_HEIGHT, ctx.height(),
+    EGL_WIDTH, static_cast<EGLint>(ctx.width()),
+    EGL_HEIGHT, static_cast<EGLint>(ctx.height()),
     EGL_NONE,
   };
 
@@ -171,8 +171,7 @@ namespace offscreen_old {
 
 std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(
     uint32_t width, uint32_t height, uint32_t majorGLVersion, 
-    uint32_t minorGLVersion, bool gles, bool compatibilityProfile,
-    const std::string& drmNode)
+    uint32_t minorGLVersion, bool gles, bool compatibilityProfile)
 {
   auto ctx = std::make_shared<OffscreenContextEGL>(width, height);
 
