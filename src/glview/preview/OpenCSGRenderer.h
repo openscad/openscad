@@ -55,21 +55,21 @@ public:
   }
 };
 
-using OpenCSGPrimitives = std::vector<OpenCSG::Primitive *>;
 class OpenCSGVBOProduct
 {
 public:
-  OpenCSGVBOProduct(std::unique_ptr<OpenCSGPrimitives> primitives, std::unique_ptr<VertexStates> states)
+  OpenCSGVBOProduct(std::vector<OpenCSG::Primitive *> primitives, std::unique_ptr<VertexStates> states)
     : primitives_(std::move(primitives)), states_(std::move(states)) {}
   virtual ~OpenCSGVBOProduct() = default;
 
-  [[nodiscard]] const OpenCSGPrimitives& primitives() const { return *(primitives_.get()); }
+  [[nodiscard]] const std::vector<OpenCSG::Primitive *>& primitives() const { return primitives_; }
   [[nodiscard]] const VertexStates& states() const { return *(states_.get()); }
 
 private:
-  const std::unique_ptr<OpenCSGPrimitives> primitives_;
+  const std::vector<OpenCSG::Primitive *> primitives_;
   const std::unique_ptr<VertexStates> states_;
 };
+
 using OpenCSGVBOProducts = std::vector<std::unique_ptr<OpenCSGVBOProduct>>;
 
 class OpenCSGRenderer : public VBORenderer
@@ -93,9 +93,10 @@ private:
   OpenCSGVBOPrim *createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState>& vertex_state,
                                      const OpenCSG::Operation operation, const unsigned int convexity) const;
 #endif // ENABLE_OPENCSG
-  void createCSGProducts(const CSGProducts& products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode);
   void renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges = false, const Renderer::shaderinfo_t *shaderinfo = nullptr,
                          bool highlight_mode = false, bool background_mode = false) const;
+  void createCSGVBOProducts(const CSGProducts& products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode);
+  void renderCSGVBOProducts(bool showedges, const Renderer::shaderinfo_t *shaderinfo) const;
 
   OpenCSGVBOProducts vbo_vertex_products;
   std::vector<GLuint> all_vbos_;
