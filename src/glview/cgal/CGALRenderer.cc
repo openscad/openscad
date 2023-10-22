@@ -145,8 +145,7 @@ void CGALRenderer::createPolySets()
   }
 
   VertexArray vertex_array(std::make_unique<VertexStateFactory>(), polyset_states, polyset_vertices_vbo, polyset_elements_vbo);
-
-  VertexStateManager vsm(*this, vertex_array);
+  VertexStateManager vsm(vertex_array);
 
   vertex_array.addEdgeData();
   vertex_array.addSurfaceData();

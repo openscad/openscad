@@ -8,10 +8,9 @@
 
 class VertexStateManager {
 public:
-  VertexStateManager(VBORenderer& r, VertexArray& v_a) : vertex_array(v_a), renderer(r) {}
+  VertexStateManager(VertexArray& v_a) : vertex_array(v_a) {}
   void initializeSize(size_t num_vertices);
-  void addColor(const Color4f& color);
+  void addColor(VBORenderer& renderer, const Color4f& color);
 private:
-  VBORenderer& renderer;
   VertexArray& vertex_array;
 };

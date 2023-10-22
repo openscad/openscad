@@ -31,7 +31,7 @@ void VertexStateManager::initializeSize(size_t num_vertices) {
     vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
   }
 }
-void VertexStateManager::addColor(const Color4f& color) {
+void VertexStateManager::addColor(VBORenderer& renderer, const Color4f& color) {
   renderer.add_shader_pointers(vertex_array);
   Renderer::shaderinfo_t shader_info = renderer.getShader();
   std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());

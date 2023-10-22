@@ -180,7 +180,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
     vbo_index++;
     VertexArray vertex_array(std::make_unique<OpenCSGVertexStateFactory>(), *(vertex_states.get()),
                              vertices_vbo, elements_vbo);
-    VertexStateManager vsm(*this, vertex_array);
+    VertexStateManager vsm(vertex_array);
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
     add_shader_data(vertex_array);
@@ -221,7 +221,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
           last_color = color;
         }
 
-        vsm.addColor(last_color);
+        vsm.addColor(*this, last_color);
 
         if (color[3] == 1.0f) {
           // object is opaque, draw normally
@@ -295,7 +295,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
           last_color = color;
         }
 
-        vsm.addColor(last_color);
+        vsm.addColor(*this, last_color);
 
         // negative objects should only render rear faces
         std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();

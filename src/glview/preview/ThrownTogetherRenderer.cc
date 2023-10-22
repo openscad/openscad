@@ -63,7 +63,7 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
     vertex_array.addSurfaceData();
     add_shader_data(vertex_array);
 
-    VertexStateManager vsm(*this, vertex_array);
+    VertexStateManager vsm(vertex_array);
 
     size_t num_vertices = 0;
     if (this->root_products) num_vertices += (getSurfaceBufferSize(this->root_products, false, false, true) * 2);
@@ -222,13 +222,13 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
 
     vertex_array.writeSurface();
 
-    VertexStateManager vsm(*this, vertex_array); // Currently, choosing to create a new VSM instead of trying to reuse the one from ThrownTogetherRenderer::prepare
+    VertexStateManager vsm(vertex_array); // Currently, choosing to create a new VSM instead of trying to reuse the one from ThrownTogetherRenderer::prepare
 
     if (highlight_mode || background_mode) {
       const ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
       getShaderColor(colormode, leaf_color, color);
 
-      vsm.addColor(color);
+      vsm.addColor(*this, color);
 
       create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
       std::shared_ptr<TTRVertexState> vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
@@ -239,7 +239,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
       getShaderColor(colormode, leaf_color, color);
 
-      vsm.addColor(color);
+      vsm.addColor(*this, color);
 
       std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();
       cull->glBegin().emplace_back([]() {
@@ -263,7 +263,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, true, type);
       getShaderColor(colormode, leaf_color, color);
 
-      vsm.addColor(color);
+      vsm.addColor(*this, color);
 
       cull = std::make_shared<VertexState>();
       cull->glBegin().emplace_back([]() {
