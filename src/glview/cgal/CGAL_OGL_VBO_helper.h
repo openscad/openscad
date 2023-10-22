@@ -209,7 +209,12 @@ public:
   void create_polyhedron() {
     PRINTD("create_polyhedron");
 
-    VertexArray points_edges_array(std::make_unique<VertexStateFactory>(), points_edges_states);
+    glGenBuffers(1, &points_edges_vertices_vbo);
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      glGenBuffers(1, &points_edges_elements_vbo);
+    }
+
+    VertexArray points_edges_array(std::make_unique<VertexStateFactory>(), points_edges_states, points_edges_vertices_vbo, points_edges_elements_vbo);
     points_edges_array.addEdgeData();
     points_edges_array.writeEdge();
     size_t last_size = 0;
@@ -314,11 +319,10 @@ public:
     }
 
     points_edges_array.createInterleavedVBOs();
-    points_edges_vertices_vbo = points_edges_array.verticesVBO();
-    points_edges_elements_vbo = points_edges_array.elementsVBO();
 
     // Halffacets
-    VertexArray halffacets_array(std::make_unique<VertexStateFactory>(), halffacets_states);
+    glGenBuffers(1, &halffacets_vertices_vbo);
+    VertexArray halffacets_array(std::make_unique<VertexStateFactory>(), halffacets_states, halffacets_vertices_vbo, 0);
     halffacets_array.addSurfaceData();
     halffacets_array.writeSurface();
 
@@ -373,8 +377,6 @@ public:
     }
 
     halffacets_array.createInterleavedVBOs();
-    halffacets_vertices_vbo = halffacets_array.verticesVBO();
-    halffacets_elements_vbo = halffacets_array.elementsVBO();
   }
 
   void init() override {

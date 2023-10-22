@@ -160,11 +160,13 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
   // We're creating one VBO(+EBO) per product.
   size_t vbo_count = products.products.size();
   if (vbo_count) {
+    vertices_vbos_.resize(vbo_count);
+    // Will default to zeroes, so we don't have to keep checking for the Indexing feature
+    elements_vbos_.resize(vbo_count);
+    glGenBuffers(vbo_count, vertices_vbos_.data());
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      vbo_count *= 2;
+      glGenBuffers(vbo_count, elements_vbos_.data());
     }
-    all_vbos_.resize(vbo_count);
-    glGenBuffers(vbo_count, all_vbos_.data());
   }
 
 #ifdef ENABLE_OPENCSG
@@ -173,8 +175,11 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
     Color4f last_color;
     std::vector<OpenCSG::Primitive *> primitives;
     std::unique_ptr<VertexStates> vertex_states = std::make_unique<VertexStates>();
+    const auto vertices_vbo = vertices_vbos_[vbo_index];
+    const auto elements_vbo = elements_vbos_[vbo_index];
+    vbo_index++;
     VertexArray vertex_array(std::make_unique<OpenCSGVertexStateFactory>(), *(vertex_states.get()),
-                             all_vbos_[vbo_index++]);
+                             vertices_vbo, elements_vbo);
     VertexStateManager vsm(*this, vertex_array);
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
@@ -192,7 +197,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
       }
     }
 
-    vsm.initializeSize(num_vertices, all_vbos_, vbo_index);
+    vsm.initializeSize(num_vertices);
 
     for (const auto& csgobj : product.intersections) {
       if (csgobj.leaf->geom) {

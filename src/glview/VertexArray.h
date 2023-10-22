@@ -335,13 +335,10 @@ public:
 
 
   VertexArray(std::unique_ptr<VertexStateFactory> factory, VertexStates& states,
-              GLuint vertices_vbo = 0, GLuint elements_vbo = 0)
+              GLuint vertices_vbo, GLuint elements_vbo)
     : factory_(std::move(factory)), states_(states),
       vertices_vbo_(vertices_vbo), elements_vbo_(elements_vbo)
   {
-    if (!vertices_vbo_) {
-      glGenBuffers(1, &vertices_vbo_);
-    }
   }
   virtual ~VertexArray() = default;
 
@@ -353,9 +350,6 @@ public:
   void addEdgeData();
   // Add elements data to VertexArray
   void addElementsData(std::shared_ptr<IAttributeData> data) {
-    if (!elements_vbo_) {
-      glGenBuffers(1, &elements_vbo_);
-    }
     elements_.addAttributeData(std::move(data));
   }
 

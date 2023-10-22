@@ -55,7 +55,11 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
 {
   PRINTD("Thrown prepare");
   if (Feature::ExperimentalVxORenderers.is_enabled() && vertex_states.empty()) {
-    VertexArray vertex_array(std::make_unique<TTRVertexStateFactory>(), vertex_states);
+    glGenBuffers(1, &vertices_vbo);
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      glGenBuffers(1, &elements_vbo);
+    }
+    VertexArray vertex_array(std::make_unique<TTRVertexStateFactory>(), vertex_states, vertices_vbo, elements_vbo);
     vertex_array.addSurfaceData();
     add_shader_data(vertex_array);
 
@@ -82,8 +86,6 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
     }
 
     vertex_array.createInterleavedVBOs();
-    vertices_vbo = vertex_array.verticesVBO();
-    elements_vbo = vertex_array.elementsVBO();
   }
 }
 

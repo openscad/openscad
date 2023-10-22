@@ -139,7 +139,12 @@ void CGALRenderer::createPolySets()
 
   polyset_states.clear();
 
-  VertexArray vertex_array(std::make_unique<VertexStateFactory>(), polyset_states);
+  glGenBuffers(1, &polyset_vertices_vbo);
+  if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+    glGenBuffers(1, &polyset_elements_vbo);
+  }
+
+  VertexArray vertex_array(std::make_unique<VertexStateFactory>(), polyset_states, polyset_vertices_vbo, polyset_elements_vbo);
 
   VertexStateManager vsm(*this, vertex_array);
 
@@ -218,8 +223,6 @@ void CGALRenderer::createPolySets()
     }
 
     vertex_array.createInterleavedVBOs();
-    polyset_vertices_vbo = vertex_array.verticesVBO();
-    polyset_elements_vbo = vertex_array.elementsVBO();
   }
 }
 

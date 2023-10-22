@@ -1,22 +1,9 @@
 #include "VertexStateManager.h"
 
 void VertexStateManager::initializeSize(size_t num_vertices) {
-  std::vector<GLuint> placeholder;
-  size_t placeholder_index = 0;
-  initializeSizeHelper(num_vertices, false, placeholder, placeholder_index);
-}
-
-void VertexStateManager::initializeSize(size_t num_vertices, std::vector<GLuint> & vbos, size_t & vbo_index) {
-  initializeSizeHelper(num_vertices, true, vbos, vbo_index);
-}
-
-void VertexStateManager::initializeSizeHelper(size_t num_vertices, bool multiple_vbo, std::vector<GLuint> & vbos, size_t & vbo_index) {
   if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
     size_t vertices_size = 0, elements_size = 0;
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      if (multiple_vbo) {
-        vertex_array.elementsVBO(vbos[vbo_index++]);
-      }
       if (num_vertices <= 0xff) {
           vertex_array.addElementsData(std::make_shared<AttributeData<GLubyte, 1, GL_UNSIGNED_BYTE>>());
       } else if (num_vertices <= 0xffff) {
@@ -41,9 +28,6 @@ void VertexStateManager::initializeSizeHelper(size_t num_vertices, bool multiple
       GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW));
     }
   } else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-    if (multiple_vbo) {
-      vertex_array.elementsVBO(vbos[vbo_index++]);
-    }
     vertex_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
   }
 }
