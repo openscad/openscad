@@ -354,9 +354,7 @@ public:
   inline void elementsSize(size_t elements_size) { elements_size_ = elements_size; }
 
   inline GLuint verticesVBO() const { return vertices_vbo_; }
-  inline void verticesVBO(GLuint vbo) { vertices_vbo_ = vbo; }
   inline GLuint elementsVBO() const { return elements_vbo_; }
-  inline void elementsVBO(GLuint vbo) { elements_vbo_ = vbo; }
 
   // Return the internal unique vertex/element map
   inline ElementsMap& elementsMap() { return elements_map_; }
@@ -379,9 +377,19 @@ private:
   size_t edge_index_{0};
   std::vector<std::shared_ptr<VertexData>> vertices_;
   std::vector<GLbyte> interleaved_buffer_;
-  GLuint vertices_vbo_, elements_vbo_;
-  size_t vertices_size_{0}, elements_size_{0};
-  size_t vertices_offset_{0}, elements_offset_{0};
+
+  // Vertex VBO
+  GLuint vertices_vbo_;
+  // Allocated size of vertex VBO
+  size_t vertices_size_{0};
+  size_t vertices_offset_{0};
+
+  // Element VBO
+  GLuint elements_vbo_;
+  // Allocated size of vertex VBO
+  size_t elements_size_{0};
+  size_t elements_offset_{0};
+
   VertexData elements_;
   ElementsMap elements_map_;
 };
