@@ -72,28 +72,6 @@ void VertexData::remove(size_t count)
 //   }
 // }
 
-std::shared_ptr<VertexData> VertexData::create() const
-{
-  std::shared_ptr<VertexData> copy = std::make_shared<VertexData>();
-  for (const auto& attribute : attributes_) {
-    copy->addAttributeData(attribute->create());
-  }
-  if (position_data_) {
-    copy->position_index_ = position_index_;
-    copy->position_data_ = copy->attributes_[copy->position_index_];
-  }
-  if (normal_data_) {
-    copy->normal_index_ = normal_index_;
-    copy->normal_data_ = copy->attributes_[copy->normal_index_];
-  }
-  if (color_data_) {
-    copy->color_index_ = color_index_;
-    copy->color_data_ = copy->attributes_[copy->color_index_];
-  }
-  copy->stride_ = stride_;
-  return copy;
-}
-
 void VertexData::append(const VertexData& data) {
   size_t i = 0;
   for (auto& a : attributes_) {
@@ -180,18 +158,6 @@ void VertexArray::addEdgeData()
   vertex_data->addColorData(std::make_shared<AttributeData<GLfloat, 4, GL_FLOAT>>());
   edge_index_ = vertices_.size();
   addVertexData(vertex_data);
-}
-
-std::shared_ptr<VertexArray> VertexArray::create() const {
-  std::shared_ptr<VertexArray> copy = std::make_shared<VertexArray>(factory_, states_);
-  copy->write_index_ = write_index_;
-  copy->surface_index_ = surface_index_;
-  copy->edge_index_ = edge_index_;
-  copy->vertices_.reserve(vertices_.size());
-  for (const auto& data : vertices_) {
-    copy->vertices_.emplace_back(data->create());
-  }
-  return copy;
 }
 
 void VertexArray::append(const VertexArray& vertex_array)

@@ -55,8 +55,6 @@ public:
   [[nodiscard]] virtual GLenum glType() const = 0;
   // Return pointer to the raw bytes of the element vector
   [[nodiscard]] virtual const GLbyte *toBytes() const = 0;
-  // Create an empty copy of the attribute data type
-  [[nodiscard]] virtual std::shared_ptr<IAttributeData> create() const = 0;
   // Append data to the end of the attribute
   virtual void append(const IAttributeData& data) = 0;
   // Clear the entire attribute
@@ -106,7 +104,6 @@ public:
   [[nodiscard]] inline size_t sizeofAttribute() const override { return sizeof(T) * C; }
   [[nodiscard]] inline size_t sizeInBytes() const override { return data_.size() * sizeof(T); }
   [[nodiscard]] inline GLenum glType() const override { return E; }
-  [[nodiscard]] inline std::shared_ptr<IAttributeData> create() const override { return std::make_shared<AttributeData<T, C, E>>(); }
   void append(const IAttributeData& data) override {
     const auto *from = dynamic_cast<const AttributeData<T, C, E> *>(&data);
     if (from != nullptr) {
@@ -234,9 +231,6 @@ public:
   // If the vbo does not exist it will be created and returned.
   // void createInterleavedVBO(GLuint& vbo) const;
 
-  // Create an empty copy of the this vertex data
-  [[nodiscard]] std::shared_ptr<VertexData> create() const;
-
 private:
   std::vector<std::shared_ptr<IAttributeData>> attributes_;
   size_t position_index_{0};
@@ -343,7 +337,7 @@ public:
   VertexArray(std::shared_ptr<VertexStateFactory> factory, VertexStates& states,
               GLuint vertices_vbo = 0, GLuint elements_vbo = 0)
     : factory_(std::move(factory)), states_(states),
-    vertices_vbo_(vertices_vbo), elements_vbo_(elements_vbo)
+    vertices_vbo_(vertices_vbo)
   {
     if (!vertices_vbo_) {
       glGenBuffers(1, &vertices_vbo_);
@@ -365,8 +359,6 @@ public:
     elements_.addAttributeData(std::move(data));
   }
 
-  // Create an empty copy of the VertexArray structure
-  std::shared_ptr<VertexArray> create() const;
   // Append VertexArray data to this VertexArray
   void append(const VertexArray& vertex_array);
   // Clear all data from the VertexArray
