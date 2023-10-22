@@ -59,7 +59,9 @@ cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON "NOT
 cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS" OFF)
 
 if(EXPERIMENTAL AND ENABLE_TBB)
-  # Requirement from TBB 2021.8.0
+  # TBB 2021.8.0 uses aligned memory deallocation.
+  # While this is technically supported in macOS 10.13, an LLVM bug used to limit this to macOS 10.14+.
+  # The bug was fixed in LLVM 15.0.0 (https://reviews.llvm.org/D129198), but was still present in Xcode 14.3.1a.
   set(DEPLOYMENT_TARGET "10.14")
 else()
   set(DEPLOYMENT_TARGET "10.13")
