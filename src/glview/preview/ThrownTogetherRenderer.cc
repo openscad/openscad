@@ -228,7 +228,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
       std::shared_ptr<TTRVertexState> vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
       if (vs) {
-        vs->csgObjectIndex(csgobj.leaf->index);
+        vs->setCsgObjectIndex(csgobj.leaf->index);
       }
     } else { // root mode
       ColorMode colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, false, type);
@@ -250,7 +250,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
       std::shared_ptr<TTRVertexState> vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
       if (vs) {
-        vs->csgObjectIndex(csgobj.leaf->index);
+        vs->setCsgObjectIndex(csgobj.leaf->index);
       }
 
       color[0] = 1.0; color[1] = 0.0; color[2] = 1.0; // override leaf color on front/back error
@@ -270,7 +270,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
       vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
       if (vs) {
-        vs->csgObjectIndex(csgobj.leaf->index);
+        vs->setCsgObjectIndex(csgobj.leaf->index);
       }
 
       vertex_states.back()->glEnd().emplace_back([]() {

@@ -24,7 +24,7 @@ public:
   {}
 
   [[nodiscard]] size_t csgObjectIndex() const { return csg_object_index_; }
-  void csgObjectIndex(size_t csg_object_index) { csg_object_index_ = csg_object_index; }
+  void setCsgObjectIndex(size_t csg_object_index) { csg_object_index_ = csg_object_index; }
 
 private:
   size_t csg_object_index_;

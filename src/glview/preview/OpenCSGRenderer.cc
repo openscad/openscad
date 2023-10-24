@@ -226,7 +226,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
           create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, last_color);
           std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
           if (surface != nullptr) {
-            surface->csgObjectIndex(csgobj.leaf->index);
+            surface->setCsgObjectIndex(csgobj.leaf->index);
             primitives.emplace_back(createVBOPrimitive(surface,
                                                         OpenCSG::Intersection,
                                                         csgobj.leaf->geom->getConvexity()));
@@ -246,7 +246,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
           std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
 
           if (surface != nullptr) {
-            surface->csgObjectIndex(csgobj.leaf->index);
+            surface->setCsgObjectIndex(csgobj.leaf->index);
 
             primitives.emplace_back(createVBOPrimitive(surface,
                                                         OpenCSG::Intersection,
@@ -310,7 +310,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
         create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, last_color);
         std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
         if (surface != nullptr) {
-          surface->csgObjectIndex(csgobj.leaf->index);
+          surface->setCsgObjectIndex(csgobj.leaf->index);
           primitives.emplace_back(createVBOPrimitive(surface,
                                                       OpenCSG::Subtraction,
                                                       csgobj.leaf->geom->getConvexity()));
