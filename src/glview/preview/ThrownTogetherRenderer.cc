@@ -52,36 +52,39 @@ ThrownTogetherRenderer::~ThrownTogetherRenderer()
 
 void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const Renderer::shaderinfo_t * /*shaderinfo*/)
 {
-  PRINTD("Thrown prepare");
-  if (Feature::ExperimentalVxORenderers.is_enabled() && vertex_states.empty()) {
-    glGenBuffers(1, &vertices_vbo);
-    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      glGenBuffers(1, &elements_vbo);
-    }
-    VertexArray vertex_array(std::make_unique<TTRVertexStateFactory>(), vertex_states, vertices_vbo, elements_vbo);
-    vertex_array.addSurfaceData();
-    add_shader_data(vertex_array);
-
-    size_t num_vertices = 0;
-    if (this->root_products) num_vertices += (getSurfaceBufferSize(this->root_products, false, false, true) * 2);
-    if (this->background_products) num_vertices += getSurfaceBufferSize(this->background_products, false, true, true);
-    if (this->highlight_products) num_vertices += getSurfaceBufferSize(this->highlight_products, true, false, true);
-
-    vertex_array.allocateBuffers(num_vertices);
-
-    if (this->root_products) createCSGProducts(*this->root_products, vertex_array, false, false);
-    if (this->background_products) createCSGProducts(*this->background_products, vertex_array, false, true);
-    if (this->highlight_products) createCSGProducts(*this->highlight_products, vertex_array, true, false);
-
-    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
-      GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-    }
-    GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
-
-    vertex_array.createInterleavedVBOs();
+  PRINTD("prepare()");
+  if (!vertex_states.empty()) {
+    PRINTD("vertex_states not empty; nothing to do");
+    return;
   }
+
+  glGenBuffers(1, &vertices_vbo);
+  if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+    glGenBuffers(1, &elements_vbo);
+  }
+  VertexArray vertex_array(std::make_unique<TTRVertexStateFactory>(), vertex_states, vertices_vbo, elements_vbo);
+  vertex_array.addSurfaceData();
+  add_shader_data(vertex_array);
+
+  size_t num_vertices = 0;
+  if (this->root_products) num_vertices += (getSurfaceBufferSize(this->root_products, false, false, true) * 2);
+  if (this->background_products) num_vertices += getSurfaceBufferSize(this->background_products, false, true, true);
+  if (this->highlight_products) num_vertices += getSurfaceBufferSize(this->highlight_products, true, false, true);
+
+  vertex_array.allocateBuffers(num_vertices);
+
+  if (this->root_products) createCSGProducts(*this->root_products, vertex_array, false, false);
+  if (this->background_products) createCSGProducts(*this->background_products, vertex_array, false, true);
+  if (this->highlight_products) createCSGProducts(*this->highlight_products, vertex_array, true, false);
+
+  if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+    GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+    GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+  }
+  GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+  GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
+
+  vertex_array.createInterleavedVBOs();
 }
 
 

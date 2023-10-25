@@ -226,8 +226,10 @@ void CGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const shaderi
   PRINTD("prepare()");
   if (!polyset_states.size()) createPolySets();
   if (!this->nefPolyhedrons.empty() &&
-      (this->polyhedrons.empty() || Feature::ExperimentalVxORenderers.is_enabled() != last_render_state)) // FIXME: this is temporary to make switching between renderers seamless.
+      (this->polyhedrons.empty() || !last_render_state)) { // FIXME: this is temporary to make switching between renderers seamless.
+    PRINTD("prepare() -> createPolyhedrons()");
     createPolyhedrons();
+  }
 
   PRINTD("prepare() end");
 }

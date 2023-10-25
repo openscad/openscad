@@ -85,16 +85,19 @@ OpenCSGRenderer::OpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,
 
 void OpenCSGRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const shaderinfo_t *shaderinfo)
 {
-  if (Feature::ExperimentalVxORenderers.is_enabled() && !vbo_vertex_products.size()) {
-    if (this->root_products) {
-      createCSGVBOProducts(*this->root_products, shaderinfo, false, false);
-    }
-    if (this->background_products) {
-      createCSGVBOProducts(*this->background_products, shaderinfo, false, true);
-    }
-    if (this->highlights_products) {
-      createCSGVBOProducts(*this->highlights_products, shaderinfo, true, false);
-    }
+  if (!vbo_vertex_products.empty()) {
+    PRINTD("vbo_vertex_products not empty; nothing to do");
+    return;
+  }
+
+  if (this->root_products) {
+    createCSGVBOProducts(*this->root_products, shaderinfo, false, false);
+  }
+  if (this->background_products) {
+    createCSGVBOProducts(*this->background_products, shaderinfo, false, true);
+  }
+  if (this->highlights_products) {
+    createCSGVBOProducts(*this->highlights_products, shaderinfo, true, false);
   }
 }
 
