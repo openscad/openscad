@@ -27,7 +27,8 @@ void VertexState::draw(bool bind_buffers) const
                 draw_mode_ == GL_QUAD_STRIP ? "GL_QUAD_STRIP" :
                 draw_mode_ == GL_POLYGON ? "GL_POLYGON" :
                 "UNKNOWN") % draw_size_ %
-               (draw_type_ == GL_UNSIGNED_SHORT ? "GL_UNSIGNED_SHORT" :
+               (draw_type_ == GL_UNSIGNED_BYTE ? "GL_UNSIGNED_BYTE" :
+                draw_type_ == GL_UNSIGNED_SHORT ? "GL_UNSIGNED_SHORT" :
                 draw_type_ == GL_UNSIGNED_INT ? "GL_UNSIGNED_INT" :
                 "UNKNOWN") % element_offset_);
       // NOLINTNEXTLINE(performance-no-int-to-ptr)
