@@ -390,7 +390,9 @@ void VertexArray::addAttributePointers(size_t start_offset)
 void VertexArray::allocateBuffers(size_t num_vertices) {
   size_t vertices_size = num_vertices * stride();
   setVerticesSize(vertices_size);
+  GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertices_vbo_);
   GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_));
+  GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
   GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW));
 
 
@@ -406,7 +408,9 @@ void VertexArray::allocateBuffers(size_t num_vertices) {
     // FIXME: How do we know how much to allocate?
     size_t elements_size = num_vertices * elements_.stride();
     setElementsSize(elements_size);
+    GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", elements_vbo_);
     GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_vbo_));
+    GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
     GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW));
   }
 }
