@@ -213,8 +213,6 @@ public:
 
   void allocateBuffers(size_t num_vertices);
 
-  // Create an interleaved buffer and return it as GLbyte array pointer
-  void fillInterleavedBuffer(GLbyte *interleaved_buffer) const;
   // Get the last interleaved vertex
   void getLastVertex(std::vector<GLbyte>& interleaved_buffer) const;
   // Create an interleaved buffer in the provided vbo.
@@ -331,9 +329,6 @@ public:
   }
 
   void allocateBuffers(size_t num_vertices);
-
-  // Create an interleaved buffer and return it as GLbyte array pointer
-  void fillInterleavedBuffer(std::vector<GLbyte>& interleaved_buffer) const;
 
   // Create an interleaved VBO from the VertexData in the array.
   void createInterleavedVBOs();

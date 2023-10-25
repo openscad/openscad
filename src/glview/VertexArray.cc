@@ -11,27 +11,6 @@
 
 void addAttributeValues(IAttributeData&) {}
 
-void VertexData::fillInterleavedBuffer(GLbyte *interleaved_buffer) const
-{
-  // All attribute vectors need to be the same size to interleave
-  if (attributes_.size()) {
-    size_t last_size = attributes_[0]->size() / attributes_[0]->count();
-
-    GLbyte *dst_start = interleaved_buffer;
-    for (const auto& data : attributes_) {
-      size_t size = data->sizeofAttribute();
-      GLbyte *dst = dst_start;
-      const GLbyte *src = data->toBytes();
-      for (size_t i = 0; i < last_size; ++i) {
-        std::memcpy((void *)dst, (void *)src, size);
-        src += size;
-        dst += stride_;
-      }
-      dst_start += size;
-    }
-  }
-}
-
 void VertexData::getLastVertex(std::vector<GLbyte>& interleaved_buffer) const
 {
   GLbyte *dst_start = interleaved_buffer.data();
@@ -50,27 +29,6 @@ void VertexData::remove(size_t count)
     data->remove(count);
   }
 }
-
-// void VertexData::createInterleavedVBO(GLuint& vbo) const
-// {
-//   size_t total_bytes = this->sizeInBytes();
-//   if (total_bytes) {
-//     std::vector<GLbyte> interleaved_buffer;
-//     interleaved_buffer.resize(total_bytes);
-//     fillInterleavedBuffer(interleaved_buffer.data());
-
-//     if (vbo == 0) {
-//       glGenBuffers(1, &vbo);
-//     }
-
-//     GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vbo);
-//     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vbo));
-//     GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", total_bytes % (void *)interleaved_buffer.data());
-//     GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, total_bytes, interleaved_buffer.data(), GL_STATIC_DRAW));
-//     GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-//     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
-//   }
-// }
 
 void VertexData::append(const VertexData& data) {
   size_t i = 0;
@@ -212,20 +170,6 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
       }
       vertices_offset_ += interleaved_vertex.size();
       data()->clear();
-    }
-  }
-}
-
-void VertexArray::fillInterleavedBuffer(std::vector<GLbyte>& interleaved_buffer) const
-{
-  size_t total_bytes = this->sizeInBytes();
-  if (total_bytes) {
-    interleaved_buffer.resize(total_bytes);
-    GLbyte *dst = interleaved_buffer.data();
-
-    for (const auto& data : vertices_) {
-      data->fillInterleavedBuffer(dst);
-      dst += data->sizeInBytes();
     }
   }
 }
