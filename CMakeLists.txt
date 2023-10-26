@@ -882,6 +882,7 @@ else()
     src/glview/GLView.cc
     src/glview/OffscreenView.cc
     src/glview/cgal/CGALRenderer.cc
+    src/glview/cgal/CGAL_OGL_VBOPolyhedron.cc
     src/glview/preview/OpenCSGRenderer.cc
     src/glview/preview/ThrownTogetherRenderer.cc
     src/io/export_png.cc

@@ -99,24 +99,13 @@ void CGALRenderer::createPolyhedrons()
   PRINTD("createPolyhedrons");
   this->polyhedrons.clear();
 
-  if (!Feature::ExperimentalVxORenderers.is_enabled()) {
-    for (const auto& N : this->nefPolyhedrons) {
-      auto p = new CGAL_OGL_Polyhedron(*this->colorscheme);
-      CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*N->p3, p);
-      // CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
-      // CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
-      p->init();
-      this->polyhedrons.push_back(shared_ptr<CGAL_OGL_Polyhedron>(p));
-    }
-  } else {
-    for (const auto& N : this->nefPolyhedrons) {
-      auto p = new CGAL_OGL_VBOPolyhedron(*this->colorscheme);
-      CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*N->p3, p);
-      // CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
-      // CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
-      p->init();
-      this->polyhedrons.push_back(shared_ptr<CGAL_OGL_Polyhedron>(p));
-    }
+  for (const auto& N : this->nefPolyhedrons) {
+    auto p = new CGAL_OGL_VBOPolyhedron(*this->colorscheme);
+    CGAL::OGL::Nef3_Converter<CGAL_Nef_polyhedron3>::convert_to_OGLPolyhedron(*N->p3, p);
+    // CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
+    // CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
+    p->init();
+    this->polyhedrons.push_back(shared_ptr<CGAL_OGL_VBOPolyhedron>(p));
   }
   PRINTD("createPolyhedrons() end");
 }
