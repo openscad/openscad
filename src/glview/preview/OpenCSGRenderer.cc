@@ -31,7 +31,6 @@
 #include <utility>
 #include "PolySet.h"
 #include "Feature.h"
-#include "VertexStateManager.h"
 
 #ifdef ENABLE_OPENCSG
 
@@ -180,7 +179,6 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
     vbo_index++;
     VertexArray vertex_array(std::make_unique<OpenCSGVertexStateFactory>(), *(vertex_states.get()),
                              vertices_vbo, elements_vbo);
-    VertexStateManager vsm(vertex_array);
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
     add_shader_data(vertex_array);
@@ -197,7 +195,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
       }
     }
 
-    vsm.initializeSize(num_vertices);
+    vertex_array.allocateBuffers(num_vertices);
 
     for (const auto& csgobj : product.intersections) {
       if (csgobj.leaf->geom) {
@@ -221,7 +219,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
           last_color = color;
         }
 
-        vsm.addColor(*this, last_color);
+        add_color(vertex_array, last_color);
 
         if (color[3] == 1.0f) {
           // object is opaque, draw normally
@@ -295,7 +293,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
           last_color = color;
         }
 
-        vsm.addColor(*this, last_color);
+        add_color(vertex_array, last_color);
 
         // negative objects should only render rear faces
         std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();

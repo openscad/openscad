@@ -384,3 +384,29 @@ void VertexArray::addAttributePointers(size_t start_offset)
     });
   }
 }
+
+// Allocates GPU memory for vertices (and elements if enabled)
+// for holding the given number of vertices.
+void VertexArray::allocateBuffers(size_t num_vertices) {
+  size_t vertices_size = num_vertices * stride();
+  setVerticesSize(vertices_size);
+  GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_));
+  GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW));
+
+
+  if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+    // Use smallest possible index data type
+    if (num_vertices <= 0xff) {
+      addElementsData(std::make_shared<AttributeData<GLubyte, 1, GL_UNSIGNED_BYTE>>());
+    } else if (num_vertices <= 0xffff) {
+      addElementsData(std::make_shared<AttributeData<GLushort, 1, GL_UNSIGNED_SHORT>>());
+    } else {
+      addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
+    }
+    // FIXME: How do we know how much to allocate?
+    size_t elements_size = num_vertices * elements_.stride();
+    setElementsSize(elements_size);
+    GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_vbo_));
+    GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW));
+  }
+}

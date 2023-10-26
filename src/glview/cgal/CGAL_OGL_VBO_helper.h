@@ -28,7 +28,6 @@
 
 #include "system-gl.h"
 #include "VertexArray.h"
-#include "VertexStateManager.h"
 #include "ext/CGAL/OGL_helper.h"
 #include <cstdlib>
 
@@ -216,7 +215,6 @@ public:
     }
 
     VertexArray points_edges_array(std::make_unique<VertexStateFactory>(), points_edges_states, points_edges_vertices_vbo, points_edges_elements_vbo);
-    VertexStateManager vsm(points_edges_array);
 
     points_edges_array.addEdgeData();
     points_edges_array.writeEdge();
@@ -224,7 +222,7 @@ public:
     size_t elements_offset = 0;
 
     size_t num_vertices = vertices_.size() + edges_.size() * 2, elements_size = 0;
-    vsm.initializeSize(num_vertices);
+    points_edges_array.allocateBuffers(num_vertices);
 
     // Points
     Vertex_iterator v;

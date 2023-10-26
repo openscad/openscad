@@ -37,7 +37,6 @@
 #include "CGALRenderer.h"
 #include "CGAL_OGL_VBOPolyhedron.h"
 #include "CGALHybridPolyhedron.h"
-#include "VertexStateManager.h"
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
 #endif
@@ -145,7 +144,6 @@ void CGALRenderer::createPolySets()
   }
 
   VertexArray vertex_array(std::make_unique<VertexStateFactory>(), polyset_states, polyset_vertices_vbo, polyset_elements_vbo);
-  VertexStateManager vsm(vertex_array);
 
   vertex_array.addEdgeData();
   vertex_array.addSurfaceData();
@@ -159,7 +157,7 @@ void CGALRenderer::createPolySets()
     }
   }
 
-  vsm.initializeSize(num_vertices);
+  vertex_array.allocateBuffers(num_vertices);
 
   for (const auto& polyset : this->polysets) {
     Color4f color;

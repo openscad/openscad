@@ -211,6 +211,8 @@ public:
   }
   [[nodiscard]] inline bool empty() const { return attributes_.empty(); }
 
+  void allocateBuffers(size_t num_vertices);
+
   // Create an interleaved buffer and return it as GLbyte array pointer
   void fillInterleavedBuffer(GLbyte *interleaved_buffer) const;
   // Get the last interleaved vertex
@@ -322,10 +324,13 @@ public:
     }
     return 0;
   }
+
   // Use VertexStateFactory to create a new VertexState object
   std::shared_ptr<VertexState> createVertexState(GLenum draw_mode, size_t draw_size, GLenum draw_type, size_t draw_offset, size_t element_offset) const {
     return factory_->createVertexState(draw_mode, draw_size, draw_type, draw_offset, element_offset, vertices_vbo_, elements_vbo_);
   }
+
+  void allocateBuffers(size_t num_vertices);
 
   // Create an interleaved buffer and return it as GLbyte array pointer
   void fillInterleavedBuffer(std::vector<GLbyte>& interleaved_buffer) const;
@@ -336,38 +341,27 @@ public:
   // Method adds begin/end states that enable and point to the VertexData in the array
   void addAttributePointers(size_t start_offset = 0);
 
-  // Return whether this Vertex Array uses elements
-  inline bool useElements() const { return elements_vbo_ != 0; }
-
-  // Return the initial buffer size allocated by Vertex Array
+  inline GLuint verticesVBO() const { return vertices_vbo_; }
   inline size_t verticesSize() const { return vertices_size_; }
-  // Set the initial buffer size allocated by VertexArray
-  inline void verticesSize(size_t vertices_size) {
+  inline void setVerticesSize(size_t vertices_size) {
     vertices_size_ = vertices_size;
     if (Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
       interleaved_buffer_.resize(vertices_size_);
     }
   }
-  // Return the elements buffer size allocated by Vertex Array
-  inline size_t elementsSize() const { return elements_size_; }
-  // Set the elements buffer size allocated by VertexArray
-  inline void elementsSize(size_t elements_size) { elements_size_ = elements_size; }
+  inline size_t verticesOffset() const { return vertices_offset_; }
+  inline void setVerticesOffset(size_t offset) { vertices_offset_ = offset; }
 
-  inline GLuint verticesVBO() const { return vertices_vbo_; }
+  // Return whether this Vertex Array uses elements (indexed rendering)
+  inline bool useElements() const { return elements_vbo_ != 0; }
   inline GLuint elementsVBO() const { return elements_vbo_; }
+  inline size_t elementsSize() const { return elements_size_; }
+  inline void setElementsSize(size_t elements_size) { elements_size_ = elements_size; }
+  inline size_t elementsOffset() const { return elements_offset_; }
+  inline void setElementsOffset(size_t offset) { elements_offset_ = offset; }
 
   // Return the internal unique vertex/element map
   inline ElementsMap& elementsMap() { return elements_map_; }
-
-  // Return current vertices offset
-  inline size_t verticesOffset() const { return vertices_offset_; }
-  // Set current vertices offset
-  inline void verticesOffset(size_t offset) { vertices_offset_ = offset; }
-
-  // Return current elements offset
-  inline size_t elementsOffset() const { return elements_offset_; }
-  // Set current elements offset
-  inline void elementsOffset(size_t offset) { elements_offset_ = offset; }
 
 private:
   std::unique_ptr<VertexStateFactory> factory_;

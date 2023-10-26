@@ -880,7 +880,6 @@ else()
     src/glview/VertexState.cc
     src/glview/VBORenderer.cc
     src/glview/GLView.cc
-    src/glview/VertexStateManager.cc
     src/glview/OffscreenView.cc
     src/glview/cgal/CGALRenderer.cc
     src/glview/preview/OpenCSGRenderer.cc

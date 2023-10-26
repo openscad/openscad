@@ -749,6 +749,18 @@ void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
   vertex_array.states().emplace_back(std::move(ss));
 }
 
+void VBORenderer::add_color(VertexArray& vertex_array, const Color4f& color)
+{
+  add_shader_pointers(vertex_array);
+  shaderinfo_t shader_info = getShader();
+  std::shared_ptr<VertexState> color_state = std::make_shared<VBOShaderVertexState>(0, 0, vertex_array.verticesVBO(), vertex_array.elementsVBO());
+  color_state->glBegin().emplace_back([shader_info, color]() {
+    GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_area, color[0], color[1], color[2], color[3]));
+    GL_CHECKD(glUniform4f(shader_info.data.csg_rendering.color_edge, (color[0] + 1) / 2, (color[1] + 1) / 2, (color[2] + 1) / 2, 1.0));
+  });
+  vertex_array.states().emplace_back(std::move(color_state));
+}
+
 void VBORenderer::shader_attribs_enable() const
 {
   GL_TRACE("glEnableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
