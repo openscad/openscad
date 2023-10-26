@@ -30,10 +30,14 @@ void VertexStateManager::initializeSizeHelper(size_t num_vertices, bool multiple
     vertices_size = num_vertices * vertex_array.stride();
     vertex_array.verticesSize(vertices_size);
 
+    GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertex_array.verticesVBO());
     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertex_array.verticesVBO()));
+    GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
     GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW));
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertex_array.elementsVBO());
       GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertex_array.elementsVBO()));
+      GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
       GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW));
     }
   } else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
