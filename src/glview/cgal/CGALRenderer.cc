@@ -47,6 +47,8 @@ CGALRenderer::CGALRenderer(const shared_ptr<const class Geometry>& geom)
   : last_render_state(Feature::ExperimentalVxORenderers.is_enabled()) // FIXME: this is temporary to make switching between renderers seamless.
 {
   this->addGeometry(geom);
+  PRINTD("CGALRenderer::CGALRenderer() -> createPolyhedrons()");
+  if (!this->nefPolyhedrons.empty() && this->polyhedrons.empty()) createPolyhedrons();
 }
 
 void CGALRenderer::addGeometry(const shared_ptr<const Geometry>& geom)
@@ -80,8 +82,6 @@ void CGALRenderer::addGeometry(const shared_ptr<const Geometry>& geom)
   } else {
     assert(false && "unsupported geom in CGALRenderer");
   }
-
-  if (!this->nefPolyhedrons.empty() && this->polyhedrons.empty()) createPolyhedrons();
 }
 
 CGALRenderer::~CGALRenderer()
