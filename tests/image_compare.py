@@ -15,6 +15,10 @@ def Compare3x3(img1, img2):
      012 123 234) for difference between the two images, and returns an array
      of the geometric mean difference for any blocks that have like-signed
      differences of magnitude 3 or greater in all 9 pixels.
+
+     A mask image is generated highlighting in bright red (#FF2828) the
+     pixels of the second image which contributed to the failed equality
+     test.  For "actual.png" the mask is saved to "actual_mask.png".
   '''
   a1 = np.array(img1, dtype=float)
   a2 = np.array(img2, dtype=float)
@@ -73,6 +77,7 @@ def CompareImageFiles(path1, path2):
     med_diff = np.median(pixel_diffs[:diff_cnt])
     print(f'{perc_diff:0.8f}% of 3x3 blocks differ with median block diff: {med_diff:0.2f}')
     Image.fromarray(mask).save(maskpath)
+    print(f'Highlight mask saved to: {maskpath}')
     return False
 
 if __name__ == '__main__':
