@@ -213,7 +213,6 @@ set(OPENSCAD_ARG "--openscad=${OPENSCAD_BINPATH}")
 # options for the tagged tests.
 macro(experimental_tests)
   foreach (TESTNAME ${ARGN})
-#    message("Marking as experimental ${TESTNAME}")
     list(APPEND EXPERIMENTAL_TESTS ${TESTNAME})
   endforeach()
 endmacro()
@@ -294,10 +293,13 @@ endfunction()
 #
 # Usage add_cmdline_test(testbasename [EXE <executable>] [ARGS <args to exe>]
 #                        [SCRIPT <script>]
-#                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>)
+#                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>
+#                        [EXPERIMENTAL])
+#
+# EXPERIMENTAL: If set, tag all tests as experimental
 #
 function(add_cmdline_test TESTCMD_BASENAME)
-  cmake_parse_arguments(TESTCMD "OPENSCAD;STDIO" "EXE;SCRIPT;SUFFIX;KERNEL;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
+  cmake_parse_arguments(TESTCMD "OPENSCAD;STDIO;EXPERIMENTAL" "EXE;SCRIPT;SUFFIX;KERNEL;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
 
   set(EXTRA_OPTIONS "")
 
@@ -338,14 +340,21 @@ function(add_cmdline_test TESTCMD_BASENAME)
     get_filename_component(FILE_BASENAME ${SCADFILE} NAME_WE)
     string(REPLACE " " "_" FILE_BASENAME ${FILE_BASENAME}) # Test names cannot include spaces
     set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
-    list(FIND EXPERIMENTAL_TESTS ${TEST_FULLNAME} EXPERIMENTAL_TEST)
 
-    set(EXPERIMENTAL_OPTION "")
-
-    if (NOT (${EXPERIMENTAL_TEST} EQUAL -1))
-      # add global experimental options here
-      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=roof" "--enable=lazy-union" "--enable=textmetrics" "--enable=import-function")
+    if (TESTCMD_EXPERIMENTAL)
+      experimental_tests(${TEST_FULLNAME})
+      set(TEST_IS_EXPERIMENTAL true)
+    else()
+      list(FIND EXPERIMENTAL_TESTS ${TEST_FULLNAME} EXPERIMENTAL_TEST)
+      if (${EXPERIMENTAL_TEST} EQUAL -1)
+        set(TEST_IS_EXPERIMENTAL false)
+      else()
+        set(TEST_IS_EXPERIMENTAL true)
+      endif()
     endif()
+
+    # add global experimental options here
+    set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=roof" "--enable=lazy-union" "--enable=textmetrics" "--enable=import-function")
 
     # Enable manifold for all tests except those marked as skipped
     if (ENABLE_MANIFOLD
@@ -415,7 +424,11 @@ function(add_cmdline_test TESTCMD_BASENAME)
     message(DEBUG "${DBG_COMMAND_STR}")
 
     # only add test if it is not experimental or if it is and experimental option is enabled
-    if (${EXPERIMENTAL_TEST} EQUAL -1 OR EXPERIMENTAL)
+    if (NOT TEST_IS_EXPERIMENTAL OR EXPERIMENTAL)
+      # disable experimental options for non-experimental tests
+      if (NOT TEST_IS_EXPERIMENTAL)
+        set(EXPERIMENTAL_OPTION "")
+      endif()
       add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
         COMMAND ${PYTHON_EXECUTABLE}
         ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
@@ -948,78 +961,6 @@ experimental_tests(svgpngtest_text-metrics)
 experimental_tests(echotest_import-json)
 experimental_tests(echotest_import-json-relative-path)
 
-experimental_tests(lazyunion-dump_lazyunion-toplevel-2dobjects)
-experimental_tests(lazyunion-dump_lazyunion-toplevel-objects)
-experimental_tests(lazyunion-dump_lazyunion-toplevel-for)
-experimental_tests(lazyunion-dump_lazyunion-nested-for)
-experimental_tests(lazyunion-dump_lazyunion-children)
-experimental_tests(lazyunion-dump_lazyunion-hull-for)
-experimental_tests(lazyunion-dump_lazyunion-root-for)
-experimental_tests(lazyunion-dump_lazyunion-intersection-for)
-experimental_tests(lazyunion-dump_lazyunion-difference-for)
-experimental_tests(lazyunion-dump_lazyunion-minkowski-for)
-experimental_tests(lazyunion-dump_lazyunion-transform-for)
-experimental_tests(lazyunion-dump_2d-3d)
-experimental_tests(lazyunion-opencsg_lazyunion-toplevel-2dobjects)
-experimental_tests(lazyunion-opencsg_lazyunion-toplevel-objects)
-experimental_tests(lazyunion-opencsg_lazyunion-toplevel-for)
-experimental_tests(lazyunion-opencsg_lazyunion-nested-for)
-experimental_tests(lazyunion-opencsg_lazyunion-children)
-experimental_tests(lazyunion-opencsg_lazyunion-hull-for)
-experimental_tests(lazyunion-opencsg_lazyunion-root-for)
-experimental_tests(lazyunion-opencsg_lazyunion-intersection-for)
-experimental_tests(lazyunion-opencsg_lazyunion-difference-for)
-experimental_tests(lazyunion-opencsg_lazyunion-minkowski-for)
-experimental_tests(lazyunion-opencsg_lazyunion-transform-for)
-experimental_tests(lazyunion-opencsg_2d-3d)
-experimental_tests(lazyunion-cgalpng_lazyunion-toplevel-2dobjects)
-experimental_tests(lazyunion-cgalpng_lazyunion-toplevel-objects)
-experimental_tests(lazyunion-cgalpng_lazyunion-toplevel-for)
-experimental_tests(lazyunion-cgalpng_lazyunion-nested-for)
-experimental_tests(lazyunion-cgalpng_lazyunion-children)
-experimental_tests(lazyunion-cgalpng_lazyunion-hull-for)
-experimental_tests(lazyunion-cgalpng_lazyunion-root-for)
-experimental_tests(lazyunion-cgalpng_lazyunion-intersection-for)
-experimental_tests(lazyunion-cgalpng_lazyunion-difference-for)
-experimental_tests(lazyunion-cgalpng_lazyunion-minkowski-for)
-experimental_tests(lazyunion-cgalpng_lazyunion-transform-for)
-experimental_tests(lazyunion-cgalpng_2d-3d)
-experimental_tests(lazyunion-monotonepng_lazyunion-toplevel-objects)
-experimental_tests(lazyunion-monotonepng_lazyunion-toplevel-for)
-experimental_tests(lazyunion-monotonepng_lazyunion-nested-for)
-experimental_tests(lazyunion-monotonepng_lazyunion-children)
-experimental_tests(lazyunion-monotonepng_lazyunion-hull-for)
-experimental_tests(lazyunion-monotonepng_lazyunion-root-for)
-experimental_tests(lazyunion-monotonepng_lazyunion-intersection-for)
-experimental_tests(lazyunion-monotonepng_lazyunion-difference-for)
-experimental_tests(lazyunion-monotonepng_lazyunion-minkowski-for)
-experimental_tests(lazyunion-monotonepng_lazyunion-transform-for)
-experimental_tests(lazyunion-monotonepng_2d-3d)
-experimental_tests(lazyunion-stlpngtest_lazyunion-toplevel-objects)
-experimental_tests(lazyunion-stlpngtest_lazyunion-toplevel-for)
-experimental_tests(lazyunion-stlpngtest_lazyunion-nested-for)
-experimental_tests(lazyunion-stlpngtest_lazyunion-children)
-experimental_tests(lazyunion-stlpngtest_lazyunion-hull-for)
-experimental_tests(lazyunion-stlpngtest_lazyunion-root-for)
-experimental_tests(lazyunion-stlpngtest_lazyunion-intersection-for)
-experimental_tests(lazyunion-stlpngtest_lazyunion-difference-for)
-experimental_tests(lazyunion-stlpngtest_lazyunion-minkowski-for)
-experimental_tests(lazyunion-stlpngtest_lazyunion-transform-for)
-experimental_tests(lazyunion-stlpngtest_2d-3d)
-experimental_tests(lazyunion-offpngtest_lazyunion-toplevel-objects)
-experimental_tests(lazyunion-offpngtest_lazyunion-toplevel-for)
-experimental_tests(lazyunion-offpngtest_lazyunion-nested-for)
-experimental_tests(lazyunion-offpngtest_lazyunion-children)
-experimental_tests(lazyunion-offpngtest_lazyunion-hull-for)
-experimental_tests(lazyunion-offpngtest_lazyunion-root-for)
-experimental_tests(lazyunion-offpngtest_lazyunion-intersection-for)
-experimental_tests(lazyunion-offpngtest_lazyunion-difference-for)
-experimental_tests(lazyunion-offpngtest_lazyunion-minkowski-for)
-experimental_tests(lazyunion-offpngtest_lazyunion-transform-for)
-experimental_tests(lazyunion-offpngtest_2d-3d)
-experimental_tests(lazyunion-dxfpngtest_lazyunion-toplevel-2dobjects)
-experimental_tests(lazyunion-svgpngtest_lazyunion-toplevel-2dobjects)
-
 ##############################
 # Define test configurations #
 ##############################
@@ -1169,26 +1110,28 @@ add_cmdline_test(svgimport OPENSCAD ARGS --imgsize 600,600 SUFFIX png FILES
   ${TEST_SCAD_DIR}/svg/extruded/simple-center.scad
 )
 
-add_cmdline_test(lazyunion-dump        OPENSCAD SUFFIX csg FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
-add_cmdline_test(lazyunion-opencsg     OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
-add_cmdline_test(lazyunion-cgalpng     OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union --render)
-add_cmdline_test(lazyunion-monotonepng OPENSCAD SUFFIX png FILES ${LAZYUNION_3D_FILES} ARGS --colorscheme=Monotone --enable=lazy-union --render )
-add_cmdline_test(lazyunion-stlpngtest  SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_ARG} --format=STL --enable=lazy-union --render=cgal)
-add_cmdline_test(lazyunion-offpngtest  SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_ARG} --format=OFF --enable=lazy-union --render=cgal)
-add_cmdline_test(lazyunion-dxfpngtest  SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=DXF --enable=lazy-union --render=cgal)
-add_cmdline_test(lazyunion-svgpngtest  SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=SVG --enable=lazy-union --render=cgal)
+add_cmdline_test(lazyunion-dump        EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
+add_cmdline_test(lazyunion-opencsg     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
+add_cmdline_test(lazyunion-cgalpng     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union --render)
+add_cmdline_test(lazyunion-monotonepng EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_3D_FILES} ARGS --colorscheme=Monotone --enable=lazy-union --render )
+add_cmdline_test(lazyunion-stlpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_ARG} --format=STL --enable=lazy-union --render=cgal)
+add_cmdline_test(lazyunion-offpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_ARG} --format=OFF --enable=lazy-union --render=cgal)
+add_cmdline_test(lazyunion-dxfpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=DXF --enable=lazy-union --render=cgal)
+add_cmdline_test(lazyunion-svgpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=SVG --enable=lazy-union --render=cgal)
 
-add_cmdline_test(manifold-cgalpng             OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS} ARGS --enable=manifold --render)
-add_cmdline_test(fastcsg-cgalpng              OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS} ARGS --enable=fast-csg --render)
-add_cmdline_test(fastcsg-lazyunion-cgalpng    OPENSCAD SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} ARGS --enable=lazy-union --render)
-add_cmdline_test(fastcsg-lazyunion-amfpngtest SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union ${OPENSCAD_ARG} --format=AMF)
-add_cmdline_test(fastcsg-lazyunion-3mfpngtest SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union ${OPENSCAD_ARG} --format=3MF)
+add_cmdline_test(manifold-cgalpng             EXPERIMENTAL OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS} ARGS --enable=manifold --render)
+add_cmdline_test(fastcsg-cgalpng              EXPERIMENTAL OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS} ARGS --enable=fast-csg --render)
+add_cmdline_test(fastcsg-lazyunion-cgalpng    EXPERIMENTAL OPENSCAD SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} ARGS --enable=lazy-union --render)
+add_cmdline_test(fastcsg-lazyunion-amfpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union ${OPENSCAD_ARG} --format=AMF)
+add_cmdline_test(fastcsg-lazyunion-3mfpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union ${OPENSCAD_ARG} --format=3MF)
 
 # Disabled due to https://github.com/openscad/openscad/issues/4470
-set_tests_properties(
-  fastcsg-cgalpng_highlight-modifier2
-  PROPERTIES DISABLED TRUE
-)
+if (EXPERIMENTAL)
+  set_tests_properties(
+    fastcsg-cgalpng_highlight-modifier2
+    PROPERTIES DISABLED TRUE
+  )
+endif()
 
 list(APPEND FASTCSG_REMESH_FILES
   ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cubes.scad
@@ -1196,8 +1139,8 @@ list(APPEND FASTCSG_REMESH_FILES
   ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cube-2.scad
 )
 
-add_cmdline_test(remesh-cgalpng OPENSCAD SUFFIX png FILES ${FASTCSG_REMESH_FILES} ARGS --enable=fast-csg --render)
-add_cmdline_test(remesh-stl     OPENSCAD SUFFIX stl FILES ${FASTCSG_REMESH_FILES} ARGS --enable=predictible-output --enable=fast-csg --render)
+add_cmdline_test(remesh-cgalpng EXPERIMENTAL OPENSCAD SUFFIX png FILES ${FASTCSG_REMESH_FILES} ARGS --enable=fast-csg --render)
+add_cmdline_test(remesh-stl     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${FASTCSG_REMESH_FILES} ARGS --enable=predictible-output --enable=fast-csg --render)
 
 # Trivial Export/Import files
 # This sanity-checks bidirectional file format import/export
@@ -1214,10 +1157,9 @@ add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SC
 
 # Corner-case Export/Import tests
 add_cmdline_test(monotonepngtest OPENSCAD SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES} ${EXPORT3D_CGALCGAL_TEST_FILES} ARGS --colorscheme=Monotone --render)
-add_cmdline_test(stlexport             OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
-add_cmdline_test(manifold-stlexport    OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=manifold --render)
-add_cmdline_test(fastcsg-stlexport     OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=fast-csg --render)
-add_cmdline_test(objexport             OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render)
+add_cmdline_test(stlexport             EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=manifold --render)
+add_cmdline_test(fastcsg-stlexport     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=fast-csg --render)
+add_cmdline_test(objexport             EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render)
 add_cmdline_test(3mfexport             OPENSCAD ARGS SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES})
 
 # stlpngtest: direct STL output, preview rendering
