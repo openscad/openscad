@@ -286,9 +286,9 @@ class Templates(object):
 
     image_template = '''<table>
     <tbody>
-    <tr><td colspan="2">{test_name}</td></tr>
-    <tr><td> Expected image </td><td> Actual image </td></tr>
-    <tr><td> {expected} </td><td> {actual} </td></tr>
+    <tr><td colspan="3">{test_name}</td></tr>
+    <tr><td> Expected image </td><td> Actual image </td><td> Failure mask </td></tr>
+    <tr><td> {expected} </td><td> {actual} </td><td> {mask} </td></tr>
     </tbody>
     </table>
 
@@ -358,6 +358,14 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
             actual_img = png_encode64(test.actualfile,
                                   data=test.actualfile_data, alt=alttxt)
 
+            split = os.path.splitext(test.actualfile)
+            test.maskfile = f'{split[0]}_mask{split[1]}'
+            test.maskfile_data = tryread(test.maskfile)
+            if not os.path.exists(test.maskfile):
+                alttxt = 'mask missing for ' + test.fullname
+            mask_img = png_encode64(test.maskfile,
+                                  data=test.maskfile_data, alt=alttxt)
+
             if not os.path.exists(test.expectedfile):
                 alttxt = 'no img generated for ' + test.fullname
             expected_img = png_encode64(test.expectedfile,
@@ -367,7 +375,8 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
                           test_name=test.fullname,
                           test_log=test.fulltestlog,
                           actual=actual_img,
-                          expected=expected_img)
+                          expected=expected_img,
+                          mask=mask_img)
         else:
             raise TypeError('Unknown test type %r' % test.type)
 
