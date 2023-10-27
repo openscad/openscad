@@ -849,6 +849,7 @@ list(APPEND SCADFILES_WITH_GREEN_FACES
   ${EXAMPLES_DIR}/Old/example016.scad
   ${EXAMPLES_DIR}/Old/example024.scad
   ${TEST_SCAD_DIR}/3D/features/difference-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/for-tests.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
   ${TEST_SCAD_DIR}/3D/features/minkowski3-erosion.scad
@@ -862,8 +863,11 @@ list(APPEND SCADFILES_WITH_GREEN_FACES
   ${TEST_SCAD_DIR}/3D/issues/issue3158.scad
   ${TEST_SCAD_DIR}/3D/issues/issue835.scad
   ${TEST_SCAD_DIR}/3D/issues/issue911.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue913.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue904.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
   ${TEST_SCAD_DIR}/3D/misc/view-options-tests.scad
+  ${TEST_SCAD_DIR}/misc/include-tests.scad
+  ${TEST_SCAD_DIR}/misc/use-tests.scad
   ${TEST_SCAD_DIR}/misc/internal-cavity-polyhedron.scad
   ${TEST_SCAD_DIR}/misc/internal-cavity.scad
   ${TEST_SCAD_DIR}/misc/let-module-tests.scad
