@@ -51,6 +51,7 @@ public:
     return stream.str();
   }
   std::string name() const override { return "cube"; }
+  std::shared_ptr<AbstractNode> cloneOne() const override;
   const Geometry *createGeometry() const override;
 
   double x = 1, y = 1, z = 1;
@@ -74,6 +75,7 @@ public:
     return stream.str();
   }
   std::string name() const override { return "sphere"; }
+  std::shared_ptr<AbstractNode> cloneOne() const override;
   const Geometry *createGeometry() const override;
 
   double fn, fs, fa;
@@ -100,6 +102,7 @@ public:
     return stream.str();
   }
   std::string name() const override { return "cylinder"; }
+  std::shared_ptr<AbstractNode> cloneOne() const override;
   const Geometry *createGeometry() const override;
 
   double fn, fs, fa;
@@ -114,6 +117,7 @@ public:
   PolyhedronNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "polyhedron"; }
+  std::shared_ptr<AbstractNode> cloneOne() const override;
   const Geometry *createGeometry() const override;
 
   std::vector<point3d> points;
@@ -136,6 +140,7 @@ public:
     return stream.str();
   }
   std::string name() const override { return "square"; }
+  std::shared_ptr<AbstractNode> cloneOne() const override;
   const Geometry *createGeometry() const override;
 
   double x = 1, y = 1;
@@ -159,6 +164,7 @@ public:
     return stream.str();
   }
   std::string name() const override { return "circle"; }
+  std::shared_ptr<AbstractNode> cloneOne() const override;
   const Geometry *createGeometry() const override;
 
   double fn, fs, fa;
@@ -172,6 +178,7 @@ public:
   PolygonNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "polygon"; }
+  std::shared_ptr<AbstractNode> cloneOne() const override;
   const Geometry *createGeometry() const override;
 
   std::vector<point2d> points;
