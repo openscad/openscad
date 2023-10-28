@@ -83,6 +83,12 @@ void PlatformUtils::registerApplicationPath(const std::string& apppath)
   path_initialized = true;
 }
 
+void PlatformUtils::registerApplicationPathFromEnv()
+{
+  const char *home = getenv("OPENSCAD_HOME");
+  PlatformUtils::registerApplicationPath(home);//apppath)
+}
+
 std::string PlatformUtils::applicationPath()
 {
   if (!path_initialized) {

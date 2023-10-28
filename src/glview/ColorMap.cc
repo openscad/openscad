@@ -212,6 +212,11 @@ std::list<std::string> ColorMap::colorSchemeNames(bool guiOnly) const
   return colorSchemeNames;
 }
 
+std::list<std::string> ColorMap::getColorSchemeNames(bool guiOnly)
+{
+  return inst()->colorSchemeNames(guiOnly);
+}
+
 Color4f ColorMap::getColor(const ColorScheme& cs, const RenderColor rc)
 {
   if (cs.count(rc)) return cs.at(rc);

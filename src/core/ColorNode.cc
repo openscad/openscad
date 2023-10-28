@@ -31,6 +31,7 @@
 #include "Children.h"
 #include "Parameters.h"
 #include "printutils.h"
+#include "linalg.h"
 #include <cctype>
 #include <sstream>
 #include <iterator>
@@ -196,6 +197,19 @@ std::unordered_map<std::string, Color4f> webcolors{
   {"transparent", {0, 0, 0, 0}}
 };
 
+static std::list<std::string> webColorNames;
+
+std::list<std::string> ColorNode::getWebColors()
+{
+  if (webColorNames.empty())
+  {
+    for(auto kv : webcolors) {
+      webColorNames.push_back(kv.first);
+    }
+  }
+  return webColorNames;
+}
+
 // Parses hex colors according to: https://drafts.csswg.org/css-color/#typedef-hex-color.
 // If the input is invalid, returns boost::none.
 // Supports the following formats:
@@ -235,7 +249,40 @@ boost::optional<Color4f> parse_hex_color(const std::string& hex) {
   return rgba;
 }
 
-static std::shared_ptr<AbstractNode> builtin_color(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+
+ColorNode::ColorNode(Color4f *color) : ColorNode()
+{
+  this->color = *color;
+  for (size_t i = 0; i < 4; ++i) {
+    if (this->color[i] > 1 || this->color[i] < 0) {
+      LOG(message_group::Warning, "color() expects numbers between 0.0 and 1.0. Value of %1$.1f is out of range", this->color[i]);
+    }
+  }
+}
+
+ColorNode::ColorNode(int red, int green, int blue, int alpha) : ColorNode(new Color4f(red, green, blue, alpha)) {}
+
+ColorNode::ColorNode(float red, float green, float blue, float alpha) : ColorNode(new Color4f(red, green, blue, alpha)) {}
+
+ColorNode::ColorNode(std::string colorname, float alpha) : ColorNode()
+{
+  boost::algorithm::to_lower(colorname);
+  if (webcolors.find(colorname) != webcolors.end()) {
+    this->color = webcolors.at(colorname);
+  } else {
+    // Try parsing it as a hex color such as "#rrggbb".
+    const auto hexColor = parse_hex_color(colorname);
+    if (hexColor) {
+      this->color = *hexColor;
+    } else {
+      LOG(message_group::Warning, "Unable to parse color \"%1$s\"", colorname);
+      LOG("Please see https://en.wikipedia.org/wiki/Web_colors");
+    }
+  }
+  this->color[3] = alpha;
+}
+
+static std::shared_ptr<AbstractNode> builtin_color(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<ColorNode>(inst);
 

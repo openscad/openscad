@@ -5,6 +5,32 @@
 #include "exceptions.h"
 #include "printutils.h"
 
+void ModuleInstantiation::setDebug(std::string& modifier)
+{
+  clearDebug();
+  if(modifier == "!") this->tag_root = true;
+  else if(modifier == "#") this->tag_highlight = true;
+  else if(modifier == "%") this->tag_background = true;
+  else if(modifier == "*") this->tag_disabled = true;
+}
+
+void ModuleInstantiation::clearDebug()
+{
+  this->tag_root = false;
+  this->tag_highlight = false;
+  this->tag_background = false;
+  this->tag_disabled = false;
+}
+
+std::string ModuleInstantiation::getDebug() const
+{
+  if(this->tag_root) return "!";
+  if(this->tag_highlight) return "#";
+  if(this->tag_background) return "%";
+  if(this->tag_disabled) return "*";
+  return "";
+}
+
 void ModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
 {
   if (!inlined) stream << indent;
@@ -58,7 +84,7 @@ static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shar
   LOG(message_group::Trace, mod->location(), context->documentRoot(), "called by '%1$s'", mod->name());
 }
 
-std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_ptr<const Context>& context) const
+std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_ptr<const Context>& context) //const
 {
   boost::optional<InstantiableModule> module = context->lookup_module(this->name(), this->loc);
   if (!module) {

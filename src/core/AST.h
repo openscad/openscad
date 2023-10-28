@@ -28,8 +28,8 @@ public:
 
   [[nodiscard]] std::string toRelativeString(const std::string& docPath) const;
 
-  bool operator==(Location const& rhs);
-  bool operator!=(Location const& rhs);
+  bool operator==(Location const& rhs) const;
+  bool operator!=(Location const& rhs) const;
 
   static const Location NONE;
 private:

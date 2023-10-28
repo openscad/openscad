@@ -27,6 +27,9 @@
 #pragma once
 
 #include <boost/filesystem.hpp>
+#include "version.h"
+#include "SourceFile.h"
+#include "Tree.h"
 
 class SourceFile;
 
@@ -39,3 +42,24 @@ extern std::string commandline_commands;
 std::pair<std::string, std::string> customSyntax(const std::string& s);
 
 int launch_openscad(int argc, char **argv);
+
+SourceFile *parse_scad(std::string text, std::string filename);
+// Tree *eval_scad(SourceFile* root_file);
+std::shared_ptr<AbstractNode> eval_scad(SourceFile* root_file);
+std::shared_ptr<AbstractNode> find_root(std::shared_ptr<AbstractNode> absolute_root_node);
+int export_file(std::shared_ptr<AbstractNode> root_node, std::string output_file);
+
+void init_globals();
+void set_debug(bool flag);
+void set_trace_depth(int value);
+void set_quiet(bool flag);
+void set_hardwarnings(bool flag);
+void set_csglimit(unsigned int limit);
+void set_render_color_scheme(const std::string& color_scheme);
+
+bool get_debug();
+int get_trace_depth();
+bool get_quiet();
+bool get_hardwarnings();
+unsigned int get_csglimit();
+std::string get_render_color_scheme();

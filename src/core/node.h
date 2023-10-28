@@ -32,7 +32,7 @@ class AbstractNode : public BaseVisitable, public std::enable_shared_from_this<A
   static size_t idx_counter; // Node instantiation index
 public:
   VISITABLE();
-  AbstractNode(const ModuleInstantiation *mi);
+  AbstractNode(ModuleInstantiation *mi);
   virtual std::string toString() const;
   /*! The 'OpenSCAD name' of this node, defaults to classname, but can be
       overloaded to provide specialization for e.g. CSG nodes, primitive nodes etc.
@@ -51,11 +51,19 @@ public:
   }
   size_t index() const { return this->idx; }
 
+  void set_debug(std::string modifier) const;
+
+  void clear_debug();
+
+  bool has_debug();
+
+  std::string get_debug();
+
   static void resetIndexCounter() { idx_counter = 1; }
 
   // FIXME: Make protected
   std::vector<std::shared_ptr<AbstractNode>> children;
-  const ModuleInstantiation *modinst;
+  ModuleInstantiation *modinst;
 
   // progress_mark is a running number used for progress indication
   // FIXME: Make all progress handling external, put it in the traverser class?
@@ -72,7 +80,7 @@ class AbstractIntersectionNode : public AbstractNode
 {
 public:
   VISITABLE();
-  AbstractIntersectionNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
+  AbstractIntersectionNode(ModuleInstantiation *mi) : AbstractNode(mi) { }
   std::string toString() const override;
   std::string name() const override;
 };
@@ -81,7 +89,7 @@ class AbstractPolyNode : public AbstractNode
 {
 public:
   VISITABLE();
-  AbstractPolyNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
+  AbstractPolyNode(ModuleInstantiation *mi) : AbstractNode(mi) { }
 
   enum class render_mode_e {
     RENDER_CGAL,
@@ -97,7 +105,7 @@ class ListNode : public AbstractNode
 {
 public:
   VISITABLE();
-  ListNode(const ModuleInstantiation *mi) : AbstractNode(mi) { }
+  ListNode(ModuleInstantiation *mi) : AbstractNode(mi) { }
   std::string name() const override;
 };
 
@@ -109,7 +117,9 @@ class GroupNode : public AbstractNode
 {
 public:
   VISITABLE();
-  GroupNode(const ModuleInstantiation *mi, std::string name = "") : AbstractNode(mi), _name(std::move(name)) { }
+  GroupNode() : GroupNode(new ModuleInstantiation("group")) { }
+  GroupNode(std::string name) : GroupNode(new ModuleInstantiation("group"), name) { }
+  GroupNode(ModuleInstantiation *mi, std::string name = "") : AbstractNode(mi), _name(std::move(name)) { }
   std::string name() const override;
   std::string verbose_name() const override;
 private:
@@ -133,7 +143,7 @@ class LeafNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  LeafNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
+  LeafNode(ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
   virtual const class Geometry *createGeometry() const = 0;
 };
 

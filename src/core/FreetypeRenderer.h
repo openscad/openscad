@@ -104,12 +104,12 @@ public:
              << ", $fa = " << params.fa
              << ", $fs = " << params.fs;
     }
-private:
     double size, spacing, fn, fa, fs;
     unsigned int segments;
     std::string text, font, direction, language, script, halign, valign;
     Location loc = Location::NONE;
     std::string documentPath = "";
+private:
     static bool is_ignored_script(const hb_script_t script);
     hb_script_t detect_script(hb_glyph_info_t *glyph_info,
                               unsigned int glyph_count) const;

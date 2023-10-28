@@ -37,3 +37,13 @@ extern std::string openscad_versionnumber;
 extern std::string openscad_displayversionnumber;
 // Version used for detailed display
 extern std::string openscad_detailedversionnumber;
+
+static std::string detailed_version_number()
+{
+  return openscad_detailedversionnumber;
+}
+
+static std::string display_version_number()
+{
+  return openscad_displayversionnumber;
+}

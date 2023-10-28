@@ -78,6 +78,17 @@ void Camera::setProjection(ProjectionType type)
   this->projection = type;
 }
 
+void Camera::setProjection(std::string& proj)
+{
+  if (proj == "o" || proj == "ortho" || proj == "orthogonal") {
+    this->projection = Camera::ProjectionType::ORTHOGONAL;
+  } else if (proj == "p" || proj == "perspective") {
+    this->projection = Camera::ProjectionType::PERSPECTIVE;
+  } else {
+    LOG("projection needs to be 'o' or 'p' for ortho or perspective\n");
+  }
+}
+
 void Camera::resetView()
 {
   setVpr(55, 0, 25); // set in user space units

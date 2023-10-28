@@ -12,7 +12,11 @@ class RoofNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  RoofNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {}
+  RoofNode(int convexity);
+  RoofNode(std::string method);
+  RoofNode(std::string method, int convexity);
+  RoofNode() : RoofNode(new ModuleInstantiation("roof")) { method = "voronoi"; }
+  RoofNode(ModuleInstantiation *mi) : AbstractPolyNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "roof"; }
 

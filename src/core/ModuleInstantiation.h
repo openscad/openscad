@@ -16,12 +16,19 @@ public:
 
   virtual void print(std::ostream& stream, const std::string& indent, const bool inlined) const;
   void print(std::ostream& stream, const std::string& indent) const override { print(stream, indent, false); }
-  std::shared_ptr<AbstractNode> evaluate(const std::shared_ptr<const Context>& context) const;
+  std::shared_ptr<AbstractNode> evaluate(const std::shared_ptr<const Context>& context); //const;
 
   const std::string& name() const { return this->modname; }
   bool isBackground() const { return this->tag_background; }
   bool isHighlight() const { return this->tag_highlight; }
   bool isRoot() const { return this->tag_root; }
+  bool isDisabled() const { return this->tag_disabled; }
+  bool hasDebug() const {
+    return this->tag_background || this->tag_highlight || this->tag_root || this-> tag_disabled;
+  }
+  void setDebug(std::string& modifier);
+  void clearDebug();
+  std::string getDebug() const;
 
   AssignmentList arguments;
   LocalScope scope;
@@ -29,6 +36,7 @@ public:
   bool tag_root{false};
   bool tag_highlight{false};
   bool tag_background{false};
+  bool tag_disabled{false};
 protected:
   std::string modname;
 };

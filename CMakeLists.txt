@@ -394,6 +394,19 @@ message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 target_include_directories(OpenSCADLib SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(OpenSCADLib PRIVATE ${LIBXML2_LIBRARIES})
 
+if(ENABLE_LANG_RT)
+  find_package(Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
+  add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/submodules/nanobind)
+  nanobind_add_module(openscadpy ${CMAKE_CURRENT_SOURCE_DIR}/src/bindings/python/openscadpy.cc)
+  target_include_directories(openscadpy SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIR})
+  target_include_directories(openscadpy SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+  target_include_directories(openscadpy SYSTEM PRIVATE ${GLIB2_INCLUDE_DIRS})
+  target_include_directories(openscadpy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
+  target_include_directories(openscadpy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
+  target_compile_definitions(openscadpy PRIVATE "STACKSIZE=${STACKSIZE}")
+  target_link_libraries(openscadpy PRIVATE OpenSCADLib)
+endif()
+
 if(ENABLE_PYTHON)
   find_package(Python REQUIRED COMPONENTS Interpreter Development)
   find_package(CryptoPP REQUIRED)
@@ -522,6 +535,29 @@ target_include_directories(OpenSCAD PRIVATE
   "src/platform"
   "src/utils"
 )
+
+if(ENABLE_LANG_RT)
+target_include_directories(openscadpy PRIVATE 
+  "src"
+  "src/core"
+  "src/core/customizer"
+  "src/ext"
+  "src/ext/json"
+  "src/ext/lexertl/include"
+  "src/ext/libtess2/Include"
+  "src/ext"
+  "src/geometry"
+  "src/geometry/cgal"
+  "src/geometry/manifold"
+  "src/glview"
+  "src/glview/preview"
+  "src/glview/cgal"
+  "src/gui"
+  "src/io"
+  "src/platform"
+  "src/utils"
+)
+endif()
 
 
 FLEX_TARGET(openscad_lexer src/core/lexer.l ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.cxx DEFINES_FILE ${OPENSCAD_LIB_OUTPUT_DIR}/lexer.hxx COMPILE_FLAGS ${WINCOMPAT})
@@ -822,6 +858,7 @@ set(CORE_SOURCES
   src/utils/StackCheck.h
   src/utils/svg.cc
   src/utils/version_check.h
+  src/openscad_api.cc
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
   ${BISON_openscad_parser_OUTPUTS}

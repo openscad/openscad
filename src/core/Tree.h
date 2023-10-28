@@ -21,6 +21,10 @@ public:
   const std::shared_ptr<const AbstractNode>& root() const { return this->root_node; }
 
   const std::string getString(const AbstractNode& node, const std::string& indent) const;
+  // const std::string getString(const std::string& indent) const
+  // {
+  //   return getString(*this->root_node, indent);
+  // }
   const std::string getIdString(const AbstractNode& node) const;
   const std::string getDocumentPath() const;
 

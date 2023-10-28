@@ -37,7 +37,34 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-static std::shared_ptr<AbstractNode> builtin_text(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+TextNode::TextNode(std::string& text) : TextNode()
+{
+  this->params.set_text(text);
+  this->params.detect_properties();
+}
+
+TextNode::TextNode(std::string& text, int size) : TextNode()
+{
+  this->params.set_text(text);
+  this->params.set_size(size);
+  this->params.detect_properties();
+}
+
+TextNode::TextNode(std::string& text, int size, std::string& font) : TextNode()
+{
+  this->params.set_text(text);
+  this->params.set_size(size);
+  this->params.set_font(font);
+  this->params.detect_properties();
+}
+
+TextNode::TextNode(FreetypeRenderer::Params& params) : TextNode()
+{
+  this->params = params;
+  this->params.detect_properties();
+}
+
+static std::shared_ptr<AbstractNode> builtin_text(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),

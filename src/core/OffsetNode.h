@@ -7,7 +7,9 @@ class OffsetNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  OffsetNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
+  OffsetNode(std::string op, double delta, bool chamfer = false);
+  OffsetNode() : OffsetNode(new ModuleInstantiation("offset")) { }
+  OffsetNode(ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
   std::string toString() const override;
   std::string name() const override { return "offset"; }
 

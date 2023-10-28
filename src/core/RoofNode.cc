@@ -10,7 +10,26 @@
 #include "Children.h"
 #include "RoofNode.h"
 
-static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+
+RoofNode::RoofNode(std::string method) : RoofNode() 
+{
+  this->method = method;
+}
+
+
+RoofNode::RoofNode(int convexity) : RoofNode() 
+{
+  this->convexity = convexity;
+}
+
+
+RoofNode::RoofNode(std::string method, int convexity) : RoofNode() 
+{
+  this->method = method;
+  this->convexity = convexity;
+}
+
+static std::shared_ptr<AbstractNode> builtin_roof(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<RoofNode>(inst);
 

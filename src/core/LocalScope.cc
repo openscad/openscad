@@ -36,18 +36,41 @@ void LocalScope::addAssignment(const shared_ptr<Assignment>& assignment)
 
 void LocalScope::print(std::ostream& stream, const std::string& indent, const bool inlined) const
 {
+  stream << "<Scope>\n";
+  stream << "<Functions>\n";
   for (const auto& f : this->astFunctions) {
+    stream << "<Function>";
     f.second->print(stream, indent);
+    stream << "</Function>";
   }
+  stream << "</Functions>\n";
+  stream << "<Modules>\n";
   for (const auto& m : this->astModules) {
+    stream << "<Module>";
     m.second->print(stream, indent);
+    stream << "</Module>";
   }
+  stream << "</Modules>\n";
+  stream << "<Assignments>\n";
   for (const auto& assignment : this->assignments) {
+    stream << "<Assignment>";
     assignment->print(stream, indent);
+    stream << "</Assignment>";
   }
+  stream << "</Assignments>\n";
+  stream << "<ModuleInstantiations>\n";
   for (const auto& inst : this->moduleInstantiations) {
+    stream << "<ModuleInstantiation>";
     inst->print(stream, indent, inlined);
+    stream << "</ModuleInstantiation>";
   }
+  stream << "</ModuleInstantiations>\n";
+  stream << "</Scope>\n";
+}
+
+void LocalScope::printss() const {//const std::string& indent
+  std::ostream out(std::cout.rdbuf());
+  print(out, "--", false);
 }
 
 std::shared_ptr<AbstractNode> LocalScope::instantiateModules(const std::shared_ptr<const Context>& context, const std::shared_ptr<AbstractNode> &target) const

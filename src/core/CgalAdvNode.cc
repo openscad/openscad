@@ -35,7 +35,70 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-static std::shared_ptr<AbstractNode> builtin_minkowski(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<CgalAdvNode> CgalAdvNode::minkowski(int convexity)
+{
+  auto node = std::make_shared<CgalAdvNode>(CgalAdvType::MINKOWSKI);
+  node->convexity = convexity;
+  return node;
+}
+
+std::shared_ptr<CgalAdvNode> CgalAdvNode::hull()
+{
+  auto node = std::make_shared<CgalAdvNode>(CgalAdvType::HULL);
+  return node;
+}
+
+std::shared_ptr<CgalAdvNode> CgalAdvNode::fill()
+{
+  auto node = std::make_shared<CgalAdvNode>(CgalAdvType::FILL);
+  return node;
+}
+
+std::shared_ptr<CgalAdvNode> CgalAdvNode::resize(std::vector<double>& newsize)
+{
+  auto node = std::make_shared<CgalAdvNode>(CgalAdvType::RESIZE);
+  node->newsize << 0, 0, 0;
+  node->autosize << false, false, false;
+  return node;
+}
+
+std::shared_ptr<CgalAdvNode> CgalAdvNode::resize(std::vector<double>& newsize, bool autosize)
+{
+  auto node = std::make_shared<CgalAdvNode>(CgalAdvType::RESIZE);
+  node->newsize << 0, 0, 0;
+  node->autosize << autosize, autosize, autosize;
+  if (newsize.size() >= 1) node->newsize[0] = newsize[0];
+  if (newsize.size() >= 2) node->newsize[1] = newsize[1];
+  if (newsize.size() >= 3) node->newsize[2] = newsize[2];
+  return node;
+}
+
+std::shared_ptr<CgalAdvNode> CgalAdvNode::resize(std::vector<double>& newsize, bool autosize, int convexity)
+{
+  auto node = resize(newsize, autosize);
+  node->convexity = convexity;
+  return node;
+}
+
+std::shared_ptr<CgalAdvNode> CgalAdvNode::resize(std::vector<double>& newsize, std::vector<bool>& autosize)
+{
+  auto node = std::make_shared<CgalAdvNode>(CgalAdvType::RESIZE);
+  node->newsize << 0, 0, 0;
+  node->autosize << false, false, false;
+  if (autosize.size() >= 1) node->autosize[0] = autosize[0];
+  if (autosize.size() >= 2) node->autosize[1] = autosize[1];
+  if (autosize.size() >= 3) node->autosize[2] = autosize[2];
+  return node;
+}
+
+std::shared_ptr<CgalAdvNode> CgalAdvNode::resize(std::vector<double>& newsize, std::vector<bool>& autosize, int convexity)
+{
+  auto node = resize(newsize, autosize);
+  node->convexity = convexity;
+  return node;
+}
+
+static std::shared_ptr<AbstractNode> builtin_minkowski(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::MINKOWSKI);
 
@@ -45,7 +108,7 @@ static std::shared_ptr<AbstractNode> builtin_minkowski(const ModuleInstantiation
   return children.instantiate(node);
 }
 
-static std::shared_ptr<AbstractNode> builtin_hull(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_hull(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::HULL);
 
@@ -55,7 +118,7 @@ static std::shared_ptr<AbstractNode> builtin_hull(const ModuleInstantiation *ins
   return children.instantiate(node);
 }
 
-static std::shared_ptr<AbstractNode> builtin_fill(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_fill(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::FILL);
 
@@ -64,7 +127,7 @@ static std::shared_ptr<AbstractNode> builtin_fill(const ModuleInstantiation *ins
   return children.instantiate(node);
 }
 
-static std::shared_ptr<AbstractNode> builtin_resize(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_resize(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<CgalAdvNode>(inst, CgalAdvType::RESIZE);
 

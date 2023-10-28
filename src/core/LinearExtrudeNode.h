@@ -7,10 +7,23 @@ class LinearExtrudeNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  LinearExtrudeNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {
+  LinearExtrudeNode(double height);
+  LinearExtrudeNode(double height, bool center);
+  LinearExtrudeNode(double height, double twist);
+  LinearExtrudeNode(double height, int convexity, double twist);
+  LinearExtrudeNode(double height, int convexity, double twist, double scale);
+  LinearExtrudeNode(double height, int convexity, double twist, std::vector<double>& scale);
+  LinearExtrudeNode(double height, bool center, int convexity, double twist);
+  LinearExtrudeNode(double height, bool center, int convexity, double twist, double scale);
+  LinearExtrudeNode(double height, bool center, int convexity, double twist, std::vector<double>& scale);
+  LinearExtrudeNode() : LinearExtrudeNode(new ModuleInstantiation("linear_extrude")) {}
+  LinearExtrudeNode(ModuleInstantiation *mi) : AbstractPolyNode(mi) {
   }
   std::string toString() const override;
   std::string name() const override { return "linear_extrude"; }
+  void set_twist(double value);
+  void set_slices(unsigned int value);
+  void set_segments(unsigned int value);
 
   double height = 100.0;
   double origin_x = 0.0, origin_y = 0.0;

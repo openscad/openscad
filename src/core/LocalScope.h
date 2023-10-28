@@ -2,6 +2,7 @@
 
 #include "Assignment.h"
 #include <unordered_map>
+#include <iostream>
 
 class AbstractNode;
 class Context;
@@ -11,6 +12,7 @@ class LocalScope
 public:
   size_t numElements() const { return assignments.size() + moduleInstantiations.size(); }
   void print(std::ostream& stream, const std::string& indent, const bool inlined = false) const;
+  void printss() const;
   std::shared_ptr<AbstractNode> instantiateModules(const std::shared_ptr<const Context>& context, const std::shared_ptr<AbstractNode> &target) const;
   std::shared_ptr<AbstractNode> instantiateModules(const std::shared_ptr<const Context>& context, const std::shared_ptr<AbstractNode> &target, const std::vector<size_t>& indices) const;
   void addModuleInst(const shared_ptr<class ModuleInstantiation>& modinst);

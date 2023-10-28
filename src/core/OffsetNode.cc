@@ -36,7 +36,26 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-static std::shared_ptr<AbstractNode> builtin_offset(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+OffsetNode::OffsetNode(std::string op, double delta, bool chamfer) : OffsetNode() {
+  this->delta = 1;
+  this->chamfer = false;
+  this->join_type = ClipperLib::jtRound;
+  if (op == "radial" || op == "r")
+  {
+    this->delta = delta;
+  } else if (op == "offset" || op == "d")
+  {
+    this->delta = delta;
+    this->join_type = ClipperLib::jtMiter;
+    if (chamfer)
+    {
+      this->chamfer = true;
+      this->join_type = ClipperLib::jtSquare;
+    }
+  }
+}
+
+static std::shared_ptr<AbstractNode> builtin_offset(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<OffsetNode>(inst);
 

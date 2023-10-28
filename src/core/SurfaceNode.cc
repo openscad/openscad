@@ -52,7 +52,52 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 namespace fs = boost::filesystem;
 
 
-static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+SurfaceNode::SurfaceNode(std::string filename_str) : SurfaceNode()
+{
+  Filename filename = lookup_file(filename_str, this->modinst->location().filePath().parent_path().string(), "");
+  this->filename = filename;
+}
+
+SurfaceNode::SurfaceNode(std::string filename_str, int convexity) : SurfaceNode()
+{
+  Filename filename = lookup_file(filename_str, this->modinst->location().filePath().parent_path().string(), "");
+  this->filename = filename;
+  this->convexity = convexity;
+}
+
+SurfaceNode::SurfaceNode(std::string filename_str, bool center) : SurfaceNode()
+{
+  Filename filename = lookup_file(filename_str, this->modinst->location().filePath().parent_path().string(), "");
+  this->filename = filename;
+  this->center = center;
+}
+
+SurfaceNode::SurfaceNode(std::string filename_str, bool center, int convexity) : SurfaceNode()
+{
+  Filename filename = lookup_file(filename_str, this->modinst->location().filePath().parent_path().string(), "");
+  this->filename = filename;
+  this->center = center;
+  this->convexity = convexity;
+}
+
+SurfaceNode::SurfaceNode(std::string filename_str, bool center, bool invert) : SurfaceNode()
+{
+  Filename filename = lookup_file(filename_str, this->modinst->location().filePath().parent_path().string(), "");
+  this->filename = filename;
+  this->center = center;
+  this->invert = invert;
+} 
+
+SurfaceNode::SurfaceNode(std::string filename_str, bool center, bool invert, int convexity) : SurfaceNode()
+{
+  Filename filename = lookup_file(filename_str, this->modinst->location().filePath().parent_path().string(), "");
+  this->filename = filename;
+  this->center = center;
+  this->invert = invert;
+  this->convexity = convexity;
+}
+
+static std::shared_ptr<AbstractNode> builtin_surface(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),

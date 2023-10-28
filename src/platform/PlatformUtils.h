@@ -12,6 +12,7 @@ namespace PlatformUtils {
 extern const char *OPENSCAD_FOLDER_NAME;
 
 void registerApplicationPath(const std::string& applicationpath);
+void registerApplicationPathFromEnv();
 std::string applicationPath();
 
 /**

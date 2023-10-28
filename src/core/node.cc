@@ -33,7 +33,7 @@
 
 size_t AbstractNode::idx_counter;
 
-AbstractNode::AbstractNode(const ModuleInstantiation *mi) :
+AbstractNode::AbstractNode(ModuleInstantiation *mi) :
   modinst(mi),
   idx(idx_counter++)
 {
@@ -59,6 +59,26 @@ std::shared_ptr<const AbstractNode> AbstractNode::getNodeByID(int idx, std::dequ
     }
   }
   return nullptr;
+}
+
+void AbstractNode::set_debug(std::string modifier) const
+{
+  this->modinst->setDebug(modifier);
+}
+
+void AbstractNode::clear_debug()
+{
+  this->modinst->clearDebug();
+}
+
+bool AbstractNode::has_debug()
+{
+  return this->modinst->hasDebug();
+}
+
+std::string AbstractNode::get_debug()
+{
+  this->modinst->getDebug();
 }
 
 std::string GroupNode::name() const

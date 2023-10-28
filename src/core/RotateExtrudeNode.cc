@@ -41,7 +41,18 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+RotateExtrudeNode::RotateExtrudeNode(double angle) : RotateExtrudeNode()
+{
+  this->angle = angle;
+}
+
+RotateExtrudeNode::RotateExtrudeNode(double angle, int convexity) : RotateExtrudeNode()
+{
+  this->angle = angle;
+  this->convexity = convexity;
+}
+
+static std::shared_ptr<AbstractNode> builtin_rotate_extrude(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<RotateExtrudeNode>(inst);
 

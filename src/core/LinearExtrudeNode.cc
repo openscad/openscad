@@ -43,6 +43,116 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+LinearExtrudeNode::LinearExtrudeNode(double height) : LinearExtrudeNode()
+{
+  this->height = height;
+}
+
+LinearExtrudeNode::LinearExtrudeNode(double height, bool center) : LinearExtrudeNode()
+{
+  this->height = height;
+  this->center = center;
+}
+
+
+LinearExtrudeNode::LinearExtrudeNode(double height, double twist) : LinearExtrudeNode()
+{
+  this->height = height;
+  this->set_twist(twist);
+}
+
+
+LinearExtrudeNode::LinearExtrudeNode(double height, int convexity, double twist) : LinearExtrudeNode()
+{
+  this->height = height;
+  this->convexity = convexity;
+  this->set_twist(twist);
+}
+
+LinearExtrudeNode::LinearExtrudeNode(double height, int convexity, double twist, double scale) : LinearExtrudeNode()
+{
+  this->height = height;
+  this->convexity = convexity;
+  this->set_twist(twist);
+  if (std::isfinite(scale))
+  {
+    this->scale_x = scale;
+    this->scale_y = scale;
+  }
+}
+
+LinearExtrudeNode::LinearExtrudeNode(double height, int convexity, double twist, std::vector<double>& scale) : LinearExtrudeNode()
+{
+  this->height = height;
+  this->convexity = convexity;
+  this->set_twist(twist);
+  auto size = scale.size();
+  if (size >= 2 && std::isfinite(scale[0]) && std::isfinite(scale[1])) 
+  {
+    this->scale_y = scale[1];
+    this->scale_x = scale[0];
+  }
+}
+
+LinearExtrudeNode::LinearExtrudeNode(double height, bool center, int convexity, double twist) : LinearExtrudeNode()
+{
+  this->height = height;
+  this->center = center;
+  this->convexity = convexity;
+  this->set_twist(twist);
+}
+
+LinearExtrudeNode::LinearExtrudeNode(double height, bool center, int convexity, double twist, double scale) : LinearExtrudeNode()
+{
+  this->height = height;
+  this->center = center;
+  this->convexity = convexity;
+  this->set_twist(twist);
+  if (std::isfinite(scale))
+  {
+    this->scale_x = scale;
+    this->scale_y = scale;
+  }
+}
+
+LinearExtrudeNode::LinearExtrudeNode(double height, bool center, int convexity, double twist, std::vector<double>& scale) : LinearExtrudeNode()
+{
+  this->height = height;
+  this->center = center;
+  this->convexity = convexity;
+  this->set_twist(twist);
+  auto size = scale.size();
+  if (size >= 2 && std::isfinite(scale[0]) && std::isfinite(scale[1])) 
+  {
+    this->scale_y = scale[1];
+    this->scale_x = scale[0];
+  }
+}
+
+void LinearExtrudeNode::set_twist(double value)
+{
+  if (value != 0.0) {
+    this->twist = value;
+    this->has_twist = true;
+  }
+}
+
+void LinearExtrudeNode::set_slices(unsigned int value)
+{
+  if (value >= 1u) {
+    this->slices = value;
+    this->has_slices = true;
+  }
+}
+
+void LinearExtrudeNode::set_segments(unsigned int value)
+{
+  if (value >= 0u) {
+    this->segments = value;
+    this->has_segments = true;
+  }
+}
+
 /*
  * Historic linear_extrude argument parsing is quirky. To remain bug-compatible,
  * try two different parses depending on conditions.
@@ -70,7 +180,7 @@ Parameters parse_parameters(Arguments arguments, const Location& location)
                            );
 }
 
-static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_linear_extrude(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<LinearExtrudeNode>(inst);
 

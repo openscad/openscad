@@ -47,7 +47,173 @@ enum class transform_type_e {
   MULTMATRIX
 };
 
-std::shared_ptr<AbstractNode> builtin_scale(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<TransformNode> TransformNode::scale(std::vector<double>& vec)
+{
+  auto node = std::make_shared<TransformNode>("scale");
+  Vector3d scalevec(1, 1, 1);
+  auto size = vec.size();
+  if (size >= 1) scalevec[0] = vec[0];
+  if (size >= 2) scalevec[1] = vec[1];
+  if (size >= 3) scalevec[2] = vec[2];
+  if (OpenSCAD::rangeCheck) {
+    if (scalevec[0] == 0 || scalevec[1] == 0 || scalevec[2] == 0 || !std::isfinite(scalevec[0])|| !std::isfinite(scalevec[1])|| !std::isfinite(scalevec[2])) {
+      LOG(message_group::Warning, "scale(%1$s, %2$s, %3$s)", scalevec[0], scalevec[1], scalevec[2]);
+    }
+  }
+  node->matrix.scale(scalevec);
+  return node;
+}
+
+
+std::shared_ptr<TransformNode> TransformNode::scale(double num)
+{
+  std::vector<double> vec = {num, num, num};
+  auto node = scale(vec);
+  return node;
+}
+
+std::shared_ptr<TransformNode> TransformNode::translate(std::vector<double>& vec)
+{
+  auto node = std::make_shared<TransformNode>("translate");
+  Vector3d translatevec(1, 1, 1);
+  auto size = vec.size();
+  if (size >= 1) translatevec[0] = vec[0];
+  if (size >= 2) translatevec[1] = vec[1];
+  if (size >= 3) translatevec[2] = vec[2];
+  if (OpenSCAD::rangeCheck) {
+    if (translatevec[0] == 0 || translatevec[1] == 0 || translatevec[2] == 0 || !std::isfinite(translatevec[0])|| !std::isfinite(translatevec[1])|| !std::isfinite(translatevec[2])) {
+      LOG(message_group::Warning, "scale(%1$s, %2$s, %3$s)", translatevec[0], translatevec[1], translatevec[2]);
+    }
+  }
+  node->matrix.translate(translatevec);
+  return node;
+}
+
+std::shared_ptr<TransformNode> TransformNode::rotate(double angle)
+{
+  auto node = std::make_shared<TransformNode>("rotate");
+  bool valid = !std::isinf(angle) && !std::isnan(angle);
+  if (!valid)
+  {
+    LOG(message_group::Warning, "Problem converting rotate(a=%1$s) parameter", angle);
+  }
+  Vector3d v(0, 0, 1);
+  node->matrix.rotate(angle_axis_degrees(angle, v));
+  return node;
+}
+
+std::shared_ptr<TransformNode> TransformNode::rotate(double angle, std::vector<double>& vec)
+{
+  auto node = std::make_shared<TransformNode>("rotate");
+  bool valid = !std::isinf(angle) && !std::isnan(angle);
+  if (!valid)
+  {
+    LOG(message_group::Warning, "Problem converting rotate(a=%1$s) parameter", angle);
+  }
+  if(vec.size() < 2)
+  {
+    LOG(message_group::Warning, "Problem converting rotate(..., v=[%1$s, %2$s, %3$s]) parameter", vec[0], vec[1], vec[2]);
+  }
+  Vector3d v(0, 0, 1);
+  auto size = vec.size();
+  if (size >= 1) v[0] = vec[0];
+  if (size >= 2) v[1] = vec[1];
+  if (size >= 3) v[2] = vec[2];
+  node->matrix.rotate(angle_axis_degrees(angle, v));
+  return node;
+}
+
+std::shared_ptr<TransformNode> TransformNode::rotate(std::vector<double>& angle)
+{
+  auto node = std::make_shared<TransformNode>("rotate");
+  double sx = 0, sy = 0, sz = 0;
+  double cx = 1, cy = 1, cz = 1;
+  double a = 0.0;
+  bool ok = true;
+  switch (angle.size()) {
+  default:
+    ok &= false;
+    [[fallthrough]];
+  case 3:
+    a = angle[2];
+    ok &= !std::isinf(a) && !std::isnan(a);
+    sz = sin_degrees(a);
+    cz = cos_degrees(a);
+    [[fallthrough]];
+  case 2:
+    a = angle[1];
+    ok &= !std::isinf(a) && !std::isnan(a);
+    sy = sin_degrees(a);
+    cy = cos_degrees(a);
+    [[fallthrough]];
+  case 1:
+    a = angle[0];
+    ok &= !std::isinf(a) && !std::isnan(a);
+    sx = sin_degrees(a);
+    cx = cos_degrees(a);
+    break;
+  case 0:
+    break;
+  }
+  if (!ok) {
+    LOG(message_group::Warning, "Problem converting rotate(a=[%1$s, %2$s, %3$s]) parameter", angle[0], angle[1], angle[2]);
+  }
+  Matrix3d M;
+  M << cy * cz,  cz *sx *sy - cx * sz,   cx *cz *sy + sx * sz,
+    cy *sz,  cx *cz + sx * sy * sz,  -cz * sx + cx * sy * sz,
+    -sy,       cy *sx,                  cx *cy;
+  node->matrix.rotate(M);
+  return node;
+}
+
+std::shared_ptr<TransformNode> TransformNode::mirror(std::vector<double>& vec)
+{
+  auto node = std::make_shared<TransformNode>("mirror");
+  double x = 1.0, y = 0.0, z = 0.0;
+  auto size = vec.size();
+  if (size >= 1) x = vec[0];
+  if (size >= 2) y = vec[1];
+  if (size >= 3) z = vec[2];
+  if (size < 2)
+  {
+    LOG(message_group::Warning, "Unable to convert mirror(%1$s, %2$s, %3$s) parameter to a vec3 or vec2 of numbers", x, y, z);
+  }
+
+  if (x != 0.0 || y != 0.0 || z != 0.0) {
+    // skip using sqrt to normalize the vector since each element of matrix contributes it with two multiplied terms
+    // instead just divide directly within each matrix element
+    // simplified calculation leads to less float errors
+    double a = x * x + y * y + z * z;
+
+    Matrix4d m;
+    m << 1 - 2 * x * x / a, -2 * y * x / a, -2 * z * x / a, 0,
+      -2 * x * y / a, 1 - 2 * y * y / a, -2 * z * y / a, 0,
+      -2 * x * z / a, -2 * y * z / a, 1 - 2 * z * z / a, 0,
+      0, 0, 0, 1;
+    node->matrix = m;
+  }
+  // return children.instantiate(node);
+  return node;
+}
+
+std::shared_ptr<TransformNode> TransformNode::multmatrix(std::vector<std::vector<double>>& mat)
+{
+  auto node = std::make_shared<TransformNode>("multmatrix");
+  Matrix4d rawmatrix{Matrix4d::Identity()};
+  // const auto& mat = parameters["m"].toVector();
+  for (size_t row_i = 0; row_i < std::min(mat.size(), size_t(4)); ++row_i) {
+    const auto& row = mat[row_i];
+    for (size_t col_i = 0; col_i < std::min(row.size(), size_t(4)); ++col_i) {
+      rawmatrix(row_i, col_i) = row[col_i];
+    }
+  }
+  double w = rawmatrix(3, 3);
+  if (w != 1.0) node->matrix = rawmatrix / w;
+  else node->matrix = rawmatrix;
+  return node;
+}
+
+std::shared_ptr<AbstractNode> builtin_scale(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "scale");
 
@@ -72,7 +238,7 @@ std::shared_ptr<AbstractNode> builtin_scale(const ModuleInstantiation *inst, Arg
   return children.instantiate(node);
 }
 
-std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_rotate(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "rotate");
 
@@ -151,7 +317,7 @@ std::shared_ptr<AbstractNode> builtin_rotate(const ModuleInstantiation *inst, Ar
   return children.instantiate(node);
 }
 
-std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_mirror(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "mirror");
 
@@ -182,7 +348,7 @@ std::shared_ptr<AbstractNode> builtin_mirror(const ModuleInstantiation *inst, Ar
   return children.instantiate(node);
 }
 
-std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_translate(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "translate");
 
@@ -200,7 +366,7 @@ std::shared_ptr<AbstractNode> builtin_translate(const ModuleInstantiation *inst,
   return children.instantiate(node);
 }
 
-std::shared_ptr<AbstractNode> builtin_multmatrix(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+std::shared_ptr<AbstractNode> builtin_multmatrix(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<TransformNode>(inst, "multmatrix");
 
@@ -242,7 +408,7 @@ std::string TransformNode::toString() const
   return stream.str();
 }
 
-TransformNode::TransformNode(const ModuleInstantiation *mi, std::string verbose_name) :
+TransformNode::TransformNode(ModuleInstantiation *mi, std::string verbose_name) :
   AbstractNode(mi),
   matrix(Transform3d::Identity()),
   _name(std::move(verbose_name))

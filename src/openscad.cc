@@ -340,6 +340,169 @@ struct RenderVariables
   double time;
 };
 
+SourceFile *parse_scad(std::string text, std::string filename)
+{
+  text += "\n\x03\n" + commandline_commands;
+
+  SourceFile *root_file = nullptr;
+  if (!parse(root_file, text, filename, filename, false)) {
+    delete root_file; // parse failed
+    root_file = nullptr;
+  }
+  if (!root_file) {
+    LOG("Can't parse file '%1$s'!\n", filename);
+    return root_file;
+  }
+
+  // add parameter to AST
+  CommentParser::collectParameters(text.c_str(), root_file);
+  // if (!cmd.parameterFile.empty() && !cmd.setName.empty()) {
+  //   ParameterObjects parameters = ParameterObjects::fromSourceFile(root_file);
+  //   ParameterSets sets;
+  //   sets.readFile(cmd.parameterFile);
+  //   for (const auto& set : sets) {
+  //     if (set.name() == cmd.setName) {
+  //       parameters.importValues(set);
+  //       parameters.apply(root_file);
+  //       break;
+  //     }
+  //   }
+  // }
+
+  root_file->handleDependencies();
+  return root_file;
+}
+
+// Tree* eval_scad(SourceFile* root_file)
+std::shared_ptr<AbstractNode> eval_scad(SourceFile* root_file)
+{
+  auto filename = root_file->getFilename();
+  auto fpath = fs::absolute(fs::path(filename));
+  auto fparent = fpath.parent_path();
+  EvaluationSession session{fparent.string()};
+  ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
+  builtin_context->set_variable("$fn", Value(128));
+#ifdef DEBUG
+  PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
+#endif
+
+  AbstractNode::resetIndexCounter();
+  std::shared_ptr<const FileContext> file_context;
+  std::shared_ptr<AbstractNode> absolute_root_node;
+  absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
+  return absolute_root_node;
+}
+
+// std::shared_ptr
+
+std::shared_ptr<AbstractNode> find_root(std::shared_ptr<AbstractNode> absolute_root_node)
+{
+  // Do we have an explicit root node (! modifier)?
+  std::shared_ptr<AbstractNode> root_node;
+  const Location *nextLocation = nullptr;
+  if (!(root_node = find_root_tag(absolute_root_node, &nextLocation))) {
+    root_node = absolute_root_node;
+  }
+  if (nextLocation) {
+    LOG(message_group::Warning, *nextLocation, "", "More than one Root Modifier (!)");
+  }
+  return root_node;
+}
+
+int export_file(std::shared_ptr<AbstractNode> root_node, std::string output_file)
+{
+  auto filename_str = fs::path(output_file).generic_string();
+  ViewOptions viewOptions;
+  bool is_stdout = false;
+  FileFormat curFormat{FileFormat::PNG};
+  Tree tree(root_node, "");//fparent.string()
+  Camera camera;
+#ifdef ENABLE_CGAL
+  // start measuring render time
+  RenderStatistic renderStatistic;
+  GeometryEvaluator geomevaluator(tree);
+  unique_ptr<OffscreenView> glview;
+  shared_ptr<const Geometry> root_geom;
+  if ((curFormat == FileFormat::ECHO || curFormat == FileFormat::PNG) && (viewOptions.renderer == RenderType::OPENCSG || viewOptions.renderer == RenderType::THROWNTOGETHER)) {
+    // OpenCSG or throwntogether png -> just render a preview
+    glview = prepare_preview(tree, viewOptions, camera);
+    if (!glview) return 1;
+  } else {
+    // Force creation of CGAL objects (for testing)
+    root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+    if (root_geom) {
+      if (viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
+        if (auto geomlist = dynamic_pointer_cast<const GeometryList>(root_geom)) {
+          auto flatlist = geomlist->flatten();
+          for (auto& child : flatlist) {
+            if (child.second->getDimension() == 3) {
+              child.second = CGALUtils::getNefPolyhedronFromGeometry(child.second);
+            }
+          }
+          root_geom.reset(new GeometryList(flatlist));
+        } else {
+          root_geom = CGALUtils::getNefPolyhedronFromGeometry(root_geom);
+        }
+        LOG("Converted to Nef polyhedron");
+      }
+    } else {
+      root_geom.reset(new CGAL_Nef_polyhedron());
+    }
+  }
+  if (curFormat == FileFormat::ASCIISTL ||
+      curFormat == FileFormat::STL ||
+      curFormat == FileFormat::OBJ ||
+      curFormat == FileFormat::OFF ||
+      curFormat == FileFormat::WRL ||
+      curFormat == FileFormat::AMF ||
+      curFormat == FileFormat::_3MF ||
+      curFormat == FileFormat::NEFDBG ||
+      curFormat == FileFormat::NEF3) {
+    if (!checkAndExport(root_geom, 3, curFormat, is_stdout, filename_str)) {
+      return 1;
+    }
+  }
+
+  if (curFormat == FileFormat::DXF || curFormat == FileFormat::SVG || curFormat == FileFormat::PDF) {
+    if (!checkAndExport(root_geom, 2, curFormat, is_stdout, filename_str)) {
+      return 1;
+    }
+  }
+
+  if (curFormat == FileFormat::PNG) {
+    bool success = true;
+    bool wrote = with_output(is_stdout, filename_str, [&success, &root_geom, &viewOptions, &camera, &glview](std::ostream& stream) { //&cmd,
+      if (viewOptions.renderer == RenderType::CGAL || viewOptions.renderer == RenderType::GEOMETRY) {
+        success = export_png(root_geom, viewOptions, camera, stream);
+      } else {
+        success = export_png(*glview, stream);
+      }
+    }, std::ios::out | std::ios::binary);
+    if (!success || !wrote) {
+      return 1;
+    }
+  }
+  // renderStatistic.printAll(root_geom, camera, summaryOptions, cmd.summaryFile);
+#else
+    LOG("OpenSCAD has been compiled without CGAL support!\n");
+    return 1;
+#endif // ifdef ENABLE_CGAL
+  return 0;
+}
+  // Camera camera = cmd.camera;
+  // if (file_context) {
+  //   camera.updateView(file_context, true);
+  // }
+
+  // // restore CWD after module instantiation finished
+  // fs::current_path(cmd.original_path);
+
+  //   Tree tree(root_node, fparent.string());
+  //   // return root_node;
+  //   return &tree;
+  // }
+
+
 int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file);
 
 int cmdline(const CommandLine& cmd)
@@ -910,6 +1073,87 @@ bool flagConvert(const std::string& str){
   }
   throw std::runtime_error("");
   return false;
+}
+
+void init_globals() {
+#if defined(ENABLE_CGAL) && defined(USE_MIMALLOC)
+// call init_mimalloc before any GMP variables are initialized. (defined in src/openscad_mimalloc.h)
+  init_mimalloc();
+#endif
+  StackCheck::inst();
+  PlatformUtils::registerApplicationPathFromEnv();
+  PlatformUtils::ensureStdIO();
+#ifdef ENABLE_CGAL
+  // Always throw exceptions from CGAL, so we can catch instead of crashing on bad geometry.
+  CGAL::set_error_behaviour(CGAL::THROW_EXCEPTION);
+  CGAL::set_warning_behaviour(CGAL::THROW_EXCEPTION);
+#endif
+  Builtins::instance()->initialize();
+  parser_init();
+  localization_init();
+}
+
+void set_debug(bool flag)
+{
+  if(flag)
+    OpenSCAD::debug = "all";
+  else
+    OpenSCAD::debug = "";
+}
+
+bool get_debug()
+{
+  return !OpenSCAD::debug.empty();
+}
+
+void set_trace_depth(int value)
+{
+  OpenSCAD::traceDepth = value;
+}
+
+int get_trace_depth()
+{
+  return OpenSCAD::traceDepth;
+}
+
+void set_quiet(bool flag)
+{
+  OpenSCAD::quiet = flag;
+}
+
+bool get_quiet()
+{
+  return OpenSCAD::quiet;
+}
+
+void set_hardwarnings(bool flag)
+{
+  OpenSCAD::hardwarnings = flag;
+}
+
+bool get_hardwarnings()
+{
+  return OpenSCAD::hardwarnings;
+}
+
+void set_csglimit(unsigned int limit)
+{
+  RenderSettings::inst()->openCSGTermLimit = limit;
+}
+
+unsigned int get_csglimit()
+{
+  return RenderSettings::inst()->openCSGTermLimit;
+}
+
+void set_render_color_scheme(const std::string& color_scheme)
+{
+  set_render_color_scheme(color_scheme, false);
+}
+
+std::string get_render_color_scheme()
+{
+  return RenderSettings::inst()->colorscheme;
 }
 
 // OpenSCAD

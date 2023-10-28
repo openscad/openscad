@@ -56,7 +56,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 extern PolySet *import_amf(const std::string&, const Location& loc);
 extern Geometry *import_3mf(const std::string&, const Location& loc);
 
-static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children, ImportType type)
+static std::shared_ptr<AbstractNode> do_import(ModuleInstantiation *inst, Arguments arguments, const Children& children, ImportType type)
 {
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
@@ -154,16 +154,16 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   return node;
 }
 
-static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_import(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 { return do_import(inst, std::move(arguments), children, ImportType::UNKNOWN); }
 
-static std::shared_ptr<AbstractNode> builtin_import_stl(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_import_stl(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 { return do_import(inst, std::move(arguments), children, ImportType::STL); }
 
-static std::shared_ptr<AbstractNode> builtin_import_off(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_import_off(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 { return do_import(inst, std::move(arguments), children, ImportType::OFF); }
 
-static std::shared_ptr<AbstractNode> builtin_import_dxf(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_import_dxf(ModuleInstantiation *inst, Arguments arguments, const Children& children)
 { return do_import(inst, std::move(arguments), children, ImportType::DXF); }
 
 

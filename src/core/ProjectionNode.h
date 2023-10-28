@@ -7,7 +7,9 @@ class ProjectionNode : public AbstractPolyNode
 {
 public:
   VISITABLE();
-  ProjectionNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
+  ProjectionNode() : ProjectionNode(new ModuleInstantiation("projection")) { }
+  ProjectionNode(ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
+  ProjectionNode(bool cut) : ProjectionNode() { this->cut_mode = cut; }
   std::string toString() const override;
   std::string name() const override { return "projection"; }
 
