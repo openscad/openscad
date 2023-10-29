@@ -12,8 +12,47 @@
 #include "ColorNode.h"
 #include "OffsetNode.h"
 #include "SourceFile.h"
+#include "handle_dep.h"
+#include "BuiltinContext.h"
 
-OpenSCADContext::OpenSCADContext(std::string filename)
+#include <fstream>
+
+std::shared_ptr<AbstractNode> eval_source_file(SourceFile* root_file)
+{
+  auto filename = root_file->getFilename();
+  auto fpath = fs::absolute(fs::path(filename));
+  auto fparent = fpath.parent_path();
+  EvaluationSession session{fparent.string()};
+  ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
+// #ifdef DEBUG
+  PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
+// #endif
+
+  AbstractNode::resetIndexCounter();
+  std::shared_ptr<const FileContext> file_context;
+  std::shared_ptr<AbstractNode> absolute_root_node;
+  absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
+  return absolute_root_node;
+}
+
+void merge_root_nodes(std::shared_ptr<AbstractNode> first, std::shared_ptr<AbstractNode> second)
+{
+  if (first == nullptr || first->children.empty()) 
+  {
+    first = second;
+  } else if (!second->children.empty())
+  {
+    first->children.insert(first->children.end(), second->children.begin(), second->children.end());
+  }
+}
+
+OpenSCADContext::OpenSCADContext()
+{
+  camera = std::make_shared<Camera>();
+  root_node = std::make_shared<RootNode>();
+}
+
+OpenSCADContext::OpenSCADContext(std::string filename) : OpenSCADContext()
 {
   fs::path filepath;
   try {
@@ -27,9 +66,96 @@ OpenSCADContext::OpenSCADContext(std::string filename)
   }
 }
 
+std::shared_ptr<OpenSCADContext> OpenSCADContext::from_scad_file(std::string filename)
+{
+  std::string text;
+  std::ifstream ifs(filename);
+  if (!ifs.is_open()) {
+    LOG("Can't open input file '%1$s'!\n", filename);
+    return nullptr;
+  }
+  handle_dep(filename);
+  text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>()); 
+  text += "\n\x03\n"; // + commandline_commands;
+
+  SourceFile *root_file = nullptr;
+  if (!parse(root_file, text, filename, filename, false)) {
+    delete root_file; // parse failed
+    root_file = nullptr;
+  }
+  if (!root_file) {
+    LOG("Can't parse file '%1$s'!\n", filename);
+    return nullptr;
+  } 
+
+  std::shared_ptr<SourceFile> shared_src_ptr(root_file);
+  auto context = std::make_shared<OpenSCADContext>();
+  context->source_file = shared_src_ptr;
+
+  // add parameter to AST
+  // CommentParser::collectParameters(text.c_str(), root_file);
+  // if (!cmd.parameterFile.empty() && !cmd.setName.empty()) {
+  //   ParameterObjects parameters = ParameterObjects::fromSourceFile(root_file);
+  //   ParameterSets sets;
+  //   sets.readFile(cmd.parameterFile);
+  //   for (const auto& set : sets) {
+  //     if (set.name() == cmd.setName) {
+  //       parameters.importValues(set);
+  //       parameters.apply(root_file);
+  //       break;
+  //     }
+  //   }
+  // }
+
+  root_file->handleDependencies();
+  context->root_node = eval_source_file(root_file);
+  return context;
+}
+
+std::shared_ptr<OpenSCADContext> OpenSCADContext::export_file(std::string output_file)
+{
+  return this->shared_from_this();
+}
+
+// std::shared_ptr<OpenSCADContext> OpenSCADContext::export_file(std::shared_ptr<AbstractNode> root_node, std::string output_file)
+// {
+//   return this->shared_from_this();
+// }
+
 std::shared_ptr<OpenSCADContext> OpenSCADContext::use_file(std::string filename)
 {
   this->source_file->registerUse(filename, Location::NONE);
+  return this->shared_from_this();
+}
+
+std::shared_ptr<OpenSCADContext> OpenSCADContext::append_scad(std::string text, std::string filename)
+{
+  text += "\n\x03\n";// + commandline_commands;
+
+  SourceFile *root_file = nullptr;
+  if (!parse(root_file, text, filename, filename, false)) {
+    delete root_file; // parse failed
+    root_file = nullptr;
+  }
+  if (!root_file) {
+    LOG("Can't parse file '%1$s'!\n", filename);
+    return nullptr;
+  }
+  root_file->handleDependencies();
+  auto scad_root_node = eval_source_file(root_file);
+  merge_root_nodes(this->root_node, scad_root_node);
+  return this->shared_from_this();
+}
+
+std::shared_ptr<OpenSCADContext> OpenSCADContext::append(std::shared_ptr<Primitive2D> primitive)
+{
+  this->root_node->children.emplace_back(primitive->transformations);
+  return this->shared_from_this();
+}
+
+std::shared_ptr<OpenSCADContext> OpenSCADContext::append(std::shared_ptr<Primitive3D> primitive)
+{
+  this->root_node->children.emplace_back(primitive->transformations);
   return this->shared_from_this();
 }
 
@@ -48,12 +174,12 @@ std::shared_ptr<T> update_(T* primitive, std::shared_ptr<S> node)
   primitive->transformations = node;
   return primitive->get_shared_ptr();
 }
-template<typename T>
-std::shared_ptr<T> color(T *primitive, Color4f *color)
-{
-  auto node = std::make_shared<ColorNode>(color);
-  return update_<T>(primitive, node);
-}
+// template<typename T>
+// std::shared_ptr<T> color(T *primitive, Color4f *color)
+// {
+//   auto node = std::make_shared<ColorNode>(color);
+//   return update_<T>(primitive, node);
+// }
 template<typename T>
 std::shared_ptr<T> color(T *primitive, std::string colorname)
 {
@@ -483,10 +609,10 @@ std::shared_ptr<Primitive2D> Primitive2D::offset(std::string op, double delta, b
   return update_<Primitive2D>(this, node);
 }
 
-std::shared_ptr<Primitive2D> Primitive2D::color(Color4f *color) 
-{ 
-  return ::color<Primitive2D>(this, color); 
-}
+// std::shared_ptr<Primitive2D> Primitive2D::color(Color4f *color) 
+// { 
+//   return ::color<Primitive2D>(this, color); 
+// }
 std::shared_ptr<Primitive2D> Primitive2D::color(std::string color)
 { 
   return ::color<Primitive2D>(this, color); 
@@ -595,10 +721,10 @@ std::shared_ptr<Primitive2D> Primitive2D::resize(std::vector<double>& newsize, s
   return ::resize<Primitive2D>(this, newsize, autosize, convexity);
 }
 
-std::shared_ptr<Primitive3D> Primitive3D::color(Color4f *color) 
-{ 
-  return ::color<Primitive3D>(this, color); 
-}
+// std::shared_ptr<Primitive3D> Primitive3D::color(Color4f *color) 
+// { 
+//   return ::color<Primitive3D>(this, color); 
+// }
 std::shared_ptr<Primitive3D> Primitive3D::color(std::string color)
 { 
   return ::color<Primitive3D>(this, color); 

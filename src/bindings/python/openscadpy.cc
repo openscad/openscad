@@ -101,11 +101,12 @@ NB_MODULE(openscadpy, m) {
 
   m.def("get_web_colors", &ColorNode::getWebColors, "Returns SVG Colors.");
 
-  // m.def("parse_scad", &parse_scad, "text"_a, "filename"_a = "untitled.scad", "Parse a scad text.");
-  // m.def("eval_scad", &eval_scad, "root_file"_a, "Evaluate a scad text.");
-  // m.def("find_root", &find_root, "node"_a, "Find root from tree.");
-  // m.def("export", &export_file, "root_node"_a, "output_file"_a, "Export png.");
+  m.def("parse_scad", &parse_scad, "text"_a, "filename"_a = "untitled.scad", "Parse a scad text.");
+  m.def("eval_scad", &eval_scad, "root_file"_a, "Evaluate a scad text.");
+  m.def("find_root", &find_root, "node"_a, "Find root from tree.");
+  m.def("export", &export_file, "root_node"_a, "output_file"_a, "Export png.");
   m.def("context", &OpenSCADContext::context, "filename"_a, "Create OpenSCADContext.");
+  m.def("context_from_scad_file", &OpenSCADContext::from_scad_file, "filename"_a, "Create OpenSCADContext from a file.");
 
   nb::enum_<OpenSCADOperator>(m, "Operator")
     .value("UNION", OpenSCADOperator::UNION)
@@ -119,8 +120,14 @@ NB_MODULE(openscadpy, m) {
 
   nb::class_<OpenSCADContext>(m, "Context")
     // .def(nb::init<std::string>())
-    .def("use_file", &OpenSCADContext::use_file, "filename"_a)
-    .def_rw("source_file", &OpenSCADContext::source_file); //OpenSCAD
+    .def("use_file", &OpenSCADContext::use_file, "filename"_a, "Use file.")
+    .def("export_file", &OpenSCADContext::export_file, "output_file"_a, "Export file.")
+    .def("append_scad", &OpenSCADContext::append_scad, "scad_text"_a, "name"_a = "untitled.scad", "append scad file.")
+    .def("append", nb::overload_cast<std::shared_ptr<Primitive2D>>(&OpenSCADContext::append), "primitive"_a, "append 2d Primitive.")
+    .def("append", nb::overload_cast<std::shared_ptr<Primitive3D>>(&OpenSCADContext::append),  "primitive"_a, "append 3d Primitive.")
+    .def_ro("root_node", &OpenSCADContext::root_node)
+    .def_ro("source_file", &OpenSCADContext::source_file); //OpenSCAD
+
 
   nb::class_<ExportInfo>(m, "ExportInfo");
 
@@ -279,14 +286,14 @@ NB_MODULE(openscadpy, m) {
   nb::class_<BoundingBox>(m, "BoundingBox")
     .def("volume", &BoundingBox::volume, "Volume");
 
-  nb::class_<Primitive>(m, "Primitive")
-    .def_ro("node", &Primitive::node, "node")
-    .def_ro("transformations", &Primitive::transformations, "transformations");
+  nb::class_<OSObject>(m, "OSObject")
+    .def_ro("node", &OSObject::node, "node")
+    .def_ro("transformations", &OSObject::transformations, "transformations");
 
-  nb::class_<Primitive3D, Primitive>(m, "Primitive3D")
+  nb::class_<Primitive3D, OSObject>(m, "Primitive3D")
     .def("scale", nb::overload_cast<double>(&Primitive3D::scale), "size"_a, "Scale")
     .def("scale", nb::overload_cast<std::vector<double>&>(&Primitive3D::scale), "vec"_a, "Scale")
-    .def("color", nb::overload_cast<Color4f*>(&Primitive3D::color), "color"_a, "color")
+    // .def("color", nb::overload_cast<Color4f*>(&Primitive3D::color), "color"_a, "color")
     .def("color", nb::overload_cast<std::string>(&Primitive3D::color), "name"_a, "color")
     .def("color", nb::overload_cast<std::string, float>(&Primitive3D::color), "name"_a, "alpha"_a, "color")
     .def("color", nb::overload_cast<int, int, int>(&Primitive3D::color), "color")
@@ -312,10 +319,10 @@ NB_MODULE(openscadpy, m) {
     .def("resize", nb::overload_cast<std::vector<double>&, std::vector<bool>&>(&Primitive3D::resize), "newsize"_a, "autosize"_a, "resize")
     .def("resize", nb::overload_cast<std::vector<double>&, std::vector<bool>&, int>(&Primitive3D::resize), "newsize"_a,  "autosize"_a, "convexity"_a, "resize");
 
-  nb::class_<Primitive2D, Primitive>(m, "Primitive2D")
+  nb::class_<Primitive2D, OSObject>(m, "Primitive2D")
     .def("scale", nb::overload_cast<double>(&Primitive2D::scale), "size"_a, "Scale")
     .def("scale", nb::overload_cast<std::vector<double>&>(&Primitive2D::scale), "vec"_a, "Scale")
-    .def("color", nb::overload_cast<Color4f*>(&Primitive2D::color), "color"_a, "color")
+    // .def("color", nb::overload_cast<Color4f*>(&Primitive2D::color), "color"_a, "color")
     .def("color", nb::overload_cast<std::string>(&Primitive2D::color), "name"_a, "color")
     .def("color", nb::overload_cast<std::string, float>(&Primitive2D::color), "name"_a, "alpha"_a, "color")
     .def("color", nb::overload_cast<int, int, int>(&Primitive2D::color), "color")

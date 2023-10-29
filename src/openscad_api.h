@@ -2,7 +2,6 @@
 #include "node.h" // AbstractNode
 #include "primitives.h" // point2d, point3d
 #include "TextNode.h" // FreetypeRenderer::Params
-#include "ColorNode.h" // Color4f
 // #include "linalg.h"
 #include "SourceFile.h"
 #include "Camera.h"
@@ -15,38 +14,49 @@
   // RenderSettings render_settings;
 //   RenderSettings renderSettings;
 //   Camera camera;
+extern bool parse(SourceFile *& file, const std::string& text, const std::string& filename, const std::string& mainFile, int debug);
+
+class Primitive2D;
+class Primitive3D;
 
 class OpenSCADContext: public std::enable_shared_from_this<OpenSCADContext>
 {
 public:
   auto get_shared_ptr() { return shared_from_this(); } 
+  OpenSCADContext();
   OpenSCADContext(std::string filename); 
   static std::shared_ptr<OpenSCADContext> context(std::string filename) 
   {
     return std::make_shared<OpenSCADContext>(filename);
   }
-  static std::shared_ptr<OpenSCADContext> parse_scad(std::string filename);
-  std::shared_ptr<OpenSCADContext> eval_scad();
+  static std::shared_ptr<OpenSCADContext> from_scad_file(std::string filename);
   std::shared_ptr<OpenSCADContext> export_file(std::string output_file);
-  std::shared_ptr<OpenSCADContext> export_file(std::shared_ptr<AbstractNode> root_node, std::string output_file);
+  // std::shared_ptr<OpenSCADContext> export_file(std::shared_ptr<AbstractNode> root_node, std::string output_file);
   std::shared_ptr<OpenSCADContext> use_file(std::string filename);
-  std::shared_ptr<AbstractNode> invoke_scad(std::string scad);
+  std::shared_ptr<OpenSCADContext> append_scad(std::string scad_txt, std::string name = "untitled.scad");
+  std::shared_ptr<OpenSCADContext> append(std::shared_ptr<Primitive2D> primitive);
+  std::shared_ptr<OpenSCADContext> append(std::shared_ptr<Primitive3D> primitive);
 
-  std::shared_ptr<AbstractNode> root_node;
+  std::shared_ptr<AbstractNode> root_node = nullptr;
   std::shared_ptr<SourceFile> source_file;
   std::shared_ptr<Camera> camera;
 };
 
-class Primitive 
+class OSObject 
 {
 public:
   std::shared_ptr<AbstractNode> node;
   std::shared_ptr<AbstractNode> transformations = nullptr;
 };
 
-class Primitive3D;
+class Operator: public OSObject, public std::enable_shared_from_this<Operator>
+{
+  //can we check if the invocation result will be an operator by looking at loaded module definition?
+  std::shared_ptr<Operator> from_scad(std::string scad_txt);
+};
 
-class Primitive2D: public Primitive, public std::enable_shared_from_this<Primitive2D>
+
+class Primitive2D: public OSObject, public std::enable_shared_from_this<Primitive2D>
 {
 public:
   auto get_shared_ptr() { return shared_from_this(); } 
@@ -69,7 +79,9 @@ public:
   static std::shared_ptr<Primitive2D> text(std::string& text, int size);
   static std::shared_ptr<Primitive2D> text(std::string& text, int size, std::string& font);
 
-  std::shared_ptr<Primitive2D> color(Color4f *color);
+  // static std::shared_ptr<Primitive2D> from_scad(std::string& text);
+  // std::shared_ptr<Primitive2D> op(std::shared_ptr<Operator> operator);
+
   std::shared_ptr<Primitive2D> color(std::string color);
   std::shared_ptr<Primitive2D> color(std::string colorname, float alpha);
   std::shared_ptr<Primitive2D> color(int red, int green, int blue);
@@ -120,7 +132,7 @@ public:
   // std::shared_ptr<Primitive2D> invoke_scad_module(std::string code);
 };
 
-class Primitive3D: public Primitive, public std::enable_shared_from_this<Primitive3D>
+class Primitive3D: public OSObject, public std::enable_shared_from_this<Primitive3D>
 {
 public:
   auto get_shared_ptr() { return shared_from_this();}
@@ -143,8 +155,9 @@ public:
   static shared_ptr<Primitive3D> polyhedron();
   static shared_ptr<Primitive3D> polyhedron(std::vector<point3d>& points, std::vector<std::vector<size_t>>& faces);
   static shared_ptr<Primitive3D> polyhedron(std::vector<point3d>& points, std::vector<std::vector<size_t>>& faces, int convexity);
+  // static std::shared_ptr<Primitive3D> from_scad(std::string& text);
 
-  std::shared_ptr<Primitive3D> color(Color4f *color);
+  // std::shared_ptr<Primitive2D> op(std::shared_ptr<Operator> operator);
   std::shared_ptr<Primitive3D> color(std::string color);
   std::shared_ptr<Primitive3D> color(std::string colorname, float alpha);
   std::shared_ptr<Primitive3D> color(int red, int green, int blue);
