@@ -80,22 +80,6 @@ struct UseCountVisitor
   int operator()(const ModulePtr& value) const { return value.get().use_count(); }
 };
 
-struct EmbeddedValuesVisitor
-{
-  const std::vector<Value> *operator()(const UndefType&) const { return nullptr; }
-  const std::vector<Value> *operator()(bool) const { return nullptr; }
-  const std::vector<Value> *operator()(double) const { return nullptr; }
-  const std::vector<Value> *operator()(const str_utf8_wrapper&) const { return nullptr; }
-  const std::vector<Value> *operator()(const RangePtr&) const { return nullptr; }
-
-  const std::vector<Value> *operator()(const VectorType& value) const { return &value.ptr->vec; }
-  const std::vector<Value> *operator()(const EmbeddedVectorType& value) const { return &value.ptr->vec; }
-  const std::vector<Value> *operator()(const ObjectType& value) const { return &value.ptr->values; }
-  const std::vector<Value> *operator()(const FunctionPtr&) const { return nullptr; }
-  const std::vector<Value> *operator()(const ModulePtr&) const { return nullptr; }
-  const std::vector<Value> *operator()(const GeometryType&) const { return nullptr; }
-};
-
 struct ReferencedContextVisitor
 {
   const std::shared_ptr<const Context> *operator()(const UndefType&) const { return nullptr; }
@@ -149,11 +133,19 @@ static std::vector<Context *> findRootContexts(const std::vector<std::shared_ptr
       int requiredReferences = std::visit(UseCountVisitor(), value.getVariant());
       assert(accountedReferences <= requiredReferences);
       if (accountedReferences == requiredReferences) {
-        const std::vector<Value> *embeddedValues = std::visit(EmbeddedValuesVisitor(), value.getVariant());
-        if (embeddedValues) {
-          for (const Value& embeddedValue : *embeddedValues) {
+        switch (value.type()) {
+        case Value::Type::VECTOR:
+          for (const Value& embeddedValue: value.toVector()) {
             valueQueue.push_back(&embeddedValue);
           }
+          break;
+        case Value::Type::OBJECT:
+          for (auto& it : value.toObject().ptr->map) {
+            valueQueue.push_back(&it.second);
+          }
+          break;
+        default:
+          break;
         }
 
         const std::shared_ptr<const Context> *referencedContext = std::visit(ReferencedContextVisitor(), value.getVariant());
@@ -245,11 +237,19 @@ static std::unordered_set<const Context *> findReachableContexts(const std::vect
       const Value *value = valueQueue.front();
       valueQueue.pop_front();
 
-      const std::vector<Value> *embeddedValues = std::visit(EmbeddedValuesVisitor(), value->getVariant());
-      if (embeddedValues) {
-        for (const Value& embeddedValue : *embeddedValues) {
+      switch (value->type()) {
+      case Value::Type::VECTOR:
+        for (const Value& embeddedValue: value->toVector()) {
           visitValue(embeddedValue);
         }
+        break;
+      case Value::Type::OBJECT:
+        for (auto& it : value->toObject().ptr->map) {
+          visitValue(it.second);
+        }
+        break;
+      default:
+        break;
       }
 
       const std::shared_ptr<const Context> *referencedContext = std::visit(ReferencedContextVisitor(), value->getVariant());

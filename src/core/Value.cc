@@ -1264,18 +1264,11 @@ const Value& ObjectType::get(const std::string& key) const
 void ObjectType::set(const std::string& key, Value&& value)
 {
   if (ptr->map.find(key) == ptr->map.end()) {
-    ptr->map.emplace(key, value.clone());
+    ptr->map.emplace(key, std::move(value));
     ptr->keys.emplace_back(key);
-    ptr->values.emplace_back(std::move(value));
   } else {
     ptr->map.erase(key);
-    ptr->map.emplace(key, value.clone());
-    for (int i = ptr->keys.size() - 1; i >= 0; i--) {
-      if (ptr->keys[i] == key) {
-        ptr->values[i] = std::move(value);
-        break;
-      }
-    }
+    ptr->map.emplace(key, std::move(value));
   }
 }
 
@@ -1300,12 +1293,10 @@ void ObjectType::del(const std::string& key)
   if (ptr->map.find(key) != ptr->map.end()) {
     ptr->map.erase(key);
     auto kit = ptr->keys.begin();
-    auto vit = ptr->values.begin();
-    for ( ; kit != ptr->keys.end(); ++kit, ++vit) {
+    for ( ; kit != ptr->keys.end(); ++kit) {
       if (*kit == key) {
-	ptr->keys.erase(kit);
-	ptr->values.erase(vit);
-	break;
+        ptr->keys.erase(kit);
+        break;
       }
     }
   }

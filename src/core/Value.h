@@ -438,7 +438,6 @@ struct Value::ObjectType::ObjectObject {
   std::unordered_map<std::string, Value> map;
   class EvaluationSession *evaluation_session = nullptr;
   std::vector<std::string> keys;
-  std::vector<Value> values;
   std::shared_ptr<AbstractNode> node = nullptr;
 };
 
