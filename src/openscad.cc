@@ -409,14 +409,68 @@ std::shared_ptr<AbstractNode> find_root(std::shared_ptr<AbstractNode> absolute_r
   return root_node;
 }
 
-int export_file(std::shared_ptr<AbstractNode> root_node, std::string output_file)
+int export_file(std::shared_ptr<AbstractNode> root_node, std::shared_ptr<SourceFile> root_file, std::string output_file)
 {
-  auto filename_str = fs::path(output_file).generic_string();
+  ExportFileFormatOptions exportFileFormatOptions;
+  FileFormat curFormat;
+  const auto path = fs::path(output_file);
+  std::string suffix = path.has_extension() ? path.extension().generic_string().substr(1) : "";
+  boost::algorithm::to_lower(suffix);
+  const auto format_iter = exportFileFormatOptions.exportFileFormats.find(suffix);
+  if (format_iter != exportFileFormatOptions.exportFileFormats.end()) {
+    curFormat = format_iter->second;
+  } else {
+    LOG("Either add a valid suffix or specify one using the --export-format option.");
+    return 1;
+  }
+
+  auto filename_str = path.generic_string();
   ViewOptions viewOptions;
   bool is_stdout = false;
-  FileFormat curFormat{FileFormat::PNG};
+  
   Tree tree(root_node, "");//fparent.string()
   Camera camera;
+  if (curFormat == FileFormat::CSG) {
+    // https://github.com/openscad/openscad/issues/128
+    // When I use the csg ouptput from the command line the paths in 'import'
+    // statements become relative. But unfortunately they become relative to
+    // the current working dir and neither to the location of the input nor
+    // the output.
+    // TODO: Enable later - 
+    //fs::current_path(fparent); // Force exported filenames to be relative to document path
+    with_output(is_stdout, filename_str, [&tree, root_node](std::ostream& stream) {
+      stream << tree.getString(*root_node, "\t") << "\n";
+    });
+    // TODO: Enable later - 
+    // fs::current_path(original_path);
+  } else if (curFormat == FileFormat::AST) {
+    // TODO: Enable later - 
+    // fs::current_path(fparent); // Force exported filenames to be relative to document path
+    // cannot export full ast as we never create AST directly in non-scad context
+    with_output(is_stdout, filename_str, [root_file](std::ostream& stream) {
+      stream << root_file->dump("");
+    });
+    // TODO: Enable later - 
+    // fs::current_path(original_path);
+  } else if (curFormat == FileFormat::PARAM) {
+    // TODO: enable later 
+    // auto fpath = fs::absolute(fs::path(filename));
+    // with_output(is_stdout, filename_str, [&root_file, &fpath](std::ostream& stream) {
+    //   export_param(root_file, fpath, stream);
+    // });
+  } else if (curFormat == FileFormat::TERM) {
+    CSGTreeEvaluator csgRenderer(tree);
+    auto root_raw_term = csgRenderer.buildCSGTree(*root_node);
+    with_output(is_stdout, filename_str, [root_raw_term](std::ostream& stream) {
+      if (!root_raw_term || root_raw_term->isEmptySet()) {
+        stream << "No top-level CSG object\n";
+      } else {
+        stream << root_raw_term->dump() << "\n";
+      }
+    });
+  } else if (curFormat == FileFormat::ECHO) {
+    // echo -> don't need to evaluate any geometry
+  } else {
 #ifdef ENABLE_CGAL
   // start measuring render time
   RenderStatistic renderStatistic;
@@ -487,6 +541,7 @@ int export_file(std::shared_ptr<AbstractNode> root_node, std::string output_file
     LOG("OpenSCAD has been compiled without CGAL support!\n");
     return 1;
 #endif // ifdef ENABLE_CGAL
+  }
   return 0;
 }
   // Camera camera = cmd.camera;

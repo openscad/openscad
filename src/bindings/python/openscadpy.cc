@@ -101,10 +101,10 @@ NB_MODULE(openscadpy, m) {
 
   m.def("get_web_colors", &ColorNode::getWebColors, "Returns SVG Colors.");
 
-  m.def("parse_scad", &parse_scad, "text"_a, "filename"_a = "untitled.scad", "Parse a scad text.");
-  m.def("eval_scad", &eval_scad, "root_file"_a, "Evaluate a scad text.");
-  m.def("find_root", &find_root, "node"_a, "Find root from tree.");
-  m.def("export", &export_file, "root_node"_a, "output_file"_a, "Export png.");
+  // m.def("parse_scad", &parse_scad, "text"_a, "filename"_a = "untitled.scad", "Parse a scad text.");
+  // m.def("eval_scad", &eval_scad, "root_file"_a, "Evaluate a scad text.");
+  // m.def("find_root", &find_root, "node"_a, "Find root from tree.");
+  // m.def("export", &export_file, "root_node"_a, "output_file"_a, "Export png.");
   m.def("context", &OpenSCADContext::context, "filename"_a, "Create OpenSCADContext.");
   m.def("context_from_scad_file", &OpenSCADContext::from_scad_file, "filename"_a, "Create OpenSCADContext from a file.");
 
@@ -125,8 +125,52 @@ NB_MODULE(openscadpy, m) {
     .def("append_scad", &OpenSCADContext::append_scad, "scad_text"_a, "name"_a = "untitled.scad", "append scad file.")
     .def("append", nb::overload_cast<std::shared_ptr<Primitive2D>>(&OpenSCADContext::append), "primitive"_a, "append 2d Primitive.")
     .def("append", nb::overload_cast<std::shared_ptr<Primitive3D>>(&OpenSCADContext::append),  "primitive"_a, "append 3d Primitive.")
+    .def("set_fn", &OpenSCADContext::set_fn, "fn"_a, "Set number of fragments.")
+    .def("set_fa", &OpenSCADContext::set_fn, "fa"_a, "Set minimum fragment angle in degrees.")
+    .def("set_fs", &OpenSCADContext::set_fn, "fs"_a, "Set minimum fragment size in mm.")
+    .def("cube", nb::overload_cast<>(&OpenSCADContext::cube), "Create Cube")
+    .def("cube", nb::overload_cast<double>(&OpenSCADContext::cube), "size"_a, "Create Cube")
+    .def("cube", nb::overload_cast<double, bool>(&OpenSCADContext::cube), "size"_a, "center"_a, "Create Cube")
+    .def("cube", nb::overload_cast<double, double, double>(&OpenSCADContext::cube), "x"_a, "y"_a, "z"_a, "Create Cube")
+    .def("cube", nb::overload_cast<double, double, double, bool>(&OpenSCADContext::cube), "x"_a, "y"_a, "z"_a, "center"_a, "Create Cube")
+
+    .def("sphere", nb::overload_cast<>(&OpenSCADContext::sphere), "Create Sphere")
+    .def("sphere", nb::overload_cast<double>(&OpenSCADContext::sphere), "radius"_a, "Create Sphere")
+
+    .def("cylinder", nb::overload_cast<>(&OpenSCADContext::cylinder), "Create Cylinder")
+    .def("cylinder", nb::overload_cast<double, double>(&OpenSCADContext::cylinder), "radius"_a, "height"_a, "Create Cylinder")
+    .def("cylinder", nb::overload_cast<double, double, bool>(&OpenSCADContext::cylinder), "radius"_a, "height"_a, "center"_a, "Create Cylinder")
+    .def("cylinder", nb::overload_cast<double, double, double>(&OpenSCADContext::cylinder), "radius1"_a, "radius2"_a, "height"_a, "Create Cylinder")
+    .def("cylinder", nb::overload_cast<double, double, double, bool>(&OpenSCADContext::cylinder), "radius1"_a, "radius2"_a, "height"_a, "center"_a, "Create Cylinder")
+
+    .def("polyhedron", nb::overload_cast<>(&OpenSCADContext::polyhedron), "Create Polyhedron")
+    .def("polyhedron", nb::overload_cast<std::vector<point3d>&, std::vector<std::vector<size_t>>&>(&OpenSCADContext::polyhedron), "points"_a, "faces"_a, "Create Polyhedron")
+    .def("polyhedron", nb::overload_cast<std::vector<point3d>&, std::vector<std::vector<size_t>>&, int>(&OpenSCADContext::polyhedron), "points"_a, "faces"_a, "convexity"_a, "Create Polyhedron")
+
+    .def("square", nb::overload_cast<>(&OpenSCADContext::square), "Create Square")
+    .def("square", nb::overload_cast<double>(&OpenSCADContext::square), "size"_a, "Create Square")
+    .def("square", nb::overload_cast<double, bool>(&OpenSCADContext::square), "size"_a, "center"_a, "Create Square")
+    .def("square", nb::overload_cast<double, double>(&OpenSCADContext::square), "x"_a, "y"_a, "Create Square")
+    .def("square", nb::overload_cast<double, double, bool>(&OpenSCADContext::square), "x"_a, "y"_a, "center"_a, "Create Square")
+
+    .def("circle", nb::overload_cast<>(&OpenSCADContext::circle), "Create Circle")
+    .def("circle", nb::overload_cast<double>(&OpenSCADContext::circle), "radius"_a, "Create Circle")
+
+    // .def("polygon", nb::overload_cast<>(&OpenSCADContext::polygon), "Create Polygon")
+    .def("polygon", nb::overload_cast<std::vector<point2d>&, std::vector<std::vector<size_t>>&>(&OpenSCADContext::polygon), "points"_a, "faces"_a, "Create Polygon")
+    .def("polygon", nb::overload_cast<std::vector<point2d>&, std::vector<std::vector<size_t>>&, int>(&OpenSCADContext::polygon), "points"_a, "faces"_a, "convexity"_a, "Create Polygon")
+
+    // .def("text", nb::overload_cast<>(&OpenSCADContext::text), "Create Text")
+    .def("text", nb::overload_cast<FreetypeRenderer::Params&>(&OpenSCADContext::text), "Create Text")
+    .def("text", nb::overload_cast<std::string&>(&OpenSCADContext::text), "Create Text")
+    .def("text", nb::overload_cast<std::string&, int>(&OpenSCADContext::text), "Create Text")
+    .def("text", nb::overload_cast<std::string&, int, std::string&>(&OpenSCADContext::text), "Create Text")
+
     .def_ro("root_node", &OpenSCADContext::root_node)
-    .def_ro("source_file", &OpenSCADContext::source_file); //OpenSCAD
+    .def_ro("source_file", &OpenSCADContext::source_file)
+    .def_ro("fa", &OpenSCADContext::fa)
+    .def_ro("fs", &OpenSCADContext::fs)
+    .def_ro("fn", &OpenSCADContext::fn);
 
 
   nb::class_<ExportInfo>(m, "ExportInfo");
@@ -362,43 +406,43 @@ NB_MODULE(openscadpy, m) {
     .def("offset", nb::overload_cast<std::string, double, bool>(&Primitive2D::offset), "op"_a, "delta"_a, "chamfer"_a, "offset")
     ;
 
-  m.def("cube", nb::overload_cast<>(&Primitive3D::cube), "Create Cube");
-  m.def("cube", nb::overload_cast<double>(&Primitive3D::cube), "size"_a, "Create Cube");
-  m.def("cube", nb::overload_cast<double, bool>(&Primitive3D::cube), "size"_a, "center"_a, "Create Cube");
-  m.def("cube", nb::overload_cast<double, double, double>(&Primitive3D::cube), "x"_a, "y"_a, "z"_a, "Create Cube");
-  m.def("cube", nb::overload_cast<double, double, double, bool>(&Primitive3D::cube), "x"_a, "y"_a, "z"_a, "center"_a, "Create Cube");
+  // m.def("cube", nb::overload_cast<>(&Primitive3D::cube), "Create Cube");
+  // m.def("cube", nb::overload_cast<double>(&Primitive3D::cube), "size"_a, "Create Cube");
+  // m.def("cube", nb::overload_cast<double, bool>(&Primitive3D::cube), "size"_a, "center"_a, "Create Cube");
+  // m.def("cube", nb::overload_cast<double, double, double>(&Primitive3D::cube), "x"_a, "y"_a, "z"_a, "Create Cube");
+  // m.def("cube", nb::overload_cast<double, double, double, bool>(&Primitive3D::cube), "x"_a, "y"_a, "z"_a, "center"_a, "Create Cube");
 
-  m.def("sphere", nb::overload_cast<>(&Primitive3D::sphere), "Create Sphere");
-  m.def("sphere", nb::overload_cast<double>(&Primitive3D::sphere), "radius"_a, "Create Sphere");
+  // m.def("sphere", nb::overload_cast<>(&Primitive3D::sphere), "Create Sphere");
+  // m.def("sphere", nb::overload_cast<double>(&Primitive3D::sphere), "radius"_a, "Create Sphere");
 
-  m.def("cylinder", nb::overload_cast<>(&Primitive3D::cylinder), "Create Cylinder");
-  m.def("cylinder", nb::overload_cast<double, double>(&Primitive3D::cylinder), "radius"_a, "height"_a, "Create Cylinder");
-  m.def("cylinder", nb::overload_cast<double, double, bool>(&Primitive3D::cylinder), "radius"_a, "height"_a, "center"_a, "Create Cylinder");
-  m.def("cylinder", nb::overload_cast<double, double, double>(&Primitive3D::cylinder), "radius1"_a, "radius2"_a, "height"_a, "Create Cylinder");
-  m.def("cylinder", nb::overload_cast<double, double, double, bool>(&Primitive3D::cylinder), "radius1"_a, "radius2"_a, "height"_a, "center"_a, "Create Cylinder");
+  // m.def("cylinder", nb::overload_cast<>(&Primitive3D::cylinder), "Create Cylinder");
+  // m.def("cylinder", nb::overload_cast<double, double>(&Primitive3D::cylinder), "radius"_a, "height"_a, "Create Cylinder");
+  // m.def("cylinder", nb::overload_cast<double, double, bool>(&Primitive3D::cylinder), "radius"_a, "height"_a, "center"_a, "Create Cylinder");
+  // m.def("cylinder", nb::overload_cast<double, double, double>(&Primitive3D::cylinder), "radius1"_a, "radius2"_a, "height"_a, "Create Cylinder");
+  // m.def("cylinder", nb::overload_cast<double, double, double, bool>(&Primitive3D::cylinder), "radius1"_a, "radius2"_a, "height"_a, "center"_a, "Create Cylinder");
 
-  m.def("polyhedron", nb::overload_cast<>(&Primitive3D::polyhedron), "Create Polyhedron");
-  m.def("polyhedron", nb::overload_cast<std::vector<point3d>&, std::vector<std::vector<size_t>>&>(&Primitive3D::polyhedron), "points"_a, "faces"_a, "Create Polyhedron");
-  m.def("polyhedron", nb::overload_cast<std::vector<point3d>&, std::vector<std::vector<size_t>>&, int>(&Primitive3D::polyhedron), "points"_a, "faces"_a, "convexity"_a, "Create Polyhedron");
+  // m.def("polyhedron", nb::overload_cast<>(&Primitive3D::polyhedron), "Create Polyhedron");
+  // m.def("polyhedron", nb::overload_cast<std::vector<point3d>&, std::vector<std::vector<size_t>>&>(&Primitive3D::polyhedron), "points"_a, "faces"_a, "Create Polyhedron");
+  // m.def("polyhedron", nb::overload_cast<std::vector<point3d>&, std::vector<std::vector<size_t>>&, int>(&Primitive3D::polyhedron), "points"_a, "faces"_a, "convexity"_a, "Create Polyhedron");
 
-  m.def("square", nb::overload_cast<>(&Primitive2D::square), "Create Square");
-  m.def("square", nb::overload_cast<double>(&Primitive2D::square), "size"_a, "Create Square");
-  m.def("square", nb::overload_cast<double, bool>(&Primitive2D::square), "size"_a, "center"_a, "Create Square");
-  m.def("square", nb::overload_cast<double, double>(&Primitive2D::square), "x"_a, "y"_a, "Create Square");
-  m.def("square", nb::overload_cast<double, double, bool>(&Primitive2D::square), "x"_a, "y"_a, "center"_a, "Create Square");
+  // m.def("square", nb::overload_cast<>(&Primitive2D::square), "Create Square");
+  // m.def("square", nb::overload_cast<double>(&Primitive2D::square), "size"_a, "Create Square");
+  // m.def("square", nb::overload_cast<double, bool>(&Primitive2D::square), "size"_a, "center"_a, "Create Square");
+  // m.def("square", nb::overload_cast<double, double>(&Primitive2D::square), "x"_a, "y"_a, "Create Square");
+  // m.def("square", nb::overload_cast<double, double, bool>(&Primitive2D::square), "x"_a, "y"_a, "center"_a, "Create Square");
 
-  m.def("circle", nb::overload_cast<>(&Primitive2D::circle), "Create Circle");
-  m.def("circle", nb::overload_cast<double>(&Primitive2D::circle), "radius"_a, "Create Circle");
+  // m.def("circle", nb::overload_cast<>(&Primitive2D::circle), "Create Circle");
+  // m.def("circle", nb::overload_cast<double>(&Primitive2D::circle), "radius"_a, "Create Circle");
 
-  // m.def("polygon", nb::overload_cast<>(&Primitive2D::polygon), "Create Polygon");
-  m.def("polygon", nb::overload_cast<std::vector<point2d>&, std::vector<std::vector<size_t>>&>(&Primitive2D::polygon), "points"_a, "faces"_a, "Create Polygon");
-  m.def("polygon", nb::overload_cast<std::vector<point2d>&, std::vector<std::vector<size_t>>&, int>(&Primitive2D::polygon), "points"_a, "faces"_a, "convexity"_a, "Create Polygon");
+  // // m.def("polygon", nb::overload_cast<>(&Primitive2D::polygon), "Create Polygon");
+  // m.def("polygon", nb::overload_cast<std::vector<point2d>&, std::vector<std::vector<size_t>>&>(&Primitive2D::polygon), "points"_a, "faces"_a, "Create Polygon");
+  // m.def("polygon", nb::overload_cast<std::vector<point2d>&, std::vector<std::vector<size_t>>&, int>(&Primitive2D::polygon), "points"_a, "faces"_a, "convexity"_a, "Create Polygon");
 
-  // m.def("text", nb::overload_cast<>(&Primitive2D::text), "Create Text");
-  m.def("text", nb::overload_cast<FreetypeRenderer::Params&>(&Primitive2D::text), "Create Text");
-  m.def("text", nb::overload_cast<std::string&>(&Primitive2D::text), "Create Text");
-  m.def("text", nb::overload_cast<std::string&, int>(&Primitive2D::text), "Create Text");
-  m.def("text", nb::overload_cast<std::string&, int, std::string&>(&Primitive2D::text), "Create Text");
+  // // m.def("text", nb::overload_cast<>(&Primitive2D::text), "Create Text");
+  // m.def("text", nb::overload_cast<FreetypeRenderer::Params&>(&Primitive2D::text), "Create Text");
+  // m.def("text", nb::overload_cast<std::string&>(&Primitive2D::text), "Create Text");
+  // m.def("text", nb::overload_cast<std::string&, int>(&Primitive2D::text), "Create Text");
+  // m.def("text", nb::overload_cast<std::string&, int, std::string&>(&Primitive2D::text), "Create Text");
 
   nb::class_<CubeNode, LeafNode>(m, "Cube")
     .def(nb::init<>())

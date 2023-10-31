@@ -30,21 +30,68 @@ public:
     return std::make_shared<OpenSCADContext>(filename);
   }
   static std::shared_ptr<OpenSCADContext> from_scad_file(std::string filename);
-  std::shared_ptr<OpenSCADContext> export_file(std::string output_file);
+  int export_file(std::string output_file);
+  // std::shared_ptr<OpenSCADContext> export_file(std::string output_file);
   // std::shared_ptr<OpenSCADContext> export_file(std::shared_ptr<AbstractNode> root_node, std::string output_file);
   std::shared_ptr<OpenSCADContext> use_file(std::string filename);
   std::shared_ptr<OpenSCADContext> append_scad(std::string scad_txt, std::string name = "untitled.scad");
   std::shared_ptr<OpenSCADContext> append(std::shared_ptr<Primitive2D> primitive);
   std::shared_ptr<OpenSCADContext> append(std::shared_ptr<Primitive3D> primitive);
+  std::shared_ptr<OpenSCADContext> set_fn(double fn);
+  std::shared_ptr<OpenSCADContext> set_fa(double fa);
+  std::shared_ptr<OpenSCADContext> set_fs(double fs);
 
+  std::shared_ptr<Primitive2D> square();
+  std::shared_ptr<Primitive2D> square(double size);
+  std::shared_ptr<Primitive2D> square(double size, bool center);
+  std::shared_ptr<Primitive2D> square(double x, double y);
+  std::shared_ptr<Primitive2D> square(double x, double y, bool center);
+
+  std::shared_ptr<Primitive2D> circle();
+  std::shared_ptr<Primitive2D> circle(double size);
+
+  std::shared_ptr<Primitive2D> polygon(std::vector<point2d>& points);
+  std::shared_ptr<Primitive2D> polygon(std::vector<point2d>& points, std::vector<std::vector<size_t>>& paths);
+  std::shared_ptr<Primitive2D> polygon(std::vector<point2d>& points, std::vector<std::vector<size_t>>& paths, int convexity);
+
+  // std::shared_ptr<Primitive2D> text();
+  std::shared_ptr<Primitive2D> text(FreetypeRenderer::Params& params); 
+  std::shared_ptr<Primitive2D> text(std::string& text);
+  std::shared_ptr<Primitive2D> text(std::string& text, int size);
+  std::shared_ptr<Primitive2D> text(std::string& text, int size, std::string& font);
+
+  std::shared_ptr<Primitive3D> cube();
+  std::shared_ptr<Primitive3D> cube(double size);
+  std::shared_ptr<Primitive3D> cube(double size, bool center);
+  std::shared_ptr<Primitive3D> cube(double x, double y, double z);
+  std::shared_ptr<Primitive3D> cube(double x, double y, double z, bool center);
+
+  std::shared_ptr<Primitive3D> sphere();
+  std::shared_ptr<Primitive3D> sphere(double r);
+
+  std::shared_ptr<Primitive3D> cylinder();
+  std::shared_ptr<Primitive3D> cylinder(double r, double h);
+  std::shared_ptr<Primitive3D> cylinder(double r, double h, bool center);
+  std::shared_ptr<Primitive3D> cylinder(double r1, double r2, double h);
+  std::shared_ptr<Primitive3D> cylinder(double r1, double r2, double h, bool center);
+
+  std::shared_ptr<Primitive3D> polyhedron();
+  std::shared_ptr<Primitive3D> polyhedron(std::vector<point3d>& points, std::vector<std::vector<size_t>>& faces);
+  std::shared_ptr<Primitive3D> polyhedron(std::vector<point3d>& points, std::vector<std::vector<size_t>>& faces, int convexity);
+  
   std::shared_ptr<AbstractNode> root_node = nullptr;
   std::shared_ptr<SourceFile> source_file;
   std::shared_ptr<Camera> camera;
+
+  double fn = 0;
+  double fa = 12;
+  double fs = 2;
 };
 
 class OSObject 
 {
 public:
+  std::shared_ptr<OpenSCADContext> context;
   std::shared_ptr<AbstractNode> node;
   std::shared_ptr<AbstractNode> transformations = nullptr;
 };
@@ -60,27 +107,27 @@ class Primitive2D: public OSObject, public std::enable_shared_from_this<Primitiv
 {
 public:
   auto get_shared_ptr() { return shared_from_this(); } 
-  static std::shared_ptr<Primitive2D> square();
-  static std::shared_ptr<Primitive2D> square(double size);
-  static std::shared_ptr<Primitive2D> square(double size, bool center);
-  static std::shared_ptr<Primitive2D> square(double x, double y);
-  static std::shared_ptr<Primitive2D> square(double x, double y, bool center);
+  static std::shared_ptr<Primitive2D> square(std::shared_ptr<OpenSCADContext> ctx);
+  static std::shared_ptr<Primitive2D> square(std::shared_ptr<OpenSCADContext> ctx, double size);
+  static std::shared_ptr<Primitive2D> square(std::shared_ptr<OpenSCADContext> ctx, double size, bool center);
+  static std::shared_ptr<Primitive2D> square(std::shared_ptr<OpenSCADContext> ctx, double x, double y);
+  static std::shared_ptr<Primitive2D> square(std::shared_ptr<OpenSCADContext> ctx, double x, double y, bool center);
 
-  static std::shared_ptr<Primitive2D> circle();
-  static std::shared_ptr<Primitive2D> circle(double size);
+  static std::shared_ptr<Primitive2D> circle(std::shared_ptr<OpenSCADContext> ctx);
+  static std::shared_ptr<Primitive2D> circle(std::shared_ptr<OpenSCADContext> ctx, double size);
 
-  static std::shared_ptr<Primitive2D> polygon(std::vector<point2d>& points);
-  static std::shared_ptr<Primitive2D> polygon(std::vector<point2d>& points, std::vector<std::vector<size_t>>& paths);
-  static std::shared_ptr<Primitive2D> polygon(std::vector<point2d>& points, std::vector<std::vector<size_t>>& paths, int convexity);
+  static std::shared_ptr<Primitive2D> polygon(std::shared_ptr<OpenSCADContext> ctx, std::vector<point2d>& points);
+  static std::shared_ptr<Primitive2D> polygon(std::shared_ptr<OpenSCADContext> ctx, std::vector<point2d>& points, std::vector<std::vector<size_t>>& paths);
+  static std::shared_ptr<Primitive2D> polygon(std::shared_ptr<OpenSCADContext> ctx, std::vector<point2d>& points, std::vector<std::vector<size_t>>& paths, int convexity);
 
-  // static std::shared_ptr<Primitive2D> text();
-  static std::shared_ptr<Primitive2D> text(FreetypeRenderer::Params& params); 
-  static std::shared_ptr<Primitive2D> text(std::string& text);
-  static std::shared_ptr<Primitive2D> text(std::string& text, int size);
-  static std::shared_ptr<Primitive2D> text(std::string& text, int size, std::string& font);
+  // static std::shared_ptr<Primitive2D> text(std::shared_ptr<OpenSCADContext> ctx);
+  static std::shared_ptr<Primitive2D> text(std::shared_ptr<OpenSCADContext> ctx, FreetypeRenderer::Params& params); 
+  static std::shared_ptr<Primitive2D> text(std::shared_ptr<OpenSCADContext> ctx, std::string& text);
+  static std::shared_ptr<Primitive2D> text(std::shared_ptr<OpenSCADContext> ctx, std::string& text, int size);
+  static std::shared_ptr<Primitive2D> text(std::shared_ptr<OpenSCADContext> ctx, std::string& text, int size, std::string& font);
 
-  // static std::shared_ptr<Primitive2D> from_scad(std::string& text);
-  // std::shared_ptr<Primitive2D> op(std::shared_ptr<Operator> operator);
+  static std::shared_ptr<Primitive2D> from_scad(std::string& text);
+  std::shared_ptr<Primitive2D> op(std::shared_ptr<Operator> op);
 
   std::shared_ptr<Primitive2D> color(std::string color);
   std::shared_ptr<Primitive2D> color(std::string colorname, float alpha);
@@ -137,24 +184,24 @@ class Primitive3D: public OSObject, public std::enable_shared_from_this<Primitiv
 public:
   auto get_shared_ptr() { return shared_from_this();}
 
-  static std::shared_ptr<Primitive3D> cube();
-  static std::shared_ptr<Primitive3D> cube(double size);
-  static std::shared_ptr<Primitive3D> cube(double size, bool center);
-  static std::shared_ptr<Primitive3D> cube(double x, double y, double z);
-  static std::shared_ptr<Primitive3D> cube(double x, double y, double z, bool center);
+  static std::shared_ptr<Primitive3D> cube(std::shared_ptr<OpenSCADContext> ctx);
+  static std::shared_ptr<Primitive3D> cube(std::shared_ptr<OpenSCADContext> ctx, double size);
+  static std::shared_ptr<Primitive3D> cube(std::shared_ptr<OpenSCADContext> ctx, double size, bool center);
+  static std::shared_ptr<Primitive3D> cube(std::shared_ptr<OpenSCADContext> ctx, double x, double y, double z);
+  static std::shared_ptr<Primitive3D> cube(std::shared_ptr<OpenSCADContext> ctx, double x, double y, double z, bool center);
 
-  static std::shared_ptr<Primitive3D> sphere();
-  static std::shared_ptr<Primitive3D> sphere(double r);
+  static std::shared_ptr<Primitive3D> sphere(std::shared_ptr<OpenSCADContext> ctx);
+  static std::shared_ptr<Primitive3D> sphere(std::shared_ptr<OpenSCADContext> ctx, double r);
 
-  static std::shared_ptr<Primitive3D> cylinder();
-  static std::shared_ptr<Primitive3D> cylinder(double r, double h);
-  static std::shared_ptr<Primitive3D> cylinder(double r, double h, bool center);
-  static std::shared_ptr<Primitive3D> cylinder(double r1, double r2, double h);
-  static std::shared_ptr<Primitive3D> cylinder(double r1, double r2, double h, bool center);
+  static std::shared_ptr<Primitive3D> cylinder(std::shared_ptr<OpenSCADContext> ctx);
+  static std::shared_ptr<Primitive3D> cylinder(std::shared_ptr<OpenSCADContext> ctx, double r, double h);
+  static std::shared_ptr<Primitive3D> cylinder(std::shared_ptr<OpenSCADContext> ctx, double r, double h, bool center);
+  static std::shared_ptr<Primitive3D> cylinder(std::shared_ptr<OpenSCADContext> ctx, double r1, double r2, double h);
+  static std::shared_ptr<Primitive3D> cylinder(std::shared_ptr<OpenSCADContext> ctx, double r1, double r2, double h, bool center);
 
-  static shared_ptr<Primitive3D> polyhedron();
-  static shared_ptr<Primitive3D> polyhedron(std::vector<point3d>& points, std::vector<std::vector<size_t>>& faces);
-  static shared_ptr<Primitive3D> polyhedron(std::vector<point3d>& points, std::vector<std::vector<size_t>>& faces, int convexity);
+  static std::shared_ptr<Primitive3D> polyhedron(std::shared_ptr<OpenSCADContext> ctx);
+  static std::shared_ptr<Primitive3D> polyhedron(std::shared_ptr<OpenSCADContext> ctx, std::vector<point3d>& points, std::vector<std::vector<size_t>>& faces);
+  static std::shared_ptr<Primitive3D> polyhedron(std::shared_ptr<OpenSCADContext> ctx, std::vector<point3d>& points, std::vector<std::vector<size_t>>& faces, int convexity);
   // static std::shared_ptr<Primitive3D> from_scad(std::string& text);
 
   // std::shared_ptr<Primitive2D> op(std::shared_ptr<Operator> operator);

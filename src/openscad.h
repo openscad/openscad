@@ -47,7 +47,7 @@ SourceFile *parse_scad(std::string text, std::string filename);
 // Tree *eval_scad(SourceFile* root_file);
 std::shared_ptr<AbstractNode> eval_scad(SourceFile* root_file);
 std::shared_ptr<AbstractNode> find_root(std::shared_ptr<AbstractNode> absolute_root_node);
-int export_file(std::shared_ptr<AbstractNode> root_node, std::string output_file);
+int export_file(std::shared_ptr<AbstractNode> root_node, std::shared_ptr<SourceFile> root_file, std::string output_file);
 
 void init_globals();
 void set_debug(bool flag);

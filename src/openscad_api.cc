@@ -14,6 +14,7 @@
 #include "SourceFile.h"
 #include "handle_dep.h"
 #include "BuiltinContext.h"
+#include "openscad.h"
 
 #include <fstream>
 
@@ -25,8 +26,9 @@ std::shared_ptr<AbstractNode> eval_source_file(SourceFile* root_file)
   EvaluationSession session{fparent.string()};
   ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
 // #ifdef DEBUG
-  PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
+  // PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
 // #endif
+  LOG("BuiltinContext:\n%s", builtin_context->dump());
 
   AbstractNode::resetIndexCounter();
   std::shared_ptr<const FileContext> file_context;
@@ -112,10 +114,41 @@ std::shared_ptr<OpenSCADContext> OpenSCADContext::from_scad_file(std::string fil
   return context;
 }
 
-std::shared_ptr<OpenSCADContext> OpenSCADContext::export_file(std::string output_file)
+int OpenSCADContext::export_file(std::string filename)
 {
+  auto root_node = ::find_root(this->root_node);
+  return ::export_file(root_node, this->source_file, filename);
+}
+
+#define F_MINIMUM 0.01
+
+std::shared_ptr<OpenSCADContext> OpenSCADContext::set_fn(double fn) {
+  this->fn = fn;
+  return shared_from_this();
+}
+
+std::shared_ptr<OpenSCADContext> OpenSCADContext::set_fa(double fa) {
+  if (fa < F_MINIMUM) {
+    LOG(message_group::Warning, "$fa too small - clamping to %1$f", F_MINIMUM);
+    fa = F_MINIMUM;
+  }
+  this->fa = fa;
   return this->shared_from_this();
 }
+
+std::shared_ptr<OpenSCADContext> OpenSCADContext::set_fs(double fs) {
+  if (fs < F_MINIMUM) {
+    LOG(message_group::Warning, "$fs too small - clamping to %1$f", F_MINIMUM);
+    fs = F_MINIMUM;
+  }
+  this->fs = fs;
+  return this->shared_from_this();
+}
+
+// std::shared_ptr<OpenSCADContext> OpenSCADContext::export_file(std::string output_file)
+// {
+//   return this->shared_from_this();
+// }
 
 // std::shared_ptr<OpenSCADContext> OpenSCADContext::export_file(std::shared_ptr<AbstractNode> root_node, std::string output_file)
 // {
@@ -130,6 +163,7 @@ std::shared_ptr<OpenSCADContext> OpenSCADContext::use_file(std::string filename)
 
 std::shared_ptr<OpenSCADContext> OpenSCADContext::append_scad(std::string text, std::string filename)
 {
+  // inject fn, fa, fs
   text += "\n\x03\n";// + commandline_commands;
 
   SourceFile *root_file = nullptr;
@@ -147,24 +181,185 @@ std::shared_ptr<OpenSCADContext> OpenSCADContext::append_scad(std::string text, 
   return this->shared_from_this();
 }
 
+void set_fragments(std::shared_ptr<OpenSCADContext> context, double& fn, double& fa, double& fs)
+{
+  if(fn == 0 && context->fn > 0)
+  {
+    fn = context->fn;
+  }
+  if(fs == 0 && context->fs > 0)
+  {
+    fs = context->fs;
+  }
+  if(fa == 0 && context->fa > 0)
+  {
+    fa = context->fa;
+  }
+}
+
 std::shared_ptr<OpenSCADContext> OpenSCADContext::append(std::shared_ptr<Primitive2D> primitive)
 {
+  // auto name = primitive->node->name();
+  // if (name == "circle")
+  // {
+  //   std::shared_ptr<CircleNode> node =
+  //     std::dynamic_pointer_cast<CircleNode> (primitive->node);
+  //   set_fragments(this, node->fn, node->fa, node->fs);
+  // }
   this->root_node->children.emplace_back(primitive->transformations);
   return this->shared_from_this();
 }
 
 std::shared_ptr<OpenSCADContext> OpenSCADContext::append(std::shared_ptr<Primitive3D> primitive)
 {
+  // auto name = primitive->node->name();
+  // if (name == "sphere")
+  // {
+  //   std::shared_ptr<SphereNode> node =
+  //     std::dynamic_pointer_cast<SphereNode> (primitive->node);
+  //   set_fragments(this, node->fn, node->fa, node->fs);
+  // } else if (name == "cylinder")
+  // {
+  //   std::shared_ptr<CylinderNode> node =
+  //     std::dynamic_pointer_cast<CylinderNode> (primitive->node);
+  //   set_fragments(this, node->fn, node->fa, node->fs);
+  // }
+
   this->root_node->children.emplace_back(primitive->transformations);
   return this->shared_from_this();
 }
 
+std::shared_ptr<Primitive2D> OpenSCADContext::square()
+{
+  return Primitive2D::square(shared_from_this());
+}
+std::shared_ptr<Primitive2D> OpenSCADContext::square(double size)
+{
+  return Primitive2D::square(shared_from_this(), size);
+}
+std::shared_ptr<Primitive2D> OpenSCADContext::square(double size, bool center)
+{
+  return Primitive2D::square(shared_from_this(), size, center);
+}
+std::shared_ptr<Primitive2D> OpenSCADContext::square(double x, double y)
+{
+  return Primitive2D::square(shared_from_this(), x, y);
+}
+std::shared_ptr<Primitive2D> OpenSCADContext::square(double x, double y, bool center)
+{
+  return Primitive2D::square(shared_from_this(), x, y, center);
+}
+
+std::shared_ptr<Primitive2D> OpenSCADContext::circle()
+{
+  return Primitive2D::circle(shared_from_this());
+}
+std::shared_ptr<Primitive2D> OpenSCADContext::circle(double size)
+{
+  return Primitive2D::circle(shared_from_this(), size);
+}
+
+std::shared_ptr<Primitive2D> OpenSCADContext::polygon(std::vector<point2d>& points)
+{
+  return Primitive2D::polygon(shared_from_this(), points);
+}
+std::shared_ptr<Primitive2D> OpenSCADContext::polygon(std::vector<point2d>& points, std::vector<std::vector<size_t>>& paths)
+{
+  return Primitive2D::polygon(shared_from_this(), points, paths);
+}
+std::shared_ptr<Primitive2D> OpenSCADContext::polygon(std::vector<point2d>& points, std::vector<std::vector<size_t>>& paths, int convexity)
+{
+  return Primitive2D::polygon(shared_from_this(), points, paths, convexity);
+}
+
+std::shared_ptr<Primitive2D> OpenSCADContext::text(FreetypeRenderer::Params& params)
+{
+  return Primitive2D::text(shared_from_this(), params);
+} 
+std::shared_ptr<Primitive2D> OpenSCADContext::text(std::string& text)
+{
+  return Primitive2D::text(shared_from_this(), text);
+}
+std::shared_ptr<Primitive2D> OpenSCADContext::text(std::string& text, int size)
+{
+  return Primitive2D::text(shared_from_this(), text, size);
+}
+std::shared_ptr<Primitive2D> OpenSCADContext::text(std::string& text, int size, std::string& font)
+{
+  return Primitive2D::text(shared_from_this(), text, size, font);
+}
+
+std::shared_ptr<Primitive3D> OpenSCADContext::cube()
+{
+  return Primitive3D::cube(shared_from_this());
+}
+std::shared_ptr<Primitive3D> OpenSCADContext::cube(double size)
+{
+  return Primitive3D::cube(shared_from_this(), size);
+}
+std::shared_ptr<Primitive3D> OpenSCADContext::cube(double size, bool center)
+{
+  return Primitive3D::cube(shared_from_this(), size, center);
+}
+std::shared_ptr<Primitive3D> OpenSCADContext::cube(double x, double y, double z)
+{
+  return Primitive3D::cube(shared_from_this(), x, y, z);
+}
+std::shared_ptr<Primitive3D> OpenSCADContext::cube(double x, double y, double z, bool center)
+{
+  return Primitive3D::cube(shared_from_this(), x, y, z, center);
+}
+
+std::shared_ptr<Primitive3D> OpenSCADContext::sphere()
+{
+  return Primitive3D::sphere(shared_from_this());
+}
+std::shared_ptr<Primitive3D> OpenSCADContext::sphere(double r)
+{
+  return Primitive3D::sphere(shared_from_this(), r);
+}
+
+std::shared_ptr<Primitive3D> OpenSCADContext::cylinder()
+{
+  return Primitive3D::cylinder(shared_from_this());
+}
+std::shared_ptr<Primitive3D> OpenSCADContext::cylinder(double r, double h)
+{
+  return Primitive3D::cylinder(shared_from_this(), r, h);
+}
+std::shared_ptr<Primitive3D> OpenSCADContext::cylinder(double r, double h, bool center)
+{
+  return Primitive3D::cylinder(shared_from_this(), r, h, center);
+}
+std::shared_ptr<Primitive3D> OpenSCADContext::cylinder(double r1, double r2, double h)
+{
+  return Primitive3D::cylinder(shared_from_this(), r1, r2, h);
+}
+std::shared_ptr<Primitive3D> OpenSCADContext::cylinder(double r1, double r2, double h, bool center)
+{
+  return Primitive3D::cylinder(shared_from_this(), r1, r2, h, center);
+}
+
+std::shared_ptr<Primitive3D> OpenSCADContext::polyhedron()
+{
+  return Primitive3D::polyhedron(shared_from_this()); 
+}
+std::shared_ptr<Primitive3D> OpenSCADContext::polyhedron(std::vector<point3d>& points, std::vector<std::vector<size_t>>& faces)
+{
+  return Primitive3D::polyhedron(shared_from_this(), points, faces); 
+}
+std::shared_ptr<Primitive3D> OpenSCADContext::polyhedron(std::vector<point3d>& points, std::vector<std::vector<size_t>>& faces, int convexity)
+{
+  return Primitive3D::polyhedron(shared_from_this(), points, faces, convexity); 
+}
+
 template<typename T, typename S>
-std::shared_ptr<T> init_(std::shared_ptr<S> shape)
+std::shared_ptr<T> init_(std::shared_ptr<OpenSCADContext> context, std::shared_ptr<S> shape)
 {
   auto primitive = std::make_shared<T>();
   primitive->node = shape;
   primitive->transformations = shape;
+  primitive->context = context;
   return primitive;
 }
 template<typename T, typename S>
@@ -268,19 +463,25 @@ template<typename T>
 std::shared_ptr<T> union_(T* primitive, T* primitive2)
 {
   auto node = CsgOpNode::union_();
-  return update_<T>(primitive, node);
+  auto ptr = update_<T>(primitive, node);
+  node->children.push_back(primitive2->transformations);
+  return ptr;
 }
 template<typename T>
 std::shared_ptr<T> intersection(T* primitive, T* primitive2)
 {
   auto node = CsgOpNode::intersection();
-  return update_<T>(primitive, node);
+  auto ptr = update_<T>(primitive, node);
+ node->children.push_back(primitive2->transformations);
+  return ptr;
 }
 template<typename T>
 std::shared_ptr<T> difference(T* primitive, T* primitive2)
 {
   auto node = CsgOpNode::difference();
-  return update_<T>(primitive, node);
+  auto ptr = update_<T>(primitive, node);
+  node->children.push_back(primitive2->transformations);
+  return ptr;
 }
 template<typename T>
 std::shared_ptr<T> minkowski(T* primitive)
@@ -337,176 +538,185 @@ std::shared_ptr<T> resize(T* primitive, std::vector<double>& newsize, std::vecto
   return update_<T>(primitive, node);
 }
 
-std::shared_ptr<Primitive3D> Primitive3D::cube()
+std::shared_ptr<Primitive3D> Primitive3D::cube(std::shared_ptr<OpenSCADContext> context)
 {
   auto shape = std::make_shared<CubeNode>();
-  return ::init_<Primitive3D, CubeNode>(shape);
+  return ::init_<Primitive3D, CubeNode>(context, shape);
 }
-std::shared_ptr<Primitive3D> Primitive3D::cube(double size)
+std::shared_ptr<Primitive3D> Primitive3D::cube(std::shared_ptr<OpenSCADContext> context, double size)
 {
   auto shape = std::make_shared<CubeNode>(size);
-  return ::init_<Primitive3D, CubeNode>(shape);
+  return ::init_<Primitive3D, CubeNode>(context, shape);
 }
-std::shared_ptr<Primitive3D> Primitive3D::cube(double size, bool center)
+std::shared_ptr<Primitive3D> Primitive3D::cube(std::shared_ptr<OpenSCADContext> context, double size, bool center)
 {
   auto shape = std::make_shared<CubeNode>(size, center);
-  return ::init_<Primitive3D, CubeNode>(shape);
+  return ::init_<Primitive3D, CubeNode>(context, shape);
 }
-std::shared_ptr<Primitive3D> Primitive3D::cube(double x, double y, double z)
+std::shared_ptr<Primitive3D> Primitive3D::cube(std::shared_ptr<OpenSCADContext> context, double x, double y, double z)
 {
   auto shape = std::make_shared<CubeNode>(x, y, z);
-  return ::init_<Primitive3D, CubeNode>(shape);
+  return ::init_<Primitive3D, CubeNode>(context, shape);
 }
-std::shared_ptr<Primitive3D> Primitive3D::cube(double x, double y, double z, bool center)
+std::shared_ptr<Primitive3D> Primitive3D::cube(std::shared_ptr<OpenSCADContext> context, double x, double y, double z, bool center)
 {
   auto shape = std::make_shared<CubeNode>(x, y, z, center);
-  return ::init_<Primitive3D, CubeNode>(shape);
+  return ::init_<Primitive3D, CubeNode>(context, shape);
 }
 
-std::shared_ptr<Primitive3D> Primitive3D::sphere()
+std::shared_ptr<Primitive3D> Primitive3D::sphere(std::shared_ptr<OpenSCADContext> context)
 {
   auto shape = std::make_shared<SphereNode>();
-  return ::init_<Primitive3D, SphereNode>(shape);
+  set_fragments(context, shape->fn, shape->fa, shape->fs);
+  return ::init_<Primitive3D, SphereNode>(context, shape);
 }
-std::shared_ptr<Primitive3D> Primitive3D::sphere(double r)
+std::shared_ptr<Primitive3D> Primitive3D::sphere(std::shared_ptr<OpenSCADContext> context, double r)
 {
   auto shape = std::make_shared<SphereNode>(r);
-  return ::init_<Primitive3D, SphereNode>(shape);
+  set_fragments(context, shape->fn, shape->fa, shape->fs);
+  return ::init_<Primitive3D, SphereNode>(context, shape);
 }
 
-std::shared_ptr<Primitive3D> Primitive3D::cylinder()
+std::shared_ptr<Primitive3D> Primitive3D::cylinder(std::shared_ptr<OpenSCADContext> context)
 {
   auto shape = std::make_shared<CylinderNode>();
-  return ::init_<Primitive3D, CylinderNode>(shape);
+  set_fragments(context, shape->fn, shape->fa, shape->fs);
+  return ::init_<Primitive3D, CylinderNode>(context, shape);
 }
-std::shared_ptr<Primitive3D> Primitive3D::cylinder(double r, double h)
+std::shared_ptr<Primitive3D> Primitive3D::cylinder(std::shared_ptr<OpenSCADContext> context, double r, double h)
 {
   auto shape = std::make_shared<CylinderNode>(r, h);
-  return ::init_<Primitive3D, CylinderNode>(shape);
+  set_fragments(context, shape->fn, shape->fa, shape->fs);
+  return ::init_<Primitive3D, CylinderNode>(context, shape);
 }
-std::shared_ptr<Primitive3D> Primitive3D::cylinder(double r, double h, bool center)
+std::shared_ptr<Primitive3D> Primitive3D::cylinder(std::shared_ptr<OpenSCADContext> context, double r, double h, bool center)
 {
   auto shape = std::make_shared<CylinderNode>(r, h, center);
-  return ::init_<Primitive3D, CylinderNode>(shape);
+  set_fragments(context, shape->fn, shape->fa, shape->fs);
+  return ::init_<Primitive3D, CylinderNode>(context, shape);
 }
-std::shared_ptr<Primitive3D> Primitive3D::cylinder(double r1, double r2, double h)
+std::shared_ptr<Primitive3D> Primitive3D::cylinder(std::shared_ptr<OpenSCADContext> context, double r1, double r2, double h)
 {
   auto shape = std::make_shared<CylinderNode>(r1, r2, h);
-  return ::init_<Primitive3D, CylinderNode>(shape);
+  set_fragments(context, shape->fn, shape->fa, shape->fs);
+  return ::init_<Primitive3D, CylinderNode>(context, shape);
 }
-std::shared_ptr<Primitive3D> Primitive3D::cylinder(double r1, double r2, double h, bool center)
+std::shared_ptr<Primitive3D> Primitive3D::cylinder(std::shared_ptr<OpenSCADContext> context, double r1, double r2, double h, bool center)
 {
   auto shape = std::make_shared<CylinderNode>(r1, r2, h, center);
-  return ::init_<Primitive3D, CylinderNode>(shape);
+  set_fragments(context, shape->fn, shape->fa, shape->fs);
+  return ::init_<Primitive3D, CylinderNode>(context, shape);
 }
 
-std::shared_ptr<Primitive3D> Primitive3D::polyhedron()
+std::shared_ptr<Primitive3D> Primitive3D::polyhedron(std::shared_ptr<OpenSCADContext> context)
 {
   auto shape = std::make_shared<PolyhedronNode>();
-  return ::init_<Primitive3D, PolyhedronNode>(shape);
+  return ::init_<Primitive3D, PolyhedronNode>(context, shape);
 }
 
-std::shared_ptr<Primitive3D> Primitive3D::polyhedron(std::vector<point3d>& points, std::vector<std::vector<size_t>>& faces)
+std::shared_ptr<Primitive3D> Primitive3D::polyhedron(std::shared_ptr<OpenSCADContext> context, std::vector<point3d>& points, std::vector<std::vector<size_t>>& faces)
 {
   auto shape = std::make_shared<PolyhedronNode>(points, faces);
-  return ::init_<Primitive3D, PolyhedronNode>(shape);
+  return ::init_<Primitive3D, PolyhedronNode>(context, shape);
 }
 
-std::shared_ptr<Primitive3D> Primitive3D::polyhedron(std::vector<point3d>& points, std::vector<std::vector<size_t>>& faces, int convexity)
+std::shared_ptr<Primitive3D> Primitive3D::polyhedron(std::shared_ptr<OpenSCADContext> context, std::vector<point3d>& points, std::vector<std::vector<size_t>>& faces, int convexity)
 {
   auto shape = std::make_shared<PolyhedronNode>(points, faces, convexity);
-  return ::init_<Primitive3D, PolyhedronNode>(shape);
+  return ::init_<Primitive3D, PolyhedronNode>(context, shape);
 }
 
-std::shared_ptr<Primitive2D> Primitive2D::square()
+std::shared_ptr<Primitive2D> Primitive2D::square(std::shared_ptr<OpenSCADContext> context)
 {
   auto shape = std::make_shared<SquareNode>();
-  return ::init_<Primitive2D, SquareNode>(shape);
+  return ::init_<Primitive2D, SquareNode>(context, shape);
 }
 
-std::shared_ptr<Primitive2D> Primitive2D::square(double size)
+std::shared_ptr<Primitive2D> Primitive2D::square(std::shared_ptr<OpenSCADContext> context, double size)
 {
   auto shape = std::make_shared<SquareNode>(size);
-  return ::init_<Primitive2D, SquareNode>(shape);
+  return ::init_<Primitive2D, SquareNode>(context, shape);
 }
-std::shared_ptr<Primitive2D> Primitive2D::square(double size, bool center)
+std::shared_ptr<Primitive2D> Primitive2D::square(std::shared_ptr<OpenSCADContext> context, double size, bool center)
 {
   auto shape = std::make_shared<SquareNode>(size, center);
-  return ::init_<Primitive2D, SquareNode>(shape);
+  return ::init_<Primitive2D, SquareNode>(context, shape);
 }
 
-std::shared_ptr<Primitive2D> Primitive2D::square(double x, double y)
+std::shared_ptr<Primitive2D> Primitive2D::square(std::shared_ptr<OpenSCADContext> context, double x, double y)
 {
   auto shape = std::make_shared<SquareNode>(x, y);
-  return ::init_<Primitive2D, SquareNode>(shape);
+  return ::init_<Primitive2D, SquareNode>(context, shape);
 }
 
-std::shared_ptr<Primitive2D> Primitive2D::square(double x, double y, bool center)
+std::shared_ptr<Primitive2D> Primitive2D::square(std::shared_ptr<OpenSCADContext> context, double x, double y, bool center)
 {
   auto shape = std::make_shared<SquareNode>(x, y, center);
-  return ::init_<Primitive2D, SquareNode>(shape);
+  return ::init_<Primitive2D, SquareNode>(context, shape);
 }
 
-std::shared_ptr<Primitive2D> Primitive2D::circle()
+std::shared_ptr<Primitive2D> Primitive2D::circle(std::shared_ptr<OpenSCADContext> context)
 {
   auto shape = std::make_shared<CircleNode>();
-  return ::init_<Primitive2D, CircleNode>(shape);
+  set_fragments(context, shape->fn, shape->fa, shape->fs);
+  return ::init_<Primitive2D, CircleNode>(context, shape);
 }
 
-std::shared_ptr<Primitive2D> Primitive2D::circle(double size)
+std::shared_ptr<Primitive2D> Primitive2D::circle(std::shared_ptr<OpenSCADContext> context, double size)
 {
   auto shape = std::make_shared<CircleNode>(size);
-  return ::init_<Primitive2D, CircleNode>(shape);
+  set_fragments(context, shape->fn, shape->fa, shape->fs);
+  return ::init_<Primitive2D, CircleNode>(context, shape);
 }
 
-// std::shared_ptr<Primitive2D> Primitive2D::polygon(){
+// std::shared_ptr<Primitive2D> Primitive2D::polygon(std::shared_ptr<OpenSCADContext> context, ){
 //   auto primitive = std::make_shared<Primitive2D>();
 //   primitive->node = Polygon::polygon();
 //   return primitive;
 // }
-std::shared_ptr<Primitive2D> Primitive2D::polygon(std::vector<point2d>& points)
+std::shared_ptr<Primitive2D> Primitive2D::polygon(std::shared_ptr<OpenSCADContext> context, std::vector<point2d>& points)
 {
   auto shape = std::make_shared<PolygonNode>(points);
-  return ::init_<Primitive2D, PolygonNode>(shape);
+  return ::init_<Primitive2D, PolygonNode>(context, shape);
 }
 
-std::shared_ptr<Primitive2D> Primitive2D::polygon(std::vector<point2d>& points, std::vector<std::vector<size_t>>& paths)
+std::shared_ptr<Primitive2D> Primitive2D::polygon(std::shared_ptr<OpenSCADContext> context, std::vector<point2d>& points, std::vector<std::vector<size_t>>& paths)
 {
   auto shape = std::make_shared<PolygonNode>(points, paths);
-  return ::init_<Primitive2D, PolygonNode>(shape);
+  return ::init_<Primitive2D, PolygonNode>(context, shape);
 }
-std::shared_ptr<Primitive2D> Primitive2D::polygon(std::vector<point2d>& points, std::vector<std::vector<size_t>>& paths, int convexity)
+std::shared_ptr<Primitive2D> Primitive2D::polygon(std::shared_ptr<OpenSCADContext> context, std::vector<point2d>& points, std::vector<std::vector<size_t>>& paths, int convexity)
 {
   auto shape = std::make_shared<PolygonNode>(points, paths, convexity);
-  return ::init_<Primitive2D, PolygonNode>(shape);
+  return ::init_<Primitive2D, PolygonNode>(context, shape);
 }
 // std::shared_ptr<Primitive2D> Primitive2D::text(){
 //   auto primitive = std::make_shared<Primitive2D>();
 //   primitive->node = std::make_shared<TextNode>();
 //   return primitive;
 // }
-std::shared_ptr<Primitive2D> Primitive2D::text(FreetypeRenderer::Params& params)
+std::shared_ptr<Primitive2D> Primitive2D::text(std::shared_ptr<OpenSCADContext> context, FreetypeRenderer::Params& params)
 {
   auto shape = std::make_shared<TextNode>(params);
-  return ::init_<Primitive2D, TextNode>(shape);
+  return ::init_<Primitive2D, TextNode>(context, shape);
 } 
 
-std::shared_ptr<Primitive2D> Primitive2D::text(std::string& text)
+std::shared_ptr<Primitive2D> Primitive2D::text(std::shared_ptr<OpenSCADContext> context, std::string& text)
 {
   auto shape = std::make_shared<TextNode>(text);
-  return ::init_<Primitive2D, TextNode>(shape);
+  return ::init_<Primitive2D, TextNode>(context, shape);
 }
 
-std::shared_ptr<Primitive2D> Primitive2D::text(std::string& text, int size)
+std::shared_ptr<Primitive2D> Primitive2D::text(std::shared_ptr<OpenSCADContext> context, std::string& text, int size)
 {
   auto shape = std::make_shared<TextNode>(text, size);
-  return ::init_<Primitive2D, TextNode>(shape);
+  return ::init_<Primitive2D, TextNode>(context, shape);
 }
 
-std::shared_ptr<Primitive2D> Primitive2D::text(std::string& text, int size, std::string& font)
+std::shared_ptr<Primitive2D> Primitive2D::text(std::shared_ptr<OpenSCADContext> context, std::string& text, int size, std::string& font)
 {
   auto shape = std::make_shared<TextNode>(text, size, font);
-  return ::init_<Primitive2D, TextNode>(shape);
+  return ::init_<Primitive2D, TextNode>(context, shape);
 }
 
 std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height)
@@ -514,7 +724,7 @@ std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height)
   auto shape = std::make_shared<LinearExtrudeNode>(height);
   shape->children.push_back(this->transformations);
   // this->transformations = shape;
-  return ::init_<Primitive3D, LinearExtrudeNode>(shape);
+  return ::init_<Primitive3D, LinearExtrudeNode>(this->context, shape);
 }
 
 std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, bool center)
@@ -522,7 +732,7 @@ std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, bool cen
   auto shape = std::make_shared<LinearExtrudeNode>(height, center);
   shape->children.push_back(this->transformations);
   // this->transformations = shape;
-  return ::init_<Primitive3D, LinearExtrudeNode>(shape);
+  return ::init_<Primitive3D, LinearExtrudeNode>(this->context, shape);
 }
 
 std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, double twist)
@@ -530,7 +740,7 @@ std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, double t
   auto shape = std::make_shared<LinearExtrudeNode>(height, twist);
   shape->children.push_back(this->transformations);
   // this->transformations = shape;
-  return ::init_<Primitive3D, LinearExtrudeNode>(shape);
+  return ::init_<Primitive3D, LinearExtrudeNode>(this->context, shape);
 }
 
 std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, int convexity, double twist)
@@ -538,7 +748,7 @@ std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, int conv
   auto shape = std::make_shared<LinearExtrudeNode>(height, convexity, twist);
   shape->children.push_back(this->transformations);
   // this->transformations = shape;
-  return ::init_<Primitive3D, LinearExtrudeNode>(shape);
+  return ::init_<Primitive3D, LinearExtrudeNode>(this->context, shape);
 }
 
 std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, int convexity, double twist, double scale)
@@ -546,7 +756,7 @@ std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, int conv
   auto shape = std::make_shared<LinearExtrudeNode>(height, convexity, twist, scale);
   shape->children.push_back(this->transformations);
   // this->transformations = shape;
-  return ::init_<Primitive3D, LinearExtrudeNode>(shape);
+  return ::init_<Primitive3D, LinearExtrudeNode>(this->context, shape);
 }
 
 std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, int convexity, double twist, std::vector<double>& scale)
@@ -554,7 +764,7 @@ std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, int conv
   auto shape = std::make_shared<LinearExtrudeNode>(height, convexity, twist, scale);
   shape->children.push_back(this->transformations);
   // this->transformations = shape;
-  return ::init_<Primitive3D, LinearExtrudeNode>(shape);
+  return ::init_<Primitive3D, LinearExtrudeNode>(this->context, shape);
 }
 
 std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, bool center, int convexity, double twist)
@@ -562,7 +772,7 @@ std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, bool cen
   auto shape = std::make_shared<LinearExtrudeNode>(height, center, convexity, twist);
   shape->children.push_back(this->transformations);
   // this->transformations = shape;
-  return ::init_<Primitive3D, LinearExtrudeNode>(shape);
+  return ::init_<Primitive3D, LinearExtrudeNode>(this->context, shape);
 }
 
 std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, bool center, int convexity, double twist, double scale)
@@ -570,7 +780,7 @@ std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, bool cen
   auto shape = std::make_shared<LinearExtrudeNode>(height, center, convexity, twist, scale);
   shape->children.push_back(this->transformations);
   // this->transformations = shape;
-  return ::init_<Primitive3D, LinearExtrudeNode>(shape);
+  return ::init_<Primitive3D, LinearExtrudeNode>(this->context, shape);
 }
 
 std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, bool center, int convexity, double twist, std::vector<double>& scale)
@@ -578,7 +788,7 @@ std::shared_ptr<Primitive3D> Primitive2D::linear_extrude(double height, bool cen
   auto shape = std::make_shared<LinearExtrudeNode>(height, center, convexity, twist, scale);
   shape->children.push_back(this->transformations);
   // this->transformations = shape;
-  return ::init_<Primitive3D, LinearExtrudeNode>(shape);
+  return ::init_<Primitive3D, LinearExtrudeNode>(this->context, shape);
 }
 
 std::shared_ptr<Primitive3D> Primitive2D::rotate_extrude(double angle)
@@ -586,7 +796,7 @@ std::shared_ptr<Primitive3D> Primitive2D::rotate_extrude(double angle)
   auto shape = std::make_shared<RotateExtrudeNode>(angle);
   node->children.push_back(this->transformations);
   // this->transformations = node;
-  return ::init_<Primitive3D, RotateExtrudeNode>(shape);
+  return ::init_<Primitive3D, RotateExtrudeNode>(this->context, shape);
 }
 
 std::shared_ptr<Primitive3D> Primitive2D::rotate_extrude(double angle, int convexity)
@@ -594,7 +804,7 @@ std::shared_ptr<Primitive3D> Primitive2D::rotate_extrude(double angle, int conve
   auto shape = std::make_shared<RotateExtrudeNode>(angle, convexity);
   node->children.push_back(this->transformations);
   // this->transformations = node;
-  return ::init_<Primitive3D, RotateExtrudeNode>(shape);
+  return ::init_<Primitive3D, RotateExtrudeNode>(this->context, shape);
 }
 
 std::shared_ptr<Primitive2D> Primitive2D::offset(std::string op, double delta)
