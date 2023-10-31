@@ -335,6 +335,7 @@ NB_MODULE(openscadpy, m) {
     .def_ro("transformations", &OSObject::transformations, "transformations");
 
   nb::class_<Primitive3D, OSObject>(m, "Primitive3D")
+    .def("set_debug", &Primitive3D::set_debug, "modifier"_a, "Set debug modifier - # (highlight) , ! (root), % (background), * (disable). ")
     .def("scale", nb::overload_cast<double>(&Primitive3D::scale), "size"_a, "Scale")
     .def("scale", nb::overload_cast<std::vector<double>&>(&Primitive3D::scale), "vec"_a, "Scale")
     // .def("color", nb::overload_cast<Color4f*>(&Primitive3D::color), "color"_a, "color")
@@ -364,6 +365,7 @@ NB_MODULE(openscadpy, m) {
     .def("resize", nb::overload_cast<std::vector<double>&, std::vector<bool>&, int>(&Primitive3D::resize), "newsize"_a,  "autosize"_a, "convexity"_a, "resize");
 
   nb::class_<Primitive2D, OSObject>(m, "Primitive2D")
+    .def("set_debug", &Primitive2D::set_debug, "modifier"_a, "Set debug modifier - # (highlight) , ! (root), % (background), * (disable). ")
     .def("scale", nb::overload_cast<double>(&Primitive2D::scale), "size"_a, "Scale")
     .def("scale", nb::overload_cast<std::vector<double>&>(&Primitive2D::scale), "vec"_a, "Scale")
     // .def("color", nb::overload_cast<Color4f*>(&Primitive2D::color), "color"_a, "color")

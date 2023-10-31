@@ -129,6 +129,8 @@ public:
   static std::shared_ptr<Primitive2D> from_scad(std::string& text);
   std::shared_ptr<Primitive2D> op(std::shared_ptr<Operator> op);
 
+  std::shared_ptr<Primitive2D> set_debug(std::string modifier);
+
   std::shared_ptr<Primitive2D> color(std::string color);
   std::shared_ptr<Primitive2D> color(std::string colorname, float alpha);
   std::shared_ptr<Primitive2D> color(int red, int green, int blue);
@@ -205,6 +207,8 @@ public:
   // static std::shared_ptr<Primitive3D> from_scad(std::string& text);
 
   // std::shared_ptr<Primitive2D> op(std::shared_ptr<Operator> operator);
+  std::shared_ptr<Primitive3D> set_debug(std::string modifier);
+
   std::shared_ptr<Primitive3D> color(std::string color);
   std::shared_ptr<Primitive3D> color(std::string colorname, float alpha);
   std::shared_ptr<Primitive3D> color(int red, int green, int blue);

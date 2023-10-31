@@ -353,6 +353,18 @@ std::shared_ptr<Primitive3D> OpenSCADContext::polyhedron(std::vector<point3d>& p
   return Primitive3D::polyhedron(shared_from_this(), points, faces, convexity); 
 }
 
+std::shared_ptr<Primitive3D> Primitive3D::set_debug(std::string modifier)
+{
+  this->node->set_debug(modifier);
+  return shared_from_this();
+}
+
+std::shared_ptr<Primitive2D> Primitive2D::set_debug(std::string modifier)
+{
+  this->node->set_debug(modifier);
+  return shared_from_this();
+}
+
 template<typename T, typename S>
 std::shared_ptr<T> init_(std::shared_ptr<OpenSCADContext> context, std::shared_ptr<S> shape)
 {
