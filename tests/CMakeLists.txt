@@ -209,14 +209,6 @@ set(OPENSCAD_ARG "--openscad=${OPENSCAD_BINPATH}")
 # Define Macros and Functions #
 ###############################
 
-# Tags tests as experimental. This will add all the --enable=<feature>
-# options for the tagged tests.
-macro(experimental_tests)
-  foreach (TESTNAME ${ARGN})
-    list(APPEND EXPERIMENTAL_TESTS ${TESTNAME})
-  endforeach()
-endmacro()
-
 #
 # Returns into the FULLNAME variable the global full test name (identifier)
 # given a test command and source filename
@@ -342,15 +334,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
     set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
 
     if (TESTCMD_EXPERIMENTAL)
-      experimental_tests(${TEST_FULLNAME})
       set(TEST_IS_EXPERIMENTAL true)
-    else()
-      list(FIND EXPERIMENTAL_TESTS ${TEST_FULLNAME} EXPERIMENTAL_TEST)
-      if (${EXPERIMENTAL_TEST} EQUAL -1)
-        set(TEST_IS_EXPERIMENTAL false)
-      else()
-        set(TEST_IS_EXPERIMENTAL true)
-      endif()
     endif()
 
     # add global experimental options here
