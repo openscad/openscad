@@ -354,7 +354,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
     endif()
 
     # add global experimental options here
-    set(EXPERIMENTAL_OPTION "--enable=lazy-union" "--enable=textmetrics")
+    set(EXPERIMENTAL_OPTION "")
 
     # Enable manifold for all tests except those marked as skipped
     if (ENABLE_MANIFOLD
@@ -535,6 +535,9 @@ add_custom_target(svg_viewbox_tests ALL
 # Find all scad files
 file(GLOB DEPRECATED_3D_FILES ${TEST_SCAD_DIR}/3D/deprecated/*.scad)
 file(GLOB FEATURES_2D_FILES   ${TEST_SCAD_DIR}/2D/features/*.scad)
+list(REMOVE_ITEM FEATURES_2D_FILES
+  ${TEST_SCAD_DIR}/2D/features/text-metrics.scad # -> EXPERIMENTAL_TEXTMETRICS_FILES
+)
 file(GLOB FEATURES_3D_FILES   ${TEST_SCAD_DIR}/3D/features/*.scad)
 file(GLOB ISSUES_2D_FILES     ${TEST_SCAD_DIR}/2D/issues/*.scad)
 file(GLOB ISSUES_3D_FILES     ${TEST_SCAD_DIR}/3D/issues/*.scad)
@@ -653,7 +656,6 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/isnum-test.scad
   ${TEST_SCAD_DIR}/misc/isbool-test.scad
   ${TEST_SCAD_DIR}/misc/isstring-test.scad
-  ${TEST_SCAD_DIR}/misc/isobject-test.scad
   ${TEST_SCAD_DIR}/misc/operators-tests.scad
   ${TEST_SCAD_DIR}/misc/expression-precedence.scad
   ${TEST_SCAD_DIR}/misc/builtins-calling-vec3vec2.scad
@@ -672,7 +674,6 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/root-modifiers.scad
   ${TEST_SCAD_DIR}/misc/root-modifier-for.scad
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
-  ${TEST_SCAD_DIR}/misc/text-metrics-test.scad
   ${TEST_SCAD_DIR}/misc/vector-swizzling.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
 )
@@ -776,7 +777,12 @@ list(APPEND EXPORT3D_TEST_FILES
 
 # 2D tests
 list(APPEND FILES_2D ${FEATURES_2D_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES})
-list(APPEND ALL_2D_FILES ${FILES_2D} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES})
+list(APPEND ALL_2D_FILES
+  ${FILES_2D}
+  ${SCAD_DXF_FILES}
+  ${SCAD_SVG_FILES}
+  ${TEST_SCAD_DIR}/2D/features/text-metrics.scad
+)
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
 # to manage, don't try. Once we improve import, we can reenable this
@@ -933,21 +939,6 @@ list(APPEND TESTS_FAILING_WITH_MANIFOLD
   cgalstlcgalpngtest_mirror-tests
   cgalbinstlcgalpngtest_mirror-tests
 )
-
-###################################
-# Add experimental features tests #
-###################################
-
-#"--enable=textmetrics"
-experimental_tests(echotest_isobject-test)
-experimental_tests(echotest_text-metrics-test)
-experimental_tests(dumptest_text-metrics)
-experimental_tests(cgalpngtest_text-metrics)
-experimental_tests(opencsgtest_text-metrics)
-experimental_tests(csgpngtest_text-metrics)
-experimental_tests(throwntogethertest_text-metrics)
-experimental_tests(dxfpngtest_text-metrics)
-experimental_tests(svgpngtest_text-metrics)
 
 ##############################
 # Define test configurations #
@@ -1263,13 +1254,9 @@ add_cmdline_test(openscad-colorscheme-metallic-render OPENSCAD FILES ${CSG_EXAMP
 #
 # Experimental tests
 #
-list(APPEND EXPERIMENTAL_ROOF_FILES ${EXAMPLES_DIR}/Basics/roof.scad)
-list(APPEND EXPERIMENTAL_IMPORT_FILES
-  ${TEST_SCAD_DIR}/json/import-json.scad
-  ${TEST_SCAD_DIR}/json/import-json-relative-path.scad
-  )
 
 # Roof tests
+list(APPEND EXPERIMENTAL_ROOF_FILES ${EXAMPLES_DIR}/Basics/roof.scad)
 add_cmdline_test(dumptest-examples  EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} SUFFIX csg ARGS --enable=roof)
 add_cmdline_test(opencsgtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} SUFFIX png ARGS --enable=roof)
 add_cmdline_test(throwntogethertest EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --preview=throwntogether --enable=roof SUFFIX png)
@@ -1277,7 +1264,28 @@ add_cmdline_test(csgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFF
 add_cmdline_test(cgalpngtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} SUFFIX png ARGS --render --enable=roof)
 
 # import-function tests
+list(APPEND EXPERIMENTAL_IMPORT_FILES
+  ${TEST_SCAD_DIR}/json/import-json.scad
+  ${TEST_SCAD_DIR}/json/import-json-relative-path.scad
+  )
 add_cmdline_test(echotest           EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${EXPERIMENTAL_IMPORT_FILES} ARGS --enable=import-function)
+
+# textmetrics tests
+list(APPEND EXPERIMENTAL_TEXTMETRICS_ECHOTEST_FILES
+  ${TEST_SCAD_DIR}/misc/isobject-test.scad
+  ${TEST_SCAD_DIR}/misc/text-metrics-test.scad
+)
+list(APPEND EXPERIMENTAL_TEXTMETRICS_FILES
+  ${TEST_SCAD_DIR}/2D/features/text-metrics.scad
+)
+add_cmdline_test(echotest           EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${EXPERIMENTAL_TEXTMETRICS_ECHOTEST_FILES} ARGS --enable=textmetrics)
+add_cmdline_test(dumptest           EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} SUFFIX csg ARGS --enable=textmetrics)
+add_cmdline_test(opencsgtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} SUFFIX png ARGS --enable=textmetrics)
+add_cmdline_test(throwntogethertest EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --preview=throwntogether --enable=textmetrics SUFFIX png)
+add_cmdline_test(csgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} EXPECTEDDIR cgalpngtest ARGS ${OPENSCAD_ARG} --format=csg --render --enable=textmetrics)
+add_cmdline_test(cgalpngtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} SUFFIX png ARGS --render --enable=textmetrics)
+add_cmdline_test(dxfpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=DXF --render=cgal --enable=textmetrics EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
+add_cmdline_test(svgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=SVG --render=cgal --enable=textmetrics EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
 
 
 ############################
