@@ -354,7 +354,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
     endif()
 
     # add global experimental options here
-    set(EXPERIMENTAL_OPTION "--enable=lazy-union" "--enable=textmetrics" "--enable=import-function")
+    set(EXPERIMENTAL_OPTION "--enable=lazy-union" "--enable=textmetrics")
 
     # Enable manifold for all tests except those marked as skipped
     if (ENABLE_MANIFOLD
@@ -563,9 +563,8 @@ list(REMOVE_ITEM EXAMPLE_3D_FILES
   ${EXAMPLES_DIR}/Functions/list_comprehensions.scad
   ${EXAMPLES_DIR}/Functions/polygon_areas.scad
   ${EXAMPLES_DIR}/Functions/recursion.scad
-  ${EXAMPLES_DIR}/Basics/roof.scad
+  ${EXAMPLES_DIR}/Basics/roof.scad # -> EXPERIMENTAL_ROOF_FILES
 )
-list(APPEND EXPERIMENTAL_ROOF_FILES ${EXAMPLES_DIR}/Basics/roof.scad)
 
 list(APPEND EXAMPLE_2D_FILES
   ${EXAMPLES_DIR}/Old/example015.scad
@@ -674,8 +673,6 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/root-modifier-for.scad
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
   ${TEST_SCAD_DIR}/misc/text-metrics-test.scad
-  ${TEST_SCAD_DIR}/json/import-json.scad
-  ${TEST_SCAD_DIR}/json/import-json-relative-path.scad
   ${TEST_SCAD_DIR}/misc/vector-swizzling.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
 )
@@ -951,10 +948,6 @@ experimental_tests(csgpngtest_text-metrics)
 experimental_tests(throwntogethertest_text-metrics)
 experimental_tests(dxfpngtest_text-metrics)
 experimental_tests(svgpngtest_text-metrics)
-
-# "--enable=import-function"
-experimental_tests(echotest_import-json)
-experimental_tests(echotest_import-json-relative-path)
 
 ##############################
 # Define test configurations #
@@ -1270,6 +1263,11 @@ add_cmdline_test(openscad-colorscheme-metallic-render OPENSCAD FILES ${CSG_EXAMP
 #
 # Experimental tests
 #
+list(APPEND EXPERIMENTAL_ROOF_FILES ${EXAMPLES_DIR}/Basics/roof.scad)
+list(APPEND EXPERIMENTAL_IMPORT_FILES
+  ${TEST_SCAD_DIR}/json/import-json.scad
+  ${TEST_SCAD_DIR}/json/import-json-relative-path.scad
+  )
 
 # Roof tests
 add_cmdline_test(dumptest-examples  EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} SUFFIX csg ARGS --enable=roof)
@@ -1277,6 +1275,10 @@ add_cmdline_test(opencsgtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_R
 add_cmdline_test(throwntogethertest EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --preview=throwntogether --enable=roof SUFFIX png)
 add_cmdline_test(csgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR cgalpngtest ARGS ${OPENSCAD_ARG} --format=csg --render --enable=roof)
 add_cmdline_test(cgalpngtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} SUFFIX png ARGS --render --enable=roof)
+
+# import-function tests
+add_cmdline_test(echotest           EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${EXPERIMENTAL_IMPORT_FILES} ARGS --enable=import-function)
+
 
 ############################
 # Relative filenames tests #
