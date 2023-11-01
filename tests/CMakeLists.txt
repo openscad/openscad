@@ -354,7 +354,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
     endif()
 
     # add global experimental options here
-    set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=roof" "--enable=lazy-union" "--enable=textmetrics" "--enable=import-function")
+    set(EXPERIMENTAL_OPTION "--enable=roof" "--enable=lazy-union" "--enable=textmetrics" "--enable=import-function")
 
     # Enable manifold for all tests except those marked as skipped
     if (ENABLE_MANIFOLD
