@@ -1427,6 +1427,11 @@ set_tests_properties(
   openscad-viewoptions-edges_view-options-tests
   openscad-viewoptions-axes-scales-edges_view-options-tests
 
+  # Non-manifold tests: https://github.com/openscad/openscad/issues/3567
+  # This may work with fast-csg, but will fail with both CGAL and Manifold
+  cgalpngtest_linear_extrude-scale-zero-tests
+  csgpngtest_linear_extrude-scale-zero-tests
+
   PROPERTIES DISABLED TRUE
 )
 
