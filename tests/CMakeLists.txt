@@ -874,53 +874,10 @@ foreach(CONFIG $CACHE{TEST_CONFIGS})
   unset(${CONFIG}_TEST_CONFIG CACHE)
 endforeach()
 
-# Heavy tests are tests taking more than 10 seconds on a development computer
+# Heavy tests are tests taking more than 5 seconds on a decent 2023 desktop
 set_test_config(Heavy FILES
-  cgalbinstlcgalpngtest_rotate_extrude-tests
-  cgalpngtest_camera-tests
-  cgalpngtest_for-nested-tests
-  cgalpngtest_fractal
-  cgalpngtest_issue267-normalization-crash
-  cgalpngtest_iteration
-  cgalpngtest_linear_extrude-scale-zero-tests
-  cgalpngtest_minkowski3-erosion
-  cgalpngtest_projection-extrude-tests
-  cgalpngtest_resize-tests
-  cgalpngtest_rotate_extrude-angle
-  cgalpngtest_rotate_extrude-tests
-  cgalpngtest_sphere-tests
-  cgalpngtest_surface-tests
-  cgalstlcgalpngtest_rotate_extrude-tests
-  csgpngtest_camera-tests
-  csgpngtest_for-nested-tests
-  csgpngtest_fractal
   csgpngtest_issue267-normalization-crash
-  csgpngtest_iteration
-  csgpngtest_linear_extrude-scale-zero-tests
-  csgpngtest_minkowski3-erosion
-  csgpngtest_resize-tests
-  csgpngtest_rotate_extrude-angle
-  csgpngtest_rotate_extrude-tests
-  csgpngtest_sphere-tests
-  csgpngtest_surface-tests
-  monotonepngtest_rotate_extrude-tests
-  offpngtest_demo_cut
-  offpngtest_difference
-  offpngtest_fence
-  offpngtest_rounded_box
-  offpngtest_search
-  offpngtest_surface
-  offpngtest_translation
-  opencsgtest_issue267-normalization-crash
-  opencsgtest_minkowski3-erosion
-  openscad-colorscheme-metallic-render_CSG
-  stlpngtest_demo_cut
-  stlpngtest_difference
-  stlpngtest_fence
-  stlpngtest_search
-  stlpngtest_surface
-  stlpngtest_rounded_box
-  stlpngtest_translation
+  cgalpngtest_issue267-normalization-crash
 )
 
 # Bugs
@@ -1199,8 +1156,8 @@ add_cmdline_test(svgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS
 function(add_output_file_test TESTCMD_BASENAME)
   cmake_parse_arguments(TESTCMD "" "FILE;FORMAT" "" ${ARGN})
 
-  add_test(NAME "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_run" COMMAND ${OPENSCAD_BINPATH} ${TESTCMD_FILE} -o ${TESTCMD_BASENAME}.${TESTCMD_FORMAT})
-  add_test(NAME "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_check" COMMAND ${CMAKE_COMMAND} -E cat ${TESTCMD_BASENAME}.${TESTCMD_FORMAT})
+  add_test(NAME "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_run" CONFIGURATIONS Default COMMAND ${OPENSCAD_BINPATH} ${TESTCMD_FILE} -o ${TESTCMD_BASENAME}.${TESTCMD_FORMAT})
+  add_test(NAME "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_check" CONFIGURATIONS Default COMMAND ${CMAKE_COMMAND} -E cat ${TESTCMD_BASENAME}.${TESTCMD_FORMAT})
   set_tests_properties("${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_check" PROPERTIES DEPENDS "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_run")
 endfunction()
 
