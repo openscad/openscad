@@ -341,25 +341,14 @@ function(add_cmdline_test TESTCMD_BASENAME)
     set(EXPERIMENTAL_OPTION "")
 
     # Enable manifold for all tests except those marked as skipped
-    if (ENABLE_MANIFOLD
+    if (EXPERIMENTAL
         AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
         AND NOT SCADFILE IN_LIST SCADFILES_FAILING_WITH_MANIFOLD
         AND NOT TEST_FULLNAME IN_LIST TESTS_FAILING_WITH_MANIFOLD
         AND NOT TESTCMD_BASENAME MATCHES "^(stlexport|objexport)$"
         AND NOT TESTCMD_BASENAME MATCHES "^openscad-viewoptions-.*"
-        AND NOT TESTCMD_BASENAME MATCHES "^fastcsg-.*"
         AND NOT TESTCMD_BASENAME MATCHES "^remesh-.*")
       set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=manifold")
-    endif()
-    
-    # Enable fast-csg for all tests but those that have different expectations or fail for other reasons.
-    if (NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
-        AND NOT SCADFILE IN_LIST SCADFILES_FAILING_WITH_FAST_CSG
-        AND NOT TEST_FULLNAME IN_LIST TESTS_FAILING_WITH_FAST_CSG)
-      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg")
-      if (SCADFILE IN_LIST FAST_CSG_SAFER_NEEDED)
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg-safer")
-      endif()
     endif()
 
     # 2D tests should be viewed from the top, not an angle.
@@ -800,41 +789,12 @@ list(APPEND LAZYUNION_2D_FILES
 )
 list(APPEND LAZYUNION_FILES ${LAZYUNION_2D_FILES} ${LAZYUNION_3D_FILES})
 
-list(APPEND FASTCSG_LAZYUNION_FILES ${LAZYUNION_3D_FILES}
-  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-1.scad
-  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-2.scad
-  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-3.scad
-  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-4.scad
-)
-
 list(APPEND SVG_VIEWBOX_TESTS
   viewbox_300x400_none viewbox_600x200_none
   viewbox_300x400_meet_xMinYMin viewbox_300x400_meet_xMidYMin viewbox_300x400_meet_xMaxYMin
   viewbox_600x200_meet_xMinYMin viewbox_600x200_meet_xMinYMid viewbox_600x200_meet_xMinYMax
   viewbox_600x200_slice_xMinYMin viewbox_600x200_slice_xMidYMin viewbox_600x200_slice_xMaxYMin
   viewbox_600x600_slice_xMinYMin viewbox_600x600_slice_xMinYMid viewbox_600x600_slice_xMinYMax
-)
-
-# Specific tests for which fast-csg cannot be enabled yet.
-list(APPEND TESTS_FAILING_WITH_FAST_CSG
-  # Different order of vertices
-  3mfexport_3mf-export
-  # Test script argument passing issue
-  cgalstlsanitytest_normal-nan
-)
-
-# Tests for which fast-csg works but produces different expectation files.
-# These tests are run twice (w/ and without fast-csg).
-list(APPEND SCADFILES_FAILING_WITH_FAST_CSG
-  # Corefinement leaves some polyhedra in a state that we can't build Nefs from
-  ${TEST_SCAD_DIR}/3D/features/mirror-tests.scad
-  # Resize issue!
-  ${TEST_SCAD_DIR}/3D/features/resize-convexity-tests.scad
-  # Needs investigation:
-  ${TEST_SCAD_DIR}/3D/issues/issue1246.scad
-)
-list(APPEND FAST_CSG_SAFER_NEEDED
-  ${TEST_SCAD_DIR}/3D/features/edge-cases.scad
 )
 
 list(APPEND SCADFILES_WITH_GREEN_FACES
@@ -875,26 +835,6 @@ list(APPEND SCADFILES_WITH_GREEN_FACES
   ${TEST_SCAD_DIR}/misc/let-module-tests.scad
   ${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
   ${TEST_SCAD_DIR}/misc/rotate-empty-bbox.scad
-)
-
-# Tests for which fast-csg works but produces different expectation files.
-# These tests are run twice (w/ and without fast-csg).
-list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
-  # No more green faces from differences.
-  ${SCADFILES_WITH_GREEN_FACES}
-
-  # This one no longer crashes, yay!
-  ${TEST_SCAD_DIR}/bugs/issue1455.scad
-  # These are less broken than before:
-  ${TEST_SCAD_DIR}/bugs/issue791.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1138.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
-
-  # Less broken and no green faces
-  ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
-
-  # Misc
-  ${TEST_SCAD_DIR}/2D/features/highlight-modifier-2d.scad
 )
 
 list(APPEND SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
@@ -981,7 +921,6 @@ set_test_config(Heavy FILES
   stlpngtest_surface
   stlpngtest_rounded_box
   stlpngtest_translation
-  fastcsg-cgalpng_minkowski3-erosion
 )
 
 # Bugs
@@ -1083,27 +1022,6 @@ add_cmdline_test(lazyunion-dxfpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} S
 add_cmdline_test(lazyunion-svgpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=SVG --enable=lazy-union --render=cgal)
 
 add_cmdline_test(manifold-cgalpng             EXPERIMENTAL OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS} ARGS --enable=manifold --render)
-add_cmdline_test(fastcsg-cgalpng              EXPERIMENTAL OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS} ARGS --enable=fast-csg --render)
-add_cmdline_test(fastcsg-lazyunion-cgalpng    EXPERIMENTAL OPENSCAD SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} ARGS --enable=lazy-union --render)
-add_cmdline_test(fastcsg-lazyunion-amfpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union ${OPENSCAD_ARG} --format=AMF)
-add_cmdline_test(fastcsg-lazyunion-3mfpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union ${OPENSCAD_ARG} --format=3MF)
-
-# Disabled due to https://github.com/openscad/openscad/issues/4470
-if (EXPERIMENTAL)
-  set_tests_properties(
-    fastcsg-cgalpng_highlight-modifier2
-    PROPERTIES DISABLED TRUE
-  )
-endif()
-
-list(APPEND FASTCSG_REMESH_FILES
-  ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cubes.scad
-  ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cube-1.scad
-  ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cube-2.scad
-)
-
-add_cmdline_test(remesh-cgalpng EXPERIMENTAL OPENSCAD SUFFIX png FILES ${FASTCSG_REMESH_FILES} ARGS --enable=fast-csg --render)
-add_cmdline_test(remesh-stl     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${FASTCSG_REMESH_FILES} ARGS --enable=predictible-output --enable=fast-csg --render)
 
 # Trivial Export/Import files
 # This sanity-checks bidirectional file format import/export
@@ -1120,8 +1038,8 @@ add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SC
 
 # Corner-case Export/Import tests
 add_cmdline_test(monotonepngtest OPENSCAD SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES} ${EXPORT3D_CGALCGAL_TEST_FILES} ARGS --colorscheme=Monotone --render)
-add_cmdline_test(stlexport             EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=manifold --render)
-add_cmdline_test(fastcsg-stlexport     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=fast-csg --render)
+add_cmdline_test(stlexport             EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
+add_cmdline_test(manifold-stlexport    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=manifold --render)
 add_cmdline_test(objexport             EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render)
 add_cmdline_test(3mfexport             OPENSCAD ARGS SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES})
 
@@ -1391,26 +1309,6 @@ if (NOT LIB3MF_FOUND)
     3mfexport_3mf-export
     PROPERTIES DISABLED TRUE
   )
-  if (EXPERIMENTAL)
-    set_tests_properties(
-      fastcsg-lazyunion-3mfpngtest_lazyunion-toplevel-objects
-      fastcsg-lazyunion-3mfpngtest_lazyunion-toplevel-for
-      fastcsg-lazyunion-3mfpngtest_lazyunion-nested-for
-      fastcsg-lazyunion-3mfpngtest_lazyunion-children
-      fastcsg-lazyunion-3mfpngtest_lazyunion-hull-for
-      fastcsg-lazyunion-3mfpngtest_lazyunion-root-for
-      fastcsg-lazyunion-3mfpngtest_lazyunion-intersection-for
-      fastcsg-lazyunion-3mfpngtest_lazyunion-difference-for
-      fastcsg-lazyunion-3mfpngtest_lazyunion-minkowski-for
-      fastcsg-lazyunion-3mfpngtest_lazyunion-transform-for
-      fastcsg-lazyunion-3mfpngtest_2d-3d
-      fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-1
-      fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-2
-      fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-3
-      fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-4
-      PROPERTIES DISABLED TRUE
-    )
-  endif(EXPERIMENTAL)
 endif(NOT LIB3MF_FOUND)
 
 list(APPEND NEF3_BROKEN_TESTS
