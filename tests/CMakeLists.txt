@@ -1389,24 +1389,29 @@ if (NOT LIB3MF_FOUND)
     throwntogethertest_import_3mf-tests
     3mfpngtest_cube10
     3mfexport_3mf-export
-    fastcsg-lazyunion-3mfpngtest_lazyunion-toplevel-objects
-    fastcsg-lazyunion-3mfpngtest_lazyunion-toplevel-for
-    fastcsg-lazyunion-3mfpngtest_lazyunion-nested-for
-    fastcsg-lazyunion-3mfpngtest_lazyunion-children
-    fastcsg-lazyunion-3mfpngtest_lazyunion-hull-for
-    fastcsg-lazyunion-3mfpngtest_lazyunion-root-for
-    fastcsg-lazyunion-3mfpngtest_lazyunion-intersection-for
-    fastcsg-lazyunion-3mfpngtest_lazyunion-difference-for
-    fastcsg-lazyunion-3mfpngtest_lazyunion-minkowski-for
-    fastcsg-lazyunion-3mfpngtest_lazyunion-transform-for
-    fastcsg-lazyunion-3mfpngtest_2d-3d
-    fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-1
-    fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-2
-    fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-3
-    fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-4
     PROPERTIES DISABLED TRUE
   )
-endif()
+  if (EXPERIMENTAL)
+    set_tests_properties(
+      fastcsg-lazyunion-3mfpngtest_lazyunion-toplevel-objects
+      fastcsg-lazyunion-3mfpngtest_lazyunion-toplevel-for
+      fastcsg-lazyunion-3mfpngtest_lazyunion-nested-for
+      fastcsg-lazyunion-3mfpngtest_lazyunion-children
+      fastcsg-lazyunion-3mfpngtest_lazyunion-hull-for
+      fastcsg-lazyunion-3mfpngtest_lazyunion-root-for
+      fastcsg-lazyunion-3mfpngtest_lazyunion-intersection-for
+      fastcsg-lazyunion-3mfpngtest_lazyunion-difference-for
+      fastcsg-lazyunion-3mfpngtest_lazyunion-minkowski-for
+      fastcsg-lazyunion-3mfpngtest_lazyunion-transform-for
+      fastcsg-lazyunion-3mfpngtest_2d-3d
+      fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-1
+      fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-2
+      fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-3
+      fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-4
+      PROPERTIES DISABLED TRUE
+    )
+  endif(EXPERIMENTAL)
+endif(NOT LIB3MF_FOUND)
 
 list(APPEND NEF3_BROKEN_TESTS
   cgalpngtest_nef3_broken
