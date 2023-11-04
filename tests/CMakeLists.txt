@@ -801,6 +801,10 @@ list(APPEND SCADFILES_WITH_GREEN_FACES
   ${EXAMPLES_DIR}/Basics/CSG-modules.scad
   ${EXAMPLES_DIR}/Basics/CSG.scad
   ${EXAMPLES_DIR}/Basics/logo.scad
+  ${EXAMPLES_DIR}/Basics/LetterBlock.scad
+  ${EXAMPLES_DIR}/Basics/text_on_cube.scad
+  ${EXAMPLES_DIR}/Basics/logo_and_text.scad
+  ${EXAMPLES_DIR}/Parametric/sign.scad
   ${EXAMPLES_DIR}/Old/example001.scad
   ${EXAMPLES_DIR}/Old/example002.scad
   ${EXAMPLES_DIR}/Old/example003.scad
