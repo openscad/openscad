@@ -340,7 +340,8 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # add global experimental options here
     set(EXPERIMENTAL_OPTION "")
 
-    # Enable manifold for all tests except those marked as skipped
+    # To give manifold some extra test coverage, enable manifold 
+    # for all tests except those marked as skipped.
     if (EXPERIMENTAL
         AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
         AND NOT SCADFILE IN_LIST SCADFILES_FAILING_WITH_MANIFOLD
@@ -348,7 +349,9 @@ function(add_cmdline_test TESTCMD_BASENAME)
         AND NOT TESTCMD_BASENAME MATCHES "^(stlexport|objexport)$"
         AND NOT TESTCMD_BASENAME MATCHES "^openscad-viewoptions-.*"
         AND NOT TESTCMD_BASENAME MATCHES "^remesh-.*")
-      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=manifold")
+      set(MANIFOLD_OPTION "--enable=manifold")
+    else()
+      set(MANIFOLD_OPTION "")
     endif()
 
     # 2D tests should be viewed from the top, not an angle.
@@ -391,7 +394,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
       ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
       -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
       ${TESTCMD_EXE} ${TESTCMD_SCRIPT} ${SCADFILE} ${CAMERA_OPTION}
-      ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS} ")"
+      ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS} ")"
     )
     # Use cmake option "--log-level DEBUG" during top level config to see this
     message(DEBUG "${DBG_COMMAND_STR}")
@@ -407,7 +410,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
         -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
         ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION}
-        ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS}
+        ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
       )
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
     endif()
@@ -798,6 +801,7 @@ list(APPEND SVG_VIEWBOX_TESTS
 )
 
 list(APPEND SCADFILES_WITH_GREEN_FACES
+  ${EXAMPLES_DIR}/Advanced/children.scad
   ${EXAMPLES_DIR}/Basics/CSG-modules.scad
   ${EXAMPLES_DIR}/Basics/CSG.scad
   ${EXAMPLES_DIR}/Basics/logo.scad
@@ -805,12 +809,14 @@ list(APPEND SCADFILES_WITH_GREEN_FACES
   ${EXAMPLES_DIR}/Basics/text_on_cube.scad
   ${EXAMPLES_DIR}/Basics/logo_and_text.scad
   ${EXAMPLES_DIR}/Parametric/sign.scad
+  ${EXAMPLES_DIR}/Parametric/candleStand.scad
   ${EXAMPLES_DIR}/Old/example001.scad
   ${EXAMPLES_DIR}/Old/example002.scad
   ${EXAMPLES_DIR}/Old/example003.scad
   ${EXAMPLES_DIR}/Old/example004.scad
   ${EXAMPLES_DIR}/Old/example005.scad
   ${EXAMPLES_DIR}/Old/example006.scad
+  ${EXAMPLES_DIR}/Old/example007.scad
   ${EXAMPLES_DIR}/Old/example012.scad
   ${EXAMPLES_DIR}/Old/example016.scad
   ${EXAMPLES_DIR}/Old/example024.scad
@@ -829,6 +835,7 @@ list(APPEND SCADFILES_WITH_GREEN_FACES
   ${TEST_SCAD_DIR}/3D/issues/issue3158.scad
   ${TEST_SCAD_DIR}/3D/issues/issue835.scad
   ${TEST_SCAD_DIR}/3D/issues/issue911.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue913.scad
   ${TEST_SCAD_DIR}/3D/issues/issue904.scad
   ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
   ${TEST_SCAD_DIR}/3D/misc/view-options-tests.scad
@@ -895,7 +902,7 @@ set_test_config(Bugs FILES
 )
 
 # Examples
-set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES cgalpngtest opencsgtest throwntogethertest csgpngtest monotonepngtest stlpngtest stlcgalpngtest cgalstlcgalpngtest cgalbinstlcgalpngtest offpngtest offcgalpngtest manifold-cgalpng dumptest-examples)
+set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES cgalpngtest manifold-cgalpng opencsgtest throwntogethertest csgpngtest monotonepngtest stlpngtest stlcgalpngtest cgalstlcgalpngtest cgalbinstlcgalpngtest offpngtest offcgalpngtest dumptest-examples)
 set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES dxfpngtest)
 
 #############
@@ -982,7 +989,7 @@ add_cmdline_test(lazyunion-offpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} S
 add_cmdline_test(lazyunion-dxfpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=DXF --enable=lazy-union --render=cgal)
 add_cmdline_test(lazyunion-svgpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=SVG --enable=lazy-union --render=cgal)
 
-add_cmdline_test(manifold-cgalpng             EXPERIMENTAL OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS} ARGS --enable=manifold --render)
+add_cmdline_test(manifold-cgalpng      EXPERIMENTAL OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS} ARGS --enable=manifold --render)
 
 # Trivial Export/Import files
 # This sanity-checks bidirectional file format import/export
