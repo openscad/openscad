@@ -381,7 +381,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
     #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
 
     # Enable vertex-object-renderers by default for all test if experimental build and openscad executable
-    if (EXPERIMENTAL AND TESTCMD_OPENSCAD)
+    if (EXPERIMENTAL)
       set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers")
       set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-prealloc")
       set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-direct")
@@ -965,7 +965,7 @@ add_cmdline_test(cgalpngtest        OPENSCAD FILES ${CGALPNGTEST_FILES} SUFFIX p
 add_cmdline_test(cgalpngstdiotest   OPENSCAD FILES ${CGALPNGSTDIOTEST_FILES} SUFFIX png STDIO EXPECTEDDIR cgalpngtest ARGS --export-format png --render)
 add_cmdline_test(opencsgtest        OPENSCAD FILES ${OPENCSGTEST_FILES} SUFFIX png ARGS)
 add_cmdline_test(throwntogethertest OPENSCAD FILES ${THROWNTOGETHERTEST_FILES} ARGS --preview=throwntogether SUFFIX png)
-add_cmdline_test(csgpngtest         SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${CGALPNGTEST_FILES} EXPECTEDDIR cgalpngtest ARGS ${OPENSCAD_ARG} --format=csg --render --enable=vertex-object-renderers --enable=vertex-object-renderers-prealloc --enable=vertex-object-renderers-direct)
+add_cmdline_test(csgpngtest         SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${CGALPNGTEST_FILES} EXPECTEDDIR cgalpngtest ARGS ${OPENSCAD_ARG} --format=csg --render)
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(cgalstlsanitytest  SCRIPT ${CGALSTLSANITYTEST_PY} SUFFIX txt FILES ${CGALSTLSANITYTEST_FILES} ARGS ${OPENSCAD_BINPATH})
