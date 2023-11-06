@@ -23,6 +23,7 @@
 #include <iostream>
 #include "Camera.h"
 #include "ColorMap.h"
+#include "system-gl.h"
 
 class GLView
 {
@@ -36,7 +37,7 @@ public:
   virtual void paintGL();
 
   void setCamera(const Camera& cam);
-  void setupCamera() const;
+  void setupCamera() ;
 
   void setColorScheme(const ColorScheme& cs);
   void setColorScheme(const std::string& cs);
@@ -69,6 +70,9 @@ public:
   bool showedges;
   bool showcrosshairs;
   bool showscale;
+  GLdouble modelview[16];
+  GLdouble projection[16];
+  Vector3d selected_pt;
 
 #ifdef ENABLE_OPENCSG
   bool is_opencsg_capable;
@@ -82,5 +86,6 @@ private:
   void showAxes(const Color4f& col);
   void showSmallaxes(const Color4f& col);
   void showScalemarkers(const Color4f& col);
+  void showSelectedPoint(void);
   void decodeMarkerValue(double i, double l, int size_div_sm);
 };

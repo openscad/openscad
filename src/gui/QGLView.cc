@@ -510,3 +510,73 @@ void QGLView::rotate2(double x, double y, double z)
   update();
   emit cameraChanged();
 }
+
+int linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,double *detptr)
+{
+        float det,ad11,ad12,ad13,ad21,ad22,ad23,ad31,ad32,ad33;
+        det=v1[0]*(v2[1]*v3[2]-v3[1]*v2[2])-v1[1]*(v2[0]*v3[2]-v3[0]*v2[2])+v1[2]*(v2[0]*v3[1]-v3[0]*v2[1]);
+        if(detptr != NULL) *detptr=det;
+        ad11=v2[1]*v3[2]-v3[1]*v2[2];
+        ad12=v3[0]*v2[2]-v2[0]*v3[2];
+        ad13=v2[0]*v3[1]-v3[0]*v2[1];
+        ad21=v3[1]*v1[2]-v1[1]*v3[2];
+        ad22=v1[0]*v3[2]-v3[0]*v1[2];
+        ad23=v3[0]*v1[1]-v1[0]*v3[1];
+        ad31=v1[1]*v2[2]-v2[1]*v1[2];
+        ad32=v2[0]*v1[2]-v1[0]*v2[2];
+        ad33=v1[0]*v2[1]-v2[0]*v1[1];
+
+        if(fabs(det) < 0.00001)
+                return 1;
+        
+        res[0] = (ad11*pt[0]+ad12*pt[1]+ad13*pt[2])/det;
+        res[1] = (ad21*pt[0]+ad22*pt[1]+ad23*pt[2])/det;
+        res[2] = (ad31*pt[0]+ad32*pt[1]+ad33*pt[2])/det;
+        return 0;
+}
+
+void QGLView::selectPoint(int mouse_x, int mouse_y)
+{
+  printf("My Select  pos=%d/%d\n",mouse_x, mouse_y);
+  const auto vpt = cam.getVpt();
+//  const auto vpr = cam.getVpr();
+//  double dist=cam.viewer_distance;
+//  double fov = cam.fov;
+  int viewport[4]={0,0,0,0};
+  double posXF, posYF, posZF;
+  double posXN, posYN, posZN;
+//  int err;
+//  glGetIntegerv(GL_VIEWPORT,viewport);
+  viewport[2]=size().rwidth();
+  viewport[3]=size().rheight();
+//  printf("Viewport %d/%d %d/%d\n",viewport[0], viewport[1], viewport[2], viewport[3]); 
+//  printf("Modelview ");  for(int i=0;i<16;i++) printf("%g ",this->modelview[i]); printf("\n");
+//  printf("Projection ");  for(int i=0;i<16;i++) printf("%g ",this->projection[i]); printf("\n");
+
+  GLdouble winX = mouse_x;
+  GLdouble winY = viewport[3] - mouse_y;
+
+  gluUnProject(winX, winY, 1, this->modelview, this->projection, viewport,&posXF, &posYF, &posZF);
+  gluUnProject(winX, winY, -1, this->modelview, this->projection, viewport,&posXN, &posYN, &posZN);
+  Vector3d far(posXF, posYF, posZF);
+  Vector3d near(posXN, posYN, posZN);
+  Vector3d eyedir=far-near;
+
+  Vector3d testpt(0,0,0);
+
+  // game: hit xy plane
+  Vector3d xdir(1,0,0);
+  Vector3d ydir(0,1,0);
+  double det;
+  Vector3d res;
+  if(linsystem(eyedir, xdir, ydir,far, res ,&det))
+	  printf("Problem during linsystem\n");
+  printf("res is %g/%g/%g\n",res[0], res[1], res[2]);
+  testpt = far - eyedir * res[0];
+  printf("hit is at %g/%g/%g\n",testpt[0], testpt[1], testpt[2]);
+  this->selected_pt=testpt;
+  update();
+
+
+}
+

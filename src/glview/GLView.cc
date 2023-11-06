@@ -81,7 +81,7 @@ void GLView::setCamera(const Camera& cam)
   this->cam = cam;
 }
 
-void GLView::setupCamera() const
+void GLView::setupCamera()
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -109,6 +109,10 @@ void GLView::setupCamera() const
   glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
   glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
   glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
+  glTranslated(cam.object_trans[0],cam.object_trans[1],cam.object_trans[2]);
+  glGetDoublev(GL_MODELVIEW_MATRIX,this->modelview);
+  glTranslated(-cam.object_trans[0],-cam.object_trans[1],-cam.object_trans[2]);
+  glGetDoublev(GL_PROJECTION_MATRIX,this->projection);
 }
 
 void GLView::paintGL()
@@ -153,6 +157,7 @@ void GLView::paintGL()
   if (showaxes) GLView::showAxes(axescolor);
   // mark the scale along the axis lines
   if (showaxes && showscale) GLView::showScalemarkers(axescolor);
+  showSelectedPoint();
 
   glEnable(GL_LIGHTING);
   glDepthFunc(GL_LESS);
@@ -379,6 +384,19 @@ void GLView::showCrosshairs(const Color4f& col)
       glVertex3d(-xf * vd, -yf * vd, -vd);
       glVertex3d(+xf * vd, +yf * vd, +vd);
     }
+  glEnd();
+}
+
+void GLView::showSelectedPoint(void)
+{
+  glLineWidth(this->getDPI());
+  auto vd = cam.zoomValue() *0.005;
+  glColor3f(1,0,0);
+  glBegin(GL_LINES);
+  glVertex3d(this->selected_pt[0]-vd,this->selected_pt[1]-vd,this->selected_pt[2]);
+  glVertex3d(this->selected_pt[0]+vd,this->selected_pt[1]+vd,this->selected_pt[2]);
+  glVertex3d(this->selected_pt[0]-vd,this->selected_pt[1]+vd,this->selected_pt[2]);
+  glVertex3d(this->selected_pt[0]+vd,this->selected_pt[1]-vd,this->selected_pt[2]);
   glEnd();
 }
 

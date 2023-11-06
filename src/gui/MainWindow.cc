@@ -102,9 +102,9 @@ extern std::shared_ptr<AbstractNode> python_result_node;
 std::string evaluatePython(const std::string &code, double time);
 extern bool python_trusted;
 
-#include "crypto++/sha.h"
-#include "crypto++/filters.h"
-#include "crypto++/base64.h"
+#include "cryptopp/sha.h"
+#include "cryptopp/filters.h"
+#include "cryptopp/base64.h"
 
 std::string SHA256HashString(std::string aString){
     std::string digest;
@@ -2336,6 +2336,7 @@ void MainWindow::selectObject(QPoint mouse)
   if (!this->selector) {
     return;
   }
+  this->qglview->selectPoint(mouse.x(),mouse.y());
 
   // Nothing to select
   if (!this->root_products) {
