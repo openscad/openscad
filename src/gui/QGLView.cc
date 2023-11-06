@@ -510,7 +510,7 @@ void QGLView::rotate2(double x, double y, double z)
   update();
   emit cameraChanged();
 }
-
+/*
 int linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,double *detptr)
 {
         float det,ad11,ad12,ad13,ad21,ad22,ad23,ad31,ad32,ad33;
@@ -534,10 +534,10 @@ int linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,dou
         res[2] = (ad31*pt[0]+ad32*pt[1]+ad33*pt[2])/det;
         return 0;
 }
-
+*/
 void QGLView::selectPoint(int mouse_x, int mouse_y)
 {
-  printf("My Select  pos=%d/%d\n",mouse_x, mouse_y);
+//  printf("My Select  pos=%d/%d\n",mouse_x, mouse_y);
   const auto vpt = cam.getVpt();
 //  const auto vpr = cam.getVpr();
 //  double dist=cam.viewer_distance;
@@ -567,16 +567,19 @@ void QGLView::selectPoint(int mouse_x, int mouse_y)
   // game: hit xy plane
   Vector3d xdir(1,0,0);
   Vector3d ydir(0,1,0);
-  double det;
-  Vector3d res;
-  if(linsystem(eyedir, xdir, ydir,far, res ,&det))
-	  printf("Problem during linsystem\n");
-  printf("res is %g/%g/%g\n",res[0], res[1], res[2]);
-  testpt = far - eyedir * res[0];
-  printf("hit is at %g/%g/%g\n",testpt[0], testpt[1], testpt[2]);
-  this->selected_pt=testpt;
-  update();
-
-
+//  double det;
+//  Vector3d res;
+//  if(linsystem(eyedir, xdir, ydir,far, res ,&det))
+////	  printf("Problem during linsystem\n");
+ // printf("res is %g/%g/%g\n",res[0], res[1], res[2]);
+ // testpt = far - eyedir * res[0];
+ // printf("hit is at %g/%g/%g\n",testpt[0], testpt[1], testpt[2]);
+  auto renderer = this->getRenderer();
+ // this->selected_pt=testpt;
+  std::vector<Vector3d>  pts= renderer->findModelPoint(near, far); update();
+  if(pts.size() == 1) {
+    this->selected_pts.push_back(pts[0]);
+    update();
+  }	  
 }
 

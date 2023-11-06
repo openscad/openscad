@@ -37,6 +37,8 @@ class Preferences;
 class ProgressWidget;
 class ThrownTogetherRenderer;
 
+enum { MEASURE_IDLE, MEASURE_DIST1, MEASURE_DIST2, MEASURE_ANG1, MEASURE_ANG2, MEASURE_ANG3 };
+
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
   Q_OBJECT
@@ -91,6 +93,7 @@ public:
 
   int compileErrors;
   int compileWarnings;
+  int measure_state = MEASURE_IDLE;
 
   MainWindow(const QStringList& filenames);
   ~MainWindow() override;
@@ -112,6 +115,7 @@ private slots:
   void openCSGSettingsChanged();
   void consoleOutput(const Message& msgObj);
   void setCursor();
+  void measureFinished();
   void errorLogOutput(const Message& log_msg);
 
 public:
@@ -245,6 +249,8 @@ private slots:
   void actionRenderDone(const shared_ptr<const Geometry>&);
   void cgalRender();
 #endif
+  void actionMeasureDistance();
+  void actionMeasureAngle();
   void actionCheckValidity();
   void actionDisplayAST();
   void actionDisplayCSGTree();

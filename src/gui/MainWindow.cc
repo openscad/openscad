@@ -465,6 +465,8 @@ MainWindow::MainWindow(const QStringList& filenames)
 #else
   this->designActionRender->setVisible(false);
 #endif
+  connect(this->designActionMeasureDist, SIGNAL(triggered()), this, SLOT(actionMeasureDistance()));
+  connect(this->designActionMeasureAngle, SIGNAL(triggered()), this, SLOT(actionMeasureAngle()));
   connect(this->designAction3DPrint, SIGNAL(triggered()), this, SLOT(action3DPrint()));
   connect(this->designCheckValidity, SIGNAL(triggered()), this, SLOT(actionCheckValidity()));
   connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
@@ -2320,6 +2322,20 @@ void MainWindow::actionRenderDone(const shared_ptr<const Geometry>& root_geom)
 
 #endif /* ENABLE_CGAL */
 
+void MainWindow::actionMeasureDistance()
+{
+	this->qglview->selected_pts.clear();
+	this->qglview->update();
+	this->measure_state=MEASURE_DIST1;
+}
+
+void MainWindow::actionMeasureAngle()
+{
+	this->qglview->selected_pts.clear();
+	this->qglview->update();
+	this->measure_state=MEASURE_ANG1;
+}
+
 /**
  * Call the mouseselection to determine the id of the clicked-on object.
  * Use the generated ID and try to find it within the list of products
@@ -2336,7 +2352,45 @@ void MainWindow::selectObject(QPoint mouse)
   if (!this->selector) {
     return;
   }
-  this->qglview->selectPoint(mouse.x(),mouse.y());
+  if(this->measure_state != MEASURE_IDLE) {
+	this->qglview->selectPoint(mouse.x(),mouse.y());
+	switch(measure_state) {
+		  case MEASURE_DIST1:
+			if(this->qglview->selected_pts.size() == 1) this->measure_state = MEASURE_DIST2;
+			break;
+		  case MEASURE_DIST2:
+			if(this->qglview->selected_pts.size() == 2)
+			{
+				double dist=(this->qglview->selected_pts[1]-this->qglview->selected_pts[0]).norm();
+    				std::stringstream ss;
+				ss << "Distance is " << dist;
+    				QMenu resultmenu(this);
+      				auto action = resultmenu.addAction(QString::fromStdString(ss.str()));
+        			connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
+    				resultmenu.exec(this->qglview->mapToGlobal(mouse));
+			}
+			break;
+		  case MEASURE_ANG1:
+			if(this->qglview->selected_pts.size() == 1) this->measure_state = MEASURE_ANG2;
+			break;
+		  case MEASURE_ANG2:
+			if(this->qglview->selected_pts.size() == 2) this->measure_state = MEASURE_ANG3;
+			break;
+		  case MEASURE_ANG3:
+			if(this->qglview->selected_pts.size() == 3){
+				Vector3d side1=(this->qglview->selected_pts[1]-this->qglview->selected_pts[0]).normalized();
+				Vector3d side2=(this->qglview->selected_pts[1]-this->qglview->selected_pts[2]).normalized();
+    				std::stringstream ss;
+				ss << "Angle  is " << acos(side1.dot(side2))*180.0/3.14159265359 << " Degrees";
+    				QMenu resultmenu(this);
+      				auto action = resultmenu.addAction(QString::fromStdString(ss.str()));
+        			connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
+    				resultmenu.exec(this->qglview->mapToGlobal(mouse));
+			}
+			break;
+	  }
+	  return;
+  }
 
   // Nothing to select
   if (!this->root_products) {
@@ -2390,7 +2444,7 @@ void MainWindow::selectObject(QPoint mouse)
         action->setProperty("line", location.firstLine());
         action->setProperty("column", location.firstColumn());
 
-        connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
+        connect(action, SIGNAL(triggered()), this, SLOT(measureFinished()));
       }
     }
 
@@ -2401,6 +2455,13 @@ void MainWindow::selectObject(QPoint mouse)
 /**
  * Expects the sender to have properties "file", "line" and "column" defined
  */
+void MainWindow::measureFinished()
+{
+	this->qglview->selected_pts.clear();
+	this->qglview->update();
+	this->measure_state = MEASURE_IDLE;
+}
+
 void MainWindow::setCursor()
 {
   auto *action = qobject_cast<QAction *>(sender());

@@ -316,3 +316,28 @@ BoundingBox CGALRenderer::getBoundingBox() const
   }
   return bbox;
 }
+double calculateLinePointDistance(const Vector3d &l1, const Vector3d &l2, const Vector3d &pt) {
+    Vector3d d = (l2 - l1).normalized();
+    Vector3d v = pt - l1;
+    double t = v.dot(d);
+    Vector3d P = l1 + t * d;
+    return (P-pt).norm();
+}
+
+std::vector<Vector3d> CGALRenderer::findModelPoint(Vector3d near, Vector3d far) {
+  std::vector<Vector3d> results;
+  for (const auto& p : this->getPolyhedrons()) {
+  }
+  for (const std::shared_ptr<const PolySet>& ps : this->polysets) {
+    for(const Polygon &pol : ps->polygons) {
+      for(const Vector3d &pt: pol) {
+        double dist= calculateLinePointDistance(near, far, pt);
+        if(dist < 0.1  ) {
+	  results.push_back(pt); // TODO nur eines und nur das naechste
+          return results;
+        }
+      }
+    }
+  }
+  return results;
+}

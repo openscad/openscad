@@ -393,10 +393,14 @@ void GLView::showSelectedPoint(void)
   auto vd = cam.zoomValue() *0.005;
   glColor3f(1,0,0);
   glBegin(GL_LINES);
-  glVertex3d(this->selected_pt[0]-vd,this->selected_pt[1]-vd,this->selected_pt[2]);
-  glVertex3d(this->selected_pt[0]+vd,this->selected_pt[1]+vd,this->selected_pt[2]);
-  glVertex3d(this->selected_pt[0]-vd,this->selected_pt[1]+vd,this->selected_pt[2]);
-  glVertex3d(this->selected_pt[0]+vd,this->selected_pt[1]-vd,this->selected_pt[2]);
+  for (const Vector3d &pt: this->selected_pts) {
+    for (double xf : {-1.0, 1.0}) {
+      for (double yf : {-1.0, 1.0}) {
+        glVertex3d(pt[0]+xf*vd,pt[1]+yf*vd,pt[2]-vd);
+        glVertex3d(pt[0]-xf*vd,pt[1]-yf*vd,pt[2]+vd);
+      }	
+    }
+  }
   glEnd();
 }
 

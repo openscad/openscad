@@ -72,7 +72,7 @@ public:
   bool showscale;
   GLdouble modelview[16];
   GLdouble projection[16];
-  Vector3d selected_pt;
+  std::vector<Vector3d> selected_pts;
 
 #ifdef ENABLE_OPENCSG
   bool is_opencsg_capable;
