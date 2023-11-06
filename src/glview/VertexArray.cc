@@ -403,8 +403,8 @@ void VertexArray::createInterleavedVBOs()
 
 void VertexArray::addAttributePointers(size_t start_offset)
 {
+  #ifndef DISABLE_FIXEDFUNCTION_GL
   if (!this->data()) return;
-
   std::shared_ptr<VertexData> vertex_data = this->data();
   std::shared_ptr<VertexState> vs = this->states().back();
 
@@ -474,4 +474,5 @@ void VertexArray::addAttributePointers(size_t start_offset)
       GL_CHECKD(glDisableClientState(GL_COLOR_ARRAY));
     });
   }
+  #endif //DISABLE_FIXEDFUNCTION_GL
 }

@@ -103,6 +103,7 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
   }
 
   if (!Feature::ExperimentalVxORenderers.is_enabled()) {
+    #ifndef DISABLE_FIXEDFUNCTION_GL
     if (this->root_products) {
       glEnable(GL_CULL_FACE);
       glCullFace(GL_BACK);
@@ -114,6 +115,7 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
     }
     if (this->background_products) renderCSGProducts(this->background_products, showedges, shaderinfo, false, true, false);
     if (this->highlight_products) renderCSGProducts(this->highlight_products, showedges, shaderinfo, true, false, false);
+    #endif //DISABLE_FIXEDFUNCTION_GL
   } else {
     renderCSGProducts(std::make_shared<CSGProducts>(), showedges, shaderinfo);
   }
@@ -130,6 +132,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, boo
                                                bool highlight_mode, bool background_mode,
                                                bool fberror, OpenSCADOperator type) const
 {
+  #ifndef DISABLE_FIXEDFUNCTION_GL
   if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;
   const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
   if (!ps) return;
@@ -159,6 +162,7 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, boo
     render_edges(*ps, csgmode);
   }
   glPopMatrix();
+  #endif //DISABLE_FIXEDFUNCTION_GL
 }
 
 void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges,

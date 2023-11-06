@@ -240,8 +240,10 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
   GLdouble projection[16];
 
   glGetIntegerv(GL_VIEWPORT, viewport);
+  #ifndef DISABLE_FIXEDFUNCTION_GL
   glGetDoublev(GL_MODELVIEW_MATRIX, modelview);
   glGetDoublev(GL_PROJECTION_MATRIX, projection);
+  #endif //DISABLE_FIXEDFUNCTION_GL
 
   const double dpi = this->getDPI();
   const double x = event->pos().x() * dpi;
@@ -266,7 +268,7 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
   }
 
   GLdouble px, py, pz;
-
+  #ifndef DISABLE_FIXEDFUNCTION_GL
   auto success = gluUnProject(x, y, z, modelview, projection, viewport, &px, &py, &pz);
 
   if (success == GL_TRUE) {
@@ -274,6 +276,7 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
     update();
     emit cameraChanged();
   }
+  #endif //DISABLE_FIXEDFUNCTION_GL
   setGLContext(oldContext);
 }
 

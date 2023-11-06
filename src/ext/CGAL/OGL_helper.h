@@ -230,7 +230,7 @@ namespace OGL {
 // ----------------------------------------------------------------------------
 // OGL Drawable Polyhedron:
 // ----------------------------------------------------------------------------
-
+  #ifndef DISABLE_FIXEDFUNCTION_GL
   inline void CGAL_GLU_TESS_CALLBACK beginCallback(GLenum which)
   { glBegin(which); }
 
@@ -253,7 +253,7 @@ namespace OGL {
     glNormal3dv(pu);
     glVertex3dv(pc); 
   }
-
+  #endif //DISABLE_FIXEDFUNCTION_GL
   inline void CGAL_GLU_TESS_CALLBACK combineCallback(GLdouble coords[3], GLvoid *[4], GLfloat [4], GLvoid **dataOut)
   { static std::list<GLdouble*> pcache;
     if (dataOut) {
@@ -344,8 +344,10 @@ namespace OGL {
       return *this;
     }
     */
+   #ifndef DISABLE_FIXEDFUNCTION_GL
     ~Polyhedron() 
     { if (object_list_) glDeleteLists(object_list_, 4); }
+    #endif //DISABLE_FIXEDFUNCTION_GL
 
     void push_back(const Double_point& p, bool m) {
         vertices_.push_back(DPoint(p,m));
@@ -383,6 +385,7 @@ namespace OGL {
     virtual void draw(bool) const = 0;
 
     void draw(Vertex_iterator v) const { 
+      #ifndef DISABLE_FIXEDFUNCTION_GL
       PRINTD("draw( Vertex_iterator )");
       //      CGAL_NEF_TRACEN("drawing vertex "<<*v);
       CGAL::Color c = getVertexColor(v);
@@ -396,6 +399,7 @@ namespace OGL {
       glVertex3d(CGAL_NEF_EMPHASIZE_VERTEX);
 #endif
       glEnd();
+      #endif //DISABLE_FIXEDFUNCTION_GL
     }
 
     // Overridden in CGAL_renderer
@@ -412,6 +416,7 @@ namespace OGL {
     }
 
     void draw(Edge_iterator e) const { 
+      #ifndef DISABLE_FIXEDFUNCTION_GL
       PRINTD("draw(Edge_iterator)");
       //      CGAL_NEF_TRACEN("drawing edge "<<*e);
       Double_point p = e->source(), q = e->target();
@@ -423,6 +428,7 @@ namespace OGL {
       glVertex3d(p.x(), p.y(), p.z());
       glVertex3d(q.x(), q.y(), q.z());
       glEnd();
+      #endif //DISABLE_FIXEDFUNCTION_GL
     }
 
 
@@ -450,6 +456,7 @@ namespace OGL {
     }
 
     void draw(Halffacet_iterator f, bool is_back_facing) const {
+      #ifndef DISABLE_FIXEDFUNCTION_GL
       PRINTD("draw(Halffacet_iterator)");
       //      CGAL_NEF_TRACEN("drawing facet "<<(f->debug(),""));
       GLUtesselator* tess_ = gluNewTess();
@@ -490,10 +497,12 @@ namespace OGL {
       //      CGAL_NEF_TRACEN("End Polygon");
       gluDeleteTess(tess_);
       combineCallback(NULL, NULL, NULL, NULL);
+      #endif// DISABLE_FIXEDFUNCTION_GL
     }
 
     void construct_axes() const
     { 
+      #ifndef DISABLE_FIXEDFUNCTION_GL
       PRINTD("construct_axes");
       glLineWidth(2.0);
       // red x-axis
@@ -524,10 +533,12 @@ namespace OGL {
       glColor3f(0.0,0.0,1.0);
       glVertex3d(0,0,5);
       glEnd();
+      #endif //DISABLE_FIXEDFUNCTION_GL
     }
 
 
     void fill_display_lists() {
+      #ifndef DISABLE_FIXEDFUNCTION_GL
       PRINTD("fill_display_lists");
       glNewList(object_list_, GL_COMPILE);
       Vertex_iterator v;
@@ -562,10 +573,11 @@ namespace OGL {
       glNewList(object_list_+3, GL_COMPILE); // axes:
       construct_axes();
       glEndList();
-
+      #endif //DISABLE_FIXEDFUNCTION_GL
     }
 
     void init() override { 
+      #ifndef DISABLE_FIXEDFUNCTION_GL
       PRINTD("init()");
       if (init_) return;
       init_ = true;
@@ -575,11 +587,13 @@ namespace OGL {
       CGAL_assertion(object_list_); 
       fill_display_lists();
       PRINTD("init() end");
+      #endif //DISABLE_FIXEDFUNCTION_GL
     }
 
 
     void draw() const override
     { 
+      #ifndef DISABLE_FIXEDFUNCTION_GL
       PRINTD("draw()");
       if (!is_initialized()) const_cast<Polyhedron&>(*this).init();
       double l = (std::max)( (std::max)( bbox().xmax() - bbox().xmin(),
@@ -604,6 +618,7 @@ namespace OGL {
       glCallList(object_list_);   // vertices
       if (switches[SNC_AXES]) glCallList(object_list_+3); // axis
       PRINTD("draw() end");
+      #endif //DISABLE_FIXEDFUNCTION_GL
    }
 
     void debug(std::ostream& os = std::cerr) const

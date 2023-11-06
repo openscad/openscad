@@ -83,6 +83,7 @@ void GLView::setCamera(const Camera& cam)
 
 void GLView::setupCamera() const
 {
+  #ifndef DISABLE_FIXEDFUNCTION_GL
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   auto dist = cam.zoomValue();
@@ -109,10 +110,12 @@ void GLView::setupCamera() const
   glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
   glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
   glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
+  #endif //DISABLE_FIXEDFUNCTION_GL
 }
 
 void GLView::paintGL()
 {
+  #ifndef DISABLE_FIXEDFUNCTION_GL
   glDisable(GL_LIGHTING);
   auto bgcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_COLOR);
   auto bgstopcol = ColorMap::getColor(*this->colorscheme, RenderColor::BACKGROUND_STOP_COLOR);
@@ -160,7 +163,7 @@ void GLView::paintGL()
   glDisable(GL_CULL_FACE);
   glLineWidth(2);
   glColor3d(1.0, 0.0, 0.0);
-
+  #endif //DISABLE_FIXEDFUNCTION_GL
   if (this->renderer) {
 #if defined(ENABLE_OPENCSG)
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
@@ -169,9 +172,11 @@ void GLView::paintGL()
     this->renderer->prepare(showfaces, showedges);
     this->renderer->draw(showfaces, showedges);
   }
+  #ifndef DISABLE_FIXEDFUNCTION_GL
 
   glDisable(GL_LIGHTING);
   if (showaxes) GLView::showSmallaxes(axescolor);
+  #endif //DISABLE_FIXEDFUNCTION_GL
 }
 
 #ifdef ENABLE_OPENCSG
@@ -221,6 +226,7 @@ void GLView::enable_opencsg_shaders()
 
 void GLView::initializeGL()
 {
+  #ifndef DISABLE_FIXEDFUNCTION_GL
 #ifdef DEBUG
 /*
    // Requires OpenGL 4.3+
@@ -254,6 +260,7 @@ void GLView::initializeGL()
   // The following line is reported to fix issue #71
   glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 64);
   glEnable(GL_COLOR_MATERIAL);
+  #endif //DISABLE_FIXEDFUNCTION_GL
 #ifdef ENABLE_OPENCSG
   enable_opencsg_shaders();
 #endif
@@ -261,6 +268,7 @@ void GLView::initializeGL()
 
 void GLView::showSmallaxes(const Color4f& col)
 {
+  #ifndef DISABLE_FIXEDFUNCTION_GL
   auto dpi = this->getDPI();
   // Small axis cross in the lower left corner
   glDepthFunc(GL_ALWAYS);
@@ -337,10 +345,12 @@ void GLView::showSmallaxes(const Color4f& col)
   glVertex3d(zlabel_x - d, zlabel_y + d, 0); glVertex3d(zlabel_x + d, zlabel_y + d, 0);
   glVertex3d(zlabel_x - d, zlabel_y - d, 0); glVertex3d(zlabel_x + d, zlabel_y + d, 0);
   glEnd();
+  #endif //DISABLE_FIXEDFUNCTION_GL
 }
 
 void GLView::showAxes(const Color4f& col)
 {
+  #ifndef DISABLE_FIXEDFUNCTION_GL
   // Large gray axis cross inline with the model
   glLineWidth(this->getDPI());
   glColor3f(col[0], col[1], col[2]);
@@ -380,10 +390,12 @@ void GLView::showCrosshairs(const Color4f& col)
       glVertex3d(+xf * vd, +yf * vd, +vd);
     }
   glEnd();
+  #endif //DISABLE_FIXEDFUNCTION_GL
 }
 
 void GLView::showScalemarkers(const Color4f& col)
 {
+  #ifndef DISABLE_FIXEDFUNCTION_GL
   // Add scale ticks on large axes
   auto l = cam.zoomValue();
   glLineWidth(this->getDPI());
@@ -478,10 +490,12 @@ void GLView::showScalemarkers(const Color4f& col)
     glEnd();
     glPopAttrib();
   }
+  #endif //DISABLE_FIXEDFUNCTION_GL
 }
 
 void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
 {
+  #ifndef DISABLE_FIXEDFUNCTION_GL
   const auto unsigned_digit = STR(i);
 
   // setup how far above the axis (or tick TBD) to draw the number
@@ -732,4 +746,5 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
       }
     }
   }
+  #endif //DISABLE_FIXEDFUNCTION_GL
 }
