@@ -440,7 +440,7 @@ void Renderer::render_edges(const PolySet& ps, csgmode_e csgmode) const
   glEnable(GL_LIGHTING);
 }
 
-std::vector<Vector3d> Renderer::findModelPoint(Vector3d near, Vector3d far) { return std::vector<Vector3d>(); }
+std::vector<Vector3d> Renderer::findModelPoint(Vector3d near, Vector3d far, double tolerance) { return std::vector<Vector3d>(); }
 #else //NULLGL
 
 Renderer::Renderer() : colorscheme(nullptr) {}
@@ -454,6 +454,6 @@ void Renderer::setColor(ColorMode colormode, const shaderinfo_t *shaderinfo) con
 void Renderer::setColorScheme(const ColorScheme& cs) {}
 void Renderer::render_surface(const PolySet& ps, csgmode_e csgmode, const Transform3d& m, const shaderinfo_t *shaderinfo) const {}
 void Renderer::render_edges(const PolySet& ps, csgmode_e csgmode) const {}
-std::vector<Vector3d> Renderer::findModelPoint(Vector3d near, Vector3d far) { return Vector3d(0,0,0); }
+std::vector<Vector3d> Renderer::findModelPoint(Vector3d near, Vector3d far, double tolerance) { return std::vector<Vector3d>(); }
 
 #endif //NULLGL

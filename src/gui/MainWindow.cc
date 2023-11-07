@@ -2366,7 +2366,7 @@ void MainWindow::selectObject(QPoint mouse)
 				ss << "Distance is " << dist;
     				QMenu resultmenu(this);
       				auto action = resultmenu.addAction(QString::fromStdString(ss.str()));
-        			connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
+        			connect(action, SIGNAL(triggered()), this, SLOT(measureFinished()));
     				resultmenu.exec(this->qglview->mapToGlobal(mouse));
 			}
 			break;
@@ -2384,10 +2384,12 @@ void MainWindow::selectObject(QPoint mouse)
 				ss << "Angle  is " << acos(side1.dot(side2))*180.0/3.14159265359 << " Degrees";
     				QMenu resultmenu(this);
       				auto action = resultmenu.addAction(QString::fromStdString(ss.str()));
-        			connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
+        			connect(action, SIGNAL(triggered()), this, SLOT(measureFinished()));
     				resultmenu.exec(this->qglview->mapToGlobal(mouse));
 			}
 			break;
+			// TODO auch scale bereucksichtigen
+			// TODO pan block
 	  }
 	  return;
   }
@@ -2451,10 +2453,6 @@ void MainWindow::selectObject(QPoint mouse)
     tracemenu.exec(this->qglview->mapToGlobal(mouse));
   }
 }
-
-/**
- * Expects the sender to have properties "file", "line" and "column" defined
- */
 void MainWindow::measureFinished()
 {
 	this->qglview->selected_pts.clear();
@@ -2462,6 +2460,9 @@ void MainWindow::measureFinished()
 	this->measure_state = MEASURE_IDLE;
 }
 
+/**
+ * Expects the sender to have properties "file", "line" and "column" defined
+ */
 void MainWindow::setCursor()
 {
   auto *action = qobject_cast<QAction *>(sender());

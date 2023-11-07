@@ -13,7 +13,7 @@ public:
   void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
   void setColorScheme(const ColorScheme& cs) override;
   BoundingBox getBoundingBox() const override;
-  std::vector<Vector3d> findModelPoint(Vector3d near, Vector3d far) override;
+  std::vector<Vector3d> findModelPoint(Vector3d near, Vector3d far, double tolerance) override;
 
 private:
   void addGeometry(const shared_ptr<const class Geometry>& geom);

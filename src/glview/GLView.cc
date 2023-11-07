@@ -109,7 +109,7 @@ void GLView::setupCamera()
   glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
   glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
   glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
-  glTranslated(cam.object_trans[0],cam.object_trans[1],cam.object_trans[2]);
+  glTranslated(cam.object_trans[0],cam.object_trans[1],cam.object_trans[2]); // translation be part of modelview matrix!
   glGetDoublev(GL_MODELVIEW_MATRIX,this->modelview);
   glTranslated(-cam.object_trans[0],-cam.object_trans[1],-cam.object_trans[2]);
   glGetDoublev(GL_PROJECTION_MATRIX,this->projection);

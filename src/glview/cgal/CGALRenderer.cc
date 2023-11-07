@@ -318,13 +318,11 @@ BoundingBox CGALRenderer::getBoundingBox() const
 }
 double calculateLinePointDistance(const Vector3d &l1, const Vector3d &l2, const Vector3d &pt) {
     Vector3d d = (l2 - l1).normalized();
-    Vector3d v = pt - l1;
-    double t = v.dot(d);
-    Vector3d P = l1 + t * d;
-    return (P-pt).norm();
+    double f = (pt-l1).dot(d);
+    return (l1 + d * f-pt).norm();
 }
 
-std::vector<Vector3d> CGALRenderer::findModelPoint(Vector3d near, Vector3d far) {
+std::vector<Vector3d> CGALRenderer::findModelPoint(Vector3d near, Vector3d far,double tolerance) {
   std::vector<Vector3d> results;
   for (const auto& p : this->getPolyhedrons()) {
   }
@@ -332,7 +330,7 @@ std::vector<Vector3d> CGALRenderer::findModelPoint(Vector3d near, Vector3d far) 
     for(const Polygon &pol : ps->polygons) {
       for(const Vector3d &pt: pol) {
         double dist= calculateLinePointDistance(near, far, pt);
-        if(dist < 0.1  ) {
+        if(dist < tolerance  ) {
 	  results.push_back(pt); // TODO nur eines und nur das naechste
           return results;
         }
