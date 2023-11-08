@@ -130,5 +130,9 @@
     <file>icons/svg-default/vcr-control-step-forward-white.svg</file>
     <file>icons/svg-default/vcr-control-end.svg</file>
     <file>icons/svg-default/vcr-control-end-white.svg</file>
+    <file>icons/svg-default/measure-dist.svg</file>
+    <file>icons/svg-default/measure-dist-white.svg</file>
+    <file>icons/svg-default/measure-ang.svg</file>
+    <file>icons/svg-default/measure-ang-white.svg</file>
   </qresource>
 </RCC>

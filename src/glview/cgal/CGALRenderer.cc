@@ -322,7 +322,7 @@ double calculateLinePointDistance(const Vector3d &l1, const Vector3d &l2, const 
     return (l1 + d * f-pt).norm();
 }
 
-std::vector<Vector3d> CGALRenderer::findModelPoint(Vector3d near, Vector3d far,double tolerance) {
+std::vector<Vector3d> CGALRenderer::findModelPoint(Vector3d near, Vector3d far,int mouse_x, int mouse_y, double tolerance) {
   std::vector<Vector3d> results;
   for (const auto& p : this->getPolyhedrons()) {
   }

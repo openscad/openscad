@@ -531,7 +531,7 @@ void QGLView::selectPoint(int mouse_x, int mouse_y)
   Vector3d testpt(0,0,0);
 
   auto renderer = this->getRenderer();
-  std::vector<Vector3d>  pts= renderer->findModelPoint(near, far,cam.zoomValue()/300);
+  std::vector<Vector3d>  pts= renderer->findModelPoint(near, far, mouse_x, mouse_y, cam.zoomValue()/300);
   if(pts.size() == 1) {
     this->selected_pts.push_back(pts[0]);
     update();
