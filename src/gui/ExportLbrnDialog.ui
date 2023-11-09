@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ExportLbrnDialog</class>
+ <widget class="QDialog" name="ExportLbrnDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>200</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>300</width>
+    <height>300</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Export Lightburn Options</string>
+  </property>
+	<layout class="QGridLayout" name="gridLayout_1">
+		
+	  <item row="0" column="0">
+	    <widget class="QLabel" name="labelColorIndex">
+	     <property name="text">
+	      <string>Color Index</string>
+	     </property>
+	    </widget>
+	 </item>
+	 <item row="0" column="1">
+      <widget class="QSpinBox" name="spinBoxColorIndex">
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="maximum">
+        <number>29</number>
+       </property>
+       <property name="value">
+        <number>0</number>
+       </property>
+      </widget>
+    </item>
+
+
+	  <item row="1" column="0">
+	    <widget class="QLabel" name="labelMinPower">
+	     <property name="text">
+	      <string>Min Power</string>
+	     </property>
+	    </widget>
+	 </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="spinBoxMinPower">
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="maximum">
+        <number>100</number>
+       </property>
+       <property name="value">
+        <number>1</number>
+       </property>
+      </widget>
+    </item>
+
+
+	  <item row="2" column="0">
+	    <widget class="QLabel" name="labelMaxPower">
+	     <property name="text">
+	      <string>Max Power</string>
+	     </property>
+	    </widget>
+	 </item>
+     <item row="2" column="1">
+      <widget class="QSpinBox" name="spinBoxMaxPower">
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="maximum">
+        <number>100</number>
+       </property>
+       <property name="value">
+        <number>1</number>
+       </property>
+      </widget>
+    </item>
+
+
+	  <item row="3" column="0">
+	    <widget class="QLabel" name="labelSpeed">
+	     <property name="text">
+	      <string>Speed</string>
+	     </property>
+	    </widget>
+	 </item>
+     <item row="3" column="1">
+      <widget class="QSpinBox" name="spinBoxSpeed">
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="maximum">
+        <number>100000</number>
+       </property>
+       <property name="value">
+        <number>1</number>
+       </property>
+      </widget>
+    </item>
+    
+
+	  <item row="4" column="0">
+	    <widget class="QLabel" name="labelNumPasses">
+	     <property name="text">
+	      <string>Num Passes</string>
+	     </property>
+	    </widget>
+	 </item>
+    <item row="4" column="1">
+      <widget class="QSpinBox" name="spinBoxNumPasses">
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="maximum">
+        <number>10</number>
+       </property>
+       <property name="value">
+        <number>1</number>
+       </property>
+      </widget>
+    </item>
+
+   <item row="5" column="1">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>ExportLbrnDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>ExportLbrnDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <buttongroups>
+  <buttongroup name="orientButtonGroup"/>
+  <buttongroup name="sizeButtonGroup"/>
+  <buttongroup name="gridButtonGroup"/>
+ </buttongroups>
+</ui>

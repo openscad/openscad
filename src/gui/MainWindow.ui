@@ -233,6 +233,7 @@
      <addaction name="fileActionExport3MF"/>
      <addaction name="fileActionExportDXF"/>
      <addaction name="fileActionExportSVG"/>
+     <addaction name="fileActionExportLBRN"/>
      <addaction name="fileActionExportCSG"/>
      <addaction name="fileActionExportPDF"/>
      <addaction name="separator"/>
@@ -1355,6 +1356,11 @@
   <action name="fileActionExportSVG">
    <property name="text">
     <string>Export as S&amp;VG...</string>
+   </property>
+  </action>
+  <action name="fileActionExportLBRN">
+   <property name="text">
+    <string>Export as &amp;LBRN...</string>
    </property>
   </action>
   <action name="fileActionExportAMF">

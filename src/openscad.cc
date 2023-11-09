@@ -50,6 +50,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <iostream>
 
 #ifdef ENABLE_CGAL
 
@@ -271,12 +272,31 @@ Camera get_camera(const po::variables_map& vm)
   return camera;
 }
 
+struct CommandLine
+{
+  const bool is_stdin;
+  const std::string& filename;
+  const bool is_stdout;
+  std::string output_file;
+  const fs::path& original_path;
+  const std::string& parameterFile;
+  const std::string& setName;
+  const ViewOptions& viewOptions;
+  const Camera& camera;
+  const boost::optional<FileFormat> export_format;
+  unsigned animate_frames;
+  const std::vector<std::string> summaryOptions;
+  const std::string summaryFile;
+  ExportFileOptions& exportFileOptions;
+};
+
 #ifndef OPENSCAD_NOGUI
 #include "QSettingsCached.h"
 #define OPENSCAD_QTGUI 1
 #endif
 static bool checkAndExport(const shared_ptr<const Geometry>& root_geom, unsigned nd,
-                           FileFormat format, const bool is_stdout, const std::string& filename)
+                           FileFormat format, const bool is_stdout, const std::string& filename, 
+                           CommandLine cmd)
 {
   if (root_geom->getDimension() != nd) {
     LOG("Current top level object is not a %1$dD object.", nd);
@@ -286,12 +306,13 @@ static bool checkAndExport(const shared_ptr<const Geometry>& root_geom, unsigned
     LOG("Current top level object is empty.");
     return false;
   }
-
+  
   ExportInfo exportInfo;
   exportInfo.format = format;
   exportInfo.name2open = filename;
   exportInfo.name2display = filename;
   exportInfo.useStdOut = is_stdout;
+  exportInfo.exportFileOptions = cmd.exportFileOptions;
 
   exportFileByName(root_geom, exportInfo);
   return true;
@@ -316,23 +337,6 @@ void set_render_color_scheme(const std::string& color_scheme, const bool exit_if
     LOG("Unknown color scheme '%1$s', using default '%2$s'.", arg_colorscheme, ColorMap::inst()->defaultColorSchemeName());
   }
 }
-
-struct CommandLine
-{
-  const bool is_stdin;
-  const std::string& filename;
-  const bool is_stdout;
-  std::string output_file;
-  const fs::path& original_path;
-  const std::string& parameterFile;
-  const std::string& setName;
-  const ViewOptions& viewOptions;
-  const Camera& camera;
-  const boost::optional<FileFormat> export_format;
-  unsigned animate_frames;
-  const std::vector<std::string> summaryOptions;
-  const std::string summaryFile;
-};
 
 struct RenderVariables
 {
@@ -587,6 +591,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
         root_geom.reset(new CGAL_Nef_polyhedron());
       }
     }
+    
     if (curFormat == FileFormat::ASCIISTL ||
         curFormat == FileFormat::STL ||
         curFormat == FileFormat::OBJ ||
@@ -596,13 +601,13 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
         curFormat == FileFormat::_3MF ||
         curFormat == FileFormat::NEFDBG ||
         curFormat == FileFormat::NEF3) {
-      if (!checkAndExport(root_geom, 3, curFormat, cmd.is_stdout, filename_str)) {
+      if (!checkAndExport(root_geom, 3, curFormat, cmd.is_stdout, filename_str, cmd)) {
         return 1;
       }
     }
 
-    if (curFormat == FileFormat::DXF || curFormat == FileFormat::SVG || curFormat == FileFormat::PDF) {
-      if (!checkAndExport(root_geom, 2, curFormat, cmd.is_stdout, filename_str)) {
+    if (curFormat == FileFormat::DXF || curFormat == FileFormat::SVG || curFormat == FileFormat::LBRN || curFormat == FileFormat::PDF) {
+      if (!checkAndExport(root_geom, 2, curFormat, cmd.is_stdout, filename_str, cmd)) {
         return 1;
       }
     }
@@ -959,10 +964,11 @@ int main(int argc, char **argv)
   po::options_description desc("Allowed options");
   desc.add_options()
     ("export-format", po::value<string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ascii stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  Ascii export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
-    ("o,o", po::value<vector<string>>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg (May be used multiple time for different exports). Use '-' for stdout\n")
+    ("o,o", po::value<vector<string>>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, wrl, amf, 3mf, csg, dxf, svg, lbrn, pdf, png, echo, ast, term, nef3, nefdbg (May be used multiple time for different exports). Use '-' for stdout\n")
     ("D,D", po::value<vector<string>>(), "var=val -pre-define variables")
     ("p,p", po::value<string>(), "customizer parameter file")
     ("P,P", po::value<string>(), "customizer parameter set")
+    ("F,F", po::value<vector<string>>(), "var=val -export file format variables")
 #ifdef ENABLE_EXPERIMENTAL
   ("enable", po::value<vector<string>>(), ("enable experimental features (specify 'all' for enabling all available features): " +
                                            str_join(boost::make_iterator_range(Feature::begin(), Feature::end()), " | ",
@@ -1122,6 +1128,7 @@ int main(int argc, char **argv)
       commandline_commands += ";\n";
     }
   }
+
   if (vm.count("enable")) {
     for (const auto& feature : vm["enable"].as<vector<string>>()) {
       if (feature == "all") {
@@ -1146,6 +1153,18 @@ int main(int argc, char **argv)
       help(argv[0], desc, true);
     }
     parameterSet = vm["P"].as<string>().c_str();
+  }
+
+  //vector<CommandExportOption> commandExportOptions;
+  // parse and store export file options from command line
+  // only used for pdf and lbrn file formats right now
+  ExportFileOptions exportFileOptions;
+  if (vm.count("F") && vm.count("o")==0) {
+    LOG("No export file format specified, ignoring -F options");
+  } else if (vm.count("F") && vm.count("o")) {
+    for (const auto& cmd : vm["F"].as<vector<string>>()) {
+      exportFileOptions.parse_command_export_option(cmd);
+    }
   }
 
   vector<string> inputFiles;
@@ -1220,7 +1239,8 @@ int main(int argc, char **argv)
             export_format,
             animate_frames,
             vm.count("summary") ? vm["summary"].as<std::vector<std::string>>() : std::vector<std::string>{},
-            vm.count("summary-file") ? vm["summary-file"].as<std::string>() : ""
+            vm.count("summary-file") ? vm["summary-file"].as<std::string>() : "",
+            exportFileOptions
           };
           rc |= cmdline(cmd);
         }

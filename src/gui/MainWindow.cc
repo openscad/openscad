@@ -224,6 +224,8 @@ QAction *getExport2DAction(const MainWindow *mainWindow) {
     return mainWindow->fileActionExportDXF;
   } else if (format == "SVG") {
     return mainWindow->fileActionExportSVG;
+  } else if (format == "LBRN") {
+    return mainWindow->fileActionExportLBRN;
   } else if (format == "PDF") {
     return mainWindow->fileActionExportPDF;
   } else {
@@ -478,6 +480,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
   connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
   connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
+  connect(this->fileActionExportLBRN, SIGNAL(triggered()), this, SLOT(actionExportLBRN()));
   connect(this->fileActionExportPDF, SIGNAL(triggered()), this, SLOT(actionExportPDF()));
   connect(this->fileActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
   connect(this->fileActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
@@ -635,6 +638,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   initActionIcon(fileActionExportWRL, ":/icons/svg-default/export-wrl.svg", ":/icons/svg-default/export-wrl-white.svg");
   initActionIcon(fileActionExportDXF, ":/icons/svg-default/export-dxf.svg", ":/icons/svg-default/export-dxf-white.svg");
   initActionIcon(fileActionExportSVG, ":/icons/svg-default/export-svg.svg", ":/icons/svg-default/export-svg-white.svg");
+  initActionIcon(fileActionExportLBRN, ":/icons/svg-default/export-lbrn.svg", ":/icons/svg-default/export-lbrn-white.svg");
   initActionIcon(fileActionExportCSG, ":/icons/svg-default/export-csg.svg", ":/icons/svg-default/export-csg-white.svg");
   initActionIcon(fileActionExportPDF, ":/icons/svg-default/export-pdf.svg", ":/icons/svg-default/export-pdf-white.svg");
   initActionIcon(fileActionExportImage, ":/icons/svg-default/export-png.svg", ":/icons/svg-default/export-png-white.svg");
@@ -2667,6 +2671,36 @@ exportInfo.options=options;
 #endif /* ENABLE_CGAL */
 }
 
+void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim, ExportLbrnOptions *options)
+{
+  //Setting filename skips the file selection dialog and uses the path provided instead.
+  if (GuiLocker::isLocked()) return;
+  GuiLocker lock;
+
+  setCurrentOutput();
+
+  //Return if something is wrong and we can't export.
+  if (!canExport(dim)) return;
+  
+  auto title = QString(_("Export %1 File")).arg(type_name);
+  auto filter = QString(_("%1 Files (*%2)")).arg(type_name, suffix);
+  auto exportFilename = QFileDialog::getSaveFileName(this, title, exportPath(suffix), filter);
+  if (exportFilename.isEmpty()) {
+    clearCurrentOutput();
+    return;
+  }
+  this->export_paths[suffix] = exportFilename;
+
+  ExportInfo exportInfo = createExportInfo(format, exportFilename, activeEditor->filepath);
+  // Add options
+  exportInfo.lbrnOptions=options;
+  
+  bool exportResult = exportFileByName(this->root_geom, exportInfo);
+
+  if (exportResult) fileExportedMessage(type_name, exportFilename);
+  clearCurrentOutput();
+}
+
 void MainWindow::actionExportSTL()
 {
   if (Settings::Settings::exportUseAsciiSTL.value()) {
@@ -2711,6 +2745,13 @@ void MainWindow::actionExportSVG()
   actionExport(FileFormat::SVG, "SVG", ".svg", 2);
 }
 
+/*
+void MainWindow::actionExportLBRN()
+{
+  actionExport(FileFormat::LBRN, "LBRN", ".lbrn", 2);
+}
+*/
+
 void MainWindow::actionExportPDF()
 {
 
@@ -2754,6 +2795,41 @@ settings.setValue("exportPdfOpts/showGrid",exportPdfDialog->getShowGrid());
 settings.setValue("exportPdfOpts/gridSize",exportPdfDialog->getGridSize());
 
 actionExport(FileFormat::PDF, "PDF", ".pdf", 2, &exportPdfOptions);
+
+}
+
+void MainWindow::actionExportLBRN()
+{
+
+ExportLbrnOptions exportLbrnOptions;
+QSettingsCached settings;
+
+// Prepopulated with default values in export.h
+auto exportLbrnDialog = new ExportLbrnDialog();
+
+exportLbrnDialog->setColorIndex(settings.value("exportLbrnOpts/colorIndex",exportLbrnOptions.colorIndex).toInt());
+exportLbrnDialog->setMinPower(settings.value("exportLbrnOpts/minPower",exportLbrnOptions.minPower).toInt());
+exportLbrnDialog->setMaxPower(settings.value("exportLbrnOpts/maxPower",exportLbrnOptions.maxPower).toInt());
+exportLbrnDialog->setSpeed(settings.value("exportLbrnOpts/speed",exportLbrnOptions.speed).toInt());
+exportLbrnDialog->setNumPasses(settings.value("exportLbrnOpts/numPasses",exportLbrnOptions.numPasses).toInt());
+
+if (exportLbrnDialog->exec() == QDialog::Rejected) {
+  return;
+}; 
+
+exportLbrnOptions.colorIndex=exportLbrnDialog->getColorIndex();
+exportLbrnOptions.minPower=exportLbrnDialog->getMinPower();
+exportLbrnOptions.maxPower=exportLbrnDialog->getMaxPower();
+exportLbrnOptions.speed=exportLbrnDialog->getSpeed();
+exportLbrnOptions.numPasses=exportLbrnDialog->getNumPasses();
+
+settings.setValue("exportLbrnOpts/colorIndex",exportLbrnDialog->getColorIndex());
+settings.setValue("exportLbrnOpts/minPower",exportLbrnDialog->getMinPower());
+settings.setValue("exportLbrnOpts/maxPower",exportLbrnDialog->getMaxPower());
+settings.setValue("exportLbrnOpts/speed",exportLbrnDialog->getSpeed());
+settings.setValue("exportLbrnOpts/numPasses",exportLbrnDialog->getNumPasses());
+
+actionExport(FileFormat::LBRN, "LBRN", ".lbrn", 2, &exportLbrnOptions);
 
 }
 
