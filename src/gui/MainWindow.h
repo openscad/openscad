@@ -4,6 +4,7 @@
 #include "Geometry.h"
 #include "export.h"
 #include "ExportPdfDialog.h"
+#include "ExportLbrnDialog.h"
 #include "memory.h"
 #include "RenderStatistic.h"
 #include "TabManager.h"
@@ -252,6 +253,7 @@ private slots:
   bool canExport(unsigned int dim);
   void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim);
   void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim, ExportPdfOptions *options);
+  void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim, ExportLbrnOptions *options);
   void actionExportSTL();
   void actionExport3MF();
   void actionExportOBJ();
@@ -260,6 +262,7 @@ private slots:
   void actionExportAMF();
   void actionExportDXF();
   void actionExportSVG();
+  void actionExportLBRN();
   void actionExportPDF();
   void actionExportCSG();
   void actionExportImage();

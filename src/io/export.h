@@ -3,6 +3,7 @@
 #include <iostream>
 #include <functional>
 #include <array>
+#include <any>
 
 #include <boost/range/algorithm.hpp>
 #include <boost/range/adaptor/map.hpp>
@@ -23,6 +24,7 @@ enum class FileFormat {
   _3MF,
   DXF,
   SVG,
+  LBRN,
   NEFDBG,
   NEF3,
   CSG,
@@ -83,6 +85,73 @@ struct ExportPdfOptions {
     paperSizes paperSize=paperSizes::A4;
 };
 
+// include defaults to use without dialog or direction.
+// Defaults match values used prior to incorporation of options.
+struct ExportLbrnOptions {
+  int colorIndex = 0;
+  int minPower   = 40;
+  int maxPower   = 40;
+  int speed      = 8;
+  int numPasses  = 1;
+};
+
+struct ExportLbrnOptionsx {
+  int colorIndex;
+  int minPower;
+  int maxPower;
+  int speed;
+  int numPasses;
+};
+
+struct CommandExportOption {
+  std::string format;
+  std::string option;
+  std::string value;
+  std::string type;
+};
+
+CommandExportOption parseCommandExportOption(std::string *option);
+CommandExportOption getExportOption(std::vector<CommandExportOption> exportOptions, std::string *format, std::string *option);
+std::vector<CommandExportOption> getExportOptions(std::vector<CommandExportOption> exportOptions, std::string *format);
+
+//extern std::map<std::string, std::any> ExportOptionsMap;
+extern std::map< std::string, std::map<std::string, std::any> > ExportOptionsMap;
+/*
+std::map<std::string,std::string> ExportLbrnOptionsMap = {
+  { "colorIndex", "0" },
+  { "minPower", "40" },
+  { "maxPower", "40" },
+  { "speed", "8" },
+  { "numPasses", "1" } 
+};
+*/
+
+
+class ExportFileOptions {
+  
+  public:
+    ExportFileOptions(); 
+    
+    bool parse_command_export_option(const std::string& option);
+    bool add_option(const std::string& format, const std::string& option, const std::string& value, const std::string& type);
+	bool update_option(const std::string& format, const std::string& option, const std::string& value);
+    bool option_exists(const std::string& format, const std::string& option);
+    int get_option_index(const std::string& format, const std::string& option);
+    std::string get_option_value(const std::string& format, const std::string& option);
+    CommandExportOption get_option(const std::string& format, const std::string& option);
+    std::vector<CommandExportOption> get_options(const std::string& format);
+    bool is_value_valid(const std::string& format, const std::string& option, const std::string& value);
+    bool is_number(const std::string& str);
+    bool is_float(const std::string& str);
+    bool is_bool(const std::string& str);
+    bool is_string(const std::string& str);
+
+  private:
+    std::vector<CommandExportOption> commandExportOptions;
+
+};
+
+
 struct ExportInfo {
   FileFormat format;
   std::string name2display;
@@ -91,6 +160,8 @@ struct ExportInfo {
   std::string sourceFileName;
   bool useStdOut;
   ExportPdfOptions *options=nullptr;
+  ExportLbrnOptions *lbrnOptions=nullptr;
+  ExportFileOptions exportFileOptions;
 };
 
 
@@ -106,10 +177,12 @@ void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_amf(const shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_dxf(const shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_svg(const shared_ptr<const Geometry>& geom, std::ostream& output);
+
+
+void export_lbrn(const shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_pdf(const shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_nefdbg(const shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_nef3(const shared_ptr<const Geometry>& geom, std::ostream& output);
-
 
 enum class Previewer { OPENCSG, THROWNTOGETHER };
 enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };
@@ -126,6 +199,7 @@ struct ExportFileFormatOptions {
     {"3mf", FileFormat::_3MF},
     {"dxf", FileFormat::DXF},
     {"svg", FileFormat::SVG},
+    {"lbrn", FileFormat::LBRN},
     {"nefdbg", FileFormat::NEFDBG},
     {"nef3", FileFormat::NEF3},
     {"csg", FileFormat::CSG},

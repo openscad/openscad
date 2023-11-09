@@ -749,6 +749,7 @@ set(CORE_SOURCES
   src/io/export_pdf.cc
   src/io/export_stl.cc
   src/io/export_svg.cc
+  src/io/export_lbrn.cc
   src/io/export_param.cc
   src/io/fileutils.cc
   src/io/import_3mf.cc
@@ -912,6 +913,7 @@ set(GUI_SOURCES
   src/gui/ErrorLog.cc
   src/gui/EventFilter.h
   src/gui/ExportPdfDialog.cc
+  src/gui/ExportLbrnDialog.cc
   src/gui/FontListDialog.cc
   src/gui/FontListTableView.cc
   src/gui/InitConfigurator.cc
@@ -977,6 +979,7 @@ set(GUI_HEADERS
     src/gui/ErrorLog.h
     src/gui/EventFilter.h
     src/gui/ExportPdfDialog.h
+    src/gui/ExportLbrnDialog.h
     src/gui/FontListDialog.h
     src/gui/FontListTableView.h
     src/gui/IgnoreWheelWhenNotFocused.h
@@ -1029,6 +1032,7 @@ set(GUI_UIS
     src/gui/Console.ui
     src/gui/ErrorLog.ui
     src/gui/ExportPdfDialog.ui
+    src/gui/ExportLbrnDialog.ui
     src/gui/FontListDialog.ui
     src/gui/LaunchingScreen.ui
     src/gui/LibraryInfoDialog.ui

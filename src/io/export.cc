@@ -31,6 +31,11 @@
 
 #include <fstream>
 
+#include <string>
+#include <vector>
+#include <boost/tokenizer.hpp>
+#include <boost/foreach.hpp>
+
 #ifdef _WIN32
 #include <io.h>
 #include <fcntl.h>
@@ -77,6 +82,9 @@ void exportFile(const shared_ptr<const Geometry>& root_geom, std::ostream& outpu
     break;
   case FileFormat::SVG:
     export_svg(root_geom, output);
+    break;
+  case FileFormat::LBRN:
+    export_lbrn(root_geom, output, exportInfo);
     break;
   case FileFormat::PDF:
     export_pdf(root_geom, output, exportInfo);
@@ -215,3 +223,232 @@ bool ExportMesh::foreach_triangle(const std::function<bool(const std::array<std:
 }
 
 } // namespace Export
+
+ExportFileOptions::ExportFileOptions() 
+{
+  struct CommandExportOption ceo[] = { 
+  	{ "lbrn", "colorIndex", "0",  "int"},
+    { "lbrn", "minPower",   "40", "int"},
+    { "lbrn", "maxPower",   "40", "int"},
+    { "lbrn", "speed",      "8",  "int"},
+    { "lbrn", "numPasses",  "1",  "int"},
+
+	{ "pdf", "showScale",   std::to_string(1),   "bool"   },
+	{ "pdf", "showScaleMg", std::to_string(1),   "bool"   },
+	{ "pdf", "showGrid",    std::to_string(0),   "bool"   },
+	{ "pdf", "gridSize",    std::to_string(10.), "float"  },
+	{ "pdf", "showDsgnFN",  std::to_string(1),   "bool"   },
+	{ "pdf", "Orientatio",  "Portrait",          "string" },
+	{ "pdf", "paperSize",   "A4",                "string" }
+  };
+  
+  for (int i = 0; i < sizeof(ceo) / sizeof(ceo[0]); i++) {
+    add_option(ceo[i].format, ceo[i].option, ceo[i].value, ceo[i].type);
+  }
+}
+
+bool ExportFileOptions::parse_command_export_option(const std::string& option)
+{
+  bool ret = false;
+  CommandExportOption ceo;
+  std::vector<std::string> parts;
+
+  std::vector<std::pair<std::string::const_iterator, std::string::const_iterator> > tokens;
+  boost::split(tokens, option.c_str(), boost::is_any_of(".="));
+  for(auto beg=tokens.begin(); beg!=tokens.end();++beg)
+  {
+    parts.push_back(std::string(beg->first, beg->second));
+  }
+
+  if (parts.size() == 3) {
+    ceo.format = std::string(parts.at(0));
+    ceo.option = std::string(parts.at(1));
+    ceo.value  = std::string(parts.at(2));
+  
+  	update_option(ceo.format, ceo.option, ceo.value);
+  	
+  	ret = true;
+  }
+
+  return ret;
+}
+
+bool ExportFileOptions::add_option(const std::string& format, const std::string& option, const std::string& value, const std::string& type)
+{
+  bool exists = option_exists(format, option);
+  CommandExportOption ceo;
+  	
+  if (exists == false) {
+    ceo.format = format;
+    ceo.option = option;
+    ceo.value  = value;
+    ceo.type   = type;
+
+    commandExportOptions.push_back(ceo);
+  }
+  
+  return true;
+}
+
+bool ExportFileOptions::update_option(const std::string& format, const std::string& option, const std::string& value)
+{
+  bool exists = option_exists(format, option);
+  CommandExportOption ceo;
+  bool ret = false;
+  	
+  if (exists == true) {
+    int idx = get_option_index(format, option);
+    if (idx != -1) {
+      ceo = get_option(format, option);
+	  if (is_value_valid(format, option, value) == true) {
+        commandExportOptions[idx].value = value;
+        ret = true;
+      } else {
+        LOG("Invalid file export option value: %1$s - %2$s should of type %3$s", format, option, ceo.type);
+      }
+    }
+  } else {
+    LOG("Invalid file export option: %1$s - %2$s", format, option);
+  }
+  
+  return ret;
+}
+
+bool ExportFileOptions::option_exists(const std::string& format, const std::string& option)
+{
+  int pos = get_option_index(format, option);
+  bool ret = true;
+  if (pos == -1)
+    ret = false;
+		
+  return ret;
+}
+
+int ExportFileOptions::get_option_index(const std::string& format, const std::string& option)
+{
+  int idx = -1;
+  int pos = -1;
+	
+  for(CommandExportOption cmdOpt : commandExportOptions) {
+    pos++;
+    if (strcmp(cmdOpt.format.c_str(), format.c_str()) == 0 && strcmp(cmdOpt.option.c_str(), option.c_str()) == 0) {
+      idx = pos;
+    }
+  }
+
+  return idx;
+}
+
+CommandExportOption ExportFileOptions::get_option(const std::string& format, const std::string& option)
+{
+  CommandExportOption ceo;
+  ceo.format = "";
+  ceo.option = "";
+  ceo.value = "";
+  ceo.type = "";
+	
+  for(CommandExportOption cmdOpt : commandExportOptions) {
+    if (strcmp(cmdOpt.format.c_str(), format.c_str()) == 0 && strcmp(cmdOpt.option.c_str(), option.c_str()) == 0) {
+      ceo.format = cmdOpt.format;
+      ceo.option = cmdOpt.option;
+      ceo.value = cmdOpt.value;
+      ceo.type = cmdOpt.type;
+    }
+  }
+  
+  return ceo;
+}
+
+
+std::string ExportFileOptions::get_option_value(const std::string& format, const std::string& option)
+{
+  if (option_exists(format, option)) {
+    CommandExportOption ceo = get_option(format, option);
+    return ceo.value;
+  }
+  
+  return NULL;
+}
+
+
+std::vector<CommandExportOption> ExportFileOptions::get_options(const std::string& format)
+{
+  std::vector<CommandExportOption> options;
+
+  for(CommandExportOption cmdOpt : commandExportOptions) {
+  	if (strcmp(cmdOpt.format.c_str(), format.c_str()) == 0) {
+   	  CommandExportOption ceo;
+   	  
+   	  ceo.format = cmdOpt.format;
+   	  ceo.option = cmdOpt.option;
+   	  ceo.value = cmdOpt.value;
+   	  
+   	  options.push_back(ceo);
+  	}
+  }
+  
+  return options;	
+}		
+
+bool ExportFileOptions::is_number(const std::string& str)
+{
+  return !str.empty() && std::find_if(str.begin(), str.end(), [](unsigned char c) { return !std::isdigit(c); }) == str.end();
+}
+
+bool ExportFileOptions::is_float(const std::string& str)
+{
+  std::string::difference_type n = std::count(str.begin(), str.end(), '.');
+  if (n != 1) return false;
+  
+  return !str.empty() && std::find_if(str.begin(), 
+    str.end(), [](unsigned char c) { return !std::isdigit(c) && c != '.'; }) == str.end();
+}
+
+bool ExportFileOptions::is_bool(const std::string& str)
+{
+  std::string lowercaseStr = str;
+  std::transform(
+    lowercaseStr.begin(),
+    lowercaseStr.end(),
+    lowercaseStr.begin(),
+    [](unsigned char c) {
+      return std::tolower(c);
+    });
+  
+  return (lowercaseStr == "true" || lowercaseStr == "false" || lowercaseStr == "0" || lowercaseStr == "1");
+}
+
+bool ExportFileOptions::is_string(const std::string& str)
+{
+  return true;
+}
+
+bool ExportFileOptions::is_value_valid(const std::string& format, const std::string& option, const std::string& value)
+{
+  bool ret = false;
+  int idx = get_option_index(format, option);
+  
+  if (idx != -1) {
+  	CommandExportOption ceo = get_option(format, option);
+  	
+    if (ceo.type == "int") {
+      if (is_number(value) == true)
+        ret = true;
+    
+    } else if (ceo.type == "float") {
+      if (is_float(value) == true)
+        ret = true;
+    
+    } else if (ceo.type == "bool") {
+      if (is_bool(value) == true)
+        ret = true;
+    
+    } else if (ceo.type == "string") {
+      ret = true;
+    
+    }
+  }
+  
+  return ret;
+}
+

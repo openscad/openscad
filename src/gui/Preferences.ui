@@ -2160,6 +2160,11 @@
                    </item>
                    <item>
                     <property name="text">
+                     <string>LBRN</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
                      <string>PDF</string>
                     </property>
                    </item>
