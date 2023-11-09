@@ -732,6 +732,20 @@ void registerDefaultIcon(QString applicationFilePath) {
 void registerDefaultIcon(const QString&) { }
 #endif
 
+static void assertValidPath()
+{
+#ifndef __WIN32
+  boost::system::error_code ec{};
+  auto current_path = fs::current_path(ec);
+
+  while(ec.value() != 0)
+  {
+      fs::current_path(fs::path(".."));
+      current_path = fs::current_path(ec);
+  }
+#endif
+}
+
 int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, char **argv)
 {
   OpenSCADApp app(argc, argv);
@@ -919,6 +933,8 @@ int main(int argc, char **argv)
   // call init_mimalloc before any GMP variables are initialized. (defined in src/openscad_mimalloc.h)
   init_mimalloc();
 #endif
+
+  assertValidPath();
 
   int rc = 0;
   StackCheck::inst();
