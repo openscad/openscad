@@ -37,6 +37,8 @@ public:
   void resetView();
   void viewAll();
   void selectPoint(int x, int y);
+  std::vector<Vector3d> findObject(int x, int y);
+  int measure_state;
 
 public slots:
   void ZoomIn();
@@ -89,7 +91,8 @@ private slots:
 signals:
   void cameraChanged();
   void resized();
-  void doSelectObject(QPoint screen_coordinate);
+  void doRightClick(QPoint screen_coordinate);
+  void doLeftClick(QPoint screen_coordinate);
 };
 
 /* These are defined in QLGView2.cc.  See the commentary there. */

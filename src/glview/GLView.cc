@@ -157,7 +157,12 @@ void GLView::paintGL()
   if (showaxes) GLView::showAxes(axescolor);
   // mark the scale along the axis lines
   if (showaxes && showscale) GLView::showScalemarkers(axescolor);
-  showSelectedPoint();
+  for (const Vector3d &pt: this->shown_pts) {
+    showPoint(pt,0,1,0);
+  }
+  for (const Vector3d &pt: this->selected_pts) {
+    showPoint(pt,1,0,0);
+  }
 
   glEnable(GL_LIGHTING);
   glDepthFunc(GL_LESS);
@@ -387,22 +392,21 @@ void GLView::showCrosshairs(const Color4f& col)
   glEnd();
 }
 
-void GLView::showSelectedPoint(void)
+void GLView::showPoint(const Vector3d &pt, double r, double g, double b)
 {
   glLineWidth(this->getDPI());
   auto vd = cam.zoomValue() *0.005;
-  glColor3f(1,0,0);
+  glColor3f(r,g,b);
   glBegin(GL_LINES);
-  for (const Vector3d &pt: this->selected_pts) {
-    for (double xf : {-1.0, 1.0}) {
-      for (double yf : {-1.0, 1.0}) {
-        glVertex3d(pt[0]+xf*vd,pt[1]+yf*vd,pt[2]-vd);
-        glVertex3d(pt[0]-xf*vd,pt[1]-yf*vd,pt[2]+vd);
-      }	
-    }
+  for (double xf : {-1.0, 1.0}) {
+    for (double yf : {-1.0, 1.0}) {
+      glVertex3d(pt[0]+xf*vd,pt[1]+yf*vd,pt[2]-vd);
+      glVertex3d(pt[0]-xf*vd,pt[1]-yf*vd,pt[2]+vd);
+    }	
   }
   glEnd();
 }
+
 
 void GLView::showScalemarkers(const Color4f& col)
 {

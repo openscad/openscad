@@ -286,6 +286,12 @@ void QGLView::normalizeAngle(GLdouble& angle)
 void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
   auto this_mouse = event->globalPos();
+  if(measure_state != 0) {
+	QPoint pt = event->pos();
+  	this->shown_pts = findObject(pt.x(), pt.y());
+	update();
+	return;
+  }
   double dx = (this_mouse.x() - last_mouse.x()) * 0.7;
   double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
   if (mouse_drag_active) {
@@ -337,12 +343,17 @@ void QGLView::mouseReleaseEvent(QMouseEvent *event)
   mouse_drag_active = false;
   releaseMouse();
 
-  auto button_compare = this->mouseSwapButtons?Qt::LeftButton : Qt::RightButton;
-  if (!mouse_drag_moved
-      && (event->button() == button_compare)) {
-    QPoint point = event->pos();
-    //point.setY(this->height() - point.y());
-    emit doSelectObject(point);
+  auto button_right = this->mouseSwapButtons?Qt::LeftButton : Qt::RightButton;
+  auto button_left =  this->mouseSwapButtons?Qt::RightButton : Qt::LeftButton;
+  if (!mouse_drag_moved) {
+    if(event->button() == button_right) {
+      QPoint point = event->pos();
+      emit doRightClick(point);
+    }  
+    if(event->button() == button_left) {
+      QPoint point = event->pos();
+      emit doLeftClick(point);
+    }  
   }
   mouse_drag_moved = false;
 }
@@ -510,9 +521,9 @@ void QGLView::rotate2(double x, double y, double z)
   update();
   emit cameraChanged();
 }
-void QGLView::selectPoint(int mouse_x, int mouse_y)
+
+std::vector<Vector3d> QGLView::findObject(int mouse_x,int mouse_y)
 {
-  const auto vpt = cam.getVpt();
   int viewport[4]={0,0,0,0};
   double posXF, posYF, posZF;
   double posXN, posYN, posZN;
@@ -531,7 +542,13 @@ void QGLView::selectPoint(int mouse_x, int mouse_y)
   Vector3d testpt(0,0,0);
 
   auto renderer = this->getRenderer();
-  std::vector<Vector3d>  pts= renderer->findModelPoint(near, far, mouse_x, mouse_y, cam.zoomValue()/300);
+  return renderer->findModelPoint(near, far, mouse_x, mouse_y, cam.zoomValue()/300);
+
+}
+
+void QGLView::selectPoint(int mouse_x, int mouse_y)
+{
+  std::vector<Vector3d>  pts= findObject(mouse_x, mouse_y);
   if(pts.size() == 1) {
     this->selected_pts.push_back(pts[0]);
     update();

@@ -73,6 +73,7 @@ public:
   GLdouble modelview[16];
   GLdouble projection[16];
   std::vector<Vector3d> selected_pts;
+  std::vector<Vector3d> shown_pts;
 
 #ifdef ENABLE_OPENCSG
   bool is_opencsg_capable;
@@ -81,11 +82,11 @@ public:
   virtual void display_opencsg_warning() = 0;
   int opencsg_id;
 #endif
+  void showPoint(const Vector3d &pt,double r, double g, double b);
 private:
   void showCrosshairs(const Color4f& col);
   void showAxes(const Color4f& col);
   void showSmallaxes(const Color4f& col);
   void showScalemarkers(const Color4f& col);
-  void showSelectedPoint(void);
   void decodeMarkerValue(double i, double l, int size_div_sm);
 };

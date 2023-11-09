@@ -386,6 +386,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   QSettingsCached settings;
   this->qglview->setMouseCentricZoom(Settings::Settings::mouseCentricZoom.value());
   this->qglview->setMouseSwapButtons(Settings::Settings::mouseSwapButtons.value());
+  this->qglview->measure_state = MEASURE_IDLE;
 
 
   autoReloadTimer = new QTimer(this);
@@ -565,7 +566,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->qglview, SIGNAL(cameraChanged()), animateWidget, SLOT(cameraChanged()));
   connect(this->qglview, SIGNAL(cameraChanged()), viewportControlWidget, SLOT(cameraChanged()));
   connect(this->qglview, SIGNAL(resized()), viewportControlWidget, SLOT(viewResized()));
-  connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
+  connect(this->qglview, SIGNAL(doRightClick(QPoint)), this, SLOT(rightClick(QPoint)));
+  connect(this->qglview, SIGNAL(doLeftClick(QPoint)), this, SLOT(leftClick(QPoint)));
 
   connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(update()));
   connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
@@ -2328,37 +2330,23 @@ void MainWindow::actionMeasureDistance()
 {
 	this->qglview->selected_pts.clear();
 	this->qglview->update();
-	this->measure_state=MEASURE_DIST1;
+	this->qglview->measure_state=MEASURE_DIST1;
 }
 
 void MainWindow::actionMeasureAngle()
 {
 	this->qglview->selected_pts.clear();
 	this->qglview->update();
-	this->measure_state=MEASURE_ANG1;
+	this->qglview->measure_state=MEASURE_ANG1;
 }
 
-/**
- * Call the mouseselection to determine the id of the clicked-on object.
- * Use the generated ID and try to find it within the list of products
- * And finally move the cursor to the beginning of the selected object in the editor
- */
-void MainWindow::selectObject(QPoint mouse)
+void MainWindow::leftClick(QPoint mouse) 
 {
-  // selecting without a renderer?!
-  if (!this->qglview->renderer) {
-    return;
-  }
-
-  // selecting without select object?!
-  if (!this->selector) {
-    return;
-  }
-  if(this->measure_state != MEASURE_IDLE) {
-	this->qglview->selectPoint(mouse.x(),mouse.y());
-	switch(measure_state) {
+  if(this->qglview->measure_state == MEASURE_IDLE) return;
+  this->qglview->selectPoint(mouse.x(),mouse.y());
+  switch(qglview->measure_state) {
 		  case MEASURE_DIST1:
-			if(this->qglview->selected_pts.size() == 1) this->measure_state = MEASURE_DIST2;
+			if(this->qglview->selected_pts.size() == 1) this->qglview->measure_state = MEASURE_DIST2;
 			break;
 		  case MEASURE_DIST2:
 			if(this->qglview->selected_pts.size() == 2)
@@ -2368,15 +2356,19 @@ void MainWindow::selectObject(QPoint mouse)
 				ss << "Distance is " << dist;
     				QMenu resultmenu(this);
       				auto action = resultmenu.addAction(QString::fromStdString(ss.str()));
-        			connect(action, SIGNAL(triggered()), this, SLOT(measureFinished()));
+        			connect(action, SIGNAL(triggered()), this, SLOT(qglview->measureFinished()));
     				resultmenu.exec(this->qglview->mapToGlobal(mouse));
+				this->qglview->selected_pts.clear();
+				this->qglview->shown_pts.clear();
+				this->qglview->update();
+				this->qglview->measure_state = MEASURE_IDLE;
 			}
 			break;
 		  case MEASURE_ANG1:
-			if(this->qglview->selected_pts.size() == 1) this->measure_state = MEASURE_ANG2;
+			if(this->qglview->selected_pts.size() == 1) this->qglview->measure_state = MEASURE_ANG2;
 			break;
 		  case MEASURE_ANG2:
-			if(this->qglview->selected_pts.size() == 2) this->measure_state = MEASURE_ANG3;
+			if(this->qglview->selected_pts.size() == 2) this->qglview->measure_state = MEASURE_ANG3;
 			break;
 		  case MEASURE_ANG3:
 			if(this->qglview->selected_pts.size() == 3){
@@ -2388,12 +2380,31 @@ void MainWindow::selectObject(QPoint mouse)
       				auto action = resultmenu.addAction(QString::fromStdString(ss.str()));
         			connect(action, SIGNAL(triggered()), this, SLOT(measureFinished()));
     				resultmenu.exec(this->qglview->mapToGlobal(mouse));
+				this->qglview->selected_pts.clear();
+				this->qglview->shown_pts.clear();
+				this->qglview->update();
+				this->qglview->measure_state = MEASURE_IDLE;
 			}
 			break;
-			// TODO auch scale bereucksichtigen
-			// TODO pan block
-	  }
-	  return;
+	}
+	return;
+}
+
+/**
+ * Call the mouseselection to determine the id of the clicked-on object.
+ * Use the generated ID and try to find it within the list of products
+ * And finally move the cursor to the beginning of the selected object in the editor
+ */
+void MainWindow::rightClick(QPoint mouse)
+{
+  // selecting without a renderer?!
+  if (!this->qglview->renderer) {
+    return;
+  }
+
+  // selecting without select object?!
+  if (!this->selector) {
+    return;
   }
 
   // Nothing to select
@@ -2458,8 +2469,9 @@ void MainWindow::selectObject(QPoint mouse)
 void MainWindow::measureFinished()
 {
 	this->qglview->selected_pts.clear();
+	this->qglview->shown_pts.clear();
 	this->qglview->update();
-	this->measure_state = MEASURE_IDLE;
+	this->qglview->measure_state = MEASURE_IDLE;
 }
 
 /**

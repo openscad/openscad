@@ -169,13 +169,13 @@
         <widget class="QToolBar" name="viewerToolBar">
          <addaction name="designActionPreview"/>
          <addaction name="designActionRender"/>
-         <addaction name="designActionMeasureDist"/>
-         <addaction name="designActionMeasureAngle"/>
          <addaction name="separator"/>
          <addaction name="viewActionViewAll"/>
          <addaction name="viewActionZoomIn"/>
          <addaction name="viewActionZoomOut"/>
          <addaction name="viewActionResetView"/>
+         <addaction name="designActionMeasureDist"/>
+         <addaction name="designActionMeasureAngle"/>
          <addaction name="separator"/>
          <addaction name="viewActionRight"/>
          <addaction name="viewActionLeft"/>

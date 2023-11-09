@@ -92,7 +92,6 @@ public:
 
   int compileErrors;
   int compileWarnings;
-  int measure_state = MEASURE_IDLE;
 
   MainWindow(const QStringList& filenames);
   ~MainWindow() override;
@@ -341,7 +340,8 @@ public slots:
   void viewResetView();
   void viewAll();
   void editorContentChanged();
-  void selectObject(QPoint coordinate);
+  void leftClick(QPoint coordinate);
+  void rightClick(QPoint coordinate);
   void dragEnterEvent(QDragEnterEvent *event) override;
   void dropEvent(QDropEvent *event) override;
   void helpAbout();
