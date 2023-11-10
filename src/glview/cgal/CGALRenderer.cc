@@ -316,29 +316,83 @@ BoundingBox CGALRenderer::getBoundingBox() const
   }
   return bbox;
 }
-double calculateLinePointDistance(const Vector3d &l1, const Vector3d &l2, const Vector3d &pt) {
+double calculateLinePointDistance(const Vector3d &l1, const Vector3d &l2, const Vector3d &pt, double & dist_lat) {
     Vector3d d = (l2 - l1).normalized();
-    double f = (pt-l1).dot(d);
-    return (l1 + d * f-pt).norm();
+    dist_lat = (pt-l1).dot(d);
+    return (l1 + d * dist_lat-pt).norm();
+}
+
+double calculateLineLineDistance(const Vector3d &l1b, const Vector3d &l1e, const Vector3d &l2b, const Vector3d &l2e, double &dist_lat)
+{
+	double d;
+	Vector3d v1=l1e-l1b;
+	Vector3d v2=l2e-l2b;
+	Vector3d n=v1.cross(v2);
+	if(n.norm() == 0) {
+		return calculateLinePointDistance(l1b,l1e,l2b,d);
+	}
+	double t=n.norm();
+	n.normalize();
+    	d=n.dot(l1b-l2b);
+	dist_lat=(v2.cross(n)).dot(l2b-l1b)/t;
+	return d;
 }
 
 std::vector<SelectedObject> CGALRenderer::findModelObject(Vector3d near, Vector3d far,int mouse_x, int mouse_y, double tolerance) {
   std::vector<SelectedObject> results;
+  double dist_near;
+  double dist_nearest=NAN;
+  Vector3d pt1_nearest;
+  Vector3d pt2_nearest;
   for (const auto& p : this->getPolyhedrons()) {
   }
   for (const std::shared_ptr<const PolySet>& ps : this->polysets) {
     for(const Polygon &pol : ps->polygons) {
       for(const Vector3d &pt: pol) {
-        double dist= calculateLinePointDistance(near, far, pt);
-        if(dist < tolerance  ) {
-	  SelectedObject obj;
-	  obj.type = SELECTION_POINT;
-	  obj.p1=pt;
-	  results.push_back(obj); // TODO nur eines und nur das naechste
-          return results;
-        }
+        double dist_pt= calculateLinePointDistance(near, far, pt,dist_near);
+        if(dist_pt < tolerance  ) {
+	  if(isnan(dist_nearest) || dist_near < dist_nearest)
+	  {
+	    dist_nearest=dist_near;
+	    pt1_nearest=pt;
+	  }
+        }	  
       }
     }
+  }
+  if(!isnan(dist_nearest)) {
+    SelectedObject obj;
+    obj.type = SELECTION_POINT;
+    obj.p1=pt1_nearest;
+    results.push_back(obj);
+    return results;
+  }
+  for (const std::shared_ptr<const PolySet>& ps : this->polysets) {
+    for(const Polygon &pol : ps->polygons) {
+	int n = pol.size();
+        for(int i=0;i < n;i++ )
+	{
+	  Vector3d pt1=pol[i];
+	  Vector3d pt2=pol[(i+1)%n];
+	  double dist_lat;
+          double dist_norm= fabs(calculateLineLineDistance(pt1, pt2, near, far,dist_lat));
+          if(dist_lat >= 0 && dist_lat <= 1 && dist_norm < tolerance  ) {
+	      dist_nearest=dist_lat;
+	      pt1_nearest=pt1;
+	      pt2_nearest=pt2;
+	  }
+        }	  
+      }
+   }
+
+  if(!isnan(dist_nearest)) {
+//    printf("Found one line\n");	  
+    SelectedObject obj;
+    obj.type = SELECTION_LINE;
+    obj.p1=pt1_nearest;
+    obj.p2=pt2_nearest;
+    results.push_back(obj);
+    return results;
   }
   return results;
 }

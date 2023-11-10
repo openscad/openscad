@@ -2340,10 +2340,16 @@ void MainWindow::actionMeasureAngle()
 	this->qglview->measure_state=MEASURE_ANG1;
 }
 
+extern double calculateLineLineDistance(const Vector3d &l1b, const Vector3d &l1e, const Vector3d &l2b, const Vector3d &l2e, double &dist_lat);
+extern double calculateLinePointDistance(const Vector3d &l1, const Vector3d &l2, const Vector3d &pt, double & dist_lat) ;
+
 void MainWindow::leftClick(QPoint mouse) 
 {
   if(this->qglview->measure_state == MEASURE_IDLE) return;
   this->qglview->selectPoint(mouse.x(),mouse.y());
+  double ang=NAN;
+  double dist=NAN;
+  SelectedObject obj1, obj2, obj3;
   switch(qglview->measure_state) {
 		  case MEASURE_DIST1:
 			if(this->qglview->selected_obj.size() == 1) this->qglview->measure_state = MEASURE_DIST2;
@@ -2351,13 +2357,21 @@ void MainWindow::leftClick(QPoint mouse)
 		  case MEASURE_DIST2:
 			if(this->qglview->selected_obj.size() == 2)
 			{
-				double dist=(this->qglview->selected_obj[1].p1-this->qglview->selected_obj[0].p1).norm();
-    				std::stringstream ss;
-				ss << "Distance is " << dist;
-    				QMenu resultmenu(this);
-      				auto action = resultmenu.addAction(QString::fromStdString(ss.str()));
-        			connect(action, SIGNAL(triggered()), this, SLOT(qglview->measureFinished()));
-    				resultmenu.exec(this->qglview->mapToGlobal(mouse));
+				double lat;
+				obj1=this->qglview->selected_obj[0];
+				obj2=this->qglview->selected_obj[1];
+				if(obj1.type == SELECTION_POINT && obj2.type == SELECTION_POINT) dist =(obj2.p1-obj1.p1).norm();
+				if(obj1.type == SELECTION_POINT && obj2.type == SELECTION_LINE) dist =calculateLinePointDistance(obj2.p1, obj2.p2,obj1.p1,lat);
+				if(obj1.type == SELECTION_LINE && obj2.type == SELECTION_POINT) dist =calculateLinePointDistance(obj1.p1, obj1.p2,obj2.p1,lat);
+				if(obj1.type == SELECTION_LINE && obj2.type == SELECTION_LINE) dist =calculateLineLineDistance(obj1.p1, obj1.p2,obj2.p1,obj2.p2,lat);
+				if(!isnan(dist)) {
+	    				std::stringstream ss;
+					ss << "Distance is " << dist;
+    					QMenu resultmenu(this);
+      					auto action = resultmenu.addAction(QString::fromStdString(ss.str()));
+        				connect(action, SIGNAL(triggered()), this, SLOT(qglview->measureFinished()));
+	    				resultmenu.exec(this->qglview->mapToGlobal(mouse));
+				}
 				this->qglview->selected_obj.clear();
 				this->qglview->shown_obj.clear();
 				this->qglview->update();
@@ -2368,18 +2382,67 @@ void MainWindow::leftClick(QPoint mouse)
 			if(this->qglview->selected_obj.size() == 1) this->qglview->measure_state = MEASURE_ANG2;
 			break;
 		  case MEASURE_ANG2:
-			if(this->qglview->selected_obj.size() == 2) this->qglview->measure_state = MEASURE_ANG3;
+			if(this->qglview->selected_obj.size() == 2)
+			{
+				obj1=this->qglview->selected_obj[0];
+				obj2=this->qglview->selected_obj[1];
+				Vector3d side1, side2;
+				if(obj1.type == SELECTION_LINE && obj2.type == SELECTION_POINT)
+				{
+					side1=(obj1.p2-obj1.p1).normalized();
+					side2=(obj1.p2-obj2.p1).normalized();
+					ang=acos(side1.dot(side2))*180.0/3.14159265359;
+					goto display_angle;
+				}
+				else if(obj1.type == SELECTION_POINT && obj2.type == SELECTION_LINE)
+				{
+					side1=(obj2.p2-obj2.p1).normalized();
+					side2=(obj2.p2-obj1.p1).normalized();
+					ang=acos(side1.dot(side2))*180.0/3.14159265359;
+					goto display_angle;
+				}
+				else if(obj1.type == SELECTION_LINE && obj2.type == SELECTION_LINE)
+				{
+					side1=(obj2.p2-obj2.p1).normalized();
+					side2=(obj2.p2-obj1.p1).normalized();
+					if(obj1.p2 == obj2.p1) {
+						side1=(obj2.p1-obj1.p1).normalized();
+						side2=(obj2.p1-obj2.p2).normalized();
+					}
+					else if(obj2.p2 == obj1.p1) {
+						side1=(obj1.p1-obj2.p1).normalized();
+						side2=(obj1.p1-obj1.p2).normalized();
+					} else {
+						side1=obj1.p2-obj1.p1;
+						side2=obj2.p2-obj2.p1;
+					}
+					ang=acos(side1.dot(side2))*180.0/3.14159265359;
+					goto display_angle;
+				} else
+					this->qglview->measure_state = MEASURE_ANG3;
+			}
 			break;
 		  case MEASURE_ANG3:
 			if(this->qglview->selected_obj.size() == 3){
-				Vector3d side1=(this->qglview->selected_obj[1].p1-this->qglview->selected_obj[0].p1).normalized();
-				Vector3d side2=(this->qglview->selected_obj[1].p1-this->qglview->selected_obj[2].p1).normalized();
-    				std::stringstream ss;
-				ss << "Angle  is " << acos(side1.dot(side2))*180.0/3.14159265359 << " Degrees";
-    				QMenu resultmenu(this);
-      				auto action = resultmenu.addAction(QString::fromStdString(ss.str()));
-        			connect(action, SIGNAL(triggered()), this, SLOT(measureFinished()));
-    				resultmenu.exec(this->qglview->mapToGlobal(mouse));
+				obj1=this->qglview->selected_obj[0];
+				obj2=this->qglview->selected_obj[1];
+				obj3=this->qglview->selected_obj[2];
+				if(obj1.type == SELECTION_POINT && obj2.type == SELECTION_POINT && obj3.type == SELECTION_POINT)
+				{
+					Vector3d side1=(obj2.p1-obj1.p1).normalized();
+					Vector3d side2=(obj2.p1-obj3.p1).normalized();
+					ang=acos(side1.dot(side2))*180.0/3.14159265359;
+				}
+display_angle:
+				if(!isnan(ang))
+				{
+	    				std::stringstream ss;
+					ss << "Angle  is " << ang << " Degrees";
+    					QMenu resultmenu(this);
+      					auto action = resultmenu.addAction(QString::fromStdString(ss.str()));
+	       	 			connect(action, SIGNAL(triggered()), this, SLOT(measureFinished()));
+    					resultmenu.exec(this->qglview->mapToGlobal(mouse));
+				}
 				this->qglview->selected_obj.clear();
 				this->qglview->shown_obj.clear();
 				this->qglview->update();
@@ -2466,7 +2529,7 @@ void MainWindow::rightClick(QPoint mouse)
     tracemenu.exec(this->qglview->mapToGlobal(mouse));
   }
 }
-void MainWindow::measureFinished()
+void MainWindow::measureFinished(void)
 {
 	this->qglview->selected_obj.clear();
 	this->qglview->shown_obj.clear();

@@ -81,6 +81,17 @@ void GLView::setCamera(const Camera& cam)
   this->cam = cam;
 }
 
+void showMatrix(char *text,GLdouble *mat)
+{
+	printf("%s\n",text);
+	for(int i=0;i<4;i++){
+		for(int j=0;j<4;j++) {
+			printf("%g\t",mat[i*4+j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
 void GLView::setupCamera()
 {
   glMatrixMode(GL_PROJECTION);
@@ -113,6 +124,8 @@ void GLView::setupCamera()
   glGetDoublev(GL_MODELVIEW_MATRIX,this->modelview);
   glTranslated(-cam.object_trans[0],-cam.object_trans[1],-cam.object_trans[2]);
   glGetDoublev(GL_PROJECTION_MATRIX,this->projection);
+//  showMatrix("modelview",this->modelview);
+//  showMatrix("projection",this->projection);
 }
 
 void GLView::paintGL()
@@ -173,12 +186,14 @@ void GLView::paintGL()
     this->renderer->prepare(showfaces, showedges);
     this->renderer->draw(showfaces, showedges);
   }
-
-  for (const SelectedObject obj: this->shown_obj) {
-    showObject(obj,0,1,0);
-  }
+  Vector3d eyedir(this->modelview[2],this->modelview[6],this->modelview[10]);
+  glColor3f(1,0,0);
   for (const SelectedObject &obj:this->selected_obj) {
-    showObject(obj,1,0,0);
+    showObject(obj,eyedir);
+  }
+  glColor3f(0,1,0);
+  for (const SelectedObject obj: this->shown_obj) {
+    showObject(obj,eyedir);
   }
   glDisable(GL_LIGHTING);
   if (showaxes) GLView::showSmallaxes(axescolor);
@@ -392,29 +407,45 @@ void GLView::showCrosshairs(const Color4f& col)
   glEnd();
 }
 
-void GLView::showObject(const SelectedObject &obj, double r, double g, double b)
+void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
 {
-  glLineWidth(this->getDPI());
-  auto vd = cam.zoomValue() *0.005;
-  glColor3f(r,g,b);
+  auto vd = cam.zoomValue()/200.0;
   switch(obj.type) {
     case SELECTION_POINT:
+    {
+      double n=1/sqrt(3);
       // create an octaeder	   
       //x- x+ y- y+ z- z+
-      int sequence[]={2, 1, 5, 1, 3, 5, 3, 0, 5, 0, 2, 5, 1, 2, 4, 3, 1, 4, 0, 3, 4, 2, 0, 4};
+      int sequence[]={ 2, 0, 4, 1, 2, 4, 0, 3, 4, 3, 1, 4, 0, 2, 5, 2, 1, 5, 3, 0, 5, 1, 3, 5 };
       glBegin(GL_TRIANGLES);
-      for(int i=0;i<24;i++) {
-	int code=sequence[i];
-        switch(code) {
+      for(int i=0;i<8;i++) {
+	glNormal3f((i&1)?-n:n,(i&2)?-n:n,(i&4)?-n:n);
+	for(int j=0;j<3;j++) {
+	  int code=sequence[i*3+j];
+          switch(code) {
 		case 0: glVertex3d(obj.p1[0]-vd,obj.p1[1],obj.p1[2]); break;
 		case 1: glVertex3d(obj.p1[0]+vd,obj.p1[1],obj.p1[2]); break;
 		case 2: glVertex3d(obj.p1[0],obj.p1[1]-vd,obj.p1[2]); break;
 		case 3: glVertex3d(obj.p1[0],obj.p1[1]+vd,obj.p1[2]); break;
 		case 4: glVertex3d(obj.p1[0],obj.p1[1],obj.p1[2]-vd); break;
 		case 5: glVertex3d(obj.p1[0],obj.p1[1],obj.p1[2]+vd); break;
+          }		
 	}	
       }	
       glEnd();
+     }
+     break;	
+   case SELECTION_LINE:
+     {
+	Vector3d diff=obj.p2-obj.p1;
+	Vector3d wdir=eyedir.cross(diff).normalized()*vd/2.0;
+        glBegin(GL_QUADS);
+        glVertex3d(obj.p1[0]-wdir[0],obj.p1[1]-wdir[1],obj.p1[2]-wdir[2]);
+        glVertex3d(obj.p2[0]-wdir[0],obj.p2[1]-wdir[1],obj.p2[2]-wdir[2]);
+        glVertex3d(obj.p2[0]+wdir[0],obj.p2[1]+wdir[1],obj.p2[2]+wdir[2]);
+        glVertex3d(obj.p1[0]+wdir[0],obj.p1[1]+wdir[1],obj.p1[2]+wdir[2]);
+        glEnd();
+      }	
       break;	
   }
 }
