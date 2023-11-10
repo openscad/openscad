@@ -2328,14 +2328,14 @@ void MainWindow::actionRenderDone(const shared_ptr<const Geometry>& root_geom)
 
 void MainWindow::actionMeasureDistance()
 {
-	this->qglview->selected_pts.clear();
+	this->qglview->selected_obj.clear();
 	this->qglview->update();
 	this->qglview->measure_state=MEASURE_DIST1;
 }
 
 void MainWindow::actionMeasureAngle()
 {
-	this->qglview->selected_pts.clear();
+	this->qglview->selected_obj.clear();
 	this->qglview->update();
 	this->qglview->measure_state=MEASURE_ANG1;
 }
@@ -2346,42 +2346,42 @@ void MainWindow::leftClick(QPoint mouse)
   this->qglview->selectPoint(mouse.x(),mouse.y());
   switch(qglview->measure_state) {
 		  case MEASURE_DIST1:
-			if(this->qglview->selected_pts.size() == 1) this->qglview->measure_state = MEASURE_DIST2;
+			if(this->qglview->selected_obj.size() == 1) this->qglview->measure_state = MEASURE_DIST2;
 			break;
 		  case MEASURE_DIST2:
-			if(this->qglview->selected_pts.size() == 2)
+			if(this->qglview->selected_obj.size() == 2)
 			{
-				double dist=(this->qglview->selected_pts[1]-this->qglview->selected_pts[0]).norm();
+				double dist=(this->qglview->selected_obj[1].p1-this->qglview->selected_obj[0].p1).norm();
     				std::stringstream ss;
 				ss << "Distance is " << dist;
     				QMenu resultmenu(this);
       				auto action = resultmenu.addAction(QString::fromStdString(ss.str()));
         			connect(action, SIGNAL(triggered()), this, SLOT(qglview->measureFinished()));
     				resultmenu.exec(this->qglview->mapToGlobal(mouse));
-				this->qglview->selected_pts.clear();
-				this->qglview->shown_pts.clear();
+				this->qglview->selected_obj.clear();
+				this->qglview->shown_obj.clear();
 				this->qglview->update();
 				this->qglview->measure_state = MEASURE_IDLE;
 			}
 			break;
 		  case MEASURE_ANG1:
-			if(this->qglview->selected_pts.size() == 1) this->qglview->measure_state = MEASURE_ANG2;
+			if(this->qglview->selected_obj.size() == 1) this->qglview->measure_state = MEASURE_ANG2;
 			break;
 		  case MEASURE_ANG2:
-			if(this->qglview->selected_pts.size() == 2) this->qglview->measure_state = MEASURE_ANG3;
+			if(this->qglview->selected_obj.size() == 2) this->qglview->measure_state = MEASURE_ANG3;
 			break;
 		  case MEASURE_ANG3:
-			if(this->qglview->selected_pts.size() == 3){
-				Vector3d side1=(this->qglview->selected_pts[1]-this->qglview->selected_pts[0]).normalized();
-				Vector3d side2=(this->qglview->selected_pts[1]-this->qglview->selected_pts[2]).normalized();
+			if(this->qglview->selected_obj.size() == 3){
+				Vector3d side1=(this->qglview->selected_obj[1].p1-this->qglview->selected_obj[0].p1).normalized();
+				Vector3d side2=(this->qglview->selected_obj[1].p1-this->qglview->selected_obj[2].p1).normalized();
     				std::stringstream ss;
 				ss << "Angle  is " << acos(side1.dot(side2))*180.0/3.14159265359 << " Degrees";
     				QMenu resultmenu(this);
       				auto action = resultmenu.addAction(QString::fromStdString(ss.str()));
         			connect(action, SIGNAL(triggered()), this, SLOT(measureFinished()));
     				resultmenu.exec(this->qglview->mapToGlobal(mouse));
-				this->qglview->selected_pts.clear();
-				this->qglview->shown_pts.clear();
+				this->qglview->selected_obj.clear();
+				this->qglview->shown_obj.clear();
 				this->qglview->update();
 				this->qglview->measure_state = MEASURE_IDLE;
 			}
@@ -2468,8 +2468,8 @@ void MainWindow::rightClick(QPoint mouse)
 }
 void MainWindow::measureFinished()
 {
-	this->qglview->selected_pts.clear();
-	this->qglview->shown_pts.clear();
+	this->qglview->selected_obj.clear();
+	this->qglview->shown_obj.clear();
 	this->qglview->update();
 	this->qglview->measure_state = MEASURE_IDLE;
 }

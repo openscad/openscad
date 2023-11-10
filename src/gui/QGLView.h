@@ -37,7 +37,7 @@ public:
   void resetView();
   void viewAll();
   void selectPoint(int x, int y);
-  std::vector<Vector3d> findObject(int x, int y);
+  std::vector<SelectedObject> findObject(int x, int y);
   int measure_state;
 
 public slots:

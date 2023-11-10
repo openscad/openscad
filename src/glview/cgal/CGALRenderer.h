@@ -3,6 +3,7 @@
 #include "VBORenderer.h"
 #include "CGAL_OGL_Polyhedron.h"
 #include "CGAL_Nef_polyhedron.h"
+#include "Selection.h"
 
 class CGALRenderer : public VBORenderer
 {
@@ -13,7 +14,7 @@ public:
   void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
   void setColorScheme(const ColorScheme& cs) override;
   BoundingBox getBoundingBox() const override;
-  std::vector<Vector3d> findModelPoint(Vector3d near, Vector3d far, int mouse_x, int mouse_y, double tolerance) override;
+  std::vector<SelectedObject> findModelObject(Vector3d near, Vector3d far, int mouse_x, int mouse_y, double tolerance) override;
 
 private:
   void addGeometry(const shared_ptr<const class Geometry>& geom);

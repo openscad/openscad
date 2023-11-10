@@ -157,11 +157,11 @@ void GLView::paintGL()
   if (showaxes) GLView::showAxes(axescolor);
   // mark the scale along the axis lines
   if (showaxes && showscale) GLView::showScalemarkers(axescolor);
-  for (const Vector3d &pt: this->shown_pts) {
-    showPoint(pt,0,1,0);
+  for (const SelectedObject obj: this->shown_obj) {
+    showObject(obj,0,1,0);
   }
-  for (const Vector3d &pt: this->selected_pts) {
-    showPoint(pt,1,0,0);
+  for (const SelectedObject &obj:this->selected_obj) {
+    showObject(obj,1,0,0);
   }
 
   glEnable(GL_LIGHTING);
@@ -392,16 +392,20 @@ void GLView::showCrosshairs(const Color4f& col)
   glEnd();
 }
 
-void GLView::showPoint(const Vector3d &pt, double r, double g, double b)
+void GLView::showObject(const SelectedObject &obj, double r, double g, double b)
 {
   glLineWidth(this->getDPI());
   auto vd = cam.zoomValue() *0.005;
   glColor3f(r,g,b);
-  glBegin(GL_LINES);
-  for (double xf : {-1.0, 1.0}) {
-    for (double yf : {-1.0, 1.0}) {
-      glVertex3d(pt[0]+xf*vd,pt[1]+yf*vd,pt[2]-vd);
-      glVertex3d(pt[0]-xf*vd,pt[1]-yf*vd,pt[2]+vd);
+  switch(obj.type) {
+    case SELECTION_POINT:
+      glBegin(GL_LINES);
+      for (double xf : {-1.0, 1.0}) {
+        for (double yf : {-1.0, 1.0}) {
+          glVertex3d(obj.p1[0]+xf*vd,obj.p1[1]+yf*vd,obj.p1[2]-vd);
+          glVertex3d(obj.p1[0]-xf*vd,obj.p1[1]-yf*vd,obj.p1[2]+vd);
+        }	
+      break;	
     }	
   }
   glEnd();

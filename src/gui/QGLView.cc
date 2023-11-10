@@ -288,7 +288,7 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
   auto this_mouse = event->globalPos();
   if(measure_state != 0) {
 	QPoint pt = event->pos();
-  	this->shown_pts = findObject(pt.x(), pt.y());
+  	this->shown_obj = findObject(pt.x(), pt.y());
 	update();
 	return;
   }
@@ -522,7 +522,7 @@ void QGLView::rotate2(double x, double y, double z)
   emit cameraChanged();
 }
 
-std::vector<Vector3d> QGLView::findObject(int mouse_x,int mouse_y)
+std::vector<SelectedObject> QGLView::findObject(int mouse_x,int mouse_y)
 {
   int viewport[4]={0,0,0,0};
   double posXF, posYF, posZF;
@@ -542,15 +542,15 @@ std::vector<Vector3d> QGLView::findObject(int mouse_x,int mouse_y)
   Vector3d testpt(0,0,0);
 
   auto renderer = this->getRenderer();
-  return renderer->findModelPoint(near, far, mouse_x, mouse_y, cam.zoomValue()/300);
+  return renderer->findModelObject(near, far, mouse_x, mouse_y, cam.zoomValue()/300);
 
 }
 
 void QGLView::selectPoint(int mouse_x, int mouse_y)
 {
-  std::vector<Vector3d>  pts= findObject(mouse_x, mouse_y);
-  if(pts.size() == 1) {
-    this->selected_pts.push_back(pts[0]);
+  std::vector<SelectedObject>  obj= findObject(mouse_x, mouse_y);
+  if(obj.size() == 1) {
+    this->selected_obj.push_back(obj[0]);
     update();
   }	  
 }

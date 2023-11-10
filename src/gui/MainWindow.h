@@ -37,7 +37,6 @@ class Preferences;
 class ProgressWidget;
 class ThrownTogetherRenderer;
 
-enum { MEASURE_IDLE, MEASURE_DIST1, MEASURE_DIST2, MEASURE_ANG1, MEASURE_ANG2, MEASURE_ANG3 };
 class MainWindow : public QMainWindow, public Ui::MainWindow, public InputEventHandler
 {
   Q_OBJECT

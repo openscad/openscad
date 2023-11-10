@@ -322,8 +322,8 @@ double calculateLinePointDistance(const Vector3d &l1, const Vector3d &l2, const 
     return (l1 + d * f-pt).norm();
 }
 
-std::vector<Vector3d> CGALRenderer::findModelPoint(Vector3d near, Vector3d far,int mouse_x, int mouse_y, double tolerance) {
-  std::vector<Vector3d> results;
+std::vector<SelectedObject> CGALRenderer::findModelObject(Vector3d near, Vector3d far,int mouse_x, int mouse_y, double tolerance) {
+  std::vector<SelectedObject> results;
   for (const auto& p : this->getPolyhedrons()) {
   }
   for (const std::shared_ptr<const PolySet>& ps : this->polysets) {
@@ -331,7 +331,10 @@ std::vector<Vector3d> CGALRenderer::findModelPoint(Vector3d near, Vector3d far,i
       for(const Vector3d &pt: pol) {
         double dist= calculateLinePointDistance(near, far, pt);
         if(dist < tolerance  ) {
-	  results.push_back(pt); // TODO nur eines und nur das naechste
+	  SelectedObject obj;
+	  obj.type = SELECTION_POINT;
+	  obj.p1=pt;
+	  results.push_back(obj); // TODO nur eines und nur das naechste
           return results;
         }
       }

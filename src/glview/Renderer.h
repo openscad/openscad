@@ -4,6 +4,7 @@
 #include "ColorMap.h"
 #include "enums.h"
 #include "PolySet.h"
+#include "Selection.h"
 
 #ifdef _MSC_VER // NULL
 #include <cstdlib>
@@ -82,7 +83,7 @@ public:
   [[nodiscard]] virtual csgmode_e get_csgmode(const bool highlight_mode, const bool background_mode, const OpenSCADOperator type = OpenSCADOperator::UNION) const;
   virtual void render_surface(const PolySet& geom, csgmode_e csgmode, const Transform3d& m, const shaderinfo_t *shaderinfo = nullptr) const;
   virtual void render_edges(const PolySet& geom, csgmode_e csgmode) const;
-  virtual std::vector<Vector3d> findModelPoint(Vector3d near_ray, Vector3d far_ray, int mouse_x, int mouse_y, double tolerance);
+  virtual std::vector<SelectedObject> findModelObject(Vector3d near_ray, Vector3d far_ray, int mouse_x, int mouse_y, double tolerance);
 
 protected:
   std::map<ColorMode, Color4f> colormap;

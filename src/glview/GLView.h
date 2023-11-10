@@ -24,6 +24,7 @@
 #include "Camera.h"
 #include "ColorMap.h"
 #include "system-gl.h"
+#include "Selection.h"
 
 class GLView
 {
@@ -72,8 +73,8 @@ public:
   bool showscale;
   GLdouble modelview[16];
   GLdouble projection[16];
-  std::vector<Vector3d> selected_pts;
-  std::vector<Vector3d> shown_pts;
+  std::vector<SelectedObject> selected_obj;
+  std::vector<SelectedObject> shown_obj;
 
 #ifdef ENABLE_OPENCSG
   bool is_opencsg_capable;
@@ -82,7 +83,7 @@ public:
   virtual void display_opencsg_warning() = 0;
   int opencsg_id;
 #endif
-  void showPoint(const Vector3d &pt,double r, double g, double b);
+  void showObject(const SelectedObject &pt,double r, double g, double b);
 private:
   void showCrosshairs(const Color4f& col);
   void showAxes(const Color4f& col);
