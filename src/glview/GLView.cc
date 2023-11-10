@@ -157,12 +157,6 @@ void GLView::paintGL()
   if (showaxes) GLView::showAxes(axescolor);
   // mark the scale along the axis lines
   if (showaxes && showscale) GLView::showScalemarkers(axescolor);
-  for (const SelectedObject obj: this->shown_obj) {
-    showObject(obj,0,1,0);
-  }
-  for (const SelectedObject &obj:this->selected_obj) {
-    showObject(obj,1,0,0);
-  }
 
   glEnable(GL_LIGHTING);
   glDepthFunc(GL_LESS);
@@ -180,6 +174,12 @@ void GLView::paintGL()
     this->renderer->draw(showfaces, showedges);
   }
 
+  for (const SelectedObject obj: this->shown_obj) {
+    showObject(obj,0,1,0);
+  }
+  for (const SelectedObject &obj:this->selected_obj) {
+    showObject(obj,1,0,0);
+  }
   glDisable(GL_LIGHTING);
   if (showaxes) GLView::showSmallaxes(axescolor);
 }
@@ -399,16 +399,24 @@ void GLView::showObject(const SelectedObject &obj, double r, double g, double b)
   glColor3f(r,g,b);
   switch(obj.type) {
     case SELECTION_POINT:
-      glBegin(GL_LINES);
-      for (double xf : {-1.0, 1.0}) {
-        for (double yf : {-1.0, 1.0}) {
-          glVertex3d(obj.p1[0]+xf*vd,obj.p1[1]+yf*vd,obj.p1[2]-vd);
-          glVertex3d(obj.p1[0]-xf*vd,obj.p1[1]-yf*vd,obj.p1[2]+vd);
-        }	
+      // create an octaeder	   
+      //x- x+ y- y+ z- z+
+      int sequence[]={2, 1, 5, 1, 3, 5, 3, 0, 5, 0, 2, 5, 1, 2, 4, 3, 1, 4, 0, 3, 4, 2, 0, 4};
+      glBegin(GL_TRIANGLES);
+      for(int i=0;i<24;i++) {
+	int code=sequence[i];
+        switch(code) {
+		case 0: glVertex3d(obj.p1[0]-vd,obj.p1[1],obj.p1[2]); break;
+		case 1: glVertex3d(obj.p1[0]+vd,obj.p1[1],obj.p1[2]); break;
+		case 2: glVertex3d(obj.p1[0],obj.p1[1]-vd,obj.p1[2]); break;
+		case 3: glVertex3d(obj.p1[0],obj.p1[1]+vd,obj.p1[2]); break;
+		case 4: glVertex3d(obj.p1[0],obj.p1[1],obj.p1[2]-vd); break;
+		case 5: glVertex3d(obj.p1[0],obj.p1[1],obj.p1[2]+vd); break;
+	}	
+      }	
+      glEnd();
       break;	
-    }	
   }
-  glEnd();
 }
 
 

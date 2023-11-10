@@ -290,7 +290,6 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
 	QPoint pt = event->pos();
   	this->shown_obj = findObject(pt.x(), pt.y());
 	update();
-	return;
   }
   double dx = (this_mouse.x() - last_mouse.x()) * 0.7;
   double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
