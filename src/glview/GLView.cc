@@ -81,17 +81,6 @@ void GLView::setCamera(const Camera& cam)
   this->cam = cam;
 }
 
-void showMatrix(char *text,GLdouble *mat)
-{
-	printf("%s\n",text);
-	for(int i=0;i<4;i++){
-		for(int j=0;j<4;j++) {
-			printf("%g\t",mat[i*4+j]);
-		}
-		printf("\n");
-	}
-	printf("\n");
-}
 void GLView::setupCamera()
 {
   glMatrixMode(GL_PROJECTION);
@@ -124,8 +113,6 @@ void GLView::setupCamera()
   glGetDoublev(GL_MODELVIEW_MATRIX,this->modelview);
   glTranslated(-cam.object_trans[0],-cam.object_trans[1],-cam.object_trans[2]);
   glGetDoublev(GL_PROJECTION_MATRIX,this->projection);
-//  showMatrix("modelview",this->modelview);
-//  showMatrix("projection",this->projection);
 }
 
 void GLView::paintGL()
@@ -449,7 +436,6 @@ void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
       break;	
   }
 }
-
 
 void GLView::showScalemarkers(const Color4f& col)
 {

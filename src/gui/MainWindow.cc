@@ -2366,7 +2366,7 @@ void MainWindow::leftClick(QPoint mouse)
 				if(obj1.type == SELECTION_LINE && obj2.type == SELECTION_LINE) dist =calculateLineLineDistance(obj1.p1, obj1.p2,obj2.p1,obj2.p2,lat);
 				if(!isnan(dist)) {
 	    				std::stringstream ss;
-					ss << "Distance is " << dist;
+					ss << "Distance is " << fabs(dist);
     					QMenu resultmenu(this);
       					auto action = resultmenu.addAction(QString::fromStdString(ss.str()));
         				connect(action, SIGNAL(triggered()), this, SLOT(qglview->measureFinished()));
@@ -2403,8 +2403,6 @@ void MainWindow::leftClick(QPoint mouse)
 				}
 				else if(obj1.type == SELECTION_LINE && obj2.type == SELECTION_LINE)
 				{
-					side1=(obj2.p2-obj2.p1).normalized();
-					side2=(obj2.p2-obj1.p1).normalized();
 					if(obj1.p2 == obj2.p1) {
 						side1=(obj2.p1-obj1.p1).normalized();
 						side2=(obj2.p1-obj2.p2).normalized();
@@ -2413,8 +2411,8 @@ void MainWindow::leftClick(QPoint mouse)
 						side1=(obj1.p1-obj2.p1).normalized();
 						side2=(obj1.p1-obj1.p2).normalized();
 					} else {
-						side1=obj1.p2-obj1.p1;
-						side2=obj2.p2-obj2.p1;
+						side1=(obj1.p2-obj1.p1).normalized();
+						side2=(obj2.p2-obj2.p1).normalized();
 					}
 					ang=acos(side1.dot(side2))*180.0/3.14159265359;
 					goto display_angle;
