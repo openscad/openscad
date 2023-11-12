@@ -765,7 +765,12 @@ list(APPEND ALL_2D_FILES
 # Known good manifold files -> EXPORT3D_CGALCGAL_TEST_FILES
 # Known weak manifold files -> EXPORT3D_CGAL_TEST_FILES
 # Known non-manifold files -> EXPORT3D_TEST_FILES
-list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${BUGS_FILES})
+list(APPEND EXPORT3D_CGALCGAL_TEST_FILES
+  ${TEST_SCAD_DIR}/3D/issues/issue13.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue13b.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue13c.scad
+  ${BUGS_FILES}
+  )
 #list(REMOVE_ITEM EXPORT3D_CGALCGAL_TEST_FILES
 #)
 #list(APPEND EXPORT3D_CGAL_TEST_FILES
@@ -895,7 +900,6 @@ set_test_config(Heavy FILES
 set_test_config(Bugs FILES ${BUGS_FILES} ${BUGS_2D_FILES} PREFIXES opencsgtest cgalpngtest csgpngtest)
 set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES offpngtest monotonepngtest stlpngtest stlcgalpngtest cgalstlcgalpngtest cgalbinstlcgalpngtest offcgalpngtest)
 set_test_config(Bugs FILES
-  offcgalpngtest_polyhedron-tests
   offpngtest_nonmanifold-polyhedron
   offpngtest_bad-stl-wing
   cgalpngtest_escape-test.scad
