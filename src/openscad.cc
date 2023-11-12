@@ -52,6 +52,10 @@
 #include <vector>
 #include <fstream>
 
+#ifdef ENABLE_MANIFOLD
+#include "manifoldutils.h"
+#endif
+
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
