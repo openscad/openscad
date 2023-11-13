@@ -1,5 +1,5 @@
 // Several types associated with geometry-as-data.
-// NEEDSWORK Should perhaps be split into GeometryLiteral.h, HybridLiteral.h,
+// NEEDSWORK Should perhaps be split into GeometryLiteral.h
 // and GeometryInstantiation.h.  (Or maybe GeometryInstantiation should
 // go in ModuleInstantiation.h.)
 #pragma once
@@ -15,16 +15,6 @@ class GeometryLiteral : public Expression
 {
 public:
   GeometryLiteral(const Location& loc);
-  Value evaluate(const std::shared_ptr<const Context>& context) const override;
-  void print(std::ostream& stream, const std::string& indent) const override;
-  bool isLiteral() const override;
-  LocalScope body;
-};
-
-class HybridLiteral : public Expression
-{
-public:
-  HybridLiteral(const Location& loc);
   Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
   bool isLiteral() const override;

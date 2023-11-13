@@ -1097,13 +1097,7 @@ static void get_mesh_data(const shared_ptr<const Geometry> &geom, EvaluationSess
 Value builtin_data_render(Arguments arguments, const Location& loc)
 {
   shared_ptr<AbstractNode> node;
-  if (try_check_arguments(arguments, { Value::Type::OBJECT })) {
-    node = arguments[0]->toObject().ptr->node;
-    if (!node) {
-      LOG(message_group::Warning,Location::NONE,"","Object has no geometry");
-      return Value::undefined.clone();
-    }
-  } else if (check_arguments("render", arguments, loc, { Value::Type::GEOMETRY })) {
+  if (check_arguments("render", arguments, loc, { Value::Type::GEOMETRY })) {
     node = arguments[0]->toGeometry().getNode();
   } else {
     return Value::undefined.clone();

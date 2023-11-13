@@ -1243,14 +1243,6 @@ ObjectType::ObjectType(EvaluationSession *session) :
   ptr(std::make_shared<ObjectObject>())
 {
   ptr->evaluation_session = session;
-  ptr->node = nullptr;
-}
-
-ObjectType::ObjectType(EvaluationSession *session, std::shared_ptr<AbstractNode> node) :
-  ptr(shared_ptr<ObjectObject>(new ObjectObject()))
-{
-  ptr->evaluation_session = session;
-  ptr->node = node;
 }
 
 const Value& ObjectType::get(const std::string& key) const
@@ -1354,45 +1346,22 @@ bool ObjectType::keyIsIdentifier(const std::string& k)
 // This is used for echo() and str().
 std::ostream& operator<<(std::ostream& stream, const ObjectType& v)
 {
-  if (v.ptr->node) {
-    stream << "{( ";
-    auto iter = v.ptr->keys.begin();
-    if (iter != v.ptr->keys.end()) {
-      for (; iter != v.ptr->keys.end(); ++iter) {
-        str_utf8_wrapper k(*iter);
-        if (ObjectType::keyIsIdentifier(k.toString())) {
-          stream << *iter;
-        } else {
-          stream << QuotedString(k.toString());
-        }
-        stream << " = " << v[k] << "; ";
+  std::string sep = " ";
+  stream << "{";
+  auto iter = v.ptr->keys.begin();
+  if (iter != v.ptr->keys.end()) {
+    for (; iter != v.ptr->keys.end(); ++iter) {
+      stream << sep;
+      str_utf8_wrapper k(*iter);
+      if (ObjectType::keyIsIdentifier(k.toString())) {
+        stream << *iter;
+      } else {
+        stream << QuotedString(k.toString());
       }
+      stream << " : " << v[k];
+      sep = ", ";
     }
-    // We skip over the top node because it's always a GroupNode and is boring;
-    // it's implied by the {{ }}.
-    for (auto child : v.ptr->node->children) {
-      Tree t(child);
-      stream << t.getString(*child, "");
-    }
-    stream << ")}";
-  } else {
-    std::string sep = " ";
-    stream << "{";
-    auto iter = v.ptr->keys.begin();
-    if (iter != v.ptr->keys.end()) {
-      for (; iter != v.ptr->keys.end(); ++iter) {
-        stream << sep;
-        str_utf8_wrapper k(*iter);
-        if (ObjectType::keyIsIdentifier(k.toString())) {
-          stream << *iter;
-        } else {
-          stream << QuotedString(k.toString());
-        }
-        stream << " : " << v[k];
-        sep = ", ";
-      }
-    }
-    stream << " }";
   }
+  stream << " }";
   return stream;
 }

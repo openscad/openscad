@@ -638,17 +638,6 @@ primary
               scope_stack.pop();
               $$ = $<expr>3;
             }
-//        | '{' '('
-//            {
-//              HybridLiteral *gl = new HybridLiteral(LOCD("literal", @$));
-//              scope_stack.push(&gl->body);
-//              $<expr>$ = gl;
-//            }
-//          inner_input ')' '}'
-//            {
-//              scope_stack.pop();
-//              $$ = $<expr>3;
-//            }
             ;
 
 expr_or_empty
