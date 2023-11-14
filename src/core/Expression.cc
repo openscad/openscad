@@ -128,6 +128,8 @@ Value BinaryOp::evaluate(const std::shared_ptr<const Context>& context) const
     return checkUndef(this->left->evaluate(context) == this->right->evaluate(context), context);
   case Op::NotEqual:
     return checkUndef(this->left->evaluate(context) != this->right->evaluate(context), context);
+  case Op::BitAnd:
+    return (int)(this->left->evaluate(context).toDouble()) & (int)(this->right->evaluate(context).toDouble());
   default:
     assert(false && "Non-existent binary operator!");
     throw EvaluationException("Non-existent binary operator!");

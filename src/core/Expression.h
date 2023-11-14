@@ -57,7 +57,8 @@ public:
     Greater,
     GreaterEqual,
     Equal,
-    NotEqual
+    NotEqual,
+    BitAnd
   };
 
   BinaryOp(Expression *left, Op op, Expression *right, const Location& loc);

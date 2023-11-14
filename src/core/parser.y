@@ -430,6 +430,10 @@ multiplication
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Modulo, $3, LOCD("modulo", @$));
             }
+        | multiplication '&' unary
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::BitAnd, $3, LOCD("bitand", @$));
+            }
 		;
 
 
