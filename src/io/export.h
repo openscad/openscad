@@ -85,16 +85,19 @@ struct ExportPdfOptions {
 
 struct ExportInfo {
   FileFormat format;
-  std::string name2display;
-  std::string name2open;
+  std::string displayName;
+  std::string fileName;
   std::string sourceFilePath;
   std::string sourceFileName;
   bool useStdOut;
-  ExportPdfOptions *options=nullptr;
+  ExportPdfOptions *options;
 };
 
 
 bool canPreview(const FileFormat format);
+bool is3D(const FileFormat format);
+bool is2D(const FileFormat format);
+
 bool exportFileByName(const shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);
 
 void export_stl(const shared_ptr<const Geometry>& geom, std::ostream& output,

@@ -37,7 +37,6 @@
 #include "CGALRenderer.h"
 #include "CGAL_OGL_VBOPolyhedron.h"
 #include "CGALHybridPolyhedron.h"
-#include "VertexStateManager.h"
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
 #endif
@@ -48,6 +47,8 @@ CGALRenderer::CGALRenderer(const shared_ptr<const class Geometry>& geom)
   : last_render_state(Feature::ExperimentalVxORenderers.is_enabled()) // FIXME: this is temporary to make switching between renderers seamless.
 {
   this->addGeometry(geom);
+  PRINTD("CGALRenderer::CGALRenderer() -> createPolyhedrons()");
+  if (!this->nefPolyhedrons.empty() && this->polyhedrons.empty()) createPolyhedrons();
 }
 
 void CGALRenderer::addGeometry(const shared_ptr<const Geometry>& geom)
@@ -81,8 +82,6 @@ void CGALRenderer::addGeometry(const shared_ptr<const Geometry>& geom)
   } else {
     assert(false && "unsupported geom in CGALRenderer");
   }
-
-  if (!this->nefPolyhedrons.empty() && this->polyhedrons.empty()) createPolyhedrons();
 }
 
 CGALRenderer::~CGALRenderer()
@@ -139,9 +138,12 @@ void CGALRenderer::createPolySets()
 
   polyset_states.clear();
 
-  VertexArray vertex_array(std::make_shared<VertexStateFactory>(), polyset_states);
+  glGenBuffers(1, &polyset_vertices_vbo);
+  if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+    glGenBuffers(1, &polyset_elements_vbo);
+  }
 
-  VertexStateManager vsm(*this, vertex_array);
+  VertexArray vertex_array(std::make_unique<VertexStateFactory>(), polyset_states, polyset_vertices_vbo, polyset_elements_vbo);
 
   vertex_array.addEdgeData();
   vertex_array.addSurfaceData();
@@ -155,7 +157,7 @@ void CGALRenderer::createPolySets()
     }
   }
 
-  vsm.initializeSize(num_vertices);
+  vertex_array.allocateBuffers(num_vertices);
 
   for (const auto& polyset : this->polysets) {
     Color4f color;
@@ -218,8 +220,6 @@ void CGALRenderer::createPolySets()
     }
 
     vertex_array.createInterleavedVBOs();
-    polyset_vertices_vbo = vertex_array.verticesVBO();
-    polyset_elements_vbo = vertex_array.elementsVBO();
   }
 }
 

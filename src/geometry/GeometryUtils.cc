@@ -64,7 +64,7 @@ public:
 
   void add(const IndexedEdge& e) {
     this->edges[e]++;
-    PRINTDB("add: (%d,%d)", e.first % e.second);
+//    PRINTDB("add: (%d,%d)", e.first % e.second);
   }
 
   void remove(int start, int end) {
@@ -74,7 +74,7 @@ public:
   void remove(const IndexedEdge& e) {
     this->edges[e]--;
     if (this->edges[e] == 0) this->edges.erase(e);
-    PRINTDB("remove: (%d,%d)", e.first % e.second);
+//    PRINTDB("remove: (%d,%d)", e.first % e.second);
   }
 
   int count(int start, int end) {
@@ -94,7 +94,7 @@ public:
   void print() const {
     for (const auto& v : this->edges) {
       const auto& e = v.first;
-      PRINTDB("     (%d,%d)%s", e.first % e.second % ((v.second > 1) ? std::to_string(v.second).c_str() : ""));
+//      PRINTDB("     (%d,%d)%s", e.first % e.second % ((v.second > 1) ? std::to_string(v.second).c_str() : ""));
     }
   }
 
@@ -116,7 +116,7 @@ public:
     auto prev = v2e_reverse[vidx].front();
 
     IndexedTriangle t(prev, vidx, next);
-    PRINTDB("Clipping ear: %d %d %d", t[0] % t[1] % t[2]);
+//    PRINTDB("Clipping ear: %d %d %d", t[0] % t[1] % t[2]);
     triangles.push_back(t);
     // Remove the generated triangle from the original.
     // Add new boundary edges to the edge dict
@@ -288,7 +288,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
       allindices.push_back(idx);
     }
     assert(face.size() >= 3);
-    PRINTDB("Contour: %d\n", face.size());
+//    PRINTDB("Contour: %d\n", face.size());
     tessAddContour(tess, 3, &contour.front(), sizeof(TESSreal) * 3, face.size());
     numContours++;
   }
@@ -333,10 +333,10 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
         mappedtri[i] = allindices[vidx];
       }
     }
-    PRINTDB("%d (%d) %d (%d) %d (%d)",
-            elements[t * 3 + 0] % mappedtri[0] %
-            elements[t * 3 + 1] % mappedtri[1] %
-            elements[t * 3 + 2] % mappedtri[2]);
+    // PRINTDB("%d (%d) %d (%d) %d (%d)",
+    //         elements[t * 3 + 0] % mappedtri[0] %
+    //         elements[t * 3 + 1] % mappedtri[1] %
+    //         elements[t * 3 + 2] % mappedtri[2]);
     // FIXME: We ignore self-intersecting triangles rather than detecting and handling this
     if (!err) {
       vflags[tri[0]]++; // B)
@@ -361,7 +361,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
       }
       if (reverse) {
         mappedtri.reverseInPlace();
-        PRINTDB("  reversed: %d %d %d", mappedtri[0] % mappedtri[1] % mappedtri[2]);
+//        PRINTDB("  reversed: %d %d %d", mappedtri[0] % mappedtri[1] % mappedtri[2]);
       }
 
       // Remove the generated triangle from the original.
@@ -391,7 +391,7 @@ bool GeometryUtils::tessellatePolygonWithHoles(const std::vector<Vector3f>& vert
       PRINTD("   Fanning left-out vertices");
       for (j = i; j < inputSize && !vflags[j]; ++j) {
         // Create triangle fan from vertex i-1 to the first existing vertex
-        PRINTDB("   (%d) (%d) (%d)\n", allindices[starti] % allindices[j] % allindices[((j + 1) % inputSize)]);
+//        PRINTDB("   (%d) (%d) (%d)\n", allindices[starti] % allindices[j] % allindices[((j + 1) % inputSize)]);
         tri[0] = allindices[starti];
         tri[1] = allindices[j];
         tri[2] = allindices[(j + 1) % inputSize];
