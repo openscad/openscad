@@ -31,7 +31,6 @@
 #include <utility>
 #include "PolySet.h"
 #include "Feature.h"
-#include "VertexStateManager.h"
 
 #ifdef ENABLE_OPENCSG
 
@@ -88,13 +87,13 @@ void OpenCSGRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const shad
 {
   if (Feature::ExperimentalVxORenderers.is_enabled() && !vbo_vertex_products.size()) {
     if (this->root_products) {
-      createCSGProducts(*this->root_products, shaderinfo, false, false);
+      createCSGVBOProducts(*this->root_products, shaderinfo, false, false);
     }
     if (this->background_products) {
-      createCSGProducts(*this->background_products, shaderinfo, false, true);
+      createCSGVBOProducts(*this->background_products, shaderinfo, false, true);
     }
     if (this->highlights_products) {
-      createCSGProducts(*this->highlights_products, shaderinfo, true, false);
+      createCSGVBOProducts(*this->highlights_products, shaderinfo, true, false);
     }
   }
 }
@@ -114,7 +113,7 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const shaderinfo_
       renderCSGProducts(this->highlights_products, showedges, shaderinfo, true, false);
     }
   } else {
-    renderCSGProducts(std::make_shared<CSGProducts>(), showedges, shaderinfo);
+    renderCSGVBOProducts(showedges, shaderinfo);
   }
 }
 
@@ -132,6 +131,7 @@ OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject& csgobj, O
 }
 
 // Primitive for drawing using OpenCSG
+// Makes a copy of the given VertexState enabling just unlit/uncolored vertex rendering
 OpenCSGVBOPrim *OpenCSGRenderer::createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState>& vertex_state,
                                                     const OpenCSG::Operation operation, const unsigned int convexity) const
 {
@@ -147,26 +147,38 @@ OpenCSGVBOPrim *OpenCSGRenderer::createVBOPrimitive(const std::shared_ptr<OpenCS
   return new OpenCSGVBOPrim(operation, convexity, std::move(opencsg_vs));
 }
 
-void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Renderer::shaderinfo_t * /*shaderinfo*/, bool highlight_mode, bool background_mode)
+// Turn the CSGProducts into VBOs
+// Will create one (temporary) VertexArray and one VBO(+EBO) per product
+// The VBO will be utilized to render multiple objects with correct state management.
+// In the future, we could use a VBO per primitive and potentially reuse VBOs, but that requires
+// some more careful state management.
+void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Renderer::shaderinfo_t * /*shaderinfo*/, bool highlight_mode, bool background_mode)
 {
+  // We need to manage buffers here since we don't have another suitable container for
+  // managing the life cycle of VBOs.
+  // We're creating one VBO(+EBO) per product.
   size_t vbo_count = products.products.size();
   if (vbo_count) {
+    vertices_vbos_.resize(vbo_count);
+    // Will default to zeroes, so we don't have to keep checking for the Indexing feature
+    elements_vbos_.resize(vbo_count);
+    glGenBuffers(vbo_count, vertices_vbos_.data());
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      vbo_count *= 2;
+      glGenBuffers(vbo_count, elements_vbos_.data());
     }
-    all_vbos_.resize(vbo_count);
-    glGenBuffers(vbo_count, all_vbos_.data());
   }
 
 #ifdef ENABLE_OPENCSG
   size_t vbo_index = 0;
   for (const auto& product : products.products) {
     Color4f last_color;
-    std::unique_ptr<OpenCSGPrimitives> primitives = std::make_unique<OpenCSGPrimitives>();
+    std::vector<OpenCSG::Primitive *> primitives;
     std::unique_ptr<VertexStates> vertex_states = std::make_unique<VertexStates>();
-    VertexArray vertex_array(std::make_shared<OpenCSGVertexStateFactory>(), *(vertex_states.get()),
-                             all_vbos_[vbo_index++]);
-    VertexStateManager vsm(*this, vertex_array);
+    const auto vertices_vbo = vertices_vbos_[vbo_index];
+    const auto elements_vbo = elements_vbos_[vbo_index];
+    vbo_index++;
+    VertexArray vertex_array(std::make_unique<OpenCSGVertexStateFactory>(), *(vertex_states.get()),
+                             vertices_vbo, elements_vbo);
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
     add_shader_data(vertex_array);
@@ -183,7 +195,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
       }
     }
 
-    vsm.initializeSize(num_vertices, all_vbos_, vbo_index);
+    vertex_array.allocateBuffers(num_vertices);
 
     for (const auto& csgobj : product.intersections) {
       if (csgobj.leaf->geom) {
@@ -207,15 +219,15 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
           last_color = color;
         }
 
-        vsm.addColor(last_color);
+        add_color(vertex_array, last_color);
 
         if (color[3] == 1.0f) {
           // object is opaque, draw normally
           create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, last_color);
           std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
           if (surface != nullptr) {
-            surface->csgObjectIndex(csgobj.leaf->index);
-            primitives->emplace_back(createVBOPrimitive(surface,
+            surface->setCsgObjectIndex(csgobj.leaf->index);
+            primitives.emplace_back(createVBOPrimitive(surface,
                                                         OpenCSG::Intersection,
                                                         csgobj.leaf->geom->getConvexity()));
           }
@@ -234,9 +246,9 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
           std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
 
           if (surface != nullptr) {
-            surface->csgObjectIndex(csgobj.leaf->index);
+            surface->setCsgObjectIndex(csgobj.leaf->index);
 
-            primitives->emplace_back(createVBOPrimitive(surface,
+            primitives.emplace_back(createVBOPrimitive(surface,
                                                         OpenCSG::Intersection,
                                                         csgobj.leaf->geom->getConvexity()));
 
@@ -281,7 +293,7 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
           last_color = color;
         }
 
-        vsm.addColor(last_color);
+        add_color(vertex_array, last_color);
 
         // negative objects should only render rear faces
         std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();
@@ -298,8 +310,8 @@ void OpenCSGRenderer::createCSGProducts(const CSGProducts& products, const Rende
         create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, last_color);
         std::shared_ptr<OpenCSGVertexState> surface = std::dynamic_pointer_cast<OpenCSGVertexState>(vertex_states->back());
         if (surface != nullptr) {
-          surface->csgObjectIndex(csgobj.leaf->index);
-          primitives->emplace_back(createVBOPrimitive(surface,
+          surface->setCsgObjectIndex(csgobj.leaf->index);
+          primitives.emplace_back(createVBOPrimitive(surface,
                                                       OpenCSG::Subtraction,
                                                       csgobj.leaf->geom->getConvexity()));
         } else {
@@ -336,152 +348,154 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
                                         bool highlight_mode, bool background_mode) const
 {
 #ifdef ENABLE_OPENCSG
-  if (!Feature::ExperimentalVxORenderers.is_enabled()) {
-    for (const auto& product : products->products) {
-      std::vector<OpenCSG::Primitive *> primitives;
-      for (const auto& csgobj : product.intersections) {
-        if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION));
-      }
-      for (const auto& csgobj : product.subtractions) {
-        if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE));
-      }
-      if (primitives.size() > 1) {
-        OpenCSG::render(primitives);
-        GL_CHECKD(glDepthFunc(GL_EQUAL));
-      }
-
-      if (shaderinfo && shaderinfo->progid) {
-        if (shaderinfo->type != EDGE_RENDERING || (shaderinfo->type == EDGE_RENDERING && showedges)) {
-          GL_CHECKD(glUseProgram(shaderinfo->progid));
-        }
-      }
-
-      for (const auto& csgobj : product.intersections) {
-        const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
-        if (!ps) continue;
-
-        if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
-          int identifier = csgobj.leaf->index;
-          GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
-                                ((identifier >> 0) & 0xff) / 255.0f, ((identifier >> 8) & 0xff) / 255.0f,
-                                ((identifier >> 16) & 0xff) / 255.0f));
-        }
-
-        const Color4f& c = csgobj.leaf->color;
-        csgmode_e csgmode = get_csgmode(highlight_mode, background_mode);
-
-        ColorMode colormode = ColorMode::NONE;
-        if (highlight_mode) {
-          colormode = ColorMode::HIGHLIGHT;
-        } else if (background_mode) {
-          colormode = ColorMode::BACKGROUND;
-        } else {
-          colormode = ColorMode::MATERIAL;
-        }
-
-        glPushMatrix();
-        glMultMatrixd(csgobj.leaf->matrix.data());
-
-        const Color4f color = setColor(colormode, c.data(), shaderinfo);
-        if (color[3] == 1.0f) {
-          // object is opaque, draw normally
-          render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
-        } else {
-          // object is transparent, so draw rear faces first.  Issue #1496
-          glEnable(GL_CULL_FACE);
-          glCullFace(GL_FRONT);
-          render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
-          glCullFace(GL_BACK);
-          render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
-          glDisable(GL_CULL_FACE);
-        }
-
-        glPopMatrix();
-      }
-      for (const auto& csgobj : product.subtractions) {
-        const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
-        if (!ps) continue;
-
-        const Color4f& c = csgobj.leaf->color;
-        csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
-
-        ColorMode colormode = ColorMode::NONE;
-        if (highlight_mode) {
-          colormode = ColorMode::HIGHLIGHT;
-        } else if (background_mode) {
-          colormode = ColorMode::BACKGROUND;
-        } else {
-          colormode = ColorMode::CUTOUT;
-        }
-
-        (void) setColor(colormode, c.data(), shaderinfo);
-        glPushMatrix();
-        glMultMatrixd(csgobj.leaf->matrix.data());
-        // negative objects should only render rear faces
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
-        render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
-        glDisable(GL_CULL_FACE);
-
-        glPopMatrix();
-      }
-
-      if (shaderinfo) glUseProgram(0);
-      for (auto& p : primitives) delete p;
-      glDepthFunc(GL_LEQUAL);
+  for (const auto& product : products->products) {
+    std::vector<OpenCSG::Primitive *> primitives;
+    for (const auto& csgobj : product.intersections) {
+      if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION));
     }
-  } else {
-    for (const auto& product : vbo_vertex_products) {
-      if (product->primitives().size() > 1) {
-        GL_CHECKD(OpenCSG::render(product->primitives()));
-        GL_TRACE0("glDepthFunc(GL_EQUAL)");
-        GL_CHECKD(glDepthFunc(GL_EQUAL));
-      }
-
-      if (shaderinfo && shaderinfo->progid) {
-        GL_TRACE("glUseProgram(%d)", shaderinfo->progid);
-        GL_CHECKD(glUseProgram(shaderinfo->progid));
-
-        if (shaderinfo->type == EDGE_RENDERING && showedges) {
-          shader_attribs_enable();
-        }
-      }
-
-      for (const auto& vs : product->states()) {
-        if (vs) {
-          std::shared_ptr<OpenCSGVertexState> csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vs);
-          if (csg_vs) {
-            if (shaderinfo && shaderinfo->type == SELECT_RENDERING) {
-              GL_TRACE("glUniform3f(%d, %f, %f, %f)", shaderinfo->data.select_rendering.identifier %
-                       (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
-                       (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
-                       (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-              GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
-                                    ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-                                    ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-                                    ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-            }
-          }
-          std::shared_ptr<VBOShaderVertexState> shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
-          if (!shader_vs || (showedges && shader_vs)) {
-            vs->draw();
-          }
-        }
-      }
-
-      if (shaderinfo && shaderinfo->progid) {
-        GL_TRACE0("glUseProgram(0)");
-        GL_CHECKD(glUseProgram(0));
-
-        if (shaderinfo->type == EDGE_RENDERING && showedges) {
-          shader_attribs_disable();
-        }
-      }
-      GL_TRACE0("glDepthFunc(GL_LEQUAL)");
-      GL_CHECKD(glDepthFunc(GL_LEQUAL));
+    for (const auto& csgobj : product.subtractions) {
+      if (csgobj.leaf->geom) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE));
     }
+    if (primitives.size() > 1) {
+      OpenCSG::render(primitives);
+      GL_CHECKD(glDepthFunc(GL_EQUAL));
+    }
+
+    if (shaderinfo && shaderinfo->progid) {
+      if (shaderinfo->type != EDGE_RENDERING || (shaderinfo->type == EDGE_RENDERING && showedges)) {
+	GL_CHECKD(glUseProgram(shaderinfo->progid));
+      }
+    }
+
+    for (const auto& csgobj : product.intersections) {
+      const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+      if (!ps) continue;
+
+      if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
+	int identifier = csgobj.leaf->index;
+	GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
+			      ((identifier >> 0) & 0xff) / 255.0f, ((identifier >> 8) & 0xff) / 255.0f,
+			      ((identifier >> 16) & 0xff) / 255.0f));
+      }
+
+      const Color4f& c = csgobj.leaf->color;
+      csgmode_e csgmode = get_csgmode(highlight_mode, background_mode);
+
+      ColorMode colormode = ColorMode::NONE;
+      if (highlight_mode) {
+	colormode = ColorMode::HIGHLIGHT;
+      } else if (background_mode) {
+	colormode = ColorMode::BACKGROUND;
+      } else {
+	colormode = ColorMode::MATERIAL;
+      }
+
+      glPushMatrix();
+      glMultMatrixd(csgobj.leaf->matrix.data());
+
+      const Color4f color = setColor(colormode, c.data(), shaderinfo);
+      if (color[3] == 1.0f) {
+	// object is opaque, draw normally
+	render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
+      } else {
+	// object is transparent, so draw rear faces first.  Issue #1496
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_FRONT);
+	render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
+	glCullFace(GL_BACK);
+	render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
+	glDisable(GL_CULL_FACE);
+      }
+
+      glPopMatrix();
+    }
+    for (const auto& csgobj : product.subtractions) {
+      const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
+      if (!ps) continue;
+
+      const Color4f& c = csgobj.leaf->color;
+      csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE);
+
+      ColorMode colormode = ColorMode::NONE;
+      if (highlight_mode) {
+	colormode = ColorMode::HIGHLIGHT;
+      } else if (background_mode) {
+	colormode = ColorMode::BACKGROUND;
+      } else {
+	colormode = ColorMode::CUTOUT;
+      }
+
+      (void) setColor(colormode, c.data(), shaderinfo);
+      glPushMatrix();
+      glMultMatrixd(csgobj.leaf->matrix.data());
+      // negative objects should only render rear faces
+      glEnable(GL_CULL_FACE);
+      glCullFace(GL_FRONT);
+      render_surface(*ps, csgmode, csgobj.leaf->matrix, shaderinfo);
+      glDisable(GL_CULL_FACE);
+
+      glPopMatrix();
+    }
+
+    if (shaderinfo) glUseProgram(0);
+    for (auto& p : primitives) delete p;
+    glDepthFunc(GL_LEQUAL);
   }
+#endif // ENABLE_OPENCSG
+}
 
+void OpenCSGRenderer::renderCSGVBOProducts(bool showedges, const Renderer::shaderinfo_t *shaderinfo) const
+{
+#ifdef ENABLE_OPENCSG
+  for (const auto& product : vbo_vertex_products) {
+    if (product->primitives().size() > 1) {
+      GL_CHECKD(OpenCSG::render(product->primitives()));
+      GL_TRACE0("glDepthFunc(GL_EQUAL)");
+      GL_CHECKD(glDepthFunc(GL_EQUAL));
+    }
+
+    if (shaderinfo && shaderinfo->progid) {
+      GL_TRACE("glUseProgram(%d)", shaderinfo->progid);
+      GL_CHECKD(glUseProgram(shaderinfo->progid));
+
+      if (shaderinfo->type == EDGE_RENDERING && showedges) {
+	shader_attribs_enable();
+      }
+    }
+
+    for (const auto& vs : product->states()) {
+      if (vs) {
+	std::shared_ptr<OpenCSGVertexState> csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vs);
+	if (csg_vs) {
+	  if (shaderinfo && shaderinfo->type == SELECT_RENDERING) {
+	    GL_TRACE("glUniform3f(%d, %f, %f, %f)", shaderinfo->data.select_rendering.identifier %
+		     (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
+		     (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
+		     (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+	    GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
+				  ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
+				  ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
+				  ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+	  }
+	}
+	std::shared_ptr<VBOShaderVertexState> shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
+	if (!shader_vs || (showedges && shader_vs)) {
+	  vs->draw();
+	}
+      }
+    }
+
+    if (shaderinfo && shaderinfo->progid) {
+      GL_TRACE0("glUseProgram(0)");
+      GL_CHECKD(glUseProgram(0));
+
+      if (shaderinfo->type == EDGE_RENDERING && showedges) {
+	shader_attribs_disable();
+      }
+    }
+    GL_TRACE0("glDepthFunc(GL_LEQUAL)");
+    GL_CHECKD(glDepthFunc(GL_LEQUAL));
+  }
 #endif // ENABLE_OPENCSG
 }
 
