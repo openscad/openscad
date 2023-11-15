@@ -171,6 +171,45 @@ echo "Checking pre-requisites..."
 
 git submodule update --init --recursive
 
+if [ "$OS" = "UNIX_CROSS_WIN" ]; then
+  cd submodules/manifold
+  echo "Patching manifold to use newer TBB version"
+  # The MXE provided TBB is too old and somehow causes linker problem.
+  # The latest version cannot compile on MXE due to compiler internal error,
+  # so we use v2021.8.0.
+  git apply << EOF
+diff --git a/src/utilities/CMakeLists.txt b/src/utilities/CMakeLists.txt
+index b1cf20a..235fb8c 100644
+--- a/src/utilities/CMakeLists.txt
++++ b/src/utilities/CMakeLists.txt
+@@ -52,10 +52,10 @@ if (TRACY_ENABLE)
+ endif()
+
+ if(MANIFOLD_PAR STREQUAL "TBB")
+-    find_package(PkgConfig)
+-    if (PKG_CONFIG_FOUND)
+-        pkg_check_modules(TBB tbb)
+-    endif()
++       #find_package(PkgConfig)
++       #if (PKG_CONFIG_FOUND)
++       #    pkg_check_modules(TBB tbb)
++       #endif()
+     if(NOT TBB_FOUND)
+         message(STATUS "tbb not found, downloading from source")
+         include(FetchContent)
+@@ -63,7 +63,7 @@ if(MANIFOLD_PAR STREQUAL "TBB")
+         set(TBB_STRICT OFF CACHE INTERNAL "" FORCE)
+         FetchContent_Declare(TBB
+             GIT_REPOSITORY https://github.com/oneapi-src/oneTBB.git
+-            GIT_TAG        v2021.10.0
++            GIT_TAG        v2021.8.0
+             GIT_SHALLOW    TRUE
+             GIT_PROGRESS   TRUE
+         )
+
+EOF
+fi
+
 echo "Building openscad-$VERSION ($VERSIONDATE)"
 echo "  CMake args: $CMAKE_CONFIG"
 echo "  DEPLOYDIR: " $DEPLOYDIR
@@ -275,7 +314,7 @@ if [ -n $FONTDIR ]; then
   cp -a fonts/10-liberation.conf $FONTDIR
   cp -a fonts/Liberation-2.00.1 $FONTDIR
   case $OS in
-    MACOSX) 
+    MACOSX)
       cp -a fonts/05-osx-fonts.conf $FONTDIR
       cp -a fonts-osx/* $FONTDIR
       ;;
