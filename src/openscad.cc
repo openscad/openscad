@@ -277,11 +277,12 @@ Camera get_camera(const po::variables_map& vm)
 #include "QSettingsCached.h"
 #define OPENSCAD_QTGUI 1
 #endif
-static bool checkAndExport(const shared_ptr<const Geometry>& root_geom, unsigned nd,
+
+static bool checkAndExport(const shared_ptr<const Geometry>& root_geom, unsigned dimensions,
                            FileFormat format, const bool is_stdout, const std::string& filename)
 {
-  if (root_geom->getDimension() != nd) {
-    LOG("Current top level object is not a %1$dD object.", nd);
+  if (root_geom->getDimension() != dimensions) {
+    LOG("Current top level object is not a %1$dD object.", dimensions);
     return false;
   }
   if (root_geom->isEmpty()) {
@@ -289,13 +290,12 @@ static bool checkAndExport(const shared_ptr<const Geometry>& root_geom, unsigned
     return false;
   }
 
-  ExportInfo exportInfo;
-  exportInfo.format = format;
-  exportInfo.name2open = filename;
-  exportInfo.name2display = filename;
-  exportInfo.useStdOut = is_stdout;
-
-  exportFileByName(root_geom, exportInfo);
+  exportFileByName(root_geom, ExportInfo {
+      .format = format,
+      .displayName = filename,
+      .fileName = filename,
+      .useStdOut = is_stdout,
+    });
   return true;
 }
 
@@ -571,8 +571,12 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
       glview = prepare_preview(tree, cmd.viewOptions, camera);
       if (!glview) return 1;
     } else {
-      // Force creation of CGAL objects (for testing)
-      root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+      // Force creation of concrete geometry (mostly for testing)
+
+      // FIXME: Consider adding MANIFOLD as a valid view option, to be able to distinguish from CGAL
+
+      constexpr bool allownef = true;
+      root_geom = geomevaluator.evaluateGeometry(*tree.root(), allownef);
       if (root_geom) {
         if (cmd.viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
           if (auto geomlist = dynamic_pointer_cast<const GeometryList>(root_geom)) {
@@ -589,24 +593,18 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
           LOG("Converted to Nef polyhedron");
         }
       } else {
+	// FIXME: The default geometry doesn't need to be a Nef polyhedron. Why not make it a PolySet?
         root_geom.reset(new CGAL_Nef_polyhedron());
       }
     }
-    if (curFormat == FileFormat::ASCIISTL ||
-        curFormat == FileFormat::STL ||
-        curFormat == FileFormat::OBJ ||
-        curFormat == FileFormat::OFF ||
-        curFormat == FileFormat::WRL ||
-        curFormat == FileFormat::AMF ||
-        curFormat == FileFormat::_3MF ||
-        curFormat == FileFormat::NEFDBG ||
-        curFormat == FileFormat::NEF3) {
+
+    if (is3D(curFormat)) {
       if (!checkAndExport(root_geom, 3, curFormat, cmd.is_stdout, filename_str)) {
         return 1;
       }
     }
 
-    if (curFormat == FileFormat::DXF || curFormat == FileFormat::SVG || curFormat == FileFormat::PDF) {
+    if (is2D(curFormat)) {
       if (!checkAndExport(root_geom, 2, curFormat, cmd.is_stdout, filename_str)) {
         return 1;
       }

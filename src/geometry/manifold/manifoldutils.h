@@ -9,7 +9,7 @@ class PolySet;
 
 namespace manifold {
   class Manifold;
-  class Mesh;
+  struct Mesh;
 };
 
 namespace ManifoldUtils {

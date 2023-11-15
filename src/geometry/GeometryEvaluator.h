@@ -14,6 +14,9 @@ class CGAL_Nef_polyhedron;
 class Polygon2d;
 class Tree;
 
+// This evaluates a node tree into concrete geometry usign an underlying geometry engine
+// FIXME: Ideally, each engine should implement its own subtype. Instead we currently have
+// multiple embedded engines with varoius methods of selecting the right one.
 class GeometryEvaluator : public NodeVisitor
 {
 public:
