@@ -55,9 +55,15 @@ void repairMesh(TriangleMesh& tm)
     if (!CGAL::is_closed(tm)) {
       size_t holeCount = 0;
       size_t facesBefore = num_faces(tm);
+      std::vector<face_descriptor> facesAdded;
       for (auto he : tm.halfedges()) {
         if (!tm.face(he).is_valid()) {
+#if CGAL_VERSION_NR >= CGAL_VERSION_NUMBER(5, 6, 0)
           PMP::triangulate_hole(tm, he);
+#else
+          facesAdded.clear();
+          PMP::triangulate_hole(tm, he, back_inserter(facesAdded));
+#endif
           holeCount++;
         }
       }
