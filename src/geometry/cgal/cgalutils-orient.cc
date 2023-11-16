@@ -29,10 +29,16 @@ void repairMesh(TriangleMesh& tm)
   } catch (const CGAL::Failure_exception& e) {
     LOG(message_group::Warning, "[repair] Failed to orient mesh: it's either unclosed or self-intersecting. Attempting repair of either cases.");
 
-    size_t removedFaceCount = 0;
+    auto rebuildMesh = [&]() {
+      TriangleMesh copy;
+      copyMesh(tm, copy);
+      tm = copy;
+    };
+    
     std::vector<std::pair<face_descriptor, face_descriptor>> selfIntersectionPairs;
     PMP::self_intersections<CGAL::Parallel_if_available_tag>(faces(tm), tm, back_inserter(selfIntersectionPairs));
     if (!selfIntersectionPairs.empty()) {
+      size_t removedFaceCount = 0;
       for (auto& p : selfIntersectionPairs) {
         auto& f = p.first;
         if (!tm.is_removed(f)) {
@@ -42,10 +48,10 @@ void repairMesh(TriangleMesh& tm)
       }
       if (removedFaceCount) {
         LOG(message_group::Warning, "[repair] Removed %1$lu self-intersecting faces", removedFaceCount);
+        rebuildMesh();
       }
     }
 
-    size_t addedFaceCount = 0;
     if (!CGAL::is_closed(tm)) {
       size_t holeCount = 0;
       size_t facesBefore = num_faces(tm);
@@ -55,12 +61,11 @@ void repairMesh(TriangleMesh& tm)
           holeCount++;
         }
       }
-      LOG(message_group::Warning, "[repair] Closed %1$lu holes with %2$lu new faces", holeCount, num_faces(tm) - facesBefore);
-    }
-    if (removedFaceCount || addedFaceCount) {
-      TriangleMesh copy;
-      copyMesh(tm, copy);
-      tm = copy;
+      size_t addedFaceCount = num_faces(tm) - facesBefore;
+      if (addedFaceCount) {
+        LOG(message_group::Warning, "[repair] Closed %1$lu holes with %2$lu new faces", holeCount, addedFaceCount);
+        rebuildMesh();
+      }
     }
     // Less strict than PMP::orient_to_bound_a_volume:
     PMP::orient(tm);

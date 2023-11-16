@@ -859,6 +859,10 @@ list(APPEND SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
 
   # Different vertex order
   ${TEST_SCAD_DIR}/3mf/3mf-export.scad
+
+  # Non-manifold tests: https://github.com/openscad/openscad/issues/3567
+  # Manifold & fast-csg modes repair most of this, Nef fails.
+  ${TEST_SCAD_DIR}/3D/features/linear_extrude-scale-zero-tests.scad
 )
 
 list(APPEND SCADFILES_FAILING_WITH_MANIFOLD
@@ -1262,11 +1266,6 @@ set_tests_properties(
   # OpenCSG z fighting https://github.com/openscad/openscad/issues/4595
   openscad-viewoptions-edges_view-options-tests
   openscad-viewoptions-axes-scales-edges_view-options-tests
-
-  # Non-manifold tests: https://github.com/openscad/openscad/issues/3567
-  # This may work with fast-csg, but will fail with both CGAL and Manifold
-  cgalpngtest_linear_extrude-scale-zero-tests
-  csgpngtest_linear_extrude-scale-zero-tests
 
   PROPERTIES DISABLED TRUE
 )
