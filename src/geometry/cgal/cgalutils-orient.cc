@@ -26,7 +26,7 @@ void repairMesh(TriangleMesh& tm)
     // (try testdata/scad/3D/issues/issue1105d.scad for instance), so we try
     // the stricter PMP::orient_to_bound_a_volume first.
     PMP::orient_to_bound_a_volume(tm);
-  } catch (CGAL::Assertion_exception& e) {
+  } catch (const CGAL::Failure_exception& e) {
     LOG(message_group::Warning, "[repair] Failed to orient mesh: it's either unclosed or self-intersecting. Attempting repair of either cases.");
 
     size_t removedFaceCount = 0;
@@ -56,9 +56,6 @@ void repairMesh(TriangleMesh& tm)
         }
       }
       LOG(message_group::Warning, "[repair] Closed %1$lu holes with %2$lu new faces", holeCount, num_faces(tm) - facesBefore);
-    }
-    if (PMP::does_self_intersect<CGAL::Parallel_if_available_tag>(faces(tm), tm)) {
-        LOG(message_group::Error, "[repair] Mesh still self-intersects!");
     }
     if (removedFaceCount || addedFaceCount) {
       TriangleMesh copy;
