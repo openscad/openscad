@@ -72,14 +72,7 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const Po
     assert(false && "Error from createMeshFromPolySet");
   }
   if (!ps_tri.is_convex()) {
-    if (isClosed(*mesh)) {
-      // Note: PMP::orient can corrupt models and cause cataclysmic memory leaks
-      // (try testdata/scad/3D/issues/issue1105d.scad for instance), but
-      // PMP::orient_to_bound_a_volume seems just fine.
-      orientToBoundAVolume(*mesh);
-    } else {
-      LOG(message_group::Warning, "Warning: mesh is not closed!");
-    }
+    repairMesh(*mesh);
   }
 
   return make_shared<CGALHybridPolyhedron>(mesh);

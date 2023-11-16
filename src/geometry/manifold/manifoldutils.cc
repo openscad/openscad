@@ -115,31 +115,25 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet
   PolySet ps_tri(3, psq.convexValue());
   PolySetUtils::tessellate_faces(psq, ps_tri);
   
-  CGAL_DoubleMesh m;
+  CGAL_EpickMesh m;
 
   if (ps_tri.is_convex()) {
-    using K = CGAL::Epick;
+    using P = CGAL::Epick::Point_3;
     // Collect point cloud
-    std::vector<K::Point_3> points(points3d.size());
+    std::vector<P> points(points3d.size());
     for (size_t i = 0, n = points3d.size(); i < n; i++) {
-      points[i] = vector_convert<K::Point_3>(points3d[i]);
+      points[i] = vector_convert<P>(points3d[i]);
     }
     if (points.size() <= 3) return make_shared<ManifoldGeometry>();
 
     // Apply hull
-    CGAL::Surface_mesh<CGAL::Point_3<K>> r;
-    CGAL::convex_hull_3(points.begin(), points.end(), r);
-    CGALUtils::copyMesh(r, m);
+    CGAL::convex_hull_3(points.begin(), points.end(), m);
   } else {
     CGALUtils::createMeshFromPolySet(ps_tri, m);
   }
 
   if (!ps_tri.is_convex()) {
-    if (CGALUtils::isClosed(m)) {
-      CGALUtils::orientToBoundAVolume(m);
-    } else {
-      LOG(message_group::Error, "[manifold] Input mesh is not closed!");
-    }
+    CGALUtils::repairMesh(m);
   }
 
   return createMutableManifoldFromSurfaceMesh(m);
