@@ -69,9 +69,6 @@ boost::optional<const Value&> Context::try_lookup_variable(const Identifier& nam
     return session()->try_lookup_special_variable(name);
   }
   for (const Context *context = this; context != nullptr; context = context->getParent().get()) {
-    if (context->empty()) {
-      continue;
-    }
     boost::optional<const Value&> result = context->lookup_local_variable(name);
     if (result) {
       return result;
@@ -96,9 +93,6 @@ boost::optional<CallableFunction> Context::lookup_function(const Identifier& nam
     return session()->lookup_special_function(name, loc);
   }
   for (const Context *context = this; context != nullptr; context = context->getParent().get()) {
-    if (context->empty()) {
-      continue;
-    }
     boost::optional<CallableFunction> result = context->lookup_local_function(name, loc);
     if (result) {
       return std::move(result);
@@ -114,9 +108,6 @@ boost::optional<InstantiableModule> Context::lookup_module(const Identifier& nam
     return session()->lookup_special_module(name, loc);
   }
   for (const Context *context = this; context != nullptr; context = context->getParent().get()) {
-    if (context->empty()) {
-      continue;
-    }
     boost::optional<InstantiableModule> result = context->lookup_local_module(name, loc);
     if (result) {
       return result;
