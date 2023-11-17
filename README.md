@@ -283,3 +283,14 @@ Once built, you can run tests with `cd build/tests && ctest -j`.
 	#    ...
 	#    ./scripts/release-common.sh -snapshot -mingw64 -v "$OPENSCAD_VERSION"
 	```
+
+# Tree Flattener for better Lazy Unions and less transforms
+
+This is a rewrite of https://github.com/openscad/openscad/pull/3637 that:
+- Pushes down color and transform nodes
+- Flattens intersections and unions (treating list and group nodes as unions)
+
+It's the ideal companion to the experimental `lazy-union` feature as it lets many more unions bubble up to the top. For instance the following scene results in a lazy union of X bodies, with instant rendering (instead of X seconds, even with `fast-csg`).
+
+It's also a potentially good combo with the upcoming `manifold` rendering option (https://github.com/openscad/openscad/pull/4533) and generally for speed on larger models as it essentially computes the world transform of most leaf nodes and applies the transform once on each leaf (instead of applying many transforms along the tree). This means less operations, and less loss of precision (esp. w/ Manifold, which stores vertex coordinates in single precision floats).
+

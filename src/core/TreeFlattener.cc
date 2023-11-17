@@ -386,6 +386,12 @@ void flattenTree(Tree& tree) {
 //     printTreeDebug(*tree.root());
 // #endif
 
+  // TODO: detect when caching would work against top-level lazy-union!
+  // for (i=[0:N-1]) translate([i,0,0])
+  //   for(j=[0:N-1]) translate([0,j,0])
+  //     sphere(d=(overlap ? 1.1 : 0.9), $fn=50);
+
+
   TreeFlattener flattener(tree, repeatedNodeIds);
   tree.setRoot(flattener.flatten(tree.root()));
 
