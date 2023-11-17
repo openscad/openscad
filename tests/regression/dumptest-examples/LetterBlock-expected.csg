@@ -5,7 +5,7 @@ group() {
 		}
 		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 5], [0, 0, 0, 1]]) {
 			linear_extrude(height = 30, $fn = 0, $fa = 12, $fs = 2, convexity = 4) {
-				text(text = "M", size = 22, spacing = 1, font = "Bitstream Vera Sans", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 0, $fa = 12, $fs = 2);
+				text(text = "Y", size = 22, spacing = 1, font = "Liberation Sans:style=bold", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "center", $fn = 0, $fa = 12, $fs = 2);
 			}
 		}
 	}

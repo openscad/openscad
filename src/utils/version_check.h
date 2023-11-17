@@ -58,7 +58,7 @@
 #else
 
 
-#ifdef ENABLE_OPENCSG
+#if defined(ENABLE_OPENCSG) && defined(OPENCSG_GLEW)
 #include <GL/glew.h>
 // kludge - GLEW doesn't have compiler-accessible version numbering
 #ifndef GLEW_ARB_occlusion_query2

@@ -1,0 +1,34 @@
+set(OPENCSG_SOURCES
+  submodules/OpenCSG/src/area.cpp
+  submodules/OpenCSG/src/batch.cpp
+  submodules/OpenCSG/src/context.cpp
+  submodules/OpenCSG/src/channelManager.cpp
+  submodules/OpenCSG/src/frameBufferObject.cpp
+  submodules/OpenCSG/src/frameBufferObjectExt.cpp
+  submodules/OpenCSG/src/occlusionQuery.cpp
+  submodules/OpenCSG/src/opencsgRender.cpp
+  submodules/OpenCSG/src/openglHelper.cpp
+  submodules/OpenCSG/src/primitive.cpp
+  submodules/OpenCSG/src/primitiveHelper.cpp
+  submodules/OpenCSG/src/renderGoldfeather.cpp
+  submodules/OpenCSG/src/renderSCS.cpp
+  submodules/OpenCSG/src/scissorMemo.cpp
+  submodules/OpenCSG/src/settings.cpp
+  submodules/OpenCSG/src/glad/src/gl.cpp
+)
+
+add_library(OpenCSGObjects OBJECT ${OPENCSG_SOURCES})
+target_include_directories(OpenCSGObjects PRIVATE OpenCSG submodules/OpenCSG submodules/OpenCSG/include)
+
+add_library(OpenCSG INTERFACE)
+target_include_directories(OpenCSG INTERFACE submodules/OpenCSG/include)
+target_sources(OpenCSG INTERFACE $<TARGET_OBJECTS:OpenCSGObjects>)
+
+set(_VERSION_FILE ${CMAKE_SOURCE_DIR}/submodules/OpenCSG/include/opencsg.h)
+if(EXISTS ${_VERSION_FILE})
+  file(STRINGS ${_VERSION_FILE} _VERSION_LINE REGEX "define[ ]+OPENCSG_VERSION_STRING" )
+  if(_VERSION_LINE)
+    string (REGEX REPLACE ".*define[ ]+OPENCSG_VERSION_STRING[ ]+\".*\ (.*)\".*" "\\1" VERSION_STRING "${_VERSION_LINE}")
+    set(OPENCSG_VERSION_STRING ${VERSION_STRING} CACHE STRING "OpenCSG version string")
+  endif()
+endif()

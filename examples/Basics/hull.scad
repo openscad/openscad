@@ -2,12 +2,12 @@
 // The hull of a toy sailboat
 $fs = .1;
 hull(){
-    #translate([0,30,2.5]) sphere(1); //bow
-    #translate([0,10,-1]) cube([20,1,8],true); //1st bulkhead
-    #translate([0,10,-5]) cube([1,1,8],true); //1st keel
-    #translate([0,-8,-1]) cube([20,1,8],true); //2nd bulkhead
-    #translate([0,-8,-5]) cube([1,1,8],true); //2nd keel
-    #translate([0,-30,1]) cube([16,1,4],true); //stern
+    translate([0,30,2.5]) sphere(1); //bow
+    translate([0,10,-1]) cube([20,1,8],true); //1st bulkhead
+    translate([0,10,-5]) cube([1,1,8],true); //1st keel
+    translate([0,-8,-1]) cube([20,1,8],true); //2nd bulkhead
+    translate([0,-8,-5]) cube([1,1,8],true); //2nd keel
+    translate([0,-30,1]) cube([16,1,4],true); //stern
 }
     cylinder(40,1,1); //Mast
 

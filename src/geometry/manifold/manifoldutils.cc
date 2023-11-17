@@ -82,7 +82,7 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromSurfaceMesh(const Tri
   }
 
   mesh.triVerts.reserve(tm.number_of_faces());
-  for (auto& f : tm.faces()) {
+  for (const auto& f : tm.faces()) {
     size_t idx[3];
     size_t i = 0;
     for (vertex_descriptor vd : vertices_around_face(tm.halfedge(f), tm)) {
