@@ -57,8 +57,6 @@ private:
 
   friend class Context;
 
-  mutable boost::optional<const BuiltinFunction *> resolved_builtin_function;
-
   void update(const std::string &name);
 
   bool is_config_variable_ = false;
