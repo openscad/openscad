@@ -352,10 +352,15 @@ public:
   Value operator>=(const Value& v) const;
   Value operator>(const Value& v) const;
   Value operator-() const;
+  Value operator~() const;
   Value operator[](size_t idx) const;
   Value operator[](const Value& v) const;
   Value operator+(const Value& v) const;
   Value operator-(const Value& v) const;
+  Value operator<<(const Value& v) const;
+  Value operator>>(const Value& v) const;
+  Value operator&(const Value& v) const;
+  Value operator|(const Value& v) const;
   Value operator*(const Value& v) const;
   Value operator/(const Value& v) const;
   Value operator%(const Value& v) const;

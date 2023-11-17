@@ -262,6 +262,10 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 
 {UNICODE}+              { parser_error_pos -= strlen(yytext); return TOK_ERROR; }
 
+0x{H}{1,8}              {
+                            parserlval.number = strtoul(lexertext + 2, NULL, 16);
+                            return TOK_NUMBER;
+                        }
 {D}+{E}? |
 {D}*\.{D}+{E}? |
 {D}+\.{D}*{E}?          {
@@ -278,6 +282,8 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 "!="                    return NEQ;
 "&&"                    return AND;
 "||"                    return OR;
+"<<"                    return LSH;
+">>"                    return RSH;
 
 .                       { return yytext[0]; }
 

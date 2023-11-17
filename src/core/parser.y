@@ -127,7 +127,7 @@ bool fileEnded=false;
 %token TOK_FALSE
 %token TOK_UNDEF
 
-%token LE GE EQ NEQ AND OR
+%token LE GE EQ NEQ AND OR LSH RSH
 
 %nonassoc NO_ELSE
 %nonassoc TOK_ELSE
@@ -138,6 +138,9 @@ bool fileEnded=false;
 %type <expr> logic_and
 %type <expr> equality
 %type <expr> comparison
+%type <expr> binaryor
+%type <expr> binaryand
+%type <expr> shift
 %type <expr> addition
 %type <expr> multiplication
 %type <expr> exponent
@@ -385,7 +388,7 @@ equality
 		;
 
 comparison
-        : addition
+        : binaryor
         | comparison '>' addition
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Greater, $3, LOCD("greater", @$));
@@ -403,6 +406,34 @@ comparison
               $$ = new BinaryOp($1, BinaryOp::Op::LessEqual, $3, LOCD("lessequal", @$));
             }
 		;
+
+binaryor
+        : binaryand
+        | binaryor '|' binaryand
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::BinaryOr, $3, LOCD("binary-or", @$));
+            }
+        ;
+
+binaryand
+        : shift
+        | binaryand '&' shift
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::BinaryAnd, $3, LOCD("binary-and", @$));
+            }
+        ;
+
+shift
+        : addition
+        | shift LSH addition
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::ShiftLeft, $3, LOCD("shift-left", @$));
+            }
+        | shift RSH addition
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::ShiftRight, $3, LOCD("shift-right", @$));
+            }
+        ;
 
 addition
         : multiplication
@@ -453,6 +484,10 @@ unary
         | '!' unary
             {
               $$ = new UnaryOp(UnaryOp::Op::Not, $2, LOCD("not", @$));
+            }
+        | '~' unary
+            {
+              $$ = new UnaryOp(UnaryOp::Op::BinaryNot, $2, LOCD("binary-not", @$));
             }
 		;
 
