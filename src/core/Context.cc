@@ -63,10 +63,10 @@ std::vector<const std::shared_ptr<const Context> *> Context::list_referenced_con
   return output;
 }
 
-boost::optional<const Value&> Context::try_lookup_variable(const std::string& name) const
+boost::optional<const Value&> Context::try_lookup_variable(const std::string& name, const Location& loc) const
 {
   if (is_config_variable(name)) {
-    return session()->try_lookup_special_variable(name);
+    return session()->try_lookup_special_variable(name, loc);
   }
   for (const Context *context = this; context != nullptr; context = context->getParent().get()) {
     boost::optional<const Value&> result = context->lookup_local_variable(name);
@@ -79,7 +79,7 @@ boost::optional<const Value&> Context::try_lookup_variable(const std::string& na
 
 const Value& Context::lookup_variable(const std::string& name, const Location& loc) const
 {
-  boost::optional<const Value&> result = try_lookup_variable(name);
+  boost::optional<const Value&> result = try_lookup_variable(name, loc);
   if (!result) {
     LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown variable '%1$s'", name);
     return Value::undefined;

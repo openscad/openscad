@@ -45,7 +45,7 @@ Parameters::Parameters(Parameters&& other) noexcept :
 boost::optional<const Value&> Parameters::lookup(const std::string& name) const
 {
   if (ContextFrame::is_config_variable(name)) {
-    return frame.session()->try_lookup_special_variable(name);
+    return frame.session()->try_lookup_special_variable(name, loc);
   } else {
     return frame.lookup_local_variable(name);
   }

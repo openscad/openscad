@@ -23,7 +23,7 @@ public:
   void replace_frame(size_t index, ContextFrame *frame);
   void pop_frame(size_t index);
 
-  [[nodiscard]] boost::optional<const Value&> try_lookup_special_variable(const std::string& name) const;
+  [[nodiscard]] boost::optional<const Value&> try_lookup_special_variable(const std::string& name, const Location& loc) const;
   [[nodiscard]] const Value& lookup_special_variable(const std::string& name, const Location& loc) const;
   [[nodiscard]] boost::optional<CallableFunction> lookup_special_function(const std::string& name, const Location& loc) const;
   [[nodiscard]] boost::optional<InstantiableModule> lookup_special_module(const std::string& name, const Location& loc) const;

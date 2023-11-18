@@ -24,8 +24,13 @@
  *
  */
 
+#include "AST.h"
 #include "ContextFrame.h"
 #include "EvaluationSession.h"
+#include "Expression.h"
+#include "ScopeContext.h"
+#include "SourceFile.h"
+#include "SourceFileCache.h"
 #include "printutils.h"
 
 size_t EvaluationSession::push_frame(ContextFrame *frame)
@@ -47,7 +52,7 @@ void EvaluationSession::pop_frame(size_t index)
   assert(stack.size() == index);
 }
 
-boost::optional<const Value&> EvaluationSession::try_lookup_special_variable(const std::string& name) const
+boost::optional<const Value&> EvaluationSession::try_lookup_special_variable(const std::string& name, const Location &loc) const
 {
   for (auto it = stack.crbegin(); it != stack.crend(); ++it) {
     boost::optional<const Value&> result = (*it)->lookup_local_variable(name);
@@ -55,12 +60,28 @@ boost::optional<const Value&> EvaluationSession::try_lookup_special_variable(con
       return result;
     }
   }
+  // try file level lookup
+  SourceFile *file = SourceFileCache::instance()->lookup(loc.fileName());
+  if (file) {
+    // find assignment of the special variable
+    for (const std::shared_ptr<Assignment> &assignment : file->scope.assignments) {
+      if (assignment->getName() == name) {
+        EvaluationSession dummy(documentRoot());
+        auto dummyContext = Context::create<Context>(&dummy);
+        auto filecontext = Context::create<FileContext>(dummyContext->get_shared_ptr(), file);
+        Value result = assignment->getExpr()->evaluate(filecontext->get_shared_ptr());
+        // set it in the top level context, so it is cleared when the frame is popped
+        stack.back()->set_variable(name, std::move(result));
+        return stack.back()->lookup_local_variable(name);
+      }
+    }
+  }
   return boost::none;
 }
 
 const Value& EvaluationSession::lookup_special_variable(const std::string& name, const Location& loc) const
 {
-  boost::optional<const Value&> result = try_lookup_special_variable(name);
+  boost::optional<const Value&> result = try_lookup_special_variable(name, loc);
   if (!result) {
     LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown variable '%1$s'", name);
     return Value::undefined;

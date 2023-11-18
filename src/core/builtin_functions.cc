@@ -868,7 +868,7 @@ Value builtin_is_undef(const std::shared_ptr<const Context>& context, const Func
     return Value::undefined.clone();
   }
   if (auto lookup = dynamic_pointer_cast<Lookup>(call->arguments[0]->getExpr())) {
-    auto result = context->try_lookup_variable(lookup->get_name());
+    auto result = context->try_lookup_variable(lookup->get_name(), call->location());
     return !result || result->isUndefined();
   } else {
     return call->arguments[0]->getExpr()->evaluate(context).isUndefined();
