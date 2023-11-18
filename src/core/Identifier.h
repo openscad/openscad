@@ -9,10 +9,7 @@ class BuiltinFunction;
 class Identifier
 {
 public:
-  Identifier() : loc(Location::NONE) {
-    update("");
-  }
-  Identifier(const std::string &name, const Location &loc) : loc(loc) {
+  Identifier(const std::string &name = "", const Location &loc = Location::NONE) : loc(loc) {
     update(name);
   }
   Identifier(const char *name, const Location &loc = Location::NONE) : loc(loc) {
@@ -64,7 +61,7 @@ private:
   size_t hash = 0;
   Location loc;
 
-  static std::unordered_map<std::string, std::string> interned_names;
+  static std::unordered_map<std::string, std::pair<std::string, size_t>> interned_names_with_hash;
 };
 
 inline std::ostream& operator<<(std::ostream& stream, const Identifier& id) {
