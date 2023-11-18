@@ -69,6 +69,11 @@ boost::optional<const Value&> EvaluationSession::try_lookup_special_variable(con
         EvaluationSession dummy(documentRoot());
         auto dummyContext = Context::create<Context>(&dummy);
         auto filecontext = Context::create<FileContext>(dummyContext->get_shared_ptr(), file);
+        // copy config variables from the stack
+        for (const ContextFrame* frame : stack) {
+          filecontext->apply_config_variables(*frame);
+        }
+
         Value result = assignment->getExpr()->evaluate(filecontext->get_shared_ptr());
         // set it in the top level context, so it is cleared when the frame is popped
         stack.back()->set_variable(name, std::move(result));
