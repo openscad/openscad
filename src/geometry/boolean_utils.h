@@ -4,5 +4,5 @@
 #include "PolySet.h"
 #include "Geometry.h"
 
-bool applyHull(const Geometry::Geometries& children, PolySet& P);
+std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children);
 shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children);

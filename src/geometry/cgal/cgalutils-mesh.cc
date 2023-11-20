@@ -63,8 +63,8 @@ bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
       builder.appendVertex(builder.vertexIndex(Vector3d(x, y, z)));
     }
   }
-  builder.append(&ps);
-  ps.reset(builder.build().release());
+  builder.append(ps);
+  ps.reset(*builder.build());
   return err;
 }
 

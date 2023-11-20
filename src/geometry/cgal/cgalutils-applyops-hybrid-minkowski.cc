@@ -220,7 +220,7 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
         t.stop();
         PRINTDB("Minkowski: Union done: %f s", t.time());
         t.reset();
-        operands[0] = N;
+        operands[0] = std::move(N);
       } else {
         operands[0] = shared_ptr<const Geometry>(new CGAL_Nef_polyhedron());
       }

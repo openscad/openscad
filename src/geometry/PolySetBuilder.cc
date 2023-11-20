@@ -76,7 +76,7 @@ void PolySetBuilder::appendGeometry(const shared_ptr<const Geometry>& geom)
       appendGeometry(item.second);
     }
   } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
-    append(ps.get());
+    append(*ps);
 #ifdef ENABLE_CGAL
   } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     PolySet ps(3);
@@ -84,15 +84,15 @@ void PolySetBuilder::appendGeometry(const shared_ptr<const Geometry>& geom)
     if (err) {
       LOG(message_group::Error, "Nef->PolySet failed");
     } else {
-      append(&ps);
+      append(ps);
     }
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement appendGeometry(Surface_mesh) instead of converting to PolySet
-    append(hybrid->toPolySet().get());
+    append(*hybrid->toPolySet());
 #endif // ifdef ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-    append(mani->toPolySet().get());
+    append(*mani->toPolySet());
 #endif
   } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
@@ -126,12 +126,12 @@ void PolySetBuilder::prependVertex(int ind)
   indices_.back().insert(indices_.back().begin(), ind);
 }
 
-void PolySetBuilder::append(const PolySet *ps)
+void PolySetBuilder::append(const PolySet& ps)
 {
-  for (const auto& poly : ps->indices) {
+  for (const auto& poly : ps.indices) {
     appendPoly(poly.size());
     for (const auto& ind: poly) {
-      appendVertex(vertexIndex(ps->vertices[ind]));
+      appendVertex(vertexIndex(ps.vertices[ind]));
     }
   }
 }

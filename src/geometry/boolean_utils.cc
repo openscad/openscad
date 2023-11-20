@@ -32,7 +32,7 @@
 #include <unordered_set>
 
 #ifdef ENABLE_CGAL
-bool applyHull(const Geometry::Geometries& children, PolySet& result)
+std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
 {
   using K = CGAL::Epick;
   // Collect point cloud
@@ -82,7 +82,7 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
   }
 
   const auto &points = reindexer.getArray();
-  if (points.size() <= 3) return false;
+  if (points.size() <= 3) return nullptr;
 
   // Apply hull
   bool success = false;
@@ -94,12 +94,12 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
       PRINTDB("After hull facets: %d", r.size_of_facets());
       PRINTDB("After hull closed: %d", r.is_closed());
       PRINTDB("After hull valid: %d", r.is_valid());
-      success = !CGALUtils::createPolySetFromPolyhedron(r, result);
+      return CGALUtils::createPolySetFromPolyhedron(r);
     } catch (const CGAL::Failure_exception& e) {
       LOG(message_group::Error, "CGAL error in applyHull(): %1$s", e.what());
     }
   }
-  return success;
+  return nullptr;
 }
 
 /*!
@@ -119,7 +119,7 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
   assert(children.size() >= 2);
   auto it = children.begin();
   t_tot.start();
-  shared_ptr<const Geometry> operands[2] = {it->second, shared_ptr<const Geometry>()};
+  shared_ptr<const Geometry> operands[2] = {it->second, std::shared_ptr<const Geometry>()};
   try {
     while (++it != children.end()) {
       operands[1] = it->second;
@@ -277,9 +277,7 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
       if (it != std::next(children.begin())) operands[0].reset();
 
       auto partToGeom = [&](auto& poly) -> shared_ptr<const Geometry> {
-          auto *ps = new PolySet(3, /* convex= */ true);
-	  CGALUtils::createPolySetFromPolyhedron(poly, *ps);
-          return shared_ptr<const Geometry>(ps);
+          return CGALUtils::createPolySetFromPolyhedron(poly);
         };
 
       if (result_parts.size() == 1) {
@@ -299,7 +297,7 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
         t.stop();
         PRINTDB("Minkowski: Union done: %f s", t.time());
         t.reset();
-        operands[0] = N;
+        operands[0] = std::move(N);
       } else {
         operands[0] = shared_ptr<const Geometry>(new CGAL_Nef_polyhedron());
       }

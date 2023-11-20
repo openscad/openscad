@@ -21,6 +21,7 @@ class Polygon2d : public Geometry
 public:
   VISITABLE_GEOMETRY();
   Polygon2d() = default;
+  Polygon2d(Outline2d outline);
   [[nodiscard]] size_t memsize() const override;
   [[nodiscard]] BoundingBox getBoundingBox() const override;
   [[nodiscard]] std::string dump() const override;
@@ -35,7 +36,7 @@ public:
                            );
   }
   void addOutline(Outline2d outline) { this->theoutlines.push_back(std::move(outline)); }
-  [[nodiscard]] class PolySet *tessellate() const;
+  [[nodiscard]] std::unique_ptr<PolySet> tessellate() const;
   [[nodiscard]] double area() const;
 
   using Outlines2d = std::vector<Outline2d>;

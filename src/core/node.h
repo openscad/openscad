@@ -134,7 +134,7 @@ class LeafNode : public AbstractPolyNode
 public:
   VISITABLE();
   LeafNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) { }
-  virtual const class Geometry *createGeometry() const = 0;
+  virtual std::unique_ptr<const class Geometry> createGeometry() const = 0;
 };
 
 std::ostream& operator<<(std::ostream& stream, const AbstractNode& node);

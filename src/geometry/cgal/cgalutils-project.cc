@@ -28,7 +28,7 @@ static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer& explorer,
                                 CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator circ,
                                 CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator end,
                                 bool positive,
-                                Polygon2d *poly) {
+                                Polygon2d &poly) {
   Outline2d outline;
 
   CGAL_For_all(circ, end) {
@@ -41,13 +41,13 @@ static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer& explorer,
 
   if (!outline.vertices.empty()) {
     outline.positive = positive;
-    poly->addOutline(outline);
+    poly.addOutline(outline);
   }
 }
 
-static Polygon2d *convertToPolygon2d(const CGAL_Nef_polyhedron2& p2)
+static std::unique_ptr<Polygon2d> convertToPolygon2d(const CGAL_Nef_polyhedron2& p2)
 {
-  auto *poly = new Polygon2d;
+  auto poly = std::make_unique<Polygon2d>();
 
   using Explorer = CGAL_Nef_polyhedron2::Explorer;
   using fci_t = Explorer::Face_const_iterator;
@@ -56,10 +56,10 @@ static Polygon2d *convertToPolygon2d(const CGAL_Nef_polyhedron2& p2)
   for (fci_t fit = E.faces_begin(), facesend = E.faces_end(); fit != facesend; ++fit) {
     if (!fit->mark()) continue;
     heafcc_t fcirc(E.face_cycle(fit)), fend(fcirc);
-    add_outline_to_poly(E, fcirc, fend, true, poly);
+    add_outline_to_poly(E, fcirc, fend, true, *poly);
     for (CGAL_Nef_polyhedron2::Explorer::Hole_const_iterator j = E.holes_begin(fit); j != E.holes_end(fit); ++j) {
       CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator hcirc(j), hend(hcirc);
-      add_outline_to_poly(E, hcirc, hend, false, poly);
+      add_outline_to_poly(E, hcirc, hend, false, *poly);
     }
   }
   poly->setSanitized(true);
@@ -172,9 +172,9 @@ void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
 
 namespace CGALUtils {
 
-Polygon2d *project(const CGAL_Nef_polyhedron& N, bool cut)
+std::unique_ptr<Polygon2d> project(const CGAL_Nef_polyhedron& N, bool cut)
 {
-  Polygon2d *poly = nullptr;
+  std::unique_ptr<Polygon2d> poly;
   if (N.getDimension() != 3) return poly;
 
   CGAL_Nef_polyhedron newN;

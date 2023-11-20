@@ -33,15 +33,15 @@ template <typename K>
 bool is_weakly_convex(const CGAL::Polyhedron_3<K>& p);
 template <typename K>
 bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m);
-shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op);
-shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
-shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries& children, OpenSCADOperator op);
-shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
+std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op);
+std::unique_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
+std::shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries& children, OpenSCADOperator op);
+std::shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
   const Geometry::Geometries::const_iterator& chbegin,
   const Geometry::Geometries::const_iterator& chend);
 //FIXME: Old, can be removed:
 //void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
-Polygon2d *project(const CGAL_Nef_polyhedron& N, bool cut);
+std::unique_ptr<Polygon2d> project(const CGAL_Nef_polyhedron& N, bool cut);
 template <typename K>
 CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K>& N);
 template <typename K>
@@ -50,7 +50,7 @@ CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox& bbox);
 bool is_approximately_convex(const PolySet& ps);
 shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& children);
 
-template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps);
+  template <typename Polyhedron> std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p);
 template <class InputKernel, class OutputKernel>
 void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel>& poly_a, CGAL::Polyhedron_3<OutputKernel>& poly_b);
 template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p);

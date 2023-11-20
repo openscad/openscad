@@ -43,7 +43,7 @@ public:
     return stream.str();
   }
   std::string name() const override { return "cube"; }
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 
   double x = 1, y = 1, z = 1;
   bool center = false;
@@ -66,7 +66,7 @@ public:
     return stream.str();
   }
   std::string name() const override { return "sphere"; }
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 
   double fn, fs, fa;
   double r = 1;
@@ -92,7 +92,7 @@ public:
     return stream.str();
   }
   std::string name() const override { return "cylinder"; }
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 
   double fn, fs, fa;
   double r1 = 1, r2 = 1, h = 1;
@@ -106,7 +106,7 @@ public:
   PolyhedronNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "polyhedron"; }
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 
   std::vector<Vector3d> points;
   std::vector<IndexedFace> faces;
@@ -128,7 +128,7 @@ public:
     return stream.str();
   }
   std::string name() const override { return "square"; }
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 
   double x = 1, y = 1;
   bool center = false;
@@ -151,7 +151,7 @@ public:
     return stream.str();
   }
   std::string name() const override { return "circle"; }
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 
   double fn, fs, fa;
   double r = 1;
@@ -164,7 +164,7 @@ public:
   PolygonNode (const ModuleInstantiation *mi) : LeafNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "polygon"; }
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 
   std::vector<Vector2d> points;
   std::vector<std::vector<size_t>> paths;

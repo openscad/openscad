@@ -177,7 +177,7 @@ shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
   if (!g->isEmpty()) {
     auto p2d = dynamic_pointer_cast<const Polygon2d>(geom);
     if (p2d) {
-      g.reset(p2d->tessellate());
+      g = p2d->tessellate();
     }
     // 3D PolySets are tessellated before inserting into Geometry cache, inside GeometryEvaluator::evaluateGeometry
   }

@@ -3,6 +3,10 @@
 #include "PolySet.h"
 
 
+Polygon2d::Polygon2d(Outline2d outline) : sanitized(true) {
+  addOutline(std::move(outline));
+}
+
 BoundingBox Outline2d::getBoundingBox() const {
   BoundingBox bbox;
   for (const auto& v : this->vertices) {
@@ -122,7 +126,7 @@ bool Polygon2d::is_convex() const
 
 double Polygon2d::area() const
 {
-  const PolySet *p = tessellate();
+  const auto p = tessellate();
   if (p == nullptr) {
     return 0;
   }

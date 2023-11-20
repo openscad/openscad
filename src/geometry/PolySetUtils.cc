@@ -18,10 +18,10 @@ namespace PolySetUtils {
 // Project all polygons (also back-facing) into a Polygon2d instance.
 // It is important to select all faces, since filtering by normal vector here
 // will trigger floating point incertainties and cause problems later.
-Polygon2d *project(const PolySet& ps) {
-  auto poly = new Polygon2d;
-  Vector3d pt;
+std::unique_ptr<Polygon2d> project(const PolySet& ps) {
+  auto poly = std::make_unique<Polygon2d>();
 
+  Vector3d pt;
   for (const auto& p : ps.indices) {
     Outline2d outline;
     for (const auto& v : p) {
@@ -120,7 +120,7 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
       }
     }
   }
-  outps.reset(builder.build().release());
+  outps.reset(*builder.build());
   if (degeneratePolygons > 0) {
     LOG(message_group::Warning, "PolySet has degenerate polygons");
   }
@@ -134,7 +134,8 @@ bool is_approximately_convex(const PolySet& ps) {
 #endif
 }
 
-  shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>& geom)
+// Get as or convert the geometry to a PolySet.
+std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const Geometry>& geom)
 {
   if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
     return ps;
