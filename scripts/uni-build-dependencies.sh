@@ -28,6 +28,7 @@
 # - GLU (GL/glu.h)
 # - gcc
 # - Qt5
+# - m4
 #
 # If your system lacks qt5, build like this:
 #
@@ -226,7 +227,7 @@ build_cmake()
   cd $BASEDIR/src
   rm -rf cmake-$version
   if [ ! -f cmake-$version.tar.gz ]; then
-    curl --insecure -O http://www.cmake.org/files/v2.8/cmake-$version.tar.gz
+    curl -O https://cmake.org/files/v2.8/cmake-$version.tar.gz
   fi
   tar zxf cmake-$version.tar.gz
   cd cmake-$version
