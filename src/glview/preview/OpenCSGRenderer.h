@@ -103,7 +103,6 @@ private:
                          bool highlight_mode = false, bool background_mode = false) const;
   void createCSGVBOProducts(const CSGProducts& products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode);
   void renderCSGVBOProducts(bool showedges, const Renderer::shaderinfo_t *shaderinfo) const;
-  std::vector<Vector3d> findModelPoint(Vector3d near, Vector3d far, int mouse_x, int mouse_y, double tolerance) override;
   std::vector<SelectedObject> findModelObject(Vector3d near, Vector3d far, int mouse_x, int mouse_y, double tolerance) override;
 
   OpenCSGVBOProducts vbo_vertex_products;
