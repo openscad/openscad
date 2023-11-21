@@ -97,6 +97,29 @@
 #include "QSettingsCached.h"
 #include <QSound>
 
+#ifdef ENABLE_PYTHON
+extern std::shared_ptr<AbstractNode> python_result_node;
+std::string evaluatePython(const std::string &code, double time);
+extern bool python_trusted;
+
+#include "crypto++/sha.h"
+#include "crypto++/filters.h"
+#include "crypto++/base64.h"
+
+std::string SHA256HashString(std::string aString){
+    std::string digest;
+    CryptoPP::SHA256 hash;
+
+    CryptoPP::StringSource foo(aString, true,
+    new CryptoPP::HashFilter(hash,
+      new CryptoPP::Base64Encoder (
+         new CryptoPP::StringSink(digest))));
+
+    return digest;
+}
+
+#endif
+
 #define ENABLE_3D_PRINTING
 #include "OctoPrint.h"
 #include "PrintService.h"
@@ -283,6 +306,9 @@ MainWindow::MainWindow(const QStringList& filenames)
   knownFileExtensions["png"] = surfaceStatement;
   knownFileExtensions["json"] = importFunction;
   knownFileExtensions["scad"] = "";
+#ifdef ENABLE_PYTHON
+  knownFileExtensions["py"] = "";
+#endif
   knownFileExtensions["csg"] = "";
 
   root_file = nullptr;
@@ -390,6 +416,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->fileActionSaveACopy, SIGNAL(triggered()), this, SLOT(actionSaveACopy()));
   connect(this->fileActionSaveAll, SIGNAL(triggered()), tabManager, SLOT(saveAll()));
   connect(this->fileActionReload, SIGNAL(triggered()), this, SLOT(actionReload()));
+  connect(this->fileActionRevoke, SIGNAL(triggered()), this, SLOT(actionRevokeTrustedFiles()));
   connect(this->fileActionClose, SIGNAL(triggered()), tabManager, SLOT(closeCurrentTab()));
   connect(this->fileActionQuit, SIGNAL(triggered()), this, SLOT(quit()));
   connect(this->fileShowLibraryFolder, SIGNAL(triggered()), this, SLOT(actionShowLibraryFolder()));
@@ -1233,6 +1260,10 @@ void MainWindow::instantiateRoot()
     setRenderVariables(builtin_context);
 
     std::shared_ptr<const FileContext> file_context;
+#ifdef ENABLE_PYTHON
+    if (python_result_node != NULL && this->python_active) this->absolute_root_node = python_result_node;
+    else
+#endif
     this->absolute_root_node = this->root_file->instantiate(*builtin_context, &file_context);
     if (file_context) {
       this->qglview->cam.updateView(file_context, false);
@@ -1521,6 +1552,18 @@ void MainWindow::actionSaveAs()
   tabManager->saveAs(activeEditor);
 }
 
+void MainWindow::actionRevokeTrustedFiles()
+{
+  QSettingsCached settings;
+#ifdef ENABLE_PYTHON  
+  python_trusted = false;
+  this->trusted_edit_document_name="";
+#endif  
+  settings.remove("python_hash");
+  QMessageBox::information(this, _("Trusted Files"), "All trusted python files revoked", QMessageBox::Ok);
+
+}
+
 void MainWindow::actionSaveACopy()
 {
   tabManager->saveACopy(activeEditor);
@@ -1789,6 +1832,61 @@ bool MainWindow::fileChangedOnDisk()
 /*!
    Returns true if anything was compiled.
  */
+
+#ifdef ENABLE_PYTHON
+bool MainWindow::trust_python_file(const std::string &file,  const std::string &content) {
+  QSettingsCached settings;
+  char setting_key[256];
+  if(python_trusted) return true;
+
+  std::string act_hash, ref_hash;
+  snprintf(setting_key,sizeof(setting_key)-1,"python_hash/%s",file.c_str());
+  act_hash = SHA256HashString(content);
+
+  if(file == this->untrusted_edit_document_name) return false;
+  
+  if(file == this->trusted_edit_document_name) {
+    settings.setValue(setting_key,act_hash.c_str());
+    return true;
+  }
+
+  if(content.size() <= 1) { // 1st character already typed
+    this->trusted_edit_document_name=file;
+    return true;
+  }
+
+  if(settings.contains(setting_key)) {
+    QString str=settings.value(setting_key).toString();
+    QByteArray ba = str.toLocal8Bit();
+    ref_hash = std::string(ba.data());
+  }
+ 
+  if(act_hash == ref_hash) {
+	  this->trusted_edit_document_name=file;
+	  return true;
+  }
+
+  auto ret = QMessageBox::warning(this, "Application",
+    _( "Python files can potentially contain harumful stuff.\n"
+    "Do you trust this file ?\n"), QMessageBox::Yes  | QMessageBox::YesAll | QMessageBox::No);
+  if (ret == QMessageBox::YesAll)  {
+    python_trusted = true;
+    return true;
+  }
+  if (ret == QMessageBox::Yes)  {
+    this->trusted_edit_document_name=file;
+    settings.setValue(setting_key,act_hash.c_str());
+    return true;
+  }
+
+  if (ret == QMessageBox::No) {
+    this->untrusted_edit_document_name=file;
+    return false;
+  }
+  return false;
+}
+#endif
+	
 void MainWindow::parseTopLevelDocument()
 {
   resetSuppressedMessages();
@@ -1802,6 +1900,27 @@ void MainWindow::parseTopLevelDocument()
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
   delete this->parsed_file;
+#ifdef ENABLE_PYTHON
+  this->python_active = false;
+  if (fname != NULL) {
+    if(boost::algorithm::ends_with(fname, ".py")) {
+	    std::string content = std::string(this->last_compiled_doc.toUtf8().constData());
+      if (
+        Feature::ExperimentalPythonEngine.is_enabled() 
+		&& trust_python_file(std::string(fname), content)) this->python_active = true;
+      else LOG(message_group::Warning, Location::NONE, "", "Python is not enabled");
+    }
+  }
+
+  if (this->python_active) {
+    auto fulltext_py =
+      std::string(this->last_compiled_doc.toUtf8().constData());
+
+    auto error = evaluatePython(fulltext_py,this->animateWidget->getAnim_tval());
+    if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
+    fulltext = "\n";
+  }
+#endif // ifdef ENABLE_PYTHON
   this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
   this->root_file = nullptr;  // ditto
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
@@ -1988,8 +2107,8 @@ ExportInfo createExportInfo(FileFormat format, const QString& exportFilename, co
 
   ExportInfo exportInfo;
   exportInfo.format = format;
-  exportInfo.name2open = exportFilename.toLocal8Bit().constData();
-  exportInfo.name2display = exportFilename.toUtf8().toStdString();
+  exportInfo.fileName = exportFilename.toLocal8Bit().constData();
+  exportInfo.displayName = exportFilename.toUtf8().toStdString();
   exportInfo.sourceFilePath = sourceFilePath.toUtf8().toStdString();
   exportInfo.sourceFileName = info.fileName().toUtf8().toStdString();
   exportInfo.useStdOut = false;

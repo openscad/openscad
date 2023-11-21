@@ -58,16 +58,23 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
         return new PolySet(3);
       }
     } else if (boost::regex_search(line, results, ex_f) && results.size() >= 2) {
-      p->append_poly();
       std::string args=results[1];
       std::vector<std::string> words;
       boost::split(words, results[1], boost::is_any_of(" \t"));
+      p->append_poly(words.size());
       for (const std::string& word : words) {
-	int ind=boost::lexical_cast<int>(word);
-        if(ind >= 1 && ind  <= pts.size())
-          p->append_vertex(pts[ind-1][0], pts[ind-1][1], pts[ind-1][2]);
-        else
-          LOG(message_group::Warning, "Index %1$d out of range in Line %2$d", filename, lineno);
+        std::vector<std::string> wordindex;
+        boost::split(wordindex, word, boost::is_any_of("/"));
+	if(wordindex.size() < 1)
+          LOG(message_group::Warning, "Invalid Face index in File %1$s in Line %2$d", filename, lineno);
+	else {
+	  int ind=boost::lexical_cast<int>(wordindex[0]);
+          if(ind >= 1 && ind  <= pts.size()) {
+            p->append_vertex(pts[ind-1][0], pts[ind-1][1], pts[ind-1][2]);
+	  } else {  
+            LOG(message_group::Warning, "Index %1$d out of range in Line %2$d", filename, lineno);
+	  }
+	} 
       }
 
     } else if (boost::regex_search(line, results, ex_vt)) { // ignore texture coords

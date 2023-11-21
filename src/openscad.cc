@@ -87,6 +87,12 @@
 #define snprintf _snprintf
 #endif
 
+#ifdef ENABLE_PYTHON
+extern std::shared_ptr<AbstractNode> python_result_node;
+std::string evaluatePython(const std::string &code, double time);
+bool python_active = false;
+bool python_trusted = false;
+#endif
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 using std::string;
@@ -269,11 +275,12 @@ Camera get_camera(const po::variables_map& vm)
 #include "QSettingsCached.h"
 #define OPENSCAD_QTGUI 1
 #endif
-static bool checkAndExport(const shared_ptr<const Geometry>& root_geom, unsigned nd,
+
+static bool checkAndExport(const shared_ptr<const Geometry>& root_geom, unsigned dimensions,
                            FileFormat format, const bool is_stdout, const std::string& filename)
 {
-  if (root_geom->getDimension() != nd) {
-    LOG("Current top level object is not a %1$dD object.", nd);
+  if (root_geom->getDimension() != dimensions) {
+    LOG("Current top level object is not a %1$dD object.", dimensions);
     return false;
   }
   if (root_geom->isEmpty()) {
@@ -281,13 +288,12 @@ static bool checkAndExport(const shared_ptr<const Geometry>& root_geom, unsigned
     return false;
   }
 
-  ExportInfo exportInfo;
-  exportInfo.format = format;
-  exportInfo.name2open = filename;
-  exportInfo.name2display = filename;
-  exportInfo.useStdOut = is_stdout;
-
-  exportFileByName(root_geom, exportInfo);
+  exportFileByName(root_geom, ExportInfo {
+      .format = format,
+      .displayName = filename,
+      .fileName = filename,
+      .useStdOut = is_stdout,
+    });
   return true;
 }
 
@@ -389,6 +395,22 @@ int cmdline(const CommandLine& cmd)
     text = std::string((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
   }
 
+#ifdef ENABLE_PYTHON  
+  python_active = false;
+  if(cmd.filename.c_str() != NULL) {
+	  if(boost::algorithm::ends_with(cmd.filename, ".py")) {
+		  if( python_trusted == true) python_active = true;
+		  else  LOG("Python is not enabled");
+	  }
+  }
+
+  if(python_active) {
+    auto fulltext_py = text;
+    auto error  = evaluatePython(fulltext_py, 0.0);
+    if(error.size() > 0) LOG(error.c_str());
+    text ="\n";
+  }
+#endif	  
   text += "\n\x03\n" + commandline_commands;
 
   SourceFile *root_file = nullptr;
@@ -473,7 +495,12 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
   AbstractNode::resetIndexCounter();
   std::shared_ptr<const FileContext> file_context;
-  auto absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
+  std::shared_ptr<AbstractNode> absolute_root_node;
+#ifdef ENABLE_PYTHON    
+    if(python_result_node != NULL && python_active) absolute_root_node = python_result_node;
+    else
+#endif	    
+  absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
   Camera camera = cmd.camera;
   if (file_context) {
     camera.updateView(file_context, true);
@@ -539,8 +566,12 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
       glview = prepare_preview(tree, cmd.viewOptions, camera);
       if (!glview) return 1;
     } else {
-      // Force creation of CGAL objects (for testing)
-      root_geom = geomevaluator.evaluateGeometry(*tree.root(), true);
+      // Force creation of concrete geometry (mostly for testing)
+
+      // FIXME: Consider adding MANIFOLD as a valid view option, to be able to distinguish from CGAL
+
+      constexpr bool allownef = true;
+      root_geom = geomevaluator.evaluateGeometry(*tree.root(), allownef);
       if (root_geom) {
         if (cmd.viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
           if (auto geomlist = dynamic_pointer_cast<const GeometryList>(root_geom)) {
@@ -557,24 +588,18 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
           LOG("Converted to Nef polyhedron");
         }
       } else {
+	// FIXME: The default geometry doesn't need to be a Nef polyhedron. Why not make it a PolySet?
         root_geom.reset(new CGAL_Nef_polyhedron());
       }
     }
-    if (curFormat == FileFormat::ASCIISTL ||
-        curFormat == FileFormat::STL ||
-        curFormat == FileFormat::OBJ ||
-        curFormat == FileFormat::OFF ||
-        curFormat == FileFormat::WRL ||
-        curFormat == FileFormat::AMF ||
-        curFormat == FileFormat::_3MF ||
-        curFormat == FileFormat::NEFDBG ||
-        curFormat == FileFormat::NEF3) {
+
+    if (is3D(curFormat)) {
       if (!checkAndExport(root_geom, 3, curFormat, cmd.is_stdout, filename_str)) {
         return 1;
       }
     }
 
-    if (curFormat == FileFormat::DXF || curFormat == FileFormat::SVG || curFormat == FileFormat::PDF) {
+    if (is2D(curFormat)) {
       if (!checkAndExport(root_geom, 2, curFormat, cmd.is_stdout, filename_str)) {
         return 1;
       }
@@ -977,6 +1002,9 @@ int main(int argc, char **argv)
     ("debug", po::value<string>(), "special debug info - specify 'all' or a set of source file names")
     ("s,s", po::value<string>(), "stl_file deprecated, use -o")
     ("x,x", po::value<string>(), "dxf_file deprecated, use -o")
+#ifdef ENABLE_PYTHON
+  ("trust-python",  "Trust python")
+#endif
   ;
 
   po::options_description hidden("Hidden options");
@@ -1005,6 +1033,12 @@ int main(int argc, char **argv)
     OpenSCAD::debug = vm["debug"].as<string>();
     LOG("Debug on. --debug=%1$s", OpenSCAD::debug);
   }
+#ifdef ENABLE_PYTHON
+  if (vm.count("trust-python")) {
+    LOG("Python Engine enabled", OpenSCAD::debug);
+    python_trusted = true;
+  }
+#endif
   if (vm.count("quiet")) {
     OpenSCAD::quiet = true;
   }

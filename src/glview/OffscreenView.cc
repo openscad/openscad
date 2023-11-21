@@ -11,7 +11,9 @@
 #include "imageutils.h"
 #include "printutils.h"
 #include "OffscreenContextFactory.h"
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
 #include "glew-utils.h"
+#endif
 
 namespace {
 
@@ -43,16 +45,50 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
     .majorGLVersion = 2,
     .minorGLVersion = 0,
   };
-  this->ctx = OffscreenContextFactory::create(OffscreenContextFactory::defaultProvider(), attrib);
-  if (!this->ctx) throw OffscreenViewException("Unable to obtain GL Context");
+  auto provider = OffscreenContextFactory::defaultProvider();
+  // We cannot initialize GLX GLEW with an EGL context:
+  // https://github.com/nigels-com/glew/issues/273
+  // ..so if we're using GLEW, default to creating a GLX context.
+  // FIXME: It's possible that GLEW was built using EGL, in which case this
+  // logic isn't correct, but we don't have a good way of determining how GLEW was built.
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
+  provider = provider == "egl" ? "glx" : provider;
+#endif
+  this->ctx = OffscreenContextFactory::create(provider, attrib);
+  if (!this->ctx) {
+    // If the provider defaulted to EGL, fall back to GLX if EGL failed
+    if (provider == "egl") {
+      this->ctx = OffscreenContextFactory::create("glx", attrib);
+    }
+    if (!this->ctx) {
+      throw OffscreenViewException("Unable to obtain GL Context");
+    }
+  }
   if (!this->ctx->makeCurrent()) throw OffscreenViewException("Unable to make GL context current");
 
 #ifndef NULLGL
-  if (!initializeGlew()) throw OffscreenViewException("Unable to initialize Glew");
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
+  if (!initializeGlew()) {
+    throw OffscreenViewException("Unable to initialize Glew");
+  }
+#endif // USE_GLEW
+#ifdef USE_GLAD
+  // We could ask for gladLoadGLES2UserPtr() here if we want to use GLES2+
+  const auto version = gladLoaderLoadGL();
+  if (version == 0) {
+    throw OffscreenViewException("Unable to initialize GLAD");
+  }
+  PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
+#endif // USE_GLAD
+
 #endif // NULLGL
 
+  PRINTD(gl_dump());
+
   this->fbo = fbo_new();
-  if (!fbo_init(this->fbo, width, height)) OffscreenViewException("Unable to create FBO");
+  if (!fbo_init(this->fbo, width, height)) {
+    throw OffscreenViewException("Unable to create FBO");
+  }
   GLView::initializeGL();
   GLView::resizeGL(width, height);
 }
@@ -91,12 +127,6 @@ bool OffscreenView::save(std::ostream& output) const
 std::string OffscreenView::getRendererInfo() const
 {
   std::ostringstream result;
-
-#ifndef NULLGL
-  result << glewInfo() << "\n";
-#endif
-	result << this->ctx->getInfo() << "\n"
-         << gl_dump();
-
+  result << this->ctx->getInfo() << "\n" << gl_dump();
   return result.str();
 }
