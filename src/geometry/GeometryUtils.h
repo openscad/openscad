@@ -8,6 +8,7 @@ using Polygons = std::vector<Polygon>;
 
 using IndexedFace = std::vector<int>;
 using IndexedTriangle = Vector3i;
+using PolygonIndices = std::vector<IndexedFace>;
 
 struct IndexedPolygons {
   std::vector<Vector3f> vertices;

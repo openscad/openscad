@@ -1,7 +1,9 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #include "ManifoldGeometry.h"
 #include "manifold.h"
-#include "IndexedMesh.h"
+#include "PolySet.h"
+#include "PolySetBuilder.h"
+#include "PolySetUtils.h"
 #include "cgalutils.h"
 #include "manifoldutils.h"
 
@@ -76,17 +78,15 @@ std::string ManifoldGeometry::dump() const {
 }
 
 std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
-  auto ps = std::make_shared<PolySet>(3);
   manifold::Mesh mesh = getManifold().GetMesh();
-  ps->reserve(mesh.triVerts.size());
-  Polygon poly(3);
-  for (const auto &tv : mesh.triVerts) {
-    for (const int j : {0, 1, 2}) {
-      poly[j] = vector_convert<Vector3d>(mesh.vertPos[tv[j]]);
-    }
-    ps->append_poly(poly);
-  }
-  return ps;
+  std::vector<int> indmap;
+  indmap.reserve(mesh.vertPos.size());
+  PolySetBuilder builder(mesh.vertPos.size(),mesh.triVerts.size());
+  for(const auto &pt :mesh.vertPos)  
+    indmap.push_back(builder.vertexIndex({pt[0],pt[1],pt[2]}));
+  for (const auto &tv : mesh.triVerts) 
+      builder.append_poly({indmap[tv[0]],indmap[tv[1]],indmap[tv[2]]});
+  return std::shared_ptr<PolySet>(builder.result());
 }
 
 template <typename Polyhedron>

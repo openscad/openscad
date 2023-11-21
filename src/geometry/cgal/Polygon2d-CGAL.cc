@@ -1,5 +1,6 @@
 #include "Polygon2d.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "printutils.h"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
@@ -93,10 +94,10 @@ double Polygon2d::area() const
   }
 
   double area = 0.0;
-  for (const auto& poly : p->polygons) {
-    const auto& v1 = poly[0];
-    const auto& v2 = poly[1];
-    const auto& v3 = poly[2];
+  for (const auto& poly : p->indices) {
+    const auto& v1 = p->vertices[poly[0]];
+    const auto& v2 = p->vertices[poly[1]];
+    const auto& v3 = p->vertices[poly[2]];
     area += 0.5 * (
       v1.x() * (v2.y() - v3.y())
       + v2.x() * (v3.y() - v1.y())
@@ -111,7 +112,7 @@ double Polygon2d::area() const
 PolySet *Polygon2d::tessellate() const
 {
   PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
-  auto polyset = new PolySet(*this);
+  PolySetBuilder builder(*this);
 
   Polygon2DCGAL::CDT cdt; // Uses a constrained Delaunay triangulator.
 
@@ -140,13 +141,11 @@ PolySet *Polygon2d::tessellate() const
   mark_domains(cdt);
   for (auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
     if (fit->info().in_domain()) {
-      polyset->append_poly(3);
+      builder.append_poly(3);
       for (int i = 0; i < 3; ++i) {
-        polyset->append_vertex(fit->vertex(i)->point()[0],
-                               fit->vertex(i)->point()[1],
-                               0);
+        builder.append_vertex(builder.vertexIndex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0)));
       }
     }
   }
-  return polyset;
+  return builder.result();
 }

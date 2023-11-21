@@ -60,13 +60,13 @@ std::string PolySet::dump() const
   out << "PolySet:"
       << "\n dimensions:" << this->dim
       << "\n convexity:" << this->convexity
-      << "\n num polygons: " << polygons.size()
+      << "\n num polygons: " << indices.size()
       << "\n num outlines: " << polygon.outlines().size()
       << "\n polygons data:";
-  for (const auto& polygon : polygons) {
+  for (const auto& polygon : indices) {
     out << "\n  polygon begin:";
     for (auto v : polygon) {
-      out << "\n   vertex:" << v.transpose();
+      out << "\n   vertex:" << this->vertices[v].transpose();
     }
   }
   out << "\n outlines data:";
@@ -74,57 +74,13 @@ std::string PolySet::dump() const
   out << "\nPolySet end";
   return out.str();
 }
-
-void PolySet::append_poly(size_t expected_vertex_count)
-{
-  polygons.emplace_back().reserve(expected_vertex_count);
-}
-
-void PolySet::append_poly(const Polygon& poly)
-{
-  polygons.push_back(poly);
-  this->dirty = true;
-}
-
-void PolySet::append_vertex(double x, double y, double z)
-{
-  append_vertex(Vector3d(x, y, z));
-}
-
-void PolySet::append_vertex(const Vector3d& v)
-{
-  polygons.back().push_back(v);
-  this->dirty = true;
-}
-
-void PolySet::append_vertex(const Vector3f& v)
-{
-  append_vertex((const Vector3d&)v.cast<double>());
-}
-
-void PolySet::insert_vertex(double x, double y, double z)
-{
-  insert_vertex(Vector3d(x, y, z));
-}
-
-void PolySet::insert_vertex(const Vector3d& v)
-{
-  polygons.back().insert(polygons.back().begin(), v);
-  this->dirty = true;
-}
-
-void PolySet::insert_vertex(const Vector3f& v)
-{
-  insert_vertex((const Vector3d&)v.cast<double>());
-}
-
 BoundingBox PolySet::getBoundingBox() const
 {
   if (this->dirty) {
     this->bbox.setNull();
-    for (const auto& poly : polygons) {
+    for (const auto& poly : indices) {
       for (const auto& p : poly) {
-        this->bbox.extend(p);
+        this->bbox.extend(this->vertices[p]);
       }
     }
     this->dirty = false;
@@ -135,30 +91,21 @@ BoundingBox PolySet::getBoundingBox() const
 size_t PolySet::memsize() const
 {
   size_t mem = 0;
-  for (const auto& p : this->polygons) mem += p.size() * sizeof(Vector3d);
+  for (const auto& p : this->indices) mem += p.size() * sizeof(int);
+  for (const auto& p : this->vertices) mem += p.size() * sizeof(Vector3d);
   mem += this->polygon.memsize() - sizeof(this->polygon);
   mem += sizeof(PolySet);
   return mem;
 }
-
-void PolySet::append(const PolySet& ps)
-{
-  this->polygons.insert(this->polygons.end(), ps.polygons.begin(), ps.polygons.end());
-  if (!dirty && !this->bbox.isNull()) {
-    this->bbox.extend(ps.getBoundingBox());
-  }
-  if (convex) convex = unknown;
-}
-
 void PolySet::transform(const Transform3d& mat)
 {
   // If mirroring transform, flip faces to avoid the object to end up being inside-out
   bool mirrored = mat.matrix().determinant() < 0;
 
-  for (auto& p : this->polygons) {
-    for (auto& v : p) {
+  for (auto& v : this->vertices) 
       v = mat * v;
-    }
+
+  for (auto& p : this->indices) {
     if (mirrored) std::reverse(p.begin(), p.end());
   }
   this->dirty = true;
@@ -184,14 +131,14 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
 {
   Grid3d<unsigned int> grid(GRID_FINE);
   std::vector<unsigned int> indices; // Vertex indices in one polygon
-  for (auto iter = this->polygons.begin(); iter != this->polygons.end();) {
-    Polygon& p = *iter;
+  for (auto iter = this->indices.begin(); iter != this->indices.end();) {
+    IndexedFace& p = *iter;
     indices.resize(p.size());
     // Quantize all vertices. Build index list
     for (unsigned int i = 0; i < p.size(); ++i) {
-      indices[i] = grid.align(p[i]);
+      indices[i] = grid.align(this->vertices[p[i]]);
       if (pPointsOut && pPointsOut->size() < grid.db.size()) {
-        pPointsOut->push_back(p[i]);
+        pPointsOut->push_back(this->vertices[p[i]]);
       }
     }
     // Remove consecutive duplicate vertices
@@ -204,10 +151,16 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
     p.erase(currp, p.end());
     if (p.size() < 3) {
       PRINTD("Removing collapsed polygon due to quantizing");
-      this->polygons.erase(iter);
+      this->indices.erase(iter);
     } else {
       iter++;
     }
   }
 }
 
+void PolySet::reset(const PolySet *ref)
+{
+	this->vertices=ref->vertices;
+	this->indices = ref->indices;
+	this->dirty=true;
+}

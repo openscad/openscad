@@ -22,6 +22,7 @@
 #include "ClipperUtils.h"
 #include "PolySetUtils.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "calc.h"
 #include "printutils.h"
 #include "calc.h"
@@ -737,12 +738,10 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
   return Response::ContinueTraversal;
 }
 
-static void translate_PolySet(PolySet& ps, const Vector3d& translation)
+static void translate_PolySet(PolySet& ps, const Vector3d& translation) // TODO duplicate with CGALutils ?
 {
-  for (auto& p : ps.polygons) {
-    for (auto& v : p) {
+  for (auto& v : ps.vertices) {
       v += translation;
-    }
   }
 }
 
@@ -778,7 +777,7 @@ int sgn_vdiff(const Vector2d& v1, const Vector2d& v2) {
    Quads are triangulated across the shorter of the two diagonals, which works well in most cases.
    However, when diagonals are equal length, decision may flip depending on other factors.
  */
-static void add_slice(PolySet *ps, const Polygon2d& poly,
+static void add_slice(PolySetBuilder &builder, const Polygon2d& poly,
                       double rot1, double rot2,
                       double h1, double h2,
                       const Vector2d& scale1,
@@ -821,47 +820,48 @@ static void add_slice(PolySet *ps, const Polygon2d& poly,
         //Vector2d mid_prev = trans3 * (prev1 +curr1+curr2)/4;
         Vector2d mid = trans_mid * (o.vertices[(i - 1) % o.vertices.size()] + o.vertices[i % o.vertices.size()]) / 2;
         double h_mid = (h1 + h2) / 2;
-        ps->append_poly(3);
-        ps->insert_vertex(prev1[0], prev1[1], h1);
-        ps->insert_vertex(mid[0],   mid[1], h_mid);
-        ps->insert_vertex(curr1[0], curr1[1], h1);
-        ps->append_poly(3);
-        ps->insert_vertex(curr1[0], curr1[1], h1);
-        ps->insert_vertex(mid[0],   mid[1], h_mid);
-        ps->insert_vertex(curr2[0], curr2[1], h2);
-        ps->append_poly(3);
-        ps->insert_vertex(curr2[0], curr2[1], h2);
-        ps->insert_vertex(mid[0],   mid[1], h_mid);
-        ps->insert_vertex(prev2[0], prev2[1], h2);
-        ps->append_poly(3);
-        ps->insert_vertex(prev2[0], prev2[1], h2);
-        ps->insert_vertex(mid[0],   mid[1], h_mid);
-        ps->insert_vertex(prev1[0], prev1[1], h1);
+        builder.append_poly(3);
+        builder.insert_vertex(prev1[0], prev1[1], h1);
+        builder.insert_vertex(mid[0],   mid[1], h_mid);
+        builder.insert_vertex(curr1[0], curr1[1], h1);
+        builder.append_poly(3);
+        builder.insert_vertex(curr1[0], curr1[1], h1);
+        builder.insert_vertex(mid[0],   mid[1], h_mid);
+        builder.insert_vertex(curr2[0], curr2[1], h2);
+        builder.append_poly(3);
+        builder.insert_vertex(curr2[0], curr2[1], h2);
+        builder.insert_vertex(mid[0],   mid[1], h_mid);
+        builder.insert_vertex(prev2[0], prev2[1], h2);
+        builder.append_poly(3);
+        builder.insert_vertex(prev2[0], prev2[1], h2);
+        builder.insert_vertex(mid[0],   mid[1], h_mid);
+        builder.insert_vertex(prev1[0], prev1[1], h1);
       } else
 #endif // ifdef LINEXT_4WAY
       // Split along shortest diagonal,
       // unless at top for a 0-scaled axis (which can create 0 thickness "ears")
+      int ind1,ind2,ind3;
       if (splitfirst xor any_zero) {
-        ps->append_poly(3);
-        ps->insert_vertex(prev1[0], prev1[1], h1);
-        ps->insert_vertex(curr2[0], curr2[1], h2);
-        ps->insert_vertex(curr1[0], curr1[1], h1);
+        ind1=builder.vertexIndex(Vector3d(prev1[0], prev1[1], h1));
+        ind2=builder.vertexIndex(Vector3d(curr2[0], curr2[1], h2));
+        ind3=builder.vertexIndex(Vector3d(curr1[0], curr1[1], h1));
+        builder.append_poly({ind3,ind2,ind1});
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          ps->append_poly(3);
-          ps->insert_vertex(curr2[0], curr2[1], h2);
-          ps->insert_vertex(prev1[0], prev1[1], h1);
-          ps->insert_vertex(prev2[0], prev2[1], h2);
+          ind1=builder.vertexIndex(Vector3d(curr2[0], curr2[1], h2));
+          ind2=builder.vertexIndex(Vector3d(prev1[0], prev1[1], h1));
+          ind3=builder.vertexIndex(Vector3d(prev2[0], prev2[1], h2));
+          builder.append_poly({ind3,ind2,ind1});
         }
       } else {
-        ps->append_poly(3);
-        ps->insert_vertex(prev1[0], prev1[1], h1);
-        ps->insert_vertex(prev2[0], prev2[1], h2);
-        ps->insert_vertex(curr1[0], curr1[1], h1);
+        ind1=builder.vertexIndex(Vector3d(prev1[0], prev1[1], h1));
+        ind2=builder.vertexIndex(Vector3d(prev2[0], prev2[1], h2));
+        ind3=builder.vertexIndex(Vector3d(curr1[0], curr1[1], h1));
+        builder.append_poly({ind3,ind2,ind1});
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          ps->append_poly(3);
-          ps->insert_vertex(prev2[0], prev2[1], h2);
-          ps->insert_vertex(curr2[0], curr2[1], h2);
-          ps->insert_vertex(curr1[0], curr1[1], h1);
+          ind1=builder.vertexIndex(Vector3d(prev2[0], prev2[1], h2));
+          ind2=builder.vertexIndex(Vector3d(curr2[0], curr2[1], h2));
+          ind3=builder.vertexIndex(Vector3d(curr1[0], curr1[1], h1));
+          builder.append_poly({ind3,ind2,ind1});
         }
       }
       prev1 = curr1;
@@ -1037,9 +1037,9 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
   boost::tribool isConvex{poly.is_convex()};
   // Twist or non-uniform scale makes convex polygons into unknown polyhedrons
   if (isConvex && non_linear) isConvex = unknown;
-  auto *ps = new PolySet(3, isConvex);
-  ps->setConvexity(node.convexity);
-  if (node.height <= 0) return ps;
+  PolySetBuilder builder(0,0,3,isConvex);
+  builder.setConvexity(node.convexity);
+  if (node.height <= 0) return new PolySet(3);
 
   size_t slices;
   if (node.has_slices) {
@@ -1141,11 +1141,11 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
   // Create bottom face.
   PolySet *ps_bottom = polyref.tessellate(); // bottom
   // Flip vertex ordering for bottom polygon
-  for (auto& p : ps_bottom->polygons) {
+  for (auto& p : ps_bottom->indices) {
     std::reverse(p.begin(), p.end());
   }
   translate_PolySet(*ps_bottom, Vector3d(0, 0, h1));
-  ps->append(*ps_bottom);
+  builder.append(ps_bottom);
   delete ps_bottom;
 
   // Create slice sides.
@@ -1158,7 +1158,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
                     1 - (1 - node.scale_y) * j / slices);
     Vector2d scale2(1 - (1 - node.scale_x) * (j + 1) / slices,
                     1 - (1 - node.scale_y) * (j + 1) / slices);
-    add_slice(ps, polyref, rot1, rot2, height1, height2, scale1, scale2);
+    add_slice(builder, polyref, rot1, rot2, height1, height2, scale1, scale2);
   }
 
   // Create top face.
@@ -1169,11 +1169,11 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     top_poly.transform(trans);
     PolySet *ps_top = top_poly.tessellate();
     translate_PolySet(*ps_top, Vector3d(0, 0, h2));
-    ps->append(*ps_top);
+    builder.append(ps_top);
     delete ps_top;
   }
 
-  return ps;
+  return builder.result();
 }
 
 /*!
@@ -1255,8 +1255,8 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
 {
   if (node.angle == 0) return nullptr;
 
-  auto *ps = new PolySet(3);
-  ps->setConvexity(node.convexity);
+  PolySetBuilder builder;
+  builder.setConvexity(node.convexity);
 
   double min_x = 0;
   double max_x = 0;
@@ -1270,7 +1270,6 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
 
   if ((max_x - min_x) > max_x && (max_x - min_x) > fabs(min_x)) {
     LOG(message_group::Error, "all points for rotate_extrude() must have the same X coordinate sign (range is %1$.2f -> %2$.2f)", min_x, max_x);
-    delete ps;
     return nullptr;
   }
 
@@ -1284,25 +1283,26 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
     ps_start->transform(rot);
     // Flip vertex ordering
     if (!flip_faces) {
-      for (auto& p : ps_start->polygons) {
+      for (auto& p : ps_start->indices) {
         std::reverse(p.begin(), p.end());
       }
     }
-    ps->append(*ps_start);
+    builder.append(ps_start);
     delete ps_start;
 
     PolySet *ps_end = poly.tessellate();
     Transform3d rot2(angle_axis_degrees(node.angle, Vector3d::UnitZ()) * angle_axis_degrees(90, Vector3d::UnitX()));
     ps_end->transform(rot2);
     if (flip_faces) {
-      for (auto& p : ps_end->polygons) {
+      for (auto& p : ps_end->indices) {
         std::reverse(p.begin(), p.end());
       }
     }
-    ps->append(*ps_end);
+    builder.append(ps_end);
     delete ps_end;
   }
 
+  int ind1, ind2, ind3;
   for (const auto& o : poly.outlines()) {
     std::vector<Vector3d> rings[2];
     rings[0].resize(o.vertices.size());
@@ -1316,19 +1316,20 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
       fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
 
       for (size_t i = 0; i < o.vertices.size(); ++i) {
-        ps->append_poly(3);
-        ps->insert_vertex(rings[j % 2][i]);
-        ps->insert_vertex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
-        ps->insert_vertex(rings[j % 2][(i + 1) % o.vertices.size()]);
-        ps->append_poly(3);
-        ps->insert_vertex(rings[j % 2][i]);
-        ps->insert_vertex(rings[(j + 1) % 2][i]);
-        ps->insert_vertex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
+        ind1=builder.vertexIndex(rings[j % 2][i]);
+        ind2=builder.vertexIndex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
+        ind3=builder.vertexIndex(rings[j % 2][(i + 1) % o.vertices.size()]);
+        builder.append_poly({ind3,ind2,ind1});
+        builder.append_poly(3);
+        ind1=builder.vertexIndex(rings[j % 2][i]);
+        ind2=builder.vertexIndex(rings[(j + 1) % 2][i]);
+        ind3=builder.vertexIndex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
+        builder.append_poly({ind3,ind2,ind1});
       }
     }
   }
 
-  return ps;
+  return builder.result();
 }
 
 /*!

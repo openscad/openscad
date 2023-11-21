@@ -200,10 +200,10 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
         });
 #endif
     } else if (const auto *ps = dynamic_cast<const PolySet*>(chgeom.get())) {
-      addCapacity(ps->polygons.size() * 3);
-      for (const auto& p : ps->polygons) {
+      addCapacity(ps->indices.size() * 3);
+      for (const auto& p : ps->indices) {
         for (const auto& v : p) {
-          addPoint(vector_convert<K::Point_3>(v));
+          addPoint(vector_convert<K::Point_3>(ps->vertices[v]));
         }
       }
     }

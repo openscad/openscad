@@ -6,6 +6,7 @@
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Surface_mesh.h>
+#include "PolySetBuilder.h"
 namespace CGALUtils {
 
 template <class TriangleMesh>
@@ -23,17 +24,15 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
 
   std::vector<vertex_descriptor> polygon;
 
-  std::unordered_map<Vector3d, vertex_descriptor> indices;
+  std::vector<vertex_descriptor> indices;
 
-  for (const auto& p : ps.polygons) {
+  for (const auto& p : ps.vertices) 
+        indices.push_back(mesh.add_vertex(vector_convert<typename TriangleMesh::Point>(p)));
+
+  for (const auto& p : ps.indices) {
     polygon.clear();
-    for (auto& v : p) {
-      auto size_before = indices.size();
-      auto& index = indices[v];
-      if (size_before != indices.size()) {
-        index = mesh.add_vertex(vector_convert<typename TriangleMesh::Point>(v));
-      }
-      polygon.push_back(index);
+    for(const auto &i: p) {
+      polygon.push_back(indices[i]);	 
     }
     mesh.add_face(polygon);
   }
@@ -47,9 +46,9 @@ template <class TriangleMesh>
 bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
 {
   bool err = false;
-  ps.reserve(ps.numFacets() + mesh.number_of_faces());
+  PolySetBuilder builder(0,mesh.number_of_faces()+ mesh.number_of_faces());
   for (const auto& f : mesh.faces()) {
-    ps.append_poly(mesh.degree(f));
+    builder.append_poly(mesh.degree(f));
 
     CGAL::Vertex_around_face_iterator<TriangleMesh> vbegin, vend;
     for (boost::tie(vbegin, vend) = vertices_around_face(mesh.halfedge(f), mesh); vbegin != vend;
@@ -59,9 +58,11 @@ bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
       double x = CGAL::to_double(v.x());
       double y = CGAL::to_double(v.y());
       double z = CGAL::to_double(v.z());
-      ps.append_vertex(x, y, z);
+      builder.append_vertex(builder.vertexIndex(Vector3d(x, y, z)));
     }
   }
+  builder.append(&ps);
+  ps.reset(builder.result());
   return err;
 }
 
