@@ -616,7 +616,11 @@ Response GeometryEvaluator::visit(State& state, const LeafNode& node)
 {
   if (state.isPrefix()) {
     shared_ptr<const Geometry> geom;
-    if (!isSmartCached(node)) {
+    if (
+#ifdef ENABLE_PYTHON
+      python_active ||
+#endif
+       !isSmartCached(node)) {
       const Geometry *geometry = node.createGeometry();
       assert(geometry);
       if (const auto *polygon = dynamic_cast<const Polygon2d *>(geometry)) {

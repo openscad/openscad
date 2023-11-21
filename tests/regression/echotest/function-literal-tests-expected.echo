@@ -1,14 +1,20 @@
 WARNING: Can't call function on undefined in file function-literal-tests.scad, line 5
+WARNING: Ignoring unknown function '(undef)' in file function-literal-tests.scad, line 5
 ECHO: undef
 WARNING: Can't call function on bool in file function-literal-tests.scad, line 6
+WARNING: Ignoring unknown function '(true)' in file function-literal-tests.scad, line 6
 ECHO: undef
 WARNING: Can't call function on number in file function-literal-tests.scad, line 7
+WARNING: Ignoring unknown function '(10.5)' in file function-literal-tests.scad, line 7
 ECHO: undef
 WARNING: Can't call function on string in file function-literal-tests.scad, line 8
+WARNING: Ignoring unknown function '("string")' in file function-literal-tests.scad, line 8
 ECHO: undef
 WARNING: Can't call function on vector in file function-literal-tests.scad, line 9
+WARNING: Ignoring unknown function '([])' in file function-literal-tests.scad, line 9
 ECHO: undef
 WARNING: Can't call function on range in file function-literal-tests.scad, line 10
+WARNING: Ignoring unknown function '([1 : 4])' in file function-literal-tests.scad, line 10
 ECHO: undef
 ECHO: is_function1 = false
 ECHO: is_function2 = true

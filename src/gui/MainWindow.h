@@ -56,6 +56,7 @@ public:
   SourceFile *parsed_file; // Last parse for include list
   std::shared_ptr<AbstractNode> absolute_root_node; // Result of tree evaluation
   std::shared_ptr<AbstractNode> root_node; // Root if the root modifier (!) is used
+  AssignmentList assignments_save;
 #ifdef ENABLE_PYTHON
   bool python_active;
   std::string trusted_edit_document_name;
@@ -351,6 +352,9 @@ public slots:
   void checkAutoReload();
   void waitAfterReload();
   void autoReloadSet(bool);
+#ifdef ENABLE_PYTHON
+  void recomputePythonActive();
+#endif
 
 private:
   bool network_progress_func(const double permille);
@@ -386,6 +390,9 @@ private:
 signals:
   void highlightError(int);
   void unhighlightLastError();
+  #ifdef ENABLE_PYTHON
+  void pythonActiveChanged(bool pythonActive);
+  #endif
 };
 
 class GuiLocker
