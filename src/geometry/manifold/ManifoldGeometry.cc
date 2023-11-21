@@ -136,7 +136,7 @@ shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
 template shared_ptr<CGAL::Polyhedron_3<CGAL_Kernel3>> ManifoldGeometry::toPolyhedron() const;
 
 shared_ptr<manifold::Manifold> binOp(ManifoldGeometry& lhs, ManifoldGeometry& rhs, manifold::OpType opType) {
-  return make_shared<manifold::Manifold>(std::move(lhs.getManifold().Boolean(rhs.getManifold(), opType)));
+  return make_shared<manifold::Manifold>(lhs.getManifold().Boolean(rhs.getManifold(), opType));
 }
 
 void ManifoldGeometry::operator+=(ManifoldGeometry& other) {
@@ -175,7 +175,7 @@ void ManifoldGeometry::transform(const Transform3d& mat) {
     mat(0, 2), mat(1, 2), mat(2, 2),
     mat(0, 3), mat(1, 3), mat(2, 3)
   );                            
-  manifold_ = make_shared<manifold::Manifold>(std::move(getManifold().Transform(glMat)));
+  manifold_ = make_shared<manifold::Manifold>(getManifold().Transform(glMat));
 }
 
 BoundingBox ManifoldGeometry::getBoundingBox() const

@@ -190,11 +190,16 @@ void glCompileCheck(GLuint shader) {
 void GLView::enable_opencsg_shaders()
 {
   // All OpenGL 2 contexts are OpenCSG capable
-  if (GLEW_VERSION_2_0) {
-		this->is_opencsg_capable = true;
-		this->has_shaders = true;
-  }
-  else {
+#ifdef USE_GLEW
+  const bool hasOpenGL2_0 = GLEW_VERSION_2_0;
+#endif
+#ifdef USE_GLAD
+  const bool hasOpenGL2_0 = GLAD_GL_VERSION_2_0;
+#endif
+  if (hasOpenGL2_0) {
+    this->is_opencsg_capable = true;
+    this->has_shaders = true;
+  } else {
     display_opencsg_warning();
   }
 }

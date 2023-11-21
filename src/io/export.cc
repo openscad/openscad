@@ -48,6 +48,24 @@ bool canPreview(const FileFormat format) {
           format == FileFormat::PNG);
 }
 
+bool is3D(const FileFormat format) {
+return format == FileFormat::ASCIISTL ||
+  format == FileFormat::STL ||
+  format == FileFormat::OBJ ||
+  format == FileFormat::OFF ||
+  format == FileFormat::WRL ||
+  format == FileFormat::AMF ||
+  format == FileFormat::_3MF ||
+  format == FileFormat::NEFDBG ||
+  format == FileFormat::NEF3;
+}
+
+bool is2D(const FileFormat format) {
+  return format == FileFormat::DXF ||
+    format == FileFormat::SVG ||
+    format == FileFormat::PDF;
+}
+
 void exportFile(const shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
 {
   switch (exportInfo.format) {
@@ -107,9 +125,9 @@ bool exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const E
   if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::STL || exportInfo.format == FileFormat::PDF) {
     mode |= std::ios::binary;
   }
-  std::ofstream fstream(exportInfo.name2open, mode);
+  std::ofstream fstream(exportInfo.fileName, mode);
   if (!fstream.is_open()) {
-    LOG(_("Can't open file \"%1$s\" for export"), exportInfo.name2display);
+    LOG(_("Can't open file \"%1$s\" for export"), exportInfo.displayName);
     return false;
   } else {
     bool onerror = false;
@@ -125,7 +143,7 @@ bool exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const E
       onerror = true;
     }
     if (onerror) {
-      LOG(message_group::Error, _("\"%1$s\" write error. (Disk full?)"), exportInfo.name2display);
+      LOG(message_group::Error, _("\"%1$s\" write error. (Disk full?)"), exportInfo.displayName);
     }
     return !onerror;
   }
@@ -133,13 +151,11 @@ bool exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const E
 
 bool exportFileByName(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
-  bool exportResult = false;
   if (exportInfo.useStdOut) {
-    exportResult = exportFileByNameStdout(root_geom, exportInfo);
+    return exportFileByNameStdout(root_geom, exportInfo);
   } else {
-    exportResult = exportFileByNameStream(root_geom, exportInfo);
+    return exportFileByNameStream(root_geom, exportInfo);
   }
-  return exportResult;
 }
 
 namespace Export {

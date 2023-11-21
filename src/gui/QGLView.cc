@@ -29,7 +29,9 @@
 #include "Preferences.h"
 #include "Renderer.h"
 #include "degree_trig.h"
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
 #include "glew-utils.h"
+#endif
 
 #include <QApplication>
 #include <QWheelEvent>
@@ -42,6 +44,9 @@
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QErrorMessage>
+#ifdef USE_GLAD
+#include <QOpenGLContext>
+#endif
 #include "OpenCSGWarningDialog.h"
 
 #include <cstdio>
@@ -84,18 +89,29 @@ void QGLView::viewAll()
 
 void QGLView::initializeGL()
 {
-  auto err = glewInit();
-  if (err != GLEW_OK) {
-    fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
+  // Since OpenCSG requires glew, we need to initialize it.
+  // ..in a separate compilation unit to avoid duplicate symbols with GLAD.
+  initializeGlew();
+#endif
+#ifdef USE_GLAD
+  // We could ask for gladLoadGLES2UserPtr() here if we want to use GLES2+
+  const auto version = gladLoadGLUserPtr([](void *ctx, const char *name) -> GLADapiproc {
+    return reinterpret_cast<QOpenGLContext *>(ctx)->getProcAddress(name);
+  }, this->context());
+  if (version == 0) {
+    std::cerr << "Unable to init GLAD" << std::endl;
+    return;
   }
+  PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
+#endif // ifdef USE_GLAD
   GLView::initializeGL();
 }
 
 std::string QGLView::getRendererInfo() const
 {
   std::ostringstream info;
-  info << glewInfo() << "\n";
-  info << gl_dump() << "\n";
+  info << gl_dump();
   // Don't translate as translated text in the Library Info dialog is not wanted
   info << "\nQt graphics widget: QOpenGLWidget";
   auto qsf = this->format();
@@ -107,7 +123,7 @@ std::string QGLView::getRendererInfo() const
   auto sbits = qsf.stencilBufferSize();
   info << boost::format("\nQSurfaceFormat: RGBA(%d%d%d%d), depth(%d), stencil(%d)\n\n") %
     rbits % gbits % bbits % abits % dbits % sbits;
-  info << glew_extensions_dump();
+  info << gl_extensions_dump();
   return info.str();
 }
 
@@ -127,12 +143,20 @@ void QGLView::display_opencsg_warning_dialog()
   message += _("It is highly recommended to use OpenSCAD on a system with "
                "OpenGL 2.0 or later.\n"
                "Your renderer information is as follows:\n");
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
   QString rendererinfo(_("GLEW version %1\n%2 (%3)\nOpenGL version %4\n"));
   message += rendererinfo.arg((const char *)glewGetString(GLEW_VERSION),
                               (const char *)glGetString(GL_RENDERER),
                               (const char *)glGetString(GL_VENDOR),
                               (const char *)glGetString(GL_VERSION));
-
+#endif
+#ifdef USE_GLAD
+  QString rendererinfo(_("GLAD version %1\n%2 (%3)\nOpenGL version %4\n"));
+  message += rendererinfo.arg(GLAD_GENERATOR_VERSION,
+                              (const char *)glGetString(GL_RENDERER),
+                              (const char *)glGetString(GL_VENDOR),
+                              (const char *)glGetString(GL_VERSION));
+#endif
   dialog->setText(message);
   dialog->exec();
 }
@@ -340,7 +364,9 @@ void QGLView::wheelEvent(QWheelEvent *event)
 {
   const auto pos = Q_WHEEL_EVENT_POSITION(event);
   const int v = event->angleDelta().y();
-  if (this->mouseCentricZoom) {
+  if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {
+    zoomFov (v);
+  } else if (this->mouseCentricZoom) {
     zoomCursor(pos.x(), pos.y(), v);
   } else {
     zoom(v, true);
@@ -360,6 +386,13 @@ void QGLView::ZoomOut()
 void QGLView::zoom(double v, bool relative)
 {
   this->cam.zoom(v, relative);
+  update();
+  emit cameraChanged();
+}
+
+void QGLView::zoomFov(double v)
+{
+  this->cam.setVpf( this->cam.fovValue () * pow(0.9, v / 120.0));
   update();
   emit cameraChanged();
 }

@@ -56,7 +56,7 @@ shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometries& ch
     for (auto pi = poly.vertices_begin(); pi != poly.vertices_end(); ++pi) {
       out.push_back(conv(pi->point()));
     }
-    return std::move(out);
+    return out;
   };
 
   try {

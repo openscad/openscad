@@ -225,7 +225,7 @@ const std::string get_lib3mf_version() {
   try {
     wrapper = Lib3MF::CWrapper::loadLibrary();
     wrapper->GetLibraryVersion(interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro);
-  } catch (Lib3MF::ELib3MFException& e) {
+  } catch (const Lib3MF::ELib3MFException& e) {
     LOG(message_group::Export_Error, e.what());
   }
 
@@ -265,7 +265,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
           LIB3MF_VERSION_MAJOR, LIB3MF_VERSION_MINOR, LIB3MF_VERSION_MICRO);
       return new PolySet(3);
     }
-  } catch (Lib3MF::ELib3MFException& e) {
+  } catch (const Lib3MF::ELib3MFException& e) {
     LOG(message_group::Export_Error, e.what());
     return new PolySet(3);
   }
@@ -277,7 +277,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
       LOG(message_group::Error, "Could not create model");
       return new PolySet(3);
     }
-  } catch (Lib3MF::ELib3MFException& e) {
+  } catch (const Lib3MF::ELib3MFException& e) {
     LOG(message_group::Export_Error, e.what());
     return new PolySet(3);
   }
@@ -289,19 +289,15 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
       LOG(message_group::Error, "Could not create 3MF reader");
       return new PolySet(3);
     }
-  } catch (Lib3MF::ELib3MFException& e) {
-    LOG(message_group::Export_Error, e.what());
+  } catch (const Lib3MF::ELib3MFException& e) {
+    LOG(message_group::Export_Error, "Could create 3MF reader, import() at line %1$d: %2$s", loc.firstLine(), e.what());
     return new PolySet(3);
   }
 
-  bool read_error = false;
   try {
     reader->ReadFromFile(filename);
-  } catch (Lib3MF::ELib3MFException& e) {
-    read_error = true;
-  }
-  if (!reader || read_error) {
-    LOG(message_group::Warning, "Could not read file '%1$s', import() at line %2$d", filename.c_str(), loc.firstLine());
+  } catch (const Lib3MF::ELib3MFException& e) {
+    LOG(message_group::Warning, "Could not read file '%1$s', import() at line %2$d: %3$s", filename.c_str(), loc.firstLine(), e.what());
     return new PolySet(3);
   }
 
@@ -322,7 +318,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
       if (!object) {
         return import_3mf_error(first_mesh);
       }
-    } catch (Lib3MF::ELib3MFException& e) {
+    } catch (const Lib3MF::ELib3MFException& e) {
       LOG(message_group::Error, e.what());
       return import_3mf_error(first_mesh);
     }

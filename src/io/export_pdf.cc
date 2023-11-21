@@ -51,7 +51,6 @@ void draw_grid(cairo_t *cr, double left, double right, double bottom, double top
   double lightLine=0.24;
   int major = (gridSize>10.? gridSize: int(10./gridSize));
 
-  double offset = mm_to_points(gridSize);
   double pts=0.;  // for iteration across page
   
   // bounds are margins in points.
@@ -96,7 +95,6 @@ void draw_grid(cairo_t *cr, double left, double right, double bottom, double top
 // New draw_axes (renamed from axis since it draws both).  
 void draw_axes(cairo_t *cr, double left, double right, double bottom, double top){
   double darkerLine=0.36;
-  double faintLine=0.24;
   double offset = mm_to_points(5.);
   double pts=0.;  // for iteration across page
   
