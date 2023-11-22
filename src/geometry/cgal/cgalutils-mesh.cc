@@ -20,8 +20,13 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
 
   std::vector<typename TriangleMesh::Point> points;
   std::vector<std::vector<size_t>> polygons;
+
+  // at least 3*numFacets
+  points.reserve(ps.polygons.size() * 3);
+  polygons.reserve(ps.polygons.size());
   for (const auto& p : ps.polygons) {
     std::vector<size_t> &polygon = polygons.emplace_back();
+    polygon.reserve(p.size());
     for (const auto &v : p) {
       polygon.push_back(points.size());
       points.push_back({v.x(), v.y(), v.z()});
