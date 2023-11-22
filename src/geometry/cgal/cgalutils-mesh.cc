@@ -6,7 +6,11 @@
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Surface_mesh.h>
+#include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
+#include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
 namespace CGALUtils {
+
+namespace PMP = CGAL::Polygon_mesh_processing;
 
 template <class TriangleMesh>
 bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
@@ -14,30 +18,20 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
   using GT = boost::graph_traits<TriangleMesh>;
   using vertex_descriptor = typename GT::vertex_descriptor;
 
-  bool err = false;
-  auto num_vertices = ps.numFacets() * 3;
-  auto num_facets = ps.numFacets();
-  auto num_edges = num_vertices + num_facets + 2; // Euler's formula.
-  mesh.reserve(mesh.number_of_vertices() + num_vertices, mesh.number_of_halfedges() + num_edges,
-               mesh.number_of_faces() + num_facets);
-
-  std::vector<vertex_descriptor> polygon;
-
-  std::unordered_map<Vector3d, vertex_descriptor> indices;
-
+  std::vector<typename TriangleMesh::Point> points;
+  std::vector<std::vector<size_t>> polygons;
   for (const auto& p : ps.polygons) {
-    polygon.clear();
-    for (auto& v : p) {
-      auto size_before = indices.size();
-      auto& index = indices[v];
-      if (size_before != indices.size()) {
-        index = mesh.add_vertex(vector_convert<typename TriangleMesh::Point>(v));
-      }
-      polygon.push_back(index);
+    std::vector<size_t> &polygon = polygons.emplace_back();
+    for (const auto &v : p) {
+      polygon.push_back(points.size());
+      points.push_back({v.x(), v.y(), v.z()});
     }
-    mesh.add_face(polygon);
   }
-  return err;
+
+  PMP::repair_polygon_soup(points, polygons);
+  PMP::orient_polygon_soup(points, polygons);
+  PMP::polygon_soup_to_polygon_mesh(points, polygons, mesh);
+  return false;
 }
 
 template bool createMeshFromPolySet(const PolySet& ps, CGAL_HybridMesh& mesh);
