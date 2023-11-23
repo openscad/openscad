@@ -820,22 +820,22 @@ static void add_slice(PolySetBuilder &builder, const Polygon2d& poly,
         //Vector2d mid_prev = trans3 * (prev1 +curr1+curr2)/4;
         Vector2d mid = trans_mid * (o.vertices[(i - 1) % o.vertices.size()] + o.vertices[i % o.vertices.size()]) / 2;
         double h_mid = (h1 + h2) / 2;
-        builder.append_poly(3);
-        builder.insert_vertex(prev1[0], prev1[1], h1);
-        builder.insert_vertex(mid[0],   mid[1], h_mid);
-        builder.insert_vertex(curr1[0], curr1[1], h1);
-        builder.append_poly(3);
-        builder.insert_vertex(curr1[0], curr1[1], h1);
-        builder.insert_vertex(mid[0],   mid[1], h_mid);
-        builder.insert_vertex(curr2[0], curr2[1], h2);
-        builder.append_poly(3);
-        builder.insert_vertex(curr2[0], curr2[1], h2);
-        builder.insert_vertex(mid[0],   mid[1], h_mid);
-        builder.insert_vertex(prev2[0], prev2[1], h2);
-        builder.append_poly(3);
-        builder.insert_vertex(prev2[0], prev2[1], h2);
-        builder.insert_vertex(mid[0],   mid[1], h_mid);
-        builder.insert_vertex(prev1[0], prev1[1], h1);
+        builder.appendPoly(3);
+        builder.insertVertex(prev1[0], prev1[1], h1);
+        builder.insertVertex(mid[0],   mid[1], h_mid);
+        builder.insertVertex(curr1[0], curr1[1], h1);
+        builder.appendPoly(3);
+        builder.insertVertex(curr1[0], curr1[1], h1);
+        builder.insertVertex(mid[0],   mid[1], h_mid);
+        builder.insertVertex(curr2[0], curr2[1], h2);
+        builder.appendPoly(3);
+        builder.insertVertex(curr2[0], curr2[1], h2);
+        builder.insertVertex(mid[0],   mid[1], h_mid);
+        builder.insertVertex(prev2[0], prev2[1], h2);
+        builder.appendPoly(3);
+        builder.insertVertex(prev2[0], prev2[1], h2);
+        builder.insertVertex(mid[0],   mid[1], h_mid);
+        builder.insertVertex(prev1[0], prev1[1], h1);
       } else
 #endif // ifdef LINEXT_4WAY
       // Split along shortest diagonal,
@@ -845,23 +845,23 @@ static void add_slice(PolySetBuilder &builder, const Polygon2d& poly,
         ind1=builder.vertexIndex(Vector3d(prev1[0], prev1[1], h1));
         ind2=builder.vertexIndex(Vector3d(curr2[0], curr2[1], h2));
         ind3=builder.vertexIndex(Vector3d(curr1[0], curr1[1], h1));
-        builder.append_poly({ind3,ind2,ind1});
+        builder.appendPoly({ind3,ind2,ind1});
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
           ind1=builder.vertexIndex(Vector3d(curr2[0], curr2[1], h2));
           ind2=builder.vertexIndex(Vector3d(prev1[0], prev1[1], h1));
           ind3=builder.vertexIndex(Vector3d(prev2[0], prev2[1], h2));
-          builder.append_poly({ind3,ind2,ind1});
+          builder.appendPoly({ind3,ind2,ind1});
         }
       } else {
         ind1=builder.vertexIndex(Vector3d(prev1[0], prev1[1], h1));
         ind2=builder.vertexIndex(Vector3d(prev2[0], prev2[1], h2));
         ind3=builder.vertexIndex(Vector3d(curr1[0], curr1[1], h1));
-        builder.append_poly({ind3,ind2,ind1});
+        builder.appendPoly({ind3,ind2,ind1});
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
           ind1=builder.vertexIndex(Vector3d(prev2[0], prev2[1], h2));
           ind2=builder.vertexIndex(Vector3d(curr2[0], curr2[1], h2));
           ind3=builder.vertexIndex(Vector3d(curr1[0], curr1[1], h1));
-          builder.append_poly({ind3,ind2,ind1});
+          builder.appendPoly({ind3,ind2,ind1});
         }
       }
       prev1 = curr1;
@@ -1319,12 +1319,12 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
         ind1=builder.vertexIndex(rings[j % 2][i]);
         ind2=builder.vertexIndex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
         ind3=builder.vertexIndex(rings[j % 2][(i + 1) % o.vertices.size()]);
-        builder.append_poly({ind3,ind2,ind1});
-        builder.append_poly(3);
+        builder.appendPoly({ind3,ind2,ind1});
+
         ind1=builder.vertexIndex(rings[j % 2][i]);
         ind2=builder.vertexIndex(rings[(j + 1) % 2][i]);
         ind3=builder.vertexIndex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
-        builder.append_poly({ind3,ind2,ind1});
+        builder.appendPoly({ind3,ind2,ind1});
       }
     }
   }

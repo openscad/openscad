@@ -60,7 +60,7 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
       std::string args=results[1];
       std::vector<std::string> words;
       boost::split(words, results[1], boost::is_any_of(" \t"));
-      builder.append_poly(words.size());
+      builder.appendPoly(words.size());
       for (const std::string& word : words) {
         std::vector<std::string> wordindex;
         boost::split(wordindex, word, boost::is_any_of("/"));
@@ -69,7 +69,7 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
 	else {
 	  int ind=boost::lexical_cast<int>(wordindex[0]);
           if(ind >= 1 && ind  <= builder.numVertices()) {
-            builder.append_vertex(ind-1);
+            builder.appendVertex(ind-1);
 	  } else {  
             LOG(message_group::Warning, "Index %1$d out of range in Line %2$d", filename, lineno);
 	  }

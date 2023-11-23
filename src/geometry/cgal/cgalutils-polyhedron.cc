@@ -291,13 +291,13 @@ bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps)
   for (FCI fi = p.facets_begin(); fi != p.facets_end(); ++fi) {
     HFCC hc = fi->facet_begin();
     HFCC hc_end = hc;
-    builder.append_poly(fi->facet_degree());
+    builder.appendPoly(fi->facet_degree());
     do {
       Vertex const& v = *((hc++)->vertex());
       double x = CGAL::to_double(v.point().x());
       double y = CGAL::to_double(v.point().y());
       double z = CGAL::to_double(v.point().z());
-      builder.append_vertex(builder.vertexIndex(Vector3d(x, y, z)));
+      builder.appendVertex(builder.vertexIndex(Vector3d(x, y, z)));
     } while (hc != hc_end);
   }
   ps.reset(builder.result());

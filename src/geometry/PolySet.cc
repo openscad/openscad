@@ -79,8 +79,8 @@ BoundingBox PolySet::getBoundingBox() const
   if (this->dirty) {
     this->bbox.setNull();
     for (const auto& poly : indices) {
-      for (const auto& p : poly) {
-        this->bbox.extend(this->vertices[p]);
+      for (const auto& idx : poly) {
+        this->bbox.extend(this->vertices[idx]);
       }
     }
     this->dirty = false;
@@ -105,8 +105,9 @@ void PolySet::transform(const Transform3d& mat)
   for (auto& v : this->vertices) 
       v = mat * v;
 
-  for (auto& p : this->indices) {
-    if (mirrored) std::reverse(p.begin(), p.end());
+  if(mirrored)
+    for (auto& p : this->indices) {
+      std::reverse(p.begin(), p.end());
   }
   this->dirty = true;
 }
@@ -131,29 +132,29 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
 {
   Grid3d<unsigned int> grid(GRID_FINE);
   std::vector<unsigned int> indices; // Vertex indices in one polygon
-  for (auto iter = this->indices.begin(); iter != this->indices.end();) {
-    IndexedFace& p = *iter;
-    indices.resize(p.size());
+  for (int i=0; i < this->indices.size();) {
+    IndexedFace& ind_f = this->indices[i];
+    indices.resize(ind_f.size());
     // Quantize all vertices. Build index list
-    for (unsigned int i = 0; i < p.size(); ++i) {
-      indices[i] = grid.align(this->vertices[p[i]]);
+    for (unsigned int i = 0; i < ind_f.size(); ++i) {
+      indices[i] = grid.align(this->vertices[ind_f[i]]);
       if (pPointsOut && pPointsOut->size() < grid.db.size()) {
-        pPointsOut->push_back(this->vertices[p[i]]);
+        pPointsOut->push_back(this->vertices[ind_f[i]]);
       }
     }
     // Remove consecutive duplicate vertices
-    auto currp = p.begin();
+    auto currp = ind_f.begin();
     for (unsigned int i = 0; i < indices.size(); ++i) {
       if (indices[i] != indices[(i + 1) % indices.size()]) {
-        (*currp++) = p[i];
+        (*currp++) = ind_f[i];
       }
     }
-    p.erase(currp, p.end());
-    if (p.size() < 3) {
+    ind_f.erase(currp, ind_f.end());
+    if (ind_f.size() < 3) {
       PRINTD("Removing collapsed polygon due to quantizing");
-      this->indices.erase(iter);
+      this->indices.erase(this->indices.begin()+i);
     } else {
-      iter++;
+      i++;
     }
   }
 }

@@ -102,7 +102,7 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
   for (const auto& faces : polygons) {
     if (faces[0].size() == 3) {
       // trivial case - triangles cannot be concave or have holes
-       builder.append_poly({faces[0][0],faces[0][1],faces[0][2]});
+       builder.appendPoly({faces[0][0],faces[0][1],faces[0][2]});
     }
     // Quads seem trivial, but can be concave, and can have degenerate cases.
     // So everything more complex than triangles goes into the general case.
@@ -111,7 +111,7 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
       auto err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
       if (!err) {
         for (const auto& t : triangles) {
-       	  builder.append_poly({t[0],t[1],t[2]});
+       	  builder.appendPoly({t[0],t[1],t[2]});
         }
       }
     }

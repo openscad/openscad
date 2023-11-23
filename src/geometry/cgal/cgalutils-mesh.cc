@@ -48,7 +48,7 @@ bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
   bool err = false;
   PolySetBuilder builder(0,mesh.number_of_faces()+ mesh.number_of_faces());
   for (const auto& f : mesh.faces()) {
-    builder.append_poly(mesh.degree(f));
+    builder.appendPoly(mesh.degree(f));
 
     CGAL::Vertex_around_face_iterator<TriangleMesh> vbegin, vend;
     for (boost::tie(vbegin, vend) = vertices_around_face(mesh.halfedge(f), mesh); vbegin != vend;
@@ -58,7 +58,7 @@ bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
       double x = CGAL::to_double(v.x());
       double y = CGAL::to_double(v.y());
       double z = CGAL::to_double(v.z());
-      builder.append_vertex(builder.vertexIndex(Vector3d(x, y, z)));
+      builder.appendVertex(builder.vertexIndex(Vector3d(x, y, z)));
     }
   }
   builder.append(&ps);

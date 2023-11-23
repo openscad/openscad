@@ -146,9 +146,9 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
           }
           if (++i == 3) {
 	    int ind[3];
-	    for(int i=0;i<3;i++)
-	            ind[i]=builder.vertexIndex(Vector3d(vdata[i][0], vdata[i][1], vdata[i][2]));
-            builder.append_poly({ind[0],ind[1],ind[2]});
+            builder.appendPoly(3);
+	    for(int j=0;j<3;j++)
+	            builder.appendVertex(builder.vertexIndex(Vector3d(vdata[j][0], vdata[j][1], vdata[j][2])));
           }
         } catch (const boost::bad_lexical_cast& blc) {
           AsciiError("can't parse vertex");
@@ -174,7 +174,7 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
         ind1=builder.vertexIndex(Vector3d(facet.data.x1, facet.data.y1, facet.data.z1));
         ind2=builder.vertexIndex(Vector3d(facet.data.x2, facet.data.y2, facet.data.z2));
         ind3=builder.vertexIndex(Vector3d(facet.data.x3, facet.data.y3, facet.data.z3));
-        builder.append_poly({ind1, ind2, ind3});
+        builder.appendPoly({ind1, ind2, ind3});
       }
     } catch (const std::ios_base::failure& ex) {
       int64_t offset = -1;

@@ -85,7 +85,7 @@ std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   for(const auto &pt :mesh.vertPos)  
     indmap.push_back(builder.vertexIndex({pt[0],pt[1],pt[2]}));
   for (const auto &tv : mesh.triVerts) 
-      builder.append_poly({indmap[tv[0]],indmap[tv[1]],indmap[tv[2]]});
+      builder.appendPoly({indmap[tv[0]],indmap[tv[1]],indmap[tv[2]]});
   return std::shared_ptr<PolySet>(builder.result());
 }
 

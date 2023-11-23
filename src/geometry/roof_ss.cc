@@ -122,7 +122,7 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
             Vector2d vv(v->x(), v->y());
             roof.push_back(hatbuilder.vertexIndex(Vector3d(v->x(), v->y(), heights[vv])));
           }
-          hatbuilder.append_poly(roof);
+          hatbuilder.appendPoly(roof);
         }
       }
     }
@@ -139,7 +139,7 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
         }
         // floor has wrong orientation
         std::reverse(floor.begin(), floor.end());
-        hatbuilder.append_poly(floor);
+        hatbuilder.appendPoly(floor);
       }
       delete tess;
     }

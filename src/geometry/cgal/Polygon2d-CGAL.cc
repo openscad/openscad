@@ -141,9 +141,9 @@ PolySet *Polygon2d::tessellate() const
   mark_domains(cdt);
   for (auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
     if (fit->info().in_domain()) {
-      builder.append_poly(3);
+      builder.appendPoly(3);
       for (int i = 0; i < 3; ++i) {
-        builder.append_vertex(builder.vertexIndex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0)));
+        builder.appendVertex(builder.vertexIndex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0)));
       }
     }
   }

@@ -49,8 +49,7 @@ PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, b
 
 PolySetBuilder::PolySetBuilder(const Polygon2d pol)
 {
-  ps= new PolySet(2, unknown);
-  ps->polygon=std::move(pol);   
+  ps= new PolySet(pol);
   ps->dirty=false;
 }
 
@@ -59,17 +58,17 @@ int PolySetBuilder::vertexIndex(const Vector3d &pt)
   return allVertices.lookup(pt);
 }
 
-void PolySetBuilder::append_poly(const std::vector<int> &inds)
+void PolySetBuilder::appendPoly(const std::vector<int> &inds)
 {
   ps->indices.push_back(inds);        
   ps->dirty = true;
 }
 
-void PolySetBuilder::append_geometry(const shared_ptr<const Geometry>& geom)
+void PolySetBuilder::appendGeometry(const shared_ptr<const Geometry>& geom)
 {
   if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const Geometry::GeometryItem& item : geomlist->getChildren()) {
-      append_geometry(item.second);
+      appendGeometry(item.second);
     }
   } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     PolySet ps(3);
@@ -82,7 +81,7 @@ void PolySetBuilder::append_geometry(const shared_ptr<const Geometry>& geom)
   } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
     append(ps.get());
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    // TODO(ochafik): Implement append_geometry(Surface_mesh) instead of converting to PolySet
+    // TODO(ochafik): Implement appendGeometry(Surface_mesh) instead of converting to PolySet
     append(hybrid->toPolySet().get());
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
@@ -97,7 +96,7 @@ void PolySetBuilder::append_geometry(const shared_ptr<const Geometry>& geom)
 }
 
 
-void PolySetBuilder::append_poly(const std::vector<Vector3d> &v)
+void PolySetBuilder::appendPoly(const std::vector<Vector3d> &v)
 {
   std::vector<int> inds;
   for(const auto &pt: v)
@@ -106,16 +105,16 @@ void PolySetBuilder::append_poly(const std::vector<Vector3d> &v)
   ps->dirty = true;
 }
 
-void PolySetBuilder::append_poly(int nvertices){
+void PolySetBuilder::appendPoly(int nvertices){
   ps->indices.emplace_back().reserve(nvertices);
 }
 
-void PolySetBuilder::append_vertex(int ind){
+void PolySetBuilder::appendVertex(int ind){
   ps->indices.back().push_back(ind);
   ps->dirty = true;
 }
 
-void PolySetBuilder::prepend_vertex(int ind){
+void PolySetBuilder::prependVertex(int ind){
   ps->indices.back().insert(ps->indices.back().begin(), ind);
   ps->dirty = true;
 }
@@ -127,13 +126,11 @@ int PolySetBuilder::numVertices(void) {
 void PolySetBuilder::append(const PolySet *ps)
 {
   for(const auto &poly : ps->indices) {
-    append_poly(poly.size());
+    appendPoly(poly.size());
     for(const auto &ind: poly) {
-      append_vertex(vertexIndex(ps->vertices[ind]));
+      appendVertex(vertexIndex(ps->vertices[ind]));
     }
   }
-}
-void PolySetBuilder::reset(void) {
 }
 
 PolySet *PolySetBuilder::result(void)

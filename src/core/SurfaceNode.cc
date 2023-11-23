@@ -222,7 +222,7 @@ const Geometry *SurfaceNode::createGeometry() const
   double ox = center ? -(columns - 1) / 2.0 : 0;
   double oy = center ? -(lines - 1) / 2.0 : 0;
 
-  PolySetBuilder builder(0,(lines - 1) * (columns - 1) * 4 + (lines - 1) * 2 + (columns - 1) * 2 + 1);
+  PolySetBuilder builder(0, (lines - 1) * (columns - 1) * 4 + (lines - 1) * 2 + (columns - 1) * 2 + 1);
   builder.setConvexity(convexity);
   // the bulk of the heightmap
   int ind1, ind2, ind3, ind4;
@@ -235,25 +235,25 @@ const Geometry *SurfaceNode::createGeometry() const
 
       double vx = (v1 + v2 + v3 + v4) / 4;
 
-      ind1=builder.vertexIndex(Vector3d(ox + j - 1, oy + i - 1, v1));
-      ind2=builder.vertexIndex(Vector3d(ox + j, oy + i - 1, v2));
-      ind3=builder.vertexIndex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
-      builder.append_poly({ind1,ind2,ind3});
+      ind1 = builder.vertexIndex(Vector3d(ox + j - 1, oy + i - 1, v1));
+      ind2 = builder.vertexIndex(Vector3d(ox + j, oy + i - 1, v2));
+      ind3 = builder.vertexIndex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
+      builder.appendPoly({ind1, ind2, ind3});
 
-      ind1=builder.vertexIndex(Vector3d(ox + j, oy + i - 1, v2));
-      ind2=builder.vertexIndex(Vector3d(ox + j, oy + i, v4));
-      ind3=builder.vertexIndex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
-      builder.append_poly({ind1,ind2,ind3});
+      ind1 = builder.vertexIndex(Vector3d(ox + j, oy + i - 1, v2));
+      ind2 = builder.vertexIndex(Vector3d(ox + j, oy + i, v4));
+      ind3 = builder.vertexIndex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
+      builder.appendPoly({ind1, ind2, ind3});
 
-      ind1=builder.vertexIndex(Vector3d(ox + j, oy + i, v4));
-      ind2=builder.vertexIndex(Vector3d(ox + j - 1, oy + i, v3));
-      ind3=builder.vertexIndex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
-      builder.append_poly({ind1,ind2,ind3});
+      ind1 = builder.vertexIndex(Vector3d(ox + j, oy + i, v4));
+      ind2 = builder.vertexIndex(Vector3d(ox + j - 1, oy + i, v3));
+      ind3 = builder.vertexIndex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
+      builder.appendPoly({ind1, ind2, ind3});
 
-      ind1=builder.vertexIndex(Vector3d(ox + j - 1, oy + i, v3));
-      ind2=builder.vertexIndex(Vector3d(ox + j - 1, oy + i - 1, v1));
-      ind3=builder.vertexIndex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
-      builder.append_poly({ind1,ind2,ind3});
+      ind1 = builder.vertexIndex(Vector3d(ox + j - 1, oy + i, v3));
+      ind2 = builder.vertexIndex(Vector3d(ox + j - 1, oy + i - 1, v1));
+      ind3 = builder.vertexIndex(Vector3d(ox + j - 0.5, oy + i - 0.5, vx));
+      builder.appendPoly({ind1, ind2, ind3});
     }
 
   // edges along Y
@@ -264,17 +264,17 @@ const Geometry *SurfaceNode::createGeometry() const
     double v4 = data[ (columns - 1) + (i) * columns ];
 
 
-    ind1=builder.vertexIndex(Vector3d(ox + 0, oy + i - 1, min_val));
-    ind2=builder.vertexIndex(Vector3d(ox + 0, oy + i - 1, v1));
-    ind3=builder.vertexIndex(Vector3d(ox + 0, oy + i, v2));
-    ind4=builder.vertexIndex(Vector3d(ox + 0, oy + i, min_val));
-    builder.append_poly({ind1,ind2,ind3,ind4});
+    ind1 = builder.vertexIndex(Vector3d(ox + 0, oy + i - 1, min_val));
+    ind2 = builder.vertexIndex(Vector3d(ox + 0, oy + i - 1, v1));
+    ind3 = builder.vertexIndex(Vector3d(ox + 0, oy + i, v2));
+    ind4 = builder.vertexIndex(Vector3d(ox + 0, oy + i, min_val));
+    builder.appendPoly({ind1, ind2, ind3, ind4});
 
-    ind1=builder.vertexIndex(Vector3d(ox + columns - 1, oy + i, min_val));
-    ind2=builder.vertexIndex(Vector3d(ox + columns - 1, oy + i, v4));
-    ind3=builder.vertexIndex(Vector3d(ox + columns - 1, oy + i - 1, v3));
-    ind4=builder.vertexIndex(Vector3d(ox + columns - 1, oy + i - 1, min_val));
-    builder.append_poly({ind1,ind2,ind3,ind4});
+    ind1 = builder.vertexIndex(Vector3d(ox + columns - 1, oy + i, min_val));
+    ind2 = builder.vertexIndex(Vector3d(ox + columns - 1, oy + i, v4));
+    ind3 = builder.vertexIndex(Vector3d(ox + columns - 1, oy + i - 1, v3));
+    ind4 = builder.vertexIndex(Vector3d(ox + columns - 1, oy + i - 1, min_val));
+    builder.appendPoly({ind1, ind2, ind3, ind4});
   }
 
   // edges along X
@@ -284,34 +284,35 @@ const Geometry *SurfaceNode::createGeometry() const
     double v3 = data[ (i - 1) + (lines - 1) * columns ];
     double v4 = data[ (i) + (lines - 1) * columns ];
 
-    ind1=builder.vertexIndex(Vector3d(ox + i, oy + 0, min_val));
-    ind2=builder.vertexIndex(Vector3d(ox + i, oy + 0, v2));
-    ind3=builder.vertexIndex(Vector3d(ox + i - 1, oy + 0, v1));
-    ind4=builder.vertexIndex(Vector3d(ox + i - 1, oy + 0, min_val));
-    builder.append_poly({ind1,ind2,ind3,ind4});
+    ind1 = builder.vertexIndex(Vector3d(ox + i, oy + 0, min_val));
+    ind2 = builder.vertexIndex(Vector3d(ox + i, oy + 0, v2));
+    ind3 = builder.vertexIndex(Vector3d(ox + i - 1, oy + 0, v1));
+    ind4 = builder.vertexIndex(Vector3d(ox + i - 1, oy + 0, min_val));
+    builder.appendPoly({ind1, ind2, ind3, ind4});
 
-    ind1=builder.vertexIndex(Vector3d(ox + i - 1, oy + lines - 1, min_val));
-    ind2=builder.vertexIndex(Vector3d(ox + i - 1, oy + lines - 1, v3));
-    ind3=builder.vertexIndex(Vector3d(ox + i, oy + lines - 1, v4));
-    ind4=builder.vertexIndex(Vector3d(ox + i, oy + lines - 1, min_val));
-    builder.append_poly({ind1,ind2,ind3,ind4});
+    ind1 = builder.vertexIndex(Vector3d(ox + i - 1, oy + lines - 1, min_val));
+    ind2 = builder.vertexIndex(Vector3d(ox + i - 1, oy + lines - 1, v3));
+    ind3 = builder.vertexIndex(Vector3d(ox + i, oy + lines - 1, v4));
+    ind4 = builder.vertexIndex(Vector3d(ox + i, oy + lines - 1, min_val));
+    builder.appendPoly({ind1, ind2, ind3, ind4});
   }
 
   // the bottom of the shape (one less than the real minimum value), making it a solid volume
   if (columns > 1 && lines > 1) {
-    builder.append_poly(2 * (columns - 1) + 2 * (lines - 1) );
+    builder.appendPoly(2 * (columns - 1) + 2 * (lines - 1) );
     for (int i = 0; i < columns - 1; ++i)
-      builder.prepend_vertex(builder.vertexIndex(Vector3d(ox + i, oy + 0, min_val)));
+      builder.prependVertex(builder.vertexIndex(Vector3d(ox + i, oy + 0, min_val)));
     for (int i = 0; i < lines - 1; ++i)
-      builder.prepend_vertex(builder.vertexIndex(Vector3d(ox + columns - 1, oy + i, min_val)));
+      builder.prependVertex(builder.vertexIndex(Vector3d(ox + columns - 1, oy + i, min_val)));
     for (int i = columns - 1; i > 0; i--)
-      builder.prepend_vertex(builder.vertexIndex(Vector3d(ox + i, oy + lines - 1, min_val)));
+      builder.prependVertex(builder.vertexIndex(Vector3d(ox + i, oy + lines - 1, min_val)));
     for (int i = lines - 1; i > 0; i--)
-      builder.prepend_vertex(builder.vertexIndex(Vector3d(ox + 0, oy + i, min_val)));
+      builder.prependVertex(builder.vertexIndex(Vector3d(ox + 0, oy + i, min_val)));
   }
 
   return builder.result();
 }
+
 
 std::string SurfaceNode::toString() const
 {

@@ -27,7 +27,7 @@ public:
   BoundingBox getBoundingBox() const override;
   std::string dump() const override;
   unsigned int getDimension() const override { return this->dim; }
-  bool isEmpty() const override { return indices.size() == 0; }
+  bool isEmpty() const override { return indices.empty(); }
   Geometry *copy() const override { return new PolySet(*this); }
 
   void quantizeVertices(std::vector<Vector3d> *pPointsOut = nullptr);

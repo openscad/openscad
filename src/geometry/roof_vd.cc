@@ -379,7 +379,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
           }
           roof.push_back(hatbuilder.vertexIndex(Vector3d(v[0] / scale, v[1] / scale, inner_faces.heights[v] / scale)));
         }
-        hatbuilder.append_poly(roof);
+        hatbuilder.appendPoly(roof);
       }
       delete tess;
     }
@@ -404,7 +404,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
         }
         // floor has reverse orientation
         std::reverse(floor.begin(), floor.end());
-        hatbuilder.append_poly(floor);
+        hatbuilder.appendPoly(floor);
       }
       delete tess;
     }

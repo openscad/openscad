@@ -13,16 +13,15 @@ class PolySetBuilder
 public:
   PolySetBuilder(int vertices_count=0, int indices_count=0, int dim=3, boost::tribool convex=unknown);
   PolySetBuilder(const Polygon2d pol);
-  void reset(void);
   void setConvexity(int n);
   int vertexIndex(const Vector3d &coord);
   int numVertices(void);
-  void append_poly(int nvertices);
+  void appendPoly(int nvertices);
   void append(const PolySet *ps);
-  void append_poly(const std::vector<int> &inds);
-  void append_geometry(const shared_ptr<const Geometry>& geom);
-  void append_poly(const std::vector<Vector3d> &v);
-  void append_vertex(int n);
-  void prepend_vertex(int n);
+  void appendPoly(const std::vector<int> &inds);
+  void appendGeometry(const shared_ptr<const Geometry>& geom);
+  void appendPoly(const std::vector<Vector3d> &v);
+  void appendVertex(int n);
+  void prependVertex(int n);
   PolySet *result(void);
 };
