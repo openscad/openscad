@@ -300,7 +300,7 @@ bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps)
       builder.appendVertex(builder.vertexIndex(Vector3d(x, y, z)));
     } while (hc != hc_end);
   }
-  ps.reset(builder.result());
+  ps.reset(builder.build());
   return err;
 }
 

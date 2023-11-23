@@ -34,7 +34,7 @@ void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   PolySetBuilder builder;
   builder.appendGeometry(geom);
-  auto *ps = builder.result();
+  auto *ps = builder.build();
 	
   output << "#VRML V2.0 utf8\n\n";
 

@@ -195,5 +195,5 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
         "STL format not recognized in '%1$s'.", filename);
     return new PolySet(3);
   }
-  return builder.result();
+  return builder.build();
 }

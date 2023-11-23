@@ -61,7 +61,6 @@ int PolySetBuilder::vertexIndex(const Vector3d &pt)
 void PolySetBuilder::appendPoly(const std::vector<int> &inds)
 {
   ps->indices.push_back(inds);        
-  ps->dirty = true;
 }
 
 void PolySetBuilder::appendGeometry(const shared_ptr<const Geometry>& geom)
@@ -99,10 +98,10 @@ void PolySetBuilder::appendGeometry(const shared_ptr<const Geometry>& geom)
 void PolySetBuilder::appendPoly(const std::vector<Vector3d> &v)
 {
   std::vector<int> inds;
+  inds.reserve(v.size());
   for(const auto &pt: v)
     inds.push_back(vertexIndex(pt));  
   ps->indices.push_back(inds);        
-  ps->dirty = true;
 }
 
 void PolySetBuilder::appendPoly(int nvertices){
@@ -111,12 +110,10 @@ void PolySetBuilder::appendPoly(int nvertices){
 
 void PolySetBuilder::appendVertex(int ind){
   ps->indices.back().push_back(ind);
-  ps->dirty = true;
 }
 
 void PolySetBuilder::prependVertex(int ind){
   ps->indices.back().insert(ps->indices.back().begin(), ind);
-  ps->dirty = true;
 }
 
 int PolySetBuilder::numVertices(void) {
@@ -133,8 +130,9 @@ void PolySetBuilder::append(const PolySet *ps)
   }
 }
 
-PolySet *PolySetBuilder::result(void)
+PolySet *PolySetBuilder::build(void)
 {
+  ps->dirty = true;
   ps->vertices = allVertices.getArray();
   return ps;
 }

@@ -23,5 +23,5 @@ public:
   void appendPoly(const std::vector<Vector3d> &v);
   void appendVertex(int n);
   void prependVertex(int n);
-  PolySet *result(void);
+  PolySet *build(void);
 };

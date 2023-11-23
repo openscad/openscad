@@ -87,5 +87,5 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
       LOG(message_group::Warning, "Unrecognized Line  %1$s in line Line %2$d", line, lineno);
     }
   }
-  return builder.result();
+  return builder.build();
 }

@@ -412,7 +412,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
     throw;
   }
 
-  return hatbuilder.result();
+  return hatbuilder.build();
 }
 
 } // roof_vd
