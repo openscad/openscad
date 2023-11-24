@@ -1,7 +1,7 @@
 #include "CGALWorker.h"
 #include <QThread>
 #ifdef __APPLE__
-#include <qos.h>
+#include <pthread/qos.h>
 #endif
 
 #include "Tree.h"
