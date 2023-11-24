@@ -27,5 +27,7 @@ namespace ManifoldUtils {
 
   std::shared_ptr<const ManifoldGeometry> applyOperator3DManifold(const Geometry::Geometries& children, OpenSCADOperator op);
 
+#ifdef ENABLE_CGAL
   std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometries& children);
+#endif
 };

@@ -27,8 +27,6 @@
 
 #include "export.h"
 
-#ifdef ENABLE_CGAL
-
 #include "IndexedMesh.h"
 
 void export_obj(const shared_ptr<const Geometry>& geom, std::ostream& output)
@@ -60,5 +58,3 @@ void export_obj(const shared_ptr<const Geometry>& geom, std::ostream& output)
   }
 
 }
-
-#endif // ENABLE_CGAL

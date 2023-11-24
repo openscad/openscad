@@ -4,11 +4,13 @@
 #include "manifold.h"
 #include "IndexedMesh.h"
 #include "printutils.h"
+#ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #include "PolySetUtils.h"
 #include "CGALHybridPolyhedron.h"
 #include <CGAL/convex_hull_3.h>
 #include <CGAL/Surface_mesh.h>
+#endif
 
 using Error = manifold::Manifold::Error;
 
@@ -104,11 +106,14 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromSurfaceMesh(const Tri
   return std::make_shared<ManifoldGeometry>(mani);
 }
 
+#ifdef ENABLE_CGAL
 template std::shared_ptr<ManifoldGeometry> createMutableManifoldFromSurfaceMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &tm);
 template std::shared_ptr<ManifoldGeometry> createMutableManifoldFromSurfaceMesh(const CGAL_DoubleMesh &tm);
+#endif
 
 std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet& ps)
 {
+#ifdef ENABLE_CGAL
   PolySet psq(ps);
   std::vector<Vector3d> points3d;
   psq.quantizeVertices(&points3d);
@@ -143,6 +148,9 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet
   }
 
   return createMutableManifoldFromSurfaceMesh(m);
+#else
+  return std::make_shared<ManifoldGeometry>();
+#endif
 }
 
 std::shared_ptr<ManifoldGeometry> createMutableManifoldFromGeometry(const std::shared_ptr<const Geometry>& geom) {
