@@ -313,7 +313,6 @@ const Geometry *SurfaceNode::createGeometry() const
   return builder.build();
 }
 
-
 std::string SurfaceNode::toString() const
 {
   std::ostringstream stream;

@@ -385,12 +385,13 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
   }
 
   PolySetBuilder builder(verts.size(),allTriangles.size());
+  std::vector<int> indMap;
   for(int i=0;i<verts.size();i++)
-    builder.vertexIndex({verts[i][0],verts[i][1],verts[i][2]});
+    indMap.push_back(builder.vertexIndex({verts[i][0],verts[i][1],verts[i][2]}));
 
   for(int i=0;i<allTriangles.size();i++)  {
 	const auto &tri=allTriangles[i];
-	builder.appendPoly({tri[0],tri[1],tri[2]});
+	builder.appendPoly({indMap[tri[0]],indMap[tri[1]],indMap[tri[2]]});
   }
   ps.reset(builder.build());
 
