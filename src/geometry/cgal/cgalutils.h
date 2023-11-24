@@ -21,14 +21,12 @@ inline std::size_t hash_value(const CGAL_HybridKernel3::FT& x) {
 }
 }
 
-namespace /* anonymous */ {
+namespace CGALUtils {
+
 template <typename Result, typename V>
 Result vector_convert(V const& v) {
   return Result(CGAL::to_double(v[0]), CGAL::to_double(v[1]), CGAL::to_double(v[2]));
 }
-}
-
-namespace CGALUtils {
 
 CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps);
 bool applyHull(const Geometry::Geometries& children, PolySet& P);

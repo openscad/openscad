@@ -67,7 +67,7 @@ std::string ManifoldGeometry::dump() const {
   for (const auto &tv : mesh.triVerts) {
     out << "\n  polygon begin:";
     for (const int j : {0, 1, 2}) {
-      Vector3d v = vector_convert<Vector3d>(mesh.vertPos[tv[j]]);
+      Vector3d v = CGALUtils::vector_convert<Vector3d>(mesh.vertPos[tv[j]]);
       out << "\n   vertex:" << v;
     }
   }
@@ -82,7 +82,7 @@ std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   Polygon poly(3);
   for (const auto &tv : mesh.triVerts) {
     for (const int j : {0, 1, 2}) {
-      poly[j] = vector_convert<Vector3d>(mesh.vertPos[tv[j]]);
+      poly[j] = CGALUtils::vector_convert<Vector3d>(mesh.vertPos[tv[j]]);
     }
     ps->append_poly(poly);
   }
@@ -105,7 +105,7 @@ public:
   
     B.begin_surface(mesh.vertPos.size(), mesh.triVerts.size());
     for (const auto &v : mesh.vertPos) {
-      B.add_vertex(vector_convert<CGALPoint>(v));
+      B.add_vertex(CGALUtils::vector_convert<CGALPoint>(v));
     }
 
     for (const auto &tv : mesh.triVerts) {
@@ -182,8 +182,8 @@ BoundingBox ManifoldGeometry::getBoundingBox() const
 {
   BoundingBox result;
   manifold::Box bbox = getManifold().BoundingBox();
-  result.extend(vector_convert<Eigen::Vector3d>(bbox.min));
-  result.extend(vector_convert<Eigen::Vector3d>(bbox.max));
+  result.extend(CGALUtils::vector_convert<Eigen::Vector3d>(bbox.min));
+  result.extend(CGALUtils::vector_convert<Eigen::Vector3d>(bbox.max));
   return result;
 }
 

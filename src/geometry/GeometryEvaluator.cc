@@ -1,7 +1,6 @@
 #include "GeometryEvaluator.h"
 #include "Tree.h"
 #include "GeometryCache.h"
-#include "CGALCache.h"
 #include "Polygon2d.h"
 #include "ModuleInstantiation.h"
 #include "State.h"
@@ -16,8 +15,6 @@
 #include "ProjectionNode.h"
 #include "CsgOpNode.h"
 #include "TextNode.h"
-#include "CGALHybridPolyhedron.h"
-#include "cgalutils.h"
 #include "RenderNode.h"
 #include "ClipperUtils.h"
 #include "PolySetUtils.h"
@@ -30,13 +27,17 @@
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
 #include "boost-utils.h"
+#ifdef ENABLE_CGAL
+#include "CGALCache.h"
+#include "CGALHybridPolyhedron.h"
+#include "cgalutils.h"
+#include <CGAL/convex_hull_2.h>
+#include <CGAL/Point_2.h>
+#endif
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
 #include "manifoldutils.h"
 #endif
-
-#include <CGAL/convex_hull_2.h>
-#include <CGAL/Point_2.h>
 
 class Geometry;
 class Polygon2d;
@@ -53,9 +54,11 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
   const std::string& key = this->tree.getIdString(node);
   if (!GeometryCache::instance()->contains(key)) {
     shared_ptr<const Geometry> N;
+#ifdef ENABLE_CGAL
     if (CGALCache::instance()->contains(key)) {
       N = CGALCache::instance()->get(key);
     }
+#endif
 
     // If not found in any caches, we need to evaluate the geometry
     if (N) {
@@ -63,10 +66,11 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
     } else {
       this->traverse(node);
     }
-
+#ifdef ENABLE_CGAL
     if (dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root)) {
       this->root = CGALUtils::getGeometryAsPolySet(this->root);
     }
+#endif
 #ifdef ENABLE_MANIFOLD
     if (dynamic_pointer_cast<const ManifoldGeometry>(this->root)) {
       this->root = CGALUtils::getGeometryAsPolySet(this->root);
@@ -170,7 +174,14 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
       return {ManifoldUtils::applyOperator3DManifold(actualchildren, op)};
     }
 #endif
+#ifdef ENABLE_CGAL
+    else if (Feature::ExperimentalFastCsg.is_enabled()) {
+      return {CGALUtils::applyUnion3DHybrid(actualchildren.begin(), actualchildren.end())};
+    }
     return {CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())};
+#else
+    assert(false && "No boolean backend available");
+#endif
     break;
   }
   default:
@@ -180,7 +191,14 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
       return {ManifoldUtils::applyOperator3DManifold(children, op)};
     }
 #endif
+#ifdef ENABLE_CGAL
+    if (Feature::ExperimentalFastCsg.is_enabled()) {
+      return {CGALUtils::applyOperator3DHybrid(children, op)};
+    }
     return {CGALUtils::applyOperator3D(children, op)};
+#else
+    assert(false && "No boolean backend available");
+    #endif
     break;
   }
   }
@@ -199,6 +217,7 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode& node)
   std::vector<const Polygon2d *> children = collectChildren2D(node);
   auto *geometry = new Polygon2d();
 
+#ifdef ENABLE_CGAL
   using CGALPoint2 = CGAL::Point_2<CGAL::Cartesian<double>>;
   // Collect point cloud
   std::list<CGALPoint2> points;
@@ -226,6 +245,7 @@ Polygon2d *GeometryEvaluator::applyHull2D(const AbstractNode& node)
       LOG(message_group::Warning, "GeometryEvaluator::applyHull2D() during CGAL::convex_hull_2(): %1$s", e.what());
     }
   }
+#endif
   return geometry;
 }
 
@@ -318,22 +338,29 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode& node,
 {
   const std::string& key = this->tree.getIdString(node);
 
+#ifdef ENABLE_CGAL
   if (CGALCache::acceptsGeometry(geom)) {
     if (!CGALCache::instance()->contains(key)) CGALCache::instance()->insert(key, geom);
   } else {
+#endif
     if (!GeometryCache::instance()->contains(key)) {
       if (!GeometryCache::instance()->insert(key, geom)) {
         LOG(message_group::Warning, "GeometryEvaluator: Node didn't fit into cache.");
       }
     }
+#ifdef ENABLE_CGAL
   }
+#endif
 }
 
 bool GeometryEvaluator::isSmartCached(const AbstractNode& node)
 {
   const std::string& key = this->tree.getIdString(node);
-  return (GeometryCache::instance()->contains(key) ||
-          CGALCache::instance()->contains(key));
+  return (GeometryCache::instance()->contains(key)
+#ifdef ENABLE_CGAL
+	  || CGALCache::instance()->contains(key)
+#endif
+    );
 }
 
 shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode& node, bool preferNef)
@@ -341,9 +368,12 @@ shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode& 
   const std::string& key = this->tree.getIdString(node);
   shared_ptr<const Geometry> geom;
   bool hasgeom = GeometryCache::instance()->contains(key);
+#ifdef ENABLE_CGAL
   bool hascgal = CGALCache::instance()->contains(key);
   if (hascgal && (preferNef || !hasgeom)) geom = CGALCache::instance()->get(key);
-  else if (hasgeom) geom = GeometryCache::instance()->get(key);
+  else
+#endif
+  if (hasgeom) geom = GeometryCache::instance()->get(key);
   return geom;
 }
 
@@ -1382,6 +1412,7 @@ shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const ProjectionNode
   shared_ptr<const Geometry> geom;
   shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
   if (newgeom) {
+#ifdef ENABLE_CGAL
     auto Nptr = CGALUtils::getNefPolyhedronFromGeometry(newgeom);
     if (Nptr && !Nptr->isEmpty()) {
       Polygon2d *poly = CGALUtils::project(*Nptr, node.cut_mode);
@@ -1390,6 +1421,7 @@ shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const ProjectionNode
         geom.reset(poly);
       }
     }
+#endif
   }
   return geom;
 }
@@ -1547,6 +1579,7 @@ Response GeometryEvaluator::visit(State& state, const AbstractIntersectionNode& 
   return Response::ContinueTraversal;
 }
 
+#if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
 static Geometry *roofOverPolygon(const RoofNode& node, const Polygon2d& poly)
 {
   PolySet *roof = nullptr;
@@ -1591,3 +1624,4 @@ Response GeometryEvaluator::visit(State& state, const RoofNode& node)
   }
   return Response::ContinueTraversal;
 }
+#endif

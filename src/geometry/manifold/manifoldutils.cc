@@ -122,7 +122,7 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet
     // Collect point cloud
     std::vector<K::Point_3> points(points3d.size());
     for (size_t i = 0, n = points3d.size(); i < n; i++) {
-      points[i] = vector_convert<K::Point_3>(points3d[i]);
+      points[i] = CGALUtils::vector_convert<K::Point_3>(points3d[i]);
     }
     if (points.size() <= 3) return make_shared<ManifoldGeometry>();
 
