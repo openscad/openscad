@@ -1,5 +1,8 @@
 #include "CGALWorker.h"
 #include <QThread>
+#ifdef __APPLE__
+#include <qos.h>
+#endif
 
 #include "Tree.h"
 #include "GeometryEvaluator.h"
@@ -11,6 +14,7 @@ CGALWorker::CGALWorker()
 {
   this->tree = nullptr;
   this->thread = new QThread();
+  this->thread->setPriority(QThread::HighPriority);
   if (this->thread->stackSize() < 1024 * 1024) this->thread->setStackSize(1024 * 1024);
   connect(this->thread, SIGNAL(started()), this, SLOT(work()));
   moveToThread(this->thread);
@@ -29,6 +33,9 @@ void CGALWorker::start(const Tree& tree)
 
 void CGALWorker::work()
 {
+#ifdef __APPLE__
+  pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE, 0);
+#endif
   // this is a worker thread: we don't want any exceptions escaping and crashing the app.
   shared_ptr<const Geometry> root_geom;
   try {
