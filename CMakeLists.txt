@@ -733,6 +733,7 @@ set(CORE_SOURCES
   src/geometry/PolySet.cc
   src/geometry/PolySetUtils.cc
   src/geometry/GeometryEvaluator.cc
+  src/geometry/boolean_utils.cc
   src/glview/OffscreenContextFactory.cc
   src/glview/RenderSettings.cc
   src/glview/Camera.cc

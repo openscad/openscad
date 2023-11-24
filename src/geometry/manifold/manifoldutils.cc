@@ -6,11 +6,13 @@
 #include "printutils.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
-#include "PolySetUtils.h"
 #include "CGALHybridPolyhedron.h"
 #include <CGAL/convex_hull_3.h>
 #include <CGAL/Surface_mesh.h>
 #endif
+#include "PolySetUtils.h"
+#include "IndexedMesh.h"
+#include "PolySet.h"
 
 using Error = manifold::Manifold::Error;
 
@@ -158,7 +160,7 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromGeometry(const std::s
     return std::make_shared<ManifoldGeometry>(*mani);
   }
 
-  auto ps = CGALUtils::getGeometryAsPolySet(geom);
+  auto ps = PolySetUtils::getGeometryAsPolySet(geom);
   if (ps) {
     return createMutableManifoldFromPolySet(*ps);
   }

@@ -27,6 +27,7 @@
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
 #include "boost-utils.h"
+#include "boolean_utils.h"
 #ifdef ENABLE_CGAL
 #include "CGALCache.h"
 #include "CGALHybridPolyhedron.h"
@@ -68,18 +69,18 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
     }
 #ifdef ENABLE_CGAL
     if (dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root)) {
-      this->root = CGALUtils::getGeometryAsPolySet(this->root);
+      this->root = PolySetUtils::getGeometryAsPolySet(this->root);
     }
 #endif
 #ifdef ENABLE_MANIFOLD
     if (dynamic_pointer_cast<const ManifoldGeometry>(this->root)) {
-      this->root = CGALUtils::getGeometryAsPolySet(this->root);
+      this->root = PolySetUtils::getGeometryAsPolySet(this->root);
     }
 #endif
 
     if (!allownef) {
       // We cannot render concave polygons, so tessellate any 3D PolySets
-      auto ps = CGALUtils::getGeometryAsPolySet(this->root);
+      auto ps = PolySetUtils::getGeometryAsPolySet(this->root);
       if (ps && !ps->isEmpty()) {
         // Since is_convex() doesn't handle non-planar faces, we need to tessellate
         // also in the indeterminate state so we cannot just use a boolean comparison. See #1061
@@ -134,7 +135,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   if (op == OpenSCADOperator::HULL) {
     auto *ps = new PolySet(3, /* convex */ true);
 
-    if (CGALUtils::applyHull(children, *ps)) {
+    if (applyHull(children, *ps)) {
       return ps;
     }
 
@@ -158,7 +159,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     }
     if (actualchildren.empty()) return {};
     if (actualchildren.size() == 1) return {actualchildren.front().second};
-    return {CGALUtils::applyMinkowski(actualchildren)};
+    return {applyMinkowski(actualchildren)};
     break;
   }
   case OpenSCADOperator::UNION:
@@ -274,7 +275,7 @@ Geometry *GeometryEvaluator::applyHull3D(const AbstractNode& node)
   Geometry::Geometries children = collectChildren3D(node);
 
   auto *P = new PolySet(3);
-  if (CGALUtils::applyHull(children, *P)) {
+  if (applyHull(children, *P)) {
     return P;
   }
   delete P;
@@ -1442,7 +1443,7 @@ shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const ProjectionNo
     // Clipper doesn't handle meshes very well.
     // It's better in V6 but not quite there. FIXME: stand-alone example.
     // project chgeom -> polygon2d
-    auto chPS = CGALUtils::getGeometryAsPolySet(chgeom);
+    auto chPS = PolySetUtils::getGeometryAsPolySet(chgeom);
     if (chPS) poly = PolySetUtils::project(*chPS);
 
     if (poly) {

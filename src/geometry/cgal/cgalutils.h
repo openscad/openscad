@@ -29,7 +29,6 @@ Result vector_convert(V const& v) {
 }
 
 CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps);
-bool applyHull(const Geometry::Geometries& children, PolySet& P);
 template <typename K>
 bool is_weakly_convex(const CGAL::Polyhedron_3<K>& p);
 template <typename K>
@@ -49,7 +48,6 @@ template <typename K>
 CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh);
 CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox& bbox);
 bool is_approximately_convex(const PolySet& ps);
-shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children);
 shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& children);
 
 template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps);
@@ -68,7 +66,6 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh);
 template <typename K>
 bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet& ps);
 shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const shared_ptr<const Geometry>& geom);
-shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>&);
 shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>&);
 
 template <typename K>

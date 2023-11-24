@@ -3,6 +3,8 @@
 #include "manifold.h"
 #include "IndexedMesh.h"
 #include "manifoldutils.h"
+#include "PolySet.h"
+#include "PolySetUtils.h"
 #ifdef ENABLE_CGAL
 #include "cgal.h"
 #include "cgalutils.h"
@@ -176,7 +178,7 @@ void ManifoldGeometry::minkowski(ManifoldGeometry& other) {
   }
   lhs->minkowski(*rhs);
 
-  auto ps = CGALUtils::getGeometryAsPolySet(lhs);
+  auto ps = PolySetUtils::getGeometryAsPolySet(lhs);
   if (!ps) clear();
   else {
     manifold_ = ManifoldUtils::trustedPolySetToManifold(*ps);

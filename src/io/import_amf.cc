@@ -25,6 +25,7 @@
  */
 
 #include "PolySet.h"
+#include "PolySetUtils.h"
 #include "printutils.h"
 #include "AST.h"
 
@@ -269,8 +270,8 @@ PolySet *AmfImporter::read(const std::string& filename)
       children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(polySet)));
     }
 
-    if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
 #ifdef ENABLE_CGAL
+    if (auto ps = PolySetUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
       p = new PolySet(*ps);
     } else
 #endif // ENABLE_CGAL
