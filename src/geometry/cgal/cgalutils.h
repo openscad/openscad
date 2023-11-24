@@ -65,6 +65,8 @@ template <class InputKernel, class OutputKernel>
 void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>& input,
               CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>>& output);
 template <class TriangleMesh>
+void repairMesh(TriangleMesh& tm);
+template <class TriangleMesh>
 bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh);
 
 template <typename K>
@@ -116,8 +118,6 @@ template <typename Polyhedron>
 void triangulateFaces(Polyhedron& polyhedron);
 template <typename Polyhedron>
 bool isClosed(const Polyhedron& polyhedron);
-template <typename Polyhedron>
-void orientToBoundAVolume(Polyhedron& polyhedron);
 template <typename Polyhedron>
 void reverseFaceOrientations(Polyhedron& polyhedron);
 template <typename K>
