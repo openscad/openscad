@@ -1,5 +1,6 @@
 #include "Polygon2d.h"
 #include "printutils.h"
+#include "PolySet.h"
 
 
 BoundingBox Outline2d::getBoundingBox() const {
@@ -119,3 +120,22 @@ bool Polygon2d::is_convex() const
   return true;
 }
 
+double Polygon2d::area() const
+{
+  const PolySet *p = tessellate();
+  if (p == nullptr) {
+    return 0;
+  }
+
+  double area = 0.0;
+  for (const auto& poly : p->polygons) {
+    const auto& v1 = poly[0];
+    const auto& v2 = poly[1];
+    const auto& v3 = poly[2];
+    area += 0.5 * (
+      v1.x() * (v2.y() - v3.y())
+      + v2.x() * (v3.y() - v1.y())
+      + v3.x() * (v1.y() - v2.y()));
+  }
+  return area;
+}

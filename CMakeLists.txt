@@ -829,6 +829,7 @@ set(MANIFOLD_SOURCES
   src/geometry/manifold/ManifoldGeometry.cc
   src/geometry/manifold/manifoldutils.cc
   src/geometry/manifold/manifold-applyops.cc
+  src/geometry/manifold/Polygon2d-manifold.cc
   src/geometry/manifold/manifold-applyops-minkowski.cc
 )
 
