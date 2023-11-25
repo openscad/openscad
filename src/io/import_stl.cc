@@ -96,6 +96,7 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
       binary = true;
     }
   }
+  if(!binary) facenum=0;
   PolySetBuilder builder(0,facenum);
   f.seekg(0);
 
