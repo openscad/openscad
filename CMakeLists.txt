@@ -694,7 +694,6 @@ set(CORE_SOURCES
   src/core/progress.cc
   src/core/ProjectionNode.cc
   src/core/RenderNode.cc
-  src/core/RoofNode.cc
   src/core/DrawingCallback.cc
   src/core/RotateExtrudeNode.cc
   src/core/SurfaceNode.cc
@@ -733,8 +732,7 @@ set(CORE_SOURCES
   src/geometry/linalg.cc
   src/geometry/PolySet.cc
   src/geometry/PolySetUtils.cc
-  src/geometry/roof_ss.cc
-  src/geometry/roof_vd.cc
+  src/geometry/GeometryEvaluator.cc
   src/glview/OffscreenContextFactory.cc
   src/glview/RenderSettings.cc
   src/glview/Camera.cc
@@ -798,8 +796,15 @@ if(ENABLE_PYTHON)
 	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
 endif()
 
+if(EXPERIMENTAL AND ENABLE_CGAL)
+  list(APPEND CORE_SOURCES
+  src/core/RoofNode.cc
+  src/geometry/roof_ss.cc
+  src/geometry/roof_vd.cc
+)
+endif()
+
 set(CGAL_SOURCES
-  src/geometry/GeometryEvaluator.cc
   src/geometry/cgal/cgalutils.cc
   src/geometry/cgal/cgalutils-applyops.cc
   src/geometry/cgal/cgalutils-applyops-hybrid.cc
@@ -823,13 +828,16 @@ set(CGAL_SOURCES
   src/geometry/cgal/Polygon2d-CGAL.cc
   src/io/export_nef.cc
   src/io/import_nef.cc
-)
+  )
 
 set(MANIFOLD_SOURCES
   src/geometry/manifold/ManifoldGeometry.cc
   src/geometry/manifold/manifoldutils.cc
   src/geometry/manifold/manifold-applyops.cc
   src/geometry/manifold/Polygon2d-manifold.cc
+)
+
+set(MANIFOLD_CGAL_SOURCES
   src/geometry/manifold/manifold-applyops-minkowski.cc
 )
 
@@ -860,6 +868,9 @@ if(EXPERIMENTAL)
 
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
   list(APPEND Sources ${MANIFOLD_SOURCES})
+  if (ENABLE_CGAL)
+    list(APPEND Sources ${MANIFOLD_CGAL_SOURCES})
+  endif()
 endif()
 
 #
@@ -1059,7 +1070,10 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set_source_files_properties("src/ext/polyclipping/clipper.cpp" PROPERTIES COMPILE_FLAGS "-Wno-class-memaccess")
 endif()
 
-list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES})
+if (ENABLE_CGAL)
+  list(APPEND Sources ${CGAL_SOURCES})
+endif()
+list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${OFFSCREEN_SOURCES})
 
 set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 if(HEADLESS)
