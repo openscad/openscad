@@ -2,8 +2,20 @@
 #include "ManifoldGeometry.h"
 #include "manifold.h"
 #include "IndexedMesh.h"
-#include "cgalutils.h"
 #include "manifoldutils.h"
+#ifdef ENABLE_CGAL
+#include "cgal.h"
+#include "cgalutils.h"
+#endif
+
+namespace {
+
+template <typename Result, typename V>
+Result vector_convert(V const& v) {
+  return Result(v[0], v[1], v[2]);
+}
+
+}
 
 ManifoldGeometry::ManifoldGeometry() : manifold_(make_shared<manifold::Manifold>()) {}
 
@@ -67,7 +79,7 @@ std::string ManifoldGeometry::dump() const {
   for (const auto &tv : mesh.triVerts) {
     out << "\n  polygon begin:";
     for (const int j : {0, 1, 2}) {
-      Vector3d v = CGALUtils::vector_convert<Vector3d>(mesh.vertPos[tv[j]]);
+      Vector3d v = vector_convert<Vector3d>(mesh.vertPos[tv[j]]);
       out << "\n   vertex:" << v;
     }
   }
@@ -82,13 +94,14 @@ std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   Polygon poly(3);
   for (const auto &tv : mesh.triVerts) {
     for (const int j : {0, 1, 2}) {
-      poly[j] = CGALUtils::vector_convert<Vector3d>(mesh.vertPos[tv[j]]);
+      poly[j] = vector_convert<Vector3d>(mesh.vertPos[tv[j]]);
     }
     ps->append_poly(poly);
   }
   return ps;
 }
 
+#ifdef ENABLE_CGAL
 template <typename Polyhedron>
 class CGALPolyhedronBuilderFromManifold : public CGAL::Modifier_base<typename Polyhedron::HalfedgeDS>
 {
@@ -134,6 +147,7 @@ shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
 }
 
 template shared_ptr<CGAL::Polyhedron_3<CGAL_Kernel3>> ManifoldGeometry::toPolyhedron() const;
+#endif
 
 shared_ptr<manifold::Manifold> binOp(ManifoldGeometry& lhs, ManifoldGeometry& rhs, manifold::OpType opType) {
   return make_shared<manifold::Manifold>(lhs.getManifold().Boolean(rhs.getManifold(), opType));
@@ -152,6 +166,8 @@ void ManifoldGeometry::operator-=(ManifoldGeometry& other) {
 }
 
 void ManifoldGeometry::minkowski(ManifoldGeometry& other) {
+// FIXME: How to deal with operation not supported?
+#ifdef ENABLE_CGAL
   auto lhs = shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*this->toPolySet()));
   auto rhs = shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*other.toPolySet()));
   if (lhs->isEmpty() || rhs->isEmpty()) {
@@ -165,6 +181,7 @@ void ManifoldGeometry::minkowski(ManifoldGeometry& other) {
   else {
     manifold_ = ManifoldUtils::trustedPolySetToManifold(*ps);
   }
+#endif
 }
 
 void ManifoldGeometry::transform(const Transform3d& mat) {
@@ -182,8 +199,8 @@ BoundingBox ManifoldGeometry::getBoundingBox() const
 {
   BoundingBox result;
   manifold::Box bbox = getManifold().BoundingBox();
-  result.extend(CGALUtils::vector_convert<Eigen::Vector3d>(bbox.min));
-  result.extend(CGALUtils::vector_convert<Eigen::Vector3d>(bbox.max));
+  result.extend(vector_convert<Eigen::Vector3d>(bbox.min));
+  result.extend(vector_convert<Eigen::Vector3d>(bbox.max));
   return result;
 }
 
