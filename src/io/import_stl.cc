@@ -146,7 +146,6 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
               boost::lexical_cast<double>(results[v + 1]);
           }
           if (++i == 3) {
-	    int ind[3];
             builder.appendPoly(3);
 	    for(int j=0;j<3;j++)
 	            builder.appendVertex(builder.vertexIndex(Vector3d(vdata[j][0], vdata[j][1], vdata[j][2])));

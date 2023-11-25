@@ -143,6 +143,7 @@ void AmfImporter::end_object(AmfImporter *importer, const xmlChar *)
   PRINTDB("AMF: add object %d", importer->polySets.size());
 importer->polySets.push_back(importer->builder->build());
   importer->vertex_list.clear();
+  delete importer->builder;
   importer->builder = nullptr;
 }
 

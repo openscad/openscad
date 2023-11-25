@@ -46,7 +46,7 @@ std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) 
     mesh.vertPos[i] = glm::vec3((float) v.x(), (float) v.y(), (float) v.z());
   }
   const auto vertexCount = mesh.vertPos.size();
-  assert(indices.size() == numfaces * 4);
+//  assert(indices.size() == numfaces * 4);
   for (size_t i = 0; i < numfaces; i++) {
     auto i0 = indices[i][0];
     auto i1 = indices[i][1];
