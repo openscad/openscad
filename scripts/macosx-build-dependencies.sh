@@ -60,7 +60,7 @@ PACKAGES=(
     "qt5 5.15.7 patch"
     "opencsg 1.6.0"
     "qscintilla 2.13.3"
-    "onetbb 2021.8.0"
+    "onetbb 2021.11.0"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.27.1"

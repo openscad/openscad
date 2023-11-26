@@ -52,11 +52,7 @@ public:
   void clear();
 
   [[nodiscard]] size_t memsize() const override;
-  [[nodiscard]] BoundingBox getBoundingBox() const override
-  {
-    assert(false && "not implemented");
-    return {};
-  }
+  [[nodiscard]] BoundingBox getBoundingBox() const override;
 
   [[nodiscard]] std::string dump() const override;
   [[nodiscard]] unsigned int getDimension() const override { return 3; }
@@ -118,8 +114,6 @@ private:
   /*! Returns the nef polyhedron if that's what's in the current data, or else nullptr.
    * Do NOT make this public. */
   [[nodiscard]] std::shared_ptr<CGAL_HybridNef> getNefPolyhedron() const;
-
-  [[nodiscard]] bbox_t getExactBoundingBox() const;
 
   // This contains data either as a polyhedron, or as a nef polyhedron.
   //
