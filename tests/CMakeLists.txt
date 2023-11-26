@@ -86,6 +86,14 @@ if(USE_IMAGE_COMPARE_PY)
     execute_process(
       COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "venv" "--system-site-packages" "--without-pip"
       WORKING_DIRECTORY "${CCBD}")
+    # Since msys2 on Windows prefers bin/ over Scripts, we need to look for the actual folder to determine
+    # how to utilize the venv
+    find_path(VENV_BIN_PATH activate PATHS "${VENV_DIR}/bin" "${VENV_DIR}/Scripts" NO_DEFAULT_PATH NO_CACHE)
+    if(WIN32)
+      set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python.exe")
+    else()
+      set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python")
+    endif()
     execute_process(
       COMMAND "${IMAGE_COMPARE_EXE}" "-m" "ensurepip"
       WORKING_DIRECTORY "${CCBD}")
