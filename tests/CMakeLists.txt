@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.0)
 if(POLICY CMP0017)
   # Explicitly use new include policy to avoid globally shadowing included modules
-  # http://www.cmake.org/cmake/help/cmake-2-8-docs.html#policy:CMP0017
+  # https://cmake.org/cmake/help/v2.8.8/cmake.html#policy:CMP0017
   cmake_policy(SET CMP0017 NEW)
 endif()
 cmake_policy(SET CMP0057 NEW) # Interpret IN_LIST
