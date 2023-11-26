@@ -148,8 +148,6 @@ static void version()
 
 static int info()
 {
-  std::cout << fegetround() << "\n";
-  std::cout << FE_DOWNWARD <<"," << FE_UPWARD <<"," << FE_TONEAREST  <<"," <<FE_TOWARDZERO << "\n";
   std::cout << LibraryInfo::info() << "\n\n";
 
   try {
