@@ -4,11 +4,15 @@
 #include "manifold.h"
 #include "IndexedMesh.h"
 #include "printutils.h"
+#ifdef ENABLE_CGAL
 #include "cgalutils.h"
-#include "PolySetUtils.h"
 #include "CGALHybridPolyhedron.h"
 #include <CGAL/convex_hull_3.h>
 #include <CGAL/Surface_mesh.h>
+#endif
+#include "PolySetUtils.h"
+#include "IndexedMesh.h"
+#include "PolySet.h"
 
 using Error = manifold::Manifold::Error;
 
@@ -104,11 +108,14 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromSurfaceMesh(const Tri
   return std::make_shared<ManifoldGeometry>(mani);
 }
 
+#ifdef ENABLE_CGAL
 template std::shared_ptr<ManifoldGeometry> createMutableManifoldFromSurfaceMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &tm);
 template std::shared_ptr<ManifoldGeometry> createMutableManifoldFromSurfaceMesh(const CGAL_DoubleMesh &tm);
+#endif
 
 std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet& ps)
 {
+#ifdef ENABLE_CGAL
   PolySet psq(ps);
   std::vector<Vector3d> points3d;
   psq.quantizeVertices(&points3d);
@@ -122,7 +129,7 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet
     // Collect point cloud
     std::vector<K::Point_3> points(points3d.size());
     for (size_t i = 0, n = points3d.size(); i < n; i++) {
-      points[i] = vector_convert<K::Point_3>(points3d[i]);
+      points[i] = CGALUtils::vector_convert<K::Point_3>(points3d[i]);
     }
     if (points.size() <= 3) return make_shared<ManifoldGeometry>();
 
@@ -143,6 +150,9 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet
   }
 
   return createMutableManifoldFromSurfaceMesh(m);
+#else
+  return std::make_shared<ManifoldGeometry>();
+#endif
 }
 
 std::shared_ptr<ManifoldGeometry> createMutableManifoldFromGeometry(const std::shared_ptr<const Geometry>& geom) {
@@ -150,7 +160,7 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromGeometry(const std::s
     return std::make_shared<ManifoldGeometry>(*mani);
   }
 
-  auto ps = CGALUtils::getGeometryAsPolySet(geom);
+  auto ps = PolySetUtils::getGeometryAsPolySet(geom);
   if (ps) {
     return createMutableManifoldFromPolySet(*ps);
   }

@@ -105,12 +105,6 @@ CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps)
   return new CGAL_Nef_polyhedron(N);
 }
 
-static CGAL_Nef_polyhedron *createNefPolyhedronFromPolygon2d(const Polygon2d& polygon)
-{
-  shared_ptr<PolySet> ps(polygon.tessellate());
-  return createNefPolyhedronFromPolySet(*ps);
-}
-
 template <typename K>
 CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K>& N)
 {
@@ -248,7 +242,8 @@ shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const shared_
   } else if (auto poly = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return createNefPolyhedronFromHybrid(*poly);
   } else if (auto poly2d = dynamic_pointer_cast<const Polygon2d>(geom)) {
-    return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolygon2d(*poly2d));
+    shared_ptr<PolySet> ps(poly2d->tessellate());
+    return shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolySet(*ps));
   } else if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     return nef;
 #if ENABLE_MANIFOLD

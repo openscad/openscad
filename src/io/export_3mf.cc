@@ -28,7 +28,9 @@
 #include "PolySet.h"
 #include "PolySetUtils.h"
 #include "printutils.h"
+#ifdef ENABLE_CGAL
 #include "CGALHybridPolyhedron.h"
+#endif
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
 #endif
@@ -55,10 +57,10 @@ using namespace NMR;
 #include <algorithm>
 
 #ifdef ENABLE_CGAL
-
 #include "cgal.h"
 #include "cgalutils.h"
 #include "CGAL_Nef_polyhedron.h"
+#endif
 
 static void export_3mf_error(std::string msg, PLib3MFModel *& model)
 {
@@ -115,6 +117,7 @@ static bool append_polyset(const PolySet& ps, PLib3MFModelMeshObject *& model)
   return true;
 }
 
+#ifdef ENABLE_CGAL
 static bool append_nef(const CGAL_Nef_polyhedron& root_N, PLib3MFModelMeshObject *& model)
 {
   if (!root_N.p3) {
@@ -135,6 +138,7 @@ static bool append_nef(const CGAL_Nef_polyhedron& root_N, PLib3MFModelMeshObject
 
   return append_polyset(ps, model);
 }
+#endif
 
 static bool append_3mf(const shared_ptr<const Geometry>& geom, PLib3MFModelMeshObject *& model)
 {
@@ -142,10 +146,12 @@ static bool append_3mf(const shared_ptr<const Geometry>& geom, PLib3MFModelMeshO
     for (const auto& item : geomlist->getChildren()) {
       if (!append_3mf(item.second, model)) return false;
     }
+#ifdef ENABLE_CGAL
   } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     return append_nef(*N, model);
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return append_polyset(*hybrid->toPolySet(), model);
+#endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     return append_polyset(*mani->toPolySet(), model);
@@ -210,8 +216,6 @@ void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output)
 
 }
 
-#endif // ENABLE_CGAL
-
 #else // LIB3MF_API_2
 
 #include "lib3mf_implicit.hpp"
@@ -219,10 +223,10 @@ void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output)
 #include <algorithm>
 
 #ifdef ENABLE_CGAL
-
 #include "cgal.h"
 #include "cgalutils.h"
 #include "CGAL_Nef_polyhedron.h"
+#endif
 
 static void export_3mf_error(std::string msg)
 {
@@ -286,6 +290,7 @@ static bool append_polyset(const PolySet& ps, Lib3MF::PWrapper& wrapper, Lib3MF:
   return true;
 }
 
+#ifdef ENABLE_CGAL
 static bool append_nef(const CGAL_Nef_polyhedron& root_N, Lib3MF::PWrapper& wrapper, Lib3MF::PModel& model)
 {
   if (!root_N.p3) {
@@ -306,6 +311,7 @@ static bool append_nef(const CGAL_Nef_polyhedron& root_N, Lib3MF::PWrapper& wrap
 
   return append_polyset(ps, wrapper, model);
 }
+#endif
 
 static bool append_3mf(const shared_ptr<const Geometry>& geom, Lib3MF::PWrapper& wrapper, Lib3MF::PModel& model)
 {
@@ -313,10 +319,12 @@ static bool append_3mf(const shared_ptr<const Geometry>& geom, Lib3MF::PWrapper&
     for (const auto& item : geomlist->getChildren()) {
       if (!append_3mf(item.second, wrapper, model)) return false;
     }
+#ifdef ENABLE_CGAL
   } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     return append_nef(*N, wrapper, model);
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return append_polyset(*hybrid->toPolySet(), wrapper, model);
+#endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     return append_polyset(*mani->toPolySet(), wrapper, model);
@@ -398,8 +406,6 @@ void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output)
   }
   output.flush();
 }
-
-#endif // ENABLE_CGAL
 
 #endif // LIB3MF_API_2
 

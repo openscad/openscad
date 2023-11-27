@@ -123,7 +123,9 @@ std::string LibraryInfo::info()
     << "\nDebug build: " << debugstatus
     << "\nBoost version: " << BOOST_LIB_VERSION
     << "\nEigen version: " << EIGEN_WORLD_VERSION << "." << EIGEN_MAJOR_VERSION << "." << EIGEN_MINOR_VERSION
+#ifdef ENABLE_CGAL
     << "\nCGAL version, kernels: " << TOSTRING(CGAL_VERSION) << ", " << cgal_3d_kernel << ", " << cgal_2d_kernel << ", " << cgal_2d_kernelEx
+#endif
     << "\nOpenCSG version: " << OPENCSG_VERSION_STRING
     << "\nQt version: " << qtVersion
 #ifndef OPENSCAD_NOGUI

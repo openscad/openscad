@@ -99,12 +99,14 @@ void exportFile(const shared_ptr<const Geometry>& root_geom, std::ostream& outpu
   case FileFormat::PDF:
     export_pdf(root_geom, output, exportInfo);
     break;
+#ifdef ENABLE_CGAL
   case FileFormat::NEFDBG:
     export_nefdbg(root_geom, output);
     break;
   case FileFormat::NEF3:
     export_nef3(root_geom, output);
     break;
+#endif
   default:
     assert(false && "Unknown file format");
   }

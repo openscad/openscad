@@ -51,6 +51,7 @@ option(ENABLE_CAIRO "Enable support for cairo vector graphics library." ON)
 option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
 option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
 option(ENABLE_TBB "Enable support for oneAPI Threading Building Blocks." ON)
+option(ENABLE_CGAL "Enable CGAL." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
 include(CMakeDependentOption)
@@ -337,34 +338,36 @@ if (("${Boost_VERSION}" VERSION_GREATER "1.72") AND ("${Boost_VERSION}" VERSION_
   target_compile_definitions(OpenSCAD PUBLIC BOOST_BIND_GLOBAL_PLACEHOLDERS)
 endif()
 
-# Note: Saving CMAKE_MODULE_PATH as CGAL will overwrite it.
-# Reconsider this after CGAL 5.4: https://github.com/CGAL/cgal/pull/6029
-set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
-set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
-# Some older versions do not match with CGAL 5.0 REQUIRED, so we check after.
-find_package(CGAL REQUIRED COMPONENTS Core)
-if (${CGAL_MAJOR_VERSION} LESS 5)
-  message(FATAL_ERROR "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}.${CGAL_BUGFIX_VERSION} less than required minimum version 5.0")
-endif()
-message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}.${CGAL_BUGFIX_VERSION}")
-target_compile_definitions(OpenSCAD PRIVATE ENABLE_CGAL)
-# The macro `CGAL_DEBUG` allows to force CGAL assertions, even if `NDEBUG` is defined,
-# Enabling CGAL assertions is necessary for us to catch them before they cause a crash
-# on bad geometry input.
-target_compile_definitions(OpenSCAD PRIVATE CGAL_DEBUG)
-target_compile_definitions(OpenSCAD PRIVATE CGAL_USE_GMPXX)
-if(TARGET CGAL::CGAL)
-  target_link_libraries(OpenSCAD PRIVATE CGAL::CGAL CGAL::CGAL_Core)
-  message(STATUS "CGAL: Using target CGAL::CGAL CGAL::CGAL_Core")
-else()
-  target_link_libraries(OpenSCAD PRIVATE ${CGAL_LIBRARY} ${GMP_LIBRARIES} ${MPFR_LIBRARIES})
-endif()
-# revert any changes to module path from CGAL_Macros.cmake; see note above
-# Commented out code should work in CGAL>= 5.4
-#if (CGAL_MODULE_PATH_IS_SET)
-#  set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
-#endif()
-set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+if(ENABLE_CGAL)
+  # Note: Saving CMAKE_MODULE_PATH as CGAL will overwrite it.
+  # Reconsider this after CGAL 5.4: https://github.com/CGAL/cgal/pull/6029
+  set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+  set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
+  # Some older versions do not match with CGAL 5.0 REQUIRED, so we check after.
+  find_package(CGAL REQUIRED COMPONENTS Core)
+  if (${CGAL_MAJOR_VERSION} LESS 5)
+    message(FATAL_ERROR "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}.${CGAL_BUGFIX_VERSION} less than required minimum version 5.0")
+  endif()
+  message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}.${CGAL_BUGFIX_VERSION}")
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_CGAL)
+  # The macro `CGAL_DEBUG` allows to force CGAL assertions, even if `NDEBUG` is defined,
+  # Enabling CGAL assertions is necessary for us to catch them before they cause a crash
+  # on bad geometry input.
+  target_compile_definitions(OpenSCAD PRIVATE CGAL_DEBUG)
+  target_compile_definitions(OpenSCAD PRIVATE CGAL_USE_GMPXX)
+  if(TARGET CGAL::CGAL)
+    target_link_libraries(OpenSCAD PRIVATE CGAL::CGAL CGAL::CGAL_Core)
+    message(STATUS "CGAL: Using target CGAL::CGAL CGAL::CGAL_Core")
+  else()
+    target_link_libraries(OpenSCAD PRIVATE ${CGAL_LIBRARY} ${GMP_LIBRARIES} ${MPFR_LIBRARIES})
+  endif()
+  # revert any changes to module path from CGAL_Macros.cmake; see note above
+  # Commented out code should work in CGAL>= 5.4
+  #if (CGAL_MODULE_PATH_IS_SET)
+  #  set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+  #endif()
+  set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+endif(ENABLE_CGAL)
 
 find_package(LibZip REQUIRED QUIET)
 message(STATUS "libzip: ${LIBZIP_VERSION}")
@@ -691,7 +694,6 @@ set(CORE_SOURCES
   src/core/progress.cc
   src/core/ProjectionNode.cc
   src/core/RenderNode.cc
-  src/core/RoofNode.cc
   src/core/DrawingCallback.cc
   src/core/RotateExtrudeNode.cc
   src/core/SurfaceNode.cc
@@ -730,8 +732,8 @@ set(CORE_SOURCES
   src/geometry/linalg.cc
   src/geometry/PolySet.cc
   src/geometry/PolySetUtils.cc
-  src/geometry/roof_ss.cc
-  src/geometry/roof_vd.cc
+  src/geometry/GeometryEvaluator.cc
+  src/geometry/boolean_utils.cc
   src/glview/OffscreenContextFactory.cc
   src/glview/RenderSettings.cc
   src/glview/Camera.cc
@@ -795,8 +797,15 @@ if(ENABLE_PYTHON)
 	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
 endif()
 
+if(EXPERIMENTAL AND ENABLE_CGAL)
+  list(APPEND CORE_SOURCES
+  src/core/RoofNode.cc
+  src/geometry/roof_ss.cc
+  src/geometry/roof_vd.cc
+)
+endif()
+
 set(CGAL_SOURCES
-  src/geometry/GeometryEvaluator.cc
   src/geometry/cgal/cgalutils.cc
   src/geometry/cgal/cgalutils-applyops.cc
   src/geometry/cgal/cgalutils-applyops-hybrid.cc
@@ -820,12 +829,16 @@ set(CGAL_SOURCES
   src/geometry/cgal/Polygon2d-CGAL.cc
   src/io/export_nef.cc
   src/io/import_nef.cc
-)
+  )
 
 set(MANIFOLD_SOURCES
   src/geometry/manifold/ManifoldGeometry.cc
   src/geometry/manifold/manifoldutils.cc
   src/geometry/manifold/manifold-applyops.cc
+  src/geometry/manifold/Polygon2d-manifold.cc
+)
+
+set(MANIFOLD_CGAL_SOURCES
   src/geometry/manifold/manifold-applyops-minkowski.cc
 )
 
@@ -856,6 +869,9 @@ if(EXPERIMENTAL)
 
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
   list(APPEND Sources ${MANIFOLD_SOURCES})
+  if (ENABLE_CGAL)
+    list(APPEND Sources ${MANIFOLD_CGAL_SOURCES})
+  endif()
 endif()
 
 #
@@ -1055,7 +1071,10 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set_source_files_properties("src/ext/polyclipping/clipper.cpp" PROPERTIES COMPILE_FLAGS "-Wno-class-memaccess")
 endif()
 
-list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES})
+if (ENABLE_CGAL)
+  list(APPEND Sources ${CGAL_SOURCES})
+endif()
+list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${OFFSCREEN_SOURCES})
 
 set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 if(HEADLESS)
