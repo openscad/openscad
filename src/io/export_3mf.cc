@@ -290,6 +290,7 @@ static bool append_polyset(const PolySet& ps, Lib3MF::PWrapper& wrapper, Lib3MF:
   return true;
 }
 
+#ifdef ENABLE_CGAL
 static bool append_nef(const CGAL_Nef_polyhedron& root_N, Lib3MF::PWrapper& wrapper, Lib3MF::PModel& model)
 {
   if (!root_N.p3) {
@@ -310,6 +311,7 @@ static bool append_nef(const CGAL_Nef_polyhedron& root_N, Lib3MF::PWrapper& wrap
 
   return append_polyset(ps, wrapper, model);
 }
+#endif
 
 static bool append_3mf(const shared_ptr<const Geometry>& geom, Lib3MF::PWrapper& wrapper, Lib3MF::PModel& model)
 {
