@@ -60,7 +60,7 @@ PACKAGES=(
     "qt5 5.15.7 patch"
     "opencsg 1.6.0"
     "qscintilla 2.13.3"
-    "onetbb 2021.8.0"
+    "onetbb 2021.11.0"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.27.1"
@@ -690,7 +690,7 @@ build_glib2()
   rm -rf "glib-$version"
   maj_min_version="${version%.*}" #Drop micro
   if [ ! -f "glib-$version.tar.xz" ]; then
-    curl --insecure -LO "http://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
+    curl -LO "https://ftp.gnome.org/pub/gnome/sources/glib/$maj_min_version/glib-$version.tar.xz"
   fi
   tar xJf "glib-$version.tar.xz"
   cd "glib-$version"

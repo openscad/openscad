@@ -6,6 +6,10 @@
 #include "Reindexer.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
+#include "CGALHybridPolyhedron.h"
+#endif
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
 #endif
 
 namespace PolySetUtils {
@@ -127,6 +131,35 @@ bool is_approximately_convex(const PolySet& ps) {
 #else
   return false;
 #endif
+}
+
+  shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>& geom)
+{
+  if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+    return ps;
+  }
+#ifdef ENABLE_CGAL
+  if (auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+    auto ps = make_shared<PolySet>(3);
+    ps->setConvexity(N->getConvexity());
+    if (!N->isEmpty()) {
+      bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
+      if (err) {
+        LOG(message_group::Error, "Nef->PolySet failed.");
+      }
+    }
+    return ps;
+  }
+  if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+    return hybrid->toPolySet();
+  }
+#endif
+#ifdef ENABLE_MANIFOLD
+  if (auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    return mani->toPolySet();
+  }
+#endif
+  return nullptr;
 }
 
 } // namespace PolySetUtils

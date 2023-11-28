@@ -2,8 +2,22 @@
 #include "ManifoldGeometry.h"
 #include "manifold.h"
 #include "IndexedMesh.h"
-#include "cgalutils.h"
 #include "manifoldutils.h"
+#include "PolySet.h"
+#include "PolySetUtils.h"
+#ifdef ENABLE_CGAL
+#include "cgal.h"
+#include "cgalutils.h"
+#endif
+
+namespace {
+
+template <typename Result, typename V>
+Result vector_convert(V const& v) {
+  return Result(v[0], v[1], v[2]);
+}
+
+}
 
 ManifoldGeometry::ManifoldGeometry() : manifold_(make_shared<manifold::Manifold>()) {}
 
@@ -89,6 +103,7 @@ std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   return ps;
 }
 
+#ifdef ENABLE_CGAL
 template <typename Polyhedron>
 class CGALPolyhedronBuilderFromManifold : public CGAL::Modifier_base<typename Polyhedron::HalfedgeDS>
 {
@@ -105,7 +120,7 @@ public:
   
     B.begin_surface(mesh.vertPos.size(), mesh.triVerts.size());
     for (const auto &v : mesh.vertPos) {
-      B.add_vertex(vector_convert<CGALPoint>(v));
+      B.add_vertex(CGALUtils::vector_convert<CGALPoint>(v));
     }
 
     for (const auto &tv : mesh.triVerts) {
@@ -134,6 +149,7 @@ shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
 }
 
 template shared_ptr<CGAL::Polyhedron_3<CGAL_Kernel3>> ManifoldGeometry::toPolyhedron() const;
+#endif
 
 shared_ptr<manifold::Manifold> binOp(ManifoldGeometry& lhs, ManifoldGeometry& rhs, manifold::OpType opType) {
   return make_shared<manifold::Manifold>(lhs.getManifold().Boolean(rhs.getManifold(), opType));
@@ -152,6 +168,8 @@ void ManifoldGeometry::operator-=(ManifoldGeometry& other) {
 }
 
 void ManifoldGeometry::minkowski(ManifoldGeometry& other) {
+// FIXME: How to deal with operation not supported?
+#ifdef ENABLE_CGAL
   auto lhs = shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*this->toPolySet()));
   auto rhs = shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*other.toPolySet()));
   if (lhs->isEmpty() || rhs->isEmpty()) {
@@ -160,11 +178,12 @@ void ManifoldGeometry::minkowski(ManifoldGeometry& other) {
   }
   lhs->minkowski(*rhs);
 
-  auto ps = CGALUtils::getGeometryAsPolySet(lhs);
+  auto ps = PolySetUtils::getGeometryAsPolySet(lhs);
   if (!ps) clear();
   else {
     manifold_ = ManifoldUtils::trustedPolySetToManifold(*ps);
   }
+#endif
 }
 
 void ManifoldGeometry::transform(const Transform3d& mat) {

@@ -66,10 +66,8 @@ public:
   EditorInterface *activeEditor;
   TabManager *tabManager;
 
-#ifdef ENABLE_CGAL
   shared_ptr<const Geometry> root_geom;
   class CGALRenderer *cgalRenderer;
-#endif
 #ifdef ENABLE_OPENCSG
   class OpenCSGRenderer *opencsgRenderer;
   std::unique_ptr<class MouseSelector> selector;
@@ -241,11 +239,9 @@ private slots:
   void action3DPrint();
   void sendToOctoPrint();
   void sendToPrintService();
-#ifdef ENABLE_CGAL
   void actionRender();
   void actionRenderDone(const shared_ptr<const Geometry>&);
   void cgalRender();
-#endif
   void actionMeasureDistance();
   void actionMeasureAngle();
   void actionCheckValidity();
@@ -316,10 +312,8 @@ public slots:
 #ifdef ENABLE_OPENCSG
   void viewModePreview();
 #endif
-#ifdef ENABLE_CGAL
   void viewModeSurface();
   void viewModeWireframe();
-#endif
   void viewModeThrownTogether();
   void viewModeShowEdges();
   void viewModeShowAxes();

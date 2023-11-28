@@ -35,8 +35,10 @@
 #include "Feature.h"
 
 #include "CGALRenderer.h"
+#ifdef ENABLE_CGAL
 #include "CGAL_OGL_VBOPolyhedron.h"
 #include "CGALHybridPolyhedron.h"
+#endif
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
 #endif
@@ -48,7 +50,9 @@ CGALRenderer::CGALRenderer(const shared_ptr<const class Geometry>& geom)
 {
   this->addGeometry(geom);
   PRINTD("CGALRenderer::CGALRenderer() -> createPolyhedrons()");
+#ifdef ENABLE_CGAL
   if (!this->nefPolyhedrons.empty() && this->polyhedrons.empty()) createPolyhedrons();
+#endif
 }
 
 void CGALRenderer::addGeometry(const shared_ptr<const Geometry>& geom)
@@ -67,6 +71,7 @@ void CGALRenderer::addGeometry(const shared_ptr<const Geometry>& geom)
     this->polysets.push_back(shared_ptr<const PolySet>(ps_tri));
   } else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
     this->polysets.push_back(shared_ptr<const PolySet>(poly->tessellate()));
+#ifdef ENABLE_CGAL
   } else if (const auto new_N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     assert(new_N->getDimension() == 3);
     if (!new_N->isEmpty()) {
@@ -75,6 +80,7 @@ void CGALRenderer::addGeometry(const shared_ptr<const Geometry>& geom)
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement rendering of CGAL_HybridMesh (CGAL::Surface_mesh) instead.
     this->polysets.push_back(hybrid->toPolySet());
+#endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     this->polysets.push_back(mani->toPolySet());
@@ -94,6 +100,7 @@ CGALRenderer::~CGALRenderer()
   }
 }
 
+#ifdef ENABLE_CGAL
 void CGALRenderer::createPolyhedrons()
 {
   PRINTD("createPolyhedrons");
@@ -120,6 +127,7 @@ void CGALRenderer::createPolyhedrons()
   }
   PRINTD("createPolyhedrons() end");
 }
+#endif
 
 // Overridden from Renderer
 void CGALRenderer::setColorScheme(const ColorScheme& cs)
@@ -128,7 +136,9 @@ void CGALRenderer::setColorScheme(const ColorScheme& cs)
   Renderer::setColorScheme(cs);
   colormap[ColorMode::CGAL_FACE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_FACE_2D_COLOR);
   colormap[ColorMode::CGAL_EDGE_2D_COLOR] = ColorMap::getColor(cs, RenderColor::CGAL_EDGE_2D_COLOR);
+#ifdef ENABLE_CGAL
   this->polyhedrons.clear(); // Mark as dirty
+#endif
   PRINTD("setColorScheme done");
 }
 
@@ -227,9 +237,11 @@ void CGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const shaderi
 {
   PRINTD("prepare()");
   if (!polyset_states.size()) createPolySets();
+#ifdef ENABLE_CGAL
   if (!this->nefPolyhedrons.empty() &&
       (this->polyhedrons.empty() || Feature::ExperimentalVxORenderers.is_enabled() != last_render_state)) // FIXME: this is temporary to make switching between renderers seamless.
     createPolyhedrons();
+#endif
 
   PRINTD("prepare() end");
 }
@@ -291,12 +303,14 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
     if (!origColorArrayState) glDisableClientState(GL_COLOR_ARRAY);
   }
 
+#ifdef ENABLE_CGAL
   for (const auto& p : this->getPolyhedrons()) {
     *const_cast<bool *>(&last_render_state) = Feature::ExperimentalVxORenderers.is_enabled(); // FIXME: this is temporary to make switching between renderers seamless.
     if (showfaces) p->set_style(SNC_BOUNDARY);
     else p->set_style(SNC_SKELETON);
     p->draw(showfaces && showedges);
   }
+#endif
 
   PRINTD("draw() end");
 }
@@ -305,12 +319,14 @@ BoundingBox CGALRenderer::getBoundingBox() const
 {
   BoundingBox bbox;
 
+#ifdef ENABLE_CGAL
   for (const auto& p : this->getPolyhedrons()) {
     CGAL::Bbox_3 cgalbbox = p->bbox();
     bbox.extend(BoundingBox(
                   Vector3d(cgalbbox.xmin(), cgalbbox.ymin(), cgalbbox.zmin()),
                   Vector3d(cgalbbox.xmax(), cgalbbox.ymax(), cgalbbox.zmax())));
   }
+#endif
   for (const auto& ps : this->polysets) {
     bbox.extend(ps->getBoundingBox());
   }

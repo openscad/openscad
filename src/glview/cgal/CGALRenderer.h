@@ -1,9 +1,11 @@
 #pragma once
 
 #include "VBORenderer.h"
+#ifdef ENABLE_CGAL
 #include "CGAL_OGL_Polyhedron.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "Selection.h"
+#endif
 
 class CGALRenderer : public VBORenderer
 {
@@ -18,14 +20,18 @@ public:
 
 private:
   void addGeometry(const shared_ptr<const class Geometry>& geom);
+#ifdef ENABLE_CGAL
   const std::list<shared_ptr<class CGAL_OGL_Polyhedron>>& getPolyhedrons() const { return this->polyhedrons; }
   void createPolyhedrons();
+#endif
   void createPolySets();
   bool last_render_state; // FIXME: this is temporary to make switching between renderers seamless.
 
-  std::list<shared_ptr<class CGAL_OGL_Polyhedron>> polyhedrons;
   std::list<shared_ptr<const class PolySet>> polysets;
+#ifdef ENABLE_CGAL
+  std::list<shared_ptr<class CGAL_OGL_Polyhedron>> polyhedrons;
   std::list<shared_ptr<const CGAL_Nef_polyhedron>> nefPolyhedrons;
+#endif
 
   VertexStates polyset_states;
   GLuint polyset_vertices_vbo{0};

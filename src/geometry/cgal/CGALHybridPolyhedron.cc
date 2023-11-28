@@ -236,21 +236,17 @@ void CGALHybridPolyhedron::resize(
 {
   if (this->isEmpty()) return;
 
-  transform(
-    CGALUtils::computeResizeTransform(getExactBoundingBox(), getDimension(), newsize, autosize));
+  transform(GeometryUtils::getResizeTransform(getBoundingBox(), newsize, autosize));
 }
 
-CGALHybridPolyhedron::bbox_t CGALHybridPolyhedron::getExactBoundingBox() const
+BoundingBox CGALHybridPolyhedron::getBoundingBox() const
 {
-  bbox_t result(0, 0, 0, 0, 0, 0);
-  std::vector<point_t> points;
-  // TODO(ochafik): Optimize this!
+  BoundingBox bbox;
   foreachVertexUntilTrue([&](const auto& pt) {
-    points.push_back(pt);
+    bbox.extend(CGALUtils::vector_convert<Vector3d>(pt));
     return false;
   });
-  if (points.size()) CGAL::bounding_box(points.begin(), points.end());
-  return result;
+  return bbox;
 }
 
 std::string CGALHybridPolyhedron::dump() const

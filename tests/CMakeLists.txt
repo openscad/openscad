@@ -5,7 +5,7 @@
 cmake_minimum_required(VERSION 3.0)
 if(POLICY CMP0017)
   # Explicitly use new include policy to avoid globally shadowing included modules
-  # http://www.cmake.org/cmake/help/cmake-2-8-docs.html#policy:CMP0017
+  # https://cmake.org/cmake/help/v2.8.8/cmake.html#policy:CMP0017
   cmake_policy(SET CMP0017 NEW)
 endif()
 cmake_policy(SET CMP0057 NEW) # Interpret IN_LIST
@@ -48,17 +48,22 @@ if(NOT EXISTS ${LIBRARIES_DIR}/MCAD/__init__.py)
 endif()
 list(APPEND CTEST_ENVIRONMENT "OPENSCADPATH=${LIBRARIES_DIR}")
 
-find_package(PythonInterp 3.4 REQUIRED)
+find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
+message(STATUS "Found Python at ${Python3_EXECUTABLE}")
 
 # Image comparison - expected test image vs actual generated image
 
 if(USE_IMAGE_COMPARE_PY)
   set(VENV_DIR "${CCBD}/venv")
-  message(STATUS "Preparing image_compare.py for test suite image comparison")
+  message(STATUS "Preparing image_compare.py for test suite image comparison: ${VENV_DIR}")
+
+  # Since msys2 on Windows prefers bin/ over Scripts, we need to look for the actual folder to determine
+  # how to utilize the venv
+  find_path(VENV_BIN_PATH activate PATHS "${VENV_DIR}/bin" "${VENV_DIR}/Scripts" NO_DEFAULT_PATH NO_CACHE)
   if(WIN32)
-    set(IMAGE_COMPARE_EXE "${VENV_DIR}/Scripts/python.exe")
+    set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python.exe")
   else()
-    set(IMAGE_COMPARE_EXE "${VENV_DIR}/bin/python")
+    set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python")
   endif()
   if(EXISTS "${IMAGE_COMPARE_EXE}")
     message(STATUS "venv found, testing libraries")
@@ -78,18 +83,22 @@ if(USE_IMAGE_COMPARE_PY)
   endif()
   if(BUILD_VENV)
     message(STATUS "Setting up testing venv for image comparison")
-    find_package(Python3 COMPONENTS Interpreter)
     execute_process(
-      COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "venv" "--without-pip"
+      COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "venv" "--system-site-packages" "--without-pip"
       WORKING_DIRECTORY "${CCBD}")
+    # Since msys2 on Windows prefers bin/ over Scripts, we need to look for the actual folder to determine
+    # how to utilize the venv
+    find_path(VENV_BIN_PATH activate PATHS "${VENV_DIR}/bin" "${VENV_DIR}/Scripts" NO_DEFAULT_PATH NO_CACHE)
+    if(WIN32)
+      set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python.exe")
+    else()
+      set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python")
+    endif()
     execute_process(
       COMMAND "${IMAGE_COMPARE_EXE}" "-m" "ensurepip"
       WORKING_DIRECTORY "${CCBD}")
-    # Tying Pillow to 9.5.0 as we're unable to download wheels for Pillow 10 under Windows.
-    # This may be a temporary issue and we should be able to revert this once wheels
-    # are generally available.
     execute_process(
-      COMMAND "${IMAGE_COMPARE_EXE}" "-m" "pip" "install" "numpy" "Pillow==9.5.0"
+      COMMAND "${IMAGE_COMPARE_EXE}" "-m" "pip" "install" "numpy" "Pillow"
       WORKING_DIRECTORY "${CCBD}")
   endif()
   set(COMPARATOR "--comparator=image_compare")
@@ -312,9 +321,9 @@ function(add_cmdline_test TESTCMD_BASENAME)
     message(FATAL_ERROR "add_cmdline_test() does not allow OPENSCAD flag alongside EXE or SCRIPT values")
   endif()
 
-  # python script implies PYTHON_EXECUTABLE
+  # python script implies Python3_EXECUTABLE
   if (TESTCMD_SCRIPT MATCHES \\.[Pp][Yy]$)
-    set(TESTCMD_EXE ${PYTHON_EXECUTABLE})
+    set(TESTCMD_EXE ${Python3_EXECUTABLE})
   endif()
   if (TESTCMD_OPENSCAD)
     set(TESTCMD_EXE ${OPENSCAD_BINPATH})
@@ -390,7 +399,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
     string(JOIN " " DBG_COMMAND_STR
       "add_test(" ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-      COMMAND ${PYTHON_EXECUTABLE}
+      COMMAND ${Python3_EXECUTABLE}
       ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
       -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
       ${TESTCMD_EXE} ${TESTCMD_SCRIPT} ${SCADFILE} ${CAMERA_OPTION}
@@ -406,7 +415,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         set(EXPERIMENTAL_OPTION "")
       endif()
       add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-        COMMAND ${PYTHON_EXECUTABLE}
+        COMMAND ${Python3_EXECUTABLE}
         ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
         -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
         ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION}
@@ -427,7 +436,7 @@ function(add_failing_test TESTCMD_BASENAME)
     message(FATAL_ERROR "add_failing_test() requires SUFFIX to be set" )
   endif()
   if (NOT TESTCMD_EXE)
-    set(TESTCMD_EXE ${PYTHON_EXECUTABLE})
+    set(TESTCMD_EXE ${Python3_EXECUTABLE})
   endif()
   if (NOT TESTCMD_SCRIPT)
     set(TESTCMD_SCRIPT ${SHOULDFAIL_PY})
@@ -494,12 +503,12 @@ configure_file(${CCSD}/CTestCustom.template ${CBD}/CTestCustom.cmake @ONLY)
 # generate a very large scad file which we would rather not commit to the source tree
 # this is for stress-testing the parser
 add_custom_target(issue2342 ALL
-  COMMAND ${PYTHON_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_issue2342.py ">${TEST_SCAD_DIR}/issues/issue2342.scad"
+  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_issue2342.py ">${TEST_SCAD_DIR}/issues/issue2342.scad"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating issue2342.scad"
 )
 add_custom_target(svg_viewbox_tests ALL
-  COMMAND ${PYTHON_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py "${TEST_DATA_DIR}/svg/viewbox" "${TEST_SCAD_DIR}/svg/extruded"
+  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py "${TEST_DATA_DIR}/svg/viewbox" "${TEST_SCAD_DIR}/svg/extruded"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating svg viewbox tests"
 )
@@ -1358,7 +1367,7 @@ if(MXECROSS AND EXPERIMENTAL)
 "# created automatically during packaging by cmake from within linux
 linux_abs_basedir='${CMAKE_SOURCE_DIR}'
 linux_abs_builddir='${CMAKE_BINARY_DIR}'
-linux_python='${PYTHON_EXECUTABLE}'
+linux_python='${Python3_EXECUTABLE}'
 linux_convert='${IMAGE_COMPARE_EXE}'
 win_installdir='OpenSCAD-Tests-${CPACK_PACKAGE_VERSION}'
 " NEWLINE_STYLE WIN32)
