@@ -871,28 +871,31 @@ static void add_slice(PolySetBuilder &builder, const Polygon2d& poly,
 #endif // ifdef LINEXT_4WAY
       // Split along shortest diagonal,
       // unless at top for a 0-scaled axis (which can create 0 thickness "ears")
-      int ind1,ind2,ind3;
       if (splitfirst xor any_zero) {
-        ind1=builder.vertexIndex(Vector3d(prev1[0], prev1[1], h1));
-        ind2=builder.vertexIndex(Vector3d(curr2[0], curr2[1], h2));
-        ind3=builder.vertexIndex(Vector3d(curr1[0], curr1[1], h1));
-        builder.appendPoly({ind3,ind2,ind1});
+        builder.appendPoly({
+		Vector3d(curr1[0], curr1[1], h1),
+		Vector3d(curr2[0], curr2[1], h2),
+		Vector3d(prev1[0], prev1[1], h1)
+		});
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          ind1=builder.vertexIndex(Vector3d(curr2[0], curr2[1], h2));
-          ind2=builder.vertexIndex(Vector3d(prev1[0], prev1[1], h1));
-          ind3=builder.vertexIndex(Vector3d(prev2[0], prev2[1], h2));
-          builder.appendPoly({ind3,ind2,ind1});
+          builder.appendPoly({
+		Vector3d(prev2[0], prev2[1], h2),
+		Vector3d(prev1[0], prev1[1], h1),
+		Vector3d(curr2[0], curr2[1], h2)
+	  });
         }
       } else {
-        ind1=builder.vertexIndex(Vector3d(prev1[0], prev1[1], h1));
-        ind2=builder.vertexIndex(Vector3d(prev2[0], prev2[1], h2));
-        ind3=builder.vertexIndex(Vector3d(curr1[0], curr1[1], h1));
-        builder.appendPoly({ind3,ind2,ind1});
+        builder.appendPoly({
+		Vector3d(curr1[0], curr1[1], h1),
+		Vector3d(prev2[0], prev2[1], h2),
+		Vector3d(prev1[0], prev1[1], h1)
+	});
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          ind1=builder.vertexIndex(Vector3d(prev2[0], prev2[1], h2));
-          ind2=builder.vertexIndex(Vector3d(curr2[0], curr2[1], h2));
-          ind3=builder.vertexIndex(Vector3d(curr1[0], curr1[1], h1));
-          builder.appendPoly({ind3,ind2,ind1});
+          builder.appendPoly({
+		Vector3d(curr1[0], curr1[1], h1),
+		Vector3d(curr2[0], curr2[1], h2),
+		Vector3d(prev2[0], prev2[1], h2)
+	  });	
         }
       }
       prev1 = curr1;
@@ -1333,7 +1336,6 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
     delete ps_end;
   }
 
-  int ind1, ind2, ind3;
   for (const auto& o : poly.outlines()) {
     std::vector<Vector3d> rings[2];
     rings[0].resize(o.vertices.size());
@@ -1347,15 +1349,17 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
       fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
 
       for (size_t i = 0; i < o.vertices.size(); ++i) {
-        ind1=builder.vertexIndex(rings[j % 2][i]);
-        ind2=builder.vertexIndex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
-        ind3=builder.vertexIndex(rings[j % 2][(i + 1) % o.vertices.size()]);
-        builder.appendPoly({ind3,ind2,ind1});
+        builder.appendPoly({
+		rings[j % 2][(i + 1) % o.vertices.size()],
+		rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
+		rings[j % 2][i]
+	});		
 
-        ind1=builder.vertexIndex(rings[j % 2][i]);
-        ind2=builder.vertexIndex(rings[(j + 1) % 2][i]);
-        ind3=builder.vertexIndex(rings[(j + 1) % 2][(i + 1) % o.vertices.size()]);
-        builder.appendPoly({ind3,ind2,ind1});
+        builder.appendPoly({
+		rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
+		rings[(j + 1) % 2][i],
+		rings[j % 2][i]
+	});
       }
     }
   }

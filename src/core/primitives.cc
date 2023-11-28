@@ -49,8 +49,7 @@ static void generate_circle(Vector2d *circle, double r, int fragments)
 {
   for (int i = 0; i < fragments; ++i) {
     double phi = (360.0 * i) / fragments;
-    circle[i][0] = r * cos_degrees(phi);
-    circle[i][1] = r * sin_degrees(phi);
+    circle[i] = {r * cos_degrees(phi), r * sin_degrees(phi) };
   }
 }
 
@@ -216,7 +215,6 @@ const Geometry *SphereNode::createGeometry() const
   for (int i = 0; i < fragments; ++i)
     builder.appendVertex(builder.vertexIndex(Vector3d(ring[0].points[i][0], ring[0].points[i][1], ring[0].z)));
 
-  int ind1,ind2,ind3;
   for (int i = 0; i < rings - 1; ++i) {
     auto r1 = &ring[i];
     auto r2 = &ring[i + 1];
@@ -227,18 +225,20 @@ const Geometry *SphereNode::createGeometry() const
       if ((double)r1i / fragments < (double)r2i / fragments) {
 sphere_next_r1:
         int r1j = (r1i + 1) % fragments;
-	ind1=builder.vertexIndex(Vector3d(r2->points[r2i % fragments][0], r2->points[r2i % fragments][1], r2->z));
-	ind2=builder.vertexIndex(Vector3d(r1->points[r1j][0], r1->points[r1j][1], r1->z));
-	ind3=builder.vertexIndex(Vector3d(r1->points[r1i][0], r1->points[r1i][1], r1->z));
-        builder.appendPoly({ind1,ind2,ind3});
+        builder.appendPoly({
+		Vector3d(r2->points[r2i % fragments][0], r2->points[r2i % fragments][1], r2->z),
+		Vector3d(r1->points[r1j][0], r1->points[r1j][1], r1->z),
+		Vector3d(r1->points[r1i][0], r1->points[r1i][1], r1->z)
+	});
         r1i++;
       } else {
 sphere_next_r2:
         int r2j = (r2i + 1) % fragments;
-	ind1=builder.vertexIndex(Vector3d(r2->points[r2i][0], r2->points[r2i][1], r2->z));
-	ind2=builder.vertexIndex(Vector3d(r2->points[r2j][0], r2->points[r2j][1], r2->z));
-	ind3=builder.vertexIndex(Vector3d(r1->points[r1i % fragments][0], r1->points[r1i % fragments][1], r1->z));
-        builder.appendPoly({ind1,ind2,ind3});
+        builder.appendPoly({
+		Vector3d(r2->points[r2i][0], r2->points[r2i][1], r2->z),
+		Vector3d(r2->points[r2j][0], r2->points[r2j][1], r2->z),
+		Vector3d(r1->points[r1i % fragments][0], r1->points[r1i % fragments][1], r1->z)
+	});
         r2i++;
       }
     }
@@ -308,7 +308,6 @@ const Geometry *CylinderNode::createGeometry() const
 
   PolySetBuilder builder(0,fragments * 2 + 2,3,true);
   
-  int ind,ind1,ind2,ind3;
   for (int i = 0; i < fragments; ++i) {
     int j = (i + 1) % fragments;
     if (r1 == r2) {
@@ -316,16 +315,19 @@ const Geometry *CylinderNode::createGeometry() const
       for(int k=0;k<4;k++)     		      
         builder.prependVertex(builder.vertexIndex(Vector3d(circle1[k&2?j:i][0], circle1[k&2?j:i][1], (k+1)&2?z2:z1)));
     } else {
-      ind1=builder.vertexIndex(Vector3d(circle1[j][0], circle1[j][1], z1));
       if (r1 > 0) {
-	ind2=builder.vertexIndex(Vector3d(circle2[i][0], circle2[i][1], z2));
-	ind3=builder.vertexIndex(Vector3d(circle1[i][0], circle1[i][1], z1));
-        builder.appendPoly({ind1,ind2,ind3});
+        builder.appendPoly({
+		Vector3d(circle1[j][0], circle1[j][1], z1),
+		Vector3d(circle2[i][0], circle2[i][1], z2),
+		Vector3d(circle1[i][0], circle1[i][1], z1)
+        });
       }
       if (r2 > 0) {
-	ind2=builder.vertexIndex(Vector3d(circle2[j][0], circle2[j][1], z2));
-	ind3=builder.vertexIndex(Vector3d(circle2[i][0], circle2[i][1], z2));
-        builder.appendPoly({ind1,ind2,ind3});
+        builder.appendPoly({
+		Vector3d(circle1[j][0], circle1[j][1], z1),
+		Vector3d(circle2[j][0], circle2[j][1], z2),
+		Vector3d(circle2[i][0], circle2[i][1], z2)
+        });
       }
     }
   }
