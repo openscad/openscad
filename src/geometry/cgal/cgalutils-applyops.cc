@@ -152,61 +152,6 @@ shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children,
   return shared_ptr<Geometry>(N);
 }
 
-shared_ptr<const Geometry> applyUnion3D(
-  Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
-{
-  if (Feature::ExperimentalFastCsg.is_enabled()) {
-    return applyUnion3DHybrid(chbegin, chend);
-  }
-
-  using QueueConstItem = std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int>;
-  struct QueueItemGreater {
-    // stable sort for priority_queue by facets, then progress mark
-    bool operator()(const QueueConstItem& lhs, const QueueConstItem& rhs) const
-    {
-      size_t l = lhs.first->p3->number_of_facets();
-      size_t r = rhs.first->p3->number_of_facets();
-      return (l > r) || (l == r && lhs.second > rhs.second);
-    }
-  };
-  std::priority_queue<QueueConstItem, std::vector<QueueConstItem>, QueueItemGreater> q;
-
-  try {
-    // sort children by fewest faces
-    for (auto it = chbegin; it != chend; ++it) {
-      auto curChild = getNefPolyhedronFromGeometry(it->second);
-      if (curChild && !curChild->isEmpty()) {
-        int node_mark = -1;
-        if (it->first) {
-          node_mark = it->first->progress_mark;
-        }
-        q.emplace(curChild, node_mark);
-      }
-    }
-
-    progress_tick();
-    while (q.size() > 1) {
-      auto p1 = q.top();
-      q.pop();
-      auto p2 = q.top();
-      q.pop();
-      q.emplace(make_shared<const CGAL_Nef_polyhedron>(*p1.first + *p2.first), -1);
-      progress_tick();
-    }
-
-    if (q.size() == 1) {
-      return shared_ptr<const Geometry>(new CGAL_Nef_polyhedron(q.top().first->p3));
-    } else {
-      return nullptr;
-    }
-  } catch (const CGAL::Failure_exception& e) {
-    LOG(message_group::Error, "CGAL error in CGALUtils::applyUnion3D: %1$s", e.what());
-  }
-  return nullptr;
-}
-
-
-
 bool applyHull(const Geometry::Geometries& children, PolySet& result)
 {
   using K = CGAL::Epick;
