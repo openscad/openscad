@@ -28,7 +28,6 @@
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 
-
 void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   PolySetBuilder builder;
