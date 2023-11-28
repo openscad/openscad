@@ -99,23 +99,30 @@
 
 #ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
-std::string evaluatePython(const std::string &code, double time);
+void initPython(double time );
+void finishPython(void);
+std::string evaluatePython(const std::string &code, AssignmentList &assignments);
 extern bool python_trusted;
 
-#include "crypto++/sha.h"
-#include "crypto++/filters.h"
-#include "crypto++/base64.h"
+#include "nettle/sha2.h"
+#include "nettle/base64.h"
 
 std::string SHA256HashString(std::string aString){
-    std::string digest;
-    CryptoPP::SHA256 hash;
+    uint8_t  digest[SHA256_DIGEST_SIZE];
+    sha256_ctx sha256_ctx;
 
-    CryptoPP::StringSource foo(aString, true,
-    new CryptoPP::HashFilter(hash,
-      new CryptoPP::Base64Encoder (
-         new CryptoPP::StringSink(digest))));
+    sha256_init(&sha256_ctx);
+    sha256_update(&sha256_ctx, aString.length(), (uint8_t *) aString.c_str());
+    sha256_digest(&sha256_ctx, SHA256_DIGEST_SIZE, digest);
 
-    return digest;
+    base64_encode_ctx base64_ctx;
+    char digest_base64[BASE64_ENCODE_LENGTH(SHA256_DIGEST_SIZE)+1];
+    memset(digest_base64,0,sizeof(digest_base64));
+
+    base64_encode_init(&base64_ctx);
+    base64_encode_update(&base64_ctx, digest_base64, SHA256_DIGEST_SIZE, digest);
+    base64_encode_final(&base64_ctx, digest_base64);		    
+    return digest_base64;
 }
 
 #endif
@@ -128,6 +135,7 @@ std::string SHA256HashString(std::string aString){
 
 #include <algorithm>
 #include <boost/version.hpp>
+#include <boost/regex.hpp>
 #include <sys/stat.h>
 
 #include "CGALRenderer.h"
@@ -1867,21 +1875,14 @@ bool MainWindow::trust_python_file(const std::string &file,  const std::string &
   return false;
 }
 #endif
-	
-void MainWindow::parseTopLevelDocument()
+
+#ifdef ENABLE_PYTHON
+void MainWindow::recomputePythonActive()
 {
-  resetSuppressedMessages();
-
-  this->last_compiled_doc = activeEditor->toPlainText();
-
-  auto fulltext =
-    std::string(this->last_compiled_doc.toUtf8().constData()) +
-    "\n\x03\n" + commandline_commands;
-
   auto fnameba = activeEditor->filepath.toLocal8Bit();
   const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
-  delete this->parsed_file;
-#ifdef ENABLE_PYTHON
+
+  bool oldPythonActive = this->python_active;
   this->python_active = false;
   if (fname != NULL) {
     if(boost::algorithm::ends_with(fname, ".py")) {
@@ -1893,15 +1894,113 @@ void MainWindow::parseTopLevelDocument()
     }
   }
 
-  if (this->python_active) {
-    auto fulltext_py =
+  if (oldPythonActive != this->python_active) {
+    emit this->pythonActiveChanged(this->python_active);
+  }
+}
+#endif
+
+void MainWindow::parseTopLevelDocument()
+{
+  resetSuppressedMessages();
+
+  this->last_compiled_doc = activeEditor->toPlainText();
+
+  auto fulltext =
+    std::string(this->last_compiled_doc.toUtf8().constData()) +
+    "\n\x03\n" + commandline_commands;
+  auto fulltext_py =
       std::string(this->last_compiled_doc.toUtf8().constData());
 
-    auto error = evaluatePython(fulltext_py,this->animateWidget->getAnim_tval());
+  auto fnameba = activeEditor->filepath.toLocal8Bit();
+  const char *fname = activeEditor->filepath.isEmpty() ? "" : fnameba;
+  delete this->parsed_file;
+#ifdef ENABLE_PYTHON
+  recomputePythonActive();
+  boost::regex ex_number( R"(^(\w+)\s*=\s*(-?[\d.]+))");
+  boost::regex ex_string( R"(^(\w+)\s*=\s*\"([^\"]*)\")");
+  if (this->python_active) {
+
+    this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
+    this->root_file = nullptr;  // ditto
+    fs::path parser_sourcefile = fs::path(fname).generic_string();				
+    this->root_file =new SourceFile(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
+    this->parsed_file = this->root_file;
+
+    initPython(this->animateWidget->getAnim_tval());
+    this->activeEditor->resetHighlighting();
+    if (this->root_file != nullptr) {
+      //add parameters as annotation in AST
+      if(this->assignments_save.size() == 0) {
+        auto error = evaluatePython(fulltext_py,this->assignments_save); // add assignments
+        if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
+      }
+      this->root_file->scope.assignments = this->assignments_save;
+      this->activeEditor->parameterWidget->setParameters(this->root_file, "\n"); // set widgets values
+      this->activeEditor->parameterWidget->applyParameters(this->root_file); // use widget values
+      this->activeEditor->parameterWidget->setEnabled(true);
+      this->activeEditor->setIndicator(this->root_file->indicatorData);
+    } else {
+      this->activeEditor->parameterWidget->setEnabled(false);
+    }
+
+    // now replace all new variables
+
+    std::istringstream iss(fulltext_py);
+    boost::smatch results;
+    std::string fulltext_py_eval="";
+    for (std::string line; std::getline(iss, line); ) {
+      bool found=false;
+
+      if (boost::regex_search(line, results, ex_number) && results.size() >= 3) {
+	for (auto par: this->root_file->scope.assignments) {
+          const std::shared_ptr<Expression> &expr = par->getExpr();
+          if (!expr->isLiteral()) continue; // Only consider literals
+            if(par->getName() == results[1]) {
+              const std::shared_ptr<Literal> &lit=dynamic_pointer_cast<Literal>(expr);
+	      if(lit->isDouble()) {
+                fulltext_py_eval.append(results[1]);
+                fulltext_py_eval.append("=");
+                fulltext_py_eval.append(std::to_string(lit->toDouble()));
+                found=true;
+	      }
+	      if(lit->isBool()) {
+                fulltext_py_eval.append(results[1]);
+                fulltext_py_eval.append("=");
+                fulltext_py_eval.append(lit->toBool()?"True":"False");
+                found=true;
+	      }
+          } 
+        }
+      }
+      if (boost::regex_search(line, results, ex_string) && results.size() >= 3) {
+	for (auto par: this->root_file->scope.assignments) {
+          const std::shared_ptr<Expression> &expr = par->getExpr();
+          if (!expr->isLiteral()) continue; // Only consider literals
+            if(par->getName() == results[1]) {
+              const std::shared_ptr<Literal> &lit=dynamic_pointer_cast<Literal>(expr);
+	      if(lit->isString()) {
+                fulltext_py_eval.append(results[1]);
+                fulltext_py_eval.append("=\"");
+                fulltext_py_eval.append(lit->toString());
+                fulltext_py_eval.append("\"");
+                found=true;
+	      }
+          } 
+        }
+      }
+
+      if(!found) fulltext_py_eval.append(line);
+      fulltext_py_eval.append("\r\n");
+
+    }
+    auto error = evaluatePython(fulltext_py_eval,this->assignments_save); // add assignments
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
-    fulltext = "\n";
-  }
+    finishPython();
+
+  } else // python not enabled
 #endif // ifdef ENABLE_PYTHON
+{
   this->parsed_file = nullptr; // because the parse() call can throw and we don't want a stale pointer!
   this->root_file = nullptr;  // ditto
   this->root_file = parse(this->parsed_file, fulltext, fname, fname, false) ? this->parsed_file : nullptr;
@@ -1917,6 +2016,7 @@ void MainWindow::parseTopLevelDocument()
   } else {
     this->activeEditor->parameterWidget->setEnabled(false);
   }
+}
 }
 
 void MainWindow::changeParameterWidget()
