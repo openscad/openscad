@@ -128,10 +128,12 @@ const Geometry *CubeNode::createGeometry() const
     y2 = this->y;
     z2 = this->z;
   }
-
-  PolySetBuilder builder(8,6,3,true);
-  int corner[8];
-  for(int i=0;i<8;i++)
+  int cubeCorners=8;
+  int cubeFaces=6;
+  int dimension=3;
+  PolySetBuilder builder(cubeCorners,cubeFaces,dimension,true);
+  int corner[cubeCorners];
+  for(int i=0;i<cubeCorners;i++)
     corner[i]=builder.vertexIndex(Vector3d(i&1?x2:x1,i&2?y2:y1,i&4?z2:z1));
 
   builder.appendPoly({corner[4],corner[5],corner[7], corner[6]}); // top
@@ -679,7 +681,7 @@ const Geometry *PolygonNode::createGeometry() const
   if (this->paths.empty() && this->points.size() > 2) {
     Outline2d outline;
     for (const auto& point : this->points) {
-      outline.vertices.emplace_back(point[0], point[1]);
+      outline.vertices.push_back(point);
     }
     p->addOutline(outline);
   } else {
@@ -688,7 +690,7 @@ const Geometry *PolygonNode::createGeometry() const
       for (const auto& index : path) {
         assert(index < this->points.size());
         const auto& point = points[index];
-        outline.vertices.emplace_back(point[0], point[1]);
+        outline.vertices.push_back(point);
       }
       p->addOutline(outline);
     }

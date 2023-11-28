@@ -8,8 +8,6 @@ class PolySet;
 
 class PolySetBuilder
 {
-  PolySet *ps;
-  Reindexer<Vector3d> allVertices;
 public:
   PolySetBuilder(int vertices_count=0, int indices_count=0, int dim=3, boost::tribool convex=unknown);
   PolySetBuilder(const Polygon2d pol);
@@ -24,4 +22,7 @@ public:
   void appendVertex(int n);
   void prependVertex(int n);
   PolySet *build(void);
+private:  
+  PolySet *ps;
+  Reindexer<Vector3d> allVertices;
 };
