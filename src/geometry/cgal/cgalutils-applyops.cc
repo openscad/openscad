@@ -41,10 +41,6 @@ namespace CGALUtils {
  */
 shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op)
 {
-  if (Feature::ExperimentalFastCsg.is_enabled()) {
-    return applyOperator3DHybrid(children, op);
-  }
-
   CGAL_Nef_polyhedron *N = nullptr;
 
   assert(op != OpenSCADOperator::UNION && "use applyUnion3D() instead of applyOperator3D()");

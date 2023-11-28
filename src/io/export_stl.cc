@@ -36,6 +36,7 @@
 #include "CGALHybridPolyhedron.h"
 #include "cgal.h"
 #include "cgalutils.h"
+#endif
 
 namespace {
 
@@ -158,6 +159,7 @@ uint64_t append_stl(const PolySet& ps, std::ostream& output, bool binary)
   return triangle_count;
 }
 
+#ifdef ENABLE_CGAL
 /*!
     Saves the current 3D CGAL Nef polyhedron as STL to the given file.
     The file must be open.
@@ -201,6 +203,7 @@ uint64_t append_stl(const CGALHybridPolyhedron& hybrid, std::ostream& output,
 
   return triangle_count;
 }
+#endif  // ENABLE_CGAL
 
 #ifdef ENABLE_MANIFOLD
 /*!
@@ -224,7 +227,7 @@ uint64_t append_stl(const ManifoldGeometry& mani, std::ostream& output,
 
   return triangle_count;
 }
-#endif
+#endif  // ENABLE_MANIFOLD
 
 
 uint64_t append_stl(const shared_ptr<const Geometry>& geom, std::ostream& output,
@@ -235,12 +238,14 @@ uint64_t append_stl(const shared_ptr<const Geometry>& geom, std::ostream& output
     for (const Geometry::GeometryItem& item : geomlist->getChildren()) {
       triangle_count += append_stl(item.second, output, binary);
     }
-  } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-    triangle_count += append_stl(*N, output, binary);
   } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
     triangle_count += append_stl(*ps, output, binary);
+#ifdef ENABLE_CGAL
+  } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+    triangle_count += append_stl(*N, output, binary);
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     triangle_count += append_stl(*hybrid, output, binary);
+#endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     triangle_count += append_stl(*mani, output, binary);
@@ -286,5 +291,3 @@ void export_stl(const shared_ptr<const Geometry>& geom, std::ostream& output,
     setlocale(LC_NUMERIC, ""); // Set default locale
   }
 }
-
-#endif // ENABLE_CGAL

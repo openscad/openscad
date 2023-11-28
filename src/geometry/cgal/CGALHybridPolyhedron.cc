@@ -243,7 +243,7 @@ BoundingBox CGALHybridPolyhedron::getBoundingBox() const
 {
   BoundingBox bbox;
   foreachVertexUntilTrue([&](const auto& pt) {
-    bbox.extend(vector_convert<Vector3d>(pt));
+    bbox.extend(CGALUtils::vector_convert<Vector3d>(pt));
     return false;
   });
   return bbox;

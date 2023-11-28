@@ -21,7 +21,7 @@ private:
   }
   inline unsigned long size() {
     unsigned char c;
-    return std::labs(ptr - &c);
+    return std::abs(ptr - &c);
   }
 
   unsigned long limit;

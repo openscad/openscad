@@ -27,8 +27,6 @@
 
 #include "export.h"
 
-#ifdef ENABLE_CGAL
-
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 
@@ -52,5 +50,3 @@ void export_off(const shared_ptr<const Geometry>& geom, std::ostream& output)
   }
 
 }
-
-#endif // ENABLE_CGAL
