@@ -868,6 +868,7 @@ list(APPEND SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
 
   # Different vertex order
   ${TEST_SCAD_DIR}/3mf/3mf-export.scad
+  ${TEST_SCAD_DIR}/stl/stl-import-nonmanifold.scad
 )
 
 list(APPEND SCADFILES_FAILING_WITH_MANIFOLD

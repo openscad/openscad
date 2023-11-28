@@ -7,7 +7,11 @@
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Surface_mesh.h>
 #include "PolySetBuilder.h"
+#include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
+#include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
 namespace CGALUtils {
+
+namespace PMP = CGAL::Polygon_mesh_processing;
 
 template <class TriangleMesh>
 bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
@@ -15,28 +19,26 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
   using GT = boost::graph_traits<TriangleMesh>;
   using vertex_descriptor = typename GT::vertex_descriptor;
 
-  bool err = false;
-  auto num_vertices = ps.numFacets() * 3;
-  auto num_facets = ps.numFacets();
-  auto num_edges = num_vertices + num_facets + 2; // Euler's formula.
-  mesh.reserve(mesh.number_of_vertices() + num_vertices, mesh.number_of_halfedges() + num_edges,
-               mesh.number_of_faces() + num_facets);
+  std::vector<typename TriangleMesh::Point> points;
+  std::vector<std::vector<size_t>> polygons;
 
-  std::vector<vertex_descriptor> polygon;
-
-  std::vector<vertex_descriptor> indices;
-
-  for (const auto& p : ps.vertices) 
-        indices.push_back(mesh.add_vertex(vector_convert<typename TriangleMesh::Point>(p)));
-
-  for (const auto& p : ps.indices) {
-    polygon.clear();
-    for(const auto &i: p) {
-      polygon.push_back(indices[i]);	 
+  // at least 3*numFacets
+  points.reserve(ps.indices.size() * 3);
+  polygons.reserve(ps.indices.size());
+  for (const auto& inds : ps.indices) {
+    std::vector<size_t> &polygon = polygons.emplace_back();
+    polygon.reserve(inds.size());
+    for (const auto &ind : inds) {
+      polygon.push_back(points.size());
+        auto &pt = ps.vertices[ind];
+      points.push_back({pt[0], pt[1], pt[2]});
     }
-    mesh.add_face(polygon);
   }
-  return err;
+
+  PMP::repair_polygon_soup(points, polygons);
+  PMP::orient_polygon_soup(points, polygons);
+  PMP::polygon_soup_to_polygon_mesh(points, polygons, mesh);
+  return false;
 }
 
 template bool createMeshFromPolySet(const PolySet& ps, CGAL_HybridMesh& mesh);
