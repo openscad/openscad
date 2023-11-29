@@ -150,9 +150,9 @@ uint64_t append_stl(const PolySet& ps, std::ostream& output, bool binary)
         return true;
       });
   } else {
-    for (const auto& p : triangulated.polygons) {
+    for (const auto& p : triangulated.indices) {
       assert(p.size() == 3); // STL only allows triangles
-      processTriangle({ p[0], p[1], p[2] });
+      processTriangle({ triangulated.vertices[p[0]], triangulated.vertices[p[1]], triangulated.vertices[p[2]] });
     }
   }
 

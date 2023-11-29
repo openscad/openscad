@@ -28,6 +28,7 @@
 #include "ModuleInstantiation.h"
 #include "core/node.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "Builtins.h"
 #include "Children.h"
 #include "Parameters.h"
@@ -211,19 +212,18 @@ const Geometry *SurfaceNode::createGeometry() const
 {
   auto data = read_png_or_dat(filename);
 
-  auto p = new PolySet(3);
-  p->setConvexity(convexity);
 
   int lines = data.height;
   int columns = data.width;
   double min_val = data.min_value() - 1; // make the bottom solid, and match old code
 
   // reserve the polygon vector size so we don't have to reallocate as often
-  p->polygons.reserve( (lines - 1) * (columns - 1) * 4 + (lines - 1) * 2 + (columns - 1) * 2 + 1);
 
   double ox = center ? -(columns - 1) / 2.0 : 0;
   double oy = center ? -(lines - 1) / 2.0 : 0;
 
+  PolySetBuilder builder(0, (lines - 1) * (columns - 1) * 4 + (lines - 1) * 2 + (columns - 1) * 2 + 1);
+  builder.setConvexity(convexity);
   // the bulk of the heightmap
   for (int i = 1; i < lines; ++i)
     for (int j = 1; j < columns; ++j) {
@@ -234,25 +234,29 @@ const Geometry *SurfaceNode::createGeometry() const
 
       double vx = (v1 + v2 + v3 + v4) / 4;
 
-      p->append_poly(3);
-      p->append_vertex(ox + j - 1, oy + i - 1, v1);
-      p->append_vertex(ox + j, oy + i - 1, v2);
-      p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
+      builder.appendPoly({
+		Vector3d(ox + j - 1, oy + i - 1, v1),
+		Vector3d(ox + j, oy + i - 1, v2),
+		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
+		});
 
-      p->append_poly(3);
-      p->append_vertex(ox + j, oy + i - 1, v2);
-      p->append_vertex(ox + j, oy + i, v4);
-      p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
+      builder.appendPoly({
+		Vector3d(ox + j, oy + i - 1, v2),
+		Vector3d(ox + j, oy + i, v4),
+		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
+		});
 
-      p->append_poly(3);
-      p->append_vertex(ox + j, oy + i, v4);
-      p->append_vertex(ox + j - 1, oy + i, v3);
-      p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
+      builder.appendPoly({
+		Vector3d(ox + j, oy + i, v4),
+		Vector3d(ox + j - 1, oy + i, v3),
+		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
+		});
 
-      p->append_poly(3);
-      p->append_vertex(ox + j - 1, oy + i, v3);
-      p->append_vertex(ox + j - 1, oy + i - 1, v1);
-      p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
+      builder.appendPoly({
+		Vector3d(ox + j - 1, oy + i, v3),
+		Vector3d(ox + j - 1, oy + i - 1, v1),
+		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
+		});
     }
 
   // edges along Y
@@ -262,17 +266,20 @@ const Geometry *SurfaceNode::createGeometry() const
     double v3 = data[ (columns - 1) + (i - 1) * columns ];
     double v4 = data[ (columns - 1) + (i) * columns ];
 
-    p->append_poly(4);
-    p->append_vertex(ox + 0, oy + i - 1, min_val);
-    p->append_vertex(ox + 0, oy + i - 1, v1);
-    p->append_vertex(ox + 0, oy + i, v2);
-    p->append_vertex(ox + 0, oy + i, min_val);
 
-    p->append_poly(4);
-    p->insert_vertex(ox + columns - 1, oy + i - 1, min_val);
-    p->insert_vertex(ox + columns - 1, oy + i - 1, v3);
-    p->insert_vertex(ox + columns - 1, oy + i, v4);
-    p->insert_vertex(ox + columns - 1, oy + i, min_val);
+    builder.appendPoly({
+	Vector3d(ox + 0, oy + i - 1, min_val),
+	Vector3d(ox + 0, oy + i - 1, v1),
+	Vector3d(ox + 0, oy + i, v2),
+	Vector3d(ox + 0, oy + i, min_val)
+    });
+
+    builder.appendPoly({
+	Vector3d(ox + columns - 1, oy + i, min_val),
+	Vector3d(ox + columns - 1, oy + i, v4),
+	Vector3d(ox + columns - 1, oy + i - 1, v3),
+	Vector3d(ox + columns - 1, oy + i - 1, min_val)
+    });
   }
 
   // edges along X
@@ -282,33 +289,35 @@ const Geometry *SurfaceNode::createGeometry() const
     double v3 = data[ (i - 1) + (lines - 1) * columns ];
     double v4 = data[ (i) + (lines - 1) * columns ];
 
-    p->append_poly(4);
-    p->insert_vertex(ox + i - 1, oy + 0, min_val);
-    p->insert_vertex(ox + i - 1, oy + 0, v1);
-    p->insert_vertex(ox + i, oy + 0, v2);
-    p->insert_vertex(ox + i, oy + 0, min_val);
+    builder.appendPoly({
+	Vector3d(ox + i, oy + 0, min_val),
+	Vector3d(ox + i, oy + 0, v2),
+	Vector3d(ox + i - 1, oy + 0, v1),
+	Vector3d(ox + i - 1, oy + 0, min_val)
+    });
 
-    p->append_poly(4);
-    p->append_vertex(ox + i - 1, oy + lines - 1, min_val);
-    p->append_vertex(ox + i - 1, oy + lines - 1, v3);
-    p->append_vertex(ox + i, oy + lines - 1, v4);
-    p->append_vertex(ox + i, oy + lines - 1, min_val);
+    builder.appendPoly({
+	Vector3d(ox + i - 1, oy + lines - 1, min_val),
+	Vector3d(ox + i - 1, oy + lines - 1, v3),
+	Vector3d(ox + i, oy + lines - 1, v4),
+	Vector3d(ox + i, oy + lines - 1, min_val)
+    });
   }
 
   // the bottom of the shape (one less than the real minimum value), making it a solid volume
   if (columns > 1 && lines > 1) {
-    p->append_poly(2 * (columns - 1) + 2 * (lines - 1) );
+    builder.appendPoly(2 * (columns - 1) + 2 * (lines - 1) );
     for (int i = 0; i < columns - 1; ++i)
-      p->insert_vertex(ox + i, oy + 0, min_val);
+      builder.prependVertex(builder.vertexIndex(Vector3d(ox + i, oy + 0, min_val)));
     for (int i = 0; i < lines - 1; ++i)
-      p->insert_vertex(ox + columns - 1, oy + i, min_val);
+      builder.prependVertex(builder.vertexIndex(Vector3d(ox + columns - 1, oy + i, min_val)));
     for (int i = columns - 1; i > 0; i--)
-      p->insert_vertex(ox + i, oy + lines - 1, min_val);
+      builder.prependVertex(builder.vertexIndex(Vector3d(ox + i, oy + lines - 1, min_val)));
     for (int i = lines - 1; i > 0; i--)
-      p->insert_vertex(ox + 0, oy + i, min_val);
+      builder.prependVertex(builder.vertexIndex(Vector3d(ox + 0, oy + i, min_val)));
   }
 
-  return p;
+  return builder.build();
 }
 
 std::string SurfaceNode::toString() const

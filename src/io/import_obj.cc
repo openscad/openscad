@@ -1,5 +1,6 @@
 #include "import.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include <fstream>
 #include <vector>
 #include <boost/regex.hpp>
@@ -8,17 +9,15 @@
 #include <boost/algorithm/string/split.hpp>
 
 PolySet *import_obj(const std::string& filename, const Location& loc) {
-  std::unique_ptr<PolySet> p = std::make_unique<PolySet>(3);
-
+  PolySetBuilder builder;
   
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary );
   if (!f.good()) {
     LOG(message_group::Warning,
         "Can't open import file '%1$s', import() at line %2$d",
         filename, loc.firstLine());
-    return p.release();
+    return new PolySet(3);
   }
-  std::vector<Vector3d> pts;
   boost::regex ex_comment(R"(^\s*#)");
   boost::regex ex_v( R"(^\s*v\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$)");
   boost::regex ex_f( R"(^\s*f\s+(.*)$)");
@@ -52,7 +51,7 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
         for (int i = 0; i < 3; i++) {
           v[i]= boost::lexical_cast<double>(results[i + 1]); 
         }
-        pts.push_back(v);
+        builder.vertexIndex(v); // expect to get subsequent numbers starting from zero
       } catch (const boost::bad_lexical_cast& blc) {
         AsciiError("can't parse vertex");
         return new PolySet(3);
@@ -61,7 +60,7 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
       std::string args=results[1];
       std::vector<std::string> words;
       boost::split(words, results[1], boost::is_any_of(" \t"));
-      p->append_poly(words.size());
+      builder.appendPoly(words.size());
       for (const std::string& word : words) {
         std::vector<std::string> wordindex;
         boost::split(wordindex, word, boost::is_any_of("/"));
@@ -69,8 +68,8 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
           LOG(message_group::Warning, "Invalid Face index in File %1$s in Line %2$d", filename, lineno);
 	else {
 	  int ind=boost::lexical_cast<int>(wordindex[0]);
-          if(ind >= 1 && ind  <= pts.size()) {
-            p->append_vertex(pts[ind-1][0], pts[ind-1][1], pts[ind-1][2]);
+          if(ind >= 1 && ind  <= builder.numVertices()) {
+            builder.appendVertex(ind-1);
 	  } else {  
             LOG(message_group::Warning, "Index %1$d out of range in Line %2$d", filename, lineno);
 	  }
@@ -88,5 +87,5 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
       LOG(message_group::Warning, "Unrecognized Line  %1$s in line Line %2$d", line, lineno);
     }
   }
-  return p.release();
+  return builder.build();
 }

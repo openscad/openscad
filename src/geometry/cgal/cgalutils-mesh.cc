@@ -6,6 +6,7 @@
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Surface_mesh.h>
+#include "PolySetBuilder.h"
 #include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
 #include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
 namespace CGALUtils {
@@ -22,14 +23,15 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
   std::vector<std::vector<size_t>> polygons;
 
   // at least 3*numFacets
-  points.reserve(ps.polygons.size() * 3);
-  polygons.reserve(ps.polygons.size());
-  for (const auto& p : ps.polygons) {
+  points.reserve(ps.indices.size() * 3);
+  polygons.reserve(ps.indices.size());
+  for (const auto& inds : ps.indices) {
     std::vector<size_t> &polygon = polygons.emplace_back();
-    polygon.reserve(p.size());
-    for (const auto &v : p) {
+    polygon.reserve(inds.size());
+    for (const auto &ind : inds) {
       polygon.push_back(points.size());
-      points.push_back({v.x(), v.y(), v.z()});
+        auto &pt = ps.vertices[ind];
+      points.push_back({pt[0], pt[1], pt[2]});
     }
   }
 
@@ -46,9 +48,9 @@ template <class TriangleMesh>
 bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
 {
   bool err = false;
-  ps.reserve(ps.numFacets() + mesh.number_of_faces());
+  PolySetBuilder builder(0,mesh.number_of_faces()+ mesh.number_of_faces());
   for (const auto& f : mesh.faces()) {
-    ps.append_poly(mesh.degree(f));
+    builder.appendPoly(mesh.degree(f));
 
     CGAL::Vertex_around_face_iterator<TriangleMesh> vbegin, vend;
     for (boost::tie(vbegin, vend) = vertices_around_face(mesh.halfedge(f), mesh); vbegin != vend;
@@ -58,9 +60,11 @@ bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
       double x = CGAL::to_double(v.x());
       double y = CGAL::to_double(v.y());
       double z = CGAL::to_double(v.z());
-      ps.append_vertex(x, y, z);
+      builder.appendVertex(builder.vertexIndex(Vector3d(x, y, z)));
     }
   }
+  builder.append(&ps);
+  ps.reset(builder.build());
   return err;
 }
 

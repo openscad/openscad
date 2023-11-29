@@ -1,5 +1,6 @@
 #include "PolySetUtils.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "Polygon2d.h"
 #include "printutils.h"
 #include "GeometryUtils.h"
@@ -19,11 +20,13 @@ namespace PolySetUtils {
 // will trigger floating point incertainties and cause problems later.
 Polygon2d *project(const PolySet& ps) {
   auto poly = new Polygon2d;
+  Vector3d pt;
 
-  for (const auto& p : ps.polygons) {
+  for (const auto& p : ps.indices) {
     Outline2d outline;
     for (const auto& v : p) {
-      outline.vertices.emplace_back(v[0], v[1]);
+      pt=ps.vertices[v];	    
+      outline.vertices.emplace_back(pt[0], pt[1]);
     }
     poly->addOutline(outline);
   }
@@ -58,12 +61,12 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
   std::vector<std::vector<IndexedFace>> polygons;
 
   // best estimate without iterating all polygons, to reduce reallocations
-  polygons.reserve(inps.polygons.size() );
+  polygons.reserve(inps.indices.size() );
 
   // minimum estimate without iterating all polygons, to reduce reallocation and rehashing
-  allVertices.reserve(3 * inps.polygons.size() );
+  allVertices.reserve(3 * inps.indices.size() );
 
-  for (const auto& pgon : inps.polygons) {
+  for (const auto& pgon : inps.indices) {
     if (pgon.size() < 3) {
       degeneratePolygons++;
       continue;
@@ -73,7 +76,8 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
     auto& faces = polygons.back();
     faces.push_back(IndexedFace());
     auto& currface = faces.back();
-    for (const auto& v : pgon) {
+    for (const auto& ind : pgon) {
+      const Vector3d v=inps.vertices[ind];
       // Create vertex indices and remove consecutive duplicate vertices
       // NOTE: a lot of time is spent here (cast+hash+lookup+insert+rehash)
       auto idx = allVertices.lookup(v.cast<float>());
@@ -94,15 +98,15 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
 
   // Estimate how many polygons we will need and preallocate.
   // This is usually an undercount, but still prevents a lot of reallocations.
-  outps.polygons.reserve(polygons.size() );
+  PolySetBuilder builder(verts.size(),polygons.size());
+  for(int i=0;i<verts.size();i++)
+    builder.vertexIndex({verts[i][0],verts[i][1],verts[i][2]});
+
 
   for (const auto& faces : polygons) {
     if (faces[0].size() == 3) {
       // trivial case - triangles cannot be concave or have holes
-      outps.append_poly(3);
-      outps.append_vertex(verts[faces[0][0]]);
-      outps.append_vertex(verts[faces[0][1]]);
-      outps.append_vertex(verts[faces[0][2]]);
+       builder.appendPoly({faces[0][0],faces[0][1],faces[0][2]});
     }
     // Quads seem trivial, but can be concave, and can have degenerate cases.
     // So everything more complex than triangles goes into the general case.
@@ -111,15 +115,12 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
       auto err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
       if (!err) {
         for (const auto& t : triangles) {
-          outps.append_poly(3);
-          outps.append_vertex(verts[t[0]]);
-          outps.append_vertex(verts[t[1]]);
-          outps.append_vertex(verts[t[2]]);
+       	  builder.appendPoly({t[0],t[1],t[2]});
         }
       }
     }
   }
-
+  outps.reset(builder.build());
   if (degeneratePolygons > 0) {
     LOG(message_group::Warning, "PolySet has degenerate polygons");
   }

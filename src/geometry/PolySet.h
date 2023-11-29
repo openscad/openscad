@@ -8,12 +8,15 @@
 
 #include <vector>
 #include <string>
+class PolySetBuilder;
 
 class PolySet : public Geometry
 {
+  friend class PolySetBuilder;	
 public:
   VISITABLE_GEOMETRY();
-  Polygons polygons;
+  PolygonIndices indices;
+  std::vector<Vector3d> vertices;
 
   PolySet(unsigned int dim, boost::tribool convex = unknown);
   PolySet(Polygon2d origin);
@@ -24,27 +27,17 @@ public:
   BoundingBox getBoundingBox() const override;
   std::string dump() const override;
   unsigned int getDimension() const override { return this->dim; }
-  bool isEmpty() const override { return polygons.size() == 0; }
+  bool isEmpty() const override { return indices.empty(); }
   Geometry *copy() const override { return new PolySet(*this); }
 
   void quantizeVertices(std::vector<Vector3d> *pPointsOut = nullptr);
-  size_t numFacets() const override { return polygons.size(); }
-  void reserve(size_t numFacets) { polygons.reserve(numFacets); }
-  void append_poly(size_t expected_vertex_count);
-  void append_poly(const Polygon& poly);
-  void append_vertex(double x, double y, double z = 0.0);
-  void append_vertex(const Vector3d& v);
-  void append_vertex(const Vector3f& v);
-  void insert_vertex(double x, double y, double z = 0.0);
-  void insert_vertex(const Vector3d& v);
-  void insert_vertex(const Vector3f& v);
-  void append(const PolySet& ps);
-
+  size_t numFacets() const override { return indices.size(); }
   void transform(const Transform3d& mat) override;
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
   bool is_convex() const;
   boost::tribool convexValue() const { return this->convex; }
+  void reset(const PolySet *ps);
 
 private:
   Polygon2d polygon;

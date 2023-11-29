@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <map>
 #include <boost/polygon/voronoi.hpp>
+#include <PolySetBuilder.h>
 
 #include "GeometryUtils.h"
 #include "ClipperUtils.h"
@@ -331,7 +332,7 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
 
 PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
 {
-  auto *hat = new PolySet(3);
+  PolySetBuilder hatbuilder = PolySetBuilder();
 
   try {
 
@@ -367,17 +368,18 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
       outline.vertices = face;
       face_poly.addOutline(outline);
       PolySet *tess = face_poly.tessellate();
-      for (const std::vector<Vector3d>& triangle : tess->polygons) {
-        Polygon roof;
-        for (Vector3d tv : triangle) {
+      for (const IndexedFace& triangle : tess->indices) {
+        std::vector<int> roof;
+        for (int tvind : triangle) {
+	  Vector3d tv=tess->vertices[tvind];
           Vector2d v;
           v << tv[0], tv[1];
           if (!(inner_faces.heights.find(v) != inner_faces.heights.end())) {
             RAISE_ROOF_EXCEPTION("Voronoi error");
           }
-          roof.push_back(Vector3d(v[0] / scale, v[1] / scale, inner_faces.heights[v] / scale));
+          roof.push_back(hatbuilder.vertexIndex(Vector3d(v[0] / scale, v[1] / scale, inner_faces.heights[v] / scale)));
         }
-        hat->append_poly(roof);
+        hatbuilder.appendPoly(roof);
       }
       delete tess;
     }
@@ -395,23 +397,22 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
         poly_floor.addOutline(o);
       }
       PolySet *tess = poly_floor.tessellate();
-      for (const std::vector<Vector3d>& triangle : tess->polygons) {
-        Polygon floor;
-        for (const Vector3d& tv : triangle) {
-          floor.push_back(tv);
+      for (const IndexedFace & triangle : tess->indices) {
+        std::vector<int> floor;
+        for (const int  tv : triangle) {
+          floor.push_back(hatbuilder.vertexIndex(tess->vertices[tv]));
         }
         // floor has reverse orientation
         std::reverse(floor.begin(), floor.end());
-        hat->append_poly(floor);
+        hatbuilder.appendPoly(floor);
       }
       delete tess;
     }
   } catch (RoofNode::roof_exception& e) {
-    delete hat;
     throw;
   }
 
-  return hat;
+  return hatbuilder.build();
 }
 
 } // roof_vd

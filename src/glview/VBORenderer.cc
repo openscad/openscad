@@ -101,7 +101,7 @@ size_t VBORenderer::getSurfaceBufferSize(const CSGChainObject& csgobj, bool high
 size_t VBORenderer::getSurfaceBufferSize(const PolySet& polyset, csgmode_e csgmode) const
 {
   size_t buffer_size = 0;
-  for (const auto& poly : polyset.polygons) {
+  for (const auto& poly : polyset.indices) {
     if (poly.size() == 3) {
       buffer_size++;
     } else if (poly.size() == 4) {
@@ -119,7 +119,7 @@ size_t VBORenderer::getSurfaceBufferSize(const PolySet& polyset, csgmode_e csgmo
           buffer_size += o.vertices.size() * 2;
         }
       } else {
-        for (const auto& poly : polyset.polygons) {
+        for (const auto& poly : polyset.indices) {
           buffer_size += poly.size() * 2;
         }
       }
@@ -173,7 +173,7 @@ size_t VBORenderer::getEdgeBufferSize(const PolySet& polyset, csgmode_e csgmode)
       }
     }
   } else if (polyset.getDimension() == 3) {
-    for (const auto& polygon : polyset.polygons) {
+    for (const auto& polygon : polyset.indices) {
       buffer_size += polygon.size();
     }
   }
@@ -334,20 +334,20 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
       vertex_array.elementsMap().clear();
     }
 
-    for (const auto& poly : ps.polygons) {
+    for (const auto& poly : ps.indices) {
       if (poly.size() == 3) {
-        Vector3d p0 = uniqueMultiply(vert_mult_map, poly.at(0), m);
-        Vector3d p1 = uniqueMultiply(vert_mult_map, poly.at(1), m);
-        Vector3d p2 = uniqueMultiply(vert_mult_map, poly.at(2), m);
+        Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
+        Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
+        Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
 
         create_triangle(vertex_array, color, p0, p1, p2,
                         0, 0, poly.size(), 3, false, mirrored);
         triangle_count++;
       } else if (poly.size() == 4) {
-        Vector3d p0 = uniqueMultiply(vert_mult_map, poly.at(0), m);
-        Vector3d p1 = uniqueMultiply(vert_mult_map, poly.at(1), m);
-        Vector3d p2 = uniqueMultiply(vert_mult_map, poly.at(2), m);
-        Vector3d p3 = uniqueMultiply(vert_mult_map, poly.at(3), m);
+        Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
+        Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
+        Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
+        Vector3d p3 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(3)], m);
 
         create_triangle(vertex_array, color, p0, p1, p3,
                         0, 0, poly.size(), 3, false, mirrored);
@@ -357,13 +357,13 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
       } else {
         Vector3d center = Vector3d::Zero();
         for (const auto& point : poly) {
-          center += point;
+          center += ps.vertices[point];
         }
         center /= poly.size();
         for (size_t i = 1; i <= poly.size(); i++) {
           Vector3d p0 = uniqueMultiply(vert_mult_map, center, m);
-          Vector3d p1 = uniqueMultiply(vert_mult_map, poly.at(i % poly.size()), m);
-          Vector3d p2 = uniqueMultiply(vert_mult_map, poly.at(i - 1), m);
+          Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i % poly.size())], m);
+          Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i - 1)], m);
 
           create_triangle(vertex_array, color, p0, p2, p1,
                           i - 1, 0, poly.size(), 3, false, mirrored);
@@ -472,7 +472,7 @@ void VBORenderer::create_edges(const PolySet& ps,
       }
     }
   } else if (ps.getDimension() == 3) {
-    for (const auto& polygon : ps.polygons) {
+    for (const auto& polygon : ps.indices) {
       size_t last_size = vertex_array.verticesOffset();
       size_t elements_offset = 0;
       if (vertex_array.useElements()) {
@@ -480,7 +480,7 @@ void VBORenderer::create_edges(const PolySet& ps,
         vertex_array.elementsMap().clear();
       }
       for (const auto& vertex : polygon) {
-        Vector3d p = uniqueMultiply(vert_mult_map, vertex, m);
+        Vector3d p = uniqueMultiply(vert_mult_map, ps.vertices[vertex], m);
 
         create_vertex(vertex_array, color, {p}, {}, 0, 0, 0.0, polygon.size(), 2, true, false);
       }
@@ -521,20 +521,20 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
 
     if (csgmode == Renderer::CSGMODE_NONE) {
       PRINTD("create_polygons CSGMODE_NONE");
-      for (const auto& poly : ps.polygons) {
+      for (const auto& poly : ps.indices) {
         if (poly.size() == 3) {
-          Vector3d p0 = uniqueMultiply(vert_mult_map, poly.at(0), m);
-          Vector3d p1 = uniqueMultiply(vert_mult_map, poly.at(1), m);
-          Vector3d p2 = uniqueMultiply(vert_mult_map, poly.at(2), m);
+          Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
+          Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
+          Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
 
           create_triangle(vertex_array, color, p0, p1, p2,
                           0, 0, poly.size(), 2, false, mirrored);
           triangle_count++;
         } else if (poly.size() == 4) {
-          Vector3d p0 = uniqueMultiply(vert_mult_map, poly.at(0), m);
-          Vector3d p1 = uniqueMultiply(vert_mult_map, poly.at(1), m);
-          Vector3d p2 = uniqueMultiply(vert_mult_map, poly.at(2), m);
-          Vector3d p3 = uniqueMultiply(vert_mult_map, poly.at(3), m);
+          Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
+          Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
+          Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(2)], m);
+          Vector3d p3 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(3)], m);
 
           create_triangle(vertex_array, color, p0, p1, p3,
                           0, 0, poly.size(), 2, false, mirrored);
@@ -544,16 +544,16 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
         } else {
           Vector3d center = Vector3d::Zero();
           for (const auto& point : poly) {
-            center[0] += point[0];
-            center[1] += point[1];
+            center[0] += ps.vertices[point][0];
+            center[1] += ps.vertices[point][1];
           }
           center[0] /= poly.size();
           center[1] /= poly.size();
 
           for (size_t i = 1; i <= poly.size(); i++) {
             Vector3d p0 = uniqueMultiply(vert_mult_map, center, m);
-            Vector3d p1 = uniqueMultiply(vert_mult_map, poly.at(i % poly.size()), m);
-            Vector3d p2 = uniqueMultiply(vert_mult_map, poly.at(i - 1), m);
+            Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i % poly.size())], m);
+            Vector3d p2 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(i - 1)], m);
 
             create_triangle(vertex_array, color, p0, p2, p1,
                             i - 1, 0, poly.size(), 2, false, mirrored);
@@ -567,11 +567,11 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
       double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0.0);
       // Render top+bottom
       for (double z : { -zbase / 2, zbase / 2}) {
-        for (const auto& poly : ps.polygons) {
+        for (const auto& poly : ps.indices) {
           if (poly.size() == 3) {
-            Vector3d p0 = poly.at(0); p0[2] += z;
-            Vector3d p1 = poly.at(1); p1[2] += z;
-            Vector3d p2 = poly.at(2); p2[2] += z;
+            Vector3d p0 = ps.vertices[poly.at(0)]; p0[2] += z;
+            Vector3d p1 = ps.vertices[poly.at(1)]; p1[2] += z;
+            Vector3d p2 = ps.vertices[poly.at(2)]; p2[2] += z;
 
             p0 = uniqueMultiply(vert_mult_map, p0, m);
             p1 = uniqueMultiply(vert_mult_map, p1, m);
@@ -586,10 +586,10 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
             }
             triangle_count++;
           } else if (poly.size() == 4) {
-            Vector3d p0 = poly.at(0); p0[2] += z;
-            Vector3d p1 = poly.at(1); p1[2] += z;
-            Vector3d p2 = poly.at(2); p2[2] += z;
-            Vector3d p3 = poly.at(3); p3[2] += z;
+            Vector3d p0 = ps.vertices[poly.at(0)]; p0[2] += z;
+            Vector3d p1 = ps.vertices[poly.at(1)]; p1[2] += z;
+            Vector3d p2 = ps.vertices[poly.at(2)]; p2[2] += z;
+            Vector3d p3 = ps.vertices[poly.at(3)]; p3[2] += z;
 
             p0 = uniqueMultiply(vert_mult_map, p0, m);
             p1 = uniqueMultiply(vert_mult_map, p1, m);
@@ -611,16 +611,16 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
           } else {
             Vector3d center = Vector3d::Zero();
             for (const auto& point : poly) {
-              center[0] += point[0];
-              center[1] += point[1];
+              center[0] += ps.vertices[point][0];
+              center[1] += ps.vertices[point][1];
             }
             center[0] /= poly.size();
             center[1] /= poly.size();
 
             for (size_t i = 1; i <= poly.size(); i++) {
               Vector3d p0 = center; p0[2] += z;
-              Vector3d p1 = poly.at(i % poly.size()); p1[2] += z;
-              Vector3d p2 = poly.at(i - 1); p2[2] += z;
+              Vector3d p1 = ps.vertices[poly.at(i % poly.size())]; p1[2] += z;
+              Vector3d p2 = ps.vertices[poly.at(i - 1)]; p2[2] += z;
 
               p0 = uniqueMultiply(vert_mult_map, p0, m);
               p1 = uniqueMultiply(vert_mult_map, p1, m);
@@ -665,12 +665,12 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
         // If we don't have borders, use the polygons as borders.
         // FIXME: When is this used?
         PRINTD("Render sides with polygons");
-        for (const auto& poly : ps.polygons) {
+        for (const auto& poly : ps.indices) {
           for (size_t i = 1; i <= poly.size(); i++) {
-            Vector3d p1 = poly.at(i - 1); p1[2] -= zbase / 2;
-            Vector3d p2 = poly.at(i - 1); p2[2] += zbase / 2;
-            Vector3d p3 = poly.at(i % poly.size()); p3[2] -= zbase / 2;
-            Vector3d p4 = poly.at(i % poly.size()); p4[2] += zbase / 2;
+            Vector3d p1 = ps.vertices[poly.at(i - 1)]; p1[2] -= zbase / 2;
+            Vector3d p2 = ps.vertices[poly.at(i - 1)]; p2[2] += zbase / 2;
+            Vector3d p3 = ps.vertices[poly.at(i % poly.size())]; p3[2] -= zbase / 2;
+            Vector3d p4 = ps.vertices[poly.at(i % poly.size())]; p4[2] += zbase / 2;
 
             p1 = uniqueMultiply(vert_mult_map, p1, m);
             p2 = uniqueMultiply(vert_mult_map, p2, m);

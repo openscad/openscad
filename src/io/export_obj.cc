@@ -27,31 +27,27 @@
 
 #include "export.h"
 
-#include "IndexedMesh.h"
+#include "PolySetBuilder.h"
+#include "PolySet.h"
 
 void export_obj(const shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  IndexedMesh mesh;
-  mesh.append_geometry(geom);
+  PolySetBuilder builder;
+  builder.appendGeometry(geom);
+  auto *ps = builder.build();
 
   output << "# OpenSCAD obj exporter\n";
 
-  size_t numverts = mesh.vertices.size();
-  const auto& v = mesh.vertices.getArray();
-  for (size_t i = 0; i < numverts; ++i) {
-    output << "v " << v[i][0] << " " << v[i][1] << " " << v[i][2] << "\n";
+  for (size_t i = 0; i < ps->vertices.size(); ++i) {
+    output << "v " << ps->vertices[i][0] << " " << ps->vertices[i][1] << " " << ps->vertices[i][2] << "\n";
   }
 
-  size_t i = 0;
-  for (size_t j = 0; j < mesh.numfaces; ++j) {
+  for (int i = 0; i < ps->indices.size(); i++) {
 
     output << "f ";
 
-    while (true) {
-      auto index = mesh.indices[i++];
-      if (index < 0) {
-        break;
-      }
+    for(int j=0;j<ps->indices[i].size();j++) {
+      auto index = ps->indices[i][j];
       output << " " << (1 + index);
     }
     output << "\n";
