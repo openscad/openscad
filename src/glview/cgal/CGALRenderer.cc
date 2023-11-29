@@ -364,15 +364,13 @@ std::vector<SelectedObject> CGALRenderer::findModelObject(Vector3d near_pt, Vect
   for (const auto& p : this->getPolyhedrons()) {
   }
   for (const std::shared_ptr<const PolySet>& ps : this->polysets) {
-    for(const Polygon &pol : ps->polygons) {
-      for(const Vector3d &pt: pol) {
-        double dist_pt= calculateLinePointDistance(near_pt, far_pt, pt,dist_near);
-        if(dist_pt < tolerance  ) {
-	  if(isnan(dist_nearest) || dist_near < dist_nearest)
-	  {
-	    dist_nearest=dist_near;
-	    pt1_nearest=pt;
-	  }
+    for(const Vector3d &pt: ps->vertices) {
+      double dist_pt= calculateLinePointDistance(near_pt, far_pt, pt, dist_near);
+      if(dist_pt < tolerance  ) {
+        if(isnan(dist_nearest) || dist_near < dist_nearest)
+        {
+          dist_nearest=dist_near;
+          pt1_nearest=pt;
         }	  
       }
     }
@@ -385,18 +383,18 @@ std::vector<SelectedObject> CGALRenderer::findModelObject(Vector3d near_pt, Vect
     return results;
   }
   for (const std::shared_ptr<const PolySet>& ps : this->polysets) {
-    for(const Polygon &pol : ps->polygons) {
+    for(const auto &pol : ps->indices) {
 	int n = pol.size();
         for(int i=0;i < n;i++ )
 	{
-	  Vector3d pt1=pol[i];
-	  Vector3d pt2=pol[(i+1)%n];
+	  int ind1=pol[i];
+	  int ind2=pol[(i+1)%n];
 	  double dist_lat;
-          double dist_norm= fabs(calculateLineLineDistance(pt1, pt2, near_pt, far_pt,dist_lat));
+          double dist_norm= fabs(calculateLineLineDistance(ps->vertices[ind1], ps->vertices[ind2], near_pt, far_pt,dist_lat));
           if(dist_lat >= 0 && dist_lat <= 1 && dist_norm < tolerance  ) {
 	      dist_nearest=dist_lat;
-	      pt1_nearest=pt1;
-	      pt2_nearest=pt2;
+	      pt1_nearest=ps->vertices[ind1];
+	      pt2_nearest=ps->vertices[ind2];
 	  }
         }	  
       }
