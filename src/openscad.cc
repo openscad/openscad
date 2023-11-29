@@ -480,6 +480,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   auto filename_str = fs::path(cmd.output_file).generic_string();
   auto fpath = fs::absolute(fs::path(cmd.filename));
   auto fparent = fpath.parent_path();
+  Camera camera = cmd.camera;
 
   // set CWD relative to source file
   fs::current_path(fparent);
@@ -488,6 +489,16 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
   builtin_context->set_variable("$preview", Value(render_variables.preview));
   builtin_context->set_variable("$t", Value(render_variables.time));
+
+  auto vpr = camera.getVpr();
+  builtin_context->set_variable("$vpr", Value(VectorType(builtin_context->session(), vpr[0],vpr[1],vpr[2])));
+  auto vpt = camera.getVpt();
+  builtin_context->set_variable("$vpt", Value(VectorType(builtin_context->session(), vpt[0],vpt[1],vpt[2])));
+  auto vpd = camera.zoomValue();
+  builtin_context->set_variable("$vpd", Value(vpd));
+  auto vpf = camera.fovValue();
+  builtin_context->set_variable("$vpf", Value(vpf));
+
 #ifdef DEBUG
   PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
 #endif
@@ -495,12 +506,17 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   AbstractNode::resetIndexCounter();
   std::shared_ptr<const FileContext> file_context;
   std::shared_ptr<AbstractNode> absolute_root_node;
+
 #ifdef ENABLE_PYTHON    
-    if(python_result_node != NULL && python_active) absolute_root_node = python_result_node;
-    else
+  if(python_result_node != NULL && python_active) {
+    absolute_root_node = python_result_node;
+  } else {
 #endif	    
   absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
-  Camera camera = cmd.camera;
+#ifdef ENABLE_PYTHON
+  }
+#endif
+
   if (file_context) {
     camera.updateView(file_context, true);
   }
