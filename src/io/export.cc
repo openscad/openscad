@@ -175,10 +175,10 @@ ExportMesh::ExportMesh(const PolySet& ps)
   std::map<Vertex, int> vertexMap;
   std::vector<std::array<int, 3>> triangleIndices;
 
-  for (const auto& pts : ps.polygons) {
-    auto pos1 = vertexMap.emplace(std::make_pair(vectorToVertex(pts[0]), vertexMap.size()));
-    auto pos2 = vertexMap.emplace(std::make_pair(vectorToVertex(pts[1]), vertexMap.size()));
-    auto pos3 = vertexMap.emplace(std::make_pair(vectorToVertex(pts[2]), vertexMap.size()));
+  for (const auto& pts : ps.indices) {
+    auto pos1 = vertexMap.emplace(std::make_pair(vectorToVertex(ps.vertices[pts[0]]), vertexMap.size()));
+    auto pos2 = vertexMap.emplace(std::make_pair(vectorToVertex(ps.vertices[pts[1]]), vertexMap.size()));
+    auto pos3 = vertexMap.emplace(std::make_pair(vectorToVertex(ps.vertices[pts[2]]), vertexMap.size()));
     triangleIndices.push_back({pos1.first->second, pos2.first->second, pos3.first->second});
   }
 

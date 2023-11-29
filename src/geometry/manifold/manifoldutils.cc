@@ -2,7 +2,6 @@
 #include "manifoldutils.h"
 #include "ManifoldGeometry.h"
 #include "manifold.h"
-#include "IndexedMesh.h"
 #include "printutils.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
@@ -36,18 +35,14 @@ const char* statusToString(Error status) {
 }
 
 std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) {
-  IndexedMesh im;
-  {
-    PolySet triangulated(3);
-    PolySetUtils::tessellate_faces(ps, triangulated);
-    im.append_geometry(triangulated);
-  }
-
-  auto numfaces = im.numfaces;
-  const auto &vertices = im.vertices.getArray();
-  const auto &indices = im.indices;
-
   manifold::Mesh mesh;
+  PolySet triangulated(3);
+  PolySetUtils::tessellate_faces(ps, triangulated);
+
+  auto numfaces = triangulated.indices.size();
+  const auto &vertices = triangulated.vertices;
+  const auto &indices = triangulated.indices;
+
   mesh.vertPos.resize(vertices.size());
   mesh.triVerts.resize(numfaces);
   for (size_t i = 0, n = vertices.size(); i < n; i++) {
@@ -55,13 +50,11 @@ std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) 
     mesh.vertPos[i] = glm::vec3((float) v.x(), (float) v.y(), (float) v.z());
   }
   const auto vertexCount = mesh.vertPos.size();
-  assert(indices.size() == numfaces * 4);
+//  assert(indices.size() == numfaces * 4);
   for (size_t i = 0; i < numfaces; i++) {
-    auto offset = i * 4; // 3 indices of triangle then -1.
-    auto i0 = indices[offset];
-    auto i1 = indices[offset + 1];
-    auto i2 = indices[offset + 2];
-    assert(indices[offset + 3] == -1);
+    auto i0 = indices[i][0];
+    auto i1 = indices[i][1];
+    auto i2 = indices[i][2];
     assert(i0 >= 0 && i0 < vertexCount &&
            i1 >= 0 && i1 < vertexCount &&
            i2 >= 0 && i2 < vertexCount);

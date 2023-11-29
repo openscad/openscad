@@ -1,5 +1,6 @@
 #include "Polygon2d.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "printutils.h"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
@@ -91,7 +92,7 @@ mark_domains(CDT& cdt)
 PolySet *Polygon2d::tessellate() const
 {
   PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
-  auto polyset = new PolySet(*this);
+  PolySetBuilder builder(*this);
 
   Polygon2DCGAL::CDT cdt; // Uses a constrained Delaunay triangulator.
 
@@ -120,13 +121,11 @@ PolySet *Polygon2d::tessellate() const
   mark_domains(cdt);
   for (auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
     if (fit->info().in_domain()) {
-      polyset->append_poly(3);
+      builder.appendPoly(3);
       for (int i = 0; i < 3; ++i) {
-        polyset->append_vertex(fit->vertex(i)->point()[0],
-                               fit->vertex(i)->point()[1],
-                               0);
+        builder.appendVertex(builder.vertexIndex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0)));
       }
     }
   }
-  return polyset;
+  return builder.build();
 }

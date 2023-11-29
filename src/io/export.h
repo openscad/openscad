@@ -207,6 +207,7 @@ struct Triangle {
   }
 };
 
+using IndexedFace = std::vector<int>;
 class ExportMesh
 {
 public:
