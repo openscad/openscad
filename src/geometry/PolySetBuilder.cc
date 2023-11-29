@@ -27,18 +27,15 @@
 #include "PolySetBuilder.h"
 #include <PolySet.h>
 #include "Geometry.h"
+
+#ifdef ENABLE_CGAL
 #include "cgalutils.h"
-
-
-#include <memory>
-
+#include "CGAL_Nef_polyhedron.h"
+#include "CGALHybridPolyhedron.h"
+#endif
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
 #endif
-
-
-#include "CGAL_Nef_polyhedron.h"
-#include "CGALHybridPolyhedron.h"
 
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
 {
@@ -70,6 +67,9 @@ void PolySetBuilder::appendGeometry(const shared_ptr<const Geometry>& geom)
     for (const Geometry::GeometryItem& item : geomlist->getChildren()) {
       appendGeometry(item.second);
     }
+  } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+    append(ps.get());
+#ifdef ENABLE_CGAL
   } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     PolySet ps(3);
     bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
@@ -78,11 +78,10 @@ void PolySetBuilder::appendGeometry(const shared_ptr<const Geometry>& geom)
     } else {
       append(&ps);
     }
-  } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
-    append(ps.get());
   } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement appendGeometry(Surface_mesh) instead of converting to PolySet
     append(hybrid->toPolySet().get());
+#endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
    append(mani->toPolySet().get());

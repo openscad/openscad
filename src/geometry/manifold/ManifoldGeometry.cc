@@ -4,10 +4,7 @@
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 #include "PolySetUtils.h"
-#include "cgalutils.h"
 #include "manifoldutils.h"
-#include "PolySet.h"
-#include "PolySetUtils.h"
 #ifdef ENABLE_CGAL
 #include "cgal.h"
 #include "cgalutils.h"
