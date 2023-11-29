@@ -25,6 +25,7 @@
  */
 
 #include "PolySet.h"
+#include "PolySetUtils.h"
 #include "Geometry.h"
 #include "printutils.h"
 #include "version_helper.h"
@@ -197,7 +198,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     for (auto& meshe : meshes) {
       children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(meshe)));
     }
-    if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
+    if (auto ps = PolySetUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
       p = new PolySet(*ps);
     } else {
       p = new PolySet(3);
@@ -371,7 +372,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     for (polysets_t::iterator it = meshes.begin(); it != meshes.end(); ++it) {
       children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), shared_ptr<const Geometry>(*it)));
     }
-    if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
+    if (auto ps = PolySetUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
       p = new PolySet(*ps);
     } else {
       p = new PolySet(3);

@@ -52,7 +52,6 @@
 #include <fstream>
 
 #ifdef ENABLE_CGAL
-
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
 #endif
@@ -559,8 +558,6 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   } else if (curFormat == FileFormat::ECHO) {
     // echo -> don't need to evaluate any geometry
   } else {
-#ifdef ENABLE_CGAL
-
     // start measuring render time
     RenderStatistic renderStatistic;
     GeometryEvaluator geomevaluator(tree);
@@ -570,10 +567,11 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
       // OpenCSG or throwntogether png -> just render a preview
       glview = prepare_preview(tree, cmd.viewOptions, camera);
       if (!glview) return 1;
-    } else {
+    }
+#ifdef ENABLE_CGAL
+    else {
       // Force creation of concrete geometry (mostly for testing)
-
-      // FIXME: Consider adding MANIFOLD as a valid view option, to be able to distinguish from CGAL
+      // FIXME: Consider adding MANIFOLD as a valid --render argument and ViewOption, to be able to distinguish from CGAL
 
       constexpr bool allownef = true;
       root_geom = geomevaluator.evaluateGeometry(*tree.root(), allownef);
@@ -597,7 +595,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
         root_geom.reset(new CGAL_Nef_polyhedron());
       }
     }
-
+#endif
     if (is3D(curFormat)) {
       if (!checkAndExport(root_geom, 3, curFormat, cmd.is_stdout, filename_str)) {
         return 1;
@@ -625,11 +623,6 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     }
 
     renderStatistic.printAll(root_geom, camera, cmd.summaryOptions, cmd.summaryFile);
-#else
-    LOG("OpenSCAD has been compiled without CGAL support!\n");
-    return 1;
-#endif // ifdef ENABLE_CGAL
-
   }
   return 0;
 }

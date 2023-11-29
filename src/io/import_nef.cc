@@ -30,4 +30,5 @@ CGAL_Nef_polyhedron *import_nef3(const std::string& filename, const Location& lo
   }
   return N;
 }
-#endif // ifdef ENABLE_CGAL
+
+#endif // ENABLE_CGAL

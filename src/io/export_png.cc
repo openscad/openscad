@@ -8,7 +8,6 @@
 
 #ifndef NULLGL
 
-#ifdef ENABLE_CGAL
 #include "CGALRenderer.h"
 
 static void setupCamera(Camera& cam, const BoundingBox& bbox)
@@ -101,8 +100,6 @@ bool export_png(const OffscreenView& glview, std::ostream& output)
   glview.save(output);
   return true;
 }
-
-#endif // ENABLE_CGAL
 
 #else // NULLGL
 

@@ -23,16 +23,18 @@
  *
  */
 
+
+#include <fstream>
 #include <json.hpp>
 
 #include "printutils.h"
 #include "GeometryCache.h"
-#include "CGALCache.h"
 #include "PolySet.h"
 #include "Polygon2d.h"
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "CGALHybridPolyhedron.h"
+#include "CGALCache.h"
 #endif // ENABLE_CGAL
 
 #ifdef ENABLE_MANIFOLD

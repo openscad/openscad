@@ -10,10 +10,6 @@
 #include "Feature.h"
 #include "printutils.h"
 
-#ifdef ENABLE_CGAL
-#include "cgal.h" // for FAST_CSG_KERNEL_IS_LAZY
-#endif
-
 /**
  * Feature registration map/list for later lookup. This must be initialized
  * before the static feature instances as those register with this map.

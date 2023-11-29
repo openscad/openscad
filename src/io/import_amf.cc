@@ -25,6 +25,7 @@
  */
 
 #include "PolySet.h"
+#include "PolySetUtils.h"
 #include "printutils.h"
 #include "AST.h"
 
@@ -38,6 +39,7 @@
 #include <cassert>
 #include <libxml/xmlreader.h>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 
 static const std::string text_node("#text");
 static const std::string object("/amf/object");
@@ -259,7 +261,6 @@ PolySet *AmfImporter::read(const std::string& filename)
   vertex_list.clear();
 
   PolySet *p = nullptr;
-#ifdef ENABLE_CGAL
   if (polySets.size() == 1) {
     p = polySets[0];
   }
@@ -269,14 +270,13 @@ PolySet *AmfImporter::read(const std::string& filename)
       children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(polySet)));
     }
 
-    if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
+#ifdef ENABLE_CGAL
+    if (auto ps = PolySetUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
       p = new PolySet(*ps);
-    } else {
+    } else
+#endif // ENABLE_CGAL
       LOG(message_group::Error, "Error importing multi-object AMF file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
-      p = new PolySet(3);
-    }
   }
-#endif // ifdef ENABLE_CGAL
   if (!p) {
     p = new PolySet(3);
   }

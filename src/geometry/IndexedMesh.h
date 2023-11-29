@@ -27,8 +27,6 @@
 
 #pragma once
 
-#ifdef ENABLE_CGAL
-
 #include "PolySet.h"
 #include "Reindexer.h"
 
@@ -42,5 +40,3 @@ struct IndexedMesh {
   void append_geometry(const PolySet& ps);
   void append_geometry(const shared_ptr<const Geometry>& geom);
 };
-
-#endif // ENABLE_CGAL
