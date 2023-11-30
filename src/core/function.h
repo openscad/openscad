@@ -32,7 +32,7 @@ public:
 class UserFunction : public ASTNode
 {
 public:
-  std::string name;
+  Identifier name;
   AssignmentList parameters;
   shared_ptr<Expression> expr;
 

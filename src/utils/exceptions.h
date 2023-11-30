@@ -5,6 +5,7 @@
 #include <utility>
 #include "AST.h"
 #include "printutils.h"
+#include "Identifier.h"
 
 class EvaluationException : public std::runtime_error
 {
@@ -27,7 +28,7 @@ public:
 class RecursionException : public EvaluationException
 {
 public:
-  static RecursionException create(const std::string& recursiontype, const std::string& name, const Location& loc) {
+  static RecursionException create(const std::string& recursiontype, const Identifier& name, const Location& loc) {
     return RecursionException{STR("Recursion detected calling ", recursiontype, " '", name, "'"), loc};
   }
 

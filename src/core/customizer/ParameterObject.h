@@ -5,6 +5,7 @@
 #include <variant>
 
 #include "ParameterSet.h"
+#include "Identifier.h"
 using json = nlohmann::json;
 
 class SourceFile;
@@ -19,7 +20,7 @@ public:
   static std::unique_ptr<ParameterObject> fromAssignment(const Assignment *assignment);
 
   [[nodiscard]] ParameterType type() const { return type_; }
-  [[nodiscard]] const std::string& name() const { return name_; }
+  [[nodiscard]] const Identifier& name() const { return name_; }
   [[nodiscard]] const std::string& description() const { return description_; }
   [[nodiscard]] const std::string& group() const { return group_; }
 
@@ -30,11 +31,11 @@ public:
   virtual void apply(Assignment *assignment) const = 0;
 
 protected:
-  ParameterObject(std::string name, std::string description, std::string group, ParameterType type) :
-    type_(type), name_(std::move(name)), description_(std::move(description)), group_(std::move(group)) {}
+  ParameterObject(const Identifier &name, const std::string &description, const std::string group, ParameterType type) :
+    type_(type), name_(name), description_(description), group_(group) {}
 
   ParameterType type_;
-  std::string name_;
+  Identifier name_;
   std::string description_;
   std::string group_;
 };
@@ -43,7 +44,7 @@ class BoolParameter : public ParameterObject
 {
 public:
   BoolParameter(
-    const std::string& name, const std::string& description, const std::string& group,
+    const Identifier& name, const std::string& description, const std::string& group,
     bool defaultValue
     ) :
     ParameterObject(name, description, group, ParameterObject::ParameterType::Bool),
@@ -64,7 +65,7 @@ class StringParameter : public ParameterObject
 {
 public:
   StringParameter(
-    const std::string& name, const std::string& description, const std::string& group,
+    const Identifier& name, const std::string& description, const std::string& group,
     const std::string& defaultValue,
     boost::optional<size_t> maximumSize
     );
@@ -84,7 +85,7 @@ class NumberParameter : public ParameterObject
 {
 public:
   NumberParameter(
-    const std::string& name, const std::string& description, const std::string& group,
+    const Identifier& name, const std::string& description, const std::string& group,
     double defaultValue,
     boost::optional<double> minimum, boost::optional<double> maximum, boost::optional<double> step
     ) :
@@ -110,7 +111,7 @@ class VectorParameter : public ParameterObject
 {
 public:
   VectorParameter(
-    const std::string& name, const std::string& description, const std::string& group,
+    const Identifier& name, const std::string& description, const std::string& group,
     const std::vector<double>& defaultValue,
     boost::optional<double> minimum, boost::optional<double> maximum, boost::optional<double> step
     ) :
@@ -142,7 +143,7 @@ public:
   };
 
   EnumParameter(
-    const std::string& name, const std::string& description, const std::string& group,
+    const Identifier& name, const std::string& description, const std::string& group,
     int defaultValueIndex,
     std::vector<EnumItem> items
     ) :

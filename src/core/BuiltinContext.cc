@@ -21,7 +21,7 @@ void BuiltinContext::init()
   this->set_variable("PI", M_PI);
 }
 
-boost::optional<CallableFunction> BuiltinContext::lookup_local_function(const std::string& name, const Location& loc) const
+boost::optional<CallableFunction> BuiltinContext::lookup_local_function(const Identifier& name, const Location& loc) const
 {
   const auto& search = Builtins::instance()->getFunctions().find(name);
   if (search != Builtins::instance()->getFunctions().end()) {
@@ -35,7 +35,7 @@ boost::optional<CallableFunction> BuiltinContext::lookup_local_function(const st
   return Context::lookup_local_function(name, loc);
 }
 
-boost::optional<InstantiableModule> BuiltinContext::lookup_local_module(const std::string& name, const Location& loc) const
+boost::optional<InstantiableModule> BuiltinContext::lookup_local_module(const Identifier& name, const Location& loc) const
 {
   const auto& search = Builtins::instance()->getModules().find(name);
   if (search != Builtins::instance()->getModules().end()) {

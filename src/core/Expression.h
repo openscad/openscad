@@ -9,6 +9,7 @@
 #include "function.h"
 #include "memory.h"
 #include "Value.h"
+#include "Identifier.h"
 
 template <class T> class ContextHandle;
 
@@ -153,9 +154,9 @@ public:
   Lookup(std::string name, const Location& loc);
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
-  [[nodiscard]] const std::string& get_name() const { return name; }
+  [[nodiscard]] const Identifier& get_name() const { return name; }
 private:
-  std::string name;
+  Identifier name;
 };
 
 class MemberLookup : public Expression
@@ -176,11 +177,11 @@ public:
   [[nodiscard]] boost::optional<CallableFunction> evaluate_function_expression(const std::shared_ptr<const Context>& context) const;
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
-  [[nodiscard]] const std::string& get_name() const { return name; }
+  [[nodiscard]] const Identifier& get_name() const { return name; }
   static Expression *create(const std::string& funcname, const AssignmentList& arglist, Expression *expr, const Location& loc);
 public:
   bool isLookup;
-  std::string name;
+  Identifier name;
   shared_ptr<Expression> expr;
   AssignmentList arguments;
 };
