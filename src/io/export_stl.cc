@@ -102,9 +102,9 @@ uint64_t append_stl(const PolySet& polyset, std::ostream& output, bool binary)
   static_assert(sizeof(float) == 4, "Need 32 bit float");
   // check if tessellation is needed
   PolySet tmp(3);
-  bool needTessellation = !std::all_of(
+  bool needTessellation = std::any_of(
       polyset.indices.begin(), polyset.indices.end(),
-      [](auto& face) { return face.size() == 3; }
+      [](const auto& face) { return face.size() != 3; }
   );
   if (needTessellation)
     PolySetUtils::tessellate_faces(polyset, tmp);
@@ -123,7 +123,7 @@ uint64_t append_stl(const PolySet& polyset, std::ostream& output, bool binary)
   if (!binary) {
     vertexStrings.resize(ps.vertices.size());
     std::transform(ps.vertices.begin(), ps.vertices.end(), vertexStrings.begin(),
-      [](auto &p) { return toString({p.x(), p.y(), p.z()}); });
+      [](const auto& p) { return toString({p.x(), p.y(), p.z()}); });
   }
 
   // Used for binary mode only
@@ -144,7 +144,7 @@ uint64_t append_stl(const PolySet& polyset, std::ostream& output, bool binary)
 
     if (binary) {
       auto coords_offset = 0;
-      auto addCoords = [&](auto v) {
+      auto addCoords = [&](const auto& v) {
         for (auto i : {0, 1, 2})
           coords[coords_offset++] = v[i];
       };
@@ -216,7 +216,7 @@ uint64_t append_stl(const CGALHybridPolyhedron& hybrid, std::ostream& output,
     LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
   }
 
-  auto ps = hybrid.toPolySet();
+  const auto ps = hybrid.toPolySet();
   if (ps) {
     triangle_count += append_stl(*ps, output, binary);
   } else {
@@ -240,7 +240,7 @@ uint64_t append_stl(const ManifoldGeometry& mani, std::ostream& output,
     LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
   }
 
-  auto ps = mani.toPolySet();
+  const auto ps = mani.toPolySet();
   if (ps) {
     triangle_count += append_stl(*ps, output, binary);
   } else {
