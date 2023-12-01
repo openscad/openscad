@@ -237,7 +237,7 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyHull2D(const AbstractNode& no
       // Construct Polygon2d
       Outline2d outline;
       for (const auto& p : result) {
-        outline.vertices.push_back(Vector2d(p[0], p[1]));
+        outline.vertices.emplace_back(p[0], p[1]);
       }
       geometry->addOutline(outline);
     } catch (const CGAL::Failure_exception& e) {
