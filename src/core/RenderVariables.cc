@@ -11,7 +11,7 @@ RenderVariables::setRenderVariables(ContextHandle<BuiltinContext>& context) cons
 
   auto vpr = camera.getVpr();
   context->set_variable("$vpr", Value(VectorType(context->session(),
-    vpr.x(), vpr.y(), vpr.y())));
+    vpr.x(), vpr.y(), vpr.z())));
   auto vpt = camera.getVpt();
   context->set_variable("$vpt", Value(VectorType(context->session(),
     vpt.x(), vpt.y(), vpt.z())));
