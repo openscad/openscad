@@ -950,7 +950,7 @@ void ScintillaEditor::uncommentSelection()
   #ifdef ENABLE_PYTHON
   const std::string commentString = mainWindow.python_active ? "# " : "//";
   #else
-  const auto commentString = "//";
+  const std::string commentString = "//";
   #endif
   auto hasSelection = qsci->hasSelectedText();
 
