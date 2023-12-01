@@ -395,7 +395,7 @@ if(ENABLE_PYTHON)
   target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
   target_include_directories(OpenSCAD PRIVATE ${Nettle_INCLUDE_DIRS})
   target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
-  target_link_libraries(OpenSCAD PRIVATE ${NETTLE_LIBRARIES})
+  target_link_libraries(OpenSCAD PRIVATE ${Nettle_LIBRARIES})
 endif()
 
 if(ENABLE_HIDAPI)
