@@ -31,12 +31,13 @@
 #include "PlatformUtils.h"
 #include <Context.h>
 
-static PyObject *PyInit_openscad();
+static PyObject *PyInit_openscad(void);
 
 // https://docs.python.org/3.10/extending/newtypes.html 
 
 PyObject *pythonInitDict = nullptr;
 PyObject *pythonMainModule = nullptr ;
+std::list<std::string> pythonInventory;
 std::shared_ptr<AbstractNode> python_result_node = nullptr; /* global result veriable containing the python created result */
 bool python_active;  /* if python is actually used during evaluation */
 bool python_trusted; /* global Python trust flag */
@@ -45,7 +46,7 @@ bool pythonRuntimeInitialized = false;
 
 void PyOpenSCADObject_dealloc(PyOpenSCADObject *self)
 {
-  Py_XDECREF(self->dict);
+//  Py_XDECREF(self->dict);
 //  Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
@@ -118,7 +119,7 @@ int python_more_obj(std::vector<std::shared_ptr<AbstractNode>>& children, PyObje
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj)
 {
   std::shared_ptr<AbstractNode> result = ((PyOpenSCADObject *) obj)->node;
-  Py_XDECREF(obj); 
+//  Py_XDECREF(obj); 
   return result;
 }
 
@@ -143,12 +144,12 @@ std::shared_ptr<AbstractNode> PyOpenSCADObjectToNodeMulti(PyObject *objs)
       if(Py_TYPE(obj) ==  &PyOpenSCADType) {
         std::shared_ptr<AbstractNode> child = PyOpenSCADObjectToNode(obj);
         node->children.push_back(child);
-        Py_XDECREF(obj);
+//        Py_XDECREF(obj);
       } else return nullptr;
     }
     result=node;
   } else result=nullptr;
-  Py_XDECREF(objs);
+//  Py_XDECREF(objs);
   return result;
 }
 
@@ -403,44 +404,53 @@ Value python_functionfunc(const FunctionCall *call,const std::shared_ptr<const C
 
 void initPython(double time)
 {
-    if(pythonInitDict) { /* If already initialized, undo to reinitialize after */
-      finishPython();
+  if(pythonInitDict) { /* If already initialized, undo to reinitialize after */
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    PyObject *maindict = PyModule_GetDict(pythonMainModule);
+    while (PyDict_Next(maindict, &pos, &key, &value)) {
+      PyObject* key1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
+      const char *key_str =  PyBytes_AS_STRING(key1);
+      if(key_str == NULL) continue;
+      if (std::find(std::begin(pythonInventory), std::end(pythonInventory), key_str) == std::end(pythonInventory))
+      {
+        PyDict_DelItemString(maindict, key_str); // TODO does not completely work!
+      }
     }
-    if(!pythonInitDict) {
-	    char run_str[80];
-	    PyImport_AppendInittab("openscad", &PyInit_openscad);
-#ifdef ENABLE_LIBFIVE	    
-	    PyImport_AppendInittab("libfive", &PyInit_libfive);
-#endif	    
-	    PyConfig config;
-            PyConfig_InitPythonConfig(&config);
-	    char libdir[256];
-	    snprintf(libdir, 256, "%s/../libraries/python/",PlatformUtils::applicationPath().c_str()); /* add libraries/python to python search path */
-	    PyConfig_SetBytesString(&config, &config.pythonpath_env, libdir);
-//	    Py_Initialize();
-            Py_InitializeFromConfig(&config);
-            PyConfig_Clear(&config);
+  } else {
+    char run_str[200];
+    PyImport_AppendInittab("openscad", &PyInit_openscad);
+    PyConfig config;
+    PyConfig_InitPythonConfig(&config);
+    char libdir[256];
+    snprintf(libdir, 256, "%s/../libraries/python/",PlatformUtils::applicationPath().c_str()); /* add libraries/python to python search path */
+    PyConfig_SetBytesString(&config, &config.pythonpath_env, libdir);
+    Py_InitializeFromConfig(&config);
+    PyConfig_Clear(&config);
 
-	    pythonMainModule =  PyImport_AddModule("__main__");
-	    pythonMainModuleInitialized = pythonMainModule != nullptr;
-	    pythonInitDict = PyModule_GetDict(pythonMainModule);
-	    pythonRuntimeInitialized = pythonInitDict != nullptr;
-	    PyInit_PyOpenSCAD();
-#ifdef ENABLE_LIBFIVE	    
-	    PyInit_PyLibFive();
-#endif	    
-	    sprintf(run_str,"from openscad import *\nfa=12.0\nfn=0.0\nfs=2.0\nt=%g",time);
-	    PyRun_String(run_str, Py_file_input, pythonInitDict, pythonInitDict);
+    pythonMainModule =  PyImport_AddModule("__main__");
+    pythonMainModuleInitialized = pythonMainModule != nullptr;
+    pythonInitDict = PyModule_GetDict(pythonMainModule);
+    pythonRuntimeInitialized = pythonInitDict != nullptr;
+    PyInit_PyOpenSCAD();
+    sprintf(run_str,"from openscad import *\nfa=12.0\nfn=0.0\nfs=2.0\nt=%g",time);
+    PyRun_String(run_str, Py_file_input, pythonInitDict, pythonInitDict);
+
+      // find base variables
+    PyObject *key, *value;
+    Py_ssize_t pos = 0;
+    PyObject *maindict = PyModule_GetDict(pythonMainModule);
+    while (PyDict_Next(maindict, &pos, &key, &value)) {
+      PyObject* key1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
+      const char *key_str =  PyBytes_AS_STRING(key1);
+      if(key_str == NULL) continue;
+      pythonInventory.push_back(key_str);
     }
+  }
 }
 
 void finishPython()
 {
-      if (Py_FinalizeEx() < 0) {
-        exit(120);
-      }
-      pythonInitDict=nullptr;
-      pythonRuntimeInitialized = false;
 }
 
 std::string evaluatePython(const std::string & code, AssignmentList &assignments)
@@ -554,8 +564,8 @@ sys.stderr = stderr_bak\n\
       Py_XDECREF(pyExcTraceback);
     }
 
-    if(pyExcType != nullptr) Py_XDECREF(pyExcType);
-    if(pyExcValue != nullptr) Py_XDECREF(pyExcValue);
+//    if(pyExcType != nullptr) Py_XDECREF(pyExcType);
+//    if(pyExcValue != nullptr) Py_XDECREF(pyExcValue);
     return error;
 }
 /*
@@ -569,34 +579,34 @@ PyTypeObject PyOpenSCADType = {
     0,                         			/* tp_itemsize */
     (destructor) PyOpenSCADObject_dealloc,	/* tp_dealloc */
     0,                         			/* vectorcall_offset */
-    nullptr,                         			/* tp_getattr */
-    nullptr,                         			/* tp_setattr */
-    nullptr,                         			/* tp_as_async */
-    nullptr,                         			/* tp_repr */
+    0,                         			/* tp_getattr */
+    0,                         			/* tp_setattr */
+    0,                         			/* tp_as_async */
+    0,                         			/* tp_repr */
     &PyOpenSCADNumbers,        			/* tp_as_number */
-    nullptr,                         			/* tp_as_sequence */
+    0,                         			/* tp_as_sequence */
     &PyOpenSCADMapping,        			/* tp_as_mapping */
-    nullptr,                         			/* tp_hash  */
-    nullptr,                         			/* tp_call */
-    nullptr,                         			/* tp_str */
-    nullptr,                         			/* tp_getattro */
-    nullptr,                         			/* tp_setattro */
-    nullptr,                         			/* tp_as_buffer */
+    0,                         			/* tp_hash  */
+    0,                         			/* tp_call */
+    0,                         			/* tp_str */
+    0,                         			/* tp_getattro */
+    0,                         			/* tp_setattro */
+    0,                         			/* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,	/* tp_flags */
     "PyOpenSCAD Object",          		/* tp_doc */
-    nullptr,                         			/* tp_traverse */
-    nullptr,                         			/* tp_clear */
-    nullptr,                         			/* tp_richcompare */
+    0,                         			/* tp_traverse */
+    0,                         			/* tp_clear */
+    0,                         			/* tp_richcompare */
     0,                         			/* tp_weaklistoffset */
-    nullptr,                         			/* tp_iter */
-    nullptr,                         			/* tp_iternext */
+    0,                         			/* tp_iter */
+    0,                         			/* tp_iternext */
     PyOpenSCADMethods,             		/* tp_methods */
-    nullptr,             				/* tp_members */
-    nullptr,                         			/* tp_getset */
-    nullptr,                         			/* tp_base */
-    nullptr,                         			/* tp_dict */
-    nullptr,                         			/* tp_descr_get */
-    nullptr,                         			/* tp_descr_set */
+    0,             				/* tp_members */
+    0,                         			/* tp_getset */
+    0,                         			/* tp_base */
+    0,                         			/* tp_dict */
+    0,                         			/* tp_descr_get */
+    0,                         			/* tp_descr_set */
     0,                         			/* tp_dictoffset */
     (initproc) PyOpenSCADInit,      		/* tp_init */
     PyOpenSCADObject_alloc,    			/* tp_alloc */
@@ -611,10 +621,10 @@ static PyModuleDef OpenSCADModule = {
   "OpenSCAD Python Module",
   -1,
   PyOpenSCADFunctions,
-  nullptr, nullptr, nullptr, nullptr
+  NULL, NULL, NULL, NULL
 };
 
-static PyObject *PyInit_openscad()
+static PyObject *PyInit_openscad(void)
 {
   return PyModule_Create(&OpenSCADModule);
 }
@@ -623,9 +633,9 @@ PyMODINIT_FUNC PyInit_PyOpenSCAD(void)
 {
   PyObject *m;
 
-  if (PyType_Ready(&PyOpenSCADType) < 0) return nullptr;
+  if (PyType_Ready(&PyOpenSCADType) < 0) return NULL;
   m = PyModule_Create(&OpenSCADModule);
-  if (m == nullptr) return nullptr;
+  if (m == NULL) return NULL;
 
   Py_INCREF(&PyOpenSCADType);
   PyModule_AddObject(m, "openscad", (PyObject *)&PyOpenSCADType);
