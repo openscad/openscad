@@ -10,10 +10,10 @@ class PolySetBuilder
 {
 public:
   PolySetBuilder(int vertices_count=0, int indices_count=0, int dim=3, boost::tribool convex=unknown);
-  PolySetBuilder(const Polygon2d pol);
+  PolySetBuilder(const Polygon2d &pol);
   void setConvexity(int n);
   int vertexIndex(const Vector3d &coord);
-  int numVertices(void);
+  int numVertices();
   void appendPoly(int nvertices);
   void append(const PolySet *ps);
   void appendPoly(const std::vector<int> &inds);
@@ -21,7 +21,7 @@ public:
   void appendPoly(const std::vector<Vector3d> &v);
   void appendVertex(int n);
   void prependVertex(int n);
-  PolySet *build(void);
+  PolySet *build();
 private:  
   PolySet *ps;
   Reindexer<Vector3d> allVertices;
