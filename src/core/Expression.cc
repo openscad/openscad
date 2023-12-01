@@ -46,7 +46,7 @@
 #include <boost/regex.hpp>
 #include <boost/assign/std/vector.hpp>
 #ifdef ENABLE_PYTHON
-#include "pyopenscad.h"
+#include "python/public.h"
 #endif
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -518,8 +518,8 @@ static SimplificationResult simplify_function_body(const Expression *expression,
 #ifdef ENABLE_PYTHON    
       if(f == boost::none)
       {
-	      Value v=python_functionfunc(call,context);
-	      if(!v.isUndefined()) return v;
+        Value v = python_functionfunc(call,context);
+        if(!v.isUndefined()) return v;
       }
 #endif    
       if (!f) {

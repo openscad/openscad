@@ -29,7 +29,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include <Python.h>
-#include <pyopenscad.h>
+#include "pyopenscad.h"
 
 #include "primitives.h"
 #include "TransformNode.h"

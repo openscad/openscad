@@ -41,8 +41,7 @@ namespace fs = boost::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
 #ifdef ENABLE_PYTHON
-#include "pyopenscad.h"
-extern bool python_trusted;
+#include "python/public.h"
 #endif
 
 SourceFile::SourceFile(std::string path, std::string filename)
@@ -82,7 +81,7 @@ void SourceFile::registerUse(const std::string& path, const Location& loc)
         boost::filesystem::path boost_path(path); 
         std::string cmd = "import sys\nsys.path.append('"+boost_path.parent_path().string()+"')\nimport "+boost_path.stem().string();
 	AssignmentList dummy_assignment;
-	if(pythonInitDict == NULL) initPython(0.0);
+        if(!pythonRuntimeInitialized) initPython(0.0);
         std::string error=evaluatePython(cmd,dummy_assignment); 
         if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
       } else LOG(message_group::Error, "File not trusted '%1$s'", path);

@@ -948,7 +948,7 @@ void ScintillaEditor::commentSelection()
 void ScintillaEditor::uncommentSelection()
 {
   #ifdef ENABLE_PYTHON
-  const auto commentString = mainWindow.python_active ? "# " : "//";
+  const std::string commentString = mainWindow.python_active ? "# " : "//";
   #else
   const auto commentString = "//";
   #endif
@@ -958,7 +958,7 @@ void ScintillaEditor::uncommentSelection()
   getRange(&lineFrom, &lineTo);
   for (int line = lineFrom; line <= lineTo; ++line) {
     QString lineText = qsci->text(line);
-    if (lineText.startsWith(commentString)) {
+    if (lineText.startsWith(commentString.c_str())) {
       qsci->setSelection(line, 0, line, 2);
       qsci->removeSelectedText();
     }
