@@ -87,12 +87,7 @@
 #endif
 
 #ifdef ENABLE_PYTHON
-extern std::shared_ptr<AbstractNode> python_result_node;
-void initPython(double time);
-void finishPython(void);
-std::string evaluatePython(const std::string &code, AssignmentList &assignments);
-extern bool python_active;
-extern bool python_trusted;
+#include "python/public.h"
 #endif
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;

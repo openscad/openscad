@@ -386,16 +386,60 @@ target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
 if(ENABLE_PYTHON)
+  add_library(OpenSCADPy
+    src/python/pyopenscad.cc
+    src/python/pyfunctions.cc)
   find_package(Python REQUIRED COMPONENTS Interpreter Development)
   find_package(Nettle REQUIRED)
   message(STATUS "Python enabled, using Nettle ")
   message(STATUS ${Nettle_INCLUDE_DIRS})
   message(STATUS ${Nettle_LIBRARIES})
   message(STATUS ${Nettle_FOUND})
-  target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
-  target_include_directories(OpenSCAD PRIVATE ${Nettle_INCLUDE_DIRS})
-  target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
-  target_link_libraries(OpenSCAD PRIVATE ${NETTLE_LIBRARIES})
+  target_include_directories(OpenSCADPy PRIVATE ${Python_INCLUDE_DIRS})
+  target_include_directories(OpenSCADPy PRIVATE ${Nettle_INCLUDE_DIRS})
+  if(MSVC)
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
+  else()
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
+  endif()
+  target_link_libraries(OpenSCADPy PRIVATE ${Python_LIBRARIES})
+  target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})
+  target_link_libraries(OpenSCADPy PRIVATE Eigen3::Eigen)
+  # copy compile options for the main OpenSCAD target
+  # duplication is not very ideal but not sure what better options do we have
+  set_property(TARGET OpenSCADPy PROPERTY CXX_STANDARD 17)
+  set_property(TARGET OpenSCADPy PROPERTY CXX_EXTENSIONS OFF)
+  set_property(TARGET OpenSCADPy PROPERTY CXX_STANDARD_REQUIRED ON)
+  target_compile_definitions(OpenSCADPy PRIVATE "STACKSIZE=${STACKSIZE}")
+  target_compile_options(OpenSCADPy PRIVATE "$<$<CONFIG:DEBUG>:-DDEBUG>")
+  target_compile_definitions(OpenSCADPy PRIVATE
+    OPENSCAD_VERSION=${OPENSCAD_VERSION}
+    OPENSCAD_SHORTVERSION=${OPENSCAD_SHORTVERSION}
+    OPENSCAD_YEAR=${OPENSCAD_YEAR}
+    OPENSCAD_MONTH=${OPENSCAD_MONTH})
+  target_include_directories(OpenSCADPy SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+  target_include_directories(OpenSCADPy SYSTEM PRIVATE ${GLIB2_INCLUDE_DIRS})
+  target_include_directories(OpenSCADPy PRIVATE
+    "src"
+    "src/core"
+    "src/core/customizer"
+    "src/ext"
+    "src/ext/json"
+    "src/ext/lexertl/include"
+    "src/ext/libtess2/Include"
+    "src/ext"
+    "src/geometry"
+    "src/geometry/cgal"
+    "src/geometry/manifold"
+    "src/glview"
+    "src/glview/preview"
+    "src/glview/cgal"
+    "src/gui"
+    "src/io"
+    "src/platform"
+    "src/utils"
+  )
+  target_link_libraries(OpenSCAD PRIVATE OpenSCADPy)
 endif()
 
 if(ENABLE_HIDAPI)
@@ -795,9 +839,9 @@ set(CORE_SOURCES
   ${FLEX_comment_lexer_OUTPUTS}
   ${BISON_comment_parser_OUTPUTS})
 if(ENABLE_PYTHON)
-	list(APPEND CORE_SOURCES
-		    src/core/pyopenscad.cc 
-		    src/core/pyfunctions.cc)
+  # list(APPEND CORE_SOURCES
+	 # 	    src/python/pyopenscad.cc 
+	 # 	    src/python/pyfunctions.cc)
 	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
 endif()
 
