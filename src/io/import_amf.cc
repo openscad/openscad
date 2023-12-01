@@ -25,6 +25,7 @@
  */
 
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "PolySetUtils.h"
 #include "printutils.h"
 #include "AST.h"
@@ -59,7 +60,7 @@ private:
 
   using cb_func = void (*)(AmfImporter *, const xmlChar *);
 
-  PolySet *polySet{nullptr};
+  PolySetBuilder *builder;
   std::vector<PolySet *> polySets;
 
   double x{0}, y{0}, z{0};
@@ -101,7 +102,7 @@ AmfImporter::AmfImporter(const Location& loc) : loc(loc)
 
 AmfImporter::~AmfImporter()
 {
-  delete polySet;
+  delete builder;
 }
 
 void AmfImporter::set_x(AmfImporter *importer, const xmlChar *value)
@@ -136,15 +137,16 @@ void AmfImporter::set_v3(AmfImporter *importer, const xmlChar *value)
 
 void AmfImporter::start_object(AmfImporter *importer, const xmlChar *)
 {
-  importer->polySet = new PolySet(3);
+  importer->builder = new PolySetBuilder(0,0,3);
 }
 
 void AmfImporter::end_object(AmfImporter *importer, const xmlChar *)
 {
   PRINTDB("AMF: add object %d", importer->polySets.size());
-  importer->polySets.push_back(importer->polySet);
+importer->polySets.push_back(importer->builder->build());
   importer->vertex_list.clear();
-  importer->polySet = nullptr;
+  delete importer->builder;
+  importer->builder = nullptr;
 }
 
 void AmfImporter::end_vertex(AmfImporter *importer, const xmlChar *)
@@ -155,17 +157,14 @@ void AmfImporter::end_vertex(AmfImporter *importer, const xmlChar *)
 
 void AmfImporter::end_triangle(AmfImporter *importer, const xmlChar *)
 {
-  int idx_v1 = importer->idx_v1;
-  int idx_v2 = importer->idx_v2;
-  int idx_v3 = importer->idx_v3;
-  PRINTDB("AMF: add triangle %d - (%.2f, %.2f, %.2f)", importer->vertex_list.size() % idx_v1 % idx_v2 % idx_v3);
+  int idx[3]= {importer->idx_v1,importer->idx_v2,importer->idx_v3};
+  PRINTDB("AMF: add triangle %d - (%.2f, %.2f, %.2f)", importer->vertex_list.size() % idx[0] % idx[1] % idx[2]);
 
   std::vector<Eigen::Vector3d>& v = importer->vertex_list;
 
-  importer->polySet->append_poly(3);
-  importer->polySet->append_vertex(v[idx_v1].x(), v[idx_v1].y(), v[idx_v1].z());
-  importer->polySet->append_vertex(v[idx_v2].x(), v[idx_v2].y(), v[idx_v2].z());
-  importer->polySet->append_vertex(v[idx_v3].x(), v[idx_v3].y(), v[idx_v3].z());
+  importer->builder->appendPoly(3);
+  for(int i=0;i<3;i++) // TODO set vertex array first
+	  importer->builder->appendVertex(importer->builder->vertexIndex(Vector3d(v[idx[i]].x(), v[idx[i]].y(), v[idx[i]].z())));
 }
 
 void AmfImporter::processNode(xmlTextReaderPtr reader)

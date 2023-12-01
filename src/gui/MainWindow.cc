@@ -101,6 +101,9 @@
 #include "python/public.h"
 #include "nettle/sha2.h"
 #include "nettle/base64.h"
+//extern std::shared_ptr<AbstractNode> python_result_node;
+//std::string evaluatePython(const std::string &code, double time);
+//extern bool python_trusted;
 
 std::string SHA256HashString(std::string aString){
     uint8_t  digest[SHA256_DIGEST_SIZE];

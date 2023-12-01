@@ -6,7 +6,12 @@
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Surface_mesh.h>
+#include "PolySetBuilder.h"
+#include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
+#include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
 namespace CGALUtils {
+
+namespace PMP = CGAL::Polygon_mesh_processing;
 
 template <class TriangleMesh>
 bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
@@ -14,30 +19,26 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
   using GT = boost::graph_traits<TriangleMesh>;
   using vertex_descriptor = typename GT::vertex_descriptor;
 
-  bool err = false;
-  auto num_vertices = ps.numFacets() * 3;
-  auto num_facets = ps.numFacets();
-  auto num_edges = num_vertices + num_facets + 2; // Euler's formula.
-  mesh.reserve(mesh.number_of_vertices() + num_vertices, mesh.number_of_halfedges() + num_edges,
-               mesh.number_of_faces() + num_facets);
+  std::vector<typename TriangleMesh::Point> points;
+  std::vector<std::vector<size_t>> polygons;
 
-  std::vector<vertex_descriptor> polygon;
-
-  std::unordered_map<Vector3d, vertex_descriptor> indices;
-
-  for (const auto& p : ps.polygons) {
-    polygon.clear();
-    for (auto& v : p) {
-      auto size_before = indices.size();
-      auto& index = indices[v];
-      if (size_before != indices.size()) {
-        index = mesh.add_vertex(vector_convert<typename TriangleMesh::Point>(v));
-      }
-      polygon.push_back(index);
+  // at least 3*numFacets
+  points.reserve(ps.indices.size() * 3);
+  polygons.reserve(ps.indices.size());
+  for (const auto& inds : ps.indices) {
+    std::vector<size_t> &polygon = polygons.emplace_back();
+    polygon.reserve(inds.size());
+    for (const auto &ind : inds) {
+      polygon.push_back(points.size());
+        auto &pt = ps.vertices[ind];
+      points.push_back({pt[0], pt[1], pt[2]});
     }
-    mesh.add_face(polygon);
   }
-  return err;
+
+  PMP::repair_polygon_soup(points, polygons);
+  PMP::orient_polygon_soup(points, polygons);
+  PMP::polygon_soup_to_polygon_mesh(points, polygons, mesh);
+  return false;
 }
 
 template bool createMeshFromPolySet(const PolySet& ps, CGAL_HybridMesh& mesh);
@@ -47,9 +48,9 @@ template <class TriangleMesh>
 bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
 {
   bool err = false;
-  ps.reserve(ps.numFacets() + mesh.number_of_faces());
+  PolySetBuilder builder(0,mesh.number_of_faces()+ mesh.number_of_faces());
   for (const auto& f : mesh.faces()) {
-    ps.append_poly(mesh.degree(f));
+    builder.appendPoly(mesh.degree(f));
 
     CGAL::Vertex_around_face_iterator<TriangleMesh> vbegin, vend;
     for (boost::tie(vbegin, vend) = vertices_around_face(mesh.halfedge(f), mesh); vbegin != vend;
@@ -59,9 +60,11 @@ bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
       double x = CGAL::to_double(v.x());
       double y = CGAL::to_double(v.y());
       double z = CGAL::to_double(v.z());
-      ps.append_vertex(x, y, z);
+      builder.appendVertex(builder.vertexIndex(Vector3d(x, y, z)));
     }
   }
+  builder.append(&ps);
+  ps.reset(builder.build());
   return err;
 }
 

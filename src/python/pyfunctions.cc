@@ -27,7 +27,8 @@
 
 #include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
-
+#include "linalg.h"
+#include "GeometryUtils.h"
 #include <Python.h>
 #include "pyopenscad.h"
 
@@ -247,7 +248,7 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *triangles = NULL;
 
   PyObject *element;
-  point3d point;
+  Vector3d point;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!O!|iO!", kwlist,
                                    &PyList_Type, &points,
@@ -267,9 +268,9 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
     for (i = 0; i < PyList_Size(points); i++) {
       element = PyList_GetItem(points, i);
       if (PyList_Check(element) && PyList_Size(element) == 3) {
-        point.x = PyFloat_AsDouble(PyList_GetItem(element, 0));
-        point.y = PyFloat_AsDouble(PyList_GetItem(element, 1));
-        point.z = PyFloat_AsDouble(PyList_GetItem(element, 2));
+        point[0] = PyFloat_AsDouble(PyList_GetItem(element, 0));
+        point[1] = PyFloat_AsDouble(PyList_GetItem(element, 1));
+        point[2] = PyFloat_AsDouble(PyList_GetItem(element, 2));
         node->points.push_back(point);
       } else {
         PyErr_SetString(PyExc_TypeError, "Coordinate must exactly contain 3 numbers");
@@ -295,7 +296,7 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
     for (i = 0; i < PyList_Size(faces); i++) {
       element = PyList_GetItem(faces, i);
       if (PyList_Check(element)) {
-        std::vector<size_t> face;
+        std::vector<int> face;
         for (j = 0; j < PyList_Size(element); j++) {
           pointIndex = PyLong_AsLong(PyList_GetItem(element, j));
 	  if(pointIndex < 0 || pointIndex >= node->points.size()) {
@@ -428,7 +429,7 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
   int convexity = 2;
 
   PyObject *element;
-  point2d point;
+  Vector2d point;
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!|O!i", kwlist,
                                    &PyList_Type, &points,
@@ -447,8 +448,8 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
     for (i = 0; i < PyList_Size(points); i++) {
       element = PyList_GetItem(points, i);
       if (PyList_Check(element) && PyList_Size(element) == 2) {
-        point.x = PyFloat_AsDouble(PyList_GetItem(element, 0));
-        point.y = PyFloat_AsDouble(PyList_GetItem(element, 1));
+        point[0] = PyFloat_AsDouble(PyList_GetItem(element, 0));
+        point[1] = PyFloat_AsDouble(PyList_GetItem(element, 1));
         node->points.push_back(point);
       } else {
         PyErr_SetString(PyExc_TypeError, "Coordinate must exactly contain 2 numbers");

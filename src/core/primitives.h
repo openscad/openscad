@@ -28,14 +28,6 @@
 #include <sstream>
 
 
-struct point2d {
-  double x, y;
-};
-
-struct point3d {
-  double x, y, z;
-};
-
 class CubeNode : public LeafNode
 {
 public:
@@ -116,8 +108,8 @@ public:
   std::string name() const override { return "polyhedron"; }
   const Geometry *createGeometry() const override;
 
-  std::vector<point3d> points;
-  std::vector<std::vector<size_t>> faces;
+  std::vector<Vector3d> points;
+  std::vector<IndexedFace> faces;
   int convexity = 1;
 };
 
@@ -174,7 +166,7 @@ public:
   std::string name() const override { return "polygon"; }
   const Geometry *createGeometry() const override;
 
-  std::vector<point2d> points;
+  std::vector<Vector2d> points;
   std::vector<std::vector<size_t>> paths;
   int convexity = 1;
 };

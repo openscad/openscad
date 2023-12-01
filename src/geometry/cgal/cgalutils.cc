@@ -6,6 +6,7 @@
 #include "cgal.h"
 #include "cgalutils.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "printutils.h"
 #include "Polygon2d.h"
 #include "PolySetUtils.h"
@@ -166,16 +167,16 @@ bool is_approximately_convex(const PolySet& ps) {
   using Edge_to_facet_map = std::map<Edge, int, VecPairCompare>;
   Edge_to_facet_map edge_to_facet_map;
   std::vector<Plane> facet_planes;
-  facet_planes.reserve(ps.polygons.size());
+  facet_planes.reserve(ps.indices.size());
 
-  for (size_t i = 0; i < ps.polygons.size(); ++i) {
+  for (size_t i = 0; i < ps.indices.size(); ++i) {
     Plane plane;
-    auto N = ps.polygons[i].size();
+    auto N = ps.indices[i].size();
     if (N >= 3) {
       std::vector<Point> v(N);
       for (size_t j = 0; j < N; ++j) {
-        v[j] = vector_convert<Point>(ps.polygons[i][j]);
-        Edge edge(ps.polygons[i][j], ps.polygons[i][(j + 1) % N]);
+        v[j] = vector_convert<Point>(ps.vertices[ps.indices[i][j]]);
+        Edge edge(ps.vertices[ps.indices[i][j]], ps.vertices[ps.indices[i][(j + 1) % N]]);
         if (edge_to_facet_map.count(edge)) return false; // edge already exists: nonmanifold
         edge_to_facet_map[edge] = i;
       }
@@ -186,18 +187,18 @@ bool is_approximately_convex(const PolySet& ps) {
     facet_planes.push_back(plane);
   }
 
-  for (size_t i = 0; i < ps.polygons.size(); ++i) {
-    auto N = ps.polygons[i].size();
+  for (size_t i = 0; i < ps.indices.size(); ++i) {
+    auto N = ps.indices[i].size();
     if (N < 3) continue;
     for (size_t j = 0; j < N; ++j) {
-      Edge other_edge(ps.polygons[i][(j + 1) % N], ps.polygons[i][j]);
+      Edge other_edge(ps.vertices[ps.indices[i][(j + 1) % N]], ps.vertices[ps.indices[i][j]]);
       if (edge_to_facet_map.count(other_edge) == 0) return false; //
       //Edge_to_facet_map::const_iterator it = edge_to_facet_map.find(other_edge);
       //if (it == edge_to_facet_map.end()) return false; // not a closed manifold
       //int other_facet = it->second;
       int other_facet = edge_to_facet_map[other_edge];
 
-      auto p = vector_convert<Point>(ps.polygons[i][(j + 2) % N]);
+      auto p = vector_convert<Point>(ps.vertices[ps.indices[i][(j + 2) % N]]);
 
       if (facet_planes[other_facet].has_on_positive_side(p)) {
         // Check angle
@@ -220,9 +221,9 @@ bool is_approximately_convex(const PolySet& ps) {
   while (!facets_to_visit.empty()) {
     int f = facets_to_visit.front(); facets_to_visit.pop();
 
-    for (size_t i = 0; i < ps.polygons[f].size(); ++i) {
-      int j = (i + 1) % ps.polygons[f].size();
-      auto it = edge_to_facet_map.find(Edge(ps.polygons[f][j], ps.polygons[f][i]));
+    for (size_t i = 0; i < ps.indices[f].size(); ++i) {
+      int j = (i + 1) % ps.indices[f].size();
+      auto it = edge_to_facet_map.find(Edge(ps.vertices[ps.indices[f][j]], ps.vertices[ps.indices[f][i]]));
       if (it == edge_to_facet_map.end()) return false; // Nonmanifold
       if (!explored_facets.count(it->second)) {
         explored_facets.insert(it->second);
@@ -232,7 +233,7 @@ bool is_approximately_convex(const PolySet& ps) {
   }
 
   // Make sure that we were able to reach all polygons during our visit
-  return explored_facets.size() == ps.polygons.size();
+  return explored_facets.size() == ps.indices.size();
 }
 
 shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const shared_ptr<const Geometry>& geom)
@@ -378,13 +379,16 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
     LOG(message_group::Error, "Non-manifold mesh created: %1$d unconnected edges", unconnected2);
   }
 
-  ps.reserve(allTriangles.size());
-  for (const auto& t : allTriangles) {
-    ps.append_poly(3);
-    ps.append_vertex(verts[t[0]]);
-    ps.append_vertex(verts[t[1]]);
-    ps.append_vertex(verts[t[2]]);
+  PolySetBuilder builder(verts.size(),allTriangles.size());
+  std::vector<int> indMap;
+  for(int i=0;i<verts.size();i++)
+    indMap.push_back(builder.vertexIndex({verts[i][0],verts[i][1],verts[i][2]}));
+
+  for(int i=0;i<allTriangles.size();i++)  {
+	const auto &tri=allTriangles[i];
+	builder.appendPoly({indMap[tri[0]],indMap[tri[1]],indMap[tri[2]]});
   }
+  ps.reset(builder.build());
 
 #if 0 // For debugging
   std::cerr.precision(20);

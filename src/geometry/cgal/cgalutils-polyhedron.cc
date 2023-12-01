@@ -2,6 +2,7 @@
 
 #include "cgalutils.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "printutils.h"
 #include "Grid.h"
 
@@ -46,11 +47,12 @@ public:
     std::vector<std::vector<size_t>> indices;
 
     // Align all vertices to grid and build vertex array in vertices
-    for (const auto& p : ps.polygons) {
+    for (const auto& p : ps.indices) {
       indices.emplace_back();
       indices.back().reserve(p.size());
-      for (auto v : boost::adaptors::reverse(p)) {
+      for (auto ind : boost::adaptors::reverse(p)) {
         // align v to the grid; the CGALPoint will receive the aligned vertex
+	Vector3d v=ps.vertices[ind];
         size_t idx = grid.align(v);
         if (idx == vertices.size()) {
           CGALPoint p(v[0], v[1], v[2]);
@@ -64,7 +66,7 @@ public:
     printf("polyhedron(faces=[");
     int pidx = 0;
 #endif
-    B.begin_surface(vertices.size(), ps.polygons.size());
+    B.begin_surface(vertices.size(), ps.indices.size());
     for (const auto& p : vertices) {
       B.add_vertex(p);
     }
@@ -114,12 +116,12 @@ public:
     std::vector<size_t> indices(3);
 
     // Estimating same # of vertices as polygons (very rough)
-    B.begin_surface(ps.polygons.size(), ps.polygons.size());
+    B.begin_surface(ps.indices.size(), ps.indices.size());
     int pidx = 0;
 #ifdef GEN_SURFACE_DEBUG
     printf("polyhedron(faces=[");
 #endif
-    for (const auto& p : ps.polygons) {
+    for (const auto& p : ps.indices) {
 #ifdef GEN_SURFACE_DEBUG
       if (pidx++ > 0) printf(",");
 #endif
@@ -284,20 +286,21 @@ bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps)
   using FCI = typename Polyhedron::Facet_const_iterator;
   using HFCC = typename Polyhedron::Halfedge_around_facet_const_circulator;
 
-  ps.reserve(p.size_of_facets());
+  PolySetBuilder builder(0,p.size_of_facets());
 
   for (FCI fi = p.facets_begin(); fi != p.facets_end(); ++fi) {
     HFCC hc = fi->facet_begin();
     HFCC hc_end = hc;
-    ps.append_poly(fi->facet_degree());
+    builder.appendPoly(fi->facet_degree());
     do {
       Vertex const& v = *((hc++)->vertex());
       double x = CGAL::to_double(v.point().x());
       double y = CGAL::to_double(v.point().y());
       double z = CGAL::to_double(v.point().z());
-      ps.append_vertex(x, y, z);
+      builder.appendVertex(builder.vertexIndex(Vector3d(x, y, z)));
     } while (hc != hc_end);
   }
+  ps.reset(builder.build());
   return err;
 }
 
