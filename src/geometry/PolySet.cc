@@ -46,11 +46,11 @@
 
  */
 
-PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(convex), dirty(false)
+PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(convex), dirty(true)
 {
 }
 
-PolySet::PolySet(Polygon2d origin) : polygon(std::move(origin)), dim(2), convex(unknown), dirty(false)
+PolySet::PolySet(Polygon2d origin) : polygon(std::move(origin)), dim(2), convex(unknown), dirty(true)
 {
 }
 
