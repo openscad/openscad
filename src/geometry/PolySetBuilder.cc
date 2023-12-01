@@ -42,15 +42,15 @@
 
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
 {
-  ps= new PolySet(dim, convex);
+  ps = new PolySet(dim, convex);
   if(vertices_count != 0) ps->vertices.reserve(vertices_count);
   if(indices_count != 0) ps->indices.reserve(indices_count);
 }
 
-PolySetBuilder::PolySetBuilder(const Polygon2d pol)
+PolySetBuilder::PolySetBuilder(const Polygon2d &pol)
 {
-  ps= new PolySet(pol);
-  ps->dirty=false;
+  ps = new PolySet(pol);
+  ps->dirty = false;
 }
 
 int PolySetBuilder::vertexIndex(const Vector3d &pt)
@@ -60,7 +60,8 @@ int PolySetBuilder::vertexIndex(const Vector3d &pt)
 
 void PolySetBuilder::appendPoly(const std::vector<int> &inds)
 {
-  ps->indices.push_back(inds);        
+  auto& face = ps->indices.emplace_back();
+  face.insert(face.begin(), inds.begin(), inds.end());
 }
 
 void PolySetBuilder::appendGeometry(const shared_ptr<const Geometry>& geom)
@@ -97,7 +98,7 @@ void PolySetBuilder::appendGeometry(const shared_ptr<const Geometry>& geom)
 
 void PolySetBuilder::appendPoly(const std::vector<Vector3d> &v)
 {
-  std::vector<int> inds;
+  IndexedFace inds;
   inds.reserve(v.size());
   for(const auto &pt: v)
     inds.push_back(vertexIndex(pt));  
@@ -116,8 +117,8 @@ void PolySetBuilder::prependVertex(int ind){
   ps->indices.back().insert(ps->indices.back().begin(), ind);
 }
 
-int PolySetBuilder::numVertices(void) {
-	return allVertices.size();
+int PolySetBuilder::numVertices() {
+  return allVertices.size();
 }
 
 void PolySetBuilder::append(const PolySet *ps)
@@ -130,7 +131,7 @@ void PolySetBuilder::append(const PolySet *ps)
   }
 }
 
-PolySet *PolySetBuilder::build(void)
+PolySet *PolySetBuilder::build()
 {
   ps->dirty = true;
   ps->vertices = allVertices.getArray();
@@ -138,6 +139,6 @@ PolySet *PolySetBuilder::build(void)
 }
 
 void PolySetBuilder::setConvexity(int convexity){
-	ps->convexity=convexity;
+  ps->convexity = convexity;
 }
 

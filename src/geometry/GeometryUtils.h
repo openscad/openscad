@@ -2,11 +2,13 @@
 
 #include "linalg.h"
 #include <vector>
+#include <boost/container/small_vector.hpp>
 
 using Polygon = std::vector<Vector3d>;
 using Polygons = std::vector<Polygon>;
 
-using IndexedFace = std::vector<int>;
+// faces are usually triangles or quads
+using IndexedFace = boost::container::small_vector<int, 4>;
 using IndexedTriangle = Vector3i;
 using PolygonIndices = std::vector<IndexedFace>;
 
