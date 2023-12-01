@@ -5,7 +5,7 @@
 #include "exceptions.h"
 #include "printutils.h"
 #ifdef ENABLE_PYTHON
-#include "pyopenscad.h"
+#include "python/public.h"
 #endif
 
 void ModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
@@ -69,11 +69,11 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_pt
 #ifdef ENABLE_PYTHON
     int modulefound;
     result = python_modulefunc(this, context,&modulefound);
-    if(result == NULL && modulefound && pythonMainModule != NULL) {
-	return result;
+    if(result == nullptr && modulefound && pythonMainModuleInitialized) {
+      return result;
     }
-#endif	  
-    if(result == NULL) LOG(message_group::Warning, loc, context->documentRoot(), "Ignoring unknown module '%1$s'", this->name());
+#endif
+    if(result == nullptr) LOG(message_group::Warning, loc, context->documentRoot(), "Ignoring unknown module '%1$s'", this->name());
     return result;
   }
 
