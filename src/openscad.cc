@@ -26,6 +26,7 @@
 
 #include "openscad.h"
 #include "CommentParser.h"
+#include "RenderVariables.h"
 #include "core/node.h"
 #include "SourceFile.h"
 #include "BuiltinContext.h"
@@ -333,12 +334,6 @@ struct CommandLine
   const std::string summaryFile;
 };
 
-struct RenderVariables
-{
-  bool preview;
-  double time;
-};
-
 int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file);
 
 int cmdline(const CommandLine& cmd)
@@ -441,6 +436,7 @@ int cmdline(const CommandLine& cmd)
 
   RenderVariables render_variables;
   render_variables.preview = canPreview(export_format) ? (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
+  render_variables.camera = cmd.camera;
 
   if (cmd.animate_frames == 0) {
     render_variables.time = 0;
@@ -480,24 +476,13 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   auto filename_str = fs::path(cmd.output_file).generic_string();
   auto fpath = fs::absolute(fs::path(cmd.filename));
   auto fparent = fpath.parent_path();
-  Camera camera = cmd.camera;
 
   // set CWD relative to source file
   fs::current_path(fparent);
 
   EvaluationSession session{fparent.string()};
   ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
-  builtin_context->set_variable("$preview", Value(render_variables.preview));
-  builtin_context->set_variable("$t", Value(render_variables.time));
-
-  auto vpr = camera.getVpr();
-  builtin_context->set_variable("$vpr", Value(VectorType(builtin_context->session(), vpr[0],vpr[1],vpr[2])));
-  auto vpt = camera.getVpt();
-  builtin_context->set_variable("$vpt", Value(VectorType(builtin_context->session(), vpt[0],vpt[1],vpt[2])));
-  auto vpd = camera.zoomValue();
-  builtin_context->set_variable("$vpd", Value(vpd));
-  auto vpf = camera.fovValue();
-  builtin_context->set_variable("$vpf", Value(vpf));
+  render_variables.setRenderVariables(builtin_context);
 
 #ifdef DEBUG
   PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
@@ -517,6 +502,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   }
 #endif
 
+  Camera camera = cmd.camera;
   if (file_context) {
     camera.updateView(file_context, true);
   }
