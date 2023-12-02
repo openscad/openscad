@@ -1102,6 +1102,12 @@ set_source_files_properties(
   src/gui/input/SpaceNavInputDriver.cc
   src/gui/QGLView.cc
   src/gui/QGLView2.cc
+  # things that requires _USE_MATH_DEFINES
+  src/core/BuiltinContext.cc
+  src/geometry/roof_vd.cc
+  src/io/DxfData.cc
+  src/utils/calc.cc
+  src/utils/degree_trig.cc
   PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 
 set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
