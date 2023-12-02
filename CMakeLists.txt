@@ -154,7 +154,6 @@ endif()
 if (MXECROSS OR WIN32)
   add_subdirectory(winconsole)
   set_property(TARGET OpenSCAD PROPERTY WIN32_EXECUTABLE ON)
-  target_compile_definitions(OpenSCAD PRIVATE _USE_MATH_DEFINES)
 endif()
 
 set(OPENSCAD_LIB_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/objects")
@@ -254,6 +253,7 @@ endmacro(find_graphics)
 if (MSVC)
   # Flex lexer options
   set(WINCOMPAT "--wincompat --nounistd")
+  target_compile_definitions(OpenSCAD PRIVATE _USE_MATH_DEFINES)
 
   find_package(Eigen3 CONFIG REQUIRED)
   target_link_libraries(OpenSCAD PRIVATE Eigen3::Eigen)
