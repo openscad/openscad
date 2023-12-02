@@ -64,7 +64,7 @@ bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
     }
   }
   builder.append(&ps);
-  ps.reset(builder.build());
+  ps.reset(builder.build().release());
   return err;
 }
 

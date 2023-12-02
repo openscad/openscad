@@ -4,10 +4,7 @@
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 #include "PolySetUtils.h"
-#include "cgalutils.h"
 #include "manifoldutils.h"
-#include "PolySet.h"
-#include "PolySetUtils.h"
 #ifdef ENABLE_CGAL
 #include "cgal.h"
 #include "cgalutils.h"
@@ -94,21 +91,21 @@ std::string ManifoldGeometry::dump() const {
 
 std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   manifold::MeshGL mesh = getManifold().GetMeshGL();
-  PolySet ps(3);
-  ps.vertices.reserve(mesh.NumVert());
-  ps.indices.reserve(mesh.NumTri());
+  auto ps = std::make_shared<PolySet>(3);
+  ps->vertices.reserve(mesh.NumVert());
+  ps->indices.reserve(mesh.NumTri());
   // first 3 channels are xyz coordinate
   for (int i = 0; i < mesh.vertProperties.size(); i += mesh.numProp)
-    ps.vertices.push_back({
+    ps->vertices.push_back({
         mesh.vertProperties[i],
         mesh.vertProperties[i+1],
         mesh.vertProperties[i+2]});
   for (int i = 0; i < mesh.triVerts.size(); i += 3)
-    ps.indices.push_back({
+    ps->indices.push_back({
         static_cast<int>(mesh.triVerts[i]),
         static_cast<int>(mesh.triVerts[i+1]),
         static_cast<int>(mesh.triVerts[i+2])});
-  return std::make_shared<const PolySet>(std::move(ps));
+  return ps;
 }
 
 #ifdef ENABLE_CGAL

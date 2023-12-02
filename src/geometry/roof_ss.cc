@@ -146,7 +146,7 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
 
     delete poly_sanitized;
 
-    return hatbuilder.build();
+    return hatbuilder.build().release();
   } catch (RoofNode::roof_exception& e) {
     throw;
   }

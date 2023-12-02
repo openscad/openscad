@@ -34,7 +34,7 @@ void export_obj(const shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   PolySetBuilder builder;
   builder.appendGeometry(geom);
-  auto *ps = builder.build();
+  auto *ps = builder.build().release();
 
   output << "# OpenSCAD obj exporter\n";
 
