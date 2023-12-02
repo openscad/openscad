@@ -27,6 +27,11 @@ CGALHybridPolyhedron::CGALHybridPolyhedron(const CGALHybridPolyhedron& other) : 
   *this = other;
 }
 
+std::unique_ptr<Geometry> CGALHybridPolyhedron::copy() const
+{
+  return std::make_unique<CGALHybridPolyhedron>(*this);
+}
+
 CGALHybridPolyhedron& CGALHybridPolyhedron::operator=(const CGALHybridPolyhedron& other)
 {
   Geometry::operator=(other);

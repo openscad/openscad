@@ -7,6 +7,11 @@ Polygon2d::Polygon2d(Outline2d outline) : sanitized(true) {
   addOutline(std::move(outline));
 }
 
+std::unique_ptr<Geometry> Polygon2d::copy() const
+{
+  return std::make_unique<Polygon2d>(*this);
+}
+
 BoundingBox Outline2d::getBoundingBox() const {
   BoundingBox bbox;
   for (const auto& v : this->vertices) {

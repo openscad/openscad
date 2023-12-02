@@ -56,7 +56,7 @@ public:
 
   [[nodiscard]] std::string dump() const override;
   [[nodiscard]] unsigned int getDimension() const override { return 3; }
-  [[nodiscard]] Geometry *copy() const override { return new CGALHybridPolyhedron(*this); }
+  [[nodiscard]] std::unique_ptr<Geometry> copy() const override;
 
   [[nodiscard]] std::shared_ptr<const PolySet> toPolySet() const;
 

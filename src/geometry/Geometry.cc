@@ -7,6 +7,11 @@ GeometryList::GeometryList(Geometry::Geometries geometries) : children(std::move
 {
 }
 
+std::unique_ptr<Geometry> GeometryList::copy() const
+{
+  return std::make_unique<GeometryList>(*this);
+}
+
 size_t GeometryList::memsize() const
 {
   size_t sum = 0;

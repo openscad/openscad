@@ -26,7 +26,7 @@ public:
   [[nodiscard]] unsigned int getDimension() const override { return 3; }
   // Empty means it is a geometric node which has zero area/volume
   [[nodiscard]] bool isEmpty() const override;
-  [[nodiscard]] Geometry *copy() const override { return new CGAL_Nef_polyhedron(*this); }
+  [[nodiscard]] std::unique_ptr<Geometry> copy() const override;
   [[nodiscard]] size_t numFacets() const override { return p3->number_of_facets(); }
 
   void reset() { p3.reset(); }

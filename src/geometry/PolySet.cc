@@ -54,6 +54,10 @@ PolySet::PolySet(Polygon2d origin) : polygon(std::move(origin)), dim(2), convex(
 {
 }
 
+std::unique_ptr<Geometry> PolySet::copy() const {
+  return std::make_unique<PolySet>(*this);
+}
+
 std::string PolySet::dump() const
 {
   std::ostringstream out;

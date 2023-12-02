@@ -28,7 +28,7 @@ public:
   std::string dump() const override;
   unsigned int getDimension() const override { return this->dim; }
   bool isEmpty() const override { return indices.empty(); }
-  Geometry *copy() const override { return new PolySet(*this); }
+  std::unique_ptr<Geometry> copy() const override;
 
   void quantizeVertices(std::vector<Vector3d> *pPointsOut = nullptr);
   size_t numFacets() const override { return indices.size(); }

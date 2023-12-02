@@ -27,7 +27,7 @@ public:
   [[nodiscard]] std::string dump() const override;
   [[nodiscard]] unsigned int getDimension() const override { return 2; }
   [[nodiscard]] bool isEmpty() const override;
-  [[nodiscard]] Geometry *copy() const override { return new Polygon2d(*this); }
+  [[nodiscard]] std::unique_ptr<Geometry> copy() const override;
   [[nodiscard]] size_t numFacets() const override {
     return std::accumulate(theoutlines.begin(), theoutlines.end(), 0,
                            [](size_t a, const Outline2d& b) {

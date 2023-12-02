@@ -28,6 +28,11 @@ ManifoldGeometry::ManifoldGeometry(const shared_ptr<manifold::Manifold>& mani) :
 
 ManifoldGeometry::ManifoldGeometry(const ManifoldGeometry& other) : manifold_(other.manifold_) {}
 
+std::unique_ptr<Geometry> ManifoldGeometry::copy() const
+{
+  return std::make_unique<ManifoldGeometry>(*this);
+}
+
 ManifoldGeometry& ManifoldGeometry::operator=(const ManifoldGeometry& other) {
   manifold_ = other.manifold_;
   return *this;

@@ -17,6 +17,11 @@ CGAL_Nef_polyhedron::CGAL_Nef_polyhedron(const CGAL_Nef_polyhedron& src) : Geome
   if (src.p3) this->p3 = src.p3;
 }
 
+std::unique_ptr<Geometry> CGAL_Nef_polyhedron::copy() const
+{
+  return std::make_unique<CGAL_Nef_polyhedron>(*this);
+}
+
 CGAL_Nef_polyhedron CGAL_Nef_polyhedron::operator+(const CGAL_Nef_polyhedron& other) const
 {
   return {new CGAL_Nef_polyhedron3((*this->p3) + (*other.p3))};

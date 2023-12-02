@@ -1507,9 +1507,9 @@ Response GeometryEvaluator::visit(State& state, const CgalAdvNode& node)
         geom = res.constptr();
         // If we added convexity, we need to pass it on
         if (geom && geom->getConvexity() != node.convexity) {
-          shared_ptr<Geometry> editablegeom;
+	  std::shared_ptr<Geometry> editablegeom;
           // If we got a const object, make a copy
-          if (res.isConst()) editablegeom.reset(geom->copy());
+          if (res.isConst()) editablegeom = geom->copy();
           else editablegeom = res.ptr();
           geom = editablegeom;
           editablegeom->setConvexity(node.convexity);
