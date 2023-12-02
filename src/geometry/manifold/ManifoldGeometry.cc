@@ -4,10 +4,7 @@
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 #include "PolySetUtils.h"
-#include "cgalutils.h"
 #include "manifoldutils.h"
-#include "PolySet.h"
-#include "PolySetUtils.h"
 #ifdef ENABLE_CGAL
 #include "cgal.h"
 #include "cgalutils.h"
@@ -93,15 +90,22 @@ std::string ManifoldGeometry::dump() const {
 }
 
 std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
-  manifold::Mesh mesh = getManifold().GetMesh();
-  std::vector<int> indmap;
-  indmap.reserve(mesh.vertPos.size());
-  PolySetBuilder builder(mesh.vertPos.size(),mesh.triVerts.size());
-  for(const auto &pt :mesh.vertPos)  
-    indmap.push_back(builder.vertexIndex({pt[0],pt[1],pt[2]}));
-  for (const auto &tv : mesh.triVerts) 
-      builder.appendPoly({indmap[tv[0]],indmap[tv[1]],indmap[tv[2]]});
-  return std::shared_ptr<PolySet>(builder.build());
+  manifold::MeshGL mesh = getManifold().GetMeshGL();
+  auto ps = std::make_shared<PolySet>(3);
+  ps->vertices.reserve(mesh.NumVert());
+  ps->indices.reserve(mesh.NumTri());
+  // first 3 channels are xyz coordinate
+  for (int i = 0; i < mesh.vertProperties.size(); i += mesh.numProp)
+    ps->vertices.push_back({
+        mesh.vertProperties[i],
+        mesh.vertProperties[i+1],
+        mesh.vertProperties[i+2]});
+  for (int i = 0; i < mesh.triVerts.size(); i += 3)
+    ps->indices.push_back({
+        static_cast<int>(mesh.triVerts[i]),
+        static_cast<int>(mesh.triVerts[i+1]),
+        static_cast<int>(mesh.triVerts[i+2])});
+  return ps;
 }
 
 #ifdef ENABLE_CGAL

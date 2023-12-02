@@ -127,5 +127,5 @@ PolySet *Polygon2d::tessellate() const
       }
     }
   }
-  return builder.build();
+  return builder.build().release();
 }

@@ -120,7 +120,7 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
       }
     }
   }
-  outps.reset(builder.build());
+  outps.reset(builder.build().release());
   if (degeneratePolygons > 0) {
     LOG(message_group::Warning, "PolySet has degenerate polygons");
   }

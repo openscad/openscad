@@ -1211,7 +1211,7 @@ static Geometry *extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& 
     delete ps_top;
   }
 
-  return builder.build();
+  return builder.build().release();
 }
 
 /*!
@@ -1368,7 +1368,7 @@ static Geometry *rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& p
     }
   }
 
-  return builder.build();
+  return builder.build().release();
 }
 
 /*!
