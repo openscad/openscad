@@ -26,6 +26,7 @@ jobs:
       env:
         HOMEBREW_NO_AUTO_UPDATE: 1
       run: |
+        export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
         ./scripts/macosx-build-homebrew.sh
     - name: Build OpenSCAD
       run: |
