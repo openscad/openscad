@@ -60,7 +60,7 @@ std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) 
     assert(i0 != i1 && i0 != i2 && i1 != i2);
     mesh.triVerts[i] = {i0, i1, i2};
   }
-  return make_shared<manifold::Manifold>(std::move(mesh));
+  return std::make_shared<manifold::Manifold>(std::move(mesh));
 }
 
 template <class TriangleMesh>
@@ -122,7 +122,7 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet
     for (size_t i = 0, n = points3d.size(); i < n; i++) {
       points[i] = CGALUtils::vector_convert<K::Point_3>(points3d[i]);
     }
-    if (points.size() <= 3) return make_shared<ManifoldGeometry>();
+    if (points.size() <= 3) return std::make_shared<ManifoldGeometry>();
 
     // Apply hull
     CGAL::Surface_mesh<CGAL::Point_3<K>> r;
@@ -147,7 +147,7 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet
 }
 
 std::shared_ptr<ManifoldGeometry> createMutableManifoldFromGeometry(const std::shared_ptr<const Geometry>& geom) {
-  if (auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+  if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     return std::make_shared<ManifoldGeometry>(*mani);
   }
 

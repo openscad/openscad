@@ -39,8 +39,8 @@ public:
   using bbox_t = CGAL::Iso_cuboid_3<CGAL_HybridKernel3>;
 
   CGALHybridPolyhedron();
-  CGALHybridPolyhedron(const shared_ptr<CGAL_HybridNef>& nef);
-  CGALHybridPolyhedron(const shared_ptr<CGAL_HybridMesh>& mesh);
+  CGALHybridPolyhedron(const std::shared_ptr<CGAL_HybridNef>& nef);
+  CGALHybridPolyhedron(const std::shared_ptr<CGAL_HybridMesh>& mesh);
   CGALHybridPolyhedron(const CGALHybridPolyhedron& other);
   CGALHybridPolyhedron& operator=(const CGALHybridPolyhedron& other);
 

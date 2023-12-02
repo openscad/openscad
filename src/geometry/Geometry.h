@@ -3,9 +3,9 @@
 #include <cstddef>
 #include <string>
 #include <list>
+#include <memory>
 
 #include "linalg.h"
-#include "memory.h"
 
 class AbstractNode;
 class CGAL_Nef_polyhedron;
@@ -19,7 +19,7 @@ class ManifoldGeometry;
 class Geometry
 {
 public:
-  using GeometryItem = std::pair<std::shared_ptr<const AbstractNode>, shared_ptr<const Geometry>>;
+  using GeometryItem = std::pair<std::shared_ptr<const AbstractNode>, std::shared_ptr<const Geometry>>;
   using Geometries = std::list<GeometryItem>;
 
   Geometry() = default;

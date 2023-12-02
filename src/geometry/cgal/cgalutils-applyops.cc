@@ -25,10 +25,10 @@
 
 #include <CGAL/convex_hull_3.h>
 
-#include "memory.h"
 #include "Reindexer.h"
 #include "GeometryUtils.h"
 
+#include <memory>
 #include <map>
 #include <queue>
 #include <unordered_set>
@@ -38,7 +38,7 @@ namespace CGALUtils {
 std::unique_ptr<const Geometry> applyUnion3D(
 Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
 {
-  using QueueConstItem = std::pair<shared_ptr<const CGAL_Nef_polyhedron>, int>;
+  using QueueConstItem = std::pair<std::shared_ptr<const CGAL_Nef_polyhedron>, int>;
   struct QueueItemGreater {
     // stable sort for priority_queue by facets, then progress mark
     bool operator()(const QueueConstItem& lhs, const QueueConstItem& rhs) const
@@ -97,7 +97,7 @@ std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& chil
 
   try {
     for (const auto& item : children) {
-      const shared_ptr<const Geometry>& chgeom = item.second;
+      const std::shared_ptr<const Geometry>& chgeom = item.second;
       auto chN = getNefPolyhedronFromGeometry(chgeom);
 
       // Initialize N with first expected geometric object

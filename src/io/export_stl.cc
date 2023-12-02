@@ -251,27 +251,27 @@ uint64_t append_stl(const ManifoldGeometry& mani, std::ostream& output,
 #endif  // ENABLE_MANIFOLD
 
 
-uint64_t append_stl(const shared_ptr<const Geometry>& geom, std::ostream& output,
+uint64_t append_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                     bool binary)
 {
   uint64_t triangle_count = 0;
-  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+  if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const Geometry::GeometryItem& item : geomlist->getChildren()) {
       triangle_count += append_stl(item.second, output, binary);
     }
-  } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+  } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     triangle_count += append_stl(*ps, output, binary);
 #ifdef ENABLE_CGAL
-  } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     triangle_count += append_stl(*N, output, binary);
-  } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+  } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     triangle_count += append_stl(*hybrid, output, binary);
 #endif
 #ifdef ENABLE_MANIFOLD
-  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+  } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     triangle_count += append_stl(*mani, output, binary);
 #endif
-  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { //NOLINT(bugprone-branch-clone)
+  } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) { //NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
   } else { //NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
@@ -282,7 +282,7 @@ uint64_t append_stl(const shared_ptr<const Geometry>& geom, std::ostream& output
 
 } // namespace
 
-void export_stl(const shared_ptr<const Geometry>& geom, std::ostream& output,
+void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 bool binary)
 {
   if (binary) {

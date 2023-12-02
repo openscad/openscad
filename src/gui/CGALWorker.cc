@@ -30,7 +30,7 @@ void CGALWorker::start(const Tree& tree)
 void CGALWorker::work()
 {
   // this is a worker thread: we don't want any exceptions escaping and crashing the app.
-  shared_ptr<const Geometry> root_geom;
+  std::shared_ptr<const Geometry> root_geom;
   try {
     GeometryEvaluator evaluator(*this->tree);
     root_geom = evaluator.evaluateGeometry(*this->tree->root(), true);

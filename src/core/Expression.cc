@@ -741,7 +741,7 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 
 Value LcIf::evaluate(const std::shared_ptr<const Context>& context) const
 {
-  const shared_ptr<Expression>& expr = this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
+  const std::shared_ptr<Expression>& expr = this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
   if (expr) {
     return expr->evaluate(context);
   } else {

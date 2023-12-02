@@ -2,9 +2,9 @@
 
 #include "NodeVisitor.h"
 #include "enums.h"
-#include "memory.h"
 #include "Geometry.h"
 
+#include <memory>
 #include <utility>
 #include <list>
 #include <vector>
@@ -22,7 +22,7 @@ class GeometryEvaluator : public NodeVisitor
 public:
   GeometryEvaluator(const Tree& tree);
 
-  shared_ptr<const Geometry> evaluateGeometry(const AbstractNode& node, bool allownef);
+  std::shared_ptr<const Geometry> evaluateGeometry(const AbstractNode& node, bool allownef);
 
   Response visit(State& state, const AbstractNode& node) override;
   Response visit(State& state, const AbstractIntersectionNode& node) override;
@@ -58,7 +58,7 @@ public:
     [[nodiscard]] bool isConst() const { return is_const; }
     std::shared_ptr<Geometry> ptr() { assert(!is_const); return pointer; }
     [[nodiscard]] std::shared_ptr<const Geometry> constptr() const {
-      return is_const ? const_pointer : static_pointer_cast<const Geometry>(pointer);
+      return is_const ? const_pointer : std::static_pointer_cast<const Geometry>(pointer);
     }
     std::shared_ptr<Geometry> asMutableGeometry() {
       if (isConst()) return std::shared_ptr<Geometry>(constptr() ? constptr()->copy() : nullptr);

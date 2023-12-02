@@ -33,9 +33,9 @@
 
 #include "system-gl.h"
 
-ThrownTogetherRenderer::ThrownTogetherRenderer(shared_ptr<CSGProducts> root_products,
-                                               shared_ptr<CSGProducts> highlight_products,
-                                               shared_ptr<CSGProducts> background_products)
+ThrownTogetherRenderer::ThrownTogetherRenderer(std::shared_ptr<CSGProducts> root_products,
+                                               std::shared_ptr<CSGProducts> highlight_products,
+                                               std::shared_ptr<CSGProducts> background_products)
   : root_products(std::move(root_products)), highlight_products(std::move(highlight_products)), background_products(std::move(background_products))
 {
 }

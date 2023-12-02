@@ -56,7 +56,7 @@ const std::string get_lib3mf_version() {
 #include "cgalutils.h"
 #endif
 
-static unique_ptr<PolySet> import_3mf_error(PLib3MFModel *model = nullptr, PLib3MFModelResourceIterator *object_it = nullptr)
+static std::unique_ptr<PolySet> import_3mf_error(PLib3MFModel *model = nullptr, PLib3MFModelResourceIterator *object_it = nullptr)
 {
   if (model) {
     lib3mf_release(model);
@@ -337,9 +337,9 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
     std::unique_ptr<PolySet> p;
 #ifdef ENABLE_CGAL
     Geometry::Geometries children;
-    children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), shared_ptr<const Geometry>(first_mesh)));
+    children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), std::shared_ptr<const Geometry>(first_mesh)));
     for (auto it = meshes.begin(); it != meshes.end(); ++it) {
-      children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), shared_ptr<const Geometry>(*it)));
+      children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), std::shared_ptr<const Geometry>(*it)));
     }
     if (auto ps = PolySetUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
       // FIXME: unnecessary copy

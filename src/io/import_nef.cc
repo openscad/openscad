@@ -1,5 +1,6 @@
 #include "import.h"
-#include "memory.h"
+
+#include <memory>
 #include "printutils.h"
 #include "AST.h"
 
@@ -18,7 +19,7 @@ std::unique_ptr<CGAL_Nef_polyhedron> import_nef3(const std::string& filename, co
   }
 
   try {
-    auto nef = make_shared<CGAL_Nef_polyhedron3>();
+    auto nef = std::make_shared<CGAL_Nef_polyhedron3>();
     f >> *nef;
     return std::make_unique<CGAL_Nef_polyhedron>(nef);
   } catch (const CGAL::Failure_exception& e) {

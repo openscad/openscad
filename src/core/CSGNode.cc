@@ -64,13 +64,13 @@
    A CSGProduct is a vector of intersections and a vector of subtractions, used for CSG rendering.
  */
 
-shared_ptr<CSGNode> CSGNode::createEmptySet() {
-  return shared_ptr<CSGNode>(new CSGLeaf(nullptr, Transform3d(), Color4f(), "empty()", 0));
+std::shared_ptr<CSGNode> CSGNode::createEmptySet() {
+  return std::shared_ptr<CSGNode>(new CSGLeaf(nullptr, Transform3d(), Color4f(), "empty()", 0));
 }
 
-shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_ptr<CSGNode> left, shared_ptr<CSGNode> right)
+std::shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, std::shared_ptr<CSGNode> left, std::shared_ptr<CSGNode> right)
 {
-  // Note that shared_ptr<CSGNode> == nullptr is different from having a CSGNode with shared_ptr<Geometry> geom == nullptr
+  // Note that std::shared_ptr<CSGNode> == nullptr is different from having a CSGNode with std::shared_ptr<Geometry> geom == nullptr
   // The former indicates lack of a geometry node (could be echo or assert node), and the latter represents the empty set of geometry.
   if (!left && !right) {
     return CSGNode::createEmptySet();
@@ -114,14 +114,14 @@ shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, shared_pt
   return {new CSGOperation(type, left, right), CSGOperationDeleter()};
 }
 
-CSGLeaf::CSGLeaf(const shared_ptr<const Geometry>& geom, Transform3d matrix, Color4f color, std::string label, const int index)
+CSGLeaf::CSGLeaf(const std::shared_ptr<const Geometry>& geom, Transform3d matrix, Color4f color, std::string label, const int index)
   : label(std::move(label)), matrix(std::move(matrix)), color(std::move(color)), index(index)
 {
   if (geom && !geom->isEmpty()) this->geom = geom;
   CSGLeaf::initBoundingBox();
 }
 
-CSGOperation::CSGOperation(OpenSCADOperator type, const shared_ptr<CSGNode>& left, const shared_ptr<CSGNode>& right)
+CSGOperation::CSGOperation(OpenSCADOperator type, const std::shared_ptr<CSGNode>& left, const std::shared_ptr<CSGNode>& right)
   : type(type)
 {
   this->children.push_back(left);
@@ -199,7 +199,7 @@ std::string CSGOperation::dump() const
       // mark current node as postfix before (maybe) pushing left child
       ispostfix = std::get<2>(callstack.top()) = true;
 
-      if (auto opl = dynamic_pointer_cast<CSGOperation>(node->left())) {
+      if (auto opl = std::dynamic_pointer_cast<CSGOperation>(node->left())) {
         callstack.emplace(opl.get(), lpostfix, false);
         continue;
       } else {
@@ -210,7 +210,7 @@ std::string CSGOperation::dump() const
     // postfix traversal of node, handle right child
     if (ispostfix) {
       callstack.pop();
-      if (auto opr = dynamic_pointer_cast<CSGOperation>(node->right())) {
+      if (auto opr = std::dynamic_pointer_cast<CSGOperation>(node->right())) {
         callstack.emplace(opr.get(), ")", false);
         continue;
       } else {
@@ -223,9 +223,9 @@ std::string CSGOperation::dump() const
   return out.str();
 }
 
-void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSGNode::Flag flags)
+void CSGProducts::import(std::shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSGNode::Flag flags)
 {
-  std::stack<std::tuple<shared_ptr<CSGNode>, OpenSCADOperator, CSGNode::Flag>> callstack;
+  std::stack<std::tuple<std::shared_ptr<CSGNode>, OpenSCADOperator, CSGNode::Flag>> callstack;
   callstack.push(std::make_tuple(csgnode, type, flags));
 
   do {
@@ -237,7 +237,7 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
 
     auto newflags = static_cast<CSGNode::Flag>(csgnode->getFlags() | flags);
 
-    if (auto leaf = dynamic_pointer_cast<CSGLeaf>(csgnode)) {
+    if (auto leaf = std::dynamic_pointer_cast<CSGLeaf>(csgnode)) {
       if (type == OpenSCADOperator::UNION && this->currentproduct->intersections.size() > 0) {
         this->createProduct();
       } else if (type == OpenSCADOperator::DIFFERENCE) {
@@ -246,7 +246,7 @@ void CSGProducts::import(shared_ptr<CSGNode> csgnode, OpenSCADOperator type, CSG
         this->currentlist = &this->currentproduct->intersections;
       }
       this->currentlist->emplace_back(leaf, newflags);
-    } else if (auto op = dynamic_pointer_cast<CSGOperation>(csgnode)) {
+    } else if (auto op = std::dynamic_pointer_cast<CSGOperation>(csgnode)) {
       assert(op->left() && op->right());
       callstack.emplace(op->right(), op->getType(), newflags);
       callstack.emplace(op->left(), type, newflags);

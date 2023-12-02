@@ -63,7 +63,7 @@ bool GeometryList::isEmpty() const
 void flatten(const GeometryList& geomlist, GeometryList::Geometries& childlist)
 {
   for (const auto& item : geomlist.getChildren()) {
-    if (const auto chlist = dynamic_pointer_cast<const GeometryList>(item.second)) {
+    if (const auto chlist = std::dynamic_pointer_cast<const GeometryList>(item.second)) {
       flatten(*chlist, childlist);
     } else {
       childlist.push_back(item);

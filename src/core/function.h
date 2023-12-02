@@ -34,9 +34,9 @@ class UserFunction : public ASTNode
 public:
   std::string name;
   AssignmentList parameters;
-  shared_ptr<Expression> expr;
+  std::shared_ptr<Expression> expr;
 
-  UserFunction(const char *name, AssignmentList& parameters, shared_ptr<Expression> expr, const Location& loc);
+  UserFunction(const char *name, AssignmentList& parameters, std::shared_ptr<Expression> expr, const Location& loc);
 
   void print(std::ostream& stream, const std::string& indent) const override;
 };

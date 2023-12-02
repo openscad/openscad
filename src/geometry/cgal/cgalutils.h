@@ -48,7 +48,7 @@ template <typename K>
 CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh);
 CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox& bbox);
 bool is_approximately_convex(const PolySet& ps);
-shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& children);
+std::shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& children);
 
 template <typename Polyhedron> std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p);
 template <class InputKernel, class OutputKernel>
@@ -65,8 +65,8 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh);
 
 template <typename K>
 bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet& ps);
-shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const shared_ptr<const Geometry>& geom);
-shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>&);
+std::shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
+std::shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const std::shared_ptr<const Geometry>&);
 
 template <typename K>
 CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d& matrix);
@@ -101,7 +101,7 @@ getCartesianConverter()
   return CGAL::Cartesian_converter<
     FromKernel, ToKernel, KernelConverter<FromKernel, ToKernel>>();
 }
-shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron& hybrid);
+std::shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron& hybrid);
 std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const PolySet& ps);
 std::shared_ptr<CGALHybridPolyhedron> createMutableHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
 std::shared_ptr<const CGALHybridPolyhedron> getHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);

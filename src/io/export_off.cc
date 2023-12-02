@@ -30,7 +30,7 @@
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 
-void export_off(const shared_ptr<const Geometry>& geom, std::ostream& output)
+void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   PolySetBuilder builder;
   builder.appendGeometry(geom);

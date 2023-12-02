@@ -183,7 +183,7 @@ void RenderStatistic::printRenderingTime()
   visitor.printRenderingTime(ms());
 }
 
-void RenderStatistic::printAll(const shared_ptr<const Geometry>& geom, const Camera& camera, const std::vector<std::string>& options, const std::string& filename)
+void RenderStatistic::printAll(const std::shared_ptr<const Geometry>& geom, const Camera& camera, const std::vector<std::string>& options, const std::string& filename)
 {
   //bool is_log = false;
   std::unique_ptr<StatisticVisitor> visitor;

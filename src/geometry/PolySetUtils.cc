@@ -138,12 +138,12 @@ bool is_approximately_convex(const PolySet& ps) {
 // Get as or convert the geometry to a PolySet.
 std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const Geometry>& geom)
 {
-  if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+  if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     return ps;
   }
 #ifdef ENABLE_CGAL
-  if (auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-    auto ps = make_shared<PolySet>(3);
+  if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+    auto ps = std::make_shared<PolySet>(3);
     ps->setConvexity(N->getConvexity());
     if (!N->isEmpty()) {
       bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
@@ -153,12 +153,12 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
     }
     return ps;
   }
-  if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+  if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return hybrid->toPolySet();
   }
 #endif
 #ifdef ENABLE_MANIFOLD
-  if (auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+  if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     return mani->toPolySet();
   }
 #endif

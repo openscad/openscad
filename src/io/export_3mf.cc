@@ -140,25 +140,25 @@ static bool append_nef(const CGAL_Nef_polyhedron& root_N, PLib3MFModelMeshObject
 }
 #endif
 
-static bool append_3mf(const shared_ptr<const Geometry>& geom, PLib3MFModelMeshObject *& model)
+static bool append_3mf(const std::shared_ptr<const Geometry>& geom, PLib3MFModelMeshObject *& model)
 {
-  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+  if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const auto& item : geomlist->getChildren()) {
       if (!append_3mf(item.second, model)) return false;
     }
 #ifdef ENABLE_CGAL
-  } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     return append_nef(*N, model);
-  } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+  } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return append_polyset(*hybrid->toPolySet(), model);
 #endif
 #ifdef ENABLE_MANIFOLD
-  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+  } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     return append_polyset(*mani->toPolySet(), model);
 #endif
-  } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+  } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     return append_polyset(*PolySetUtils::tessellate_faces(*ps), model);
-  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
+  } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
   } else { // NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
@@ -171,7 +171,7 @@ static bool append_3mf(const shared_ptr<const Geometry>& geom, PLib3MFModelMeshO
     Saves the current 3D Geometry as 3MF to the given file.
     The file must be open.
  */
-void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output)
+void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
   HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
@@ -311,25 +311,25 @@ static bool append_nef(const CGAL_Nef_polyhedron& root_N, Lib3MF::PWrapper& wrap
 }
 #endif
 
-static bool append_3mf(const shared_ptr<const Geometry>& geom, Lib3MF::PWrapper& wrapper, Lib3MF::PModel& model)
+static bool append_3mf(const std::shared_ptr<const Geometry>& geom, Lib3MF::PWrapper& wrapper, Lib3MF::PModel& model)
 {
-  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+  if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const auto& item : geomlist->getChildren()) {
       if (!append_3mf(item.second, wrapper, model)) return false;
     }
 #ifdef ENABLE_CGAL
-  } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     return append_nef(*N, wrapper, model);
-  } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+  } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return append_polyset(*hybrid->toPolySet(), wrapper, model);
 #endif
 #ifdef ENABLE_MANIFOLD
-  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+  } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     return append_polyset(*mani->toPolySet(), wrapper, model);
 #endif
-  } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+  } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     return append_polyset(*PolySetUtils::tessellate_faces(*ps), wrapper, model);
-  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
+  } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) {
     assert(false && "Unsupported file format");
   } else {
     assert(false && "Not implemented");
@@ -343,7 +343,7 @@ static bool append_3mf(const shared_ptr<const Geometry>& geom, Lib3MF::PWrapper&
     The file must be open.
  */
 
-void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output)
+void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   Lib3MF_uint32 interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
   Lib3MF::PWrapper wrapper;
@@ -407,7 +407,7 @@ void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output)
 
 #else // ENABLE_LIB3MF
 
-void export_3mf(const shared_ptr<const Geometry>&, std::ostream&)
+void export_3mf(const std::shared_ptr<const Geometry>&, std::ostream&)
 {
   LOG("Export to 3MF format was not enabled when building the application.");
 }
