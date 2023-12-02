@@ -296,7 +296,7 @@ PyObject *python_polyhedron(PyObject *self, PyObject *args, PyObject *kwargs)
     for (i = 0; i < PyList_Size(faces); i++) {
       element = PyList_GetItem(faces, i);
       if (PyList_Check(element)) {
-        std::vector<int> face;
+        IndexedFace face;
         for (j = 0; j < PyList_Size(element); j++) {
           pointIndex = PyLong_AsLong(PyList_GetItem(element, j));
 	  if(pointIndex < 0 || pointIndex >= node->points.size()) {
