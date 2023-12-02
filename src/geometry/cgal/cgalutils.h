@@ -56,7 +56,7 @@ void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel>& poly_a, CGAL::Polyhed
 template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p);
 
 template <class TriangleMesh>
-bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps);
+std::unique_ptr<PolySet> createPolySetFromMesh(const TriangleMesh& mesh);
 template <class InputKernel, class OutputKernel>
 void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>& input,
               CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>>& output);

@@ -387,7 +387,6 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
 	const auto &tri=allTriangles[i];
 	builder.appendPoly({indMap[tri[0]],indMap[tri[1]],indMap[tri[2]]});
   }
-  ps.reset(*builder.build());
 
 #if 0 // For debugging
   std::cerr.precision(20);
@@ -395,6 +394,8 @@ bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet
     std::cerr << verts[i][0] << ", " << verts[i][1] << ", " << verts[i][2] << "\n";
   }
 #endif // debug
+
+  ps = *builder.build();
 
   return err;
 }

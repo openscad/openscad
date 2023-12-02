@@ -119,10 +119,8 @@ bool CGALHybridPolyhedron::isValid() const
 std::shared_ptr<const PolySet> CGALHybridPolyhedron::toPolySet() const
 {
   if (auto mesh = getMesh()) {
-    auto ps = std::make_shared<PolySet>(3, /* convex */ unknown);
-    if (CGALUtils::createPolySetFromMesh(*mesh, *ps)) {
-      assert(false && "Error from CGALUtils::createPolySetFromNefPolyhedron3");
-    }
+    auto ps = CGALUtils::createPolySetFromMesh(*mesh);
+    assert(ps && "Error from CGALUtils::createPolySetFromNefPolyhedron3");
     ps->setConvexity(convexity);
     return ps;
   } else if (auto nef = getNefPolyhedron()) {

@@ -162,10 +162,3 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
     }
   }
 }
-
-void PolySet::reset(const PolySet &ref)
-{
-  this->vertices=ref.vertices;
-  this->indices = ref.indices;
-  this->dirty=true;
-}
