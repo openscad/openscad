@@ -248,16 +248,13 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyHull2D(const AbstractNode& no
 std::unique_ptr<Polygon2d> GeometryEvaluator::applyFill2D(const AbstractNode& node)
 {
   // Merge and sanitize input geometry
-  auto children = collectChildren2D(node);
-  auto geometry_in = ClipperUtils::apply(children, ClipperLib::ctUnion);
+  auto geometry_in = ClipperUtils::apply(collectChildren2D(node), ClipperLib::ctUnion);
 
   std::vector<std::shared_ptr<const Polygon2d>> newchildren;
   // Keep only the 'positive' outlines, eg: the outside edges
   for (const auto& outline : geometry_in->outlines()) {
     if (outline.positive) {
-      auto poly = std::make_shared<Polygon2d>();
-      poly->addOutline(outline);
-      newchildren.push_back(poly);
+      newchildren.push_back(std::make_shared<Polygon2d>(outline));
     }
   }
 
@@ -583,8 +580,7 @@ Response GeometryEvaluator::visit(State& state, const OffsetNode& node)
   if (state.isPostfix()) {
     std::shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      const auto polygon = applyToChildren2D(node, OpenSCADOperator::UNION);
-      if (polygon) {
+      if (const auto polygon = applyToChildren2D(node, OpenSCADOperator::UNION)) {
         // ClipperLib documentation: The formula for the number of steps in a full
         // circular arc is ... Pi / acos(1 - arc_tolerance / abs(delta))
         double n = Calc::get_fragments_from_r(std::abs(node.delta), node.fn, node.fs, node.fa);
@@ -1417,19 +1413,15 @@ shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const ProjectionNo
   shared_ptr<const Geometry> geom;
   std::vector<std::unique_ptr<Polygon2d>> tmp_geom;
   BoundingBox bounds;
-  for (const auto& item : this->visitedchildren[node.index()]) {
-    auto& chnode = item.first;
-    const shared_ptr<const Geometry>& chgeom = item.second;
+  for (const auto& [chnode, chgeom] : this->visitedchildren[node.index()]) {
     if (chnode->modinst->isBackground()) continue;
 
     // Clipper version of Geometry projection
     // Clipper doesn't handle meshes very well.
     // It's better in V6 but not quite there. FIXME: stand-alone example.
     // project chgeom -> polygon2d
-    auto chPS = PolySetUtils::getGeometryAsPolySet(chgeom);
-    if (chPS) {
-      auto poly = PolySetUtils::project(*chPS);
-      if (poly) {
+    if (auto chPS = PolySetUtils::getGeometryAsPolySet(chgeom)) {
+      if (auto poly = PolySetUtils::project(*chPS)) {
 	bounds.extend(poly->getBoundingBox());
 	tmp_geom.push_back(std::move(poly));
       }

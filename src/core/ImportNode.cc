@@ -214,7 +214,7 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
     g = std::make_unique<PolySet>(3);
   }
 
-  if (g) g->setConvexity(this->convexity);
+  g->setConvexity(this->convexity);
   return g;
 }
 
