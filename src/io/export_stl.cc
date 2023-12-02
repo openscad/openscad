@@ -193,9 +193,8 @@ uint64_t append_stl(const CGAL_Nef_polyhedron& root_N, std::ostream& output,
     LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
   }
 
-  PolySet ps(3);
-  if (!CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3), ps)) {
-    triangle_count += append_stl(ps, output, binary);
+  if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3))) {
+    triangle_count += append_stl(*ps, output, binary);
   } else {
     LOG(message_group::Export_Error, "Nef->PolySet failed");
   }

@@ -120,14 +120,12 @@ std::shared_ptr<const PolySet> CGALHybridPolyhedron::toPolySet() const
 {
   if (auto mesh = getMesh()) {
     auto ps = CGALUtils::createPolySetFromMesh(*mesh);
-    assert(ps && "Error from CGALUtils::createPolySetFromNefPolyhedron3");
+    assert(ps && "Error from CGALUtils::createPolySetFromMesh");
     ps->setConvexity(convexity);
     return ps;
   } else if (auto nef = getNefPolyhedron()) {
-    auto ps = std::make_shared<PolySet>(3, /* convex */ unknown);
-    if (CGALUtils::createPolySetFromNefPolyhedron3(*nef, *ps)) {
-      assert(false && "Error from CGALUtils::createPolySetFromNefPolyhedron3");
-    }
+    auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*nef);
+    assert(ps && "Error from CGALUtils::createPolySetFromNefPolyhedron3");
     ps->setConvexity(convexity);
     return ps;
   } else {

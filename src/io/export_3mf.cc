@@ -129,14 +129,13 @@ static bool append_nef(const CGAL_Nef_polyhedron& root_N, PLib3MFModelMeshObject
     LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
   }
 
-  PolySet ps{3};
-  const bool err = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3, ps);
-  if (err) {
-    export_3mf_error("Error converting NEF Polyhedron.", model);
-    return false;
+
+  if (const auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3)) {
+    return append_polyset(*ps, model);
   }
 
-  return append_polyset(ps, model);
+  export_3mf_error("Error converting NEF Polyhedron.", model);
+  return false;
 }
 #endif
 
@@ -300,14 +299,11 @@ static bool append_nef(const CGAL_Nef_polyhedron& root_N, Lib3MF::PWrapper& wrap
     LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
   }
 
-  PolySet ps{3};
-  const bool err = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3, ps);
-  if (err) {
-    export_3mf_error("Error converting NEF Polyhedron.");
-    return false;
+  if (const auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3)) {
+    return append_polyset(*ps, wrapper, model);
   }
-
-  return append_polyset(ps, wrapper, model);
+  export_3mf_error("Error converting NEF Polyhedron.");
+  return false;
 }
 #endif
 

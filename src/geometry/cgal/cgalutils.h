@@ -64,7 +64,7 @@ template <class TriangleMesh>
 bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh);
 
 template <typename K>
-bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet& ps);
+std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N);
 std::shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
 std::shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const std::shared_ptr<const Geometry>&);
 

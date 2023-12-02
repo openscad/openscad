@@ -235,13 +235,13 @@ for (int i = 0; i < 8; ++i) pts.push_back(bigcuboid.vertex(i));
   }
   // In projection mode all the triangles are projected manually into the XY plane
   else {
-    PolySet ps(3);
-    bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N.p3, ps);
-    if (err) {
+    if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N.p3)) {
+      poly = PolySetUtils::project(*ps);
+    }
+    else {
       LOG(message_group::Error, "Nef->PolySet failed");
       return poly;
     }
-    poly = PolySetUtils::project(ps);
   }
   return poly;
 }

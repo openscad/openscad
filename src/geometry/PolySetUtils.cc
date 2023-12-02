@@ -143,15 +143,14 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
   }
 #ifdef ENABLE_CGAL
   if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-    auto ps = std::make_shared<PolySet>(3);
-    ps->setConvexity(N->getConvexity());
     if (!N->isEmpty()) {
-      bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
-      if (err) {
-        LOG(message_group::Error, "Nef->PolySet failed.");
+      if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3)) {
+	ps->setConvexity(N->getConvexity());
+	return ps;
       }
+      LOG(message_group::Error, "Nef->PolySet failed.");
     }
-    return ps;
+    return std::make_unique<PolySet>(3);
   }
   if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return hybrid->toPolySet();

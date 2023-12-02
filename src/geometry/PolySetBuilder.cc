@@ -79,12 +79,11 @@ void PolySetBuilder::appendGeometry(const std::shared_ptr<const Geometry>& geom)
     append(*ps);
 #ifdef ENABLE_CGAL
   } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-    PolySet ps(3);
-    const bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
-    if (err) {
+    if (const auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3))) {
+      append(*ps);
+    }
+    else {
       LOG(message_group::Error, "Nef->PolySet failed");
-    } else {
-      append(ps);
     }
   } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement appendGeometry(Surface_mesh) instead of converting to PolySet
