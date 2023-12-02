@@ -237,7 +237,7 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
       LOG(message_group::Error, "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
           interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro,
           LIB3MF_VERSION_MAJOR, LIB3MF_VERSION_MINOR, LIB3MF_VERSION_MICRO);
-      return new PolySet(3);
+      return std::make_unique<PolySet>(3);
     }
   } catch (const Lib3MF::ELib3MFException& e) {
     LOG(message_group::Export_Error, e.what());
@@ -337,7 +337,9 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
     std::unique_ptr<PolySet> p;
 #ifdef ENABLE_CGAL
     Geometry::Geometries children;
-    children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), std::shared_ptr<const Geometry>(first_mesh)));
+    children.push_back(std::make_pair(
+			 std::shared_ptr<const AbstractNode>(),
+			 std::shared_ptr<const Geometry>(std::move(first_mesh))));
     for (auto it = meshes.begin(); it != meshes.end(); ++it) {
       children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), std::shared_ptr<const Geometry>(*it)));
     }
