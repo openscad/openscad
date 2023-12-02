@@ -1100,6 +1100,8 @@ set_source_files_properties(
   src/glview/ColorMap.cc
   src/glview/preview/CSGTreeNormalizer.cc
   src/gui/input/SpaceNavInputDriver.cc
+  src/gui/QGLView.cc
+  src/gui/QGLView2.cc
   PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 
 set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
