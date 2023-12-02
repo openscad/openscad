@@ -36,9 +36,9 @@
 
 namespace CGALUtils {
 
-CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps)
+std::unique_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromPolySet(const PolySet& ps)
 {
-  if (ps.isEmpty()) return new CGAL_Nef_polyhedron();
+  if (ps.isEmpty()) return std::make_unique<CGAL_Nef_polyhedron>();
   assert(ps.getDimension() == 3);
 
   // Since is_convex doesn't work well with non-planar faces,
@@ -46,9 +46,8 @@ CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps)
   PolySet psq(ps);
   std::vector<Vector3d> points3d;
   psq.quantizeVertices(&points3d);
-  PolySet ps_tri(3, psq.convexValue());
-  PolySetUtils::tessellate_faces(psq, ps_tri);
-  if (ps_tri.is_convex()) {
+  auto ps_tri = PolySetUtils::tessellate_faces(psq);
+  if (ps_tri->is_convex()) {
     using K = CGAL::Epick;
     // Collect point cloud
     std::vector<K::Point_3> points(points3d.size());
@@ -56,17 +55,17 @@ CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps)
       points[i] = vector_convert<K::Point_3>(points3d[i]);
     }
 
-    if (points.size() <= 3) return new CGAL_Nef_polyhedron();
+    if (points.size() <= 3) return std::make_unique<CGAL_Nef_polyhedron>();
 
     // Apply hull
     CGAL::Polyhedron_3<K> r;
     CGAL::convex_hull_3(points.begin(), points.end(), r);
     CGAL_Polyhedron r_exact;
     CGALUtils::copyPolyhedron(r, r_exact);
-    return new CGAL_Nef_polyhedron(new CGAL_Nef_polyhedron3(r_exact));
+    return std::make_unique<CGAL_Nef_polyhedron>(std::make_shared<CGAL_Nef_polyhedron3>(r_exact));
   }
 
-  CGAL_Nef_polyhedron3 *N = nullptr;
+  std::shared_ptr<CGAL_Nef_polyhedron3> N;
   auto plane_error = false;
   try {
     CGAL_Polyhedron P;
@@ -77,7 +76,7 @@ CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps)
       } else if (!P.is_valid(false, 0)) {
         LOG(message_group::Error, "The given mesh is invalid! Unable to convert to CGAL_Nef_Polyhedron.");
       } else {
-        N = new CGAL_Nef_polyhedron3(P);
+        N = std::make_shared<CGAL_Nef_polyhedron3>(P);
       }
     }
   } catch (const CGAL::Assertion_exception& e) {
@@ -94,16 +93,16 @@ CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps)
   }
   if (plane_error) try {
       CGAL_Polyhedron P;
-      auto err = CGALUtils::createPolyhedronFromPolySet(ps_tri, P);
+      auto err = CGALUtils::createPolyhedronFromPolySet(*ps_tri, P);
       if (!err) {
         PRINTDB("Polyhedron is closed: %d", P.is_closed());
         PRINTDB("Polyhedron is valid: %d", P.is_valid(false, 0));
       }
-      if (!err) N = new CGAL_Nef_polyhedron3(P);
+      if (!err) N = std::make_shared<CGAL_Nef_polyhedron3>(P);
     } catch (const CGAL::Assertion_exception& e) {
       LOG(message_group::Error, "Alternate construction failed. CGAL error in CGAL_Nef_polyhedron3(): %1$s", e.what());
     }
-  return new CGAL_Nef_polyhedron(N);
+  return std::make_unique<CGAL_Nef_polyhedron>(N);
 }
 
 template <typename K>

@@ -232,16 +232,20 @@ bool ExportMesh::foreach_triangle(const std::function<bool(const std::array<std:
   return true;
 }
 
-void ExportMesh::export_to_polyset(PolySet& ps) const
+std::unique_ptr<PolySet> ExportMesh::toPolySet() const
 {
-  ps.vertices.clear();
-  ps.vertices.reserve(vertices.size());
-  ps.indices.clear();
-  ps.indices.reserve(triangles.size());
-  for (const auto& v : vertices)
-    ps.vertices.push_back({v[0], v[1], v[2]});
-  for (const auto& tri : triangles)
-    ps.indices.push_back({tri.key[0], tri.key[1], tri.key[2]});
+  auto ps = std::make_unique<PolySet>(3);
+  ps->vertices.clear();
+  ps->vertices.reserve(vertices.size());
+  ps->indices.clear();
+  ps->indices.reserve(triangles.size());
+  for (const auto& v : vertices) {
+    ps->vertices.push_back({v[0], v[1], v[2]});
+  }
+  for (const auto& tri : triangles) {
+    ps->indices.push_back({tri.key[0], tri.key[1], tri.key[2]});
+  }
+  return ps;
 }
 
 } // namespace Export

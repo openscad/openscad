@@ -48,9 +48,8 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const Po
   PolySet psq(ps);
   std::vector<Vector3d> points3d;
   psq.quantizeVertices(&points3d);
-  PolySet ps_tri(3, psq.convexValue());
-  PolySetUtils::tessellate_faces(psq, ps_tri);
-  if (ps_tri.is_convex()) {
+  auto ps_tri = PolySetUtils::tessellate_faces(psq);
+  if (ps_tri->is_convex()) {
     using K = CGAL::Epick;
     // Collect point cloud
     std::vector<K::Point_3> points(points3d.size());
@@ -68,10 +67,10 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const Po
   }
 
   auto mesh = make_shared<CGAL_HybridMesh>();
-  if (createMeshFromPolySet(ps_tri, *mesh)) {
+  if (createMeshFromPolySet(*ps_tri, *mesh)) {
     assert(false && "Error from createMeshFromPolySet");
   }
-  if (!ps_tri.is_convex()) {
+  if (!ps_tri->is_convex()) {
     if (isClosed(*mesh)) {
       // Note: PMP::orient can corrupt models and cause cataclysmic memory leaks
       // (try testdata/scad/3D/issues/issue1105d.scad for instance), but

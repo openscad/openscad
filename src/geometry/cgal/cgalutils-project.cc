@@ -98,12 +98,12 @@ class ZRemover
 {
 public:
   CGAL_Nef_polyhedron2::Boundary boundary;
-  shared_ptr<CGAL_Nef_polyhedron2> tmpnef2d;
-  shared_ptr<CGAL_Nef_polyhedron2> output_nefpoly2d;
+  std::shared_ptr<CGAL_Nef_polyhedron2> tmpnef2d;
+  std::shared_ptr<CGAL_Nef_polyhedron2> output_nefpoly2d;
   CGAL::Direction_3<CGAL_Kernel3> up;
   ZRemover()
   {
-    output_nefpoly2d.reset(new CGAL_Nef_polyhedron2() );
+    output_nefpoly2d = std::make_shared<CGAL_Nef_polyhedron2>();
     boundary = CGAL_Nef_polyhedron2::INCLUDED;
     up = CGAL::Direction_3<CGAL_Kernel3>(0, 0, 1);
   }
@@ -144,7 +144,7 @@ void ZRemover::visit(CGAL_Nef_polyhedron3::Halffacet_const_handle hfacet)
 
       if (OpenSCAD::debug != "") PRINTDB(" <!-- is_simple_2: %i -->", CGAL::is_simple_2(contour.begin(), contour.end()));
 
-      tmpnef2d.reset(new CGAL_Nef_polyhedron2(contour.begin(), contour.end(), boundary));
+      tmpnef2d = std::make_shared<CGAL_Nef_polyhedron2>(contour.begin(), contour.end(), boundary);
 
       if (contour_counter == 0) {
         PRINTDB(" <!-- contour is a body. make union(). %i points -->", contour.size());
@@ -181,7 +181,7 @@ std::unique_ptr<Polygon2d> project(const CGAL_Nef_polyhedron& N, bool cut)
   if (cut) {
     try {
       CGAL_Nef_polyhedron3::Plane_3 xy_plane = CGAL_Nef_polyhedron3::Plane_3(0, 0, 1, 0);
-      newN.p3.reset(new CGAL_Nef_polyhedron3(N.p3->intersection(xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY)));
+      newN.p3 = std::make_shared<CGAL_Nef_polyhedron3>(N.p3->intersection(xy_plane, CGAL_Nef_polyhedron3::PLANE_ONLY));
     } catch (const CGAL::Failure_exception& e) {
       PRINTDB("CGALUtils::project during plane intersection: %s", e.what());
       try {
@@ -198,7 +198,7 @@ for (int i = 0; i < 8; ++i) pts.push_back(bigcuboid.vertex(i));
         CGAL_Polyhedron bigbox;
         CGAL::convex_hull_3(pts.begin(), pts.end(), bigbox);
         CGAL_Nef_polyhedron3 nef_bigbox(bigbox);
-        newN.p3.reset(new CGAL_Nef_polyhedron3(nef_bigbox.intersection(*N.p3)));
+        newN.p3 = std::make_shared<CGAL_Nef_polyhedron3>(nef_bigbox.intersection(*N.p3));
       } catch (const CGAL::Failure_exception& e) {
         LOG(message_group::Error, " CGAL error in CGALUtils::project during bigbox intersection: %1$s", e.what());
 

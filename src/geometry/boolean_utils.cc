@@ -299,7 +299,7 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
         t.reset();
         operands[0] = std::move(N);
       } else {
-        operands[0] = shared_ptr<const Geometry>(new CGAL_Nef_polyhedron());
+        operands[0] = std::make_shared<CGAL_Nef_polyhedron>();
       }
     }
 

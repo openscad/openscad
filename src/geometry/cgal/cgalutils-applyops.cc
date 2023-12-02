@@ -90,7 +90,7 @@ Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend)
  */
 std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op)
 {
-  CGAL_Nef_polyhedron *N = nullptr;
+  std::shared_ptr<CGAL_Nef_polyhedron> N;
 
   assert(op != OpenSCADOperator::UNION && "use applyUnion3D() instead of applyOperator3D()");
   bool foundFirst = false;
@@ -103,7 +103,8 @@ std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& chil
       // Initialize N with first expected geometric object
       if (!foundFirst) {
         if (chN) {
-          N = new CGAL_Nef_polyhedron(*chN);
+	  // FIXME: Do we need to make a copy here?
+          N = std::make_shared<CGAL_Nef_polyhedron>(*chN);
         } else { // first child geometry might be empty/null
           N = nullptr;
         }
@@ -114,7 +115,6 @@ std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& chil
       // Intersecting something with nothing results in nothing
       if (!chN || chN->isEmpty()) {
         if (op == OpenSCADOperator::INTERSECTION) {
-          if (N != nullptr) delete N; // safety!
           N = nullptr;
         }
         continue;
@@ -149,7 +149,7 @@ std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& chil
     std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
     LOG(message_group::Error, "exception in CGALUtils::applyBinaryOperator %1$s: %2$s", opstr, e.what());
   }
-  return shared_ptr<Geometry>(N);
+  return N;
 }
 
 }  // namespace CGALUtils

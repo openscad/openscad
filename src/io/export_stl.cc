@@ -101,20 +101,19 @@ uint64_t append_stl(const PolySet& polyset, std::ostream& output, bool binary)
 {
   static_assert(sizeof(float) == 4, "Need 32 bit float");
   // check if tessellation is needed
-  PolySet tmp(3);
+  std::unique_ptr<PolySet> tmp;
   bool needTessellation = std::any_of(
       polyset.indices.begin(), polyset.indices.end(),
       [](const auto& face) { return face.size() != 3; }
   );
-  if (needTessellation)
-    PolySetUtils::tessellate_faces(polyset, tmp);
-  bool useTmp = needTessellation;
-  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
-    Export::ExportMesh ex(needTessellation ? tmp : polyset);
-    ex.export_to_polyset(tmp);
-    useTmp = true;
+  if (needTessellation) {
+    tmp = PolySetUtils::tessellate_faces(polyset);
   }
-  const PolySet& ps = useTmp ? tmp : polyset;
+  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
+    Export::ExportMesh ex(needTessellation ? *tmp : polyset);
+    tmp = ex.toPolySet();
+  }
+  const PolySet& ps = tmp ? *tmp : polyset;
 
   uint64_t triangle_count = 0;
 

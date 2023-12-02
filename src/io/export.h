@@ -218,7 +218,7 @@ public:
   bool foreach_vertex(const std::function<bool(const Vertex&)>& callback) const;
   bool foreach_indexed_triangle(const std::function<bool(const std::array<int, 3>&)>& callback) const;
   bool foreach_triangle(const std::function<bool(const std::array<Vertex, 3>&)>& callback) const;
-  void export_to_polyset(PolySet& ps) const;
+  std::unique_ptr<PolySet> toPolySet() const;
 
 private:
   std::vector<Vertex> vertices;

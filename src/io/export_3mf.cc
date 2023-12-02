@@ -157,9 +157,7 @@ static bool append_3mf(const shared_ptr<const Geometry>& geom, PLib3MFModelMeshO
     return append_polyset(*mani->toPolySet(), model);
 #endif
   } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
-    PolySet triangulated(3);
-    PolySetUtils::tessellate_faces(*ps, triangulated);
-    return append_polyset(triangulated, model);
+    return append_polyset(*PolySetUtils::tessellate_faces(*ps), model);
   } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
   } else { // NOLINT(bugprone-branch-clone)
@@ -330,9 +328,7 @@ static bool append_3mf(const shared_ptr<const Geometry>& geom, Lib3MF::PWrapper&
     return append_polyset(*mani->toPolySet(), wrapper, model);
 #endif
   } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
-    PolySet triangulated(3);
-    PolySetUtils::tessellate_faces(*ps, triangulated);
-    return append_polyset(triangulated, wrapper, model);
+    return append_polyset(*PolySetUtils::tessellate_faces(*ps), wrapper, model);
   } else if (dynamic_pointer_cast<const Polygon2d>(geom)) {
     assert(false && "Unsupported file format");
   } else {

@@ -52,7 +52,7 @@ std::unique_ptr<Polygon2d> project(const PolySet& ps) {
    polyset has simple polygon faces with no holes.
    The tessellation will be robust wrt. degenerate and self-intersecting
  */
-void tessellate_faces(const PolySet& inps, PolySet& outps)
+std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
 {
   int degeneratePolygons = 0;
 
@@ -61,12 +61,12 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
   std::vector<std::vector<IndexedFace>> polygons;
 
   // best estimate without iterating all polygons, to reduce reallocations
-  polygons.reserve(inps.indices.size() );
+  polygons.reserve(polyset.indices.size() );
 
   // minimum estimate without iterating all polygons, to reduce reallocation and rehashing
-  allVertices.reserve(3 * inps.indices.size() );
+  allVertices.reserve(3 * polyset.indices.size() );
 
-  for (const auto& pgon : inps.indices) {
+  for (const auto& pgon : polyset.indices) {
     if (pgon.size() < 3) {
       degeneratePolygons++;
       continue;
@@ -77,7 +77,7 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
     faces.push_back(IndexedFace());
     auto& currface = faces.back();
     for (const auto& ind : pgon) {
-      const Vector3d v=inps.vertices[ind];
+      const Vector3d v=polyset.vertices[ind];
       // Create vertex indices and remove consecutive duplicate vertices
       // NOTE: a lot of time is spent here (cast+hash+lookup+insert+rehash)
       auto idx = allVertices.lookup(v.cast<float>());
@@ -98,7 +98,8 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
 
   // Estimate how many polygons we will need and preallocate.
   // This is usually an undercount, but still prevents a lot of reallocations.
-  PolySetBuilder builder(verts.size(),polygons.size());
+  PolySetBuilder builder(verts.size(), polygons.size(), polyset.getDimension(), polyset.convexValue());
+  builder.setConvexity(polyset.getConvexity());
   for(int i=0;i<verts.size();i++)
     builder.vertexIndex({verts[i][0],verts[i][1],verts[i][2]});
 
@@ -120,10 +121,10 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
       }
     }
   }
-  outps.reset(*builder.build());
   if (degeneratePolygons > 0) {
     LOG(message_group::Warning, "PolySet has degenerate polygons");
   }
+  return builder.build();
 }
 
 bool is_approximately_convex(const PolySet& ps) {

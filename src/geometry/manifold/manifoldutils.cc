@@ -36,12 +36,11 @@ const char* statusToString(Error status) {
 
 std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) {
   manifold::Mesh mesh;
-  PolySet triangulated(3);
-  PolySetUtils::tessellate_faces(ps, triangulated);
+  auto triangulated = PolySetUtils::tessellate_faces(ps);
 
-  auto numfaces = triangulated.indices.size();
-  const auto &vertices = triangulated.vertices;
-  const auto &indices = triangulated.indices;
+  auto numfaces = triangulated->indices.size();
+  const auto &vertices = triangulated->vertices;
+  const auto &indices = triangulated->indices;
 
   mesh.vertPos.resize(vertices.size());
   mesh.triVerts.resize(numfaces);
@@ -112,12 +111,11 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet
   PolySet psq(ps);
   std::vector<Vector3d> points3d;
   psq.quantizeVertices(&points3d);
-  PolySet ps_tri(3, psq.convexValue());
-  PolySetUtils::tessellate_faces(psq, ps_tri);
+  auto ps_tri = PolySetUtils::tessellate_faces(psq);
   
   CGAL_DoubleMesh m;
 
-  if (ps_tri.is_convex()) {
+  if (ps_tri->is_convex()) {
     using K = CGAL::Epick;
     // Collect point cloud
     std::vector<K::Point_3> points(points3d.size());
@@ -131,10 +129,10 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet
     CGAL::convex_hull_3(points.begin(), points.end(), r);
     CGALUtils::copyMesh(r, m);
   } else {
-    CGALUtils::createMeshFromPolySet(ps_tri, m);
+    CGALUtils::createMeshFromPolySet(*ps_tri, m);
   }
 
-  if (!ps_tri.is_convex()) {
+  if (!ps_tri->is_convex()) {
     if (CGALUtils::isClosed(m)) {
       CGALUtils::orientToBoundAVolume(m);
     } else {

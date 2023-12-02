@@ -274,6 +274,7 @@ std::unique_ptr<PolySet> AmfImporter::read(const std::string& filename)
 #endif // ENABLE_CGAL
       LOG(message_group::Error, "Error importing multi-object AMF file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
   }
+  return std::make_unique<PolySet>(3);
 }
 
 #ifdef ENABLE_LIBZIP

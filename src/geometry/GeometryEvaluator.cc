@@ -88,10 +88,7 @@ shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNod
         bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)
         if (!convex) {
           assert(ps->getDimension() == 3);
-          auto ps_tri = new PolySet(3, ps->convexValue());
-          ps_tri->setConvexity(ps->getConvexity());
-          PolySetUtils::tessellate_faces(*ps, *ps_tri);
-          this->root.reset(ps_tri);
+          this->root = PolySetUtils::tessellate_faces(*ps);
         }
       }
     }
@@ -557,7 +554,7 @@ Response GeometryEvaluator::lazyEvaluateRootNode(State& state, const AbstractNod
       if (chgeom && !chgeom->isEmpty()) geometries.push_back(item);
     }
     if (geometries.size() == 1) geom = geometries.front().second;
-    else if (geometries.size() > 1) geom.reset(new GeometryList(geometries));
+    else if (geometries.size() > 1) geom = std::make_shared<GeometryList>(geometries);
 
     this->root = geom;
   }
@@ -730,7 +727,7 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
 
             // If we got a const object, make a copy
             shared_ptr<Polygon2d> newpoly;
-            if (res.isConst()) newpoly.reset(new Polygon2d(*polygons));
+            if (res.isConst()) newpoly = std::make_shared<Polygon2d>(*polygons);
             else newpoly = dynamic_pointer_cast<Polygon2d>(res.ptr());
 
             Transform2d mat2;

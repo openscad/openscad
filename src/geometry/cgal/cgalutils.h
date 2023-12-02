@@ -28,7 +28,7 @@ Result vector_convert(V const& v) {
   return Result(CGAL::to_double(v[0]), CGAL::to_double(v[1]), CGAL::to_double(v[2]));
 }
 
-CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps);
+std::unique_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromPolySet(const PolySet& ps);
 template <typename K>
 bool is_weakly_convex(const CGAL::Polyhedron_3<K>& p);
 template <typename K>
@@ -50,7 +50,7 @@ CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox& bbox);
 bool is_approximately_convex(const PolySet& ps);
 shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& children);
 
-  template <typename Polyhedron> std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p);
+template <typename Polyhedron> std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p);
 template <class InputKernel, class OutputKernel>
 void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel>& poly_a, CGAL::Polyhedron_3<OutputKernel>& poly_b);
 template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p);

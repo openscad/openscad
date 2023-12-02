@@ -579,7 +579,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
                 child.second = CGALUtils::getNefPolyhedronFromGeometry(child.second);
               }
             }
-            root_geom.reset(new GeometryList(flatlist));
+            root_geom = std::make_shared<GeometryList>(flatlist);
           } else {
             root_geom = CGALUtils::getNefPolyhedronFromGeometry(root_geom);
           }
@@ -587,7 +587,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
         }
       } else {
 	// FIXME: The default geometry doesn't need to be a Nef polyhedron. Why not make it a PolySet?
-        root_geom.reset(new CGAL_Nef_polyhedron());
+        root_geom = std::make_shared<CGAL_Nef_polyhedron>();
       }
     }
 #endif
