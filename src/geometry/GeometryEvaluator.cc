@@ -115,7 +115,6 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
   for (const auto& item : this->visitedchildren[node.index()]) {
     if (!isValidDim(item, dim)) break;
   }
-  // FIXME: It's annoying to have to disambiguate here:
   if (dim == 2) return {std::shared_ptr<Geometry>(applyToChildren2D(node, op))};
   else if (dim == 3) return applyToChildren3D(node, op);
   return {};
@@ -124,15 +123,14 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
 /*!
    Applies the operator to all child nodes of the given node.
 
-   May return nullptr or any 3D Geometry object (can be either PolySet or CGAL_Nef_polyhedron)
+   May return nullptr or any 3D Geometry object
  */
 GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const AbstractNode& node, OpenSCADOperator op)
 {
   Geometry::Geometries children = collectChildren3D(node);
-  if (children.size() == 0) return {};
+  if (children.empty()) return {};
 
   if (op == OpenSCADOperator::HULL) {
-    // FIXME: It's annoying to have to disambiguate here:
     return {std::shared_ptr<Geometry>(applyHull(children))};
   } else if (op == OpenSCADOperator::FILL) {
     for (const auto& item : children) {
@@ -170,7 +168,6 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
 #endif
 #ifdef ENABLE_CGAL
     else if (Feature::ExperimentalFastCsg.is_enabled()) {
-      // FIXME: It's annoying to have to disambiguate here:
       return {std::shared_ptr<Geometry>(CGALUtils::applyUnion3DHybrid(actualchildren.begin(), actualchildren.end()))};
     }
     return {CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())};
@@ -723,8 +720,12 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
 
             // If we got a const object, make a copy
             std::shared_ptr<Polygon2d> newpoly;
-            if (res.isConst()) newpoly = std::make_shared<Polygon2d>(*polygons);
-            else newpoly = std::dynamic_pointer_cast<Polygon2d>(res.ptr());
+            if (res.isConst()) {
+              newpoly = std::make_shared<Polygon2d>(*polygons);
+	    }
+            else {
+              newpoly = std::dynamic_pointer_cast<Polygon2d>(res.ptr());
+	    }
 
             Transform2d mat2;
             mat2.matrix() <<
