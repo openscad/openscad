@@ -43,7 +43,7 @@ BuiltinFunction::BuiltinFunction(Value(*f)(Arguments, const Location&), const Fe
     };
 }
 
-UserFunction::UserFunction(const char *name, AssignmentList& parameters, shared_ptr<Expression> expr, const Location& loc)
+UserFunction::UserFunction(const char *name, AssignmentList& parameters, std::shared_ptr<Expression> expr, const Location& loc)
   : ASTNode(loc), name(name), parameters(parameters), expr(std::move(expr))
 {
 }

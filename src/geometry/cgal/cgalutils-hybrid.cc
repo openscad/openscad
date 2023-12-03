@@ -23,11 +23,11 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolyhedron(const
   CGAL::Surface_mesh<CGAL::Point_3<K>> mesh;
   CGAL::copy_face_graph(poly, mesh);
 
-  auto hybrid_mesh = make_shared<CGAL_HybridMesh>();
+  auto hybrid_mesh = std::make_shared<CGAL_HybridMesh>();
   copyMesh(mesh, *hybrid_mesh);
   CGALUtils::triangulateFaces(*hybrid_mesh);
 
-  return make_shared<CGALHybridPolyhedron>(hybrid_mesh);
+  return std::make_shared<CGALHybridPolyhedron>(hybrid_mesh);
 }
 
 template std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick>& poly);
@@ -48,30 +48,29 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const Po
   PolySet psq(ps);
   std::vector<Vector3d> points3d;
   psq.quantizeVertices(&points3d);
-  PolySet ps_tri(3, psq.convexValue());
-  PolySetUtils::tessellate_faces(psq, ps_tri);
-  if (ps_tri.is_convex()) {
+  auto ps_tri = PolySetUtils::tessellate_faces(psq);
+  if (ps_tri->is_convex()) {
     using K = CGAL::Epick;
     // Collect point cloud
     std::vector<K::Point_3> points(points3d.size());
     for (size_t i = 0, n = points3d.size(); i < n; i++) {
       points[i] = vector_convert<K::Point_3>(points3d[i]);
     }
-    if (points.size() <= 3) return make_shared<CGALHybridPolyhedron>();
+    if (points.size() <= 3) return std::make_shared<CGALHybridPolyhedron>();
 
     // Apply hull
     CGAL::Surface_mesh<CGAL::Point_3<K>> r;
     CGAL::convex_hull_3(points.begin(), points.end(), r);
-    auto r_exact = make_shared<CGAL_HybridMesh>();
+    auto r_exact = std::make_shared<CGAL_HybridMesh>();
     copyMesh(r, *r_exact);
-    return make_shared<CGALHybridPolyhedron>(r_exact);
+    return std::make_shared<CGALHybridPolyhedron>(r_exact);
   }
 
-  auto mesh = make_shared<CGAL_HybridMesh>();
-  if (createMeshFromPolySet(ps_tri, *mesh)) {
+  auto mesh = std::make_shared<CGAL_HybridMesh>();
+  if (createMeshFromPolySet(*ps_tri, *mesh)) {
     assert(false && "Error from createMeshFromPolySet");
   }
-  if (!ps_tri.is_convex()) {
+  if (!ps_tri->is_convex()) {
     if (isClosed(*mesh)) {
       // Note: PMP::orient can corrupt models and cause cataclysmic memory leaks
       // (try testdata/scad/3D/issues/issue1105d.scad for instance), but
@@ -82,32 +81,32 @@ std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const Po
     }
   }
 
-  return make_shared<CGALHybridPolyhedron>(mesh);
+  return std::make_shared<CGALHybridPolyhedron>(mesh);
 }
 
 std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromNefPolyhedron(const CGAL_Nef_polyhedron& nef)
 {
   assert(nef.p3);
 
-  auto mesh = make_shared<CGAL_HybridMesh>();
+  auto mesh = std::make_shared<CGAL_HybridMesh>();
 
   CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>> alien_mesh;
   convertNefPolyhedronToTriangleMesh(*nef.p3, alien_mesh);
   copyMesh(alien_mesh, *mesh);
 
-  return make_shared<CGALHybridPolyhedron>(mesh);
+  return std::make_shared<CGALHybridPolyhedron>(mesh);
 }
 
 std::shared_ptr<CGALHybridPolyhedron> createMutableHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom)
 {
-  if (auto poly = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    return make_shared<CGALHybridPolyhedron>(*poly);
-  } else if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+  if (auto poly = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+    return std::make_shared<CGALHybridPolyhedron>(*poly);
+  } else if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     return createHybridPolyhedronFromPolySet(*ps);
-  } else if (auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  } else if (auto nef = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     return createHybridPolyhedronFromNefPolyhedron(*nef);
 #if ENABLE_MANIFOLD
-  } else if (auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+  } else if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     return createHybridPolyhedronFromPolySet(*mani->toPolySet());
 #endif
   } else {
@@ -118,21 +117,21 @@ std::shared_ptr<CGALHybridPolyhedron> createMutableHybridPolyhedronFromGeometry(
 
 std::shared_ptr<const CGALHybridPolyhedron> getHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom)
 {
-  if (auto poly = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+  if (auto poly = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return poly;
   } else {
     return createMutableHybridPolyhedronFromGeometry(geom);
   }
 }
 
-shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron& hybrid)
+std::shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron& hybrid)
 {
   using CGAL_SurfaceMesh = CGAL::Surface_mesh<CGAL::Point_3<CGAL_Kernel3>>;
   if (auto mesh = hybrid.getMesh()) {
     CGAL_SurfaceMesh alien_mesh;
     copyMesh(*mesh, alien_mesh);
 
-    return make_shared<CGAL_Nef_polyhedron>(make_shared<CGAL_Nef_polyhedron3>(alien_mesh));
+    return std::make_shared<CGAL_Nef_polyhedron>(std::make_shared<CGAL_Nef_polyhedron3>(alien_mesh));
   }
   if (auto nef = hybrid.getNefPolyhedron()) {
     CGAL_HybridMesh mesh;
@@ -141,7 +140,7 @@ shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPo
     CGAL_SurfaceMesh alien_mesh;
     copyMesh(mesh, alien_mesh);
 
-    return make_shared<CGAL_Nef_polyhedron>(make_shared<CGAL_Nef_polyhedron3>(alien_mesh));
+    return std::make_shared<CGAL_Nef_polyhedron>(std::make_shared<CGAL_Nef_polyhedron3>(alien_mesh));
   } else {
     assert(!"Invalid hybrid polyhedron state");
     return nullptr;

@@ -52,33 +52,32 @@ void IndexedMesh::append_geometry(const PolySet& ps)
   }
 }
 
-void IndexedMesh::append_geometry(const shared_ptr<const Geometry>& geom)
+void IndexedMesh::append_geometry(const std::shared_ptr<const Geometry>& geom)
 {
   IndexedMesh& mesh = *this;
-  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+  if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const Geometry::GeometryItem& item : geomlist->getChildren()) {
       mesh.append_geometry(item.second);
     }
-  } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+  } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     mesh.append_geometry(*ps);
 #ifdef ENABLE_CGAL
-  } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-    PolySet ps(3);
-    bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
-    if (err) {
-      LOG(message_group::Error, "Nef->PolySet failed");
-    } else {
+  } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+    if (const auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3))) {
       mesh.append_geometry(ps);
     }
-  } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+    else {
+      LOG(message_group::Error, "Nef->PolySet failed");
+    }
+  } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement append_geometry(Surface_mesh) instead of converting to PolySet
     mesh.append_geometry(hybrid->toPolySet());
 #endif
 #ifdef ENABLE_MANIFOLD
-  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+  } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     mesh.append_geometry(mani->toPolySet());
 #endif
-  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
+  } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
   } else { // NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");

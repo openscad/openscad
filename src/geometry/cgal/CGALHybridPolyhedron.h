@@ -39,8 +39,8 @@ public:
   using bbox_t = CGAL::Iso_cuboid_3<CGAL_HybridKernel3>;
 
   CGALHybridPolyhedron();
-  CGALHybridPolyhedron(const shared_ptr<CGAL_HybridNef>& nef);
-  CGALHybridPolyhedron(const shared_ptr<CGAL_HybridMesh>& mesh);
+  CGALHybridPolyhedron(const std::shared_ptr<CGAL_HybridNef>& nef);
+  CGALHybridPolyhedron(const std::shared_ptr<CGAL_HybridMesh>& mesh);
   CGALHybridPolyhedron(const CGALHybridPolyhedron& other);
   CGALHybridPolyhedron& operator=(const CGALHybridPolyhedron& other);
 
@@ -56,7 +56,7 @@ public:
 
   [[nodiscard]] std::string dump() const override;
   [[nodiscard]] unsigned int getDimension() const override { return 3; }
-  [[nodiscard]] Geometry *copy() const override { return new CGALHybridPolyhedron(*this); }
+  [[nodiscard]] std::unique_ptr<Geometry> copy() const override;
 
   [[nodiscard]] std::shared_ptr<const PolySet> toPolySet() const;
 

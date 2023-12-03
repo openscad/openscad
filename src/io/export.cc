@@ -66,7 +66,7 @@ bool is2D(const FileFormat format) {
     format == FileFormat::PDF;
 }
 
-void exportFile(const shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
+void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
 {
   switch (exportInfo.format) {
   case FileFormat::ASCIISTL:
@@ -112,7 +112,7 @@ void exportFile(const shared_ptr<const Geometry>& root_geom, std::ostream& outpu
   }
 }
 
-bool exportFileByNameStdout(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
+bool exportFileByNameStdout(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
 #ifdef _WIN32
   _setmode(_fileno(stdout), _O_BINARY);
@@ -121,7 +121,7 @@ bool exportFileByNameStdout(const shared_ptr<const Geometry>& root_geom, const E
   return true;
 }
 
-bool exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
+bool exportFileByNameStream(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
   std::ios::openmode mode = std::ios::out | std::ios::trunc;
   if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::STL || exportInfo.format == FileFormat::PDF) {
@@ -151,7 +151,7 @@ bool exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const E
   }
 }
 
-bool exportFileByName(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
+bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
   if (exportInfo.useStdOut) {
     return exportFileByNameStdout(root_geom, exportInfo);
@@ -232,16 +232,18 @@ bool ExportMesh::foreach_triangle(const std::function<bool(const std::array<std:
   return true;
 }
 
-void ExportMesh::export_to_polyset(PolySet& ps) const
+std::unique_ptr<PolySet> ExportMesh::toPolySet() const
 {
-  ps.vertices.clear();
-  ps.vertices.reserve(vertices.size());
-  ps.indices.clear();
-  ps.indices.reserve(triangles.size());
-  for (const auto& v : vertices)
-    ps.vertices.push_back({v[0], v[1], v[2]});
-  for (const auto& tri : triangles)
-    ps.indices.push_back({tri.key[0], tri.key[1], tri.key[2]});
+  auto ps = std::make_unique<PolySet>(3);
+  ps->vertices.reserve(vertices.size());
+  ps->indices.reserve(triangles.size());
+  for (const auto& v : vertices) {
+    ps->vertices.push_back({v[0], v[1], v[2]});
+  }
+  for (const auto& tri : triangles) {
+    ps->indices.push_back({tri.key[0], tri.key[1], tri.key[2]});
+  }
+  return ps;
 }
 
 } // namespace Export
