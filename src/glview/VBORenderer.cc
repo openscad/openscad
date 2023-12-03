@@ -191,7 +191,7 @@ void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
 {
   if (!shader_attributes_index) return;
 
-  shared_ptr<VertexData> vertex_data = vertex_array.data();
+  std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
   if (points.size() == 3 && getShader().data.csg_rendering.barycentric) {
     // Get edge states
@@ -312,7 +312,7 @@ Vector3d uniqueMultiply(std::unordered_map<Vector3d, Vector3d>& vert_mult_map,
 void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
                                  csgmode_e csgmode, const Transform3d& m, const Color4f& color) const
 {
-  shared_ptr<VertexData> vertex_data = vertex_array.data();
+  std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
   if (!vertex_data) {
     return;
@@ -389,7 +389,7 @@ void VBORenderer::create_edges(const PolySet& ps,
                                const Transform3d& m,
                                const Color4f& color) const
 {
-  shared_ptr<VertexData> vertex_data = vertex_array.data();
+  std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
   if (!vertex_data) return;
 
@@ -501,7 +501,7 @@ void VBORenderer::create_edges(const PolySet& ps,
 void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
                                   csgmode_e csgmode, const Transform3d& m, const Color4f& color) const
 {
-  shared_ptr<VertexData> vertex_data = vertex_array.data();
+  std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
   if (!vertex_data) return;
 
@@ -708,7 +708,7 @@ void VBORenderer::add_shader_data(VertexArray& vertex_array)
 
 void VBORenderer::add_shader_pointers(VertexArray& vertex_array)
 {
-  shared_ptr<VertexData> vertex_data = vertex_array.data();
+  std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
   if (!vertex_data) return;
 

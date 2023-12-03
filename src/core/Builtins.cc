@@ -110,19 +110,19 @@ std::string Builtins::isDeprecated(const std::string& name) const
 
 Builtins::Builtins()
 {
-  this->assignments.emplace_back(new Assignment("$fn", make_shared<Literal>(0.0)) );
-  this->assignments.emplace_back(new Assignment("$fs", make_shared<Literal>(2.0)) );
-  this->assignments.emplace_back(new Assignment("$fa", make_shared<Literal>(12.0)) );
-  this->assignments.emplace_back(new Assignment("$t", make_shared<Literal>(0.0)) );
-  this->assignments.emplace_back(new Assignment("$preview", make_shared<Literal>()) ); //undef as should always be overwritten.
-  auto zeroVector = make_shared<Vector>(Location::NONE);
+  this->assignments.emplace_back(new Assignment("$fn", std::make_shared<Literal>(0.0)) );
+  this->assignments.emplace_back(new Assignment("$fs", std::make_shared<Literal>(2.0)) );
+  this->assignments.emplace_back(new Assignment("$fa", std::make_shared<Literal>(12.0)) );
+  this->assignments.emplace_back(new Assignment("$t", std::make_shared<Literal>(0.0)) );
+  this->assignments.emplace_back(new Assignment("$preview", std::make_shared<Literal>()) ); //undef as should always be overwritten.
+  auto zeroVector = std::make_shared<Vector>(Location::NONE);
   zeroVector->emplace_back(new Literal(0.0));
   zeroVector->emplace_back(new Literal(0.0));
   zeroVector->emplace_back(new Literal(0.0));
   this->assignments.emplace_back(new Assignment("$vpt", zeroVector) );
   this->assignments.emplace_back(new Assignment("$vpr", zeroVector) );
-  this->assignments.emplace_back(new Assignment("$vpd", make_shared<Literal>(500.0)) );
-  this->assignments.emplace_back(new Assignment("$vpf", make_shared<Literal>(22.5)) );
+  this->assignments.emplace_back(new Assignment("$vpd", std::make_shared<Literal>(500.0)) );
+  this->assignments.emplace_back(new Assignment("$vpf", std::make_shared<Literal>(22.5)) );
 }
 
 void Builtins::initKeywordList()

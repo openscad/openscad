@@ -1,5 +1,5 @@
-#include "io/import.h"
-#include "memory.h"
+#include "import.h"
+#include <memory>
 #include "printutils.h"
 #include "AST.h"
 
@@ -8,27 +8,24 @@
 #include "CGAL_Nef_polyhedron.h"
 #include <CGAL/IO/Nef_polyhedron_iostream_3.h>
 
-CGAL_Nef_polyhedron *import_nef3(const std::string& filename, const Location& loc)
+std::unique_ptr<CGAL_Nef_polyhedron> import_nef3(const std::string& filename, const Location& loc)
 {
-  auto *N = new CGAL_Nef_polyhedron;
-
   // Open file and position at the end
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary);
   if (!f.good()) {
     LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename, loc.firstLine());
-    return N;
+    return std::make_unique<CGAL_Nef_polyhedron>();
   }
 
   try {
-    auto nef = make_shared<CGAL_Nef_polyhedron3>();
+    auto nef = std::make_shared<CGAL_Nef_polyhedron3>();
     f >> *nef;
-    N->p3 = nef;
+    return std::make_unique<CGAL_Nef_polyhedron>(nef);
   } catch (const CGAL::Failure_exception& e) {
     LOG(message_group::Warning, "Failure trying to import '%1$s', import() at line %2$d", filename, loc.firstLine());
     LOG(e.what());
-    N = new CGAL_Nef_polyhedron;
+    return std::make_unique<CGAL_Nef_polyhedron>();
   }
-  return N;
 }
 
 #endif // ENABLE_CGAL

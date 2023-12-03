@@ -36,12 +36,11 @@ const char* statusToString(Error status) {
 
 std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) {
   manifold::Mesh mesh;
-  PolySet triangulated(3);
-  PolySetUtils::tessellate_faces(ps, triangulated);
+  auto triangulated = PolySetUtils::tessellate_faces(ps);
 
-  auto numfaces = triangulated.indices.size();
-  const auto &vertices = triangulated.vertices;
-  const auto &indices = triangulated.indices;
+  auto numfaces = triangulated->indices.size();
+  const auto &vertices = triangulated->vertices;
+  const auto &indices = triangulated->indices;
 
   mesh.vertPos.resize(vertices.size());
   mesh.triVerts.resize(numfaces);
@@ -61,7 +60,7 @@ std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) 
     assert(i0 != i1 && i0 != i2 && i1 != i2);
     mesh.triVerts[i] = {i0, i1, i2};
   }
-  return make_shared<manifold::Manifold>(std::move(mesh));
+  return std::make_shared<manifold::Manifold>(std::move(mesh));
 }
 
 template <class TriangleMesh>
@@ -112,29 +111,28 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet
   PolySet psq(ps);
   std::vector<Vector3d> points3d;
   psq.quantizeVertices(&points3d);
-  PolySet ps_tri(3, psq.convexValue());
-  PolySetUtils::tessellate_faces(psq, ps_tri);
+  auto ps_tri = PolySetUtils::tessellate_faces(psq);
   
   CGAL_DoubleMesh m;
 
-  if (ps_tri.is_convex()) {
+  if (ps_tri->is_convex()) {
     using K = CGAL::Epick;
     // Collect point cloud
     std::vector<K::Point_3> points(points3d.size());
     for (size_t i = 0, n = points3d.size(); i < n; i++) {
       points[i] = CGALUtils::vector_convert<K::Point_3>(points3d[i]);
     }
-    if (points.size() <= 3) return make_shared<ManifoldGeometry>();
+    if (points.size() <= 3) return std::make_shared<ManifoldGeometry>();
 
     // Apply hull
     CGAL::Surface_mesh<CGAL::Point_3<K>> r;
     CGAL::convex_hull_3(points.begin(), points.end(), r);
     CGALUtils::copyMesh(r, m);
   } else {
-    CGALUtils::createMeshFromPolySet(ps_tri, m);
+    CGALUtils::createMeshFromPolySet(*ps_tri, m);
   }
 
-  if (!ps_tri.is_convex()) {
+  if (!ps_tri->is_convex()) {
     if (CGALUtils::isClosed(m)) {
       CGALUtils::orientToBoundAVolume(m);
     } else {
@@ -149,7 +147,7 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet
 }
 
 std::shared_ptr<ManifoldGeometry> createMutableManifoldFromGeometry(const std::shared_ptr<const Geometry>& geom) {
-  if (auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+  if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     return std::make_shared<ManifoldGeometry>(*mani);
   }
 

@@ -4,7 +4,6 @@
 #include "Geometry.h"
 #include "export.h"
 #include "ExportPdfDialog.h"
-#include "memory.h"
 #include "RenderStatistic.h"
 #include "TabManager.h"
 #include "Tree.h"
@@ -67,7 +66,7 @@ public:
   EditorInterface *activeEditor;
   TabManager *tabManager;
 
-  shared_ptr<const Geometry> root_geom;
+  std::shared_ptr<const Geometry> root_geom;
   class CGALRenderer *cgalRenderer;
 #ifdef ENABLE_OPENCSG
   class OpenCSGRenderer *opencsgRenderer;
@@ -240,7 +239,7 @@ private slots:
   void sendToOctoPrint();
   void sendToPrintService();
   void actionRender();
-  void actionRenderDone(const shared_ptr<const Geometry>&);
+  void actionRenderDone(const std::shared_ptr<const Geometry>&);
   void cgalRender();
   void actionCheckValidity();
   void actionDisplayAST();
@@ -359,11 +358,11 @@ private:
   static QElapsedTimer *progressThrottle;
   QWidget *lastFocus; // keep track of active copyable widget (Editor|Console) for global menu action Edit->Copy
 
-  shared_ptr<CSGNode> csgRoot; // Result of the CSGTreeEvaluator
-  shared_ptr<CSGNode> normalizedRoot; // Normalized CSG tree
-  shared_ptr<CSGProducts> root_products;
-  shared_ptr<CSGProducts> highlights_products;
-  shared_ptr<CSGProducts> background_products;
+  std::shared_ptr<CSGNode> csgRoot; // Result of the CSGTreeEvaluator
+  std::shared_ptr<CSGNode> normalizedRoot; // Normalized CSG tree
+  std::shared_ptr<CSGProducts> root_products;
+  std::shared_ptr<CSGProducts> highlights_products;
+  std::shared_ptr<CSGProducts> background_products;
 
   char const *afterCompileSlot;
   bool procevents{false};

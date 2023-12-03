@@ -69,32 +69,31 @@ void PolySetBuilder::appendPoly(const std::vector<int>& inds)
   face.insert(face.begin(), inds.begin(), inds.end());
 }
 
-void PolySetBuilder::appendGeometry(const shared_ptr<const Geometry>& geom)
+void PolySetBuilder::appendGeometry(const std::shared_ptr<const Geometry>& geom)
 {
-  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+  if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const Geometry::GeometryItem& item : geomlist->getChildren()) {
       appendGeometry(item.second);
     }
-  } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
-    append(ps.get());
+  } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+    append(*ps);
 #ifdef ENABLE_CGAL
-  } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-    PolySet ps(3);
-    const bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
-    if (err) {
-      LOG(message_group::Error, "Nef->PolySet failed");
-    } else {
-      append(&ps);
+  } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+    if (const auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3))) {
+      append(*ps);
     }
-  } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+    else {
+      LOG(message_group::Error, "Nef->PolySet failed");
+    }
+  } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement appendGeometry(Surface_mesh) instead of converting to PolySet
-    append(hybrid->toPolySet().get());
+    append(*hybrid->toPolySet());
 #endif // ifdef ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
-  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-    append(mani->toPolySet().get());
+  } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    append(*mani->toPolySet());
 #endif
-  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
+  } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
   } else { // NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
@@ -126,12 +125,12 @@ void PolySetBuilder::prependVertex(int ind)
   indices_.back().insert(indices_.back().begin(), ind);
 }
 
-void PolySetBuilder::append(const PolySet *ps)
+void PolySetBuilder::append(const PolySet& ps)
 {
-  for (const auto& poly : ps->indices) {
+  for (const auto& poly : ps.indices) {
     appendPoly(poly.size());
     for (const auto& ind: poly) {
-      appendVertex(vertexIndex(ps->vertices[ind]));
+      appendVertex(vertexIndex(ps.vertices[ind]));
     }
   }
 }

@@ -9,8 +9,8 @@ class PolySet;
 
 namespace PolySetUtils {
 
-Polygon2d *project(const PolySet& ps);
-void tessellate_faces(const PolySet& inps, PolySet& outps);
+std::unique_ptr<Polygon2d> project(const PolySet& ps);
+std::unique_ptr<PolySet> tessellate_faces(const PolySet& inps);
 bool is_approximately_convex(const PolySet& ps);
 
 std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const class Geometry>&);
