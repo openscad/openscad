@@ -55,53 +55,58 @@ std::unique_ptr<Polygon2d> project(const PolySet& ps) {
 std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
 {
   int degeneratePolygons = 0;
+  auto result = std::make_unique<PolySet>(3, polyset.convexValue());
+  result->setConvexity(polyset.getConvexity());
+  result->vertices.reserve(polyset.vertices.size());
+  result->indices.reserve(polyset.indices.size());
 
-  // Build Indexed PolyMesh
-  Reindexer<Vector3f> allVertices;
-  std::vector<IndexedFace> polygons;
-
+  std::vector<bool> used(polyset.vertices.size(), false);
   // best estimate without iterating all polygons, to reduce reallocations
-  polygons.reserve(polyset.indices.size() );
-
-  // minimum estimate without iterating all polygons, to reduce reallocation and rehashing
-  allVertices.reserve(3 * polyset.indices.size() );
-
+  std::vector<IndexedFace> polygons;
+  polygons.reserve(polyset.indices.size());
   for (const auto& pgon : polyset.indices) {
     if (pgon.size() < 3) {
       degeneratePolygons++;
       continue;
     }
-
     auto& currface = polygons.emplace_back();
     for (const auto& ind : pgon) {
-      const Vector3d v=polyset.vertices[ind];
-      // Create vertex indices and remove consecutive duplicate vertices
-      // NOTE: a lot of time is spent here (cast+hash+lookup+insert+rehash)
-      auto idx = allVertices.lookup(v.cast<float>());
-      if (currface.empty() || idx != currface.back()) currface.push_back(idx);
+      const Vector3f v = polyset.vertices[ind].cast<float>();
+      if (currface.empty() || v != polyset.vertices[currface.back()].cast<float>())
+        currface.push_back(ind);
     }
-    if (currface.front() == currface.back()) currface.pop_back();
+    const Vector3f head = polyset.vertices[currface.front()].cast<float>();
+    while (!currface.empty() && head == polyset.vertices[currface.back()].cast<float>())
+      currface.pop_back();
     if (currface.size() < 3) {
-      polygons.pop_back(); // All faces were culled
+      polygons.pop_back();
+      continue;
+    }
+    for (const auto& ind : currface)
+      used[ind] = true;
+  }
+  // remove unreferenced vertices
+  std::vector<Vector3f> verts;
+  std::vector<int> indexMap(polyset.vertices.size());
+  verts.reserve(polyset.vertices.size());
+  for (int i = 0; i < polyset.vertices.size(); ++i) {
+    if (used[i]) {
+      indexMap[i] = verts.size();
+      verts.emplace_back(polyset.vertices[i].cast<float>());
+      result->vertices.push_back(polyset.vertices[i]);
+    }
+  }
+  if (verts.size() != polyset.vertices.size()) {
+    // only remap indices when some vertices are really removed
+    for (auto& face : polygons) {
+      for (auto& ind : face)
+        ind = indexMap[ind];
     }
   }
 
-  // Tessellate indexed mesh
-  const auto& verts = allVertices.getArray();
-
   // we will reuse this memory instead of reallocating for each polygon
   std::vector<IndexedTriangle> triangles;
-
-  // Estimate how many polygons we will need and preallocate.
-  // This is usually an undercount, but still prevents a lot of reallocations.
-  auto result = std::make_unique<PolySet>(3, polyset.convexValue());
-  result->setConvexity(polyset.getConvexity());
-  result->vertices.reserve(verts.size());
-  result->indices.reserve(polygons.size());
-
-  for (const auto &v : verts)
-    result->vertices.emplace_back(v[0], v[1], v[2]);
-
+  std::vector<IndexedFace> facesBuffer(1);
   for (const auto& face : polygons) {
     if (face.size() == 3) {
       // trivial case - triangles cannot be concave or have holes
@@ -111,7 +116,8 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
     // So everything more complex than triangles goes into the general case.
     else {
       triangles.clear();
-      auto err = GeometryUtils::tessellatePolygonWithHoles(verts, {face}, triangles, nullptr);
+      facesBuffer[0] = face;
+      auto err = GeometryUtils::tessellatePolygonWithHoles(verts, facesBuffer, triangles, nullptr);
       if (!err) {
         for (const auto& t : triangles) {
           result->indices.push_back({t[0],t[1],t[2]});
