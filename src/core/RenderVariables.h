@@ -8,6 +8,5 @@ public:
   bool preview;
   double time;
   Camera camera;
-  void setRenderVariables(ContextHandle<BuiltinContext>& context) const;
+  void applyToContext(ContextHandle<BuiltinContext>& context) const;
 };
-

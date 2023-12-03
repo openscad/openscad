@@ -434,9 +434,13 @@ int cmdline(const CommandLine& cmd)
 
   root_file->handleDependencies();
 
-  RenderVariables render_variables;
-  render_variables.preview = canPreview(export_format) ? (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
-  render_variables.camera = cmd.camera;
+  RenderVariables render_variables = {
+    .preview = canPreview(export_format)
+      ? (cmd.viewOptions.renderer == RenderType::OPENCSG
+        || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)
+      : false,
+    .camera = cmd.camera,
+  };
 
   if (cmd.animate_frames == 0) {
     render_variables.time = 0;
@@ -482,7 +486,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
   EvaluationSession session{fparent.string()};
   ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
-  render_variables.setRenderVariables(builtin_context);
+  render_variables.applyToContext(builtin_context);
 
 #ifdef DEBUG
   PRINTDB("BuiltinContext:\n%s", builtin_context->dump());

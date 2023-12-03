@@ -1779,11 +1779,12 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
 void MainWindow::setRenderVariables(ContextHandle<BuiltinContext>& context)
 {
-  RenderVariables r;
-  r.preview = this->is_preview;
-  r.time = this->animateWidget->getAnim_tval();
-  r.camera = qglview->cam;
-  r.setRenderVariables(context);
+  RenderVariables r = {
+    .preview = this->is_preview,
+    .time = this->animateWidget->getAnim_tval(),
+    .camera = qglview->cam,
+  };
+  r.applyToContext(context);
 }
 
 /*!
