@@ -386,58 +386,25 @@ target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
 if(ENABLE_PYTHON)
-  SET(PYTHON_SOURCES
+  add_library(OpenSCADPy
     src/python/pyopenscad.cc
     src/python/pyfunctions.cc)
-  add_library(OpenSCADPy ${PYTHON_SOURCES} )# Base stuff
-
-  target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
-  target_compile_definitions(OpenSCADPy PRIVATE ENABLE_PYTHON)
-
-  target_compile_definitions(OpenSCAD PRIVATE ENABLE_NETTLE)
-  target_compile_definitions(OpenSCADPy PRIVATE ENABLE_NETTLE)
-  if(APPLE)	
-    target_include_directories(OpenSCADPy PRIVATE "/usr/local/include")
-    target_link_directories(OpenSCADPy PRIVATE "/usr/local/lib")
-    target_link_libraries(OpenSCADPy PRIVATE "libnettle.a")
+  find_package(Python REQUIRED COMPONENTS Interpreter Development)
+  find_package(Nettle REQUIRED)
+  message(STATUS "Python enabled, using Nettle ")
+  message(STATUS ${Nettle_INCLUDE_DIRS})
+  message(STATUS ${Nettle_LIBRARIES})
+  message(STATUS ${Nettle_FOUND})
+  target_include_directories(OpenSCADPy PRIVATE ${Python_INCLUDE_DIRS})
+  target_include_directories(OpenSCADPy PRIVATE ${Nettle_INCLUDE_DIRS})
+  target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
+  if(MSVC)
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
   else()
-    find_package(Nettle REQUIRED)
-    message(STATUS "Python enabled, using Nettle ")
-    message(STATUS ${Nettle_INCLUDE_DIRS})
-    message(STATUS ${Nettle_LIBRARIES})
-    message(STATUS ${Nettle_FOUND})
-    target_include_directories(OpenSCADPy PRIVATE ${Nettle_INCLUDE_DIRS})
-    target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})
-  endif()   
-  if(MXECROSS) # Python Lib
-    SET(PYTHON_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python")
-    SET(PYTHON_PACKAGEFOLDER "https://mirror.msys2.org/mingw/mingw64")
-    SET(PYTHON_PACKAGEFILE "mingw-w64-x86_64-python-3.11.5-2-any.pkg.tar.zst")
-    SET(PYTHON_VERSION "python3.11")
-    SET(PYTHON_ARCHIVE "${PYTHON_DEVPATH}/mingw64/lib/lib${PYTHON_VERSION}.dll.a")
-    add_custom_command(
-      OUTPUT ${PYTHON_ARCHIVE}
-      COMMAND mkdir -p python && cd python && wget ${PYTHON_PACKAGEFOLDER}/${PYTHON_PACKAGEFILE} && tar -I zstd -xf ${PYTHON_PACKAGEFILE}
-      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    )
-    add_custom_target(python_lib DEPENDS ${PYTHON_ARCHIVE})
-    target_include_directories(OpenSCAD SYSTEM PRIVATE "${PYTHON_DEVPATH}/mingw64/include/${PYTHON_VERSION}")
-    target_link_libraries(OpenSCADPy PRIVATE "${PYTHON_DEVPATH}/mingw64/lib/lib${PYTHON_VERSION}.dll.a")
-  else() ## not MXE
-    find_package(PythonLibs REQUIRED COMPONENTS Interpreter Development)
-    SET(PYTHON_LIBRARIES "/lib64/libpython3.11.so.1.0" )
-    SET(PYTHON_INCLUDE_DIRS "/usr/include/python3.11/" )
-    target_include_directories(OpenSCADPy PRIVATE ${PYTHON_INCLUDE_DIRS})
-    target_link_libraries(OpenSCADPy PRIVATE ${PYTHON_LIBRARIES})
-    if(MSVC)
-      target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
-    else()
-      target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
-    endif()
-    message(STATUS "Python enabled ${PYTHONLIBS_FOUND} ${PYTHON_LIBRARIES}")
-    target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
-  endif() # end MXE
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
+  endif()
   target_link_libraries(OpenSCADPy PRIVATE ${Python_LIBRARIES})
+  target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})
   target_link_libraries(OpenSCADPy PRIVATE Eigen3::Eigen)
   # copy compile options for the main OpenSCAD target
   # duplication is not very ideal but not sure what better options do we have
@@ -872,6 +839,12 @@ set(CORE_SOURCES
   ${BISON_openscad_parser_OUTPUTS}
   ${FLEX_comment_lexer_OUTPUTS}
   ${BISON_comment_parser_OUTPUTS})
+if(ENABLE_PYTHON)
+  # list(APPEND CORE_SOURCES
+	 # 	    src/python/pyopenscad.cc 
+	 # 	    src/python/pyfunctions.cc)
+	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
+endif()
 
 if(EXPERIMENTAL AND ENABLE_CGAL)
   list(APPEND CORE_SOURCES
@@ -1254,7 +1227,6 @@ if(NOT APPLE OR APPLE_UNIX)
       endif()
       install(FILES ${CMAKE_BINARY_DIR}/submodules/mimalloc/mimalloc.dll DESTINATION ".")
     endif()
-    install(FILES ${CMAKE_SOURCE_DIR}/libpython3.11.dll DESTINATION ".")
   else()
     install(FILES ${CMAKE_CURRENT_LIST_DIR}/doc/openscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME openscad${SUFFIX_WITH_DASH}.1)
     install(FILES ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.openscad.OpenSCAD${SUFFIX_WITH_DASH}.appdata.xml)
