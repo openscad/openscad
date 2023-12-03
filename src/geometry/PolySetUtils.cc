@@ -58,7 +58,7 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
 
   // Build Indexed PolyMesh
   Reindexer<Vector3f> allVertices;
-  std::vector<std::vector<IndexedFace>> polygons;
+  std::vector<IndexedFace> polygons;
 
   // best estimate without iterating all polygons, to reduce reallocations
   polygons.reserve(polyset.indices.size() );
@@ -72,10 +72,7 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
       continue;
     }
 
-    polygons.emplace_back();
-    auto& faces = polygons.back();
-    faces.push_back(IndexedFace());
-    auto& currface = faces.back();
+    auto& currface = polygons.emplace_back();
     for (const auto& ind : pgon) {
       const Vector3d v=polyset.vertices[ind];
       // Create vertex indices and remove consecutive duplicate vertices
@@ -85,8 +82,7 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
     }
     if (currface.front() == currface.back()) currface.pop_back();
     if (currface.size() < 3) {
-      faces.pop_back(); // Cull empty triangles
-      if (faces.empty()) polygons.pop_back(); // All faces were culled
+      polygons.pop_back(); // All faces were culled
     }
   }
 
@@ -98,25 +94,27 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
 
   // Estimate how many polygons we will need and preallocate.
   // This is usually an undercount, but still prevents a lot of reallocations.
-  PolySetBuilder builder(verts.size(), polygons.size(), polyset.getDimension(), polyset.convexValue());
-  builder.setConvexity(polyset.getConvexity());
-  for(int i=0;i<verts.size();i++)
-    builder.vertexIndex({verts[i][0],verts[i][1],verts[i][2]});
+  auto result = std::make_unique<PolySet>(3, polyset.convexValue());
+  result->setConvexity(polyset.getConvexity());
+  result->vertices.reserve(verts.size());
+  result->indices.reserve(polygons.size());
 
+  for (const auto &v : verts)
+    result->vertices.emplace_back(v[0], v[1], v[2]);
 
-  for (const auto& faces : polygons) {
-    if (faces[0].size() == 3) {
+  for (const auto& face : polygons) {
+    if (face.size() == 3) {
       // trivial case - triangles cannot be concave or have holes
-       builder.appendPoly({faces[0][0],faces[0][1],faces[0][2]});
+       result->indices.push_back({face[0],face[1],face[2]});
     }
     // Quads seem trivial, but can be concave, and can have degenerate cases.
     // So everything more complex than triangles goes into the general case.
     else {
       triangles.clear();
-      auto err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
+      auto err = GeometryUtils::tessellatePolygonWithHoles(verts, {face}, triangles, nullptr);
       if (!err) {
         for (const auto& t : triangles) {
-       	  builder.appendPoly({t[0],t[1],t[2]});
+          result->indices.push_back({t[0],t[1],t[2]});
         }
       }
     }
@@ -124,7 +122,7 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
   if (degeneratePolygons > 0) {
     LOG(message_group::Warning, "PolySet has degenerate polygons");
   }
-  return builder.build();
+  return result;
 }
 
 bool is_approximately_convex(const PolySet& ps) {
