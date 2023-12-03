@@ -5,6 +5,33 @@
 #include "exceptions.h"
 #include "printutils.h"
 
+ModuleInstantiation::ModuleInstantiation(const std::string name, const AssignmentList args, const Location& loc)
+   : ASTNode(loc), arguments(std::move(args)), modname(std::move(name)), isLookup(true)
+{
+}
+
+/* Subclass must supply the meat. */
+ModuleInstantiation::ModuleInstantiation(const Location& loc) : ASTNode(loc)
+{
+}
+
+ModuleInstantiation::ModuleInstantiation(Expression *ref_expr, const AssignmentList args, const Location& loc)
+    : ASTNode(loc), arguments(args), ref_expr(ref_expr)
+{
+  if (typeid(*ref_expr) == typeid(Lookup)) {
+    isLookup = true;
+    const Lookup *lookup = static_cast<Lookup *>(ref_expr);
+    modname = lookup->get_name();
+  } else {
+    isLookup = false;
+    std::ostringstream s;
+    s << "(";
+    ref_expr->print(s, "");
+    s << ")";
+    modname = s.str();
+  }
+}
+
 void ModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
 {
   if (!inlined) stream << indent;
@@ -58,9 +85,24 @@ static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shar
   LOG(message_group::Trace, mod->location(), context->documentRoot(), "called by '%1$s'", mod->name());
 }
 
+boost::optional<InstantiableModule> ModuleInstantiation::evaluate_module_expression(const std::shared_ptr<const Context>& context) const
+{
+  if (isLookup) {
+    return context->lookup_module(modname, location());
+  } else {
+    Value v = ref_expr->evaluate(context);
+    if (v.type() == Value::Type::MODULE) {
+      return InstantiableModule{context, v.toModule().getModule()};
+    } else {
+      LOG(message_group::Warning, loc, context->documentRoot(), "Can't call module on %1$s", v.typeName());
+      return boost::none;
+    }
+  }
+}
+
 std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_ptr<const Context>& context) const
 {
-  boost::optional<InstantiableModule> module = context->lookup_module(this->name(), this->loc);
+  auto module = evaluate_module_expression(context);
   if (!module) {
     return nullptr;
   }

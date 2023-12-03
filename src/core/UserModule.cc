@@ -105,22 +105,17 @@ std::shared_ptr<AbstractNode> UserModule::instantiate(const std::shared_ptr<cons
   return ret;
 }
 
+// Used for both AST dumps and echo()/str().
 void UserModule::print(std::ostream& stream, const std::string& indent) const
 {
-  std::string tab;
-  if (!this->name.empty()) {
-    stream << indent << "module " << this->name << "(";
-    for (size_t i = 0; i < this->parameters.size(); ++i) {
-      const auto& parameter = this->parameters[i];
-      if (i > 0) stream << ", ";
-      stream << parameter->getName();
-      if (parameter->getExpr()) stream << " = " << *parameter->getExpr();
-    }
-    stream << ") {\n";
-    tab = "\t";
+  stream << indent << "module " << this->name << "(";
+  for (size_t i = 0; i < this->parameters.size(); ++i) {
+    const auto& parameter = this->parameters[i];
+    if (i > 0) stream << ", ";
+    stream << parameter->getName();
+    if (parameter->getExpr()) stream << " = " << *parameter->getExpr();
   }
-  body.print(stream, indent + tab);
-  if (!this->name.empty()) {
-    stream << indent << "}\n";
-  }
+  stream << ") {\n";
+  body.print(stream, indent + "\t");
+  stream << indent << "}";
 }

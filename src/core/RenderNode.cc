@@ -52,6 +52,10 @@ std::string RenderNode::toString() const
   return STR(this->name(), "(convexity = ", convexity, ")");
 }
 
+std::shared_ptr<AbstractNode> RenderNode::cloneOne() const {
+  return std::make_shared<RenderNode>(*this);
+}
+
 void register_builtin_render()
 {
   Builtins::init("render", new BuiltinModule(builtin_render),

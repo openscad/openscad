@@ -334,6 +334,10 @@ std::string SurfaceNode::toString() const
   return stream.str();
 }
 
+std::shared_ptr<AbstractNode> SurfaceNode::cloneOne() const {
+  return std::make_shared<SurfaceNode>(*this);
+}
+
 void register_builtin_surface()
 {
   Builtins::init("surface", new BuiltinModule(builtin_surface),

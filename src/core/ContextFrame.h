@@ -37,6 +37,7 @@ public:
 
   EvaluationSession *session() const { return evaluation_session; }
   const std::string& documentRoot() const { return evaluation_session->documentRoot(); }
+  const ValueMap& get_lexical_variables() const;
 
 protected:
   ValueMap lexical_variables;

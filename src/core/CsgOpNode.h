@@ -11,4 +11,5 @@ public:
   CsgOpNode(const ModuleInstantiation *mi, OpenSCADOperator type) : AbstractNode(mi), type(type) { }
   std::string toString() const override;
   std::string name() const override;
+  std::shared_ptr<AbstractNode> cloneOne() const override;
 };

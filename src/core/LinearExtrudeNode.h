@@ -11,6 +11,7 @@ public:
   }
   std::string toString() const override;
   std::string name() const override { return "linear_extrude"; }
+  std::shared_ptr<AbstractNode> cloneOne() const override;
 
   double height = 100.0;
   double origin_x = 0.0, origin_y = 0.0;

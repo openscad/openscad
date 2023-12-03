@@ -677,6 +677,7 @@ set(CORE_SOURCES
   src/core/customizer/CommentParser.cc
   src/core/EvaluationSession.cc
   src/core/Expression.cc
+  src/core/GeometryLiteral.cc
   src/core/builtin_functions.cc
   src/core/function.cc
   src/core/FunctionType.cc

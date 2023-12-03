@@ -5,7 +5,6 @@
 #include <unordered_set>
 #include <ctime>
 
-#include "module.h"
 #include "LocalScope.h"
 #include "IndicatorData.h"
 

@@ -179,6 +179,10 @@ std::string LinearExtrudeNode::toString() const
   return stream.str();
 }
 
+std::shared_ptr<AbstractNode> LinearExtrudeNode::cloneOne() const {
+  return std::make_shared<LinearExtrudeNode>(*this);
+}
+
 void register_builtin_dxf_linear_extrude()
 {
   Builtins::init("dxf_linear_extrude", new BuiltinModule(builtin_linear_extrude));

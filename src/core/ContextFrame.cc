@@ -55,8 +55,13 @@ boost::optional<CallableFunction> ContextFrame::lookup_local_function(const std:
   return boost::none;
 }
 
-boost::optional<InstantiableModule> ContextFrame::lookup_local_module(const std::string& /*name*/, const Location& /*loc*/) const
+boost::optional<InstantiableModule> ContextFrame::lookup_local_module(const std::string& name, const Location& /*loc*/) const
 {
+  boost::optional<const Value&> value = lookup_local_variable(name);
+  if (value && value->type() == Value::Type::MODULE) {
+    ModuleType mod = value->toModule();
+    return InstantiableModule{mod.getContext(), mod.getModule()};
+  }
   return boost::none;
 }
 
@@ -133,6 +138,11 @@ void ContextFrame::apply_variables(ContextFrame&& other)
 bool ContextFrame::is_config_variable(const std::string& name)
 {
   return name[0] == '$' && name != "$children";
+}
+
+const ValueMap& ContextFrame::get_lexical_variables() const
+{
+  return lexical_variables;
 }
 
 #ifdef DEBUG

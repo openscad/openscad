@@ -15,6 +15,7 @@ public:
   RoofNode(const ModuleInstantiation *mi) : AbstractPolyNode(mi) {}
   std::string toString() const override;
   std::string name() const override { return "roof"; }
+  std::shared_ptr<AbstractNode> cloneOne() const override;
 
   double fa, fs, fn;
   int convexity = 1;

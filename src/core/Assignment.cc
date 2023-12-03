@@ -58,7 +58,9 @@ void Assignment::print(std::ostream& stream, const std::string& indent) const
     const Annotation *parameter = this->annotation("Parameter");
     if (parameter) parameter->print(stream, indent);
   }
-  stream << indent << this->name << " = " << *this->expr << ";\n";
+  stream << indent << this->name << " = ";
+  this->expr->print(stream, indent);
+  stream << ";\n";
 }
 
 std::ostream& operator<<(std::ostream& stream, const AssignmentList& assignments)

@@ -77,6 +77,10 @@ std::string TextNode::toString() const
   return STR(name(), "(", this->params, ")");
 }
 
+std::shared_ptr<AbstractNode> TextNode::cloneOne() const {
+  return std::make_shared<TextNode>(*this);
+}
+
 void register_builtin_text()
 {
   Builtins::init("text", new BuiltinModule(builtin_text),

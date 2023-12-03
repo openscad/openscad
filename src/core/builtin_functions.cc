@@ -36,6 +36,13 @@
 #include "Parameters.h"
 #include "io/import.h"
 #include "io/fileutils.h"
+#include "GeometryEvaluator.h"
+#include "Reindexer.h"
+#include "PolySet.h"
+#include "Tree.h"
+#ifdef ENABLE_CGAL
+#include "CGAL_Nef_polyhedron.h"
+#endif
 
 #include <cmath>
 #include <sstream>
@@ -423,6 +430,59 @@ Value builtin_concat(Arguments arguments, const Location& /*loc*/)
     }
   }
   return std::move(result);
+}
+
+Value builtin_object(const std::shared_ptr<const Context>& context, const FunctionCall *call)
+{
+  ObjectType result(context->session());
+  for (const auto& argument : call->arguments) {
+    Value value = argument->getExpr()->evaluate(context);
+    if (argument->getName().empty()) {
+      if (value.type() == Value::Type::VECTOR) {
+	const auto &vec = value.toVector();
+	for (const auto& keyval : vec) {
+	  if (keyval.type() != Value::Type::VECTOR || (keyval.toVector().size()!=1 && keyval.toVector().size()!=2)) {
+	    LOG(message_group::Warning, call->location(), context->documentRoot(), "un-named object() arguments must be another object, a list of [keystring,value] pairs to set, or a list of singleton [keystring] names to delete.");
+	  } else {
+	    if (keyval[0].type() != Value::Type::STRING) {
+	      LOG(message_group::Warning, call->location(), context->documentRoot(), "un-named object() arguments must be another object, a list of [keystring,value] pairs to set, or a list of singleton [keystring] names to delete.");
+	    } else {
+	      const auto &key = keyval[0].toString();
+	      if (keyval.toVector().size()==1) {
+		// keyval is one of a list of singleton [key] name strings to delete.
+		result.del(key);
+	      } else {
+		// keyval is one of a list of [key,value] entries to add or set.
+		result.set(key, keyval[1]);
+	      }
+	    }
+	  }
+	}
+      } else if (value.type() != Value::Type::OBJECT) {
+	LOG(message_group::Warning, call->location(), context->documentRoot(), "un-named object() arguments must be another object, a list of [keystring,value] pairs to set, or a list of singleton [keystring] names to delete.");
+      } else {
+	// Argument is another object to copy from.
+	const auto obj = value.toObject();
+	for (const auto& key : obj.keys()) {
+	  result.set(key, obj.get(key).clone());
+	}
+      }
+    } else {
+      // Argument is a named key=value to add or set.
+      result.set(argument->getName(), std::move(value));
+    }
+  }
+  return std::move(result);
+}
+
+Value builtin_has_key(Arguments arguments, const Location& loc)
+{
+  if (!check_arguments("has_key", arguments, loc, { Value::Type::OBJECT, Value::Type::STRING })) {
+    return Value::undefined.clone();
+  }
+  const auto &obj = arguments[0]->toObject();
+  const auto &key = arguments[1]->toString();
+  return Value(obj.contains(key));
 }
 
 Value builtin_lookup(Arguments arguments, const Location& loc)
@@ -923,6 +983,14 @@ Value builtin_is_object(Arguments arguments, const Location& loc)
   return {arguments[0]->isDefinedAs(Value::Type::OBJECT)};
 }
 
+Value builtin_is_geometry(Arguments arguments, const Location& loc)
+{
+  if (!check_arguments("is_geometry", arguments, loc, 1)) {
+    return Value::undefined.clone();
+  }
+  return Value(arguments[0]->isDefinedAs(Value::Type::GEOMETRY));
+}
+
 Value builtin_import(Arguments arguments, const Location& loc)
 {
   auto session = arguments.session();
@@ -930,6 +998,176 @@ Value builtin_import(Arguments arguments, const Location& loc)
   std::string raw_filename = parameters.get("file", "");
   std::string file = lookup_file(raw_filename, loc.filePath().parent_path().string(), parameters.documentRoot());
   return import_json(file, session, loc);
+}
+
+
+#ifdef ENABLE_CGAL
+
+static void get_mesh_data(const CGAL_Nef_polyhedron &root_N, EvaluationSession* session, VectorType& vertices_out, VectorType& indices_out)
+{
+  if (!root_N.p3->is_simple()) {
+    LOG(message_group::Warning,Location::NONE,"","Acquiring mesh data failed, the object isn't a valid 2-manifold.");
+    return;
+  }
+  try {
+    CGAL_Polyhedron P;
+    root_N.p3->convert_to_polyhedron(P);
+
+    typedef CGAL_Polyhedron::Point_iterator PCI;
+    typedef CGAL_Polyhedron::Facet_iterator FCI;
+    typedef CGAL_Polyhedron::Halfedge_around_facet_circulator HFCC;
+
+    for (PCI pi = P.points_begin(); pi != P.points_end(); ++pi) {
+      VectorType pc(session,
+        CGAL::to_double(pi->x()),
+        CGAL::to_double(pi->y()),
+        CGAL::to_double(pi->z()));
+      vertices_out.emplace_back(std::move(pc));
+    }
+
+    for (FCI i = P.facets_begin(); i != P.facets_end(); ++i) {
+      HFCC j = i->facet_begin();
+      CGAL_assertion(CGAL::circulator_size(j) >= 3);
+      VectorType facet(session);
+      do {
+        double idx = std::distance(P.vertices_begin(), j->vertex());
+        facet.emplace_back(idx);
+      } while ( ++j != i->facet_begin());
+      indices_out.emplace_back(std::move(facet));
+    }
+
+  } catch (CGAL::Assertion_exception& e) {
+    LOG(message_group::Error,Location::NONE,"","CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %1$s",e.what());
+  }
+}
+#endif
+
+static void get_mesh_data(const shared_ptr<const Geometry> &geom, EvaluationSession* session, VectorType& points, VectorType& faces, VectorType& paths)
+{
+  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+    for(const auto &item : geomlist->getChildren()) {
+      get_mesh_data(item.second, session, points, faces,  paths);
+    }
+  }
+
+#ifdef ENABLE_CGAL
+
+  if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+    if (!N->isEmpty())
+      get_mesh_data(*N, session, points, faces);
+  } else
+
+#endif
+
+  if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+    Reindexer<Vector3d> reindexer;
+    for(const auto &p : ps->polygons)  {
+      VectorType polygon_indices(session);
+      for (auto i = p.rbegin(); i != p.rend(); i++) {
+        const auto &v = *i;
+        int point_idx = reindexer.lookup(v);
+        if(point_idx == points.size()) {
+          VectorType vc(session, v.x(), v.y(), v.z());
+          points.emplace_back(std::move(vc));
+        }
+        polygon_indices.emplace_back((double)point_idx);
+      }
+      faces.emplace_back(std::move(polygon_indices));
+    }
+  }
+  else if (const auto N = dynamic_pointer_cast<const Polygon2d>(geom)) {
+    for(const auto &o : N->outlines()) {
+      VectorType polygon_indices(session);
+      for(const auto &v : o.vertices) {
+        VectorType vc(session);
+        double x = v.x();
+        double y = v.y();
+        vc.emplace_back(x);
+        vc.emplace_back(y);
+        polygon_indices.emplace_back((double)points.size());
+        points.emplace_back(std::move(vc));
+      }
+      paths.emplace_back(std::move(polygon_indices));
+    }
+  } else {
+    assert(false && "Not implemented");
+  }
+}
+
+Value builtin_data_render(Arguments arguments, const Location& loc)
+{
+  shared_ptr<AbstractNode> node;
+  if (check_arguments("render", arguments, loc, { Value::Type::GEOMETRY })) {
+    node = arguments[0]->toGeometry().getNode();
+  } else {
+    return Value::undefined.clone();
+  }
+
+  Tree tree(node);
+  GeometryEvaluator geomevaluator(tree);
+  auto geom = shared_ptr<const Geometry>(geomevaluator.evaluateGeometry(*tree.root(), true));
+
+  if(!geom)
+    return Value::undefined.clone();
+
+  auto boundingBox = geom->getBoundingBox();
+
+  // NEEDSWORK I think this should include only min and size, because you can easily
+  // derive the others from that.  (Why not min and max?  Because with min and size
+  // you can translate(min) cube(size).  If I want to pick a minimum set, it might as
+  // well be a minimum set that works conveniently with the existing tools.)
+  VectorType bounding_box_min(arguments.session(),
+    boundingBox.min().x(),
+    boundingBox.min().y(),
+    boundingBox.min().z());
+
+  VectorType bounding_box_max(arguments.session(),
+    boundingBox.max().x(),
+    boundingBox.max().y(),
+    boundingBox.max().z());
+
+  VectorType bounding_box_center(	arguments.session(),
+    boundingBox.center().x(),
+    boundingBox.center().y(),
+    boundingBox.center().z());
+
+  VectorType bounding_box_size(	arguments.session(),
+    boundingBox.max().x()-boundingBox.min().x(),
+    boundingBox.max().y()-boundingBox.min().y(),
+    boundingBox.max().z()-boundingBox.min().z());
+
+  ObjectType info(arguments.session());
+  info.set("min", std::move(bounding_box_min));
+  info.set("max", std::move(bounding_box_max));
+  info.set("center", std::move(bounding_box_center));
+  info.set("size", std::move(bounding_box_size));
+
+  VectorType objects(arguments.session());
+
+  // Following would theoretically be repeated for each sub-object,
+  // e.g. each color, each material.
+  VectorType points(arguments.session());
+  VectorType faces(arguments.session());
+  VectorType paths(arguments.session());
+
+  get_mesh_data(geom, arguments.session(), points, faces, paths);
+
+  ObjectType obj1(arguments.session());
+  obj1.set("points", std::move(points));
+  if(faces.size()>0)
+    obj1.set("faces", std::move(faces));
+  if(paths.size()>0)
+    obj1.set("paths", std::move(paths));
+  // obj1.set("color", ...);
+  // obj1.set("material", ...);
+
+  objects.emplace_back(std::move(obj1));
+  // End of sub-object stuff
+
+  info.set("objects", std::move(objects));
+
+
+  return std::move(info);
 }
 
 void register_builtin_functions()
@@ -1150,8 +1388,28 @@ void register_builtin_functions()
     "is_object(arg) -> boolean",
   });
 
+  Builtins::init("object", new BuiltinFunction(&builtin_object, &Feature::ExperimentalObjectFunction),
+  {
+    "object([ object, ] [ key-val list, ] key=value, ...) -> object",
+  });
+
+  Builtins::init("has_key", new BuiltinFunction(&builtin_has_key, &Feature::ExperimentalObjectFunction),
+  {
+    "has_key(object, key) -> boolean",
+  });
+
+  Builtins::init("is_geometry", new BuiltinFunction(&builtin_is_geometry),
+  {
+    "is_geometry(arg) -> boolean",
+  });
+
   Builtins::init("import", new BuiltinFunction(&builtin_import, &Feature::ExperimentalImportFunction),
   {
     "import(file) -> object",
+  });
+
+  Builtins::init("render", new BuiltinFunction(&builtin_data_render),
+  {
+    "render(geometry) -> object",
   });
 }

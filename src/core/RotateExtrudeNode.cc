@@ -112,6 +112,10 @@ std::string RotateExtrudeNode::toString() const
   return stream.str();
 }
 
+std::shared_ptr<AbstractNode> RotateExtrudeNode::cloneOne() const {
+  return std::make_shared<RotateExtrudeNode>(*this);
+}
+
 void register_builtin_dxf_rotate_extrude()
 {
   Builtins::init("dxf_rotate_extrude", new BuiltinModule(builtin_rotate_extrude));

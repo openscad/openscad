@@ -13,6 +13,7 @@ public:
 
   std::string toString() const override;
   std::string name() const override { return "text"; }
+  std::shared_ptr<AbstractNode> cloneOne() const override;
 
   virtual std::vector<const class Geometry *> createGeometryList() const;
 

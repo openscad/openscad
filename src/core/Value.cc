@@ -31,6 +31,9 @@
 #include <boost/lexical_cast.hpp>
 
 #include "Value.h"
+#include "node.h"
+#include "Tree.h"
+#include "Expression.h"
 #include "EvaluationSession.h"
 #include "printutils.h"
 #include "StackCheck.h"
@@ -203,6 +206,8 @@ Value Value::clone() const {
   case Type::VECTOR:    return std::get<VectorType>(this->value).clone();
   case Type::OBJECT:    return std::get<ObjectType>(this->value).clone();
   case Type::FUNCTION:  return std::get<FunctionPtr>(this->value).clone();
+  case Type::MODULE:    return std::get<ModulePtr>(this->value).clone();
+  case Type::GEOMETRY:  return std::get<GeometryType>(this->value).clone();
   default: assert(false && "unknown Value variant type"); return {};
   }
 }
@@ -223,6 +228,8 @@ std::string Value::typeName(Type type)
   case Type::RANGE:     return "range";
   case Type::OBJECT:    return "object";
   case Type::FUNCTION:  return "function";
+  case Type::MODULE:    return "module";
+  case Type::GEOMETRY:  return "geometry";
   default: assert(false && "unknown Value variant type"); return "<unknown>";
   }
 }
@@ -241,6 +248,8 @@ std::string getTypeName(const VectorType&) { return "vector"; }
 std::string getTypeName(const ObjectType&) { return "object"; }
 std::string getTypeName(const RangePtr&) { return "range"; }
 std::string getTypeName(const FunctionPtr&) { return "function"; }
+std::string getTypeName(const ModulePtr&) { return "module"; }
+std::string getTypeName(const GeometryType&) { return "geometry"; }
 
 bool Value::toBool() const
 {
@@ -252,8 +261,10 @@ bool Value::toBool() const
   case Type::STRING:    return !std::get<str_utf8_wrapper>(this->value).empty();
   case Type::VECTOR:    return !std::get<VectorType>(this->value).empty();
   case Type::RANGE:     return true;
-  case Type::OBJECT:    return true;
+  case Type::OBJECT:    return !std::get<ObjectType>(this->value).empty();
   case Type::FUNCTION:  return true;
+  case Type::MODULE:    return true;
+  case Type::GEOMETRY:  return true;  // NEEDSWORK would be cool if it meant "not empty"
   default: assert(false && "unknown Value variant type"); return false;
   }
   // NOLINTEND(bugprone-branch-clone)
@@ -374,6 +385,10 @@ public:
   void operator()(const FunctionPtr& v) const {
     stream << *v;
   }
+
+  void operator()(const ModulePtr& v) const {
+    stream << *v;
+  }
 };
 
 class tostring_visitor
@@ -431,6 +446,14 @@ public:
 
   std::string operator()(const FunctionPtr& v) const {
     return STR(*v);
+  }
+
+  std::string operator()(const ModulePtr& v) const {
+    return STR(*v);
+  }
+
+  std::string operator()(const GeometryType& v) const {
+    return STR(v);
   }
 };
 
@@ -640,6 +663,13 @@ const EmbeddedVectorType& Value::toEmbeddedVector() const
   return std::get<EmbeddedVectorType>(this->value);
 }
 
+const GeometryType& Value::toGeometry() const
+{
+  static const GeometryType empty(nullptr);
+  const GeometryType *v = std::get_if<GeometryType>(&this->value);
+  return v ? *v : empty;
+}
+
 bool Value::getVec2(double& x, double& y, bool ignoreInfinite) const
 {
   if (this->type() != Type::VECTOR) return false;
@@ -691,9 +721,33 @@ const FunctionType& Value::toFunction() const
   return *std::get<FunctionPtr>(this->value);
 }
 
+const ModuleType& Value::toModule() const
+{
+  return *std::get<ModulePtr>(this->value);
+}
+
 bool Value::isUncheckedUndef() const
 {
   return this->type() == Type::UNDEFINED && !std::get<UndefType>(this->value).empty();
+}
+
+Value ModuleType::operator==(const ModuleType& other) const {
+  return this == &other;
+}
+Value ModuleType::operator!=(const ModuleType& other) const {
+  return this != &other;
+}
+Value ModuleType::operator<(const ModuleType& other) const {
+  return Value::undef("operation undefined (module < module)");
+}
+Value ModuleType::operator>(const ModuleType& other) const {
+  return Value::undef("operation undefined (module > module)");
+}
+Value ModuleType::operator<=(const ModuleType& other) const {
+  return Value::undef("operation undefined (module <= module)");
+}
+Value ModuleType::operator>=(const ModuleType& other) const {
+  return Value::undef("operation undefined (module >= module)");
 }
 
 Value ObjectType::operator==(const ObjectType& /*other*/) const {
@@ -1173,6 +1227,12 @@ std::ostream& operator<<(std::ostream& stream, const RangeType& r)
                 << DoubleConvert(r.end_value(),   buffer, builder, dc) << "]";
 }
 
+std::ostream& operator<<(std::ostream& stream, const ModuleType& m)
+{
+  m.getModule()->print(stream, "");
+  return stream;
+}
+
 // called by clone()
 ObjectType::ObjectType(const shared_ptr<ObjectObject>& copy)
   : ptr(copy)
@@ -1195,9 +1255,53 @@ const Value& ObjectType::get(const std::string& key) const
 
 void ObjectType::set(const std::string& key, Value&& value)
 {
-  ptr->map.emplace(key, value.clone());
-  ptr->keys.emplace_back(key);
-  ptr->values.emplace_back(std::move(value));
+  if (ptr->map.find(key) == ptr->map.end()) {
+    ptr->map.emplace(key, std::move(value));
+    ptr->keys.emplace_back(key);
+  } else {
+    ptr->map.erase(key);
+    ptr->map.emplace(key, std::move(value));
+  }
+}
+
+void ObjectType::merge(Value&& value, const Location& loc)
+{
+      if (value.type() != Value::Type::OBJECT) {
+        std::stringstream message;
+        message << "inclusion is " << value.typeName() << ", must be object.";
+        LOG(message_group::Warning, loc, "", "%1$s", message.str());
+        return;
+      }
+
+      ObjectType o = value.toObject();
+      for (auto iter = o.ptr->keys.begin(); iter != o.ptr->keys.end(); ++iter) {
+        const auto& k = *iter;
+        this->set(k, o[k].clone());
+      }
+}
+
+void ObjectType::del(const std::string& key)
+{
+  if (ptr->map.find(key) != ptr->map.end()) {
+    ptr->map.erase(key);
+    auto kit = ptr->keys.begin();
+    for ( ; kit != ptr->keys.end(); ++kit) {
+      if (*kit == key) {
+        ptr->keys.erase(kit);
+        break;
+      }
+    }
+  }
+}
+
+bool ObjectType::contains(const std::string& key) const
+{
+  return ptr->map.find(key) != ptr->map.end();
+}
+
+bool ObjectType::empty() const
+{
+  return ptr->map.empty();
 }
 
 const std::vector<std::string>& ObjectType::keys() const
@@ -1216,17 +1320,48 @@ ObjectType ObjectType::clone() const
   return ObjectType(this->ptr);
 }
 
-std::ostream& operator<<(std::ostream& stream, const ObjectType& v)
+// NEEDSWORK perhaps "true", "false", "undef", and maybe a couple of others
+// should be reserved for non-string keys, when they become available.
+bool ObjectType::keyIsIdentifier(const std::string& k)
 {
-  stream << "{ ";
-  auto iter = v.ptr->keys.begin();
-  if (iter != v.ptr->keys.end()) {
-    str_utf8_wrapper k(*iter);
-    for (; iter != v.ptr->keys.end(); ++iter) {
-      str_utf8_wrapper k2(*iter);
-      stream << k2.toString() << " = " << v[k2] << "; ";
+  bool first = true;
+  for (auto c: k) {
+    if (!isascii(c)) {
+      return false;
+    }
+    if (first) {
+      first = false;
+      if (!isalpha(c) && c != '$' && c != '_') {
+        return false;
+      }
+    } else {
+      if (!isalnum(c) && c != '_') {
+        return false;
+      }
     }
   }
-  stream << "}";
+  return true;
+}
+
+// This is used for echo() and str().
+std::ostream& operator<<(std::ostream& stream, const ObjectType& v)
+{
+  std::string sep = " ";
+  stream << "{";
+  auto iter = v.ptr->keys.begin();
+  if (iter != v.ptr->keys.end()) {
+    for (; iter != v.ptr->keys.end(); ++iter) {
+      stream << sep;
+      str_utf8_wrapper k(*iter);
+      if (ObjectType::keyIsIdentifier(k.toString())) {
+        stream << *iter;
+      } else {
+        stream << QuotedString(k.toString());
+      }
+      stream << " : " << v[k];
+      sep = ", ";
+    }
+  }
+  stream << " }";
   return stream;
 }

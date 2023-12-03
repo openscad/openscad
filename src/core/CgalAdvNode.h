@@ -18,6 +18,7 @@ public:
   }
   std::string toString() const override;
   std::string name() const override;
+  std::shared_ptr<AbstractNode> cloneOne() const override;
 
   unsigned int convexity{1};
   Vector3d newsize;

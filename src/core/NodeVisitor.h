@@ -14,6 +14,7 @@ class NodeVisitor :
   public Visitor<class ListNode>,
   public Visitor<class GroupNode>,
   public Visitor<class RootNode>,
+  public Visitor<class LiteralNode>,
   public Visitor<class LeafNode>,
   public Visitor<class CgalAdvNode>,
   public Visitor<class CsgOpNode>,
@@ -53,6 +54,9 @@ public:
   }
   Response visit(State& state, const LeafNode& node) override {
     return visit(state, (const AbstractPolyNode&) node);
+  }
+  Response visit(State& state, const LiteralNode& node) override {
+    return visit(state, (const GroupNode&)node);
   }
   Response visit(State& state, const CgalAdvNode& node) override {
     return visit(state, (const AbstractNode&) node);

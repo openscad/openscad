@@ -145,6 +145,10 @@ const Geometry *CubeNode::createGeometry() const
   return builder.build().release();
 }
 
+std::shared_ptr<AbstractNode> CubeNode::cloneOne() const {
+  return std::make_shared<CubeNode>(*this);
+}
+
 static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<CubeNode>(inst);
@@ -254,6 +258,10 @@ sphere_next_r2:
   return builder.build().release();
 }
 
+std::shared_ptr<AbstractNode> SphereNode::cloneOne() const {
+  return std::make_shared<SphereNode>(*this);
+}
+
 static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<SphereNode>(inst);
@@ -347,6 +355,10 @@ const Geometry *CylinderNode::createGeometry() const
   }
 
   return builder.build().release();
+}
+
+std::shared_ptr<AbstractNode> CylinderNode::cloneOne() const {
+  return std::make_shared<CylinderNode>(*this);
 }
 
 static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -453,6 +465,10 @@ const Geometry *PolyhedronNode::createGeometry() const
   return p;
 }
 
+std::shared_ptr<AbstractNode> PolyhedronNode::cloneOne() const {
+  return std::make_shared<PolyhedronNode>(*this);
+}
+
 static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<PolyhedronNode>(inst);
@@ -552,6 +568,10 @@ const Geometry *SquareNode::createGeometry() const
   return p;
 }
 
+std::shared_ptr<AbstractNode> SquareNode::cloneOne() const {
+  return std::make_shared<SquareNode>(*this);
+}
+
 static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
   auto node = std::make_shared<SquareNode>(inst);
@@ -604,6 +624,10 @@ const Geometry *CircleNode::createGeometry() const
   p->addOutline(o);
   p->setSanitized(true);
   return p;
+}
+
+std::shared_ptr<AbstractNode> CircleNode::cloneOne() const {
+  return std::make_shared<CircleNode>(*this);
 }
 
 static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -699,6 +723,10 @@ const Geometry *PolygonNode::createGeometry() const
     p->setConvexity(convexity);
   }
   return p;
+}
+
+std::shared_ptr<AbstractNode> PolygonNode::cloneOne() const {
+  return std::make_shared<PolygonNode>(*this);
 }
 
 static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
