@@ -1955,7 +1955,7 @@ void MainWindow::parseTopLevelDocument()
           const std::shared_ptr<Expression> &expr = par->getExpr();
           if (!expr->isLiteral()) continue; // Only consider literals
             if(par->getName() == results[1]) {
-              const std::shared_ptr<Literal> &lit=std::dynamic_pointer_cast<Literal>(expr);
+              const auto &lit=std::dynamic_pointer_cast<Literal>(expr);
 	      if(lit->isDouble()) {
                 fulltext_py_eval.append(results[1]);
                 fulltext_py_eval.append("=");
@@ -1976,7 +1976,7 @@ void MainWindow::parseTopLevelDocument()
           const std::shared_ptr<Expression> &expr = par->getExpr();
           if (!expr->isLiteral()) continue; // Only consider literals
             if(par->getName() == results[1]) {
-              const std::shared_ptr<Literal> &lit=std::dynamic_pointer_cast<Literal>(expr);
+              const auto &lit=std::dynamic_pointer_cast<Literal>(expr);
 	      if(lit->isString()) {
                 fulltext_py_eval.append(results[1]);
                 fulltext_py_eval.append("=\"");
