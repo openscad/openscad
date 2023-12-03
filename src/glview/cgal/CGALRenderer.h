@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "VBORenderer.h"
 #ifdef ENABLE_CGAL
 #include "CGAL_OGL_Polyhedron.h"
@@ -9,7 +11,7 @@
 class CGALRenderer : public VBORenderer
 {
 public:
-  CGALRenderer(const shared_ptr<const class Geometry>& geom);
+  CGALRenderer(const std::shared_ptr<const class Geometry>& geom);
   ~CGALRenderer() override;
   void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) override;
   void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
@@ -17,18 +19,18 @@ public:
   BoundingBox getBoundingBox() const override;
 
 private:
-  void addGeometry(const shared_ptr<const class Geometry>& geom);
+  void addGeometry(const std::shared_ptr<const class Geometry>& geom);
 #ifdef ENABLE_CGAL
-  const std::list<shared_ptr<class CGAL_OGL_Polyhedron>>& getPolyhedrons() const { return this->polyhedrons; }
+  const std::list<std::shared_ptr<class CGAL_OGL_Polyhedron>>& getPolyhedrons() const { return this->polyhedrons; }
   void createPolyhedrons();
 #endif
   void createPolySets();
   bool last_render_state; // FIXME: this is temporary to make switching between renderers seamless.
 
-  std::list<shared_ptr<const class PolySet>> polysets;
+  std::list<std::shared_ptr<const class PolySet>> polysets;
 #ifdef ENABLE_CGAL
-  std::list<shared_ptr<class CGAL_OGL_Polyhedron>> polyhedrons;
-  std::list<shared_ptr<const CGAL_Nef_polyhedron>> nefPolyhedrons;
+  std::list<std::shared_ptr<class CGAL_OGL_Polyhedron>> polyhedrons;
+  std::list<std::shared_ptr<const CGAL_Nef_polyhedron>> nefPolyhedrons;
 #endif
 
   VertexStates polyset_states;

@@ -19,7 +19,7 @@
 
 #define MARGIN 30.
 
-// void export_pdf(const shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo, const ExportPdfOptions  exportPdfOptions);
+// void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo, const ExportPdfOptions  exportPdfOptions);
  
 const std::string get_cairo_version() {
   return OpenSCAD::get_version(CAIRO_VERSION_STRING, cairo_version_string());
@@ -167,14 +167,14 @@ void draw_geom(const Polygon2d& poly, cairo_t *cr ){
 
 
 // Main entry:  draw geometry that consists of 2D polygons.  Walks the tree...
-void draw_geom(const shared_ptr<const Geometry>& geom, cairo_t *cr){
-  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) { // iterate
+void draw_geom(const std::shared_ptr<const Geometry>& geom, cairo_t *cr){
+  if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) { // iterate
     for (const auto& item : geomlist->getChildren()) {
       draw_geom(item.second, cr);
     }
-  } else if (dynamic_pointer_cast<const PolySet>(geom)) {  
+  } else if (std::dynamic_pointer_cast<const PolySet>(geom)) {
     assert(false && "Unsupported file format");
-  } else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) { // geometry that can be drawn.
+  } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) { // geometry that can be drawn.
     draw_geom(*poly, cr);
   } else {
     assert(false && "Export as PDF for this geometry type is not supported");
@@ -189,7 +189,7 @@ static cairo_status_t export_pdf_write(void *closure, const unsigned char *data,
 }
 
 
-void export_pdf(const shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
+void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
 {
 // Extract the options.  This will change when options becomes a variant.
 ExportPdfOptions *exportPdfOptions;
@@ -297,7 +297,7 @@ const std::string get_cairo_version() {
   return cairo_version;
 }
 
-void export_pdf(const shared_ptr<const Geometry>&, std::ostream&, const ExportInfo&) {
+void export_pdf(const std::shared_ptr<const Geometry>&, std::ostream&, const ExportInfo&) {
 
   LOG(message_group::Error, "Export to PDF format was not enabled when building the application.");
 

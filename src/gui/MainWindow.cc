@@ -24,6 +24,8 @@
  *
  */
 #include <iostream>
+#include <memory>
+
 #include "boost-utils.h"
 #include "BuiltinContext.h"
 #include "CommentParser.h"
@@ -38,7 +40,6 @@
 #include "printutils.h"
 #include "core/node.h"
 #include "CSGNode.h"
-#include "memory.h"
 #include "Expression.h"
 #include "ScopeContext.h"
 #include "progress.h"
@@ -364,8 +365,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   scadApp->windowManager.add(this);
 
   this->cgalworker = new CGALWorker();
-  connect(this->cgalworker, SIGNAL(done(shared_ptr<const Geometry>)),
-          this, SLOT(actionRenderDone(shared_ptr<const Geometry>)));
+  connect(this->cgalworker, SIGNAL(done(std::shared_ptr<const Geometry>)),
+          this, SLOT(actionRenderDone(std::shared_ptr<const Geometry>)));
   this->cgalRenderer = nullptr;
 
 #ifdef ENABLE_OPENCSG
@@ -1337,7 +1338,7 @@ void MainWindow::compileCSG()
       }
     }
 
-    const std::vector<shared_ptr<CSGNode>>& highlight_terms = csgrenderer.getHighlightNodes();
+    const std::vector<std::shared_ptr<CSGNode>>& highlight_terms = csgrenderer.getHighlightNodes();
     if (highlight_terms.size() > 0) {
       LOG("Compiling highlights (%1$d CSG Trees)...", highlight_terms.size());
       this->processEvents();
@@ -2258,7 +2259,7 @@ void MainWindow::cgalRender()
   this->cgalworker->start(this->tree);
 }
 
-void MainWindow::actionRenderDone(const shared_ptr<const Geometry>& root_geom)
+void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom)
 {
   progress_report_fin();
   if (root_geom) {
@@ -2538,12 +2539,12 @@ void MainWindow::actionCheckValidity()
 #ifdef ENABLE_CGAL
   if (auto N = CGALUtils::getNefPolyhedronFromGeometry(this->root_geom)) {
     valid = N->p3 ? const_cast<CGAL_Nef_polyhedron3&>(*N->p3).is_valid() : false;
-  } else if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root_geom)) {
+  } else if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root_geom)) {
     valid = hybrid->isValid();
   } else
 #endif
 #ifdef ENABLE_MANIFOLD
-  if (auto mani = dynamic_pointer_cast<const ManifoldGeometry>(this->root_geom)) {
+  if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(this->root_geom)) {
     valid = mani->isValid();
   }
 #endif

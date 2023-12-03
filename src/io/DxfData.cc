@@ -586,9 +586,9 @@ std::string DxfData::dump() const
 /*
     May return an empty polygon, but will not return nullptr
  */
-Polygon2d *DxfData::toPolygon2d() const
+std::unique_ptr<Polygon2d> DxfData::toPolygon2d() const
 {
-  auto poly = new Polygon2d();
+  auto poly = std::make_unique<Polygon2d>();
   for (const auto& path : this->paths) {
     Outline2d outline;
     size_t endidx = path.indices.size();

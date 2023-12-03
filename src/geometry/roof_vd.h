@@ -7,5 +7,5 @@
 #include "PolySet.h"
 
 namespace roof_vd {
-PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs);
+std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs);
 }

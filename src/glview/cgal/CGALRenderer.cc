@@ -45,7 +45,7 @@
 
 //#include "Preferences.h"
 
-CGALRenderer::CGALRenderer(const shared_ptr<const class Geometry>& geom)
+CGALRenderer::CGALRenderer(const std::shared_ptr<const class Geometry>& geom)
   : last_render_state(Feature::ExperimentalVxORenderers.is_enabled()) // FIXME: this is temporary to make switching between renderers seamless.
 {
   this->addGeometry(geom);
@@ -55,34 +55,31 @@ CGALRenderer::CGALRenderer(const shared_ptr<const class Geometry>& geom)
 #endif
 }
 
-void CGALRenderer::addGeometry(const shared_ptr<const Geometry>& geom)
+void CGALRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
 {
-  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+  if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const auto& item : geomlist->getChildren()) {
       this->addGeometry(item.second);
     }
-  } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+  } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     assert(ps->getDimension() == 3);
     // We need to tessellate here, in case the generated PolySet contains concave polygons
     // See tests/data/scad/3D/features/polyhedron-concave-test.scad
-    auto ps_tri = new PolySet(3, ps->convexValue());
-    ps_tri->setConvexity(ps->getConvexity());
-    PolySetUtils::tessellate_faces(*ps, *ps_tri);
-    this->polysets.push_back(shared_ptr<const PolySet>(ps_tri));
-  } else if (const auto poly = dynamic_pointer_cast<const Polygon2d>(geom)) {
-    this->polysets.push_back(shared_ptr<const PolySet>(poly->tessellate()));
+    this->polysets.push_back(PolySetUtils::tessellate_faces(*ps));
+  } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
+    this->polysets.push_back(std::shared_ptr<const PolySet>(poly->tessellate()));
 #ifdef ENABLE_CGAL
-  } else if (const auto new_N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  } else if (const auto new_N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     assert(new_N->getDimension() == 3);
     if (!new_N->isEmpty()) {
       this->nefPolyhedrons.push_back(new_N);
     }
-  } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+  } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement rendering of CGAL_HybridMesh (CGAL::Surface_mesh) instead.
     this->polysets.push_back(hybrid->toPolySet());
 #endif
 #ifdef ENABLE_MANIFOLD
-  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+  } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     this->polysets.push_back(mani->toPolySet());
 #endif
   } else {
@@ -113,7 +110,7 @@ void CGALRenderer::createPolyhedrons()
       // CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
       // CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
       p->init();
-      this->polyhedrons.push_back(shared_ptr<CGAL_OGL_Polyhedron>(p));
+      this->polyhedrons.push_back(std::shared_ptr<CGAL_OGL_Polyhedron>(p));
     }
   } else {
     for (const auto& N : this->nefPolyhedrons) {
@@ -122,7 +119,7 @@ void CGALRenderer::createPolyhedrons()
       // CGAL_NEF3_MARKED_FACET_COLOR <- CGAL_FACE_BACK_COLOR
       // CGAL_NEF3_UNMARKED_FACET_COLOR <- CGAL_FACE_FRONT_COLOR
       p->init();
-      this->polyhedrons.push_back(shared_ptr<CGAL_OGL_Polyhedron>(p));
+      this->polyhedrons.push_back(std::shared_ptr<CGAL_OGL_Polyhedron>(p));
     }
   }
   PRINTD("createPolyhedrons() end");

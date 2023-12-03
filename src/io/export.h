@@ -3,13 +3,13 @@
 #include <iostream>
 #include <functional>
 #include <array>
+#include <memory>
 
 #include <boost/range/algorithm.hpp>
 #include <boost/range/adaptor/map.hpp>
 
 #include "Tree.h"
 #include "Camera.h"
-#include "memory.h"
 
 class PolySet;
 
@@ -98,20 +98,20 @@ bool canPreview(const FileFormat format);
 bool is3D(const FileFormat format);
 bool is2D(const FileFormat format);
 
-bool exportFileByName(const shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);
+bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);
 
-void export_stl(const shared_ptr<const Geometry>& geom, std::ostream& output,
+void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 bool binary = true);
-void export_3mf(const shared_ptr<const Geometry>& geom, std::ostream& output);
-void export_obj(const shared_ptr<const Geometry>& geom, std::ostream& output);
-void export_off(const shared_ptr<const Geometry>& geom, std::ostream& output);
-void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output);
-void export_amf(const shared_ptr<const Geometry>& geom, std::ostream& output);
-void export_dxf(const shared_ptr<const Geometry>& geom, std::ostream& output);
-void export_svg(const shared_ptr<const Geometry>& geom, std::ostream& output);
-void export_pdf(const shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
-void export_nefdbg(const shared_ptr<const Geometry>& geom, std::ostream& output);
-void export_nef3(const shared_ptr<const Geometry>& geom, std::ostream& output);
+void export_3mf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
+void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
+void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
+void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
+void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
+void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
+void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
+void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
+void export_nefdbg(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
+void export_nef3(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 
 
 enum class Previewer { OPENCSG, THROWNTOGETHER };
@@ -177,7 +177,7 @@ struct ViewOptions {
 class OffscreenView;
 
 std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera);
-bool export_png(const shared_ptr<const class Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output);
+bool export_png(const std::shared_ptr<const class Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output);
 bool export_png(const OffscreenView& glview, std::ostream& output);
 bool export_param(SourceFile *root, const fs::path& path, std::ostream& output);
 
@@ -218,7 +218,7 @@ public:
   bool foreach_vertex(const std::function<bool(const Vertex&)>& callback) const;
   bool foreach_indexed_triangle(const std::function<bool(const std::array<int, 3>&)>& callback) const;
   bool foreach_triangle(const std::function<bool(const std::array<Vertex, 3>&)>& callback) const;
-  void export_to_polyset(PolySet& ps) const;
+  std::unique_ptr<PolySet> toPolySet() const;
 
 private:
   std::vector<Vertex> vertices;

@@ -18,9 +18,9 @@ public:
   int vertexIndex(const Vector3d& coord);
   int numVertices() const;
   void appendPoly(int nvertices);
-  void append(const PolySet *ps);
+  void append(const PolySet &ps);
   void appendPoly(const std::vector<int>& inds);
-  void appendGeometry(const shared_ptr<const Geometry>& geom);
+  void appendGeometry(const std::shared_ptr<const Geometry>& geom);
   void appendPoly(const std::vector<Vector3d>& v);
   void appendVertex(int n);
   void prependVertex(int n);

@@ -65,7 +65,7 @@ public:
   bool invert{false};
   int convexity{1};
 
-  const Geometry *createGeometry() const override;
+  std::unique_ptr<const Geometry> createGeometry() const override;
 private:
   void convert_image(img_data_t& data, std::vector<uint8_t>& img, unsigned int width, unsigned int height) const;
   bool is_png(std::vector<uint8_t>& img) const;
