@@ -10,7 +10,6 @@
 #include <CGAL/Surface_mesh.h>
 #endif
 #include "PolySetUtils.h"
-#include "IndexedMesh.h"
 #include "PolySet.h"
 
 using Error = manifold::Manifold::Error;
