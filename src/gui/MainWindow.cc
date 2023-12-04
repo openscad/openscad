@@ -1519,7 +1519,12 @@ void MainWindow::saveBackup()
   }
 
   if (!this->tempFile) {
-    this->tempFile = new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX.scad"));
+    QString suffix="scad";
+#ifdef ENABLE_PYTHON
+    this->recomputePythonActive();
+    if(this->python_active) suffix="py";
+#endif
+    this->tempFile = new QTemporaryFile(backupPath.append(basename + "-backup-XXXXXXXX." + suffix));
   }
 
   if ((!this->tempFile->isOpen()) && (!this->tempFile->open())) {
