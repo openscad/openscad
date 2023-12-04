@@ -148,5 +148,12 @@ std::unique_ptr<PolySet> PolySetBuilder::build()
   polyset->indices = std::move(indices_);
   polyset->setConvexity(convexity_);
   polyset->dirty = true;
+  polyset->isTriangular = true;
+  for (const auto& face : polyset->indices) {
+    if (face.size() > 3) {
+      polyset->isTriangular = false;
+      break;
+    }
+  }
   return polyset;
 }

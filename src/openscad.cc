@@ -723,6 +723,12 @@ void registerDefaultIcon(QString applicationFilePath) {
 void registerDefaultIcon(const QString&) { }
 #endif
 
+#ifdef OPENSCAD_SUFFIX
+#define DESKTOP_FILENAME "openscad" OPENSCAD_SUFFIX
+#else
+#define DESKTOP_FILENAME "openscad"
+#endif
+
 int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, char **argv)
 {
   OpenSCADApp app(argc, argv);
@@ -735,6 +741,7 @@ int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, cha
   QCoreApplication::setApplicationName("OpenSCAD");
   QCoreApplication::setApplicationVersion(TOSTRING(OPENSCAD_VERSION));
   QGuiApplication::setApplicationDisplayName("OpenSCAD");
+  QGuiApplication::setDesktopFileName(DESKTOP_FILENAME);
   QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #ifdef Q_OS_MAC
   app.setWindowIcon(QIcon(":/icon-macos.png"));

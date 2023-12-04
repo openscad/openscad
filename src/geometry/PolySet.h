@@ -37,6 +37,7 @@ public:
 
   bool is_convex() const;
   boost::tribool convexValue() const { return this->convex; }
+  bool isTriangular = false;
 
 private:
   Polygon2d polygon;

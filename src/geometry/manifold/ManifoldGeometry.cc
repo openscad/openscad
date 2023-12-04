@@ -97,6 +97,7 @@ std::string ManifoldGeometry::dump() const {
 std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   manifold::MeshGL mesh = getManifold().GetMeshGL();
   auto ps = std::make_shared<PolySet>(3);
+  ps->isTriangular = true;
   ps->vertices.reserve(mesh.NumVert());
   ps->indices.reserve(mesh.NumTri());
   // first 3 channels are xyz coordinate
