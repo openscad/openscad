@@ -325,7 +325,7 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
     if (zipfile == nullptr) {
       LOG(message_group::Warning, "Can't read file '%1$s' from zipped AMF '%2$s', import() at line %3$d", filename, filepath, this->loc.firstLine());
     }
-    if ((zipfile == nullptr) && (zip_get_num_files(archive) == 1)) {
+    if ((zipfile == nullptr) && (zip_get_num_entries(archive, 0) == 1)) {
       LOG(message_group::Warning, "Trying to read single entry '%1$s'", zip_get_name(archive, 0, 0));
       zipfile = zip_fopen_index(archive, 0, 0);
     }
