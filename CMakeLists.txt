@@ -1088,13 +1088,19 @@ endif()
 list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${OFFSCREEN_SOURCES})
 
 set_source_files_properties(
-  ${OFFSCREEN_SOURCES}
-  ${PLATFORM_SOURCES}
+  # flex and bison tends to generate many macros, which does not work well with
+  # unity build
   ${FLEX_openscad_lexer_OUTPUTS}
   ${BISON_openscad_parser_OUTPUTS}
   ${FLEX_comment_lexer_OUTPUTS}
   ${BISON_comment_parser_OUTPUTS}
+  # manifold uses a lot of anonymous namespaces.
+  # unity build will cause naming conflict for functions inside those namespaces.
   ${MANIFOLD_SOURCES}
+  # files using opengl does not work well with unity build, again due to the
+  # macros
+  ${OFFSCREEN_SOURCES}
+  ${PLATFORM_SOURCES}
   src/glview/OffscreenContextFactory.cc
   src/glview/RenderSettings.cc
   src/glview/Camera.cc
@@ -1103,7 +1109,8 @@ set_source_files_properties(
   src/gui/input/SpaceNavInputDriver.cc
   src/gui/QGLView.cc
   src/gui/QGLView2.cc
-  # things that requires _USE_MATH_DEFINES
+  # _USE_MATH_DEFINES should be defined before the first include of cmath,
+  # unity build will violate this so we just exclude them
   src/core/BuiltinContext.cc
   src/geometry/roof_vd.cc
   src/io/DxfData.cc
