@@ -20,8 +20,7 @@
 
 #include <CGAL/convex_hull_3.h>
 
-#include "memory.h"
-
+#include <memory>
 #include <map>
 #include <queue>
 #include <unordered_set>
@@ -31,7 +30,7 @@ namespace CGALUtils {
 /*!
    children cannot contain nullptr objects
  */
-shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& children)
+std::shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& children)
 {
   // TODO: use Surface_mesh everywhere!!!
   using Hull_kernel = CGAL::Epick;
@@ -43,18 +42,18 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
   assert(children.size() >= 2);
   auto it = children.begin();
   t_tot.start();
-  shared_ptr<const Geometry> operands[2] = {it->second, shared_ptr<const Geometry>()};
+  std::shared_ptr<const Geometry> operands[2] = {it->second, std::shared_ptr<const Geometry>()};
   try {
     while (++it != children.end()) {
       operands[1] = it->second;
 
-      std::list<shared_ptr<Hybrid_Polyhedron>> P[2];
-      std::list<shared_ptr<Hull_Polyhedron>> result_parts;
+      std::list<std::shared_ptr<Hybrid_Polyhedron>> P[2];
+      std::list<std::shared_ptr<Hull_Polyhedron>> result_parts;
 
       for (size_t i = 0; i < 2; ++i) {
-        auto poly = make_shared<Hybrid_Polyhedron>();
+        auto poly = std::make_shared<Hybrid_Polyhedron>();
 
-        auto ps = dynamic_pointer_cast<const PolySet>(operands[i]);
+        auto ps = std::dynamic_pointer_cast<const PolySet>(operands[i]);
         auto hybrid = CGALUtils::getHybridPolyhedronFromGeometry(operands[i]);
         if (!hybrid) throw 0;
 
@@ -73,12 +72,12 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
           P[i].push_back(poly);
         } else {
           PRINTDB("Minkowski: child %d is nonconvex, decomposing...", i);
-          shared_ptr<Hybrid_Nef> decomposed_nef;
+          std::shared_ptr<Hybrid_Nef> decomposed_nef;
 
           if (auto mesh = hybrid->getMesh()) {
-            decomposed_nef = make_shared<Hybrid_Nef>(*mesh);
+            decomposed_nef = std::make_shared<Hybrid_Nef>(*mesh);
           } else if (auto nef = hybrid->getNefPolyhedron()) {
-            decomposed_nef = make_shared<Hybrid_Nef>(*nef);
+            decomposed_nef = std::make_shared<Hybrid_Nef>(*nef);
           }
 
           t.start();
@@ -88,7 +87,7 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
           Hybrid_Nef::Volume_const_iterator ci = ++decomposed_nef->volumes_begin();
           for (; ci != decomposed_nef->volumes_end(); ++ci) {
             if (ci->mark()) {
-              auto poly = make_shared<Hybrid_Polyhedron>();
+              auto poly = std::make_shared<Hybrid_Polyhedron>();
               decomposed_nef->convert_inner_shell_to_polyhedron(ci->shells_begin(), *poly);
               P[i].push_back(poly);
             }
@@ -137,7 +136,7 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
             continue;
           }
 
-          auto result = make_shared<Hull_Polyhedron>();
+          auto result = std::make_shared<Hull_Polyhedron>();
           t.stop();
           PRINTDB("Minkowski: Point cloud creation (%d ⨉ %d -> %d) took %f ms", points[0].size() % points[1].size() % minkowski_points.size() % (t.time() * 1000));
           t.reset();
@@ -196,11 +195,11 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
 
       if (it != std::next(children.begin())) operands[0].reset();
 
-      auto partToGeom = [&](auto& poly) -> shared_ptr<const Geometry> {
-          auto mesh = make_shared<CGAL_HybridMesh>();
+      auto partToGeom = [&](auto& poly) -> std::shared_ptr<const Geometry> {
+          auto mesh = std::make_shared<CGAL_HybridMesh>();
           CGAL::copy_face_graph(*poly, *mesh);
           CGALUtils::triangulateFaces(*mesh);
-          return make_shared<CGALHybridPolyhedron>(mesh);
+          return std::make_shared<CGALHybridPolyhedron>(mesh);
         };
 
       if (result_parts.size() == 1) {
@@ -220,9 +219,9 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
         t.stop();
         PRINTDB("Minkowski: Union done: %f s", t.time());
         t.reset();
-        operands[0] = N;
+        operands[0] = std::move(N);
       } else {
-        operands[0] = shared_ptr<const Geometry>(new CGAL_Nef_polyhedron());
+        operands[0] = std::make_shared<CGAL_Nef_polyhedron>();
       }
     }
 
@@ -234,7 +233,7 @@ shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& chil
     LOG(message_group::Warning,
         "[fast-csg] Minkowski failed with error, falling back to Nef operation: %1$s\n", e.what());
 
-    auto N = shared_ptr<const Geometry>(applyOperator3D(children, OpenSCADOperator::MINKOWSKI));
+    auto N = std::shared_ptr<const Geometry>(applyOperator3D(children, OpenSCADOperator::MINKOWSKI));
     return N;
   }
 }

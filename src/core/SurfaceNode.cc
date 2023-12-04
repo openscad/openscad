@@ -208,10 +208,9 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
   return data;
 }
 
-const Geometry *SurfaceNode::createGeometry() const
+std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
 {
   auto data = read_png_or_dat(filename);
-
 
   int lines = data.height;
   int columns = data.width;

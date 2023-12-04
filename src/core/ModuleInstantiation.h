@@ -36,7 +36,7 @@ protected:
 class IfElseModuleInstantiation : public ModuleInstantiation
 {
 public:
-  IfElseModuleInstantiation(shared_ptr<class Expression> expr, const Location& loc) :
+  IfElseModuleInstantiation(std::shared_ptr<class Expression> expr, const Location& loc) :
     ModuleInstantiation("if", AssignmentList{assignment("", std::move(expr))}, loc) { }
 
   LocalScope *makeElseScope();

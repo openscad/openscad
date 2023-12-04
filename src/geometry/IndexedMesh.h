@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include <memory>
 #include "PolySet.h"
 #include "Reindexer.h"
 
@@ -38,5 +39,5 @@ struct IndexedMesh {
   size_t numfaces{0};
 
   void append_geometry(const PolySet& ps);
-  void append_geometry(const shared_ptr<const Geometry>& geom);
+  void append_geometry(const std::shared_ptr<const Geometry>& geom);
 };

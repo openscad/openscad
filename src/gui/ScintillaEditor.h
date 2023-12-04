@@ -1,6 +1,8 @@
 #pragma once
 
 #include <functional>
+#include <memory>
+
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -49,7 +51,7 @@ class ScintillaEditor : public EditorInterface
 {
   Q_OBJECT;
 
-  using colorscheme_set_t = std::multimap<int, shared_ptr<EditorColorScheme>, std::less<>>;
+  using colorscheme_set_t = std::multimap<int, std::shared_ptr<EditorColorScheme>, std::less<>>;
 
 public:
   ScintillaEditor(QWidget *parent, MainWindow &mainWindow);

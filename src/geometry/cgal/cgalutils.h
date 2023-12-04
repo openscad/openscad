@@ -28,35 +28,35 @@ Result vector_convert(V const& v) {
   return Result(CGAL::to_double(v[0]), CGAL::to_double(v[1]), CGAL::to_double(v[2]));
 }
 
-CGAL_Nef_polyhedron *createNefPolyhedronFromPolySet(const PolySet& ps);
+std::unique_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromPolySet(const PolySet& ps);
 template <typename K>
 bool is_weakly_convex(const CGAL::Polyhedron_3<K>& p);
 template <typename K>
 bool is_weakly_convex(const CGAL::Surface_mesh<CGAL::Point_3<K>>& m);
-shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op);
-shared_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
-shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries& children, OpenSCADOperator op);
-shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
+std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& children, OpenSCADOperator op);
+std::unique_ptr<const Geometry> applyUnion3D(Geometry::Geometries::iterator chbegin, Geometry::Geometries::iterator chend);
+std::shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries& children, OpenSCADOperator op);
+std::shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
   const Geometry::Geometries::const_iterator& chbegin,
   const Geometry::Geometries::const_iterator& chend);
 //FIXME: Old, can be removed:
 //void applyBinaryOperator(CGAL_Nef_polyhedron &target, const CGAL_Nef_polyhedron &src, OpenSCADOperator op);
-Polygon2d *project(const CGAL_Nef_polyhedron& N, bool cut);
+std::unique_ptr<Polygon2d> project(const CGAL_Nef_polyhedron& N, bool cut);
 template <typename K>
 CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Nef_polyhedron_3<K>& N);
 template <typename K>
 CGAL::Iso_cuboid_3<K> boundingBox(const CGAL::Surface_mesh<CGAL::Point_3<K>>& mesh);
 CGAL_Iso_cuboid_3 createIsoCuboidFromBoundingBox(const BoundingBox& bbox);
 bool is_approximately_convex(const PolySet& ps);
-shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& children);
+std::shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries& children);
 
-template <typename Polyhedron> bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps);
+template <typename Polyhedron> std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p);
 template <class InputKernel, class OutputKernel>
 void copyPolyhedron(const CGAL::Polyhedron_3<InputKernel>& poly_a, CGAL::Polyhedron_3<OutputKernel>& poly_b);
 template <typename Polyhedron> bool createPolyhedronFromPolySet(const PolySet& ps, Polyhedron& p);
 
 template <class TriangleMesh>
-bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps);
+std::unique_ptr<PolySet> createPolySetFromMesh(const TriangleMesh& mesh);
 template <class InputKernel, class OutputKernel>
 void copyMesh(const CGAL::Surface_mesh<CGAL::Point_3<InputKernel>>& input,
               CGAL::Surface_mesh<CGAL::Point_3<OutputKernel>>& output);
@@ -64,9 +64,9 @@ template <class TriangleMesh>
 bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh);
 
 template <typename K>
-bool createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N, PolySet& ps);
-shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const shared_ptr<const Geometry>& geom);
-shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const shared_ptr<const Geometry>&);
+std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhedron_3<K>& N);
+std::shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
+std::shared_ptr<const CGAL_Nef_polyhedron> getGeometryAsNefPolyhedron(const std::shared_ptr<const Geometry>&);
 
 template <typename K>
 CGAL::Aff_transformation_3<K> createAffineTransformFromMatrix(const Transform3d& matrix);
@@ -101,7 +101,7 @@ getCartesianConverter()
   return CGAL::Cartesian_converter<
     FromKernel, ToKernel, KernelConverter<FromKernel, ToKernel>>();
 }
-shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron& hybrid);
+std::shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHybridPolyhedron& hybrid);
 std::shared_ptr<CGALHybridPolyhedron> createHybridPolyhedronFromPolySet(const PolySet& ps);
 std::shared_ptr<CGALHybridPolyhedron> createMutableHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);
 std::shared_ptr<const CGALHybridPolyhedron> getHybridPolyhedronFromGeometry(const std::shared_ptr<const Geometry>& geom);

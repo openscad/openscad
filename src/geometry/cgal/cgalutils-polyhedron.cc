@@ -279,9 +279,8 @@ template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL::Polyhedron_3<
 template bool createPolyhedronFromPolySet(const PolySet& ps, CGAL::Polyhedron_3<CGAL::Epeck>& p);
 
 template <typename Polyhedron>
-bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps)
+std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p)
 {
-  bool err = false;
   using Vertex = typename Polyhedron::Vertex;
   using FCI = typename Polyhedron::Facet_const_iterator;
   using HFCC = typename Polyhedron::Halfedge_around_facet_const_circulator;
@@ -300,13 +299,12 @@ bool createPolySetFromPolyhedron(const Polyhedron& p, PolySet& ps)
       builder.appendVertex(builder.vertexIndex(Vector3d(x, y, z)));
     } while (hc != hc_end);
   }
-  ps.reset(builder.build());
-  return err;
+  return builder.build();
 }
 
-template bool createPolySetFromPolyhedron(const CGAL_Polyhedron& p, PolySet& ps);
-template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick>& p, PolySet& ps);
-template bool createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long>>& p, PolySet& ps);
+template std::unique_ptr<PolySet> createPolySetFromPolyhedron(const CGAL_Polyhedron& p);
+template std::unique_ptr<PolySet> createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Epick>& p);
+template std::unique_ptr<PolySet> createPolySetFromPolyhedron(const CGAL::Polyhedron_3<CGAL::Simple_cartesian<long>>& p);
 
 class Polyhedron_writer
 {

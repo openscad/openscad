@@ -8,15 +8,15 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-PolySet *import_obj(const std::string& filename, const Location& loc) {
+std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location& loc) {
   PolySetBuilder builder;
-  
+
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary );
   if (!f.good()) {
     LOG(message_group::Warning,
         "Can't open import file '%1$s', import() at line %2$d",
         filename, loc.firstLine());
-    return new PolySet(3);
+    return std::make_unique<PolySet>(3);
   }
   boost::regex ex_comment(R"(^\s*#)");
   boost::regex ex_v( R"(^\s*v\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s*$)");
@@ -54,7 +54,7 @@ PolySet *import_obj(const std::string& filename, const Location& loc) {
         builder.vertexIndex(v); // expect to get subsequent numbers starting from zero
       } catch (const boost::bad_lexical_cast& blc) {
         AsciiError("can't parse vertex");
-        return new PolySet(3);
+        return std::make_unique<PolySet>(3);
       }
     } else if (boost::regex_search(line, results, ex_f) && results.size() >= 2) {
       std::string args=results[1];

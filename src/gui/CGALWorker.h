@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QObject>
-#include "memory.h"
+#include <memory>
 
 class Tree;
 
@@ -19,7 +19,7 @@ protected slots:
   void work();
 
 signals:
-  void done(shared_ptr<const class Geometry>);
+  void done(std::shared_ptr<const class Geometry>);
 
 protected:
 

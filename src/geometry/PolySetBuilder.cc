@@ -27,67 +27,73 @@
 #include "PolySetBuilder.h"
 #include <PolySet.h>
 #include "Geometry.h"
+
+#ifdef ENABLE_CGAL
 #include "cgalutils.h"
-
-
-#include <memory>
-
+#include "CGAL_Nef_polyhedron.h"
+#include "CGALHybridPolyhedron.h"
+#endif
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
 #endif
 
-
-#include "CGAL_Nef_polyhedron.h"
-#include "CGALHybridPolyhedron.h"
-
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
+  : dim_(dim), convex_(convex)
 {
-  ps = new PolySet(dim, convex);
-  if(vertices_count != 0) ps->vertices.reserve(vertices_count);
-  if(indices_count != 0) ps->indices.reserve(indices_count);
+  if (vertices_count != 0) vertices_.reserve(vertices_count);
+  if (indices_count != 0) indices_.reserve(indices_count);
 }
 
-PolySetBuilder::PolySetBuilder(const Polygon2d &pol)
+PolySetBuilder::PolySetBuilder(const Polygon2d& polygon2d)
+  : polygon2d_(polygon2d), dim_(2), convex_(unknown)
 {
-  ps = new PolySet(pol);
-  ps->dirty = false;
 }
 
-int PolySetBuilder::vertexIndex(const Vector3d &pt)
-{
-  return allVertices.lookup(pt);
+
+void PolySetBuilder::setConvexity(int convexity){
+  convexity_ = convexity;
 }
 
-void PolySetBuilder::appendPoly(const std::vector<int> &inds)
+int PolySetBuilder::numVertices() const {
+  return vertices_.size();
+}
+
+int PolySetBuilder::vertexIndex(const Vector3d& pt)
 {
-  auto& face = ps->indices.emplace_back();
+  return vertices_.lookup(pt);
+}
+
+void PolySetBuilder::appendPoly(const std::vector<int>& inds)
+{
+  auto& face = indices_.emplace_back();
   face.insert(face.begin(), inds.begin(), inds.end());
 }
 
-void PolySetBuilder::appendGeometry(const shared_ptr<const Geometry>& geom)
+void PolySetBuilder::appendGeometry(const std::shared_ptr<const Geometry>& geom)
 {
-  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+  if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const Geometry::GeometryItem& item : geomlist->getChildren()) {
       appendGeometry(item.second);
     }
-  } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-    PolySet ps(3);
-    bool err = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3), ps);
-    if (err) {
-      LOG(message_group::Error, "Nef->PolySet failed");
-    } else {
-      append(&ps);
+  } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+    append(*ps);
+#ifdef ENABLE_CGAL
+  } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+    if (const auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3))) {
+      append(*ps);
     }
-  } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
-    append(ps.get());
-  } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+    else {
+      LOG(message_group::Error, "Nef->PolySet failed");
+    }
+  } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement appendGeometry(Surface_mesh) instead of converting to PolySet
-    append(hybrid->toPolySet().get());
+    append(*hybrid->toPolySet());
+#endif // ifdef ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
-  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-   append(mani->toPolySet().get());
+  } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    append(*mani->toPolySet());
 #endif
-  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
+  } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
   } else { // NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
@@ -96,49 +102,51 @@ void PolySetBuilder::appendGeometry(const shared_ptr<const Geometry>& geom)
 }
 
 
-void PolySetBuilder::appendPoly(const std::vector<Vector3d> &v)
+void PolySetBuilder::appendPoly(const std::vector<Vector3d>& v)
 {
   IndexedFace inds;
   inds.reserve(v.size());
-  for(const auto &pt: v)
-    inds.push_back(vertexIndex(pt));  
-  ps->indices.push_back(inds);        
+  for (const auto& pt: v)
+    inds.push_back(vertexIndex(pt));
+  indices_.push_back(inds);
 }
 
 void PolySetBuilder::appendPoly(int nvertices){
-  ps->indices.emplace_back().reserve(nvertices);
+  indices_.emplace_back().reserve(nvertices);
 }
 
-void PolySetBuilder::appendVertex(int ind){
-  ps->indices.back().push_back(ind);
-}
-
-void PolySetBuilder::prependVertex(int ind){
-  ps->indices.back().insert(ps->indices.back().begin(), ind);
-}
-
-int PolySetBuilder::numVertices() {
-  return allVertices.size();
-}
-
-void PolySetBuilder::append(const PolySet *ps)
+void PolySetBuilder::appendVertex(int ind)
 {
-  for(const auto &poly : ps->indices) {
+  indices_.back().push_back(ind);
+}
+
+void PolySetBuilder::prependVertex(int ind)
+{
+  indices_.back().insert(indices_.back().begin(), ind);
+}
+
+void PolySetBuilder::append(const PolySet& ps)
+{
+  for (const auto& poly : ps.indices) {
     appendPoly(poly.size());
-    for(const auto &ind: poly) {
-      appendVertex(vertexIndex(ps->vertices[ind]));
+    for (const auto& ind: poly) {
+      appendVertex(vertexIndex(ps.vertices[ind]));
     }
   }
 }
 
-PolySet *PolySetBuilder::build()
+std::unique_ptr<PolySet> PolySetBuilder::build()
 {
-  ps->dirty = true;
-  ps->vertices = allVertices.getArray();
-  return ps;
+  std::unique_ptr<PolySet> polyset;
+  if (!polygon2d_.isEmpty()) {
+    polyset = std::make_unique<PolySet>(polygon2d_);
+  }
+  else {
+    polyset = std::make_unique<PolySet>(dim_, convex_);
+  }
+  vertices_.copy(std::back_inserter(polyset->vertices));
+  polyset->indices = std::move(indices_);
+  polyset->setConvexity(convexity_);
+  polyset->dirty = true;
+  return polyset;
 }
-
-void PolySetBuilder::setConvexity(int convexity){
-  ps->convexity = convexity;
-}
-

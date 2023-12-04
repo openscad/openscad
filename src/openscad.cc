@@ -272,7 +272,7 @@ Camera get_camera(const po::variables_map& vm)
 #define OPENSCAD_QTGUI 1
 #endif
 
-static bool checkAndExport(const shared_ptr<const Geometry>& root_geom, unsigned dimensions,
+static bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned dimensions,
                            FileFormat format, const bool is_stdout, const std::string& filename)
 {
   if (root_geom->getDimension() != dimensions) {
@@ -373,7 +373,7 @@ int cmdline(const CommandLine& cmd)
 
   set_render_color_scheme(arg_colorscheme, true);
 
-  shared_ptr<Echostream> echostream;
+  std::shared_ptr<Echostream> echostream;
   if (export_format == FileFormat::ECHO) {
     echostream.reset(cmd.is_stdout ? new Echostream(std::cout) : new Echostream(cmd.output_file));
   }
@@ -557,7 +557,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     RenderStatistic renderStatistic;
     GeometryEvaluator geomevaluator(tree);
     unique_ptr<OffscreenView> glview;
-    shared_ptr<const Geometry> root_geom;
+    std::shared_ptr<const Geometry> root_geom;
     if ((curFormat == FileFormat::ECHO || curFormat == FileFormat::PNG) && (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)) {
       // OpenCSG or throwntogether png -> just render a preview
       glview = prepare_preview(tree, cmd.viewOptions, camera);
@@ -572,14 +572,14 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
       root_geom = geomevaluator.evaluateGeometry(*tree.root(), allownef);
       if (root_geom) {
         if (cmd.viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
-          if (auto geomlist = dynamic_pointer_cast<const GeometryList>(root_geom)) {
+          if (auto geomlist = std::dynamic_pointer_cast<const GeometryList>(root_geom)) {
             auto flatlist = geomlist->flatten();
             for (auto& child : flatlist) {
               if (child.second->getDimension() == 3) {
                 child.second = CGALUtils::getNefPolyhedronFromGeometry(child.second);
               }
             }
-            root_geom.reset(new GeometryList(flatlist));
+            root_geom = std::make_shared<GeometryList>(flatlist);
           } else {
             root_geom = CGALUtils::getNefPolyhedronFromGeometry(root_geom);
           }
@@ -587,7 +587,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
         }
       } else {
 	// FIXME: The default geometry doesn't need to be a Nef polyhedron. Why not make it a PolySet?
-        root_geom.reset(new CGAL_Nef_polyhedron());
+        root_geom = std::make_shared<CGAL_Nef_polyhedron>();
       }
     }
 #endif
@@ -656,7 +656,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 #include "Settings.h"
 
 Q_DECLARE_METATYPE(Message);
-Q_DECLARE_METATYPE(shared_ptr<const Geometry>);
+Q_DECLARE_METATYPE(std::shared_ptr<const Geometry>);
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
 static QString assemblePath(const fs::path& absoluteBaseDir,
@@ -744,7 +744,7 @@ int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, cha
 
   // Other global settings
   qRegisterMetaType<Message>();
-  qRegisterMetaType<shared_ptr<const Geometry>>();
+  qRegisterMetaType<std::shared_ptr<const Geometry>>();
 
   FontCache::registerProgressHandler(dialogInitHandler);
 

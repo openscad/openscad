@@ -101,20 +101,19 @@ uint64_t append_stl(const PolySet& polyset, std::ostream& output, bool binary)
 {
   static_assert(sizeof(float) == 4, "Need 32 bit float");
   // check if tessellation is needed
-  PolySet tmp(3);
+  std::unique_ptr<PolySet> tmp;
   bool needTessellation = std::any_of(
       polyset.indices.begin(), polyset.indices.end(),
       [](const auto& face) { return face.size() != 3; }
   );
-  if (needTessellation)
-    PolySetUtils::tessellate_faces(polyset, tmp);
-  bool useTmp = needTessellation;
-  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
-    Export::ExportMesh ex(needTessellation ? tmp : polyset);
-    ex.export_to_polyset(tmp);
-    useTmp = true;
+  if (needTessellation) {
+    tmp = PolySetUtils::tessellate_faces(polyset);
   }
-  const PolySet& ps = useTmp ? tmp : polyset;
+  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
+    Export::ExportMesh ex(needTessellation ? *tmp : polyset);
+    tmp = ex.toPolySet();
+  }
+  const PolySet& ps = tmp ? *tmp : polyset;
 
   uint64_t triangle_count = 0;
 
@@ -194,9 +193,8 @@ uint64_t append_stl(const CGAL_Nef_polyhedron& root_N, std::ostream& output,
     LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
   }
 
-  PolySet ps(3);
-  if (!CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3), ps)) {
-    triangle_count += append_stl(ps, output, binary);
+  if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3))) {
+    triangle_count += append_stl(*ps, output, binary);
   } else {
     LOG(message_group::Export_Error, "Nef->PolySet failed");
   }
@@ -252,27 +250,27 @@ uint64_t append_stl(const ManifoldGeometry& mani, std::ostream& output,
 #endif  // ENABLE_MANIFOLD
 
 
-uint64_t append_stl(const shared_ptr<const Geometry>& geom, std::ostream& output,
+uint64_t append_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                     bool binary)
 {
   uint64_t triangle_count = 0;
-  if (const auto geomlist = dynamic_pointer_cast<const GeometryList>(geom)) {
+  if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
     for (const Geometry::GeometryItem& item : geomlist->getChildren()) {
       triangle_count += append_stl(item.second, output, binary);
     }
-  } else if (const auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+  } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     triangle_count += append_stl(*ps, output, binary);
 #ifdef ENABLE_CGAL
-  } else if (const auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+  } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     triangle_count += append_stl(*N, output, binary);
-  } else if (const auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+  } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     triangle_count += append_stl(*hybrid, output, binary);
 #endif
 #ifdef ENABLE_MANIFOLD
-  } else if (const auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+  } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     triangle_count += append_stl(*mani, output, binary);
 #endif
-  } else if (dynamic_pointer_cast<const Polygon2d>(geom)) { //NOLINT(bugprone-branch-clone)
+  } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) { //NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
   } else { //NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
@@ -283,7 +281,7 @@ uint64_t append_stl(const shared_ptr<const Geometry>& geom, std::ostream& output
 
 } // namespace
 
-void export_stl(const shared_ptr<const Geometry>& geom, std::ostream& output,
+void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 bool binary)
 {
   if (binary) {

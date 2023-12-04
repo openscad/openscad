@@ -18,10 +18,10 @@ namespace PolySetUtils {
 // Project all polygons (also back-facing) into a Polygon2d instance.
 // It is important to select all faces, since filtering by normal vector here
 // will trigger floating point incertainties and cause problems later.
-Polygon2d *project(const PolySet& ps) {
-  auto poly = new Polygon2d;
-  Vector3d pt;
+std::unique_ptr<Polygon2d> project(const PolySet& ps) {
+  auto poly = std::make_unique<Polygon2d>();
 
+  Vector3d pt;
   for (const auto& p : ps.indices) {
     Outline2d outline;
     for (const auto& v : p) {
@@ -52,7 +52,7 @@ Polygon2d *project(const PolySet& ps) {
    polyset has simple polygon faces with no holes.
    The tessellation will be robust wrt. degenerate and self-intersecting
  */
-void tessellate_faces(const PolySet& inps, PolySet& outps)
+std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
 {
   int degeneratePolygons = 0;
 
@@ -61,12 +61,12 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
   std::vector<std::vector<IndexedFace>> polygons;
 
   // best estimate without iterating all polygons, to reduce reallocations
-  polygons.reserve(inps.indices.size() );
+  polygons.reserve(polyset.indices.size() );
 
   // minimum estimate without iterating all polygons, to reduce reallocation and rehashing
-  allVertices.reserve(3 * inps.indices.size() );
+  allVertices.reserve(3 * polyset.indices.size() );
 
-  for (const auto& pgon : inps.indices) {
+  for (const auto& pgon : polyset.indices) {
     if (pgon.size() < 3) {
       degeneratePolygons++;
       continue;
@@ -77,7 +77,7 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
     faces.push_back(IndexedFace());
     auto& currface = faces.back();
     for (const auto& ind : pgon) {
-      const Vector3d v=inps.vertices[ind];
+      const Vector3d v=polyset.vertices[ind];
       // Create vertex indices and remove consecutive duplicate vertices
       // NOTE: a lot of time is spent here (cast+hash+lookup+insert+rehash)
       auto idx = allVertices.lookup(v.cast<float>());
@@ -98,7 +98,8 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
 
   // Estimate how many polygons we will need and preallocate.
   // This is usually an undercount, but still prevents a lot of reallocations.
-  PolySetBuilder builder(verts.size(),polygons.size());
+  PolySetBuilder builder(verts.size(), polygons.size(), polyset.getDimension(), polyset.convexValue());
+  builder.setConvexity(polyset.getConvexity());
   for(int i=0;i<verts.size();i++)
     builder.vertexIndex({verts[i][0],verts[i][1],verts[i][2]});
 
@@ -120,10 +121,10 @@ void tessellate_faces(const PolySet& inps, PolySet& outps)
       }
     }
   }
-  outps.reset(builder.build());
   if (degeneratePolygons > 0) {
     LOG(message_group::Warning, "PolySet has degenerate polygons");
   }
+  return builder.build();
 }
 
 bool is_approximately_convex(const PolySet& ps) {
@@ -134,29 +135,29 @@ bool is_approximately_convex(const PolySet& ps) {
 #endif
 }
 
-  shared_ptr<const PolySet> getGeometryAsPolySet(const shared_ptr<const Geometry>& geom)
+// Get as or convert the geometry to a PolySet.
+std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const Geometry>& geom)
 {
-  if (auto ps = dynamic_pointer_cast<const PolySet>(geom)) {
+  if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     return ps;
   }
 #ifdef ENABLE_CGAL
-  if (auto N = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
-    auto ps = make_shared<PolySet>(3);
-    ps->setConvexity(N->getConvexity());
+  if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     if (!N->isEmpty()) {
-      bool err = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3, *ps);
-      if (err) {
-        LOG(message_group::Error, "Nef->PolySet failed.");
+      if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3)) {
+	ps->setConvexity(N->getConvexity());
+	return ps;
       }
+      LOG(message_group::Error, "Nef->PolySet failed.");
     }
-    return ps;
+    return std::make_unique<PolySet>(3);
   }
-  if (auto hybrid = dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+  if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return hybrid->toPolySet();
   }
 #endif
 #ifdef ENABLE_MANIFOLD
-  if (auto mani = dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+  if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
     return mani->toPolySet();
   }
 #endif

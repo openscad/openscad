@@ -104,14 +104,13 @@ static void set_fragments(const Parameters& parameters, const ModuleInstantiatio
 
 
 
-const Geometry *CubeNode::createGeometry() const
+std::unique_ptr<const Geometry> CubeNode::createGeometry() const
 {
-  if (
-    this->x <= 0 || !std::isfinite(this->x)
+  if (this->x <= 0 || !std::isfinite(this->x)
     || this->y <= 0 || !std::isfinite(this->y)
     || this->z <= 0 || !std::isfinite(this->z)
     ) {
-    return new PolySet(3, true);
+    return std::make_unique<PolySet>(3, true);
   }
 
   double x1, x2, y1, y2, z1, z2;
@@ -142,7 +141,7 @@ const Geometry *CubeNode::createGeometry() const
   builder.appendPoly({corner[1],corner[3],corner[7], corner[5]}); // right
   builder.appendPoly({corner[3],corner[2],corner[6], corner[7]}); // back
   builder.appendPoly({corner[2],corner[0],corner[4], corner[6]}); // left
-  return builder.build();									   
+  return builder.build();
 }
 
 static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -184,10 +183,10 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
 
 
 
-const Geometry *SphereNode::createGeometry() const
+std::unique_ptr<const Geometry> SphereNode::createGeometry() const
 {
   if (this->r <= 0 || !std::isfinite(this->r)) {
-    return  new PolySet(3, true);
+    return std::make_unique<PolySet>(3, true);
   }
 
   struct ring_s {
@@ -280,7 +279,7 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
 
 
 
-const Geometry *CylinderNode::createGeometry() const
+std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
 {
   if (
     this->h <= 0 || !std::isfinite(this->h)
@@ -288,7 +287,7 @@ const Geometry *CylinderNode::createGeometry() const
     || this->r2 < 0 || !std::isfinite(this->r2)
     || (this->r1 <= 0 && this->r2 <= 0)
     ) {
-    return  new PolySet(3, true);
+    return std::make_unique<PolySet>(3, true);
   }
 
   auto fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
@@ -442,9 +441,9 @@ std::string PolyhedronNode::toString() const
   return stream.str();
 }
 
-const Geometry *PolyhedronNode::createGeometry() const
+std::unique_ptr<const Geometry> PolyhedronNode::createGeometry() const
 {
-  auto p = new PolySet(3);
+  auto p = std::make_unique<PolySet>(3);
   p->setConvexity(this->convexity);
   p->vertices=this->points;
   p->indices=this->faces;
@@ -528,9 +527,9 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
 }
 
 
-const Geometry *SquareNode::createGeometry() const
+std::unique_ptr<const Geometry> SquareNode::createGeometry() const
 {
-  auto p = new Polygon2d();
+  auto p = std::make_unique<Polygon2d>();
   if (
     this->x <= 0 || !std::isfinite(this->x)
     || this->y <= 0 || !std::isfinite(this->y)
@@ -587,11 +586,10 @@ static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *i
   return node;
 }
 
-const Geometry *CircleNode::createGeometry() const
+std::unique_ptr<const Geometry> CircleNode::createGeometry() const
 {
-  auto p = new Polygon2d();
   if (this->r <= 0 || !std::isfinite(this->r)) {
-    return p;
+    return std::make_unique<Polygon2d>();
   }
 
   auto fragments = Calc::get_fragments_from_r(this->r, this->fn, this->fs, this->fa);
@@ -601,9 +599,7 @@ const Geometry *CircleNode::createGeometry() const
     double phi = (360.0 * i) / fragments;
     o.vertices[i] = {this->r * cos_degrees(phi), this->r * sin_degrees(phi)};
   }
-  p->addOutline(o);
-  p->setSanitized(true);
-  return p;
+  return std::make_unique<Polygon2d>(o);
 }
 
 static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -675,9 +671,9 @@ std::string PolygonNode::toString() const
   return stream.str();
 }
 
-const Geometry *PolygonNode::createGeometry() const
+std::unique_ptr<const Geometry> PolygonNode::createGeometry() const
 {
-  auto p = new Polygon2d();
+  auto p = std::make_unique<Polygon2d>();
   if (this->paths.empty() && this->points.size() > 2) {
     Outline2d outline;
     for (const auto& point : this->points) {

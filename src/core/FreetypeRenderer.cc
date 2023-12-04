@@ -542,7 +542,7 @@ FreetypeRenderer::TextMetrics::TextMetrics(
   ok = true;
 }
 
-std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::Params& params) const
+std::vector<std::shared_ptr<const Geometry>> FreetypeRenderer::render(const FreetypeRenderer::Params& params) const
 {
   ShapeResults sr(params);
 

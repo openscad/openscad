@@ -15,7 +15,7 @@ static void setupCamera(Camera& cam, const BoundingBox& bbox)
   if (cam.viewall) cam.viewAll(bbox);
 }
 
-bool export_png(const shared_ptr<const Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output)
+bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output)
 {
   PRINTD("export_png geom");
   std::unique_ptr<OffscreenView> glview;
@@ -103,7 +103,7 @@ bool export_png(const OffscreenView& glview, std::ostream& output)
 
 #else // NULLGL
 
-bool export_png(const shared_ptr<const Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output) { return false; }
+bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output) { return false; }
 std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera) { return nullptr; }
 bool export_png(const OffscreenView& glview, std::ostream& output) { return false; }
 

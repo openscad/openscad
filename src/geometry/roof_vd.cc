@@ -330,7 +330,7 @@ Faces_2_plus_1 vd_inner_faces(const voronoi_diagram& vd,
   return ret;
 }
 
-PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
+std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
 {
   PolySetBuilder hatbuilder = PolySetBuilder();
 
@@ -367,7 +367,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
       Outline2d outline;
       outline.vertices = face;
       face_poly.addOutline(outline);
-      PolySet *tess = face_poly.tessellate();
+      auto tess = face_poly.tessellate();
       for (const IndexedFace& triangle : tess->indices) {
         std::vector<int> roof;
         for (int tvind : triangle) {
@@ -381,7 +381,6 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
         }
         hatbuilder.appendPoly(roof);
       }
-      delete tess;
     }
 
     // floor
@@ -396,7 +395,7 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
         }
         poly_floor.addOutline(o);
       }
-      PolySet *tess = poly_floor.tessellate();
+      auto tess = poly_floor.tessellate();
       for (const IndexedFace & triangle : tess->indices) {
         std::vector<int> floor;
         for (const int  tv : triangle) {
@@ -406,7 +405,6 @@ PolySet *voronoi_diagram_roof(const Polygon2d& poly, double fa, double fs)
         std::reverse(floor.begin(), floor.end());
         hatbuilder.appendPoly(floor);
       }
-      delete tess;
     }
   } catch (RoofNode::roof_exception& e) {
     throw;

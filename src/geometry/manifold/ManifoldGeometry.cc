@@ -4,10 +4,7 @@
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 #include "PolySetUtils.h"
-#include "cgalutils.h"
 #include "manifoldutils.h"
-#include "PolySet.h"
-#include "PolySetUtils.h"
 #ifdef ENABLE_CGAL
 #include "cgal.h"
 #include "cgalutils.h"
@@ -22,14 +19,19 @@ Result vector_convert(V const& v) {
 
 }
 
-ManifoldGeometry::ManifoldGeometry() : manifold_(make_shared<manifold::Manifold>()) {}
+ManifoldGeometry::ManifoldGeometry() : manifold_(std::make_shared<manifold::Manifold>()) {}
 
-ManifoldGeometry::ManifoldGeometry(const shared_ptr<manifold::Manifold>& mani) : manifold_(mani) {
+ManifoldGeometry::ManifoldGeometry(const std::shared_ptr<manifold::Manifold>& mani) : manifold_(mani) {
   assert(manifold_);
   if (!manifold_) clear();
 }
 
 ManifoldGeometry::ManifoldGeometry(const ManifoldGeometry& other) : manifold_(other.manifold_) {}
+
+std::unique_ptr<Geometry> ManifoldGeometry::copy() const
+{
+  return std::make_unique<ManifoldGeometry>(*this);
+}
 
 ManifoldGeometry& ManifoldGeometry::operator=(const ManifoldGeometry& other) {
   manifold_ = other.manifold_;
@@ -62,7 +64,7 @@ bool ManifoldGeometry::isValid() const {
 }
 
 void ManifoldGeometry::clear() {
-  manifold_ = make_shared<manifold::Manifold>();
+  manifold_ = std::make_shared<manifold::Manifold>();
 }
 
 size_t ManifoldGeometry::memsize() const {
@@ -94,21 +96,21 @@ std::string ManifoldGeometry::dump() const {
 
 std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   manifold::MeshGL mesh = getManifold().GetMeshGL();
-  PolySet ps(3);
-  ps.vertices.reserve(mesh.NumVert());
-  ps.indices.reserve(mesh.NumTri());
+  auto ps = std::make_shared<PolySet>(3);
+  ps->vertices.reserve(mesh.NumVert());
+  ps->indices.reserve(mesh.NumTri());
   // first 3 channels are xyz coordinate
   for (int i = 0; i < mesh.vertProperties.size(); i += mesh.numProp)
-    ps.vertices.push_back({
+    ps->vertices.push_back({
         mesh.vertProperties[i],
         mesh.vertProperties[i+1],
         mesh.vertProperties[i+2]});
   for (int i = 0; i < mesh.triVerts.size(); i += 3)
-    ps.indices.push_back({
+    ps->indices.push_back({
         static_cast<int>(mesh.triVerts[i]),
         static_cast<int>(mesh.triVerts[i+1]),
         static_cast<int>(mesh.triVerts[i+2])});
-  return std::make_shared<const PolySet>(std::move(ps));
+  return ps;
 }
 
 #ifdef ENABLE_CGAL
@@ -143,9 +145,9 @@ public:
 };
 
 template <class Polyhedron>
-shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
+std::shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
 {
-  auto p = make_shared<Polyhedron>();
+  auto p = std::make_shared<Polyhedron>();
   try {
     manifold::Mesh mesh = getManifold().GetMesh();
     CGALPolyhedronBuilderFromManifold<Polyhedron> builder(mesh);
@@ -156,11 +158,11 @@ shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
   return p;
 }
 
-template shared_ptr<CGAL::Polyhedron_3<CGAL_Kernel3>> ManifoldGeometry::toPolyhedron() const;
+template std::shared_ptr<CGAL::Polyhedron_3<CGAL_Kernel3>> ManifoldGeometry::toPolyhedron() const;
 #endif
 
-shared_ptr<manifold::Manifold> binOp(ManifoldGeometry& lhs, ManifoldGeometry& rhs, manifold::OpType opType) {
-  return make_shared<manifold::Manifold>(lhs.getManifold().Boolean(rhs.getManifold(), opType));
+std::shared_ptr<manifold::Manifold> binOp(ManifoldGeometry& lhs, ManifoldGeometry& rhs, manifold::OpType opType) {
+  return std::make_shared<manifold::Manifold>(lhs.getManifold().Boolean(rhs.getManifold(), opType));
 }
 
 void ManifoldGeometry::operator+=(ManifoldGeometry& other) {
@@ -178,8 +180,8 @@ void ManifoldGeometry::operator-=(ManifoldGeometry& other) {
 void ManifoldGeometry::minkowski(ManifoldGeometry& other) {
 // FIXME: How to deal with operation not supported?
 #ifdef ENABLE_CGAL
-  auto lhs = shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*this->toPolySet()));
-  auto rhs = shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*other.toPolySet()));
+  auto lhs = std::shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*this->toPolySet()));
+  auto rhs = std::shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*other.toPolySet()));
   if (lhs->isEmpty() || rhs->isEmpty()) {
     clear();
     return;
@@ -202,7 +204,7 @@ void ManifoldGeometry::transform(const Transform3d& mat) {
     mat(0, 2), mat(1, 2), mat(2, 2),
     mat(0, 3), mat(1, 3), mat(2, 3)
   );                            
-  manifold_ = make_shared<manifold::Manifold>(getManifold().Transform(glMat));
+  manifold_ = std::make_shared<manifold::Manifold>(getManifold().Transform(glMat));
 }
 
 BoundingBox ManifoldGeometry::getBoundingBox() const

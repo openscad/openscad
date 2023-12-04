@@ -290,7 +290,8 @@ PyObject *python_callfunction(const std::shared_ptr<const Context> &cxt , const 
 	for(int i=0;i<op_args.size();i++)
 	{
 		Assignment *op_arg=op_args[i].get();
-		shared_ptr<Expression> expr=op_arg->getExpr();
+		
+		std::shared_ptr<Expression> expr=op_arg->getExpr();
 		Value val = expr.get()->evaluate(cxt);
 		switch(val.type())
 		{
