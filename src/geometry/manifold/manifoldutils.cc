@@ -10,7 +10,6 @@
 #include <CGAL/Surface_mesh.h>
 #endif
 #include "PolySetUtils.h"
-#include "IndexedMesh.h"
 #include "PolySet.h"
 
 using Error = manifold::Manifold::Error;
@@ -36,11 +35,14 @@ const char* statusToString(Error status) {
 
 std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) {
   manifold::Mesh mesh;
-  auto triangulated = PolySetUtils::tessellate_faces(ps);
+  std::unique_ptr<PolySet> buffer;
+  if (!ps.isTriangular)
+    buffer = PolySetUtils::tessellate_faces(ps);
+  const PolySet& triangulated = ps.isTriangular ? ps : *buffer;
 
-  auto numfaces = triangulated->indices.size();
-  const auto &vertices = triangulated->vertices;
-  const auto &indices = triangulated->indices;
+  auto numfaces = triangulated.indices.size();
+  const auto &vertices = triangulated.vertices;
+  const auto &indices = triangulated.indices;
 
   mesh.vertPos.resize(vertices.size());
   mesh.triVerts.resize(numfaces);
