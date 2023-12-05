@@ -386,6 +386,14 @@ message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
+find_package(Python COMPONENTS Interpreter Development)
+if(NOT Python_FOUND)
+  if(ENABLE_PYTHON)
+  message(WARNING "Python not found, disabling python support.")
+  set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
+  endif()
+endif()
+
 if(ENABLE_PYTHON)
   add_library(OpenSCADPy
     src/python/pyopenscad.cc
