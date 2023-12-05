@@ -1106,9 +1106,10 @@ set_source_files_properties(
   src/glview/Camera.cc
   src/glview/ColorMap.cc
   src/glview/preview/CSGTreeNormalizer.cc
-  src/gui/input/SpaceNavInputDriver.cc
   src/gui/QGLView.cc
   src/gui/QGLView2.cc
+  # spnv.h references Xlib.h
+  src/gui/input/SpaceNavInputDriver.cc
   # _USE_MATH_DEFINES should be defined before the first include of cmath,
   # unity build will violate this so we just exclude them
   src/core/BuiltinContext.cc
