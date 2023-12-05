@@ -389,19 +389,19 @@ equality
 
 comparison
         : binaryor
-        | comparison '>' addition
+        | comparison '>' binaryor
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Greater, $3, LOCD("greater", @$));
             }
-        | comparison GE addition
+        | comparison GE binaryor
             {
               $$ = new BinaryOp($1, BinaryOp::Op::GreaterEqual, $3, LOCD("greaterequal", @$));
             }
-        | comparison '<' addition
+        | comparison '<' binaryor
             {
               $$ = new BinaryOp($1, BinaryOp::Op::Less, $3, LOCD("less", @$));
             }
-        | comparison LE addition
+        | comparison LE binaryor
             {
               $$ = new BinaryOp($1, BinaryOp::Op::LessEqual, $3, LOCD("lessequal", @$));
             }
