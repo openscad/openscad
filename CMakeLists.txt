@@ -387,10 +387,11 @@ target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
 find_package(Python COMPONENTS Interpreter Development)
-if(NOT Python_FOUND)
+find_package(Nettle)
+if(NOT Python_FOUND or NOT Nettle_FOUND)
   if(ENABLE_PYTHON)
-  message(WARNING "Python not found, disabling python support.")
-  set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
+    message(WARNING "Python/Nettle not found, disabling python support.")
+    set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
   endif()
 endif()
 
@@ -398,8 +399,6 @@ if(ENABLE_PYTHON)
   add_library(OpenSCADPy
     src/python/pyopenscad.cc
     src/python/pyfunctions.cc)
-  find_package(Python REQUIRED COMPONENTS Interpreter Development)
-  find_package(Nettle REQUIRED)
   message(STATUS "Python enabled, using Nettle ")
   message(STATUS ${Nettle_INCLUDE_DIRS})
   message(STATUS ${Nettle_LIBRARIES})
@@ -416,6 +415,7 @@ if(ENABLE_PYTHON)
   target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})
   target_link_libraries(OpenSCADPy PRIVATE Eigen3::Eigen)
   target_link_libraries(OpenSCADPy PRIVATE ${GETTEXT_LIBRARY})
+  target_link_libraries(OpenSCADPy PRIVATE unofficial::glib::gio unofficial::glib::glib unofficial::glib::gmodule unofficial::glib::gobject)
   # copy compile options for the main OpenSCAD target
   # duplication is not very ideal but not sure what better options do we have
   set_property(TARGET OpenSCADPy PROPERTY CXX_STANDARD 17)
