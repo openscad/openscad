@@ -388,7 +388,7 @@ target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
 find_package(Python COMPONENTS Interpreter Development)
 find_package(Nettle)
-if(NOT Python_FOUND or NOT Nettle_FOUND)
+if(NOT Python_FOUND OR NOT Nettle_FOUND)
   if(ENABLE_PYTHON)
     message(WARNING "Python/Nettle not found, disabling python support.")
     set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
