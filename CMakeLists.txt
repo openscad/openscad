@@ -132,6 +132,7 @@ endif()
 
 if(WASM)
   set(NULLGL ON CACHE BOOL "" FORCE)
+  set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
 endif()
@@ -406,6 +407,7 @@ if(ENABLE_PYTHON)
   target_link_libraries(OpenSCADPy PRIVATE ${Python_LIBRARIES})
   target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})
   target_link_libraries(OpenSCADPy PRIVATE Eigen3::Eigen)
+  target_link_libraries(OpenSCADPy PRIVATE ${GETTEXT_LIBRARY})
   # copy compile options for the main OpenSCAD target
   # duplication is not very ideal but not sure what better options do we have
   set_property(TARGET OpenSCADPy PROPERTY CXX_STANDARD 17)

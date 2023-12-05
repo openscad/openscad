@@ -12,7 +12,7 @@ find_path(Nettle_INCLUDE_DIRS NAMES nettle/sha2.h
 	HINTS ${PC_NETTLE_INCLUDE_DIRS} ${PC_NETTLE_INCLUDEDIR}
 )
 
-find_library(Nettle_LIBRARIES NAMES nettle
+find_library(Nettle_LIBRARIES NAMES nettle libnettle
 	HINTS ${PC_NETTLE_LIBRARY_DIRS} ${PC_NETTLE_LIBDIR}
 )
 
