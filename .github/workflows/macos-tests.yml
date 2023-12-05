@@ -26,12 +26,13 @@ jobs:
       env:
         HOMEBREW_NO_AUTO_UPDATE: 1
       run: |
+        export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
         ./scripts/macosx-build-homebrew.sh
     - name: Build OpenSCAD
       run: |
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=ON -DEXPERIMENTAL=ON -DSNAPSHOT=ON
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
         make -j$NUMCPU
     - name: Run Test Suite
