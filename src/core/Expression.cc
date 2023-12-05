@@ -78,6 +78,7 @@ const char *UnaryOp::opString() const
   switch (this->op) {
   case Op::Not:    return "!";
   case Op::Negate: return "-";
+  case Op::BinaryNot: return "~";
   default:
     assert(false && "Non-existent unary operator!");
     throw EvaluationException("Non-existent unary operator!");
@@ -160,6 +161,10 @@ const char *BinaryOp::opString() const
   case Op::GreaterEqual: return ">=";
   case Op::Equal:        return "==";
   case Op::NotEqual:     return "!=";
+  case Op::BinaryOr:     return "|";
+  case Op::BinaryAnd:     return "&";
+  case Op::ShiftLeft:     return "<<";
+  case Op::ShiftRight:     return ">>";
   default:
     assert(false && "Non-existent binary operator!");
     throw EvaluationException("Non-existent binary operator!");
