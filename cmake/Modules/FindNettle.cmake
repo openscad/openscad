@@ -16,9 +16,5 @@ find_library(Nettle_LIBRARIES NAMES nettle libnettle
 	HINTS ${PC_NETTLE_LIBRARY_DIRS} ${PC_NETTLE_LIBDIR}
 )
 
-set(Nettle_VERSION ${PC_NETTLE_VERSION})
-set(Nettle_LIBRARIES ${PC_NETTLE_LIBRARIES})
-set(Nettle_INCLUDE_DIRS ${PC_NETTLE_INCLUDE_DIRS})
-
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Nettle DEFAULT_MSG Nettle_INCLUDE_DIRS Nettle_LIBRARIES)
