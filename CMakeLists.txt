@@ -415,7 +415,7 @@ if(ENABLE_PYTHON)
   target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})
   target_link_libraries(OpenSCADPy PRIVATE Eigen3::Eigen)
   target_link_libraries(OpenSCADPy PRIVATE ${GETTEXT_LIBRARY})
-  target_link_libraries(OpenSCADPy PRIVATE unofficial::glib::gio unofficial::glib::glib unofficial::glib::gmodule unofficial::glib::gobject)
+  target_link_libraries(OpenSCADPy PRIVATE ${GLIB2_LIBRARIES})
   # copy compile options for the main OpenSCAD target
   # duplication is not very ideal but not sure what better options do we have
   set_property(TARGET OpenSCADPy PROPERTY CXX_STANDARD 17)
