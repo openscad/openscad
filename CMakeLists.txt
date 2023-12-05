@@ -694,6 +694,7 @@ set(CORE_SOURCES
   src/core/progress.cc
   src/core/ProjectionNode.cc
   src/core/RenderNode.cc
+  src/core/RenderVariables.cc
   src/core/DrawingCallback.cc
   src/core/RotateExtrudeNode.cc
   src/core/SurfaceNode.cc

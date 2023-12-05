@@ -26,6 +26,7 @@
 
 #include "openscad.h"
 #include "CommentParser.h"
+#include "RenderVariables.h"
 #include "core/node.h"
 #include "SourceFile.h"
 #include "BuiltinContext.h"
@@ -333,12 +334,6 @@ struct CommandLine
   const std::string summaryFile;
 };
 
-struct RenderVariables
-{
-  bool preview;
-  double time;
-};
-
 int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file);
 
 int cmdline(const CommandLine& cmd)
@@ -439,8 +434,13 @@ int cmdline(const CommandLine& cmd)
 
   root_file->handleDependencies();
 
-  RenderVariables render_variables;
-  render_variables.preview = canPreview(export_format) ? (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER) : false;
+  RenderVariables render_variables = {
+    .preview = canPreview(export_format)
+      ? (cmd.viewOptions.renderer == RenderType::OPENCSG
+        || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)
+      : false,
+    .camera = cmd.camera,
+  };
 
   if (cmd.animate_frames == 0) {
     render_variables.time = 0;
@@ -486,8 +486,8 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
   EvaluationSession session{fparent.string()};
   ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
-  builtin_context->set_variable("$preview", Value(render_variables.preview));
-  builtin_context->set_variable("$t", Value(render_variables.time));
+  render_variables.applyToContext(builtin_context);
+
 #ifdef DEBUG
   PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
 #endif
@@ -495,11 +495,17 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   AbstractNode::resetIndexCounter();
   std::shared_ptr<const FileContext> file_context;
   std::shared_ptr<AbstractNode> absolute_root_node;
+
 #ifdef ENABLE_PYTHON    
-    if(python_result_node != NULL && python_active) absolute_root_node = python_result_node;
-    else
+  if(python_result_node != NULL && python_active) {
+    absolute_root_node = python_result_node;
+  } else {
 #endif	    
   absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
+#ifdef ENABLE_PYTHON
+  }
+#endif
+
   Camera camera = cmd.camera;
   if (file_context) {
     camera.updateView(file_context, true);
