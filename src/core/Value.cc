@@ -1086,7 +1086,15 @@ Value Value::operator%(const Value& v) const
 Value Value::operator<<(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
-    return (double)((uint32_t)std::get<double>(this->value) << (uint32_t)std::get<double>(v.value));
+    uint32_t lhs = std::get<double>(this->value);
+    int rhs = std::get<double>(v.value);
+    if (rhs < 0) {
+      return Value::undef(STR("negative shift"));
+    }
+    if (rhs >= 32) {
+      return Value::undef(STR("shift too large"));
+    }
+    return (double)(lhs << rhs);
   }
   return Value::undef(STR("undefined operation (", this->typeName(), " << ", v.typeName(), ")"));
 }
@@ -1094,7 +1102,15 @@ Value Value::operator<<(const Value& v) const
 Value Value::operator>>(const Value& v) const
 {
   if (this->type() == Type::NUMBER && v.type() == Type::NUMBER) {
-    return (double)((uint32_t)std::get<double>(this->value) >> (uint32_t)std::get<double>(v.value));
+    uint32_t lhs = std::get<double>(this->value);
+    int rhs = std::get<double>(v.value);
+    if (rhs < 0) {
+      return Value::undef(STR("negative shift"));
+    }
+    if (rhs >= 32) {
+      return Value::undef(STR("shift too large"));
+    }
+    return (double)(lhs >> rhs);
   }
   return Value::undef(STR("undefined operation (", this->typeName(), " >> ", v.typeName(), ")"));
 }
