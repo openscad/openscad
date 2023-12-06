@@ -41,6 +41,7 @@ int python_numberval(PyObject *number, double *result);
 void get_fnas(double& fn, double& fa, double& fs);
 
 PyObject *python_oo_args(PyObject *self, PyObject *args);
+PyObject *python_str(PyObject *self);
 
 extern PyNumberMethods PyOpenSCADNumbers;
 extern PyMappingMethods PyOpenSCADMapping;

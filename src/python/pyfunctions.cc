@@ -1879,6 +1879,17 @@ PyObject *python_import(PyObject *self, PyObject *args, PyObject *kwargs) {
   return do_import_python(self, args, kwargs, ImportType::STL);
 }
 
+PyObject *python_str(PyObject *self) {
+	char str[40];
+	auto node=PyOpenSCADObjectToNode(self);
+	if(str != nullptr)
+		sprintf(str,"OpenSCAD (%d)",node->index());
+	else
+		sprintf(str,"Invalid OpenSCAD Object");
+
+	return PyUnicode_FromStringAndSize(str,strlen(str)+1);
+}
+
 
 PyMethodDef PyOpenSCADFunctions[] = {
   {"square", (PyCFunction) python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
