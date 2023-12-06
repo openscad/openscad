@@ -424,7 +424,7 @@ void initPython(double time)
     PyConfig config;
     PyConfig_InitPythonConfig(&config);
     char libdir[256];
-    snprintf(libdir, 256, "%s/../libraries/python/",PlatformUtils::applicationPath().c_str()); /* add libraries/python to python search path */
+    snprintf(libdir, 256, "%s/../libraries/python/:.",PlatformUtils::applicationPath().c_str()); /* add libraries/python to python search path */
     PyConfig_SetBytesString(&config, &config.pythonpath_env, libdir);
     Py_InitializeFromConfig(&config);
     PyConfig_Clear(&config);
