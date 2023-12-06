@@ -397,9 +397,8 @@ int cmdline(const CommandLine& cmd)
 
   if(python_active) {
     auto fulltext_py = text;
-    AssignmentList dummy_assignments;
     initPython(0.0 );
-    auto error  = evaluatePython(fulltext_py,  dummy_assignments);
+    auto error  = evaluatePython(fulltext_py);
     if(error.size() > 0) LOG(error.c_str());
     text ="\n";
     finishPython();

@@ -39,6 +39,7 @@
 #include "CgalAdvNode.h"
 #include "CsgOpNode.h"
 #include "ColorNode.h"
+#include "Expression.h"
 #include "RoofNode.h"
 #include "RenderNode.h"
 #include "SurfaceNode.h"
@@ -963,7 +964,6 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   if (!isnan(fn)) node->fn = fn;
   if (!isnan(fa)) node->fa = fa;
   if (!isnan(fs)) node->fs = fs;
-  printf("t %f\n",fn);
 
   if (layer != NULL) node->layername = layer;
   node->convexity = convexity;
@@ -1891,6 +1891,67 @@ PyObject *python_str(PyObject *self) {
 }
 
 
+
+PyObject *python_add_parameter(PyObject *self, PyObject *args, PyObject *kwargs, ImportType type)
+{
+  char *kwlist[] = {"name", "default", NULL};
+  char *name = NULL;
+  PyObject *value = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "sO", kwlist,
+                                   &name,
+                                   &value
+                                   )) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing add_parameter(name,defval)");
+    return NULL;
+  }
+  bool found = false;
+  std::shared_ptr<Literal> lit;
+  if(value == Py_True) {
+    lit = std::make_shared<Literal>(true,Location::NONE);
+    found=true;
+  } else if(value == Py_False) {
+    lit = std::make_shared<Literal>(false,Location::NONE);
+    found=true;
+  } else if(PyFloat_Check(value)) {
+    lit  = std::make_shared<Literal>(PyFloat_AsDouble(value),Location::NONE);
+    found=true;
+  }
+  else if(PyLong_Check(value)){
+    lit = std::make_shared<Literal>(PyLong_AsLong(value)*1.0,Location::NONE);
+    found=true;
+  }
+  else if(PyUnicode_Check(value)){
+    PyObject* value1 = PyUnicode_AsEncodedString(value, "utf-8", "~");
+    const char *value_str =  PyBytes_AS_STRING(value1);
+    lit = std::make_shared<Literal>(value_str,Location::NONE);
+    found=true;
+  }
+
+  if(found){
+    AnnotationList annotationList;
+    annotationList.push_back(Annotation("Parameter",std::make_shared<Literal>("Parameter")));
+    annotationList.push_back(Annotation("Description",std::make_shared<Literal>("Description")));
+    annotationList.push_back(Annotation("Group",std::make_shared<Literal>("Group")));
+    auto assignment = std::make_shared<Assignment>(name,lit);
+    assignment->addAnnotations(&annotationList);
+    customizer_parameters.push_back(assignment);
+    PyObject *value_effective = value;
+    for(int i=0;i<customizer_parameters_finished.size();i++) {
+      if(customizer_parameters_finished[i]->getName() == name)
+      {
+        auto expr = customizer_parameters_finished[i]->getExpr();
+        const auto &lit=std::dynamic_pointer_cast<Literal>(expr);
+        if(lit->isDouble()) value_effective=PyFloat_FromDouble(lit->toDouble());
+        if(lit->isString()) value_effective=PyUnicode_FromString(lit->toString().c_str());
+      }
+    }
+    PyObject *maindict = PyModule_GetDict(pythonMainModule);
+    PyDict_SetItemString(maindict, name,value_effective);
+
+  }
+  return Py_None;
+}
+
 PyMethodDef PyOpenSCADFunctions[] = {
   {"square", (PyCFunction) python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
   {"circle", (PyCFunction) python_circle, METH_VARARGS | METH_KEYWORDS, "Create Circle."},
@@ -1932,6 +1993,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"output", (PyCFunction) python_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
   {"version", (PyCFunction) python_version, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
   {"version_num", (PyCFunction) python_version_num, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
+  {"add_parameter", (PyCFunction) python_add_parameter, METH_VARARGS | METH_KEYWORDS, "Add Parameter for Customizer."},
   {NULL, NULL, 0, NULL}
 };
 

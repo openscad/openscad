@@ -4,13 +4,14 @@
 
 extern bool python_active;
 extern bool python_trusted;
+extern AssignmentList customizer_parameters;
+extern AssignmentList customizer_parameters_finished;
 
 void initPython(double time);
 
 void finishPython();
 
-std::string evaluatePython(const std::string &code,
-                           AssignmentList &assignments);
+std::string evaluatePython(const std::string &code);
 
 std::shared_ptr<AbstractNode>
 python_modulefunc(const ModuleInstantiation *module,

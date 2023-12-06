@@ -38,6 +38,8 @@ static PyObject *PyInit_openscad(void);
 PyObject *pythonInitDict = nullptr;
 PyObject *pythonMainModule = nullptr ;
 std::list<std::string> pythonInventory;
+AssignmentList customizer_parameters;
+AssignmentList customizer_parameters_finished;
 std::shared_ptr<AbstractNode> python_result_node = nullptr; /* global result veriable containing the python created result */
 bool python_active;  /* if python is actually used during evaluation */
 bool python_trusted; /* global Python trust flag */
@@ -415,7 +417,7 @@ void initPython(double time)
       if(key_str == NULL) continue;
       if (std::find(std::begin(pythonInventory), std::end(pythonInventory), key_str) == std::end(pythonInventory))
       {
-        PyDict_DelItemString(maindict, key_str); // TODO does not completely work!
+        PyDict_DelItemString(maindict, key_str);
       }
     }
   } else {
@@ -448,13 +450,15 @@ void initPython(double time)
       pythonInventory.push_back(key_str);
     }
   }
+  customizer_parameters_finished = customizer_parameters;
+  customizer_parameters.clear();
 }
 
 void finishPython()
 {
 }
 
-std::string evaluatePython(const std::string & code, AssignmentList &assignments)
+std::string evaluatePython(const std::string & code)
 {
   std::string error;
   python_result_node = nullptr;
@@ -491,49 +495,6 @@ sys.stderr = stderr_bak\n\
     PyObject *pFunc;
 
     PyObject *maindict = PyModule_GetDict(pythonMainModule);
-    assignments.clear();
-    while (PyDict_Next(maindict, &pos, &key, &value)) {
-      PyObject* key1 = PyUnicode_AsEncodedString(key, "utf-8", "~");
-      const char *key_str =  PyBytes_AS_STRING(key1);
-      if(key_str == nullptr) continue;
-      if(strcmp(key_str,"fn") == 0) continue;
-      if(strcmp(key_str,"fa") == 0) continue;
-      if(strcmp(key_str,"fs") == 0) continue;
-      if(strcmp(key_str,"t") == 0) continue;
-      if(strcmp(key_str,"__name__") == 0) continue;
-      // annotation "Parameter" missing
-      std::shared_ptr<Literal> lit;
-      bool found=false;
-      if(value == Py_True) {
-        lit = std::make_shared<Literal>(true,Location::NONE);
-        found=true;
-      } else if(value == Py_False) {
-        lit = std::make_shared<Literal>(false,Location::NONE);
-        found=true;
-      } else if(PyFloat_Check(value)) {
-        lit  = std::make_shared<Literal>(PyFloat_AsDouble(value),Location::NONE);
-        found=true;
-      }
-      else if(PyLong_Check(value)){
-        lit = std::make_shared<Literal>(PyLong_AsLong(value)*1.0,Location::NONE);
-        found=true;
-      }
-      else if(PyUnicode_Check(value)){
-        PyObject* value1 = PyUnicode_AsEncodedString(value, "utf-8", "~");
-        const char *value_str =  PyBytes_AS_STRING(value1);
-        lit = std::make_shared<Literal>(value_str,Location::NONE);
-        found=true;
-      }
-      if(found == true) {
-        AnnotationList annotationList;
-        annotationList.push_back(Annotation("Parameter",std::make_shared<Literal>("Parameter")));
-        annotationList.push_back(Annotation("Description",std::make_shared<Literal>("Description")));
-        annotationList.push_back(Annotation("Group",std::make_shared<Literal>("Group")));
-        auto assignment = std::make_shared<Assignment>(key_str,lit);
-        assignment->addAnnotations(&annotationList);
-        assignments.push_back(assignment);
-      }
-    }
 
     if(result  == nullptr) PyErr_Print();
     PyRun_SimpleString(python_exit_code);
