@@ -102,9 +102,6 @@
 #include "python/public.h"
 #include "nettle/sha2.h"
 #include "nettle/base64.h"
-//extern std::shared_ptr<AbstractNode> python_result_node;
-//std::string evaluatePython(const std::string &code, double time);
-//extern bool python_trusted;
 
 std::string SHA256HashString(std::string aString){
     uint8_t  digest[SHA256_DIGEST_SIZE];
@@ -1933,11 +1930,11 @@ void MainWindow::parseTopLevelDocument()
     this->activeEditor->resetHighlighting();
     if (this->root_file != nullptr) {
       //add parameters as annotation in AST
-      if(this->assignments_save.size() == 0) {
-        auto error = evaluatePython(fulltext_py,this->assignments_save); // add assignments
+      if(this->root_file->scope.assignments.size() == 0) {
+        auto error = evaluatePython(fulltext_py,this->root_file->scope.assignments); // add assignments
         if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
       }
-      this->root_file->scope.assignments = this->assignments_save;
+      CommentParser::collectParameters(fulltext_py, this->root_file);  // add annotations
       this->activeEditor->parameterWidget->setParameters(this->root_file, "\n"); // set widgets values
       this->activeEditor->parameterWidget->applyParameters(this->root_file); // use widget values
       this->activeEditor->parameterWidget->setEnabled(true);
@@ -1996,7 +1993,7 @@ void MainWindow::parseTopLevelDocument()
       fulltext_py_eval.append("\r\n");
 
     }
-    auto error = evaluatePython(fulltext_py_eval,this->assignments_save); // add assignments
+    auto error = evaluatePython(fulltext_py_eval,this->root_file->scope.assignments); // add assignments
     if (error.size() > 0) LOG(message_group::Error, Location::NONE, "", error.c_str());
     finishPython();
 
