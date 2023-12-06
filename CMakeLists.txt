@@ -199,6 +199,9 @@ macro(find_graphics)
   if(NULLGL)
     target_compile_definitions(OpenSCAD PRIVATE NULLGL)
   else()
+
+    set(OPENSCAD_UNITY_BUILD ${CMAKE_UNITY_BUILD})
+    set(CMAKE_UNITY_BUILD OFF)
     if(NOT USE_BUILTIN_OPENCSG)
       find_package(OpenCSG REQUIRED QUIET)
       target_link_libraries(OpenSCAD PRIVATE ${OPENCSG_LIBRARY})
@@ -215,6 +218,7 @@ macro(find_graphics)
       target_link_libraries(OpenSCAD PRIVATE OpenCSG)
       message(STATUS "OpenCSG submodule: ${OPENCSG_VERSION_STRING}")
     endif(NOT USE_BUILTIN_OPENCSG)
+    set(CMAKE_UNITY_BUILD ${OPENSCAD_UNITY_BUILD})
 
     target_compile_definitions(OpenSCAD PRIVATE ENABLE_OPENCSG)
 
@@ -752,6 +756,7 @@ set(CORE_SOURCES
   src/core/progress.cc
   src/core/ProjectionNode.cc
   src/core/RenderNode.cc
+  src/core/RenderVariables.cc
   src/core/DrawingCallback.cc
   src/core/RotateExtrudeNode.cc
   src/core/SurfaceNode.cc
@@ -921,8 +926,15 @@ if(EXPERIMENTAL)
 
   set(PYBIND11_FINDPYTHON OFF)
   set(MANIFOLD_PYBIND OFF)
+  set(MANIFOLD_TEST OFF)
 
-  add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
+  if(CMAKE_UNITY_BUILD)
+    set(CMAKE_UNITY_BUILD OFF)
+    add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
+    set(CMAKE_UNITY_BUILD ON)
+  else()
+    add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
+  endif()
   target_link_libraries(OpenSCAD PRIVATE manifold)
   add_sanitizers(manifold)
 
@@ -1134,6 +1146,38 @@ if (ENABLE_CGAL)
   list(APPEND Sources ${CGAL_SOURCES})
 endif()
 list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${OFFSCREEN_SOURCES})
+
+set_source_files_properties(
+  # flex and bison tends to generate many macros, which does not work well with
+  # unity build
+  ${FLEX_openscad_lexer_OUTPUTS}
+  ${BISON_openscad_parser_OUTPUTS}
+  ${FLEX_comment_lexer_OUTPUTS}
+  ${BISON_comment_parser_OUTPUTS}
+  # manifold uses a lot of anonymous namespaces.
+  # unity build will cause naming conflict for functions inside those namespaces.
+  ${MANIFOLD_SOURCES}
+  # files using opengl does not work well with unity build, again due to the
+  # macros
+  ${OFFSCREEN_SOURCES}
+  ${PLATFORM_SOURCES}
+  src/glview/OffscreenContextFactory.cc
+  src/glview/RenderSettings.cc
+  src/glview/Camera.cc
+  src/glview/ColorMap.cc
+  src/glview/preview/CSGTreeNormalizer.cc
+  src/gui/QGLView.cc
+  src/gui/QGLView2.cc
+  # spnv.h references Xlib.h
+  src/gui/input/SpaceNavInputDriver.cc
+  # _USE_MATH_DEFINES should be defined before the first include of cmath,
+  # unity build will violate this so we just exclude them
+  src/core/BuiltinContext.cc
+  src/geometry/roof_vd.cc
+  src/io/DxfData.cc
+  src/utils/calc.cc
+  src/utils/degree_trig.cc
+  PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 
 set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 if(HEADLESS)

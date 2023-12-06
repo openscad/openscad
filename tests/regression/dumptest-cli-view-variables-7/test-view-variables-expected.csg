@@ -1,0 +1,8 @@
+multmatrix([[1, 0, 0, 10], [0, 1, 0, 20], [0, 0, 1, 30], [0, 0, 0, 1]]) {
+	multmatrix([[0.321394, -0.417212, 0.850082, 0], [0.55667, 0.809456, 0.186811, 0], [-0.766044, 0.413176, 0.492404, 0], [0, 0, 0, 1]]) {
+		multmatrix([[0.35, 0, 0, 0], [0, 0.35, 0, 0], [0, 0, 0.35, 0], [0, 0, 0, 1]]) {
+			text(text = "Hello, world!", size = 10, spacing = 1, font = "", direction = "ltr", language = "en", script = "Latn", halign = "center", valign = "default", $fn = 0, $fa = 12, $fs = 2);
+		}
+	}
+}
+
