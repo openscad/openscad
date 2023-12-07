@@ -1195,11 +1195,20 @@ PyObject *python_nb_sub_vec3(PyObject *arg1, PyObject *arg2, int mode) // 0: tra
   return NULL;
 }
 
-PyObject *python_nb_add(PyObject *arg1, PyObject *arg2) { return python_nb_sub_vec3(arg1, arg2, 0); } 
-PyObject *python_nb_mul(PyObject *arg1, PyObject *arg2) { return python_nb_sub_vec3(arg1, arg2, 1); }
+PyObject *python_nb_add(PyObject *arg1, PyObject *arg2) { return python_nb_sub_vec3(arg1, arg2, 0); }  // translate
+PyObject *python_nb_mul(PyObject *arg1, PyObject *arg2) { return python_nb_sub_vec3(arg1, arg2, 1); } // scale
 PyObject *python_nb_or(PyObject *arg1, PyObject *arg2) { return python_nb_sub(arg1, arg2,  OpenSCADOperator::UNION); }
 PyObject *python_nb_andnot(PyObject *arg1, PyObject *arg2) { return python_nb_sub(arg1, arg2,  OpenSCADOperator::DIFFERENCE); }
 PyObject *python_nb_and(PyObject *arg1, PyObject *arg2) { return python_nb_sub(arg1, arg2,  OpenSCADOperator::INTERSECTION); }
+
+PyObject *python_nb_invert(PyObject *arg) { // is used to highlight
+  DECLARE_INSTANCE
+  auto child = PyOpenSCADObjectToNode(arg);
+  instance->tag_highlight=true;
+  auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
+  node->children.push_back(child);
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+}
 
 PyObject *python_csg_oo_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenSCADOperator mode)
 {
@@ -2029,7 +2038,7 @@ PyNumberMethods PyOpenSCADNumbers =
      0,			//unaryfunc nb_positive
      0,			//unaryfunc nb_absolute
      0,			//inquiry nb_bool
-     0,			//unaryfunc nb_invert
+     python_nb_invert,  //unaryfunc nb_invert
      0,			//binaryfunc nb_lshift
      0,			//binaryfunc nb_rshift
      python_nb_and,	//binaryfunc nb_and 
