@@ -7,6 +7,12 @@
 #include "degree_trig.h"
 #include <cmath>
 #include <cstdio>
+#if __has_include(<tracy/Tracy.hpp>)
+#include <tracy/Tracy.hpp>
+#else
+#define FrameMarkStart(x)
+#define FrameMarkEnd(x)
+#endif
 
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
@@ -166,10 +172,11 @@ void GLView::paintGL()
     // FIXME: This belongs in the OpenCSG renderer, but it doesn't know about this ID yet
     OpenCSG::setContext(this->opencsg_id);
 #endif
+    FrameMarkStart("Renderer Draw");
     this->renderer->prepare(showfaces, showedges);
     this->renderer->draw(showfaces, showedges);
+    FrameMarkEnd("Renderer Draw");
   }
-
   glDisable(GL_LIGHTING);
   if (showaxes) GLView::showSmallaxes(axescolor);
 }
