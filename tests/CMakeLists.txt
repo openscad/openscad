@@ -777,7 +777,7 @@ list(APPEND ALL_2D_FILES
 list(APPEND EXPORT3D_CGALCGAL_TEST_FILES
   ${TEST_SCAD_DIR}/3D/issues/issue13.scad
   ${TEST_SCAD_DIR}/3D/issues/issue13b.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue13c.scad
+  # Note issue13c is still flaky in non-experimental mode, so it's still in bugs/
   ${BUGS_FILES}
   )
 #list(REMOVE_ITEM EXPORT3D_CGALCGAL_TEST_FILES
