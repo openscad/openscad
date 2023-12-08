@@ -23,6 +23,6 @@ By clicking on the left/right buttons next to the drop down button, you can focu
 The `Statistics` window allows user to view the sum of execution time of functions.
 ![tracy-statistics](./doc/tracy-statistics.png)
 
-Clicking on individual function in the time view allows the user to view the source code and time spent on different part of the code.
+Right click on the location column in the statistics window allows the user to view the source code and time spent on different part of the code.
 ![tracy-function](./doc/tracy-function.png)
 
