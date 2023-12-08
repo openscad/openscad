@@ -4,7 +4,7 @@
 #include "Polygon2d.h"
 #include "printutils.h"
 #include "GeometryUtils.h"
-#include "Reindexer.h"
+#include "profiling.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #include "CGALHybridPolyhedron.h"
@@ -19,6 +19,7 @@ namespace PolySetUtils {
 // It is important to select all faces, since filtering by normal vector here
 // will trigger floating point incertainties and cause problems later.
 std::unique_ptr<Polygon2d> project(const PolySet& ps) {
+  ZoneScoped;
   auto poly = std::make_unique<Polygon2d>();
 
   Vector3d pt;
@@ -54,6 +55,7 @@ std::unique_ptr<Polygon2d> project(const PolySet& ps) {
  */
 std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
 {
+  ZoneScoped;
   int degeneratePolygons = 0;
   auto result = std::make_unique<PolySet>(3, polyset.convexValue());
   result->setConvexity(polyset.getConvexity());
@@ -149,6 +151,7 @@ bool is_approximately_convex(const PolySet& ps) {
 // Get as or convert the geometry to a PolySet.
 std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const Geometry>& geom)
 {
+  ZoneScoped;
   if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     return ps;
   }

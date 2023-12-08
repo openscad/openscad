@@ -16,6 +16,7 @@
 #include "ManifoldGeometry.h"
 #include "manifoldutils.h"
 #endif
+#include "profiling.h"
 
 #include "Feature.h"
 #include "PolySet.h"
@@ -34,6 +35,7 @@
 #ifdef ENABLE_CGAL
 std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
 {
+  ZoneScoped;
   using K = CGAL::Epick;
   // Collect point cloud
   Reindexer<K::Point_3> reindexer;
@@ -107,6 +109,7 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
  */
 std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 {
+  ZoneScoped;
 #if ENABLE_MANIFOLD
   if (Feature::ExperimentalManifold.is_enabled()) {
     return ManifoldUtils::applyMinkowskiManifold(children);

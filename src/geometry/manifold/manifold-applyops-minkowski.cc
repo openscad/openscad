@@ -10,6 +10,7 @@
 #include "manifoldutils.h"
 #include "ManifoldGeometry.h"
 #include "parallel.h"
+#include "profiling.h"
 
 namespace ManifoldUtils {
 
@@ -18,6 +19,7 @@ namespace ManifoldUtils {
  */
 std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometries& children)
 {
+  ZoneScoped;
   using Hull_kernel = CGAL::Epick;
   using Hull_Mesh = CGAL::Surface_mesh<CGAL::Point_3<Hull_kernel>>;
   using Hull_Points = std::vector<Hull_kernel::Point_3>;

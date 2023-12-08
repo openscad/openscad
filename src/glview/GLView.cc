@@ -7,12 +7,7 @@
 #include "degree_trig.h"
 #include <cmath>
 #include <cstdio>
-#if __has_include(<tracy/Tracy.hpp>)
-#include <tracy/Tracy.hpp>
-#else
-#define FrameMarkStart(x)
-#define FrameMarkEnd(x)
-#endif
+#include "profiling.h"
 
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>

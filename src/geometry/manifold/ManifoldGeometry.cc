@@ -5,6 +5,7 @@
 #include "PolySetBuilder.h"
 #include "PolySetUtils.h"
 #include "manifoldutils.h"
+#include "profiling.h"
 #ifdef ENABLE_CGAL
 #include "cgal.h"
 #include "cgalutils.h"
@@ -95,6 +96,7 @@ std::string ManifoldGeometry::dump() const {
 }
 
 std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
+  ZoneScoped;
   manifold::MeshGL mesh = getManifold().GetMeshGL();
   auto ps = std::make_shared<PolySet>(3);
   ps->isTriangular = true;
@@ -148,6 +150,7 @@ public:
 template <class Polyhedron>
 std::shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
 {
+  ZoneScoped;
   auto p = std::make_shared<Polyhedron>();
   try {
     manifold::Mesh mesh = getManifold().GetMesh();
