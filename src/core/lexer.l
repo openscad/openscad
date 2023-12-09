@@ -148,7 +148,8 @@ LOCATION_NEXT(parserlloc);
 
 include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; LOCATION_COUNT_LINES(parserlloc, yytext); }
 <cond_include>{
-[\n\r]					{
+\r						/* ignored */
+\n						{
 							LOCATION_ADD_LINES(parserlloc, yyleng);
 							// see merge request #4221
 							LOG(message_group::Warning,LOCATION(parserlloc),"","new lines in 'include<>'-statement is not defined - behavior may change in the future");
@@ -162,7 +163,8 @@ include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; LOCATION_C
 
 use[ \t\r\n]*"<"		{ BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
 <cond_use>{
-[\n\r]					{
+\r						/* ignored */
+\n						{
 							LOCATION_ADD_LINES(parserlloc, yyleng);
 							// see merge request #4221
 							LOG(message_group::Warning,LOCATION(parserlloc),"","new lines 'use<>'-statement is not defined - behavior may change in the future");
@@ -193,28 +195,32 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
 {UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ stringcontents += lexertext; }
 \\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
 \\u{H}{4}|\\U{H}{6}     { const auto c = strtoul(lexertext + 2, NULL, 16); stringcontents += str_utf8_wrapper(c).toString(); }
-[^\\\n\"]				{ stringcontents += lexertext; }
-[\n\r]					{ LOCATION_ADD_LINES(parserlloc, yyleng); }
+[^\\\n\r\"]				{ stringcontents += lexertext; }
+\r						/* ignored */
+\n						{ LOCATION_ADD_LINES(parserlloc, yyleng); }
 \"						{ BEGIN(INITIAL); parserlval.text = strdup(stringcontents.c_str()); return TOK_STRING; }
 <<EOF>>                 { parsererror("Unterminated string"); return TOK_ERROR; }
 }
 
 [\t ]                   { LOCATION_NEXT(parserlloc); }
-[\n\r]					{ LOCATION_ADD_LINES(parserlloc, yyleng); }
+\r						/* ignored */
+\n						{ LOCATION_ADD_LINES(parserlloc, yyleng); }
 
 \/\/					{ BEGIN(cond_lcomment); }
 <cond_lcomment>{
+\r						/* ignored */
 \n                      { BEGIN(INITIAL); LOCATION_ADD_LINES(parserlloc, yyleng); }
 {UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ }
-[^\n]
+.						/* ignored */
 }
 
 "/*" BEGIN(cond_comment);
 <cond_comment>{
 "*/"                    { BEGIN(INITIAL); }
+\r						/* ignored */
+\n                      { LOCATION_ADD_LINES(parserlloc, yyleng); }
 {UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ }
-.
-[\n]                    { LOCATION_ADD_LINES(parserlloc, yyleng); }
+.						/* ignored */
 <<EOF>>                 { parsererror("Unterminated comment"); return TOK_ERROR; }
 }
 
@@ -258,7 +264,7 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
  files on the cmd-line as in the editor.
 */%}
 
-[\xc2\xa0]+
+[\xc2\xa0]+				/* ignored */
 
 {UNICODE}+              { parser_error_pos -= strlen(yytext); return TOK_ERROR; }
 
