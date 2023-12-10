@@ -389,7 +389,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
     #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
 
-    # Enable vertex-object-renderers by default for all test if experimental build and openscad executable
+    # Enable vertex-object-renderers by default for all test if experimental build
     if (EXPERIMENTAL)
       set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers")
       set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-prealloc")
@@ -410,10 +410,6 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
     # only add test if it is not experimental or if it is and experimental option is enabled
     if (NOT TEST_IS_EXPERIMENTAL OR EXPERIMENTAL)
-      # disable experimental options for non-experimental tests
-      if (NOT TEST_IS_EXPERIMENTAL)
-        set(EXPERIMENTAL_OPTION "")
-      endif()
       add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
         COMMAND ${Python3_EXECUTABLE}
         ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
@@ -779,7 +775,7 @@ list(APPEND ALL_2D_FILES
 list(APPEND EXPORT3D_CGALCGAL_TEST_FILES
   ${TEST_SCAD_DIR}/3D/issues/issue13.scad
   ${TEST_SCAD_DIR}/3D/issues/issue13b.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue13c.scad
+  # Note issue13c is still flaky in non-experimental mode, so it's still in bugs/
   ${BUGS_FILES}
   )
 #list(REMOVE_ITEM EXPORT3D_CGALCGAL_TEST_FILES
@@ -994,7 +990,7 @@ add_cmdline_test(throwntogethertest OPENSCAD FILES ${THROWNTOGETHERTEST_FILES} A
 add_cmdline_test(csgpngtest         SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${CGALPNGTEST_FILES} EXPECTEDDIR cgalpngtest ARGS ${OPENSCAD_ARG} --format=csg --render)
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
-add_cmdline_test(cgalstlsanitytest  SCRIPT ${CGALSTLSANITYTEST_PY} SUFFIX txt FILES ${CGALSTLSANITYTEST_FILES} ARGS ${OPENSCAD_BINPATH})
+add_cmdline_test(cgalstlsanitytest  SCRIPT ${CGALSTLSANITYTEST_PY} SUFFIX txt FILES ${CGALSTLSANITYTEST_FILES} ARGS ${OPENSCAD_ARG})
 add_cmdline_test(cgalpngtest_python  OPENSCAD FILES ${CGALPNGTEST_PYTHON_FILES} SUFFIX png  ARGS --trust-python --render)
 add_cmdline_test(echotest_python     OPENSCAD FILES ${ECHO_PYTHON_FILES}        SUFFIX echo ARGS --trust-python )
 
