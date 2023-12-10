@@ -324,9 +324,16 @@ def run_test(testname, cmd, args, redirect_stdin=False, redirect_stdout=False):
         outfile.close()
         if infile is not None:
             infile.close()
-        if proc.returncode != 0:
-            print("Error: %s failed with return code %d" % (cmdname, proc.returncode), file=sys.stderr)
-            return None
+        if proc.returncode == 0:
+            if options.retval != 0:
+                print("Error: %s unexpectedly succeeded, expected return code %d" % (cmdname, options.retval), file=sys.stderr)
+                return None
+        else:
+            if proc.returncode != options.retval:
+                print("Error: %s failed with return code %d" % (cmdname, proc.returncode), file=sys.stderr)
+                return None
+            else:
+                print("Note: as expected, %s failed with return code %d" % (cmdname, proc.returncode), file=sys.stderr)
 
         return outputname
     except (OSError) as err:
@@ -358,7 +365,7 @@ if __name__ == '__main__':
     # Handle command-line arguments
     try:
         debug('args:'+str(sys.argv))
-        opts, args = getopt.getopt(sys.argv[1:], "gs:k:e:c:t:f:m", ["generate", "convexec=", "suffix=", "kernel=", "expected_dir=", "test=", "file=", "comparator=", "stdin", "stdout"])
+        opts, args = getopt.getopt(sys.argv[1:], "gs:k:e:c:t:f:m", ["generate", "convexec=", "suffix=", "kernel=", "expected_dir=", "test=", "file=", "comparator=", "stdin", "stdout", "retval="])
         debug('getopt args:'+str(sys.argv))
     except (getopt.GetoptError) as err:
         usage()
@@ -373,6 +380,7 @@ if __name__ == '__main__':
     options.comparator = ""
     options.stdin = False
     options.stdout = False
+    options.retval = 0
 
     for o, a in opts:
         if o in ("-g", "--generate"): options.generate = True
@@ -395,6 +403,8 @@ if __name__ == '__main__':
             options.stdin = True
         elif o == "--stdout" :
             options.stdout = True
+        elif o == "--retval":
+            options.retval = int(a)
 
     # <cmdline-tool> and <argument>
     if len(args) < 2:

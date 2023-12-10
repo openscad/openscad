@@ -1,0 +1,54 @@
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 28
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 29
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 30
+WARNING: Can't open include file 'line30'. in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 31
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 37
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 38
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 39
+WARNING: Can't open library 'line39'. in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 40
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 68
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 69
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 70
+WARNING: Can't open include file 'line70'. in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 71
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 77
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 78
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 79
+WARNING: Can't open library 'line79'. in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 80
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 108
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 109
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 110
+WARNING: Can't open include file 'line110'. in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 111
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 117
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 118
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 119
+WARNING: Can't open library 'line119'. in file ../../tests/data/scad/misc/linenumber-NL-1.bin.scad, line 120
+WARNING: Ignoring unknown variable 'line16' in file linenumber-NL-1.bin.scad, line 16
+ECHO: undef
+WARNING: Ignoring unknown variable 'line23' in file linenumber-NL-1.bin.scad, line 23
+ECHO: undef
+WARNING: Ignoring unknown variable 'line33' in file linenumber-NL-1.bin.scad, line 33
+ECHO: undef
+WARNING: Ignoring unknown variable 'line42' in file linenumber-NL-1.bin.scad, line 42
+ECHO: undef
+WARNING: Ignoring unknown variable 'line48' in file linenumber-NL-1.bin.scad, line 48
+ECHO: undef
+WARNING: Ignoring unknown variable 'line56' in file linenumber-NL-1.bin.scad, line 56
+ECHO: undef
+WARNING: Ignoring unknown variable 'line63' in file linenumber-NL-1.bin.scad, line 63
+ECHO: undef
+WARNING: Ignoring unknown variable 'line73' in file linenumber-NL-1.bin.scad, line 73
+ECHO: undef
+WARNING: Ignoring unknown variable 'line82' in file linenumber-NL-1.bin.scad, line 82
+ECHO: undef
+WARNING: Ignoring unknown variable 'line88' in file linenumber-NL-1.bin.scad, line 88
+ECHO: undef
+WARNING: Ignoring unknown variable 'line96' in file linenumber-NL-1.bin.scad, line 96
+ECHO: undef
+WARNING: Ignoring unknown variable 'line103' in file linenumber-NL-1.bin.scad, line 103
+ECHO: undef
+WARNING: Ignoring unknown variable 'line113' in file linenumber-NL-1.bin.scad, line 113
+ECHO: undef
+WARNING: Ignoring unknown variable 'line122' in file linenumber-NL-1.bin.scad, line 122
+ECHO: undef
+WARNING: Ignoring unknown variable 'line128' in file linenumber-NL-1.bin.scad, line 128
+ECHO: undef

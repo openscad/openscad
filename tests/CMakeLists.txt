@@ -296,11 +296,12 @@ endfunction()
 #                        [SCRIPT <script>]
 #                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>
 #                        [EXPERIMENTAL])
+#                        [RETVAL <n>]
 #
 # EXPERIMENTAL: If set, tag all tests as experimental
 #
 function(add_cmdline_test TESTCMD_BASENAME)
-  cmake_parse_arguments(TESTCMD "OPENSCAD;STDIO;EXPERIMENTAL" "EXE;SCRIPT;SUFFIX;KERNEL;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
+  cmake_parse_arguments(TESTCMD "OPENSCAD;STDIO;EXPERIMENTAL" "EXE;SCRIPT;SUFFIX;KERNEL;EXPECTEDDIR;RETVAL" "FILES;ARGS" ${ARGN})
 
   set(EXTRA_OPTIONS "")
 
@@ -315,6 +316,10 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
   if (TESTCMD_STDIO)
     list(APPEND EXTRA_OPTIONS --stdin --stdout)
+  endif()
+
+  if (TESTCMD_RETVAL)
+    list(APPEND EXTRA_OPTIONS --retval=${TESTCMD_RETVAL})
   endif()
 
   if ((TESTCMD_EXE OR TESTCMD_SCRIPT) AND TESTCMD_OPENSCAD)
@@ -657,6 +662,7 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
   ${TEST_SCAD_DIR}/misc/vector-swizzling.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
+  ${TEST_SCAD_DIR}/misc/linenumber-NL-1.bin.scad
 )
 
 list(APPEND ASTDUMPTEST_FILES ${MISC_FILES}
@@ -958,6 +964,7 @@ add_cmdline_test(csgtermtest      OPENSCAD SUFFIX term FILES
 )
 
 add_cmdline_test(echotest         OPENSCAD SUFFIX echo FILES ${ECHO_FILES})
+add_cmdline_test(echotest         OPENSCAD SUFFIX echo RETVAL 1 FILES ${TEST_SCAD_DIR}/misc/linenumber-NL-2.bin.scad)
 # trace-usermodule-parameters is on by default,
 # but can generate very long outputs and potentially
 # unstable outputs, when combined with recursive tests.

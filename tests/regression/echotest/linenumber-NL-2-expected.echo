@@ -1,0 +1,27 @@
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 28
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 29
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 30
+WARNING: Can't open include file 'line30'. in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 31
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 37
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 38
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 39
+WARNING: Can't open library 'line39'. in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 40
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 68
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 69
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 70
+WARNING: Can't open include file 'line70'. in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 71
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 77
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 78
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 79
+WARNING: Can't open library 'line79'. in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 80
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 108
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 109
+WARNING: new lines in 'include<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 110
+WARNING: Can't open include file 'line110'. in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 111
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 117
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 118
+WARNING: new lines 'use<>'-statement is not defined - behavior may change in the future in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 119
+WARNING: Can't open library 'line119'. in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 120
+ERROR: Parser error: syntax error in file ../../tests/data/scad/misc/linenumber-NL-2.bin.scad, line 129
+Can't parse file 'C:/msys64/home/jordan/openscad/4882a-CRLF/tests/data/scad/misc/linenumber-NL-2.bin.scad'!
+
