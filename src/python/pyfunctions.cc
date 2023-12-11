@@ -343,7 +343,7 @@ PyObject *python_square(PyObject *self, PyObject *args, PyObject *kwargs)
   PyObject *center = NULL;
 
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|O", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OO", kwlist,
                                    &dim,
                                    &center)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing square(dim)");
@@ -486,9 +486,6 @@ PyObject *python_polygon(PyObject *self, PyObject *args, PyObject *kwargs)
 	return NULL;
       }
     }
-  } else {
-    PyErr_SetString(PyExc_TypeError, "Polygon path must be a list of indices");
-    return NULL;
   }
 
   node->convexity = convexity;
@@ -1767,8 +1764,6 @@ PyObject *python_str(PyObject *self) {
 	return PyUnicode_FromStringAndSize(str,strlen(str)+1);
 }
 
-
-
 PyObject *python_add_parameter(PyObject *self, PyObject *args, PyObject *kwargs, ImportType type)
 {
   char *kwlist[] = {"name", "default", NULL};
@@ -1900,10 +1895,10 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"background", (PyCFunction) python_background, METH_VARARGS | METH_KEYWORDS, "Background Object."},
   {"only", (PyCFunction) python_only, METH_VARARGS | METH_KEYWORDS, "Only Object."},
 
-  {"projection", (PyCFunction) python_projection, METH_VARARGS | METH_KEYWORDS, "Projectr Object."},
+  {"projection", (PyCFunction) python_projection, METH_VARARGS | METH_KEYWORDS, "Projection Object."},
   {"surface", (PyCFunction) python_surface, METH_VARARGS | METH_KEYWORDS, "Surface Object."},
 
-  {"group", (PyCFunction) python_group, METH_VARARGS | METH_KEYWORDS, "GRoup Object."},
+  {"group", (PyCFunction) python_group, METH_VARARGS | METH_KEYWORDS, "Group Object."},
   {"render", (PyCFunction) python_render, METH_VARARGS | METH_KEYWORDS, "Render Object."},
   {"osimport", (PyCFunction) python_import, METH_VARARGS | METH_KEYWORDS, "Import Object."},
   {"version", (PyCFunction) python_version, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
@@ -1912,72 +1907,42 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {NULL, NULL, 0, NULL}
 };
 
-
-#define CREATE_OO_FUNC(name) \
-PyObject *python_oo_##name(PyObject *self, PyObject *args, PyObject *kwargs) \
-{ \
+#define	OO_METHOD_ENTRY(name,desc) \
+  { #name, (PyCFunction) ( [ ] (PyObject *self, PyObject *args) -> PyObject * { \
   PyObject *new_args = python_oo_args(self, args); \
-  PyObject *result = python_##name(self, new_args, kwargs); \
-  return result; \
-} 
+  PyObject *result = python_##name(self, new_args, NULL); \
+  return result;  } ),  METH_VARARGS | METH_KEYWORDS, (desc)},
 
-CREATE_OO_FUNC(translate)
-CREATE_OO_FUNC(rotate)
-CREATE_OO_FUNC(scale)
-CREATE_OO_FUNC(mirror)
-CREATE_OO_FUNC(multmatrix)
-CREATE_OO_FUNC(offset)
-CREATE_OO_FUNC(roof)
-CREATE_OO_FUNC(color)
-CREATE_OO_FUNC(output)
-
-CREATE_OO_FUNC(linear_extrude)
-CREATE_OO_FUNC(rotate_extrude)
-
-CREATE_OO_FUNC(union)
-CREATE_OO_FUNC(difference)
-CREATE_OO_FUNC(intersection)
-
-CREATE_OO_FUNC(hull)
-CREATE_OO_FUNC(minkowski)
-CREATE_OO_FUNC(fill)
-CREATE_OO_FUNC(resize)
-
-CREATE_OO_FUNC(highlight)
-CREATE_OO_FUNC(background)
-CREATE_OO_FUNC(only)
-
-CREATE_OO_FUNC(projection)
-CREATE_OO_FUNC(render)
 
 PyMethodDef PyOpenSCADMethods[] = {
-  {"translate", (PyCFunction) python_oo_translate, METH_VARARGS | METH_KEYWORDS, "Move  Object."},
-  {"rotate", (PyCFunction) python_oo_rotate, METH_VARARGS | METH_KEYWORDS, "Rotate Object."},
-  {"scale", (PyCFunction) python_oo_scale, METH_VARARGS | METH_KEYWORDS, "Scale Object."},
-  {"mirror", (PyCFunction) python_oo_mirror, METH_VARARGS | METH_KEYWORDS, "Mirror Object."},
-  {"multmatrix", (PyCFunction) python_oo_multmatrix, METH_VARARGS | METH_KEYWORDS, "Multmatrix Object."},
-  {"offset", (PyCFunction) python_oo_offset, METH_VARARGS | METH_KEYWORDS, "Offset Object."},
-  {"roof", (PyCFunction) python_oo_roof, METH_VARARGS | METH_KEYWORDS, "Roof Object."},
-  {"color", (PyCFunction) python_oo_color, METH_VARARGS | METH_KEYWORDS, "Output the result."},
-  {"output", (PyCFunction) python_oo_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
+  OO_METHOD_ENTRY(translate,"Move Object")	
+  OO_METHOD_ENTRY(rotate,"Rotate Object")	
+  OO_METHOD_ENTRY(scale,"Scale Object")	
+  OO_METHOD_ENTRY(mirror,"Mirror Object")	
+  OO_METHOD_ENTRY(multmatrix,"Multmatrix Object")	
 
-  {"linear_extrude", (PyCFunction) python_oo_linear_extrude, METH_VARARGS | METH_KEYWORDS, "Linear_extrude Object."},
-  {"rotate_extrude", (PyCFunction) python_oo_rotate_extrude, METH_VARARGS | METH_KEYWORDS, "Rotate_extrude Object."},
-  {"union", (PyCFunction) python_oo_union, METH_VARARGS | METH_KEYWORDS, "Union Object."},
-  {"difference", (PyCFunction) python_oo_difference, METH_VARARGS | METH_KEYWORDS, "Difference Object."},
-  {"intersection", (PyCFunction) python_oo_intersection, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
+  OO_METHOD_ENTRY(offset,"Offset Object")	
+  OO_METHOD_ENTRY(roof,"Roof Object")	
+  OO_METHOD_ENTRY(color,"Color Object")	
+  OO_METHOD_ENTRY(output,"Output Object")	
 
-  {"hull", (PyCFunction) python_oo_hull, METH_VARARGS | METH_KEYWORDS, "Hull Object."},
-  {"minkowski", (PyCFunction) python_oo_hull, METH_VARARGS | METH_KEYWORDS, "Minkowski Object."},
-  {"fill", (PyCFunction) python_oo_fill, METH_VARARGS | METH_KEYWORDS, "Fill Object."},
-  {"resize", (PyCFunction) python_oo_fill, METH_VARARGS | METH_KEYWORDS, "Resize Object."},
+  OO_METHOD_ENTRY(linear_extrude,"Linear_extrude Object")	
+  OO_METHOD_ENTRY(rotate_extrude,"Rotate_extrude Object")	
+  OO_METHOD_ENTRY(union,"Union Object")	
+  OO_METHOD_ENTRY(difference,"Difference Object")	
+  OO_METHOD_ENTRY(intersection,"Intersection Object")	
 
-  {"highlight", (PyCFunction) python_oo_highlight, METH_VARARGS | METH_KEYWORDS, "Highlight Object."},
-  {"background", (PyCFunction) python_oo_background, METH_VARARGS | METH_KEYWORDS, "Background Object."},
-  {"only", (PyCFunction) python_oo_only, METH_VARARGS | METH_KEYWORDS, "Only Object."},
+  OO_METHOD_ENTRY(hull,"Hull Object")	
+  OO_METHOD_ENTRY(minkowski,"Minkowski Object")	
+  OO_METHOD_ENTRY(fill,"fill Object")	
+  OO_METHOD_ENTRY(resize,"Resize Object")	
 
-  {"projection", (PyCFunction) python_oo_fill, METH_VARARGS | METH_KEYWORDS, "Project Object."},
-  {"render", (PyCFunction) python_oo_fill, METH_VARARGS | METH_KEYWORDS, "Render Object."},
+  OO_METHOD_ENTRY(highlight,"Highlight Object")	
+  OO_METHOD_ENTRY(background,"Background Object")	
+  OO_METHOD_ENTRY(only,"Only Object")	
+
+  OO_METHOD_ENTRY(projection,"Projection Object")	
+  OO_METHOD_ENTRY(render,"Render Object")	
 
   {NULL, NULL, 0, NULL}
 };
