@@ -91,7 +91,7 @@ extern YYLTYPE parserlloc;
 #define LOCATION(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile())
 #define LOCATION_INIT(loc) do { (loc).first_line = (loc).first_column = (loc).last_line = (loc).last_column = yylineno = 1; } while (0)
 #define LOCATION_NEXT(loc) do { (loc).first_column = (loc).last_column; (loc).first_line = yylineno = (loc).last_line; } while (0)
-#define LOCATION_ADD_LINES(loc, cnt) do { (loc).last_column = 1; (loc).last_line += cnt; LOCATION_NEXT(loc); } while (0)
+#define LOCATION_ADD_LINE(loc) do { (loc).last_column = 1; (loc).last_line++; LOCATION_NEXT(loc); } while (0)
 
 #define LOCATION_COUNT_LINES(loc, text)                     \
     do {                                                    \
@@ -160,7 +160,7 @@ include[ \t\r\n]*"<"    { BEGIN(cond_include); filepath = filename = ""; LOCATIO
 {NL}                    {
                             // see merge request #4221
                             LOG(message_group::Warning,LOCATION(parserlloc),"","new lines in 'include<>'-statement is not defined - behavior may change in the future");
-                            LOCATION_ADD_LINES(parserlloc, yyleng);
+                            LOCATION_ADD_LINE(parserlloc);
 }
 [^\t\r\n>]*"/"          { filepath = yytext; }
 [^\t\r\n>/]+            { filename = yytext; }
@@ -174,7 +174,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 {NL}                    {
                             // see merge request #4221
                             LOG(message_group::Warning,LOCATION(parserlloc),"","new lines 'use<>'-statement is not defined - behavior may change in the future");
-                            LOCATION_ADD_LINES(parserlloc, yyleng);
+                            LOCATION_ADD_LINE(parserlloc);
 }
 [^\t\r\n>]+             { filename = yytext; }
  ">"                    {
@@ -203,17 +203,17 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 \\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
 \\u{H}{4}|\\U{H}{6}     { const auto c = strtoul(lexertext + 2, NULL, 16); stringcontents += str_utf8_wrapper(c).toString(); }
 [^\\\r\n\"]             { stringcontents += lexertext; }
-{NL}                    { LOCATION_ADD_LINES(parserlloc, yyleng); }
+{NL}                    { LOCATION_ADD_LINE(parserlloc); }
 \"                      { BEGIN(INITIAL); parserlval.text = strdup(stringcontents.c_str()); return TOK_STRING; }
 <<EOF>>                 { parsererror("Unterminated string"); return TOK_ERROR; }
 }
 
 [\t ]                   { LOCATION_NEXT(parserlloc); }
-{NL}                    { LOCATION_ADD_LINES(parserlloc, yyleng); }
+{NL}                    { LOCATION_ADD_LINE(parserlloc); }
 
 \/\/                    { BEGIN(cond_lcomment); }
 <cond_lcomment>{
-{NL}                    { BEGIN(INITIAL); LOCATION_ADD_LINES(parserlloc, yyleng); }
+{NL}                    { BEGIN(INITIAL); LOCATION_ADD_LINE(parserlloc); }
 {UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ }
 .
 }
@@ -222,7 +222,7 @@ use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yyte
 <cond_comment>{
 "*/"                    { BEGIN(INITIAL); }
 {UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ }
-{NL}                    { LOCATION_ADD_LINES(parserlloc, yyleng); }
+{NL}                    { LOCATION_ADD_LINE(parserlloc); }
 .
 <<EOF>>                 { parsererror("Unterminated comment"); return TOK_ERROR; }
 }
