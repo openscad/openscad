@@ -538,12 +538,6 @@ PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
-PyObject *python_scale_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  PyObject *new_args = python_oo_args(self, args);
-  PyObject *result = python_scale(self, new_args, kwargs);
-  return result;
-}
 
 
 PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -633,14 +627,6 @@ PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
-PyObject *python_rotate_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  PyObject *new_args = python_oo_args(self, args);
-  PyObject *result = python_rotate(self, new_args, kwargs);
-  return result;
-}
-
-
 PyObject *python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
@@ -692,14 +678,6 @@ PyObject *python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
-PyObject *python_mirror_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  PyObject *new_args = python_oo_args(self, args);
-  PyObject *result = python_mirror(self, new_args, kwargs);
-  return result;
-}
-
-
 PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
@@ -732,13 +710,6 @@ PyObject *python_translate(PyObject *self, PyObject *args, PyObject *kwargs)
   node->matrix.translate(translatevec);
   node->children.push_back(child);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
-}
-
-PyObject *python_translate_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  PyObject *new_args = python_oo_args(self, args);
-  PyObject *result = python_translate(self, new_args, kwargs);
-  return result;
 }
 
 
@@ -794,13 +765,6 @@ PyObject *python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
 
 }
 
-PyObject *python_multmatrix_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  PyObject *new_args = python_oo_args(self, args);
-  PyObject *result = python_multmatrix(self, new_args, kwargs);
-  return result;
-}
-
 PyObject *python_output(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   PyObject *object = NULL;
@@ -819,13 +783,6 @@ PyObject *python_output(PyObject *self, PyObject *args, PyObject *kwargs)
   }
   python_result_node = child;
   return Py_None;
-}
-
-PyObject *python_output_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  PyObject *new_args = python_oo_args(self, args);
-  PyObject *result = python_output(self, new_args, kwargs);
-  return result;
 }
 
 
@@ -911,14 +868,6 @@ PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
-PyObject *python_color_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  PyObject *new_args = python_oo_args(self, args);
-  PyObject *result = python_color(self, new_args, kwargs);
-  return result;
-}
-
-
 
 PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -984,14 +933,6 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   node->children.push_back(child);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
-
-PyObject *python_rotate_extrude_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  PyObject *new_args = python_oo_args(self, args);
-  PyObject *result = python_rotate_extrude(self, new_args, kwargs);
-  return result;
-}
-
 
 PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -1077,13 +1018,6 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
 
   node->children.push_back(child);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
-}
-
-PyObject *python_linear_extrude_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  PyObject *new_args = python_oo_args(self, args);
-  PyObject *result = python_linear_extrude(self, new_args, kwargs);
-  return result;
 }
 
 PyObject *python_csg_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenSCADOperator mode)
@@ -1201,45 +1135,9 @@ PyObject *python_nb_or(PyObject *arg1, PyObject *arg2) { return python_nb_sub(ar
 PyObject *python_nb_andnot(PyObject *arg1, PyObject *arg2) { return python_nb_sub(arg1, arg2,  OpenSCADOperator::DIFFERENCE); }
 PyObject *python_nb_and(PyObject *arg1, PyObject *arg2) { return python_nb_sub(arg1, arg2,  OpenSCADOperator::INTERSECTION); }
 
-PyObject *python_nb_unary_jordan(PyObject *arg,int mode) { // is used to highlight
-  DECLARE_INSTANCE
-  auto child = PyOpenSCADObjectToNode(arg);
-  switch(mode){
-    case 0:	  instance->tag_highlight=true; break; // #
-    case 1:	  instance->tag_background=true; break; // %
-    case 2:	  instance->tag_root=true; break; // ! 
-  }
-  auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
-  node->children.push_back(child);
-  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
-}
-
-PyObject *python_nb_invert(PyObject *arg) { return python_nb_unary_jordan(arg,0); }
-PyObject *python_nb_neg(PyObject *arg) { return python_nb_unary_jordan(arg,1); }
-PyObject *python_nb_pos(PyObject *arg) { return python_nb_unary_jordan(arg,2); }
 
 
 
-PyObject *python_csg_oo_sub(PyObject *self, PyObject *args, PyObject *kwargs, OpenSCADOperator mode)
-{
-  PyObject *new_args = python_oo_args(self, args);
-  return python_csg_sub(self, new_args, kwargs, mode);
-}
-
-PyObject *python_union_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  return python_csg_oo_sub(self, args, kwargs, OpenSCADOperator::UNION);
-}
-
-PyObject *python_difference_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  return python_csg_oo_sub(self, args, kwargs, OpenSCADOperator::DIFFERENCE);
-}
-
-PyObject *python_intersection_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  return python_csg_oo_sub(self, args, kwargs, OpenSCADOperator::INTERSECTION);
-}
 
 
 PyObject *python_csg_adv_sub(PyObject *self, PyObject *args, PyObject *kwargs, CgalAdvType mode)
@@ -1272,22 +1170,6 @@ PyObject *python_csg_adv_sub(PyObject *self, PyObject *args, PyObject *kwargs, C
   }
 
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
-}
-
-PyObject *python_csg_adv_oo_sub(PyObject *self, PyObject *args, PyObject *kwargs, CgalAdvType mode)
-{
-  PyObject *new_args = python_oo_args(self, args);
-  return python_csg_adv_sub(self, new_args, kwargs, mode);
-}
-
-PyObject *python_hull_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  return python_csg_adv_oo_sub(self, args, kwargs, CgalAdvType::HULL);
-}
-
-PyObject *python_fill_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  return python_csg_adv_oo_sub(self, args, kwargs, CgalAdvType::FILL);
 }
 
 PyObject *python_minkowski(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -1454,13 +1336,6 @@ PyObject *python_roof(PyObject *self, PyObject *args, PyObject *kwargs)
 
   node->children.push_back(child);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
-}
-
-PyObject *python_roof_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  PyObject *new_args = python_oo_args(self, args);
-  PyObject *result = python_roof(self, new_args, kwargs);
-  return result;
 }
 
 PyObject *python_render(PyObject *self, PyObject *args, PyObject *kwargs)
@@ -1736,15 +1611,6 @@ PyObject *python_offset(PyObject *self, PyObject *args, PyObject *kwargs)
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
 
-PyObject *python_offset_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  PyObject *new_args = python_oo_args(self, args);
-  PyObject *result = python_offset(self, new_args, kwargs);
-  return result;
-}
-
-
-
 PyObject *python_projection(PyObject *self, PyObject *args, PyObject *kwargs)
 {
   DECLARE_INSTANCE
@@ -1776,14 +1642,6 @@ PyObject *python_projection(PyObject *self, PyObject *args, PyObject *kwargs)
   node->children.push_back(child);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 }
-
-PyObject *python_projection_oo(PyObject *self, PyObject *args, PyObject *kwargs)
-{
-  PyObject *new_args = python_oo_args(self, args);
-  PyObject *result = python_projection(self, new_args, kwargs);
-  return result;
-}
-
 
 PyObject *python_group(PyObject *self, PyObject *args, PyObject *kwargs)
 {
@@ -1971,6 +1829,40 @@ PyObject *python_add_parameter(PyObject *self, PyObject *args, PyObject *kwargs,
   return Py_None;
 }
 
+PyObject *python_debug_modifier(PyObject *arg,int mode) { // is used to highlight
+  DECLARE_INSTANCE
+  auto child = PyOpenSCADObjectToNode(arg);
+  switch(mode){
+    case 0:	  instance->tag_highlight=true; break; // #
+    case 1:	  instance->tag_background=true; break; // %
+    case 2:	  instance->tag_root=true; break; // ! 
+  }
+  auto node = std::make_shared<CsgOpNode>(instance, OpenSCADOperator::UNION);
+  node->children.push_back(child);
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
+}
+
+PyObject *python_debug_modifier_func(PyObject *self, PyObject *args, PyObject *kwargs, int mode)
+{
+  char *kwlist[] = {"obj", NULL};
+  PyObject *obj = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O!", kwlist,
+                                   &PyOpenSCADType, &obj
+                                   )) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing group(group)");
+    return NULL;
+  }
+  return python_debug_modifier(obj, mode);
+}
+
+PyObject *python_highlight(PyObject *self, PyObject *args, PyObject *kwargs) { return python_debug_modifier_func(self, args, kwargs, 0); }
+PyObject *python_background(PyObject *self, PyObject *args, PyObject *kwargs) { return python_debug_modifier_func(self, args, kwargs, 1); }
+PyObject *python_only(PyObject *self, PyObject *args, PyObject *kwargs) { return python_debug_modifier_func(self, args, kwargs, 2); }
+
+PyObject *python_nb_invert(PyObject *arg) { return python_debug_modifier(arg,0); }
+PyObject *python_nb_neg(PyObject *arg) { return python_debug_modifier(arg,1); }
+PyObject *python_nb_pos(PyObject *arg) { return python_debug_modifier(arg,2); }
+
 PyMethodDef PyOpenSCADFunctions[] = {
   {"square", (PyCFunction) python_square, METH_VARARGS | METH_KEYWORDS, "Create Square."},
   {"circle", (PyCFunction) python_circle, METH_VARARGS | METH_KEYWORDS, "Create Circle."},
@@ -1990,6 +1882,8 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"multmatrix", (PyCFunction) python_multmatrix, METH_VARARGS | METH_KEYWORDS, "Multmatrix Object."},
   {"offset", (PyCFunction) python_offset, METH_VARARGS | METH_KEYWORDS, "Offset Object."},
   {"roof", (PyCFunction) python_roof, METH_VARARGS | METH_KEYWORDS, "Roof Object."},
+  {"color", (PyCFunction) python_color, METH_VARARGS | METH_KEYWORDS, "Import Object."},
+  {"output", (PyCFunction) python_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
 
   {"linear_extrude", (PyCFunction) python_linear_extrude, METH_VARARGS | METH_KEYWORDS, "Linear_extrude Object."},
   {"rotate_extrude", (PyCFunction) python_rotate_extrude, METH_VARARGS | METH_KEYWORDS, "Rotate_extrude Object."},
@@ -2001,38 +1895,90 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"minkowski", (PyCFunction) python_minkowski, METH_VARARGS | METH_KEYWORDS, "Minkowski Object."},
   {"fill", (PyCFunction) python_fill, METH_VARARGS | METH_KEYWORDS, "Fill Object."},
   {"resize", (PyCFunction) python_resize, METH_VARARGS | METH_KEYWORDS, "Resize Object."},
-  {"render", (PyCFunction) python_render, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
-  {"group", (PyCFunction) python_group, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
 
-  {"projection", (PyCFunction) python_projection, METH_VARARGS | METH_KEYWORDS, "Projection Object."},
+  {"highlight", (PyCFunction) python_highlight, METH_VARARGS | METH_KEYWORDS, "Highlight Object."},
+  {"background", (PyCFunction) python_background, METH_VARARGS | METH_KEYWORDS, "Background Object."},
+  {"only", (PyCFunction) python_only, METH_VARARGS | METH_KEYWORDS, "Only Object."},
+
+  {"projection", (PyCFunction) python_projection, METH_VARARGS | METH_KEYWORDS, "Projectr Object."},
   {"surface", (PyCFunction) python_surface, METH_VARARGS | METH_KEYWORDS, "Surface Object."},
-  {"osimport", (PyCFunction) python_import, METH_VARARGS | METH_KEYWORDS, "Import Object."},
-  {"color", (PyCFunction) python_color, METH_VARARGS | METH_KEYWORDS, "Import Object."},
 
-  {"output", (PyCFunction) python_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
+  {"group", (PyCFunction) python_group, METH_VARARGS | METH_KEYWORDS, "GRoup Object."},
+  {"render", (PyCFunction) python_render, METH_VARARGS | METH_KEYWORDS, "Render Object."},
+  {"osimport", (PyCFunction) python_import, METH_VARARGS | METH_KEYWORDS, "Import Object."},
   {"version", (PyCFunction) python_version, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
   {"version_num", (PyCFunction) python_version_num, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
   {"add_parameter", (PyCFunction) python_add_parameter, METH_VARARGS | METH_KEYWORDS, "Add Parameter for Customizer."},
   {NULL, NULL, 0, NULL}
 };
 
+
+#define CREATE_OO_FUNC(name) \
+PyObject *python_oo_##name(PyObject *self, PyObject *args, PyObject *kwargs) \
+{ \
+  PyObject *new_args = python_oo_args(self, args); \
+  PyObject *result = python_##name(self, new_args, kwargs); \
+  return result; \
+} 
+
+CREATE_OO_FUNC(translate)
+CREATE_OO_FUNC(rotate)
+CREATE_OO_FUNC(scale)
+CREATE_OO_FUNC(mirror)
+CREATE_OO_FUNC(multmatrix)
+CREATE_OO_FUNC(offset)
+CREATE_OO_FUNC(roof)
+CREATE_OO_FUNC(color)
+CREATE_OO_FUNC(output)
+
+CREATE_OO_FUNC(linear_extrude)
+CREATE_OO_FUNC(rotate_extrude)
+
+CREATE_OO_FUNC(union)
+CREATE_OO_FUNC(difference)
+CREATE_OO_FUNC(intersection)
+
+CREATE_OO_FUNC(hull)
+CREATE_OO_FUNC(minkowski)
+CREATE_OO_FUNC(fill)
+CREATE_OO_FUNC(resize)
+
+CREATE_OO_FUNC(highlight)
+CREATE_OO_FUNC(background)
+CREATE_OO_FUNC(only)
+
+CREATE_OO_FUNC(projection)
+CREATE_OO_FUNC(render)
+
 PyMethodDef PyOpenSCADMethods[] = {
-  {"translate", (PyCFunction) python_translate_oo, METH_VARARGS | METH_KEYWORDS, "Move  Object."},
-  {"rotate", (PyCFunction) python_rotate_oo, METH_VARARGS | METH_KEYWORDS, "Rotate Object."},
-  {"scale", (PyCFunction) python_scale_oo, METH_VARARGS | METH_KEYWORDS, "Scale Object."},
-  {"union", (PyCFunction) python_union_oo, METH_VARARGS | METH_KEYWORDS, "Union Object."},
-  {"difference", (PyCFunction) python_difference_oo, METH_VARARGS | METH_KEYWORDS, "Difference Object."},
-  {"intersection", (PyCFunction) python_intersection_oo, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
-  {"hull", (PyCFunction) python_hull_oo, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
-  {"fill", (PyCFunction) python_fill_oo, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
-  {"mirror", (PyCFunction) python_mirror_oo, METH_VARARGS | METH_KEYWORDS, "Mirror Object."},
-  {"multmatrix", (PyCFunction) python_multmatrix_oo, METH_VARARGS | METH_KEYWORDS, "Multmatrix Object."},
-  {"linear_extrude", (PyCFunction) python_linear_extrude_oo, METH_VARARGS | METH_KEYWORDS, "Linear_extrude Object."},
-  {"rotate_extrude", (PyCFunction) python_rotate_extrude_oo, METH_VARARGS | METH_KEYWORDS, "Rotate_extrude Object."},
-  {"offset", (PyCFunction) python_offset_oo, METH_VARARGS | METH_KEYWORDS, "Offset Object."},
-  {"roof", (PyCFunction) python_roof_oo, METH_VARARGS | METH_KEYWORDS, "Roof Object."},
-  {"output", (PyCFunction) python_output_oo, METH_VARARGS | METH_KEYWORDS, "Output the result."},
-  {"color", (PyCFunction) python_color_oo, METH_VARARGS | METH_KEYWORDS, "Output the result."},
+  {"translate", (PyCFunction) python_oo_translate, METH_VARARGS | METH_KEYWORDS, "Move  Object."},
+  {"rotate", (PyCFunction) python_oo_rotate, METH_VARARGS | METH_KEYWORDS, "Rotate Object."},
+  {"scale", (PyCFunction) python_oo_scale, METH_VARARGS | METH_KEYWORDS, "Scale Object."},
+  {"mirror", (PyCFunction) python_oo_mirror, METH_VARARGS | METH_KEYWORDS, "Mirror Object."},
+  {"multmatrix", (PyCFunction) python_oo_multmatrix, METH_VARARGS | METH_KEYWORDS, "Multmatrix Object."},
+  {"offset", (PyCFunction) python_oo_offset, METH_VARARGS | METH_KEYWORDS, "Offset Object."},
+  {"roof", (PyCFunction) python_oo_roof, METH_VARARGS | METH_KEYWORDS, "Roof Object."},
+  {"color", (PyCFunction) python_oo_color, METH_VARARGS | METH_KEYWORDS, "Output the result."},
+  {"output", (PyCFunction) python_oo_output, METH_VARARGS | METH_KEYWORDS, "Output the result."},
+
+  {"linear_extrude", (PyCFunction) python_oo_linear_extrude, METH_VARARGS | METH_KEYWORDS, "Linear_extrude Object."},
+  {"rotate_extrude", (PyCFunction) python_oo_rotate_extrude, METH_VARARGS | METH_KEYWORDS, "Rotate_extrude Object."},
+  {"union", (PyCFunction) python_oo_union, METH_VARARGS | METH_KEYWORDS, "Union Object."},
+  {"difference", (PyCFunction) python_oo_difference, METH_VARARGS | METH_KEYWORDS, "Difference Object."},
+  {"intersection", (PyCFunction) python_oo_intersection, METH_VARARGS | METH_KEYWORDS, "Intersection Object."},
+
+  {"hull", (PyCFunction) python_oo_hull, METH_VARARGS | METH_KEYWORDS, "Hull Object."},
+  {"minkowski", (PyCFunction) python_oo_hull, METH_VARARGS | METH_KEYWORDS, "Minkowski Object."},
+  {"fill", (PyCFunction) python_oo_fill, METH_VARARGS | METH_KEYWORDS, "Fill Object."},
+  {"resize", (PyCFunction) python_oo_fill, METH_VARARGS | METH_KEYWORDS, "Resize Object."},
+
+  {"highlight", (PyCFunction) python_oo_highlight, METH_VARARGS | METH_KEYWORDS, "Highlight Object."},
+  {"background", (PyCFunction) python_oo_background, METH_VARARGS | METH_KEYWORDS, "Background Object."},
+  {"only", (PyCFunction) python_oo_only, METH_VARARGS | METH_KEYWORDS, "Only Object."},
+
+  {"projection", (PyCFunction) python_oo_fill, METH_VARARGS | METH_KEYWORDS, "Project Object."},
+  {"render", (PyCFunction) python_oo_fill, METH_VARARGS | METH_KEYWORDS, "Render Object."},
+
   {NULL, NULL, 0, NULL}
 };
 
