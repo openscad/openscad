@@ -417,7 +417,7 @@ void initPython(double time)
       if(key_str == NULL) continue;
       if (std::find(std::begin(pythonInventory), std::end(pythonInventory), key_str) == std::end(pythonInventory))
       {
-        PyDict_DelItemString(maindict, key_str);
+        PyDict_DelItemString(maindict, key_str); // TODO does not work!
       }
     }
   } else {
@@ -436,7 +436,8 @@ void initPython(double time)
     pythonInitDict = PyModule_GetDict(pythonMainModule);
     pythonRuntimeInitialized = pythonInitDict != nullptr;
     PyInit_PyOpenSCAD();
-    sprintf(run_str,"from openscad import *\nfa=12.0\nfn=0.0\nfs=2.0\nt=%g",time);
+    PyRun_String("from builtins import *\n", Py_file_input, pythonInitDict, pythonInitDict);
+    sprintf(run_str,"fa=12.0\nfn=0.0\nfs=2.0\nt=%g",time);
     PyRun_String(run_str, Py_file_input, pythonInitDict, pythonInitDict);
 
       // find base variables
@@ -454,7 +455,7 @@ void initPython(double time)
   customizer_parameters.clear();
 }
 
-void finishPython()
+void finishPython(void)
 {
 }
 
