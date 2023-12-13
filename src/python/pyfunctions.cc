@@ -67,23 +67,23 @@ PyObject *python_cube(PyObject *self, PyObject *args, PyObject *kwargs)
   DECLARE_INSTANCE
   auto node = std::make_shared<CubeNode>(instance);
 
-  char *kwlist[] = {"dim", "center", NULL};
-  PyObject *dim = NULL;
+  char *kwlist[] = {"size", "center", NULL};
+  PyObject *size = NULL;
 
   double x = 1, y = 1, z = 1;
   PyObject *center = NULL;
 
 
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OO", kwlist,
-                                   &dim,
+                                   &size,
                                    &center)){
-    PyErr_SetString(PyExc_TypeError, "Error during parsing cube(dim)");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing cube(size)");
     return NULL;
   }	  
 
-  if (dim != NULL) {
+  if (size != NULL) {
     double x, y, z;
-    if (python_vectorval(dim, &(node->x), &(node->y), &(node->z))) {
+    if (python_vectorval(size, &(node->x), &(node->y), &(node->z))) {
       PyErr_SetString(PyExc_TypeError, "Invalid Cube dimensions");
       return NULL;
     }
