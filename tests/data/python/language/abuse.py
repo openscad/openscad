@@ -1,4 +1,5 @@
 import sys, traceback
+from openscad import *
 # Checking the python-openscad for the worst things a user could potentionally do
 
 def catch_error(code):

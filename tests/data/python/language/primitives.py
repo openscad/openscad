@@ -1,6 +1,6 @@
 # Sample python script to check *most* available python bindings and their
 # parameters
-
+from openscad import *
 fn=20
 
 cube1 = cube([3,2,1],center=True)
