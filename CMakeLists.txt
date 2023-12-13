@@ -398,7 +398,6 @@ if(NOT Python_FOUND OR NOT Nettle_FOUND)
     set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
   endif()
 endif()
-
 if(ENABLE_PYTHON)
   add_library(OpenSCADPy
     src/python/pyopenscad.cc
@@ -407,7 +406,24 @@ if(ENABLE_PYTHON)
   message(STATUS ${Nettle_INCLUDE_DIRS})
   message(STATUS ${Nettle_LIBRARIES})
   message(STATUS ${Nettle_FOUND})
+  if(MXECROSS) # Python Lib
+    SET(PYTHON_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python")
+    SET(PYTHON_PACKAGEFOLDER "https://mirror.msys2.org/mingw/mingw64")
+    SET(PYTHON_PACKAGEFILE "mingw-w64-x86_64-python-3.11.5-2-any.pkg.tar.zst")
+    SET(PYTHON_VERSION "python3.11")
+    SET(PYTHON_ARCHIVE "${PYTHON_DEVPATH}/mingw64/lib/lib${PYTHON_VERSION}.dll.a")
+    add_custom_command(
+      OUTPUT ${PYTHON_ARCHIVE}
+      COMMAND mkdir -p python && cd python && wget ${PYTHON_PACKAGEFOLDER}/${PYTHON_PACKAGEFILE} && tar -I zstd -xf ${PYTHON_PACKAGEFILE}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    )
+    add_custom_target(python_lib DEPENDS ${PYTHON_ARCHIVE})
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE "${PYTHON_DEVPATH}/mingw64/include/${PYTHON_VERSION}")
+    target_link_libraries(OpenSCADPy PRIVATE "${PYTHON_DEVPATH}/mingw64/lib/lib${PYTHON_VERSION}.dll.a")
+  else() #MXE
   target_include_directories(OpenSCADPy PRIVATE ${Python_INCLUDE_DIRS})
+  target_link_libraries(OpenSCADPy PRIVATE ${Python_LIBRARIES})
+  endif() # endif MXE
   target_include_directories(OpenSCADPy PRIVATE ${Nettle_INCLUDE_DIRS})
   target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
   if(MSVC)
@@ -415,7 +431,6 @@ if(ENABLE_PYTHON)
   else()
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
   endif()
-  target_link_libraries(OpenSCADPy PRIVATE ${Python_LIBRARIES})
   target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})
   target_link_libraries(OpenSCADPy PRIVATE Eigen3::Eigen)
   target_link_libraries(OpenSCADPy PRIVATE ${GETTEXT_LIBRARY})
