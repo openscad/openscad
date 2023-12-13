@@ -399,9 +399,11 @@ if(NOT Python_FOUND OR NOT Nettle_FOUND)
   endif()
 endif()
 if(ENABLE_PYTHON)
-  add_library(OpenSCADPy
+  SET(PYTHON_SOURCES
     src/python/pyopenscad.cc
     src/python/pyfunctions.cc)
+  add_library(OpenSCADPy
+    ${PYTHON_SOURCES} )
   message(STATUS "Python enabled, using Nettle ")
   message(STATUS ${Nettle_INCLUDE_DIRS})
   message(STATUS ${Nettle_LIBRARIES})
@@ -421,8 +423,8 @@ if(ENABLE_PYTHON)
     target_include_directories(OpenSCADPy SYSTEM PRIVATE "${PYTHON_DEVPATH}/mingw64/include/${PYTHON_VERSION}")
     target_link_libraries(OpenSCADPy PRIVATE "${PYTHON_DEVPATH}/mingw64/lib/lib${PYTHON_VERSION}.dll.a")
   else() #MXE
-  target_include_directories(OpenSCADPy PRIVATE ${Python_INCLUDE_DIRS})
-  target_link_libraries(OpenSCADPy PRIVATE ${Python_LIBRARIES})
+    target_include_directories(OpenSCADPy PRIVATE ${Python_INCLUDE_DIRS})
+    target_link_libraries(OpenSCADPy PRIVATE ${Python_LIBRARIES})
   endif() # endif MXE
   target_include_directories(OpenSCADPy PRIVATE ${Nettle_INCLUDE_DIRS})
   target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
