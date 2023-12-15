@@ -226,6 +226,7 @@ PyObject *python_oo_args(PyObject *self, PyObject *args)
   int n = PyTuple_Size(args);
   PyObject *new_args = PyTuple_New(n + 1);
 
+  Py_INCREF(self);
   PyTuple_SetItem(new_args, 0, self);
 
   for (i = 0; i < PyTuple_Size(args); i++) {
@@ -438,7 +439,11 @@ void initPython(double time)
     char libdir[256];
     snprintf(libdir, 256, "%s/../libraries/python/:.",PlatformUtils::applicationPath().c_str()); /* add libraries/python to python search path */
     PyConfig_SetBytesString(&config, &config.pythonpath_env, libdir);
-    Py_InitializeFromConfig(&config);
+    PyStatus status = Py_InitializeFromConfig(&config);
+    if (PyStatus_Exception(status)) {
+      LOG( message_group::Error, "Python not found. Is it installed ?");
+      return;
+    }
     PyConfig_Clear(&config);
 
     pythonMainModule =  PyImport_AddModule("__main__");
@@ -479,6 +484,8 @@ std::string evaluatePython(const std::string & code)
   PyObject *pyExcValue = nullptr;
   PyObject *pyExcTraceback = nullptr;
   /* special python code to catch errors from stdout and stderr and make them available in OpenSCAD console */
+  if(!pythonMainModuleInitialized)
+	  return "Python not initialized";
   const char *python_init_code="\
 import sys\n\
 class OutputCatcher:\n\
