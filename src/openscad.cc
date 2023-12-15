@@ -329,6 +329,7 @@ struct CommandLine
   const ViewOptions& viewOptions;
   const Camera& camera;
   const boost::optional<FileFormat> export_format;
+  const int numFrames;
   unsigned animate_frames;
   const std::vector<std::string> summaryOptions;
   const std::string summaryFile;
@@ -566,7 +567,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     std::shared_ptr<const Geometry> root_geom;
     if ((curFormat == FileFormat::ECHO || curFormat == FileFormat::PNG) && (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)) {
       // OpenCSG or throwntogether png -> just render a preview
-      glview = prepare_preview(tree, cmd.viewOptions, camera);
+      glview = prepare_preview(tree, cmd.viewOptions, camera, cmd.numFrames);
       if (!glview) return 1;
     }
 #ifdef ENABLE_CGAL
@@ -613,7 +614,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
       bool success = true;
       bool wrote = with_output(cmd.is_stdout, filename_str, [&success, &root_geom, &cmd, &camera, &glview](std::ostream& stream) {
         if (cmd.viewOptions.renderer == RenderType::CGAL || cmd.viewOptions.renderer == RenderType::GEOMETRY) {
-          success = export_png(root_geom, cmd.viewOptions, camera, stream);
+          success = export_png(root_geom, cmd.viewOptions, camera, stream, cmd.numFrames);
         } else {
           success = export_png(*glview, stream);
         }
@@ -962,6 +963,9 @@ int main(int argc, char **argv)
   po::options_description desc("Allowed options");
   desc.add_options()
     ("export-format", po::value<string>(), "overrides format of exported scad file when using option '-o', arg can be any of its supported file extensions.  For ascii stl export, specify 'asciistl', and for binary stl export, specify 'binstl'.  Ascii export is the current stl default, but binary stl is planned as the future default so asciistl should be explicitly specified in scripts when needed.\n")
+#ifdef ENABLE_TEST_TOOLS
+    ("num-frames", po::value<int>(), "=n For testing only: When writing to png, render the same frame n times.")
+#endif
     ("o,o", po::value<vector<string>>(), "output specified file instead of running the GUI, the file extension specifies the type: stl, off, wrl, amf, 3mf, csg, dxf, svg, pdf, png, echo, ast, term, nef3, nefdbg (May be used multiple time for different exports). Use '-' for stdout\n")
     ("D,D", po::value<vector<string>>(), "var=val -pre-define variables")
     ("p,p", po::value<string>(), "customizer parameter file")
@@ -1172,6 +1176,13 @@ int main(int argc, char **argv)
     }
   }
 
+  int num_frames = 1;
+#ifdef ENABLE_TEST_TOOLS
+ if (vm.count("num-frames")) {
+    num_frames = vm["num-frames"].as<int>();
+  }
+#endif
+
   unsigned animate_frames = 0;
   if (vm.count("animate")) {
     animate_frames = vm["animate"].as<unsigned>();
@@ -1221,6 +1232,7 @@ int main(int argc, char **argv)
             viewOptions,
             camera,
             export_format,
+            num_frames,
             animate_frames,
             vm.count("summary") ? vm["summary"].as<std::vector<std::string>>() : std::vector<std::string>{},
             vm.count("summary-file") ? vm["summary-file"].as<std::string>() : ""

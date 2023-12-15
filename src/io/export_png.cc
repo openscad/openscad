@@ -15,7 +15,7 @@ static void setupCamera(Camera& cam, const BoundingBox& bbox)
   if (cam.viewall) cam.viewAll(bbox);
 }
 
-bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output)
+bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output, int num_frames)
 {
   PRINTD("export_png geom");
   std::unique_ptr<OffscreenView> glview;
@@ -38,7 +38,11 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
   glview->setShowAxes(options["axes"]);
   glview->setShowScaleProportional(options["scales"]);
   glview->setShowEdges(options["edges"]);
-  glview->paintGL();
+  // Render 360 frames for benchmarking purposes
+  LOG("Rendering %1$d frames", num_frames);
+  for (int i=0;i<num_frames;i++) {
+    glview->paintGL();
+  }
   glview->save(output);
   return true;
 }
@@ -49,7 +53,7 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
 #endif
 #include "ThrownTogetherRenderer.h"
 
-std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera)
+std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera, int num_frames)
 {
   PRINTD("prepare_preview_common");
   CsgInfo csgInfo = CsgInfo();
@@ -90,7 +94,11 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
   glview->setShowAxes(options["axes"]);
   glview->setShowScaleProportional(options["scales"]);
   glview->setShowEdges(options["edges"]);
-  glview->paintGL();
+  // Render 360 frames for benchmarking purposes
+  LOG("Rendering %1$d frames", num_frames);
+  for (int i=0;i<num_frames;i++) {
+    glview->paintGL();
+  }
   return glview;
 }
 
