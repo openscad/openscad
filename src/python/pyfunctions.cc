@@ -598,26 +598,6 @@ PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
       -sy,       cy *sx,                  cx *cy;
     node->matrix.rotate(M);
 
-  } else {
-#if 0
-// TODO activate this option (need better par parsing)
-    double a = 0.0;
-    bool aConverted = val_a.getDouble(a);
-    aConverted &= !std::isinf(a) && !std::isnan(a);
-
-    Vector3d v(0, 0, 1);
-    bool vConverted = val_v.getVec3(v[0], v[1], v[2], 0.0);
-    node->matrix.rotate(angle_axis_degrees(aConverted ? a : 0, v));
-    if (val_v.isDefined() && !vConverted) {
-      if (aConverted) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(..., v=%1$s) parameter", val_v.toEchoStringNoThrow());
-      } else {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s, v=%2$s) parameter", val_a.toEchoStringNoThrow(), val_v.toEchoStringNoThrow());
-      }
-    } else if (!aConverted) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Problem converting rotate(a=%1$s) parameter", val_a.toEchoStringNoThrow());
-    }
-#endif // if 0
   }
 
   node->children.push_back(child);
@@ -1257,19 +1237,6 @@ PyObject *python_resize(PyObject *self, PyObject *args, PyObject *kwargs)
     node->newsize[1] = y;
     node->newsize[2] = z;
   }
-
-  /* TODO what is that ?
-     const auto& autosize = parameters["auto"];
-     node->autosize << false, false, false;
-     if (autosize.type() == Value::Type::VECTOR) {
-     const auto& va = autosize.toVector();
-     if (va.size() >= 1) node->autosize[0] = va[0].toBool();
-     if (va.size() >= 2) node->autosize[1] = va[1].toBool();
-     if (va.size() >= 3) node->autosize[2] = va[2].toBool();
-     } else if (autosize.type() == Value::Type::BOOL) {
-     node->autosize << autosize.toBool(), autosize.toBool(), autosize.toBool();
-     }
-   */
 
   node->children.push_back(child);
   node->convexity = convexity;
@@ -1911,7 +1878,9 @@ PyMethodDef PyOpenSCADFunctions[] = {
   { #name, (PyCFunction) ( [ ] (PyObject *self, PyObject *args) -> PyObject * { \
   PyObject *new_args = python_oo_args(self, args); \
   PyObject *result = python_##name(self, new_args, NULL); \
+  Py_XDECREF(args); \
   return result;  } ),  METH_VARARGS | METH_KEYWORDS, (desc)},
+/* args and new_args swap roles, free args instead */
 
 
 PyMethodDef PyOpenSCADMethods[] = {
