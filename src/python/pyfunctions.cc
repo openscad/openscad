@@ -526,7 +526,6 @@ PyObject *python_scale(PyObject *self, PyObject *args, PyObject *kwargs)
 
   if (OpenSCAD::rangeCheck) {
     if (scalevec[0] == 0 || scalevec[1] == 0 || scalevec[2] == 0 || !std::isfinite(scalevec[0])|| !std::isfinite(scalevec[1])|| !std::isfinite(scalevec[2])) {
-//      LOG(message_group::Warning, instance->location(), parameters.documentRoot(), "scale(%1$s)", parameters["v"].toEchoStringNoThrow());
     }
   }
   node->matrix.scale(scalevec);
@@ -567,7 +566,6 @@ PyObject *python_rotate(PyObject *self, PyObject *args, PyObject *kwargs)
     double cx = 1, cy = 1, cz = 1;
     double a = 0.0;
     bool ok = true;
-//    const auto& vec_a = val_a.toVector();
     switch (PyList_Size(val_a)) {
     case 3:
       a = PyFloat_AsDouble(PyList_GetItem(val_a, 2));
@@ -634,9 +632,6 @@ PyObject *python_mirror(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Invalid vector specifiaction in mirror");
     return NULL;
   }
-  // x /= sqrt(x*x + y*y + z*z)
-  // y /= sqrt(x*x + y*y + z*z)
-  // z /= sqrt(x*x + y*y + z*z)
   if (x != 0.0 || y != 0.0 || z != 0.0) {
     // skip using sqrt to normalize the vector since each element of matrix contributes it with two multiplied terms
     // instead just divide directly within each matrix element
@@ -835,8 +830,6 @@ PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
       node->color = *hexColor;
     } else {
       PyErr_SetString(PyExc_TypeError, "Cannot parse color");
-//        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to parse color \"%1$s\"", colorname);
-//        LOG(message_group::None, Location::NONE, "", "Please see https://en.wikipedia.org/wiki/Web_colors");
       return NULL;
     }
   }
@@ -1288,8 +1281,6 @@ PyObject *python_roof(PyObject *self, PyObject *args, PyObject *kwargs)
     node->method = method;
     // method can only be one of...
     if (node->method != "voronoi" && node->method != "straight") {
-//      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-//          "Unknown roof method '" + node->method + "'. Using 'voronoi'.");
       node->method = "voronoi";
     }
   }
@@ -1701,11 +1692,6 @@ PyObject *do_import_python(PyObject *self, PyObject *args, PyObject *kwargs, Imp
   double val = dpi;
   if (val < 0.001) {
     PyErr_SetString(PyExc_TypeError, "Invalid dpi value giving");
-//      std::string filePath = boostfs_uncomplete(instance->location().filePath(), "");
-//      LOG(message_group::Warning, Location::NONE, "",
-//          "Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
-//          origin.toEchoStringNoThrow(), filePath, filePath, inst->location().firstLine()
-//          );
     return NULL;
   } else {
     node->dpi = val;
@@ -1791,7 +1777,7 @@ PyObject *python_add_parameter(PyObject *self, PyObject *args, PyObject *kwargs,
   return Py_None;
 }
 
-PyObject *python_debug_modifier(PyObject *arg,int mode) { // is used to highlight
+PyObject *python_debug_modifier(PyObject *arg,int mode) {
   DECLARE_INSTANCE
   auto child = PyOpenSCADObjectToNode(arg);
   switch(mode){

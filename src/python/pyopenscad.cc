@@ -112,7 +112,6 @@ int python_more_obj(std::vector<std::shared_ptr<AbstractNode>>& children, PyObje
 std::shared_ptr<AbstractNode> PyOpenSCADObjectToNode(PyObject *obj)
 {
   std::shared_ptr<AbstractNode> result = ((PyOpenSCADObject *) obj)->node;
-//  Py_XDECREF(obj);
   return result;
 }
 
@@ -220,7 +219,7 @@ void get_fnas(double& fn, double& fa, double& fs) {
  * Helper function to offer OO functions without having to rewrite all funcions in 2 variants(cascading functions)
  */
 
-PyObject *python_oo_args(PyObject *self, PyObject *args) // returns new reference,
+PyObject *python_oo_args(PyObject *self, PyObject *args)
 {
   int i;
   PyObject *item;
@@ -545,7 +544,6 @@ sys.stderr = stderr_bak\n\
       Py_XDECREF(pyExcTraceback);
     }
 
-//    if(pyExcValue != nullptr) Py_XDECREF(pyExcValue);
     return error;
 }
 /*
