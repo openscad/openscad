@@ -27,6 +27,7 @@ pacboy --noconfirm --sync --needed \
     bison: \
     flex: \
     unzip: \
+    zstd: \
     toolchain:p \
     cmake:p \
     ninja:p \
