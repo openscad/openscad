@@ -431,13 +431,13 @@ if(ENABLE_PYTHON)
     add_custom_target(python_mingw DEPENDS ${PYTHON_MINGW_ARCHIVE})
 
     # Python embeddable Package
-    SET(PYTHON_EMBEDDABLE_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_embed")
+    SET(PYTHON_EMBEDDABLE_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/bin")
     SET(PYTHON_EMBEDDABLE_PACKAGEFILE "python-3.11.5-embed-amd64.zip")
     SET(PYTHON_EMBEDDABLE_URL "http://www.python.org/ftp/python/3.11.5")
     SET(PYTHON_EMBEDDABLE_DLL "${PYTHON_EMBEDDABLE_DEVPATH}/python311.dll")
     add_custom_command(
       OUTPUT ${PYTHON_EMBEDDABLE_DLL}
-      COMMAND mkdir -p python_embed && cd python_embed && wget ${PYTHON_EMBEDDABLE_URL}/${PYTHON_EMBEDDABLE_PACKAGEFILE} && unzip ${PYTHON_EMBEDDABLE_PACKAGEFILE}
+      COMMAND mkdir -p bin && cd bin && wget ${PYTHON_EMBEDDABLE_URL}/${PYTHON_EMBEDDABLE_PACKAGEFILE} && unzip ${PYTHON_EMBEDDABLE_PACKAGEFILE}
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     )
     add_custom_target(python_embed DEPENDS ${PYTHON_EMBEDDABLE_DLL})
@@ -1315,21 +1315,22 @@ endif()
 
 if(NOT APPLE OR APPLE_UNIX)
   set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
-  install(TARGETS OpenSCAD RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
   if(WIN32)
+    if(ENABLE_PYTHON)
+      install(DIRECTORY ${CMAKE_SOURCE_DIR}/bin DESTINATION "." )
+      install(FILES ${CMAKE_SOURCE_DIR}/bin/python311.dll DESTINATION "bin" RENAME "libpython3.11.dll")
+    endif()  
+    install(TARGETS OpenSCAD RUNTIME DESTINATION "bin")
     if(USE_MIMALLOC AND MI_LINK_SHARED)
       if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect.dll DESTINATION ".")
+        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect.dll DESTINATION "bin")
       elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect32.dll DESTINATION ".")
+        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect32.dll DESTINATION "bin")
       endif()
-      install(FILES ${CMAKE_BINARY_DIR}/submodules/mimalloc/mimalloc.dll DESTINATION ".")
+      install(FILES ${CMAKE_BINARY_DIR}/submodules/mimalloc/mimalloc.dll DESTINATION "bin")
     endif()
-    if(ENABLE_PYTHON)
-      install(DIRECTORY ${CMAKE_SOURCE_DIR}/python_embed DESTINATION ".")
-      install(FILES ${CMAKE_SOURCE_DIR}/python_embed/python311.dll DESTINATION "python_embed" RENAME "libpython3.11.dll")
-    endif()  
   else()
+    install(TARGETS OpenSCAD RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
     install(FILES ${CMAKE_CURRENT_LIST_DIR}/doc/openscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME openscad${SUFFIX_WITH_DASH}.1)
     install(FILES ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.openscad.OpenSCAD${SUFFIX_WITH_DASH}.appdata.xml)
     install(FILES ${RESOURCE_DIR}/icons/openscad.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications RENAME openscad${SUFFIX_WITH_DASH}.desktop)
@@ -1369,11 +1370,12 @@ if(MXECROSS)
   ")
   set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "\
     \\\${RegisterExtension} '$INSTDIR\\\\openscad.exe' '.scad' 'OpenSCAD_File'\n\
-    \\\${EnvVarUpdate} $0 'PATH' 'A' 'HKLM' '$INSTDIR\\\\python_embed'\n\
+    CreateShortCut \\\"$INSTDIR\\\\OpenSCAD.lnk\\\" \\\"$INSTDIR\\\\bin\\\\OpenSCAD.exe\\\"
     \\\${RefreshShellIcons}\
   ")
   set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "\
     \\\${UnRegisterExtension} '.scad' 'OpenSCAD_File'\n\
+    Delete \\\"$INSTDIR\\\\OpenSCAD.lnk\\\"
     \\\${RefreshShellIcons}\
   ")
 endif()

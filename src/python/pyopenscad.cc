@@ -432,15 +432,6 @@ void initPython(double time)
       }
     }
   } else {
-#ifdef _WIN32	  
-	  char pythonhome[200];
-//	  GetModuleFileName(pythonhome,sizeof(pythonhome));
-//	  char *ptr = strstr(pythonhome,"openscad");
-//	  if(ptr != NULL) *ptr='\0';
-//	  strcat(pythonhome,"\\python_embed");
-//	  printf("home is %s\n",pythonhome);
-//	  PlatformUtils::setenv("PYTHONHOME",pythonhome,1);	  
-#endif    
     char run_str[200];
     PyImport_AppendInittab("openscad", &PyInit_openscad);
     PyConfig config;
@@ -448,10 +439,6 @@ void initPython(double time)
     char libdir[256];
     snprintf(libdir, 256, "%s/../libraries/python/:.",PlatformUtils::applicationPath().c_str()); /* add libraries/python to python search path */
     PyConfig_SetBytesString(&config, &config.pythonpath_env, libdir);
-    PyConfig_SetBytesString(&config, &config.exec_prefix, "python_embed");
-//    PyConfig_SetBytesString(&config, &config.home, "python_embed");
-//    PyConfig_SetBytesString(&config, &config.platlibdir, "python_embed");
-//    PyConfig_SetBytesString(&config, &config.prefix, "python_embed");
     PyStatus status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
       LOG( message_group::Error, "Python not found. Is it installed ?");
