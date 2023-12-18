@@ -49,6 +49,7 @@ pacboy --noconfirm --sync --needed \
     python-pip:p \
     python-numpy:p \
     python-pillow:p \
-    nettle:p
+    nettle:p \
+    unzip:p
 
 date "+### %Y-%m-%d %T msys2-install-dependencies finished"
