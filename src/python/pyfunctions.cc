@@ -31,6 +31,9 @@
 #include "GeometryUtils.h"
 #include <Python.h>
 #include "pyopenscad.h"
+#include "SourceFile.h"
+#include "BuiltinContext.h"
+extern bool parse(SourceFile *& file, const std::string& text, const std::string& filename, const std::string& mainFile, int debug);
 
 #include "primitives.h"
 #include "TransformNode.h"
@@ -1777,6 +1780,32 @@ PyObject *python_add_parameter(PyObject *self, PyObject *args, PyObject *kwargs,
   return Py_None;
 }
 
+PyObject *python_scad(PyObject *self, PyObject *args, PyObject *kwargs)
+{
+  DECLARE_INSTANCE
+  char *kwlist[] = {"code", NULL};
+  const char *code = NULL;
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "s", kwlist,
+                                   &code
+                                   )) {
+    PyErr_SetString(PyExc_TypeError, "Error during parsing scad(code)");
+    return NULL;
+  }
+
+  SourceFile *parsed_file = NULL;
+  if(!parse(parsed_file, code, "python", "python", false)) {
+    PyErr_SetString(PyExc_TypeError, "Error in SCAD code");
+    return Py_None;
+  }
+
+  EvaluationSession session{"python"};
+  ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
+  std::shared_ptr<const FileContext> file_context;
+  std::shared_ptr<AbstractNode> resultnode = parsed_file->instantiate(*builtin_context, &file_context);
+  delete parsed_file;
+  return PyOpenSCADObjectFromNode(&PyOpenSCADType,resultnode);
+}
+
 PyObject *python_debug_modifier(PyObject *arg,int mode) {
   DECLARE_INSTANCE
   auto child = PyOpenSCADObjectToNode(arg);
@@ -1857,6 +1886,7 @@ PyMethodDef PyOpenSCADFunctions[] = {
   {"version", (PyCFunction) python_version, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
   {"version_num", (PyCFunction) python_version_num, METH_VARARGS | METH_KEYWORDS, "Output openscad Version."},
   {"add_parameter", (PyCFunction) python_add_parameter, METH_VARARGS | METH_KEYWORDS, "Add Parameter for Customizer."},
+  {"scad", (PyCFunction) python_scad, METH_VARARGS | METH_KEYWORDS, "Source OpenSCAD code."},
   {NULL, NULL, 0, NULL}
 };
 
