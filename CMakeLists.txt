@@ -421,11 +421,12 @@ if(ENABLE_PYTHON)
     SET(PYTHON_MINGW_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_mingw")
     SET(PYTHON_MINGW_PACKAGEFOLDER "https://mirror.msys2.org/mingw/mingw64")
     SET(PYTHON_MINGW_PACKAGEFILE "mingw-w64-x86_64-python-3.11.5-2-any.pkg.tar.zst")
+    SET(PYTHON_MINGW_PACKAGETAR "mingw-w64-x86_64-python-3.11.5-2-any.pkg.tar")
     SET(PYTHON_MINGW_VERSION "python3.11")
     SET(PYTHON_MINGW_ARCHIVE "${PYTHON_MINGW_DEVPATH}/mingw64/lib/lib${PYTHON_MINGW_VERSION}.dll.a")
     add_custom_command(
       WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-      COMMAND rm -rf python_mingw && mkdir python_mingw && cd python_mingw && wget ${PYTHON_MINGW_PACKAGEFOLDER}/${PYTHON_MINGW_PACKAGEFILE} && tar -I zstd -xf ${PYTHON_MINGW_PACKAGEFILE}
+      COMMAND rm -rf python_mingw && mkdir python_mingw && cd python_mingw && wget ${PYTHON_MINGW_PACKAGEFOLDER}/${PYTHON_MINGW_PACKAGEFILE} && unzstd ${PYTHON_MINGW_PACKAGEFILE} && tar -xf ${PYTHON_MINGW_PACKAGETAR}
       OUTPUT ${PYTHON_MINGW_ARCHIVE}
     )
     add_custom_target(tgt_python_mingw DEPENDS ${PYTHON_MINGW_ARCHIVE})
