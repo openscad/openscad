@@ -2281,7 +2281,7 @@
                <item>
                 <widget class="QCheckBox" name="enableTraceUsermoduleParametersCheckBox">
                  <property name="text">
-                  <string>show parameters of usermodul calls in trace</string>
+                  <string>show parameters of usermodule calls in trace</string>
                  </property>
                  <property name="checked">
                   <bool>false</bool>

@@ -1855,7 +1855,7 @@ msgid "(max. number or trace messages)"
 msgstr ""
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1997
-msgid "show parameters of usermodul calls in trace"
+msgid "show parameters of usermodule calls in trace"
 msgstr ""
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1998
