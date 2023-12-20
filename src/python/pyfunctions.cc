@@ -736,6 +736,7 @@ PyObject *python_multmatrix(PyObject *self, PyObject *args, PyObject *kwargs)
     PyErr_SetString(PyExc_TypeError, "Matrix vector should be 4x4 array");
     return NULL;
   }
+  node->children.push_back(child);
   return PyOpenSCADObjectFromNode(&PyOpenSCADType, node);
 
 }
