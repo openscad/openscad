@@ -54,10 +54,16 @@ option(ENABLE_TBB "Enable support for oneAPI Threading Building Blocks." ON)
 option(ENABLE_CGAL "Enable CGAL." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
+option(TRACY_ENABLE "Enable Tracy profiler support" OFF)
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON "NOT HEADLESS" OFF)
 cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS" OFF)
+
+if (TRACY_ENABLE)
+  # tracy requires debug info for useful results
+  set(CMAKE_BUILD_TYPE RelWithDebInfo)
+endif()
 
 if(EXPERIMENTAL AND ENABLE_TBB)
   # TBB 2021.8.0 uses aligned memory deallocation.
@@ -372,6 +378,19 @@ if(ENABLE_CGAL)
   #endif()
   set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
 endif(ENABLE_CGAL)
+
+if (TRACY_ENABLE)
+  include(FetchContent)
+  FetchContent_Declare(tracy
+    GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+    GIT_TAG v0.10
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+  )
+  FetchContent_MakeAvailable(tracy)
+  option(TRACY_NO_CODE_TRANSFER ON)
+  target_link_libraries(OpenSCAD INTERFACE TracyClient)
+endif()
 
 find_package(LibZip REQUIRED QUIET)
 message(STATUS "libzip: ${LIBZIP_VERSION}")
