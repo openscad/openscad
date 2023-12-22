@@ -24,6 +24,7 @@
  *
  */
 
+#pragma once
 #include "node.h"
 #include <sstream>
 
