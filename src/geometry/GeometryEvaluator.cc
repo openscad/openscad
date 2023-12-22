@@ -625,16 +625,11 @@ Response GeometryEvaluator::visit(State& state, const RenderNode& node)
    input: None
    output: PolySet or Polygon2d
  */
-
 Response GeometryEvaluator::visit(State& state, const LeafNode& node)
 {
   if (state.isPrefix()) {
     std::shared_ptr<const Geometry> geom;
-    if (
-#ifdef ENABLE_PYTHON
-      python_active ||
-#endif
-      !isSmartCached(node)) {
+    if (!isSmartCached(node)) {
       geom = node.createGeometry();
       assert(geom);
       if (const auto polygon = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
@@ -650,6 +645,7 @@ Response GeometryEvaluator::visit(State& state, const LeafNode& node)
   }
   return Response::PruneTraversal;
 }
+
 Response GeometryEvaluator::visit(State& state, const TextNode& node)
 {
   if (state.isPrefix()) {

@@ -793,6 +793,7 @@ set(CORE_SOURCES
   src/core/ScopeContext.cc
   src/core/module.cc
   src/core/node.cc
+  src/core/node_clone.cc
   src/core/NodeDumper.cc
   src/core/OffsetNode.cc
   src/core/Parameters.cc

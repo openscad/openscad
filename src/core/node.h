@@ -66,6 +66,7 @@ public:
   int idx; // Node index (unique per tree)
 
   std::shared_ptr<const AbstractNode> getNodeByID(int idx, std::deque<std::shared_ptr<const AbstractNode>>& path) const;
+  std::shared_ptr<AbstractNode> clone(void);
 };
 
 class AbstractIntersectionNode : public AbstractNode
