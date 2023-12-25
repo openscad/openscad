@@ -508,13 +508,3 @@ BoundingBox OpenCSGRenderer::getBoundingBox() const
 
   return bbox;
 }
-
-std::vector<SelectedObject> OpenCSGRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt,int mouse_x, int mouse_y, double tolerance) {
-	std::vector<SelectedObject> result;
-//	printf("opencsg renderer\n");
-//	GLfloat depth=10.0;
-//	GL_CHECKD(glReadPixels(mouse_x, mouse_y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth));
-//	printf("Depth is %g\n",depth);
-
-	return result;
-}

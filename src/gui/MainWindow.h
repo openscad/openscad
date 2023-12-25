@@ -4,6 +4,7 @@
 #include "Geometry.h"
 #include "export.h"
 #include "ExportPdfDialog.h"
+#include "Measurement.h"
 #include "RenderStatistic.h"
 #include "TabManager.h"
 #include "Tree.h"
@@ -85,6 +86,8 @@ public:
   QWidget *errorLogDockTitleWidget;
   QWidget *animateDockTitleWidget;
   QWidget *viewportControlTitleWidget;
+
+  Measurement meas;
 
   int compileErrors;
   int compileWarnings;

@@ -57,6 +57,7 @@
 #endif
 
 #include "qt-obsolete.h"
+#include <Measurement.h>
 
 QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent)
 {
@@ -286,7 +287,7 @@ void QGLView::normalizeAngle(GLdouble& angle)
 void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
   auto this_mouse = event->globalPos();
-  if(measure_state != 0) {
+  if(measure_state != MEASURE_IDLE) {
 	QPoint pt = event->pos();
   	this->shown_obj = findObject(pt.x(), pt.y());
 	update();

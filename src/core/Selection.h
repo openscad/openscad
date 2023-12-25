@@ -28,7 +28,6 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-enum { MEASURE_IDLE, MEASURE_DIST1, MEASURE_DIST2, MEASURE_ANG1, MEASURE_ANG2, MEASURE_ANG3 };
 enum { SELECTION_POINT, SELECTION_LINE};
 
 class SelectedObject {
