@@ -46,12 +46,16 @@
 
  */
 
-PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(convex), dirty(false)
+PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(convex), dirty(true)
 {
 }
 
-PolySet::PolySet(Polygon2d origin) : polygon(std::move(origin)), dim(2), convex(unknown), dirty(false)
+PolySet::PolySet(Polygon2d origin) : polygon(std::move(origin)), dim(2), convex(unknown), dirty(true)
 {
+}
+
+std::unique_ptr<Geometry> PolySet::copy() const {
+  return std::make_unique<PolySet>(*this);
 }
 
 std::string PolySet::dump() const
@@ -157,11 +161,4 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
       i++;
     }
   }
-}
-
-void PolySet::reset(const PolySet *ref)
-{
-	this->vertices=ref->vertices;
-	this->indices = ref->indices;
-	this->dirty=true;
 }

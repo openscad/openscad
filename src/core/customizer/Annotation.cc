@@ -30,7 +30,7 @@
 #include <utility>
 #include "Expression.h"
 
-Annotation::Annotation(std::string name, shared_ptr<Expression> expr)
+Annotation::Annotation(std::string name, std::shared_ptr<Expression> expr)
   : name(std::move(name)), expr(std::move(expr))
 {
 }

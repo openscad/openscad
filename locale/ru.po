@@ -1763,7 +1763,7 @@ msgid "Console"
 msgstr "Консоль"
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1971
-msgid "clear console before Preview/Render"
+msgid "Clear console before Preview/Render"
 msgstr ""
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1972
@@ -1855,7 +1855,7 @@ msgid "(max. number or trace messages)"
 msgstr ""
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1997
-msgid "show parameters of usermodul calls in trace"
+msgid "Show parameters of usermodule calls in trace"
 msgstr ""
 
 #: build/OpenSCAD_autogen/include/ui_Preferences.h:1998

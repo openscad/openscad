@@ -45,9 +45,8 @@ template bool createMeshFromPolySet(const PolySet& ps, CGAL_HybridMesh& mesh);
 template bool createMeshFromPolySet(const PolySet& ps, CGAL_DoubleMesh& mesh);
 
 template <class TriangleMesh>
-bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
+std::unique_ptr<PolySet> createPolySetFromMesh(const TriangleMesh& mesh)
 {
-  bool err = false;
   PolySetBuilder builder(0,mesh.number_of_faces()+ mesh.number_of_faces());
   for (const auto& f : mesh.faces()) {
     builder.appendPoly(mesh.degree(f));
@@ -63,12 +62,10 @@ bool createPolySetFromMesh(const TriangleMesh& mesh, PolySet& ps)
       builder.appendVertex(builder.vertexIndex(Vector3d(x, y, z)));
     }
   }
-  builder.append(&ps);
-  ps.reset(builder.build());
-  return err;
+  return builder.build();
 }
 
-template bool createPolySetFromMesh(const CGAL_HybridMesh& mesh, PolySet& ps);
+template std::unique_ptr<PolySet> createPolySetFromMesh(const CGAL_HybridMesh& mesh);
 
 template <class InputKernel, class OutputKernel>
 void copyMesh(

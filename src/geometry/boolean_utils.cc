@@ -32,7 +32,7 @@
 #include <unordered_set>
 
 #ifdef ENABLE_CGAL
-bool applyHull(const Geometry::Geometries& children, PolySet& result)
+std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
 {
   using K = CGAL::Epick;
   // Collect point cloud
@@ -82,7 +82,7 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
   }
 
   const auto &points = reindexer.getArray();
-  if (points.size() <= 3) return false;
+  if (points.size() <= 3) return nullptr;
 
   // Apply hull
   bool success = false;
@@ -94,18 +94,18 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
       PRINTDB("After hull facets: %d", r.size_of_facets());
       PRINTDB("After hull closed: %d", r.is_closed());
       PRINTDB("After hull valid: %d", r.is_valid());
-      success = !CGALUtils::createPolySetFromPolyhedron(r, result);
+      return CGALUtils::createPolySetFromPolyhedron(r);
     } catch (const CGAL::Failure_exception& e) {
       LOG(message_group::Error, "CGAL error in applyHull(): %1$s", e.what());
     }
   }
-  return success;
+  return nullptr;
 }
 
 /*!
    children cannot contain nullptr objects
  */
-shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
+std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 {
 #if ENABLE_MANIFOLD
   if (Feature::ExperimentalManifold.is_enabled()) {
@@ -119,7 +119,7 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
   assert(children.size() >= 2);
   auto it = children.begin();
   t_tot.start();
-  shared_ptr<const Geometry> operands[2] = {it->second, shared_ptr<const Geometry>()};
+  std::shared_ptr<const Geometry> operands[2] = {it->second, std::shared_ptr<const Geometry>()};
   try {
     while (++it != children.end()) {
       operands[1] = it->second;
@@ -132,8 +132,8 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
       for (size_t i = 0; i < 2; ++i) {
         CGAL_Polyhedron poly;
 
-        auto ps = dynamic_pointer_cast<const PolySet>(operands[i]);
-        auto nef = dynamic_pointer_cast<const CGAL_Nef_polyhedron>(operands[i]);
+        auto ps = std::dynamic_pointer_cast<const PolySet>(operands[i]);
+        auto nef = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(operands[i]);
 
         if (!nef) {
           nef = CGALUtils::getNefPolyhedronFromGeometry(operands[i]);
@@ -276,10 +276,8 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 
       if (it != std::next(children.begin())) operands[0].reset();
 
-      auto partToGeom = [&](auto& poly) -> shared_ptr<const Geometry> {
-          auto *ps = new PolySet(3, /* convex= */ true);
-	  CGALUtils::createPolySetFromPolyhedron(poly, *ps);
-          return shared_ptr<const Geometry>(ps);
+      auto partToGeom = [&](auto& poly) -> std::shared_ptr<const Geometry> {
+          return CGALUtils::createPolySetFromPolyhedron(poly);
         };
 
       if (result_parts.size() == 1) {
@@ -299,9 +297,9 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
         t.stop();
         PRINTDB("Minkowski: Union done: %f s", t.time());
         t.reset();
-        operands[0] = N;
+        operands[0] = std::move(N);
       } else {
-        operands[0] = shared_ptr<const Geometry>(new CGAL_Nef_polyhedron());
+        operands[0] = std::make_shared<CGAL_Nef_polyhedron>();
       }
     }
 
@@ -313,7 +311,7 @@ shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
     // If anything throws we simply fall back to Nef Minkowski
     PRINTD("Minkowski: Falling back to Nef Minkowski");
 
-    auto N = shared_ptr<const Geometry>(CGALUtils::applyOperator3D(children, OpenSCADOperator::MINKOWSKI));
+    auto N = std::shared_ptr<const Geometry>(CGALUtils::applyOperator3D(children, OpenSCADOperator::MINKOWSKI));
     return N;
   }
 }
@@ -323,7 +321,7 @@ bool applyHull(const Geometry::Geometries& children, PolySet& result)
   return false;
 }
 
-shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
+std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 {
   return std::make_shared<PolySet>(3);
 }

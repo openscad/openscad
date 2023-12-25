@@ -28,12 +28,12 @@
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 
-void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output)
+void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   PolySetBuilder builder;
   builder.appendGeometry(geom);
-  auto *ps = builder.build();
-	
+  auto ps = builder.build();
+
   output << "#VRML V2.0 utf8\n\n";
 
   output << "Shape {\n\n";
@@ -66,8 +66,8 @@ void export_wrl(const shared_ptr<const Geometry>& geom, std::ostream& output)
   for (size_t i = 0; i < numindices; ++i) {
     const auto &poly=ps->indices[i];
     for(int j=0;j<poly.size();j++) {
-      output << poly[i];
-        if (i < poly.size() - 1) output << ",";
+      output << poly[j];
+        if (j < poly.size() - 1) output << ",";
       output << "\n";
     }
   }

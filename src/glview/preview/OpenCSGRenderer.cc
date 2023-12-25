@@ -25,9 +25,9 @@
  */
 
 #include "system-gl.h"
-#include "memory.h"
 #include "OpenCSGRenderer.h"
 
+#include <memory.h>
 #include <utility>
 #include "PolySet.h"
 #include "Feature.h"
@@ -121,7 +121,7 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const shaderinfo_
 OpenCSGPrim *OpenCSGRenderer::createCSGPrimitive(const CSGChainObject& csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const
 {
   auto *prim = new OpenCSGPrim(operation, csgobj.leaf->geom->getConvexity(), *this);
-  std::shared_ptr<const PolySet> ps = dynamic_pointer_cast<const PolySet>(csgobj.leaf->geom);
+  std::shared_ptr<const PolySet> ps = std::dynamic_pointer_cast<const PolySet>(csgobj.leaf->geom);
   if (ps) {
     prim->geom = ps;
   }

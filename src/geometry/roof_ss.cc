@@ -72,14 +72,14 @@ std::vector<CGAL_Polygon_with_holes_2> polygons_with_holes(const ClipperLib::Pol
   return ret;
 }
 
-PolySet *straight_skeleton_roof(const Polygon2d& poly)
+std::unique_ptr<PolySet> straight_skeleton_roof(const Polygon2d& poly)
 {
   PolySetBuilder hatbuilder;
 
   int scale_pow2 = ClipperUtils::getScalePow2(poly.getBoundingBox(), 32);
   ClipperLib::Paths paths = ClipperUtils::fromPolygon2d(poly, scale_pow2);
   ClipperLib::PolyTree polytree = ClipperUtils::sanitize(paths);
-  Polygon2d *poly_sanitized = ClipperUtils::toPolygon2d(polytree, scale_pow2);
+  auto poly_sanitized = ClipperUtils::toPolygon2d(polytree, scale_pow2);
 
   try {
     // roof
@@ -131,7 +131,7 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
     {
       // poly has to go through clipper just as it does for the roof
       // because this may change coordinates
-      PolySet *tess = poly_sanitized->tessellate();
+      auto tess = poly_sanitized->tessellate();
       for (const IndexedFace& triangle : tess->indices) {
         std::vector<int> floor;
         for (const int tv : triangle) {
@@ -141,10 +141,7 @@ PolySet *straight_skeleton_roof(const Polygon2d& poly)
         std::reverse(floor.begin(), floor.end());
         hatbuilder.appendPoly(floor);
       }
-      delete tess;
     }
-
-    delete poly_sanitized;
 
     return hatbuilder.build();
   } catch (RoofNode::roof_exception& e) {

@@ -3,9 +3,9 @@
 #include <cstddef>
 #include <string>
 #include <list>
+#include <memory>
 
 #include "linalg.h"
-#include "memory.h"
 
 class AbstractNode;
 class CGAL_Nef_polyhedron;
@@ -19,7 +19,7 @@ class ManifoldGeometry;
 class Geometry
 {
 public:
-  using GeometryItem = std::pair<std::shared_ptr<const AbstractNode>, shared_ptr<const Geometry>>;
+  using GeometryItem = std::pair<std::shared_ptr<const AbstractNode>, std::shared_ptr<const Geometry>>;
   using Geometries = std::list<GeometryItem>;
 
   Geometry() = default;
@@ -34,9 +34,8 @@ public:
   [[nodiscard]] virtual std::string dump() const = 0;
   [[nodiscard]] virtual unsigned int getDimension() const = 0;
   [[nodiscard]] virtual bool isEmpty() const = 0;
-  [[nodiscard]] virtual Geometry *copy() const = 0;
+  [[nodiscard]] virtual std::unique_ptr<Geometry> copy() const = 0;
   [[nodiscard]] virtual size_t numFacets() const = 0;
-
   [[nodiscard]] unsigned int getConvexity() const { return convexity; }
   void setConvexity(int c) { this->convexity = c; }
 
@@ -88,7 +87,7 @@ public:
   [[nodiscard]] std::string dump() const override;
   [[nodiscard]] unsigned int getDimension() const override;
   [[nodiscard]] bool isEmpty() const override;
-  [[nodiscard]] Geometry *copy() const override { return new GeometryList(*this); }
+  [[nodiscard]] std::unique_ptr<Geometry> copy() const override;
   [[nodiscard]] size_t numFacets() const override { assert(false && "not implemented"); return 0; }
 
   [[nodiscard]] const Geometries& getChildren() const {

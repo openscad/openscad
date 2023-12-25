@@ -56,9 +56,7 @@ const std::string get_lib3mf_version() {
 #include "cgalutils.h"
 #endif
 
-using polysets_t = std::list<std::shared_ptr<PolySet>>;
-
-static Geometry *import_3mf_error(PLib3MFModel *model = nullptr, PLib3MFModelResourceIterator *object_it = nullptr, PolySet *mesh = nullptr, PolySet *mesh2 = nullptr)
+static std::unique_ptr<PolySet> import_3mf_error(PLib3MFModel *model = nullptr, PLib3MFModelResourceIterator *object_it = nullptr)
 {
   if (model) {
     lib3mf_release(model);
@@ -66,30 +64,24 @@ static Geometry *import_3mf_error(PLib3MFModel *model = nullptr, PLib3MFModelRes
   if (object_it) {
     lib3mf_release(object_it);
   }
-  if (mesh) {
-    delete mesh;
-  }
-  if (mesh2) {
-    delete mesh2;
-  }
 
-  return new PolySet(3);
+  return std::make_unique<PolySet>(3);
 }
 
-Geometry *import_3mf(const std::string& filename, const Location& loc)
+std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location& loc)
 {
   DWORD interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
   HRESULT result = lib3mf_getinterfaceversion(&interfaceVersionMajor, &interfaceVersionMinor, &interfaceVersionMicro);
   if (result != LIB3MF_OK) {
     LOG(message_group::Error, "Error reading 3MF library version");
-    return new PolySet(3);
+    return std::make_unique<PolySet>(3);
   }
 
   if ((interfaceVersionMajor != NMR_APIVERSION_INTERFACE_MAJOR)) {
     LOG(message_group::Error, "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
         interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro,
         NMR_APIVERSION_INTERFACE_MAJOR, NMR_APIVERSION_INTERFACE_MINOR, NMR_APIVERSION_INTERFACE_MICRO);
-    return new PolySet(3);
+    return std::make_unique<PolySet>(3);
   }
 
   PLib3MFModel *model;
@@ -119,14 +111,14 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     return import_3mf_error(model);
   }
 
-  PolySet *first_mesh = nullptr;
-  polysets_t meshes;
+  std::unique_ptr<PolySet> first_mesh;
+  std::list<std::shared_ptr<PolySet>> meshes;
   unsigned int mesh_idx = 0;
   while (true) {
     int has_next;
     result = lib3mf_resourceiterator_movenext(object_it, &has_next);
     if (result != LIB3MF_OK) {
-      return import_3mf_error(model, object_it, first_mesh);
+      return import_3mf_error(model, object_it);
     }
     if (!has_next) {
       break;
@@ -135,18 +127,18 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     PLib3MFModelResource *object;
     result = lib3mf_resourceiterator_getcurrent(object_it, &object);
     if (result != LIB3MF_OK) {
-      return import_3mf_error(model, object_it, first_mesh);
+      return import_3mf_error(model, object_it);
     }
 
     DWORD vertex_count;
     result = lib3mf_meshobject_getvertexcount(object, &vertex_count);
     if (result != LIB3MF_OK) {
-      return import_3mf_error(model, object_it, first_mesh);
+      return import_3mf_error(model, object_it);
     }
     DWORD triangle_count;
     result = lib3mf_meshobject_gettrianglecount(object, &triangle_count);
     if (result != LIB3MF_OK) {
-      return import_3mf_error(model, object_it, first_mesh);
+      return import_3mf_error(model, object_it);
     }
 
     PRINTDB("%s: mesh %d, vertex count: %lu, triangle count: %lu", filename.c_str() % mesh_idx % vertex_count % triangle_count);
@@ -155,7 +147,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     for (DWORD idx = 0; idx < triangle_count; ++idx) {
       MODELMESHTRIANGLE triangle;
       if (lib3mf_meshobject_gettriangle(object, idx, &triangle) != LIB3MF_OK) {
-        return import_3mf_error(model, object_it, first_mesh);
+        return import_3mf_error(model, object_it);
       }
 
       MODELMESHVERTEX vertex;
@@ -163,14 +155,14 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
       builder.appendPoly(3);
       for(int i=0;i<3;i++) {
         if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[i], &vertex) != LIB3MF_OK) {
-          return import_3mf_error(model, object_it, first_mesh);
+          return import_3mf_error(model, object_it);
         }
         builder.appendVertex(builder.vertexIndex(Vector3d(vertex.m_fPosition[0], vertex.m_fPosition[1], vertex.m_fPosition[2])));
       }
     }
 
     if (first_mesh) {
-      meshes.push_back(std::shared_ptr<PolySet>(builder.build()));
+      meshes.push_back(builder.build());
     } else {
       first_mesh = builder.build();
     }
@@ -180,25 +172,25 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
   lib3mf_release(object_it);
   lib3mf_release(model);
 
-  if (first_mesh == nullptr) {
-    return new PolySet(3);
+  if (!first_mesh) {
+    return std::make_unique<PolySet>(3);
   } else if (meshes.empty()) {
     return first_mesh;
   } else {
-    PolySet *p = nullptr;
+    std::unique_ptr<PolySet> p;
 #ifdef ENABLE_CGAL
     Geometry::Geometries children;
-    children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(first_mesh)));
+    children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), std::shared_ptr<const Geometry>(std::move(first_mesh))));
     for (auto& meshe : meshes) {
-      children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(meshe)));
+      children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), std::shared_ptr<const Geometry>(meshe)));
     }
     if (auto ps = PolySetUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
-      p = new PolySet(*ps);
+      p = std::make_unique<PolySet>(*ps);
     } else {
-      p = new PolySet(3);
+      p = std::make_unique<PolySet>(3);
     }
 #else
-    p = new PolySet(3);
+    p = std::make_unique<PolySet>(3);
 #endif // ifdef ENABLE_CGAL
     return p;
   }
@@ -233,20 +225,7 @@ const std::string get_lib3mf_version() {
 #include "cgalutils.h"
 #endif
 
-using polysets_t = std::list<std::shared_ptr<PolySet>>;
-
-static Geometry *import_3mf_error(PolySet *mesh = nullptr, PolySet *mesh2 = nullptr)
-{
-  if (mesh) {
-    delete mesh;
-  }
-  if (mesh2) {
-    delete mesh2;
-  }
-  return new PolySet(3);
-}
-
-Geometry *import_3mf(const std::string& filename, const Location& loc)
+std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location& loc)
 {
   Lib3MF_uint32 interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
   Lib3MF::PWrapper wrapper;
@@ -258,11 +237,11 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
       LOG(message_group::Error, "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
           interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro,
           LIB3MF_VERSION_MAJOR, LIB3MF_VERSION_MINOR, LIB3MF_VERSION_MICRO);
-      return new PolySet(3);
+      return std::make_unique<PolySet>(3);
     }
   } catch (const Lib3MF::ELib3MFException& e) {
     LOG(message_group::Export_Error, e.what());
-    return new PolySet(3);
+    return std::make_unique<PolySet>(3);
   }
 
   Lib3MF::PModel model;
@@ -270,11 +249,11 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     model = wrapper->CreateModel();
     if (!model) {
       LOG(message_group::Error, "Could not create model");
-      return new PolySet(3);
+      return std::make_unique<PolySet>(3);
     }
   } catch (const Lib3MF::ELib3MFException& e) {
     LOG(message_group::Export_Error, e.what());
-    return new PolySet(3);
+    return std::make_unique<PolySet>(3);
   }
 
   Lib3MF::PReader reader;
@@ -282,28 +261,28 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     reader = model->QueryReader("3mf");
     if (!reader) {
       LOG(message_group::Error, "Could not create 3MF reader");
-      return new PolySet(3);
+      return std::make_unique<PolySet>(3);
     }
   } catch (const Lib3MF::ELib3MFException& e) {
     LOG(message_group::Export_Error, "Could create 3MF reader, import() at line %1$d: %2$s", loc.firstLine(), e.what());
-    return new PolySet(3);
+    return std::make_unique<PolySet>(3);
   }
 
   try {
     reader->ReadFromFile(filename);
   } catch (const Lib3MF::ELib3MFException& e) {
     LOG(message_group::Warning, "Could not read file '%1$s', import() at line %2$d: %3$s", filename.c_str(), loc.firstLine(), e.what());
-    return new PolySet(3);
+    return std::make_unique<PolySet>(3);
   }
 
   Lib3MF::PMeshObjectIterator object_it;
   object_it = model->GetMeshObjects();
   if (!object_it) {
-    return new PolySet(3);
+    return std::make_unique<PolySet>(3);
   }
 
-  PolySet *first_mesh = 0;
-  polysets_t meshes;
+  std::unique_ptr<PolySet> first_mesh;
+  std::list<std::shared_ptr<PolySet>> meshes;
   unsigned int mesh_idx = 0;
   bool has_next = object_it->MoveNext();
   while (has_next) {
@@ -311,20 +290,20 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     try {
       object = object_it->GetCurrentMeshObject();
       if (!object) {
-        return import_3mf_error(first_mesh);
+        return std::make_unique<PolySet>(3);
       }
     } catch (const Lib3MF::ELib3MFException& e) {
       LOG(message_group::Error, e.what());
-      return import_3mf_error(first_mesh);
+      return std::make_unique<PolySet>(3);
     }
 
     Lib3MF_uint64 vertex_count = object->GetVertexCount();
     if (!vertex_count) {
-      return import_3mf_error(first_mesh);
+      return std::make_unique<PolySet>(3);
     }
     Lib3MF_uint64 triangle_count = object->GetTriangleCount();
     if (!triangle_count) {
-      return import_3mf_error(first_mesh);
+      return std::make_unique<PolySet>(3);
     }
 
     PRINTDB("%s: mesh %d, vertex count: %lu, triangle count: %lu", filename.c_str() % mesh_idx % vertex_count % triangle_count);
@@ -342,7 +321,7 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
     }
 
     if (first_mesh) {
-      meshes.push_back(std::shared_ptr<PolySet>(builder.build()));
+      meshes.push_back(builder.build());
     } else {
       first_mesh = builder.build();
     }
@@ -351,24 +330,27 @@ Geometry *import_3mf(const std::string& filename, const Location& loc)
   }
 
   if (first_mesh == 0) {
-    return new PolySet(3);
+    return std::make_unique<PolySet>(3);
   } else if (meshes.empty()) {
     return first_mesh;
   } else {
-    PolySet *p = nullptr;
+    std::unique_ptr<PolySet> p;
 #ifdef ENABLE_CGAL
     Geometry::Geometries children;
-    children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), shared_ptr<const Geometry>(first_mesh)));
-    for (polysets_t::iterator it = meshes.begin(); it != meshes.end(); ++it) {
-      children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), shared_ptr<const Geometry>(*it)));
+    children.push_back(std::make_pair(
+			 std::shared_ptr<const AbstractNode>(),
+			 std::shared_ptr<const Geometry>(std::move(first_mesh))));
+    for (auto it = meshes.begin(); it != meshes.end(); ++it) {
+      children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), std::shared_ptr<const Geometry>(*it)));
     }
     if (auto ps = PolySetUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
-      p = new PolySet(*ps);
+      // FIXME: unnecessary copy
+      p = std::make_unique<PolySet>(*ps);
     } else {
-      p = new PolySet(3);
+      p = std::make_unique<PolySet>(3);
     }
 #else
-    p = new PolySet(3);
+    p = std::make_unique<PolySet>(3);
 #endif // ifdef ENABLE_CGAL
     return p;
   }
@@ -383,10 +365,10 @@ const std::string get_lib3mf_version() {
   return lib3mf_version;
 }
 
-Geometry *import_3mf(const std::string&, const Location& loc)
+std::unique_ptr<Geometry> import_3mf(const std::string&, const Location& loc)
 {
   LOG(message_group::Warning, "Import from 3MF format was not enabled when building the application, import() at line %1$d", loc.firstLine());
-  return new PolySet(3);
+  return std::make_unique<PolySet>(3);
 }
 
 #endif // ENABLE_LIB3MF

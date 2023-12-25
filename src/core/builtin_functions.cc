@@ -29,7 +29,6 @@
 #include "Expression.h"
 #include "Builtins.h"
 #include "printutils.h"
-#include "memory.h"
 #include "UserModule.h"
 #include "degree_trig.h"
 #include "FreetypeRenderer.h"
@@ -867,7 +866,7 @@ Value builtin_is_undef(const std::shared_ptr<const Context>& context, const Func
     print_argCnt_warning("is_undef", call->arguments.size(), "1", call->location(), context->documentRoot());
     return Value::undefined.clone();
   }
-  if (auto lookup = dynamic_pointer_cast<Lookup>(call->arguments[0]->getExpr())) {
+  if (auto lookup = std::dynamic_pointer_cast<Lookup>(call->arguments[0]->getExpr())) {
     auto result = context->try_lookup_variable(lookup->get_name());
     return !result || result->isUndefined();
   } else {
