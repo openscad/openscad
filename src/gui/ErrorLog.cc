@@ -113,7 +113,7 @@ int ErrorLog::getLine(int row, int col)
   return logTable->model()->index(row, col).data().toInt();
 }
 
-void ErrorLog::on_errorLogComboBox_currentIndexChanged(const QString& group)
+void ErrorLog::on_errorLogComboBox_currentTextChanged(const QString& group)
 {
   errorLogModel->clear();
   initGUI();
