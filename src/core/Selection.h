@@ -30,8 +30,7 @@
 
 enum { SELECTION_POINT, SELECTION_LINE};
 
-class SelectedObject {
-	public:
+struct SelectedObject {
 	int type;
 	Vector3d p1;
 	Vector3d p2;

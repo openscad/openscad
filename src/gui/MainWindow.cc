@@ -704,6 +704,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->animateDock, SIGNAL(topLevelChanged(bool)), this, SLOT(animateTopLevelChanged(bool)));
   connect(this->viewportControlDock, SIGNAL(topLevelChanged(bool)), this, SLOT(viewportControlTopLevelChanged(bool)));
 
+  connect(this->activeEditor, SIGNAL(escapePressed()), this, SLOT(measureFinished()));
   // display this window and check for OpenGL 2.0 (OpenCSG) support
   viewModeThrownTogether();
   show();
@@ -2324,6 +2325,7 @@ void MainWindow::leftClick(QPoint mouse)
 {
   QString str = meas.statemachine(mouse);
   if(str.size() > 0) {
+    this->qglview->measure_state = MEASURE_IDLE;
     QMenu resultmenu(this);
     auto action = resultmenu.addAction(str);
     connect(action, SIGNAL(triggered()), this, SLOT(measureFinished()));
@@ -2400,7 +2402,7 @@ void MainWindow::rightClick(QPoint mouse)
         action->setProperty("line", location.firstLine());
         action->setProperty("column", location.firstColumn());
 
-        connect(action, SIGNAL(triggered()), this, SLOT(measureFinished()));
+        connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
       }
     }
 

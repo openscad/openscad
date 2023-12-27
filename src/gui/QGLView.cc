@@ -57,7 +57,7 @@
 #endif
 
 #include "qt-obsolete.h"
-#include <Measurement.h>
+#include "Measurement.h"
 
 QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent)
 {

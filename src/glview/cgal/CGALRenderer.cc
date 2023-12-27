@@ -396,7 +396,6 @@ std::vector<SelectedObject> CGALRenderer::findModelObject(Vector3d near_pt, Vect
    }
 
   if(!isnan(dist_nearest)) {
-//    printf("Found one line\n");	  
     SelectedObject obj;
     obj.type = SELECTION_LINE;
     obj.p1=pt1_nearest;
