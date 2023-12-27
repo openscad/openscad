@@ -146,6 +146,8 @@ private slots:
   void fireModificationChanged();
   void onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state);
   void onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state);
+signals:
+   void escapePressed(void);	
 
 public:
   void public_applySettings();

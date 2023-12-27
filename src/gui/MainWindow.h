@@ -4,6 +4,7 @@
 #include "Geometry.h"
 #include "export.h"
 #include "ExportPdfDialog.h"
+#include "Measurement.h"
 #include "RenderStatistic.h"
 #include "TabManager.h"
 #include "Tree.h"
@@ -86,6 +87,8 @@ public:
   QWidget *animateDockTitleWidget;
   QWidget *viewportControlTitleWidget;
 
+  Measurement meas;
+
   int compileErrors;
   int compileWarnings;
 
@@ -109,6 +112,7 @@ private slots:
   void openCSGSettingsChanged();
   void consoleOutput(const Message& msgObj);
   void setCursor();
+  void measureFinished();
   void errorLogOutput(const Message& log_msg);
 
 public:
@@ -240,6 +244,8 @@ private slots:
   void actionRender();
   void actionRenderDone(const std::shared_ptr<const Geometry>&);
   void cgalRender();
+  void actionMeasureDistance();
+  void actionMeasureAngle();
   void actionCheckValidity();
   void actionDisplayAST();
   void actionDisplayCSGTree();
@@ -329,7 +335,8 @@ public slots:
   void viewResetView();
   void viewAll();
   void editorContentChanged();
-  void selectObject(QPoint coordinate);
+  void leftClick(QPoint coordinate);
+  void rightClick(QPoint coordinate);
   void dragEnterEvent(QDragEnterEvent *event) override;
   void dropEvent(QDropEvent *event) override;
   void helpAbout();

@@ -384,7 +384,9 @@ MainWindow::MainWindow(const QStringList& filenames)
   QSettingsCached settings;
   this->qglview->setMouseCentricZoom(Settings::Settings::mouseCentricZoom.value());
   this->qglview->setMouseSwapButtons(Settings::Settings::mouseSwapButtons.value());
-
+  this->meas.setView(qglview);
+  this->designActionMeasureDist->setEnabled(false);
+  this->designActionMeasureAngle->setEnabled(false);
 
   autoReloadTimer = new QTimer(this);
   autoReloadTimer->setSingleShot(false);
@@ -459,6 +461,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->designActionReloadAndPreview, SIGNAL(triggered()), this, SLOT(actionReloadRenderPreview()));
   connect(this->designActionPreview, SIGNAL(triggered()), this, SLOT(actionRenderPreview()));
   connect(this->designActionRender, SIGNAL(triggered()), this, SLOT(actionRender()));
+  connect(this->designActionMeasureDist, SIGNAL(triggered()), this, SLOT(actionMeasureDistance()));
+  connect(this->designActionMeasureAngle, SIGNAL(triggered()), this, SLOT(actionMeasureAngle()));
   connect(this->designAction3DPrint, SIGNAL(triggered()), this, SLOT(action3DPrint()));
   connect(this->designCheckValidity, SIGNAL(triggered()), this, SLOT(actionCheckValidity()));
   connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
@@ -552,7 +556,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->qglview, SIGNAL(cameraChanged()), animateWidget, SLOT(cameraChanged()));
   connect(this->qglview, SIGNAL(cameraChanged()), viewportControlWidget, SLOT(cameraChanged()));
   connect(this->qglview, SIGNAL(resized()), viewportControlWidget, SLOT(viewResized()));
-  connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
+  connect(this->qglview, SIGNAL(doRightClick(QPoint)), this, SLOT(rightClick(QPoint)));
+  connect(this->qglview, SIGNAL(doLeftClick(QPoint)), this, SLOT(leftClick(QPoint)));
 
   connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(update()));
   connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
@@ -616,6 +621,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   initActionIcon(viewActionPerspective, ":/icons/svg-default/perspective.svg", ":/icons/svg-default/perspective-white.svg");
   initActionIcon(viewActionOrthogonal, ":/icons/svg-default/orthogonal.svg", ":/icons/svg-default/orthogonal-white.svg");
   initActionIcon(designActionPreview, ":/icons/svg-default/preview.svg", ":/icons/svg-default/preview-white.svg");
+  initActionIcon(designActionMeasureDist, ":/icons/svg-default/measure-dist.svg", ":/icons/svg-default/measure-dist-white.svg");
+  initActionIcon(designActionMeasureAngle, ":/icons/svg-default/measure-ang.svg", ":/icons/svg-default/measure-ang-white.svg");
   initActionIcon(fileActionExportSTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
   initActionIcon(fileActionExportAMF, ":/icons/svg-default/export-amf.svg", ":/icons/svg-default/export-amf-white.svg");
   initActionIcon(fileActionExport3MF, ":/icons/svg-default/export-3mf.svg", ":/icons/svg-default/export-3mf-white.svg");
@@ -697,6 +704,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->animateDock, SIGNAL(topLevelChanged(bool)), this, SLOT(animateTopLevelChanged(bool)));
   connect(this->viewportControlDock, SIGNAL(topLevelChanged(bool)), this, SLOT(viewportControlTopLevelChanged(bool)));
 
+  connect(this->activeEditor, SIGNAL(escapePressed()), this, SLOT(measureFinished()));
   // display this window and check for OpenGL 2.0 (OpenCSG) support
   viewModeThrownTogether();
   show();
@@ -2007,6 +2015,9 @@ void MainWindow::actionRenderPreview()
   GuiLocker::lock();
   preview_requested = false;
 
+  this->designActionMeasureDist->setEnabled(false);
+  this->designActionMeasureAngle->setEnabled(false);
+
   prepareCompile("csgRender", windowActionHideAnimate->isChecked(), true);
   compile(false, false);
   if (preview_requested) {
@@ -2230,6 +2241,9 @@ void MainWindow::actionRender()
   if (GuiLocker::isLocked()) return;
   GuiLocker::lock();
 
+  this->designActionMeasureDist->setEnabled(true);
+  this->designActionMeasureAngle->setEnabled(true);
+
   prepareCompile("cgalRender", true, false);
   compile(false);
 }
@@ -2297,12 +2311,34 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
   compileEnded();
 }
 
+void MainWindow::actionMeasureDistance()
+{
+  meas.startMeasureDist();
+}
+
+void MainWindow::actionMeasureAngle()
+{
+  meas.startMeasureAngle();
+}
+
+void MainWindow::leftClick(QPoint mouse) 
+{
+  QString str = meas.statemachine(mouse);
+  if(str.size() > 0) {
+    this->qglview->measure_state = MEASURE_IDLE;
+    QMenu resultmenu(this);
+    auto action = resultmenu.addAction(str);
+    connect(action, SIGNAL(triggered()), this, SLOT(measureFinished()));
+    resultmenu.exec(qglview->mapToGlobal(mouse));
+  }
+}
+
 /**
  * Call the mouseselection to determine the id of the clicked-on object.
  * Use the generated ID and try to find it within the list of products
  * And finally move the cursor to the beginning of the selected object in the editor
  */
-void MainWindow::selectObject(QPoint mouse)
+void MainWindow::rightClick(QPoint mouse)
 {
   // selecting without a renderer?!
   if (!this->qglview->renderer) {
@@ -2372,6 +2408,13 @@ void MainWindow::selectObject(QPoint mouse)
 
     tracemenu.exec(this->qglview->mapToGlobal(mouse));
   }
+}
+void MainWindow::measureFinished(void)
+{
+  this->qglview->selected_obj.clear();
+  this->qglview->shown_obj.clear();
+  this->qglview->update();
+  this->qglview->measure_state = MEASURE_IDLE;
 }
 
 /**

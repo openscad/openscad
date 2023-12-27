@@ -911,6 +911,12 @@ QString ScintillaEditor::selectedText()
 
 bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
 {
+  if (e->type() == QEvent::KeyPress) {
+    auto keyEvent = static_cast<QKeyEvent *>(e);
+    if (keyEvent->key() == Qt::Key_Escape) {
+      emit escapePressed();	    
+    }
+  }    
   if (QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) || QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)) {
     if (!this->indicatorsActive) {
       this->indicatorsActive = true;
