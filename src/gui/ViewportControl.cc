@@ -5,7 +5,6 @@
 #include <boost/filesystem.hpp>
 #include <cfloat>
 #include <QDoubleSpinBox>
-#include <QDesktopWidget>
 
 ViewportControl::ViewportControl(QWidget *parent) : QWidget(parent)
 {

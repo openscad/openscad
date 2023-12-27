@@ -19,6 +19,7 @@
 #include <QIcon>
 #include <QIODevice>
 #include <QMutex>
+#include <QSoundEffect>
 #include <QTime>
 
 #ifdef STATIC_QT_SVG_PLUGIN
@@ -375,7 +376,9 @@ private:
   int tabCount = 0;
   paperSizes sizeString2Enum(QString current);
   paperOrientations orientationsString2Enum(QString current);
-  
+
+  QSoundEffect *renderCompleteSoundEffect;
+
 signals:
   void highlightError(int);
   void unhighlightLastError();

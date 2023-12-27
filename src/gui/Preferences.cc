@@ -26,9 +26,12 @@
 
 #include "Preferences.h"
 
+#include <QActionGroup>
 #include <QMessageBox>
 #include <QFontDatabase>
 #include <QKeyEvent>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 #include <QStatusBar>
 #include <QSettings>
 #include <QTextDocument>
@@ -174,7 +177,7 @@ void Preferences::init() {
   QValidator *memvalidator = new QIntValidator(1, absolute_max, this);
   auto *uintValidator = new QIntValidator(this);
   uintValidator->setBottom(0);
-  QValidator *validator1 = new QRegExpValidator(QRegExp("[1-9][0-9]{0,1}"), this); // range between 1-99 both inclusive
+  QValidator *validator1 = new QRegularExpressionValidator(QRegularExpression("[1-9][0-9]{0,1}"), this); // range between 1-99 both inclusive
 #ifdef ENABLE_CGAL
   this->cgalCacheSizeMBEdit->setValidator(memvalidator);
 #endif
