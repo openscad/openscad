@@ -679,8 +679,8 @@ MainWindow::MainWindow(const QStringList& filenames)
     // again.
     // On Windows that causes the main window to open in a not
     // easily reachable place.
-    auto desktop = QApplication::desktop();
-    auto desktopRect = desktop->frameGeometry().adjusted(250, 150, -250, -150).normalized();
+    auto primaryScreen = QApplication::primaryScreen();
+    auto desktopRect = primaryScreen->availableGeometry().adjusted(250, 150, -250, -150).normalized();
     auto windowRect = frameGeometry();
     if (!desktopRect.intersects(windowRect)) {
       windowRect.moveCenter(desktopRect.center());
