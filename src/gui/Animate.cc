@@ -308,18 +308,18 @@ void Animate::resizeEvent(QResizeEvent *event)
     if (sizeEvent.height() > 140) {
       mainLayout->setDirection(QBoxLayout::TopToBottom);
       if (sizeEvent.height() > 250 && sizeEvent.width() > 200) {
-        mainLayout->setMargin(10);
+        mainLayout->setContentsMargins(10, 10, 10, 10);
         mainLayout->setSpacing(10);
         iconSize = 32;
       } else {
-        mainLayout->setMargin(0);
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         mainLayout->setSpacing(0);
       }
       this->vcr_controls->show();
     } else {
       mainLayout->setDirection(QBoxLayout::LeftToRight);
 
-      mainLayout->setMargin(0);
+      mainLayout->setContentsMargins(0, 0, 0, 0);
       mainLayout->setSpacing(0);
       if (sizeEvent.width() > 720) {
         this->vcr_controls->show();

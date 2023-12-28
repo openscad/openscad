@@ -63,6 +63,9 @@
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
 #endif
+#ifdef Q_OS_WIN
+#include <QScreen>
+#endif
 #include "PlatformUtils.h"
 #ifdef OPENSCAD_UPDATER
 #include "AutoUpdater.h"
@@ -91,13 +94,11 @@
 #include <QTemporaryFile>
 #include <QDockWidget>
 #include <QClipboard>
-#include <QDesktopWidget>
 #include <memory>
 #include <string>
 #include "QWordSearchField.h"
 #include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "QSettingsCached.h"
-#include <QSound>
 
 #ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
@@ -293,6 +294,9 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
   updateStatusBar(nullptr);
+
+  renderCompleteSoundEffect = new QSoundEffect();
+  renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
 
   const QString importStatement = "import(\"%1\");\n";
   const QString surfaceStatement = "surface(\"%1\");\n";
@@ -685,8 +689,8 @@ MainWindow::MainWindow(const QStringList& filenames)
     // again.
     // On Windows that causes the main window to open in a not
     // easily reachable place.
-    auto desktop = QApplication::desktop();
-    auto desktopRect = desktop->frameGeometry().adjusted(250, 150, -250, -150).normalized();
+    auto primaryScreen = QApplication::primaryScreen();
+    auto desktopRect = primaryScreen->availableGeometry().adjusted(250, 150, -250, -150).normalized();
     auto windowRect = frameGeometry();
     if (!desktopRect.intersects(windowRect)) {
       windowRect.moveCenter(desktopRect.center());
@@ -1498,7 +1502,9 @@ void MainWindow::writeBackup(QFile *file)
   // see MainWindow::saveBackup()
   file->resize(0);
   QTextStream writer(file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   writer.setCodec("UTF-8");
+#endif
   writer << activeEditor->toPlainText();
   this->activeEditor->parameterWidget->saveBackupFile(file->fileName());
 
@@ -2303,7 +2309,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
   const bool renderSoundEnabled = Preferences::inst()->getValue("advanced/enableSoundNotification").toBool();
   const uint soundThreshold = Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt();
   if (renderSoundEnabled && soundThreshold <= renderStatistic.ms().count() / 1000) {
-    QSound::play(":/sounds/complete.wav");
+    renderCompleteSoundEffect->play();
   }
 
   renderedEditor = activeEditor;

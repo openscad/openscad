@@ -6,6 +6,8 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <QString>
 #include <QChar>
+#include <QRegExp>
+#include <QRegularExpression>
 #include <QShortcut>
 #include <Qsci/qscicommandset.h>
 
@@ -1161,11 +1163,11 @@ void ScintillaEditor::navigateOnNumber(int key)
   qsci->getCursorPosition(&line, &index);
   auto text = qsci->text(line);
   auto left = text.left(index);
-  auto dotOnLeft = left.contains(QRegExp("\\.\\d*$"));
+  auto dotOnLeft = left.contains(QRegularExpression("\\.\\d*$"));
   auto dotJustLeft = index > 1 && text[index - 2] == '.';
   auto dotJustRight = text[index] == '.';
-  auto numOnLeft = left.contains(QRegExp("\\d\\.?$")) || left.endsWith("-.");
-  auto numOnRight = text.indexOf(QRegExp("\\.?\\d"), index) == index;
+  auto numOnLeft = left.contains(QRegularExpression("\\d\\.?$")) || left.endsWith("-.");
+  auto numOnRight = text.indexOf(QRegularExpression("\\.?\\d"), index) == index;
 
   switch (key) {
   case Qt::Key_Left:
@@ -1205,10 +1207,10 @@ bool ScintillaEditor::modifyNumber(int key)
   auto check = text.mid(begin - 1, 1);
   if (rx.exactMatch(check)) return false;
 
-  auto end = text.indexOf(QRegExp("[^0-9.]"), index);
+  auto end = text.indexOf(QRegularExpression("[^0-9.]"), index);
   if (end < 0) end = text.length();
   auto nr = text.mid(begin, end - begin);
-  if (!(nr.contains(QRegExp(R"(^[-+]?\d*\.?\d+$)")) && nr.contains(QRegExp("\\d"))) ) return false;
+  if (!(nr.contains(QRegularExpression(R"(^[-+]?\d*\.?\d+$)")) && nr.contains(QRegularExpression("\\d"))) ) return false;
   auto sign = nr[0] == '+'||nr[0] == '-';
   if (nr.endsWith('.')) nr = nr.left(nr.length() - 1);
   auto curpos = index - begin;
@@ -1420,7 +1422,7 @@ void ScintillaEditor::findMarker(int findStartOffset, int wrapStart, const std::
   }
   if (line != -1) {
     // make sure we don't wrap into new line
-    int len = qsci->text(line).remove(QRegExp("[\n\r]$")).length();
+    int len = qsci->text(line).remove(QRegularExpression("[\n\r]$")).length();
     int col = std::min(index, len);
     qsci->setCursorPosition(line, col);
   }
