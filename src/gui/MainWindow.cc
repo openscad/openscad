@@ -63,6 +63,9 @@
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
 #endif
+#ifdef Q_OS_WIN
+#include <QScreen>
+#endif
 #include "PlatformUtils.h"
 #ifdef OPENSCAD_UPDATER
 #include "AutoUpdater.h"
