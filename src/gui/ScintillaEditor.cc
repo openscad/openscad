@@ -6,7 +6,6 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <QString>
 #include <QChar>
-#include <QRegExp>
 #include <QRegularExpression>
 #include <QShortcut>
 #include <Qsci/qscicommandset.h>
@@ -1201,11 +1200,11 @@ bool ScintillaEditor::modifyNumber(int key)
   qsci->SendScintilla(QsciScintilla::SCI_SETEMPTYSELECTION);
   qsci->setCursorPosition(line, index);
 
-  auto begin = QRegExp(R"([-+]?\d*\.?\d*$)").indexIn(text.left(index));
+  auto begin = text.left(index).indexOf(QRegularExpression(R"([-+]?\d*\.?\d*$)"));
 
-  QRegExp rx("[_a-zA-Z]");
+  QRegularExpression rx(QRegularExpression::anchoredPattern(QString("[_a-zA-Z]")));
   auto check = text.mid(begin - 1, 1);
-  if (rx.exactMatch(check)) return false;
+  if (rx.match(check).hasMatch()) return false;
 
   auto end = text.indexOf(QRegularExpression("[^0-9.]"), index);
   if (end < 0) end = text.length();
