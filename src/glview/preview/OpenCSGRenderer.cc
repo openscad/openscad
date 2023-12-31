@@ -77,23 +77,23 @@ private:
 OpenCSGRenderer::OpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,
                                  std::shared_ptr<CSGProducts> highlights_products,
                                  std::shared_ptr<CSGProducts> background_products)
-  : root_products(std::move(root_products)),
-  highlights_products(std::move(highlights_products)),
-  background_products(std::move(background_products))
+  : root_products_(std::move(root_products)),
+  highlights_products_(std::move(highlights_products)),
+  background_products_(std::move(background_products))
 {
 }
 
 void OpenCSGRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const shaderinfo_t *shaderinfo)
 {
-  if (Feature::ExperimentalVxORenderers.is_enabled() && !vbo_vertex_products.size()) {
-    if (this->root_products) {
-      createCSGVBOProducts(*this->root_products, shaderinfo, false, false);
+  if (Feature::ExperimentalVxORenderers.is_enabled() && vbo_vertex_products_.empty()) {
+    if (root_products_) {
+      createCSGVBOProducts(*root_products_, shaderinfo, false, false);
     }
-    if (this->background_products) {
-      createCSGVBOProducts(*this->background_products, shaderinfo, false, true);
+    if (background_products_) {
+      createCSGVBOProducts(*background_products_, shaderinfo, false, true);
     }
-    if (this->highlights_products) {
-      createCSGVBOProducts(*this->highlights_products, shaderinfo, true, false);
+    if (highlights_products_) {
+      createCSGVBOProducts(*highlights_products_, shaderinfo, true, false);
     }
   }
 }
@@ -103,14 +103,14 @@ void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const shaderinfo_
   if (!shaderinfo && showedges) shaderinfo = &getShader();
 
   if (!Feature::ExperimentalVxORenderers.is_enabled()) {
-    if (this->root_products) {
-      renderCSGProducts(this->root_products, showedges, shaderinfo, false, false);
+    if (root_products_) {
+      renderCSGProducts(root_products_, showedges, shaderinfo, false, false);
     }
-    if (this->background_products) {
-      renderCSGProducts(this->background_products, showedges, shaderinfo, false, true);
+    if (background_products_) {
+      renderCSGProducts(background_products_, showedges, shaderinfo, false, true);
     }
-    if (this->highlights_products) {
-      renderCSGProducts(this->highlights_products, showedges, shaderinfo, true, false);
+    if (highlights_products_) {
+      renderCSGProducts(highlights_products_, showedges, shaderinfo, true, false);
     }
   } else {
     renderCSGVBOProducts(showedges, shaderinfo);
@@ -173,7 +173,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
   for (const auto& product : products.products) {
     Color4f last_color;
     std::vector<OpenCSG::Primitive *> primitives;
-    std::unique_ptr<VertexStates> vertex_states = std::make_unique<VertexStates>();
+    auto vertex_states = std::make_unique<VertexStates>();
     const auto vertices_vbo = vertices_vbos_[vbo_index];
     const auto elements_vbo = elements_vbos_[vbo_index];
     vbo_index++;
@@ -335,8 +335,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
     vertex_array.createInterleavedVBOs();
-    vbo_vertex_products.emplace_back(std::make_unique<OpenCSGVBOProduct>(
-                                       std::move(primitives), std::move(vertex_states)));
+    vbo_vertex_products_.emplace_back(std::make_unique<OpenCSGVBOProduct>(std::move(primitives), std::move(vertex_states)));
   }
 #endif // ENABLE_OPENCSG
 }
@@ -445,7 +444,7 @@ void OpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& prod
 void OpenCSGRenderer::renderCSGVBOProducts(bool showedges, const Renderer::shaderinfo_t *shaderinfo) const
 {
 #ifdef ENABLE_OPENCSG
-  for (const auto& product : vbo_vertex_products) {
+  for (const auto& product : vbo_vertex_products_) {
     if (product->primitives().size() > 1) {
       GL_CHECKD(OpenCSG::render(product->primitives()));
       GL_TRACE0("glDepthFunc(GL_EQUAL)");
@@ -500,9 +499,9 @@ void OpenCSGRenderer::renderCSGVBOProducts(bool showedges, const Renderer::shade
 BoundingBox OpenCSGRenderer::getBoundingBox() const
 {
   BoundingBox bbox;
-  if (this->root_products) bbox = this->root_products->getBoundingBox();
-  if (this->highlights_products) bbox.extend(this->highlights_products->getBoundingBox());
-  if (this->background_products) bbox.extend(this->background_products->getBoundingBox());
+  if (root_products_) bbox = root_products_->getBoundingBox();
+  if (highlights_products_) bbox.extend(highlights_products_->getBoundingBox());
+  if (background_products_) bbox.extend(background_products_->getBoundingBox());
 
   return bbox;
 }

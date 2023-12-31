@@ -73,8 +73,6 @@ private:
   const std::unique_ptr<VertexStates> states_;
 };
 
-using OpenCSGVBOProducts = std::vector<std::unique_ptr<OpenCSGVBOProduct>>;
-
 class OpenCSGRenderer : public VBORenderer
 {
 public:
@@ -104,10 +102,11 @@ private:
   void createCSGVBOProducts(const CSGProducts& products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode);
   void renderCSGVBOProducts(bool showedges, const Renderer::shaderinfo_t *shaderinfo) const;
 
-  OpenCSGVBOProducts vbo_vertex_products;
+private:
+  std::vector<std::unique_ptr<OpenCSGVBOProduct>> vbo_vertex_products_;
   std::vector<GLuint> vertices_vbos_;
   std::vector<GLuint> elements_vbos_;
-  std::shared_ptr<CSGProducts> root_products;
-  std::shared_ptr<CSGProducts> highlights_products;
-  std::shared_ptr<CSGProducts> background_products;
+  std::shared_ptr<CSGProducts> root_products_;
+  std::shared_ptr<CSGProducts> highlights_products_;
+  std::shared_ptr<CSGProducts> background_products_;
 };
