@@ -128,31 +128,7 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
     }
 
     // append element data
-    if (!elements_size_ || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-      addAttributeValues(*elementsData(), entry.first->second);
-    } else {
-      if (elementsData()->sizeofAttribute() == sizeof(GLubyte)) {
-        auto index = (GLubyte)entry.first->second;
-        GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
-        GL_CHECKD(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
-                                  elementsData()->sizeofAttribute(),
-                                  &index));
-      } else if (elementsData()->sizeofAttribute() == sizeof(GLushort)) {
-        auto index = (GLushort)entry.first->second;
-        GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
-        GL_CHECKD(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
-                                  elementsData()->sizeofAttribute(),
-                                  &index));
-      } else if (elementsData()->sizeofAttribute() == sizeof(GLuint)) {
-        auto index = (GLuint)entry.first->second;
-        GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", elements_offset_ % elementsData()->sizeofAttribute() % (void *)&index);
-        GL_CHECKD(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, elements_offset_,
-                                  elementsData()->sizeofAttribute(),
-                                  &index));
-      } else {
-        assert(false && "create_vertex invalid index attribute size");
-      }
-    }
+    addAttributeValues(*elementsData(), entry.first->second);
     elements_offset_ += elementsData()->sizeofAttribute();
   } else { // !useElements()
     if (!vertices_size_) {
@@ -234,13 +210,9 @@ void VertexArray::createInterleavedVBOs()
   }
 
   PRINTDB("useElements() = %d, elements_size_ = %d", useElements() % elements_size_);
-  if (useElements() && (!elements_size_ || Feature::ExperimentalVxORenderersPrealloc.is_enabled())) {
+  if (useElements()) {
     GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", elements_vbo_);
     GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_vbo_));
-    if (!Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-      GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_.sizeInBytes() % (void *)nullptr);
-      GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_.sizeInBytes(), nullptr, GL_STATIC_DRAW));
-    }
     size_t last_size = 0;
     for (const auto& e : elements_.attributes()) {
       GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", last_size % e->sizeInBytes() % (void *)e->toBytes());
@@ -332,14 +304,13 @@ void VertexArray::addAttributePointers(size_t start_offset)
 // Allocates GPU memory for vertices (and elements if enabled)
 // for holding the given number of vertices.
 void VertexArray::allocateBuffers(size_t num_vertices) {
-  if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-    size_t vertices_size = num_vertices * stride();
-    setVerticesSize(vertices_size);
-    GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", vertices_vbo_);
-    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_));
-    GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
-    GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW));
-  } else if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+  size_t vertices_size = num_vertices * stride();
+  setVerticesSize(vertices_size);
+  GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertices_vbo_);
+  GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_));
+  GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
+  GL_CHECKD(glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW));
+  if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
     // Use smallest possible index data type
     if (num_vertices <= 0xff) {
       addElementsData(std::make_shared<AttributeData<GLubyte, 1, GL_UNSIGNED_BYTE>>());

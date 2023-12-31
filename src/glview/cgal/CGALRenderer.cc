@@ -217,14 +217,12 @@ void CGALRenderer::createPolySets()
   }
 
   if (this->polysets.size()) {
-    if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-      if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-        GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
-        GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-      }
-      GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-      GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+      GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
     }
+    GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
     vertex_array.createInterleavedVBOs();
   }
