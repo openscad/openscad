@@ -62,7 +62,9 @@ static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *
 
   auto node = std::make_shared<SurfaceNode>(inst);
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"file", "center", "convexity"}, {"invert"});
+  Parameters parameters =
+      Parameters::parse(std::move(arguments), inst->location(),
+                        {"file", "center", "convexity"}, {"invert", "doubleSided", "thickness", "pixelStep"});
 
   std::string fileval = parameters["file"].isUndefined() ? "" : parameters["file"].toString();
   auto filename = lookup_file(fileval, inst->location().filePath().parent_path().string(), parameters.documentRoot());
@@ -79,6 +81,22 @@ static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *
 
   if (parameters["invert"].type() == Value::Type::BOOL) {
     node->invert = parameters["invert"].toBool();
+  }
+
+  if (parameters["doubleSided"].type() == Value::Type::BOOL) {
+    node->doubleSided = parameters["doubleSided"].toBool();
+  }
+
+  if (parameters["thickness"].type() == Value::Type::NUMBER) {
+    node->thickness = parameters["thickness"].toDouble();
+  }
+
+  if (parameters["pixelStep"].type() == Value::Type::NUMBER) {
+    node->pixelStep = static_cast<int>(parameters["pixelStep"].toDouble());
+    if (node->pixelStep < 1) {
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "surface(..., pixelStep=%1$s) pixelStep parameter can not be less than 1, reset to 1.", parameters["pixelStep"].toEchoStringNoThrow());
+      node->pixelStep = 1;
+    }
   }
 
   return node;
@@ -212,108 +230,126 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
 {
   auto data = read_png_or_dat(filename);
 
-  int lines = data.height;
-  int columns = data.width;
-  double min_val = data.min_value() - 1; // make the bottom solid, and match old code
+  int lines = data.height / pixelStep;
+  int columns = data.width / pixelStep;
+  double min_val =
+      data.min_value() - thickness; // make the bottom solid, and match old code
+
+  int width = data.width - (data.width % pixelStep);
+  int height = data.height - (data.height % pixelStep);
+
+  double ox = center ? -(width - 1) / 2.0 : 0;
+  double oy = center ? -(height - 1) / 2.0 : 0;
 
   // reserve the polygon vector size so we don't have to reallocate as often
+  int numPolys = ((lines - 1) * (columns - 1) * 4); // heightmap (on top)
+  numPolys += ((lines - 1) * 2 + (columns - 1) * 2); // sides
+  numPolys += doubleSided ? ((lines - 1) * (columns - 1) * 4) : 1; // bottom (heightmap or plane)
 
-  double ox = center ? -(columns - 1) / 2.0 : 0;
-  double oy = center ? -(lines - 1) / 2.0 : 0;
-
-  PolySetBuilder builder(0, (lines - 1) * (columns - 1) * 4 + (lines - 1) * 2 + (columns - 1) * 2 + 1);
+  int numVertices = (lines * columns);
+  numVertices += doubleSided ? (lines * columns) : ((lines + columns - 4) * 2);
+                      
+  PolySetBuilder builder(numVertices, numPolys);
   builder.setConvexity(convexity);
+
   // the bulk of the heightmap
-  for (int i = 1; i < lines; ++i)
-    for (int j = 1; j < columns; ++j) {
-      double v1 = data[ (j - 1) + (i - 1) * columns ];
-      double v2 = data[ (j) + (i - 1) * columns ];
-      double v3 = data[ (j - 1) + (i) * columns ];
-      double v4 = data[ (j) + (i) * columns ];
+  for (int i = pixelStep; i < height; i += pixelStep) {
+    for (int j = pixelStep; j < width; j += pixelStep) {
+      double v1 = data[(j - pixelStep) + (i - pixelStep) * data.width];
+      double v2 = data[(j) + (i - pixelStep) * data.width];
+      double v3 = data[(j - pixelStep) + (i)*data.width];
+      double v4 = data[(j) + (i)*data.width];
 
       double vx = (v1 + v2 + v3 + v4) / 4;
 
-      builder.appendPoly({
-		Vector3d(ox + j - 1, oy + i - 1, v1),
-		Vector3d(ox + j, oy + i - 1, v2),
-		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
-		});
+      Vector3d topLeft    (ox + j - pixelStep , oy + i - pixelStep, v1);
+      Vector3d topRight   (ox + j             , oy + i - pixelStep, v2);
+      Vector3d bottomLeft (ox + j - pixelStep , oy + i            , v3);
+      Vector3d bottomRight(ox + j             , oy + i            , v4);
+      Vector3d center     (ox + j - (pixelStep / 2.0), oy + i - (pixelStep / 2.0), vx);
 
-      builder.appendPoly({
-		Vector3d(ox + j, oy + i - 1, v2),
-		Vector3d(ox + j, oy + i, v4),
-		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
-		});
-
-      builder.appendPoly({
-		Vector3d(ox + j, oy + i, v4),
-		Vector3d(ox + j - 1, oy + i, v3),
-		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
-		});
-
-      builder.appendPoly({
-		Vector3d(ox + j - 1, oy + i, v3),
-		Vector3d(ox + j - 1, oy + i - 1, v1),
-		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
-		});
+      builder.appendPoly({topLeft, topRight, center});
+      builder.appendPoly({topRight, bottomRight, center});
+      builder.appendPoly({bottomRight, bottomLeft, center});
+      builder.appendPoly({bottomLeft, topLeft, center});
     }
+  }
+
+  if (doubleSided) {
+    for (int i = pixelStep; i < height; i += pixelStep) {
+      for (int j = pixelStep; j < width; j += pixelStep) {
+        double v1 = data[(j - pixelStep) + (i - pixelStep) * data.width] - thickness;
+        double v2 = data[(j) + (i - pixelStep) * data.width] - thickness;
+        double v3 = data[(j - pixelStep) + (i)*data.width] - thickness;
+        double v4 = data[(j) + (i)*data.width] - thickness;
+
+        double vx = (v1 + v2 + v3 + v4) / 4;
+
+        Vector3d topLeft    (ox + j - pixelStep , oy + i - pixelStep, v1);
+        Vector3d topRight   (ox + j             , oy + i - pixelStep, v2);
+        Vector3d bottomLeft (ox + j - pixelStep , oy + i            , v3);
+        Vector3d bottomRight(ox + j             , oy + i            , v4);
+        Vector3d center     (ox + j - (pixelStep / 2.0), oy + i - (pixelStep / 2.0), vx);
+
+        builder.appendPoly({topLeft, topRight, center});
+        builder.appendPoly({topRight, bottomRight, center});
+        builder.appendPoly({bottomRight, bottomLeft, center});
+        builder.appendPoly({bottomLeft, topLeft, center});
+      }
+    }
+  }
+  else if (columns > 1 && lines > 1) {
+    // the bottom of the shape (one less than the real minimum value), making it a
+    // solid volume
+    builder.appendPoly(2 * (columns - 1) + 2 * (lines - 1));
+    for (int i = 0; i < width - 1; i += pixelStep)
+      builder.prependVertex(
+          builder.vertexIndex(Vector3d(ox + i, oy + 0, min_val)));
+    for (int i = 0; i < height - 1; i += pixelStep)
+      builder.prependVertex(
+          builder.vertexIndex(Vector3d(ox + columns - 1, oy + i, min_val)));
+    for (int i = width - pixelStep; i > 0; i -= pixelStep)
+      builder.prependVertex(
+          builder.vertexIndex(Vector3d(ox + i, oy + lines - 1, min_val)));
+    for (int i = height - pixelStep; i > 0; i -= pixelStep)
+      builder.prependVertex(
+          builder.vertexIndex(Vector3d(ox + 0, oy + i, min_val)));
+  }
 
   // edges along Y
-  for (int i = 1; i < lines; ++i) {
-    double v1 = data[ (0) + (i - 1) * columns ];
-    double v2 = data[ (0) + (i) * columns ];
-    double v3 = data[ (columns - 1) + (i - 1) * columns ];
-    double v4 = data[ (columns - 1) + (i) * columns ];
+  for (int i = pixelStep; i < height; i += pixelStep) {
+    double v1 = data[(0) + (i - pixelStep) * data.width];
+    double v2 = data[(0) + (i) * data.width];
+    double v3 = data[(width - pixelStep) + (i - pixelStep) * data.width];
+    double v4 = data[(width - pixelStep) + (i) * data.width];
 
+    builder.appendPoly({Vector3d(ox + 0, oy + i - pixelStep, doubleSided ? v1 - thickness : min_val),
+                        Vector3d(ox + 0, oy + i - pixelStep, v1),
+                        Vector3d(ox + 0, oy + i, v2),
+                        Vector3d(ox + 0, oy + i, doubleSided ? v2 - thickness : min_val)});
 
-    builder.appendPoly({
-	Vector3d(ox + 0, oy + i - 1, min_val),
-	Vector3d(ox + 0, oy + i - 1, v1),
-	Vector3d(ox + 0, oy + i, v2),
-	Vector3d(ox + 0, oy + i, min_val)
-    });
-
-    builder.appendPoly({
-	Vector3d(ox + columns - 1, oy + i, min_val),
-	Vector3d(ox + columns - 1, oy + i, v4),
-	Vector3d(ox + columns - 1, oy + i - 1, v3),
-	Vector3d(ox + columns - 1, oy + i - 1, min_val)
-    });
+    builder.appendPoly({Vector3d(ox + width - pixelStep, oy + i, doubleSided ? v4 - thickness : min_val),
+                        Vector3d(ox + width - pixelStep, oy + i, v4),
+                        Vector3d(ox + width - pixelStep, oy + i - pixelStep, v3),
+                        Vector3d(ox + width - pixelStep, oy + i - pixelStep, doubleSided ? v3 - thickness : min_val)});
   }
 
   // edges along X
-  for (int i = 1; i < columns; ++i) {
-    double v1 = data[ (i - 1) + (0) * columns ];
-    double v2 = data[ (i) + (0) * columns ];
-    double v3 = data[ (i - 1) + (lines - 1) * columns ];
-    double v4 = data[ (i) + (lines - 1) * columns ];
+  for (int i = pixelStep; i < width; i += pixelStep) {
+    double v1 = data[(i - pixelStep) + (0) * data.width];
+    double v2 = data[(i) + (0) * data.width];
+    double v3 = data[(i - pixelStep) + (height - pixelStep) * data.width];
+    double v4 = data[(i) + (height - pixelStep) * data.width];
 
-    builder.appendPoly({
-	Vector3d(ox + i, oy + 0, min_val),
-	Vector3d(ox + i, oy + 0, v2),
-	Vector3d(ox + i - 1, oy + 0, v1),
-	Vector3d(ox + i - 1, oy + 0, min_val)
-    });
+    builder.appendPoly({Vector3d(ox + i, oy + 0, doubleSided ? v2 - thickness : min_val),
+                        Vector3d(ox + i, oy + 0, v2),
+                        Vector3d(ox + i - pixelStep, oy + 0, v1),
+                        Vector3d(ox + i - pixelStep, oy + 0, doubleSided ? v1 - thickness : min_val)});
 
-    builder.appendPoly({
-	Vector3d(ox + i - 1, oy + lines - 1, min_val),
-	Vector3d(ox + i - 1, oy + lines - 1, v3),
-	Vector3d(ox + i, oy + lines - 1, v4),
-	Vector3d(ox + i, oy + lines - 1, min_val)
-    });
-  }
-
-  // the bottom of the shape (one less than the real minimum value), making it a solid volume
-  if (columns > 1 && lines > 1) {
-    builder.appendPoly(2 * (columns - 1) + 2 * (lines - 1) );
-    for (int i = 0; i < columns - 1; ++i)
-      builder.prependVertex(builder.vertexIndex(Vector3d(ox + i, oy + 0, min_val)));
-    for (int i = 0; i < lines - 1; ++i)
-      builder.prependVertex(builder.vertexIndex(Vector3d(ox + columns - 1, oy + i, min_val)));
-    for (int i = columns - 1; i > 0; i--)
-      builder.prependVertex(builder.vertexIndex(Vector3d(ox + i, oy + lines - 1, min_val)));
-    for (int i = lines - 1; i > 0; i--)
-      builder.prependVertex(builder.vertexIndex(Vector3d(ox + 0, oy + i, min_val)));
+    builder.appendPoly({Vector3d(ox + i - pixelStep, oy + height - pixelStep, doubleSided ? v3 - thickness : min_val),
+                        Vector3d(ox + i - pixelStep, oy + height - pixelStep, v3),
+                        Vector3d(ox + i, oy + height - pixelStep, v4),
+                        Vector3d(ox + i, oy + height - pixelStep, doubleSided ? v4 - thickness : min_val)});
   }
 
   return builder.build();
@@ -327,8 +363,12 @@ std::string SurfaceNode::toString() const
   stream << this->name() << "(file = " << this->filename
          << ", center = " << (this->center ? "true" : "false")
          << ", invert = " << (this->invert ? "true" : "false")
-         << ", " "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
-         << ")";
+         << ", doubleSided = " << (this->doubleSided ? "true" : "false")
+         << ", thickness = " << this->thickness
+         << ", pixelStep = " << this->pixelStep
+         << ", "
+            "timestamp = "
+         << (fs::exists(path) ? fs::last_write_time(path) : 0) << ")";
 
   return stream.str();
 }
@@ -336,7 +376,7 @@ std::string SurfaceNode::toString() const
 void register_builtin_surface()
 {
   Builtins::init("surface", new BuiltinModule(builtin_surface),
-  {
-    "surface(string, center = false, invert = false, number)",
-  });
+                 {
+                     "surface(string, center = false, invert = false, convexity = number, doubleSided = false, thickness = 1, pixelStep = 1)",
+                 });
 }
