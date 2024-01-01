@@ -126,9 +126,8 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, boo
                                                bool highlight_mode, bool background_mode,
                                                bool fberror, OpenSCADOperator type) const
 {
-  if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;
-  const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
-  if (!ps) return;
+  if (this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return;
+  if (!csgobj.leaf->polyset) return;
 
   const Color4f& c = csgobj.leaf->color;
   csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
@@ -147,12 +146,12 @@ void ThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, boo
   }
   glPushMatrix();
   glMultMatrixd(m.data());
-  render_surface(*ps, csgmode, m, shaderinfo);
+  render_surface(*csgobj.leaf->polyset, csgmode, m, shaderinfo);
   // only use old render_edges if there is no shader progid
   if (showedges && (shaderinfo && shaderinfo->progid == 0)) {
     // FIXME? glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
     setColor(edge_colormode);
-    render_edges(*ps, csgmode);
+    render_edges(*csgobj.leaf->polyset, csgmode);
   }
   glPopMatrix();
 }
@@ -205,11 +204,8 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
                                                const CSGChainObject& csgobj, bool highlight_mode,
                                                bool background_mode, OpenSCADOperator type)
 {
-  if (csgobj.leaf->geom) {
-    const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
-    if (!ps) return;
-
-    if (this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return;
+  if (csgobj.leaf->polyset) {
+    if (this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return;
 
     Color4f color;
     Color4f& leaf_color = csgobj.leaf->color;
@@ -223,7 +219,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
 
       add_color(vertex_array, color);
 
-      create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
+      create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, csgobj.leaf->matrix, color);
       std::shared_ptr<TTRVertexState> vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
       if (vs) {
         vs->setCsgObjectIndex(csgobj.leaf->index);
@@ -245,7 +241,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       });
       vertex_states.emplace_back(std::move(cull));
 
-      create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
+      create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, csgobj.leaf->matrix, color);
       std::shared_ptr<TTRVertexState> vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
       if (vs) {
         vs->setCsgObjectIndex(csgobj.leaf->index);
@@ -265,7 +261,7 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       });
       vertex_states.emplace_back(std::move(cull));
 
-      create_surface(*ps, vertex_array, csgmode, csgobj.leaf->matrix, color);
+      create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, csgobj.leaf->matrix, color);
       vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
       if (vs) {
         vs->setCsgObjectIndex(csgobj.leaf->index);

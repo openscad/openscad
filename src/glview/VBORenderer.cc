@@ -86,14 +86,11 @@ size_t VBORenderer::getSurfaceBufferSize(const std::shared_ptr<CSGProducts>& pro
 size_t VBORenderer::getSurfaceBufferSize(const CSGChainObject& csgobj, bool highlight_mode, bool background_mode, const OpenSCADOperator type, bool unique_geometry) const
 {
   size_t buffer_size = 0;
-  if (unique_geometry && this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return 0;
+  if (unique_geometry && this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return 0;
   csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
 
-  if (csgobj.leaf->geom) {
-    const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
-    if (ps) {
-      buffer_size += getSurfaceBufferSize(*ps, csgmode);
-    }
+  if (csgobj.leaf->polyset) {
+    buffer_size += getSurfaceBufferSize(*csgobj.leaf->polyset, csgmode);
   }
   return buffer_size;
 }
@@ -147,14 +144,11 @@ size_t VBORenderer::getEdgeBufferSize(const std::shared_ptr<CSGProducts>& produc
 size_t VBORenderer::getEdgeBufferSize(const CSGChainObject& csgobj, bool highlight_mode, bool background_mode, const OpenSCADOperator type, bool unique_geometry) const
 {
   size_t buffer_size = 0;
-  if (unique_geometry && this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return 0;
+  if (unique_geometry && this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return 0;
   csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
 
-  if (csgobj.leaf->geom) {
-    const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
-    if (ps) {
-      buffer_size += getEdgeBufferSize(*ps, csgmode);
-    }
+  if (csgobj.leaf->polyset) {
+    buffer_size += getEdgeBufferSize(*csgobj.leaf->polyset, csgmode);
   }
   return buffer_size;
 }
