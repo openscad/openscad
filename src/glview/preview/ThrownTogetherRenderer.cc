@@ -53,7 +53,7 @@ ThrownTogetherRenderer::~ThrownTogetherRenderer()
 void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const Renderer::shaderinfo_t * /*shaderinfo*/)
 {
   PRINTD("Thrown prepare");
-  if (Feature::ExperimentalVxORenderers.is_enabled() && vertex_states.empty()) {
+  if (vertex_states.empty()) {
     glGenBuffers(1, &vertices_vbo);
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
       glGenBuffers(1, &elements_vbo);
@@ -98,21 +98,7 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
     }
   }
 
-  if (!Feature::ExperimentalVxORenderers.is_enabled()) {
-    if (this->root_products) {
-      glEnable(GL_CULL_FACE);
-      glCullFace(GL_BACK);
-      renderCSGProducts(this->root_products, showedges, shaderinfo, false, false, false);
-      glCullFace(GL_FRONT);
-      glColor3ub(255, 0, 255);
-      renderCSGProducts(this->root_products, showedges, shaderinfo, false, false, true);
-      glDisable(GL_CULL_FACE);
-    }
-    if (this->background_products) renderCSGProducts(this->background_products, showedges, shaderinfo, false, true, false);
-    if (this->highlight_products) renderCSGProducts(this->highlight_products, showedges, shaderinfo, true, false, false);
-  } else {
-    renderCSGProducts(std::make_shared<CSGProducts>(), showedges, shaderinfo);
-  }
+  renderCSGProducts(std::make_shared<CSGProducts>(), showedges, shaderinfo);
   if (shaderinfo && shaderinfo->progid) {
     if (shaderinfo->type == EDGE_RENDERING && showedges) {
       shader_attribs_disable();
@@ -165,36 +151,25 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
   glDepthFunc(GL_LEQUAL);
   this->geomVisitMark.clear();
 
-  if (!Feature::ExperimentalVxORenderers.is_enabled()) {
-    for (const auto& product : products->products) {
-      for (const auto& csgobj : product.intersections) {
-        renderChainObject(csgobj, showedges, shaderinfo, highlight_mode, background_mode, fberror, OpenSCADOperator::INTERSECTION);
+  for (const auto& vs : vertex_states) {
+    if (vs) {
+      std::shared_ptr<TTRVertexState> csg_vs = std::dynamic_pointer_cast<TTRVertexState>(vs);
+      if (csg_vs) {
+	if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
+	  GL_TRACE("glUniform3f(%d, %f, %f, %f)",
+		   shaderinfo->data.select_rendering.identifier %
+		   (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
+		   (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
+		   (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+	  GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
+				((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
+				((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
+				((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+	}
       }
-      for (const auto& csgobj : product.subtractions) {
-        renderChainObject(csgobj, showedges, shaderinfo, highlight_mode, background_mode, fberror, OpenSCADOperator::DIFFERENCE);
-      }
-    }
-  } else {
-    for (const auto& vs : vertex_states) {
-      if (vs) {
-        std::shared_ptr<TTRVertexState> csg_vs = std::dynamic_pointer_cast<TTRVertexState>(vs);
-        if (csg_vs) {
-          if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
-            GL_TRACE("glUniform3f(%d, %f, %f, %f)",
-                     shaderinfo->data.select_rendering.identifier %
-                     (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
-                     (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
-                     (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-            GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
-                                  ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-                                  ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-                                  ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-          }
-        }
-        std::shared_ptr<VBOShaderVertexState> shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
-        if (!shader_vs || (shader_vs && showedges)) {
-          vs->draw();
-        }
+      std::shared_ptr<VBOShaderVertexState> shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
+      if (!shader_vs || (shader_vs && showedges)) {
+	vs->draw();
       }
     }
   }

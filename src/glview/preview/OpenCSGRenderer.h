@@ -93,12 +93,9 @@ public:
   BoundingBox getBoundingBox() const override;
 private:
 #ifdef ENABLE_OPENCSG
-  OpenCSGPrim *createCSGPrimitive(const CSGChainObject& csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const;
   OpenCSGVBOPrim *createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState>& vertex_state,
                                      const OpenCSG::Operation operation, const unsigned int convexity) const;
 #endif // ENABLE_OPENCSG
-  void renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges = false, const Renderer::shaderinfo_t *shaderinfo = nullptr,
-                         bool highlight_mode = false, bool background_mode = false) const;
   void createCSGVBOProducts(const CSGProducts& products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode);
   void renderCSGVBOProducts(bool showedges, const Renderer::shaderinfo_t *shaderinfo) const;
 

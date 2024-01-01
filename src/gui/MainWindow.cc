@@ -53,10 +53,12 @@
 #ifdef ENABLE_OPENCSG
 #include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
+#include "LegacyOpenCSGRenderer.h"
 #include <opencsg.h>
 #endif
 #include "ProgressWidget.h"
 #include "ThrownTogetherRenderer.h"
+#include "LegacyThrownTogetherRenderer.h"
 #include "CSGTreeNormalizer.h"
 #include "QGLView.h"
 #include "MouseSelector.h"
@@ -134,6 +136,7 @@ std::string SHA256HashString(std::string aString){
 #include <sys/stat.h>
 
 #include "CGALRenderer.h"
+#include "LegacyCGALRenderer.h"
 #include "CGALWorker.h"
 
 #ifdef ENABLE_CGAL
@@ -1393,14 +1396,28 @@ void MainWindow::compileCSG()
     else {
       LOG("Normalized tree has %1$d elements!",
           (this->root_products ? this->root_products->size() : 0));
-      this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
-                                                  this->highlights_products,
-                                                  this->background_products);
+      if (Feature::ExperimentalVxORenderers.is_enabled()) {
+	this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
+						    this->highlights_products,
+						    this->background_products);
+      }
+      else {
+	this->opencsgRenderer = new LegacyOpenCSGRenderer(this->root_products,
+							  this->highlights_products,
+							  this->background_products);
+      }
     }
 #endif
-    this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
-                                                              this->highlights_products,
-                                                              this->background_products);
+    if (Feature::ExperimentalVxORenderers.is_enabled()) {
+      this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
+								this->highlights_products,
+								this->background_products);
+    }
+    else {
+      this->thrownTogetherRenderer = new LegacyThrownTogetherRenderer(this->root_products,
+								      this->highlights_products,
+								      this->background_products);
+    }
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
     this->processEvents();
@@ -2296,7 +2313,12 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     LOG("Rendering finished.");
 
     this->root_geom = root_geom;
-    this->cgalRenderer = new CGALRenderer(root_geom);
+    if (Feature::ExperimentalVxORenderers.is_enabled()) {
+      this->cgalRenderer = new CGALRenderer(root_geom);
+    }
+    else {
+      this->cgalRenderer = new LegacyCGALRenderer(root_geom);
+    }
     // Go to CGAL view mode
     if (viewActionWireframe->isChecked()) viewModeWireframe();
     else viewModeSurface();

@@ -910,8 +910,12 @@ else()
     src/glview/GLView.cc
     src/glview/OffscreenView.cc
     src/glview/cgal/CGALRenderer.cc
+    src/glview/cgal/LegacyCGALRenderer.cc
+    src/glview/cgal/CGALRenderUtils.cc
     src/glview/preview/OpenCSGRenderer.cc
+    src/glview/preview/LegacyOpenCSGRenderer.cc
     src/glview/preview/ThrownTogetherRenderer.cc
+    src/glview/preview/LegacyThrownTogetherRenderer.cc
     src/io/export_png.cc
     src/io/imageutils.cc
     ${GLEW_SOURCES})
