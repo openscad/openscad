@@ -454,7 +454,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(showFind()));
   connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(showFindAndReplace()));
 #ifdef Q_OS_WIN
-  this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F));
+  this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL, Qt::SHIFT, Qt::Key_F));
 #endif
   connect(this->editActionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
   connect(this->editActionFindPrevious, SIGNAL(triggered()), this, SLOT(findPrev()));
