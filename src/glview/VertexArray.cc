@@ -229,7 +229,7 @@ void VertexArray::addAttributePointers(size_t start_offset)
   if (!this->data()) return;
 
   std::shared_ptr<VertexData> vertex_data = this->data();
-  std::shared_ptr<VertexState> vs = this->states().back();
+  std::shared_ptr<VertexState> vs = states_.back();
 
   GLsizei count = vertex_data->positionData()->count();
   GLenum type = vertex_data->positionData()->glType();

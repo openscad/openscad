@@ -58,19 +58,19 @@ public:
 class OpenCSGVBOProduct
 {
 public:
-  OpenCSGVBOProduct(std::vector<OpenCSG::Primitive *> primitives, std::unique_ptr<VertexStates> states)
+  OpenCSGVBOProduct(std::vector<OpenCSG::Primitive *> primitives, std::unique_ptr<std::vector<std::shared_ptr<VertexState>>> states)
     : primitives_(std::move(primitives)), states_(std::move(states)) {}
   virtual ~OpenCSGVBOProduct() = default;
 
   [[nodiscard]] const std::vector<OpenCSG::Primitive *>& primitives() const { return primitives_; }
-  [[nodiscard]] const VertexStates& states() const { return *(states_.get()); }
+  [[nodiscard]] const std::vector<std::shared_ptr<VertexState>>& states() const { return *(states_.get()); }
 
 private:
   // primitives_ is used to create the OpenCSG depth buffer (unlit rendering).
   // states_ is used for color rendering (using GL_EQUAL).
   // Both may use the same underlying VBOs
   const std::vector<OpenCSG::Primitive *> primitives_;
-  const std::unique_ptr<VertexStates> states_;
+  const std::unique_ptr<std::vector<std::shared_ptr<VertexState>>> states_;
 };
 
 class OpenCSGRenderer : public VBORenderer

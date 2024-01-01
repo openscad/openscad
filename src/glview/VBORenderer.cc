@@ -318,7 +318,7 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
   if (ps.getDimension() == 2) {
     create_polygons(ps, vertex_array, csgmode, m, color);
   } else if (ps.getDimension() == 3) {
-    VertexStates& vertex_states = vertex_array.states();
+    auto& vertex_states = vertex_array.states();
     std::unordered_map<Vector3d, Vector3d> vert_mult_map;
     size_t last_size = vertex_array.verticesOffset();
 
@@ -387,7 +387,7 @@ void VBORenderer::create_edges(const PolySet& ps,
 
   if (!vertex_data) return;
 
-  VertexStates& vertex_states = vertex_array.states();
+  auto& vertex_states = vertex_array.states();
   std::unordered_map<Vector3d, Vector3d> vert_mult_map;
 
   if (ps.getDimension() == 2) {
@@ -499,7 +499,7 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
 
   if (!vertex_data) return;
 
-  VertexStates& vertex_states = vertex_array.states();
+  auto& vertex_states = vertex_array.states();
   std::unordered_map<Vector3d, Vector3d> vert_mult_map;
 
   if (ps.getDimension() == 2) {

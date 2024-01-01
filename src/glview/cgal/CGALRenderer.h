@@ -35,7 +35,7 @@ private:
   std::list<std::shared_ptr<const CGAL_Nef_polyhedron>> nefPolyhedrons;
 #endif
 
-  VertexStates polyset_states;
+  std::vector<std::shared_ptr<VertexState>> polyset_states;
   GLuint polyset_vertices_vbo{0};
   GLuint polyset_elements_vbo{0};
 };

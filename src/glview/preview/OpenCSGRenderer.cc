@@ -174,7 +174,7 @@ void OpenCSGRenderer::createCSGVBOProducts(const CSGProducts& products, const Re
 
     Color4f last_color;
     std::vector<OpenCSG::Primitive *> primitives;
-    auto vertex_states = std::make_unique<VertexStates>();
+    std::unique_ptr<std::vector<std::shared_ptr<VertexState>>> vertex_states = std::make_unique<std::vector<std::shared_ptr<VertexState>>>();
     VertexArray vertex_array(std::make_unique<OpenCSGVertexStateFactory>(), *(vertex_states.get()),
                              vertices_vbo, elements_vbo);
     vertex_array.addSurfaceData();

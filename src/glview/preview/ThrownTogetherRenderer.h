@@ -71,7 +71,7 @@ private:
   Renderer::ColorMode getColorMode(const CSGNode::Flag& flags, bool highlight_mode,
                                    bool background_mode, bool fberror, OpenSCADOperator type) const;
 
-  VertexStates vertex_states;
+  std::vector<std::shared_ptr<VertexState>> vertex_states;
   std::shared_ptr<CSGProducts> root_products;
   std::shared_ptr<CSGProducts> highlight_products;
   std::shared_ptr<CSGProducts> background_products;
