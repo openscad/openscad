@@ -172,6 +172,7 @@ std::shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
   State& state, const std::shared_ptr<const Geometry>& geom,
   const ModuleInstantiation *modinst, const AbstractNode& node)
 {
+  assert(geom);
   // We cannot render Polygon2d directly, so we preprocess (tessellate) it here
   std::shared_ptr<const PolySet> ps;
   if (!geom->isEmpty()) {
@@ -183,8 +184,6 @@ std::shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
       ps = std::dynamic_pointer_cast<const PolySet>(geom);
     }
   }
-
-  // FIXME: if (!ps) error and return nullptr, or are there legitimate reasons why we can encounter a null geometry?
 
   std::shared_ptr<CSGNode> t(new CSGLeaf(ps, state.matrix(), state.color(), STR(node.name(), node.index()), node.index()));
   if (modinst->isHighlight() || state.isHighlight()) t->setHighlight(true);
