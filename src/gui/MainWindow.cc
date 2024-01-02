@@ -53,12 +53,16 @@
 #ifdef ENABLE_OPENCSG
 #include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
+#ifdef ENABLE_LEGACY_RENDERERS
 #include "LegacyOpenCSGRenderer.h"
+#endif
 #include <opencsg.h>
 #endif
 #include "ProgressWidget.h"
 #include "ThrownTogetherRenderer.h"
+#ifdef ENABLE_LEGACY_RENDERERS
 #include "LegacyThrownTogetherRenderer.h"
+#endif
 #include "CSGTreeNormalizer.h"
 #include "QGLView.h"
 #include "MouseSelector.h"
@@ -1384,27 +1388,31 @@ void MainWindow::compileCSG()
       LOG("Normalized tree has %1$d elements!",
           (this->root_products ? this->root_products->size() : 0));
       if (Feature::ExperimentalVxORenderers.is_enabled()) {
-	this->opencsgRenderer = std::make_shared<OpenCSGRenderer>(this->root_products,
-						    this->highlights_products,
-						    this->background_products);
+        this->opencsgRenderer = std::make_shared<OpenCSGRenderer>(this->root_products,
+                                                                  this->highlights_products,
+                                                  						    this->background_products);
       }
+#ifdef ENABLE_LEGACY_RENDERERS
       else {
-	this->opencsgRenderer = std::make_shared<LegacyOpenCSGRenderer>(this->root_products,
-							  this->highlights_products,
-							  this->background_products);
+        this->opencsgRenderer = std::make_shared<LegacyOpenCSGRenderer>(this->root_products,
+                                                                        this->highlights_products,
+                                                                        this->background_products);
       }
+#endif
     }
 #endif
     if (Feature::ExperimentalVxORenderers.is_enabled()) {
       this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(this->root_products,
-								this->highlights_products,
-								this->background_products);
+                                                                              this->highlights_products,
+                                                                              this->background_products);
     }
+#ifdef ENABLE_LEGACY_RENDERERS
     else {
       this->thrownTogetherRenderer = std::make_shared<LegacyThrownTogetherRenderer>(this->root_products,
-								      this->highlights_products,
-								      this->background_products);
+                                                                                    this->highlights_products,
+                                                                                    this->background_products);
     }
+#endif
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
     this->processEvents();
@@ -2302,9 +2310,11 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     if (Feature::ExperimentalVxORenderers.is_enabled()) {
       this->cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
     }
+#ifdef ENABLE_LEGACY_RENDERERS
     else {
       this->cgalRenderer = std::make_shared<LegacyCGALRenderer>(root_geom);
     }
+#endif
     // Go to CGAL view mode
     if (viewActionWireframe->isChecked()) viewModeWireframe();
     else viewModeSurface();

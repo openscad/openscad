@@ -9,6 +9,10 @@
 #ifndef NULLGL
 
 #include "CGALRenderer.h"
+#ifdef ENABLE_LEGACY_RENDERERS
+#include "LegacyCGALRenderer.h"
+#endif
+
 
 static void setupCamera(Camera& cam, const BoundingBox& bbox)
 {
@@ -25,8 +29,15 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
     fprintf(stderr, "Can't create OffscreenView: %s.\n", ex.what());
     return false;
   }
-  auto cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
-
+  std::shared_ptr<Renderer> cgalRenderer;
+  if (Feature::ExperimentalVxORenderers.is_enabled()) {
+    cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
+  }
+#ifdef ENABLE_LEGACY_RENDERERS
+  else {
+    cgalRenderer = std::make_shared<LegacyCGALRenderer>(root_geom);
+  }
+#endif
   BoundingBox bbox = cgalRenderer->getBoundingBox();
   setupCamera(camera, bbox);
 
@@ -45,11 +56,15 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
 
 #ifdef ENABLE_OPENCSG
 #include "OpenCSGRenderer.h"
+#ifdef ENABLE_LEGACY_RENDERERS
 #include "LegacyOpenCSGRenderer.h"
+#endif
 #include <opencsg.h>
 #endif
 #include "ThrownTogetherRenderer.h"
+#ifdef ENABLE_LEGACY_RENDERERS
 #include "LegacyThrownTogetherRenderer.h"
+#endif
 
 std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera)
 {
@@ -70,9 +85,12 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
 #ifdef ENABLE_OPENCSG
     if (Feature::ExperimentalVxORenderers.is_enabled()) {
       renderer = std::make_shared<OpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-    } else {
+    }
+#ifdef ENABLE_LEGACY_RENDERERS
+    else {
       renderer = std::make_shared<LegacyOpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
     }
+#endif
 #else
     fprintf(stderr, "This openscad was built without OpenCSG support\n");
     return 0;
@@ -80,12 +98,15 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
   } else {
     if (Feature::ExperimentalVxORenderers.is_enabled()) {
       renderer = std::make_shared<ThrownTogetherRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-    } else {
+    }
+#ifdef ENABLE_LEGACY_RENDERERS
+    else {
       renderer = std::make_shared<LegacyThrownTogetherRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
     }
+#endif
   }
 
-  glview->setRenderer(std::move(renderer));
+  glview->setRenderer(renderer);
 
 
 #ifdef ENABLE_OPENCSG
