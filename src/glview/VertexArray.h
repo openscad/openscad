@@ -245,7 +245,7 @@ public:
                                                    bool mirror)>;
 
 
-  VertexArray(std::unique_ptr<VertexStateFactory> factory, VertexStates& states,
+  VertexArray(std::unique_ptr<VertexStateFactory> factory, std::vector<std::shared_ptr<VertexState>>& states,
               GLuint vertices_vbo, GLuint elements_vbo)
     : factory_(std::move(factory)), states_(states),
       vertices_vbo_(vertices_vbo), elements_vbo_(elements_vbo)
@@ -281,7 +281,7 @@ public:
                     bool mirror = false, const CreateVertexCallback& vertex_callback = nullptr);
 
   // Return reference to the VertexStates
-  inline VertexStates& states() { return states_; }
+  inline std::vector<std::shared_ptr<VertexState>>& states() { return states_; }
   // Return reference to VertexData at current internal write index
   inline std::shared_ptr<VertexData> data() { return vertices_[write_index_]; }
   // Return reference to VertexData at custom external write index
@@ -358,7 +358,7 @@ public:
 
 private:
   std::unique_ptr<VertexStateFactory> factory_;
-  VertexStates& states_;
+  std::vector<std::shared_ptr<VertexState>>& states_;
   size_t write_index_{0};
   size_t surface_index_{0};
   size_t edge_index_{0};

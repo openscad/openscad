@@ -62,8 +62,8 @@ protected:
   void shader_attribs_enable() const;
   void shader_attribs_disable() const;
 
-  mutable std::unordered_map<std::pair<const Geometry *, const Transform3d *>, int,
-                             boost::hash<std::pair<const Geometry *, const Transform3d *>>> geomVisitMark;
+  mutable std::unordered_map<std::pair<const PolySet *, const Transform3d *>, int,
+                             boost::hash<std::pair<const PolySet *, const Transform3d *>>> geomVisitMark;
 
 private:
   void add_shader_attributes(VertexArray& vertex_array,

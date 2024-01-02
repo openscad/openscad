@@ -25,13 +25,14 @@
 #include "ColorMap.h"
 #include "system-gl.h"
 #include "Selection.h"
+#include "Renderer.h"
 
 class GLView
 {
 public:
   GLView();
-  void setRenderer(class Renderer *r);
-  [[nodiscard]] Renderer *getRenderer() const { return this->renderer; }
+  void setRenderer(std::shared_ptr<Renderer> r);
+  [[nodiscard]] Renderer *getRenderer() const { return this->renderer.get(); }
 
   void initializeGL();
   void resizeGL(int w, int h);
@@ -61,7 +62,7 @@ public:
 
   virtual ~GLView() = default;
 
-  Renderer *renderer;
+  std::shared_ptr<Renderer> renderer;
   const ColorScheme *colorscheme;
   Camera cam;
   double far_far_away;

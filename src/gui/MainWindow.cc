@@ -53,10 +53,16 @@
 #ifdef ENABLE_OPENCSG
 #include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
+#ifdef ENABLE_LEGACY_RENDERERS
+#include "LegacyOpenCSGRenderer.h"
+#endif
 #include <opencsg.h>
 #endif
 #include "ProgressWidget.h"
 #include "ThrownTogetherRenderer.h"
+#ifdef ENABLE_LEGACY_RENDERERS
+#include "LegacyThrownTogetherRenderer.h"
+#endif
 #include "CSGTreeNormalizer.h"
 #include "QGLView.h"
 #include "MouseSelector.h"
@@ -134,6 +140,7 @@ std::string SHA256HashString(std::string aString){
 #include <sys/stat.h>
 
 #include "CGALRenderer.h"
+#include "LegacyCGALRenderer.h"
 #include "CGALWorker.h"
 
 #ifdef ENABLE_CGAL
@@ -372,12 +379,6 @@ MainWindow::MainWindow(const QStringList& filenames)
   this->cgalworker = new CGALWorker();
   connect(this->cgalworker, SIGNAL(done(std::shared_ptr<const Geometry>)),
           this, SLOT(actionRenderDone(std::shared_ptr<const Geometry>)));
-  this->cgalRenderer = nullptr;
-
-#ifdef ENABLE_OPENCSG
-  this->opencsgRenderer = nullptr;
-#endif
-  this->thrownTogetherRenderer = nullptr;
 
   root_node = nullptr;
 
@@ -971,11 +972,6 @@ MainWindow::~MainWindow()
   // If root_file is not null then it will be the same as parsed_file,
   // so no need to delete it.
   delete parsed_file;
-  delete this->cgalRenderer;
-#ifdef ENABLE_OPENCSG
-  delete this->opencsgRenderer;
-#endif
-  delete this->thrownTogetherRenderer;
   scadApp->windowManager.remove(this);
   if (scadApp->windowManager.getWindows().size() == 0) {
     // Quit application even in case some other windows like
@@ -1228,10 +1224,8 @@ void MainWindow::instantiateRoot()
   // Invalidate renderers before we kill the CSG tree
   this->qglview->setRenderer(nullptr);
 #ifdef ENABLE_OPENCSG
-  delete this->opencsgRenderer;
   this->opencsgRenderer = nullptr;
 #endif
-  delete this->thrownTogetherRenderer;
   this->thrownTogetherRenderer = nullptr;
 
   // Remove previous CSG tree
@@ -1393,14 +1387,32 @@ void MainWindow::compileCSG()
     else {
       LOG("Normalized tree has %1$d elements!",
           (this->root_products ? this->root_products->size() : 0));
-      this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
-                                                  this->highlights_products,
-                                                  this->background_products);
+      if (Feature::ExperimentalVxORenderers.is_enabled()) {
+        this->opencsgRenderer = std::make_shared<OpenCSGRenderer>(this->root_products,
+                                                                  this->highlights_products,
+                                                  						    this->background_products);
+      }
+#ifdef ENABLE_LEGACY_RENDERERS
+      else {
+        this->opencsgRenderer = std::make_shared<LegacyOpenCSGRenderer>(this->root_products,
+                                                                        this->highlights_products,
+                                                                        this->background_products);
+      }
+#endif
     }
 #endif
-    this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
-                                                              this->highlights_products,
-                                                              this->background_products);
+    if (Feature::ExperimentalVxORenderers.is_enabled()) {
+      this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(this->root_products,
+                                                                              this->highlights_products,
+                                                                              this->background_products);
+    }
+#ifdef ENABLE_LEGACY_RENDERERS
+    else {
+      this->thrownTogetherRenderer = std::make_shared<LegacyThrownTogetherRenderer>(this->root_products,
+                                                                                    this->highlights_products,
+                                                                                    this->background_products);
+    }
+#endif
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
     this->processEvents();
@@ -2259,7 +2271,6 @@ void MainWindow::cgalRender()
   }
 
   this->qglview->setRenderer(nullptr);
-  delete this->cgalRenderer;
   this->cgalRenderer = nullptr;
   this->root_geom.reset();
 
@@ -2293,7 +2304,14 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     LOG("Rendering finished.");
 
     this->root_geom = root_geom;
-    this->cgalRenderer = new CGALRenderer(root_geom);
+    if (Feature::ExperimentalVxORenderers.is_enabled()) {
+      this->cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
+    }
+#ifdef ENABLE_LEGACY_RENDERERS
+    else {
+      this->cgalRenderer = std::make_shared<LegacyCGALRenderer>(root_geom);
+    }
+#endif
     // Go to CGAL view mode
     if (viewActionWireframe->isChecked()) viewModeWireframe();
     else viewModeSurface();
@@ -2368,7 +2386,7 @@ void MainWindow::rightClick(QPoint mouse)
   this->selector->reset(this->qglview);
 
   // Select the object at mouse coordinates
-  int index = this->selector->select(this->qglview->renderer, mouse.x(), mouse.y());
+  int index = this->selector->select(this->qglview->getRenderer(), mouse.x(), mouse.y());
   std::deque<std::shared_ptr<const AbstractNode>> path;
   std::shared_ptr<const AbstractNode> result = this->root_node->getNodeByID(index, path);
 
@@ -2881,7 +2899,7 @@ void MainWindow::viewModePreview()
   if (this->qglview->hasOpenCSGSupport()) {
     viewModeActionsUncheck();
     viewActionPreview->setChecked(true);
-    this->qglview->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : (Renderer *)this->thrownTogetherRenderer);
+    this->qglview->setRenderer(this->opencsgRenderer ? this->opencsgRenderer : this->thrownTogetherRenderer);
     this->qglview->updateColorScheme();
     this->qglview->update();
   } else {

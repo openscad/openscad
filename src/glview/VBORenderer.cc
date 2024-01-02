@@ -86,14 +86,11 @@ size_t VBORenderer::getSurfaceBufferSize(const std::shared_ptr<CSGProducts>& pro
 size_t VBORenderer::getSurfaceBufferSize(const CSGChainObject& csgobj, bool highlight_mode, bool background_mode, const OpenSCADOperator type, bool unique_geometry) const
 {
   size_t buffer_size = 0;
-  if (unique_geometry && this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return 0;
+  if (unique_geometry && this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return 0;
   csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
 
-  if (csgobj.leaf->geom) {
-    const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
-    if (ps) {
-      buffer_size += getSurfaceBufferSize(*ps, csgmode);
-    }
+  if (csgobj.leaf->polyset) {
+    buffer_size += getSurfaceBufferSize(*csgobj.leaf->polyset, csgmode);
   }
   return buffer_size;
 }
@@ -147,14 +144,11 @@ size_t VBORenderer::getEdgeBufferSize(const std::shared_ptr<CSGProducts>& produc
 size_t VBORenderer::getEdgeBufferSize(const CSGChainObject& csgobj, bool highlight_mode, bool background_mode, const OpenSCADOperator type, bool unique_geometry) const
 {
   size_t buffer_size = 0;
-  if (unique_geometry && this->geomVisitMark[std::make_pair(csgobj.leaf->geom.get(), &csgobj.leaf->matrix)]++ > 0) return 0;
+  if (unique_geometry && this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return 0;
   csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
 
-  if (csgobj.leaf->geom) {
-    const auto *ps = dynamic_cast<const PolySet *>(csgobj.leaf->geom.get());
-    if (ps) {
-      buffer_size += getEdgeBufferSize(*ps, csgmode);
-    }
+  if (csgobj.leaf->polyset) {
+    buffer_size += getEdgeBufferSize(*csgobj.leaf->polyset, csgmode);
   }
   return buffer_size;
 }
@@ -324,7 +318,7 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
   if (ps.getDimension() == 2) {
     create_polygons(ps, vertex_array, csgmode, m, color);
   } else if (ps.getDimension() == 3) {
-    VertexStates& vertex_states = vertex_array.states();
+    auto& vertex_states = vertex_array.states();
     std::unordered_map<Vector3d, Vector3d> vert_mult_map;
     size_t last_size = vertex_array.verticesOffset();
 
@@ -393,7 +387,7 @@ void VBORenderer::create_edges(const PolySet& ps,
 
   if (!vertex_data) return;
 
-  VertexStates& vertex_states = vertex_array.states();
+  auto& vertex_states = vertex_array.states();
   std::unordered_map<Vector3d, Vector3d> vert_mult_map;
 
   if (ps.getDimension() == 2) {
@@ -505,7 +499,7 @@ void VBORenderer::create_polygons(const PolySet& ps, VertexArray& vertex_array,
 
   if (!vertex_data) return;
 
-  VertexStates& vertex_states = vertex_array.states();
+  auto& vertex_states = vertex_array.states();
   std::unordered_map<Vector3d, Vector3d> vert_mult_map;
 
   if (ps.getDimension() == 2) {

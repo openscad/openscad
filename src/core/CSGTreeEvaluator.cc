@@ -172,16 +172,20 @@ std::shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
   State& state, const std::shared_ptr<const Geometry>& geom,
   const ModuleInstantiation *modinst, const AbstractNode& node)
 {
+  assert(geom);
   // We cannot render Polygon2d directly, so we preprocess (tessellate) it here
-  auto g = geom;
-  if (!g->isEmpty()) {
+  std::shared_ptr<const PolySet> ps;
+  if (!geom->isEmpty()) {
     if (auto p2d = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
-      g = p2d->tessellate();
+      ps = p2d->tessellate();
     }
     // 3D PolySets are tessellated before inserting into Geometry cache, inside GeometryEvaluator::evaluateGeometry
+    else {
+      ps = std::dynamic_pointer_cast<const PolySet>(geom);
+    }
   }
 
-  std::shared_ptr<CSGNode> t(new CSGLeaf(g, state.matrix(), state.color(), STR(node.name(), node.index()), node.index()));
+  std::shared_ptr<CSGNode> t(new CSGLeaf(ps, state.matrix(), state.color(), STR(node.name(), node.index()), node.index()));
   if (modinst->isHighlight() || state.isHighlight()) t->setHighlight(true);
   if (modinst->isBackground() || state.isBackground()) t->setBackground(true);
   return t;
