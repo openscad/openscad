@@ -20,7 +20,6 @@ GLView::GLView()
   showaxes = false;
   showcrosshairs = false;
   showscale = false;
-  renderer = nullptr;
   colorscheme = &ColorMap::inst()->defaultColorScheme();
   cam = Camera();
   far_far_away = RenderSettings::inst()->far_gl_clip_limit;
@@ -32,9 +31,9 @@ GLView::GLView()
 #endif
 }
 
-void GLView::setRenderer(Renderer *r)
+void GLView::setRenderer(std::shared_ptr<Renderer> r)
 {
-  renderer = r;
+  this->renderer = r;
   if (this->renderer) {
     this->renderer->resize(cam.pixel_width, cam.pixel_height);
   }

@@ -58,9 +58,6 @@ private:
                          const Renderer::shaderinfo_t *shaderinfo = nullptr,
                          bool highlight_mode = false, bool background_mode = false,
                          bool fberror = false) const;
-  void renderChainObject(const CSGChainObject& csgobj, bool showedges,
-                         const Renderer::shaderinfo_t *, bool highlight_mode,
-                         bool background_mode, bool fberror, OpenSCADOperator type) const;
 
   void createCSGProducts(const CSGProducts& products, VertexArray& vertex_array,
                          bool highlight_mode, bool background_mode);

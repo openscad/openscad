@@ -13,7 +13,7 @@ class CSGChainObject;
 class CSGProducts;
 class OpenCSGPrim;
 
-class LegacyOpenCSGRenderer : public VBORenderer
+class LegacyOpenCSGRenderer : public Renderer
 {
 public:
   LegacyOpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,

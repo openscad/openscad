@@ -25,13 +25,13 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
     fprintf(stderr, "Can't create OffscreenView: %s.\n", ex.what());
     return false;
   }
-  CGALRenderer cgalRenderer(root_geom);
+  auto cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
 
-  BoundingBox bbox = cgalRenderer.getBoundingBox();
+  BoundingBox bbox = cgalRenderer->getBoundingBox();
   setupCamera(camera, bbox);
 
   glview->setCamera(camera);
-  glview->setRenderer(&cgalRenderer);
+  glview->setRenderer(cgalRenderer);
   glview->setColorScheme(RenderSettings::inst()->colorscheme);
   glview->setShowFaces(!options["wireframe"]);
   glview->setShowCrosshairs(options["crosshairs"]);
@@ -45,9 +45,11 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
 
 #ifdef ENABLE_OPENCSG
 #include "OpenCSGRenderer.h"
+#include "LegacyOpenCSGRenderer.h"
 #include <opencsg.h>
 #endif
 #include "ThrownTogetherRenderer.h"
+#include "LegacyThrownTogetherRenderer.h"
 
 std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera)
 {
@@ -63,21 +65,29 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
     return nullptr;
   }
 
-#ifdef ENABLE_OPENCSG
-  OpenCSGRenderer openCSGRenderer(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-#endif
-  ThrownTogetherRenderer thrownTogetherRenderer(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-
+  std::shared_ptr<Renderer> renderer;
   if (options.previewer == Previewer::OPENCSG) {
 #ifdef ENABLE_OPENCSG
-    glview->setRenderer(&openCSGRenderer);
+    if (Feature::ExperimentalVxORenderers.is_enabled()) {
+      renderer = std::make_shared<OpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
+    } else {
+      renderer = std::make_shared<LegacyOpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
+    }
 #else
     fprintf(stderr, "This openscad was built without OpenCSG support\n");
     return 0;
 #endif
   } else {
-    glview->setRenderer(&thrownTogetherRenderer);
+    if (Feature::ExperimentalVxORenderers.is_enabled()) {
+      renderer = std::make_shared<ThrownTogetherRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
+    } else {
+      renderer = std::make_shared<LegacyThrownTogetherRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
+    }
   }
+
+  glview->setRenderer(std::move(renderer));
+
+
 #ifdef ENABLE_OPENCSG
   BoundingBox bbox = glview->getRenderer()->getBoundingBox();
   setupCamera(camera, bbox);

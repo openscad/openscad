@@ -8,7 +8,7 @@
 class CSGProducts;
 class CSGChainObject;
 
-class LegacyThrownTogetherRenderer : public VBORenderer
+class LegacyThrownTogetherRenderer : public Renderer
 {
 public:
   LegacyThrownTogetherRenderer(std::shared_ptr<CSGProducts> root_products,

@@ -107,41 +107,6 @@ void ThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, const Rend
   }
 }
 
-void ThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgobj, bool showedges,
-                                               const Renderer::shaderinfo_t *shaderinfo,
-                                               bool highlight_mode, bool background_mode,
-                                               bool fberror, OpenSCADOperator type) const
-{
-  if (this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return;
-  if (!csgobj.leaf->polyset) return;
-
-  const Color4f& c = csgobj.leaf->color;
-  csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
-  ColorMode colormode = ColorMode::NONE;
-  ColorMode edge_colormode = ColorMode::NONE;
-
-  colormode = getColorMode(csgobj.flags, highlight_mode, background_mode, fberror, type);
-  const Transform3d& m = csgobj.leaf->matrix;
-
-  if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
-    int identifier = csgobj.leaf->index;
-    glUniform3f(shaderinfo->data.select_rendering.identifier, ((identifier >> 0) & 0xff) / 255.0f,
-                ((identifier >> 8) & 0xff) / 255.0f, ((identifier >> 16) & 0xff) / 255.0f);
-  } else {
-    setColor(colormode, c.data());
-  }
-  glPushMatrix();
-  glMultMatrixd(m.data());
-  render_surface(*csgobj.leaf->polyset, csgmode, m, shaderinfo);
-  // only use old render_edges if there is no shader progid
-  if (showedges && (shaderinfo && shaderinfo->progid == 0)) {
-    // FIXME? glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
-    setColor(edge_colormode);
-    render_edges(*csgobj.leaf->polyset, csgmode);
-  }
-  glPopMatrix();
-}
-
 void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges,
                                                const Renderer::shaderinfo_t *shaderinfo,
                                                bool highlight_mode, bool background_mode,

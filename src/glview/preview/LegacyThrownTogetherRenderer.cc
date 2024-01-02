@@ -53,7 +53,8 @@ void LegacyThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, cons
   if (shaderinfo && shaderinfo->progid) {
     glUseProgram(shaderinfo->progid);
     if (shaderinfo->type == EDGE_RENDERING && showedges) {
-      shader_attribs_enable();
+      GL_TRACE("glEnableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
+      GL_CHECKD(glEnableVertexAttribArray(getShader().data.csg_rendering.barycentric));
     }
   }
 
@@ -70,7 +71,8 @@ void LegacyThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, cons
   if (this->highlight_products) renderCSGProducts(this->highlight_products, showedges, shaderinfo, true, false, false);
   if (shaderinfo && shaderinfo->progid) {
     if (shaderinfo->type == EDGE_RENDERING && showedges) {
-      shader_attribs_disable();
+      GL_TRACE("glDisableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
+      GL_CHECKD(glDisableVertexAttribArray(getShader().data.csg_rendering.barycentric));
     }
     glUseProgram(0);
   }
@@ -81,7 +83,7 @@ void LegacyThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgob
                                                bool highlight_mode, bool background_mode,
                                                bool fberror, OpenSCADOperator type) const
 {
-  if (this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return;
+//  if (this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return;
   if (!csgobj.leaf->polyset) return;
 
   const Color4f& c = csgobj.leaf->color;
@@ -118,7 +120,7 @@ void LegacyThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGPr
 {
   PRINTD("Thrown renderCSGProducts");
   glDepthFunc(GL_LEQUAL);
-  this->geomVisitMark.clear();
+//  this->geomVisitMark.clear();
 
   for (const auto& product : products->products) {
     for (const auto& csgobj : product.intersections) {

@@ -9,7 +9,7 @@
 #include "Selection.h"
 #endif
 
-class LegacyCGALRenderer : public VBORenderer
+class LegacyCGALRenderer : public Renderer
 {
 public:
   LegacyCGALRenderer(const std::shared_ptr<const class Geometry>& geom);
