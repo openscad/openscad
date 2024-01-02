@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "VBORenderer.h"
+#include "Renderer.h"
 #ifdef ENABLE_CGAL
 #include "CGAL_OGL_Polyhedron.h"
 #include "CGAL_Nef_polyhedron.h"
@@ -13,7 +13,7 @@ class LegacyCGALRenderer : public Renderer
 {
 public:
   LegacyCGALRenderer(const std::shared_ptr<const class Geometry>& geom);
-  ~LegacyCGALRenderer() override;
+  ~LegacyCGALRenderer() override = default;
   void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
   void setColorScheme(const ColorScheme& cs) override;
   BoundingBox getBoundingBox() const override;

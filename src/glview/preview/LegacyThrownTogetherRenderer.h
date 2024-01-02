@@ -3,8 +3,6 @@
 #include "Renderer.h"
 #include "CSGNode.h"
 
-#include "VBORenderer.h"
-
 class CSGProducts;
 class CSGChainObject;
 
@@ -14,7 +12,7 @@ public:
   LegacyThrownTogetherRenderer(std::shared_ptr<CSGProducts> root_products,
 			       std::shared_ptr<CSGProducts> highlight_products,
 			       std::shared_ptr<CSGProducts> background_products);
-  ~LegacyThrownTogetherRenderer() override;
+  ~LegacyThrownTogetherRenderer() override = default;
   void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
 
   BoundingBox getBoundingBox() const override;

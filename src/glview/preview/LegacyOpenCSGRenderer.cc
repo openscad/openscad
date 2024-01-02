@@ -26,6 +26,7 @@
 
 #include "system-gl.h"
 #include "LegacyOpenCSGRenderer.h"
+#include "LegacyRendererUtils.h"
 
 #include <memory.h>
 #include <utility>
@@ -47,13 +48,24 @@ public:
     if (polyset) {
       glPushMatrix();
       glMultMatrixd(m.data());
-      renderer.render_surface(*polyset, csgmode, m);
+      render_surface(*polyset, csgmode, m);
       glPopMatrix();
     }
   }
 private:
   const LegacyOpenCSGRenderer& renderer;
 };
+
+// Primitive for rendering using OpenCSG
+OpenCSGPrim *createCSGPrimitive(const CSGChainObject& csgobj, OpenCSG::Operation operation,
+                                bool highlight_mode, bool background_mode, OpenSCADOperator type, 
+                                const LegacyOpenCSGRenderer &renderer) {
+  auto *prim = new OpenCSGPrim(operation, csgobj.leaf->polyset->getConvexity(), renderer);
+  prim->polyset = csgobj.leaf->polyset;
+  prim->m = csgobj.leaf->matrix;
+  prim->csgmode = Renderer::get_csgmode(highlight_mode, background_mode, type);
+  return prim;
+}
 
 #endif // ENABLE_OPENCSG
 
@@ -81,16 +93,6 @@ void LegacyOpenCSGRenderer::draw(bool /*showfaces*/, bool showedges, const shade
   }
 }
 
-// Primitive for rendering using OpenCSG
-OpenCSGPrim *LegacyOpenCSGRenderer::createCSGPrimitive(const CSGChainObject& csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const
-{
-  auto *prim = new OpenCSGPrim(operation, csgobj.leaf->polyset->getConvexity(), *this);
-  prim->polyset = csgobj.leaf->polyset;
-  prim->m = csgobj.leaf->matrix;
-  prim->csgmode = get_csgmode(highlight_mode, background_mode, type);
-  return prim;
-}
-
 void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges,
                                         const Renderer::shaderinfo_t *shaderinfo,
                                         bool highlight_mode, bool background_mode) const
@@ -99,10 +101,10 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
   for (const auto& product : products->products) {
     std::vector<OpenCSG::Primitive *> primitives;
     for (const auto& csgobj : product.intersections) {
-      if (csgobj.leaf->polyset) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION));
+      if (csgobj.leaf->polyset) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION, *this));
     }
     for (const auto& csgobj : product.subtractions) {
-      if (csgobj.leaf->polyset) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE));
+      if (csgobj.leaf->polyset) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE, *this));
     }
     if (primitives.size() > 1) {
       OpenCSG::render(primitives);

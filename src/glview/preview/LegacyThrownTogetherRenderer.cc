@@ -30,6 +30,7 @@
 #include "Feature.h"
 #include "PolySet.h"
 #include "printutils.h"
+#include "LegacyRendererUtils.h"
 
 #include "system-gl.h"
 
@@ -37,10 +38,6 @@ LegacyThrownTogetherRenderer::LegacyThrownTogetherRenderer(std::shared_ptr<CSGPr
                                                std::shared_ptr<CSGProducts> highlight_products,
                                                std::shared_ptr<CSGProducts> background_products)
   : root_products(std::move(root_products)), highlight_products(std::move(highlight_products)), background_products(std::move(background_products))
-{
-}
-
-LegacyThrownTogetherRenderer::~LegacyThrownTogetherRenderer()
 {
 }
 
@@ -53,7 +50,6 @@ void LegacyThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, cons
   if (shaderinfo && shaderinfo->progid) {
     glUseProgram(shaderinfo->progid);
     if (shaderinfo->type == EDGE_RENDERING && showedges) {
-      GL_TRACE("glEnableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
       GL_CHECKD(glEnableVertexAttribArray(getShader().data.csg_rendering.barycentric));
     }
   }
@@ -71,7 +67,6 @@ void LegacyThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, cons
   if (this->highlight_products) renderCSGProducts(this->highlight_products, showedges, shaderinfo, true, false, false);
   if (shaderinfo && shaderinfo->progid) {
     if (shaderinfo->type == EDGE_RENDERING && showedges) {
-      GL_TRACE("glDisableVertexAttribArray(%d)", getShader().data.csg_rendering.barycentric);
       GL_CHECKD(glDisableVertexAttribArray(getShader().data.csg_rendering.barycentric));
     }
     glUseProgram(0);

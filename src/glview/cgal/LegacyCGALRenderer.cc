@@ -34,6 +34,7 @@
 #include "printutils.h"
 
 #include "LegacyCGALRenderer.h"
+#include "LegacyRendererUtils.h"
 #include "CGALRenderUtils.h"
 #ifdef ENABLE_CGAL
 #include "CGALHybridPolyhedron.h"
@@ -83,10 +84,6 @@ void LegacyCGALRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom
   } else {
     assert(false && "unsupported geom in LegacyCGALRenderer");
   }
-}
-
-LegacyCGALRenderer::~LegacyCGALRenderer()
-{
 }
 
 #ifdef ENABLE_CGAL
@@ -144,12 +141,12 @@ void LegacyCGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t
 
       glLineWidth(2);
       setColor(ColorMode::CGAL_EDGE_2D_COLOR);
-      this->render_edges(*polyset, CSGMODE_NONE);
+      render_edges(*polyset, CSGMODE_NONE);
       glEnable(GL_DEPTH_TEST);
     } else {
       // Draw 3D polygons
       setColor(ColorMode::MATERIAL);
-      this->render_surface(*polyset, CSGMODE_NORMAL, Transform3d::Identity(), nullptr);
+      render_surface(*polyset, CSGMODE_NORMAL, Transform3d::Identity(), nullptr);
     }
   }
 

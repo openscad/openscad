@@ -893,6 +893,7 @@ if(NULLGL)
   message(STATUS "NULLGL is set. Overriding OpenGL(TM) settings")
   set(OFFSCREEN_SOURCES
     src/glview/Renderer.cc
+    src/glview/LegacyRendererUtils.cc
     src/glview/NULLGL.cc # contains several 'nullified' versions of above .cc files
     src/glview/OffscreenView.cc
     src/glview/OffscreenContextNULL.cc
@@ -916,6 +917,7 @@ else()
     src/glview/preview/LegacyOpenCSGRenderer.cc
     src/glview/preview/ThrownTogetherRenderer.cc
     src/glview/preview/LegacyThrownTogetherRenderer.cc
+    src/glview/LegacyRendererUtils.cc
     src/io/export_png.cc
     src/io/imageutils.cc
     ${GLEW_SOURCES})
