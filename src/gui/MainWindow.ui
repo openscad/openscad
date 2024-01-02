@@ -176,7 +176,6 @@
          <addaction name="viewActionResetView"/>
          <addaction name="designActionMeasureDist"/>
          <addaction name="designActionMeasureAngle"/>
-         <addaction name="designActionFindHandle"/>
          <addaction name="separator"/>
          <addaction name="viewActionRight"/>
          <addaction name="viewActionLeft"/>
