@@ -14,6 +14,7 @@ class LegacyCGALRenderer : public Renderer
 public:
   LegacyCGALRenderer(const std::shared_ptr<const class Geometry>& geom);
   ~LegacyCGALRenderer() override = default;
+  void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) override;
   void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
   void setColorScheme(const ColorScheme& cs) override;
   BoundingBox getBoundingBox() const override;

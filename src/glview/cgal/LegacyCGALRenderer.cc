@@ -116,6 +116,13 @@ void LegacyCGALRenderer::setColorScheme(const ColorScheme& cs)
   PRINTD("setColorScheme done");
 }
 
+void LegacyCGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const shaderinfo_t * /*shaderinfo*/)
+{
+#ifdef ENABLE_CGAL
+  if (!this->nefPolyhedrons.empty() && this->polyhedrons.empty()) createPolyhedrons();
+#endif
+}
+
 void LegacyCGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*shaderinfo*/) const
 {
   PRINTD("draw()");
