@@ -49,9 +49,6 @@ void LegacyThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, cons
   }
   if (shaderinfo && shaderinfo->progid) {
     glUseProgram(shaderinfo->progid);
-    if (shaderinfo->type == EDGE_RENDERING && showedges) {
-      GL_CHECKD(glEnableVertexAttribArray(getShader().data.csg_rendering.barycentric));
-    }
   }
 
   if (this->root_products) {
@@ -66,9 +63,6 @@ void LegacyThrownTogetherRenderer::draw(bool /*showfaces*/, bool showedges, cons
   if (this->background_products) renderCSGProducts(this->background_products, showedges, shaderinfo, false, true, false);
   if (this->highlight_products) renderCSGProducts(this->highlight_products, showedges, shaderinfo, true, false, false);
   if (shaderinfo && shaderinfo->progid) {
-    if (shaderinfo->type == EDGE_RENDERING && showedges) {
-      GL_CHECKD(glDisableVertexAttribArray(getShader().data.csg_rendering.barycentric));
-    }
     glUseProgram(0);
   }
 }
@@ -94,7 +88,7 @@ void LegacyThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgob
     glUniform3f(shaderinfo->data.select_rendering.identifier, ((identifier >> 0) & 0xff) / 255.0f,
                 ((identifier >> 8) & 0xff) / 255.0f, ((identifier >> 16) & 0xff) / 255.0f);
   } else {
-    setColor(colormode, c.data());
+    setColor(colormode, c.data(), shaderinfo);
   }
   glPushMatrix();
   glMultMatrixd(m.data());
