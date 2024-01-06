@@ -174,7 +174,7 @@ static const int autoReloadPollingPeriodMS = 200;
 unsigned int GuiLocker::gui_locked = 0;
 
 static char copyrighttext[] =
-  "<p>Copyright (C) 2009-2022 The OpenSCAD Developers</p>"
+  "<p>Copyright (C) 2009-2024 The OpenSCAD Developers</p>"
   "<p>This program is free software; you can redistribute it and/or modify "
   "it under the terms of the GNU General Public License as published by "
   "the Free Software Foundation; either version 2 of the License, or "
