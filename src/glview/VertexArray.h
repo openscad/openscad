@@ -340,9 +340,7 @@ public:
   inline size_t verticesSize() const { return vertices_size_; }
   inline void setVerticesSize(size_t vertices_size) {
     vertices_size_ = vertices_size;
-    if (Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-      interleaved_buffer_.resize(vertices_size_);
-    }
+    interleaved_buffer_.resize(vertices_size_);
   }
   inline size_t verticesOffset() const { return vertices_offset_; }
   inline void setVerticesOffset(size_t offset) { vertices_offset_ = offset; }

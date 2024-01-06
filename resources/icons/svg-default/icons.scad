@@ -67,6 +67,8 @@ icons = [
     ["vcr-control-pause"],
     ["vcr-control-step-forward"],
     ["vcr-control-end"],
+    ["measure-dist"],
+    ["measure-ang"]
 ];
 
 icon(selected_icon) {
@@ -121,6 +123,8 @@ icon(selected_icon) {
     vcr_control_pause();
     vcr_control_step_forward();
     vcr_control_end();
+    measure_dist();
+    measure_ang();
 }
 
 if (list_icons) {
@@ -732,4 +736,37 @@ module vcr_control_end(){
         circle(d = 0.5 * width, $fn = 3);
        translate([x, 0]) square([thick, 0.4 * width], center = true);
     }
+}
+
+module measure_dist(){
+    x =  0.75 * width /2;
+    a = width*0.2;
+    t = thin*0.1;
+    offset(rounding)
+    translate([width/2,height/2]){
+        for(mirr=[1,0,0]) mirror([mirr,0,0])  {
+            translate([x, 0]) square([t, 0.8 * width], center = true);
+        polygon([[x-t,-15],[x-a-t,a-15],[x-a-t,-a-15]]);
+        }
+       translate([0,-15])  square([2*x, thin], center = true);
+    }
+    translate([25,50])
+    resize([40, 40], true)
+    text("10", 40, font = export_font);
+
+}
+
+module measure_ang() {
+    x =  0.75 * width /2;
+    a = width*0.2;
+    offset(rounding)
+    translate([width/2,height/2]){
+        for(mirr=[1,0,0]) mirror([mirr,0,0])  {
+            translate([0, -x]) rotate([0,0,45]) square([thin, 0.8 * width/sqrt(2)]);
+        }
+    }
+    translate([width*0.5,width*0.6]) scale(0.7) curved_arrow();
+    translate([30,30])
+    resize([40, 40], true)
+    text("45", 40, font = export_font);
 }

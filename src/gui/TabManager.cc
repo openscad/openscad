@@ -551,7 +551,9 @@ bool TabManager::refreshDocument()
           editor->filepath.toLocal8Bit().constData(), file.errorString().toLocal8Bit().constData());
     } else {
       QTextStream reader(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
       reader.setCodec("UTF-8");
+#endif
       auto text = reader.readAll();
       LOG("Loaded design '%1$s'.", editor->filepath.toLocal8Bit().constData());
       if (editor->toPlainText() != text) {
@@ -669,7 +671,9 @@ bool TabManager::save(EditorInterface *edt, const QString& path)
   }
 
   QTextStream writer(&file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   writer.setCodec("UTF-8");
+#endif
   writer << edt->toPlainText();
   writer.flush();
   bool saveOk = writer.status() == QTextStream::Ok;

@@ -217,14 +217,12 @@ void CGALRenderer::createPolySets()
   }
 
   if (this->polysets.size()) {
-    if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-      if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-        GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
-        GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-      }
-      GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-      GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+      GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
     }
+    GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
     vertex_array.createInterleavedVBOs();
   }
@@ -329,4 +327,79 @@ BoundingBox CGALRenderer::getBoundingBox() const
     bbox.extend(ps->getBoundingBox());
   }
   return bbox;
+}
+double calculateLinePointDistance(const Vector3d &l1, const Vector3d &l2, const Vector3d &pt, double & dist_lat) {
+    Vector3d d = (l2 - l1).normalized();
+    dist_lat = (pt-l1).dot(d);
+    return (l1 + d * dist_lat-pt).norm();
+}
+
+double calculateLineLineDistance(const Vector3d &l1b, const Vector3d &l1e, const Vector3d &l2b, const Vector3d &l2e, double &dist_lat)
+{
+	double d;
+	Vector3d v1=l1e-l1b;
+	Vector3d v2=l2e-l2b;
+	Vector3d n=v1.cross(v2);
+	if(n.norm() == 0) {
+		return calculateLinePointDistance(l1b,l1e,l2b,d);
+	}
+	double t=n.norm();
+	n.normalize();
+    	d=n.dot(l1b-l2b);
+	dist_lat=(v2.cross(n)).dot(l2b-l1b)/t;
+	return d;
+}
+
+std::vector<SelectedObject> CGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt,int mouse_x, int mouse_y, double tolerance) {
+  std::vector<SelectedObject> results;
+  double dist_near;
+  double dist_nearest=NAN;
+  Vector3d pt1_nearest;
+  Vector3d pt2_nearest;
+  for (const std::shared_ptr<const PolySet>& ps : this->polysets) {
+    for(const Vector3d &pt: ps->vertices) {
+      double dist_pt= calculateLinePointDistance(near_pt, far_pt, pt, dist_near);
+      if(dist_pt < tolerance  ) {
+        if(isnan(dist_nearest) || dist_near < dist_nearest)
+        {
+          dist_nearest=dist_near;
+          pt1_nearest=pt;
+        }	  
+      }
+    }
+  }
+  if(!isnan(dist_nearest)) {
+    SelectedObject obj;
+    obj.type = SELECTION_POINT;
+    obj.p1=pt1_nearest;
+    results.push_back(obj);
+    return results;
+  }
+  for (const std::shared_ptr<const PolySet>& ps : this->polysets) {
+    for(const auto &pol : ps->indices) {
+	int n = pol.size();
+        for(int i=0;i < n;i++ )
+	{
+	  int ind1=pol[i];
+	  int ind2=pol[(i+1)%n];
+	  double dist_lat;
+          double dist_norm= fabs(calculateLineLineDistance(ps->vertices[ind1], ps->vertices[ind2], near_pt, far_pt,dist_lat));
+          if(dist_lat >= 0 && dist_lat <= 1 && dist_norm < tolerance  ) {
+	      dist_nearest=dist_lat;
+	      pt1_nearest=ps->vertices[ind1];
+	      pt2_nearest=ps->vertices[ind2];
+	  }
+        }	  
+      }
+   }
+
+  if(!isnan(dist_nearest)) {
+    SelectedObject obj;
+    obj.type = SELECTION_LINE;
+    obj.p1=pt1_nearest;
+    obj.p2=pt2_nearest;
+    results.push_back(obj);
+    return results;
+  }
+  return results;
 }
