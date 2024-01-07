@@ -132,7 +132,7 @@ void AmfImporter::set_v3(AmfImporter *importer, const xmlChar *value)
 
 void AmfImporter::start_object(AmfImporter *importer, const xmlChar *)
 {
-  importer->builder = std::make_unique<PolySetBuilder>(0,0,3);
+  importer->builder = std::make_unique<PolySetBuilder>(0,0);
 }
 
 void AmfImporter::end_object(AmfImporter *importer, const xmlChar *)
