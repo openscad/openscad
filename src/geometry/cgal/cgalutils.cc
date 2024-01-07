@@ -242,7 +242,7 @@ std::shared_ptr<const CGAL_Nef_polyhedron> getNefPolyhedronFromGeometry(const st
   } else if (auto poly = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return createNefPolyhedronFromHybrid(*poly);
   } else if (auto poly2d = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
-    std::shared_ptr<PolySet> ps(poly2d->tessellate());
+    std::shared_ptr<PolySet> ps(poly2d->tessellate(false));
     return std::shared_ptr<CGAL_Nef_polyhedron>(createNefPolyhedronFromPolySet(*ps));
   } else if (auto nef = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     return nef;

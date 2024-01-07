@@ -89,15 +89,19 @@ mark_domains(CDT& cdt)
 /*!
    Triangulates this polygon2d and returns a 2D-in-3D PolySet.
 
-  The returned PolySet contains a reference to the original 2D polygon.
-   Note: Most of the times we call this, we don't really need access to the original 2D polygon, 
-   but we do need it in the cases when we want to render polygon outlines.
-   FIXME: Differentiate between the cases.
- */
-std::unique_ptr<PolySet> Polygon2d::tessellate() const
+   If retain_2d is true, the returned PolySet will be a 2D PolySet and retain a 
+   reference to the original 2D polygon. This is typically used to be able to correctly render
+   polygon outlines (line segments or thick polygons for CSG rendering)
+*/
+std::unique_ptr<PolySet> Polygon2d::tessellate(bool retain_2d) const
 {
   PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
-  PolySetBuilder builder(*this); // This is the only place PolySetBuilder is used in 2D mode
+  std::unique_ptr<PolySetBuilder> builder;
+  if (retain_2d) {
+    builder = std::make_unique<PolySetBuilder>(*this); // This is the only place PolySetBuilder is used in 2D mode
+  } else {
+    builder = std::make_unique<PolySetBuilder>(); // This is the only place PolySetBuilder is used in 2D mode
+  }
 
   Polygon2DCGAL::CDT cdt; // Uses a constrained Delaunay triangulator.
 
@@ -126,11 +130,11 @@ std::unique_ptr<PolySet> Polygon2d::tessellate() const
   mark_domains(cdt);
   for (auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
     if (fit->info().in_domain()) {
-      builder.appendPoly(3);
+      builder->appendPoly(3);
       for (int i = 0; i < 3; ++i) {
-        builder.appendVertex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0));
+        builder->appendVertex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0));
       }
     }
   }
-  return builder.build();
+  return builder->build();
 }

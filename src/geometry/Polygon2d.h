@@ -36,7 +36,7 @@ public:
                            );
   }
   void addOutline(Outline2d outline) { this->theoutlines.push_back(std::move(outline)); }
-  [[nodiscard]] std::unique_ptr<PolySet> tessellate() const;
+  [[nodiscard]] std::unique_ptr<PolySet> tessellate(bool retain_2d) const;
   [[nodiscard]] double area() const;
 
   using Outlines2d = std::vector<Outline2d>;

@@ -49,6 +49,11 @@ GeometryEvaluator::GeometryEvaluator(const Tree& tree) : tree(tree) { }
 
 /*!
    Set allownef to false to force the result to _not_ be a Nef polyhedron
+
+   There are some guarantees on the returned geometry:
+   * 2D and 3D geometry cannot be mixed; we will return either _only_ 2D or _only_ 3D geometries
+   * PolySet geometries are always 3D. 2D Polysets are only created for special-purpose rendering operations downstream from here.
+   * Needs validation: Implementation-specific geometries shouldn't be mixed (Nef polyhedron, Manifold, CGAL Hybrid polyhedrons)
  */
 std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode& node,
                                                                bool allownef)
@@ -1160,7 +1165,7 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
   }
 
   // Create bottom face.
-  auto ps_bottom = polyref.tessellate(); // bottom
+  auto ps_bottom = polyref.tessellate(false); // bottom
   // Flip vertex ordering for bottom polygon
   for (auto& p : ps_bottom->indices) {
     std::reverse(p.begin(), p.end());
@@ -1187,7 +1192,7 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
     Polygon2d top_poly(polyref);
     Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) * Eigen::Affine2d(rotate_degrees(-node.twist)));
     top_poly.transform(trans);
-    auto ps_top = top_poly.tessellate();
+    auto ps_top = top_poly.tessellate(false);
     translate_PolySet(*ps_top, Vector3d(0, 0, h2));
     builder.append(*ps_top);
   }
@@ -1295,7 +1300,7 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
   bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
 
   if (node.angle != 360) {
-    auto ps_start = poly.tessellate(); // starting face
+    auto ps_start = poly.tessellate(false); // starting face
     Transform3d rot(angle_axis_degrees(90, Vector3d::UnitX()));
     ps_start->transform(rot);
     // Flip vertex ordering
@@ -1306,7 +1311,7 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
     }
     builder.append(*ps_start);
 
-    auto ps_end = poly.tessellate();
+    auto ps_end = poly.tessellate(false);
     Transform3d rot2(angle_axis_degrees(node.angle, Vector3d::UnitZ()) * angle_axis_degrees(90, Vector3d::UnitX()));
     ps_end->transform(rot2);
     if (flip_faces) {

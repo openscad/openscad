@@ -66,7 +66,7 @@ void LegacyCGALRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom
     // See tests/data/scad/3D/features/polyhedron-concave-test.scad
     this->polysets.push_back(PolySetUtils::tessellate_faces(*ps));
   } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
-    this->polysets.push_back(std::shared_ptr<const PolySet>(poly->tessellate()));
+    this->polysets.push_back(std::shared_ptr<const PolySet>(poly->tessellate(true)));
 #ifdef ENABLE_CGAL
   } else if (const auto new_N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     assert(new_N->getDimension() == 3);
@@ -135,12 +135,12 @@ void LegacyCGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t
       setColor(ColorMode::CGAL_FACE_2D_COLOR);
 
       for (const auto& polygon : polyset->indices) {
-	glBegin(GL_POLYGON);
-	for (const auto& ind : polygon) {
-	  Vector3d p=polyset->vertices[ind];
-	  glVertex3d(p[0], p[1], 0);
-	}
-	glEnd();
+        glBegin(GL_POLYGON);
+        for (const auto& ind : polygon) {
+          Vector3d p=polyset->vertices[ind];
+          glVertex3d(p[0], p[1], 0);
+        }
+        glEnd();
       }
 
       // Draw 2D edges
@@ -200,7 +200,7 @@ std::vector<SelectedObject> LegacyCGALRenderer::findModelObject(Vector3d near_pt
         {
           dist_nearest=dist_near;
           pt1_nearest=pt;
-        }	  
+        }          
       }
     }
   }
@@ -213,19 +213,19 @@ std::vector<SelectedObject> LegacyCGALRenderer::findModelObject(Vector3d near_pt
   }
   for (const std::shared_ptr<const PolySet>& ps : this->polysets) {
     for(const auto &pol : ps->indices) {
-	int n = pol.size();
+        int n = pol.size();
         for(int i=0;i < n;i++ )
-	{
-	  int ind1=pol[i];
-	  int ind2=pol[(i+1)%n];
-	  double dist_lat;
+        {
+          int ind1=pol[i];
+          int ind2=pol[(i+1)%n];
+          double dist_lat;
           double dist_norm= fabs(calculateLineLineDistance(ps->vertices[ind1], ps->vertices[ind2], near_pt, far_pt,dist_lat));
           if(dist_lat >= 0 && dist_lat <= 1 && dist_norm < tolerance  ) {
-	      dist_nearest=dist_lat;
-	      pt1_nearest=ps->vertices[ind1];
-	      pt2_nearest=ps->vertices[ind2];
-	  }
-        }	  
+              dist_nearest=dist_lat;
+              pt1_nearest=ps->vertices[ind1];
+              pt2_nearest=ps->vertices[ind2];
+          }
+        }          
       }
    }
 

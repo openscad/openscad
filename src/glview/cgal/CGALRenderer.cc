@@ -67,7 +67,7 @@ void CGALRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
     // See tests/data/scad/3D/features/polyhedron-concave-test.scad
     this->polysets.push_back(PolySetUtils::tessellate_faces(*ps));
   } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
-    this->polysets.push_back(std::shared_ptr<const PolySet>(poly->tessellate()));
+    this->polysets.push_back(std::shared_ptr<const PolySet>(poly->tessellate(true)));
 #ifdef ENABLE_CGAL
   } else if (const auto new_N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     assert(new_N->getDimension() == 3);

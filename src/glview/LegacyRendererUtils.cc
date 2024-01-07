@@ -89,6 +89,11 @@ void render_surface(const PolySet& ps, Renderer::csgmode_e csgmode, const Transf
   PRINTD("render_surface");
   bool mirrored = m.matrix().determinant() < 0;
 
+  // Instead of late resolving to 3D, could we simply build a 3D PolySet earlier?
+  // One challenge: Negative objects need to be rendered slightly thicker to avoid z fighting
+  // Possible workarounds:
+  // * Do we know if it's negative at the time of creation?
+  // * Can we scale it here?
   if (ps.getDimension() == 2) {
     // Render 2D objects 1mm thick, but differences slightly larger
     double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0);
