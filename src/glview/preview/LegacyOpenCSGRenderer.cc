@@ -44,6 +44,7 @@ public:
   Transform3d m;
   Renderer::csgmode_e csgmode{Renderer::CSGMODE_NONE};
 
+  // This is used by OpenCSG to render depth values
   void render() override {
     if (polyset) {
       glPushMatrix();
@@ -57,10 +58,10 @@ private:
 };
 
 // Primitive for rendering using OpenCSG
-OpenCSGPrim *createCSGPrimitive(const CSGChainObject& csgobj, OpenCSG::Operation operation,
+std::unique_ptr<OpenCSGPrim> createCSGPrimitive(const CSGChainObject& csgobj, OpenCSG::Operation operation,
                                 bool highlight_mode, bool background_mode, OpenSCADOperator type, 
                                 const LegacyOpenCSGRenderer &renderer) {
-  auto *prim = new OpenCSGPrim(operation, csgobj.leaf->polyset->getConvexity(), renderer);
+  auto prim = std::make_unique<OpenCSGPrim>(operation, csgobj.leaf->polyset->getConvexity(), renderer);
   prim->polyset = csgobj.leaf->polyset;
   prim->m = csgobj.leaf->matrix;
   prim->csgmode = Renderer::get_csgmode(highlight_mode, background_mode, type);
@@ -99,12 +100,20 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
 {
 #ifdef ENABLE_OPENCSG
   for (const auto& product : products->products) {
+    // owned_primitives is only for memory management
+    std::vector<std::unique_ptr<OpenCSG::Primitive>> owned_primitives;
     std::vector<OpenCSG::Primitive *> primitives;
     for (const auto& csgobj : product.intersections) {
-      if (csgobj.leaf->polyset) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION, *this));
+      if (csgobj.leaf->polyset) {
+        owned_primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Intersection, highlight_mode, background_mode, OpenSCADOperator::INTERSECTION, *this));
+        primitives.push_back(owned_primitives.back().get());
+      }
     }
     for (const auto& csgobj : product.subtractions) {
-      if (csgobj.leaf->polyset) primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE, *this));
+      if (csgobj.leaf->polyset) {
+        owned_primitives.push_back(createCSGPrimitive(csgobj, OpenCSG::Subtraction, highlight_mode, background_mode, OpenSCADOperator::DIFFERENCE, *this));
+        primitives.push_back(owned_primitives.back().get());
+      }
     }
     if (primitives.size() > 1) {
       OpenCSG::render(primitives);
@@ -186,7 +195,6 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
     }
 
     if (shaderinfo) glUseProgram(0);
-    for (auto& p : primitives) delete p;
     glDepthFunc(GL_LEQUAL);
   }
 #endif // ENABLE_OPENCSG
