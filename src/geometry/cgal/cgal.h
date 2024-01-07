@@ -13,6 +13,7 @@
  #endif
  #endif
    //*/
+#include <boost/next_prior.hpp>
 
 #include "ext/CGAL/CGAL_workaround_Mark_bounded_volumes.h" // This file must be included prior to CGAL/Nef_polyhedron_3.h
 #include <CGAL/Gmpq.h>
