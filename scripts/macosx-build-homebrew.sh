@@ -58,7 +58,7 @@ for formula in boost; do
   fi
 done
 
-for formula in pkg-config eigen cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 qscintilla2 lib3mf double-conversion imagemagick ccache ghostscript tbb; do
+for formula in pkg-config eigen cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt6 qscintilla2 lib3mf double-conversion imagemagick ccache ghostscript tbb; do
   log "Installing formula $formula"
   brew ls --versions $formula
   time brew install $formula
@@ -70,7 +70,7 @@ for formula in libzip opencsg; do
   time brew link $formula
 done
 
-for formula in gettext qt5 qscintilla2; do
+for formula in gettext qt6 qscintilla2; do
   log "Linking formula $formula"
   time brew link --force $formula
 done
