@@ -12,7 +12,7 @@ class PolySet;
 class PolySetBuilder
 {
 public:
-  PolySetBuilder(int vertices_count = 0, int indices_count = 0, boost::tribool convex = unknown);
+  PolySetBuilder(int vertices_count = 0, int indices_count = 0, boost::tribool convex = unknown, int dim = 3);
   PolySetBuilder(const Polygon2d& polygon2d);
   void setConvexity(int n);
   int vertexIndex(const Vector3d& coord);

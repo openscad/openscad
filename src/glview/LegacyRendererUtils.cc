@@ -84,158 +84,53 @@ static void gl_draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vec
   }
 }
 
-void render_surface(const PolySet& ps, Renderer::csgmode_e csgmode, const Transform3d& m, const Renderer::shaderinfo_t *shaderinfo)
+void render_surface(const PolySet& ps, const Transform3d& m, const Renderer::shaderinfo_t *shaderinfo)
 {
   PRINTD("render_surface");
   bool mirrored = m.matrix().determinant() < 0;
 
-  // Instead of late resolving to 3D, could we simply build a 3D PolySet earlier?
-  // One challenge: Negative objects need to be rendered slightly thicker to avoid z fighting
-  // Possible workarounds:
-  // * Do we know if it's negative at the time of creation?
-  // * Can we scale it here?
-  if (ps.getDimension() == 2) {
-    // Render 2D objects 1mm thick, but differences slightly larger
-    double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0);
+  for (const auto& poly : ps.indices) {
     glBegin(GL_TRIANGLES);
-
-    // Render top+bottom
-    for (double z : {-zbase / 2, zbase / 2}) {
-      for (const auto& poly : ps.indices) {
-        if (poly.size() == 3) {
-          if (z < 0) {
-            gl_draw_triangle(shaderinfo, ps.vertices[poly.at(0)], ps.vertices[poly.at(2)], ps.vertices[poly.at(1)], true, true, true, z, mirrored);
-          } else {
-            gl_draw_triangle(shaderinfo, ps.vertices[poly.at(0)], ps.vertices[poly.at(1)], ps.vertices[poly.at(2)], true, true, true, z, mirrored);
-          }
-        } else if (poly.size() == 4) {
-          if (z < 0) {
-            gl_draw_triangle(shaderinfo, ps.vertices[poly.at(0)], ps.vertices[poly.at(3)], ps.vertices[poly.at(1)], false, true, true, z, mirrored);
-            gl_draw_triangle(shaderinfo, ps.vertices[poly.at(2)], ps.vertices[poly.at(1)], ps.vertices[poly.at(3)], false, true, true, z, mirrored);
-          } else {
-            gl_draw_triangle(shaderinfo, ps.vertices[poly.at(0)], ps.vertices[poly.at(1)], ps.vertices[poly.at(3)], false, true, true, z, mirrored);
-            gl_draw_triangle(shaderinfo, ps.vertices[poly.at(2)], ps.vertices[poly.at(3)], ps.vertices[poly.at(1)], false, true, true, z, mirrored);
-          }
-        } else {
-          Vector3d center = Vector3d::Zero();
-          for (const auto& point : poly) {
-            center[0] += ps.vertices[point][0];
-            center[1] += ps.vertices[point][1];
-          }
-          center /= poly.size();
-          for (size_t j = 1; j <= poly.size(); ++j) {
-            if (z < 0) {
-              gl_draw_triangle(shaderinfo, center, ps.vertices[poly.at(j % poly.size())], ps.vertices[poly.at(j - 1)],
-                               true, false, false, z, mirrored);
-            } else {
-              gl_draw_triangle(shaderinfo, center, ps.vertices[poly.at(j - 1)], ps.vertices[poly.at(j % poly.size())],
-                               true, false, false, z, mirrored);
-            }
-          }
-        }
-      }
-    }
-
-    // Render sides
-    if (ps.getPolygon().outlines().size() > 0) {
-      for (const Outline2d& o : ps.getPolygon().outlines()) {
-        for (size_t j = 1; j <= o.vertices.size(); ++j) {
-          Vector3d p1(o.vertices[j - 1][0], o.vertices[j - 1][1], -zbase / 2);
-          Vector3d p2(o.vertices[j - 1][0], o.vertices[j - 1][1], zbase / 2);
-          Vector3d p3(o.vertices[j % o.vertices.size()][0], o.vertices[j % o.vertices.size()][1], -zbase / 2);
-          Vector3d p4(o.vertices[j % o.vertices.size()][0], o.vertices[j % o.vertices.size()][1], zbase / 2);
-          gl_draw_triangle(shaderinfo, p2, p1, p3, true, false, true, 0, mirrored);
-          gl_draw_triangle(shaderinfo, p2, p3, p4, true, true, false, 0, mirrored);
-        }
-      }
+    if (poly.size() == 3) {
+      gl_draw_triangle(shaderinfo, ps.vertices[poly.at(0)], ps.vertices[poly.at(1)], ps.vertices[poly.at(2)], true, true, true, 0, mirrored);
+    } else if (poly.size() == 4) {
+      gl_draw_triangle(shaderinfo, ps.vertices[poly.at(0)], ps.vertices[poly.at(1)], ps.vertices[poly.at(3)], false, true, true, 0, mirrored);
+      gl_draw_triangle(shaderinfo, ps.vertices[poly.at(2)], ps.vertices[poly.at(3)], ps.vertices[poly.at(1)], false, true, true, 0, mirrored);
     } else {
-      // If we don't have borders, use the polygons as borders.
-      // FIXME: When is this used?
-      const std::vector<IndexedFace> *borders_p = &ps.indices;
-      for (const auto& poly : *borders_p) {
-        for (size_t j = 1; j <= poly.size(); ++j) {
-          Vector3d p1 = ps.vertices[poly.at(j - 1)], p2 = ps.vertices[poly.at(j - 1)];
-          Vector3d p3 = ps.vertices[poly.at(j % poly.size())], p4 = ps.vertices[poly.at(j % poly.size())];
-          p1[2] -= zbase / 2, p2[2] += zbase / 2;
-          p3[2] -= zbase / 2, p4[2] += zbase / 2;
-          gl_draw_triangle(shaderinfo, p2, p1, p3, true, false, true, 0, mirrored);
-          gl_draw_triangle(shaderinfo, p2, p3, p4, true, true, false, 0, mirrored);
-        }
+      Vector3d center = Vector3d::Zero();
+      for (const auto& point : poly) {
+        center += ps.vertices[point];
+      }
+      center /= poly.size();
+      for (size_t j = 1; j <= poly.size(); ++j) {
+        gl_draw_triangle(shaderinfo, center, ps.vertices[poly.at(j - 1)], ps.vertices[poly.at(j % poly.size())], true, false, false, 0, mirrored);
       }
     }
     glEnd();
-  } else if (ps.getDimension() == 3) {
-    for (const auto& poly : ps.indices) {
-      glBegin(GL_TRIANGLES);
-      if (poly.size() == 3) {
-        gl_draw_triangle(shaderinfo, ps.vertices[poly.at(0)], ps.vertices[poly.at(1)], ps.vertices[poly.at(2)], true, true, true, 0, mirrored);
-      } else if (poly.size() == 4) {
-        gl_draw_triangle(shaderinfo, ps.vertices[poly.at(0)], ps.vertices[poly.at(1)], ps.vertices[poly.at(3)], false, true, true, 0, mirrored);
-        gl_draw_triangle(shaderinfo, ps.vertices[poly.at(2)], ps.vertices[poly.at(3)], ps.vertices[poly.at(1)], false, true, true, 0, mirrored);
-      } else {
-        Vector3d center = Vector3d::Zero();
-        for (const auto& point : poly) {
-          center += ps.vertices[point];
-        }
-        center /= poly.size();
-        for (size_t j = 1; j <= poly.size(); ++j) {
-          gl_draw_triangle(shaderinfo, center, ps.vertices[poly.at(j - 1)], ps.vertices[poly.at(j % poly.size())], true, false, false, 0, mirrored);
-        }
-      }
-      glEnd();
-    }
-  } else {
-    assert(false && "Cannot render object with no dimension");
   }
 }
 
-/*! This is used in throwntogether and CGAL mode
-
-   csgmode is set to CSGMODE_NONE in CGAL mode. In this mode a pure 2D rendering is performed.
-
-   For some reason, this is not used to render edges in Preview mode
+/*! 
+  This is used in CGAL mode
  */
-void render_edges(const PolySet& ps, Renderer::csgmode_e csgmode)
+void render_edges(const PolySet& ps)
 {
   glDisable(GL_LIGHTING);
   if (ps.getDimension() == 2) {
-    if (csgmode == Renderer::CSGMODE_NONE) {
-      // Render only outlines
-      for (const Outline2d& o : ps.getPolygon().outlines()) {
-        glBegin(GL_LINE_LOOP);
-        for (const Vector2d& v : o.vertices) {
-          glVertex3d(v[0], v[1], 0);
-        }
-        glEnd();
+    // Render only outlines
+    for (const Outline2d& o : ps.getPolygon().outlines()) {
+      glBegin(GL_LINE_LOOP);
+      for (const Vector2d& v : o.vertices) {
+        glVertex3d(v[0], v[1], 0);
       }
-    } else {
-      // Render 2D objects 1mm thick, but differences slightly larger
-      double zbase = 1 + ((csgmode & CSGMODE_DIFFERENCE_FLAG) ? 0.1 : 0);
-
-      for (const Outline2d& o : ps.getPolygon().outlines()) {
-        // Render top+bottom outlines
-        for (double z : { -zbase / 2, zbase / 2}) {
-          glBegin(GL_LINE_LOOP);
-          for (const Vector2d& v : o.vertices) {
-            glVertex3d(v[0], v[1], z);
-          }
-          glEnd();
-        }
-        // Render sides
-        glBegin(GL_LINES);
-        for (const Vector2d& v : o.vertices) {
-          glVertex3d(v[0], v[1], -zbase / 2);
-          glVertex3d(v[0], v[1], +zbase / 2);
-        }
-        glEnd();
-      }
-    }
+      glEnd();
+    }    
   } else if (ps.getDimension() == 3) {
     for (const auto& polygon : ps.indices) {
       const IndexedFace *poly = &polygon;
       glBegin(GL_LINE_LOOP);
       for (const auto& ind : *poly) {
-	Vector3d p=ps.vertices[ind];
+        Vector3d p=ps.vertices[ind];
         glVertex3d(p[0], p[1], p[2]);
       }
       glEnd();

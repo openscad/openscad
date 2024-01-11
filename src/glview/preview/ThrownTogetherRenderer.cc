@@ -29,6 +29,7 @@
 #include <utility>
 #include "Feature.h"
 #include "PolySet.h"
+#include "enums.h"
 #include "printutils.h"
 
 #include "system-gl.h"
@@ -63,9 +64,9 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
     add_shader_data(vertex_array);
 
     size_t num_vertices = 0;
-    if (this->root_products) num_vertices += (getSurfaceBufferSize(this->root_products, false, false, true) * 2);
-    if (this->background_products) num_vertices += getSurfaceBufferSize(this->background_products, false, true, true);
-    if (this->highlight_products) num_vertices += getSurfaceBufferSize(this->highlight_products, true, false, true);
+    if (this->root_products) num_vertices += (getSurfaceBufferSize(this->root_products, true) * 2);
+    if (this->background_products) num_vertices += getSurfaceBufferSize(this->background_products, true);
+    if (this->highlight_products) num_vertices += getSurfaceBufferSize(this->highlight_products, true);
 
     vertex_array.allocateBuffers(num_vertices);
 
@@ -181,7 +182,13 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       });
       vertex_states.emplace_back(std::move(cull));
 
-      create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, csgobj.leaf->matrix, color);
+      // FIXME(kintel): We could adjust the scale of this matrix for negative
+        // objects to allow building PolySets ahead of time
+        Transform3d tmp = csgobj.leaf->matrix;
+        if (csgobj.leaf->polyset->getDimension() == 2 && type == OpenSCADOperator::DIFFERENCE) {
+          tmp *= Eigen::Scaling(1.0, 1.0, 1.1);
+        }
+      create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, tmp, color);
       std::shared_ptr<TTRVertexState> vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
       if (vs) {
         vs->setCsgObjectIndex(csgobj.leaf->index);

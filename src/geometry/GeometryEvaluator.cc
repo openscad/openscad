@@ -1052,7 +1052,6 @@ static Outline2d splitOutlineByFn(
   return o2;
 }
 
-
 /*!
    Input to extrude should be sanitized. This means non-intersecting, correct winding order
    etc., the input coming from a library like Clipper.

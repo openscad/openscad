@@ -148,12 +148,12 @@ void LegacyCGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t
 
       glLineWidth(2);
       setColor(ColorMode::CGAL_EDGE_2D_COLOR);
-      render_edges(*polyset, CSGMODE_NONE);
+      render_edges(*polyset);
       glEnable(GL_DEPTH_TEST);
     } else {
       // Draw 3D polygons
       setColor(ColorMode::MATERIAL);
-      render_surface(*polyset, CSGMODE_NORMAL, Transform3d::Identity(), nullptr);
+      render_surface(*polyset, Transform3d::Identity(), nullptr);
     }
   }
 

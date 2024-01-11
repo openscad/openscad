@@ -171,7 +171,7 @@ void CGALRenderer::createPolySets()
 
       // Create 2D polygons
       getColor(ColorMode::CGAL_FACE_2D_COLOR, color);
-      this->create_polygons(*polyset, vertex_array, CSGMODE_NONE, Transform3d::Identity(), color);
+      this->create_polygons(*polyset, vertex_array, Transform3d::Identity(), color);
 
       std::shared_ptr<VertexState> edge_state = std::make_shared<VertexState>();
       edge_state->glBegin().emplace_back([]() {
@@ -186,7 +186,7 @@ void CGALRenderer::createPolySets()
 
       // Create 2D edges
       getColor(ColorMode::CGAL_EDGE_2D_COLOR, color);
-      this->create_edges(*polyset, vertex_array, CSGMODE_NONE, Transform3d::Identity(), color);
+      this->create_edges(*polyset, vertex_array, Transform3d::Identity(), color);
 
       std::shared_ptr<VertexState> end_state = std::make_shared<VertexState>();
       end_state->glBegin().emplace_back([]() {

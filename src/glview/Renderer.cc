@@ -107,7 +107,7 @@ Renderer::Renderer()
     PRINTDB("OpenGL Program Validation results:\n%s", logbuffer);
   }
 
-  renderer_shader.progid = edgeshader_prog; // 0
+  renderer_shader.progid = edgeshader_prog;
   renderer_shader.type = EDGE_RENDERING;
   renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
   renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2

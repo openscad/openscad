@@ -6,5 +6,5 @@
 #include "PolySet.h"
 #include "Renderer.h"
 
-void render_surface(const PolySet& geom, Renderer::csgmode_e csgmode, const Transform3d& m, const Renderer::shaderinfo_t *shaderinfo = nullptr);
-void render_edges(const PolySet& geom, Renderer::csgmode_e csgmode);
+void render_surface(const PolySet& geom, const Transform3d& m, const Renderer::shaderinfo_t *shaderinfo = nullptr);
+void render_edges(const PolySet& geom);

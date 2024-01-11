@@ -37,8 +37,8 @@
 #include "ManifoldGeometry.h"
 #endif
 
-PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, boost::tribool convex)
-  : convex_(convex)
+PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, boost::tribool convex, int dim)
+  : convex_(convex), dim_(dim)
 {
   if (vertices_count != 0) vertices_.reserve(vertices_count);
   if (indices_count != 0) indices_.reserve(indices_count);
@@ -152,7 +152,7 @@ std::unique_ptr<PolySet> PolySetBuilder::build()
     polyset = std::make_unique<PolySet>(polygon2d_); // This is the only place this constructor is used
   }
   else {
-    polyset = std::make_unique<PolySet>(3, convex_);
+    polyset = std::make_unique<PolySet>(dim_, convex_);
   }
   vertices_.copy(std::back_inserter(polyset->vertices));
   polyset->indices = std::move(indices_);

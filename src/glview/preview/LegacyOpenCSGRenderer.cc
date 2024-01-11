@@ -24,6 +24,7 @@
  *
  */
 
+#include "enums.h"
 #include "system-gl.h"
 #include "LegacyOpenCSGRenderer.h"
 #include "LegacyRendererUtils.h"
@@ -49,7 +50,7 @@ public:
     if (polyset) {
       glPushMatrix();
       glMultMatrixd(m.data());
-      render_surface(*polyset, csgmode, m);
+      render_surface(*polyset, m);
       glPopMatrix();
     }
   }
@@ -57,13 +58,18 @@ private:
   const LegacyOpenCSGRenderer& renderer;
 };
 
-// Primitive for rendering using OpenCSG
+// Primitive for depth rendering using OpenCSG
 std::unique_ptr<OpenCSGPrim> createCSGPrimitive(const CSGChainObject& csgobj, OpenCSG::Operation operation,
                                 bool highlight_mode, bool background_mode, OpenSCADOperator type, 
                                 const LegacyOpenCSGRenderer &renderer) {
   auto prim = std::make_unique<OpenCSGPrim>(operation, csgobj.leaf->polyset->getConvexity(), renderer);
   prim->polyset = csgobj.leaf->polyset;
+  // FIXME(kintel): We could adjust the scale of this matrix for negative 
+  // objects to allow building PolySets ahead of time
   prim->m = csgobj.leaf->matrix;
+  if (type == OpenSCADOperator::DIFFERENCE) {
+    prim->m *= Eigen::Scaling(1.0, 1.0, 1.1);
+  }
   prim->csgmode = Renderer::get_csgmode(highlight_mode, background_mode, type);
   return prim;
 }
@@ -122,7 +128,7 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
 
     if (shaderinfo && shaderinfo->progid) {
       if (shaderinfo->type != EDGE_RENDERING || (shaderinfo->type == EDGE_RENDERING && showedges)) {
-	GL_CHECKD(glUseProgram(shaderinfo->progid));
+        GL_CHECKD(glUseProgram(shaderinfo->progid));
       }
     }
 
@@ -130,10 +136,10 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
       if (!csgobj.leaf->polyset) continue;
 
       if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
-	int identifier = csgobj.leaf->index;
-	GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
-			      ((identifier >> 0) & 0xff) / 255.0f, ((identifier >> 8) & 0xff) / 255.0f,
-			      ((identifier >> 16) & 0xff) / 255.0f));
+        int identifier = csgobj.leaf->index;
+        GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
+                              ((identifier >> 0) & 0xff) / 255.0f, ((identifier >> 8) & 0xff) / 255.0f,
+                              ((identifier >> 16) & 0xff) / 255.0f));
       }
 
       const Color4f& c = csgobj.leaf->color;
@@ -141,11 +147,11 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
 
       ColorMode colormode = ColorMode::NONE;
       if (highlight_mode) {
-	colormode = ColorMode::HIGHLIGHT;
+        colormode = ColorMode::HIGHLIGHT;
       } else if (background_mode) {
-	colormode = ColorMode::BACKGROUND;
+        colormode = ColorMode::BACKGROUND;
       } else {
-	colormode = ColorMode::MATERIAL;
+        colormode = ColorMode::MATERIAL;
       }
 
       glPushMatrix();
@@ -153,16 +159,16 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
 
       const Color4f color = setColor(colormode, c.data(), shaderinfo);
       if (color[3] == 1.0f) {
-	// object is opaque, draw normally
-	render_surface(*csgobj.leaf->polyset, csgmode, csgobj.leaf->matrix, shaderinfo);
+        // object is opaque, draw normally
+        render_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, shaderinfo);
       } else {
-	// object is transparent, so draw rear faces first.  Issue #1496
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_FRONT);
-	render_surface(*csgobj.leaf->polyset, csgmode, csgobj.leaf->matrix, shaderinfo);
-	glCullFace(GL_BACK);
-	render_surface(*csgobj.leaf->polyset, csgmode, csgobj.leaf->matrix, shaderinfo);
-	glDisable(GL_CULL_FACE);
+        // object is transparent, so draw rear faces first.  Issue #1496
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+        render_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, shaderinfo);
+        glCullFace(GL_BACK);
+        render_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, shaderinfo);
+        glDisable(GL_CULL_FACE);
       }
 
       glPopMatrix();
@@ -175,20 +181,24 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
 
       ColorMode colormode = ColorMode::NONE;
       if (highlight_mode) {
-	colormode = ColorMode::HIGHLIGHT;
+        colormode = ColorMode::HIGHLIGHT;
       } else if (background_mode) {
-	colormode = ColorMode::BACKGROUND;
+        colormode = ColorMode::BACKGROUND;
       } else {
-	colormode = ColorMode::CUTOUT;
+        colormode = ColorMode::CUTOUT;
       }
 
       (void) setColor(colormode, c.data(), shaderinfo);
       glPushMatrix();
-      glMultMatrixd(csgobj.leaf->matrix.data());
+      // FIXME(kintel): We could adjust the scale of this matrix for negative 
+      // objects to allow building PolySets ahead of time
+      //Transform3d tmp = csgobj.leaf->matrix;
+       Transform3d tmp = csgobj.leaf->matrix * Eigen::Scaling(1.0, 1.0, 1.1);
+      glMultMatrixd(tmp.data());
       // negative objects should only render rear faces
       glEnable(GL_CULL_FACE);
       glCullFace(GL_FRONT);
-      render_surface(*csgobj.leaf->polyset, csgmode, csgobj.leaf->matrix, shaderinfo);
+      render_surface(*csgobj.leaf->polyset, csgobj.leaf->matrix, shaderinfo);
       glDisable(GL_CULL_FACE);
 
       glPopMatrix();
