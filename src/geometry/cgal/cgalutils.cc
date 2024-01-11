@@ -378,12 +378,12 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhed
 
   PolySetBuilder builder(verts.size(),allTriangles.size());
   std::vector<int> indMap;
-  for(int i=0;i<verts.size();i++)
-    indMap.push_back(builder.vertexIndex({verts[i][0],verts[i][1],verts[i][2]}));
-
-  for(int i=0;i<allTriangles.size();i++)  {
-	const auto &tri=allTriangles[i];
-	builder.appendPoly({indMap[tri[0]],indMap[tri[1]],indMap[tri[2]]});
+  indMap.reserve(verts.size());
+  for (const auto &v : verts) {
+    indMap.push_back(builder.vertexIndex({v[0], v[1], v[2]}));
+  }
+  for (const auto& tri : allTriangles) {
+    builder.appendPoly({indMap[tri[0]], indMap[tri[1]], indMap[tri[2]]});
   }
 
 #if 0 // For debugging
@@ -492,8 +492,8 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
     auto ps = std::make_shared<PolySet>(3);
     if (!N->isEmpty()) {
       if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3)) {
-	ps->setConvexity(N->getConvexity());
-	return ps;
+        ps->setConvexity(N->getConvexity());
+        return ps;
       }
       LOG(message_group::Error, "Nef->PolySet failed.");
     }

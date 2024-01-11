@@ -23,7 +23,9 @@ public:
   void appendGeometry(const std::shared_ptr<const Geometry>& geom);
   void appendPoly(const std::vector<Vector3d>& v);
   void appendVertex(int n);
+  void appendVertex(const Vector3d &v);
   void prependVertex(int n);
+  void prependVertex(const Vector3d &v);
   std::unique_ptr<PolySet> build();
 private:
   Reindexer<Vector3d> vertices_;

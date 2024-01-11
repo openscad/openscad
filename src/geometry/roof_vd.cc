@@ -371,7 +371,7 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, 
       for (const IndexedFace& triangle : tess->indices) {
         std::vector<int> roof;
         for (int tvind : triangle) {
-	  Vector3d tv=tess->vertices[tvind];
+          Vector3d tv=tess->vertices[tvind];
           Vector2d v;
           v << tv[0], tv[1];
           if (!(inner_faces.heights.find(v) != inner_faces.heights.end())) {
