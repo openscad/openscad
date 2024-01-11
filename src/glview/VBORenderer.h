@@ -27,8 +27,6 @@ public:
   virtual size_t getSurfaceBufferSize(const std::shared_ptr<CSGProducts>& products, bool unique_geometry = false) const;
   virtual size_t getSurfaceBufferSize(const CSGChainObject& csgobj, bool unique_geometry = false) const;
   virtual size_t getSurfaceBufferSize(const PolySet& polyset) const;
-  virtual size_t getEdgeBufferSize(const std::shared_ptr<CSGProducts>& products, bool unique_geometry = false) const;
-  virtual size_t getEdgeBufferSize(const CSGChainObject& csgobj, bool unique_geometry = false) const;
   virtual size_t getEdgeBufferSize(const PolySet& polyset) const;
 
   virtual void create_surface(const PolySet& ps, VertexArray& vertex_array,

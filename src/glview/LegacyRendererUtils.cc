@@ -115,28 +115,14 @@ void render_surface(const PolySet& ps, const Transform3d& m, const Renderer::sha
  */
 void render_edges(const PolySet& ps)
 {
+  assert(ps.getDimension() == 2);
   glDisable(GL_LIGHTING);
-  if (ps.getDimension() == 2) {
-    // Render only outlines
-    for (const Outline2d& o : ps.getPolygon().outlines()) {
-      glBegin(GL_LINE_LOOP);
-      for (const Vector2d& v : o.vertices) {
-        glVertex3d(v[0], v[1], 0);
-      }
-      glEnd();
-    }    
-  } else if (ps.getDimension() == 3) {
-    for (const auto& polygon : ps.indices) {
-      const IndexedFace *poly = &polygon;
-      glBegin(GL_LINE_LOOP);
-      for (const auto& ind : *poly) {
-        Vector3d p=ps.vertices[ind];
-        glVertex3d(p[0], p[1], p[2]);
-      }
-      glEnd();
+  for (const Outline2d& o : ps.getPolygon().outlines()) {
+    glBegin(GL_LINE_LOOP);
+    for (const Vector2d& v : o.vertices) {
+      glVertex3d(v[0], v[1], 0);
     }
-  } else {
-    assert(false && "Cannot render object with no dimension");
-  }
+    glEnd();
+  }    
   glEnable(GL_LIGHTING);
 }

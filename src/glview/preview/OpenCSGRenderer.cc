@@ -278,10 +278,9 @@ void OpenCSGRenderer::createCSGVBOProducts(
           GL_CHECKD(glCullFace(GL_FRONT));
         });
         vertex_states->emplace_back(std::move(cull));
-        // FIXME(kintel): We could adjust the scale of this matrix for negative
-        // objects to allow building PolySets ahead of time
         Transform3d tmp = csgobj.leaf->matrix;
         if (csgobj.leaf->polyset->getDimension() == 2) {
+          // Scale 2D negative objects 10% in the Z direction to avoid z fighting
           tmp *= Eigen::Scaling(1.0, 1.0, 1.1);
         }
         create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, tmp,
