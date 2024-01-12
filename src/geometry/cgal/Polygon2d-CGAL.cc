@@ -88,20 +88,12 @@ mark_domains(CDT& cdt)
 
 /*!
    Triangulates this polygon2d and returns a 2D-in-3D PolySet.
-
-   If retain_2d is true, the returned PolySet will be a 2D PolySet and retain a 
-   reference to the original 2D polygon. This is typically used to be able to correctly render
-   polygon outlines (line segments or thick polygons for CSG rendering)
 */
-std::unique_ptr<PolySet> Polygon2d::tessellate(bool retain_2d) const
+std::unique_ptr<PolySet> Polygon2d::tessellate() const
 {
   PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
   std::unique_ptr<PolySetBuilder> builder;
-  if (retain_2d) {
-    builder = std::make_unique<PolySetBuilder>(*this); // This is the only place PolySetBuilder is used in 2D mode
-  } else {
-    builder = std::make_unique<PolySetBuilder>(0, 0, unknown, 2); // This is the only place PolySetBuilder is used in 2D mode
-  }
+  builder = std::make_unique<PolySetBuilder>(0, 0, unknown, 2); // This is the only place PolySetBuilder is used in 2D mode
 
   Polygon2DCGAL::CDT cdt; // Uses a constrained Delaunay triangulator.
 

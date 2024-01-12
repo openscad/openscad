@@ -171,7 +171,7 @@ Response CSGTreeEvaluator::visit(State& state, const class ListNode& node)
 }
 
 std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
-  auto ps = p2d.tessellate(false);
+  auto ps = p2d.tessellate();
   // Estimating num vertices and polygons
   PolySetBuilder builder(ps->vertices.size() * 2, 
                          ps->indices.size() * 2 + ps->vertices.size(),

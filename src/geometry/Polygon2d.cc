@@ -131,7 +131,7 @@ bool Polygon2d::is_convex() const
 
 double Polygon2d::area() const
 {
-  const auto p = tessellate(false);
+  const auto p = tessellate();
   if (p == nullptr) {
     return 0;
   }

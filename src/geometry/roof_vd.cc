@@ -367,7 +367,7 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, 
       Outline2d outline;
       outline.vertices = face;
       face_poly.addOutline(outline);
-      auto tess = face_poly.tessellate(false);
+      auto tess = face_poly.tessellate();
       for (const IndexedFace& triangle : tess->indices) {
         std::vector<int> roof;
         for (int tvind : triangle) {
@@ -395,7 +395,7 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, 
         }
         poly_floor.addOutline(o);
       }
-      auto tess = poly_floor.tessellate(false);
+      auto tess = poly_floor.tessellate();
       for (const IndexedFace & triangle : tess->indices) {
         std::vector<int> floor;
         for (const int  tv : triangle) {

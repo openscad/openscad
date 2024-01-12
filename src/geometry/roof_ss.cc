@@ -131,7 +131,7 @@ std::unique_ptr<PolySet> straight_skeleton_roof(const Polygon2d& poly)
     {
       // poly has to go through clipper just as it does for the roof
       // because this may change coordinates
-      auto tess = poly_sanitized->tessellate(false);
+      auto tess = poly_sanitized->tessellate();
       for (const IndexedFace& triangle : tess->indices) {
         std::vector<int> floor;
         for (const int tv : triangle) {
