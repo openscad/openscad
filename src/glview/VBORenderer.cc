@@ -103,7 +103,7 @@ size_t VBORenderer::getSurfaceBufferSize(const PolySet& polyset) const
     } else if (poly.size() == 4) {
       buffer_size += 2;
     } else {
-      buffer_size += poly.size();
+      buffer_size += poly.size(); // FIXME: Why? doesn't this add two extra vertices?
     }
   }
   return buffer_size * 3;
@@ -112,15 +112,18 @@ size_t VBORenderer::getSurfaceBufferSize(const PolySet& polyset) const
 size_t VBORenderer::getEdgeBufferSize(const PolySet& polyset) const
 {
   size_t buffer_size = 0;
-  if (polyset.getDimension() == 2) {
-    // Render only outlines
-    for (const Outline2d& o : polyset.getPolygon().outlines()) {
-      buffer_size += o.vertices.size();
-    }
-  } else if (polyset.getDimension() == 3) {
-    for (const auto& polygon : polyset.indices) {
-      buffer_size += polygon.size();
-    }
+  for (const auto& polygon : polyset.indices) {
+    buffer_size += polygon.size();
+  }
+  return buffer_size;
+}
+
+size_t VBORenderer::getEdgeBufferSize(const Polygon2d& polygon) const
+{
+  size_t buffer_size = 0;
+  // Render only outlines
+  for (const Outline2d& o : polygon.outlines()) {
+    buffer_size += o.vertices.size();
   }
   return buffer_size;
 }
@@ -323,12 +326,11 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
   vertex_array.addAttributePointers(last_size);
 }
 
-void VBORenderer::create_edges(const PolySet& ps,
+void VBORenderer::create_edges(const Polygon2d& polygon,
                                VertexArray& vertex_array,
                                const Transform3d& m,
                                const Color4f& color) const
 {
-  assert(ps.getDimension() == 2);
   std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
   if (!vertex_data) return;
@@ -337,7 +339,7 @@ void VBORenderer::create_edges(const PolySet& ps,
   std::unordered_map<Vector3d, Vector3d> vert_mult_map;
 
   // Render only outlines
-  for (const Outline2d& o : ps.getPolygon().outlines()) {
+  for (const Outline2d& o : polygon.outlines()) {
     size_t last_size = vertex_array.verticesOffset();
     size_t elements_offset = 0;
     if (vertex_array.useElements()) {

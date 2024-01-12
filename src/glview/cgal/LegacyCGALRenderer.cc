@@ -30,6 +30,7 @@
 #endif
 
 #include "PolySet.h"
+#include "Polygon2d.h"
 #include "PolySetUtils.h"
 #include "printutils.h"
 
@@ -66,7 +67,7 @@ void LegacyCGALRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom
     // See tests/data/scad/3D/features/polyhedron-concave-test.scad
     this->polysets.push_back(PolySetUtils::tessellate_faces(*ps));
   } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
-    this->polysets.push_back(std::shared_ptr<const PolySet>(poly->tessellate(true)));
+    this->polygons.emplace_back(poly, std::shared_ptr<const PolySet>(poly->tessellate(false)));
 #ifdef ENABLE_CGAL
   } else if (const auto new_N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     assert(new_N->getDimension() == 3);
@@ -127,34 +128,45 @@ void LegacyCGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t
 {
   PRINTD("draw()");
 
+
   for (const auto& polyset : this->polysets) {
     PRINTD("draw() polyset");
-    if (polyset->getDimension() == 2) {
-      // Draw 2D polygons
-      glDisable(GL_LIGHTING);
-      setColor(ColorMode::CGAL_FACE_2D_COLOR);
+    // Draw 3D polygons
+    setColor(ColorMode::MATERIAL);
+    render_surface(*polyset, Transform3d::Identity());
+  }
 
-      for (const auto& polygon : polyset->indices) {
-        glBegin(GL_POLYGON);
-        for (const auto& ind : polygon) {
-          Vector3d p=polyset->vertices[ind];
-          glVertex3d(p[0], p[1], 0);
-        }
-        glEnd();
+  for (const auto& [polygon, polyset] : this->polygons) {
+    PRINTD("draw() polygon2d");
+    // Draw 2D polygon
+    glDisable(GL_LIGHTING);
+    setColor(ColorMode::CGAL_FACE_2D_COLOR);
+
+    for (const auto& polygon : polyset->indices) {
+      glBegin(GL_POLYGON);
+      for (const auto& ind : polygon) {
+        Vector3d p=polyset->vertices[ind];
+        glVertex3d(p[0], p[1], 0);
       }
-
-      // Draw 2D edges
-      glDisable(GL_DEPTH_TEST);
-
-      glLineWidth(2);
-      setColor(ColorMode::CGAL_EDGE_2D_COLOR);
-      render_edges(*polyset);
-      glEnable(GL_DEPTH_TEST);
-    } else {
-      // Draw 3D polygons
-      setColor(ColorMode::MATERIAL);
-      render_surface(*polyset, Transform3d::Identity(), nullptr);
+      glEnd();
     }
+
+    // Draw 2D edges
+    glDisable(GL_DEPTH_TEST);
+
+    glLineWidth(2);
+    setColor(ColorMode::CGAL_EDGE_2D_COLOR);
+    glDisable(GL_LIGHTING);
+    for (const Outline2d& o : polygon->outlines()) {
+      glBegin(GL_LINE_LOOP);
+      for (const Vector2d& v : o.vertices) {
+        glVertex3d(v[0], v[1], 0);
+      }
+      glEnd();
+    }    
+    glEnable(GL_LIGHTING);
+
+    glEnable(GL_DEPTH_TEST);
   }
 
 #ifdef ENABLE_CGAL
@@ -182,6 +194,9 @@ BoundingBox LegacyCGALRenderer::getBoundingBox() const
 #endif
   for (const auto& ps : this->polysets) {
     bbox.extend(ps->getBoundingBox());
+  }
+  for (const auto& [polygon, polyset] : this->polygons) {
+    bbox.extend(polygon->getBoundingBox());
   }
   return bbox;
 }

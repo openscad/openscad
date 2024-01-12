@@ -28,11 +28,12 @@ public:
   virtual size_t getSurfaceBufferSize(const CSGChainObject& csgobj, bool unique_geometry = false) const;
   virtual size_t getSurfaceBufferSize(const PolySet& polyset) const;
   virtual size_t getEdgeBufferSize(const PolySet& polyset) const;
+  virtual size_t getEdgeBufferSize(const Polygon2d& polygon) const;
 
   virtual void create_surface(const PolySet& ps, VertexArray& vertex_array,
                               csgmode_e csgmode, const Transform3d& m, const Color4f& color) const;
 
-  virtual void create_edges(const PolySet& ps, VertexArray& vertex_array,
+  virtual void create_edges(const Polygon2d& polygon, VertexArray& vertex_array,
                             const Transform3d& m, const Color4f& color) const;
 
   virtual void create_polygons(const PolySet& ps, VertexArray& vertex_array,

@@ -67,7 +67,7 @@ void CGALRenderer::addGeometry(const std::shared_ptr<const Geometry>& geom)
     // See tests/data/scad/3D/features/polyhedron-concave-test.scad
     this->polysets.push_back(PolySetUtils::tessellate_faces(*ps));
   } else if (const auto poly = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
-    this->polysets.push_back(std::shared_ptr<const PolySet>(poly->tessellate(true)));
+    this->polygons.emplace_back(poly, std::shared_ptr<const PolySet>(poly->tessellate(false)));
 #ifdef ENABLE_CGAL
   } else if (const auto new_N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     assert(new_N->getDimension() == 3);
@@ -127,84 +127,89 @@ void CGALRenderer::setColorScheme(const ColorScheme& cs)
   PRINTD("setColorScheme done");
 }
 
-void CGALRenderer::createPolySets()
+void CGALRenderer::createPolySetStates()
 {
-  PRINTD("createPolySets() polyset");
+  PRINTD("createPolySetStates() polyset");
 
-  polyset_states.clear();
+  vertex_states.clear();
 
   glGenBuffers(1, &polyset_vertices_vbo);
   if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
     glGenBuffers(1, &polyset_elements_vbo);
   }
 
-  VertexArray vertex_array(std::make_unique<VertexStateFactory>(), polyset_states, polyset_vertices_vbo, polyset_elements_vbo);
+  VertexArray vertex_array(std::make_unique<VertexStateFactory>(), vertex_states, polyset_vertices_vbo, polyset_elements_vbo);
 
   vertex_array.addEdgeData();
   vertex_array.addSurfaceData();
 
-
   size_t num_vertices = 0;
-  if (this->polysets.size()) {
-    for (const auto& polyset : this->polysets) {
-      num_vertices += getSurfaceBufferSize(*polyset);
-      num_vertices += getEdgeBufferSize(*polyset);
-    }
+  for (const auto& polyset : this->polysets) {
+    num_vertices += getSurfaceBufferSize(*polyset);
+    num_vertices += getEdgeBufferSize(*polyset);
+  }
+  for (const auto& [polygon, polyset] : this->polygons) {
+    num_vertices += getSurfaceBufferSize(*polyset);
+    num_vertices += getEdgeBufferSize(*polygon);
   }
 
   vertex_array.allocateBuffers(num_vertices);
 
   for (const auto& polyset : this->polysets) {
     Color4f color;
-
+    
     PRINTD("polysets");
-    if (polyset->getDimension() == 2) {
-      PRINTD("2d polysets");
-      vertex_array.writeEdge();
+    PRINTD("3d polysets");
+    vertex_array.writeSurface();
 
-      std::shared_ptr<VertexState> init_state = std::make_shared<VertexState>();
-      init_state->glEnd().emplace_back([]() {
-        GL_TRACE0("glDisable(GL_LIGHTING)");
-        GL_CHECKD(glDisable(GL_LIGHTING));
-      });
-      polyset_states.emplace_back(std::move(init_state));
-
-      // Create 2D polygons
-      getColor(ColorMode::CGAL_FACE_2D_COLOR, color);
-      this->create_polygons(*polyset, vertex_array, Transform3d::Identity(), color);
-
-      std::shared_ptr<VertexState> edge_state = std::make_shared<VertexState>();
-      edge_state->glBegin().emplace_back([]() {
-        GL_TRACE0("glDisable(GL_DEPTH_TEST)");
-        GL_CHECKD(glDisable(GL_DEPTH_TEST));
-      });
-      edge_state->glBegin().emplace_back([]() {
-        GL_TRACE0("glLineWidth(2)");
-        GL_CHECKD(glLineWidth(2));
-      });
-      polyset_states.emplace_back(std::move(edge_state));
-
-      // Create 2D edges
-      getColor(ColorMode::CGAL_EDGE_2D_COLOR, color);
-      this->create_edges(*polyset, vertex_array, Transform3d::Identity(), color);
-
-      std::shared_ptr<VertexState> end_state = std::make_shared<VertexState>();
-      end_state->glBegin().emplace_back([]() {
-        GL_TRACE0("glEnable(GL_DEPTH_TEST)");
-        GL_CHECKD(glEnable(GL_DEPTH_TEST));
-      });
-      polyset_states.emplace_back(std::move(end_state));
-    } else {
-      PRINTD("3d polysets");
-      vertex_array.writeSurface();
-
-      // Create 3D polygons
-      getColor(ColorMode::MATERIAL, color);
-      this->create_surface(*polyset, vertex_array, CSGMODE_NORMAL, Transform3d::Identity(), color);
-    }
+    // Create 3D polygons
+    getColor(ColorMode::MATERIAL, color);
+    this->create_surface(*polyset, vertex_array, CSGMODE_NORMAL, Transform3d::Identity(), color);
   }
 
-  if (this->polysets.size()) {
+  for (const auto& [polygon, polyset] : this->polygons) {
+    Color4f color;
+    
+    PRINTD("polysets");
+    PRINTD("2d polysets");
+    vertex_array.writeEdge();
+
+    std::shared_ptr<VertexState> init_state = std::make_shared<VertexState>();
+    init_state->glEnd().emplace_back([]() {
+      GL_TRACE0("glDisable(GL_LIGHTING)");
+      GL_CHECKD(glDisable(GL_LIGHTING));
+    });
+    vertex_states.emplace_back(std::move(init_state));
+
+    // Create 2D polygons
+    getColor(ColorMode::CGAL_FACE_2D_COLOR, color);
+    this->create_polygons(*polyset, vertex_array, Transform3d::Identity(), color);
+
+    std::shared_ptr<VertexState> edge_state = std::make_shared<VertexState>();
+    edge_state->glBegin().emplace_back([]() {
+      GL_TRACE0("glDisable(GL_DEPTH_TEST)");
+      GL_CHECKD(glDisable(GL_DEPTH_TEST));
+    });
+    edge_state->glBegin().emplace_back([]() {
+      GL_TRACE0("glLineWidth(2)");
+      GL_CHECKD(glLineWidth(2));
+    });
+    vertex_states.emplace_back(std::move(edge_state));
+
+    // Create 2D edges
+    getColor(ColorMode::CGAL_EDGE_2D_COLOR, color);
+    this->create_edges(*polygon, vertex_array, Transform3d::Identity(), color);
+
+    std::shared_ptr<VertexState> end_state = std::make_shared<VertexState>();
+    end_state->glBegin().emplace_back([]() {
+      GL_TRACE0("glEnable(GL_DEPTH_TEST)");
+      GL_CHECKD(glEnable(GL_DEPTH_TEST));
+    });
+    vertex_states.emplace_back(std::move(end_state));
+  }
+
+
+  if (!this->polysets.empty() || !this->polygons.empty()) {
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
       GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
       GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
@@ -219,7 +224,7 @@ void CGALRenderer::createPolySets()
 void CGALRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, const shaderinfo_t * /*shaderinfo*/)
 {
   PRINTD("prepare()");
-  if (!polyset_states.size()) createPolySets();
+  if (!vertex_states.size()) createPolySetStates();
 #ifdef ENABLE_CGAL
   if (!this->nefPolyhedrons.empty() && this->polyhedrons.empty()) createPolyhedrons();
 #endif
@@ -239,8 +244,8 @@ void CGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t * /*s
   GL_CHECKD(glGetFloatv(GL_POINT_SIZE, &current_point_size));
   GL_CHECKD(glGetFloatv(GL_LINE_WIDTH, &current_line_width));
 
-  for (const auto& polyset : polyset_states) {
-    if (polyset) polyset->draw();
+  for (const auto& vertex_state : vertex_states) {
+    if (vertex_state) vertex_state->draw();
   }
 
   // restore states
@@ -279,6 +284,9 @@ BoundingBox CGALRenderer::getBoundingBox() const
   for (const auto& ps : this->polysets) {
     bbox.extend(ps->getBoundingBox());
   }
+  for (const auto& [polygon, polyset] : this->polygons) {
+    bbox.extend(polygon->getBoundingBox());
+  }
   return bbox;
 }
 
@@ -288,6 +296,7 @@ std::vector<SelectedObject> CGALRenderer::findModelObject(Vector3d near_pt, Vect
   double dist_nearest=NAN;
   Vector3d pt1_nearest;
   Vector3d pt2_nearest;
+  // FIXME: Iterate over polygons
   for (const std::shared_ptr<const PolySet>& ps : this->polysets) {
     for(const Vector3d &pt: ps->vertices) {
       double dist_pt= calculateLinePointDistance(near_pt, far_pt, pt, dist_near);

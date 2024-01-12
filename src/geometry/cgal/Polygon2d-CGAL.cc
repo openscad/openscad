@@ -100,7 +100,7 @@ std::unique_ptr<PolySet> Polygon2d::tessellate(bool retain_2d) const
   if (retain_2d) {
     builder = std::make_unique<PolySetBuilder>(*this); // This is the only place PolySetBuilder is used in 2D mode
   } else {
-    builder = std::make_unique<PolySetBuilder>(); // This is the only place PolySetBuilder is used in 2D mode
+    builder = std::make_unique<PolySetBuilder>(0, 0, unknown, 2); // This is the only place PolySetBuilder is used in 2D mode
   }
 
   Polygon2DCGAL::CDT cdt; // Uses a constrained Delaunay triangulator.
