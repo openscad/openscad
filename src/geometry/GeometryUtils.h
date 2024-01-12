@@ -2,12 +2,15 @@
 
 #include "linalg.h"
 #include <vector>
+#include <boost/container/small_vector.hpp>
 
 using Polygon = std::vector<Vector3d>;
 using Polygons = std::vector<Polygon>;
 
-using IndexedFace = std::vector<int>;
+// faces are usually triangles or quads
+using IndexedFace = boost::container::small_vector<int, 4>;
 using IndexedTriangle = Vector3i;
+using PolygonIndices = std::vector<IndexedFace>;
 
 struct IndexedPolygons {
   std::vector<Vector3f> vertices;
@@ -36,4 +39,6 @@ bool tessellatePolygonWithHoles(const std::vector<Vector3f>& vertices,
 
 int findUnconnectedEdges(const std::vector<std::vector<IndexedFace>>& polygons);
 int findUnconnectedEdges(const std::vector<IndexedTriangle>& triangles);
+
+Transform3d getResizeTransform(const BoundingBox &bbox, const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize);
 }

@@ -5,13 +5,11 @@
 cmake_minimum_required(VERSION 3.0)
 if(POLICY CMP0017)
   # Explicitly use new include policy to avoid globally shadowing included modules
-  # http://www.cmake.org/cmake/help/cmake-2-8-docs.html#policy:CMP0017
+  # https://cmake.org/cmake/help/v2.8.8/cmake.html#policy:CMP0017
   cmake_policy(SET CMP0017 NEW)
 endif()
 cmake_policy(SET CMP0057 NEW) # Interpret IN_LIST
 cmake_policy(SET CMP0070 NEW) # Allow relative paths for file(GENERATE ...)
-
-enable_testing()
 
 option(USE_IMAGE_COMPARE_PY "Use built-in image_compare.py" ON)
 
@@ -46,21 +44,26 @@ set_directory_properties(PROPERTIES TEST_INCLUDE_FILES "${CCSD}/EnforceConfig.cm
 
 # MCAD
 if(NOT EXISTS ${LIBRARIES_DIR}/MCAD/__init__.py)
-  message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init")
+  message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init --recursive")
 endif()
 list(APPEND CTEST_ENVIRONMENT "OPENSCADPATH=${LIBRARIES_DIR}")
 
-find_package(PythonInterp 3.4 REQUIRED)
+find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
+message(STATUS "Found Python at ${Python3_EXECUTABLE}")
 
 # Image comparison - expected test image vs actual generated image
 
 if(USE_IMAGE_COMPARE_PY)
   set(VENV_DIR "${CCBD}/venv")
-  message(STATUS "Preparing image_compare.py for test suite image comparison")
+  message(STATUS "Preparing image_compare.py for test suite image comparison: ${VENV_DIR}")
+
+  # Since msys2 on Windows prefers bin/ over Scripts, we need to look for the actual folder to determine
+  # how to utilize the venv
+  find_path(VENV_BIN_PATH activate PATHS "${VENV_DIR}/bin" "${VENV_DIR}/Scripts" NO_DEFAULT_PATH NO_CACHE)
   if(WIN32)
-    set(IMAGE_COMPARE_EXE "${VENV_DIR}/Scripts/python.exe")
+    set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python.exe")
   else()
-    set(IMAGE_COMPARE_EXE "${VENV_DIR}/bin/python")
+    set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python")
   endif()
   if(EXISTS "${IMAGE_COMPARE_EXE}")
     message(STATUS "venv found, testing libraries")
@@ -80,10 +83,17 @@ if(USE_IMAGE_COMPARE_PY)
   endif()
   if(BUILD_VENV)
     message(STATUS "Setting up testing venv for image comparison")
-    find_package(Python3 COMPONENTS Interpreter)
     execute_process(
-      COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "venv" "--without-pip"
+      COMMAND "${Python3_EXECUTABLE}" "-m" "venv" "venv" "--system-site-packages" "--without-pip"
       WORKING_DIRECTORY "${CCBD}")
+    # Since msys2 on Windows prefers bin/ over Scripts, we need to look for the actual folder to determine
+    # how to utilize the venv
+    find_path(VENV_BIN_PATH activate PATHS "${VENV_DIR}/bin" "${VENV_DIR}/Scripts" NO_DEFAULT_PATH NO_CACHE)
+    if(WIN32)
+      set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python.exe")
+    else()
+      set(IMAGE_COMPARE_EXE "${VENV_BIN_PATH}/python")
+    endif()
     execute_process(
       COMMAND "${IMAGE_COMPARE_EXE}" "-m" "ensurepip"
       WORKING_DIRECTORY "${CCBD}")
@@ -208,15 +218,6 @@ set(OPENSCAD_ARG "--openscad=${OPENSCAD_BINPATH}")
 # Define Macros and Functions #
 ###############################
 
-# Tags tests as experimental. This will add all the --enable=<feature>
-# options for the tagged tests.
-macro(experimental_tests)
-  foreach (TESTNAME ${ARGN})
-#    message("Marking as experimental ${TESTNAME}")
-    list(APPEND EXPERIMENTAL_TESTS ${TESTNAME})
-  endforeach()
-endmacro()
-
 #
 # Returns into the FULLNAME variable the global full test name (identifier)
 # given a test command and source filename
@@ -293,10 +294,13 @@ endfunction()
 #
 # Usage add_cmdline_test(testbasename [EXE <executable>] [ARGS <args to exe>]
 #                        [SCRIPT <script>]
-#                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>)
+#                        [EXPECTEDDIR <shared dir>] SUFFIX <suffix> FILES <test files>
+#                        [EXPERIMENTAL])
+#
+# EXPERIMENTAL: If set, tag all tests as experimental
 #
 function(add_cmdline_test TESTCMD_BASENAME)
-  cmake_parse_arguments(TESTCMD "OPENSCAD;STDIO" "EXE;SCRIPT;SUFFIX;KERNEL;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
+  cmake_parse_arguments(TESTCMD "OPENSCAD;STDIO;EXPERIMENTAL" "EXE;SCRIPT;SUFFIX;KERNEL;EXPECTEDDIR" "FILES;ARGS" ${ARGN})
 
   set(EXTRA_OPTIONS "")
 
@@ -317,9 +321,9 @@ function(add_cmdline_test TESTCMD_BASENAME)
     message(FATAL_ERROR "add_cmdline_test() does not allow OPENSCAD flag alongside EXE or SCRIPT values")
   endif()
 
-  # python script implies PYTHON_EXECUTABLE
+  # python script implies Python3_EXECUTABLE
   if (TESTCMD_SCRIPT MATCHES \\.[Pp][Yy]$)
-    set(TESTCMD_EXE ${PYTHON_EXECUTABLE})
+    set(TESTCMD_EXE ${Python3_EXECUTABLE})
   endif()
   if (TESTCMD_OPENSCAD)
     set(TESTCMD_EXE ${OPENSCAD_BINPATH})
@@ -337,23 +341,26 @@ function(add_cmdline_test TESTCMD_BASENAME)
     get_filename_component(FILE_BASENAME ${SCADFILE} NAME_WE)
     string(REPLACE " " "_" FILE_BASENAME ${FILE_BASENAME}) # Test names cannot include spaces
     set(TEST_FULLNAME "${TESTCMD_BASENAME}_${FILE_BASENAME}")
-    list(FIND EXPERIMENTAL_TESTS ${TEST_FULLNAME} EXPERIMENTAL_TEST)
 
-    set(EXPERIMENTAL_OPTION "")
-
-    if (NOT (${EXPERIMENTAL_TEST} EQUAL -1))
-      # add global experimental options here
-      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=roof" "--enable=lazy-union" "--enable=textmetrics" "--enable=import-function")
+    if (TESTCMD_EXPERIMENTAL)
+      set(TEST_IS_EXPERIMENTAL true)
     endif()
 
-    # Enable fast-csg for all tests but those that have different expectations or fail for other reasons.
-    if (NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
-        AND NOT SCADFILE IN_LIST SCADFILES_FAILING_WITH_FAST_CSG
-        AND NOT TEST_FULLNAME IN_LIST TESTS_FAILING_WITH_FAST_CSG)
-      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg" "--enable=fast-csg-remesh")
-      if (NOT SCADFILE IN_LIST FAST_CSG_TRUST_FAILING_SCADFILES)
-        set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=fast-csg-trust-corefinement")
-      endif()
+    # add global experimental options here
+    set(EXPERIMENTAL_OPTION "")
+
+    # To give manifold some extra test coverage, enable manifold 
+    # for all tests except those marked as skipped.
+    if (EXPERIMENTAL
+        AND NOT SCADFILE IN_LIST SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
+        AND NOT SCADFILE IN_LIST SCADFILES_FAILING_WITH_MANIFOLD
+        AND NOT TEST_FULLNAME IN_LIST TESTS_FAILING_WITH_MANIFOLD
+        AND NOT TESTCMD_BASENAME MATCHES "^(stlexport|objexport)$"
+        AND NOT TESTCMD_BASENAME MATCHES "^openscad-viewoptions-.*"
+        AND NOT TESTCMD_BASENAME MATCHES "^remesh-.*")
+      set(MANIFOLD_OPTION "--enable=manifold")
+    else()
+      set(MANIFOLD_OPTION "")
     endif()
 
     # 2D tests should be viewed from the top, not an angle.
@@ -382,33 +389,31 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
     #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
 
-    # Enable vertex-object-renderers by default for all test if experimental build and openscad executable
-    if (EXPERIMENTAL AND TESTCMD_OPENSCAD)
+    # Enable vertex-object-renderers by default for all test if experimental build
+    if (EXPERIMENTAL)
       set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers")
-      #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-prealloc")
-      #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-direct")
       #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-indexing")
     endif()
 
     string(JOIN " " DBG_COMMAND_STR
       "add_test(" ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-      COMMAND ${PYTHON_EXECUTABLE}
+      COMMAND ${Python3_EXECUTABLE}
       ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
       -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
       ${TESTCMD_EXE} ${TESTCMD_SCRIPT} ${SCADFILE} ${CAMERA_OPTION}
-      ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS} ")"
+      ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS} ")"
     )
     # Use cmake option "--log-level DEBUG" during top level config to see this
     message(DEBUG "${DBG_COMMAND_STR}")
 
     # only add test if it is not experimental or if it is and experimental option is enabled
-    if (${EXPERIMENTAL_TEST} EQUAL -1 OR EXPERIMENTAL)
+    if (NOT TEST_IS_EXPERIMENTAL OR EXPERIMENTAL)
       add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
-        COMMAND ${PYTHON_EXECUTABLE}
+        COMMAND ${Python3_EXECUTABLE}
         ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
         -s ${TESTCMD_SUFFIX} ${EXTRA_OPTIONS} ${TESTNAME_OPTION} ${FILENAME_OPTION}
         ${TESTCMD_EXE} ${TESTCMD_SCRIPT} "${SCADFILE}" ${CAMERA_OPTION}
-        ${EXPERIMENTAL_OPTION} ${TESTCMD_ARGS}
+        ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
       )
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
     endif()
@@ -425,7 +430,7 @@ function(add_failing_test TESTCMD_BASENAME)
     message(FATAL_ERROR "add_failing_test() requires SUFFIX to be set" )
   endif()
   if (NOT TESTCMD_EXE)
-    set(TESTCMD_EXE ${PYTHON_EXECUTABLE})
+    set(TESTCMD_EXE ${Python3_EXECUTABLE})
   endif()
   if (NOT TESTCMD_SCRIPT)
     set(TESTCMD_SCRIPT ${SHOULDFAIL_PY})
@@ -487,17 +492,17 @@ set(UPLOADARG "")
 if ($ENV{OPENSCAD_UPLOAD_TESTS})
   set(UPLOADARG "--upload")
 endif()
-configure_file(${CCSD}/CTestCustom.template ${CCBD}/CTestCustom.cmake @ONLY)
+configure_file(${CCSD}/CTestCustom.template ${CBD}/CTestCustom.cmake @ONLY)
 
 # generate a very large scad file which we would rather not commit to the source tree
 # this is for stress-testing the parser
 add_custom_target(issue2342 ALL
-  COMMAND ${PYTHON_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_issue2342.py ">${TEST_SCAD_DIR}/issues/issue2342.scad"
+  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_issue2342.py ">${TEST_SCAD_DIR}/issues/issue2342.scad"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating issue2342.scad"
 )
 add_custom_target(svg_viewbox_tests ALL
-  COMMAND ${PYTHON_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py "${TEST_DATA_DIR}/svg/viewbox" "${TEST_SCAD_DIR}/svg/extruded"
+  COMMAND ${Python3_EXECUTABLE} ${TEST_PYTHON_DIR}/gen_svg_viewbox_tests.py "${TEST_DATA_DIR}/svg/viewbox" "${TEST_SCAD_DIR}/svg/extruded"
   WORKING_DIRECTORY ${GEN_SCRIPT_DIR}
   COMMENT "Generating svg viewbox tests"
 )
@@ -509,6 +514,9 @@ add_custom_target(svg_viewbox_tests ALL
 # Find all scad files
 file(GLOB DEPRECATED_3D_FILES ${TEST_SCAD_DIR}/3D/deprecated/*.scad)
 file(GLOB FEATURES_2D_FILES   ${TEST_SCAD_DIR}/2D/features/*.scad)
+list(REMOVE_ITEM FEATURES_2D_FILES
+  ${TEST_SCAD_DIR}/2D/features/text-metrics.scad # -> EXPERIMENTAL_TEXTMETRICS_FILES
+)
 file(GLOB FEATURES_3D_FILES   ${TEST_SCAD_DIR}/3D/features/*.scad)
 file(GLOB ISSUES_2D_FILES     ${TEST_SCAD_DIR}/2D/issues/*.scad)
 file(GLOB ISSUES_3D_FILES     ${TEST_SCAD_DIR}/3D/issues/*.scad)
@@ -537,6 +545,7 @@ list(REMOVE_ITEM EXAMPLE_3D_FILES
   ${EXAMPLES_DIR}/Functions/list_comprehensions.scad
   ${EXAMPLES_DIR}/Functions/polygon_areas.scad
   ${EXAMPLES_DIR}/Functions/recursion.scad
+  ${EXAMPLES_DIR}/Basics/roof.scad # -> EXPERIMENTAL_ROOF_FILES
 )
 
 list(APPEND EXAMPLE_2D_FILES
@@ -626,7 +635,6 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/isnum-test.scad
   ${TEST_SCAD_DIR}/misc/isbool-test.scad
   ${TEST_SCAD_DIR}/misc/isstring-test.scad
-  ${TEST_SCAD_DIR}/misc/isobject-test.scad
   ${TEST_SCAD_DIR}/misc/operators-tests.scad
   ${TEST_SCAD_DIR}/misc/expression-precedence.scad
   ${TEST_SCAD_DIR}/misc/builtins-calling-vec3vec2.scad
@@ -645,9 +653,6 @@ list(APPEND ECHO_FILES ${FUNCTION_FILES} ${MISC_FILES} ${REDEFINITION_FILES}
   ${TEST_SCAD_DIR}/misc/root-modifiers.scad
   ${TEST_SCAD_DIR}/misc/root-modifier-for.scad
   ${TEST_DATA_DIR}/use-order-test/use-order-test.scad
-  ${TEST_SCAD_DIR}/misc/text-metrics-test.scad
-  ${TEST_SCAD_DIR}/json/import-json.scad
-  ${TEST_SCAD_DIR}/json/import-json-relative-path.scad
   ${TEST_SCAD_DIR}/misc/vector-swizzling.scad
   ${TEST_SCAD_DIR}/misc/linenumber.scad
 )
@@ -708,6 +713,8 @@ list(APPEND CGALSTLSANITYTEST_FILES ${TEST_SCAD_DIR}/misc/normal-nan.scad)
 list(APPEND EXPORT_STL_TEST_FILES ${TEST_SCAD_DIR}/stl/stl-export.scad)
 
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-export.scad)
+list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-import-export_dodecahedron.scad)
+list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-import-export_cube.scad)
 
 list(APPEND EXPORT_3MF_TEST_FILES ${TEST_SCAD_DIR}/3mf/3mf-export.scad)
 
@@ -749,14 +756,24 @@ list(APPEND EXPORT3D_TEST_FILES
 
 # 2D tests
 list(APPEND FILES_2D ${FEATURES_2D_FILES} ${ISSUES_2D_FILES} ${EXAMPLE_2D_FILES})
-list(APPEND ALL_2D_FILES ${FILES_2D} ${SCAD_DXF_FILES} ${SCAD_SVG_FILES})
+list(APPEND ALL_2D_FILES
+  ${FILES_2D}
+  ${SCAD_DXF_FILES}
+  ${SCAD_SVG_FILES}
+  ${TEST_SCAD_DIR}/2D/features/text-metrics.scad
+)
 
 # We know that we cannot import weakly manifold files into CGAL, so to make tests easier
 # to manage, don't try. Once we improve import, we can reenable this
 # Known good manifold files -> EXPORT3D_CGALCGAL_TEST_FILES
 # Known weak manifold files -> EXPORT3D_CGAL_TEST_FILES
 # Known non-manifold files -> EXPORT3D_TEST_FILES
-list(APPEND EXPORT3D_CGALCGAL_TEST_FILES ${BUGS_FILES})
+list(APPEND EXPORT3D_CGALCGAL_TEST_FILES
+  ${TEST_SCAD_DIR}/3D/issues/issue13.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue13b.scad
+  # Note issue13c is still flaky in non-experimental mode, so it's still in bugs/
+  ${BUGS_FILES}
+  )
 #list(REMOVE_ITEM EXPORT3D_CGALCGAL_TEST_FILES
 #)
 #list(APPEND EXPORT3D_CGAL_TEST_FILES
@@ -783,13 +800,6 @@ list(APPEND LAZYUNION_2D_FILES
 )
 list(APPEND LAZYUNION_FILES ${LAZYUNION_2D_FILES} ${LAZYUNION_3D_FILES})
 
-list(APPEND FASTCSG_LAZYUNION_FILES ${LAZYUNION_3D_FILES}
-  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-1.scad
-  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-2.scad
-  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-3.scad
-  ${TEST_SCAD_DIR}/experimental/fastcsg-lazyunion-issue4109-4.scad
-)
-
 list(APPEND SVG_VIEWBOX_TESTS
   viewbox_300x400_none viewbox_600x200_none
   viewbox_300x400_meet_xMinYMin viewbox_300x400_meet_xMidYMin viewbox_300x400_meet_xMaxYMin
@@ -798,53 +808,28 @@ list(APPEND SVG_VIEWBOX_TESTS
   viewbox_600x600_slice_xMinYMin viewbox_600x600_slice_xMinYMid viewbox_600x600_slice_xMinYMax
 )
 
-# Specific tests for which fast-csg cannot be enabled yet.
-list(APPEND TESTS_FAILING_WITH_FAST_CSG
-  # Different order of vertices
-  3mfexport_3mf-export
-  # Test script argument passing issue
-  cgalstlsanitytest_normal-nan
-)
-
-# Tests for which fast-csg works but produces different expectation files.
-# These tests are run twice (w/ and without fast-csg).
-list(APPEND SCADFILES_FAILING_WITH_FAST_CSG
-  # Corefinement leaves some polyhedra in a state that we can't build Nefs from
-  ${TEST_SCAD_DIR}/3D/features/mirror-tests.scad
-  # Resize issue!
-  ${TEST_SCAD_DIR}/3D/features/resize-convexity-tests.scad
-  # Needs investigation:
-  ${TEST_SCAD_DIR}/3D/issues/issue1246.scad
-)
-list(APPEND FAST_CSG_TRUST_FAILING_SCADFILES
-  ${TEST_SCAD_DIR}/3D/features/edge-cases.scad
-)
-
-# Tests for which fast-csg works but produces different expectation files.
-# These tests are run twice (w/ and without fast-csg).
-list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
-  # This one no longer crashes, yay!
-  ${TEST_SCAD_DIR}/bugs/issue1455.scad
-  # These are less broken than before:
-  ${TEST_SCAD_DIR}/bugs/issue791.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1138.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
-
-  # No more green faces from differences.
+list(APPEND SCADFILES_WITH_GREEN_FACES
+  ${EXAMPLES_DIR}/Advanced/children.scad
   ${EXAMPLES_DIR}/Basics/CSG-modules.scad
   ${EXAMPLES_DIR}/Basics/CSG.scad
   ${EXAMPLES_DIR}/Basics/logo.scad
+  ${EXAMPLES_DIR}/Basics/LetterBlock.scad
+  ${EXAMPLES_DIR}/Basics/text_on_cube.scad
+  ${EXAMPLES_DIR}/Basics/logo_and_text.scad
+  ${EXAMPLES_DIR}/Parametric/sign.scad
+  ${EXAMPLES_DIR}/Parametric/candleStand.scad
   ${EXAMPLES_DIR}/Old/example001.scad
   ${EXAMPLES_DIR}/Old/example002.scad
   ${EXAMPLES_DIR}/Old/example003.scad
   ${EXAMPLES_DIR}/Old/example004.scad
   ${EXAMPLES_DIR}/Old/example005.scad
   ${EXAMPLES_DIR}/Old/example006.scad
+  ${EXAMPLES_DIR}/Old/example007.scad
   ${EXAMPLES_DIR}/Old/example012.scad
   ${EXAMPLES_DIR}/Old/example016.scad
   ${EXAMPLES_DIR}/Old/example024.scad
-  ${TEST_SCAD_DIR}/2D/features/highlight-modifier-2d.scad
   ${TEST_SCAD_DIR}/3D/features/difference-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/for-tests.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
   ${TEST_SCAD_DIR}/3D/features/minkowski3-erosion.scad
@@ -859,113 +844,45 @@ list(APPEND SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS
   ${TEST_SCAD_DIR}/3D/issues/issue835.scad
   ${TEST_SCAD_DIR}/3D/issues/issue911.scad
   ${TEST_SCAD_DIR}/3D/issues/issue913.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue904.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
   ${TEST_SCAD_DIR}/3D/misc/view-options-tests.scad
+  ${TEST_SCAD_DIR}/misc/include-tests.scad
+  ${TEST_SCAD_DIR}/misc/use-tests.scad
   ${TEST_SCAD_DIR}/misc/internal-cavity-polyhedron.scad
   ${TEST_SCAD_DIR}/misc/internal-cavity.scad
   ${TEST_SCAD_DIR}/misc/let-module-tests.scad
   ${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
   ${TEST_SCAD_DIR}/misc/rotate-empty-bbox.scad
-  # Less broken and no green faces
-  ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
 )
 
-###################################
-# Add experimental features tests #
-###################################
+list(APPEND SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
+  # No more green faces from differences.
+  ${SCADFILES_WITH_GREEN_FACES}
 
-experimental_tests(dumptest-examples_roof)
-experimental_tests(cgalpngtest_roof)
-experimental_tests(csgpngtest_roof)
-experimental_tests(opencsgtest_roof)
-experimental_tests(throwntogethertest_roof)
+  # Different vertex order
+  ${TEST_SCAD_DIR}/3mf/3mf-export.scad
+  ${TEST_SCAD_DIR}/stl/stl-import-nonmanifold.scad
+)
 
-experimental_tests(echotest_allexpressions)
-experimental_tests(astdumptest_allexpressions)
-experimental_tests(echotest_function-literal-tests)
-experimental_tests(echotest_function-literal-compare)
-experimental_tests(echotest_isobject-test)
-experimental_tests(echotest_text-metrics-test)
-experimental_tests(dumptest_text-metrics)
-experimental_tests(cgalpngtest_text-metrics)
-experimental_tests(opencsgtest_text-metrics)
-experimental_tests(csgpngtest_text-metrics)
-experimental_tests(throwntogethertest_text-metrics)
-experimental_tests(dxfpngtest_text-metrics)
-experimental_tests(svgpngtest_text-metrics)
-experimental_tests(echotest_import-json)
-experimental_tests(echotest_import-json-relative-path)
+list(APPEND SCADFILES_FAILING_WITH_MANIFOLD
+  # Crashes with Input mesh not closed! / NoManifold
+  ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
 
-experimental_tests(lazyunion-dump_lazyunion-toplevel-2dobjects)
-experimental_tests(lazyunion-dump_lazyunion-toplevel-objects)
-experimental_tests(lazyunion-dump_lazyunion-toplevel-for)
-experimental_tests(lazyunion-dump_lazyunion-nested-for)
-experimental_tests(lazyunion-dump_lazyunion-children)
-experimental_tests(lazyunion-dump_lazyunion-hull-for)
-experimental_tests(lazyunion-dump_lazyunion-root-for)
-experimental_tests(lazyunion-dump_lazyunion-intersection-for)
-experimental_tests(lazyunion-dump_lazyunion-difference-for)
-experimental_tests(lazyunion-dump_lazyunion-minkowski-for)
-experimental_tests(lazyunion-dump_lazyunion-transform-for)
-experimental_tests(lazyunion-dump_2d-3d)
-experimental_tests(lazyunion-opencsg_lazyunion-toplevel-2dobjects)
-experimental_tests(lazyunion-opencsg_lazyunion-toplevel-objects)
-experimental_tests(lazyunion-opencsg_lazyunion-toplevel-for)
-experimental_tests(lazyunion-opencsg_lazyunion-nested-for)
-experimental_tests(lazyunion-opencsg_lazyunion-children)
-experimental_tests(lazyunion-opencsg_lazyunion-hull-for)
-experimental_tests(lazyunion-opencsg_lazyunion-root-for)
-experimental_tests(lazyunion-opencsg_lazyunion-intersection-for)
-experimental_tests(lazyunion-opencsg_lazyunion-difference-for)
-experimental_tests(lazyunion-opencsg_lazyunion-minkowski-for)
-experimental_tests(lazyunion-opencsg_lazyunion-transform-for)
-experimental_tests(lazyunion-opencsg_2d-3d)
-experimental_tests(lazyunion-cgalpng_lazyunion-toplevel-2dobjects)
-experimental_tests(lazyunion-cgalpng_lazyunion-toplevel-objects)
-experimental_tests(lazyunion-cgalpng_lazyunion-toplevel-for)
-experimental_tests(lazyunion-cgalpng_lazyunion-nested-for)
-experimental_tests(lazyunion-cgalpng_lazyunion-children)
-experimental_tests(lazyunion-cgalpng_lazyunion-hull-for)
-experimental_tests(lazyunion-cgalpng_lazyunion-root-for)
-experimental_tests(lazyunion-cgalpng_lazyunion-intersection-for)
-experimental_tests(lazyunion-cgalpng_lazyunion-difference-for)
-experimental_tests(lazyunion-cgalpng_lazyunion-minkowski-for)
-experimental_tests(lazyunion-cgalpng_lazyunion-transform-for)
-experimental_tests(lazyunion-cgalpng_2d-3d)
-experimental_tests(lazyunion-monotonepng_lazyunion-toplevel-objects)
-experimental_tests(lazyunion-monotonepng_lazyunion-toplevel-for)
-experimental_tests(lazyunion-monotonepng_lazyunion-nested-for)
-experimental_tests(lazyunion-monotonepng_lazyunion-children)
-experimental_tests(lazyunion-monotonepng_lazyunion-hull-for)
-experimental_tests(lazyunion-monotonepng_lazyunion-root-for)
-experimental_tests(lazyunion-monotonepng_lazyunion-intersection-for)
-experimental_tests(lazyunion-monotonepng_lazyunion-difference-for)
-experimental_tests(lazyunion-monotonepng_lazyunion-minkowski-for)
-experimental_tests(lazyunion-monotonepng_lazyunion-transform-for)
-experimental_tests(lazyunion-monotonepng_2d-3d)
-experimental_tests(lazyunion-stlpngtest_lazyunion-toplevel-objects)
-experimental_tests(lazyunion-stlpngtest_lazyunion-toplevel-for)
-experimental_tests(lazyunion-stlpngtest_lazyunion-nested-for)
-experimental_tests(lazyunion-stlpngtest_lazyunion-children)
-experimental_tests(lazyunion-stlpngtest_lazyunion-hull-for)
-experimental_tests(lazyunion-stlpngtest_lazyunion-root-for)
-experimental_tests(lazyunion-stlpngtest_lazyunion-intersection-for)
-experimental_tests(lazyunion-stlpngtest_lazyunion-difference-for)
-experimental_tests(lazyunion-stlpngtest_lazyunion-minkowski-for)
-experimental_tests(lazyunion-stlpngtest_lazyunion-transform-for)
-experimental_tests(lazyunion-stlpngtest_2d-3d)
-experimental_tests(lazyunion-offpngtest_lazyunion-toplevel-objects)
-experimental_tests(lazyunion-offpngtest_lazyunion-toplevel-for)
-experimental_tests(lazyunion-offpngtest_lazyunion-nested-for)
-experimental_tests(lazyunion-offpngtest_lazyunion-children)
-experimental_tests(lazyunion-offpngtest_lazyunion-hull-for)
-experimental_tests(lazyunion-offpngtest_lazyunion-root-for)
-experimental_tests(lazyunion-offpngtest_lazyunion-intersection-for)
-experimental_tests(lazyunion-offpngtest_lazyunion-difference-for)
-experimental_tests(lazyunion-offpngtest_lazyunion-minkowski-for)
-experimental_tests(lazyunion-offpngtest_lazyunion-transform-for)
-experimental_tests(lazyunion-offpngtest_2d-3d)
-experimental_tests(lazyunion-dxfpngtest_lazyunion-toplevel-2dobjects)
-experimental_tests(lazyunion-svgpngtest_lazyunion-toplevel-2dobjects)
+  # Resize issues!
+  ${TEST_SCAD_DIR}/3D/features/resize-convexity-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
+
+  # Misc
+  ${TEST_SCAD_DIR}/misc/normal-nan.scad
+)
+
+list(APPEND TESTS_FAILING_WITH_MANIFOLD
+  # Need to flip faces if transform determinant is < 0
+  cgalstlcgalpngtest_mirror-tests
+  cgalbinstlcgalpngtest_mirror-tests
+)
 
 ##############################
 # Define test configurations #
@@ -977,68 +894,23 @@ foreach(CONFIG $CACHE{TEST_CONFIGS})
   unset(${CONFIG}_TEST_CONFIG CACHE)
 endforeach()
 
-# Heavy tests are tests taking more than 10 seconds on a development computer
+# Heavy tests are tests taking more than 5 seconds on a decent 2023 desktop
 set_test_config(Heavy FILES
-  cgalbinstlcgalpngtest_rotate_extrude-tests
-  cgalpngtest_camera-tests
-  cgalpngtest_for-nested-tests
-  cgalpngtest_fractal
-  cgalpngtest_issue267-normalization-crash
-  cgalpngtest_iteration
-  cgalpngtest_linear_extrude-scale-zero-tests
-  cgalpngtest_minkowski3-erosion
-  cgalpngtest_projection-extrude-tests
-  cgalpngtest_resize-tests
-  cgalpngtest_rotate_extrude-angle
-  cgalpngtest_rotate_extrude-tests
-  cgalpngtest_sphere-tests
-  cgalpngtest_surface-tests
-  cgalstlcgalpngtest_rotate_extrude-tests
-  csgpngtest_camera-tests
-  csgpngtest_for-nested-tests
-  csgpngtest_fractal
   csgpngtest_issue267-normalization-crash
-  csgpngtest_iteration
-  csgpngtest_linear_extrude-scale-zero-tests
-  csgpngtest_minkowski3-erosion
-  csgpngtest_resize-tests
-  csgpngtest_rotate_extrude-angle
-  csgpngtest_rotate_extrude-tests
-  csgpngtest_sphere-tests
-  csgpngtest_surface-tests
-  monotonepngtest_rotate_extrude-tests
-  offpngtest_demo_cut
-  offpngtest_difference
-  offpngtest_fence
-  offpngtest_rounded_box
-  offpngtest_search
-  offpngtest_surface
-  offpngtest_translation
-  opencsgtest_issue267-normalization-crash
-  opencsgtest_minkowski3-erosion
-  openscad-colorscheme-metallic-render_CSG
-  stlpngtest_demo_cut
-  stlpngtest_difference
-  stlpngtest_fence
-  stlpngtest_search
-  stlpngtest_surface
-  stlpngtest_rounded_box
-  stlpngtest_translation
-  fastcsg-cgalpng_minkowski3-erosion
+  cgalpngtest_issue267-normalization-crash
 )
 
 # Bugs
 set_test_config(Bugs FILES ${BUGS_FILES} ${BUGS_2D_FILES} PREFIXES opencsgtest cgalpngtest csgpngtest)
 set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES offpngtest monotonepngtest stlpngtest stlcgalpngtest cgalstlcgalpngtest cgalbinstlcgalpngtest offcgalpngtest)
 set_test_config(Bugs FILES
-  offcgalpngtest_polyhedron-tests
   offpngtest_nonmanifold-polyhedron
   offpngtest_bad-stl-wing
   cgalpngtest_escape-test.scad
 )
 
 # Examples
-set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES cgalpngtest opencsgtest throwntogethertest csgpngtest monotonepngtest stlpngtest stlcgalpngtest cgalstlcgalpngtest cgalbinstlcgalpngtest offpngtest offcgalpngtest)
+set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES cgalpngtest manifold-cgalpng opencsgtest throwntogethertest csgpngtest monotonepngtest stlpngtest stlcgalpngtest cgalstlcgalpngtest cgalbinstlcgalpngtest offpngtest offcgalpngtest dumptest-examples)
 set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES dxfpngtest)
 
 #############
@@ -1095,6 +967,16 @@ add_cmdline_test(echotest         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/mi
 # This test is quiet to speed up the test and to have a stable and reproducable output
 add_cmdline_test(echotest         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/issues/issue4172-echo-vector-stack-exhaust.scad ARGS --quiet --trace-usermodule-parameters=false)
 
+# Test transcription of --camera options to $vp* for 7-argument --camera.
+add_cmdline_test(echotest-cli-view-variables-7         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60,70)
+add_cmdline_test(dumptest-cli-view-variables-7         OPENSCAD SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60,70)
+add_cmdline_test(opencsgtest-cli-view-variables-7         OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60,70)
+
+# Test transcription of --camera options to $vp* for 6-argument --camera.
+add_cmdline_test(echotest-cli-view-variables-6         OPENSCAD SUFFIX echo FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60)
+add_cmdline_test(dumptest-cli-view-variables-6         OPENSCAD SUFFIX csg FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60)
+add_cmdline_test(opencsgtest-cli-view-variables-6         OPENSCAD SUFFIX png FILES ${TEST_SCAD_DIR}/misc/test-view-variables.scad ARGS --camera 10,20,30,40,50,60)
+
 add_cmdline_test(dumptest           OPENSCAD FILES ${FEATURES_2D_FILES} ${FEATURES_3D_FILES} ${DEPRECATED_3D_FILES} ${MISC_FILES} SUFFIX csg ARGS)
 add_cmdline_test(dumptest-examples  OPENSCAD FILES ${EXAMPLE_FILES} SUFFIX csg ARGS)
 add_cmdline_test(cgalpngtest        OPENSCAD FILES ${CGALPNGTEST_FILES} SUFFIX png ARGS --render)
@@ -1104,7 +986,7 @@ add_cmdline_test(throwntogethertest OPENSCAD FILES ${THROWNTOGETHERTEST_FILES} A
 add_cmdline_test(csgpngtest         SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${CGALPNGTEST_FILES} EXPECTEDDIR cgalpngtest ARGS ${OPENSCAD_ARG} --format=csg --render)
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
-add_cmdline_test(cgalstlsanitytest  SCRIPT ${CGALSTLSANITYTEST_PY} SUFFIX txt FILES ${CGALSTLSANITYTEST_FILES} ARGS ${OPENSCAD_BINPATH})
+add_cmdline_test(cgalstlsanitytest  SCRIPT ${CGALSTLSANITYTEST_PY} SUFFIX txt FILES ${CGALSTLSANITYTEST_FILES} ARGS ${OPENSCAD_ARG})
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
 foreach(TEST ${SVG_VIEWBOX_TESTS})
@@ -1116,34 +998,16 @@ add_cmdline_test(svgimport OPENSCAD ARGS --imgsize 600,600 SUFFIX png FILES
   ${TEST_SCAD_DIR}/svg/extruded/simple-center.scad
 )
 
-add_cmdline_test(lazyunion-dump        OPENSCAD SUFFIX csg FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
-add_cmdline_test(lazyunion-opencsg     OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
-add_cmdline_test(lazyunion-cgalpng     OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union --render)
-add_cmdline_test(lazyunion-monotonepng OPENSCAD SUFFIX png FILES ${LAZYUNION_3D_FILES} ARGS --colorscheme=Monotone --enable=lazy-union --render )
-add_cmdline_test(lazyunion-stlpngtest  SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_ARG} --format=STL --enable=lazy-union --render=cgal)
-add_cmdline_test(lazyunion-offpngtest  SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_ARG} --format=OFF --enable=lazy-union --render=cgal)
-add_cmdline_test(lazyunion-dxfpngtest  SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=DXF --enable=lazy-union --render=cgal)
-add_cmdline_test(lazyunion-svgpngtest  SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=SVG --enable=lazy-union --render=cgal)
+add_cmdline_test(lazyunion-dump        EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
+add_cmdline_test(lazyunion-opencsg     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
+add_cmdline_test(lazyunion-cgalpng     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union --render)
+add_cmdline_test(lazyunion-monotonepng EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_3D_FILES} ARGS --colorscheme=Monotone --enable=lazy-union --render )
+add_cmdline_test(lazyunion-stlpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_ARG} --format=STL --enable=lazy-union --render=cgal)
+add_cmdline_test(lazyunion-offpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_ARG} --format=OFF --enable=lazy-union --render=cgal)
+add_cmdline_test(lazyunion-dxfpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=DXF --enable=lazy-union --render=cgal)
+add_cmdline_test(lazyunion-svgpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=SVG --enable=lazy-union --render=cgal)
 
-add_cmdline_test(fastcsg-cgalpng              OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_FAST_CSG_EXPECTATIONS} ARGS --enable=fast-csg --enable=fast-csg-remesh --enable=fast-csg-trust-corefinement --render)
-add_cmdline_test(fastcsg-lazyunion-cgalpng    OPENSCAD SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} ARGS --enable=lazy-union --render)
-add_cmdline_test(fastcsg-lazyunion-amfpngtest SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union ${OPENSCAD_ARG} --format=AMF)
-add_cmdline_test(fastcsg-lazyunion-3mfpngtest SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${FASTCSG_LAZYUNION_FILES} EXPECTEDDIR fastcsg-lazyunion-monotonepngtest ARGS --enable=lazy-union ${OPENSCAD_ARG} --format=3MF)
-
-# Disabled due to https://github.com/openscad/openscad/issues/4470
-set_tests_properties(
-  fastcsg-cgalpng_highlight-modifier2
-  PROPERTIES DISABLED TRUE
-)
-
-list(APPEND FASTCSG_REMESH_FILES
-  ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cubes.scad
-  ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cube-1.scad
-  ${TEST_SCAD_DIR}/experimental/fastcsg-remesh-cube-2.scad
-)
-
-add_cmdline_test(remesh-cgalpng OPENSCAD SUFFIX png FILES ${FASTCSG_REMESH_FILES} ARGS --enable=fast-csg --enable=fast-csg-remesh --enable=fast-csg-trust-corefinement --render)
-add_cmdline_test(remesh-stl     OPENSCAD SUFFIX stl FILES ${FASTCSG_REMESH_FILES} ARGS --enable=sort-stl --enable=fast-csg --enable=fast-csg-remesh-predictibly --enable=fast-csg-trust-corefinement --render)
+add_cmdline_test(manifold-cgalpng      EXPERIMENTAL OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS} ARGS --enable=manifold --render)
 
 # Trivial Export/Import files
 # This sanity-checks bidirectional file format import/export
@@ -1160,8 +1024,9 @@ add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SC
 
 # Corner-case Export/Import tests
 add_cmdline_test(monotonepngtest OPENSCAD SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES} ${EXPORT3D_CGALCGAL_TEST_FILES} ARGS --colorscheme=Monotone --render)
-add_cmdline_test(stlexport             OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=sort-stl --render)
-add_cmdline_test(objexport             OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render)
+add_cmdline_test(stlexport             EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
+add_cmdline_test(manifold-stlexport    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=manifold --render)
+add_cmdline_test(objexport             EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render)
 add_cmdline_test(3mfexport             OPENSCAD ARGS SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES})
 
 # stlpngtest: direct STL output, preview rendering
@@ -1256,12 +1121,12 @@ add_cmdline_test(openscad-camvp-override      OPENSCAD FILES ${CAMERA_TEST_VP} S
 
 # View Options tests
 set(VIEW_OPTIONS_TEST "${TEST_SCAD_DIR}/3D/misc/view-options-tests.scad")
-add_cmdline_test(openscad-viewoptions-axes              OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=16,14,13,0,0,0 --viewall --view axes)
-add_cmdline_test(openscad-viewoptions-axes-scales       OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=16,14,13,0,0,0 --viewall --view axes,scales)
-add_cmdline_test(openscad-viewoptions-edges             OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=16,14,13,0,0,0 --viewall --view edges)
-add_cmdline_test(openscad-viewoptions-axes-scales-edges OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=16,14,13,0,0,0 --viewall --view axes,scales,edges)
-add_cmdline_test(openscad-viewoptions-wireframe         OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=16,14,13,0,0,0 --viewall --render --view wireframe)
-add_cmdline_test(openscad-viewoptions-crosshairs        OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=16,14,13,0,0,0 --viewall --render --view crosshairs)
+add_cmdline_test(openscad-viewoptions-axes              OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes)
+add_cmdline_test(openscad-viewoptions-axes-scales       OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes,scales)
+add_cmdline_test(openscad-viewoptions-edges             OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view edges)
+add_cmdline_test(openscad-viewoptions-axes-scales-edges OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --view axes,scales,edges)
+add_cmdline_test(openscad-viewoptions-wireframe         OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --render --view wireframe)
+add_cmdline_test(openscad-viewoptions-crosshairs        OPENSCAD FILES ${VIEW_OPTIONS_TEST} SUFFIX png ARGS ${IMGSIZE} --camera=80,14,19,0,0,0 --viewall --render --view crosshairs)
 
 # Colorscheme tests
 set(LOGO_EXAMPLE ${EXAMPLES_DIR}/Basics/logo.scad)
@@ -1273,6 +1138,80 @@ add_cmdline_test(openscad-colorscheme-starnight       OPENSCAD FILES ${LOGO_EXAM
 add_cmdline_test(openscad-colorscheme-monotone        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=Monotone)
 add_cmdline_test(openscad-colorscheme-clearsky        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=ClearSky)
 add_cmdline_test(openscad-colorscheme-metallic-render OPENSCAD FILES ${CSG_EXAMPLE}  SUFFIX png ARGS --colorscheme=Metallic --render)
+
+#
+# Experimental tests
+#
+
+# Roof tests
+list(APPEND EXPERIMENTAL_ROOF_FILES ${EXAMPLES_DIR}/Basics/roof.scad)
+add_cmdline_test(dumptest-examples  EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} SUFFIX csg ARGS --enable=roof)
+add_cmdline_test(opencsgtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} SUFFIX png ARGS --enable=roof)
+add_cmdline_test(throwntogethertest EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --preview=throwntogether --enable=roof SUFFIX png)
+add_cmdline_test(csgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR cgalpngtest ARGS ${OPENSCAD_ARG} --format=csg --render --enable=roof)
+add_cmdline_test(cgalpngtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} SUFFIX png ARGS --render --enable=roof)
+
+# import-function tests
+list(APPEND EXPERIMENTAL_IMPORT_FILES
+  ${TEST_SCAD_DIR}/json/import-json.scad
+  ${TEST_SCAD_DIR}/json/import-json-relative-path.scad
+  )
+add_cmdline_test(echotest           EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${EXPERIMENTAL_IMPORT_FILES} ARGS --enable=import-function)
+
+# textmetrics tests
+list(APPEND EXPERIMENTAL_TEXTMETRICS_ECHOTEST_FILES
+  ${TEST_SCAD_DIR}/misc/isobject-test.scad
+  ${TEST_SCAD_DIR}/misc/text-metrics-test.scad
+)
+list(APPEND EXPERIMENTAL_TEXTMETRICS_FILES
+  ${TEST_SCAD_DIR}/2D/features/text-metrics.scad
+)
+add_cmdline_test(echotest           EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${EXPERIMENTAL_TEXTMETRICS_ECHOTEST_FILES} ARGS --enable=textmetrics)
+add_cmdline_test(dumptest           EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} SUFFIX csg ARGS --enable=textmetrics)
+add_cmdline_test(opencsgtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} SUFFIX png ARGS --enable=textmetrics)
+add_cmdline_test(throwntogethertest EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --preview=throwntogether --enable=textmetrics SUFFIX png)
+add_cmdline_test(csgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} EXPECTEDDIR cgalpngtest ARGS ${OPENSCAD_ARG} --format=csg --render --enable=textmetrics)
+add_cmdline_test(cgalpngtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} SUFFIX png ARGS --render --enable=textmetrics)
+add_cmdline_test(dxfpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=DXF --render=cgal --enable=textmetrics EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
+add_cmdline_test(svgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=SVG --render=cgal --enable=textmetrics EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
+
+
+############################
+# Relative filenames tests #
+############################
+# These tests writing outputs to a relative filename, and verifies that the
+# resulting file is written to the correct location.
+
+function(add_output_file_test TESTCMD_BASENAME)
+  cmake_parse_arguments(TESTCMD "" "FILE;FORMAT" "" ${ARGN})
+
+  add_test(NAME "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_run" CONFIGURATIONS Default COMMAND ${OPENSCAD_BINPATH} ${TESTCMD_FILE} -o ${TESTCMD_BASENAME}.${TESTCMD_FORMAT})
+  add_test(NAME "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_check" CONFIGURATIONS Default COMMAND ${CMAKE_COMMAND} -E cat ${TESTCMD_BASENAME}.${TESTCMD_FORMAT})
+  set_tests_properties("${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_check" PROPERTIES DEPENDS "${TESTCMD_BASENAME}_${TESTCMD_FORMAT}_run")
+endfunction()
+
+add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT stl)
+add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT off)
+add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT wrl)
+add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT amf)
+add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT 3mf)
+add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT csg)
+add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/2D/features/square-tests.scad FORMAT dxf)
+add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/2D/features/square-tests.scad FORMAT svg)
+add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/2D/features/square-tests.scad FORMAT pdf)
+add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT png)
+add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT echo)
+add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT ast)
+add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT term)
+add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT nef3)
+add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-tests.scad FORMAT nefdbg)
+
+# Disable tests failing due to https://github.com/openscad/openscad/issues/4632
+set_tests_properties(
+  relative-output_csg_check
+  relative-output_ast_check
+  PROPERTIES DISABLED TRUE
+)
 
 ###################################
 # Disable Tests with Known Issues #
@@ -1333,6 +1272,16 @@ set_tests_properties(
   cgalpngtest_import-empty-tests
   cgalpngtest_empty-shape-tests
   csgpngtest_issue1258
+
+  # OpenCSG z fighting https://github.com/openscad/openscad/issues/4595
+  openscad-viewoptions-edges_view-options-tests
+  openscad-viewoptions-axes-scales-edges_view-options-tests
+
+  # Non-manifold tests: https://github.com/openscad/openscad/issues/3567
+  # This may work with fast-csg, but will fail with both CGAL and Manifold
+  cgalpngtest_linear_extrude-scale-zero-tests
+  csgpngtest_linear_extrude-scale-zero-tests
+
   PROPERTIES DISABLED TRUE
 )
 
@@ -1344,24 +1293,9 @@ if (NOT LIB3MF_FOUND)
     throwntogethertest_import_3mf-tests
     3mfpngtest_cube10
     3mfexport_3mf-export
-    fastcsg-lazyunion-3mfpngtest_lazyunion-toplevel-objects
-    fastcsg-lazyunion-3mfpngtest_lazyunion-toplevel-for
-    fastcsg-lazyunion-3mfpngtest_lazyunion-nested-for
-    fastcsg-lazyunion-3mfpngtest_lazyunion-children
-    fastcsg-lazyunion-3mfpngtest_lazyunion-hull-for
-    fastcsg-lazyunion-3mfpngtest_lazyunion-root-for
-    fastcsg-lazyunion-3mfpngtest_lazyunion-intersection-for
-    fastcsg-lazyunion-3mfpngtest_lazyunion-difference-for
-    fastcsg-lazyunion-3mfpngtest_lazyunion-minkowski-for
-    fastcsg-lazyunion-3mfpngtest_lazyunion-transform-for
-    fastcsg-lazyunion-3mfpngtest_2d-3d
-    fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-1
-    fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-2
-    fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-3
-    fastcsg-lazyunion-3mfpngtest_fastcsg-lazyunion-issue4109-4
     PROPERTIES DISABLED TRUE
   )
-endif()
+endif(NOT LIB3MF_FOUND)
 
 list(APPEND NEF3_BROKEN_TESTS
   cgalpngtest_nef3_broken
@@ -1374,11 +1308,10 @@ list(APPEND NEF3_BROKEN_TESTS
 if(APPLE)
   set_tests_properties(
     ${NEF3_BROKEN_TESTS}
-    # Z issues specific to edge shader
-    openscad-viewoptions-edges_view-options-tests
-    openscad-viewoptions-axes-scales-edges_view-options-tests
     # issue3158 test failing on macos, see: https://github.com/openscad/openscad/issues/4509
     opencsgtest_issue3158
+    # On macOS, GL_POINTS are sometimes circular even though GL_POINT_SMOOTH is disabled
+    openscad-viewoptions-wireframe_view-options-tests
     PROPERTIES DISABLED TRUE
   )
 elseif(UNIX)
@@ -1388,9 +1321,6 @@ elseif(UNIX)
   )
 elseif(WIN32 OR MXECROSS)
   set_tests_properties(
-    # Z issues specific to edge shader
-    openscad-viewoptions-edges_view-options-tests
-    openscad-viewoptions-axes-scales-edges_view-options-tests
     # Known UTF-8 issue on Windows
     openscad-nonascii_sfære
     # requires `gs` tool
@@ -1425,6 +1355,7 @@ if(MXECROSS AND EXPERIMENTAL)
     DESTINATION tests-build
     USE_SOURCE_PERMISSIONS
     COMPONENT Tests
+    PATTERN "venv" EXCLUDE
     PATTERN "CMakeFiles" EXCLUDE
     PATTERN "CMakeLists.txt" EXCLUDE
     PATTERN "cmake_install.cmake" EXCLUDE
@@ -1441,7 +1372,7 @@ if(MXECROSS AND EXPERIMENTAL)
 "# created automatically during packaging by cmake from within linux
 linux_abs_basedir='${CMAKE_SOURCE_DIR}'
 linux_abs_builddir='${CMAKE_BINARY_DIR}'
-linux_python='${PYTHON_EXECUTABLE}'
+linux_python='${Python3_EXECUTABLE}'
 linux_convert='${IMAGE_COMPARE_EXE}'
 win_installdir='OpenSCAD-Tests-${CPACK_PACKAGE_VERSION}'
 " NEWLINE_STYLE WIN32)

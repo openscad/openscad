@@ -415,7 +415,7 @@ public:
     try {
       (tostream_visitor(stream))(v);
     } catch (EvaluationException& e) {
-      LOG(message_group::Error, Location::NONE, "", e.what());
+      LOG(message_group::Error, e.what());
       throw;
     }
     return stream.str();
@@ -503,7 +503,7 @@ public:
   {
     const uint32_t steps = v->numValues();
     if (steps >= RangeType::MAX_RANGE_STEPS) {
-      LOG(message_group::Warning, Location::NONE, "", "Bad range parameter in for statement: too many elements (%1$lu).", steps);
+      LOG(message_group::Warning, "Bad range parameter in for statement: too many elements (%1$lu).", steps);
       return "";
     }
 
@@ -519,13 +519,13 @@ std::string Value::chrString() const
 }
 
 VectorType::VectorType(EvaluationSession *session) :
-  ptr(shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() ))
+  ptr(std::shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() ))
 {
   ptr->evaluation_session = session;
 }
 
 VectorType::VectorType(class EvaluationSession *session, double x, double y, double z) :
-  ptr(shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() ))
+  ptr(std::shared_ptr<VectorObject>(new VectorObject(), VectorObjectDeleter() ))
 {
   ptr->evaluation_session = session;
   emplace_back(x);
@@ -588,17 +588,17 @@ void VectorType::VectorObjectDeleter::operator()(VectorObject *v)
   }
 
   VectorObject *orig = v;
-  shared_ptr<VectorObject> curr;
-  std::vector<shared_ptr<VectorObject>> purge;
+  std::shared_ptr<VectorObject> curr;
+  std::vector<std::shared_ptr<VectorObject>> purge;
   while (true) {
     if (v && v->embed_excess) {
       for (Value& val : v->vec) {
         auto type = val.type();
         if (type == Value::Type::EMBEDDED_VECTOR) {
-          shared_ptr<VectorObject>& temp = std::get<EmbeddedVectorType>(val.value).ptr;
+          std::shared_ptr<VectorObject>& temp = std::get<EmbeddedVectorType>(val.value).ptr;
           if (temp.use_count() <= 1) purge.emplace_back(std::move(temp));
         } else if (type == Value::Type::VECTOR) {
-          shared_ptr<VectorObject>& temp = std::get<VectorType>(val.value).ptr;
+          std::shared_ptr<VectorObject>& temp = std::get<VectorType>(val.value).ptr;
           if (temp.use_count() <= 1) purge.emplace_back(std::move(temp));
         }
       }
@@ -872,6 +872,7 @@ public:
 
   Value operator()(const VectorType& op1, const VectorType& op2) const {
     VectorType sum(op1.evaluation_session());
+    sum.reserve(op1.size());
     // FIXME: should we really truncate to shortest vector here?
     //   Maybe better to either "add zeroes" and return longest
     //   and/or issue an warning/error about length mismatch.
@@ -902,6 +903,7 @@ public:
 
   Value operator()(const VectorType& op1, const VectorType& op2) const {
     VectorType sum(op1.evaluation_session());
+    sum.reserve(op1.size());
     for (size_t i = 0; i < op1.size() && i < op2.size(); ++i) {
       sum.emplace_back(op1[i] - op2[i]);
     }
@@ -918,6 +920,7 @@ Value multvecnum(const VectorType& vecval, const Value& numval)
 {
   // Vector * Number
   VectorType dstv(vecval.evaluation_session());
+  dstv.reserve(vecval.size());
   for (const auto& val : vecval) {
     dstv.emplace_back(val * numval);
   }
@@ -928,6 +931,7 @@ Value multmatvec(const VectorType& matrixvec, const VectorType& vectorvec)
 {
   // Matrix * Vector
   VectorType dstv(matrixvec.evaluation_session());
+  dstv.reserve(matrixvec.size());
   for (size_t i = 0; i < matrixvec.size(); ++i) {
     if (matrixvec[i].type() != Value::Type::VECTOR ||
         matrixvec[i].toVector().size() != vectorvec.size()) {
@@ -954,20 +958,21 @@ Value multvecmat(const VectorType& vectorvec, const VectorType& matrixvec)
   // Vector * Matrix
   VectorType dstv(matrixvec[0].toVector().evaluation_session());
   size_t firstRowSize = matrixvec[0].toVector().size();
+  dstv.reserve(firstRowSize);
   for (size_t i = 0; i < firstRowSize; ++i) {
     double r_e = 0.0;
     for (size_t j = 0; j < vectorvec.size(); ++j) {
       if (matrixvec[j].type() != Value::Type::VECTOR ||
           matrixvec[j].toVector().size() != firstRowSize) {
-        LOG(message_group::Warning, Location::NONE, "", "Matrix must be rectangular. Problem at row %1$lu", j);
+        LOG(message_group::Warning, "Matrix must be rectangular. Problem at row %1$lu", j);
         return Value::undef(STR("Matrix must be rectangular. Problem at row ", j));
       }
       if (vectorvec[j].type() != Value::Type::NUMBER) {
-        LOG(message_group::Warning, Location::NONE, "", "Vector must contain only numbers. Problem at index %1$lu", j);
+        LOG(message_group::Warning, "Vector must contain only numbers. Problem at index %1$lu", j);
         return Value::undef(STR("Vector must contain only numbers. Problem at index ", j));
       }
       if (matrixvec[j].toVector()[i].type() != Value::Type::NUMBER) {
-        LOG(message_group::Warning, Location::NONE, "", "Matrix must contain only numbers. Problem at row %1$lu, col %2$lu", j, i);
+        LOG(message_group::Warning, "Matrix must contain only numbers. Problem at row %1$lu, col %2$lu", j, i);
         return Value::undef(STR("Matrix must contain only numbers. Problem at row ", j, ", col ", i));
       }
       r_e += vectorvec[j].toDouble() * matrixvec[j].toVector()[i].toDouble();
@@ -1019,6 +1024,7 @@ public:
         if ((*first1).toVector().size() == op2.size()) {
           // Matrix * Matrix
           VectorType dstv(op1.evaluation_session());
+          dstv.reserve(op1.size());
           size_t i = 0;
           for (const auto& srcrow : op1) {
             const auto& srcrowvec = srcrow.toVector();
@@ -1053,12 +1059,14 @@ Value Value::operator/(const Value& v) const
     return this->toDouble() / v.toDouble();
   } else if (this->type() == Type::VECTOR && v.type() == Type::NUMBER) {
     VectorType dstv(this->toVector().evaluation_session());
+    dstv.reserve(this->toVector().size());
     for (const auto& vecval : this->toVector()) {
       dstv.emplace_back(vecval / v);
     }
     return std::move(dstv);
   } else if (this->type() == Type::NUMBER && v.type() == Type::VECTOR) {
     VectorType dstv(v.toVector().evaluation_session());
+    dstv.reserve(v.toVector().size());
     for (const auto& vecval : v.toVector()) {
       dstv.emplace_back(*this / vecval);
     }
@@ -1081,6 +1089,7 @@ Value Value::operator-() const
     return {-this->toDouble()};
   } else if (this->type() == Type::VECTOR) {
     VectorType dstv(this->toVector().evaluation_session());
+    dstv.reserve(this->toVector().size());
     for (const auto& vecval : this->toVector()) {
       dstv.emplace_back(-vecval);
     }
@@ -1107,18 +1116,11 @@ class bracket_visitor
 public:
   Value operator()(const str_utf8_wrapper& str, const double& idx) const {
     const auto i = convert_to_uint32(idx);
-    if (i < str.size()) {
-      // Ensure character (not byte) index is inside the character/glyph array
-      if (glong(i) < str.get_utf8_strlen()) {
-        gchar utf8_of_cp[6] = ""; //A buffer for a single unicode character to be copied into
-        auto ptr = g_utf8_offset_to_pointer(str.c_str(), i);
-        if (ptr) {
-          g_utf8_strncpy(utf8_of_cp, ptr, 1);
-        }
-        return std::string(utf8_of_cp);
-      }
+    auto unichar = str[i];
+    if (unichar.empty()) {
+      return Value::undefined.clone();
     }
-    return Value::undefined.clone();
+    return unichar;
   }
 
   Value operator()(const VectorType& vec, const double& idx) const {
@@ -1172,7 +1174,7 @@ std::ostream& operator<<(std::ostream& stream, const RangeType& r)
 }
 
 // called by clone()
-ObjectType::ObjectType(const shared_ptr<ObjectObject>& copy)
+ObjectType::ObjectType(const std::shared_ptr<ObjectObject>& copy)
   : ptr(copy)
 {
 }

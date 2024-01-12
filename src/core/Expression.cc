@@ -318,6 +318,7 @@ Value Vector::evaluate(const std::shared_ptr<const Context>& context) const
     }
   } else {
     VectorType vec(context->session());
+    vec.reserve(this->children.size());
     for (const auto& e : this->children) vec.emplace_back(e->evaluate(context));
     return std::move(vec);
   }
@@ -361,6 +362,7 @@ Value MemberLookup::evaluate(const std::shared_ptr<const Context>& context) cons
   case Value::Type::VECTOR:
     if (this->member.length() > 1 && boost::regex_match(this->member, re_swizzle_validation)) {
       VectorType ret(context->session());
+      ret.reserve(this->member.length());
       for (const char& ch : this->member)
         switch (ch) {
         case 'r': case 'x': ret.emplace_back(v[0]); break;
@@ -667,7 +669,7 @@ Echo::Echo(AssignmentList args, Expression *expr, const Location& loc)
 const Expression *Echo::evaluateStep(const std::shared_ptr<const Context>& context) const
 {
   Arguments arguments{this->arguments, context};
-  LOG(message_group::Echo, Location::NONE, "", "%1$s", STR(arguments));
+  LOG(message_group::Echo, "%1$s", STR(arguments));
   return expr.get();
 }
 
@@ -739,7 +741,7 @@ LcIf::LcIf(Expression *cond, Expression *ifexpr, Expression *elseexpr, const Loc
 
 Value LcIf::evaluate(const std::shared_ptr<const Context>& context) const
 {
-  const shared_ptr<Expression>& expr = this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
+  const std::shared_ptr<Expression>& expr = this->cond->evaluate(context).toBool() ? this->ifexpr : this->elseexpr;
   if (expr) {
     return expr->evaluate(context);
   } else {
@@ -770,6 +772,7 @@ Value LcEach::evalRecur(Value&& v, const std::shared_ptr<const Context>& context
       LOG(message_group::Warning, loc, context->documentRoot(), "Bad range parameter in for statement: too many elements (%1$lu)", steps);
     } else {
       EmbeddedVectorType vec(context->session());
+      vec.reserve(range.numValues());
       for (double d : range) vec.emplace_back(d);
       return {std::move(vec)};
     }
@@ -779,13 +782,16 @@ Value LcEach::evalRecur(Value&& v, const std::shared_ptr<const Context>& context
     return {std::move(vec)};
   } else if (v.type() == Value::Type::EMBEDDED_VECTOR) {
     EmbeddedVectorType vec(context->session());
+    vec.reserve(v.toEmbeddedVector().size());
     // Not safe to move values out of a vector, since it's shared_ptr maye be shared with another Value,
     // which should remain constant
     for (const auto& val : v.toEmbeddedVector()) vec.emplace_back(evalRecur(val.clone(), context) );
     return {std::move(vec)};
   } else if (v.type() == Value::Type::STRING) {
     EmbeddedVectorType vec(context->session());
-    for (auto ch : v.toStrUtf8Wrapper()) vec.emplace_back(std::move(ch));
+    auto &wrapper = v.toStrUtf8Wrapper();
+    vec.reserve(wrapper.size());
+    for (auto ch : wrapper) vec.emplace_back(std::move(ch));
     return {std::move(vec)};
   } else if (v.type() != Value::Type::UNDEFINED) {
     return std::move(v);
@@ -820,7 +826,8 @@ static void doForEach(
   const Location& location,
   const std::function<void(const std::shared_ptr<const Context>&)>& operation,
   size_t assignment_index,
-  const std::shared_ptr<const Context>& context
+  const std::shared_ptr<const Context>& context,
+  const std::function<void(size_t)> *pReserve = nullptr
   ) {
   if (assignment_index >= assignments.size()) {
     operation(context);
@@ -837,6 +844,9 @@ static void doForEach(
       LOG(message_group::Warning, location, context->documentRoot(),
           "Bad range parameter in for statement: too many elements (%1$lu)", steps);
     } else {
+      if (pReserve) {
+        (*pReserve)(steps);
+      }
       for (double value : range) {
         doForEach(assignments, location, operation, assignment_index + 1,
                   *forContext(context, variable_name, value)
@@ -844,19 +854,31 @@ static void doForEach(
       }
     }
   } else if (variable_values.type() == Value::Type::VECTOR) {
-    for (const auto& value : variable_values.toVector()) {
+    auto &vec = variable_values.toVector();
+    if (pReserve) {
+      (*pReserve)(vec.size());
+    }
+    for (const auto& value : vec) {
       doForEach(assignments, location, operation, assignment_index + 1,
                 *forContext(context, variable_name, value.clone())
                 );
     }
   } else if (variable_values.type() == Value::Type::OBJECT) {
-    for (auto key : variable_values.toObject().keys()) {
+    auto &keys = variable_values.toObject().keys();
+    if (pReserve) {
+      (*pReserve)(keys.size());
+    }
+    for (auto key : keys) {
       doForEach(assignments, location, operation, assignment_index + 1,
                 *forContext(context, variable_name, key)
                 );
     }
   } else if (variable_values.type() == Value::Type::STRING) {
-    for (auto value : variable_values.toStrUtf8Wrapper()) {
+    auto &wrapper = variable_values.toStrUtf8Wrapper();
+    if (pReserve) {
+      (*pReserve)(wrapper.size());
+    }
+    for (auto value : wrapper) {
       doForEach(assignments, location, operation, assignment_index + 1,
                 *forContext(context, variable_name, Value(std::move(value)))
                 );
@@ -868,19 +890,21 @@ static void doForEach(
   }
 }
 
-void LcFor::forEach(const AssignmentList& assignments, const Location& loc, const std::shared_ptr<const Context>& context, const std::function<void(const std::shared_ptr<const Context>&)>& operation)
+void LcFor::forEach(const AssignmentList& assignments, const Location& loc, const std::shared_ptr<const Context>& context, const std::function<void(const std::shared_ptr<const Context>&)>& operation, const std::function<void(size_t)>* pReserve)
 {
-  doForEach(assignments, loc, operation, 0, context);
+  doForEach(assignments, loc, operation, 0, context, pReserve);
 }
 
 Value LcFor::evaluate(const std::shared_ptr<const Context>& context) const
 {
   EmbeddedVectorType vec(context->session());
+  std::function<void(size_t)> reserve = [&vec](size_t capacity) {
+    vec.reserve(capacity);
+  };
   forEach(this->arguments, this->loc, context,
           [&vec, expression = expr.get()] (const std::shared_ptr<const Context>& iterationContext) {
     vec.emplace_back(expression->evaluate(iterationContext));
-  }
-          );
+  }, &reserve);
   return {std::move(vec)};
 }
 

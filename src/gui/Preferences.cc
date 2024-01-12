@@ -26,9 +26,12 @@
 
 #include "Preferences.h"
 
+#include <QActionGroup>
 #include <QMessageBox>
 #include <QFontDatabase>
 #include <QKeyEvent>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 #include <QStatusBar>
 #include <QSettings>
 #include <QTextDocument>
@@ -115,7 +118,6 @@ void Preferences::init() {
 
   // Setup default settings
   this->defaultmap["advanced/opencsg_show_warning"] = true;
-  this->defaultmap["advanced/enable_opencsg_opengl1x"] = true;
   this->defaultmap["advanced/polysetCacheSize"] = qulonglong(GeometryCache::instance()->maxSizeMB()) * 1024ul * 1024ul;
   this->defaultmap["advanced/polysetCacheSizeMB"] = getValue("advanced/polysetCacheSize").toULongLong() / (1024ul * 1024ul); // carry over old settings if they exist
 #ifdef ENABLE_CGAL
@@ -175,7 +177,7 @@ void Preferences::init() {
   QValidator *memvalidator = new QIntValidator(1, absolute_max, this);
   auto *uintValidator = new QIntValidator(this);
   uintValidator->setBottom(0);
-  QValidator *validator1 = new QRegExpValidator(QRegExp("[1-9][0-9]{0,1}"), this); // range between 1-99 both inclusive
+  QValidator *validator1 = new QRegularExpressionValidator(QRegularExpression("[1-9][0-9]{0,1}"), this); // range between 1-99 both inclusive
 #ifdef ENABLE_CGAL
   this->cgalCacheSizeMBEdit->setValidator(memvalidator);
 #endif
@@ -354,22 +356,22 @@ void Preferences::on_colorSchemeChooser_itemSelectionChanged()
   emit colorSchemeChanged(scheme);
 }
 
-void Preferences::on_fontChooser_activated(const QString& family)
+void Preferences::on_fontChooser_currentFontChanged(const QFont& font)
 {
   QSettingsCached settings;
-  settings.setValue("editor/fontfamily", family);
-  emit fontChanged(family, getValue("editor/fontsize").toUInt());
+  settings.setValue("editor/fontfamily", font.family());
+  emit fontChanged(font.family(), getValue("editor/fontsize").toUInt());
 }
 
-void Preferences::on_fontSize_currentIndexChanged(const QString& size)
+void Preferences::on_fontSize_currentIndexChanged(int index)
 {
-  uint intsize = size.toUInt();
+  uint intsize = this->fontSize->itemText(index).toUInt();
   QSettingsCached settings;
   settings.setValue("editor/fontsize", intsize);
   emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
-void Preferences::on_syntaxHighlight_activated(const QString& s)
+void Preferences::on_syntaxHighlight_currentTextChanged(const QString& s)
 {
   QSettingsCached settings;
   settings.setValue("editor/syntaxhighlight", s);
@@ -435,13 +437,6 @@ Preferences::on_openCSGWarningBox_toggled(bool state)
 {
   QSettingsCached settings;
   settings.setValue("advanced/opencsg_show_warning", state);
-}
-
-void
-Preferences::on_enableOpenCSGBox_toggled(bool state)
-{
-  QSettingsCached settings;
-  settings.setValue("advanced/enable_opencsg_opengl1x", state);
 }
 
 void Preferences::on_cgalCacheSizeMBEdit_textChanged(const QString& text)
@@ -644,16 +639,16 @@ void Preferences::on_consoleMaxLinesEdit_textChanged(const QString& text)
   settings.setValue("advanced/consoleMaxLines", text);
 }
 
-void Preferences::on_consoleFontChooser_activated(const QString& family)
+void Preferences::on_consoleFontChooser_currentFontChanged(const QFont& font)
 {
   QSettingsCached settings;
-  settings.setValue("advanced/consoleFontFamily", family);
-  emit consoleFontChanged(family, getValue("advanced/consoleFontSize").toUInt());
+  settings.setValue("advanced/consoleFontFamily", font.family());
+  emit consoleFontChanged(font.family(), getValue("advanced/consoleFontSize").toUInt());
 }
 
-void Preferences::on_consoleFontSize_currentIndexChanged(const QString& size)
-{
-  uint intsize = size.toUInt();
+void Preferences::on_consoleFontSize_currentIndexChanged(int index)
+{ 
+  uint intsize = this->consoleFontSize->itemText(index).toUInt();
   QSettingsCached settings;
   settings.setValue("advanced/consoleFontSize", intsize);
   emit consoleFontChanged(getValue("advanced/consoleFontFamily").toString(), intsize);
@@ -963,7 +958,6 @@ void Preferences::updateGUI()
   }
 
   BlockSignals<QCheckBox *>(this->openCSGWarningBox)->setChecked(getValue("advanced/opencsg_show_warning").toBool());
-  BlockSignals<QCheckBox *>(this->enableOpenCSGBox)->setChecked(getValue("advanced/enable_opencsg_opengl1x").toBool());
   BlockSignals<QLineEdit *>(this->cgalCacheSizeMBEdit)->setText(getValue("advanced/cgalCacheSizeMB").toString());
   BlockSignals<QLineEdit *>(this->polysetCacheSizeMBEdit)->setText(getValue("advanced/polysetCacheSizeMB").toString());
   BlockSignals<QLineEdit *>(this->opencsgLimitEdit)->setText(getValue("advanced/openCSGLimit").toString());

@@ -209,40 +209,20 @@ public:
   void create_polyhedron() {
     PRINTD("create_polyhedron");
 
-    VertexArray points_edges_array(std::make_shared<VertexStateFactory>(), points_edges_states);
+    glGenBuffers(1, &points_edges_vertices_vbo);
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      glGenBuffers(1, &points_edges_elements_vbo);
+    }
+
+    VertexArray points_edges_array(std::make_unique<VertexStateFactory>(), points_edges_states, points_edges_vertices_vbo, points_edges_elements_vbo);
+
     points_edges_array.addEdgeData();
     points_edges_array.writeEdge();
     size_t last_size = 0;
     size_t elements_offset = 0;
 
-    size_t vertices_size = vertices_.size() + edges_.size() * 2, elements_size = 0;
-    vertices_size *= points_edges_array.stride();
-    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      if (vertices_size <= 0xff) {
-        points_edges_array.addElementsData(std::make_shared<AttributeData<GLubyte, 1, GL_UNSIGNED_BYTE>>());
-      } else if (vertices_size <= 0xffff) {
-        points_edges_array.addElementsData(std::make_shared<AttributeData<GLushort, 1, GL_UNSIGNED_SHORT>>());
-      } else {
-        points_edges_array.addElementsData(std::make_shared<AttributeData<GLuint, 1, GL_UNSIGNED_INT>>());
-      }
-      elements_size = vertices_size * points_edges_array.elements().stride();
-    }
-
-    if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-      points_edges_array.verticesSize(vertices_size);
-      points_edges_array.elementsSize(elements_size);
-
-      GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", points_edges_array.verticesVBO());
-      glBindBuffer(GL_ARRAY_BUFFER, points_edges_array.verticesVBO()); GL_ERROR_CHECK();
-      GL_TRACE("glBufferData(GL_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", vertices_size % (void *)nullptr);
-      glBufferData(GL_ARRAY_BUFFER, vertices_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
-      if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-        GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", points_edges_array.elementsVBO());
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, points_edges_array.elementsVBO()); GL_ERROR_CHECK();
-        GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_size % (void *)nullptr);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_size, nullptr, GL_STATIC_DRAW); GL_ERROR_CHECK();
-      }
-    }
+    size_t num_vertices = vertices_.size() + edges_.size() * 2, elements_size = 0;
+    points_edges_array.allocateBuffers(num_vertices);
 
     // Points
     Vertex_iterator v;
@@ -253,10 +233,12 @@ public:
 
     std::shared_ptr<VertexState> settings = std::make_shared<VertexState>();
     settings->glBegin().emplace_back([]() {
-      GL_TRACE0("glDisable(GL_LIGHTING)"); glDisable(GL_LIGHTING); GL_ERROR_CHECK();
+      GL_TRACE0("glDisable(GL_LIGHTING)");
+      GL_CHECKD(glDisable(GL_LIGHTING));
     });
     settings->glBegin().emplace_back([]() {
-      GL_TRACE0("glPointSize(10.0f)"); glPointSize(10.0f); GL_ERROR_CHECK();
+      GL_TRACE0("glPointSize(10.0f)");
+      GL_CHECKD(glPointSize(10.0f));
     });
     points_edges_states.emplace_back(std::move(settings));
 
@@ -282,10 +264,12 @@ public:
 
     settings = std::make_shared<VertexState>();
     settings->glBegin().emplace_back([]() {
-      GL_TRACE0("glDisable(GL_LIGHTING)"); glDisable(GL_LIGHTING); GL_ERROR_CHECK();
+      GL_TRACE0("glDisable(GL_LIGHTING)");
+      GL_CHECKD(glDisable(GL_LIGHTING));
     });
     settings->glBegin().emplace_back([]() {
-      GL_TRACE0("glLineWidth(5.0f)"); glLineWidth(5.0f); GL_ERROR_CHECK();
+      GL_TRACE0("glLineWidth(5.0f)");
+      GL_CHECKD(glLineWidth(5.0f));
     });
     points_edges_states.emplace_back(std::move(settings));
 
@@ -301,37 +285,38 @@ public:
     points_edges_states.emplace_back(std::move(vs));
     points_edges_array.addAttributePointers(last_size);
 
-    if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-      if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-        GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
-      }
-      GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-      glBindBuffer(GL_ARRAY_BUFFER, 0); GL_ERROR_CHECK();
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+      GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
     }
+    GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
     points_edges_array.createInterleavedVBOs();
-    points_edges_vertices_vbo = points_edges_array.verticesVBO();
-    points_edges_elements_vbo = points_edges_array.elementsVBO();
 
     // Halffacets
-    VertexArray halffacets_array(std::make_shared<VertexStateFactory>(), halffacets_states);
+    glGenBuffers(1, &halffacets_vertices_vbo);
+    VertexArray halffacets_array(std::make_unique<VertexStateFactory>(), halffacets_states, halffacets_vertices_vbo, 0);
     halffacets_array.addSurfaceData();
     halffacets_array.writeSurface();
 
     settings = std::make_shared<VertexState>();
     settings->glBegin().emplace_back([]() {
-      GL_TRACE0("glEnable(GL_LIGHTING)"); glEnable(GL_LIGHTING); GL_ERROR_CHECK();
+      GL_TRACE0("glEnable(GL_LIGHTING)");
+      GL_CHECKD(glEnable(GL_LIGHTING));
     });
     settings->glBegin().emplace_back([]() {
-      GL_TRACE0("glLineWidth(5.0f)"); glLineWidth(5.0f); GL_ERROR_CHECK();
+      GL_TRACE0("glLineWidth(5.0f)");
+      GL_CHECKD(glLineWidth(5.0f));
     });
     if (cull_backfaces || color_backfaces) {
       settings->glBegin().emplace_back([]() {
-        GL_TRACE0("glEnable(GL_CULL_FACE)"); glEnable(GL_CULL_FACE); GL_ERROR_CHECK();
+        GL_TRACE0("glEnable(GL_CULL_FACE)");
+        GL_CHECKD(glEnable(GL_CULL_FACE));
       });
       settings->glBegin().emplace_back([]() {
-        GL_TRACE0("glCullFace(GL_BACK)"); glCullFace(GL_BACK); GL_ERROR_CHECK();
+        GL_TRACE0("glCullFace(GL_BACK)");
+        GL_CHECKD(glCullFace(GL_BACK));
       });
     }
     halffacets_states.emplace_back(std::move(settings));
@@ -345,7 +330,8 @@ public:
       if (color_backfaces) {
         settings = std::make_shared<VertexState>();
         settings->glBegin().emplace_back([]() {
-          GL_TRACE0("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT); GL_ERROR_CHECK();
+          GL_TRACE0("glCullFace(GL_FRONT)");
+          GL_CHECKD(glCullFace(GL_FRONT));
         });
         halffacets_states.emplace_back(std::move(settings));
       }
@@ -354,17 +340,17 @@ public:
     if (cull_backfaces || color_backfaces) {
       settings = std::make_shared<VertexState>();
       settings->glBegin().emplace_back([]() {
-        GL_TRACE0("glCullFace(GL_BACK)"); glCullFace(GL_BACK); GL_ERROR_CHECK();
+        GL_TRACE0("glCullFace(GL_BACK)");
+        GL_CHECKD(glCullFace(GL_BACK));
       });
       settings->glBegin().emplace_back([]() {
-        GL_TRACE0("glDisable(GL_CULL_FACE)"); glDisable(GL_CULL_FACE); GL_ERROR_CHECK();
+        GL_TRACE0("glDisable(GL_CULL_FACE)");
+        GL_CHECKD(glDisable(GL_CULL_FACE));
       });
       halffacets_states.emplace_back(std::move(settings));
     }
 
     halffacets_array.createInterleavedVBOs();
-    halffacets_vertices_vbo = halffacets_array.verticesVBO();
-    halffacets_elements_vbo = halffacets_array.elementsVBO();
   }
 
   void init() override {
@@ -383,6 +369,6 @@ protected:
   GLuint points_edges_elements_vbo{0};
   GLuint halffacets_vertices_vbo{0};
   GLuint halffacets_elements_vbo{0};
-  VertexStates points_edges_states;
-  VertexStates halffacets_states;
+  std::vector<std::shared_ptr<VertexState>> points_edges_states;
+  std::vector<std::shared_ptr<VertexState>> halffacets_states;
 }; // Polyhedron

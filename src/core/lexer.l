@@ -30,8 +30,8 @@
 
 %{
 
-#include <glib.h>
 #include "handle_dep.h"
+#include "str_utf8_wrapper.h"
 #include "printutils.h"
 #include "parsersettings.h"
 #include "Assignment.h"
@@ -103,8 +103,8 @@ extern YYLTYPE parserlloc;
 #define YY_USER_ACTION parserlloc.last_column += yyleng; \
         PRINTDB("YY_USER_ACTION(): %3d, %3d - %3d, %3d | %3d: %s", \
                 parserlloc.first_line % parserlloc.first_column % \
-				parserlloc.last_line % parserlloc.last_column % \
-				yyleng % quoted_string(yytext));
+                parserlloc.last_line % parserlloc.last_column % \
+                yyleng % quoted_string(yytext));
 #else
 #define YY_USER_ACTION parserlloc.last_column += yyleng;
 #endif
@@ -146,70 +146,70 @@ UNICODE {U2}{U}|{U3}{U}{U}|{U4}{U}{U}{U}
 LOCATION_NEXT(parserlloc);
 %}
 
-include[ \t\r\n]*"<"	{ BEGIN(cond_include); filepath = filename = ""; LOCATION_COUNT_LINES(parserlloc, yytext); }
+include[ \t\r\n]*"<"    { BEGIN(cond_include); filepath = filename = ""; LOCATION_COUNT_LINES(parserlloc, yytext); }
 <cond_include>{
-[\n\r]					{
-							LOCATION_ADD_LINES(parserlloc, yyleng);
-							// see merge request #4221
-							LOG(message_group::Warning,LOCATION(parserlloc),"","new lines in 'include<>'-statement is not defined - behavior may change in the future");
+[\n\r]                  {
+                            LOCATION_ADD_LINES(parserlloc, yyleng);
+                            // see merge request #4221
+                            LOG(message_group::Warning,LOCATION(parserlloc),"","new lines in 'include<>'-statement is not defined - behavior may change in the future");
 }
-[^\t\r\n>]*"/"			{ filepath = yytext; }
-[^\t\r\n>/]+			{ filename = yytext; }
-">"						{ BEGIN(INITIAL); includefile(LOCATION(parserlloc));  }
-<<EOF>>					{ parsererror("Unterminated include statement"); return TOK_ERROR; }
+[^\t\r\n>]*"/"          { filepath = yytext; }
+[^\t\r\n>/]+            { filename = yytext; }
+">"                     { BEGIN(INITIAL); includefile(LOCATION(parserlloc));  }
+<<EOF>>                 { parsererror("Unterminated include statement"); return TOK_ERROR; }
 }
 
 
-use[ \t\r\n]*"<"		{ BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
+use[ \t\r\n]*"<"        { BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
 <cond_use>{
-[\n\r]					{
-							LOCATION_ADD_LINES(parserlloc, yyleng);
-							// see merge request #4221
-							LOG(message_group::Warning,LOCATION(parserlloc),"","new lines 'use<>'-statement is not defined - behavior may change in the future");
+[\n\r]                  {
+                            LOCATION_ADD_LINES(parserlloc, yyleng);
+                            // see merge request #4221
+                            LOG(message_group::Warning,LOCATION(parserlloc),"","new lines 'use<>'-statement is not defined - behavior may change in the future");
 }
-[^\t\r\n>]+				{ filename = yytext; }
- ">"					{
-							BEGIN(INITIAL);
-							fs::path fullpath = find_valid_path(sourcefile()->parent_path(), fs::path(filename), &openfilenames);
-							if (fullpath.empty()) {
-							LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open library '%1$s'.",filename);
-								parserlval.text = strdup(filename.c_str());
-							} else {
-								handle_dep(fullpath.generic_string());
-								parserlval.text = strdup(fullpath.string().c_str());
-							}
-							return TOK_USE;
-						}
-<<EOF>>					{ parsererror("Unterminated use statement"); return TOK_ERROR; }
+[^\t\r\n>]+             { filename = yytext; }
+ ">"                    {
+                            BEGIN(INITIAL);
+                            fs::path fullpath = find_valid_path(sourcefile()->parent_path(), fs::path(filename), &openfilenames);
+                            if (fullpath.empty()) {
+                            LOG(message_group::Warning,LOCATION(parserlloc),"","Can't open library '%1$s'.",filename);
+                                parserlval.text = strdup(filename.c_str());
+                            } else {
+                                handle_dep(fullpath.generic_string());
+                                parserlval.text = strdup(fullpath.string().c_str());
+                            }
+                            return TOK_USE;
+                        }
+<<EOF>>                 { parsererror("Unterminated use statement"); return TOK_ERROR; }
 }
 
-\"						{ BEGIN(cond_string); stringcontents.clear(); }
+\"                      { BEGIN(cond_string); stringcontents.clear(); }
 <cond_string>{
-\\n						{ stringcontents += '\n'; }
-\\t						{ stringcontents += '\t'; }
-\\r						{ stringcontents += '\r'; }
-\\\\					{ stringcontents += '\\'; }
-\\\"					{ stringcontents += '"'; }
+\\n                     { stringcontents += '\n'; }
+\\t                     { stringcontents += '\t'; }
+\\r                     { stringcontents += '\r'; }
+\\\\                    { stringcontents += '\\'; }
+\\\"                    { stringcontents += '"'; }
 {UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ stringcontents += lexertext; }
 \\x[0-7]{H}             { unsigned long i = strtoul(lexertext + 2, NULL, 16); stringcontents += (i == 0 ? ' ' : (unsigned char)(i & 0xff)); }
-\\u{H}{4}|\\U{H}{6}     { char buf[8]; to_utf8(lexertext + 2, buf); stringcontents += buf; }
-[^\\\n\"]				{ stringcontents += lexertext; }
-[\n\r]					{ LOCATION_ADD_LINES(parserlloc, yyleng); }
-\"						{ BEGIN(INITIAL); parserlval.text = strdup(stringcontents.c_str()); return TOK_STRING; }
+\\u{H}{4}|\\U{H}{6}     { const auto c = strtoul(lexertext + 2, NULL, 16); stringcontents += str_utf8_wrapper(c).toString(); }
+[^\\\n\"]               { stringcontents += lexertext; }
+[\n\r]                  { LOCATION_ADD_LINES(parserlloc, yyleng); }
+\"                      { BEGIN(INITIAL); parserlval.text = strdup(stringcontents.c_str()); return TOK_STRING; }
 <<EOF>>                 { parsererror("Unterminated string"); return TOK_ERROR; }
 }
 
 [\t ]                   { LOCATION_NEXT(parserlloc); }
-[\n\r]					{ LOCATION_ADD_LINES(parserlloc, yyleng); }
+[\n\r]                  { LOCATION_ADD_LINES(parserlloc, yyleng); }
 
-\/\/					{ BEGIN(cond_lcomment); }
+\/\/                    { BEGIN(cond_lcomment); }
 <cond_lcomment>{
 \n                      { BEGIN(INITIAL); LOCATION_ADD_LINES(parserlloc, yyleng); }
 {UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ }
 [^\n]
 }
 
-"/*" BEGIN(cond_comment);
+"/*"                    BEGIN(cond_comment);
 <cond_comment>{
 "*/"                    { BEGIN(INITIAL); }
 {UNICODE}               { /* parser_error_pos -= strlen(lexertext) - 1; */ }
@@ -219,38 +219,38 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
 }
 
 <<EOF>> {
-	if (!filename_stack.empty()) filename_stack.pop_back();
-	if (!loc_stack.empty()) {
-		parserlloc = loc_stack.back();
-		yylineno = parserlloc.first_line;
-		loc_stack.pop_back();
-	}
-	if (yyin && yyin != stdin) {
-		assert(!openfiles.empty());
-		fclose(openfiles.back());
-		openfiles.pop_back();
-		openfilenames.pop_back();
-	}
-	yypop_buffer_state();
-	if (!YY_CURRENT_BUFFER)
-		yyterminate();
+    if (!filename_stack.empty()) filename_stack.pop_back();
+    if (!loc_stack.empty()) {
+        parserlloc = loc_stack.back();
+        yylineno = parserlloc.first_line;
+        loc_stack.pop_back();
+    }
+    if (yyin && yyin != stdin) {
+        assert(!openfiles.empty());
+        fclose(openfiles.back());
+        openfiles.pop_back();
+        openfilenames.pop_back();
+    }
+    yypop_buffer_state();
+    if (!YY_CURRENT_BUFFER)
+        yyterminate();
 }
 
-"\x03"		return TOK_EOT;
+"\x03"                  return TOK_EOT;
 
-"module"	return TOK_MODULE;
-"function"	return TOK_FUNCTION;
-"if"		return TOK_IF;
-"else"		return TOK_ELSE;
-"let"		return TOK_LET;
-"assert"	return TOK_ASSERT;
-"echo"	        return TOK_ECHO;
-"for"		return TOK_FOR;
-"each"		return TOK_EACH;
+"module"                return TOK_MODULE;
+"function"              return TOK_FUNCTION;
+"if"                    return TOK_IF;
+"else"                  return TOK_ELSE;
+"let"                   return TOK_LET;
+"assert"                return TOK_ASSERT;
+"echo"                  return TOK_ECHO;
+"for"                   return TOK_FOR;
+"each"                  return TOK_EACH;
 
-"true"		return TOK_TRUE;
-"false"		return TOK_FALSE;
-"undef"		return TOK_UNDEF;
+"true"                  return TOK_TRUE;
+"false"                 return TOK_FALSE;
+"undef"                 return TOK_UNDEF;
 
 %{/*
  U+00A0 (UTF-8 encoded: C2A0) is no-break space. We support it since Qt's QTextEdit
@@ -272,32 +272,16 @@ use[ \t\r\n]*"<"		{ BEGIN(cond_use); LOCATION_COUNT_LINES(parserlloc, yytext); }
                         }
 "$"?[a-zA-Z0-9_]+       { parserlval.text = strdup(yytext); return TOK_ID; }
 
-"<="	return LE;
-">="	return GE;
-"=="	return EQ;
-"!="	return NEQ;
-"&&"	return AND;
-"||"	return OR;
+"<="                    return LE;
+">="                    return GE;
+"=="                    return EQ;
+"!="                    return NEQ;
+"&&"                    return AND;
+"||"                    return OR;
 
-. { return yytext[0]; }
+.                       { return yytext[0]; }
 
 %%
-
-/*!
- * Convert unicode codepoint given in hex notation
- * into UTF8 encoding. The output buffer must be 8
- * characters long.
- */
-void to_utf8(const char *str, char *out)
-{
-    memset(out, 0, 8);
-    const gunichar c = strtoul(str, NULL, 16);
-    if (g_unichar_validate(c) && (c != 0)) {
-        g_unichar_to_utf8(c, out);
-    } else {
-        out[0] = ' ';
-    }
-}
 
 void lexer_set_parser_sourcefile(const fs::path& path)
 {
@@ -366,9 +350,9 @@ void includefile(const Location& loc)
 */
 void lexerdestroy()
 {
-	for (auto f : openfiles) fclose(f);
-	openfiles.clear();
-	openfilenames.clear();
-	filename_stack.clear();
-	loc_stack.clear();
+    for (auto f : openfiles) fclose(f);
+    openfiles.clear();
+    openfilenames.clear();
+    filename_stack.clear();
+    loc_stack.clear();
 }

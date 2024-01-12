@@ -54,15 +54,16 @@ public:
                              double z_offset = 0, size_t shape_size = 0,
                              size_t shape_dimensions = 0, bool outlines = false,
                              bool mirror = false) const;
+  void add_shader_pointers(VertexArray& vertex_array); // This could stay protected, were it not for VertexStateManager
+  void add_color(VertexArray& vertex_array, const Color4f& color);
 
 protected:
   void add_shader_data(VertexArray& vertex_array);
-  void add_shader_pointers(VertexArray& vertex_array);
   void shader_attribs_enable() const;
   void shader_attribs_disable() const;
 
-  mutable std::unordered_map<std::pair<const Geometry *, const Transform3d *>, int,
-                             boost::hash<std::pair<const Geometry *, const Transform3d *>>> geomVisitMark;
+  mutable std::unordered_map<std::pair<const PolySet *, const Transform3d *>, int,
+                             boost::hash<std::pair<const PolySet *, const Transform3d *>>> geomVisitMark;
 
 private:
   void add_shader_attributes(VertexArray& vertex_array,

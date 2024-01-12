@@ -38,12 +38,11 @@ DrawingCallback::DrawingCallback(unsigned long fn, double size) :
 
 DrawingCallback::~DrawingCallback()
 {
-  delete this->polygon;
 }
 
 void DrawingCallback::start_glyph()
 {
-  this->polygon = new Polygon2d();
+  this->polygon = std::make_shared<Polygon2d>();
   this->polygon->setSanitized(true);
 }
 
@@ -54,7 +53,6 @@ void DrawingCallback::finish_glyph()
     this->outline.vertices.clear();
   }
   if (this->polygon->outlines().size() == 0) {
-    delete this->polygon;
     this->polygon = nullptr;
   }
   if (this->polygon) {
@@ -63,7 +61,7 @@ void DrawingCallback::finish_glyph()
   }
 }
 
-std::vector<const Geometry *> DrawingCallback::get_result()
+std::vector<std::shared_ptr<const Geometry>> DrawingCallback::get_result()
 {
   return this->polygons;
 }

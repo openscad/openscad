@@ -15,11 +15,11 @@ Location getLocation(const std::shared_ptr<const AbstractNode>& node)
 
 namespace CGALUtils {
 
-shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
+std::shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
   const Geometry::Geometries::const_iterator& chbegin,
   const Geometry::Geometries::const_iterator& chend)
 {
-  using QueueItem = std::pair<shared_ptr<CGALHybridPolyhedron>, int>;
+  using QueueItem = std::pair<std::shared_ptr<CGALHybridPolyhedron>, int>;
   struct QueueItemGreater {
     // stable sort for priority_queue by facets, then progress mark
     bool operator()(const QueueItem& lhs, const QueueItem& rhs) const
@@ -74,7 +74,7 @@ shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
       return nullptr;
     }
   } catch (const CGAL::Failure_exception& e) {
-    LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::applyUnion3DHybrid: %1$s", e.what());
+    LOG(message_group::Error, "CGAL error in CGALUtils::applyUnion3DHybrid: %1$s", e.what());
   }
   return nullptr;
 }
@@ -83,9 +83,9 @@ shared_ptr<CGALHybridPolyhedron> applyUnion3DHybrid(
    Applies op to all children and returns the result.
    The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
  */
-shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries& children, OpenSCADOperator op)
+std::shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometries& children, OpenSCADOperator op)
 {
-  shared_ptr<CGALHybridPolyhedron> N;
+  std::shared_ptr<CGALHybridPolyhedron> N;
 
   assert(op != OpenSCADOperator::UNION && "use applyUnion3D() instead of applyOperator3D()");
   bool foundFirst = false;
@@ -124,7 +124,7 @@ shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometrie
         N->minkowski(*chN);
         break;
       default:
-        LOG(message_group::Error, Location::NONE, "", "Unsupported CGAL operator: %1$d", static_cast<int>(op));
+        LOG(message_group::Error, "Unsupported CGAL operator: %1$d", static_cast<int>(op));
       }
       if (item.first) item.first->progress_report();
     }
@@ -132,7 +132,7 @@ shared_ptr<CGALHybridPolyhedron> applyOperator3DHybrid(const Geometry::Geometrie
   // union && difference assert triggered by testdata/scad/bugs/rotate-diff-nonmanifold-crash.scad and testdata/scad/bugs/issue204.scad
   catch (const CGAL::Failure_exception& e) {
     std::string opstr = op == OpenSCADOperator::INTERSECTION ? "intersection" : op == OpenSCADOperator::DIFFERENCE ? "difference" : op == OpenSCADOperator::UNION ? "union" : "UNKNOWN";
-    LOG(message_group::Error, Location::NONE, "", "CGAL error in CGALUtils::applyOperator3DHybrid %1$s: %2$s", opstr, e.what());
+    LOG(message_group::Error, "CGAL error in CGALUtils::applyOperator3DHybrid %1$s: %2$s", opstr, e.what());
 
   }
   return N;

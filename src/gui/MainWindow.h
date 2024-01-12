@@ -3,7 +3,8 @@
 #include "Editor.h"
 #include "Geometry.h"
 #include "export.h"
-#include "memory.h"
+#include "ExportPdfDialog.h"
+#include "Measurement.h"
 #include "RenderStatistic.h"
 #include "TabManager.h"
 #include "Tree.h"
@@ -19,6 +20,7 @@
 #include <QIcon>
 #include <QIODevice>
 #include <QMutex>
+#include <QSoundEffect>
 #include <QTime>
 
 #ifdef STATIC_QT_SVG_PLUGIN
@@ -55,19 +57,23 @@ public:
   SourceFile *parsed_file; // Last parse for include list
   std::shared_ptr<AbstractNode> absolute_root_node; // Result of tree evaluation
   std::shared_ptr<AbstractNode> root_node; // Root if the root modifier (!) is used
+#ifdef ENABLE_PYTHON
+  bool python_active;
+  std::string trusted_edit_document_name;
+  std::string untrusted_edit_document_name;
+  bool trust_python_file(const std::string &file, const std::string &content);
+#endif
   Tree tree;
   EditorInterface *activeEditor;
   TabManager *tabManager;
 
-#ifdef ENABLE_CGAL
-  shared_ptr<const Geometry> root_geom;
-  class CGALRenderer *cgalRenderer;
-#endif
+  std::shared_ptr<const Geometry> root_geom;
+  std::shared_ptr<Renderer> cgalRenderer;
 #ifdef ENABLE_OPENCSG
-  class OpenCSGRenderer *opencsgRenderer;
+  std::shared_ptr<Renderer> opencsgRenderer;
   std::unique_ptr<class MouseSelector> selector;
 #endif
-  ThrownTogetherRenderer *thrownTogetherRenderer;
+  std::shared_ptr<Renderer> thrownTogetherRenderer;
 
   QString last_compiled_doc;
 
@@ -81,6 +87,8 @@ public:
   QWidget *errorLogDockTitleWidget;
   QWidget *animateDockTitleWidget;
   QWidget *viewportControlTitleWidget;
+
+  Measurement meas;
 
   int compileErrors;
   int compileWarnings;
@@ -105,6 +113,7 @@ private slots:
   void openCSGSettingsChanged();
   void consoleOutput(const Message& msgObj);
   void setCursor();
+  void measureFinished();
   void errorLogOutput(const Message& log_msg);
 
 public:
@@ -160,6 +169,7 @@ private slots:
   void clearRecentFiles();
   void actionSave();
   void actionSaveAs();
+  void actionRevokeTrustedFiles();
   void actionSaveACopy();
   void actionReload();
   void actionShowLibraryFolder();
@@ -232,17 +242,18 @@ private slots:
   void action3DPrint();
   void sendToOctoPrint();
   void sendToPrintService();
-#ifdef ENABLE_CGAL
   void actionRender();
-  void actionRenderDone(const shared_ptr<const Geometry>&);
+  void actionRenderDone(const std::shared_ptr<const Geometry>&);
   void cgalRender();
-#endif
+  void actionMeasureDistance();
+  void actionMeasureAngle();
   void actionCheckValidity();
   void actionDisplayAST();
   void actionDisplayCSGTree();
   void actionDisplayCSGProducts();
   bool canExport(unsigned int dim);
   void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim);
+  void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim, ExportPdfOptions *options);
   void actionExportSTL();
   void actionExport3MF();
   void actionExportOBJ();
@@ -304,10 +315,8 @@ public slots:
 #ifdef ENABLE_OPENCSG
   void viewModePreview();
 #endif
-#ifdef ENABLE_CGAL
   void viewModeSurface();
   void viewModeWireframe();
-#endif
   void viewModeThrownTogether();
   void viewModeShowEdges();
   void viewModeShowAxes();
@@ -327,7 +336,8 @@ public slots:
   void viewResetView();
   void viewAll();
   void editorContentChanged();
-  void selectObject(QPoint coordinate);
+  void leftClick(QPoint coordinate);
+  void rightClick(QPoint coordinate);
   void dragEnterEvent(QDragEnterEvent *event) override;
   void dropEvent(QDropEvent *event) override;
   void helpAbout();
@@ -352,11 +362,11 @@ private:
   static QElapsedTimer *progressThrottle;
   QWidget *lastFocus; // keep track of active copyable widget (Editor|Console) for global menu action Edit->Copy
 
-  shared_ptr<CSGNode> csgRoot; // Result of the CSGTreeEvaluator
-  shared_ptr<CSGNode> normalizedRoot; // Normalized CSG tree
-  shared_ptr<CSGProducts> root_products;
-  shared_ptr<CSGProducts> highlights_products;
-  shared_ptr<CSGProducts> background_products;
+  std::shared_ptr<CSGNode> csgRoot; // Result of the CSGTreeEvaluator
+  std::shared_ptr<CSGNode> normalizedRoot; // Normalized CSG tree
+  std::shared_ptr<CSGProducts> root_products;
+  std::shared_ptr<CSGProducts> highlights_products;
+  std::shared_ptr<CSGProducts> background_products;
 
   char const *afterCompileSlot;
   bool procevents{false};
@@ -371,6 +381,10 @@ private:
   QString exportPath(const char *suffix); // look up the last export path and generate one if not found
   int last_parser_error_pos{-1}; // last highlighted error position
   int tabCount = 0;
+  paperSizes sizeString2Enum(QString current);
+  paperOrientations orientationsString2Enum(QString current);
+
+  QSoundEffect *renderCompleteSoundEffect;
 
 signals:
   void highlightError(int);

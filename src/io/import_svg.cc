@@ -83,10 +83,10 @@ double calc_alignment(const libsvg::align_t alignment, double page_mm, double sc
 } // namespace
 
 
-Polygon2d *import_svg(double fn, double fs, double fa,
-                      const std::string& filename,
-                      const boost::optional<std::string>& id, const boost::optional<std::string>& layer,
-                      const double dpi, const bool center, const Location& loc)
+std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
+				      const std::string& filename,
+				      const boost::optional<std::string>& id, const boost::optional<std::string>& layer,
+				      const double dpi, const bool center, const Location& loc)
 {
   try {
     fnContext scadContext(fn, fs, fa);
@@ -188,10 +188,10 @@ Polygon2d *import_svg(double fn, double fs, double fa,
     double cx = center ? bbox.center().x() : -align.x();
     double cy = center ? bbox.center().y() : height_mm - align.y();
 
-    std::vector<const Polygon2d *> polygons;
+    std::vector<std::shared_ptr<const Polygon2d>> polygons;
     for (const auto& shape_ptr : *shapes) {
       if (!shape_ptr->is_excluded()) {
-        auto *poly = new Polygon2d();
+        auto poly = std::make_shared<Polygon2d>();
         const auto& s = *shape_ptr;
         for (const auto& p : s.get_path_list()) {
           Outline2d outline;
@@ -209,7 +209,7 @@ Polygon2d *import_svg(double fn, double fs, double fa,
     libsvg_free(shapes);
     return ClipperUtils::apply(polygons, ClipperLib::ctUnion);
   } catch (const std::exception& e) {
-    LOG(message_group::Error, Location::NONE, "", "%1$s, import() at line %2$d", e.what(), loc.firstLine());
-    return new Polygon2d();
+    LOG(message_group::Error, "%1$s, import() at line %2$d", e.what(), loc.firstLine());
+    return std::make_unique<Polygon2d>();
   }
 }

@@ -62,13 +62,13 @@ ClipperLib::PolyTree sanitize(const ClipperLib::Paths& paths)
     // Most likely caught a RangeTest exception from clipper
     // Note that Clipper up to v6.2.1 incorrectly throws
     // an exception of type char* rather than a clipperException()
-    LOG(message_group::Warning, Location::NONE, "", "Range check failed for polygon. skipping");
+    LOG(message_group::Warning, "Range check failed for polygon. skipping");
   }
   clipper.Execute(ClipperLib::ctUnion, result, ClipperLib::pftEvenOdd);
   return result;
 }
 
-Polygon2d *sanitize(const Polygon2d& poly)
+std::unique_ptr<Polygon2d> sanitize(const Polygon2d& poly)
 {
   auto tmp = ClipperUtils::fromPolygon2d(poly);
   return toPolygon2d(sanitize(tmp.geometry), ClipperUtils::getScalePow2(tmp.bounds));
@@ -80,9 +80,9 @@ Polygon2d *sanitize(const Polygon2d& poly)
    We could use a Paths structure, but we'd have to check the orientation of each
    path before adding it to the Polygon2d.
  */
-Polygon2d *toPolygon2d(const ClipperLib::PolyTree& poly, int pow2)
+std::unique_ptr<Polygon2d> toPolygon2d(const ClipperLib::PolyTree& poly, int pow2)
 {
-  auto result = new Polygon2d;
+  auto result = std::make_unique<Polygon2d>();
   auto node = poly.GetFirst();
   double scale = std::ldexp(1.0, -pow2);
   while (node) {
@@ -124,8 +124,8 @@ ClipperLib::Paths process(const ClipperLib::Paths& polygons,
 
    May return an empty Polygon2d, but will not return nullptr.
  */
-Polygon2d *apply(const std::vector<ClipperLib::Paths>& pathsvector,
-                 ClipperLib::ClipType clipType, int pow2)
+std::unique_ptr<Polygon2d> apply(const std::vector<ClipperLib::Paths>& pathsvector,
+				 ClipperLib::ClipType clipType, int pow2)
 {
   ClipperLib::Clipper clipper;
 
@@ -163,8 +163,8 @@ Polygon2d *apply(const std::vector<ClipperLib::Paths>& pathsvector,
 
    May return an empty Polygon2d, but will not return nullptr.
  */
-Polygon2d *apply(const std::vector<const Polygon2d *>& polygons,
-                 ClipperLib::ClipType clipType)
+std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon2d>>& polygons,
+				 ClipperLib::ClipType clipType)
 {
   BoundingBox bounds;
   for (auto polygon : polygons) {
@@ -253,10 +253,10 @@ static void fill_minkowski_insides(const ClipperLib::Paths& a,
   }
 }
 
-Polygon2d *applyMinkowski(const std::vector<const Polygon2d *>& polygons)
+std::unique_ptr<Polygon2d> applyMinkowski(const std::vector<std::shared_ptr<const Polygon2d>>& polygons)
 {
   if (polygons.size() == 1) {
-    return polygons[0] ? new Polygon2d(*polygons[0]) : nullptr; // Just copy
+    return polygons[0] ? std::make_unique<Polygon2d>(*polygons[0]) : nullptr; // Just copy
   }
 
   auto it = polygons.begin();
@@ -310,8 +310,8 @@ Polygon2d *applyMinkowski(const std::vector<const Polygon2d *>& polygons)
   return toPolygon2d(polytree, pow2);
 }
 
-Polygon2d *applyOffset(const Polygon2d& poly, double offset, ClipperLib::JoinType joinType,
-                       double miter_limit, double arc_tolerance)
+std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, ClipperLib::JoinType joinType,
+				       double miter_limit, double arc_tolerance)
 {
   bool isMiter = joinType == ClipperLib::jtMiter;
   bool isRound = joinType == ClipperLib::jtRound;

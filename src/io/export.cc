@@ -48,7 +48,25 @@ bool canPreview(const FileFormat format) {
           format == FileFormat::PNG);
 }
 
-void exportFile(const shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
+bool is3D(const FileFormat format) {
+return format == FileFormat::ASCIISTL ||
+  format == FileFormat::STL ||
+  format == FileFormat::OBJ ||
+  format == FileFormat::OFF ||
+  format == FileFormat::WRL ||
+  format == FileFormat::AMF ||
+  format == FileFormat::_3MF ||
+  format == FileFormat::NEFDBG ||
+  format == FileFormat::NEF3;
+}
+
+bool is2D(const FileFormat format) {
+  return format == FileFormat::DXF ||
+    format == FileFormat::SVG ||
+    format == FileFormat::PDF;
+}
+
+void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
 {
   switch (exportInfo.format) {
   case FileFormat::ASCIISTL:
@@ -81,18 +99,20 @@ void exportFile(const shared_ptr<const Geometry>& root_geom, std::ostream& outpu
   case FileFormat::PDF:
     export_pdf(root_geom, output, exportInfo);
     break;
+#ifdef ENABLE_CGAL
   case FileFormat::NEFDBG:
     export_nefdbg(root_geom, output);
     break;
   case FileFormat::NEF3:
     export_nef3(root_geom, output);
     break;
+#endif
   default:
     assert(false && "Unknown file format");
   }
 }
 
-bool exportFileByNameStdout(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
+bool exportFileByNameStdout(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
 #ifdef _WIN32
   _setmode(_fileno(stdout), _O_BINARY);
@@ -101,15 +121,15 @@ bool exportFileByNameStdout(const shared_ptr<const Geometry>& root_geom, const E
   return true;
 }
 
-bool exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
+bool exportFileByNameStream(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
   std::ios::openmode mode = std::ios::out | std::ios::trunc;
   if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::STL || exportInfo.format == FileFormat::PDF) {
     mode |= std::ios::binary;
   }
-  std::ofstream fstream(exportInfo.name2open, mode);
+  std::ofstream fstream(exportInfo.fileName, mode);
   if (!fstream.is_open()) {
-    LOG(message_group::None, Location::NONE, "", _("Can't open file \"%1$s\" for export"), exportInfo.name2display);
+    LOG(_("Can't open file \"%1$s\" for export"), exportInfo.displayName);
     return false;
   } else {
     bool onerror = false;
@@ -125,21 +145,19 @@ bool exportFileByNameStream(const shared_ptr<const Geometry>& root_geom, const E
       onerror = true;
     }
     if (onerror) {
-      LOG(message_group::Error, Location::NONE, "", _("\"%1$s\" write error. (Disk full?)"), exportInfo.name2display);
+      LOG(message_group::Error, _("\"%1$s\" write error. (Disk full?)"), exportInfo.displayName);
     }
     return !onerror;
   }
 }
 
-bool exportFileByName(const shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
+bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
-  bool exportResult = false;
   if (exportInfo.useStdOut) {
-    exportResult = exportFileByNameStdout(root_geom, exportInfo);
+    return exportFileByNameStdout(root_geom, exportInfo);
   } else {
-    exportResult = exportFileByNameStream(root_geom, exportInfo);
+    return exportFileByNameStream(root_geom, exportInfo);
   }
-  return exportResult;
 }
 
 namespace Export {
@@ -157,10 +175,10 @@ ExportMesh::ExportMesh(const PolySet& ps)
   std::map<Vertex, int> vertexMap;
   std::vector<std::array<int, 3>> triangleIndices;
 
-  for (const auto& pts : ps.polygons) {
-    auto pos1 = vertexMap.emplace(std::make_pair(vectorToVertex(pts[0]), vertexMap.size()));
-    auto pos2 = vertexMap.emplace(std::make_pair(vectorToVertex(pts[1]), vertexMap.size()));
-    auto pos3 = vertexMap.emplace(std::make_pair(vectorToVertex(pts[2]), vertexMap.size()));
+  for (const auto& pts : ps.indices) {
+    auto pos1 = vertexMap.emplace(std::make_pair(vectorToVertex(ps.vertices[pts[0]]), vertexMap.size()));
+    auto pos2 = vertexMap.emplace(std::make_pair(vectorToVertex(ps.vertices[pts[1]]), vertexMap.size()));
+    auto pos3 = vertexMap.emplace(std::make_pair(vectorToVertex(ps.vertices[pts[2]]), vertexMap.size()));
     triangleIndices.push_back({pos1.first->second, pos2.first->second, pos3.first->second});
   }
 
@@ -212,6 +230,20 @@ bool ExportMesh::foreach_triangle(const std::function<bool(const std::array<std:
     }
   }
   return true;
+}
+
+std::unique_ptr<PolySet> ExportMesh::toPolySet() const
+{
+  auto ps = std::make_unique<PolySet>(3);
+  ps->vertices.reserve(vertices.size());
+  ps->indices.reserve(triangles.size());
+  for (const auto& v : vertices) {
+    ps->vertices.push_back({v[0], v[1], v[2]});
+  }
+  for (const auto& tri : triangles) {
+    ps->indices.push_back({tri.key[0], tri.key[1], tri.key[2]});
+  }
+  return ps;
 }
 
 } // namespace Export

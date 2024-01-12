@@ -1,19 +1,27 @@
 #pragma once
 
-#include "OffscreenContext.h"
-#include <Eigen/Core>
-#include <Eigen/Geometry>
+#include <memory>
 #include <string>
-#include <iostream>
+#include <ostream>
+
 #include "GLView.h"
+#include "OpenGLContext.h"
+#include "fbo.h"
+
+class OffscreenViewException : public std::runtime_error
+{
+public:
+  OffscreenViewException(const std::string& what_arg) : std::runtime_error(what_arg) {}
+};
 
 class OffscreenView : public GLView
 {
 public:
-  OffscreenView(int width, int height);
+  OffscreenView(uint32_t width, uint32_t height);
   ~OffscreenView() override;
   bool save(std::ostream& output) const;
-  OffscreenContext *ctx;
+  std::shared_ptr<OpenGLContext> ctx;
+  fbo_t *fbo;
 
   // overrides
   bool save(const char *filename) const override;

@@ -1,11 +1,16 @@
 #include "PolySetUtils.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "Polygon2d.h"
 #include "printutils.h"
 #include "GeometryUtils.h"
 #include "Reindexer.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
+#include "CGALHybridPolyhedron.h"
+#endif
+#ifdef ENABLE_MANIFOLD
+#include "ManifoldGeometry.h"
 #endif
 
 namespace PolySetUtils {
@@ -13,13 +18,15 @@ namespace PolySetUtils {
 // Project all polygons (also back-facing) into a Polygon2d instance.
 // It is important to select all faces, since filtering by normal vector here
 // will trigger floating point incertainties and cause problems later.
-Polygon2d *project(const PolySet& ps) {
-  auto poly = new Polygon2d;
+std::unique_ptr<Polygon2d> project(const PolySet& ps) {
+  auto poly = std::make_unique<Polygon2d>();
 
-  for (const auto& p : ps.polygons) {
+  Vector3d pt;
+  for (const auto& p : ps.indices) {
     Outline2d outline;
     for (const auto& v : p) {
-      outline.vertices.emplace_back(v[0], v[1]);
+      pt=ps.vertices[v];	    
+      outline.vertices.emplace_back(pt[0], pt[1]);
     }
     poly->addOutline(outline);
   }
@@ -45,80 +52,90 @@ Polygon2d *project(const PolySet& ps) {
    polyset has simple polygon faces with no holes.
    The tessellation will be robust wrt. degenerate and self-intersecting
  */
-void tessellate_faces(const PolySet& inps, PolySet& outps)
+std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
 {
   int degeneratePolygons = 0;
+  auto result = std::make_unique<PolySet>(3, polyset.convexValue());
+  result->setConvexity(polyset.getConvexity());
+  result->isTriangular = true;
+  // ideally this should not require a copy...
+  if (polyset.isTriangular) {
+    result->vertices = polyset.vertices;
+    result->indices = polyset.indices;
+    return result;
+  }
+  result->vertices.reserve(polyset.vertices.size());
+  result->indices.reserve(polyset.indices.size());
 
-  // Build Indexed PolyMesh
-  Reindexer<Vector3f> allVertices;
-  std::vector<std::vector<IndexedFace>> polygons;
-
+  std::vector<bool> used(polyset.vertices.size(), false);
   // best estimate without iterating all polygons, to reduce reallocations
-  polygons.reserve(inps.polygons.size() );
-
-  // minimum estimate without iterating all polygons, to reduce reallocation and rehashing
-  allVertices.reserve(3 * inps.polygons.size() );
-
-  for (const auto& pgon : inps.polygons) {
+  std::vector<IndexedFace> polygons;
+  polygons.reserve(polyset.indices.size());
+  for (const auto& pgon : polyset.indices) {
     if (pgon.size() < 3) {
       degeneratePolygons++;
       continue;
     }
-
-    polygons.emplace_back();
-    auto& faces = polygons.back();
-    faces.push_back(IndexedFace());
-    auto& currface = faces.back();
-    for (const auto& v : pgon) {
-      // Create vertex indices and remove consecutive duplicate vertices
-      // NOTE: a lot of time is spent here (cast+hash+lookup+insert+rehash)
-      auto idx = allVertices.lookup(v.cast<float>());
-      if (currface.empty() || idx != currface.back()) currface.push_back(idx);
+    auto& currface = polygons.emplace_back();
+    for (const auto& ind : pgon) {
+      const Vector3f v = polyset.vertices[ind].cast<float>();
+      if (currface.empty() || v != polyset.vertices[currface.back()].cast<float>())
+        currface.push_back(ind);
     }
-    if (currface.front() == currface.back()) currface.pop_back();
+    const Vector3f head = polyset.vertices[currface.front()].cast<float>();
+    while (!currface.empty() && head == polyset.vertices[currface.back()].cast<float>())
+      currface.pop_back();
     if (currface.size() < 3) {
-      faces.pop_back(); // Cull empty triangles
-      if (faces.empty()) polygons.pop_back(); // All faces were culled
+      polygons.pop_back();
+      continue;
+    }
+    for (const auto& ind : currface)
+      used[ind] = true;
+  }
+  // remove unreferenced vertices
+  std::vector<Vector3f> verts;
+  std::vector<int> indexMap(polyset.vertices.size());
+  verts.reserve(polyset.vertices.size());
+  for (int i = 0; i < polyset.vertices.size(); ++i) {
+    if (used[i]) {
+      indexMap[i] = verts.size();
+      verts.emplace_back(polyset.vertices[i].cast<float>());
+      result->vertices.push_back(polyset.vertices[i]);
+    }
+  }
+  if (verts.size() != polyset.vertices.size()) {
+    // only remap indices when some vertices are really removed
+    for (auto& face : polygons) {
+      for (auto& ind : face)
+        ind = indexMap[ind];
     }
   }
 
-  // Tessellate indexed mesh
-  const auto& verts = allVertices.getArray();
-
   // we will reuse this memory instead of reallocating for each polygon
   std::vector<IndexedTriangle> triangles;
-
-  // Estimate how many polygons we will need and preallocate.
-  // This is usually an undercount, but still prevents a lot of reallocations.
-  outps.polygons.reserve(polygons.size() );
-
-  for (const auto& faces : polygons) {
-    if (faces[0].size() == 3) {
+  std::vector<IndexedFace> facesBuffer(1);
+  for (const auto& face : polygons) {
+    if (face.size() == 3) {
       // trivial case - triangles cannot be concave or have holes
-      outps.append_poly();
-      outps.append_vertex(verts[faces[0][0]]);
-      outps.append_vertex(verts[faces[0][1]]);
-      outps.append_vertex(verts[faces[0][2]]);
+       result->indices.push_back({face[0],face[1],face[2]});
     }
     // Quads seem trivial, but can be concave, and can have degenerate cases.
     // So everything more complex than triangles goes into the general case.
     else {
       triangles.clear();
-      auto err = GeometryUtils::tessellatePolygonWithHoles(verts, faces, triangles, nullptr);
+      facesBuffer[0] = face;
+      auto err = GeometryUtils::tessellatePolygonWithHoles(verts, facesBuffer, triangles, nullptr);
       if (!err) {
         for (const auto& t : triangles) {
-          outps.append_poly();
-          outps.append_vertex(verts[t[0]]);
-          outps.append_vertex(verts[t[1]]);
-          outps.append_vertex(verts[t[2]]);
+          result->indices.push_back({t[0],t[1],t[2]});
         }
       }
     }
   }
-
   if (degeneratePolygons > 0) {
-    LOG(message_group::Warning, Location::NONE, "", "PolySet has degenerate polygons");
+    LOG(message_group::Warning, "PolySet has degenerate polygons");
   }
+  return result;
 }
 
 bool is_approximately_convex(const PolySet& ps) {
@@ -127,6 +144,35 @@ bool is_approximately_convex(const PolySet& ps) {
 #else
   return false;
 #endif
+}
+
+// Get as or convert the geometry to a PolySet.
+std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const Geometry>& geom)
+{
+  if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+    return ps;
+  }
+#ifdef ENABLE_CGAL
+  if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
+    if (!N->isEmpty()) {
+      if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3)) {
+	ps->setConvexity(N->getConvexity());
+	return ps;
+      }
+      LOG(message_group::Error, "Nef->PolySet failed.");
+    }
+    return std::make_unique<PolySet>(3);
+  }
+  if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
+    return hybrid->toPolySet();
+  }
+#endif
+#ifdef ENABLE_MANIFOLD
+  if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    return mani->toPolySet();
+  }
+#endif
+  return nullptr;
 }
 
 } // namespace PolySetUtils

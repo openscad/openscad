@@ -7,11 +7,6 @@
 #include "degree_trig.h"
 #include <cmath>
 #include <cstdio>
-#ifdef _WIN32
-#include <GL/wglew.h>
-#elif !defined(__APPLE__)
-#include <GL/glxew.h>
-#endif
 
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
@@ -25,22 +20,20 @@ GLView::GLView()
   showaxes = false;
   showcrosshairs = false;
   showscale = false;
-  renderer = nullptr;
   colorscheme = &ColorMap::inst()->defaultColorScheme();
   cam = Camera();
   far_far_away = RenderSettings::inst()->far_gl_clip_limit;
 #ifdef ENABLE_OPENCSG
   is_opencsg_capable = false;
   has_shaders = false;
-  opencsg_support = true;
   static int sId = 0;
   this->opencsg_id = sId++;
 #endif
 }
 
-void GLView::setRenderer(Renderer *r)
+void GLView::setRenderer(std::shared_ptr<Renderer> r)
 {
-  renderer = r;
+  this->renderer = r;
   if (this->renderer) {
     this->renderer->resize(cam.pixel_width, cam.pixel_height);
   }
@@ -67,7 +60,7 @@ void GLView::setColorScheme(const std::string& cs)
   if (colorscheme) {
     setColorScheme(*colorscheme);
   } else {
-    LOG(message_group::UI_Warning, Location::NONE, "", "GLView: unknown colorscheme %1$s", cs);
+    LOG(message_group::UI_Warning, "GLView: unknown colorscheme %1$s", cs);
   }
 }
 
@@ -87,7 +80,7 @@ void GLView::setCamera(const Camera& cam)
   this->cam = cam;
 }
 
-void GLView::setupCamera() const
+void GLView::setupCamera()
 {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
@@ -115,6 +108,10 @@ void GLView::setupCamera() const
   glRotated(cam.object_rot.x(), 1.0, 0.0, 0.0);
   glRotated(cam.object_rot.y(), 0.0, 1.0, 0.0);
   glRotated(cam.object_rot.z(), 0.0, 0.0, 1.0);
+  glTranslated(cam.object_trans[0],cam.object_trans[1],cam.object_trans[2]); // translation be part of modelview matrix!
+  glGetDoublev(GL_MODELVIEW_MATRIX,this->modelview);
+  glTranslated(-cam.object_trans[0],-cam.object_trans[1],-cam.object_trans[2]);
+  glGetDoublev(GL_PROJECTION_MATRIX,this->projection);
 }
 
 void GLView::paintGL()
@@ -175,19 +172,20 @@ void GLView::paintGL()
     this->renderer->prepare(showfaces, showedges);
     this->renderer->draw(showfaces, showedges);
   }
-
+  Vector3d eyedir(this->modelview[2],this->modelview[6],this->modelview[10]);
+  glColor3f(1,0,0);
+  for (const SelectedObject &obj:this->selected_obj) {
+    showObject(obj,eyedir);
+  }
+  glColor3f(0,1,0);
+  for (const SelectedObject obj: this->shown_obj) {
+    showObject(obj,eyedir);
+  }
   glDisable(GL_LIGHTING);
   if (showaxes) GLView::showSmallaxes(axescolor);
 }
 
 #ifdef ENABLE_OPENCSG
-
-void glErrorCheck() {
-  GLenum err = glGetError();
-  if (err != GL_NO_ERROR) {
-    fprintf(stderr, "OpenGL Error: %s\n", gluErrorString(err));
-  }
-}
 
 void glCompileCheck(GLuint shader) {
   GLint status;
@@ -202,33 +200,17 @@ void glCompileCheck(GLuint shader) {
 
 void GLView::enable_opencsg_shaders()
 {
-  const char *openscad_disable_gl20_env = getenv("OPENSCAD_DISABLE_GL20");
-  if (openscad_disable_gl20_env && !strcmp(openscad_disable_gl20_env, "0")) {
-    openscad_disable_gl20_env = nullptr;
-  }
-
   // All OpenGL 2 contexts are OpenCSG capable
-  if (GLEW_VERSION_2_0) {
-    if (!openscad_disable_gl20_env) {
-      this->is_opencsg_capable = true;
-      this->has_shaders = true;
-    }
-  }
-#ifndef GLEW_EGL
-  // If OpenGL < 2, check for extensions
-  else if (GLEW_ARB_framebuffer_object || (GLEW_EXT_framebuffer_object && GLEW_EXT_packed_depth_stencil)
-#ifdef _WIN32
-           || (WGLEW_ARB_pbuffer && WGLEW_ARB_pixel_format)
-#elif !defined(__APPLE__)
-          // not supported by GLEW when built with EGL
-           || (GLXEW_SGIX_pbuffer && GLXEW_SGIX_fbconfig)
+#ifdef USE_GLEW
+  const bool hasOpenGL2_0 = GLEW_VERSION_2_0;
 #endif
-  ) {
+#ifdef USE_GLAD
+  const bool hasOpenGL2_0 = GLAD_GL_VERSION_2_0;
+#endif
+  if (hasOpenGL2_0) {
     this->is_opencsg_capable = true;
-  }
-#endif // ifndef GLEW_EGL
-
-  if (!GLEW_VERSION_2_0 || !this->is_opencsg_capable) {
+    this->has_shaders = true;
+  } else {
     display_opencsg_warning();
   }
 }
@@ -409,6 +391,49 @@ void GLView::showCrosshairs(const Color4f& col)
       glVertex3d(+xf * vd, +yf * vd, +vd);
     }
   glEnd();
+}
+
+void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
+{
+  auto vd = cam.zoomValue()/200.0;
+  switch(obj.type) {
+    case SELECTION_POINT:
+    {
+      double n=1/sqrt(3);
+      // create an octaeder	   
+      //x- x+ y- y+ z- z+
+      int sequence[]={ 2, 0, 4, 1, 2, 4, 0, 3, 4, 3, 1, 4, 0, 2, 5, 2, 1, 5, 3, 0, 5, 1, 3, 5 };
+      glBegin(GL_TRIANGLES);
+      for(int i=0;i<8;i++) {
+	glNormal3f((i&1)?-n:n,(i&2)?-n:n,(i&4)?-n:n);
+	for(int j=0;j<3;j++) {
+	  int code=sequence[i*3+j];
+          switch(code) {
+		case 0: glVertex3d(obj.p1[0]-vd,obj.p1[1],obj.p1[2]); break;
+		case 1: glVertex3d(obj.p1[0]+vd,obj.p1[1],obj.p1[2]); break;
+		case 2: glVertex3d(obj.p1[0],obj.p1[1]-vd,obj.p1[2]); break;
+		case 3: glVertex3d(obj.p1[0],obj.p1[1]+vd,obj.p1[2]); break;
+		case 4: glVertex3d(obj.p1[0],obj.p1[1],obj.p1[2]-vd); break;
+		case 5: glVertex3d(obj.p1[0],obj.p1[1],obj.p1[2]+vd); break;
+          }		
+	}	
+      }	
+      glEnd();
+     }
+     break;	
+   case SELECTION_LINE:
+     {
+	Vector3d diff=obj.p2-obj.p1;
+	Vector3d wdir=eyedir.cross(diff).normalized()*vd/2.0;
+        glBegin(GL_QUADS);
+        glVertex3d(obj.p1[0]-wdir[0],obj.p1[1]-wdir[1],obj.p1[2]-wdir[2]);
+        glVertex3d(obj.p2[0]-wdir[0],obj.p2[1]-wdir[1],obj.p2[2]-wdir[2]);
+        glVertex3d(obj.p2[0]+wdir[0],obj.p2[1]+wdir[1],obj.p2[2]+wdir[2]);
+        glVertex3d(obj.p1[0]+wdir[0],obj.p1[1]+wdir[1],obj.p1[2]+wdir[2]);
+        glEnd();
+      }	
+      break;	
+  }
 }
 
 void GLView::showScalemarkers(const Color4f& col)

@@ -21,7 +21,7 @@ std::string lookup_file(const std::string& filename,
 
     if (!fs::exists(absfile) && fs::exists(absfile_fallback)) {
       resultfile = absfile_fallback.string();
-      LOG(message_group::Deprecated, Location::NONE, "", "Imported file (%1$s) found in document root instead of relative to the importing module. This behavior is deprecated", std::string(filename));
+      LOG(message_group::Deprecated, "Imported file (%1$s) found in document root instead of relative to the importing module. This behavior is deprecated", std::string(filename));
     } else {
       resultfile = absfile.string();
     }

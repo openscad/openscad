@@ -24,7 +24,7 @@
  *
  */
 
-#include "import.h"
+#include "io/import.h"
 #include "ImportNode.h"
 
 #include "module.h"
@@ -39,7 +39,7 @@
 #include "DxfData.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include "fileutils.h"
+#include "io/fileutils.h"
 #include "Feature.h"
 #include "handle_dep.h"
 #include "boost-utils.h"
@@ -52,9 +52,6 @@ namespace fs = boost::filesystem;
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <cstdint>
-
-extern PolySet *import_amf(const std::string&, const Location& loc);
-extern Geometry *import_3mf(const std::string&, const Location& loc);
 
 static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children, ImportType type)
 {
@@ -75,7 +72,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   } else {
     const auto& filename_val = parameters["filename"];
     if (!filename_val.isUndefined()) {
-      LOG(message_group::Deprecated, Location::NONE, "", "filename= is deprecated. Please use file=");
+      LOG(message_group::Deprecated, "filename= is deprecated. Please use file=");
     }
     filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
   }
@@ -91,6 +88,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     else if (ext == ".3mf") actualtype = ImportType::_3MF;
     else if (ext == ".amf") actualtype = ImportType::AMF;
     else if (ext == ".svg") actualtype = ImportType::SVG;
+    else if (ext == ".obj") actualtype = ImportType::OBJ;
   }
 
   auto node = std::make_shared<ImportNode>(inst, actualtype);
@@ -106,7 +104,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   } else {
     const auto& layername = parameters["layername"];
     if (layername.isDefined()) {
-      LOG(message_group::Deprecated, Location::NONE, "", "layername= is deprecated. Please use layer=");
+      LOG(message_group::Deprecated, "layername= is deprecated. Please use layer=");
       node->layer = layername.toString();
     }
   }
@@ -138,7 +136,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     double val = dpi.toDouble();
     if (val < 0.001) {
       std::string filePath = boostfs_uncomplete(inst->location().filePath(), parameters.documentRoot()).generic_string();
-      LOG(message_group::Warning, Location::NONE, "",
+      LOG(message_group::Warning,
           "Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
           origin.toEchoStringNoThrow(), filePath, filePath, inst->location().firstLine()
           );
@@ -170,9 +168,9 @@ static std::shared_ptr<AbstractNode> builtin_import_dxf(const ModuleInstantiatio
 /*!
    Will return an empty geometry if the import failed, but not nullptr
  */
-const Geometry *ImportNode::createGeometry() const
+std::unique_ptr<const Geometry> ImportNode::createGeometry() const
 {
-  Geometry *g = nullptr;
+  std::unique_ptr<Geometry> g;
   auto loc = this->modinst->location();
 
   switch (this->type) {
@@ -192,6 +190,10 @@ const Geometry *ImportNode::createGeometry() const
     g = import_off(this->filename, loc);
     break;
   }
+  case ImportType::OBJ: {
+    g = import_obj(this->filename, loc);
+    break;
+  }
   case ImportType::SVG: {
     g = import_svg(this->fn, this->fs, this->fa, this->filename, this->id, this->layer, this->dpi, this->center, loc);
     break;
@@ -208,11 +210,11 @@ const Geometry *ImportNode::createGeometry() const
   }
 #endif
   default:
-    LOG(message_group::Error, Location::NONE, "", "Unsupported file format while trying to import file '%1$s', import() at line %2$d", this->filename, loc.firstLine());
-    g = new PolySet(3);
+    LOG(message_group::Error, "Unsupported file format while trying to import file '%1$s', import() at line %2$d", this->filename, loc.firstLine());
+    g = std::make_unique<PolySet>(3);
   }
 
-  if (g) g->setConvexity(this->convexity);
+  g->setConvexity(this->convexity);
   return g;
 }
 

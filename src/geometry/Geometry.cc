@@ -7,6 +7,11 @@ GeometryList::GeometryList(Geometry::Geometries geometries) : children(std::move
 {
 }
 
+std::unique_ptr<Geometry> GeometryList::copy() const
+{
+  return std::make_unique<GeometryList>(*this);
+}
+
 size_t GeometryList::memsize() const
 {
   size_t sum = 0;
@@ -40,7 +45,7 @@ unsigned int GeometryList::getDimension() const
   for (const auto& item : this->children) {
     if (!dim) dim = item.second->getDimension();
     else if (dim != item.second->getDimension()) {
-      LOG(message_group::Warning, Location::NONE, "", "Mixing 2D and 3D objects is not supported.");
+      LOG(message_group::Warning, "Mixing 2D and 3D objects is not supported.");
       break;
     }
   }
@@ -58,7 +63,7 @@ bool GeometryList::isEmpty() const
 void flatten(const GeometryList& geomlist, GeometryList::Geometries& childlist)
 {
   for (const auto& item : geomlist.getChildren()) {
-    if (const auto chlist = dynamic_pointer_cast<const GeometryList>(item.second)) {
+    if (const auto chlist = std::dynamic_pointer_cast<const GeometryList>(item.second)) {
       flatten(*chlist, childlist);
     } else {
       childlist.push_back(item);

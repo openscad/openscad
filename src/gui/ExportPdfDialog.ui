@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ExportPdfDialog</class>
+ <widget class="QDialog" name="ExportPdfDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>462</width>
+    <height>546</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>462</width>
+    <height>546</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Export PDF Options</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QGroupBox" name="groupPage">
+     <property name="title">
+      <string>Page Layout</string>
+     </property>
+     <widget class="QGroupBox" name="groupSize">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>188</width>
+        <height>181</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the PDF page (paper) size.  &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="title">
+       <string>Size</string>
+      </property>
+      <widget class="QWidget" name="layoutWidgetSize">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>30</y>
+         <width>148</width>
+         <height>141</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="vLayoutSize">
+        <item>
+         <widget class="QRadioButton" name="rbS_A4">
+          <property name="text">
+           <string>A4 (210x297 mm)</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">sizeButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rbS_A3">
+          <property name="text">
+           <string>A3 (297x420 mm)</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">sizeButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rbS_Ltr">
+          <property name="text">
+           <string>Letter (8.5x11 in)</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">sizeButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rbS_Leg">
+          <property name="text">
+           <string>Legal (8.5x14 in)</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">sizeButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rbS_Tab">
+          <property name="text">
+           <string>Tabloid (11x17 in)</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">sizeButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupOrientation">
+      <property name="geometry">
+       <rect>
+        <x>230</x>
+        <y>60</y>
+        <width>204</width>
+        <height>121</height>
+       </rect>
+      </property>
+      <property name="toolTip">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the direction of the largest page dimension.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="title">
+       <string>Orientation</string>
+      </property>
+      <widget class="QWidget" name="layoutWidgetOrientation">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>184</width>
+         <height>83</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="vLayoutOrient">
+        <item>
+         <widget class="QRadioButton" name="rbOPort">
+          <property name="text">
+           <string>Portrait (Vertical)</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">orientButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rbOLand">
+          <property name="text">
+           <string>Landscape (Horizontal)</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">orientButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="rbOAuto">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Determine best orientation based on maximum geometry dimension.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Auto</string>
+          </property>
+          <attribute name="buttonGroup">
+           <string notr="true">orientButtonGroup</string>
+          </attribute>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupAnnotations">
+     <property name="title">
+      <string>Annotations</string>
+     </property>
+     <widget class="QWidget" name="layoutWidgetAnnotations">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>30</y>
+        <width>421</width>
+        <height>211</height>
+       </rect>
+      </property>
+      <layout class="QVBoxLayout" name="vLayoutAnnot">
+       <item>
+        <widget class="QCheckBox" name="cbDsnFn">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include design filename on page.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Show Design Filename</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupScale">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include rulers on page to confirm 1:1 printing scale.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="title">
+          <string>Show Scale</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <widget class="QCheckBox" name="cbScaleUsg">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>40</y>
+            <width>161</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include text describing usage of scale.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string>Show Scale Usage</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupGrid">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Include a grid of the selected size on the page.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="title">
+          <string>Show Grid</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+         <widget class="QWidget" name="layoutWidgetGrid">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>30</y>
+            <width>398</width>
+            <height>25</height>
+           </rect>
+          </property>
+          <layout class="QHBoxLayout" name="hLayoutGrid">
+           <item>
+            <widget class="QRadioButton" name="rbGs_2mm">
+             <property name="text">
+              <string>2mm</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">gridButtonGroup</string>
+             </attribute>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="rbGs_2r5mm">
+             <property name="text">
+              <string>2.5mm</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">gridButtonGroup</string>
+             </attribute>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="rbGs_4mm">
+             <property name="text">
+              <string>4mm</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">gridButtonGroup</string>
+             </attribute>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="rbGs_5mm">
+             <property name="text">
+              <string>5mm</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">gridButtonGroup</string>
+             </attribute>
+            </widget>
+           </item>
+           <item>
+            <widget class="QRadioButton" name="rbGs_10mm">
+             <property name="text">
+              <string>10mm</string>
+             </property>
+             <attribute name="buttonGroup">
+              <string notr="true">gridButtonGroup</string>
+             </attribute>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>ExportPdfDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>ExportPdfDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <buttongroups>
+  <buttongroup name="orientButtonGroup"/>
+  <buttongroup name="sizeButtonGroup"/>
+  <buttongroup name="gridButtonGroup"/>
+ </buttongroups>
+</ui>

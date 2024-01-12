@@ -26,7 +26,7 @@
 
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "node.h"
+#include "core/node.h"
 #include "Arguments.h"
 #include "Children.h"
 #include "Expression.h"
@@ -64,7 +64,7 @@ static boost::optional<size_t> validChildIndex(const Value& value, const Childre
 
 static std::shared_ptr<AbstractNode> builtin_child(const ModuleInstantiation *inst, const std::shared_ptr<const Context>& context)
 {
-  LOG(message_group::Deprecated, Location::NONE, "", "child() will be removed in future releases. Use children() instead.");
+  LOG(message_group::Deprecated, "child() will be removed in future releases. Use children() instead.");
 
   if (!inst->scope.moduleInstantiations.empty()) {
     LOG(message_group::Warning, inst->location(), context->documentRoot(),
@@ -152,7 +152,7 @@ static std::shared_ptr<AbstractNode> builtin_children(const ModuleInstantiation 
 
 static std::shared_ptr<AbstractNode> builtin_echo(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
-  LOG(message_group::Echo, Location::NONE, "", "%1$s", STR(arguments));
+  LOG(message_group::Echo, "%1$s", STR(arguments));
 
   auto node = children.instantiate(lazyUnionNode(inst));
   // echo without child geometries should not count as valid CSGNode

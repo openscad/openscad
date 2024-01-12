@@ -22,22 +22,23 @@ endif()
 if(POLICY CMP0082) # Install rules from add_subdirectory() calls are interleaved with those in caller.
   cmake_policy(SET CMP0082 NEW)
 endif()
-
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "Minimum OS X deployment version")
+if(POLICY CMP0077) # Let parent project set child project options (used to skip python lookup from manifold & force TBB)
+  cmake_policy(SET CMP0079 NEW)
+endif()
 
 include("cmake/Modules/openscad_version.cmake")
-project(OpenSCAD
-  VERSION ${PROJECT_VERSION}
-  DESCRIPTION "The Programmer's Solid 3D CAD Modeler"
-  LANGUAGES C CXX
-)
 
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
+option(ENABLE_LEGACY_RENDERERS "Enable legacy (non-VBO) OpenGL renderers" ON)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
-option(ENABLE_EGL "Enable EGL instead of GLX support if available" OFF)
+option(ENABLE_EGL "Enable EGL support if available" ON)
+option(ENABLE_GLX "Enable GLX support if available" ON)
+# For now, we'll default to whatever OpenCSG uses (>=1.6 -> GLAD, <1.6 -> GLEW)
+option(USE_GLAD "Use GLAD. Mutually exclusive from USE_GLEW" OFF)
+option(USE_GLEW "Use GLEW. Mutually exclusive from USE_GLEW" OFF)
 option(WASM "Build WebAssembly, (implies NULLGL=ON) " OFF)
 option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
@@ -45,15 +46,37 @@ option(PROFILE "Enable compiling with profiling / test coverage instrumentation"
 option(MXECROSS "Enable setup for MXE cross platform build" OFF)
 option(OFFLINE_DOCS "Download Documentation for offline usage" OFF)
 option(USE_MIMALLOC "Use mimalloc as malloc replacement." ON)
+option(USE_BUILTIN_OPENCSG "Use OpenCSG from submodule." OFF)
 option(USE_CCACHE "Use ccache to speed up compilation." ON)
 option(ENABLE_CAIRO "Enable support for cairo vector graphics library." ON)
 option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
 option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
+option(ENABLE_TBB "Enable support for oneAPI Threading Building Blocks." ON)
+option(ENABLE_CGAL "Enable CGAL." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
+option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON "NOT HEADLESS" OFF)
 cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS" OFF)
+
+if(EXPERIMENTAL AND ENABLE_TBB)
+  # TBB 2021.8.0 uses aligned memory deallocation.
+  # While this is technically supported in macOS 10.13, an LLVM bug used to limit this to macOS 10.14+.
+  # The bug was fixed in LLVM 15.0.0 (https://reviews.llvm.org/D129198), but was still present in Xcode 14.3.1a.
+  set(DEPLOYMENT_TARGET "10.14")
+else()
+  set(DEPLOYMENT_TARGET "10.13")
+endif()
+
+# Note: CMAKE_OSX_DEPLOYMENT_TARGET must be set before the project() invocation
+set(CMAKE_OSX_DEPLOYMENT_TARGET ${DEPLOYMENT_TARGET} CACHE STRING "Minimum OS X deployment version")
+
+project(OpenSCAD
+  VERSION ${PROJECT_VERSION}
+  DESCRIPTION "The Programmer's Solid 3D CAD Modeler"
+  LANGUAGES C CXX
+)
 
 # GNUInstallDirs must be done before BuildParameters
 include(GNUInstallDirs)
@@ -79,6 +102,9 @@ if(CLANG_TIDY)
 endif(CLANG_TIDY)
 
 add_executable(OpenSCAD)
+
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/submodules/sanitizers-cmake/cmake" ${CMAKE_MODULE_PATH})
+find_package(Sanitizers)
 
 # Strict c++17, e.g. no GNU extensions
 set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD 17)
@@ -120,6 +146,9 @@ endif()
 if(IDPREFIX)
   target_compile_definitions(OpenSCAD PRIVATE IDPREFIX)
 endif()
+if(ENABLE_LEGACY_RENDERERS)
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_LEGACY_RENDERERS)
+endif()
 
 if (NOT "${SUFFIX}" STREQUAL "")
   set(SUFFIX_WITH_DASH "-${SUFFIX}")
@@ -158,8 +187,12 @@ find_package(PkgConfig)
 
 add_subdirectory(submodules)
 
+# The submodules will set up mimalloc if needed, and we need to defer any 
+# target_link_libraries() calls until after that.
+
 if (MXECROSS)
-  target_compile_definitions(OpenSCAD PRIVATE GLEW_STATIC LIBXML_STATIC STATIC_QT_SVG_PLUGIN)
+  target_compile_definitions(OpenSCAD PRIVATE LIBXML_STATIC STATIC_QT_SVG_PLUGIN)
+  target_compile_definitions(OpenSCAD PRIVATE GLEW_STATIC)
   target_link_libraries(OpenSCAD PRIVATE bcrypt)
 endif()
 
@@ -169,24 +202,50 @@ macro(find_graphics)
   if(NULLGL)
     target_compile_definitions(OpenSCAD PRIVATE NULLGL)
   else()
-    find_package(OpenCSG REQUIRED QUIET)
-    target_link_libraries(OpenSCAD PRIVATE ${OPENCSG_LIBRARY})
-    message(STATUS "OpenCSG: ${OPENCSG_VERSION_STRING}")
+
+    set(OPENSCAD_UNITY_BUILD ${CMAKE_UNITY_BUILD})
+    set(CMAKE_UNITY_BUILD OFF)
+    if(NOT USE_BUILTIN_OPENCSG)
+      find_package(OpenCSG REQUIRED QUIET)
+      target_link_libraries(OpenSCAD PRIVATE ${OPENCSG_LIBRARY})
+      message(STATUS "OpenCSG: ${OPENCSG_VERSION_STRING}")
+      if(MSVC)
+        find_path(OPENCSG_INCLUDE_DIRS opencsg/opencsg.h)
+        target_include_directories(OpenSCAD SYSTEM PRIVATE "${OPENCSG_INCLUDE_DIRS}/opencsg")
+      else()
+        find_path(OPENCSG_INCLUDE_DIRS opencsg.h)
+        target_include_directories(OpenSCAD SYSTEM PRIVATE ${OPENCSG_INCLUDE_DIRS})
+      endif()
+    else()
+      include("submodules/CMakeLists-OpenCSG.txt")
+      target_link_libraries(OpenSCAD PRIVATE OpenCSG)
+      message(STATUS "OpenCSG submodule: ${OPENCSG_VERSION_STRING}")
+    endif(NOT USE_BUILTIN_OPENCSG)
+    set(CMAKE_UNITY_BUILD ${OPENSCAD_UNITY_BUILD})
+
     target_compile_definitions(OpenSCAD PRIVATE ENABLE_OPENCSG)
 
-    if(MSVC)
-      find_package(GLEW CONFIG REQUIRED QUIET)
-      find_path(OPENCSG_INCLUDE_DIRS opencsg/opencsg.h)
-      message(STATUS "GLEW: Using target GLEW::GLEW")
-      target_include_directories(OpenSCAD SYSTEM PRIVATE "${OPENCSG_INCLUDE_DIRS}/opencsg")
-      target_link_libraries(OpenSCAD PRIVATE GLEW::GLEW)
-    else()
-      find_package(GLEW REQUIRED)
-      find_path(OPENCSG_INCLUDE_DIRS opencsg.h)
-      message(STATUS "GLEW_INCLUDE_DIR: ${GLEW_INCLUDE_DIR}")
-      message(STATUS "GLEW_LIBRARY: ${GLEW_LIBRARY}")
-      target_include_directories(OpenSCAD SYSTEM PRIVATE ${GLEW_INCLUDE_DIR} ${OPENCSG_INCLUDE_DIRS})
-      target_link_libraries(OpenSCAD PRIVATE ${GLEW_LIBRARY})
+    if (${OPENCSG_VERSION_STRING} VERSION_LESS "1.6.0")
+      set(OPENCSG_GLEW ON)
+      target_compile_definitions(OpenSCAD PRIVATE OPENCSG_GLEW)
+    endif()
+
+    if (NOT USE_GLAD AND NOT USE_GLEW)
+      if (OPENCSG_GLEW)
+        set(USE_GLEW ON)
+        set(WRANGLER "glew")
+      else()
+	set(USE_GLAD ON)
+        set(WRANGLER "GLAD")
+      endif()
+      message(STATUS "USE_GLAD/USE_GLEW not specified: Defaulting to ${WRANGLER}")
+    endif()
+
+    if (USE_GLEW OR OPENCSG_GLEW)
+      find_package(GLEW REQUIRED QUIET)
+      message(STATUS "GLEW: ${GLEW_VERSION}")
+      target_link_libraries(OpenSCAD PRIVATE GLEW::glew)
+      set(GLEW_SOURCES src/glview/glew-utils.cc)
     endif()
 
     find_package(OpenGL REQUIRED QUIET)
@@ -232,11 +291,19 @@ if (MSVC)
   find_graphics()
 
   # needed for Qt5QScintilla, maybe others
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 else()
-  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+  set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
+  if(MXECROSS)
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/MXE")
+  endif()
+
   if(NOT "$ENV{OPENSCAD_LIBRARIES}" STREQUAL "")
     list(APPEND CMAKE_PREFIX_PATH "$ENV{OPENSCAD_LIBRARIES}")
+    if(APPLE)
+      list(APPEND CMAKE_IGNORE_PREFIX_PATH "/opt/homebrew") # Homebrew Apple Silicon
+      list(APPEND CMAKE_IGNORE_PREFIX_PATH "/usr/local")    # Homebrew Intel
+    endif()
   endif()
 
   find_package(Eigen3 REQUIRED)
@@ -269,40 +336,46 @@ else()
   find_graphics()
 endif()
 
+if(USE_GLAD)
+  target_link_libraries(OpenSCAD PRIVATE ${CMAKE_DL_LIBS})
+endif()
+
 if (("${Boost_VERSION}" VERSION_GREATER "1.72") AND ("${Boost_VERSION}" VERSION_LESS "1.76"))
   # Avoid warning messages from boost which are also caused by boost's code.
   #   https://github.com/boostorg/property_tree/issues/51
   target_compile_definitions(OpenSCAD PUBLIC BOOST_BIND_GLOBAL_PLACEHOLDERS)
 endif()
 
-# Note: Saving CMAKE_MODULE_PATH as CGAL will overwrite it.
-# Reconsider this after CGAL 5.4: https://github.com/CGAL/cgal/pull/6029
-set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
-set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
-# Some older versions do not match with CGAL 5.0 REQUIRED, so we check after.
-find_package(CGAL REQUIRED COMPONENTS Core)
-if (${CGAL_MAJOR_VERSION} LESS 5)
-  message(FATAL_ERROR "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}.${CGAL_BUGFIX_VERSION} less than required minimum version 5.0")
-endif()
-message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}.${CGAL_BUGFIX_VERSION}")
-target_compile_definitions(OpenSCAD PRIVATE ENABLE_CGAL)
-# The macro `CGAL_DEBUG` allows to force CGAL assertions, even if `NDEBUG` is defined,
-# Enabling CGAL assertions is necessary for us to catch them before they cause a crash
-# on bad geometry input.
-target_compile_definitions(OpenSCAD PRIVATE CGAL_DEBUG)
-target_compile_definitions(OpenSCAD PRIVATE CGAL_USE_GMPXX)
-if(TARGET CGAL::CGAL)
-  target_link_libraries(OpenSCAD PRIVATE CGAL::CGAL CGAL::CGAL_Core)
-  message(STATUS "CGAL: Using target CGAL::CGAL CGAL::CGAL_Core")
-else()
-  target_link_libraries(OpenSCAD PRIVATE ${CGAL_LIBRARY} ${GMP_LIBRARIES} ${MPFR_LIBRARIES})
-endif()
-# revert any changes to module path from CGAL_Macros.cmake; see note above
-# Commented out code should work in CGAL>= 5.4
-#if (CGAL_MODULE_PATH_IS_SET)
-#  set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
-#endif()
-set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+if(ENABLE_CGAL)
+  # Note: Saving CMAKE_MODULE_PATH as CGAL will overwrite it.
+  # Reconsider this after CGAL 5.4: https://github.com/CGAL/cgal/pull/6029
+  set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+  set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
+  # Some older versions do not match with CGAL 5.0 REQUIRED, so we check after.
+  find_package(CGAL REQUIRED COMPONENTS Core)
+  if (${CGAL_MAJOR_VERSION} LESS 5)
+    message(FATAL_ERROR "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}.${CGAL_BUGFIX_VERSION} less than required minimum version 5.0")
+  endif()
+  message(STATUS "CGAL: ${CGAL_MAJOR_VERSION}.${CGAL_MINOR_VERSION}.${CGAL_BUGFIX_VERSION}")
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_CGAL)
+  # The macro `CGAL_DEBUG` allows to force CGAL assertions, even if `NDEBUG` is defined,
+  # Enabling CGAL assertions is necessary for us to catch them before they cause a crash
+  # on bad geometry input.
+  target_compile_definitions(OpenSCAD PRIVATE CGAL_DEBUG)
+  target_compile_definitions(OpenSCAD PRIVATE CGAL_USE_GMPXX)
+  if(TARGET CGAL::CGAL)
+    target_link_libraries(OpenSCAD PRIVATE CGAL::CGAL CGAL::CGAL_Core)
+    message(STATUS "CGAL: Using target CGAL::CGAL CGAL::CGAL_Core")
+  else()
+    target_link_libraries(OpenSCAD PRIVATE ${CGAL_LIBRARY} ${GMP_LIBRARIES} ${MPFR_LIBRARIES})
+  endif()
+  # revert any changes to module path from CGAL_Macros.cmake; see note above
+  # Commented out code should work in CGAL>= 5.4
+  #if (CGAL_MODULE_PATH_IS_SET)
+  #  set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+  #endif()
+  set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+endif(ENABLE_CGAL)
 
 find_package(LibZip REQUIRED QUIET)
 message(STATUS "libzip: ${LIBZIP_VERSION}")
@@ -319,6 +392,16 @@ find_package(LibXml2 2.9 REQUIRED QUIET)
 message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
+
+if(ENABLE_PYTHON)
+  find_package(Python REQUIRED COMPONENTS Interpreter Development)
+  find_package(CryptoPP REQUIRED)
+  message(STATUS "Python enabled, using Crypto++ ${PC_CRYPTOPP_VERSION}")
+  target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
+  target_include_directories(OpenSCAD PRIVATE ${CRYPTOPP_INCLUDE_DIRS})
+  target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
+  target_link_libraries(OpenSCAD PRIVATE ${CRYPTOPP_LIBRARIES})
+endif()
 
 if(ENABLE_HIDAPI)
   find_package(HidAPI 0.10 QUIET)
@@ -391,15 +474,24 @@ endif()
 # Automatically add the current source and build directories to the include path.
 set(CMAKE_INCLUDE_CURRENT_DIR ON) # (does not propagate down to subdirectories)
 
+if(USE_GLAD)
+  target_compile_definitions(OpenSCAD PRIVATE USE_GLAD)
+else()
+  target_compile_definitions(OpenSCAD PRIVATE USE_GLEW)
+endif()
+
 target_include_directories(OpenSCAD PRIVATE
   "src"
   "src/core"
   "src/core/customizer"
+  "src/ext"
   "src/ext/json"
   "src/ext/lexertl/include"
   "src/ext/libtess2/Include"
+  "src/ext"
   "src/geometry"
   "src/geometry/cgal"
+  "src/geometry/manifold"
   "src/glview"
   "src/glview/preview"
   "src/glview/cgal"
@@ -514,15 +606,17 @@ else()
 endif()
 if(APPLE)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_OS="Mac OS X")
-  message(STATUS "Offscreen OpenGL Context - using Apple CGL")
+  message(STATUS "Offscreen OpenGL Context - using Apple CGL/NSOpenGL")
   set(PLATFORM_SOURCES src/platform/PlatformUtils-mac.mm src/io/imageutils-macosx.cc src/platform/CocoaUtils.mm)
   if(NOT HEADLESS)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/gui/AppleEvents.cc)
   endif()
   if(NOT NULLGL)
     target_compile_definitions(OpenSCAD PRIVATE GL_SILENCE_DEPRECATION)
-    set(OFFSCREEN_METHOD "Apple CGL")
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextCGL.mm)
+    set(OFFSCREEN_METHOD "Apple CGL/NSOpenGL")
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
+        src/glview/offscreen-old/OffscreenContextNSOpenGL.mm
+        src/glview/OffscreenContextCGL.cc)
   endif()
   find_library(COCOA_LIBRARY Cocoa)
   target_link_libraries(OpenSCAD PRIVATE ${COCOA_LIBRARY})
@@ -530,19 +624,28 @@ elseif(UNIX)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_OS="Unix")
   set(PLATFORM_SOURCES src/io/imageutils-lodepng.cc src/platform/PlatformUtils-posix.cc)
   if(NOT NULLGL)
+    set(OFFSCREEN_METHOD "Unix")
     if(ENABLE_EGL AND OpenGL_EGL_FOUND)
-      set(OFFSCREEN_METHOD "Unix EGL")
-      message(STATUS "Offscreen OpenGL Context - using Unix EGL")
-      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextEGL.cc)
-      target_compile_definitions(OpenSCAD PRIVATE GLEW_EGL)
+      target_compile_definitions(OpenSCAD PRIVATE ENABLE_EGL)
+      set(OFFSCREEN_METHOD "${OFFSCREEN_METHOD} EGL")
+      set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
+	src/glview/offscreen-old/OffscreenContextEGL.cc
+        src/glview/OffscreenContextEGL.cc)
+      if (NOT USE_GLAD)
+        target_compile_definitions(OpenSCAD PRIVATE GLEW_EGL)
+      endif()
       target_link_libraries(OpenSCAD PRIVATE OpenGL::EGL)
-    else()
-      set(OFFSCREEN_METHOD "Unix GLX on X11")
-      message(STATUS "Offscreen OpenGL Context - using Unix GLX on X11")
-      set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextGLX.cc)
-      find_library(X11_LIBRARY X11)
-      target_link_libraries(OpenSCAD PRIVATE ${X11_LIBRARY})
     endif()
+    if(ENABLE_GLX AND OpenGL_GLX_FOUND)
+      target_compile_definitions(OpenSCAD PRIVATE ENABLE_GLX)
+      set(OFFSCREEN_METHOD "${OFFSCREEN_METHOD} GLX")
+      set(PLATFORM_SOURCES ${PLATFORM_SOURCES}
+          src/glview/offscreen-old/OffscreenContextGLX.cc
+          src/glview/OffscreenContextGLX.cc)
+      find_package(X11 REQUIRED)
+      target_link_libraries(OpenSCAD PRIVATE X11::X11 ${CMAKE_DL_LIBS})
+    endif()
+    message(STATUS "Offscreen OpenGL Context - using ${OFFSCREEN_METHOD}")
   endif()
 elseif(WIN32)
   target_compile_definitions(OpenSCAD PRIVATE NOGDI)
@@ -552,7 +655,7 @@ elseif(WIN32)
   if(NOT NULLGL)
     set(OFFSCREEN_METHOD "Windows WGL")
     message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/OffscreenContextWGL.cc)
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextWGL.cc)
   endif()
 endif()
 
@@ -599,7 +702,7 @@ set(CORE_SOURCES
   src/core/progress.cc
   src/core/ProjectionNode.cc
   src/core/RenderNode.cc
-  src/core/RoofNode.cc
+  src/core/RenderVariables.cc
   src/core/DrawingCallback.cc
   src/core/RotateExtrudeNode.cc
   src/core/SurfaceNode.cc
@@ -633,13 +736,14 @@ set(CORE_SOURCES
   src/geometry/Geometry.cc
   src/geometry/GeometryCache.cc
   src/geometry/GeometryUtils.cc
-  src/geometry/IndexedMesh.cc
   src/geometry/Polygon2d.cc
   src/geometry/linalg.cc
   src/geometry/PolySet.cc
+  src/geometry/PolySetBuilder.cc
   src/geometry/PolySetUtils.cc
-  src/geometry/roof_ss.cc
-  src/geometry/roof_vd.cc
+  src/geometry/GeometryEvaluator.cc
+  src/geometry/boolean_utils.cc
+  src/glview/OffscreenContextFactory.cc
   src/glview/RenderSettings.cc
   src/glview/Camera.cc
   src/glview/ColorMap.cc
@@ -661,6 +765,7 @@ set(CORE_SOURCES
   src/io/import_3mf.cc
   src/io/import_amf.cc
   src/io/import_stl.cc
+  src/io/import_obj.cc
   src/io/import_off.cc
   src/io/import_svg.cc
   src/io/import_json.cc
@@ -695,9 +800,21 @@ set(CORE_SOURCES
   ${BISON_openscad_parser_OUTPUTS}
   ${FLEX_comment_lexer_OUTPUTS}
   ${BISON_comment_parser_OUTPUTS})
+if(ENABLE_PYTHON)
+	list(APPEND CORE_SOURCES
+		    src/core/pyopenscad.cc )
+	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
+endif()
+
+if(EXPERIMENTAL AND ENABLE_CGAL)
+  list(APPEND CORE_SOURCES
+  src/core/RoofNode.cc
+  src/geometry/roof_ss.cc
+  src/geometry/roof_vd.cc
+)
+endif()
 
 set(CGAL_SOURCES
-  src/geometry/GeometryEvaluator.cc
   src/geometry/cgal/cgalutils.cc
   src/geometry/cgal/cgalutils-applyops.cc
   src/geometry/cgal/cgalutils-applyops-hybrid.cc
@@ -721,7 +838,57 @@ set(CGAL_SOURCES
   src/geometry/cgal/Polygon2d-CGAL.cc
   src/io/export_nef.cc
   src/io/import_nef.cc
+  )
+
+set(MANIFOLD_SOURCES
+  src/geometry/manifold/ManifoldGeometry.cc
+  src/geometry/manifold/manifoldutils.cc
+  src/geometry/manifold/manifold-applyops.cc
+  src/geometry/manifold/Polygon2d-manifold.cc
 )
+
+set(MANIFOLD_CGAL_SOURCES
+  src/geometry/manifold/manifold-applyops-minkowski.cc
+)
+
+if(EXPERIMENTAL AND ENABLE_TBB)
+  # Note: currently only Manifold-related code makes use of TBB parallelization
+  # ("exact" CGAL numerics are not thread-safe)
+  target_compile_options(OpenSCAD PRIVATE 
+    -DENABLE_TBB
+    -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_TBB
+  )
+endif()
+
+if(EXPERIMENTAL)
+
+  # Hack to find our wanted version of Python before Manifold's included googletest finds Python2
+  find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
+
+  if(NOT DEFINED MANIFOLD_PAR AND ENABLE_TBB)
+    set(MANIFOLD_PAR TBB CACHE STRING "Parallel backend, either \"TBB\" or \"OpenMP\" or \"NONE\"" FORCE)
+  endif()
+
+  set(PYBIND11_FINDPYTHON OFF)
+  set(MANIFOLD_PYBIND OFF)
+  set(MANIFOLD_TEST OFF)
+
+  if(CMAKE_UNITY_BUILD)
+    set(CMAKE_UNITY_BUILD OFF)
+    add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
+    set(CMAKE_UNITY_BUILD ON)
+  else()
+    add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
+  endif()
+  target_link_libraries(OpenSCAD PRIVATE manifold)
+  add_sanitizers(manifold)
+
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
+  list(APPEND Sources ${MANIFOLD_SOURCES})
+  if (ENABLE_CGAL)
+    list(APPEND Sources ${MANIFOLD_CGAL_SOURCES})
+  endif()
+endif()
 
 #
 # Offscreen OpenGL context source code
@@ -734,22 +901,34 @@ if(NULLGL)
     src/glview/OffscreenView.cc
     src/glview/OffscreenContextNULL.cc
     src/io/export_png.cc
-    src/io/imageutils.cc
-    ${OFFSCREEN_IMGUTILS_SOURCE})
+    src/io/imageutils.cc)
 else()
+  if(ENABLE_LEGACY_RENDERERS)
+    set(LEGACY_RENDERER_SOURCES
+      src/glview/cgal/LegacyCGALRenderer.cc
+      src/glview/preview/LegacyOpenCSGRenderer.cc
+      src/glview/preview/LegacyThrownTogetherRenderer.cc
+      src/glview/LegacyRendererUtils.cc
+    )
+  endif()
   set(OFFSCREEN_SOURCES
+    src/glview/OpenGLContext.cc
     src/glview/fbo.cc
     src/glview/Renderer.cc
     src/glview/system-gl.cc
     src/glview/VertexArray.cc
+    src/glview/VertexState.cc
     src/glview/VBORenderer.cc
     src/glview/GLView.cc
     src/glview/OffscreenView.cc
     src/glview/cgal/CGALRenderer.cc
+    src/glview/cgal/CGALRenderUtils.cc
     src/glview/preview/OpenCSGRenderer.cc
     src/glview/preview/ThrownTogetherRenderer.cc
     src/io/export_png.cc
-    src/io/imageutils.cc)
+    src/io/imageutils.cc
+    ${LEGACY_RENDERER_SOURCES}
+    ${GLEW_SOURCES})
 endif()
 
 
@@ -774,12 +953,14 @@ set(GUI_SOURCES
   src/gui/Editor.cc
   src/gui/ErrorLog.cc
   src/gui/EventFilter.h
+  src/gui/ExportPdfDialog.cc
   src/gui/FontListDialog.cc
   src/gui/FontListTableView.cc
   src/gui/InitConfigurator.cc
   src/gui/LaunchingScreen.cc
   src/gui/LibraryInfoDialog.cc
   src/gui/MainWindow.cc
+  src/gui/Measurement.cc
   src/gui/Animate.cc
   src/gui/MouseSelector.cc
   src/gui/OctoPrint.cc
@@ -821,26 +1002,147 @@ set(GUI_SOURCES
   )
 
 # header-only code
-set(GUI_HEADERS
+set(GUI_HEADER_ONLY
   src/gui/AboutDialog.h
   src/gui/Network.h
   src/gui/NetworkSignal.h
-  )
+)
 
+# To be added in Source for QtCreator to show them in project tree
+set(GUI_HEADERS
+    src/gui/Animate.h
+    src/gui/AppleEvents.h
+    src/gui/AutoUpdater.h
+    src/gui/CGALWorker.h
+    src/gui/Console.h
+    src/gui/Dock.h
+    src/gui/Editor.h
+    src/gui/ErrorLog.h
+    src/gui/EventFilter.h
+    src/gui/ExportPdfDialog.h
+    src/gui/FontListDialog.h
+    src/gui/FontListTableView.h
+    src/gui/IgnoreWheelWhenNotFocused.h
+    src/gui/InitConfigurator.h
+    src/gui/LaunchingScreen.h
+    src/gui/LibraryInfoDialog.h
+    src/gui/MainWindow.h
+    src/gui/MouseSelector.h
+    src/gui/Network.h
+    src/gui/NetworkSignal.h
+    src/gui/OctoPrint.h
+    src/gui/OpenCSGWarningDialog.h
+    src/gui/OpenSCADApp.h
+    src/gui/Preferences.h
+    src/gui/PrintInitDialog.h
+    src/gui/PrintService.h
+    src/gui/ProgressWidget.h
+    src/gui/QGLView.h
+    src/gui/QSettingsCached.h
+    src/gui/QWordSearchField.h
+    src/gui/ScadApi.h
+    src/gui/ScadLexer.h
+    src/gui/ScintillaEditor.h
+    src/gui/Settings.h
+    src/gui/SettingsWriter.h
+    src/gui/TabManager.h
+    src/gui/TabWidget.h
+    src/gui/UIUtils.h
+    src/gui/ViewportControl.h
+    src/gui/WindowManager.h
+    src/gui/qt-obsolete.h
+    src/gui/qtgettext.h
+    src/gui/AboutDialog.h
+    src/gui/parameter/GroupWidget.h
+    src/gui/parameter/ParameterCheckBox.h
+    src/gui/parameter/ParameterComboBox.h
+    src/gui/parameter/ParameterSlider.h
+    src/gui/parameter/ParameterSpinBox.h
+    src/gui/parameter/ParameterText.h
+    src/gui/parameter/ParameterVector.h
+    src/gui/parameter/ParameterVirtualWidget.h
+    src/gui/parameter/ParameterWidget.h
+)
+
+# To be added in Source for QtCreator to show them in project tree
+set(GUI_UIS
+    ${GUI_UIS}
+    src/gui/AboutDialog.ui
+    src/gui/Animate.ui
+    src/gui/Console.ui
+    src/gui/ErrorLog.ui
+    src/gui/ExportPdfDialog.ui
+    src/gui/FontListDialog.ui
+    src/gui/LaunchingScreen.ui
+    src/gui/LibraryInfoDialog.ui
+    src/gui/MainWindow.ui
+    src/gui/OpenCSGWarningDialog.ui
+    src/gui/Preferences.ui
+    src/gui/PrintInitDialog.ui
+    src/gui/ProgressWidget.ui
+    src/gui/ViewportControl.ui
+    src/gui/input/AxisConfigWidget.ui
+    src/gui/input/ButtonConfigWidget.ui
+    src/gui/parameter/ParameterCheckBox.ui
+    src/gui/parameter/ParameterComboBox.ui
+    src/gui/parameter/ParameterDescriptionWidget.ui
+    src/gui/parameter/ParameterSlider.ui
+    src/gui/parameter/ParameterSpinBox.ui
+    src/gui/parameter/ParameterText.ui
+    src/gui/parameter/ParameterVector.ui
+    src/gui/parameter/ParameterWidget.ui
+)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   # Ignore specific warning on external lib
   set_source_files_properties("src/ext/polyclipping/clipper.cpp" PROPERTIES COMPILE_FLAGS "-Wno-class-memaccess")
 endif()
 
-list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${CGAL_SOURCES} ${OFFSCREEN_SOURCES})
+if (ENABLE_CGAL)
+  list(APPEND Sources ${CGAL_SOURCES})
+endif()
+list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${OFFSCREEN_SOURCES})
+
+set_source_files_properties(
+  # flex and bison tends to generate many macros, which does not work well with
+  # unity build
+  ${FLEX_openscad_lexer_OUTPUTS}
+  ${BISON_openscad_parser_OUTPUTS}
+  ${FLEX_comment_lexer_OUTPUTS}
+  ${BISON_comment_parser_OUTPUTS}
+  # manifold uses a lot of anonymous namespaces.
+  # unity build will cause naming conflict for functions inside those namespaces.
+  ${MANIFOLD_SOURCES}
+  # files using opengl does not work well with unity build, again due to the
+  # macros
+  ${OFFSCREEN_SOURCES}
+  ${PLATFORM_SOURCES}
+  src/glview/OffscreenContextFactory.cc
+  src/glview/RenderSettings.cc
+  src/glview/Camera.cc
+  src/glview/ColorMap.cc
+  src/glview/preview/CSGTreeNormalizer.cc
+  src/gui/QGLView.cc
+  src/gui/QGLView2.cc
+  # spnv.h references Xlib.h
+  src/gui/input/SpaceNavInputDriver.cc
+  # _USE_MATH_DEFINES should be defined before the first include of cmath,
+  # unity build will violate this so we just exclude them
+  src/core/BuiltinContext.cc
+  src/geometry/roof_vd.cc
+  src/io/DxfData.cc
+  src/utils/calc.cc
+  src/utils/degree_trig.cc
+  PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
 
 set(RESOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/resources)
 if(HEADLESS)
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_NOGUI)
 else()
   list(APPEND RESOURCE_FILES ${RESOURCE_DIR}/common.qrc)
-  list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADERS})
+  # GUI_UIS for .ui files to be indexed by Qt Creator despite AUTOUIC usage
+  # GUI_HEADERS for .h files to be indexed by Qt Creator despite AUTOUIC usage
+  list(APPEND Sources ${GUI_SOURCES} ${GUI_HEADER_ONLY} ${GUI_UIS} ${GUI_HEADERS})
 endif()
 
 if (SNAPSHOT)
@@ -991,6 +1293,7 @@ set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/openscad_cpack.cmake")
 set(CPACK_THREADS 0)
 
 if(ENABLE_TESTS)
+  enable_testing()
   add_subdirectory(tests)
 endif()
 
@@ -999,6 +1302,8 @@ if(OFFLINE_DOCS)
 endif()
 
 include(CPack)
+
+add_sanitizers(OpenSCAD)
 
 if(INFO)
   include("cmake/Modules/info.cmake")

@@ -6,7 +6,7 @@
 
 // Helper function to debug normalization bugs
 #if 0
-static bool validate_tree(const shared_ptr<CSGNode>& node)
+static bool validate_tree(const std::shared_ptr<CSGNode>& node)
 {
   if (node->getType() == OpenSCADOperator::PRIMITIVE) return true;
   if (!node->left() || !node->right()) return false;
@@ -19,11 +19,11 @@ static bool validate_tree(const shared_ptr<CSGNode>& node)
 /*!
    NB! for e.g. empty intersections, this can normalize a tree to nothing and return nullptr.
  */
-shared_ptr<CSGNode> CSGTreeNormalizer::normalize(const shared_ptr<CSGNode>& root)
+std::shared_ptr<CSGNode> CSGTreeNormalizer::normalize(const std::shared_ptr<CSGNode>& root)
 {
   this->aborted = false;
   this->nodecount = 0;
-  shared_ptr<CSGNode> temp = root;
+  std::shared_ptr<CSGNode> temp = root;
   temp = normalizePass(temp);
   this->rootnode.reset();
   return temp;
@@ -35,9 +35,9 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalize(const shared_ptr<CSGNode>& root
    This will search for nullptr children an recursively repair the corresponding
    subtree.
  */
-shared_ptr<CSGNode> CSGTreeNormalizer::cleanup_term(shared_ptr<CSGNode>& t)
+std::shared_ptr<CSGNode> CSGTreeNormalizer::cleanup_term(std::shared_ptr<CSGNode>& t)
 {
-  if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(t)) {
+  if (std::shared_ptr<CSGOperation> op = std::dynamic_pointer_cast<CSGOperation>(t)) {
     if (op->left()) op->left() = cleanup_term(op->left());
     if (op->right()) op->right() = cleanup_term(op->right());
     return collapse_null_terms(op);
@@ -45,22 +45,22 @@ shared_ptr<CSGNode> CSGTreeNormalizer::cleanup_term(shared_ptr<CSGNode>& t)
   return t;
 }
 
-static bool isUnion(const shared_ptr<CSGNode>& node) {
-  shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
+static bool isUnion(const std::shared_ptr<CSGNode>& node) {
+  std::shared_ptr<CSGOperation> op = std::dynamic_pointer_cast<CSGOperation>(node);
   return op && op->getType() == OpenSCADOperator::UNION;
 }
 
-static bool hasRightNonLeaf(const shared_ptr<CSGNode>& node) {
-  shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
-  return op->right() && (dynamic_pointer_cast<CSGLeaf>(op->right()) == nullptr);
+static bool hasRightNonLeaf(const std::shared_ptr<CSGNode>& node) {
+  std::shared_ptr<CSGOperation> op = std::dynamic_pointer_cast<CSGOperation>(node);
+  return op->right() && (std::dynamic_pointer_cast<CSGLeaf>(op->right()) == nullptr);
 }
 
-static bool hasLeftUnion(const shared_ptr<CSGNode>& node) {
-  shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
+static bool hasLeftUnion(const std::shared_ptr<CSGNode>& node) {
+  std::shared_ptr<CSGOperation> op = std::dynamic_pointer_cast<CSGOperation>(node);
   return op && isUnion(op->left());
 }
 
-shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
+std::shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(std::shared_ptr<CSGNode> node)
 {
   // This function implements the CSG normalization
   // Reference:
@@ -78,21 +78,21 @@ shared_ptr<CSGNode> CSGTreeNormalizer::normalizePass(shared_ptr<CSGNode> node)
   // See Pull Request #2343 for the initial reasons for making this not recursive.
 
   // stores current node and bool indicating if it was a left or right call;
-  using stackframe_t = std::pair<shared_ptr<CSGOperation>, bool>;
+  using stackframe_t = std::pair<std::shared_ptr<CSGOperation>, bool>;
   std::stack<stackframe_t> callstack;
 
 entrypoint:
-  if (dynamic_pointer_cast<CSGLeaf>(node)) goto return_node;
+  if (std::dynamic_pointer_cast<CSGLeaf>(node)) goto return_node;
   do {
     while (node && match_and_replace(node)) {
     }
     this->nodecount++;
     if (nodecount > this->limit) {
-      LOG(message_group::Warning, Location::NONE, "", "Normalized tree is growing past %1$d elements. Aborting normalization.\n", this->limit);
+      LOG(message_group::Warning, "Normalized tree is growing past %1$d elements. Aborting normalization.\n", this->limit);
       this->aborted = true;
       return {};
     }
-    if (!node || dynamic_pointer_cast<CSGLeaf>(node)) goto return_node;
+    if (!node || std::dynamic_pointer_cast<CSGLeaf>(node)) goto return_node;
     goto normalize_left_if_op;
 cont_left:;
   } while (!this->aborted && !isUnion(node) && (hasRightNonLeaf(node) || hasLeftUnion(node)));
@@ -126,23 +126,23 @@ return_node:
     }
   }
 normalize_left_if_op:
-  if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node)) {
+  if (std::shared_ptr<CSGOperation> op = std::dynamic_pointer_cast<CSGOperation>(node)) {
     callstack.emplace(op, true);
     node = op->left();
     goto entrypoint;
   }
   goto cont_left;
 normalize_right:
-  shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
+  std::shared_ptr<CSGOperation> op = std::dynamic_pointer_cast<CSGOperation>(node);
   assert(op);
   callstack.emplace(op, false);
   node = op->right();
   goto entrypoint;
 }
 
-shared_ptr<CSGNode> CSGTreeNormalizer::collapse_null_terms(const shared_ptr<CSGNode>& node)
+std::shared_ptr<CSGNode> CSGTreeNormalizer::collapse_null_terms(const std::shared_ptr<CSGNode>& node)
 {
-  shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
+  std::shared_ptr<CSGOperation> op = std::dynamic_pointer_cast<CSGOperation>(node);
   if (op) {
     if (!op->right()) {
       this->nodecount--;
@@ -158,19 +158,19 @@ shared_ptr<CSGNode> CSGTreeNormalizer::collapse_null_terms(const shared_ptr<CSGN
   return node;
 }
 
-bool CSGTreeNormalizer::match_and_replace(shared_ptr<CSGNode>& node)
+bool CSGTreeNormalizer::match_and_replace(std::shared_ptr<CSGNode>& node)
 {
-  shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node);
+  std::shared_ptr<CSGOperation> op = std::dynamic_pointer_cast<CSGOperation>(node);
   if (!op) return false;
   if (op->getType() == OpenSCADOperator::UNION) return false;
 
   // Part A: The 'x . (y . z)' expressions
 
-  shared_ptr<CSGOperation> rightop = dynamic_pointer_cast<CSGOperation>(op->right());
+  std::shared_ptr<CSGOperation> rightop = std::dynamic_pointer_cast<CSGOperation>(op->right());
   if (rightop) {
-    shared_ptr<CSGNode> x = op->left();
-    shared_ptr<CSGNode> y = rightop->left();
-    shared_ptr<CSGNode> z = rightop->right();
+    std::shared_ptr<CSGNode> x = op->left();
+    std::shared_ptr<CSGNode> y = rightop->left();
+    std::shared_ptr<CSGNode> z = rightop->right();
 
     // 1.  x - (y + z) -> (x - y) - z
     if (op->getType() == OpenSCADOperator::DIFFERENCE && rightop->getType() == OpenSCADOperator::UNION) {
@@ -216,12 +216,12 @@ bool CSGTreeNormalizer::match_and_replace(shared_ptr<CSGNode>& node)
     }
   }
 
-  shared_ptr<CSGOperation> leftop = dynamic_pointer_cast<CSGOperation>(op->left());
+  std::shared_ptr<CSGOperation> leftop = std::dynamic_pointer_cast<CSGOperation>(op->left());
   if (leftop) {
     // Part B: The '(x . y) . z' expressions
-    shared_ptr<CSGNode> x = leftop->left();
-    shared_ptr<CSGNode> y = leftop->right();
-    shared_ptr<CSGNode> z = op->right();
+    std::shared_ptr<CSGNode> x = leftop->left();
+    std::shared_ptr<CSGNode> y = leftop->right();
+    std::shared_ptr<CSGNode> z = op->right();
 
     // 7. (x - y) * z  -> (x * z) - y
     if (leftop->getType() == OpenSCADOperator::DIFFERENCE && op->getType() == OpenSCADOperator::INTERSECTION) {
@@ -249,9 +249,9 @@ bool CSGTreeNormalizer::match_and_replace(shared_ptr<CSGNode>& node)
 }
 
 // Counts all non-leaf nodes
-unsigned int CSGTreeNormalizer::count(const shared_ptr<CSGNode>& node) const
+unsigned int CSGTreeNormalizer::count(const std::shared_ptr<CSGNode>& node) const
 {
-  if (shared_ptr<CSGOperation> op = dynamic_pointer_cast<CSGOperation>(node)) {
+  if (std::shared_ptr<CSGOperation> op = std::dynamic_pointer_cast<CSGOperation>(node)) {
     return 1 + count(op->left()) + count(op->right());
   }
   return 0;

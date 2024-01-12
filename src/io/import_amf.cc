@@ -25,6 +25,8 @@
  */
 
 #include "PolySet.h"
+#include "PolySetBuilder.h"
+#include "PolySetUtils.h"
 #include "printutils.h"
 #include "AST.h"
 
@@ -38,6 +40,7 @@
 #include <cassert>
 #include <libxml/xmlreader.h>
 #include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 
 static const std::string text_node("#text");
 static const std::string object("/amf/object");
@@ -57,8 +60,8 @@ private:
 
   using cb_func = void (*)(AmfImporter *, const xmlChar *);
 
-  PolySet *polySet{nullptr};
-  std::vector<PolySet *> polySets;
+  std::unique_ptr<PolySetBuilder> builder;
+  std::vector<std::unique_ptr<PolySet>> polySets;
 
   double x{0}, y{0}, z{0};
   int idx_v1{0}, idx_v2{0}, idx_v3{0};
@@ -87,19 +90,14 @@ protected:
 
 public:
   AmfImporter(const Location& loc);
-  virtual ~AmfImporter();
-  PolySet *read(const std::string& filename);
+  virtual ~AmfImporter() = default;
+  std::unique_ptr<PolySet> read(const std::string& filename);
 
   virtual xmlTextReaderPtr createXmlReader(const char *filename);
 };
 
 AmfImporter::AmfImporter(const Location& loc) : loc(loc)
 {
-}
-
-AmfImporter::~AmfImporter()
-{
-  delete polySet;
 }
 
 void AmfImporter::set_x(AmfImporter *importer, const xmlChar *value)
@@ -134,15 +132,15 @@ void AmfImporter::set_v3(AmfImporter *importer, const xmlChar *value)
 
 void AmfImporter::start_object(AmfImporter *importer, const xmlChar *)
 {
-  importer->polySet = new PolySet(3);
+  importer->builder = std::make_unique<PolySetBuilder>(0,0,3);
 }
 
 void AmfImporter::end_object(AmfImporter *importer, const xmlChar *)
 {
   PRINTDB("AMF: add object %d", importer->polySets.size());
-  importer->polySets.push_back(importer->polySet);
+  importer->polySets.push_back(importer->builder->build());
   importer->vertex_list.clear();
-  importer->polySet = nullptr;
+  importer->builder.reset(nullptr);
 }
 
 void AmfImporter::end_vertex(AmfImporter *importer, const xmlChar *)
@@ -153,17 +151,14 @@ void AmfImporter::end_vertex(AmfImporter *importer, const xmlChar *)
 
 void AmfImporter::end_triangle(AmfImporter *importer, const xmlChar *)
 {
-  int idx_v1 = importer->idx_v1;
-  int idx_v2 = importer->idx_v2;
-  int idx_v3 = importer->idx_v3;
-  PRINTDB("AMF: add triangle %d - (%.2f, %.2f, %.2f)", importer->vertex_list.size() % idx_v1 % idx_v2 % idx_v3);
+  int idx[3]= {importer->idx_v1,importer->idx_v2,importer->idx_v3};
+  PRINTDB("AMF: add triangle %d - (%.2f, %.2f, %.2f)", importer->vertex_list.size() % idx[0] % idx[1] % idx[2]);
 
   std::vector<Eigen::Vector3d>& v = importer->vertex_list;
 
-  importer->polySet->append_poly();
-  importer->polySet->append_vertex(v[idx_v1].x(), v[idx_v1].y(), v[idx_v1].z());
-  importer->polySet->append_vertex(v[idx_v2].x(), v[idx_v2].y(), v[idx_v2].z());
-  importer->polySet->append_vertex(v[idx_v3].x(), v[idx_v3].y(), v[idx_v3].z());
+  importer->builder->appendPoly(3);
+  for(int i=0;i<3;i++) // TODO set vertex array first
+	  importer->builder->appendVertex(importer->builder->vertexIndex(Vector3d(v[idx[i]].x(), v[idx[i]].y(), v[idx[i]].z())));
 }
 
 void AmfImporter::processNode(xmlTextReaderPtr reader)
@@ -222,7 +217,7 @@ int AmfImporter::streamFile(const char *filename)
   xmlTextReaderPtr reader = createXmlReader(filename);
 
   if (reader == nullptr) {
-    LOG(message_group::Warning, Location::NONE, "", "Can't open import file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
+    LOG(message_group::Warning, "Can't open import file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
     return 1;
   }
 
@@ -238,12 +233,12 @@ int AmfImporter::streamFile(const char *filename)
     ret = -1;
   }
   if (ret != 0) {
-    LOG(message_group::Warning, Location::NONE, "", "Failed to parse file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
+    LOG(message_group::Warning, "Failed to parse file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
   }
   return ret;
 }
 
-PolySet *AmfImporter::read(const std::string& filename)
+std::unique_ptr<PolySet> AmfImporter::read(const std::string& filename)
 {
   funcs[coordinates_x] = set_x;
   funcs[coordinates_y] = set_y;
@@ -258,30 +253,28 @@ PolySet *AmfImporter::read(const std::string& filename)
   streamFile(filename.c_str());
   vertex_list.clear();
 
-  PolySet *p = nullptr;
-#ifdef ENABLE_CGAL
+  if (polySets.empty()) {
+    return std::make_unique<PolySet>(3);
+  }
   if (polySets.size() == 1) {
-    p = polySets[0];
+    return std::move(polySets[0]);
   }
   if (polySets.size() > 1) {
     Geometry::Geometries children;
     for (auto& polySet : polySets) {
-      children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), shared_ptr<const Geometry>(polySet)));
+      children.push_back(std::make_pair(std::shared_ptr<AbstractNode>(), std::move(polySet)));
     }
 
-    if (auto ps = CGALUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
-      p = new PolySet(*ps);
-    } else {
-      LOG(message_group::Error, Location::NONE, "", "Error importing multi-object AMF file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
-      p = new PolySet(3);
-    }
+#ifdef ENABLE_CGAL
+    std::unique_ptr<const Geometry> geom = CGALUtils::applyUnion3D(children.begin(), children.end());
+    if (auto ps = PolySetUtils::getGeometryAsPolySet(std::move(geom))) {
+      // FIXME: Unnecessary copy
+      return std::make_unique<PolySet>(*ps);
+    } else
+#endif // ENABLE_CGAL
+      LOG(message_group::Error, "Error importing multi-object AMF file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
   }
-#endif // ifdef ENABLE_CGAL
-  if (!p) {
-    p = new PolySet(3);
-  }
-  polySets.clear();
-  return p;
+  return std::make_unique<PolySet>(3);
 }
 
 #ifdef ENABLE_LIBZIP
@@ -330,10 +323,10 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
     const char *filename = last_slash ? last_slash + 1 : filepath;
     zipfile = zip_fopen(archive, filename, ZIP_FL_NODIR);
     if (zipfile == nullptr) {
-      LOG(message_group::Warning, Location::NONE, "", "Can't read file '%1$s' from zipped AMF '%2$s', import() at line %3$d", filename, filepath, this->loc.firstLine());
+      LOG(message_group::Warning, "Can't read file '%1$s' from zipped AMF '%2$s', import() at line %3$d", filename, filepath, this->loc.firstLine());
     }
-    if ((zipfile == nullptr) && (zip_get_num_files(archive) == 1)) {
-      LOG(message_group::Warning, Location::NONE, "", "Trying to read single entry '%1$s'", zip_get_name(archive, 0, 0));
+    if ((zipfile == nullptr) && (zip_get_num_entries(archive, 0) == 1)) {
+      LOG(message_group::Warning, "Trying to read single entry '%1$s'", zip_get_name(archive, 0, 0));
       zipfile = zip_fopen_index(archive, 0, 0);
     }
     if (zipfile) {
@@ -349,14 +342,14 @@ xmlTextReaderPtr AmfImporterZIP::createXmlReader(const char *filepath)
   }
 }
 
-PolySet *import_amf(const std::string& filename, const Location& loc) {
+std::unique_ptr<PolySet> import_amf(const std::string& filename, const Location& loc) {
   AmfImporterZIP importer(loc);
   return importer.read(filename);
 }
 
 #else
 
-PolySet *import_amf(const std::string& filename, const Location& loc) {
+std::unique_ptr<PolySet> import_amf(const std::string& filename, const Location& loc) {
   AmfImporter importer(loc);
   return importer.read(filename);
 }

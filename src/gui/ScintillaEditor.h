@@ -1,6 +1,8 @@
 #pragma once
 
 #include <functional>
+#include <memory>
+
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
@@ -13,7 +15,6 @@
 #include <Qsci/qsciscintilla.h>
 
 #include "Editor.h"
-#include "memory.h"
 #include "ScadApi.h"
 
 // don't need the full definition, because it confuses Qt
@@ -46,7 +47,7 @@ class ScintillaEditor : public EditorInterface
 {
   Q_OBJECT;
 
-  using colorscheme_set_t = std::multimap<int, shared_ptr<EditorColorScheme>, std::less<>>;
+  using colorscheme_set_t = std::multimap<int, std::shared_ptr<EditorColorScheme>, std::less<>>;
 
 public:
   ScintillaEditor(QWidget *parent);
@@ -145,6 +146,8 @@ private slots:
   void fireModificationChanged();
   void onIndicatorClicked(int line, int col, Qt::KeyboardModifiers state);
   void onIndicatorReleased(int line, int col, Qt::KeyboardModifiers state);
+signals:
+   void escapePressed(void);	
 
 public:
   void public_applySettings();

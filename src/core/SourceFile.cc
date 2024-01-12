@@ -63,7 +63,7 @@ void SourceFile::registerUse(const std::string& path, const Location& loc)
     if (fs::is_regular_file(path)) {
       FontCache::instance()->register_font_file(path);
     } else {
-      LOG(message_group::Error, Location::NONE, "", "Can't read font with path '%1$s'", path);
+      LOG(message_group::Error, "Can't read font with path '%1$s'", path);
     }
   } else {
     auto pos = std::find(usedlibs.begin(), usedlibs.end(), path);
@@ -176,7 +176,7 @@ std::shared_ptr<AbstractNode> SourceFile::instantiate(const std::shared_ptr<cons
   } catch (HardWarningException& e) {
     throw;
   } catch (EvaluationException& e) {
-    // LOG(message_group::None,Location::NONE,"",e.what()); //please output the message before throwing the exception
+    // LOG(message_group::NONE,,e.what()); //please output the message before throwing the exception
     *resulting_file_context = nullptr;
   }
   return node;

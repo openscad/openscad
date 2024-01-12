@@ -38,19 +38,19 @@ fs::path search_libs(const fs::path& localpath)
 static bool check_valid(const fs::path& p, const std::vector<std::string> *openfilenames)
 {
   if (p.empty()) {
-    // LOG(message_group::Warning,Location::NONE,"","File path is blank: %1$s",p);
+    // LOG(message_group::Warning,,"File path is blank: %1$s",p);
     return false;
   }
   if (!p.has_parent_path()) {
-    // LOG(message_group::Warning,Location::NONE,"","No parent path: %1$s",p);
+    // LOG(message_group::Warning,,"No parent path: %1$s",p);
     return false;
   }
   if (!fs::exists(p)) {
-    // LOG(message_group::Warning,Location::NONE,"","File not found: %1$s",p);
+    // LOG(message_group::Warning,,"File not found: %1$s",p);
     return false;
   }
   if (fs::is_directory(p)) {
-    // LOG(message_group::Warning,Location::NONE,"","%1$s invalid - points to a directory",p);
+    // LOG(message_group::Warning,,"%1$s invalid - points to a directory",p);
     return false;
   }
   const std::string& fullname = p.generic_string();
@@ -58,7 +58,7 @@ static bool check_valid(const fs::path& p, const std::vector<std::string> *openf
   if (openfilenames) {
     for (const auto& s : *openfilenames) {
       if (s == fullname) {
-        // LOG(message_group::Warning,Location::NONE,"","circular include file %1$s",fullname);
+        // LOG(message_group::Warning,,"circular include file %1$s",fullname);
         return false;
       }
     }

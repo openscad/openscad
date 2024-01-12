@@ -29,6 +29,9 @@
 #include "Preferences.h"
 #include "Renderer.h"
 #include "degree_trig.h"
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
+#include "glew-utils.h"
+#endif
 
 #include <QApplication>
 #include <QWheelEvent>
@@ -41,6 +44,9 @@
 #include <QTextEdit>
 #include <QVBoxLayout>
 #include <QErrorMessage>
+#ifdef USE_GLAD
+#include <QOpenGLContext>
+#endif
 #include "OpenCSGWarningDialog.h"
 
 #include <cstdio>
@@ -51,6 +57,7 @@
 #endif
 
 #include "qt-obsolete.h"
+#include "Measurement.h"
 
 QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent)
 {
@@ -83,17 +90,29 @@ void QGLView::viewAll()
 
 void QGLView::initializeGL()
 {
-  auto err = glewInit();
-  if (err != GLEW_OK) {
-    fprintf(stderr, "GLEW Error: %s\n", glewGetErrorString(err));
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
+  // Since OpenCSG requires glew, we need to initialize it.
+  // ..in a separate compilation unit to avoid duplicate symbols with GLAD.
+  initializeGlew();
+#endif
+#ifdef USE_GLAD
+  // We could ask for gladLoadGLES2UserPtr() here if we want to use GLES2+
+  const auto version = gladLoadGLUserPtr([](void *ctx, const char *name) -> GLADapiproc {
+    return reinterpret_cast<QOpenGLContext *>(ctx)->getProcAddress(name);
+  }, this->context());
+  if (version == 0) {
+    std::cerr << "Unable to init GLAD" << std::endl;
+    return;
   }
+  PRINTDB("GLAD: Loaded OpenGL %d.%d", GLAD_VERSION_MAJOR(version) % GLAD_VERSION_MINOR(version));
+#endif // ifdef USE_GLAD
   GLView::initializeGL();
 }
 
 std::string QGLView::getRendererInfo() const
 {
   std::ostringstream info;
-  info << glew_dump();
+  info << gl_dump();
   // Don't translate as translated text in the Library Info dialog is not wanted
   info << "\nQt graphics widget: QOpenGLWidget";
   auto qsf = this->format();
@@ -105,7 +124,7 @@ std::string QGLView::getRendererInfo() const
   auto sbits = qsf.stencilBufferSize();
   info << boost::format("\nQSurfaceFormat: RGBA(%d%d%d%d), depth(%d), stencil(%d)\n\n") %
     rbits % gbits % bbits % abits % dbits % sbits;
-  info << glew_extensions_dump();
+  info << gl_extensions_dump();
   return info.str();
 }
 
@@ -121,27 +140,26 @@ void QGLView::display_opencsg_warning_dialog()
 {
   auto dialog = new OpenCSGWarningDialog(this);
 
-  QString message;
-  if (this->is_opencsg_capable) {
-    message += _("Warning: You may experience OpenCSG rendering errors.\n\n");
-  } else {
-    message += _("Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n");
-    dialog->enableOpenCSGBox->hide();
-  }
+  QString message = _("Warning: Missing OpenGL capabilities for OpenCSG - OpenCSG has been disabled.\n\n");
   message += _("It is highly recommended to use OpenSCAD on a system with "
                "OpenGL 2.0 or later.\n"
                "Your renderer information is as follows:\n");
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
   QString rendererinfo(_("GLEW version %1\n%2 (%3)\nOpenGL version %4\n"));
   message += rendererinfo.arg((const char *)glewGetString(GLEW_VERSION),
                               (const char *)glGetString(GL_RENDERER),
                               (const char *)glGetString(GL_VENDOR),
                               (const char *)glGetString(GL_VERSION));
-
+#endif
+#ifdef USE_GLAD
+  QString rendererinfo(_("GLAD version %1\n%2 (%3)\nOpenGL version %4\n"));
+  message += rendererinfo.arg(GLAD_GENERATOR_VERSION,
+                              (const char *)glGetString(GL_RENDERER),
+                              (const char *)glGetString(GL_VENDOR),
+                              (const char *)glGetString(GL_VERSION));
+#endif
   dialog->setText(message);
-  dialog->enableOpenCSGBox->setChecked(Preferences::inst()->getValue("advanced/enable_opencsg_opengl1x").toBool());
   dialog->exec();
-
-  opencsg_support = this->is_opencsg_capable && Preferences::inst()->getValue("advanced/enable_opencsg_opengl1x").toBool();
 }
 #endif // ifdef ENABLE_OPENCSG
 
@@ -233,8 +251,7 @@ void QGLView::mouseDoubleClickEvent(QMouseEvent *event) {
 
   glGetError(); // clear error state so we don't pick up previous errors
   glReadPixels(x, y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
-  auto glError = glGetError();
-  if (glError != GL_NO_ERROR) {
+  if (const auto glError = glGetError(); glError != GL_NO_ERROR) {
     if (statusLabel) {
       auto status = QString("Center View: OpenGL Error reading Pixel: %s")
         .arg(QString::fromLocal8Bit((const char *)gluErrorString(glError)));
@@ -270,6 +287,11 @@ void QGLView::normalizeAngle(GLdouble& angle)
 void QGLView::mouseMoveEvent(QMouseEvent *event)
 {
   auto this_mouse = event->globalPos();
+  if(measure_state != MEASURE_IDLE) {
+	QPoint pt = event->pos();
+  	this->shown_obj = findObject(pt.x(), pt.y());
+	update();
+  }
   double dx = (this_mouse.x() - last_mouse.x()) * 0.7;
   double dy = (this_mouse.y() - last_mouse.y()) * 0.7;
   if (mouse_drag_active) {
@@ -321,12 +343,17 @@ void QGLView::mouseReleaseEvent(QMouseEvent *event)
   mouse_drag_active = false;
   releaseMouse();
 
-  auto button_compare = this->mouseSwapButtons?Qt::LeftButton : Qt::RightButton;
-  if (!mouse_drag_moved
-      && (event->button() == button_compare)) {
-    QPoint point = event->pos();
-    //point.setY(this->height() - point.y());
-    emit doSelectObject(point);
+  auto button_right = this->mouseSwapButtons?Qt::LeftButton : Qt::RightButton;
+  auto button_left =  this->mouseSwapButtons?Qt::RightButton : Qt::LeftButton;
+  if (!mouse_drag_moved) {
+    if(event->button() == button_right) {
+      QPoint point = event->pos();
+      emit doRightClick(point);
+    }  
+    if(event->button() == button_left) {
+      QPoint point = event->pos();
+      emit doLeftClick(point);
+    }  
   }
   mouse_drag_moved = false;
 }
@@ -348,7 +375,9 @@ void QGLView::wheelEvent(QWheelEvent *event)
 {
   const auto pos = Q_WHEEL_EVENT_POSITION(event);
   const int v = event->angleDelta().y();
-  if (this->mouseCentricZoom) {
+  if (QApplication::keyboardModifiers() & Qt::ShiftModifier) {
+    zoomFov (v);
+  } else if (this->mouseCentricZoom) {
     zoomCursor(pos.x(), pos.y(), v);
   } else {
     zoom(v, true);
@@ -368,6 +397,13 @@ void QGLView::ZoomOut()
 void QGLView::zoom(double v, bool relative)
 {
   this->cam.zoom(v, relative);
+  update();
+  emit cameraChanged();
+}
+
+void QGLView::zoomFov(double v)
+{
+  this->cam.setVpf( this->cam.fovValue () * pow(0.9, v / 120.0));
   update();
   emit cameraChanged();
 }
@@ -484,4 +520,38 @@ void QGLView::rotate2(double x, double y, double z)
 
   update();
   emit cameraChanged();
+}
+
+std::vector<SelectedObject> QGLView::findObject(int mouse_x,int mouse_y)
+{
+  int viewport[4]={0,0,0,0};
+  double posXF, posYF, posZF;
+  double posXN, posYN, posZN;
+  viewport[2]=size().rwidth();
+  viewport[3]=size().rheight();
+
+  GLdouble winX = mouse_x;
+  GLdouble winY = viewport[3] - mouse_y;
+
+  gluUnProject(winX, winY, 1, this->modelview, this->projection, viewport,&posXF, &posYF, &posZF);
+  gluUnProject(winX, winY, -1, this->modelview, this->projection, viewport,&posXN, &posYN, &posZN);
+  Vector3d far_pt(posXF, posYF, posZF);
+  Vector3d near_pt(posXN, posYN, posZN);
+  Vector3d eyedir=far_pt-near_pt;
+
+  Vector3d testpt(0,0,0);
+  std::vector<SelectedObject> result;
+  auto renderer = this->getRenderer();
+  if(renderer == nullptr) return result;
+  result = renderer->findModelObject(near_pt, far_pt, mouse_x, mouse_y, cam.zoomValue()/300);
+  return result;
+}
+
+void QGLView::selectPoint(int mouse_x, int mouse_y)
+{
+  std::vector<SelectedObject>  obj= findObject(mouse_x, mouse_y);
+  if(obj.size() == 1) {
+    this->selected_obj.push_back(obj[0]);
+    update();
+  }	  
 }
