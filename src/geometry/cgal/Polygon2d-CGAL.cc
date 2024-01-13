@@ -123,7 +123,7 @@ std::unique_ptr<PolySet> Polygon2d::tessellate() const
     if (fit->info().in_domain()) {
       builder.appendPoly(3);
       for (int i = 0; i < 3; ++i) {
-        builder.appendVertex(builder.vertexIndex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0)));
+        builder.appendVertex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0));
       }
     }
   }

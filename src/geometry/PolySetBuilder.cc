@@ -120,9 +120,19 @@ void PolySetBuilder::appendVertex(int ind)
   indices_.back().push_back(ind);
 }
 
+void PolySetBuilder::appendVertex(const Vector3d &v)
+{
+  appendVertex(vertexIndex(v));
+}
+
 void PolySetBuilder::prependVertex(int ind)
 {
   indices_.back().insert(indices_.back().begin(), ind);
+}
+
+void PolySetBuilder::prependVertex(const Vector3d &v)
+{
+  prependVertex(vertexIndex(v));
 }
 
 void PolySetBuilder::append(const PolySet& ps)

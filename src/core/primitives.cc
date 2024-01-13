@@ -214,7 +214,7 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
 
   builder.appendPoly(fragments);
   for (int i = 0; i < fragments; ++i)
-    builder.appendVertex(builder.vertexIndex(Vector3d(ring[0].points[i][0], ring[0].points[i][1], ring[0].z)));
+    builder.appendVertex(Vector3d(ring[0].points[i][0], ring[0].points[i][1], ring[0].z));
 
   for (int i = 0; i < rings - 1; ++i) {
     auto r1 = &ring[i];
@@ -247,7 +247,7 @@ sphere_next_r2:
 
   builder.appendPoly(fragments);
   for (int i = 0; i < fragments; ++i) {
-    builder.prependVertex( builder.vertexIndex(Vector3d(ring[rings - 1].points[i][0], ring[rings - 1].points[i][1], ring[rings - 1].z)));
+    builder.prependVertex(Vector3d(ring[rings - 1].points[i][0], ring[rings - 1].points[i][1], ring[rings - 1].z));
   }
 
   return builder.build();
@@ -314,7 +314,7 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
     if (r1 == r2) {
       builder.appendPoly(4);
       for(int k=0;k<4;k++)     		      
-        builder.prependVertex(builder.vertexIndex(Vector3d(circle1[k&2?j:i][0], circle1[k&2?j:i][1], (k+1)&2?z2:z1)));
+        builder.prependVertex(Vector3d(circle1[k&2?j:i][0], circle1[k&2?j:i][1], (k+1)&2?z2:z1));
     } else {
       if (r1 > 0) {
         builder.appendPoly({
@@ -336,13 +336,13 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
   if (this->r1 > 0) {
     builder.appendPoly(fragments);
     for (int i = 0; i < fragments; ++i)
-      builder.prependVertex(builder.vertexIndex(Vector3d(circle1[i][0], circle1[i][1], z1)));
+      builder.prependVertex(Vector3d(circle1[i][0], circle1[i][1], z1));
   }
 
   if (this->r2 > 0) {
     builder.appendPoly(fragments);
     for (int i = 0; i < fragments; ++i)
-      builder.appendVertex(builder.vertexIndex(Vector3d(circle2[i][0], circle2[i][1], z2)));
+      builder.appendVertex(Vector3d(circle2[i][0], circle2[i][1], z2));
   }
 
   return builder.build();
