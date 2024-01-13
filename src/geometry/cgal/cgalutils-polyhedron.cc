@@ -296,7 +296,7 @@ std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p)
       double x = CGAL::to_double(v.point().x());
       double y = CGAL::to_double(v.point().y());
       double z = CGAL::to_double(v.point().z());
-      builder.appendVertex(builder.vertexIndex(Vector3d(x, y, z)));
+      builder.appendVertex(Vector3d(x, y, z));
     } while (hc != hc_end);
   }
   return builder.build();

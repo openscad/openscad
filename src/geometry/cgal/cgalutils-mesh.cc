@@ -59,7 +59,7 @@ std::unique_ptr<PolySet> createPolySetFromMesh(const TriangleMesh& mesh)
       double x = CGAL::to_double(v.x());
       double y = CGAL::to_double(v.y());
       double z = CGAL::to_double(v.z());
-      builder.appendVertex(builder.vertexIndex(Vector3d(x, y, z)));
+      builder.appendVertex(Vector3d(x, y, z));
     }
   }
   return builder.build();
