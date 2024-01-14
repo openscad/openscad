@@ -96,7 +96,7 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
     }
   }
   if(!binary) facenum=0;
-  PolySetBuilder builder(0,facenum);
+  PolySetBuilder builder(0, facenum);
   f.seekg(0);
 
   char data[5];

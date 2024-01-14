@@ -221,7 +221,8 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
   double ox = center ? -(columns - 1) / 2.0 : 0;
   double oy = center ? -(lines - 1) / 2.0 : 0;
 
-  PolySetBuilder builder(0, (lines - 1) * (columns - 1) * 4 + (lines - 1) * 2 + (columns - 1) * 2 + 1);
+  int num_indices = (lines - 1) * (columns - 1) * 4 + (lines - 1) * 2 + (columns - 1) * 2 + 1;
+  PolySetBuilder builder(0, num_indices);
   builder.setConvexity(convexity);
   // the bulk of the heightmap
   for (int i = 1; i < lines; ++i)

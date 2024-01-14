@@ -37,7 +37,7 @@
 #include "ManifoldGeometry.h"
 #endif
 
-PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, boost::tribool convex, int dim)
+PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
   : convex_(convex), dim_(dim)
 {
   if (vertices_count != 0) vertices_.reserve(vertices_count);

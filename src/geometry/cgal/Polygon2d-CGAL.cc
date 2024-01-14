@@ -93,7 +93,7 @@ std::unique_ptr<PolySet> Polygon2d::tessellate() const
 {
   PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
   std::unique_ptr<PolySetBuilder> builder;
-  builder = std::make_unique<PolySetBuilder>(0, 0, unknown, 2); // This is the only place PolySetBuilder is used in 2D mode
+  builder = std::make_unique<PolySetBuilder>(0, 0, 2, unknown);
 
   Polygon2DCGAL::CDT cdt; // Uses a constrained Delaunay triangulator.
 

@@ -175,7 +175,7 @@ std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
   // Estimating num vertices and polygons
   PolySetBuilder builder(ps->vertices.size() * 2, 
                          ps->indices.size() * 2 + ps->vertices.size(),
-                         p2d.is_convex(), 2);
+                         2, p2d.is_convex());
   builder.setConvexity(p2d.getConvexity());
 
   // Create bottom face.
