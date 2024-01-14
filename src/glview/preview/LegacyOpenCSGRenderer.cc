@@ -64,10 +64,9 @@ std::unique_ptr<OpenCSGPrim> createCSGPrimitive(const CSGChainObject& csgobj, Op
                                 const LegacyOpenCSGRenderer &renderer) {
   auto prim = std::make_unique<OpenCSGPrim>(operation, csgobj.leaf->polyset->getConvexity(), renderer);
   prim->polyset = csgobj.leaf->polyset;
-  // FIXME(kintel): We could adjust the scale of this matrix for negative 
-  // objects to allow building PolySets ahead of time
   prim->m = csgobj.leaf->matrix;
-  if (type == OpenSCADOperator::DIFFERENCE) {
+  if (prim->polyset->getDimension() == 2 && type == OpenSCADOperator::DIFFERENCE) {
+    // Scale 2D negative objects 10% in the Z direction to avoid z fighting
     prim->m *= Eigen::Scaling(1.0, 1.0, 1.1);
   }
   prim->csgmode = Renderer::get_csgmode(highlight_mode, background_mode, type);
@@ -190,11 +189,12 @@ void LegacyOpenCSGRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts>
 
       (void) setColor(colormode, c.data(), shaderinfo);
       glPushMatrix();
-      // FIXME(kintel): We could adjust the scale of this matrix for negative 
-      // objects to allow building PolySets ahead of time
-      //Transform3d tmp = csgobj.leaf->matrix;
-       Transform3d tmp = csgobj.leaf->matrix * Eigen::Scaling(1.0, 1.0, 1.1);
-      glMultMatrixd(tmp.data());
+      Transform3d mat = csgobj.leaf->matrix;
+      if (csgobj.leaf->polyset->getDimension() == 2) {
+        // Scale 2D negative objects 10% in the Z direction to avoid z fighting
+        mat *= Eigen::Scaling(1.0, 1.0, 1.1);
+      }
+      glMultMatrixd(mat.data());
       // negative objects should only render rear faces
       glEnable(GL_CULL_FACE);
       glCullFace(GL_FRONT);
