@@ -1283,6 +1283,11 @@ set_tests_properties(
   cgalpngtest_linear_extrude-scale-zero-tests
   csgpngtest_linear_extrude-scale-zero-tests
 
+  # CGAL sometimes fail to union minkowski convex decompositions, causing visual differences
+  # in rendering.
+  cgalpngtest_minkowski3-difference-test
+  csgpngtest_minkowski3-difference-test
+
   PROPERTIES DISABLED TRUE
 )
 
