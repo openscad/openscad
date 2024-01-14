@@ -100,6 +100,7 @@ std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   ps->isTriangular = true;
   ps->vertices.reserve(mesh.NumVert());
   ps->indices.reserve(mesh.NumTri());
+  ps->setConvexity(convexity);
   // first 3 channels are xyz coordinate
   for (int i = 0; i < mesh.vertProperties.size(); i += mesh.numProp)
     ps->vertices.push_back({
