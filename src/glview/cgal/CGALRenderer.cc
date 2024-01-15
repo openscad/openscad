@@ -158,7 +158,6 @@ void CGALRenderer::createPolySetStates()
   for (const auto& polyset : this->polysets) {
     Color4f color;
     
-    PRINTD("polysets");
     PRINTD("3d polysets");
     vertex_array.writeSurface();
 
@@ -170,8 +169,7 @@ void CGALRenderer::createPolySetStates()
   for (const auto& [polygon, polyset] : this->polygons) {
     Color4f color;
     
-    PRINTD("polysets");
-    PRINTD("2d polysets");
+    PRINTD("2d polygons");
     vertex_array.writeEdge();
 
     std::shared_ptr<VertexState> init_state = std::make_shared<VertexState>();
