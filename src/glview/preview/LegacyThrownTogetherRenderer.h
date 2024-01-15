@@ -3,6 +3,7 @@
 #include "Renderer.h"
 #include "CSGNode.h"
 #include <boost/functional/hash.hpp>
+#include <unordered_map>
 
 class CSGProducts;
 class CSGChainObject;
