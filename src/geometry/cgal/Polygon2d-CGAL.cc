@@ -92,8 +92,7 @@ mark_domains(CDT& cdt)
 std::unique_ptr<PolySet> Polygon2d::tessellate() const
 {
   PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
-  std::unique_ptr<PolySetBuilder> builder;
-  builder = std::make_unique<PolySetBuilder>(0, 0, 2, unknown);
+  PolySetBuilder builder(0, 0, 2, unknown);
 
   Polygon2DCGAL::CDT cdt; // Uses a constrained Delaunay triangulator.
 
@@ -122,11 +121,11 @@ std::unique_ptr<PolySet> Polygon2d::tessellate() const
   mark_domains(cdt);
   for (auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
     if (fit->info().in_domain()) {
-      builder->appendPoly(3);
+      builder.appendPoly(3);
       for (int i = 0; i < 3; ++i) {
-        builder->appendVertex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0));
+        builder.appendVertex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0));
       }
     }
   }
-  return builder->build();
+  return builder.build();
 }

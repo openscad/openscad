@@ -129,7 +129,8 @@ std::unique_ptr<const Geometry> CubeNode::createGeometry() const
   }
   int cubeCorners=8;
   int cubeFaces=6;
-  PolySetBuilder builder(cubeCorners, cubeFaces, 3, true);
+  int dimension=3;
+  PolySetBuilder builder(cubeCorners, cubeFaces, dimension, true);
   int corner[cubeCorners];
   for(int i=0;i<cubeCorners;i++)
     corner[i]=builder.vertexIndex(Vector3d(i&1?x2:x1,i&2?y2:y1,i&4?z2:z1));
