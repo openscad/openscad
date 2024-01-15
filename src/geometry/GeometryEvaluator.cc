@@ -1062,7 +1062,7 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
   boost::tribool isConvex{poly.is_convex()};
   // Twist or non-uniform scale makes convex polygons into unknown polyhedrons
   if (isConvex && non_linear) isConvex = unknown;
-  PolySetBuilder builder(0, 0, 2, isConvex);
+  PolySetBuilder builder(0, 0, 3, isConvex);
   builder.setConvexity(node.convexity);
   if (node.height <= 0) return std::make_unique<PolySet>(3);
 
