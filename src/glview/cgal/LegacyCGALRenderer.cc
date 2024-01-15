@@ -201,56 +201,66 @@ BoundingBox LegacyCGALRenderer::getBoundingBox() const
   return bbox;
 }
 
-std::vector<SelectedObject> LegacyCGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt,int mouse_x, int mouse_y, double tolerance) {
-  std::vector<SelectedObject> results;
+std::vector<SelectedObject>
+LegacyCGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x,
+                              int mouse_y, double tolerance) {
   double dist_near;
-  double dist_nearest=NAN;
+  double dist_nearest = std::numeric_limits<double>::max();
   Vector3d pt1_nearest;
   Vector3d pt2_nearest;
-  for (const std::shared_ptr<const PolySet>& ps : this->polysets) {
-    for(const Vector3d &pt: ps->vertices) {
-      double dist_pt= calculateLinePointDistance(near_pt, far_pt, pt, dist_near);
-      if(dist_pt < tolerance  ) {
-        if(isnan(dist_nearest) || dist_near < dist_nearest)
-        {
-          dist_nearest=dist_near;
-          pt1_nearest=pt;
-        }          
+  const auto find_nearest_point = [&](const std::vector<Vector3d> &vertices){
+    for (const Vector3d &pt : vertices) {
+      const double dist_pt =
+          calculateLinePointDistance(near_pt, far_pt, pt, dist_near);
+      if (dist_pt < tolerance && dist_near < dist_nearest) {
+        dist_nearest = dist_near;
+        pt1_nearest = pt;
       }
     }
+  };
+  for (const std::shared_ptr<const PolySet> &ps : this->polysets) {
+    find_nearest_point(ps->vertices);
   }
-  if(!isnan(dist_nearest)) {
-    SelectedObject obj;
-    obj.type = SELECTION_POINT;
-    obj.p1=pt1_nearest;
-    results.push_back(obj);
-    return results;
+  for (const auto &[polygon, ps] : this->polygons) {
+    find_nearest_point(ps->vertices);
   }
-  for (const std::shared_ptr<const PolySet>& ps : this->polysets) {
-    for(const auto &pol : ps->indices) {
-        int n = pol.size();
-        for(int i=0;i < n;i++ )
-        {
-          int ind1=pol[i];
-          int ind2=pol[(i+1)%n];
-          double dist_lat;
-          double dist_norm= fabs(calculateLineLineDistance(ps->vertices[ind1], ps->vertices[ind2], near_pt, far_pt,dist_lat));
-          if(dist_lat >= 0 && dist_lat <= 1 && dist_norm < tolerance  ) {
-              dist_nearest=dist_lat;
-              pt1_nearest=ps->vertices[ind1];
-              pt2_nearest=ps->vertices[ind2];
-          }
-        }          
-      }
-   }
+  if (dist_nearest < std::numeric_limits<double>::max()) {
+    SelectedObject obj = {
+      .type = SelectionType::SELECTION_POINT,
+      .p1 = pt1_nearest
+    };
+    return std::vector<SelectedObject>{obj};
+  }
 
-  if(!isnan(dist_nearest)) {
-    SelectedObject obj;
-    obj.type = SELECTION_LINE;
-    obj.p1=pt1_nearest;
-    obj.p2=pt2_nearest;
-    results.push_back(obj);
-    return results;
+  const auto find_nearest_line = [&](const std::vector<Vector3d> &vertices, const PolygonIndices& indices) {
+    for (const auto &poly : indices) {
+      for (int i = 0; i < poly.size(); i++) {
+        int ind1 = poly[i];
+        int ind2 = poly[(i + 1) % poly.size()];
+        double dist_lat;
+        double dist_norm = fabs(calculateLineLineDistance(
+            vertices[ind1], vertices[ind2], near_pt, far_pt, dist_lat));
+        if (dist_lat >= 0 && dist_lat <= 1 && dist_norm < tolerance) {
+          dist_nearest = dist_lat;
+          pt1_nearest = vertices[ind1];
+          pt2_nearest = vertices[ind2];
+        }
+      }
+    }
+  };
+  for (const std::shared_ptr<const PolySet> &ps : this->polysets) {
+    find_nearest_line(ps->vertices, ps->indices);
   }
-  return results;
+  for (const auto &[polygon, ps] : this->polygons) {
+    find_nearest_line(ps->vertices, ps->indices);
+  }
+  if (dist_nearest < std::numeric_limits<double>::max()) {
+    SelectedObject obj = {
+      .type = SelectionType::SELECTION_LINE,
+      .p1 = pt1_nearest,
+      .p2 = pt2_nearest,
+    };
+    return std::vector<SelectedObject>{obj};
+  }
+  return {};
 }
