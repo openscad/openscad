@@ -45,8 +45,7 @@ public:
     if (vertex_state != nullptr) {
       vertex_state->draw();
     } else {
-      if (OpenSCAD::debug != "")
-        PRINTD("OpenCSGVBOPrim vertex_state was null");
+      if (OpenSCAD::debug != "") PRINTD("OpenCSGVBOPrim vertex_state was null");
     }
   }
 
@@ -80,8 +79,7 @@ void OpenCSGRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
 
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges,
                            const shaderinfo_t *shaderinfo) const {
-  if (!shaderinfo && showedges)
-    shaderinfo = &getShader();
+  if (!shaderinfo && showedges) shaderinfo = &getShader();
   renderCSGVBOProducts(showedges, shaderinfo);
 }
 
