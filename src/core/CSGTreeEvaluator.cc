@@ -179,27 +179,6 @@ std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
   builder.setConvexity(p2d.getConvexity());
 
   // Create bottom face.
-  // Flip vertex ordering for bottom polygon
-  // for (auto& p : ps->indices) {
-  //   std::reverse(p.begin(), p.end());
-  // }
-  // for (auto& v : ps->vertices) {
-  //     v += Vector3d(0, 0, -0.5);
-  // }
-  // builder.append(*ps);
-
-  // Create top face.
-  // Flip again, back to normal
-  // for (auto& p : ps->indices) {
-  //   std::reverse(p.begin(), p.end());
-  // }
-  // for (auto& v : ps->vertices) {
-  //   v += Vector3d(0, 0, 1.0);
-  // }
-  // builder.append(*ps);
-
-
-  // Create bottom face.
   for (const auto& poly : ps->indices) {
     builder.appendPoly(poly.size());
     // Flip vertex ordering for bottom polygon
@@ -211,7 +190,6 @@ std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
   // Create top face.
   for (const auto& poly : ps->indices) {
     builder.appendPoly(poly.size());
-    // Flip vertex ordering for bottom polygon
     for (const auto& ind: poly) {
       builder.appendVertex(ps->vertices[ind] + Vector3d(0, 0, 0.5));
     }

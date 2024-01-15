@@ -103,7 +103,8 @@ size_t VBORenderer::getSurfaceBufferSize(const PolySet& polyset) const
     } else if (poly.size() == 4) {
       buffer_size += 2;
     } else {
-      buffer_size += poly.size(); // FIXME: Why? doesn't this add two extra vertices?
+      // poly.size() because we'll render a triangle fan from the centroid
+      buffer_size += poly.size();
     }
   }
   return buffer_size * 3;
@@ -301,8 +302,8 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
       triangle_count += 2;
     } else {
       Vector3d center = Vector3d::Zero();
-      for (const auto& point : poly) {
-        center += ps.vertices[point];
+      for (const auto& idx : poly) {
+        center += ps.vertices[idx];
       }
       center /= poly.size();
       for (size_t i = 1; i <= poly.size(); i++) {
