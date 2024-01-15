@@ -2,6 +2,7 @@
 
 #include "Renderer.h"
 #include "CSGNode.h"
+#include <boost/functional/hash.hpp>
 
 class CSGProducts;
 class CSGChainObject;
