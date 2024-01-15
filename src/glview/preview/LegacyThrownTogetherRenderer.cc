@@ -73,8 +73,8 @@ void LegacyThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgob
                                                bool highlight_mode, bool background_mode,
                                                bool fberror, OpenSCADOperator type) const
 {
-//  if (this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return;
   if (!csgobj.leaf->polyset) return;
+  if (this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return;
 
   const Color4f& c = csgobj.leaf->color;
   csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
@@ -110,7 +110,7 @@ void LegacyThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGPr
 {
   PRINTD("Thrown renderCSGProducts");
   glDepthFunc(GL_LEQUAL);
-//  this->geomVisitMark.clear();
+  this->geomVisitMark.clear();
 
   for (const auto& product : products->products) {
     for (const auto& csgobj : product.intersections) {

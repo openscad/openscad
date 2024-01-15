@@ -31,4 +31,6 @@ private:
   std::shared_ptr<CSGProducts> root_products;
   std::shared_ptr<CSGProducts> highlight_products;
   std::shared_ptr<CSGProducts> background_products;
+  mutable std::unordered_map<std::pair<const PolySet *, const Transform3d *>, int,
+                             boost::hash<std::pair<const PolySet *, const Transform3d *>>> geomVisitMark;
 };
