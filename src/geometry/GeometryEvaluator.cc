@@ -366,28 +366,46 @@ static indexedFaceList stl_tricombine(const std::vector<IndexedFace> &triangles)
 	return result;
 }
 
-std::vector<IndexedFace> mergetriangles(const std::vector<IndexedFace> triangles,const std::vector<Vector3d> normals,std::vector<Vector3d> &newNormals)
+using Eigen::Vector4d;
+
+std::vector<IndexedFace> mergetriangles(const std::vector<IndexedFace> triangles,const std::vector<Vector4d> normals,std::vector<Vector4d> &newNormals, const std::vector<Vector3d> vert) // TODO letztes debug
 {
 	int i,j,k;
 	int n;
 	indexedFaceList emptyList;
 	std::vector<IndexedFace> polygons;
-	std::unordered_map<Vector3d,int>  norm_map;
-	std::vector<Vector3d> norm_list;
+	std::unordered_map<Vector4d,int>  norm_map;
+	std::vector<Vector4d> norm_list;
 	std::vector<indexedFaceList>  triangles_sorted;
 	// sort triangles into buckets of same orientation
 	for(int i=0;i<triangles.size();i++) {
-		Vector3d norm=normals[i];
+		Vector4d norm=normals[i];
 		int norm_ind;
-		if(norm_map.count(norm) == 0) {
+		IndexedFace triangle;
+		if(norm_map.count(norm) != 0){
+			norm_ind = norm_map[norm];
+			triangle = triangles[i];
+		}
+//	       	else if(norm_map.count(-norm) != 0){
+//			norm_ind = norm_map[-norm];
+//			triangle = triangles[i];
+//			printf("Adding tri:\n");
+//			for(int j=0;j<triangle.size();j++)
+//			{
+//				Vector3d pt=vert[triangle[j]];
+//				printf("%g/%g/%g\n",pt[0],pt[1], pt[2]);
+//			}
+//		}
+		else {
+			triangle = triangles[i];
 			norm_ind=norm_list.size();
 
 			norm_list.push_back(norm);
 			triangles_sorted.push_back(emptyList);
 
 			norm_map[norm]=norm_ind;
-		} else norm_ind = norm_map[norm];
-		triangles_sorted[norm_ind].push_back(triangles[i]);
+		}
+		triangles_sorted[norm_ind].push_back(triangle);
 	}
 
 	// now merge the triangles in all buckets independly
@@ -415,28 +433,15 @@ void roundNumber(double &x)
 	}
 }
 
-double  offset_3D_round(double x)
+double  offset_3D_round(double x) 
 {
 	if(x >= 0) return ((int)(x*1e6+0.5))*1e-6;
 	else return -((int)(-x*1e6+0.5))*1e-6;
 }
 
-std::vector<Vector3d> offset3D_sub(const std::vector<Vector3d> &vertices, const std::vector<IndexedFace> &indices, double &off)
+std::vector<Vector4d> offset3D_normals(const std::vector<Vector3d> &vertices, const std::vector<IndexedFace> &indices)
 {
-	// ----------------------------------------------------------
-	// create a point database and use it. and form polygons
-	// ----------------------------------------------------------
-	std::unordered_map<Vector3d, int, boost::hash<Vector3d> > pointIntMap;
-	std::vector<Vector3d> verticesNew; // list of all the points in the object
-	std::vector<intList>  pointToFaceInds; //  mapping pt_ind -> list of polygon inds which use it
-	intList emptyList;
-	for(int i=0;i<vertices.size();i++)
-		pointToFaceInds.push_back(emptyList);
-
-	// -------------------------------
-	// Calculating face normals
-	// -------------------------------
-	std::vector<Vector3d>  faceNormal;
+	std::vector<Vector4d>  faceNormal;
 	for(int i=0;i<indices.size();i++) {
 		IndexedFace pol = indices[i];
 		assert (pol.size() >= 3);
@@ -449,22 +454,40 @@ std::vector<Vector3d> offset3D_sub(const std::vector<Vector3d> &vertices, const 
 		roundNumber(norm[1]);
 		roundNumber(norm[2]);
 		norm.normalize();
-		faceNormal.push_back(norm);
+		Vector3d pt=vertices[pol[0]];
+		faceNormal.push_back(Vector4d(norm[0],norm[1],norm[2],norm.dot(pt)));
+		printf("norm is %g/%g/%g/%g\n",norm[0],norm[1],norm[2],norm.dot(pt));
+		for(int j=0;j<pol.size();j++)
+		{
+			Vector3d pt = vertices[pol[j]];
+			printf("%g/%g/%g ",pt[0], pt[1], pt[2]);
+			printf("\n");
+		}
+
 	}
+	return faceNormal;
 
-	std::vector<Vector3d> newNormals;
-	std::vector<IndexedFace> polygons_merged  = mergetriangles(indices,faceNormal,newNormals); // TODO sind es immer dreiecke ?
-	faceNormal=newNormals;
-	printf("now %d faces\n",polygons_merged.size());
+}
 
+std::vector<Vector4d> offset3D_combine(const std::vector<Vector3d> &vertices, const std::vector<IndexedFace> &indices,  std::vector<IndexedFace> &indicesNew)
+{
+	std::vector<Vector4d>  faceNormal=offset3D_normals(vertices, indices);
+	std::vector<Vector4d> newNormals;
+	indicesNew  = mergetriangles(indices,faceNormal,newNormals, vertices ); // TODO sind es immer dreiecke ?
+	return newNormals;
+}
+std::vector<Vector3d> offset3D_offset(const std::vector<Vector3d> &vertices, const std::vector<IndexedFace> &indices,const std::vector<Vector4d> &faceNormal, double &off) // off always contains the value, which is still to be sized
+{														    
+	std::vector<Vector3d> verticesNew;
 	// -------------------------------
 	// now calc length of all edges
 	// -------------------------------
 	std::vector<double> edge_len, edge_len_factor;
+	double edge_len_min=0;
 	if(off < 0) {
-		for(int i=0;i<polygons_merged.size();i++)
+		for(int i=0;i<indices.size();i++)
 		{
-			auto &pol = polygons_merged[i];
+			auto &pol = indices[i];
 			int n=pol.size();
 			for(int j=0;j<n;j++){
 				int a=pol[j];
@@ -472,17 +495,27 @@ std::vector<Vector3d> offset3D_sub(const std::vector<Vector3d> &vertices, const 
 				if(b > a) {
 					double dist=(vertices[b]-vertices[a]).norm();
 					edge_len.push_back(dist);
-					printf("%d - %d: %g\n",a,b, dist);
+					if(edge_len_min == 0 || edge_len_min > dist) edge_len_min=dist;
+//					printf("%d - %d: %g\n",a,b, dist);
 				}
 			}
 		}
 	}
+	//
+	// ----------------------------------------------------------
+	// create a point database and use it. and form polygons
+	// ----------------------------------------------------------
+	std::unordered_map<Vector3d, int, boost::hash<Vector3d> > pointIntMap;
+	std::vector<intList>  pointToFaceInds; //  mapping pt_ind -> list of polygon inds which use it
+	intList emptyList;
+	for(int i=0;i<vertices.size();i++)
+		pointToFaceInds.push_back(emptyList);
 
 	// -------------------------------
 	// calculate point-to-polygon relation
 	// -------------------------------
-	for(int i=0;i<polygons_merged.size();i++) {
-		IndexedFace pol = polygons_merged[i];
+	for(int i=0;i<indices.size();i++) {
+		IndexedFace pol = indices[i];
 		for(int j=0;j<pol.size(); j++) {
 			pointToFaceInds[pol[j]].push_back(i);
 		}
@@ -492,7 +525,7 @@ std::vector<Vector3d> offset3D_sub(const std::vector<Vector3d> &vertices, const 
 	// Calculate offset position to each point
 	// ---------------------------------------
 	double off_act=off;
-	if(off_act < 0) off_act=-0.001; // TODO dynamisch
+	if(off_act < 0) off_act=-edge_len_min/3.0;
 
 	for( int i = 0; i< pointToFaceInds.size();i++ ) {
 		Vector3d newpt;
@@ -505,37 +538,37 @@ std::vector<Vector3d> offset3D_sub(const std::vector<Vector3d> &vertices, const 
 			int xind=-1, yind=-1, zind=-1;
 			
 			// find closest  normal to xdir
-			for(int i=0;i<indexes.size();i++) {
-				if(fabs(faceNormal[indexes[i]][0]) > xmax) {
-					xmax=fabs(faceNormal[indexes[i]][0]);
-					xind=indexes[i];
+			for(int j=0;j<indexes.size();j++) {
+				if(fabs(faceNormal[indexes[j]][0]) > xmax) {
+					xmax=fabs(faceNormal[indexes[j]][0]);
+					xind=indexes[j];
 				}
 			}
 			if(xind == -1)  break;
 
 			// find closest  normal to ydir
-			for(int i=0;i<indexes.size();i++) {
-				if(fabs(faceNormal[indexes[i]][1]) > ymax && faceNormal[indexes[i]].dot(faceNormal[xind]) < 0.99999) {
-					ymax=fabs(faceNormal[indexes[i]][1]);
-					yind=indexes[i];
+			for(int j=0;j<indexes.size();j++) {
+				if(fabs(faceNormal[indexes[j]][1]) > ymax && faceNormal[indexes[j]].head<3>().dot(faceNormal[xind].head<3>()) < 0.99999) {
+					ymax=fabs(faceNormal[indexes[j]][1]);
+					yind=indexes[j];
 				}
 			}
 			if(yind == -1)  break; 
 
 			// find closest  normal to zdir
-			for(int i=0;i<indexes.size();i++) {
-				if(fabs(faceNormal[indexes[i]][2]) > zmax && faceNormal[indexes[i]].dot(faceNormal[xind]) < 0.99999 && faceNormal[indexes[i]].dot(faceNormal[yind]) < 0.99999 ) {
-					zmax=fabs(faceNormal[indexes[i]][2]);
-					zind=indexes[i];
+			for(int j=0;j<indexes.size();j++) {
+				if(fabs(faceNormal[indexes[j]][2]) > zmax && faceNormal[indexes[j]].head<3>().dot(faceNormal[xind].head<3>()) < 0.99999 && faceNormal[indexes[j]].head<3>().dot(faceNormal[yind].head<3>()) < 0.99999 ) {
+					zmax=fabs(faceNormal[indexes[j]][2]);
+					zind=indexes[j];
 				}
 			}
 			if(zind == -1) break;
 			
 			// now calculate the new pt
 			if(cut_face_face_face(
-						vertices[i]  +faceNormal[xind]*off_act  , faceNormal[xind], 
-						vertices[i]  +faceNormal[yind]*off_act  , faceNormal[yind], 
-						vertices[i]  +faceNormal[zind]*off_act  , faceNormal[zind], 
+						vertices[i]  +faceNormal[xind].head<3>()*off_act  , faceNormal[xind].head<3>(), 
+						vertices[i]  +faceNormal[yind].head<3>()*off_act  , faceNormal[yind].head<3>(), 
+						vertices[i]  +faceNormal[zind].head<3>()*off_act  , faceNormal[zind].head<3>(), 
 						newpt)){ printf("d\n");  break; }
 			valid=1;
 		} while(0);
@@ -543,7 +576,7 @@ std::vector<Vector3d> offset3D_sub(const std::vector<Vector3d> &vertices, const 
 		{
 			Vector3d dir={0,0,0};
 			for(int j=0;j<indexes.size();j++)
-				dir += faceNormal[j];
+				dir += faceNormal[j].head<3>();
 			newpt  = vertices[i] + off_act* dir.normalized();
 		}
 		verticesNew.push_back(newpt);
@@ -552,11 +585,11 @@ std::vector<Vector3d> offset3D_sub(const std::vector<Vector3d> &vertices, const 
 	// now calc new length of all new edges
 	// -------------------------------
 	if(off < 0) {
-		double off_min=0;
+		double off_min=-1e9;
 		int cnt=0;
-		for(int i=0;i<polygons_merged.size();i++)
+		for(int i=0;i<indices.size();i++)
 		{
-			auto &pol = polygons_merged[i];
+			auto &pol = indices[i];
 			int n=pol.size();
 			for(int j=0;j<n;j++){
 				int a=pol[j];
@@ -564,92 +597,111 @@ std::vector<Vector3d> offset3D_sub(const std::vector<Vector3d> &vertices, const 
 				if(b > a) {
 					double dist=(verticesNew[b]-verticesNew[a]).norm();
 					double fact = (dist-edge_len[cnt])/off_act;
-					printf("%d - %d: %g %g \n",a,b, dist, fact);
-					// find maximal downsize value
-					double t_off_min=-edge_len[cnt]/fact;
-					if(cnt == 0 ||off_min > t_off_min) off_min=t_off_min;
-					edge_len_factor.push_back(fact);
+//					printf("%d - %d: %g %g \n",a,b, dist, fact);
+					if(fabs(fact) > 0.0001) {
+						// find maximal downsize value
+						double t_off_min=-edge_len[cnt]/fact;
+						if(off_min < t_off_min) off_min=t_off_min;
+						edge_len_factor.push_back(fact);
+					}
 					cnt++;
 				}
 			}
 		}
-		if(off <  off_min) off=off_min;
-		printf("actual off is  %g\n",off);
+
+		double off_do=off;
+		printf("off_min is  %g\n",off_min);
+		if(off_do <  off_min) off_do=off_min;
 		for(int i=0;i<verticesNew.size();i++) {
-			Vector3d d=(verticesNew[i]-vertices[i])*off/off_act;
+			Vector3d d=(verticesNew[i]-vertices[i])*off_do/off_act;
 			verticesNew[i]=vertices[i]+d;
-			verticesNew[i][0]=offset_3D_round(verticesNew[i][0]);
-			verticesNew[i][1]=offset_3D_round(verticesNew[i][1]);
-			verticesNew[i][2]=offset_3D_round(verticesNew[i][2]);
+			verticesNew[i][0]=verticesNew[i][0];
+			verticesNew[i][1]=verticesNew[i][1];
+			verticesNew[i][2]=verticesNew[i][2];
 		}			
+		off -= off_do;
 	}
 	return verticesNew;
-
+}
+void  offset3D_reindex(const std::vector<Vector3d> &vertices, std::vector<IndexedFace> & indices, std::vector<Vector3d> &verticesNew, std::vector<IndexedFace> &indicesNew)
+{
+  indicesNew.clear();
+  verticesNew.clear();  
+  Reindexer<Vector3d> vertices_;
+  for(int i=0;i<indices.size();i++) {
+    auto face= indices[i];		
+    if(face.size() < 3) continue;
+    Vector3d diff1=vertices[face[1]] - vertices[face[0]];
+    Vector3d diff2=vertices[face[2]] - vertices[face[1]];
+    Vector3d norm = diff1.cross(diff2);
+    if(norm.norm() < 0.0001) continue;
+    IndexedFace facenew;
+    for(int j=0;j<face.size();j++) {
+      int ind=vertices_.lookup(vertices[face[j]]);
+      if(facenew.size() > 0){
+        if(facenew[0] == ind) continue;
+        if(facenew[facenew.size()-1] == ind) continue;
+      }
+      facenew.push_back(ind);
+    }
+    if(facenew.size() >= 3) indicesNew.push_back(facenew);
+  }
+  vertices_.copy(std::back_inserter(verticesNew));
 }
 
 std::shared_ptr<PolySet> offset3D(const std::shared_ptr<const PolySet> &ps,double off) {
   printf("Running offset3D %d polygons\n",ps->indices.size());
 //  if(off == 0) return ps;
+  std::vector<Vector3d> verticesNew;
+  std::vector<IndexedFace> indicesNew;
+  std::vector<Vector4d> normals;
   if(off > 0) { // upsize
     // TODO decomposition and assemble	
-    std::vector<Vector3d> pointList = offset3D_sub(ps->vertices, ps->indices,off);
+    std::vector<IndexedFace> indicesNew;
+//    offset3D_sub(ps->vertices, ps->indices,verticesNew, indicesNew, off);
+    normals = offset3D_combine(ps->vertices, ps->indices, indicesNew);
+    verticesNew = offset3D_offset(ps->vertices, indicesNew, normals, off);
     // -------------------------------
     // Map all points and assemble
     // -------------------------------
     PolySet *offset_result =  new PolySet(3, /* convex */ true);
-    offset_result->vertices = pointList;
-    offset_result->indices = ps->indices;
+    offset_result->vertices = verticesNew;
+    offset_result->indices = indicesNew;
     return std::shared_ptr<PolySet>(offset_result);
   } else {
     printf("Downsize\n");	  
 
-    double off_left=off;
-    std::vector<Vector3d> pointList=ps->vertices;
+    std::vector<Vector3d> vertices = ps->vertices;
     std::vector<IndexedFace> indices = ps->indices;
+    int round=0;
     do
     {
-      std::vector<Vector3d> pointListNew = offset3D_sub(pointList, indices,off);
-      if(fabs(off-off_left) > 0.0001) {
-        printf("offset was reduced!\n");
+      printf("New Round\n=======================\n");	    
 
-        // reindex to get rid of collapsed triangles
-	std::vector<IndexedFace> indicesNew;
-	Reindexer<Vector3d> vertices_;
-	for(int i=0;i<ps->indices.size();i++) {
-          auto face= ps->indices[i];		
-	  IndexedFace facenew;
-	  for(int j=0;j<face.size();j++) {
-            int ind=vertices_.lookup(pointListNew[face[j]]);
-	    if(facenew.size() > 0){
-              if(facenew[0] == ind) continue;
-              if(facenew[facenew.size()-1] == ind) continue;
-	    }
-	    facenew.push_back(ind);
-	  }
-	  if(facenew.size() >= 3) indicesNew.push_back(facenew);
-	}
-        std::vector<Vector3d> pointListNewX;
-	vertices_.copy(std::back_inserter(pointListNewX));
+      printf("Combine OP\n");
+      normals = offset3D_combine(vertices,indices, indicesNew);
+      indices = indicesNew;
+//      for(int i=0;i<vertices.size();i++)
+//	      printf("%g/%g/%g\n",vertices[i][0], vertices[i][1], vertices[i][2]);
 
-	printf("new faces: %d: %d\n",pointListNewX.size(), indicesNew.size());
-	for(int i=0;i<pointListNewX.size();i++) {
-          printf("%g %g %g\n",pointListNewX[i][0]-pointListNewX[0][0], 	pointListNewX[i][1], pointListNewX[i][2]);	
-	}
-	pointList = pointListNewX;
-	indices = indicesNew;
-        off_left -= off;
-        break;
-      } else {
-	pointList = pointListNew;
-	break;
-      }
+      if(indices.size() == 0 || fabs(off) <  0.0001) break;
+
+      printf("Offset OP\n");
+      verticesNew = offset3D_offset(vertices, indices, normals, off);
+      vertices = verticesNew;
+
+      printf("Reindex OP\n");
+      offset3D_reindex(vertices, indices, verticesNew, indicesNew);
+      vertices = verticesNew;
+      indices = indicesNew;
     }
-    while(true);
+    while(1);
+    // TODO negative flaechdfn zusammenfassern fuer rchtecke
     // -------------------------------
     // Map all points and assemble
     // -------------------------------
     PolySet *offset_result =  new PolySet(3, /* convex */ true);
-    offset_result->vertices = pointList;
+    offset_result->vertices = vertices;
     offset_result->indices = indices;
     return std::shared_ptr<PolySet>(offset_result);
   }
