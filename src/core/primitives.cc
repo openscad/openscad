@@ -275,7 +275,7 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
     return std::make_unique<PolySet>(3, true);
   }
 
-  auto fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
+  auto num_fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
 
   double z1, z2;
   if (this->center) {
@@ -286,51 +286,36 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
     z2 = this->h;
   }
 
-  auto circle1 = std::vector<Vector2d>(fragments);
-  auto circle2 = std::vector<Vector2d>(fragments);
+  auto polyset = std::make_unique<PolySet>(3, true);
+  polyset->vertices.reserve(2 * num_fragments);
 
-  generate_circle(circle1.data(), r1, fragments);
-  generate_circle(circle2.data(), r2, fragments);
+  generate_circle3(std::back_inserter(polyset->vertices), r1, z1, num_fragments);
+  generate_circle3(std::back_inserter(polyset->vertices), r2, z2, num_fragments);
 
-  PolySetBuilder builder(0, fragments * 2 + 2, 3, true);
-
-  for (int i = 0; i < fragments; ++i) {
-    int j = (i + 1) % fragments;
-    if (r1 == r2) {
-      builder.appendPoly(4);
-      for(int k=0;k<4;k++)
-        builder.prependVertex(Vector3d(circle1[k&2?j:i][0], circle1[k&2?j:i][1], (k+1)&2?z2:z1));
-    } else {
-      if (r1 > 0) {
-        builder.appendPoly({
-		Vector3d(circle1[j][0], circle1[j][1], z1),
-                            Vector3d(circle2[i][0], circle2[i][1], z2),
-                            Vector3d(circle1[i][0], circle1[i][1], z1)
-        });
-      }
-      if (r2 > 0) {
-        builder.appendPoly({
-		Vector3d(circle1[j][0], circle1[j][1], z1),
-                            Vector3d(circle2[j][0], circle2[j][1], z2),
-                            Vector3d(circle2[i][0], circle2[i][1], z2)
-        });
-      }
-    }
+  for (int i = 0; i < num_fragments; ++i) {
+    int j = (i + 1) % num_fragments;
+    polyset->indices.push_back({
+      i,
+      j,
+      j+num_fragments,
+      i+num_fragments,
+    });
   }
 
   if (this->r1 > 0) {
-    builder.appendPoly(fragments);
-    for (int i = 0; i < fragments; ++i)
-      builder.prependVertex(Vector3d(circle1[i][0], circle1[i][1], z1));
+    polyset->indices.push_back({});
+    for (int i = 0; i < num_fragments; ++i) {
+      polyset->indices.back().push_back(num_fragments-i-1);
+    }
   }
-
   if (this->r2 > 0) {
-    builder.appendPoly(fragments);
-    for (int i = 0; i < fragments; ++i)
-      builder.appendVertex(Vector3d(circle2[i][0], circle2[i][1], z2));
+    polyset->indices.push_back({});
+    for (int i = 0; i < num_fragments; ++i) {
+      polyset->indices.back().push_back(num_fragments+i);
+    }
   }
 
-  return builder.build();
+  return polyset;
 }
 
 static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
