@@ -203,19 +203,16 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
   //  if (num_rings % 2 == 0) num_rings++; // To ensure that the middle ring is at
   //  phi == 0 degrees
 
-  std::vector<Vector3d> vertices;
-  vertices.reserve(num_rings * num_fragments);
+  auto polyset = std::make_unique<PolySet>(3, true);
+  polyset->vertices.reserve(num_rings * num_fragments);
 
   // double offset = 0.5 * ((fragments / 2) % 2);
   for (int i = 0; i < num_rings; ++i) {
     //                double phi = (180.0 * (i + offset)) / (fragments/2);
     const double phi = (180.0 * (i + 0.5)) / num_rings;
     const double radius = r * sin_degrees(phi);
-    generate_circle3(std::back_inserter(vertices), radius, r * cos_degrees(phi), num_fragments);
+    generate_circle3(std::back_inserter(polyset->vertices), radius, r * cos_degrees(phi), num_fragments);
   }
-
-  auto polyset = std::make_unique<PolySet>(3, true);
-  polyset->vertices = std::move(vertices);
 
   polyset->indices.push_back({});
   for (int i = 0; i < num_fragments; ++i) {
@@ -223,31 +220,13 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
   }
 
   for (int i = 0; i < num_rings - 1; ++i) {
-    int r1i = 0, r2i = 0;
-    while (r1i < num_fragments || r2i < num_fragments) {
-      if (r1i >= num_fragments)
-        goto sphere_next_r2;
-      if (r2i >= num_fragments)
-        goto sphere_next_r1;
-      if ((double)r1i / num_fragments < (double)r2i / num_fragments) {
-      sphere_next_r1:
-        int r1j = (r1i + 1) % num_fragments;
-        polyset->indices.push_back({
-          (i+1)*num_fragments+r2i%num_fragments,
-          i*num_fragments+r1j,
-          i*num_fragments+r1i
-        });
-        r1i++;
-      } else {
-      sphere_next_r2:
-        int r2j = (r2i + 1) % num_fragments;
-        polyset->indices.push_back({
-          (i+1)*num_fragments+r2i%num_fragments,
-          (i+1)*num_fragments+r2j,
-          i*num_fragments+r1i
-        });
-        r2i++;
-      }
+    for (int r=0;r<num_fragments;++r) {
+      polyset->indices.push_back({
+        i*num_fragments+(r+1)%num_fragments,
+        i*num_fragments+r,
+        (i+1)*num_fragments+r,
+        (i+1)*num_fragments+(r+1)%num_fragments,
+      });
     }
   }
 
