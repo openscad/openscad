@@ -46,7 +46,7 @@
 
  */
 
-PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(convex), dirty(true)
+PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(convex)
 {
 }
 
@@ -71,16 +71,13 @@ std::string PolySet::dump() const
   out << "\nPolySet end";
   return out.str();
 }
+
 BoundingBox PolySet::getBoundingBox() const
 {
-  if (this->dirty) {
-    this->bbox.setNull();
-    for (const auto& poly : indices) {
-      for (const auto& idx : poly) {
-        this->bbox.extend(this->vertices[idx]);
-      }
+  if (this->bbox.isNull()) {
+    for (const auto& v : vertices) {
+      this->bbox.extend(v);
     }
-    this->dirty = false;
   }
   return this->bbox;
 }
@@ -105,7 +102,7 @@ void PolySet::transform(const Transform3d& mat)
     for (auto& p : this->indices) {
       std::reverse(p.begin(), p.end());
   }
-  this->dirty = true;
+  this->bbox.setNull();
 }
 
 bool PolySet::is_convex() const {
