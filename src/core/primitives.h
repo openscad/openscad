@@ -24,6 +24,8 @@
  *
  */
 
+#include "GeometryUtils.h"
+#include "linalg.h"
 #include "node.h"
 #include <sstream>
 
