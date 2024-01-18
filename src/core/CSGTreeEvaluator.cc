@@ -170,12 +170,14 @@ Response CSGTreeEvaluator::visit(State& state, const class ListNode& node)
 
 }
 
+// Creates a 1-unit-thick PolySet with dim==2 from a Polygon2d.
 std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
-  auto ps = p2d.tessellate();
-  // Estimating num vertices and polygons
+  const auto ps = p2d.tessellate();
+  constexpr int dim = 2;
+  // Estimating num vertices and polygons: top + bottom + sides
   PolySetBuilder builder(ps->vertices.size() * 2, 
                          ps->indices.size() * 2 + ps->vertices.size(),
-                         2, p2d.is_convex());
+                         dim, p2d.is_convex());
   builder.setConvexity(p2d.getConvexity());
 
   // Create bottom face.
@@ -209,8 +211,7 @@ std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
     }
   }
 
-  auto polyset = builder.build();
-  return polyset;
+  return builder.build();
 }
 
 
