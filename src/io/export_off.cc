@@ -32,6 +32,7 @@
 
 void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
+  // FIXME: Should we offer a fast path if geom is already a PolySet?
   PolySetBuilder builder;
   builder.appendGeometry(geom);
   auto ps = builder.build();

@@ -208,6 +208,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
   return data;
 }
 
+// FIXME: Look for faster way to generate PolySet directly
 std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
 {
   auto data = read_png_or_dat(filename);
