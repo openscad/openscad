@@ -118,7 +118,7 @@ uint64_t append_stl(const PolySet& polyset, std::ostream& output, bool binary)
   if (!binary) {
     vertexStrings.resize(ps.vertices.size());
     std::transform(ps.vertices.begin(), ps.vertices.end(), vertexStrings.begin(),
-      [](const auto& p) { return toString({p.x(), p.y(), p.z()}); });
+      [](const auto& p) { return toString({(float) p.x(), (float) p.y(),(float)  p.z()}); });
   }
 
   // Used for binary mode only
@@ -162,7 +162,7 @@ uint64_t append_stl(const PolySet& polyset, std::ostream& output, bool binary)
       assert(s0 != s1 && s0 != s2 && s1 != s2);
       
       output << "  facet normal ";
-      output << toString({normal.x(), normal.y(), normal.z()}) << "\n";
+      output << toString({(float) normal.x(), (float)normal.y(), (float) normal.z()}) << "\n";
       output << "    outer loop\n";
       output << "      vertex " << s0 << "\n";
       output << "      vertex " << s1 << "\n";

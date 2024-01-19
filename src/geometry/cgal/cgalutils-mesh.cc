@@ -16,9 +16,6 @@ namespace PMP = CGAL::Polygon_mesh_processing;
 template <class TriangleMesh>
 bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
 {
-  using GT = boost::graph_traits<TriangleMesh>;
-  using vertex_descriptor = typename GT::vertex_descriptor;
-
   std::vector<typename TriangleMesh::Point> points;
   std::vector<std::vector<size_t>> polygons;
 
