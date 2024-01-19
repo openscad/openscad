@@ -30,7 +30,6 @@
 #include "ModuleInstantiation.h"
 #include "Parameters.h"
 #include "PolySet.h"
-#include "PolySetBuilder.h"
 #include "Polygon2d.h"
 #include "calc.h"
 #include "core/node.h"

@@ -6,7 +6,6 @@
 #include "cgal.h"
 #include "cgalutils.h"
 #include "PolySet.h"
-#include "PolySetBuilder.h"
 #include "printutils.h"
 #include "Polygon2d.h"
 #include "PolySetUtils.h"
