@@ -29,6 +29,7 @@
 #include <utility>
 #include "Feature.h"
 #include "PolySet.h"
+#include "enums.h"
 #include "printutils.h"
 #include "LegacyRendererUtils.h"
 
@@ -72,8 +73,8 @@ void LegacyThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgob
                                                bool highlight_mode, bool background_mode,
                                                bool fberror, OpenSCADOperator type) const
 {
-//  if (this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return;
   if (!csgobj.leaf->polyset) return;
+  if (this->geomVisitMark[std::make_pair(csgobj.leaf->polyset.get(), &csgobj.leaf->matrix)]++ > 0) return;
 
   const Color4f& c = csgobj.leaf->color;
   csgmode_e csgmode = get_csgmode(highlight_mode, background_mode, type);
@@ -91,14 +92,14 @@ void LegacyThrownTogetherRenderer::renderChainObject(const CSGChainObject& csgob
     setColor(colormode, c.data(), shaderinfo);
   }
   glPushMatrix();
-  glMultMatrixd(m.data());
-  render_surface(*csgobj.leaf->polyset, csgmode, m, shaderinfo);
-  // only use old render_edges if there is no shader progid
-  if (showedges && (shaderinfo && shaderinfo->progid == 0)) {
-    // FIXME? glColor4f((c[0]+1)/2, (c[1]+1)/2, (c[2]+1)/2, 1.0);
-    setColor(edge_colormode);
-    render_edges(*csgobj.leaf->polyset, csgmode);
+
+  Transform3d tmp = csgobj.leaf->matrix;
+  if (csgobj.leaf->polyset->getDimension() == 2 && type == OpenSCADOperator::DIFFERENCE) {
+    // Scale 2D negative objects 10% in the Z direction to avoid z fighting
+    tmp *= Eigen::Scaling(1.0, 1.0, 1.1);
   }
+  glMultMatrixd(tmp.data());
+  render_surface(*csgobj.leaf->polyset, tmp, shaderinfo);
   glPopMatrix();
 }
 
@@ -109,7 +110,7 @@ void LegacyThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGPr
 {
   PRINTD("Thrown renderCSGProducts");
   glDepthFunc(GL_LEQUAL);
-//  this->geomVisitMark.clear();
+  this->geomVisitMark.clear();
 
   for (const auto& product : products->products) {
     for (const auto& csgobj : product.intersections) {

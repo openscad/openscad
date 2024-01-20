@@ -65,10 +65,10 @@ QString Measurement::statemachine(QPoint mouse)
         double lat;
         obj1=qglview->selected_obj[0];
         obj2=qglview->selected_obj[1];
-        if(obj1.type == SELECTION_POINT && obj2.type == SELECTION_POINT) dist =(obj2.p1-obj1.p1).norm();
-        if(obj1.type == SELECTION_POINT && obj2.type == SELECTION_LINE) dist =calculateLinePointDistance(obj2.p1, obj2.p2,obj1.p1,lat);
-        if(obj1.type == SELECTION_LINE && obj2.type == SELECTION_POINT) dist =calculateLinePointDistance(obj1.p1, obj1.p2,obj2.p1,lat);
-        if(obj1.type == SELECTION_LINE && obj2.type == SELECTION_LINE) dist =calculateLineLineDistance(obj1.p1, obj1.p2,obj2.p1,obj2.p2,lat);
+        if(obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_POINT) dist =(obj2.p1-obj1.p1).norm();
+        if(obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_LINE) dist =calculateLinePointDistance(obj2.p1, obj2.p2,obj1.p1,lat);
+        if(obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_POINT) dist =calculateLinePointDistance(obj1.p1, obj1.p2,obj2.p1,lat);
+        if(obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_LINE) dist =calculateLineLineDistance(obj1.p1, obj1.p2,obj2.p1,obj2.p2,lat);
         if(!std::isnan(dist)) {
           return QString("Distance is %1").arg(fabs(dist));
               std::stringstream ss;
@@ -88,21 +88,21 @@ QString Measurement::statemachine(QPoint mouse)
         obj1=qglview->selected_obj[0];
         obj2=qglview->selected_obj[1];
         Vector3d side1, side2;
-        if(obj1.type == SELECTION_LINE && obj2.type == SELECTION_POINT)
+        if(obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_POINT)
         {
           side1=(obj1.p2-obj1.p1).normalized();
           side2=(obj1.p2-obj2.p1).normalized();
           ang=acos(side1.dot(side2))*180.0/3.14159265359;
           goto display_angle;
         }
-        else if(obj1.type == SELECTION_POINT && obj2.type == SELECTION_LINE)
+        else if(obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_LINE)
         {
           side1=(obj2.p2-obj2.p1).normalized();
           side2=(obj2.p2-obj1.p1).normalized();
           ang=acos(side1.dot(side2))*180.0/3.14159265359;
           goto display_angle;
         }
-        else if(obj1.type == SELECTION_LINE && obj2.type == SELECTION_LINE)
+        else if(obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_LINE)
         {
           if(obj1.p2 == obj2.p1) {
             side1=(obj2.p1-obj1.p1).normalized();
@@ -126,7 +126,7 @@ QString Measurement::statemachine(QPoint mouse)
         obj1=qglview->selected_obj[0];
         obj2=qglview->selected_obj[1];
         obj3=qglview->selected_obj[2];
-        if(obj1.type == SELECTION_POINT && obj2.type == SELECTION_POINT && obj3.type == SELECTION_POINT)
+        if(obj1.type == SelectionType::SELECTION_POINT && obj2.type == SelectionType::SELECTION_POINT && obj3.type == SelectionType::SELECTION_POINT)
         {
           Vector3d side1=(obj2.p1-obj1.p1).normalized();
           Vector3d side2=(obj2.p1-obj3.p1).normalized();

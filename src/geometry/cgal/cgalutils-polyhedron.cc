@@ -285,7 +285,7 @@ std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p)
   using FCI = typename Polyhedron::Facet_const_iterator;
   using HFCC = typename Polyhedron::Halfedge_around_facet_const_circulator;
 
-  PolySetBuilder builder(0,p.size_of_facets());
+  PolySetBuilder builder(0, p.size_of_facets());
 
   for (FCI fi = p.facets_begin(); fi != p.facets_end(); ++fi) {
     HFCC hc = fi->facet_begin();

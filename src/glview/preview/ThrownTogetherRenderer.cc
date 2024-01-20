@@ -29,6 +29,7 @@
 #include <utility>
 #include "Feature.h"
 #include "PolySet.h"
+#include "enums.h"
 #include "printutils.h"
 
 #include "system-gl.h"
@@ -63,9 +64,9 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
     add_shader_data(vertex_array);
 
     size_t num_vertices = 0;
-    if (this->root_products) num_vertices += (getSurfaceBufferSize(this->root_products, false, false, true) * 2);
-    if (this->background_products) num_vertices += getSurfaceBufferSize(this->background_products, false, true, true);
-    if (this->highlight_products) num_vertices += getSurfaceBufferSize(this->highlight_products, true, false, true);
+    if (this->root_products) num_vertices += (getSurfaceBufferSize(this->root_products, true) * 2);
+    if (this->background_products) num_vertices += getSurfaceBufferSize(this->background_products, true);
+    if (this->highlight_products) num_vertices += getSurfaceBufferSize(this->highlight_products, true);
 
     vertex_array.allocateBuffers(num_vertices);
 
@@ -120,21 +121,21 @@ void ThrownTogetherRenderer::renderCSGProducts(const std::shared_ptr<CSGProducts
     if (vs) {
       std::shared_ptr<TTRVertexState> csg_vs = std::dynamic_pointer_cast<TTRVertexState>(vs);
       if (csg_vs) {
-	if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
-	  GL_TRACE("glUniform3f(%d, %f, %f, %f)",
-		   shaderinfo->data.select_rendering.identifier %
-		   (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
-		   (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
-		   (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-	  GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
-				((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-				((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-				((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-	}
+        if (shaderinfo && shaderinfo->type == Renderer::SELECT_RENDERING) {
+          GL_TRACE("glUniform3f(%d, %f, %f, %f)",
+                   shaderinfo->data.select_rendering.identifier %
+                   (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
+                   (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
+                   (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+          GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
+                                ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
+                                ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
+                                ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+        }
       }
       std::shared_ptr<VBOShaderVertexState> shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
       if (!shader_vs || (shader_vs && showedges)) {
-	vs->draw();
+        vs->draw();
       }
     }
   }
@@ -181,7 +182,12 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       });
       vertex_states.emplace_back(std::move(cull));
 
-      create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, csgobj.leaf->matrix, color);
+      Transform3d mat = csgobj.leaf->matrix;
+      if (csgobj.leaf->polyset->getDimension() == 2 && type == OpenSCADOperator::DIFFERENCE) {
+        // Scale 2D negative objects 10% in the Z direction to avoid z fighting
+        mat *= Eigen::Scaling(1.0, 1.0, 1.1);
+      }
+      create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, mat, color);
       std::shared_ptr<TTRVertexState> vs = std::dynamic_pointer_cast<TTRVertexState>(vertex_array.states().back());
       if (vs) {
         vs->setCsgObjectIndex(csgobj.leaf->index);

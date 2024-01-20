@@ -50,10 +50,6 @@ PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(con
 {
 }
 
-PolySet::PolySet(Polygon2d origin) : polygon(std::move(origin)), dim(2), convex(unknown), dirty(true)
-{
-}
-
 std::unique_ptr<Geometry> PolySet::copy() const {
   return std::make_unique<PolySet>(*this);
 }
@@ -65,7 +61,6 @@ std::string PolySet::dump() const
       << "\n dimensions:" << this->dim
       << "\n convexity:" << this->convexity
       << "\n num polygons: " << indices.size()
-      << "\n num outlines: " << polygon.outlines().size()
       << "\n polygons data:";
   for (const auto& polygon : indices) {
     out << "\n  polygon begin:";
@@ -73,8 +68,6 @@ std::string PolySet::dump() const
       out << "\n   vertex:" << this->vertices[v].transpose();
     }
   }
-  out << "\n outlines data:";
-  out << polygon.dump();
   out << "\nPolySet end";
   return out.str();
 }
@@ -97,7 +90,6 @@ size_t PolySet::memsize() const
   size_t mem = 0;
   for (const auto& p : this->indices) mem += p.size() * sizeof(int);
   for (const auto& p : this->vertices) mem += p.size() * sizeof(Vector3d);
-  mem += this->polygon.memsize() - sizeof(this->polygon);
   mem += sizeof(PolySet);
   return mem;
 }

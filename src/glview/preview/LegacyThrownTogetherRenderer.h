@@ -2,6 +2,8 @@
 
 #include "Renderer.h"
 #include "CSGNode.h"
+#include <boost/functional/hash.hpp>
+#include <unordered_map>
 
 class CSGProducts;
 class CSGChainObject;
@@ -31,4 +33,6 @@ private:
   std::shared_ptr<CSGProducts> root_products;
   std::shared_ptr<CSGProducts> highlight_products;
   std::shared_ptr<CSGProducts> background_products;
+  mutable std::unordered_map<std::pair<const PolySet *, const Transform3d *>, int,
+                             boost::hash<std::pair<const PolySet *, const Transform3d *>>> geomVisitMark;
 };

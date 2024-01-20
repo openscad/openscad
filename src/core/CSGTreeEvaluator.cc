@@ -10,12 +10,14 @@
 #include "printutils.h"
 #include "GeometryEvaluator.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 
 #include <string>
 #include <map>
 #include <list>
 #include <cassert>
 #include <cstddef>
+#include <boost/range/adaptor/reversed.hpp>
 
 /*!
    \class CSGTreeEvaluator
@@ -168,16 +170,60 @@ Response CSGTreeEvaluator::visit(State& state, const class ListNode& node)
 
 }
 
+std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
+  auto ps = p2d.tessellate();
+  // Estimating num vertices and polygons
+  PolySetBuilder builder(ps->vertices.size() * 2, 
+                         ps->indices.size() * 2 + ps->vertices.size(),
+                         2, p2d.is_convex());
+  builder.setConvexity(p2d.getConvexity());
+
+  // Create bottom face.
+  for (const auto& poly : ps->indices) {
+    builder.appendPoly(poly.size());
+    // Flip vertex ordering for bottom polygon
+    for (const auto& ind: boost::adaptors::reverse(poly)) {
+      builder.appendVertex(ps->vertices[ind] - Vector3d(0, 0, 0.5));
+    }
+  }
+
+  // Create top face.
+  for (const auto& poly : ps->indices) {
+    builder.appendPoly(poly.size());
+    for (const auto& ind: poly) {
+      builder.appendVertex(ps->vertices[ind] + Vector3d(0, 0, 0.5));
+    }
+  }
+
+  // Create sides
+  for (const auto& o : p2d.outlines()) {
+    for (size_t i = 0; i < o.vertices.size(); ++i) {
+      const Vector2d &prev = o.vertices[i];
+      const Vector2d &curr = o.vertices[(i+1)%o.vertices.size()];
+      builder.appendPoly({
+        Vector3d(prev[0], prev[1], -0.5),
+        Vector3d(curr[0], curr[1], -0.5),
+        Vector3d(curr[0], curr[1], 0.5),
+        Vector3d(prev[0], prev[1], 0.5),
+      });
+    }
+  }
+
+  auto polyset = builder.build();
+  return polyset;
+}
+
+
 std::shared_ptr<CSGNode> CSGTreeEvaluator::evaluateCSGNodeFromGeometry(
   State& state, const std::shared_ptr<const Geometry>& geom,
   const ModuleInstantiation *modinst, const AbstractNode& node)
 {
   assert(geom);
-  // We cannot render Polygon2d directly, so we preprocess (tessellate) it here
+  // We cannot render Polygon2d directly, so we convert it to a PolySet here
   std::shared_ptr<const PolySet> ps;
   if (!geom->isEmpty()) {
     if (auto p2d = std::dynamic_pointer_cast<const Polygon2d>(geom)) {
-      ps = p2d->tessellate();
+      ps = polygon2dToPolySet(*p2d);
     }
     // 3D PolySets are tessellated before inserting into Geometry cache, inside GeometryEvaluator::evaluateGeometry
     else {

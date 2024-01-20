@@ -44,7 +44,7 @@ template bool createMeshFromPolySet(const PolySet& ps, CGAL_DoubleMesh& mesh);
 template <class TriangleMesh>
 std::unique_ptr<PolySet> createPolySetFromMesh(const TriangleMesh& mesh)
 {
-  PolySetBuilder builder(0,mesh.number_of_faces()+ mesh.number_of_faces());
+  PolySetBuilder builder(0, mesh.number_of_faces()+ mesh.number_of_faces());
   for (const auto& f : mesh.faces()) {
     builder.appendPoly(mesh.degree(f));
 

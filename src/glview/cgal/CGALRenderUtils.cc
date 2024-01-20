@@ -17,7 +17,7 @@ double calculateLineLineDistance(const Vector3d &l1b, const Vector3d &l1e, const
 	}
 	double t=n.norm();
 	n.normalize();
-    	d=n.dot(l1b-l2b);
+  d=n.dot(l1b-l2b);
 	dist_lat=(v2.cross(n)).dot(l2b-l1b)/t;
 	return d;
 }

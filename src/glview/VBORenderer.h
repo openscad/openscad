@@ -24,21 +24,20 @@ public:
   VBORenderer();
   void resize(int w, int h) override;
   virtual bool getShaderColor(Renderer::ColorMode colormode, const Color4f& col, Color4f& outcolor) const;
-  virtual size_t getSurfaceBufferSize(const std::shared_ptr<CSGProducts>& products, bool highlight_mode, bool background_mode, bool unique_geometry = false) const;
-  virtual size_t getSurfaceBufferSize(const CSGChainObject& csgobj, bool highlight_mode, bool background_mode, const OpenSCADOperator type = OpenSCADOperator::UNION, bool unique_geometry = false) const;
-  virtual size_t getSurfaceBufferSize(const PolySet& polyset, csgmode_e csgmode = CSGMODE_NORMAL) const;
-  virtual size_t getEdgeBufferSize(const std::shared_ptr<CSGProducts>& products, bool highlight_mode, bool background_mode, bool unique_geometry = false) const;
-  virtual size_t getEdgeBufferSize(const CSGChainObject& csgobj, bool highlight_mode, bool background_mode, const OpenSCADOperator type = OpenSCADOperator::UNION, bool unique_geometry = false) const;
-  virtual size_t getEdgeBufferSize(const PolySet& polyset, csgmode_e csgmode = CSGMODE_NORMAL) const;
+  virtual size_t getSurfaceBufferSize(const std::shared_ptr<CSGProducts>& products, bool unique_geometry = false) const;
+  virtual size_t getSurfaceBufferSize(const CSGChainObject& csgobj, bool unique_geometry = false) const;
+  virtual size_t getSurfaceBufferSize(const PolySet& polyset) const;
+  virtual size_t getEdgeBufferSize(const PolySet& polyset) const;
+  virtual size_t getEdgeBufferSize(const Polygon2d& polygon) const;
 
   virtual void create_surface(const PolySet& ps, VertexArray& vertex_array,
                               csgmode_e csgmode, const Transform3d& m, const Color4f& color) const;
 
-  virtual void create_edges(const PolySet& ps, VertexArray& vertex_array,
-                            csgmode_e csgmode, const Transform3d& m, const Color4f& color) const;
+  virtual void create_edges(const Polygon2d& polygon, VertexArray& vertex_array,
+                            const Transform3d& m, const Color4f& color) const;
 
   virtual void create_polygons(const PolySet& ps, VertexArray& vertex_array,
-                               csgmode_e csgmode, const Transform3d& m, const Color4f& color) const;
+                               const Transform3d& m, const Color4f& color) const;
 
   virtual void create_triangle(VertexArray& vertex_array, const Color4f& color,
                                const Vector3d& p0, const Vector3d& p1, const Vector3d& p2,
