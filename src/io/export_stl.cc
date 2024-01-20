@@ -282,6 +282,7 @@ uint64_t append_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& o
 void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 bool binary)
 {
+  // FIXME: In lazy union mode, should we export multiple solids?
   if (binary) {
     char header[80] = "OpenSCAD Model\n";
     output.write(header, sizeof(header));

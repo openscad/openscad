@@ -26,14 +26,12 @@
 #include "export.h"
 
 #include "PolySet.h"
-#include "PolySetBuilder.h"
+#include "PolySetUtils.h"
 
 void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  // FIXME: Should we offer a fast path if geom is already a PolySet?
-  PolySetBuilder builder;
-  builder.appendGeometry(geom);
-  auto ps = builder.build();
+  // FIXME: In lazy union mode, should we export multiple IndexedFaceSets?
+  auto ps = PolySetUtils::getGeometryAsPolySet(geom);
 
   output << "#VRML V2.0 utf8\n\n";
 
