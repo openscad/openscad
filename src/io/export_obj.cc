@@ -42,11 +42,11 @@ void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     output << "v " << ps->vertices[i][0] << " " << ps->vertices[i][1] << " " << ps->vertices[i][2] << "\n";
   }
 
-  for (int i = 0; i < ps->indices.size(); i++) {
+  for (size_t i = 0; i < ps->indices.size(); i++) {
 
     output << "f ";
 
-    for(int j=0;j<ps->indices[i].size();j++) {
+    for(size_t j=0;j<ps->indices[i].size();j++) {
       auto index = ps->indices[i][j];
       output << " " << (1 + index);
     }

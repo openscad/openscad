@@ -92,10 +92,10 @@ public:
   size_t size() const { return this->edges.size(); }
 
   void print() const {
-    for (const auto& v : this->edges) {
-      const auto& e = v.first;
+//    for (const auto& v : this->edges) {
+//      const auto& e = v.first;
 //      PRINTDB("     (%d,%d)%s", e.first % e.second % ((v.second > 1) ? std::to_string(v.second).c_str() : ""));
-    }
+//    }
   }
 
   void remove_from_v2e(int vidx, int next, int prev) {

@@ -53,9 +53,9 @@ std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) 
   const auto vertexCount = mesh.vertPos.size();
 //  assert(indices.size() == numfaces * 4);
   for (size_t i = 0; i < numfaces; i++) {
-    auto i0 = indices[i][0];
-    auto i1 = indices[i][1];
-    auto i2 = indices[i][2];
+    unsigned int i0 = indices[i][0];
+    unsigned int i1 = indices[i][1];
+    unsigned int i2 = indices[i][2];
     assert(i0 >= 0 && i0 < vertexCount &&
            i1 >= 0 && i1 < vertexCount &&
            i2 >= 0 && i2 < vertexCount);
@@ -69,7 +69,6 @@ template <class TriangleMesh>
 std::shared_ptr<ManifoldGeometry> createMutableManifoldFromSurfaceMesh(const TriangleMesh& tm)
 {
   typedef typename TriangleMesh::Vertex_index vertex_descriptor;
-  typedef typename TriangleMesh::Face_index face_descriptor;
 
   manifold::Mesh mesh;
 

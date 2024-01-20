@@ -99,7 +99,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
           t.stop();
           PRINTDB("Minkowski: decomposition took %f s", t.time());
         }
-        return std::move(part_points);
+        return part_points;
       });
 
       std::vector<Hull_kernel::Point_3> minkowski_points;

@@ -136,7 +136,7 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
 {
   Grid3d<unsigned int> grid(GRID_FINE);
   std::vector<unsigned int> indices; // Vertex indices in one polygon
-  for (int i=0; i < this->indices.size();) {
+  for (size_t i=0; i < this->indices.size();) {
     IndexedFace& ind_f = this->indices[i];
     indices.resize(ind_f.size());
     // Quantize all vertices. Build index list

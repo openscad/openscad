@@ -3667,14 +3667,14 @@ void MainWindow::jumpToLine(int line, int col)
 }
 
 paperSizes MainWindow::sizeString2Enum(QString current){
-   for(int i = 0; i < paperSizeStrings.size(); i++){
+   for(size_t i = 0; i < paperSizeStrings.size(); i++){
        if (current.toStdString()==paperSizeStrings[i]) return static_cast<paperSizes>(i);
    };
    return paperSizes::A4;
 };
 
 paperOrientations MainWindow::orientationsString2Enum(QString current){
-   for(int i = 0; i < paperOrientationsStrings.size(); i++){
+   for(size_t i = 0; i < paperOrientationsStrings.size(); i++){
        if (current.toStdString()==paperOrientationsStrings[i]) return static_cast<paperOrientations>(i);
    };
    return paperOrientations::PORTRAIT;

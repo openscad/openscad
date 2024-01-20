@@ -53,7 +53,7 @@ static void uint32_byte_swap(uint32_t& x) {
 
 static void read_stl_facet(std::ifstream& f, stl_facet& facet) {
   f.read((char *)facet.data8, STL_FACET_NUMBYTES);
-  if (f.gcount() < STL_FACET_NUMBYTES) {
+  if (static_cast<size_t>(f.gcount()) < STL_FACET_NUMBYTES) {
     throw std::ios_base::failure("facet data truncated");
   }
 #if BOOST_ENDIAN_BIG_BYTE
