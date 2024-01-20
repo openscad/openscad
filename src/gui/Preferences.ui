@@ -1976,7 +1976,7 @@
                <item>
                 <widget class="QCheckBox" name="enableClearConsoleCheckBox">
                  <property name="text">
-                  <string>clear console before Preview/Render</string>
+                  <string>Clear console before Preview/Render</string>
                  </property>
                  <property name="checked">
                   <bool>false</bool>
@@ -2281,7 +2281,7 @@
                <item>
                 <widget class="QCheckBox" name="enableTraceUsermoduleParametersCheckBox">
                  <property name="text">
-                  <string>show parameters of usermodul calls in trace</string>
+                  <string>Show parameters of usermodule calls in trace</string>
                  </property>
                  <property name="checked">
                   <bool>false</bool>

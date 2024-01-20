@@ -132,7 +132,7 @@ void AmfImporter::set_v3(AmfImporter *importer, const xmlChar *value)
 
 void AmfImporter::start_object(AmfImporter *importer, const xmlChar *)
 {
-  importer->builder = std::make_unique<PolySetBuilder>(0,0,3);
+  importer->builder = std::make_unique<PolySetBuilder>(0,0);
 }
 
 void AmfImporter::end_object(AmfImporter *importer, const xmlChar *)
@@ -158,7 +158,7 @@ void AmfImporter::end_triangle(AmfImporter *importer, const xmlChar *)
 
   importer->builder->appendPoly(3);
   for(int i=0;i<3;i++) // TODO set vertex array first
-	  importer->builder->appendVertex(importer->builder->vertexIndex(Vector3d(v[idx[i]].x(), v[idx[i]].y(), v[idx[i]].z())));
+	  importer->builder->appendVertex(Vector3d(v[idx[i]].x(), v[idx[i]].y(), v[idx[i]].z()));
 }
 
 void AmfImporter::processNode(xmlTextReaderPtr reader)

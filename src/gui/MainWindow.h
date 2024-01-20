@@ -4,6 +4,7 @@
 #include "Geometry.h"
 #include "export.h"
 #include "ExportPdfDialog.h"
+#include "Measurement.h"
 #include "RenderStatistic.h"
 #include "TabManager.h"
 #include "Tree.h"
@@ -19,6 +20,7 @@
 #include <QIcon>
 #include <QIODevice>
 #include <QMutex>
+#include <QSoundEffect>
 #include <QTime>
 
 #ifdef STATIC_QT_SVG_PLUGIN
@@ -66,12 +68,12 @@ public:
   TabManager *tabManager;
 
   std::shared_ptr<const Geometry> root_geom;
-  class CGALRenderer *cgalRenderer;
+  std::shared_ptr<Renderer> cgalRenderer;
 #ifdef ENABLE_OPENCSG
-  class OpenCSGRenderer *opencsgRenderer;
+  std::shared_ptr<Renderer> opencsgRenderer;
   std::unique_ptr<class MouseSelector> selector;
 #endif
-  ThrownTogetherRenderer *thrownTogetherRenderer;
+  std::shared_ptr<Renderer> thrownTogetherRenderer;
 
   QString last_compiled_doc;
 
@@ -85,6 +87,8 @@ public:
   QWidget *errorLogDockTitleWidget;
   QWidget *animateDockTitleWidget;
   QWidget *viewportControlTitleWidget;
+
+  Measurement meas;
 
   int compileErrors;
   int compileWarnings;
@@ -109,6 +113,7 @@ private slots:
   void openCSGSettingsChanged();
   void consoleOutput(const Message& msgObj);
   void setCursor();
+  void measureFinished();
   void errorLogOutput(const Message& log_msg);
 
 public:
@@ -240,6 +245,8 @@ private slots:
   void actionRender();
   void actionRenderDone(const std::shared_ptr<const Geometry>&);
   void cgalRender();
+  void actionMeasureDistance();
+  void actionMeasureAngle();
   void actionCheckValidity();
   void actionDisplayAST();
   void actionDisplayCSGTree();
@@ -329,7 +336,8 @@ public slots:
   void viewResetView();
   void viewAll();
   void editorContentChanged();
-  void selectObject(QPoint coordinate);
+  void leftClick(QPoint coordinate);
+  void rightClick(QPoint coordinate);
   void dragEnterEvent(QDragEnterEvent *event) override;
   void dropEvent(QDropEvent *event) override;
   void helpAbout();
@@ -378,7 +386,9 @@ private:
   int tabCount = 0;
   paperSizes sizeString2Enum(QString current);
   paperOrientations orientationsString2Enum(QString current);
-  
+
+  QSoundEffect *renderCompleteSoundEffect;
+
 signals:
   void highlightError(int);
   void unhighlightLastError();

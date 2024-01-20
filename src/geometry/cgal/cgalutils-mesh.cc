@@ -16,9 +16,6 @@ namespace PMP = CGAL::Polygon_mesh_processing;
 template <class TriangleMesh>
 bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
 {
-  using GT = boost::graph_traits<TriangleMesh>;
-  using vertex_descriptor = typename GT::vertex_descriptor;
-
   std::vector<typename TriangleMesh::Point> points;
   std::vector<std::vector<size_t>> polygons;
 
@@ -47,7 +44,7 @@ template bool createMeshFromPolySet(const PolySet& ps, CGAL_DoubleMesh& mesh);
 template <class TriangleMesh>
 std::unique_ptr<PolySet> createPolySetFromMesh(const TriangleMesh& mesh)
 {
-  PolySetBuilder builder(0,mesh.number_of_faces()+ mesh.number_of_faces());
+  PolySetBuilder builder(0, mesh.number_of_faces()+ mesh.number_of_faces());
   for (const auto& f : mesh.faces()) {
     builder.appendPoly(mesh.degree(f));
 
@@ -59,7 +56,7 @@ std::unique_ptr<PolySet> createPolySetFromMesh(const TriangleMesh& mesh)
       double x = CGAL::to_double(v.x());
       double y = CGAL::to_double(v.y());
       double z = CGAL::to_double(v.z());
-      builder.appendVertex(builder.vertexIndex(Vector3d(x, y, z)));
+      builder.appendVertex(Vector3d(x, y, z));
     }
   }
   return builder.build();

@@ -153,6 +153,8 @@ private slots:
 #ifdef ENABLE_PYTHON
   void onPythonActiveChanged(bool pythonActive);
 #endif
+signals:
+   void escapePressed(void);	
 
 public:
   void public_applySettings();

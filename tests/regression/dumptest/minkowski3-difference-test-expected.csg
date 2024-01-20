@@ -1,0 +1,15 @@
+difference() {
+	minkowski(convexity = 2) {
+		difference() {
+			cylinder($fn = 0, $fa = 12, $fs = 2, h = 10, r1 = 7.5, r2 = 7.5, center = false);
+			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -0.1], [0, 0, 0, 1]]) {
+				cylinder($fn = 0, $fa = 12, $fs = 2, h = 11, r1 = 7, r2 = 7, center = false);
+			}
+		}
+		sphere($fn = 8, $fa = 12, $fs = 2, r = 1);
+	}
+	multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 15], [0, 0, 0, 1]]) {
+		cube(size = [20, 20, 20], center = true);
+	}
+}
+

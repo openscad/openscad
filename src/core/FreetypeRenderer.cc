@@ -337,7 +337,6 @@ FreetypeRenderer::ShapeResults::ShapeResults(
     // values are untouched, so using the correct codepoint directly
     // (e.g. \uf021 for the spider in Webdings) still works.
     str_utf8_wrapper utf8_str{params.text};
-    const char *p = params.text.c_str();
     if (utf8_str.utf8_validate()) {
       for (auto ch : utf8_str) {
         gunichar c = ch.get_utf8_char();

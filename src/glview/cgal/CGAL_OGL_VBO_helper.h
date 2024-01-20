@@ -285,14 +285,12 @@ public:
     points_edges_states.emplace_back(std::move(vs));
     points_edges_array.addAttributePointers(last_size);
 
-    if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-      if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-        GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
-        GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-      }
-      GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-      GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+      GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
     }
+    GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
     points_edges_array.createInterleavedVBOs();
 
@@ -371,6 +369,6 @@ protected:
   GLuint points_edges_elements_vbo{0};
   GLuint halffacets_vertices_vbo{0};
   GLuint halffacets_elements_vbo{0};
-  VertexStates points_edges_states;
-  VertexStates halffacets_states;
+  std::vector<std::shared_ptr<VertexState>> points_edges_states;
+  std::vector<std::shared_ptr<VertexState>> halffacets_states;
 }; // Polyhedron

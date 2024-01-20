@@ -654,7 +654,6 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 #include <QDir>
 #include <QFileInfo>
 #include <QMetaType>
-#include <QTextCodec>
 #include <QProgressDialog>
 #include <QFutureWatcher>
 #include <QtConcurrentRun>

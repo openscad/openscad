@@ -221,7 +221,8 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
   double ox = center ? -(columns - 1) / 2.0 : 0;
   double oy = center ? -(lines - 1) / 2.0 : 0;
 
-  PolySetBuilder builder(0, (lines - 1) * (columns - 1) * 4 + (lines - 1) * 2 + (columns - 1) * 2 + 1);
+  int num_indices = (lines - 1) * (columns - 1) * 4 + (lines - 1) * 2 + (columns - 1) * 2 + 1;
+  PolySetBuilder builder(0, num_indices);
   builder.setConvexity(convexity);
   // the bulk of the heightmap
   for (int i = 1; i < lines; ++i)
@@ -307,13 +308,13 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
   if (columns > 1 && lines > 1) {
     builder.appendPoly(2 * (columns - 1) + 2 * (lines - 1) );
     for (int i = 0; i < columns - 1; ++i)
-      builder.prependVertex(builder.vertexIndex(Vector3d(ox + i, oy + 0, min_val)));
+      builder.prependVertex(Vector3d(ox + i, oy + 0, min_val));
     for (int i = 0; i < lines - 1; ++i)
-      builder.prependVertex(builder.vertexIndex(Vector3d(ox + columns - 1, oy + i, min_val)));
+      builder.prependVertex(Vector3d(ox + columns - 1, oy + i, min_val));
     for (int i = columns - 1; i > 0; i--)
-      builder.prependVertex(builder.vertexIndex(Vector3d(ox + i, oy + lines - 1, min_val)));
+      builder.prependVertex(Vector3d(ox + i, oy + lines - 1, min_val));
     for (int i = lines - 1; i > 0; i--)
-      builder.prependVertex(builder.vertexIndex(Vector3d(ox + 0, oy + i, min_val)));
+      builder.prependVertex(Vector3d(ox + 0, oy + i, min_val));
   }
 
   return builder.build();

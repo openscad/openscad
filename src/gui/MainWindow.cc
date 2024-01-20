@@ -52,15 +52,24 @@
 #ifdef ENABLE_OPENCSG
 #include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
+#ifdef ENABLE_LEGACY_RENDERERS
+#include "LegacyOpenCSGRenderer.h"
+#endif
 #include <opencsg.h>
 #endif
 #include "ProgressWidget.h"
 #include "ThrownTogetherRenderer.h"
+#ifdef ENABLE_LEGACY_RENDERERS
+#include "LegacyThrownTogetherRenderer.h"
+#endif
 #include "CSGTreeNormalizer.h"
 #include "QGLView.h"
 #include "MouseSelector.h"
 #ifdef Q_OS_MAC
 #include "CocoaUtils.h"
+#endif
+#ifdef Q_OS_WIN
+#include <QScreen>
 #endif
 #include "PlatformUtils.h"
 #ifdef OPENSCAD_UPDATER
@@ -90,13 +99,11 @@
 #include <QTemporaryFile>
 #include <QDockWidget>
 #include <QClipboard>
-#include <QDesktopWidget>
 #include <memory>
 #include <string>
 #include "QWordSearchField.h"
 #include <QSettings> //Include QSettings for direct operations on settings arrays
 #include "QSettingsCached.h"
-#include <QSound>
 
 #ifdef ENABLE_PYTHON
 #include "python/public.h"
@@ -135,6 +142,7 @@ std::string SHA256HashString(std::string aString){
 #include <sys/stat.h>
 
 #include "CGALRenderer.h"
+#include "LegacyCGALRenderer.h"
 #include "CGALWorker.h"
 
 #ifdef ENABLE_CGAL
@@ -168,7 +176,7 @@ static const int autoReloadPollingPeriodMS = 200;
 unsigned int GuiLocker::gui_locked = 0;
 
 static char copyrighttext[] =
-  "<p>Copyright (C) 2009-2022 The OpenSCAD Developers</p>"
+  "<p>Copyright (C) 2009-2024 The OpenSCAD Developers</p>"
   "<p>This program is free software; you can redistribute it and/or modify "
   "it under the terms of the GNU General Public License as published by "
   "the Free Software Foundation; either version 2 of the License, or "
@@ -296,6 +304,9 @@ MainWindow::MainWindow(const QStringList& filenames)
   this->versionLabel = nullptr; // must be initialized before calling updateStatusBar()
   updateStatusBar(nullptr);
 
+  renderCompleteSoundEffect = new QSoundEffect();
+  renderCompleteSoundEffect->setSource(QUrl("qrc:/sounds/complete.wav"));
+
   const QString importStatement = "import(\"%1\");\n";
   const QString surfaceStatement = "surface(\"%1\");\n";
   const QString importFunction = "data = import(\"%1\");\n";
@@ -370,12 +381,6 @@ MainWindow::MainWindow(const QStringList& filenames)
   this->cgalworker = new CGALWorker();
   connect(this->cgalworker, SIGNAL(done(std::shared_ptr<const Geometry>)),
           this, SLOT(actionRenderDone(std::shared_ptr<const Geometry>)));
-  this->cgalRenderer = nullptr;
-
-#ifdef ENABLE_OPENCSG
-  this->opencsgRenderer = nullptr;
-#endif
-  this->thrownTogetherRenderer = nullptr;
 
   root_node = nullptr;
 
@@ -386,7 +391,9 @@ MainWindow::MainWindow(const QStringList& filenames)
   QSettingsCached settings;
   this->qglview->setMouseCentricZoom(Settings::Settings::mouseCentricZoom.value());
   this->qglview->setMouseSwapButtons(Settings::Settings::mouseSwapButtons.value());
-
+  this->meas.setView(qglview);
+  this->designActionMeasureDist->setEnabled(false);
+  this->designActionMeasureAngle->setEnabled(false);
 
   autoReloadTimer = new QTimer(this);
   autoReloadTimer->setSingleShot(false);
@@ -450,7 +457,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(showFind()));
   connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(showFindAndReplace()));
 #ifdef Q_OS_WIN
-  this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F));
+  this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL, Qt::SHIFT, Qt::Key_F));
 #endif
   connect(this->editActionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
   connect(this->editActionFindPrevious, SIGNAL(triggered()), this, SLOT(findPrev()));
@@ -461,6 +468,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->designActionReloadAndPreview, SIGNAL(triggered()), this, SLOT(actionReloadRenderPreview()));
   connect(this->designActionPreview, SIGNAL(triggered()), this, SLOT(actionRenderPreview()));
   connect(this->designActionRender, SIGNAL(triggered()), this, SLOT(actionRender()));
+  connect(this->designActionMeasureDist, SIGNAL(triggered()), this, SLOT(actionMeasureDistance()));
+  connect(this->designActionMeasureAngle, SIGNAL(triggered()), this, SLOT(actionMeasureAngle()));
   connect(this->designAction3DPrint, SIGNAL(triggered()), this, SLOT(action3DPrint()));
   connect(this->designCheckValidity, SIGNAL(triggered()), this, SLOT(actionCheckValidity()));
   connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
@@ -554,7 +563,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->qglview, SIGNAL(cameraChanged()), animateWidget, SLOT(cameraChanged()));
   connect(this->qglview, SIGNAL(cameraChanged()), viewportControlWidget, SLOT(cameraChanged()));
   connect(this->qglview, SIGNAL(resized()), viewportControlWidget, SLOT(viewResized()));
-  connect(this->qglview, SIGNAL(doSelectObject(QPoint)), this, SLOT(selectObject(QPoint)));
+  connect(this->qglview, SIGNAL(doRightClick(QPoint)), this, SLOT(rightClick(QPoint)));
+  connect(this->qglview, SIGNAL(doLeftClick(QPoint)), this, SLOT(leftClick(QPoint)));
 
   connect(Preferences::inst(), SIGNAL(requestRedraw()), this->qglview, SLOT(update()));
   connect(Preferences::inst(), SIGNAL(updateMouseCentricZoom(bool)), this->qglview, SLOT(setMouseCentricZoom(bool)));
@@ -618,6 +628,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   initActionIcon(viewActionPerspective, ":/icons/svg-default/perspective.svg", ":/icons/svg-default/perspective-white.svg");
   initActionIcon(viewActionOrthogonal, ":/icons/svg-default/orthogonal.svg", ":/icons/svg-default/orthogonal-white.svg");
   initActionIcon(designActionPreview, ":/icons/svg-default/preview.svg", ":/icons/svg-default/preview-white.svg");
+  initActionIcon(designActionMeasureDist, ":/icons/svg-default/measure-dist.svg", ":/icons/svg-default/measure-dist-white.svg");
+  initActionIcon(designActionMeasureAngle, ":/icons/svg-default/measure-ang.svg", ":/icons/svg-default/measure-ang-white.svg");
   initActionIcon(fileActionExportSTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
   initActionIcon(fileActionExportAMF, ":/icons/svg-default/export-amf.svg", ":/icons/svg-default/export-amf-white.svg");
   initActionIcon(fileActionExport3MF, ":/icons/svg-default/export-3mf.svg", ":/icons/svg-default/export-3mf-white.svg");
@@ -680,8 +692,8 @@ MainWindow::MainWindow(const QStringList& filenames)
     // again.
     // On Windows that causes the main window to open in a not
     // easily reachable place.
-    auto desktop = QApplication::desktop();
-    auto desktopRect = desktop->frameGeometry().adjusted(250, 150, -250, -150).normalized();
+    auto primaryScreen = QApplication::primaryScreen();
+    auto desktopRect = primaryScreen->availableGeometry().adjusted(250, 150, -250, -150).normalized();
     auto windowRect = frameGeometry();
     if (!desktopRect.intersects(windowRect)) {
       windowRect.moveCenter(desktopRect.center());
@@ -699,6 +711,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->animateDock, SIGNAL(topLevelChanged(bool)), this, SLOT(animateTopLevelChanged(bool)));
   connect(this->viewportControlDock, SIGNAL(topLevelChanged(bool)), this, SLOT(viewportControlTopLevelChanged(bool)));
 
+  connect(this->activeEditor, SIGNAL(escapePressed()), this, SLOT(measureFinished()));
   // display this window and check for OpenGL 2.0 (OpenCSG) support
   viewModeThrownTogether();
   show();
@@ -961,11 +974,6 @@ MainWindow::~MainWindow()
   // If root_file is not null then it will be the same as parsed_file,
   // so no need to delete it.
   delete parsed_file;
-  delete this->cgalRenderer;
-#ifdef ENABLE_OPENCSG
-  delete this->opencsgRenderer;
-#endif
-  delete this->thrownTogetherRenderer;
   scadApp->windowManager.remove(this);
   if (scadApp->windowManager.getWindows().size() == 0) {
     // Quit application even in case some other windows like
@@ -1218,10 +1226,8 @@ void MainWindow::instantiateRoot()
   // Invalidate renderers before we kill the CSG tree
   this->qglview->setRenderer(nullptr);
 #ifdef ENABLE_OPENCSG
-  delete this->opencsgRenderer;
   this->opencsgRenderer = nullptr;
 #endif
-  delete this->thrownTogetherRenderer;
   this->thrownTogetherRenderer = nullptr;
 
   // Remove previous CSG tree
@@ -1383,14 +1389,32 @@ void MainWindow::compileCSG()
     else {
       LOG("Normalized tree has %1$d elements!",
           (this->root_products ? this->root_products->size() : 0));
-      this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
-                                                  this->highlights_products,
-                                                  this->background_products);
+      if (Feature::ExperimentalVxORenderers.is_enabled()) {
+        this->opencsgRenderer = std::make_shared<OpenCSGRenderer>(this->root_products,
+                                                                  this->highlights_products,
+                                                  						    this->background_products);
+      }
+#ifdef ENABLE_LEGACY_RENDERERS
+      else {
+        this->opencsgRenderer = std::make_shared<LegacyOpenCSGRenderer>(this->root_products,
+                                                                        this->highlights_products,
+                                                                        this->background_products);
+      }
+#endif
     }
 #endif
-    this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
-                                                              this->highlights_products,
-                                                              this->background_products);
+    if (Feature::ExperimentalVxORenderers.is_enabled()) {
+      this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(this->root_products,
+                                                                              this->highlights_products,
+                                                                              this->background_products);
+    }
+#ifdef ENABLE_LEGACY_RENDERERS
+    else {
+      this->thrownTogetherRenderer = std::make_shared<LegacyThrownTogetherRenderer>(this->root_products,
+                                                                                    this->highlights_products,
+                                                                                    this->background_products);
+    }
+#endif
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
     this->processEvents();
@@ -1492,7 +1516,9 @@ void MainWindow::writeBackup(QFile *file)
   // see MainWindow::saveBackup()
   file->resize(0);
   QTextStream writer(file);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
   writer.setCodec("UTF-8");
+#endif
   writer << activeEditor->toPlainText();
   this->activeEditor->parameterWidget->saveBackupFile(file->fileName());
 
@@ -2056,6 +2082,9 @@ void MainWindow::actionRenderPreview()
   GuiLocker::lock();
   preview_requested = false;
 
+  this->designActionMeasureDist->setEnabled(false);
+  this->designActionMeasureAngle->setEnabled(false);
+
   prepareCompile("csgRender", windowActionHideAnimate->isChecked(), true);
   compile(false, false);
   if (preview_requested) {
@@ -2291,7 +2320,6 @@ void MainWindow::cgalRender()
   }
 
   this->qglview->setRenderer(nullptr);
-  delete this->cgalRenderer;
   this->cgalRenderer = nullptr;
   this->root_geom.reset();
 
@@ -2325,11 +2353,22 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     LOG("Rendering finished.");
 
     this->root_geom = root_geom;
-    this->cgalRenderer = new CGALRenderer(root_geom);
+    if (Feature::ExperimentalVxORenderers.is_enabled()) {
+      this->cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
+    }
+#ifdef ENABLE_LEGACY_RENDERERS
+    else {
+      this->cgalRenderer = std::make_shared<LegacyCGALRenderer>(root_geom);
+    }
+#endif
     // Go to CGAL view mode
     if (viewActionWireframe->isChecked()) viewModeWireframe();
     else viewModeSurface();
+    this->designActionMeasureDist->setEnabled(true);
+    this->designActionMeasureAngle->setEnabled(true);
   } else {
+    this->designActionMeasureDist->setEnabled(false);
+    this->designActionMeasureAngle->setEnabled(false);
     LOG(message_group::UI_Warning, "No top level geometry to render");
   }
 
@@ -2338,7 +2377,7 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
   const bool renderSoundEnabled = Preferences::inst()->getValue("advanced/enableSoundNotification").toBool();
   const uint soundThreshold = Preferences::inst()->getValue("advanced/timeThresholdOnRenderCompleteSound").toUInt();
   if (renderSoundEnabled && soundThreshold <= renderStatistic.ms().count() / 1000) {
-    QSound::play(":/sounds/complete.wav");
+    renderCompleteSoundEffect->play();
   }
 
   renderedEditor = activeEditor;
@@ -2346,12 +2385,34 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
   compileEnded();
 }
 
+void MainWindow::actionMeasureDistance()
+{
+  meas.startMeasureDist();
+}
+
+void MainWindow::actionMeasureAngle()
+{
+  meas.startMeasureAngle();
+}
+
+void MainWindow::leftClick(QPoint mouse) 
+{
+  QString str = meas.statemachine(mouse);
+  if(str.size() > 0) {
+    this->qglview->measure_state = MEASURE_IDLE;
+    QMenu resultmenu(this);
+    auto action = resultmenu.addAction(str);
+    connect(action, SIGNAL(triggered()), this, SLOT(measureFinished()));
+    resultmenu.exec(qglview->mapToGlobal(mouse));
+  }
+}
+
 /**
  * Call the mouseselection to determine the id of the clicked-on object.
  * Use the generated ID and try to find it within the list of products
  * And finally move the cursor to the beginning of the selected object in the editor
  */
-void MainWindow::selectObject(QPoint mouse)
+void MainWindow::rightClick(QPoint mouse)
 {
   // selecting without a renderer?!
   if (!this->qglview->renderer) {
@@ -2374,7 +2435,7 @@ void MainWindow::selectObject(QPoint mouse)
   this->selector->reset(this->qglview);
 
   // Select the object at mouse coordinates
-  int index = this->selector->select(this->qglview->renderer, mouse.x(), mouse.y());
+  int index = this->selector->select(this->qglview->getRenderer(), mouse.x(), mouse.y());
   std::deque<std::shared_ptr<const AbstractNode>> path;
   std::shared_ptr<const AbstractNode> result = this->root_node->getNodeByID(index, path);
 
@@ -2421,6 +2482,13 @@ void MainWindow::selectObject(QPoint mouse)
 
     tracemenu.exec(this->qglview->mapToGlobal(mouse));
   }
+}
+void MainWindow::measureFinished(void)
+{
+  this->qglview->selected_obj.clear();
+  this->qglview->shown_obj.clear();
+  this->qglview->update();
+  this->qglview->measure_state = MEASURE_IDLE;
 }
 
 /**
@@ -2880,7 +2948,7 @@ void MainWindow::viewModePreview()
   if (this->qglview->hasOpenCSGSupport()) {
     viewModeActionsUncheck();
     viewActionPreview->setChecked(true);
-    this->qglview->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : (Renderer *)this->thrownTogetherRenderer);
+    this->qglview->setRenderer(this->opencsgRenderer ? this->opencsgRenderer : this->thrownTogetherRenderer);
     this->qglview->updateColorScheme();
     this->qglview->update();
   } else {
@@ -3648,14 +3716,14 @@ void MainWindow::jumpToLine(int line, int col)
 }
 
 paperSizes MainWindow::sizeString2Enum(QString current){
-   for(int i = 0; i < paperSizeStrings.size(); i++){
+   for(size_t i = 0; i < paperSizeStrings.size(); i++){
        if (current.toStdString()==paperSizeStrings[i]) return static_cast<paperSizes>(i);
    };
    return paperSizes::A4;
 };
 
 paperOrientations MainWindow::orientationsString2Enum(QString current){
-   for(int i = 0; i < paperOrientationsStrings.size(); i++){
+   for(size_t i = 0; i < paperOrientationsStrings.size(); i++){
        if (current.toStdString()==paperOrientationsStrings[i]) return static_cast<paperOrientations>(i);
    };
    return paperOrientations::PORTRAIT;

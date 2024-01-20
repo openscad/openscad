@@ -31,6 +31,7 @@ include("cmake/Modules/openscad_version.cmake")
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
+option(ENABLE_LEGACY_RENDERERS "Enable legacy (non-VBO) OpenGL renderers" ON)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
 option(ENABLE_EGL "Enable EGL support if available" ON)
@@ -145,6 +146,9 @@ if(EXPERIMENTAL)
 endif()
 if(IDPREFIX)
   target_compile_definitions(OpenSCAD PRIVATE IDPREFIX)
+endif()
+if(ENABLE_LEGACY_RENDERERS)
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_LEGACY_RENDERERS)
 endif()
 
 if (NOT "${SUFFIX}" STREQUAL "")
@@ -958,6 +962,14 @@ if(NULLGL)
     src/io/export_png.cc
     src/io/imageutils.cc)
 else()
+  if(ENABLE_LEGACY_RENDERERS)
+    set(LEGACY_RENDERER_SOURCES
+      src/glview/cgal/LegacyCGALRenderer.cc
+      src/glview/preview/LegacyOpenCSGRenderer.cc
+      src/glview/preview/LegacyThrownTogetherRenderer.cc
+      src/glview/LegacyRendererUtils.cc
+    )
+  endif()
   set(OFFSCREEN_SOURCES
     src/glview/OpenGLContext.cc
     src/glview/fbo.cc
@@ -969,10 +981,12 @@ else()
     src/glview/GLView.cc
     src/glview/OffscreenView.cc
     src/glview/cgal/CGALRenderer.cc
+    src/glview/cgal/CGALRenderUtils.cc
     src/glview/preview/OpenCSGRenderer.cc
     src/glview/preview/ThrownTogetherRenderer.cc
     src/io/export_png.cc
     src/io/imageutils.cc
+    ${LEGACY_RENDERER_SOURCES}
     ${GLEW_SOURCES})
 endif()
 
@@ -1005,6 +1019,7 @@ set(GUI_SOURCES
   src/gui/LaunchingScreen.cc
   src/gui/LibraryInfoDialog.cc
   src/gui/MainWindow.cc
+  src/gui/Measurement.cc
   src/gui/Animate.cc
   src/gui/MouseSelector.cc
   src/gui/OctoPrint.cc
