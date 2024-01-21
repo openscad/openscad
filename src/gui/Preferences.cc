@@ -88,33 +88,19 @@ void Preferences::init() {
   this->defaultmap["advanced/consoleFontFamily"] = font2.family();
   this->defaultmap["advanced/consoleFontSize"] = font2.pointSize();
 
+  // Leave Customizer font with default if user has not chosen another.
+  this->defaultmap["advanced/customizerFontFamily"] = font2.family();
+  this->defaultmap["advanced/customizerFontSize"] = font2.pointSize();
+
 #if defined (Q_OS_MAC)
   this->defaultmap["editor/ctrlmousewheelzoom"] = false;
 #else
   this->defaultmap["editor/ctrlmousewheelzoom"] = true;
 #endif
 
-  uint savedsize = getValue("editor/fontsize").toUInt();
-  const QFontDatabase db;
-  BlockSignals<QComboBox *> fontSize{this->fontSize};
-  for (auto size : db.standardSizes()) {
-    fontSize->addItem(QString::number(size));
-    if (static_cast<uint>(size) == savedsize) {
-      fontSize->setCurrentIndex(this->fontSize->count() - 1);
-    }
-  }
-  // reset GUI fontsize if fontSize->addItem emitted signals that changed it.
-  this->fontSize->setEditText(QString("%1").arg(savedsize) );
-
-  uint consavedsize = getValue("advanced/consoleFontSize").toUInt();
-  BlockSignals<QComboBox *> consoleFontSize{this->consoleFontSize};
-  for (auto size : db.standardSizes()) {
-    consoleFontSize->addItem(QString::number(size));
-    if (static_cast<uint>(size) == consavedsize) {
-      consoleFontSize->setCurrentIndex(this->consoleFontSize->count() - 1);
-    }
-  }
-  this->consoleFontSize->setEditText(QString("%1").arg(consavedsize) );
+  createFontSizeMenu(fontSize, "editor/fontsize");
+  createFontSizeMenu(consoleFontSize, "advanced/consoleFontSize");
+  createFontSizeMenu(customizerFontSize, "advanced/customizerFontSize");
 
   // Setup default settings
   this->defaultmap["advanced/opencsg_show_warning"] = true;
@@ -647,11 +633,26 @@ void Preferences::on_consoleFontChooser_currentFontChanged(const QFont& font)
 }
 
 void Preferences::on_consoleFontSize_currentIndexChanged(int index)
-{ 
+{
   uint intsize = this->consoleFontSize->itemText(index).toUInt();
   QSettingsCached settings;
   settings.setValue("advanced/consoleFontSize", intsize);
   emit consoleFontChanged(getValue("advanced/consoleFontFamily").toString(), intsize);
+}
+
+void Preferences::on_customizerFontChooser_currentFontChanged(const QFont& font)
+{
+  QSettingsCached settings;
+  settings.setValue("advanced/customizerFontFamily", font.family());
+  emit customizerFontChanged(font.family(), getValue("advanced/customizerFontSize").toUInt());
+}
+
+void Preferences::on_customizerFontSize_currentIndexChanged(int index)
+{
+  uint intsize = this->customizerFontSize->itemText(index).toUInt();
+  QSettingsCached settings;
+  settings.setValue("advanced/customizerFontSize", intsize);
+  emit customizerFontChanged(getValue("advanced/customizerFontFamily").toString(), intsize);
 }
 
 void Preferences::on_checkBoxEnableAutocomplete_toggled(bool state)
@@ -928,19 +929,8 @@ void Preferences::updateGUI()
   const auto found = this->colorSchemeChooser->findItems(getValue("3dview/colorscheme").toString(), Qt::MatchExactly);
   if (!found.isEmpty()) BlockSignals<QListWidget *>(this->colorSchemeChooser)->setCurrentItem(found.first());
 
-  const auto fontfamily = getValue("editor/fontfamily").toString();
-  const auto fidx = this->fontChooser->findText(fontfamily, Qt::MatchContains);
-  if (fidx >= 0) {
-    BlockSignals<QFontComboBox *>(this->fontChooser)->setCurrentIndex(fidx);
-  }
-
-  const auto fontsize = getValue("editor/fontsize").toString();
-  const auto sidx = this->fontSize->findText(fontsize);
-  if (sidx >= 0) {
-    BlockSignals<QComboBox *>(this->fontSize)->setCurrentIndex(sidx);
-  } else {
-    BlockSignals<QComboBox *>(this->fontSize)->setEditText(fontsize);
-  }
+  updateGUIFontFamily(fontChooser, "editor/fontfamily");
+  updateGUIFontSize(fontSize, "editor/fontsize");
 
   const auto shighlight = getValue("editor/syntaxhighlight").toString();
   const auto shidx = this->syntaxHighlight->findText(shighlight);
@@ -971,20 +961,13 @@ void Preferences::updateGUI()
   BlockSignals<QLineEdit *>(this->timeThresholdOnRenderCompleteSoundEdit)->setText(getValue("advanced/timeThresholdOnRenderCompleteSound").toString());
   BlockSignals<QCheckBox *>(this->enableClearConsoleCheckBox)->setChecked(getValue("advanced/consoleAutoClear").toBool());
   BlockSignals<QLineEdit *>(this->consoleMaxLinesEdit)->setText(getValue("advanced/consoleMaxLines").toString());
-  {
-    const auto fontfamily = getValue("advanced/consoleFontFamily").toString();
-    const auto fidx = this->consoleFontChooser->findText(fontfamily, Qt::MatchContains);
-    if (fidx >= 0) {
-      BlockSignals<QFontComboBox *>(this->consoleFontChooser)->setCurrentIndex(fidx);
-    }
-    const auto fontsize = getValue("advanced/consoleFontSize").toString();
-    const auto sidx = this->consoleFontSize->findText(fontsize);
-    if (sidx >= 0) {
-      BlockSignals<QComboBox *>(this->consoleFontSize)->setCurrentIndex(sidx);
-    } else {
-      BlockSignals<QComboBox *>(this->consoleFontSize)->setEditText(fontsize);
-    }
-  }
+
+  updateGUIFontFamily(consoleFontChooser, "advanced/consoleFontFamily");
+  updateGUIFontSize(consoleFontSize, "advanced/consoleFontSize");
+
+  updateGUIFontFamily(customizerFontChooser, "advanced/customizerFontFamily");
+  updateGUIFontSize(customizerFontSize, "advanced/customizerFontSize");
+
   BlockSignals<QCheckBox *>(this->enableHardwarningsCheckBox)->setChecked(getValue("advanced/enableHardwarnings").toBool());
   BlockSignals<QLineEdit *>(this->traceDepthEdit)->setText(getValue("advanced/traceDepth").toString());
   BlockSignals<QCheckBox *>(this->enableTraceUsermoduleParametersCheckBox)->setChecked(getValue("advanced/enableTraceUsermoduleParameters").toBool());
@@ -1088,3 +1071,37 @@ Preferences *Preferences::inst() {
 }
 
 
+void Preferences::createFontSizeMenu(QComboBox *boxarg, const QString &setting)
+{
+  uint savedsize = getValue(setting).toUInt();
+  const QFontDatabase db;
+  BlockSignals<QComboBox *> box{boxarg};
+  for (auto size : db.standardSizes()) {
+    box->addItem(QString::number(size));
+    if (static_cast<uint>(size) == savedsize) {
+      box->setCurrentIndex(box->count() - 1);
+    }
+  }
+  // reset GUI fontsize if fontSize->addItem emitted signals that changed it.
+  box->setEditText(QString("%1").arg(savedsize) );
+}
+
+void Preferences::updateGUIFontFamily(QFontComboBox *ffSelector, const QString &setting)
+{
+    const auto fontfamily = getValue(setting).toString();
+    const auto fidx = ffSelector->findText(fontfamily, Qt::MatchContains);
+    if (fidx >= 0) {
+      BlockSignals<QFontComboBox *>(ffSelector)->setCurrentIndex(fidx);
+    }
+}
+
+void Preferences::updateGUIFontSize(QComboBox *fsSelector, const QString &setting)
+{
+  const auto fontsize = getValue(setting).toString();
+  const auto sidx = fsSelector->findText(fontsize);
+  if (sidx >= 0) {
+    BlockSignals<QComboBox *>(fsSelector)->setCurrentIndex(sidx);
+  } else {
+    BlockSignals<QComboBox *>(fsSelector)->setEditText(fontsize);
+  }
+}

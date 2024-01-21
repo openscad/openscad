@@ -2024,6 +2024,65 @@
              </widget>
             </item>
             <item>
+             <widget class="QGroupBox" name="groupBox_Customizer">
+              <property name="title">
+               <string>Customizer</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_Customizer">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_customizerFont" stretch="0,0,0,0">
+                 <property name="spacing">
+                  <number>6</number>
+                 </property>
+                 <item>
+                  <widget class="QLabel" name="label_customizerFont">
+                   <property name="text">
+                    <string>Font</string>
+                   </property>
+                   <property name="scaledContents">
+                    <bool>true</bool>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QFontComboBox" name="customizerFontChooser">
+                   <property name="customizerCurrentFont" stdset="0">
+                    <font>
+                     <family>DejaVu Sans</family>
+                     <pointsize>12</pointsize>
+                    </font>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="customizerFontSize">
+                   <property name="editable">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacer_36">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
              <widget class="QGroupBox" name="groupBox_lang">
               <property name="title">
                <string>OpenSCAD Language Features</string>

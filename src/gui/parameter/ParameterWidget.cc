@@ -34,6 +34,7 @@
 #include "ParameterCheckBox.h"
 #include "ParameterText.h"
 #include "ParameterVector.h"
+#include "Preferences.h"
 
 #include <boost/filesystem.hpp>
 
@@ -58,6 +59,13 @@ ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
   //connect(comboBoxPreset, SIGNAL(editTextChanged(const QString&)), this, SLOT(onSetNameChanged()));
   connect(addButton, SIGNAL(clicked()), this, SLOT(onSetAdd()));
   connect(deleteButton, SIGNAL(clicked()), this, SLOT(onSetDelete()));
+
+  QString fontfamily = Preferences::inst()->getValue("advanced/customizerFontFamily").toString();
+  uint fontsize = Preferences::inst()->getValue("advanced/customizerFontSize").toUInt();
+  setFontFamilySize(fontfamily, fontsize);
+
+  connect(Preferences::inst(), SIGNAL(customizerFontChanged(const QString&, uint)), this,
+    SLOT(setFontFamilySize(const QString&, uint)));
 }
 
 // Can only be called before the initial setParameters().
@@ -420,4 +428,9 @@ void ParameterWidget::cleanSets()
       }
     }
   }
+}
+
+void ParameterWidget::setFontFamilySize(const QString &fontFamily, uint fontSize)
+{
+  scrollArea->setStyleSheet(QString("font-family: \"%1\"; font-size: %2pt;").arg(fontFamily).arg(fontSize));
 }
