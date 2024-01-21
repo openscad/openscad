@@ -24,6 +24,7 @@
  *
  */
 
+#include "GeometryUtils.h"
 #include "export.h"
 #include "PolySet.h"
 #include "PolySetUtils.h"
@@ -86,26 +87,33 @@ static bool append_polyset(const PolySet& ps, PLib3MFModelMeshObject *& model)
     return false;
   }
 
-  auto vertexFunc = [&](const std::array<double, 3>& coords) -> bool {
-      MODELMESHVERTEX v{(FLOAT)coords[0], (FLOAT)coords[1], (FLOAT)coords[2]};
+  auto vertexFunc = [&](const Vector3d& coords) -> bool {
+    const auto f = coords.cast<float>();
+      MODELMESHVERTEX v{f[0], f[1], f[2]};
       return lib3mf_meshobject_addvertex(mesh, &v, nullptr) == LIB3MF_OK;
     };
 
-  auto triangleFunc = [&](const std::array<int, 3>& indices) -> bool {
+
+  auto triangleFunc = [&](const IndexedFace& indices) -> bool {
       MODELMESHTRIANGLE t{(DWORD)indices[0], (DWORD)indices[1], (DWORD)indices[2]};
       return lib3mf_meshobject_addtriangle(mesh, &t, nullptr) == LIB3MF_OK;
     };
 
   Export::ExportMesh exportMesh{ps};
+  auto sorted_ps = exportMesh.toPolySet();
 
-  if (!exportMesh.foreach_vertex(vertexFunc)) {
-    export_3mf_error("Can't add vertex to 3MF model.", model);
-    return false;
+  for (const auto &v : sorted_ps->vertices) {
+    if (!vertexFunc(v)) {
+      export_3mf_error("Can't add vertex to 3MF model.", model);
+      return false;
+    }
   }
 
-  if (!exportMesh.foreach_indexed_triangle(triangleFunc)) {
-    export_3mf_error("Can't add triangle to 3MF model.", model);
-    return false;
+  for (const auto& poly : sorted_ps->indices) {
+    if (!triangleFunc(poly)) {
+      export_3mf_error("Can't add triangle to 3MF model.", model);
+      return false;
+    }
   }
 
   PLib3MFModelBuildItem *builditem;
