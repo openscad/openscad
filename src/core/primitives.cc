@@ -46,16 +46,8 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
 
-static void generate_circle(Vector2d *circle, double r, int fragments)
-{
-  for (int i = 0; i < fragments; ++i) {
-    double phi = (360.0 * i) / fragments;
-    circle[i] = {r * cos_degrees(phi), r * sin_degrees(phi) };
-  }
-}
-
 template <class InsertIterator>
-static void generate_circle3(InsertIterator iter, double r, double z, int fragments) {
+static void generate_circle(InsertIterator iter, double r, double z, int fragments) {
   for (int i = 0; i < fragments; ++i) {
     double phi = (360.0 * i) / fragments;
     *(iter++) = {r * cos_degrees(phi), r * sin_degrees(phi), z};
@@ -210,7 +202,7 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
     //                double phi = (180.0 * (i + offset)) / (fragments/2);
     const double phi = (180.0 * (i + 0.5)) / num_rings;
     const double radius = r * sin_degrees(phi);
-    generate_circle3(std::back_inserter(polyset->vertices), radius, r * cos_degrees(phi), num_fragments);
+    generate_circle(std::back_inserter(polyset->vertices), radius, r * cos_degrees(phi), num_fragments);
   }
 
   polyset->indices.push_back({});
@@ -288,8 +280,8 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
   auto polyset = std::make_unique<PolySet>(3, true);
   polyset->vertices.reserve(2 * num_fragments);
 
-  generate_circle3(std::back_inserter(polyset->vertices), r1, z1, num_fragments);
-  generate_circle3(std::back_inserter(polyset->vertices), r2, z2, num_fragments);
+  generate_circle(std::back_inserter(polyset->vertices), r1, z1, num_fragments);
+  generate_circle(std::back_inserter(polyset->vertices), r2, z2, num_fragments);
 
   for (int i = 0; i < num_fragments; ++i) {
     int j = (i + 1) % num_fragments;
