@@ -149,7 +149,11 @@ bool is_approximately_convex(const PolySet& ps) {
 // Get as or convert the geometry to a PolySet.
 std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const Geometry>& geom)
 {
-  if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+  if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
+    PolySetBuilder builder;
+    builder.appendGeometry(geom);
+    return builder.build();
+  } else if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     return ps;
   }
 #ifdef ENABLE_CGAL

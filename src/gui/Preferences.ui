@@ -1910,60 +1910,6 @@
                  </item>
                 </layout>
                </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayoutToolbarExport3D">
-                 <item>
-                  <widget class="QLabel" name="labelToolbarExport3D">
-                   <property name="text">
-                    <string>Toolbar Export 3D</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QComboBox" name="comboBoxToolbarExport3D"/>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacerToolbarExport3D">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayoutToolbarExport2D">
-                 <item>
-                  <widget class="QLabel" name="labelToolbarExport2D">
-                   <property name="text">
-                    <string>Toolbar Export 2D</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QComboBox" name="comboBoxToolbarExport2D"/>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacerToolbarExport2D">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </item>
               </layout>
              </widget>
             </item>
@@ -2074,112 +2020,6 @@
                  </item>
                 </layout>
                </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayoutExport3D">
-                 <item>
-                  <widget class="QLabel" name="labelExport3D">
-                   <property name="text">
-                    <string>Toolbar Export Format 3D</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QComboBox" name="comboBoxExport3D">
-                   <item>
-                    <property name="text">
-                     <string>STL</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>OBJ</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>OFF</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>WRL</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>AMF</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>3MF</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacerExport3D">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </item>
-               <item>
-                <layout class="QHBoxLayout" name="horizontalLayoutExport2D">
-                 <item>
-                  <widget class="QLabel" name="labelExport2D">
-                   <property name="text">
-                    <string>Toolbar Export Format 2D</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QComboBox" name="comboBoxExport2D">
-                   <item>
-                    <property name="text">
-                     <string>none</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>DXF</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>SVG</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>PDF</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacerExport2D">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
-                </layout>
-               </item>
               </layout>
              </widget>
             </item>
@@ -2189,108 +2029,108 @@
                <string>OpenSCAD Language Features</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_15">
-            <item>
-             <widget class="QGroupBox" name="groupBox_warn">
-              <property name="title">
-               <string>Warnings</string>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_15a">
                <item>
-                <widget class="QCheckBox" name="enableHardwarningsCheckBox">
-                 <property name="text">
-                  <string>Stop on the first warning</string>
+                <widget class="QGroupBox" name="groupBox_warn">
+                 <property name="title">
+                  <string>Warnings</string>
                  </property>
-                 <property name="checked">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="enableRangeCheckBox">
-                 <property name="text">
-                  <string>Check the parameter range for builtin modules</string>
-                 </property>
-                 <property name="checked">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="enableParameterCheckBox">
-                 <property name="text">
-                  <string>Warn when there is a parameter mismatch in user module calls</string>
-                 </property>
-                 <property name="checked">
-                  <bool>false</bool>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-              </widget>
-            </item>
-            <item>
-             <widget class="QGroupBox" name="groupBox_trace">
-              <property name="title">
-               <string>Trace</string>
-              </property>
-              <layout class="QVBoxLayout" name="verticalLayout_15b">
-                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_traceDepth">
-                 <item>
-                  <widget class="QLabel" name="traceDepthLabel">
-                   <property name="text">
-                    <string>Trace depth:</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLineEdit" name="traceDepthEdit">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="alignment">
-                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="traceDepthLabel2">
-                   <property name="text">
-                    <string>(max. number or trace messages)</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <spacer name="horizontalSpacer38">
-                   <property name="orientation">
-                    <enum>Qt::Horizontal</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>40</width>
-                     <height>20</height>
-                    </size>
-                   </property>
-                  </spacer>
-                 </item>
+                 <layout class="QVBoxLayout" name="verticalLayout_15a">
+                  <item>
+                   <widget class="QCheckBox" name="enableHardwarningsCheckBox">
+                    <property name="text">
+                     <string>Stop on the first warning</string>
+                    </property>
+                    <property name="checked">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="enableRangeCheckBox">
+                    <property name="text">
+                     <string>Check the parameter range for builtin modules</string>
+                    </property>
+                    <property name="checked">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="enableParameterCheckBox">
+                    <property name="text">
+                     <string>Warn when there is a parameter mismatch in user module calls</string>
+                    </property>
+                    <property name="checked">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
                  </layout>
-               </item>
-               <item>
-                <widget class="QCheckBox" name="enableTraceUsermoduleParametersCheckBox">
-                 <property name="text">
-                  <string>Show parameters of usermodule calls in trace</string>
-                 </property>
-                 <property name="checked">
-                  <bool>false</bool>
-                 </property>
                 </widget>
                </item>
-              </layout>
-              </widget>
-              </item>
+               <item>
+                <widget class="QGroupBox" name="groupBox_trace">
+                 <property name="title">
+                  <string>Trace</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_15b">
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_traceDepth">
+                    <item>
+                     <widget class="QLabel" name="traceDepthLabel">
+                      <property name="text">
+                       <string>Trace depth:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLineEdit" name="traceDepthEdit">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="alignment">
+                       <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QLabel" name="traceDepthLabel2">
+                      <property name="text">
+                       <string>(max. number or trace messages)</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <spacer name="horizontalSpacer38">
+                      <property name="orientation">
+                       <enum>Qt::Horizontal</enum>
+                      </property>
+                      <property name="sizeHint" stdset="0">
+                       <size>
+                        <width>40</width>
+                        <height>20</height>
+                       </size>
+                      </property>
+                     </spacer>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="enableTraceUsermoduleParametersCheckBox">
+                    <property name="text">
+                     <string>Show parameters of usermodule calls in trace</string>
+                    </property>
+                    <property name="checked">
+                     <bool>false</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
               </layout>
              </widget>
             </item>
@@ -2349,6 +2189,60 @@
                   <string>Default to ASCII STL export</string>
                  </property>
                 </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutToolbarExport3D">
+                 <item>
+                  <widget class="QLabel" name="labelToolbarExport3D">
+                   <property name="text">
+                    <string>Toolbar Export 3D</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="comboBoxToolbarExport3D"/>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacerToolbarExport3D">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutToolbarExport2D">
+                 <item>
+                  <widget class="QLabel" name="labelToolbarExport2D">
+                   <property name="text">
+                    <string>Toolbar Export 2D</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="comboBoxToolbarExport2D"/>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacerToolbarExport2D">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
                </item>
               </layout>
              </widget>

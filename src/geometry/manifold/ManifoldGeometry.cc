@@ -2,7 +2,6 @@
 #include "ManifoldGeometry.h"
 #include "manifold.h"
 #include "PolySet.h"
-#include "PolySetBuilder.h"
 #include "PolySetUtils.h"
 #include "manifoldutils.h"
 #ifdef ENABLE_CGAL

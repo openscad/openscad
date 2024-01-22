@@ -51,7 +51,7 @@ PACKAGES=(
     "libuuid 1.6.2"
     "fontconfig 2.14.1"
     "hidapi 0.12.0"
-    "lib3mf 1.8.1"
+    "lib3mf 2.2.0"
     # FIXME: Re-evaluate patches if bumping glib past 2.76.3
     "glib2 2.76.3"
     "pixman 0.42.2"
@@ -810,7 +810,7 @@ build_lib3mf()
   fi
   tar xzf lib3mf-$version.tar.gz
   cd lib3mf-$version
-  cmake -DLIB3MF_TESTS=false -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR  -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
+  cmake -DLIB3MF_TESTS=false -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_INSTALL_INCLUDEDIR=include/lib3mf  -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
   make -j"$NUMCPU" VERBOSE=1
   make -j"$NUMCPU" install
 }

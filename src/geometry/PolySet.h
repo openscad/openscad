@@ -40,5 +40,4 @@ private:
   unsigned int dim;
   mutable boost::tribool convex;
   mutable BoundingBox bbox;
-  mutable bool dirty;
 };
