@@ -174,12 +174,22 @@ Vector3d remove_negative_zero(const Vector3d& pt) {
   };
 }
 
+#if EIGEN_VERSION_AT_LEAST(3,4,0)
+// Eigen 3.4.0 added begin()/end()
 struct LexographicLess {
   template<class T>
   bool operator()(T const& lhs, T const& rhs) const {
     return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), std::less{});
   }
 };
+#else
+struct LexographicLess {
+  template<class T>
+  bool operator()(T const& lhs, T const& rhs) const {
+    return std::lexicographical_compare(lhs.data(), lhs.data() + lhs.size(), rhs.data(), rhs.data() + rhs.size(), std::less{});
+  }
+};
+#endif
 
 } // namespace 
 
