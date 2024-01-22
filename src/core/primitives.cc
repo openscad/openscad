@@ -24,32 +24,33 @@
  *
  */
 
-#include "module.h"
-#include "core/node.h"
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "Children.h"
-#include "Polygon2d.h"
+#include "primitives.h"
 #include "Builtins.h"
+#include "Children.h"
+#include "ModuleInstantiation.h"
 #include "Parameters.h"
-#include "printutils.h"
+#include "PolySet.h"
+#include "Polygon2d.h"
 #include "calc.h"
+#include "core/node.h"
 #include "degree_trig.h"
-#include <sstream>
+#include "module.h"
+#include "printutils.h"
+#include <boost/assign/std/vector.hpp>
 #include <cassert>
 #include <cmath>
-#include <boost/assign/std/vector.hpp>
-#include "ModuleInstantiation.h"
-#include "primitives.h"
+#include <iterator>
+#include <memory>
+#include <sstream>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
 
-static void generate_circle(Vector2d *circle, double r, int fragments)
-{
+template <class InsertIterator>
+static void generate_circle(InsertIterator iter, double r, double z, int fragments) {
   for (int i = 0; i < fragments; ++i) {
     double phi = (360.0 * i) / fragments;
-    circle[i] = {r * cos_degrees(phi), r * sin_degrees(phi) };
+    *(iter++) = {r * cos_degrees(phi), r * sin_degrees(phi), z};
   }
 }
 
@@ -127,21 +128,22 @@ std::unique_ptr<const Geometry> CubeNode::createGeometry() const
     y2 = this->y;
     z2 = this->z;
   }
-  int cubeCorners=8;
-  int cubeFaces=6;
-  int dimension=3;
-  PolySetBuilder builder(cubeCorners, cubeFaces, dimension, true);
-  int corner[cubeCorners];
-  for(int i=0;i<cubeCorners;i++)
-    corner[i]=builder.vertexIndex(Vector3d(i&1?x2:x1,i&2?y2:y1,i&4?z2:z1));
+  int dimension = 3;
+  auto ps = std::make_unique<PolySet>(3, true);
+  for (int i = 0; i < 8; i++) {
+    ps->vertices.emplace_back(i & 1 ? x2 : x1, i & 2 ? y2 : y1,
+                              i & 4 ? z2 : z1);
+  }
+  ps->indices = {
+      {4, 5, 7, 6}, // top
+      {2, 3, 1, 0}, // bottom
+      {0, 1, 5, 4}, // front
+      {1, 3, 7, 5}, // right
+      {3, 2, 6, 7}, // back
+      {2, 0, 4, 6}, // left
+  };
 
-  builder.appendPoly({corner[4],corner[5],corner[7], corner[6]}); // top
-  builder.appendPoly({corner[2],corner[3],corner[1], corner[0]}); // bottom
-  builder.appendPoly({corner[0],corner[1],corner[5], corner[4]}); // front
-  builder.appendPoly({corner[1],corner[3],corner[7], corner[5]}); // right
-  builder.appendPoly({corner[3],corner[2],corner[6], corner[7]}); // back
-  builder.appendPoly({corner[2],corner[0],corner[4], corner[6]}); // left
-  return builder.build();
+  return ps;
 }
 
 static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -179,78 +181,52 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
   return node;
 }
 
-
-
-
-
 std::unique_ptr<const Geometry> SphereNode::createGeometry() const
 {
   if (this->r <= 0 || !std::isfinite(this->r)) {
     return std::make_unique<PolySet>(3, true);
   }
 
-  struct ring_s {
-    std::vector<Vector2d> points;
-    double z;
-  };
+  auto num_fragments = Calc::get_fragments_from_r(r, fn, fs, fa);
+  size_t num_rings = (num_fragments + 1) / 2;
+  // Uncomment the following three lines to enable experimental sphere
+  // tessellation
+  //  if (num_rings % 2 == 0) num_rings++; // To ensure that the middle ring is at
+  //  phi == 0 degrees
 
-  auto fragments = Calc::get_fragments_from_r(r, fn, fs, fa);
-  int rings = (fragments + 1) / 2;
-  PolySetBuilder builder(0, rings * fragments + 2, 3, true);
-// Uncomment the following three lines to enable experimental sphere tessellation
-//	if (rings % 2 == 0) rings++; // To ensure that the middle ring is at phi == 0 degrees
+  auto polyset = std::make_unique<PolySet>(3, true);
+  polyset->vertices.reserve(num_rings * num_fragments);
 
-  auto ring = std::vector<ring_s>(rings);
-
-//	double offset = 0.5 * ((fragments / 2) % 2);
-  for (int i = 0; i < rings; ++i) {
-//		double phi = (180.0 * (i + offset)) / (fragments/2);
-    double phi = (180.0 * (i + 0.5)) / rings;
-    double radius = r * sin_degrees(phi);
-    ring[i].z = r * cos_degrees(phi);
-    ring[i].points.resize(fragments);
-    generate_circle(ring[i].points.data(), radius, fragments);
+  // double offset = 0.5 * ((fragments / 2) % 2);
+  for (int i = 0; i < num_rings; ++i) {
+    //                double phi = (180.0 * (i + offset)) / (fragments/2);
+    const double phi = (180.0 * (i + 0.5)) / num_rings;
+    const double radius = r * sin_degrees(phi);
+    generate_circle(std::back_inserter(polyset->vertices), radius, r * cos_degrees(phi), num_fragments);
   }
 
-  builder.appendPoly(fragments);
-  for (int i = 0; i < fragments; ++i)
-    builder.appendVertex(Vector3d(ring[0].points[i][0], ring[0].points[i][1], ring[0].z));
+  polyset->indices.push_back({});
+  for (int i = 0; i < num_fragments; ++i) {
+    polyset->indices.back().push_back(i);
+  }
 
-  for (int i = 0; i < rings - 1; ++i) {
-    auto r1 = &ring[i];
-    auto r2 = &ring[i + 1];
-    int r1i = 0, r2i = 0;
-    while (r1i < fragments || r2i < fragments) {
-      if (r1i >= fragments) goto sphere_next_r2;
-      if (r2i >= fragments) goto sphere_next_r1;
-      if ((double)r1i / fragments < (double)r2i / fragments) {
-sphere_next_r1:
-        int r1j = (r1i + 1) % fragments;
-        builder.appendPoly({
-		Vector3d(r2->points[r2i % fragments][0], r2->points[r2i % fragments][1], r2->z),
-		Vector3d(r1->points[r1j][0], r1->points[r1j][1], r1->z),
-		Vector3d(r1->points[r1i][0], r1->points[r1i][1], r1->z)
-	});
-        r1i++;
-      } else {
-sphere_next_r2:
-        int r2j = (r2i + 1) % fragments;
-        builder.appendPoly({
-		Vector3d(r2->points[r2i][0], r2->points[r2i][1], r2->z),
-		Vector3d(r2->points[r2j][0], r2->points[r2j][1], r2->z),
-		Vector3d(r1->points[r1i % fragments][0], r1->points[r1i % fragments][1], r1->z)
-	});
-        r2i++;
-      }
+  for (int i = 0; i < num_rings - 1; ++i) {
+    for (int r=0;r<num_fragments;++r) {
+      polyset->indices.push_back({
+        i*num_fragments+(r+1)%num_fragments,
+        i*num_fragments+r,
+        (i+1)*num_fragments+r,
+        (i+1)*num_fragments+(r+1)%num_fragments,
+      });
     }
   }
 
-  builder.appendPoly(fragments);
-  for (int i = 0; i < fragments; ++i) {
-    builder.prependVertex(Vector3d(ring[rings - 1].points[i][0], ring[rings - 1].points[i][1], ring[rings - 1].z));
+  polyset->indices.push_back({});
+  for (int i = 0; i < num_fragments; ++i) {
+    polyset->indices.back().push_back(num_rings * num_fragments - i - 1);
   }
 
-  return builder.build();
+  return polyset;
 }
 
 static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -290,7 +266,7 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
     return std::make_unique<PolySet>(3, true);
   }
 
-  auto fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
+  auto num_fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
 
   double z1, z2;
   if (this->center) {
@@ -301,51 +277,36 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
     z2 = this->h;
   }
 
-  auto circle1 = std::vector<Vector2d>(fragments);
-  auto circle2 = std::vector<Vector2d>(fragments);
+  auto polyset = std::make_unique<PolySet>(3, true);
+  polyset->vertices.reserve(2 * num_fragments);
 
-  generate_circle(circle1.data(), r1, fragments);
-  generate_circle(circle2.data(), r2, fragments);
+  generate_circle(std::back_inserter(polyset->vertices), r1, z1, num_fragments);
+  generate_circle(std::back_inserter(polyset->vertices), r2, z2, num_fragments);
 
-  PolySetBuilder builder(0, fragments * 2 + 2, 3, true);
-  
-  for (int i = 0; i < fragments; ++i) {
-    int j = (i + 1) % fragments;
-    if (r1 == r2) {
-      builder.appendPoly(4);
-      for(int k=0;k<4;k++)     		      
-        builder.prependVertex(Vector3d(circle1[k&2?j:i][0], circle1[k&2?j:i][1], (k+1)&2?z2:z1));
-    } else {
-      if (r1 > 0) {
-        builder.appendPoly({
-		Vector3d(circle1[j][0], circle1[j][1], z1),
-		Vector3d(circle2[i][0], circle2[i][1], z2),
-		Vector3d(circle1[i][0], circle1[i][1], z1)
-        });
-      }
-      if (r2 > 0) {
-        builder.appendPoly({
-		Vector3d(circle1[j][0], circle1[j][1], z1),
-		Vector3d(circle2[j][0], circle2[j][1], z2),
-		Vector3d(circle2[i][0], circle2[i][1], z2)
-        });
-      }
-    }
+  for (int i = 0; i < num_fragments; ++i) {
+    int j = (i + 1) % num_fragments;
+    polyset->indices.push_back({
+      i,
+      j,
+      j+num_fragments,
+      i+num_fragments,
+    });
   }
 
   if (this->r1 > 0) {
-    builder.appendPoly(fragments);
-    for (int i = 0; i < fragments; ++i)
-      builder.prependVertex(Vector3d(circle1[i][0], circle1[i][1], z1));
+    polyset->indices.push_back({});
+    for (int i = 0; i < num_fragments; ++i) {
+      polyset->indices.back().push_back(num_fragments-i-1);
+    }
   }
-
   if (this->r2 > 0) {
-    builder.appendPoly(fragments);
-    for (int i = 0; i < fragments; ++i)
-      builder.appendVertex(Vector3d(circle2[i][0], circle2[i][1], z2));
+    polyset->indices.push_back({});
+    for (int i = 0; i < num_fragments; ++i) {
+      polyset->indices.back().push_back(num_fragments+i);
+    }
   }
 
-  return builder.build();
+  return polyset;
 }
 
 static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -447,7 +408,7 @@ std::unique_ptr<const Geometry> PolyhedronNode::createGeometry() const
   p->setConvexity(this->convexity);
   p->vertices=this->points;
   p->indices=this->faces;
-  for (auto &poly : p->indices) 
+  for (auto &poly : p->indices)
     std::reverse(poly.begin(),poly.end());
   return p;
 }
@@ -765,49 +726,49 @@ static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *
 void register_builtin_primitives()
 {
   Builtins::init("cube", new BuiltinModule(builtin_cube),
-  {
-    "cube(size)",
-    "cube([width, depth, height])",
-    "cube([width, depth, height], center = true)",
-  });
+                 {
+                     "cube(size)",
+                     "cube([width, depth, height])",
+                     "cube([width, depth, height], center = true)",
+                 });
 
   Builtins::init("sphere", new BuiltinModule(builtin_sphere),
-  {
-    "sphere(radius)",
-    "sphere(r = radius)",
-    "sphere(d = diameter)",
-  });
+                 {
+                     "sphere(radius)",
+                     "sphere(r = radius)",
+                     "sphere(d = diameter)",
+                 });
 
   Builtins::init("cylinder", new BuiltinModule(builtin_cylinder),
-  {
-    "cylinder(h, r1, r2)",
-    "cylinder(h = height, r = radius, center = true)",
-    "cylinder(h = height, r1 = bottom, r2 = top, center = true)",
-    "cylinder(h = height, d = diameter, center = true)",
-    "cylinder(h = height, d1 = bottom, d2 = top, center = true)",
-  });
+      {
+          "cylinder(h, r1, r2)",
+          "cylinder(h = height, r = radius, center = true)",
+          "cylinder(h = height, r1 = bottom, r2 = top, center = true)",
+          "cylinder(h = height, d = diameter, center = true)",
+          "cylinder(h = height, d1 = bottom, d2 = top, center = true)",
+      });
 
   Builtins::init("polyhedron", new BuiltinModule(builtin_polyhedron),
-  {
-    "polyhedron(points, faces, convexity)",
-  });
+                 {
+                     "polyhedron(points, faces, convexity)",
+                 });
 
   Builtins::init("square", new BuiltinModule(builtin_square),
-  {
-    "square(size, center = true)",
-    "square([width,height], center = true)",
-  });
+                 {
+                     "square(size, center = true)",
+                     "square([width,height], center = true)",
+                 });
 
   Builtins::init("circle", new BuiltinModule(builtin_circle),
-  {
-    "circle(radius)",
-    "circle(r = radius)",
-    "circle(d = diameter)",
-  });
+                 {
+                     "circle(radius)",
+                     "circle(r = radius)",
+                     "circle(d = diameter)",
+                 });
 
   Builtins::init("polygon", new BuiltinModule(builtin_polygon),
-  {
-    "polygon([points])",
-    "polygon([points], [paths])",
-  });
+                 {
+                     "polygon([points])",
+                     "polygon([points], [paths])",
+                 });
 }

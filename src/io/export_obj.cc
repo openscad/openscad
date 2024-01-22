@@ -27,30 +27,25 @@
 
 #include "export.h"
 
-#include "PolySetBuilder.h"
+#include "PolySetUtils.h"
 #include "PolySet.h"
 
 void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  PolySetBuilder builder;
-  builder.appendGeometry(geom);
-  auto ps = builder.build();
+  // FIXME: In lazy union mode, should we export multiple objects?
+  auto ps = PolySetUtils::getGeometryAsPolySet(geom);
 
   output << "# OpenSCAD obj exporter\n";
 
-  for (size_t i = 0; i < ps->vertices.size(); ++i) {
-    output << "v " << ps->vertices[i][0] << " " << ps->vertices[i][1] << " " << ps->vertices[i][2] << "\n";
+  for (const auto &v : ps->vertices) {
+    output << "v " <<v[0] << " " << v[1] << " " << v[2] << "\n";
   }
 
-  for (size_t i = 0; i < ps->indices.size(); i++) {
-
+  for (const auto& poly : ps->indices) {
     output << "f ";
-
-    for(size_t j=0;j<ps->indices[i].size();j++) {
-      auto index = ps->indices[i][j];
-      output << " " << (1 + index);
+    for (const auto idx : poly) {
+      output << " " << idx + 1;
     }
     output << "\n";
   }
-
 }
