@@ -200,10 +200,12 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
   std::map<Vector3d, int, LexographicLess> vertexMap;
 
   for (const auto& poly : ps.indices) {
-    auto pos1 = vertexMap.emplace(remove_negative_zero(ps.vertices[poly[0]]), vertexMap.size());
-    auto pos2 = vertexMap.emplace(remove_negative_zero(ps.vertices[poly[1]]), vertexMap.size());
-    auto pos3 = vertexMap.emplace(remove_negative_zero(ps.vertices[poly[2]]), vertexMap.size());
-    out->indices.push_back({pos1.first->second, pos2.first->second, pos3.first->second});
+    IndexedFace face;
+    for (const auto idx : poly) {
+      auto pos = vertexMap.emplace(remove_negative_zero(ps.vertices[idx]), vertexMap.size());
+      face.push_back(pos.first->second);
+    }
+    out->indices.push_back(face);
   }
 
   std::vector<int> indexTranslationMap(vertexMap.size());
@@ -215,13 +217,14 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
   }
 
   for (auto& poly : out->indices) {
-    IndexedFace polygon = {indexTranslationMap[poly[0]], indexTranslationMap[poly[1]], indexTranslationMap[poly[2]]};
+    IndexedFace polygon;
+    for (const auto idx : poly) {
+      polygon.push_back(indexTranslationMap[idx]);
+    }
     std::rotate(polygon.begin(), std::min_element(polygon.begin(), polygon.end()), polygon.end());
     poly = polygon;
   }
-  std::sort(out->indices.begin(), out->indices.end(), [](const IndexedFace& t1, const IndexedFace& t2) -> bool {
-    return t1 < t2;
-  });
+  std::sort(out->indices.begin(), out->indices.end());
 
   return out;
 }
