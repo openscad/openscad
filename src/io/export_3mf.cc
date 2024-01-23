@@ -24,6 +24,7 @@
  *
  */
 
+#include "GeometryUtils.h"
 #include "export.h"
 #include "PolySet.h"
 #include "PolySetUtils.h"
@@ -86,26 +87,32 @@ static bool append_polyset(const PolySet& ps, PLib3MFModelMeshObject *& model)
     return false;
   }
 
-  auto vertexFunc = [&](const std::array<double, 3>& coords) -> bool {
-      MODELMESHVERTEX v{(FLOAT)coords[0], (FLOAT)coords[1], (FLOAT)coords[2]};
-      return lib3mf_meshobject_addvertex(mesh, &v, nullptr) == LIB3MF_OK;
-    };
+  auto vertexFunc = [&](const Vector3d& coords) -> bool {
+    const auto f = coords.cast<float>();
+    MODELMESHVERTEX v{f[0], f[1], f[2]};
+    return lib3mf_meshobject_addvertex(mesh, &v, nullptr) == LIB3MF_OK;
+  };
 
-  auto triangleFunc = [&](const std::array<int, 3>& indices) -> bool {
-      MODELMESHTRIANGLE t{(DWORD)indices[0], (DWORD)indices[1], (DWORD)indices[2]};
-      return lib3mf_meshobject_addtriangle(mesh, &t, nullptr) == LIB3MF_OK;
-    };
 
-  Export::ExportMesh exportMesh{ps};
+  auto triangleFunc = [&](const IndexedFace& indices) -> bool {
+    MODELMESHTRIANGLE t{(DWORD)indices[0], (DWORD)indices[1], (DWORD)indices[2]};
+    return lib3mf_meshobject_addtriangle(mesh, &t, nullptr) == LIB3MF_OK;
+  };
 
-  if (!exportMesh.foreach_vertex(vertexFunc)) {
-    export_3mf_error("Can't add vertex to 3MF model.", model);
-    return false;
+  auto sorted_ps = createSortedPolySet(ps);
+
+  for (const auto &v : sorted_ps->vertices) {
+    if (!vertexFunc(v)) {
+      export_3mf_error("Can't add vertex to 3MF model.", model);
+      return false;
+    }
   }
 
-  if (!exportMesh.foreach_indexed_triangle(triangleFunc)) {
-    export_3mf_error("Can't add triangle to 3MF model.", model);
-    return false;
+  for (const auto& poly : sorted_ps->indices) {
+    if (!triangleFunc(poly)) {
+      export_3mf_error("Can't add triangle to 3MF model.", model);
+      return false;
+    }
   }
 
   PLib3MFModelBuildItem *builditem;
@@ -240,38 +247,43 @@ static bool append_polyset(const PolySet& ps, Lib3MF::PWrapper& wrapper, Lib3MF:
     if (!mesh) return false;
     mesh->SetName("OpenSCAD Model");
 
-    auto vertexFunc = [&](const std::array<double, 3>& coords) -> bool {
-        try {
-          Lib3MF::sPosition v{(Lib3MF_single)coords[0], (Lib3MF_single)coords[1], (Lib3MF_single)coords[2]};
-          mesh->AddVertex(v);
-        } catch (Lib3MF::ELib3MFException& e) {
-          export_3mf_error(e.what());
-          return false;
-        }
-        return true;
-      };
+    auto vertexFunc = [&](const Vector3d& coords) -> bool {
+      const auto f = coords.cast<float>();
+      try {
+        Lib3MF::sPosition v{f[0], f[1], f[2]};
+        mesh->AddVertex(v);
+      } catch (Lib3MF::ELib3MFException& e) {
+        export_3mf_error(e.what());
+        return false;
+      }
+      return true;
+    };
 
-    auto triangleFunc = [&](const std::array<int, 3>& indices) -> bool {
-        try {
-          Lib3MF::sTriangle t{(Lib3MF_uint32)indices[0], (Lib3MF_uint32)indices[1], (Lib3MF_uint32)indices[2]};
-          mesh->AddTriangle(t);
-        } catch (Lib3MF::ELib3MFException& e) {
-          export_3mf_error(e.what());
-          return false;
-        }
-        return true;
-      };
+    auto triangleFunc = [&](const IndexedFace& indices) -> bool {
+      try {
+        Lib3MF::sTriangle t{(Lib3MF_uint32)indices[0], (Lib3MF_uint32)indices[1], (Lib3MF_uint32)indices[2]};
+        mesh->AddTriangle(t);
+      } catch (Lib3MF::ELib3MFException& e) {
+        export_3mf_error(e.what());
+        return false;
+      }
+      return true;
+    };
 
-    Export::ExportMesh exportMesh{ps};
+    auto sorted_ps = createSortedPolySet(ps);
 
-    if (!exportMesh.foreach_vertex(vertexFunc)) {
-      export_3mf_error("Can't add vertex to 3MF model.");
-      return false;
+    for (const auto &v : sorted_ps->vertices) {
+      if (!vertexFunc(v)) {
+        export_3mf_error("Can't add vertex to 3MF model.");
+        return false;
+      }
     }
 
-    if (!exportMesh.foreach_indexed_triangle(triangleFunc)) {
-      export_3mf_error("Can't add triangle to 3MF model.");
-      return false;
+    for (const auto& poly : sorted_ps->indices) {
+      if (!triangleFunc(poly)) {
+        export_3mf_error("Can't add triangle to 3MF model.");
+        return false;
+      }
     }
 
     Lib3MF::PBuildItem builditem;

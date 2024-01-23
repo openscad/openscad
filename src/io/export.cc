@@ -160,90 +160,68 @@ bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const Ex
   }
 }
 
-namespace Export {
+namespace {
 
-double normalize(double x) {
+double remove_negative_zero(double x) {
   return x == -0 ? 0 : x;
 }
 
-ExportMesh::Vertex vectorToVertex(const Vector3d& pt) {
-  return {normalize(pt.x()), normalize(pt.y()), normalize(pt.z())};
+Vector3d remove_negative_zero(const Vector3d& pt) {
+  return {
+    remove_negative_zero(pt[0]), 
+    remove_negative_zero(pt[1]), 
+    remove_negative_zero(pt[2]),
+  };
 }
 
-ExportMesh::ExportMesh(const PolySet& ps)
+#if EIGEN_VERSION_AT_LEAST(3,4,0)
+// Eigen 3.4.0 added begin()/end()
+struct LexographicLess {
+  template<class T>
+  bool operator()(T const& lhs, T const& rhs) const {
+    return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), std::less{});
+  }
+};
+#else
+struct LexographicLess {
+  template<class T>
+  bool operator()(T const& lhs, T const& rhs) const {
+    return std::lexicographical_compare(lhs.data(), lhs.data() + lhs.size(), rhs.data(), rhs.data() + rhs.size(), std::less{});
+  }
+};
+#endif
+
+} // namespace 
+
+std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
 {
-  std::map<Vertex, int> vertexMap;
-  std::vector<std::array<int, 3>> triangleIndices;
+  auto out = std::make_unique<PolySet>(3);
 
-  for (const auto& pts : ps.indices) {
-    auto pos1 = vertexMap.emplace(std::make_pair(vectorToVertex(ps.vertices[pts[0]]), vertexMap.size()));
-    auto pos2 = vertexMap.emplace(std::make_pair(vectorToVertex(ps.vertices[pts[1]]), vertexMap.size()));
-    auto pos3 = vertexMap.emplace(std::make_pair(vectorToVertex(ps.vertices[pts[2]]), vertexMap.size()));
-    triangleIndices.push_back({pos1.first->second, pos2.first->second, pos3.first->second});
+  std::map<Vector3d, int, LexographicLess> vertexMap;
+
+  for (const auto& poly : ps.indices) {
+    auto pos1 = vertexMap.emplace(remove_negative_zero(ps.vertices[poly[0]]), vertexMap.size());
+    auto pos2 = vertexMap.emplace(remove_negative_zero(ps.vertices[poly[1]]), vertexMap.size());
+    auto pos3 = vertexMap.emplace(remove_negative_zero(ps.vertices[poly[2]]), vertexMap.size());
+    out->indices.push_back({pos1.first->second, pos2.first->second, pos3.first->second});
   }
 
-  std::vector<size_t> indexTranslationMap(vertexMap.size());
-  vertices.reserve(vertexMap.size());
+  std::vector<int> indexTranslationMap(vertexMap.size());
+  out->vertices.reserve(vertexMap.size());
 
-  size_t index = 0;
-  for (const auto& e : vertexMap) {
-    vertices.push_back(e.first);
-    indexTranslationMap[e.second] = index++;
+  for (const auto& [v,i] : vertexMap) {
+    indexTranslationMap[i] = out->vertices.size();
+    out->vertices.push_back(v);
   }
 
-  for (const auto& i : triangleIndices) {
-    triangles.emplace_back(indexTranslationMap[i[0]], indexTranslationMap[i[1]], indexTranslationMap[i[2]]);
+  for (auto& poly : out->indices) {
+    IndexedFace polygon = {indexTranslationMap[poly[0]], indexTranslationMap[poly[1]], indexTranslationMap[poly[2]]};
+    std::rotate(polygon.begin(), std::min_element(polygon.begin(), polygon.end()), polygon.end());
+    poly = polygon;
   }
-  std::sort(triangles.begin(), triangles.end(), [](const Triangle& t1, const Triangle& t2) -> bool {
-      return t1.key < t2.key;
-    });
+  std::sort(out->indices.begin(), out->indices.end(), [](const IndexedFace& t1, const IndexedFace& t2) -> bool {
+    return t1 < t2;
+  });
+
+  return out;
 }
-
-bool ExportMesh::foreach_vertex(const std::function<bool(const Vertex&)>& callback) const
-{
-  for (const auto& v : vertices) {
-    if (!callback(v)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool ExportMesh::foreach_indexed_triangle(const std::function<bool(const std::array<int, 3>&)>& callback) const
-{
-  for (const auto& t : triangles) {
-    if (!callback(t.key)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool ExportMesh::foreach_triangle(const std::function<bool(const std::array<std::array<double, 3>, 3>&)>& callback) const
-{
-  for (const auto& t : triangles) {
-    auto& v0 = vertices[t.key[0]];
-    auto& v1 = vertices[t.key[1]];
-    auto& v2 = vertices[t.key[2]];
-    if (!callback({ v0, v1, v2 })) {
-      return false;
-    }
-  }
-  return true;
-}
-
-std::unique_ptr<PolySet> ExportMesh::toPolySet() const
-{
-  auto ps = std::make_unique<PolySet>(3);
-  ps->vertices.reserve(vertices.size());
-  ps->indices.reserve(triangles.size());
-  for (const auto& v : vertices) {
-    ps->vertices.push_back({v[0], v[1], v[2]});
-  }
-  for (const auto& tri : triangles) {
-    ps->indices.push_back({tri.key[0], tri.key[1], tri.key[2]});
-  }
-  return ps;
-}
-
-} // namespace Export

@@ -101,15 +101,18 @@ uint64_t append_stl(const PolySet& polyset, std::ostream& output, bool binary)
 {
   static_assert(sizeof(float) == 4, "Need 32 bit float");
   // check if tessellation is needed
-  std::unique_ptr<PolySet> tmp;
+  std::unique_ptr<PolySet> tmp_ps;
   if (!polyset.isTriangular) {
-    tmp = PolySetUtils::tessellate_faces(polyset);
+    tmp_ps = PolySetUtils::tessellate_faces(polyset);
   }
+  const PolySet &tri_ps = tmp_ps ? *tmp_ps : polyset;
+
+  std::unique_ptr<PolySet> sorted_ps;
   if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
-    Export::ExportMesh ex(!polyset.isTriangular ? *tmp : polyset);
-    tmp = ex.toPolySet();
+    sorted_ps = createSortedPolySet(tri_ps);
   }
-  const PolySet& ps = tmp ? *tmp : polyset;
+
+  const PolySet &ps = sorted_ps ? *sorted_ps : tri_ps;
 
   uint64_t triangle_count = 0;
 
