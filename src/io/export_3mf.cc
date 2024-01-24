@@ -270,16 +270,19 @@ static bool append_polyset(std::shared_ptr<const PolySet> ps, Lib3MF::PWrapper& 
       return true;
     };
 
-    auto sorted_ps = createSortedPolySet(*ps);
+    std::shared_ptr<const PolySet> out_ps = ps;
+    if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
+      out_ps = createSortedPolySet(*ps);
+    }
 
-    for (const auto &v : sorted_ps->vertices) {
+    for (const auto &v : out_ps->vertices) {
       if (!vertexFunc(v)) {
         export_3mf_error("Can't add vertex to 3MF model.");
         return false;
       }
     }
 
-    for (const auto& poly : sorted_ps->indices) {
+    for (const auto& poly : out_ps->indices) {
       if (!triangleFunc(poly)) {
         export_3mf_error("Can't add triangle to 3MF model.");
         return false;
