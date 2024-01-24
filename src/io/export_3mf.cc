@@ -137,7 +137,7 @@ static bool append_nef(const CGAL_Nef_polyhedron& root_N, PLib3MFModelMeshObject
   }
 
 
-  if (const auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3)) {
+  if (std::shared_ptr<PolySet> ps = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3)) {
     return append_polyset(ps, model);
   }
 
