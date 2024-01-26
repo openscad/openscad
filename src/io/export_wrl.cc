@@ -32,6 +32,9 @@ void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 {
   // FIXME: In lazy union mode, should we export multiple IndexedFaceSets?
   auto ps = PolySetUtils::getGeometryAsPolySet(geom);
+  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
+    ps = createSortedPolySet(*ps);
+  }
 
   output << "#VRML V2.0 utf8\n\n";
 
