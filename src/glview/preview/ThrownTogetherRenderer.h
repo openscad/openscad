@@ -15,12 +15,8 @@ class CSGChainObject;
 class TTRVertexState : public VertexState
 {
 public:
-  TTRVertexState()
-    : VertexState(), csg_object_index_(0)
-  {}
-  TTRVertexState(size_t csg_object_index)
-    : VertexState(), csg_object_index_(csg_object_index)
-  {}
+  TTRVertexState(size_t csg_object_index = 0)
+    : csg_object_index_(csg_object_index) {}
   TTRVertexState(GLenum draw_mode, GLsizei draw_size, GLenum draw_type,
                  size_t draw_offset, size_t element_offset, GLuint vertices_vbo, GLuint elements_vbo,
                  size_t csg_object_index = 0)

@@ -1,12 +1,12 @@
 #include "glview/VertexState.h"
 
-void VertexState::draw(bool bind_buffers) const
+void VertexState::draw() const
 {
-  if (vertices_vbo_ && bind_buffers) {
+  if (vertices_vbo_) {
     GL_TRACE("glBindBuffer(GL_ARRAY_BUFFER, %d)", vertices_vbo_);
     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, vertices_vbo_));
   }
-  if (elements_vbo_ && bind_buffers) {
+  if (elements_vbo_) {
     GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", elements_vbo_);
     GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_vbo_));
   }
@@ -52,11 +52,11 @@ void VertexState::draw(bool bind_buffers) const
   for (const auto& gl_func : gl_end_) {
     gl_func();
   }
-  if (elements_vbo_ && bind_buffers) {
+  if (elements_vbo_) {
     GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
     GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
   }
-  if (vertices_vbo_ && bind_buffers) {
+  if (vertices_vbo_) {
     GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
     GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
   }

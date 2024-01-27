@@ -181,8 +181,6 @@ void ThrownTogetherRenderer::createChainObject(VertexArray& vertex_array,
       cull->glBegin().emplace_back([]() {
         GL_TRACE0("glEnable(GL_CULL_FACE)");
         GL_CHECKD(glEnable(GL_CULL_FACE));
-      });
-      cull->glBegin().emplace_back([]() {
         GL_TRACE0("glCullFace(GL_BACK)");
         GL_CHECKD(glCullFace(GL_BACK));
       });
