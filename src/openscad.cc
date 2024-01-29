@@ -449,8 +449,7 @@ int cmdline(const CommandLine& cmd)
     std::shared_ptr<OffscreenView> glview = nullptr;
     if ((export_format == FileFormat::ECHO || export_format == FileFormat::PNG) && (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)) {
       Camera camera = cmd.camera;
-      fprintf(stderr, "initial view\n");
-     glview = create_offscreenview(camera);
+      glview = create_offscreenview(camera);
       if (!glview) return 1;
     }
 
