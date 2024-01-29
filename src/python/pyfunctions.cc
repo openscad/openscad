@@ -990,7 +990,7 @@ PyObject *python_output(PyObject *self, PyObject *args, PyObject *kwargs)
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist,
                                    &obj
                                    ))  {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing output(obj)");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing output(object)");
     return NULL;
   }
   return python_output_core(obj);
@@ -1001,7 +1001,7 @@ PyObject *python_oo_output(PyObject *obj, PyObject *args, PyObject *kwargs)
   char *kwlist[] = {NULL};
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "", kwlist
                                    ))  {
-    PyErr_SetString(PyExc_TypeError, "Error during parsing output(obj)");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing output(object)");
     return NULL;
   }
   return python_output_core(obj);
@@ -1084,7 +1084,7 @@ PyObject *python_color(PyObject *self, PyObject *args, PyObject *kwargs)
                                    &obj,
                                    &colorname, &alpha
                                    )) {
-    PyErr_SetString(PyExc_TypeError, "error duing parsing color");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing color(obj, colorspec)");
     return NULL;
   }
   return python_color_core(obj, colorname, alpha);
@@ -1157,7 +1157,7 @@ PyObject *python_rotate_extrude(PyObject *self, PyObject *args, PyObject *kwargs
                           &obj, &layer, &convexity, &scale, &angle, &twist, &origin, &offset, &fn,&fa,&fs))
     {
 
-    PyErr_SetString(PyExc_TypeError, "error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError, "Error during parsing rotate_extrude(object,...)");
     return NULL;
   }
   return rotate_extrude_core(obj, layer, convexity, scale, angle, twist, origin, offset, fn, fa,fs);
@@ -1257,7 +1257,7 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|dsiOOOiiiddd", kwlist, 
                                    &obj, &height, &layer, &convexity, &origin, &scale, &center, &slices, &segments, &twist, &fn, &fs, &fs))
    {
-    PyErr_SetString(PyExc_TypeError,"error duing parsing\n");
+    PyErr_SetString(PyExc_TypeError,"Error during parsing linear_extrude(object, ...)");
     return NULL;
   }
 

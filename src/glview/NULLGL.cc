@@ -1,7 +1,7 @@
 #include "GLView.h"
 
 GLView::GLView() {}
-void GLView::setRenderer(Renderer *r) {}
+void GLView::setRenderer(std::shared_ptr<Renderer>) {}
 void GLView::initializeGL() {}
 void GLView::resizeGL(int w, int h) {}
 void GLView::setCamera(const Camera& cam) {assert(false && "not implemented");}

@@ -68,12 +68,12 @@ public:
   TabManager *tabManager;
 
   std::shared_ptr<const Geometry> root_geom;
-  class CGALRenderer *cgalRenderer;
+  std::shared_ptr<Renderer> cgalRenderer;
 #ifdef ENABLE_OPENCSG
-  class OpenCSGRenderer *opencsgRenderer;
+  std::shared_ptr<Renderer> opencsgRenderer;
   std::unique_ptr<class MouseSelector> selector;
 #endif
-  ThrownTogetherRenderer *thrownTogetherRenderer;
+  std::shared_ptr<Renderer> thrownTogetherRenderer;
 
   QString last_compiled_doc;
 

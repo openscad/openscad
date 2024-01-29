@@ -181,48 +181,4 @@ bool export_png(const std::shared_ptr<const class Geometry>& root_geom, const Vi
 bool export_png(const OffscreenView& glview, std::ostream& output);
 bool export_param(SourceFile *root, const fs::path& path, std::ostream& output);
 
-namespace Export {
-
-struct Triangle {
-  std::array<int, 3> key;
-  Triangle(int p1, int p2, int p3)
-  {
-    // sort vertices with smallest value first without
-    // changing winding order of the triangle.
-    // See https://github.com/nophead/Mendel90/blob/master/c14n_stl.py
-
-    if (p1 < p2) {
-      if (p1 < p3) {
-        key = {p1, p2, p3}; // v1 is the smallest
-      } else {
-        key = {p3, p1, p2}; // v3 is the smallest
-      }
-    } else {
-      if (p2 < p3) {
-        key = {p2, p3, p1}; // v2 is the smallest
-      } else {
-        key = {p3, p1, p2}; // v3 is the smallest
-      }
-    }
-  }
-};
-
-using IndexedFace = std::vector<int>;
-class ExportMesh
-{
-public:
-  using Vertex = std::array<double, 3>;
-
-  ExportMesh(const PolySet& ps);
-
-  bool foreach_vertex(const std::function<bool(const Vertex&)>& callback) const;
-  bool foreach_indexed_triangle(const std::function<bool(const std::array<int, 3>&)>& callback) const;
-  bool foreach_triangle(const std::function<bool(const std::array<Vertex, 3>&)>& callback) const;
-  std::unique_ptr<PolySet> toPolySet() const;
-
-private:
-  std::vector<Vertex> vertices;
-  std::vector<Triangle> triangles;
-};
-
-} // namespace Export
+std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps);

@@ -51,7 +51,7 @@ def createImport(inputfile, scadfile):
 #
 # Parse arguments
 #
-formats = ['csg', 'asciistl', 'binstl', 'stl', 'off', 'amf', '3mf', 'dxf', 'svg']
+formats = ['csg', 'asciistl', 'binstl', 'stl', 'off', 'amf', '3mf', 'obj', 'dxf', 'svg']
 parser = argparse.ArgumentParser()
 parser.add_argument('--openscad', required=False, default=os.environ["OPENSCAD_BINARY"],
     help='Specify OpenSCAD executable, default to env["OPENSCAD_BINARY"] if absent.')

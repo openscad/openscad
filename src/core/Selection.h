@@ -25,13 +25,15 @@
  */
 
 #pragma once
-#include <Eigen/Core>
-#include <Eigen/Geometry>
+#include "linalg.h"
 
-enum { SELECTION_POINT, SELECTION_LINE};
+enum class SelectionType {
+	SELECTION_POINT, 
+	SELECTION_LINE
+};
 
 struct SelectedObject {
-	int type;
+	SelectionType type;
 	Vector3d p1;
 	Vector3d p2;
 };

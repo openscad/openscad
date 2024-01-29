@@ -38,17 +38,11 @@
 #endif
 
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
-  : dim_(dim), convex_(convex)
+  : convex_(convex), dim_(dim)
 {
   if (vertices_count != 0) vertices_.reserve(vertices_count);
   if (indices_count != 0) indices_.reserve(indices_count);
 }
-
-PolySetBuilder::PolySetBuilder(const Polygon2d& polygon2d)
-  : polygon2d_(polygon2d), dim_(2), convex_(unknown)
-{
-}
-
 
 void PolySetBuilder::setConvexity(int convexity){
   convexity_ = convexity;
@@ -94,7 +88,7 @@ void PolySetBuilder::appendGeometry(const std::shared_ptr<const Geometry>& geom)
     append(*mani->toPolySet());
 #endif
   } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
-    assert(false && "Unsupported file format");
+    assert(false && "Unsupported geometry");
   } else { // NOLINT(bugprone-branch-clone)
     assert(false && "Not implemented");
   }
@@ -120,9 +114,19 @@ void PolySetBuilder::appendVertex(int ind)
   indices_.back().push_back(ind);
 }
 
+void PolySetBuilder::appendVertex(const Vector3d &v)
+{
+  appendVertex(vertexIndex(v));
+}
+
 void PolySetBuilder::prependVertex(int ind)
 {
   indices_.back().insert(indices_.back().begin(), ind);
+}
+
+void PolySetBuilder::prependVertex(const Vector3d &v)
+{
+  prependVertex(vertexIndex(v));
 }
 
 void PolySetBuilder::append(const PolySet& ps)
@@ -138,16 +142,10 @@ void PolySetBuilder::append(const PolySet& ps)
 std::unique_ptr<PolySet> PolySetBuilder::build()
 {
   std::unique_ptr<PolySet> polyset;
-  if (!polygon2d_.isEmpty()) {
-    polyset = std::make_unique<PolySet>(polygon2d_);
-  }
-  else {
-    polyset = std::make_unique<PolySet>(dim_, convex_);
-  }
+  polyset = std::make_unique<PolySet>(dim_, convex_);
   vertices_.copy(std::back_inserter(polyset->vertices));
   polyset->indices = std::move(indices_);
   polyset->setConvexity(convexity_);
-  polyset->dirty = true;
   polyset->isTriangular = true;
   for (const auto& face : polyset->indices) {
     if (face.size() > 3) {

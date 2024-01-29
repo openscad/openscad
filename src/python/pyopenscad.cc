@@ -181,6 +181,7 @@ int python_vectorval(PyObject *vec, double *x, double *y, double *z)
 {
   *x = 1.0;
   *y = 1.0;
+  if(vec == nullptr) return 1;
   if (PyList_Check(vec)) {
     if (PyList_Size(vec) >= 1) {
       if (python_numberval(PyList_GetItem(vec, 0), x)) return 1;

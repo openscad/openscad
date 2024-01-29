@@ -28,13 +28,14 @@
 #include "export.h"
 
 #include "PolySet.h"
-#include "PolySetBuilder.h"
+#include "PolySetUtils.h"
 
 void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  PolySetBuilder builder;
-  builder.appendGeometry(geom);
-  auto ps = builder.build();
+  auto ps = PolySetUtils::getGeometryAsPolySet(geom);
+  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
+    ps = createSortedPolySet(*ps);
+  }
 
   output << "OFF " << ps->vertices.size() << " " << ps->indices.size() << " 0\n";
   const auto& v = ps->vertices;

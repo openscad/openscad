@@ -69,7 +69,6 @@ Error during parsing scale(object, scale) in line 99
 Error during parsing rotate(object, vec3) in line 102
 Error during parsing rotate(object, vec3) in line 103
 Error during parsing rotate(object, vec3) in line 104
-rotate accepts at most 3 angles in line 105
 Error during parsing rotate(object, vec3) in line 106
 Error during parsing mirror(object, vec3) in line 109
 Invalid type for Object in mirror in line 110
@@ -77,7 +76,7 @@ Invalid vector specifiaction in mirror in line 111
 Invalid vector specifiaction in mirror in line 112
 Error during parsing mirror(object, vec3) in line 113
 Error during parsing mirror(object, vec3) in line 114
-Error during parsing translate(object,vec3) in line 117
+Invalid vector specifiaction in trans in line 117
 Invalid type for Object in translate in line 118
 Invalid vector specifiaction in trans in line 119
 Invalid vector specifiaction in trans in line 120

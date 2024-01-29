@@ -28,8 +28,14 @@ endif()
 set(LIB3MF_VERSION ${PC_LIB3MF_VERSION})
 set(LIB3MF_FOUND ${PC_LIB3MF_FOUND})
 
+if ("${PC_LIB3MF_VERSION}" VERSION_GREATER_EQUAL 2)
+  set(FIND_FILE "lib3mf_implicit.hpp")
+else()
+  set(FIND_FILE "Model/COM/NMR_DLLInterfaces.h")
+endif()
+
 find_path(LIB3MF_INCLUDE_DIRS
-    NAMES Model/COM/NMR_DLLInterfaces.h lib3mf_implicit.hpp
+    NAMES "${FIND_FILE}"
     HINTS $ENV{LIB3MF_INCLUDEDIR}
           ${PC_LIB3MF_INCLUDEDIR}
           ${PC_LIB3MF_INCLUDE_DIRS}

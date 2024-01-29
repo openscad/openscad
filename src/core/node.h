@@ -41,10 +41,6 @@ public:
   /*| When a more specific name for user interaction shall be used, such as module names,
       the verbose name shall be overloaded. */
   virtual std::string verbose_name() const { return this->name(); }
-  /*! Should return a Geometry instance describing the node. Returns nullptr if smth.
-     goes wrong. This is only called by PolySetEvaluator, to make sure polysets
-     are inserted into the cache*/
-  virtual class Geometry *evaluate_geometry(class PolySetEvaluator *) const { return nullptr; }
 
   const std::vector<std::shared_ptr<AbstractNode>>& getChildren() const {
     return this->children;

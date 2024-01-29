@@ -85,7 +85,6 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
   if (points.size() <= 3) return nullptr;
 
   // Apply hull
-  bool success = false;
   if (points.size() >= 4) {
     try {
       CGAL::Polyhedron_3<K> r;

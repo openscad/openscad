@@ -369,6 +369,6 @@ protected:
   GLuint points_edges_elements_vbo{0};
   GLuint halffacets_vertices_vbo{0};
   GLuint halffacets_elements_vbo{0};
-  VertexStates points_edges_states;
-  VertexStates halffacets_states;
+  std::vector<std::shared_ptr<VertexState>> points_edges_states;
+  std::vector<std::shared_ptr<VertexState>> halffacets_states;
 }; // Polyhedron

@@ -20,7 +20,6 @@ GLView::GLView()
   showaxes = false;
   showcrosshairs = false;
   showscale = false;
-  renderer = nullptr;
   colorscheme = &ColorMap::inst()->defaultColorScheme();
   cam = Camera();
   far_far_away = RenderSettings::inst()->far_gl_clip_limit;
@@ -32,9 +31,9 @@ GLView::GLView()
 #endif
 }
 
-void GLView::setRenderer(Renderer *r)
+void GLView::setRenderer(std::shared_ptr<Renderer> r)
 {
-  renderer = r;
+  this->renderer = r;
   if (this->renderer) {
     this->renderer->resize(cam.pixel_width, cam.pixel_height);
   }
@@ -398,7 +397,7 @@ void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
 {
   auto vd = cam.zoomValue()/200.0;
   switch(obj.type) {
-    case SELECTION_POINT:
+    case SelectionType::SELECTION_POINT:
     {
       double n=1/sqrt(3);
       // create an octaeder	   
@@ -422,7 +421,7 @@ void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
       glEnd();
      }
      break;	
-   case SELECTION_LINE:
+   case SelectionType::SELECTION_LINE:
      {
 	Vector3d diff=obj.p2-obj.p1;
 	Vector3d wdir=eyedir.cross(diff).normalized()*vd/2.0;

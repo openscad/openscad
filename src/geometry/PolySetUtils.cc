@@ -96,7 +96,7 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
   std::vector<Vector3f> verts;
   std::vector<int> indexMap(polyset.vertices.size());
   verts.reserve(polyset.vertices.size());
-  for (int i = 0; i < polyset.vertices.size(); ++i) {
+  for (size_t i = 0; i < polyset.vertices.size(); ++i) {
     if (used[i]) {
       indexMap[i] = verts.size();
       verts.emplace_back(polyset.vertices[i].cast<float>());
@@ -149,7 +149,11 @@ bool is_approximately_convex(const PolySet& ps) {
 // Get as or convert the geometry to a PolySet.
 std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const Geometry>& geom)
 {
-  if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+  if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
+    PolySetBuilder builder;
+    builder.appendGeometry(geom);
+    return builder.build();
+  } else if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     return ps;
   }
 #ifdef ENABLE_CGAL

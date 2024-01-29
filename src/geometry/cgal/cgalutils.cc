@@ -6,7 +6,6 @@
 #include "cgal.h"
 #include "cgalutils.h"
 #include "PolySet.h"
-#include "PolySetBuilder.h"
 #include "printutils.h"
 #include "Polygon2d.h"
 #include "PolySetUtils.h"
@@ -376,14 +375,14 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhed
     LOG(message_group::Error, "Non-manifold mesh created: %1$d unconnected edges", unconnected2);
   }
 
-  PolySetBuilder builder(verts.size(),allTriangles.size());
-  std::vector<int> indMap;
-  for(int i=0;i<verts.size();i++)
-    indMap.push_back(builder.vertexIndex({verts[i][0],verts[i][1],verts[i][2]}));
-
-  for(int i=0;i<allTriangles.size();i++)  {
-	const auto &tri=allTriangles[i];
-	builder.appendPoly({indMap[tri[0]],indMap[tri[1]],indMap[tri[2]]});
+  auto polyset = std::make_unique<PolySet>(3);
+  polyset->vertices.reserve(verts.size());
+  for (const auto& v : verts) {
+    polyset->vertices.emplace_back(v.cast<double>());
+  }
+  polyset->indices.reserve(allTriangles.size());
+  for (const auto& tri : allTriangles) {
+    polyset->indices.push_back({tri[0], tri[1], tri[2]});
   }
 
 #if 0 // For debugging
@@ -393,7 +392,7 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhed
   }
 #endif // debug
 
-  return builder.build();
+  return polyset;
 }
 
 template std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL_Nef_polyhedron3& N);
@@ -492,8 +491,8 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
     auto ps = std::make_shared<PolySet>(3);
     if (!N->isEmpty()) {
       if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3)) {
-	ps->setConvexity(N->getConvexity());
-	return ps;
+        ps->setConvexity(N->getConvexity());
+        return ps;
       }
       LOG(message_group::Error, "Nef->PolySet failed.");
     }
