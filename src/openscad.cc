@@ -334,7 +334,7 @@ struct CommandLine
   const std::string summaryFile;
 };
 
-int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file);
+int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file, std::shared_ptr<OffscreenView> glview = nullptr);
 
 int cmdline(const CommandLine& cmd)
 {
@@ -446,6 +446,14 @@ int cmdline(const CommandLine& cmd)
     render_variables.time = 0;
     return do_export(cmd, render_variables, export_format, root_file);
   } else {
+    std::shared_ptr<OffscreenView> glview = nullptr;
+    if ((export_format == FileFormat::ECHO || export_format == FileFormat::PNG) && (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)) {
+      Camera camera = cmd.camera;
+      fprintf(stderr, "initial view\n");
+     glview = create_offscreenview(camera);
+      if (!glview) return 1;
+    }
+
     // export the requested number of animated frames
     for (unsigned frame = 0; frame < cmd.animate_frames; ++frame) {
       render_variables.time = frame * (1.0 / cmd.animate_frames);
@@ -465,7 +473,7 @@ int cmdline(const CommandLine& cmd)
       CommandLine frame_cmd = cmd;
       frame_cmd.output_file = frame_str;
 
-      int r = do_export(frame_cmd, render_variables, export_format, root_file);
+      int r = do_export(frame_cmd, render_variables, export_format, root_file, glview);
       if (r != 0) {
         return r;
       }
@@ -475,7 +483,7 @@ int cmdline(const CommandLine& cmd)
   }
 }
 
-int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file)
+int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file, std::shared_ptr<OffscreenView> glview)
 {
   auto filename_str = fs::path(cmd.output_file).generic_string();
   auto fpath = fs::absolute(fs::path(cmd.filename));
@@ -562,12 +570,14 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     // start measuring render time
     RenderStatistic renderStatistic;
     GeometryEvaluator geomevaluator(tree);
-    unique_ptr<OffscreenView> glview;
     std::shared_ptr<const Geometry> root_geom;
     if ((curFormat == FileFormat::ECHO || curFormat == FileFormat::PNG) && (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)) {
       // OpenCSG or throwntogether png -> just render a preview
-      glview = prepare_preview(tree, cmd.viewOptions, camera);
-      if (!glview) return 1;
+      if (!glview) {
+        glview = create_offscreenview(camera);
+        if (!glview) return 1;
+      }
+      if (!prepare_preview(tree, cmd.viewOptions, camera, *glview)) return 1;
     }
 #ifdef ENABLE_CGAL
     else {
