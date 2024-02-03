@@ -454,7 +454,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(showFind()));
   connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(showFindAndReplace()));
 #ifdef Q_OS_WIN
-  this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F));
+  this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL, Qt::SHIFT, Qt::Key_F));
 #endif
   connect(this->editActionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
   connect(this->editActionFindPrevious, SIGNAL(triggered()), this, SLOT(findPrev()));
@@ -2247,9 +2247,6 @@ void MainWindow::actionRender()
   if (GuiLocker::isLocked()) return;
   GuiLocker::lock();
 
-  this->designActionMeasureDist->setEnabled(true);
-  this->designActionMeasureAngle->setEnabled(true);
-
   prepareCompile("cgalRender", true, false);
   compile(false);
 }
@@ -2300,7 +2297,11 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     // Go to CGAL view mode
     if (viewActionWireframe->isChecked()) viewModeWireframe();
     else viewModeSurface();
+    this->designActionMeasureDist->setEnabled(true);
+    this->designActionMeasureAngle->setEnabled(true);
   } else {
+    this->designActionMeasureDist->setEnabled(false);
+    this->designActionMeasureAngle->setEnabled(false);
     LOG(message_group::UI_Warning, "No top level geometry to render");
   }
 

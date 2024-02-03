@@ -540,10 +540,11 @@ std::vector<SelectedObject> QGLView::findObject(int mouse_x,int mouse_y)
   Vector3d eyedir=far_pt-near_pt;
 
   Vector3d testpt(0,0,0);
-
+  std::vector<SelectedObject> result;
   auto renderer = this->getRenderer();
-  return renderer->findModelObject(near_pt, far_pt, mouse_x, mouse_y, cam.zoomValue()/300);
-
+  if(renderer == nullptr) return result;
+  result = renderer->findModelObject(near_pt, far_pt, mouse_x, mouse_y, cam.zoomValue()/300);
+  return result;
 }
 
 void QGLView::selectPoint(int mouse_x, int mouse_y)
