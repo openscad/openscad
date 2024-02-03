@@ -43,7 +43,7 @@ jobs:
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
         ctest -j$NUMCPU -E pdfexporttest
     - name: Upload Test Result Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
         name: Test Result Report (MacOS)

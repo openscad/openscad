@@ -64,7 +64,7 @@ jobs:
       run: |
         ./scripts/macosx-sanity-check.py ./build/OpenSCAD.app/Contents/MacOS/OpenSCAD
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Build Artifacts
         path: ${{ runner.temp }}/out/
