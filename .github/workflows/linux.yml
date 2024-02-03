@@ -36,7 +36,7 @@ jobs:
     - name: Make Qt5 the default
       if: ${{ matrix.qt5default }}
       run: sudo apt-get install qt5-default
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     - name: Build and test
