@@ -1,6 +1,5 @@
 #include "import.h"
 #include "PolySet.h"
-#include "PolySetBuilder.h"
 #include "printutils.h"
 #include "AST.h"
 #include <fstream>
@@ -15,7 +14,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
 
   int lineno = 1;
   std::string line;
-  //boost::smatch results;
+  double scale = 1000.0;
 
   auto AsciiError = [&](const auto& errstr){
     LOG(message_group::Error, loc, "",
@@ -30,8 +29,6 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
 
   boost::regex ex_magic(R"(^OFF$|^COFF$)"); // TODO: 4OFF?
   boost::regex ex_comment(R"(^\s*#)");
-
-
 
   std::getline(f, line);
   if (f.eof() || !boost::regex_search(line, ex_magic)) {
@@ -56,14 +53,13 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     faces_count = boost::lexical_cast<unsigned long>(words[1]);
     edges_count = boost::lexical_cast<unsigned long>(words[2]);
     (void)edges_count; // ignored
-    fprintf(stderr, __FILE__ ": OFF: %d %d %d\n\n", vertices_count, faces_count, edges_count);
   } catch (const boost::bad_lexical_cast& blc) {
     AsciiError("bad header");
     return std::make_unique<PolySet>(3);
   }
-  PolySetBuilder builder(vertices_count, faces_count);
-  // The builder merges identical vertices, so just keep a table around
-  //std::array<Vector3d, vertices_count> vertices;
+  auto ps = std::make_unique<PolySet>(3);
+  ps->vertices.reserve(vertices_count);
+  ps->indices.reserve(faces_count);
 
   while ((!f.eof()) && (vertices_count--)) {
     lineno++;
@@ -81,11 +77,10 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     try {
       Vector3d v;
       for (int i = 0; i < 3; i++) {
-        v[i]= boost::lexical_cast<double>(words[i]);
+        v[i]= boost::lexical_cast<double>(words[i]) * scale;
       }
       // TODO: Meshlab appends color there, probably to allow gradients
-      fprintf(stderr, __FILE__ ": v: %f %f %f\n\n", v[0], v[1], v[2]);
-      builder.vertexIndex(v); // expect to get subsequent numbers starting from zero
+      ps->vertices.push_back(v);
     } catch (const boost::bad_lexical_cast& blc) {
       AsciiError("can't parse vertex");
       return std::make_unique<PolySet>(3);
@@ -111,14 +106,12 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
         AsciiError("can't parse face");
         return std::make_unique<PolySet>(3);
       }
-      fprintf(stderr, __FILE__ ": F: %d\n", n);
-      builder.appendPoly(n);
+      ps->indices.emplace_back().reserve(n);
 
       for (int i = 0; i < n; i++) {
         int ind=boost::lexical_cast<int>(words[i+1]);
-        fprintf(stderr, __FILE__ ": f: %d %d\n\n", ind, builder.numVertices());
-        if(ind >= 0 && ind < builder.numVertices())
-          builder.appendVertex(ind);
+        if(ind >= 0 && ind < vertices_count)
+          ps->indices.back().push_back(ind);
       }
       if (words.size() >= n + 4) {
         // optional color info
@@ -134,5 +127,5 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   }
 
   f.close();
-  return builder.build();
+  return ps;
 }
