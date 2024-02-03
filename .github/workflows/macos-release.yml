@@ -16,7 +16,7 @@ jobs:
       LIBRARIES_CACHE: libraries.tar.gz
     steps:
     - name: Checkout OpenSCAD
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: Install Homebrew packages
