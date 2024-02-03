@@ -112,8 +112,8 @@ void SurfaceNode::convert_image(img_data_t& data, std::vector<uint8_t>& img, uns
     for (unsigned int x = 0; x < width; ++x) {
       long idx = 4l * (y * width + x);
       double pixel = 0.2126 * img[idx] + 0.7152 * img[idx + 1] + 0.0722 * img[idx + 2];
-      data[ x + (width * (height - 1 - y)) ] = z;
       double z = 100.0 / 255 * (invert ? 255 - pixel : pixel);
+      data[ x + (width * (height - 1 - y)) ] = z;
       min_val = std::min(z, min_val);
     }
   }
@@ -230,126 +230,171 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
 {
   auto data = read_png_or_dat(filename);
 
-  int lines = data.height / pixelStep;
-  int columns = data.width / pixelStep;
-  double min_val =
-      data.min_value() - thickness; // make the bottom solid, and match old code
+  const int columns = data.width / pixelStep;
+  const int rows = data.height / pixelStep;
 
-  int width = data.width - (data.width % pixelStep);
-  int height = data.height - (data.height % pixelStep);
+  const int width = data.width;
+  const int height = data.height;
 
-  double ox = center ? -(width - 1) / 2.0 : 0;
-  double oy = center ? -(height - 1) / 2.0 : 0;
+  const double xStep = static_cast<double>(width-1) / static_cast<double>(columns-1);
+  const double yStep = static_cast<double>(height-1) / static_cast<double>(rows-1);
+
+  const double min_val = data.min_value() - thickness; // make the bottom solid, and match old code
+
+  const double ox = center ? -(width - 1) / 2.0 : 0;
+  const double oy = center ? -(height - 1) / 2.0 : 0;
 
   // reserve the polygon vector size so we don't have to reallocate as often
-  int numPolys = ((lines - 1) * (columns - 1) * 4); // heightmap (on top)
-  numPolys += ((lines - 1) * 2 + (columns - 1) * 2); // sides
-  numPolys += doubleSided ? ((lines - 1) * (columns - 1) * 4) : 1; // bottom (heightmap or plane)
+  int numPolys = ((rows - 1) * (columns - 1) * 4); // heightmap (on top)
+  numPolys += ((rows - 1) * 2 + (columns - 1) * 2); // sides
+  numPolys += doubleSided ? ((rows - 1) * (columns - 1) * 4) : 1; // bottom (heightmap or plane)
 
-  int numVertices = (lines * columns);
-  numVertices += doubleSided ? (lines * columns) : ((lines + columns - 4) * 2);
+  int numVertices = (rows * columns);
+  numVertices += doubleSided ? (rows * columns) : ((rows + columns - 4) * 2);
                       
   PolySetBuilder builder(numVertices, numPolys);
   builder.setConvexity(convexity);
 
   // the bulk of the heightmap
-  for (int i = pixelStep; i < height; i += pixelStep) {
-    for (int j = pixelStep; j < width; j += pixelStep) {
-      double v1 = data[(j - pixelStep) + (i - pixelStep) * data.width];
-      double v2 = data[(j) + (i - pixelStep) * data.width];
-      double v3 = data[(j - pixelStep) + (i)*data.width];
-      double v4 = data[(j) + (i)*data.width];
+  for (int i = 1; i < rows; ++i) {
+      const int topIdx = (i - 1) * pixelStep;
+      const int bottomIdx = i * pixelStep;
+      const double top = oy + (i - 1) * yStep;
+      const double bottom = oy + i * yStep;
+      const double yCenter = oy + (i - 0.5) * yStep;
 
-      double vx = (v1 + v2 + v3 + v4) / 4;
+      for (int j = 1; j < columns; ++j) {
+        const int leftIdx = (j - 1) * pixelStep;
+        const int rightIdx = j * pixelStep;
+        const double left = ox + (j - 1) * xStep;
+        const double right = ox + j * xStep;
+        const double xCenter = ox + (j - 0.5) * xStep;
 
-      Vector3d topLeft    (ox + j - pixelStep , oy + i - pixelStep, v1);
-      Vector3d topRight   (ox + j             , oy + i - pixelStep, v2);
-      Vector3d bottomLeft (ox + j - pixelStep , oy + i            , v3);
-      Vector3d bottomRight(ox + j             , oy + i            , v4);
-      Vector3d center     (ox + j - (pixelStep / 2.0), oy + i - (pixelStep / 2.0), vx);
+        const double v1 = data[leftIdx  + topIdx  * data.width];
+        const double v2 = data[rightIdx + topIdx  * data.width];
+        const double v3 = data[leftIdx  + bottomIdx * data.width];
+        const double v4 = data[rightIdx + bottomIdx * data.width];
 
-      builder.appendPoly({topLeft, topRight, center});
-      builder.appendPoly({topRight, bottomRight, center});
-      builder.appendPoly({bottomRight, bottomLeft, center});
-      builder.appendPoly({bottomLeft, topLeft, center});
+        const double vx = (v1 + v2 + v3 + v4) / 4.0;
+
+        const Vector3d topLeft    (left,  top,  v1);
+        const Vector3d topRight   (right, top,  v2);
+        const Vector3d bottomLeft (left,  bottom, v3);
+        const Vector3d bottomRight(right, bottom, v4);
+        const Vector3d center     (xCenter, yCenter, vx);
+
+        builder.appendPoly({topLeft, topRight, center});
+        builder.appendPoly({bottomLeft, topLeft, center});
+        builder.appendPoly({bottomRight, bottomLeft, center});
+        builder.appendPoly({topRight, bottomRight, center});
     }
   }
 
   if (doubleSided) {
-    for (int i = pixelStep; i < height; i += pixelStep) {
-      for (int j = pixelStep; j < width; j += pixelStep) {
-        double v1 = data[(j - pixelStep) + (i - pixelStep) * data.width] - thickness;
-        double v2 = data[(j) + (i - pixelStep) * data.width] - thickness;
-        double v3 = data[(j - pixelStep) + (i)*data.width] - thickness;
-        double v4 = data[(j) + (i)*data.width] - thickness;
+    for (int i = 1; i < rows; ++i) {
+      const int topIdx = (i - 1) * pixelStep;
+      const int bottomIdx = i * pixelStep;
+      const double top = oy + (i - 1) * yStep;
+      const double bottom = oy + i * yStep;
+      const double yCenter = oy + (i - 0.5) * yStep;
 
-        double vx = (v1 + v2 + v3 + v4) / 4;
+      for (int j = 1; j < columns; ++j) {
+        const int leftIdx = (j - 1) * pixelStep;
+        const int rightIdx = j * pixelStep;
+        const double left = ox + (j - 1) * xStep;
+        const double right = ox + j * xStep;
+        const double xCenter = ox + (j - 0.5) * xStep;
 
-        Vector3d topLeft    (ox + j - pixelStep , oy + i - pixelStep, v1);
-        Vector3d topRight   (ox + j             , oy + i - pixelStep, v2);
-        Vector3d bottomLeft (ox + j - pixelStep , oy + i            , v3);
-        Vector3d bottomRight(ox + j             , oy + i            , v4);
-        Vector3d center     (ox + j - (pixelStep / 2.0), oy + i - (pixelStep / 2.0), vx);
+        const double v1 = data[leftIdx  + topIdx  * data.width] - thickness;
+        const double v2 = data[rightIdx + topIdx  * data.width] - thickness;
+        const double v3 = data[leftIdx  + bottomIdx * data.width] - thickness;
+        const double v4 = data[rightIdx + bottomIdx * data.width] - thickness;
+
+        const double vx = (v1 + v2 + v3 + v4) / 4.0;
+
+        const Vector3d topLeft    (left,  top,  v1);
+        const Vector3d topRight   (right, top,  v2);
+        const Vector3d bottomLeft (left,  bottom, v3);
+        const Vector3d bottomRight(right, bottom, v4);
+        const Vector3d center     (xCenter, yCenter, vx);
 
         builder.appendPoly({topLeft, topRight, center});
-        builder.appendPoly({topRight, bottomRight, center});
-        builder.appendPoly({bottomRight, bottomLeft, center});
         builder.appendPoly({bottomLeft, topLeft, center});
+        builder.appendPoly({bottomRight, bottomLeft, center});
+        builder.appendPoly({topRight, bottomRight, center});
       }
     }
   }
-  else if (columns > 1 && lines > 1) {
+  else if (columns > 1 && rows > 1) {
     // the bottom of the shape (one less than the real minimum value), making it a
     // solid volume
-    builder.appendPoly(2 * (columns - 1) + 2 * (lines - 1));
-    for (int i = 0; i < width - 1; i += pixelStep)
+    builder.appendPoly(2 * (columns - 1) + 2 * (rows - 1));
+    for (int i = 0; i < columns - 1; ++i)
       builder.prependVertex(
-          builder.vertexIndex(Vector3d(ox + i, oy + 0, min_val)));
-    for (int i = 0; i < height - 1; i += pixelStep)
+          builder.vertexIndex(Vector3d(ox + i * xStep, oy + 0, min_val)));
+    for (int i = 0; i < rows - 1; ++i)
       builder.prependVertex(
-          builder.vertexIndex(Vector3d(ox + columns - 1, oy + i, min_val)));
-    for (int i = width - pixelStep; i > 0; i -= pixelStep)
+          builder.vertexIndex(Vector3d(ox + width - 1, oy + i * yStep, min_val)));
+    for (int i = columns - 1; i > 0; --i)
       builder.prependVertex(
-          builder.vertexIndex(Vector3d(ox + i, oy + lines - 1, min_val)));
-    for (int i = height - pixelStep; i > 0; i -= pixelStep)
+          builder.vertexIndex(Vector3d(ox + i * xStep, oy + height - 1, min_val)));
+    for (int i = rows - 1; i > 0; --i)
       builder.prependVertex(
-          builder.vertexIndex(Vector3d(ox + 0, oy + i, min_val)));
+          builder.vertexIndex(Vector3d(ox + 0, oy + i * yStep, min_val)));
   }
 
   // edges along Y
-  for (int i = pixelStep; i < height; i += pixelStep) {
-    double v1 = data[(0) + (i - pixelStep) * data.width];
-    double v2 = data[(0) + (i) * data.width];
-    double v3 = data[(width - pixelStep) + (i - pixelStep) * data.width];
-    double v4 = data[(width - pixelStep) + (i) * data.width];
+  for (int i = 1; i < rows; ++i) {
+    const int topIdx = (i - 1) * pixelStep;
+    const int bottomIdx = i * pixelStep;
+    const double top = oy + (i - 1) * yStep;
+    const double bottom = oy + i * yStep;
 
-    builder.appendPoly({Vector3d(ox + 0, oy + i - pixelStep, doubleSided ? v1 - thickness : min_val),
-                        Vector3d(ox + 0, oy + i - pixelStep, v1),
-                        Vector3d(ox + 0, oy + i, v2),
-                        Vector3d(ox + 0, oy + i, doubleSided ? v2 - thickness : min_val)});
+    const double v1 = data[(0)           + topIdx    * data.width];
+    const double v2 = data[(0)           + bottomIdx * data.width];
+    const double v3 = data[(columns - 1) * pixelStep + topIdx  * data.width];
+    const double v4 = data[(columns - 1) * pixelStep + bottomIdx * data.width];
 
-    builder.appendPoly({Vector3d(ox + width - pixelStep, oy + i, doubleSided ? v4 - thickness : min_val),
-                        Vector3d(ox + width - pixelStep, oy + i, v4),
-                        Vector3d(ox + width - pixelStep, oy + i - pixelStep, v3),
-                        Vector3d(ox + width - pixelStep, oy + i - pixelStep, doubleSided ? v3 - thickness : min_val)});
+    builder.appendPoly({
+      Vector3d(ox + 0, top, doubleSided ? v1 - thickness : min_val),
+      Vector3d(ox + 0, top, v1),
+      Vector3d(ox + 0, bottom,v2),
+      Vector3d(ox + 0, bottom,doubleSided ? v2 - thickness : min_val)
+    });
+
+    builder.appendPoly({
+      Vector3d(ox + width - 1, bottom,doubleSided ? v4 - thickness : min_val),
+      Vector3d(ox + width - 1, bottom,v4),
+      Vector3d(ox + width - 1, top, v3),
+      Vector3d(ox + width - 1, top, doubleSided ? v3 - thickness : min_val)
+    });
   }
 
   // edges along X
-  for (int i = pixelStep; i < width; i += pixelStep) {
-    double v1 = data[(i - pixelStep) + (0) * data.width];
-    double v2 = data[(i) + (0) * data.width];
-    double v3 = data[(i - pixelStep) + (height - pixelStep) * data.width];
-    double v4 = data[(i) + (height - pixelStep) * data.width];
+  for (int i = 1; i < columns; ++i) {
+    const int leftIdx = (i - 1) * pixelStep;
+    const int rightIdx = i * pixelStep;
+    const double left = ox + (i - 1) * xStep;
+    const double right = ox + i * xStep;
 
-    builder.appendPoly({Vector3d(ox + i, oy + 0, doubleSided ? v2 - thickness : min_val),
-                        Vector3d(ox + i, oy + 0, v2),
-                        Vector3d(ox + i - pixelStep, oy + 0, v1),
-                        Vector3d(ox + i - pixelStep, oy + 0, doubleSided ? v1 - thickness : min_val)});
+    const double v1 = data[leftIdx  + (0) * data.width];
+    const double v2 = data[rightIdx + (0) * data.width];
+    const double v3 = data[leftIdx  + (rows - 1) * pixelStep * data.width];
+    const double v4 = data[rightIdx + (rows - 1) * pixelStep * data.width];
 
-    builder.appendPoly({Vector3d(ox + i - pixelStep, oy + height - pixelStep, doubleSided ? v3 - thickness : min_val),
-                        Vector3d(ox + i - pixelStep, oy + height - pixelStep, v3),
-                        Vector3d(ox + i, oy + height - pixelStep, v4),
-                        Vector3d(ox + i, oy + height - pixelStep, doubleSided ? v4 - thickness : min_val)});
+    builder.appendPoly({
+      Vector3d(right, oy + 0, doubleSided ? v2 - thickness : min_val),
+      Vector3d(right, oy + 0, v2),
+      Vector3d(left,  oy + 0, v1),
+      Vector3d(left,  oy + 0, doubleSided ? v1 - thickness : min_val)
+    });
+
+    builder.appendPoly({
+      Vector3d(left,  oy + height - 1, doubleSided ? v3 - thickness : min_val),
+      Vector3d(left,  oy + height - 1, v3),
+      Vector3d(right, oy + height - 1, v4),
+      Vector3d(right, oy + height - 1, doubleSided ? v4 - thickness : min_val)
+    });
   }
 
   return builder.build();
