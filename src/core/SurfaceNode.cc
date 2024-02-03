@@ -226,6 +226,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
   return data;
 }
 
+// FIXME: Look for faster way to generate PolySet directly
 std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
 {
   auto data = read_png_or_dat(filename);
@@ -245,14 +246,14 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
   const double oy = center ? -(height - 1) / 2.0 : 0;
 
   // reserve the polygon vector size so we don't have to reallocate as often
-  int numPolys = ((rows - 1) * (columns - 1) * 4); // heightmap (on top)
-  numPolys += ((rows - 1) * 2 + (columns - 1) * 2); // sides
-  numPolys += doubleSided ? ((rows - 1) * (columns - 1) * 4) : 1; // bottom (heightmap or plane)
+  int numIndices = ((rows - 1) * (columns - 1) * 4); // heightmap (on top)
+  numIndices += ((rows - 1) * 2 + (columns - 1) * 2); // sides
+  numIndices += doubleSided ? ((rows - 1) * (columns - 1) * 4) : 1; // bottom (heightmap or plane)
 
   int numVertices = (rows * columns);
   numVertices += doubleSided ? (rows * columns) : ((rows + columns - 4) * 2);
                       
-  PolySetBuilder builder(numVertices, numPolys);
+  PolySetBuilder builder(numVertices, numIndices);
   builder.setConvexity(convexity);
 
   // the bulk of the heightmap

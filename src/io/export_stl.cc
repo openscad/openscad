@@ -97,37 +97,36 @@ void write_floats(std::ostream& output, const std::array<float, N>& data) {
 }
 
 
-uint64_t append_stl(const PolySet& polyset, std::ostream& output, bool binary)
+uint64_t append_stl(std::shared_ptr<const PolySet> polyset, std::ostream& output, bool binary)
 {
   static_assert(sizeof(float) == 4, "Need 32 bit float");
-  // check if tessellation is needed
-  std::unique_ptr<PolySet> tmp;
-  if (!polyset.isTriangular) {
-    tmp = PolySetUtils::tessellate_faces(polyset);
+
+  std::shared_ptr<const PolySet> ps = polyset;
+  if (!ps->isTriangular) {
+    ps = PolySetUtils::tessellate_faces(*ps);
   }
   if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
-    Export::ExportMesh ex(!polyset.isTriangular ? *tmp : polyset);
-    tmp = ex.toPolySet();
+    ps = createSortedPolySet(*ps);
   }
-  const PolySet& ps = tmp ? *tmp : polyset;
 
   uint64_t triangle_count = 0;
 
   // In ASCII mode only, convert each vertex to string.
   std::vector<std::string> vertexStrings;
   if (!binary) {
-    vertexStrings.resize(ps.vertices.size());
-    std::transform(ps.vertices.begin(), ps.vertices.end(), vertexStrings.begin(),
-      [](const auto& p) { return toString({p.x(), p.y(), p.z()}); });
+    vertexStrings.resize(ps->vertices.size());
+    std::transform(ps->vertices.begin(), ps->vertices.end(), vertexStrings.begin(),
+      [](const auto& p) 
+     { return toString({static_cast<float>(p.x()), static_cast<float>(p.y()) , static_cast<float>(p.z()) }); });
   }
 
   // Used for binary mode only
   std::array<float, 4lu * 3> coords;
 
-  for (const auto &t : ps.indices) {
-    const auto &p0 = ps.vertices[t[0]];
-    const auto &p1 = ps.vertices[t[1]];
-    const auto &p2 = ps.vertices[t[2]];
+  for (const auto &t : ps->indices) {
+    const auto &p0 = ps->vertices[t[0]];
+    const auto &p1 = ps->vertices[t[1]];
+    const auto &p2 = ps->vertices[t[2]];
 
     // Tessellation already eliminated these cases.
     assert(p0 != p1 && p0 != p2 && p1 != p2);
@@ -162,7 +161,8 @@ uint64_t append_stl(const PolySet& polyset, std::ostream& output, bool binary)
       assert(s0 != s1 && s0 != s2 && s1 != s2);
       
       output << "  facet normal ";
-      output << toString({normal.x(), normal.y(), normal.z()}) << "\n";
+      output << toString(
+        {static_cast<float>(normal.x()), static_cast<float>(normal.y()), static_cast<float>(normal.z()) }) << "\n";
       output << "    outer loop\n";
       output << "      vertex " << s0 << "\n";
       output << "      vertex " << s1 << "\n";
@@ -189,8 +189,8 @@ uint64_t append_stl(const CGAL_Nef_polyhedron& root_N, std::ostream& output,
     LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
   }
 
-  if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3))) {
-    triangle_count += append_stl(*ps, output, binary);
+  if (std::shared_ptr<PolySet> ps = CGALUtils::createPolySetFromNefPolyhedron3(*(root_N.p3))) {
+    triangle_count += append_stl(ps, output, binary);
   } else {
     LOG(message_group::Export_Error, "Nef->PolySet failed");
   }
@@ -212,7 +212,7 @@ uint64_t append_stl(const CGALHybridPolyhedron& hybrid, std::ostream& output,
 
   const auto ps = hybrid.toPolySet();
   if (ps) {
-    triangle_count += append_stl(*ps, output, binary);
+    triangle_count += append_stl(ps, output, binary);
   } else {
     LOG(message_group::Export_Error, "Nef->PolySet failed");
   }
@@ -236,7 +236,7 @@ uint64_t append_stl(const ManifoldGeometry& mani, std::ostream& output,
 
   const auto ps = mani.toPolySet();
   if (ps) {
-    triangle_count += append_stl(*ps, output, binary);
+    triangle_count += append_stl(ps, output, binary);
   } else {
     LOG(message_group::Export_Error, "Manifold->PolySet failed");
   }
@@ -255,16 +255,16 @@ uint64_t append_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& o
       triangle_count += append_stl(item.second, output, binary);
     }
   } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
-    triangle_count += append_stl(*ps, output, binary);
+    triangle_count += append_stl(ps, output, binary);
 #ifdef ENABLE_CGAL
   } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     triangle_count += append_stl(*N, output, binary);
   } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    triangle_count += append_stl(*hybrid, output, binary);
+    triangle_count += append_stl(hybrid, output, binary);
 #endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-    triangle_count += append_stl(*mani, output, binary);
+    triangle_count += append_stl(mani, output, binary);
 #endif
   } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) { //NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
@@ -280,6 +280,7 @@ uint64_t append_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& o
 void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 bool binary)
 {
+  // FIXME: In lazy union mode, should we export multiple solids?
   if (binary) {
     char header[80] = "OpenSCAD Model\n";
     output.write(header, sizeof(header));

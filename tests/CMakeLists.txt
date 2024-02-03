@@ -715,6 +715,7 @@ list(APPEND EXPORT_STL_TEST_FILES ${TEST_SCAD_DIR}/stl/stl-export.scad)
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-export.scad)
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-import-export_dodecahedron.scad)
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-import-export_cube.scad)
+list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/3D/features/polyhedron-cube.scad)
 
 list(APPEND EXPORT_3MF_TEST_FILES ${TEST_SCAD_DIR}/3mf/3mf-export.scad)
 
@@ -833,6 +834,7 @@ list(APPEND SCADFILES_WITH_GREEN_FACES
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
   ${TEST_SCAD_DIR}/3D/features/minkowski3-erosion.scad
+  ${TEST_SCAD_DIR}/3D/features/minkowski3-difference-test.scad
   ${TEST_SCAD_DIR}/3D/features/render-tests.scad
   ${TEST_SCAD_DIR}/3D/issues/issue1105.scad
   ${TEST_SCAD_DIR}/3D/issues/issue1105b.scad
@@ -1018,6 +1020,7 @@ add_cmdline_test(stlpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP
 add_cmdline_test(offpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=OFF)
 add_cmdline_test(amfpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=AMF)
 add_cmdline_test(3mfpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=3MF)
+add_cmdline_test(objpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=OBJ)
 add_cmdline_test(dxfpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_2D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=DXF --render=cgal)
 add_cmdline_test(svgpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_2D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=SVG --render=cgal)
 add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SCAD_PDF_FILES} EXPECTEDDIR pdfexporttest ARGS ${OPENSCAD_ARG} --format=PDF KERNEL Square:2)
@@ -1026,8 +1029,8 @@ add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SC
 add_cmdline_test(monotonepngtest OPENSCAD SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES} ${EXPORT3D_CGALCGAL_TEST_FILES} ARGS --colorscheme=Monotone --render)
 add_cmdline_test(stlexport             EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
 add_cmdline_test(manifold-stlexport    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=manifold --render)
-add_cmdline_test(objexport             EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render)
-add_cmdline_test(3mfexport             OPENSCAD ARGS SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES})
+add_cmdline_test(objexport             EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render --enable=predictible-output)
+add_cmdline_test(3mfexport             OPENSCAD ARGS SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
 
 # stlpngtest: direct STL output, preview rendering
 add_cmdline_test(stlpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=STL EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
@@ -1281,6 +1284,11 @@ set_tests_properties(
   # This may work with fast-csg, but will fail with both CGAL and Manifold
   cgalpngtest_linear_extrude-scale-zero-tests
   csgpngtest_linear_extrude-scale-zero-tests
+
+  # CGAL sometimes fail to union minkowski convex decompositions, causing visual differences
+  # in rendering.
+  cgalpngtest_minkowski3-difference-test
+  csgpngtest_minkowski3-difference-test
 
   PROPERTIES DISABLED TRUE
 )

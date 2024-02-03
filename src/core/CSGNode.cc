@@ -25,7 +25,7 @@
  */
 
 #include "CSGNode.h"
-#include "Geometry.h"
+#include "PolySet.h"
 #include "linalg.h"
 
 #include <numeric>
@@ -114,10 +114,10 @@ std::shared_ptr<CSGNode> CSGOperation::createCSGNode(OpenSCADOperator type, std:
   return {new CSGOperation(type, left, right), CSGOperationDeleter()};
 }
 
-CSGLeaf::CSGLeaf(const std::shared_ptr<const Geometry>& geom, Transform3d matrix, Color4f color, std::string label, const int index)
+CSGLeaf::CSGLeaf(const std::shared_ptr<const PolySet>& ps, Transform3d matrix, Color4f color, std::string label, const int index)
   : label(std::move(label)), matrix(std::move(matrix)), color(std::move(color)), index(index)
 {
-  if (geom && !geom->isEmpty()) this->geom = geom;
+  if (ps && !ps->isEmpty()) this->polyset = ps;
   CSGLeaf::initBoundingBox();
 }
 
@@ -131,8 +131,8 @@ CSGOperation::CSGOperation(OpenSCADOperator type, const std::shared_ptr<CSGNode>
 
 void CSGLeaf::initBoundingBox()
 {
-  if (!this->geom) return;
-  this->bbox = this->matrix * this->geom->getBoundingBox();
+  if (!this->polyset) return;
+  this->bbox = this->matrix * this->polyset->getBoundingBox();
 }
 
 void CSGOperation::initBoundingBox()
@@ -157,7 +157,7 @@ void CSGOperation::initBoundingBox()
 
 bool CSGLeaf::isEmptySet() const
 {
-  return geom == nullptr || geom->isEmpty();
+  return polyset == nullptr || polyset->isEmpty();
 }
 
 std::string CSGLeaf::dump() const

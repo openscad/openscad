@@ -26,13 +26,15 @@
 #include "export.h"
 
 #include "PolySet.h"
-#include "PolySetBuilder.h"
+#include "PolySetUtils.h"
 
 void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  PolySetBuilder builder;
-  builder.appendGeometry(geom);
-  auto ps = builder.build();
+  // FIXME: In lazy union mode, should we export multiple IndexedFaceSets?
+  auto ps = PolySetUtils::getGeometryAsPolySet(geom);
+  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
+    ps = createSortedPolySet(*ps);
+  }
 
   output << "#VRML V2.0 utf8\n\n";
 
@@ -65,7 +67,7 @@ void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   const size_t numindices = ps->indices.size();
   for (size_t i = 0; i < numindices; ++i) {
     const auto &poly=ps->indices[i];
-    for(int j=0;j<poly.size();j++) {
+    for(size_t j=0;j<poly.size();j++) {
       output << poly[j];
         if (j < poly.size() - 1) output << ",";
       output << "\n";

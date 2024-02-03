@@ -88,11 +88,11 @@ mark_domains(CDT& cdt)
 
 /*!
    Triangulates this polygon2d and returns a 2D-in-3D PolySet.
- */
+*/
 std::unique_ptr<PolySet> Polygon2d::tessellate() const
 {
   PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
-  PolySetBuilder builder(*this);
+  PolySetBuilder builder(0, 0, 2, unknown);
 
   Polygon2DCGAL::CDT cdt; // Uses a constrained Delaunay triangulator.
 
@@ -123,7 +123,7 @@ std::unique_ptr<PolySet> Polygon2d::tessellate() const
     if (fit->info().in_domain()) {
       builder.appendPoly(3);
       for (int i = 0; i < 3; ++i) {
-        builder.appendVertex(builder.vertexIndex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0)));
+        builder.appendVertex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0));
       }
     }
   }

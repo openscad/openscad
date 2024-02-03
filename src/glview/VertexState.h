@@ -78,8 +78,6 @@ private:
   std::vector<std::function<void()>> gl_begin_;
   std::vector<std::function<void()>> gl_end_;
 };
-// A set of VertexState objects
-using VertexStates = std::vector<std::shared_ptr<VertexState>>;
 
 // Allows Renderers to override VertexState objects with their own derived
 // type. VertexArray will create the appropriate type for creating

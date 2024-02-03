@@ -19,9 +19,6 @@ public:
   std::vector<Vector3d> vertices;
 
   PolySet(unsigned int dim, boost::tribool convex = unknown);
-  PolySet(Polygon2d origin);
-
-  const Polygon2d& getPolygon() const { return polygon; }
 
   size_t memsize() const override;
   BoundingBox getBoundingBox() const override;
@@ -40,9 +37,7 @@ public:
   bool isTriangular = false;
 
 private:
-  Polygon2d polygon;
   unsigned int dim;
   mutable boost::tribool convex;
   mutable BoundingBox bbox;
-  mutable bool dirty;
 };
