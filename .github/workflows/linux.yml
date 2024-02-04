@@ -26,7 +26,7 @@ jobs:
     name: ${{ matrix.os }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: Install dependencies
@@ -36,13 +36,13 @@ jobs:
     - name: Make Qt5 the default
       if: ${{ matrix.qt5default }}
       run: sudo apt-get install qt5-default
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     - name: Build and test
       run: ./scripts/github-ci.sh enable_python build test coverage
     - name: Upload Test Result Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
         name: Test Result Report (${{ matrix.os }})
@@ -50,7 +50,7 @@ jobs:
           b/Testing/Temporary/*_report.html
           b/Testing/Temporary/LastTest.log
     - name: Upload Code Coverage Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Code Coverage Report (${{ matrix.os }})
         path: c/coverage*.html
