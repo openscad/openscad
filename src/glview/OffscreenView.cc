@@ -52,13 +52,13 @@ OffscreenView::OffscreenView(uint32_t width, uint32_t height)
   // FIXME: It's possible that GLEW was built using EGL, in which case this
   // logic isn't correct, but we don't have a good way of determining how GLEW was built.
 #if defined(USE_GLEW) || defined(OPENCSG_GLEW)
-  provider = provider == "egl" ? "glx" : provider;
+  provider = !strcmp(provider, "egl") ? "glx-old" : provider;
 #endif
   this->ctx = OffscreenContextFactory::create(provider, attrib);
   if (!this->ctx) {
     // If the provider defaulted to EGL, fall back to GLX if EGL failed
-    if (provider == "egl") {
-      this->ctx = OffscreenContextFactory::create("glx", attrib);
+    if (!strcmp(provider, "egl")) {
+      this->ctx = OffscreenContextFactory::create("glx-old", attrib);
     }
     if (!this->ctx) {
       throw OffscreenViewException("Unable to obtain GL Context");
