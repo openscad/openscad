@@ -1130,6 +1130,7 @@ set_source_files_properties(
   # unity build will violate this so we just exclude them
   src/core/BuiltinContext.cc
   src/geometry/roof_vd.cc
+  src/geometry/manifold/manifold-applyops-minkowski.cc
   src/io/DxfData.cc
   src/utils/calc.cc
   src/utils/degree_trig.cc
