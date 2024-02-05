@@ -31,7 +31,7 @@ include("cmake/Modules/openscad_version.cmake")
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
-option(ENABLE_LEGACY_RENDERERS "Enable legacy (non-VBO) OpenGL renderers" ON)
+option(USE_LEGACY_RENDERERS "Enable legacy (non-VBO) OpenGL renderers" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
 option(ENABLE_EGL "Enable EGL support if available" ON)
@@ -146,8 +146,8 @@ endif()
 if(IDPREFIX)
   target_compile_definitions(OpenSCAD PRIVATE IDPREFIX)
 endif()
-if(ENABLE_LEGACY_RENDERERS)
-  target_compile_definitions(OpenSCAD PRIVATE ENABLE_LEGACY_RENDERERS)
+if(USE_LEGACY_RENDERERS)
+  target_compile_definitions(OpenSCAD PRIVATE USE_LEGACY_RENDERERS)
 endif()
 
 if (NOT "${SUFFIX}" STREQUAL "")
@@ -903,7 +903,7 @@ if(NULLGL)
     src/io/export_png.cc
     src/io/imageutils.cc)
 else()
-  if(ENABLE_LEGACY_RENDERERS)
+  if(USE_LEGACY_RENDERERS)
     set(LEGACY_RENDERER_SOURCES
       src/glview/cgal/LegacyCGALRenderer.cc
       src/glview/preview/LegacyOpenCSGRenderer.cc
