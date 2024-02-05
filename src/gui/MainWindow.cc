@@ -1398,17 +1398,14 @@ void MainWindow::compileCSG()
 #endif
     }
 #endif
-    if (Feature::ExperimentalVxORenderers.is_enabled()) {
-      this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(this->root_products,
-                                                                              this->highlights_products,
-                                                                              this->background_products);
-    }
 #ifdef USE_LEGACY_RENDERERS
-    else {
-      this->thrownTogetherRenderer = std::make_shared<LegacyThrownTogetherRenderer>(this->root_products,
-                                                                                    this->highlights_products,
-                                                                                    this->background_products);
-    }
+    this->thrownTogetherRenderer = std::make_shared<LegacyThrownTogetherRenderer>(this->root_products,
+                                                                                  this->highlights_products,
+                                                                                  this->background_products);
+#else
+    this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(this->root_products,
+                                                                            this->highlights_products,
+                                                                            this->background_products);
 #endif
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
