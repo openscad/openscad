@@ -389,11 +389,10 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # Mostly just breaks issues that export non-manifold/intersecting geometry without explicit union.
     #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=lazy-union")
 
-    # Enable vertex-object-renderers by default for all test if experimental build
-    if (EXPERIMENTAL)
-      set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers")
-      #set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-indexing")
-    endif()
+    # Enable vertex-object-renderers-indexing by default for all test if experimental build
+    # if (EXPERIMENTAL)
+    #   set(EXPERIMENTAL_OPTION ${EXPERIMENTAL_OPTION} "--enable=vertex-object-renderers-indexing")
+    # endif()
 
     string(JOIN " " DBG_COMMAND_STR
       "add_test(" ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
