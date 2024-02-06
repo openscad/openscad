@@ -340,9 +340,9 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, 
     int scale_pow2 = ClipperUtils::getScalePow2(poly.getBoundingBox(), 32);
     double scale = std::ldexp(1.0, scale_pow2);
 
-    ClipperLib::Paths paths = ClipperUtils::fromPolygon2d(poly, scale_pow2);
+    Clipper2Lib::Paths64 paths = ClipperUtils::fromPolygon2d(poly, scale_pow2);
     // sanitize is important e.g. when after converting to 32 bit integers we have double points
-    ClipperLib::PolyTreeToPaths(ClipperUtils::sanitize(paths), paths);
+    Clipper2Lib::PolyTree64ToPaths(ClipperUtils::sanitize(paths), paths);
     std::vector<Segment> segments;
 
     for (auto path : paths) {

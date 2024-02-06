@@ -1,18 +1,5 @@
-polygon(points = [], paths = undef, convexity = 1);
-polygon(points = [], paths = undef, convexity = 1);
-polygon(points = [[0, 0], [0, 0]], paths = undef, convexity = 1);
-polygon(points = [[0, 0]], paths = undef, convexity = 1);
 multmatrix([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	polygon(points = [[0, 0], [1, 0], [1, 1]], paths = undef, convexity = 1);
-}
-multmatrix([[1, 0, 0, 0], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	polygon(points = [[0, 0]], paths = undef, convexity = 1);
-}
-multmatrix([[1, 0, 0, 2], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	polygon(points = [[0, 0], [1, 1]], paths = undef, convexity = 1);
-}
-multmatrix([[1, 0, 0, 2], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	polygon(points = [[0, 0], [1, 1], [2, 2]], paths = undef, convexity = 1);
 }
 multmatrix([[1, 0, 0, 0], [0, 1, 0, -2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	polygon(points = [[0, 0], [1, 0], [1, 1], [0, 1]], paths = undef, convexity = 1);
@@ -37,6 +24,19 @@ multmatrix([[1, 0, 0, -2], [0, 1, 0, -4], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 }
 multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	polygon(points = [[0, 1], [0, 0], [1, 0], [1, 1], [0.8, 0.8], [0.8, 0.2], [0.2, 0.2], [0.2, 0.8]], paths = [[7, 6, 5, 4, 3, 2, 1, 0], [7, 0, 3, 4]], convexity = 1);
+}
+polygon(points = [], paths = undef, convexity = 1);
+polygon(points = [], paths = undef, convexity = 1);
+polygon(points = [[0, 0], [0, 0]], paths = undef, convexity = 1);
+polygon(points = [[0, 0]], paths = undef, convexity = 1);
+multmatrix([[1, 0, 0, 0], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	polygon(points = [[0, 0]], paths = undef, convexity = 1);
+}
+multmatrix([[1, 0, 0, 2], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	polygon(points = [[0, 0], [1, 1]], paths = undef, convexity = 1);
+}
+multmatrix([[1, 0, 0, 2], [0, 1, 0, 2], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	polygon(points = [[0, 0], [1, 1], [2, 2]], paths = undef, convexity = 1);
 }
 polyhedron(points = [], faces = [], convexity = 1);
 polyhedron(points = [[0, 0, 0], [1, 1, 1]], faces = [], convexity = 1);

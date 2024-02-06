@@ -190,6 +190,9 @@ add_subdirectory(submodules)
 # The submodules will set up mimalloc if needed, and we need to defer any 
 # target_link_libraries() calls until after that.
 
+target_link_libraries(OpenSCAD PRIVATE Clipper2)
+target_include_directories(OpenSCAD SYSTEM PRIVATE "submodules/Clipper2/CPP/Clipper2Lib/include")
+
 if (MXECROSS)
   target_compile_definitions(OpenSCAD PRIVATE LIBXML_STATIC STATIC_QT_SVG_PLUGIN)
   target_compile_definitions(OpenSCAD PRIVATE GLEW_STATIC)
@@ -724,7 +727,6 @@ set(CORE_SOURCES
   src/core/customizer/ParameterObject.cc
   src/core/customizer/ParameterSet.cc
   src/ext/lodepng/lodepng.cpp
-  src/ext/polyclipping/clipper.cpp
   src/ext/libtess2/Source/bucketalloc.c
   src/ext/libtess2/Source/dict.c
   src/ext/libtess2/Source/geom.c
@@ -1095,11 +1097,6 @@ set(GUI_UIS
     src/gui/parameter/ParameterVector.ui
     src/gui/parameter/ParameterWidget.ui
 )
-
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  # Ignore specific warning on external lib
-  set_source_files_properties("src/ext/polyclipping/clipper.cpp" PROPERTIES COMPILE_FLAGS "-Wno-class-memaccess")
-endif()
 
 if (ENABLE_CGAL)
   list(APPEND Sources ${CGAL_SOURCES})

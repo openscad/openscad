@@ -13,3 +13,6 @@
 [submodule "OpenCSG"]
 	path = submodules/OpenCSG
 	url = https://github.com/openscad/OpenCSG.git
+[submodule "submodules/Clipper2"]
+	path = submodules/Clipper2
+	url = https://github.com/AngusJohnson/Clipper2.git

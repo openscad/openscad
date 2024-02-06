@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ext/polyclipping/clipper.hpp"
+#include "clipper2/clipper.h"
 #include "Polygon2d.h"
 
 namespace ClipperUtils {
@@ -13,14 +13,14 @@ struct AutoScaled {
 };
 
 int getScalePow2(const BoundingBox& bounds, int bits = 0);
-ClipperLib::Paths fromPolygon2d(const Polygon2d& poly, int pow2);
-ClipperLib::PolyTree sanitize(const ClipperLib::Paths& paths);
-VectorOfVector2d fromPath(const ClipperLib::Path& path, int pow2);
+Clipper2Lib::Paths64 fromPolygon2d(const Polygon2d& poly, int pow2);
+std::unique_ptr<Clipper2Lib::PolyTree64> sanitize(const Clipper2Lib::Paths64& paths);
+VectorOfVector2d fromPath(const Clipper2Lib::Path64& path, int pow2);
 std::unique_ptr<Polygon2d> sanitize(const Polygon2d& poly);
-std::unique_ptr<Polygon2d> toPolygon2d(const ClipperLib::PolyTree& poly, int pow2);
-ClipperLib::Paths process(const ClipperLib::Paths& polygons,
-                          ClipperLib::ClipType, ClipperLib::PolyFillType);
-std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, ClipperLib::JoinType joinType, double miter_limit, double arc_tolerance);
+std::unique_ptr<Polygon2d> toPolygon2d(const Clipper2Lib::PolyTree64& poly, int pow2);
+Clipper2Lib::Paths64 process(const Clipper2Lib::Paths64& polygons, Clipper2Lib::ClipType, Clipper2Lib::FillRule);
+std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, Clipper2Lib::JoinType joinType, double miter_limit, double arc_tolerance);
 std::unique_ptr<Polygon2d> applyMinkowski(const std::vector<std::shared_ptr<const Polygon2d>>& polygons);
-std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon2d>>& polygons, ClipperLib::ClipType);
-}
+std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon2d>>& polygons, Clipper2Lib::ClipType);
+
+}  // namespace ClipperUtils

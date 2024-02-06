@@ -8,6 +8,7 @@
 /*!
    A single contour.
    positive is (optionally) used to distinguish between polygon contours and hole contours.
+   TODO: If using 'positive' is optional, when can we trust it?
  */
 struct Outline2d {
   Outline2d() = default;

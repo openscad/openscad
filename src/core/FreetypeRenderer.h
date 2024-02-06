@@ -156,7 +156,7 @@ public:
   FreetypeRenderer();
   virtual ~FreetypeRenderer() = default;
 
-  [[nodiscard]] std::vector<std::shared_ptr<const class Geometry>> render(const FreetypeRenderer::Params& params) const;
+  [[nodiscard]] std::vector<std::shared_ptr<const class Polygon2d>> render(const FreetypeRenderer::Params& params) const;
 private:
   const static double scale;
   FT_Outline_Funcs funcs;

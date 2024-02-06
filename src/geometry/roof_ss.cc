@@ -36,7 +36,7 @@ using CGAL_PT = CGAL::Partition_traits_2<CGAL_KERNEL>;
 
 using CGAL_SsPtr = boost::shared_ptr<CGAL_Ss>;
 
-using PolyTree = ClipperLib::PolyTree;
+using PolyTree = Clipper2Lib::PolyTree64;
 using PolyNode = ClipperLib::PolyNode;
 
 CGAL_Polygon_2 to_cgal_polygon_2(const VectorOfVector2d& points)
@@ -48,7 +48,7 @@ CGAL_Polygon_2 to_cgal_polygon_2(const VectorOfVector2d& points)
 }
 
 // break a list of outlines into polygons with holes
-std::vector<CGAL_Polygon_with_holes_2> polygons_with_holes(const ClipperLib::PolyTree& polytree, int scale_pow2)
+std::vector<CGAL_Polygon_with_holes_2> polygons_with_holes(const Clipper2Lib::PolyTree64& polytree, int scale_pow2)
 {
   std::vector<CGAL_Polygon_with_holes_2> ret;
 
@@ -77,8 +77,8 @@ std::unique_ptr<PolySet> straight_skeleton_roof(const Polygon2d& poly)
   PolySetBuilder hatbuilder;
 
   int scale_pow2 = ClipperUtils::getScalePow2(poly.getBoundingBox(), 32);
-  ClipperLib::Paths paths = ClipperUtils::fromPolygon2d(poly, scale_pow2);
-  ClipperLib::PolyTree polytree = ClipperUtils::sanitize(paths);
+  Clipper2Lib::Paths64 paths = ClipperUtils::fromPolygon2d(poly, scale_pow2);
+  Clipper2Lib::PolyTree64 polytree = ClipperUtils::sanitize(paths);
   auto poly_sanitized = ClipperUtils::toPolygon2d(polytree, scale_pow2);
 
   try {

@@ -27,12 +27,23 @@ BoundingBox Outline2d::getBoundingBox() const {
    polygons. Each polygon can contain holes and islands. Both polygons,
    holes and island contours may intersect each other.
 
-   We can store sanitized vs. unsanitized polygons. Sanitized polygons
-   will have opposite winding order for holes and is guaranteed to not
-   have intersecting geometry. The winding order will be counter-clockwise
-   for positive outlines and clockwise for holes. Sanitization is typically
+   We can store sanitized vs. unsanitized polygons. Sanitization is typically
    done by ClipperUtils, but if you create geometry which you know is sanitized,
    the flag can be set manually.
+
+   Sanitized polygons:
+   * is guaranteed to not have intersecting geometry
+   * will have opposite winding order for holes (counter-clockwise
+     for positive outlines and clockwise for holes)
+   * will have the 'positive' flag set correctly for polygons vs. holes
+
+   Unsanitized polygons:
+   * May have overlapping contours
+   * TODO: Should have the 'positive' flag set correctly for polygons vs. holes, but this isn't currently the case. 
+     It's also unclear if this is feasible in all cases, e.g. when constructing outlines from fonts.
+   * TODO: Should, according to the docs only have _one_ positive contour
+
+   TODO: Document semantics for overlapping contours
  */
 
 size_t Polygon2d::memsize() const

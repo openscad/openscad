@@ -250,7 +250,8 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyHull2D(const AbstractNode& no
 std::unique_ptr<Polygon2d> GeometryEvaluator::applyFill2D(const AbstractNode& node)
 {
   // Merge and sanitize input geometry
-  auto geometry_in = ClipperUtils::apply(collectChildren2D(node), ClipperLib::ctUnion);
+  auto geometry_in = ClipperUtils::apply(collectChildren2D(node), Clipper2Lib::ClipType::Union);
+  assert(geometry_in->isSanitized());
 
   std::vector<std::shared_ptr<const Polygon2d>> newchildren;
   // Keep only the 'positive' outlines, eg: the outside edges
@@ -261,7 +262,7 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyFill2D(const AbstractNode& no
   }
 
   // Re-merge geometry in case of nested outlines
-  return ClipperUtils::apply(newchildren, ClipperLib::ctUnion);
+  return ClipperUtils::apply(newchildren, Clipper2Lib::ClipType::Union);
 }
 
 std::unique_ptr<Geometry> GeometryEvaluator::applyHull3D(const AbstractNode& node)
@@ -425,16 +426,16 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyToChildren2D(const AbstractNo
     }
   }
 
-  ClipperLib::ClipType clipType;
+  Clipper2Lib::ClipType clipType;
   switch (op) {
   case OpenSCADOperator::UNION:
-    clipType = ClipperLib::ctUnion;
+    clipType = Clipper2Lib::ClipType::Union;
     break;
   case OpenSCADOperator::INTERSECTION:
-    clipType = ClipperLib::ctIntersection;
+    clipType = Clipper2Lib::ClipType::Intersection;
     break;
   case OpenSCADOperator::DIFFERENCE:
-    clipType = ClipperLib::ctDifference;
+    clipType = Clipper2Lib::ClipType::Difference;
     break;
   default:
     LOG(message_group::Error, "Unknown boolean operation %1$d", int(op));
@@ -656,14 +657,8 @@ Response GeometryEvaluator::visit(State& state, const TextNode& node)
   if (state.isPrefix()) {
     std::shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      auto geometrylist = node.createGeometryList();
-      std::vector<std::shared_ptr<const Polygon2d>> polygonlist;
-      for (const auto& geometry : geometrylist) {
-        const auto polygon = std::dynamic_pointer_cast<const Polygon2d>(geometry);
-        assert(polygon);
-        polygonlist.push_back(polygon);
-      }
-      geom = ClipperUtils::apply(polygonlist, ClipperLib::ctUnion);
+      auto polygonlist = node.createPolygonList();
+      geom = ClipperUtils::apply(polygonlist, Clipper2Lib::ClipType::Union);
     } else {
       geom = GeometryCache::instance()->get(this->tree.getIdString(node));
     }
@@ -1058,6 +1053,7 @@ static Outline2d splitOutlineByFn(
  */
 static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& poly)
 {
+  assert(poly.isSanitized());
   bool non_linear = node.twist != 0 || node.scale_x != node.scale_y;
   boost::tribool isConvex{poly.is_convex()};
   // Twist or non-uniform scale makes convex polygons into unknown polyhedrons
@@ -1434,27 +1430,27 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const Project
   }
   int pow2 = ClipperUtils::getScalePow2(bounds);
 
-  ClipperLib::Clipper sumclipper;
+  Clipper2Lib::Clipper64 sumclipper;
   for (auto &poly : tmp_geom) {
-    ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*poly, pow2);
+    Clipper2Lib::Paths64 result = ClipperUtils::fromPolygon2d(*poly, pow2);
     // Using NonZero ensures that we don't create holes from polygons sharing
     // edges since we're unioning a mesh
-    result = ClipperUtils::process(result, ClipperLib::ctUnion, ClipperLib::pftNonZero);
+    result = ClipperUtils::process(result, Clipper2Lib::ClipType::Union, Clipper2Lib::FillRule::NonZero);
     // Add correctly winded polygons to the main clipper
-    sumclipper.AddPaths(result, ClipperLib::ptSubject, true);
+    sumclipper.AddSubject(result);
   }
 
-  ClipperLib::PolyTree sumresult;
+  Clipper2Lib::PolyTree64 sumresult;
   // This is key - without StrictlySimple, we tend to get self-intersecting results
-  sumclipper.StrictlySimple(true);
-  sumclipper.Execute(ClipperLib::ctUnion, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
-  if (sumresult.Total() > 0) {
+  // FIXME: StrictlySimple doesn't exist in Clipper2. Check if it still exposes problems without
+  //  sumclipper.StrictlySimple(true);
+  sumclipper.Execute(Clipper2Lib::ClipType::Union, Clipper2Lib::FillRule::NonZero, sumresult);
+  if (sumresult.Count() > 0) {
     geom = ClipperUtils::toPolygon2d(sumresult, pow2);
   }
 
   return geom;
 }
-
 
 /*!
    input: List of 3D objects
