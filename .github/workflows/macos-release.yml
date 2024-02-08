@@ -16,7 +16,7 @@ jobs:
       LIBRARIES_CACHE: libraries.tar.gz
     steps:
     - name: Checkout OpenSCAD
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: Install Homebrew packages
@@ -64,7 +64,7 @@ jobs:
       run: |
         ./scripts/macosx-sanity-check.py ./build/OpenSCAD.app/Contents/MacOS/OpenSCAD
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: Build Artifacts
         path: ${{ runner.temp }}/out/

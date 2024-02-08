@@ -962,7 +962,10 @@ if(EXPERIMENTAL AND ENABLE_TBB)
   target_compile_options(OpenSCAD PRIVATE 
     -DENABLE_TBB
     -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_TBB
+    -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_TBB
   )
+  find_package(TBB REQUIRED)
+  target_link_libraries(OpenSCAD PRIVATE TBB::tbb)
 endif()
 
 if(EXPERIMENTAL)
@@ -1235,6 +1238,7 @@ set_source_files_properties(
   # unity build will violate this so we just exclude them
   src/core/BuiltinContext.cc
   src/geometry/roof_vd.cc
+  src/geometry/manifold/manifold-applyops-minkowski.cc
   src/io/DxfData.cc
   src/utils/calc.cc
   src/utils/degree_trig.cc

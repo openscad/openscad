@@ -228,22 +228,6 @@ void get_fnas(double& fn, double& fa, double& fs) {
 }
 
 /*
- * Helper function to offer OO functions without having to rewrite all funcions in 2 variants(cascading functions)
- */
-
-PyObject *python_oo_args(PyObject *self, PyObject *args) // returns new reference,
-{
-  int n = PyTuple_Size(args);
-  PyObject *new_args = PyTuple_New(n + 1);
-  PyTuple_SetItem(new_args, 0, self);
-
-  for (int i = 0; i < n; i++) 
-    PyTuple_SetItem(new_args, i + 1, PyTuple_GetItem(args, i));
-  return new_args;
-}
-
-
-/*
  * Type specific init function. nothing special here
  */
 
@@ -526,6 +510,7 @@ sys.stderr = stderr_bak\n\
     for(int i=0;i<2;i++)
     {
       PyObject* catcher = PyObject_GetAttrString(pythonMainModule, i==1?"catcher_err":"catcher_out");
+	if(catcher == nullptr) continue;
       PyObject* command_output = PyObject_GetAttrString(catcher, "data");
       Py_XDECREF(catcher);
       PyObject* command_output_value = PyUnicode_AsEncodedString(command_output, "utf-8", "~");

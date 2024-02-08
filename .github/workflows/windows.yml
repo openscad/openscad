@@ -15,7 +15,7 @@ jobs:
         shell: msys2 {0}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Setup MSYS2 Environment
         uses: msys2/setup-msys2@v2
         with:
@@ -42,7 +42,7 @@ jobs:
           cd build
           ctest -j2
       - name: Upload Test Result Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
           name: Test Result Report (Windows)

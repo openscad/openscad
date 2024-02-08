@@ -822,7 +822,6 @@ PyObject *python_oo_mirror(PyObject *obj, PyObject *args, PyObject *kwargs)
 
   PyObject *val_v = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O", kwlist,
-                                   &obj,
                                    &val_v)) {
     PyErr_SetString(PyExc_TypeError, "Error during parsing mirror(object, vec3)");
     return NULL;
@@ -1010,8 +1009,8 @@ PyObject *python_oo_output(PyObject *obj, PyObject *args, PyObject *kwargs)
 PyObject *python__getitem__(PyObject *dict, PyObject *key)
 {
   PyOpenSCADObject *self = (PyOpenSCADObject *) dict;
-  if (self->dict == NULL) {
-    return 0;
+  if (self->dict == nullptr) {
+    return nullptr;
   }
   PyObject *result = PyDict_GetItem(self->dict, key);
   if (result == NULL) result = Py_None;

@@ -15,11 +15,11 @@ jobs:
     timeout-minutes: 60
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: 3.11
     - name: Install Homebrew packages
@@ -43,7 +43,7 @@ jobs:
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
         ctest -j$NUMCPU -E pdfexporttest
     - name: Upload Test Result Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
         name: Test Result Report (MacOS)
