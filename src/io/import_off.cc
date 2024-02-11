@@ -87,7 +87,12 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       return std::make_unique<PolySet>(3);
     }
     line = line.erase(0, words[0].length() + ((words.size() > 1) ? 1 : 0));
-    dimension = boost::lexical_cast<unsigned int>(words[0]) + dimension - 3;
+    try {
+      dimension = boost::lexical_cast<unsigned int>(words[0]) + dimension - 3;
+    } catch (const boost::bad_lexical_cast& blc) {
+      AsciiError("bad header: bad data for Ndim");
+      return std::make_unique<PolySet>(3);
+    }
   }
 
   PRINTDB("Header flags: N:%d C:%d ST:%d Ndim:%d B:%d", has_normals % has_color % has_textures % dimension % is_binary);
