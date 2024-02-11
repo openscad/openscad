@@ -59,6 +59,7 @@ public:
 
 public slots:
   void setModified(bool modified = true);
+  void setFontFamilySize(const QString &fontfamily, uint fontsize);
 
 protected slots:
   void autoPreview(bool immediate = false);
