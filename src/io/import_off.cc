@@ -29,7 +29,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     return std::make_unique<PolySet>(3);
   }
 
-  boost::regex ex_magic(R"(^(ST)?(C)?(N)?(4)?([0-9])?OFF( BINARY)? *)");
+  boost::regex ex_magic(R"(^(ST)?(C)?(N)?(4)?(n)?OFF( BINARY)? *)");
   // XXX: are ST C N always in order?
   // XXX: should we accept trailing whitespace? comment?
   boost::regex ex_comment(R"(^\s*#)");
@@ -40,6 +40,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   bool has_normals = false;
   bool has_color = false;
   bool has_textures = false;
+  bool has_ndim = false;
   bool is_binary = false;
   unsigned int dimension = 3;
 
@@ -59,13 +60,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     if (results[4].length())
       dimension = 4;
     if (results[5].length())
-      dimension = boost::lexical_cast<unsigned int>(results[5].str()) + (results[4].length() ? 1 : 0);
-    PRINTDB("Header flags: N:%d C:%d ST:%d Ndim:%d B:%d", has_normals % has_color % has_textures % dimension % is_binary);
-  }
-
-  if (dimension != 3) {
-    AsciiError("unhandled vertex dimensions");
-    return std::make_unique<PolySet>(3);
+      has_ndim = true;
   }
 
   // TODO: handle binary format
@@ -78,6 +73,27 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   if (line.length() < 1)
     std::getline(f, line);
   std::vector<std::string> words;
+
+  if (has_ndim) {
+    boost::split(words, line, boost::is_any_of(" \t"));
+    if (f.eof() || words.size() < 1) {
+      AsciiError("bad header");
+      return std::make_unique<PolySet>(3);
+    }
+    line = line.erase(0, words[0].length() + ((words.size() > 1) ? 1 : 0));
+    dimension = boost::lexical_cast<unsigned int>(words[0]) + dimension - 3;
+  }
+
+  PRINTDB("Header flags: N:%d C:%d ST:%d Ndim:%d B:%d", has_normals % has_color % has_textures % dimension % is_binary);
+
+  if (dimension != 3) {
+    AsciiError("unhandled vertex dimensions");
+    return std::make_unique<PolySet>(3);
+  }
+
+  // TODO: handle comments in the header
+  if (line.length() < 1)
+    std::getline(f, line);
 
   boost::split(words, line, boost::is_any_of(" \t"));
   if (f.eof() || words.size() < 3) {
@@ -93,15 +109,18 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     faces_count = boost::lexical_cast<unsigned long>(words[1]);
     edges_count = boost::lexical_cast<unsigned long>(words[2]);
     (void)edges_count; // ignored
-    PRINTDB("%d vertices, %d faces, %d edges.", vertices_count % faces_count % edges_count);
   } catch (const boost::bad_lexical_cast& blc) {
     AsciiError("bad header");
     return std::make_unique<PolySet>(3);
   }
+
   if (f.eof() || vertices_count < 1 || faces_count < 1) {
     AsciiError("bad header");
     return std::make_unique<PolySet>(3);
   }
+
+  PRINTDB("%d vertices, %d faces, %d edges.", vertices_count % faces_count % edges_count);
+
   auto ps = std::make_unique<PolySet>(3);
   ps->vertices.reserve(vertices_count);
   ps->indices.reserve(faces_count);
@@ -170,11 +189,10 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
           ps->indices.back().push_back(ind);
       }
       if (words.size() >= n + 4) {
-        // optional color info
+        // TODO: handle optional color info
         int r=boost::lexical_cast<int>(words[n+1]);
         int g=boost::lexical_cast<int>(words[n+2]);
         int b=boost::lexical_cast<int>(words[n+3]);
-        // TODO: handle this somehow?
       }
     } catch (const boost::bad_lexical_cast& blc) {
       AsciiError("can't parse vertex");
