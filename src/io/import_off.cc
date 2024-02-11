@@ -8,6 +8,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
+// References:
+// http://www.geomview.org/docs/html/OFF.html
+
 std::unique_ptr<PolySet> import_off(const std::string& filename, const Location& loc)
 {
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary);
@@ -27,16 +30,51 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     return std::make_unique<PolySet>(3);
   }
 
-  boost::regex ex_magic(R"(^OFF$|^COFF$)"); // TODO: 4OFF?
+  boost::regex ex_magic(R"(^(ST)?(C)?(N)?(4)?([0-9])?OFF( BINARY)?$)");
+  // XXX: are ST C N always in order?
+  // XXX: should we accept trailing whitespace? comment?
   boost::regex ex_comment(R"(^\s*#)");
+  boost::smatch results;
+
+  bool got_magic = false;
+  // defaults
+  bool has_normals = false;
+  bool has_color = false;
+  bool has_textures = false;
+  bool is_binary = false;
+  unsigned int dimension = 3;
 
   std::getline(f, line);
-  if (f.eof() || !boost::regex_search(line, ex_magic)) {
+  if (f.eof()) {
     AsciiError("bad header");
     return std::make_unique<PolySet>(3);
   }
+  if (boost::regex_search(line, results, ex_magic) > 0) {
+    got_magic = true;
+    has_normals = results[3].length() > 0;
+    has_color = results[2].length() > 0;
+    has_textures = results[1].length() > 0;
+    is_binary = results[6].length() > 0;
+    if (results[4].length())
+      dimension = 4;
+    if (results[5].length())
+      dimension = boost::lexical_cast<unsigned int>(results[5].str()) + (results[4].length() ? 1 : 0);
+    PRINTDB("Header flags: N:%d C:%d ST:%d Ndim:%d B:%d", has_normals % has_color % has_textures % dimension % is_binary);
+  }
 
-  std::getline(f, line);
+  if (dimension != 3) {
+    AsciiError("unhandled vertex dimensions");
+    return std::make_unique<PolySet>(3);
+  }
+
+  // TODO: handle binary format
+  if (is_binary) {
+    AsciiError("unhandled binary format");
+    return std::make_unique<PolySet>(3);
+  }
+
+  if (got_magic)
+    std::getline(f, line);
   std::vector<std::string> words;
 
   boost::split(words, line, boost::is_any_of(" \t"));
@@ -54,6 +92,10 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     edges_count = boost::lexical_cast<unsigned long>(words[2]);
     (void)edges_count; // ignored
   } catch (const boost::bad_lexical_cast& blc) {
+    AsciiError("bad header");
+    return std::make_unique<PolySet>(3);
+  }
+  if (f.eof() || vertices_count < 1 || faces_count < 1) {
     AsciiError("bad header");
     return std::make_unique<PolySet>(3);
   }
@@ -79,7 +121,18 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       for (int i = 0; i < 3; i++) {
         v[i]= boost::lexical_cast<double>(words[i]) * scale;
       }
-      // TODO: Meshlab appends color there, probably to allow gradients
+      int o = dimension;
+      if (has_normals) {
+        ; // TODO words[o++]
+        o += 0;
+      }
+      if (has_color) {
+        ; // TODO: Meshlab appends color there, probably to allow gradients
+        o += 3; // 4?
+      }
+      if (has_textures) {
+        ; // TODO
+      }
       ps->vertices.push_back(v);
     } catch (const boost::bad_lexical_cast& blc) {
       AsciiError("can't parse vertex");
