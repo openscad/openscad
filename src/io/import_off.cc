@@ -70,8 +70,10 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   }
 
   // TODO: handle comments in the header
-  if (line.length() < 1)
+  if (line.length() < 1) {
+    lineno++;
     std::getline(f, line);
+  }
   std::vector<std::string> words;
 
   if (has_ndim) {
@@ -92,8 +94,10 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   }
 
   // TODO: handle comments in the header
-  if (line.length() < 1)
+  if (line.length() < 1) {
+    lineno++;
     std::getline(f, line);
+  }
 
   boost::split(words, line, boost::is_any_of(" \t"));
   if (f.eof() || words.size() < 3) {
