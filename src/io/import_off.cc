@@ -17,7 +17,6 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
 
   int lineno = 1;
   std::string line;
-  double scale = 1000.0;
 
   auto AsciiError = [&](const auto& errstr){
     LOG(message_group::Error, loc, "",
@@ -119,7 +118,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     try {
       Vector3d v;
       for (int i = 0; i < 3; i++) {
-        v[i]= boost::lexical_cast<double>(words[i]) * scale;
+        v[i]= boost::lexical_cast<double>(words[i]);
       }
       int o = dimension;
       if (has_normals) {
