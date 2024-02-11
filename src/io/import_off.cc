@@ -29,7 +29,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     return std::make_unique<PolySet>(3);
   }
 
-  boost::regex ex_magic(R"(^(ST)?(C)?(N)?(4)?([0-9])?OFF( BINARY)?$)");
+  boost::regex ex_magic(R"(^(ST)?(C)?(N)?(4)?([0-9])?OFF( BINARY)? *)");
   // XXX: are ST C N always in order?
   // XXX: should we accept trailing whitespace? comment?
   boost::regex ex_comment(R"(^\s*#)");
@@ -50,6 +50,8 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   }
   if (boost::regex_search(line, results, ex_magic) > 0) {
     got_magic = true;
+    // Remove the matched part, we might have numbers next.
+    line = line.erase(0, results[0].length());
     has_normals = results[3].length() > 0;
     has_color = results[2].length() > 0;
     has_textures = results[1].length() > 0;
@@ -72,7 +74,8 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     return std::make_unique<PolySet>(3);
   }
 
-  if (got_magic)
+  // TODO: handle comments in the header
+  if (line.length() < 1)
     std::getline(f, line);
   std::vector<std::string> words;
 
@@ -90,6 +93,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     faces_count = boost::lexical_cast<unsigned long>(words[1]);
     edges_count = boost::lexical_cast<unsigned long>(words[2]);
     (void)edges_count; // ignored
+    PRINTDB("%d vertices, %d faces, %d edges.", vertices_count % faces_count % edges_count);
   } catch (const boost::bad_lexical_cast& blc) {
     AsciiError("bad header");
     return std::make_unique<PolySet>(3);
