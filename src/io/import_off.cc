@@ -149,13 +149,14 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   ps->vertices.reserve(vertices_count);
   ps->indices.reserve(faces_count);
 
-  while ((!f.eof()) && (vertices_count--)) {
+  while ((!f.eof()) && vertices_count) {
     lineno++;
     std::getline(f, line);
     if (boost::regex_search(line, results, ex_comment))
       line = line.erase(results.position(), results[0].length());
     if (line.length() == 0)
       continue;
+    vertices_count--;
 
     boost::trim(line);
     boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
@@ -169,6 +170,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       for (int i = 0; i < 3; i++) {
         v[i]= boost::lexical_cast<double>(words[i]);
       }
+      //PRINTDB("Vertex[] = { %f, %f, %f }", v[0] % v[1] % v[2]);
       int o = dimension;
       if (has_normals) {
         ; // TODO words[o++]
@@ -188,13 +190,14 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     }
   }
 
-  while (!f.eof() && faces_count--) {
+  while (!f.eof() && faces_count) {
     lineno++;
     std::getline(f, line);
     if (boost::regex_search(line, results, ex_comment))
       line = line.erase(results.position(), results[0].length());
     if (line.length() == 0)
       continue;
+    faces_count--;
 
     boost::trim(line);
     boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
@@ -223,7 +226,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
         int b=boost::lexical_cast<int>(words[n+3]);
       }
     } catch (const boost::bad_lexical_cast& blc) {
-      AsciiError("can't parse vertex: bad data");
+      AsciiError("can't parse face: bad data");
       return std::make_unique<PolySet>(3);
     }
   }
