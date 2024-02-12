@@ -15,7 +15,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
 {
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary);
 
-  int lineno = 1;
+  int lineno = 0;
   std::string line;
 
   auto AsciiError = [&](const auto& errstr){
@@ -32,7 +32,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   boost::regex ex_magic(R"(^(ST)?(C)?(N)?(4)?(n)?OFF( BINARY)? *)");
   // XXX: are ST C N always in order?
   // XXX: should we accept trailing whitespace? comment?
-  boost::regex ex_comment(R"(^\s*#)");
+  boost::regex ex_comment(R"(\s*#.*$)");
   boost::smatch results;
 
   bool got_magic = false;
@@ -44,10 +44,15 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   bool is_binary = false;
   unsigned int dimension = 3;
 
-  std::getline(f, line);
-  if (f.eof()) {
-    AsciiError("bad header: end of file");
-    return std::make_unique<PolySet>(3);
+  while (line.length() == 0) {
+    lineno++;
+    std::getline(f, line);
+    if (f.eof()) {
+      AsciiError("bad header: end of file");
+      return std::make_unique<PolySet>(3);
+    }
+    if (boost::regex_search(line, results, ex_comment))
+      line = line.erase(results.position(), results[0].length());
   }
   if (boost::regex_search(line, results, ex_magic) > 0) {
     got_magic = true;
@@ -69,14 +74,15 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     return std::make_unique<PolySet>(3);
   }
 
-  // TODO: handle comments in the header
-  if (line.length() < 1) {
+  while (line.length() == 0) {
     lineno++;
     std::getline(f, line);
-  }
-  if (f.eof()) {
-    AsciiError("bad header: end of file");
-    return std::make_unique<PolySet>(3);
+    if (f.eof()) {
+      AsciiError("bad header: end of file");
+      return std::make_unique<PolySet>(3);
+    }
+    if (boost::regex_search(line, results, ex_comment))
+      line = line.erase(results.position(), results[0].length());
   }
   std::vector<std::string> words;
 
@@ -102,14 +108,15 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     return std::make_unique<PolySet>(3);
   }
 
-  // TODO: handle comments in the header
-  if (line.length() < 1) {
+  while (line.length() == 0) {
     lineno++;
     std::getline(f, line);
-  }
-  if (f.eof()) {
-    AsciiError("bad header: end of file");
-    return std::make_unique<PolySet>(3);
+    if (f.eof()) {
+      AsciiError("bad header: end of file");
+      return std::make_unique<PolySet>(3);
+    }
+    if (boost::regex_search(line, results, ex_comment))
+      line = line.erase(results.position(), results[0].length());
   }
 
   boost::split(words, line, boost::is_any_of(" \t"));
@@ -145,7 +152,9 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   while ((!f.eof()) && (vertices_count--)) {
     lineno++;
     std::getline(f, line);
-    if (line.length() == 0 || boost::regex_search(line, ex_comment))
+    if (boost::regex_search(line, results, ex_comment))
+      line = line.erase(results.position(), results[0].length());
+    if (line.length() == 0)
       continue;
 
     boost::trim(line);
@@ -182,7 +191,9 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   while (!f.eof() && faces_count--) {
     lineno++;
     std::getline(f, line);
-    if (line.length() == 0 || boost::regex_search(line, ex_comment))
+    if (boost::regex_search(line, results, ex_comment))
+      line = line.erase(results.position(), results[0].length());
+    if (line.length() == 0)
       continue;
 
     boost::trim(line);
