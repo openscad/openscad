@@ -128,6 +128,8 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   unsigned long vertices_count;
   unsigned long faces_count;
   unsigned long edges_count;
+  unsigned long vertex = 0;
+  unsigned long face = 0;
   try {
     vertices_count = boost::lexical_cast<unsigned long>(words[0]);
     faces_count = boost::lexical_cast<unsigned long>(words[1]);
@@ -149,14 +151,13 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   ps->vertices.reserve(vertices_count);
   ps->indices.reserve(faces_count);
 
-  while ((!f.eof()) && vertices_count) {
+  while ((!f.eof()) && (vertex++ < vertices_count)) {
     lineno++;
     std::getline(f, line);
     if (boost::regex_search(line, results, ex_comment))
       line = line.erase(results.position(), results[0].length());
     if (line.length() == 0)
       continue;
-    vertices_count--;
 
     boost::trim(line);
     boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
@@ -170,7 +171,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       for (int i = 0; i < 3; i++) {
         v[i]= boost::lexical_cast<double>(words[i]);
       }
-      //PRINTDB("Vertex[] = { %f, %f, %f }", v[0] % v[1] % v[2]);
+      //PRINTDB("Vertex[%ld] = { %f, %f, %f }", vertex % v[0] % v[1] % v[2]);
       int o = dimension;
       if (has_normals) {
         ; // TODO words[o++]
@@ -190,14 +191,13 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     }
   }
 
-  while (!f.eof() && faces_count) {
+  while (!f.eof() && (face++ < faces_count)) {
     lineno++;
     std::getline(f, line);
     if (boost::regex_search(line, results, ex_comment))
       line = line.erase(results.position(), results[0].length());
     if (line.length() == 0)
       continue;
-    faces_count--;
 
     boost::trim(line);
     boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
@@ -213,12 +213,14 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
         return std::make_unique<PolySet>(3);
       }
       ps->indices.emplace_back().reserve(n);
-
+      //PRINTDB("Index[%d] [%d] = { ", face % n);
       for (int i = 0; i < n; i++) {
         int ind=boost::lexical_cast<int>(words[i+1]);
+        //PRINTDB("%d, ", ind);
         if(ind >= 0 && ind < vertices_count)
           ps->indices.back().push_back(ind);
       }
+      //PRINTD("}");
       if (words.size() >= n + 4) {
         // TODO: handle optional color info
         /*
@@ -233,6 +235,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     }
   }
 
+  //PRINTDB("PS: %ld vertices, %ld indices", ps->vertices.size() % ps->indices.size());
   f.close();
   return ps;
 }
