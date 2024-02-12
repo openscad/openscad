@@ -221,9 +221,11 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       }
       if (words.size() >= n + 4) {
         // TODO: handle optional color info
+        /*
         int r=boost::lexical_cast<int>(words[n+1]);
         int g=boost::lexical_cast<int>(words[n+2]);
         int b=boost::lexical_cast<int>(words[n+3]);
+        */
       }
     } catch (const boost::bad_lexical_cast& blc) {
       AsciiError("can't parse face: bad data");
