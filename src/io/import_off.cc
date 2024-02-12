@@ -87,7 +87,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   std::vector<std::string> words;
 
   if (has_ndim) {
-    boost::split(words, line, boost::is_any_of(" \t"));
+    boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
     if (f.eof() || words.size() < 1) {
       AsciiError("bad header: missing Ndim");
       return std::make_unique<PolySet>(3);
@@ -119,7 +119,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       line = line.erase(results.position(), results[0].length());
   }
 
-  boost::split(words, line, boost::is_any_of(" \t"));
+  boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
   if (f.eof() || words.size() < 3) {
     AsciiError("bad header: missing data");
     return std::make_unique<PolySet>(3);
@@ -158,7 +158,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       continue;
 
     boost::trim(line);
-    boost::split(words, line, boost::is_any_of(" \t"));
+    boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
     if (words.size() < 3) {
       AsciiError("can't parse vertex: not enough data");
       return std::make_unique<PolySet>(3);
@@ -197,7 +197,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       continue;
 
     boost::trim(line);
-    boost::split(words, line, boost::is_any_of(" \t"));
+    boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
     if (words.size() < 1) {
       AsciiError("can't parse face: not enough data");
       return std::make_unique<PolySet>(3);
