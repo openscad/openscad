@@ -13,12 +13,18 @@ void addAttributeValues(IAttributeData&) {}
 
 void VertexData::getLastVertex(std::vector<GLbyte>& interleaved_buffer) const
 {
+  size_t size = 0, last_size = 0, stride = stride_;
   GLbyte *dst_start = interleaved_buffer.data();
   for (const auto& data : attributes_) {
-    size_t size = data->sizeofAttribute();
+    size = data->sizeofAttribute();
+    last_size = data->size() / data->count();
     GLbyte *dst = dst_start;
-    const GLbyte *src = data->toBytes() + data->sizeInBytes() - data->sizeofAttribute();
-    std::memcpy((void *)dst, (void *)src, size);
+    const GLbyte *src = data->toBytes();
+    for (size_t i = 0; i < last_size; ++i) {
+      std::memcpy((void *)dst, (void *)src, size);
+      src += size;
+      dst += stride;
+    }
     dst_start += size;
   }
 }
