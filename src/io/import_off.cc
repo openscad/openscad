@@ -73,13 +73,13 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     got_magic = true;
     // Remove the matched part, we might have numbers next.
     line = line.erase(0, results[0].length());
-    has_normals = results[3].length() > 0;
-    has_color = results[2].length() > 0;
-    has_textures = results[1].length() > 0;
-    is_binary = results[6].length() > 0;
-    if (results[4].length())
+    has_normals = results[3].matched;
+    has_color = results[2].matched;
+    has_textures = results[1].matched;
+    is_binary = results[6].matched;
+    if (results[4].matched)
       dimension = 4;
-    has_ndim = results[5].length() > 0;
+    has_ndim = results[5].matched;
   }
 
   // TODO: handle binary format
