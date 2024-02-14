@@ -70,10 +70,10 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& 
 {
   switch (exportInfo.format) {
   case FileFormat::ASCIISTL:
-    export_stl(root_geom, output, false);
+    export_stl(root_geom, output, false, exportInfo.solidName);
     break;
   case FileFormat::STL:
-    export_stl(root_geom, output, true);
+    export_stl(root_geom, output, true, exportInfo.solidName);
     break;
   case FileFormat::OBJ:
     export_obj(root_geom, output);

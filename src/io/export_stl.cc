@@ -278,17 +278,17 @@ uint64_t append_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& o
 } // namespace
 
 void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
-                bool binary)
+                bool binary,
+                std::string solidName)
 {
   // FIXME: In lazy union mode, should we export multiple solids?
   if (binary) {
-    char header[80] = "OpenSCAD Model\n";
-    output.write(header, sizeof(header));
+    output << solidName << "\n";
     char tmp_triangle_count[4] = {0, 0, 0, 0}; // We must fill this in below.
     output.write(tmp_triangle_count, 4);
   } else {
     setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
-    output << "solid OpenSCAD_Model\n";
+    output << "solid " << solidName << "\n";
   }
 
   uint64_t triangle_count = append_stl(geom, output, binary);
@@ -304,7 +304,7 @@ void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       LOG(message_group::Export_Error, "Triangle count exceeded 4294967295, so the stl file is not valid");
     }
   } else {
-    output << "endsolid OpenSCAD_Model\n";
+    output << "endsolid " << solidName << "\n";
     setlocale(LC_NUMERIC, ""); // Set default locale
   }
 }

@@ -292,6 +292,7 @@ static bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, uns
       .format = format,
       .displayName = filename,
       .fileName = filename,
+      .solidName = "fromopenscadcc",
       .useStdOut = is_stdout,
     });
   return true;

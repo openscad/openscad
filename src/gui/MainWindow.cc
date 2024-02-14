@@ -2113,6 +2113,7 @@ ExportInfo createExportInfo(FileFormat format, const QString& exportFilename, co
   exportInfo.format = format;
   exportInfo.fileName = exportFilename.toLocal8Bit().constData();
   exportInfo.displayName = exportFilename.toUtf8().toStdString();
+  exportInfo.solidName = "fromMainWindowcc";
   exportInfo.sourceFilePath = sourceFilePath.toUtf8().toStdString();
   exportInfo.sourceFileName = info.fileName().toUtf8().toStdString();
   exportInfo.useStdOut = false;
