@@ -141,7 +141,37 @@ To pull the various submodules (incl. the [MCAD library](https://github.com/open
 Prerequisites:
 
 * Xcode
+Terminal tools
 * automake, libtool, cmake, pkg-config, wget, meson (we recommend installing these using Homebrew)
+
+### Install Terminal Prerequisites:
+Homebrew overall
+* In terminal, run: brew help
+* Run: brew -v
+* If neither command returns information, this means Homewbrew is not installed
+* Proceed in terminal and run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+* If more help is needed, visit https://stackoverflow.com/questions/21577968/how-to-tell-if-homebrew-is-installed-on-mac-os-x
+automake
+* In terminal, run: brew install automake
+libtool
+* In terminal, run: brew install libtool
+* May have to use "glibtool" instead on some newer versions of MacOSX
+cmake
+* Ensure no old versions are lingering by running in terminal: sudo apt purge --auto-remove cmake
+* Visit http://www.cmake.org/download/ and download the appropriate package for your operating system and version
+* Install using: sudo mkdir /opt/cmake
+* Finish install; sudo sh <installer filename> --prefix=/opt/cmake
+* Common issues with cmake: version too outdated or filepaths contain unecessary spaces
+* If issues persist, visit this resource https://hsf-training.github.io/hsf-training-cmake-webpage/07-commonproblems/index.html
+wget
+* In terminal, run: brew install wget
+meson
+* In terminal, run: brew install meson
+* Common error returned: "error cannot open file '_____.lib'"
+* To address this, make sure the proper language is installed
+* Ex.: for C++ projects, install Visual C++ for Desktop Development
+* In Visual Studio: Installed > Change Installed VS CE > Workloads > Desktop Development with C++ > apply and save
+
 
 Install Dependencies:
 
