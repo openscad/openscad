@@ -8,8 +8,11 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
-    name: macos-latest
+    strategy:
+      matrix:
+        os: [macos-latest, macos-14]
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os }}
     # If it's not done in 60 minutes, something is wrong.
     # Default is 6 hours, which is a bit long to wait.
     timeout-minutes: 60
