@@ -31,18 +31,23 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   };
 
   auto getline_clean = [&](const auto& errstr){
-    lineno++;
-    std::getline(f, line);
-    if (f.eof()) {
-      AsciiError(errstr);
-      return false;
-    }
-    // strip DOS line endings
-    if (boost::regex_search(line, results, ex_cr))
-      line = line.erase(results.position(), results[0].length());
-    // strip comments
-    if (boost::regex_search(line, results, ex_comment))
-      line = line.erase(results.position(), results[0].length());
+    do {
+      lineno++;
+      std::getline(f, line);
+      if (f.eof()) {
+        AsciiError(errstr);
+        return false;
+      }
+      // strip DOS line endings
+      if (boost::regex_search(line, results, ex_cr)) {
+        line = line.erase(results.position(), results[0].length());
+      }
+      // strip comments
+      if (boost::regex_search(line, results, ex_comment)) {
+        line = line.erase(results.position(), results[0].length());
+      }
+    } while (line.empty());
+
     return true;
   };
 
@@ -60,10 +65,10 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   bool is_binary = false;
   unsigned int dimension = 3;
 
-  while (line.length() == 0) {
-    if (!getline_clean("bad header: end of file"))
+  if (line.empty() && !getline_clean("bad header: end of file")) {
       return std::make_unique<PolySet>(3);
   }
+
   if (boost::regex_search(line, results, ex_magic) > 0) {
     got_magic = true;
     // Remove the matched part, we might have numbers next.
@@ -74,23 +79,21 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     is_binary = results[6].length() > 0;
     if (results[4].length())
       dimension = 4;
-    if (results[5].length())
-      has_ndim = true;
+    has_ndim = results[5].length() > 0;
   }
 
   // TODO: handle binary format
   if (is_binary) {
-    AsciiError("unhandled binary format");
+    AsciiError("binary OFF format not supported");
     return std::make_unique<PolySet>(3);
   }
 
-  while (line.length() == 0) {
-    if (!getline_clean("bad header: end of file"))
-      return std::make_unique<PolySet>(3);
-  }
   std::vector<std::string> words;
 
   if (has_ndim) {
+    if (line.empty() && !getline_clean("bad header: end of file")) {
+        return std::make_unique<PolySet>(3);
+    }
     boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
     if (f.eof() || words.size() < 1) {
       AsciiError("bad header: missing Ndim");
@@ -108,12 +111,11 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   PRINTDB("Header flags: N:%d C:%d ST:%d Ndim:%d B:%d", has_normals % has_color % has_textures % dimension % is_binary);
 
   if (dimension != 3) {
-    AsciiError("unhandled vertex dimensions");
+    AsciiError((boost::format("unhandled vertex dimensions (%d)") % dimension).str().c_str());
     return std::make_unique<PolySet>(3);
   }
 
-  while (line.length() == 0) {
-    if (!getline_clean("bad header: end of file"))
+  if (line.empty() && !getline_clean("bad header: end of file")) {
       return std::make_unique<PolySet>(3);
   }
 
@@ -150,10 +152,9 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   ps->indices.reserve(faces_count);
 
   while ((!f.eof()) && (vertex++ < vertices_count)) {
-    if (!getline_clean("reading vertices: end of file"))
+    if (!getline_clean("reading vertices: end of file")) {
       return std::make_unique<PolySet>(3);
-    if (line.length() == 0)
-      continue;
+    }
 
     boost::trim(line);
     boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
@@ -163,22 +164,22 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     }
 
     try {
-      Vector3d v;
-      for (int i = 0; i < 3; i++) {
+      Vector3d v = {0, 0, 0};
+      int i;
+      for (i = 0; i < dimension; i++) {
         v[i]= boost::lexical_cast<double>(words[i]);
       }
       //PRINTDB("Vertex[%ld] = { %f, %f, %f }", vertex % v[0] % v[1] % v[2]);
-      int o = dimension;
       if (has_normals) {
-        ; // TODO words[o++]
-        o += 0;
+        ; // TODO words[i++]
+        i += 0;
       }
       if (has_color) {
         ; // TODO: Meshlab appends color there, probably to allow gradients
-        o += 3; // 4?
+        i += 3; // 4?
       }
       if (has_textures) {
-        ; // TODO
+        ; // TODO words[i++]
       }
       ps->vertices.push_back(v);
     } catch (const boost::bad_lexical_cast& blc) {
@@ -188,10 +189,9 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   }
 
   while (!f.eof() && (face++ < faces_count)) {
-    if (!getline_clean("reading faces: end of file"))
+    if (!getline_clean("reading faces: end of file")) {
       return std::make_unique<PolySet>(3);
-    if (line.length() == 0)
-      continue;
+    }
 
     boost::trim(line);
     boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
@@ -201,26 +201,30 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     }
 
     try {
-      unsigned long n=boost::lexical_cast<unsigned long>(words[0]);
-      if (words.size() - 1 < n) {
+      unsigned long face_size=boost::lexical_cast<unsigned long>(words[0]);
+      unsigned long i;
+      if (words.size() - 1 < face_size) {
         AsciiError("can't parse face: missing indices");
         return std::make_unique<PolySet>(3);
       }
-      ps->indices.emplace_back().reserve(n);
+      ps->indices.emplace_back().reserve(face_size);
       //PRINTDB("Index[%d] [%d] = { ", face % n);
-      for (int i = 0; i < n; i++) {
+      for (i = 0; i < face_size; i++) {
         int ind=boost::lexical_cast<int>(words[i+1]);
         //PRINTDB("%d, ", ind);
-        if(ind >= 0 && ind < vertices_count)
+        if (ind >= 0 && ind < vertices_count) {
           ps->indices.back().push_back(ind);
+        } else {
+          AsciiError((boost::format("ignored bad face vertex index: %d") % ind).str().c_str());
+        }
       }
       //PRINTD("}");
-      if (words.size() >= n + 4) {
+      if (words.size() >= face_size + 4) {
         // TODO: handle optional color info
         /*
-        int r=boost::lexical_cast<int>(words[n+1]);
-        int g=boost::lexical_cast<int>(words[n+2]);
-        int b=boost::lexical_cast<int>(words[n+3]);
+        int r=boost::lexical_cast<int>(words[i++]);
+        int g=boost::lexical_cast<int>(words[i++]);
+        int b=boost::lexical_cast<int>(words[i++]);
         */
       }
     } catch (const boost::bad_lexical_cast& blc) {
@@ -230,6 +234,5 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   }
 
   //PRINTDB("PS: %ld vertices, %ld indices", ps->vertices.size() % ps->indices.size());
-  f.close();
   return ps;
 }
