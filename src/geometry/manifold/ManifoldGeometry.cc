@@ -5,7 +5,6 @@
 #include "PolySetUtils.h"
 #include "manifoldutils.h"
 #ifdef ENABLE_CGAL
-#include "cgal.h"
 #include "cgalutils.h"
 #endif
 

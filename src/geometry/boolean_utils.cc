@@ -23,13 +23,8 @@
 #include "progress.h"
 #include "node.h"
 
-#include "memory.h"
 #include "Reindexer.h"
 #include "GeometryUtils.h"
-
-#include <map>
-#include <queue>
-#include <unordered_set>
 
 #ifdef ENABLE_CGAL
 std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)

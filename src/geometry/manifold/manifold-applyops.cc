@@ -9,8 +9,6 @@
 #include "progress.h"
 #include "printutils.h"
 
-#include <queue>
-
 namespace ManifoldUtils {
 
 Location getLocation(const std::shared_ptr<const AbstractNode>& node)

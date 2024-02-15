@@ -4,7 +4,6 @@
 #include "Polygon2d.h"
 #include "printutils.h"
 #include "GeometryUtils.h"
-#include "Reindexer.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #include "CGALHybridPolyhedron.h"
@@ -160,8 +159,8 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
   if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     if (!N->isEmpty()) {
       if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3)) {
-	ps->setConvexity(N->getConvexity());
-	return ps;
+        ps->setConvexity(N->getConvexity());
+        return ps;
       }
       LOG(message_group::Error, "Nef->PolySet failed.");
     }
