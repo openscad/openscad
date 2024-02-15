@@ -34,7 +34,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     do {
       lineno++;
       std::getline(f, line);
-      if (f.eof()) {
+      if (line.empty() && f.eof()) {
         AsciiError(errstr);
         return false;
       }
