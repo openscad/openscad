@@ -43,9 +43,9 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
     throw 0;
   };
   
-  CGAL::Timer t, t_tot;
   assert(children.size() >= 2);
   auto it = children.begin();
+  CGAL::Timer t_tot;
   t_tot.start();
   std::vector<std::shared_ptr<const Geometry>> operands = {it->second, std::shared_ptr<const Geometry>()};
 
@@ -81,7 +81,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
           part_points.emplace_back(getHullPoints(*poly));
         } else {
           Nef decomposed_nef(*poly);
-
+          CGAL::Timer t;
           t.start();
           CGAL::convex_decomposition_3(decomposed_nef);
 
@@ -186,6 +186,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
 
       if (it != std::next(children.begin())) operands[0].reset();
 
+      CGAL::Timer t;
       t.start();
       PRINTDB("Minkowski: Computing union of %d parts", result_parts.size());
       Geometry::Geometries fake_children;
