@@ -46,6 +46,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       if (boost::regex_search(line, results, ex_comment)) {
         line = line.erase(results.position(), results[0].length());
       }
+      boost::trim(line);
     } while (line.empty());
 
     return true;
@@ -156,7 +157,6 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       return std::make_unique<PolySet>(3);
     }
 
-    boost::trim(line);
     boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
     if (words.size() < 3) {
       AsciiError("can't parse vertex: not enough data");
@@ -193,7 +193,6 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       return std::make_unique<PolySet>(3);
     }
 
-    boost::trim(line);
     boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
     if (words.size() < 1) {
       AsciiError("can't parse face: not enough data");
