@@ -72,34 +72,25 @@ std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const Abstra
     } else {
       this->traverse(node);
     }
-#ifdef ENABLE_CGAL
-    if (std::dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root)) {
-      this->root = PolySetUtils::getGeometryAsPolySet(this->root);
-    }
-#endif
-#ifdef ENABLE_MANIFOLD
-    if (std::dynamic_pointer_cast<const ManifoldGeometry>(this->root)) {
-      this->root = PolySetUtils::getGeometryAsPolySet(this->root);
-    }
-#endif
+  } else {
+    this->root = GeometryCache::instance()->get(key);
+  }
 
-    if (!allownef) {
-      // We cannot render concave polygons, so tessellate any 3D PolySets
-      auto ps = PolySetUtils::getGeometryAsPolySet(this->root);
-      if (ps && !ps->isEmpty()) {
-        // Since is_convex() doesn't handle non-planar faces, we need to tessellate
-        // also in the indeterminate state so we cannot just use a boolean comparison. See #1061
-        bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)
-        if (!convex) {
-          assert(ps->getDimension() == 3);
-          this->root = PolySetUtils::tessellate_faces(*ps);
-        }
+  if (!allownef) {
+    // We cannot render concave polygons, so tessellate any 3D PolySets
+    auto ps = PolySetUtils::getGeometryAsPolySet(this->root);
+    if (ps && !ps->isEmpty()) {
+      // Since is_convex() doesn't handle non-planar faces, we need to tessellate
+      // also in the indeterminate state so we cannot just use a boolean comparison. See #1061
+      bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)
+      if (!convex) {
+        assert(ps->getDimension() == 3);
+        this->root = PolySetUtils::tessellate_faces(*ps);
       }
     }
-    smartCacheInsert(node, this->root);
-    return this->root;
   }
-  return GeometryCache::instance()->get(key);
+  smartCacheInsert(node, this->root);
+  return this->root;
 }
 
 bool GeometryEvaluator::isValidDim(const Geometry::GeometryItem& item, unsigned int& dim) const {
