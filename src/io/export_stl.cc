@@ -260,11 +260,11 @@ uint64_t append_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& o
   } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     triangle_count += append_stl(*N, output, binary);
   } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    triangle_count += append_stl(hybrid, output, binary);
+    triangle_count += append_stl(*hybrid, output, binary);
 #endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-    triangle_count += append_stl(mani, output, binary);
+    triangle_count += append_stl(*mani, output, binary);
 #endif
   } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) { //NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
