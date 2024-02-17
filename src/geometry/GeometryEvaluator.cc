@@ -80,9 +80,12 @@ std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const Abstra
     // We cannot render concave polygons, so tessellate any 3D PolySets
     auto ps = PolySetUtils::getGeometryAsPolySet(this->root);
     if (ps && !ps->isEmpty()) {
+      this->root = ps;
       // Since is_convex() doesn't handle non-planar faces, we need to tessellate
       // also in the indeterminate state so we cannot just use a boolean comparison. See #1061
       bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)
+      if (std::dynamic_pointer_cast<const ManifoldGeometry>(ps))
+        convex = true; // manifold only have triangles, which are convex
       if (!convex) {
         assert(ps->getDimension() == 3);
         this->root = PolySetUtils::tessellate_faces(*ps);
