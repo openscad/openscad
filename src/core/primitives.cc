@@ -721,6 +721,29 @@ static std::shared_ptr<AbstractNode> builtin_polygon(const ModuleInstantiation *
   return node;
 }
 
+static std::shared_ptr<AbstractNode> builtin_part(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+{
+  auto node = std::make_shared<PartNode>(inst);
+
+  if (!children.empty()) {
+    LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
+        "module %1$s() does not support child modules", node->name());
+  }
+
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"name"});
+
+  const auto& solid_name = parameters["name"];
+  if (!solid_name.isDefined()) {
+    LOG(message_group::Error, inst->location(), arguments.documentRoot(),
+        "module %1$s() needs a name defined", node->name());
+    return node;
+  }
+  node->solid_name = solid_name.toString();
+
+  return node;
+
+}
+
 
 
 void register_builtin_primitives()
@@ -770,5 +793,9 @@ void register_builtin_primitives()
                  {
                      "polygon([points])",
                      "polygon([points], [paths])",
+                 });
+  Builtins::init("part", new BuiltinModule(builtin_part),
+                 {
+                     "part(\"name\")",
                  });
 }

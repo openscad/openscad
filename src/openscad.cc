@@ -48,6 +48,7 @@
 #include "ParameterObject.h"
 #include "ParameterSet.h"
 #include "openscad_mimalloc.h"
+#include "primitives.h"
 #include <string>
 #include <vector>
 #include <fstream>
@@ -277,7 +278,7 @@ Camera get_camera(const po::variables_map& vm)
 #endif
 
 static bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned dimensions,
-                           FileFormat format, const bool is_stdout, const std::string& filename)
+                           FileFormat format, const bool is_stdout, const std::string& filename, const std::string& solid_name)
 {
   if (root_geom->getDimension() != dimensions) {
     LOG("Current top level object is not a %1$dD object.", dimensions);
@@ -292,7 +293,7 @@ static bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, uns
       .format = format,
       .displayName = filename,
       .fileName = filename,
-      .solidName = "fromopenscadcc",
+      .solidName = solid_name,
       .useStdOut = is_stdout,
     });
   return true;
@@ -524,6 +525,22 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   if (nextLocation) {
     LOG(message_group::Warning, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
   }
+
+  std::string solid_name = "OpenSCAD_Model";
+  auto children_josh = root_node->getChildren();
+  auto root_name = root_node->name();
+  if (root_name == "part") {
+    auto rn = dynamic_cast<const PartNode*>(root_node.get());
+    solid_name = rn->solid_name;
+  }
+
+  for (auto& c : children_josh) {
+    if (c->name() == "part") {
+      auto c2 = dynamic_cast<const PartNode*>(c.get());
+      solid_name = c2->solid_name;
+    }
+  }
+
   Tree tree(root_node, fparent.string());
 
   if (curFormat == FileFormat::CSG) {
@@ -599,13 +616,13 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     }
 #endif
     if (is3D(curFormat)) {
-      if (!checkAndExport(root_geom, 3, curFormat, cmd.is_stdout, filename_str)) {
+      if (!checkAndExport(root_geom, 3, curFormat, cmd.is_stdout, filename_str, solid_name)) {
         return 1;
       }
     }
 
     if (is2D(curFormat)) {
-      if (!checkAndExport(root_geom, 2, curFormat, cmd.is_stdout, filename_str)) {
+      if (!checkAndExport(root_geom, 2, curFormat, cmd.is_stdout, filename_str, solid_name)) {
         return 1;
       }
     }
