@@ -42,9 +42,8 @@ static void uint32_byte_swap(float& x) {
   uint32_byte_swap(reinterpret_cast<unsigned char *>(&x));
 }
 
-#ifndef __STDC_IEC_559__
-#error Float format not IEEE-754
-#endif
+// as there is no 'float32_t' standard, we assume the systems 'float'
+// is a 'binary32' aka 'single' standard IEEE 32-bit floating point type
 
 std::unique_ptr<PolySet> import_off(const std::string& filename, const Location& loc)
 {
