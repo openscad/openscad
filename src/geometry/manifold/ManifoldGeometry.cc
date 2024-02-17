@@ -5,7 +5,6 @@
 #include "PolySetUtils.h"
 #include "manifoldutils.h"
 #ifdef ENABLE_CGAL
-#include "cgal.h"
 #include "cgalutils.h"
 #endif
 
@@ -25,14 +24,13 @@ ManifoldGeometry::ManifoldGeometry(const std::shared_ptr<manifold::Manifold>& ma
   if (!manifold_) clear();
 }
 
-ManifoldGeometry::ManifoldGeometry(const ManifoldGeometry& other) : manifold_(other.manifold_) {}
-
 std::unique_ptr<Geometry> ManifoldGeometry::copy() const
 {
   return std::make_unique<ManifoldGeometry>(*this);
 }
 
 ManifoldGeometry& ManifoldGeometry::operator=(const ManifoldGeometry& other) {
+  if (this == &other) return *this;
   manifold_ = other.manifold_;
   return *this;
 }
