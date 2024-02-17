@@ -477,72 +477,26 @@ int cmdline(const CommandLine& cmd)
   }
 }
 
-int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file)
+
+
+
+
+
+
+
+int render_and_export(
+  Tree tree,
+  std::shared_ptr<const AbstractNode> root_node,
+  std::string solid_name,
+  FileFormat curFormat,
+  const CommandLine& cmd,
+  fs::path fparent,
+  std::string filename_str,
+  Camera camera,
+  SourceFile *root_file,
+  fs::path fpath
+  )
 {
-  auto filename_str = fs::path(cmd.output_file).generic_string();
-  auto fpath = fs::absolute(fs::path(cmd.filename));
-  auto fparent = fpath.parent_path();
-
-  // set CWD relative to source file
-  fs::current_path(fparent);
-
-  EvaluationSession session{fparent.string()};
-  ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
-  render_variables.applyToContext(builtin_context);
-
-#ifdef DEBUG
-  PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
-#endif
-
-  AbstractNode::resetIndexCounter();
-  std::shared_ptr<const FileContext> file_context;
-  std::shared_ptr<AbstractNode> absolute_root_node;
-
-#ifdef ENABLE_PYTHON    
-  if(python_result_node != NULL && python_active) {
-    absolute_root_node = python_result_node;
-  } else {
-#endif	    
-  absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
-#ifdef ENABLE_PYTHON
-  }
-#endif
-
-  Camera camera = cmd.camera;
-  if (file_context) {
-    camera.updateView(file_context, true);
-  }
-
-  // restore CWD after module instantiation finished
-  fs::current_path(cmd.original_path);
-
-  // Do we have an explicit root node (! modifier)?
-  std::shared_ptr<const AbstractNode> root_node;
-  const Location *nextLocation = nullptr;
-  if (!(root_node = find_root_tag(absolute_root_node, &nextLocation))) {
-    root_node = absolute_root_node;
-  }
-  if (nextLocation) {
-    LOG(message_group::Warning, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
-  }
-
-  std::string solid_name = "OpenSCAD_Model";
-  auto children_josh = root_node->getChildren();
-  auto root_name = root_node->name();
-  if (root_name == "part") {
-    auto rn = dynamic_cast<const PartNode*>(root_node.get());
-    solid_name = rn->solid_name;
-  }
-
-  for (auto& c : children_josh) {
-    if (c->name() == "part") {
-      auto c2 = dynamic_cast<const PartNode*>(c.get());
-      solid_name = c2->solid_name;
-    }
-  }
-
-  Tree tree(root_node, fparent.string());
-
   if (curFormat == FileFormat::CSG) {
     // https://github.com/openscad/openscad/issues/128
     // When I use the csg ouptput from the command line the paths in 'import'
@@ -643,8 +597,89 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
     renderStatistic.printAll(root_geom, camera, cmd.summaryOptions, cmd.summaryFile);
   }
+
   return 0;
 }
+
+
+
+int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file)
+{
+  auto filename_str = fs::path(cmd.output_file).generic_string();
+  auto fpath = fs::absolute(fs::path(cmd.filename));
+  auto fparent = fpath.parent_path();
+
+  // set CWD relative to source file
+  fs::current_path(fparent);
+
+  EvaluationSession session{fparent.string()};
+  ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
+  render_variables.applyToContext(builtin_context);
+
+#ifdef DEBUG
+  PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
+#endif
+
+  AbstractNode::resetIndexCounter();
+  std::shared_ptr<const FileContext> file_context;
+  std::shared_ptr<AbstractNode> absolute_root_node;
+
+#ifdef ENABLE_PYTHON    
+  if(python_result_node != NULL && python_active) {
+    absolute_root_node = python_result_node;
+  } else {
+#endif	    
+  absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
+#ifdef ENABLE_PYTHON
+  }
+#endif
+
+  Camera camera = cmd.camera;
+  if (file_context) {
+    camera.updateView(file_context, true);
+  }
+
+  // restore CWD after module instantiation finished
+  fs::current_path(cmd.original_path);
+
+  // Do we have an explicit root node (! modifier)?
+  std::shared_ptr<const AbstractNode> root_node;
+  const Location *nextLocation = nullptr;
+  if (!(root_node = find_root_tag(absolute_root_node, &nextLocation))) {
+    root_node = absolute_root_node;
+  }
+  if (nextLocation) {
+    LOG(message_group::Warning, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
+  }
+
+  std::string solid_name = "OpenSCAD_Model";
+  std::cout << "Woo!!!!!" << "\n";
+  // TODO do we want to check the root node?
+  auto children_josh = root_node->getChildren();
+  auto root_name = root_node->name();
+  if (root_name == "part") {
+    auto rn = dynamic_cast<const PartNode*>(root_node.get());
+    std::cout << "is rn null?: " << (rn == 0) << "\n";
+    solid_name = rn->solid_name;
+  }
+
+  std::cout << root_name << "\n";
+  for (auto& c : children_josh) {
+    std::cout << (*c).name() << "\n";
+    if (c->name() == "part") {
+      auto c2 = dynamic_cast<const PartNode*>(c.get());
+      // TODO null check
+      std::cout << "is c null?: " << (c == 0) << "\n";
+      solid_name = c2->solid_name;
+    }
+  }
+  std::cout << "Woo!!!!!" << "\n";
+
+  Tree tree(root_node, fparent.string());
+
+  return render_and_export(tree, root_node, solid_name, curFormat, cmd, fparent, filename_str, camera, root_file, fpath);
+}
+
 
 #ifdef OPENSCAD_QTGUI
 #include <QtPlugin>
