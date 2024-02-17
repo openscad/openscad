@@ -1,0 +1,1 @@
+import("../../off/vertcube.off");
