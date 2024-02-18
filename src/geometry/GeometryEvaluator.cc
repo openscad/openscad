@@ -58,46 +58,50 @@ std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const Abstra
                                                                bool allownef)
 {
   const std::string& key = this->tree.getIdString(node);
+  // FIXME: Geometry cache is meant to cache "polygon geometries" (PolySet, Polygon2d), not other geometries
+  // but we don't have any checks for this.
+  // FIXME: Perhaps we should prefer using the CGALCache, to avoid looking up potentially lossy geometry?
   if (GeometryCache::instance()->contains(key)) {
     return GeometryCache::instance()->get(key);
   }
-  std::shared_ptr<const Geometry> geom;
+
+  std::shared_ptr<const Geometry> result;
+  // FIXME: The CGALCache doesn't really need to be a CGAL cache, it could just be a cache for the chosen geometry engine
   if (CGALCache::instance()->contains(key)) {
-    geom = CGALCache::instance()->get(key);
+    result = CGALCache::instance()->get(key);
   }
 
   // If not found in any caches, we need to evaluate the geometry
-  if (geom) {
-    this->root = geom;
-  } else {
+  if (!result) {
+    // traverse() will set this->root to a geometry, which can be any geometry
+    // (including GeometryList if the lazyunions feature is enabled)
     this->traverse(node);
+    result = this->root;
   }
-#ifdef ENABLE_CGAL
-  if (std::dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root)) {
-    this->root = PolySetUtils::getGeometryAsPolySet(this->root);
-  }
-#endif
-#ifdef ENABLE_MANIFOLD
-  if (std::dynamic_pointer_cast<const ManifoldGeometry>(this->root)) {
-    this->root = PolySetUtils::getGeometryAsPolySet(this->root);
-  }
-#endif
 
+  // Convert engine-specific 3D geometry to PolySet if needed
   if (!allownef) {
-    // We cannot render concave polygons, so tessellate any 3D PolySets
-    auto ps = PolySetUtils::getGeometryAsPolySet(this->root);
-    if (ps && !ps->isEmpty()) {
+    std::shared_ptr<const PolySet> ps;
+    if (std::dynamic_pointer_cast<const CGALHybridPolyhedron>(result) ||
+        std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(result) ||
+        std::dynamic_pointer_cast<const ManifoldGeometry>(result) ||
+        std::dynamic_pointer_cast<const PolySet>(result)) {
+      ps = PolySetUtils::getGeometryAsPolySet(result);
+    }
+    // We cannot render concave polygons, so tessellate any PolySets
+    if (ps && !ps->isEmpty() && !ps->isTriangular) {
       // Since is_convex() doesn't handle non-planar faces, we need to tessellate
       // also in the indeterminate state so we cannot just use a boolean comparison. See #1061
       bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)
       if (!convex) {
         assert(ps->getDimension() == 3);
-        this->root = PolySetUtils::tessellate_faces(*ps);
+        ps = PolySetUtils::tessellate_faces(*ps);
       }
     }
+    if (ps) result = ps;
   }
-  smartCacheInsert(node, this->root);
-  return this->root;
+  smartCacheInsert(node, result);
+  return result;
 }
 
 bool GeometryEvaluator::isValidDim(const Geometry::GeometryItem& item, unsigned int& dim) const {
@@ -331,6 +335,7 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode& node,
       CGALCache::instance()->insert(key, geom);
     }
   } else if (!GeometryCache::instance()->contains(key)) {
+    // Perhaps add acceptsGeometry() to GeometryCache as well?
     if (!GeometryCache::instance()->insert(key, geom)) {
       LOG(message_group::Warning, "GeometryEvaluator: Node didn't fit into cache.");
     }
