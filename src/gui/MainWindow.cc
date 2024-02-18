@@ -906,10 +906,8 @@ void MainWindow::loadDesignSettings()
   }
   auto polySetCacheSizeMB = Preferences::inst()->getValue("advanced/polysetCacheSizeMB").toUInt();
   GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
-#ifdef ENABLE_CGAL
   auto cgalCacheSizeMB = Preferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
-#endif
 }
 
 void MainWindow::updateUndockMode(bool undockMode)
@@ -2860,9 +2858,7 @@ void MainWindow::actionCopyViewport()
 void MainWindow::actionFlushCaches()
 {
   GeometryCache::instance()->clear();
-#ifdef ENABLE_CGAL
   CGALCache::instance()->clear();
-#endif
   dxf_dim_cache.clear();
   dxf_cross_cache.clear();
   SourceFileCache::instance()->clear();

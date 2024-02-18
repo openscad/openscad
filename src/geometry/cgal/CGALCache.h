@@ -2,11 +2,8 @@
 
 #include "Cache.h"
 #include <memory>
+#include "Geometry.h"
 
-class Geometry;
-
-/*!
- */
 class CGALCache
 {
 public:
