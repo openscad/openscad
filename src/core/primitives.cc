@@ -725,11 +725,6 @@ static std::shared_ptr<AbstractNode> builtin_part(const ModuleInstantiation *ins
 {
   auto node = std::make_shared<PartNode>(inst);
 
-  if (!children.empty()) {
-    LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
-        "module %1$s() does not support child modules", node->name());
-  }
-
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"name"});
 
   const auto& solid_name = parameters["name"];
@@ -740,7 +735,7 @@ static std::shared_ptr<AbstractNode> builtin_part(const ModuleInstantiation *ins
   }
   node->solid_name = solid_name.toString();
 
-  return node;
+  return children.instantiate(node);;
 
 }
 

@@ -653,31 +653,37 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   }
 
   std::string solid_name = "OpenSCAD_Model";
-  std::cout << "Woo!!!!!" << "\n";
   // TODO do we want to check the root node?
-  auto children_josh = root_node->getChildren();
+  auto root_children = root_node->getChildren();
   auto root_name = root_node->name();
   if (root_name == "part") {
     auto rn = dynamic_cast<const PartNode*>(root_node.get());
-    std::cout << "is rn null?: " << (rn == 0) << "\n";
     solid_name = rn->solid_name;
   }
 
-  std::cout << root_name << "\n";
-  for (auto& c : children_josh) {
-    std::cout << (*c).name() << "\n";
+  auto did_part_export = false;
+  auto result = 0;
+  // TODO if there is a part at the top level, do this
+  for (auto& c : root_children) {
     if (c->name() == "part") {
       auto c2 = dynamic_cast<const PartNode*>(c.get());
-      // TODO null check
-      std::cout << "is c null?: " << (c == 0) << "\n";
-      solid_name = c2->solid_name;
+      if (c2 != 0) {
+        solid_name = c2->solid_name;
+        did_part_export = true;
+        Tree tree(c, fparent.string());
+        auto filename2_str = solid_name + "." + filename_str;
+        // TODO how to report multiple exports?
+        result = render_and_export(tree, c, solid_name, curFormat, cmd, fparent, filename2_str, camera, root_file, fpath);
+      }
     }
   }
-  std::cout << "Woo!!!!!" << "\n";
 
-  Tree tree(root_node, fparent.string());
-
-  return render_and_export(tree, root_node, solid_name, curFormat, cmd, fparent, filename_str, camera, root_file, fpath);
+  if (did_part_export == false) {
+    Tree tree(root_node, fparent.string());
+    return render_and_export(tree, root_node, solid_name, curFormat, cmd, fparent, filename_str, camera, root_file, fpath);
+  } else {
+    return result;
+  }
 }
 
 
