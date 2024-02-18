@@ -338,6 +338,19 @@ struct CommandLine
 
 int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file);
 
+int render_and_export(
+  Tree tree,
+  std::shared_ptr<const AbstractNode> root_node,
+  std::string solid_name,
+  FileFormat curFormat,
+  const CommandLine& cmd,
+  fs::path fparent,
+  std::string filename_str,
+  Camera camera,
+  SourceFile *root_file,
+  fs::path fpath
+);
+
 int cmdline(const CommandLine& cmd)
 {
   ExportFileFormatOptions exportFileFormatOptions;
@@ -477,11 +490,88 @@ int cmdline(const CommandLine& cmd)
   }
 }
 
+int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file)
+{
+  auto filename_str = fs::path(cmd.output_file).generic_string();
+  auto fpath = fs::absolute(fs::path(cmd.filename));
+  auto fparent = fpath.parent_path();
 
+  // set CWD relative to source file
+  fs::current_path(fparent);
 
+  EvaluationSession session{fparent.string()};
+  ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
+  render_variables.applyToContext(builtin_context);
 
+#ifdef DEBUG
+  PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
+#endif
 
+  AbstractNode::resetIndexCounter();
+  std::shared_ptr<const FileContext> file_context;
+  std::shared_ptr<AbstractNode> absolute_root_node;
 
+#ifdef ENABLE_PYTHON    
+  if(python_result_node != NULL && python_active) {
+    absolute_root_node = python_result_node;
+  } else {
+#endif	    
+  absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
+#ifdef ENABLE_PYTHON
+  }
+#endif
+
+  Camera camera = cmd.camera;
+  if (file_context) {
+    camera.updateView(file_context, true);
+  }
+
+  // restore CWD after module instantiation finished
+  fs::current_path(cmd.original_path);
+
+  // Do we have an explicit root node (! modifier)?
+  std::shared_ptr<const AbstractNode> root_node;
+  const Location *nextLocation = nullptr;
+  if (!(root_node = find_root_tag(absolute_root_node, &nextLocation))) {
+    root_node = absolute_root_node;
+  }
+  if (nextLocation) {
+    LOG(message_group::Warning, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
+  }
+
+  std::string solid_name = "OpenSCAD_Model";
+  // TODO do we want to check the root node?
+  auto root_children = root_node->getChildren();
+  auto root_name = root_node->name();
+  if (root_name == "part") {
+    auto rn = dynamic_cast<const PartNode*>(root_node.get());
+    solid_name = rn->solid_name;
+  }
+
+  auto did_part_export = false;
+  auto result = 0;
+  // TODO if there is a part at the top level, do this
+  for (auto& c : root_children) {
+    if (c->name() == "part") {
+      auto c2 = dynamic_cast<const PartNode*>(c.get());
+      if (c2 != 0) {
+        solid_name = c2->solid_name;
+        did_part_export = true;
+        Tree tree(c, fparent.string());
+        auto filename2_str = solid_name + "." + filename_str;
+        // TODO how to report multiple exports?
+        result = render_and_export(tree, c, solid_name, curFormat, cmd, fparent, filename2_str, camera, root_file, fpath);
+      }
+    }
+  }
+
+  if (did_part_export == false) {
+    Tree tree(root_node, fparent.string());
+    return render_and_export(tree, root_node, solid_name, curFormat, cmd, fparent, filename_str, camera, root_file, fpath);
+  } else {
+    return result;
+  }
+}
 
 
 int render_and_export(
@@ -597,95 +687,8 @@ int render_and_export(
 
     renderStatistic.printAll(root_geom, camera, cmd.summaryOptions, cmd.summaryFile);
   }
-
   return 0;
 }
-
-
-
-int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file)
-{
-  auto filename_str = fs::path(cmd.output_file).generic_string();
-  auto fpath = fs::absolute(fs::path(cmd.filename));
-  auto fparent = fpath.parent_path();
-
-  // set CWD relative to source file
-  fs::current_path(fparent);
-
-  EvaluationSession session{fparent.string()};
-  ContextHandle<BuiltinContext> builtin_context{Context::create<BuiltinContext>(&session)};
-  render_variables.applyToContext(builtin_context);
-
-#ifdef DEBUG
-  PRINTDB("BuiltinContext:\n%s", builtin_context->dump());
-#endif
-
-  AbstractNode::resetIndexCounter();
-  std::shared_ptr<const FileContext> file_context;
-  std::shared_ptr<AbstractNode> absolute_root_node;
-
-#ifdef ENABLE_PYTHON    
-  if(python_result_node != NULL && python_active) {
-    absolute_root_node = python_result_node;
-  } else {
-#endif	    
-  absolute_root_node = root_file->instantiate(*builtin_context, &file_context);
-#ifdef ENABLE_PYTHON
-  }
-#endif
-
-  Camera camera = cmd.camera;
-  if (file_context) {
-    camera.updateView(file_context, true);
-  }
-
-  // restore CWD after module instantiation finished
-  fs::current_path(cmd.original_path);
-
-  // Do we have an explicit root node (! modifier)?
-  std::shared_ptr<const AbstractNode> root_node;
-  const Location *nextLocation = nullptr;
-  if (!(root_node = find_root_tag(absolute_root_node, &nextLocation))) {
-    root_node = absolute_root_node;
-  }
-  if (nextLocation) {
-    LOG(message_group::Warning, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
-  }
-
-  std::string solid_name = "OpenSCAD_Model";
-  // TODO do we want to check the root node?
-  auto root_children = root_node->getChildren();
-  auto root_name = root_node->name();
-  if (root_name == "part") {
-    auto rn = dynamic_cast<const PartNode*>(root_node.get());
-    solid_name = rn->solid_name;
-  }
-
-  auto did_part_export = false;
-  auto result = 0;
-  // TODO if there is a part at the top level, do this
-  for (auto& c : root_children) {
-    if (c->name() == "part") {
-      auto c2 = dynamic_cast<const PartNode*>(c.get());
-      if (c2 != 0) {
-        solid_name = c2->solid_name;
-        did_part_export = true;
-        Tree tree(c, fparent.string());
-        auto filename2_str = solid_name + "." + filename_str;
-        // TODO how to report multiple exports?
-        result = render_and_export(tree, c, solid_name, curFormat, cmd, fparent, filename2_str, camera, root_file, fpath);
-      }
-    }
-  }
-
-  if (did_part_export == false) {
-    Tree tree(root_node, fparent.string());
-    return render_and_export(tree, root_node, solid_name, curFormat, cmd, fparent, filename_str, camera, root_file, fpath);
-  } else {
-    return result;
-  }
-}
-
 
 #ifdef OPENSCAD_QTGUI
 #include <QtPlugin>
