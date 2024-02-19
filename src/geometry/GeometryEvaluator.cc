@@ -57,27 +57,14 @@ GeometryEvaluator::GeometryEvaluator(const Tree& tree) : tree(tree) { }
 std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode& node,
                                                                bool allownef)
 {
-  const std::string& key = this->tree.getIdString(node);
-  // FIXME: Geometry cache is meant to cache "polygon geometries" (PolySet, Polygon2d), not other geometries
-  // but we don't have any checks for this.
-  // FIXME: Perhaps we should prefer using the CGALCache, to avoid looking up potentially lossy geometry?
-  if (GeometryCache::instance()->contains(key)) {
-    return GeometryCache::instance()->get(key);
-  }
-
-  std::shared_ptr<const Geometry> result;
-  // FIXME: The CGALCache doesn't really need to be a CGAL cache, it could just be a cache for the chosen geometry engine
-  if (CGALCache::instance()->contains(key)) {
-    result = CGALCache::instance()->get(key);
-  }
+  auto result = smartCacheGet(node, allownef);
+  if (result) return result;
 
   // If not found in any caches, we need to evaluate the geometry
-  if (!result) {
-    // traverse() will set this->root to a geometry, which can be any geometry
-    // (including GeometryList if the lazyunions feature is enabled)
-    this->traverse(node);
-    result = this->root;
-  }
+  // traverse() will set this->root to a geometry, which can be any geometry
+  // (including GeometryList if the lazyunions feature is enabled)
+  this->traverse(node);
+  result = this->root;
 
   // Convert engine-specific 3D geometry to PolySet if needed
   if (!allownef) {
@@ -351,12 +338,11 @@ bool GeometryEvaluator::isSmartCached(const AbstractNode& node)
 std::shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode& node, bool preferNef)
 {
   const std::string& key = this->tree.getIdString(node);
-  std::shared_ptr<const Geometry> geom;
-  bool hasgeom = GeometryCache::instance()->contains(key);
-  bool hascgal = CGALCache::instance()->contains(key);
-  if (hascgal && (preferNef || !hasgeom)) geom = CGALCache::instance()->get(key);
-  else if (hasgeom) geom = GeometryCache::instance()->get(key);
-  return geom;
+  const bool hasgeom = GeometryCache::instance()->contains(key);
+  const bool hascgal = CGALCache::instance()->contains(key);
+  if (hascgal && (preferNef || !hasgeom)) return CGALCache::instance()->get(key);
+  if (hasgeom) return GeometryCache::instance()->get(key);
+  return {};
 }
 
 /*!
