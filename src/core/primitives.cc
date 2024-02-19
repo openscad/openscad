@@ -728,9 +728,9 @@ static std::shared_ptr<AbstractNode> builtin_part(const ModuleInstantiation *ins
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"name"});
 
   const auto& solid_name = parameters["name"];
-  if (!solid_name.isDefined()) {
+  if (!solid_name.isDefined() || solid_name.type() != Value::Type::STRING) {
     LOG(message_group::Error, inst->location(), arguments.documentRoot(),
-        "module %1$s() needs a name defined", node->name());
+        "module %1$s() needs a name defined and the type to be a string", node->name());
     return node;
   }
   node->solid_name = solid_name.toString();
