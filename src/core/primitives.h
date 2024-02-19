@@ -181,7 +181,7 @@ public:
   {
     std::ostringstream stream;
     stream << "part"
-           << "(solid_name = " << solid_name
+           << "(name = " << solid_name
            << ")";
     return stream.str();
   }
