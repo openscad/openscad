@@ -789,7 +789,7 @@ void register_builtin_primitives()
                      "polygon([points])",
                      "polygon([points], [paths])",
                  });
-  Builtins::init("part", new BuiltinModule(builtin_part),
+  Builtins::init("part", new BuiltinModule(builtin_part, &Feature::ExperimentalPart),
                  {
                      "part(\"name\")",
                  });
