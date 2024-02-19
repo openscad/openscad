@@ -74,15 +74,15 @@ std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const Abstra
         std::dynamic_pointer_cast<const ManifoldGeometry>(result) ||
         std::dynamic_pointer_cast<const PolySet>(result)) {
       ps = PolySetUtils::getGeometryAsPolySet(result);
-    }
-    // We cannot render concave polygons, so tessellate any PolySets
-    if (ps && !ps->isEmpty() && !ps->isTriangular) {
-      // Since is_convex() doesn't handle non-planar faces, we need to tessellate
-      // also in the indeterminate state so we cannot just use a boolean comparison. See #1061
-      bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)
-      if (!convex) {
-        assert(ps->getDimension() == 3);
-        ps = PolySetUtils::tessellate_faces(*ps);
+      assert(ps && ps->getDimension() == 3);
+      // We cannot render concave polygons, so tessellate any PolySets
+      if (!ps->isEmpty() && !ps->isTriangular) {
+        // Since is_convex() doesn't handle non-planar faces, we need to tessellate
+        // also in the indeterminate state so we cannot just use a boolean comparison. See #1061
+        bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)
+        if (!convex) {
+          ps = PolySetUtils::tessellate_faces(*ps);
+        }
       }
     }
     if (ps) result = ps;
