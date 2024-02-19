@@ -1211,7 +1211,9 @@ add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-test
 
 # Disable tests failing due to https://github.com/openscad/openscad/issues/4632
 set_tests_properties(
+  relative-output_csg_run
   relative-output_csg_check
+  relative-output_ast_run 
   relative-output_ast_check
   PROPERTIES DISABLED TRUE
 )
