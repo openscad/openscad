@@ -109,38 +109,16 @@ template std::shared_ptr<ManifoldGeometry> createMutableManifoldFromSurfaceMesh(
 std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet& ps)
 {
 #ifdef ENABLE_CGAL
-  PolySet psq(ps);
-  std::vector<Vector3d> points3d;
-  psq.quantizeVertices(&points3d);
-  auto ps_tri = PolySetUtils::tessellate_faces(psq);
+  std::unique_ptr<PolySet> tmp;
+  if (!ps.isTriangular)
+    tmp = PolySetUtils::tessellate_faces(ps);
+  const PolySet& ps_tri = ps.isTriangular ? ps : *tmp;
   
   CGAL_DoubleMesh m;
-
-  if (ps_tri->is_convex()) {
-    using K = CGAL::Epick;
-    // Collect point cloud
-    std::vector<K::Point_3> points(points3d.size());
-    for (size_t i = 0, n = points3d.size(); i < n; i++) {
-      points[i] = CGALUtils::vector_convert<K::Point_3>(points3d[i]);
-    }
-    if (points.size() <= 3) return std::make_shared<ManifoldGeometry>();
-
-    // Apply hull
-    CGAL::Surface_mesh<CGAL::Point_3<K>> r;
-    CGAL::convex_hull_3(points.begin(), points.end(), r);
-    CGALUtils::copyMesh(r, m);
-  } else {
-    CGALUtils::createMeshFromPolySet(*ps_tri, m);
-  }
-
-  if (!ps_tri->is_convex()) {
-    if (CGALUtils::isClosed(m)) {
-      CGALUtils::orientToBoundAVolume(m);
-    } else {
-      LOG(message_group::Error, "[manifold] Input mesh is not closed!");
-    }
-  }
-
+  // note: this function can fix manifoldness issue
+  CGALUtils::createMeshFromPolySet(ps_tri, m);
+  if (!m.is_empty())
+    CGALUtils::orientToBoundAVolume(m);
   return createMutableManifoldFromSurfaceMesh(m);
 #else
   return std::make_shared<ManifoldGeometry>();
