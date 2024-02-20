@@ -57,49 +57,38 @@ GeometryEvaluator::GeometryEvaluator(const Tree& tree) : tree(tree) { }
 std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode& node,
                                                                bool allownef)
 {
-  const std::string& key = this->tree.getIdString(node);
-  if (!GeometryCache::instance()->contains(key)) {
-    std::shared_ptr<const Geometry> N;
-#ifdef ENABLE_CGAL
-    if (CGALCache::instance()->contains(key)) {
-      N = CGALCache::instance()->get(key);
-    }
-#endif
+  auto result = smartCacheGet(node, allownef);
+  if (result) return result;
 
-    // If not found in any caches, we need to evaluate the geometry
-    if (N) {
-      this->root = N;
-    } else {
-      this->traverse(node);
-    }
-#ifdef ENABLE_CGAL
-    if (std::dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root)) {
-      this->root = PolySetUtils::getGeometryAsPolySet(this->root);
-    }
-#endif
-#ifdef ENABLE_MANIFOLD
-    if (std::dynamic_pointer_cast<const ManifoldGeometry>(this->root)) {
-      this->root = PolySetUtils::getGeometryAsPolySet(this->root);
-    }
-#endif
+  // If not found in any caches, we need to evaluate the geometry
+  // traverse() will set this->root to a geometry, which can be any geometry
+  // (including GeometryList if the lazyunions feature is enabled)
+  this->traverse(node);
+  result = this->root;
 
-    if (!allownef) {
-      // We cannot render concave polygons, so tessellate any 3D PolySets
-      auto ps = PolySetUtils::getGeometryAsPolySet(this->root);
-      if (ps && !ps->isEmpty()) {
+  // Convert engine-specific 3D geometry to PolySet if needed
+  if (!allownef) {
+    std::shared_ptr<const PolySet> ps;
+    if (std::dynamic_pointer_cast<const CGALHybridPolyhedron>(result) ||
+        std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(result) ||
+        std::dynamic_pointer_cast<const ManifoldGeometry>(result) ||
+        std::dynamic_pointer_cast<const PolySet>(result)) {
+      ps = PolySetUtils::getGeometryAsPolySet(result);
+      assert(ps && ps->getDimension() == 3);
+      // We cannot render concave polygons, so tessellate any PolySets
+      if (!ps->isEmpty() && !ps->isTriangular) {
         // Since is_convex() doesn't handle non-planar faces, we need to tessellate
         // also in the indeterminate state so we cannot just use a boolean comparison. See #1061
         bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)
         if (!convex) {
-          assert(ps->getDimension() == 3);
-          this->root = PolySetUtils::tessellate_faces(*ps);
+          ps = PolySetUtils::tessellate_faces(*ps);
         }
       }
     }
-    smartCacheInsert(node, this->root);
-    return this->root;
+    if (ps) result = ps;
   }
-  return GeometryCache::instance()->get(key);
+  smartCacheInsert(node, result);
+  return result;
 }
 
 bool GeometryEvaluator::isValidDim(const Geometry::GeometryItem& item, unsigned int& dim) const {
@@ -328,43 +317,32 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode& node,
 {
   const std::string& key = this->tree.getIdString(node);
 
-#ifdef ENABLE_CGAL
   if (CGALCache::acceptsGeometry(geom)) {
-    if (!CGALCache::instance()->contains(key)) CGALCache::instance()->insert(key, geom);
-  } else {
-#endif
-    if (!GeometryCache::instance()->contains(key)) {
-      if (!GeometryCache::instance()->insert(key, geom)) {
-        LOG(message_group::Warning, "GeometryEvaluator: Node didn't fit into cache.");
-      }
+    if (!CGALCache::instance()->contains(key)) {
+      CGALCache::instance()->insert(key, geom);
     }
-#ifdef ENABLE_CGAL
+  } else if (!GeometryCache::instance()->contains(key)) {
+    // Perhaps add acceptsGeometry() to GeometryCache as well?
+    if (!GeometryCache::instance()->insert(key, geom)) {
+      LOG(message_group::Warning, "GeometryEvaluator: Node didn't fit into cache.");
+    }
   }
-#endif
 }
 
 bool GeometryEvaluator::isSmartCached(const AbstractNode& node)
 {
   const std::string& key = this->tree.getIdString(node);
-  return (GeometryCache::instance()->contains(key)
-#ifdef ENABLE_CGAL
-	  || CGALCache::instance()->contains(key)
-#endif
-    );
+  return GeometryCache::instance()->contains(key) || CGALCache::instance()->contains(key);
 }
 
 std::shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode& node, bool preferNef)
 {
   const std::string& key = this->tree.getIdString(node);
-  std::shared_ptr<const Geometry> geom;
-  bool hasgeom = GeometryCache::instance()->contains(key);
-#ifdef ENABLE_CGAL
-  bool hascgal = CGALCache::instance()->contains(key);
-  if (hascgal && (preferNef || !hasgeom)) geom = CGALCache::instance()->get(key);
-  else
-#endif
-  if (hasgeom) geom = GeometryCache::instance()->get(key);
-  return geom;
+  const bool hasgeom = GeometryCache::instance()->contains(key);
+  const bool hascgal = CGALCache::instance()->contains(key);
+  if (hascgal && (preferNef || !hasgeom)) return CGALCache::instance()->get(key);
+  if (hasgeom) return GeometryCache::instance()->get(key);
+  return {};
 }
 
 /*!
