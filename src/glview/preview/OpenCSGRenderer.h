@@ -80,11 +80,8 @@ public:
                   std::shared_ptr<CSGProducts> highlights_products,
                   std::shared_ptr<CSGProducts> background_products);
   ~OpenCSGRenderer() override {
-    if (vertices_vbos_.size()) {
-      glDeleteBuffers(vertices_vbos_.size(), vertices_vbos_.data());
-    }
-    if (Feature::ExperimentalVxORenderersIndexing.is_enabled() && elements_vbos_.size()) {
-      glDeleteBuffers(elements_vbos_.size(), elements_vbos_.data());
+    if (all_vbos_.size()) {
+      glDeleteBuffers(all_vbos_.size(), all_vbos_.data());
     }
   }
   void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) override;
@@ -101,8 +98,7 @@ private:
 
 private:
   std::vector<std::unique_ptr<OpenCSGVBOProduct>> vbo_vertex_products_;
-  std::vector<GLuint> vertices_vbos_;
-  std::vector<GLuint> elements_vbos_;
+  std::vector<GLuint> all_vbos_;
   std::shared_ptr<CSGProducts> root_products_;
   std::shared_ptr<CSGProducts> highlights_products_;
   std::shared_ptr<CSGProducts> background_products_;
