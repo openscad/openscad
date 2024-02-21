@@ -30,14 +30,6 @@ void VertexData::remove(size_t count)
   }
 }
 
-void VertexData::append(const VertexData& data) {
-  size_t i = 0;
-  for (auto& a : attributes_) {
-    a->append(*(data.attributes_[i]));
-    i++;
-  }
-}
-
 void VertexArray::addSurfaceData()
 {
   std::shared_ptr<VertexData> vertex_data = std::make_shared<VertexData>();
@@ -57,15 +49,6 @@ void VertexArray::addEdgeData()
   addVertexData(vertex_data);
 }
 
-void VertexArray::append(const VertexArray& vertex_array)
-{
-  size_t i = 0;
-  for (auto& v : vertices_) {
-    v->append(*(vertex_array.vertices_[i]));
-    i++;
-  }
-}
-
 void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
                                const std::array<Vector3d, 3>& normals,
                                const Color4f& color,
@@ -73,10 +56,11 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
                                size_t shape_size, bool outlines, bool mirror,
                                const CreateVertexCallback& vertex_callback)
 {
-  if (vertex_callback)
+  if (vertex_callback) {
     vertex_callback(*this, points, normals, color, active_point_index,
                     primitive_index, shape_size, outlines, mirror);
-
+  }
+  
   addAttributeValues(*(data()->positionData()), points[active_point_index][0], points[active_point_index][1], points[active_point_index][2]);
   if (data()->hasNormalData()) {
     addAttributeValues(*(data()->normalData()), normals[active_point_index][0], normals[active_point_index][1], normals[active_point_index][2]);
