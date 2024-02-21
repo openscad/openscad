@@ -558,9 +558,16 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
         solid_name = c2->solid_name;
         did_part_export = true;
         Tree tree(c, fparent.string());
-        auto filename2_str = solid_name + "." + filename_str;
+        auto output_file = fs::path(cmd.output_file);
+        auto part_filename = fs::path();
+        part_filename += output_file.parent_path();
+        part_filename /= output_file.stem();
+        part_filename += ".";
+        part_filename += fs::path(solid_name);
+        part_filename += output_file.extension();
+        auto part_filename_str = part_filename.generic_string();
         // TODO how to report multiple exports?
-        result = render_and_export(tree, c, solid_name, curFormat, cmd, fparent, filename2_str, camera, root_file, fpath);
+        result = render_and_export(tree, c, solid_name, curFormat, cmd, fparent, part_filename_str, camera, root_file, fpath);
       }
     }
   }
