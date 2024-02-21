@@ -733,7 +733,25 @@ static std::shared_ptr<AbstractNode> builtin_part(const ModuleInstantiation *ins
         "module %1$s() needs a name defined and the type to be a string", node->name());
     return node;
   }
-  node->solid_name = solid_name.toString();
+
+  auto solid_name_str = solid_name.toString();
+
+  if (solid_name_str.rfind("solid", 0) == 0) {
+    LOG(message_group::Error, inst->location(), arguments.documentRoot(),
+        "module %1$s() name cannot start with 'solid'", node->name());
+    return node;
+  }
+
+  for (int i=0; i < solid_name_str.length(); i++)
+  {
+      if (isspace(solid_name_str[i])) {
+        LOG(message_group::Error, inst->location(), arguments.documentRoot(),
+          "module %1$s() name cannot contain whitespace", node->name());
+        return node;
+      }
+  }
+
+  node->solid_name = solid_name_str;
 
   return children.instantiate(node);;
 

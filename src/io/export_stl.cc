@@ -281,6 +281,16 @@ void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
                 bool binary,
                 std::string solidName)
 {
+  if (solidName.rfind("solid", 0) == 0) {
+    return;
+  }
+  if (solidName.length() > 79) {
+    solidName = solidName.substr(0, 79);
+  }
+  // remove whitespace
+  // TODO should we error here instead of removing it?
+  solidName.erase(std::remove_if(solidName.begin(), solidName.end(), ::isspace), solidName.end());
+
   // FIXME: In lazy union mode, should we export multiple solids?
   if (binary) {
     output << solidName << "\n";
