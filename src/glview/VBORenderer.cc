@@ -134,9 +134,8 @@ void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
                                         const std::array<Vector3d, 3>& /*normals*/,
                                         const Color4f& /*color*/,
                                         size_t active_point_index, size_t primitive_index,
-                                        double /*z_offset*/, size_t shape_size,
-                                        size_t /*shape_dimensions*/, bool outlines,
-                                        bool /*mirror*/) const
+                                        double /*z_offset*/, size_t shape_size, 
+                                        bool outlines, bool /*mirror*/) const
 {
   if (!shader_attributes_index) return;
 
@@ -182,27 +181,22 @@ void VBORenderer::create_vertex(VertexArray& vertex_array, const Color4f& color,
                                 const std::array<Vector3d, 3>& normals,
                                 size_t active_point_index, size_t primitive_index,
                                 double z_offset, size_t shape_size,
-                                size_t shape_dimensions, bool outlines,
-                                bool mirror) const
+                                bool outlines, bool mirror) const
 {
   vertex_array.createVertex(points, normals, color, active_point_index,
                             primitive_index, z_offset, shape_size,
-                            shape_dimensions, outlines, mirror,
+                            outlines, mirror,
                             [this](VertexArray& vertex_array,
                                    const std::array<Vector3d, 3>& points,
                                    const std::array<Vector3d, 3>& normals,
                                    const Color4f& color,
                                    size_t active_point_index, size_t primitive_index,
                                    double z_offset, size_t shape_size,
-                                   size_t shape_dimensions, bool outlines,
-                                   bool mirror) -> void {
+                                   bool outlines, bool mirror) -> void {
     this->add_shader_attributes(vertex_array, points, normals, color,
                                 active_point_index, primitive_index,
-                                z_offset, shape_size, shape_dimensions,
-                                outlines, mirror);
-  }
-                            );
-
+                                z_offset, shape_size, outlines, mirror);
+  });
 }
 
 void VBORenderer::create_triangle(VertexArray& vertex_array, const Color4f& color,
@@ -225,19 +219,19 @@ void VBORenderer::create_triangle(VertexArray& vertex_array, const Color4f& colo
 
   create_vertex(vertex_array, color, {p0, p1, p2}, {n, n, n},
                 0, primitive_index, z_offset, shape_size,
-                shape_dimensions, outlines, mirror);
+                outlines, mirror);
   if (!mirror) {
     create_vertex(vertex_array, color, {p0, p1, p2}, {n, n, n},
                   1, primitive_index, z_offset, shape_size,
-                  shape_dimensions, outlines, mirror);
+                  outlines, mirror);
   }
   create_vertex(vertex_array, color, {p0, p1, p2}, {n, n, n},
                 2, primitive_index, z_offset, shape_size,
-                shape_dimensions, outlines, mirror);
+                outlines, mirror);
   if (mirror) {
     create_vertex(vertex_array, color, {p0, p1, p2}, {n, n, n},
                   1, primitive_index, z_offset, shape_size,
-                  shape_dimensions, outlines, mirror);
+                  outlines, mirror);
   }
 }
 
@@ -350,7 +344,7 @@ void VBORenderer::create_edges(const Polygon2d& polygon,
     for (const Vector2d& v : o.vertices) {
       Vector3d p0 = uniqueMultiply(vert_mult_map, Vector3d(v[0], v[1], 0.0), m);
 
-      create_vertex(vertex_array, color, {p0}, {}, 0, 0, 0.0, o.vertices.size(), 2, true, false);
+      create_vertex(vertex_array, color, {p0}, {}, 0, 0, 0.0, o.vertices.size(), true, false);
     }
 
     GLenum elements_type = 0;
