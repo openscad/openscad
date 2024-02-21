@@ -567,7 +567,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
         part_filename += output_file.extension();
         auto part_filename_str = part_filename.generic_string();
         // TODO how to report multiple exports?
-        result = render_and_export(tree, c, solid_name, curFormat, cmd, fparent, part_filename_str, camera, root_file, fpath);
+        result |= render_and_export(tree, c, solid_name, curFormat, cmd, fparent, part_filename_str, camera, root_file, fpath);
       }
     }
   }
