@@ -57,8 +57,8 @@ void VertexArray::createVertex(const std::array<Vector3d, 3>& points,
                                const CreateVertexCallback& vertex_callback)
 {
   if (vertex_callback) {
-    vertex_callback(*this, points, normals, color, active_point_index,
-                    primitive_index, shape_size, outlines, mirror);
+    vertex_callback(*this, active_point_index,
+                    primitive_index, shape_size, outlines);
   }
   
   addAttributeValues(*(data()->positionData()), points[active_point_index][0], points[active_point_index][1], points[active_point_index][2]);

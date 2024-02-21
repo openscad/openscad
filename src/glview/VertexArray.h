@@ -225,11 +225,8 @@ class VertexArray
 {
 public:
   using CreateVertexCallback = std::function<void (VertexArray& vertex_array,
-                                                   const std::array<Vector3d, 3>& points,
-                                                   const std::array<Vector3d, 3>& normals,
-                                                   const Color4f& color,
                                                    size_t active_point_index, size_t primitive_index,
-                                                   size_t shape_size, bool outlines, bool mirror)>;
+                                                   size_t shape_size, bool outlines)>;
 
 
   VertexArray(std::unique_ptr<VertexStateFactory> factory, std::vector<std::shared_ptr<VertexState>>& states,

@@ -130,17 +130,14 @@ size_t VBORenderer::getEdgeBufferSize(const Polygon2d& polygon) const
 }
 
 void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
-                                        const std::array<Vector3d, 3>& points,
-                                        const std::array<Vector3d, 3>& /*normals*/,
-                                        const Color4f& /*color*/,
                                         size_t active_point_index, size_t primitive_index,
-                                        size_t shape_size, bool outlines, bool /*mirror*/) const
+                                        size_t shape_size, bool outlines) const
 {
   if (!shader_attributes_index) return;
 
   std::shared_ptr<VertexData> vertex_data = vertex_array.data();
 
-  if (points.size() == 3 && getShader().data.csg_rendering.barycentric) {
+  if (getShader().data.csg_rendering.barycentric) {
     // Get edge states
     std::array<GLubyte, 3> barycentric_flags;
 
@@ -170,8 +167,6 @@ void VBORenderer::add_shader_attributes(VertexArray& vertex_array,
     barycentric_flags[active_point_index] = 1;
 
     addAttributeValues(*(vertex_data->attributes()[shader_attributes_index + BARYCENTRIC_ATTRIB]), barycentric_flags[0], barycentric_flags[1], barycentric_flags[2], 0);
-  } else {
-    if (OpenSCAD::debug != "") PRINTDB("add_shader_attributes bad points size = %d", points.size());
   }
 }
 
@@ -185,14 +180,10 @@ void VBORenderer::create_vertex(VertexArray& vertex_array, const Color4f& color,
   vertex_array.createVertex(points, normals, color, active_point_index,
                             primitive_index, shape_size, outlines, mirror,
                             [this](VertexArray& vertex_array,
-                                   const std::array<Vector3d, 3>& points,
-                                   const std::array<Vector3d, 3>& normals,
-                                   const Color4f& color,
                                    size_t active_point_index, size_t primitive_index,
-                                   size_t shape_size, bool outlines, bool mirror) -> void {
-    this->add_shader_attributes(vertex_array, points, normals, color,
-                                active_point_index, primitive_index,
-                                shape_size, outlines, mirror);
+                                   size_t shape_size, bool outlines) -> void {
+    this->add_shader_attributes(vertex_array, active_point_index, primitive_index,
+                                shape_size, outlines);
   });
 }
 
