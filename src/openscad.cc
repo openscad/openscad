@@ -539,7 +539,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     LOG(message_group::Warning, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
   }
 
-  std::string solid_name = "OpenSCAD_Model";
+  std::string solid_name = "OpenSCAD_Model";  // TODO move this to someplace the GUI can get it
   // TODO do we want to check the root node?
   auto root_children = root_node->getChildren();
   auto root_name = root_node->name();
