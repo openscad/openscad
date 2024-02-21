@@ -152,18 +152,14 @@ public:
   }
 
   static inline void CGAL_GLU_TESS_CALLBACK combineCallback(GLdouble coords[3], GLvoid *[4], GLfloat [4], GLvoid **dataOut) {
-    static std::list<GLdouble *> pcache;
+    static std::vector<GLdouble> vertexCache;
     if (dataOut) {
-      auto *n = new GLdouble[3];
-      n[0] = coords[0];
-      n[1] = coords[1];
-      n[2] = coords[2];
-      pcache.push_back(n);
-      *dataOut = n;
+      vertexCache.push_back(coords[0]);
+      vertexCache.push_back(coords[1]);
+      vertexCache.push_back(coords[2]);
+      *dataOut = vertexCache.data() - 3;
     } else {
-      for (auto& i : pcache)
-        delete[] i;
-      pcache.clear();
+      vertexCache.clear();
     }
   }
 
