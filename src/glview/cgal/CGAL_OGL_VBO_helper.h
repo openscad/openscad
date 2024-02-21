@@ -56,7 +56,7 @@ public:
     vertex_array.createVertex({Vector3d(v->x(), v->y(), v->z())},
                               {},
                               Color4f(c.red(), c.green(), c.blue()),
-                              0, 0, 0.0, 1);
+                              0, 0, 1);
   }
 
   void draw(Edge_iterator e, VertexArray& vertex_array) const {
@@ -69,11 +69,11 @@ public:
     vertex_array.createVertex({Vector3d(p.x(), p.y(), p.z())},
                               {},
                               color,
-                              0, 0, 0.0, true);
+                              0, 0, true);
     vertex_array.createVertex({Vector3d(q.x(), q.y(), q.z())},
                               {},
                               color,
-                              0, 1, 0.0, true);
+                              0, 1, true);
   }
 
   struct TessUserData {
@@ -147,7 +147,7 @@ public:
     tess->vertex_array.createVertex({Vector3d(vertex)},
                                     {Vector3d(tess->normal)},
                                     Color4f(tess->color.red(), tess->color.green(), tess->color.blue()),
-                                    0, 0, 0.0, shape_size);
+                                    0, 0, shape_size);
     tess->draw_size++;
     tess->active_point_index++;
   }

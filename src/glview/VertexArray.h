@@ -240,8 +240,7 @@ public:
                                                    const std::array<Vector3d, 3>& normals,
                                                    const Color4f& color,
                                                    size_t active_point_index, size_t primitive_index,
-                                                   double z_offset, size_t shape_size,
-                                                   bool outlines, bool mirror)>;
+                                                   size_t shape_size, bool outlines, bool mirror)>;
 
 
   VertexArray(std::unique_ptr<VertexStateFactory> factory, std::vector<std::shared_ptr<VertexState>>& states,
@@ -275,7 +274,7 @@ public:
                     const std::array<Vector3d, 3>& normals,
                     const Color4f& color,
                     size_t active_point_index = 0, size_t primitive_index = 0,
-                    double z_offset = 0, size_t shape_size = 0,
+                    size_t shape_size = 0,
                     bool outlines = false, bool mirror = false,
                     const CreateVertexCallback& vertex_callback = nullptr);
 
