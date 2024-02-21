@@ -293,7 +293,11 @@ void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
   // FIXME: In lazy union mode, should we export multiple solids?
   if (binary) {
-    output << solidName << "\n";
+    auto solidName_newline = solidName + "\n";
+    char solidName_cstr[80] = {0};
+    strcpy(solidName_cstr, solidName_newline.c_str());
+    std::cout << "---Size: " << sizeof(solidName_cstr) << std::endl;
+    output.write(solidName_cstr, sizeof(solidName_cstr));
     char tmp_triangle_count[4] = {0, 0, 0, 0}; // We must fill this in below.
     output.write(tmp_triangle_count, 4);
   } else {
