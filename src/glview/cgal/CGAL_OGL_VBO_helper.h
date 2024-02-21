@@ -53,10 +53,10 @@ public:
     PRINTD("draw(Vertex_iterator)");
 
     CGAL::Color c = getVertexColor(v);
-    vertex_array.createVertex({Vector3d((float)v->x(), (float)v->y(), (float)v->z())},
+    vertex_array.createVertex({Vector3d(v->x(), v->y(), v->z())},
                               {},
-                              {(float)c.red() / 255.0f, (float)c.green() / 255.0f, (float)c.blue() / 255.0f, 1.0},
                               0, 0, 0.0, 1, 1);
+                              Color4f(c.red(), c.green(), c.blue()),
   }
 
   void draw(Edge_iterator e, VertexArray& vertex_array) const {
@@ -64,13 +64,13 @@ public:
 
     Double_point p = e->source(), q = e->target();
     CGAL::Color c = getEdgeColor(e);
-    Color4f color = {(float)c.red() / 255.0f, (float)c.green() / 255.0f, (float)c.blue() / 255.0f, 1.0};
+    Color4f color(c.red(), c.green(), c.blue());
 
-    vertex_array.createVertex({Vector3d((float)p.x(), (float)p.y(), (float)p.z())},
+    vertex_array.createVertex({Vector3d(p.x(), p.y(), p.z())},
                               {},
                               color,
                               0, 0, 0.0, 1, 2, true);
-    vertex_array.createVertex({Vector3d((float)q.x(), (float)q.y(), (float)q.z())},
+    vertex_array.createVertex({Vector3d(q.x(), q.y(), q.z())},
                               {},
                               color,
                               0, 1, 0.0, 1, 2, true);
@@ -124,9 +124,9 @@ public:
     std::exit(0);
   }
 
-  static inline void CGAL_GLU_TESS_CALLBACK vertexCallback(GLvoid *vertex, GLvoid *user) {
-    auto *pc(static_cast<GLdouble *>(vertex));
-    auto *tess(static_cast<TessUserData *>(user));
+  static inline void CGAL_GLU_TESS_CALLBACK vertexCallback(GLvoid *vertex_arg, GLvoid *user_arg) {
+    auto *vertex(static_cast<GLdouble *>(vertex_arg));
+    auto *tess(static_cast<TessUserData *>(user_arg));
     size_t shape_size = 0;
 
     switch (tess->which) {
@@ -143,10 +143,10 @@ public:
     }
 
 
-    tess->vertex_array.createVertex({Vector3d((float)pc[0], (float)pc[1], (float)pc[2])},
-                                    {Vector3d((float)(tess->normal[0]), (float)(tess->normal[1]), (float)(tess->normal[2]))},
-                                    {(float)(tess->color.red() / 255.0f), (float)(tess->color.green() / 255.0f), (float)(tess->color.blue() / 255.0f), 1.0},
                                     0, 0, 0.0, shape_size, 3);
+    tess->vertex_array.createVertex({Vector3d(vertex)},
+                                    {Vector3d(tess->normal)},
+                                    Color4f(tess->color.red(), tess->color.green(), tess->color.blue()),
     tess->draw_size++;
     tess->active_point_index++;
   }
