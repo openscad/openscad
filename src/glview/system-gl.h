@@ -1,12 +1,21 @@
 #pragma once
 
 #ifndef NULLGL
+
+#if defined(USE_GLEW) || defined(OPENCSG_GLEW)
 #include <GL/glew.h>
+#endif
+#ifdef USE_GLAD
+  #ifdef _WIN32
+  #define NORESOURCE // To avoid picking up DIFFERENCE from winuser.h, conflicting with OpenSCADOperator::DIFFERENCE
+  #include <windows.h>
+  #endif
+#include "glad/gl.h"
+#endif
 
 #ifdef __APPLE__
- #include <OpenGL/OpenGL.h>
+ #include <OpenGL/glu.h>
 #else
- #include <GL/gl.h>
  #include <GL/glu.h>
 #endif
 
@@ -94,9 +103,17 @@ bool glCheckd(const char *stmt, const char *file, int line)
 
 #define GLint int
 #define GLuint unsigned int
+#define GLdouble unsigned int
 inline void glColor4fv(float *c) {}
 
 #endif // NULLGL
 
-std::string glew_dump();
-std::string glew_extensions_dump();
+#ifdef USE_GLEW
+#define hasGLExtension(ext) glewIsSupported("GL_" #ext)
+#endif
+#ifdef USE_GLAD
+#define hasGLExtension(ext) GLAD_GL_## ext
+#endif
+
+std::string gl_dump();
+std::string gl_extensions_dump();

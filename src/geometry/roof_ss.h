@@ -7,5 +7,5 @@
 #include "PolySet.h"
 
 namespace roof_ss {
-PolySet *straight_skeleton_roof(const Polygon2d& poly);
+std::unique_ptr<PolySet> straight_skeleton_roof(const Polygon2d& poly);
 }

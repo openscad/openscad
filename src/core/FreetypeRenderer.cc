@@ -28,8 +28,6 @@
 
 #include <iostream>
 
-#include <glib.h>
-
 #include <fontconfig/fontconfig.h>
 
 #include "printutils.h"
@@ -338,16 +336,12 @@ FreetypeRenderer::ShapeResults::ShapeResults(
     // to the 0xf000 page (Private Use Area of Unicode). All other
     // values are untouched, so using the correct codepoint directly
     // (e.g. \uf021 for the spider in Webdings) still works.
-    const char *p = params.text.c_str();
-    if (g_utf8_validate(p, -1, nullptr)) {
-      char buf[8];
-      while (*p != 0) {
-        memset(buf, 0, 8);
-        gunichar c = g_utf8_get_char(p);
+    str_utf8_wrapper utf8_str{params.text};
+    if (utf8_str.utf8_validate()) {
+      for (auto ch : utf8_str) {
+        gunichar c = ch.get_utf8_char();
         c = (c < 0x0100) ? 0xf000 + c : c;
-        g_unichar_to_utf8(c, buf);
-        hb_buffer_add_utf8(hb_buf, buf, strlen(buf), 0, strlen(buf));
-        p = g_utf8_next_char(p);
+        hb_buffer_add_utf32(hb_buf, &c, 1, 0, 1);
       }
     } else {
       LOG(message_group::Warning, params.loc, params.documentPath,
@@ -547,7 +541,7 @@ FreetypeRenderer::TextMetrics::TextMetrics(
   ok = true;
 }
 
-std::vector<const Geometry *> FreetypeRenderer::render(const FreetypeRenderer::Params& params) const
+std::vector<std::shared_ptr<const Geometry>> FreetypeRenderer::render(const FreetypeRenderer::Params& params) const
 {
   ShapeResults sr(params);
 

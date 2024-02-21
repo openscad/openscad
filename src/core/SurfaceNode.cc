@@ -26,15 +26,17 @@
 
 #include "module.h"
 #include "ModuleInstantiation.h"
-#include "node.h"
+#include "core/node.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "Builtins.h"
 #include "Children.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include "fileutils.h"
+#include "io/fileutils.h"
 #include "handle_dep.h"
 #include "ext/lodepng/lodepng.h"
+#include "SurfaceNode.h"
 
 #include <cstdint>
 #include <sstream>
@@ -50,53 +52,6 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-
-struct img_data_t
-{
-public:
-  using storage_type = double; // float could be enough here
-
-  img_data_t() { min_val = 0; height = width = 0; }
-
-  void clear() { min_val = 0; height = width = 0; storage.clear(); }
-
-  void reserve(size_t x) { storage.reserve(x); }
-
-  void resize(size_t x) { storage.resize(x); }
-
-  storage_type& operator[](int x) { return storage[x]; }
-
-  storage_type min_value() { return min_val; } // *std::min_element(storage.begin(), storage.end());
-
-public:
-  unsigned int height; // rows
-  unsigned int width; // columns
-  storage_type min_val;
-  std::vector<storage_type> storage;
-
-};
-
-
-class SurfaceNode : public LeafNode
-{
-public:
-  VISITABLE();
-  SurfaceNode(const ModuleInstantiation *mi) : LeafNode(mi) { }
-  std::string toString() const override;
-  std::string name() const override { return "surface"; }
-
-  Filename filename;
-  bool center{false};
-  bool invert{false};
-  int convexity{1};
-
-  const Geometry *createGeometry() const override;
-private:
-  void convert_image(img_data_t& data, std::vector<uint8_t>& img, unsigned int width, unsigned int height) const;
-  bool is_png(std::vector<uint8_t>& img) const;
-  img_data_t read_dat(std::string filename) const;
-  img_data_t read_png_or_dat(std::string filename) const;
-};
 
 static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {
@@ -253,23 +208,23 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
   return data;
 }
 
-const Geometry *SurfaceNode::createGeometry() const
+// FIXME: Look for faster way to generate PolySet directly
+std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
 {
   auto data = read_png_or_dat(filename);
-
-  auto p = new PolySet(3);
-  p->setConvexity(convexity);
 
   int lines = data.height;
   int columns = data.width;
   double min_val = data.min_value() - 1; // make the bottom solid, and match old code
 
   // reserve the polygon vector size so we don't have to reallocate as often
-  p->polygons.reserve( (lines - 1) * (columns - 1) * 4 + (lines - 1) * 2 + (columns - 1) * 2 + 1);
 
   double ox = center ? -(columns - 1) / 2.0 : 0;
   double oy = center ? -(lines - 1) / 2.0 : 0;
 
+  int num_indices = (lines - 1) * (columns - 1) * 4 + (lines - 1) * 2 + (columns - 1) * 2 + 1;
+  PolySetBuilder builder(0, num_indices);
+  builder.setConvexity(convexity);
   // the bulk of the heightmap
   for (int i = 1; i < lines; ++i)
     for (int j = 1; j < columns; ++j) {
@@ -280,25 +235,29 @@ const Geometry *SurfaceNode::createGeometry() const
 
       double vx = (v1 + v2 + v3 + v4) / 4;
 
-      p->append_poly();
-      p->append_vertex(ox + j - 1, oy + i - 1, v1);
-      p->append_vertex(ox + j, oy + i - 1, v2);
-      p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
+      builder.appendPoly({
+		Vector3d(ox + j - 1, oy + i - 1, v1),
+		Vector3d(ox + j, oy + i - 1, v2),
+		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
+		});
 
-      p->append_poly();
-      p->append_vertex(ox + j, oy + i - 1, v2);
-      p->append_vertex(ox + j, oy + i, v4);
-      p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
+      builder.appendPoly({
+		Vector3d(ox + j, oy + i - 1, v2),
+		Vector3d(ox + j, oy + i, v4),
+		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
+		});
 
-      p->append_poly();
-      p->append_vertex(ox + j, oy + i, v4);
-      p->append_vertex(ox + j - 1, oy + i, v3);
-      p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
+      builder.appendPoly({
+		Vector3d(ox + j, oy + i, v4),
+		Vector3d(ox + j - 1, oy + i, v3),
+		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
+		});
 
-      p->append_poly();
-      p->append_vertex(ox + j - 1, oy + i, v3);
-      p->append_vertex(ox + j - 1, oy + i - 1, v1);
-      p->append_vertex(ox + j - 0.5, oy + i - 0.5, vx);
+      builder.appendPoly({
+		Vector3d(ox + j - 1, oy + i, v3),
+		Vector3d(ox + j - 1, oy + i - 1, v1),
+		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
+		});
     }
 
   // edges along Y
@@ -308,17 +267,20 @@ const Geometry *SurfaceNode::createGeometry() const
     double v3 = data[ (columns - 1) + (i - 1) * columns ];
     double v4 = data[ (columns - 1) + (i) * columns ];
 
-    p->append_poly();
-    p->append_vertex(ox + 0, oy + i - 1, min_val);
-    p->append_vertex(ox + 0, oy + i - 1, v1);
-    p->append_vertex(ox + 0, oy + i, v2);
-    p->append_vertex(ox + 0, oy + i, min_val);
 
-    p->append_poly();
-    p->insert_vertex(ox + columns - 1, oy + i - 1, min_val);
-    p->insert_vertex(ox + columns - 1, oy + i - 1, v3);
-    p->insert_vertex(ox + columns - 1, oy + i, v4);
-    p->insert_vertex(ox + columns - 1, oy + i, min_val);
+    builder.appendPoly({
+	Vector3d(ox + 0, oy + i - 1, min_val),
+	Vector3d(ox + 0, oy + i - 1, v1),
+	Vector3d(ox + 0, oy + i, v2),
+	Vector3d(ox + 0, oy + i, min_val)
+    });
+
+    builder.appendPoly({
+	Vector3d(ox + columns - 1, oy + i, min_val),
+	Vector3d(ox + columns - 1, oy + i, v4),
+	Vector3d(ox + columns - 1, oy + i - 1, v3),
+	Vector3d(ox + columns - 1, oy + i - 1, min_val)
+    });
   }
 
   // edges along X
@@ -328,34 +290,35 @@ const Geometry *SurfaceNode::createGeometry() const
     double v3 = data[ (i - 1) + (lines - 1) * columns ];
     double v4 = data[ (i) + (lines - 1) * columns ];
 
-    p->append_poly();
-    p->insert_vertex(ox + i - 1, oy + 0, min_val);
-    p->insert_vertex(ox + i - 1, oy + 0, v1);
-    p->insert_vertex(ox + i, oy + 0, v2);
-    p->insert_vertex(ox + i, oy + 0, min_val);
+    builder.appendPoly({
+	Vector3d(ox + i, oy + 0, min_val),
+	Vector3d(ox + i, oy + 0, v2),
+	Vector3d(ox + i - 1, oy + 0, v1),
+	Vector3d(ox + i - 1, oy + 0, min_val)
+    });
 
-    p->append_poly();
-    p->append_vertex(ox + i - 1, oy + lines - 1, min_val);
-    p->append_vertex(ox + i - 1, oy + lines - 1, v3);
-    p->append_vertex(ox + i, oy + lines - 1, v4);
-    p->append_vertex(ox + i, oy + lines - 1, min_val);
+    builder.appendPoly({
+	Vector3d(ox + i - 1, oy + lines - 1, min_val),
+	Vector3d(ox + i - 1, oy + lines - 1, v3),
+	Vector3d(ox + i, oy + lines - 1, v4),
+	Vector3d(ox + i, oy + lines - 1, min_val)
+    });
   }
 
   // the bottom of the shape (one less than the real minimum value), making it a solid volume
   if (columns > 1 && lines > 1) {
-    p->append_poly();
-    p->polygons.back().reserve(2 * (columns - 1) + 2 * (lines - 1) ); // inelegant, could vertex count be argument to append_poly?  or separate call poly_reserve(x)?
+    builder.appendPoly(2 * (columns - 1) + 2 * (lines - 1) );
     for (int i = 0; i < columns - 1; ++i)
-      p->insert_vertex(ox + i, oy + 0, min_val);
+      builder.prependVertex(Vector3d(ox + i, oy + 0, min_val));
     for (int i = 0; i < lines - 1; ++i)
-      p->insert_vertex(ox + columns - 1, oy + i, min_val);
+      builder.prependVertex(Vector3d(ox + columns - 1, oy + i, min_val));
     for (int i = columns - 1; i > 0; i--)
-      p->insert_vertex(ox + i, oy + lines - 1, min_val);
+      builder.prependVertex(Vector3d(ox + i, oy + lines - 1, min_val));
     for (int i = lines - 1; i > 0; i--)
-      p->insert_vertex(ox + 0, oy + i, min_val);
+      builder.prependVertex(Vector3d(ox + 0, oy + i, min_val));
   }
 
-  return p;
+  return builder.build();
 }
 
 std::string SurfaceNode::toString() const

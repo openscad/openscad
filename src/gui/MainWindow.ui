@@ -177,6 +177,8 @@
          <addaction name="viewActionZoomIn"/>
          <addaction name="viewActionZoomOut"/>
          <addaction name="viewActionResetView"/>
+         <addaction name="designActionMeasureDist"/>
+         <addaction name="designActionMeasureAngle"/>
          <addaction name="separator"/>
          <addaction name="viewActionRight"/>
          <addaction name="viewActionLeft"/>
@@ -249,6 +251,7 @@
     <addaction name="separator"/>
     <addaction name="fileActionNewWindow"/>
     <addaction name="fileActionOpenWindow"/>
+    <addaction name="fileActionRevoke"/>
     <addaction name="fileActionClose"/>
     <addaction name="separator"/>
     <addaction name="fileActionSave"/>
@@ -312,6 +315,8 @@
     <addaction name="designActionPreview"/>
     <addaction name="designActionRender"/>
     <addaction name="designAction3DPrint"/>
+    <addaction name="designActionMeasureDist"/>
+    <addaction name="designActionMeasureAngle"/>
     <addaction name="separator"/>
     <addaction name="designCheckValidity"/>
     <addaction name="designActionDisplayAST"/>
@@ -985,6 +990,22 @@
     <string>F8</string>
    </property>
   </action>
+  <action name="designActionMeasureDist">
+   <property name="text">
+    <string>Measure &amp;Distance</string>
+   </property>
+   <property name="shortcut">
+    <string>d</string>
+   </property>
+  </action>
+  <action name="designActionMeasureAngle">
+   <property name="text">
+    <string>Measure &amp;Angle</string>
+   </property>
+   <property name="shortcut">
+    <string>a</string>
+   </property>
+  </action>
   <action name="designCheckValidity">
    <property name="text">
     <string>&amp;Check Validity</string>
@@ -1235,6 +1256,11 @@
   <action name="fileActionExportDXF">
    <property name="text">
     <string>Export as &amp;DXF...</string>
+   </property>
+  </action>
+  <action name="fileActionRevoke">
+   <property name="text">
+    <string>Revoke trusted python Files</string>
    </property>
   </action>
   <action name="fileActionClose">

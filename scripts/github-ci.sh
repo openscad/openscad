@@ -8,8 +8,11 @@ PARALLEL_CTEST=-j"$PARALLEL"
 
 BUILDDIR=b
 GCOVRDIR=c
-TESTDIR=tests
 
+do_enable_python() {
+	echo "do_enable_python()"
+	PYTHON_DEFINE="-DENABLE_PYTHON=ON"
+}
 do_build() {
 	echo "do_build()"
 
@@ -17,7 +20,7 @@ do_build() {
 	mkdir "$BUILDDIR"
 	(
 		cd "$BUILDDIR"
-		cmake -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DPROFILE=ON .. && make $PARALLEL_MAKE
+		cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=ON -DEXPERIMENTAL=ON -DPROFILE=ON -DUSE_BUILTIN_OPENCSG=1 ${PYTHON_DEFINE} .. && make $PARALLEL_MAKE
 	)
 	if [[ $? != 0 ]]; then
 		echo "Build failure"
@@ -29,13 +32,14 @@ do_test() {
 	echo "do_test()"
 
 	(
-		# Use TESTDIR within BUILDDIR
-		cd "$BUILDDIR/$TESTDIR"
+		cd "$BUILDDIR"
 		ctest $PARALLEL_CTEST
 		if [[ $? != 0 ]]; then
 			exit 1
 		fi
-		tar -C .gcov -c -f - . | tar -C ../ -x -f -
+		if [ -d tests/.gcov ]; then
+			tar -C tests/.gcov -c -f - . | tar -x -f -
+		fi
 	)
 	if [[ $? != 0 ]]; then
 		echo "Test failure"

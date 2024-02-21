@@ -1,5 +1,6 @@
 #include "import.h"
 #include "PolySet.h"
+#include "PolySetBuilder.h"
 #include "printutils.h"
 #include "AST.h"
 
@@ -52,7 +53,7 @@ static void uint32_byte_swap(uint32_t& x) {
 
 static void read_stl_facet(std::ifstream& f, stl_facet& facet) {
   f.read((char *)facet.data8, STL_FACET_NUMBYTES);
-  if (f.gcount() < STL_FACET_NUMBYTES) {
+  if (static_cast<size_t>(f.gcount()) < STL_FACET_NUMBYTES) {
     throw std::ios_base::failure("facet data truncated");
   }
 #if BOOST_ENDIAN_BIG_BYTE
@@ -63,18 +64,17 @@ static void read_stl_facet(std::ifstream& f, stl_facet& facet) {
 #endif
 }
 
-PolySet *import_stl(const std::string& filename, const Location& loc) {
-  std::unique_ptr<PolySet> p = std::make_unique<PolySet>(3);
-
+std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location& loc) {
   // Open file and position at the end
   std::ifstream f(filename.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
   if (!f.good()) {
     LOG(message_group::Warning,
         "Can't open import file '%1$s', import() at line %2$d",
         filename, loc.firstLine());
-    return p.release();
+    return std::make_unique<PolySet>(3);
   }
 
+  uint32_t facenum = 0;
   boost::regex ex_sfe(R"(^\s*solid|^\s*facet|^\s*endfacet)");
   boost::regex ex_outer("^\\s*outer loop$");
   boost::regex ex_loopend("^\\s*endloop$");
@@ -87,7 +87,6 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
   std::streampos file_size = f.tellg();
   f.seekg(80);
   if (f.good() && !f.eof()) {
-    uint32_t facenum = 0;
     f.read((char *)&facenum, sizeof(uint32_t));
 #if BOOST_ENDIAN_BIG_BYTE
     uint32_byte_swap(facenum);
@@ -96,6 +95,8 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
       binary = true;
     }
   }
+  if(!binary) facenum=0;
+  PolySetBuilder builder(0, facenum);
   f.seekg(0);
 
   char data[5];
@@ -135,7 +136,7 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
         break;
       } else if (i >= 3) {
         AsciiError("extra vertex");
-        return new PolySet(3);
+	return std::make_unique<PolySet>(3);
       } else if (boost::regex_search(line, results, ex_vertices) &&
                  results.size() >= 4) {
         try {
@@ -144,14 +145,13 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
               boost::lexical_cast<double>(results[v + 1]);
           }
           if (++i == 3) {
-            p->append_poly();
-            p->append_vertex(vdata[0][0], vdata[0][1], vdata[0][2]);
-            p->append_vertex(vdata[1][0], vdata[1][1], vdata[1][2]);
-            p->append_vertex(vdata[2][0], vdata[2][1], vdata[2][2]);
+            builder.appendPoly(3);
+	    for(int j=0;j<3;j++)
+	            builder.appendVertex(Vector3d(vdata[j][0], vdata[j][1], vdata[j][2]));
           }
         } catch (const boost::bad_lexical_cast& blc) {
           AsciiError("can't parse vertex");
-          return new PolySet(3);
+	  return std::make_unique<PolySet>(3);
         }
       }
     }
@@ -169,10 +169,11 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
           if (f.eof()) break;
           throw;
         }
-        p->append_poly();
-        p->append_vertex(facet.data.x1, facet.data.y1, facet.data.z1);
-        p->append_vertex(facet.data.x2, facet.data.y2, facet.data.z2);
-        p->append_vertex(facet.data.x3, facet.data.y3, facet.data.z3);
+        builder.appendPoly({
+		Vector3d(facet.data.x1, facet.data.y1, facet.data.z1),
+		Vector3d(facet.data.x2, facet.data.y2, facet.data.z2),
+		Vector3d(facet.data.x3, facet.data.y3, facet.data.z3)
+	});
       }
     } catch (const std::ios_base::failure& ex) {
       int64_t offset = -1;
@@ -186,12 +187,12 @@ PolySet *import_stl(const std::string& filename, const Location& loc) {
             "Binary STL '%1$s' error at byte %2$s: %3$s",
             filename, offset, ex.what());
       }
-      return new PolySet(3);
+      return std::make_unique<PolySet>(3);
     }
   } else {
     LOG(message_group::Error, loc, "",
         "STL format not recognized in '%1$s'.", filename);
-    return new PolySet(3);
+    return std::make_unique<PolySet>(3);
   }
-  return p.release();
+  return builder.build();
 }

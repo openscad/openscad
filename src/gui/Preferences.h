@@ -29,9 +29,9 @@ public slots:
   void featuresCheckBoxToggled(bool);
   void on_stackedWidget_currentChanged(int);
   void on_colorSchemeChooser_itemSelectionChanged();
-  void on_fontChooser_activated(const QString&);
-  void on_fontSize_currentIndexChanged(const QString&);
-  void on_syntaxHighlight_activated(const QString&);
+  void on_fontChooser_currentFontChanged(const QFont&);
+  void on_fontSize_currentIndexChanged(int);
+  void on_syntaxHighlight_currentTextChanged(const QString&);
   void on_openCSGWarningBox_toggled(bool);
   void on_cgalCacheSizeMBEdit_textChanged(const QString&);
   void on_polysetCacheSizeMBEdit_textChanged(const QString&);
@@ -65,8 +65,10 @@ public slots:
   void on_timeThresholdOnRenderCompleteSoundEdit_textChanged(const QString&);
   void on_enableClearConsoleCheckBox_toggled(bool);
   void on_consoleMaxLinesEdit_textChanged(const QString&);
-  void on_consoleFontChooser_activated(const QString&);
-  void on_consoleFontSize_currentIndexChanged(const QString&);
+  void on_consoleFontChooser_currentFontChanged(const QFont&);
+  void on_consoleFontSize_currentIndexChanged(int);
+  void on_customizerFontChooser_currentFontChanged(const QFont&);
+  void on_customizerFontSize_currentIndexChanged(int);
   void on_checkBoxEnableAutocomplete_toggled(bool);
   void on_lineEditCharacterThreshold_textChanged(const QString&);
   //
@@ -115,6 +117,7 @@ signals:
   void updateReorderMode(bool undockMode) const;
   void fontChanged(const QString& family, uint size) const;
   void consoleFontChanged(const QString& family, uint size) const;
+  void customizerFontChanged(const QString& family, uint size) const;
   void colorSchemeChanged(const QString& scheme) const;
   void openCSGSettingsChanged() const;
   void syntaxHighlightChanged(const QString& s) const;
@@ -142,6 +145,9 @@ private:
   void writeSettings();
   void hidePasswords();
   void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
+  void createFontSizeMenu(QComboBox *box, const QString &setting);
+  void updateGUIFontFamily(QFontComboBox *fontSelector, const QString &setting);
+  void updateGUIFontSize(QComboBox *fsSelector, const QString &setting);
 
   /** Set value from combobox to settings */
   void applyComboBox(QComboBox *comboBox, int val, Settings::SettingsEntryEnum& entry);

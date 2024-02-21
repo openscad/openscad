@@ -1,6 +1,16 @@
 #include "Polygon2d.h"
 #include "printutils.h"
+#include "PolySet.h"
 
+
+Polygon2d::Polygon2d(Outline2d outline) : sanitized(true) {
+  addOutline(std::move(outline));
+}
+
+std::unique_ptr<Geometry> Polygon2d::copy() const
+{
+  return std::make_unique<Polygon2d>(*this);
+}
 
 BoundingBox Outline2d::getBoundingBox() const {
   BoundingBox bbox;
@@ -119,3 +129,22 @@ bool Polygon2d::is_convex() const
   return true;
 }
 
+double Polygon2d::area() const
+{
+  const auto p = tessellate();
+  if (p == nullptr) {
+    return 0;
+  }
+
+  double area = 0.0;
+  for (const auto& poly : p->indices) {
+    const auto& v1 = p->vertices[poly[0]];
+    const auto& v2 = p->vertices[poly[1]];
+    const auto& v3 = p->vertices[poly[2]];
+    area += 0.5 * (
+      v1.x() * (v2.y() - v3.y())
+      + v2.x() * (v3.y() - v1.y())
+      + v3.x() * (v1.y() - v2.y()));
+  }
+  return area;
+}

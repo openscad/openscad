@@ -170,7 +170,6 @@ esac
 echo "Checking pre-requisites..."
 
 git submodule update --init --recursive
-( cd submodules/manifold ; git apply thrust.diff || true )
 
 echo "Building openscad-$VERSION ($VERSIONDATE)"
 echo "  CMake args: $CMAKE_CONFIG"

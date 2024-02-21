@@ -503,8 +503,8 @@ found_next_line_in_closed_path:;
   printf("----- DXF Data -----\n");
   for (int i = 0; i < this->paths.size(); ++i) {
     printf("Path %d (%s):\n", i, this->paths[i].is_closed ? "closed" : "open");
-    for (int j = 0; j < this->paths[i].points.size(); ++j)
-      printf("  %f %f\n", (*this->paths[i].points[j])[0], (*this->paths[i].points[j])[1]);
+    for (int j = 0; j < this->paths[i].vertices.size(); ++j)
+      printf("  %f %f\n", (*this->paths[i].vertices[j])[0], (*this->paths[i].vertices[j])[1]);
   }
   printf("--------------------\n");
   fflush(stdout);
@@ -586,9 +586,9 @@ std::string DxfData::dump() const
 /*
     May return an empty polygon, but will not return nullptr
  */
-Polygon2d *DxfData::toPolygon2d() const
+std::unique_ptr<Polygon2d> DxfData::toPolygon2d() const
 {
-  auto poly = new Polygon2d();
+  auto poly = std::make_unique<Polygon2d>();
   for (const auto& path : this->paths) {
     Outline2d outline;
     size_t endidx = path.indices.size();

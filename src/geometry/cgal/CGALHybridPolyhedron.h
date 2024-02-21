@@ -39,8 +39,8 @@ public:
   using bbox_t = CGAL::Iso_cuboid_3<CGAL_HybridKernel3>;
 
   CGALHybridPolyhedron();
-  CGALHybridPolyhedron(const shared_ptr<CGAL_HybridNef>& nef);
-  CGALHybridPolyhedron(const shared_ptr<CGAL_HybridMesh>& mesh);
+  CGALHybridPolyhedron(const std::shared_ptr<CGAL_HybridNef>& nef);
+  CGALHybridPolyhedron(const std::shared_ptr<CGAL_HybridMesh>& mesh);
   CGALHybridPolyhedron(const CGALHybridPolyhedron& other);
   CGALHybridPolyhedron& operator=(const CGALHybridPolyhedron& other);
 
@@ -52,15 +52,11 @@ public:
   void clear();
 
   [[nodiscard]] size_t memsize() const override;
-  [[nodiscard]] BoundingBox getBoundingBox() const override
-  {
-    assert(false && "not implemented");
-    return {};
-  }
+  [[nodiscard]] BoundingBox getBoundingBox() const override;
 
   [[nodiscard]] std::string dump() const override;
   [[nodiscard]] unsigned int getDimension() const override { return 3; }
-  [[nodiscard]] Geometry *copy() const override { return new CGALHybridPolyhedron(*this); }
+  [[nodiscard]] std::unique_ptr<Geometry> copy() const override;
 
   [[nodiscard]] std::shared_ptr<const PolySet> toPolySet() const;
 
@@ -118,8 +114,6 @@ private:
   /*! Returns the nef polyhedron if that's what's in the current data, or else nullptr.
    * Do NOT make this public. */
   [[nodiscard]] std::shared_ptr<CGAL_HybridNef> getNefPolyhedron() const;
-
-  [[nodiscard]] bbox_t getExactBoundingBox() const;
 
   // This contains data either as a polyhedron, or as a nef polyhedron.
   //

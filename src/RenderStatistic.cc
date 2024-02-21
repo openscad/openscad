@@ -23,16 +23,18 @@
  *
  */
 
+
+#include <fstream>
 #include <json.hpp>
 
 #include "printutils.h"
 #include "GeometryCache.h"
-#include "CGALCache.h"
 #include "PolySet.h"
 #include "Polygon2d.h"
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "CGALHybridPolyhedron.h"
+#include "CGALCache.h"
 #endif // ENABLE_CGAL
 
 #ifdef ENABLE_MANIFOLD
@@ -181,7 +183,7 @@ void RenderStatistic::printRenderingTime()
   visitor.printRenderingTime(ms());
 }
 
-void RenderStatistic::printAll(const shared_ptr<const Geometry>& geom, const Camera& camera, const std::vector<std::string>& options, const std::string& filename)
+void RenderStatistic::printAll(const std::shared_ptr<const Geometry>& geom, const Camera& camera, const std::vector<std::string>& options, const std::string& filename)
 {
   //bool is_log = false;
   std::unique_ptr<StatisticVisitor> visitor;
@@ -291,8 +293,6 @@ void LogVisitor::visit(const ManifoldGeometry& mani_geom)
   LOG("   Facets:     %1$6d", mani.NumTri());
   LOG("   BBox.min:   %1$f, %2$f, %3$f", bbox.min.x, bbox.min.y, bbox.min.z);
   LOG("   BBox.max:   %1$f, %2$f, %3$f", bbox.max.x, bbox.max.y, bbox.max.z);
-  
-  assert(false && "not implemented");
 }
 #endif // ENABLE_MANIFOLD
 

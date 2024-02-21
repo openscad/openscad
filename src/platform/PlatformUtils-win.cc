@@ -1,4 +1,7 @@
 #include "PlatformUtils.h"
+
+#include <map>
+
 #include "printutils.h"
 #include "findversion.h"
 #ifndef _WIN32_WINNT
@@ -149,16 +152,28 @@ const std::string PlatformUtils::sysinfo(bool extended)
 {
   std::string result;
 
+  SYSTEM_INFO si;
+  GetSystemInfo(&si);
+  std::map<WORD, const char *> archs;
+  archs[PROCESSOR_ARCHITECTURE_AMD64] = "x86_64";
+  archs[PROCESSOR_ARCHITECTURE_ARM] = "arm";
+  archs[PROCESSOR_ARCHITECTURE_ARM64] = "arm64";
+  archs[PROCESSOR_ARCHITECTURE_IA64] = "itanium";
+  archs[PROCESSOR_ARCHITECTURE_INTEL] = "x86";
+  archs[PROCESSOR_ARCHITECTURE_UNKNOWN] = "unknown";
+
   OSVERSIONINFOEX osinfo;
   osinfo.dwOSVersionInfoSize = sizeof(osinfo);
 
   if (GetVersionExEx(&osinfo) == 0) {
-    result += "Unknown Windows(TM)";
+    result += "Microsoft Windows Unknown Version";
   } else {
-    boost::format fmt("Windows(TM) %d.%d SP %d.%d NTW %i MSDN 724833");
-    fmt % osinfo.dwMajorVersion % osinfo.dwMinorVersion
-    % osinfo.wServicePackMajor % osinfo.wServicePackMinor
-    % (osinfo.wProductType == VER_NT_WORKSTATION);
+    int majorVersion = osinfo.dwMajorVersion;
+    if (majorVersion == 10 && osinfo.dwBuildNumber >= 22000) {
+      majorVersion = 11;
+    }
+    boost::format fmt("Microsoft Windows %d (%d.%d.%d) %s");
+    fmt % majorVersion % osinfo.dwMajorVersion % osinfo.dwMinorVersion % osinfo.dwBuildNumber % archs[si.wProcessorArchitecture];
     result += fmt.str();
   }
 

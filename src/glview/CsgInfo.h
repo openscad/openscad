@@ -15,22 +15,22 @@ class CsgInfo
 {
 public:
   CsgInfo() = default;
-  shared_ptr<class CSGProducts> root_products;
-  shared_ptr<CSGProducts> highlights_products;
-  shared_ptr<CSGProducts> background_products;
+  std::shared_ptr<class CSGProducts> root_products;
+  std::shared_ptr<CSGProducts> highlights_products;
+  std::shared_ptr<CSGProducts> background_products;
 
   bool compile_products(const Tree& tree) {
     auto& root_node = tree.root();
     GeometryEvaluator geomevaluator(tree);
     CSGTreeEvaluator evaluator(tree, &geomevaluator);
-    shared_ptr<CSGNode> csgRoot = evaluator.buildCSGTree(*root_node);
-    std::vector<shared_ptr<CSGNode>> highlightNodes = evaluator.getHighlightNodes();
-    std::vector<shared_ptr<CSGNode>> backgroundNodes = evaluator.getBackgroundNodes();
+    std::shared_ptr<CSGNode> csgRoot = evaluator.buildCSGTree(*root_node);
+    std::vector<std::shared_ptr<CSGNode>> highlightNodes = evaluator.getHighlightNodes();
+    std::vector<std::shared_ptr<CSGNode>> backgroundNodes = evaluator.getBackgroundNodes();
 
     LOG("Compiling design (CSG Products normalization)...");
     CSGTreeNormalizer normalizer(RenderSettings::inst()->openCSGTermLimit);
     if (csgRoot) {
-      shared_ptr<CSGNode> normalizedRoot = normalizer.normalize(csgRoot);
+      std::shared_ptr<CSGNode> normalizedRoot = normalizer.normalize(csgRoot);
       if (normalizedRoot) {
         this->root_products.reset(new CSGProducts());
         this->root_products->import(normalizedRoot);

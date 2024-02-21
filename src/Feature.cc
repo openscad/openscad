@@ -10,10 +10,6 @@
 #include "Feature.h"
 #include "printutils.h"
 
-#ifdef ENABLE_CGAL
-#include "cgal.h" // for FAST_CSG_KERNEL_IS_LAZY
-#endif
-
 /**
  * Feature registration map/list for later lookup. This must be initialized
  * before the static feature instances as those register with this map.
@@ -38,13 +34,13 @@ const Feature Feature::ExperimentalManifold("manifold", "Use the Manifold librar
 const Feature Feature::ExperimentalRoof("roof", "Enable <code>roof</code>");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
-const Feature Feature::ExperimentalVxORenderers("vertex-object-renderers", "Enable vertex object renderers");
 const Feature Feature::ExperimentalVxORenderersIndexing("vertex-object-renderers-indexing", "Enable indexing in vertex object renderers");
-const Feature Feature::ExperimentalVxORenderersDirect("vertex-object-renderers-direct", "Enable direct buffer writes in vertex object renderers");
-const Feature Feature::ExperimentalVxORenderersPrealloc("vertex-object-renderers-prealloc", "Enable preallocating buffers in vertex object renderers");
 const Feature Feature::ExperimentalTextMetricsFunctions("textmetrics", "Enable the <code>textmetrics()</code> and <code>fontmetrics()</code> functions.");
 const Feature Feature::ExperimentalImportFunction("import-function", "Enable import function returning data instead of geometry.");
 const Feature Feature::ExperimentalPredictibleOutput("predictible-output", "Attempt to produce predictible, diffable outputs (e.g. sorting the STL, or remeshing in a determined order)");
+#ifdef ENABLE_PYTHON
+const Feature Feature::ExperimentalPythonEngine("python-engine", "Enable experimental Python Engine (implies risk of malicious scripts downloaded).");
+#endif
 
 Feature::Feature(const std::string& name, std::string description)
   : name(name), description(std::move(description))

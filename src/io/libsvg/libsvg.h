@@ -25,9 +25,9 @@
 #pragma once
 
 #include <utility>
+#include <memory>
 
 #include "shape.h"
-#include "memory.h"
 
 namespace libsvg {
 
@@ -45,7 +45,7 @@ private:
   std::string message;
 };
 
-using shapes_list_t = std::vector<shared_ptr<shape>>;
+using shapes_list_t = std::vector<std::shared_ptr<shape>>;
 
 shapes_list_t *
 libsvg_read_file(const char *filename, void *context);

@@ -16,8 +16,8 @@ public:
   VISITABLE_GEOMETRY();
 
   ManifoldGeometry();
-  ManifoldGeometry(const shared_ptr<manifold::Manifold>& object);
-  ManifoldGeometry(const ManifoldGeometry& other);
+  ManifoldGeometry(const std::shared_ptr<manifold::Manifold>& object);
+  ManifoldGeometry(const ManifoldGeometry& other) = default;
   ManifoldGeometry& operator=(const ManifoldGeometry& other);
 
   [[nodiscard]] bool isEmpty() const override;
@@ -32,7 +32,7 @@ public:
 
   [[nodiscard]] std::string dump() const override;
   [[nodiscard]] unsigned int getDimension() const override { return 3; }
-  [[nodiscard]] Geometry *copy() const override { return new ManifoldGeometry(*this); }
+  [[nodiscard]] std::unique_ptr<Geometry> copy() const override;
 
   [[nodiscard]] std::shared_ptr<const PolySet> toPolySet() const;
 
@@ -56,5 +56,5 @@ public:
   const manifold::Manifold& getManifold() const;
 
 private:
-  shared_ptr<manifold::Manifold> manifold_;
+  std::shared_ptr<manifold::Manifold> manifold_;
 };

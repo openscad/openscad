@@ -2,6 +2,7 @@
 #include "printutils.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "CGALHybridPolyhedron.h"
+#include "ManifoldGeometry.h"
 
 CGALCache *CGALCache::inst = nullptr;
 
@@ -9,7 +10,7 @@ CGALCache::CGALCache(size_t limit) : cache(limit)
 {
 }
 
-shared_ptr<const Geometry> CGALCache::get(const std::string& id) const
+std::shared_ptr<const Geometry> CGALCache::get(const std::string& id) const
 {
   const auto& N = this->cache[id]->N;
 #ifdef DEBUG
@@ -18,13 +19,14 @@ shared_ptr<const Geometry> CGALCache::get(const std::string& id) const
   return N;
 }
 
-bool CGALCache::acceptsGeometry(const shared_ptr<const Geometry>& geom) {
+bool CGALCache::acceptsGeometry(const std::shared_ptr<const Geometry>& geom) {
   return
-    dynamic_pointer_cast<const CGALHybridPolyhedron>(geom).get() ||
-    dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom).get();
+    std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom) ||
+    std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom) ||
+    std::dynamic_pointer_cast<const ManifoldGeometry>(geom);
 }
 
-bool CGALCache::insert(const std::string& id, const shared_ptr<const Geometry>& N)
+bool CGALCache::insert(const std::string& id, const std::shared_ptr<const Geometry>& N)
 {
   assert(acceptsGeometry(N));
   auto inserted = this->cache.insert(id, new cache_entry(N), N ? N->memsize() : 0);
@@ -66,7 +68,7 @@ void CGALCache::print()
   LOG("CGAL cache size in bytes: %1$d", this->cache.totalCost());
 }
 
-CGALCache::cache_entry::cache_entry(const shared_ptr<const Geometry>& N)
+CGALCache::cache_entry::cache_entry(const std::shared_ptr<const Geometry>& N)
   : N(N)
 {
   if (print_messages_stack.size() > 0) this->msg = print_messages_stack.back();

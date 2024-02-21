@@ -1,0 +1,156 @@
+name: manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        type: choice
+        description: 'Build type'
+        options:
+        - Release
+        - Debug
+        required: true
+        default: Release
+      variant:
+        type: choice
+        description: 'Variant'
+        options:
+        - GUI
+        - Headless
+        - NULLGL
+        - WASM
+        required: true
+        default: GUI
+      compiler:
+        type: choice
+        description: 'Compiler'
+        options:
+        - gcc
+        - clang
+        required: true
+        default: gcc
+      enable_experimental:
+        type: boolean
+        description: 'Experimental'
+        required: false
+        default: true
+      use_mimalloc:
+        type: boolean
+        description: 'Use mimalloc'
+        required: false
+        default: true
+      enable_sanitizers:
+        type: choice
+        description: 'Enable Sanitizers'
+        options:
+        - None
+        - MSAN
+        - ASAN
+        - TSAN
+        - UBSAN
+        required: true
+        default: None
+      use_builtin_opencsg:
+        type: boolean
+        description: 'Use built-in OpenCSG'
+        required: false
+        default: false
+      gl_wrangler:
+        type: choice
+        description: 'OpenGL Wrangler'
+        options:
+        - Default
+        - GLEW
+        - GLAD
+        required: true
+        default: Default
+      gl_interface:
+        type: choice
+        description: 'OpenGL Interface'
+        options:
+        - GLX
+        - EGL
+        required: true
+        default: GLX
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Inputs
+      run: echo "${{ toJSON(inputs) }}"
+    - name: Select compiler
+      run: |
+        echo "CC=clang" >> $GITHUB_ENV
+        echo "CXX=clang++" >> $GITHUB_ENV
+        echo "LD=lld" >> $GITHUB_ENV
+      if: ${{ inputs.compiler == 'clang' }}
+    - name: Select variant
+      run: |
+        case ${{ inputs.variant }} in
+        Headless) echo "CMAKE_EXTRA=-DHEADLESS=1" >> $GITHUB_ENV ;;
+        NULLGL) echo "CMAKE_EXTRA=-DNULLGL=1" >> $GITHUB_ENV ;;
+        WASM) echo "CMAKE_EXTRA=-DWASM=1" >> $GITHUB_ENV ;;
+        esac
+    - name: Select sanitizer
+      run: |
+        case ${{ inputs.enable_sanitizers }} in
+        MSAN) echo "CMAKE_EXTRA=-DSANITIZE_MEMORY=1" >> $GITHUB_ENV ;;
+        ASAN) echo "CMAKE_EXTRA=-DSANITIZE_ADDRESS=1" >> $GITHUB_ENV ;;
+        TSAN) echo "CMAKE_EXTRA=-DSANITIZE_THREAD=1" >> $GITHUB_ENV ;;
+        UBSAN) echo "CMAKE_EXTRA=-DSANITIZE_UNDEFINED=1" >> $GITHUB_ENV ;;
+        esac
+    - name: Select OpenGL wrangler
+      run: |
+        case ${{ inputs.gl_wrangler }} in
+        GLAD) echo "CMAKE_EXTRA=-DUSE_GLAD=1" >> $GITHUB_ENV ;;
+        GLEW) echo "CMAKE_EXTRA=-DUSE_GLEW=1" >> $GITHUB_ENV ;;
+        esac
+    - name: Select OpenGL interface
+      run: |
+        case ${{ inputs.gl_interface }} in
+        EGL) echo "CMAKE_EXTRA=-DENABLE_EGL=1" >> $GITHUB_ENV ;;
+        esac
+    - uses: kenchan0130/actions-system-info@master
+      id: system-info
+    - name: Print System Info
+      run: |
+        OUTPUTS=(
+          "CPU Core: ${{ steps.system-info.outputs.cpu-core }}"
+          "CPU Model: ${{ steps.system-info.outputs.cpu-model }}"
+          "Hostname: ${{ steps.system-info.outputs.hostname }}"
+          "Kernel release: ${{ steps.system-info.outputs.kernel-release }}"
+          "Kernel version: ${{ steps.system-info.outputs.kernel-version }}"
+          "Name: ${{ steps.system-info.outputs.name }}"
+          "Platform: ${{ steps.system-info.outputs.platform }}"
+          "Release: ${{ steps.system-info.outputs.release }}"
+          "Total memory bytes: ${{ steps.system-info.outputs.totalmem }}"
+        )
+        for OUTPUT in "${OUTPUTS[@]}";do
+          echo "${OUTPUT}"
+        done
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    - name: Install dependencies
+      run: ./scripts/github-ci-linux-get-dependencies.sh kinetic
+    - name: Dependency fixup
+      run: sudo apt-get install gettext
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Build
+      run: |
+        cmake ${CMAKE_EXTRA} -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DUSE_MIMALLOC=${{ inputs.use_mimalloc }} -DUSE_BUILTIN_OPENCSG=${{ inputs.use_builtin_opencsg }} -B b .
+        cmake --build b -j 2
+        echo "Build exit code: $?"
+    - name: Test
+      run: ./scripts/github-ci.sh test
+      if: ${{ ! inputs.enable_wasm }} 
+    - name: Upload Test Result Report
+      uses: actions/upload-artifact@v4
+      if: ${{ always() }}
+      with:
+        name: Test Result Report (${{ matrix.os }})
+        path: |
+          b/Testing/Temporary/*_report.html
+          b/Testing/Temporary/LastTest.log

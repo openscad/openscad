@@ -16,8 +16,6 @@
 #include "str_utf8_wrapper.h"
 #include "UndefType.h"
 
-#include "memory.h"
-
 class tostring_visitor;
 class tostream_visitor;
 class Expression;
@@ -126,10 +124,11 @@ protected:
       size_type embed_excess = 0; // Keep count of the number of embedded elements *excess of* vec.size()
       class EvaluationSession *evaluation_session = nullptr; // Used for heap size bookkeeping. May be null for vectors of known small maximum size.
       [[nodiscard]] size_type size() const { return vec.size() + embed_excess;  }
+      [[nodiscard]] bool empty() const { return vec.empty() && embed_excess == 0;  }
     };
     using vec_t = VectorObject::vec_t;
 public:
-    shared_ptr<VectorObject> ptr;
+    std::shared_ptr<VectorObject> ptr;
 protected:
 
     // A Deleter is used on the shared_ptrs to avoid stack overflow in cases
@@ -142,7 +141,7 @@ protected:
     void flatten() const; // flatten replaces VectorObject::vec with a new vector
                           // where any embedded elements are copied directly into the top level vec,
                           // leaving only true elements for straightforward indexing by operator[].
-    explicit VectorType(const shared_ptr<VectorObject>& copy) : ptr(copy) { } // called by clone()
+    explicit VectorType(const std::shared_ptr<VectorObject>& copy) : ptr(copy) { } // called by clone()
 public:
     using size_type = VectorObject::size_type;
     static const VectorType EMPTY;
@@ -216,10 +215,14 @@ public:
     [[nodiscard]] VectorType clone() const { return VectorType(this->ptr); } // Copy explicitly only when necessary
     static Value Empty() { return VectorType(nullptr); }
 
+    void reserve(size_t size) {
+      ptr->vec.reserve(size);
+    }
+
     [[nodiscard]] const_iterator begin() const { return iterator(ptr.get()); }
     [[nodiscard]] const_iterator   end() const { return iterator(ptr.get(), true); }
     [[nodiscard]] size_type size() const { return ptr->size(); }
-    [[nodiscard]] bool empty() const { return ptr->vec.empty(); }
+    [[nodiscard]] bool empty() const { return ptr->empty(); }
     // const accesses to VectorObject require .clone to be move-able
     const Value& operator[](size_t idx) const {
       if (idx < this->size()) {
@@ -245,7 +248,7 @@ public:
   class EmbeddedVectorType : public VectorType
   {
 private:
-    explicit EmbeddedVectorType(const shared_ptr<VectorObject>& copy) : VectorType(copy) { } // called by clone()
+    explicit EmbeddedVectorType(const std::shared_ptr<VectorObject>& copy) : VectorType(copy) { } // called by clone()
 public:
     EmbeddedVectorType(class EvaluationSession *session) : VectorType(session) {}
     EmbeddedVectorType(const EmbeddedVectorType&) = delete;
@@ -267,10 +270,10 @@ protected:
     };
 
 private:
-    explicit ObjectType(const shared_ptr<ObjectObject>& copy);
+    explicit ObjectType(const std::shared_ptr<ObjectObject>& copy);
 
 public:
-    shared_ptr<ObjectObject> ptr;
+    std::shared_ptr<ObjectObject> ptr;
     ObjectType(class EvaluationSession *session);
     [[nodiscard]] ObjectType clone() const;
     [[nodiscard]] const Value& get(const std::string& key) const;

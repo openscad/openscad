@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <vector>
 #include "linalg.h"
 
@@ -42,5 +43,5 @@ public:
 
   void fixup_path_direction();
   [[nodiscard]] std::string dump() const;
-  [[nodiscard]] class Polygon2d *toPolygon2d() const;
+  [[nodiscard]] std::unique_ptr<class Polygon2d> toPolygon2d() const;
 };

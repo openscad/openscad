@@ -24,7 +24,7 @@
  *
  */
 
-#include "import.h"
+#include "io/import.h"
 #include "ImportNode.h"
 
 #include "module.h"
@@ -39,7 +39,7 @@
 #include "DxfData.h"
 #include "Parameters.h"
 #include "printutils.h"
-#include "fileutils.h"
+#include "io/fileutils.h"
 #include "Feature.h"
 #include "handle_dep.h"
 #include "boost-utils.h"
@@ -52,9 +52,6 @@ namespace fs = boost::filesystem;
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #include <cstdint>
-
-extern PolySet *import_amf(const std::string&, const Location& loc);
-extern Geometry *import_3mf(const std::string&, const Location& loc);
 
 static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children, ImportType type)
 {
@@ -171,9 +168,9 @@ static std::shared_ptr<AbstractNode> builtin_import_dxf(const ModuleInstantiatio
 /*!
    Will return an empty geometry if the import failed, but not nullptr
  */
-const Geometry *ImportNode::createGeometry() const
+std::unique_ptr<const Geometry> ImportNode::createGeometry() const
 {
-  Geometry *g = nullptr;
+  std::unique_ptr<Geometry> g;
   auto loc = this->modinst->location();
 
   switch (this->type) {
@@ -214,10 +211,10 @@ const Geometry *ImportNode::createGeometry() const
 #endif
   default:
     LOG(message_group::Error, "Unsupported file format while trying to import file '%1$s', import() at line %2$d", this->filename, loc.firstLine());
-    g = new PolySet(3);
+    g = std::make_unique<PolySet>(3);
   }
 
-  if (g) g->setConvexity(this->convexity);
+  g->setConvexity(this->convexity);
   return g;
 }
 

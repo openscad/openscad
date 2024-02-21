@@ -36,6 +36,9 @@ public:
   bool save(const char *filename) const override;
   void resetView();
   void viewAll();
+  void selectPoint(int x, int y);
+  std::vector<SelectedObject> findObject(int x, int y);
+  int measure_state;
 
 public slots:
   void ZoomIn();
@@ -51,6 +54,7 @@ public:
   QLabel *statusLabel;
 
   void zoom(double v, bool relative);
+  void zoomFov(double v);
   void zoomCursor(int x, int y, int zoom);
   void rotate(double x, double y, double z, bool relative);
   void rotate2(double x, double y, double z);
@@ -87,7 +91,8 @@ private slots:
 signals:
   void cameraChanged();
   void resized();
-  void doSelectObject(QPoint screen_coordinate);
+  void doRightClick(QPoint screen_coordinate);
+  void doLeftClick(QPoint screen_coordinate);
 };
 
 /* These are defined in QLGView2.cc.  See the commentary there. */
