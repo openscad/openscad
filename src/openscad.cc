@@ -550,7 +550,6 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
   auto did_part_export = false;
   auto result = 0;
-  // TODO if there is a part at the top level, do this
   for (auto& c : root_children) {
     if (c->name() == "part") {
       auto c2 = dynamic_cast<const PartNode*>(c.get());
@@ -566,7 +565,6 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
         part_filename += fs::path(solid_name);
         part_filename += output_file.extension();
         auto part_filename_str = part_filename.generic_string();
-        // TODO how to report multiple exports?
         result |= render_and_export(tree, c, solid_name, curFormat, cmd, fparent, part_filename_str, camera, root_file, fpath);
       }
     }
