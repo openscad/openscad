@@ -293,7 +293,10 @@ public:
 
     // Halffacets
     glGenBuffers(1, &halffacets_vertices_vbo);
-    VertexArray halffacets_array(std::make_unique<VertexStateFactory>(), halffacets_states, halffacets_vertices_vbo, 0);
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      glGenBuffers(1, &halffacets_elements_vbo);
+    }
+    VertexArray halffacets_array(std::make_unique<VertexStateFactory>(), halffacets_states, halffacets_vertices_vbo, halffacets_elements_vbo);
     halffacets_array.addSurfaceData();
     halffacets_array.writeSurface();
 

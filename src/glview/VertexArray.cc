@@ -195,6 +195,10 @@ void VertexArray::createInterleavedVBOs()
   if (useElements()) {
     GL_TRACE("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, %d)", elements_vbo_);
     GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_vbo_));
+    if (elements_size_ == 0) {
+      GL_TRACE("glBufferData(GL_ELEMENT_ARRAY_BUFFER, %d, %p, GL_STATIC_DRAW)", elements_.sizeInBytes() % (void *)nullptr);
+      GL_CHECKD(glBufferData(GL_ELEMENT_ARRAY_BUFFER, elements_.sizeInBytes(), nullptr, GL_STATIC_DRAW));
+    }
     size_t last_size = 0;
     for (const auto& e : elements_.attributes()) {
       GL_TRACE("glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, %d, %d, %p)", last_size % e->sizeInBytes() % (void *)e->toBytes());
