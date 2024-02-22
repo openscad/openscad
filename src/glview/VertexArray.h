@@ -43,8 +43,6 @@ public:
   [[nodiscard]] virtual GLenum glType() const = 0;
   // Return pointer to the raw bytes of the element vector
   [[nodiscard]] virtual const GLbyte *toBytes() const = 0;
-  // Append data to the end of the attribute
-  virtual void append(const IAttributeData& data) = 0;
   // Clear the entire attribute
   virtual void clear() = 0;
   // Remove data from the end of the attribute
@@ -92,14 +90,6 @@ public:
   [[nodiscard]] inline size_t sizeofAttribute() const override { return sizeof(T) * C; }
   [[nodiscard]] inline size_t sizeInBytes() const override { return data_.size() * sizeof(T); }
   [[nodiscard]] inline GLenum glType() const override { return E; }
-  void append(const IAttributeData& data) override {
-    const auto *from = dynamic_cast<const AttributeData<T, C, E> *>(&data);
-    if (from != nullptr) {
-      data_.insert(data_.end(), from->data_.begin(), from->data_.end());
-    } else {
-      assert(false && "AttributeData append type mismatch!!!");
-    }
-  }
   void clear() override { data_.clear(); }
   void remove(size_t count) override { data_.erase(data_.end() - (count * C), data_.end()); }
   [[nodiscard]] inline const GLbyte *toBytes() const override { return (GLbyte *)(data_.data()); }
@@ -161,14 +151,13 @@ public:
     color_data_ = std::shared_ptr<IAttributeData>(attributes_.back());
   }
 
-  void append(const VertexData& data);
   void clear() { for (auto& a : attributes_) a->clear(); }
   // Remove the last n interleaved vertices
   void remove(size_t count = 1);
 
   // Return reference to internal IAttributeData vector
   [[nodiscard]] inline const std::vector<std::shared_ptr<IAttributeData>>& attributes() const { return attributes_; }
-  // Return reference to IAttributeData
+  // Return reference to the last added IAttributeData. This is typically where elements data is stored.
   [[nodiscard]] inline const std::shared_ptr<IAttributeData> attributeData() const { if (attributes_.size()) return attributes_.back(); else return nullptr; }
   // Return reference to position attribute data
   [[nodiscard]] inline const std::shared_ptr<IAttributeData>& positionData() const { return position_data_; }
@@ -236,13 +225,8 @@ class VertexArray
 {
 public:
   using CreateVertexCallback = std::function<void (VertexArray& vertex_array,
-                                                   const std::array<Vector3d, 3>& points,
-                                                   const std::array<Vector3d, 3>& normals,
-                                                   const Color4f& color,
                                                    size_t active_point_index, size_t primitive_index,
-                                                   double z_offset, size_t shape_size,
-                                                   size_t shape_dimensions, bool outlines,
-                                                   bool mirror)>;
+                                                   size_t shape_size, bool outlines)>;
 
 
   VertexArray(std::unique_ptr<VertexStateFactory> factory, std::vector<std::shared_ptr<VertexState>>& states,
@@ -264,8 +248,6 @@ public:
     elements_.addAttributeData(std::move(data));
   }
 
-  // Append VertexArray data to this VertexArray
-  void append(const VertexArray& vertex_array);
   // Clear all data from the VertexArray
   void clear() { for (auto& v : vertices_) v->clear(); }
 
@@ -276,9 +258,9 @@ public:
                     const std::array<Vector3d, 3>& normals,
                     const Color4f& color,
                     size_t active_point_index = 0, size_t primitive_index = 0,
-                    double z_offset = 0, size_t shape_size = 0,
-                    size_t shape_dimensions = 0, bool outlines = false,
-                    bool mirror = false, const CreateVertexCallback& vertex_callback = nullptr);
+                    size_t shape_size = 0,
+                    bool outlines = false, bool mirror = false,
+                    const CreateVertexCallback& vertex_callback = nullptr);
 
   // Return reference to the VertexStates
   inline std::vector<std::shared_ptr<VertexState>>& states() { return states_; }
