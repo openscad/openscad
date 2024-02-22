@@ -710,7 +710,11 @@ list(APPEND THROWNTOGETHERTEST_FILES ${CGALPNGTEST_FILES} ${PRUNE_TEST})
 
 list(APPEND CGALSTLSANITYTEST_FILES ${TEST_SCAD_DIR}/misc/normal-nan.scad)
 
-list(APPEND EXPORT_STL_TEST_FILES ${TEST_SCAD_DIR}/stl/stl-export.scad)
+list(APPEND EXPORT_STL_TEST_FILES
+  ${TEST_SCAD_DIR}/stl/stl-export.scad
+  ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-edge.scad
+  ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-vertex.scad
+)
 
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-export.scad)
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-import-export_dodecahedron.scad)
