@@ -141,13 +141,12 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
                  results.size() >= 4) {
         try {
           for (int v = 0; v < 3; ++v) {
-            vdata.at(i).at(v) =
-              boost::lexical_cast<double>(results[v + 1]);
+            vdata.at(i).at(v) = boost::lexical_cast<double>(results[v + 1]);
           }
           if (++i == 3) {
-            builder.appendPoly(3);
-            for (int j=0;j<3;j++) {
-              builder.appendVertex(Vector3d(vdata[j][0], vdata[j][1], vdata[j][2]));
+            builder.beginPolygon(3);
+            for(int j=0;j<3;j++) {
+              builder.addVertex(Vector3d(vdata[j][0], vdata[j][1], vdata[j][2]));
             }
           }
         } catch (const boost::bad_lexical_cast& blc) {
@@ -170,7 +169,7 @@ std::unique_ptr<PolySet> import_stl(const std::string& filename, const Location&
           if (f.eof()) break;
           throw;
         }
-        builder.appendPoly({
+        builder.appendPolygon({
                 Vector3d(facet.data.x1, facet.data.y1, facet.data.z1),
                 Vector3d(facet.data.x2, facet.data.y2, facet.data.z2),
                 Vector3d(facet.data.x3, facet.data.y3, facet.data.z3)
