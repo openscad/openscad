@@ -14,12 +14,12 @@
 
 namespace {
 
-GLuint compileShader(const std::string& name) {
+GLuint compileShader(const std::string& name, GLuint shader_type) {
   auto shader_source = Renderer::loadShaderSource(name);
-  GLuint shader = glCreateShader(GL_VERTEX_SHADER);
+  GLuint shader = glCreateShader(shader_type);
   auto *c_source = shader_source.c_str();
   glShaderSource(shader, 1, (const GLchar **)&c_source, nullptr);
-  IF_GL_CHECK(glCompileShader(shader)) return 0;
+  glCompileShader(shader);
   GLint status;
   glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
   if (!status) {
@@ -64,14 +64,19 @@ Renderer::Renderer()
 void Renderer::setupShader() {
   renderer_shader.progid = 0;
 
-  auto fs = compileShader("Preview.vert");
-  auto vs = compileShader("Preview.frag");
-
-  if (!fs || !vs) {
+  auto fs = compileShader("Preview.vert", GL_VERTEX_SHADER);
+  if (!fs) {
     // FIXME: Print to error
-    LOG("OpenGL Error: Error compiling Preview shaders");
+    LOG("OpenGL Error: Error compiling Preview vertex shader");
     return;
   }
+  auto vs = compileShader("Preview.frag", GL_FRAGMENT_SHADER);
+  if (!vs) {
+    // FIXME: Print to error
+    LOG("OpenGL Error: Error compiling Preview fragment shader");
+    return;
+  }
+
 
   auto edgeshader_prog = glCreateProgram();
   glAttachShader(edgeshader_prog, vs);
