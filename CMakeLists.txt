@@ -350,7 +350,7 @@ endif()
 if(ENABLE_CGAL)
   # Note: Saving CMAKE_MODULE_PATH as CGAL will overwrite it.
   # Reconsider this after CGAL 5.4: https://github.com/CGAL/cgal/pull/6029
-  set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+  set(OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
   set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
   # Some older versions do not match with CGAL 5.0 REQUIRED, so we check after.
   find_package(CGAL REQUIRED COMPONENTS Core)
@@ -373,9 +373,9 @@ if(ENABLE_CGAL)
   # revert any changes to module path from CGAL_Macros.cmake; see note above
   # Commented out code should work in CGAL>= 5.4
   #if (CGAL_MODULE_PATH_IS_SET)
-  #  set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+  #  set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
   #endif()
-  set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+  set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
 endif(ENABLE_CGAL)
 
 find_package(LibZip REQUIRED QUIET)
