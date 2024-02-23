@@ -861,6 +861,7 @@ if(EXPERIMENTAL AND ENABLE_TBB)
     -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_TBB
   )
   find_package(TBB REQUIRED)
+  message(STATUS "TBB: ${TBB_VERSION}")
   target_link_libraries(OpenSCAD PRIVATE TBB::tbb)
 endif()
 
