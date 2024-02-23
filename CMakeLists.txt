@@ -860,7 +860,18 @@ if(EXPERIMENTAL AND ENABLE_TBB)
     -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_TBB
     -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_TBB
   )
-  find_package(TBB REQUIRED)
+  find_package(TBB QUIET)
+  if (NOT TBB_FOUND AND PKG_CONFIG_FOUND)
+    pkg_check_modules(TBB tbb REQUIRED)
+    add_library(TBB::tbb UNKNOWN IMPORTED)
+    set_target_properties(TBB::tbb
+      PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${TBB_INCLUDE_DIRS}")
+    set_target_properties(TBB::tbb
+      PROPERTIES INTERFACE_LINK_LIBRARIES "${TBB_LINK_LIBRARIES}")
+    list(GET TBB_LINK_LIBRARIES 0 TBB_IMPORTED_LOCATION)
+    set_target_properties(TBB::tbb
+      PROPERTIES IMPORTED_LOCATION "${TBB_IMPORTED_LOCATION}")
+  endif()
   message(STATUS "TBB: ${TBB_VERSION}")
   target_link_libraries(OpenSCAD PRIVATE TBB::tbb)
 endif()
