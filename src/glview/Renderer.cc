@@ -26,7 +26,7 @@ GLuint compileShader(const std::string& name, GLuint shader_type) {
     int loglen;
     char logbuffer[1000];
     glGetShaderInfoLog(shader, sizeof(logbuffer), &loglen, logbuffer);
-    PRINTDB("OpenGL Program Compile Vertex Shader Error:\n%s", logbuffer);
+    PRINTDB("OpenGL shader compilation error:\n%s", logbuffer);
     return 0;
   }
   return shader;
