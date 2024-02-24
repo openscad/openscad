@@ -47,7 +47,7 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"file", "layer", "origin", "scale"},
-                                            {"convexity", "angle", "rise"}
+                                            {"convexity", "angle", "height"}
                                             );
 
   node->fn = parameters["$fn"].toDouble();
@@ -72,14 +72,14 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
   node->angle = 360;
   parameters["angle"].getFiniteDouble(node->angle);
 
-  node->rise = 0;
-  parameters["rise"].getFiniteDouble(node->rise);
+  node->height = 0;
+  parameters["height"].getFiniteDouble(node->height);
 
   if (node->convexity <= 0) node->convexity = 2;
 
   if (node->scale <= 0) node->scale = 1;
 
-  if (node->rise == 0 && ((node->angle <= -360) || (node->angle > 360))) node->angle = 360;
+  if (node->height == 0 && ((node->angle <= -360) || (node->angle > 360))) node->angle = 360;
 
   if (node->filename.empty()) {
     children.instantiate(node);
@@ -110,7 +110,7 @@ std::string RotateExtrudeNode::toString() const
   stream <<
     "angle = " << this->angle << ", "
     "convexity = " << this->convexity << ", "
-    "rise = " << this->rise << ", "
+    "height = " << this->height << ", "
     "$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 
   return stream.str();
