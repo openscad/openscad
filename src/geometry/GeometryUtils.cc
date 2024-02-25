@@ -508,12 +508,12 @@ Transform3d GeometryUtils::getResizeTransform(const BoundingBox &bbox, const Vec
 
 // Return or force creation of backend-specific geometry.
 // Will prefer Manifold if multiple backends are enabled.
-// geom must be a 3D geometry and must be a PolySet or already the correct backend-specific geometry
+// geom must be a 3D PolySet or the correct backend-specific geometry.
 std::shared_ptr<const Geometry> GeometryUtils::getBackendSpecificGeometry(const std::shared_ptr<const Geometry>& geom)
 {
 #if ENABLE_MANIFOLD
   if (Feature::ExperimentalManifold.is_enabled()) {
-    if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+    if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
       return ManifoldUtils::createMutableManifoldFromPolySet(*ps);
     } else if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
       return geom;
