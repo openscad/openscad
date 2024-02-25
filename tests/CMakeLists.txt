@@ -1046,6 +1046,24 @@ add_cmdline_test(offcgalpngtest        SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCA
 add_cmdline_test(dxfpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=DXF --render=force EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D} ${SCAD_DXF_FILES})
 add_cmdline_test(svgpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=SVG --render=force EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D} ${SCAD_SVG_FILES})
 
+# Manifold corner cases
+set(FILES_MANIFOLD_CORNER_CASES
+  ${TEST_SCAD_DIR}/3D/misc/tetracyl-slim.scad
+  ${TEST_SCAD_DIR}/3D/misc/tetracyl-touch-edge.scad
+  ${TEST_SCAD_DIR}/3D/misc/tetracyl-touch-vertex.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-edge-nonmanifold.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-edge.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-vertex-nonmanifold.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-vertex.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-edge-nonmanifold.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-edge.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-face-nonmanifold.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-face.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-vertex-nonmanifold.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-vertex.scad
+)
+add_cmdline_test(3mfpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=3MF --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
+
 # Failing tests
 add_failing_test(stlfailedtest         SUFFIX stl  FILES ${TEST_SCAD_DIR}/misc/empty-union.scad ARGS --retval=1)
 add_failing_test(offfailedtest         SUFFIX off  FILES ${TEST_SCAD_DIR}/misc/empty-union.scad ARGS --retval=1)
