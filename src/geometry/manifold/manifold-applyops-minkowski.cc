@@ -175,7 +175,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         t.reset();
 
         CGALUtils::triangulateFaces(mesh);
-        return ManifoldUtils::createMutableManifoldFromSurfaceMesh(mesh);
+        return ManifoldUtils::createManifoldFromSurfaceMesh(mesh);
       };
 
       std::vector<std::shared_ptr<const ManifoldGeometry>> result_parts(part_points[0].size() * part_points[1].size());

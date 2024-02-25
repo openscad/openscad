@@ -160,39 +160,58 @@ std::shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
 template std::shared_ptr<CGAL::Polyhedron_3<CGAL_Kernel3>> ManifoldGeometry::toPolyhedron() const;
 #endif
 
-std::shared_ptr<manifold::Manifold> binOp(ManifoldGeometry& lhs, ManifoldGeometry& rhs, manifold::OpType opType) {
-  return std::make_shared<manifold::Manifold>(lhs.getManifold().Boolean(rhs.getManifold(), opType));
+std::shared_ptr<manifold::Manifold> binOp(const manifold::Manifold& lhs, const manifold::Manifold& rhs, manifold::OpType opType) {
+  return std::make_shared<manifold::Manifold>(lhs.Boolean(rhs, opType));
+}
+
+ManifoldGeometry ManifoldGeometry::operator+(const ManifoldGeometry& other) const {
+  return {binOp(*this->manifold_, *other.manifold_, manifold::OpType::Add)};
 }
 
 void ManifoldGeometry::operator+=(ManifoldGeometry& other) {
-  manifold_ = binOp(*this, other, manifold::OpType::Add);
+  manifold_ = binOp(*this->manifold_, *other.manifold_, manifold::OpType::Add);
+}
+
+ManifoldGeometry ManifoldGeometry::operator*(const ManifoldGeometry& other) const {
+  return {binOp(*this->manifold_, *other.manifold_, manifold::OpType::Intersect)};
 }
 
 void ManifoldGeometry::operator*=(ManifoldGeometry& other) {
-  manifold_ = binOp(*this, other, manifold::OpType::Intersect);
+  manifold_ = binOp(*this->manifold_, *other.manifold_, manifold::OpType::Intersect);
+}
+
+ManifoldGeometry ManifoldGeometry::operator-(const ManifoldGeometry& other) const {
+  return {binOp(*this->manifold_, *other.manifold_, manifold::OpType::Subtract)};
 }
 
 void ManifoldGeometry::operator-=(ManifoldGeometry& other) {
-  manifold_ = binOp(*this, other, manifold::OpType::Subtract);
+  manifold_ = binOp(*this->manifold_, *other.manifold_, manifold::OpType::Subtract);
+}
+
+std::shared_ptr<manifold::Manifold> minkowskiOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs) {
+// FIXME: How to deal with operation not supported?
+#ifdef ENABLE_CGAL
+  auto lhs_nef = std::shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*lhs.toPolySet()));
+  auto rhs_nef = std::shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*rhs.toPolySet()));
+  if (lhs_nef->isEmpty() || rhs_nef->isEmpty()) {
+    return {};
+  }
+  lhs_nef->minkowski(*rhs_nef);
+
+  auto ps = PolySetUtils::getGeometryAsPolySet(lhs_nef);
+  if (!ps) return {};
+  else {
+    return ManifoldUtils::trustedPolySetToManifold(*ps);
+  }
+#endif
 }
 
 void ManifoldGeometry::minkowski(ManifoldGeometry& other) {
-// FIXME: How to deal with operation not supported?
-#ifdef ENABLE_CGAL
-  auto lhs = std::shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*this->toPolySet()));
-  auto rhs = std::shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*other.toPolySet()));
-  if (lhs->isEmpty() || rhs->isEmpty()) {
-    clear();
-    return;
-  }
-  lhs->minkowski(*rhs);
+  manifold_ = minkowskiOp(*this, other);
+}
 
-  auto ps = PolySetUtils::getGeometryAsPolySet(lhs);
-  if (!ps) clear();
-  else {
-    manifold_ = ManifoldUtils::trustedPolySetToManifold(*ps);
-  }
-#endif
+ManifoldGeometry ManifoldGeometry::minkowski(const ManifoldGeometry& other) const {
+  return {minkowskiOp(*this, other)};
 }
 
 void ManifoldGeometry::transform(const Transform3d& mat) {
