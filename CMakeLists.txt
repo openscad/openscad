@@ -350,7 +350,7 @@ endif()
 if(ENABLE_CGAL)
   # Note: Saving CMAKE_MODULE_PATH as CGAL will overwrite it.
   # Reconsider this after CGAL 5.4: https://github.com/CGAL/cgal/pull/6029
-  set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+  set(OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
   set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
   # Some older versions do not match with CGAL 5.0 REQUIRED, so we check after.
   find_package(CGAL REQUIRED COMPONENTS Core)
@@ -373,9 +373,9 @@ if(ENABLE_CGAL)
   # revert any changes to module path from CGAL_Macros.cmake; see note above
   # Commented out code should work in CGAL>= 5.4
   #if (CGAL_MODULE_PATH_IS_SET)
-  #  set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+  #  set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
   #endif()
-  set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+  set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
 endif(ENABLE_CGAL)
 
 find_package(LibZip REQUIRED QUIET)
@@ -860,7 +860,19 @@ if(EXPERIMENTAL AND ENABLE_TBB)
     -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_TBB
     -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_TBB
   )
-  find_package(TBB REQUIRED)
+  find_package(TBB QUIET)
+  if (NOT TBB_FOUND AND PKG_CONFIG_FOUND)
+    pkg_check_modules(TBB tbb REQUIRED)
+    add_library(TBB::tbb UNKNOWN IMPORTED)
+    set_target_properties(TBB::tbb
+      PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${TBB_INCLUDE_DIRS}")
+    set_target_properties(TBB::tbb
+      PROPERTIES INTERFACE_LINK_LIBRARIES "${TBB_LINK_LIBRARIES}")
+    list(GET TBB_LINK_LIBRARIES 0 TBB_IMPORTED_LOCATION)
+    set_target_properties(TBB::tbb
+      PROPERTIES IMPORTED_LOCATION "${TBB_IMPORTED_LOCATION}")
+  endif()
+  message(STATUS "TBB: ${TBB_VERSION}")
   target_link_libraries(OpenSCAD PRIVATE TBB::tbb)
 endif()
 
