@@ -408,8 +408,13 @@ std::unique_ptr<const Geometry> PolyhedronNode::createGeometry() const
   p->setConvexity(this->convexity);
   p->vertices=this->points;
   p->indices=this->faces;
-  for (auto &poly : p->indices)
+  p->isTriangular = true;
+  for (auto &poly : p->indices) {
     std::reverse(poly.begin(),poly.end());
+    if (p->isTriangular && poly.size() > 3) {
+      p->isTriangular = false;
+    }
+  }
   return p;
 }
 
@@ -474,6 +479,7 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
         }
         pointIndexIndex++;
       }
+      // FIXME: Print an error message if < 3 vertices are specified
       if (face.size() >= 3) {
         node->faces.push_back(std::move(face));
       }
