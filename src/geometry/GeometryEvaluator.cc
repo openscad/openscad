@@ -1258,17 +1258,26 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
 
   double min_x = 0;
   double max_x = 0;
+  double min_y = std::numeric_limits<double>::max();
+  double max_y = std::numeric_limits<double>::min();
   unsigned int fragments = 0;
   for (const auto& o : poly.outlines()) {
     for (const auto& v : o.vertices) {
       min_x = fmin(min_x, v[0]);
       max_x = fmax(max_x, v[0]);
+      min_y = fmin(min_y, v[1]);
+      max_y = fmax(max_y, v[1]);
     }
   }
 
   if ((max_x - min_x) > max_x && (max_x - min_x) > fabs(min_x)) {
     LOG(message_group::Error, "all points for rotate_extrude() must have the same X coordinate sign (range is %1$.2f -> %2$.2f)", min_x, max_x);
     return nullptr;
+  }
+
+  double rise_per_rev = node.height/(node.angle/360.0);
+  if ((node.height != 0) && (std::abs(node.angle) > 360) && (rise_per_rev < (max_y-min_y))){
+    LOG(message_group::Warning, "Rise-per-rotation (%1$2f) is less than total y-height (%2$.2f) of extruded polygon. This may lead to self-intersection.", rise_per_rev, max_y - min_y);
   }
 
   fragments = (unsigned int)std::ceil(fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1));
