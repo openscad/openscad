@@ -36,6 +36,7 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
     "OBJ File line %1$s, %2$s line '%3$s' importing file '%4$s'",
     lineno, errstr, line, filename);
   };
+  std::vector<int> vertex_map;	
 
   while (!f.eof()) {
     lineno++;
@@ -51,7 +52,7 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
         for (int i = 0; i < 3; i++) {
           v[i]= boost::lexical_cast<double>(results[i + 1]); 
         }
-        builder.vertexIndex(v); // expect to get subsequent numbers starting from zero
+        vertex_map.push_back(builder.vertexIndex(v));
       } catch (const boost::bad_lexical_cast& blc) {
         AsciiError("can't parse vertex");
         return std::make_unique<PolySet>(3);
@@ -68,8 +69,8 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
           LOG(message_group::Warning, "Invalid Face index in File %1$s in Line %2$d", filename, lineno);
 	else {
 	  int ind=boost::lexical_cast<int>(wordindex[0]);
-          if(ind >= 1 && ind  <= builder.numVertices()) {
-            builder.appendVertex(ind-1);
+          if(ind >= 1 && ind  <= vertex_map.size()) {
+            builder.appendVertex(vertex_map[ind-1]);
 	  } else {  
             LOG(message_group::Warning, "Index %1$d out of range in Line %2$d", filename, lineno);
 	  }
