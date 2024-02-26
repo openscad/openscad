@@ -1065,6 +1065,7 @@ set(FILES_MANIFOLD_CORNER_CASES
 add_cmdline_test(3mfpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=3MF --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
 add_cmdline_test(objpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OBJ --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
 add_cmdline_test(offpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OFF --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
+add_cmdline_test(stlpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=STL --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
 
 set_tests_properties(
   # Manifold construction error. Probably due to polygon soup strategy
@@ -1074,6 +1075,8 @@ set_tests_properties(
   objpngtest_polyhedron-self-touch-face
   offpngtest_polyhedron-self-touch-face-nonmanifold
   offpngtest_polyhedron-self-touch-face
+  stlpngtest_polyhedron-self-touch-face-nonmanifold
+  stlpngtest_polyhedron-self-touch-face
   PROPERTIES DISABLED TRUE
 )
 
