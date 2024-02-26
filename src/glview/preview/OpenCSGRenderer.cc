@@ -152,7 +152,11 @@ void OpenCSGRenderer::createCSGVBOProducts(
                              elements_vbo);
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
-    add_shader_data(vertex_array);
+    if (getShader().progid != 0) {
+      add_shader_data(vertex_array);
+    } else {
+      LOG("Warning: Shader not available");
+    }
 
     size_t num_vertices = 0;
     for (const auto &csgobj : product.intersections) {
