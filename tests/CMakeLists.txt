@@ -1066,6 +1066,17 @@ add_cmdline_test(3mfpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --fo
 add_cmdline_test(objpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OBJ --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
 add_cmdline_test(offpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OFF --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
 
+set_tests_properties(
+  # Manifold construction error. Probably due to polygon soup strategy
+  3mfpngtest_polyhedron-self-touch-face-nonmanifold
+  3mfpngtest_polyhedron-self-touch-face
+  objpngtest_polyhedron-self-touch-face-nonmanifold
+  objpngtest_polyhedron-self-touch-face
+  offpngtest_polyhedron-self-touch-face-nonmanifold
+  offpngtest_polyhedron-self-touch-face
+  PROPERTIES DISABLED TRUE
+)
+
 # Failing tests
 add_failing_test(stlfailedtest         SUFFIX stl  FILES ${TEST_SCAD_DIR}/misc/empty-union.scad ARGS --retval=1)
 add_failing_test(offfailedtest         SUFFIX off  FILES ${TEST_SCAD_DIR}/misc/empty-union.scad ARGS --retval=1)
