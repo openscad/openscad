@@ -173,3 +173,19 @@ public:
   int convexity = 1;
 };
 
+class PartNode : public AbstractNode
+{
+public:
+  PartNode (const ModuleInstantiation *mi) : AbstractNode(mi) {}
+  std::string toString() const override
+  {
+    std::ostringstream stream;
+    stream << "part"
+           << "(name = " << solid_name
+           << ")";
+    return stream.str();
+  }
+  std::string name() const override { return "part"; }
+
+  std::string solid_name;
+};

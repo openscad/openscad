@@ -48,6 +48,7 @@
 #include "ParameterObject.h"
 #include "ParameterSet.h"
 #include "openscad_mimalloc.h"
+#include "primitives.h"
 #include <string>
 #include <vector>
 #include <fstream>
@@ -277,7 +278,7 @@ Camera get_camera(const po::variables_map& vm)
 #endif
 
 static bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned dimensions,
-                           FileFormat format, const bool is_stdout, const std::string& filename)
+                           FileFormat format, const bool is_stdout, const std::string& filename, const std::string& solid_name)
 {
   if (root_geom->getDimension() != dimensions) {
     LOG("Current top level object is not a %1$dD object.", dimensions);
@@ -292,6 +293,7 @@ static bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, uns
       .format = format,
       .displayName = filename,
       .fileName = filename,
+      .solidName = solid_name,
       .useStdOut = is_stdout,
     });
   return true;
@@ -335,6 +337,19 @@ struct CommandLine
 };
 
 int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file);
+
+int render_and_export(
+  Tree tree,
+  std::shared_ptr<const AbstractNode> root_node,
+  std::string solid_name,
+  FileFormat curFormat,
+  const CommandLine& cmd,
+  fs::path fparent,
+  std::string filename_str,
+  Camera camera,
+  SourceFile *root_file,
+  fs::path fpath
+);
 
 int cmdline(const CommandLine& cmd)
 {
@@ -523,8 +538,60 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   if (nextLocation) {
     LOG(message_group::Warning, *nextLocation, builtin_context->documentRoot(), "More than one Root Modifier (!)");
   }
-  Tree tree(root_node, fparent.string());
 
+  std::string solid_name = "OpenSCAD_Model";  // TODO move this to someplace the GUI can get it
+  // TODO do we want to check the root node?
+  auto root_children = root_node->getChildren();
+  auto root_name = root_node->name();
+  if (root_name == "part") {
+    auto rn = dynamic_cast<const PartNode*>(root_node.get());
+    solid_name = rn->solid_name;
+  }
+
+  auto did_part_export = false;
+  auto result = 0;
+  for (auto& c : root_children) {
+    if (c->name() == "part") {
+      auto c2 = dynamic_cast<const PartNode*>(c.get());
+      if (c2 != 0) {
+        solid_name = c2->solid_name;
+        did_part_export = true;
+        Tree tree(c, fparent.string());
+        auto output_file = fs::path(cmd.output_file);
+        auto part_filename = fs::path();
+        part_filename += output_file.parent_path();
+        part_filename /= output_file.stem();
+        part_filename += ".";
+        part_filename += fs::path(solid_name);
+        part_filename += output_file.extension();
+        auto part_filename_str = part_filename.generic_string();
+        result |= render_and_export(tree, c, solid_name, curFormat, cmd, fparent, part_filename_str, camera, root_file, fpath);
+      }
+    }
+  }
+
+  if (did_part_export == false) {
+    Tree tree(root_node, fparent.string());
+    return render_and_export(tree, root_node, solid_name, curFormat, cmd, fparent, filename_str, camera, root_file, fpath);
+  } else {
+    return result;
+  }
+}
+
+
+int render_and_export(
+  Tree tree,
+  std::shared_ptr<const AbstractNode> root_node,
+  std::string solid_name,
+  FileFormat curFormat,
+  const CommandLine& cmd,
+  fs::path fparent,
+  std::string filename_str,
+  Camera camera,
+  SourceFile *root_file,
+  fs::path fpath
+  )
+{
   if (curFormat == FileFormat::CSG) {
     // https://github.com/openscad/openscad/issues/128
     // When I use the csg ouptput from the command line the paths in 'import'
@@ -598,13 +665,13 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     }
 #endif
     if (is3D(curFormat)) {
-      if (!checkAndExport(root_geom, 3, curFormat, cmd.is_stdout, filename_str)) {
+      if (!checkAndExport(root_geom, 3, curFormat, cmd.is_stdout, filename_str, solid_name)) {
         return 1;
       }
     }
 
     if (is2D(curFormat)) {
-      if (!checkAndExport(root_geom, 2, curFormat, cmd.is_stdout, filename_str)) {
+      if (!checkAndExport(root_geom, 2, curFormat, cmd.is_stdout, filename_str, solid_name)) {
         return 1;
       }
     }
