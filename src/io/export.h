@@ -176,7 +176,8 @@ struct ViewOptions {
 
 class OffscreenView;
 
-std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera);
+std::shared_ptr<OffscreenView> create_offscreenview(Camera& camera);
+bool prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera, OffscreenView& glview);
 bool export_png(const std::shared_ptr<const class Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output);
 bool export_png(const OffscreenView& glview, std::ostream& output);
 bool export_param(SourceFile *root, const fs::path& path, std::ostream& output);
