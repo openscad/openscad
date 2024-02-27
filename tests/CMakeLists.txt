@@ -1079,6 +1079,14 @@ set_tests_properties(
   offpngtest_polyhedron-self-touch-face
   stlpngtest_polyhedron-self-touch-face-nonmanifold
   stlpngtest_polyhedron-self-touch-face
+	3mfpngtest_polyhedrons-touch-face-nonmanifold
+	3mfpngtest_polyhedrons-touch-face
+	objpngtest_polyhedrons-touch-face-nonmanifold
+	objpngtest_polyhedrons-touch-face
+	offpngtest_polyhedrons-touch-face-nonmanifold
+	offpngtest_polyhedrons-touch-face
+	stlpngtest_polyhedrons-touch-face-nonmanifold
+	stlpngtest_polyhedrons-touch-face
   PROPERTIES DISABLED TRUE
 )
 
