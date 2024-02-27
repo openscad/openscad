@@ -1055,6 +1055,8 @@ set(FILES_MANIFOLD_CORNER_CASES
   ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-edge.scad
   ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-vertex-nonmanifold.scad
   ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-vertex.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-face-nonmanifold.scad
+  ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-face.scad
   ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-edge-nonmanifold.scad
   ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-edge.scad
   ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-face-nonmanifold.scad
