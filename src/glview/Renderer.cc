@@ -81,7 +81,7 @@ void Renderer::setupShader() {
   auto edgeshader_prog = glCreateProgram();
   glAttachShader(edgeshader_prog, vs);
   glAttachShader(edgeshader_prog, fs);
-  IF_GL_CHECK(glLinkProgram(edgeshader_prog)) return;
+  glLinkProgram(edgeshader_prog);
   GLint status;
   glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);
   if (!status) {
