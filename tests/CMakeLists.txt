@@ -928,10 +928,10 @@ set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES dxfpngtest)
 # o csgpngtest: 1) Export to .csg, 2) import .csg and export to PNG (--render)
 # o monotonepngtest: Same as cgalpngtest but with the "Monotone" color scheme
 # o stlpngtest: Export to STL, Re-import and render to PNG (--render)
-# o stlcgalpngtest: Export to STL, Re-import and render to PNG (--render=cgal)
+# o stlcgalpngtest: Export to STL, Re-import and render to PNG (--render=force)
 # o offpngtest: Export to OFF, Re-import and render to PNG (--render)
-# o offcgalpngtest: Export to STL, Re-import and render to PNG (--render=cgal)
-# o dxfpngtest: Export to DXF, Re-import and render to PNG (--render=cgal)
+# o offcgalpngtest: Export to STL, Re-import and render to PNG (--render=force)
+# o dxfpngtest: Export to DXF, Re-import and render to PNG (--render=force)
 #
 
 add_cmdline_test(astdumptest OPENSCAD SUFFIX ast FILES
@@ -1004,10 +1004,10 @@ add_cmdline_test(lazyunion-dump        EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${
 add_cmdline_test(lazyunion-opencsg     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union)
 add_cmdline_test(lazyunion-cgalpng     EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_FILES} ARGS --enable=lazy-union --render)
 add_cmdline_test(lazyunion-monotonepng EXPERIMENTAL OPENSCAD SUFFIX png FILES ${LAZYUNION_3D_FILES} ARGS --colorscheme=Monotone --enable=lazy-union --render )
-add_cmdline_test(lazyunion-stlpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_ARG} --format=STL --enable=lazy-union --render=cgal)
-add_cmdline_test(lazyunion-offpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_ARG} --format=OFF --enable=lazy-union --render=cgal)
-add_cmdline_test(lazyunion-dxfpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=DXF --enable=lazy-union --render=cgal)
-add_cmdline_test(lazyunion-svgpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=SVG --enable=lazy-union --render=cgal)
+add_cmdline_test(lazyunion-stlpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_ARG} --format=STL --enable=lazy-union --render=force)
+add_cmdline_test(lazyunion-offpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_3D_FILES} EXPECTEDDIR lazyunion-monotonepng ARGS ${OPENSCAD_ARG} --format=OFF --enable=lazy-union --render=force)
+add_cmdline_test(lazyunion-dxfpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=DXF --enable=lazy-union --render=force)
+add_cmdline_test(lazyunion-svgpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=SVG --enable=lazy-union --render=force)
 
 add_cmdline_test(manifold-cgalpng      EXPERIMENTAL OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS} ARGS --enable=manifold --render)
 
@@ -1021,8 +1021,8 @@ add_cmdline_test(offpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP
 add_cmdline_test(amfpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=AMF)
 add_cmdline_test(3mfpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=3MF)
 add_cmdline_test(objpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=OBJ)
-add_cmdline_test(dxfpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_2D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=DXF --render=cgal)
-add_cmdline_test(svgpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_2D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=SVG --render=cgal)
+add_cmdline_test(dxfpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_2D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=DXF --render=force)
+add_cmdline_test(svgpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_2D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=SVG --render=force)
 add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SCAD_PDF_FILES} EXPECTEDDIR pdfexporttest ARGS ${OPENSCAD_ARG} --format=PDF KERNEL Square:2)
 
 # Corner-case Export/Import tests
@@ -1037,14 +1037,14 @@ add_cmdline_test(stlpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCA
 # cgalstlpngtest: CGAL STL output, normal rendering
 add_cmdline_test(stlcgalpngtest        SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=STL --require-manifold --render EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES})
 # cgalstlcgalpngtest: CGAL STL output, CGAL rendering
-add_cmdline_test(cgalstlcgalpngtest    SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=ASCIISTL --require-manifold --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_CGALCGAL_TEST_FILES})
+add_cmdline_test(cgalstlcgalpngtest    SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=ASCIISTL --require-manifold --render=force EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_CGALCGAL_TEST_FILES})
 
 # cgalbinstlcgalpngtest: CGAL binary STL output, CGAL rendering
-add_cmdline_test(cgalbinstlcgalpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=BINSTL --require-manifold --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_CGALCGAL_TEST_FILES})
+add_cmdline_test(cgalbinstlcgalpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=BINSTL --require-manifold --render=force EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_CGALCGAL_TEST_FILES})
 add_cmdline_test(offpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OFF --render EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
-add_cmdline_test(offcgalpngtest        SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OFF --render=cgal EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES})
-add_cmdline_test(dxfpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=DXF --render=cgal EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D} ${SCAD_DXF_FILES})
-add_cmdline_test(svgpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=SVG --render=cgal EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D} ${SCAD_SVG_FILES})
+add_cmdline_test(offcgalpngtest        SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OFF --render=force EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_CGAL_TEST_FILES})
+add_cmdline_test(dxfpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=DXF --render=force EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D} ${SCAD_DXF_FILES})
+add_cmdline_test(svgpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=SVG --render=force EXPECTEDDIR cgalpngtest SUFFIX png FILES ${FILES_2D} ${SCAD_SVG_FILES})
 
 # Failing tests
 add_failing_test(stlfailedtest         SUFFIX stl  FILES ${TEST_SCAD_DIR}/misc/empty-union.scad ARGS --retval=1)
@@ -1175,8 +1175,8 @@ add_cmdline_test(opencsgtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_T
 add_cmdline_test(throwntogethertest EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --preview=throwntogether --enable=textmetrics SUFFIX png)
 add_cmdline_test(csgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} EXPECTEDDIR cgalpngtest ARGS ${OPENSCAD_ARG} --format=csg --render --enable=textmetrics)
 add_cmdline_test(cgalpngtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} SUFFIX png ARGS --render --enable=textmetrics)
-add_cmdline_test(dxfpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=DXF --render=cgal --enable=textmetrics EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
-add_cmdline_test(svgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=SVG --render=cgal --enable=textmetrics EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
+add_cmdline_test(dxfpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=DXF --render=force --enable=textmetrics EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
+add_cmdline_test(svgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=SVG --render=force --enable=textmetrics EXPECTEDDIR cgalpngtest SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
 
 
 ############################

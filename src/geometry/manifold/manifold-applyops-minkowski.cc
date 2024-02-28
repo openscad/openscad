@@ -111,9 +111,9 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         std::vector<Hull_kernel::Point_3> minkowski_points;
 
         minkowski_points.reserve(points0.size() * points1.size());
-        for (size_t i = 0; i < points0.size(); ++i) {
-          for (size_t j = 0; j < points1.size(); ++j) {
-            minkowski_points.push_back(points0[i] + (points1[j] - CGAL::ORIGIN));
+        for (const auto& p0 : points0) {
+          for (const auto p1 : points1) {
+            minkowski_points.push_back(p0 + (p1 - CGAL::ORIGIN));
           }
         }
 
@@ -175,7 +175,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         t.reset();
 
         CGALUtils::triangulateFaces(mesh);
-        return ManifoldUtils::createMutableManifoldFromSurfaceMesh(mesh);
+        return ManifoldUtils::createManifoldFromSurfaceMesh(mesh);
       };
 
       std::vector<std::shared_ptr<const ManifoldGeometry>> result_parts(part_points[0].size() * part_points[1].size());
