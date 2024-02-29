@@ -1050,7 +1050,9 @@ add_cmdline_test(svgpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCA
 set(FILES_MANIFOLD_CORNER_CASES
   ${TEST_SCAD_DIR}/3D/misc/tetracyl-slim.scad
   ${TEST_SCAD_DIR}/3D/misc/tetracyl-touch-edge.scad
+  ${TEST_SCAD_DIR}/3D/misc/tetracyl-touch-edge-nonmanifold.scad
   ${TEST_SCAD_DIR}/3D/misc/tetracyl-touch-vertex.scad
+  ${TEST_SCAD_DIR}/3D/misc/tetracyl-touch-vertex-nonmanifold.scad
   ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-edge-nonmanifold.scad
   ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-edge.scad
   ${TEST_SCAD_DIR}/3D/misc/polyhedrons-touch-vertex-nonmanifold.scad

@@ -1,5 +1,6 @@
 h = 1;
 
+// A cylinder with a triangular base and a slim waist
 polyhedron(
   points=[
     [0,1,0],

@@ -1,5 +1,7 @@
 h = 1;
 
+// A cylinder with a triangular base and a slim waist which is collapsed into a single vertex,
+// but with a manifold topology (the collapsed vertices are still distinct).
 polyhedron(
   points=[
     [0,1,0],
