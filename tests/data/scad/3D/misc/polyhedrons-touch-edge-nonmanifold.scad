@@ -1,3 +1,5 @@
+// Two cubes sharing an edge.
+// This is a non-manifold object since the collapsed vertices are not distinct.
 polyhedron(
   points=[
     [0, 0, 0],

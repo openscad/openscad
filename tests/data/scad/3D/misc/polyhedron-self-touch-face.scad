@@ -1,3 +1,4 @@
+// A single volume touching itself (three pairs of coincident vertices forming a triangle).
 polyhedron(
   points=[
     [0, 0, 0],
