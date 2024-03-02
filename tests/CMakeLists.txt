@@ -1349,6 +1349,19 @@ if (NOT LIB3MF_FOUND)
     throwntogethertest_import_3mf-tests
     3mfpngtest_cube10
     3mfexport_3mf-export
+    3mfpngtest_tetracyl-slim
+    3mfpngtest_tetracyl-touch-edge
+    3mfpngtest_tetracyl-touch-edge-nonmanifold
+    3mfpngtest_tetracyl-touch-vertex
+    3mfpngtest_tetracyl-touch-vertex-nonmanifold
+    3mfpngtest_polyhedrons-touch-edge-nonmanifold
+    3mfpngtest_polyhedrons-touch-edge
+    3mfpngtest_polyhedrons-touch-vertex-nonmanifold
+    3mfpngtest_polyhedrons-touch-vertex
+    3mfpngtest_polyhedron-self-touch-edge-nonmanifold
+    3mfpngtest_polyhedron-self-touch-edge
+    3mfpngtest_polyhedron-self-touch-vertex-nonmanifold
+    3mfpngtest_polyhedron-self-touch-vertex
     PROPERTIES DISABLED TRUE
   )
 endif(NOT LIB3MF_FOUND)
