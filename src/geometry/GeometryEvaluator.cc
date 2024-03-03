@@ -704,10 +704,10 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
             std::shared_ptr<Polygon2d> newpoly;
             if (res.isConst()) {
               newpoly = std::make_shared<Polygon2d>(*polygons);
-	    }
+            }
             else {
               newpoly = std::dynamic_pointer_cast<Polygon2d>(res.ptr());
-	    }
+            }
 
             Transform2d mat2;
             mat2.matrix() <<
@@ -715,7 +715,7 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
               node.matrix(1, 0), node.matrix(1, 1), node.matrix(1, 3),
               node.matrix(3, 0), node.matrix(3, 1), node.matrix(3, 3);
             newpoly->transform(mat2);
-	    // FIXME: We lose the transform if we copied a const geometry above. Probably similar issue in multiple places
+            // FIXME: We lose the transform if we copied a const geometry above. Probably similar issue in multiple places
             // A 2D transformation may flip the winding order of a polygon.
             // If that happens with a sanitized polygon, we need to reverse
             // the winding order for it to be correct.
@@ -842,29 +842,29 @@ static void add_slice(PolySetBuilder &builder, const Polygon2d& poly,
       // unless at top for a 0-scaled axis (which can create 0 thickness "ears")
       if (splitfirst xor any_zero) {
         builder.appendPoly({
-		Vector3d(curr1[0], curr1[1], h1),
-		Vector3d(curr2[0], curr2[1], h2),
-		Vector3d(prev1[0], prev1[1], h1)
-		});
+                Vector3d(curr1[0], curr1[1], h1),
+                Vector3d(curr2[0], curr2[1], h2),
+                Vector3d(prev1[0], prev1[1], h1)
+                });
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
           builder.appendPoly({
-		Vector3d(prev2[0], prev2[1], h2),
-		Vector3d(prev1[0], prev1[1], h1),
-		Vector3d(curr2[0], curr2[1], h2)
-	  });
+                Vector3d(prev2[0], prev2[1], h2),
+                Vector3d(prev1[0], prev1[1], h1),
+                Vector3d(curr2[0], curr2[1], h2)
+          });
         }
       } else {
         builder.appendPoly({
-		Vector3d(curr1[0], curr1[1], h1),
-		Vector3d(prev2[0], prev2[1], h2),
-		Vector3d(prev1[0], prev1[1], h1)
-	});
+                Vector3d(curr1[0], curr1[1], h1),
+                Vector3d(prev2[0], prev2[1], h2),
+                Vector3d(prev1[0], prev1[1], h1)
+        });
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
           builder.appendPoly({
-		Vector3d(curr1[0], curr1[1], h1),
-		Vector3d(curr2[0], curr2[1], h2),
-		Vector3d(prev2[0], prev2[1], h2)
-	  });	
+                Vector3d(curr1[0], curr1[1], h1),
+                Vector3d(curr2[0], curr2[1], h2),
+                Vector3d(prev2[0], prev2[1], h2)
+          });        
         }
       }
       prev1 = curr1;
@@ -1312,16 +1312,16 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
 
       for (size_t i = 0; i < o.vertices.size(); ++i) {
         builder.appendPoly({
-		rings[j % 2][(i + 1) % o.vertices.size()],
-		rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
-		rings[j % 2][i]
-	});		
+                rings[j % 2][(i + 1) % o.vertices.size()],
+                rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
+                rings[j % 2][i]
+        });                
 
         builder.appendPoly({
-		rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
-		rings[(j + 1) % 2][i],
-		rings[j % 2][i]
-	});
+                rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
+                rings[(j + 1) % 2][i],
+                rings[j % 2][i]
+        });
       }
     }
   }
@@ -1351,7 +1351,7 @@ Response GeometryEvaluator::visit(State& state, const RotateExtrudeNode& node)
         geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       }
       if (geometry) {
-	geom = rotatePolygon(node, *geometry);
+        geom = rotatePolygon(node, *geometry);
       }
     } else {
       geom = smartCacheGet(node, false);
@@ -1404,8 +1404,8 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const Project
     // project chgeom -> polygon2d
     if (auto chPS = PolySetUtils::getGeometryAsPolySet(chgeom)) {
       if (auto poly = PolySetUtils::project(*chPS)) {
-	bounds.extend(poly->getBoundingBox());
-	tmp_geom.push_back(std::move(poly));
+        bounds.extend(poly->getBoundingBox());
+        tmp_geom.push_back(std::move(poly));
       }
     }
   }
@@ -1478,7 +1478,7 @@ Response GeometryEvaluator::visit(State& state, const CgalAdvNode& node)
         geom = res.constptr();
         // If we added convexity, we need to pass it on
         if (geom && geom->getConvexity() != node.convexity) {
-	  std::shared_ptr<Geometry> editablegeom;
+          std::shared_ptr<Geometry> editablegeom;
           // If we got a const object, make a copy
           if (res.isConst()) editablegeom = geom->copy();
           else editablegeom = res.ptr();
@@ -1561,7 +1561,7 @@ Response GeometryEvaluator::visit(State& state, const RoofNode& node)
     if (!isSmartCached(node)) {
       const auto polygon2d = applyToChildren2D(node, OpenSCADOperator::UNION);
       if (polygon2d) {
-	std::unique_ptr<Geometry> roof;
+        std::unique_ptr<Geometry> roof;
         try {
           roof = roofOverPolygon(node, *polygon2d);
         } catch (RoofNode::roof_exception& e) {
