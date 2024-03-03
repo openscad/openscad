@@ -88,6 +88,8 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
       PRINTDB("After hull facets: %d", r.size_of_facets());
       PRINTDB("After hull closed: %d", r.is_closed());
       PRINTDB("After hull valid: %d", r.is_valid());
+      // FIXME: Make sure PolySet is set to convex.
+      // FIXME: Can we guarantee a manifold PolySet here?
       return CGALUtils::createPolySetFromPolyhedron(r);
     } catch (const CGAL::Failure_exception& e) {
       LOG(message_group::Error, "CGAL error in applyHull(): %1$s", e.what());
