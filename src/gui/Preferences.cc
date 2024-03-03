@@ -355,7 +355,7 @@ void Preferences::on_fontSize_currentIndexChanged(int index)
   emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
-void Preferences::on_syntaxHighlight_currentTextChanged(const QString& s)
+void Preferences::on_syntaxHighlight_textActivated(const QString & s)
 {
   QSettingsCached settings;
   settings.setValue("editor/syntaxhighlight", s);
