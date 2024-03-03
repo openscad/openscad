@@ -1,3 +1,5 @@
+// A single volume touching itself (two coincident vertices),
+// but with a manifold topology (the coincident vertices are distinct).
 polyhedron(
   points=[
     [0, 0, 0],
