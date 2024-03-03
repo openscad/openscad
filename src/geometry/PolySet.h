@@ -36,8 +36,8 @@ public:
   boost::tribool convexValue() const { return this->convex; }
   bool isTriangular = false;
 
-  static std::unique_ptr<PolySet> createEmpty() { return PolySet::createEmpty(); }
-}
+  static std::unique_ptr<PolySet> createEmpty() { return std::make_unique<PolySet>(3); }
+
 private:
   unsigned int dim;
   mutable boost::tribool convex;

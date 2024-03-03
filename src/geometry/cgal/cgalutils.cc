@@ -375,7 +375,7 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhed
     LOG(message_group::Error, "Non-manifold mesh created: %1$d unconnected edges", unconnected2);
   }
 
-  auto polyset = std::make_unique<PolySet>(3);
+  auto polyset = PolySet::createEmpty();
   polyset->vertices.reserve(verts.size());
   for (const auto& v : verts) {
     polyset->vertices.emplace_back(v.cast<double>());

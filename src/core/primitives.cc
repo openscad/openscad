@@ -111,7 +111,7 @@ std::unique_ptr<const Geometry> CubeNode::createGeometry() const
     || this->y <= 0 || !std::isfinite(this->y)
     || this->z <= 0 || !std::isfinite(this->z)
     ) {
-    return std::make_unique<PolySet>(3, true);
+    return PolySet::createEmpty();
   }
 
   double x1, x2, y1, y2, z1, z2;
@@ -184,7 +184,7 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
 std::unique_ptr<const Geometry> SphereNode::createGeometry() const
 {
   if (this->r <= 0 || !std::isfinite(this->r)) {
-    return std::make_unique<PolySet>(3, true);
+    return PolySet::createEmpty();
   }
 
   auto num_fragments = Calc::get_fragments_from_r(r, fn, fs, fa);
@@ -263,7 +263,7 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
     || this->r2 < 0 || !std::isfinite(this->r2)
     || (this->r1 <= 0 && this->r2 <= 0)
     ) {
-    return std::make_unique<PolySet>(3);
+    return PolySet::createEmpty();
   }
 
   auto num_fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
@@ -404,7 +404,7 @@ std::string PolyhedronNode::toString() const
 
 std::unique_ptr<const Geometry> PolyhedronNode::createGeometry() const
 {
-  auto p = std::make_unique<PolySet>(3);
+  auto p = PolySet::createEmpty();
   p->setConvexity(this->convexity);
   p->vertices=this->points;
   p->indices=this->faces;

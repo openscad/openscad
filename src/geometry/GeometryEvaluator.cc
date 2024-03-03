@@ -256,7 +256,7 @@ std::unique_ptr<Geometry> GeometryEvaluator::applyHull3D(const AbstractNode& nod
 {
   Geometry::Geometries children = collectChildren3D(node);
 
-  auto P = std::make_unique<PolySet>(3);
+  auto P = PolySet::createEmpty();
   return applyHull(children);
 }
 
@@ -1041,7 +1041,7 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
   if (isConvex && non_linear) isConvex = unknown;
   PolySetBuilder builder(0, 0, 3, isConvex);
   builder.setConvexity(node.convexity);
-  if (node.height <= 0) return std::make_unique<PolySet>(3);
+  if (node.height <= 0) return PolySet::createEmpty();
 
   size_t slices;
   if (node.has_slices) {
@@ -1567,7 +1567,7 @@ Response GeometryEvaluator::visit(State& state, const RoofNode& node)
         } catch (RoofNode::roof_exception& e) {
           LOG(message_group::Error, node.modinst->location(), this->tree.getDocumentPath(),
               "Skeleton computation error. " + e.message());
-          roof = std::make_unique<PolySet>(3);
+          roof = PolySet::createEmpty();
         }
         assert(roof);
         geom = std::move(roof);

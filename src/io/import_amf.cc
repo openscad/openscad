@@ -254,7 +254,7 @@ std::unique_ptr<PolySet> AmfImporter::read(const std::string& filename)
   vertex_list.clear();
 
   if (polySets.empty()) {
-    return std::make_unique<PolySet>(3);
+    return PolySet::createEmpty();
   }
   if (polySets.size() == 1) {
     return std::move(polySets[0]);
@@ -274,7 +274,7 @@ std::unique_ptr<PolySet> AmfImporter::read(const std::string& filename)
 #endif // ENABLE_CGAL
       LOG(message_group::Error, "Error importing multi-object AMF file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
   }
-  return std::make_unique<PolySet>(3);
+  return PolySet::createEmpty();
 }
 
 #ifdef ENABLE_LIBZIP

@@ -54,7 +54,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
 
   if (!f.good()) {
     AsciiError("File error");
-    return std::make_unique<PolySet>(3);
+    return PolySet::createEmpty();
   }
 
   bool got_magic = false;
@@ -67,7 +67,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   unsigned int dimension = 3;
 
   if (line.empty() && !getline_clean("bad header: end of file")) {
-      return std::make_unique<PolySet>(3);
+      return PolySet::createEmpty();
   }
 
   if (boost::regex_search(line, results, ex_magic) > 0) {
@@ -86,26 +86,26 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
   // TODO: handle binary format
   if (is_binary) {
     AsciiError("binary OFF format not supported");
-    return std::make_unique<PolySet>(3);
+    return PolySet::createEmpty();
   }
 
   std::vector<std::string> words;
 
   if (has_ndim) {
     if (line.empty() && !getline_clean("bad header: end of file")) {
-        return std::make_unique<PolySet>(3);
+        return PolySet::createEmpty();
     }
     boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
     if (f.eof() || words.size() < 1) {
       AsciiError("bad header: missing Ndim");
-      return std::make_unique<PolySet>(3);
+      return PolySet::createEmpty();
     }
     line = line.erase(0, words[0].length() + ((words.size() > 1) ? 1 : 0));
     try {
       dimension = boost::lexical_cast<unsigned int>(words[0]) + dimension - 3;
     } catch (const boost::bad_lexical_cast& blc) {
       AsciiError("bad header: bad data for Ndim");
-      return std::make_unique<PolySet>(3);
+      return PolySet::createEmpty();
     }
   }
 
@@ -113,17 +113,17 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
 
   if (dimension != 3) {
     AsciiError((boost::format("unhandled vertex dimensions (%d)") % dimension).str().c_str());
-    return std::make_unique<PolySet>(3);
+    return PolySet::createEmpty();
   }
 
   if (line.empty() && !getline_clean("bad header: end of file")) {
-      return std::make_unique<PolySet>(3);
+      return PolySet::createEmpty();
   }
 
   boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
   if (f.eof() || words.size() < 3) {
     AsciiError("bad header: missing data");
-    return std::make_unique<PolySet>(3);
+    return PolySet::createEmpty();
   }
 
   unsigned long vertices_count;
@@ -138,29 +138,29 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     (void)edges_count; // ignored
   } catch (const boost::bad_lexical_cast& blc) {
     AsciiError("bad header: bad data");
-    return std::make_unique<PolySet>(3);
+    return PolySet::createEmpty();
   }
 
   if (f.eof() || vertices_count < 1 || faces_count < 1) {
     AsciiError("bad header: not enough data");
-    return std::make_unique<PolySet>(3);
+    return PolySet::createEmpty();
   }
 
   PRINTDB("%d vertices, %d faces, %d edges.", vertices_count % faces_count % edges_count);
 
-  auto ps = std::make_unique<PolySet>(3);
+  auto ps = PolySet::createEmpty();
   ps->vertices.reserve(vertices_count);
   ps->indices.reserve(faces_count);
 
   while ((!f.eof()) && (vertex++ < vertices_count)) {
     if (!getline_clean("reading vertices: end of file")) {
-      return std::make_unique<PolySet>(3);
+      return PolySet::createEmpty();
     }
 
     boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
     if (words.size() < 3) {
       AsciiError("can't parse vertex: not enough data");
-      return std::make_unique<PolySet>(3);
+      return PolySet::createEmpty();
     }
 
     try {
@@ -184,19 +184,19 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       ps->vertices.push_back(v);
     } catch (const boost::bad_lexical_cast& blc) {
       AsciiError("can't parse vertex: bad data");
-      return std::make_unique<PolySet>(3);
+      return PolySet::createEmpty();
     }
   }
 
   while (!f.eof() && (face++ < faces_count)) {
     if (!getline_clean("reading faces: end of file")) {
-      return std::make_unique<PolySet>(3);
+      return PolySet::createEmpty();
     }
 
     boost::split(words, line, boost::is_any_of(" \t"), boost::token_compress_on);
     if (words.size() < 1) {
       AsciiError("can't parse face: not enough data");
-      return std::make_unique<PolySet>(3);
+      return PolySet::createEmpty();
     }
 
     try {
@@ -204,7 +204,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       unsigned long i;
       if (words.size() - 1 < face_size) {
         AsciiError("can't parse face: missing indices");
-        return std::make_unique<PolySet>(3);
+        return PolySet::createEmpty();
       }
       ps->indices.emplace_back().reserve(face_size);
       //PRINTDB("Index[%d] [%d] = { ", face % n);
@@ -228,7 +228,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       }
     } catch (const boost::bad_lexical_cast& blc) {
       AsciiError("can't parse face: bad data");
-      return std::make_unique<PolySet>(3);
+      return PolySet::createEmpty();
     }
   }
 
