@@ -98,17 +98,18 @@ std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   ps->vertices.reserve(mesh.NumVert());
   ps->indices.reserve(mesh.NumTri());
   ps->setConvexity(convexity);
+
   // first 3 channels are xyz coordinate
   for (size_t i = 0; i < mesh.vertProperties.size(); i += mesh.numProp)
-    ps->vertices.push_back({
+    ps->vertices.emplace_back(
         mesh.vertProperties[i],
-        mesh.vertProperties[i+1],
-        mesh.vertProperties[i+2]});
+        mesh.vertProperties[i + 1],
+        mesh.vertProperties[i + 2]);
   for (size_t i = 0; i < mesh.triVerts.size(); i += 3)
     ps->indices.push_back({
         static_cast<int>(mesh.triVerts[i]),
-        static_cast<int>(mesh.triVerts[i+1]),
-        static_cast<int>(mesh.triVerts[i+2])});
+        static_cast<int>(mesh.triVerts[i + 1]),
+        static_cast<int>(mesh.triVerts[i + 2])});
   return ps;
 }
 
