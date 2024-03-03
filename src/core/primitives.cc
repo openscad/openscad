@@ -263,7 +263,7 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
     || this->r2 < 0 || !std::isfinite(this->r2)
     || (this->r1 <= 0 && this->r2 <= 0)
     ) {
-    return std::make_unique<PolySet>(3, true);
+    return std::make_unique<PolySet>(3);
   }
 
   auto num_fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
@@ -277,7 +277,7 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
     z2 = this->h;
   }
 
-  auto polyset = std::make_unique<PolySet>(3, true);
+  auto polyset = std::make_unique<PolySet>(3, /*convex*/true);
   polyset->vertices.reserve(2 * num_fragments);
 
   generate_circle(std::back_inserter(polyset->vertices), r1, z1, num_fragments);
