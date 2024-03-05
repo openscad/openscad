@@ -3644,8 +3644,10 @@ QString MainWindow::exportPath(const char *suffix) {
     QString default_dir = QString::fromStdString(Settings::Settings::defaultExportDir.value());
     if (!default_dir.isEmpty()) {
         default_dir = QDir(default_dir).canonicalPath(); // validate the path
-        if (default_dir.isEmpty())
-            qWarning() << "invalid defaultExporDir";
+        if (default_dir.isEmpty()) {
+            std::string std_dir = default_dir.toStdString();
+            LOG(message_group::UI_Warning, "Default Export Directory '%1$d' preference is invalid.", std_dir);
+        }
     }
 
     // filename
