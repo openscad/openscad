@@ -2685,7 +2685,8 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
     clearCurrentOutput();
     return;
   }
-  this->export_paths[suffix] = exportFilename;
+//  this->export_paths[suffix] = exportFilename;
+  this->activeEditor->exportPaths[suffix] = exportFilename;
 
   ExportInfo exportInfo = createExportInfo(format, exportFilename, activeEditor->filepath);
   // Add options
@@ -2812,7 +2813,8 @@ void MainWindow::actionExportCSG()
     fstream << this->tree.getString(*this->root_node, "\t") << "\n";
     fstream.close();
     fileExportedMessage("CSG", csg_filename);
-    this->export_paths[suffix] = csg_filename;
+    //this->export_paths[suffix] = csg_filename;
+    this->activeEditor->exportPaths[suffix] = csg_filename;
   }
 
   clearCurrentOutput();
@@ -2828,7 +2830,8 @@ void MainWindow::actionExportImage()
   if (!img_filename.isEmpty()) {
     bool saveResult = qglview->save(img_filename.toLocal8Bit().constData());
     if (saveResult) {
-      this->export_paths[suffix] = img_filename;
+      //this->export_paths[suffix] = img_filename;
+      this->activeEditor->exportPaths[suffix] = img_filename;
       setCurrentOutput();
       fileExportedMessage("PNG", img_filename);
       clearCurrentOutput();
@@ -3633,8 +3636,8 @@ void MainWindow::processEvents()
 
 QString MainWindow::exportPath(const char *suffix) {
   QString path;
-  auto path_it = this->export_paths.find(suffix);
-  if (path_it != export_paths.end()) {
+  auto path_it = this->activeEditor->exportPaths.find(suffix);
+  if (path_it != this->activeEditor->exportPaths.end()) {
     path = QFileInfo(path_it->second).absolutePath() + QString("/");
     if (activeEditor->filepath.isEmpty()) path += QString(_("Untitled")) + suffix;
     else path += QFileInfo(activeEditor->filepath).completeBaseName() + suffix;

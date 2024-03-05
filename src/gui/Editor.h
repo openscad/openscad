@@ -75,6 +75,7 @@ public:
   bool contentsRendered; // Set if the source code has changes since the last render (F6)
   int findState;
   QString filepath;
+  std::unordered_map<std::string, QString> exportPaths; // for each file type, where it was exported to last
   std::string autoReloadId;
   std::vector<IndicatorData> indicatorData;
   ParameterWidget *parameterWidget;
