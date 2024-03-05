@@ -99,6 +99,11 @@ std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   ps->indices.reserve(mesh.NumTri());
   ps->setConvexity(convexity);
 
+  // FIXME: Is a manifold geometry guaranteed to return a manifold MeshGL?
+  // Ref. comment at https://github.com/elalish/manifold/blob/2ddbd0a1a05fe8a5ac48454756c741fc3403102c/src/manifold/include/manifold.h#L43
+  // "This may not be manifold since the verts are duplicated along property boundaries that do not match"
+  ps->setManifold(this->isManifold());
+
   // first 3 channels are xyz coordinate
   for (size_t i = 0; i < mesh.vertProperties.size(); i += mesh.numProp)
     ps->vertices.emplace_back(
