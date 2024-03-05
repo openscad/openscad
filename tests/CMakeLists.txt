@@ -717,6 +717,9 @@ list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-import-export_dodecah
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-import-export_cube.scad)
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/3D/features/polyhedron-cube.scad)
 
+list(APPEND EXPORT_OFF_TEST_FILES ${TEST_SCAD_DIR}/off/off-import-export_vertcube.scad)
+list(APPEND EXPORT_OFF_TEST_FILES ${TEST_SCAD_DIR}/off/off-import-export_vertcube_le_b.scad)
+
 list(APPEND EXPORT_3MF_TEST_FILES ${TEST_SCAD_DIR}/3mf/3mf-export.scad)
 
 list(APPEND EXPORT3D_CGALCGAL_TEST_FILES
@@ -1030,6 +1033,7 @@ add_cmdline_test(monotonepngtest OPENSCAD SUFFIX png FILES ${EXPORT3D_CGAL_TEST_
 add_cmdline_test(stlexport             EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
 add_cmdline_test(manifold-stlexport    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=manifold --render)
 add_cmdline_test(objexport             EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render --enable=predictible-output)
+add_cmdline_test(offexport             EXPERIMENTAL OPENSCAD SUFFIX off FILES ${EXPORT_OFF_TEST_FILES} ARGS --render --enable=predictible-output)
 add_cmdline_test(3mfexport             EXPERIMENTAL OPENSCAD ARGS SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
 
 # stlpngtest: direct STL output, preview rendering
