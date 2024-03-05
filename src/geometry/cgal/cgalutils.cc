@@ -46,7 +46,7 @@ std::unique_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromPolySet(const PolySe
   std::vector<Vector3d> points3d;
   psq.quantizeVertices(&points3d);
   auto ps_tri = PolySetUtils::tessellate_faces(psq);
-  if (ps_tri->is_convex()) {
+  if (ps_tri->isConvex()) {
     using K = CGAL::Epick;
     // Collect point cloud
     std::vector<K::Point_3> points(points3d.size());

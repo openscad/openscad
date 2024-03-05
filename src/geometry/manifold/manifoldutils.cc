@@ -116,7 +116,7 @@ std::shared_ptr<const ManifoldGeometry> createManifoldFromPolySet(const PolySet&
   
   CGAL_DoubleMesh m;
 
-  if (ps_tri->is_convex()) {
+  if (ps_tri->isConvex()) {
     using K = CGAL::Epick;
     // Collect point cloud
     std::vector<K::Point_3> points(points3d.size());
@@ -133,7 +133,7 @@ std::shared_ptr<const ManifoldGeometry> createManifoldFromPolySet(const PolySet&
     CGALUtils::createMeshFromPolySet(*ps_tri, m);
   }
 
-  if (!ps_tri->is_convex()) {
+  if (!ps_tri->isConvex()) {
     if (CGALUtils::isClosed(m)) {
       CGALUtils::orientToBoundAVolume(m);
     } else {

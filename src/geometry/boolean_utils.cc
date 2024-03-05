@@ -137,7 +137,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
         else if (nef && nef->p3->is_simple()) CGALUtils::convertNefToPolyhedron(*nef->p3, poly);
         else throw 0;
 
-        if ((ps && ps->is_convex()) ||
+        if ((ps && ps->isConvex()) ||
             (!ps && CGALUtils::is_weakly_convex(poly))) {
           PRINTDB("Minkowski: child %d is convex and %s", i % (ps?"PolySet":"Nef"));
           P[i].push_back(poly);
