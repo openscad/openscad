@@ -2685,7 +2685,6 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
     clearCurrentOutput();
     return;
   }
-//  this->export_paths[suffix] = exportFilename;
   this->activeEditor->exportPaths[suffix] = exportFilename;
 
   ExportInfo exportInfo = createExportInfo(format, exportFilename, activeEditor->filepath);
@@ -2813,7 +2812,6 @@ void MainWindow::actionExportCSG()
     fstream << this->tree.getString(*this->root_node, "\t") << "\n";
     fstream.close();
     fileExportedMessage("CSG", csg_filename);
-    //this->export_paths[suffix] = csg_filename;
     this->activeEditor->exportPaths[suffix] = csg_filename;
   }
 
@@ -2830,7 +2828,6 @@ void MainWindow::actionExportImage()
   if (!img_filename.isEmpty()) {
     bool saveResult = qglview->save(img_filename.toLocal8Bit().constData());
     if (saveResult) {
-      //this->export_paths[suffix] = img_filename;
       this->activeEditor->exportPaths[suffix] = img_filename;
       setCurrentOutput();
       fileExportedMessage("PNG", img_filename);
@@ -3642,12 +3639,36 @@ QString MainWindow::exportPath(const char *suffix) {
     if (activeEditor->filepath.isEmpty()) path += QString(_("Untitled")) + suffix;
     else path += QFileInfo(activeEditor->filepath).completeBaseName() + suffix;
   } else {
-    if (activeEditor->filepath.isEmpty()) path = QString(PlatformUtils::userDocumentsPath().c_str()) + QString("/") + QString(_("Untitled")) + suffix;
-    else {
-      auto info = QFileInfo(activeEditor->filepath);
-      path = info.absolutePath() + QString("/") + info.completeBaseName() + suffix;
+
+    // get default export directory from settings
+    QString default_dir = QString::fromStdString(Settings::Settings::defaultExportDir.value());
+    if (!default_dir.isEmpty()) {
+        default_dir = QDir(default_dir).canonicalPath(); // validate the path
+        if (default_dir.isEmpty())
+            qWarning() << "invalid defaultExporDir";
+    }
+
+    // filename
+    QString filename;
+    if (!activeEditor->filepath.isEmpty()) {
+        auto info = QFileInfo(activeEditor->filepath);
+        filename = info.completeBaseName() + suffix;
+    } else {
+        filename = QString(_("Untitled")) + suffix;
+    }
+
+    // path
+    if (!default_dir.isEmpty()) {
+        path = default_dir + QString("/") + filename;
+    } else
+    if (!activeEditor->filepath.isEmpty()) {
+        auto info = QFileInfo(activeEditor->filepath);
+        path = info.absolutePath() + QString("/") + filename;
+    } else {
+        path = QString(PlatformUtils::userDocumentsPath().c_str()) + QString("/") + filename;
     }
   }
+
   return path;
 }
 

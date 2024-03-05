@@ -190,6 +190,7 @@ public:
   static SettingsEntryBool exportUseAsciiSTL;
   static SettingsEntryEnum toolbarExport3D;
   static SettingsEntryEnum toolbarExport2D;
+  static SettingsEntryString defaultExportDir;
 
   static SettingsEntryBool summaryCamera;
   static SettingsEntryBool summaryArea;

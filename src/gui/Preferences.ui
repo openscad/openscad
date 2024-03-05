@@ -2303,6 +2303,20 @@
                  </item>
                 </layout>
                </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutDefaultExportDir">
+                 <item>
+                  <widget class="QLabel" name="labelDefaultExportDir">
+                   <property name="text">
+                    <string>Default Export Directory</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLineEdit" name="lineEditDefaultExportDir"/>
+                 </item>
+                </layout>
+               </item>
               </layout>
              </widget>
             </item>
