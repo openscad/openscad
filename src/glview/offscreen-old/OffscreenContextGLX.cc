@@ -55,8 +55,8 @@ public:
   OffscreenContextGLX(uint32_t width, uint32_t height) : OffscreenContext(width, height) {}
   ~OffscreenContextGLX() {
     if (this->xwindow) XDestroyWindow(this->xdisplay, this->xwindow);
-    if (this->openGLContext) (this->xdisplay, this->openGLContext);
-    if (this->xdisplay) (this->xdisplay);
+    if (this->openGLContext) glXDestroyContext(this->xdisplay, this->openGLContext);
+    if (this->xdisplay) XCloseDisplay(this->xdisplay);
   }
 
   std::string getInfo() const override {
