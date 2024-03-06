@@ -106,45 +106,88 @@ template std::shared_ptr<const ManifoldGeometry> createManifoldFromSurfaceMesh(c
 template std::shared_ptr<const ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL_DoubleMesh &tm);
 #endif
 
+std::unique_ptr<const manifold::Manifold> createManifoldFromTriangularPolySet(const PolySet& ps)
+{
+  assert(ps.isTriangular());
+
+  manifold::Mesh mesh;
+
+  mesh.vertPos.reserve(ps.vertices.size());
+  for (const auto& v : ps.vertices) {
+    mesh.vertPos.emplace_back((float)v.x(), (float)v.y(), (float)v.z());
+  }
+
+  mesh.triVerts.reserve(ps.indices.size());
+  for (const auto& face : ps.indices) {
+    assert(face.size() == 3);
+    mesh.triVerts.emplace_back(face[0], face[1], face[2]);
+  }
+
+  return std::make_unique<manifold::Manifold>(std::move(mesh));
+}
+
 std::shared_ptr<const ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
 {
-#ifdef ENABLE_CGAL
-  PolySet psq(ps);
-  std::vector<Vector3d> points3d;
-  psq.quantizeVertices(&points3d);
-  auto ps_tri = PolySetUtils::tessellate_faces(psq);
-  
-  CGAL_DoubleMesh m;
+  // FIXME: To create a Manifold object, we may need to first triangulate.
+  // The incoming PolySet could be severely broken if it originated from user or file input, so
+  // be prepared to repair it.
+  // 1. If it's not triangular, attempt to triangulate it directly
+  // 2. Try to create a Manifold object
+  // 3. If the Manifold object is broken (e.g. not a manifold), attempt repair
+     // 4. If successfully repaired, try to create Manifold again.
 
-  if (ps_tri->isConvex()) {
-    using K = CGAL::Epick;
-    // Collect point cloud
-    std::vector<K::Point_3> points(points3d.size());
-    for (size_t i = 0, n = points3d.size(); i < n; i++) {
-      points[i] = CGALUtils::vector_convert<K::Point_3>(points3d[i]);
-    }
-    if (points.size() <= 3) return std::make_shared<ManifoldGeometry>();
-
-    // Apply hull
-    CGAL::Surface_mesh<CGAL::Point_3<K>> r;
-    CGAL::convex_hull_3(points.begin(), points.end(), r);
-    CGALUtils::copyMesh(r, m);
-  } else {
-    CGALUtils::createMeshFromPolySet(*ps_tri, m);
+  std::unique_ptr<const PolySet> ps_tri;
+  if (!ps.isTriangular()) {
+    ps_tri = PolySetUtils::tessellate_faces(ps);
+  }
+  const PolySet good_ps = ps.isTriangular() ? ps : *ps_tri;
+  auto mani = createManifoldFromTriangularPolySet(good_ps);
+  if (mani->Status() == Error::NoError) {    
+    return std::make_shared<const ManifoldGeometry>(std::shared_ptr<const manifold::Manifold>(std::move(mani)));
   }
 
-  if (!ps_tri->isConvex()) {
-    if (CGALUtils::isClosed(m)) {
-      CGALUtils::orientToBoundAVolume(m);
+  LOG("Warning: [manifold] PolySet -> Manifold conversion failed: %1$s\n"
+      "Trying to repair and reconstruct mesh",
+      ManifoldUtils::statusToString(mani->Status()));
+  {
+  #ifdef ENABLE_CGAL
+    PolySet psq(ps);
+    std::vector<Vector3d> points3d;
+    psq.quantizeVertices(&points3d);
+    auto ps_tri = PolySetUtils::tessellate_faces(psq);
+    
+    CGAL_DoubleMesh m;
+
+    if (ps_tri->isConvex()) {
+      using K = CGAL::Epick;
+      // Collect point cloud
+      std::vector<K::Point_3> points(points3d.size());
+      for (size_t i = 0, n = points3d.size(); i < n; i++) {
+        points[i] = CGALUtils::vector_convert<K::Point_3>(points3d[i]);
+      }
+      if (points.size() <= 3) return std::make_shared<ManifoldGeometry>();
+
+      // Apply hull
+      CGAL::Surface_mesh<CGAL::Point_3<K>> r;
+      CGAL::convex_hull_3(points.begin(), points.end(), r);
+      CGALUtils::copyMesh(r, m);
     } else {
-      LOG(message_group::Error, "[manifold] Input mesh is not closed!");
+      CGALUtils::createMeshFromPolySet(*ps_tri, m);
     }
-  }
 
-  return createManifoldFromSurfaceMesh(m);
-#else
-  return std::make_shared<ManifoldGeometry>();
-#endif
+    if (!ps_tri->isConvex()) {
+      if (CGALUtils::isClosed(m)) {
+        CGALUtils::orientToBoundAVolume(m);
+      } else {
+        LOG(message_group::Error, "[manifold] Input mesh is not closed!");
+      }
+    }
+
+    return createManifoldFromSurfaceMesh(m);
+  #else
+    return std::make_shared<ManifoldGeometry>();
+  #endif
+  }
 }
 
 std::shared_ptr<const ManifoldGeometry> createManifoldFromGeometry(const std::shared_ptr<const Geometry>& geom) {
