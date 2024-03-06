@@ -116,16 +116,15 @@ bool PolySet::isConvex() const {
 }
 
 bool PolySet::isManifold() const {
-  // FIXME: We only support checking triangular PolySets
-  if (!is_triangular_ || this->vertices.size() <= 3 || this->indices.size() <= 3) {
+  if (this->vertices.size() <= 3 || this->indices.size() <= 3) {
     is_manifold_ = false;
     return false;
   }
 
   std::unordered_map<Vector2i, int> edges;
   for (const IndexedFace& face : this->indices) {
-    for (int i=0;i<3;i++) {
-      Vector2i edge(face[i], face[(i+1)%3]);
+    for (int i=0;i<face.size();i++) {
+      Vector2i edge(face[i], face[(i+1)%face.size()]);
       if (edge[0] > edge[1]) edge.reverseInPlace();
       edges[edge]++;
     }

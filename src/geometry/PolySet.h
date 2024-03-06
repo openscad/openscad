@@ -28,6 +28,7 @@ public:
   std::unique_ptr<Geometry> copy() const override;
 
   void quantizeVertices(std::vector<Vector3d> *pPointsOut = nullptr);
+  size_t numVertices() const { return vertices.size(); }
   size_t numFacets() const override { return indices.size(); }
   void transform(const Transform3d& mat) override;
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
