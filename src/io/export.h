@@ -115,7 +115,7 @@ void export_nef3(const std::shared_ptr<const Geometry>& geom, std::ostream& outp
 
 
 enum class Previewer { OPENCSG, THROWNTOGETHER };
-enum class RenderType { GEOMETRY, CGAL, OPENCSG, THROWNTOGETHER };
+enum class RenderType { GEOMETRY, BACKEND_SPECIFIC, OPENCSG, THROWNTOGETHER };
 
 struct ExportFileFormatOptions {
   const std::map<const std::string, FileFormat> exportFileFormats{

@@ -11,6 +11,29 @@
 
 #ifndef NULLGL
 
+
+namespace {
+
+GLuint compileShader(const std::string& name, GLuint shader_type) {
+  auto shader_source = Renderer::loadShaderSource(name);
+  GLuint shader = glCreateShader(shader_type);
+  auto *c_source = shader_source.c_str();
+  glShaderSource(shader, 1, (const GLchar **)&c_source, nullptr);
+  glCompileShader(shader);
+  GLint status;
+  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+  if (!status) {
+    int loglen;
+    char logbuffer[1000];
+    glGetShaderInfoLog(shader, sizeof(logbuffer), &loglen, logbuffer);
+    PRINTDB("OpenGL shader compilation error:\n%s", logbuffer);
+    return 0;
+  }
+  return shader;
+}
+
+}  // namespace
+
 Renderer::Renderer()
 {
   PRINTD("Renderer() start");
@@ -34,60 +57,34 @@ Renderer::Renderer()
 
   Renderer::setColorScheme(ColorMap::inst()->defaultColorScheme());
 
-  std::string vs_str = Renderer::loadShaderSource("Preview.vert");
-  std::string fs_str = Renderer::loadShaderSource("Preview.frag");
-  const char *vs_source = vs_str.c_str();
-  const char *fs_source = fs_str.c_str();
+  setupShader();
+  PRINTD("Renderer() end");
+}
 
-  GLint status;
-  GLenum err;
-  auto vs = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vs, 1, (const GLchar **)&vs_source, nullptr);
-  glCompileShader(vs);
-  err = glGetError();
-  if (err != GL_NO_ERROR) {
-    PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
+void Renderer::setupShader() {
+  renderer_shader.progid = 0;
+
+  auto fs = compileShader("Preview.vert", GL_VERTEX_SHADER);
+  if (!fs) {
+    // FIXME: Print to error
+    LOG("OpenGL Error: Error compiling Preview vertex shader");
     return;
   }
-  glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
-  if (status == GL_FALSE) {
-    int loglen;
-    char logbuffer[1000];
-    glGetShaderInfoLog(vs, sizeof(logbuffer), &loglen, logbuffer);
-    PRINTDB("OpenGL Program Compile Vertex Shader Error:\n%s", logbuffer);
+  auto vs = compileShader("Preview.frag", GL_FRAGMENT_SHADER);
+  if (!vs) {
+    // FIXME: Print to error
+    LOG("OpenGL Error: Error compiling Preview fragment shader");
     return;
   }
 
-  auto fs = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fs, 1, (const GLchar **)&fs_source, nullptr);
-  glCompileShader(fs);
-  err = glGetError();
-  if (err != GL_NO_ERROR) {
-    PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
-    return;
-  }
-  glGetShaderiv(fs, GL_COMPILE_STATUS, &status);
-  if (status == GL_FALSE) {
-    int loglen;
-    char logbuffer[1000];
-    glGetShaderInfoLog(fs, sizeof(logbuffer), &loglen, logbuffer);
-    PRINTDB("OpenGL Program Compile Fragment Shader Error:\n%s", logbuffer);
-    return;
-  }
 
   auto edgeshader_prog = glCreateProgram();
   glAttachShader(edgeshader_prog, vs);
   glAttachShader(edgeshader_prog, fs);
   glLinkProgram(edgeshader_prog);
-
-  err = glGetError();
-  if (err != GL_NO_ERROR) {
-    PRINTDB("OpenGL Error: %s\n", gluErrorString(err));
-    return;
-  }
-
+  GLint status;
   glGetProgramiv(edgeshader_prog, GL_LINK_STATUS, &status);
-  if (status == GL_FALSE) {
+  if (!status) {
     int loglen;
     char logbuffer[1000];
     glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
@@ -95,16 +92,14 @@ Renderer::Renderer()
     return;
   }
 
-  int loglen;
-  char logbuffer[1000];
-  glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-  if (loglen > 0) {
-    PRINTDB("OpenGL Program Link OK:\n%s", logbuffer);
-  }
-  glValidateProgram(edgeshader_prog);
-  glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
-  if (loglen > 0) {
-    PRINTDB("OpenGL Program Validation results:\n%s", logbuffer);
+  {
+    int loglen;
+    char logbuffer[1000];
+    glValidateProgram(edgeshader_prog);
+    glGetProgramInfoLog(edgeshader_prog, sizeof(logbuffer), &loglen, logbuffer);
+    if (loglen > 0) {
+      PRINTDB("OpenGL Program Validation results:\n%s", logbuffer);
+    }
   }
 
   renderer_shader.progid = edgeshader_prog;
@@ -112,8 +107,6 @@ Renderer::Renderer()
   renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
   renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
   renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
-
-  PRINTD("Renderer() end");
 }
 
 void Renderer::resize(int /*w*/, int /*h*/)

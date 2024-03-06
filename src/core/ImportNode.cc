@@ -211,7 +211,7 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
 #endif
   default:
     LOG(message_group::Error, "Unsupported file format while trying to import file '%1$s', import() at line %2$d", this->filename, loc.firstLine());
-    g = std::make_unique<PolySet>(3);
+    g = PolySet::createEmpty();
   }
 
   g->setConvexity(this->convexity);

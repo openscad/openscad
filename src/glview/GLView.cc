@@ -114,6 +114,8 @@ void GLView::setupCamera()
   glGetDoublev(GL_PROJECTION_MATRIX,this->projection);
 }
 
+
+std::vector<SelectedObject> debug_pts;
 void GLView::paintGL()
 {
   glDisable(GL_LIGHTING);
@@ -179,6 +181,9 @@ void GLView::paintGL()
   }
   glColor3f(0,1,0);
   for (const SelectedObject obj: this->shown_obj) {
+    showObject(obj,eyedir);
+  }
+  for (const SelectedObject obj: debug_pts) {
     showObject(obj,eyedir);
   }
   glDisable(GL_LIGHTING);

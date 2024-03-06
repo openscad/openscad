@@ -46,7 +46,7 @@
 
  */
 
-PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(convex)
+PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim_(dim), convex_(convex)
 {
 }
 
@@ -58,7 +58,7 @@ std::string PolySet::dump() const
 {
   std::ostringstream out;
   out << "PolySet:"
-      << "\n dimensions:" << this->dim
+      << "\n dimensions:" << dim_
       << "\n convexity:" << this->convexity
       << "\n num polygons: " << indices.size()
       << "\n polygons data:";
@@ -74,12 +74,12 @@ std::string PolySet::dump() const
 
 BoundingBox PolySet::getBoundingBox() const
 {
-  if (this->bbox.isNull()) {
+  if (bbox_.isNull()) {
     for (const auto& v : vertices) {
-      this->bbox.extend(v);
+      bbox_.extend(v);
     }
   }
-  return this->bbox;
+  return bbox_;
 }
 
 size_t PolySet::memsize() const
@@ -102,12 +102,12 @@ void PolySet::transform(const Transform3d& mat)
     for (auto& p : this->indices) {
       std::reverse(p.begin(), p.end());
   }
-  this->bbox.setNull();
+  bbox_.setNull();
 }
 
-bool PolySet::is_convex() const {
-  if (convex || this->isEmpty()) return true;
-  if (!convex) return false;
+bool PolySet::isConvex() const {
+  if (convex_ || this->isEmpty()) return true;
+  if (!convex_) return false;
   return PolySetUtils::is_approximately_convex(*this);
 }
 

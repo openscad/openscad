@@ -31,7 +31,7 @@ include("cmake/Modules/openscad_version.cmake")
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
-option(ENABLE_LEGACY_RENDERERS "Enable legacy (non-VBO) OpenGL renderers" ON)
+option(USE_LEGACY_RENDERERS "Use legacy (non-VBO) OpenGL renderers" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
 option(ENABLE_EGL "Enable EGL support if available" ON)
@@ -54,7 +54,8 @@ option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
 option(ENABLE_TBB "Enable support for oneAPI Threading Building Blocks." ON)
 option(ENABLE_CGAL "Enable CGAL." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
-option(ENABLE_PYTHON "Enable experimental Python Interpreter" ON)
+option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
+option(BUILD_SHARED_LIBS "Build shared library" OFF)
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON "NOT HEADLESS" OFF)
@@ -147,8 +148,8 @@ endif()
 if(IDPREFIX)
   target_compile_definitions(OpenSCAD PRIVATE IDPREFIX)
 endif()
-if(ENABLE_LEGACY_RENDERERS)
-  target_compile_definitions(OpenSCAD PRIVATE ENABLE_LEGACY_RENDERERS)
+if(USE_LEGACY_RENDERERS)
+  target_compile_definitions(OpenSCAD PRIVATE USE_LEGACY_RENDERERS)
 endif()
 
 if (NOT "${SUFFIX}" STREQUAL "")
@@ -350,7 +351,7 @@ endif()
 if(ENABLE_CGAL)
   # Note: Saving CMAKE_MODULE_PATH as CGAL will overwrite it.
   # Reconsider this after CGAL 5.4: https://github.com/CGAL/cgal/pull/6029
-  set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+  set(OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
   set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
   # Some older versions do not match with CGAL 5.0 REQUIRED, so we check after.
   find_package(CGAL REQUIRED COMPONENTS Core)
@@ -373,9 +374,9 @@ if(ENABLE_CGAL)
   # revert any changes to module path from CGAL_Macros.cmake; see note above
   # Commented out code should work in CGAL>= 5.4
   #if (CGAL_MODULE_PATH_IS_SET)
-  #  set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+  #  set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
   #endif()
-  set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+  set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
 endif(ENABLE_CGAL)
 
 find_package(LibZip REQUIRED QUIET)
@@ -964,7 +965,19 @@ if(EXPERIMENTAL AND ENABLE_TBB)
     -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_TBB
     -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_TBB
   )
-  find_package(TBB REQUIRED)
+  find_package(TBB QUIET)
+  if (NOT TBB_FOUND AND PKG_CONFIG_FOUND)
+    pkg_check_modules(TBB tbb REQUIRED)
+    add_library(TBB::tbb UNKNOWN IMPORTED)
+    set_target_properties(TBB::tbb
+      PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${TBB_INCLUDE_DIRS}")
+    set_target_properties(TBB::tbb
+      PROPERTIES INTERFACE_LINK_LIBRARIES "${TBB_LINK_LIBRARIES}")
+    list(GET TBB_LINK_LIBRARIES 0 TBB_IMPORTED_LOCATION)
+    set_target_properties(TBB::tbb
+      PROPERTIES IMPORTED_LOCATION "${TBB_IMPORTED_LOCATION}")
+  endif()
+  message(STATUS "TBB: ${TBB_VERSION}")
   target_link_libraries(OpenSCAD PRIVATE TBB::tbb)
 endif()
 
@@ -1011,7 +1024,7 @@ if(NULLGL)
     src/io/export_png.cc
     src/io/imageutils.cc)
 else()
-  if(ENABLE_LEGACY_RENDERERS)
+  if(USE_LEGACY_RENDERERS)
     set(LEGACY_RENDERER_SOURCES
       src/glview/cgal/LegacyCGALRenderer.cc
       src/glview/preview/LegacyOpenCSGRenderer.cc

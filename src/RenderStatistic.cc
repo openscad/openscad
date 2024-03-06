@@ -354,7 +354,7 @@ void StreamVisitor::visit(const PolySet& ps)
     assert(ps.getDimension() == 3);
     nlohmann::json geometryJson;
     geometryJson["dimensions"] = 3;
-    geometryJson["convex"] = ps.is_convex();
+    geometryJson["convex"] = ps.isConvex();
     geometryJson["facets"] = ps.numFacets();
     if (is_enabled(RenderStatistic::BOUNDING_BOX)) {
       geometryJson["bounding_box"] = getBoundingBox3(ps);

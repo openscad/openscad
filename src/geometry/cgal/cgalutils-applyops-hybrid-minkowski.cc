@@ -66,7 +66,7 @@ std::shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries&
           else throw 0;
         } else throw 0;
 
-        if ((ps && ps->is_convex()) ||
+        if ((ps && ps->isConvex()) ||
             (!ps && CGALUtils::is_weakly_convex(*poly))) {
           PRINTDB("Minkowski: child %d is convex and %s", i % (ps?"PolySet":"Hybrid"));
           P[i].push_back(poly);

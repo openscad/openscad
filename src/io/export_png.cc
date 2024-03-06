@@ -9,7 +9,7 @@
 #ifndef NULLGL
 
 #include "CGALRenderer.h"
-#ifdef ENABLE_LEGACY_RENDERERS
+#ifdef USE_LEGACY_RENDERERS
 #include "LegacyCGALRenderer.h"
 #endif
 
@@ -30,13 +30,10 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
     return false;
   }
   std::shared_ptr<Renderer> cgalRenderer;
-  if (Feature::ExperimentalVxORenderers.is_enabled()) {
-    cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
-  }
-#ifdef ENABLE_LEGACY_RENDERERS
-  else {
-    cgalRenderer = std::make_shared<LegacyCGALRenderer>(root_geom);
-  }
+#ifdef USE_LEGACY_RENDERERS
+  cgalRenderer = std::make_shared<LegacyCGALRenderer>(root_geom);
+#else
+  cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
 #endif
   BoundingBox bbox = cgalRenderer->getBoundingBox();
   setupCamera(camera, bbox);
@@ -56,13 +53,13 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
 
 #ifdef ENABLE_OPENCSG
 #include "OpenCSGRenderer.h"
-#ifdef ENABLE_LEGACY_RENDERERS
+#ifdef USE_LEGACY_RENDERERS
 #include "LegacyOpenCSGRenderer.h"
 #endif
 #include <opencsg.h>
 #endif
 #include "ThrownTogetherRenderer.h"
-#ifdef ENABLE_LEGACY_RENDERERS
+#ifdef USE_LEGACY_RENDERERS
 #include "LegacyThrownTogetherRenderer.h"
 #endif
 
@@ -83,26 +80,24 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
   std::shared_ptr<Renderer> renderer;
   if (options.previewer == Previewer::OPENCSG) {
 #ifdef ENABLE_OPENCSG
-    if (Feature::ExperimentalVxORenderers.is_enabled()) {
-      renderer = std::make_shared<OpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-    }
-#ifdef ENABLE_LEGACY_RENDERERS
-    else {
-      renderer = std::make_shared<LegacyOpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-    }
+#ifdef USE_LEGACY_RENDERERS
+    PRINTD("Initializing LegacyOpenCSGRenderer");
+    renderer = std::make_shared<LegacyOpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
+#else
+    PRINTD("Initializing OpenCSGRenderer");
+    renderer = std::make_shared<OpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
 #endif
 #else
     fprintf(stderr, "This openscad was built without OpenCSG support\n");
     return 0;
 #endif
   } else {
-    if (Feature::ExperimentalVxORenderers.is_enabled()) {
-      renderer = std::make_shared<ThrownTogetherRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-    }
-#ifdef ENABLE_LEGACY_RENDERERS
-    else {
-      renderer = std::make_shared<LegacyThrownTogetherRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
-    }
+#ifdef USE_LEGACY_RENDERERS
+    PRINTD("Initializing LegacyThrownTogetherRenderer");
+    renderer = std::make_shared<LegacyThrownTogetherRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
+#else
+    PRINTD("Initializing ThrownTogetherRenderer");
+    renderer = std::make_shared<ThrownTogetherRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
 #endif
   }
 
