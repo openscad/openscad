@@ -16,7 +16,7 @@ public:
   VISITABLE_GEOMETRY();
 
   ManifoldGeometry();
-  ManifoldGeometry(const std::shared_ptr<manifold::Manifold>& object);
+  ManifoldGeometry(const std::shared_ptr<const manifold::Manifold>& object);
   ManifoldGeometry(const ManifoldGeometry& other) = default;
   ManifoldGeometry& operator=(const ManifoldGeometry& other);
 

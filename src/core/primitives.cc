@@ -111,7 +111,7 @@ std::unique_ptr<const Geometry> CubeNode::createGeometry() const
     || this->y <= 0 || !std::isfinite(this->y)
     || this->z <= 0 || !std::isfinite(this->z)
     ) {
-    return std::make_unique<PolySet>(3, true);
+    return PolySet::createEmpty();
   }
 
   double x1, x2, y1, y2, z1, z2;
@@ -184,7 +184,7 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
 std::unique_ptr<const Geometry> SphereNode::createGeometry() const
 {
   if (this->r <= 0 || !std::isfinite(this->r)) {
-    return std::make_unique<PolySet>(3, true);
+    return PolySet::createEmpty();
   }
 
   auto num_fragments = Calc::get_fragments_from_r(r, fn, fs, fa);
@@ -263,7 +263,7 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
     || this->r2 < 0 || !std::isfinite(this->r2)
     || (this->r1 <= 0 && this->r2 <= 0)
     ) {
-    return std::make_unique<PolySet>(3, true);
+    return PolySet::createEmpty();
   }
 
   auto num_fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
@@ -277,7 +277,7 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
     z2 = this->h;
   }
 
-  auto polyset = std::make_unique<PolySet>(3, true);
+  auto polyset = std::make_unique<PolySet>(3, /*convex*/true);
   polyset->vertices.reserve(2 * num_fragments);
 
   generate_circle(std::back_inserter(polyset->vertices), r1, z1, num_fragments);
@@ -404,12 +404,17 @@ std::string PolyhedronNode::toString() const
 
 std::unique_ptr<const Geometry> PolyhedronNode::createGeometry() const
 {
-  auto p = std::make_unique<PolySet>(3);
+  auto p = PolySet::createEmpty();
   p->setConvexity(this->convexity);
   p->vertices=this->points;
   p->indices=this->faces;
-  for (auto &poly : p->indices)
+  p->isTriangular = true;
+  for (auto &poly : p->indices) {
     std::reverse(poly.begin(),poly.end());
+    if (p->isTriangular && poly.size() > 3) {
+      p->isTriangular = false;
+    }
+  }
   return p;
 }
 
@@ -474,6 +479,7 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
         }
         pointIndexIndex++;
       }
+      // FIXME: Print an error message if < 3 vertices are specified
       if (face.size() >= 3) {
         node->faces.push_back(std::move(face));
       }

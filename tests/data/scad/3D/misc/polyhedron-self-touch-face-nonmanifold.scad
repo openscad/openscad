@@ -1,3 +1,5 @@
+// A single volume touching itself (three pairs of coincident vertices forming a triangle).
+// This is a non-manifold object since the collapsed vertices are not distinct.
 polyhedron(
   points=[
     [0, 0, 0],

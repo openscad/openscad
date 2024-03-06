@@ -31,7 +31,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
     if (ps) {
       auto poly = std::make_shared<Polyhedron>();
       CGALUtils::createPolyhedronFromPolySet(*ps, *poly);
-      if (pIsConvexOut) *pIsConvexOut = ps->is_convex();
+      if (pIsConvexOut) *pIsConvexOut = ps->isConvex();
       return poly;
     } else {
       if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {

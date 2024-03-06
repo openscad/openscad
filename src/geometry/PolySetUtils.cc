@@ -164,7 +164,7 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
       }
       LOG(message_group::Error, "Nef->PolySet failed.");
     }
-    return std::make_unique<PolySet>(3);
+    return PolySet::createEmpty();
   }
   if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return hybrid->toPolySet();

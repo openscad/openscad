@@ -23,7 +23,7 @@ public:
   size_t memsize() const override;
   BoundingBox getBoundingBox() const override;
   std::string dump() const override;
-  unsigned int getDimension() const override { return this->dim; }
+  unsigned int getDimension() const override { return dim_; }
   bool isEmpty() const override { return indices.empty(); }
   std::unique_ptr<Geometry> copy() const override;
 
@@ -32,12 +32,14 @@ public:
   void transform(const Transform3d& mat) override;
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
-  bool is_convex() const;
-  boost::tribool convexValue() const { return this->convex; }
+  bool isConvex() const;
+  boost::tribool convexValue() const { return convex_; }
   bool isTriangular = false;
 
+  static std::unique_ptr<PolySet> createEmpty() { return std::make_unique<PolySet>(3); }
+
 private:
-  unsigned int dim;
-  mutable boost::tribool convex;
-  mutable BoundingBox bbox;
+  unsigned int dim_;
+  mutable boost::tribool convex_;
+  mutable BoundingBox bbox_;
 };
