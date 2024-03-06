@@ -30,6 +30,7 @@
 #include "printutils.h"
 #include "Grid.h"
 #include <Eigen/LU>
+#include <unordered_set>
 #include <utility>
 
 /*! /class PolySet
@@ -46,7 +47,8 @@
 
  */
 
-PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim_(dim), convex_(convex)
+PolySet::PolySet(unsigned int dim, boost::tribool convex, boost::tribool manifold)
+ : dim_(dim), convex_(convex), is_manifold_(manifold)
 {
 }
 
@@ -108,7 +110,31 @@ void PolySet::transform(const Transform3d& mat)
 bool PolySet::isConvex() const {
   if (convex_ || this->isEmpty()) return true;
   if (!convex_) return false;
-  return PolySetUtils::is_approximately_convex(*this);
+  bool is_convex = PolySetUtils::is_approximately_convex(*this);
+  convex_ = is_convex;
+  return is_convex;
+}
+
+bool PolySet::isManifold() const {
+  // FIXME: We only support checking triangular PolySets
+  if (!is_triangular_ || this->vertices.size() <= 3 || this->indices.size() <= 3) {
+    is_manifold_ = false;
+    return false;
+  }
+
+  std::unordered_map<Vector2i, int> edges;
+  for (const IndexedFace& face : this->indices) {
+    for (int i=0;i<3;i++) {
+      Vector2i edge(face[i], face[(i+1)%3]);
+      if (edge[0] > edge[1]) edge.reverseInPlace();
+      edges[edge]++;
+    }
+  }
+
+  bool is_manifold = std::all_of(edges.cbegin(), edges.cend(), 
+                                 [](const auto &entry) { return entry.second == 2; });
+  is_manifold_ = is_manifold;
+  return is_manifold;
 }
 
 void PolySet::resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize)

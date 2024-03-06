@@ -18,7 +18,7 @@ public:
   PolygonIndices indices;
   std::vector<Vector3d> vertices;
 
-  PolySet(unsigned int dim, boost::tribool convex = unknown);
+  PolySet(unsigned int dim, boost::tribool convex = unknown, boost::tribool manifold = unknown);
 
   size_t memsize() const override;
   BoundingBox getBoundingBox() const override;
@@ -34,11 +34,19 @@ public:
 
   bool isConvex() const;
   boost::tribool convexValue() const { return convex_; }
-  bool isTriangular = false;
+
+  bool isTriangular() const { return is_triangular_; }
+  void setTriangular(bool triangular) { is_triangular_ = triangular; }
+
+  bool isManifold() const;
+  boost::tribool manifoldValue() const { return is_manifold_; }
+  void setManifold(bool manifold) const { is_manifold_ = manifold; }
 
   static std::unique_ptr<PolySet> createEmpty() { return std::make_unique<PolySet>(3); }
 
 private:
+  bool is_triangular_ = false;
+  mutable boost::tribool is_manifold_ = unknown;
   unsigned int dim_;
   mutable boost::tribool convex_;
   mutable BoundingBox bbox_;

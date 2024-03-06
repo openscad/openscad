@@ -384,7 +384,7 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhed
   for (const auto& tri : allTriangles) {
     polyset->indices.push_back({tri[0], tri[1], tri[2]});
   }
-  polyset->isTriangular = true;
+  polyset->setTriangular(true);
 
 #if 0 // For debugging
   std::cerr.precision(20);
