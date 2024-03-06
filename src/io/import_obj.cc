@@ -36,7 +36,7 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
     "OBJ File line %1$s, %2$s line '%3$s' importing file '%4$s'",
     lineno, errstr, line, filename);
   };
-  std::vector<int> vertex_map;        
+  std::vector<int> vertex_map;
 
   while (!f.eof()) {
     lineno++;
