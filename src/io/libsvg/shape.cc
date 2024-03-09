@@ -184,7 +184,7 @@ shape::get_stroke_linejoin() const
     return ClipperLib::jtSquare;
   } else if (join == "round") {
     return ClipperLib::jtRound;
-  } else if (join == "square") {
+  } else if (join == "miter") {
     return ClipperLib::jtMiter;
   }
   return ClipperLib::jtMiter;
