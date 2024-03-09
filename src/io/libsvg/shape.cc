@@ -168,7 +168,7 @@ shape::get_stroke_linecap() const
   } else if (cap == "square") {
     return ClipperLib::etOpenSquare;
   }
-  return ClipperLib::etOpenSquare;
+  return ClipperLib::etOpenButt;
 }
 
 ClipperLib::JoinType
