@@ -102,7 +102,7 @@ uint64_t append_stl(std::shared_ptr<const PolySet> polyset, std::ostream& output
   static_assert(sizeof(float) == 4, "Need 32 bit float");
 
   std::shared_ptr<const PolySet> ps = polyset;
-  if (!ps->isTriangular) {
+  if (!ps->isTriangular()) {
     ps = PolySetUtils::tessellate_faces(*ps);
   }
   if (Feature::ExperimentalPredictibleOutput.is_enabled()) {

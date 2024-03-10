@@ -34,11 +34,14 @@ public:
 
   bool isConvex() const;
   boost::tribool convexValue() const { return convex_; }
-  bool isTriangular = false;
+
+  bool isTriangular() const { return is_triangular_; }
+  void setTriangular(bool triangular) { is_triangular_ = triangular; }
 
   static std::unique_ptr<PolySet> createEmpty() { return std::make_unique<PolySet>(3); }
 
 private:
+  bool is_triangular_ = false;
   unsigned int dim_;
   mutable boost::tribool convex_;
   mutable BoundingBox bbox_;

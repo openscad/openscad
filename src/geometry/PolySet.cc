@@ -46,7 +46,8 @@
 
  */
 
-PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim_(dim), convex_(convex)
+PolySet::PolySet(unsigned int dim, boost::tribool convex)
+ : dim_(dim), convex_(convex)
 {
 }
 
@@ -108,7 +109,9 @@ void PolySet::transform(const Transform3d& mat)
 bool PolySet::isConvex() const {
   if (convex_ || this->isEmpty()) return true;
   if (!convex_) return false;
-  return PolySetUtils::is_approximately_convex(*this);
+  bool is_convex = PolySetUtils::is_approximately_convex(*this);
+  convex_ = is_convex;
+  return is_convex;
 }
 
 void PolySet::resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize)

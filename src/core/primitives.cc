@@ -129,7 +129,7 @@ std::unique_ptr<const Geometry> CubeNode::createGeometry() const
     z2 = this->z;
   }
   int dimension = 3;
-  auto ps = std::make_unique<PolySet>(3, true);
+  auto ps = std::make_unique<PolySet>(3, /*convex*/true);
   for (int i = 0; i < 8; i++) {
     ps->vertices.emplace_back(i & 1 ? x2 : x1, i & 2 ? y2 : y1,
                               i & 4 ? z2 : z1);
@@ -194,7 +194,7 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
   //  if (num_rings % 2 == 0) num_rings++; // To ensure that the middle ring is at
   //  phi == 0 degrees
 
-  auto polyset = std::make_unique<PolySet>(3, true);
+  auto polyset = std::make_unique<PolySet>(3, /*convex*/true);
   polyset->vertices.reserve(num_rings * num_fragments);
 
   // double offset = 0.5 * ((fragments / 2) % 2);
@@ -408,13 +408,14 @@ std::unique_ptr<const Geometry> PolyhedronNode::createGeometry() const
   p->setConvexity(this->convexity);
   p->vertices=this->points;
   p->indices=this->faces;
-  p->isTriangular = true;
+  bool is_triangular = true;
   for (auto &poly : p->indices) {
     std::reverse(poly.begin(),poly.end());
-    if (p->isTriangular && poly.size() > 3) {
-      p->isTriangular = false;
+    if (is_triangular && poly.size() > 3) {
+      is_triangular = false;
     }
   }
+  p->setTriangular(is_triangular);
   return p;
 }
 
