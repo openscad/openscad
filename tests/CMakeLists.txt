@@ -1073,22 +1073,6 @@ add_cmdline_test(stlpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --fo
 
 set_tests_properties(
   # Manifold construction error. Probably due to polygon soup strategy
-  3mfpngtest_polyhedron-self-touch-face-nonmanifold
-  3mfpngtest_polyhedron-self-touch-face
-  objpngtest_polyhedron-self-touch-face-nonmanifold
-  objpngtest_polyhedron-self-touch-face
-  offpngtest_polyhedron-self-touch-face-nonmanifold
-  offpngtest_polyhedron-self-touch-face
-  stlpngtest_polyhedron-self-touch-face-nonmanifold
-  stlpngtest_polyhedron-self-touch-face
-	3mfpngtest_polyhedrons-touch-face-nonmanifold
-	3mfpngtest_polyhedrons-touch-face
-	objpngtest_polyhedrons-touch-face-nonmanifold
-	objpngtest_polyhedrons-touch-face
-	offpngtest_polyhedrons-touch-face-nonmanifold
-	offpngtest_polyhedrons-touch-face
-	stlpngtest_polyhedrons-touch-face-nonmanifold
-	stlpngtest_polyhedrons-touch-face
   PROPERTIES DISABLED TRUE
 )
 

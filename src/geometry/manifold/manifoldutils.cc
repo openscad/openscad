@@ -128,27 +128,29 @@ std::unique_ptr<const manifold::Manifold> createManifoldFromTriangularPolySet(co
 
 std::shared_ptr<const ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
 {
-  // FIXME: To create a Manifold object, we may need to first triangulate.
-  // The incoming PolySet could be severely broken if it originated from user or file input, so
-  // be prepared to repair it.
-  // 1. If it's not triangular, attempt to triangulate it directly
-  // 2. Try to create a Manifold object
-  // 3. If the Manifold object is broken (e.g. not a manifold), attempt repair
-     // 4. If successfully repaired, try to create Manifold again.
-
-  std::unique_ptr<const PolySet> ps_tri;
+  // 1. If the PolySet is already manifold, we should be able to build a Manifold object directly
+  // (through using manifold::Mesh).
+  // We need to make sure our PolySet is triangulated before doing that.
+  // Note: We currently don't have a way of directly checking if a PolySet is manifold,
+  // so we just try converting to a Manifold object and check its status. 
+  std::unique_ptr<const PolySet> triangulated;
   if (!ps.isTriangular()) {
-    ps_tri = PolySetUtils::tessellate_faces(ps);
+    triangulated = PolySetUtils::tessellate_faces(ps);
   }
-  const PolySet good_ps = ps.isTriangular() ? ps : *ps_tri;
-  auto mani = createManifoldFromTriangularPolySet(good_ps);
+  const PolySet triangle_set = ps.isTriangular() ? ps : *triangulated;
+
+  auto mani = createManifoldFromTriangularPolySet(triangle_set);
   if (mani->Status() == Error::NoError) {    
     return std::make_shared<const ManifoldGeometry>(std::shared_ptr<const manifold::Manifold>(std::move(mani)));
   }
 
-  LOG("Warning: [manifold] PolySet -> Manifold conversion failed: %1$s\n"
-      "Trying to repair and reconstruct mesh",
+  // FIXME: Should we suppress this warning, as it may not be very actionable?
+  LOG(message_group::Warning,"PolySet -> Manifold conversion failed: %1$s\n"
+      "Trying to repair and reconstruct mesh..",
       ManifoldUtils::statusToString(mani->Status()));
+
+  // 2. If the PolySet couldn't be converted into a Manifold object, let's try to repair it.
+  // We currently have to utilize some CGAL functions to do this.
   {
   #ifdef ENABLE_CGAL
     PolySet psq(ps);
