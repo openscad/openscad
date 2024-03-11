@@ -36,9 +36,9 @@ const char* statusToString(Error status) {
 std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) {
   manifold::Mesh mesh;
   std::unique_ptr<PolySet> buffer;
-  if (!ps.isTriangular)
+  if (!ps.isTriangular())
     buffer = PolySetUtils::tessellate_faces(ps);
-  const PolySet& triangulated = ps.isTriangular ? ps : *buffer;
+  const PolySet& triangulated = ps.isTriangular() ? ps : *buffer;
 
   auto numfaces = triangulated.indices.size();
   const auto &vertices = triangulated.vertices;

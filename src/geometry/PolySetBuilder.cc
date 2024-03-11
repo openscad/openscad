@@ -141,17 +141,17 @@ void PolySetBuilder::append(const PolySet& ps)
 
 std::unique_ptr<PolySet> PolySetBuilder::build()
 {
-  std::unique_ptr<PolySet> polyset;
-  polyset = std::make_unique<PolySet>(dim_, convex_);
+  auto polyset = std::make_unique<PolySet>(dim_, convex_);
   vertices_.copy(std::back_inserter(polyset->vertices));
   polyset->indices = std::move(indices_);
   polyset->setConvexity(convexity_);
-  polyset->isTriangular = true;
+  bool is_triangular = true;
   for (const auto& face : polyset->indices) {
     if (face.size() > 3) {
-      polyset->isTriangular = false;
+      is_triangular = false;
       break;
     }
   }
+  polyset->setTriangular(is_triangular);
   return polyset;
 }

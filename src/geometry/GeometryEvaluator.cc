@@ -76,7 +76,7 @@ std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const Abstra
       ps = PolySetUtils::getGeometryAsPolySet(result);
       assert(ps && ps->getDimension() == 3);
       // We cannot render concave polygons, so tessellate any PolySets
-      if (!ps->isEmpty() && !ps->isTriangular) {
+      if (!ps->isEmpty() && !ps->isTriangular()) {
         // Since is_convex() doesn't handle non-planar faces, we need to tessellate
         // also in the indeterminate state so we cannot just use a boolean comparison. See #1061
         bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)

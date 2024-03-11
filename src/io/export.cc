@@ -195,7 +195,9 @@ struct LexographicLess {
 
 std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
 {
-  auto out = PolySet::createEmpty();
+  auto out = std::make_unique<PolySet>(ps.getDimension(), ps.convexValue());
+  out->setTriangular(ps.isTriangular());
+  out->setConvexity(ps.getConvexity());
 
   std::map<Vector3d, int, LexographicLess> vertexMap;
 
