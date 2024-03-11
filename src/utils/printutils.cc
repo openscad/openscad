@@ -8,6 +8,8 @@
 #include "exceptions.h"
 
 
+static void PRINT_NOCACHE(const Message& msgObj);
+
 namespace fs = boost::filesystem;
 
 std::set<std::string> printedDeprecations;
@@ -84,16 +86,9 @@ void PRINT(const Message& msgObj)
   }
 
   PRINT_NOCACHE(msgObj);
-
-  //to error log
-  if (outputhandler2 &&
-      !(msgObj.group == message_group::NONE || msgObj.group == message_group::Echo || msgObj.group == message_group::Trace)) {
-
-    outputhandler2(msgObj, outputhandler_data);
-  }
 }
 
-void PRINT_NOCACHE(const Message& msgObj)
+static void PRINT_NOCACHE(const Message& msgObj)
 {
   if (msgObj.msg.empty() && msgObj.group != message_group::Echo) return;
 
@@ -107,7 +102,7 @@ void PRINT_NOCACHE(const Message& msgObj)
     if (i == 5) return; // Suppress output after 5 equal ERROR or WARNING outputs.
     lastmessages.push_back(msg);
   }
-  if (!deferred)
+  if (!deferred) {
     if (!OpenSCAD::quiet || msgObj.group == message_group::Error) {
       if (!outputhandler) {
         std::cerr << msg << "\n";
@@ -115,10 +110,27 @@ void PRINT_NOCACHE(const Message& msgObj)
         outputhandler(msgObj, outputhandler_data);
       }
     }
+
+    //to error log
+    if (outputhandler2 &&
+        !(msgObj.group == message_group::NONE || msgObj.group == message_group::Echo || msgObj.group == message_group::Trace)) {
+
+      outputhandler2(msgObj, outputhandler_data);
+    }
+  }
+}
+
+void MAYBETHROW(const Message& msgObj)
+{
   if (!std::current_exception()) {
-    if ((OpenSCAD::hardwarnings && msgObj.group == message_group::Warning) || (no_throw && msgObj.group == message_group::Error)) {
+    if (msgObj.group == message_group::Warning) {
+      if (OpenSCAD::hardwarnings) {
+        if (no_throw) deferred = true;
+        else throw HardWarningException(msgObj.msg);
+      }
+    } else if (msgObj.group == message_group::Error) {
       if (no_throw) deferred = true;
-      else throw HardWarningException(msgObj.msg);
+      else throw EvaluationException(msgObj.msg);
     }
   }
 }
