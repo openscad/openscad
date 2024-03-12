@@ -697,30 +697,21 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
         ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
         if ((geom = res.constptr())) {
           if (geom->getDimension() == 2) {
-            std::shared_ptr<const Polygon2d> polygons = std::dynamic_pointer_cast<const Polygon2d>(geom);
+            auto polygons =  std::dynamic_pointer_cast<Polygon2d>(res.asMutableGeometry());
             assert(polygons);
-
-            // If we got a const object, make a copy
-            std::shared_ptr<Polygon2d> newpoly;
-            if (res.isConst()) {
-              newpoly = std::make_shared<Polygon2d>(*polygons);
-            }
-            else {
-              newpoly = std::dynamic_pointer_cast<Polygon2d>(res.ptr());
-            }
 
             Transform2d mat2;
             mat2.matrix() <<
               node.matrix(0, 0), node.matrix(0, 1), node.matrix(0, 3),
               node.matrix(1, 0), node.matrix(1, 1), node.matrix(1, 3),
               node.matrix(3, 0), node.matrix(3, 1), node.matrix(3, 3);
-            newpoly->transform(mat2);
+            polygons->transform(mat2);
             // FIXME: We lose the transform if we copied a const geometry above. Probably similar issue in multiple places
             // A 2D transformation may flip the winding order of a polygon.
             // If that happens with a sanitized polygon, we need to reverse
             // the winding order for it to be correct.
-            if (newpoly->isSanitized() && mat2.matrix().determinant() <= 0) {
-              geom = ClipperUtils::sanitize(*newpoly);
+            if (polygons->isSanitized() && mat2.matrix().determinant() <= 0) {
+              geom = ClipperUtils::sanitize(*polygons);
             }
           } else if (geom->getDimension() == 3) {
             auto mutableGeom = res.asMutableGeometry();
@@ -1479,12 +1470,9 @@ Response GeometryEvaluator::visit(State& state, const CgalAdvNode& node)
         geom = res.constptr();
         // If we added convexity, we need to pass it on
         if (geom && geom->getConvexity() != node.convexity) {
-          std::shared_ptr<Geometry> editablegeom;
-          // If we got a const object, make a copy
-          if (res.isConst()) editablegeom = geom->copy();
-          else editablegeom = res.ptr();
-          geom = editablegeom;
+          auto editablegeom = res.asMutableGeometry();
           editablegeom->setConvexity(node.convexity);
+          geom = editablegeom;
         }
         break;
       }

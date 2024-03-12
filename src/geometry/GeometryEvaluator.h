@@ -55,13 +55,12 @@ public:
     ResultObject() : is_const(true) {}
     ResultObject(std::shared_ptr<const Geometry> g) : is_const(true), const_pointer(std::move(g)) {}
     ResultObject(std::shared_ptr<Geometry> g) : is_const(false), pointer(std::move(g)) {}
-    [[nodiscard]] bool isConst() const { return is_const; }
     std::shared_ptr<Geometry> ptr() { assert(!is_const); return pointer; }
     [[nodiscard]] std::shared_ptr<const Geometry> constptr() const {
       return is_const ? const_pointer : std::static_pointer_cast<const Geometry>(pointer);
     }
     std::shared_ptr<Geometry> asMutableGeometry() {
-      if (isConst()) return std::shared_ptr<Geometry>(constptr() ? constptr()->copy() : nullptr);
+      if (is_const) return {constptr() ? constptr()->copy() : nullptr};
       else return ptr();
     }
 private:
