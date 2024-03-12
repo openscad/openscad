@@ -11,11 +11,11 @@
 #include <CGAL/version.h>
 #include <CGAL/convex_hull_3.h>
 #include "cgalutils.h"
-#endif
+#endif  // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
 #include "manifoldutils.h"
-#endif
+#endif  // ENABLE_MANIFOLD
 
 #include "Feature.h"
 #include "PolySet.h"
@@ -65,7 +65,7 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
           addPoint(CGALUtils::vector_convert<K::Point_3>(p));
           return false;
         });
-#endif
+#endif  // ENABLE_MANIFOLD
     } else if (const auto *ps = dynamic_cast<const PolySet*>(chgeom.get())) {
       addCapacity(ps->indices.size() * 3);
       for (const auto& p : ps->indices) {
@@ -100,6 +100,8 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
 
 /*!
    children cannot contain nullptr objects
+
+  FIXME: This shouldn't return const, but it does due to internal implementation details
  */
 std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 {
@@ -107,7 +109,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
   if (Feature::ExperimentalManifold.is_enabled()) {
     return ManifoldUtils::applyMinkowskiManifold(children);
   }
-#endif
+#endif  // ENABLE_MANIFOLD
   if (Feature::ExperimentalFastCsg.is_enabled()) {
     return CGALUtils::applyMinkowskiHybrid(children);
   }
@@ -311,7 +313,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
     return N;
   }
 }
-#else
+#else  // ENABLE_CGAL
 bool applyHull(const Geometry::Geometries& children, PolySet& result)
 {
   return false;
@@ -321,4 +323,4 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
 {
   return std::make_shared<PolySet>(3);
 }
-#endif
+#endif  // ENABLE_CGAL

@@ -119,7 +119,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
 
         if (minkowski_points.size() <= 3) {
           t.stop();
-          return std::make_shared<const ManifoldGeometry>();
+          return std::make_shared<ManifoldGeometry>();
         }
 
         t.stop();

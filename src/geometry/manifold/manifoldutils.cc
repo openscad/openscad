@@ -66,7 +66,7 @@ std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) 
 }
 
 template <class TriangleMesh>
-std::shared_ptr<const ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMesh& tm)
+std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMesh& tm)
 {
   typedef typename TriangleMesh::Vertex_index vertex_descriptor;
 
@@ -102,8 +102,8 @@ std::shared_ptr<const ManifoldGeometry> createManifoldFromSurfaceMesh(const Tria
 }
 
 #ifdef ENABLE_CGAL
-template std::shared_ptr<const ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &tm);
-template std::shared_ptr<const ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL_DoubleMesh &tm);
+template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &tm);
+template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL_DoubleMesh &tm);
 #endif
 
 std::unique_ptr<const manifold::Manifold> createManifoldFromTriangularPolySet(const PolySet& ps)
@@ -126,7 +126,7 @@ std::unique_ptr<const manifold::Manifold> createManifoldFromTriangularPolySet(co
   return std::make_unique<manifold::Manifold>(std::move(mesh));
 }
 
-std::shared_ptr<const ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
+std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
 {
   // 1. If the PolySet is already manifold, we should be able to build a Manifold object directly
   // (through using manifold::Mesh).
@@ -141,7 +141,7 @@ std::shared_ptr<const ManifoldGeometry> createManifoldFromPolySet(const PolySet&
 
   auto mani = createManifoldFromTriangularPolySet(triangle_set);
   if (mani->Status() == Error::NoError) {    
-    return std::make_shared<const ManifoldGeometry>(std::shared_ptr<const manifold::Manifold>(std::move(mani)));
+    return std::make_shared<ManifoldGeometry>(std::shared_ptr<const manifold::Manifold>(std::move(mani)));
   }
 
   // FIXME: Should we suppress this warning, as it may not be very actionable?

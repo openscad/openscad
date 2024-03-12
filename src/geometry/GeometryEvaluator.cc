@@ -108,7 +108,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
   for (const auto& item : this->visitedchildren[node.index()]) {
     if (!isValidDim(item, dim)) break;
   }
-  if (dim == 2) return {std::shared_ptr<Geometry>(applyToChildren2D(node, op))};
+  if (dim == 2) return ResultObject::mutableResult(std::shared_ptr<Geometry>(applyToChildren2D(node, op)));
   else if (dim == 3) return applyToChildren3D(node, op);
   return {};
 }
@@ -124,7 +124,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   if (children.empty()) return {};
 
   if (op == OpenSCADOperator::HULL) {
-    return {std::shared_ptr<Geometry>(applyHull(children))};
+    return ResultObject::mutableResult(std::shared_ptr<Geometry>(applyHull(children)));
   } else if (op == OpenSCADOperator::FILL) {
     for (const auto& item : children) {
       LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(), "fill() not yet implemented for 3D");
@@ -132,7 +132,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   }
 
   // Only one child -> this is a noop
-  if (children.size() == 1) return {children.front().second};
+  if (children.size() == 1) return ResultObject::constResult(children.front().second);
 
   switch (op) {
   case OpenSCADOperator::MINKOWSKI:
@@ -142,8 +142,8 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
       if (item.second && !item.second->isEmpty()) actualchildren.push_back(item);
     }
     if (actualchildren.empty()) return {};
-    if (actualchildren.size() == 1) return {actualchildren.front().second};
-    return {applyMinkowski(actualchildren)};
+    if (actualchildren.size() == 1) return ResultObject::constResult(actualchildren.front().second);
+    return ResultObject::constResult(applyMinkowski(actualchildren));
     break;
   }
   case OpenSCADOperator::UNION:
@@ -153,17 +153,17 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
       if (item.second && !item.second->isEmpty()) actualchildren.push_back(item);
     }
     if (actualchildren.empty()) return {};
-    if (actualchildren.size() == 1) return {actualchildren.front().second};
+    if (actualchildren.size() == 1) return ResultObject::constResult(actualchildren.front().second);
 #ifdef ENABLE_MANIFOLD
     if (Feature::ExperimentalManifold.is_enabled()) {
-      return {ManifoldUtils::applyOperator3DManifold(actualchildren, op)};
+      return ResultObject::mutableResult(ManifoldUtils::applyOperator3DManifold(actualchildren, op));
     }
 #endif
 #ifdef ENABLE_CGAL
     else if (Feature::ExperimentalFastCsg.is_enabled()) {
-      return {std::shared_ptr<Geometry>(CGALUtils::applyUnion3DHybrid(actualchildren.begin(), actualchildren.end()))};
+      return ResultObject::mutableResult(std::shared_ptr<Geometry>(CGALUtils::applyUnion3DHybrid(actualchildren.begin(), actualchildren.end())));
     }
-    return {CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())};
+    return ResultObject::constResult(std::shared_ptr<const Geometry>(CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())));
 #else
     assert(false && "No boolean backend available");
 #endif
@@ -173,15 +173,15 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   {
 #ifdef ENABLE_MANIFOLD
     if (Feature::ExperimentalManifold.is_enabled()) {
-      return {ManifoldUtils::applyOperator3DManifold(children, op)};
+      return ResultObject::mutableResult(ManifoldUtils::applyOperator3DManifold(children, op));
     }
 #endif
 #ifdef ENABLE_CGAL
     if (Feature::ExperimentalFastCsg.is_enabled()) {
       // FIXME: It's annoying to have to disambiguate here:
-      return {std::shared_ptr<Geometry>(CGALUtils::applyOperator3DHybrid(children, op))};
+      return ResultObject::mutableResult(std::shared_ptr<Geometry>(CGALUtils::applyOperator3DHybrid(children, op)));
     }
-    return {CGALUtils::applyOperator3D(children, op)};
+    return ResultObject::constResult(CGALUtils::applyOperator3D(children, op));
 #else
     assert(false && "No boolean backend available");
     #endif
