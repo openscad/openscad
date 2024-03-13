@@ -33,38 +33,6 @@ const char* statusToString(Error status) {
   }
 }
 
-std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) {
-  manifold::Mesh mesh;
-  std::unique_ptr<PolySet> buffer;
-  if (!ps.isTriangular())
-    buffer = PolySetUtils::tessellate_faces(ps);
-  const PolySet& triangulated = ps.isTriangular() ? ps : *buffer;
-
-  auto numfaces = triangulated.indices.size();
-  const auto &vertices = triangulated.vertices;
-  const auto &indices = triangulated.indices;
-
-  mesh.vertPos.resize(vertices.size());
-  mesh.triVerts.resize(numfaces);
-  for (size_t i = 0, n = vertices.size(); i < n; i++) {
-    const auto &v = vertices[i];
-    mesh.vertPos[i] = glm::vec3((float) v.x(), (float) v.y(), (float) v.z());
-  }
-  const auto vertexCount = mesh.vertPos.size();
-//  assert(indices.size() == numfaces * 4);
-  for (size_t i = 0; i < numfaces; i++) {
-    unsigned int i0 = indices[i][0];
-    unsigned int i1 = indices[i][1];
-    unsigned int i2 = indices[i][2];
-    assert(i0 >= 0 && i0 < vertexCount &&
-           i1 >= 0 && i1 < vertexCount &&
-           i2 >= 0 && i2 < vertexCount);
-    assert(i0 != i1 && i0 != i2 && i1 != i2);
-    mesh.triVerts[i] = {i0, i1, i2};
-  }
-  return std::make_shared<manifold::Manifold>(std::move(mesh));
-}
-
 template <class TriangleMesh>
 std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMesh& tm)
 {
@@ -106,7 +74,7 @@ template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const C
 template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL_DoubleMesh &tm);
 #endif
 
-std::unique_ptr<const manifold::Manifold> createManifoldFromTriangularPolySet(const PolySet& ps)
+std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const PolySet& ps)
 {
   assert(ps.isTriangular());
 
@@ -123,7 +91,7 @@ std::unique_ptr<const manifold::Manifold> createManifoldFromTriangularPolySet(co
     mesh.triVerts.emplace_back(face[0], face[1], face[2]);
   }
 
-  return std::make_unique<manifold::Manifold>(std::move(mesh));
+  return std::make_shared<ManifoldGeometry>(std::make_shared<const manifold::Manifold>(std::move(mesh)));
 }
 
 std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
@@ -140,14 +108,14 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
   const PolySet triangle_set = ps.isTriangular() ? ps : *triangulated;
 
   auto mani = createManifoldFromTriangularPolySet(triangle_set);
-  if (mani->Status() == Error::NoError) {    
-    return std::make_shared<ManifoldGeometry>(std::shared_ptr<const manifold::Manifold>(std::move(mani)));
+  if (mani->getManifold().Status() == Error::NoError) {
+    return mani;
   }
 
   // FIXME: Should we suppress this warning, as it may not be very actionable?
   LOG(message_group::Warning,"PolySet -> Manifold conversion failed: %1$s\n"
       "Trying to repair and reconstruct mesh..",
-      ManifoldUtils::statusToString(mani->Status()));
+      ManifoldUtils::statusToString(mani->getManifold().Status()));
 
   // 2. If the PolySet couldn't be converted into a Manifold object, let's try to repair it.
   // We currently have to utilize some CGAL functions to do this.

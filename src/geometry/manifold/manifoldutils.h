@@ -16,9 +16,6 @@ namespace ManifoldUtils {
 
   const char* statusToString(manifold::Manifold::Error status);
 
-  /*! If the PolySet isn't trusted, use createManifoldFromPolySet which will triangulate and reorient it. */
-  std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps);
-
   std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps);
   std::shared_ptr<const ManifoldGeometry> createManifoldFromGeometry(const std::shared_ptr<const Geometry>& geom);
 
