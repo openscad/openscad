@@ -2,7 +2,6 @@
 # # This python script generates a large output .scad file (3.1MB) for stress testing the parser.
 # See Issue #2342 / Pull Request #2343
 
-from __future__ import print_function
 
 xcount = 100
 ycount = 100

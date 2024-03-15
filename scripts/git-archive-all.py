@@ -1,8 +1,4 @@
 #! /usr/bin/env python3
-# coding=utf-8
-
-from __future__ import print_function
-from __future__ import unicode_literals
 
 __version__ = "1.7"
 

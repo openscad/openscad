@@ -27,7 +27,6 @@
 #
 # 1. why is hash differing
 
-from __future__ import print_function
 
 import string, sys, re, os, hashlib, subprocess, time, platform, html, base64
 
