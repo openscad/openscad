@@ -105,7 +105,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
   if (!ps.isTriangular()) {
     triangulated = PolySetUtils::tessellate_faces(ps);
   }
-  const PolySet triangle_set = ps.isTriangular() ? ps : *triangulated;
+  const PolySet& triangle_set = ps.isTriangular() ? ps : *triangulated;
 
   auto mani = createManifoldFromTriangularPolySet(triangle_set);
   if (mani->getManifold().Status() == Error::NoError) {
