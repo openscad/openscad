@@ -110,7 +110,11 @@ void PolySetBuilder::beginPolygon(int nvertices) {
 
 void PolySetBuilder::addVertex(int ind)
 {
-  current_polygon_.push_back(ind);
+  // Ignore consecutive duplicate indices
+  if (current_polygon_.empty() || 
+      ind != current_polygon_.back() && ind != current_polygon_.front()) {
+    current_polygon_.push_back(ind);
+  }
 }
 
 void PolySetBuilder::addVertex(const Vector3d &v)
