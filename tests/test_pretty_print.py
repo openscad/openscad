@@ -222,7 +222,7 @@ def findlogfile(builddir):
 
 # --- Templating ---
 
-class Templates(object):
+class Templates:
     html_template = '''<html>
     <head><title>Test run for {sysid}</title>
     <meta charset="utf-8" />

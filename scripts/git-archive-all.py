@@ -7,7 +7,7 @@ from os import path, extsep
 from subprocess import Popen, PIPE, CalledProcessError
 
 
-class GitArchiver(object):
+class GitArchiver:
     """
     GitArchiver
 
