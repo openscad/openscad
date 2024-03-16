@@ -39,15 +39,6 @@ public:
   template <class Polyhedron>
   [[nodiscard]] std::shared_ptr<Polyhedron> toPolyhedron() const;
 
-  /*! In-place union. */
-  void operator+=(ManifoldGeometry& other);
-  /*! In-place intersection. */
-  void operator*=(ManifoldGeometry& other);
-  /*! In-place difference. */
-  void operator-=(ManifoldGeometry& other);
-  /*! In-place minkowksi operation. */
-  void minkowski(ManifoldGeometry& other);
-
   /*! union. */
   ManifoldGeometry operator+(const ManifoldGeometry& other) const;
   /*! intersection. */

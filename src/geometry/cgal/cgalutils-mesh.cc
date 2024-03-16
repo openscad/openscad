@@ -41,9 +41,11 @@ bool createMeshFromPolySet(const PolySet& ps, TriangleMesh& mesh)
 template bool createMeshFromPolySet(const PolySet& ps, CGAL_HybridMesh& mesh);
 template bool createMeshFromPolySet(const PolySet& ps, CGAL_DoubleMesh& mesh);
 
+
 template <class TriangleMesh>
 std::unique_ptr<PolySet> createPolySetFromMesh(const TriangleMesh& mesh)
 {
+  //  FIXME: We may want to convert directly, without PolySetBuilder here, to maintain manifoldness, if possible.
   PolySetBuilder builder(0, mesh.number_of_faces()+ mesh.number_of_faces());
   for (const auto& f : mesh.faces()) {
     builder.appendPoly(mesh.degree(f));

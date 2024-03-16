@@ -16,18 +16,16 @@ namespace ManifoldUtils {
 
   const char* statusToString(manifold::Manifold::Error status);
 
-  /*! If the PolySet isn't trusted, use createManifoldFromPolySet which will triangulate and reorient it. */
-  std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps);
-
-  std::shared_ptr<const ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps);
+  std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps);
   std::shared_ptr<const ManifoldGeometry> createManifoldFromGeometry(const std::shared_ptr<const Geometry>& geom);
 
   template <class TriangleMesh>
-  std::shared_ptr<const ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMesh& mesh);
+  std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMesh& mesh);
 
-  std::shared_ptr<const ManifoldGeometry> applyOperator3DManifold(const Geometry::Geometries& children, OpenSCADOperator op);
+  std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geometries& children, OpenSCADOperator op);
 
 #ifdef ENABLE_CGAL
+  // FIXME: This shouldn't return const, but it does due to internal implementation details.
   std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometries& children);
 #endif
 };

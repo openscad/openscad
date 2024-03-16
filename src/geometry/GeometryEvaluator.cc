@@ -108,7 +108,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
   for (const auto& item : this->visitedchildren[node.index()]) {
     if (!isValidDim(item, dim)) break;
   }
-  if (dim == 2) return {std::shared_ptr<Geometry>(applyToChildren2D(node, op))};
+  if (dim == 2) return ResultObject::mutableResult(std::shared_ptr<Geometry>(applyToChildren2D(node, op)));
   else if (dim == 3) return applyToChildren3D(node, op);
   return {};
 }
@@ -124,7 +124,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   if (children.empty()) return {};
 
   if (op == OpenSCADOperator::HULL) {
-    return {std::shared_ptr<Geometry>(applyHull(children))};
+    return ResultObject::mutableResult(std::shared_ptr<Geometry>(applyHull(children)));
   } else if (op == OpenSCADOperator::FILL) {
     for (const auto& item : children) {
       LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(), "fill() not yet implemented for 3D");
@@ -132,7 +132,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   }
 
   // Only one child -> this is a noop
-  if (children.size() == 1) return {children.front().second};
+  if (children.size() == 1) return ResultObject::constResult(children.front().second);
 
   switch (op) {
   case OpenSCADOperator::MINKOWSKI:
@@ -142,8 +142,8 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
       if (item.second && !item.second->isEmpty()) actualchildren.push_back(item);
     }
     if (actualchildren.empty()) return {};
-    if (actualchildren.size() == 1) return {actualchildren.front().second};
-    return {applyMinkowski(actualchildren)};
+    if (actualchildren.size() == 1) return ResultObject::constResult(actualchildren.front().second);
+    return ResultObject::constResult(applyMinkowski(actualchildren));
     break;
   }
   case OpenSCADOperator::UNION:
@@ -153,17 +153,17 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
       if (item.second && !item.second->isEmpty()) actualchildren.push_back(item);
     }
     if (actualchildren.empty()) return {};
-    if (actualchildren.size() == 1) return {actualchildren.front().second};
+    if (actualchildren.size() == 1) return ResultObject::constResult(actualchildren.front().second);
 #ifdef ENABLE_MANIFOLD
     if (Feature::ExperimentalManifold.is_enabled()) {
-      return {ManifoldUtils::applyOperator3DManifold(actualchildren, op)};
+      return ResultObject::mutableResult(ManifoldUtils::applyOperator3DManifold(actualchildren, op));
     }
 #endif
 #ifdef ENABLE_CGAL
     else if (Feature::ExperimentalFastCsg.is_enabled()) {
-      return {std::shared_ptr<Geometry>(CGALUtils::applyUnion3DHybrid(actualchildren.begin(), actualchildren.end()))};
+      return ResultObject::mutableResult(std::shared_ptr<Geometry>(CGALUtils::applyUnion3DHybrid(actualchildren.begin(), actualchildren.end())));
     }
-    return {CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())};
+    return ResultObject::constResult(std::shared_ptr<const Geometry>(CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())));
 #else
     assert(false && "No boolean backend available");
 #endif
@@ -173,15 +173,15 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   {
 #ifdef ENABLE_MANIFOLD
     if (Feature::ExperimentalManifold.is_enabled()) {
-      return {ManifoldUtils::applyOperator3DManifold(children, op)};
+      return ResultObject::mutableResult(ManifoldUtils::applyOperator3DManifold(children, op));
     }
 #endif
 #ifdef ENABLE_CGAL
     if (Feature::ExperimentalFastCsg.is_enabled()) {
       // FIXME: It's annoying to have to disambiguate here:
-      return {std::shared_ptr<Geometry>(CGALUtils::applyOperator3DHybrid(children, op))};
+      return ResultObject::mutableResult(std::shared_ptr<Geometry>(CGALUtils::applyOperator3DHybrid(children, op)));
     }
-    return {CGALUtils::applyOperator3D(children, op)};
+    return ResultObject::constResult(CGALUtils::applyOperator3D(children, op));
 #else
     assert(false && "No boolean backend available");
     #endif
@@ -697,30 +697,21 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
         ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
         if ((geom = res.constptr())) {
           if (geom->getDimension() == 2) {
-            std::shared_ptr<const Polygon2d> polygons = std::dynamic_pointer_cast<const Polygon2d>(geom);
+            auto polygons =  std::dynamic_pointer_cast<Polygon2d>(res.asMutableGeometry());
             assert(polygons);
-
-            // If we got a const object, make a copy
-            std::shared_ptr<Polygon2d> newpoly;
-            if (res.isConst()) {
-              newpoly = std::make_shared<Polygon2d>(*polygons);
-            }
-            else {
-              newpoly = std::dynamic_pointer_cast<Polygon2d>(res.ptr());
-            }
 
             Transform2d mat2;
             mat2.matrix() <<
               node.matrix(0, 0), node.matrix(0, 1), node.matrix(0, 3),
               node.matrix(1, 0), node.matrix(1, 1), node.matrix(1, 3),
               node.matrix(3, 0), node.matrix(3, 1), node.matrix(3, 3);
-            newpoly->transform(mat2);
+            polygons->transform(mat2);
             // FIXME: We lose the transform if we copied a const geometry above. Probably similar issue in multiple places
             // A 2D transformation may flip the winding order of a polygon.
             // If that happens with a sanitized polygon, we need to reverse
             // the winding order for it to be correct.
-            if (newpoly->isSanitized() && mat2.matrix().determinant() <= 0) {
-              geom = ClipperUtils::sanitize(*newpoly);
+            if (polygons->isSanitized() && mat2.matrix().determinant() <= 0) {
+              geom = ClipperUtils::sanitize(*polygons);
             }
           } else if (geom->getDimension() == 3) {
             auto mutableGeom = res.asMutableGeometry();
@@ -1033,6 +1024,7 @@ static Outline2d splitOutlineByFn(
    Input to extrude should be sanitized. This means non-intersecting, correct winding order
    etc., the input coming from a library like Clipper.
  */
+ // FIXME: What happens if the input Polygon isn't manifold, or has coincident vertices?
 static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& poly)
 {
   bool non_linear = node.twist != 0 || node.scale_x != node.scale_y;
@@ -1478,12 +1470,9 @@ Response GeometryEvaluator::visit(State& state, const CgalAdvNode& node)
         geom = res.constptr();
         // If we added convexity, we need to pass it on
         if (geom && geom->getConvexity() != node.convexity) {
-          std::shared_ptr<Geometry> editablegeom;
-          // If we got a const object, make a copy
-          if (res.isConst()) editablegeom = geom->copy();
-          else editablegeom = res.ptr();
-          geom = editablegeom;
+          auto editablegeom = res.asMutableGeometry();
           editablegeom->setConvexity(node.convexity);
+          geom = editablegeom;
         }
         break;
       }
@@ -1537,6 +1526,7 @@ Response GeometryEvaluator::visit(State& state, const AbstractIntersectionNode& 
 }
 
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
+// FIXME: What is the convex/manifold situation of the resulting PolySet?
 static std::unique_ptr<Geometry> roofOverPolygon(const RoofNode& node, const Polygon2d& poly)
 {
   std::unique_ptr<PolySet> roof;
