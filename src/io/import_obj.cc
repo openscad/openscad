@@ -61,7 +61,7 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
       std::string args=results[1];
       std::vector<std::string> words;
       boost::split(words, results[1], boost::is_any_of(" \t"));
-      builder.appendPoly(words.size());
+      builder.beginPolygon(words.size());
       for (const std::string& word : words) {
         std::vector<std::string> wordindex;
         boost::split(wordindex, word, boost::is_any_of("/"));
@@ -70,7 +70,7 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
         else {
           int ind=boost::lexical_cast<int>(wordindex[0]);
           if(ind >= 1 && ind  <= vertex_map.size()) {
-            builder.appendVertex(vertex_map[ind-1]);
+            builder.addVertex(vertex_map[ind-1]);
           } else {  
             LOG(message_group::Warning, "Index %1$d out of range in Line %2$d", filename, lineno);
           }

@@ -322,6 +322,11 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode& node,
       CGALCache::instance()->insert(key, geom);
     }
   } else if (!GeometryCache::instance()->contains(key)) {
+    // FIXME: Sanity-check Polygon2d as well?
+    // if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+    //   assert(!ps->hasDegeneratePolygons());
+    // }
+
     // Perhaps add acceptsGeometry() to GeometryCache as well?
     if (!GeometryCache::instance()->insert(key, geom)) {
       LOG(message_group::Warning, "GeometryEvaluator: Node didn't fit into cache.");
@@ -618,6 +623,8 @@ Response GeometryEvaluator::visit(State& state, const LeafNode& node)
         if (!polygon->isSanitized()) {
           geom = ClipperUtils::sanitize(*polygon);
         }
+      } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+//        assert(!ps->hasDegeneratePolygons());
       }
     } else {
       geom = smartCacheGet(node, state.preferNef());
@@ -811,19 +818,19 @@ static void add_slice(PolySetBuilder &builder, const Polygon2d& poly,
         //Vector2d mid_prev = trans3 * (prev1 +curr1+curr2)/4;
         Vector2d mid = trans_mid * (o.vertices[(i - 1) % o.vertices.size()] + o.vertices[i % o.vertices.size()]) / 2;
         double h_mid = (h1 + h2) / 2;
-        builder.appendPoly(3);
+        builder.beginPolygon(3);
         builder.insertVertex(prev1[0], prev1[1], h1);
         builder.insertVertex(mid[0],   mid[1], h_mid);
         builder.insertVertex(curr1[0], curr1[1], h1);
-        builder.appendPoly(3);
+        builder.beginPolygon(3);
         builder.insertVertex(curr1[0], curr1[1], h1);
         builder.insertVertex(mid[0],   mid[1], h_mid);
         builder.insertVertex(curr2[0], curr2[1], h2);
-        builder.appendPoly(3);
+        builder.beginPolygon(3);
         builder.insertVertex(curr2[0], curr2[1], h2);
         builder.insertVertex(mid[0],   mid[1], h_mid);
         builder.insertVertex(prev2[0], prev2[1], h2);
-        builder.appendPoly(3);
+        builder.beginPolygon(3);
         builder.insertVertex(prev2[0], prev2[1], h2);
         builder.insertVertex(mid[0],   mid[1], h_mid);
         builder.insertVertex(prev1[0], prev1[1], h1);
@@ -832,26 +839,26 @@ static void add_slice(PolySetBuilder &builder, const Polygon2d& poly,
       // Split along shortest diagonal,
       // unless at top for a 0-scaled axis (which can create 0 thickness "ears")
       if (splitfirst xor any_zero) {
-        builder.appendPoly({
+        builder.appendPolygon({
                 Vector3d(curr1[0], curr1[1], h1),
                 Vector3d(curr2[0], curr2[1], h2),
                 Vector3d(prev1[0], prev1[1], h1)
                 });
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          builder.appendPoly({
+          builder.appendPolygon({
                 Vector3d(prev2[0], prev2[1], h2),
                 Vector3d(prev1[0], prev1[1], h1),
                 Vector3d(curr2[0], curr2[1], h2)
           });
         }
       } else {
-        builder.appendPoly({
+        builder.appendPolygon({
                 Vector3d(curr1[0], curr1[1], h1),
                 Vector3d(prev2[0], prev2[1], h2),
                 Vector3d(prev1[0], prev1[1], h1)
         });
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          builder.appendPoly({
+          builder.appendPolygon({
                 Vector3d(curr1[0], curr1[1], h1),
                 Vector3d(curr2[0], curr2[1], h2),
                 Vector3d(prev2[0], prev2[1], h2)
@@ -1139,7 +1146,7 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
     std::reverse(p.begin(), p.end());
   }
   translate_PolySet(*ps_bottom, Vector3d(0, 0, h1));
-  builder.append(*ps_bottom);
+  builder.appendPolySet(*ps_bottom);
 
   // Create slice sides.
   for (unsigned int j = 0; j < slices; j++) {
@@ -1162,7 +1169,7 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
     top_poly.transform(trans);
     auto ps_top = top_poly.tessellate();
     translate_PolySet(*ps_top, Vector3d(0, 0, h2));
-    builder.append(*ps_top);
+    builder.appendPolySet(*ps_top);
   }
 
   return builder.build();
@@ -1277,7 +1284,7 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
         std::reverse(p.begin(), p.end());
       }
     }
-    builder.append(*ps_start);
+    builder.appendPolySet(*ps_start);
 
     auto ps_end = poly.tessellate();
     Transform3d rot2(angle_axis_degrees(node.angle, Vector3d::UnitZ()) * angle_axis_degrees(90, Vector3d::UnitX()));
@@ -1287,7 +1294,7 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
         std::reverse(p.begin(), p.end());
       }
     }
-    builder.append(*ps_end);
+    builder.appendPolySet(*ps_end);
   }
 
   for (const auto& o : poly.outlines()) {
@@ -1303,13 +1310,13 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
       fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
 
       for (size_t i = 0; i < o.vertices.size(); ++i) {
-        builder.appendPoly({
+        builder.appendPolygon({
                 rings[j % 2][(i + 1) % o.vertices.size()],
                 rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
                 rings[j % 2][i]
         });                
 
-        builder.appendPoly({
+        builder.appendPolygon({
                 rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
                 rings[(j + 1) % 2][i],
                 rings[j % 2][i]
@@ -1343,6 +1350,7 @@ Response GeometryEvaluator::visit(State& state, const RotateExtrudeNode& node)
         geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       }
       if (geometry) {
+        geom = rotatePolygon(node, *geometry);
         geom = rotatePolygon(node, *geometry);
       }
     } else {

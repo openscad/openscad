@@ -121,9 +121,9 @@ std::unique_ptr<PolySet> Polygon2d::tessellate() const
   mark_domains(cdt);
   for (auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
     if (fit->info().in_domain()) {
-      builder.appendPoly(3);
+      builder.beginPolygon(3);
       for (int i = 0; i < 3; ++i) {
-        builder.appendVertex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0));
+        builder.addVertex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0));
       }
     }
   }

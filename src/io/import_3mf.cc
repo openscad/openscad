@@ -152,12 +152,12 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
 
       MODELMESHVERTEX vertex;
 
-      builder.appendPoly(3);
+      builder.beginPolygon(3);
       for(int i=0;i<3;i++) {
         if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[i], &vertex) != LIB3MF_OK) {
           return import_3mf_error(model, object_it);
         }
-        builder.appendVertex(Vector3d(vertex.m_fPosition[0], vertex.m_fPosition[1], vertex.m_fPosition[2]));
+        builder.addVertex(Vector3d(vertex.m_fPosition[0], vertex.m_fPosition[1], vertex.m_fPosition[2]));
       }
     }
 
@@ -312,11 +312,11 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
     for (Lib3MF_uint64 idx = 0; idx < triangle_count; ++idx) {
       Lib3MF::sTriangle triangle = object->GetTriangle(idx);
 
-      builder.appendPoly(3);
+      builder.beginPolygon(3);
 
       for(int i=0;i<3;i++) {
         Lib3MF::sPosition vertex = object->GetVertex(triangle.m_Indices[i]);
-        builder.appendVertex(Vector3d(vertex.m_Coordinates[0], vertex.m_Coordinates[1], vertex.m_Coordinates[2]));
+        builder.addVertex(Vector3d(vertex.m_Coordinates[0], vertex.m_Coordinates[1], vertex.m_Coordinates[2]));
       }
     }
 
