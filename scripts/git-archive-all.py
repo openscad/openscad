@@ -308,8 +308,7 @@ class GitArchiver:
         for submodule_path in self.read_shell("git submodule --quiet foreach 'pwd'", repo_abspath).splitlines():
             # In order to get output path we need to exclude repository path from submodule_path.
             submodule_path = path.relpath(submodule_path, self.main_repo_abspath)
-            for file_path in self.list_files(submodule_path):
-                yield file_path
+            yield from self.list_files(submodule_path)
 
     @staticmethod
     def run_shell(cmd, cwd=None):
