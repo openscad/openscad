@@ -352,6 +352,9 @@ public slots:
   void checkAutoReload();
   void waitAfterReload();
   void autoReloadSet(bool);
+#ifdef ENABLE_PYTHON
+  void recomputePythonActive();
+#endif
 
 private:
   bool network_progress_func(const double permille);
@@ -389,6 +392,9 @@ private:
 signals:
   void highlightError(int);
   void unhighlightLastError();
+  #ifdef ENABLE_PYTHON
+  void pythonActiveChanged(bool pythonActive);
+  #endif
 };
 
 class GuiLocker
