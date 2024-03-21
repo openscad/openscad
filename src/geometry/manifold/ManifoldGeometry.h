@@ -21,7 +21,6 @@ public:
   [[nodiscard]] size_t numVertices() const;
   [[nodiscard]] bool isManifold() const;
   [[nodiscard]] bool isValid() const;
-  void clear();
 
   [[nodiscard]] size_t memsize() const override;
   [[nodiscard]] BoundingBox getBoundingBox() const override;

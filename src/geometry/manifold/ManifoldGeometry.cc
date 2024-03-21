@@ -4,9 +4,6 @@
 #include "PolySet.h"
 #include "PolySetUtils.h"
 #include "manifoldutils.h"
-#ifdef ENABLE_CGAL
-#include "cgalutils.h"
-#endif
 
 namespace {
 
@@ -21,7 +18,7 @@ ManifoldGeometry::ManifoldGeometry() : manifold_(std::make_shared<const manifold
 
 ManifoldGeometry::ManifoldGeometry(const std::shared_ptr<const manifold::Manifold>& mani) : manifold_(mani) {
   assert(manifold_);
-  if (!manifold_) clear();
+  if (!manifold_) manifold_ = std::make_shared<manifold::Manifold>();
 }
 
 std::unique_ptr<Geometry> ManifoldGeometry::copy() const
@@ -58,10 +55,6 @@ bool ManifoldGeometry::isManifold() const {
 
 bool ManifoldGeometry::isValid() const {
   return manifold_->Status() == manifold::Manifold::Error::NoError;
-}
-
-void ManifoldGeometry::clear() {
-  manifold_ = std::make_shared<manifold::Manifold>();
 }
 
 size_t ManifoldGeometry::memsize() const {
@@ -115,24 +108,6 @@ std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
 
 std::shared_ptr<manifold::Manifold> binOp(const manifold::Manifold& lhs, const manifold::Manifold& rhs, manifold::OpType opType) {
   return std::make_shared<manifold::Manifold>(lhs.Boolean(rhs, opType));
-}
-
-std::shared_ptr<ManifoldGeometry> minkowskiOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs) {
-// FIXME: How to deal with operation not supported?
-#ifdef ENABLE_CGAL
-  auto lhs_nef = std::shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*lhs.toPolySet()));
-  auto rhs_nef = std::shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*rhs.toPolySet()));
-  if (lhs_nef->isEmpty() || rhs_nef->isEmpty()) {
-    return {};
-  }
-  lhs_nef->minkowski(*rhs_nef);
-
-  auto ps = PolySetUtils::getGeometryAsPolySet(lhs_nef);
-  if (!ps) return {};
-  else {
-    return ManifoldUtils::createManifoldFromPolySet(*ps);
-  }
-#endif
 }
 
 ManifoldGeometry ManifoldGeometry::operator+(const ManifoldGeometry& other) const {
