@@ -31,13 +31,6 @@ public:
 
   [[nodiscard]] std::shared_ptr<const PolySet> toPolySet() const;
 
-  /*! union. */
-  ManifoldGeometry operator+(const ManifoldGeometry& other) const;
-  /*! intersection. */
-  ManifoldGeometry operator*(const ManifoldGeometry& other) const;
-  /*! difference. */
-  ManifoldGeometry operator-(const ManifoldGeometry& other) const;
-
   void transform(const Transform3d& mat) override;
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
