@@ -106,22 +106,6 @@ std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   return ps;
 }
 
-std::shared_ptr<manifold::Manifold> binOp(const manifold::Manifold& lhs, const manifold::Manifold& rhs, manifold::OpType opType) {
-  return std::make_shared<manifold::Manifold>(lhs.Boolean(rhs, opType));
-}
-
-ManifoldGeometry ManifoldGeometry::operator+(const ManifoldGeometry& other) const {
-  return {binOp(*this->manifold_, *other.manifold_, manifold::OpType::Add)};
-}
-
-ManifoldGeometry ManifoldGeometry::operator*(const ManifoldGeometry& other) const {
-  return {binOp(*this->manifold_, *other.manifold_, manifold::OpType::Intersect)};
-}
-
-ManifoldGeometry ManifoldGeometry::operator-(const ManifoldGeometry& other) const {
-  return {binOp(*this->manifold_, *other.manifold_, manifold::OpType::Subtract)};
-}
-
 void ManifoldGeometry::transform(const Transform3d& mat) {
   glm::mat4x3 glMat(
     // Column-major ordering
