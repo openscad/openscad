@@ -147,10 +147,6 @@ ManifoldGeometry ManifoldGeometry::operator-(const ManifoldGeometry& other) cons
   return {binOp(*this->manifold_, *other.manifold_, manifold::OpType::Subtract)};
 }
 
-ManifoldGeometry ManifoldGeometry::minkowski(const ManifoldGeometry& other) const {
-  return {*minkowskiOp(*this, other)};
-}
-
 void ManifoldGeometry::transform(const Transform3d& mat) {
   glm::mat4x3 glMat(
     // Column-major ordering

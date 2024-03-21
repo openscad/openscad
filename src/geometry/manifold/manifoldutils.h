@@ -23,7 +23,6 @@ namespace ManifoldUtils {
   std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMesh& mesh);
 
   std::shared_ptr<ManifoldGeometry> applyOperator(const Geometry::Geometries& children, OpenSCADOperator op);
-  std::shared_ptr<ManifoldGeometry> applyMinkowski(const Geometry::Geometries& children);
 
 #ifdef ENABLE_CGAL
   // FIXME: This shouldn't return const, but it does due to internal implementation details.

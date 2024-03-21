@@ -38,9 +38,6 @@ public:
   ManifoldGeometry operator*(const ManifoldGeometry& other) const;
   /*! difference. */
   ManifoldGeometry operator-(const ManifoldGeometry& other) const;
-  /*! minkowksi operation. */
-  ManifoldGeometry minkowski(const ManifoldGeometry& other) const;
-
 
   void transform(const Transform3d& mat) override;
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
