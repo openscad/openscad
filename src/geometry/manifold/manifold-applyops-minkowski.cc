@@ -194,7 +194,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         fake_children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(),
                                                 part));
       }
-      auto N = ManifoldUtils::applyOperator3DManifold(fake_children, OpenSCADOperator::UNION);
+      auto N = ManifoldUtils::applyOperator(fake_children, OpenSCADOperator::UNION);
         
       // FIXME: This should really never throw.
       // Assert once we figured out what went wrong with issue #1069?
@@ -214,12 +214,12 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
     LOG(message_group::Warning,
         "[manifold] Minkowski failed with error, falling back to Nef operation: %1$s\n", e.what());
 
-    return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::MINKOWSKI);
+    return ManifoldUtils::applyMinkowski(children);
   } catch (...) {
     LOG(message_group::Warning,
         "[manifold] Minkowski hard-crashed, falling back to Nef operation.");
 
-    return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::MINKOWSKI);
+    return ManifoldUtils::applyMinkowski(children);
   }
 }
 

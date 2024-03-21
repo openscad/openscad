@@ -148,19 +148,19 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   }
   case OpenSCADOperator::UNION:
   {
+#ifdef ENABLE_MANIFOLD
+    if (Feature::ExperimentalManifold.is_enabled()) {
+      return ResultObject::mutableResult(ManifoldUtils::applyOperator(children, op));
+    }
+#endif
     Geometry::Geometries actualchildren;
     for (const auto& item : children) {
       if (item.second && !item.second->isEmpty()) actualchildren.push_back(item);
     }
     if (actualchildren.empty()) return {};
     if (actualchildren.size() == 1) return ResultObject::constResult(actualchildren.front().second);
-#ifdef ENABLE_MANIFOLD
-    if (Feature::ExperimentalManifold.is_enabled()) {
-      return ResultObject::mutableResult(ManifoldUtils::applyOperator3DManifold(actualchildren, op));
-    }
-#endif
 #ifdef ENABLE_CGAL
-    else if (Feature::ExperimentalFastCsg.is_enabled()) {
+    if (Feature::ExperimentalFastCsg.is_enabled()) {
       return ResultObject::mutableResult(std::shared_ptr<Geometry>(CGALUtils::applyUnion3DHybrid(actualchildren.begin(), actualchildren.end())));
     }
     return ResultObject::constResult(std::shared_ptr<const Geometry>(CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())));
@@ -173,7 +173,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   {
 #ifdef ENABLE_MANIFOLD
     if (Feature::ExperimentalManifold.is_enabled()) {
-      return ResultObject::mutableResult(ManifoldUtils::applyOperator3DManifold(children, op));
+      return ResultObject::mutableResult(ManifoldUtils::applyOperator(children, op));
     }
 #endif
 #ifdef ENABLE_CGAL
