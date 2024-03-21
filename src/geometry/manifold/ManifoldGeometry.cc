@@ -113,54 +113,6 @@ std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
   return ps;
 }
 
-#ifdef ENABLE_CGAL
-template <typename Polyhedron>
-class CGALPolyhedronBuilderFromManifold : public CGAL::Modifier_base<typename Polyhedron::HalfedgeDS>
-{
-  using HDS = typename Polyhedron::HalfedgeDS;
-  using CGAL_Polybuilder = CGAL::Polyhedron_incremental_builder_3<typename Polyhedron::HalfedgeDS>;
-public:
-  using CGALPoint = typename CGAL_Polybuilder::Point_3;
-
-  const manifold::Mesh& mesh;
-  CGALPolyhedronBuilderFromManifold(const manifold::Mesh& mesh) : mesh(mesh) { }
-
-  void operator()(HDS& hds) override {
-    CGAL_Polybuilder B(hds, true);
-  
-    B.begin_surface(mesh.vertPos.size(), mesh.triVerts.size());
-    for (const auto &v : mesh.vertPos) {
-      B.add_vertex(CGALUtils::vector_convert<CGALPoint>(v));
-    }
-
-    for (const auto &tv : mesh.triVerts) {
-      B.begin_facet();
-      for (const int j : {0, 1, 2}) {
-        B.add_vertex_to_facet(tv[j]);
-      }
-      B.end_facet();
-    }
-    B.end_surface();
-  }
-};
-
-template <class Polyhedron>
-std::shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
-{
-  auto p = std::make_shared<Polyhedron>();
-  try {
-    manifold::Mesh mesh = getManifold().GetMesh();
-    CGALPolyhedronBuilderFromManifold<Polyhedron> builder(mesh);
-    p->delegate(builder);
-  } catch (const CGAL::Assertion_exception& e) {
-    LOG(message_group::Error, "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
-  }
-  return p;
-}
-
-template std::shared_ptr<CGAL::Polyhedron_3<CGAL_Kernel3>> ManifoldGeometry::toPolyhedron() const;
-#endif
-
 std::shared_ptr<manifold::Manifold> binOp(const manifold::Manifold& lhs, const manifold::Manifold& rhs, manifold::OpType opType) {
   return std::make_shared<manifold::Manifold>(lhs.Boolean(rhs, opType));
 }

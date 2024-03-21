@@ -10,8 +10,64 @@
 #include "manifoldutils.h"
 #include "ManifoldGeometry.h"
 #include "parallel.h"
+#include "node.h"
+#include "PolySetUtils.h"
 
 namespace ManifoldUtils {
+
+namespace {
+
+
+#ifdef ENABLE_CGAL
+template <typename Polyhedron>
+class CGALPolyhedronBuilderFromManifold : public CGAL::Modifier_base<typename Polyhedron::HalfedgeDS>
+{
+  using HDS = typename Polyhedron::HalfedgeDS;
+  using CGAL_Polybuilder = CGAL::Polyhedron_incremental_builder_3<typename Polyhedron::HalfedgeDS>;
+public:
+  using CGALPoint = typename CGAL_Polybuilder::Point_3;
+
+  const manifold::Mesh& mesh;
+  CGALPolyhedronBuilderFromManifold(const manifold::Mesh& mesh) : mesh(mesh) { }
+
+  void operator()(HDS& hds) override {
+    CGAL_Polybuilder B(hds, true);
+  
+    B.begin_surface(mesh.vertPos.size(), mesh.triVerts.size());
+    for (const auto &v : mesh.vertPos) {
+      B.add_vertex(CGALUtils::vector_convert<CGALPoint>(v));
+    }
+
+    for (const auto &tv : mesh.triVerts) {
+      B.begin_facet();
+      for (const int j : {0, 1, 2}) {
+        B.add_vertex_to_facet(tv[j]);
+      }
+      B.end_facet();
+    }
+    B.end_surface();
+  }
+};
+
+template <class Polyhedron>
+std::shared_ptr<Polyhedron> createPolyhedronFromManifold(const ManifoldGeometry& manifold)
+{
+  auto p = std::make_shared<Polyhedron>();
+  try {
+    manifold::Mesh mesh = manifold.getManifold().GetMesh();
+    CGALPolyhedronBuilderFromManifold<Polyhedron> builder(mesh);
+    p->delegate(builder);
+  } catch (const CGAL::Assertion_exception& e) {
+    LOG(message_group::Error, "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
+  }
+  return p;
+}
+
+#endif
+
+
+}  // namespace
+
 
 /*!
    children cannot contain nullptr objects
@@ -35,7 +91,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
       return poly;
     } else {
       if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-        auto poly = mani->toPolyhedron<Polyhedron>();
+        auto poly = createPolyhedronFromManifold<Polyhedron>(*mani);
         if (pIsConvexOut) *pIsConvexOut = CGALUtils::is_weakly_convex(*poly);
         return poly;
       } else throw 0;
