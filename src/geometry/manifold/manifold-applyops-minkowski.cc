@@ -224,45 +224,6 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         Hull_Mesh mesh;
         CGAL::convex_hull_3(minkowski_points.begin(), minkowski_points.end(), mesh);
 
-        std::vector<Hull_kernel::Point_3> strict_points;
-        strict_points.reserve(minkowski_points.size());
-
-        for (auto v : mesh.vertices()) {
-          auto &p = mesh.point(v);
-
-          auto h = mesh.halfedge(v);
-          auto e = h;
-          bool collinear = false;
-          bool coplanar = true;
-
-          do {
-            auto &q = mesh.point(mesh.target(mesh.opposite(h)));
-            if (coplanar && !CGAL::coplanar(p, q,
-                                            mesh.point(mesh.target(mesh.next(h))),
-                                            mesh.point(mesh.target(mesh.next(mesh.opposite(mesh.next(h))))))) {
-              coplanar = false;
-            }
-
-
-            for (auto j = mesh.opposite(mesh.next(h));
-                  j != h && !collinear && !coplanar;
-                  j = mesh.opposite(mesh.next(j))) {
-
-              auto& r = mesh.point(mesh.target(mesh.opposite(j)));
-              if (CGAL::collinear(p, q, r)) {
-                collinear = true;
-              }
-            }
-
-            h = mesh.opposite(mesh.next(h));
-          } while (h != e && !collinear);
-
-          if (!collinear && !coplanar) strict_points.push_back(p);
-        }
-
-        mesh.clear();
-        CGAL::convex_hull_3(strict_points.begin(), strict_points.end(), mesh);
-
         t.stop();
         PRINTDB("Minkowski: Computing convex hull took %f s", t.time());
         t.reset();
