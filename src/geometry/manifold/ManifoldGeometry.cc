@@ -222,13 +222,3 @@ BoundingBox ManifoldGeometry::getBoundingBox() const
 void ManifoldGeometry::resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) {
   transform(GeometryUtils::getResizeTransform(this->getBoundingBox(), newsize, autosize));
 }
-
-/*! Iterate over all vertices' points until the function returns true (for done). */
-void ManifoldGeometry::foreachVertexUntilTrue(const std::function<bool(const glm::vec3& pt)>& f) const {
-  auto mesh = getManifold().GetMesh();
-  for (const auto &pt : mesh.vertPos) {
-    if (f(pt)) {
-      return;
-    }
-  }
-}

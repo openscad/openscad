@@ -2,11 +2,7 @@
 #pragma once
 
 #include "Geometry.h"
-#include <glm/glm.hpp>
-
-namespace manifold {
-  class Manifold;
-};
+#include "manifold.h"
 
 /*! A mutable polyhedron backed by a manifold::Manifold
  */
@@ -52,8 +48,12 @@ public:
   void transform(const Transform3d& mat) override;
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
-  /*! Iterate over all vertices' points until the function returns true (for done). */
-  void foreachVertexUntilTrue(const std::function<bool(const glm::vec3& pt)>& f) const;
+  /*! Iterate over all vertices' points */
+  template <class F>
+  void foreachVertex(F f) const {
+    const auto mesh = getManifold().GetMesh();
+    std::for_each(std::begin(mesh.vertPos), std::end(mesh.vertPos), f);
+  }
 
   const manifold::Manifold& getManifold() const;
 

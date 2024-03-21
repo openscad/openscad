@@ -61,10 +61,9 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
 #ifdef ENABLE_MANIFOLD
     } else if (const auto *mani = dynamic_cast<const ManifoldGeometry*>(chgeom.get())) {
       addCapacity(mani->numVertices());
-      mani->foreachVertexUntilTrue([&](auto& p) {
-          addPoint(CGALUtils::vector_convert<K::Point_3>(p));
-          return false;
-        });
+      mani->foreachVertex([&](const auto& p) {
+        addPoint(CGALUtils::vector_convert<K::Point_3>(p));
+      });
 #endif  // ENABLE_MANIFOLD
     } else if (const auto *ps = dynamic_cast<const PolySet*>(chgeom.get())) {
       addCapacity(ps->indices.size() * 3);
