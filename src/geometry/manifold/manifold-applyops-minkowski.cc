@@ -18,6 +18,43 @@ namespace ManifoldUtils {
 namespace {
 
 
+std::shared_ptr<ManifoldGeometry> minkowskiOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs) {
+// FIXME: How to deal with operation not supported?
+#ifdef ENABLE_CGAL
+  auto lhs_nef = std::shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*lhs.toPolySet()));
+  auto rhs_nef = std::shared_ptr<CGAL_Nef_polyhedron>(CGALUtils::createNefPolyhedronFromPolySet(*rhs.toPolySet()));
+  if (lhs_nef->isEmpty() || rhs_nef->isEmpty()) {
+    return {};
+  }
+  lhs_nef->minkowski(*rhs_nef);
+
+  auto ps = PolySetUtils::getGeometryAsPolySet(lhs_nef);
+  if (!ps) return {};
+  else {
+    return ManifoldUtils::createManifoldFromPolySet(*ps);
+  }
+#endif
+}
+
+std::shared_ptr<const Geometry> applyPairwiseMinkowski(const Geometry::Geometries& children)
+{
+  std::shared_ptr<ManifoldGeometry> geom;
+
+  for (const auto& item : children) {
+    auto child_geom = item.second ? createManifoldFromGeometry(item.second) : nullptr;
+    if (!child_geom || child_geom->isEmpty()) continue;
+
+    if (!geom) {
+      geom = std::make_shared<ManifoldGeometry>(*child_geom);
+    } else {
+      geom = minkowskiOp(*geom, *child_geom);
+    }
+    if (item.first) item.first->progress_report();
+  }
+  return geom;
+}
+
+
 #ifdef ENABLE_CGAL
 template <typename Polyhedron>
 class CGALPolyhedronBuilderFromManifold : public CGAL::Modifier_base<typename Polyhedron::HalfedgeDS>
@@ -270,12 +307,12 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
     LOG(message_group::Warning,
         "[manifold] Minkowski failed with error, falling back to Nef operation: %1$s\n", e.what());
 
-    return ManifoldUtils::applyMinkowski(children);
+    return applyPairwiseMinkowski(children);
   } catch (...) {
     LOG(message_group::Warning,
         "[manifold] Minkowski hard-crashed, falling back to Nef operation.");
 
-    return ManifoldUtils::applyMinkowski(children);
+    return applyPairwiseMinkowski(children);
   }
 }
 
