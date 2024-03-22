@@ -187,7 +187,7 @@ class GitArchiver:
         def read_attributes(attributes_abspath):
             patterns = []
             if path.isfile(attributes_abspath):
-                attributes = open(attributes_abspath, 'r').readlines()
+                attributes = open(attributes_abspath).readlines()
                 patterns = []
                 for line in attributes:
                     tokens = line.strip().split()
