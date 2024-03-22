@@ -58,7 +58,7 @@ for formula in boost; do
   fi
 done
 
-for formula in pkg-config eigen cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 qscintilla2 lib3mf double-conversion imagemagick ccache ghostscript tbb; do
+for formula in pkg-config eigen cgal glew glib opencsg freetype libzip libxml2 fontconfig harfbuzz qt5 lib3mf double-conversion imagemagick ccache ghostscript tbb; do
   log "Installing formula $formula"
   brew ls --versions $formula
   time brew install $formula
@@ -70,9 +70,14 @@ for formula in libzip opencsg; do
   time brew link $formula
 done
 
-for formula in gettext qt5 qscintilla2; do
+for formula in gettext qt5; do
   log "Linking formula $formula"
   time brew link --force $formula
 done
+
+# FIXME: Workaround for https://github.com/openscad/openscad/issues/5058
+curl -o qscintilla2.rb https://raw.githubusercontent.com/Homebrew/homebrew-core/da59bcdf7f1dadf70e30240394ddc0bd6014affe/Formula/q/qscintilla2.rb
+brew unlink qscintilla2
+brew install qscintilla2.rb
 
 $TAP untap openscad/homebrew-tap || true
