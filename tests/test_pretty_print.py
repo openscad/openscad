@@ -30,15 +30,10 @@
 
 import string, sys, re, os, hashlib, subprocess, time, platform, html, base64
 
+from urllib.error import URLError
+from urllib.request import urlopen
+from urllib.parse import urlencode
 
-try:
-    from urllib.error import URLError
-    from urllib.request import urlopen
-    from urllib.parse import urlencode
-except:
-    from urllib2 import URLError
-    from urllib2 import urlopen
-    from urllib import urlencode
 
 def tryread(filename):
     data = None
