@@ -277,32 +277,41 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
     z2 = this->h;
   }
 
+  bool cone = (r2 == 0.0);
+  bool inverted_cone = (r1 == 0.0);
+  
   auto polyset = std::make_unique<PolySet>(3, /*convex*/true);
-  polyset->vertices.reserve(2 * num_fragments);
+  polyset->vertices.reserve((cone || inverted_cone) ? num_fragments + 1 : 2 * num_fragments);
 
-  generate_circle(std::back_inserter(polyset->vertices), r1, z1, num_fragments);
-  generate_circle(std::back_inserter(polyset->vertices), r2, z2, num_fragments);
+  if (inverted_cone) {
+    polyset->vertices.emplace_back(0.0, 0.0, z1);
+  } else {
+   generate_circle(std::back_inserter(polyset->vertices), r1, z1, num_fragments);
+  }
+  if (cone) {
+    polyset->vertices.emplace_back(0.0, 0.0, z2);
+  } else {
+    generate_circle(std::back_inserter(polyset->vertices), r2, z2, num_fragments);
+  }
 
   for (int i = 0; i < num_fragments; ++i) {
     int j = (i + 1) % num_fragments;
-    polyset->indices.push_back({
-      i,
-      j,
-      j+num_fragments,
-      i+num_fragments,
-    });
+    if (cone) polyset->indices.push_back({i, j, num_fragments});
+    else if (inverted_cone) polyset->indices.push_back({0, j+1, i+1});
+    else polyset->indices.push_back({i, j, j+num_fragments, i+num_fragments});
   }
 
-  if (this->r1 > 0) {
+  if (!inverted_cone) {
     polyset->indices.push_back({});
     for (int i = 0; i < num_fragments; ++i) {
       polyset->indices.back().push_back(num_fragments-i-1);
     }
   }
-  if (this->r2 > 0) {
+  if (!cone) {
     polyset->indices.push_back({});
+    int offset = inverted_cone ? 1 : num_fragments;
     for (int i = 0; i < num_fragments; ++i) {
-      polyset->indices.back().push_back(num_fragments+i);
+      polyset->indices.back().push_back(offset+i);
     }
   }
 
