@@ -79,8 +79,57 @@ void OpenCSGRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
 
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges,
                            const shaderinfo_t *shaderinfo) const {
+#ifdef ENABLE_OPENCSG
   if (!shaderinfo && showedges) shaderinfo = &getShader();
-  renderCSGVBOProducts(showedges, shaderinfo);
+  for (const auto& product : vbo_vertex_products_) {
+    if (product->primitives().size() > 1) {
+      GL_CHECKD(OpenCSG::render(product->primitives()));
+      GL_TRACE0("glDepthFunc(GL_EQUAL)");
+      GL_CHECKD(glDepthFunc(GL_EQUAL));
+    }
+
+    if (shaderinfo && shaderinfo->progid) {
+      GL_TRACE("glUseProgram(%d)", shaderinfo->progid);
+      GL_CHECKD(glUseProgram(shaderinfo->progid));
+
+      if (shaderinfo->type == EDGE_RENDERING && showedges) {
+	shader_attribs_enable();
+      }
+    }
+
+    for (const auto& vs : product->states()) {
+      if (vs) {
+	if (std::shared_ptr<OpenCSGVertexState> csg_vs = std::dynamic_pointer_cast<OpenCSGVertexState>(vs)) {
+	  if (shaderinfo && shaderinfo->type == SELECT_RENDERING) {
+	    GL_TRACE("glUniform3f(%d, %f, %f, %f)", shaderinfo->data.select_rendering.identifier %
+		     (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
+		     (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
+		     (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+	    GL_CHECKD(glUniform3f(shaderinfo->data.select_rendering.identifier,
+				  ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
+				  ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
+				  ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+	  }
+	}
+	std::shared_ptr<VBOShaderVertexState> shader_vs = std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
+	if (!shader_vs || (showedges && shader_vs)) {
+	  vs->draw();
+	}
+      }
+    }
+
+    if (shaderinfo && shaderinfo->progid) {
+      GL_TRACE0("glUseProgram(0)");
+      GL_CHECKD(glUseProgram(0));
+
+      if (shaderinfo->type == EDGE_RENDERING && showedges) {
+	shader_attribs_disable();
+      }
+    }
+    GL_TRACE0("glDepthFunc(GL_LEQUAL)");
+    GL_CHECKD(glDepthFunc(GL_LEQUAL));
+  }
+#endif // ENABLE_OPENCSG
 }
 
 // Primitive for drawing using OpenCSG
@@ -137,9 +186,8 @@ void OpenCSGRenderer::createCSGVBOProducts(
   }
 
 #ifdef ENABLE_OPENCSG
-  size_t vbo_index = 0;
-  for (auto i = 0; i < products.products.size(); ++i) {
-    const auto &product = products.products[i];
+   for (auto i = 0; i < products.products.size(); ++i) {
+    const auto& product = products.products[i];
     const auto vertices_vbo = vertices_vbos[i];
     const auto elements_vbo = elements_vbos[i];
 
@@ -210,12 +258,8 @@ void OpenCSGRenderer::createCSGVBOProducts(
           // object is transparent, so draw rear faces first.  Issue #1496
           std::shared_ptr<VertexState> cull = std::make_shared<VertexState>();
           cull->glBegin().emplace_back([]() {
-            GL_TRACE0("glEnable(GL_CULL_FACE)");
-            glEnable(GL_CULL_FACE);
-          });
-          cull->glBegin().emplace_back([]() {
-            GL_TRACE0("glCullFace(GL_FRONT)");
-            glCullFace(GL_FRONT);
+            GL_TRACE0("glEnable(GL_CULL_FACE)"); glEnable(GL_CULL_FACE);
+            GL_TRACE0("glCullFace(GL_FRONT)"); glCullFace(GL_FRONT);
           });
           vertex_states->emplace_back(std::move(cull));
 
@@ -325,65 +369,6 @@ void OpenCSGRenderer::createCSGVBOProducts(
     vertex_array.createInterleavedVBOs();
     vbo_vertex_products_.emplace_back(std::make_unique<OpenCSGVBOProduct>(
         std::move(primitives), std::move(vertex_states)));
-  }
-#endif // ENABLE_OPENCSG
-}
-
-void OpenCSGRenderer::renderCSGVBOProducts(
-    bool showedges, const Renderer::shaderinfo_t *shaderinfo) const {
-#ifdef ENABLE_OPENCSG
-  for (const auto &product : vbo_vertex_products_) {
-    if (product->primitives().size() > 1) {
-      GL_CHECKD(OpenCSG::render(product->primitives()));
-      GL_TRACE0("glDepthFunc(GL_EQUAL)");
-      GL_CHECKD(glDepthFunc(GL_EQUAL));
-    }
-
-    if (shaderinfo && shaderinfo->progid) {
-      GL_TRACE("glUseProgram(%d)", shaderinfo->progid);
-      GL_CHECKD(glUseProgram(shaderinfo->progid));
-
-      if (shaderinfo->type == EDGE_RENDERING && showedges) {
-        shader_attribs_enable();
-      }
-    }
-
-    for (const auto &vs : product->states()) {
-      if (vs) {
-        std::shared_ptr<OpenCSGVertexState> csg_vs =
-            std::dynamic_pointer_cast<OpenCSGVertexState>(vs);
-        if (csg_vs) {
-          if (shaderinfo && shaderinfo->type == SELECT_RENDERING) {
-            GL_TRACE("glUniform3f(%d, %f, %f, %f)",
-                     shaderinfo->data.select_rendering.identifier %
-                         (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
-                         (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
-                         (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-            GL_CHECKD(glUniform3f(
-                shaderinfo->data.select_rendering.identifier,
-                ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-                ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-                ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-          }
-        }
-        std::shared_ptr<VBOShaderVertexState> shader_vs =
-            std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
-        if (!shader_vs || (showedges && shader_vs)) {
-          vs->draw();
-        }
-      }
-    }
-
-    if (shaderinfo && shaderinfo->progid) {
-      GL_TRACE0("glUseProgram(0)");
-      GL_CHECKD(glUseProgram(0));
-
-      if (shaderinfo->type == EDGE_RENDERING && showedges) {
-        shader_attribs_disable();
-      }
-    }
-    GL_TRACE0("glDepthFunc(GL_LEQUAL)");
-    GL_CHECKD(glDepthFunc(GL_LEQUAL));
   }
 #endif // ENABLE_OPENCSG
 }
