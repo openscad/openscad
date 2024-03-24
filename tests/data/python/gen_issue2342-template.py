@@ -11,7 +11,7 @@ totalcount = xcount*ycount*zcount
 for x in range(1, xcount):
     for y in range(1, ycount):
         for z in range(1, zcount):
-            print("translate([{}, {}, {}])".format(x,y,z))
+            print(f"translate([{x}, {y}, {z}])")
             print("  cube(0.5);")
 
-print("echo(\"{} elements processed\");".format(totalcount))
+print(f'echo("{totalcount} elements processed");')

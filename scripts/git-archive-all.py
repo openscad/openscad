@@ -55,7 +55,7 @@ class GitArchiver:
         try:
             self.run_shell("[ -d .git ] || git rev-parse --git-dir > /dev/null 2>&1", main_repo_abspath)
         except Exception as e:
-            raise ValueError("Not a git repository (or any of the parent directories).".format(path=main_repo_abspath))
+            raise ValueError(f"Not a git repository (or any of the parent directories).")
 
         # Detect toplevel directory of the repo.
         main_repo_abspath = path.abspath(self.read_git_shell('git rev-parse --show-toplevel', main_repo_abspath).rstrip())
@@ -102,13 +102,13 @@ class GitArchiver:
             elif output_format == 'tgz':
                 t_mode = 'w:gz'
             else:
-                t_mode = 'w:{f}'.format(f=output_format)
+                t_mode = f'w:{output_format}'
 
             if not dry_run:
                 archive = tarfile.open(path.abspath(output_path), t_mode)
                 add = lambda file_path, file_name: archive.add(file_path, path.join(self.prefix, file_name))
         else:
-            raise RuntimeError("Unknown format: {f}".format(f=output_format))
+            raise RuntimeError(f"Unknown format: {output_format}")
 
         for file_path in self.extra:
             if not dry_run:
@@ -254,7 +254,7 @@ class GitArchiver:
                 for p in patterns:
                     if fnmatch(file_name, p) or fnmatch(repo_file_path, p):
                         if self.verbose:
-                            print("Exclude pattern matched {pattern}: {path}".format(pattern=p, path=repo_file_path))
+                            print(f"Exclude pattern matched {p}: {repo_file_path}")
                         is_excluded = True
 
             if not len(components):
@@ -392,7 +392,7 @@ if __name__ == '__main__':
     from optparse import OptionParser
 
     parser = OptionParser(usage="usage: %prog [-v] [--prefix PREFIX] [--no-exclude] [--force-submodules] [--dry-run] OUTPUT_FILE",
-                          version="%prog {version}".format(version=__version__))
+                          version=f"%prog {__version__}")
 
     parser.add_option('--prefix',
                       type='string',
@@ -454,6 +454,6 @@ if __name__ == '__main__':
                                options.extra)
         archiver.create(output_file_path, options.dry_run)
     except Exception as e:
-        parser.exit(2, "{exception}\n".format(exception=e))
+        parser.exit(2, f"{e}\n")
 
     sys.exit(0)
