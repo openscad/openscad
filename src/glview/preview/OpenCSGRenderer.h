@@ -14,8 +14,6 @@
 #include <cstddef>
 #include <vector>
 
-class OpenCSGVBOPrim;
-
 class OpenCSGVertexState : public VertexState
 {
 public:
@@ -80,14 +78,8 @@ public:
 
   BoundingBox getBoundingBox() const override;
 private:
-#ifdef ENABLE_OPENCSG
-  OpenCSGVBOPrim *createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState>& vertex_state,
-                                     const OpenCSG::Operation operation, const unsigned int convexity) const;
-#endif // ENABLE_OPENCSG
   void createCSGVBOProducts(const CSGProducts& products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode);
-  void renderCSGVBOProducts(bool showedges, const Renderer::shaderinfo_t *shaderinfo) const;
 
-private:
   std::vector<std::unique_ptr<OpenCSGVBOProduct>> vbo_vertex_products_;
   std::vector<GLuint> all_vbos_;
   std::shared_ptr<CSGProducts> root_products_;

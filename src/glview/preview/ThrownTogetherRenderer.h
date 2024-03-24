@@ -65,13 +65,10 @@ private:
                          bool highlight_mode, bool background_mode,
                          OpenSCADOperator type);
 
-  Renderer::ColorMode getColorMode(const CSGNode::Flag& flags, bool highlight_mode,
-                                   bool background_mode, bool fberror, OpenSCADOperator type) const;
-
-  std::vector<std::shared_ptr<VertexState>> vertex_states;
-  std::shared_ptr<CSGProducts> root_products;
-  std::shared_ptr<CSGProducts> highlight_products;
-  std::shared_ptr<CSGProducts> background_products;
-  GLuint vertices_vbo{0};
-  GLuint elements_vbo{0};
+  std::vector<std::shared_ptr<VertexState>> vertex_states_;
+  std::shared_ptr<CSGProducts> root_products_;
+  std::shared_ptr<CSGProducts> highlight_products_;
+  std::shared_ptr<CSGProducts> background_products_;
+  GLuint vertices_vbo_{0};
+  GLuint elements_vbo_{0};
 };

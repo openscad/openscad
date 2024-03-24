@@ -14,11 +14,14 @@
 #include "glview/cgal/LegacyCGALRenderer.h"
 #endif
 
+namespace {
 
-static void setupCamera(Camera& cam, const BoundingBox& bbox)
+void setupCamera(Camera& cam, const BoundingBox& bbox)
 {
   if (cam.viewall) cam.viewAll(bbox);
 }
+
+}  // namespace
 
 bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOptions& options, Camera& camera, std::ostream& output)
 {
@@ -36,7 +39,7 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
 #else
   cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
 #endif
-  BoundingBox bbox = cgalRenderer->getBoundingBox();
+  const BoundingBox bbox = cgalRenderer->getBoundingBox();
   setupCamera(camera, bbox);
 
   glview->setCamera(camera);
@@ -106,7 +109,7 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
 
 
 #ifdef ENABLE_OPENCSG
-  BoundingBox bbox = glview->getRenderer()->getBoundingBox();
+  const BoundingBox bbox = glview->getRenderer()->getBoundingBox();
   setupCamera(camera, bbox);
 
   glview->setCamera(camera);
