@@ -33,6 +33,7 @@ public:
   boost::optional<std::string> layer;
   int convexity;
   bool center;
+  bool literal_coordinate;
   double dpi;
   double fn, fs, fa;
   double origin_x, origin_y, scale;

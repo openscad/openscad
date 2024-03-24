@@ -86,7 +86,7 @@ double calc_alignment(const libsvg::align_t alignment, double page_mm, double sc
 std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
 				      const std::string& filename,
 				      const boost::optional<std::string>& id, const boost::optional<std::string>& layer,
-				      const double dpi, const bool center, const Location& loc)
+				      const double dpi, const bool center, const Location& loc, const bool literal_coordinate)
 {
   try {
     fnContext scadContext(fn, fs, fa);
@@ -196,8 +196,8 @@ std::unique_ptr<Polygon2d> import_svg(double fn, double fs, double fa,
         for (const auto& p : s.get_path_list()) {
           Outline2d outline;
           for (const auto& v : p) {
-            double x = scale.x() * (-viewbox.x() + v.x()) - cx;
-            double y = scale.y() * (-viewbox.y() - v.y()) + cy;
+            double x = literal_coordinate ? v.x() : scale.x() * (-viewbox.x() + v.x()) - cx;
+            double y = literal_coordinate ? v.y() : scale.y() * (-viewbox.y() - v.y()) + cy;
             outline.vertices.push_back(Vector2d(x, y));
             outline.positive = true;
           }

@@ -14,7 +14,7 @@ std::unique_ptr<class Geometry> import_3mf(const std::string&, const Location& l
 std::unique_ptr<class Polygon2d> import_svg(double fn, double fs, double fa,
 					  const std::string& filename,
 					  const boost::optional<std::string>& id, const boost::optional<std::string>& layer,
-					  const double dpi, const bool center, const Location& loc);
+					  const double dpi, const bool center, const Location& loc, const bool literal_coordinate);
 
 #ifdef ENABLE_CGAL
 std::unique_ptr<class CGAL_Nef_polyhedron> import_nef3(const std::string& filename, const Location& loc);

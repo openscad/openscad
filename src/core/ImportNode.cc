@@ -62,7 +62,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"file", "layer", "convexity", "origin", "scale"},
-                                            {"width", "height", "filename", "layername", "center", "dpi", "id"}
+                                            {"width", "height", "filename", "layername", "center", "dpi", "id", "literal_coordinate"}
                                             );
 
   const auto& v = parameters["file"];
@@ -124,8 +124,15 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert import(..., origin=%1$s) parameter to vec2", origin.toEchoStringNoThrow());
   }
 
+  const auto& literal_coordinate = parameters["literal_coordinate"];
+  node->literal_coordinate = literal_coordinate.type() == Value::Type::BOOL ? literal_coordinate.toBool() : false;
+
   const auto& center = parameters["center"];
   node->center = center.type() == Value::Type::BOOL ? center.toBool() : false;
+
+  if (node->center && node->literal_coordinate) {
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Import argument center is ignored when literal_coordinate is set.");
+  }
 
   node->scale = parameters["scale"].toDouble();
   if (node->scale <= 0) node->scale = 1;
@@ -195,7 +202,7 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
     break;
   }
   case ImportType::SVG: {
-    g = import_svg(this->fn, this->fs, this->fa, this->filename, this->id, this->layer, this->dpi, this->center, loc);
+    g = import_svg(this->fn, this->fs, this->fa, this->filename, this->id, this->layer, this->dpi, this->center, loc, this->literal_coordinate);
     break;
   }
   case ImportType::DXF: {
@@ -234,6 +241,7 @@ std::string ImportNode::toString() const
   stream << ", origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "]";
   if (this->type == ImportType::SVG) {
     stream << ", center = " << (this->center ? "true" : "false")
+           << ", literal_coordinate = " << (this->literal_coordinate ? "true" : "false")
            << ", dpi = " << this->dpi;
   }
   stream << ", scale = " << this->scale
