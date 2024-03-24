@@ -108,6 +108,7 @@
 #include "geometry/Geometry.h"
 #include "geometry/GeometryCache.h"
 #include "geometry/GeometryEvaluator.h"
+#include "glview/PolySetRenderer.h"
 #include "glview/cgal/CGALRenderer.h"
 #include "glview/preview/CSGTreeNormalizer.h"
 #include "glview/preview/ThrownTogetherRenderer.h"
@@ -1290,7 +1291,7 @@ void MainWindow::instantiateRoot()
   // Invalidate renderers before we kill the CSG tree
   this->qglview->setRenderer(nullptr);
 #ifdef ENABLE_OPENCSG
-  this->opencsgRenderer = nullptr;
+  this->previewRenderer = nullptr;
 #endif
   this->thrownTogetherRenderer = nullptr;
 
@@ -1453,7 +1454,7 @@ void MainWindow::compileCSG()
     else {
       LOG("Normalized tree has %1$d elements!",
           (this->rootProduct ? this->rootProduct->size() : 0));
-      this->opencsgRenderer = std::make_shared<OpenCSGRenderer>(this->rootProduct,
+      this->previewRenderer = std::make_shared<OpenCSGRenderer>(this->rootProduct,
                                                                 this->highlightsProducts,
                                                                 this->backgroundProducts);
     }
@@ -2239,7 +2240,7 @@ void MainWindow::cgalRender()
   }
 
   this->qglview->setRenderer(nullptr);
-  this->cgalRenderer = nullptr;
+  this->geomRenderer = nullptr;
   rootGeom.reset();
 
   LOG("Rendering Polygon Mesh using %1$s...",
@@ -2274,8 +2275,16 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     renderStatistic.printAll(root_geom, qglview->cam, options);
     LOG("Rendering finished.");
 
-    rootGeom = root_geom;
-    this->cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
+    this->rootGeom = root_geom;
+    // Choose PolySetRenderer for Manifold since we know that all
+    // geometries are convertible to PolySet.
+    // TODO: Also choose PolySetRenderer for single-node PolySet/Polygon2D roots?
+    if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+      this->geomRenderer = std::make_shared<PolySetRenderer>(this->rootGeom);
+    } else {
+      this->geomRenderer = std::make_shared<CGALRenderer>(this->rootGeom);
+    }
+
     // Go to CGAL view mode
     viewModeRender();
     this->designActionMeasureDist->setEnabled(true);
@@ -2927,7 +2936,7 @@ void MainWindow::viewModeRender()
 {
   viewActionThrownTogether->setEnabled(false);
   viewActionPreview->setEnabled(false);
-  this->qglview->setRenderer(this->cgalRenderer);
+  this->qglview->setRenderer(this->geomRenderer);
   this->qglview->updateColorScheme();
   this->qglview->update();
 }
@@ -2943,7 +2952,7 @@ void MainWindow::viewModePreview()
   if (this->qglview->hasOpenCSGSupport()) {
     viewActionPreview->setChecked(true);
     viewActionThrownTogether->setChecked(false);
-    this->qglview->setRenderer(this->opencsgRenderer ? this->opencsgRenderer : this->thrownTogetherRenderer);
+    this->qglview->setRenderer(this->previewRenderer ? this->previewRenderer : this->thrownTogetherRenderer);
     this->qglview->updateColorScheme();
     this->qglview->update();
   } else {

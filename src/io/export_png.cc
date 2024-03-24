@@ -15,8 +15,15 @@
 #include "utils/printutils.h"
 
 #ifndef NULLGL
-
 #include "glview/cgal/CGALRenderer.h"
+#include "glview/PolySetRenderer.h"
+
+#ifdef ENABLE_OPENCSG
+#include "glview/preview/OpenCSGRenderer.h"
+#include <opencsg.h>
+#endif  // ENABLE_OPENCSG
+
+#include "glview/preview/ThrownTogetherRenderer.h"
 
 namespace {
 
@@ -37,13 +44,20 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
     fprintf(stderr, "Can't create OffscreenView: %s.\n", ex.what());
     return false;
   }
-  std::shared_ptr<Renderer> cgalRenderer;
-  cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
-  const BoundingBox bbox = cgalRenderer->getBoundingBox();
+  std::shared_ptr<Renderer> geomRenderer;
+  // Choose PolySetRenderer for Manifold since we know that all
+  // geometries are convertible to PolySet.
+  // TODO: Also choose PolySetRenderer for single-node PolySet/Polygon2D roots?
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
+    geomRenderer = std::make_shared<PolySetRenderer>(root_geom);
+  } else {
+    geomRenderer = std::make_shared<CGALRenderer>(root_geom);
+  }
+  const BoundingBox bbox = geomRenderer->getBoundingBox();
   setupCamera(camera, bbox);
 
   glview->setCamera(camera);
-  glview->setRenderer(cgalRenderer);
+  glview->setRenderer(geomRenderer);
   glview->setColorScheme(RenderSettings::inst()->colorscheme);
   glview->setShowCrosshairs(options["crosshairs"]);
   glview->setShowAxes(options["axes"]);
@@ -53,12 +67,6 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
   glview->save(output);
   return true;
 }
-
-#ifdef ENABLE_OPENCSG
-#include "glview/preview/OpenCSGRenderer.h"
-#include <opencsg.h>
-#endif
-#include "glview/preview/ThrownTogetherRenderer.h"
 
 std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera)
 {
