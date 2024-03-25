@@ -298,7 +298,7 @@ void QGLView::mouseMoveEvent(QMouseEvent *event)
     mouse_drag_moved = true;
     auto button_compare = this->mouseSwapButtons?Qt::RightButton : Qt::LeftButton;
     if (event->buttons() & button_compare
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
         && !(event->modifiers() & Qt::MetaModifier)
 #endif
         ) {

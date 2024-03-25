@@ -66,7 +66,7 @@
 #include "CSGTreeNormalizer.h"
 #include "QGLView.h"
 #include "MouseSelector.h"
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 #include "CocoaUtils.h"
 #endif
 #ifdef Q_OS_WIN
@@ -3557,7 +3557,7 @@ void MainWindow::quit()
   QApplication::sendEvent(QApplication::instance(), &ev);
   if (ev.isAccepted()) QApplication::instance()->quit();
   // FIXME: Cancel any CGAL calculations
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
   CocoaUtils::endApplication();
 #endif
 }

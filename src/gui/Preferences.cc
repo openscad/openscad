@@ -92,7 +92,7 @@ void Preferences::init() {
   this->defaultmap["advanced/customizerFontFamily"] = font2.family();
   this->defaultmap["advanced/customizerFontSize"] = font2.pointSize();
 
-#if defined (Q_OS_MAC)
+#ifdef Q_OS_MACOS
   this->defaultmap["editor/ctrlmousewheelzoom"] = false;
 #else
   this->defaultmap["editor/ctrlmousewheelzoom"] = true;
@@ -874,7 +874,7 @@ void Preferences::fireEditorConfigChanged() const
 
 void Preferences::keyPressEvent(QKeyEvent *e)
 {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
   if (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_Period) {
     close();
   } else
