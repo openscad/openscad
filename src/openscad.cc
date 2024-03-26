@@ -745,7 +745,7 @@ int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, cha
   QGuiApplication::setApplicationDisplayName("OpenSCAD");
   QGuiApplication::setDesktopFileName(DESKTOP_FILENAME);
   QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
   app.setWindowIcon(QIcon(":/icon-macos.png"));
 #else
   app.setWindowIcon(QIcon(":/logo.png"));
@@ -764,7 +764,7 @@ int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, cha
     localization_init();
   }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
   installAppleEventHandlers();
 #endif
 
@@ -868,7 +868,7 @@ int gui(const vector<string>& inputFiles, const fs::path& original_path, int arg
 }
 #endif // OPENSCAD_QTGUI
 
-#if defined(Q_OS_MACX)
+#ifdef Q_OS_MACOS
 std::pair<string, string> customSyntax(const string& s)
 {
   if (s.find("-psn_") == 0) return {"psn", s.substr(5)};
@@ -932,7 +932,7 @@ int main(int argc, char **argv)
   PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
 #endif
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
   bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
   auto nslog = [](const Message& msg, void *userdata) {
       CocoaUtils::nslog(msg.msg, userdata);
@@ -1011,7 +1011,7 @@ int main(int argc, char **argv)
 
   po::options_description hidden("Hidden options");
   hidden.add_options()
-#ifdef Q_OS_MACX
+#ifdef Q_OS_MACOS
   ("psn", po::value<string>(), "process serial number")
 #endif
   ("input-file", po::value<vector<string>>(), "input file");
