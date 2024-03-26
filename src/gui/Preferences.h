@@ -55,6 +55,7 @@ public slots:
   void on_useAsciiSTLCheckBox_toggled(bool);
   void on_comboBoxToolbarExport3D_activated(int);
   void on_comboBoxToolbarExport2D_activated(int);
+  void on_lineEditDefaultExportDir_editingFinished();
   void on_checkBoxSummaryCamera_toggled(bool);
   void on_checkBoxSummaryArea_toggled(bool);
   void on_checkBoxSummaryBoundingBox_toggled(bool);
@@ -129,6 +130,7 @@ signals:
   void characterThresholdChanged(int val) const;
   void stepSizeChanged(int val) const;
   void toolbarExportChanged() const;
+
 
 private slots:
   void on_lineEditStepSize_textChanged(const QString& arg1);

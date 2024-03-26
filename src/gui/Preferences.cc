@@ -1025,6 +1025,7 @@ void Preferences::updateGUI()
   updateComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
   updateComboBox(this->comboBoxOctoPrintSlicingEngine, Settings::Settings::octoPrintSlicerEngine.value());
   updateComboBox(this->comboBoxOctoPrintSlicingProfile, Settings::Settings::octoPrintSlicerProfile.value());
+  BlockSignals<QLineEdit *>(this->lineEditDefaultExportDir)->setText(QString::fromStdString(Settings::Settings::defaultExportDir.value()));
 }
 
 void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val, Settings::SettingsEntryEnum& entry)
@@ -1101,3 +1102,10 @@ void Preferences::updateGUIFontSize(QComboBox *fsSelector, const QString &settin
     BlockSignals<QComboBox *>(fsSelector)->setEditText(fontsize);
   }
 }
+
+void Preferences::on_lineEditDefaultExportDir_editingFinished()
+{
+    Settings::Settings::defaultExportDir.setValue(this->lineEditDefaultExportDir->text().toStdString());
+    writeSettings();
+}
+
