@@ -131,6 +131,7 @@ void CGALRenderer::setColorScheme(const ColorScheme &cs) {
 #ifdef ENABLE_CGAL
   this->polyhedrons.clear(); // Mark as dirty
 #endif
+  this->vertex_states.clear(); // Mark as dirty
   PRINTD("setColorScheme done");
 }
 
