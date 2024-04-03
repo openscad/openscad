@@ -1376,6 +1376,16 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const Projectio
   std::shared_ptr<const Geometry> geom;
   std::shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
   if (newgeom) {
+#ifdef ENABLE_MANIFOLD
+    if (Feature::ExperimentalManifold.is_enabled()) {
+      auto manifold = ManifoldUtils::createManifoldFromGeometry(newgeom);
+      if (node.cut_mode) {
+        return std::make_shared<const Polygon2d>(manifold->slice());
+      } else {
+        return std::make_shared<const Polygon2d>(manifold->project());
+      }
+    }
+#endif
 #ifdef ENABLE_CGAL
     auto Nptr = CGALUtils::getNefPolyhedronFromGeometry(newgeom);
     if (Nptr && !Nptr->isEmpty()) {

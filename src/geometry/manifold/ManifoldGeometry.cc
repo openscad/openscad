@@ -1,5 +1,6 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #include "ManifoldGeometry.h"
+#include "Polygon2d.h"
 #include "manifold.h"
 #include "PolySet.h"
 #include "PolySetUtils.h"
@@ -197,6 +198,16 @@ ManifoldGeometry ManifoldGeometry::operator-(const ManifoldGeometry& other) cons
 
 ManifoldGeometry ManifoldGeometry::minkowski(const ManifoldGeometry& other) const {
   return {*minkowskiOp(*this, other)};
+}
+
+Polygon2d ManifoldGeometry::slice() const {
+  auto cross_section = manifold_->Slice();
+  return ManifoldUtils::polygonsToPolygon2d(cross_section.ToPolygons());
+}
+
+Polygon2d ManifoldGeometry::project() const {
+  auto cross_section = manifold_->Project();
+  return ManifoldUtils::polygonsToPolygon2d(cross_section.ToPolygons());
 }
 
 void ManifoldGeometry::transform(const Transform3d& mat) {

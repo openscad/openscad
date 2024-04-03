@@ -48,6 +48,8 @@ public:
   /*! minkowksi operation. */
   ManifoldGeometry minkowski(const ManifoldGeometry& other) const;
 
+  Polygon2d slice() const;
+  Polygon2d project() const;
 
   void transform(const Transform3d& mat) override;
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
