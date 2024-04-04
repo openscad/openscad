@@ -1379,11 +1379,8 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const Projectio
 #ifdef ENABLE_MANIFOLD
     if (Feature::ExperimentalManifold.is_enabled()) {
       auto manifold = ManifoldUtils::createManifoldFromGeometry(newgeom);
-      if (node.cut_mode) {
-        return std::make_shared<const Polygon2d>(manifold->slice());
-      } else {
-        return std::make_shared<const Polygon2d>(manifold->project());
-      }
+      auto poly2d = manifold->slice();
+      return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
     }
 #endif
 #ifdef ENABLE_CGAL
@@ -1402,6 +1399,7 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const Projectio
 
 std::shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const ProjectionNode& node)
 {
+  // TODO(kintel): Measure this approach vs. manifold::Project()
   std::shared_ptr<const Geometry> geom;
   std::vector<std::unique_ptr<Polygon2d>> tmp_geom;
   BoundingBox bounds;
