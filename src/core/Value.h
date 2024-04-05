@@ -319,6 +319,8 @@ public:
   // Conversion to std::variant "BoundedType"s. const ref where appropriate.
   [[nodiscard]] bool toBool() const;
   [[nodiscard]] double toDouble() const;
+  [[nodiscard]] uint32_t toUint32() const;
+  [[nodiscard]] int32_t toInt32() const;
   [[nodiscard]] const str_utf8_wrapper& toStrUtf8Wrapper() const;
   [[nodiscard]] const VectorType& toVector() const;
   [[nodiscard]] const EmbeddedVectorType& toEmbeddedVector() const;
