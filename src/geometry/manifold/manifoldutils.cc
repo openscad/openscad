@@ -170,4 +170,16 @@ std::shared_ptr<const ManifoldGeometry> createManifoldFromGeometry(const std::sh
   return nullptr;
 }
 
+Polygon2d polygonsToPolygon2d(const manifold::Polygons& polygons) {
+  Polygon2d poly2d;
+  for (const auto& polygon : polygons) {
+    Outline2d outline;
+    for (const auto& v : polygon) {
+      outline.vertices.emplace_back(v[0], v[1]);
+    }
+    poly2d.addOutline(std::move(outline));
+  }
+  return std::move(poly2d);
+}
+
 }; // namespace ManifoldUtils
