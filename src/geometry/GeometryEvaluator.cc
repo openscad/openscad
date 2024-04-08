@@ -1412,7 +1412,6 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const Project
   }
 #endif
 
-  // TODO(kintel): Measure this approach vs. manifold::Project()
   std::shared_ptr<const Geometry> geom;
   std::vector<std::unique_ptr<Polygon2d>> tmp_geom;
   BoundingBox bounds;

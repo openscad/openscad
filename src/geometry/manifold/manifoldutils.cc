@@ -177,7 +177,7 @@ Polygon2d polygonsToPolygon2d(const manifold::Polygons& polygons) {
     for (const auto& v : polygon) {
       outline.vertices.emplace_back(v[0], v[1]);
     }
-    poly2d.addOutline(outline);
+    poly2d.addOutline(std::move(outline));
   }
   return std::move(poly2d);
 }
