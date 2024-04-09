@@ -51,7 +51,7 @@ Parameters parse_parameters(Arguments arguments, const Location& location)
 {
   {
     Parameters normal_parse = Parameters::parse(arguments.clone(), location,
-                                                {"file", "layer", "height", "origin", "scale", "center", "twist", "slices", "segments"},
+                                                {"file", "layer", "height", "v", "origin", "scale", "center", "twist", "slices", "segments"},
                                                 {"convexity"}
                                                 );
     if (normal_parse["height"].isDefined()) {
@@ -65,7 +65,7 @@ Parameters parse_parameters(Arguments arguments, const Location& location)
   // if height not given, and first argument is a number,
   // then assume it should be the height.
   return Parameters::parse(std::move(arguments), location,
-                           {"height", "file", "layer", "origin", "scale", "center", "twist", "slices", "segments"},
+                           {"height", "v", "file", "layer", "origin", "scale", "center", "twist", "slices", "segments"},
                            {"convexity"}
                            );
 }
@@ -87,13 +87,27 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
     node->filename = filename;
     handle_dep(filename);
   }
+  double height = 100.0;
+  Vector3d v(0,0,1);
 
-  if (parameters["height"].isDefined()) {
-    if(!parameters["height"].getVec3(node->height[0], node->height[1], node->height[2], 0.0)) {
-      node->height[0]=0;
-      node->height[1]=0;
-      parameters["height"].getFiniteDouble(node->height[2]);
-    }
+  if (parameters["v"].isDefined()) {
+    if(!parameters["v"].getVec3(v[0], v[1], v[2], 0.0))
+      LOG(message_group::Error, "v when specified should be  a vector.");
+
+    if (parameters["height"].isDefined()) {
+      if(!parameters["height"].getFiniteDouble(height))
+        LOG(message_group::Error, "height when specified should be a double.");
+
+      v.normalize();	    
+      v = v * height;
+
+    } 
+    node->height = v;
+  } else if (parameters["height"].isDefined()) {
+    node->height[0]=0;
+    node->height[1]=0;
+    if(!parameters["height"].getFiniteDouble(node->height[2]))
+      LOG(message_group::Error, "height when specified should be a double.");
   }
 
   node->layername = parameters["layer"].isUndefined() ? "" : parameters["layer"].toString();
