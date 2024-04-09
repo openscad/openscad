@@ -89,7 +89,11 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
   }
 
   if (parameters["height"].isDefined()) {
-    parameters["height"].getFiniteDouble(node->height);
+    if(!parameters["height"].getVec3(node->height[0], node->height[1], node->height[2], 0.0)) {
+      node->height[0]=0;
+      node->height[1]=0;
+      parameters["height"].getFiniteDouble(node->height[2]);
+    }
   }
 
   node->layername = parameters["layer"].isUndefined() ? "" : parameters["layer"].toString();
@@ -111,7 +115,7 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
 
   if (parameters["center"].type() == Value::Type::BOOL) node->center = parameters["center"].toBool();
 
-  if (node->height <= 0) node->height = 0;
+  if (node->height[2] <= 0) node->height[2] = 0;
 
   if (node->scale_x < 0) node->scale_x = 0;
   if (node->scale_y < 0) node->scale_y = 0;
@@ -149,7 +153,7 @@ std::string LinearExtrudeNode::toString() const
            << "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
     ;
   }
-  stream << "height = " << std::dec << this->height;
+  stream << "height = [ " <<  this->height[0] << ", " << this->height[1] << ", " << this->height[2] << "]" ;
   if (this->center) {
     stream << ", center = true";
   }
