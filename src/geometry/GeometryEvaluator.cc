@@ -820,7 +820,7 @@ static void add_slice(PolySetBuilder &builder, const Polygon2d& poly,
         Vector3d h_mid = (h1 + h2) / 2;
         builder.beginPolygon(3);
         builder.insertVertex(prev1[0] + h1[0], prev1[1] + h1[1], h1[2]);
-        builder.insertVertex(mid[0]+h_mid[0],   mid[1] + h_mid[1], h_mid+h_mid[2]);
+        builder.insertVertex(mid[0] + h_mid[0],   mid[1] + h_mid[1], h_mid+h_mid[2]);
         builder.insertVertex(curr1[0] + h1[0], curr1[1] + h1[1], h1[2]);
         builder.beginPolygon(3);
         builder.insertVertex(curr1[0] + h1[0], curr1[1] + h1[1], h1[2]);
@@ -853,9 +853,9 @@ static void add_slice(PolySetBuilder &builder, const Polygon2d& poly,
         }
       } else {
         builder.appendPolygon({
-                Vector3d(curr1[0] + h1[0], curr1[1]+h1[1], h1[2]),
-                Vector3d(prev2[0] + h2[0], prev2[1]+h2[1], h2[2]),
-                Vector3d(prev1[0] + h1[0], prev1[1]+h1[1], h1[2])
+                Vector3d(curr1[0] + h1[0], curr1[1] + h1[1], h1[2]),
+                Vector3d(prev2[0] + h2[0], prev2[1] + h2[1], h2[2]),
+                Vector3d(prev1[0] + h1[0], prev1[1] + h1[1], h1[2])
         });
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
           builder.appendPolygon({
@@ -1132,10 +1132,10 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
 
   Vector3d h1, h2;
   if (node.center) {
-    h1 = Vector3d(-node.height[0] * 0.5, -node.height[1] * 0.5, -node.height[2] * 0.5);
-    h2 = Vector3d(node.height[0] * 0.5, node.height[1] * 0.5, node.height[2] * 0.5);
+    h1 = -node.height / 2.0;
+    h2 = node.height / 2.0;
   } else {
-    h1 = Vector3d(0,0,0);
+    h1 = Vector3d(0 ,0, 0);
     h2 = node.height;
   }
 

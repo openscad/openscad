@@ -91,8 +91,10 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
   Vector3d v(0,0,1);
 
   if (parameters["v"].isDefined()) {
-    if(!parameters["v"].getVec3(v[0], v[1], v[2], 0.0))
+    if(!parameters["v"].getVec3(v[0], v[1], v[2], 0.0)) {
+      v=Vector3d(0,0,1);
       LOG(message_group::Error, "v when specified should be  a vector.");
+    }
 
     if (parameters["height"].isDefined()) {
       if(!parameters["height"].getFiniteDouble(height))
