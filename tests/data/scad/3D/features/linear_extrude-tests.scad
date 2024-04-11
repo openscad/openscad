@@ -19,9 +19,16 @@ translate([19,20,0]) linear_extrude(height=20, twist=45, slices=10) square([10,1
 
 translate([0,-15,0]) linear_extrude(5) square([10,10]);
 
-translate([15,-15,0]) linear_extrude(v=[3 ,4 ,5]) square([10, 10]);
+translate([-30,-30,0]) linear_extrude(v=[3 ,4 ,5]) square([10, 10]);
 
-translate([30,-15,0]) linear_extrude(height=10, v=[3, 4, 5]) square([10,10]);
+translate([-15,-30,0]) linear_extrude(height=8, v=[3, 4, 5]) square([10,10]);
+
+
+// does not display beause 2d is accepted as 3d vector and z coordinate of v will go zero
+translate([0,-30,0]) linear_extrude(height=8, v=[6, 7]) square([10,10]); 
+
+// is not accepted, outputs errors sets default [0,0,1] and displays that
+translate([15,-30,0]) linear_extrude(height=8, v=[8]) square([10,10]);
 
 // scale given as a scalar
 translate([-25,-10,0]) linear_extrude(height=10, scale=2) square(5, center=true);
