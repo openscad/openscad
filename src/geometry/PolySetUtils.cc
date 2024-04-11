@@ -4,6 +4,7 @@
 #include "Polygon2d.h"
 #include "printutils.h"
 #include "GeometryUtils.h"
+#include <sstream>
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #include "CGALHybridPolyhedron.h"
