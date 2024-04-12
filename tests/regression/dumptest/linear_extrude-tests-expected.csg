@@ -39,23 +39,13 @@ multmatrix([[1, 0, 0, 0], [0, 1, 0, -15], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		square(size = [10, 10], center = false);
 	}
 }
-multmatrix([[1, 0, 0, -30], [0, 1, 0, -30], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	linear_extrude(v = [ 3, 4, 5], $fn = 0, $fa = 12, $fs = 2) {
+multmatrix([[1, 0, 0, 15], [0, 1, 0, -15], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	linear_extrude(v = [ 3, 2, 5], $fn = 0, $fa = 12, $fs = 2) {
 		square(size = [10, 10], center = false);
 	}
 }
-multmatrix([[1, 0, 0, -15], [0, 1, 0, -30], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	linear_extrude(v = [ 3.39411, 4.52548, 5.65685], $fn = 0, $fa = 12, $fs = 2) {
-		square(size = [10, 10], center = false);
-	}
-}
-multmatrix([[1, 0, 0, 0], [0, 1, 0, -30], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	linear_extrude(v = [ 5.20633, 6.07405, 0], $fn = 0, $fa = 12, $fs = 2) {
-		square(size = [10, 10], center = false);
-	}
-}
-multmatrix([[1, 0, 0, 15], [0, 1, 0, -30], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	linear_extrude(v = [ 0, 0, 8], $fn = 0, $fa = 12, $fs = 2) {
+multmatrix([[1, 0, 0, 30], [0, 1, 0, -15], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	linear_extrude(v = [ 3.89331, 2.59554, 6.48886], $fn = 0, $fa = 12, $fs = 2) {
 		square(size = [10, 10], center = false);
 	}
 }

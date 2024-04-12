@@ -91,9 +91,9 @@ static std::shared_ptr<AbstractNode> builtin_linear_extrude(const ModuleInstanti
   Vector3d v(0,0,1);
 
   if (parameters["v"].isDefined()) {
-    if(!parameters["v"].getVec3(v[0], v[1], v[2], 0.0)) {
+    if(!parameters["v"].getVec3(v[0], v[1], v[2])) {
       v=Vector3d(0,0,1);
-      LOG(message_group::Error, "v when specified should be  a 3d vector.");
+      LOG(message_group::Error, "v when specified should be a 3d vector.");
     }
 
     if (parameters["height"].isDefined()) {
@@ -205,6 +205,6 @@ void register_builtin_dxf_linear_extrude()
 
   Builtins::init("linear_extrude", new BuiltinModule(builtin_linear_extrude),
   {
-    "linear_extrude(height = 100, center = false, convexity = 1, twist = 0, scale = 1.0, [slices, segments, $fn, $fs, $fa])",
+    "linear_extrude(height = 100, center = false, convexity = 1, twist = 0, scale = 1.0, [slices, segments, v, $fn, $fs, $fa])",
   });
 }
