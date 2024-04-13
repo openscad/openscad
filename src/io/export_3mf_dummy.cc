@@ -24,10 +24,12 @@
  *
  */
 
+#include <memory>
+#include <ostream>
 #include "export.h"
 #include "printutils.h"
 
-void export_3mf(const std::shared_ptr<const Geometry>&, std::ostream&)
+void export_3mf(const std::shared_ptr<const class Geometry>&, std::ostream&)
 {
   LOG("Export to 3MF format was not enabled when building the application.");
 }

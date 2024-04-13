@@ -33,6 +33,35 @@
 #include "AST.h"
 #include "lib3mf_implicit.hpp"
 
+
+namespace {
+  std::unique_ptr<PolySet> getAsPolySet(const Lib3MF::PMeshObject& object) {
+    try {
+      if (!object) return nullptr;
+    
+      Lib3MF_uint64 vertex_count = object->GetVertexCount();
+      Lib3MF_uint64 triangle_count = object->GetTriangleCount();
+      if (!vertex_count || !triangle_count) return nullptr;
+
+      PolySetBuilder builder(0,triangle_count);
+      for (Lib3MF_uint64 idx = 0; idx < triangle_count; ++idx) {
+        Lib3MF::sTriangle triangle = object->GetTriangle(idx);
+
+        builder.beginPolygon(3);
+
+        for (unsigned int idx : triangle.m_Indices) {
+          Lib3MF::sPosition vertex = object->GetVertex(idx);
+          builder.addVertex({vertex.m_Coordinates[0], vertex.m_Coordinates[1], vertex.m_Coordinates[2]});
+        }
+      }
+      return builder.build();
+    } catch (const Lib3MF::ELib3MFException& e) {
+      LOG(message_group::Error, e.what());
+      return nullptr;
+    }
+  }
+}
+
 /*
  * Provided here for reference in LibraryInfo.cc which can't include
  * both Qt and lib3mf headers due to some conflicting definitions of
@@ -60,11 +89,11 @@ const std::string get_lib3mf_version() {
 
 std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location& loc)
 {
-  Lib3MF_uint32 interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
   Lib3MF::PWrapper wrapper;
 
   try {
     wrapper = Lib3MF::CWrapper::loadLibrary();
+    Lib3MF_uint32 interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro;
     wrapper->GetLibraryVersion(interfaceVersionMajor, interfaceVersionMinor, interfaceVersionMicro);
     if (interfaceVersionMajor != LIB3MF_VERSION_MAJOR) {
       LOG(message_group::Error, "Invalid 3MF library major version %1$d.%2$d.%3$d, expected %4$d.%5$d.%6$d",
@@ -108,73 +137,31 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
     return PolySet::createEmpty();
   }
 
-  Lib3MF::PMeshObjectIterator object_it;
-  object_it = model->GetMeshObjects();
+  Lib3MF::PMeshObjectIterator object_it = model->GetMeshObjects();
   if (!object_it) {
     return PolySet::createEmpty();
   }
 
   std::unique_ptr<PolySet> first_mesh;
-  std::list<std::shared_ptr<PolySet>> meshes;
+  std::vector<std::unique_ptr<PolySet>> meshes;
   unsigned int mesh_idx = 0;
-  bool has_next = object_it->MoveNext();
-  while (has_next) {
-    Lib3MF::PMeshObject object;
-    try {
-      object = object_it->GetCurrentMeshObject();
-      if (!object) {
-        return PolySet::createEmpty();
-      }
-    } catch (const Lib3MF::ELib3MFException& e) {
-      LOG(message_group::Error, e.what());
-      return PolySet::createEmpty();
-    }
-
-    Lib3MF_uint64 vertex_count = object->GetVertexCount();
-    if (!vertex_count) {
-      return PolySet::createEmpty();
-    }
-    Lib3MF_uint64 triangle_count = object->GetTriangleCount();
-    if (!triangle_count) {
-      return PolySet::createEmpty();
-    }
-
-    PRINTDB("%s: mesh %d, vertex count: %lu, triangle count: %lu", filename.c_str() % mesh_idx % vertex_count % triangle_count);
-
-    PolySetBuilder builder(0,triangle_count);
-    for (Lib3MF_uint64 idx = 0; idx < triangle_count; ++idx) {
-      Lib3MF::sTriangle triangle = object->GetTriangle(idx);
-
-      builder.beginPolygon(3);
-
-      for(int i=0;i<3;i++) {
-        Lib3MF::sPosition vertex = object->GetVertex(triangle.m_Indices[i]);
-        builder.addVertex(Vector3d(vertex.m_Coordinates[0], vertex.m_Coordinates[1], vertex.m_Coordinates[2]));
-      }
-    }
-
-    if (first_mesh) {
-      meshes.push_back(builder.build());
-    } else {
-      first_mesh = builder.build();
-    }
-    mesh_idx++;
-    has_next = object_it->MoveNext();
+  while (object_it->MoveNext()) {
+      auto ps = getAsPolySet(object_it->GetCurrentMeshObject());
+      // FIXME: Should we just return an empty object for all these cases, or is it valid to return existing geometry?
+      if (!ps) return PolySet::createEmpty();
+      PRINTDB("%s: mesh %d, vertex count: %lu, triangle count: %lu", filename.c_str() % mesh_idx % ps->vertices.size() % ps->indices.size());
+      meshes.push_back(std::move(ps));
+      mesh_idx++;
   }
 
-  if (first_mesh == 0) {
-    return PolySet::createEmpty();
-  } else if (meshes.empty()) {
-    return first_mesh;
+  if (meshes.size() == 1) {
+    return std::move(meshes.front());
   } else {
     std::unique_ptr<PolySet> p;
 #ifdef ENABLE_CGAL
     Geometry::Geometries children;
-    children.push_back(std::make_pair(
-			 std::shared_ptr<const AbstractNode>(),
-			 std::shared_ptr<const Geometry>(std::move(first_mesh))));
-    for (auto it = meshes.begin(); it != meshes.end(); ++it) {
-      children.push_back(std::make_pair(std::shared_ptr<const AbstractNode>(), std::shared_ptr<const Geometry>(*it)));
+    for (auto& ps : meshes) {
+      children.emplace_back(std::shared_ptr<const AbstractNode>(), std::shared_ptr<const PolySet>(std::move(ps)));
     }
     if (auto ps = PolySetUtils::getGeometryAsPolySet(CGALUtils::applyUnion3D(children.begin(), children.end()))) {
       // FIXME: unnecessary copy

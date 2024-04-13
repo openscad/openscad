@@ -24,6 +24,7 @@
  *
  */
 
+#include <string>
 #include "import.h"
 #include "printutils.h"
 #include "PolySet.h"
@@ -32,7 +33,7 @@ const std::string get_lib3mf_version() {
   return "(not enabled)";
 }
 
-std::unique_ptr<Geometry> import_3mf(const std::string&, const Location& loc)
+std::unique_ptr<class Geometry> import_3mf(const std::string&, const Location& loc)
 {
   LOG(message_group::Warning, "Import from 3MF format was not enabled when building the application, import() at line %1$d", loc.firstLine());
   return PolySet::createEmpty();
