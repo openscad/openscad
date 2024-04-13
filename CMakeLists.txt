@@ -471,6 +471,7 @@ if(NOT MSVC)
       target_compile_definitions(OpenSCAD PRIVATE LIB3MF_API_2)
     endif()
   else()
+    set(LIB3MF_SOURCES src/io/export_3mf_dummy.cc src/io/import_3mf_dummy.cc)
     message(STATUS "lib3mf: disabled")
   endif()
 endif()
@@ -755,7 +756,6 @@ set(CORE_SOURCES
   src/io/DxfData.cc
   src/io/dxfdim.cc
   src/io/export.cc
-  src/io/export_3mf.cc
   src/io/export_amf.cc
   src/io/export_dxf.cc
   src/io/export_obj.cc
@@ -766,7 +766,6 @@ set(CORE_SOURCES
   src/io/export_svg.cc
   src/io/export_param.cc
   src/io/fileutils.cc
-  src/io/import_3mf.cc
   src/io/import_amf.cc
   src/io/import_stl.cc
   src/io/import_obj.cc
@@ -799,6 +798,7 @@ set(CORE_SOURCES
   src/utils/StackCheck.h
   src/utils/svg.cc
   src/utils/version_check.h
+  ${LIB3MF_SOURCES}
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
   ${BISON_openscad_parser_OUTPUTS}
