@@ -1,5 +1,5 @@
 multmatrix([[1, 0, 0, 22], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	linear_extrude(height = 20, $fn = 0, $fa = 12, $fs = 2) {
+	linear_extrude(v = [ 0, 0, 20], $fn = 0, $fa = 12, $fs = 2) {
 		projection(cut = true, convexity = 0) {
 			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 9], [0, 0, 0, 1]]) {
 				sphere($fn = 0, $fa = 12, $fs = 2, r = 10);
@@ -8,7 +8,7 @@ multmatrix([[1, 0, 0, 22], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	}
 }
 multmatrix([[1, 0, 0, 44], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
-	linear_extrude(height = 20, $fn = 0, $fa = 12, $fs = 2) {
+	linear_extrude(v = [ 0, 0, 20], $fn = 0, $fa = 12, $fs = 2) {
 		projection(cut = true, convexity = 0) {
 			multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 7], [0, 0, 0, 1]]) {
 				sphere($fn = 0, $fa = 12, $fs = 2, r = 10);

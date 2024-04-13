@@ -62,7 +62,7 @@ multmatrix([[1, 0, 0, 0], [0, 1, 0, -12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 multmatrix([[1, 0, 0, 0], [0, 1, 0, -12], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	intersection() {
 		cube(size = [4, 4, 4], center = true);
-		linear_extrude(height = 100, $fn = 0, $fa = 12, $fs = 2);
+		linear_extrude(v = [ 0, 0, 100], $fn = 0, $fa = 12, $fs = 2);
 	}
 }
 multmatrix([[1, 0, 0, 0], [0, 1, 0, -16], [0, 0, 1, 0], [0, 0, 0, 1]]) {
