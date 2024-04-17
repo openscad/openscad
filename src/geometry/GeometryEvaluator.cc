@@ -1278,6 +1278,24 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
   // or collapse vertices, so Polygon2d::tessellate() doesn't cut it.
 
 
+  // Create top and bottom face.
+  auto ps_bottom = polyref.tessellate(); // bottom
+  // Flip vertex ordering for bottom polygon
+  for (auto& p : ps_bottom->indices) {
+    std::reverse(p.begin(), p.end());
+  }
+  std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
+     std::back_inserter(final_polyset->indices));
+
+  for (auto& p : ps_bottom->indices) {
+    std::reverse(p.begin(), p.end());
+    for (auto& i : p) {
+      i += slice_stride * num_slices;
+    }
+  }
+  std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
+     std::back_inserter(final_polyset->indices));
+
   LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
 
   return final_polyset;
