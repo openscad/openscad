@@ -950,6 +950,8 @@ static void add_slice_indices(PolygonIndices &indices, int slice_idx, int slice_
           });
         }
       }
+      prev1 = curr1;
+      prev2 = curr2;
     }
     curr_outline += o.vertices.size();
   }
@@ -1243,7 +1245,7 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
   // Calculate all vertices
   Vector2d full_scale(1 - node.scale_x, 1 - node.scale_y);
   double full_rot = -node.twist;
-  double full_height = h1 + (h2 - h1);
+  double full_height = (h2 - h1);
   for (unsigned int j = 0; j <= num_slices; j++) {
     Eigen::Affine2d trans(
       Eigen::Scaling(Vector2d(1,1) - full_scale * j / num_slices) * 
@@ -1252,21 +1254,21 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
     for (const auto& o : polyref.outlines()) {
       for (const auto& v : o.vertices) {
         auto tmp = trans * v;
-        final_polyset->vertices.emplace_back(tmp[0], tmp[1], full_height * j / num_slices);
+        final_polyset->vertices.emplace_back(tmp[0], tmp[1], h1 + full_height * j / num_slices);
       }
     }
   }
 
   // Create all indices
   for (unsigned int slice_idx = 1; slice_idx <= num_slices; slice_idx++) {
-    double rot1 = node.twist * slice_idx / num_slices;
-    double rot2 = node.twist * (slice_idx + 1) / num_slices;
-    double height1 = h1 + (h2 - h1) * slice_idx / num_slices;
-    double height2 = h1 + (h2 - h1) * (slice_idx + 1) / num_slices;
-    Vector2d scale1(1 - (1 - node.scale_x) * slice_idx / num_slices,
+    double rot1 = node.twist * (slice_idx -1)/ num_slices;
+    double rot2 = node.twist * slice_idx / num_slices;
+    double height1 = h1 + (h2 - h1) * (slice_idx - 1) / num_slices;
+    double height2 = h1 + (h2 - h1) * slice_idx / num_slices;
+    Vector2d scale1(1 - (1 - node.scale_x) * (slice_idx - 1) / num_slices,
+                    1 - (1 - node.scale_y) * (slice_idx - 1) / num_slices);
+    Vector2d scale2(1 - (1 - node.scale_x) * slice_idx / num_slices,
                     1 - (1 - node.scale_y) * slice_idx / num_slices);
-    Vector2d scale2(1 - (1 - node.scale_x) * (slice_idx + 1) / num_slices,
-                    1 - (1 - node.scale_y) * (slice_idx + 1) / num_slices);
     add_slice_indices(final_polyset->indices, slice_idx, slice_stride, polyref, rot1, rot2, scale1, scale2);
   }
 
