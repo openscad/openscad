@@ -4,6 +4,7 @@
 #include "Polygon2d.h"
 #include "printutils.h"
 #include "GeometryUtils.h"
+#include <boost/range/adaptor/reversed.hpp>
 #include <sstream>
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
@@ -192,7 +193,7 @@ std::string polySetToPolyhedronSource(const PolySet& ps)
   sstr << "  faces=[\n";
   for (const auto& polygon : ps.indices) {
     sstr << "[";
-    for (const auto idx : polygon) {
+    for (const auto idx : boost::adaptors::reverse(polygon)) {
       sstr << idx << ",";
     }
     sstr << "],\n";
