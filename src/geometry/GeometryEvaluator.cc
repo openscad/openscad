@@ -1113,12 +1113,155 @@ static Outline2d splitOutlineByFn(
   return o2;
 }
 
+static std::unique_ptr<Geometry> extrudePolygonUsingBuilder(const LinearExtrudeNode& node, const Polygon2d& poly)
+{
+  bool non_linear = node.twist != 0 || node.scale_x != node.scale_y;
+  boost::tribool isConvex{poly.is_convex()};
+  // Twist or non-uniform scale makes convex polygons into unknown polyhedrons
+  if (isConvex && non_linear) isConvex = unknown;
+  PolySetBuilder builder(0, 0, 3, isConvex);
+  builder.setConvexity(node.convexity);
+  if (node.height[2] <= 0) return PolySet::createEmpty();
+
+  size_t slices;
+  if (node.has_slices) {
+    slices = node.slices;
+  } else if (node.has_twist) {
+    double max_r1_sqr = 0; // r1 is before scaling
+    Vector2d scale(node.scale_x, node.scale_y);
+    for (const auto& o : poly.outlines())
+      for (const auto& v : o.vertices)
+        max_r1_sqr = fmax(max_r1_sqr, v.squaredNorm());
+    // Calculate Helical curve length for Twist with no Scaling
+    if (node.scale_x == 1.0 && node.scale_y == 1.0) {
+      slices = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height[2], node.twist, node.fn, node.fs, node.fa);
+    } else if (node.scale_x != node.scale_y) {  // non uniform scaling with twist using max slices from twist and non uniform scale
+      double max_delta_sqr = 0; // delta from before/after scaling
+      Vector2d scale(node.scale_x, node.scale_y);
+      for (const auto& o : poly.outlines()) {
+        for (const auto& v : o.vertices) {
+          max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
+        }
+      }
+      size_t slicesNonUniScale;
+      size_t slicesTwist;
+      slicesNonUniScale = (unsigned int)Calc::get_diagonal_slices(max_delta_sqr, node.height[2], node.fn, node.fs);
+      slicesTwist = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height[2], node.twist, node.fn, node.fs, node.fa);
+      slices = std::max(slicesNonUniScale, slicesTwist);
+    } else { // uniform scaling with twist, use conical helix calculation
+      slices = (unsigned int)Calc::get_conical_helix_slices(max_r1_sqr, node.height[2], node.twist, node.scale_x, node.fn, node.fs, node.fa);
+    }
+  } else if (node.scale_x != node.scale_y) {
+    // Non uniform scaling, w/o twist
+    double max_delta_sqr = 0; // delta from before/after scaling
+    Vector2d scale(node.scale_x, node.scale_y);
+    for (const auto& o : poly.outlines()) {
+      for (const auto& v : o.vertices) {
+        max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
+      }
+    }
+    slices = Calc::get_diagonal_slices(max_delta_sqr, node.height[2], node.fn, node.fs);
+  } else {
+    // uniform or [1,1] scaling w/o twist needs only one slice
+    slices = 1;
+  }
+
+  // Calculate outline segments if appropriate.
+  Polygon2d seg_poly;
+  bool is_segmented = false;
+  if (node.has_segments) {
+    // Set segments = 0 to disable
+    if (node.segments > 0) {
+      for (const auto& o : poly.outlines()) {
+        if (o.vertices.size() >= node.segments) {
+          seg_poly.addOutline(o);
+        } else {
+          seg_poly.addOutline(splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, node.segments, slices));
+        }
+      }
+      is_segmented = true;
+    }
+  } else if (non_linear) {
+    if (node.fn > 0.0) {
+      for (const auto& o : poly.outlines()) {
+        if (o.vertices.size() >= node.fn) {
+          seg_poly.addOutline(o);
+        } else {
+          seg_poly.addOutline(splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, node.fn, slices));
+        }
+      }
+    } else { // $fs and $fa based segmentation
+      auto fa_segs = static_cast<unsigned int>(std::ceil(360.0 / node.fa));
+      for (const auto& o : poly.outlines()) {
+        if (o.vertices.size() >= fa_segs) {
+          seg_poly.addOutline(o);
+        } else {
+          // try splitting by $fs, then check if $fa results in less segments
+          auto fsOutline = splitOutlineByFs(o, node.twist, node.scale_x, node.scale_y, node.fs, slices);
+          if (fsOutline.vertices.size() >= fa_segs) {
+            seg_poly.addOutline(splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, fa_segs, slices));
+          } else {
+            seg_poly.addOutline(std::move(fsOutline));
+          }
+        }
+      }
+    }
+    is_segmented = true;
+  }
+
+  const Polygon2d& polyref = is_segmented ? seg_poly : poly;
+
+  Vector3d h1, h2;
+  if (node.center) {
+    h1 = -node.height / 2.0;
+    h2 = node.height / 2.0;
+  } else {
+    h1 = Vector3d(0 ,0, 0);
+    h2 = node.height;
+  }
+
+  // Create bottom face.
+  auto ps_bottom = polyref.tessellate(); // bottom
+  // Flip vertex ordering for bottom polygon
+  for (auto& p : ps_bottom->indices) {
+    std::reverse(p.begin(), p.end());
+  }
+  translate_PolySet(*ps_bottom, h1);
+  builder.appendPolySet(*ps_bottom);
+
+  // Create slice sides.
+  for (unsigned int j = 0; j < slices; j++) {
+    double rot1 = node.twist * j / slices;
+    double rot2 = node.twist * (j + 1) / slices;
+    Vector3d height1 = h1 + (h2 - h1) * j / slices;
+    Vector3d height2 = h1 + (h2 - h1) * (j + 1) / slices;
+    Vector2d scale1(1 - (1 - node.scale_x) * j / slices,
+                    1 - (1 - node.scale_y) * j / slices);
+    Vector2d scale2(1 - (1 - node.scale_x) * (j + 1) / slices,
+                    1 - (1 - node.scale_y) * (j + 1) / slices);
+    add_slice(builder, polyref, rot1, rot2, height1, height2, scale1, scale2);
+  }
+
+  // Create top face.
+  // If either scale components are 0, then top will be zero-area, so skip it.
+  if (node.scale_x != 0 && node.scale_y != 0) {
+    Polygon2d top_poly(polyref);
+    Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) * Eigen::Affine2d(rotate_degrees(-node.twist)));
+    top_poly.transform(trans);
+    auto ps_top = top_poly.tessellate();
+    translate_PolySet(*ps_top, h2);
+    builder.appendPolySet(*ps_top);
+  }
+
+  return builder.build();
+}
+
 /*!
    Input to extrude should be sanitized. This means non-intersecting, correct winding order
    etc., the input coming from a library like Clipper.
  */
  // FIXME: What happens if the input Polygon isn't manifold, or has coincident vertices?
-static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& poly)
+static std::unique_ptr<Geometry> extrudePolygonDirect(const LinearExtrudeNode& node, const Polygon2d& poly)
 {
   bool non_linear = node.twist != 0 || node.scale_x != node.scale_y;
   boost::tribool isConvex{poly.is_convex()};
@@ -1351,7 +1494,18 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
       }
       if (geometry) {
         const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
-        auto extruded = extrudePolygon(node, *polygons);
+
+        std::unique_ptr<Geometry> extruded;
+#ifdef ENABLE_MANIFOLD
+        if (Feature::ExperimentalManifold.is_enabled()) {
+          extruded = extrudePolygonDirect(node, *polygons);
+        }
+        else
+#endif
+        // We have to use the builder since we don't have a triangulator which
+        // leaves vertices alone and only produces indices.
+        extruded = extrudePolygonUsingBuilder(node, *polygons);
+
         assert(extruded);
         geom = std::move(extruded);
       }
