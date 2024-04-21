@@ -19,8 +19,6 @@ jobs:
       run: ./scripts/github-ci-linux-get-dependencies.sh kinetic
     - name: Dependency fixup
       run: sudo apt-get install gettext gcovr
-    - name: Make Qt5 the default
-      run: sudo apt-get install qt5-default
     - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
