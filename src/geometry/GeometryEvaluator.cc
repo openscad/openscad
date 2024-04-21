@@ -70,9 +70,11 @@ std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const Abstra
   if (!allownef) {
     std::shared_ptr<const PolySet> ps;
     if (std::dynamic_pointer_cast<const CGALHybridPolyhedron>(result) ||
-        std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(result) ||
-        std::dynamic_pointer_cast<const ManifoldGeometry>(result) ||
-        std::dynamic_pointer_cast<const PolySet>(result)) {
+        std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(result)
+#ifdef ENABLE_MANIFOLD
+        || std::dynamic_pointer_cast<const ManifoldGeometry>(result)
+#endif
+        || std::dynamic_pointer_cast<const PolySet>(result)) {
       ps = PolySetUtils::getGeometryAsPolySet(result);
       assert(ps && ps->getDimension() == 3);
       // We cannot render concave polygons, so tessellate any PolySets

@@ -1070,10 +1070,12 @@ set(FILES_MANIFOLD_CORNER_CASES
   ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-edge.scad
   ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-vertex.scad
 )
-add_cmdline_test(3mfpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=3MF --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
-add_cmdline_test(objpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OBJ --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
-add_cmdline_test(offpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OFF --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
-add_cmdline_test(stlpngtest SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=STL --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
+
+# Tagging these tests as experimental since they only pass when using Manifold
+add_cmdline_test(3mfpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=3MF --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
+add_cmdline_test(objpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OBJ --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
+add_cmdline_test(offpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OFF --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
+add_cmdline_test(stlpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=STL --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
 
 set_tests_properties(
   # Manifold construction error. Probably due to polygon soup strategy
