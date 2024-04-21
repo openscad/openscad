@@ -14,7 +14,9 @@ class GeometryList;
 class GeometryVisitor;
 class Polygon2d;
 class PolySet;
+#ifdef ENABLE_MANIFOLD
 class ManifoldGeometry;
+#endif
 
 class Geometry
 {
