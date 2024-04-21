@@ -402,11 +402,11 @@ function(add_cmdline_test TESTCMD_BASENAME)
       ${TESTCMD_EXE} ${TESTCMD_SCRIPT} ${SCADFILE} ${CAMERA_OPTION}
       ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS} ")"
     )
-    # Use cmake option "--log-level DEBUG" during top level config to see this
-    message(DEBUG "${DBG_COMMAND_STR}")
 
     # only add test if it is not experimental or if it is and experimental option is enabled
     if (NOT TEST_IS_EXPERIMENTAL OR EXPERIMENTAL)
+      # Use cmake option "--log-level DEBUG" during top level config to see this
+      message(DEBUG "${DBG_COMMAND_STR}")
       add_test(NAME ${TEST_FULLNAME} CONFIGURATIONS ${CONFVAL}
         COMMAND ${Python3_EXECUTABLE}
         ${TEST_CMDLINE_TOOL_PY} ${COMPARATOR} -c ${IMAGE_COMPARE_EXE}
@@ -415,6 +415,8 @@ function(add_cmdline_test TESTCMD_BASENAME)
         ${EXPERIMENTAL_OPTION} ${MANIFOLD_OPTION} ${TESTCMD_ARGS}
       )
       set_property(TEST ${TEST_FULLNAME} PROPERTY ENVIRONMENT ${CTEST_ENVIRONMENT})
+    else()
+      message(DEBUG "Experimental Test not added: ${DBG_COMMAND_STR}")
     endif()
   endforeach()
 endfunction()
@@ -1032,7 +1034,7 @@ add_cmdline_test(monotonepngtest OPENSCAD SUFFIX png FILES ${EXPORT3D_CGAL_TEST_
 add_cmdline_test(stlexport             EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
 add_cmdline_test(manifold-stlexport    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=manifold --render)
 add_cmdline_test(objexport             EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render --enable=predictible-output)
-add_cmdline_test(3mfexport             EXPERIMENTAL OPENSCAD ARGS SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
+add_cmdline_test(3mfexport             EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
 
 # stlpngtest: direct STL output, preview rendering
 add_cmdline_test(stlpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=STL EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
@@ -1331,27 +1333,33 @@ set_tests_properties(
   PROPERTIES DISABLED TRUE
 )
 
+
 if (NOT LIB3MF_FOUND)
+  if (EXPERIMENTAL)
+    set_tests_properties(
+      3mfexport_3mf-export
+      3mfpngtest_tetracyl-slim
+      3mfpngtest_tetracyl-touch-edge
+      3mfpngtest_tetracyl-touch-edge-nonmanifold
+      3mfpngtest_tetracyl-touch-vertex
+      3mfpngtest_tetracyl-touch-vertex-nonmanifold
+      3mfpngtest_polyhedrons-touch-edge
+      3mfpngtest_polyhedrons-touch-edge-nonmanifold
+      3mfpngtest_polyhedrons-touch-vertex
+      3mfpngtest_polyhedrons-touch-vertex-nonmanifold
+      3mfpngtest_polyhedron-self-touch-edge
+      3mfpngtest_polyhedron-self-touch-edge-nonmanifold
+      3mfpngtest_polyhedron-self-touch-vertex
+      3mfpngtest_polyhedron-self-touch-vertex-nonmanifold
+      PROPERTIES DISABLED TRUE
+    )
+  endif (EXPERIMENTAL)
   set_tests_properties(
     opencsgtest_import_3mf-tests
     cgalpngtest_import_3mf-tests
     csgpngtest_import_3mf-tests
     throwntogethertest_import_3mf-tests
     3mfpngtest_cube10
-    3mfexport_3mf-export
-    3mfpngtest_tetracyl-slim
-    3mfpngtest_tetracyl-touch-edge
-    3mfpngtest_tetracyl-touch-edge-nonmanifold
-    3mfpngtest_tetracyl-touch-vertex
-    3mfpngtest_tetracyl-touch-vertex-nonmanifold
-    3mfpngtest_polyhedrons-touch-edge-nonmanifold
-    3mfpngtest_polyhedrons-touch-edge
-    3mfpngtest_polyhedrons-touch-vertex-nonmanifold
-    3mfpngtest_polyhedrons-touch-vertex
-    3mfpngtest_polyhedron-self-touch-edge-nonmanifold
-    3mfpngtest_polyhedron-self-touch-edge
-    3mfpngtest_polyhedron-self-touch-vertex-nonmanifold
-    3mfpngtest_polyhedron-self-touch-vertex
     PROPERTIES DISABLED TRUE
   )
 endif(NOT LIB3MF_FOUND)

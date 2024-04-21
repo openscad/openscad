@@ -13,10 +13,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest ]
+        enable_tests: [ ON, OFF ]
 
     runs-on: ${{ matrix.os }}
 
-    name: ${{ matrix.os }}-build
+    name: ${{ matrix.os }}-tests=${{ matrix.enable_tests }}
 
     steps:
     - uses: actions/checkout@v4
@@ -25,6 +26,9 @@ jobs:
     - name: Install dependencies
       run: sudo ./scripts/uni-get-dependencies.sh
     - name: Run CMake
-      run: cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+      run: >
+        cmake -S . -B build -GNinja \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -DENABLE_TESTS=${{ matrix.enable_tests }}
     - name: Build OpenSCAD
       run: cmake --build build
