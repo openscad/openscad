@@ -764,116 +764,6 @@ int sgn_vdiff(const Vector2d& v1, const Vector2d& v2) {
 }
 
 /*
-   Enable/Disable experimental 4-way split quads for linear_extrude, with added midpoint.
-   These look very nice when(and only when) diagonals are near equal.
-   This typically happens when an edge is colinear with the origin.
- */
-//#define LINEXT_4WAY
-
-/*
-   Attempt to triangulate quads in an ideal way.
-   Each quad is composed of two adjacent outline vertices: (prev1, curr1)
-   and their corresponding transformed points one step up: (prev2, curr2).
-   Quads are triangulated across the shorter of the two diagonals, which works well in most cases.
-   However, when diagonals are equal length, decision may flip depending on other factors.
- */
-static void add_slice(PolySetBuilder &builder, const Polygon2d& poly,
-                      double rot1, double rot2,
-                      Vector3d h1, Vector3d h2,
-                      const Vector2d& scale1,
-                      const Vector2d& scale2)
-{
-  Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Affine2d(rotate_degrees(-rot1)));
-  Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Affine2d(rotate_degrees(-rot2)));
-#ifdef LINEXT_4WAY
-  Eigen::Affine2d trans_mid(Eigen::Scaling((scale1 + scale2) / 2) * Eigen::Affine2d(rotate_degrees(-(rot1 + rot2) / 2)));
-  bool is_straight = rot1 == rot2 && scale1[0] == scale1[1] && scale2[0] == scale2[1];
-#endif
-  bool any_zero = scale2[0] == 0 || scale2[1] == 0;
-  bool any_non_zero = scale2[0] != 0 || scale2[1] != 0;
-  // Not likely to matter, but when no twist (rot2 == rot1),
-  // setting back_twist true helps keep diagonals same as previous builds.
-  bool back_twist = rot2 <= rot1;
-
-  for (const auto& o : poly.outlines()) {
-    Vector2d prev1 = trans1 * o.vertices[0];
-    Vector2d prev2 = trans2 * o.vertices[0];
-
-    // For equal length diagonals, flip selected choice depending on direction of twist and
-    // whether the outline is negative (eg circle hole inside a larger circle).
-    // This was tested against circles with a single point touching the origin,
-    // and extruded with twist.  Diagonal choice determined by whichever option
-    // matched the direction of diagonal for neighboring edges (which did not exhibit "equal" diagonals).
-    bool flip = ((!o.positive) xor (back_twist));
-
-    for (size_t i = 1; i <= o.vertices.size(); ++i) {
-      Vector2d curr1 = trans1 * o.vertices[i % o.vertices.size()];
-      Vector2d curr2 = trans2 * o.vertices[i % o.vertices.size()];
-
-      int diff_sign = sgn_vdiff(prev1 - curr2, curr1 - prev2);
-      bool splitfirst = diff_sign == -1 || (diff_sign == 0 && !flip);
-
-#ifdef LINEXT_4WAY
-      // Diagonals should be equal whenever an edge is co-linear with the origin (edge itself need not touch it)
-      if (!is_straight && diff_sign == 0) {
-        // Split into 4 triangles, with an added midpoint.
-        //Vector2d mid_prev = trans3 * (prev1 +curr1+curr2)/4;
-        Vector2d mid = trans_mid * (o.vertices[(i - 1) % o.vertices.size()] + o.vertices[i % o.vertices.size()]) / 2;
-        Vector3d h_mid = (h1 + h2) / 2;
-        builder.beginPolygon(3);
-        builder.insertVertex(prev1[0] + h1[0], prev1[1] + h1[1], h1[2]);
-        builder.insertVertex(mid[0] + h_mid[0],   mid[1] + h_mid[1], h_mid+h_mid[2]);
-        builder.insertVertex(curr1[0] + h1[0], curr1[1] + h1[1], h1[2]);
-        builder.beginPolygon(3);
-        builder.insertVertex(curr1[0] + h1[0], curr1[1] + h1[1], h1[2]);
-        builder.insertVertex(mid[0] + h_mid[0],   mid[1] + h_mid[1], h_mid[2]);
-        builder.insertVertex(curr2[0] + h2[0], curr2[1] + h2[1], h2[2]);
-        builder.beginPolygon(3);
-        builder.insertVertex(curr2[0] + h2[0], curr2[1] + h2[1], h2[2]);
-        builder.insertVertex(mid[0] + h_mid[0],   mid[1] + h_mid[1], h_mid[2]);
-        builder.insertVertex(prev2[0] + h2[0], prev2[1] + h2[1], h2[2]);
-        builder.beginPolygon(3);
-        builder.insertVertex(prev2[0] + h2[0], prev2[1] + h2[1], h2[2]);
-        builder.insertVertex(mid[0] + h_mid[0],   mid[1] + h_mid[1], h_mid[2]);
-        builder.insertVertex(prev1[0] + h1[0], prev1[1] + h1[1], h1[2]);
-      } else
-#endif // ifdef LINEXT_4WAY
-      // Split along shortest diagonal,
-      // unless at top for a 0-scaled axis (which can create 0 thickness "ears")
-      if (splitfirst xor any_zero) {
-        builder.appendPolygon({
-                Vector3d(curr1[0] + h1[0], curr1[1] + h1[1], h1[2]),
-                Vector3d(curr2[0] + h2[0], curr2[1] + h2[1], h2[2]),
-                Vector3d(prev1[0] + h1[0], prev1[1] + h1[1], h1[2])
-                });
-        if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          builder.appendPolygon({
-                Vector3d(prev2[0] + h2[0], prev2[1] + h2[1], h2[2]),
-                Vector3d(prev1[0] + h1[0], prev1[1] + h1[1], h1[2]),
-                Vector3d(curr2[0] + h2[0], curr2[1] + h2[1], h2[2])
-          });
-        }
-      } else {
-        builder.appendPolygon({
-                Vector3d(curr1[0] + h1[0], curr1[1] + h1[1], h1[2]),
-                Vector3d(prev2[0] + h2[0], prev2[1] + h2[1], h2[2]),
-                Vector3d(prev1[0] + h1[0], prev1[1] + h1[1], h1[2])
-        });
-        if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          builder.appendPolygon({
-                Vector3d(curr1[0] + h1[0], curr1[1] + h1[1], h1[2]),
-                Vector3d(curr2[0] + h2[0], curr2[1] + h2[1], h2[2]),
-                Vector3d(prev2[0] + h2[0], prev2[1] + h2[1], h2[2])
-          });        
-        }
-      }
-      prev1 = curr1;
-      prev2 = curr2;
-    }
-  }
-}
-
-/*
    Attempt to triangulate quads in an ideal way.
    Each quad is composed of two adjacent outline vertices: (prev1, curr1)
    and their corresponding transformed points one step up: (prev2, curr2).
@@ -1113,150 +1003,6 @@ static Outline2d splitOutlineByFn(
   return o2;
 }
 
-static std::unique_ptr<Geometry> extrudePolygonUsingBuilder(const LinearExtrudeNode& node, const Polygon2d& poly)
-{
-  bool non_linear = node.twist != 0 || node.scale_x != node.scale_y;
-  boost::tribool isConvex{poly.is_convex()};
-  // Twist or non-uniform scale makes convex polygons into unknown polyhedrons
-  if (isConvex && non_linear) isConvex = unknown;
-  if (node.height[2] <= 0) return PolySet::createEmpty();
-
-  size_t slices;
-  if (node.has_slices) {
-    slices = node.slices;
-  } else if (node.has_twist) {
-    double max_r1_sqr = 0; // r1 is before scaling
-    Vector2d scale(node.scale_x, node.scale_y);
-    for (const auto& o : poly.outlines())
-      for (const auto& v : o.vertices)
-        max_r1_sqr = fmax(max_r1_sqr, v.squaredNorm());
-    // Calculate Helical curve length for Twist with no Scaling
-    if (node.scale_x == 1.0 && node.scale_y == 1.0) {
-      slices = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height[2], node.twist, node.fn, node.fs, node.fa);
-    } else if (node.scale_x != node.scale_y) {  // non uniform scaling with twist using max slices from twist and non uniform scale
-      double max_delta_sqr = 0; // delta from before/after scaling
-      Vector2d scale(node.scale_x, node.scale_y);
-      for (const auto& o : poly.outlines()) {
-        for (const auto& v : o.vertices) {
-          max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
-        }
-      }
-      size_t slicesNonUniScale;
-      size_t slicesTwist;
-      slicesNonUniScale = (unsigned int)Calc::get_diagonal_slices(max_delta_sqr, node.height[2], node.fn, node.fs);
-      slicesTwist = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height[2], node.twist, node.fn, node.fs, node.fa);
-      slices = std::max(slicesNonUniScale, slicesTwist);
-    } else { // uniform scaling with twist, use conical helix calculation
-      slices = (unsigned int)Calc::get_conical_helix_slices(max_r1_sqr, node.height[2], node.twist, node.scale_x, node.fn, node.fs, node.fa);
-    }
-  } else if (node.scale_x != node.scale_y) {
-    // Non uniform scaling, w/o twist
-    double max_delta_sqr = 0; // delta from before/after scaling
-    Vector2d scale(node.scale_x, node.scale_y);
-    for (const auto& o : poly.outlines()) {
-      for (const auto& v : o.vertices) {
-        max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
-      }
-    }
-    slices = Calc::get_diagonal_slices(max_delta_sqr, node.height[2], node.fn, node.fs);
-  } else {
-    // uniform or [1,1] scaling w/o twist needs only one slice
-    slices = 1;
-  }
-
-  // Calculate outline segments if appropriate.
-  Polygon2d seg_poly;
-  bool is_segmented = false;
-  if (node.has_segments) {
-    // Set segments = 0 to disable
-    if (node.segments > 0) {
-      for (const auto& o : poly.outlines()) {
-        if (o.vertices.size() >= node.segments) {
-          seg_poly.addOutline(o);
-        } else {
-          seg_poly.addOutline(splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, node.segments, slices));
-        }
-      }
-      is_segmented = true;
-    }
-  } else if (non_linear) {
-    if (node.fn > 0.0) {
-      for (const auto& o : poly.outlines()) {
-        if (o.vertices.size() >= node.fn) {
-          seg_poly.addOutline(o);
-        } else {
-          seg_poly.addOutline(splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, node.fn, slices));
-        }
-      }
-    } else { // $fs and $fa based segmentation
-      auto fa_segs = static_cast<unsigned int>(std::ceil(360.0 / node.fa));
-      for (const auto& o : poly.outlines()) {
-        if (o.vertices.size() >= fa_segs) {
-          seg_poly.addOutline(o);
-        } else {
-          // try splitting by $fs, then check if $fa results in less segments
-          auto fsOutline = splitOutlineByFs(o, node.twist, node.scale_x, node.scale_y, node.fs, slices);
-          if (fsOutline.vertices.size() >= fa_segs) {
-            seg_poly.addOutline(splitOutlineByFn(o, node.twist, node.scale_x, node.scale_y, fa_segs, slices));
-          } else {
-            seg_poly.addOutline(std::move(fsOutline));
-          }
-        }
-      }
-    }
-    is_segmented = true;
-  }
-
-  const Polygon2d& polyref = is_segmented ? seg_poly : poly;
-
-  Vector3d h1, h2;
-  if (node.center) {
-    h1 = -node.height / 2.0;
-    h2 = node.height / 2.0;
-  } else {
-    h1 = Vector3d(0 ,0, 0);
-    h2 = node.height;
-  }
-
-  // Create bottom face.
-  auto ps_bottom = polyref.tessellate(); // bottom
-  // Flip vertex ordering for bottom polygon
-  for (auto& p : ps_bottom->indices) {
-    std::reverse(p.begin(), p.end());
-  }
-  translate_PolySet(*ps_bottom, h1);
-
-  PolySetBuilder builder(0, 0, 3, isConvex);
-  builder.setConvexity(node.convexity);
-  builder.appendPolySet(*ps_bottom);
-
-  // Create slice sides.
-  for (unsigned int j = 0; j < slices; j++) {
-    double rot1 = node.twist * j / slices;
-    double rot2 = node.twist * (j + 1) / slices;
-    Vector3d height1 = h1 + (h2 - h1) * j / slices;
-    Vector3d height2 = h1 + (h2 - h1) * (j + 1) / slices;
-    Vector2d scale1(1 - (1 - node.scale_x) * j / slices,
-                    1 - (1 - node.scale_y) * j / slices);
-    Vector2d scale2(1 - (1 - node.scale_x) * (j + 1) / slices,
-                    1 - (1 - node.scale_y) * (j + 1) / slices);
-    add_slice(builder, polyref, rot1, rot2, height1, height2, scale1, scale2);
-  }
-
-  // Create top face.
-  // If either scale components are 0, then top will be zero-area, so skip it.
-  if (node.scale_x != 0 && node.scale_y != 0) {
-    Polygon2d top_poly(polyref);
-    Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) * Eigen::Affine2d(rotate_degrees(-node.twist)));
-    top_poly.transform(trans);
-    auto ps_top = top_poly.tessellate();
-    translate_PolySet(*ps_top, h2);
-    builder.appendPolySet(*ps_top);
-  }
-
-  return builder.build();
-}
-
 std::unique_ptr<PolySet> assemblePolySetForManifold(
   const Polygon2d& polyref,
   std::vector<Vector3d>& vertices, PolygonIndices& indices,
@@ -1336,7 +1082,7 @@ std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
    etc., the input coming from a library like Clipper.
  */
  // FIXME: What happens if the input Polygon isn't manifold, or has coincident vertices?
-static std::unique_ptr<Geometry> extrudePolygonDirect(const LinearExtrudeNode& node, const Polygon2d& poly)
+static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& poly)
 {
   bool non_linear = node.twist != 0 || node.scale_x != node.scale_y;
   boost::tribool isConvex{poly.is_convex()};
@@ -1529,16 +1275,7 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
         const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
 
         std::unique_ptr<Geometry> extruded;
-#ifdef ENABLE_MANIFOLD
-        if (Feature::ExperimentalManifold.is_enabled()) {
-          extruded = extrudePolygonDirect(node, *polygons);
-        }
-        else
-#endif
-        // We have to use the builder since we don't have a triangulator which
-        // leaves vertices alone and only produces indices.
-        extruded = extrudePolygonUsingBuilder(node, *polygons);
-
+        extruded = extrudePolygon(node, *polygons);
         assert(extruded);
         geom = std::move(extruded);
       }
