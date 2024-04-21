@@ -1119,8 +1119,6 @@ static std::unique_ptr<Geometry> extrudePolygonUsingBuilder(const LinearExtrudeN
   boost::tribool isConvex{poly.is_convex()};
   // Twist or non-uniform scale makes convex polygons into unknown polyhedrons
   if (isConvex && non_linear) isConvex = unknown;
-  PolySetBuilder builder(0, 0, 3, isConvex);
-  builder.setConvexity(node.convexity);
   if (node.height[2] <= 0) return PolySet::createEmpty();
 
   size_t slices;
@@ -1227,6 +1225,9 @@ static std::unique_ptr<Geometry> extrudePolygonUsingBuilder(const LinearExtrudeN
     std::reverse(p.begin(), p.end());
   }
   translate_PolySet(*ps_bottom, h1);
+
+  PolySetBuilder builder(0, 0, 3, isConvex);
+  builder.setConvexity(node.convexity);
   builder.appendPolySet(*ps_bottom);
 
   // Create slice sides.
@@ -1256,6 +1257,80 @@ static std::unique_ptr<Geometry> extrudePolygonUsingBuilder(const LinearExtrudeN
   return builder.build();
 }
 
+std::unique_ptr<PolySet> assemblePolySetForManifold(
+  const Polygon2d& polyref,
+  std::vector<Vector3d>& vertices, PolygonIndices& indices,
+  int convexity, boost::tribool isConvex, int index_offset) {
+  auto final_polyset = std::make_unique<PolySet>(3);
+  final_polyset->setConvexity(convexity);
+  final_polyset->vertices = std::move(vertices);
+  final_polyset->indices = std::move(indices);
+
+  // Create top and bottom face.
+  auto ps_bottom = polyref.tessellate(); // bottom
+  // Flip vertex ordering for bottom polygon
+  for (auto& p : ps_bottom->indices) {
+    std::reverse(p.begin(), p.end());
+  }
+  std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
+     std::back_inserter(final_polyset->indices));
+
+  for (auto& p : ps_bottom->indices) {
+    std::reverse(p.begin(), p.end());
+    for (auto& i : p) {
+      i += index_offset;
+    }
+  }
+  std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
+     std::back_inserter(final_polyset->indices));
+
+  LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
+
+  return final_polyset; 
+}
+
+std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
+  std::vector<Vector3d>& vertices, PolygonIndices& indices,
+  int convexity, boost::tribool isConvex,
+  double scale_x, double scale_y,
+  const Vector3d& h1, const Vector3d& h2, double twist) {
+
+
+  PolySetBuilder builder(0, 0, 3, isConvex);
+  builder.setConvexity(convexity);
+
+  for (const auto& poly: indices) {
+    builder.beginPolygon(poly.size());
+    for (const auto idx : poly) {
+      builder.addVertex(vertices[idx]);
+    }
+}
+
+  // Create bottom face.
+  auto ps_bottom = polyref.tessellate(); // bottom
+  // Flip vertex ordering for bottom polygon
+  for (auto& p : ps_bottom->indices) {
+    std::reverse(p.begin(), p.end());
+  }
+  translate_PolySet(*ps_bottom, h1);
+
+  builder.appendPolySet(*ps_bottom);
+
+
+  // Create top face.
+  // If either scale components are 0, then top will be zero-area, so skip it.
+  if (scale_x != 0 && scale_y != 0) {
+    Polygon2d top_poly(polyref);
+    Eigen::Affine2d trans(Eigen::Scaling(scale_x, scale_y) * Eigen::Affine2d(rotate_degrees(-twist)));
+    top_poly.transform(trans);
+    auto ps_top = top_poly.tessellate();
+    translate_PolySet(*ps_top, h2);
+    builder.appendPolySet(*ps_top);
+  }
+
+  return builder.build();
+}
+
 /*!
    Input to extrude should be sanitized. This means non-intersecting, correct winding order
    etc., the input coming from a library like Clipper.
@@ -1267,8 +1342,6 @@ static std::unique_ptr<Geometry> extrudePolygonDirect(const LinearExtrudeNode& n
   boost::tribool isConvex{poly.is_convex()};
   // Twist or non-uniform scale makes convex polygons into unknown polyhedrons
   if (isConvex && non_linear) isConvex = unknown;
-  PolySetBuilder builder(0, 0, 3, isConvex);
-  builder.setConvexity(node.convexity);
   if (node.height[2] <= 0) return PolySet::createEmpty();
 
   size_t num_slices;
@@ -1368,27 +1441,21 @@ static std::unique_ptr<Geometry> extrudePolygonDirect(const LinearExtrudeNode& n
     h2 = node.height;
   }
 
-  // // Create bottom face.
-  // auto ps_bottom = polyref.tessellate(); // bottom
-  // // Flip vertex ordering for bottom polygon
-  // for (auto& p : ps_bottom->indices) {
-  //   std::reverse(p.begin(), p.end());
-  // }
-  // translate_PolySet(*ps_bottom, Vector3d(0, 0, h1));
-  // builder.appendPolySet(*ps_bottom);
+// The two functions are the same until here
 
   auto slice_stride = 0; // FIXME: slices * outline size
   for (const auto& o : polyref.outlines()) {
     slice_stride += o.vertices.size();
   }
-  auto final_polyset = std::make_unique<PolySet>(3);
-  final_polyset->vertices.reserve(slice_stride * num_slices);
-  final_polyset->indices.reserve(slice_stride * num_slices); // FIXME: Better estimate
+  std::vector<Vector3d> vertices;
+  vertices.reserve(slice_stride * num_slices);
+  PolygonIndices indices;
+  indices.reserve(slice_stride * num_slices); // FIXME: Better estimate
 
   // Calculate all vertices
   Vector2d full_scale(1 - node.scale_x, 1 - node.scale_y);
   double full_rot = -node.twist;
-  double full_height = (h2 - h1);
+  auto full_height = (h2 - h1);
   for (unsigned int j = 0; j <= num_slices; j++) {
     Eigen::Affine2d trans(
       Eigen::Scaling(Vector2d(1,1) - full_scale * j / num_slices) * 
@@ -1397,7 +1464,7 @@ static std::unique_ptr<Geometry> extrudePolygonDirect(const LinearExtrudeNode& n
     for (const auto& o : polyref.outlines()) {
       for (const auto& v : o.vertices) {
         auto tmp = trans * v;
-        final_polyset->vertices.emplace_back(tmp[0], tmp[1], h1 + full_height * j / num_slices);
+        vertices.emplace_back(Vector3d(tmp[0], tmp[1], 0.0) + h1 + full_height * j / num_slices);
       }
     }
   }
@@ -1406,68 +1473,34 @@ static std::unique_ptr<Geometry> extrudePolygonDirect(const LinearExtrudeNode& n
   for (unsigned int slice_idx = 1; slice_idx <= num_slices; slice_idx++) {
     double rot1 = node.twist * (slice_idx -1)/ num_slices;
     double rot2 = node.twist * slice_idx / num_slices;
-    double height1 = h1 + (h2 - h1) * (slice_idx - 1) / num_slices;
-    double height2 = h1 + (h2 - h1) * slice_idx / num_slices;
+    auto height1 = h1 + (h2 - h1) * (slice_idx - 1) / num_slices;
+    auto height2 = h1 + (h2 - h1) * slice_idx / num_slices;
     Vector2d scale1(1 - (1 - node.scale_x) * (slice_idx - 1) / num_slices,
                     1 - (1 - node.scale_y) * (slice_idx - 1) / num_slices);
     Vector2d scale2(1 - (1 - node.scale_x) * slice_idx / num_slices,
                     1 - (1 - node.scale_y) * slice_idx / num_slices);
-    add_slice_indices(final_polyset->indices, slice_idx, slice_stride, polyref, rot1, rot2, scale1, scale2);
+    add_slice_indices(indices, slice_idx, slice_stride, polyref, rot1, rot2, scale1, scale2);
   }
 
   // Create bottom and top face indices
-  // FIXME: This may be a polygon with holes, so we need to tessellate
-  // However, we need to tesselate without changing vertex position/order,
-  // or collapse vertices, so Polygon2d::tessellate() doesn't cut it.
 
 
-  // Create top and bottom face.
-  auto ps_bottom = polyref.tessellate(); // bottom
-  // Flip vertex ordering for bottom polygon
-  for (auto& p : ps_bottom->indices) {
-    std::reverse(p.begin(), p.end());
+  // For Manifold, we can tesselate the endcaps using existing vertices to build a manifold mesh.
+  // Without Manifold, however, we don't have such a tessellator available, so we'll have to build
+  // the polyset from vertices using PolySetBuilder
+
+
+#ifdef ENABLE_MANIFOLD
+  if (Feature::ExperimentalManifold.is_enabled()) {
+    return assemblePolySetForManifold(polyref, vertices, indices,
+                                      node.convexity, isConvex, slice_stride * num_slices);
   }
-  std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
-     std::back_inserter(final_polyset->indices));
-
-  for (auto& p : ps_bottom->indices) {
-    std::reverse(p.begin(), p.end());
-    for (auto& i : p) {
-      i += slice_stride * num_slices;
-    }
-  }
-  std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
-     std::back_inserter(final_polyset->indices));
-
-  LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
-
-  return final_polyset;
-
-  // Create slice sides.
-  // for (unsigned int j = 0; j < num_slices; j++) {
-  //   double rot1 = node.twist * j / num_slices;
-  //   double rot2 = node.twist * (j + 1) / num_slices;
-  //   double height1 = h1 + (h2 - h1) * j / num_slices;
-  //   double height2 = h1 + (h2 - h1) * (j + 1) / num_slices;
-  //   Vector2d scale1(1 - (1 - node.scale_x) * j / num_slices,
-  //                   1 - (1 - node.scale_y) * j / num_slices);
-  //   Vector2d scale2(1 - (1 - node.scale_x) * (j + 1) / num_slices,
-  //                   1 - (1 - node.scale_y) * (j + 1) / num_slices);
-  //   add_slice(builder, polyref, rot1, rot2, height1, height2, scale1, scale2);
-  // }
-
-  // // Create top face.
-  // // If either scale components are 0, then top will be zero-area, so skip it.
-  // if (node.scale_x != 0 && node.scale_y != 0) {
-  //   Polygon2d top_poly(polyref);
-  //   Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) * Eigen::Affine2d(rotate_degrees(-node.twist)));
-  //   top_poly.transform(trans);
-  //   auto ps_top = top_poly.tessellate();
-  //   translate_PolySet(*ps_top, Vector3d(0, 0, h2));
-  //   builder.appendPolySet(*ps_top);
-  // }
-
-  // return builder.build();
+  else
+#endif
+  return assemblePolySetForCGAL(polyref, vertices, indices,
+                                node.convexity, isConvex, 
+                                node.scale_x, node.scale_y,
+                                h1, h2, node.twist);
 }
 
 /*!
