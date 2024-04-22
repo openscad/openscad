@@ -100,13 +100,13 @@ get_mageia_deps()
 get_debian_deps()
 {
  apt-get -y install \
-  build-essential curl libffi-dev \
+  build-essential curl ninja-build libffi-dev \
   libxmu-dev cmake bison flex git-core libboost-all-dev \
   libmpfr-dev libboost-dev libglew-dev libcairo2-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   imagemagick libfreetype6-dev libdouble-conversion-dev \
   gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel libtbb-dev \
-  libgl1-mesa-dev libxi-dev libfontconfig-dev libzip-dev
+  libgl1-mesa-dev libxi-dev libfontconfig-dev libzip-dev libglm-dev
 }
 
 get_qt5_deps_debian()
