@@ -15,4 +15,6 @@ bool is_approximately_convex(const PolySet& ps);
 
 std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const class Geometry>&);
 
+std::string polySetToPolyhedronSource(const PolySet& ps);
+
 }

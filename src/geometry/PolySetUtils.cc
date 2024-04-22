@@ -178,4 +178,27 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
   return nullptr;
 }
 
+
+std::string polySetToPolyhedronSource(const PolySet& ps)
+{
+  std::stringstream sstr;
+  sstr << "polyhedron(\n";
+  sstr << "  points=[\n";
+  for (const auto& v : ps.vertices) {
+    sstr << "[" << v[0] << ", " << v[1] << ", " << v[2] << "],\n";
+  }
+  sstr << "  ],\n";
+  sstr << "  faces=[\n";
+  for (const auto& polygon : ps.indices) {
+    sstr << "[";
+    for (const auto idx : polygon) {
+      sstr << idx << ",";
+    }
+    sstr << "],\n";
+  }
+  sstr << "  ],\n";
+  sstr << ");\n";
+  return sstr.str();
+}
+
 } // namespace PolySetUtils

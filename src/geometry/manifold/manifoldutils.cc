@@ -11,6 +11,7 @@
 #endif
 #include "PolySetUtils.h"
 #include "PolySet.h"
+#include "polygon.h"
 
 using Error = manifold::Manifold::Error;
 
@@ -180,6 +181,30 @@ Polygon2d polygonsToPolygon2d(const manifold::Polygons& polygons) {
     poly2d.addOutline(std::move(outline));
   }
   return std::move(poly2d);
+}
+
+std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d)
+{
+  auto polyset = std::make_unique<PolySet>(2); 
+  polyset->setTriangular(true);
+
+  manifold::Polygons polygons;
+  for (const auto& outline : polygon2d.outlines()) {
+    manifold::SimplePolygon simplePolygon;
+    for (const auto& vertex : outline.vertices) {
+      polyset->vertices.emplace_back(vertex[0], vertex[1], 0.0);
+      simplePolygon.emplace_back(vertex[0], vertex[1]);
+    }
+    polygons.push_back(std::move(simplePolygon));
+  }
+
+  const auto triangles = manifold::Triangulate(polygons);
+
+  for (const auto& triangle : triangles) {
+    polyset->indices.push_back({triangle[0], triangle[1], triangle[2]});
+  }
+  return polyset;
+
 }
 
 }; // namespace ManifoldUtils
