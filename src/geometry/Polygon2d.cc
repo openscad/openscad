@@ -164,18 +164,11 @@ double Polygon2d::area() const
    * Rendering (both preview and render mode)
    * Polygon area calculation
    *
-   * One use-case is special: For geometry construction, we may require this function to 
+   * One use-case is special: For geometry construction in Manifold mode, we require this function to 
    * guarantee that vertices and their order are untouched (apart from adding a zero 3rd dimension)
    * 
  */
 std::unique_ptr<PolySet> Polygon2d::tessellate() const
-// createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d)
-// TODO(kintel): How to choose between different triangulators?
-// TODO(kintel): When to choose which triangulator?
-// * While testing, it could be very cool to switch on the cmd-line, e.g. by following --enable=manifold
-// * Later, it could be fun to have a flag to choose geometry backend and use that to switch CGAL vs. Manifold everywhere
-// ENABLE_CGAL -> CGAL CDT is available
-// ENABLE_MANIFOLD -> Manifold triangulator is available
 {
   PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
 #ifdef ENABLE_MANIFOLD

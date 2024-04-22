@@ -186,24 +186,23 @@ Polygon2d polygonsToPolygon2d(const manifold::Polygons& polygons) {
 std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d)
 {
   auto polyset = std::make_unique<PolySet>(2); 
+  polyset->setTriangular(true);
+
   manifold::Polygons polygons;
   for (const auto& outline : polygon2d.outlines()) {
-    manifold::SimplePolygon simplePolygon; // = createSimplePolygonFromOutline(outline);
+    manifold::SimplePolygon simplePolygon;
     for (const auto& vertex : outline.vertices) {
-      polyset->vertices.emplace_back(vertex[0], vertex[1], 0);
+      polyset->vertices.emplace_back(vertex[0], vertex[1], 0.0);
       simplePolygon.emplace_back(vertex[0], vertex[1]);
     }
     polygons.push_back(std::move(simplePolygon));
   }
-  // Disabled since it reorders vertices
-  //auto polygons2 = manifold::CrossSection(polygons).ToPolygons();
 
-  std::vector<glm::ivec3> triangles = manifold::Triangulate(polygons);
+  const auto triangles = manifold::Triangulate(polygons);
 
   for (const auto& triangle : triangles) {
     polyset->indices.push_back({triangle[0], triangle[1], triangle[2]});
   }
-  polyset->setTriangular(true);
   return polyset;
 
 }
