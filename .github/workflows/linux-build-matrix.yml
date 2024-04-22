@@ -13,11 +13,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-latest ]
+        headless: [ ON, OFF ]
         enable_tests: [ ON, OFF ]
 
     runs-on: ${{ matrix.os }}
 
-    name: ${{ matrix.os }}-tests=${{ matrix.enable_tests }}
+    name: ${{ matrix.os }}:HEADLESS=${{ matrix.headless }},ENABLE_TESTS=${{ matrix.enable_tests }}
 
     steps:
     - uses: actions/checkout@v4
@@ -29,6 +30,7 @@ jobs:
       run: >
         cmake -S . -B build -GNinja \
           -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -DHEADLESS=${{ matrix.headless }} \
           -DENABLE_TESTS=${{ matrix.enable_tests }}
     - name: Build OpenSCAD
       run: cmake --build build
