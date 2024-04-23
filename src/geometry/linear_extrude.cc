@@ -410,7 +410,7 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
 {
   if (node.height[2] <= 0) return PolySet::createEmpty();
 
-  bool non_linear = node.twist != 0;
+  bool non_linear = node.twist != 0 || node.scale_x != node.scale_y;
   boost::tribool isConvex{poly.is_convex()};
   // Twist makes convex polygons into unknown polyhedrons
   if (isConvex && non_linear) isConvex = unknown;
