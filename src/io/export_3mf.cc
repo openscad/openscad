@@ -24,6 +24,7 @@
  *
  */
 
+#include "GeometryUtils.h"
 #include "export.h"
 #include "PolySet.h"
 #include "PolySetUtils.h"
@@ -74,7 +75,7 @@ static void export_3mf_error(std::string msg, PLib3MFModel *& model)
 /*
  * PolySet must be triangulated.
  */
-static bool append_polyset(const PolySet& ps, PLib3MFModelMeshObject *& model)
+static bool append_polyset(std::shared_ptr<const PolySet> ps, PLib3MFModelMeshObject *& model)
 {
   PLib3MFModelMeshObject *mesh;
   if (lib3mf_model_addmeshobject(model, &mesh) != LIB3MF_OK) {
@@ -86,26 +87,32 @@ static bool append_polyset(const PolySet& ps, PLib3MFModelMeshObject *& model)
     return false;
   }
 
-  auto vertexFunc = [&](const std::array<double, 3>& coords) -> bool {
-      MODELMESHVERTEX v{(FLOAT)coords[0], (FLOAT)coords[1], (FLOAT)coords[2]};
-      return lib3mf_meshobject_addvertex(mesh, &v, nullptr) == LIB3MF_OK;
-    };
+  auto vertexFunc = [&](const Vector3d& coords) -> bool {
+    const auto f = coords.cast<float>();
+    MODELMESHVERTEX v{f[0], f[1], f[2]};
+    return lib3mf_meshobject_addvertex(mesh, &v, nullptr) == LIB3MF_OK;
+  };
 
-  auto triangleFunc = [&](const std::array<int, 3>& indices) -> bool {
-      MODELMESHTRIANGLE t{(DWORD)indices[0], (DWORD)indices[1], (DWORD)indices[2]};
-      return lib3mf_meshobject_addtriangle(mesh, &t, nullptr) == LIB3MF_OK;
-    };
 
-  Export::ExportMesh exportMesh{ps};
+  auto triangleFunc = [&](const IndexedFace& indices) -> bool {
+    MODELMESHTRIANGLE t{(DWORD)indices[0], (DWORD)indices[1], (DWORD)indices[2]};
+    return lib3mf_meshobject_addtriangle(mesh, &t, nullptr) == LIB3MF_OK;
+  };
 
-  if (!exportMesh.foreach_vertex(vertexFunc)) {
-    export_3mf_error("Can't add vertex to 3MF model.", model);
-    return false;
+  auto sorted_ps = createSortedPolySet(*ps);
+
+  for (const auto &v : sorted_ps->vertices) {
+    if (!vertexFunc(v)) {
+      export_3mf_error("Can't add vertex to 3MF model.", model);
+      return false;
+    }
   }
 
-  if (!exportMesh.foreach_indexed_triangle(triangleFunc)) {
-    export_3mf_error("Can't add triangle to 3MF model.", model);
-    return false;
+  for (const auto& poly : sorted_ps->indices) {
+    if (!triangleFunc(poly)) {
+      export_3mf_error("Can't add triangle to 3MF model.", model);
+      return false;
+    }
   }
 
   PLib3MFModelBuildItem *builditem;
@@ -130,8 +137,8 @@ static bool append_nef(const CGAL_Nef_polyhedron& root_N, PLib3MFModelMeshObject
   }
 
 
-  if (const auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3)) {
-    return append_polyset(*ps, model);
+  if (std::shared_ptr<PolySet> ps = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3)) {
+    return append_polyset(ps, model);
   }
 
   export_3mf_error("Error converting NEF Polyhedron.", model);
@@ -149,14 +156,14 @@ static bool append_3mf(const std::shared_ptr<const Geometry>& geom, PLib3MFModel
   } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     return append_nef(*N, model);
   } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    return append_polyset(*hybrid->toPolySet(), model);
+    return append_polyset(hybrid->toPolySet(), model);
 #endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-    return append_polyset(*mani->toPolySet(), model);
+    return append_polyset(mani->toPolySet(), model);
 #endif
   } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
-    return append_polyset(*PolySetUtils::tessellate_faces(*ps), model);
+    return append_polyset(PolySetUtils::tessellate_faces(*ps), model);
   } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported file format");
   } else { // NOLINT(bugprone-branch-clone)
@@ -233,45 +240,53 @@ static void export_3mf_error(std::string msg)
 /*
  * PolySet must be triangulated.
  */
-static bool append_polyset(const PolySet& ps, Lib3MF::PWrapper& wrapper, Lib3MF::PModel& model)
+static bool append_polyset(std::shared_ptr<const PolySet> ps, Lib3MF::PWrapper& wrapper, Lib3MF::PModel& model)
 {
   try {
     auto mesh = model->AddMeshObject();
     if (!mesh) return false;
     mesh->SetName("OpenSCAD Model");
 
-    auto vertexFunc = [&](const std::array<double, 3>& coords) -> bool {
-        try {
-          Lib3MF::sPosition v{(Lib3MF_single)coords[0], (Lib3MF_single)coords[1], (Lib3MF_single)coords[2]};
-          mesh->AddVertex(v);
-        } catch (Lib3MF::ELib3MFException& e) {
-          export_3mf_error(e.what());
-          return false;
-        }
-        return true;
-      };
+    auto vertexFunc = [&](const Vector3d& coords) -> bool {
+      const auto f = coords.cast<float>();
+      try {
+        Lib3MF::sPosition v{f[0], f[1], f[2]};
+        mesh->AddVertex(v);
+      } catch (Lib3MF::ELib3MFException& e) {
+        export_3mf_error(e.what());
+        return false;
+      }
+      return true;
+    };
 
-    auto triangleFunc = [&](const std::array<int, 3>& indices) -> bool {
-        try {
-          Lib3MF::sTriangle t{(Lib3MF_uint32)indices[0], (Lib3MF_uint32)indices[1], (Lib3MF_uint32)indices[2]};
-          mesh->AddTriangle(t);
-        } catch (Lib3MF::ELib3MFException& e) {
-          export_3mf_error(e.what());
-          return false;
-        }
-        return true;
-      };
+    auto triangleFunc = [&](const IndexedFace& indices) -> bool {
+      try {
+        Lib3MF::sTriangle t{(Lib3MF_uint32)indices[0], (Lib3MF_uint32)indices[1], (Lib3MF_uint32)indices[2]};
+        mesh->AddTriangle(t);
+      } catch (Lib3MF::ELib3MFException& e) {
+        export_3mf_error(e.what());
+        return false;
+      }
+      return true;
+    };
 
-    Export::ExportMesh exportMesh{ps};
-
-    if (!exportMesh.foreach_vertex(vertexFunc)) {
-      export_3mf_error("Can't add vertex to 3MF model.");
-      return false;
+    std::shared_ptr<const PolySet> out_ps = ps;
+    if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
+      out_ps = createSortedPolySet(*ps);
     }
 
-    if (!exportMesh.foreach_indexed_triangle(triangleFunc)) {
-      export_3mf_error("Can't add triangle to 3MF model.");
-      return false;
+    for (const auto &v : out_ps->vertices) {
+      if (!vertexFunc(v)) {
+        export_3mf_error("Can't add vertex to 3MF model.");
+        return false;
+      }
+    }
+
+    for (const auto& poly : out_ps->indices) {
+      if (!triangleFunc(poly)) {
+        export_3mf_error("Can't add triangle to 3MF model.");
+        return false;
+      }
     }
 
     Lib3MF::PBuildItem builditem;
@@ -299,8 +314,8 @@ static bool append_nef(const CGAL_Nef_polyhedron& root_N, Lib3MF::PWrapper& wrap
     LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
   }
 
-  if (const auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3)) {
-    return append_polyset(*ps, wrapper, model);
+  if (std::shared_ptr<PolySet> ps = CGALUtils::createPolySetFromNefPolyhedron3(*root_N.p3)) {
+    return append_polyset(ps, wrapper, model);
   }
   export_3mf_error("Error converting NEF Polyhedron.");
   return false;
@@ -317,14 +332,14 @@ static bool append_3mf(const std::shared_ptr<const Geometry>& geom, Lib3MF::PWra
   } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     return append_nef(*N, wrapper, model);
   } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
-    return append_polyset(*hybrid->toPolySet(), wrapper, model);
+    return append_polyset(hybrid->toPolySet(), wrapper, model);
 #endif
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-    return append_polyset(*mani->toPolySet(), wrapper, model);
+    return append_polyset(mani->toPolySet(), wrapper, model);
 #endif
   } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
-    return append_polyset(*PolySetUtils::tessellate_faces(*ps), wrapper, model);
+    return append_polyset(PolySetUtils::tessellate_faces(*ps), wrapper, model);
   } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) {
     assert(false && "Unsupported file format");
   } else {

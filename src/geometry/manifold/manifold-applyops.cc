@@ -9,8 +9,6 @@
 #include "progress.h"
 #include "printutils.h"
 
-#include <queue>
-
 namespace ManifoldUtils {
 
 Location getLocation(const std::shared_ptr<const AbstractNode>& node)
@@ -22,54 +20,54 @@ Location getLocation(const std::shared_ptr<const AbstractNode>& node)
    Applies op to all children and returns the result.
    The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
  */
-std::shared_ptr<const ManifoldGeometry> applyOperator3DManifold(const Geometry::Geometries& children, OpenSCADOperator op)
+std::shared_ptr<ManifoldGeometry> applyOperator3DManifold(const Geometry::Geometries& children, OpenSCADOperator op)
 {
-  auto N = std::make_shared<ManifoldGeometry>();
+  std::shared_ptr<ManifoldGeometry> geom;
 
   bool foundFirst = false;
 
   for (const auto& item : children) {
-    auto chN = item.second ? createMutableManifoldFromGeometry(item.second) : nullptr;
+    auto chN = item.second ? createManifoldFromGeometry(item.second) : nullptr;
 
     // Intersecting something with nothing results in nothing
     if (!chN || chN->isEmpty()) {
       if (op == OpenSCADOperator::INTERSECTION) {
-        N = nullptr;
+        geom = nullptr;
         break;
       }
       if (op == OpenSCADOperator::DIFFERENCE && !foundFirst) {
-        N = nullptr;
+        geom = nullptr;
         break;
       }
       continue;
     }
 
-    // Initialize N with first expected geometric object
+    // Initialize geom with first expected geometric object
     if (!foundFirst) {
-      N = chN;
+      geom = std::make_shared<ManifoldGeometry>(*chN);
       foundFirst = true;
       continue;
     }
 
     switch (op) {
     case OpenSCADOperator::UNION:
-      *N += *chN;
+      *geom = *geom + *chN;
       break;
     case OpenSCADOperator::INTERSECTION:
-      *N *= *chN;
+      *geom = *geom * *chN;
       break;
     case OpenSCADOperator::DIFFERENCE:
-      *N -= *chN;
+      *geom = *geom - *chN;
       break;
     case OpenSCADOperator::MINKOWSKI:
-      N->minkowski(*chN);
+      *geom = geom->minkowski(*chN);
       break;
     default:
       LOG(message_group::Error, "Unsupported CGAL operator: %1$d", static_cast<int>(op));
     }
     if (item.first) item.first->progress_report();
   }
-  return N;
+  return geom;
 }
 
 };  // namespace ManifoldUtils

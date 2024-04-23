@@ -61,7 +61,11 @@ void ThrownTogetherRenderer::prepare(bool /*showfaces*/, bool /*showedges*/, con
     }
     VertexArray vertex_array(std::make_unique<TTRVertexStateFactory>(), vertex_states, vertices_vbo, elements_vbo);
     vertex_array.addSurfaceData();
-    add_shader_data(vertex_array);
+    if (getShader().progid != 0) {
+      add_shader_data(vertex_array);
+    } else {
+      LOG("Warning: Shader not available");
+    }
 
     size_t num_vertices = 0;
     if (this->root_products) num_vertices += (getSurfaceBufferSize(this->root_products, true) * 2);

@@ -1,6 +1,6 @@
 #include "OpenSCADApp.h"
 #include "MainWindow.h"
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 #include "EventFilter.h"
 #endif
 
@@ -12,7 +12,7 @@
 OpenSCADApp::OpenSCADApp(int& argc, char **argv)
   : QApplication(argc, argv)
 {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
   this->installEventFilter(new SCADEventFilter(this));
 #endif
 }

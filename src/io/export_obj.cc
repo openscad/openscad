@@ -33,15 +33,19 @@
 void export_obj(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
   // FIXME: In lazy union mode, should we export multiple objects?
-  auto ps = PolySetUtils::getGeometryAsPolySet(geom);
+  
+  std::shared_ptr<const PolySet> out = PolySetUtils::getGeometryAsPolySet(geom);
+  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
+    out = createSortedPolySet(*out);
+  }
 
   output << "# OpenSCAD obj exporter\n";
 
-  for (const auto &v : ps->vertices) {
+  for (const auto &v : out->vertices) {
     output << "v " <<v[0] << " " << v[1] << " " << v[2] << "\n";
   }
 
-  for (const auto& poly : ps->indices) {
+  for (const auto& poly : out->indices) {
     output << "f ";
     for (const auto idx : poly) {
       output << " " << idx + 1;

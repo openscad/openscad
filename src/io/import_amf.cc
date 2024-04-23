@@ -156,9 +156,9 @@ void AmfImporter::end_triangle(AmfImporter *importer, const xmlChar *)
 
   std::vector<Eigen::Vector3d>& v = importer->vertex_list;
 
-  importer->builder->appendPoly(3);
+  importer->builder->beginPolygon(3);
   for(int i=0;i<3;i++) // TODO set vertex array first
-	  importer->builder->appendVertex(Vector3d(v[idx[i]].x(), v[idx[i]].y(), v[idx[i]].z()));
+	  importer->builder->addVertex(Vector3d(v[idx[i]].x(), v[idx[i]].y(), v[idx[i]].z()));
 }
 
 void AmfImporter::processNode(xmlTextReaderPtr reader)
@@ -254,7 +254,7 @@ std::unique_ptr<PolySet> AmfImporter::read(const std::string& filename)
   vertex_list.clear();
 
   if (polySets.empty()) {
-    return std::make_unique<PolySet>(3);
+    return PolySet::createEmpty();
   }
   if (polySets.size() == 1) {
     return std::move(polySets[0]);
@@ -274,7 +274,7 @@ std::unique_ptr<PolySet> AmfImporter::read(const std::string& filename)
 #endif // ENABLE_CGAL
       LOG(message_group::Error, "Error importing multi-object AMF file '%1$s', import() at line %2$d", filename, this->loc.firstLine());
   }
-  return std::make_unique<PolySet>(3);
+  return PolySet::createEmpty();
 }
 
 #ifdef ENABLE_LIBZIP

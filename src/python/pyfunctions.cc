@@ -939,19 +939,19 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   auto node = std::make_shared<LinearExtrudeNode>(instance);
 
   PyObject *obj = NULL;
-  double height = 1;
   char *layer = NULL;
   int convexity = 1;
   PyObject *origin = NULL;
   PyObject *scale = NULL;
   PyObject *center = NULL;
+  PyObject *height;
   int slices = 1;
   int segments = 0;
   double twist = 0.0;
   double fn = NAN, fa = NAN, fs = NAN;
 
   char *kwlist[] = {"obj", "height", "layer", "convexity", "origin", "scale", "center", "slices", "segments", "twist", "fn", "fa", "fs", NULL};
-  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|dsiO!O!Oiidddd", kwlist,
+  if (!PyArg_ParseTupleAndKeywords(args, kwargs, "O|OsiO!O!Oiidddd", kwlist,
                                    &obj,
                                    &height,
                                    &layer,
@@ -981,7 +981,15 @@ PyObject *python_linear_extrude(PyObject *self, PyObject *args, PyObject *kwargs
   if (!isnan(fa)) node->fa = fa;
   if (!isnan(fs)) node->fs = fs;
 
-  node->height = height;
+  Vector3d height_vec(0,0,0);
+  double dummy;
+  if(!python_numberval(height, &height_vec[2])) {
+	  printf("lin cvase\n");
+    node->height = height_vec;
+  } else if(!python_vectorval(height, &height_vec[0], &height_vec[1], &height_vec[2])) {
+    node->height = height_vec;
+  }
+
   node->convexity = convexity;
   if (layer != NULL) node->layername = layer;
 

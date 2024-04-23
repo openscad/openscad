@@ -1,6 +1,5 @@
 #! ${PYTHON_EXECUTABLE}
 
-from __future__ import print_function
 
 import sys
 
@@ -28,9 +27,9 @@ for p in params:
     width, height = p[0:2]
     aspectParam = ' '.join(str(x) for x in p[2:])
     aspectFile = '_'.join(str(x) for x in p[2:][::-1])
-    svg_viewBox = "viewBox=\"0 0 {} {}\"".format(width, height)
-    svg_preserveAspectRatio = "preserveAspectRatio=\"{}\"".format(aspectParam)
+    svg_viewBox = f'viewBox="0 0 {width} {height}"'
+    svg_preserveAspectRatio = f'preserveAspectRatio="{aspectParam}"'
     out = svg.replace('__VIEWBOX__', svg_viewBox).replace('__PRESERVE_ASPECT_RATIO__', svg_preserveAspectRatio)
-    outfile = sys.argv[1] + "/viewbox_{}x{}_{}.svg".format(width, height, aspectFile)
+    outfile = sys.argv[1] + f"/viewbox_{width}x{height}_{aspectFile}.svg"
     with open(outfile, "w") as f:
         f.write(out)

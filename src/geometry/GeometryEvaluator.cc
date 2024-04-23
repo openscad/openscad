@@ -37,7 +37,6 @@
 #include <CGAL/Point_2.h>
 #endif
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
 #include "manifoldutils.h"
 #endif
 
@@ -58,49 +57,40 @@ GeometryEvaluator::GeometryEvaluator(const Tree& tree) : tree(tree) { }
 std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const AbstractNode& node,
                                                                bool allownef)
 {
-  const std::string& key = this->tree.getIdString(node);
-  if (!GeometryCache::instance()->contains(key)) {
-    std::shared_ptr<const Geometry> N;
-#ifdef ENABLE_CGAL
-    if (CGALCache::instance()->contains(key)) {
-      N = CGALCache::instance()->get(key);
-    }
-#endif
+  auto result = smartCacheGet(node, allownef);
+  if (result) return result;
 
-    // If not found in any caches, we need to evaluate the geometry
-    if (N) {
-      this->root = N;
-    } else {
-      this->traverse(node);
-    }
-#ifdef ENABLE_CGAL
-    if (std::dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root)) {
-      this->root = PolySetUtils::getGeometryAsPolySet(this->root);
-    }
-#endif
+  // If not found in any caches, we need to evaluate the geometry
+  // traverse() will set this->root to a geometry, which can be any geometry
+  // (including GeometryList if the lazyunions feature is enabled)
+  this->traverse(node);
+  result = this->root;
+
+  // Convert engine-specific 3D geometry to PolySet if needed
+  if (!allownef) {
+    std::shared_ptr<const PolySet> ps;
+    if (std::dynamic_pointer_cast<const CGALHybridPolyhedron>(result) ||
+        std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(result)
 #ifdef ENABLE_MANIFOLD
-    if (std::dynamic_pointer_cast<const ManifoldGeometry>(this->root)) {
-      this->root = PolySetUtils::getGeometryAsPolySet(this->root);
-    }
+        || std::dynamic_pointer_cast<const ManifoldGeometry>(result)
 #endif
-
-    if (!allownef) {
-      // We cannot render concave polygons, so tessellate any 3D PolySets
-      auto ps = PolySetUtils::getGeometryAsPolySet(this->root);
-      if (ps && !ps->isEmpty()) {
+        || std::dynamic_pointer_cast<const PolySet>(result)) {
+      ps = PolySetUtils::getGeometryAsPolySet(result);
+      assert(ps && ps->getDimension() == 3);
+      // We cannot render concave polygons, so tessellate any PolySets
+      if (!ps->isEmpty() && !ps->isTriangular()) {
         // Since is_convex() doesn't handle non-planar faces, we need to tessellate
         // also in the indeterminate state so we cannot just use a boolean comparison. See #1061
         bool convex = bool(ps->convexValue()); // bool is true only if tribool is true, (not indeterminate and not false)
         if (!convex) {
-          assert(ps->getDimension() == 3);
-          this->root = PolySetUtils::tessellate_faces(*ps);
+          ps = PolySetUtils::tessellate_faces(*ps);
         }
       }
     }
-    smartCacheInsert(node, this->root);
-    return this->root;
+    if (ps) result = ps;
   }
-  return GeometryCache::instance()->get(key);
+  smartCacheInsert(node, result);
+  return result;
 }
 
 bool GeometryEvaluator::isValidDim(const Geometry::GeometryItem& item, unsigned int& dim) const {
@@ -120,7 +110,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren(const Abstrac
   for (const auto& item : this->visitedchildren[node.index()]) {
     if (!isValidDim(item, dim)) break;
   }
-  if (dim == 2) return {std::shared_ptr<Geometry>(applyToChildren2D(node, op))};
+  if (dim == 2) return ResultObject::mutableResult(std::shared_ptr<Geometry>(applyToChildren2D(node, op)));
   else if (dim == 3) return applyToChildren3D(node, op);
   return {};
 }
@@ -136,7 +126,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   if (children.empty()) return {};
 
   if (op == OpenSCADOperator::HULL) {
-    return {std::shared_ptr<Geometry>(applyHull(children))};
+    return ResultObject::mutableResult(std::shared_ptr<Geometry>(applyHull(children)));
   } else if (op == OpenSCADOperator::FILL) {
     for (const auto& item : children) {
       LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(), "fill() not yet implemented for 3D");
@@ -144,7 +134,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   }
 
   // Only one child -> this is a noop
-  if (children.size() == 1) return {children.front().second};
+  if (children.size() == 1) return ResultObject::constResult(children.front().second);
 
   switch (op) {
   case OpenSCADOperator::MINKOWSKI:
@@ -154,8 +144,8 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
       if (item.second && !item.second->isEmpty()) actualchildren.push_back(item);
     }
     if (actualchildren.empty()) return {};
-    if (actualchildren.size() == 1) return {actualchildren.front().second};
-    return {applyMinkowski(actualchildren)};
+    if (actualchildren.size() == 1) return ResultObject::constResult(actualchildren.front().second);
+    return ResultObject::constResult(applyMinkowski(actualchildren));
     break;
   }
   case OpenSCADOperator::UNION:
@@ -165,17 +155,17 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
       if (item.second && !item.second->isEmpty()) actualchildren.push_back(item);
     }
     if (actualchildren.empty()) return {};
-    if (actualchildren.size() == 1) return {actualchildren.front().second};
+    if (actualchildren.size() == 1) return ResultObject::constResult(actualchildren.front().second);
 #ifdef ENABLE_MANIFOLD
     if (Feature::ExperimentalManifold.is_enabled()) {
-      return {ManifoldUtils::applyOperator3DManifold(actualchildren, op)};
+      return ResultObject::mutableResult(ManifoldUtils::applyOperator3DManifold(actualchildren, op));
     }
 #endif
 #ifdef ENABLE_CGAL
     else if (Feature::ExperimentalFastCsg.is_enabled()) {
-      return {std::shared_ptr<Geometry>(CGALUtils::applyUnion3DHybrid(actualchildren.begin(), actualchildren.end()))};
+      return ResultObject::mutableResult(std::shared_ptr<Geometry>(CGALUtils::applyUnion3DHybrid(actualchildren.begin(), actualchildren.end())));
     }
-    return {CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())};
+    return ResultObject::constResult(std::shared_ptr<const Geometry>(CGALUtils::applyUnion3D(actualchildren.begin(), actualchildren.end())));
 #else
     assert(false && "No boolean backend available");
 #endif
@@ -185,15 +175,15 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   {
 #ifdef ENABLE_MANIFOLD
     if (Feature::ExperimentalManifold.is_enabled()) {
-      return {ManifoldUtils::applyOperator3DManifold(children, op)};
+      return ResultObject::mutableResult(ManifoldUtils::applyOperator3DManifold(children, op));
     }
 #endif
 #ifdef ENABLE_CGAL
     if (Feature::ExperimentalFastCsg.is_enabled()) {
       // FIXME: It's annoying to have to disambiguate here:
-      return {std::shared_ptr<Geometry>(CGALUtils::applyOperator3DHybrid(children, op))};
+      return ResultObject::mutableResult(std::shared_ptr<Geometry>(CGALUtils::applyOperator3DHybrid(children, op)));
     }
-    return {CGALUtils::applyOperator3D(children, op)};
+    return ResultObject::constResult(CGALUtils::applyOperator3D(children, op));
 #else
     assert(false && "No boolean backend available");
     #endif
@@ -268,7 +258,7 @@ std::unique_ptr<Geometry> GeometryEvaluator::applyHull3D(const AbstractNode& nod
 {
   Geometry::Geometries children = collectChildren3D(node);
 
-  auto P = std::make_unique<PolySet>(3);
+  auto P = PolySet::createEmpty();
   return applyHull(children);
 }
 
@@ -329,43 +319,37 @@ void GeometryEvaluator::smartCacheInsert(const AbstractNode& node,
 {
   const std::string& key = this->tree.getIdString(node);
 
-#ifdef ENABLE_CGAL
   if (CGALCache::acceptsGeometry(geom)) {
-    if (!CGALCache::instance()->contains(key)) CGALCache::instance()->insert(key, geom);
-  } else {
-#endif
-    if (!GeometryCache::instance()->contains(key)) {
-      if (!GeometryCache::instance()->insert(key, geom)) {
-        LOG(message_group::Warning, "GeometryEvaluator: Node didn't fit into cache.");
-      }
+    if (!CGALCache::instance()->contains(key)) {
+      CGALCache::instance()->insert(key, geom);
     }
-#ifdef ENABLE_CGAL
+  } else if (!GeometryCache::instance()->contains(key)) {
+    // FIXME: Sanity-check Polygon2d as well?
+    // if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+    //   assert(!ps->hasDegeneratePolygons());
+    // }
+
+    // Perhaps add acceptsGeometry() to GeometryCache as well?
+    if (!GeometryCache::instance()->insert(key, geom)) {
+      LOG(message_group::Warning, "GeometryEvaluator: Node didn't fit into cache.");
+    }
   }
-#endif
 }
 
 bool GeometryEvaluator::isSmartCached(const AbstractNode& node)
 {
   const std::string& key = this->tree.getIdString(node);
-  return (GeometryCache::instance()->contains(key)
-#ifdef ENABLE_CGAL
-	  || CGALCache::instance()->contains(key)
-#endif
-    );
+  return GeometryCache::instance()->contains(key) || CGALCache::instance()->contains(key);
 }
 
 std::shared_ptr<const Geometry> GeometryEvaluator::smartCacheGet(const AbstractNode& node, bool preferNef)
 {
   const std::string& key = this->tree.getIdString(node);
-  std::shared_ptr<const Geometry> geom;
-  bool hasgeom = GeometryCache::instance()->contains(key);
-#ifdef ENABLE_CGAL
-  bool hascgal = CGALCache::instance()->contains(key);
-  if (hascgal && (preferNef || !hasgeom)) geom = CGALCache::instance()->get(key);
-  else
-#endif
-  if (hasgeom) geom = GeometryCache::instance()->get(key);
-  return geom;
+  const bool hasgeom = GeometryCache::instance()->contains(key);
+  const bool hascgal = CGALCache::instance()->contains(key);
+  if (hascgal && (preferNef || !hasgeom)) return CGALCache::instance()->get(key);
+  if (hasgeom) return GeometryCache::instance()->get(key);
+  return {};
 }
 
 /*!
@@ -646,6 +630,8 @@ Response GeometryEvaluator::visit(State& state, const LeafNode& node)
         if (!polygon->isSanitized()) {
           geom = ClipperUtils::sanitize(*polygon);
         }
+      } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+//        assert(!ps->hasDegeneratePolygons());
       }
     } else {
       geom = smartCacheGet(node, state.preferNef());
@@ -724,30 +710,21 @@ Response GeometryEvaluator::visit(State& state, const TransformNode& node)
         ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
         if ((geom = res.constptr())) {
           if (geom->getDimension() == 2) {
-            std::shared_ptr<const Polygon2d> polygons = std::dynamic_pointer_cast<const Polygon2d>(geom);
+            auto polygons =  std::dynamic_pointer_cast<Polygon2d>(res.asMutableGeometry());
             assert(polygons);
-
-            // If we got a const object, make a copy
-            std::shared_ptr<Polygon2d> newpoly;
-            if (res.isConst()) {
-              newpoly = std::make_shared<Polygon2d>(*polygons);
-	    }
-            else {
-              newpoly = std::dynamic_pointer_cast<Polygon2d>(res.ptr());
-	    }
 
             Transform2d mat2;
             mat2.matrix() <<
               node.matrix(0, 0), node.matrix(0, 1), node.matrix(0, 3),
               node.matrix(1, 0), node.matrix(1, 1), node.matrix(1, 3),
               node.matrix(3, 0), node.matrix(3, 1), node.matrix(3, 3);
-            newpoly->transform(mat2);
-	    // FIXME: We lose the transform if we copied a const geometry above. Probably similar issue in multiple places
+            polygons->transform(mat2);
+            // FIXME: We lose the transform if we copied a const geometry above. Probably similar issue in multiple places
             // A 2D transformation may flip the winding order of a polygon.
             // If that happens with a sanitized polygon, we need to reverse
             // the winding order for it to be correct.
-            if (newpoly->isSanitized() && mat2.matrix().determinant() <= 0) {
-              geom = ClipperUtils::sanitize(*newpoly);
+            if (polygons->isSanitized() && mat2.matrix().determinant() <= 0) {
+              geom = ClipperUtils::sanitize(*polygons);
             }
           } else if (geom->getDimension() == 3) {
             auto mutableGeom = res.asMutableGeometry();
@@ -806,7 +783,7 @@ int sgn_vdiff(const Vector2d& v1, const Vector2d& v2) {
  */
 static void add_slice(PolySetBuilder &builder, const Polygon2d& poly,
                       double rot1, double rot2,
-                      double h1, double h2,
+                      Vector3d h1, Vector3d h2,
                       const Vector2d& scale1,
                       const Vector2d& scale2)
 {
@@ -846,52 +823,52 @@ static void add_slice(PolySetBuilder &builder, const Polygon2d& poly,
         // Split into 4 triangles, with an added midpoint.
         //Vector2d mid_prev = trans3 * (prev1 +curr1+curr2)/4;
         Vector2d mid = trans_mid * (o.vertices[(i - 1) % o.vertices.size()] + o.vertices[i % o.vertices.size()]) / 2;
-        double h_mid = (h1 + h2) / 2;
-        builder.appendPoly(3);
-        builder.insertVertex(prev1[0], prev1[1], h1);
-        builder.insertVertex(mid[0],   mid[1], h_mid);
-        builder.insertVertex(curr1[0], curr1[1], h1);
-        builder.appendPoly(3);
-        builder.insertVertex(curr1[0], curr1[1], h1);
-        builder.insertVertex(mid[0],   mid[1], h_mid);
-        builder.insertVertex(curr2[0], curr2[1], h2);
-        builder.appendPoly(3);
-        builder.insertVertex(curr2[0], curr2[1], h2);
-        builder.insertVertex(mid[0],   mid[1], h_mid);
-        builder.insertVertex(prev2[0], prev2[1], h2);
-        builder.appendPoly(3);
-        builder.insertVertex(prev2[0], prev2[1], h2);
-        builder.insertVertex(mid[0],   mid[1], h_mid);
-        builder.insertVertex(prev1[0], prev1[1], h1);
+        Vector3d h_mid = (h1 + h2) / 2;
+        builder.beginPolygon(3);
+        builder.insertVertex(prev1[0] + h1[0], prev1[1] + h1[1], h1[2]);
+        builder.insertVertex(mid[0] + h_mid[0],   mid[1] + h_mid[1], h_mid+h_mid[2]);
+        builder.insertVertex(curr1[0] + h1[0], curr1[1] + h1[1], h1[2]);
+        builder.beginPolygon(3);
+        builder.insertVertex(curr1[0] + h1[0], curr1[1] + h1[1], h1[2]);
+        builder.insertVertex(mid[0] + h_mid[0],   mid[1] + h_mid[1], h_mid[2]);
+        builder.insertVertex(curr2[0] + h2[0], curr2[1] + h2[1], h2[2]);
+        builder.beginPolygon(3);
+        builder.insertVertex(curr2[0] + h2[0], curr2[1] + h2[1], h2[2]);
+        builder.insertVertex(mid[0] + h_mid[0],   mid[1] + h_mid[1], h_mid[2]);
+        builder.insertVertex(prev2[0] + h2[0], prev2[1] + h2[1], h2[2]);
+        builder.beginPolygon(3);
+        builder.insertVertex(prev2[0] + h2[0], prev2[1] + h2[1], h2[2]);
+        builder.insertVertex(mid[0] + h_mid[0],   mid[1] + h_mid[1], h_mid[2]);
+        builder.insertVertex(prev1[0] + h1[0], prev1[1] + h1[1], h1[2]);
       } else
 #endif // ifdef LINEXT_4WAY
       // Split along shortest diagonal,
       // unless at top for a 0-scaled axis (which can create 0 thickness "ears")
       if (splitfirst xor any_zero) {
-        builder.appendPoly({
-		Vector3d(curr1[0], curr1[1], h1),
-		Vector3d(curr2[0], curr2[1], h2),
-		Vector3d(prev1[0], prev1[1], h1)
-		});
+        builder.appendPolygon({
+                Vector3d(curr1[0] + h1[0], curr1[1] + h1[1], h1[2]),
+                Vector3d(curr2[0] + h2[0], curr2[1] + h2[1], h2[2]),
+                Vector3d(prev1[0] + h1[0], prev1[1] + h1[1], h1[2])
+                });
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          builder.appendPoly({
-		Vector3d(prev2[0], prev2[1], h2),
-		Vector3d(prev1[0], prev1[1], h1),
-		Vector3d(curr2[0], curr2[1], h2)
-	  });
+          builder.appendPolygon({
+                Vector3d(prev2[0] + h2[0], prev2[1] + h2[1], h2[2]),
+                Vector3d(prev1[0] + h1[0], prev1[1] + h1[1], h1[2]),
+                Vector3d(curr2[0] + h2[0], curr2[1] + h2[1], h2[2])
+          });
         }
       } else {
-        builder.appendPoly({
-		Vector3d(curr1[0], curr1[1], h1),
-		Vector3d(prev2[0], prev2[1], h2),
-		Vector3d(prev1[0], prev1[1], h1)
-	});
+        builder.appendPolygon({
+                Vector3d(curr1[0] + h1[0], curr1[1] + h1[1], h1[2]),
+                Vector3d(prev2[0] + h2[0], prev2[1] + h2[1], h2[2]),
+                Vector3d(prev1[0] + h1[0], prev1[1] + h1[1], h1[2])
+        });
         if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          builder.appendPoly({
-		Vector3d(curr1[0], curr1[1], h1),
-		Vector3d(curr2[0], curr2[1], h2),
-		Vector3d(prev2[0], prev2[1], h2)
-	  });	
+          builder.appendPolygon({
+                Vector3d(curr1[0] + h1[0], curr1[1] + h1[1], h1[2]),
+                Vector3d(curr2[0] + h2[0], curr2[1] + h2[1], h2[2]),
+                Vector3d(prev2[0] + h2[0], prev2[1] + h2[1], h2[2])
+          });        
         }
       }
       prev1 = curr1;
@@ -1060,6 +1037,7 @@ static Outline2d splitOutlineByFn(
    Input to extrude should be sanitized. This means non-intersecting, correct winding order
    etc., the input coming from a library like Clipper.
  */
+ // FIXME: What happens if the input Polygon isn't manifold, or has coincident vertices?
 static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& poly)
 {
   bool non_linear = node.twist != 0 || node.scale_x != node.scale_y;
@@ -1068,7 +1046,7 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
   if (isConvex && non_linear) isConvex = unknown;
   PolySetBuilder builder(0, 0, 3, isConvex);
   builder.setConvexity(node.convexity);
-  if (node.height <= 0) return std::make_unique<PolySet>(3);
+  if (node.height[2] <= 0) return PolySet::createEmpty();
 
   size_t slices;
   if (node.has_slices) {
@@ -1081,7 +1059,7 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
         max_r1_sqr = fmax(max_r1_sqr, v.squaredNorm());
     // Calculate Helical curve length for Twist with no Scaling
     if (node.scale_x == 1.0 && node.scale_y == 1.0) {
-      slices = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height, node.twist, node.fn, node.fs, node.fa);
+      slices = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height[2], node.twist, node.fn, node.fs, node.fa);
     } else if (node.scale_x != node.scale_y) {  // non uniform scaling with twist using max slices from twist and non uniform scale
       double max_delta_sqr = 0; // delta from before/after scaling
       Vector2d scale(node.scale_x, node.scale_y);
@@ -1092,11 +1070,11 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
       }
       size_t slicesNonUniScale;
       size_t slicesTwist;
-      slicesNonUniScale = (unsigned int)Calc::get_diagonal_slices(max_delta_sqr, node.height, node.fn, node.fs);
-      slicesTwist = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height, node.twist, node.fn, node.fs, node.fa);
+      slicesNonUniScale = (unsigned int)Calc::get_diagonal_slices(max_delta_sqr, node.height[2], node.fn, node.fs);
+      slicesTwist = (unsigned int)Calc::get_helix_slices(max_r1_sqr, node.height[2], node.twist, node.fn, node.fs, node.fa);
       slices = std::max(slicesNonUniScale, slicesTwist);
     } else { // uniform scaling with twist, use conical helix calculation
-      slices = (unsigned int)Calc::get_conical_helix_slices(max_r1_sqr, node.height, node.twist, node.scale_x, node.fn, node.fs, node.fa);
+      slices = (unsigned int)Calc::get_conical_helix_slices(max_r1_sqr, node.height[2], node.twist, node.scale_x, node.fn, node.fs, node.fa);
     }
   } else if (node.scale_x != node.scale_y) {
     // Non uniform scaling, w/o twist
@@ -1107,7 +1085,7 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
         max_delta_sqr = fmax(max_delta_sqr, (v - v.cwiseProduct(scale)).squaredNorm());
       }
     }
-    slices = Calc::get_diagonal_slices(max_delta_sqr, node.height, node.fn, node.fs);
+    slices = Calc::get_diagonal_slices(max_delta_sqr, node.height[2], node.fn, node.fs);
   } else {
     // uniform or [1,1] scaling w/o twist needs only one slice
     slices = 1;
@@ -1158,12 +1136,12 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
 
   const Polygon2d& polyref = is_segmented ? seg_poly : poly;
 
-  double h1, h2;
+  Vector3d h1, h2;
   if (node.center) {
     h1 = -node.height / 2.0;
-    h2 = +node.height / 2.0;
+    h2 = node.height / 2.0;
   } else {
-    h1 = 0;
+    h1 = Vector3d(0 ,0, 0);
     h2 = node.height;
   }
 
@@ -1173,15 +1151,15 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
   for (auto& p : ps_bottom->indices) {
     std::reverse(p.begin(), p.end());
   }
-  translate_PolySet(*ps_bottom, Vector3d(0, 0, h1));
-  builder.append(*ps_bottom);
+  translate_PolySet(*ps_bottom, h1);
+  builder.appendPolySet(*ps_bottom);
 
   // Create slice sides.
   for (unsigned int j = 0; j < slices; j++) {
     double rot1 = node.twist * j / slices;
     double rot2 = node.twist * (j + 1) / slices;
-    double height1 = h1 + (h2 - h1) * j / slices;
-    double height2 = h1 + (h2 - h1) * (j + 1) / slices;
+    Vector3d height1 = h1 + (h2 - h1) * j / slices;
+    Vector3d height2 = h1 + (h2 - h1) * (j + 1) / slices;
     Vector2d scale1(1 - (1 - node.scale_x) * j / slices,
                     1 - (1 - node.scale_y) * j / slices);
     Vector2d scale2(1 - (1 - node.scale_x) * (j + 1) / slices,
@@ -1196,8 +1174,8 @@ static std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, c
     Eigen::Affine2d trans(Eigen::Scaling(node.scale_x, node.scale_y) * Eigen::Affine2d(rotate_degrees(-node.twist)));
     top_poly.transform(trans);
     auto ps_top = top_poly.tessellate();
-    translate_PolySet(*ps_top, Vector3d(0, 0, h2));
-    builder.append(*ps_top);
+    translate_PolySet(*ps_top, h2);
+    builder.appendPolySet(*ps_top);
   }
 
   return builder.build();
@@ -1312,7 +1290,7 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
         std::reverse(p.begin(), p.end());
       }
     }
-    builder.append(*ps_start);
+    builder.appendPolySet(*ps_start);
 
     auto ps_end = poly.tessellate();
     Transform3d rot2(angle_axis_degrees(node.angle, Vector3d::UnitZ()) * angle_axis_degrees(90, Vector3d::UnitX()));
@@ -1322,7 +1300,7 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
         std::reverse(p.begin(), p.end());
       }
     }
-    builder.append(*ps_end);
+    builder.appendPolySet(*ps_end);
   }
 
   for (const auto& o : poly.outlines()) {
@@ -1338,17 +1316,17 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
       fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
 
       for (size_t i = 0; i < o.vertices.size(); ++i) {
-        builder.appendPoly({
-		rings[j % 2][(i + 1) % o.vertices.size()],
-		rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
-		rings[j % 2][i]
-	});		
+        builder.appendPolygon({
+                rings[j % 2][(i + 1) % o.vertices.size()],
+                rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
+                rings[j % 2][i]
+        });                
 
-        builder.appendPoly({
-		rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
-		rings[(j + 1) % 2][i],
-		rings[j % 2][i]
-	});
+        builder.appendPolygon({
+                rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
+                rings[(j + 1) % 2][i],
+                rings[j % 2][i]
+        });
       }
     }
   }
@@ -1378,7 +1356,8 @@ Response GeometryEvaluator::visit(State& state, const RotateExtrudeNode& node)
         geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
       }
       if (geometry) {
-	geom = rotatePolygon(node, *geometry);
+        geom = rotatePolygon(node, *geometry);
+        geom = rotatePolygon(node, *geometry);
       }
     } else {
       geom = smartCacheGet(node, false);
@@ -1403,6 +1382,13 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const Projectio
   std::shared_ptr<const Geometry> geom;
   std::shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
   if (newgeom) {
+#ifdef ENABLE_MANIFOLD
+    if (Feature::ExperimentalManifold.is_enabled()) {
+      auto manifold = ManifoldUtils::createManifoldFromGeometry(newgeom);
+      auto poly2d = manifold->slice();
+      return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+    }
+#endif
 #ifdef ENABLE_CGAL
     auto Nptr = CGALUtils::getNefPolyhedronFromGeometry(newgeom);
     if (Nptr && !Nptr->isEmpty()) {
@@ -1419,6 +1405,19 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const Projectio
 
 std::shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const ProjectionNode& node)
 {
+#ifdef ENABLE_MANIFOLD
+  if (Feature::ExperimentalManifold.is_enabled()) {
+    std::shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
+    if (newgeom) {
+        auto manifold = ManifoldUtils::createManifoldFromGeometry(newgeom);
+        auto poly2d = manifold->project();
+        return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+    } else {
+      return std::make_shared<Polygon2d>();
+    }
+  }
+#endif
+
   std::shared_ptr<const Geometry> geom;
   std::vector<std::unique_ptr<Polygon2d>> tmp_geom;
   BoundingBox bounds;
@@ -1431,8 +1430,8 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const Project
     // project chgeom -> polygon2d
     if (auto chPS = PolySetUtils::getGeometryAsPolySet(chgeom)) {
       if (auto poly = PolySetUtils::project(*chPS)) {
-	bounds.extend(poly->getBoundingBox());
-	tmp_geom.push_back(std::move(poly));
+        bounds.extend(poly->getBoundingBox());
+        tmp_geom.push_back(std::move(poly));
       }
     }
   }
@@ -1505,12 +1504,9 @@ Response GeometryEvaluator::visit(State& state, const CgalAdvNode& node)
         geom = res.constptr();
         // If we added convexity, we need to pass it on
         if (geom && geom->getConvexity() != node.convexity) {
-	  std::shared_ptr<Geometry> editablegeom;
-          // If we got a const object, make a copy
-          if (res.isConst()) editablegeom = geom->copy();
-          else editablegeom = res.ptr();
-          geom = editablegeom;
+          auto editablegeom = res.asMutableGeometry();
           editablegeom->setConvexity(node.convexity);
+          geom = editablegeom;
         }
         break;
       }
@@ -1564,6 +1560,7 @@ Response GeometryEvaluator::visit(State& state, const AbstractIntersectionNode& 
 }
 
 #if defined(ENABLE_EXPERIMENTAL) && defined(ENABLE_CGAL)
+// FIXME: What is the convex/manifold situation of the resulting PolySet?
 static std::unique_ptr<Geometry> roofOverPolygon(const RoofNode& node, const Polygon2d& poly)
 {
   std::unique_ptr<PolySet> roof;
@@ -1588,13 +1585,13 @@ Response GeometryEvaluator::visit(State& state, const RoofNode& node)
     if (!isSmartCached(node)) {
       const auto polygon2d = applyToChildren2D(node, OpenSCADOperator::UNION);
       if (polygon2d) {
-	std::unique_ptr<Geometry> roof;
+        std::unique_ptr<Geometry> roof;
         try {
           roof = roofOverPolygon(node, *polygon2d);
         } catch (RoofNode::roof_exception& e) {
           LOG(message_group::Error, node.modinst->location(), this->tree.getDocumentPath(),
               "Skeleton computation error. " + e.message());
-          roof = std::make_unique<PolySet>(3);
+          roof = PolySet::createEmpty();
         }
         assert(roof);
         geom = std::move(roof);

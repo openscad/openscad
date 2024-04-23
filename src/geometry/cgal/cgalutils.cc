@@ -46,7 +46,7 @@ std::unique_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromPolySet(const PolySe
   std::vector<Vector3d> points3d;
   psq.quantizeVertices(&points3d);
   auto ps_tri = PolySetUtils::tessellate_faces(psq);
-  if (ps_tri->is_convex()) {
+  if (ps_tri->isConvex()) {
     using K = CGAL::Epick;
     // Collect point cloud
     std::vector<K::Point_3> points(points3d.size());
@@ -375,7 +375,7 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhed
     LOG(message_group::Error, "Non-manifold mesh created: %1$d unconnected edges", unconnected2);
   }
 
-  auto polyset = std::make_unique<PolySet>(3);
+  auto polyset = PolySet::createEmpty();
   polyset->vertices.reserve(verts.size());
   for (const auto& v : verts) {
     polyset->vertices.emplace_back(v.cast<double>());
@@ -384,6 +384,7 @@ std::unique_ptr<PolySet> createPolySetFromNefPolyhedron3(const CGAL::Nef_polyhed
   for (const auto& tri : allTriangles) {
     polyset->indices.push_back({tri[0], tri[1], tri[2]});
   }
+  polyset->setTriangular(true);
 
 #if 0 // For debugging
   std::cerr.precision(20);

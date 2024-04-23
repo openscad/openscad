@@ -10,8 +10,8 @@ group() {
 union();
 difference();
 intersection();
-linear_extrude(height = 100, $fn = 0, $fa = 12, $fs = 2);
-linear_extrude(height = 100, $fn = 0, $fa = 12, $fs = 2);
+linear_extrude(v = [ 0, 0, 100], $fn = 0, $fa = 12, $fs = 2);
+linear_extrude(v = [ 0, 0, 100], $fn = 0, $fa = 12, $fs = 2);
 rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 12, $fs = 2);
 rotate_extrude(angle = 360, convexity = 2, $fn = 0, $fa = 12, $fs = 2);
 import(file = "", origin = [0, 0], scale = 1, convexity = 1, $fn = 0, $fa = 12, $fs = 2, timestamp = 0);

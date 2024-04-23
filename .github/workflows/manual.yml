@@ -128,14 +128,14 @@ jobs:
         for OUTPUT in "${OUTPUTS[@]}";do
           echo "${OUTPUT}"
         done
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
     - name: Install dependencies
       run: ./scripts/github-ci-linux-get-dependencies.sh kinetic
     - name: Dependency fixup
       run: sudo apt-get install gettext
-    - uses: actions/setup-python@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     - name: Build
@@ -147,7 +147,7 @@ jobs:
       run: ./scripts/github-ci.sh test
       if: ${{ ! inputs.enable_wasm }} 
     - name: Upload Test Result Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
         name: Test Result Report (${{ matrix.os }})

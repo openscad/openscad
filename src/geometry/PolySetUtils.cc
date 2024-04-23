@@ -4,7 +4,6 @@
 #include "Polygon2d.h"
 #include "printutils.h"
 #include "GeometryUtils.h"
-#include "Reindexer.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #include "CGALHybridPolyhedron.h"
@@ -57,9 +56,9 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
   int degeneratePolygons = 0;
   auto result = std::make_unique<PolySet>(3, polyset.convexValue());
   result->setConvexity(polyset.getConvexity());
-  result->isTriangular = true;
+  result->setTriangular(true);
   // ideally this should not require a copy...
-  if (polyset.isTriangular) {
+  if (polyset.isTriangular()) {
     result->vertices = polyset.vertices;
     result->indices = polyset.indices;
     return result;
@@ -160,12 +159,12 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
   if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     if (!N->isEmpty()) {
       if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3)) {
-	ps->setConvexity(N->getConvexity());
-	return ps;
+        ps->setConvexity(N->getConvexity());
+        return ps;
       }
       LOG(message_group::Error, "Nef->PolySet failed.");
     }
-    return std::make_unique<PolySet>(3);
+    return PolySet::createEmpty();
   }
   if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return hybrid->toPolySet();
@@ -177,6 +176,29 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
   }
 #endif
   return nullptr;
+}
+
+
+std::string polySetToPolyhedronSource(const PolySet& ps)
+{
+  std::stringstream sstr;
+  sstr << "polyhedron(\n";
+  sstr << "  points=[\n";
+  for (const auto& v : ps.vertices) {
+    sstr << "[" << v[0] << ", " << v[1] << ", " << v[2] << "],\n";
+  }
+  sstr << "  ],\n";
+  sstr << "  faces=[\n";
+  for (const auto& polygon : ps.indices) {
+    sstr << "[";
+    for (const auto idx : polygon) {
+      sstr << idx << ",";
+    }
+    sstr << "],\n";
+  }
+  sstr << "  ],\n";
+  sstr << ");\n";
+  return sstr.str();
 }
 
 } // namespace PolySetUtils

@@ -1,38 +1,5 @@
 version: 2
 jobs:
-  openscad-mxe-32bit:
-    working_directory: ~/workspace
-    docker:
-      - image: openscad/mxe-i686-gui:latest
-    resource_class: large
-    steps:
-      - checkout
-      - run:
-          name: Build OpenSCAD Windows Application (32bit)
-          no_output_timeout: 18000
-          command: |
-              export NUMCPU=4
-              export LC_ALL=C.UTF-8
-              export MXEDIR=/mxe
-              export PKG_CONFIG_PATH=/mxe/usr/i686-w64-mingw32.static.posix/lib/pkgconfig
-              ln -sf /usr/bin/python{3,}
-              if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"; fi
-              export OPENSCAD_VERSION="$(date +%Y.%m.%d).ci${CIRCLE_BUILD_NUM}"
-              ./scripts/release-common.sh snapshot mingw32 -v "$OPENSCAD_VERSION"
-              mkdir -p /tmp/out
-              for f in mingw*/*.zip mingw*/*.exe; do N=$(basename "$f" | sed -e "s/\\(-x86-[36][24]\\)/\\1${SUFFIX}/;"); cp -iv "$f" /tmp/out/"$N"; done
-              if [ -n "${CODE_SIGNING_KEY}" ]; then
-                  cd /tmp/out
-                  echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
-                  export GPG_ARGS="--batch --yes --passphrase-fd 0 --pinentry-mode loopback --detach-sign --armor"
-                  for a in *.exe *.zip; do echo "$CODE_SIGNING_PW" | gpg -u "$CODE_SIGNING_KEY" $GPG_ARGS "$a"; sha256sum "$a" | tee "${a}.sha256"; sha512sum "$a" | tee "${a}.sha512"; done
-                  rm -rf ~/.gnupg
-              else
-                  echo "Skipping code signing."
-              fi
-      - store_artifacts:
-          path: /tmp/out
-          destination: 32-bit
   openscad-mxe-64bit:
     working_directory: ~/workspace
     docker:
@@ -226,12 +193,6 @@ workflows:
   version: 2
   master-build:
     jobs:
-      - openscad-mxe-32bit:
-          context: secret-context
-          filters:
-              branches:
-                  only:
-                      - master
       - openscad-mxe-64bit:
           context: secret-context
           filters:
@@ -252,13 +213,6 @@ workflows:
                       - master
   branch-build:
     jobs:
-      - openscad-mxe-32bit:
-          filters:
-              branches:
-                  ignore:
-                      - master
-                      - coverity_scan
-                      - /^(?i:continuous)$/
       - openscad-mxe-64bit:
           filters:
               branches:

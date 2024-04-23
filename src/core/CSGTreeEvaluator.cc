@@ -182,18 +182,18 @@ std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
 
   // Create bottom face.
   for (const auto& poly : ps->indices) {
-    builder.appendPoly(poly.size());
+    builder.beginPolygon(poly.size());
     // Flip vertex ordering for bottom polygon
     for (const auto& ind: boost::adaptors::reverse(poly)) {
-      builder.appendVertex(ps->vertices[ind] - Vector3d(0, 0, 0.5));
+      builder.addVertex(ps->vertices[ind] - Vector3d(0, 0, 0.5));
     }
   }
 
   // Create top face.
   for (const auto& poly : ps->indices) {
-    builder.appendPoly(poly.size());
+    builder.beginPolygon(poly.size());
     for (const auto& ind: poly) {
-      builder.appendVertex(ps->vertices[ind] + Vector3d(0, 0, 0.5));
+      builder.addVertex(ps->vertices[ind] + Vector3d(0, 0, 0.5));
     }
   }
 
@@ -202,7 +202,7 @@ std::shared_ptr<const PolySet> polygon2dToPolySet(const Polygon2d &p2d) {
     for (size_t i = 0; i < o.vertices.size(); ++i) {
       const Vector2d &prev = o.vertices[i];
       const Vector2d &curr = o.vertices[(i+1)%o.vertices.size()];
-      builder.appendPoly({
+      builder.appendPolygon({
         Vector3d(prev[0], prev[1], -0.5),
         Vector3d(curr[0], curr[1], -0.5),
         Vector3d(curr[0], curr[1], 0.5),

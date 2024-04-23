@@ -11,6 +11,7 @@
 #endif
 #include "PolySetUtils.h"
 #include "PolySet.h"
+#include "polygon.h"
 
 using Error = manifold::Manifold::Error;
 
@@ -33,40 +34,8 @@ const char* statusToString(Error status) {
   }
 }
 
-std::shared_ptr<manifold::Manifold> trustedPolySetToManifold(const PolySet& ps) {
-  manifold::Mesh mesh;
-  std::unique_ptr<PolySet> buffer;
-  if (!ps.isTriangular)
-    buffer = PolySetUtils::tessellate_faces(ps);
-  const PolySet& triangulated = ps.isTriangular ? ps : *buffer;
-
-  auto numfaces = triangulated.indices.size();
-  const auto &vertices = triangulated.vertices;
-  const auto &indices = triangulated.indices;
-
-  mesh.vertPos.resize(vertices.size());
-  mesh.triVerts.resize(numfaces);
-  for (size_t i = 0, n = vertices.size(); i < n; i++) {
-    const auto &v = vertices[i];
-    mesh.vertPos[i] = glm::vec3((float) v.x(), (float) v.y(), (float) v.z());
-  }
-  const auto vertexCount = mesh.vertPos.size();
-//  assert(indices.size() == numfaces * 4);
-  for (size_t i = 0; i < numfaces; i++) {
-    unsigned int i0 = indices[i][0];
-    unsigned int i1 = indices[i][1];
-    unsigned int i2 = indices[i][2];
-    assert(i0 >= 0 && i0 < vertexCount &&
-           i1 >= 0 && i1 < vertexCount &&
-           i2 >= 0 && i2 < vertexCount);
-    assert(i0 != i1 && i0 != i2 && i1 != i2);
-    mesh.triVerts[i] = {i0, i1, i2};
-  }
-  return std::make_shared<manifold::Manifold>(std::move(mesh));
-}
-
 template <class TriangleMesh>
-std::shared_ptr<ManifoldGeometry> createMutableManifoldFromSurfaceMesh(const TriangleMesh& tm)
+std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMesh& tm)
 {
   typedef typename TriangleMesh::Vertex_index vertex_descriptor;
 
@@ -102,62 +71,140 @@ std::shared_ptr<ManifoldGeometry> createMutableManifoldFromSurfaceMesh(const Tri
 }
 
 #ifdef ENABLE_CGAL
-template std::shared_ptr<ManifoldGeometry> createMutableManifoldFromSurfaceMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &tm);
-template std::shared_ptr<ManifoldGeometry> createMutableManifoldFromSurfaceMesh(const CGAL_DoubleMesh &tm);
+template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>> &tm);
+template std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const CGAL_DoubleMesh &tm);
 #endif
 
-std::shared_ptr<ManifoldGeometry> createMutableManifoldFromPolySet(const PolySet& ps)
+std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const PolySet& ps)
 {
-#ifdef ENABLE_CGAL
-  PolySet psq(ps);
-  std::vector<Vector3d> points3d;
-  psq.quantizeVertices(&points3d);
-  auto ps_tri = PolySetUtils::tessellate_faces(psq);
-  
-  CGAL_DoubleMesh m;
+  assert(ps.isTriangular());
 
-  if (ps_tri->is_convex()) {
-    using K = CGAL::Epick;
-    // Collect point cloud
-    std::vector<K::Point_3> points(points3d.size());
-    for (size_t i = 0, n = points3d.size(); i < n; i++) {
-      points[i] = CGALUtils::vector_convert<K::Point_3>(points3d[i]);
-    }
-    if (points.size() <= 3) return std::make_shared<ManifoldGeometry>();
+  manifold::Mesh mesh;
 
-    // Apply hull
-    CGAL::Surface_mesh<CGAL::Point_3<K>> r;
-    CGAL::convex_hull_3(points.begin(), points.end(), r);
-    CGALUtils::copyMesh(r, m);
-  } else {
-    CGALUtils::createMeshFromPolySet(*ps_tri, m);
+  mesh.vertPos.reserve(ps.vertices.size());
+  for (const auto& v : ps.vertices) {
+    mesh.vertPos.emplace_back((float)v.x(), (float)v.y(), (float)v.z());
   }
 
-  if (!ps_tri->is_convex()) {
-    if (CGALUtils::isClosed(m)) {
-      CGALUtils::orientToBoundAVolume(m);
-    } else {
-      LOG(message_group::Error, "[manifold] Input mesh is not closed!");
-    }
+  mesh.triVerts.reserve(ps.indices.size());
+  for (const auto& face : ps.indices) {
+    assert(face.size() == 3);
+    mesh.triVerts.emplace_back(face[0], face[1], face[2]);
   }
 
-  return createMutableManifoldFromSurfaceMesh(m);
-#else
-  return std::make_shared<ManifoldGeometry>();
-#endif
+  return std::make_shared<ManifoldGeometry>(std::make_shared<const manifold::Manifold>(std::move(mesh)));
 }
 
-std::shared_ptr<ManifoldGeometry> createMutableManifoldFromGeometry(const std::shared_ptr<const Geometry>& geom) {
-  if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-    return std::make_shared<ManifoldGeometry>(*mani);
+std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
+{
+  // 1. If the PolySet is already manifold, we should be able to build a Manifold object directly
+  // (through using manifold::Mesh).
+  // We need to make sure our PolySet is triangulated before doing that.
+  // Note: We currently don't have a way of directly checking if a PolySet is manifold,
+  // so we just try converting to a Manifold object and check its status. 
+  std::unique_ptr<const PolySet> triangulated;
+  if (!ps.isTriangular()) {
+    triangulated = PolySetUtils::tessellate_faces(ps);
+  }
+  const PolySet& triangle_set = ps.isTriangular() ? ps : *triangulated;
+
+  auto mani = createManifoldFromTriangularPolySet(triangle_set);
+  if (mani->getManifold().Status() == Error::NoError) {
+    return mani;
   }
 
-  auto ps = PolySetUtils::getGeometryAsPolySet(geom);
-  if (ps) {
-    return createMutableManifoldFromPolySet(*ps);
+  // FIXME: Should we suppress this warning, as it may not be very actionable?
+  LOG(message_group::Warning,"PolySet -> Manifold conversion failed: %1$s\n"
+      "Trying to repair and reconstruct mesh..",
+      ManifoldUtils::statusToString(mani->getManifold().Status()));
+
+  // 2. If the PolySet couldn't be converted into a Manifold object, let's try to repair it.
+  // We currently have to utilize some CGAL functions to do this.
+  {
+  #ifdef ENABLE_CGAL
+    PolySet psq(ps);
+    std::vector<Vector3d> points3d;
+    psq.quantizeVertices(&points3d);
+    auto ps_tri = PolySetUtils::tessellate_faces(psq);
+    
+    CGAL_DoubleMesh m;
+
+    if (ps_tri->isConvex()) {
+      using K = CGAL::Epick;
+      // Collect point cloud
+      std::vector<K::Point_3> points(points3d.size());
+      for (size_t i = 0, n = points3d.size(); i < n; i++) {
+        points[i] = CGALUtils::vector_convert<K::Point_3>(points3d[i]);
+      }
+      if (points.size() <= 3) return std::make_shared<ManifoldGeometry>();
+
+      // Apply hull
+      CGAL::Surface_mesh<CGAL::Point_3<K>> r;
+      CGAL::convex_hull_3(points.begin(), points.end(), r);
+      CGALUtils::copyMesh(r, m);
+    } else {
+      CGALUtils::createMeshFromPolySet(*ps_tri, m);
+    }
+
+    if (!ps_tri->isConvex()) {
+      if (CGALUtils::isClosed(m)) {
+        CGALUtils::orientToBoundAVolume(m);
+      } else {
+        LOG(message_group::Error, "[manifold] Input mesh is not closed!");
+      }
+    }
+
+    return createManifoldFromSurfaceMesh(m);
+  #else
+    return std::make_shared<ManifoldGeometry>();
+  #endif
   }
-  
+}
+
+std::shared_ptr<const ManifoldGeometry> createManifoldFromGeometry(const std::shared_ptr<const Geometry>& geom) {
+  if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
+    return mani;
+  }
+  if (auto ps = PolySetUtils::getGeometryAsPolySet(geom)) {
+    return createManifoldFromPolySet(*ps);
+  }
   return nullptr;
+}
+
+Polygon2d polygonsToPolygon2d(const manifold::Polygons& polygons) {
+  Polygon2d poly2d;
+  for (const auto& polygon : polygons) {
+    Outline2d outline;
+    for (const auto& v : polygon) {
+      outline.vertices.emplace_back(v[0], v[1]);
+    }
+    poly2d.addOutline(std::move(outline));
+  }
+  return std::move(poly2d);
+}
+
+std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d)
+{
+  auto polyset = std::make_unique<PolySet>(2); 
+  polyset->setTriangular(true);
+
+  manifold::Polygons polygons;
+  for (const auto& outline : polygon2d.outlines()) {
+    manifold::SimplePolygon simplePolygon;
+    for (const auto& vertex : outline.vertices) {
+      polyset->vertices.emplace_back(vertex[0], vertex[1], 0.0);
+      simplePolygon.emplace_back(vertex[0], vertex[1]);
+    }
+    polygons.push_back(std::move(simplePolygon));
+  }
+
+  const auto triangles = manifold::Triangulate(polygons);
+
+  for (const auto& triangle : triangles) {
+    polyset->indices.push_back({triangle[0], triangle[1], triangle[2]});
+  }
+  return polyset;
+
 }
 
 }; // namespace ManifoldUtils

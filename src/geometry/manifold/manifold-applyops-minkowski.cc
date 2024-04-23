@@ -31,7 +31,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
     if (ps) {
       auto poly = std::make_shared<Polyhedron>();
       CGALUtils::createPolyhedronFromPolySet(*ps, *poly);
-      if (pIsConvexOut) *pIsConvexOut = ps->is_convex();
+      if (pIsConvexOut) *pIsConvexOut = ps->isConvex();
       return poly;
     } else {
       if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
@@ -43,9 +43,9 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
     throw 0;
   };
   
-  CGAL::Timer t, t_tot;
   assert(children.size() >= 2);
   auto it = children.begin();
+  CGAL::Timer t_tot;
   t_tot.start();
   std::vector<std::shared_ptr<const Geometry>> operands = {it->second, std::shared_ptr<const Geometry>()};
 
@@ -81,7 +81,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
           part_points.emplace_back(getHullPoints(*poly));
         } else {
           Nef decomposed_nef(*poly);
-
+          CGAL::Timer t;
           t.start();
           CGAL::convex_decomposition_3(decomposed_nef);
 
@@ -111,15 +111,15 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         std::vector<Hull_kernel::Point_3> minkowski_points;
 
         minkowski_points.reserve(points0.size() * points1.size());
-        for (size_t i = 0; i < points0.size(); ++i) {
-          for (size_t j = 0; j < points1.size(); ++j) {
-            minkowski_points.push_back(points0[i] + (points1[j] - CGAL::ORIGIN));
+        for (const auto& p0 : points0) {
+          for (const auto p1 : points1) {
+            minkowski_points.push_back(p0 + (p1 - CGAL::ORIGIN));
           }
         }
 
         if (minkowski_points.size() <= 3) {
           t.stop();
-          return std::make_shared<const ManifoldGeometry>();
+          return std::make_shared<ManifoldGeometry>();
         }
 
         t.stop();
@@ -175,7 +175,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         t.reset();
 
         CGALUtils::triangulateFaces(mesh);
-        return ManifoldUtils::createMutableManifoldFromSurfaceMesh(mesh);
+        return ManifoldUtils::createManifoldFromSurfaceMesh(mesh);
       };
 
       std::vector<std::shared_ptr<const ManifoldGeometry>> result_parts(part_points[0].size() * part_points[1].size());
@@ -186,6 +186,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
 
       if (it != std::next(children.begin())) operands[0].reset();
 
+      CGAL::Timer t;
       t.start();
       PRINTDB("Minkowski: Computing union of %d parts", result_parts.size());
       Geometry::Geometries fake_children;

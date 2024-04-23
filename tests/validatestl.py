@@ -31,7 +31,7 @@ def read_stl(filename):
     print(start)
 
     if stl_type == 'ascii':
-        with open(filename, "r") as fd:
+        with open(filename) as fd:
             triangle = {
                 'normal': [0, 0, 0],
                 'points': list()
