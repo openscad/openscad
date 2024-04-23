@@ -1,11 +1,13 @@
 #include "PolySetUtils.h"
+
+#include <sstream>
+#include <boost/range/adaptor/reversed.hpp>
+
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 #include "Polygon2d.h"
 #include "printutils.h"
 #include "GeometryUtils.h"
-#include <boost/range/adaptor/reversed.hpp>
-#include <sstream>
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #include "CGALHybridPolyhedron.h"

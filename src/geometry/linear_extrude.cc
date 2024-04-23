@@ -15,12 +15,12 @@
 namespace {
   
 /*
-   Compare Euclidean length of vectors
-   Return:
-    -1 : if v1  < v2
-     0 : if v1 ~= v2 (approximation to compoensate for floating point precision)
-     1 : if v1  > v2
- */
+  Compare Euclidean length of vectors
+  Return:
+   -1 : if v1  < v2
+    0 : if v1 ~= v2 (approximation to compoensate for floating point precision)
+    1 : if v1  > v2
+*/
 int sgn_vdiff(const Vector2d& v1, const Vector2d& v2) {
   constexpr double ratio_threshold = 1e5; // 10ppm difference
   double l1 = v1.norm();
@@ -30,13 +30,6 @@ int sgn_vdiff(const Vector2d& v1, const Vector2d& v2) {
   double scale = (l1 + l2);
   double diff = 2 * std::fabs(l1 - l2) * ratio_threshold;
   return diff > scale ? (l1 < l2 ? -1 : 1) : 0;
-}
-
-void translate_PolySet(PolySet& ps, const Vector3d& translation) // TODO duplicate with CGALutils ?
-{
-  for (auto& v : ps.vertices) {
-      v += translation;
-  }
 }
 
 // Insert vertices for segments interpolated between v0 and v1.
@@ -73,16 +66,16 @@ Outline2d splitOutlineByFn(
     }
   };
 
-  const auto sz = o.vertices.size();
-  std::vector<unsigned int> segment_counts(sz, 1);
+  const auto num_vertices = o.vertices.size();
+  std::vector<unsigned int> segment_counts(num_vertices, 1);
   std::priority_queue<segment_tracker, std::vector<segment_tracker>> q;
 
   Vector2d v0 = o.vertices[0];
   // non-uniform scaling requires iterating over each slice transform
   // to find maximum length of a given edge.
   if (scale_x != scale_y) {
-    for (size_t i = 1; i <= sz; ++i) {
-      Vector2d v1 = o.vertices[i % sz];
+    for (size_t i = 1; i <= num_vertices; ++i) {
+      Vector2d v1 = o.vertices[i % num_vertices];
       double max_edgelen = 0.0; // max length for single edge over all transformed slices
       for (unsigned int j = 0; j <= slices; j++) {
         double t = static_cast<double>(j) / slices;
@@ -97,8 +90,8 @@ Outline2d splitOutlineByFn(
     }
   } else { // uniform scaling
     double max_scale = std::max(scale_x, 1.0);
-    for (size_t i = 1; i <= sz; ++i) {
-      Vector2d v1 = o.vertices[i % sz];
+    for (size_t i = 1; i <= num_vertices; ++i) {
+      Vector2d v1 = o.vertices[i % num_vertices];
       double max_edgelen = (v1 - v0).norm() * max_scale;
       q.emplace(i - 1, max_edgelen);
       v0 = v1;
@@ -107,7 +100,7 @@ Outline2d splitOutlineByFn(
 
   std::vector<segment_tracker> tmp_q;
   // Process priority_queue until number of segments is reached.
-  size_t seg_total = sz;
+  size_t seg_total = num_vertices;
   while (seg_total < fn) {
     auto current = q.top();
 
@@ -142,8 +135,8 @@ Outline2d splitOutlineByFn(
   Outline2d o2;
   o2.positive = o.positive;
   v0 = o.vertices[0];
-  for (size_t i = 1; i <= sz; ++i) {
-    Vector2d v1 = o.vertices[i % sz];
+  for (size_t i = 1; i <= num_vertices; ++i) {
+    Vector2d v1 = o.vertices[i % num_vertices];
     add_segmented_edge(o2, v0, v1, segment_counts[i - 1]);
     v0 = v1;
   }
@@ -159,7 +152,7 @@ Outline2d splitOutlineByFs(
   const double twist, const double scale_x, const double scale_y,
   const double fs, unsigned int slices)
 {
-  const auto sz = o.vertices.size();
+  const auto num_vertices = o.vertices.size();
 
   Vector2d v0 = o.vertices[0];
   Outline2d o2;
@@ -168,8 +161,8 @@ Outline2d splitOutlineByFs(
   // non-uniform scaling requires iterating over each slice transform
   // to find maximum length of a given edge.
   if (scale_x != scale_y) {
-    for (size_t i = 1; i <= sz; ++i) {
-      Vector2d v1 = o.vertices[i % sz];
+    for (size_t i = 1; i <= num_vertices; ++i) {
+      Vector2d v1 = o.vertices[i % num_vertices];
       double max_edgelen = 0.0; // max length for single edge over all transformed slices
       for (unsigned int j = 0; j <= slices; j++) {
         double t = static_cast<double>(j) / slices;
@@ -185,8 +178,8 @@ Outline2d splitOutlineByFs(
     }
   } else { // uniform scaling
     double max_scale = std::max(scale_x, 1.0);
-    for (size_t i = 1; i <= sz; ++i) {
-      Vector2d v1 = o.vertices[i % sz];
+    for (size_t i = 1; i <= num_vertices; ++i) {
+      Vector2d v1 = o.vertices[i % num_vertices];
       unsigned int edge_segments = static_cast<unsigned int>(std::ceil((v1 - v0).norm() * max_scale / fs));
       add_segmented_edge(o2, v0, v1, edge_segments);
       v0 = v1;
@@ -233,7 +226,6 @@ std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
   double scale_x, double scale_y,
   const Vector3d& h1, const Vector3d& h2, double twist) {
 
-
   PolySetBuilder builder(0, 0, 3, isConvex);
   builder.setConvexity(convexity);
 
@@ -242,7 +234,13 @@ std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
     for (const auto idx : poly) {
       builder.addVertex(vertices[idx]);
     }
-}
+  }
+
+  auto translatePolySet = [](PolySet& ps, const Vector3d& translation) {
+    for (auto& v : ps.vertices) {
+      v += translation;
+    }
+  };
 
   // Create bottom face.
   auto ps_bottom = polyref.tessellate(); // bottom
@@ -250,10 +248,8 @@ std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
   for (auto& p : ps_bottom->indices) {
     std::reverse(p.begin(), p.end());
   }
-  translate_PolySet(*ps_bottom, h1);
-
+  translatePolySet(*ps_bottom, h1);
   builder.appendPolySet(*ps_bottom);
-
 
   // Create top face.
   // If either scale components are 0, then top will be zero-area, so skip it.
@@ -262,7 +258,7 @@ std::unique_ptr<PolySet> assemblePolySetForCGAL(const Polygon2d& polyref,
     Eigen::Affine2d trans(Eigen::Scaling(scale_x, scale_y) * Eigen::Affine2d(rotate_degrees(-twist)));
     top_poly.transform(trans);
     auto ps_top = top_poly.tessellate();
-    translate_PolySet(*ps_top, h2);
+    translatePolySet(*ps_top, h2);
     builder.appendPolySet(*ps_top);
   }
 
@@ -405,7 +401,6 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly) {
    Input to extrude should be sanitized. This means non-intersecting, correct winding order
    etc., the input coming from a library like Clipper.
  */
- // FIXME: What happens if the input Polygon isn't manifold, or has coincident vertices?
 std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& poly)
 {
   if (node.height[2] <= 0) return PolySet::createEmpty();
