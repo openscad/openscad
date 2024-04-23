@@ -763,11 +763,8 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
       }
       if (geometry) {
         const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
-
-        std::unique_ptr<Geometry> extruded;
-        extruded = extrudePolygon(node, *polygons);
-        assert(extruded);
-        geom = std::move(extruded);
+        geom = extrudePolygon(node, *polygons);
+        assert(geom);
       }
     } else {
       geom = smartCacheGet(node, false);
