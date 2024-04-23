@@ -6,17 +6,8 @@ PACKAGES1="build-essential bison cmake curl flex git-core imagemagick ghostscrip
 PACKAGES2="libboost-all-dev libboost-dev libeigen3-dev libzip-dev libcrypto++-dev"
 PACKAGES3="libxi-dev libxmu-dev qtbase5-dev qtmultimedia5-dev libqt5opengl5-dev libqt5svg5-dev libqt5scintilla2-dev"
 PACKAGES4="libcgal-dev libglew-dev libgmp3-dev libgmp-dev libmpfr-dev libegl-dev libegl1-mesa-dev"
-<<<<<<< HEAD
-<<<<<<< HEAD
-PACKAGES5="libdouble-conversion-dev libfontconfig-dev libharfbuzz-dev libopencsg-dev lib3mf-dev libtbb-dev nettle-dev"
-=======
-PACKAGES5="libdouble-conversion-dev libfontconfig-dev libharfbuzz-dev libopencsg-dev lib3mf-dev libtbb-dev"
-PACKAGES6="libthrust-dev libglm-dev"
->>>>>>> master
-=======
 PACKAGES5="libdouble-conversion-dev libfontconfig-dev libharfbuzz-dev libopencsg-dev lib3mf-dev libtbb-dev nettle-dev"
 PACKAGES6="libthrust-dev libglm-dev"
->>>>>>> 23599d4637b17bec38a723c45e0a8cab6ff31621
 
 if [[ "$DIST" == "xenial" ]]; then
 
