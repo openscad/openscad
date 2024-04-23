@@ -1,4 +1,4 @@
-name: linux-build-matrix
+name: Linux Release Build
 
 on:
   push:

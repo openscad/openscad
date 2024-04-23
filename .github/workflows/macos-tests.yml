@@ -1,4 +1,4 @@
-name: macos-tests
+name: macOS Experimental Tests
 
 on:
   push:

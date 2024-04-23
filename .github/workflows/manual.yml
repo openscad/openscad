@@ -1,4 +1,4 @@
-name: manual
+name: Manually Triggered Tests
 
 on:
   workflow_dispatch:
