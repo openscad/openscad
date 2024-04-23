@@ -397,30 +397,75 @@ target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
 find_package(Python COMPONENTS Interpreter Development)
 find_package(Nettle)
-if(NOT Python_FOUND OR NOT Nettle_FOUND)
+if(NOT Nettle_FOUND)
   if(ENABLE_PYTHON)
-    message(WARNING "Python/Nettle not found, disabling python support.")
+    message(WARNING "Nettle not found, disabling python support.")
     set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
   endif()
 endif()
-
+if(NOT Python_FOUND  AND NOT WIN32)
+  if(ENABLE_PYTHON)
+    message(WARNING "Python not found, disabling python support.")
+    set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
+  endif()
+endif()
 if(ENABLE_PYTHON)
-  add_library(OpenSCADPy
+  SET(PYTHON_SOURCES
     src/python/pyopenscad.cc
     src/python/pyfunctions.cc)
+  add_library(OpenSCADPy
+    ${PYTHON_SOURCES} )
   message(STATUS "Python enabled, using Nettle ")
   message(STATUS ${Nettle_INCLUDE_DIRS})
   message(STATUS ${Nettle_LIBRARIES})
   message(STATUS ${Nettle_FOUND})
-  target_include_directories(OpenSCADPy PRIVATE ${Python_INCLUDE_DIRS})
-  target_include_directories(OpenSCADPy PRIVATE ${Nettle_INCLUDE_DIRS})
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
+  target_compile_definitions(OpenSCADPy PRIVATE ENABLE_PYTHON)
+  if(WIN32) 
+    #MINGW environment	  
+    SET(PYTHON_MINGW_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_mingw")
+    SET(PYTHON_MINGW_PACKAGEFOLDER "https://mirror.msys2.org/mingw/mingw64")
+    SET(PYTHON_MINGW_PACKAGEFILE "mingw-w64-x86_64-python-3.11.5-2-any.pkg.tar.zst")
+    SET(PYTHON_MINGW_PACKAGETAR "mingw-w64-x86_64-python-3.11.5-2-any.pkg.tar")
+    SET(PYTHON_MINGW_VERSION "python3.11")
+    SET(PYTHON_MINGW_ARCHIVE "${PYTHON_MINGW_DEVPATH}/mingw64/lib/lib${PYTHON_MINGW_VERSION}.dll.a")
+    add_custom_command(
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      COMMAND rm -rf python_mingw && mkdir python_mingw && cd python_mingw && wget ${PYTHON_MINGW_PACKAGEFOLDER}/${PYTHON_MINGW_PACKAGEFILE} && unzstd ${PYTHON_MINGW_PACKAGEFILE} && tar -xf ${PYTHON_MINGW_PACKAGETAR}
+      OUTPUT ${PYTHON_MINGW_ARCHIVE}
+    )
+    add_custom_target(tgt_python_mingw DEPENDS ${PYTHON_MINGW_ARCHIVE})
+
+    # Python embeddable Package
+    SET(PYTHON_EMBEDDABLE_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+    SET(PYTHON_EMBEDDABLE_PACKAGEFILE "python-3.11.5-embed-amd64.zip")
+    SET(PYTHON_EMBEDDABLE_URL "http://www.python.org/ftp/python/3.11.5")
+    SET(PYTHON_EMBEDDABLE_DLL "${PYTHON_EMBEDDABLE_DEVPATH}/python311.dll")
+    add_custom_command(
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      COMMAND rm -rf bin && mkdir bin && cd bin && wget ${PYTHON_EMBEDDABLE_URL}/${PYTHON_EMBEDDABLE_PACKAGEFILE} && unzip ${PYTHON_EMBEDDABLE_PACKAGEFILE}
+      OUTPUT ${PYTHON_EMBEDDABLE_DLL}
+    )
+    add_custom_target(tgt_python_embed DEPENDS ${PYTHON_EMBEDDABLE_DLL})
+
+    add_dependencies(OpenSCADPy tgt_python_embed)
+    add_dependencies(OpenSCADPy tgt_python_mingw)
+
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE "${PYTHON_MINGW_DEVPATH}/mingw64/include/${PYTHON_MINGW_VERSION}")
+    target_link_libraries(OpenSCADPy PRIVATE "${PYTHON_MINGW_ARCHIVE}")
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
+  else() #MXE
+    target_include_directories(OpenSCADPy PRIVATE ${Python_INCLUDE_DIRS})
+    target_link_libraries(OpenSCADPy PRIVATE ${Python_LIBRARIES})
+  endif() # endif MXE
   target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
   if(MSVC)
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
   else()
     target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
   endif()
-  target_link_libraries(OpenSCADPy PRIVATE ${Python_LIBRARIES})
+  target_include_directories(OpenSCADPy PRIVATE ${Nettle_INCLUDE_DIRS})
   target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})
   target_link_libraries(OpenSCADPy PRIVATE Eigen3::Eigen)
   target_link_libraries(OpenSCADPy PRIVATE ${GETTEXT_LIBRARY})
@@ -753,6 +798,7 @@ set(CORE_SOURCES
   src/core/ScopeContext.cc
   src/core/module.cc
   src/core/node.cc
+  src/core/node_clone.cc
   src/core/NodeDumper.cc
   src/core/OffsetNode.cc
   src/core/Parameters.cc
@@ -1302,17 +1348,22 @@ endif()
 
 if(NOT APPLE OR APPLE_UNIX)
   set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
-  install(TARGETS OpenSCAD RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
   if(WIN32)
+    if(ENABLE_PYTHON)
+      install(DIRECTORY ${CMAKE_SOURCE_DIR}/bin DESTINATION "." )
+      install(FILES ${CMAKE_SOURCE_DIR}/bin/python311.dll DESTINATION "bin" RENAME "libpython3.11.dll")
+    endif()  
+    install(TARGETS OpenSCAD RUNTIME DESTINATION "bin")
     if(USE_MIMALLOC AND MI_LINK_SHARED)
       if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect.dll DESTINATION ".")
+        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect.dll DESTINATION "bin")
       elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect32.dll DESTINATION ".")
+        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect32.dll DESTINATION "bin")
       endif()
-      install(FILES ${CMAKE_BINARY_DIR}/submodules/mimalloc/mimalloc.dll DESTINATION ".")
+      install(FILES ${CMAKE_BINARY_DIR}/submodules/mimalloc/mimalloc.dll DESTINATION "bin")
     endif()
   else()
+    install(TARGETS OpenSCAD RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
     install(FILES ${CMAKE_CURRENT_LIST_DIR}/doc/openscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME openscad${SUFFIX_WITH_DASH}.1)
     install(FILES ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.openscad.OpenSCAD${SUFFIX_WITH_DASH}.appdata.xml)
     install(FILES ${RESOURCE_DIR}/icons/openscad.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications RENAME openscad${SUFFIX_WITH_DASH}.desktop)
@@ -1352,10 +1403,12 @@ if(MXECROSS)
   ")
   set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "\
     \\\${RegisterExtension} '$INSTDIR\\\\openscad.exe' '.scad' 'OpenSCAD_File'\n\
+    CreateShortCut \\\"$INSTDIR\\\\OpenSCAD.lnk\\\" \\\"$INSTDIR\\\\bin\\\\OpenSCAD.exe\\\"
     \\\${RefreshShellIcons}\
   ")
   set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "\
     \\\${UnRegisterExtension} '.scad' 'OpenSCAD_File'\n\
+    Delete \\\"$INSTDIR\\\\OpenSCAD.lnk\\\"
     \\\${RefreshShellIcons}\
   ")
 endif()
