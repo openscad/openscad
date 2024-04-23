@@ -56,6 +56,7 @@ public slots:
   void on_comboBoxToolbarExport3D_activated(int);
   void on_comboBoxToolbarExport2D_activated(int);
   void on_lineEditDefaultExportDir_editingFinished();
+  void on_browseExportDirPushButton_clicked();
   void on_checkBoxSummaryCamera_toggled(bool);
   void on_checkBoxSummaryArea_toggled(bool);
   void on_checkBoxSummaryBoundingBox_toggled(bool);

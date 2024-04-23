@@ -35,6 +35,7 @@
 #include <QStatusBar>
 #include <QSettings>
 #include <QTextDocument>
+#include <QFileDialog>
 #include <boost/algorithm/string.hpp>
 #include "GeometryCache.h"
 #include "AutoUpdater.h"
@@ -1107,5 +1108,21 @@ void Preferences::on_lineEditDefaultExportDir_editingFinished()
 {
     Settings::Settings::defaultExportDir.setValue(this->lineEditDefaultExportDir->text().toStdString());
     writeSettings();
+}
+
+
+void Preferences::on_browseExportDirPushButton_clicked()
+{
+    // start browsing from defaultExportDir if present, or fall back to PlatformUtils::userDocumentsPath()
+    QString startDir = this->lineEditDefaultExportDir->text();
+    if (startDir.isEmpty())
+        startDir = QString(PlatformUtils::userDocumentsPath().c_str());
+
+    QString selectedDir = QFileDialog::getExistingDirectory(this, "Choose directory", startDir, QFileDialog::ShowDirsOnly);
+    if (!selectedDir.isEmpty())
+    {
+        this->lineEditDefaultExportDir->setText(selectedDir);
+        emit this->lineEditDefaultExportDir->editingFinished(); // simulate typing to textbox  i.e. persist to Settings
+    }
 }
 
