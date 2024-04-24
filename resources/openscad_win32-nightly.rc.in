@@ -34,6 +34,10 @@ VS_VERSION_INFO VERSIONINFO
 				VALUE "ProductVersion", "${OPENSCAD_VERSION}\0"
 			END
 		END
+		BLOCK "VarFileInfo"
+		BEGIN
+			VALUE "Translation", 0x409, 1200
+		END
 	END
 /* End of Version info */
 
