@@ -8,8 +8,8 @@
 1 RT_MANIFEST "scripts/winmanifest.xml"
 
 VS_VERSION_INFO VERSIONINFO
-	FILEVERSION 0,0,0,0
-	PRODUCTVERSION 0,0,0,0
+	FILEVERSION ${CMAKE_PROJECT_VERSION_MAJOR},${CMAKE_PROJECT_VERSION_MINOR},${CMAKE_PROJECT_VERSION_PATCH},0
+	PRODUCTVERSION ${CMAKE_PROJECT_VERSION_MAJOR},${CMAKE_PROJECT_VERSION_MINOR},${CMAKE_PROJECT_VERSION_PATCH},0
 	FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
 	FILEFLAGS VS_FF_DEBUG
@@ -24,18 +24,17 @@ VS_VERSION_INFO VERSIONINFO
 		BEGIN
 			BLOCK "0409"
 			BEGIN
-				VALUE "CompanyName", "\0"
+				VALUE "CompanyName", "The OpenSCAD Project\0"
 				VALUE "FileDescription", "OpenSCAD Executable\0"
-				VALUE "FileVersion", "development build\0"
-				VALUE "LegalCopyright", "Copyright (C) 2009-2022 The OpenSCAD Developers\0"
+				VALUE "FileVersion", "${OPENSCAD_VERSION} ${OPENSCAD_COMMIT}\0"
+				VALUE "LegalCopyright", "Copyright (C) 2009-2024 The OpenSCAD Developers\0"
 				VALUE "OriginalFilename", "openscad.exe\0"
-				VALUE "ProductName", "OpenSCAD\0"
+				VALUE "ProductName", "OpenSCAD (nightly)\0"
+				VALUE "ProductVersion", "${OPENSCAD_VERSION}\0"
 			END
 		END
 	END
 /* End of Version info */
 
-IDI_ICON1   ICON    DISCARDABLE "resources/icons/openscad.ico"
+IDI_ICON1   ICON    DISCARDABLE "resources/icons/openscad-nightly.ico"
 IDI_ICON2   ICON    DISCARDABLE "resources/icons/openscad_doc.ico"
-
-
