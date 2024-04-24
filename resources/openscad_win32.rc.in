@@ -16,8 +16,8 @@ VS_VERSION_INFO VERSIONINFO
 #else
 	FILEFLAGS 0x0L
 #endif
-	FILEOS VOS__WINDOWS32
-	FILETYPE VFT_DLL
+	FILEOS VOS_NT
+	FILETYPE VFT_APP
 	FILESUBTYPE 0x0L
 	BEGIN
 		BLOCK "StringFileInfo"
@@ -27,6 +27,7 @@ VS_VERSION_INFO VERSIONINFO
 				VALUE "CompanyName", "The OpenSCAD Project\0"
 				VALUE "FileDescription", "OpenSCAD Executable\0"
 				VALUE "FileVersion", "${OPENSCAD_VERSION}\0"
+				VALUE "InternalName", "openscad\0"
 				VALUE "LegalCopyright", "Copyright (C) 2009-2024 The OpenSCAD Developers\0"
 				VALUE "OriginalFilename", "openscad.exe\0"
 				VALUE "ProductName", "OpenSCAD\0"
