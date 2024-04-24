@@ -1276,8 +1276,11 @@ endif()
 # Packaging: CPACK_* settings should be configured before `include(CPack)`
 include(InstallRequiredSystemLibraries)
 set(CPACK_PACKAGE_NAME OpenSCAD)
+set(CPACK_PACKAGE_VENDOR "The OpenSCAD Developers")
 set(CPACK_PACKAGE_VERSION ${OPENSCAD_VERSION})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Programmer's Solid 3D CAD Modeler")
+set(CPACK_NSIS_URL_INFO_ABOUT "https://openscad.org/")
+set(CPACK_NSIS_HELP_LINK "https://openscad.org/community.html")
 
 if(MXECROSS)
   set(CPACK_GENERATOR ZIP;NSIS)
@@ -1289,15 +1292,13 @@ if(MXECROSS)
   endif()
   set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "\
     !include \\\"FileFunc.nsh\\\"\n\
-    !include \\\"${CMAKE_SOURCE_DIR}/scripts/mingw-file-association.nsh\\\"\
+    !include \\\"${CMAKE_SOURCE_DIR}/cmake/nsis/mingw-file-association.nsh\\\"\
   ")
   set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "\
-    \\\${RegisterExtension} '$INSTDIR\\\\openscad.exe' '.scad' 'OpenSCAD_File'\n\
-    \\\${RefreshShellIcons}\
+    !include \\\"${CMAKE_SOURCE_DIR}/cmake/nsis/extra-install-commands.nsh\\\"\
   ")
   set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "\
-    \\\${UnRegisterExtension} '.scad' 'OpenSCAD_File'\n\
-    \\\${RefreshShellIcons}\
+    !include \\\"${CMAKE_SOURCE_DIR}/cmake/nsis/extra-uninstall-commands.nsh\\\"\
   ")
 endif()
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
