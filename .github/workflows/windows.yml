@@ -1,4 +1,4 @@
-name: windows
+name: Windows(msys2) Experimental Tests
 
 on:
   push:
