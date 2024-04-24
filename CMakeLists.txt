@@ -76,6 +76,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET ${DEPLOYMENT_TARGET} CACHE STRING "Minimum OS X 
 project(OpenSCAD
   VERSION ${PROJECT_VERSION}
   DESCRIPTION "The Programmer's Solid 3D CAD Modeler"
+  HOMEPAGE_URL "https://openscad.org/"
   LANGUAGES C CXX
 )
 
