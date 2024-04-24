@@ -1280,6 +1280,7 @@ set(CPACK_PACKAGE_NAME OpenSCAD)
 set(CPACK_PACKAGE_VENDOR "The OpenSCAD Developers")
 set(CPACK_PACKAGE_VERSION ${OPENSCAD_VERSION})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Programmer's Solid 3D CAD Modeler")
+set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}${SUFFIX_WITH_DASH}")
 set(CPACK_NSIS_URL_INFO_ABOUT "https://openscad.org/")
 set(CPACK_NSIS_HELP_LINK "https://openscad.org/community.html")
 
@@ -1296,16 +1297,20 @@ if(MXECROSS)
     !include \\\"${CMAKE_SOURCE_DIR}/cmake/nsis/mingw-file-association.nsh\\\"\
   ")
   set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "\
-    !include \\\"${CMAKE_SOURCE_DIR}/cmake/nsis/extra-install-commands.nsh\\\"\
+    !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-install-commands.nsh\\\"\
   ")
   set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "\
-    !include \\\"${CMAKE_SOURCE_DIR}/cmake/nsis/extra-uninstall-commands.nsh\\\"\
+    !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-uninstall-commands.nsh\\\"\
   ")
 endif()
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 # None of config time variables are available for CPACK_PROJECT_CONFIG_FILE, so we configure it now with values.
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/openscad_cpack.cmake.in"
                "${CMAKE_BINARY_DIR}/openscad_cpack.cmake" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/nsis/extra-install-commands.nsh.in"
+               "${CMAKE_BINARY_DIR}/nsis-extra-install-commands.nsh" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/nsis/extra-uninstall-commands.nsh.in"
+               "${CMAKE_BINARY_DIR}/nsis-extra-uninstall-commands.nsh" @ONLY)
 # CPACK_PROJECT_CONFIG_FILE is for configuring CPack-generator specific settings
 set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/openscad_cpack.cmake")
 set(CPACK_THREADS 0)
