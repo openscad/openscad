@@ -5,7 +5,7 @@
 
 #include "cgalutils.h"
 #include "CGALHybridPolyhedron.h"
-#include "node.h"
+#include "core/node.h"
 #include "progress.h"
 
 Location getLocation(const std::shared_ptr<const AbstractNode>& node)
