@@ -662,10 +662,9 @@ MainWindow::MainWindow(const QStringList& filenames)
   bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
 
   // make sure it looks nice..
-  auto windowState = settings.value("window/state", QByteArray()).toByteArray();
+  const auto windowState = settings.value("window/state", QByteArray()).toByteArray();
+  restoreGeometry(settings.value("window/geometry", QByteArray()).toByteArray());
   restoreState(windowState);
-  resize(settings.value("window/size", QSize(800, 600)).toSize());
-  move(settings.value("window/position", QPoint(0, 0)).toPoint());
   updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideViewportControl);
 
   if (windowState.size() == 0) {
@@ -3511,8 +3510,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     hideCurrentOutput();
 
     QSettingsCached settings;
-    settings.setValue("window/size", size());
-    settings.setValue("window/position", pos());
+    settings.setValue("window/geometry", saveGeometry());
     settings.setValue("window/state", saveState());
     if (this->tempFile) {
       delete this->tempFile;
