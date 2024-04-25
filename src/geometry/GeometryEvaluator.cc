@@ -1213,22 +1213,25 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
   }
   return Response::ContinueTraversal;
 }
-
-static void fill_ring(std::vector<Vector3d>& ring, const Outline2d& o, double a, bool flip)
+// TODO avoid intersection
+// TODO ctests org and new cgalpngtest_rotate_extrude-angle ministreifen gehen nicht
+// TODOo start bug, anfang immer horizonatl
+// TODO 90 knoten losen
+static void fill_ring(std::vector<Vector3d>& ring, const std::vector<Vector2d> & vertices, double a, Vector3d dv, double fact, double xmid,bool flip)
 {
-  if (flip) {
-    unsigned int l = o.vertices.size() - 1;
-    for (unsigned int i = 0; i < o.vertices.size(); ++i) {
-      ring[i][0] = o.vertices[l - i][0] * sin_degrees(a);
-      ring[i][1] = o.vertices[l - i][0] * cos_degrees(a);
-      ring[i][2] = o.vertices[l - i][1];
-    }
-  } else {
-    for (unsigned int i = 0; i < o.vertices.size(); ++i) {
-      ring[i][0] = o.vertices[i][0] * sin_degrees(a);
-      ring[i][1] = o.vertices[i][0] * cos_degrees(a);
-      ring[i][2] = o.vertices[i][1];
-    }
+  unsigned int l = vertices.size() - 1;
+  for (unsigned int i = 0; i < vertices.size(); ++i) {
+    unsigned int j = flip?l - i : i;	  
+    //
+    // cos(atan(x))=1/sqrt(1+x*x)
+    // sin(atan(x))=x/sqrt(1+x*x)
+    double tan_pitch= fact/(isnan(xmid)?vertices[j][0]:xmid);
+    double cf=1/sqrt(1+tan_pitch*tan_pitch);
+    double sf=cf*tan_pitch;
+    Vector3d centripedal=Vector3d( sin_degrees(a), cos_degrees(a) ,0);
+    Vector3d progress=Vector3d(-cos_degrees(a)*cf, sin_degrees(a)*cf, sf);
+    Vector3d upwards=centripedal.cross(progress);
+    ring[i] =  centripedal * vertices[j][0] + upwards * vertices[j][1] + dv;
   }
 }
 
@@ -1276,27 +1279,34 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
 
   bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
 
-  if (node.angle != 360) {
-    auto ps_start = poly.tessellate(); // starting face
-    Transform3d rot(angle_axis_degrees(90, Vector3d::UnitX()));
-    ps_start->transform(rot);
-    // Flip vertex ordering
-    if (!flip_faces) {
-      for (auto& p : ps_start->indices) {
-        std::reverse(p.begin(), p.end());
-      }
-    }
-    builder.appendPolySet(*ps_start);
+  double fact=(node.v[2]/node.angle)*(180.0/M_PI);
 
-    auto ps_end = poly.tessellate();
-    Transform3d rot2(angle_axis_degrees(node.angle, Vector3d::UnitZ()) * angle_axis_degrees(90, Vector3d::UnitX()));
-    ps_end->transform(rot2);
-    if (flip_faces) {
-      for (auto& p : ps_end->indices) {
-        std::reverse(p.begin(), p.end());
+  if (node.angle != 360 || node.v.norm() > 0) {
+    auto ps = poly.tessellate(); // starting face
+    double xmid=NAN;
+    if(node.method == "centered") {
+      double xmin, xmax;
+      xmin=xmax=ps->vertices[0][0];
+      for(const auto &v : ps->vertices) {
+        if(v[0] < xmin) xmin=v[0];	    
+        if(v[0] > xmax) xmax=v[0];	    
       }
+      xmid=(xmin+xmax)/2;
+    }  
+
+    std::vector<Vector3d> ring;
+    ring.resize(3);
+    for (auto& p : ps->indices) {
+      std::vector<Vector2d> vertices;
+      for(int j=0;j<3;j++)
+        vertices.push_back(ps->vertices[p[j]].head<2>());
+
+      fill_ring(ring , vertices, 90, Vector3d(0,0,0), fact, xmid, !flip_faces); // close start
+      builder.appendPolygon(ring);
+
+      fill_ring(ring, vertices, 90 - node.angle, node.v, fact, xmid, flip_faces); // close end
+      builder.appendPolygon(ring);
     }
-    builder.appendPolySet(*ps_end);
   }
 
   for (const auto& o : poly.outlines()) {
@@ -1304,13 +1314,30 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
     rings[0].resize(o.vertices.size());
     rings[1].resize(o.vertices.size());
 
-    fill_ring(rings[0], o, (node.angle == 360) ? -90 : 90, flip_faces); // first ring
+    double xmid=NAN;
+
+    if(node.method == "centered") {
+      double xmin, xmax;
+      xmin=xmax=o.vertices[0][0];
+      for(const auto &v : o.vertices) {
+        if(v[0] < xmin) xmin=v[0];	    
+        if(v[0] > xmax) xmax=v[0];	    
+      }
+      xmid=(xmin+xmax)/2;
+    }  
+
+    fill_ring(rings[0], o.vertices, (node.angle == 360 && node.v.norm() == 0) ? -90 : 90, Vector3d(0, 0, 0),fact,  xmid, flip_faces); // first ring
+
+
+    printf("fragments is %d\n",fragments);
     for (unsigned int j = 0; j < fragments; ++j) {
       double a;
-      if (node.angle == 360) a = -90 + ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
+      printf("j=%d\n",j);
+      Vector3d dv = fragments>1?node.v*j/(fragments-1):node.v;
+      if (node.angle == 360 && node.v.norm() == 0) a = -90 + ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
       else a = 90 - (j + 1) * node.angle / fragments; // start on the X axis
-      fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
-
+      printf("a=%g\n",a);
+      fill_ring(rings[(j + 1) % 2], o.vertices, a, dv, fact, xmid, flip_faces);
       for (size_t i = 0; i < o.vertices.size(); ++i) {
         builder.appendPolygon({
                 rings[j % 2][(i + 1) % o.vertices.size()],
