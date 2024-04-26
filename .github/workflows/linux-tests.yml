@@ -1,4 +1,4 @@
-name: linux-tests
+name: Linux Experimental Tests
 
 on:
   push:

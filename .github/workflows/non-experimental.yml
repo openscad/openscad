@@ -1,4 +1,4 @@
-name: linux
+name: Linux Release Tests
 
 on:
   push:
