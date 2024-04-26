@@ -169,7 +169,14 @@ std::string LinearExtrudeNode::toString() const
            << "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
     ;
   }
-  stream << "v = [ " <<  this->height[0] << ", " << this->height[1] << ", " << this->height[2] << "]" ;
+  double height=this->height.norm();
+  stream << "height = " << height;
+  if(height > 0) {
+    Vector3d v=this->height/height;
+    if(v[2] < 1) {
+      stream << ", v = [ " <<  this->height[0] << ", " << this->height[1] << ", " << this->height[2] << "]" ;
+    }
+  }
   if (this->center) {
     stream << ", center = true";
   }
