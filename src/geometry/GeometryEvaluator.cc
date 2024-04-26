@@ -1213,9 +1213,6 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
   }
   return Response::ContinueTraversal;
 }
-// TODO avoid intersection but crashes
-// TODO 90 knoten losen
-// 
 static void fill_ring(std::vector<Vector3d>& ring, const std::vector<Vector2d> & vertices, double a, Vector3d dv, double fact, double xmid,bool flip)
 {
   unsigned int l = vertices.size() - 1;
@@ -1227,8 +1224,8 @@ static void fill_ring(std::vector<Vector3d>& ring, const std::vector<Vector2d> &
     double tan_pitch= fact/(isnan(xmid)?vertices[j][0]:xmid);
     double cf=1/sqrt(1+tan_pitch*tan_pitch);
     double sf=cf*tan_pitch;
-    Vector3d centripedal=Vector3d( sin_degrees(a), cos_degrees(a) ,0);
-    Vector3d progress=Vector3d(-cos_degrees(a)*cf, sin_degrees(a)*cf, sf);
+    Vector3d centripedal=Vector3d( cos_degrees(a), sin_degrees(a) ,0);
+    Vector3d progress=Vector3d(-sin_degrees(a)*cf, cos_degrees(a)*cf, sf);
     Vector3d upwards=centripedal.cross(progress);
     ring[i] =  centripedal * vertices[j][0] + upwards * vertices[j][1] + dv;
   }
@@ -1250,6 +1247,10 @@ static void fill_ring(std::vector<Vector3d>& ring, const std::vector<Vector2d> &
     collapse to one vertex. Any quad using this ring will be collapsed to a triangle.
 
    Currently, we generate a lot of zero-area triangles
+
+failed:
+	889 - throwntogethertest_issue267-normalization-crash (Failed)
+	1490 - svgpngtest_spec-shapes-polyline01 (Failed)
 
  */
 static std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const Polygon2d& poly, int fragments, int fragstart, int fragend, bool flip_faces)
@@ -1282,10 +1283,10 @@ static std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node,
       for(int j=0;j<3;j++)
         vertices.push_back(ps->vertices[p[j]].head<2>());
 
-      fill_ring(ring , vertices, 90 - node.angle*fragstart/fragments, node.v*fragstart/fragments, fact, xmid, !flip_faces); // close start
+      fill_ring(ring , vertices, node.angle*fragstart/fragments, node.v*fragstart/fragments, fact, xmid, !flip_faces); // close start
       builder.appendPolygon(ring);
 
-      fill_ring(ring, vertices, 90 - node.angle*fragend/fragments   , node.v*fragend/fragments  , fact, xmid, flip_faces); // close end
+      fill_ring(ring, vertices, node.angle*fragend/fragments   , node.v*fragend/fragments  , fact, xmid, flip_faces); // close end
       builder.appendPolygon(ring);
     }
   }
@@ -1307,14 +1308,16 @@ static std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node,
       xmid=(xmin+xmax)/2;
     }  
     Vector3d dv = node.v*fragstart/fragments;
+    double a;
+    if (node.angle == 360 && node.v.norm() == 0) a=180;
+     else a = fragstart * node.angle / fragments;
 
-    fill_ring(rings[fragstart % 2 ], o.vertices, (node.angle == 360 && node.v.norm() == 0) ? -90 : 90- fragstart * node.angle / fragments, dv,fact,  xmid, flip_faces); // first ring
+    fill_ring(rings[fragstart % 2 ], o.vertices, a, dv,fact,  xmid, flip_faces); // first ring
 
     for (unsigned int j = fragstart; j < fragend; ++j) {
-      double a;
       dv = node.v*(j+1)/fragments;
-      if (node.angle == 360 && node.v.norm() == 0) a = -90 + ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
-      else a = 90 - (j + 1) * node.angle / fragments; // start on the X axis
+      if (node.angle == 360 && node.v.norm() == 0) a = 180 - ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
+      else a = (j + 1) * node.angle / fragments; // start on the X axis
       fill_ring(rings[(j + 1) % 2], o.vertices, a, dv, fact, xmid, flip_faces);
       for (size_t i = 0; i < o.vertices.size(); ++i) {
         builder.appendPolygon({
@@ -1335,7 +1338,7 @@ static std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node,
   return builder.build();
 }
 
-static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& poly){
+static std::shared_ptr<const Geometry> rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& poly){
 
   if (node.angle == 0) return nullptr;
   double min_x = 0;
@@ -1366,15 +1369,13 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
     if(node.angle < 300) break;	  
     if(node.v.norm() == 0) break;
     if(node.v[2]/(node.angle/360.0)  >  (max_y-min_y) * 1.5) break;
-//    printf("not safe!\n");		     TODO activate
-//    safe=false;
+    safe=false;
 
   } while(false);
   if(safe) return rotatePolygonSub(node, poly, fragments, 0, fragments, flip_faces);	
 
   // now create a fragment splitting plan
   int splits=ceil(node.angle/300.0);
-  printf("splits=%d fragments=%d\n",splits, fragments);
   int fragstart=0,fragend;
   std::shared_ptr<ManifoldGeometry> result = nullptr;
 
@@ -1382,12 +1383,13 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
     fragend=fragstart+(fragments/splits)+1;    	 
     if(fragend > fragments) fragend=fragments;
     std::unique_ptr<Geometry> part_u =rotatePolygonSub(node, poly, fragments, fragstart, fragend, flip_faces);	
-    std::shared_ptr<Geometry> part_s = std::shared_ptr<Geometry>(part_u.release());
+    std::shared_ptr<Geometry> part_s = std::move(part_u);
     std::shared_ptr<const ManifoldGeometry>term = ManifoldUtils::createManifoldFromGeometry(part_s);
-    if(i == 0) result = std::make_shared<ManifoldGeometry>(*term); else *result = *result + *term;	
+    if(result == nullptr) result = std::make_shared<ManifoldGeometry>(*term);
+      else *result = *result + *term;	
     fragstart=fragend-1;
   }
-  return std::unique_ptr<Geometry>(result.get());
+  return  result; 
 }
 
 /*!
