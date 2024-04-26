@@ -1248,10 +1248,6 @@ static void fill_ring(std::vector<Vector3d>& ring, const std::vector<Vector2d> &
 
    Currently, we generate a lot of zero-area triangles
 
-failed:
-	889 - throwntogethertest_issue267-normalization-crash (Failed)
-	1490 - svgpngtest_spec-shapes-polyline01 (Failed)
-
  */
 static std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const Polygon2d& poly, int fragments, int fragstart, int fragend, bool flip_faces)
 {
