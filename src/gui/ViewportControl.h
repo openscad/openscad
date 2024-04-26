@@ -51,4 +51,5 @@ private:
   void resizeToRatio();
   int maxH;
   int maxW;
+  int initMinWidth;
 };
