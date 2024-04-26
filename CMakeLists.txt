@@ -76,6 +76,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET ${DEPLOYMENT_TARGET} CACHE STRING "Minimum OS X 
 project(OpenSCAD
   VERSION ${PROJECT_VERSION}
   DESCRIPTION "The Programmer's Solid 3D CAD Modeler"
+  HOMEPAGE_URL "https://openscad.org/"
   LANGUAGES C CXX
 )
 
@@ -1163,9 +1164,10 @@ endif()
 
 if (SNAPSHOT)
   set(SNAPSHOT_SUFFIX "-nightly")
+  set(SNAPSHOT_NAME_SUFFIX " (Nightly)")
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_SNAPSHOT)
 endif()
-set(WINDOWS_RESOURCE_PATH ${RESOURCE_DIR}/openscad_win32${SNAPSHOT_SUFFIX}.rc)
+set(WINDOWS_RESOURCE_PATH ${CMAKE_BINARY_DIR}/openscad_win32${SNAPSHOT_SUFFIX}.rc)
 set(MACOSX_BUNDLE_ICON_FILE icon${SNAPSHOT_SUFFIX}.icns)
 
 if (APPLE)
@@ -1275,13 +1277,17 @@ endif()
 
 # Packaging: CPACK_* settings should be configured before `include(CPack)`
 include(InstallRequiredSystemLibraries)
-set(CPACK_PACKAGE_NAME OpenSCAD)
-set(CPACK_PACKAGE_VERSION ${OPENSCAD_VERSION})
+set(CPACK_PACKAGE_NAME "OpenSCAD")
+set(CPACK_PACKAGE_VENDOR "The OpenSCAD Developers")
+set(CPACK_PACKAGE_VERSION "${OPENSCAD_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Programmer's Solid 3D CAD Modeler")
 
 if(MXECROSS)
   set(CPACK_GENERATOR ZIP;NSIS)
   set(CPACK_SYSTEM_NAME ${PACKAGE_ARCH})
+  set(CPACK_PACKAGE_EXECUTABLES "openscad;${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
+  set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
   if("${CMAKE_VERSION}" VERSION_GREATER_EQUAL "3.22")
     set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
   else()
@@ -1289,21 +1295,23 @@ if(MXECROSS)
   endif()
   set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "\
     !include \\\"FileFunc.nsh\\\"\n\
-    !include \\\"${CMAKE_SOURCE_DIR}/scripts/mingw-file-association.nsh\\\"\
+    !include \\\"${CMAKE_SOURCE_DIR}/cmake/nsis/mingw-file-association.nsh\\\"\
   ")
   set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "\
-    \\\${RegisterExtension} '$INSTDIR\\\\openscad.exe' '.scad' 'OpenSCAD_File'\n\
-    \\\${RefreshShellIcons}\
+    !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-install-commands.nsh\\\"\
   ")
   set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "\
-    \\\${UnRegisterExtension} '.scad' 'OpenSCAD_File'\n\
-    \\\${RefreshShellIcons}\
+    !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-uninstall-commands.nsh\\\"\
   ")
 endif()
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 # None of config time variables are available for CPACK_PROJECT_CONFIG_FILE, so we configure it now with values.
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/openscad_cpack.cmake.in"
                "${CMAKE_BINARY_DIR}/openscad_cpack.cmake" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/nsis/extra-install-commands.nsh.in"
+               "${CMAKE_BINARY_DIR}/nsis-extra-install-commands.nsh" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/nsis/extra-uninstall-commands.nsh.in"
+               "${CMAKE_BINARY_DIR}/nsis-extra-uninstall-commands.nsh" @ONLY)
 # CPACK_PROJECT_CONFIG_FILE is for configuring CPack-generator specific settings
 set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/openscad_cpack.cmake")
 set(CPACK_THREADS 0)
@@ -1317,6 +1325,8 @@ if(OFFLINE_DOCS)
   add_subdirectory(resources)
 endif()
 
+configure_file(${RESOURCE_DIR}/openscad_win32${SNAPSHOT_SUFFIX}.rc.in
+	       ${CMAKE_BINARY_DIR}/openscad_win32${SNAPSHOT_SUFFIX}.rc)
 include(CPack)
 
 add_sanitizers(OpenSCAD)
