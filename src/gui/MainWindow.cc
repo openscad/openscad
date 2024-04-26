@@ -906,7 +906,7 @@ void MainWindow::loadViewSettings(){
 void MainWindow::loadDesignSettings()
 {
   QSettingsCached settings;
-  if (settings.value("design/autoReload", true).toBool()) {
+  if (settings.value("design/autoReload", false).toBool()) {
     designActionAutoReload->setChecked(true);
   }
   auto polySetCacheSizeMB = Preferences::inst()->getValue("advanced/polysetCacheSizeMB").toUInt();
