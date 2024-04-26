@@ -1,19 +1,24 @@
 #include "GeometryUtils.h"
+
+#include <string>
+#include <cmath>
+#include <memory>
+#include <boost/functional/hash.hpp>
+
 #include "ext/libtess2/Include/tesselator.h"
 #include "printutils.h"
 #include "Reindexer.h"
 #include "Feature.h"
-#include "manifoldutils.h"
 #include "PolySet.h"
+
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #include "CGALHybridPolyhedron.h"
 #endif
-#include <string>
-#include <cmath>
-#include <memory>
 
-#include <boost/functional/hash.hpp>
+#ifdef ENABLE_MANIFOLD
+#include "manifoldutils.h"
+#endif
 
 static void *stdAlloc(void *userData, unsigned int size) {
   TESS_NOTUSED(userData);

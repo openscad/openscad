@@ -191,7 +191,7 @@ jobs:
           path: /tmp/out
 workflows:
   version: 2
-  master-build:
+  "CircleCI master build":
     jobs:
       - openscad-mxe-64bit:
           context: secret-context
@@ -211,7 +211,7 @@ workflows:
               branches:
                   only:
                       - master
-  branch-build:
+  "CircleCI branch build":
     jobs:
       - openscad-mxe-64bit:
           filters:

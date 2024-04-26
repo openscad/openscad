@@ -70,9 +70,11 @@ std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const Abstra
   if (!allownef) {
     std::shared_ptr<const PolySet> ps;
     if (std::dynamic_pointer_cast<const CGALHybridPolyhedron>(result) ||
-        std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(result) ||
-        std::dynamic_pointer_cast<const ManifoldGeometry>(result) ||
-        std::dynamic_pointer_cast<const PolySet>(result)) {
+        std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(result)
+#ifdef ENABLE_MANIFOLD
+        || std::dynamic_pointer_cast<const ManifoldGeometry>(result)
+#endif
+        || std::dynamic_pointer_cast<const PolySet>(result)) {
       ps = PolySetUtils::getGeometryAsPolySet(result);
       assert(ps && ps->getDimension() == 3);
       // We cannot render concave polygons, so tessellate any PolySets
@@ -1376,6 +1378,13 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const Projectio
   std::shared_ptr<const Geometry> geom;
   std::shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
   if (newgeom) {
+#ifdef ENABLE_MANIFOLD
+    if (Feature::ExperimentalManifold.is_enabled()) {
+      auto manifold = ManifoldUtils::createManifoldFromGeometry(newgeom);
+      auto poly2d = manifold->slice();
+      return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+    }
+#endif
 #ifdef ENABLE_CGAL
     auto Nptr = CGALUtils::getNefPolyhedronFromGeometry(newgeom);
     if (Nptr && !Nptr->isEmpty()) {
@@ -1392,6 +1401,19 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const Projectio
 
 std::shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const ProjectionNode& node)
 {
+#ifdef ENABLE_MANIFOLD
+  if (Feature::ExperimentalManifold.is_enabled()) {
+    std::shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
+    if (newgeom) {
+        auto manifold = ManifoldUtils::createManifoldFromGeometry(newgeom);
+        auto poly2d = manifold->project();
+        return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
+    } else {
+      return std::make_shared<Polygon2d>();
+    }
+  }
+#endif
+
   std::shared_ptr<const Geometry> geom;
   std::vector<std::unique_ptr<Polygon2d>> tmp_geom;
   BoundingBox bounds;
