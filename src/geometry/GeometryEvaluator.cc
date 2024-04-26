@@ -1213,10 +1213,9 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
   }
   return Response::ContinueTraversal;
 }
-// TODO avoid intersection
-// TODO ctests org and new cgalpngtest_rotate_extrude-angle ministreifen gehen nicht
-// TODOo start bug, anfang immer horizonatl
+// TODO avoid intersection but crashes
 // TODO 90 knoten losen
+// 
 static void fill_ring(std::vector<Vector3d>& ring, const std::vector<Vector2d> & vertices, double a, Vector3d dv, double fact, double xmid,bool flip)
 {
   unsigned int l = vertices.size() - 1;
@@ -1253,31 +1252,13 @@ static void fill_ring(std::vector<Vector3d>& ring, const std::vector<Vector2d> &
    Currently, we generate a lot of zero-area triangles
 
  */
-static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& poly)
+static std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node, const Polygon2d& poly, int fragments, int fragstart, int fragend, bool flip_faces)
 {
-  if (node.angle == 0) return nullptr;
 
   PolySetBuilder builder;
   builder.setConvexity(node.convexity);
 
-  double min_x = 0;
-  double max_x = 0;
-  unsigned int fragments = 0;
-  for (const auto& o : poly.outlines()) {
-    for (const auto& v : o.vertices) {
-      min_x = fmin(min_x, v[0]);
-      max_x = fmax(max_x, v[0]);
-    }
-  }
 
-  if ((max_x - min_x) > max_x && (max_x - min_x) > fabs(min_x)) {
-    LOG(message_group::Error, "all points for rotate_extrude() must have the same X coordinate sign (range is %1$.2f -> %2$.2f)", min_x, max_x);
-    return nullptr;
-  }
-
-  fragments = (unsigned int)std::ceil(fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1));
-
-  bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
 
   double fact=(node.v[2]/node.angle)*(180.0/M_PI);
 
@@ -1301,10 +1282,10 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
       for(int j=0;j<3;j++)
         vertices.push_back(ps->vertices[p[j]].head<2>());
 
-      fill_ring(ring , vertices, 90, Vector3d(0,0,0), fact, xmid, !flip_faces); // close start
+      fill_ring(ring , vertices, 90 - node.angle*fragstart/fragments, node.v*fragstart/fragments, fact, xmid, !flip_faces); // close start
       builder.appendPolygon(ring);
 
-      fill_ring(ring, vertices, 90 - node.angle, node.v, fact, xmid, flip_faces); // close end
+      fill_ring(ring, vertices, 90 - node.angle*fragend/fragments   , node.v*fragend/fragments  , fact, xmid, flip_faces); // close end
       builder.appendPolygon(ring);
     }
   }
@@ -1325,18 +1306,15 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
       }
       xmid=(xmin+xmax)/2;
     }  
+    Vector3d dv = node.v*fragstart/fragments;
 
-    fill_ring(rings[0], o.vertices, (node.angle == 360 && node.v.norm() == 0) ? -90 : 90, Vector3d(0, 0, 0),fact,  xmid, flip_faces); // first ring
+    fill_ring(rings[fragstart % 2 ], o.vertices, (node.angle == 360 && node.v.norm() == 0) ? -90 : 90- fragstart * node.angle / fragments, dv,fact,  xmid, flip_faces); // first ring
 
-
-    printf("fragments is %d\n",fragments);
-    for (unsigned int j = 0; j < fragments; ++j) {
+    for (unsigned int j = fragstart; j < fragend; ++j) {
       double a;
-      printf("j=%d\n",j);
-      Vector3d dv = fragments>1?node.v*j/(fragments-1):node.v;
+      dv = node.v*(j+1)/fragments;
       if (node.angle == 360 && node.v.norm() == 0) a = -90 + ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
       else a = 90 - (j + 1) * node.angle / fragments; // start on the X axis
-      printf("a=%g\n",a);
       fill_ring(rings[(j + 1) % 2], o.vertices, a, dv, fact, xmid, flip_faces);
       for (size_t i = 0; i < o.vertices.size(); ++i) {
         builder.appendPolygon({
@@ -1355,6 +1333,61 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
   }
 
   return builder.build();
+}
+
+static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& poly){
+
+  if (node.angle == 0) return nullptr;
+  double min_x = 0;
+  double max_x = 0;
+  double min_y = 0;
+  double max_y = 0;
+  unsigned int fragments = 0;
+  for (const auto& o : poly.outlines()) {
+    for (const auto& v : o.vertices) {
+      min_x = fmin(min_x, v[0]);
+      max_x = fmax(max_x, v[0]);
+      min_y = fmin(min_y, v[1]);
+      max_y = fmax(max_y, v[1]);
+    }
+  }
+
+  if ((max_x - min_x) > max_x && (max_x - min_x) > fabs(min_x)) {
+    LOG(message_group::Error, "all points for rotate_extrude() must have the same X coordinate sign (range is %1$.2f -> %2$.2f)", min_x, max_x);
+    return nullptr;
+  }
+  fragments = (unsigned int)std::ceil(fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1));
+  bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
+
+  // check if its save to extrude
+  bool safe=true;
+  do
+  {
+    if(node.angle < 300) break;	  
+    if(node.v.norm() == 0) break;
+    if(node.v[2]/(node.angle/360.0)  >  (max_y-min_y) * 1.5) break;
+//    printf("not safe!\n");		     TODO activate
+//    safe=false;
+
+  } while(false);
+  if(safe) return rotatePolygonSub(node, poly, fragments, 0, fragments, flip_faces);	
+
+  // now create a fragment splitting plan
+  int splits=ceil(node.angle/300.0);
+  printf("splits=%d fragments=%d\n",splits, fragments);
+  int fragstart=0,fragend;
+  std::shared_ptr<ManifoldGeometry> result = nullptr;
+
+  for(int i=0;i<splits;i++) {
+    fragend=fragstart+(fragments/splits)+1;    	 
+    if(fragend > fragments) fragend=fragments;
+    std::unique_ptr<Geometry> part_u =rotatePolygonSub(node, poly, fragments, fragstart, fragend, flip_faces);	
+    std::shared_ptr<Geometry> part_s = std::shared_ptr<Geometry>(part_u.release());
+    std::shared_ptr<const ManifoldGeometry>term = ManifoldUtils::createManifoldFromGeometry(part_s);
+    if(i == 0) result = std::make_shared<ManifoldGeometry>(*term); else *result = *result + *term;	
+    fragstart=fragend-1;
+  }
+  return std::unique_ptr<Geometry>(result.get());
 }
 
 /*!

@@ -80,6 +80,30 @@ multmatrix([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		}
 	}
 }
+multmatrix([[1, 0, 0, 80], [0, 1, 0, -40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	difference() {
+		cylinder($fn = 0, $fa = 15, $fs = 4, h = 20, r1 = 5, r2 = 5, center = false);
+		rotate_extrude(angle = 900, method = "centered", v = [ 0, 0, 20], convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+			multmatrix([[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+				circle($fn = 20, $fa = 15, $fs = 4, r = 2);
+			}
+		}
+	}
+}
+multmatrix([[1, 0, 0, 80], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	rotate_extrude(angle = 900, method = "linear", v = [ 10, -10, 30], convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+		multmatrix([[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			circle($fn = 20, $fa = 15, $fs = 4, r = 4);
+		}
+	}
+}
+multmatrix([[1, 0, 0, 80], [0, 1, 0, 40], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	rotate_extrude(angle = 270, method = "centered", v = [ 0, 0, 40], convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
+		multmatrix([[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			circle($fn = 20, $fa = 15, $fs = 4, r = 4);
+		}
+	}
+}
 rotate_extrude(angle = 0, method = "centered", v = [ 0, 0, 0], convexity = 2, $fn = 0, $fa = 15, $fs = 4) {
 	group() {
 		multmatrix([[1, 0, 0, 5], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {

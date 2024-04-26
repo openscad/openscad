@@ -26,6 +26,22 @@ rotate([0,0,90]) {
   rotate_extrude(angle=-5) face(-21);
 }
 
+translate([80,-40,0])
+difference(){
+  cylinder(r=5,h=20);
+  rotate_extrude(angle=180*5,v=[0,0,20])
+    translate([5,0]) circle(2,$fn=20);
+}
+
+translate([80,0,0])
+rotate_extrude(angle=180*5,v=[10,-10,30],method="linear")
+    translate([5,0]) circle(4,$fn=20);
+
+translate([80,40,0])
+rotate_extrude(angle=270,v=[0,0,40])
+    translate([5,0]) circle(4,$fn=20);
+
+
 // show nothing
 rotate_extrude(angle=0) face(5); // 0 angle
 
