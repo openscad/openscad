@@ -1257,7 +1257,7 @@ static std::unique_ptr<Geometry> rotatePolygonSub(const RotateExtrudeNode& node,
 
 
 
-  double fact=(node.v[2]/node.angle)*(180.0/M_PI);
+  double fact=(node.v[2]/node.angle)*(180.0/G_PI);
 
   if (node.angle != 360 || node.v.norm() > 0) {
     auto ps = poly.tessellate(); // starting face
