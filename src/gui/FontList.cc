@@ -1,8 +1,77 @@
+#include <string>
+#include <iostream>
+
 #include <QClipboard>
+#include <QRegularExpression>
+#include <QFileInfo>
+#include <QFontMetrics>
+#include <QMenu>
+#include <QDir>
+#include <QUrl>
+#include <QDesktopServices>
+#include <QAction>
+#include <QHeaderView>
+#include <QItemSelectionModel>
+#include <QSpinBox>
+#include <QLineEdit>
 
 #include "FontList.h"
 #include "FontCache.h"
 #include "printutils.h"
+
+FontItemDelegate::FontItemDelegate(QObject *parent) : QStyledItemDelegate(parent)
+{
+}
+
+int FontItemDelegate::fontSize() const
+{
+  return _fontSize;
+}
+
+void FontItemDelegate::setFontSize(int fontSize)
+{
+  _fontSize = fontSize;
+}
+
+QString FontItemDelegate::text() const
+{
+  return _text;
+}
+
+void FontItemDelegate::setText(const QString& text)
+{
+  _text = text;
+}
+
+QSize FontItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &idx) const
+{
+  QStyleOptionViewItem opt = option;
+  initStyleOption(&opt, idx);
+  opt.font.setPointSize(_fontSize);
+
+  const auto text = opt.text.isEmpty() ? this->text() : opt.text;
+
+  QFontMetrics fm(opt.font);
+  return { 2 * fm.height() + fm.horizontalAdvance(text), fm.height()};
+}
+
+void FontItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &idx) const
+{
+  QStyleOptionViewItem opt = option;
+  initStyleOption(&opt, idx);
+
+  const auto fontName = FontList::colStr(idx, FontList::COL_FONT_NAME);
+  const auto fontStyle= FontList::colStr(idx, FontList::COL_FONT_STYLE);
+
+  opt.font.setFamily(fontName);
+  opt.font.setStyleName(fontStyle);
+  opt.font.setStyleStrategy(QFont::NoFontMerging);
+  opt.font.setPointSize(_fontSize);
+  opt.text = this->_text;
+  opt.textElideMode = Qt::ElideNone;
+
+  QStyledItemDelegate::paint(painter, opt, idx);
+}
 
 FontSortFilterProxyModel::FontSortFilterProxyModel(QObject *parent) : QSortFilterProxyModel(parent)
 {
@@ -11,41 +80,230 @@ FontSortFilterProxyModel::FontSortFilterProxyModel(QObject *parent) : QSortFilte
 void FontSortFilterProxyModel::clearFilter()
 {
   filterHashes.clear();
-  invalidateFilter();
 }
 
-void FontSortFilterProxyModel::setFilterHashes(const std::vector<uint32_t>& hashes)
+void FontSortFilterProxyModel::appendFilterHashes(const std::vector<uint32_t>& hashes)
 {
-  filterHashes.clear();
   for (const auto hash : hashes) {
     filterHashes.insert(QString::number(hash, 16));
   }
-  invalidateFilter();
 }
 
 bool FontSortFilterProxyModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
+  bool parentResult = QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
   if (filterHashes.empty()) {
-    return true;
+    return parentResult;
   }
 
   QModelIndex idx = sourceModel()->index(sourceRow, FontList::COL_HASH, sourceParent);
   const auto &data = sourceModel()->data(idx);
   const bool result = filterHashes.contains(data.toString());
-  return result;
+  return parentResult && result;
 }
 
 FontList::FontList(QWidget *parent) : QWidget(parent), model(nullptr), proxy(nullptr)
 {
   setupUi(this);
+  lineEditSampleText->addAction(actionResetSampleText, QLineEdit::TrailingPosition);
+  actionResetSampleText->trigger();
+  lineEditFontNameSelected->addAction(actionCopyFontName, QLineEdit::TrailingPosition);
+  lineEditFontPathSelected->addAction(actionOpenFolder, QLineEdit::TrailingPosition);
+  lineEditFontPathSelected->addAction(actionCopyFullPath, QLineEdit::TrailingPosition);
+  lineEditFcStyleSelected->addAction(actionCopyStyle, QLineEdit::TrailingPosition);
+  spinBoxFontSize->setValue(tableView->fontInfo().pointSize());
+  selection_changed(QItemSelection(), QItemSelection());
+
+  tableView->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+  connect(tableView->horizontalHeader(), &QHeaderView::customContextMenuRequested,
+   this, &FontList::customHeaderContexMenuRequested);
+
 }
 
-void FontList::resizeEvent(QResizeEvent *event)
+void FontList::on_lineEditFontName_textChanged(const QString& text)
 {
-  QWidget::resizeEvent(event);
+  updateFilter(comboBoxSearchType->currentIndex(), text);
 }
 
-void FontList::on_copyButton_clicked()
+void FontList::on_comboBoxSearchType_currentIndexChanged(int idx)
+{
+  updateFilter(idx, lineEditFontName->text());
+}
+
+void FontList::updateFilter(int searchTypeIdx, const QString& text)
+{
+  const auto regExp = QRegularExpression(text, QRegularExpression::CaseInsensitiveOption);
+
+  switch (searchTypeIdx) {
+    case 0:
+      proxy->setFilterFixedString(text);
+      break;
+    case 1:
+      proxy->setFilterWildcard(text);
+      break;
+    default:
+      proxy->setFilterRegularExpression(regExp);
+      break;
+  }
+  groupBoxFilter->setTitle(QString("Filter (%1 fonts found)").arg(proxy->rowCount()));
+}
+
+void FontList::on_comboBoxCharFilterType_currentIndexChanged(int idx)
+{
+  updateCharFilter(idx, lineEditChars->text());
+}
+
+void FontList::on_lineEditChars_textChanged(const QString& text)
+{
+  updateCharFilter(comboBoxCharFilterType->currentIndex(), text);
+}
+
+void FontList::updateCharFilter(int charFilterType, const QString& text)
+{
+  proxy->clearFilter();
+  if (text.length() > 0) {
+    if (charFilterType == 0) {
+      // AND
+      const auto hashes = FontCache::instance()->filter(text.toStdU32String());
+      proxy->appendFilterHashes(hashes);
+    } else {
+      // OR
+      for (const auto ch : text.toStdU32String()) {
+        const auto hashes = FontCache::instance()->filter(std::u32string{ch});
+        proxy->appendFilterHashes(hashes);
+      }
+    }
+  }
+  proxy->invalidate();
+  groupBoxFilter->setTitle(QString("Filter (%1 fonts found)").arg(proxy->rowCount()));
+}
+
+void FontList::on_actionResetSampleText_triggered()
+{
+  lineEditSampleText->setText(SAMPLE_TEXT_DEFAULT);
+  lineEditSampleText->setCursorPosition(0);
+}
+
+void FontList::on_lineEditSampleText_textChanged(const QString& text)
+{
+  updateSampleText(text, spinBoxFontSize->value());
+}
+
+void FontList::on_spinBoxFontSize_valueChanged(int value)
+{
+  updateSampleText(lineEditSampleText->text(), value);
+}
+
+void FontList::updateSampleText(const QString& text, int fontSize)
+{
+  delegate.setText(text);
+  delegate.setFontSize(fontSize);
+
+  QFont font = tableView->font();
+  font.setPointSize(fontSize);
+  const QFontMetrics fm(font);
+  const int size = fm.height() + fm.height() / 4;
+  tableView->verticalHeader()->setMinimumSectionSize(1);
+  tableView->verticalHeader()->setMaximumSectionSize(size);
+  tableView->verticalHeader()->setDefaultSectionSize(size);
+  tableView->resizeColumnToContents(COL_SAMPLE);
+  tableView->resizeColumnToContents(COL_STYLED_FONT_NAME);
+
+  if (proxy) {
+    proxy->invalidate();
+  }
+}
+
+void FontList::customHeaderContexMenuRequested(const QPoint& pos)
+{
+  auto *menu = new QMenu(this);
+  menu->addAction(actionShowFontNameColumn);
+  menu->addAction(actionShowStyledFontNameColumn);
+  menu->addAction(actionShowFontStyleColumn);
+  menu->addAction(actionShowFontSampleColumn);
+  menu->addAction(actionShowFileNameColumn);
+  menu->addAction(actionShowFilePathColumn);
+  menu->addSeparator();
+  menu->addAction(actionResetColumns);
+  menu->popup(tableView->horizontalHeader()->viewport()->mapToGlobal(pos));
+}
+
+void FontList::showColumn(int column, bool show) {
+  tableView->setColumnHidden(column, !show);
+  if (show) {
+    tableView->resizeColumnToContents(column);
+  }
+}
+
+void FontList::on_actionShowFontNameColumn_toggled(bool show)
+{
+  showColumn(COL_FONT_NAME, show);
+}
+
+void FontList::on_actionShowStyledFontNameColumn_toggled(bool show)
+{
+  showColumn(COL_STYLED_FONT_NAME, show);
+}
+
+void FontList::on_actionShowFontStyleColumn_toggled(bool show)
+{
+  showColumn(COL_FONT_STYLE, show);
+}
+
+void FontList::on_actionShowFontSampleColumn_toggled(bool show)
+{
+  showColumn(COL_SAMPLE, show);
+}
+
+void FontList::on_actionShowFileNameColumn_toggled(bool show)
+{
+  showColumn(COL_FILE_NAME, show);
+}
+
+void FontList::on_actionShowFilePathColumn_toggled(bool show)
+{
+  showColumn(COL_FILE_PATH, show);
+}
+
+void FontList::on_actionResetColumns_triggered()
+{
+  actionShowFontNameColumn->setChecked(true);
+  actionShowStyledFontNameColumn->setChecked(false);
+  actionShowFontStyleColumn->setChecked(true);
+  actionShowFontSampleColumn->setChecked(true);
+  actionShowFileNameColumn->setChecked(true);
+  actionShowFilePathColumn->setChecked(false);
+  // depending on the initial state of the action, the
+  // toggle callback might not trigger, so force the sync
+  // of the column state
+  tableView->hideColumn(COL_STYLED_FONT_NAME);
+  tableView->hideColumn(COL_FILE_PATH);
+  tableView->hideColumn(COL_HASH);
+}
+
+void FontList::on_tableView_customContextMenuRequested(const QPoint& pos)
+{
+  auto *menu = new QMenu(this);
+  menu->addAction(actionCopyStyle);
+  menu->addSeparator();
+  menu->addAction(actionCopyFontName);
+  menu->addAction(actionCopyFolder);
+  menu->addAction(actionCopyFullPath);
+  menu->addSeparator();
+  menu->addAction(actionOpenFolder);
+  menu->popup(tableView->viewport()->mapToGlobal(pos));
+}
+
+
+void FontList::on_actionCopyFontName_triggered()
+{
+  const auto fontName = colStr(tableView->selectionModel()->currentIndex(), COL_FONT_NAME);
+
+  QClipboard *clipboard = QApplication::clipboard();
+  clipboard->setText(fontName);
+}
+
+void FontList::on_actionCopyStyle_triggered()
 {
   font_selected(selection);
 
@@ -53,43 +311,67 @@ void FontList::on_copyButton_clicked()
   clipboard->setText(selection);
 }
 
-void FontList::on_filterLineEdit_textChanged(const QString& text)
+void FontList::on_actionCopyFolder_triggered()
 {
-  proxy->setFilterWildcard(text);
-  groupBox->setTitle(QString("Filter (%1 fonts found)").arg(proxy->rowCount()));
+  QFileInfo fileInfo(colStr(tableView->selectionModel()->currentIndex(), COL_FILE_PATH));
+  QClipboard *clipboard = QApplication::clipboard();
+  clipboard->setText(fileInfo.dir().canonicalPath());
 }
 
-void FontList::on_charsLineEdit_textChanged(const QString& text)
+void FontList::on_actionCopyFullPath_triggered()
 {
-  if (text.length() == 0) {
-    proxy->clearFilter();
-  } else {
-    const auto hashes = FontCache::instance()->filter(text.toStdU32String());
-    proxy->setFilterHashes(hashes);
+  QClipboard *clipboard = QApplication::clipboard();
+  clipboard->setText(colStr(tableView->selectionModel()->currentIndex(), COL_FILE_PATH));
+}
+
+void FontList::on_actionOpenFolder_triggered()
+{
+  QFileInfo fileInfo(colStr(tableView->selectionModel()->currentIndex(), COL_FILE_PATH));
+  if (fileInfo.dir().exists()) {
+      QDesktopServices::openUrl(QUrl::fromLocalFile(fileInfo.dir().absolutePath()));
   }
-  groupBox->setTitle(QString("Filter (%1 fonts found)").arg(proxy->rowCount()));
 }
 
 void FontList::selection_changed(const QItemSelection& current, const QItemSelection&)
 {
-  if (current.count() == 0) {
-    copyButton->setEnabled(false);
+  const std::array<QAction *, 5> actions = {
+    actionCopyFontName,
+    actionCopyStyle,
+    actionCopyFolder,
+    actionCopyFullPath,
+    actionOpenFolder,
+  };
+
+  const bool disabled = current.count() == 0;
+  for (const auto action : actions) {
+    action->setDisabled(disabled);
+    action->setVisible(!disabled);
+  }
+
+  if (disabled) {
     tableView->setDragText("");
+    lineEditFontNameSelected->setText("");
+    lineEditFontPathSelected->setText("");
+    lineEditFcStyleSelected->setText("");
     return;
   }
 
-  const QModelIndex& idx = proxy->mapToSource(current.indexes().at(0));
-  const QString name = model->item(idx.row(), COL_FONT_NAME)->text();
-  const QString style = model->item(idx.row(), COL_FONT_STYLE)->text();
-  selection = QString("\"%1:style=%2\"").arg(quote(name)).arg(quote(style));
-  copyButton->setEnabled(true);
-  tableView->setDragText(selection);
+  const auto& idx = proxy->mapToSource(current.indexes().at(0));
+  const auto name = model->item(idx.row(), COL_FONT_NAME)->text();
+  const auto path = model->item(idx.row(), COL_FILE_PATH)->text();
+  const auto style = model->item(idx.row(), COL_FONT_STYLE)->text();
+  const auto fcStyle = QString("%1:style=%2").arg(quote(name)).arg(quote(style));
+  this->selection = "\"" + fcStyle + "\"";
+  tableView->setDragText(this->selection);
+  lineEditFontNameSelected->setText(name);
+  lineEditFontNameSelected->setCursorPosition(0);
+  lineEditFontPathSelected->setText(path); // keep cursor at the end to prefer the file name
+  lineEditFcStyleSelected->setText(fcStyle);
+  lineEditFcStyleSelected->setCursorPosition(0);
 }
 
 void FontList::update_font_list()
 {
-  copyButton->setEnabled(false);
-
   if (proxy) {
     delete proxy;
     proxy = nullptr;
@@ -100,24 +382,41 @@ void FontList::update_font_list()
   }
 
   FontInfoList *list = FontCache::instance()->list_fonts();
-  model = new QStandardItemModel(list->size(), 4, this);
+  model = new QStandardItemModel(list->size(), COL_COUNT, this);
   model->setHorizontalHeaderItem(COL_FONT_NAME, new QStandardItem(_("Font name")));
+  model->setHorizontalHeaderItem(COL_STYLED_FONT_NAME, new QStandardItem(_("Styled font name")));
   model->setHorizontalHeaderItem(COL_FONT_STYLE, new QStandardItem(_("Font style")));
-  model->setHorizontalHeaderItem(COL_FILE_NAME, new QStandardItem(_("Filename")));
+  model->setHorizontalHeaderItem(COL_SAMPLE, new QStandardItem(_("Sample text"))); // text handled by delegate
+  model->setHorizontalHeaderItem(COL_FILE_NAME, new QStandardItem(_("File name")));
+  model->setHorizontalHeaderItem(COL_FILE_PATH, new QStandardItem(_("File path")));
   model->setHorizontalHeaderItem(COL_HASH, new QStandardItem(_("Hash")));
 
   int idx = 0;
   for (auto it = list->begin(); it != list->end(); it++, idx++) {
     FontInfo font_info = (*it);
+
     auto *family = new QStandardItem(QString::fromStdString(font_info.get_family()));
     family->setEditable(false);
     model->setItem(idx, COL_FONT_NAME, family);
+
+    auto *styledFamily = new QStandardItem(QString::fromStdString(font_info.get_family()));
+    styledFamily->setEditable(false);
+    styledFamily->setToolTip(styledFamily->text());
+    model->setItem(idx, COL_STYLED_FONT_NAME, styledFamily);
+
     auto *style = new QStandardItem(QString::fromStdString(font_info.get_style()));
     style->setEditable(false);
     model->setItem(idx, COL_FONT_STYLE, style);
-    auto *file = new QStandardItem(QString::fromStdString(font_info.get_file()));
+
+    QFileInfo fileInfo(QString::fromStdString(font_info.get_file()));
+    auto *file = new QStandardItem(fileInfo.fileName());
     file->setEditable(false);
+    file->setToolTip(fileInfo.canonicalFilePath());
     model->setItem(idx, COL_FILE_NAME, file);
+    auto *filePath = new QStandardItem(fileInfo.canonicalFilePath());
+    filePath->setEditable(false);
+    model->setItem(idx, COL_FILE_PATH, filePath);
+
     auto *hash = new QStandardItem(QString::number(font_info.get_hash(), 16));
     hash->setEditable(false);
     model->setItem(idx, COL_HASH, hash);
@@ -126,10 +425,14 @@ void FontList::update_font_list()
   proxy = new FontSortFilterProxyModel(this);
   proxy->setSourceModel(model);
   proxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
-  groupBox->setTitle(QString("Filter (%1 fonts found)").arg(proxy->rowCount()));
+  groupBoxFilter->setTitle(QString("Filter (%1 fonts found)").arg(proxy->rowCount()));
 
   this->tableView->setModel(proxy);
+  on_actionResetColumns_triggered();
+  this->tableView->setItemDelegateForColumn(COL_STYLED_FONT_NAME, &delegate);
+  this->tableView->setItemDelegateForColumn(COL_SAMPLE, &delegate);
   this->tableView->setSelectionMode(QAbstractItemView::SingleSelection);
+  this->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
   this->tableView->sortByColumn(COL_FONT_NAME, Qt::AscendingOrder);
   this->tableView->resizeColumnsToContents();
   this->tableView->setSortingEnabled(true);
@@ -137,6 +440,11 @@ void FontList::update_font_list()
   connect(tableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection&,const QItemSelection&)), this, SLOT(selection_changed(const QItemSelection&,const QItemSelection&)));
 
   delete list;
+}
+
+void FontList::resizeEvent(QResizeEvent *event)
+{
+  QWidget::resizeEvent(event);
 }
 
 /**
@@ -162,4 +470,14 @@ QString FontList::quote(const QString& text)
   .replace('=', "\\\\=")
   .replace('_', "\\\\_");
   return result;
+}
+
+QModelIndex FontList::colIdx(const QModelIndex& idx, int column)
+{
+  return idx.model()->index(idx.row(), column, idx.parent());
+}
+
+QString FontList::colStr(const QModelIndex& idx, int column)
+{
+  return idx.model()->data(colIdx(idx, column)).toString();
 }

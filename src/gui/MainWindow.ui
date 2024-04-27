@@ -376,6 +376,7 @@
     <addaction name="windowActionSelectEditor"/>
     <addaction name="windowActionSelectConsole"/>
     <addaction name="windowActionSelectErrorLog"/>
+    <addaction name="windowActionSelectFontList"/>
     <addaction name="windowActionSelectCustomizer"/>
     <addaction name="windowActionSelectAnimate"/>
     <addaction name="windowActionSelectViewportControl"/>
@@ -1600,6 +1601,11 @@
    </property>
    <property name="text">
     <string>Hide Font List</string>
+   </property>
+  </action>
+  <action name="windowActionSelectFontList">
+   <property name="text">
+    <string>Font List</string>
    </property>
   </action>
  </widget>

@@ -846,7 +846,6 @@ void MainWindow::onTranslateEvent(InputEventTranslate *event)
   } else {
     qglview->translate(zoomFactor * event->x, event->y, zoomFactor * event->z, event->relative, false);
   }
-
 }
 
 void MainWindow::onRotateEvent(InputEventRotate *event)
@@ -3490,7 +3489,6 @@ void MainWindow::hideAnimate()
 
 void MainWindow::showFontList()
 {
-  std::cout << "MainWindow::showFontList()\n";
   windowActionHideFontList->setChecked(false);
   fontListWidget->update_font_list();
   fontListDock->show();
