@@ -46,9 +46,10 @@ PACKAGES=(
     "freetype 2.12.1"
     "ragel REMOVE"
     "harfbuzz 6.0.0"
+
     "libzip 1.9.2"
     "libxml2 REMOVE"
-    "libuuid 1.6.2"
+    "libuuid REMOVE"
     "fontconfig 2.14.1"
     "hidapi 0.12.0"
     "lib3mf 2.3.1"
@@ -561,46 +562,11 @@ remove_libxml2()
   find $DEPLOYDIR -name "*libxml*" -prune -exec rm -rf {} \;
 }
 
-build_libuuid()
+remove_libuuid()
 {
-  version=$1
-  cd $BASEDIR/src
-  rm -rf uuid-$version
-  if [ ! -f uuid-$version.tar.gz ]; then
-    curl -L https://mirrors.ocf.berkeley.edu/debian/pool/main/o/ossp-uuid/ossp-uuid_$version.orig.tar.gz -o uuid-$version.tar.gz
-  fi
-  tar xzf uuid-$version.tar.gz
-  cd uuid-$version
-  patch -p1 < $OPENSCADDIR/patches/uuid-1.6.2.patch
-  # Update old config.sub to get aarch64 support
-  cp $OPENSCADDIR/patches/uuid-config.sub ./config.sub
-
-  # Build each arch separately
-  for i in ${!ARCHS[@]}; do
-    arch=${ARCHS[$i]}
-    mkdir build-$arch
-    cd build-$arch
-    # ac_cv_va_copy=yes is a workaround for a bug uuid's build system causing the va_copy() check
-    # to not work while cross compiling
-    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --without-perl --without-php --without-pgsql --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0 ac_cv_va_copy=yes
-    make -j"$NUMCPU"
-    make install DESTDIR=$PWD/install/
-    cd ..
-  done
-
-  # Install the first arch
-  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
-
-  # If we're building for multiple archs, create fat binaries
-  if (( ${#ARCHS[@]} > 1 )); then
-    LIBS=()
-    for arch in ${ARCHS[*]}; do
-      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libuuid.dylib)
-    done
-    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libuuid.dylib
-  fi
-
-  install_name_tool -id @rpath/libuuid.dylib $DEPLOYDIR/lib/libuuid.dylib
+  echo "Removing libuuid..."
+  find $DEPLOYDIR -name "*libuuid*" -prune -exec rm -rf {} \;
+  rm -f $DEPLOYDIR/include/uuid.h $DEPLOYDIR/lib/pkgconfig/uuid.pc
 }
 
 build_fontconfig()
