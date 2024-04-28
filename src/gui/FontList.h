@@ -23,6 +23,9 @@ public:
   QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
   void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 
+protected:
+  void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override;
+
 private:
   int _fontSize;
   QString _text;
@@ -102,13 +105,14 @@ public slots:
   void on_actionShowFilePathColumn_toggled(bool);
   void on_actionResetColumns_triggered();
 
-  static QModelIndex colIdx(const QModelIndex& idx, int column);
-  static QString colStr(const QModelIndex& idx, int column);
+  static const QModelIndex colIdx(const QModelIndex& idx, int column);
+  static const QString colStr(const QModelIndex& idx, int column);
 
 signals:
   void font_selected(const QString font);
 
 protected:
+  const QModelIndex currentIndex() const;
   void resizeEvent(QResizeEvent *event) override;
 
 private:

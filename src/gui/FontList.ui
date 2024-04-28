@@ -332,7 +332,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show Font Sample</string>
+    <string>Show Sample Text</string>
    </property>
   </action>
   <action name="actionShowFileNameColumn">
