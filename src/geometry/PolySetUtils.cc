@@ -1,4 +1,8 @@
 #include "PolySetUtils.h"
+
+#include <sstream>
+#include <boost/range/adaptor/reversed.hpp>
+
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 #include "Polygon2d.h"
@@ -191,7 +195,7 @@ std::string polySetToPolyhedronSource(const PolySet& ps)
   sstr << "  faces=[\n";
   for (const auto& polygon : ps.indices) {
     sstr << "[";
-    for (const auto idx : polygon) {
+    for (const auto idx : boost::adaptors::reverse(polygon)) {
       sstr << idx << ",";
     }
     sstr << "],\n";
