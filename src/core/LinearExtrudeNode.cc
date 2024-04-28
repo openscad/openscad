@@ -174,7 +174,7 @@ std::string LinearExtrudeNode::toString() const
   if(height > 0) {
     Vector3d v=this->height/height;
     if(v[2] < 1) {
-      stream << ", v = [ " <<  this->height[0] << ", " << this->height[1] << ", " << this->height[2] << "]" ;
+      stream << ", v = [ " <<  v[0] << ", " << v[1] << ", " << v[2] << "]" ;
     }
   }
   if (this->center) {
