@@ -87,6 +87,7 @@ public:
   QWidget *errorLogDockTitleWidget;
   QWidget *animateDockTitleWidget;
   QWidget *viewportControlTitleWidget;
+  QWidget *fontListDockTitleWidget;
 
   Measurement meas;
 
@@ -145,7 +146,7 @@ private:
   void loadViewSettings();
   void loadDesignSettings();
   void prepareCompile(const char *afterCompileSlot, bool procevents, bool preview);
-  void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool ViewportControlWidget);
+  void updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool fontList, bool ViewportControlWidget);
   void saveBackup();
   void writeBackup(QFile *file);
   void show_examples();
@@ -205,11 +206,14 @@ private slots:
   void hideParameters();
   void showAnimate();
   void hideAnimate();
+  void showFontList();
+  void hideFontList();
   void on_windowActionSelectEditor_triggered();
   void on_windowActionSelectConsole_triggered();
   void on_windowActionSelectCustomizer_triggered();
   void on_windowActionSelectErrorLog_triggered();
   void on_windowActionSelectAnimate_triggered();
+  void on_windowActionSelectFontList_triggered();
   void on_windowActionSelectViewportControl_triggered();
   void on_windowActionNextWindow_triggered();
   void on_windowActionPreviousWindow_triggered();
@@ -291,6 +295,7 @@ public:
   void changedTopLevelEditor(bool);
   void changedTopLevelErrorLog(bool);
   void changedTopLevelAnimate(bool);
+  void changedTopLevelFontList(bool);
   void changedTopLevelViewportControl(bool);
 
   QList<double> getTranslation() const;
@@ -303,6 +308,7 @@ public slots:
   void on_parameterDock_visibilityChanged(bool);
   void on_errorLogDock_visibilityChanged(bool);
   void on_animateDock_visibilityChanged(bool);
+  void on_fontListDock_visibilityChanged(bool);
   void on_viewportControlDock_visibilityChanged(bool);
   void on_toolButtonCompileResultClose_clicked();
   void editorTopLevelChanged(bool);
@@ -310,6 +316,7 @@ public slots:
   void parameterTopLevelChanged(bool);
   void errorLogTopLevelChanged(bool);
   void animateTopLevelChanged(bool);
+  void fontListTopLevelChanged(bool);
   void viewportControlTopLevelChanged(bool);
   void processEvents();
   void jumpToLine(int, int);
