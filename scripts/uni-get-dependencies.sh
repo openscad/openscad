@@ -11,7 +11,7 @@ get_fedora_deps_yum()
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl imagemagick ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb gettext qscintilla-qt5-devel \
-  mesa-dri-drivers double-conversion-devel tbb-devel
+  mesa-dri-drivers double-conversion-devel tbb-devel nettle-devel libjpeg-turbo-devel
 }
 
 get_fedora_deps_dnf()
@@ -22,7 +22,7 @@ get_fedora_deps_dnf()
   opencsg-devel git libXmu-devel curl ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb gettext qscintilla-qt5-devel \
   mesa-dri-drivers libzip-devel ccache qt5-qtmultimedia-devel qt5-qtsvg-devel \
-  double-conversion-devel tbb-devel
+  double-conversion-devel tbb-devel nettle-devel libjpeg-turbo-devel
  dnf -y install libxml2-devel
  dnf -y install libffi-devel
  dnf -y install redhat-rpm-config
@@ -106,7 +106,8 @@ get_debian_deps()
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   imagemagick libfreetype6-dev libdouble-conversion-dev \
   gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel libtbb-dev \
-  libgl1-mesa-dev libxi-dev libfontconfig-dev libzip-dev libglm-dev
+  libgl1-mesa-dev libxi-dev libfontconfig-dev libzip-dev libglm-dev nettle-dev \
+  libjpeg-dev
 }
 
 get_qt5_deps_debian()
