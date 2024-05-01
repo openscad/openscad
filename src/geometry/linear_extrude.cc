@@ -283,7 +283,7 @@ void add_slice_indices(PolygonIndices &indices, int slice_idx, int slice_stride,
   Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Affine2d(rotate_degrees(-rot1)));
   Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Affine2d(rotate_degrees(-rot2)));
 
-  // Not likely to matter, but when no twist (rot2 == rot1),
+  bool any_zero = scale2[0] == 0 || scale2[1] == 0;
   // setting back_twist true helps keep diagonals same as previous builds.
   bool back_twist = rot2 <= rot1;
 
@@ -314,7 +314,7 @@ void add_slice_indices(PolygonIndices &indices, int slice_idx, int slice_stride,
 
       // Split along shortest diagonal,
       // unless at top for a 0-scaled axis (which can create 0 thickness "ears")
-      if (splitfirst) {
+      if (splitfirst xor any_zero) {
         indices.push_back({
           prev_slice + curr_idx,
           curr_slice + curr_idx,
