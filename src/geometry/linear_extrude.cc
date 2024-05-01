@@ -193,6 +193,7 @@ std::unique_ptr<PolySet> assemblePolySetForManifold(
   std::vector<Vector3d>& vertices, PolygonIndices& indices,
   int convexity, boost::tribool isConvex, int index_offset) {
   auto final_polyset = std::make_unique<PolySet>(3, isConvex);
+  final_polyset->setTriangular(true);
   final_polyset->setConvexity(convexity);
   final_polyset->vertices = std::move(vertices);
   final_polyset->indices = std::move(indices);
@@ -215,7 +216,7 @@ std::unique_ptr<PolySet> assemblePolySetForManifold(
   std::copy(ps_bottom->indices.begin(), ps_bottom->indices.end(),
      std::back_inserter(final_polyset->indices));
 
-//  LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
+  // LOG(PolySetUtils::polySetToPolyhedronSource(*final_polyset));
 
   return final_polyset; 
 }
@@ -282,8 +283,6 @@ void add_slice_indices(PolygonIndices &indices, int slice_idx, int slice_stride,
   Eigen::Affine2d trans1(Eigen::Scaling(scale1) * Eigen::Affine2d(rotate_degrees(-rot1)));
   Eigen::Affine2d trans2(Eigen::Scaling(scale2) * Eigen::Affine2d(rotate_degrees(-rot2)));
 
-  bool any_zero = scale2[0] == 0 || scale2[1] == 0;
-  bool any_non_zero = scale2[0] != 0 || scale2[1] != 0;
   // Not likely to matter, but when no twist (rot2 == rot1),
   // setting back_twist true helps keep diagonals same as previous builds.
   bool back_twist = rot2 <= rot1;
@@ -315,32 +314,28 @@ void add_slice_indices(PolygonIndices &indices, int slice_idx, int slice_stride,
 
       // Split along shortest diagonal,
       // unless at top for a 0-scaled axis (which can create 0 thickness "ears")
-      if (splitfirst xor any_zero) {
+      if (splitfirst) {
         indices.push_back({
           prev_slice + curr_idx,
           curr_slice + curr_idx,
           prev_slice + prev_idx,
         });
-        if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          indices.push_back({
-            curr_slice + prev_idx,
-            prev_slice + prev_idx,
-            curr_slice + curr_idx,
-          });
-        }
+        indices.push_back({
+          curr_slice + prev_idx,
+          prev_slice + prev_idx,
+          curr_slice + curr_idx,
+        });
       } else {
         indices.push_back({
           prev_slice + curr_idx,
           curr_slice + prev_idx,
           prev_slice + prev_idx,
         });
-        if (!any_zero || (any_non_zero && prev2 != curr2)) {
-          indices.push_back({
-            prev_slice + curr_idx,
-            curr_slice + curr_idx,
-            curr_slice + prev_idx,
-          });
-        }
+        indices.push_back({
+          prev_slice + curr_idx,
+          curr_slice + curr_idx,
+          curr_slice + prev_idx,
+        });
       }
       prev1 = curr1;
       prev2 = curr2;
@@ -410,6 +405,8 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
   // Twist makes convex polygons into unknown polyhedrons
   if (isConvex && non_linear) isConvex = unknown;
 
+  // num_slices is the number of volumetric segments, minimum 1.
+  // The number of rings of vertices will be num_slices+1.
   auto num_slices = calc_num_slices(node, poly);
 
   // Calculate outline segments if appropriate.
@@ -470,9 +467,9 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
     slice_stride += o.vertices.size();
   }
   std::vector<Vector3d> vertices;
-  vertices.reserve(slice_stride * num_slices);
+  vertices.reserve(slice_stride * (num_slices + 1));
   PolygonIndices indices;
-  indices.reserve(slice_stride * num_slices * 2); // sides + endcaps
+  indices.reserve(slice_stride * (num_slices + 1) * 2); // sides + endcaps
 
   // Calculate all vertices
   Vector2d full_scale(1 - node.scale_x, 1 - node.scale_y);
