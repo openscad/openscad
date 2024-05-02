@@ -44,14 +44,14 @@ def lookup_library(file):
         if os.path.exists(file): found = file
         if DEBUG: print("@rpath resolved: " + str(file))
     if not found:
-        if re.search("\.app/", file):
+        if re.search(r"\.app/", file):
             found = file
             if DEBUG: print("App found: " + str(found))
         elif re.search("@executable_path", file):
             abs = re.sub("^@executable_path", executable_path, file)
             if os.path.exists(abs): found = abs
             if DEBUG: print("Lib in @executable_path found: " + str(found))
-        elif re.search("\.framework/", file):
+        elif re.search(r"\.framework/", file):
             found = os.path.join("/Library/Frameworks", file)
             if DEBUG: print("Framework found: " + str(found))
         else:
@@ -78,7 +78,7 @@ def find_dependencies(file):
         # print(dep)
         # Fail if libstc++ and libc++ was mixed
         global cxxlib
-        match = re.search("lib(std)?c\+\+", dep)
+        match = re.search(r"lib(std)?c\+\+", dep)
         if match:
             if not cxxlib:
                 cxxlib = match.group(0)
@@ -88,7 +88,7 @@ def find_dependencies(file):
                     return None
         dep = re.sub(".*:$", "", dep) # Take away header line
         dep = re.sub("^\t", "", dep) # Remove initial tabs
-        dep = re.sub(" \(.*\)$", "", dep) # Remove trailing parentheses
+        dep = re.sub(r"\s\(.*\)$", "", dep) # Remove trailing parentheses
         if len(dep) > 0 and not re.search("/System/Library", dep) and not re.search("/usr/lib", dep):
             libs.append(dep)
     return libs
@@ -101,12 +101,12 @@ def validate_lib(lib):
     output = p.communicate()[0]
     if p.returncode != 0: return False
     # Check deployment target
-    m = re.search("LC_VERSION_MIN_MACOSX([^\n]*\n){2}\s+version (.*)", output, re.MULTILINE)
+    m = re.search(r"LC_VERSION_MIN_MACOSX([^\n]*\n){2}\s+version\s(.*)", output, re.MULTILINE)
     deploymenttarget = None
     if m is not None:
         deploymenttarget = m.group(2)
     if deploymenttarget is None:
-        m = re.search("LC_BUILD_VERSION([^\n]*\n){3}\s+minos (.*)", output, re.MULTILINE)
+        m = re.search(r"LC_BUILD_VERSION([^\n]*\n){3}\s+minos\s(.*)", output, re.MULTILINE)
         if m is not None:
             deploymenttarget = m.group(2)
     if deploymenttarget is None:
@@ -155,7 +155,7 @@ if __name__ == '__main__':
         print('Error otool -l failed on main executable')
         sys.exit(1)
     # Check deployment target
-    m = re.search("LC_RPATH\n(.*)\n\s+path ([^ ]+)", output, re.MULTILINE)
+    m = re.search(r"LC_RPATH\n(.*)\n\s+path\s([^\s]+)", output, re.MULTILINE)
     lc_rpath = m.group(2)
     if DEBUG: print('Runpath search path: ' + lc_rpath)
 
