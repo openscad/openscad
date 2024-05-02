@@ -1353,7 +1353,6 @@ Response GeometryEvaluator::visit(State& state, const RotateExtrudeNode& node)
       }
       if (geometry) {
         geom = rotatePolygon(node, *geometry);
-        geom = rotatePolygon(node, *geometry);
       }
     } else {
       geom = smartCacheGet(node, false);
