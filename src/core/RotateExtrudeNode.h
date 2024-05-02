@@ -2,6 +2,7 @@
 
 #include "node.h"
 #include "Value.h"
+#include "linalg.h"
 
 class RotateExtrudeNode : public AbstractPolyNode
 {
@@ -19,6 +20,8 @@ public:
   int convexity;
   double fn, fs, fa;
   double origin_x, origin_y, scale, angle;
+  std::string method;
+  Vector3d v;
   Filename filename;
   std::string layername;
 };

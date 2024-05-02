@@ -47,7 +47,7 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"file", "layer", "origin", "scale"},
-                                            {"convexity", "angle"}
+                                            {"convexity", "angle","v", "method" }
                                             );
 
   node->fn = parameters["$fn"].toDouble();
@@ -76,7 +76,30 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
 
   if (node->scale <= 0) node->scale = 1;
 
-  if ((node->angle <= -360) || (node->angle > 360)) node->angle = 360;
+
+  Vector3d v(0,0,0);
+
+  if (parameters["v"].isDefined()) {
+    if(!parameters["v"].getVec3(v[0], v[1], v[2])) {
+      v=Vector3d(0,0,0);
+      LOG(message_group::Error, "v when specified should be a 3d vector.");
+    }
+  }
+  if (parameters["method"].isUndefined()) {
+    node->method = "centered";
+  } else {
+    node->method = parameters["method"].toString();
+    // method can only be one of...
+    if (node->method != "centered" && node->method != "linear") {
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "Unknown roof method '" + node->method + "'. Using 'centered'.");
+      node->method = "centered";
+    }
+  }
+  if (node->angle <= -360) node->angle = 360;
+  if (node->angle > 360 && v.norm() == 0) node->angle = 360;
+
+  node->v=v;
 
   if (node->filename.empty()) {
     children.instantiate(node);
@@ -106,6 +129,8 @@ std::string RotateExtrudeNode::toString() const
   }
   stream <<
     "angle = " << this->angle << ", "
+    "method = \"" << this->method << "\", "
+    "v = [ " << this->v[0] <<  ", " << this->v[1] << ", " << this->v[2] << "], "
     "convexity = " << this->convexity << ", "
     "$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 

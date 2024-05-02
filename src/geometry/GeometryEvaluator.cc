@@ -11,6 +11,7 @@
 #include "roof_ss.h"
 #include "roof_vd.h"
 #include "RotateExtrudeNode.h"
+#include "rotextrude.h"
 #include "CgalAdvNode.h"
 #include "ProjectionNode.h"
 #include "CsgOpNode.h"
@@ -1212,122 +1213,6 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
     node.progress_report();
   }
   return Response::ContinueTraversal;
-}
-
-static void fill_ring(std::vector<Vector3d>& ring, const Outline2d& o, double a, bool flip)
-{
-  if (flip) {
-    unsigned int l = o.vertices.size() - 1;
-    for (unsigned int i = 0; i < o.vertices.size(); ++i) {
-      ring[i][0] = o.vertices[l - i][0] * sin_degrees(a);
-      ring[i][1] = o.vertices[l - i][0] * cos_degrees(a);
-      ring[i][2] = o.vertices[l - i][1];
-    }
-  } else {
-    for (unsigned int i = 0; i < o.vertices.size(); ++i) {
-      ring[i][0] = o.vertices[i][0] * sin_degrees(a);
-      ring[i][1] = o.vertices[i][0] * cos_degrees(a);
-      ring[i][2] = o.vertices[i][1];
-    }
-  }
-}
-
-/*!
-   Input to extrude should be clean. This means non-intersecting, correct winding order
-   etc., the input coming from a library like Clipper.
-
-   FIXME: We should handle some common corner cases better:
-   o 2D polygon having an edge being on the Y axis:
-    In this case, we don't need to generate geometry involving this edge as it
-    will be an internal edge.
-   o 2D polygon having a vertex touching the Y axis:
-    This is more complex as the resulting geometry will (may?) be nonmanifold.
-    In any case, the previous case is a specialization of this, so the following
-    should be handled for both cases:
-    Since the ring associated with this vertex will have a radius of zero, it will
-    collapse to one vertex. Any quad using this ring will be collapsed to a triangle.
-
-   Currently, we generate a lot of zero-area triangles
-
- */
-static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, const Polygon2d& poly)
-{
-  if (node.angle == 0) return nullptr;
-
-  PolySetBuilder builder;
-  builder.setConvexity(node.convexity);
-
-  double min_x = 0;
-  double max_x = 0;
-  unsigned int fragments = 0;
-  for (const auto& o : poly.outlines()) {
-    for (const auto& v : o.vertices) {
-      min_x = fmin(min_x, v[0]);
-      max_x = fmax(max_x, v[0]);
-    }
-  }
-
-  if ((max_x - min_x) > max_x && (max_x - min_x) > fabs(min_x)) {
-    LOG(message_group::Error, "all points for rotate_extrude() must have the same X coordinate sign (range is %1$.2f -> %2$.2f)", min_x, max_x);
-    return nullptr;
-  }
-
-  fragments = (unsigned int)std::ceil(fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1));
-
-  bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
-
-  if (node.angle != 360) {
-    auto ps_start = poly.tessellate(); // starting face
-    Transform3d rot(angle_axis_degrees(90, Vector3d::UnitX()));
-    ps_start->transform(rot);
-    // Flip vertex ordering
-    if (!flip_faces) {
-      for (auto& p : ps_start->indices) {
-        std::reverse(p.begin(), p.end());
-      }
-    }
-    builder.appendPolySet(*ps_start);
-
-    auto ps_end = poly.tessellate();
-    Transform3d rot2(angle_axis_degrees(node.angle, Vector3d::UnitZ()) * angle_axis_degrees(90, Vector3d::UnitX()));
-    ps_end->transform(rot2);
-    if (flip_faces) {
-      for (auto& p : ps_end->indices) {
-        std::reverse(p.begin(), p.end());
-      }
-    }
-    builder.appendPolySet(*ps_end);
-  }
-
-  for (const auto& o : poly.outlines()) {
-    std::vector<Vector3d> rings[2];
-    rings[0].resize(o.vertices.size());
-    rings[1].resize(o.vertices.size());
-
-    fill_ring(rings[0], o, (node.angle == 360) ? -90 : 90, flip_faces); // first ring
-    for (unsigned int j = 0; j < fragments; ++j) {
-      double a;
-      if (node.angle == 360) a = -90 + ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
-      else a = 90 - (j + 1) * node.angle / fragments; // start on the X axis
-      fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
-
-      for (size_t i = 0; i < o.vertices.size(); ++i) {
-        builder.appendPolygon({
-                rings[j % 2][(i + 1) % o.vertices.size()],
-                rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
-                rings[j % 2][i]
-        });                
-
-        builder.appendPolygon({
-                rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
-                rings[(j + 1) % 2][i],
-                rings[j % 2][i]
-        });
-      }
-    }
-  }
-
-  return builder.build();
 }
 
 /*!
