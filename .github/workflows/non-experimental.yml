@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - "*-non-experimental"
   workflow_dispatch:
 
 jobs:
