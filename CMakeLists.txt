@@ -749,6 +749,7 @@ set(CORE_SOURCES
   src/geometry/PolySetBuilder.cc
   src/geometry/PolySetUtils.cc
   src/geometry/GeometryEvaluator.cc
+  src/geometry/linear_extrude.cc
   src/geometry/boolean_utils.cc
   src/glview/OffscreenContextFactory.cc
   src/glview/RenderSettings.cc
