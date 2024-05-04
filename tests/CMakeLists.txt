@@ -1366,6 +1366,15 @@ list(APPEND NEF3_BROKEN_TESTS
   csgpngtest_nef3_broken
 )
 
+# Disable tests broken due to https://github.com/openscad/openscad/issues/3567
+if (NOT EXPERIMENTAL)
+    set_tests_properties(
+      cgalpngtest_linear_extrude-scale-zero-tests
+      csgpngtest_linear_extrude-scale-zero-tests
+      PROPERTIES DISABLED TRUE
+    )
+endif()
+
 # Platform specific test disable
 if(APPLE)
   set_tests_properties(
