@@ -1,0 +1,18 @@
+diff --color -ur qt-everywhere-src-5.15.13-old/qtbase/src/corelib/tools/qduplicatetracker_p.h qt-everywhere-src-5.15.13/qtbase/src/corelib/tools/qduplicatetracker_p.h
+--- qt-everywhere-src-5.15.13-old/qtbase/src/corelib/tools/qduplicatetracker_p.h	2024-01-04 14:21:43
++++ qt-everywhere-src-5.15.13/qtbase/src/corelib/tools/qduplicatetracker_p.h	2024-05-07 19:08:49
+@@ -52,7 +52,13 @@
+ 
+ #include <qglobal.h>
+ 
+-#if QT_HAS_INCLUDE(<memory_resource>) && __cplusplus > 201402L
++#  if defined(__cpp_lib_memory_resource) \
++    && ((defined(__MAC_OS_X_VERSION_MIN_REQUIRED)  && __MAC_OS_X_VERSION_MIN_REQUIRED  < 140000) \
++     || (defined(__IPHONE_OS_VERSION_MIN_REQUIRED) && __IPHONE_OS_VERSION_MIN_REQUIRED < 170000))
++#   undef __cpp_lib_memory_resource // Only supported on macOS 14 and iOS 17
++#  endif
++
++#ifdef __cpp_lib_memory_resource
+ #  include <unordered_set>
+ #  include <memory_resource>
+ #else
