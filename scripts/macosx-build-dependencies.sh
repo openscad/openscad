@@ -15,7 +15,9 @@
 #  -x         Build x86_64 binaries
 #  -v         Verbose
 #
-# Prerequisites: automake, libtool, cmake, pkg-config, wget, meson
+# Prerequisites: automake, libtool, cmake, pkg-config, wget, meson, python-packaging
+#
+# meson and python-packaging is required by glib.
 #
 
 set -e
@@ -53,12 +55,11 @@ PACKAGES=(
     "fontconfig 2.14.1"
     "hidapi 0.12.0"
     "lib3mf 2.3.1"
-    # FIXME: Re-evaluate patches if bumping glib past 2.76.3
-    "glib2 2.76.3"
+    "glib2 2.80.0"
     "pixman 0.42.2"
     "cairo 1.18.0"
     "cgal 5.5"
-    "qt5 5.15.7 patch"
+    "qt5 5.15.13"
     "opencsg 1.6.0"
     "qscintilla 2.13.3"
     "onetbb 2021.11.0"
@@ -200,7 +201,8 @@ build_qt5()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.xz
   cd qt-everywhere-src-$version
-  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-macos-CGColorSpace.patch
+  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-xcode15.patch
+  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-memory_resource.patch
 
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
@@ -395,8 +397,6 @@ build_onetbb()
   cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DTBB_TEST=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install  
-  # install_name_tool -id @rpath/libtbb.dylib $DEPLOYDIR/lib/libtbb.dylib
-  # install_name_tool -id @rpath/libtbbmalloc.dylib $DEPLOYDIR/lib/libtbbmalloc.dylib
 }
 
 build_glew()
@@ -660,9 +660,6 @@ build_glib2()
   fi
   tar xJf "glib-$version.tar.xz"
   cd "glib-$version"
-  # FIXME: Once bumping past glib-2.76.3, we may not need these patches
-  patch -p1 < $OPENSCADDIR/patches/glib-iconv-macos.patch
-  patch -p1 < $OPENSCADDIR/patches/glib-pcre-macos.patch
 
   # Build each arch separately
   for arch in ${ARCHS[*]}; do

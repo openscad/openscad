@@ -1,0 +1,57 @@
+diff --color -u qt-everywhere-src-5.15.13-old/qtbase/mkspecs/features/toolchain.prf qt-everywhere-src-5.15.13/qtbase/mkspecs/features/toolchain.prf
+--- qt-everywhere-src-5.15.13-old/qtbase/mkspecs/features/toolchain.prf	2024-01-04 14:21:43
++++ qt-everywhere-src-5.15.13/qtbase/mkspecs/features/toolchain.prf	2024-05-05 18:36:29
+@@ -153,10 +153,10 @@
+         arch = amd64
+     else: !equals(arch, arm):!equals(arch, arm64): \  # may be "win32" or undefined
+         arch = x86
+-    # Consider only WinRT and ARM64 desktop builds to be cross-builds -
++    # Consider only ARM64 desktop builds to be cross-builds -
+     # the host is assumed to be Intel and capable of running the target
+     # executables (so building for x64 on x86 will break).
+-    winrt|equals(arch, arm64): \
++    equals(arch, arm64): \
+         CONFIG += msvc_cross
+ }
+ 
+@@ -182,7 +182,7 @@
+         # UIKit simulator platforms will see the device SDK's sysroot in
+         # QMAKE_DEFAULT_*DIRS, because they're handled in a single build pass.
+         darwin {
+-            uikit {
++            uikit:!isEmpty(QMAKE_APPLE_DEVICE_ARCHS) {
+                 # Clang doesn't automatically pick up the architecture, just because
+                 # we're passing the iOS sysroot below, and we will end up building the
+                 # test for the host architecture, resulting in linker errors when
+@@ -288,9 +288,12 @@
+                 }
+             }
+         }
+-        isEmpty(QMAKE_DEFAULT_LIBDIRS)|isEmpty(QMAKE_DEFAULT_INCDIRS): \
++        isEmpty(QMAKE_DEFAULT_INCDIRS): \
+             !integrity: \
+-                error("failed to parse default search paths from compiler output")
++                error("failed to parse default include paths from compiler output")
++        isEmpty(QMAKE_DEFAULT_LIBDIRS): \
++            !integrity:!darwin: \
++                error("failed to parse default library paths from compiler output")
+         QMAKE_DEFAULT_LIBDIRS = $$unique(QMAKE_DEFAULT_LIBDIRS)
+     } else: ghs {
+         cmd = $$QMAKE_CXX $$QMAKE_CXXFLAGS -$${LITERAL_HASH} -o /tmp/fake_output /tmp/fake_input.cpp
+@@ -354,7 +357,6 @@
+                 error("Failed to find the Visual C installation directory.")
+             cmd += $$system_quote($$dir\\vcvarsall.bat) $$arch
+         }
+-        winrt: cmd += store
+ 
+         isEmpty(WINSDK_VER): \
+             error("Mkspec does not specify WINSDK_VER. Cannot continue.")
+@@ -412,7 +414,7 @@
+         QMAKE_DEFAULT_INCDIRS = $$split(INCLUDE, $$QMAKE_DIRLIST_SEP)
+     }
+ 
+-    unix:if(!cross_compile|host_build) {
++    unix:!darwin:if(!cross_compile|host_build) {
+         isEmpty(QMAKE_DEFAULT_INCDIRS): QMAKE_DEFAULT_INCDIRS = /usr/include /usr/local/include
+         isEmpty(QMAKE_DEFAULT_LIBDIRS): QMAKE_DEFAULT_LIBDIRS = /lib /usr/lib
+     }
