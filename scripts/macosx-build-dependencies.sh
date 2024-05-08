@@ -15,7 +15,9 @@
 #  -x         Build x86_64 binaries
 #  -v         Verbose
 #
-# Prerequisites: automake, libtool, cmake, pkg-config, wget, meson
+# Prerequisites: automake, libtool, cmake, pkg-config, wget, meson, python-packaging
+#
+# meson and python-packaging is required by glib.
 #
 
 set -e
