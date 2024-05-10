@@ -7,9 +7,9 @@ on:
   pull_request:
 
 jobs:
-  build:
+  qt5:
     runs-on: macos-13
-    name: macos-13
+    name: macos-13 Qt5
     # If it's not done in 60 minutes, something is wrong.
     # Default is 6 hours, which is a bit long to wait.
     timeout-minutes: 60
@@ -46,7 +46,50 @@ jobs:
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Test Result Report (MacOS)
+        name: Test Result Report (MacOS Qt5)
+        path: |
+          build/Testing/Temporary/*_report.html
+          build/Testing/Temporary/LastTest.log
+  qt6:
+    runs-on: macos-13
+    name: macos-13 Qt6
+    # If it's not done in 60 minutes, something is wrong.
+    # Default is 6 hours, which is a bit long to wait.
+    timeout-minutes: 60
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.11
+    - name: Install Homebrew packages
+      env:
+        HOMEBREW_NO_AUTO_UPDATE: 1
+      run: |
+        export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
+        ./scripts/macosx-build-homebrew.sh qt6
+    - name: Build OpenSCAD
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DUSE_QT6=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=ON -DEXPERIMENTAL=ON -DSNAPSHOT=ON
+        export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
+        make -j$NUMCPU
+    - name: Run Test Suite
+      # Disable pdf export test on macOS because Cairo >= 1.18 on Homebrew uses the
+      # Quartz backend which doesn't have the Liberation Sans font we use.
+      run: |
+        cd build
+        export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
+        ctest -j$NUMCPU -E pdfexporttest
+    - name: Upload Test Result Report
+      uses: actions/upload-artifact@v4
+      if: ${{ always() }}
+      with:
+        name: Test Result Report (MacOS Qt6)
         path: |
           build/Testing/Temporary/*_report.html
           build/Testing/Temporary/LastTest.log
