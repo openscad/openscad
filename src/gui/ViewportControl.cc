@@ -106,6 +106,11 @@ void ViewportControl::resizeEvent(QResizeEvent *event)
         gridLayout->addWidget(labelFOV, 3, 0, 1, 1);
         gridLayout->addWidget(doubleSpinBox_fov, 3, 1, 1, 1);
         scrollAreaWidgetContents->layout()->invalidate();
+      } else {
+        const auto width = scrollAreaWidgetContents->minimumSizeHint().width();
+        if (scrollArea->minimumSize().width() != width) {
+          scrollArea->setMinimumSize(QSize(width,0));
+        }
       }
     }
   }
