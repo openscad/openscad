@@ -32,7 +32,7 @@ jobs:
     - name: Install dependencies
       run: ./scripts/github-ci-linux-get-dependencies.sh ${{ matrix.distro }}
     - name: Dependency fixup
-      run: sudo apt-get install gettext gcovr
+      run: sudo apt-get install gcovr
     - name: Make Qt5 the default
       if: ${{ matrix.qt5default }}
       run: sudo apt-get install qt5-default
