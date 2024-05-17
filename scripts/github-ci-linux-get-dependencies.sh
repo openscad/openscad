@@ -4,7 +4,7 @@ DIST="$1"
 
 PACKAGES1="build-essential bison cmake curl flex git-core imagemagick ghostscript"
 PACKAGES2="libboost-all-dev libboost-dev libeigen3-dev libzip-dev libcrypto++-dev"
-PACKAGES3="libxi-dev libxmu-dev qtbase5-dev qtmultimedia5-dev libqt5opengl5-dev libqt5svg5-dev libqt5scintilla2-dev"
+PACKAGES3="libxi-dev libxmu-dev qt6-base-dev qt6-multimedia-dev libqt6core5compat6-dev libqt6svg6-dev libqscintilla2-qt6-dev"
 PACKAGES4="libcgal-dev libglew-dev libgmp3-dev libgmp-dev libmpfr-dev libegl-dev libegl1-mesa-dev"
 PACKAGES5="libdouble-conversion-dev libfontconfig-dev libharfbuzz-dev libopencsg-dev lib3mf-dev libtbb-dev"
 PACKAGES6="libthrust-dev libglm-dev"
@@ -13,16 +13,6 @@ if [[ "$DIST" == "xenial" ]]; then
 
     LIB3MF_REPO="http://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_16.04/"
     LIBCGAL_REPO="http://download.opensuse.org/repositories/home:/t-paul:/cgal/xUbuntu_16.04/"
-
-elif [[ "$DIST" == "bionic" ]]; then
-
-    LIB3MF_REPO="https://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_18.04/"
-    LIBCGAL_REPO="https://download.opensuse.org/repositories/home:/t-paul:/cgal/xUbuntu_18.04/"
-
-elif [[ "$DIST" == "focal" ]]; then
-
-    LIB3MF_REPO="https://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_20.04/"
-    LIBCGAL_REPO="https://download.opensuse.org/repositories/home:/t-paul:/cgal/xUbuntu_20.04/"
 
 elif [[ "$DIST" == "kinetic" ]]; then
 

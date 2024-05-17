@@ -33,7 +33,7 @@ pacboy --noconfirm --sync --needed \
     cgal:p \
     eigen3:p \
     glew:p \
-    qscintilla:p \
+    qscintilla-qt6:p \
     opencsg:p \
     lib3mf:p \
     libzip:p \
@@ -42,8 +42,9 @@ pacboy --noconfirm --sync --needed \
     cairo:p \
     ghostscript:p \
     imagemagick:p \
-    qt5-svg:p \
-    qt5-multimedia:p \
+    qt6-5compat:p \
+    qt6-svg:p \
+    qt6-multimedia:p \
     tbb:p \
     python:p \
     python-pip:p \
