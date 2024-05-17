@@ -33,4 +33,4 @@ jobs:
           -DHEADLESS=${{ matrix.headless }} \
           -DENABLE_TESTS=${{ matrix.enable_tests }}
     - name: Build OpenSCAD
-      run: cmake --build build
+      run: cmake --build build -j4
