@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-latest ]
+        os: [ ubuntu-24.04 ]
         headless: [ ON, OFF ]
         enable_tests: [ ON, OFF ]
 
@@ -29,6 +29,7 @@ jobs:
       run: >
         cmake -S . -B build -GNinja \
           -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -DUSE_QT6=ON \
           -DHEADLESS=${{ matrix.headless }} \
           -DENABLE_TESTS=${{ matrix.enable_tests }}
     - name: Build OpenSCAD

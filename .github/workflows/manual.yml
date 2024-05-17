@@ -74,7 +74,7 @@ on:
         default: GLX
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - name: Inputs
       run: echo "${{ toJSON(inputs) }}"
@@ -132,15 +132,15 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Install dependencies
-      run: ./scripts/github-ci-linux-get-dependencies.sh kinetic
+      run: ./scripts/github-ci-linux-get-dependencies.sh
     - name: Dependency fixup
       run: sudo apt-get install gettext
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        python-version: '3.12'
     - name: Build
       run: |
-        cmake ${CMAKE_EXTRA} -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DUSE_MIMALLOC=${{ inputs.use_mimalloc }} -DUSE_BUILTIN_OPENCSG=${{ inputs.use_builtin_opencsg }} -B b .
+        cmake ${CMAKE_EXTRA} -DCMAKE_BUILD_TYPE=${{ inputs.build_type }} -DUSE_QT6=ON -DEXPERIMENTAL=${{ inputs.enable_experimental }} -DUSE_MIMALLOC=${{ inputs.use_mimalloc }} -DUSE_BUILTIN_OPENCSG=${{ inputs.use_builtin_opencsg }} -B b .
         cmake --build b -j 2
         echo "Build exit code: $?"
     - name: Test

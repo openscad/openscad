@@ -122,11 +122,23 @@ get_qt5_deps_debian()
   fi
 }
 
+get_qt6_deps_debian()
+{
+  apt-get -y install qt6-base-dev qt6-multimedia-dev libqt6core5compat6-dev libqt6svg6-dev libqscintilla2-qt6-dev
+}
+
 get_debian_8_deps()
 {
   apt-get -y install libharfbuzz-dev libxml2-dev
   get_debian_deps
   get_qt5_deps_debian
+}
+
+get_debian_12_deps()
+{
+  apt-get -y install libharfbuzz-dev libxml2-dev
+  get_debian_deps
+  get_qt6_deps_debian
 }
 
 get_ubuntu_14_deps()
@@ -149,6 +161,12 @@ get_ubuntu_16_deps()
   # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=804539
   apt-get -y install libcgal-qt5-dev
   get_debian_8_deps
+}
+
+get_ubuntu_24_deps()
+{
+  apt-get -y install libxi-dev libxml2-dev libfontconfig1-dev
+  get_debian_12_deps
 }
 
 get_neon_deps()
@@ -178,8 +196,10 @@ if [ -e /etc/issue ]; then
   get_ubuntu_14_deps
  elif [ "`grep -i ubuntu.1[6-9] /etc/issue`" ]; then
   get_ubuntu_16_deps
- elif [ "`grep -i ubuntu.2[0-4] /etc/issue`" ]; then
+ elif [ "`grep -i ubuntu.2[0-3] /etc/issue`" ]; then
   get_ubuntu_16_deps
+ elif [ "`grep -i ubuntu.2[4-9] /etc/issue`" ]; then
+  get_ubuntu_24_deps
  elif [ "`grep -i ubuntu /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i KDE.neon /etc/issue`" ]; then
