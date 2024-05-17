@@ -12,10 +12,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-22.04 ]
+        os: [ ubuntu-24.04 ]
         include:
-          - os: ubuntu-22.04
-            distro: kinetic
+          - os: ubuntu-24.04
+            distro: noble
 
     runs-on: ${{ matrix.os }}
 
@@ -31,7 +31,7 @@ jobs:
       run: sudo apt-get install gettext gcovr
     - uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        python-version: '3.12'
     - name: Build and test
       run: ./scripts/github-ci.sh experimental enable_python build test coverage
     - name: Upload Test Result Report
