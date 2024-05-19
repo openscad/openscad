@@ -9,17 +9,7 @@ PACKAGES4="libcgal-dev libglew-dev libgmp3-dev libgmp-dev libmpfr-dev libegl-dev
 PACKAGES5="libdouble-conversion-dev libfontconfig-dev libharfbuzz-dev libopencsg-dev lib3mf-dev libtbb-dev"
 PACKAGES6="libthrust-dev libglm-dev"
 
-if [[ "$DIST" == "xenial" ]]; then
-
-    LIB3MF_REPO="http://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_16.04/"
-    LIBCGAL_REPO="http://download.opensuse.org/repositories/home:/t-paul:/cgal/xUbuntu_16.04/"
-
-elif [[ "$DIST" == "bionic" ]]; then
-
-    LIB3MF_REPO="https://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_18.04/"
-    LIBCGAL_REPO="https://download.opensuse.org/repositories/home:/t-paul:/cgal/xUbuntu_18.04/"
-
-elif [[ "$DIST" == "focal" ]]; then
+if [[ "$DIST" == "focal" ]]; then
 
     LIB3MF_REPO="https://download.opensuse.org/repositories/home:/t-paul:/lib3mf/xUbuntu_20.04/"
     LIBCGAL_REPO="https://download.opensuse.org/repositories/home:/t-paul:/cgal/xUbuntu_20.04/"
