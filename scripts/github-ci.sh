@@ -5,6 +5,7 @@ set -e
 PARALLEL=2
 PARALLEL_MAKE=-j"$PARALLEL"
 PARALLEL_CTEST=-j"$PARALLEL"
+PARALLEL_GCOVR=-j"$PARALLEL"
 
 BUILDDIR=b
 GCOVRDIR=c
@@ -61,21 +62,12 @@ do_test() {
 do_coverage() {
 	echo "do_coverage()"
 
-	case $(gcovr --version | head -n1 | awk '{ print $2 }') in
-	    [4-9].*)
-		PARALLEL_GCOVR=-j"$PARALLEL"
-		;;
-	    *)
-		PARALLEL_GCOVR=
-		;;
-	esac
-
 	rm -rf "$GCOVRDIR"
 	mkdir "$GCOVRDIR"
 	(
 		cd "$BUILDDIR"
 		echo "Generating code coverage report..."
-		gcovr -r .. $PARALLEL_GCOVR --html --html-details -p -o coverage.html
+		gcovr -r .. $PARALLEL_GCOVR --html --html-details --sort uncovered-percent -o coverage.html
 		if [[ $? != 0 ]]; then
 			exit 1
 		fi
