@@ -2,6 +2,8 @@
 
 DIST="$1"
 
+[[ -z "$DIST" ]] && DIST="jammy"  # ubuntu-latest
+
 PACKAGES1="build-essential bison cmake curl flex gettext git-core imagemagick ghostscript"
 PACKAGES2="libboost-all-dev libboost-dev libeigen3-dev libzip-dev libcrypto++-dev"
 PACKAGES3="libxi-dev libxmu-dev qtbase5-dev qtmultimedia5-dev libqt5opengl5-dev libqt5svg5-dev libqt5scintilla2-dev"
