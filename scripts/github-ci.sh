@@ -49,9 +49,6 @@ do_test() {
 		if [[ $? != 0 ]]; then
 			exit 1
 		fi
-		if [ -d tests/.gcov ]; then
-			tar -C tests/.gcov -c -f - . | tar -x -f -
-		fi
 	)
 	if [[ $? != 0 ]]; then
 		echo "Test failure"
@@ -67,7 +64,7 @@ do_coverage() {
 	(
 		cd "$BUILDDIR"
 		echo "Generating code coverage report..."
-		gcovr -r .. $PARALLEL_GCOVR --html --html-details --sort uncovered-percent -o coverage.html
+		gcovr -r ../src CMakeFiles/OpenSCAD.dir $PARALLEL_GCOVR --html --html-details --sort uncovered-percent -o coverage.html
 		if [[ $? != 0 ]]; then
 			exit 1
 		fi
