@@ -18,7 +18,7 @@ jobs:
             distro: focal
             qt5default: true
           - os: ubuntu-22.04
-            distro: kinetic
+            distro: jammy
             qt5default: false
 
     runs-on: ${{ matrix.os }}
