@@ -1,0 +1,32 @@
+name: Linux Release Tests
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Test examples
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: 'recursive'
+    - name: Install dependencies
+      run: ./scripts/github-ci-linux-get-dependencies.sh kinetic
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    - name: Build and test
+      run: ./scripts/github-ci.sh enable_python build test_examples test
+    - name: Upload Test Result Report
+      uses: actions/upload-artifact@v4
+      if: ${{ always() }}
+      with:
+        name: Test Result Report (Test examples)
+        path: |
+          b/Testing/Temporary/*_report.html
+          b/Testing/Temporary/LastTest.log
