@@ -1,4 +1,4 @@
-name: Linux Release Tests
+name: Linux Examples Tests
 
 on:
   push:
