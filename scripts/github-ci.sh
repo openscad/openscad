@@ -19,6 +19,11 @@ do_enable_python() {
 	PYTHON_DEFINE="-DENABLE_PYTHON=ON"
 }
 
+do_qt6() {
+	echo "do_qt6()"
+	USE_QT6="-DUSE_QT6=ON"
+}
+
 do_build() {
 	echo "do_build()"
 
@@ -26,7 +31,7 @@ do_build() {
 	mkdir "$BUILDDIR"
 	(
 		cd "$BUILDDIR"
-		cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=ON -DPROFILE=ON -DUSE_BUILTIN_OPENCSG=1 ${EXPERIMENTAL} ${PYTHON_DEFINE} .. && make $PARALLEL_MAKE
+		cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=ON -DPROFILE=ON -DUSE_BUILTIN_OPENCSG=1 ${EXPERIMENTAL} ${PYTHON_DEFINE} ${USE_QT6} .. && make $PARALLEL_MAKE
 	)
 	if [[ $? != 0 ]]; then
 		echo "Build failure"
