@@ -1330,7 +1330,6 @@ set_tests_properties(
   cgalpngtest_GEB
   cgalpngtest_logo_and_text
   opencsgtest_surface_image
-  opencsgtest_example009
   opencsgtest_example017
   opencsgtest_GEB
   throwntogethertest_surface_image
