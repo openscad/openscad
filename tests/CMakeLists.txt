@@ -358,7 +358,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
         AND NOT TESTCMD_BASENAME MATCHES "^(stlexport|objexport)$"
         AND NOT TESTCMD_BASENAME MATCHES "^openscad-viewoptions-.*"
         AND NOT TESTCMD_BASENAME MATCHES "^remesh-.*")
-      set(MANIFOLD_OPTION "--enable=manifold")
+      #set(MANIFOLD_OPTION "--enable=manifold")
     else()
       set(MANIFOLD_OPTION "")
     endif()
@@ -1327,18 +1327,21 @@ set_tests_properties(
 
   # Temporarily disabled (https://github.com/openscad/openscad/pull/5143)
   cgalpngtest_projection
-  cgalpngtest_GEB
-  cgalpngtest_logo_and_text
   opencsgtest_surface_image
   opencsgtest_example017
-  opencsgtest_GEB
   throwntogethertest_surface_image
   throwntogethertest_example017
-  throwntogethertest_GEB
-  csgpngtest_logo_and_text
   csgpngtest_projection
   csgpngtest_module_recursion
+
+  # https://github.com/openscad/openscad/issues/5137
+  cgalpngtest_GEB
+  opencsgtest_GEB
+  throwntogethertest_GEB
   csgpngtest_GEB
+
+  # $vpr not saved in .csg
+  csgpngtest_logo_and_text
   PROPERTIES DISABLED TRUE
 )
 
