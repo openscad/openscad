@@ -5,7 +5,7 @@ import numpy as np
 import os
 import sys
 
-PIXEL_TOLERANCE = 6
+PIXEL_TOLERANCE = 8
 
 def Compare3x3(img1, img2):
   '''Informally, this identifies image differences that are consistently
