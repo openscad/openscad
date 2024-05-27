@@ -1334,12 +1334,6 @@ set_tests_properties(
   csgpngtest_projection
   csgpngtest_module_recursion
 
-  # https://github.com/openscad/openscad/issues/5137
-  cgalpngtest_GEB
-  opencsgtest_GEB
-  throwntogethertest_GEB
-  csgpngtest_GEB
-
   # $vpr not saved in .csg
   csgpngtest_logo_and_text
   PROPERTIES DISABLED TRUE
