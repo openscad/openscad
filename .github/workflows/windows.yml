@@ -8,8 +8,11 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        qt: [ qt5, qt6 ]
     runs-on: windows-latest
-    name: windows-latest
+    name: windows-latest ${{ matrix.qt }}
     defaults:
       run:
         shell: msys2 {0}
@@ -24,7 +27,7 @@ jobs:
       - name: Install MSYS2 Dependencies
         run: |
           pwd
-          ./scripts/msys2-install-dependencies.sh
+          ./scripts/msys2-install-dependencies.sh ${{ matrix.qt }}
       - name: Install Mesa
         uses: ssciwr/setup-mesa-dist-win@v2
         with:
@@ -34,7 +37,7 @@ jobs:
         run: |
           git submodule update --init --recursive
           mkdir build && cd build
-          cmake .. -G"Ninja" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON
+          cmake .. -G"Ninja" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DUSE_QT6=${{ matrix.qt == 'qt6' && 'ON' || 'OFF' }}
           cmake --build . -j2
           cmake --install . --prefix=.
       - name: Run Test Suite
@@ -45,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
         with:
-          name: Test Result Report (Windows)
+          name: Test Result Report (Windows ${{ matrix.qt }})
           path: |
             build/Testing/Temporary/*_report.html
             build/Testing/Temporary/LastTest.log
