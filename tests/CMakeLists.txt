@@ -1336,8 +1336,6 @@ set_tests_properties(
   cgalpngtest_example017 
   opencsgtest_example017
 
-  csgpngtest_module_recursion
-
   # $vpr not saved in .csg
   csgpngtest_logo_and_text
   PROPERTIES DISABLED TRUE
