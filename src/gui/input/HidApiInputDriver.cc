@@ -72,6 +72,7 @@ static const struct device_id device_ids[] = {
   { 0x256f, 0xc631, &HidApiInputDriver::hidapi_decode_axis, &HidApiInputDriver::hidapi_decode_button, "3Dconnexion Space Mouse Pro Wireless (cabled)"},
   { 0x256f, 0xc632, &HidApiInputDriver::hidapi_decode_axis, &HidApiInputDriver::hidapi_decode_button, "3Dconnexion Space Mouse Pro Wireless"},
   { 0x256f, 0xc635, &HidApiInputDriver::hidapi_decode_axis, &HidApiInputDriver::hidapi_decode_button, "3Dconnexion Space Mouse Compact"},
+  { 0x256f, 0xc63a, &HidApiInputDriver::hidapi_decode_axis, &HidApiInputDriver::hidapi_decode_button, "3Dconnexion Space Mouse Wireless BT"},
   // This is reported to be used with a 3Dconnexion Space Mouse Wireless 256f:c62e
   { 0x256f, 0xc652, &HidApiInputDriver::hidapi_decode_axis, &HidApiInputDriver::hidapi_decode_button, "3Dconnexion Universal Receiver"},
   { -1, -1, nullptr, nullptr, nullptr},
