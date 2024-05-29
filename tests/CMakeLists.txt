@@ -1329,9 +1329,6 @@ set_tests_properties(
   cgalpngtest_projection
   csgpngtest_projection
 
-  opencsgtest_surface_image
-  throwntogethertest_surface_image
-
   throwntogethertest_example017
   cgalpngtest_example017 
   opencsgtest_example017
