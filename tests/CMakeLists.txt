@@ -1325,10 +1325,11 @@ set_tests_properties(
   cgalpngtest_minkowski3-difference-test
   csgpngtest_minkowski3-difference-test
 
-  # Temporarily disabled (https://github.com/openscad/openscad/pull/5143)
+  # Disabled due to https://github.com/openscad/openscad/issues/5159
   cgalpngtest_projection
   csgpngtest_projection
 
+  # Disabled due to https://github.com/openscad/openscad/issues/5158
   throwntogethertest_example017
   cgalpngtest_example017 
   opencsgtest_example017
