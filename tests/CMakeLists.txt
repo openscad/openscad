@@ -1334,8 +1334,9 @@ set_tests_properties(
   cgalpngtest_example017 
   opencsgtest_example017
 
-  # $vpr not saved in .csg
+  # Disabled due to https://github.com/openscad/openscad/issues/4398
   csgpngtest_logo_and_text
+
   PROPERTIES DISABLED TRUE
 )
 
