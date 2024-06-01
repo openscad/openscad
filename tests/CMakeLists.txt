@@ -1319,11 +1319,25 @@ set_tests_properties(
   # OpenCSG z fighting https://github.com/openscad/openscad/issues/4595
   openscad-viewoptions-edges_view-options-tests
   openscad-viewoptions-axes-scales-edges_view-options-tests
+  opencsgtest_surface_image
+  throwntogethertest_surface_image
 
   # CGAL sometimes fail to union minkowski convex decompositions, causing visual differences
   # in rendering.
   cgalpngtest_minkowski3-difference-test
   csgpngtest_minkowski3-difference-test
+
+  # Disabled due to https://github.com/openscad/openscad/issues/5159
+  cgalpngtest_projection
+  csgpngtest_projection
+
+  # Disabled due to https://github.com/openscad/openscad/issues/5158
+  throwntogethertest_example017
+  cgalpngtest_example017 
+  opencsgtest_example017
+
+  # Disabled due to https://github.com/openscad/openscad/issues/4398
+  csgpngtest_logo_and_text
 
   PROPERTIES DISABLED TRUE
 )

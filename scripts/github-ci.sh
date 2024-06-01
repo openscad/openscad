@@ -40,12 +40,17 @@ do_build() {
 	fi
 }
 
+do_test_examples() {
+	echo "do_test_examples()"
+	CTEST_ARGS="-C Examples"
+}
+
 do_test() {
 	echo "do_test()"
 
 	(
 		cd "$BUILDDIR"
-		ctest $PARALLEL_CTEST
+		ctest $PARALLEL_CTEST $CTEST_ARGS
 		if [[ $? != 0 ]]; then
 			exit 1
 		fi
