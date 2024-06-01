@@ -5,7 +5,6 @@ on:
     branches:
       - master
   workflow_dispatch:
-  pull_request:
 
 jobs:
   build_and_test:
