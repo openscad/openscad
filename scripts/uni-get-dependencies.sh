@@ -99,6 +99,7 @@ get_mageia_deps()
 
 get_debian_deps()
 {
+ apt-get update
  apt-get -y install \
   build-essential curl ninja-build libffi-dev \
   libxmu-dev cmake bison flex git-core libboost-all-dev \
@@ -124,8 +125,8 @@ get_qt5_deps_debian()
 
 get_debian_8_deps()
 {
-  apt-get -y install libharfbuzz-dev libxml2-dev
   get_debian_deps
+  apt-get -y install libharfbuzz-dev libxml2-dev
   get_qt5_deps_debian
 }
 
@@ -140,10 +141,10 @@ get_arch_deps()
 
 get_ubuntu_16_deps()
 {
+  get_debian_8_deps
   apt-get -y install libxi-dev libxml2-dev libfontconfig1-dev
   # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=804539
   apt-get -y install libcgal-qt5-dev
-  get_debian_8_deps
 }
 
 get_neon_deps()
