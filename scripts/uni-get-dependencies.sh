@@ -129,11 +129,6 @@ get_debian_8_deps()
   get_qt5_deps_debian
 }
 
-get_ubuntu_14_deps()
-{
-  get_debian_8_deps
-}
-
 get_arch_deps()
 {
   pacman -S --noconfirm \
@@ -174,28 +169,18 @@ unknown()
 }
 
 if [ -e /etc/issue ]; then
- if [ "`grep -i ubuntu.1[4-5] /etc/issue`" ]; then
-  get_ubuntu_14_deps
- elif [ "`grep -i ubuntu.1[6-9] /etc/issue`" ]; then
-  get_ubuntu_16_deps
- elif [ "`grep -i ubuntu.2[0-4] /etc/issue`" ]; then
+ if [ "`grep -i ubuntu.2[0-4] /etc/issue`" ]; then
   get_ubuntu_16_deps
  elif [ "`grep -i ubuntu /etc/issue`" ]; then
   get_debian_deps
  elif [ "`grep -i KDE.neon /etc/issue`" ]; then
   get_neon_deps
- elif [ "`grep -i elementary.*freya /etc/issue`" ]; then
-  get_ubuntu_14_deps
  elif [ "`grep ID=.solus /etc/os-release`" ]; then
   get_solus_deps
  elif [ "`grep -i debian /etc/issue`" ]; then
   get_debian_8_deps
  elif [ "`grep -i raspbian /etc/issue`" ]; then
   get_debian_deps
- elif [ "`grep -i linux.mint.2 /etc/issue`" ]; then
-  get_ubuntu_14_deps
- elif [ "`grep -i linux.mint.17 /etc/issue`" ]; then
-  get_ubuntu_14_deps
  elif [ "`grep -i linux.mint.1[89] /etc/issue`" ]; then
   get_ubuntu_16_deps
  elif [ "`grep -i suse /etc/issue`" ]; then
