@@ -38,12 +38,12 @@ jobs:
           git submodule update --init --recursive
           mkdir build && cd build
           cmake .. -G"Ninja" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DEXPERIMENTAL=ON -DSNAPSHOT=ON -DUSE_QT6=${{ matrix.qt == 'qt6' && 'ON' || 'OFF' }}
-          cmake --build . -j2
+          cmake --build . -j4
           cmake --install . --prefix=.
       - name: Run Test Suite
         run: |
           cd build
-          ctest -j2
+          ctest -j4
       - name: Upload Test Result Report
         uses: actions/upload-artifact@v4
         if: ${{ always() }}
