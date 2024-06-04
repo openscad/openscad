@@ -1,9 +1,8 @@
 #!/bin/bash
 
-DIST="$1"
-QT="$2"
+QT="$1"
 
-[[ -z "$DIST" ]] && DIST="jammy"  # ubuntu-latest
+DIST=$(. /etc/os-release; echo $VERSION_CODENAME)
 
 PACKAGES1="build-essential bison cmake curl flex gettext git-core imagemagick ghostscript"
 PACKAGES2="libboost-all-dev libboost-dev libeigen3-dev libzip-dev libcrypto++-dev"

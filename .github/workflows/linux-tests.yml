@@ -23,13 +23,10 @@ jobs:
             qt: qt6
         include:
           - os: ubuntu-20.04
-            distro: focal
             qt5default: true
           - os: ubuntu-22.04
-            distro: jammy
             qt5default: false
           - os: ubuntu-24.04
-            distro: noble
             qt5default: false
 
     runs-on: ${{ matrix.os }}
@@ -41,7 +38,7 @@ jobs:
       with:
         submodules: 'recursive'
     - name: Install dependencies
-      run: ./scripts/github-ci-linux-get-dependencies.sh ${{ matrix.distro }} ${{ matrix.qt }}
+      run: ./scripts/github-ci-linux-get-dependencies.sh ${{ matrix.qt }}
     - name: Make Qt5 the default
       if: ${{ matrix.qt5default }}
       run: sudo apt-get install qt5-default
