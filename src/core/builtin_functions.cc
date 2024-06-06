@@ -57,6 +57,14 @@ int process_id = getpid();
 #endif
 
 std::mt19937 deterministic_rng(std::time(nullptr) + process_id);
+void initialize_rng() {
+  static uint64_t seed_val = 0;
+  seed_val ^= uint64_t(std::time(nullptr) + process_id);
+  deterministic_rng.seed(seed_val);
+  std::uniform_int_distribution<uint64_t> distributor(0);
+  seed_val ^= distributor(deterministic_rng);
+}
+
 #include <array>
 
 static inline bool check_arguments(const char *function_name, const Arguments& arguments, const Location& loc, unsigned int expected_count, bool warn = true)
