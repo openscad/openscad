@@ -1,5 +1,12 @@
 #include "Polygon2d.h"
+
+#include <memory>
 #include "printutils.h"
+#ifdef ENABLE_MANIFOLD
+#include "manifoldutils.h"
+#endif
+#include "cgalutils.h"
+#include "Feature.h"
 #include "PolySet.h"
 
 
@@ -131,20 +138,44 @@ bool Polygon2d::is_convex() const
 
 double Polygon2d::area() const
 {
-  const auto p = tessellate();
-  if (p == nullptr) {
+  auto ps = tessellate();
+  if (ps == nullptr) {
     return 0;
   }
 
   double area = 0.0;
-  for (const auto& poly : p->indices) {
-    const auto& v1 = p->vertices[poly[0]];
-    const auto& v2 = p->vertices[poly[1]];
-    const auto& v3 = p->vertices[poly[2]];
+  for (const auto& poly : ps->indices) {
+    const auto& v1 = ps->vertices[poly[0]];
+    const auto& v2 = ps->vertices[poly[1]];
+    const auto& v3 = ps->vertices[poly[2]];
     area += 0.5 * (
       v1.x() * (v2.y() - v3.y())
       + v2.x() * (v3.y() - v1.y())
       + v3.x() * (v1.y() - v2.y()));
   }
   return area;
+}
+
+/*!
+   Triangulates this polygon2d and returns a 2D-in-3D PolySet.
+
+   This is used for various purposes:
+   * Geometry evaluation for roof, linear_extrude, rotate_extrude
+   * Rendering (both preview and render mode)
+   * Polygon area calculation
+   *
+   * One use-case is special: For geometry construction in Manifold mode, we require this function to 
+   * guarantee that vertices and their order are untouched (apart from adding a zero 3rd dimension)
+   * 
+ */
+std::unique_ptr<PolySet> Polygon2d::tessellate() const
+{
+  PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
+#ifdef ENABLE_MANIFOLD
+  if (Feature::ExperimentalManifold.is_enabled()) {
+    return ManifoldUtils::createTriangulatedPolySetFromPolygon2d(*this);
+  }
+  else
+#endif
+  return CGALUtils::createTriangulatedPolySetFromPolygon2d(*this);
 }

@@ -371,7 +371,7 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, 
       for (const IndexedFace& triangle : tess->indices) {
         std::vector<int> roof;
         for (int tvind : triangle) {
-	  Vector3d tv=tess->vertices[tvind];
+          Vector3d tv=tess->vertices[tvind];
           Vector2d v;
           v << tv[0], tv[1];
           if (!(inner_faces.heights.find(v) != inner_faces.heights.end())) {
@@ -379,7 +379,7 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, 
           }
           roof.push_back(hatbuilder.vertexIndex(Vector3d(v[0] / scale, v[1] / scale, inner_faces.heights[v] / scale)));
         }
-        hatbuilder.appendPoly(roof);
+        hatbuilder.appendPolygon(roof);
       }
     }
 
@@ -403,7 +403,7 @@ std::unique_ptr<PolySet> voronoi_diagram_roof(const Polygon2d& poly, double fa, 
         }
         // floor has reverse orientation
         std::reverse(floor.begin(), floor.end());
-        hatbuilder.appendPoly(floor);
+        hatbuilder.appendPolygon(floor);
       }
     }
   } catch (RoofNode::roof_exception& e) {

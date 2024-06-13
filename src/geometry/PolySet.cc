@@ -46,11 +46,8 @@
 
  */
 
-PolySet::PolySet(unsigned int dim, boost::tribool convex) : dim(dim), convex(convex), dirty(true)
-{
-}
-
-PolySet::PolySet(Polygon2d origin) : polygon(std::move(origin)), dim(2), convex(unknown), dirty(true)
+PolySet::PolySet(unsigned int dim, boost::tribool convex)
+ : dim_(dim), convex_(convex)
 {
 }
 
@@ -62,10 +59,9 @@ std::string PolySet::dump() const
 {
   std::ostringstream out;
   out << "PolySet:"
-      << "\n dimensions:" << this->dim
+      << "\n dimensions:" << dim_
       << "\n convexity:" << this->convexity
       << "\n num polygons: " << indices.size()
-      << "\n num outlines: " << polygon.outlines().size()
       << "\n polygons data:";
   for (const auto& polygon : indices) {
     out << "\n  polygon begin:";
@@ -73,23 +69,18 @@ std::string PolySet::dump() const
       out << "\n   vertex:" << this->vertices[v].transpose();
     }
   }
-  out << "\n outlines data:";
-  out << polygon.dump();
   out << "\nPolySet end";
   return out.str();
 }
+
 BoundingBox PolySet::getBoundingBox() const
 {
-  if (this->dirty) {
-    this->bbox.setNull();
-    for (const auto& poly : indices) {
-      for (const auto& idx : poly) {
-        this->bbox.extend(this->vertices[idx]);
-      }
+  if (bbox_.isNull()) {
+    for (const auto& v : vertices) {
+      bbox_.extend(v);
     }
-    this->dirty = false;
   }
-  return this->bbox;
+  return bbox_;
 }
 
 size_t PolySet::memsize() const
@@ -97,7 +88,6 @@ size_t PolySet::memsize() const
   size_t mem = 0;
   for (const auto& p : this->indices) mem += p.size() * sizeof(int);
   for (const auto& p : this->vertices) mem += p.size() * sizeof(Vector3d);
-  mem += this->polygon.memsize() - sizeof(this->polygon);
   mem += sizeof(PolySet);
   return mem;
 }
@@ -113,13 +103,15 @@ void PolySet::transform(const Transform3d& mat)
     for (auto& p : this->indices) {
       std::reverse(p.begin(), p.end());
   }
-  this->dirty = true;
+  bbox_.setNull();
 }
 
-bool PolySet::is_convex() const {
-  if (convex || this->isEmpty()) return true;
-  if (!convex) return false;
-  return PolySetUtils::is_approximately_convex(*this);
+bool PolySet::isConvex() const {
+  if (convex_ || this->isEmpty()) return true;
+  if (!convex_) return false;
+  bool is_convex = PolySetUtils::is_approximately_convex(*this);
+  convex_ = is_convex;
+  return is_convex;
 }
 
 void PolySet::resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize)
@@ -136,7 +128,7 @@ void PolySet::quantizeVertices(std::vector<Vector3d> *pPointsOut)
 {
   Grid3d<unsigned int> grid(GRID_FINE);
   std::vector<unsigned int> indices; // Vertex indices in one polygon
-  for (int i=0; i < this->indices.size();) {
+  for (size_t i=0; i < this->indices.size();) {
     IndexedFace& ind_f = this->indices[i];
     indices.resize(ind_f.size());
     // Quantize all vertices. Build index list

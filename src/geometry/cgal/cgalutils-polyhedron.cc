@@ -285,18 +285,18 @@ std::unique_ptr<PolySet> createPolySetFromPolyhedron(const Polyhedron& p)
   using FCI = typename Polyhedron::Facet_const_iterator;
   using HFCC = typename Polyhedron::Halfedge_around_facet_const_circulator;
 
-  PolySetBuilder builder(0,p.size_of_facets());
+  PolySetBuilder builder(0, p.size_of_facets());
 
   for (FCI fi = p.facets_begin(); fi != p.facets_end(); ++fi) {
     HFCC hc = fi->facet_begin();
     HFCC hc_end = hc;
-    builder.appendPoly(fi->facet_degree());
+    builder.beginPolygon(fi->facet_degree());
     do {
       Vertex const& v = *((hc++)->vertex());
       double x = CGAL::to_double(v.point().x());
       double y = CGAL::to_double(v.point().y());
       double z = CGAL::to_double(v.point().z());
-      builder.appendVertex(builder.vertexIndex(Vector3d(x, y, z)));
+      builder.addVertex(Vector3d(x, y, z));
     } while (hc != hc_end);
   }
   return builder.build();

@@ -165,6 +165,7 @@ void TabManager::createTab(const QString& filename)
   assert(par != nullptr);
 
   editor = new ScintillaEditor(tabWidget);
+  Preferences::create(editor->colorSchemes()); // needs to be done only once, however handled
   par->activeEditor = editor;
   editor->parameterWidget = new ParameterWidget(par->parameterDock);
   connect(editor->parameterWidget, SIGNAL(parametersChanged()), par, SLOT(actionRenderPreview()));
@@ -176,8 +177,6 @@ void TabManager::createTab(const QString& filename)
   qcmd->setKey(0);
   qcmd = qcmdset->boundTo(Qt::ControlModifier | Qt::Key_Minus);
   qcmd->setKey(0);
-
-  Preferences::create(editor->colorSchemes()); // needs to be done only once, however handled
 
   connect(editor, SIGNAL(uriDropped(const QUrl&)), par, SLOT(handleFileDrop(const QUrl&)));
   connect(editor, SIGNAL(previewRequest()), par, SLOT(actionRenderPreview()));
@@ -574,7 +573,7 @@ bool TabManager::maybeSave(int x)
     box.setDefaultButton(QMessageBox::Save);
     box.setIcon(QMessageBox::Warning);
     box.setWindowModality(Qt::ApplicationModal);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     // Cmd-D is the standard shortcut for this button on Mac
     box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
     box.button(QMessageBox::Discard)->setShortcutEnabled(true);
@@ -606,7 +605,7 @@ bool TabManager::shouldClose()
     box.setDefaultButton(QMessageBox::SaveAll);
     box.setIcon(QMessageBox::Warning);
     box.setWindowModality(Qt::ApplicationModal);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
     // Cmd-D is the standard shortcut for this button on Mac
     box.button(QMessageBox::Discard)->setShortcut(QKeySequence("Ctrl+D"));
     box.button(QMessageBox::Discard)->setShortcutEnabled(true);

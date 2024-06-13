@@ -52,6 +52,10 @@
 #include <vector>
 #include <fstream>
 
+#ifdef ENABLE_MANIFOLD
+#include "manifoldutils.h"
+#endif
+
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"
@@ -334,7 +338,7 @@ struct CommandLine
   const std::string summaryFile;
 };
 
-int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file);
+int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat export_format, SourceFile *root_file);
 
 int cmdline(const CommandLine& cmd)
 {
@@ -475,7 +479,7 @@ int cmdline(const CommandLine& cmd)
   }
 }
 
-int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat curFormat, SourceFile *root_file)
+int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat export_format, SourceFile *root_file)
 {
   auto filename_str = fs::path(cmd.output_file).generic_string();
   auto fpath = fs::absolute(fs::path(cmd.filename));
@@ -525,7 +529,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
   }
   Tree tree(root_node, fparent.string());
 
-  if (curFormat == FileFormat::CSG) {
+  if (export_format == FileFormat::CSG) {
     // https://github.com/openscad/openscad/issues/128
     // When I use the csg ouptput from the command line the paths in 'import'
     // statements become relative. But unfortunately they become relative to
@@ -536,17 +540,17 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
       stream << tree.getString(*root_node, "\t") << "\n";
     });
     fs::current_path(cmd.original_path);
-  } else if (curFormat == FileFormat::AST) {
+  } else if (export_format == FileFormat::AST) {
     fs::current_path(fparent); // Force exported filenames to be relative to document path
     with_output(cmd.is_stdout, filename_str, [root_file](std::ostream& stream) {
       stream << root_file->dump("");
     });
     fs::current_path(cmd.original_path);
-  } else if (curFormat == FileFormat::PARAM) {
+  } else if (export_format == FileFormat::PARAM) {
     with_output(cmd.is_stdout, filename_str, [&root_file, &fpath](std::ostream& stream) {
       export_param(root_file, fpath, stream);
     });
-  } else if (curFormat == FileFormat::TERM) {
+  } else if (export_format == FileFormat::TERM) {
     CSGTreeEvaluator csgRenderer(tree);
     auto root_raw_term = csgRenderer.buildCSGTree(*root_node);
     with_output(cmd.is_stdout, filename_str, [root_raw_term](std::ostream& stream) {
@@ -556,7 +560,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
         stream << root_raw_term->dump() << "\n";
       }
     });
-  } else if (curFormat == FileFormat::ECHO) {
+  } else if (export_format == FileFormat::ECHO) {
     // echo -> don't need to evaluate any geometry
   } else {
     // start measuring render time
@@ -564,55 +568,48 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     GeometryEvaluator geomevaluator(tree);
     unique_ptr<OffscreenView> glview;
     std::shared_ptr<const Geometry> root_geom;
-    if ((curFormat == FileFormat::ECHO || curFormat == FileFormat::PNG) && (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)) {
+    if ((export_format == FileFormat::ECHO || export_format == FileFormat::PNG) && (cmd.viewOptions.renderer == RenderType::OPENCSG || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)) {
       // OpenCSG or throwntogether png -> just render a preview
       glview = prepare_preview(tree, cmd.viewOptions, camera);
       if (!glview) return 1;
-    }
-#ifdef ENABLE_CGAL
-    else {
+    } else {
       // Force creation of concrete geometry (mostly for testing)
       // FIXME: Consider adding MANIFOLD as a valid --render argument and ViewOption, to be able to distinguish from CGAL
 
       constexpr bool allownef = true;
       root_geom = geomevaluator.evaluateGeometry(*tree.root(), allownef);
-      if (root_geom) {
-        if (cmd.viewOptions.renderer == RenderType::CGAL && root_geom->getDimension() == 3) {
-          if (auto geomlist = std::dynamic_pointer_cast<const GeometryList>(root_geom)) {
-            auto flatlist = geomlist->flatten();
-            for (auto& child : flatlist) {
-              if (child.second->getDimension() == 3) {
-                child.second = CGALUtils::getNefPolyhedronFromGeometry(child.second);
-              }
+      if (!root_geom) root_geom = std::make_shared<PolySet>(3);
+      if (cmd.viewOptions.renderer == RenderType::BACKEND_SPECIFIC && root_geom->getDimension() == 3) {
+        if (auto geomlist = std::dynamic_pointer_cast<const GeometryList>(root_geom)) {
+          auto flatlist = geomlist->flatten();
+          for (auto& child : flatlist) {
+            if (child.second->getDimension() == 3) {
+              child.second = GeometryUtils::getBackendSpecificGeometry(child.second);
             }
-            root_geom = std::make_shared<GeometryList>(flatlist);
-          } else {
-            root_geom = CGALUtils::getNefPolyhedronFromGeometry(root_geom);
           }
-          LOG("Converted to Nef polyhedron");
+          root_geom = std::make_shared<GeometryList>(flatlist);
+        } else {
+          root_geom = GeometryUtils::getBackendSpecificGeometry(root_geom);
         }
-      } else {
-	// FIXME: The default geometry doesn't need to be a Nef polyhedron. Why not make it a PolySet?
-        root_geom = std::make_shared<CGAL_Nef_polyhedron>();
+        LOG("Converted to backend-specific geometry");
       }
     }
-#endif
-    if (is3D(curFormat)) {
-      if (!checkAndExport(root_geom, 3, curFormat, cmd.is_stdout, filename_str)) {
+    if (is3D(export_format)) {
+      if (!checkAndExport(root_geom, 3, export_format, cmd.is_stdout, filename_str)) {
         return 1;
       }
     }
 
-    if (is2D(curFormat)) {
-      if (!checkAndExport(root_geom, 2, curFormat, cmd.is_stdout, filename_str)) {
+    if (is2D(export_format)) {
+      if (!checkAndExport(root_geom, 2, export_format, cmd.is_stdout, filename_str)) {
         return 1;
       }
     }
 
-    if (curFormat == FileFormat::PNG) {
+    if (export_format == FileFormat::PNG) {
       bool success = true;
       bool wrote = with_output(cmd.is_stdout, filename_str, [&success, &root_geom, &cmd, &camera, &glview](std::ostream& stream) {
-        if (cmd.viewOptions.renderer == RenderType::CGAL || cmd.viewOptions.renderer == RenderType::GEOMETRY) {
+        if (cmd.viewOptions.renderer == RenderType::BACKEND_SPECIFIC || cmd.viewOptions.renderer == RenderType::GEOMETRY) {
           success = export_png(root_geom, cmd.viewOptions, camera, stream);
         } else {
           success = export_png(*glview, stream);
@@ -748,7 +745,7 @@ int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, cha
   QGuiApplication::setApplicationDisplayName("OpenSCAD");
   QGuiApplication::setDesktopFileName(DESKTOP_FILENAME);
   QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
   app.setWindowIcon(QIcon(":/icon-macos.png"));
 #else
   app.setWindowIcon(QIcon(":/logo.png"));
@@ -767,7 +764,7 @@ int gui(vector<string>& inputFiles, const fs::path& original_path, int argc, cha
     localization_init();
   }
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
   installAppleEventHandlers();
 #endif
 
@@ -871,7 +868,7 @@ int gui(const vector<string>& inputFiles, const fs::path& original_path, int arg
 }
 #endif // OPENSCAD_QTGUI
 
-#if defined(Q_OS_MACX)
+#ifdef Q_OS_MACOS
 std::pair<string, string> customSyntax(const string& s)
 {
   if (s.find("-psn_") == 0) return {"psn", s.substr(5)};
@@ -935,7 +932,7 @@ int main(int argc, char **argv)
   PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
 #endif
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
   bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
   auto nslog = [](const Message& msg, void *userdata) {
       CocoaUtils::nslog(msg.msg, userdata);
@@ -1014,7 +1011,7 @@ int main(int argc, char **argv)
 
   po::options_description hidden("Hidden options");
   hidden.add_options()
-#ifdef Q_OS_MACX
+#ifdef Q_OS_MACOS
   ("psn", po::value<string>(), "process serial number")
 #endif
   ("input-file", po::value<vector<string>>(), "input file");
@@ -1078,8 +1075,12 @@ int main(int argc, char **argv)
   if (vm.count("preview")) {
     if (vm["preview"].as<string>() == "throwntogether") viewOptions.renderer = RenderType::THROWNTOGETHER;
   } else if (vm.count("render")) {
-    if (vm["render"].as<string>() == "cgal") viewOptions.renderer = RenderType::CGAL;
-    else viewOptions.renderer = RenderType::GEOMETRY;
+    // Note: "cgal" is here for backwards compatibility, can probably be removed soon
+    if (vm["render"].as<string>() == "cgal" || vm["render"].as<string>() == "force") {
+      viewOptions.renderer = RenderType::BACKEND_SPECIFIC;
+    } else {
+      viewOptions.renderer = RenderType::GEOMETRY;
+    }
   }
 
   viewOptions.previewer = (viewOptions.renderer == RenderType::THROWNTOGETHER) ? Previewer::THROWNTOGETHER : Previewer::OPENCSG;

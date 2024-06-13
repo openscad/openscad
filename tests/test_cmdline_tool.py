@@ -22,7 +22,6 @@
 # Author: Marius Kintel <marius@kintel.net>
 #
 
-from __future__ import print_function
 
 import sys
 import os
@@ -96,7 +95,7 @@ def verify_test(testname, cmd):
     global expectedfilename, actualfilename
     if not options.generate:
         if not os.path.isfile(expectedfilename):
-            print("Error: test '%s' is missing expected output in %s" % (testname, expectedfilename), file=sys.stderr)
+            print(f"Error: test '{testname}' is missing expected output in {expectedfilename}", file=sys.stderr)
             # next 2 imgs parsed by test_pretty_print.py
             print(' actual image: ' + actualfilename + '\n', file=sys.stderr)
             print(' expected image: ' + expectedfilename + '\n', file=sys.stderr)
@@ -330,7 +329,7 @@ def run_test(testname, cmd, args, redirect_stdin=False, redirect_stdout=False):
 
         return outputname
     except (OSError) as err:
-        print("Error: %s \"%s\"" % (err.strerror, cmd), file=sys.stderr)
+        print(f'Error: {err.strerror} "{cmd}"', file=sys.stderr)
         return None
 
 class Options:

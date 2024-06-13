@@ -53,14 +53,20 @@
 #ifdef ENABLE_OPENCSG
 #include "CSGTreeEvaluator.h"
 #include "OpenCSGRenderer.h"
+#ifdef USE_LEGACY_RENDERERS
+#include "LegacyOpenCSGRenderer.h"
+#endif
 #include <opencsg.h>
 #endif
 #include "ProgressWidget.h"
 #include "ThrownTogetherRenderer.h"
+#ifdef USE_LEGACY_RENDERERS
+#include "LegacyThrownTogetherRenderer.h"
+#endif
 #include "CSGTreeNormalizer.h"
 #include "QGLView.h"
 #include "MouseSelector.h"
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 #include "CocoaUtils.h"
 #endif
 #ifdef Q_OS_WIN
@@ -134,6 +140,7 @@ std::string SHA256HashString(std::string aString){
 #include <sys/stat.h>
 
 #include "CGALRenderer.h"
+#include "LegacyCGALRenderer.h"
 #include "CGALWorker.h"
 
 #ifdef ENABLE_CGAL
@@ -167,7 +174,7 @@ static const int autoReloadPollingPeriodMS = 200;
 unsigned int GuiLocker::gui_locked = 0;
 
 static char copyrighttext[] =
-  "<p>Copyright (C) 2009-2022 The OpenSCAD Developers</p>"
+  "<p>Copyright (C) 2009-2024 The OpenSCAD Developers</p>"
   "<p>This program is free software; you can redistribute it and/or modify "
   "it under the terms of the GNU General Public License as published by "
   "the Free Software Foundation; either version 2 of the License, or "
@@ -372,12 +379,6 @@ MainWindow::MainWindow(const QStringList& filenames)
   this->cgalworker = new CGALWorker();
   connect(this->cgalworker, SIGNAL(done(std::shared_ptr<const Geometry>)),
           this, SLOT(actionRenderDone(std::shared_ptr<const Geometry>)));
-  this->cgalRenderer = nullptr;
-
-#ifdef ENABLE_OPENCSG
-  this->opencsgRenderer = nullptr;
-#endif
-  this->thrownTogetherRenderer = nullptr;
 
   root_node = nullptr;
 
@@ -454,7 +455,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->editActionFind, SIGNAL(triggered()), this, SLOT(showFind()));
   connect(this->editActionFindAndReplace, SIGNAL(triggered()), this, SLOT(showFindAndReplace()));
 #ifdef Q_OS_WIN
-  this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F));
+  this->editActionFindAndReplace->setShortcut(QKeySequence(Qt::CTRL, Qt::SHIFT, Qt::Key_F));
 #endif
   connect(this->editActionFindNext, SIGNAL(triggered()), this, SLOT(findNext()));
   connect(this->editActionFindPrevious, SIGNAL(triggered()), this, SLOT(findPrev()));
@@ -661,11 +662,9 @@ MainWindow::MainWindow(const QStringList& filenames)
   bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
 
   // make sure it looks nice..
-  auto windowState = settings.value("window/state", QByteArray()).toByteArray();
+  const auto windowState = settings.value("window/state", QByteArray()).toByteArray();
+  restoreGeometry(settings.value("window/geometry", QByteArray()).toByteArray());
   restoreState(windowState);
-  resize(settings.value("window/size", QSize(800, 600)).toSize());
-  move(settings.value("window/position", QPoint(0, 0)).toPoint());
-  updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideViewportControl);
 
   if (windowState.size() == 0) {
     /*
@@ -681,6 +680,11 @@ MainWindow::MainWindow(const QStringList& filenames)
      * fill the available space.
      */
     activeEditor->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
+    tabifyDockWidget(consoleDock, errorLogDock);
+    tabifyDockWidget(errorLogDock, animateDock);
+    showConsole();
+    hideCustomizer = true;
+    hideViewportControl = true;
   } else {
 #ifdef Q_OS_WIN
     // Try moving the main window into the display range, this
@@ -700,6 +704,8 @@ MainWindow::MainWindow(const QStringList& filenames)
     }
 #endif // ifdef Q_OS_WIN
   }
+
+  updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideViewportControl);
 
   connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
   connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
@@ -900,15 +906,13 @@ void MainWindow::loadViewSettings(){
 void MainWindow::loadDesignSettings()
 {
   QSettingsCached settings;
-  if (settings.value("design/autoReload", true).toBool()) {
+  if (settings.value("design/autoReload", false).toBool()) {
     designActionAutoReload->setChecked(true);
   }
   auto polySetCacheSizeMB = Preferences::inst()->getValue("advanced/polysetCacheSizeMB").toUInt();
   GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
-#ifdef ENABLE_CGAL
   auto cgalCacheSizeMB = Preferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
-#endif
 }
 
 void MainWindow::updateUndockMode(bool undockMode)
@@ -971,11 +975,6 @@ MainWindow::~MainWindow()
   // If root_file is not null then it will be the same as parsed_file,
   // so no need to delete it.
   delete parsed_file;
-  delete this->cgalRenderer;
-#ifdef ENABLE_OPENCSG
-  delete this->opencsgRenderer;
-#endif
-  delete this->thrownTogetherRenderer;
   scadApp->windowManager.remove(this);
   if (scadApp->windowManager.getWindows().size() == 0) {
     // Quit application even in case some other windows like
@@ -1228,10 +1227,8 @@ void MainWindow::instantiateRoot()
   // Invalidate renderers before we kill the CSG tree
   this->qglview->setRenderer(nullptr);
 #ifdef ENABLE_OPENCSG
-  delete this->opencsgRenderer;
   this->opencsgRenderer = nullptr;
 #endif
-  delete this->thrownTogetherRenderer;
   this->thrownTogetherRenderer = nullptr;
 
   // Remove previous CSG tree
@@ -1393,14 +1390,26 @@ void MainWindow::compileCSG()
     else {
       LOG("Normalized tree has %1$d elements!",
           (this->root_products ? this->root_products->size() : 0));
-      this->opencsgRenderer = new OpenCSGRenderer(this->root_products,
-                                                  this->highlights_products,
-                                                  this->background_products);
+#ifdef USE_LEGACY_RENDERERS
+      this->opencsgRenderer = std::make_shared<LegacyOpenCSGRenderer>(this->root_products,
+                                                                      this->highlights_products,
+                                                                      this->background_products);
+#else
+      this->opencsgRenderer = std::make_shared<OpenCSGRenderer>(this->root_products,
+                                                                this->highlights_products,
+                                                						    this->background_products);
+#endif
     }
 #endif
-    this->thrownTogetherRenderer = new ThrownTogetherRenderer(this->root_products,
-                                                              this->highlights_products,
-                                                              this->background_products);
+#ifdef USE_LEGACY_RENDERERS
+    this->thrownTogetherRenderer = std::make_shared<LegacyThrownTogetherRenderer>(this->root_products,
+                                                                                  this->highlights_products,
+                                                                                  this->background_products);
+#else
+    this->thrownTogetherRenderer = std::make_shared<ThrownTogetherRenderer>(this->root_products,
+                                                                            this->highlights_products,
+                                                                            this->background_products);
+#endif
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
     this->processEvents();
@@ -2259,7 +2268,6 @@ void MainWindow::cgalRender()
   }
 
   this->qglview->setRenderer(nullptr);
-  delete this->cgalRenderer;
   this->cgalRenderer = nullptr;
   this->root_geom.reset();
 
@@ -2293,7 +2301,11 @@ void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_ge
     LOG("Rendering finished.");
 
     this->root_geom = root_geom;
-    this->cgalRenderer = new CGALRenderer(root_geom);
+#ifdef USE_LEGACY_RENDERERS
+    this->cgalRenderer = std::make_shared<LegacyCGALRenderer>(root_geom);
+#else
+    this->cgalRenderer = std::make_shared<CGALRenderer>(root_geom);
+#endif
     // Go to CGAL view mode
     if (viewActionWireframe->isChecked()) viewModeWireframe();
     else viewModeSurface();
@@ -2368,7 +2380,7 @@ void MainWindow::rightClick(QPoint mouse)
   this->selector->reset(this->qglview);
 
   // Select the object at mouse coordinates
-  int index = this->selector->select(this->qglview->renderer, mouse.x(), mouse.y());
+  int index = this->selector->select(this->qglview->getRenderer(), mouse.x(), mouse.y());
   std::deque<std::shared_ptr<const AbstractNode>> path;
   std::shared_ptr<const AbstractNode> result = this->root_node->getNodeByID(index, path);
 
@@ -2851,9 +2863,7 @@ void MainWindow::actionCopyViewport()
 void MainWindow::actionFlushCaches()
 {
   GeometryCache::instance()->clear();
-#ifdef ENABLE_CGAL
   CGALCache::instance()->clear();
-#endif
   dxf_dim_cache.clear();
   dxf_cross_cache.clear();
   SourceFileCache::instance()->clear();
@@ -2881,7 +2891,7 @@ void MainWindow::viewModePreview()
   if (this->qglview->hasOpenCSGSupport()) {
     viewModeActionsUncheck();
     viewActionPreview->setChecked(true);
-    this->qglview->setRenderer(this->opencsgRenderer ? (Renderer *)this->opencsgRenderer : (Renderer *)this->thrownTogetherRenderer);
+    this->qglview->setRenderer(this->opencsgRenderer ? this->opencsgRenderer : this->thrownTogetherRenderer);
     this->qglview->updateColorScheme();
     this->qglview->update();
   } else {
@@ -3506,8 +3516,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     hideCurrentOutput();
 
     QSettingsCached settings;
-    settings.setValue("window/size", size());
-    settings.setValue("window/position", pos());
+    settings.setValue("window/geometry", saveGeometry());
     settings.setValue("window/state", saveState());
     if (this->tempFile) {
       delete this->tempFile;
@@ -3552,7 +3561,7 @@ void MainWindow::quit()
   QApplication::sendEvent(QApplication::instance(), &ev);
   if (ev.isAccepted()) QApplication::instance()->quit();
   // FIXME: Cancel any CGAL calculations
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
   CocoaUtils::endApplication();
 #endif
 }
@@ -3649,14 +3658,14 @@ void MainWindow::jumpToLine(int line, int col)
 }
 
 paperSizes MainWindow::sizeString2Enum(QString current){
-   for(int i = 0; i < paperSizeStrings.size(); i++){
+   for(size_t i = 0; i < paperSizeStrings.size(); i++){
        if (current.toStdString()==paperSizeStrings[i]) return static_cast<paperSizes>(i);
    };
    return paperSizes::A4;
 };
 
 paperOrientations MainWindow::orientationsString2Enum(QString current){
-   for(int i = 0; i < paperOrientationsStrings.size(); i++){
+   for(size_t i = 0; i < paperOrientationsStrings.size(); i++){
        if (current.toStdString()==paperOrientationsStrings[i]) return static_cast<paperOrientations>(i);
    };
    return paperOrientations::PORTRAIT;

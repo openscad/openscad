@@ -19,14 +19,11 @@ public:
   std::vector<Vector3d> vertices;
 
   PolySet(unsigned int dim, boost::tribool convex = unknown);
-  PolySet(Polygon2d origin);
-
-  const Polygon2d& getPolygon() const { return polygon; }
 
   size_t memsize() const override;
   BoundingBox getBoundingBox() const override;
   std::string dump() const override;
-  unsigned int getDimension() const override { return this->dim; }
+  unsigned int getDimension() const override { return dim_; }
   bool isEmpty() const override { return indices.empty(); }
   std::unique_ptr<Geometry> copy() const override;
 
@@ -35,14 +32,17 @@ public:
   void transform(const Transform3d& mat) override;
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
-  bool is_convex() const;
-  boost::tribool convexValue() const { return this->convex; }
-  bool isTriangular = false;
+  bool isConvex() const;
+  boost::tribool convexValue() const { return convex_; }
+
+  bool isTriangular() const { return is_triangular_; }
+  void setTriangular(bool triangular) { is_triangular_ = triangular; }
+
+  static std::unique_ptr<PolySet> createEmpty() { return std::make_unique<PolySet>(3); }
 
 private:
-  Polygon2d polygon;
-  unsigned int dim;
-  mutable boost::tribool convex;
-  mutable BoundingBox bbox;
-  mutable bool dirty;
+  bool is_triangular_ = false;
+  unsigned int dim_;
+  mutable boost::tribool convex_;
+  mutable BoundingBox bbox_;
 };

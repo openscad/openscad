@@ -123,6 +123,9 @@ Follow the instructions for the platform you're compiling on below.
 * [pkg-config (0.26 -> )](https://www.freedesktop.org/wiki/Software/pkg-config/)
 * [double-conversion (2.0.1 -> )](https://github.com/google/double-conversion/)
 
+For the test suite, additional requirements are:
+* Python3 (3.8 -> )
+
 ### Getting the source code
 
 Install git (https://git-scm.com/) onto your system. Then run a clone:
@@ -141,7 +144,7 @@ To pull the various submodules (incl. the [MCAD library](https://github.com/open
 Prerequisites:
 
 * Xcode
-* automake, libtool, cmake, pkg-config, wget, meson (we recommend installing these using Homebrew)
+* automake, libtool, cmake, pkg-config, wget, meson, python-packaging (we recommend installing these using Homebrew)
 
 Install Dependencies:
 

@@ -208,6 +208,7 @@ img_data_t SurfaceNode::read_dat(std::string filename) const
   return data;
 }
 
+// FIXME: Look for faster way to generate PolySet directly
 std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
 {
   auto data = read_png_or_dat(filename);
@@ -221,7 +222,8 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
   double ox = center ? -(columns - 1) / 2.0 : 0;
   double oy = center ? -(lines - 1) / 2.0 : 0;
 
-  PolySetBuilder builder(0, (lines - 1) * (columns - 1) * 4 + (lines - 1) * 2 + (columns - 1) * 2 + 1);
+  int num_indices = (lines - 1) * (columns - 1) * 4 + (lines - 1) * 2 + (columns - 1) * 2 + 1;
+  PolySetBuilder builder(0, num_indices);
   builder.setConvexity(convexity);
   // the bulk of the heightmap
   for (int i = 1; i < lines; ++i)
@@ -233,29 +235,29 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
 
       double vx = (v1 + v2 + v3 + v4) / 4;
 
-      builder.appendPoly({
-		Vector3d(ox + j - 1, oy + i - 1, v1),
-		Vector3d(ox + j, oy + i - 1, v2),
-		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
-		});
+      builder.appendPolygon({
+                Vector3d(ox + j - 1, oy + i - 1, v1),
+                Vector3d(ox + j, oy + i - 1, v2),
+                Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
+                });
 
-      builder.appendPoly({
-		Vector3d(ox + j, oy + i - 1, v2),
-		Vector3d(ox + j, oy + i, v4),
-		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
-		});
+      builder.appendPolygon({
+                Vector3d(ox + j, oy + i - 1, v2),
+                Vector3d(ox + j, oy + i, v4),
+                Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
+                });
 
-      builder.appendPoly({
-		Vector3d(ox + j, oy + i, v4),
-		Vector3d(ox + j - 1, oy + i, v3),
-		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
-		});
+      builder.appendPolygon({
+                Vector3d(ox + j, oy + i, v4),
+                Vector3d(ox + j - 1, oy + i, v3),
+                Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
+                });
 
-      builder.appendPoly({
-		Vector3d(ox + j - 1, oy + i, v3),
-		Vector3d(ox + j - 1, oy + i - 1, v1),
-		Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
-		});
+      builder.appendPolygon({
+                Vector3d(ox + j - 1, oy + i, v3),
+                Vector3d(ox + j - 1, oy + i - 1, v1),
+                Vector3d(ox + j - 0.5, oy + i - 0.5, vx)
+                });
     }
 
   // edges along Y
@@ -266,18 +268,18 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
     double v4 = data[ (columns - 1) + (i) * columns ];
 
 
-    builder.appendPoly({
-	Vector3d(ox + 0, oy + i - 1, min_val),
-	Vector3d(ox + 0, oy + i - 1, v1),
-	Vector3d(ox + 0, oy + i, v2),
-	Vector3d(ox + 0, oy + i, min_val)
+    builder.appendPolygon({
+        Vector3d(ox + 0, oy + i - 1, min_val),
+        Vector3d(ox + 0, oy + i - 1, v1),
+        Vector3d(ox + 0, oy + i, v2),
+        Vector3d(ox + 0, oy + i, min_val)
     });
 
-    builder.appendPoly({
-	Vector3d(ox + columns - 1, oy + i, min_val),
-	Vector3d(ox + columns - 1, oy + i, v4),
-	Vector3d(ox + columns - 1, oy + i - 1, v3),
-	Vector3d(ox + columns - 1, oy + i - 1, min_val)
+    builder.appendPolygon({
+        Vector3d(ox + columns - 1, oy + i, min_val),
+        Vector3d(ox + columns - 1, oy + i, v4),
+        Vector3d(ox + columns - 1, oy + i - 1, v3),
+        Vector3d(ox + columns - 1, oy + i - 1, min_val)
     });
   }
 
@@ -288,32 +290,32 @@ std::unique_ptr<const Geometry> SurfaceNode::createGeometry() const
     double v3 = data[ (i - 1) + (lines - 1) * columns ];
     double v4 = data[ (i) + (lines - 1) * columns ];
 
-    builder.appendPoly({
-	Vector3d(ox + i, oy + 0, min_val),
-	Vector3d(ox + i, oy + 0, v2),
-	Vector3d(ox + i - 1, oy + 0, v1),
-	Vector3d(ox + i - 1, oy + 0, min_val)
+    builder.appendPolygon({
+        Vector3d(ox + i, oy + 0, min_val),
+        Vector3d(ox + i, oy + 0, v2),
+        Vector3d(ox + i - 1, oy + 0, v1),
+        Vector3d(ox + i - 1, oy + 0, min_val)
     });
 
-    builder.appendPoly({
-	Vector3d(ox + i - 1, oy + lines - 1, min_val),
-	Vector3d(ox + i - 1, oy + lines - 1, v3),
-	Vector3d(ox + i, oy + lines - 1, v4),
-	Vector3d(ox + i, oy + lines - 1, min_val)
+    builder.appendPolygon({
+        Vector3d(ox + i - 1, oy + lines - 1, min_val),
+        Vector3d(ox + i - 1, oy + lines - 1, v3),
+        Vector3d(ox + i, oy + lines - 1, v4),
+        Vector3d(ox + i, oy + lines - 1, min_val)
     });
   }
 
   // the bottom of the shape (one less than the real minimum value), making it a solid volume
   if (columns > 1 && lines > 1) {
-    builder.appendPoly(2 * (columns - 1) + 2 * (lines - 1) );
-    for (int i = 0; i < columns - 1; ++i)
-      builder.prependVertex(builder.vertexIndex(Vector3d(ox + i, oy + 0, min_val)));
+    builder.beginPolygon(2 * (columns - 1) + 2 * (lines - 1) );
     for (int i = 0; i < lines - 1; ++i)
-      builder.prependVertex(builder.vertexIndex(Vector3d(ox + columns - 1, oy + i, min_val)));
-    for (int i = columns - 1; i > 0; i--)
-      builder.prependVertex(builder.vertexIndex(Vector3d(ox + i, oy + lines - 1, min_val)));
+      builder.addVertex(Vector3d(ox + 0, oy + i, min_val));
+    for (int i = 0; i < columns - 1; ++i)
+      builder.addVertex(Vector3d(ox + i, oy + lines - 1, min_val));
     for (int i = lines - 1; i > 0; i--)
-      builder.prependVertex(builder.vertexIndex(Vector3d(ox + 0, oy + i, min_val)));
+      builder.addVertex(Vector3d(ox + columns - 1, oy + i, min_val));
+    for (int i = columns - 1; i > 0; i--)
+      builder.addVertex(Vector3d(ox + i, oy + 0, min_val));
   }
 
   return builder.build();

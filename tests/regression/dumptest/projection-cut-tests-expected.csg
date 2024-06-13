@@ -8,7 +8,7 @@ projection(cut = true, convexity = 0) {
 }
 multmatrix([[1, 0, 0, 0], [0, 1, 0, 20], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 	projection(cut = true, convexity = 0) {
-		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -5], [0, 0, 0, 1]]) {
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, -4.99999], [0, 0, 0, 1]]) {
 			cube(size = [10, 10, 10], center = true);
 		}
 	}
@@ -45,3 +45,4 @@ multmatrix([[1, 0, 0, -15], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
 		square(size = [1, 1], center = false);
 	}
 }
+

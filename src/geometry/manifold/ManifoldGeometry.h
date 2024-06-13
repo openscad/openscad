@@ -16,8 +16,8 @@ public:
   VISITABLE_GEOMETRY();
 
   ManifoldGeometry();
-  ManifoldGeometry(const std::shared_ptr<manifold::Manifold>& object);
-  ManifoldGeometry(const ManifoldGeometry& other);
+  ManifoldGeometry(const std::shared_ptr<const manifold::Manifold>& object);
+  ManifoldGeometry(const ManifoldGeometry& other) = default;
   ManifoldGeometry& operator=(const ManifoldGeometry& other);
 
   [[nodiscard]] bool isEmpty() const override;
@@ -39,14 +39,18 @@ public:
   template <class Polyhedron>
   [[nodiscard]] std::shared_ptr<Polyhedron> toPolyhedron() const;
 
-  /*! In-place union. */
-  void operator+=(ManifoldGeometry& other);
-  /*! In-place intersection. */
-  void operator*=(ManifoldGeometry& other);
-  /*! In-place difference. */
-  void operator-=(ManifoldGeometry& other);
-  /*! In-place minkowksi operation. */
-  void minkowski(ManifoldGeometry& other);
+  /*! union. */
+  ManifoldGeometry operator+(const ManifoldGeometry& other) const;
+  /*! intersection. */
+  ManifoldGeometry operator*(const ManifoldGeometry& other) const;
+  /*! difference. */
+  ManifoldGeometry operator-(const ManifoldGeometry& other) const;
+  /*! minkowksi operation. */
+  ManifoldGeometry minkowski(const ManifoldGeometry& other) const;
+
+  Polygon2d slice() const;
+  Polygon2d project() const;
+
   void transform(const Transform3d& mat) override;
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
@@ -56,5 +60,5 @@ public:
   const manifold::Manifold& getManifold() const;
 
 private:
-  std::shared_ptr<manifold::Manifold> manifold_;
+  std::shared_ptr<const manifold::Manifold> manifold_;
 };

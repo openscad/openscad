@@ -1,4 +1,4 @@
-name: "CodeQL"
+name: CodeQL
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
         language: ['cpp']
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: 'recursive'
         # We must fetch at least the immediate parents so that if this is
@@ -37,11 +37,9 @@ jobs:
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
     - name: Install dependencies
-      run: ./scripts/github-ci-linux-get-dependencies.sh bionic
-    - name: Dependency fixup
-      run: sudo apt-get install gettext
+      run: ./scripts/github-ci-linux-get-dependencies.sh
     - name: Build
-      run: ./scripts/github-ci.sh build
+      run: ./scripts/github-ci.sh experimental build
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2

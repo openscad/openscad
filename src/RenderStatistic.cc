@@ -242,8 +242,13 @@ void LogVisitor::printBoundingBox3(const BoundingBox& bb)
 void LogVisitor::visit(const PolySet& ps)
 {
   assert(ps.getDimension() == 3);
-  LOG("Top level object is a 3D object:");
-  LOG("   Facets:     %1$6d", ps.numFacets());
+  LOG("Top level object is a 3D object (PolySet):");
+  LOG("   Convex:       %1$s", (ps.isConvex() ? "yes" : "no"));
+  if (ps.isTriangular()) {
+    LOG("   Triangles: %1$6d", ps.numFacets());
+  } else {
+    LOG("   Facets:    %1$6d", ps.numFacets());
+  }
   printBoundingBox3(ps.getBoundingBox());
 }
 
@@ -252,7 +257,7 @@ void LogVisitor::visit(const CGAL_Nef_polyhedron& nef)
 {
   if (nef.getDimension() == 3) {
     bool simple = nef.p3->is_simple();
-    LOG("Top level object is a 3D object:");
+    LOG("Top level object is a 3D object (Nef polyhedron):");
     LOG("   Simple:     %1$s", (simple ? "yes" : "no"));
     LOG("   Vertices:   %1$6d", nef.p3->number_of_vertices());
     LOG("   Halfedges:  %1$6d", nef.p3->number_of_halfedges());
@@ -285,14 +290,12 @@ void LogVisitor::visit(const ManifoldGeometry& mani_geom)
 {
   LOG("   Top level object is a 3D object (manifold):");
   auto &mani = mani_geom.getManifold();
-  auto bbox = mani.BoundingBox();
   
   LOG("   Status:     %1$s", ManifoldUtils::statusToString(mani.Status()));
   LOG("   Genus:      %1$d", mani.Genus());
   LOG("   Vertices:   %1$6d", mani.NumVert());
   LOG("   Facets:     %1$6d", mani.NumTri());
-  LOG("   BBox.min:   %1$f, %2$f, %3$f", bbox.min.x, bbox.min.y, bbox.min.z);
-  LOG("   BBox.max:   %1$f, %2$f, %3$f", bbox.max.x, bbox.max.y, bbox.max.z);
+  printBoundingBox3(mani_geom.getBoundingBox());
 }
 #endif // ENABLE_MANIFOLD
 
@@ -354,7 +357,8 @@ void StreamVisitor::visit(const PolySet& ps)
     assert(ps.getDimension() == 3);
     nlohmann::json geometryJson;
     geometryJson["dimensions"] = 3;
-    geometryJson["convex"] = ps.is_convex();
+    geometryJson["convex"] = ps.isConvex();
+    geometryJson["triangular"] = ps.isTriangular();
     geometryJson["facets"] = ps.numFacets();
     if (is_enabled(RenderStatistic::BOUNDING_BOX)) {
       geometryJson["bounding_box"] = getBoundingBox3(ps);

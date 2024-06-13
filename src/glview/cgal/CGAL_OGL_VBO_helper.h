@@ -53,10 +53,10 @@ public:
     PRINTD("draw(Vertex_iterator)");
 
     CGAL::Color c = getVertexColor(v);
-    vertex_array.createVertex({Vector3d((float)v->x(), (float)v->y(), (float)v->z())},
+    vertex_array.createVertex({Vector3d(v->x(), v->y(), v->z())},
                               {},
-                              {(float)c.red() / 255.0f, (float)c.green() / 255.0f, (float)c.blue() / 255.0f, 1.0},
-                              0, 0, 0.0, 1, 1);
+                              Color4f(c.red(), c.green(), c.blue()),
+                              0, 0, 1);
   }
 
   void draw(Edge_iterator e, VertexArray& vertex_array) const {
@@ -64,16 +64,16 @@ public:
 
     Double_point p = e->source(), q = e->target();
     CGAL::Color c = getEdgeColor(e);
-    Color4f color = {(float)c.red() / 255.0f, (float)c.green() / 255.0f, (float)c.blue() / 255.0f, 1.0};
+    Color4f color(c.red(), c.green(), c.blue());
 
-    vertex_array.createVertex({Vector3d((float)p.x(), (float)p.y(), (float)p.z())},
+    vertex_array.createVertex({Vector3d(p.x(), p.y(), p.z())},
                               {},
                               color,
-                              0, 0, 0.0, 1, 2, true);
-    vertex_array.createVertex({Vector3d((float)q.x(), (float)q.y(), (float)q.z())},
+                              0, 0, true);
+    vertex_array.createVertex({Vector3d(q.x(), q.y(), q.z())},
                               {},
                               color,
-                              0, 1, 0.0, 1, 2, true);
+                              0, 1, true);
   }
 
   struct TessUserData {
@@ -124,9 +124,9 @@ public:
     std::exit(0);
   }
 
-  static inline void CGAL_GLU_TESS_CALLBACK vertexCallback(GLvoid *vertex, GLvoid *user) {
-    auto *pc(static_cast<GLdouble *>(vertex));
-    auto *tess(static_cast<TessUserData *>(user));
+  static inline void CGAL_GLU_TESS_CALLBACK vertexCallback(GLvoid *vertex_arg, GLvoid *user_arg) {
+    auto *vertex(static_cast<GLdouble *>(vertex_arg));
+    auto *tess(static_cast<TessUserData *>(user_arg));
     size_t shape_size = 0;
 
     switch (tess->which) {
@@ -139,31 +139,28 @@ public:
       shape_size = 1;
       break;
     default:
+      assert(false && "Unsupported primitive type");
       break;
     }
 
 
-    tess->vertex_array.createVertex({Vector3d((float)pc[0], (float)pc[1], (float)pc[2])},
-                                    {Vector3d((float)(tess->normal[0]), (float)(tess->normal[1]), (float)(tess->normal[2]))},
-                                    {(float)(tess->color.red() / 255.0f), (float)(tess->color.green() / 255.0f), (float)(tess->color.blue() / 255.0f), 1.0},
-                                    0, 0, 0.0, shape_size, 3);
+    tess->vertex_array.createVertex({Vector3d(vertex)},
+                                    {Vector3d(tess->normal)},
+                                    Color4f(tess->color.red(), tess->color.green(), tess->color.blue()),
+                                    0, 0, shape_size);
     tess->draw_size++;
     tess->active_point_index++;
   }
 
   static inline void CGAL_GLU_TESS_CALLBACK combineCallback(GLdouble coords[3], GLvoid *[4], GLfloat [4], GLvoid **dataOut) {
-    static std::list<GLdouble *> pcache;
+    static std::vector<GLdouble> vertexCache;
     if (dataOut) {
-      auto *n = new GLdouble[3];
-      n[0] = coords[0];
-      n[1] = coords[1];
-      n[2] = coords[2];
-      pcache.push_back(n);
-      *dataOut = n;
+      vertexCache.push_back(coords[0]);
+      vertexCache.push_back(coords[1]);
+      vertexCache.push_back(coords[2]);
+      *dataOut = vertexCache.data() - 3;
     } else {
-      for (auto& i : pcache)
-        delete[] i;
-      pcache.clear();
+      vertexCache.clear();
     }
   }
 
@@ -285,20 +282,23 @@ public:
     points_edges_states.emplace_back(std::move(vs));
     points_edges_array.addAttributePointers(last_size);
 
-    if (Feature::ExperimentalVxORenderersDirect.is_enabled() || Feature::ExperimentalVxORenderersPrealloc.is_enabled()) {
-      if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-        GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
-        GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
-      }
-      GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
-      GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      GL_TRACE0("glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)");
+      GL_CHECKD(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
     }
+    GL_TRACE0("glBindBuffer(GL_ARRAY_BUFFER, 0)");
+    GL_CHECKD(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
     points_edges_array.createInterleavedVBOs();
 
     // Halffacets
     glGenBuffers(1, &halffacets_vertices_vbo);
-    VertexArray halffacets_array(std::make_unique<VertexStateFactory>(), halffacets_states, halffacets_vertices_vbo, 0);
+    if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
+      glGenBuffers(1, &halffacets_elements_vbo);
+    }
+    
+    // FIXME: We don't know the size of this VertexArray in advanced, so we have to deal with some fallback mechanism for filling in the data. This complicates code quite a bit
+    VertexArray halffacets_array(std::make_unique<VertexStateFactory>(), halffacets_states, halffacets_vertices_vbo, halffacets_elements_vbo);
     halffacets_array.addSurfaceData();
     halffacets_array.writeSurface();
 
@@ -371,6 +371,6 @@ protected:
   GLuint points_edges_elements_vbo{0};
   GLuint halffacets_vertices_vbo{0};
   GLuint halffacets_elements_vbo{0};
-  VertexStates points_edges_states;
-  VertexStates halffacets_states;
+  std::vector<std::shared_ptr<VertexState>> points_edges_states;
+  std::vector<std::shared_ptr<VertexState>> halffacets_states;
 }; // Polyhedron

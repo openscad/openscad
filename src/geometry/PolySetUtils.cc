@@ -1,10 +1,13 @@
 #include "PolySetUtils.h"
+
+#include <sstream>
+#include <boost/range/adaptor/reversed.hpp>
+
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 #include "Polygon2d.h"
 #include "printutils.h"
 #include "GeometryUtils.h"
-#include "Reindexer.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #include "CGALHybridPolyhedron.h"
@@ -57,9 +60,9 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
   int degeneratePolygons = 0;
   auto result = std::make_unique<PolySet>(3, polyset.convexValue());
   result->setConvexity(polyset.getConvexity());
-  result->isTriangular = true;
+  result->setTriangular(true);
   // ideally this should not require a copy...
-  if (polyset.isTriangular) {
+  if (polyset.isTriangular()) {
     result->vertices = polyset.vertices;
     result->indices = polyset.indices;
     return result;
@@ -96,7 +99,7 @@ std::unique_ptr<PolySet> tessellate_faces(const PolySet& polyset)
   std::vector<Vector3f> verts;
   std::vector<int> indexMap(polyset.vertices.size());
   verts.reserve(polyset.vertices.size());
-  for (int i = 0; i < polyset.vertices.size(); ++i) {
+  for (size_t i = 0; i < polyset.vertices.size(); ++i) {
     if (used[i]) {
       indexMap[i] = verts.size();
       verts.emplace_back(polyset.vertices[i].cast<float>());
@@ -149,19 +152,23 @@ bool is_approximately_convex(const PolySet& ps) {
 // Get as or convert the geometry to a PolySet.
 std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const Geometry>& geom)
 {
-  if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
+  if (const auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
+    PolySetBuilder builder;
+    builder.appendGeometry(geom);
+    return builder.build();
+  } else if (auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
     return ps;
   }
 #ifdef ENABLE_CGAL
   if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     if (!N->isEmpty()) {
       if (auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3)) {
-	ps->setConvexity(N->getConvexity());
-	return ps;
+        ps->setConvexity(N->getConvexity());
+        return ps;
       }
       LOG(message_group::Error, "Nef->PolySet failed.");
     }
-    return std::make_unique<PolySet>(3);
+    return PolySet::createEmpty();
   }
   if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     return hybrid->toPolySet();
@@ -173,6 +180,29 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
   }
 #endif
   return nullptr;
+}
+
+
+std::string polySetToPolyhedronSource(const PolySet& ps)
+{
+  std::stringstream sstr;
+  sstr << "polyhedron(\n";
+  sstr << "  points=[\n";
+  for (const auto& v : ps.vertices) {
+    sstr << "[" << v[0] << ", " << v[1] << ", " << v[2] << "],\n";
+  }
+  sstr << "  ],\n";
+  sstr << "  faces=[\n";
+  for (const auto& polygon : ps.indices) {
+    sstr << "[";
+    for (const auto idx : boost::adaptors::reverse(polygon)) {
+      sstr << idx << ",";
+    }
+    sstr << "],\n";
+  }
+  sstr << "  ],\n";
+  sstr << ");\n";
+  return sstr.str();
 }
 
 } // namespace PolySetUtils

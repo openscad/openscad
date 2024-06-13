@@ -58,22 +58,20 @@ public:
 class OpenCSGVBOProduct
 {
 public:
-  OpenCSGVBOProduct(std::vector<OpenCSG::Primitive *> primitives, std::unique_ptr<VertexStates> states)
+  OpenCSGVBOProduct(std::vector<OpenCSG::Primitive *> primitives, std::unique_ptr<std::vector<std::shared_ptr<VertexState>>> states)
     : primitives_(std::move(primitives)), states_(std::move(states)) {}
   virtual ~OpenCSGVBOProduct() = default;
 
   [[nodiscard]] const std::vector<OpenCSG::Primitive *>& primitives() const { return primitives_; }
-  [[nodiscard]] const VertexStates& states() const { return *(states_.get()); }
+  [[nodiscard]] const std::vector<std::shared_ptr<VertexState>>& states() const { return *(states_.get()); }
 
 private:
   // primitives_ is used to create the OpenCSG depth buffer (unlit rendering).
   // states_ is used for color rendering (using GL_EQUAL).
   // Both may use the same underlying VBOs
   const std::vector<OpenCSG::Primitive *> primitives_;
-  const std::unique_ptr<VertexStates> states_;
+  const std::unique_ptr<std::vector<std::shared_ptr<VertexState>>> states_;
 };
-
-using OpenCSGVBOProducts = std::vector<std::unique_ptr<OpenCSGVBOProduct>>;
 
 class OpenCSGRenderer : public VBORenderer
 {
@@ -82,11 +80,8 @@ public:
                   std::shared_ptr<CSGProducts> highlights_products,
                   std::shared_ptr<CSGProducts> background_products);
   ~OpenCSGRenderer() override {
-    if (vertices_vbos_.size()) {
-      glDeleteBuffers(vertices_vbos_.size(), vertices_vbos_.data());
-    }
-    if (Feature::ExperimentalVxORenderersIndexing.is_enabled() && elements_vbos_.size()) {
-      glDeleteBuffers(elements_vbos_.size(), elements_vbos_.data());
+    if (all_vbos_.size()) {
+      glDeleteBuffers(all_vbos_.size(), all_vbos_.data());
     }
   }
   void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) override;
@@ -95,19 +90,16 @@ public:
   BoundingBox getBoundingBox() const override;
 private:
 #ifdef ENABLE_OPENCSG
-  OpenCSGPrim *createCSGPrimitive(const CSGChainObject& csgobj, OpenCSG::Operation operation, bool highlight_mode, bool background_mode, OpenSCADOperator type) const;
   OpenCSGVBOPrim *createVBOPrimitive(const std::shared_ptr<OpenCSGVertexState>& vertex_state,
                                      const OpenCSG::Operation operation, const unsigned int convexity) const;
 #endif // ENABLE_OPENCSG
-  void renderCSGProducts(const std::shared_ptr<CSGProducts>& products, bool showedges = false, const Renderer::shaderinfo_t *shaderinfo = nullptr,
-                         bool highlight_mode = false, bool background_mode = false) const;
   void createCSGVBOProducts(const CSGProducts& products, const Renderer::shaderinfo_t *shaderinfo, bool highlight_mode, bool background_mode);
   void renderCSGVBOProducts(bool showedges, const Renderer::shaderinfo_t *shaderinfo) const;
 
-  OpenCSGVBOProducts vbo_vertex_products;
-  std::vector<GLuint> vertices_vbos_;
-  std::vector<GLuint> elements_vbos_;
-  std::shared_ptr<CSGProducts> root_products;
-  std::shared_ptr<CSGProducts> highlights_products;
-  std::shared_ptr<CSGProducts> background_products;
+private:
+  std::vector<std::unique_ptr<OpenCSGVBOProduct>> vbo_vertex_products_;
+  std::vector<GLuint> all_vbos_;
+  std::shared_ptr<CSGProducts> root_products_;
+  std::shared_ptr<CSGProducts> highlights_products_;
+  std::shared_ptr<CSGProducts> background_products_;
 };

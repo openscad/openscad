@@ -138,7 +138,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   //
   QsciCommand *c;
   // NOLINTBEGIN(bugprone-suspicious-enum-usage)
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
   // Alt-Backspace should delete left word (Alt-Delete already deletes right word)
   c = qsci->standardCommands()->find(QsciCommand::DeleteWordLeft);
   c->setKey(Qt::Key_Backspace | Qt::ALT);
@@ -154,7 +154,7 @@ ScintillaEditor::ScintillaEditor(QWidget *parent) : EditorInterface(parent)
   c->setKey(Qt::Key_Z | Qt::CTRL | Qt::SHIFT);
   c->setAlternateKey(Qt::Key_Y | Qt::CTRL);
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
   const unsigned long modifier = Qt::META;
 #else
   const unsigned long modifier = Qt::CTRL;
@@ -1079,7 +1079,7 @@ bool ScintillaEditor::handleKeyEventNavigateNumber(QKeyEvent *keyEvent)
 {
   static bool previewAfterUndo = false;
 
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
   unsigned int navigateOnNumberModifiers = Qt::AltModifier | Qt::ShiftModifier | Qt::KeypadModifier;
 #else
   unsigned int navigateOnNumberModifiers = Qt::AltModifier;

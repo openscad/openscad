@@ -8,6 +8,13 @@ Animate::Animate(QWidget *parent) : QWidget(parent)
 {
   setupUi(this);
   initGUI();
+
+  const auto width = groupBoxParameter->minimumSizeHint().width();
+  const auto margins = layout()->contentsMargins();
+  const auto scrollMargins = scrollAreaWidgetContents->layout()->contentsMargins();
+  const auto parameterMargins = groupBoxParameter->layout()->contentsMargins();
+  initMinWidth = width + margins.left() + margins.right() + scrollMargins.left() + scrollMargins.right()
+  +parameterMargins.left() + parameterMargins.right();
 }
 
 void Animate::initGUI()
@@ -73,19 +80,11 @@ void Animate::initVCR(){
     "start", pushButton_MoveToBeginning);
 
   createActionAndPrepareButton(
-    stepBackIcon, _("step one frame back"),
+    stepBackIcon, _("Step one frame back"),
     "stepBack", pushButton_StepBack);
 
   createActionAndPrepareButton(
-    playIcon, _("play animation"),
-    "play", pushButton_Resume);
-
-  createActionAndPrepareButton(
-    pauseIcon, _("pause animation"),
-    "pause", pushButton_Pause);
-
-  createActionAndPrepareButton(
-    stepFwrdIcon, _("step one frame forward"),
+    stepFwrdIcon, _("Step one frame forward"),
     "stepFwrd", pushButton_StepForward);
 
   createActionAndPrepareButton(
@@ -289,66 +288,25 @@ int Animate::nextFrame(){
   return anim_step;
 }
 
-// Invalid minimumSizeHint means we accept any size.
-// This is not ideal, but QT does not seam to have an
-// elegant way to handle widgets that can adapt
-// to horizontal and vertical layout
-QSize Animate::minimumSizeHint() const {
-  return {-1, -1};
-}
-
 void Animate::resizeEvent(QResizeEvent *event)
 {
-  const QSize sizeEvent = size();
+  auto layoutParameters = dynamic_cast<QBoxLayout *>(groupBoxParameter->layout());
+  auto layoutButtons = dynamic_cast<QBoxLayout *>(groupBoxButtons->layout());
 
-  // QTDesigner does not make it obvious, but
-  // QBoxLayout can be switch from vertical to horizontal.
-  int iconSize = 16;
-  if (auto mainLayout = dynamic_cast<QBoxLayout *>(this->layout())) {
-    if (sizeEvent.height() > 140) {
-      mainLayout->setDirection(QBoxLayout::TopToBottom);
-      if (sizeEvent.height() > 250 && sizeEvent.width() > 200) {
-        mainLayout->setContentsMargins(10, 10, 10, 10);
-        mainLayout->setSpacing(10);
-        iconSize = 32;
-      } else {
-        mainLayout->setContentsMargins(0, 0, 0, 0);
-        mainLayout->setSpacing(0);
+  if (layoutParameters && layoutButtons) {
+    if (layoutParameters->direction() == QBoxLayout::LeftToRight) {
+      if (event->size().width() < initMinWidth) {
+        layoutParameters->setDirection(QBoxLayout::TopToBottom);
+        layoutButtons->setDirection(QBoxLayout::TopToBottom);
+        scrollAreaWidgetContents->layout()->invalidate();
       }
-      this->vcr_controls->show();
     } else {
-      mainLayout->setDirection(QBoxLayout::LeftToRight);
-
-      mainLayout->setContentsMargins(0, 0, 0, 0);
-      mainLayout->setSpacing(0);
-      if (sizeEvent.width() > 720) {
-        this->vcr_controls->show();
-      } else {
-        this->vcr_controls->hide();
+      if (event->size().width() > initMinWidth) {
+        layoutParameters->setDirection(QBoxLayout::LeftToRight);
+        layoutButtons->setDirection(QBoxLayout::LeftToRight);
+        scrollAreaWidgetContents->layout()->invalidate();
       }
     }
-  } else {
-    static bool warnOnce = true;
-    if (warnOnce) {
-      std::cout << "you should not see this message - "
-                << " if you work on the animate UI, you can consider removing this code"
-                << std::endl;
-      warnOnce = false;
-    }
-  }
-
-  auto qPushButtons = this->findChildren<QPushButton *>();
-  for (auto qPushButton : qPushButtons) {
-    qPushButton->setIconSize(QSize(iconSize, iconSize));
-  }
-
-  QFormLayout::RowWrapPolicy policy = QFormLayout::RowWrapPolicy::DontWrapRows;
-  if (sizeEvent.width() < 150) {
-    policy = QFormLayout::RowWrapPolicy::WrapAllRows;
-  }
-  auto qFormLayouts = this->findChildren<QFormLayout *>();
-  for (auto qFormLayout : qFormLayouts) {
-    qFormLayout->setRowWrapPolicy(policy);
   }
 
   QWidget::resizeEvent(event);
@@ -383,14 +341,6 @@ void Animate::on_pushButton_StepBack_clicked(){
   pauseAnimation();
   this->anim_step -= 1;
   this->updateTVal();
-}
-
-void Animate::on_pushButton_Resume_clicked(){
-  updatedAnimFpsAndAnimSteps();
-}
-
-void Animate::on_pushButton_Pause_clicked(){
-  pauseAnimation();
 }
 
 void Animate::on_pushButton_StepForward_clicked(){

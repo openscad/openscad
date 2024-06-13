@@ -15,7 +15,9 @@
 #  -x         Build x86_64 binaries
 #  -v         Verbose
 #
-# Prerequisites: automake, libtool, cmake, pkg-config, wget, meson
+# Prerequisites: automake, libtool, cmake, pkg-config, wget, meson, python-packaging
+#
+# meson and python-packaging is required by glib.
 #
 
 set -e
@@ -46,18 +48,18 @@ PACKAGES=(
     "freetype 2.12.1"
     "ragel REMOVE"
     "harfbuzz 6.0.0"
+
     "libzip 1.9.2"
     "libxml2 REMOVE"
-    "libuuid 1.6.2"
+    "libuuid REMOVE"
     "fontconfig 2.14.1"
     "hidapi 0.12.0"
-    "lib3mf 1.8.1"
-    # FIXME: Re-evaluate patches if bumping glib past 2.76.3
-    "glib2 2.76.3"
+    "lib3mf 2.3.1"
+    "glib2 2.80.0"
     "pixman 0.42.2"
     "cairo 1.18.0"
     "cgal 5.5"
-    "qt5 5.15.7 patch"
+    "qt5 5.15.13"
     "opencsg 1.6.0"
     "qscintilla 2.13.3"
     "onetbb 2021.11.0"
@@ -199,7 +201,8 @@ build_qt5()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.xz
   cd qt-everywhere-src-$version
-  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-macos-CGColorSpace.patch
+  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-xcode15.patch
+  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-memory_resource.patch
 
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
@@ -394,8 +397,6 @@ build_onetbb()
   cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DTBB_TEST=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
   make -j"$NUMCPU" install
   make install  
-  # install_name_tool -id @rpath/libtbb.dylib $DEPLOYDIR/lib/libtbb.dylib
-  # install_name_tool -id @rpath/libtbbmalloc.dylib $DEPLOYDIR/lib/libtbbmalloc.dylib
 }
 
 build_glew()
@@ -561,46 +562,11 @@ remove_libxml2()
   find $DEPLOYDIR -name "*libxml*" -prune -exec rm -rf {} \;
 }
 
-build_libuuid()
+remove_libuuid()
 {
-  version=$1
-  cd $BASEDIR/src
-  rm -rf uuid-$version
-  if [ ! -f uuid-$version.tar.gz ]; then
-    curl -L https://mirrors.ocf.berkeley.edu/debian/pool/main/o/ossp-uuid/ossp-uuid_$version.orig.tar.gz -o uuid-$version.tar.gz
-  fi
-  tar xzf uuid-$version.tar.gz
-  cd uuid-$version
-  patch -p1 < $OPENSCADDIR/patches/uuid-1.6.2.patch
-  # Update old config.sub to get aarch64 support
-  cp $OPENSCADDIR/patches/uuid-config.sub ./config.sub
-
-  # Build each arch separately
-  for i in ${!ARCHS[@]}; do
-    arch=${ARCHS[$i]}
-    mkdir build-$arch
-    cd build-$arch
-    # ac_cv_va_copy=yes is a workaround for a bug uuid's build system causing the va_copy() check
-    # to not work while cross compiling
-    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --without-perl --without-php --without-pgsql --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0 ac_cv_va_copy=yes
-    make -j"$NUMCPU"
-    make install DESTDIR=$PWD/install/
-    cd ..
-  done
-
-  # Install the first arch
-  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
-
-  # If we're building for multiple archs, create fat binaries
-  if (( ${#ARCHS[@]} > 1 )); then
-    LIBS=()
-    for arch in ${ARCHS[*]}; do
-      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libuuid.dylib)
-    done
-    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libuuid.dylib
-  fi
-
-  install_name_tool -id @rpath/libuuid.dylib $DEPLOYDIR/lib/libuuid.dylib
+  echo "Removing libuuid..."
+  find $DEPLOYDIR -name "*libuuid*" -prune -exec rm -rf {} \;
+  rm -f $DEPLOYDIR/include/uuid.h $DEPLOYDIR/lib/pkgconfig/uuid.pc
 }
 
 build_fontconfig()
@@ -694,9 +660,6 @@ build_glib2()
   fi
   tar xJf "glib-$version.tar.xz"
   cd "glib-$version"
-  # FIXME: Once bumping past glib-2.76.3, we may not need these patches
-  patch -p1 < $OPENSCADDIR/patches/glib-iconv-macos.patch
-  patch -p1 < $OPENSCADDIR/patches/glib-pcre-macos.patch
 
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
@@ -804,13 +767,14 @@ build_lib3mf()
 {
   version=$1
   cd $BASEDIR/src
-  rm -rf lib3mf-$version
-  if [ ! -f $version.tar.gz ]; then
-    curl -L https://github.com/3MFConsortium/lib3mf/archive/v$version.tar.gz -o lib3mf-$version.tar.gz
-  fi
-  tar xzf lib3mf-$version.tar.gz
+ rm -rf lib3mf-$version
+ if [ ! -f $version.tar.gz ]; then
+   curl -L https://github.com/3MFConsortium/lib3mf/archive/v$version.tar.gz -o lib3mf-$version.tar.gz
+ fi
+ tar xzf lib3mf-$version.tar.gz
   cd lib3mf-$version
-  cmake -DLIB3MF_TESTS=false -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR  -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
+  patch -p1 < $OPENSCADDIR/patches/lib3mf-macos.patch
+  cmake -DLIB3MF_TESTS=false -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_INSTALL_INCLUDEDIR=include/lib3mf -DUSE_INCLUDED_ZLIB=OFF -DUSE_INCLUDED_LIBZIP=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
   make -j"$NUMCPU" VERBOSE=1
   make -j"$NUMCPU" install
 }
