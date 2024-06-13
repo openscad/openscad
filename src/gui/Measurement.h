@@ -7,6 +7,7 @@ enum { MEASURE_IDLE, MEASURE_DIST1, MEASURE_DIST2, MEASURE_ANG1, MEASURE_ANG2, M
 
 extern double calculateLinePointDistance(const Vector3d &l1, const Vector3d &l2, const Vector3d &pt, double & dist_lat) ;
 extern double calculateLineLineDistance(const Vector3d &l1b, const Vector3d &l1e, const Vector3d &l2b, const Vector3d &l2e, double &dist_lat);
+extern double calculateSegSegDistance(const Vector3d &l1b, const Vector3d &l1e, const Vector3d &l2b, const Vector3d &l2e, double &dist_lat);
 
 class Measurement
 {
