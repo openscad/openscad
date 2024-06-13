@@ -60,8 +60,11 @@ QFileInfoList UIUtils::openFiles(QWidget *parent)
 {
   QSettingsCached settings;
   QString last_dirname = settings.value("lastOpenDirName").toString();
+  static constexpr QLatin1String defaultSelectedFilter {"OpenSCAD Designs (*.scad *.csg)"};
+  static QString filters = QString("Supported Filetypes (*.scad, *.csg, *.stl);;%1;;STL Files (*.stl)").arg(defaultSelectedFilter);
+  static QString lastSelectedFilter(defaultSelectedFilter);
   QStringList new_filenames = QFileDialog::getOpenFileNames(parent, "Open File",
-                                                            last_dirname, "OpenSCAD Designs (*.scad *.csg)");
+                                                            last_dirname, filters, &lastSelectedFilter);
 
   QFileInfoList fileInfoList;
   for (const QString& filename: new_filenames) {
