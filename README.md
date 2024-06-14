@@ -103,7 +103,7 @@ are build scripts that download and compile the libraries from source.
 Follow the instructions for the platform you're compiling on below.
 
 * A C++ compiler supporting C++17
-* [cmake (3.5 ->)](https://cmake.org/)
+* [cmake (< 3.5)](https://cmake.org/)
 * [Qt (5.4 ->)](https://qt.io/)
 * [QScintilla2 (2.9 ->)](https://riverbankcomputing.com/software/qscintilla/)
 * [CGAL (5.4 ->)](https://www.cgal.org/)
