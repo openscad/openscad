@@ -837,6 +837,10 @@ build_cairo()
 
   # FIXME: Cairo cannot disable lzo2, so we patch it
   patch -p1 < $OPENSCADDIR/patches/cairo-lzo2-macos.patch
+  
+  # Cairo will not build on MacOS, patch the error. https://lore.kernel.org/buildroot/20231116145113.1828682-1-thomas.devoogdt@barco.com/T/
+  patch -p1 < $OPENSCADDIR/patches/cairo-ft-private.h-fix-missing-FT_Color-error.patch
+  
 
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
