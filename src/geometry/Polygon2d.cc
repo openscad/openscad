@@ -171,7 +171,7 @@ double Polygon2d::area() const
 std::unique_ptr<PolySet> Polygon2d::tessellate() const
 {
   PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
-#ifdef ENABLE_MANIFOLD
+#if defined(ENABLE_MANIFOLD) && defined(USE_MANIFOLD_TRIANGULATOR)
   if (Feature::ExperimentalManifold.is_enabled()) {
     return ManifoldUtils::createTriangulatedPolySetFromPolygon2d(*this);
   }
