@@ -40,6 +40,10 @@
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
   : convex_(convex), dim_(dim)
 {
+  reserve(vertices_count, indices_count);
+}
+
+void PolySetBuilder::reserve(int vertices_count, int indices_count) {
   if (vertices_count != 0) vertices_.reserve(vertices_count);
   if (indices_count != 0) indices_.reserve(indices_count);
 }
@@ -50,6 +54,10 @@ void PolySetBuilder::setConvexity(int convexity){
 
 int PolySetBuilder::numVertices() const {
   return vertices_.size();
+}
+
+int PolySetBuilder::numPolygons() const {
+  return indices_.size();
 }
 
 int PolySetBuilder::vertexIndex(const Vector3d& pt)
