@@ -223,6 +223,16 @@ QAction *getExport3DAction(const MainWindow *mainWindow) {
     return mainWindow->fileActionExportAMF;
   } else if (format == "3MF") {
     return mainWindow->fileActionExport3MF;
+  } else if (format == "COLLADA") {
+    return mainWindow->fileActionExportCOLLADA;
+  } else if (format == "STP") {
+    return mainWindow->fileActionExportSTP;
+  } else if (format == "PLY") {
+    return mainWindow->fileActionExportPLY;
+  } else if (format == "GLTF") {
+    return mainWindow->fileActionExportGLTF;
+  } else if (format == "X3D") {
+    return mainWindow->fileActionExportX3D;
   } else {
     return nullptr;
   }
@@ -479,6 +489,11 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
   connect(this->fileActionExportWRL, SIGNAL(triggered()), this, SLOT(actionExportWRL()));
   connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
+  connect(this->fileActionExportCOLLADA, SIGNAL(triggered()), this, SLOT(actionExportCOLLADA()));
+  connect(this->fileActionExportSTP, SIGNAL(triggered()), this, SLOT(actionExportSTP()));
+  connect(this->fileActionExportPLY, SIGNAL(triggered()), this, SLOT(actionExportPLY()));
+  connect(this->fileActionExportGLTF, SIGNAL(triggered()), this, SLOT(actionExportGLTF()));
+  connect(this->fileActionExportX3D, SIGNAL(triggered()), this, SLOT(actionExportX3D()));
   connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
   connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
   connect(this->fileActionExportPDF, SIGNAL(triggered()), this, SLOT(actionExportPDF()));
@@ -634,6 +649,11 @@ MainWindow::MainWindow(const QStringList& filenames)
   initActionIcon(fileActionExportOBJ, ":/icons/svg-default/export-obj.svg", ":/icons/svg-default/export-obj-white.svg");
   initActionIcon(fileActionExportOFF, ":/icons/svg-default/export-off.svg", ":/icons/svg-default/export-off-white.svg");
   initActionIcon(fileActionExportWRL, ":/icons/svg-default/export-wrl.svg", ":/icons/svg-default/export-wrl-white.svg");
+  initActionIcon(fileActionExportCOLLADA, ":/icons/svg-default/export-dae.svg", ":/icons/svg-default/export-wrl-white.svg");
+  initActionIcon(fileActionExportSTP, ":/icons/svg-default/export-stp.svg", ":/icons/svg-default/export-wrl-white.svg");
+  initActionIcon(fileActionExportPLY, ":/icons/svg-default/export-ply.svg", ":/icons/svg-default/export-wrl-white.svg");
+  initActionIcon(fileActionExportGLTF, ":/icons/svg-default/export-glb.svg", ":/icons/svg-default/export-wrl-white.svg");
+  initActionIcon(fileActionExportX3D, ":/icons/svg-default/export-x3d.svg", ":/icons/svg-default/export-wrl-white.svg");
   initActionIcon(fileActionExportDXF, ":/icons/svg-default/export-dxf.svg", ":/icons/svg-default/export-dxf-white.svg");
   initActionIcon(fileActionExportSVG, ":/icons/svg-default/export-svg.svg", ":/icons/svg-default/export-svg-white.svg");
   initActionIcon(fileActionExportCSG, ":/icons/svg-default/export-csg.svg", ":/icons/svg-default/export-csg-white.svg");
@@ -2734,6 +2754,31 @@ void MainWindow::actionExportWRL()
 void MainWindow::actionExportAMF()
 {
   actionExport(FileFormat::AMF, "AMF", ".amf", 3);
+}
+
+void MainWindow::actionExportPLY()
+{
+  actionExport(FileFormat::PLY, "PLY", ".ply", 3);
+}
+
+void MainWindow::actionExportX3D()
+{
+  actionExport(FileFormat::X3D, "X3D", ".x3d", 3);
+}
+
+void MainWindow::actionExportSTP()
+{
+  actionExport(FileFormat::STP, "STEP", ".stp", 3);
+}
+
+void MainWindow::actionExportCOLLADA()
+{
+  actionExport(FileFormat::COLLADA, "COLLADA", ".dae", 3);
+}
+
+void MainWindow::actionExportGLTF()
+{
+  actionExport(FileFormat::GLTF, "GLTF", ".glb", 3);
 }
 
 void MainWindow::actionExportDXF()

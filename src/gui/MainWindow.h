@@ -259,6 +259,11 @@ private slots:
   void actionExportOBJ();
   void actionExportOFF();
   void actionExportWRL();
+  void actionExportPLY();
+  void actionExportX3D();
+  void actionExportSTP();
+  void actionExportCOLLADA();
+  void actionExportGLTF();
   void actionExportAMF();
   void actionExportDXF();
   void actionExportSVG();

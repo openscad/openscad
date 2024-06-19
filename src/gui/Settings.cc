@@ -125,7 +125,21 @@ SettingsEntryString Settings::octoPrintSlicerProfile("printing", "octoPrintSlice
 SettingsEntryString Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", "");
 
 SettingsEntryBool Settings::exportUseAsciiSTL("export", "useAsciiSTL", false);
-SettingsEntryEnum Settings::toolbarExport3D("advanced", "toolbarExport3D", {{"none", "none"}, {"STL", "STL"}, {"OFF", "OFF"}, {"WRL", "WRL"}, {"AMF", "AMF"}, {"3MF", "3MF"}}, "STL");
+SettingsEntryEnum Settings::toolbarExport3D("advanced", "toolbarExport3D", {
+  {"none", "none"},
+  {"STL", "STL"},
+  {"OFF", "OFF"},
+  {"WRL", "WRL"},
+  {"AMF", "AMF"},
+  {"3MF", "3MF"},
+#ifdef ENABLE_ASSIMP
+  {"PLY", "PLY"},
+  {"COLLADA", "COLLADA"},
+  {"STP", "STP"},
+  {"GLTF", "GLTF"},
+  {"X3D", "X3D"},
+#endif  // ENABLE_ASSIMP
+  }, "STL");
 SettingsEntryEnum Settings::toolbarExport2D("advanced", "toolbarExport2D", {{"none", "none"}, {"DXF", "DXF"}, {"SVG", "SVG"}, {"PDF", "PDF"}}, "none");
 
 SettingsEntryBool Settings::summaryCamera("summary", "camera", false);

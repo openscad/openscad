@@ -382,11 +382,6 @@ if(ENABLE_CGAL)
   set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
 endif(ENABLE_CGAL)
 
-find_package(LibZip REQUIRED QUIET)
-message(STATUS "libzip: ${LIBZIP_VERSION}")
-target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBZIP_INCLUDE_DIR_ZIP} ${LIBZIP_INCLUDE_DIR_ZIPCONF})
-target_link_libraries(OpenSCAD PRIVATE ${LIBZIP_LIBRARY})
-target_compile_definitions(OpenSCAD PRIVATE ENABLE_LIBZIP)
 
 find_package(Freetype 2.4.9 REQUIRED QUIET)
 message(STATUS "Freetype: ${FREETYPE_VERSION_STRING}")
@@ -797,6 +792,7 @@ set(CORE_SOURCES
   src/io/DxfData.cc
   src/io/dxfdim.cc
   src/io/export.cc
+  src/io/export_assimp.cc
   src/io/export_amf.cc
   src/io/export_dxf.cc
   src/io/export_obj.cc
@@ -807,6 +803,7 @@ set(CORE_SOURCES
   src/io/export_svg.cc
   src/io/export_param.cc
   src/io/fileutils.cc
+  # src/io/import_assimp.cc
   src/io/import_amf.cc
   src/io/import_stl.cc
   src/io/import_obj.cc
@@ -939,7 +936,8 @@ if(EXPERIMENTAL)
   else()
     add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
   endif()
-  target_link_libraries(OpenSCAD PRIVATE manifold polygon)
+  add_subdirectory(submodules/assimp EXCLUDE_FROM_ALL)
+  target_link_libraries(OpenSCAD PRIVATE manifold polygon assimp)
   add_sanitizers(manifold)
 
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
