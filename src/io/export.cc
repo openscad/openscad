@@ -209,6 +209,8 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
     }
     out->indices.push_back(face);
   }
+  out->color_indices = ps.color_indices;
+  out->colors = ps.colors;
 
   std::vector<int> indexTranslationMap(vertexMap.size());
   out->vertices.reserve(vertexMap.size());
@@ -242,8 +244,9 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
       return a.face < b.face;
     });
     for (size_t i = 0, n = faces.size(); i < n; i++) {
-      out->indices[i] = faces[i].face;
-      out->color_indices[i] = faces[i].color_index;
+      auto & face = faces[i];
+      out->indices[i] = face.face;
+      out->color_indices[i] = face.color_index;
     }
   }
   return out;
