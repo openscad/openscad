@@ -226,7 +226,25 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
     std::rotate(polygon.begin(), std::min_element(polygon.begin(), polygon.end()), polygon.end());
     poly = polygon;
   }
-  std::sort(out->indices.begin(), out->indices.end());
-
+  if (ps.color_indices.empty()) {
+    std::sort(out->indices.begin(), out->indices.end());
+  } else {
+    struct ColoredFace {
+      IndexedFace face;
+      int32_t color_index;
+    };
+    std::vector<ColoredFace> faces;
+    faces.reserve(ps.indices.size());
+    for (size_t i = 0, n = ps.indices.size(); i < n; i++) {
+      faces.push_back({out->indices[i], out->color_indices[i]});
+    }
+    std::sort(faces.begin(), faces.end(), [](const ColoredFace& a, const ColoredFace& b) {
+      return a.face < b.face;
+    });
+    for (size_t i = 0, n = faces.size(); i < n; i++) {
+      out->indices[i] = faces[i].face;
+      out->color_indices[i] = faces[i].color_index;
+    }
+  }
   return out;
 }

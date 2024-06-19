@@ -25,6 +25,7 @@ public:
   static const Feature ExperimentalTextMetricsFunctions;
   static const Feature ExperimentalImportFunction;
   static const Feature ExperimentalPredictibleOutput;
+  static const Feature ExperimentalColors;
 #ifdef ENABLE_PYTHON
   static const Feature ExperimentalPythonEngine;
 #endif

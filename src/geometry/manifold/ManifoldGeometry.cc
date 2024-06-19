@@ -3,6 +3,8 @@
 #include "Polygon2d.h"
 #include "manifold.h"
 #include "PolySet.h"
+#include "Feature.h"
+#include "PolySetBuilder.h"
 #include "PolySetUtils.h"
 #include "manifoldutils.h"
 #ifdef ENABLE_CGAL
@@ -20,7 +22,7 @@ Result vector_convert(V const& v) {
 
 ManifoldGeometry::ManifoldGeometry() : manifold_(std::make_shared<const manifold::Manifold>()) {}
 
-ManifoldGeometry::ManifoldGeometry(const std::shared_ptr<const manifold::Manifold>& mani) : manifold_(mani) {
+ManifoldGeometry::ManifoldGeometry(const std::shared_ptr<const manifold::Manifold>& mani, const std::map<uint32_t, Color4f> & originalIDToColor) : manifold_(mani), originalIDToColor_(originalIDToColor) {
   assert(manifold_);
   if (!manifold_) clear();
 }
@@ -33,6 +35,7 @@ std::unique_ptr<Geometry> ManifoldGeometry::copy() const
 ManifoldGeometry& ManifoldGeometry::operator=(const ManifoldGeometry& other) {
   if (this == &other) return *this;
   manifold_ = other.manifold_;
+  originalIDToColor_ = other.originalIDToColor_;
   return *this;
 }
 
@@ -92,7 +95,7 @@ std::string ManifoldGeometry::dump() const {
   return out.str();
 }
 
-std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
+std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const {
   manifold::MeshGL mesh = getManifold().GetMeshGL();
   auto ps = std::make_shared<PolySet>(3);
   ps->setTriangular(true);
@@ -106,11 +109,42 @@ std::shared_ptr<const PolySet> ManifoldGeometry::toPolySet() const {
         mesh.vertProperties[i],
         mesh.vertProperties[i + 1],
         mesh.vertProperties[i + 2]);
-  for (size_t i = 0; i < mesh.triVerts.size(); i += 3)
-    ps->indices.push_back({
-        static_cast<int>(mesh.triVerts[i]),
-        static_cast<int>(mesh.triVerts[i + 1]),
-        static_cast<int>(mesh.triVerts[i + 2])});
+
+  if (Feature::ExperimentalColors.is_enabled() && !originalIDToColor_.empty()) {
+    ps->color_indices.resize(ps->indices.size(), -1);
+    ps->colors.reserve(originalIDToColor_.size());
+    std::map<uint32_t, size_t> originalIDToColorIndex;
+    for (const auto& [originalID, color] : originalIDToColor_) {
+      originalIDToColorIndex[originalID] = ps->colors.size();
+      ps->colors.push_back(color);
+    }
+
+    auto start = mesh.runIndex[0];
+    for (int run = 0, numRun = mesh.runIndex.size() - 1; run < numRun; ++run) {
+      const auto id = mesh.runOriginalID[run];
+      const auto end = mesh.runIndex[run + 1];
+      const size_t numTri = (end - start) / 3;
+      assert(numTri > 0);
+
+      auto colorIt = originalIDToColorIndex.find(id);
+      int colorIndex = colorIt != originalIDToColorIndex.end() ? colorIt->second : -1;
+      
+      for (int i = start; i < end; i += 3) {
+        ps->indices.push_back({
+            static_cast<int>(mesh.triVerts[i]),
+            static_cast<int>(mesh.triVerts[i + 1]),
+            static_cast<int>(mesh.triVerts[i + 2])});
+        ps->color_indices.push_back(colorIndex);
+      }
+      start = end;
+    }
+  } else {
+    for (size_t i = 0; i < mesh.triVerts.size(); i += 3)
+      ps->indices.push_back({
+          static_cast<int>(mesh.triVerts[i]),
+          static_cast<int>(mesh.triVerts[i + 1]),
+          static_cast<int>(mesh.triVerts[i + 2])});
+  }
   return ps;
 }
 
@@ -162,8 +196,12 @@ std::shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
 template std::shared_ptr<CGAL::Polyhedron_3<CGAL_Kernel3>> ManifoldGeometry::toPolyhedron() const;
 #endif
 
-std::shared_ptr<manifold::Manifold> binOp(const manifold::Manifold& lhs, const manifold::Manifold& rhs, manifold::OpType opType) {
-  return std::make_shared<manifold::Manifold>(lhs.Boolean(rhs, opType));
+ManifoldGeometry ManifoldGeometry::binOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs, manifold::OpType opType) const {
+  auto mani = std::make_shared<manifold::Manifold>(lhs.manifold_->Boolean(*rhs.manifold_, opType));
+  // Concatenate the color maps
+  auto colorMap = lhs.originalIDToColor_;
+  colorMap.insert(rhs.originalIDToColor_.begin(), rhs.originalIDToColor_.end());
+  return {mani, colorMap};
 }
 
 std::shared_ptr<ManifoldGeometry> minkowskiOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs) {
@@ -185,19 +223,19 @@ std::shared_ptr<ManifoldGeometry> minkowskiOp(const ManifoldGeometry& lhs, const
 }
 
 ManifoldGeometry ManifoldGeometry::operator+(const ManifoldGeometry& other) const {
-  return {binOp(*this->manifold_, *other.manifold_, manifold::OpType::Add)};
+  return binOp(*this, other, manifold::OpType::Add);
 }
 
 ManifoldGeometry ManifoldGeometry::operator*(const ManifoldGeometry& other) const {
-  return {binOp(*this->manifold_, *other.manifold_, manifold::OpType::Intersect)};
+  return binOp(*this, other, manifold::OpType::Intersect);
 }
 
 ManifoldGeometry ManifoldGeometry::operator-(const ManifoldGeometry& other) const {
-  return {binOp(*this->manifold_, *other.manifold_, manifold::OpType::Subtract)};
+  return binOp(*this, other, manifold::OpType::Subtract);
 }
 
 ManifoldGeometry ManifoldGeometry::minkowski(const ManifoldGeometry& other) const {
-  return {*minkowskiOp(*this, other)};
+  return *minkowskiOp(*this, other);
 }
 
 Polygon2d ManifoldGeometry::slice() const {
@@ -219,6 +257,14 @@ void ManifoldGeometry::transform(const Transform3d& mat) {
     mat(0, 3), mat(1, 3), mat(2, 3)
   );                            
   manifold_ = std::make_shared<manifold::Manifold>(getManifold().Transform(glMat));
+}
+
+void ManifoldGeometry::setColor(const Color4f& c) {
+  if (manifold_->OriginalID() == -1) {
+    manifold_ = std::make_shared<manifold::Manifold>(manifold_->AsOriginal());
+  }
+  originalIDToColor_.clear();
+  originalIDToColor_[manifold_->OriginalID()] = c;
 }
 
 BoundingBox ManifoldGeometry::getBoundingBox() const

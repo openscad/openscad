@@ -34,6 +34,8 @@ public:
 private:
   Reindexer<Vector3d> vertices_;
   PolygonIndices indices_;
+  std::vector<int32_t> color_indices_;
+  std::vector<Color4f> colors_;
   int convexity_{1};
   int dim_;
   boost::tribool convex_;

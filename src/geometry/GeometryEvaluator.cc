@@ -4,6 +4,7 @@
 #include "Polygon2d.h"
 #include "ModuleInstantiation.h"
 #include "State.h"
+#include "ColorNode.h"
 #include "OffsetNode.h"
 #include "TransformNode.h"
 #include "LinearExtrudeNode.h"
@@ -447,6 +448,32 @@ void GeometryEvaluator::addToParent(const State& state,
     this->root = geom;
     assert(this->visitedchildren.empty());
   }
+}
+
+Response GeometryEvaluator::visit(State& state, const ColorNode& node)
+{
+  if (!Feature::ExperimentalColors.is_enabled()) {
+    return GeometryEvaluator::visit(state, (const AbstractNode&)node);
+  }
+    
+  if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
+  if (state.isPostfix()) {
+    std::shared_ptr<const Geometry> geom;
+    if (!isSmartCached(node)) {
+      // First union all children
+      ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
+      if ((geom = res.constptr())) {
+        auto mutableGeom = res.asMutableGeometry();
+        if (mutableGeom) mutableGeom->setColor(node.color);
+        geom = mutableGeom;
+      }
+    } else {
+      geom = smartCacheGet(node, state.preferNef());
+    }
+    addToParent(state, node, geom);
+    node.progress_report();
+  }
+  return Response::ContinueTraversal;
 }
 
 /*!

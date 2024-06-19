@@ -142,6 +142,37 @@ void PolySetBuilder::endPolygon() {
 
 void PolySetBuilder::appendPolySet(const PolySet& ps)
 {
+  // Copy color indices lazily.
+  if (!ps.color_indices.empty()) {
+    // If we hadn't built color_indices_ yet, catch up / fill w/ -1.
+    if (color_indices_.empty() && !indices_.empty()) {
+      color_indices_.resize(indices_.size(), -1);
+    }
+    color_indices_.reserve(color_indices_.size() + ps.color_indices.size());
+
+    std::unordered_map<int32_t, int32_t> color_map;
+    for (int i = 0, n = ps.colors.size(); i < n; i++) {
+      const auto& color = ps.colors[i];
+      // Find index of color in colors_, or add it if it doesn't exist
+      auto it = std::find(colors_.begin(), colors_.end(), color);
+      size_t index;
+      if (it == colors_.end()) {
+        index = colors_.size();
+        color_map[i] = index;
+        colors_.push_back(color);
+      } else {
+        index = it - colors_.begin();
+      }
+    }
+    for (int i = 0, n = ps.color_indices.size(); i < n; i++) {
+      color_indices_.push_back(color_map[ps.color_indices[i]]);
+    }
+  } else if (!color_indices_.empty()) {
+    // If we already built color_indices_ but don't have colors with this ps, fill with -1.
+    color_indices_.resize(color_indices_.size() + ps.indices.size(), -1);
+  }
+
+  reserve(numVertices() + ps.vertices.size(), numPolygons() + ps.indices.size());
   for (const auto& poly : ps.indices) {
     beginPolygon(poly.size());
     for (const auto& ind: poly) {
@@ -158,6 +189,8 @@ std::unique_ptr<PolySet> PolySetBuilder::build()
   polyset = std::make_unique<PolySet>(dim_, convex_);
   vertices_.copy(std::back_inserter(polyset->vertices));
   polyset->indices = std::move(indices_);
+  polyset->color_indices = std::move(color_indices_);
+  polyset->colors = std::move(colors_);
   polyset->setConvexity(convexity_);
   bool is_triangular = true;
   for (const auto& face : polyset->indices) {
