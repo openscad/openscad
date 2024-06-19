@@ -60,22 +60,25 @@ std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const Abstra
                                                                bool allownef)
 {
   auto result = smartCacheGet(node, allownef);
-  if (!result) {
-    // If not found in any caches, we need to evaluate the geometry
-    // traverse() will set this->root to a geometry, which can be any geometry
-    // (including GeometryList if the lazyunions feature is enabled)
-    this->traverse(node);
-    result = this->root;
+  if (result) return result;
 
-    // Insert the raw result into the cache.
-    smartCacheInsert(node, result);
-  }
+  // If not found in any caches, we need to evaluate the geometry
+  // traverse() will set this->root to a geometry, which can be any geometry
+  // (including GeometryList if the lazyunions feature is enabled)
+  this->traverse(node);
+  result = this->root;
 
   // Convert engine-specific 3D geometry to PolySet if needed
-  // Note: we don't store the converted into the cache as it would conflict with subsequent calls where allownef is true.
   if (!allownef) {
-    if (auto ps = PolySetUtils::getGeometryAsPolySet(result)) {
-      assert(ps->getDimension() == 3);
+    std::shared_ptr<const PolySet> ps;
+    if (std::dynamic_pointer_cast<const CGALHybridPolyhedron>(result) ||
+        std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(result)
+#ifdef ENABLE_MANIFOLD
+        || std::dynamic_pointer_cast<const ManifoldGeometry>(result)
+#endif
+        || std::dynamic_pointer_cast<const PolySet>(result)) {
+      ps = PolySetUtils::getGeometryAsPolySet(result);
+      assert(ps && ps->getDimension() == 3);
       // We cannot render concave polygons, so tessellate any PolySets
       if (!ps->isEmpty() && !ps->isTriangular()) {
         // Since is_convex() doesn't handle non-planar faces, we need to tessellate
@@ -85,9 +88,10 @@ std::shared_ptr<const Geometry> GeometryEvaluator::evaluateGeometry(const Abstra
           ps = PolySetUtils::tessellate_faces(*ps);
         }
       }
-      return ps;
     }
+    if (ps) result = ps;
   }
+  smartCacheInsert(node, result);
   return result;
 }
 
