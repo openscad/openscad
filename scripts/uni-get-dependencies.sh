@@ -102,7 +102,7 @@ get_debian_deps()
  apt-get update
  apt-get -y install \
   build-essential curl ninja-build libffi-dev \
-  libxmu-dev cmake bison flex git-core libboost-all-dev \
+  libxmu-dev cmake bison flex git-core gnulib libboost-all-dev \
   libmpfr-dev libboost-dev libglew-dev libcairo2-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp3-dev libgmp-dev \
   imagemagick libfreetype6-dev libdouble-conversion-dev \
