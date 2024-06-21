@@ -113,10 +113,20 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const {
   if (Feature::ExperimentalColors.is_enabled() && !originalIDToColor_.empty()) {
     ps->color_indices.resize(ps->indices.size(), -1);
     ps->colors.reserve(originalIDToColor_.size());
+
+    std::map<Color4f, size_t> colorToIndex;
     std::map<uint32_t, size_t> originalIDToColorIndex;
     for (const auto& [originalID, color] : originalIDToColor_) {
-      originalIDToColorIndex[originalID] = ps->colors.size();
-      ps->colors.push_back(color);
+      auto colorIt = colorToIndex.find(color);
+      size_t color_index;
+      if (colorIt == colorToIndex.end()) {
+        color_index = ps->colors.size();
+        colorToIndex[color] = color_index;
+        ps->colors.push_back(color);
+      } else {
+        color_index = colorIt->second;
+      }
+      originalIDToColorIndex[originalID] = color_index;
     }
 
     auto start = mesh.runIndex[0];
