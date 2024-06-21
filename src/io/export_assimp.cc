@@ -59,8 +59,8 @@ const char *getAiFormatName(FileFormat fileFormat) {
       return "stlb";
     case FileFormat::OBJ:
       return "obj";
-    case FileFormat::_3MF:
-      return "3mf";
+    // case FileFormat::_3MF:
+    //   return "3mf";
     case FileFormat::COLLADA:
       return "collada";
     case FileFormat::STP:
