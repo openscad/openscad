@@ -114,13 +114,6 @@ get_qt5_deps_debian()
 {
   # OpenSCAD requires Qt5
   apt-get -y install qtbase5-dev libqt5scintilla2-dev libqt5opengl5-dev libqt5svg5-dev qtmultimedia5-dev libqt5multimedia5-plugins qt5-qmake
-  if [ ! "`command -v qmake`" ]; then
-    apt-get -y install qt5-default
-    echo "installed qt5-default to enable qmake"
-  elif [ ! "`qmake --version | grep qmake.version`" ]; then
-    apt-get -y install qt5-default
-    echo "installed qt5qt-default to enable qmake"
-  fi
 }
 
 get_debian_8_deps()
