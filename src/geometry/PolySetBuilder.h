@@ -29,6 +29,9 @@ public:
   void addVertex(const Vector3d &v);
   // Calling this is optional; will be called automatically when adding a new polygon or building the PolySet
   void endPolygon();
+  bool empty() const {
+    return indices_.empty();
+  }
 
   std::unique_ptr<PolySet> build();
 private:

@@ -43,8 +43,6 @@
 #include "ManifoldGeometry.h"
 #endif
 
-#ifdef ENABLE_ASSIMP
-
 #include <assimp/scene.h>
 #include <assimp/Exporter.hpp>
 
@@ -83,6 +81,7 @@ struct AiSceneBuilder {
   std::map<Color4f, int> colorMaterialMap;
   std::vector<aiMaterial*> materials;
   std::vector<aiMesh*> meshes;
+  std::vector<aiNode*> nodes;
 
   ~AiSceneBuilder() {
     for (auto material : materials) {
@@ -110,35 +109,47 @@ struct AiSceneBuilder {
     return i;
   }
 
-  void addMesh(const PolySet& ps)
+  void addPolySet(const PolySet& ps)
   {
-    auto mesh = new aiMesh();
-    mesh->mPrimitiveTypes = aiPrimitiveType_TRIANGLE;
-    
-    if (ps.getColor().isValid()) {
-      mesh->mMaterialIndex = addColorMaterial(ps.getColor());
-    } else {
-      mesh->mMaterialIndex = -1;
-    }
+    auto node = new aiNode();
+    auto splits = ps.splitByColor();
+    node->mMeshes = new unsigned int[splits.size()];
+    node->mNumMeshes = splits.size();
 
-    mesh->mNumVertices = ps.vertices.size();
-    mesh->mVertices = new aiVector3D[ps.vertices.size()];
-    for (int i = 0; i < ps.vertices.size(); i++) {
-      mesh->mVertices[i] = aiVector3D(ps.vertices[i][0], ps.vertices[i][1], ps.vertices[i][2]);
-    }
+    for (size_t iSplit = 0; iSplit < splits.size(); iSplit++) {
+      const auto & split = splits[iSplit];
+      const auto & color = split.first;
+      const auto & ps = split.second;
+      auto mesh = new aiMesh();
+      mesh->mPrimitiveTypes = aiPrimitiveType_TRIANGLE;
+      
+      if (color.has_value()) {
+        mesh->mMaterialIndex = addColorMaterial(color.value());
+      } else {
+        mesh->mMaterialIndex = -1;
+      }
 
-    mesh->mNumFaces = ps.indices.size();
-    mesh->mFaces = new aiFace[ps.indices.size()];
-    for (int i = 0, n = ps.indices.size(); i < n; i++) {
-      auto & face = mesh->mFaces[i];
-      face.mNumIndices = 3;
-      face.mIndices = new unsigned int[3];
-      face.mIndices[0] = ps.indices[i][0];
-      face.mIndices[1] = ps.indices[i][1];
-      face.mIndices[2] = ps.indices[i][2];
-    }
+      mesh->mNumVertices = ps->vertices.size();
+      mesh->mVertices = new aiVector3D[ps->vertices.size()];
+      for (int i = 0; i < ps->vertices.size(); i++) {
+        mesh->mVertices[i] = aiVector3D(ps->vertices[i][0], ps->vertices[i][1], ps->vertices[i][2]);
+      }
 
-    meshes.push_back(mesh);
+      mesh->mNumFaces = ps->indices.size();
+      mesh->mFaces = new aiFace[ps->indices.size()];
+      for (int i = 0, n = ps->indices.size(); i < n; i++) {
+        auto & face = mesh->mFaces[i];
+        face.mNumIndices = 3;
+        face.mIndices = new unsigned int[3];
+        face.mIndices[0] = ps->indices[i][0];
+        face.mIndices[1] = ps->indices[i][1];
+        face.mIndices[2] = ps->indices[i][2];
+      }
+
+      meshes.push_back(mesh);
+      node->mMeshes[iSplit] = meshes.size() - 1;
+    }
+    nodes.push_back(node);
   }
 
   std::unique_ptr<aiScene> toScene() {
@@ -153,29 +164,17 @@ struct AiSceneBuilder {
     scene->mNumMeshes = meshes.size();
 
     scene->mRootNode = new aiNode();
-    auto single_node = true;
-    if (single_node) {
-      scene->mRootNode->mMeshes = new unsigned int[meshes.size()];
-      for (int i = 0; i < meshes.size(); i++) {
-        scene->mRootNode->mMeshes[i] = i;
-      }
-      scene->mRootNode->mNumMeshes = meshes.size();
-    } else {
-      scene->mRootNode->mNumChildren = meshes.size();
-      scene->mRootNode->mChildren = new aiNode*[meshes.size()];
-      for (int i = 0; i < meshes.size(); i++) {
-        auto node = new aiNode();
-        node->mMeshes = new unsigned int[1];
-        node->mMeshes[0] = i;
-        node->mNumMeshes = 1;
-        node->mParent = scene->mRootNode;
-        scene->mRootNode->mChildren[i] = node;
-      }
+    scene->mRootNode->mNumChildren = nodes.size();
+    scene->mRootNode->mChildren = new aiNode*[nodes.size()];
+    for (int i = 0; i < nodes.size(); i++) {
+      nodes[i]->mParent = scene->mRootNode;
     }
+    std::copy(nodes.begin(), nodes.end(), scene->mRootNode->mChildren);
 
     // Reset vectors so we don't delete them in the destructor: they're owned by the aiScene now.
     materials.clear();
     meshes.clear();
+    nodes.clear();
 
     return scene;
   }
@@ -204,23 +203,21 @@ bool export_assimp(const std::shared_ptr<const Geometry>& geom, std::ostream& ou
         LOG(message_group::Export_Warning, "Exported object may not be a valid 2-manifold and may need repair");
       }
       if (const auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*N->p3)) {
-        builder.addMesh(*ps);
+        builder.addPolySet(*ps);
         return true;
       }
       return false;
     } else if (const auto hybrid = dynamic_cast<const CGALHybridPolyhedron *>(&geom)) {
-      builder.addMesh(*hybrid->toPolySet());
+      builder.addPolySet(*hybrid->toPolySet());
       return true;
 #endif
 #ifdef ENABLE_MANIFOLD
     } else if (const auto mani = dynamic_cast<const ManifoldGeometry *>(&geom)) {
-      for (const auto & ps : mani->toPolySets()) {
-        builder.addMesh(*ps);
-      }
+      builder.addPolySet(*mani->toPolySet());
       return true;
 #endif
     } else if (const auto ps = dynamic_cast<const PolySet *>(&geom)) {
-      builder.addMesh(*PolySetUtils::tessellate_faces(*ps));
+      builder.addPolySet(*PolySetUtils::tessellate_faces(*ps));
       return true;
     } else if (dynamic_cast<const Polygon2d *>(&geom)) { // NOLINT(bugprone-branch-clone)
       assert(false && "Unexpected 2D geom in 3D model");
@@ -244,13 +241,3 @@ bool export_assimp(const std::shared_ptr<const Geometry>& geom, std::ostream& ou
   output.write(reinterpret_cast<const char*>(blob->data), blob->size);
   return true;
 }
-
-#else // ENABLE_ASSIMP
-
-bool export_assimp(const std::shared_ptr<const Geometry>& geom, std::ostream& output, FileFormat format)
-{
-  LOG("Export to assimp was not enabled when building the application.");
-  return false;
-}
-
-#endif // ENABLE_ASSIMP
