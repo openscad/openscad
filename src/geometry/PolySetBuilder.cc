@@ -150,22 +150,23 @@ void PolySetBuilder::appendPolySet(const PolySet& ps)
     }
     color_indices_.reserve(color_indices_.size() + ps.color_indices.size());
 
-    std::unordered_map<int32_t, int32_t> color_map;
-    for (int i = 0, n = ps.colors.size(); i < n; i++) {
+    auto nColors = ps.colors.size();
+    std::vector<uint32_t> color_map(nColors);
+    for (int i = 0; i < nColors; i++) {
       const auto& color = ps.colors[i];
       // Find index of color in colors_, or add it if it doesn't exist
       auto it = std::find(colors_.begin(), colors_.end(), color);
       size_t index;
       if (it == colors_.end()) {
-        index = colors_.size();
-        color_map[i] = index;
-        colors_.push_back(color);
+        color_map[i] = colors_.size();
+        color_map.push_back(index);
       } else {
-        index = it - colors_.begin();
+        color_map[i] = it - colors_.begin();
       }
     }
     for (int i = 0, n = ps.color_indices.size(); i < n; i++) {
-      color_indices_.push_back(color_map[ps.color_indices[i]]);
+      const auto color_index = ps.color_indices[i];
+      color_indices_.push_back(color_index < 0 ? -1 : color_map[color_index]);
     }
   } else if (!color_indices_.empty()) {
     // If we already built color_indices_ but don't have colors with this ps, fill with -1.
