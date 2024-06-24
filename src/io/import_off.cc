@@ -233,19 +233,12 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
           int g=boost::lexical_cast<int>(words[i++]);
           int b=boost::lexical_cast<int>(words[i++]);
           int a=i < words.size() ? boost::lexical_cast<int>(words[i++]) : 255;
-          Color4f color(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
+          Color4f color(r, g, b, a);
           
-          auto it = color_indices.find(color);
-          int32_t colorIndex;
-          if (it != color_indices.end()) {
-            colorIndex = it->second;
-          } else {
-            colorIndex = ps->colors.size();
-            color_indices[color] = colorIndex;
-            ps->colors.push_back(color);
-          }
+          auto iter_pair = color_indices.insert_or_assign(color, ps->colors.size());
+          if (iter_pair.second) ps->colors.push_back(color); // inserted
           ps->color_indices.resize(face_idx, -1);
-          ps->color_indices.push_back(colorIndex);
+          ps->color_indices.push_back(iter_pair.first->second);
         } else {
           LOG(message_group::Warning, "Ignoring color information in OFF file (enable `colors` feature to read it).");
           logged_color_warning = true;
