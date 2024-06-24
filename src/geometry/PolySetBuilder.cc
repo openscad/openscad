@@ -156,10 +156,9 @@ void PolySetBuilder::appendPolySet(const PolySet& ps)
       const auto& color = ps.colors[i];
       // Find index of color in colors_, or add it if it doesn't exist
       auto it = std::find(colors_.begin(), colors_.end(), color);
-      size_t index;
       if (it == colors_.end()) {
         color_map[i] = colors_.size();
-        color_map.push_back(index);
+        colors_.push_back(color);
       } else {
         color_map[i] = it - colors_.begin();
       }
