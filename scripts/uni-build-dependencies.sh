@@ -763,7 +763,7 @@ if [ ! "`command -v curl`" ]; then
 fi
 
 if [ ! "`command -v bison`" ]; then
-  build_bison 2.6.1
+  build_bison 3.8.2
 fi
 
 # NB! For cmake, also update the actual download URL in the function
