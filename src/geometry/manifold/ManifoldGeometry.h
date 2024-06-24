@@ -19,7 +19,7 @@ public:
   VISITABLE_GEOMETRY();
 
   ManifoldGeometry();
-  ManifoldGeometry(const std::shared_ptr<const manifold::Manifold>& object, const std::map<uint32_t, Color4f> & originalIDToColor = std::map<uint32_t, Color4f>());
+  ManifoldGeometry(const std::shared_ptr<const manifold::Manifold>& object, const std::map<uint32_t, Color4f> & originalIDToColor = {});
   ManifoldGeometry(const ManifoldGeometry& other) = default;
   ManifoldGeometry& operator=(const ManifoldGeometry& other);
 

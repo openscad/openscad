@@ -195,7 +195,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
     }
 
     auto geom = createManifoldFromSurfaceMesh(m);
-    // TODO: preserve fully colored polyset?
+    // TODO: preserve color if polyset is fully monochrome, or maybe pass colors around in surface mesh?
     return geom;
   #else
     return std::make_shared<ManifoldGeometry>();
