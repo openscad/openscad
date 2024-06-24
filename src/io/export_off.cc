@@ -51,9 +51,6 @@ void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
 
   output << "OFF " << numverts << " " << ps->indices.size() << " 0\n";
-  if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
-    output << "# Vertices\n";
-  }
   for (size_t i = 0; i < numverts; ++i) {
     output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
   }
