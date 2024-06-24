@@ -452,7 +452,7 @@ void GeometryEvaluator::addToParent(const State& state,
 
 Response GeometryEvaluator::visit(State& state, const ColorNode& node)
 {
-  if (!Feature::ExperimentalColors.is_enabled()) {
+  if (!Feature::ExperimentalRenderColors.is_enabled()) {
     return GeometryEvaluator::visit(state, (const AbstractNode&)node);
   }
     

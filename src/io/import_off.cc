@@ -226,7 +226,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       }
       //PRINTD("}");
       if (words.size() >= face_size + 4) {
-        if (Feature::ExperimentalColors.is_enabled()) {
+        if (Feature::ExperimentalRenderColors.is_enabled()) {
           i = face_size + 1;
           // handle optional color info (r g b [a])
           int r=boost::lexical_cast<int>(words[i++]);

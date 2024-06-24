@@ -716,6 +716,16 @@ list(APPEND EXPORT_STL_TEST_FILES
   ${TEST_SCAD_DIR}/stl/stl-export.scad
 )
 
+list(APPEND COLOR_TEST_FILES
+  ${TEST_SCAD_DIR}/3D/features/color-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/background-modifier.scad
+  ${TEST_SCAD_DIR}/3D/features/background-modifier2.scad
+  ${TEST_SCAD_DIR}/3D/features/child-child-test.scad
+  ${TEST_SCAD_DIR}/3D/features/linear_extrude-parameter-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/testcolornames.scad
+)
+
 list(APPEND EXPORT_OFFEXPORT_TEST_FILES
   ${TEST_SCAD_DIR}/off/off-export.scad
 )
@@ -1044,8 +1054,9 @@ add_cmdline_test(manifold-stlexport    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${
 add_cmdline_test(objexport             EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render --enable=predictible-output)
 add_cmdline_test(3mfexport             EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
 add_cmdline_test(offexport             EXPERIMENTAL OPENSCAD SUFFIX off FILES ${EXPORT_OFFEXPORT_TEST_FILES} ARGS --enable=predictible-output --render)
-add_cmdline_test(color-offexport       EXPERIMENTAL OPENSCAD SUFFIX off FILES ${EXPORT_OFFEXPORT_TEST_FILES} ARGS --enable=manifold --enable=colors --enable=predictible-output --render)
-add_cmdline_test(color-offimport       EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPORT_OFFIMPORT_TEST_FILES} ARGS --enable=colors)
+add_cmdline_test(color-offexport       EXPERIMENTAL OPENSCAD SUFFIX off FILES ${EXPORT_OFFEXPORT_TEST_FILES} ARGS --enable=manifold --enable=render-colors --enable=predictible-output --render)
+add_cmdline_test(color-offimport       EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPORT_OFFIMPORT_TEST_FILES} ARGS --enable=render-colors)
+add_cmdline_test(colorpngtest          EXPERIMENTAL OPENSCAD SUFFIX png FILES ${COLOR_TEST_FILES} ARGS --enable=render-colors)
 
 # stlpngtest: direct STL output, preview rendering
 add_cmdline_test(stlpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=STL EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})
