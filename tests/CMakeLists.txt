@@ -722,21 +722,11 @@ list(APPEND COLOR_3D_TEST_FILES
   ${TEST_SCAD_DIR}/3D/features/linear_extrude-parameter-tests.scad
   ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
   ${TEST_SCAD_DIR}/3D/features/testcolornames.scad
-  # ${TEST_SCAD_DIR}/off/off-export.scad
 )
 
 list(APPEND EXPORT_OFFEXPORT_TEST_FILES
   ${TEST_SCAD_DIR}/off/off-export.scad
 )
-# list(APPEND EXPORT_OFFEXPORT_TEST_FILES
-# )
-
-list(APPEND EXPORT_OFFIMPORT_TEST_FILES
-  ${TEST_SCAD_DIR}/off/off-import-export.scad
-)
-# list(APPEND EXPORT_OFFIMPORT_TEST_FILES
-#   ${TEST_SCAD_DIR}/off/off-import-export.scad
-# )
 
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-export.scad)
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-import-export_dodecahedron.scad)
@@ -1059,6 +1049,8 @@ add_cmdline_test(stlexport             EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${
 add_cmdline_test(manifold-stlexport    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=manifold --render)
 add_cmdline_test(objexport             EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render --enable=predictible-output)
 add_cmdline_test(3mfexport             EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
+add_cmdline_test(offexport             EXPERIMENTAL OPENSCAD SUFFIX off FILES ${EXPORT_OFFEXPORT_TEST_FILES} ARGS --enable=predictible-output)
+add_cmdline_test(color-offexport       EXPERIMENTAL OPENSCAD SUFFIX off FILES ${EXPORT_OFFEXPORT_TEST_FILES} ARGS --enable=predictible-output --enable=manifold --enable=render-colors)
 add_cmdline_test(colorpngtest          EXPERIMENTAL OPENSCAD SUFFIX png FILES ${COLOR_3D_TEST_FILES} ARGS --render --enable=render-colors --enable=manifold)
 
 # stlpngtest: direct STL output, preview rendering
