@@ -1,13 +1,15 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
-#include "cgalutils.h"
 #include "PolySetBuilder.h"
+#include "cgalutils.h"
 
+#include <utility>
+
+#include <CGAL/Constrained_Delaunay_triangulation_2.h>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Polygon_2.h>
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
 #include <CGAL/Surface_mesh.h>
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
-#include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Triangulation_face_base_with_info_2.h>
-#include <CGAL/Polygon_2.h>
 #include <CGAL/exceptions.h>
 
 namespace CGALUtils {
@@ -23,7 +25,7 @@ struct FaceInfo
 
 
 using K = CGAL::Exact_predicates_inexact_constructions_kernel;
-using Vb = CGAL::Triangulation_vertex_base_2<K>;
+using Vb = CGAL::Triangulation_vertex_base_with_info_2<int, K>;
 using Fbb = CGAL::Triangulation_face_base_with_info_2<FaceInfo, K>;
 using Fb = CGAL::Constrained_triangulation_face_base_2<K, Fbb>;
 using TDS = CGAL::Triangulation_data_structure_2<Vb, Fb>;
@@ -99,22 +101,25 @@ template void triangulateFaces(CGAL::Surface_mesh<CGAL::Point_3<CGAL::Epick>>& p
 
 std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d& polygon2d)
 {
-  PolySetBuilder builder(0, 0, 2, unknown);
+  auto polyset = std::make_unique<PolySet>(2); 
+  polyset->setTriangular(true);
 
   Polygon2DCGAL::CDT cdt; // Uses a constrained Delaunay triangulator.
 
   try {
-
     // Adds all vertices, and add all contours as constraints.
     for (const auto& outline : polygon2d.outlines()) {
       // Start with last point
-      auto prev = cdt.insert({outline.vertices[outline.vertices.size() - 1][0], outline.vertices[outline.vertices.size() - 1][1]});
-      for (const auto& v : outline.vertices) {
+      int last_idx = outline.vertices.size() - 1;
+      auto prev = cdt.insert({outline.vertices[last_idx][0], outline.vertices[last_idx][1]});
+      prev->info() = last_idx;
+      for (int i=0;i<outline.vertices.size();i++) {
+        const auto &v = outline.vertices[i];
+        polyset->vertices.emplace_back(v[0], v[1], 0.0);
         auto curr = cdt.insert({v[0], v[1]});
-        if (prev != curr) { // Ignore duplicate vertices
+        curr->info() = polyset->vertices.size() - 1;
           cdt.insert_constraint(prev, curr);
           prev = curr;
-        }
       }
     }
 
@@ -128,13 +133,10 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
   mark_domains(cdt);
   for (auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
     if (fit->info().in_domain()) {
-      builder.beginPolygon(3);
-      for (int i = 0; i < 3; ++i) {
-        builder.addVertex(Vector3d(fit->vertex(i)->point()[0], fit->vertex(i)->point()[1], 0));
-      }
+      polyset->indices.push_back({fit->vertex(0)->info(), fit->vertex(1)->info(), fit->vertex(2)->info()});
     }
   }
-  return builder.build();
+  return polyset;
 }
 
 } // namespace CGALUtils
