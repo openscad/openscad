@@ -1,8 +1,11 @@
+#include "cgalutils.h"
 #include "import.h"
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 #include "printutils.h"
 #include "AST.h"
+#include "Feature.h"
+#include "manifoldutils.h"
 
 #include <fstream>
 #include <assimp/scene.h>
@@ -20,16 +23,12 @@ std::unique_ptr<Geometry> import_assimp(const std::string& filename, const Locat
           aiComponent_TANGENTS_AND_BITANGENTS  |
           aiComponent_BONEWEIGHTS              |
           aiComponent_ANIMATIONS               |
-          // aiComponent_TEXTURES                 |
+          aiComponent_TEXTURES                 |
           aiComponent_LIGHTS                   |
           aiComponent_CAMERAS);
 
-  // And have it read the given file with some example postprocessing
-  // Usually - if speed is not the most important aspect for you - you'll
-  // probably to request more postprocessing than we do in this example.
   auto scene = importer.ReadFile(filename,
-    // aiProcess_JoinIdenticalVertices  |
-    // aiProcess_DropNormals |
+    aiProcess_DropNormals |
     aiProcess_RemoveComponent |
     aiProcess_Triangulate |
     aiProcess_ValidateDataStructure
@@ -38,8 +37,9 @@ std::unique_ptr<Geometry> import_assimp(const std::string& filename, const Locat
     LOG(message_group::Error, "Error loading file '%1$s' with Assimp: %2$s", filename, importer.GetErrorString());
     return nullptr;
   }
-  std::function<std::unique_ptr<Geometry>(const aiNode*)> processNode = [&](const aiNode* node) -> std::unique_ptr<Geometry> {
-    std::vector<std::unique_ptr<Geometry>> children;
+
+  std::vector<std::unique_ptr<PolySet>> solids;
+  std::function<void(const aiNode*)> visitNode = [&](const aiNode* node) {
 
     if (node->mNumMeshes) {
       // Each of the meshes may have a different color, and may repeat vertices from the others.
@@ -73,7 +73,7 @@ std::unique_ptr<Geometry> import_assimp(const std::string& filename, const Locat
           const aiFace& face = mesh->mFaces[j];
           if (face.mNumIndices != 3) {
             LOG(message_group::Error, "Error loading face %1$d from mesh %2$d in file '%3$s' with Assimp: only triangular faces are supported", j, i, filename);
-            return std::unique_ptr<Geometry>();
+            return;
           }
           auto i1 = face.mIndices[0];
           auto i2 = face.mIndices[1];
@@ -89,29 +89,36 @@ std::unique_ptr<Geometry> import_assimp(const std::string& filename, const Locat
           LOG(message_group::Error, "Error building PolySet from mesh %1$d in file '%2$s' with Assimp", i, filename);
           continue;
         }
-        children.push_back(std::move(polySet));
+        solids.push_back(std::move(polySet));
       }
     }
 
     for (unsigned int i = 0; i < node->mNumChildren; ++i) {
-      auto childGeom = processNode(node->mChildren[i]);
-      if (childGeom) {
-        children.push_back(std::move(childGeom));
-      }
-    }
-    
-    if (children.empty()) {
-      return std::unique_ptr<Geometry>();
-    } else if (children.size() == 1) {
-      return std::move(children[0]);
-    } else {
-      Geometry::Geometries gchildren;
-      for (auto& child : children) {
-        gchildren.emplace_back(nullptr, std::move(child));
-      }
-      return std::make_unique<GeometryList>(gchildren);
+      visitNode(node->mChildren[i]);
     }
   };
 
-  return processNode(scene->mRootNode);
+  visitNode(scene->mRootNode);
+
+  if (solids.empty()) {
+    LOG(message_group::Error, "No meshes found in file '%1$s' with Assimp", filename);
+    return nullptr;
+  } else if (solids.size() == 1) {
+    return std::move(solids[0]);
+  } else {
+    Geometry::Geometries geoms;
+    for (auto& solid : solids) {
+      geoms.emplace_back(nullptr, std::move(solid));
+    }
+    std::shared_ptr<Geometry> res;
+    // if (Feature::ExperimentalManifold.is_enabled()) {
+    res = ManifoldUtils::applyOperator3DManifold(geoms, OpenSCADOperator::UNION);
+    // } else if (Feature::ExperimentalFastCsg.is_enabled()) {
+    //   res = CGALUtils::applyOperator3DHybrid(children, OpenSCADOperator::UNION);
+    // } else {
+    //   res = CGALUtils::applyOperator3D(children, OpenSCADOperator::UNION);
+    // }
+    // Copy just because applyUnion3D still returns shared ptrs
+    return res ? res->copy() : nullptr;
+  }
 }
