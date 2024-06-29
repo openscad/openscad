@@ -931,14 +931,14 @@ fi
 ARCHS=()
 GNU_ARCHS=()
 if $OPTION_ARM64 || $OPTION_X86_64; then
-    if $OPTION_X86_64; then
-	ARCHS+=(x86_64)
-	GNU_ARCHS+=(x86_64)
-    fi
-    if $OPTION_ARM64; then
-	ARCHS+=(arm64)
-	GNU_ARCHS+=(aarch64)
-    fi
+  if $OPTION_ARM64; then
+    ARCHS+=(arm64)
+    GNU_ARCHS+=(aarch64)
+  fi
+  if $OPTION_X86_64; then
+    ARCHS+=(x86_64)
+	  GNU_ARCHS+=(x86_64)
+  fi
 else
     ARCHS+=($LOCAL_ARCH)
     GNU_ARCHS+=($LOCAL_GNU_ARCH)
