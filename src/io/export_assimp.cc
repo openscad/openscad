@@ -180,10 +180,41 @@ struct AiSceneBuilder {
   }
 };
 
+static const char * assimp_format_name(FileFormat fileFormat) {
+  switch (fileFormat) {
+  case FileFormat::ASCIISTL:
+    return "stl";
+  case FileFormat::STL:
+    return "stlb";
+  case FileFormat::OBJ:
+    return "obj";
+  case FileFormat::OFF:
+    return "off";
+  case FileFormat::WRL:
+    return "wrl";
+  case FileFormat::AMF:
+    return "amf";
+  case FileFormat::_3MF:
+    return "3mf";
+  case FileFormat::COLLADA:
+    return "collada";
+  case FileFormat::STP:
+    return "stp";
+  case FileFormat::PLY:
+    return "plyb";
+  case FileFormat::GLTF:
+    return "glb2";
+  case FileFormat::X3D:
+    return "x3d";
+  default:
+    return nullptr;
+  }
+}
+
 bool export_assimp(const std::shared_ptr<const Geometry>& geom, std::ostream& output, FileFormat fileFormat)
 {
-  const char *formatName = getAiFormatName(fileFormat);
-  if (!formatName) {
+  auto format_name = assimp_format_name(fileFormat);
+  if (!format_name) {
     return false;
   }
 
@@ -232,8 +263,8 @@ bool export_assimp(const std::shared_ptr<const Geometry>& geom, std::ostream& ou
   
   auto scene = builder.toScene();
   ::Assimp::Exporter exporter;
-  // exporter.Export(scene.get(), formatName, "out_file.gltf");
-  const aiExportDataBlob *blob = exporter.ExportToBlob(scene.get(), formatName);
+  // exporter.Export(scene.get(), format_name, "out_file.gltf");
+  const aiExportDataBlob *blob = exporter.ExportToBlob(scene.get(), format_name);
   if (!blob) {
     LOG(message_group::Export_Error, "Assimp exporter failed: %1$s.", exporter.GetErrorString());
     return false;

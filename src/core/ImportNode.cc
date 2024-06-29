@@ -89,6 +89,12 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     else if (ext == ".amf") actualtype = ImportType::AMF;
     else if (ext == ".svg") actualtype = ImportType::SVG;
     else if (ext == ".obj") actualtype = ImportType::OBJ;
+    else if (Feature::ExperimentalAssimp.is_enabled()) {
+      if (ext == ".glb" || ext == ".gltf") actualtype = ImportType::GLTF;
+      else if (ext == ".x3d") actualtype = ImportType::X3D;
+      else if (ext == ".dae") actualtype = ImportType::COLLADA;
+      else if (ext == ".stp") actualtype = ImportType::STP;
+    }
   }
 
   auto node = std::make_shared<ImportNode>(inst, actualtype);
@@ -172,6 +178,14 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
 {
   std::unique_ptr<Geometry> g;
   auto loc = this->modinst->location();
+
+  if (Feature::ExperimentalAssimp.is_enabled()) {
+    g = import_assimp(this->filename, loc);
+    if (g) {
+      g->setConvexity(this->convexity);
+      return g;
+    }
+  }
 
   switch (this->type) {
   case ImportType::STL: {

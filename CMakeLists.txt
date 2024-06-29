@@ -793,8 +793,8 @@ set(CORE_SOURCES
   src/io/DxfData.cc
   src/io/dxfdim.cc
   src/io/export.cc
-  src/io/export_assimp.cc
   src/io/export_amf.cc
+  src/io/export_assimp.cc
   src/io/export_dxf.cc
   src/io/export_obj.cc
   src/io/export_off.cc
@@ -804,8 +804,8 @@ set(CORE_SOURCES
   src/io/export_svg.cc
   src/io/export_param.cc
   src/io/fileutils.cc
-  # src/io/import_assimp.cc
   src/io/import_amf.cc
+  src/io/import_assimp.cc
   src/io/import_stl.cc
   src/io/import_obj.cc
   src/io/import_off.cc

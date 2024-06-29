@@ -103,7 +103,6 @@ struct ExportInfo {
 bool canPreview(const FileFormat format);
 bool is3D(const FileFormat format);
 bool is2D(const FileFormat format);
-bool supportsColor(const FileFormat format);
 
 bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);
 
@@ -119,8 +118,7 @@ void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_nefdbg(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_nef3(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
-
-bool export_assimp(const std::shared_ptr<const Geometry>& geom, std::ostream& output, FileFormat format);
+bool export_assimp(const std::shared_ptr<const Geometry>& geom, std::ostream& output, FileFormat fileFormat);
 
 enum class Previewer { OPENCSG, THROWNTOGETHER };
 enum class RenderType { GEOMETRY, BACKEND_SPECIFIC, OPENCSG, THROWNTOGETHER };

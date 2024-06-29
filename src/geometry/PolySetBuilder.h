@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <map>
+#include <vector>
 
 #include <Reindexer.h>
 #include "Polygon2d.h"
@@ -22,7 +24,7 @@ public:
   void appendPolySet(const PolySet &ps);
   void appendGeometry(const std::shared_ptr<const Geometry>& geom);
   void appendPolygon(const std::vector<int>& inds);
-  void appendPolygon(const std::vector<Vector3d>& v);
+  void appendPolygon(const std::vector<Vector3d>& v, const Color4f & color = {});
 
   void beginPolygon(int nvertices);
   void addVertex(int ind);
@@ -39,6 +41,7 @@ private:
   PolygonIndices indices_;
   std::vector<int32_t> color_indices_;
   std::vector<Color4f> colors_;
+  std::map<Color4f, int32_t> color_map_;
   int convexity_{1};
   int dim_;
   boost::tribool convex_;
