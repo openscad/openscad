@@ -12,6 +12,7 @@ enum class ImportType {
   STL,
   OFF,
   GLTF,
+  WRL,
   X3D,
   COLLADA,
   STP,

@@ -1,7 +1,9 @@
 #include "cgalutils.h"
 #include "import.h"
 #include "PolySet.h"
+#include "CGALHybridPolyhedron.h"
 #include "PolySetBuilder.h"
+#include "PolySetUtils.h"
 #include "printutils.h"
 #include "AST.h"
 #include "Feature.h"
@@ -12,6 +14,29 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 
+
+// TODO: Refactor into some GeometryUtils class w/ CSG ops from GeometryEvaluator::applyToChildren3D 
+static std::shared_ptr<const Geometry> union3d(const Geometry::Geometries& children) {
+#ifdef ENABLE_MANIFOLD
+  if (Feature::ExperimentalManifold.is_enabled()) {
+    return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::UNION);
+  }
+#endif
+#ifdef ENABLE_CGAL
+  if (Feature::ExperimentalFastCsg.is_enabled()) {
+    return CGALUtils::applyOperator3DHybrid(children, OpenSCADOperator::UNION);
+  } else {
+    return CGALUtils::applyOperator3D(children, OpenSCADOperator::UNION);
+  }
+#endif
+  PolySetBuilder builder(3);
+  for (const auto& child : children) {
+    if (const auto ps = PolySetUtils::getGeometryAsPolySet(child.second)) {
+      builder.appendPolySet(*ps);
+    }
+  }
+  return builder.build();
+}
 
 std::unique_ptr<Geometry> import_assimp(const std::string& filename, const Location& loc) {
 
@@ -110,14 +135,8 @@ std::unique_ptr<Geometry> import_assimp(const std::string& filename, const Locat
     for (auto& solid : solids) {
       geoms.emplace_back(nullptr, std::move(solid));
     }
-    std::shared_ptr<Geometry> res;
-    // if (Feature::ExperimentalManifold.is_enabled()) {
-    res = ManifoldUtils::applyOperator3DManifold(geoms, OpenSCADOperator::UNION);
-    // } else if (Feature::ExperimentalFastCsg.is_enabled()) {
-    //   res = CGALUtils::applyOperator3DHybrid(children, OpenSCADOperator::UNION);
-    // } else {
-    //   res = CGALUtils::applyOperator3D(children, OpenSCADOperator::UNION);
-    // }
+
+    auto res = union3d(geoms);
     // Copy just because applyUnion3D still returns shared ptrs
     return res ? res->copy() : nullptr;
   }

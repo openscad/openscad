@@ -191,7 +191,7 @@ static const char * assimp_format_name(FileFormat fileFormat) {
   case FileFormat::OFF:
     return "off";
   case FileFormat::WRL:
-    return "wrl";
+    return "vrml";
   case FileFormat::AMF:
     return "amf";
   case FileFormat::_3MF:
