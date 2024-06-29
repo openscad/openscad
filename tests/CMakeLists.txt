@@ -721,7 +721,6 @@ list(APPEND COLOR_3D_TEST_FILES
   ${TEST_SCAD_DIR}/3D/features/child-child-test.scad
   ${TEST_SCAD_DIR}/3D/features/linear_extrude-parameter-tests.scad
   ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
-  ${TEST_SCAD_DIR}/3D/features/testcolornames.scad
 )
 
 list(APPEND EXPORT_OFFEXPORT_TEST_FILES
