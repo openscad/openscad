@@ -716,12 +716,13 @@ list(APPEND EXPORT_STL_TEST_FILES
   ${TEST_SCAD_DIR}/stl/stl-export.scad
 )
 
-list(APPEND EXPORT_OFFEXPORT_TEST_FILES
-  ${TEST_SCAD_DIR}/off/off-export.scad
+list(APPEND COLOR_3D_TEST_FILES
+  ${TEST_SCAD_DIR}/3D/features/linear_extrude-parameter-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
 )
 
-list(APPEND EXPORT_OFFIMPORT_TEST_FILES
-  ${TEST_SCAD_DIR}/off/off-import-export.scad
+list(APPEND EXPORT_OFFEXPORT_TEST_FILES
+  ${TEST_SCAD_DIR}/off/off-export.scad
 )
 
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-export.scad)
@@ -1027,9 +1028,11 @@ add_cmdline_test(manifold-cgalpng      EXPERIMENTAL OPENSCAD SUFFIX png FILES ${
 # This sanity-checks bidirectional file format import/export
 set(EXP_IMP_2D_TEST ${TEST_SCAD_DIR}/misc/square10.scad)
 set(EXP_IMP_3D_TEST ${TEST_SCAD_DIR}/misc/cube10.scad)
+set(EXP_IMP_3D_COLOR_TEST ${COLOR_3D_TEST_FILES})
 add_cmdline_test(monotonepngtest OPENSCAD SUFFIX png FILES ${EXP_IMP_2D_TEST} ${EXP_IMP_3D_TEST} ARGS --colorscheme=Monotone --render)
 add_cmdline_test(stlpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=STL)
 add_cmdline_test(offpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=OFF)
+add_cmdline_test(offcolorpngtest SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_COLOR_TEST} EXPECTEDDIR colorpngtest ARGS ${OPENSCAD_ARG} --format=OFF --enable=render-colors --enable=manifold --render)
 add_cmdline_test(amfpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=AMF)
 add_cmdline_test(3mfpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=3MF)
 add_cmdline_test(objpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=OBJ)
@@ -1043,9 +1046,9 @@ add_cmdline_test(stlexport             EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${
 add_cmdline_test(manifold-stlexport    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=manifold --render)
 add_cmdline_test(objexport             EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render --enable=predictible-output)
 add_cmdline_test(3mfexport             EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
-add_cmdline_test(offexport             EXPERIMENTAL OPENSCAD SUFFIX off FILES ${EXPORT_OFFEXPORT_TEST_FILES} ARGS --enable=predictible-output --render)
-add_cmdline_test(color-offexport       EXPERIMENTAL OPENSCAD SUFFIX off FILES ${EXPORT_OFFEXPORT_TEST_FILES} ARGS --enable=manifold --enable=colors --enable=predictible-output --render)
-add_cmdline_test(color-offimport       EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPORT_OFFIMPORT_TEST_FILES} ARGS --enable=colors)
+add_cmdline_test(offexport             EXPERIMENTAL OPENSCAD SUFFIX off FILES ${EXPORT_OFFEXPORT_TEST_FILES} ARGS --enable=predictible-output)
+add_cmdline_test(color-offexport       EXPERIMENTAL OPENSCAD SUFFIX off FILES ${EXPORT_OFFEXPORT_TEST_FILES} ARGS --enable=predictible-output --enable=manifold --enable=render-colors)
+add_cmdline_test(colorpngtest          EXPERIMENTAL OPENSCAD SUFFIX png FILES ${COLOR_3D_TEST_FILES} ARGS --render --enable=render-colors --enable=manifold)
 
 # stlpngtest: direct STL output, preview rendering
 add_cmdline_test(stlpngtest            SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=STL EXPECTEDDIR monotonepngtest SUFFIX png FILES ${EXPORT3D_TEST_FILES})

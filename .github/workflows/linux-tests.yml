@@ -21,13 +21,6 @@ jobs:
           - os: ubuntu-22.04
             # libqscintilla2-qt6-dev not packaged
             qt: qt6
-        include:
-          - os: ubuntu-20.04
-            qt5default: true
-          - os: ubuntu-22.04
-            qt5default: false
-          - os: ubuntu-24.04
-            qt5default: false
 
     runs-on: ${{ matrix.os }}
 
@@ -39,9 +32,6 @@ jobs:
         submodules: 'recursive'
     - name: Install dependencies
       run: ./scripts/github-ci-linux-get-dependencies.sh ${{ matrix.qt }}
-    - name: Make Qt5 the default
-      if: ${{ matrix.qt5default }}
-      run: sudo apt-get install qt5-default
     - uses: actions/setup-python@v5
       with:
         python-version: '3.x'

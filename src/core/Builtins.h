@@ -8,6 +8,8 @@
 class AbstractModule;
 class BuiltinFunction;
 
+void initialize_rng();
+
 class Builtins
 {
 public:

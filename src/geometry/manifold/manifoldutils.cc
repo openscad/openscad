@@ -1,6 +1,7 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #include "manifoldutils.h"
 #include "ManifoldGeometry.h"
+#include "PolySetBuilder.h"
 #include "manifold.h"
 #include "printutils.h"
 #ifdef ENABLE_CGAL
@@ -153,7 +154,23 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
     return mani;
   }
 
-  // FIXME: Should we suppress this warning, as it may not be very actionable?
+  // Before announcing that the conversion failed, let's try to fix the most common
+  // causes of a non-manifold topology:
+  // Polygon soup of manifold topology with co-incident vertices having identical vertex positions
+  //
+  // Note: This causes us to lose the ability to represent manifold topologies with duplicate 
+  // vertex positions (touching cubes, donut with vertex in the center etc.)
+  PolySetBuilder builder(ps.vertices.size(), ps.indices.size(),
+                         ps.getDimension(), ps.convexValue());
+  builder.appendPolySet(ps);
+  std::unique_ptr<PolySet> rebuilt_ps = builder.build();
+  rebuilt_ps->setTriangular(ps.isTriangular());
+  mani = createManifoldFromTriangularPolySet(*rebuilt_ps);
+  if (mani->getManifold().Status() == Error::NoError) {
+    return mani;
+  }
+
+  // FIXME: Should we attempt merging vertices within epsilon distance before issuing this warning?
   LOG(message_group::Warning,"PolySet -> Manifold conversion failed: %1$s\n"
       "Trying to repair and reconstruct mesh..",
       ManifoldUtils::statusToString(mani->getManifold().Status()));
@@ -195,7 +212,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
     }
 
     auto geom = createManifoldFromSurfaceMesh(m);
-    // TODO: preserve fully colored polyset?
+    // TODO: preserve color if polyset is fully monochrome, or maybe pass colors around in surface mesh?
     return geom;
   #else
     return std::make_shared<ManifoldGeometry>();
