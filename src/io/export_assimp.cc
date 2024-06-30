@@ -48,34 +48,6 @@
 
 #include <algorithm>
 
-const char *getAiFormatName(FileFormat fileFormat) {
-  // Formats supported:
-  // - Import: https://assimp-docs.readthedocs.io/en/latest/about/introduction.html
-  // - Export: https://assimp-docs.readthedocs.io/en/latest/usage/use_the_lib.html#exporting-models
-  switch (fileFormat) {
-    case FileFormat::ASCIISTL:
-      return "stl";
-    case FileFormat::STL:
-      return "stlb";
-    case FileFormat::OBJ:
-      return "obj";
-    // case FileFormat::_3MF:
-    //   return "3mf";
-    case FileFormat::COLLADA:
-      return "collada";
-    case FileFormat::STP:
-      return "stp";
-    case FileFormat::PLY:
-      return "plyb";
-    case FileFormat::GLTF:
-      return "glb2";
-    case FileFormat::X3D:
-      return "x3d";
-    default:
-      return NULL;
-    // case FileFormat::OFF:
-  }
-}
 
 struct AiSceneBuilder {
   std::map<Color4f, int> colorMaterialMap;
@@ -178,31 +150,34 @@ struct AiSceneBuilder {
 
 static const char * assimp_format_name(FileFormat fileFormat) {
   switch (fileFormat) {
+  // Formats supported:
+  // - Import: https://assimp-docs.readthedocs.io/en/latest/about/introduction.html
+  // - Export: https://assimp-docs.readthedocs.io/en/latest/usage/use_the_lib.html#exporting-models
   case FileFormat::ASCIISTL:
     return "stl";
   case FileFormat::STL:
     return "stlb";
   case FileFormat::OBJ:
     return "obj";
-  case FileFormat::OFF:
-    return "off";
   case FileFormat::WRL:
     return "vrml";
-  case FileFormat::AMF:
-    return "amf";
-  case FileFormat::_3MF:
-    return "3mf";
   case FileFormat::COLLADA:
     return "collada";
-  case FileFormat::STP:
-    return "stp";
-  case FileFormat::PLY:
-    return "plyb";
   case FileFormat::GLTF:
     return "glb2";
   case FileFormat::X3D:
     return "x3d";
   default:
+  case FileFormat::STP:
+    return "stp";
+  case FileFormat::PLY:
+    return "plyb";
+  // case FileFormat::OFF:
+  //   return "off";
+  // case FileFormat::AMF:
+  //   return "amf";
+  // case FileFormat::_3MF:
+  //   return "3mf";
     return nullptr;
   }
 }
