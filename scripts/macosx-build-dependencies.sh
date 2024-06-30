@@ -62,7 +62,7 @@ PACKAGES=(
     "qt5 5.15.13"
     "opencsg 1.6.0"
     "qscintilla 2.13.3"
-    "onetbb 2021.11.0"
+    "onetbb 2021.12.0"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.27.1"
@@ -393,9 +393,8 @@ build_onetbb()
   fi
   tar xzf oneTBB-$version.tar.gz
   cd oneTBB-$version
-  cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DTBB_TEST=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
+  cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DTBB_TEST=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED"
   make -j"$NUMCPU" install
-  make install  
 }
 
 build_glew()
