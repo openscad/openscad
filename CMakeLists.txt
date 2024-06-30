@@ -41,7 +41,6 @@ option(ENABLE_GLX "Enable GLX support if available" ON)
 # For now, we'll default to whatever OpenCSG uses (>=1.6 -> GLAD, <1.6 -> GLEW)
 option(USE_GLAD "Use GLAD. Mutually exclusive from USE_GLEW" OFF)
 option(USE_GLEW "Use GLEW. Mutually exclusive from USE_GLEW" OFF)
-option(WASM "Build WebAssembly, (implies NULLGL=ON) " OFF)
 option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
 option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
@@ -137,10 +136,27 @@ if(PROFILE)
   SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
 endif()
 
-if(WASM)
+if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
+  set(Boost_USE_STATIC_LIBS ON CACHE BOOL "" FORCE)
+  set(Boost_USE_STATIC_RUNTIME ON CACHE BOOL "" FORCE)
+  set(ENABLE_CAIRO OFF CACHE BOOL "" FORCE)
+  set(ENABLE_TBB OFF CACHE BOOL "" FORCE)
   set(NULLGL ON CACHE BOOL "" FORCE)
+  set(USE_MIMALLOC OFF CACHE BOOL "" FORCE)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
+  target_link_options(OpenSCAD PUBLIC
+    -sALLOW_MEMORY_GROWTH=1
+    -sENVIRONMENT=web,worker
+    -sEXIT_RUNTIME=1
+    -sEXPORT_ES6=1
+    -sEXPORT_NAME=OpenSCAD
+    -sEXPORTED_RUNTIME_METHODS=['FS','ENV','callMain','ERRNO_CODES']
+    -sFORCE_FILESYSTEM=1
+    -sMODULARIZE=1
+    -sNO_DISABLE_EXCEPTION_CATCHING
+    -sUSE_PTHREADS=0
+  )
 endif()
 
 if(NULLGL)
