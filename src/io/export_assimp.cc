@@ -82,6 +82,7 @@ struct AiSceneBuilder {
   std::vector<aiMaterial*> materials;
   std::vector<aiMesh*> meshes;
   std::vector<aiNode*> nodes;
+  int default_color_material;
 
   ~AiSceneBuilder() {
     for (auto material : materials) {
@@ -90,6 +91,7 @@ struct AiSceneBuilder {
     for (auto mesh : meshes) {
       delete mesh;
     }
+    default_color_material = addColorMaterial(Color4f(0xf9, 0xd7, 0x2c));
   }
 
   int addColorMaterial(Color4f color) {
@@ -122,13 +124,7 @@ struct AiSceneBuilder {
       const auto & ps = split.second;
       auto mesh = new aiMesh();
       mesh->mPrimitiveTypes = aiPrimitiveType_TRIANGLE;
-      
-      if (color.has_value()) {
-        mesh->mMaterialIndex = addColorMaterial(color.value());
-      } else {
-        mesh->mMaterialIndex = 0;
-      }
-
+      mesh->mMaterialIndex = color.has_value() ? addColorMaterial(color.value()) : default_color_material;
       mesh->mNumVertices = ps->vertices.size();
       mesh->mVertices = new aiVector3D[ps->vertices.size()];
       for (int i = 0; i < ps->vertices.size(); i++) {
