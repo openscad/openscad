@@ -662,7 +662,7 @@ build_glib2()
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt --force-fallback-for libpcre2-8 -Dgtk_doc=false -Dman=false -Ddtrace=false -Dtests=false build-$arch
+    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt --force-fallback-for libpcre2-8 -Ddocumentation=false -Dman-pages=disabled -Ddtrace=false -Dtests=false build-$arch
     meson compile -C build-$arch
     DESTDIR=install/ meson install -C build-$arch
   done
