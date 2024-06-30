@@ -359,6 +359,9 @@ function(add_cmdline_test TESTCMD_BASENAME)
         AND NOT TESTCMD_BASENAME MATCHES "^openscad-viewoptions-.*"
         AND NOT TESTCMD_BASENAME MATCHES "^remesh-.*")
       set(MANIFOLD_OPTION "--enable=manifold")
+      if (NOT SCADFILE IN_LIST FILES_MANIFOLD_COLOR_CORNER_CASES)
+        set(MANIFOLD_OPTION "${MANIFOLD_OPTION} --enable=render-colors")
+      endif()
     else()
       set(MANIFOLD_OPTION "")
     endif()
@@ -823,58 +826,8 @@ list(APPEND SVG_VIEWBOX_TESTS
   viewbox_600x600_slice_xMinYMin viewbox_600x600_slice_xMinYMid viewbox_600x600_slice_xMinYMax
 )
 
-list(APPEND SCADFILES_WITH_GREEN_FACES
-  ${EXAMPLES_DIR}/Advanced/children.scad
-  ${EXAMPLES_DIR}/Basics/CSG-modules.scad
-  ${EXAMPLES_DIR}/Basics/CSG.scad
-  ${EXAMPLES_DIR}/Basics/logo.scad
-  ${EXAMPLES_DIR}/Basics/LetterBlock.scad
-  ${EXAMPLES_DIR}/Basics/text_on_cube.scad
-  ${EXAMPLES_DIR}/Basics/logo_and_text.scad
-  ${EXAMPLES_DIR}/Parametric/sign.scad
-  ${EXAMPLES_DIR}/Parametric/candleStand.scad
-  ${EXAMPLES_DIR}/Old/example001.scad
-  ${EXAMPLES_DIR}/Old/example002.scad
-  ${EXAMPLES_DIR}/Old/example003.scad
-  ${EXAMPLES_DIR}/Old/example004.scad
-  ${EXAMPLES_DIR}/Old/example005.scad
-  ${EXAMPLES_DIR}/Old/example006.scad
-  ${EXAMPLES_DIR}/Old/example007.scad
-  ${EXAMPLES_DIR}/Old/example012.scad
-  ${EXAMPLES_DIR}/Old/example016.scad
-  ${EXAMPLES_DIR}/Old/example024.scad
-  ${TEST_SCAD_DIR}/3D/features/difference-tests.scad
-  ${TEST_SCAD_DIR}/3D/features/for-tests.scad
-  ${TEST_SCAD_DIR}/3D/features/highlight-modifier.scad
-  ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
-  ${TEST_SCAD_DIR}/3D/features/minkowski3-erosion.scad
-  ${TEST_SCAD_DIR}/3D/features/minkowski3-difference-test.scad
-  ${TEST_SCAD_DIR}/3D/features/render-tests.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1105.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1105b.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1105c.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1105d.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1215c.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1803.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue3158.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue835.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue911.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue913.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue904.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
-  ${TEST_SCAD_DIR}/3D/misc/view-options-tests.scad
-  ${TEST_SCAD_DIR}/misc/include-tests.scad
-  ${TEST_SCAD_DIR}/misc/use-tests.scad
-  ${TEST_SCAD_DIR}/misc/internal-cavity-polyhedron.scad
-  ${TEST_SCAD_DIR}/misc/internal-cavity.scad
-  ${TEST_SCAD_DIR}/misc/let-module-tests.scad
-  ${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
-  ${TEST_SCAD_DIR}/misc/rotate-empty-bbox.scad
-)
-
 list(APPEND SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
-  # No more green faces from differences.
-  ${SCADFILES_WITH_GREEN_FACES}
+  ${EXAMPLES_DIR}/Basics/roof.scad
 
   # Different vertex order
   ${TEST_SCAD_DIR}/3mf/3mf-export.scad
@@ -1023,7 +976,7 @@ add_cmdline_test(lazyunion-offpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} S
 add_cmdline_test(lazyunion-dxfpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=DXF --enable=lazy-union --render=force)
 add_cmdline_test(lazyunion-svgpngtest  EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${LAZYUNION_2D_FILES} EXPECTEDDIR lazyunion-cgalpng     ARGS ${OPENSCAD_ARG} --format=SVG --enable=lazy-union --render=force)
 
-add_cmdline_test(manifold-cgalpng      EXPERIMENTAL OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS} ARGS --enable=manifold --render)
+add_cmdline_test(manifold-cgalpng      EXPERIMENTAL OPENSCAD SUFFIX png FILES ${SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS} ARGS --enable=manifold --enable=render-colors --render)
 
 # Trivial Export/Import files
 # This sanity-checks bidirectional file format import/export
@@ -1033,7 +986,7 @@ set(EXP_IMP_3D_COLOR_TEST ${COLOR_3D_TEST_FILES})
 add_cmdline_test(monotonepngtest OPENSCAD SUFFIX png FILES ${EXP_IMP_2D_TEST} ${EXP_IMP_3D_TEST} ARGS --colorscheme=Monotone --render)
 add_cmdline_test(stlpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=STL)
 add_cmdline_test(offpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=OFF)
-add_cmdline_test(offcolorpngtest SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_COLOR_TEST} EXPECTEDDIR colorpngtest ARGS ${OPENSCAD_ARG} --format=OFF --enable=render-colors --enable=manifold --render)
+add_cmdline_test(offcolorpngtest SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_COLOR_TEST} EXPECTEDDIR colorpngtest ARGS ${OPENSCAD_ARG} --format=OFF --enable=manifold --enable=render-colors --render)
 add_cmdline_test(amfpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=AMF)
 add_cmdline_test(3mfpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_TEST} EXPECTEDDIR monotonepngtest ARGS ${OPENSCAD_ARG} --format=3MF)
 add_cmdline_test(3mfcolorpngtest    SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXP_IMP_3D_COLOR_TEST} EXPECTEDDIR colorpngtest ARGS ${OPENSCAD_ARG} --format=3MF --enable=render-colors --enable=manifold --render)
@@ -1092,6 +1045,13 @@ set(FILES_MANIFOLD_CORNER_CASES
   ${TEST_SCAD_DIR}/3D/misc/polyhedron-self-touch-vertex.scad
   ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-edge.scad
   ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-vertex.scad
+)
+
+list(APPEND FILES_MANIFOLD_COLOR_CORNER_CASES
+  ${FILES_MANIFOLD_CORNER_CASES}
+  ${EXAMPLES_DIR}/Basics/roof.scad
+  ${TEST_SCAD_DIR}/off/off-export.scad
+  ${TEST_SCAD_DIR}/3D/features/linear_extrude-scale-zero-tests.scad
 )
 
 # Tagging these tests as experimental since they only pass when using Manifold
