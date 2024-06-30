@@ -32,13 +32,6 @@ std::unique_ptr<Geometry> ManifoldGeometry::copy() const
   return std::make_unique<ManifoldGeometry>(*this);
 }
 
-ManifoldGeometry& ManifoldGeometry::operator=(const ManifoldGeometry& other) {
-  if (this == &other) return *this;
-  manifold_ = other.manifold_;
-  originalIDToColor_ = other.originalIDToColor_;
-  return *this;
-}
-
 const manifold::Manifold& ManifoldGeometry::getManifold() const {
   assert(manifold_);
   return *manifold_;
