@@ -33,6 +33,8 @@
 #include "PolySetBuilder.h"
 #include "PolySetUtils.h"
 #include "printutils.h"
+#include "ColorMap.h"
+#include "src/glview/RenderSettings.h"
 #ifdef ENABLE_CGAL
 #include "CGALHybridPolyhedron.h"
 #include "cgal.h"
@@ -56,6 +58,11 @@ struct AiSceneBuilder {
   std::vector<aiNode*> nodes;
   int default_color_material;
 
+  AiSceneBuilder() {
+    auto colorScheme = ColorMap::inst()->findColorScheme(RenderSettings::inst()->colorscheme);
+    default_color_material = addColorMaterial(ColorMap::getColor(*colorScheme, RenderColor::CGAL_FACE_FRONT_COLOR));
+  }
+
   ~AiSceneBuilder() {
     for (auto material : materials) {
       delete material;
@@ -63,7 +70,6 @@ struct AiSceneBuilder {
     for (auto mesh : meshes) {
       delete mesh;
     }
-    default_color_material = addColorMaterial(Color4f(0xf9, 0xd7, 0x2c));
   }
 
   int addColorMaterial(Color4f color) {
