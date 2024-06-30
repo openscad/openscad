@@ -239,11 +239,9 @@ We support building OpenSCAD headless for WebAssembly using Emscripten inside a 
 
 ```bash
 docker run --rm -it -v $PWD:/src:rw --platform=linux/amd64 openscad/wasm-base:latest \
-  emcmake cmake -B build \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DEXPERIMENTAL=ON && \
+  emcmake cmake -B build -DEXPERIMENTAL=ON -DCMAKE_BUILD_TYPE=Release && \
 docker run --rm -it -v $PWD:/src:rw --platform=linux/amd64 openscad/wasm-base:latest \
-   cmake --build build -j10
+  cmake --build build -j10
 ```
 
 This creates `openscad.wasm` & `openscad.js` in the `build/` folder.
