@@ -145,6 +145,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   set(USE_MIMALLOC OFF CACHE BOOL "" FORCE)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
+  target_link_libraries(OpenSCAD PRIVATE /emsdk/upstream/emscripten/cache/sysroot/lib/libz.a)
   target_link_options(OpenSCAD PUBLIC
     -sALLOW_MEMORY_GROWTH=1
     -sENVIRONMENT=web,worker
