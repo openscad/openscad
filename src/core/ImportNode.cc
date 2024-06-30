@@ -94,7 +94,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
       else if (ext == ".x3d") actualtype = ImportType::X3D;
       else if (ext == ".dae") actualtype = ImportType::COLLADA;
       else if (ext == ".stp") actualtype = ImportType::STP;
-      else if (ext == ".wrl") actualtype = ImportType::WRL;
+      else if (ext == ".ply") actualtype = ImportType::PLY;
     }
   }
 
@@ -182,15 +182,7 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
 
   if (Feature::ExperimentalAssimp.is_enabled()) {
     switch (this->type) {
-    case ImportType::WRL:
-      // TODO: check how to make this work.
-      break; 
-    case ImportType::OFF: 
-      if (Feature::ExperimentalRenderColors.is_enabled()) {
-        // Assimp doesn't seem to preserve the colors of imported OFF files.
-        break;
-      }
-      // Fall through.
+    // TODO: import OFF files w/ Assimp once it supports its colors.
     case ImportType::STL:
     case ImportType::AMF:
     case ImportType::_3MF: 
@@ -198,6 +190,7 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
     case ImportType::GLTF:
     case ImportType::COLLADA: 
     case ImportType::STP:
+    case ImportType::PLY:
       g = import_assimp(this->filename, loc);
       if (g) {
         g->setConvexity(this->convexity);

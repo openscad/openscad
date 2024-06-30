@@ -15,29 +15,6 @@
 #include <assimp/postprocess.h>
 
 
-// TODO: Refactor into some GeometryUtils class w/ CSG ops from GeometryEvaluator::applyToChildren3D 
-static std::shared_ptr<const Geometry> union3d(const Geometry::Geometries& children) {
-#ifdef ENABLE_MANIFOLD
-  if (Feature::ExperimentalManifold.is_enabled()) {
-    return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::UNION);
-  }
-#endif
-#ifdef ENABLE_CGAL
-  if (Feature::ExperimentalFastCsg.is_enabled()) {
-    return CGALUtils::applyOperator3DHybrid(children, OpenSCADOperator::UNION);
-  } else {
-    return CGALUtils::applyOperator3D(children, OpenSCADOperator::UNION);
-  }
-#endif
-  PolySetBuilder builder(3);
-  for (const auto& child : children) {
-    if (const auto ps = PolySetUtils::getGeometryAsPolySet(child.second)) {
-      builder.appendPolySet(*ps);
-    }
-  }
-  return builder.build();
-}
-
 std::unique_ptr<Geometry> import_assimp(const std::string& filename, const Location& loc) {
 
   Assimp::Importer importer;
@@ -63,7 +40,7 @@ std::unique_ptr<Geometry> import_assimp(const std::string& filename, const Locat
     return nullptr;
   }
 
-  std::vector<std::unique_ptr<PolySet>> solids;
+  std::vector<std::unique_ptr<PolySet>> parts;
   std::function<void(const aiNode*)> visitNode = [&](const aiNode* node) {
 
     if (node->mNumMeshes) {
@@ -114,7 +91,7 @@ std::unique_ptr<Geometry> import_assimp(const std::string& filename, const Locat
           LOG(message_group::Error, "Error building PolySet from mesh %1$d in file '%2$s' with Assimp", i, filename);
           continue;
         }
-        solids.push_back(std::move(polySet));
+        parts.push_back(std::move(polySet));
       }
     }
 
@@ -125,19 +102,14 @@ std::unique_ptr<Geometry> import_assimp(const std::string& filename, const Locat
 
   visitNode(scene->mRootNode);
 
-  if (solids.empty()) {
-    LOG(message_group::Error, "No meshes found in file '%1$s' with Assimp", filename);
-    return nullptr;
-  } else if (solids.size() == 1) {
-    return std::move(solids[0]);
+  if (parts.size() == 1) {
+    return std::move(parts[0]);
   } else {
     Geometry::Geometries geoms;
-    for (auto& solid : solids) {
+    for (auto& solid : parts) {
       geoms.emplace_back(nullptr, std::move(solid));
     }
 
-    auto res = union3d(geoms);
-    // Copy just because applyUnion3D still returns shared ptrs
-    return res ? res->copy() : nullptr;
+    return std::make_unique<GeometryList>(geoms);
   }
 }

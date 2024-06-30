@@ -59,8 +59,8 @@ const char *getAiFormatName(FileFormat fileFormat) {
       return "stlb";
     case FileFormat::OBJ:
       return "obj";
-    // case FileFormat::_3MF:
-    //   return "3mf";
+    case FileFormat::_3MF:
+      return "3mf";
     case FileFormat::COLLADA:
       return "collada";
     case FileFormat::STP:
@@ -126,7 +126,7 @@ struct AiSceneBuilder {
       if (color.has_value()) {
         mesh->mMaterialIndex = addColorMaterial(color.value());
       } else {
-        mesh->mMaterialIndex = -1;
+        mesh->mMaterialIndex = 0;
       }
 
       mesh->mNumVertices = ps->vertices.size();
