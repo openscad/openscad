@@ -17,6 +17,8 @@
 
 std::unique_ptr<Geometry> import_assimp(const std::string& filename, const Location& loc) {
 
+  LOG("Importing with Assimp");
+
   Assimp::Importer importer;
 
   // In combination w/ aiProcess_RemoveComponent below, skips reading stuff we don't need.
@@ -55,7 +57,7 @@ std::unique_ptr<Geometry> import_assimp(const std::string& filename, const Locat
         bool hasVertexColors = mesh->HasVertexColors(0);
 
         Color4f meshColor;
-        if (mesh->mMaterialIndex >= 0) {
+        if (mesh->mMaterialIndex < scene->mNumMaterials) {
           const aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
           aiColor4D color;
           if ((material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) ||

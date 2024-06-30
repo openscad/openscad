@@ -182,10 +182,12 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
 
   if (Feature::ExperimentalAssimp.is_enabled()) {
     switch (this->type) {
-    // TODO: import OFF files w/ Assimp once it supports its colors.
-    case ImportType::STL:
     case ImportType::AMF:
-    case ImportType::_3MF: 
+    case ImportType::_3MF:
+    case ImportType::OFF: 
+      // TODO: import these formats w/ Assimp once it supports their colors.
+      break;
+    case ImportType::STL:
     case ImportType::X3D:
     case ImportType::GLTF:
     case ImportType::COLLADA: 

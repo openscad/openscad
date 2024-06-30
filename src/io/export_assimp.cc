@@ -218,6 +218,8 @@ bool export_assimp(const std::shared_ptr<const Geometry>& geom, std::ostream& ou
     return false;
   }
 
+  LOG("Exporting to %1$s with Assimp", format_name);
+
   AiSceneBuilder builder;
   std::function<bool(const Geometry &)> append_geom = [&](const Geometry& geom) {
     if (const auto list = dynamic_cast<const GeometryList *>(&geom)) {
