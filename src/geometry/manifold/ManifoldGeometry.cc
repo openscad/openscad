@@ -103,9 +103,9 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const {
         mesh.vertProperties[i + 1],
         mesh.vertProperties[i + 2]);
 
-  if (Feature::ExperimentalRenderColors.is_enabled() && !originalIDToColor_.empty()) {
-    ps->color_indices.resize(ps->indices.size(), -1);
+  if (Feature::ExperimentalRenderColors.is_enabled()) {
     ps->colors.reserve(originalIDToColor_.size());
+    ps->color_indices.reserve(ps->indices.size());
 
     std::map<Color4f, size_t> colorToIndex;
     std::map<uint32_t, size_t> originalIDToColorIndex;
