@@ -170,7 +170,7 @@ std::vector<std::pair<std::optional<const Color4f>, std::unique_ptr<PolySet>>> P
   }
   
   for (int i = 0; i < indices.size(); i++) {
-    int color_index = color_indices[i];
+    int color_index = i < color_indices.size() ? color_indices[i] : -1;
     auto & builder = builders[color_index < 0 ? builders.size() - 1 : color_index];
     builder.beginPolygon(indices[i].size());
     for (int j = 0; j < indices[i].size(); j++) {
