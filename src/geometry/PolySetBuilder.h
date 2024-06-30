@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <memory>
 #include <map>
 #include <vector>
@@ -26,7 +27,7 @@ public:
   void appendPolygon(const std::vector<int>& inds);
   void appendPolygon(const std::vector<Vector3d>& v, const Color4f & color = {});
 
-  void beginPolygon(int nvertices);
+  void beginPolygon(int nvertices, const Color4f & color = {});
   void addVertex(int ind);
   void addVertex(const Vector3d &v);
   // Calling this is optional; will be called automatically when adding a new polygon or building the PolySet
