@@ -40,7 +40,7 @@ PACKAGES=(
     "double_conversion 3.2.1"
     "boost 1.81.0"
     "eigen 3.4.0"
-    "gmp 6.2.1 patch"
+    "gmp 6.3.0"
     "mpfr 4.2.0"
     "glew 2.2.0"
     "gettext 0.21.1"
@@ -276,13 +276,12 @@ build_gmp()
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
-  patch -p1 < $OPENSCADDIR/patches/gmp-macos-x18.patch
 
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     mkdir build-$arch
     cd build-$arch
-    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --enable-cxx --build=$LOCAL_ARCH-apple-darwin --host=$arch-apple-darwin17.0.0
+    M4=gm4 ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --enable-cxx --build=$LOCAL_ARCH-apple-darwin --host=$arch-apple-darwin17.0.0
     make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
