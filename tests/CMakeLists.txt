@@ -348,6 +348,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
     # add global experimental options here
     set(EXPERIMENTAL_OPTION "")
+    list(APPEND MANIFOLD_OPTION)
 
     # To give manifold some extra test coverage, enable manifold 
     # for all tests except those marked as skipped.
@@ -358,12 +359,10 @@ function(add_cmdline_test TESTCMD_BASENAME)
         AND NOT TESTCMD_BASENAME MATCHES "^(stlexport|objexport)$"
         AND NOT TESTCMD_BASENAME MATCHES "^openscad-viewoptions-.*"
         AND NOT TESTCMD_BASENAME MATCHES "^remesh-.*")
-      set(MANIFOLD_OPTION "--enable=manifold")
+      list(APPEND MANIFOLD_OPTION --enable=manifold)
       if (NOT SCADFILE IN_LIST FILES_MANIFOLD_COLOR_CORNER_CASES)
-        set(MANIFOLD_OPTION "${MANIFOLD_OPTION} --enable=render-colors")
+        list(APPEND MANIFOLD_OPTION --enable=render-colors)
       endif()
-    else()
-      set(MANIFOLD_OPTION "")
     endif()
 
     # 2D tests should be viewed from the top, not an angle.
