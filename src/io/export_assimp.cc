@@ -178,12 +178,12 @@ static const char * assimp_format_name(FileFormat fileFormat) {
     return "stp";
   case FileFormat::PLY:
     return "plyb";
+  case FileFormat::_3MF:
+    return "3mf";
   // case FileFormat::OFF:
   //   return "off";
   // case FileFormat::AMF:
   //   return "amf";
-  // case FileFormat::_3MF:
-  //   return "3mf";
     return nullptr;
   }
 }
