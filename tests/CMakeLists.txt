@@ -825,10 +825,10 @@ list(APPEND SVG_VIEWBOX_TESTS
 )
 
 list(APPEND SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
-  ${EXAMPLES_DIR}/Basics/roof.scad
-
-list(APPEND SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
-  # Manifold colors are better.
+  ${TEST_SCAD_DIR}/3D/features/color-tests2.scad
+  ${TEST_SCAD_DIR}/3D/features/render-tests.scad
+  
+  # Manifold colors are better here
   ${TEST_SCAD_DIR}/misc/internal-cavity.scad
   
   # Different vertex order
