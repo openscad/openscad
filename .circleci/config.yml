@@ -1,7 +1,7 @@
-version: 2
+version: 2.1
 
 orbs:
-  macos: circleci/macos@2.4.1
+  macos: circleci/macos@2.5.1
   
 jobs:
   openscad-mxe-64bit:
