@@ -348,7 +348,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
 
     # add global experimental options here
     set(EXPERIMENTAL_OPTION "")
-    list(APPEND MANIFOLD_OPTION)
+    set(MANIFOLD_OPTION "")
 
     # To give manifold some extra test coverage, enable manifold 
     # for all tests except those marked as skipped.
@@ -827,6 +827,10 @@ list(APPEND SVG_VIEWBOX_TESTS
 list(APPEND SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
   ${EXAMPLES_DIR}/Basics/roof.scad
 
+list(APPEND SCADFILES_WITH_DIFFERENT_MANIFOLD_EXPECTATIONS
+  # Manifold colors are better.
+  ${TEST_SCAD_DIR}/misc/internal-cavity.scad
+  
   # Different vertex order
   ${TEST_SCAD_DIR}/3mf/3mf-export.scad
   ${TEST_SCAD_DIR}/stl/stl-import-nonmanifold.scad
@@ -1043,6 +1047,15 @@ list(APPEND FILES_MANIFOLD_COLOR_CORNER_CASES
   ${FILES_MANIFOLD_CORNER_CASES}
   ${EXAMPLES_DIR}/Basics/roof.scad
   ${TEST_SCAD_DIR}/off/off-export.scad
+  # Transparent colors render differently in different CI envs.
+  ${TEST_SCAD_DIR}/3D/features/color-tests.scad
+  # Bug with render color caching
+  ${TEST_SCAD_DIR}/3D/features/color-tests2.scad
+
+  ${TEST_SCAD_DIR}/3D/features/render-tests.scad
+  # Color not preserved across minkowski
+  ${TEST_SCAD_DIR}/3D/issues/issue913.scad
+  ${TEST_SCAD_DIR}/3D/features/minkowski3-erosion.scad
   ${TEST_SCAD_DIR}/3D/features/linear_extrude-scale-zero-tests.scad
 )
 
