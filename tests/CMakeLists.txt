@@ -360,8 +360,8 @@ function(add_cmdline_test TESTCMD_BASENAME)
         AND NOT TESTCMD_BASENAME MATCHES "^openscad-viewoptions-.*"
         AND NOT TESTCMD_BASENAME MATCHES "^remesh-.*")
       list(APPEND MANIFOLD_OPTION --enable=manifold)
-      if (NOT SCADFILE IN_LIST FILES_MANIFOLD_COLOR_CORNER_CASES)
-        list(APPEND MANIFOLD_OPTION --enable=render-colors)
+      if (NOT SCADFILE IN_LIST FILES_COLOR_CORNER_CASES)
+        list(APPEND EXPERIMENTAL_OPTION --enable=render-colors)
       endif()
     endif()
 
@@ -1043,7 +1043,7 @@ set(FILES_MANIFOLD_CORNER_CASES
   ${TEST_SCAD_DIR}/3D/features/rotate_extrude-touch-vertex.scad
 )
 
-list(APPEND FILES_MANIFOLD_COLOR_CORNER_CASES
+list(APPEND FILES_COLOR_CORNER_CASES
   ${FILES_MANIFOLD_CORNER_CASES}
   ${EXAMPLES_DIR}/Basics/roof.scad
   ${TEST_SCAD_DIR}/off/off-export.scad
