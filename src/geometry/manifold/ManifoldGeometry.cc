@@ -7,6 +7,8 @@
 #include "PolySetBuilder.h"
 #include "PolySetUtils.h"
 #include "manifoldutils.h"
+#include "ColorMap.h"
+#include "src/glview/RenderSettings.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #endif
@@ -22,7 +24,16 @@ Result vector_convert(V const& v) {
 
 ManifoldGeometry::ManifoldGeometry() : manifold_(std::make_shared<const manifold::Manifold>()) {}
 
-ManifoldGeometry::ManifoldGeometry(const std::shared_ptr<const manifold::Manifold>& mani, const std::map<uint32_t, Color4f> & originalIDToColor) : manifold_(mani), originalIDToColor_(originalIDToColor) {
+ManifoldGeometry::ManifoldGeometry(
+  const std::shared_ptr<const manifold::Manifold>& mani,
+  const std::set<uint32_t> & originalIDs,
+  const std::map<uint32_t, Color4f> & originalIDToColor,
+  const std::set<uint32_t> & subtractedIDs)
+    : manifold_(mani),
+      originalIDs_(originalIDs),
+      originalIDToColor_(originalIDToColor),
+      subtractedIDs_(subtractedIDs)
+{
   assert(manifold_);
   if (!manifold_) clear();
 }
@@ -30,13 +41,6 @@ ManifoldGeometry::ManifoldGeometry(const std::shared_ptr<const manifold::Manifol
 std::unique_ptr<Geometry> ManifoldGeometry::copy() const
 {
   return std::make_unique<ManifoldGeometry>(*this);
-}
-
-ManifoldGeometry& ManifoldGeometry::operator=(const ManifoldGeometry& other) {
-  if (this == &other) return *this;
-  manifold_ = other.manifold_;
-  originalIDToColor_ = other.originalIDToColor_;
-  return *this;
 }
 
 const manifold::Manifold& ManifoldGeometry::getManifold() const {
@@ -110,24 +114,54 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const {
         mesh.vertProperties[i + 1],
         mesh.vertProperties[i + 2]);
 
-  if (Feature::ExperimentalRenderColors.is_enabled() && !originalIDToColor_.empty()) {
-    ps->color_indices.resize(ps->indices.size(), -1);
+  if (Feature::ExperimentalRenderColors.is_enabled()) {
     ps->colors.reserve(originalIDToColor_.size());
+    ps->color_indices.reserve(ps->indices.size());
 
-    std::map<Color4f, size_t> colorToIndex;
-    std::map<uint32_t, size_t> originalIDToColorIndex;
-    for (const auto& [originalID, color] : originalIDToColor_) {
-      auto colorIt = colorToIndex.find(color);
-      size_t color_index;
-      if (colorIt == colorToIndex.end()) {
-        color_index = ps->colors.size();
-        colorToIndex[color] = color_index;
-        ps->colors.push_back(color);
-      } else {
-        color_index = colorIt->second;
+    auto colorScheme = ColorMap::inst()->findColorScheme(RenderSettings::inst()->colorscheme);
+    int32_t faceFrontColorIndex = -1;
+    int32_t faceBackColorIndex = -1;
+
+    std::map<Color4f, int32_t> colorToIndex;
+    std::map<uint32_t, int32_t> originalIDToColorIndex;
+
+    auto getFaceFrontColorIndex = [&]() -> int {
+      if (faceFrontColorIndex < 0) {
+        faceFrontColorIndex = ps->colors.size();
+        ps->colors.push_back(ColorMap::getColor(*colorScheme, RenderColor::CGAL_FACE_FRONT_COLOR));
       }
+      return faceFrontColorIndex;
+    };
+    auto getFaceBackColorIndex = [&]() -> int {
+      if (faceBackColorIndex < 0) {
+        faceBackColorIndex = ps->colors.size();
+        ps->colors.push_back(ColorMap::getColor(*colorScheme, RenderColor::CGAL_FACE_BACK_COLOR));
+      }
+      return faceBackColorIndex;
+    };
+
+    auto getColorIndex = [&](uint32_t originalID) -> int32_t {
+      if (subtractedIDs_.find(originalID) != subtractedIDs_.end()) {
+        return getFaceBackColorIndex();
+      }
+      auto colorIndexIt = originalIDToColorIndex.find(originalID);
+      if (colorIndexIt != originalIDToColorIndex.end()) {
+        return colorIndexIt->second;
+      }
+      auto colorIt = originalIDToColor_.find(originalID);
+      if (colorIt == originalIDToColor_.end()) {
+        return getFaceFrontColorIndex();
+      }
+      const auto & color = colorIt->second;
+      
+      auto pair = colorToIndex.insert({color, ps->colors.size()});
+      if (pair.second) {
+        ps->colors.push_back(color);
+      }
+      int32_t color_index = pair.first->second;
       originalIDToColorIndex[originalID] = color_index;
-    }
+      return color_index;
+    };
 
     auto start = mesh.runIndex[0];
     for (int run = 0, numRun = mesh.runIndex.size() - 1; run < numRun; ++run) {
@@ -136,9 +170,7 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const {
       const size_t numTri = (end - start) / 3;
       assert(numTri > 0);
 
-      auto colorIt = originalIDToColorIndex.find(id);
-      int colorIndex = colorIt != originalIDToColorIndex.end() ? colorIt->second : -1;
-      
+      auto colorIndex = getColorIndex(id);
       for (int i = start; i < end; i += 3) {
         ps->indices.push_back({
             static_cast<int>(mesh.triVerts[i]),
@@ -208,10 +240,28 @@ template std::shared_ptr<CGAL::Polyhedron_3<CGAL_Kernel3>> ManifoldGeometry::toP
 
 ManifoldGeometry ManifoldGeometry::binOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs, manifold::OpType opType) const {
   auto mani = std::make_shared<manifold::Manifold>(lhs.manifold_->Boolean(*rhs.manifold_, opType));
-  // Concatenate the color maps
-  auto colorMap = lhs.originalIDToColor_;
-  colorMap.insert(rhs.originalIDToColor_.begin(), rhs.originalIDToColor_.end());
-  return {mani, colorMap};
+  auto originalIDToColor = lhs.originalIDToColor_;
+  auto subtractedIDs = lhs.subtractedIDs_;
+  
+  auto originalIDs = lhs.originalIDs_;
+  originalIDs.insert(rhs.originalIDs_.begin(), rhs.originalIDs_.end());
+
+  if (opType == manifold::OpType::Subtract) {
+    // Mark all the original ids coming from rhs as subtracted, unless they're mapped to a color.
+    for (const auto id : rhs.originalIDs_) {
+      auto it = rhs.originalIDToColor_.find(id);
+      if (it != rhs.originalIDToColor_.end()) {
+        originalIDToColor[id] = it->second;
+      } else {
+        subtractedIDs.insert(id);
+      }
+    }
+  } else {
+    // Add the id -> color mapping from the rhs.
+    originalIDToColor.insert(rhs.originalIDToColor_.begin(), rhs.originalIDToColor_.end());
+    subtractedIDs.insert(rhs.subtractedIDs_.begin(), rhs.subtractedIDs_.end());
+  }
+  return {mani, originalIDs, originalIDToColor, subtractedIDs};
 }
 
 std::shared_ptr<ManifoldGeometry> minkowskiOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs) {
@@ -273,8 +323,11 @@ void ManifoldGeometry::setColor(const Color4f& c) {
   if (manifold_->OriginalID() == -1) {
     manifold_ = std::make_shared<manifold::Manifold>(manifold_->AsOriginal());
   }
+  originalIDs_.clear();
+  originalIDs_.insert(manifold_->OriginalID());
   originalIDToColor_.clear();
   originalIDToColor_[manifold_->OriginalID()] = c;
+  subtractedIDs_.clear();
 }
 
 BoundingBox ManifoldGeometry::getBoundingBox() const
