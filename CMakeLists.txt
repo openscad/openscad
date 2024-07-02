@@ -56,6 +56,7 @@ option(ENABLE_TBB "Enable support for oneAPI Threading Building Blocks." ON)
 option(ENABLE_CGAL "Enable CGAL." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
+option(WASM_BUILD_TYPE "WebAssembly build type. Support web or node" "web")
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
@@ -145,19 +146,52 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   set(USE_MIMALLOC OFF CACHE BOOL "" FORCE)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
+  # https://emscripten.org/docs/tools_reference/emcc.html
+  target_compile_options(OpenSCAD PRIVATE -fexceptions)
   target_link_libraries(OpenSCAD PRIVATE /emsdk/upstream/emscripten/cache/sysroot/lib/libz.a)
   target_link_options(OpenSCAD PUBLIC
+    # https://emscripten.org/docs/tools_reference/settings_reference.html
     -sALLOW_MEMORY_GROWTH=1
-    -sENVIRONMENT=web,worker
     -sEXIT_RUNTIME=1
-    -sEXPORT_ES6=1
-    -sEXPORT_NAME=OpenSCAD
-    -sEXPORTED_RUNTIME_METHODS=['FS','ENV','callMain','ERRNO_CODES']
+    -sEXPORTED_RUNTIME_METHODS=['FS','ENV','PATH','callMain','formatException','ERRNO_CODES']
     -sFORCE_FILESYSTEM=1
-    -sMODULARIZE=1
-    -sNO_DISABLE_EXCEPTION_CATCHING
-    -sUSE_PTHREADS=0
+    -fexceptions
+    -sDISABLE_EXCEPTION_CATCHING=0
+
+    # -sFORMAT_EXCEPTION_SUPPORT
+    # -sDEMANGLE_SUPPORT
+    $<$<CONFIG:Debug>:-sMALLOC=emmalloc-memvalidate>
+    $<$<CONFIG:Debug>:-sASSERTIONS=2>
+    $<$<CONFIG:Debug>:-sSTACK_OVERFLOW_CHECK=2>
+    $<$<CONFIG:Debug>:-sEXCEPTION_DEBUG>
+    # Manifold uses threads well on web
+    #   -sUSE_PTHREADS=0
+    # Options that sound good but seem broken:
+    #   -sSTRICT 
+    #   $<$<CONFIG:Debug>:-sSAFE_HEAP=1>
+    #   $<$<CONFIG:Debug>:-sCHECK_NULL_WRITES>
   )
+  if (WASM_BUILD_TYPE STREQUAL "node")
+    # SHARED_MEMORY
+    target_link_options(OpenSCAD PUBLIC
+      -sENVIRONMENT=node
+      -sSINGLE_FILE
+      -sNODERAWFS
+      -sNODEJS_CATCH_EXIT
+      -sNODE_CODE_CACHING # (maybe broken)
+      -sABORT_ON_WASM_EXCEPTIONS
+      -sLOAD_SOURCE_MAP
+    )
+  elseif (WASM_BUILD_TYPE STREQUAL "web")
+    target_link_options(OpenSCAD PUBLIC
+      -sENVIRONMENT=web,worker
+      -sMODULARIZE=1
+      -sEXPORT_ES6=1
+      -sEXPORT_NAME=OpenSCAD
+    )
+  else()
+    message(FATAL_ERROR "Invalid WASM_BUILD_TYPE: ${WASM_BUILD_TYPE} (allowed: node, web)")
+  endif()
 endif()
 
 if(NULLGL)
