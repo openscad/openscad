@@ -90,7 +90,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
     else if (ext == ".svg") actualtype = ImportType::SVG;
     else if (ext == ".obj") actualtype = ImportType::OBJ;
     else if (Feature::ExperimentalAssimp.is_enabled()) {
-      if (ext == ".glb2" || ext == ".glb" || ext == ".gltf") actualtype = ImportType::GLTF;
+      if (ext == ".glb" || ext == ".gltf") actualtype = ImportType::GLTF;
       else if (ext == ".x3d") actualtype = ImportType::X3D;
       else if (ext == ".dae") actualtype = ImportType::COLLADA;
       else if (ext == ".stp") actualtype = ImportType::STP;

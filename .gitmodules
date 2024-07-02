@@ -15,4 +15,5 @@
 	url = https://github.com/openscad/OpenCSG.git
 [submodule "submodules/assimp"]
 	path = submodules/assimp
-	url = https://github.com/assimp/assimp
+	url = https://github.com/ochafik/assimp
+	branch = gltf-magics
