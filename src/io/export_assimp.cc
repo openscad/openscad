@@ -177,8 +177,8 @@ static const char * assimp_format_name(FileFormat fileFormat) {
     return "stp";
   case FileFormat::PLY:
     return "plyb";
-  // case FileFormat::_3MF:
-  //   return "3mf";
+  case FileFormat::_3MF:
+    return "3mf";
   // case FileFormat::OFF:
   //   return "off";
   // case FileFormat::AMF:
