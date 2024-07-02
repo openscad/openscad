@@ -1,5 +1,8 @@
 #include "import.h"
+#include "Feature.h"
 #include "PolySet.h"
+#include "ManifoldGeometry.h"
+#include "manifold.h"
 #include "printutils.h"
 #include "AST.h"
 #include <fstream>
@@ -188,6 +191,8 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
     }
   }
 
+  auto logged_color_warning = false;
+
   while (!f.eof() && (face++ < faces_count)) {
     if (!getline_clean("reading faces: end of file")) {
       return PolySet::createEmpty();
@@ -199,6 +204,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       return PolySet::createEmpty();
     }
 
+    std::map<Color4f, int32_t> color_indices;
     try {
       unsigned long face_size=boost::lexical_cast<unsigned long>(words[0]);
       unsigned long i;
@@ -206,6 +212,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
         AsciiError("can't parse face: missing indices");
         return PolySet::createEmpty();
       }
+      size_t face_idx = ps->indices.size();
       ps->indices.emplace_back().reserve(face_size);
       //PRINTDB("Index[%d] [%d] = { ", face % n);
       for (i = 0; i < face_size; i++) {
@@ -219,17 +226,31 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       }
       //PRINTD("}");
       if (words.size() >= face_size + 4) {
-        // TODO: handle optional color info
-        /*
-        int r=boost::lexical_cast<int>(words[i++]);
-        int g=boost::lexical_cast<int>(words[i++]);
-        int b=boost::lexical_cast<int>(words[i++]);
-        */
+        if (Feature::ExperimentalRenderColors.is_enabled()) {
+          i = face_size + 1;
+          // handle optional color info (r g b [a])
+          int r=boost::lexical_cast<int>(words[i++]);
+          int g=boost::lexical_cast<int>(words[i++]);
+          int b=boost::lexical_cast<int>(words[i++]);
+          int a=i < words.size() ? boost::lexical_cast<int>(words[i++]) : 255;
+          Color4f color(r, g, b, a);
+          
+          auto iter_pair = color_indices.insert_or_assign(color, ps->colors.size());
+          if (iter_pair.second) ps->colors.push_back(color); // inserted
+          ps->color_indices.resize(face_idx, -1);
+          ps->color_indices.push_back(iter_pair.first->second);
+        } else {
+          LOG(message_group::Warning, "Ignoring color information in OFF file (enable `colors` feature to read it).");
+          logged_color_warning = true;
+        }
       }
     } catch (const boost::bad_lexical_cast& blc) {
       AsciiError("can't parse face: bad data");
       return PolySet::createEmpty();
     }
+  }
+  if (!ps->color_indices.empty()) {
+    ps->color_indices.resize(ps->indices.size(), -1);
   }
 
   //PRINTDB("PS: %ld vertices, %ld indices", ps->vertices.size() % ps->indices.size());

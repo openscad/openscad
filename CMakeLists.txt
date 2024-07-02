@@ -41,7 +41,6 @@ option(ENABLE_GLX "Enable GLX support if available" ON)
 # For now, we'll default to whatever OpenCSG uses (>=1.6 -> GLAD, <1.6 -> GLEW)
 option(USE_GLAD "Use GLAD. Mutually exclusive from USE_GLEW" OFF)
 option(USE_GLEW "Use GLEW. Mutually exclusive from USE_GLEW" OFF)
-option(WASM "Build WebAssembly, (implies NULLGL=ON) " OFF)
 option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
 option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
@@ -57,6 +56,7 @@ option(ENABLE_TBB "Enable support for oneAPI Threading Building Blocks." ON)
 option(ENABLE_CGAL "Enable CGAL." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
+option(WASM_BUILD_TYPE "WebAssembly build type. Support web or node" "web")
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
@@ -137,10 +137,61 @@ if(PROFILE)
   SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
 endif()
 
-if(WASM)
+if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
+  set(Boost_USE_STATIC_LIBS ON CACHE BOOL "" FORCE)
+  set(Boost_USE_STATIC_RUNTIME ON CACHE BOOL "" FORCE)
+  set(ENABLE_CAIRO OFF CACHE BOOL "" FORCE)
+  set(ENABLE_TBB OFF CACHE BOOL "" FORCE)
   set(NULLGL ON CACHE BOOL "" FORCE)
+  set(USE_MIMALLOC OFF CACHE BOOL "" FORCE)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
+  # https://emscripten.org/docs/tools_reference/emcc.html
+  target_compile_options(OpenSCAD PRIVATE -fexceptions)
+  target_link_libraries(OpenSCAD PRIVATE /emsdk/upstream/emscripten/cache/sysroot/lib/libz.a)
+  target_link_options(OpenSCAD PUBLIC
+    # https://emscripten.org/docs/tools_reference/settings_reference.html
+    -sALLOW_MEMORY_GROWTH=1
+    -sEXIT_RUNTIME=1
+    -sEXPORTED_RUNTIME_METHODS=['FS','ENV','PATH','callMain','formatException','ERRNO_CODES']
+    -sFORCE_FILESYSTEM=1
+    -fexceptions
+    -sDISABLE_EXCEPTION_CATCHING=0
+
+    # -sFORMAT_EXCEPTION_SUPPORT
+    # -sDEMANGLE_SUPPORT
+    $<$<CONFIG:Debug>:-sMALLOC=emmalloc-memvalidate>
+    $<$<CONFIG:Debug>:-sASSERTIONS=2>
+    $<$<CONFIG:Debug>:-sSTACK_OVERFLOW_CHECK=2>
+    $<$<CONFIG:Debug>:-sEXCEPTION_DEBUG>
+    # Manifold uses threads well on web
+    #   -sUSE_PTHREADS=0
+    # Options that sound good but seem broken:
+    #   -sSTRICT 
+    #   $<$<CONFIG:Debug>:-sSAFE_HEAP=1>
+    #   $<$<CONFIG:Debug>:-sCHECK_NULL_WRITES>
+  )
+  if (WASM_BUILD_TYPE STREQUAL "node")
+    # SHARED_MEMORY
+    target_link_options(OpenSCAD PUBLIC
+      -sENVIRONMENT=node
+      -sSINGLE_FILE
+      -sNODERAWFS
+      -sNODEJS_CATCH_EXIT
+      -sNODE_CODE_CACHING # (maybe broken)
+      -sABORT_ON_WASM_EXCEPTIONS
+      -sLOAD_SOURCE_MAP
+    )
+  elseif (WASM_BUILD_TYPE STREQUAL "web")
+    target_link_options(OpenSCAD PUBLIC
+      -sENVIRONMENT=web,worker
+      -sMODULARIZE=1
+      -sEXPORT_ES6=1
+      -sEXPORT_NAME=OpenSCAD
+    )
+  else()
+    message(FATAL_ERROR "Invalid WASM_BUILD_TYPE: ${WASM_BUILD_TYPE} (allowed: node, web)")
+  endif()
 endif()
 
 if(NULLGL)
@@ -383,11 +434,6 @@ if(ENABLE_CGAL)
   set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
 endif(ENABLE_CGAL)
 
-find_package(LibZip REQUIRED QUIET)
-message(STATUS "libzip: ${LIBZIP_VERSION}")
-target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBZIP_INCLUDE_DIR_ZIP} ${LIBZIP_INCLUDE_DIR_ZIPCONF})
-target_link_libraries(OpenSCAD PRIVATE ${LIBZIP_LIBRARY})
-target_compile_definitions(OpenSCAD PRIVATE ENABLE_LIBZIP)
 
 find_package(Freetype 2.4.9 REQUIRED QUIET)
 message(STATUS "Freetype: ${FREETYPE_VERSION_STRING}")
@@ -799,6 +845,7 @@ set(CORE_SOURCES
   src/io/dxfdim.cc
   src/io/export.cc
   src/io/export_amf.cc
+  src/io/export_assimp.cc
   src/io/export_dxf.cc
   src/io/export_obj.cc
   src/io/export_off.cc
@@ -809,6 +856,7 @@ set(CORE_SOURCES
   src/io/export_param.cc
   src/io/fileutils.cc
   src/io/import_amf.cc
+  src/io/import_assimp.cc
   src/io/import_stl.cc
   src/io/import_obj.cc
   src/io/import_off.cc
@@ -940,7 +988,8 @@ if(EXPERIMENTAL)
   else()
     add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
   endif()
-  target_link_libraries(OpenSCAD PRIVATE manifold polygon)
+  add_subdirectory(submodules/assimp EXCLUDE_FROM_ALL)
+  target_link_libraries(OpenSCAD PRIVATE manifold polygon assimp)
   add_sanitizers(manifold)
 
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)

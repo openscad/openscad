@@ -233,11 +233,26 @@ installer:
 
 For a 32-bit Windows cross-build, replace 64 with 32 in the above instructions. 
 
+### Building for WebAssembly
+
+We support building OpenSCAD headless for WebAssembly w/ Emscripten, using a premade Docker image built in [openscad/openscad-wasm](https://github.com/openscad/openscad-wasm) (which also has usage examples):
+
+```bash
+docker run --rm -it -v $PWD:/src:rw --platform=linux/amd64 openscad/wasm-base:latest \
+  emcmake cmake -B build -DEXPERIMENTAL=ON -DCMAKE_BUILD_TYPE=Release && \
+docker run --rm -it -v $PWD:/src:rw --platform=linux/amd64 openscad/wasm-base:latest \
+  cmake --build build -j10
+```
+
+This creates `openscad.wasm` & `openscad.js` in the `build/` folder.
+
+[openscad/openscad-playground](https://github.com/openscad/openscad-playground) uses the WASM build to provide a Web UI with a subset of features of OpenSCAD.
+
 ### Compilation
 
-First, run `mkdir build && cd build && cmake .. -DEXPERIMENTAL=1` to generate a Makefile.
+First, run `cmake -B build -DEXPERIMENTAL=1` to generate a Makefile in the `build` folder.
 
-Then run `make`. Finally, on Linux you might run `make install` as root.
+Then run `cmake --build build -j`. Finally, on Linux you might run `cmake --install build` as root.
 
 If you had problems compiling from source, raise a new issue in the
 [issue tracker on the github page](https://github.com/openscad/openscad/issues).
@@ -245,9 +260,9 @@ If you had problems compiling from source, raise a new issue in the
 This site and it's subpages can also be helpful:
 https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/Building_OpenSCAD_from_Sources
 
-Once built, you can run tests with `ctest` from the build directory.
+Once built, you can run tests with `ctest` from the `build` directory.
 
-Note: Both `make` and `ctest` accepts a `-j N` argument for distributing the load over `N` parallel processes.
+Note: Both `cmake --build` and `ctest` accepts a `-j N` argument for distributing the load over `N` parallel processes.
 
 ### Running CI workflows locally
 

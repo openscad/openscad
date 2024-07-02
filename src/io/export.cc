@@ -56,6 +56,11 @@ return format == FileFormat::ASCIISTL ||
   format == FileFormat::WRL ||
   format == FileFormat::AMF ||
   format == FileFormat::_3MF ||
+  format == FileFormat::COLLADA ||
+  format == FileFormat::STP ||
+  format == FileFormat::PLY ||
+  format == FileFormat::GLTF ||
+  format == FileFormat::X3D ||
   format == FileFormat::NEFDBG ||
   format == FileFormat::NEF3;
 }
@@ -68,6 +73,11 @@ bool is2D(const FileFormat format) {
 
 void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
 {
+  if (Feature::ExperimentalAssimp.is_enabled()) {
+    if (export_assimp(root_geom, output, exportInfo.format)) {
+      return;
+    }
+  }
   switch (exportInfo.format) {
   case FileFormat::ASCIISTL:
     export_stl(root_geom, output, false);
@@ -209,6 +219,8 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
     }
     out->indices.push_back(face);
   }
+  out->color_indices = ps.color_indices;
+  out->colors = ps.colors;
 
   std::vector<int> indexTranslationMap(vertexMap.size());
   out->vertices.reserve(vertexMap.size());
@@ -226,7 +238,26 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
     std::rotate(polygon.begin(), std::min_element(polygon.begin(), polygon.end()), polygon.end());
     poly = polygon;
   }
-  std::sort(out->indices.begin(), out->indices.end());
-
+  if (ps.color_indices.empty()) {
+    std::sort(out->indices.begin(), out->indices.end());
+  } else {
+    struct ColoredFace {
+      IndexedFace face;
+      int32_t color_index;
+    };
+    std::vector<ColoredFace> faces;
+    faces.reserve(ps.indices.size());
+    for (size_t i = 0, n = ps.indices.size(); i < n; i++) {
+      faces.push_back({out->indices[i], out->color_indices[i]});
+    }
+    std::sort(faces.begin(), faces.end(), [](const ColoredFace& a, const ColoredFace& b) {
+      return a.face < b.face;
+    });
+    for (size_t i = 0, n = faces.size(); i < n; i++) {
+      auto & face = faces[i];
+      out->indices[i] = face.face;
+      out->color_indices[i] = face.color_index;
+    }
+  }
   return out;
 }
