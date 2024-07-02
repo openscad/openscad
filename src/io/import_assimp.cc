@@ -31,14 +31,25 @@ std::unique_ptr<Geometry> import_assimp(const std::string& filename, const Locat
           aiComponent_LIGHTS                   |
           aiComponent_CAMERAS);
 
-  auto scene = importer.ReadFile(filename,
-    aiProcess_DropNormals |
-    aiProcess_RemoveComponent |
-    aiProcess_Triangulate |
-    aiProcess_ValidateDataStructure
-  );
-  if (!scene) {
-    LOG(message_group::Error, "Error loading file '%1$s' with Assimp: %2$s", filename, importer.GetErrorString());
+  auto extension = filename.substr(filename.find_last_of('.') + 1);
+  if (extension == "glb") {
+    extension = "glb2";
+  }
+
+  const aiScene * scene = nullptr;
+  try {
+    scene = importer.ReadFile(filename,
+      aiProcess_DropNormals |
+      aiProcess_RemoveComponent |
+      aiProcess_Triangulate |
+      aiProcess_ValidateDataStructure
+    );
+    if (!scene) {
+      LOG(message_group::Error, "Error loading file '%1$s' with Assimp: %2$s", filename, importer.GetErrorString());
+      return nullptr;
+    }
+  } catch (const DeadlyImportError & e) {
+    LOG(message_group::Error, "Error loading file '%1$s' with Assimp: %2$s", filename, e.what());
     return nullptr;
   }
 
