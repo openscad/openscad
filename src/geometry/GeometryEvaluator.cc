@@ -127,7 +127,11 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   if (children.empty()) return {};
 
   if (op == OpenSCADOperator::HULL) {
+#if ENABLE_MANIFOLD
+    return ResultObject::mutableResult(std::shared_ptr<Geometry>(ManifoldUtils::applyHullManifold(children)));
+#else
     return ResultObject::mutableResult(std::shared_ptr<Geometry>(applyHull(children)));
+#endif
   } else if (op == OpenSCADOperator::FILL) {
     for (const auto& item : children) {
       LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(), "fill() not yet implemented for 3D");
