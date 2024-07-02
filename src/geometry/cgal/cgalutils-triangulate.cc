@@ -115,11 +115,13 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
       prev->info() = last_idx;
       for (int i=0;i<outline.vertices.size();i++) {
         const auto &v = outline.vertices[i];
-        polyset->vertices.emplace_back(v[0], v[1], 0.0);
         auto curr = cdt.insert({v[0], v[1]});
-        curr->info() = polyset->vertices.size() - 1;
+        if (curr != prev) {
+          polyset->vertices.emplace_back(v[0], v[1], 0.0);
+          curr->info() = polyset->vertices.size() - 1;
           cdt.insert_constraint(prev, curr);
           prev = curr;
+        }
       }
     }
 
