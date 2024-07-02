@@ -106,6 +106,11 @@ void PolySet::transform(const Transform3d& mat)
   bbox_.setNull();
 }
 
+void PolySet::setColor(const Color4f& c) {
+  colors = {c};
+  color_indices.assign(indices.size(), 0);
+}
+
 bool PolySet::isConvex() const {
   if (convex_ || this->isEmpty()) return true;
   if (!convex_) return false;
