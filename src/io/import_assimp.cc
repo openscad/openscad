@@ -12,6 +12,7 @@
 #include <fstream>
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
+#include <assimp/Exceptional.h>
 #include <assimp/postprocess.h>
 
 

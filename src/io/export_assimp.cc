@@ -173,17 +173,17 @@ static const char * assimp_format_name(FileFormat fileFormat) {
     return "glb2";
   case FileFormat::X3D:
     return "x3d";
-  default:
   case FileFormat::STP:
     return "stp";
   case FileFormat::PLY:
     return "plyb";
-  case FileFormat::_3MF:
-    return "3mf";
+  // case FileFormat::_3MF:
+  //   return "3mf";
   // case FileFormat::OFF:
   //   return "off";
   // case FileFormat::AMF:
   //   return "amf";
+  default:
     return nullptr;
   }
 }
