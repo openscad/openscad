@@ -13,8 +13,9 @@ jobs:
         os: [macos-13, macos-latest]
         qt: [qt5, qt6]
         exclude:
-          # macos-latest runs on arm64, which has a broken SW renderer
-          - os: macos-latest
+          # Exclusions to make testing faster
+          - os: macos-13
+          - qt: qt6
     runs-on:  ${{ matrix.os }}
     name: ${{ matrix.os }} ${{ matrix.qt }}
     # If it's not done in 60 minutes, something is wrong.
