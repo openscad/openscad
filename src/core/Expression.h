@@ -9,8 +9,17 @@
 #include "Assignment.h"
 #include "function.h"
 #include "Value.h"
+#include "Context.h"
 
 template <class T> class ContextHandle;
+class Expression;
+
+struct SimplifiedExpression {
+  const Expression *expression = nullptr;
+  boost::optional<ContextHandle<Context>> new_context = boost::none;
+  boost::optional<const FunctionCall *> new_active_function_call = boost::none;
+};
+using SimplificationResult = std::variant<SimplifiedExpression, Value>;
 
 class Expression : public ASTNode
 {
@@ -19,6 +28,7 @@ public:
   [[nodiscard]] virtual bool isLiteral() const;
   [[nodiscard]] virtual Value evaluate(const std::shared_ptr<const Context>& context) const = 0;
   Value checkUndef(Value&& val, const std::shared_ptr<const Context>& context) const;
+  virtual SimplificationResult simplify_function_body(const std::shared_ptr<const Context>& context) const;
 };
 
 class UnaryOp : public Expression
@@ -79,6 +89,7 @@ public:
   [[nodiscard]] const Expression *evaluateStep(const std::shared_ptr<const Context>& context) const;
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  SimplificationResult simplify_function_body(const std::shared_ptr<const Context>& context) const override;
 private:
   std::shared_ptr<Expression> cond;
   std::shared_ptr<Expression> ifexpr;
@@ -178,6 +189,7 @@ public:
   void print(std::ostream& stream, const std::string& indent) const override;
   [[nodiscard]] const std::string& get_name() const { return name; }
   static Expression *create(const std::string& funcname, const AssignmentList& arglist, Expression *expr, const Location& loc);
+  SimplificationResult simplify_function_body(const std::shared_ptr<const Context>& context) const override;
 public:
   bool isLookup;
   std::string name;
@@ -205,6 +217,7 @@ public:
   [[nodiscard]] const Expression *evaluateStep(const std::shared_ptr<const Context>& context) const;
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  SimplificationResult simplify_function_body(const std::shared_ptr<const Context>& context) const override;
 private:
   AssignmentList arguments;
   std::shared_ptr<Expression> expr;
@@ -217,6 +230,7 @@ public:
   [[nodiscard]] const Expression *evaluateStep(const std::shared_ptr<const Context>& context) const;
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  SimplificationResult simplify_function_body(const std::shared_ptr<const Context>& context) const override;
 private:
   AssignmentList arguments;
   std::shared_ptr<Expression> expr;
@@ -231,6 +245,7 @@ public:
   const Expression *evaluateStep(ContextHandle<Context>& targetContext) const;
   [[nodiscard]] Value evaluate(const std::shared_ptr<const Context>& context) const override;
   void print(std::ostream& stream, const std::string& indent) const override;
+  SimplificationResult simplify_function_body(const std::shared_ptr<const Context>& context) const override;
 private:
   AssignmentList arguments;
   std::shared_ptr<Expression> expr;
