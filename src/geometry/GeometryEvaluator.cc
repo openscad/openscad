@@ -460,22 +460,22 @@ void GeometryEvaluator::addToParent(const State& state,
   if (Feature::ExperimentalRenderModifiers.is_enabled() && (
       node.modinst->isBackground() || (node.modinst->isHighlight()))) {  
     auto ps = std::make_shared<PolySet>(*PolySetUtils::getGeometryAsPolySet(geom));
-    if (node.modinst->isBackground()) {
-      ps->setColor(Color4f(0.5f, 0.5f, 0.5f, 0.5f));
-    } else {
-      ps->setColor(Color4f(1.0f, 0.0f, 0.0f, 0.5f));
-    }
 
     if (node.modinst->isHighlight()) {
       if (state.subtraction()) {
+        ps->setColor(Color4f(1.0f, 0.0f, 0.0f, 1.0f));
+        doAdd(std::make_shared<PolySet>(*ps));
+        
+        ps->setColor(Color4f(1.0f, 0.0f, 0.0f, 0.5f));
         ps->transform(state.matrix());
         extra_geometries.emplace_back(nullptr, ps);
-        doAdd(geom);
       } else {
+        ps->setColor(Color4f(1.0f, 0.0f, 0.0f, 0.5f));
         doAdd(ps);
       }
     } else {
       assert(node.modinst->isBackground());
+      ps->setColor(Color4f(1.0f, 0.0f, 0.0f, 0.5f));
       ps->transform(state.matrix());
       extra_geometries.emplace_back(nullptr, ps);
     }
