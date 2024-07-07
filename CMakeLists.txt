@@ -158,8 +158,6 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
     -fexceptions
     -sDISABLE_EXCEPTION_CATCHING=0
 
-    # -sFORMAT_EXCEPTION_SUPPORT
-    # -sDEMANGLE_SUPPORT
     $<$<CONFIG:Debug>:-sMALLOC=emmalloc-memvalidate>
     $<$<CONFIG:Debug>:-sASSERTIONS=2>
     $<$<CONFIG:Debug>:-sSTACK_OVERFLOW_CHECK=2>
@@ -171,23 +169,23 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
     #   $<$<CONFIG:Debug>:-sSAFE_HEAP=1>
     #   $<$<CONFIG:Debug>:-sCHECK_NULL_WRITES>
   )
-  if (WASM_BUILD_TYPE STREQUAL "node")
-    # SHARED_MEMORY
-    target_link_options(OpenSCAD PUBLIC
-      -sENVIRONMENT=node
-      -sSINGLE_FILE
-      -sNODERAWFS
-      -sNODEJS_CATCH_EXIT
-      -sNODE_CODE_CACHING # (maybe broken)
-      -sABORT_ON_WASM_EXCEPTIONS
-      -sLOAD_SOURCE_MAP
-    )
-  elseif (WASM_BUILD_TYPE STREQUAL "web")
+  if (WASM_BUILD_TYPE STREQUAL "web")
     target_link_options(OpenSCAD PUBLIC
       -sENVIRONMENT=web,worker
       -sMODULARIZE=1
       -sEXPORT_ES6=1
       -sEXPORT_NAME=OpenSCAD
+    )
+  elseif (WASM_BUILD_TYPE STREQUAL "node")
+    target_link_options(OpenSCAD PUBLIC
+      -sENVIRONMENT=node
+      -sSINGLE_FILE
+      -sNODERAWFS
+      -sSHARED_MEMORY
+      -sNODEJS_CATCH_EXIT
+      # -sNODE_CODE_CACHING # (maybe broken)
+      -sABORT_ON_WASM_EXCEPTIONS
+      -sLOAD_SOURCE_MAP
     )
   else()
     message(FATAL_ERROR "Invalid WASM_BUILD_TYPE: ${WASM_BUILD_TYPE} (allowed: node, web)")
