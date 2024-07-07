@@ -1,12 +1,23 @@
 #include "NodeVisitor.h"
 #include "State.h"
+#include "CsgOpNode.h"
 
 State NodeVisitor::nullstate(nullptr);
+
+bool isPurelyAdditive(const AbstractNode& node)
+{
+  if (auto csgNode = dynamic_cast<const CsgOpNode*>(&node)) {
+    return csgNode->type != OpenSCADOperator::INTERSECTION &&
+           csgNode->type != OpenSCADOperator::DIFFERENCE;
+  }
+  return true;
+}
 
 Response NodeVisitor::traverse(const AbstractNode& node, const State& state)
 {
   State newstate = state;
   newstate.setNumChildren(node.getChildren().size());
+  newstate.setPurelyAdditive(state.purelyAdditive() && isPurelyAdditive(node));
 
   Response response = Response::ContinueTraversal;
   newstate.setPrefix(true);
