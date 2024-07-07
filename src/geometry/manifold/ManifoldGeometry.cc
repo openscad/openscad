@@ -168,7 +168,9 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const {
       const auto id = mesh.runOriginalID[run];
       const auto end = mesh.runIndex[run + 1];
       const size_t numTri = (end - start) / 3;
-      assert(numTri > 0);
+      if (numTri == 0) {
+        continue;
+      }
 
       auto colorIndex = getColorIndex(id);
       for (int i = start; i < end; i += 3) {
