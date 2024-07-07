@@ -321,6 +321,11 @@ std::vector<std::shared_ptr<const Polygon2d>> GeometryEvaluator::collectChildren
 void GeometryEvaluator::smartCacheInsert(const AbstractNode& node,
                                          const std::shared_ptr<const Geometry>& geom)
 {
+  if (Feature::ExperimentalRenderModifiers.is_enabled() && (
+      node.modinst->isBackground() || (node.modinst->isHighlight()))) {
+    return;
+  }
+
   const std::string& key = this->tree.getIdString(node);
 
   if (CGALCache::acceptsGeometry(geom)) {
