@@ -81,16 +81,19 @@ struct AiSceneBuilder {
 
     aiColor4D col {color[0], color[1], color[2], color[3]};
     material->AddProperty(&col, 1, AI_MATKEY_COLOR_DIFFUSE);
-    // material->AddProperty(&col, 1, AI_MATKEY_COLOR_SPECULAR);
-    // material->AddProperty(&col, 1, AI_MATKEY_COLOR_AMBIENT);
-    
+    material->AddProperty(&col, 1, AI_MATKEY_COLOR_SPECULAR);
+    material->AddProperty(&col, 1, AI_MATKEY_COLOR_AMBIENT);
+
+    ai_real opacity = color[3];
+    material->AddProperty(&opacity, 1, AI_MATKEY_OPACITY);
+    // if (color[3] < 1.0f) {
+    //   aiString alphaMode("BLEND");
+    //   material->AddProperty(&alphaMode, AI_MATKEY_GLTF_ALPHAMODE);
+    // }
+
     float shininess = 64.0f;
     material->AddProperty(&shininess, 1, AI_MATKEY_SHININESS);
 
-    if (color[3] < 1.0f) {
-      aiString alphaMode("BLEND");
-      material->AddProperty(&alphaMode, AI_MATKEY_GLTF_ALPHAMODE);
-    }
     auto i = materials.size();
     materials.push_back(material);
     colorMaterialMap[color] = i;
@@ -159,12 +162,12 @@ struct AiSceneBuilder {
     scene->mLights[0] = new aiLight();
     scene->mLights[0]->mType = aiLightSource_DIRECTIONAL;
     scene->mLights[0]->mColorDiffuse = aiColor3D(1.0f, 1.0f, 1.0f);
-    scene->mLights[0]->mDirection = aiVector3D(-1.0f, 1.0f, 1.0f);
+    scene->mLights[0]->mDirection = aiVector3D(-1.0f, 1.0f, 1.0f).Normalize();
 
     scene->mLights[1] = new aiLight();
     scene->mLights[1]->mType = aiLightSource_DIRECTIONAL;
     scene->mLights[1]->mColorDiffuse = aiColor3D(1.0f, 1.0f, 1.0f);
-    scene->mLights[1]->mDirection = aiVector3D(1.0f, -1.0f, -1.0f);
+    scene->mLights[1]->mDirection = aiVector3D(1.0f, -1.0f, -1.0f).Normalize();
 
     // Reset vectors so we don't delete them in the destructor: they're owned by the aiScene now.
     materials.clear();
