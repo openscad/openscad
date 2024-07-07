@@ -475,7 +475,7 @@ void GeometryEvaluator::addToParent(const State& state,
       }
     } else {
       assert(node.modinst->isBackground());
-      ps->setColor(Color4f(1.0f, 0.0f, 0.0f, 0.5f));
+      ps->setColor(Color4f(0.5f, 0.5f, 0.5f, 0.5f));
       ps->transform(state.matrix());
       extra_geometries.emplace_back(nullptr, ps);
     }
