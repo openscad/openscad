@@ -84,6 +84,11 @@ struct AiSceneBuilder {
     material->AddProperty(&col, 1, AI_MATKEY_COLOR_SPECULAR);
     material->AddProperty(&col, 1, AI_MATKEY_COLOR_AMBIENT);
 
+    ai_real metallicFactor = 1.0f;
+    material->AddProperty(&metallicFactor, 1, AI_MATKEY_METALLIC_FACTOR);
+    ai_real roughnessFactor = 1.0f;
+    material->AddProperty(&roughnessFactor, 1, AI_MATKEY_ROUGHNESS_FACTOR);
+    
     ai_real opacity = color[3];
     material->AddProperty(&opacity, 1, AI_MATKEY_OPACITY);
     // if (color[3] < 1.0f) {
