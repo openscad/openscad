@@ -447,6 +447,15 @@ void GeometryEvaluator::addToParent(const State& state,
                                     const std::shared_ptr<const Geometry>& geom)
 {
   this->visitedchildren.erase(node.index());
+  auto doAdd = [&](const std::shared_ptr<const Geometry>& geom) {
+    if (state.parent()) {
+      this->visitedchildren[state.parent()->index()].push_back(std::make_pair(node.shared_from_this(), geom));
+    } else {
+      // Root node
+      this->root = geom;
+      assert(this->visitedchildren.empty());
+    }
+  };
 
   if (Feature::ExperimentalRenderModifiers.is_enabled() && (
       node.modinst->isBackground() || (node.modinst->isHighlight()))) {  
@@ -456,20 +465,24 @@ void GeometryEvaluator::addToParent(const State& state,
     } else {
       ps->setColor(Color4f(1.0f, 0.0f, 0.0f, 0.5f));
     }
-    ps->transform(state.matrix());
-    extra_geometries.emplace_back(nullptr, ps);
-    if (!node.modinst->isHighlight() || state.purelyAdditive()) {
-      return;
+
+    if (node.modinst->isHighlight()) {
+      if (state.subtraction()) {
+        ps->transform(state.matrix());
+        extra_geometries.emplace_back(nullptr, ps);
+        doAdd(geom);
+      } else {
+        doAdd(ps);
+      }
+    } else {
+      assert(node.modinst->isBackground());
+      ps->transform(state.matrix());
+      extra_geometries.emplace_back(nullptr, ps);
     }
+    return;
   }
 
-  if (state.parent()) {
-    this->visitedchildren[state.parent()->index()].push_back(std::make_pair(node.shared_from_this(), geom));
-  } else {
-    // Root node
-    this->root = geom;
-    assert(this->visitedchildren.empty());
-  }
+  doAdd(geom);
 }
 
 Response GeometryEvaluator::visit(State& state, const ColorNode& node)
