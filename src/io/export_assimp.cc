@@ -87,8 +87,10 @@ struct AiSceneBuilder {
     float shininess = 64.0f;
     material->AddProperty(&shininess, 1, AI_MATKEY_SHININESS);
 
-    aiString alphaMode("BLEND");
-    material->AddProperty(&alphaMode, AI_MATKEY_GLTF_ALPHAMODE);
+    if (color[3] < 1.0f) {
+      aiString alphaMode("BLEND");
+      material->AddProperty(&alphaMode, AI_MATKEY_GLTF_ALPHAMODE);
+    }
     auto i = materials.size();
     materials.push_back(material);
     colorMaterialMap[color] = i;
