@@ -29,7 +29,8 @@
 
 enum class SelectionType {
 	SELECTION_POINT, 
-	SELECTION_LINE
+	SELECTION_SEGMENT,
+	SELECTION_INVALID
 };
 
 struct SelectedObject {

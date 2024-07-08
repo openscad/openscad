@@ -2345,7 +2345,7 @@ void MainWindow::actionMeasureAngle()
 void MainWindow::leftClick(QPoint mouse) 
 {
   QString str = meas.statemachine(mouse);
-  if(str.size() > 0) {
+  if(str != nullptr) {
     this->qglview->measure_state = MEASURE_IDLE;
     QMenu resultmenu(this);
     auto action = resultmenu.addAction(str);
@@ -2433,7 +2433,7 @@ void MainWindow::rightClick(QPoint mouse)
 void MainWindow::measureFinished(void)
 {
   this->qglview->selected_obj.clear();
-  this->qglview->shown_obj.clear();
+  this->qglview->shown_obj = nullptr;
   this->qglview->update();
   this->qglview->measure_state = MEASURE_IDLE;
 }
