@@ -1,4 +1,8 @@
-version: 2
+version: 2.1
+
+orbs:
+  macos: circleci/macos@2.5.1
+  
 jobs:
   openscad-mxe-64bit:
     working_directory: ~/workspace
@@ -88,27 +92,13 @@ jobs:
               export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
               export OPENSCAD_VERSION="$(date +%Y.%m.%d).wasm${CIRCLE_BUILD_NUM}"
               if [ x"${CIRCLE_BRANCH}" = xmaster ]; then export SUFFIX=""; else export SUFFIX="_$(echo ${CIRCLE_BRANCH} | sed -e 's,pull/,PR,; s,/head,h,; s,/merge,m,; s,/,.,g')"; fi
-              export PKG_CONFIG_PATH="/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig"
               git submodule update --init --recursive
               emcmake cmake -B ../build . \
-                  -DWASM=ON \
                   -DSNAPSHOT=ON \
                   -DEXPERIMENTAL=ON \
-                  -DENABLE_TBB=OFF \
-                  -DENABLE_CAIRO=OFF \
-                  -DUSE_MIMALLOC=OFF \
-                  -DBoost_USE_STATIC_RUNTIME=ON \
-                  -DBoost_USE_STATIC_LIBS=ON \
                   -DCMAKE_BUILD_TYPE=Release \
                   -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT" \
-                  -DOPENSCAD_VERSION="$OPENSCAD_VERSION" \
-                  -DHARFBUZZ_INCLUDE_DIRS=/emsdk/upstream/emscripten/cache/sysroot/include/harfbuzz \
-                  -DFONTCONFIG_INCLUDE_DIR=/emsdk/upstream/emscripten/cache/sysroot/include/fontconfig \
-                  -DFONTCONFIG_LIBRARIES=libfontconfig.a
-              sed -e "s|-isystem /emsdk/upstream/emscripten/cache/sysroot/include[^/]||g" -i ../build/CMakeFiles/OpenSCAD.dir/includes_C.rsp
-              sed -e "s|-isystem /emsdk/upstream/emscripten/cache/sysroot/include[^/]||g" -i ../build/CMakeFiles/OpenSCAD.dir/includes_CXX.rsp
-              sed -e "s|-lfontconfig|/emsdk/upstream/emscripten/cache/sysroot/lib/libglib-2.0.a /emsdk/upstream/emscripten/cache/sysroot/lib/libzip.a /emsdk/upstream/emscripten/cache/sysroot/lib/libz.a /emsdk/upstream/emscripten/cache/sysroot/lib/libfontconfig.a|g" -i ../build/CMakeFiles/OpenSCAD.dir/linklibs.rsp
-              sed -e "s|em++|em++ ${EMXX_FLAGS} -s USE_PTHREADS=0 -s NO_DISABLE_EXCEPTION_CATCHING -s FORCE_FILESYSTEM=1 -s ALLOW_MEMORY_GROWTH=1 -s EXPORTED_RUNTIME_METHODS=['FS','callMain'] -s EXPORT_ES6=1 -s ENVIRONMENT=web,worker -s MODULARIZE=1 -s EXPORT_NAME=OpenSCAD -s EXIT_RUNTIME=1|g" -i ../build/CMakeFiles/OpenSCAD.dir/link.txt
+                  -DOPENSCAD_VERSION="$OPENSCAD_VERSION"
               cd ../build
               make -j4 VERBOSE=1
               mkdir -p /tmp/out
@@ -126,7 +116,7 @@ jobs:
           path: /tmp/out
           destination: wasm
   openscad-macos:
-    resource_class: macos.x86.medium.gen2
+    resource_class: macos.m1.medium.gen1
     macos:
       xcode: 15.3.0
     environment:
@@ -135,6 +125,7 @@ jobs:
       DYLD_LIBRARY_PATH: /Users/distiller/libraries/install/lib
       DYLD_FRAMEWORK_PATH: /Users/distiller/libraries/install/lib
     steps:
+      - macos/install-rosetta
       - checkout
       - run: git submodule update --init --recursive
       - run:
