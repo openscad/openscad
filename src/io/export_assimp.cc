@@ -161,18 +161,19 @@ struct AiSceneBuilder {
     }
     std::copy(nodes.begin(), nodes.end(), scene->mRootNode->mChildren);
 
+    float lightIntensity = 8.0f;
     scene->mNumLights = 2;
     scene->mLights = new aiLight*[2];
 
     scene->mLights[0] = new aiLight();
     scene->mLights[0]->mType = aiLightSource_DIRECTIONAL;
     scene->mLights[0]->mColorDiffuse = aiColor3D(1.0f, 1.0f, 1.0f);
-    scene->mLights[0]->mDirection = aiVector3D(-1.0f, 1.0f, 1.0f).Normalize();
+    scene->mLights[0]->mDirection = aiVector3D(-1.0f, 1.0f, 1.0f).Normalize() *= lightIntensity;
 
     scene->mLights[1] = new aiLight();
     scene->mLights[1]->mType = aiLightSource_DIRECTIONAL;
     scene->mLights[1]->mColorDiffuse = aiColor3D(1.0f, 1.0f, 1.0f);
-    scene->mLights[1]->mDirection = aiVector3D(1.0f, -1.0f, -1.0f).Normalize();
+    scene->mLights[1]->mDirection = aiVector3D(1.0f, -1.0f, -1.0f).Normalize() *= lightIntensity;
 
     // Reset vectors so we don't delete them in the destructor: they're owned by the aiScene now.
     materials.clear();
