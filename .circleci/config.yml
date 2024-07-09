@@ -87,7 +87,7 @@ jobs:
     working_directory: ~/workspace
     docker:
       - image: openscad/wasm-base:latest
-    resource_class: large
+    resource_class: xlarge
     steps:
       - checkout
       - run:
