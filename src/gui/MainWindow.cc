@@ -1893,7 +1893,7 @@ bool MainWindow::trust_python_file(const std::string &file,  const std::string &
   }
 
   auto ret = QMessageBox::warning(this, "Application",
-    _( "Python files can potentially contain harumful stuff.\n"
+    _( "Python files can potentially contain harmful stuff.\n"
     "Do you trust this file ?\n"), QMessageBox::Yes  | QMessageBox::YesAll | QMessageBox::No);
   if (ret == QMessageBox::YesAll)  {
     python_trusted = true;

@@ -1,4 +1,8 @@
-version: 2
+version: 2.1
+
+orbs:
+  macos: circleci/macos@2.5.1
+  
 jobs:
   openscad-mxe-64bit:
     working_directory: ~/workspace
@@ -75,6 +79,9 @@ jobs:
           path: /tmp/out
           destination: 64-bit
   openscad-wasm:
+    parameters:
+      wasm-type:
+        type: string
     working_directory: ~/workspace
     docker:
       - image: openscad/wasm-base:latest
@@ -82,7 +89,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build OpenSCAD WASM
+          name: Build OpenSCAD WASM (<< parameters.wasm-type >>)
           no_output_timeout: 18000
           command: |
               export OPENSCAD_COMMIT=$(git log -1 --pretty=format:%h)
@@ -93,12 +100,13 @@ jobs:
                   -DSNAPSHOT=ON \
                   -DEXPERIMENTAL=ON \
                   -DCMAKE_BUILD_TYPE=Release \
+                  -DWASM_BUILD_TYPE=<< parameters.wasm-type >> \
                   -DOPENSCAD_COMMIT="$OPENSCAD_COMMIT" \
                   -DOPENSCAD_VERSION="$OPENSCAD_VERSION"
               cd ../build
               make -j4 VERBOSE=1
               mkdir -p /tmp/out
-              zip -9r "/tmp/out/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}-WebAssembly.zip" openscad.*
+              zip -9r "/tmp/out/OpenSCAD-${OPENSCAD_VERSION}${SUFFIX}-WebAssembly-<< parameters.wasm-type >>.zip" openscad.*
               if [ -n "${CODE_SIGNING_KEY}" ]; then
                   cd /tmp/out
                   echo $CODE_SIGNING_DATA | base64 -d | gzip -d | gpg --import --allow-secret-key-import --pinentry-mode loopback --passphrase-file <(echo $CODE_SIGNING_PW)
@@ -112,7 +120,7 @@ jobs:
           path: /tmp/out
           destination: wasm
   openscad-macos:
-    resource_class: macos.x86.medium.gen2
+    resource_class: macos.m1.medium.gen1
     macos:
       xcode: 15.3.0
     environment:
@@ -121,6 +129,7 @@ jobs:
       DYLD_LIBRARY_PATH: /Users/distiller/libraries/install/lib
       DYLD_FRAMEWORK_PATH: /Users/distiller/libraries/install/lib
     steps:
+      - macos/install-rosetta
       - checkout
       - run: git submodule update --init --recursive
       - run:
@@ -192,6 +201,9 @@ workflows:
                   only:
                       - master
       - openscad-wasm:
+          matrix:
+            parameters:
+              wasm-type: [web, node]
           context: secret-context
           filters:
               branches:
@@ -214,6 +226,9 @@ workflows:
                       - coverity_scan
                       - /^(?i:continuous)$/
       - openscad-wasm:
+          matrix:
+            parameters:
+              wasm-type: [web, node]
           filters:
               branches:
                   ignore:

@@ -61,7 +61,8 @@ include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt." ON "NOT HEADLESS" OFF)
 cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS;NOT USE_QT6" OFF)
-set(WASM_BUILD_TYPE "web" CACHE STRING "WebAssembly build type. Support web or node")
+set(WASM_BUILD_TYPE "web" CACHE STRING 
+  "WebAssembly build type. Support web (builds an OpenSCAD module) or node (standalone .js executable)")
 
 if(USE_QT6)
   set(DEPLOYMENT_TARGET "10.15")
@@ -146,46 +147,55 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   set(USE_MIMALLOC OFF CACHE BOOL "" FORCE)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
-  # https://emscripten.org/docs/tools_reference/emcc.html
-  target_compile_options(OpenSCAD PRIVATE -fexceptions)
   target_link_libraries(OpenSCAD PRIVATE /emsdk/upstream/emscripten/cache/sysroot/lib/libz.a)
+  
+  # https://emscripten.org/docs/tools_reference/emcc.html
+  # https://emscripten.org/docs/tools_reference/settings_reference.html
+  target_compile_options(OpenSCAD PRIVATE -fexceptions)
   target_link_options(OpenSCAD PUBLIC
-    # https://emscripten.org/docs/tools_reference/settings_reference.html
-    -sALLOW_MEMORY_GROWTH=1
-    -sEXIT_RUNTIME=1
-    -sEXPORTED_RUNTIME_METHODS=['FS','ENV','PATH','callMain','formatException','ERRNO_CODES']
-    -sFORCE_FILESYSTEM=1
     -fexceptions
+    -sABORT_ON_WASM_EXCEPTIONS
+    -sALLOW_MEMORY_GROWTH=1
     -sDISABLE_EXCEPTION_CATCHING=0
-
-    $<$<CONFIG:Debug>:-sMALLOC=emmalloc-memvalidate>
-    $<$<CONFIG:Debug>:-sASSERTIONS=2>
-    $<$<CONFIG:Debug>:-sSTACK_OVERFLOW_CHECK=2>
-    $<$<CONFIG:Debug>:-sEXCEPTION_DEBUG>
-    # Manifold uses threads well on web
-    #   -sUSE_PTHREADS=0
-    # Options that sound good but seem broken:
-    #   -sSTRICT 
-    #   $<$<CONFIG:Debug>:-sSAFE_HEAP=1>
-    #   $<$<CONFIG:Debug>:-sCHECK_NULL_WRITES>
+    -sEXPORTED_RUNTIME_METHODS=['ENV','ERRNO_CODES','FS','PATH','callMain']
+    -sMAXIMUM_MEMORY=4GB
+    
+    # -g produces DWARF debug info, which is quite large and may need debugger extensions.
+    # Alternatively, can pass -gsource-map -sLOAD_SOURCE_MAP but then variable debugging isn't possible
+    $<$<CONFIG:Debug>:-g -O0>
   )
   if (WASM_BUILD_TYPE STREQUAL "web")
     target_link_options(OpenSCAD PUBLIC
       -sENVIRONMENT=web,worker
-      -sMODULARIZE=1
+      -sEXIT_RUNTIME=1
       -sEXPORT_ES6=1
       -sEXPORT_NAME=OpenSCAD
+      -sMODULARIZE=1
     )
   elseif (WASM_BUILD_TYPE STREQUAL "node")
     target_link_options(OpenSCAD PUBLIC
-      -sENVIRONMENT=node
-      -sSINGLE_FILE
-      -sNODERAWFS
-      -sSHARED_MEMORY
+      -sENVIRONMENT=node,worker
       -sNODEJS_CATCH_EXIT
-      # -sNODE_CODE_CACHING # (maybe broken)
-      -sABORT_ON_WASM_EXCEPTIONS
-      -sLOAD_SOURCE_MAP
+      -sNODERAWFS
+
+      # Single .js (more elegant for CLI release) is larger than separate .js & .wasm (preferred for web)
+      $<$<CONFIG:Release>:-sSINGLE_FILE> 
+      
+      # Alternatively to single-file mode, code caching could make repeated runs faster:
+      # -sNODE_CODE_CACHING -sWASM_ASYNC_COMPILATION=0
+    )
+
+    # Ensure the resulting .js file is executable on Unix:
+    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/prepend_node_shebang.cmake "
+      file(READ \"\${FILE}\" CONTENT)
+      file(WRITE \"\${FILE}\" \"#!/usr/bin/env node\n\${CONTENT}\")
+      if(CMAKE_HOST_UNIX)
+        execute_process(COMMAND chmod +x \"\${FILE}\")
+      endif()
+    ")
+    add_custom_command(
+      POST_BUILD TARGET OpenSCAD
+      COMMAND ${CMAKE_COMMAND} "-DFILE=$<TARGET_FILE:OpenSCAD>" -P "${CMAKE_CURRENT_BINARY_DIR}/prepend_node_shebang.cmake"
     )
   else()
     message(FATAL_ERROR "Invalid WASM_BUILD_TYPE: ${WASM_BUILD_TYPE} (allowed: node, web)")
