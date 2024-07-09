@@ -229,6 +229,10 @@ workflows:
                       - coverity_scan
                       - /^(?i:continuous)$/
       - openscad-wasm:
+          matrix:
+            parameters:
+              build-type: [Release, Debug]
+              wasm-type: [web, node]
           filters:
               branches:
                   ignore:
