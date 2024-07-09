@@ -79,6 +79,11 @@ jobs:
           path: /tmp/out
           destination: 64-bit
   openscad-wasm:
+    parameters:
+      build-type:
+        type: string
+      wasm-type:
+        type: string
     working_directory: ~/workspace
     docker:
       - image: openscad/wasm-base:latest
