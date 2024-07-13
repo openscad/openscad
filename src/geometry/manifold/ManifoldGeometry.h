@@ -3,6 +3,10 @@
 
 #include "Geometry.h"
 #include <glm/glm.hpp>
+#include "linalg.h"
+#include "manifold.h"
+#include <map>
+#include <set>
 
 namespace manifold {
   class Manifold;
@@ -16,9 +20,12 @@ public:
   VISITABLE_GEOMETRY();
 
   ManifoldGeometry();
-  ManifoldGeometry(const std::shared_ptr<const manifold::Manifold>& object);
-  ManifoldGeometry(const ManifoldGeometry& other) = default;
-  ManifoldGeometry& operator=(const ManifoldGeometry& other);
+  ManifoldGeometry(
+    const std::shared_ptr<const manifold::Manifold>& object,
+    const std::set<uint32_t> & originalIDs = {},
+    const std::map<uint32_t, Color4f> & originalIDToColor = {},
+    const std::set<uint32_t> & subtractedIDs = {});
+   ManifoldGeometry(const ManifoldGeometry& other) = default;
 
   [[nodiscard]] bool isEmpty() const override;
   [[nodiscard]] size_t numFacets() const override;
@@ -34,7 +41,7 @@ public:
   [[nodiscard]] unsigned int getDimension() const override { return 3; }
   [[nodiscard]] std::unique_ptr<Geometry> copy() const override;
 
-  [[nodiscard]] std::shared_ptr<const PolySet> toPolySet() const;
+  [[nodiscard]] std::shared_ptr<PolySet> toPolySet() const;
 
   template <class Polyhedron>
   [[nodiscard]] std::shared_ptr<Polyhedron> toPolyhedron() const;
@@ -52,6 +59,7 @@ public:
   Polygon2d project() const;
 
   void transform(const Transform3d& mat) override;
+  void setColor(const Color4f& c) override;
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
   /*! Iterate over all vertices' points until the function returns true (for done). */
@@ -60,5 +68,10 @@ public:
   const manifold::Manifold& getManifold() const;
 
 private:
+  ManifoldGeometry binOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs, manifold::OpType opType) const;
+
   std::shared_ptr<const manifold::Manifold> manifold_;
+  std::set<uint32_t> originalIDs_;
+  std::map<uint32_t, Color4f> originalIDToColor_;
+  std::set<uint32_t> subtractedIDs_;
 };
