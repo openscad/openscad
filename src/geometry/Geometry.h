@@ -40,6 +40,7 @@ public:
   [[nodiscard]] virtual size_t numFacets() const = 0;
   [[nodiscard]] unsigned int getConvexity() const { return convexity; }
   void setConvexity(int c) { this->convexity = c; }
+  virtual void setColor(const Color4f& c) {}
 
   virtual void transform(const Transform3d& /*mat*/) { assert(!"transform not implemented!"); }
   virtual void resize(const Vector3d& /*newsize*/, const Eigen::Matrix<bool, 3, 1>& /*autosize*/) {
