@@ -39,6 +39,7 @@
 #include <boost/optional.hpp>
 
 #include "ext/polyclipping/clipper.hpp"
+#include "linalg.h"
 
 namespace libsvg {
 class shape;
@@ -83,6 +84,8 @@ protected:
   std::string stroke_linecap;
   std::string stroke_linejoin;
   std::string style;
+  std::string fill;
+  std::string fill_opacity;
   bool excluded{false};
   bool selected{false};
 
@@ -110,6 +113,7 @@ public:
   [[nodiscard]] virtual const std::string& get_layer() const { return layer.get(); }
   [[nodiscard]] virtual double get_x() const { return x; }
   [[nodiscard]] virtual double get_y() const { return y; }
+  [[nodiscard]] virtual Color4f get_fill_color() const;
 
   [[nodiscard]] virtual const path_list_t& get_path_list() const { return path_list; }
 

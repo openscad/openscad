@@ -138,6 +138,9 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
       polyset->indices.push_back({fit->vertex(0)->info(), fit->vertex(1)->info(), fit->vertex(2)->info()});
     }
   }
+  if (polygon2d.getColor().isValid()) {
+    polyset->setColor(polygon2d.getColor());
+  }
   return polyset;
 }
 

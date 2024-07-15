@@ -68,6 +68,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMe
     LOG(message_group::Error,
         "[manifold] Surface_mesh -> Manifold conversion failed: %1$s", 
         ManifoldUtils::statusToString(mani->Status()));
+    return nullptr;
   }
   std::set<uint32_t> originalIDs;
   auto id = mani->OriginalID();
@@ -184,8 +185,8 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
 
   // 2. If the PolySet couldn't be converted into a Manifold object, let's try to repair it.
   // We currently have to utilize some CGAL functions to do this.
-  {
-  #ifdef ENABLE_CGAL
+#ifdef ENABLE_CGAL
+  try {
     PolySet psq(ps);
     std::vector<Vector3d> points3d;
     psq.quantizeVertices(&points3d);
@@ -221,10 +222,11 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
     auto geom = createManifoldFromSurfaceMesh(m);
     // TODO: preserve color if polyset is fully monochrome, or maybe pass colors around in surface mesh?
     return geom;
-  #else
-    return std::make_shared<ManifoldGeometry>();
-  #endif
+  } catch (const std::exception& e) {
+    LOG(message_group::Error, "[manifold] CGAL error: %1$s", e.what());
   }
+#endif
+  return std::make_shared<ManifoldGeometry>();
 }
 
 std::shared_ptr<const ManifoldGeometry> createManifoldFromGeometry(const std::shared_ptr<const Geometry>& geom) {

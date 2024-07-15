@@ -71,7 +71,11 @@ ClipperLib::PolyTree sanitize(const ClipperLib::Paths& paths)
 std::unique_ptr<Polygon2d> sanitize(const Polygon2d& poly)
 {
   auto tmp = ClipperUtils::fromPolygon2d(poly);
-  return toPolygon2d(sanitize(tmp.geometry), ClipperUtils::getScalePow2(tmp.bounds));
+  auto result = toPolygon2d(sanitize(tmp.geometry), ClipperUtils::getScalePow2(tmp.bounds));
+  if (poly.getColor().isValid()) {
+    result->setColor(poly.getColor());
+  }
+  return result;
 }
 
 /*!

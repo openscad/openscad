@@ -298,13 +298,20 @@ std::vector<std::shared_ptr<const Polygon2d>> GeometryEvaluator::collectChildren
         LOG(message_group::Warning, item.first->modinst->location(), this->tree.getDocumentPath(), "Ignoring 3D child object for 2D operation");
         children.push_back(nullptr); // replace 3D geometry with empty geometry
       } else {
-        if (chgeom->isEmpty()) {
-          children.push_back(nullptr);
-        } else {
-          const auto polygon2d = std::dynamic_pointer_cast<const Polygon2d>(chgeom);
-          assert(polygon2d);
-          children.push_back(polygon2d);
-        }
+        std::function<void(const std::shared_ptr<const Geometry>&)> collect = [&](const std::shared_ptr<const Geometry>& geom) {
+          if (geom->isEmpty()) {
+            children.push_back(nullptr);
+          } else if (auto geomlist = std::dynamic_pointer_cast<const GeometryList>(geom)) {
+            for (const auto& child : geomlist->getChildren()) {
+              collect(child.second);
+            }
+          } else {
+            const auto polygon2d = std::dynamic_pointer_cast<const Polygon2d>(geom);
+            assert(polygon2d);
+            children.push_back(polygon2d);
+          }
+        };
+        collect(chgeom);
       }
     } else {
       children.push_back(nullptr);
@@ -818,19 +825,36 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
   if (state.isPostfix()) {
     std::shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      std::shared_ptr<const Geometry> geometry;
-      if (!node.filename.empty()) {
-        DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale_x);
-
-        auto p2d = dxf.toPolygon2d();
-        if (p2d) geometry = ClipperUtils::sanitize(*p2d);
+      if (Feature::ExperimentalRenderColors.is_enabled()) {
+        // Our 2D / Clipper operations don't preserve colors yet, so we
+        // extrude children *then* union them in 3D space.
+        auto children = collectChildren2D(node);
+        Geometry::Geometries extruded;
+        for (const auto& child : children) {
+          if (!child) {
+            LOG(message_group::Warning, "Ignoring empty child object for linear_extrude()");
+            continue;
+          }
+          extruded.emplace_back(nullptr, extrudePolygon(node, *child));
+        }
+        // TODO: Could preserve the solids by treating a GeometryList as a partitioned solid
+        // geom = std::make_shared<GeometryList>(extruded);
+        geom = ManifoldUtils::applyOperator3DManifold(extruded, OpenSCADOperator::UNION);
       } else {
-        geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
-      }
-      if (geometry) {
-        const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
-        geom = extrudePolygon(node, *polygons);
-        assert(geom);
+        std::shared_ptr<const Geometry> geometry;
+        if (!node.filename.empty()) {
+          DxfData dxf(node.fn, node.fs, node.fa, node.filename, node.layername, node.origin_x, node.origin_y, node.scale_x);
+
+          auto p2d = dxf.toPolygon2d();
+          if (p2d) geometry = ClipperUtils::sanitize(*p2d);
+        } else {
+          geometry = applyToChildren2D(node, OpenSCADOperator::UNION);
+        }
+        if (geometry) {
+          const auto polygons = std::dynamic_pointer_cast<const Polygon2d>(geometry);
+          geom = extrudePolygon(node, *polygons);
+          assert(geom);
+        }
       }
     } else {
       geom = smartCacheGet(node, false);
