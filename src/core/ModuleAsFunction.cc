@@ -107,8 +107,7 @@ boost::optional<CallableFunction> Context::lookup_function(const std::string& na
   }
   if (Feature::ExperimentalModuleFunctions.is_enabled()) {
     if (auto module = lookup_module(name, loc)) {
-      LOG(message_group::Warning, loc, documentRoot(), "Converting unknown function '%1$s' to module", name);
-      CallableFunction result = std::make_shared<const BuiltinFunction>([module, loc] (const std::shared_ptr<const Context>& context, const FunctionCall *call) {
+      return std::make_unique<BuiltinFunction>([module, loc] (const std::shared_ptr<const Context>& context, const FunctionCall *call) {
         auto inst = std::make_unique<ModuleInstantiation>(call->name, call->arguments, loc);
         auto node = module->module->instantiate(module->defining_context, inst.get(), context);
         if (!node) {
@@ -126,8 +125,8 @@ boost::optional<CallableFunction> Context::lookup_function(const std::string& na
         }
 
         VectorType vertices(context->session());
-        vertices.reserve(ps->vertices.size());
-        for (const auto & v : ps->vertices) {
+        vertices.reserve(ps->vertices().size());
+        for (const auto & v : ps->vertices()) {
           VectorType vertex(context->session());
           vertex.reserve(3);
           vertex.emplace_back(v[0]);
@@ -137,8 +136,8 @@ boost::optional<CallableFunction> Context::lookup_function(const std::string& na
         }
         
         VectorType faces(context->session());
-        faces.reserve(ps->indices.size());
-        for (const auto & f : ps->indices) {
+        faces.reserve(ps->faces().size());
+        for (const auto & f : ps->faces()) {
           VectorType face(context->session());
           face.reserve(3);
           face.emplace_back(f[0]);
@@ -149,8 +148,8 @@ boost::optional<CallableFunction> Context::lookup_function(const std::string& na
 
         const Color4f invalid_color;
         VectorType colors(context->session());
-        colors.reserve(ps->color_indices.size());
-        for (const auto & ci : ps->color_indices) {
+        colors.reserve(ps->colors().size());
+        for (const auto & ci : ps->color_indices()) {
           const auto & color = ci >= 0 && ci < ps->colors.size() ? ps->colors[ci] : invalid_color;
           VectorType colorVec(context->session());
           colorVec.reserve(4);
@@ -178,8 +177,6 @@ boost::optional<CallableFunction> Context::lookup_function(const std::string& na
 
         return std::move(ret);
       });
-      // boost::optional<CallableFunction> 
-      return result;
     }
   }
   LOG(message_group::Warning, loc, documentRoot(), "Ignoring unknown function '%1$s'", name);

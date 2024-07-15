@@ -22,6 +22,7 @@ public:
   static const Feature ExperimentalInputDriverDBus;
   static const Feature ExperimentalLazyUnion;
   static const Feature ExperimentalVxORenderersIndexing;
+  static const Feature ExperimentalModuleFunctions;
   static const Feature ExperimentalTextMetricsFunctions;
   static const Feature ExperimentalImportFunction;
   static const Feature ExperimentalAssimp;

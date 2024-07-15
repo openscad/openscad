@@ -35,6 +35,7 @@ const Feature Feature::ExperimentalRoof("roof", "Enable <code>roof</code>");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
 const Feature Feature::ExperimentalVxORenderersIndexing("vertex-object-renderers-indexing", "Enable indexing in vertex object renderers");
+const Feature Feature::ExperimentalModuleFunctions("modules-as-functions", "Makes all modules available as functions, returning VNF / area geometry.");
 const Feature Feature::ExperimentalTextMetricsFunctions("textmetrics", "Enable the <code>textmetrics()</code> and <code>fontmetrics()</code> functions.");
 const Feature Feature::ExperimentalImportFunction("import-function", "Enable import function returning data instead of geometry.");
 const Feature Feature::ExperimentalAssimp("assimp", "Use assimp for import/export of its supported formats.");
