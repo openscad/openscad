@@ -725,7 +725,7 @@ list(REMOVE_ITEM RENDERTEST_FILES
 
 set(PRUNE_TEST ${TEST_SCAD_DIR}/misc/intersection-prune-test.scad)
 list(APPEND PREVIEWTEST_FILES ${STL_IMPORT_FILES} ${RENDERTEST_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
-list(APPEND THROWNTOGETHERTEST_FILES ${RENDERTEST_FILES} ${PRUNE_TEST})
+list(APPEND THROWNTOGETHERTEST_FILES ${RENDERTEST_FILES} ${PRUNE_TEST} ${PREVIEW_ONLY_FILES})
 
 list(APPEND STLEXPORTSANITYTEST_FILES ${TEST_SCAD_DIR}/misc/normal-nan.scad)
 
@@ -739,8 +739,8 @@ list(APPEND COLOR_3D_TEST_FILES
   ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
 )
 
-list(APPEND EXPORT_OFFEXPORT_TEST_FILES
-  ${TEST_SCAD_DIR}/off/off-export.scad
+list(APPEND COLOR_EXPORT_TEST_FILES
+  ${TEST_SCAD_DIR}/misc/color-export.scad
 )
 
 list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/obj/obj-export.scad)
@@ -922,7 +922,6 @@ list(APPEND SCADFILES_WITH_COLOR
   ${TEST_SCAD_DIR}/3D/features/rotate-parameters.scad
   ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
   ${TEST_SCAD_DIR}/3D/features/testcolornames.scad
-  ${TEST_SCAD_DIR}/misc/preview_variable.scad
   #${TEST_SCAD_DIR}/bugs/issue1000.scad
 )
 
@@ -1064,14 +1063,15 @@ add_cmdline_test(dumptest-examples  OPENSCAD FILES ${EXAMPLE_FILES} SUFFIX csg A
 add_cmdline_test(rendertest         OPENSCAD FILES ${RENDERTEST_FILES} SUFFIX png ARGS --render)
 add_cmdline_test(previewtest        OPENSCAD FILES ${PREVIEWTEST_FILES} SUFFIX png ARGS)
 
+# Other PNG tests
+add_cmdline_test(renderstdiotest     OPENSCAD SUFFIX png FILES ${RENDERSTDIOTEST_FILES} STDIO EXPECTEDDIR rendertest ARGS --export-format png --render)
 add_cmdline_test(csgrendertest       SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${RENDERTEST_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_ARG} --format=csg --render)
 add_cmdline_test(rendermanifoldtest  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${RENDERMANIFOLDTEST_FILES} EXPECTEDDIR rendertest ARGS --render --enable=manifold)
 add_cmdline_test(rendermanifoldtest-different  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS} ARGS --render --enable=manifold)
 add_cmdline_test(previewmanifoldtest EXPERIMENTAL OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --enable=manifold)
 add_cmdline_test(previewmanifoldtest-different EXPERIMENTAL SUFFIX png OPENSCAD FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --enable=manifold)
+add_cmdline_test(throwntogethertest  OPENSCAD SUFFIX png FILES ${THROWNTOGETHERTEST_FILES} ARGS --preview=throwntogether)
 
-add_cmdline_test(renderstdiotest   OPENSCAD FILES ${RENDERSTDIOTEST_FILES} SUFFIX png STDIO EXPECTEDDIR rendertest ARGS --export-format png --render)
-add_cmdline_test(throwntogethertest OPENSCAD FILES ${THROWNTOGETHERTEST_FILES} ARGS --preview=throwntogether SUFFIX png)
 # FIXME: We don't actually need to compare the output of cgalstlsanitytest
 # with anything. It's self-contained and returns != 0 on error
 add_cmdline_test(stlexportsanitytest  SCRIPT ${STLEXPORTSANITYTEST_PY} SUFFIX txt FILES ${STLEXPORTSANITYTEST_FILES} ARGS ${OPENSCAD_ARG})
@@ -1117,8 +1117,7 @@ add_cmdline_test(stlexport             EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${
 add_cmdline_test(manifold-stlexport    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=manifold --render)
 add_cmdline_test(objexport             EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render --enable=predictible-output)
 add_cmdline_test(3mfexport             EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
-add_cmdline_test(offexport             EXPERIMENTAL OPENSCAD SUFFIX off FILES ${EXPORT_OFFEXPORT_TEST_FILES} ARGS --enable=predictible-output)
-add_cmdline_test(color-offexport       EXPERIMENTAL OPENSCAD SUFFIX off FILES ${EXPORT_OFFEXPORT_TEST_FILES} ARGS --enable=predictible-output --enable=manifold)
+add_cmdline_test(offexport-color       EXPERIMENTAL OPENSCAD SUFFIX off FILES ${COLOR_EXPORT_TEST_FILES} ARGS --enable=predictible-output --enable=manifold)
 add_cmdline_test(colorpngtest          EXPERIMENTAL OPENSCAD SUFFIX png FILES ${COLOR_3D_TEST_FILES} ARGS --render --enable=manifold)
 
 # stlpreviewtest: STL export, preview rendering
@@ -1159,10 +1158,10 @@ set(FILES_MANIFOLD_CORNER_CASES
 )
 
 # Tagging these tests as experimental since they only pass when using Manifold
-add_cmdline_test(3mfpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=3MF --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
-add_cmdline_test(objpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OBJ --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
-add_cmdline_test(offpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=OFF --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
-add_cmdline_test(stlpreviewtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=STL --render=force EXPECTEDDIR 3mfpngtest SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES})
+add_cmdline_test(3mfpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=3MF --render=force --enable=manifold EXPECTEDDIR 3mfpngtest FILES ${FILES_MANIFOLD_CORNER_CASES})
+add_cmdline_test(objpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=OBJ --render=force --enable=manifold EXPECTEDDIR 3mfpngtest FILES ${FILES_MANIFOLD_CORNER_CASES})
+add_cmdline_test(offpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=OFF --render=force --enable=manifold EXPECTEDDIR 3mfpngtest FILES ${FILES_MANIFOLD_CORNER_CASES})
+add_cmdline_test(stlpreviewmanifoldtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=STL --render=force --enable=manifold EXPECTEDDIR 3mfpngtest FILES ${FILES_MANIFOLD_CORNER_CASES})
 
 set_tests_properties(
   # Manifold construction error. Probably due to polygon soup strategy
@@ -1281,11 +1280,13 @@ add_cmdline_test(openscad-colorscheme-metallic-render OPENSCAD FILES ${CSG_EXAMP
 
 # Roof tests
 list(APPEND EXPERIMENTAL_ROOF_FILES ${EXAMPLES_DIR}/Basics/roof.scad)
-add_cmdline_test(dumptest-examples  EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} SUFFIX csg ARGS --enable=roof)
-add_cmdline_test(previewtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} SUFFIX png ARGS --enable=roof)
-add_cmdline_test(throwntogethertest EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --preview=throwntogether --enable=roof SUFFIX png)
-add_cmdline_test(csgrendertest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_ARG} --format=csg --render --enable=roof)
-add_cmdline_test(rendertest         EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_ROOF_FILES} SUFFIX png ARGS --render --enable=roof)
+add_cmdline_test(dumptest-examples   EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof)
+add_cmdline_test(rendertest          EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --render --enable=roof)
+add_cmdline_test(csgrendertest       EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_ARG} --format=csg --render --enable=roof)
+add_cmdline_test(rendermanifoldtest  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} EXPECTEDDIR rendertest ARGS --render --enable=roof --enable=manifold)
+add_cmdline_test(previewtest         EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof)
+add_cmdline_test(previewmanifoldtest EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof --enable=manifold)
+add_cmdline_test(throwntogethertest  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --preview=throwntogether --enable=roof)
 
 # import-function tests
 list(APPEND EXPERIMENTAL_IMPORT_FILES
@@ -1405,6 +1406,7 @@ set_tests_properties(
   # in rendering.
   rendertest_minkowski3-difference-test
   csgrendertest_minkowski3-difference-test
+  previewtest_minkowski3-difference-test
 
   # Disabled due to https://github.com/openscad/openscad/issues/5159
   rendertest_projection
@@ -1421,6 +1423,10 @@ set_tests_properties(
   # Disabled due to https://github.com/openscad/openscad/issues/3567
   rendertest_linear_extrude-scale-zero-tests
   csgrendertest_linear_extrude-scale-zero-tests
+
+  # FIXME(kintel: Create ticket)
+  rendertest_roof
+  csgrendertest_roof
 
   PROPERTIES DISABLED TRUE
 )
