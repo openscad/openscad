@@ -1,0 +1,43 @@
+group() {
+	group() {
+		multmatrix([[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+			cube(size = [1, 1, 1], center = false);
+		}
+	}
+	group() {
+		multmatrix([[1, -0, -0, 0], [-0, 1, -0, 0], [-0, -0, -1, 0], [0, 0, 0, 1]]) {
+			cube(size = [1, 1, 1], center = false);
+		}
+	}
+	group() {
+		multmatrix([[1, -0, -0, 0], [-0, -1, -0, 0], [-0, -0, 1, 0], [0, 0, 0, 1]]) {
+			cube(size = [1, 1, 1], center = false);
+		}
+	}
+	group() {
+		multmatrix([[1, -0, -0, 0], [-0, 0, -1, 0], [-0, -1, 0, 0], [0, 0, 0, 1]]) {
+			cube(size = [1, 1, 1], center = false);
+		}
+	}
+	group() {
+		multmatrix([[-1, -0, -0, 0], [-0, 1, -0, 0], [-0, -0, 1, 0], [0, 0, 0, 1]]) {
+			cube(size = [1, 1, 1], center = false);
+		}
+	}
+	group() {
+		multmatrix([[0, -0, -1, 0], [-0, 1, -0, 0], [-1, -0, 0, 0], [0, 0, 0, 1]]) {
+			cube(size = [1, 1, 1], center = false);
+		}
+	}
+	group() {
+		multmatrix([[0, -1, -0, 0], [-1, 0, -0, 0], [-0, -0, 1, 0], [0, 0, 0, 1]]) {
+			cube(size = [1, 1, 1], center = false);
+		}
+	}
+	group() {
+		multmatrix([[-1, -0, -0, 0], [-0, -1, -0, 0], [-0, -0, -1, 0], [0, 0, 0, 1]]) {
+			cube(size = [1, 1, 1], center = false);
+		}
+	}
+}
+
