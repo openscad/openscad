@@ -1453,10 +1453,16 @@ if (EXPERIMENTAL)
 set_tests_properties(
   # z-fighting different on different machines
   previewmanifoldtest_issue1165
+  previewmanifoldtest_issue1215
 
   # https://github.com/openscad/openscad/issues/5220
   rendertest_roof
   csgrendertest_roof
+
+  # Manifold triangle order not stable, causes transparent
+  # objects to render differently on different machines
+  rendermanifoldtest-different_color-tests
+  rendermanifoldtest-different_hex-colors-tests
 
   PROPERTIES DISABLED TRUE
 )
