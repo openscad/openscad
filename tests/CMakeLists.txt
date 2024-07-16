@@ -922,16 +922,37 @@ list(APPEND SCADFILES_WITH_COLOR
   ${TEST_SCAD_DIR}/3D/features/rotate-parameters.scad
   ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
   ${TEST_SCAD_DIR}/3D/features/testcolornames.scad
+
+  ${EXAMPLES_DIR}/Advanced/assert.scad
+  ${EXAMPLES_DIR}/Advanced/animation.scad
+  ${EXAMPLES_DIR}/Advanced/GEB.scad
+  ${EXAMPLES_DIR}/Advanced/children_indexed.scad
+  ${EXAMPLES_DIR}/Advanced/children.scad
+  ${EXAMPLES_DIR}/Basics/linear_extrude.scad
+  ${EXAMPLES_DIR}/Basics/CSG-modules.scad
+  ${EXAMPLES_DIR}/Basics/projection.scad
+  ${EXAMPLES_DIR}/Advanced/surface_image.scad
+  ${EXAMPLES_DIR}/Basics/text_on_cube.scad
+  ${EXAMPLES_DIR}/Functions/functions.scad
+  ${EXAMPLES_DIR}/Basics/rotate_extrude.scad
+  ${EXAMPLES_DIR}/Basics/logo_and_text.scad
+  ${EXAMPLES_DIR}/Old/example017.scad
+
   #${TEST_SCAD_DIR}/bugs/issue1000.scad
 )
 
 list(APPEND SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS
   ${SCADFILES_WITH_COLOR}
 
-  ${TEST_SCAD_DIR}/3D/features/render-tests.scad # Manifold preserves color through render()
-  ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad # Manifold can repair winding order
-  ${TEST_SCAD_DIR}/3D/issues/issue1165.scad # Manifold can retain thin slivers which are non-manifold in CGAL mode
-  # Bugs fixed by Manifold
+  # Manifold preserves color through render()
+  ${TEST_SCAD_DIR}/3D/features/render-tests.scad
+  ${EXAMPLES_DIR}/Old/example016.scad 
+
+  # Manifold can repair winding order
+  ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
+
+  # Manifold can retain thin slivers which are non-manifold in CGAL mode
+  ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
 )
 
 list(APPEND SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS
@@ -997,7 +1018,7 @@ set_test_config(Bugs FILES
 )
 
 # Examples
-set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES rendertest rendermanifoldtest previewtest throwntogethertest csgrendertest monotonepngtest stlpreviewtest stlrendertest stlrenderforcetest binstlrenderforcetest offpngtest offrendertest dumptest-examples)
+set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES rendertest rendermanifoldtest rendermanifoldtest-different previewtest previewmanifoldtest previewmanifoldtest-different previewtestthrowntogethertest csgrendertest monotonepngtest stlpreviewtest stlrendertest stlrenderforcetest binstlrenderforcetest offpngtest offrendertest dumptest-examples)
 set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES dxfpngtest)
 
 #############
