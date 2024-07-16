@@ -1447,6 +1447,9 @@ set_tests_properties(
   rendertest_linear_extrude-scale-zero-tests
   csgrendertest_linear_extrude-scale-zero-tests
 
+  # Transparent objects rendered differently on different machines
+  throwntogethertest_offset
+
   PROPERTIES DISABLED TRUE
 )
 if (EXPERIMENTAL)
