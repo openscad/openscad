@@ -1393,7 +1393,6 @@ set_tests_properties(
   # z-fighting different on different machines
   throwntogethertest_issue1803
   previewtest_issue1165
-  previewmanifoldtest_issue1165
   previewtest_issue1215
   throwntogethertest_issue1089
   throwntogethertest_issue1215
@@ -1445,13 +1444,19 @@ set_tests_properties(
   rendertest_linear_extrude-scale-zero-tests
   csgrendertest_linear_extrude-scale-zero-tests
 
+  PROPERTIES DISABLED TRUE
+)
+if (EXPERIMENTAL)
+set_tests_properties(
+  # z-fighting different on different machines
+  previewmanifoldtest_issue1165
+  PROPERTIES DISABLED TRUE
+
   # FIXME(kintel: Create ticket)
   rendertest_roof
   csgrendertest_roof
-
-  PROPERTIES DISABLED TRUE
 )
-
+endif (EXPERIMENTAL)
 
 if (NOT LIB3MF_FOUND)
   if (EXPERIMENTAL)
