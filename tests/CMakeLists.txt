@@ -720,7 +720,8 @@ list(REMOVE_ITEM RENDERTEST_FILES
   # These tests only makes sense in preview mode
   ${PREVIEW_ONLY_FILES}
   # These tests don't make sense in CGAL mode
-  ${TEST_SCAD_DIR}/3D/features/testcolornames.scad
+  ${TEST_SCAD_DIR}/3D/features/color-names-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/hex-colors-tests.scad
 )
 
 set(PRUNE_TEST ${TEST_SCAD_DIR}/misc/intersection-prune-test.scad)
@@ -921,7 +922,8 @@ list(APPEND SCADFILES_WITH_COLOR
   ${TEST_SCAD_DIR}/3D/features/linear_extrude-parameter-tests.scad
   ${TEST_SCAD_DIR}/3D/features/rotate-parameters.scad
   ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
-  ${TEST_SCAD_DIR}/3D/features/testcolornames.scad
+  ${TEST_SCAD_DIR}/3D/features/color-names-tests.scad
+  ${TEST_SCAD_DIR}/3D/features/hex-colors-tests.scad
 
   ${EXAMPLES_DIR}/Advanced/assert.scad
   ${EXAMPLES_DIR}/Advanced/animation.scad
@@ -1184,11 +1186,6 @@ add_cmdline_test(objpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png A
 add_cmdline_test(offpngtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=OFF --render=force --enable=manifold EXPECTEDDIR 3mfpngtest FILES ${FILES_MANIFOLD_CORNER_CASES})
 add_cmdline_test(stlpreviewmanifoldtest EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=STL --render=force --enable=manifold EXPECTEDDIR 3mfpngtest FILES ${FILES_MANIFOLD_CORNER_CASES})
 
-set_tests_properties(
-  # Manifold construction error. Probably due to polygon soup strategy
-  PROPERTIES DISABLED TRUE
-)
-
 # Failing tests
 add_failing_test(stlfailedtest         SUFFIX stl  FILES ${TEST_SCAD_DIR}/misc/empty-union.scad ARGS --retval=1)
 add_failing_test(offfailedtest         SUFFIX off  FILES ${TEST_SCAD_DIR}/misc/empty-union.scad ARGS --retval=1)
@@ -1295,11 +1292,13 @@ add_cmdline_test(openscad-colorscheme-monotone        OPENSCAD FILES ${LOGO_EXAM
 add_cmdline_test(openscad-colorscheme-clearsky        OPENSCAD FILES ${LOGO_EXAMPLE} SUFFIX png ARGS --colorscheme=ClearSky)
 add_cmdline_test(openscad-colorscheme-metallic-render OPENSCAD FILES ${CSG_EXAMPLE}  SUFFIX png ARGS --colorscheme=Metallic --render)
 
-#
-# Experimental tests
-#
+############################
+# Experimental tests       #
+############################
 
-# Roof tests
+#
+# --enable=roof tests
+#
 list(APPEND EXPERIMENTAL_ROOF_FILES ${EXAMPLES_DIR}/Basics/roof.scad)
 add_cmdline_test(dumptest-examples   EXPERIMENTAL OPENSCAD SUFFIX csg FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof)
 add_cmdline_test(rendertest          EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --render --enable=roof)
@@ -1309,14 +1308,18 @@ add_cmdline_test(previewtest         EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EX
 add_cmdline_test(previewmanifoldtest EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --enable=roof --enable=manifold)
 add_cmdline_test(throwntogethertest  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_ROOF_FILES} ARGS --preview=throwntogether --enable=roof)
 
-# import-function tests
+#
+# --enable=import-function tests
+#
 list(APPEND EXPERIMENTAL_IMPORT_FILES
   ${TEST_SCAD_DIR}/json/import-json.scad
   ${TEST_SCAD_DIR}/json/import-json-relative-path.scad
   )
 add_cmdline_test(echotest           EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${EXPERIMENTAL_IMPORT_FILES} ARGS --enable=import-function)
 
-# textmetrics tests
+#
+# --enable=textmetrics tests
+#
 list(APPEND EXPERIMENTAL_TEXTMETRICS_ECHOTEST_FILES
   ${TEST_SCAD_DIR}/misc/isobject-test.scad
   ${TEST_SCAD_DIR}/misc/text-metrics-test.scad
@@ -1325,13 +1328,13 @@ list(APPEND EXPERIMENTAL_TEXTMETRICS_FILES
   ${TEST_SCAD_DIR}/2D/features/text-metrics.scad
 )
 add_cmdline_test(echotest           EXPERIMENTAL OPENSCAD SUFFIX echo FILES ${EXPERIMENTAL_TEXTMETRICS_ECHOTEST_FILES} ARGS --enable=textmetrics)
-add_cmdline_test(dumptest           EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} SUFFIX csg ARGS --enable=textmetrics)
-add_cmdline_test(previewtest        EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} SUFFIX png ARGS --enable=textmetrics)
-add_cmdline_test(throwntogethertest EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --preview=throwntogether --enable=textmetrics SUFFIX png)
-add_cmdline_test(csgrendertest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_ARG} --format=csg --render --enable=textmetrics)
-add_cmdline_test(rendertest         EXPERIMENTAL OPENSCAD FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} SUFFIX png ARGS --render --enable=textmetrics)
-add_cmdline_test(dxfpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=DXF --render=force --enable=textmetrics EXPECTEDDIR rendertest SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
-add_cmdline_test(svgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} ARGS ${OPENSCAD_ARG} --format=SVG --render=force --enable=textmetrics EXPECTEDDIR rendertest SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
+add_cmdline_test(dumptest           EXPERIMENTAL OPENSCAD SUFFIX csg  FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --enable=textmetrics)
+add_cmdline_test(previewtest        EXPERIMENTAL OPENSCAD SUFFIX png  FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --enable=textmetrics)
+add_cmdline_test(throwntogethertest EXPERIMENTAL OPENSCAD SUFFIX png  FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --preview=throwntogether --enable=textmetrics)
+add_cmdline_test(csgrendertest      EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_ARG} --format=csg --render --enable=textmetrics)
+add_cmdline_test(rendertest         EXPERIMENTAL OPENSCAD SUFFIX png FILES ${EXPERIMENTAL_TEXTMETRICS_FILES} ARGS --render --enable=textmetrics)
+add_cmdline_test(dxfpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=DXF --render=force --enable=textmetrics EXPECTEDDIR rendertest FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
+add_cmdline_test(svgpngtest         EXPERIMENTAL SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=SVG --render=force --enable=textmetrics EXPECTEDDIR rendertest FILES ${EXPERIMENTAL_TEXTMETRICS_FILES})
 
 
 ############################
