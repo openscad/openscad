@@ -1453,11 +1453,12 @@ if (EXPERIMENTAL)
 set_tests_properties(
   # z-fighting different on different machines
   previewmanifoldtest_issue1165
-  PROPERTIES DISABLED TRUE
 
-  # FIXME(kintel: Create ticket)
+  # https://github.com/openscad/openscad/issues/5220
   rendertest_roof
   csgrendertest_roof
+
+  PROPERTIES DISABLED TRUE
 )
 endif (EXPERIMENTAL)
 
