@@ -261,7 +261,21 @@ function(set_test_config CONFIG)
   endif()
   # Export to parent scope
   set(${CONFIG}_TEST_CONFIG ${${CONFIG}_TEST_CONFIG} CACHE INTERNAL "")
-endfunction()
+endfunction(set_test_config)
+
+#
+# Removes a tag from the given tests
+#
+# Usage example: remove_test_config(Bugs FILES previewtest_testname2)
+#
+function(remove_test_config CONFIG)
+  cmake_parse_arguments(TESTCFG "" "" "FILES" ${ARGN})
+  list(APPEND FULLNAMES ${TESTCFG_FILES})
+  # Remove config from fullnames
+  list(REMOVE_ITEM ${CONFIG}_TEST_CONFIG ${FULLNAMES})
+  # Export to parent scope
+  set(${CONFIG}_TEST_CONFIG ${${CONFIG}_TEST_CONFIG} CACHE INTERNAL "")
+endfunction(remove_test_config)
 
 #
 # Returns a list of test configs
@@ -1010,17 +1024,57 @@ set_test_config(Heavy FILES
 )
 
 # Bugs
-# FIXME(kintel): Re-enable "fixed by manifold" bugs for Manifold and perhaps untag them as Bugs?
-set_test_config(Bugs FILES ${BUGS_FILES} ${BUGS_2D_FILES} PREFIXES rendertest rendermanifoldtest csgrendertest previewtest previewmanifoldtest throwntogethertest)
-set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES offpngtest monotonepngtest stlpreviewtest stlrendertest stlrenderforcetest binstlrenderforcetest offrendertest)
+set_test_config(Bugs FILES ${BUGS_FILES} ${BUGS_2D_FILES} PREFIXES
+ rendertest rendermanifoldtest csgrendertest previewtest previewmanifoldtest throwntogethertest)
+set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES
+  offpngtest monotonepngtest 
+  stlpreviewtest stlpreviewmanifoldtest 
+  stlrendertest stlrendermanifoldtest
+  stlrenderforcetest stlrendermanifoldforcetest
+  binstlrenderforcetest binstlrendermanifoldforcetest
+  offrendertest)
+
+# Re-enable "fixed by manifold" bugs for Manifold
 set_test_config(Bugs FILES
-  offpngtest_nonmanifold-polyhedron
-  offpngtest_bad-stl-wing
-  rendertest_escape-test.scad
+  # https://github.com/openscad/openscad/issues/5159
+  rendertest_projection
+  csgrendertest_projection
+
+  # https://github.com/openscad/openscad/issues/5158
+  throwntogethertest_example017
+  rendertest_example017 
+  previewtest_example017
+
+  # https://github.com/openscad/openscad/issues/4398
+  csgrendertest_logo_and_text
+
+  # https://github.com/openscad/openscad/issues/3567
+  rendertest_linear_extrude-scale-zero-tests
+  csgrendertest_linear_extrude-scale-zero-tests
+
+)
+
+# Remove bugs fixed by manifold from the Bugs tag, to guard against regressions
+remove_test_config(Bugs FILES
+  stlrendermanifoldforcetest_issue584
+  rendermanifoldtest_issue591
+  rendermanifoldtest_issue791 
+  # FIXME: #802
+  stlrendermanifoldforcetest_issue945
+  stlrendermanifoldforcetest_issue945b
+  stlrendermanifoldforcetest_issue945c
+  stlrendermanifoldforcetest_issue945d
+  stlrendermanifoldforcetest_issue945e
+  stlrendermanifoldforcetest_issue945f
+  rendermanifoldtest_issue1455
 )
 
 # Examples
-set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES rendertest rendermanifoldtest rendermanifoldtest-different previewtest previewmanifoldtest previewmanifoldtest-different previewtestthrowntogethertest csgrendertest monotonepngtest stlpreviewtest stlrendertest stlrenderforcetest binstlrenderforcetest offpngtest offrendertest dumptest-examples)
+set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES
+  rendertest rendermanifoldtest rendermanifoldtest-different 
+  previewtest previewmanifoldtest previewmanifoldtest-different previewtestthrowntogethertest 
+  csgrendertest monotonepngtest 
+  offpngtest offrendertest dumptest-examples)
 set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES dxfpngtest)
 
 #############
@@ -1145,14 +1199,18 @@ add_cmdline_test(colorpngtest          EXPERIMENTAL OPENSCAD SUFFIX png FILES ${
 
 # stlpreviewtest: STL export, preview rendering
 add_cmdline_test(stlpreviewtest       SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=STL EXPECTEDDIR monotonepngtest FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(stlpreviewmanifoldtest       SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=STL --enable=manifold EXPECTEDDIR monotonepngtest FILES ${EXPORT3D_TEST_FILES})
 # stlrendertest: --render=force STL export, --render rendering
 add_cmdline_test(stlrendertest        SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=STL --require-manifold --render EXPECTEDDIR monotonepngtest FILES ${EXPORT3D_CGAL_TEST_FILES})
+add_cmdline_test(stlrendermanifoldtest        SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=STL --require-manifold --render --enable=manifold EXPECTEDDIR monotonepngtest FILES ${EXPORT3D_CGAL_TEST_FILES})
 # stlrenderforcetest: --render=force STL export, --render=force rendering
-add_cmdline_test(stlrenderforcetest   SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=ASCIISTL --require-manifold --render=force --enable=manifold EXPECTEDDIR monotonepngtest FILES ${EXPORT3D_CGALCGAL_TEST_FILES})
+add_cmdline_test(stlrenderforcetest   SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=ASCIISTL --require-manifold --render=force EXPECTEDDIR monotonepngtest FILES ${EXPORT3D_CGALCGAL_TEST_FILES})
+add_cmdline_test(stlrendermanifoldforcetest   SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=ASCIISTL --require-manifold --render=force --enable=manifold EXPECTEDDIR monotonepngtest FILES ${EXPORT3D_CGALCGAL_TEST_FILES})
 # binstlrenderforcetest: CGAL binary STL output, CGAL rendering
 add_cmdline_test(binstlrenderforcetest SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=BINSTL   --require-manifold --render=force EXPECTEDDIR monotonepngtest FILES ${EXPORT3D_CGALCGAL_TEST_FILES})
+add_cmdline_test(binstlrendermanifoldforcetest SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=BINSTL   --require-manifold --render=force --enable=manifold EXPECTEDDIR monotonepngtest FILES ${EXPORT3D_CGALCGAL_TEST_FILES})
 
-add_cmdline_test(offpngtest           SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=OFF --render EXPECTEDDIR monotonepngtest FILES ${EXPORT3D_TEST_FILES})
+add_cmdline_test(offpngtest           SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=OFF EXPECTEDDIR monotonepngtest FILES ${EXPORT3D_TEST_FILES})
 add_cmdline_test(offrendertest        SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=OFF --render=force EXPECTEDDIR monotonepngtest FILES ${EXPORT3D_CGAL_TEST_FILES})
 add_cmdline_test(dxfpngtest           SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=DXF --render=force EXPECTEDDIR rendertest FILES ${FILES_2D} ${SCAD_DXF_FILES})
 add_cmdline_test(svgpngtest           SCRIPT ${EX_IM_PNGTEST_PY} SUFFIX png ARGS ${OPENSCAD_ARG} --format=SVG --render=force EXPECTEDDIR rendertest FILES ${FILES_2D} ${SCAD_SVG_FILES})
@@ -1430,22 +1488,6 @@ set_tests_properties(
   rendertest_minkowski3-difference-test
   csgrendertest_minkowski3-difference-test
   previewtest_minkowski3-difference-test
-
-  # Disabled due to https://github.com/openscad/openscad/issues/5159
-  rendertest_projection
-  csgrendertest_projection
-
-  # Disabled due to https://github.com/openscad/openscad/issues/5158
-  throwntogethertest_example017
-  rendertest_example017 
-  previewtest_example017
-
-  # Disabled due to https://github.com/openscad/openscad/issues/4398
-  csgrendertest_logo_and_text
-
-  # Disabled due to https://github.com/openscad/openscad/issues/3567
-  rendertest_linear_extrude-scale-zero-tests
-  csgrendertest_linear_extrude-scale-zero-tests
 
   # Transparent objects rendered differently on different machines
   throwntogethertest_offset
