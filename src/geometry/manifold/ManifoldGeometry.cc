@@ -9,6 +9,7 @@
 #include "manifoldutils.h"
 #include "ColorMap.h"
 #include "src/glview/RenderSettings.h"
+#include <memory>
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
 #endif
@@ -274,13 +275,21 @@ std::shared_ptr<ManifoldGeometry> minkowskiOp(const ManifoldGeometry& lhs, const
   if (lhs_nef->isEmpty() || rhs_nef->isEmpty()) {
     return {};
   }
-  lhs_nef->minkowski(*rhs_nef);
-
-  auto ps = PolySetUtils::getGeometryAsPolySet(lhs_nef);
-  if (!ps) return {};
-  else {
-    return ManifoldUtils::createManifoldFromPolySet(*ps);
+  std::shared_ptr<const PolySet> ps;
+  try {
+    lhs_nef->minkowski(*rhs_nef);
+    ps = PolySetUtils::getGeometryAsPolySet(lhs_nef);
+    if (ps) {
+      return ManifoldUtils::createManifoldFromPolySet(*ps);
+    }
+  } catch (const std::exception& e) {
+    LOG(message_group::Error,
+        "Nef minkoswki operation failed: %1$s\n", e.what());
+  } catch (...) {
+    LOG(message_group::Warning,
+        "Nef minkowski hard-crashed");
   }
+  return {};
 #endif
 }
 
@@ -297,7 +306,9 @@ ManifoldGeometry ManifoldGeometry::operator-(const ManifoldGeometry& other) cons
 }
 
 ManifoldGeometry ManifoldGeometry::minkowski(const ManifoldGeometry& other) const {
-  return *minkowskiOp(*this, other);
+  std::shared_ptr<ManifoldGeometry> geom = minkowskiOp(*this, other);
+  if (geom) return *geom;
+  else return {};
 }
 
 Polygon2d ManifoldGeometry::slice() const {
