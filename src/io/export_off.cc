@@ -28,7 +28,6 @@
 #include "export.h"
 #include "linalg.h"
 #include "Feature.h"
-#include "ManifoldGeometry.h"
 #include "Reindexer.h"
 #include "PolySet.h"
 #include "PolySetUtils.h"
