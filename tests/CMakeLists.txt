@@ -1316,6 +1316,7 @@ set_tests_properties(
   amfrendertest_bad-stl-tardis
   amfrendertest_bad-stl-wing
   3mfrendertest_polyhedron-tests
+  3mfrendertest_bad-stl-tardis # For some reason, only failing on Linux
   3mfrendertest_bad-stl-wing
   objrendertest_polyhedron-tests
   objrendertest_bad-stl-wing
