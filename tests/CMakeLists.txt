@@ -1303,25 +1303,28 @@ add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SC
 set_tests_properties(
   # https://github.com/openscad/openscad/issues/909
   amfpreviewtest_polyhedron-single-triangle
+  amfrendertest_bad-stl-tardis
+  amfrendertest_bad-stl-pcbvicebar
+  amfrendertest_bad-stl-wing
+	amfrendermanifoldtest_bad-stl-wing
 
   # We don't repair polygon winding order in CGAL mode
+  # We could perhaps split the test into good+bad polyhedrons
+  # and only disable the bad ones.
   stlrendertest_polyhedron-tests
   offrendertest_polyhedron-tests
+  amfrendertest_polyhedron-tests
+  3mfrendertest_polyhedron-tests
+  objrendertest_polyhedron-tests
 
-  # FIXME(kintel): Classify
+  # When exported from CGAL, the file cannot be re-imported
   stlrendertest_bad-stl-wing
   offrendertest_bad-stl-wing
-  amfrendertest_polyhedron-tests
-  amfrendertest_bad-stl-pcbvicebar
-  amfrendertest_bad-stl-tardis
-  amfrendertest_bad-stl-wing
-  3mfrendertest_polyhedron-tests
-  3mfrendertest_bad-stl-tardis # For some reason, only failing on Linux
   3mfrendertest_bad-stl-wing
-  objrendertest_polyhedron-tests
   objrendertest_bad-stl-wing
 
-	amfrendermanifoldtest_bad-stl-wing
+  # For some reason, only failing on Linux
+  3mfrendertest_bad-stl-tardis
 
   PROPERTIES DISABLED TRUE
 )
