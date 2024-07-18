@@ -900,6 +900,10 @@ list(APPEND SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS
 
   # Manifold can retain thin slivers which are non-manifold in CGAL mode
   ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
+
+  # Manifold can construct geometry which isn't representable in CGAL mode,
+  # causing CGAL-based operations like minkowski() to fail.
+  ${TEST_SCAD_DIR}/3D/issues/issue5211.scad
 )
 
 list(APPEND SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS
@@ -909,6 +913,10 @@ list(APPEND SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS
 
   # Manifold preserves color through resize
   ${TEST_SCAD_DIR}/3D/features/resize-convexity-tests.scad
+
+  # Manifold can construct geometry which isn't representable in CGAL mode,
+  # causing CGAL-based operations like minkowski() to fail.
+  ${TEST_SCAD_DIR}/3D/issues/issue5211.scad
 
   # ${TEST_SCAD_DIR}/bugs/issue1000.scad
   # ${TEST_SCAD_DIR}/bugs/issue802.scad
