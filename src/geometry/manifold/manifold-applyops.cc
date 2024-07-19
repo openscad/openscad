@@ -16,6 +16,16 @@ Location getLocation(const std::shared_ptr<const AbstractNode>& node)
   return node && node->modinst ? node->modinst->location() : Location::NONE;
 }
 
+std::unique_ptr<Geometry> applyHullManifold(const Geometry::Geometries& children)
+{
+  std::vector<manifold::Manifold> manifolds;
+  for (const auto& item : children) {
+    auto chN = item.second ? createManifoldFromGeometry(item.second) : nullptr;
+    if (chN) manifolds.emplace_back(chN->getManifold());
+  }
+  return std::make_unique<ManifoldGeometry>(std::make_shared<manifold::Manifold>(manifold::Manifold::Hull(manifolds)));
+}
+
 /*!
    Applies op to all children and returns the result.
    The child list should be guaranteed to contain non-NULL 3D or empty Geometry objects
