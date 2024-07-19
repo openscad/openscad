@@ -136,7 +136,7 @@ static void append_amf(const CGAL_Nef_polyhedron& root_N, std::ostream& output)
     output << "   </volume>\r\n";
     output << "  </mesh>\r\n"
            << " </object>\r\n";
-  } catch (CGAL::Assertion_exception& e) {
+  } catch (std::exception& e) {
     LOG(message_group::Export_Error, "CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %1$s", e.what());
   }
 }
