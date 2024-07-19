@@ -1,8 +1,6 @@
 #include "import.h"
 #include "Feature.h"
 #include "PolySet.h"
-#include "ManifoldGeometry.h"
-#include "manifold.h"
 #include "printutils.h"
 #include "AST.h"
 #include <fstream>
