@@ -975,18 +975,6 @@ set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES
 
 # Re-enable "fixed by manifold" bugs for Manifold
 set_test_config(Bugs FILES
-  # https://github.com/openscad/openscad/issues/5159
-  rendertest_projection
-  csgrendertest_projection
-
-  # https://github.com/openscad/openscad/issues/5158
-  throwntogethertest_example017
-  rendertest_example017 
-  previewtest_example017
-
-  # https://github.com/openscad/openscad/issues/4398
-  csgrendertest_logo_and_text
-
   # https://github.com/openscad/openscad/issues/3567
   rendertest_linear_extrude-scale-zero-tests
   csgrendertest_linear_extrude-scale-zero-tests
@@ -1602,6 +1590,18 @@ set_tests_properties(
 
   # Transparent objects rendered differently on different machines
   throwntogethertest_offset
+
+  # https://github.com/openscad/openscad/issues/5159
+  rendertest_projection
+  csgrendertest_projection
+
+  # https://github.com/openscad/openscad/issues/5158
+  throwntogethertest_example017
+  rendertest_example017 
+  previewtest_example017
+
+  # https://github.com/openscad/openscad/issues/4398
+  csgrendertest_logo_and_text
 
   PROPERTIES DISABLED TRUE
 )
