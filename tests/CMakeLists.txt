@@ -1132,10 +1132,10 @@ ${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
 #
 
 # Export tests (compare actually exported files)
-add_cmdline_test(stlexport              OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
-add_cmdline_test(manifold-stlexport     OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=manifold --render)
-add_cmdline_test(objexport              OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render --enable=predictible-output)
-add_cmdline_test(3mfexport              OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
+add_cmdline_test(stlexport              EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
+add_cmdline_test(manifold-stlexport     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=manifold --render)
+add_cmdline_test(objexport              EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render --enable=predictible-output)
+add_cmdline_test(3mfexport              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
 
 # Trivial Export/Import files: Sanity-checks bidirectional file format import/export
 set(SIMPLE_EXPORT_IMPORT_2D_FILES ${TEST_SCAD_DIR}/misc/square10.scad)
@@ -1220,36 +1220,6 @@ add_cmdline_test(offcolorpngtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY}
 
 # PDF Export
 add_cmdline_test(pdfexporttest SCRIPT ${EXPORT_PNGTEST_PY} SUFFIX png FILES ${SCAD_PDF_FILES} ARGS ${OPENSCAD_EXE_ARG} --format=PDF KERNEL Square:2)
-
-set_tests_properties(
-  # https://github.com/openscad/openscad/issues/909
-  amfpreviewtest_polyhedron-single-triangle
-  amfrendertest_bad-stl-tardis
-  amfrendertest_bad-stl-pcbvicebar
-  amfrendertest_bad-stl-wing
-	amfrendermanifoldtest_bad-stl-wing
-
-  # We don't repair polygon winding order in CGAL mode
-  # We could perhaps split the test into good+bad polyhedrons
-  # and only disable the bad ones.
-  stlrendertest_polyhedron-tests
-  offrendertest_polyhedron-tests
-  amfrendertest_polyhedron-tests
-  3mfrendertest_polyhedron-tests
-  objrendertest_polyhedron-tests
-
-  # When exported from CGAL, the file cannot be re-imported
-  stlrendertest_bad-stl-wing
-  offrendertest_bad-stl-wing
-  3mfrendertest_bad-stl-wing
-  objrendertest_bad-stl-wing
-
-  # For some reason, only failing on Linux
-  3mfrendertest_bad-stl-tardis
-
-  PROPERTIES DISABLED TRUE
-)
-
 
 # Expected failing tests
 add_failing_test(stlfailedtest         SUFFIX stl  FILES ${TEST_SCAD_DIR}/misc/empty-union.scad ARGS --retval=1)
@@ -1528,6 +1498,30 @@ set_tests_properties(
   # https://github.com/openscad/openscad/issues/4398
   csgrendertest_logo_and_text
 
+  # https://github.com/openscad/openscad/issues/909
+  amfpreviewtest_polyhedron-single-triangle
+  amfrendertest_bad-stl-tardis
+  amfrendertest_bad-stl-pcbvicebar
+  amfrendertest_bad-stl-wing
+  
+  # We don't repair polygon winding order in CGAL mode
+  # We could perhaps split the test into good+bad polyhedrons
+  # and only disable the bad ones.
+  stlrendertest_polyhedron-tests
+  offrendertest_polyhedron-tests
+  amfrendertest_polyhedron-tests
+  3mfrendertest_polyhedron-tests
+  objrendertest_polyhedron-tests
+
+  # When exported from CGAL, the file cannot be re-imported
+  stlrendertest_bad-stl-wing
+  offrendertest_bad-stl-wing
+  3mfrendertest_bad-stl-wing
+  objrendertest_bad-stl-wing
+
+  # For some reason, only failing on Linux
+  3mfrendertest_bad-stl-tardis
+  
   PROPERTIES DISABLED TRUE
 )
 if (EXPERIMENTAL)
@@ -1544,6 +1538,9 @@ set_tests_properties(
   # objects to render differently on different machines
   rendermanifoldtest-different_color-tests
   rendermanifoldtest-different_hex-colors-tests
+
+  # https://github.com/openscad/openscad/issues/909
+  amfrendermanifoldtest_bad-stl-wing
 
   PROPERTIES DISABLED TRUE
 )
