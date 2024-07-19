@@ -1529,6 +1529,10 @@ set_tests_properties(
   # z-fighting different on different machines
   previewmanifoldtest_issue1165
   previewmanifoldtest_issue1215
+  previewmanifoldtest_surface_image
+
+  # Transparent objects rendered differently on different machines
+  previewmanifoldtest_example017
 
   # https://github.com/openscad/openscad/issues/5220
   rendertest_roof
@@ -1538,6 +1542,7 @@ set_tests_properties(
   # objects to render differently on different machines
   rendermanifoldtest-different_color-tests
   rendermanifoldtest-different_hex-colors-tests
+  rendermanifoldtest-different_projection
 
   # https://github.com/openscad/openscad/issues/909
   amfrendermanifoldtest_bad-stl-wing
