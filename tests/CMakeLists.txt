@@ -834,28 +834,6 @@ list(APPEND SCADFILES_WITH_GREEN_FACES
   ${TEST_SCAD_DIR}/misc/rotate-empty-bbox.scad
 )
 
-# list(APPEND SCADFILES_DIFFERENT_MANIFOLD_EXPECTATIONS
-#   # No more green faces from differences.
-#   ${SCADFILES_WITH_GREEN_FACES}
-
-#   # Different vertex order
-#   ${TEST_SCAD_DIR}/3mf/3mf-export.scad
-#   ${TEST_SCAD_DIR}/stl/stl-import-nonmanifold.scad
-# )
-
-# list(APPEND SCADFILES_FAILING_WITH_MANIFOLD
-#   # Crashes with Input mesh not closed! / NoManifold
-#   ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
-#   ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
-
-#   # Resize issues!
-#   ${TEST_SCAD_DIR}/3D/features/resize-convexity-tests.scad
-#   ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
-
-#   # Misc
-#   ${TEST_SCAD_DIR}/misc/normal-nan.scad
-# )
-
 list(APPEND SCADFILES_WITH_COLOR
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
@@ -1137,59 +1115,6 @@ ${TEST_SCAD_DIR}/misc/nonmanifold-polyhedron.scad
 ${TEST_SCAD_DIR}/misc/preview_variable.scad
 ${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
 )
-
-list(APPEND EXPORT3D_CGALCGAL_TEST_FILES
-  ${TEST_SCAD_DIR}/3D/features/polyhedron-nonplanar-tests.scad
-  ${TEST_SCAD_DIR}/3D/features/rotate_extrude-tests.scad
-  ${TEST_SCAD_DIR}/3D/features/union-coincident-test.scad
-  ${TEST_SCAD_DIR}/3D/features/mirror-tests.scad
-  ${TEST_SCAD_DIR}/misc/null-polygons.scad
-  ${TEST_SCAD_DIR}/misc/internal-cavity.scad
-  ${TEST_SCAD_DIR}/misc/internal-cavity-polyhedron.scad
-  ${TEST_SCAD_DIR}/misc/bad-stl-pcbvicebar.scad
-  ${TEST_SCAD_DIR}/misc/bad-stl-tardis.scad
-  ${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue904.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1105.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1105d.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1215.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1215c.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1221.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1225.scad
-  ${TEST_SCAD_DIR}/misc/preview_variable.scad
-  ${TEST_SCAD_DIR}/3D/issues/fn_bug.scad
-)
-
-list(APPEND EXPORT3D_CGAL_TEST_FILES
-  ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1105b.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1105c.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1215b.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue1258.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue2259.scad
-)
-
-list(APPEND EXPORT3D_TEST_FILES
-  ${TEST_SCAD_DIR}/misc/nonmanifold-polyhedron.scad
-  ${TEST_SCAD_DIR}/misc/bad-stl-wing.scad
-)
-
-# We know that we cannot import weakly manifold files into CGAL, so to make tests easier
-# to manage, don't try. Once we improve import, we can reenable this
-# Known good manifold files -> EXPORT3D_CGALCGAL_TEST_FILES
-# Known weak manifold files -> EXPORT3D_CGAL_TEST_FILES
-# Known non-manifold files -> EXPORT3D_TEST_FILES
-list(APPEND EXPORT3D_CGALCGAL_TEST_FILES
-  ${TEST_SCAD_DIR}/3D/issues/issue13.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue13b.scad
-  # Note issue13c is still flaky in non-experimental mode, so it's still in bugs/
-  ${BUGS_FILES}
-  )
-#list(REMOVE_ITEM EXPORT3D_CGALCGAL_TEST_FILES
-#)
-#list(APPEND EXPORT3D_CGAL_TEST_FILES
-#)
-
 
 #
 # There are some caveats with export and import, so we need to test a few combinations:
