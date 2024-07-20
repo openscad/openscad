@@ -3,8 +3,8 @@ for (x = [0:1]) {
     translate ([(x*51),0,(y*31)]) {
       difference () {
         cube ([55,35,35]);
-        translate ([5,-0.01,5]) {
-          cube ([45,30,25]);
+        translate ([5,-1,5]) {
+          cube ([45,31,25]);
         }
       }
       translate ([27.5,15,7]) {

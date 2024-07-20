@@ -17,6 +17,9 @@ public:
   VISITABLE_GEOMETRY();
   PolygonIndices indices;
   std::vector<Vector3d> vertices;
+  // Per polygon color, indexing the colors vector below. Can be empty, and -1 means no specific color.
+  std::vector<int32_t> color_indices; 
+  std::vector<Color4f> colors;
 
   PolySet(unsigned int dim, boost::tribool convex = unknown);
 
@@ -31,6 +34,7 @@ public:
   size_t numFacets() const override { return indices.size(); }
   void transform(const Transform3d& mat) override;
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
+  void setColor(const Color4f& c) override;
 
   bool isConvex() const;
   boost::tribool convexValue() const { return convex_; }

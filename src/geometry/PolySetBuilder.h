@@ -13,9 +13,11 @@ class PolySetBuilder
 {
 public:
   PolySetBuilder(int vertices_count = 0, int indices_count = 0, int dim = 3, boost::tribool convex = unknown);
+  void reserve(int vertices_count = 0, int indices_count = 0);
   void setConvexity(int n);
   int vertexIndex(const Vector3d& coord);
   int numVertices() const;
+  int numPolygons() const;
 
   void appendPolySet(const PolySet &ps);
   void appendGeometry(const std::shared_ptr<const Geometry>& geom);
@@ -32,6 +34,8 @@ public:
 private:
   Reindexer<Vector3d> vertices_;
   PolygonIndices indices_;
+  std::vector<int32_t> color_indices_;
+  std::vector<Color4f> colors_;
   int convexity_{1};
   int dim_;
   boost::tribool convex_;

@@ -1,0 +1,21 @@
+$fn=5;
+radius=0.8;
+
+translate([0,0]) color("#ff0000") sphere(radius);
+translate([1,0]) color("#ff7f00") sphere(radius);
+translate([2,0]) color("#ffff00") sphere(radius);
+translate([3,0]) color("#00FF00") sphere(radius);
+translate([4,0]) color("#0000ff") sphere(radius);
+translate([5,0]) color("#4b00ff") sphere(radius);
+translate([6,0]) color("#9400d3") sphere(radius);
+translate([7,0]) color("#000000Ff") sphere(radius);
+translate([8,0]) color("#00000080") sphere(radius);
+translate([0,1]) color("#f00") sphere(radius);
+translate([1,1]) color("#f70") sphere(radius);
+translate([2,1]) color("#ff0") sphere(radius);
+translate([3,1]) color("#0F0") sphere(radius);
+translate([4,1]) color("#00f") sphere(radius);
+translate([5,1]) color("#40f") sphere(radius);
+translate([6,1]) color("#90d") sphere(radius);
+translate([7,1]) color("#000F") sphere(radius);
+translate([8,1]) color("#0008") sphere(radius);
