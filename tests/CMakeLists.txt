@@ -1522,6 +1522,11 @@ set_tests_properties(
   offrendertest_bad-stl-wing
   objrendertest_bad-stl-wing
 
+  # https://github.com/openscad/openscad/issues/2301
+  rendertest_issue2301
+  previewtest_issue2301
+  csgrendertest_issue2301
+
   PROPERTIES DISABLED TRUE
 )
 if (EXPERIMENTAL)
