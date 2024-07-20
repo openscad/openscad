@@ -162,6 +162,7 @@ static void append_amf(const std::shared_ptr<const Geometry>& geom, std::ostream
 
 void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
+  LOG(message_group::Deprecated, "AMF export is deprecated. Please use 3md instead.");
   setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 
   output << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
