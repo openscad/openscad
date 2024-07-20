@@ -161,9 +161,8 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
   // vertex positions (touching cubes, donut with vertex in the center etc.)
   PolySetBuilder builder(ps.vertices.size(), ps.indices.size(),
                          ps.getDimension(), ps.convexValue());
-  builder.appendPolySet(ps);
-  std::unique_ptr<PolySet> rebuilt_ps = builder.build();
-  rebuilt_ps->setTriangular(ps.isTriangular());
+  builder.appendPolySet(triangle_set);
+  const std::unique_ptr<PolySet> rebuilt_ps = builder.build();
   mani = createManifoldFromTriangularPolySet(*rebuilt_ps);
   if (mani->getManifold().Status() == Error::NoError) {
     return mani;
