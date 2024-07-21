@@ -960,6 +960,19 @@ if(EXPERIMENTAL)
   target_link_libraries(OpenSCAD PRIVATE manifold polygon)
   add_sanitizers(manifold)
 
+  # If building from a git clone, try to extract the Manifold git hash
+  if (EXISTS "${PROJECT_SOURCE_DIR}/.git")
+    find_package(Git QUIET)
+    if (GIT_FOUND)
+      execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/submodules/manifold"
+        OUTPUT_VARIABLE MANIFOLD_VERSION
+        ERROR_QUIET
+        OUTPUT_STRIP_TRAILING_WHITESPACE) 
+      message(STATUS "Manifold: git ${MANIFOLD_VERSION}")
+    endif()
+  endif()
+
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
   list(APPEND Sources ${MANIFOLD_SOURCES})
   if (ENABLE_CGAL)
