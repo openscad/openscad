@@ -1515,18 +1515,13 @@ set_tests_properties(
   stlrendertest_polyhedron-tests
   offrendertest_polyhedron-tests
   amfrendertest_polyhedron-tests
-  3mfrendertest_polyhedron-tests
   objrendertest_polyhedron-tests
 
   # When exported from CGAL, the file cannot be re-imported
   stlrendertest_bad-stl-wing
   offrendertest_bad-stl-wing
-  3mfrendertest_bad-stl-wing
   objrendertest_bad-stl-wing
 
-  # For some reason, only failing on Linux
-  3mfrendertest_bad-stl-tardis
-  
   PROPERTIES DISABLED TRUE
 )
 if (EXPERIMENTAL)
