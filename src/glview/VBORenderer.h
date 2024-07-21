@@ -31,7 +31,8 @@ public:
   virtual size_t getEdgeBufferSize(const Polygon2d& polygon) const;
 
   virtual void create_surface(const PolySet& ps, VertexArray& vertex_array,
-                              csgmode_e csgmode, const Transform3d& m, const Color4f& color) const;
+                              csgmode_e csgmode, const Transform3d& m,
+                              const Color4f& default_color, bool force_default_color = false) const;
 
   virtual void create_edges(const Polygon2d& polygon, VertexArray& vertex_array,
                             const Transform3d& m, const Color4f& color) const;
