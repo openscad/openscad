@@ -718,7 +718,9 @@ elseif(WIN32)
   if(NOT NULLGL)
     set(OFFSCREEN_METHOD "Windows WGL")
     message(STATUS "Offscreen OpenGL Context - using Microsoft WGL")
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} src/glview/offscreen-old/OffscreenContextWGL.cc)
+    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} 
+    src/glview/offscreen-old/OffscreenContextWGL.cc
+    src/glview/OffscreenContextWGL.cc)
   endif()
 endif()
 
