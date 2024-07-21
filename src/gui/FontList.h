@@ -25,6 +25,7 @@ public:
 
 protected:
   void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override;
+  QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 
 private:
   int _fontSize;

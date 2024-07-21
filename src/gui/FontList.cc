@@ -53,6 +53,11 @@ void FontItemDelegate::initStyleOption(QStyleOptionViewItem *opt, const QModelIn
   opt->textElideMode = Qt::ElideNone;
 }
 
+QWidget *FontItemDelegate::createEditor(QWidget *, const QStyleOptionViewItem &, const QModelIndex &) const
+{
+  return nullptr;
+}
+
 QSize FontItemDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &idx) const
 {
   QStyleOptionViewItem opt = option;
