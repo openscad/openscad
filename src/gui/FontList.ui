@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>428</width>
+    <width>441</width>
     <height>609</height>
    </rect>
   </property>
@@ -60,7 +60,7 @@
        <rect>
         <x>0</x>
         <y>0</y>
-        <width>406</width>
+        <width>419</width>
         <height>587</height>
        </rect>
       </property>
@@ -296,7 +296,8 @@
   </action>
   <action name="actionOpenFolder">
    <property name="icon">
-    <iconset theme="document-open"/>
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/svg-default/open.svg</normaloff>:/icons/svg-default/open.svg</iconset>
    </property>
    <property name="text">
     <string>Open Font Folder</string>
@@ -304,7 +305,8 @@
   </action>
   <action name="actionCopyFolder">
    <property name="icon">
-    <iconset theme="edit-copy"/>
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/svg-default/edit-copy.svg</normaloff>:/icons/svg-default/edit-copy.svg</iconset>
    </property>
    <property name="text">
     <string>Copy Font Folder</string>
@@ -312,7 +314,8 @@
   </action>
   <action name="actionCopyFullPath">
    <property name="icon">
-    <iconset theme="edit-copy"/>
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/svg-default/edit-copy.svg</normaloff>:/icons/svg-default/edit-copy.svg</iconset>
    </property>
    <property name="text">
     <string>Copy Full Path to Font</string>
@@ -320,7 +323,8 @@
   </action>
   <action name="actionCopyStyle">
    <property name="icon">
-    <iconset theme="edit-copy"/>
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/svg-default/edit-copy.svg</normaloff>:/icons/svg-default/edit-copy.svg</iconset>
    </property>
    <property name="text">
     <string>Copy Font Style</string>
@@ -328,7 +332,8 @@
   </action>
   <action name="actionCopyFontName">
    <property name="icon">
-    <iconset theme="edit-copy"/>
+    <iconset resource="../../resources/common.qrc">
+     <normaloff>:/icons/svg-default/edit-copy.svg</normaloff>:/icons/svg-default/edit-copy.svg</iconset>
    </property>
    <property name="text">
     <string>Copy Font Name</string>
