@@ -52,7 +52,7 @@ private:
 class FontList : public QWidget, public Ui::FontListWidget
 {
   Q_OBJECT
-  static constexpr char SAMPLE_TEXT_DEFAULT[] = "abcdef ABCDEF 012345 !$%&/()#";
+  static constexpr char SAMPLE_TEXT_DEFAULT[] = "abcdef ABCDEF 012345 0O5S8B 1Iil !$%&/()#";
 
 public:
   FontList(QWidget *parent = nullptr);
