@@ -728,8 +728,6 @@ list(APPEND PREVIEW_ONLY_FILES
   ${TEST_SCAD_DIR}/3D/features/highlight-and-background-modifier.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
   ${TEST_SCAD_DIR}/3D/features/background-modifier2.scad
-  ${TEST_SCAD_DIR}/issues/issue5217.scad
-  ${TEST_SCAD_DIR}/issues/issue5218.scad
 )
 
 list(REMOVE_ITEM RENDERTEST_FILES 
@@ -1581,7 +1579,7 @@ else()
     throwntogethertest_import_3mf-tests
     PROPERTIES DISABLED TRUE
   )
-endif(NOT LIB3MF_FOUND)
+endif(LIB3MF_FOUND)
 
 list(APPEND NEF3_BROKEN_TESTS
   rendertest_nef3_broken
