@@ -905,13 +905,7 @@ list(APPEND SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS
 )
 
 list(APPEND SCADFILES_FAILING_WITH_MANIFOLD
-  # https://github.com/openscad/openscad/issues/5215
-  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
-  # https://github.com/openscad/openscad/issues/5217
-  ${TEST_SCAD_DIR}/3D/features/color-tests2.scad
-  # https://github.com/openscad/openscad/issues/5218
-  ${TEST_SCAD_DIR}/3D/issues/issue913.scad
-  ${TEST_SCAD_DIR}/3D/features/minkowski3-erosion.scad
+  # Add any tests failing just w/ Manifold here.
 )
 
 list(APPEND RENDERMANIFOLDTEST_FILES ${RENDERTEST_FILES})
