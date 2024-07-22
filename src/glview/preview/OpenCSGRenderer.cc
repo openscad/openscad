@@ -274,7 +274,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           override_color = true;
         } else {
           colormode = ColorMode::CUTOUT;
-          override_color = true;//c.isValid();
+          override_color = true;
         }
 
         Color4f color;
