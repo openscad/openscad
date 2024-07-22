@@ -1,15 +1,7 @@
-color("red")
-    render()
-        color("blue")
-            cube();
-
-#translate([2, 0, 0])
-    render()
-        color("blue")
-            cube();
-
-            
-%translate([4, 0, 0])
-    render()
-        color("blue")
-            cube();
+difference() {
+  cube(10, center=true);
+  translate([5,5,5]) minkowski(convexity=2) {
+    cube(8, center=true);
+    cube(1, center=true);
+  }
+}
