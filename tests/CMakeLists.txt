@@ -863,6 +863,9 @@ list(APPEND SCADFILES_WITH_COLOR
   ${EXAMPLES_DIR}/Basics/logo_and_text.scad
   ${EXAMPLES_DIR}/Old/example017.scad
 
+  ${TEST_SCAD_DIR}/3D/issues/issue5217.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5218.scad
+
   #${TEST_SCAD_DIR}/bugs/issue1000.scad
 )
 
