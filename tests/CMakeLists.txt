@@ -1046,6 +1046,7 @@ add_cmdline_test(openscad-nonascii  OPENSCAD FILES ${TEST_SCAD_DIR}/misc/sfære.
 # Baseline PNG tests
 add_cmdline_test(rendertest         OPENSCAD FILES ${RENDERTEST_FILES} SUFFIX png ARGS --render)
 add_cmdline_test(previewtest        OPENSCAD FILES ${PREVIEWTEST_FILES} SUFFIX png ARGS)
+add_cmdline_test(throwntogethertest OPENSCAD SUFFIX png FILES ${THROWNTOGETHERTEST_FILES} ARGS --preview=throwntogether)
 
 # Other PNG tests
 add_cmdline_test(renderstdiotest     OPENSCAD SUFFIX png FILES ${RENDERSTDIOTEST_FILES} STDIO EXPECTEDDIR rendertest ARGS --export-format png --render)
@@ -1054,7 +1055,6 @@ add_cmdline_test(rendermanifoldtest  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${RE
 add_cmdline_test(rendermanifoldtest-different  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS} ARGS --render --enable=manifold)
 add_cmdline_test(previewmanifoldtest EXPERIMENTAL OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --enable=manifold)
 add_cmdline_test(previewmanifoldtest-different EXPERIMENTAL SUFFIX png OPENSCAD FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --enable=manifold)
-add_cmdline_test(throwntogethertest  OPENSCAD SUFFIX png FILES ${THROWNTOGETHERTEST_FILES} ARGS --preview=throwntogether)
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
 foreach(TEST ${SVG_VIEWBOX_TESTS})
@@ -1526,6 +1526,12 @@ set_tests_properties(
   rendertest_issue2301
   previewtest_issue2301
   csgrendertest_issue2301
+
+  # https://github.com/openscad/openscad/issues/2090
+  rendertest_issue2090
+  previewtest_issue2090
+  throwntogethertest_issue2090
+  csgrendertest_issue2090
 
   PROPERTIES DISABLED TRUE
 )
