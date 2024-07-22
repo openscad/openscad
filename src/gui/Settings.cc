@@ -1,4 +1,5 @@
 #include "Settings.h"
+#include "RenderSettings.h"
 #include "printutils.h"
 #include "input/InputEventMapper.h"
 #include <boost/algorithm/string.hpp>
@@ -125,6 +126,7 @@ SettingsEntryString Settings::octoPrintSlicerProfile("printing", "octoPrintSlice
 SettingsEntryString Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", "");
 
 SettingsEntryBool Settings::exportUseAsciiSTL("export", "useAsciiSTL", false);
+SettingsEntryEnum Settings::renderBackend3D("advanced", "renderBackend3D", {{"CGAL", "CGAL (legacy, slow)"}, {"Manifold", "Manifold (BETA, fast!)"}}, "CGAL");  
 SettingsEntryEnum Settings::toolbarExport3D("advanced", "toolbarExport3D", {{"none", "none"}, {"STL", "STL"}, {"OFF", "OFF"}, {"WRL", "WRL"}, {"AMF", "AMF"}, {"3MF", "3MF"}}, "STL");
 SettingsEntryEnum Settings::toolbarExport2D("advanced", "toolbarExport2D", {{"none", "none"}, {"DXF", "DXF"}, {"SVG", "SVG"}, {"PDF", "PDF"}}, "none");
 

@@ -4,13 +4,13 @@
 #include <boost/logic/tribool.hpp>
 
 #include "GeometryUtils.h"
+#include "RenderSettings.h"
 #include "LinearExtrudeNode.h"
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 #include "PolySetUtils.h"
 #include "calc.h"
 #include "degree_trig.h"
-#include "Feature.h"
 
 namespace {
   
@@ -506,7 +506,7 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
   // the polyset from vertices using PolySetBuilder
 
 #ifdef ENABLE_MANIFOLD
-  if (Feature::ExperimentalManifold.is_enabled()) {
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     return assemblePolySetForManifold(polyref, vertices, indices,
                                       node.convexity, isConvex, slice_stride * num_slices);
   }

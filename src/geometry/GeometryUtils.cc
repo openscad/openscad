@@ -8,6 +8,7 @@
 #include "ext/libtess2/Include/tesselator.h"
 #include "printutils.h"
 #include "Reindexer.h"
+#include "RenderSettings.h"
 #include "Feature.h"
 #include "PolySet.h"
 
@@ -517,7 +518,7 @@ Transform3d GeometryUtils::getResizeTransform(const BoundingBox &bbox, const Vec
 std::shared_ptr<const Geometry> GeometryUtils::getBackendSpecificGeometry(const std::shared_ptr<const Geometry>& geom)
 {
 #if ENABLE_MANIFOLD
-  if (Feature::ExperimentalManifold.is_enabled()) {
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
       return ManifoldUtils::createManifoldFromPolySet(*ps);
     } else if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
