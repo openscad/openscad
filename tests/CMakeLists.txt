@@ -1034,11 +1034,13 @@ add_cmdline_test(previewtest        OPENSCAD FILES ${PREVIEWTEST_FILES} SUFFIX p
 # Other PNG tests
 add_cmdline_test(renderstdiotest     OPENSCAD SUFFIX png FILES ${RENDERSTDIOTEST_FILES} STDIO EXPECTEDDIR rendertest ARGS --export-format png --render)
 add_cmdline_test(csgrendertest       SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${RENDERTEST_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render)
-add_cmdline_test(rendermanifoldtest  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${RENDERMANIFOLDTEST_FILES} EXPECTEDDIR rendertest ARGS --render --backend=manifold)
-add_cmdline_test(rendermanifoldtest-different  EXPERIMENTAL OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS} ARGS --render --backend=manifold)
-add_cmdline_test(previewmanifoldtest EXPERIMENTAL OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
-add_cmdline_test(previewmanifoldtest-different EXPERIMENTAL SUFFIX png OPENSCAD FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --backend=manifold)
 add_cmdline_test(throwntogethertest  OPENSCAD SUFFIX png FILES ${THROWNTOGETHERTEST_FILES} ARGS --preview=throwntogether)
+if (ENABLE_MANIFOLD)
+add_cmdline_test(rendermanifoldtest  OPENSCAD SUFFIX png FILES ${RENDERMANIFOLDTEST_FILES} EXPECTEDDIR rendertest ARGS --render --backend=manifold)
+add_cmdline_test(rendermanifoldtest-different  OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS} ARGS --render --backend=manifold)
+add_cmdline_test(previewmanifoldtest OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
+add_cmdline_test(previewmanifoldtest-different SUFFIX png OPENSCAD FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --backend=manifold)
+endif()
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
 foreach(TEST ${SVG_VIEWBOX_TESTS})
@@ -1117,7 +1119,9 @@ ${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
 
 # Export tests (compare actually exported files)
 add_cmdline_test(stlexport              EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
+if (ENABLE_MANIFOLD)
 add_cmdline_test(manifold-stlexport     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --backend=manifold --render)
+endif()
 add_cmdline_test(objexport              EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render --enable=predictible-output)
 if (LIB3MF_FOUND)
 add_cmdline_test(3mfexport              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
@@ -1173,22 +1177,24 @@ add_cmdline_test(offrendertest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FIL
 add_cmdline_test(amfrendertest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=AMF --render=force)
 add_cmdline_test(objrendertest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDER_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=OBJ --render=force)
 
-add_cmdline_test(offrendermanifoldtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${OFFRENDERMANIFOLDTEST_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
-add_cmdline_test(offrendermanifoldtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${TEST_SCAD_DIR}/misc/cube10.scad EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
-add_cmdline_test(offrendermanifoldtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad EXPECTEDDIR rendermanifoldtest-different ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
-add_cmdline_test(offrendermanifoldtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES} ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
+if (ENABLE_MANIFOLD)
+add_cmdline_test(offrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${OFFRENDERMANIFOLDTEST_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
+add_cmdline_test(offrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${TEST_SCAD_DIR}/misc/cube10.scad EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
+add_cmdline_test(offrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad EXPECTEDDIR rendermanifoldtest-different ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
+add_cmdline_test(offrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES} ARGS ${OPENSCAD_EXE_ARG} --format=OFF --render=force --backend=manifold)
 
-add_cmdline_test(stlrendermanifoldtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=STL --render=force --backend=manifold)
-add_cmdline_test(stlrendermanifoldtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES} EXPECTEDDIR offrendermanifoldtest ARGS ${OPENSCAD_EXE_ARG} --format=STL --render=force --backend=manifold)
+add_cmdline_test(stlrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=STL --render=force --backend=manifold)
+add_cmdline_test(stlrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES} EXPECTEDDIR offrendermanifoldtest ARGS ${OPENSCAD_EXE_ARG} --format=STL --render=force --backend=manifold)
 
 set(OFFRENDERMANIFOLDTEST_FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES})
 list(REMOVE_ITEM OFFRENDERMANIFOLDTEST_FILES
   ${TEST_SCAD_DIR}/misc/cube10.scad
   ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
 )
-add_cmdline_test(amfrendermanifoldtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=AMF --render=force --backend=manifold)
-add_cmdline_test(objrendermanifoldtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=OBJ --render=force --backend=manifold)
-add_cmdline_test(objrendermanifoldtest EXPERIMENTAL SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES} EXPECTEDDIR offrendermanifoldtest ARGS ${OPENSCAD_EXE_ARG} --format=OBJ --render=force --backend=manifold)
+add_cmdline_test(amfrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=AMF --render=force --backend=manifold)
+add_cmdline_test(objrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_RENDERMANIFOLD_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=OBJ --render=force --backend=manifold)
+add_cmdline_test(objrendermanifoldtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${FILES_MANIFOLD_CORNER_CASES} EXPECTEDDIR offrendermanifoldtest ARGS ${OPENSCAD_EXE_ARG} --format=OBJ --render=force --backend=manifold)
+endif(ENABLE_MANIFOLD)
 
 if (LIB3MF_FOUND)
 add_cmdline_test(3mfpreviewtest SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${EXPORT_IMPORT_3D_PREVIEW_FILES} EXPECTEDDIR monotonerendertest ARGS ${OPENSCAD_EXE_ARG} --format=3MF)
@@ -1513,6 +1519,7 @@ set_tests_properties(
 
   PROPERTIES DISABLED TRUE
 )
+if (ENABLE_MANIFOLD)
 set_tests_properties(
   # z-fighting different on different machines
   previewmanifoldtest_issue1215
@@ -1531,6 +1538,7 @@ set_tests_properties(
 
   PROPERTIES DISABLED TRUE
 )
+endif (ENABLE_MANIFOLD)
 if (EXPERIMENTAL)
 set_tests_properties(
   # https://github.com/openscad/openscad/issues/5220
