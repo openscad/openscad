@@ -45,7 +45,7 @@ namespace {
       Lib3MF_uint64 triangle_count = object->GetTriangleCount();
       if (!vertex_count || !triangle_count) return nullptr;
 
-      auto colorsEnabled = Feature::ExperimentalRenderColors.is_enabled();
+      auto colorsEnabled = Feature::ExperimentalManifold.is_enabled();
       const Color4f invalidColor;
 
       Lib3MF_uint32 objectLevelResourceId = 0;

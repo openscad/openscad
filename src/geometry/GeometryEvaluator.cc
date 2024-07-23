@@ -499,32 +499,10 @@ void GeometryEvaluator::addToParent(const State& state,
 
 Response GeometryEvaluator::visit(State& state, const ColorNode& node)
 {
-  if (!Feature::ExperimentalRenderColors.is_enabled()) {
+  if (!Feature::ExperimentalManifold.is_enabled()) {
     return GeometryEvaluator::visit(state, (const AbstractNode&)node);
   }
     
-  if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
-  if (state.isPostfix()) {
-    std::shared_ptr<const Geometry> geom;
-    if (!isSmartCached(node)) {
-      // First union all children
-      ResultObject res = applyToChildren(node, OpenSCADOperator::UNION);
-      if ((geom = res.constptr())) {
-        auto mutableGeom = res.asMutableGeometry();
-        if (mutableGeom) mutableGeom->setColor(node.color);
-        geom = mutableGeom;
-      }
-    } else {
-      geom = smartCacheGet(node, state.preferNef());
-    }
-    addToParent(state, node, geom);
-    node.progress_report();
-  }
-  return Response::ContinueTraversal;
-}
-
-Response GeometryEvaluator::visit(State& state, const ColorNode& node)
-{
   if (state.isPrefix() && isSmartCached(node)) return Response::PruneTraversal;
   if (state.isPostfix()) {
     std::shared_ptr<const Geometry> geom;
@@ -847,7 +825,7 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
   if (state.isPostfix()) {
     std::shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      if (Feature::ExperimentalRenderColors.is_enabled()) {
+      if (Feature::ExperimentalManifold.is_enabled()) {
         // Our 2D / Clipper operations don't preserve colors yet, so we
         // extrude children *then* union them in 3D space.
         auto children = collectChildren2D(node);

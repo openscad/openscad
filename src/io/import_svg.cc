@@ -193,7 +193,7 @@ std::unique_ptr<Geometry> import_svg(double fn, double fs, double fa,
     for (const auto& shape_ptr : *shapes) {
       if (!shape_ptr->is_excluded()) {
         auto poly = std::make_shared<Polygon2d>();
-        if (Feature::ExperimentalRenderColors.is_enabled()) {
+        if (Feature::ExperimentalManifold.is_enabled()) {
           poly->setColor(shape_ptr->get_fill_color());
         }
         const auto& s = *shape_ptr;
@@ -212,7 +212,7 @@ std::unique_ptr<Geometry> import_svg(double fn, double fs, double fa,
     }
     libsvg_free(shapes);
 
-    if (Feature::ExperimentalRenderColors.is_enabled()) {
+    if (Feature::ExperimentalManifold.is_enabled()) {
       Geometry::Geometries geoms;
       // Implement a crude painter's algorithm: make sure the last polygons are drawn on top by masking the others.
       std::shared_ptr<const Polygon2d> mask;
