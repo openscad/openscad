@@ -1,8 +1,6 @@
 #include "import.h"
 #include "Feature.h"
 #include "PolySet.h"
-#include "ManifoldGeometry.h"
-#include "manifold.h"
 #include "printutils.h"
 #include "AST.h"
 #include <fstream>
@@ -226,23 +224,18 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       }
       //PRINTD("}");
       if (words.size() >= face_size + 4) {
-        if (Feature::ExperimentalRenderColors.is_enabled()) {
-          i = face_size + 1;
-          // handle optional color info (r g b [a])
-          int r=boost::lexical_cast<int>(words[i++]);
-          int g=boost::lexical_cast<int>(words[i++]);
-          int b=boost::lexical_cast<int>(words[i++]);
-          int a=i < words.size() ? boost::lexical_cast<int>(words[i++]) : 255;
-          Color4f color(r, g, b, a);
-          
-          auto iter_pair = color_indices.insert_or_assign(color, ps->colors.size());
-          if (iter_pair.second) ps->colors.push_back(color); // inserted
-          ps->color_indices.resize(face_idx, -1);
-          ps->color_indices.push_back(iter_pair.first->second);
-        } else {
-          LOG(message_group::Warning, "Ignoring color information in OFF file (enable `colors` feature to read it).");
-          logged_color_warning = true;
-        }
+        i = face_size + 1;
+        // handle optional color info (r g b [a])
+        int r=boost::lexical_cast<int>(words[i++]);
+        int g=boost::lexical_cast<int>(words[i++]);
+        int b=boost::lexical_cast<int>(words[i++]);
+        int a=i < words.size() ? boost::lexical_cast<int>(words[i++]) : 255;
+        Color4f color(r, g, b, a);
+        
+        auto iter_pair = color_indices.insert_or_assign(color, ps->colors.size());
+        if (iter_pair.second) ps->colors.push_back(color); // inserted
+        ps->color_indices.resize(face_idx, -1);
+        ps->color_indices.push_back(iter_pair.first->second);
       }
     } catch (const boost::bad_lexical_cast& blc) {
       AsciiError("can't parse face: bad data");

@@ -28,7 +28,6 @@
 #include "export.h"
 #include "linalg.h"
 #include "Feature.h"
-#include "ManifoldGeometry.h"
 #include "Reindexer.h"
 #include "PolySet.h"
 #include "PolySetUtils.h"
@@ -55,7 +54,7 @@ void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
   }
 
-  auto has_color = Feature::ExperimentalRenderColors.is_enabled() && !ps->color_indices.empty();
+  auto has_color = !ps->color_indices.empty();
   
   for (size_t i = 0; i < ps->indices.size(); ++i) {
     int nverts = ps->indices[i].size();
