@@ -68,6 +68,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMe
     LOG(message_group::Error,
         "[manifold] Surface_mesh -> Manifold conversion failed: %1$s", 
         ManifoldUtils::statusToString(mani->Status()));
+    return nullptr;
   }
   std::set<uint32_t> originalIDs;
   auto id = mani->OriginalID();
@@ -161,9 +162,8 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
   // vertex positions (touching cubes, donut with vertex in the center etc.)
   PolySetBuilder builder(ps.vertices.size(), ps.indices.size(),
                          ps.getDimension(), ps.convexValue());
-  builder.appendPolySet(ps);
-  std::unique_ptr<PolySet> rebuilt_ps = builder.build();
-  rebuilt_ps->setTriangular(ps.isTriangular());
+  builder.appendPolySet(triangle_set);
+  const std::unique_ptr<PolySet> rebuilt_ps = builder.build();
   mani = createManifoldFromTriangularPolySet(*rebuilt_ps);
   if (mani->getManifold().Status() == Error::NoError) {
     return mani;
@@ -176,8 +176,8 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
 
   // 2. If the PolySet couldn't be converted into a Manifold object, let's try to repair it.
   // We currently have to utilize some CGAL functions to do this.
-  {
-  #ifdef ENABLE_CGAL
+#ifdef ENABLE_CGAL
+  try {
     PolySet psq(ps);
     std::vector<Vector3d> points3d;
     psq.quantizeVertices(&points3d);
@@ -213,10 +213,11 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
     auto geom = createManifoldFromSurfaceMesh(m);
     // TODO: preserve color if polyset is fully monochrome, or maybe pass colors around in surface mesh?
     return geom;
-  #else
-    return std::make_shared<ManifoldGeometry>();
-  #endif
+  } catch (const std::exception& e) {
+    LOG(message_group::Error, "[manifold] CGAL error: %1$s", e.what());
   }
+#endif
+  return std::make_shared<ManifoldGeometry>();
 }
 
 std::shared_ptr<const ManifoldGeometry> createManifoldFromGeometry(const std::shared_ptr<const Geometry>& geom) {

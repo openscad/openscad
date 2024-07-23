@@ -1,0 +1,12 @@
+cube(size = [1, 1, 1], center = false);
+cube(size = [1, 1, 0], center = false);
+cube(size = [1, 0, 1], center = false);
+cube(size = [0, 1, 1], center = false);
+cube(size = [0, 0, 0], center = false);
+multmatrix([[1, 0, 0, 2], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	cube(size = [2, 3, 1], center = false);
+}
+multmatrix([[1, 0, 0, 6], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]) {
+	cube(size = [2, 4, 2], center = true);
+}
+
