@@ -1717,7 +1717,7 @@
                  <item>
                   <widget class="QLabel" name="labelRenderBackend3D">
                    <property name="text">
-                    <string>3D Rendering Backend</string>
+                    <string>Backend</string>
                    </property>
                   </widget>
                  </item>
