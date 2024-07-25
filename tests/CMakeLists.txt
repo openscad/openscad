@@ -865,6 +865,9 @@ list(APPEND SCADFILES_WITH_COLOR
   ${EXAMPLES_DIR}/Basics/logo_and_text.scad
   ${EXAMPLES_DIR}/Old/example017.scad
 
+  ${TEST_SCAD_DIR}/3D/issues/issue5217.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5218.scad
+
   #${TEST_SCAD_DIR}/bugs/issue1000.scad
 )
 
@@ -884,6 +887,7 @@ list(APPEND SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS
   # Manifold can construct geometry which isn't representable in CGAL mode,
   # causing CGAL-based operations like minkowski() to fail.
   ${TEST_SCAD_DIR}/3D/issues/issue5211.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
 )
 
 list(APPEND SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS
@@ -897,6 +901,7 @@ list(APPEND SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS
   # Manifold can construct geometry which isn't representable in CGAL mode,
   # causing CGAL-based operations like minkowski() to fail.
   ${TEST_SCAD_DIR}/3D/issues/issue5211.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
 
   # ${TEST_SCAD_DIR}/bugs/issue1000.scad
   # ${TEST_SCAD_DIR}/bugs/issue802.scad
@@ -904,13 +909,7 @@ list(APPEND SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS
 )
 
 list(APPEND SCADFILES_FAILING_WITH_MANIFOLD
-  # https://github.com/openscad/openscad/issues/5215
-  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
-  # https://github.com/openscad/openscad/issues/5217
-  ${TEST_SCAD_DIR}/3D/features/color-tests2.scad
-  # https://github.com/openscad/openscad/issues/5218
-  ${TEST_SCAD_DIR}/3D/issues/issue913.scad
-  ${TEST_SCAD_DIR}/3D/features/minkowski3-erosion.scad
+  # Add any tests failing just w/ Manifold here.
 )
 
 list(APPEND RENDERMANIFOLDTEST_FILES ${RENDERTEST_FILES})
@@ -1587,7 +1586,7 @@ else()
     throwntogethertest_import_3mf-tests
     PROPERTIES DISABLED TRUE
   )
-endif(NOT LIB3MF_FOUND)
+endif(LIB3MF_FOUND)
 
 list(APPEND NEF3_BROKEN_TESTS
   rendertest_nef3_broken
