@@ -857,6 +857,9 @@ list(APPEND SCADFILES_WITH_COLOR
   ${EXAMPLES_DIR}/Basics/rotate_extrude.scad
   ${EXAMPLES_DIR}/Old/example017.scad
 
+  ${TEST_SCAD_DIR}/3D/issues/issue5217.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue5218.scad
+
   #${TEST_SCAD_DIR}/bugs/issue1000.scad
 )
 
@@ -870,6 +873,7 @@ list(APPEND SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS
   # Manifold can construct geometry which isn't representable in CGAL mode,
   # causing CGAL-based operations like minkowski() to fail.
   ${TEST_SCAD_DIR}/3D/issues/issue5211.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
 )
 
 list(APPEND SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS
@@ -879,6 +883,7 @@ list(APPEND SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS
   # Manifold can construct geometry which isn't representable in CGAL mode,
   # causing CGAL-based operations like minkowski() to fail.
   ${TEST_SCAD_DIR}/3D/issues/issue5211.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
 
   # ${TEST_SCAD_DIR}/bugs/issue1000.scad
   # ${TEST_SCAD_DIR}/bugs/issue802.scad
@@ -886,13 +891,7 @@ list(APPEND SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS
 )
 
 list(APPEND SCADFILES_FAILING_WITH_MANIFOLD
-  # https://github.com/openscad/openscad/issues/5215
-  ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
-  # https://github.com/openscad/openscad/issues/5217
-  ${TEST_SCAD_DIR}/3D/features/color-tests2.scad
-  # https://github.com/openscad/openscad/issues/5218
-  ${TEST_SCAD_DIR}/3D/issues/issue913.scad
-  ${TEST_SCAD_DIR}/3D/features/minkowski3-erosion.scad
+  # Add any tests failing just w/ Manifold here.
 )
 
 list(APPEND RENDERMANIFOLDTEST_FILES ${RENDERTEST_FILES})
@@ -1030,11 +1029,11 @@ add_cmdline_test(openscad-nonascii  OPENSCAD FILES ${TEST_SCAD_DIR}/misc/sfære.
 # Baseline PNG tests
 add_cmdline_test(rendertest         OPENSCAD FILES ${RENDERTEST_FILES} SUFFIX png ARGS --render)
 add_cmdline_test(previewtest        OPENSCAD FILES ${PREVIEWTEST_FILES} SUFFIX png ARGS)
+add_cmdline_test(throwntogethertest OPENSCAD SUFFIX png FILES ${THROWNTOGETHERTEST_FILES} ARGS --preview=throwntogether)
 
 # Other PNG tests
 add_cmdline_test(renderstdiotest     OPENSCAD SUFFIX png FILES ${RENDERSTDIOTEST_FILES} STDIO EXPECTEDDIR rendertest ARGS --export-format png --render)
 add_cmdline_test(csgrendertest       SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${RENDERTEST_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render)
-add_cmdline_test(throwntogethertest  OPENSCAD SUFFIX png FILES ${THROWNTOGETHERTEST_FILES} ARGS --preview=throwntogether)
 if (ENABLE_MANIFOLD)
 add_cmdline_test(rendermanifoldtest  OPENSCAD SUFFIX png FILES ${RENDERMANIFOLDTEST_FILES} EXPECTEDDIR rendertest ARGS --render --backend=manifold)
 add_cmdline_test(rendermanifoldtest-different  OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS} ARGS --render --backend=manifold)
@@ -1516,6 +1515,12 @@ set_tests_properties(
   rendertest_issue2301
   previewtest_issue2301
   csgrendertest_issue2301
+
+  # https://github.com/openscad/openscad/issues/2090
+  rendertest_issue2090
+  previewtest_issue2090
+  throwntogethertest_issue2090
+  csgrendertest_issue2090
 
   PROPERTIES DISABLED TRUE
 )
