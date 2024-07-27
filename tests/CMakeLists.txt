@@ -1541,8 +1541,6 @@ set_tests_properties(
   previewtest_issue2841b
   throwntogethertest_issue2841b
   csgrendertest_issue2841b
-  rendermanifoldtest_issue2841b
-  previewmanifoldtest_issue2841b
   
   PROPERTIES DISABLED TRUE
 )
@@ -1568,6 +1566,10 @@ set_tests_properties(
 
   # https://github.com/openscad/openscad/issues/909
   amfrendermanifoldtest_bad-stl-wing
+
+  # https://github.com/openscad/openscad/issues/2841
+  rendermanifoldtest_issue2841b
+  previewmanifoldtest_issue2841b
 
   PROPERTIES DISABLED TRUE
 )
