@@ -3560,7 +3560,7 @@ void MainWindow::setFont(const QString& family, uint size)
 void MainWindow::quit()
 {
   QCloseEvent ev;
-  QApplication::sendEvent(QApplication::instance(), &ev);
+  MainWindow::closeEvent(&ev);
   if (ev.isAccepted()) QApplication::instance()->quit();
   // FIXME: Cancel any CGAL calculations
 #ifdef Q_OS_MACOS
