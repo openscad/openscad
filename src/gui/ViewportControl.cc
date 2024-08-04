@@ -52,7 +52,7 @@ bool ViewportControl::isLightTheme()
 
 QString ViewportControl::yellowHintBackground()
 {
-  return {isLightTheme() ? "background-color:#ffffaa;" : "background-color:#30306;"};
+  return {isLightTheme() ? "background-color:#ffffaa;" : "background-color:#303006;"};
 }
 
 QString ViewportControl::redHintBackground()
