@@ -42,6 +42,21 @@
     <file>icons/svg-default/export-off-white.svg</file>
     <file>icons/svg-default/export-wrl.svg</file>
     <file>icons/svg-default/export-wrl-white.svg</file>
+    <file>icons/svg-default/export-dae.svg</file>
+    <file>icons/svg-default/export-dae-white.svg</file>
+    <file>icons/svg-default/export-glb.svg</file>
+    <file>icons/svg-default/export-glb-white.svg</file>
+    <file>icons/svg-default/export-ply.svg</file>
+    <file>icons/svg-default/export-ply-white.svg</file>
+    <file>icons/svg-default/export-stp.svg</file>
+    <file>icons/svg-default/export-stp-white.svg</file>
+    <file>icons/svg-default/export-x3d.svg</file>
+    <file>icons/svg-default/export-x3d-white.svg</file>
+    <file>icons/svg-default/export-wrl.svg</file>
+    <file>icons/svg-default/export-wrl-white.svg</file>
+    <file>icons/svg-default/export-wrl.svg</file>
+    <file>icons/svg-default/export-wrl-white.svg</file>
+
     <file>icons/svg-default/export-pdf.svg</file>
     <file>icons/svg-default/export-pdf-white.svg</file>
     <file>icons/svg-default/export-png.svg</file>

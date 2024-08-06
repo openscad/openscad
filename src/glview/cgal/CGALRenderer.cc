@@ -176,6 +176,9 @@ void CGALRenderer::createPolySetStates() {
                          Transform3d::Identity(), color);
   }
 
+  Color4f face2DColor;
+  getColor(ColorMode::CGAL_FACE_2D_COLOR, face2DColor);
+
   for (const auto &[polygon, polyset] : this->polygons) {
     Color4f color;
 
@@ -190,9 +193,8 @@ void CGALRenderer::createPolySetStates() {
     vertex_states.emplace_back(std::move(init_state));
 
     // Create 2D polygons
-    getColor(ColorMode::CGAL_FACE_2D_COLOR, color);
     this->create_polygons(*polyset, vertex_array, Transform3d::Identity(),
-                          color);
+                          polygon->getColor().isValid() ? polygon->getColor() : face2DColor);
 
     std::shared_ptr<VertexState> edge_state = std::make_shared<VertexState>();
     edge_state->glBegin().emplace_back([]() {
