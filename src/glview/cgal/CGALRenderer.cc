@@ -305,7 +305,7 @@ BoundingBox CGALRenderer::getBoundingBox() const {
   return bbox;
 }
 
-std::vector<SelectedObject>
+std::shared_ptr<SelectedObject>
 CGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x,
                               int mouse_y, double tolerance) {
   double dist_near;
@@ -314,8 +314,8 @@ CGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x,
   Vector3d pt2_nearest;
   const auto find_nearest_point = [&](const std::vector<Vector3d> &vertices){
     for (const Vector3d &pt : vertices) {
-      const double dist_pt =
-          calculateLinePointDistance(near_pt, far_pt, pt, dist_near);
+      SelectedObject ruler = calculateLinePointDistance(near_pt, far_pt, pt, dist_near);
+      double dist_pt = (ruler.p1-ruler.p2).norm();
       if (dist_pt < tolerance && dist_near < dist_nearest) {
         dist_nearest = dist_near;
         pt1_nearest = pt;
@@ -333,7 +333,7 @@ CGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x,
       .type = SelectionType::SELECTION_POINT,
       .p1 = pt1_nearest
     };
-    return std::vector<SelectedObject>{obj};
+    return std::make_shared<SelectedObject>(obj);
   }
 
   const auto find_nearest_line = [&](const std::vector<Vector3d> &vertices, const PolygonIndices& indices) {
@@ -360,11 +360,11 @@ CGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x,
   }
   if (dist_nearest < std::numeric_limits<double>::max()) {
     SelectedObject obj = {
-      .type = SelectionType::SELECTION_LINE,
+      .type = SelectionType::SELECTION_SEGMENT,
       .p1 = pt1_nearest,
       .p2 = pt2_nearest,
     };
-    return std::vector<SelectedObject>{obj};
+    return std::make_shared<SelectedObject>(obj);
   }
-  return {};
+  return nullptr;
 }

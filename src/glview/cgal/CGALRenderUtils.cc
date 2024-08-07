@@ -1,4 +1,5 @@
 #include "CGALRenderUtils.h"
+#include "Selection.h"
 
 
 // this function resolves a 3x3 linear eqauation system
@@ -30,43 +31,56 @@ bool linsystem( Vector3d v1,Vector3d v2,Vector3d v3,Vector3d pt,Vector3d &res,do
         return false;
 }
 
-double calculateLinePointDistance(const Vector3d &l1, const Vector3d &l2, const Vector3d &pt, double & dist_lat) {
+SelectedObject calculateLinePointDistance(const Vector3d &l1, const Vector3d &l2, const Vector3d &pt, double & dist_lat) {
+    SelectedObject ruler;
+    ruler.type =  SelectionType::SELECTION_SEGMENT;
     Vector3d d = (l2 - l1);
     double l=d.norm();
     d.normalize();
     dist_lat = std::clamp((pt-l1).dot(d),0.0,l);
-    return (l1 + d * dist_lat-pt).norm();
+    ruler.p1 = l1 + d * dist_lat;
+    ruler.p2 = pt;
+    return ruler;
 }
 
 double calculateLineLineDistance(const Vector3d &l1b, const Vector3d &l1e, const Vector3d &l2b, const Vector3d &l2e, double &dist_lat)
 {
-	double d;
 	Vector3d v1=l1e-l1b;
 	Vector3d v2=l2e-l2b;
 	Vector3d n=v1.cross(v2);
 	if(n.norm() == 0) {
-		return calculateLinePointDistance(l1b,l1e,l2b,d);
+		double dummy;
+		SelectedObject rul = calculateLinePointDistance(l1b,l1e,l2b,dummy);
+		return (rul.p1-rul.p2).norm();
 	}
 	double t=n.norm();
 	n.normalize();
-  d=n.dot(l1b-l2b);
+  	double d=n.dot(l1b-l2b);
 	dist_lat=(v2.cross(n)).dot(l2b-l1b)/t;
 	return d;
 }
 
-double calculateSegSegDistance(const Vector3d &l1b, const Vector3d &l1e, const Vector3d &l2b, const Vector3d &l2e, double &dist_lat)
+SelectedObject calculateSegSegDistance(const Vector3d &l1b, const Vector3d &l1e, const Vector3d &l2b, const Vector3d &l2e)
 {
-	double d;
+	SelectedObject ruler;
+	ruler.type =  SelectionType::SELECTION_SEGMENT;
+
 	Vector3d v1=l1e-l1b;
 	Vector3d v2=l2e-l2b;
 	Vector3d n=v1.cross(v2);
 	Vector3d res;
 	if(n.norm() < 1e-6) {
-		return calculateLinePointDistance(l1b,l1e,l2b,d);
+		double dummy;
+		return calculateLinePointDistance(l1b,l1e,l2b,dummy);
 	}
-	if(linsystem(v1,n,v2,l2e-l1b,res,nullptr)) return NAN;
+	if(linsystem(v1,n,v2,l2e-l1b,res,nullptr)) {
+	  ruler.type =  SelectionType::SELECTION_INVALID;
+	  return ruler;
+	}
 	double d1=std::clamp(res[0],0.0,1.0);
         double d2=std::clamp(res[2],0.0,1.0);
-	Vector3d dist= (l2e-v2*d2) - (l1b+v1*d1);
-	return dist.norm();
+	ruler.p1=l1b + v1*d1;
+	ruler.p2=l2e - v2*d2;
+
+	return ruler;
 }

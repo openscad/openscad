@@ -201,7 +201,7 @@ BoundingBox LegacyCGALRenderer::getBoundingBox() const
   return bbox;
 }
 
-std::vector<SelectedObject>
+std::shared_ptr<SelectedObject>
 LegacyCGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x,
                               int mouse_y, double tolerance) {
   double dist_near;
@@ -229,7 +229,7 @@ LegacyCGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse
       .type = SelectionType::SELECTION_POINT,
       .p1 = pt1_nearest
     };
-    return std::vector<SelectedObject>{obj};
+    return std::make_shared<SelectedObject>(obj);
   }
 
   const auto find_nearest_line = [&](const std::vector<Vector3d> &vertices, const PolygonIndices& indices) {
@@ -256,11 +256,11 @@ LegacyCGALRenderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse
   }
   if (dist_nearest < std::numeric_limits<double>::max()) {
     SelectedObject obj = {
-      .type = SelectionType::SELECTION_LINE,
+      .type = SelectionType::SELECTION_SEGMENT,
       .p1 = pt1_nearest,
       .p2 = pt2_nearest,
     };
-    return std::vector<SelectedObject>{obj};
+    return std::make_shared<SelectedObject>(obj);
   }
-  return {};
+  return nullptr;
 }
