@@ -495,6 +495,7 @@ void TabManager::openTabFile(const QString& filename)
 
   if (opened) { // only try to parse if the file opened
     par->hideCurrentOutput(); // Initial parse for customizer, hide any errors to avoid duplication
+/*   prevent parseToplevelDocument beeing called twice on startup (also from MainWindow::compile) 
     try {
       par->parseTopLevelDocument();
     } catch (const HardWarningException&) {
@@ -506,6 +507,7 @@ void TabManager::openTabFile(const QString& filename)
     }
     par->last_compiled_doc = ""; // undo the damage so F4 works
     par->clearCurrentOutput();
+*/    
   }
 }
 
