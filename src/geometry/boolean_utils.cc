@@ -18,6 +18,7 @@
 #endif  // ENABLE_MANIFOLD
 
 #include "Feature.h"
+#include "RenderSettings.h"
 #include "PolySet.h"
 #include "printutils.h"
 #include "progress.h"
@@ -106,7 +107,7 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
 std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 {
 #if ENABLE_MANIFOLD
-  if (Feature::ExperimentalManifold.is_enabled()) {
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     return ManifoldUtils::applyMinkowskiManifold(children);
   }
 #endif  // ENABLE_MANIFOLD
