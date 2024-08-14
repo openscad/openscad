@@ -139,7 +139,7 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
     if (f->info().in_domain() &&
         f->vertex(0)->info().id != -1 &&
         f->vertex(1)->info().id != -1 &&
-        f->vertex(1)->info().id != -1)
+        f->vertex(2)->info().id != -1)
       polyset->indices.push_back({
           f->vertex(0)->info().id,
           f->vertex(1)->info().id,
