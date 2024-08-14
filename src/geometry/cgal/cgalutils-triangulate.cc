@@ -23,9 +23,12 @@ struct FaceInfo
   [[nodiscard]] bool in_domain() const { return nesting_level % 2 == 1; }
 };
 
+struct IdInfo {
+  int id = -1;
+};
 
 using K = CGAL::Exact_predicates_inexact_constructions_kernel;
-using Vb = CGAL::Triangulation_vertex_base_with_info_2<int, K>;
+using Vb = CGAL::Triangulation_vertex_base_with_info_2<IdInfo, K>;
 using Fbb = CGAL::Triangulation_face_base_with_info_2<FaceInfo, K>;
 using Fb = CGAL::Constrained_triangulation_face_base_2<K, Fbb>;
 using TDS = CGAL::Triangulation_data_structure_2<Vb, Fb>;
@@ -112,12 +115,12 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
       // Start with last point
       int last_idx = outline.vertices.size() - 1;
       auto prev = cdt.insert({outline.vertices[last_idx][0], outline.vertices[last_idx][1]});
-      prev->info() = polyset->vertices.size() + last_idx;
+      prev->info().id = polyset->vertices.size() + last_idx;
       for (const auto &v : outline.vertices) {
         auto curr = cdt.insert({v[0], v[1]});
         if (curr != prev) {
           polyset->vertices.emplace_back(v[0], v[1], 0.0);
-          curr->info() = polyset->vertices.size() - 1;
+          curr->info().id = polyset->vertices.size() - 1;
           cdt.insert_constraint(prev, curr);
           prev = curr;
         }
@@ -133,8 +136,15 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
   // triangles inside holes.
   mark_domains(cdt);
   for (auto f : cdt.finite_face_handles()) {
-    if (f->info().in_domain() && f->vertex(0)->info() >= 0 && f->vertex(1)->info() >= 0 && f->vertex(2)->info() >= 0)
-      polyset->indices.push_back({f->vertex(0)->info(), f->vertex(1)->info(), f->vertex(2)->info()});
+    if (f->info().in_domain() &&
+        f->vertex(0)->info().id != -1 &&
+        f->vertex(1)->info().id != -1 &&
+        f->vertex(1)->info().id != -1)
+      polyset->indices.push_back({
+          f->vertex(0)->info().id,
+          f->vertex(1)->info().id,
+          f->vertex(2)->info().id
+      });
   }
   return polyset;
 }
