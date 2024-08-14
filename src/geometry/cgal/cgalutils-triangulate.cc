@@ -126,7 +126,12 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
         }
       }
     }
-
+    int old_id = -1;
+    for (const auto &v : cdt.all_vertex_handles()) {
+      if (v->info().id == -1)
+        v->info().id = old_id;
+      old_id = v->info().id;
+    }
   } catch (const CGAL::Precondition_exception& e) {
     LOG("CGAL error in Polygon2d::tesselate(): %1$s", e.what());
     return nullptr;
