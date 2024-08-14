@@ -112,9 +112,8 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
       // Start with last point
       int last_idx = outline.vertices.size() - 1;
       auto prev = cdt.insert({outline.vertices[last_idx][0], outline.vertices[last_idx][1]});
-      prev->info() = last_idx;
-      for (int i=0;i<outline.vertices.size();i++) {
-        const auto &v = outline.vertices[i];
+      prev->info() = polyset->vertices.size() + last_idx;
+      for (const auto &v : outline.vertices) {
         auto curr = cdt.insert({v[0], v[1]});
         if (curr != prev) {
           polyset->vertices.emplace_back(v[0], v[1], 0.0);
@@ -133,10 +132,9 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
   // To extract triangles which is part of our polygon, we need to filter away
   // triangles inside holes.
   mark_domains(cdt);
-  for (auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
-    if (fit->info().in_domain()) {
-      polyset->indices.push_back({fit->vertex(0)->info(), fit->vertex(1)->info(), fit->vertex(2)->info()});
-    }
+  for (auto f : cdt.finite_face_handles()) {
+    if (f->info().in_domain() && f->vertex(0)->info() >= 0 && f->vertex(1)->info() >= 0 && f->vertex(2)->info() >= 0)
+      polyset->indices.push_back({f->vertex(0)->info(), f->vertex(1)->info(), f->vertex(2)->info()});
   }
   return polyset;
 }
