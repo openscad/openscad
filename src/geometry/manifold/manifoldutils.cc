@@ -1,9 +1,11 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
+#include <manifold/manifold.h>
+#include <manifold/polygon.h>
+
 #include "manifoldutils.h"
 #include "ManifoldGeometry.h"
 #include "PolySetBuilder.h"
 #include "Feature.h"
-#include "manifold.h"
 #include "printutils.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
@@ -13,7 +15,7 @@
 #endif
 #include "PolySetUtils.h"
 #include "PolySet.h"
-#include "polygon.h"
+
 
 using Error = manifold::Manifold::Error;
 

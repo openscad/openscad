@@ -1,7 +1,7 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
+#include <manifold/manifold.h>
 #include "ManifoldGeometry.h"
 #include "Polygon2d.h"
-#include "manifold.h"
 #include "PolySet.h"
 #include "Feature.h"
 #include "PolySetBuilder.h"

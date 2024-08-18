@@ -38,8 +38,8 @@
 #endif // ENABLE_CGAL
 
 #ifdef ENABLE_MANIFOLD
+#include <manifold/manifold.h>
 #include "ManifoldGeometry.h"
-#include "manifold.h"
 #include "manifoldutils.h"
 #endif // ENABLE_MANIFOLD
 
