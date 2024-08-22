@@ -177,6 +177,8 @@ if [ -e /etc/issue ]; then
   get_debian_deps
  elif [ "`grep -i linux.mint.1[89] /etc/issue`" ]; then
   get_ubuntu_16_deps
+  elif [ "`grep -i linux.mint.2[0-1] /etc/issue`" ]; then
+  get_ubuntu_16_deps
  elif [ "`grep -i suse /etc/issue`" ]; then
   get_opensuse_deps
  elif [ "`grep -i fedora.release.2[2-9] /etc/issue`" ]; then
