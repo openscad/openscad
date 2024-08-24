@@ -158,7 +158,7 @@ public:
       vertexCache.push_back(coords[0]);
       vertexCache.push_back(coords[1]);
       vertexCache.push_back(coords[2]);
-      *dataOut = vertexCache.data() - 3;
+      *dataOut = &(vertexCache.back()) - 2;
     } else {
       vertexCache.clear();
     }
