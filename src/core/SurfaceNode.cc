@@ -88,7 +88,7 @@ void SurfaceNode::convert_image(img_data_t& data, std::vector<uint8_t>& img, uns
 {
   data.width = width;
   data.height = height;
-  data.reserve( (size_t)width * height);
+  data.resize( (size_t)width * height);
   double min_val = 200;
   for (unsigned int y = 0; y < height; ++y) {
     for (unsigned int x = 0; x < width; ++x) {
