@@ -32,10 +32,7 @@ void main(void) {
   }
 
   // otherwise we need to test the depth buffer to select the appropriate fragment
-  //vec2 resolution = vec2(694,471);
-  vec2 fragCoords = gl_FragCoord.xy;
-  fragCoords = fragCoords / resolution;
-  vec2 screenCoords = fragCoords;
+  vec2 screenCoords = gl_FragCoord.xy / resolution;
   float surface_depth = texture2D(depth_buffer, screenCoords).x;
 
   // nearly-equal z-depth
