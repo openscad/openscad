@@ -13,6 +13,7 @@ class CSGChainObject;
 class CSGProducts;
 class OpenCSGPrim;
 class OpenCSGVBOPrim;
+class OpenCSGVBORendererFBO;
 
 class OpenCSGVertexState : public VertexState
 {
@@ -79,14 +80,10 @@ public:
   OpenCSGRenderer(std::shared_ptr<CSGProducts> root_products,
                   std::shared_ptr<CSGProducts> highlights_products,
                   std::shared_ptr<CSGProducts> background_products);
-  ~OpenCSGRenderer() override {
-    if (all_vbos_.size()) {
-      glDeleteBuffers(all_vbos_.size(), all_vbos_.data());
-    }
-  }
+  ~OpenCSGRenderer() override;
   void prepare(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) override;
   void draw(bool showfaces, bool showedges, const shaderinfo_t *shaderinfo = nullptr) const override;
-
+  void resize(int width, int height) override;
   BoundingBox getBoundingBox() const override;
 private:
 #ifdef ENABLE_OPENCSG
@@ -102,4 +99,7 @@ private:
   std::shared_ptr<CSGProducts> root_products_;
   std::shared_ptr<CSGProducts> highlights_products_;
   std::shared_ptr<CSGProducts> background_products_;
+
+  std::unique_ptr<OpenCSGVBORendererFBO> pass1_fbo;
+  int width_, height_;
 };

@@ -18,5 +18,6 @@ bool fbo_resize(fbo_t *fbo, size_t width, size_t height);
 void fbo_delete(fbo_t *fbo);
 GLuint fbo_bind(fbo_t *fbo);
 void fbo_unbind(fbo_t *fbo);
+bool fbo_check_status();
 
 bool REPORTGLERROR(const char *task);

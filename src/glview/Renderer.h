@@ -24,17 +24,21 @@ public:
   struct shaderinfo_t {
     int progid = 0;
     shader_type_t type;
-    union {
-      struct {
-        int color_area;
-        int color_edge;
-        // barycentric coordinates of the current vertex
-        int barycentric;
-      } csg_rendering;
-      struct {
-        int identifier;
-      } select_rendering;
-    } data;
+    struct {
+        int rendering_mode {-1};
+        int resolution {-1};
+        union {
+            struct {
+                int color_area;
+                int color_edge;
+                // barycentric coordinates of the current vertex
+                int barycentric;
+            } csg_rendering;
+            struct {
+                int identifier;
+            } select_rendering;
+        };
+    }data;
   };
 
 

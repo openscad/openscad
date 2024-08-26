@@ -25,7 +25,7 @@ bool use_ext()
   }
 }
 
-bool check_fbo_status()
+bool fbo_check_status()
 {
   /* This code is based on user V-man code from
      http://www.opengl.org/wiki/GL_EXT_framebuffer_multisample
@@ -81,7 +81,7 @@ bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
     return false;
   }
 
-  if (!check_fbo_status()) {
+  if (!fbo_check_status()) {
     cerr << "Problem with OpenGL EXT framebuffer after specifying color render buffer.\n";
     return false;
   }
@@ -97,7 +97,7 @@ bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
       return false;
     }
 
-    if (!check_fbo_status()) {
+    if (!fbo_check_status()) {
       cerr << "Problem with OpenGL EXT framebuffer after specifying depth render buffer.\n";
       return false;
     }
@@ -108,7 +108,7 @@ bool fbo_ext_init(fbo_t *fbo, size_t width, size_t height)
       return false;
     }
 
-    if (!check_fbo_status()) {
+    if (!fbo_check_status()) {
       cerr << "Problem with OpenGL EXT framebuffer after specifying depth stencil render buffer.\n";
       return false;
     }
@@ -136,7 +136,7 @@ bool fbo_arb_init(fbo_t *fbo, size_t width, size_t height)
     return false;
   }
 
-  if (!check_fbo_status()) {
+  if (!fbo_check_status()) {
     cerr << "Problem with OpenGL framebuffer after specifying color render buffer.\n";
     return false;
   }
@@ -151,7 +151,7 @@ bool fbo_arb_init(fbo_t *fbo, size_t width, size_t height)
     return false;
   }
 
-  if (!check_fbo_status()) {
+  if (!fbo_check_status()) {
     cerr << "Problem with OpenGL framebuffer after specifying depth render buffer.\n";
     return false;
   }

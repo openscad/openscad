@@ -25,6 +25,8 @@
  */
 
 #include "OpenCSGRenderer.h"
+#include "VertexState.h"
+#include "fbo.h"
 #include "linalg.h"
 #include "system-gl.h"
 
@@ -34,6 +36,82 @@
 #include <utility>
 
 #ifdef ENABLE_OPENCSG
+
+class OpenCSGVBORendererFBO
+{
+public:
+    OpenCSGVBORendererFBO(int width, int height)
+    {
+        int initial_fbo {-1};
+
+        // save the initial framebuffer to restore it at end.
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &initial_fbo);
+
+        glGenFramebuffers(1, &fbo_id);
+        glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
+
+        // creates a buffer storing colors values
+        glGenTextures(1, &color_buffer_id);
+        glBindTexture(GL_TEXTURE_2D, color_buffer_id);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        // creates a buffer storing depth values, we use a texture instead of a RenderBuffer
+        // because we want the values to be accessed as input/read in a shader
+        glGenTextures(1, &depth_buffer_id);
+        glBindTexture(GL_TEXTURE_2D, depth_buffer_id);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_DEPTH_TEXTURE_MODE, GL_INTENSITY);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_ALWAYS);
+
+        // binds the two buffers for the framebuffer
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_buffer_id, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_buffer_id, 0);
+        glDrawBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
+
+        fbo_check_status();
+
+        // restore back to the initial framebuffer.
+        glBindFramebuffer(GL_FRAMEBUFFER, initial_fbo);
+    }
+
+
+    unsigned int width;
+    unsigned int height;
+    unsigned int fbo_id;
+    unsigned int depth_buffer_id;
+    unsigned int color_buffer_id;
+};
+
+class RenderingTargetRAII {
+  public:
+    RenderingTargetRAII(OpenCSGVBORendererFBO* target) {
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previous_fbo_id);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, target->fbo_id);
+
+        glViewport(0,0, target->width, target->height);
+        glClearColor(0.0,0.0,0.0,0.0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        fbo_check_status();
+    }
+
+    ~RenderingTargetRAII()
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, previous_fbo_id);
+    }
+
+    int current_fbo_id {-1};
+    int previous_fbo_id {-1};
+};
 
 class OpenCSGVBOPrim : public OpenCSG::Primitive {
 public:
@@ -54,17 +132,42 @@ private:
 };
 #endif // ENABLE_OPENCSG
 
+void GLAPIENTRY
+MessageCallback( GLenum source,
+                 GLenum type,
+                 GLuint id,
+                 GLenum severity,
+                 GLsizei length,
+                 const GLchar* message,
+                 const void* userParam )
+{
+    std::cerr << "GL CALLBACK: message = " << message << std::endl;
+}
+
 OpenCSGRenderer::OpenCSGRenderer(
     std::shared_ptr<CSGProducts> root_products,
     std::shared_ptr<CSGProducts> highlights_products,
     std::shared_ptr<CSGProducts> background_products)
     : root_products_(std::move(root_products)),
       highlights_products_(std::move(highlights_products)),
-      background_products_(std::move(background_products)) {}
+      background_products_(std::move(background_products)) {
+    // During init, enable debug output
+    glEnable              ( GL_DEBUG_OUTPUT );
+    glDebugMessageCallback( MessageCallback, 0 );
+}
 
 void OpenCSGRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
                               const shaderinfo_t *shaderinfo) {
-  if (vbo_vertex_products_.empty()) {
+
+    // TODO: this part is probably to rewrite (as the static init is a code smell)
+    static bool inited=false;
+    if(!inited)
+    {
+        pass1_fbo = std::make_unique<OpenCSGVBORendererFBO>(width_, height_);
+        inited = true;
+    }
+
+    if (vbo_vertex_products_.empty()) {
     if (root_products_) {
       createCSGVBOProducts(*root_products_, shaderinfo, false, false);
     }
@@ -75,6 +178,17 @@ void OpenCSGRenderer::prepare(bool /*showfaces*/, bool /*showedges*/,
       createCSGVBOProducts(*highlights_products_, shaderinfo, true, false);
     }
   }
+}
+
+OpenCSGRenderer::~OpenCSGRenderer() {
+  if (all_vbos_.size()) {
+    glDeleteBuffers(all_vbos_.size(), all_vbos_.data());
+  }
+}
+
+void OpenCSGRenderer::resize(int width, int height) {
+    width_ = width;
+    height_ = height;
 }
 
 void OpenCSGRenderer::draw(bool /*showfaces*/, bool showedges,
@@ -338,61 +452,115 @@ void OpenCSGRenderer::createCSGVBOProducts(
 }
 
 void OpenCSGRenderer::renderCSGVBOProducts(
-    bool showedges, const Renderer::shaderinfo_t *shaderinfo) const {
+        bool showedges, const Renderer::shaderinfo_t *shaderinfo) const {
 #ifdef ENABLE_OPENCSG
-  for (const auto &product : vbo_vertex_products_) {
-    if (product->primitives().size() > 1) {
-      GL_CHECKD(OpenCSG::render(product->primitives()));
-      GL_TRACE0("glDepthFunc(GL_EQUAL)");
-      GL_CHECKD(glDepthFunc(GL_EQUAL));
-    }
 
-    if (shaderinfo && shaderinfo->progid) {
-      GL_TRACE("glUseProgram(%d)", shaderinfo->progid);
-      GL_CHECKD(glUseProgram(shaderinfo->progid));
+    // Fixed version of the renderer (i.e. when there is no shader), in case
+    // there is a shader the OpenCSG::render based on fixed pipeline rendering will interact badly
+    // with programmable graphics pipeline resulting in z-fighting and artifacts.
+    // This is why there is a different rendering approach after that one.
+    if(!shaderinfo || !shaderinfo->progid)
+    {
+        for (const auto &product : vbo_vertex_products_) {
+            if (product->primitives().size() > 1) {
+                GL_CHECKD(OpenCSG::render(product->primitives()));
 
-      if (shaderinfo->type == EDGE_RENDERING && showedges) {
-        shader_attribs_enable();
-      }
-    }
+                GL_TRACE0("glDepthFunc(GL_LEQUAL)");
+                GL_CHECKD(glDepthFunc(GL_EQUAL));
+            }
 
-    for (const auto &vs : product->states()) {
-      if (vs) {
-        std::shared_ptr<OpenCSGVertexState> csg_vs =
-            std::dynamic_pointer_cast<OpenCSGVertexState>(vs);
-        if (csg_vs) {
-          if (shaderinfo && shaderinfo->type == SELECT_RENDERING) {
-            GL_TRACE("glUniform3f(%d, %f, %f, %f)",
-                     shaderinfo->data.select_rendering.identifier %
-                         (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
-                         (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
-                         (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-            GL_CHECKD(glUniform3f(
-                shaderinfo->data.select_rendering.identifier,
-                ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
-                ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
-                ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
-          }
+            for (const auto &vs : product->states()) {
+                std::shared_ptr<VBOShaderVertexState> shader_vs =
+                        std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
+                if (vs) {
+                    vs->draw();
+                }
+            }
+
+            GL_TRACE0("glDepthFunc(GL_LEQUAL)");
+            GL_CHECKD(glDepthFunc(GL_LEQUAL));
         }
-        std::shared_ptr<VBOShaderVertexState> shader_vs =
-            std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
-        if (!shader_vs || (showedges && shader_vs)) {
-          vs->draw();
+        return;
+    }
+
+    // Rendering algorithm is in two pass, in the first one we compute the depth of fragments
+    // then in a second pass we render the colors using the previously computed depth to select which color to use.
+    if(!pass1_fbo)
+        return;
+
+    // RENDERING PASS 1: Render the depth into dedicated buffers using an FBO
+    {
+        RenderingTargetRAII activate(pass1_fbo.get());
+        for (const auto &product : vbo_vertex_products_) {
+            if (product->primitives().size() > 1) {
+                GL_CHECKD(OpenCSG::render(product->primitives()));
+            }
         }
-      }
     }
 
-    if (shaderinfo && shaderinfo->progid) {
-      GL_TRACE0("glUseProgram(0)");
-      GL_CHECKD(glUseProgram(0));
 
-      if (shaderinfo->type == EDGE_RENDERING && showedges) {
-        shader_attribs_disable();
-      }
+    // RENDERING PASS 2: Render the colors on the screen buffer
+    //      - The previously computed depth buffer is binded as a texture,
+    //      - A shader takes the depth value from that texture to discard samples that are not "nearly equal".
+    for (const auto &product : vbo_vertex_products_) {
+        GL_TRACE0("glDepthFunc(GL_EQUAL)");
+        GL_CHECKD(glDepthFunc(GL_LEQUAL));
+
+        GL_TRACE("glUseProgram(%d)", shaderinfo->progid);
+        GL_CHECKD(glUseProgram(shaderinfo->progid));
+
+        GL_TRACE("glUniform2f(%d)", shaderinfo->data.resolution);
+        GL_CHECKD(glUniform2f(shaderinfo->data.resolution, float(width_), float(height_)));
+
+        GL_TRACE("glUniform1i(%d)", shaderinfo->data.rendering_mode);
+        GL_CHECKD(glUniform1i(shaderinfo->data.rendering_mode, product->primitives().size()>1));
+
+        if (shaderinfo->type == EDGE_RENDERING && showedges) {
+            shader_attribs_enable();
+        }
+
+        // bind the depth texture as it is needed in the color shader to implement the discarding of
+        // irrelevant fragments.
+        glBindTexture(GL_TEXTURE_2D, pass1_fbo->depth_buffer_id);
+
+        for (const auto &vs : product->states()) {
+            if (vs) {
+                std::shared_ptr<OpenCSGVertexState> csg_vs =
+                        std::dynamic_pointer_cast<OpenCSGVertexState>(vs);
+                if (csg_vs) {
+                    if (shaderinfo->type == SELECT_RENDERING) {
+                        GL_TRACE("glUniform3f(%d, %f, %f, %f)",
+                                 shaderinfo->data.select_rendering.identifier %
+                                 (((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f) %
+                                 (((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f) %
+                                 (((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+                        GL_CHECKD(glUniform3f(
+                                      shaderinfo->data.select_rendering.identifier,
+                                      ((csg_vs->csgObjectIndex() >> 0) & 0xff) / 255.0f,
+                                      ((csg_vs->csgObjectIndex() >> 8) & 0xff) / 255.0f,
+                                      ((csg_vs->csgObjectIndex() >> 16) & 0xff) / 255.0f));
+                    }
+                }
+                std::shared_ptr<VBOShaderVertexState> shader_vs =
+                        std::dynamic_pointer_cast<VBOShaderVertexState>(vs);
+
+                if (!shader_vs || (showedges && shader_vs)) {
+                    vs->draw();
+                }
+            }
+        }
+
+        if (shaderinfo->progid) {
+            GL_TRACE0("glUseProgram(0)");
+            GL_CHECKD(glUseProgram(0));
+
+            if (shaderinfo->type == EDGE_RENDERING && showedges) {
+                shader_attribs_disable();
+            }
+        }
+        GL_TRACE0("glDepthFunc(GL_LEQUAL)");
+        GL_CHECKD(glDepthFunc(GL_LEQUAL));
     }
-    GL_TRACE0("glDepthFunc(GL_LEQUAL)");
-    GL_CHECKD(glDepthFunc(GL_LEQUAL));
-  }
 #endif // ENABLE_OPENCSG
 }
 

@@ -1,8 +1,11 @@
 #version 110
 
+uniform int rendering_mode;
+uniform vec2 resolution;
 uniform vec4 color1, color2;
 varying vec3 vBC;
 varying float shading;
+uniform sampler2D depth_buffer;
 
 vec3 smoothstep3f(vec3 edge0, vec3 edge1, vec3 x) {
   vec3 t;
@@ -19,5 +22,30 @@ float edgeFactor() {
 }
 
 void main(void) {
-  gl_FragColor = mix(color2, vec4(color1.rgb * shading, color1.a), edgeFactor());
+  vec4 color = mix(color2, vec4(color1.rgb * shading, color1.a), edgeFactor());
+
+  // if rendering_mode is zero we fall back to a classical rendering schema using a LEQUAL test
+  if(rendering_mode == 0)
+  {
+    gl_FragColor = color;
+    return;
+  }
+
+  // otherwise we need to test the depth buffer to select the appropriate fragment
+  //vec2 resolution = vec2(694,471);
+  vec2 fragCoords = gl_FragCoord.xy;
+  fragCoords = fragCoords / resolution;
+  vec2 screenCoords = fragCoords;
+  float surface_depth = texture2D(depth_buffer, screenCoords).x;
+
+  // nearly-equal z-depth
+  if( (abs(surface_depth-gl_FragCoord.z) < 0.0001))
+  {
+      gl_FragColor = color;
+      return;
+  }
+
+  // we discard fragment that fails to render.
+  discard;
 }
+
