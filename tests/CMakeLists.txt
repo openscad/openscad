@@ -1522,6 +1522,16 @@ set_tests_properties(
   throwntogethertest_issue2090
   csgrendertest_issue2090
 
+  # https://github.com/openscad/openscad/issues/2841
+  rendertest_issue2841
+  previewtest_issue2841
+  csgrendertest_issue2841
+  throwntogethertest_issue2841
+  rendertest_issue2841b
+  previewtest_issue2841b
+  throwntogethertest_issue2841b
+  csgrendertest_issue2841b
+  
   PROPERTIES DISABLED TRUE
 )
 if (ENABLE_MANIFOLD)
@@ -1540,6 +1550,10 @@ set_tests_properties(
 
   # https://github.com/openscad/openscad/issues/909
   amfrendermanifoldtest_bad-stl-wing
+
+  # https://github.com/openscad/openscad/issues/2841
+  rendermanifoldtest_issue2841b
+  previewmanifoldtest_issue2841b
 
   PROPERTIES DISABLED TRUE
 )

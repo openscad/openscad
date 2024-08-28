@@ -105,10 +105,9 @@ Outline2d splitOutlineByFn(
     auto current = q.top();
 
     // Group similar length segmented edges to keep result roughly symmetrical.
-    while (!q.empty() && (tmp_q.empty() || current.close_match(tmp_q.front()))) {
+    while (!q.empty() && (tmp_q.empty() || q.top().close_match(tmp_q.front()))) {
+      tmp_q.push_back(q.top());
       q.pop();
-      tmp_q.push_back(current);
-      current = q.top();
     }
 
     if (seg_total + tmp_q.size() <= fn) {

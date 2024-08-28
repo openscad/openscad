@@ -153,12 +153,10 @@ public:
   }
 
   static inline void CGAL_GLU_TESS_CALLBACK combineCallback(GLdouble coords[3], GLvoid *[4], GLfloat [4], GLvoid **dataOut) {
-    static std::vector<GLdouble> vertexCache;
+    static std::vector<std::unique_ptr<Vector3d>> vertexCache;
     if (dataOut) {
-      vertexCache.push_back(coords[0]);
-      vertexCache.push_back(coords[1]);
-      vertexCache.push_back(coords[2]);
-      *dataOut = vertexCache.data() - 3;
+      vertexCache.push_back(std::make_unique<Vector3d>(coords));
+      *dataOut = vertexCache.back().get();
     } else {
       vertexCache.clear();
     }
