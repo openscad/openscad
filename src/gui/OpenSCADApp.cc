@@ -24,36 +24,10 @@ OpenSCADApp::~OpenSCADApp()
 
 #include <QMessageBox>
 
-// See: https://bugreports.qt.io/browse/QTBUG-65592
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
-void OpenSCADApp::workaround_QTBUG_65592(QObject *o, QEvent *e)
-{
-  QMainWindow *mw;
-  if (o->isWidgetType() && e->type() == QEvent::MouseButtonPress && (mw = qobject_cast<QMainWindow *>(o))) {
-    for (auto& ch : mw->children()) {
-      if (auto dw = qobject_cast<QDockWidget *>(ch)) {
-        auto pname = "_wa-QTBUG-65592";
-        auto v = dw->property(pname);
-        if (v.isNull()) {
-          dw->setProperty(pname, true);
-          mw->restoreDockWidget(dw);
-          auto area = mw->dockWidgetArea(dw);
-          auto orient = area == Qt::TopDockWidgetArea || area == Qt::BottomDockWidgetArea ? Qt::Horizontal : Qt::Vertical;
-          mw->resizeDocks({dw}, {orient == Qt::Horizontal ? dw->width() : dw->height() }, orient);
-        }
-      }
-    }
-  }
-}
-#else
-void OpenSCADApp::workaround_QTBUG_65592(QObject *, QEvent *) { }
-#endif // if (QT_VERSION >= QT_VERSION_CHECK(5, 10, 0))
-
 bool OpenSCADApp::notify(QObject *object, QEvent *event)
 {
   QString msg;
   try {
-    workaround_QTBUG_65592(object, event);
     return QApplication::notify(object, event);
   } catch (const std::exception& e) {
     msg = e.what();

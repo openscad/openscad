@@ -591,7 +591,7 @@ if(NOT HEADLESS)
       message(STATUS "DBus input driver disabled per user request.")
     endif()
   else()
-    find_package(Qt5 5.4 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network Svg REQUIRED QUIET)
+    find_package(Qt5 5.12 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network Svg REQUIRED QUIET)
     message(STATUS "Qt5: ${Qt5_VERSION}")
 
     if (Qt5_POSITION_INDEPENDENT_CODE)
