@@ -104,7 +104,7 @@ Follow the instructions for the platform you're compiling on below.
 
 * A C++ compiler supporting C++17
 * [cmake (3.5 ->)](https://cmake.org/)
-* [Qt (5.4 ->)](https://qt.io/)
+* [Qt (5.12 ->)](https://qt.io/)
 * [QScintilla2 (2.9 ->)](https://riverbankcomputing.com/software/qscintilla/)
 * [CGAL (5.4 ->)](https://www.cgal.org/)
  * [GMP (5.x)](https://gmplib.org/)
