@@ -2399,35 +2399,44 @@ void MainWindow::rightClick(QPoint mouse)
       auto location = step->modinst->location();
       ss.str("");
 
+      // Remove the "module" prefix if any as it induce confusion between the module declaration and instanciation
+      int first_position = (step->verbose_name().find("module") == std::string::npos)? 0 : 7;
+      std::string name = step->verbose_name().substr(first_position);
+
+      // It happens that the verbose_name is empty (eg: in for loops), when this happens instead of letting
+      // empty entry in the menu we prefer using the name in the modinstanciation.
+      if(step->verbose_name().empty())
+          name = step->modinst->name();
+
       // Check if the path is contained in a library (using parsersettings.h)
       fs::path libpath = get_library_for_path(location.filePath());
       if (!libpath.empty()) {
         // Display the library (without making the window too wide!)
-        ss << step->verbose_name() << " (library "
+        ss << name << " (library "
            << location.fileName().substr(libpath.string().length() + 1) << ":"
            << location.firstLine() << ")";
       } else if (activeEditor->filepath.toStdString() == location.fileName()) {
-        ss << step->verbose_name() << " (" << location.filePath().filename().string() << ":"
-           << location.firstLine() << ")";
+          // removes the "module" prefix if any as it makes it not clear if it is module declaration or call.
+          ss << name << " (" << location.filePath().filename().string() << ":"
+                     << location.firstLine() << ")";
       } else {
-        auto relname = boostfs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
+        auto relative_filename = boostfs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
           .generic_string();
         // Set the displayed name relative to the active editor window
-        ss << step->verbose_name() << " (" << relname << ":" << location.firstLine() << ")";
+        ss << name << " (" << relative_filename << ":" << location.firstLine() << ")";
       }
 
       // Prepare the action to be sent
       auto action = tracemenu.addAction(QString::fromStdString(ss.str()));
       if (editorDock->isVisible()) {
-        action->setProperty("file", QString::fromStdString(location.fileName()));
-        action->setProperty("line", location.firstLine());
-        action->setProperty("column", location.firstColumn());
-
-        connect(action, SIGNAL(triggered()), this, SLOT(setCursor()));
+        action->setProperty("id", step->idx);
+        connect(action, SIGNAL(hovered()), this, SLOT(onHoveredObjectInSelectionMenu()));
       }
     }
 
     tracemenu.exec(this->qglview->mapToGlobal(mouse));
+  } else {
+      clearAllSelectionIndicators();
   }
 }
 void MainWindow::measureFinished(void)
@@ -2438,29 +2447,181 @@ void MainWindow::measureFinished(void)
   this->qglview->measure_state = MEASURE_IDLE;
 }
 
+void MainWindow::clearAllSelectionIndicators()
+{
+    this->activeEditor->clearAllSelectionIndicators();
+}
+
+void findNodesWithSameMod(std::shared_ptr<const AbstractNode> tree,
+                          std::shared_ptr<const AbstractNode> node_mod,
+                          std::vector<std::shared_ptr<const AbstractNode>>& nodes){
+    if(node_mod->modinst == tree->modinst){
+      nodes.push_back(tree);
+    }
+    for(auto step : tree->children){
+      findNodesWithSameMod(step,node_mod,nodes);
+    }
+}
+
+void getCodeLocation(const AbstractNode* self, int currentLevel,  int includeLevel, int * firstLine, int * firstColumn, int * lastLine, int * lastColumn, int nestedModuleDepth)
+{
+  auto location = self->modinst->location();
+  if(currentLevel >= includeLevel && nestedModuleDepth == 0)
+  {
+    if(*firstLine < 0 || *firstLine > location.firstLine())
+    {
+      *firstLine = location.firstLine();
+      *firstColumn = location.firstColumn();
+    }
+    else if(*firstLine ==  location.firstLine() && *firstColumn > location.firstColumn())
+    {
+      *firstColumn = location.firstColumn();
+    }
+
+    if(*lastLine < 0 || *lastLine < location.lastLine())
+    {
+      *lastLine = location.lastLine();
+      *lastColumn = location.lastColumn();
+    }
+    else{
+      if(*firstLine < 0 || *firstLine > location.firstLine())
+      {
+        *firstLine = location.firstLine();
+        *firstColumn = location.firstColumn();
+      }
+      else if(*firstLine ==  location.firstLine() && *firstColumn > location.firstColumn())
+      {
+        *firstColumn = location.firstColumn();
+      }
+      if(*lastLine < 0 || *lastLine < location.lastLine())
+      {
+        *lastLine = location.lastLine();
+        *lastColumn = location.lastColumn();
+      }
+      else if( *lastLine ==  location.lastLine() && *lastColumn < location.lastColumn())
+      {
+        *lastColumn = location.lastColumn();
+      }
+    }
+  }
+
+  if(self->verbose_name().rfind("module", 0) == 0)
+  {
+    nestedModuleDepth++;
+  }
+  if(self->modinst->name() == "children")
+  {
+    nestedModuleDepth--;
+  }
+
+  if(nestedModuleDepth >= 0 )
+  {
+    for (const auto& node : self->children) {
+      getCodeLocation(node.get(), currentLevel + 1, includeLevel, firstLine,  firstColumn, lastLine, lastColumn, nestedModuleDepth);
+    }
+  }
+}
+
+void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndicatorStatus status)
+{
+  std::deque<std::shared_ptr<const AbstractNode>> stack;
+  this->root_node->getNodeByID(nodeIndex, stack);
+
+  int level = 1;
+
+  // first we flags all the nodes in the stack of the provided index
+  // ends at size - 1 because we are not doing anything for the root node.
+  // starts at 1 because we will process this one after later
+  for(int i = 1; i < stack.size()-1; i++)
+  {
+    auto node = stack[i];
+
+    auto& location = node->modinst->location();
+    if(location.filePath().compare(activeEditor->filepath.toStdString()) != 0  )
+    {
+      std::cout<<"--->>> Line of code in a different file -- PATH -- "<<location.fileName()<<std::endl;
+      node->modinst->print(std::cout,"");
+      level++;
+      continue;
+    }
+
+    if(node->verbose_name().rfind("module", 0) == 0 || node->modinst->name() == "children")
+    {
+        this->activeEditor->setSelectionIndicatorStatus(
+                        status, level,
+                        location.firstLine() - 1,location.firstColumn() - 1,location.lastLine() - 1,location.lastColumn()- 1);
+        level++;
+    }
+  }
+
+  auto& node = stack[0];
+  auto location = node->modinst->location();
+  auto line = location.firstLine();
+  auto column = location.firstColumn();
+  auto lastLine = location.lastLine();
+  auto lastColumn = location.lastColumn();
+
+  // Update the location returned by location to cover the whole section.
+  getCodeLocation(node.get(), 0,0,&line,&column,&lastLine,&lastColumn,0);
+
+  this->activeEditor->setSelectionIndicatorStatus(status, 0, line - 1 , column - 1, lastLine - 1, lastColumn - 1);
+ }
+
+void MainWindow::setSelection(int index)
+{
+    if(currently_selected_object == index)
+      return;
+
+    std::deque<std::shared_ptr<const AbstractNode>> path;
+    std::shared_ptr<const AbstractNode> selected_node = root_node->getNodeByID(index, path);
+
+    if(!selected_node)
+        return;
+
+    currently_selected_object = index;
+
+    auto location = selected_node->modinst->location();
+    auto file = location.fileName();
+    auto line = location.firstLine();
+    auto column = location.firstColumn();
+
+    // Unsaved files do have the pwd as current path, therefore we will not open a new
+    // tab on click
+    if (!fs::is_directory(fs::path(file))) {
+      tabManager->open(QString::fromStdString(file));
+    }
+
+    // removes all previsly configure selection indicators.
+    clearAllSelectionIndicators();
+
+    std::vector<std::shared_ptr<const AbstractNode>> nodesSameModule{};
+    findNodesWithSameMod(root_node, selected_node, nodesSameModule);
+
+    // highlight in the text editor all the text fragment of the hierarchy of object with same mode.
+    for(auto element : nodesSameModule) {
+        if(element->index() != currently_selected_object) {
+            setSelectionIndicatorStatus(element->index(), EditorSelectionIndicatorStatus::IMPACTED);
+        }
+    }
+
+    // highlight in the text editor only the fragment correponding to the selected stack.
+    // this step must be done after all the impacted element have been marked.
+    setSelectionIndicatorStatus(currently_selected_object, EditorSelectionIndicatorStatus::SELECTED);
+
+    activeEditor->setCursorPosition(line - 1, column - 1);
+}
+
 /**
- * Expects the sender to have properties "file", "line" and "column" defined
+ * Expects the sender to have properties "id" defined
  */
-void MainWindow::setCursor()
+void MainWindow::onHoveredObjectInSelectionMenu()
 {
   auto *action = qobject_cast<QAction *>(sender());
-  if (!action || !action->property("file").isValid() || !action->property("line").isValid() ||
-      !action->property("column").isValid()) {
+  if (!action || !action->property("id").isValid()) {
     return;
   }
 
-  auto file = action->property("file").toString();
-  auto line = action->property("line").toInt();
-  auto column = action->property("column").toInt();
-
-  // Unsaved files do have the pwd as current path, therefore we will not open a new
-  // tab on click
-  if (!fs::is_directory(fs::path(file.toStdString()))) {
-    this->tabManager->open(file);
-  }
-
-  // move the cursor, the editor is 0 based whereby location is 1 based
-  this->activeEditor->setCursorPosition(line - 1, column - 1);
+  setSelection(action->property("id").toInt());
 }
 
 void MainWindow::setLastFocus(QWidget *widget) {
@@ -2976,6 +3137,9 @@ void MainWindow::editorContentChanged()
   auto current_doc = activeEditor->toPlainText();
   if (current_doc != last_compiled_doc) {
     animateWidget->editorContentChanged();
+
+    // removes the live selection feedbacks in both the 3d view and editor.
+    clearAllSelectionIndicators();
   }
 }
 

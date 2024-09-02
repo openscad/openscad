@@ -99,6 +99,8 @@ public:
 private:
   volatile bool isClosing = false;
   void consoleOutputRaw(const QString& msg);
+  void clearAllSelectionIndicators();
+  void setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndicatorStatus status);
 
 protected:
   void closeEvent(QCloseEvent *event) override;
@@ -112,7 +114,8 @@ private slots:
   void showProgress();
   void openCSGSettingsChanged();
   void consoleOutput(const Message& msgObj);
-  void setCursor();
+  void setSelection(int index);
+  void onHoveredObjectInSelectionMenu();
   void measureFinished();
   void errorLogOutput(const Message& log_msg);
 
@@ -367,6 +370,7 @@ private:
   std::shared_ptr<CSGProducts> root_products;
   std::shared_ptr<CSGProducts> highlights_products;
   std::shared_ptr<CSGProducts> background_products;
+  int currently_selected_object {-1};
 
   char const *afterCompileSlot;
   bool procevents{false};
