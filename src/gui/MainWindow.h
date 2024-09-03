@@ -61,7 +61,7 @@ public:
   bool python_active;
   std::string trusted_edit_document_name;
   std::string untrusted_edit_document_name;
-  bool trust_python_file(const std::string &file, const std::string &content);
+  bool trust_python_file(const std::string& file, const std::string& content);
 #endif
   Tree tree;
   EditorInterface *activeEditor;

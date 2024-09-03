@@ -11,8 +11,8 @@
 
 enum class EditorSelectionIndicatorStatus
 {
-    SELECTED,
-    IMPACTED
+  SELECTED,
+  IMPACTED
 };
 
 class EditorInterface : public QWidget

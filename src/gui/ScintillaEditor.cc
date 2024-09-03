@@ -630,13 +630,13 @@ void ScintillaEditor::noColor()
   qsci->setIndicatorForegroundColor(QColor(11, 156, 49, 100), selectionIndicatorIsActiveNumber);
   qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), selectionIndicatorIsActiveNumber);
   qsci->setIndicatorForegroundColor(QColor(11, 156, 49, 50), selectionIndicatorIsActiveNumber + 1);
-  qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), selectionIndicatorIsActiveNumber + 1 );
+  qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), selectionIndicatorIsActiveNumber + 1);
   qsci->setIndicatorForegroundColor(QColor(255, 128, 128, 100), selectionIndicatorIsImpactedNumber);
   qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), selectionIndicatorIsImpactedNumber);
   qsci->setIndicatorForegroundColor(QColor(255, 128, 128, 80), selectionIndicatorIsImpactedNumber + 1);
   qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), selectionIndicatorIsImpactedNumber + 1);
-  qsci->setIndicatorForegroundColor(QColor(255, 128, 128, 60), selectionIndicatorIsImpactedNumber + 2 );
-  qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), selectionIndicatorIsImpactedNumber + 2 );
+  qsci->setIndicatorForegroundColor(QColor(255, 128, 128, 60), selectionIndicatorIsImpactedNumber + 2);
+  qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), selectionIndicatorIsImpactedNumber + 2);
 
   qsci->setIndicatorForegroundColor(QColor(255, 0, 0, 128), errorIndicatorNumber); //red
   qsci->setIndicatorOutlineColor(QColor(0, 0, 0, 255), errorIndicatorNumber); // only alpha part is used
@@ -964,9 +964,9 @@ bool ScintillaEditor::eventFilter(QObject *obj, QEvent *e)
   if (e->type() == QEvent::KeyPress) {
     auto keyEvent = static_cast<QKeyEvent *>(e);
     if (keyEvent->key() == Qt::Key_Escape) {
-      emit escapePressed();	    
+      emit escapePressed();
     }
-  }    
+  }
   if (QGuiApplication::keyboardModifiers().testFlag(Qt::ControlModifier) || QGuiApplication::keyboardModifiers().testFlag(Qt::AltModifier)) {
     if (!this->indicatorsActive) {
       this->indicatorsActive = true;
@@ -1440,10 +1440,10 @@ void ScintillaEditor::setCursorPosition(int line, int col)
 
 void ScintillaEditor::updateSymbolMarginVisibility()
 {
-    if (qsci->markerFindNext(0, 1 << bmMarkerNumber | 1 << errMarkerNumber | 1 << selectionMarkerLevelNumber |
-                             1 << (selectionMarkerLevelNumber + 1) | 1 << (selectionMarkerLevelNumber + 2) |
-                             1 << (selectionMarkerLevelNumber + 3) | 1 << (selectionMarkerLevelNumber + 4) |
-                             1 << (selectionMarkerLevelNumber + 5)) < 0) {
+  if (qsci->markerFindNext(0, 1 << bmMarkerNumber | 1 << errMarkerNumber | 1 << selectionMarkerLevelNumber |
+                           1 << (selectionMarkerLevelNumber + 1) | 1 << (selectionMarkerLevelNumber + 2) |
+                           1 << (selectionMarkerLevelNumber + 3) | 1 << (selectionMarkerLevelNumber + 4) |
+                           1 << (selectionMarkerLevelNumber + 5)) < 0) {
     qsci->setMarginWidth(symbolMargin, 0);
   } else {
     qsci->setMarginWidth(symbolMargin, "0");
@@ -1515,31 +1515,29 @@ void ScintillaEditor::setSelectionIndicatorStatus(EditorSelectionIndicatorStatus
   clearSelectionIndicators(lineFrom, colFrom, lineTo, colTo);
 
   int indicator_base_index = 0;
-  int indicator_level=0;
-  int mark_level=0;
-  if(status == EditorSelectionIndicatorStatus::SELECTED)
-  {
-      indicator_base_index = selectionIndicatorIsActiveNumber;
-      mark_level = (level>5)?5:level;
-      indicator_level = (level>1)?1:level;
-  }else{
-      indicator_base_index = selectionIndicatorIsImpactedNumber;
-      indicator_level = (level>2)?2:level;
+  int indicator_level = 0;
+  int mark_level = 0;
+  if (status == EditorSelectionIndicatorStatus::SELECTED) {
+    indicator_base_index = selectionIndicatorIsActiveNumber;
+    mark_level = (level > 5)?5:level;
+    indicator_level = (level > 1)?1:level;
+  } else {
+    indicator_base_index = selectionIndicatorIsImpactedNumber;
+    indicator_level = (level > 2)?2:level;
   }
 
   clearSelectionIndicators(lineFrom, colFrom, lineTo, colTo);
   qsci->fillIndicatorRange(lineFrom, colFrom, lineTo, colTo,  indicator_base_index + indicator_level);
 
-  if(status == EditorSelectionIndicatorStatus::SELECTED)
-  {
-      qsci->ensureLineVisible(std::max(lineFrom - setCursorPositionVisibleLines, 0));
-      qsci->ensureLineVisible(std::min(lineFrom + setCursorPositionVisibleLines, qsci->lines() - 1));
+  if (status == EditorSelectionIndicatorStatus::SELECTED) {
+    qsci->ensureLineVisible(std::max(lineFrom - setCursorPositionVisibleLines, 0));
+    qsci->ensureLineVisible(std::min(lineFrom + setCursorPositionVisibleLines, qsci->lines() - 1));
 
-      // replace the marker at provide line with a new one.
-      qsci->markerDelete(lineFrom);
+    // replace the marker at provide line with a new one.
+    qsci->markerDelete(lineFrom);
 
-      qsci->markerAdd(lineFrom, selectionMarkerLevelNumber + mark_level);
-      updateSymbolMarginVisibility();
+    qsci->markerAdd(lineFrom, selectionMarkerLevelNumber + mark_level);
+    updateSymbolMarginVisibility();
   }
 }
 
@@ -1566,8 +1564,8 @@ void ScintillaEditor::clearAllSelectionIndicators()
 }
 
 /**
-* @brief Unhighlight all the texts for DM
-*/
+ * @brief Unhighlight all the texts for DM
+ */
 void ScintillaEditor::clearSelectionIndicators(int lineFrom, int colFrom, int lineTo, int colTo)
 {
   qsci->clearIndicatorRange(lineFrom, colFrom, lineTo, colTo, selectionIndicatorIsImpactedNumber);
