@@ -957,7 +957,7 @@ if(EXPERIMENTAL)
   else()
     add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
   endif()
-  target_link_libraries(OpenSCAD PRIVATE manifold polygon)
+  target_link_libraries(OpenSCAD PRIVATE manifold polygon cross_section)
   add_sanitizers(manifold)
 
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)

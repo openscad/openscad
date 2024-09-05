@@ -1,6 +1,7 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #include "ManifoldGeometry.h"
 #include "Polygon2d.h"
+#include "cross_section.h"
 #include "manifold.h"
 #include "PolySet.h"
 #include "Feature.h"
@@ -304,17 +305,17 @@ ManifoldGeometry ManifoldGeometry::minkowski(const ManifoldGeometry& other) cons
 }
 
 Polygon2d ManifoldGeometry::slice() const {
-  auto cross_section = manifold_->Slice();
+  auto cross_section = manifold::CrossSection(manifold_->Slice());
   return ManifoldUtils::polygonsToPolygon2d(cross_section.ToPolygons());
 }
 
 Polygon2d ManifoldGeometry::project() const {
-  auto cross_section = manifold_->Project();
+  auto cross_section = manifold::CrossSection(manifold_->Project());
   return ManifoldUtils::polygonsToPolygon2d(cross_section.ToPolygons());
 }
 
 void ManifoldGeometry::transform(const Transform3d& mat) {
-  glm::mat4x3 glMat(
+  manifold::mat4x3 glMat(
     // Column-major ordering
     mat(0, 0), mat(1, 0), mat(2, 0),
     mat(0, 1), mat(1, 1), mat(2, 1),
@@ -349,7 +350,7 @@ void ManifoldGeometry::resize(const Vector3d& newsize, const Eigen::Matrix<bool,
 }
 
 /*! Iterate over all vertices' points until the function returns true (for done). */
-void ManifoldGeometry::foreachVertexUntilTrue(const std::function<bool(const glm::vec3& pt)>& f) const {
+void ManifoldGeometry::foreachVertexUntilTrue(const std::function<bool(const manifold::vec3& pt)>& f) const {
   auto mesh = getManifold().GetMesh();
   for (const auto &pt : mesh.vertPos) {
     if (f(pt)) {

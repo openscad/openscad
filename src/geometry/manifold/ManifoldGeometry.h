@@ -63,7 +63,7 @@ public:
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
   /*! Iterate over all vertices' points until the function returns true (for done). */
-  void foreachVertexUntilTrue(const std::function<bool(const glm::vec3& pt)>& f) const;
+  void foreachVertexUntilTrue(const std::function<bool(const manifold::vec3& pt)>& f) const;
 
   const manifold::Manifold& getManifold() const;
 
