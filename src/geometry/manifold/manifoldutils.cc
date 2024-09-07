@@ -42,6 +42,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMe
   typedef typename TriangleMesh::Vertex_index vertex_descriptor;
 
   manifold::Mesh mesh;
+  mesh.precision = 0.00001;
 
   mesh.vertPos.resize(tm.number_of_vertices());
   for (vertex_descriptor vd : tm.vertices()){
@@ -88,6 +89,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
   assert(ps.isTriangular());
 
   manifold::MeshGL mesh;
+  mesh.precision = 0.00001;
 
   mesh.vertProperties.reserve(ps.vertices.size() * 3);
   for (const auto& v : ps.vertices) {
