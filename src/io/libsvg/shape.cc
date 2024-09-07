@@ -38,7 +38,7 @@
 #include "text.h"
 #include "tspan.h"
 #include "data.h"
-#include "polygon.h"
+#include "io/libsvg/polygon.h"
 #include "polyline.h"
 #include "rect.h"
 #include "svgpage.h"

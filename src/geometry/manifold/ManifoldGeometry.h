@@ -4,7 +4,7 @@
 #include "Geometry.h"
 #include <glm/glm.hpp>
 #include "linalg.h"
-#include "manifold.h"
+#include "manifold/manifold.h"
 #include <map>
 #include <set>
 
