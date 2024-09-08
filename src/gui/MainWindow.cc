@@ -220,6 +220,8 @@ QAction *getExport3DAction(const MainWindow *mainWindow) {
     return mainWindow->fileActionExportOFF;
   } else if (format == "WRL") {
     return mainWindow->fileActionExportWRL;
+  } else if (format == "POV") {
+    return mainWindow->fileActionExportPOV;
   } else if (format == "AMF") {
     return mainWindow->fileActionExportAMF;
   } else if (format == "3MF") {
@@ -479,6 +481,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->fileActionExportOBJ, SIGNAL(triggered()), this, SLOT(actionExportOBJ()));
   connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
   connect(this->fileActionExportWRL, SIGNAL(triggered()), this, SLOT(actionExportWRL()));
+  connect(this->fileActionExportPOV, SIGNAL(triggered()), this, SLOT(actionExportPOV()));
   connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
   connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
   connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
@@ -635,6 +638,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   initActionIcon(fileActionExportOBJ, ":/icons/svg-default/export-obj.svg", ":/icons/svg-default/export-obj-white.svg");
   initActionIcon(fileActionExportOFF, ":/icons/svg-default/export-off.svg", ":/icons/svg-default/export-off-white.svg");
   initActionIcon(fileActionExportWRL, ":/icons/svg-default/export-wrl.svg", ":/icons/svg-default/export-wrl-white.svg");
+  initActionIcon(fileActionExportPOV, ":/icons/svg-default/export-pov.svg", ":/icons/svg-default/export-pov-white.svg");
   initActionIcon(fileActionExportDXF, ":/icons/svg-default/export-dxf.svg", ":/icons/svg-default/export-dxf-white.svg");
   initActionIcon(fileActionExportSVG, ":/icons/svg-default/export-svg.svg", ":/icons/svg-default/export-svg-white.svg");
   initActionIcon(fileActionExportCSG, ":/icons/svg-default/export-csg.svg", ":/icons/svg-default/export-csg-white.svg");
@@ -2731,6 +2735,11 @@ void MainWindow::actionExportOFF()
 void MainWindow::actionExportWRL()
 {
   actionExport(FileFormat::WRL, "WRL", ".wrl", 3);
+}
+
+void MainWindow::actionExportPOV()
+{
+  actionExport(FileFormat::POV, "POV", ".pov", 3);
 }
 
 void MainWindow::actionExportAMF()
