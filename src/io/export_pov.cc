@@ -29,16 +29,29 @@
 #include "PolySet.h"
 #include "PolySetUtils.h"
 
-#include <stdlib.h>
+
+double clamp_color(const double v)
+{
+  if (v < 0)
+    return 0;
+  if (v > 1)
+    return 1;
+  return v;
+}
+
 void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  // FIXME: In lazy union mode, should we export multiple IndexedFaceSets?
   auto ps = PolySetUtils::getGeometryAsPolySet(geom);
   if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
     ps = createSortedPolySet(*ps);
   }
 
   output << "// hello povray!\n\n";
+
+  output << "#declare MATERIAL=finish { specular 0.5 roughness 0.001 reflection{0 0.63 fresnel} ambient 0 diffuse 0.6 conserve_energy }\n";
+  output << "#declare MATERIAL_INT=interior{ior 1.32}\n";
+
+  auto has_color = !ps->color_indices.empty();
 
   double avg_x = 0;
   double avg_y = 0;
@@ -48,7 +61,8 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   double tsd_z = 0;
   size_t avg_n = 0;
 
-  for (const auto &t : ps->indices) {
+  for (size_t pi=0; pi<ps->indices.size(); pi++) {
+    const auto &t = ps->indices.at(pi);
     output << "polygon { " << t.size() + 1 << ", \n";
     for (size_t i=0; i<t.size(); i++) {
       if (i)
@@ -62,9 +76,23 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       tsd_z += ps->vertices[t.at(i)].z() * ps->vertices[t.at(i)].z();
       avg_n++;
     }
+    double r = 1.0, g = 1.0, b = 1.0, a = 0.0;
+    if (has_color) {
+      auto color_index = ps->color_indices[pi];
+      if (color_index >= 0) {
+        auto color = ps->colors[color_index];
+        r = clamp_color(color[0]);
+        g = clamp_color(color[1]);
+        b = clamp_color(color[2]);
+        a = clamp_color(1.0 - color[3]);
+      }
+    }
+    if (r == 0 && g == 0 && b == 0)  // work around for black objects in 5185
+      g = 1.0;
     output << ", <" << ps->vertices[t.at(0)].x() << ", " << ps->vertices[t.at(0)].y() << ", " << ps->vertices[t.at(0)].z() << ">";
     output << "\n";
-    output << "texture { pigment { color rgb <" << 1.0 << ", " << 1.0 << ", " << 1.0 << "> } }\n";
+    output << "texture { pigment { color rgbf <" << r << ", " << g << ", " << b << ", " << a << "> } }\n";
+    output << "finish { MATERIAL } interior { MATERIAL_INT }\n";
     output << "}\n";
   }
 
@@ -77,7 +105,7 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   double sd_z = sqrt(tsd_z / avg_n - pow(center_z, 2.));
   double dist = pow(sd_x * sd_x + sd_y * sd_y + sd_z * sd_z, 1/3.);
 
-  double l_x = center_x + dist * 5;
+  double l_x = center_x + dist * 5;  // '5' is chosen arbitrarily
   double l_y = center_y + dist * 5;
   double l_z = center_z + dist * 5;
 
@@ -86,5 +114,11 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   output << "light_source { <" <<  l_x << ", " << -l_y << ", " <<  l_z << "> color rgb <1, 1, 1> }\n";
   output << "light_source { <" <<  l_x << ", " <<  l_y << ", " << -l_z << "> color rgb <1, 1, 1> }\n";
 
-  output << "camera { look_at <" << center_x << ", " << center_y << ", " << center_z << "> location <" << center_x + dist * 10 << ", " << center_y + dist * 10 << ", " << center_z + dist * 10 << "> }\n";
+  double camera_x = center_x + sd_x * 3;  // '3' is chosen arbitrarily
+  double camera_y = center_y + sd_y * 3;
+  double camera_z = center_z + sd_z * 3;
+
+  output << "camera { look_at <" << center_x << ", " << center_y << ", " << center_z << "> location <" << camera_x << ", " << camera_y << ", " << camera_z << "> sky <0, 0, 1> rotate <0, clock * 3, clock + 90> }\n";
+  output << "#include \"rad_def.inc\"\n";
+  output << "global_settings { photons { count 20000 autostop 0 jitter .4 } radiosity { Rad_Settings(Radiosity_Normal, off, off) } }\n";
 }
