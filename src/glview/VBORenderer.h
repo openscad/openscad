@@ -31,7 +31,8 @@ public:
   virtual size_t getEdgeBufferSize(const Polygon2d& polygon) const;
 
   virtual void create_surface(const PolySet& ps, VertexArray& vertex_array,
-                              csgmode_e csgmode, const Transform3d& m, const Color4f& color) const;
+                              csgmode_e csgmode, const Transform3d& m,
+                              const Color4f& default_color, bool force_default_color = false) const;
 
   virtual void create_edges(const Polygon2d& polygon, VertexArray& vertex_array,
                             const Transform3d& m, const Color4f& color) const;
@@ -41,18 +42,14 @@ public:
 
   virtual void create_triangle(VertexArray& vertex_array, const Color4f& color,
                                const Vector3d& p0, const Vector3d& p1, const Vector3d& p2,
-                               size_t primitive_index = 0,
-                               double z_offset = 0, size_t shape_size = 0,
-                               size_t shape_dimensions = 0, bool outlines = false,
-                               bool mirror = false) const;
+                               size_t primitive_index = 0, size_t shape_size = 0,
+                               bool outlines = false, bool mirror = false) const;
 
   virtual void create_vertex(VertexArray& vertex_array, const Color4f& color,
                              const std::array<Vector3d, 3>& points,
                              const std::array<Vector3d, 3>& normals,
                              size_t active_point_index = 0, size_t primitive_index = 0,
-                             double z_offset = 0, size_t shape_size = 0,
-                             size_t shape_dimensions = 0, bool outlines = false,
-                             bool mirror = false) const;
+                             size_t shape_size = 0, bool outlines = false, bool mirror = false) const;
   void add_shader_pointers(VertexArray& vertex_array); // This could stay protected, were it not for VertexStateManager
   void add_color(VertexArray& vertex_array, const Color4f& color);
 
@@ -66,13 +63,8 @@ protected:
 
 private:
   void add_shader_attributes(VertexArray& vertex_array,
-                             const std::array<Vector3d, 3>& points,
-                             const std::array<Vector3d, 3>& normals,
-                             const Color4f& color,
                              size_t active_point_index = 0, size_t primitive_index = 0,
-                             double z_offset = 0, size_t shape_size = 0,
-                             size_t shape_dimensions = 0, bool outlines = false,
-                             bool mirror = false) const;
+                             size_t shape_size = 0, bool outlines = false) const;
 
   size_t shader_attributes_index{0};
   enum ShaderAttribIndex {

@@ -92,7 +92,7 @@ void Preferences::init() {
   this->defaultmap["advanced/customizerFontFamily"] = font2.family();
   this->defaultmap["advanced/customizerFontSize"] = font2.pointSize();
 
-#if defined (Q_OS_MAC)
+#ifdef Q_OS_MACOS
   this->defaultmap["editor/ctrlmousewheelzoom"] = false;
 #else
   this->defaultmap["editor/ctrlmousewheelzoom"] = true;
@@ -124,7 +124,12 @@ void Preferences::init() {
   this->defaultmap["advanced/enableTraceUsermoduleParameters"] = true;
   this->defaultmap["advanced/enableParameterCheck"] = true;
   this->defaultmap["advanced/enableParameterRangeCheck"] = false;
-
+  this->defaultmap["view/hideConsole"] = false;
+  this->defaultmap["view/hideEditor"] = false;
+  this->defaultmap["view/hideErrorLog"] = false;
+  this->defaultmap["view/hideAnimate"] = false;
+  this->defaultmap["view/hideCustomizer"] = true;
+  this->defaultmap["view/hideViewportControl"] = true;
   this->defaultmap["editor/enableAutocomplete"] = true;
   this->defaultmap["editor/characterThreshold"] = 1;
   this->defaultmap["editor/stepSize"] = 1;
@@ -355,7 +360,7 @@ void Preferences::on_fontSize_currentIndexChanged(int index)
   emit fontChanged(getValue("editor/fontfamily").toString(), intsize);
 }
 
-void Preferences::on_syntaxHighlight_currentTextChanged(const QString& s)
+void Preferences::on_syntaxHighlight_textActivated(const QString & s)
 {
   QSettingsCached settings;
   settings.setValue("editor/syntaxhighlight", s);
@@ -874,7 +879,7 @@ void Preferences::fireEditorConfigChanged() const
 
 void Preferences::keyPressEvent(QKeyEvent *e)
 {
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
   if (e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_Period) {
     close();
   } else

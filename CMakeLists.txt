@@ -31,15 +31,16 @@ include("cmake/Modules/openscad_version.cmake")
 option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
+option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's" OFF)
 option(USE_LEGACY_RENDERERS "Use legacy (non-VBO) OpenGL renderers" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
+option(USE_QT6 "Build the GUI with Qt6" OFF)
 option(ENABLE_EGL "Enable EGL support if available" ON)
 option(ENABLE_GLX "Enable GLX support if available" ON)
 # For now, we'll default to whatever OpenCSG uses (>=1.6 -> GLAD, <1.6 -> GLEW)
 option(USE_GLAD "Use GLAD. Mutually exclusive from USE_GLEW" OFF)
 option(USE_GLEW "Use GLEW. Mutually exclusive from USE_GLEW" OFF)
-option(WASM "Build WebAssembly, (implies NULLGL=ON) " OFF)
 option(NULLGL "Build without OpenGL, (implies HEADLESS=ON) " OFF)
 option(IDPREFIX "Prefix CSG nodes with index # (debugging purposes only, will break node cache)" OFF)
 option(PROFILE "Enable compiling with profiling / test coverage instrumentation" OFF)
@@ -58,10 +59,12 @@ option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
-cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt5." ON "NOT HEADLESS" OFF)
-cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS" OFF)
+cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt." ON "NOT HEADLESS" OFF)
+cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS;NOT USE_QT6" OFF)
 
-if(EXPERIMENTAL AND ENABLE_TBB)
+if(USE_QT6)
+  set(DEPLOYMENT_TARGET "10.15")
+elseif(EXPERIMENTAL AND ENABLE_TBB)
   # TBB 2021.8.0 uses aligned memory deallocation.
   # While this is technically supported in macOS 10.13, an LLVM bug used to limit this to macOS 10.14+.
   # The bug was fixed in LLVM 15.0.0 (https://reviews.llvm.org/D129198), but was still present in Xcode 14.3.1a.
@@ -76,6 +79,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET ${DEPLOYMENT_TARGET} CACHE STRING "Minimum OS X 
 project(OpenSCAD
   VERSION ${PROJECT_VERSION}
   DESCRIPTION "The Programmer's Solid 3D CAD Modeler"
+  HOMEPAGE_URL "https://openscad.org/"
   LANGUAGES C CXX
 )
 
@@ -132,10 +136,28 @@ if(PROFILE)
   SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
 endif()
 
-if(WASM)
+if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
+  set(Boost_USE_STATIC_LIBS ON CACHE BOOL "" FORCE)
+  set(Boost_USE_STATIC_RUNTIME ON CACHE BOOL "" FORCE)
+  set(ENABLE_CAIRO OFF CACHE BOOL "" FORCE)
+  set(ENABLE_TBB OFF CACHE BOOL "" FORCE)
   set(NULLGL ON CACHE BOOL "" FORCE)
+  set(USE_MIMALLOC OFF CACHE BOOL "" FORCE)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
+  target_link_libraries(OpenSCAD PRIVATE /emsdk/upstream/emscripten/cache/sysroot/lib/libz.a)
+  target_link_options(OpenSCAD PUBLIC
+    -sALLOW_MEMORY_GROWTH=1
+    -sENVIRONMENT=web,worker
+    -sEXIT_RUNTIME=1
+    -sEXPORT_ES6=1
+    -sEXPORT_NAME=OpenSCAD
+    -sEXPORTED_RUNTIME_METHODS=['FS','ENV','callMain','ERRNO_CODES']
+    -sFORCE_FILESYSTEM=1
+    -sMODULARIZE=1
+    -sNO_DISABLE_EXCEPTION_CATCHING
+    -sUSE_PTHREADS=0
+  )
 endif()
 
 if(NULLGL)
@@ -291,7 +313,7 @@ if (MSVC)
   # call before setting local CMAKE_MODULE_PATH so we use VCPKG version of FindGLEW
   find_graphics()
 
-  # needed for Qt5QScintilla, maybe others
+  # needed for QtQScintilla, maybe others
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
 else()
   set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules")
@@ -350,7 +372,7 @@ endif()
 if(ENABLE_CGAL)
   # Note: Saving CMAKE_MODULE_PATH as CGAL will overwrite it.
   # Reconsider this after CGAL 5.4: https://github.com/CGAL/cgal/pull/6029
-  set(ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
+  set(OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH})
   set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE TRUE)
   # Some older versions do not match with CGAL 5.0 REQUIRED, so we check after.
   find_package(CGAL REQUIRED COMPONENTS Core)
@@ -373,9 +395,9 @@ if(ENABLE_CGAL)
   # revert any changes to module path from CGAL_Macros.cmake; see note above
   # Commented out code should work in CGAL>= 5.4
   #if (CGAL_MODULE_PATH_IS_SET)
-  #  set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+  #  set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
   #endif()
-  set(CMAKE_MODULE_PATH ${ORIGINAL_CMAKE_MODULE_PATH})
+  set(CMAKE_MODULE_PATH ${OPENSCAD_ORIGINAL_CMAKE_MODULE_PATH})
 endif(ENABLE_CGAL)
 
 find_package(LibZip REQUIRED QUIET)
@@ -461,13 +483,18 @@ find_package(BISON REQUIRED QUIET)
 message(STATUS "Bison: ${BISON_VERSION}")
 
 if(NOT MSVC)
-  find_package(Lib3MF QUIET)
-  if (LIB3MF_FOUND)
-    message(STATUS "lib3mf: ${LIB3MF_VERSION}")
-    target_compile_definitions(OpenSCAD PRIVATE ${LIB3MF_DEFINITIONS})
-    target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIB3MF_INCLUDE_DIRS})
-    target_link_libraries(OpenSCAD PRIVATE ${LIB3MF_LIBRARIES})
+  find_package(Lib3MF)
+  if (Lib3MF_FOUND)
+    message(STATUS "lib3mf: ${Lib3MF_VERSION}")
+    target_link_libraries(OpenSCAD PRIVATE Lib3MF::Lib3MF)
+    target_compile_definitions(OpenSCAD PRIVATE ENABLE_LIB3MF)
+    if (Lib3MF_VERSION VERSION_GREATER_EQUAL 2)
+      set(LIB3MF_SOURCES src/io/export_3mf_v2.cc src/io/import_3mf_v2.cc)
+    else()
+      set(LIB3MF_SOURCES src/io/export_3mf_v1.cc src/io/import_3mf_v1.cc)
+    endif()
   else()
+    set(LIB3MF_SOURCES src/io/export_3mf_dummy.cc src/io/import_3mf_dummy.cc)
     message(STATUS "lib3mf: disabled")
   endif()
 endif()
@@ -514,11 +541,20 @@ if(NOT HEADLESS)
   if (APPLE AND EXISTS /usr/local/opt/qt)
     list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt")
   endif()
-  if (APPLE AND EXISTS /usr/local/opt/qt@5)
-    list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt@5")
-  endif()
-  if (APPLE AND EXISTS /opt/homebrew/opt/qt@5)
-    list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt/qt@5")
+  if (USE_QT6)
+    if (APPLE AND EXISTS /usr/local/opt/qt@6)
+      list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt@6")
+    endif()
+    if (APPLE AND EXISTS /opt/homebrew/opt/qt@6)
+      list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt/qt@6")
+    endif()
+  else()
+    if (APPLE AND EXISTS /usr/local/opt/qt@5)
+      list(APPEND CMAKE_PREFIX_PATH "/usr/local/opt/qt@5")
+    endif()
+    if (APPLE AND EXISTS /opt/homebrew/opt/qt@5)
+      list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt/qt@5")
+    endif()
   endif()
 
   if("${CMAKE_VERSION}" VERSION_GREATER_EQUAL "3.14")
@@ -529,48 +565,74 @@ if(NOT HEADLESS)
   set_property(TARGET OpenSCAD PROPERTY AUTORCC ON)
   set_property(TARGET OpenSCAD PROPERTY AUTOUIC_OPTIONS --tr q_)
   set_property(TARGET OpenSCAD PROPERTY AUTORCC_OPTIONS --threshold 10 --compress 9)
-  find_package(Qt5 5.4 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network Svg REQUIRED QUIET)
-  message(STATUS "Qt5: ${Qt5_VERSION}")
+  if (USE_QT6)
+    find_package(Qt6 COMPONENTS Core Core5Compat Widgets Multimedia OpenGL OpenGLWidgets Concurrent Network Svg REQUIRED QUIET)
+    message(STATUS "Qt6: ${Qt6_VERSION}")
 
-  if (Qt5_POSITION_INDEPENDENT_CODE)
-    set_property(TARGET OpenSCAD PROPERTY POSITION_INDEPENDENT_CODE ON)
-  endif()
+    if (Qt6_POSITION_INDEPENDENT_CODE)
+      set_property(TARGET OpenSCAD PROPERTY POSITION_INDEPENDENT_CODE ON)
+    endif()
 
-  if (("${Qt5_VERSION}" VERSION_GREATER_EQUAL "5.4"))
-    target_compile_definitions(OpenSCAD PRIVATE USE_QOPENGLWIDGET)
-  endif()
+    find_package(Qt6QScintilla 2.8.0 REQUIRED QUIET)
+    message(STATUS "QScintilla: ${QT6QSCINTILLA_VERSION_STRING}")
 
-  find_package(Qt5QScintilla 2.8.0 REQUIRED QUIET)
-  message(STATUS "QScintilla: ${QT5QSCINTILLA_VERSION_STRING}")
-
-  if(ENABLE_QTDBUS)
-    find_package(Qt5DBus QUIET)
-    if (Qt5DBus_FOUND)
-      message(STATUS "DBus input driver enabled")
-      target_compile_definitions(OpenSCAD PRIVATE ENABLE_DBUS)
-      set(INPUT_DRIVER_DBUS_SOURCES src/gui/input/DBusInputDriver.cc)
-      qt5_add_dbus_interface(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml openscad_interface)
-      qt5_add_dbus_adaptor(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml gui/input/DBusInputDriver.h DBusInputDriver openscad_adaptor)
+    if(ENABLE_QTDBUS)
+      find_package(Qt6DBus QUIET)
+      if (Qt6DBus_FOUND)
+        message(STATUS "DBus input driver enabled")
+        target_compile_definitions(OpenSCAD PRIVATE ENABLE_DBUS)
+        set(INPUT_DRIVER_DBUS_SOURCES src/gui/input/DBusInputDriver.cc)
+        qt6_add_dbus_interface(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml openscad_interface)
+        qt6_add_dbus_adaptor(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml gui/input/DBusInputDriver.h DBusInputDriver openscad_adaptor)
+      else()
+        message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
+      endif()
     else()
-      message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
+      message(STATUS "DBus input driver disabled per user request.")
     endif()
   else()
-    message(STATUS "DBus input driver disabled per user request.")
-  endif()
+    find_package(Qt5 5.4 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network Svg REQUIRED QUIET)
+    message(STATUS "Qt5: ${Qt5_VERSION}")
 
-  if(ENABLE_GAMEPAD)
-    find_package(Qt5Gamepad QUIET)
-    if (Qt5Gamepad_FOUND)
-      message(STATUS "Qt5Gamepad input driver enabled")
-      set(GUI_SOURCES ${GUI_SOURCES} src/gui/input/QGamepadInputDriver.cc)
-      target_compile_definitions(OpenSCAD PRIVATE ENABLE_QGAMEPAD)
-    else()
-      message(STATUS "Qt5Gamepad input driver disabled as the Qt5Gamepad module could not be found.")
+    if (Qt5_POSITION_INDEPENDENT_CODE)
+      set_property(TARGET OpenSCAD PROPERTY POSITION_INDEPENDENT_CODE ON)
     endif()
-  else()
-    message(STATUS "Qt5Gamepad input driver disabled per user request.")
-  endif()
 
+    if (("${Qt5_VERSION}" VERSION_GREATER_EQUAL "5.4"))
+       target_compile_definitions(OpenSCAD PRIVATE USE_QOPENGLWIDGET)
+    endif()
+
+    find_package(Qt5QScintilla 2.8.0 REQUIRED QUIET)
+    message(STATUS "QScintilla: ${QT5QSCINTILLA_VERSION_STRING}")
+
+    if(ENABLE_QTDBUS)
+      find_package(Qt5DBus QUIET)
+      if (Qt5DBus_FOUND)
+        message(STATUS "DBus input driver enabled")
+        target_compile_definitions(OpenSCAD PRIVATE ENABLE_DBUS)
+        set(INPUT_DRIVER_DBUS_SOURCES src/gui/input/DBusInputDriver.cc)
+        qt5_add_dbus_interface(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml openscad_interface)
+        qt5_add_dbus_adaptor(INPUT_DRIVER_DBUS_SOURCES org.openscad.OpenSCAD.xml gui/input/DBusInputDriver.h DBusInputDriver openscad_adaptor)
+      else()
+        message(STATUS "DBus input driver disabled as the QtDBus module could not be found.")
+      endif()
+    else()
+      message(STATUS "DBus input driver disabled per user request.")
+    endif()
+
+    if(ENABLE_GAMEPAD)
+      find_package(Qt5Gamepad QUIET)
+      if (Qt5Gamepad_FOUND)
+        message(STATUS "Qt5Gamepad input driver enabled")
+        set(GUI_SOURCES ${GUI_SOURCES} src/gui/input/QGamepadInputDriver.cc)
+        target_compile_definitions(OpenSCAD PRIVATE ENABLE_QGAMEPAD)
+      else()
+        message(STATUS "Qt5Gamepad input driver disabled as the Qt5Gamepad module could not be found.")
+      endif()
+    else()
+      message(STATUS "Qt5Gamepad input driver disabled per user request.")
+    endif()
+  endif()
 endif()
 
 # Setup ccache (if available) to speed up recompiles. It's especially useful
@@ -743,6 +805,7 @@ set(CORE_SOURCES
   src/geometry/PolySetBuilder.cc
   src/geometry/PolySetUtils.cc
   src/geometry/GeometryEvaluator.cc
+  src/geometry/linear_extrude.cc
   src/geometry/boolean_utils.cc
   src/glview/OffscreenContextFactory.cc
   src/glview/RenderSettings.cc
@@ -752,7 +815,6 @@ set(CORE_SOURCES
   src/io/DxfData.cc
   src/io/dxfdim.cc
   src/io/export.cc
-  src/io/export_3mf.cc
   src/io/export_amf.cc
   src/io/export_dxf.cc
   src/io/export_obj.cc
@@ -763,7 +825,6 @@ set(CORE_SOURCES
   src/io/export_svg.cc
   src/io/export_param.cc
   src/io/fileutils.cc
-  src/io/import_3mf.cc
   src/io/import_amf.cc
   src/io/import_stl.cc
   src/io/import_obj.cc
@@ -796,6 +857,7 @@ set(CORE_SOURCES
   src/utils/StackCheck.h
   src/utils/svg.cc
   src/utils/version_check.h
+  ${LIB3MF_SOURCES}
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
   ${BISON_openscad_parser_OUTPUTS}
@@ -836,7 +898,6 @@ set(CGAL_SOURCES
   src/geometry/cgal/CGALHybridPolyhedron.cc
   src/geometry/cgal/CGAL_Nef_polyhedron.cc
   src/geometry/cgal/CGALCache.cc
-  src/geometry/cgal/Polygon2d-CGAL.cc
   src/io/export_nef.cc
   src/io/import_nef.cc
   )
@@ -860,7 +921,19 @@ if(EXPERIMENTAL AND ENABLE_TBB)
     -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_TBB
     -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_TBB
   )
-  find_package(TBB REQUIRED)
+  find_package(TBB QUIET)
+  if (NOT TBB_FOUND AND PKG_CONFIG_FOUND)
+    pkg_check_modules(TBB tbb REQUIRED)
+    add_library(TBB::tbb UNKNOWN IMPORTED)
+    set_target_properties(TBB::tbb
+      PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${TBB_INCLUDE_DIRS}")
+    set_target_properties(TBB::tbb
+      PROPERTIES INTERFACE_LINK_LIBRARIES "${TBB_LINK_LIBRARIES}")
+    list(GET TBB_LINK_LIBRARIES 0 TBB_IMPORTED_LOCATION)
+    set_target_properties(TBB::tbb
+      PROPERTIES IMPORTED_LOCATION "${TBB_IMPORTED_LOCATION}")
+  endif()
+  message(STATUS "TBB: ${TBB_VERSION}")
   target_link_libraries(OpenSCAD PRIVATE TBB::tbb)
 endif()
 
@@ -884,13 +957,17 @@ if(EXPERIMENTAL)
   else()
     add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
   endif()
-  target_link_libraries(OpenSCAD PRIVATE manifold)
+  target_link_libraries(OpenSCAD PRIVATE manifold polygon)
   add_sanitizers(manifold)
 
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
   list(APPEND Sources ${MANIFOLD_SOURCES})
   if (ENABLE_CGAL)
     list(APPEND Sources ${MANIFOLD_CGAL_SOURCES})
+  endif()
+
+  if (USE_MANIFOLD_TRIANGULATOR)
+    target_compile_definitions(OpenSCAD PRIVATE USE_MANIFOLD_TRIANGULATOR)
   endif()
 endif()
 
@@ -924,6 +1001,7 @@ else()
     src/glview/VertexState.cc
     src/glview/VBORenderer.cc
     src/glview/GLView.cc
+    src/glview/hershey.cc
     src/glview/OffscreenView.cc
     src/glview/cgal/CGALRenderer.cc
     src/glview/cgal/CGALRenderUtils.cc
@@ -1152,9 +1230,10 @@ endif()
 
 if (SNAPSHOT)
   set(SNAPSHOT_SUFFIX "-nightly")
+  set(SNAPSHOT_NAME_SUFFIX " (Nightly)")
   target_compile_definitions(OpenSCAD PRIVATE OPENSCAD_SNAPSHOT)
 endif()
-set(WINDOWS_RESOURCE_PATH ${RESOURCE_DIR}/openscad_win32${SNAPSHOT_SUFFIX}.rc)
+set(WINDOWS_RESOURCE_PATH ${CMAKE_BINARY_DIR}/openscad_win32${SNAPSHOT_SUFFIX}.rc)
 set(MACOSX_BUNDLE_ICON_FILE icon${SNAPSHOT_SUFFIX}.icns)
 
 if (APPLE)
@@ -1205,14 +1284,26 @@ elseif(MSVC)
   )
 endif()
 
-if(NOT HEADLESS)
-  target_link_libraries(OpenSCAD PRIVATE
-    Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network Qt5::Svg
-    ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES}
-  )
-endif()
-if(MXECROSS)
-  target_link_libraries(OpenSCAD PRIVATE Qt5::QSvgPlugin)
+if (USE_QT6)
+  if(NOT HEADLESS)
+    target_link_libraries(OpenSCAD PRIVATE
+      Qt6::Core Qt6::Core5Compat Qt6::Widgets Qt6::Multimedia Qt6::OpenGL Qt6::OpenGLWidgets Qt6::Concurrent Qt6::Network Qt6::Svg
+      ${QT6QSCINTILLA_LIBRARY} ${Qt6DBus_LIBRARIES} ${Qt6Gamepad_LIBRARIES}
+    )
+  endif()
+  if(MXECROSS)
+    target_link_libraries(OpenSCAD PRIVATE Qt6::QSvgPlugin)
+  endif()
+else()
+  if(NOT HEADLESS)
+    target_link_libraries(OpenSCAD PRIVATE
+      Qt5::Core Qt5::Widgets Qt5::Multimedia Qt5::OpenGL Qt5::Concurrent Qt5::Network Qt5::Svg
+      ${QT5QSCINTILLA_LIBRARY} ${Qt5DBus_LIBRARIES} ${Qt5Gamepad_LIBRARIES}
+    )
+  endif()
+  if(MXECROSS)
+    target_link_libraries(OpenSCAD PRIVATE Qt5::QSvgPlugin)
+  endif()
 endif()
 
 # Configure icon-related files, for release vs nightly
@@ -1260,17 +1351,25 @@ if(NOT APPLE OR APPLE_UNIX)
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/locale DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}" FILES_MATCHING PATTERN "*/LC_MESSAGES/openscad.mo")
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/shaders DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}")
   install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/templates DESTINATION "${OPENSCAD_INSTALL_RESOURCEDIR}" FILES_MATCHING PATTERN "*.json")
+else()
+  install(TARGETS ${CMAKE_PROJECT_NAME}
+      BUNDLE DESTINATION ${CMAKE_INSTALL_BINDIR}
+  )
 endif()
 
 # Packaging: CPACK_* settings should be configured before `include(CPack)`
 include(InstallRequiredSystemLibraries)
-set(CPACK_PACKAGE_NAME OpenSCAD)
-set(CPACK_PACKAGE_VERSION ${OPENSCAD_VERSION})
+set(CPACK_PACKAGE_NAME "OpenSCAD")
+set(CPACK_PACKAGE_VENDOR "The OpenSCAD Developers")
+set(CPACK_PACKAGE_VERSION "${OPENSCAD_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Programmer's Solid 3D CAD Modeler")
 
 if(MXECROSS)
   set(CPACK_GENERATOR ZIP;NSIS)
   set(CPACK_SYSTEM_NAME ${PACKAGE_ARCH})
+  set(CPACK_PACKAGE_EXECUTABLES "openscad;${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
+  set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
+  set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "${CPACK_PACKAGE_NAME}${SNAPSHOT_NAME_SUFFIX}")
   if("${CMAKE_VERSION}" VERSION_GREATER_EQUAL "3.22")
     set(CPACK_NSIS_IGNORE_LICENSE_PAGE ON)
   else()
@@ -1278,21 +1377,23 @@ if(MXECROSS)
   endif()
   set(CPACK_NSIS_EXTRA_PREINSTALL_COMMANDS "\
     !include \\\"FileFunc.nsh\\\"\n\
-    !include \\\"${CMAKE_SOURCE_DIR}/scripts/mingw-file-association.nsh\\\"\
+    !include \\\"${CMAKE_SOURCE_DIR}/cmake/nsis/mingw-file-association.nsh\\\"\
   ")
   set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "\
-    \\\${RegisterExtension} '$INSTDIR\\\\openscad.exe' '.scad' 'OpenSCAD_File'\n\
-    \\\${RefreshShellIcons}\
+    !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-install-commands.nsh\\\"\
   ")
   set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "\
-    \\\${UnRegisterExtension} '.scad' 'OpenSCAD_File'\n\
-    \\\${RefreshShellIcons}\
+    !include \\\"${CMAKE_BINARY_DIR}/nsis-extra-uninstall-commands.nsh\\\"\
   ")
 endif()
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/COPYING")
 # None of config time variables are available for CPACK_PROJECT_CONFIG_FILE, so we configure it now with values.
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/openscad_cpack.cmake.in"
                "${CMAKE_BINARY_DIR}/openscad_cpack.cmake" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/nsis/extra-install-commands.nsh.in"
+               "${CMAKE_BINARY_DIR}/nsis-extra-install-commands.nsh" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/nsis/extra-uninstall-commands.nsh.in"
+               "${CMAKE_BINARY_DIR}/nsis-extra-uninstall-commands.nsh" @ONLY)
 # CPACK_PROJECT_CONFIG_FILE is for configuring CPack-generator specific settings
 set(CPACK_PROJECT_CONFIG_FILE "${CMAKE_BINARY_DIR}/openscad_cpack.cmake")
 set(CPACK_THREADS 0)
@@ -1306,6 +1407,8 @@ if(OFFLINE_DOCS)
   add_subdirectory(resources)
 endif()
 
+configure_file(${RESOURCE_DIR}/openscad_win32${SNAPSHOT_SUFFIX}.rc.in
+	       ${CMAKE_BINARY_DIR}/openscad_win32${SNAPSHOT_SUFFIX}.rc)
 include(CPack)
 
 add_sanitizers(OpenSCAD)

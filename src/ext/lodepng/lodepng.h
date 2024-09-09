@@ -1,7 +1,7 @@
 /*
-LodePNG version 20210627
+LodePNG version 20230410
 
-Copyright (c) 2005-2021 Lode Vandevenne
+Copyright (c) 2005-2023 Lode Vandevenne
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
@@ -35,43 +35,50 @@ The following #defines are used to create code sections. They can be disabled
 to disable code sections, which can give faster compile time and smaller binary.
 The "NO_COMPILE" defines are designed to be used to pass as defines to the
 compiler command to disable them without modifying this header, e.g.
--DLODEPNG_NO_COMPILE_ZLIB for gcc.
-In addition to those below, you can also define LODEPNG_NO_COMPILE_CRC to
-allow implementing a custom lodepng_crc32.
+-DLODEPNG_NO_COMPILE_ZLIB for gcc or clang.
 */
 /*deflate & zlib. If disabled, you must specify alternative zlib functions in
 the custom_zlib field of the compress and decompress settings*/
 #ifndef LODEPNG_NO_COMPILE_ZLIB
+/*pass -DLODEPNG_NO_COMPILE_ZLIB to the compiler to disable this, or comment out LODEPNG_COMPILE_ZLIB below*/
 #define LODEPNG_COMPILE_ZLIB
 #endif
 
 /*png encoder and png decoder*/
 #ifndef LODEPNG_NO_COMPILE_PNG
+/*pass -DLODEPNG_NO_COMPILE_PNG to the compiler to disable this, or comment out LODEPNG_COMPILE_PNG below*/
 #define LODEPNG_COMPILE_PNG
 #endif
 
 /*deflate&zlib decoder and png decoder*/
 #ifndef LODEPNG_NO_COMPILE_DECODER
+/*pass -DLODEPNG_NO_COMPILE_DECODER to the compiler to disable this, or comment out LODEPNG_COMPILE_DECODER below*/
 #define LODEPNG_COMPILE_DECODER
 #endif
 
 /*deflate&zlib encoder and png encoder*/
 #ifndef LODEPNG_NO_COMPILE_ENCODER
+/*pass -DLODEPNG_NO_COMPILE_ENCODER to the compiler to disable this, or comment out LODEPNG_COMPILE_ENCODER below*/
 #define LODEPNG_COMPILE_ENCODER
 #endif
 
 /*the optional built in harddisk file loading and saving functions*/
 #ifndef LODEPNG_NO_COMPILE_DISK
+/*pass -DLODEPNG_NO_COMPILE_DISK to the compiler to disable this, or comment out LODEPNG_COMPILE_DISK below*/
 #define LODEPNG_COMPILE_DISK
 #endif
 
 /*support for chunks other than IHDR, IDAT, PLTE, tRNS, IEND: ancillary and unknown chunks*/
 #ifndef LODEPNG_NO_COMPILE_ANCILLARY_CHUNKS
+/*pass -DLODEPNG_NO_COMPILE_ANCILLARY_CHUNKS to the compiler to disable this,
+or comment out LODEPNG_COMPILE_ANCILLARY_CHUNKS below*/
 #define LODEPNG_COMPILE_ANCILLARY_CHUNKS
 #endif
 
 /*ability to convert error numerical codes to English text string*/
 #ifndef LODEPNG_NO_COMPILE_ERROR_TEXT
+/*pass -DLODEPNG_NO_COMPILE_ERROR_TEXT to the compiler to disable this,
+or comment out LODEPNG_COMPILE_ERROR_TEXT below*/
 #define LODEPNG_COMPILE_ERROR_TEXT
 #endif
 
@@ -79,12 +86,27 @@ the custom_zlib field of the compress and decompress settings*/
 you can define the functions lodepng_free, lodepng_malloc and lodepng_realloc in your
 source files with custom allocators.*/
 #ifndef LODEPNG_NO_COMPILE_ALLOCATORS
+/*pass -DLODEPNG_NO_COMPILE_ALLOCATORS to the compiler to disable the built-in ones,
+or comment out LODEPNG_COMPILE_ALLOCATORS below*/
 #define LODEPNG_COMPILE_ALLOCATORS
+#endif
+
+/*Disable built-in CRC function, in that case a custom implementation of
+lodepng_crc32 must be defined externally so that it can be linked in.
+The default built-in CRC code comes with 8KB of lookup tables, so for memory constrained environment you may want it
+disabled and provide a much smaller implementation externally as said above. You can find such an example implementation
+in a comment in the lodepng.c(pp) file in the 'else' case of the searchable LODEPNG_COMPILE_CRC section.*/
+#ifndef LODEPNG_NO_COMPILE_CRC
+/*pass -DLODEPNG_NO_COMPILE_CRC to the compiler to disable the built-in one,
+or comment out LODEPNG_COMPILE_CRC below*/
+#define LODEPNG_COMPILE_CRC
 #endif
 
 /*compile the C++ version (you can disable the C++ wrapper here even when compiling for C++)*/
 #ifdef __cplusplus
 #ifndef LODEPNG_NO_COMPILE_CPP
+/*pass -DLODEPNG_NO_COMPILE_CPP to the compiler to disable C++ (not needed if a C-only compiler),
+or comment out LODEPNG_COMPILE_CPP below*/
 #define LODEPNG_COMPILE_CPP
 #endif
 #endif
@@ -374,8 +396,10 @@ typedef struct LodePNGColorMode {
 
   The alpha channels must be set as well, set them to 255 for opaque images.
 
-  When decoding, by default you can ignore this palette, since LodePNG already
-  fills the palette colors in the pixels of the raw RGBA output.
+  When decoding, with the default settings you can ignore this palette, since
+  LodePNG already fills the palette colors in the pixels of the raw RGBA output,
+  but when decoding to the original PNG color mode it is needed to reconstruct
+  the colors.
 
   The palette is only supported for color type 3.
   */
@@ -465,10 +489,12 @@ typedef struct LodePNGInfo {
   with values truncated to the bit depth in the unsigned integer.
 
   For grayscale and palette PNGs, the value is stored in background_r. The values
-  in background_g and background_b are then unused.
+  in background_g and background_b are then unused. The decoder will set them
+  equal to background_r, the encoder ignores them in this case.
 
-  So when decoding, you may get these in a different color mode than the one you requested
-  for the raw pixels.
+  When decoding, you may get these in a different color mode than the one you requested
+  for the raw pixels: the colortype and bitdepth defined by info_png.color, that is the
+  ones defined in the header of the PNG image, are used.
 
   When encoding with auto_convert, you must use the color model defined in info_png.color for
   these values. The encoder normally ignores info_png.color when auto_convert is on, but will
@@ -535,7 +561,7 @@ typedef struct LodePNGInfo {
   unsigned phys_unit; /*may be 0 (unknown unit) or 1 (metre)*/
 
   /*
-  Color profile related chunks: gAMA, cHRM, sRGB, iCPP
+  Color profile related chunks: gAMA, cHRM, sRGB, iCPP, sBIT
 
   LodePNG does not apply any color conversions on pixels in the encoder or decoder and does not interpret these color
   profile values. It merely passes on the information. If you wish to use color profiles and convert colors, please
@@ -597,6 +623,45 @@ typedef struct LodePNGInfo {
   */
   unsigned char* iccp_profile;
   unsigned iccp_profile_size; /* The size of iccp_profile in bytes */
+
+  /*
+  sBIT chunk: significant bits. Optional metadata, only set this if needed.
+
+  If defined, these values give the bit depth of the original data. Since PNG only stores 1, 2, 4, 8 or 16-bit
+  per channel data, the significant bits value can be used to indicate the original encoded data has another
+  sample depth, such as 10 or 12.
+
+  Encoders using this value, when storing the pixel data, should use the most significant bits
+  of the data to store the original bits, and use a good sample depth scaling method such as
+  "left bit replication" to fill in the least significant bits, rather than fill zeroes.
+
+  Decoders using this value, if able to work with data that's e.g. 10-bit or 12-bit, should right
+  shift the data to go back to the original bit depth, but decoders are also allowed to ignore
+  sbit and work e.g. with the 8-bit or 16-bit data from the PNG directly, since thanks
+  to the encoder contract, the values encoded in PNG are in valid range for the PNG bit depth.
+
+  For grayscale images, sbit_g and sbit_b are not used, and for images that don't use color
+  type RGBA or grayscale+alpha, sbit_a is not used (it's not used even for palette images with
+  translucent palette values, or images with color key). The values that are used must be
+  greater than zero and smaller than or equal to the PNG bit depth.
+
+  The color type from the header in the PNG image defines these used and unused fields: if
+  decoding with a color mode conversion, such as always decoding to RGBA, this metadata still
+  only uses the color type of the original PNG, and may e.g. lack the alpha channel info
+  if the PNG was RGB. When encoding with auto_convert (as well as without), also always the
+  color model defined in info_png.color determines this.
+
+  NOTE: enabling sbit can hurt compression, because the encoder can then not always use
+  auto_convert to choose a more optimal color mode for the data, because the PNG format has
+  strict requirements for the allowed sbit values in combination with color modes.
+  For example, setting these fields to 10-bit will force the encoder to keep using a 16-bit per channel
+  color mode, even if the pixel data would in fact fit in a more efficient 8-bit mode.
+  */
+  unsigned sbit_defined; /*is significant bits given? if not, the values below are unused*/
+  unsigned sbit_r;       /*red or gray component of significant bits*/
+  unsigned sbit_g;       /*green component of significant bits*/
+  unsigned sbit_b;       /*blue component of significant bits*/
+  unsigned sbit_a;       /*alpha component of significant bits*/
 
   /* End of color profile related chunks */
 
@@ -770,7 +835,11 @@ typedef struct LodePNGEncoderSettings {
   const unsigned char* predefined_filters;
 
   /*force creating a PLTE chunk if colortype is 2 or 6 (= a suggested palette).
-  If colortype is 3, PLTE is _always_ created.*/
+  If colortype is 3, PLTE is always created. If color type is explicitely set
+  to a grayscale type (1 or 4), this is not done and is ignored. If enabling this,
+  a palette must be present in the info_png.
+  NOTE: enabling this may worsen compression if auto_convert is used to choose
+  optimal color mode, because it cannot use grayscale color modes in this case*/
   unsigned force_palette;
 #ifdef LODEPNG_COMPILE_ANCILLARY_CHUNKS
   /*add LodePNG identifier and version as a text chunk, for debugging*/
@@ -824,8 +893,8 @@ unsigned lodepng_inspect(unsigned* w, unsigned* h,
 #endif /*LODEPNG_COMPILE_DECODER*/
 
 /*
-Reads one metadata chunk (other than IHDR) of the PNG file and outputs what it
-read in the state. Returns error code on failure.
+Reads one metadata chunk (other than IHDR, which is handled by lodepng_inspect)
+of the PNG file and outputs what it read in the state. Returns error code on failure.
 Use lodepng_inspect first with a new state, then e.g. lodepng_chunk_find_const
 to find the desired chunk type, and if non null use lodepng_inspect_chunk (with
 chunk_pointer - start_of_file as pos).
@@ -932,7 +1001,7 @@ and data separately. The type is a 4-letter string.
 The out variable and outsize are updated to reflect the new reallocated buffer.
 Returne error code (0 if it went ok)
 */
-unsigned lodepng_chunk_create(unsigned char** out, size_t* outsize, unsigned length,
+unsigned lodepng_chunk_create(unsigned char** out, size_t* outsize, size_t length,
                               const char* type, const unsigned char* data);
 
 
@@ -1103,7 +1172,7 @@ TODO:
 [.] check compatibility with various compilers  - done but needs to be redone for every newer version
 [X] converting color to 16-bit per channel types
 [X] support color profile chunk types (but never let them touch RGB values by default)
-[ ] support all public PNG chunk types (almost done except sBIT, sPLT and hIST)
+[ ] support all public PNG chunk types (almost done except sPLT and hIST)
 [ ] make sure encoder generates no chunks with size > (2^31)-1
 [ ] partial decoding (stream processing)
 [X] let the "isFullyOpaque" function check color keys and transparent palettes too
@@ -1230,18 +1299,16 @@ The following features are supported by the decoder:
     gAMA: RGB gamma correction
     iCCP: ICC color profile
     sRGB: rendering intent
+    sBIT: significant bits
 
 1.2. features not supported
 ---------------------------
 
-The following features are _not_ supported:
+The following features are not (yet) supported:
 
 *) some features needed to make a conformant PNG-Editor might be still missing.
 *) partial loading/stream processing. All data must be available and is processed in one call.
-*) The following public chunks are not (yet) supported but treated as unknown chunks by LodePNG:
-    sBIT
-    hIST
-    sPLT
+*) The hIST and sPLT public chunks are not (yet) supported but treated as unknown chunks
 
 
 2. C and C++ version
@@ -1845,6 +1912,9 @@ symbol.
 Not all changes are listed here, the commit history in github lists more:
 https://github.com/lvandeve/lodepng
 
+*) 10 apr 2023: faster CRC32 implementation, but with larger lookup table.
+*) 13 jun 2022: added support for the sBIT chunk.
+*) 09 jan 2022: minor decoder speed improvements.
 *) 27 jun 2021: added warnings that file reading/writing functions don't support
    wide-character filenames (support for this is not planned, opening files is
    not the core part of PNG decoding/decoding and is platform dependent).
@@ -2015,5 +2085,5 @@ Domain: gmail dot com.
 Account: lode dot vandevenne.
 
 
-Copyright (c) 2005-2021 Lode Vandevenne
+Copyright (c) 2005-2022 Lode Vandevenne
 */

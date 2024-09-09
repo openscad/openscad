@@ -111,21 +111,28 @@ OpenCSGVBOPrim *OpenCSGRenderer::createVBOPrimitive(
 // The VBO will be utilized to render multiple objects with correct state
 // management. In the future, we could use a VBO per primitive and potentially
 // reuse VBOs, but that requires some more careful state management.
+// Note: This function can be called multiple times for different products.
+// Each call will add to vbo_vertex_products_.
 void OpenCSGRenderer::createCSGVBOProducts(
     const CSGProducts &products, const Renderer::shaderinfo_t * /*shaderinfo*/,
     bool highlight_mode, bool background_mode) {
   // We need to manage buffers here since we don't have another suitable
   // container for managing the life cycle of VBOs. We're creating one VBO(+EBO)
   // per product.
+  std::vector<GLuint> vertices_vbos;
+  std::vector<GLuint> elements_vbos;
+
   size_t vbo_count = products.products.size();
   if (vbo_count) {
-    vertices_vbos_.resize(vbo_count);
+    vertices_vbos.resize(vbo_count);
     // Will default to zeroes, so we don't have to keep checking for the
     // Indexing feature
-    elements_vbos_.resize(vbo_count);
-    glGenBuffers(vbo_count, vertices_vbos_.data());
+    elements_vbos.resize(vbo_count);
+    glGenBuffers(vbo_count, vertices_vbos.data());
+    all_vbos_.insert(all_vbos_.end(), vertices_vbos.begin(), vertices_vbos.end());
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
-      glGenBuffers(vbo_count, elements_vbos_.data());
+      glGenBuffers(vbo_count, elements_vbos.data());
+      all_vbos_.insert(all_vbos_.end(), elements_vbos.begin(), elements_vbos.end());
     }
   }
 
@@ -133,8 +140,8 @@ void OpenCSGRenderer::createCSGVBOProducts(
   size_t vbo_index = 0;
   for (auto i = 0; i < products.products.size(); ++i) {
     const auto &product = products.products[i];
-    const auto vertices_vbo = vertices_vbos_[i];
-    const auto elements_vbo = elements_vbos_[i];
+    const auto vertices_vbo = vertices_vbos[i];
+    const auto elements_vbo = elements_vbos[i];
 
     Color4f last_color;
     std::vector<OpenCSG::Primitive *> primitives;
@@ -145,7 +152,11 @@ void OpenCSGRenderer::createCSGVBOProducts(
                              elements_vbo);
     vertex_array.addSurfaceData();
     vertex_array.writeSurface();
-    add_shader_data(vertex_array);
+    if (getShader().progid != 0) {
+      add_shader_data(vertex_array);
+    } else {
+      LOG("Warning: Shader not available");
+    }
 
     size_t num_vertices = 0;
     for (const auto &csgobj : product.intersections) {
@@ -167,12 +178,16 @@ void OpenCSGRenderer::createCSGVBOProducts(
         csgmode_e csgmode = get_csgmode(highlight_mode, background_mode);
 
         ColorMode colormode = ColorMode::NONE;
+        bool override_color;
         if (highlight_mode) {
           colormode = ColorMode::HIGHLIGHT;
+          override_color = true;
         } else if (background_mode) {
           colormode = ColorMode::BACKGROUND;
+          override_color = true;
         } else {
           colormode = ColorMode::MATERIAL;
+          override_color = c.isValid();
         }
 
         Color4f color;
@@ -185,7 +200,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
         if (color[3] == 1.0f) {
           // object is opaque, draw normally
           create_surface(*csgobj.leaf->polyset, vertex_array, csgmode,
-                         csgobj.leaf->matrix, last_color);
+                         csgobj.leaf->matrix, last_color, override_color);
           std::shared_ptr<OpenCSGVertexState> surface =
               std::dynamic_pointer_cast<OpenCSGVertexState>(
                   vertex_states->back());
@@ -209,7 +224,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           vertex_states->emplace_back(std::move(cull));
 
           create_surface(*csgobj.leaf->polyset, vertex_array, csgmode,
-                         csgobj.leaf->matrix, last_color);
+                         csgobj.leaf->matrix, last_color, override_color);
           std::shared_ptr<OpenCSGVertexState> surface =
               std::dynamic_pointer_cast<OpenCSGVertexState>(
                   vertex_states->back());
@@ -250,12 +265,16 @@ void OpenCSGRenderer::createCSGVBOProducts(
                                         OpenSCADOperator::DIFFERENCE);
 
         ColorMode colormode = ColorMode::NONE;
+        bool override_color;
         if (highlight_mode) {
           colormode = ColorMode::HIGHLIGHT;
+          override_color = true;
         } else if (background_mode) {
           colormode = ColorMode::BACKGROUND;
+          override_color = true;
         } else {
           colormode = ColorMode::CUTOUT;
+          override_color = true;
         }
 
         Color4f color;
@@ -282,7 +301,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           tmp *= Eigen::Scaling(1.0, 1.0, 1.1);
         }
         create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, tmp,
-                       last_color);
+                       last_color, override_color);
         std::shared_ptr<OpenCSGVertexState> surface =
             std::dynamic_pointer_cast<OpenCSGVertexState>(
                 vertex_states->back());

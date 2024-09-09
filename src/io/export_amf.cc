@@ -136,7 +136,7 @@ static void append_amf(const CGAL_Nef_polyhedron& root_N, std::ostream& output)
     output << "   </volume>\r\n";
     output << "  </mesh>\r\n"
            << " </object>\r\n";
-  } catch (CGAL::Assertion_exception& e) {
+  } catch (std::exception& e) {
     LOG(message_group::Export_Error, "CGAL error in CGAL_Nef_polyhedron3::convert_to_polyhedron(): %1$s", e.what());
   }
 }
@@ -162,6 +162,7 @@ static void append_amf(const std::shared_ptr<const Geometry>& geom, std::ostream
 
 void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
+  LOG(message_group::Deprecated, "AMF export is deprecated. Please use 3md instead.");
   setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 
   output << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"

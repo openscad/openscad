@@ -11,11 +11,11 @@
 #include <CGAL/version.h>
 #include <CGAL/convex_hull_3.h>
 #include "cgalutils.h"
-#endif
+#endif  // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
 #include "manifoldutils.h"
-#endif
+#endif  // ENABLE_MANIFOLD
 
 #include "Feature.h"
 #include "PolySet.h"
@@ -65,7 +65,7 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
           addPoint(CGALUtils::vector_convert<K::Point_3>(p));
           return false;
         });
-#endif
+#endif  // ENABLE_MANIFOLD
     } else if (const auto *ps = dynamic_cast<const PolySet*>(chgeom.get())) {
       addCapacity(ps->indices.size() * 3);
       for (const auto& p : ps->indices) {
@@ -88,6 +88,8 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
       PRINTDB("After hull facets: %d", r.size_of_facets());
       PRINTDB("After hull closed: %d", r.is_closed());
       PRINTDB("After hull valid: %d", r.is_valid());
+      // FIXME: Make sure PolySet is set to convex.
+      // FIXME: Can we guarantee a manifold PolySet here?
       return CGALUtils::createPolySetFromPolyhedron(r);
     } catch (const CGAL::Failure_exception& e) {
       LOG(message_group::Error, "CGAL error in applyHull(): %1$s", e.what());
@@ -98,6 +100,8 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
 
 /*!
    children cannot contain nullptr objects
+
+  FIXME: This shouldn't return const, but it does due to internal implementation details
  */
 std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 {
@@ -105,7 +109,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
   if (Feature::ExperimentalManifold.is_enabled()) {
     return ManifoldUtils::applyMinkowskiManifold(children);
   }
-#endif
+#endif  // ENABLE_MANIFOLD
   if (Feature::ExperimentalFastCsg.is_enabled()) {
     return CGALUtils::applyMinkowskiHybrid(children);
   }
@@ -137,7 +141,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
         else if (nef && nef->p3->is_simple()) CGALUtils::convertNefToPolyhedron(*nef->p3, poly);
         else throw 0;
 
-        if ((ps && ps->is_convex()) ||
+        if ((ps && ps->isConvex()) ||
             (!ps && CGALUtils::is_weakly_convex(poly))) {
           PRINTDB("Minkowski: child %d is convex and %s", i % (ps?"PolySet":"Nef"));
           P[i].push_back(poly);
@@ -309,7 +313,7 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
     return N;
   }
 }
-#else
+#else  // ENABLE_CGAL
 bool applyHull(const Geometry::Geometries& children, PolySet& result)
 {
   return false;
@@ -319,4 +323,4 @@ std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& child
 {
   return std::make_shared<PolySet>(3);
 }
-#endif
+#endif  // ENABLE_CGAL

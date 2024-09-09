@@ -81,8 +81,10 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
   if (options.previewer == Previewer::OPENCSG) {
 #ifdef ENABLE_OPENCSG
 #ifdef USE_LEGACY_RENDERERS
+    PRINTD("Initializing LegacyOpenCSGRenderer");
     renderer = std::make_shared<LegacyOpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
 #else
+    PRINTD("Initializing OpenCSGRenderer");
     renderer = std::make_shared<OpenCSGRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
 #endif
 #else
@@ -91,8 +93,10 @@ std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& op
 #endif
   } else {
 #ifdef USE_LEGACY_RENDERERS
+    PRINTD("Initializing LegacyThrownTogetherRenderer");
     renderer = std::make_shared<LegacyThrownTogetherRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
 #else
+    PRINTD("Initializing ThrownTogetherRenderer");
     renderer = std::make_shared<ThrownTogetherRenderer>(csgInfo.root_products, csgInfo.highlights_products, csgInfo.background_products);
 #endif
   }

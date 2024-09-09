@@ -1,4 +1,4 @@
-name: macos-tests
+name: macOS Experimental Tests
 
 on:
   push:
@@ -7,13 +7,25 @@ on:
   pull_request:
 
 jobs:
-  build:
-    runs-on: macos-latest
-    name: macos-latest
+  build_and_test:
+    strategy:
+      matrix:
+        os: [macos-13, macos-latest]
+        qt: [qt5, qt6]
+        exclude:
+          # macos-latest runs on arm64, which has a broken SW renderer
+          - os: macos-latest
+    runs-on:  ${{ matrix.os }}
+    name: ${{ matrix.os }} ${{ matrix.qt }}
     # If it's not done in 60 minutes, something is wrong.
     # Default is 6 hours, which is a bit long to wait.
     timeout-minutes: 60
     steps:
+    - name: Set Qt version
+      run: |
+        case ${{ matrix.qt }} in
+        qt6) echo "CMAKE_OPTIONS=-DUSE_QT6=1" >> $GITHUB_ENV ;;
+        esac
     - name: Checkout
       uses: actions/checkout@v4
       with:
@@ -27,12 +39,12 @@ jobs:
         HOMEBREW_NO_AUTO_UPDATE: 1
       run: |
         export HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1
-        ./scripts/macosx-build-homebrew.sh
+        ./scripts/macosx-build-homebrew.sh ${{ matrix.qt }}
     - name: Build OpenSCAD
       run: |
         mkdir build
         cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=ON -DEXPERIMENTAL=ON -DSNAPSHOT=ON
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_UNITY_BUILD=ON -DEXPERIMENTAL=ON -DSNAPSHOT=ON $CMAKE_OPTIONS
         export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
         make -j$NUMCPU
     - name: Run Test Suite
@@ -46,7 +58,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: ${{ always() }}
       with:
-        name: Test Result Report (MacOS)
+        name: Test Result Report (MacOS ${{ matrix.qt }})
         path: |
           build/Testing/Temporary/*_report.html
           build/Testing/Temporary/LastTest.log

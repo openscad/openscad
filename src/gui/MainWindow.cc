@@ -27,6 +27,7 @@
 #include <memory>
 
 #include "boost-utils.h"
+#include "Builtins.h"
 #include "BuiltinContext.h"
 #include "CommentParser.h"
 #include "RenderVariables.h"
@@ -66,7 +67,7 @@
 #include "CSGTreeNormalizer.h"
 #include "QGLView.h"
 #include "MouseSelector.h"
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
 #include "CocoaUtils.h"
 #endif
 #ifdef Q_OS_WIN
@@ -663,11 +664,9 @@ MainWindow::MainWindow(const QStringList& filenames)
   bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
 
   // make sure it looks nice..
-  auto windowState = settings.value("window/state", QByteArray()).toByteArray();
+  const auto windowState = settings.value("window/state", QByteArray()).toByteArray();
+  restoreGeometry(settings.value("window/geometry", QByteArray()).toByteArray());
   restoreState(windowState);
-  resize(settings.value("window/size", QSize(800, 600)).toSize());
-  move(settings.value("window/position", QPoint(0, 0)).toPoint());
-  updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideViewportControl);
 
   if (windowState.size() == 0) {
     /*
@@ -683,6 +682,11 @@ MainWindow::MainWindow(const QStringList& filenames)
      * fill the available space.
      */
     activeEditor->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
+    tabifyDockWidget(consoleDock, errorLogDock);
+    tabifyDockWidget(errorLogDock, animateDock);
+    showConsole();
+    hideCustomizer = true;
+    hideViewportControl = true;
   } else {
 #ifdef Q_OS_WIN
     // Try moving the main window into the display range, this
@@ -702,6 +706,8 @@ MainWindow::MainWindow(const QStringList& filenames)
     }
 #endif // ifdef Q_OS_WIN
   }
+
+  updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideViewportControl);
 
   connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
   connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
@@ -902,7 +908,7 @@ void MainWindow::loadViewSettings(){
 void MainWindow::loadDesignSettings()
 {
   QSettingsCached settings;
-  if (settings.value("design/autoReload", true).toBool()) {
+  if (settings.value("design/autoReload", false).toBool()) {
     designActionAutoReload->setChecked(true);
   }
   auto polySetCacheSizeMB = Preferences::inst()->getValue("advanced/polysetCacheSizeMB").toUInt();
@@ -1089,6 +1095,7 @@ void MainWindow::compile(bool reload, bool forcedone)
     // reload picking up where it left off, thwarting the stop, so we turn off exceptions in PRINT.
     no_exceptions_for_warnings();
     if (shouldcompiletoplevel) {
+      initialize_rng();
       this->errorLogWidget->clearModel();
       if (Preferences::inst()->getValue("advanced/consoleAutoClear").toBool()) {
         this->console->actionClearConsole_triggered();
@@ -1867,7 +1874,7 @@ bool MainWindow::trust_python_file(const std::string &file,  const std::string &
   }
 
   auto ret = QMessageBox::warning(this, "Application",
-    _( "Python files can potentially contain harumful stuff.\n"
+    _( "Python files can potentially contain harmful stuff.\n"
     "Do you trust this file ?\n"), QMessageBox::Yes  | QMessageBox::YesAll | QMessageBox::No);
   if (ret == QMessageBox::YesAll)  {
     python_trusted = true;
@@ -3512,8 +3519,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     hideCurrentOutput();
 
     QSettingsCached settings;
-    settings.setValue("window/size", size());
-    settings.setValue("window/position", pos());
+    settings.setValue("window/geometry", saveGeometry());
     settings.setValue("window/state", saveState());
     if (this->tempFile) {
       delete this->tempFile;
@@ -3558,7 +3564,7 @@ void MainWindow::quit()
   QApplication::sendEvent(QApplication::instance(), &ev);
   if (ev.isAccepted()) QApplication::instance()->quit();
   // FIXME: Cancel any CGAL calculations
-#ifdef Q_OS_MAC
+#ifdef Q_OS_MACOS
   CocoaUtils::endApplication();
 #endif
 }

@@ -27,19 +27,13 @@
 #
 # 1. why is hash differing
 
-from __future__ import print_function
 
 import string, sys, re, os, hashlib, subprocess, time, platform, html, base64
 
+from urllib.error import URLError
+from urllib.request import urlopen
+from urllib.parse import urlencode
 
-try:
-    from urllib.error import URLError
-    from urllib.request import urlopen
-    from urllib.parse import urlencode
-except:
-    from urllib2 import URLError
-    from urllib2 import urlopen
-    from urllib import urlencode
 
 def tryread(filename):
     data = None
@@ -223,7 +217,7 @@ def findlogfile(builddir):
 
 # --- Templating ---
 
-class Templates(object):
+class Templates:
     html_template = '''<html>
     <head><title>Test run for {sysid}</title>
     <meta charset="utf-8" />

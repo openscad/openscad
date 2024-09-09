@@ -25,6 +25,7 @@ public:
   std::shared_ptr<const Geometry> evaluateGeometry(const AbstractNode& node, bool allownef);
 
   Response visit(State& state, const AbstractNode& node) override;
+  Response visit(State& state, const ColorNode& node) override;
   Response visit(State& state, const AbstractIntersectionNode& node) override;
   Response visit(State& state, const AbstractPolyNode& node) override;
   Response visit(State& state, const LinearExtrudeNode& node) override;
@@ -50,21 +51,30 @@ private:
   class ResultObject
   {
 public:
+    // This makes it explicit if we want a const vs. non-const result.
+    // This is important to avoid inadvertently tagging a geometry as const when
+    // the underlying geometry is actually mutable. 
+    // The template trick, combined with private constructors, makes it possible
+    // to create a ResultObject containing a const, _only_ from const objects
+    // (i.e. no implicit conversion from non-const to const).
+    template<class T> static ResultObject constResult(std::shared_ptr<const T> geom) {return {geom};}
+    template<class T> static ResultObject mutableResult(std::shared_ptr<T> geom) {return {geom};}
+
     // Default constructor with nullptr can be used to represent empty geometry,
     // for example union() with no children, etc.
     ResultObject() : is_const(true) {}
-    ResultObject(std::shared_ptr<const Geometry> g) : is_const(true), const_pointer(std::move(g)) {}
-    ResultObject(std::shared_ptr<Geometry> g) : is_const(false), pointer(std::move(g)) {}
-    [[nodiscard]] bool isConst() const { return is_const; }
     std::shared_ptr<Geometry> ptr() { assert(!is_const); return pointer; }
     [[nodiscard]] std::shared_ptr<const Geometry> constptr() const {
       return is_const ? const_pointer : std::static_pointer_cast<const Geometry>(pointer);
     }
     std::shared_ptr<Geometry> asMutableGeometry() {
-      if (isConst()) return std::shared_ptr<Geometry>(constptr() ? constptr()->copy() : nullptr);
+      if (is_const) return {constptr() ? constptr()->copy() : nullptr};
       else return ptr();
     }
 private:
+    template<class T> ResultObject(std::shared_ptr<const T> g) : is_const(true), const_pointer(std::move(g)) {}
+    template<class T> ResultObject(std::shared_ptr<T> g) : is_const(false), pointer(std::move(g)) {}
+
     bool is_const;
     std::shared_ptr<Geometry> pointer;
     std::shared_ptr<const Geometry> const_pointer;

@@ -23,7 +23,6 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
   using Hull_Points = std::vector<Hull_kernel::Point_3>;
   using Nef_kernel = CGAL_Kernel3;
   using Polyhedron = CGAL_Polyhedron;
-  using Nef = CGAL_Nef_polyhedron3;
 
   auto polyhedronFromGeometry = [](const std::shared_ptr<const Geometry>& geom, bool *pIsConvexOut) -> std::shared_ptr<Polyhedron>
   {
@@ -31,7 +30,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
     if (ps) {
       auto poly = std::make_shared<Polyhedron>();
       CGALUtils::createPolyhedronFromPolySet(*ps, *poly);
-      if (pIsConvexOut) *pIsConvexOut = ps->is_convex();
+      if (pIsConvexOut) *pIsConvexOut = ps->isConvex();
       return poly;
     } else {
       if (auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
@@ -80,13 +79,15 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         if (is_convex) {
           part_points.emplace_back(getHullPoints(*poly));
         } else {
-          Nef decomposed_nef(*poly);
+          // The CGAL_Nef_polyhedron3 constructor can crash on bad polyhedron, so don't try
+          if (!poly->is_valid()) throw 0;
+          CGAL_Nef_polyhedron3 decomposed_nef(*poly);
           CGAL::Timer t;
           t.start();
           CGAL::convex_decomposition_3(decomposed_nef);
 
           // the first volume is the outer volume, which ignored in the decomposition
-          Nef::Volume_const_iterator ci = ++decomposed_nef.volumes_begin();
+          CGAL_Nef_polyhedron3::Volume_const_iterator ci = ++decomposed_nef.volumes_begin();
           for (; ci != decomposed_nef.volumes_end(); ++ci) {
             if (ci->mark()) {
               Polyhedron poly;
@@ -111,15 +112,15 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         std::vector<Hull_kernel::Point_3> minkowski_points;
 
         minkowski_points.reserve(points0.size() * points1.size());
-        for (size_t i = 0; i < points0.size(); ++i) {
-          for (size_t j = 0; j < points1.size(); ++j) {
-            minkowski_points.push_back(points0[i] + (points1[j] - CGAL::ORIGIN));
+        for (const auto& p0 : points0) {
+          for (const auto p1 : points1) {
+            minkowski_points.push_back(p0 + (p1 - CGAL::ORIGIN));
           }
         }
 
         if (minkowski_points.size() <= 3) {
           t.stop();
-          return std::make_shared<const ManifoldGeometry>();
+          return std::make_shared<ManifoldGeometry>();
         }
 
         t.stop();
@@ -175,7 +176,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
         t.reset();
 
         CGALUtils::triangulateFaces(mesh);
-        return ManifoldUtils::createMutableManifoldFromSurfaceMesh(mesh);
+        return ManifoldUtils::createManifoldFromSurfaceMesh(mesh);
       };
 
       std::vector<std::shared_ptr<const ManifoldGeometry>> result_parts(part_points[0].size() * part_points[1].size());
@@ -213,14 +214,11 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
   } catch (const std::exception& e) {
     LOG(message_group::Warning,
         "[manifold] Minkowski failed with error, falling back to Nef operation: %1$s\n", e.what());
-
-    return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::MINKOWSKI);
   } catch (...) {
     LOG(message_group::Warning,
         "[manifold] Minkowski hard-crashed, falling back to Nef operation.");
-
-    return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::MINKOWSKI);
   }
+  return ManifoldUtils::applyOperator3DManifold(children, OpenSCADOperator::MINKOWSKI);
 }
 
 }  // namespace ManifoldUtils

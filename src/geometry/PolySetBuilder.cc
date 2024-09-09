@@ -40,6 +40,10 @@
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
   : convex_(convex), dim_(dim)
 {
+  reserve(vertices_count, indices_count);
+}
+
+void PolySetBuilder::reserve(int vertices_count, int indices_count) {
   if (vertices_count != 0) vertices_.reserve(vertices_count);
   if (indices_count != 0) indices_.reserve(indices_count);
 }
@@ -52,15 +56,13 @@ int PolySetBuilder::numVertices() const {
   return vertices_.size();
 }
 
+int PolySetBuilder::numPolygons() const {
+  return indices_.size();
+}
+
 int PolySetBuilder::vertexIndex(const Vector3d& pt)
 {
   return vertices_.lookup(pt);
-}
-
-void PolySetBuilder::appendPoly(const std::vector<int>& inds)
-{
-  auto& face = indices_.emplace_back();
-  face.insert(face.begin(), inds.begin(), inds.end());
 }
 
 void PolySetBuilder::appendGeometry(const std::shared_ptr<const Geometry>& geom)
@@ -70,22 +72,22 @@ void PolySetBuilder::appendGeometry(const std::shared_ptr<const Geometry>& geom)
       appendGeometry(item.second);
     }
   } else if (const auto ps = std::dynamic_pointer_cast<const PolySet>(geom)) {
-    append(*ps);
+    appendPolySet(*ps);
 #ifdef ENABLE_CGAL
   } else if (const auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(geom)) {
     if (const auto ps = CGALUtils::createPolySetFromNefPolyhedron3(*(N->p3))) {
-      append(*ps);
+      appendPolySet(*ps);
     }
     else {
       LOG(message_group::Error, "Nef->PolySet failed");
     }
   } else if (const auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(geom)) {
     // TODO(ochafik): Implement appendGeometry(Surface_mesh) instead of converting to PolySet
-    append(*hybrid->toPolySet());
+    appendPolySet(*hybrid->toPolySet());
 #endif // ifdef ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
   } else if (const auto mani = std::dynamic_pointer_cast<const ManifoldGeometry>(geom)) {
-    append(*mani->toPolySet());
+    appendPolySet(*mani->toPolySet());
 #endif
   } else if (std::dynamic_pointer_cast<const Polygon2d>(geom)) { // NOLINT(bugprone-branch-clone)
     assert(false && "Unsupported geometry");
@@ -95,63 +97,108 @@ void PolySetBuilder::appendGeometry(const std::shared_ptr<const Geometry>& geom)
 
 }
 
-
-void PolySetBuilder::appendPoly(const std::vector<Vector3d>& v)
+void PolySetBuilder::appendPolygon(const std::vector<int>& inds)
 {
-  IndexedFace inds;
-  inds.reserve(v.size());
-  for (const auto& pt: v)
-    inds.push_back(vertexIndex(pt));
-  indices_.push_back(inds);
+  beginPolygon(inds.size());
+  for (int idx : inds) addVertex(idx);
+  endPolygon();
 }
 
-void PolySetBuilder::appendPoly(int nvertices){
-  indices_.emplace_back().reserve(nvertices);
+void PolySetBuilder::appendPolygon(const std::vector<Vector3d>& polygon)
+{
+  beginPolygon(polygon.size());
+  for (const auto& v: polygon) addVertex(v);
+  endPolygon();
 }
 
-void PolySetBuilder::appendVertex(int ind)
-{
-  indices_.back().push_back(ind);
+void PolySetBuilder::beginPolygon(int nvertices) {
+  endPolygon();
+  current_polygon_.reserve(nvertices);
 }
 
-void PolySetBuilder::appendVertex(const Vector3d &v)
+void PolySetBuilder::addVertex(int ind)
 {
-  appendVertex(vertexIndex(v));
+  // Ignore consecutive duplicate indices
+  if (current_polygon_.empty() || 
+      ind != current_polygon_.back() && ind != current_polygon_.front()) {
+    current_polygon_.push_back(ind);
+  }
 }
 
-void PolySetBuilder::prependVertex(int ind)
+void PolySetBuilder::addVertex(const Vector3d &v)
 {
-  indices_.back().insert(indices_.back().begin(), ind);
+  addVertex(vertexIndex(v));
 }
 
-void PolySetBuilder::prependVertex(const Vector3d &v)
-{
-  prependVertex(vertexIndex(v));
+void PolySetBuilder::endPolygon() {
+  // FIXME: Should we check for self-touching polygons (non-consecutive duplicate indices)?
+
+  // FIXME: Can we move? What would the state of current_polygon_ be after move?
+  if (current_polygon_.size() >= 3) {
+    indices_.push_back(current_polygon_);
+  }
+  current_polygon_.clear();
 }
 
-void PolySetBuilder::append(const PolySet& ps)
+void PolySetBuilder::appendPolySet(const PolySet& ps)
 {
-  for (const auto& poly : ps.indices) {
-    appendPoly(poly.size());
-    for (const auto& ind: poly) {
-      appendVertex(vertexIndex(ps.vertices[ind]));
+  // Copy color indices lazily.
+  if (!ps.color_indices.empty()) {
+    // If we hadn't built color_indices_ yet, catch up / fill w/ -1.
+    if (color_indices_.empty() && !indices_.empty()) {
+      color_indices_.resize(indices_.size(), -1);
     }
+    color_indices_.reserve(color_indices_.size() + ps.color_indices.size());
+
+    auto nColors = ps.colors.size();
+    std::vector<uint32_t> color_map(nColors);
+    for (int i = 0; i < nColors; i++) {
+      const auto& color = ps.colors[i];
+      // Find index of color in colors_, or add it if it doesn't exist
+      auto it = std::find(colors_.begin(), colors_.end(), color);
+      if (it == colors_.end()) {
+        color_map[i] = colors_.size();
+        colors_.push_back(color);
+      } else {
+        color_map[i] = it - colors_.begin();
+      }
+    }
+    for (int i = 0, n = ps.color_indices.size(); i < n; i++) {
+      const auto color_index = ps.color_indices[i];
+      color_indices_.push_back(color_index < 0 ? -1 : color_map[color_index]);
+    }
+  } else if (!color_indices_.empty()) {
+    // If we already built color_indices_ but don't have colors with this ps, fill with -1.
+    color_indices_.resize(color_indices_.size() + ps.indices.size(), -1);
+  }
+
+  reserve(numVertices() + ps.vertices.size(), numPolygons() + ps.indices.size());
+  for (const auto& poly : ps.indices) {
+    beginPolygon(poly.size());
+    for (const auto& ind: poly) {
+      addVertex(ps.vertices[ind]);
+    }
+    endPolygon();
   }
 }
 
 std::unique_ptr<PolySet> PolySetBuilder::build()
 {
+  endPolygon();
   std::unique_ptr<PolySet> polyset;
   polyset = std::make_unique<PolySet>(dim_, convex_);
   vertices_.copy(std::back_inserter(polyset->vertices));
   polyset->indices = std::move(indices_);
+  polyset->color_indices = std::move(color_indices_);
+  polyset->colors = std::move(colors_);
   polyset->setConvexity(convexity_);
-  polyset->isTriangular = true;
+  bool is_triangular = true;
   for (const auto& face : polyset->indices) {
     if (face.size() > 3) {
-      polyset->isTriangular = false;
+      is_triangular = false;
       break;
     }
   }
+  polyset->setTriangular(is_triangular);
   return polyset;
 }
