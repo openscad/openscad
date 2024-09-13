@@ -3,7 +3,6 @@
 #include "ManifoldGeometry.h"
 #include "PolySetBuilder.h"
 #include "Feature.h"
-#include "manifold.h"
 #include "printutils.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
@@ -13,7 +12,7 @@
 #endif
 #include "PolySetUtils.h"
 #include "PolySet.h"
-#include "polygon.h"
+#include "manifold/polygon.h"
 
 using Error = manifold::Manifold::Error;
 
