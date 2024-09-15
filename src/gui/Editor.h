@@ -9,6 +9,12 @@
 #include "IndicatorData.h"
 #include "parameter/ParameterWidget.h"
 
+enum class EditorSelectionIndicatorStatus
+{
+  SELECTED,
+  IMPACTED
+};
+
 class EditorInterface : public QWidget
 {
   Q_OBJECT
@@ -50,6 +56,8 @@ public slots:
   virtual void commentSelection() = 0;
   virtual void uncommentSelection() = 0;
   virtual void setPlainText(const QString&) = 0;
+  virtual void setSelectionIndicatorStatus(EditorSelectionIndicatorStatus status, int level, int lineFrom, int colFrom, int lineTo, int colTo) = 0;
+  virtual void clearAllSelectionIndicators() = 0;
   virtual void highlightError(int) = 0;
   virtual void unhighlightLastError() = 0;
   virtual void setHighlightScheme(const QString&) = 0;
