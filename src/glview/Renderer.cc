@@ -104,9 +104,12 @@ void Renderer::setupShader() {
 
   renderer_shader.progid = edgeshader_prog;
   renderer_shader.type = EDGE_RENDERING;
-  renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1"); // 1
-  renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2"); // 2
-  renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric"); // 3
+  renderer_shader.data.rendering_mode = glGetUniformLocation(edgeshader_prog, "rendering_mode");
+  renderer_shader.data.resolution = glGetUniformLocation(edgeshader_prog, "resolution");
+
+  renderer_shader.data.csg_rendering.color_area = glGetUniformLocation(edgeshader_prog, "color1");
+  renderer_shader.data.csg_rendering.color_edge = glGetUniformLocation(edgeshader_prog, "color2");
+  renderer_shader.data.csg_rendering.barycentric = glGetAttribLocation(edgeshader_prog, "barycentric");
 }
 
 void Renderer::resize(int /*w*/, int /*h*/)
