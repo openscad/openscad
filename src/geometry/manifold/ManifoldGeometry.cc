@@ -82,18 +82,18 @@ size_t ManifoldGeometry::memsize() const {
 std::string ManifoldGeometry::dump() const {
   std::ostringstream out;
   auto &manifold = getManifold();
-  auto mesh = manifold.GetMesh();
+  auto meshgl = manifold.GetMeshGL64();
   out << "Manifold:"
       << "\n status: " << ManifoldUtils::statusToString(manifold.Status())
       << "\n genus: " << manifold.Genus()
-      << "\n num vertices: " << mesh.vertPos.size()
-      << "\n num polygons: " << mesh.triVerts.size()
+      << "\n num vertices: " << meshgl.NumVert()
+      << "\n num polygons: " << meshgl.NumTri()
       << "\n polygons data:";
 
-  for (const auto &tv : mesh.triVerts) {
+  for (size_t faceid = 0; faceid < meshgl.NumTri(); faceid++) {
     out << "\n  polygon begin:";
     for (const int j : {0, 1, 2}) {
-      Vector3d v = vector_convert<Vector3d>(mesh.vertPos[tv[j]]);
+      auto v = vector_convert<Vector3d>(meshgl.GetVertPos(meshgl.GetTriVerts(faceid)[j]));
       out << "\n   vertex:" << v;
     }
   }
@@ -102,7 +102,7 @@ std::string ManifoldGeometry::dump() const {
 }
 
 std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const {
-  manifold::MeshGL mesh = getManifold().GetMeshGL();
+  manifold::MeshGL64 mesh = getManifold().GetMeshGL64();
   auto ps = std::make_shared<PolySet>(3);
   ps->setTriangular(true);
   ps->vertices.reserve(mesh.NumVert());
@@ -195,18 +195,18 @@ class CGALPolyhedronBuilderFromManifold : public CGAL::Modifier_base<typename Po
 public:
   using CGALPoint = typename CGAL_Polybuilder::Point_3;
 
-  const manifold::Mesh& mesh;
-  CGALPolyhedronBuilderFromManifold(const manifold::Mesh& mesh) : mesh(mesh) { }
+  const manifold::MeshGL64& meshgl;
+  CGALPolyhedronBuilderFromManifold(const manifold::MeshGL64& mesh) : meshgl(mesh) { }
 
   void operator()(HDS& hds) override {
     CGAL_Polybuilder B(hds, true);
   
-    B.begin_surface(mesh.vertPos.size(), mesh.triVerts.size());
-    for (const auto &v : mesh.vertPos) {
-      B.add_vertex(CGALUtils::vector_convert<CGALPoint>(v));
-    }
+    B.begin_surface(meshgl.NumVert(), meshgl.NumTri());
+    for (size_t vertid = 0; vertid < meshgl.NumVert(); vertid++)
+      B.add_vertex(CGALUtils::vector_convert<CGALPoint>(meshgl.GetVertPos(vertid)));
 
-    for (const auto &tv : mesh.triVerts) {
+    for (size_t faceid = 0; faceid < meshgl.NumTri(); faceid++) {
+      const auto tv = meshgl.GetTriVerts(faceid);
       B.begin_facet();
       for (const int j : {0, 1, 2}) {
         B.add_vertex_to_facet(tv[j]);
@@ -222,8 +222,8 @@ std::shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
 {
   auto p = std::make_shared<Polyhedron>();
   try {
-    manifold::Mesh mesh = getManifold().GetMesh();
-    CGALPolyhedronBuilderFromManifold<Polyhedron> builder(mesh);
+    auto meshgl = getManifold().GetMeshGL64();
+    CGALPolyhedronBuilderFromManifold<Polyhedron> builder(meshgl);
     p->delegate(builder);
   } catch (const CGAL::Assertion_exception& e) {
     LOG(message_group::Error, "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
