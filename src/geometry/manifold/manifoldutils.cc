@@ -66,7 +66,8 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMe
 
   assert((mesh.triVerts.size() == tm.number_of_faces() * 3) || !"Mesh was not triangular!");
 
-  auto mani = std::make_shared<manifold::Manifold>(std::move(meshgl));
+  auto mani = std::make_shared<manifold::Manifold>(
+      manifold::Manifold(meshgl).AsOriginal());
   if (mani->Status() != Error::NoError) {
     LOG(message_group::Error,
         "[manifold] Surface_mesh -> Manifold conversion failed: %1$s", 
