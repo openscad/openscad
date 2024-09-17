@@ -2223,8 +2223,6 @@ void MainWindow::sendToCura(void)
   ExportInfo exportInfo = createExportInfo(FileFormat::STL, exportFileName, activeEditor->filepath);
   exportFileByName(this->root_geom, exportInfo);
 
-  //exportFilName
-  printf("tt %s\n",exportFileName.toStdString().c_str());
 
   QProcess *process = new QProcess(this);
   QString file = "cura";
