@@ -1044,6 +1044,7 @@ set(GUI_SOURCES
   src/gui/MainWindow.cc
   src/gui/Measurement.cc
   src/gui/Animate.cc
+  src/gui/FontList.cc
   src/gui/MouseSelector.cc
   src/gui/OctoPrint.cc
   src/gui/OpenCSGWarningDialog.cc
@@ -1102,6 +1103,7 @@ set(GUI_HEADERS
     src/gui/ErrorLog.h
     src/gui/EventFilter.h
     src/gui/ExportPdfDialog.h
+    src/gui/FontList.h
     src/gui/FontListDialog.h
     src/gui/FontListTableView.h
     src/gui/IgnoreWheelWhenNotFocused.h
@@ -1154,6 +1156,7 @@ set(GUI_UIS
     src/gui/Console.ui
     src/gui/ErrorLog.ui
     src/gui/ExportPdfDialog.ui
+    src/gui/FontList.ui
     src/gui/FontListDialog.ui
     src/gui/LaunchingScreen.ui
     src/gui/LibraryInfoDialog.ui
