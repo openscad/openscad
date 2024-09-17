@@ -3,6 +3,8 @@
 #include <boost/foreach.hpp>
 #include <utility>
 
+GeometryList::GeometryList() = default;
+
 GeometryList::GeometryList(Geometry::Geometries geometries) : children(std::move(geometries))
 {
 }

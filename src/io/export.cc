@@ -56,6 +56,11 @@ return format == FileFormat::ASCIISTL ||
   format == FileFormat::WRL ||
   format == FileFormat::AMF ||
   format == FileFormat::_3MF ||
+  format == FileFormat::COLLADA ||
+  format == FileFormat::STP ||
+  format == FileFormat::PLY ||
+  format == FileFormat::GLTF ||
+  format == FileFormat::X3D ||
   format == FileFormat::NEFDBG ||
   format == FileFormat::NEF3;
 }
@@ -68,6 +73,11 @@ bool is2D(const FileFormat format) {
 
 void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
 {
+  if (Feature::ExperimentalAssimp.is_enabled()) {
+    if (export_assimp(root_geom, output, exportInfo.format)) {
+      return;
+    }
+  }
   switch (exportInfo.format) {
   case FileFormat::ASCIISTL:
     export_stl(root_geom, output, false);
