@@ -101,6 +101,7 @@
 #include <QTemporaryFile>
 #include <QDockWidget>
 #include <QClipboard>
+#include <QProcess>
 #include <memory>
 #include <string>
 #include "QWordSearchField.h"
@@ -2102,6 +2103,9 @@ void MainWindow::action3DPrint()
     LOG("Sending design to OctoPrint...");
     sendToOctoPrint();
     break;
+  case print_service_t::CURA:
+    sendToCura();
+    break;    
   default:
     break;
   }
@@ -2192,6 +2196,39 @@ void MainWindow::sendToOctoPrint()
   }
 
   updateStatusBar(nullptr);
+#endif // ifdef ENABLE_3D_PRINTING
+}
+
+void MainWindow::sendToCura(void)
+{
+#ifdef ENABLE_3D_PRINTING
+
+  QTemporaryFile exportFile{QDir::temp().filePath("OpenSCAD.XXXXXX.stl")};
+  exportFile.setAutoRemove(false);
+  if (!exportFile.open()) {
+    LOG("Could not open temporary file.");
+    return;
+  }
+  const QString exportFileName = exportFile.fileName();
+  exportFile.close();
+
+  QString userFileName;
+  if (activeEditor->filepath.isEmpty()) {
+    userFileName = exportFileName;
+  } else {
+    QFileInfo fileInfo{activeEditor->filepath};
+    userFileName = fileInfo.baseName() + ".stl";
+  }
+
+  ExportInfo exportInfo = createExportInfo(FileFormat::STL, exportFileName, activeEditor->filepath);
+  exportFileByName(this->root_geom, exportInfo);
+
+  //exportFilName
+  printf("tt %s\n",exportFileName.toStdString().c_str());
+
+  QProcess *process = new QProcess(this);
+  QString file = "cura";
+  process->start(file, {exportFileName});
 #endif // ifdef ENABLE_3D_PRINTING
 }
 

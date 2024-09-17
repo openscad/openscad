@@ -244,6 +244,7 @@ private slots:
   void csgReloadRender();
   void action3DPrint();
   void sendToOctoPrint();
+  void sendToCura();
   void sendToPrintService();
   void actionRender();
   void actionRenderDone(const std::shared_ptr<const Geometry>&);
