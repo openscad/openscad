@@ -392,8 +392,8 @@ private:
   QString exportPath(const char *suffix); // look up the last export path and generate one if not found
   int last_parser_error_pos{-1}; // last highlighted error position
   int tabCount = 0;
-  paperSizes sizeString2Enum(QString current);
-  paperOrientations orientationsString2Enum(QString current);
+  paperSizes sizeString2Enum(const QString& current);
+  paperOrientations orientationsString2Enum(const QString& current);
 
   QSoundEffect *renderCompleteSoundEffect;
 

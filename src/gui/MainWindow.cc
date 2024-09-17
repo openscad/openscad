@@ -671,7 +671,6 @@ MainWindow::MainWindow(const QStringList& filenames)
   const auto windowState = settings.value("window/state", QByteArray()).toByteArray();
   restoreGeometry(settings.value("window/geometry", QByteArray()).toByteArray());
   restoreState(windowState);
-  updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideFontList, hideViewportControl);
 
   if (windowState.size() == 0) {
     /*
@@ -688,7 +687,8 @@ MainWindow::MainWindow(const QStringList& filenames)
      */
     activeEditor->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
     tabifyDockWidget(consoleDock, errorLogDock);
-    tabifyDockWidget(errorLogDock, animateDock);
+    tabifyDockWidget(errorLogDock, fontListDock);
+    tabifyDockWidget(fontListDock, animateDock);
     showConsole();
     hideCustomizer = true;
     hideViewportControl = true;
@@ -712,7 +712,7 @@ MainWindow::MainWindow(const QStringList& filenames)
 #endif // ifdef Q_OS_WIN
   }
 
-  updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideViewportControl);
+  updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideFontList, hideViewportControl);
 
   connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
   connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
@@ -2452,7 +2452,8 @@ void MainWindow::rightClick(QPoint mouse)
     clearAllSelectionIndicators();
   }
 }
-void MainWindow::measureFinished(void)
+
+void MainWindow::measureFinished()
 {
   this->qglview->selected_obj.clear();
   this->qglview->shown_obj.clear();
@@ -3861,17 +3862,16 @@ void MainWindow::jumpToLine(int line, int col)
   this->activeEditor->setCursorPosition(line, col);
 }
 
-paperSizes MainWindow::sizeString2Enum(QString current){
-  for (size_t i = 0; i < paperSizeStrings.size(); i++) {
-    if (current.toStdString() == paperSizeStrings[i]) return static_cast<paperSizes>(i);
-  }
-  return paperSizes::A4;
-}
+paperSizes MainWindow::sizeString2Enum(const QString& current){
+   for(size_t i = 0; i < paperSizeStrings.size(); i++){
+       if (current.toStdString()==paperSizeStrings[i]) return static_cast<paperSizes>(i);
+   };
+   return paperSizes::A4;
+};
 
-paperOrientations MainWindow::orientationsString2Enum(QString current){
-  for (size_t i = 0; i < paperOrientationsStrings.size(); i++) {
-    if (current.toStdString() == paperOrientationsStrings[i]) return static_cast<paperOrientations>(i);
-  }
-  return paperOrientations::PORTRAIT;
-}
-
+paperOrientations MainWindow::orientationsString2Enum(const QString& current){
+   for(size_t i = 0; i < paperOrientationsStrings.size(); i++){
+       if (current.toStdString()==paperOrientationsStrings[i]) return static_cast<paperOrientations>(i);
+   };
+   return paperOrientations::PORTRAIT;
+};
