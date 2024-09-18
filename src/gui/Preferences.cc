@@ -40,6 +40,7 @@
 #include "GeometryCache.h"
 #include "AutoUpdater.h"
 #include "Feature.h"
+#include "Settings.h"
 #ifdef ENABLE_CGAL
 #include "CGALCache.h"
 #endif
@@ -61,10 +62,9 @@ class SettingsReader : public Settings::SettingsVisitor
 
   void handle(Settings::SettingsEntry& entry) const override
   {
-    std::string key = entry.category() + "/" + entry.name();
-    if (settings.contains(QString::fromStdString(key))) {
-      std::string value = settings.value(QString::fromStdString(key)).toString().toStdString();
-      PRINTDB("SettingsReader R: %s = '%s'", key % value);
+    if (settings.contains(QString::fromStdString(entry.key()))) {
+      std::string value = settings.value(QString::fromStdString(entry.key())).toString().toStdString();
+      PRINTDB("SettingsReader R: %s = '%s'", entry.key() % value);
       entry.decode(value);
     }
   }
@@ -193,6 +193,7 @@ void Preferences::init() {
   initIntSpinBox(this->spinBoxShowWhitespaceSize, Settings::Settings::showWhitespaceSize);
   initIntSpinBox(this->spinBoxTabWidth, Settings::Settings::tabWidth);
 
+  initComboBox(this->comboBoxDefaultPrintService, Settings::Settings::defaultPrintService);
   initComboBox(this->comboBoxOctoPrintFileFormat, Settings::Settings::octoPrintFileFormat);
   initComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
   initComboBox(this->comboBoxLocalSlicerFileFormat, Settings::Settings::localSlicerFileFormat);
@@ -757,6 +758,11 @@ void Preferences::on_enableHidapiTraceCheckBox_toggled(bool checked)
 {
   Settings::Settings::inputEnableDriverHIDAPILog.setValue(checked);
   writeSettings();
+}
+
+void Preferences::on_comboBoxDefaultPrintService_activated(int val)
+{
+  applyComboBox(this->comboBoxDefaultPrintService, val, Settings::Settings::defaultPrintService);
 }
 
 void Preferences::on_comboBoxOctoPrintAction_activated(int val)

@@ -13,6 +13,7 @@ class SettingsEntry
 public:
   const std::string& category() const { return _category; }
   const std::string& name() const { return _name; }
+  const std::string key() const { return category() + "/" + name(); }
 
   virtual bool isDefault() const = 0;
   virtual std::string encode() const = 0;
@@ -178,6 +179,7 @@ public:
   static SettingsEntryBool enableLineNumbers;
   static SettingsEntryBool enableNumberScrollWheel;
   static SettingsEntryEnum modifierNumberScrollWheel;
+  static SettingsEntryEnum defaultPrintService;
   static SettingsEntryString octoPrintUrl;
   static SettingsEntryString octoPrintApiKey;
   static SettingsEntryEnum octoPrintFileFormat;

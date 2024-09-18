@@ -29,14 +29,15 @@
 #include "qtgettext.h"
 #include "ui_PrintInitDialog.h"
 
-enum class print_service_t { PRINT_SERVICE, OCTOPRINT, LOCALSLICER };
+enum class print_service_t { NONE, PRINT_SERVICE, OCTOPRINT, LOCALSLICER };
 
 class PrintInitDialog : public QDialog, public Ui::PrintInitDialog
 {
   Q_OBJECT;
 public:
   PrintInitDialog();
-  print_service_t getResult() const { return this->result; }
+  static print_service_t getResult();
+  static QString serviceName(print_service_t service);
 
 public slots:
   void on_printServiceButton_clicked();

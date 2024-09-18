@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>815</width>
-    <height>625</height>
+    <height>750</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1338,6 +1338,38 @@
       <widget class="QWidget" name="page3DPrint">
        <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
+         <widget class="QGroupBox" name="groupBoxGeneral">
+          <property name="title">
+           <string>General</string>
+          </property>
+          <layout class="QGridLayout" name="gridLayout_10">
+           <item row="0" column="0">
+            <widget class="QLabel" name="labelDefaultPrintService">
+             <property name="text">
+              <string>Default Print Service</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QComboBox" name="comboBoxDefaultPrintService"/>
+           </item>
+           <item row="0" column="2">
+            <spacer name="horizontalSpacerGeneral1">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
          <widget class="QGroupBox" name="groupBoxOctoPrint">
           <property name="title">
            <string>OctoPrint</string>
@@ -1581,19 +1613,6 @@
          </widget>
         </item>
         <item>
-         <spacer name="verticalSpacer3DPrint">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
-        </item>
-        <item>
          <widget class="QGroupBox" name="groupBoxLocalSlicer">
           <property name="title">
            <string>Local Slicer</string>
@@ -1655,6 +1674,19 @@
            </item>
           </layout>
          </widget>
+        </item>
+        <item>
+         <spacer name="verticalSpacer3DPrint">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </widget>

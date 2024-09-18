@@ -2084,14 +2084,7 @@ void MainWindow::action3DPrint()
   if (!canExport(dim)) return;
 
   const auto printService = PrintService::inst();
-  auto printInitDialog = new PrintInitDialog();
-  auto printInitResult = printInitDialog->exec();
-  printInitDialog->deleteLater();
-  if (printInitResult == QDialog::Rejected) {
-    return;
-  }
-
-  const auto selectedService = printInitDialog->getResult();
+  const auto selectedService = PrintInitDialog::getResult();
   Preferences::Preferences::inst()->updateGUI();
 
   switch (selectedService) {
