@@ -506,12 +506,9 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
 
 std::unique_ptr<const Geometry> SquareNode::createGeometry() const
 {
-  auto p = std::make_unique<Polygon2d>();
-  if (
-    this->x <= 0 || !std::isfinite(this->x)
-    || this->y <= 0 || !std::isfinite(this->y)
-    ) {
-    return p;
+  if (this->x <= 0 || !std::isfinite(this->x) ||
+      this->y <= 0 || !std::isfinite(this->y)) {
+    return std::make_unique<Polygon2d>();
   }
 
   Vector2d v1(0, 0);
@@ -523,9 +520,7 @@ std::unique_ptr<const Geometry> SquareNode::createGeometry() const
 
   Outline2d o;
   o.vertices = {v1, {v2[0], v1[1]}, v2, {v1[0], v2[1]}};
-  p->addOutline(o);
-  p->setSanitized(true);
-  return p;
+  return std::make_unique<Polygon2d>(o);
 }
 
 static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
