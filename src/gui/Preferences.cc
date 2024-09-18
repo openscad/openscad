@@ -203,6 +203,7 @@ void Preferences::init() {
   const QString slicerDesc = QString::fromStdString(Settings::Settings::octoPrintSlicerEngineDesc.value());
   const QString profile = QString::fromStdString(Settings::Settings::octoPrintSlicerProfile.value());
   const QString profileDesc = QString::fromStdString(Settings::Settings::octoPrintSlicerProfileDesc.value());
+  BlockSignals<QLineEdit *>(this->lineEditLocalSlicer)->setText(QString::fromStdString(Settings::Settings::localSlicerExecutable.value()));
   this->comboBoxOctoPrintSlicingEngine->clear();
   this->comboBoxOctoPrintSlicingEngine->addItem(_("<Default>"), QVariant{""});
   if (!slicer.isEmpty()) {
@@ -781,6 +782,12 @@ void Preferences::on_pushButtonOctoPrintApiKey_clicked()
 void Preferences::on_comboBoxOctoPrintFileFormat_activated(int val)
 {
   applyComboBox(this->comboBoxOctoPrintFileFormat, val, Settings::Settings::octoPrintFileFormat);
+}
+
+void Preferences::on_lineEditLocalSlicer_editingFinished()
+{
+  Settings::Settings::localSlicerExecutable.setValue(this->lineEditLocalSlicer->text().toStdString());
+  writeSettings();
 }
 
 void Preferences::on_pushButtonOctoPrintCheckConnection_clicked()

@@ -113,9 +113,9 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="CuraButton">
+       <widget class="QPushButton" name="LocalSlicerButton">
         <property name="text">
-         <string>Send to CURA</string>
+         <string>Send to local Slicer</string>
         </property>
         <property name="checkable">
          <bool>true</bool>

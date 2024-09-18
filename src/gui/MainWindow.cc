@@ -2103,8 +2103,8 @@ void MainWindow::action3DPrint()
     LOG("Sending design to OctoPrint...");
     sendToOctoPrint();
     break;
-  case print_service_t::CURA:
-    sendToCura();
+  case print_service_t::LOCALSLICER:
+    sendToLocalSlicer();
     break;    
   default:
     break;
@@ -2199,34 +2199,52 @@ void MainWindow::sendToOctoPrint()
 #endif // ifdef ENABLE_3D_PRINTING
 }
 
-void MainWindow::sendToCura(void)
+void MainWindow::sendToLocalSlicer(void)
 {
 #ifdef ENABLE_3D_PRINTING
+  const QString slicer = QString::fromStdString(Settings::Settings::localSlicerExecutable.value());
 
-  QTemporaryFile exportFile{QDir::temp().filePath("OpenSCAD.XXXXXX.stl")};
-  exportFile.setAutoRemove(false);
-  if (!exportFile.open()) {
+ const QString fileFormat = QString::fromStdString(Settings::Settings::octoPrintFileFormat.value());
+  FileFormat exportFileFormat{FileFormat::STL};
+  if (fileFormat == "OBJ") {
+    exportFileFormat = FileFormat::OBJ;
+  } else if (fileFormat == "OFF") {
+    exportFileFormat = FileFormat::OFF;
+  } else if (fileFormat == "ASCIISTL") {
+    exportFileFormat = FileFormat::ASCIISTL;
+  } else if (fileFormat == "AMF") {
+    exportFileFormat = FileFormat::AMF;
+  } else if (fileFormat == "3MF") {
+    exportFileFormat = FileFormat::_3MF;
+  } else {
+    exportFileFormat = FileFormat::STL;
+  }
+
+  std::shared_ptr<QTemporaryFile> exportFile = std::shared_ptr<QTemporaryFile>(new QTemporaryFile({QDir::temp().filePath("OpenSCAD.XXXXXX."+fileFormat.toLower())}));
+  exportFile->setAutoRemove(false);
+  if (!exportFile->open()) {
     LOG("Could not open temporary file.");
     return;
   }
-  const QString exportFileName = exportFile.fileName();
-  exportFile.close();
+  const QString exportFileName = exportFile->fileName();
+  exportFile->close();
 
   QString userFileName;
   if (activeEditor->filepath.isEmpty()) {
     userFileName = exportFileName;
   } else {
     QFileInfo fileInfo{activeEditor->filepath};
-    userFileName = fileInfo.baseName() + ".stl";
+    userFileName = fileInfo.baseName() + fileFormat.toLower();
   }
 
-  ExportInfo exportInfo = createExportInfo(FileFormat::STL, exportFileName, activeEditor->filepath);
+  ExportInfo exportInfo = createExportInfo(exportFileFormat, exportFileName, activeEditor->filepath);
   exportFileByName(this->root_geom, exportInfo);
 
-
-  QProcess *process = new QProcess(this);
-  QString file = "cura";
-  process->start(file, {exportFileName});
+  QProcess process(this);
+  if(!process.startDetached(slicer, {exportFileName})) {
+    LOG(message_group::Error, "Could not start Slicer.  Is it installed?");
+  }
+  this->allTempFiles.push_back(exportFile);				   
 #endif // ifdef ENABLE_3D_PRINTING
 }
 
@@ -3744,6 +3762,9 @@ void MainWindow::quit()
 #ifdef Q_OS_MACOS
   CocoaUtils::endApplication();
 #endif
+  for(auto &temp: this->allTempFiles) {
+    temp->setAutoRemove(true);
+  }
 }
 
 void MainWindow::consoleOutput(const Message& msgObj, void *userdata)
