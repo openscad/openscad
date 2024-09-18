@@ -181,6 +181,7 @@ public:
   static SettingsEntryString octoPrintUrl;
   static SettingsEntryString octoPrintApiKey;
   static SettingsEntryEnum octoPrintFileFormat;
+  static SettingsEntryEnum localSlicerFileFormat;
   static SettingsEntryEnum octoPrintAction;
   static SettingsEntryString octoPrintSlicerEngine;
   static SettingsEntryString octoPrintSlicerEngineDesc;

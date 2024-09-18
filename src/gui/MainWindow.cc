@@ -2204,7 +2204,7 @@ void MainWindow::sendToLocalSlicer(void)
 #ifdef ENABLE_3D_PRINTING
   const QString slicer = QString::fromStdString(Settings::Settings::localSlicerExecutable.value());
 
- const QString fileFormat = QString::fromStdString(Settings::Settings::octoPrintFileFormat.value());
+ const QString fileFormat = QString::fromStdString(Settings::Settings::localSlicerFileFormat.value());
   FileFormat exportFileFormat{FileFormat::STL};
   if (fileFormat == "OBJ") {
     exportFileFormat = FileFormat::OBJ;
@@ -2240,9 +2240,22 @@ void MainWindow::sendToLocalSlicer(void)
   ExportInfo exportInfo = createExportInfo(exportFileFormat, exportFileName, activeEditor->filepath);
   exportFileByName(this->root_geom, exportInfo);
 
+  QTemporaryFile errorFile;
+  const QString errorFileName = errorFile.fileName();
+
   QProcess process(this);
+  process.setStandardErrorFile(errorFileName);
+#ifdef Q_OS_MACOS
+  if(!process.startDetached("open", {"-a", slicer, exportFileName})) {
+#else	  
   if(!process.startDetached(slicer, {exportFileName})) {
-    LOG(message_group::Error, "Could not start Slicer.  Is it installed?");
+#endif	  
+    LOG(message_group::Error, "Could not start Slicer.");
+    if (errorFile.open()){
+      QTextStream in(&errorFile);
+      QString log = in.readAll();
+      LOG(message_group::Error, log.toStdString().c_str());
+    }
   }
   this->allTempFiles.push_back(exportFile);				   
 #endif // ifdef ENABLE_3D_PRINTING

@@ -191,6 +191,7 @@ void Preferences::init() {
   initIntSpinBox(this->spinBoxTabWidth, Settings::Settings::tabWidth);
 
   initComboBox(this->comboBoxOctoPrintFileFormat, Settings::Settings::octoPrintFileFormat);
+  initComboBox(this->comboBoxLocalSlicerFileFormat, Settings::Settings::localSlicerFileFormat);
   initComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
   initComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
   initComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
@@ -782,6 +783,12 @@ void Preferences::on_pushButtonOctoPrintApiKey_clicked()
 void Preferences::on_comboBoxOctoPrintFileFormat_activated(int val)
 {
   applyComboBox(this->comboBoxOctoPrintFileFormat, val, Settings::Settings::octoPrintFileFormat);
+}
+
+void Preferences::on_comboBoxLocalSlicerFileFormat_activated(int val)
+{
+  applyComboBox(this->comboBoxLocalSlicerFileFormat, val, Settings::Settings::localSlicerFileFormat);
+  writeSettings();
 }
 
 void Preferences::on_lineEditLocalSlicer_editingFinished()
