@@ -64,7 +64,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMe
       meshgl.triVerts.emplace_back(idx[j]);
   }
 
-  assert((mesh.triVerts.size() == tm.number_of_faces() * 3) || !"Mesh was not triangular!");
+  assert((meshgl.triVerts.size() == tm.number_of_faces() * 3) || !"Mesh was not triangular!");
 
   auto mani = std::make_shared<manifold::Manifold>(
       manifold::Manifold(meshgl).AsOriginal());
