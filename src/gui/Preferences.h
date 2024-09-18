@@ -111,6 +111,7 @@ public slots:
   void on_lineEditOctoPrintURL_editingFinished();
   void on_lineEditOctoPrintApiKey_editingFinished();
   void on_pushButtonOctoPrintApiKey_clicked();
+  void on_pushButtonSelectLocalSlicerPath_clicked();
   void on_lineEditLocalSlicer_editingFinished();
 
 signals:

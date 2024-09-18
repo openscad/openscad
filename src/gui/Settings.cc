@@ -118,7 +118,6 @@ SettingsEntryEnum Settings::modifierNumberScrollWheel("editor", "modifierNumberS
 SettingsEntryString Settings::octoPrintUrl("printing", "octoPrintUrl", "");
 SettingsEntryString Settings::octoPrintApiKey("printing", "octoPrintApiKey", "");
 SettingsEntryEnum Settings::octoPrintFileFormat("printing", "octoPrintFileFormat", {{"STL", "STL"}, {"OFF", "OFF"}, {"AMF", "AMF"}, {"3MF", "3MF"}}, "STL");
-SettingsEntryEnum Settings::localSlicerFileFormat("printing", "localSlicerFileFormat", {{"STL", "STL"}, {"OFF", "OFF"}, {"AMF", "AMF"}, {"3MF", "3MF"}}, "STL");
 SettingsEntryEnum Settings::octoPrintAction("printing", "octoPrintAction", {{"upload", _("Upload only")}, {"slice", _("Upload & Slice")}, {"select", _("Upload, Slice & Select for printing")}, {"print", _("Upload, Slice & Start printing")}}, "upload");
 SettingsEntryString Settings::octoPrintSlicerEngine("printing", "octoPrintSlicerEngine", "");
 SettingsEntryString Settings::octoPrintSlicerEngineDesc("printing", "octoPrintSlicerEngineDesc", "");
@@ -126,6 +125,8 @@ SettingsEntryString Settings::octoPrintSlicerProfile("printing", "octoPrintSlice
 SettingsEntryString Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", "");
 
 SettingsEntryString Settings::localSlicerExecutable("printing", "localSlicerExecutable", "");
+SettingsEntryEnum Settings::localSlicerFileFormat("printing", "localSlicerFileFormat", {{"STL", "STL"}, {"OFF", "OFF"}, {"AMF", "AMF"}, {"3MF", "3MF"}}, "STL");
+
 SettingsEntryBool Settings::exportUseAsciiSTL("export", "useAsciiSTL", false);
 SettingsEntryEnum Settings::toolbarExport3D("advanced", "toolbarExport3D", {{"none", "none"}, {"STL", "STL"}, {"OFF", "OFF"}, {"WRL", "WRL"}, {"AMF", "AMF"}, {"3MF", "3MF"}}, "STL");
 SettingsEntryEnum Settings::toolbarExport2D("advanced", "toolbarExport2D", {{"none", "none"}, {"DXF", "DXF"}, {"SVG", "SVG"}, {"PDF", "PDF"}}, "none");

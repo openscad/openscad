@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>636</width>
-    <height>539</height>
+    <width>815</width>
+    <height>625</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -27,7 +27,7 @@
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="page3DView">
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -145,9 +145,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>-450</y>
-             <width>602</width>
-             <height>901</height>
+             <y>0</y>
+             <width>781</width>
+             <height>1135</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -1581,26 +1581,28 @@
          </widget>
         </item>
         <item>
+         <spacer name="verticalSpacer3DPrint">
+          <property name="orientation">
+           <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>20</width>
+            <height>40</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
          <widget class="QGroupBox" name="groupBoxLocalSlicer">
           <property name="title">
            <string>Local Slicer</string>
           </property>
-	  <layout class="QGridLayout" name="gridLayout_72">
-
-          <item row="0" column="0">
-            <widget class="QLabel" name="labelLocalSlicer">
-             <property name="text">
-              <string>Executable name</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
-             </property>
-            </widget>
-           </item>
+          <layout class="QGridLayout" name="gridLayout_72">
            <item row="0" column="2">
             <widget class="QLineEdit" name="lineEditLocalSlicer">
              <property name="placeholderText">
-		     <string notr="true">Local slicer path</string>
+              <string notr="true">Local slicer path</string>
              </property>
             </widget>
            </item>
@@ -1608,6 +1610,16 @@
             <widget class="QLabel" name="labelLocalSlicerFileFormat">
              <property name="text">
               <string>File Format</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QLabel" name="labelLocalSlicer">
+             <property name="text">
+              <string>Executable</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1634,21 +1646,15 @@
              </item>
             </layout>
            </item>
+           <item row="0" column="3">
+            <widget class="QPushButton" name="pushButtonSelectLocalSlicerPath">
+             <property name="text">
+              <string>...</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer3DPrint">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
         </item>
        </layout>
       </widget>
@@ -1682,8 +1688,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>548</width>
-             <height>747</height>
+             <width>781</width>
+             <height>1711</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_12">

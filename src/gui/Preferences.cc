@@ -30,6 +30,7 @@
 #include <QMessageBox>
 #include <QFontDatabase>
 #include <QKeyEvent>
+#include <QFileDialog>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <QStatusBar>
@@ -178,6 +179,8 @@ void Preferences::init() {
   this->lineEditStepSize->setValidator(validator1);
   this->traceDepthEdit->setValidator(uintValidator);
 
+  Settings::Settings::visit(SettingsReader());
+
   initComboBox(this->comboBoxIndentUsing, Settings::Settings::indentStyle);
   initComboBox(this->comboBoxLineWrap, Settings::Settings::lineWrap);
   initComboBox(this->comboBoxLineWrapIndentationStyle, Settings::Settings::lineWrapIndentationStyle);
@@ -191,14 +194,12 @@ void Preferences::init() {
   initIntSpinBox(this->spinBoxTabWidth, Settings::Settings::tabWidth);
 
   initComboBox(this->comboBoxOctoPrintFileFormat, Settings::Settings::octoPrintFileFormat);
-  initComboBox(this->comboBoxLocalSlicerFileFormat, Settings::Settings::localSlicerFileFormat);
   initComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
+  initComboBox(this->comboBoxLocalSlicerFileFormat, Settings::Settings::localSlicerFileFormat);
   initComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
   initComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
 
   installIgnoreWheelWhenNotFocused(this);
-
-  Settings::Settings::visit(SettingsReader());
 
   const QString slicer = QString::fromStdString(Settings::Settings::octoPrintSlicerEngine.value());
   const QString slicerDesc = QString::fromStdString(Settings::Settings::octoPrintSlicerEngineDesc.value());
@@ -783,6 +784,17 @@ void Preferences::on_pushButtonOctoPrintApiKey_clicked()
 void Preferences::on_comboBoxOctoPrintFileFormat_activated(int val)
 {
   applyComboBox(this->comboBoxOctoPrintFileFormat, val, Settings::Settings::octoPrintFileFormat);
+}
+
+void Preferences::on_pushButtonSelectLocalSlicerPath_clicked()
+{
+  const QString fileName = QFileDialog::getOpenFileName(this, "Select application");
+  if (fileName.isEmpty()) {
+    return;
+  }
+
+  this->lineEditLocalSlicer->setText(fileName);
+  on_lineEditLocalSlicer_editingFinished();
 }
 
 void Preferences::on_comboBoxLocalSlicerFileFormat_activated(int val)
