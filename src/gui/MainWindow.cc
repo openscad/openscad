@@ -25,6 +25,7 @@
  */
 #include <iostream>
 #include <memory>
+#include <qfileinfo.h>
 
 #include "boost-utils.h"
 #include "Builtins.h"
@@ -2083,24 +2084,18 @@ void MainWindow::action3DPrint()
   const unsigned int dim = 3;
   if (!canExport(dim)) return;
 
-  const auto printService = PrintService::inst();
   const auto selectedService = PrintInitDialog::getResult();
   Preferences::Preferences::inst()->updateGUI();
 
-  switch (selectedService) {
-  case print_service_t::PRINT_SERVICE:
+  if (selectedService == print_service_t::PRINT_SERVICE) {
+    const auto printService = PrintService::inst();
     LOG("Sending design to print service %1$s...", printService->getDisplayName().toStdString());
     sendToPrintService();
-    break;
-  case print_service_t::OCTOPRINT:
+  } else if (selectedService == print_service_t::OCTOPRINT) {
     LOG("Sending design to OctoPrint...");
     sendToOctoPrint();
-    break;
-  case print_service_t::LOCALSLICER:
+  } else if (selectedService == print_service_t::LOCALSLICER) {
     sendToLocalSlicer();
-    break;    
-  default:
-    break;
   }
 #endif // ifdef ENABLE_3D_PRINTING
 }
@@ -2192,12 +2187,12 @@ void MainWindow::sendToOctoPrint()
 #endif // ifdef ENABLE_3D_PRINTING
 }
 
-void MainWindow::sendToLocalSlicer(void)
+void MainWindow::sendToLocalSlicer()
 {
 #ifdef ENABLE_3D_PRINTING
   const QString slicer = QString::fromStdString(Settings::Settings::localSlicerExecutable.value());
 
- const QString fileFormat = QString::fromStdString(Settings::Settings::localSlicerFileFormat.value());
+  const QString fileFormat = QString::fromStdString(Settings::Settings::localSlicerFileFormat.value());
   FileFormat exportFileFormat{FileFormat::STL};
   if (fileFormat == "OBJ") {
     exportFileFormat = FileFormat::OBJ;
@@ -2213,14 +2208,15 @@ void MainWindow::sendToLocalSlicer(void)
     exportFileFormat = FileFormat::STL;
   }
 
-  std::shared_ptr<QTemporaryFile> exportFile = std::shared_ptr<QTemporaryFile>(new QTemporaryFile({QDir::temp().filePath("OpenSCAD.XXXXXX."+fileFormat.toLower())}));
-  exportFile->setAutoRemove(false);
+  const auto tmpPath = QDir::temp().filePath("OpenSCAD.XXXXXX."+fileFormat.toLower());
+  auto exportFile = std::make_unique<QTemporaryFile>(tmpPath);
   if (!exportFile->open()) {
-    LOG("Could not open temporary file.");
+    LOG(message_group::Error, "Could not open temporary file '%1$s'.", tmpPath.toStdString());
     return;
   }
-  const QString exportFileName = exportFile->fileName();
+  const auto exportFileName = exportFile->fileName();
   exportFile->close();
+  this->allTempFiles.push_back(std::move(exportFile));
 
   QString userFileName;
   if (activeEditor->filepath.isEmpty()) {
@@ -2233,24 +2229,19 @@ void MainWindow::sendToLocalSlicer(void)
   ExportInfo exportInfo = createExportInfo(exportFileFormat, exportFileName, activeEditor->filepath);
   exportFileByName(this->root_geom, exportInfo);
 
-  QTemporaryFile errorFile;
-  const QString errorFileName = errorFile.fileName();
-
   QProcess process(this);
-  process.setStandardErrorFile(errorFileName);
+  process.setProcessChannelMode(QProcess::MergedChannels);
 #ifdef Q_OS_MACOS
   if(!process.startDetached("open", {"-a", slicer, exportFileName})) {
 #else	  
   if(!process.startDetached(slicer, {exportFileName})) {
-#endif	  
-    LOG(message_group::Error, "Could not start Slicer.");
-    if (errorFile.open()){
-      QTextStream in(&errorFile);
-      QString log = in.readAll();
-      LOG(message_group::Error, log.toStdString().c_str());
+#endif
+    LOG(message_group::Error, "Could not start Slicer '%1$s': %2$s", slicer.toStdString(), process.errorString().toStdString());
+    const auto output = process.readAll();
+    if (output.length() > 0) {
+      LOG(message_group::Error, "Output: %1$s", output.toStdString());
     }
   }
-  this->allTempFiles.push_back(exportFile);				   
 #endif // ifdef ENABLE_3D_PRINTING
 }
 
@@ -3768,9 +3759,6 @@ void MainWindow::quit()
 #ifdef Q_OS_MACOS
   CocoaUtils::endApplication();
 #endif
-  for(auto &temp: this->allTempFiles) {
-    temp->setAutoRemove(true);
-  }
 }
 
 void MainWindow::consoleOutput(const Message& msgObj, void *userdata)
@@ -3877,4 +3865,3 @@ paperOrientations MainWindow::orientationsString2Enum(QString current){
   }
   return paperOrientations::PORTRAIT;
 }
-
