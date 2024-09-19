@@ -4,7 +4,6 @@
 #include "manifold/cross_section.h"
 #include "manifold/manifold.h"
 #include "PolySet.h"
-#include "Feature.h"
 #include "PolySetBuilder.h"
 #include "PolySetUtils.h"
 #include "manifoldutils.h"
@@ -24,20 +23,18 @@ Result vector_convert(V const& v) {
 
 }
 
-ManifoldGeometry::ManifoldGeometry() : manifold_(std::make_shared<const manifold::Manifold>()) {}
+ManifoldGeometry::ManifoldGeometry() : manifold_(manifold::Manifold()) {}
 
 ManifoldGeometry::ManifoldGeometry(
-  const std::shared_ptr<const manifold::Manifold>& mani,
+  manifold::Manifold mani,
   const std::set<uint32_t> & originalIDs,
   const std::map<uint32_t, Color4f> & originalIDToColor,
   const std::set<uint32_t> & subtractedIDs)
-    : manifold_(mani),
+    : manifold_(std::move(mani)),
       originalIDs_(originalIDs),
       originalIDToColor_(originalIDToColor),
       subtractedIDs_(subtractedIDs)
 {
-  assert(manifold_);
-  if (!manifold_) clear();
 }
 
 std::unique_ptr<Geometry> ManifoldGeometry::copy() const
@@ -46,8 +43,7 @@ std::unique_ptr<Geometry> ManifoldGeometry::copy() const
 }
 
 const manifold::Manifold& ManifoldGeometry::getManifold() const {
-  assert(manifold_);
-  return *manifold_;
+  return manifold_;
 }
 
 bool ManifoldGeometry::isEmpty() const {
@@ -67,11 +63,11 @@ bool ManifoldGeometry::isManifold() const {
 }
 
 bool ManifoldGeometry::isValid() const {
-  return manifold_->Status() == manifold::Manifold::Error::NoError;
+  return manifold_.Status() == manifold::Manifold::Error::NoError;
 }
 
 void ManifoldGeometry::clear() {
-  manifold_ = std::make_shared<manifold::Manifold>();
+  manifold_ = manifold::Manifold();
 }
 
 size_t ManifoldGeometry::memsize() const {
@@ -235,7 +231,7 @@ template std::shared_ptr<CGAL::Polyhedron_3<CGAL_Kernel3>> ManifoldGeometry::toP
 #endif
 
 ManifoldGeometry ManifoldGeometry::binOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs, manifold::OpType opType) const {
-  auto mani = std::make_shared<manifold::Manifold>(lhs.manifold_->Boolean(*rhs.manifold_, opType));
+  auto mani = lhs.manifold_.Boolean(rhs.manifold_, opType);
   auto originalIDToColor = lhs.originalIDToColor_;
   auto subtractedIDs = lhs.subtractedIDs_;
   
@@ -305,12 +301,12 @@ ManifoldGeometry ManifoldGeometry::minkowski(const ManifoldGeometry& other) cons
 }
 
 Polygon2d ManifoldGeometry::slice() const {
-  auto cross_section = manifold::CrossSection(manifold_->Slice());
+  auto cross_section = manifold::CrossSection(manifold_.Slice());
   return ManifoldUtils::polygonsToPolygon2d(cross_section.ToPolygons());
 }
 
 Polygon2d ManifoldGeometry::project() const {
-  auto cross_section = manifold::CrossSection(manifold_->Project());
+  auto cross_section = manifold::CrossSection(manifold_.Project());
   return ManifoldUtils::polygonsToPolygon2d(cross_section.ToPolygons());
 }
 
@@ -322,17 +318,27 @@ void ManifoldGeometry::transform(const Transform3d& mat) {
     mat(0, 2), mat(1, 2), mat(2, 2),
     mat(0, 3), mat(1, 3), mat(2, 3)
   );                            
-  manifold_ = std::make_shared<manifold::Manifold>(getManifold().Transform(glMat));
+  manifold_ = getManifold().Transform(glMat);
 }
 
 void ManifoldGeometry::setColor(const Color4f& c) {
-  if (manifold_->OriginalID() == -1) {
-    manifold_ = std::make_shared<manifold::Manifold>(manifold_->AsOriginal());
+  if (manifold_.OriginalID() == -1) {
+    manifold_ = manifold_.AsOriginal();
   }
   originalIDs_.clear();
-  originalIDs_.insert(manifold_->OriginalID());
+  originalIDs_.insert(manifold_.OriginalID());
   originalIDToColor_.clear();
-  originalIDToColor_[manifold_->OriginalID()] = c;
+  originalIDToColor_[manifold_.OriginalID()] = c;
+  subtractedIDs_.clear();
+}
+
+void ManifoldGeometry::toOriginal() {
+  if (manifold_.OriginalID() == -1) {
+    manifold_ = manifold_.AsOriginal();
+  }
+  originalIDs_.clear();
+  originalIDs_.insert(manifold_.OriginalID());
+  originalIDToColor_.clear();
   subtractedIDs_.clear();
 }
 

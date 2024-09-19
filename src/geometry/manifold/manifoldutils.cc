@@ -66,16 +66,15 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMe
 
   assert((meshgl.triVerts.size() == tm.number_of_faces() * 3) || !"Mesh was not triangular!");
 
-  auto mani = std::make_shared<manifold::Manifold>(
-      manifold::Manifold(meshgl).AsOriginal());
-  if (mani->Status() != Error::NoError) {
+  auto mani = manifold::Manifold(meshgl).AsOriginal();
+  if (mani.Status() != Error::NoError) {
     LOG(message_group::Error,
         "[manifold] Surface_mesh -> Manifold conversion failed: %1$s", 
-        ManifoldUtils::statusToString(mani->Status()));
+        ManifoldUtils::statusToString(mani.Status()));
     return nullptr;
   }
   std::set<uint32_t> originalIDs;
-  auto id = mani->OriginalID();
+  auto id = mani.OriginalID();
   if (id >= 0) {
     originalIDs.insert(id);
   }
@@ -137,7 +136,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
   }
   mesh.runIndex.push_back(mesh.triVerts.size());
 
-  auto mani = std::make_shared<const manifold::Manifold>(std::move(mesh));
+  auto mani = manifold::Manifold(mesh);
   return std::make_shared<ManifoldGeometry>(mani, originalIDs, originalIDToColor);
 }
 

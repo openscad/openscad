@@ -21,7 +21,7 @@ public:
 
   ManifoldGeometry();
   ManifoldGeometry(
-    const std::shared_ptr<const manifold::Manifold>& object,
+    manifold::Manifold object,
     const std::set<uint32_t> & originalIDs = {},
     const std::map<uint32_t, Color4f> & originalIDToColor = {},
     const std::set<uint32_t> & subtractedIDs = {});
@@ -60,6 +60,7 @@ public:
 
   void transform(const Transform3d& mat) override;
   void setColor(const Color4f& c) override;
+  void toOriginal();
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
   /*! Iterate over all vertices' points until the function returns true (for done). */
@@ -70,7 +71,7 @@ public:
 private:
   ManifoldGeometry binOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs, manifold::OpType opType) const;
 
-  std::shared_ptr<const manifold::Manifold> manifold_;
+  manifold::Manifold manifold_;
   std::set<uint32_t> originalIDs_;
   std::map<uint32_t, Color4f> originalIDToColor_;
   std::set<uint32_t> subtractedIDs_;
