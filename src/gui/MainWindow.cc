@@ -25,7 +25,6 @@
  */
 #include <iostream>
 #include <memory>
-#include <qfileinfo.h>
 
 #include "boost-utils.h"
 #include "Builtins.h"
