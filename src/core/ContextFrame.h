@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 #include "EvaluationSession.h"
 #include "ValueMap.h"
 

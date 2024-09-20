@@ -4,6 +4,8 @@
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
 #include "cgalutils-coplanar-faces-remesher.h"
 
+#include <cstddef>
+
 namespace CGALUtils {
 
 namespace internal {

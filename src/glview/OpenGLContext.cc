@@ -1,5 +1,7 @@
 #include "OpenGLContext.h"
 
+#include <cstddef>
+
 #include "system-gl.h"
 
 std::vector<uint8_t> OpenGLContext::getFramebuffer() const

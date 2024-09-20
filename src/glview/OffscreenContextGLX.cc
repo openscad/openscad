@@ -3,6 +3,7 @@
 #define GLAD_GLX_IMPLEMENTATION
 #include <glad/glx.h>
 
+#include <cstddef>
 #include <iostream>
 #include <sstream>
 

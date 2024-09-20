@@ -4,6 +4,7 @@
 #include "printutils.h"
 #include "AST.h"
 #include <charconv>
+#include <cstddef>
 #include <fstream>
 #include <sstream>
 #include <locale>

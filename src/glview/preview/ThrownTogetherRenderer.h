@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 #include "Renderer.h"
 #include "CSGNode.h"
 

@@ -26,6 +26,7 @@
 #pragma once
 
 #include <QTimer>
+#include <cstddef>
 #include <map>
 
 #include "qtgettext.h" // IWYU pragma: keep

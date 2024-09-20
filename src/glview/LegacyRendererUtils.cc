@@ -7,6 +7,7 @@
 #include "system-gl.h"
 
 #include <Eigen/LU>
+#include <cstddef>
 #include <fstream>
 
 #ifdef ENABLE_OPENCSG

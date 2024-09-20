@@ -29,6 +29,7 @@
 #include <cstdint>
 #include <cmath>
 #include <cassert>
+#include <cstddef>
 #include <memory>
 #include <sstream>
 #include <algorithm>

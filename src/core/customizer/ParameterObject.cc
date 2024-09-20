@@ -4,6 +4,7 @@
 #include "SourceFile.h"
 #include "ParameterObject.h"
 
+#include <cstddef>
 #include <sstream>
 #include <boost/algorithm/string.hpp>
 

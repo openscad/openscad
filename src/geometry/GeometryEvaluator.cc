@@ -42,6 +42,8 @@
 #endif
 #include "linear_extrude.h"
 
+#include <cstddef>
+
 class Geometry;
 class Polygon2d;
 class Tree;

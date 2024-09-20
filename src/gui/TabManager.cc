@@ -18,6 +18,8 @@
 #include "Preferences.h"
 #include "MainWindow.h"
 
+#include <cstddef>
+
 TabManager::TabManager(MainWindow *o, const QString& filename)
 {
   par = o;

@@ -30,6 +30,7 @@
 #include "AxisConfigWidget.h"
 #include "ButtonConfigWidget.h"
 #include <ciso646> // C alternative tokens
+#include <cstddef>
 #include <cmath>
 #include <QSettings>
 

@@ -33,6 +33,7 @@
 #include "Expression.h"
 #include "printutils.h"
 #include "compiler_specific.h"
+#include <cstddef>
 #include <sstream>
 
 std::vector<std::string> StaticModuleNameStack::stack;

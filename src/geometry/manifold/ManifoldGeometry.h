@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include "linalg.h"
 #include "manifold/manifold.h"
+#include <cstddef>
 #include <map>
 #include <set>
 

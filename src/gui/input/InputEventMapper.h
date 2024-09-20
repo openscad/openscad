@@ -28,6 +28,7 @@
 #include <QTimer>
 #include <QObject>
 
+#include <cstddef>
 #include "InputDriver.h"
 #include "InputDriverEvent.h"
 

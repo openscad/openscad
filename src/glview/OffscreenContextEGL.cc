@@ -1,6 +1,7 @@
 #include "OffscreenContextEGL.h"
 
 #include <fcntl.h>
+#include <cstddef>
 #include <iostream>
 #include <sstream>
 #include <set>

@@ -26,6 +26,7 @@
 #pragma once
 
 #include <QThread>
+#include <cstddef>
 
 class InputDriver : public QThread
 {

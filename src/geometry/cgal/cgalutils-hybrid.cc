@@ -8,6 +8,7 @@
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
 #include <CGAL/Surface_mesh.h>
 #include <CGAL/convex_hull_3.h>
+#include <cstddef>
 
 #include "CGAL_Nef_polyhedron.h"
 #include "PolySetUtils.h"
@@ -148,4 +149,3 @@ std::shared_ptr<CGAL_Nef_polyhedron> createNefPolyhedronFromHybrid(const CGALHyb
 }
 
 } // namespace CGALUtils
-

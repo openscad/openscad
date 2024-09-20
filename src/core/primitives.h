@@ -27,6 +27,8 @@
 #include "GeometryUtils.h"
 #include "linalg.h"
 #include "node.h"
+
+#include <cstddef>
 #include <sstream>
 
 
@@ -172,4 +174,3 @@ public:
   std::vector<std::vector<size_t>> paths;
   int convexity = 1;
 };
-

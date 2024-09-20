@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Cache.h"
+#include <cstddef>
 #include <memory>
 #include "Geometry.h"
 

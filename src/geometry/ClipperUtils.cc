@@ -1,5 +1,6 @@
 #include "ClipperUtils.h"
 #include "printutils.h"
+#include <cstddef>
 
 namespace ClipperUtils {
 

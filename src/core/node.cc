@@ -27,6 +27,8 @@
 #include "core/node.h"
 #include "ModuleInstantiation.h"
 #include "progress.h"
+
+#include <cstddef>
 #include <functional>
 #include <iostream>
 #include <algorithm>

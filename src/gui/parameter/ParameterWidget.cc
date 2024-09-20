@@ -40,6 +40,7 @@
 
 #include <QInputDialog>
 #include <QMessageBox>
+#include <cstddef>
 #include <utility>
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)

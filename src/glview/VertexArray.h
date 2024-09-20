@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
 #include <utility>

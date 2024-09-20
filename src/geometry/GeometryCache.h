@@ -3,6 +3,7 @@
 #include "Cache.h"
 #include <memory>
 #include "Geometry.h"
+#include <cstddef>
 
 class GeometryCache
 {

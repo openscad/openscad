@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include <utility>
 #include <hidapi.h>
 

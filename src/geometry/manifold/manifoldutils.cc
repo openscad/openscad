@@ -14,6 +14,8 @@
 #include "PolySet.h"
 #include "manifold/polygon.h"
 
+#include <cstddef>
+
 using Error = manifold::Manifold::Error;
 
 namespace ManifoldUtils {

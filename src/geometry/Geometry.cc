@@ -1,6 +1,7 @@
 #include "Geometry.h"
 #include "printutils.h"
 #include <boost/foreach.hpp>
+#include <cstddef>
 #include <utility>
 
 GeometryList::GeometryList(Geometry::Geometries geometries) : children(std::move(geometries))

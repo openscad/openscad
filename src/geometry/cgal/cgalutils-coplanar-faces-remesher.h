@@ -2,6 +2,7 @@
 #pragma once
 
 #include <CGAL/Surface_mesh.h>
+#include <cstddef>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>

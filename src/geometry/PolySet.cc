@@ -30,6 +30,7 @@
 #include "printutils.h"
 #include "Grid.h"
 #include <Eigen/LU>
+#include <cstddef>
 #include <utility>
 
 /*! /class PolySet

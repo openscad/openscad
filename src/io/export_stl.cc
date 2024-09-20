@@ -39,6 +39,8 @@
 #include "cgalutils.h"
 #endif
 
+#include <cstddef>
+
 namespace {
 /* Define values for double-conversion library. */
 #define DC_BUFFER_SIZE (128)

@@ -24,6 +24,7 @@
  *
  */
 
+#include <cstddef>
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "core/node.h"

@@ -29,6 +29,7 @@
 #include "printutils.h"
 #include "Geometry.h"
 
+#include <cstddef>
 #include <fstream>
 
 #ifdef _WIN32

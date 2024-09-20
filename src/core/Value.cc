@@ -25,6 +25,7 @@
  */
 
 #include <cassert>
+#include <cstddef>
 #include <memory>
 #include <numeric>
 #include <sstream>

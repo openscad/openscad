@@ -9,6 +9,8 @@
 
 #include "VBORenderer.h"
 
+#include <cstddef>
+
 class CSGChainObject;
 class CSGProducts;
 class OpenCSGPrim;

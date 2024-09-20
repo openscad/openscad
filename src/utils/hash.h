@@ -1,6 +1,7 @@
 #pragma once
 
 #include "linalg.h"
+#include <cstddef>
 
 using Vector3l = Eigen::Matrix<int64_t, 3, 1>;
 

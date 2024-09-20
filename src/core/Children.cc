@@ -24,6 +24,8 @@
  *
  */
 
+#include <cstddef>
+
 #include "Children.h"
 #include "ScopeContext.h"
 

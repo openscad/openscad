@@ -1,5 +1,6 @@
 #include "OffscreenContextCGL.h"
 
+#include <cstddef>
 #include <iostream>
 
 #include "system-gl.h"

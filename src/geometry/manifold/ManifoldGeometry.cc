@@ -9,6 +9,7 @@
 #include "manifoldutils.h"
 #include "ColorMap.h"
 #include "src/glview/RenderSettings.h"
+#include <cstddef>
 #include <memory>
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"

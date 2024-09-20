@@ -28,6 +28,7 @@
 #include "PolySet.h"
 #include "linalg.h"
 
+#include <cstddef>
 #include <numeric>
 #include <sstream>
 #include <stack>

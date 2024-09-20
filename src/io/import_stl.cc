@@ -4,6 +4,7 @@
 #include "printutils.h"
 #include "AST.h"
 
+#include <cstddef>
 #include <fstream>
 #include <boost/predef.h>
 #include <boost/regex.hpp>

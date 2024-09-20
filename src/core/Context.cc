@@ -24,6 +24,8 @@
  *
  */
 
+#include <cstddef>
+
 #include "Context.h"
 #include "function.h"
 #include "printutils.h"

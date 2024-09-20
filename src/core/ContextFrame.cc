@@ -24,6 +24,8 @@
  *
  */
 
+#include <cstddef>
+
 #include "ContextFrame.h"
 
 ContextFrame::ContextFrame(EvaluationSession *session) :

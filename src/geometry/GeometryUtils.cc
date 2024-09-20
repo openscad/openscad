@@ -1,9 +1,10 @@
 #include "GeometryUtils.h"
 
-#include <string>
+#include <boost/functional/hash.hpp>
+#include <cstddef>
 #include <cmath>
 #include <memory>
-#include <boost/functional/hash.hpp>
+#include <string>
 
 #include "ext/libtess2/Include/tesselator.h"
 #include "printutils.h"

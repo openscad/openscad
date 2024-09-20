@@ -1,3 +1,4 @@
+#include <cstddef>
 #include "cgal.h"
 #include "CGAL_Nef_polyhedron.h"
 #include "cgalutils.h"

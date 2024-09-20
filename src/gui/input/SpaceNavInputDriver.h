@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include <cstddef>
 #include "input/InputDriver.h"
 
 class SpaceNavInputDriver : public InputDriver

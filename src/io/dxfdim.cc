@@ -35,6 +35,7 @@
 #include "handle_dep.h"
 #include "degree_trig.h"
 
+#include <cstddef>
 #include <cmath>
 #include <sstream>
 #include <cstdint>

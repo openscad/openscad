@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <json.hpp>
 #include <utility>
 #include <variant>

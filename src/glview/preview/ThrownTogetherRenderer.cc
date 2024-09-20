@@ -26,6 +26,7 @@
 
 #include "ThrownTogetherRenderer.h"
 
+#include <cstddef>
 #include <utility>
 #include "Feature.h"
 #include "PolySet.h"

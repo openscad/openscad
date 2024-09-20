@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 #include "ContextFrame.h"
 #include "ContextMemoryManager.h"
 

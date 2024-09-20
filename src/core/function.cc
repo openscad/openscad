@@ -28,6 +28,7 @@
 #include "Expression.h"
 #include "function.h"
 
+#include <cstddef>
 #include <utility>
 
 BuiltinFunction::BuiltinFunction(Value(*f)(const std::shared_ptr<const Context>&, const FunctionCall *), const Feature *feature) :

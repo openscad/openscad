@@ -1,5 +1,7 @@
 #include "boolean_utils.h"
 
+#include <cstddef>
+
 #ifdef ENABLE_CGAL
 #include "cgal.h"
 #include "CGALHybridPolyhedron.h"

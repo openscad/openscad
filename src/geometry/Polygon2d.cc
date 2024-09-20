@@ -1,6 +1,8 @@
 #include "Polygon2d.h"
 
+#include <cstddef>
 #include <memory>
+
 #include "printutils.h"
 #ifdef ENABLE_MANIFOLD
 #include "manifoldutils.h"

@@ -39,6 +39,7 @@
 #include "SurfaceNode.h"
 
 #include <cstdint>
+#include <cstddef>
 #include <sstream>
 #include <fstream>
 #include <unordered_map>

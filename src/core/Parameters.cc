@@ -24,6 +24,7 @@
  *
  */
 
+#include <cstddef>
 #include <set>
 #include <utility>
 

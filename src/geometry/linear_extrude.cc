@@ -1,5 +1,6 @@
 #include "linear_extrude.h"
 
+#include <cstddef>
 #include <queue>
 #include <boost/logic/tribool.hpp>
 

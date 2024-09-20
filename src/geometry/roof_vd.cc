@@ -5,6 +5,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+#include <cstddef>
 #include <algorithm>
 #include <map>
 #include <boost/polygon/voronoi.hpp>

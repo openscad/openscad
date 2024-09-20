@@ -1,12 +1,15 @@
 #pragma once
 
-#include <string>
-#include <list>
-#include <iostream>
-#include <boost/format.hpp>
 #include <boost/algorithm/string.hpp>
-#include <utility>
+#include <boost/format.hpp>
+#include <cstddef>
+#include <initializer_list>
+#include <iostream>
+#include <list>
 #include <sstream>
+#include <string>
+#include <tuple>
+#include <utility>
 
 #include <libintl.h>
 // Undefine some defines from libintl.h to presolve

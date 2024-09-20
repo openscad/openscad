@@ -1,5 +1,6 @@
 #include "PolySetUtils.h"
 
+#include <cstddef>
 #include <sstream>
 #include <boost/range/adaptor/reversed.hpp>
 
