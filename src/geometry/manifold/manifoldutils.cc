@@ -3,7 +3,6 @@
 #include "ManifoldGeometry.h"
 #include "PolySetBuilder.h"
 #include "Feature.h"
-#include "manifold.h"
 #include "printutils.h"
 #ifdef ENABLE_CGAL
 #include "cgalutils.h"
@@ -13,7 +12,7 @@
 #endif
 #include "PolySetUtils.h"
 #include "PolySet.h"
-#include "polygon.h"
+#include "manifold/polygon.h"
 
 using Error = manifold::Manifold::Error;
 
@@ -41,15 +40,18 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMe
 {
   typedef typename TriangleMesh::Vertex_index vertex_descriptor;
 
-  manifold::Mesh mesh;
+  manifold::MeshGL64 meshgl;
 
-  mesh.vertPos.resize(tm.number_of_vertices());
+  meshgl.numProp = 3;
+  meshgl.vertProperties.resize(tm.number_of_vertices() * 3);
   for (vertex_descriptor vd : tm.vertices()){
     const auto &v = tm.point(vd);
-    mesh.vertPos[vd] = glm::vec3((float) v.x(), (float) v.y(), (float) v.z());
+    meshgl.vertProperties[3 * vd] = v.x();
+    meshgl.vertProperties[3 * vd + 1] = v.y();
+    meshgl.vertProperties[3 * vd + 2] = v.z();
   }
 
-  mesh.triVerts.reserve(tm.number_of_faces());
+  meshgl.triVerts.reserve(tm.number_of_faces() * 3);
   for (const auto& f : tm.faces()) {
     size_t idx[3];
     size_t i = 0;
@@ -58,20 +60,21 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMe
       idx[i++] = vd;
     }
     if (i < 3) continue;
-    mesh.triVerts.emplace_back(idx[0], idx[1], idx[2]);
+    for (size_t j : {0, 1, 2})
+      meshgl.triVerts.emplace_back(idx[j]);
   }
 
-  assert((mesh.triVerts.size() == tm.number_of_faces()) || !"Mesh was not triangular!");
+  assert((meshgl.triVerts.size() == tm.number_of_faces() * 3) || !"Mesh was not triangular!");
 
-  auto mani = std::make_shared<manifold::Manifold>(std::move(mesh));
-  if (mani->Status() != Error::NoError) {
+  auto mani = manifold::Manifold(meshgl).AsOriginal();
+  if (mani.Status() != Error::NoError) {
     LOG(message_group::Error,
         "[manifold] Surface_mesh -> Manifold conversion failed: %1$s", 
-        ManifoldUtils::statusToString(mani->Status()));
+        ManifoldUtils::statusToString(mani.Status()));
     return nullptr;
   }
   std::set<uint32_t> originalIDs;
-  auto id = mani->OriginalID();
+  auto id = mani.OriginalID();
   if (id >= 0) {
     originalIDs.insert(id);
   }
@@ -87,13 +90,14 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
 {
   assert(ps.isTriangular());
 
-  manifold::MeshGL mesh;
+  manifold::MeshGL64 mesh;
 
+  mesh.numProp = 3;
   mesh.vertProperties.reserve(ps.vertices.size() * 3);
   for (const auto& v : ps.vertices) {
-    mesh.vertProperties.push_back((float)v.x());
-    mesh.vertProperties.push_back((float)v.y());
-    mesh.vertProperties.push_back((float)v.z());
+    mesh.vertProperties.push_back(v.x());
+    mesh.vertProperties.push_back(v.y());
+    mesh.vertProperties.push_back(v.z());
   }
 
   mesh.triVerts.reserve(ps.indices.size() * 3);
@@ -132,7 +136,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
   }
   mesh.runIndex.push_back(mesh.triVerts.size());
 
-  auto mani = std::make_shared<const manifold::Manifold>(std::move(mesh));
+  auto mani = manifold::Manifold(mesh);
   return std::make_shared<ManifoldGeometry>(mani, originalIDs, originalIDToColor);
 }
 

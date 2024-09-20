@@ -39,7 +39,6 @@
 
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
-#include "manifold.h"
 #include "manifoldutils.h"
 #endif // ENABLE_MANIFOLD
 

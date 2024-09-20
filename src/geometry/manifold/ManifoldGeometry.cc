@@ -1,9 +1,9 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #include "ManifoldGeometry.h"
 #include "Polygon2d.h"
-#include "manifold.h"
+#include "manifold/cross_section.h"
+#include "manifold/manifold.h"
 #include "PolySet.h"
-#include "Feature.h"
 #include "PolySetBuilder.h"
 #include "PolySetUtils.h"
 #include "manifoldutils.h"
@@ -23,20 +23,18 @@ Result vector_convert(V const& v) {
 
 }
 
-ManifoldGeometry::ManifoldGeometry() : manifold_(std::make_shared<const manifold::Manifold>()) {}
+ManifoldGeometry::ManifoldGeometry() : manifold_(manifold::Manifold()) {}
 
 ManifoldGeometry::ManifoldGeometry(
-  const std::shared_ptr<const manifold::Manifold>& mani,
+  manifold::Manifold mani,
   const std::set<uint32_t> & originalIDs,
   const std::map<uint32_t, Color4f> & originalIDToColor,
   const std::set<uint32_t> & subtractedIDs)
-    : manifold_(mani),
+    : manifold_(std::move(mani)),
       originalIDs_(originalIDs),
       originalIDToColor_(originalIDToColor),
       subtractedIDs_(subtractedIDs)
 {
-  assert(manifold_);
-  if (!manifold_) clear();
 }
 
 std::unique_ptr<Geometry> ManifoldGeometry::copy() const
@@ -45,8 +43,7 @@ std::unique_ptr<Geometry> ManifoldGeometry::copy() const
 }
 
 const manifold::Manifold& ManifoldGeometry::getManifold() const {
-  assert(manifold_);
-  return *manifold_;
+  return manifold_;
 }
 
 bool ManifoldGeometry::isEmpty() const {
@@ -66,11 +63,11 @@ bool ManifoldGeometry::isManifold() const {
 }
 
 bool ManifoldGeometry::isValid() const {
-  return manifold_->Status() == manifold::Manifold::Error::NoError;
+  return manifold_.Status() == manifold::Manifold::Error::NoError;
 }
 
 void ManifoldGeometry::clear() {
-  manifold_ = std::make_shared<manifold::Manifold>();
+  manifold_ = manifold::Manifold();
 }
 
 size_t ManifoldGeometry::memsize() const {
@@ -81,18 +78,18 @@ size_t ManifoldGeometry::memsize() const {
 std::string ManifoldGeometry::dump() const {
   std::ostringstream out;
   auto &manifold = getManifold();
-  auto mesh = manifold.GetMesh();
+  auto meshgl = manifold.GetMeshGL64();
   out << "Manifold:"
       << "\n status: " << ManifoldUtils::statusToString(manifold.Status())
       << "\n genus: " << manifold.Genus()
-      << "\n num vertices: " << mesh.vertPos.size()
-      << "\n num polygons: " << mesh.triVerts.size()
+      << "\n num vertices: " << meshgl.NumVert()
+      << "\n num polygons: " << meshgl.NumTri()
       << "\n polygons data:";
 
-  for (const auto &tv : mesh.triVerts) {
+  for (size_t faceid = 0; faceid < meshgl.NumTri(); faceid++) {
     out << "\n  polygon begin:";
     for (const int j : {0, 1, 2}) {
-      Vector3d v = vector_convert<Vector3d>(mesh.vertPos[tv[j]]);
+      auto v = vector_convert<Vector3d>(meshgl.GetVertPos(meshgl.GetTriVerts(faceid)[j]));
       out << "\n   vertex:" << v;
     }
   }
@@ -101,7 +98,7 @@ std::string ManifoldGeometry::dump() const {
 }
 
 std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const {
-  manifold::MeshGL mesh = getManifold().GetMeshGL();
+  manifold::MeshGL64 mesh = getManifold().GetMeshGL64();
   auto ps = std::make_shared<PolySet>(3);
   ps->setTriangular(true);
   ps->vertices.reserve(mesh.NumVert());
@@ -194,18 +191,18 @@ class CGALPolyhedronBuilderFromManifold : public CGAL::Modifier_base<typename Po
 public:
   using CGALPoint = typename CGAL_Polybuilder::Point_3;
 
-  const manifold::Mesh& mesh;
-  CGALPolyhedronBuilderFromManifold(const manifold::Mesh& mesh) : mesh(mesh) { }
+  const manifold::MeshGL64& meshgl;
+  CGALPolyhedronBuilderFromManifold(const manifold::MeshGL64& mesh) : meshgl(mesh) { }
 
   void operator()(HDS& hds) override {
     CGAL_Polybuilder B(hds, true);
   
-    B.begin_surface(mesh.vertPos.size(), mesh.triVerts.size());
-    for (const auto &v : mesh.vertPos) {
-      B.add_vertex(CGALUtils::vector_convert<CGALPoint>(v));
-    }
+    B.begin_surface(meshgl.NumVert(), meshgl.NumTri());
+    for (size_t vertid = 0; vertid < meshgl.NumVert(); vertid++)
+      B.add_vertex(CGALUtils::vector_convert<CGALPoint>(meshgl.GetVertPos(vertid)));
 
-    for (const auto &tv : mesh.triVerts) {
+    for (size_t faceid = 0; faceid < meshgl.NumTri(); faceid++) {
+      const auto tv = meshgl.GetTriVerts(faceid);
       B.begin_facet();
       for (const int j : {0, 1, 2}) {
         B.add_vertex_to_facet(tv[j]);
@@ -221,8 +218,8 @@ std::shared_ptr<Polyhedron> ManifoldGeometry::toPolyhedron() const
 {
   auto p = std::make_shared<Polyhedron>();
   try {
-    manifold::Mesh mesh = getManifold().GetMesh();
-    CGALPolyhedronBuilderFromManifold<Polyhedron> builder(mesh);
+    auto meshgl = getManifold().GetMeshGL64();
+    CGALPolyhedronBuilderFromManifold<Polyhedron> builder(meshgl);
     p->delegate(builder);
   } catch (const CGAL::Assertion_exception& e) {
     LOG(message_group::Error, "CGAL error in CGALUtils::createPolyhedronFromPolySet: %1$s", e.what());
@@ -234,7 +231,7 @@ template std::shared_ptr<CGAL::Polyhedron_3<CGAL_Kernel3>> ManifoldGeometry::toP
 #endif
 
 ManifoldGeometry ManifoldGeometry::binOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs, manifold::OpType opType) const {
-  auto mani = std::make_shared<manifold::Manifold>(lhs.manifold_->Boolean(*rhs.manifold_, opType));
+  auto mani = lhs.manifold_.Boolean(rhs.manifold_, opType);
   auto originalIDToColor = lhs.originalIDToColor_;
   auto subtractedIDs = lhs.subtractedIDs_;
   
@@ -304,34 +301,44 @@ ManifoldGeometry ManifoldGeometry::minkowski(const ManifoldGeometry& other) cons
 }
 
 Polygon2d ManifoldGeometry::slice() const {
-  auto cross_section = manifold_->Slice();
+  auto cross_section = manifold::CrossSection(manifold_.Slice());
   return ManifoldUtils::polygonsToPolygon2d(cross_section.ToPolygons());
 }
 
 Polygon2d ManifoldGeometry::project() const {
-  auto cross_section = manifold_->Project();
+  auto cross_section = manifold::CrossSection(manifold_.Project());
   return ManifoldUtils::polygonsToPolygon2d(cross_section.ToPolygons());
 }
 
 void ManifoldGeometry::transform(const Transform3d& mat) {
-  glm::mat4x3 glMat(
+  manifold::mat4x3 glMat(
     // Column-major ordering
     mat(0, 0), mat(1, 0), mat(2, 0),
     mat(0, 1), mat(1, 1), mat(2, 1),
     mat(0, 2), mat(1, 2), mat(2, 2),
     mat(0, 3), mat(1, 3), mat(2, 3)
   );                            
-  manifold_ = std::make_shared<manifold::Manifold>(getManifold().Transform(glMat));
+  manifold_ = getManifold().Transform(glMat);
 }
 
 void ManifoldGeometry::setColor(const Color4f& c) {
-  if (manifold_->OriginalID() == -1) {
-    manifold_ = std::make_shared<manifold::Manifold>(manifold_->AsOriginal());
+  if (manifold_.OriginalID() == -1) {
+    manifold_ = manifold_.AsOriginal();
   }
   originalIDs_.clear();
-  originalIDs_.insert(manifold_->OriginalID());
+  originalIDs_.insert(manifold_.OriginalID());
   originalIDToColor_.clear();
-  originalIDToColor_[manifold_->OriginalID()] = c;
+  originalIDToColor_[manifold_.OriginalID()] = c;
+  subtractedIDs_.clear();
+}
+
+void ManifoldGeometry::toOriginal() {
+  if (manifold_.OriginalID() == -1) {
+    manifold_ = manifold_.AsOriginal();
+  }
+  originalIDs_.clear();
+  originalIDs_.insert(manifold_.OriginalID());
+  originalIDToColor_.clear();
   subtractedIDs_.clear();
 }
 
@@ -349,7 +356,7 @@ void ManifoldGeometry::resize(const Vector3d& newsize, const Eigen::Matrix<bool,
 }
 
 /*! Iterate over all vertices' points until the function returns true (for done). */
-void ManifoldGeometry::foreachVertexUntilTrue(const std::function<bool(const glm::vec3& pt)>& f) const {
+void ManifoldGeometry::foreachVertexUntilTrue(const std::function<bool(const manifold::vec3& pt)>& f) const {
   auto mesh = getManifold().GetMesh();
   for (const auto &pt : mesh.vertPos) {
     if (f(pt)) {
