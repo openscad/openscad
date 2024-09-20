@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This script builds all library dependencies of OpenSCAD for Mac OS X.
 # The libraries will be build in 64-bit mode and backwards compatible

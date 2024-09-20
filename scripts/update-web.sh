@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Works with Mac OS X and Linux cross-compiling for windows using
 # mingw-cross-env (use like: OS=LINXWIN update-web.sh file1.zip file2.exe).
