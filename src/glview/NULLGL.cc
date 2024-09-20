@@ -1,6 +1,7 @@
 #include "GLView.h"
 
 #include <cstddef>
+#include <vector>
 
 GLView::GLView() {}
 void GLView::setRenderer(std::shared_ptr<Renderer>) {}

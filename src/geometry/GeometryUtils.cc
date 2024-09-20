@@ -5,6 +5,7 @@
 #include <cmath>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ext/libtess2/Include/tesselator.h"
 #include "printutils.h"

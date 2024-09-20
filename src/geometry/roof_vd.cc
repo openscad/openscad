@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <map>
 #include <boost/polygon/voronoi.hpp>
+#include <vector>
 #include <PolySetBuilder.h>
 
 #include "GeometryUtils.h"

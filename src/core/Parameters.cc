@@ -27,6 +27,7 @@
 #include <cstddef>
 #include <set>
 #include <utility>
+#include <vector>
 
 #include "Expression.h"
 #include "Parameters.h"

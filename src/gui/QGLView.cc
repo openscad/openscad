@@ -51,6 +51,7 @@
 
 #include <cstdio>
 #include <sstream>
+#include <vector>
 
 #ifdef ENABLE_OPENCSG
 #  include <opencsg.h>
@@ -349,11 +350,11 @@ void QGLView::mouseReleaseEvent(QMouseEvent *event)
     if(event->button() == button_right) {
       QPoint point = event->pos();
       emit doRightClick(point);
-    }  
+    }
     if(event->button() == button_left) {
       QPoint point = event->pos();
       emit doLeftClick(point);
-    }  
+    }
   }
   mouse_drag_moved = false;
 }
@@ -552,5 +553,5 @@ void QGLView::selectPoint(int mouse_x, int mouse_y)
   if(obj.size() == 1) {
     this->selected_obj.push_back(obj[0]);
     update();
-  }	  
+  }
 }

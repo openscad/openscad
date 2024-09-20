@@ -26,6 +26,7 @@
 
 #include <utility>
 #include <memory>
+#include <vector>
 
 #include "shape.h"
 

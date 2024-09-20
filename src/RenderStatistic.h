@@ -26,6 +26,8 @@
 #pragma once
 
 #include <chrono>
+#include <vector>
+
 #include "Camera.h"
 #include "Geometry.h"
 

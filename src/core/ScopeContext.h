@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <vector>
+
 #include "Arguments.h"
 #include "Children.h"
 #include "Context.h"

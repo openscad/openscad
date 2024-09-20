@@ -27,16 +27,17 @@
 // NOLINTNEXTLINE(bugprone-reserved-identifier)
 #define _USE_MATH_DEFINES
 #include <cmath>
-#include <cstddef>
 
 #include "DxfData.h"
 #include "Grid.h"
 #include "printutils.h"
 #include "calc.h"
 
-#include <fstream>
 #include <cassert>
+#include <cstddef>
+#include <fstream>
 #include <unordered_map>
+#include <vector>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>

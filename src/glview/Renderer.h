@@ -10,6 +10,8 @@
 #include <cstdlib>
 #endif
 
+#include <vector>
+
 class Renderer
 {
 public:

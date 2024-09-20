@@ -45,6 +45,7 @@
 #endif
 
 #include <cstddef>
+#include <vector>
 
 // #include "Preferences.h"
 

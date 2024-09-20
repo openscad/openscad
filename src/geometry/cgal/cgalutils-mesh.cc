@@ -11,6 +11,7 @@
 #include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
 
 #include <cstddef>
+#include <vector>
 
 namespace CGALUtils {
 

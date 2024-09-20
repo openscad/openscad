@@ -9,6 +9,8 @@
 #include "IndicatorData.h"
 #include "parameter/ParameterWidget.h"
 
+#include <vector>
+
 enum class EditorSelectionIndicatorStatus
 {
   SELECTED,

@@ -25,6 +25,7 @@
  */
 
 #include <cstddef>
+#include <vector>
 
 #include "Children.h"
 #include "ScopeContext.h"

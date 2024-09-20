@@ -4,6 +4,8 @@
 #ifdef ENABLE_CGAL
 
 #include <cstddef>
+#include <vector>
+
 #include "cgalutils.h"
 #include "CGALHybridPolyhedron.h"
 #include "node.h"

@@ -1,5 +1,6 @@
 #include <ciso646> // C alternative tokens (xor)
 #include <cstdlib>
+#include <vector>
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>

@@ -42,6 +42,7 @@
 #include <QMessageBox>
 #include <cstddef>
 #include <utility>
+#include <vector>
 
 ParameterWidget::ParameterWidget(QWidget *parent) : QWidget(parent)
 {

@@ -28,6 +28,7 @@
 #include <QTimer>
 #include <cstddef>
 #include <map>
+#include <vector>
 
 #include "qtgettext.h" // IWYU pragma: keep
 #include "ui_ParameterWidget.h"

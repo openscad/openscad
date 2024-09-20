@@ -27,6 +27,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
+#include <vector>
 #include "import.h"
 #include "Polygon2d.h"
 #include "printutils.h"

@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <unordered_map>
 #include <memory>
+#include <vector>
 
 class AbstractNode;
 class Context;

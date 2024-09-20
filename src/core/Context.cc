@@ -25,6 +25,7 @@
  */
 
 #include <cstddef>
+#include <vector>
 
 #include "Context.h"
 #include "function.h"

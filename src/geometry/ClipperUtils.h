@@ -3,6 +3,8 @@
 #include "ext/polyclipping/clipper.hpp"
 #include "Polygon2d.h"
 
+#include <vector>
+
 namespace ClipperUtils {
 
 template <typename T>

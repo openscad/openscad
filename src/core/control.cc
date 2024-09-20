@@ -25,6 +25,8 @@
  */
 
 #include <cstddef>
+#include <vector>
+
 #include "module.h"
 #include "ModuleInstantiation.h"
 #include "core/node.h"

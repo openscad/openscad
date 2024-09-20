@@ -8,6 +8,7 @@
 
 #include <Eigen/LU>
 #include <fstream>
+#include <vector>
 
 #ifndef NULLGL
 

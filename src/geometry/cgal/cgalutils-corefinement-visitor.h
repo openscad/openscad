@@ -5,6 +5,7 @@
 #include "cgalutils-coplanar-faces-remesher.h"
 
 #include <cstddef>
+#include <vector>
 
 namespace CGALUtils {
 

@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <ctime>
+#include <vector>
 
 #include "module.h"
 #include "LocalScope.h"

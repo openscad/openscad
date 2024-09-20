@@ -10,6 +10,7 @@
 #include "VBORenderer.h"
 
 #include <cstddef>
+#include <vector>
 
 class CSGChainObject;
 class CSGProducts;

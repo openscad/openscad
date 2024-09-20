@@ -39,6 +39,7 @@
 #include <cmath>
 #include <sstream>
 #include <cstdint>
+#include <vector>
 
 #include <boost/filesystem.hpp>
 std::unordered_map<std::string, double> dxf_dim_cache;

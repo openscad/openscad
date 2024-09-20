@@ -32,7 +32,7 @@
 #include <cstddef>
 #include <map>
 #include <queue>
-
+#include <vector>
 
 namespace CGALUtils {
 

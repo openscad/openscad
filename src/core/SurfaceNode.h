@@ -25,6 +25,8 @@
  */
 
 #include <cstddef>
+#include <vector>
+
 #include "node.h"
 
 struct img_data_t

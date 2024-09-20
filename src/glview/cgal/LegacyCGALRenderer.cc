@@ -44,6 +44,8 @@
 #include "ManifoldGeometry.h"
 #endif
 
+#include <vector>
+
 //#include "Preferences.h"
 
 LegacyCGALRenderer::LegacyCGALRenderer(const std::shared_ptr<const class Geometry>& geom)
@@ -163,7 +165,7 @@ void LegacyCGALRenderer::draw(bool showfaces, bool showedges, const shaderinfo_t
         glVertex3d(v[0], v[1], 0);
       }
       glEnd();
-    }    
+    }
     glEnable(GL_LIGHTING);
 
     glEnable(GL_DEPTH_TEST);

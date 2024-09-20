@@ -23,10 +23,10 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include <cmath>
-
-#include <iostream>
 #include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <vector>
 
 #include "Polygon2d.h"
 #include "DrawingCallback.h"
@@ -43,7 +43,7 @@ DrawingCallback::~DrawingCallback()
 void DrawingCallback::start_glyph()
 {
   this->polygon = std::make_shared<Polygon2d>();
-  // FIXME: Why do we think that a glyph is sanitized? 
+  // FIXME: Why do we think that a glyph is sanitized?
   this->polygon->setSanitized(true);
 }
 

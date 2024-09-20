@@ -24,6 +24,8 @@
  *
  */
 
+#include <vector>
+
 #include "UserModule.h"
 #include "ModuleInstantiation.h"
 #include "core/node.h"

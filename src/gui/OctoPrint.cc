@@ -28,6 +28,8 @@
 #include "OctoPrint.h"
 
 #include <utility>
+#include <vector>
+
 #include "printutils.h"
 #include "PlatformUtils.h"
 

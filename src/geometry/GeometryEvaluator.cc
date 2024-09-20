@@ -43,6 +43,7 @@
 #include "linear_extrude.h"
 
 #include <cstddef>
+#include <vector>
 
 class Geometry;
 class Polygon2d;
@@ -898,7 +899,7 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
                 rings[j % 2][(i + 1) % o.vertices.size()],
                 rings[(j + 1) % 2][(i + 1) % o.vertices.size()],
                 rings[j % 2][i]
-        });                
+        });
 
         builder.appendPolygon({
                 rings[(j + 1) % 2][(i + 1) % o.vertices.size()],

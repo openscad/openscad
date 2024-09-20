@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <vector>
 
 #include "Assignment.h"
 #include "LocalScope.h"

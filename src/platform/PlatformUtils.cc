@@ -1,5 +1,7 @@
 #include <cstdlib>
 #include <iomanip>
+#include <vector>
+
 #include "PlatformUtils.h"
 #include "printutils.h"
 

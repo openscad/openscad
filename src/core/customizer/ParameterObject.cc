@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <sstream>
+#include <vector>
 #include <boost/algorithm/string.hpp>
 
 namespace {

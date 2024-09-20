@@ -16,6 +16,8 @@
 #include "ManifoldGeometry.h"
 #endif
 
+#include <vector>
+
 namespace CGALUtils {
 
 template <typename K>

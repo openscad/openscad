@@ -30,7 +30,7 @@
 #include <QString>
 #include <QtNetwork>
 #include <utility>
-#include <utility>
+#include <vector>
 
 #include "printutils.h"
 #include "PlatformUtils.h"

@@ -42,6 +42,7 @@
 #include <limits>
 #include <algorithm>
 #include <random>
+#include <vector>
 
 #include "boost-utils.h"
 // hash double

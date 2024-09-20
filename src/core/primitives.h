@@ -30,7 +30,7 @@
 
 #include <cstddef>
 #include <sstream>
-
+#include <vector>
 
 class CubeNode : public LeafNode
 {

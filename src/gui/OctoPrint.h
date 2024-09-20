@@ -27,6 +27,7 @@
 #pragma once
 
 #include <tuple>
+#include <vector>
 
 #include <QFile>
 #include <QString>

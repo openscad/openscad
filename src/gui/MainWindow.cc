@@ -25,6 +25,7 @@
  */
 #include <iostream>
 #include <memory>
+#include <vector>
 
 #include "boost-utils.h"
 #include "Builtins.h"

@@ -5,6 +5,7 @@
 #include <boost/lexical_cast.hpp>
 #include <cstddef>
 #include <utility>
+#include <vector>
 
 namespace Settings {
 

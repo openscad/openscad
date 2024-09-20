@@ -25,6 +25,7 @@
  */
 
 #include <iostream>
+#include <vector>
 
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>

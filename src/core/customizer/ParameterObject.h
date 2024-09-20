@@ -4,6 +4,7 @@
 #include <json.hpp>
 #include <utility>
 #include <variant>
+#include <vector>
 
 #include "ParameterSet.h"
 using json = nlohmann::json;

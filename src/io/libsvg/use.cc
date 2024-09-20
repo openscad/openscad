@@ -24,6 +24,7 @@
  */
 #include <cstdlib>
 #include <iostream>
+#include <vector>
 
 #include "use.h"
 #include "util.h"

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <vector>
 
 #include "EvaluationSession.h"
 #include "ValueMap.h"

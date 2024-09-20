@@ -1,6 +1,7 @@
 #include "boolean_utils.h"
 
 #include <cstddef>
+#include <vector>
 
 #ifdef ENABLE_CGAL
 #include "cgal.h"
