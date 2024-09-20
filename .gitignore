@@ -95,3 +95,4 @@ tests/data/scad/misc/use-tests.scad
 tests/data/svg/viewbox/viewbox_*.svg
 tests/regression/pdfexporttest/centered.pdf
 tests/regression/pdfexporttest/simple-pdf.pdf
+scripts/run-clang-tidy-cached
