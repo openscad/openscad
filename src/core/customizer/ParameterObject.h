@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <json.hpp>
+#include <string>
 #include <utility>
 #include <variant>
 #include <vector>

@@ -29,14 +29,15 @@
  *  Public Domain.
  */
 
-#include <chrono>
-#include <iomanip>
 #include <bitset>
-#include <fstream>
-#include <ostream>
-#include <codecvt>
-#include <cmath>
 #include <boost/format.hpp>
+#include <chrono>
+#include <cmath>
+#include <codecvt>
+#include <fstream>
+#include <iomanip>
+#include <ostream>
+#include <string>
 
 #include "Settings.h"
 #include "PlatformUtils.h"

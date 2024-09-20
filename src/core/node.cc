@@ -32,6 +32,7 @@
 #include <functional>
 #include <iostream>
 #include <algorithm>
+#include <string>
 
 size_t AbstractNode::idx_counter;
 

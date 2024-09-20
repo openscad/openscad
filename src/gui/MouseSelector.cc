@@ -2,6 +2,7 @@
 #include "MouseSelector.h"
 
 #include <QOpenGLFramebufferObject>
+#include <string>
 #include <memory>
 /**
  * The selection is making use of a special shader, that renders each object in a color

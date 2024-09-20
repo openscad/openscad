@@ -29,6 +29,7 @@
 #include <QObject>
 
 #include <cstddef>
+#include <string>
 #include "InputDriver.h"
 #include "InputDriverEvent.h"
 

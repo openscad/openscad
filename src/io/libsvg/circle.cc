@@ -25,6 +25,8 @@
 #include "circle.h"
 #include "util.h"
 
+#include <string>
+
 namespace libsvg {
 
 const std::string circle::name("circle");

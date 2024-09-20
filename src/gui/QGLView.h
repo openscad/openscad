@@ -4,6 +4,7 @@
 #include <QtGlobal>
 #include <QOpenGLWidget>
 #include <QLabel>
+#include <string>
 #include <vector>
 
 #include <Eigen/Core>

@@ -27,6 +27,8 @@
 #include "polygon.h"
 #include "util.h"
 
+#include <string>
+
 namespace libsvg {
 
 const std::string polygon::name("polygon");

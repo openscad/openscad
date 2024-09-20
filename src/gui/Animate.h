@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "qtgettext.h"
 #include "ui_Animate.h"
 #include <QIcon>

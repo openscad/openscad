@@ -1,3 +1,5 @@
+#include <string>
+
 #include "fileutils.h"
 #include "printutils.h"
 

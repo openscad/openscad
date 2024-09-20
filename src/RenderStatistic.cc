@@ -26,6 +26,7 @@
 
 #include <fstream>
 #include <json.hpp>
+#include <string>
 #include <vector>
 
 #include "printutils.h"

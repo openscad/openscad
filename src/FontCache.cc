@@ -29,6 +29,7 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
+#include <string>
 #include <utility>
 
 #include "FontCache.h"

@@ -25,6 +25,7 @@
  */
 
 #include <iostream>
+#include <string>
 #include <json.hpp>
 #include <boost/property_tree/json_parser.hpp>
 

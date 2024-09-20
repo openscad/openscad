@@ -28,6 +28,7 @@
 #include <iostream>
 #include <cmath>
 #include <cctype>
+#include <string>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>

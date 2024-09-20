@@ -6,6 +6,7 @@
 
 #include <cstddef>
 #include <fstream>
+#include <string>
 #include <boost/predef.h>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>

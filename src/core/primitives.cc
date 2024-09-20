@@ -43,6 +43,7 @@
 #include <iterator>
 #include <memory>
 #include <sstream>
+#include <string>
 #include <vector>
 
 using namespace boost::assign; // bring 'operator+=()' into scope

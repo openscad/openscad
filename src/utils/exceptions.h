@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <utility>
+#include <string>
 #include "AST.h"
 #include "printutils.h"
 

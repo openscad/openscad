@@ -43,6 +43,7 @@
 #include <boost/filesystem.hpp>
 #include <algorithm>
 #include <sstream>
+#include <string>
 #include <map>
 
 #include "Value.h"

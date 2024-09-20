@@ -3,8 +3,9 @@
 #include <fcntl.h>
 #include <cstddef>
 #include <iostream>
-#include <sstream>
 #include <set>
+#include <sstream>
+#include <string>
 #include <vector>
 
 #include "printutils.h"
@@ -121,7 +122,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
   }
   PRINTDB("GLAD: Loaded EGL %d.%d on first load",
 	  GLAD_VERSION_MAJOR(initialEglVersion) % GLAD_VERSION_MINOR(initialEglVersion));
-  
+
   EGLint conformant;
   if (!gles) conformant = EGL_OPENGL_BIT;
   else if (majorGLVersion >= 3) conformant = EGL_OPENGL_ES3_BIT;

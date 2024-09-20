@@ -31,6 +31,7 @@
 #include "Grid.h"
 #include <Eigen/LU>
 #include <cstddef>
+#include <string>
 #include <utility>
 #include <vector>
 

@@ -3,6 +3,7 @@
 #include "Cache.h"
 #include <cstddef>
 #include <memory>
+#include <string>
 #include "Geometry.h"
 
 class CGALCache

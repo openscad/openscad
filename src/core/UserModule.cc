@@ -37,6 +37,7 @@
 #include "compiler_specific.h"
 #include <cstddef>
 #include <sstream>
+#include <string>
 
 std::vector<std::string> StaticModuleNameStack::stack;
 

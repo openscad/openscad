@@ -2,6 +2,7 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 #include <variant>
 
 #include "cgal.h"

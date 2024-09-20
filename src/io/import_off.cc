@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <fstream>
 #include <sstream>
+#include <string>
 #include <locale>
 #include <vector>
 #include <boost/regex.hpp>

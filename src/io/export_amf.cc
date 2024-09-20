@@ -35,6 +35,7 @@
 #endif
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
 #define QUOTE(x__) # x__

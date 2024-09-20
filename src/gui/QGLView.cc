@@ -51,6 +51,7 @@
 
 #include <cstdio>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #ifdef ENABLE_OPENCSG

@@ -38,6 +38,8 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
+#include <string>
+
 QFileInfo UIUtils::openFile(QWidget *parent)
 {
   QSettingsCached settings;

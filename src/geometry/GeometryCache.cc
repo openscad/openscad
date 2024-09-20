@@ -1,7 +1,9 @@
 #include "GeometryCache.h"
 #include "printutils.h"
 #include "Geometry.h"
+
 #include <cstddef>
+#include <string>
 
 #ifdef ENABLE_CGAL
 #include "CGAL_Nef_polyhedron.h"

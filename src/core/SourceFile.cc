@@ -34,6 +34,7 @@
 #include "StatCache.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include <string>
 #include <utility>
 #include <vector>
 

@@ -10,6 +10,7 @@
 #include <cstdlib>
 #endif
 
+#include <string>
 #include <vector>
 
 class Renderer

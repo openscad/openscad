@@ -3,6 +3,8 @@
 #include "node.h"
 #include "ext/polyclipping/clipper.hpp"
 
+#include <string>
+
 class OffsetNode : public AbstractPolyNode
 {
 public:

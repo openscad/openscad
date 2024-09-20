@@ -27,6 +27,7 @@
 
 #include <QThread>
 #include <cstddef>
+#include <string>
 
 class InputDriver : public QThread
 {

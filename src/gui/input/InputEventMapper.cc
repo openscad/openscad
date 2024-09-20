@@ -31,6 +31,7 @@
 #include "ButtonConfigWidget.h"
 #include <ciso646> // C alternative tokens
 #include <cstddef>
+#include <string>
 #include <cmath>
 #include <QSettings>
 

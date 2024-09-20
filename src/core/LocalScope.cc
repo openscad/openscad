@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <string>
 #include <vector>
 
 #include "Assignment.h"

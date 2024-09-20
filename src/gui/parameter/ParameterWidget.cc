@@ -41,6 +41,7 @@
 #include <QInputDialog>
 #include <QMessageBox>
 #include <cstddef>
+#include <string>
 #include <utility>
 #include <vector>
 

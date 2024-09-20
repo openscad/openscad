@@ -40,6 +40,7 @@
 #endif
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
 namespace {

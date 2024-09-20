@@ -24,6 +24,7 @@
  */
 #include <map>
 #include <stack>
+#include <string>
 #include <vector>
 #include <Eigen/Core>
 #include <Eigen/Geometry>

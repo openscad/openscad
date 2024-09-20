@@ -28,6 +28,7 @@
 #include "InputDriver.h"
 
 #include <cstddef>
+#include <string>
 
 class JoystickInputDriver : public InputDriver
 {

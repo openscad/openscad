@@ -29,7 +29,9 @@
 #include <QObject>
 #include <QString>
 #include <QtNetwork>
+
 #include <utility>
+#include <string>
 #include <vector>
 
 #include "printutils.h"
