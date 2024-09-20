@@ -23,9 +23,12 @@ struct FaceInfo
   [[nodiscard]] bool in_domain() const { return nesting_level % 2 == 1; }
 };
 
+struct IdInfo {
+  int id = -1;
+};
 
 using K = CGAL::Exact_predicates_inexact_constructions_kernel;
-using Vb = CGAL::Triangulation_vertex_base_with_info_2<int, K>;
+using Vb = CGAL::Triangulation_vertex_base_with_info_2<IdInfo, K>;
 using Fbb = CGAL::Triangulation_face_base_with_info_2<FaceInfo, K>;
 using Fb = CGAL::Constrained_triangulation_face_base_2<K, Fbb>;
 using TDS = CGAL::Triangulation_data_structure_2<Vb, Fb>;
@@ -109,17 +112,20 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
   try {
     // Adds all vertices, and add all contours as constraints.
     for (const auto& outline : polygon2d.outlines()) {
-      // Start with last point
-      int last_idx = outline.vertices.size() - 1;
-      auto prev = cdt.insert({outline.vertices[last_idx][0], outline.vertices[last_idx][1]});
-      prev->info() = last_idx;
-      for (int i=0;i<outline.vertices.size();i++) {
-        const auto &v = outline.vertices[i];
+      Polygon2DCGAL::CDT::Vertex_handle prev;
+      for (int i=0;i<=outline.vertices.size();i++) {
+        const int idx = i % outline.vertices.size();
+        const auto &v = outline.vertices[idx];
         auto curr = cdt.insert({v[0], v[1]});
+        // FIXME: We need be make sure that client relying on vertex indices being
+        // maintained also skips coincident vertices the same way.
         if (curr != prev) {
-          polyset->vertices.emplace_back(v[0], v[1], 0.0);
-          curr->info() = polyset->vertices.size() - 1;
-          cdt.insert_constraint(prev, curr);
+          // Don't add the first vertex twice
+          if (i < outline.vertices.size()) {
+            polyset->vertices.emplace_back(v[0], v[1], 0.0);
+            curr->info().id = polyset->vertices.size() - 1;
+          }
+          if (prev != nullptr) cdt.insert_constraint(prev, curr);
           prev = curr;
         }
       }
@@ -135,7 +141,19 @@ std::unique_ptr<PolySet> createTriangulatedPolySetFromPolygon2d(const Polygon2d&
   mark_domains(cdt);
   for (auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) {
     if (fit->info().in_domain()) {
-      polyset->indices.push_back({fit->vertex(0)->info(), fit->vertex(1)->info(), fit->vertex(2)->info()});
+      // If this assert hits, it means that the polygon2d somehow contains
+      // self-intersecting or intersecting constraints. This shouldn't happen
+      // since Clipper guarantees no overlaps, but could happen if we lose 
+      // precision from converting from Clipper's coordinate space (int64) to Polygon2's (double).
+      // One possible workaround is to reduce Clipper's precision further, 
+      // see https://github.com/openscad/openscad/issues/5253.
+      assert(fit->vertex(0)->info().id != -1);
+      assert(fit->vertex(1)->info().id != -1);
+      assert(fit->vertex(2)->info().id != -1);
+      polyset->indices.push_back({
+        fit->vertex(0)->info().id,
+        fit->vertex(1)->info().id,
+        fit->vertex(2)->info().id});
     }
   }
   return polyset;

@@ -1,41 +1,41 @@
 #pragma once
-
-#ifdef ENABLE_TBB
-#include <thrust/transform.h>
-#include <thrust/functional.h>
-#include <thrust/execution_policy.h>
+#include <algorithm>
+#if ENABLE_TBB
+#include <tbb/parallel_for.h>
+#include <tbb/parallel_for_each.h>
 #endif
 
 template <class InputIterator, class OutputIterator, class Operation>
-void parallelizable_transform(
-  const InputIterator begin1, const InputIterator end1,
-  OutputIterator out, 
-  const Operation &op)
-{
-#ifdef ENABLE_TBB
+void parallelizable_transform(const InputIterator begin1,
+                              const InputIterator end1, OutputIterator out,
+                              const Operation &op) {
+#if ENABLE_TBB
   if (!getenv("OPENSCAD_NO_PARALLEL")) {
-    thrust::transform(begin1, end1, out, op);
+    tbb::parallel_for(tbb::blocked_range(begin1, end1), [&](auto range) {
+      size_t start_index = std::distance(begin1, range.begin());
+      for (auto iter = range.begin(); iter != range.end(); iter++)
+        out[start_index++] = op(*iter);
+    });
+    return;
   }
-  else
 #endif
-  {
-    std::transform(begin1, end1, out, op);
-  }
+  std::transform(begin1, end1, out, op);
 }
 
-template <class Container1, class Container2, class OutputIterator, class Operation>
-void parallelizable_cross_product_transform(
-  const Container1 &cont1,
-  const Container2 &cont2,
-  OutputIterator out, 
-  const Operation &op)
-{
-#ifdef ENABLE_TBB
+template <class Container1, class Container2, class OutputIterator,
+          class Operation>
+void parallelizable_cross_product_transform(const Container1 &cont1,
+                                            const Container2 &cont2,
+                                            OutputIterator out,
+                                            const Operation &op) {
+#if ENABLE_TBB
   if (!getenv("OPENSCAD_NO_PARALLEL")) {
     struct ReferencePair {
       decltype(*cont1.begin()) first;
       decltype(*cont2.begin()) second;
-      ReferencePair(decltype(*cont1.begin()) first, decltype(*cont2.begin()) second) : first(first), second(second) {}
+      ReferencePair(decltype(*cont1.begin()) first,
+                    decltype(*cont2.begin()) second)
+          : first(first), second(second) {}
     };
     std::vector<ReferencePair> pairs;
     pairs.reserve(cont1.size() * cont2.size());
@@ -44,17 +44,15 @@ void parallelizable_cross_product_transform(
         pairs.emplace_back(v1, v2);
       }
     }
-    thrust::transform(pairs.begin(), pairs.end(), out, [&](const auto &pair) {
-      return op(pair.first, pair.second);
-    });
+    parallelizable_transform(
+        pairs.begin(), pairs.end(), out,
+        [&](const auto &pair) { return op(pair.first, pair.second); });
+    return;
   }
-  else
 #endif
-  {
-    for (const auto &v1 : cont1) {
-      for (const auto &v2 : cont2) {
-        *(out++) = op(v1, v2);
-      }
+  for (const auto &v1 : cont1) {
+    for (const auto &v2 : cont2) {
+      *(out++) = op(v1, v2);
     }
   }
 }

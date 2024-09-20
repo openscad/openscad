@@ -204,6 +204,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
       PRINTDB("Minkowski: Union done: %f s", t.time());
       t.reset();
 
+      N->toOriginal();
       operands[0] = N;
     }
 

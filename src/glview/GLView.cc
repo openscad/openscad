@@ -566,21 +566,25 @@ void GLView::decodeMarkerValue(double i, double l, int size_div_sm)
       glVertex3d(-y + (fh + bl), 0, x);  // z-label along z-axis; font below
     },
   };
+  bool needs_glend = false;
   for (const PlaneVertexDraw& axis_draw : axis_draw_planes) {
     // We get 'plot instructions', a sequence of vertices. Translate into gl ops
-    const auto plot_fun = [ = ](bool pen_down, float x, float y) {
+    const auto plot_fun = [&](bool pen_down, float x, float y) {
         if (!pen_down) { // Start a new line, coordinates just move not draw
-          glEnd();
+          if (needs_glend) glEnd();
           glBegin(GL_LINE_STRIP);
+          needs_glend = true;
         }
         axis_draw(x, y, font_size, baseline_offset);
       };
 
     hershey::DrawText(pos_number_str, i, 0,
                       hershey::TextAlign::kCenter, font_size, plot_fun);
-    glEnd();
+    if (needs_glend) glEnd();
+    needs_glend = false;
     hershey::DrawText(neg_number_str, -i - prefix_offset, 0,
                       hershey::TextAlign::kCenter, font_size, plot_fun);
-    glEnd();
+    if (needs_glend) glEnd();
+    needs_glend = false;
   }
 }

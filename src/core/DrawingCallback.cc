@@ -43,6 +43,7 @@ DrawingCallback::~DrawingCallback()
 void DrawingCallback::start_glyph()
 {
   this->polygon = std::make_shared<Polygon2d>();
+  // FIXME: Why do we think that a glyph is sanitized? 
   this->polygon->setSanitized(true);
 }
 

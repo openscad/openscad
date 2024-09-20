@@ -28,6 +28,18 @@
     <file>icons/stopbutton.png</file>
     <file>icons/background.png</file>
 
+    <file>icons/svg-default/animate_disabled.svg</file>
+    <file>icons/svg-default/animate_disabled-white.svg</file>
+    <file>icons/svg-default/animate_pause.svg</file>
+    <file>icons/svg-default/animate_pause-white.svg</file>
+    <file>icons/svg-default/animate.svg</file>
+    <file>icons/svg-default/animate-white.svg</file>
+    <file>icons/svg-default/axes.svg</file>
+    <file>icons/svg-default/axes-white.svg</file>
+    <file>icons/svg-default/crosshairs.svg</file>
+    <file>icons/svg-default/crosshairs-white.svg</file>
+    <file>icons/svg-default/edit-copy.svg</file>
+    <file>icons/svg-default/edit-copy-white.svg</file>
     <file>icons/svg-default/export-3mf.svg</file>
     <file>icons/svg-default/export-3mf-white.svg</file>
     <file>icons/svg-default/export-amf.svg</file>
@@ -40,8 +52,6 @@
     <file>icons/svg-default/export-obj-white.svg</file>
     <file>icons/svg-default/export-off.svg</file>
     <file>icons/svg-default/export-off-white.svg</file>
-    <file>icons/svg-default/export-wrl.svg</file>
-    <file>icons/svg-default/export-wrl-white.svg</file>
     <file>icons/svg-default/export-pdf.svg</file>
     <file>icons/svg-default/export-pdf-white.svg</file>
     <file>icons/svg-default/export-png.svg</file>
@@ -50,89 +60,81 @@
     <file>icons/svg-default/export-stl-white.svg</file>
     <file>icons/svg-default/export-svg.svg</file>
     <file>icons/svg-default/export-svg-white.svg</file>
+    <file>icons/svg-default/export-wrl.svg</file>
+    <file>icons/svg-default/export-wrl-white.svg</file>
     <file>icons/svg-default/indent.svg</file>
     <file>icons/svg-default/indent-white.svg</file>
+    <file>icons/svg-default/measure-ang.svg</file>
+    <file>icons/svg-default/measure-ang-white.svg</file>
+    <file>icons/svg-default/measure-dist.svg</file>
+    <file>icons/svg-default/measure-dist-white.svg</file>
     <file>icons/svg-default/new.svg</file>
     <file>icons/svg-default/new-white.svg</file>
     <file>icons/svg-default/open.svg</file>
     <file>icons/svg-default/open-white.svg</file>
+    <file>icons/svg-default/orthogonal.svg</file>
+    <file>icons/svg-default/orthogonal-white.svg</file>
+    <file>icons/svg-default/perspective.svg</file>
+    <file>icons/svg-default/perspective-white.svg</file>
     <file>icons/svg-default/preview.svg</file>
     <file>icons/svg-default/preview-white.svg</file>
     <file>icons/svg-default/redo.svg</file>
     <file>icons/svg-default/redo-white.svg</file>
     <file>icons/svg-default/render.svg</file>
     <file>icons/svg-default/render-white.svg</file>
+    <file>icons/svg-default/reset-view.svg</file>
+    <file>icons/svg-default/reset-view-white.svg</file>
     <file>icons/svg-default/save.svg</file>
     <file>icons/svg-default/save-white.svg</file>
+    <file>icons/svg-default/scalemarkers.svg</file>
+    <file>icons/svg-default/scalemarkers-white.svg</file>
     <file>icons/svg-default/send.svg</file>
     <file>icons/svg-default/send-white.svg</file>
+    <file>icons/svg-default/show-edges.svg</file>
+    <file>icons/svg-default/show-edges-white.svg</file>
+    <file>icons/svg-default/surface.svg</file>
+    <file>icons/svg-default/surface-white.svg</file>
+    <file>icons/svg-default/throwntogether.svg</file>
+    <file>icons/svg-default/throwntogether-white.svg</file>
     <file>icons/svg-default/undo.svg</file>
     <file>icons/svg-default/undo-white.svg</file>
     <file>icons/svg-default/unindent.svg</file>
     <file>icons/svg-default/unindent-white.svg</file>
-    <file>icons/svg-default/zoom-in.svg</file>
-    <file>icons/svg-default/zoom-in-white.svg</file>
-    <file>icons/svg-default/zoom-out.svg</file>
-    <file>icons/svg-default/zoom-out-white.svg</file>
-    <file>icons/svg-default/zoom-all.svg</file>
-    <file>icons/svg-default/zoom-all-white.svg</file>
-    <file>icons/svg-default/zoom-text-in.svg</file>
-    <file>icons/svg-default/zoom-text-in-white.svg</file>
-    <file>icons/svg-default/zoom-text-out.svg</file>
-    <file>icons/svg-default/zoom-text-out-white.svg</file>
-    <file>icons/svg-default/reset-view.svg</file>
-    <file>icons/svg-default/reset-view-white.svg</file>
-    <file>icons/svg-default/view-right.svg</file>
-    <file>icons/svg-default/view-right-white.svg</file>
-    <file>icons/svg-default/view-top.svg</file>
-    <file>icons/svg-default/view-top-white.svg</file>
-    <file>icons/svg-default/view-bottom.svg</file>
-    <file>icons/svg-default/view-bottom-white.svg</file>
-    <file>icons/svg-default/view-left.svg</file>
-    <file>icons/svg-default/view-left-white.svg</file>
-    <file>icons/svg-default/view-front.svg</file>
-    <file>icons/svg-default/view-front-white.svg</file>
-    <file>icons/svg-default/view-back.svg</file>
-    <file>icons/svg-default/view-back-white.svg</file>
-    <file>icons/svg-default/perspective.svg</file>
-    <file>icons/svg-default/perspective-white.svg</file>
-    <file>icons/svg-default/orthogonal.svg</file>
-    <file>icons/svg-default/orthogonal-white.svg</file>
-    <file>icons/svg-default/axes.svg</file>
-    <file>icons/svg-default/axes-white.svg</file>
-    <file>icons/svg-default/scalemarkers.svg</file>
-    <file>icons/svg-default/scalemarkers-white.svg</file>
-    <file>icons/svg-default/show-edges.svg</file>
-    <file>icons/svg-default/show-edges-white.svg</file>
-    <file>icons/svg-default/crosshairs.svg</file>
-    <file>icons/svg-default/crosshairs-white.svg</file>
-    <file>icons/svg-default/animate.svg</file>
-    <file>icons/svg-default/animate-white.svg</file>
-    <file>icons/svg-default/animate_pause.svg</file>
-    <file>icons/svg-default/animate_pause-white.svg</file>
-    <file>icons/svg-default/animate_disabled.svg</file>
-    <file>icons/svg-default/animate_disabled-white.svg</file>
-    <file>icons/svg-default/surface.svg</file>
-    <file>icons/svg-default/surface-white.svg</file>
-    <file>icons/svg-default/wireframe.svg</file>
-    <file>icons/svg-default/wireframe-white.svg</file>
-    <file>icons/svg-default/throwntogether.svg</file>
-    <file>icons/svg-default/throwntogether-white.svg</file>
+    <file>icons/svg-default/vcr-control-end.svg</file>
+    <file>icons/svg-default/vcr-control-end-white.svg</file>
+    <file>icons/svg-default/vcr-control-pause.svg</file>
+    <file>icons/svg-default/vcr-control-pause-white.svg</file>
+    <file>icons/svg-default/vcr-control-play.svg</file>
+    <file>icons/svg-default/vcr-control-play-white.svg</file>
     <file>icons/svg-default/vcr-control-start.svg</file>
     <file>icons/svg-default/vcr-control-start-white.svg</file>
     <file>icons/svg-default/vcr-control-step-back.svg</file>
     <file>icons/svg-default/vcr-control-step-back-white.svg</file>
-    <file>icons/svg-default/vcr-control-play.svg</file>
-    <file>icons/svg-default/vcr-control-play-white.svg</file>
-    <file>icons/svg-default/vcr-control-pause.svg</file>
-    <file>icons/svg-default/vcr-control-pause-white.svg</file>
     <file>icons/svg-default/vcr-control-step-forward.svg</file>
     <file>icons/svg-default/vcr-control-step-forward-white.svg</file>
-    <file>icons/svg-default/vcr-control-end.svg</file>
-    <file>icons/svg-default/vcr-control-end-white.svg</file>
-    <file>icons/svg-default/measure-dist.svg</file>
-    <file>icons/svg-default/measure-dist-white.svg</file>
-    <file>icons/svg-default/measure-ang.svg</file>
-    <file>icons/svg-default/measure-ang-white.svg</file>
+    <file>icons/svg-default/view-back.svg</file>
+    <file>icons/svg-default/view-back-white.svg</file>
+    <file>icons/svg-default/view-bottom.svg</file>
+    <file>icons/svg-default/view-bottom-white.svg</file>
+    <file>icons/svg-default/view-front.svg</file>
+    <file>icons/svg-default/view-front-white.svg</file>
+    <file>icons/svg-default/view-left.svg</file>
+    <file>icons/svg-default/view-left-white.svg</file>
+    <file>icons/svg-default/view-right.svg</file>
+    <file>icons/svg-default/view-right-white.svg</file>
+    <file>icons/svg-default/view-top.svg</file>
+    <file>icons/svg-default/view-top-white.svg</file>
+    <file>icons/svg-default/wireframe.svg</file>
+    <file>icons/svg-default/wireframe-white.svg</file>
+    <file>icons/svg-default/zoom-all.svg</file>
+    <file>icons/svg-default/zoom-all-white.svg</file>
+    <file>icons/svg-default/zoom-in.svg</file>
+    <file>icons/svg-default/zoom-in-white.svg</file>
+    <file>icons/svg-default/zoom-out.svg</file>
+    <file>icons/svg-default/zoom-out-white.svg</file>
+    <file>icons/svg-default/zoom-text-in.svg</file>
+    <file>icons/svg-default/zoom-text-in-white.svg</file>
+    <file>icons/svg-default/zoom-text-out.svg</file>
+    <file>icons/svg-default/zoom-text-out-white.svg</file>
   </qresource>
 </RCC>
