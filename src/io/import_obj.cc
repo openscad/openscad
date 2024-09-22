@@ -1,6 +1,6 @@
-#include "import.h"
-#include "PolySet.h"
-#include "PolySetBuilder.h"
+#include "io/import.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
 #include <fstream>
 #include <string>
 #include <vector>

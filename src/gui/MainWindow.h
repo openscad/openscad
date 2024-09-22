@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Editor.h"
-#include "Geometry.h"
-#include "export.h"
-#include "ExportPdfDialog.h"
-#include "Measurement.h"
+#include "gui/Editor.h"
+#include "geometry/Geometry.h"
+#include "io/export.h"
+#include "gui/ExportPdfDialog.h"
+#include "gui/Measurement.h"
 #include "RenderStatistic.h"
-#include "TabManager.h"
-#include "Tree.h"
-#include "UIUtils.h"
-#include "qtgettext.h" // IWYU pragma: keep
+#include "gui/TabManager.h"
+#include "core/Tree.h"
+#include "gui/UIUtils.h"
+#include "gui/qtgettext.h" // IWYU pragma: keep
 #include "ui_MainWindow.h"
 
 #include <memory>

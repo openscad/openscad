@@ -31,12 +31,12 @@
 
 #include <fontconfig/fontconfig.h>
 
-#include "printutils.h"
+#include "utils/printutils.h"
 
 #include "FontCache.h"
-#include "DrawingCallback.h"
-#include "FreetypeRenderer.h"
-#include "calc.h"
+#include "core/DrawingCallback.h"
+#include "core/FreetypeRenderer.h"
+#include "utils/calc.h"
 
 #include FT_OUTLINE_H
 // NOLINTNEXTLINE(bugprone-macro-parentheses)

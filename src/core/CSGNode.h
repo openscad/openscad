@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include "linalg.h"
-#include "enums.h"
+#include "geometry/linalg.h"
+#include "core/enums.h"
 
 class PolySet;
 

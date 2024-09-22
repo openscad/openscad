@@ -26,9 +26,9 @@
 
 #include <QString>
 
-#include "Settings.h"
-#include "PrintService.h"
-#include "PrintInitDialog.h"
+#include "gui/Settings.h"
+#include "gui/PrintService.h"
+#include "gui/PrintInitDialog.h"
 #include "QSettingsCached.h"
 
 PrintInitDialog::PrintInitDialog()

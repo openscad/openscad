@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Geometry.h"
-#include "enums.h"
-#include "ManifoldGeometry.h"
+#include "geometry/Geometry.h"
+#include "core/enums.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 
 namespace ManifoldUtils {
 

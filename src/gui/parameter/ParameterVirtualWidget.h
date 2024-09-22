@@ -3,9 +3,9 @@
 #include <boost/optional.hpp>
 #include <vector>
 
-#include "qtgettext.h"
+#include "gui/qtgettext.h"
 #include "ui_ParameterDescriptionWidget.h"
-#include "ParameterObject.h"
+#include "core/customizer/ParameterObject.h"
 
 enum class DescriptionStyle { ShowDetails, Inline, HideDetails, DescriptionOnly };
 

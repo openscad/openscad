@@ -6,7 +6,7 @@
 #include <QWheelEvent>
 #include <QScrollBar>
 #include <QTextEdit>
-#include "IndicatorData.h"
+#include "core/IndicatorData.h"
 #include "parameter/ParameterWidget.h"
 
 #include <string>

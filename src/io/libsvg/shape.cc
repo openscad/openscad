@@ -31,24 +31,24 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/spirit/include/qi.hpp>
 
-#include "shape.h"
-#include "circle.h"
-#include "ellipse.h"
-#include "line.h"
-#include "text.h"
-#include "tspan.h"
-#include "data.h"
-#include "polygon.h"
-#include "polyline.h"
-#include "rect.h"
-#include "svgpage.h"
-#include "path.h"
-#include "group.h"
-#include "use.h"
+#include "io/libsvg/shape.h"
+#include "io/libsvg/circle.h"
+#include "io/libsvg/ellipse.h"
+#include "io/libsvg/line.h"
+#include "io/libsvg/text.h"
+#include "io/libsvg/tspan.h"
+#include "io/libsvg/data.h"
+#include "io/libsvg/polygon.h"
+#include "io/libsvg/polyline.h"
+#include "io/libsvg/rect.h"
+#include "io/libsvg/svgpage.h"
+#include "io/libsvg/path.h"
+#include "io/libsvg/group.h"
+#include "io/libsvg/use.h"
 
-#include "transformation.h"
-#include "degree_trig.h"
-#include "calc.h"
+#include "io/libsvg/transformation.h"
+#include "utils/degree_trig.h"
+#include "utils/calc.h"
 
 namespace libsvg {
 

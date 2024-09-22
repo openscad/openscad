@@ -7,9 +7,9 @@
 #include <vector>
 #include <memory>
 #include <boost/logic/tribool.hpp>
-#include "Assignment.h"
-#include "function.h"
-#include "Value.h"
+#include "core/Assignment.h"
+#include "core/function.h"
+#include "core/Value.h"
 
 template <class T> class ContextHandle;
 

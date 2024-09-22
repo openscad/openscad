@@ -3,7 +3,7 @@
 #include <QStandardItemModel>
 #include <QSortFilterProxyModel>
 
-#include "qtgettext.h"
+#include "gui/qtgettext.h"
 #include "ui_FontListDialog.h"
 
 class FontListDialog : public QDialog, public Ui::FontListDialog

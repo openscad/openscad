@@ -24,13 +24,13 @@
  *
  */
 
-#include "ColorNode.h"
-#include "module.h"
-#include "ModuleInstantiation.h"
-#include "Builtins.h"
-#include "Children.h"
-#include "Parameters.h"
-#include "printutils.h"
+#include "core/ColorNode.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Builtins.h"
+#include "core/Children.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
 #include <cctype>
 #include <cstddef>
 #include <sstream>

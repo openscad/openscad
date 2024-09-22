@@ -1,7 +1,7 @@
-#include "Camera.h"
-#include "RenderSettings.h"
-#include "printutils.h"
-#include "degree_trig.h"
+#include "glview/Camera.h"
+#include "glview/RenderSettings.h"
+#include "utils/printutils.h"
+#include "utils/degree_trig.h"
 
 #include <vector>
 

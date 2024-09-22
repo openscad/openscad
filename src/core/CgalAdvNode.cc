@@ -24,12 +24,12 @@
  *
  */
 
-#include "CgalAdvNode.h"
-#include "module.h"
-#include "ModuleInstantiation.h"
-#include "Builtins.h"
-#include "Children.h"
-#include "Parameters.h"
+#include "core/CgalAdvNode.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Builtins.h"
+#include "core/Children.h"
+#include "core/Parameters.h"
 #include <sstream>
 #include <cassert>
 #include <boost/assign/std/vector.hpp>

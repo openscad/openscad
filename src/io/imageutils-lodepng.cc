@@ -1,4 +1,4 @@
-#include "imageutils.h"
+#include "io/imageutils.h"
 #include "ext/lodepng/lodepng.h"
 #include <cstdio>
 #include <cstdlib>

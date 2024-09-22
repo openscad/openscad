@@ -5,9 +5,9 @@
 #include <memory>
 #include <cstdio>
 #include <functional>
-#include "VertexArray.h"
+#include "glview/VertexArray.h"
 
-#include "printutils.h"
+#include "utils/printutils.h"
 
 void addAttributeValues(IAttributeData&) {}
 

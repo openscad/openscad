@@ -3,8 +3,8 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "module.h"
-#include "Assignment.h"
+#include "core/module.h"
+#include "core/Assignment.h"
 
 class AbstractModule;
 class BuiltinFunction;

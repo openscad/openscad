@@ -24,10 +24,10 @@
  *
  */
 
-#include "export.h"
-#include "PolySet.h"
-#include "printutils.h"
-#include "Geometry.h"
+#include "io/export.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
+#include "geometry/Geometry.h"
 
 #include <cstddef>
 #include <fstream>

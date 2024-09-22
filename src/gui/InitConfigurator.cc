@@ -1,6 +1,7 @@
+
 #include <QSettings>
-#include "Settings.h"
-#include "InitConfigurator.h"
+#include "gui/Settings.h"
+#include "gui/InitConfigurator.h"
 
 #include <string>
 

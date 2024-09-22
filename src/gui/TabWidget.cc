@@ -3,7 +3,7 @@
 #include <QMouseEvent>
 #include <QList>
 
-#include "TabWidget.h"
+#include "gui/TabWidget.h"
 
 TabWidget::TabWidget(QWidget *parent) : QTabBar(parent)
 {

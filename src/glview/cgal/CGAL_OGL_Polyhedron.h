@@ -28,9 +28,9 @@
 
 #ifndef NULLGL
 
-#include "ColorMap.h"
+#include "glview/ColorMap.h"
 #include "ext/CGAL/OGL_helper.h"
-#include "printutils.h"
+#include "utils/printutils.h"
 
 using CGAL::OGL::SNC_BOUNDARY;
 using CGAL::OGL::SNC_SKELETON;

@@ -401,7 +401,7 @@
   <customwidget>
    <class>FontListTableView</class>
    <extends>QTableView</extends>
-   <header>FontListTableView.h</header>
+   <header>gui/FontListTableView.h</header>
   </customwidget>
  </customwidgets>
  <resources>

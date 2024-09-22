@@ -2,7 +2,7 @@
    Create an NULL OpenGL context that doesn't actually use any OpenGL code,
    and can be compiled on a system without OpenGL.
  */
-#include "OffscreenContextNULL.h"
+#include "glview/OffscreenContextNULL.h"
 
 #include <string>
 

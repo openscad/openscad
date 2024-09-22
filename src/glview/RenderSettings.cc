@@ -1,4 +1,4 @@
-#include "RenderSettings.h"
+#include "glview/RenderSettings.h"
 
 RenderSettings *RenderSettings::inst(bool erase)
 {

@@ -1,12 +1,12 @@
 #include <cstddef>
 #include <string>
 
-#include "compiler_specific.h"
-#include "Context.h"
-#include "ModuleInstantiation.h"
-#include "Expression.h"
-#include "exceptions.h"
-#include "printutils.h"
+#include "utils/compiler_specific.h"
+#include "core/Context.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Expression.h"
+#include "utils/exceptions.h"
+#include "utils/printutils.h"
 
 void ModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
 {

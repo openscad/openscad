@@ -31,10 +31,10 @@
 #include <boost/format.hpp>
 #include <libxml/xmlreader.h>
 
-#include "libsvg.h"
+#include "io/libsvg/libsvg.h"
 
-#include "shape.h"
-#include "use.h"
+#include "io/libsvg/shape.h"
+#include "io/libsvg/use.h"
 
 namespace libsvg {
 

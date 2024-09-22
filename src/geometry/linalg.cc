@@ -1,4 +1,4 @@
-#include "linalg.h"
+#include "geometry/linalg.h"
 #include <cmath>
 
 // FIXME: We can achieve better pruning by either:
