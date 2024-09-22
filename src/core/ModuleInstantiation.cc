@@ -1,3 +1,6 @@
+#include <cstddef>
+#include <string>
+
 #include "compiler_specific.h"
 #include "Context.h"
 #include "ModuleInstantiation.h"

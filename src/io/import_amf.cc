@@ -35,9 +35,12 @@
 #endif
 
 #include <sys/types.h>
+#include <cstddef>
 #include <map>
 #include <fstream>
 #include <cassert>
+#include <string>
+#include <vector>
 #include <libxml/xmlreader.h>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>

@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstddef>
 #include <functional>
+#include <string>
 #include <QObject>
 #include <QSet>
 #include "Editor.h"

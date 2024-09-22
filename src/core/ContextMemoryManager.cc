@@ -27,6 +27,7 @@
 #include <deque>
 #include <map>
 #include <unordered_set>
+#include <vector>
 
 #include "Context.h"
 #include "ContextMemoryManager.h"

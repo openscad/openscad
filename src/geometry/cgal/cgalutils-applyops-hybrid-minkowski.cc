@@ -20,10 +20,12 @@
 
 #include <CGAL/convex_hull_3.h>
 
+#include <cstddef>
 #include <memory>
 #include <map>
 #include <queue>
 #include <unordered_set>
+#include <vector>
 
 namespace CGALUtils {
 
@@ -241,11 +243,3 @@ std::shared_ptr<const Geometry> applyMinkowskiHybrid(const Geometry::Geometries&
 
 
 #endif // ENABLE_CGAL
-
-
-
-
-
-
-
-

@@ -30,7 +30,10 @@
 #include "printutils.h"
 #include "Grid.h"
 #include <Eigen/LU>
+#include <cstddef>
+#include <string>
 #include <utility>
+#include <vector>
 
 /*! /class PolySet
 
@@ -96,7 +99,7 @@ void PolySet::transform(const Transform3d& mat)
   // If mirroring transform, flip faces to avoid the object to end up being inside-out
   bool mirrored = mat.matrix().determinant() < 0;
 
-  for (auto& v : this->vertices) 
+  for (auto& v : this->vertices)
       v = mat * v;
 
   if(mirrored)

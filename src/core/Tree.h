@@ -2,6 +2,7 @@
 
 #include "NodeCache.h"
 #include <map>
+#include <string>
 #include <utility>
 
 /*!

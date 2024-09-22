@@ -44,6 +44,9 @@
 #include "ManifoldGeometry.h"
 #endif
 
+#include <cstddef>
+#include <vector>
+
 // #include "Preferences.h"
 
 CGALRenderer::CGALRenderer(const std::shared_ptr<const class Geometry> &geom) {

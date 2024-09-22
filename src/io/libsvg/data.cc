@@ -24,6 +24,8 @@
  */
 #include "data.h"
 
+#include <string>
+
 namespace libsvg {
 
 const std::string data::name("data");

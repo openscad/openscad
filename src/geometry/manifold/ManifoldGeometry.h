@@ -5,8 +5,10 @@
 #include <glm/glm.hpp>
 #include "linalg.h"
 #include "manifold/manifold.h"
+#include <cstddef>
 #include <map>
 #include <set>
+#include <string>
 
 namespace manifold {
   class Manifold;

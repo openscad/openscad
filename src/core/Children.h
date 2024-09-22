@@ -1,7 +1,9 @@
 #pragma once
 
+#include <cstddef>
 #include <utility>
 #include <memory>
+#include <vector>
 
 #include "Context.h"
 #include "LocalScope.h"

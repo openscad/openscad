@@ -14,6 +14,9 @@
 #include "PolySet.h"
 #include "manifold/polygon.h"
 
+#include <cstddef>
+#include <vector>
+
 using Error = manifold::Manifold::Error;
 
 namespace ManifoldUtils {
@@ -69,7 +72,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMe
   auto mani = manifold::Manifold(meshgl).AsOriginal();
   if (mani.Status() != Error::NoError) {
     LOG(message_group::Error,
-        "[manifold] Surface_mesh -> Manifold conversion failed: %1$s", 
+        "[manifold] Surface_mesh -> Manifold conversion failed: %1$s",
         ManifoldUtils::statusToString(mani.Status()));
     return nullptr;
   }
@@ -116,7 +119,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
   }
   auto next_id = manifold::Manifold::ReserveIDs(colorToFaceIndices.size());
   for (const auto& [color, faceIndices] : colorToFaceIndices) {
-    
+
     auto id = next_id++;
     if (color.has_value()) {
       originalIDToColor[id] = color.value();
@@ -125,7 +128,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
     mesh.runIndex.push_back(mesh.triVerts.size());
     mesh.runOriginalID.push_back(id);
     originalIDs.insert(id);
-    
+
     for (size_t faceIndex : faceIndices) {
       auto & face = ps.indices[faceIndex];
       assert(face.size() == 3);
@@ -146,7 +149,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
   // (through using manifold::Mesh).
   // We need to make sure our PolySet is triangulated before doing that.
   // Note: We currently don't have a way of directly checking if a PolySet is manifold,
-  // so we just try converting to a Manifold object and check its status. 
+  // so we just try converting to a Manifold object and check its status.
   std::unique_ptr<const PolySet> triangulated;
   if (!ps.isTriangular()) {
     triangulated = PolySetUtils::tessellate_faces(ps);
@@ -162,7 +165,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
   // causes of a non-manifold topology:
   // Polygon soup of manifold topology with co-incident vertices having identical vertex positions
   //
-  // Note: This causes us to lose the ability to represent manifold topologies with duplicate 
+  // Note: This causes us to lose the ability to represent manifold topologies with duplicate
   // vertex positions (touching cubes, donut with vertex in the center etc.)
   PolySetBuilder builder(ps.vertices.size(), ps.indices.size(),
                          ps.getDimension(), ps.convexValue());
@@ -186,7 +189,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
     std::vector<Vector3d> points3d;
     psq.quantizeVertices(&points3d);
     auto ps_tri = PolySetUtils::tessellate_faces(psq);
-    
+
     CGAL_DoubleMesh m;
 
     if (ps_tri->isConvex()) {

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <boost/optional.hpp>
+#include <vector>
+
 #include "qtgettext.h"
 #include "ui_ParameterDescriptionWidget.h"
 #include "ParameterObject.h"

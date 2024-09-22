@@ -37,6 +37,8 @@
 #include "ManifoldGeometry.h"
 #endif
 
+#include <vector>
+
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
   : convex_(convex), dim_(dim)
 {
@@ -119,7 +121,7 @@ void PolySetBuilder::beginPolygon(int nvertices) {
 void PolySetBuilder::addVertex(int ind)
 {
   // Ignore consecutive duplicate indices
-  if (current_polygon_.empty() || 
+  if (current_polygon_.empty() ||
       ind != current_polygon_.back() && ind != current_polygon_.front()) {
     current_polygon_.push_back(ind);
   }

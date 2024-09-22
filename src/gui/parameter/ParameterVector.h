@@ -3,6 +3,8 @@
 #include "ParameterVirtualWidget.h"
 #include "ui_ParameterVector.h"
 
+#include <vector>
+
 class ParameterVector : public ParameterVirtualWidget, Ui::ParameterVector
 {
   Q_OBJECT

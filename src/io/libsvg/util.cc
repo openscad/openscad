@@ -24,6 +24,9 @@
  */
 #include <boost/spirit/include/qi.hpp>
 
+#include <string>
+#include <vector>
+
 // include fusion headers for Ubuntu trusty, everything later seems happy without
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>

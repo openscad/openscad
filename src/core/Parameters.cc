@@ -24,8 +24,11 @@
  *
  */
 
+#include <cstddef>
 #include <set>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "Expression.h"
 #include "Parameters.h"

@@ -33,12 +33,13 @@
 #include "AST.h"
 #include "lib3mf_implicit.hpp"
 
+#include <vector>
 
 namespace {
   std::unique_ptr<PolySet> getAsPolySet(const Lib3MF::PMeshObject& object) {
     try {
       if (!object) return nullptr;
-    
+
       Lib3MF_uint64 vertex_count = object->GetVertexCount();
       Lib3MF_uint64 triangle_count = object->GetTriangleCount();
       if (!vertex_count || !triangle_count) return nullptr;

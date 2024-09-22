@@ -2,6 +2,8 @@
 #include "printutils.h"
 #include <boost/property_tree/json_parser.hpp>
 
+#include <string>
+
 static std::string parameterSetsKey("parameterSets");
 static std::string fileFormatVersionKey("fileFormatVersion");
 static std::string fileFormatVersionValue("1");

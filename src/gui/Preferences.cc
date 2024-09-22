@@ -49,6 +49,8 @@
 #include "OctoPrint.h"
 #include "IgnoreWheelWhenNotFocused.h"
 
+#include <string>
+
 Preferences *Preferences::instance = nullptr;
 
 const char *Preferences::featurePropertyName = "FeatureProperty";

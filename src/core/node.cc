@@ -27,9 +27,12 @@
 #include "core/node.h"
 #include "ModuleInstantiation.h"
 #include "progress.h"
+
+#include <cstddef>
 #include <functional>
 #include <iostream>
 #include <algorithm>
+#include <string>
 
 size_t AbstractNode::idx_counter;
 

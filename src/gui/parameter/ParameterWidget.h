@@ -26,7 +26,10 @@
 #pragma once
 
 #include <QTimer>
+#include <cstddef>
 #include <map>
+#include <string>
+#include <vector>
 
 #include "qtgettext.h" // IWYU pragma: keep
 #include "ui_ParameterWidget.h"

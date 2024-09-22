@@ -1,6 +1,9 @@
 #include "ClipperUtils.h"
 #include "printutils.h"
 
+#include <cstddef>
+#include <vector>
+
 namespace ClipperUtils {
 
 // Using 1 bit less precision than the maximum possible, to limit the chance

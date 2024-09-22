@@ -6,6 +6,8 @@
 #include <QSpinBox>
 #include <QCheckBox>
 
+#include <string>
+
 template <class WidgetPtr>
 class BlockSignals
 {

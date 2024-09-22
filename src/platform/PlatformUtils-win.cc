@@ -1,6 +1,7 @@
 #include "PlatformUtils.h"
 
 #include <map>
+#include <string>
 
 #include "printutils.h"
 #include "findversion.h"
@@ -242,4 +243,3 @@ void PlatformUtils::ensureStdIO(void)
   mi_register_output(&mi_output, NULL);
 #endif
 }
-

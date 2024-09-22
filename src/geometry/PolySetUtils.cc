@@ -1,6 +1,9 @@
 #include "PolySetUtils.h"
 
+#include <cstddef>
 #include <sstream>
+#include <vector>
+
 #include <boost/range/adaptor/reversed.hpp>
 
 #include "PolySet.h"
@@ -28,7 +31,7 @@ std::unique_ptr<Polygon2d> project(const PolySet& ps) {
   for (const auto& p : ps.indices) {
     Outline2d outline;
     for (const auto& v : p) {
-      pt=ps.vertices[v];	    
+      pt=ps.vertices[v];
       outline.vertices.emplace_back(pt[0], pt[1]);
     }
     poly->addOutline(outline);

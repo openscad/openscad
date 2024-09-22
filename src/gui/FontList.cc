@@ -1,6 +1,7 @@
 #include <qitemselectionmodel.h>
 #include <string>
 #include <iostream>
+#include <vector>
 
 #include <QClipboard>
 #include <QRegularExpression>

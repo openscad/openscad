@@ -34,6 +34,10 @@
 #include "CGAL_Nef_polyhedron.h"
 #endif
 
+#include <cstddef>
+#include <string>
+#include <vector>
+
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 

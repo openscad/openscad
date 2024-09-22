@@ -29,8 +29,10 @@
 #include <QObject>
 #include <QString>
 #include <QtNetwork>
+
 #include <utility>
-#include <utility>
+#include <string>
+#include <vector>
 
 #include "printutils.h"
 #include "PlatformUtils.h"

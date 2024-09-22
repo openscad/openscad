@@ -33,6 +33,8 @@
 #include <utility>
 #include "PolySet.h"
 
+#include <vector>
+
 #ifdef ENABLE_OPENCSG
 
 class OpenCSGPrim : public OpenCSG::Primitive
@@ -60,7 +62,7 @@ private:
 
 // Primitive for depth rendering using OpenCSG
 std::unique_ptr<OpenCSGPrim> createCSGPrimitive(const CSGChainObject& csgobj, OpenCSG::Operation operation,
-                                bool highlight_mode, bool background_mode, OpenSCADOperator type, 
+                                bool highlight_mode, bool background_mode, OpenSCADOperator type,
                                 const LegacyOpenCSGRenderer &renderer) {
   auto prim = std::make_unique<OpenCSGPrim>(operation, csgobj.leaf->polyset->getConvexity(), renderer);
   prim->polyset = csgobj.leaf->polyset;

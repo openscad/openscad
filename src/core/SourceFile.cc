@@ -34,7 +34,10 @@
 #include "StatCache.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include <string>
 #include <utility>
+#include <vector>
+
 namespace fs = boost::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>

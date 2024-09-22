@@ -1,3 +1,6 @@
+#include <string>
+#include <vector>
+
 #include "parsersettings.h"
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>

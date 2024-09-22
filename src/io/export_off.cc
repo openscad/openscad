@@ -32,6 +32,9 @@
 #include "PolySet.h"
 #include "PolySetUtils.h"
 
+#include <cstddef>
+#include <cstdint>
+
 uint8_t clamp_color_channel(float value)
 {
   if (value < 0) return 0;

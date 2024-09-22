@@ -29,9 +29,10 @@
 #include "ManifoldGeometry.h"
 #endif
 
+#include <cstddef>
 #include <map>
 #include <queue>
-
+#include <vector>
 
 namespace CGALUtils {
 
@@ -513,10 +514,3 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
 }  // namespace CGALUtils
 
 #endif /* ENABLE_CGAL */
-
-
-
-
-
-
-

@@ -36,6 +36,7 @@
 #include "ManifoldGeometry.h"
 #endif
 
+#include <string>
 
 static uint32_t lib3mf_write_callback(const char *data, uint32_t bytes, std::ostream *stream)
 {

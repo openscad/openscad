@@ -24,6 +24,7 @@
  */
 #pragma once
 
+#include <string>
 #include "shape.h"
 #include "util.h"
 

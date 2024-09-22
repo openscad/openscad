@@ -1,5 +1,8 @@
 #pragma once
 #include "Value.h"
+
+#include <cstddef>
+#include <string>
 #include <utility>
 #include <unordered_map>
 

@@ -24,6 +24,10 @@
  *
  */
 
+#include <cstddef>
+#include <string>
+#include <vector>
+
 #include "Context.h"
 #include "function.h"
 #include "printutils.h"

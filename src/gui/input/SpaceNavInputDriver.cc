@@ -35,6 +35,7 @@
 
 #include <spnav.h>
 #include <unistd.h>
+#include <string>
 
 void SpaceNavInputDriver::run()
 {

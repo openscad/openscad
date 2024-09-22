@@ -2,6 +2,8 @@
 #include <QSettings>
 #include "Settings.h"
 
+#include <string>
+
 void InitConfigurator::initUpdateCheckBox(const BlockSignals<QCheckBox *>& checkBox, const Settings::SettingsEntryBool& entry)
 {
   checkBox->setChecked(entry.value());

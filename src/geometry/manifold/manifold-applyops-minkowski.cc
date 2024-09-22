@@ -11,6 +11,8 @@
 #include "ManifoldGeometry.h"
 #include "parallel.h"
 
+#include <vector>
+
 namespace ManifoldUtils {
 
 /*!
@@ -41,7 +43,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
     }
     throw 0;
   };
-  
+
   assert(children.size() >= 2);
   auto it = children.begin();
   CGAL::Timer t_tot;
@@ -104,7 +106,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
       });
 
       std::vector<Hull_kernel::Point_3> minkowski_points;
-      
+
       auto combineParts = [&](const Hull_Points &points0, const Hull_Points &points1) -> std::shared_ptr<const ManifoldGeometry> {
         CGAL::Timer t;
 
@@ -196,7 +198,7 @@ std::shared_ptr<const Geometry> applyMinkowskiManifold(const Geometry::Geometrie
                                                 part));
       }
       auto N = ManifoldUtils::applyOperator3DManifold(fake_children, OpenSCADOperator::UNION);
-        
+
       // FIXME: This should really never throw.
       // Assert once we figured out what went wrong with issue #1069?
       if (!N) throw 0;

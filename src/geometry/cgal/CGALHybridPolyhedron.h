@@ -1,6 +1,8 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #pragma once
 
+#include <cstddef>
+#include <string>
 #include <variant>
 
 #include "cgal.h"

@@ -1,6 +1,9 @@
 #pragma once
 
 #include <memory>
+#include <string>
+#include <vector>
+
 #include "Arguments.h"
 #include "Children.h"
 #include "Context.h"

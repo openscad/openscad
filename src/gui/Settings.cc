@@ -3,7 +3,10 @@
 #include "input/InputEventMapper.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <cstddef>
+#include <string>
 #include <utility>
+#include <vector>
 
 namespace Settings {
 

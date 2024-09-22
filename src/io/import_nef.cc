@@ -1,6 +1,7 @@
 #include "import.h"
 
 #include <memory>
+#include <string>
 #include "printutils.h"
 #include "AST.h"
 

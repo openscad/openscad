@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 #include "VBORenderer.h"
 #ifdef ENABLE_CGAL

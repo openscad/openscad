@@ -2,6 +2,7 @@
 #include "PolySet.h"
 #include "PolySetBuilder.h"
 #include <fstream>
+#include <string>
 #include <vector>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
@@ -50,7 +51,7 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
       try {
         Vector3d v;
         for (int i = 0; i < 3; i++) {
-          v[i]= boost::lexical_cast<double>(results[i + 1]); 
+          v[i]= boost::lexical_cast<double>(results[i + 1]);
         }
         vertex_map.push_back(builder.vertexIndex(v));
       } catch (const boost::bad_lexical_cast& blc) {
@@ -71,10 +72,10 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
           int ind=boost::lexical_cast<int>(wordindex[0]);
           if(ind >= 1 && ind  <= vertex_map.size()) {
             builder.addVertex(vertex_map[ind-1]);
-          } else {  
+          } else {
             LOG(message_group::Warning, "Index %1$d out of range in Line %2$d", filename, lineno);
           }
-        } 
+        }
       }
 
     } else if (boost::regex_search(line, results, ex_vt)) { // ignore texture coords
