@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env -S bash -e
 
 NAME=( "OpenSCAD-*-x86_64.AppImage" "OpenSCAD-*-aarch64.AppImage" "OpenSCAD-*-WebAssembly.zip" "OpenSCAD-*.dmg"     "OpenSCAD-*-x86-32.zip" "OpenSCAD-*-x86-32-Installer.exe" "OpenSCAD-*-x86-64.zip" "OpenSCAD-*-x86-64-Installer.exe" )
 KEY=(  "LIN64_SNAPSHOT"             "LIN_AARCH64_SNAPSHOT"        "WASM_SNAPSHOT"              "MAC_SNAPSHOT"       "WIN32_SNAPSHOT_ZIP"    "WIN32_SNAPSHOT_INSTALLER"        "WIN64_SNAPSHOT_ZIP"    "WIN64_SNAPSHOT_INSTALLER"        )
