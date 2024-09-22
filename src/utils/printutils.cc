@@ -1,5 +1,6 @@
 #include "printutils.h"
 #include <sstream>
+#include <string>
 #include <cstdio>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/predicate.hpp>

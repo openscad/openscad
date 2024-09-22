@@ -27,6 +27,7 @@
 
 #include <QStringList>
 #include "InputDriver.h"
+#include <string>
 
 class DBusInputDriver : public InputDriver
 {

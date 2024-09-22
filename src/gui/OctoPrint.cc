@@ -27,7 +27,10 @@
 #include "Settings.h"
 #include "OctoPrint.h"
 
+#include <string>
 #include <utility>
+#include <vector>
+
 #include "printutils.h"
 #include "PlatformUtils.h"
 

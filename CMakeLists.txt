@@ -32,6 +32,7 @@ option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's" OFF)
+option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
 option(USE_LEGACY_RENDERERS "Use legacy (non-VBO) OpenGL renderers" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
@@ -950,15 +951,18 @@ if(ENABLE_MANIFOLD)
   set(PYBIND11_FINDPYTHON OFF)
   set(MANIFOLD_PYBIND OFF)
   set(MANIFOLD_TEST OFF)
-
-  if(CMAKE_UNITY_BUILD)
-    set(CMAKE_UNITY_BUILD OFF)
-    add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
-    set(CMAKE_UNITY_BUILD ON)
+  if(USE_BUILTIN_MANIFOLD)
+    if(CMAKE_UNITY_BUILD)
+      set(CMAKE_UNITY_BUILD OFF)
+      add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
+      set(CMAKE_UNITY_BUILD ON)
+    else()
+      add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
+    endif()
   else()
-    add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
+    find_package(manifold REQUIRED)
   endif()
-  target_link_libraries(OpenSCAD PRIVATE manifold polygon)
+  target_link_libraries(OpenSCAD PRIVATE manifold polygon cross_section)
   add_sanitizers(manifold)
 
   if (USE_MANIFOLD_TRIANGULATOR)
@@ -1039,6 +1043,7 @@ set(GUI_SOURCES
   src/gui/MainWindow.cc
   src/gui/Measurement.cc
   src/gui/Animate.cc
+  src/gui/FontList.cc
   src/gui/MouseSelector.cc
   src/gui/OctoPrint.cc
   src/gui/OpenCSGWarningDialog.cc
@@ -1097,6 +1102,7 @@ set(GUI_HEADERS
     src/gui/ErrorLog.h
     src/gui/EventFilter.h
     src/gui/ExportPdfDialog.h
+    src/gui/FontList.h
     src/gui/FontListDialog.h
     src/gui/FontListTableView.h
     src/gui/IgnoreWheelWhenNotFocused.h
@@ -1149,6 +1155,7 @@ set(GUI_UIS
     src/gui/Console.ui
     src/gui/ErrorLog.ui
     src/gui/ExportPdfDialog.ui
+    src/gui/FontList.ui
     src/gui/FontListDialog.ui
     src/gui/LaunchingScreen.ui
     src/gui/LibraryInfoDialog.ui

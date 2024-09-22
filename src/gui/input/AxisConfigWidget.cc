@@ -25,6 +25,9 @@
  */
 
 #include <QWidget>
+#include <cstddef>
+#include <string>
+
 #include "AxisConfigWidget.h"
 
 #include "Settings.h"

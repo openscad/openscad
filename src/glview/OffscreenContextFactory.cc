@@ -1,5 +1,7 @@
 #include "OffscreenContextFactory.h"
 
+#include <string>
+
 #include "printutils.h"
 
 #ifdef __APPLE__
@@ -81,10 +83,10 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider, const Offscre
 #endif
 #ifdef ENABLE_GLX
   if (provider == "glx-old") {
-   return offscreen_old::CreateOffscreenContextGLX(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion, 
+   return offscreen_old::CreateOffscreenContextGLX(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion,
                                     attrib.gles, attrib.compatibilityProfile);
   } else if (provider == "glx") {
-   return CreateOffscreenContextGLX(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion, 
+   return CreateOffscreenContextGLX(attrib.width, attrib.height, attrib.majorGLVersion, attrib.minorGLVersion,
                                     attrib.gles, attrib.compatibilityProfile);
   }
 #endif
@@ -105,4 +107,3 @@ std::shared_ptr<OpenGLContext> create(const std::string& provider, const Offscre
 }
 
 }  // namespace OffscreenContextFactory
-

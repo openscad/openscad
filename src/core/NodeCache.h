@@ -3,6 +3,8 @@
 #include <string>
 #include <unordered_map>
 #include <cassert>
+#include <cstddef>
+
 #include "node.h"
 #include "printutils.h"
 

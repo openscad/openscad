@@ -1,3 +1,6 @@
+#include <cstddef>
+#include <string>
+
 #include "CGALCache.h"
 #include "printutils.h"
 #include "CGAL_Nef_polyhedron.h"

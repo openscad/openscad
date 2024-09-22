@@ -3,7 +3,6 @@
 #include "Geometry.h"
 #include "enums.h"
 #include "ManifoldGeometry.h"
-#include "manifold.h"
 
 namespace ManifoldUtils {
 

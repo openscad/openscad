@@ -26,6 +26,8 @@
 #include "SettingsWriter.h"
 #include "QSettingsCached.h"
 
+#include <string>
+
 void SettingsWriter::handle(Settings::SettingsEntry& entry) const {
   QSettingsCached settings;
   std::string key = entry.category() + "/" + entry.name();

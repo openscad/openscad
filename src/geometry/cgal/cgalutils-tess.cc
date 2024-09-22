@@ -1,5 +1,6 @@
 #include "cgalutils.h"
 #include "printutils.h"
+#include <cstddef>
 //#include "cgal.h"
 //#include "tess.h"
 
@@ -190,4 +191,3 @@ bool tessellatePolygon(const PolygonK& polygon,
 }
 
 }  // namespace CGALUtils
-

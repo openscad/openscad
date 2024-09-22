@@ -8,6 +8,8 @@
 #include "RenderSettings.h"
 #include "printutils.h"
 
+#include <vector>
+
 /*
    Small helper class for compiling and normalizing node trees into CSG products
  */

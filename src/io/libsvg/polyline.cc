@@ -24,6 +24,7 @@
  */
 #include <boost/tokenizer.hpp>
 
+#include <string>
 #include "polyline.h"
 #include "util.h"
 

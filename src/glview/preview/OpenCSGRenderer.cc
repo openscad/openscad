@@ -31,7 +31,9 @@
 #include "Feature.h"
 #include "PolySet.h"
 #include <memory.h>
+#include <cstddef>
 #include <utility>
+#include <vector>
 
 #ifdef ENABLE_OPENCSG
 

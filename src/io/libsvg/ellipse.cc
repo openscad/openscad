@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 #include <cstdlib>
+#include <string>
 #include <iostream>
 
 #include "ellipse.h"

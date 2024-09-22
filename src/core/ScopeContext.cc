@@ -4,7 +4,9 @@
 #include "printutils.h"
 #include "SourceFileCache.h"
 #include "UserModule.h"
+
 #include <cmath>
+#include <vector>
 
 // Experimental code. See issue #399
 #if 0

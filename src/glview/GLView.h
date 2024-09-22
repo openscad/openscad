@@ -21,6 +21,7 @@
 #include <Eigen/Geometry>
 #include <string>
 #include <iostream>
+#include <vector>
 #include "Camera.h"
 #include "ColorMap.h"
 #include "system-gl.h"

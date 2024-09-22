@@ -10,6 +10,9 @@
 
 #include <boost/range/adaptor/reversed.hpp>
 
+#include <cstddef>
+#include <vector>
+
 #undef GEN_SURFACE_DEBUG
 namespace /* anonymous */ {
 
@@ -354,4 +357,3 @@ public:
 }  // namespace CGALUtils
 
 #endif /* ENABLE_CGAL */
-

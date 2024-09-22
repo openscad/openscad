@@ -5,6 +5,9 @@
 #include "CGAL_Nef_polyhedron.h"
 #include "enums.h"
 
+#include <cstddef>
+#include <vector>
+
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
 using K = CGAL::Epick;

@@ -34,6 +34,10 @@
 #include "CGAL_Nef_polyhedron.h"
 #endif
 
+#include <cstddef>
+#include <string>
+#include <vector>
+
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
@@ -162,7 +166,7 @@ static void append_amf(const std::shared_ptr<const Geometry>& geom, std::ostream
 
 void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
-  LOG(message_group::Deprecated, "AMF export is deprecated. Please use 3md instead.");
+  LOG(message_group::Deprecated, "AMF export is deprecated. Please use 3MF instead.");
   setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
 
   output << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"

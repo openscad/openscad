@@ -1,10 +1,12 @@
 #pragma once
 
+#include <cstddef>
 #include <utility>
 #include <utility>
 #include <vector>
 #include <string>
 #include <deque>
+
 #include "BaseVisitable.h"
 #include "AST.h"
 #include "ModuleInstantiation.h"

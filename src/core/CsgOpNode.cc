@@ -31,7 +31,9 @@
 #include "Builtins.h"
 #include "Children.h"
 #include "Parameters.h"
+
 #include <sstream>
+#include <string>
 #include <cassert>
 
 static std::shared_ptr<AbstractNode> builtin_union(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -92,4 +94,3 @@ void register_builtin_csgops()
     "intersection()",
   });
 }
-

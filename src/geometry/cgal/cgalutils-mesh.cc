@@ -9,6 +9,10 @@
 #include "PolySetBuilder.h"
 #include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
 #include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
+
+#include <cstddef>
+#include <vector>
+
 namespace CGALUtils {
 
 namespace PMP = CGAL::Polygon_mesh_processing;
@@ -136,4 +140,3 @@ void cleanupMesh(CGAL_HybridMesh& mesh, bool is_corefinement_result)
 }
 
 } // namespace CGALUtils
-

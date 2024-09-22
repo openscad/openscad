@@ -32,6 +32,8 @@
 #include "version_helper.h"
 #include "AST.h"
 
+#include <string>
+
 #include <Model/COM/NMR_DLLInterfaces.h>
 #undef BOOL
 using namespace NMR;

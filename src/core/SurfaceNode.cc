@@ -39,9 +39,12 @@
 #include "SurfaceNode.h"
 
 #include <cstdint>
+#include <cstddef>
 #include <sstream>
 #include <fstream>
+#include <vector>
 #include <unordered_map>
+
 #include <boost/functional/hash.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>

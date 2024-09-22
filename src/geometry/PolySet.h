@@ -6,8 +6,10 @@
 #include "Polygon2d.h"
 #include "boost-utils.h"
 
-#include <vector>
+#include <cstddef>
 #include <string>
+#include <vector>
+
 class PolySetBuilder;
 
 class PolySet : public Geometry

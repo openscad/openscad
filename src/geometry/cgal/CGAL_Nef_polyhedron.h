@@ -2,6 +2,7 @@
 
 #include "cgal.h"
 #include "Geometry.h"
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>

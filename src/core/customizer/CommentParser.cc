@@ -1,3 +1,5 @@
+#include <cstddef>
+
 #include "CommentParser.h"
 #include "Expression.h"
 #include "Annotation.h"

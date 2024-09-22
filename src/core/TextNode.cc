@@ -24,6 +24,8 @@
  *
  */
 
+#include <vector>
+
 #include "Children.h"
 #include "module.h"
 #include "ModuleInstantiation.h"

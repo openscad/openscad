@@ -4,7 +4,10 @@
 #include "SourceFile.h"
 #include "ParameterObject.h"
 
+#include <cstddef>
 #include <sstream>
+#include <string>
+#include <vector>
 #include <boost/algorithm/string.hpp>
 
 namespace {

@@ -2,6 +2,7 @@
 #include <iostream>
 #include "imageutils.h"
 #include <cassert>
+#include <cstddef>
 
 CGDataConsumerCallbacks dc_callbacks;
 
@@ -101,6 +102,3 @@ bool write_png(std::ostream& output, unsigned char *pixels, int width, int heigh
   CGColorSpaceRelease(colorSpace);
   return true;
 }
-
-
-

@@ -23,11 +23,12 @@
  * THE SOFTWARE.
  */
 #include <cstdlib>
-
+#include <vector>
 #include <string>
 #include <iostream>
 #include <cmath>
 #include <cctype>
+#include <string>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>

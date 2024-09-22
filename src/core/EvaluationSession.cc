@@ -24,6 +24,9 @@
  *
  */
 
+#include <cstddef>
+#include <string>
+
 #include "ContextFrame.h"
 #include "EvaluationSession.h"
 #include "printutils.h"

@@ -1,5 +1,6 @@
 #include "LibraryInfo.h"
 #include <glib.h>
+#include <string>
 #include <vector>
 
 #include "version_check.h"

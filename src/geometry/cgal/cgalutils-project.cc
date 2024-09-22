@@ -23,6 +23,7 @@
 
 #include <map>
 #include <queue>
+#include <vector>
 
 static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer& explorer,
                                 CGAL_Nef_polyhedron2::Explorer::Halfedge_around_face_const_circulator circ,

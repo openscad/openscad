@@ -25,6 +25,7 @@
  */
 
 #include <QWidget>
+#include <cstddef>
 #include "ButtonConfigWidget.h"
 #include "Settings.h"
 #include "input/InputDriverManager.h"

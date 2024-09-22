@@ -30,6 +30,9 @@
 #include <QTimer>
 #include <QIcon>
 
+#include <cstddef>
+#include <string>
+
 #include "InputDriver.h"
 #include "InputEventMapper.h"
 

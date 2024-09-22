@@ -25,6 +25,7 @@
  */
 
 #include <fstream>
+#include <string>
 #include <json.hpp>
 
 #include "Value.h"

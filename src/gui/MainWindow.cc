@@ -25,6 +25,8 @@
  */
 #include <iostream>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "boost-utils.h"
 #include "Builtins.h"
@@ -101,6 +103,7 @@
 #include <QTemporaryFile>
 #include <QDockWidget>
 #include <QClipboard>
+#include <QProcess>
 #include <memory>
 #include <string>
 #include "QWordSearchField.h"
@@ -279,6 +282,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   parameterDockTitleWidget = new QWidget();
   errorLogDockTitleWidget = new QWidget();
   animateDockTitleWidget = new QWidget();
+  fontListDockTitleWidget = new QWidget();
   viewportControlTitleWidget = new QWidget();
 
   this->animateWidget->setMainWindow(this);
@@ -297,6 +301,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   this->errorLogDock->setAction(this->windowActionHideErrorLog);
   this->animateDock->setConfigKey("view/hideAnimate");
   this->animateDock->setAction(this->windowActionHideAnimate);
+  this->fontListDock->setConfigKey("view/hideFontList");
+  this->fontListDock->setAction(this->windowActionHideFontList);
   this->viewportControlDock->setConfigKey("view/hideViewportControl");
   this->viewportControlDock->setAction(this->windowActionHideViewportControl);
 
@@ -534,6 +540,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->windowActionHideCustomizer, SIGNAL(triggered()), this, SLOT(hideParameters()));
   connect(this->windowActionHideErrorLog, SIGNAL(triggered()), this, SLOT(hideErrorLog()));
   connect(this->windowActionHideAnimate, SIGNAL(triggered()), this, SLOT(hideAnimate()));
+  connect(this->windowActionHideFontList, SIGNAL(triggered()), this, SLOT(hideFontList()));
   connect(this->windowActionHideViewportControl, SIGNAL(triggered()), this, SLOT(hideViewportControl()));
 
   // Help menu
@@ -658,6 +665,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   bool hideCustomizer = settings.value("view/hideCustomizer").toBool();
   bool hideErrorLog = settings.value("view/hideErrorLog").toBool();
   bool hideAnimate = settings.value("view/hideAnimate").toBool();
+  bool hideFontList = settings.value("view/hideFontList").toBool();
   bool hideViewportControl = settings.value("view/hideViewportControl").toBool();
   bool hideEditorToolbar = settings.value("view/hideEditorToolbar").toBool();
   bool hide3DViewToolbar = settings.value("view/hide3DViewToolbar").toBool();
@@ -682,7 +690,8 @@ MainWindow::MainWindow(const QStringList& filenames)
      */
     activeEditor->setInitialSizeHint(QSize((5 * this->width() / 11), 100));
     tabifyDockWidget(consoleDock, errorLogDock);
-    tabifyDockWidget(errorLogDock, animateDock);
+    tabifyDockWidget(errorLogDock, fontListDock);
+    tabifyDockWidget(fontListDock, animateDock);
     showConsole();
     hideCustomizer = true;
     hideViewportControl = true;
@@ -706,13 +715,14 @@ MainWindow::MainWindow(const QStringList& filenames)
 #endif // ifdef Q_OS_WIN
   }
 
-  updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideViewportControl);
+  updateWindowSettings(hideConsole, hideEditor, hideCustomizer, hideErrorLog, hideEditorToolbar, hide3DViewToolbar, hideAnimate, hideFontList, hideViewportControl);
 
   connect(this->editorDock, SIGNAL(topLevelChanged(bool)), this, SLOT(editorTopLevelChanged(bool)));
   connect(this->consoleDock, SIGNAL(topLevelChanged(bool)), this, SLOT(consoleTopLevelChanged(bool)));
   connect(this->parameterDock, SIGNAL(topLevelChanged(bool)), this, SLOT(parameterTopLevelChanged(bool)));
   connect(this->errorLogDock, SIGNAL(topLevelChanged(bool)), this, SLOT(errorLogTopLevelChanged(bool)));
   connect(this->animateDock, SIGNAL(topLevelChanged(bool)), this, SLOT(animateTopLevelChanged(bool)));
+  connect(this->fontListDock, SIGNAL(topLevelChanged(bool)), this, SLOT(fontListTopLevelChanged(bool)));
   connect(this->viewportControlDock, SIGNAL(topLevelChanged(bool)), this, SLOT(viewportControlTopLevelChanged(bool)));
 
   connect(this->activeEditor, SIGNAL(escapePressed()), this, SLOT(measureFinished()));
@@ -797,7 +807,7 @@ void MainWindow::addKeyboardShortCut(const QList<QAction *>& actions)
  * Qt call. So the values are loaded before the call and restored here
  * regardless of the (potential outdated) serialized state.
  */
-void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool viewportControl)
+void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer, bool errorLog, bool editorToolbar, bool viewToolbar, bool animate, bool fontList, bool viewportControl)
 {
   windowActionHideEditor->setChecked(editor);
   hideEditor();
@@ -809,6 +819,8 @@ void MainWindow::updateWindowSettings(bool console, bool editor, bool customizer
   hideParameters();
   windowActionHideAnimate->setChecked(animate);
   hideAnimate();
+  windowActionHideFontList->setChecked(fontList);
+  hideFontList();
   windowActionHideViewportControl->setChecked(viewportControl);
   hideViewportControl();
 
@@ -837,7 +849,6 @@ void MainWindow::onTranslateEvent(InputEventTranslate *event)
   } else {
     qglview->translate(zoomFactor * event->x, event->y, zoomFactor * event->z, event->relative, false);
   }
-
 }
 
 void MainWindow::onRotateEvent(InputEventRotate *event)
@@ -927,8 +938,8 @@ void MainWindow::updateUndockMode(bool undockMode)
     parameterDock->setFeatures(parameterDock->features() | QDockWidget::DockWidgetFloatable);
     errorLogDock->setFeatures(errorLogDock->features() | QDockWidget::DockWidgetFloatable);
     animateDock->setFeatures(animateDock->features() | QDockWidget::DockWidgetFloatable);
+    fontListDock->setFeatures(fontListDock->features() | QDockWidget::DockWidgetFloatable);
     viewportControlDock->setFeatures(viewportControlDock->features() | QDockWidget::DockWidgetFloatable);
-
   } else {
     if (editorDock->isFloating()) {
       editorDock->setFloating(false);
@@ -955,6 +966,11 @@ void MainWindow::updateUndockMode(bool undockMode)
     }
     animateDock->setFeatures(animateDock->features() & ~QDockWidget::DockWidgetFloatable);
 
+    if (fontListDock->isFloating()) {
+      fontListDock->setFloating(false);
+    }
+    fontListDock->setFeatures(fontListDock->features() & ~QDockWidget::DockWidgetFloatable);
+
     if (viewportControlDock->isFloating()) {
       viewportControlDock->setFloating(false);
     }
@@ -970,6 +986,7 @@ void MainWindow::updateReorderMode(bool reorderMode)
   parameterDock->setTitleBarWidget(reorderMode ? nullptr : parameterDockTitleWidget);
   errorLogDock->setTitleBarWidget(reorderMode ? nullptr : errorLogDockTitleWidget);
   animateDock->setTitleBarWidget(reorderMode ? nullptr : animateDockTitleWidget);
+  fontListDock->setTitleBarWidget(reorderMode ? nullptr : fontListDockTitleWidget);
   viewportControlDock->setTitleBarWidget(reorderMode ? nullptr : viewportControlWidget);
 }
 
@@ -2084,28 +2101,18 @@ void MainWindow::action3DPrint()
   const unsigned int dim = 3;
   if (!canExport(dim)) return;
 
-  const auto printService = PrintService::inst();
-  auto printInitDialog = new PrintInitDialog();
-  auto printInitResult = printInitDialog->exec();
-  printInitDialog->deleteLater();
-  if (printInitResult == QDialog::Rejected) {
-    return;
-  }
-
-  const auto selectedService = printInitDialog->getResult();
+  const auto selectedService = PrintInitDialog::getResult();
   Preferences::Preferences::inst()->updateGUI();
 
-  switch (selectedService) {
-  case print_service_t::PRINT_SERVICE:
+  if (selectedService == print_service_t::PRINT_SERVICE) {
+    const auto printService = PrintService::inst();
     LOG("Sending design to print service %1$s...", printService->getDisplayName().toStdString());
     sendToPrintService();
-    break;
-  case print_service_t::OCTOPRINT:
+  } else if (selectedService == print_service_t::OCTOPRINT) {
     LOG("Sending design to OctoPrint...");
     sendToOctoPrint();
-    break;
-  default:
-    break;
+  } else if (selectedService == print_service_t::LOCALSLICER) {
+    sendToLocalSlicer();
   }
 #endif // ifdef ENABLE_3D_PRINTING
 }
@@ -2194,6 +2201,64 @@ void MainWindow::sendToOctoPrint()
   }
 
   updateStatusBar(nullptr);
+#endif // ifdef ENABLE_3D_PRINTING
+}
+
+void MainWindow::sendToLocalSlicer()
+{
+#ifdef ENABLE_3D_PRINTING
+  const QString slicer = QString::fromStdString(Settings::Settings::localSlicerExecutable.value());
+
+  const QString fileFormat = QString::fromStdString(Settings::Settings::localSlicerFileFormat.value());
+  FileFormat exportFileFormat{FileFormat::STL};
+  if (fileFormat == "OBJ") {
+    exportFileFormat = FileFormat::OBJ;
+  } else if (fileFormat == "OFF") {
+    exportFileFormat = FileFormat::OFF;
+  } else if (fileFormat == "ASCIISTL") {
+    exportFileFormat = FileFormat::ASCIISTL;
+  } else if (fileFormat == "AMF") {
+    exportFileFormat = FileFormat::AMF;
+  } else if (fileFormat == "3MF") {
+    exportFileFormat = FileFormat::_3MF;
+  } else {
+    exportFileFormat = FileFormat::STL;
+  }
+
+  const auto tmpPath = QDir::temp().filePath("OpenSCAD.XXXXXX."+fileFormat.toLower());
+  auto exportFile = std::make_unique<QTemporaryFile>(tmpPath);
+  if (!exportFile->open()) {
+    LOG(message_group::Error, "Could not open temporary file '%1$s'.", tmpPath.toStdString());
+    return;
+  }
+  const auto exportFileName = exportFile->fileName();
+  exportFile->close();
+  this->allTempFiles.push_back(std::move(exportFile));
+
+  QString userFileName;
+  if (activeEditor->filepath.isEmpty()) {
+    userFileName = exportFileName;
+  } else {
+    QFileInfo fileInfo{activeEditor->filepath};
+    userFileName = fileInfo.baseName() + fileFormat.toLower();
+  }
+
+  ExportInfo exportInfo = createExportInfo(exportFileFormat, exportFileName, activeEditor->filepath);
+  exportFileByName(this->root_geom, exportInfo);
+
+  QProcess process(this);
+  process.setProcessChannelMode(QProcess::MergedChannels);
+#ifdef Q_OS_MACOS
+  if(!process.startDetached("open", {"-a", slicer, exportFileName})) {
+#else	  
+  if(!process.startDetached(slicer, {exportFileName})) {
+#endif
+    LOG(message_group::Error, "Could not start Slicer '%1$s': %2$s", slicer.toStdString(), process.errorString().toStdString());
+    const auto output = process.readAll();
+    if (output.length() > 0) {
+      LOG(message_group::Error, "Output: %1$s", output.toStdString());
+    }
+  }
 #endif // ifdef ENABLE_3D_PRINTING
 }
 
@@ -2440,7 +2505,8 @@ void MainWindow::rightClick(QPoint mouse)
     clearAllSelectionIndicators();
   }
 }
-void MainWindow::measureFinished(void)
+
+void MainWindow::measureFinished()
 {
   this->qglview->selected_obj.clear();
   this->qglview->shown_obj.clear();
@@ -3240,6 +3306,11 @@ void MainWindow::on_animateDock_visibilityChanged(bool)
   animateTopLevelChanged(animateDock->isFloating());
 }
 
+void MainWindow::on_fontListDock_visibilityChanged(bool)
+{
+  fontListTopLevelChanged(fontListDock->isFloating());
+}
+
 void MainWindow::on_viewportControlDock_visibilityChanged(bool)
 {
   viewportControlTopLevelChanged(viewportControlDock->isFloating());
@@ -3305,7 +3376,6 @@ void MainWindow::changedTopLevelAnimate(bool topLevel)
   setDockWidgetTitle(animateDock, QString(_("Animate")), topLevel);
 }
 
-
 void MainWindow::animateTopLevelChanged(bool topLevel)
 {
   setDockWidgetTitle(animateDock, QString(_("Animate")), topLevel);
@@ -3314,6 +3384,22 @@ void MainWindow::animateTopLevelChanged(bool topLevel)
   if (topLevel) {
     animateDock->setWindowFlags(flags);
     animateDock->show();
+  }
+}
+
+void MainWindow::changedTopLevelFontList(bool topLevel)
+{
+  setDockWidgetTitle(fontListDock, QString(_("Font List")), topLevel);
+}
+
+void MainWindow::fontListTopLevelChanged(bool topLevel)
+{
+  setDockWidgetTitle(fontListDock, QString(_("Font List")), topLevel);
+
+  Qt::WindowFlags flags = (fontListDock->windowFlags() & ~Qt::WindowType_Mask) | Qt::Window;
+  if (topLevel) {
+    fontListDock->setWindowFlags(flags);
+    fontListDock->show();
   }
 }
 
@@ -3455,6 +3541,25 @@ void MainWindow::hideAnimate()
   }
 }
 
+void MainWindow::showFontList()
+{
+  windowActionHideFontList->setChecked(false);
+  fontListWidget->update_font_list();
+  fontListDock->show();
+  fontListDock->raise();
+  fontListWidget->setFocus();
+}
+
+void MainWindow::hideFontList()
+{
+  if (windowActionHideFontList->isChecked()) {
+    fontListDock->hide();
+  } else {
+    fontListWidget->update_font_list();
+    fontListDock->show();
+  }
+}
+
 void MainWindow::showViewportControl()
 {
   windowActionHideViewportControl->setChecked(false);
@@ -3510,6 +3615,11 @@ void MainWindow::on_windowActionSelectAnimate_triggered()
   showAnimate();
 }
 
+void MainWindow::on_windowActionSelectFontList_triggered()
+{
+  showFontList();
+}
+
 void MainWindow::on_windowActionSelectViewportControl_triggered()
 {
   showViewportControl();
@@ -3542,11 +3652,12 @@ void MainWindow::on_editActionFoldAll_triggered()
 
 void MainWindow::activateWindow(int offset)
 {
-  const std::array<DockFocus, 6> docks = {{
+  const std::array<DockFocus, 7> docks = {{
     { editorDock, &MainWindow::on_windowActionSelectEditor_triggered },
     { consoleDock, &MainWindow::on_windowActionSelectConsole_triggered },
     { errorLogDock, &MainWindow::on_windowActionSelectErrorLog_triggered },
     { parameterDock, &MainWindow::on_windowActionSelectCustomizer_triggered },
+    { fontListDock, &MainWindow::on_windowActionSelectFontList_triggered },
     { animateDock, &MainWindow::on_windowActionSelectAnimate_triggered },
     { viewportControlDock, &MainWindow::on_windowActionSelectViewportControl_triggered },
   }};
@@ -3804,17 +3915,16 @@ void MainWindow::jumpToLine(int line, int col)
   this->activeEditor->setCursorPosition(line, col);
 }
 
-paperSizes MainWindow::sizeString2Enum(QString current){
-  for (size_t i = 0; i < paperSizeStrings.size(); i++) {
-    if (current.toStdString() == paperSizeStrings[i]) return static_cast<paperSizes>(i);
-  }
-  return paperSizes::A4;
-}
+paperSizes MainWindow::sizeString2Enum(const QString& current){
+   for(size_t i = 0; i < paperSizeStrings.size(); i++){
+       if (current.toStdString()==paperSizeStrings[i]) return static_cast<paperSizes>(i);
+   };
+   return paperSizes::A4;
+};
 
-paperOrientations MainWindow::orientationsString2Enum(QString current){
-  for (size_t i = 0; i < paperOrientationsStrings.size(); i++) {
-    if (current.toStdString() == paperOrientationsStrings[i]) return static_cast<paperOrientations>(i);
-  }
-  return paperOrientations::PORTRAIT;
-}
-
+paperOrientations MainWindow::orientationsString2Enum(const QString& current){
+   for(size_t i = 0; i < paperOrientationsStrings.size(); i++){
+       if (current.toStdString()==paperOrientationsStrings[i]) return static_cast<paperOrientations>(i);
+   };
+   return paperOrientations::PORTRAIT;
+};

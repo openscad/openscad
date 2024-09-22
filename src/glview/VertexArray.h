@@ -1,8 +1,10 @@
 #pragma once
 
+#include <cstddef>
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
 #include <utility>
+#include <vector>
 
 #include "system-gl.h"
 #include "printutils.h"

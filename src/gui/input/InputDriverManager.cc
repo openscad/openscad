@@ -30,6 +30,8 @@
 #include <QMenu>
 #include <QApplication>
 #include <QCoreApplication>
+#include <cstddef>
+#include <string>
 
 InputDriverManager *InputDriverManager::self = nullptr;
 

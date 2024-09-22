@@ -2,6 +2,7 @@
 
 #include "cgal.h"
 #include <boost/algorithm/string.hpp>
+#include <string>
 #include <map>
 
 namespace OpenSCAD {

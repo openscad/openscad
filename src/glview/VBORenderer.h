@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include "Renderer.h"
 #include "system-gl.h"
 #ifdef ENABLE_OPENCSG

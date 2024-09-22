@@ -26,6 +26,8 @@
 
 #include <fstream>
 #include <json.hpp>
+#include <string>
+#include <vector>
 
 #include "printutils.h"
 #include "GeometryCache.h"
@@ -39,7 +41,6 @@
 
 #ifdef ENABLE_MANIFOLD
 #include "ManifoldGeometry.h"
-#include "manifold.h"
 #include "manifoldutils.h"
 #endif // ENABLE_MANIFOLD
 
@@ -290,7 +291,7 @@ void LogVisitor::visit(const ManifoldGeometry& mani_geom)
 {
   LOG("   Top level object is a 3D object (manifold):");
   auto &mani = mani_geom.getManifold();
-  
+
   LOG("   Status:     %1$s", ManifoldUtils::statusToString(mani.Status()));
   LOG("   Genus:      %1$d", mani.Genus());
   LOG("   Vertices:   %1$6d", mani.NumVert());

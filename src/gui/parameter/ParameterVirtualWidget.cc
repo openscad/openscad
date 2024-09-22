@@ -1,6 +1,7 @@
 #include "ParameterVirtualWidget.h"
 
 #include <QRegularExpression>
+#include <vector>
 
 ParameterDescriptionWidget::ParameterDescriptionWidget(QWidget *parent) :
   QWidget(parent)

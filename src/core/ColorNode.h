@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "node.h"
 #include "linalg.h"
 
