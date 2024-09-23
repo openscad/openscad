@@ -919,8 +919,6 @@ if(EXPERIMENTAL AND ENABLE_TBB)
   # ("exact" CGAL numerics are not thread-safe)
   target_compile_options(OpenSCAD PRIVATE 
     -DENABLE_TBB
-    -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_TBB
-    -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_TBB
   )
   find_package(TBB QUIET)
   if (NOT TBB_FOUND AND PKG_CONFIG_FOUND)
