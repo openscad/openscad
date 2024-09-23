@@ -308,7 +308,7 @@
      <string>&amp;Design</string>
     </property>
     <addaction name="designActionAutoReload"/>
-    <addaction name="designActionReloadAndPreview"/>
+    <addaction name="designActionReloadAndRender"/>
     <addaction name="designActionPreview"/>
     <addaction name="designActionRender"/>
     <addaction name="designAction3DPrint"/>
@@ -967,9 +967,9 @@
     <string>Hide Editor</string>
    </property>
   </action>
-  <action name="designActionReloadAndPreview">
+  <action name="designActionReloadAndRender">
    <property name="text">
-    <string>&amp;Reload and Preview</string>
+    <string>&amp;Reload and Render</string>
    </property>
    <property name="shortcut">
     <string>F4</string>
@@ -1351,7 +1351,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Automatic Reload and Preview</string>
+    <string>&amp;Automatic Reload and Render</string>
    </property>
   </action>
   <action name="fileActionExportImage">

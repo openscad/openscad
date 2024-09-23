@@ -469,7 +469,7 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   // Design menu
   connect(this->designActionAutoReload, SIGNAL(toggled(bool)), this, SLOT(autoReloadSet(bool)));
-  connect(this->designActionReloadAndPreview, SIGNAL(triggered()), this, SLOT(actionReloadRenderPreview()));
+  connect(this->designActionReloadAndRender, SIGNAL(triggered()), this, SLOT(actionReloadRender()));
   connect(this->designActionPreview, SIGNAL(triggered()), this, SLOT(actionRenderPreview()));
   connect(this->designActionRender, SIGNAL(triggered()), this, SLOT(actionRender()));
   connect(this->designActionMeasureDist, SIGNAL(triggered()), this, SLOT(actionMeasureDistance()));
@@ -1968,7 +1968,7 @@ void MainWindow::changeParameterWidget()
 void MainWindow::checkAutoReload()
 {
   if (!activeEditor->filepath.isEmpty()) {
-    actionReloadRenderPreview();
+    actionReloadRender();
   }
 }
 
@@ -1997,16 +1997,16 @@ bool MainWindow::checkEditorModified()
   return true;
 }
 
-void MainWindow::actionReloadRenderPreview()
+void MainWindow::actionReloadRender()
 {
   if (GuiLocker::isLocked()) return;
   GuiLocker::lock();
   autoReloadTimer->stop();
   setCurrentOutput();
 
-  this->afterCompileSlot = "csgReloadRender";
+  this->afterCompileSlot = "cgalRender";
   this->procevents = true;
-  this->is_preview = true;
+  this->is_preview = false;
   compile(true);
 }
 

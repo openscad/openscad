@@ -302,7 +302,7 @@ public:
   QList<double> getRotation() const;
 
 public slots:
-  void actionReloadRenderPreview();
+  void actionReloadRender();
   void on_editorDock_visibilityChanged(bool);
   void on_consoleDock_visibilityChanged(bool);
   void on_parameterDock_visibilityChanged(bool);
