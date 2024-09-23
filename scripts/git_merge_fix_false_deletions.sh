@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This script is meant to help with updating old PRs.
 # Mainly any OpenSCAD branch which has not been updated since 2022-02-06

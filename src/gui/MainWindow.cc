@@ -103,6 +103,7 @@
 #include <QTemporaryFile>
 #include <QDockWidget>
 #include <QClipboard>
+#include <QProcess>
 #include <memory>
 #include <string>
 #include "QWordSearchField.h"
@@ -2098,28 +2099,18 @@ void MainWindow::action3DPrint()
   const unsigned int dim = 3;
   if (!canExport(dim)) return;
 
-  const auto printService = PrintService::inst();
-  auto printInitDialog = new PrintInitDialog();
-  auto printInitResult = printInitDialog->exec();
-  printInitDialog->deleteLater();
-  if (printInitResult == QDialog::Rejected) {
-    return;
-  }
-
-  const auto selectedService = printInitDialog->getResult();
+  const auto selectedService = PrintInitDialog::getResult();
   Preferences::Preferences::inst()->updateGUI();
 
-  switch (selectedService) {
-  case print_service_t::PRINT_SERVICE:
+  if (selectedService == print_service_t::PRINT_SERVICE) {
+    const auto printService = PrintService::inst();
     LOG("Sending design to print service %1$s...", printService->getDisplayName().toStdString());
     sendToPrintService();
-    break;
-  case print_service_t::OCTOPRINT:
+  } else if (selectedService == print_service_t::OCTOPRINT) {
     LOG("Sending design to OctoPrint...");
     sendToOctoPrint();
-    break;
-  default:
-    break;
+  } else if (selectedService == print_service_t::LOCALSLICER) {
+    sendToLocalSlicer();
   }
 #endif // ifdef ENABLE_3D_PRINTING
 }
@@ -2208,6 +2199,64 @@ void MainWindow::sendToOctoPrint()
   }
 
   updateStatusBar(nullptr);
+#endif // ifdef ENABLE_3D_PRINTING
+}
+
+void MainWindow::sendToLocalSlicer()
+{
+#ifdef ENABLE_3D_PRINTING
+  const QString slicer = QString::fromStdString(Settings::Settings::localSlicerExecutable.value());
+
+  const QString fileFormat = QString::fromStdString(Settings::Settings::localSlicerFileFormat.value());
+  FileFormat exportFileFormat{FileFormat::STL};
+  if (fileFormat == "OBJ") {
+    exportFileFormat = FileFormat::OBJ;
+  } else if (fileFormat == "OFF") {
+    exportFileFormat = FileFormat::OFF;
+  } else if (fileFormat == "ASCIISTL") {
+    exportFileFormat = FileFormat::ASCIISTL;
+  } else if (fileFormat == "AMF") {
+    exportFileFormat = FileFormat::AMF;
+  } else if (fileFormat == "3MF") {
+    exportFileFormat = FileFormat::_3MF;
+  } else {
+    exportFileFormat = FileFormat::STL;
+  }
+
+  const auto tmpPath = QDir::temp().filePath("OpenSCAD.XXXXXX."+fileFormat.toLower());
+  auto exportFile = std::make_unique<QTemporaryFile>(tmpPath);
+  if (!exportFile->open()) {
+    LOG(message_group::Error, "Could not open temporary file '%1$s'.", tmpPath.toStdString());
+    return;
+  }
+  const auto exportFileName = exportFile->fileName();
+  exportFile->close();
+  this->allTempFiles.push_back(std::move(exportFile));
+
+  QString userFileName;
+  if (activeEditor->filepath.isEmpty()) {
+    userFileName = exportFileName;
+  } else {
+    QFileInfo fileInfo{activeEditor->filepath};
+    userFileName = fileInfo.baseName() + fileFormat.toLower();
+  }
+
+  ExportInfo exportInfo = createExportInfo(exportFileFormat, exportFileName, activeEditor->filepath);
+  exportFileByName(this->root_geom, exportInfo);
+
+  QProcess process(this);
+  process.setProcessChannelMode(QProcess::MergedChannels);
+#ifdef Q_OS_MACOS
+  if(!process.startDetached("open", {"-a", slicer, exportFileName})) {
+#else	  
+  if(!process.startDetached(slicer, {exportFileName})) {
+#endif
+    LOG(message_group::Error, "Could not start Slicer '%1$s': %2$s", slicer.toStdString(), process.errorString().toStdString());
+    const auto output = process.readAll();
+    if (output.length() > 0) {
+      LOG(message_group::Error, "Output: %1$s", output.toStdString());
+    }
+  }
 #endif // ifdef ENABLE_3D_PRINTING
 }
 
