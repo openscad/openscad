@@ -29,8 +29,8 @@
 
 #include <boost/format.hpp>
 
-#include "io/libsvg/rect.h"
-#include "io/libsvg/util.h"
+#include "libsvg/rect.h"
+#include "libsvg/util.h"
 
 namespace libsvg {
 

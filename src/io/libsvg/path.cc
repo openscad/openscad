@@ -36,10 +36,10 @@
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "io/libsvg/path.h"
+#include "libsvg/path.h"
 #include "utils/degree_trig.h"
 #include "utils/calc.h"
-#include "io/libsvg/util.h"
+#include "libsvg/util.h"
 
 namespace libsvg {
 

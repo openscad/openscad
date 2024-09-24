@@ -25,7 +25,7 @@
 #pragma once
 
 #include <string>
-#include "io/libsvg/path.h"
+#include "libsvg/path.h"
 
 namespace libsvg {
 

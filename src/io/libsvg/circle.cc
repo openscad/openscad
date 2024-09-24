@@ -22,8 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "io/libsvg/circle.h"
-#include "io/libsvg/util.h"
+#include "libsvg/circle.h"
+#include "libsvg/util.h"
 
 #include <string>
 

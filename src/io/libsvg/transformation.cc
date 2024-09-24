@@ -26,8 +26,8 @@
 #include <vector>
 #include <iostream>
 
-#include "io/libsvg/util.h"
-#include "io/libsvg/transformation.h"
+#include "libsvg/util.h"
+#include "libsvg/transformation.h"
 #include "utils/degree_trig.h"
 
 namespace libsvg {

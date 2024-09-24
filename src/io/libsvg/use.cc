@@ -27,8 +27,8 @@
 #include <string>
 #include <vector>
 
-#include "io/libsvg/use.h"
-#include "io/libsvg/util.h"
+#include "libsvg/use.h"
+#include "libsvg/util.h"
 
 namespace libsvg {
 

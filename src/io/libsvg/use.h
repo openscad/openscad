@@ -27,7 +27,7 @@
 #include <vector>
 #include <string>
 #include <memory>
-#include "io/libsvg/shape.h"
+#include "libsvg/shape.h"
 
 namespace libsvg {
 
