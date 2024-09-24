@@ -88,13 +88,13 @@ QStringList ScadLexer::autoCompletionWordSeparators() const
 #include <Qsci/qscilexercustom.h>
 #include <Qsci/qsciscintilla.h>
 
-#include "lexertl/include/lexertl/generator.hpp"
-#include "lexertl/include/lexertl/lookup.hpp"
+#include "lexertl/generator.hpp"
+#include "lexertl/lookup.hpp"
 
 //#define DEBUG_LEXERTL   1
 
 #if DEBUG_LEXERTL
-#include "lexertl/include/lexertl/debug.hpp"
+#include "lexertl/debug.hpp"
 #include <fstream>
 #include <iostream>
 #endif
