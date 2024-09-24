@@ -12,7 +12,7 @@
 #endif
 #include "geometry/PolySetUtils.h"
 #include "geometry/PolySet.h"
-#include "manifold/polygon.h"
+#include <manifold/polygon.h>
 
 #include <cstddef>
 #include <vector>

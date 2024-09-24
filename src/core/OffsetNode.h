@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/node.h"
-#include "ext/polyclipping/clipper.hpp"
+#include "polyclipping/clipper.hpp"
 
 #include <string>
 

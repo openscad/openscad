@@ -29,7 +29,7 @@
 #ifndef NULLGL
 
 #include "glview/ColorMap.h"
-#include "ext/CGAL/OGL_helper.h"
+#include "CGAL/OGL_helper.h"
 #include "utils/printutils.h"
 
 using CGAL::OGL::SNC_BOUNDARY;

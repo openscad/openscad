@@ -29,7 +29,7 @@
 #include "gui/Settings.h"
 #include "gui/PrintService.h"
 #include "gui/PrintInitDialog.h"
-#include "QSettingsCached.h"
+#include "gui/QSettingsCached.h"
 
 PrintInitDialog::PrintInitDialog()
 {

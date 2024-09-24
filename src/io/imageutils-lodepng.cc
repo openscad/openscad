@@ -1,5 +1,5 @@
 #include "io/imageutils.h"
-#include "ext/lodepng/lodepng.h"
+#include "lodepng/lodepng.h"
 #include <cstdio>
 #include <cstdlib>
 #include <vector>

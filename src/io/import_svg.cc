@@ -32,8 +32,8 @@
 #include "io/import.h"
 #include "geometry/Polygon2d.h"
 #include "utils/printutils.h"
-#include "libsvg/libsvg.h"
-#include "libsvg/svgpage.h"
+#include "io/libsvg/libsvg.h"
+#include "io/libsvg/svgpage.h"
 #include "geometry/ClipperUtils.h"
 #include "core/AST.h"
 

@@ -28,7 +28,7 @@
 
 #include "glview/system-gl.h"
 #include "glview/VertexArray.h"
-#include "ext/CGAL/OGL_helper.h"
+#include "CGAL/OGL_helper.h"
 
 #include <cstdlib>
 #include <vector>

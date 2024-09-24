@@ -35,7 +35,7 @@
 #include "utils/printutils.h"
 #include "io/fileutils.h"
 #include "handle_dep.h"
-#include "ext/lodepng/lodepng.h"
+#include "lodepng/lodepng.h"
 #include "core/SurfaceNode.h"
 
 #include <cstdint>

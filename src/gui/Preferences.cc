@@ -40,7 +40,7 @@
 #include "geometry/GeometryCache.h"
 #include "gui/AutoUpdater.h"
 #include "Feature.h"
-#include "Settings.h"
+#include "gui/Settings.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALCache.h"
 #endif

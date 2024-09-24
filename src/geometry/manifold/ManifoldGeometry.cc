@@ -1,14 +1,14 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #include "geometry/manifold/ManifoldGeometry.h"
 #include "geometry/Polygon2d.h"
-#include "manifold/cross_section.h"
-#include "manifold/manifold.h"
+#include <manifold/cross_section.h>
+#include <manifold/manifold.h>
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/manifold/manifoldutils.h"
 #include "glview/ColorMap.h"
-#include "src/glview/RenderSettings.h"
+#include "glview/RenderSettings.h"
 #include <cstddef>
 #include <string>
 #include <memory>

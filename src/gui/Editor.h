@@ -7,7 +7,7 @@
 #include <QScrollBar>
 #include <QTextEdit>
 #include "core/IndicatorData.h"
-#include "parameter/ParameterWidget.h"
+#include "gui/parameter/ParameterWidget.h"
 
 #include <string>
 #include <vector>

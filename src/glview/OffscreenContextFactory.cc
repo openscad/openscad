@@ -5,11 +5,11 @@
 #include "utils/printutils.h"
 
 #ifdef __APPLE__
-#include "offscreen-old/OffscreenContextNSOpenGL.h"
+#include "glview/offscreen-old/OffscreenContextNSOpenGL.h"
 #include "glview/OffscreenContextCGL.h"
 #endif
 #ifdef _WIN32
-#include "offscreen-old/OffscreenContextWGL.h"
+#include "glview/offscreen-old/OffscreenContextWGL.h"
 #endif
 #ifdef ENABLE_EGL
 #include "glview/offscreen-old/OffscreenContextEGL.h"

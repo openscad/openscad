@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "ext/libtess2/Include/tesselator.h"
+#include "libtess2/Include/tesselator.h"
 #include "utils/printutils.h"
 #include "geometry/Reindexer.h"
 #include "Feature.h"
