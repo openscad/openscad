@@ -1,5 +1,6 @@
 #include "geometry/boolean_utils.h"
 
+#include <memory>
 #include <cstddef>
 #include <vector>
 

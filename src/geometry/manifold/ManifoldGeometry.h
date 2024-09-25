@@ -2,6 +2,7 @@
 #pragma once
 
 #include "geometry/Geometry.h"
+#include <memory>
 #include <glm/glm.hpp>
 #include "geometry/linalg.h"
 #include <manifold/manifold.h>

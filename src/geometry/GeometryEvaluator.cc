@@ -26,6 +26,7 @@
 #include "utils/calc.h"
 #include "io/DxfData.h"
 #include "utils/degree_trig.h"
+#include <memory>
 #include <ciso646> // C alternative tokens (xor)
 #include <algorithm>
 #include "utils/boost-utils.h"

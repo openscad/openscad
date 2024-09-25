@@ -35,6 +35,7 @@
 #include "core/Builtins.h"
 #include "handle_dep.h"
 
+#include <memory>
 #include <cmath>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>

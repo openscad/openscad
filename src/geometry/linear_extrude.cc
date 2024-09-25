@@ -1,5 +1,6 @@
 #include "geometry/linear_extrude.h"
 
+#include <memory>
 #include <cstddef>
 #include <queue>
 #include <vector>

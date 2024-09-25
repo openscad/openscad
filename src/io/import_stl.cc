@@ -4,6 +4,7 @@
 #include "utils/printutils.h"
 #include "core/AST.h"
 
+#include <memory>
 #include <cstddef>
 #include <fstream>
 #include <string>

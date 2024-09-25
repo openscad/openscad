@@ -25,6 +25,7 @@
  *
  */
 
+#include <memory>
 #include "io/export.h"
 
 #include "geometry/PolySetUtils.h"

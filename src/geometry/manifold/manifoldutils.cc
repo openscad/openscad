@@ -7,6 +7,7 @@
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
 #include "geometry/cgal/CGALHybridPolyhedron.h"
+#include <memory>
 #include <CGAL/convex_hull_3.h>
 #include <CGAL/Surface_mesh.h>
 #endif

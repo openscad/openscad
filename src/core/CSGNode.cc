@@ -28,6 +28,7 @@
 #include "geometry/PolySet.h"
 #include "geometry/linalg.h"
 
+#include <memory>
 #include <cstddef>
 #include <numeric>
 #include <sstream>

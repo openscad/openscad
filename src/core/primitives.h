@@ -28,6 +28,7 @@
 #include "geometry/linalg.h"
 #include "core/node.h"
 
+#include <memory>
 #include <cstddef>
 #include <sstream>
 #include <string>

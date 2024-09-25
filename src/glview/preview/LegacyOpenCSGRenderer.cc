@@ -29,6 +29,7 @@
 #include "glview/preview/LegacyOpenCSGRenderer.h"
 #include "glview/LegacyRendererUtils.h"
 
+#include <memory>
 #include <memory.h>
 #include <utility>
 #include "geometry/PolySet.h"

@@ -18,6 +18,7 @@
 
 #include "geometry/linalg.h"
 #include "core/ScopeContext.h"
+#include <memory>
 #include <string>
 #include <vector>
 #include <Eigen/Geometry>

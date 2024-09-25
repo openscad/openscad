@@ -36,6 +36,7 @@
 #include "io/import.h"
 #include "io/fileutils.h"
 
+#include <memory>
 #include <cmath>
 #include <sstream>
 #include <ctime>

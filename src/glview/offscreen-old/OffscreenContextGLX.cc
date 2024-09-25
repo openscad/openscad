@@ -38,6 +38,7 @@
 
 
 #include "glview/system-gl.h"
+#include <memory>
 #include <GL/gl.h>
 #include <GL/glx.h>
 

@@ -30,6 +30,7 @@
 #include "core/Builtins.h"
 #include "core/Children.h"
 #include "core/Parameters.h"
+#include <memory>
 #include <sstream>
 #include <cassert>
 #include <boost/assign/std/vector.hpp>

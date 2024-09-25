@@ -24,6 +24,7 @@
  *
  */
 
+#include <memory>
 #include <string>
 #include "io/import.h"
 #include "utils/printutils.h"

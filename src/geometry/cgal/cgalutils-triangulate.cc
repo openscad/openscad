@@ -2,6 +2,7 @@
 #include "geometry/PolySetBuilder.h"
 #include "geometry/cgal/cgalutils.h"
 
+#include <memory>
 #include <utility>
 
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>

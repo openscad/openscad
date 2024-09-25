@@ -1,5 +1,7 @@
 #include "glview/OffscreenContextGLX.h"
 
+#include <memory>
+
 #define GLAD_GLX_IMPLEMENTATION
 #include <glad/glx.h>
 

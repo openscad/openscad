@@ -8,6 +8,7 @@
 #include "glview/RenderSettings.h"
 #include "utils/printutils.h"
 
+#include <memory>
 #include <vector>
 
 /*

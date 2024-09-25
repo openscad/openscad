@@ -32,6 +32,7 @@
 #include "core/Children.h"
 #include "core/Parameters.h"
 
+#include <memory>
 #include <sstream>
 #include <string>
 #include <cassert>
