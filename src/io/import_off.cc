@@ -3,6 +3,7 @@
 #include "geometry/PolySet.h"
 #include "utils/printutils.h"
 #include "core/AST.h"
+#include <cstdint>
 #include <memory>
 #include <charconv>
 #include <cstddef>

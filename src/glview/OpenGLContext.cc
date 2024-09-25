@@ -1,5 +1,6 @@
 #include "glview/OpenGLContext.h"
 
+#include <cstdint>
 #include <cstddef>
 #include <vector>
 

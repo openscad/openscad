@@ -29,6 +29,7 @@
  *  Public Domain.
  */
 
+#include <cstdint>
 #include <bitset>
 #include <boost/format.hpp>
 #include <chrono>

@@ -29,6 +29,7 @@
 #include "utils/printutils.h"
 #include "geometry/Geometry.h"
 
+#include <cstdint>
 #include <memory>
 #include <cstddef>
 #include <fstream>
