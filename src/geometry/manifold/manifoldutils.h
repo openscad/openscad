@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include "geometry/Geometry.h"
 #include "core/enums.h"
 #include "geometry/manifold/ManifoldGeometry.h"

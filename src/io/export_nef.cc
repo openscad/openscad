@@ -32,6 +32,7 @@
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #include "geometry/cgal/cgal.h"
 #include "geometry/cgal/cgalutils.h"
+#include <memory>
 #include <CGAL/IO/Nef_polyhedron_iostream_3.h> // for dumping .nef3
 
 void export_nefdbg(const std::shared_ptr<const Geometry>& geom, std::ostream& output)

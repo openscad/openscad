@@ -32,6 +32,7 @@
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
 
+#include <memory>
 #include <cstddef>
 #include <cstdint>
 

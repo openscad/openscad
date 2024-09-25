@@ -4,6 +4,7 @@
 #include "core/SourceFile.h"
 #include "core/customizer/ParameterObject.h"
 
+#include <memory>
 #include <cstddef>
 #include <sstream>
 #include <string>

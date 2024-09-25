@@ -1,5 +1,6 @@
 #include "glview/OffscreenContextCGL.h"
 
+#include <memory>
 #include <cstddef>
 #include <string>
 #include <iostream>

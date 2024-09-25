@@ -34,6 +34,7 @@
 #include "geometry/cgal/cgalutils.h"
 #endif
 
+#include <memory>
 #include <sys/types.h>
 #include <cstddef>
 #include <map>

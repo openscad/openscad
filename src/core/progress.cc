@@ -1,3 +1,4 @@
+#include <memory>
 #include "core/progress.h"
 #include "core/node.h"
 

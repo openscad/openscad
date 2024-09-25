@@ -1,5 +1,6 @@
 #include "geometry/PolySetUtils.h"
 
+#include <memory>
 #include <cstddef>
 #include <sstream>
 #include <vector>

@@ -1,3 +1,4 @@
+#include <memory>
 #include <cstddef>
 
 #include "core/customizer/CommentParser.h"

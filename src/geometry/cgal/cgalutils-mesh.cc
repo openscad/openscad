@@ -3,6 +3,7 @@
 #include "geometry/linalg.h"
 #include "utils/hash.h"
 
+#include <memory>
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Surface_mesh.h>

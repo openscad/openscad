@@ -17,6 +17,7 @@
 
  */
 
+#include <memory>
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <string>

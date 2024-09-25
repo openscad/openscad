@@ -6,6 +6,7 @@
 #include "utils/printutils.h"
 #include "geometry/Grid.h"
 
+#include <memory>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
 #include <boost/range/adaptor/reversed.hpp>

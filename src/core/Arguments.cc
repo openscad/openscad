@@ -24,6 +24,7 @@
  *
  */
 
+#include <memory>
 #include "core/Arguments.h"
 #include "core/Expression.h"
 

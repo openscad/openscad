@@ -30,6 +30,7 @@
 
 #include "Feature.h"
 #include "geometry/PolySet.h"
+#include <memory>
 #include <memory.h>
 #include <cstddef>
 #include <utility>

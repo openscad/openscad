@@ -26,6 +26,7 @@
 
 #include "glview/preview/LegacyThrownTogetherRenderer.h"
 
+#include <memory>
 #include <utility>
 #include "Feature.h"
 #include "geometry/PolySet.h"

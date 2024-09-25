@@ -25,6 +25,7 @@
  */
 #pragma once
 
+#include <memory>
 #include <vector>
 #include <cmath>
 #include <Eigen/Core>

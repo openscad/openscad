@@ -1,5 +1,6 @@
 #include "geometry/Geometry.h"
 #include "utils/printutils.h"
+#include <memory>
 #include <boost/foreach.hpp>
 #include <cstddef>
 #include <string>

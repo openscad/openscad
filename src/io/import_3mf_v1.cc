@@ -32,6 +32,7 @@
 #include "utils/version_helper.h"
 #include "core/AST.h"
 
+#include <memory>
 #include <string>
 
 #include <Model/COM/NMR_DLLInterfaces.h>

@@ -5,6 +5,7 @@
 #include "Feature.h"
 #include "core/Value.h"
 
+#include <memory>
 #include <functional>
 #include <string>
 #include <variant>
