@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-#include "node.h"
+#include "core/node.h"
 
 struct img_data_t
 {

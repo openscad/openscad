@@ -3,7 +3,7 @@
 #include <string>
 #include <boost/optional.hpp>
 
-#include "AST.h"
+#include "core/AST.h"
 
 std::unique_ptr<class PolySet> import_stl(const std::string& filename, const Location& loc);
 std::unique_ptr<class PolySet> import_obj(const std::string& filename, const Location& loc);

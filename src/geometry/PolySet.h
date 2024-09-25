@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Geometry.h"
-#include "linalg.h"
-#include "GeometryUtils.h"
-#include "Polygon2d.h"
-#include "boost-utils.h"
+#include "geometry/Geometry.h"
+#include "geometry/linalg.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/Polygon2d.h"
+#include "utils/boost-utils.h"
 
 #include <cstddef>
 #include <string>

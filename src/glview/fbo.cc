@@ -1,5 +1,5 @@
-#include "fbo.h"
-#include "system-gl.h"
+#include "glview/fbo.h"
+#include "glview/system-gl.h"
 #include <cstdio>
 #include <iostream>
 using namespace std;

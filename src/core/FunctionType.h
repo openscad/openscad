@@ -3,7 +3,7 @@
 #include <memory>
 #include <ostream>
 
-#include "Assignment.h"
+#include "core/Assignment.h"
 
 class Context;
 class Expression;

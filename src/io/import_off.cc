@@ -1,8 +1,8 @@
-#include "import.h"
+#include "io/import.h"
 #include "Feature.h"
-#include "PolySet.h"
-#include "printutils.h"
-#include "AST.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
+#include "core/AST.h"
 #include <charconv>
 #include <cstddef>
 #include <fstream>

@@ -7,7 +7,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "cgalutils-mesh-edits.h"
+#include "geometry/cgal/cgalutils-mesh-edits.h"
 #include "Feature.h"
 
 namespace CGALUtils {

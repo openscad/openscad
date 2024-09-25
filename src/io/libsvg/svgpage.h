@@ -25,8 +25,8 @@
 #pragma once
 
 #include <string>
-#include "shape.h"
-#include "util.h"
+#include "libsvg/shape.h"
+#include "libsvg/util.h"
 
 namespace libsvg {
 

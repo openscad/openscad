@@ -5,7 +5,7 @@
 #include <list>
 #include <memory.h>
 
-#include "linalg.h"
+#include "geometry/linalg.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>

@@ -1,4 +1,4 @@
-#include "GeometryUtils.h"
+#include "geometry/GeometryUtils.h"
 
 #include <boost/functional/hash.hpp>
 #include <cstddef>
@@ -7,19 +7,19 @@
 #include <string>
 #include <vector>
 
-#include "ext/libtess2/Include/tesselator.h"
-#include "printutils.h"
-#include "Reindexer.h"
+#include "libtess2/Include/tesselator.h"
+#include "utils/printutils.h"
+#include "geometry/Reindexer.h"
 #include "Feature.h"
-#include "PolySet.h"
+#include "geometry/PolySet.h"
 
 #ifdef ENABLE_CGAL
-#include "cgalutils.h"
-#include "CGALHybridPolyhedron.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
 #endif
 
 #ifdef ENABLE_MANIFOLD
-#include "manifoldutils.h"
+#include "geometry/manifold/manifoldutils.h"
 #endif
 
 static void *stdAlloc(void *userData, unsigned int size) {

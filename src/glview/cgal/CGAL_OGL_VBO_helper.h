@@ -26,9 +26,9 @@
 
 #pragma once
 
-#include "system-gl.h"
-#include "VertexArray.h"
-#include "ext/CGAL/OGL_helper.h"
+#include "glview/system-gl.h"
+#include "glview/VertexArray.h"
+#include "CGAL/OGL_helper.h"
 
 #include <cstdlib>
 #include <vector>

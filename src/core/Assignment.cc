@@ -24,9 +24,9 @@
  *
  */
 
-#include "Assignment.h"
-#include "Annotation.h"
-#include "Expression.h"
+#include "core/Assignment.h"
+#include "core/customizer/Annotation.h"
+#include "core/Expression.h"
 #include <sstream>
 #include <string>
 

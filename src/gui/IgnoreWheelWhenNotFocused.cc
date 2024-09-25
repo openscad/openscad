@@ -1,4 +1,4 @@
-#include "IgnoreWheelWhenNotFocused.h"
+#include "gui/IgnoreWheelWhenNotFocused.h"
 #include <QComboBox>
 #include <QSpinBox>
 #include <QDoubleSpinBox>

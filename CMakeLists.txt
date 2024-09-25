@@ -511,12 +511,16 @@ endif()
 
 target_include_directories(OpenSCAD PRIVATE
   "src"
-  "src/core"
-  "src/core/customizer"
   "src/ext"
-  "src/ext/json"
   "src/ext/lexertl/include"
   "src/ext/libtess2/Include"
+
+  # All the following should go away, not needed anymore after
+  # PR #5312. Left here for now in case there are on-going PRs that
+  # rely on these. Should be removed soon.
+  "src/core"
+  "src/core/customizer"
+  "src/ext/json"
   "src/ext"
   "src/geometry"
   "src/geometry/cgal"

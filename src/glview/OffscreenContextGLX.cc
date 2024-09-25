@@ -1,4 +1,4 @@
-#include "OffscreenContextGLX.h"
+#include "glview/OffscreenContextGLX.h"
 
 #define GLAD_GLX_IMPLEMENTATION
 #include <glad/glx.h>
@@ -8,8 +8,8 @@
 #include <sstream>
 #include <string>
 
-#include "scope_guard.hpp"
-#include "printutils.h"
+#include "utils/scope_guard.hpp"
+#include "utils/printutils.h"
 
 namespace {
 

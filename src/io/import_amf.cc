@@ -24,14 +24,14 @@
  *
  */
 
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "PolySetUtils.h"
-#include "printutils.h"
-#include "AST.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySetUtils.h"
+#include "utils/printutils.h"
+#include "core/AST.h"
 
 #ifdef ENABLE_CGAL
-#include "cgalutils.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
 
 #include <sys/types.h>

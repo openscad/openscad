@@ -31,7 +31,7 @@
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "util.h"
+#include "libsvg/util.h"
 
 BOOST_FUSION_ADAPT_STRUCT(libsvg::length_struct, (double, number)(std::string, unit))
 

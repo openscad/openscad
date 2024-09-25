@@ -1,10 +1,10 @@
-#include "PlatformUtils.h"
+#include "platform/PlatformUtils.h"
 
 #include <map>
 #include <string>
 
-#include "printutils.h"
-#include "findversion.h"
+#include "utils/printutils.h"
+#include "utils/findversion.h"
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0501
 #endif

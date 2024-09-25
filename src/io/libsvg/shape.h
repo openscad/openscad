@@ -38,7 +38,7 @@
 
 #include <boost/optional.hpp>
 
-#include "ext/polyclipping/clipper.hpp"
+#include "polyclipping/clipper.hpp"
 
 namespace libsvg {
 class shape;

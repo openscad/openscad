@@ -30,24 +30,24 @@
 #endif
 
 #include "Feature.h"
-#include "PolySet.h"
-#include "PolySetUtils.h"
-#include "printutils.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
+#include "utils/printutils.h"
 
-#include "CGALRenderUtils.h"
-#include "CGALRenderer.h"
+#include "glview/cgal/CGALRenderUtils.h"
+#include "glview/cgal/CGALRenderer.h"
 #ifdef ENABLE_CGAL
-#include "CGALHybridPolyhedron.h"
-#include "CGAL_OGL_VBOPolyhedron.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
+#include "glview/cgal/CGAL_OGL_VBOPolyhedron.h"
 #endif
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
 #include <cstddef>
 #include <vector>
 
-// #include "Preferences.h"
+// #include "gui/Preferences.h"
 
 CGALRenderer::CGALRenderer(const std::shared_ptr<const class Geometry> &geom) {
   this->addGeometry(geom);

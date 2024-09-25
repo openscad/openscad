@@ -1,4 +1,4 @@
-#include "VertexState.h"
+#include "glview/VertexState.h"
 
 void VertexState::draw(bool bind_buffers) const
 {

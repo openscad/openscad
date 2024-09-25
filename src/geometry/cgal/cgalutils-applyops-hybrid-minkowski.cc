@@ -3,12 +3,12 @@
 
 #ifdef ENABLE_CGAL
 
-#include "cgal.h"
-#include "cgalutils.h"
-#include "PolySet.h"
-#include "printutils.h"
-#include "CGALHybridPolyhedron.h"
-#include "node.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
+#include "core/node.h"
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>

@@ -3,8 +3,8 @@
 #include <string>
 #include <vector>
 
-#include "module.h"
-#include "LocalScope.h"
+#include "core/module.h"
+#include "core/LocalScope.h"
 
 class Feature;
 

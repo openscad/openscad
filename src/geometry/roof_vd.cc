@@ -10,12 +10,12 @@
 #include <map>
 #include <boost/polygon/voronoi.hpp>
 #include <vector>
-#include <PolySetBuilder.h>
+#include "geometry/PolySetBuilder.h"
 
-#include "GeometryUtils.h"
-#include "ClipperUtils.h"
-#include "RoofNode.h"
-#include "roof_vd.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/ClipperUtils.h"
+#include "core/RoofNode.h"
+#include "geometry/roof_vd.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
         throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());

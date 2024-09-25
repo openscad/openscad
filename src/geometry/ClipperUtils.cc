@@ -1,5 +1,5 @@
-#include "ClipperUtils.h"
-#include "printutils.h"
+#include "geometry/ClipperUtils.h"
+#include "utils/printutils.h"
 
 #include <cstddef>
 #include <vector>

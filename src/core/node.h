@@ -7,9 +7,9 @@
 #include <string>
 #include <deque>
 
-#include "BaseVisitable.h"
-#include "AST.h"
-#include "ModuleInstantiation.h"
+#include "core/BaseVisitable.h"
+#include "core/AST.h"
+#include "core/ModuleInstantiation.h"
 
 extern int progress_report_count;
 extern void (*progress_report_f)(const std::shared_ptr<const AbstractNode>&, void *, int);

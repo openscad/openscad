@@ -24,7 +24,7 @@
  *
  */
 
-#include "Measurement.h"
+#include "gui/Measurement.h"
 
 #include <string>
 

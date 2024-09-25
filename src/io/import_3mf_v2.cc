@@ -24,13 +24,13 @@
  *
  */
 
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "PolySetUtils.h"
-#include "Geometry.h"
-#include "printutils.h"
-#include "version_helper.h"
-#include "AST.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySetUtils.h"
+#include "geometry/Geometry.h"
+#include "utils/printutils.h"
+#include "utils/version_helper.h"
+#include "core/AST.h"
 #include "lib3mf_implicit.hpp"
 
 #include <vector>
@@ -85,7 +85,7 @@ const std::string get_lib3mf_version() {
 }
 
 #ifdef ENABLE_CGAL
-#include "cgalutils.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
 
 std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location& loc)

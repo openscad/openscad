@@ -3,7 +3,7 @@
 #include <string>
 #include <memory>
 
-#include "Geometry.h"
+#include "geometry/Geometry.h"
 
 class Polygon2d;
 class PolySet;

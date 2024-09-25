@@ -1,5 +1,5 @@
-#include "system-gl.h"
-#include "MouseSelector.h"
+#include "glview/system-gl.h"
+#include "gui/MouseSelector.h"
 
 #include <QOpenGLFramebufferObject>
 #include <string>

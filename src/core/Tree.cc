@@ -1,5 +1,5 @@
-#include "Tree.h"
-#include "NodeDumper.h"
+#include "core/Tree.h"
+#include "core/NodeDumper.h"
 
 #include <cassert>
 #include <algorithm>

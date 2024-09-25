@@ -1,15 +1,15 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #ifdef ENABLE_MANIFOLD
 
-#include "cgal.h"
-#include "cgalutils.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
 #include <CGAL/convex_hull_3.h>
 
-#include "PolySet.h"
-#include "printutils.h"
-#include "manifoldutils.h"
-#include "ManifoldGeometry.h"
-#include "parallel.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
+#include "geometry/manifold/manifoldutils.h"
+#include "geometry/manifold/ManifoldGeometry.h"
+#include "utils/parallel.h"
 
 #include <vector>
 

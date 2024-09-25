@@ -2,7 +2,7 @@
 #pragma once
 
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
-#include "cgalutils-coplanar-faces-remesher.h"
+#include "geometry/cgal/cgalutils-coplanar-faces-remesher.h"
 
 #include <cstddef>
 #include <vector>

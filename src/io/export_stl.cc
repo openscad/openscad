@@ -24,19 +24,19 @@
  *
  */
 
-#include "export.h"
-#include "PolySet.h"
-#include "PolySetUtils.h"
-#include "double-conversion/double-conversion.h"
+#include "io/export.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
+#include <double-conversion/double-conversion.h>
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
 #ifdef ENABLE_CGAL
-#include "CGAL_Nef_polyhedron.h"
-#include "CGALHybridPolyhedron.h"
-#include "cgal.h"
-#include "cgalutils.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
 
 #include <cstddef>

@@ -4,7 +4,7 @@
 #include <functional>
 #include <vector>
 
-#include "system-gl.h"
+#include "glview/system-gl.h"
 
 #define GL_TRACE_ENABLE
 #ifdef GL_TRACE_ENABLE

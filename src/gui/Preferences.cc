@@ -24,7 +24,7 @@
  *
  */
 
-#include "Preferences.h"
+#include "gui/Preferences.h"
 
 #include <QActionGroup>
 #include <QMessageBox>
@@ -37,19 +37,19 @@
 #include <QSettings>
 #include <QTextDocument>
 #include <boost/algorithm/string.hpp>
-#include "GeometryCache.h"
-#include "AutoUpdater.h"
+#include "geometry/GeometryCache.h"
+#include "gui/AutoUpdater.h"
 #include "Feature.h"
-#include "Settings.h"
+#include "gui/Settings.h"
 #ifdef ENABLE_CGAL
-#include "CGALCache.h"
+#include "geometry/cgal/CGALCache.h"
 #endif
-#include "ColorMap.h"
-#include "RenderSettings.h"
-#include "QSettingsCached.h"
-#include "SettingsWriter.h"
-#include "OctoPrint.h"
-#include "IgnoreWheelWhenNotFocused.h"
+#include "glview/ColorMap.h"
+#include "glview/RenderSettings.h"
+#include "gui/QSettingsCached.h"
+#include "gui/SettingsWriter.h"
+#include "gui/OctoPrint.h"
+#include "gui/IgnoreWheelWhenNotFocused.h"
 
 #include <string>
 

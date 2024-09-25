@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 
-#include "SourceFile.h"
+#include "core/SourceFile.h"
 
 namespace CommentParser {
 

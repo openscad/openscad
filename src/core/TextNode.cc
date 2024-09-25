@@ -26,15 +26,15 @@
 
 #include <vector>
 
-#include "Children.h"
-#include "module.h"
-#include "ModuleInstantiation.h"
-#include "Parameters.h"
-#include "printutils.h"
-#include "Builtins.h"
+#include "core/Children.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
+#include "core/Builtins.h"
 
-#include "TextNode.h"
-#include "FreetypeRenderer.h"
+#include "core/TextNode.h"
+#include "core/FreetypeRenderer.h"
 
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope

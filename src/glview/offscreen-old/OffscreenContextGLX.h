@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "OffscreenContext.h"
+#include "glview/OffscreenContext.h"
 
 namespace offscreen_old {
 

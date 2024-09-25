@@ -1,10 +1,10 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #pragma once
 
-#include "Geometry.h"
+#include "geometry/Geometry.h"
 #include <glm/glm.hpp>
-#include "linalg.h"
-#include "manifold/manifold.h"
+#include "geometry/linalg.h"
+#include <manifold/manifold.h>
 #include <cstddef>
 #include <map>
 #include <set>

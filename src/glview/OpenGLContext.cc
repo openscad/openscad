@@ -1,9 +1,9 @@
-#include "OpenGLContext.h"
+#include "glview/OpenGLContext.h"
 
 #include <cstddef>
 #include <vector>
 
-#include "system-gl.h"
+#include "glview/system-gl.h"
 
 std::vector<uint8_t> OpenGLContext::getFramebuffer() const
 {

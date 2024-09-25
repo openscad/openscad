@@ -24,8 +24,8 @@
  */
 #include <string>
 
-#include "tspan.h"
-#include "util.h"
+#include "libsvg/tspan.h"
+#include "libsvg/util.h"
 
 namespace libsvg {
 
