@@ -24,6 +24,7 @@
  *
  */
 
+#include <utility>
 #include <memory>
 #include "core/ModuleInstantiation.h"
 #include "core/node.h"

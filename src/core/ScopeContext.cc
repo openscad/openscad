@@ -5,6 +5,7 @@
 #include "core/SourceFileCache.h"
 #include "core/UserModule.h"
 
+#include <utility>
 #include <memory>
 #include <cmath>
 #include <vector>

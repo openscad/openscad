@@ -36,6 +36,7 @@
 #include "utils/degree_trig.h"
 #include "core/module.h"
 #include "utils/printutils.h"
+#include <utility>
 #include <boost/assign/std/vector.hpp>
 #include <cassert>
 #include <cstddef>
