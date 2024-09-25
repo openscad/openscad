@@ -110,7 +110,7 @@ void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
-void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
+void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_nefdbg(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_nef3(const std::shared_ptr<const Geometry>& geom, std::ostream& output);

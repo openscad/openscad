@@ -101,7 +101,7 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& 
     export_pdf(root_geom, output, exportInfo);
     break;
   case FileFormat::POV:
-    export_pov(root_geom, output);
+    export_pov(root_geom, output, exportInfo);
     break;
 #ifdef ENABLE_CGAL
   case FileFormat::NEFDBG:
