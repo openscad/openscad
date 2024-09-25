@@ -30,6 +30,7 @@
 #include "utils/printutils.h"
 #include "utils/hash.h" // IWYU pragma: keep
 
+#include <utility>
 #include <memory>
 #include <cstddef>
 #include <iomanip>

@@ -24,6 +24,7 @@
  *
  */
 
+#include <utility>
 #include <memory>
 
 #ifdef _MSC_VER
