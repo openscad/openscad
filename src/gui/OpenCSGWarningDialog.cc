@@ -1,5 +1,5 @@
-#include "OpenCSGWarningDialog.h"
-#include "Preferences.h"
+#include "gui/OpenCSGWarningDialog.h"
+#include "gui/Preferences.h"
 
 OpenCSGWarningDialog::OpenCSGWarningDialog(QWidget *)
 {

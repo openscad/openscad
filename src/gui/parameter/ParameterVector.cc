@@ -1,6 +1,6 @@
 #include <cstddef>
-#include "ParameterVector.h"
-#include "IgnoreWheelWhenNotFocused.h"
+#include "gui/parameter/ParameterVector.h"
+#include "gui/IgnoreWheelWhenNotFocused.h"
 
 ParameterVector::ParameterVector(QWidget *parent, VectorParameter *parameter, DescriptionStyle descriptionStyle) :
   ParameterVirtualWidget(parent, parameter),

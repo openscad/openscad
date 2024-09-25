@@ -1,5 +1,5 @@
-#include "RenderSettings.h"
-#include "printutils.h"
+#include "glview/RenderSettings.h"
+#include "utils/printutils.h"
 
 std::string renderBackend3DToString(RenderBackend3D backend) {
   switch (backend) {

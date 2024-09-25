@@ -1,4 +1,4 @@
-#include "ParameterText.h"
+#include "gui/parameter/ParameterText.h"
 
 #include <string>
 

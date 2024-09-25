@@ -28,13 +28,13 @@
 #include <cstddef>
 #include <string>
 
-#include "AxisConfigWidget.h"
+#include "gui/input/AxisConfigWidget.h"
 
-#include "Settings.h"
-#include "input/InputDriverManager.h"
-#include "SettingsWriter.h"
-#include "IgnoreWheelWhenNotFocused.h"
-#include "InitConfigurator.h"
+#include "gui/Settings.h"
+#include "gui/input/InputDriverManager.h"
+#include "gui/SettingsWriter.h"
+#include "gui/IgnoreWheelWhenNotFocused.h"
+#include "gui/InitConfigurator.h"
 
 AxisConfigWidget::AxisConfigWidget(QWidget *parent) : QWidget(parent)
 {

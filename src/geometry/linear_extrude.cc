@@ -1,4 +1,4 @@
-#include "linear_extrude.h"
+#include "geometry/linear_extrude.h"
 
 #include <cstddef>
 #include <queue>
@@ -6,14 +6,14 @@
 
 #include <boost/logic/tribool.hpp>
 
-#include "GeometryUtils.h"
-#include "RenderSettings.h"
-#include "LinearExtrudeNode.h"
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "PolySetUtils.h"
-#include "calc.h"
-#include "degree_trig.h"
+#include "geometry/GeometryUtils.h"
+#include "glview/RenderSettings.h"
+#include "core/LinearExtrudeNode.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySetUtils.h"
+#include "utils/calc.h"
+#include "utils/degree_trig.h"
 
 namespace {
 

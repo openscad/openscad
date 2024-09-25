@@ -11,12 +11,12 @@
 #include <Qsci/qscicommand.h>
 #include <Qsci/qscicommandset.h>
 
-#include "Editor.h"
-#include "TabManager.h"
-#include "TabWidget.h"
-#include "ScintillaEditor.h"
-#include "Preferences.h"
-#include "MainWindow.h"
+#include "gui/Editor.h"
+#include "gui/TabManager.h"
+#include "gui/TabWidget.h"
+#include "gui/ScintillaEditor.h"
+#include "gui/Preferences.h"
+#include "gui/MainWindow.h"
 
 #include <cstddef>
 

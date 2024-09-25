@@ -24,11 +24,11 @@
  *
  */
 
-#include "Arguments.h"
-#include "Children.h"
-#include "Context.h"
-#include "module.h"
-#include "ModuleInstantiation.h"
+#include "core/Arguments.h"
+#include "core/Children.h"
+#include "core/Context.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
 
 BuiltinModule::BuiltinModule(std::shared_ptr<AbstractNode>(*instantiate)(const ModuleInstantiation *, const std::shared_ptr<const Context>&), const Feature *feature) :
   AbstractModule(feature),

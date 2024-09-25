@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "node.h"
-#include "enums.h"
+#include "core/node.h"
+#include "core/enums.h"
 
 class CsgOpNode : public AbstractNode
 {

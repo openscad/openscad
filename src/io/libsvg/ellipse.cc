@@ -26,8 +26,8 @@
 #include <string>
 #include <iostream>
 
-#include "ellipse.h"
-#include "util.h"
+#include "libsvg/ellipse.h"
+#include "libsvg/util.h"
 
 namespace libsvg {
 

@@ -31,11 +31,11 @@
 #include <string>
 #include <vector>
 
-#include "qtgettext.h" // IWYU pragma: keep
+#include "gui/qtgettext.h" // IWYU pragma: keep
 #include "ui_ParameterWidget.h"
-#include "ParameterObject.h"
-#include "ParameterSet.h"
-#include "ParameterVirtualWidget.h"
+#include "core/customizer/ParameterObject.h"
+#include "core/customizer/ParameterSet.h"
+#include "gui/parameter/ParameterVirtualWidget.h"
 
 class ParameterWidget : public QWidget, public Ui::ParameterWidget
 {

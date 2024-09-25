@@ -3,8 +3,8 @@
 #include <string>
 #include <boost/optional.hpp>
 
-#include "node.h"
-#include "Value.h"
+#include "core/node.h"
+#include "core/Value.h"
 
 enum class ImportType {
   UNKNOWN,

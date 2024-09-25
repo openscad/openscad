@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QApplication>
-#include "WindowManager.h"
+#include "gui/WindowManager.h"
 
 class QProgressDialog;
 

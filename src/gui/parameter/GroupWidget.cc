@@ -1,4 +1,4 @@
-#include "GroupWidget.h"
+#include "gui/parameter/GroupWidget.h"
 
 #include <QLineEdit>
 

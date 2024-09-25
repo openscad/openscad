@@ -10,7 +10,7 @@
     ( which includes robot.cc by Steven Billington )
    http://blogs.msdn.com/b/oldnewthing/archive/2006/12/04/1205831.aspx by Tom
  */
-#include "OffscreenContextWGL.h"
+#include "glview/offscreen-old/OffscreenContextWGL.h"
 
 #undef NOGDI
 #include <windows.h>
@@ -19,8 +19,8 @@
 #include <map>
 #include <string>
 #include <sstream>
-#include "printutils.h"
-#include "system-gl.h"
+#include "utils/printutils.h"
+#include "glview/system-gl.h"
 #include <GL/gl.h> // must be included after glew.h
 
 

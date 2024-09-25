@@ -28,10 +28,10 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include "DxfData.h"
-#include "Grid.h"
-#include "printutils.h"
-#include "calc.h"
+#include "io/DxfData.h"
+#include "geometry/Grid.h"
+#include "utils/printutils.h"
+#include "utils/calc.h"
 
 #include <cassert>
 #include <cstddef>
@@ -46,11 +46,11 @@
 #include <string>
 #include <map>
 
-#include "Value.h"
-#include "boost-utils.h"
-#include "Polygon2d.h"
-#include "printutils.h"
-#include "degree_trig.h"
+#include "core/Value.h"
+#include "utils/boost-utils.h"
+#include "geometry/Polygon2d.h"
+#include "utils/printutils.h"
+#include "utils/degree_trig.h"
 
 
 namespace fs = boost::filesystem;

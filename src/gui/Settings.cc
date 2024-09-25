@@ -1,7 +1,7 @@
-#include "Settings.h"
-#include "RenderSettings.h"
-#include "printutils.h"
-#include "input/InputEventMapper.h"
+#include "gui/Settings.h"
+#include "glview/RenderSettings.h"
+#include "utils/printutils.h"
+#include "gui/input/InputEventMapper.h"
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <cstddef>

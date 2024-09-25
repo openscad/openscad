@@ -24,8 +24,8 @@
  */
 #include <boost/tokenizer.hpp>
 
-#include "polygon.h"
-#include "util.h"
+#include "libsvg/polygon.h"
+#include "libsvg/util.h"
 
 #include <string>
 

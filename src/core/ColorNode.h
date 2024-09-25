@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "node.h"
-#include "linalg.h"
+#include "core/node.h"
+#include "geometry/linalg.h"
 
 class ColorNode : public AbstractNode
 {

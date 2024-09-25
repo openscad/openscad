@@ -3,12 +3,12 @@
 
 #include <sstream>
 
-#include "module.h"
-#include "ModuleInstantiation.h"
-#include "Builtins.h"
-#include "Parameters.h"
-#include "Children.h"
-#include "RoofNode.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Builtins.h"
+#include "core/Parameters.h"
+#include "core/Children.h"
+#include "core/RoofNode.h"
 
 static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {

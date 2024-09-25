@@ -1,4 +1,4 @@
-#include "CGALRenderUtils.h"
+#include "glview/cgal/CGALRenderUtils.h"
 
 
 // this function resolves a 3x3 linear eqauation system

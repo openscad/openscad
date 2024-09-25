@@ -1,7 +1,7 @@
-#include "AST.h"
+#include "core/AST.h"
 #include <sstream>
 #include <string>
-#include "boost-utils.h"
+#include "utils/boost-utils.h"
 
 const Location Location::NONE(0, 0, 0, 0, std::make_shared<fs::path>(fs::path{}));
 

@@ -27,7 +27,7 @@
 #include <QClipboard>
 #include <QSortFilterProxyModel>
 
-#include "FontListDialog.h"
+#include "gui/FontListDialog.h"
 #include "FontCache.h"
 
 FontListDialog::FontListDialog()

@@ -5,8 +5,8 @@
 #include <utility>
 #include <vector>
 
-#include "AST.h"
-#include "Annotation.h"
+#include "core/AST.h"
+#include "core/customizer/Annotation.h"
 
 class Assignment : public ASTNode
 {

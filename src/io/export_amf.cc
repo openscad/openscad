@@ -24,14 +24,14 @@
  *
  */
 
-#include "export.h"
+#include "io/export.h"
 
-#include "Geometry.h"
+#include "geometry/Geometry.h"
 
 #ifdef ENABLE_CGAL
-#include "cgal.h"
-#include "cgalutils.h"
-#include "CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #endif
 
 #include <cstddef>

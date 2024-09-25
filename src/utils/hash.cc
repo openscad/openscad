@@ -1,4 +1,4 @@
-#include "hash.h"
+#include "utils/hash.h"
 #include <boost/functional/hash.hpp>
 
 #include <cstddef>

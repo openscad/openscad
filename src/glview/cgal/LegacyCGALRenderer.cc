@@ -29,24 +29,24 @@
 #include <mpfr.h>
 #endif
 
-#include "PolySet.h"
-#include "Polygon2d.h"
-#include "PolySetUtils.h"
-#include "printutils.h"
+#include "geometry/PolySet.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/PolySetUtils.h"
+#include "utils/printutils.h"
 
-#include "LegacyCGALRenderer.h"
-#include "LegacyRendererUtils.h"
-#include "CGALRenderUtils.h"
+#include "glview/cgal/LegacyCGALRenderer.h"
+#include "glview/LegacyRendererUtils.h"
+#include "glview/cgal/CGALRenderUtils.h"
 #ifdef ENABLE_CGAL
-#include "CGALHybridPolyhedron.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
 #endif
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
 #include <vector>
 
-//#include "Preferences.h"
+//#include "gui/Preferences.h"
 
 LegacyCGALRenderer::LegacyCGALRenderer(const std::shared_ptr<const class Geometry>& geom)
 {

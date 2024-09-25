@@ -1,5 +1,5 @@
 
-#include "LibraryInfoDialog.h"
+#include "gui/LibraryInfoDialog.h"
 
 #include <QString>
 #include <QStringRef>

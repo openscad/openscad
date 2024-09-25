@@ -4,9 +4,9 @@
     #include <sstream>
     #include <string>
     #include <memory>
-    #include "Expression.h"
-    #include "printutils.h"
-    #include "CommentParser.h"
+    #include "core/Expression.h"
+    #include "utils/printutils.h"
+    #include "core/customizer/CommentParser.h"
     #ifdef _MSC_VER
     #define strdup _strdup
     #endif

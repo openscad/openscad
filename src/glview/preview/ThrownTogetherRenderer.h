@@ -3,10 +3,10 @@
 #include <cstddef>
 #include <vector>
 
-#include "Renderer.h"
-#include "CSGNode.h"
+#include "glview/Renderer.h"
+#include "core/CSGNode.h"
 
-#include "VBORenderer.h"
+#include "glview/VBORenderer.h"
 
 class CSGProducts;
 class CSGChainObject;

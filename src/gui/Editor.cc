@@ -1,6 +1,6 @@
-#include "Editor.h"
-#include "Preferences.h"
-#include "QSettingsCached.h"
+#include "gui/Editor.h"
+#include "gui/Preferences.h"
+#include "gui/QSettingsCached.h"
 
 void EditorInterface::wheelEvent(QWheelEvent *event)
 {

@@ -7,7 +7,7 @@
 #include <QStyledItemDelegate>
 #include <QSortFilterProxyModel>
 
-#include "qtgettext.h"
+#include "gui/qtgettext.h"
 #include "ui_FontList.h"
 
 class FontItemDelegate : public QStyledItemDelegate

@@ -1,12 +1,12 @@
-#include "cgalutils.h"
+#include "geometry/cgal/cgalutils.h"
 #include "Feature.h"
-#include "linalg.h"
-#include "hash.h"
+#include "geometry/linalg.h"
+#include "utils/hash.h"
 
 #include <CGAL/boost/graph/convert_nef_polyhedron_to_polygon_mesh.h>
 #include <CGAL/boost/graph/graph_traits_Surface_mesh.h>
 #include <CGAL/Surface_mesh.h>
-#include "PolySetBuilder.h"
+#include "geometry/PolySetBuilder.h"
 #include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
 #include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
 

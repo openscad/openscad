@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
 
 namespace Polygon2DCGAL {
 CGAL_Nef_polyhedron toNefPolyhedron();

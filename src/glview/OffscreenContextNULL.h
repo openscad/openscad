@@ -2,6 +2,6 @@
 
 #include <memory>
 
-#include "OffscreenContext.h"
+#include "glview/OffscreenContext.h"
 
 std::shared_ptr<OffscreenContext> CreateOffscreenContextNULL();

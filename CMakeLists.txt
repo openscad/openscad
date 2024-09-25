@@ -512,12 +512,16 @@ endif()
 
 target_include_directories(OpenSCAD PRIVATE
   "src"
-  "src/core"
-  "src/core/customizer"
   "src/ext"
-  "src/ext/json"
   "src/ext/lexertl/include"
   "src/ext/libtess2/Include"
+
+  # All the following should go away, not needed anymore after
+  # PR #5312. Left here for now in case there are on-going PRs that
+  # rely on these. Should be removed soon.
+  "src/core"
+  "src/core/customizer"
+  "src/ext/json"
   "src/ext"
   "src/geometry"
   "src/geometry/cgal"
@@ -920,8 +924,6 @@ if(EXPERIMENTAL AND ENABLE_TBB)
   # ("exact" CGAL numerics are not thread-safe)
   target_compile_options(OpenSCAD PRIVATE 
     -DENABLE_TBB
-    -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_TBB
-    -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_TBB
   )
   find_package(TBB QUIET)
   if (NOT TBB_FOUND AND PKG_CONFIG_FOUND)

@@ -1,4 +1,4 @@
-#include "PolySetUtils.h"
+#include "geometry/PolySetUtils.h"
 
 #include <cstddef>
 #include <sstream>
@@ -6,17 +6,17 @@
 
 #include <boost/range/adaptor/reversed.hpp>
 
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "Polygon2d.h"
-#include "printutils.h"
-#include "GeometryUtils.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/Polygon2d.h"
+#include "utils/printutils.h"
+#include "geometry/GeometryUtils.h"
 #ifdef ENABLE_CGAL
-#include "cgalutils.h"
-#include "CGALHybridPolyhedron.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
 #endif
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
 namespace PolySetUtils {

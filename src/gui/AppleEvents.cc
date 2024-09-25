@@ -1,9 +1,9 @@
-#include "AppleEvents.h"
+#include "gui/AppleEvents.h"
 #include <MacTypes.h>
 #include <AssertMacros.h>
 #include <CoreServices/CoreServices.h>
 #include <QApplication>
-#include "MainWindow.h"
+#include "gui/MainWindow.h"
 
 extern "C" {
 OSErr eventHandler(const AppleEvent *ev, AppleEvent *reply, SRefCon refcon);

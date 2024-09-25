@@ -17,9 +17,9 @@
 #include <QSpinBox>
 #include <QLineEdit>
 
-#include "FontList.h"
+#include "gui/FontList.h"
 #include "FontCache.h"
-#include "printutils.h"
+#include "utils/printutils.h"
 
 FontItemDelegate::FontItemDelegate(QObject *parent) : QStyledItemDelegate(parent)
 {

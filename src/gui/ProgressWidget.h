@@ -1,6 +1,6 @@
 #pragma once
 
-#include "qtgettext.h"
+#include "gui/qtgettext.h"
 #include "ui_ProgressWidget.h"
 #include <QElapsedTimer>
 

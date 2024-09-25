@@ -13,11 +13,11 @@
 #include <map>
 #include <vector>
 
-#include "GeometryUtils.h"
-#include "ClipperUtils.h"
-#include "RoofNode.h"
-#include "roof_ss.h"
-#include "PolySetBuilder.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/ClipperUtils.h"
+#include "core/RoofNode.h"
+#include "geometry/roof_ss.h"
+#include "geometry/PolySetBuilder.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
         throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());

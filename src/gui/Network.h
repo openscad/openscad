@@ -34,9 +34,9 @@
 #include <string>
 #include <vector>
 
-#include "printutils.h"
-#include "PlatformUtils.h"
-#include "NetworkSignal.h"
+#include "utils/printutils.h"
+#include "platform/PlatformUtils.h"
+#include "gui/NetworkSignal.h"
 
 class NetworkException : public std::exception
 {

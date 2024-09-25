@@ -31,9 +31,9 @@
 #include <QDesktopServices>
 
 #include "version.h"
-#include "UIUtils.h"
-#include "PlatformUtils.h"
-#include "QSettingsCached.h"
+#include "gui/UIUtils.h"
+#include "platform/PlatformUtils.h"
+#include "gui/QSettingsCached.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>

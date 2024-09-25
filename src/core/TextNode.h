@@ -3,8 +3,8 @@
 #include <string>
 #include <vector>
 
-#include "node.h"
-#include "FreetypeRenderer.h"
+#include "core/node.h"
+#include "core/FreetypeRenderer.h"
 
 class TextModule;
 

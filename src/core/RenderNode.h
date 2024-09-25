@@ -1,6 +1,6 @@
 #pragma once
 
-#include "node.h"
+#include "core/node.h"
 #include <string>
 
 class RenderNode : public AbstractNode

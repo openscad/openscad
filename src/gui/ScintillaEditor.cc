@@ -12,11 +12,11 @@
 #include <QShortcut>
 #include <Qsci/qscicommandset.h>
 
-#include "ScintillaEditor.h"
-#include "Preferences.h"
-#include "PlatformUtils.h"
-#include "Settings.h"
-#include "ScadLexer.h"
+#include "gui/ScintillaEditor.h"
+#include "gui/Preferences.h"
+#include "platform/PlatformUtils.h"
+#include "gui/Settings.h"
+#include "gui/ScadLexer.h"
 
 #include <QWheelEvent>
 #include <QPoint>

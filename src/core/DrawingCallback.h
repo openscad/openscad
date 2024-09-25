@@ -28,7 +28,7 @@
 #include <vector>
 #include <cmath>
 #include <Eigen/Core>
-#include "Polygon2d.h"
+#include "geometry/Polygon2d.h"
 
 class Polygon2d;
 class Geometry;
