@@ -27,6 +27,7 @@
 #include "io/export.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
+#include <cstdint>
 #include <memory>
 #include <double-conversion/double-conversion.h>
 #ifdef ENABLE_MANIFOLD
