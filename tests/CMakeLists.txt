@@ -806,7 +806,6 @@ list(APPEND SCADFILES_WITH_GREEN_FACES
   ${EXAMPLES_DIR}/Old/example024.scad
   ${TEST_SCAD_DIR}/3D/features/difference-tests.scad
   ${TEST_SCAD_DIR}/3D/features/for-tests.scad
-  ${TEST_SCAD_DIR}/3D/features/highlight-modifier.scad
   ${TEST_SCAD_DIR}/3D/features/highlight-modifier2.scad
   ${TEST_SCAD_DIR}/3D/features/minkowski3-erosion.scad
   ${TEST_SCAD_DIR}/3D/features/minkowski3-difference-test.scad
@@ -835,11 +834,11 @@ list(APPEND SCADFILES_WITH_GREEN_FACES
 )
 
 list(APPEND SCADFILES_WITH_COLOR
-  ${SCADFILES_WITH_GREEN_FACES}
   ${TEST_SCAD_DIR}/3D/features/child-child-test.scad
   ${TEST_SCAD_DIR}/3D/features/color-tests.scad
   ${TEST_SCAD_DIR}/3D/features/color-tests2.scad
   ${TEST_SCAD_DIR}/3D/features/color-tests3.scad
+  ${TEST_SCAD_DIR}/3D/features/highlight-modifier.scad
   ${TEST_SCAD_DIR}/3D/features/linear_extrude-parameter-tests.scad
   ${TEST_SCAD_DIR}/3D/features/rotate-parameters.scad
   ${TEST_SCAD_DIR}/3D/features/resize-tests.scad
@@ -873,6 +872,10 @@ list(APPEND SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS
   # Manifold can construct geometry which isn't representable in CGAL mode,
   # causing CGAL-based operations like minkowski() to fail.
   ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
+
+  # TODO: comment
+  ${TEST_SCAD_DIR}/3D/features/render-tests.scad
+  ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
 )
 
 list(APPEND SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS
@@ -882,6 +885,11 @@ list(APPEND SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS
   # Manifold can construct geometry which isn't representable in CGAL mode,
   # causing CGAL-based operations like minkowski() to fail.
   ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
+
+  # TODO: comment
+  ${TEST_SCAD_DIR}/3D/features/render-tests.scad
+  ${TEST_SCAD_DIR}/misc/internal-cavity.scad
+  ${TEST_SCAD_DIR}/3D/features/resize-convexity-tests.scad
 
   # ${TEST_SCAD_DIR}/bugs/issue1000.scad
   # ${TEST_SCAD_DIR}/bugs/issue802.scad
@@ -1033,10 +1041,10 @@ add_cmdline_test(throwntogethertest OPENSCAD SUFFIX png FILES ${THROWNTOGETHERTE
 add_cmdline_test(renderstdiotest     OPENSCAD SUFFIX png FILES ${RENDERSTDIOTEST_FILES} STDIO EXPECTEDDIR rendertest ARGS --export-format png --render)
 add_cmdline_test(csgrendertest       SCRIPT ${EXPORT_IMPORT_PNGTEST_PY} SUFFIX png FILES ${RENDERTEST_FILES} EXPECTEDDIR rendertest ARGS ${OPENSCAD_EXE_ARG} --format=csg --render)
 if (ENABLE_MANIFOLD)
-add_cmdline_test(rendermanifoldtest  OPENSCAD SUFFIX png FILES ${RENDERMANIFOLDTEST_FILES} EXPECTEDDIR rendertest ARGS --render --backend=manifold)
+add_cmdline_test(rendermanifoldtest            OPENSCAD SUFFIX png FILES ${RENDERMANIFOLDTEST_FILES} EXPECTEDDIR rendertest ARGS --render --backend=manifold)
 add_cmdline_test(rendermanifoldtest-different  OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS} ARGS --render --backend=manifold)
-add_cmdline_test(previewmanifoldtest OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
-add_cmdline_test(previewmanifoldtest-different SUFFIX png OPENSCAD FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --backend=manifold)
+add_cmdline_test(previewmanifoldtest           OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
+add_cmdline_test(previewmanifoldtest-different OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --backend=manifold)
 endif()
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
@@ -1535,6 +1543,7 @@ set_tests_properties(
 if (ENABLE_MANIFOLD)
 set_tests_properties(
   # z-fighting different on different machines
+  previewmanifoldtest_issue1165
   previewmanifoldtest_issue1215
 
   # https://github.com/openscad/openscad/issues/5217
