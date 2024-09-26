@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include "glview/OpenGLContext.h"
 
 class OffscreenContext : public OpenGLContext {

@@ -1,3 +1,5 @@
+#include <ostream>
+#include <memory>
 #include <cstddef>
 #include <string>
 #include <vector>

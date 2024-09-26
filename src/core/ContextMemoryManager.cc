@@ -24,6 +24,8 @@
  *
  */
 
+#include <utility>
+#include <memory>
 #include <deque>
 #include <map>
 #include <unordered_set>

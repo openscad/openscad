@@ -1,6 +1,7 @@
 #include "core/Tree.h"
 #include "core/NodeDumper.h"
 
+#include <memory>
 #include <cassert>
 #include <algorithm>
 #include <sstream>

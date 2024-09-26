@@ -2,6 +2,7 @@
 
 #include "glview/Renderer.h"
 #include "core/CSGNode.h"
+#include <memory>
 #include <boost/functional/hash.hpp>
 #include <unordered_map>
 

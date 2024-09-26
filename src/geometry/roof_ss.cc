@@ -1,6 +1,7 @@
 // This file is a part of openscad. Everything implied is implied.
 // Author: Alexey Korepanov <kaikaikai@yandex.ru>
 
+#include <memory>
 #include <boost/shared_ptr.hpp>
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>

@@ -24,6 +24,9 @@
  *
  */
 
+#include <utility>
+#include <memory>
+
 #ifdef _MSC_VER
 // Boost conflicts with MPFR under MSVC (google it)
 #include <mpfr.h>

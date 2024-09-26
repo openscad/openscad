@@ -30,6 +30,8 @@
 #include "glview/VertexArray.h"
 #include "CGAL/OGL_helper.h"
 
+#include <utility>
+#include <memory>
 #include <cstdlib>
 #include <vector>
 

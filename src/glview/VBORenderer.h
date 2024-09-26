@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <cstddef>
 #include "glview/Renderer.h"
 #include "glview/system-gl.h"

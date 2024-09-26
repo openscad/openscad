@@ -2,6 +2,8 @@
 #pragma once
 
 #include "geometry/Geometry.h"
+#include <cstdint>
+#include <memory>
 #include <glm/glm.hpp>
 #include "geometry/linalg.h"
 #include <manifold/manifold.h>

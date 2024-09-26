@@ -2,6 +2,8 @@
 
 #include "core/AST.h"
 #include "core/LocalScope.h"
+#include <ostream>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>

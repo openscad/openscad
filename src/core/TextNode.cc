@@ -24,6 +24,8 @@
  *
  */
 
+#include <utility>
+#include <memory>
 #include <vector>
 
 #include "core/Children.h"

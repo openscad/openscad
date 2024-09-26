@@ -6,6 +6,8 @@
 #include "geometry/Polygon2d.h"
 #include "utils/boost-utils.h"
 
+#include <cstdint>
+#include <memory>
 #include <cstddef>
 #include <string>
 #include <vector>

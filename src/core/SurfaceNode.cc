@@ -38,6 +38,8 @@
 #include "lodepng/lodepng.h"
 #include "core/SurfaceNode.h"
 
+#include <utility>
+#include <memory>
 #include <cstdint>
 #include <cstddef>
 #include <sstream>

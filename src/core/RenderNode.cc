@@ -31,6 +31,8 @@
 #include "core/Children.h"
 #include "core/Parameters.h"
 
+#include <utility>
+#include <memory>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope

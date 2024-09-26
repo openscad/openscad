@@ -32,6 +32,7 @@
 #include "core/Parameters.h"
 #include "utils/printutils.h"
 #include "utils/degree_trig.h"
+#include <memory>
 #include <cstddef>
 #include <sstream>
 #include <utility>

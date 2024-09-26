@@ -1,5 +1,6 @@
 #include "glview/OffscreenContextFactory.h"
 
+#include <memory>
 #include <string>
 
 #include "utils/printutils.h"

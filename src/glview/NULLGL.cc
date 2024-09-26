@@ -1,5 +1,7 @@
 #include "glview/GLView.h"
 
+#include <cstdint>
+#include <memory>
 #include <cstddef>
 #include <string>
 #include <vector>

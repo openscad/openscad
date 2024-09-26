@@ -4,6 +4,7 @@
  */
 #include "glview/OffscreenContextNULL.h"
 
+#include <memory>
 #include <string>
 
 class OffscreenContextNULL : public OffscreenContext {

@@ -1,3 +1,4 @@
+#include <memory>
 #include <stack>
 
 #include "glview/preview/CSGTreeNormalizer.h"

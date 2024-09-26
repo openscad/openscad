@@ -26,6 +26,7 @@
 #include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"
 #include "gui/MainWindow.h"
+#include <sstream>
 #include <QAction>
 #include <QMenu>
 #include <QApplication>

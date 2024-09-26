@@ -25,6 +25,9 @@
  */
 #include "glview/offscreen-old/OffscreenContextEGL.h"
 
+#include <iostream>
+#include <cstdint>
+#include <memory>
 #include <EGL/egl.h>
 #define EGL_EGLEXT_PROTOTYPES
 #include <EGL/eglext.h>

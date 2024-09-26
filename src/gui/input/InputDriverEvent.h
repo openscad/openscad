@@ -25,6 +25,7 @@
  */
 #pragma once
 
+#include <utility>
 #include <QEvent>
 #include <string>
 

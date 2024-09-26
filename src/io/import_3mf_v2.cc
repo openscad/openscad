@@ -33,6 +33,8 @@
 #include "core/AST.h"
 #include "lib3mf_implicit.hpp"
 
+#include <utility>
+#include <memory>
 #include <vector>
 
 namespace {

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/Assignment.h"
+#include <ostream>
 #include <cstddef>
 #include <unordered_map>
 #include <memory>

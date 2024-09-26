@@ -13,6 +13,9 @@
 #include "glview/offscreen-old/OffscreenContextWGL.h"
 
 #undef NOGDI
+#include <iostream>
+#include <cstdint>
+#include <memory>
 #include <windows.h>
 
 #include <vector>

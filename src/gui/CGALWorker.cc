@@ -1,4 +1,5 @@
 #include "gui/CGALWorker.h"
+#include <memory>
 #include <QThread>
 
 #include "core/Tree.h"

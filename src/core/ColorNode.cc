@@ -31,6 +31,8 @@
 #include "core/Children.h"
 #include "core/Parameters.h"
 #include "utils/printutils.h"
+#include <utility>
+#include <memory>
 #include <cctype>
 #include <cstddef>
 #include <sstream>

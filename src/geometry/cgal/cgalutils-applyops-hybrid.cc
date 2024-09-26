@@ -3,6 +3,7 @@
 
 #ifdef ENABLE_CGAL
 
+#include <memory>
 #include <cstddef>
 #include <vector>
 

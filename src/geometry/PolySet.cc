@@ -29,6 +29,8 @@
 #include "geometry/linalg.h"
 #include "utils/printutils.h"
 #include "geometry/Grid.h"
+#include <sstream>
+#include <memory>
 #include <Eigen/LU>
 #include <cstddef>
 #include <string>

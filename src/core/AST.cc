@@ -1,4 +1,6 @@
 #include "core/AST.h"
+#include <ostream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include "utils/boost-utils.h"

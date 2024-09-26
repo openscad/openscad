@@ -24,6 +24,7 @@
  */
 #include "libsvg/data.h"
 
+#include <sstream>
 #include <string>
 
 namespace libsvg {

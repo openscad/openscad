@@ -33,6 +33,9 @@
 #include "io/fileutils.h"
 #include "core/Builtins.h"
 #include "handle_dep.h"
+#include <ios>
+#include <utility>
+#include <memory>
 #include <cmath>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>

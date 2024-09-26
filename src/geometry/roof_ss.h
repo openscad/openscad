@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <memory>
 #include "geometry/Polygon2d.h"
 #include "geometry/PolySet.h"
 

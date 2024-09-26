@@ -28,6 +28,8 @@
 #include "core/Expression.h"
 #include "core/function.h"
 
+#include <ostream>
+#include <memory>
 #include <cstddef>
 #include <utility>
 

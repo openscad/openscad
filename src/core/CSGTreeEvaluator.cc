@@ -12,6 +12,7 @@
 #include "geometry/PolySet.h"
 #include "geometry/PolySetBuilder.h"
 
+#include <memory>
 #include <string>
 #include <map>
 #include <list>

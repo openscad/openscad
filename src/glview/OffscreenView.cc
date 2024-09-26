@@ -1,5 +1,7 @@
 #include "glview/OffscreenView.h"
 #include "glview/system-gl.h"
+#include <iostream>
+#include <cstdint>
 #include <cmath>
 #include <cstdio>
 #include <string>

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/NodeCache.h"
+#include <memory>
 #include <map>
 #include <string>
 #include <utility>

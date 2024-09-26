@@ -29,6 +29,9 @@
  *  Public Domain.
  */
 
+#include <ios>
+#include <sstream>
+#include <cstdint>
 #include <bitset>
 #include <boost/format.hpp>
 #include <chrono>

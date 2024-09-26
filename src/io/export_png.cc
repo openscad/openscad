@@ -2,6 +2,7 @@
 #include "utils/printutils.h"
 #include "glview/OffscreenView.h"
 #include "glview/CsgInfo.h"
+#include <ostream>
 #include <cstdio>
 #include <memory>
 #include "glview/RenderSettings.h"

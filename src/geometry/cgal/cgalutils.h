@@ -5,6 +5,7 @@
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #include "core/enums.h"
 
+#include <memory>
 #include <cstddef>
 #include <vector>
 

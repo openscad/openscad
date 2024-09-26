@@ -26,6 +26,7 @@
 
 #include "glview/preview/ThrownTogetherRenderer.h"
 
+#include <memory>
 #include <cstddef>
 #include <utility>
 #include "Feature.h"

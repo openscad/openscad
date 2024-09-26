@@ -1,6 +1,8 @@
 // This file is a part of openscad. Everything implied is implied.
 // Author: Alexey Korepanov <kaikaikai@yandex.ru>
 
+#include <utility>
+#include <memory>
 #include <sstream>
 
 #include "core/module.h"

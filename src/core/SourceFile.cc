@@ -32,6 +32,8 @@
 #include "core/ScopeContext.h"
 #include "core/parsersettings.h"
 #include "core/StatCache.h"
+#include <ostream>
+#include <memory>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <string>

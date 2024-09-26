@@ -1,5 +1,7 @@
 #include "geometry/Polygon2d.h"
 
+#include <sstream>
+#include <utility>
 #include <cstddef>
 #include <string>
 #include <memory>
