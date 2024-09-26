@@ -24,10 +24,11 @@
  *
  */
 
+#include <memory>
 #include <string>
-#include "import.h"
-#include "printutils.h"
-#include "PolySet.h"
+#include "io/import.h"
+#include "utils/printutils.h"
+#include "geometry/PolySet.h"
 
 const std::string get_lib3mf_version() {
   return "(not enabled)";

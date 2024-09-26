@@ -4,7 +4,7 @@
 #include <QDialog>
 #include <QTreeWidgetItem>
 
-#include "qtgettext.h" // IWYU pragma: keep
+#include "gui/qtgettext.h" // IWYU pragma: keep
 #include "ui_LaunchingScreen.h"
 
 class LaunchingScreen : public QDialog, public Ui::LaunchingScreen

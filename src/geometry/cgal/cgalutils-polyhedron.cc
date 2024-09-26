@@ -1,14 +1,19 @@
 #ifdef ENABLE_CGAL
 
-#include "cgalutils.h"
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "printutils.h"
-#include "Grid.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "utils/printutils.h"
+#include "geometry/Grid.h"
 
+#include <ostream>
+#include <memory>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 
 #include <boost/range/adaptor/reversed.hpp>
+
+#include <cstddef>
+#include <vector>
 
 #undef GEN_SURFACE_DEBUG
 namespace /* anonymous */ {
@@ -354,4 +359,3 @@ public:
 }  // namespace CGALUtils
 
 #endif /* ENABLE_CGAL */
-

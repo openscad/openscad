@@ -24,7 +24,13 @@
  *
  */
 
-#include "node.h"
+#include <cstdint>
+#include <memory>
+#include <cstddef>
+#include <string>
+#include <vector>
+
+#include "core/node.h"
 
 struct img_data_t
 {
@@ -72,4 +78,3 @@ private:
   img_data_t read_dat(std::string filename) const;
   img_data_t read_png_or_dat(std::string filename) const;
 };
-

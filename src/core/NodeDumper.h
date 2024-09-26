@@ -1,12 +1,14 @@
 #pragma once
 
+#include <sstream>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <list>
 #include <utility>
-#include "NodeVisitor.h"
-#include "node.h"
-#include "NodeCache.h"
+#include "core/NodeVisitor.h"
+#include "core/node.h"
+#include "core/NodeCache.h"
 
 // GroupNodeChecker does a quick first pass to count children of group nodes
 // If a GroupNode has 0 children, don't include in node id strings

@@ -24,10 +24,12 @@
  *
  */
 
-#include "CSGNode.h"
-#include "PolySet.h"
-#include "linalg.h"
+#include "core/CSGNode.h"
+#include "geometry/PolySet.h"
+#include "geometry/linalg.h"
 
+#include <memory>
+#include <cstddef>
 #include <numeric>
 #include <sstream>
 #include <stack>

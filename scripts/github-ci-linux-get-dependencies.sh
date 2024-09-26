@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 QT="$1"
 
@@ -9,7 +9,7 @@ PACKAGES2="libboost-all-dev libeigen3-dev libzip-dev libcrypto++-dev"
 PACKAGES3="libxi-dev libxmu-dev qtbase5-dev qtmultimedia5-dev libqt5opengl5-dev libqt5svg5-dev libqscintilla2-qt5-dev"
 PACKAGES4="libcairo2-dev libcgal-dev libglew-dev libgmp-dev libmpfr-dev libegl-dev libegl1-mesa-dev"
 PACKAGES5="libdouble-conversion-dev libfontconfig-dev libharfbuzz-dev libopencsg-dev lib3mf-dev libtbb-dev"
-PACKAGES6="libthrust-dev libglm-dev libxml2-dev"
+PACKAGES6="libglm-dev libxml2-dev"
 
 if [[ "$DIST" == "focal" ]]; then
 

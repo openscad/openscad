@@ -3,8 +3,8 @@
 #include <cstring>
 #include <memory>
 #include <utility>
-#include "linalg.h"
-#include "node.h"
+#include "geometry/linalg.h"
+#include "core/node.h"
 
 class State
 {

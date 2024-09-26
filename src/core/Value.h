@@ -5,16 +5,17 @@
 #include <string>
 #include <algorithm>
 #include <cstdint>
+#include <cstddef>
 #include <limits>
 #include <ostream>
 #include <memory>
 #include <type_traits>
 #include <variant>
 
-#include "FunctionType.h"
-#include "RangeType.h"
-#include "str_utf8_wrapper.h"
-#include "UndefType.h"
+#include "core/FunctionType.h"
+#include "core/RangeType.h"
+#include "core/str_utf8_wrapper.h"
+#include "core/UndefType.h"
 
 class tostring_visitor;
 class tostream_visitor;

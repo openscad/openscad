@@ -1,10 +1,12 @@
 #pragma once
 
-#include "AST.h"
-#include "Assignment.h"
+#include "core/AST.h"
+#include "core/Assignment.h"
 #include "Feature.h"
-#include "Value.h"
+#include "core/Value.h"
 
+#include <ostream>
+#include <memory>
 #include <functional>
 #include <string>
 #include <variant>

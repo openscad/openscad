@@ -1,14 +1,17 @@
 #pragma once
 
-#include "linalg.h"
-#include "ColorMap.h"
-#include "enums.h"
-#include "PolySet.h"
-#include "Selection.h"
+#include "geometry/linalg.h"
+#include "glview/ColorMap.h"
+#include "core/enums.h"
+#include "geometry/PolySet.h"
+#include "core/Selection.h"
 
 #ifdef _MSC_VER // NULL
 #include <cstdlib>
 #endif
+
+#include <string>
+#include <vector>
 
 class Renderer
 {

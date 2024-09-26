@@ -24,18 +24,22 @@
  *
  */
 
-#include "GeometryUtils.h"
-#include "export.h"
-#include "PolySet.h"
-#include "PolySetUtils.h"
-#include "printutils.h"
+#include "geometry/GeometryUtils.h"
+#include "io/export.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
+#include "utils/printutils.h"
 #ifdef ENABLE_CGAL
-#include "CGALHybridPolyhedron.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
 #endif
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
+#include <ostream>
+#include <cstdint>
+#include <memory>
+#include <string>
 
 static uint32_t lib3mf_write_callback(const char *data, uint32_t bytes, std::ostream *stream)
 {
@@ -56,9 +60,9 @@ using namespace NMR;
 #include <algorithm>
 
 #ifdef ENABLE_CGAL
-#include "cgal.h"
-#include "cgalutils.h"
-#include "CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #endif
 
 static void export_3mf_error(std::string msg, PLib3MFModel *& model)

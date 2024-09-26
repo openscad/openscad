@@ -24,24 +24,29 @@
  *
  */
 
-#include "primitives.h"
-#include "Builtins.h"
-#include "Children.h"
-#include "ModuleInstantiation.h"
-#include "Parameters.h"
-#include "PolySet.h"
-#include "Polygon2d.h"
-#include "calc.h"
+#include "core/primitives.h"
+#include "core/Builtins.h"
+#include "core/Children.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Parameters.h"
+#include "geometry/PolySet.h"
+#include "geometry/Polygon2d.h"
+#include "utils/calc.h"
 #include "core/node.h"
-#include "degree_trig.h"
-#include "module.h"
-#include "printutils.h"
+#include "utils/degree_trig.h"
+#include "core/module.h"
+#include "utils/printutils.h"
+#include <utility>
 #include <boost/assign/std/vector.hpp>
 #include <cassert>
+#include <cstddef>
 #include <cmath>
 #include <iterator>
 #include <memory>
 #include <sstream>
+#include <string>
+#include <vector>
+
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 #define F_MINIMUM 0.01
@@ -279,7 +284,7 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
 
   bool cone = (r2 == 0.0);
   bool inverted_cone = (r1 == 0.0);
-  
+
   auto polyset = std::make_unique<PolySet>(3, /*convex*/true);
   polyset->vertices.reserve((cone || inverted_cone) ? num_fragments + 1 : 2 * num_fragments);
 

@@ -23,13 +23,15 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "InputEventMapper.h"
-#include "InputDriverManager.h"
-#include "Settings.h"
-#include "Preferences.h"
-#include "AxisConfigWidget.h"
-#include "ButtonConfigWidget.h"
+#include "gui/input/InputEventMapper.h"
+#include "gui/input/InputDriverManager.h"
+#include "gui/Settings.h"
+#include "gui/Preferences.h"
+#include "gui/input/AxisConfigWidget.h"
+#include "gui/input/ButtonConfigWidget.h"
 #include <ciso646> // C alternative tokens
+#include <cstddef>
+#include <string>
 #include <cmath>
 #include <QSettings>
 

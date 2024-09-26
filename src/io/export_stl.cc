@@ -24,20 +24,28 @@
  *
  */
 
-#include "export.h"
-#include "PolySet.h"
-#include "PolySetUtils.h"
-#include "double-conversion/double-conversion.h"
+#include "io/export.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
+#include <ios>
+#include <ostream>
+#include <cstdint>
+#include <memory>
+#include <double-conversion/double-conversion.h>
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
 #ifdef ENABLE_CGAL
-#include "CGAL_Nef_polyhedron.h"
-#include "CGALHybridPolyhedron.h"
-#include "cgal.h"
-#include "cgalutils.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
+
+#include <cstddef>
+#include <string>
+#include <vector>
 
 namespace {
 /* Define values for double-conversion library. */
@@ -72,7 +80,7 @@ std::string toString(const Vector3f& v)
 }
 
 int32_t flipEndianness(int32_t x) {
-  return 
+  return
     ((x << 24) & 0xff000000) | ((x >> 24) & 0xff) |
     ((x << 8) & 0xff0000) | ((x >> 8) & 0xff00);
 }
@@ -116,7 +124,7 @@ uint64_t append_stl(std::shared_ptr<const PolySet> polyset, std::ostream& output
   if (!binary) {
     vertexStrings.resize(ps->vertices.size());
     std::transform(ps->vertices.begin(), ps->vertices.end(), vertexStrings.begin(),
-      [](const auto& p) 
+      [](const auto& p)
      { return toString({static_cast<float>(p.x()), static_cast<float>(p.y()) , static_cast<float>(p.z()) }); });
   }
 
@@ -155,11 +163,11 @@ uint64_t append_stl(std::shared_ptr<const PolySet> polyset, std::ostream& output
       const auto &s1 = vertexStrings[t[1]];
       const auto &s2 = vertexStrings[t[2]];
 
-      // Since the points are different, the precision we use to 
-      // format them to string should guarantee the strings are 
+      // Since the points are different, the precision we use to
+      // format them to string should guarantee the strings are
       // different too.
       assert(s0 != s1 && s0 != s2 && s1 != s2);
-      
+
       output << "  facet normal ";
       output << toString(
         {static_cast<float>(normal.x()), static_cast<float>(normal.y()), static_cast<float>(normal.z()) }) << "\n";

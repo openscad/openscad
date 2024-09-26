@@ -1,3 +1,4 @@
+#include <ios>
 #include <mutex>
 #include <string>
 #include <fstream>
@@ -11,7 +12,7 @@
 #include <boost/filesystem.hpp>
 
 #include "version.h"
-#include "PlatformUtils.h"
+#include "platform/PlatformUtils.h"
 
 namespace fs = boost::filesystem;
 

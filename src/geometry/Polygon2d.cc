@@ -1,13 +1,18 @@
-#include "Polygon2d.h"
+#include "geometry/Polygon2d.h"
 
+#include <sstream>
+#include <utility>
+#include <cstddef>
+#include <string>
 #include <memory>
-#include "printutils.h"
+
+#include "utils/printutils.h"
 #ifdef ENABLE_MANIFOLD
-#include "manifoldutils.h"
+#include "geometry/manifold/manifoldutils.h"
 #endif
-#include "cgalutils.h"
+#include "geometry/cgal/cgalutils.h"
 #include "Feature.h"
-#include "PolySet.h"
+#include "geometry/PolySet.h"
 
 
 Polygon2d::Polygon2d(Outline2d outline) : sanitized(true) {
@@ -164,9 +169,9 @@ double Polygon2d::area() const
    * Rendering (both preview and render mode)
    * Polygon area calculation
    *
-   * One use-case is special: For geometry construction in Manifold mode, we require this function to 
+   * One use-case is special: For geometry construction in Manifold mode, we require this function to
    * guarantee that vertices and their order are untouched (apart from adding a zero 3rd dimension)
-   * 
+   *
  */
 std::unique_ptr<PolySet> Polygon2d::tessellate() const
 {

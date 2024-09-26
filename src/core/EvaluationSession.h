@@ -1,14 +1,15 @@
 #pragma once
 
+#include <cstddef>
 #include <string>
 #include <utility>
 #include <vector>
 #include <boost/optional.hpp>
 
-#include "ContextMemoryManager.h"
-#include "function.h"
-#include "module.h"
-#include "Value.h"
+#include "core/ContextMemoryManager.h"
+#include "core/function.h"
+#include "core/module.h"
+#include "core/Value.h"
 
 class ContextFrame;
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+#include <cstddef>
 #include <string>
 
 #include <boost/filesystem.hpp>

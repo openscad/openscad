@@ -24,20 +24,24 @@
  *
  */
 
-#include "dxfdim.h"
-#include "Value.h"
-#include "function.h"
-#include "DxfData.h"
-#include "Builtins.h"
-#include "Parameters.h"
-#include "printutils.h"
-#include "fileutils.h"
+#include "io/dxfdim.h"
+#include "core/Value.h"
+#include "core/function.h"
+#include "io/DxfData.h"
+#include "core/Builtins.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
+#include "io/fileutils.h"
 #include "handle_dep.h"
-#include "degree_trig.h"
+#include "utils/degree_trig.h"
 
+#include <utility>
+#include <cstddef>
 #include <cmath>
 #include <sstream>
 #include <cstdint>
+#include <string>
+#include <vector>
 
 #include <boost/filesystem.hpp>
 std::unordered_map<std::string, double> dxf_dim_cache;

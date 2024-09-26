@@ -23,61 +23,64 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include <sstream>
 #include <iostream>
 #include <memory>
+#include <string>
+#include <vector>
 
-#include "boost-utils.h"
-#include "Builtins.h"
-#include "BuiltinContext.h"
-#include "CommentParser.h"
-#include "RenderVariables.h"
+#include "utils/boost-utils.h"
+#include "core/Builtins.h"
+#include "core/BuiltinContext.h"
+#include "core/customizer/CommentParser.h"
+#include "core/RenderVariables.h"
 #include "openscad.h"
-#include "GeometryCache.h"
-#include "SourceFileCache.h"
-#include "MainWindow.h"
-#include "OpenSCADApp.h"
-#include "parsersettings.h"
-#include "RenderSettings.h"
-#include "Preferences.h"
-#include "printutils.h"
+#include "geometry/GeometryCache.h"
+#include "core/SourceFileCache.h"
+#include "gui/MainWindow.h"
+#include "gui/OpenSCADApp.h"
+#include "core/parsersettings.h"
+#include "glview/RenderSettings.h"
+#include "gui/Preferences.h"
+#include "utils/printutils.h"
 #include "core/node.h"
-#include "CSGNode.h"
-#include "Expression.h"
-#include "ScopeContext.h"
-#include "progress.h"
-#include "dxfdim.h"
-#include "Settings.h"
-#include "AboutDialog.h"
-#include "FontListDialog.h"
-#include "LibraryInfoDialog.h"
-#include "ScintillaEditor.h"
+#include "core/CSGNode.h"
+#include "core/Expression.h"
+#include "core/ScopeContext.h"
+#include "core/progress.h"
+#include "io/dxfdim.h"
+#include "gui/Settings.h"
+#include "gui/AboutDialog.h"
+#include "gui/FontListDialog.h"
+#include "gui/LibraryInfoDialog.h"
+#include "gui/ScintillaEditor.h"
 #ifdef ENABLE_OPENCSG
-#include "CSGTreeEvaluator.h"
-#include "OpenCSGRenderer.h"
+#include "core/CSGTreeEvaluator.h"
+#include "glview/preview/OpenCSGRenderer.h"
 #ifdef USE_LEGACY_RENDERERS
-#include "LegacyOpenCSGRenderer.h"
+#include "glview/preview/LegacyOpenCSGRenderer.h"
 #endif
 #include <opencsg.h>
 #endif
-#include "ProgressWidget.h"
-#include "ThrownTogetherRenderer.h"
+#include "gui/ProgressWidget.h"
+#include "glview/preview/ThrownTogetherRenderer.h"
 #ifdef USE_LEGACY_RENDERERS
-#include "LegacyThrownTogetherRenderer.h"
+#include "glview/preview/LegacyThrownTogetherRenderer.h"
 #endif
-#include "CSGTreeNormalizer.h"
-#include "QGLView.h"
-#include "MouseSelector.h"
+#include "glview/preview/CSGTreeNormalizer.h"
+#include "gui/QGLView.h"
+#include "gui/MouseSelector.h"
 #ifdef Q_OS_MACOS
-#include "CocoaUtils.h"
+#include "platform/CocoaUtils.h"
 #endif
 #ifdef Q_OS_WIN
 #include <QScreen>
 #endif
-#include "PlatformUtils.h"
+#include "platform/PlatformUtils.h"
 #ifdef OPENSCAD_UPDATER
-#include "AutoUpdater.h"
+#include "gui/AutoUpdater.h"
 #endif
-#include "TabManager.h"
+#include "gui/TabManager.h"
 
 #include <QMenu>
 #include <QTime>
@@ -101,11 +104,12 @@
 #include <QTemporaryFile>
 #include <QDockWidget>
 #include <QClipboard>
+#include <QProcess>
 #include <memory>
 #include <string>
-#include "QWordSearchField.h"
+#include "gui/QWordSearchField.h"
 #include <QSettings> //Include QSettings for direct operations on settings arrays
-#include "QSettingsCached.h"
+#include "gui/QSettingsCached.h"
 
 #ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
@@ -131,8 +135,8 @@ std::string SHA256HashString(std::string aString){
 #endif // ifdef ENABLE_PYTHON
 
 #define ENABLE_3D_PRINTING
-#include "OctoPrint.h"
-#include "PrintService.h"
+#include "gui/OctoPrint.h"
+#include "gui/PrintService.h"
 
 #include <fstream>
 
@@ -140,34 +144,34 @@ std::string SHA256HashString(std::string aString){
 #include <boost/version.hpp>
 #include <sys/stat.h>
 
-#include "CGALRenderer.h"
-#include "LegacyCGALRenderer.h"
-#include "CGALWorker.h"
+#include "glview/cgal/CGALRenderer.h"
+#include "glview/cgal/LegacyCGALRenderer.h"
+#include "gui/CGALWorker.h"
 
 #ifdef ENABLE_CGAL
-#include "cgal.h"
-#include "cgalutils.h"
-#include "CGALCache.h"
-#include "CGAL_Nef_polyhedron.h"
-#include "CGALHybridPolyhedron.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/cgal/CGALCache.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
 #endif // ENABLE_CGAL
 
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif // ENABLE_MANIFOLD
 
-#include "GeometryEvaluator.h"
+#include "geometry/GeometryEvaluator.h"
 
-#include "PrintInitDialog.h"
-//#include "ExportPdfDialog.h"
-#include "input/InputDriverEvent.h"
-#include "input/InputDriverManager.h"
+#include "gui/PrintInitDialog.h"
+//#include "gui/ExportPdfDialog.h"
+#include "gui/input/InputDriverEvent.h"
+#include "gui/input/InputDriverManager.h"
 #include <cstdio>
 #include <memory>
 #include <QtNetwork>
 #include <utility>
 
-#include "qt-obsolete.h" // IWYU pragma: keep
+#include "gui/qt-obsolete.h" // IWYU pragma: keep
 
 static const int autoReloadPollingPeriodMS = 200;
 
@@ -2100,28 +2104,18 @@ void MainWindow::action3DPrint()
   const unsigned int dim = 3;
   if (!canExport(dim)) return;
 
-  const auto printService = PrintService::inst();
-  auto printInitDialog = new PrintInitDialog();
-  auto printInitResult = printInitDialog->exec();
-  printInitDialog->deleteLater();
-  if (printInitResult == QDialog::Rejected) {
-    return;
-  }
-
-  const auto selectedService = printInitDialog->getResult();
+  const auto selectedService = PrintInitDialog::getResult();
   Preferences::Preferences::inst()->updateGUI();
 
-  switch (selectedService) {
-  case print_service_t::PRINT_SERVICE:
+  if (selectedService == print_service_t::PRINT_SERVICE) {
+    const auto printService = PrintService::inst();
     LOG("Sending design to print service %1$s...", printService->getDisplayName().toStdString());
     sendToPrintService();
-    break;
-  case print_service_t::OCTOPRINT:
+  } else if (selectedService == print_service_t::OCTOPRINT) {
     LOG("Sending design to OctoPrint...");
     sendToOctoPrint();
-    break;
-  default:
-    break;
+  } else if (selectedService == print_service_t::LOCALSLICER) {
+    sendToLocalSlicer();
   }
 #endif // ifdef ENABLE_3D_PRINTING
 }
@@ -2210,6 +2204,64 @@ void MainWindow::sendToOctoPrint()
   }
 
   updateStatusBar(nullptr);
+#endif // ifdef ENABLE_3D_PRINTING
+}
+
+void MainWindow::sendToLocalSlicer()
+{
+#ifdef ENABLE_3D_PRINTING
+  const QString slicer = QString::fromStdString(Settings::Settings::localSlicerExecutable.value());
+
+  const QString fileFormat = QString::fromStdString(Settings::Settings::localSlicerFileFormat.value());
+  FileFormat exportFileFormat{FileFormat::STL};
+  if (fileFormat == "OBJ") {
+    exportFileFormat = FileFormat::OBJ;
+  } else if (fileFormat == "OFF") {
+    exportFileFormat = FileFormat::OFF;
+  } else if (fileFormat == "ASCIISTL") {
+    exportFileFormat = FileFormat::ASCIISTL;
+  } else if (fileFormat == "AMF") {
+    exportFileFormat = FileFormat::AMF;
+  } else if (fileFormat == "3MF") {
+    exportFileFormat = FileFormat::_3MF;
+  } else {
+    exportFileFormat = FileFormat::STL;
+  }
+
+  const auto tmpPath = QDir::temp().filePath("OpenSCAD.XXXXXX."+fileFormat.toLower());
+  auto exportFile = std::make_unique<QTemporaryFile>(tmpPath);
+  if (!exportFile->open()) {
+    LOG(message_group::Error, "Could not open temporary file '%1$s'.", tmpPath.toStdString());
+    return;
+  }
+  const auto exportFileName = exportFile->fileName();
+  exportFile->close();
+  this->allTempFiles.push_back(std::move(exportFile));
+
+  QString userFileName;
+  if (activeEditor->filepath.isEmpty()) {
+    userFileName = exportFileName;
+  } else {
+    QFileInfo fileInfo{activeEditor->filepath};
+    userFileName = fileInfo.baseName() + fileFormat.toLower();
+  }
+
+  ExportInfo exportInfo = createExportInfo(exportFileFormat, exportFileName, activeEditor->filepath);
+  exportFileByName(this->root_geom, exportInfo);
+
+  QProcess process(this);
+  process.setProcessChannelMode(QProcess::MergedChannels);
+#ifdef Q_OS_MACOS
+  if(!process.startDetached("open", {"-a", slicer, exportFileName})) {
+#else	  
+  if(!process.startDetached(slicer, {exportFileName})) {
+#endif
+    LOG(message_group::Error, "Could not start Slicer '%1$s': %2$s", slicer.toStdString(), process.errorString().toStdString());
+    const auto output = process.readAll();
+    if (output.length() > 0) {
+      LOG(message_group::Error, "Output: %1$s", output.toStdString());
+    }
+  }
 #endif // ifdef ENABLE_3D_PRINTING
 }
 

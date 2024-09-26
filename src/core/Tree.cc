@@ -1,9 +1,11 @@
-#include "Tree.h"
-#include "NodeDumper.h"
+#include "core/Tree.h"
+#include "core/NodeDumper.h"
 
+#include <memory>
 #include <cassert>
 #include <algorithm>
 #include <sstream>
+#include <string>
 #include <tuple>
 
 Tree::~Tree()

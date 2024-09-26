@@ -24,9 +24,15 @@
  *
  */
 
-#include "Context.h"
-#include "function.h"
-#include "printutils.h"
+#include <utility>
+#include <memory>
+#include <cstddef>
+#include <string>
+#include <vector>
+
+#include "core/Context.h"
+#include "core/function.h"
+#include "utils/printutils.h"
 
 Context::Context(EvaluationSession *session) :
   ContextFrame(session),

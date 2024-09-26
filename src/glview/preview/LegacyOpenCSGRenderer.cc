@@ -24,14 +24,17 @@
  *
  */
 
-#include "enums.h"
-#include "system-gl.h"
-#include "LegacyOpenCSGRenderer.h"
-#include "LegacyRendererUtils.h"
+#include "core/enums.h"
+#include "glview/system-gl.h"
+#include "glview/preview/LegacyOpenCSGRenderer.h"
+#include "glview/LegacyRendererUtils.h"
 
+#include <memory>
 #include <memory.h>
 #include <utility>
-#include "PolySet.h"
+#include "geometry/PolySet.h"
+
+#include <vector>
 
 #ifdef ENABLE_OPENCSG
 
@@ -60,7 +63,7 @@ private:
 
 // Primitive for depth rendering using OpenCSG
 std::unique_ptr<OpenCSGPrim> createCSGPrimitive(const CSGChainObject& csgobj, OpenCSG::Operation operation,
-                                bool highlight_mode, bool background_mode, OpenSCADOperator type, 
+                                bool highlight_mode, bool background_mode, OpenSCADOperator type,
                                 const LegacyOpenCSGRenderer &renderer) {
   auto prim = std::make_unique<OpenCSGPrim>(operation, csgobj.leaf->polyset->getConvexity(), renderer);
   prim->polyset = csgobj.leaf->polyset;

@@ -23,9 +23,9 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "DBusInputDriver.h"
-#include "InputDriverManager.h"
-#include "printutils.h"
+#include "gui/input/DBusInputDriver.h"
+#include "gui/input/InputDriverManager.h"
+#include "utils/printutils.h"
 #include "openscad_adaptor.h"
 #include "openscad_interface.h"
 

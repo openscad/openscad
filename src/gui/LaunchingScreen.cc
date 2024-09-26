@@ -2,11 +2,11 @@
 #include <QListWidgetItem>
 
 #include "version.h"
-#include "LaunchingScreen.h"
+#include "gui/LaunchingScreen.h"
 #include "ui_LaunchingScreen.h"
-#include "QSettingsCached.h"
+#include "gui/QSettingsCached.h"
 
-#include "UIUtils.h"
+#include "gui/UIUtils.h"
 
 LaunchingScreen *LaunchingScreen::inst = nullptr;
 

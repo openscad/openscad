@@ -1,17 +1,22 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
-#include "ManifoldGeometry.h"
-#include "Polygon2d.h"
-#include "manifold/cross_section.h"
-#include "manifold/manifold.h"
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "PolySetUtils.h"
-#include "manifoldutils.h"
-#include "ColorMap.h"
-#include "src/glview/RenderSettings.h"
+#include "geometry/manifold/ManifoldGeometry.h"
+#include "geometry/Polygon2d.h"
+#include <sstream>
+#include <utility>
+#include <cstdint>
+#include <manifold/cross_section.h>
+#include <manifold/manifold.h>
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySetUtils.h"
+#include "geometry/manifold/manifoldutils.h"
+#include "glview/ColorMap.h"
+#include "glview/RenderSettings.h"
+#include <cstddef>
+#include <string>
 #include <memory>
 #ifdef ENABLE_CGAL
-#include "cgalutils.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
 
 namespace {
@@ -150,7 +155,7 @@ std::shared_ptr<PolySet> ManifoldGeometry::toPolySet() const {
       return getFaceFrontColorIndex();
     }
     const auto & color = colorIt->second;
-    
+
     auto pair = colorToIndex.insert({color, ps->colors.size()});
     if (pair.second) {
       ps->colors.push_back(color);
@@ -196,7 +201,7 @@ public:
 
   void operator()(HDS& hds) override {
     CGAL_Polybuilder B(hds, true);
-  
+
     B.begin_surface(meshgl.NumVert(), meshgl.NumTri());
     for (size_t vertid = 0; vertid < meshgl.NumVert(); vertid++)
       B.add_vertex(CGALUtils::vector_convert<CGALPoint>(meshgl.GetVertPos(vertid)));
@@ -234,7 +239,7 @@ ManifoldGeometry ManifoldGeometry::binOp(const ManifoldGeometry& lhs, const Mani
   auto mani = lhs.manifold_.Boolean(rhs.manifold_, opType);
   auto originalIDToColor = lhs.originalIDToColor_;
   auto subtractedIDs = lhs.subtractedIDs_;
-  
+
   auto originalIDs = lhs.originalIDs_;
   originalIDs.insert(rhs.originalIDs_.begin(), rhs.originalIDs_.end());
 
@@ -317,7 +322,7 @@ void ManifoldGeometry::transform(const Transform3d& mat) {
     mat(0, 1), mat(1, 1), mat(2, 1),
     mat(0, 2), mat(1, 2), mat(2, 2),
     mat(0, 3), mat(1, 3), mat(2, 3)
-  );                            
+  );
   manifold_ = getManifold().Transform(glMat);
 }
 

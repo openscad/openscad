@@ -1,13 +1,17 @@
-#include "OffscreenContextGLX.h"
+#include "glview/OffscreenContextGLX.h"
+
+#include <memory>
 
 #define GLAD_GLX_IMPLEMENTATION
 #include <glad/glx.h>
 
+#include <cstddef>
 #include <iostream>
 #include <sstream>
+#include <string>
 
-#include "scope_guard.hpp"
-#include "printutils.h"
+#include "utils/scope_guard.hpp"
+#include "utils/printutils.h"
 
 namespace {
 
@@ -97,12 +101,12 @@ public:
     const auto root = DefaultRootWindow(this->display);
     XSetWindowAttributes windowAttributes = {
       .event_mask = StructureNotifyMask | ExposureMask | KeyPressMask,
-      .colormap = XCreateColormap(this->display, root, visinfo->visual, AllocNone), 
+      .colormap = XCreateColormap(this->display, root, visinfo->visual, AllocNone),
     };
     unsigned long mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
-    this->xWindow = 
-      XCreateWindow(this->display, root, 0, 0, this->width(), this->height(), 0, 
+    this->xWindow =
+      XCreateWindow(this->display, root, 0, 0, this->width(), this->height(), 0,
                     visinfo->depth, InputOutput, visinfo->visual, mask, &windowAttributes);
     XSync(this->display, false);
     if (xlibLastError != Success) {
@@ -170,14 +174,14 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextGLX(size_t width, size_t
   PRINTDB("GLAD: Loaded GLX %d.%d", glxMajor % glxMinor);
 
   // We require GLX >= 1.3.
-  // However, glxQueryVersion sometimes returns an earlier version than is actually available, so 
+  // However, glxQueryVersion sometimes returns an earlier version than is actually available, so
   // we also accept GLX < 1.3 as long as glXGetVisualFromFBConfig() exists.
   // FIXME: Figure out if this is still relevant with GLAD, as we may want to check functions anyway?
   if (glxMajor == 1 && glxMinor <= 2 && glXGetVisualFromFBConfig == nullptr) {
     LOG("Error: GLX version 1.3 functions missing. Your GLX version: %1$d.%2$d", glxMajor, glxMinor);
     return nullptr;
   }
-  
+
   if (!ctx->createGLXContext(majorGLVersion, minorGLVersion, compatibilityProfile)) {
     return nullptr;
   }

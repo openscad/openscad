@@ -24,18 +24,23 @@
  *
  */
 
-#include "PolySetBuilder.h"
-#include <PolySet.h>
-#include "Geometry.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySet.h"
+#include "geometry/Geometry.h"
 
 #ifdef ENABLE_CGAL
-#include "cgalutils.h"
-#include "CGAL_Nef_polyhedron.h"
-#include "CGALHybridPolyhedron.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
 #endif
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
+
+#include <utility>
+#include <cstdint>
+#include <memory>
+#include <vector>
 
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
   : convex_(convex), dim_(dim)
@@ -119,7 +124,7 @@ void PolySetBuilder::beginPolygon(int nvertices) {
 void PolySetBuilder::addVertex(int ind)
 {
   // Ignore consecutive duplicate indices
-  if (current_polygon_.empty() || 
+  if (current_polygon_.empty() ||
       ind != current_polygon_.back() && ind != current_polygon_.front()) {
     current_polygon_.push_back(ind);
   }

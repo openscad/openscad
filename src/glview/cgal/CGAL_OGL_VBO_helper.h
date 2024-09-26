@@ -26,10 +26,14 @@
 
 #pragma once
 
-#include "system-gl.h"
-#include "VertexArray.h"
-#include "ext/CGAL/OGL_helper.h"
+#include "glview/system-gl.h"
+#include "glview/VertexArray.h"
+#include "CGAL/OGL_helper.h"
+
+#include <utility>
+#include <memory>
 #include <cstdlib>
+#include <vector>
 
 using namespace CGAL::OGL;
 
@@ -294,7 +298,7 @@ public:
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
       glGenBuffers(1, &halffacets_elements_vbo);
     }
-    
+
     // FIXME: We don't know the size of this VertexArray in advanced, so we have to deal with some fallback mechanism for filling in the data. This complicates code quite a bit
     VertexArray halffacets_array(std::make_unique<VertexStateFactory>(), halffacets_states, halffacets_vertices_vbo, halffacets_elements_vbo);
     halffacets_array.addSurfaceData();

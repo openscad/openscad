@@ -1,7 +1,8 @@
-#include "ViewportControl.h"
-#include "printutils.h"
-#include "MainWindow.h"
-#include "QGLView.h"
+#include "gui/ViewportControl.h"
+#include "utils/printutils.h"
+#include "gui/MainWindow.h"
+#include "gui/QGLView.h"
+#include <iostream>
 #include <boost/filesystem.hpp>
 #include <cfloat>
 #include <QDoubleSpinBox>

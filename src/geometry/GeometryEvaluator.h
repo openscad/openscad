@@ -1,8 +1,8 @@
 #pragma once
 
-#include "NodeVisitor.h"
-#include "enums.h"
-#include "Geometry.h"
+#include "core/NodeVisitor.h"
+#include "core/enums.h"
+#include "geometry/Geometry.h"
 
 #include <memory>
 #include <utility>

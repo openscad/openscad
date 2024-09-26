@@ -28,10 +28,10 @@
 
 #ifndef NULLGL
 
-#include "ColorMap.h"
-#include "CGAL_OGL_Polyhedron.h"
-#include "CGAL_OGL_VBO_helper.h"
-#include "printutils.h"
+#include "glview/ColorMap.h"
+#include "glview/cgal/CGAL_OGL_Polyhedron.h"
+#include "glview/cgal/CGAL_OGL_VBO_helper.h"
+#include "utils/printutils.h"
 
 class CGAL_OGL_VBOPolyhedron : public VBOPolyhedron, public CGAL_OGL_Polyhedron
 {

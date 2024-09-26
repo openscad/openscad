@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>504</width>
-    <height>246</height>
+    <height>265</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -85,21 +85,8 @@
      <property name="flat">
       <bool>false</bool>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QPushButton" name="printServiceButton">
-        <property name="text">
-         <string>%1</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="autoExclusive">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="1">
        <widget class="QPushButton" name="octoPrintButton">
         <property name="text">
          <string>OctoPrint</string>
@@ -112,7 +99,7 @@
         </property>
        </widget>
       </item>
-      <item>
+      <item row="0" column="3">
        <spacer name="horizontalSpacer">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -124,6 +111,39 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item row="0" column="0">
+       <widget class="QPushButton" name="printServiceButton">
+        <property name="text">
+         <string>%1</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="LocalSlicerButton">
+        <property name="text">
+         <string>Send to local Slicer</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="3">
+       <widget class="QCheckBox" name="checkBoxRememberSelection">
+        <property name="text">
+         <string>Remember Selection</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

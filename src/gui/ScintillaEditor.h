@@ -2,6 +2,8 @@
 
 #include <functional>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
@@ -14,8 +16,8 @@
 #include <QVBoxLayout>
 #include <Qsci/qsciscintilla.h>
 
-#include "Editor.h"
-#include "ScadApi.h"
+#include "gui/Editor.h"
+#include "gui/ScadApi.h"
 
 // don't need the full definition, because it confuses Qt
 class ScadLexer;
