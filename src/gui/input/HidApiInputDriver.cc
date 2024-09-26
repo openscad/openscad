@@ -29,6 +29,7 @@
  *  Public Domain.
  */
 
+#include <sstream>
 #include <cstdint>
 #include <bitset>
 #include <boost/format.hpp>

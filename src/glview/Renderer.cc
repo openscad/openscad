@@ -6,6 +6,7 @@
 #include "platform/PlatformUtils.h"
 #include "glview/system-gl.h"
 
+#include <sstream>
 #include <Eigen/LU>
 #include <fstream>
 #include <string>

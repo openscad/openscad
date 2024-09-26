@@ -25,6 +25,7 @@
 #include "libsvg/circle.h"
 #include "libsvg/util.h"
 
+#include <sstream>
 #include <string>
 
 namespace libsvg {
