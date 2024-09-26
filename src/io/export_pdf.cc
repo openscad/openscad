@@ -5,6 +5,7 @@
 // #include "version.h"
 #include "utils/version_helper.h"
 
+#include <ostream>
 #include <memory>
 #include <string>
 #include <cmath>

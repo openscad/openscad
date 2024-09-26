@@ -25,6 +25,7 @@
  *
  */
 
+#include <ostream>
 #include <memory>
 #include "io/export.h"
 

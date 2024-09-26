@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ostream>
 #include <memory>
 #include <cstddef>
 #include <utility>

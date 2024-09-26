@@ -28,6 +28,7 @@
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
 
+#include <ostream>
 #include <memory>
 #include <cstddef>
 

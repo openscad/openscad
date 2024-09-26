@@ -1,6 +1,7 @@
 #include "core/NodeDumper.h"
 #include "core/State.h"
 #include "core/ModuleInstantiation.h"
+#include <ostream>
 #include <string>
 #include <sstream>
 #include <boost/regex.hpp>
