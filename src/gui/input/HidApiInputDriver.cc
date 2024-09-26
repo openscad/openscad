@@ -29,6 +29,7 @@
  *  Public Domain.
  */
 
+#include <ios>
 #include <sstream>
 #include <cstdint>
 #include <bitset>

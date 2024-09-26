@@ -32,6 +32,7 @@
 #include "core/Parameters.h"
 #include "core/Builtins.h"
 
+#include <ios>
 #include <utility>
 #include <memory>
 #include <sstream>
