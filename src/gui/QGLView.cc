@@ -33,6 +33,7 @@
 #include "glview/glew-utils.h"
 #endif
 
+#include <iostream>
 #include <QApplication>
 #include <QWheelEvent>
 #include <QCheckBox>

@@ -38,6 +38,7 @@
 
 
 #include "glview/system-gl.h"
+#include <iostream>
 #include <cstdint>
 #include <memory>
 #include <GL/gl.h>
