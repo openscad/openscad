@@ -24,6 +24,8 @@
  *
  */
 
+#include "core/Value.h"
+
 #include <ostream>
 #include <utility>
 #include <cstdint>
@@ -36,7 +38,6 @@
 #include <vector>
 #include <boost/lexical_cast.hpp>
 
-#include "core/Value.h"
 #include "core/EvaluationSession.h"
 #include "utils/printutils.h"
 #include "utils/StackCheck.h"

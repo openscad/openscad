@@ -24,11 +24,12 @@
  *
  */
 
+#include "core/EvaluationSession.h"
+
 #include <cstddef>
 #include <string>
 
 #include "core/ContextFrame.h"
-#include "core/EvaluationSession.h"
 #include "utils/printutils.h"
 
 size_t EvaluationSession::push_frame(ContextFrame *frame)

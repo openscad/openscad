@@ -23,11 +23,12 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "utils/calc.h"
 
 #include <cmath>
+
 #include <cassert>
 #include <algorithm>
-#include "utils/calc.h"
 #include "geometry/Grid.h"
 #include "utils/degree_trig.h"
 

@@ -24,8 +24,9 @@
  *
  */
 
-#include "utils/printutils.h"
 #include "gui/PrintService.h"
+
+#include "utils/printutils.h"
 
 std::mutex PrintService::printServiceMutex;
 

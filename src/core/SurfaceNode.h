@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "core/node.h"
+#include "core/Value.h"
 
 struct img_data_t
 {

@@ -22,9 +22,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "libsvg/polygon.h"
+
 #include <boost/tokenizer.hpp>
 
-#include "libsvg/polygon.h"
 #include "libsvg/util.h"
 
 #include <string>

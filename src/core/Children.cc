@@ -24,11 +24,12 @@
  *
  */
 
+#include "core/Children.h"
+
 #include <memory>
 #include <cstddef>
 #include <vector>
 
-#include "core/Children.h"
 #include "core/ScopeContext.h"
 
 std::shared_ptr<AbstractNode> Children::instantiate(const std::shared_ptr<AbstractNode> &target) const

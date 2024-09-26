@@ -1,9 +1,10 @@
+#include "gui/TabWidget.h"
+
 #include <QTabBar>
 #include <QStackedWidget>
 #include <QMouseEvent>
 #include <QList>
 
-#include "gui/TabWidget.h"
 
 TabWidget::TabWidget(QWidget *parent) : QTabBar(parent)
 {

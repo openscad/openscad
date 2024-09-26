@@ -24,6 +24,8 @@
  *
  */
 
+#include "gui/UIUtils.h"
+
 #include <QDir>
 #include <QFileInfo>
 #include <QUrl>
@@ -31,7 +33,6 @@
 #include <QDesktopServices>
 
 #include "version.h"
-#include "gui/UIUtils.h"
 #include "platform/PlatformUtils.h"
 #include "gui/QSettingsCached.h"
 

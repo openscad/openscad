@@ -22,6 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "libsvg/rect.h"
+
 #include <sstream>
 #include <cstdlib>
 #include <iostream>
@@ -30,7 +32,6 @@
 
 #include <boost/format.hpp>
 
-#include "libsvg/rect.h"
 #include "libsvg/util.h"
 
 namespace libsvg {

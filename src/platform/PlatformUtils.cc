@@ -1,10 +1,11 @@
+#include "platform/PlatformUtils.h"
+
 #include <cstdint>
 #include <cstdlib>
 #include <iomanip>
 #include <string>
 #include <vector>
 
-#include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
 
 #ifdef OPENSCAD_SUFFIX

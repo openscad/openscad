@@ -1,3 +1,5 @@
+#include "gui/ScintillaEditor.h"
+
 #include <memory>
 #include <ciso646> // C alternative tokens (xor)
 #include <cstdlib>
@@ -13,7 +15,6 @@
 #include <QShortcut>
 #include <Qsci/qscicommandset.h>
 
-#include "gui/ScintillaEditor.h"
 #include "gui/Preferences.h"
 #include "platform/PlatformUtils.h"
 #include "gui/Settings.h"

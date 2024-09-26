@@ -1,7 +1,8 @@
+#include "core/BuiltinContext.h"
+
 #include <cmath>
 
 #include "core/Builtins.h"
-#include "core/BuiltinContext.h"
 #include "core/Expression.h"
 #include "core/function.h"
 #include "utils/printutils.h"
