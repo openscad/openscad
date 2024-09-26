@@ -55,35 +55,38 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   double tsd_z = 0;
   size_t avg_n = 0;
 
-  for (size_t pi=0; pi<ps->indices.size(); pi++) {
-    const auto &t = ps->indices.at(pi);
-    output << "polygon { " << t.size() + 1 << ", \n";
-    for (size_t i=0; i<t.size(); i++) {
+  for (size_t polygon_index=0; polygon_index<ps->indices.size(); polygon_index++) {
+    const auto &polygon = ps->indices[polygon_index];
+    output << "polygon { " << polygon.size() + 1 << ", \n";
+    for (size_t i=0; i<polygon.size(); i++) {
       if (i)
         output << ", ";
-      output << "<" << ps->vertices[t.at(i)].x() << ", " << -ps->vertices[t.at(i)].y() << ", " << ps->vertices[t.at(i)].z() << ">";
-      avg_x += ps->vertices[t.at(i)].x();
-      avg_y += -ps->vertices[t.at(i)].y();
-      avg_z += ps->vertices[t.at(i)].z();
-      tsd_x += ps->vertices[t.at(i)].x() * ps->vertices[t.at(i)].x();
-      tsd_y += ps->vertices[t.at(i)].y() * ps->vertices[t.at(i)].y();
-      tsd_z += ps->vertices[t.at(i)].z() * ps->vertices[t.at(i)].z();
+      const auto & x = ps->vertices[polygon[i]].x();
+      const auto & y = ps->vertices[polygon[i]].y();
+      const auto & z = ps->vertices[polygon[i]].z();
+      output << "<" << x << ", " << y << ", " << z << ">";
+      avg_x += x;
+      avg_y += y;
+      avg_z += z;
+      tsd_x += x * x;
+      tsd_y += y * y;
+      tsd_z += z * z;
       avg_n++;
     }
-    double r = 1.0, g = 1.0, b = 1.0, a = 0.0;
+    output << ", <" << ps->vertices[polygon[0]].x() << ", " << ps->vertices[polygon[0]].y() << ", " << ps->vertices[polygon[0]].z() << ">";
+    float r = 1.0, g = 1.0, b = 1.0, a = 0.0;
     if (has_color) {
-      auto color_index = ps->color_indices[pi];
+      auto color_index = ps->color_indices[polygon_index];
       if (color_index >= 0) {
         auto color = ps->colors[color_index];
-        r = std::clamp(double(color[0]), 0., 1.);
-        g = std::clamp(double(color[1]), 0., 1.);
-        b = std::clamp(double(color[2]), 0., 1.);
-        a = std::clamp(1.0 - color[3], 0., 1.);
+        r = float(color[0]);
+        g = float(color[1]);
+        b = float(color[2]);
+        a = 1.0 - color[3];
       }
     }
     if (r == 0 && g == 0 && b == 0)  // work around for black objects in 5185
       g = 1.0;
-    output << ", <" << ps->vertices[t.at(0)].x() << ", " << -ps->vertices[t.at(0)].y() << ", " << ps->vertices[t.at(0)].z() << ">";
     output << "\n";
     output << "texture { pigment { color rgbf <" << r << ", " << g << ", " << b << ", " << a << "> } }\n";
     output << "finish { MATERIAL } interior { MATERIAL_INT }\n";
@@ -99,15 +102,15 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   double sd_z = sqrt(tsd_z / avg_n - pow(center_z, 2.));
   double dist = pow(sd_x * sd_x + sd_y * sd_y + sd_z * sd_z, 1/3.);
 
-  double l_x = center_x + sd_x * 5;  // '5' is chosen arbitrarily
-  double l_y = center_y + sd_y * 5;
-  double l_z = center_z + sd_z * 5;
+  double light_vector_x = center_x + sd_x * 5;  // '5' is chosen arbitrarily
+  double light_vector_y = center_y + sd_y * 5;
+  double light_vector_z = center_z + sd_z * 5;
 
-  std::vector<double> lx { -l_x, 0, +l_x };
-  std::vector<double> ly { -l_y, 0, +l_y };
-  std::vector<double> lz { -l_z, 0, +l_z };
+  std::vector<double> lx { -light_vector_x, 0, +light_vector_x };
+  std::vector<double> ly { -light_vector_y, 0, +light_vector_y };
+  std::vector<double> lz { -light_vector_z, 0, +light_vector_z };
 
-  constexpr const double brightness = 0.2;  // 1.0 is way too bright
+  constexpr float brightness = 0.2;  // 1.0 is way too bright
 
   for(auto cur_lx: lx) {
 	  for(auto cur_ly: ly) {
@@ -115,8 +118,7 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 			  output << "light_source { <" << cur_lx << ", " << cur_ly << ", " << cur_lz << "> color rgb <" << brightness << ", " << brightness << ", " << brightness << "> }\n";
 	  }
   }
-
-  output << "camera { look_at <0, 0, 0> location <0, " << dist * 15 << ", 0> sky <0, 0, 1> rotate <55, clock * 3, clock - 25> }\n";
+  output << "camera { look_at <0, 0, 0> location <0, " << -dist * 15 << ", 0> up <0, 0, 1> right <1, 0, 0> sky <0, 0, 1> rotate <-55, clock * 3, clock + 25> }\n";
   output << "#include \"rad_def.inc\"\n";
   output << "global_settings { photons { count 20000 autostop 0 jitter .4 } radiosity { Rad_Settings(Radiosity_Normal, off, off) } }\n";
 }
