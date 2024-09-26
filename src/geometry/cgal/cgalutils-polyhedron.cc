@@ -6,6 +6,7 @@
 #include "utils/printutils.h"
 #include "geometry/Grid.h"
 
+#include <ostream>
 #include <memory>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 

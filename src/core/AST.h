@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ostream>
 #include <string>
 #include <memory>
 #include <boost/filesystem.hpp>

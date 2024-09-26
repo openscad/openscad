@@ -1,6 +1,7 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #pragma once
 
+#include <iostream>
 #include <CGAL/Surface_mesh.h>
 #include <cstddef>
 #include <unordered_map>

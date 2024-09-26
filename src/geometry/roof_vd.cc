@@ -1,6 +1,7 @@
 // This file is a part of openscad. Everything implied is implied.
 // Author: Alexey Korepanov <kaikaikai@yandex.ru>
 
+#include <ostream>
 #include <cstdint>
 #include <memory>
 

@@ -26,6 +26,7 @@
 #include "utils/compiler_specific.h"
 #include "core/Expression.h"
 #include "core/Value.h"
+#include <ostream>
 #include <cstdint>
 #include <cmath>
 #include <cassert>

@@ -1,3 +1,4 @@
+#include <ostream>
 #include "core/Value.h"
 #include "core/Expression.h"
 #include "core/FunctionType.h"

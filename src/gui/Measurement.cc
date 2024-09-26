@@ -26,6 +26,7 @@
 
 #include "gui/Measurement.h"
 
+#include <sstream>
 #include <string>
 
 Measurement::Measurement()

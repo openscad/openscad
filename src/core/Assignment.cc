@@ -27,6 +27,7 @@
 #include "core/Assignment.h"
 #include "core/customizer/Annotation.h"
 #include "core/Expression.h"
+#include <ostream>
 #include <sstream>
 #include <string>
 

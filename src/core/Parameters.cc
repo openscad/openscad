@@ -24,6 +24,7 @@
  *
  */
 
+#include <sstream>
 #include <memory>
 #include <cstddef>
 #include <set>

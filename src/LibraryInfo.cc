@@ -1,4 +1,5 @@
 #include "LibraryInfo.h"
+#include <sstream>
 #include <glib.h>
 #include <string>
 #include <vector>

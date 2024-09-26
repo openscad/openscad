@@ -24,6 +24,7 @@
  *
  */
 
+#include <ostream>
 #include <memory>
 #include <vector>
 
