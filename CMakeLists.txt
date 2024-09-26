@@ -198,7 +198,11 @@ file(MAKE_DIRECTORY ${OPENSCAD_LIB_OUTPUT_DIR})
 
 target_compile_options(OpenSCAD PRIVATE "$<$<CONFIG:DEBUG>:-DDEBUG>")
 
-target_compile_definitions(OpenSCAD PRIVATE _REENTRANT UNICODE _UNICODE)
+target_compile_definitions(OpenSCAD PRIVATE
+  _REENTRANT
+  UNICODE
+  _UNICODE
+  _USE_MATH_DEFINES)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")

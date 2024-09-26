@@ -24,8 +24,6 @@
  *
  */
 
-// NOLINTNEXTLINE(bugprone-reserved-identifier)
-#define _USE_MATH_DEFINES
 #include <cmath>
 #include <cassert>
 #include <algorithm>

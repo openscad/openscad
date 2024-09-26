@@ -26,8 +26,6 @@
 //
 // Trigonometry function taking degrees, accurate for 30, 45, 60 and 90, etc.
 //
-// NOLINTNEXTLINE(bugprone-reserved-identifier)
-#define _USE_MATH_DEFINES
 #include <cmath>
 #include <limits>
 
