@@ -3,6 +3,7 @@
 
 #include "geometry/cgal/cgal.h"
 #include "geometry/cgal/cgalutils.h"
+#include <exception>
 #include <memory>
 #include <CGAL/convex_hull_3.h>
 

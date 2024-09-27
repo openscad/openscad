@@ -24,6 +24,7 @@
  *
  */
 
+#include <exception>
 #include <utility>
 #include <fstream>
 #include <string>
