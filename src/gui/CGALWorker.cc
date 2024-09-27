@@ -1,4 +1,5 @@
 #include "gui/CGALWorker.h"
+#include <exception>
 #include <memory>
 #include <QThread>
 

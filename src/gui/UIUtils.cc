@@ -26,6 +26,7 @@
 
 #include "gui/UIUtils.h"
 
+#include <exception>
 #include <QDir>
 #include <QFileInfo>
 #include <QUrl>
