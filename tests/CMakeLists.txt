@@ -1134,7 +1134,7 @@ add_cmdline_test(stlexport              EXPERIMENTAL OPENSCAD SUFFIX stl FILES $
 add_cmdline_test(manifold-stlexport     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --enable=manifold --render)
 add_cmdline_test(objexport              EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render --enable=predictible-output)
 if (LIB3MF_FOUND)
-add_cmdline_test(3mfexport              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
+add_cmdline_test(3mfexport              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output --enable=manifold)
 endif()
 
 # Trivial Export/Import files: Sanity-checks bidirectional file format import/export
