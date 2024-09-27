@@ -3,8 +3,9 @@
 
 #ifdef ENABLE_CGAL
 
-#include "geometry/cgal/cgal.h"
 #include "geometry/cgal/cgalutils.h"
+
+#include "geometry/cgal/cgal.h"
 #include "geometry/PolySet.h"
 #include "utils/printutils.h"
 #include "geometry/Polygon2d.h"

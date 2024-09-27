@@ -23,8 +23,9 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"
+
+#include "gui/input/InputDriverEvent.h"
 #include "gui/MainWindow.h"
 #include <sstream>
 #include <QAction>

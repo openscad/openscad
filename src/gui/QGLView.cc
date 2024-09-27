@@ -24,8 +24,9 @@
  *
  */
 
-#include "gui/qtgettext.h"
 #include "gui/QGLView.h"
+
+#include "gui/qtgettext.h"
 #include "gui/Preferences.h"
 #include "glview/Renderer.h"
 #include "utils/degree_trig.h"

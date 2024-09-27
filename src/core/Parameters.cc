@@ -24,6 +24,8 @@
  *
  */
 
+#include "core/Parameters.h"
+
 #include <sstream>
 #include <memory>
 #include <cstddef>
@@ -33,7 +35,6 @@
 #include <vector>
 
 #include "core/Expression.h"
-#include "core/Parameters.h"
 
 Parameters::Parameters(ContextFrame&& frame, Location loc) :
   loc(std::move(loc)),

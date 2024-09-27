@@ -1,3 +1,5 @@
+#include "gui/TabManager.h"
+
 #include <QFileInfo>
 #include <QFile>
 #include <QDir>
@@ -12,7 +14,6 @@
 #include <Qsci/qscicommandset.h>
 
 #include "gui/Editor.h"
-#include "gui/TabManager.h"
 #include "gui/TabWidget.h"
 #include "gui/ScintillaEditor.h"
 #include "gui/Preferences.h"

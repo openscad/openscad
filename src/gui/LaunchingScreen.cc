@@ -1,8 +1,9 @@
+#include "gui/LaunchingScreen.h"
+
 #include <QFileInfo>
 #include <QListWidgetItem>
 
 #include "version.h"
-#include "gui/LaunchingScreen.h"
 #include "ui_LaunchingScreen.h"
 #include "gui/QSettingsCached.h"
 

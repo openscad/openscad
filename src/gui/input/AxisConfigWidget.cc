@@ -24,11 +24,12 @@
  *
  */
 
+#include "gui/input/AxisConfigWidget.h"
+
 #include <QWidget>
 #include <cstddef>
 #include <string>
 
-#include "gui/input/AxisConfigWidget.h"
 
 #include "gui/Settings.h"
 #include "gui/input/InputDriverManager.h"

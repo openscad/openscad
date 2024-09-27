@@ -23,6 +23,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "gui/input/JoystickInputDriver.h"
+
 #include <string>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -31,7 +33,6 @@
 #include <utility>
 
 #include "gui/input/InputDriverManager.h"
-#include "gui/input/JoystickInputDriver.h"
 #include "utils/printutils.h"
 
 #include <unistd.h>

@@ -24,11 +24,12 @@
  *
  */
 
+#include "gui/PrintInitDialog.h"
+
 #include <QString>
 
 #include "gui/Settings.h"
 #include "gui/PrintService.h"
-#include "gui/PrintInitDialog.h"
 #include "gui/QSettingsCached.h"
 
 PrintInitDialog::PrintInitDialog()

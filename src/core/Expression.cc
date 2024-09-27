@@ -23,8 +23,9 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "utils/compiler_specific.h"
 #include "core/Expression.h"
+
+#include "utils/compiler_specific.h"
 #include "core/Value.h"
 #include <ostream>
 #include <cstdint>

@@ -1,6 +1,8 @@
 // This file is a part of openscad. Everything implied is implied.
 // Author: Alexey Korepanov <kaikaikai@yandex.ru>
 
+#include "geometry/roof_ss.h"
+
 #include <memory>
 #include <boost/shared_ptr.hpp>
 
@@ -17,7 +19,6 @@
 #include "geometry/GeometryUtils.h"
 #include "geometry/ClipperUtils.h"
 #include "core/RoofNode.h"
-#include "geometry/roof_ss.h"
 #include "geometry/PolySetBuilder.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \

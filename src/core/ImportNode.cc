@@ -24,8 +24,9 @@
  *
  */
 
-#include "io/import.h"
 #include "core/ImportNode.h"
+
+#include "io/import.h"
 
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
