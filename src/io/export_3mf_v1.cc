@@ -123,17 +123,6 @@ static bool append_polyset(std::shared_ptr<const PolySet> ps, PLib3MFModelMeshOb
       return false;
   }
 
-  std::vector<DWORD> ids;
-  for(int i=0;i<sorted_ps->colors.size();i++) {
-    DWORD nBaseMaterialID;
-    std::string colname=std::string("Color") + std::to_string(i);
-
-    result = lib3mf_basematerial_addmaterialutf8(pBaseMaterial, colname.c_str(), sorted_ps->colors[i][0], sorted_ps->colors[i][1], sorted_ps->colors[i][2],&nBaseMaterialID);
-
-    ids.push_back(nBaseMaterialID);
-  }
-  
-
   PLib3MFDefaultPropertyHandler * defprophandler=nullptr ; 
   if(lib3mf_object_createdefaultpropertyhandler(mesh, &defprophandler) != LIB3MF_OK) {
       export_3mf_error("Could not create def prop handler.", model);
@@ -144,10 +133,10 @@ static bool append_polyset(std::shared_ptr<const PolySet> ps, PLib3MFModelMeshOb
   if(sorted_ps->color_indices.size() > 0) {
     int ind=sorted_ps->color_indices[0];	  
     if(lib3mf_defaultpropertyhandler_setcolorrgba(defprophandler,
-		   sorted_ps->colors[ind][3],
-		   sorted_ps->colors[ind][2],
-		   sorted_ps->colors[ind][1],
-		   sorted_ps->colors[ind][0]) != LIB3MF_OK) {
+		   sorted_ps->colors[ind][0]*255.0f,
+		   sorted_ps->colors[ind][1]*255.0f,
+		   sorted_ps->colors[ind][2]*255.0f,
+		   sorted_ps->colors[ind][3]*255.0f) != LIB3MF_OK) {
       export_3mf_error("Could not set def color.", model);
       return false;
     }
@@ -162,10 +151,10 @@ static bool append_polyset(std::shared_ptr<const PolySet> ps, PLib3MFModelMeshOb
   for(int i=0;i<sorted_ps->color_indices.size();i++) {
     int ind=sorted_ps->color_indices[i];	  
     if(ind < 0) continue;
-    tri_prop.m_Red = sorted_ps->colors[ind][3];
-    tri_prop.m_Green = sorted_ps->colors[ind][2];
-    tri_prop.m_Blue = sorted_ps->colors[ind][1];
-    tri_prop.m_Alpha = sorted_ps->colors[ind][0];
+    tri_prop.m_Red = sorted_ps->colors[ind][0]*255.0f;
+    tri_prop.m_Green = sorted_ps->colors[ind][1]*255.0f;
+    tri_prop.m_Blue = sorted_ps->colors[ind][2]*255.0f;
+    tri_prop.m_Alpha = sorted_ps->colors[ind][3]*255.0f;
     if(i < sorted_ps->indices.size()) {
       if(lib3mf_propertyhandler_setsinglecolor(prophandler, i, &tri_prop) != LIB3MF_OK) {
         export_3mf_error("Can't set Triangle Color.", model);
