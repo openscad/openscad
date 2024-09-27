@@ -4,11 +4,7 @@
 #include <ostream>
 #include <cstdint>
 #include <memory>
-
-// NOLINTNEXTLINE(bugprone-reserved-identifier)
-#define _USE_MATH_DEFINES
 #include <cmath>
-
 #include <cstddef>
 #include <algorithm>
 #include <map>
