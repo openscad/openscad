@@ -125,8 +125,7 @@ static bool append_polyset(std::shared_ptr<const PolySet> ps, Lib3MF::PWrapper& 
 
     std::vector<Lib3MF_uint32> ids;
     for(int i=0;i<out_ps->colors.size();i++) {
-      sLib3MFColor col;
-      std::string colname="Color" + i;
+      std::string colname=std::string("Color") + std::to_string(i);
       Lib3MF_uint32 nBaseMaterialID = pBaseMaterial->AddMaterial(colname.c_str(), wrapper->FloatRGBAToColor(
 		out_ps->colors[i][0], out_ps->colors[i][1], out_ps->colors[i][2], out_ps->colors[i][3]));
       ids.push_back(nBaseMaterialID);
@@ -135,9 +134,10 @@ static bool append_polyset(std::shared_ptr<const PolySet> ps, Lib3MF::PWrapper& 
     sLib3MFTriangleProperties tri_prop;
     tri_prop.m_ResourceID=pBaseMaterial->GetResourceID();
     for(int i=0;i<out_ps->color_indices.size();i++) {
-      tri_prop.m_PropertyIDs[0]=ids[out_ps->color_indices[i]];
-      tri_prop.m_PropertyIDs[1]=ids[out_ps->color_indices[i]];
-      tri_prop.m_PropertyIDs[2]=ids[out_ps->color_indices[i]];
+      int ind=out_ps->color_indices[i]; 
+      if(ind == -1) continue;
+      for(int j=0;j<3;j++)	    
+        tri_prop.m_PropertyIDs[j]=ids[ind];
       mesh->SetTriangleProperties(i,tri_prop);
     }
 
