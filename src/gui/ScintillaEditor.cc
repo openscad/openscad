@@ -1,5 +1,6 @@
 #include "gui/ScintillaEditor.h"
 
+#include <functional>
 #include <exception>
 #include <memory>
 #include <ciso646> // C alternative tokens (xor)

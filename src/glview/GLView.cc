@@ -7,6 +7,7 @@
 #include "utils/degree_trig.h"
 #include "glview/hershey.h"
 
+#include <functional>
 #include <memory>
 #include <cmath>
 #include <cstdio>
