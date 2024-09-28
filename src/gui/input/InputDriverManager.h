@@ -25,6 +25,7 @@
  */
 #pragma once
 
+#include <list>
 #include <QWidget>
 #include <QThread>
 #include <QTimer>

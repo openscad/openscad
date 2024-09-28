@@ -25,6 +25,7 @@
  */
 #include "core/FreetypeRenderer.h"
 
+#include <limits>
 #include <cstdint>
 #include <memory>
 #include <cmath>
