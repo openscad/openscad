@@ -22,40 +22,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <sstream>
-#include <string>
-#include "libsvg/line.h"
+#include "libsvg/polygon.h"
+
+#include <boost/tokenizer.hpp>
+
 #include "libsvg/util.h"
+
+#include <string>
 
 namespace libsvg {
 
-const std::string line::name("line");
+const std::string polygon::name("polygon");
 
 void
-line::set_attrs(attr_map_t& attrs, void *context)
+polygon::set_attrs(attr_map_t& attrs, void *context)
 {
   shape::set_attrs(attrs, context);
-  this->x = parse_double(attrs["x1"]);
-  this->y = parse_double(attrs["y1"]);
-  this->x2 = parse_double(attrs["x2"]);
-  this->y2 = parse_double(attrs["y2"]);
+  this->points = attrs["points"];
 
+  using tokenizer = boost::tokenizer<boost::char_separator<char>>;
+  boost::char_separator<char> sep(" ,");
+  tokenizer tokens(this->points, sep);
+
+  double x = 0.0;
   path_t path;
-  path.push_back(Eigen::Vector3d(x, y, 0));
-  path.push_back(Eigen::Vector3d(x2, y2, 0));
-  offset_path(path_list, path, get_stroke_width(), get_stroke_linecap());
-}
+  bool first = true;
+  for (const auto& v : tokens) {
+    double p = parse_double(v);
 
-const std::string
-line::dump() const
-{
-  std::stringstream s;
-  s << get_name()
-    << ": x1 = " << this->x
-    << ": y1 = " << this->y
-    << ": x2 = " << this->x2
-    << ": y2 = " << this->y2;
-  return s.str();
+    if (first) {
+      x = p;
+    } else {
+      path.push_back(Eigen::Vector3d(x, p, 0));
+    }
+    first = !first;
+  }
+  if (!path.empty()) {
+    path.push_back(path[0]);
+  }
+  path_list.push_back(path);
 }
 
 } // namespace libsvg

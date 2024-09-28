@@ -22,44 +22,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <boost/tokenizer.hpp>
+#include "libsvg/group.h"
 
-#include "libsvg/polygon.h"
-#include "libsvg/util.h"
-
+#include <sstream>
+#include <cstdlib>
 #include <string>
+#include <iostream>
+
 
 namespace libsvg {
 
-const std::string polygon::name("polygon");
+const std::string group::name("g");
 
 void
-polygon::set_attrs(attr_map_t& attrs, void *context)
+group::set_attrs(attr_map_t& attrs, void *context)
 {
   shape::set_attrs(attrs, context);
-  this->points = attrs["points"];
-
-  using tokenizer = boost::tokenizer<boost::char_separator<char>>;
-  boost::char_separator<char> sep(" ,");
-  tokenizer tokens(this->points, sep);
-
-  double x = 0.0;
-  path_t path;
-  bool first = true;
-  for (const auto& v : tokens) {
-    double p = parse_double(v);
-
-    if (first) {
-      x = p;
-    } else {
-      path.push_back(Eigen::Vector3d(x, p, 0));
-    }
-    first = !first;
-  }
-  if (!path.empty()) {
-    path.push_back(path[0]);
-  }
-  path_list.push_back(path);
 }
 
-} // namespace libsvg
+const std::string
+group::dump() const
+{
+  std::stringstream s;
+  s << get_name()
+    << ": x = " << this->x
+    << ": y = " << this->y;
+  return s.str();
+}
+
+}

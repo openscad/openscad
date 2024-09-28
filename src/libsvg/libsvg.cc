@@ -22,6 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "libsvg/libsvg.h"
+
 #include <iostream>
 #include <memory>
 #include <map>
@@ -33,7 +35,6 @@
 #include <boost/format.hpp>
 #include <libxml/xmlreader.h>
 
-#include "libsvg/libsvg.h"
 
 #include "libsvg/shape.h"
 #include "libsvg/use.h"

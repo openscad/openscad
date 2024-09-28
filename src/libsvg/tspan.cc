@@ -22,41 +22,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <sstream>
-#include <cstdlib>
-#include <string>
-#include <iostream>
+#include "libsvg/tspan.h"
 
-#include "libsvg/ellipse.h"
+#include <sstream>
+#include <string>
+
 #include "libsvg/util.h"
 
 namespace libsvg {
 
-const std::string ellipse::name("ellipse");
+const std::string tspan::name("tspan");
 
 void
-ellipse::set_attrs(attr_map_t& attrs, void *context)
+tspan::set_attrs(attr_map_t& attrs, void *context)
 {
   shape::set_attrs(attrs, context);
-  this->x = parse_double(attrs["cx"]);
-  this->y = parse_double(attrs["cy"]);
-  this->rx = parse_double(attrs["rx"]);
-  this->ry = parse_double(attrs["ry"]);
-
-  path_t path;
-  draw_ellipse(path, get_x(), get_y(), get_radius_x(), get_radius_y(), context);
-  path_list.push_back(path);
+  this->x = parse_double(attrs["x"]);
+  this->y = parse_double(attrs["y"]);
+  this->dx = parse_double(attrs["dx"]);
+  this->dy = parse_double(attrs["dy"]);
 }
 
 const std::string
-ellipse::dump() const
+tspan::dump() const
 {
   std::stringstream s;
   s << get_name()
     << ": x = " << this->x
     << ": y = " << this->y
-    << ": rx = " << this->rx
-    << ": ry = " << this->ry;
+    << ": dx = " << this->dx
+    << ": dy = " << this->dy;
   return s.str();
 }
 

@@ -22,6 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "libsvg/util.h"
+
 #include <ostream>
 #include <boost/spirit/include/qi.hpp>
 
@@ -32,7 +34,6 @@
 #include <boost/fusion/adapted/struct/adapt_struct.hpp>
 #include <boost/fusion/include/adapt_struct.hpp>
 
-#include "libsvg/util.h"
 
 BOOST_FUSION_ADAPT_STRUCT(libsvg::length_struct, (double, number)(std::string, unit))
 

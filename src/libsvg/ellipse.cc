@@ -22,31 +22,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "libsvg/ellipse.h"
+
 #include <sstream>
 #include <cstdlib>
 #include <string>
 #include <iostream>
 
-#include "libsvg/group.h"
+#include "libsvg/util.h"
 
 namespace libsvg {
 
-const std::string group::name("g");
+const std::string ellipse::name("ellipse");
 
 void
-group::set_attrs(attr_map_t& attrs, void *context)
+ellipse::set_attrs(attr_map_t& attrs, void *context)
 {
   shape::set_attrs(attrs, context);
+  this->x = parse_double(attrs["cx"]);
+  this->y = parse_double(attrs["cy"]);
+  this->rx = parse_double(attrs["rx"]);
+  this->ry = parse_double(attrs["ry"]);
+
+  path_t path;
+  draw_ellipse(path, get_x(), get_y(), get_radius_x(), get_radius_y(), context);
+  path_list.push_back(path);
 }
 
 const std::string
-group::dump() const
+ellipse::dump() const
 {
   std::stringstream s;
   s << get_name()
     << ": x = " << this->x
-    << ": y = " << this->y;
+    << ": y = " << this->y
+    << ": rx = " << this->rx
+    << ": ry = " << this->ry;
   return s.str();
 }
 
-}
+} // namespace libsvg

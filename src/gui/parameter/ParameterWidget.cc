@@ -23,10 +23,11 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "gui/parameter/ParameterWidget.h"
+
 #include <memory>
 #include <QWidget>
 
-#include "gui/parameter/ParameterWidget.h"
 
 #include "gui/parameter/GroupWidget.h"
 #include "gui/parameter/ParameterSpinBox.h"

@@ -22,41 +22,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <boost/tokenizer.hpp>
+#include "libsvg/line.h"
 
+#include <sstream>
 #include <string>
-#include "libsvg/polyline.h"
 #include "libsvg/util.h"
 
 namespace libsvg {
 
-const std::string polyline::name("polyline");
+const std::string line::name("line");
 
 void
-polyline::set_attrs(attr_map_t& attrs, void *context)
+line::set_attrs(attr_map_t& attrs, void *context)
 {
   shape::set_attrs(attrs, context);
-  this->points = attrs["points"];
+  this->x = parse_double(attrs["x1"]);
+  this->y = parse_double(attrs["y1"]);
+  this->x2 = parse_double(attrs["x2"]);
+  this->y2 = parse_double(attrs["y2"]);
 
-  using tokenizer = boost::tokenizer<boost::char_separator<char>>;
-  boost::char_separator<char> sep(" ,");
-  tokenizer tokens(this->points, sep);
-
-  double x = 0.0;
   path_t path;
-  bool first = true;
-  for (const auto& v : tokens) {
-    double p = parse_double(v);
-
-    if (first) {
-      x = p;
-    } else {
-      path.push_back(Eigen::Vector3d(x, p, 0));
-    }
-    first = !first;
-  }
-
+  path.push_back(Eigen::Vector3d(x, y, 0));
+  path.push_back(Eigen::Vector3d(x2, y2, 0));
   offset_path(path_list, path, get_stroke_width(), get_stroke_linecap());
+}
+
+const std::string
+line::dump() const
+{
+  std::stringstream s;
+  s << get_name()
+    << ": x1 = " << this->x
+    << ": y1 = " << this->y
+    << ": x2 = " << this->x2
+    << ": y2 = " << this->y2;
+  return s.str();
 }
 
 } // namespace libsvg

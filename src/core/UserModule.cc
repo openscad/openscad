@@ -24,11 +24,12 @@
  *
  */
 
+#include "core/UserModule.h"
+
 #include <ostream>
 #include <memory>
 #include <vector>
 
-#include "core/UserModule.h"
 #include "core/ModuleInstantiation.h"
 #include "core/node.h"
 #include "utils/exceptions.h"

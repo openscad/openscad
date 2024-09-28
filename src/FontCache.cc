@@ -24,6 +24,8 @@
  *
  */
 
+#include "FontCache.h"
+
 #include <cstdint>
 #include <iostream>
 #include <vector>
@@ -33,7 +35,6 @@
 #include <string>
 #include <utility>
 
-#include "FontCache.h"
 #include "platform/PlatformUtils.h"
 #include "utils/printutils.h"
 #include "utils/version_helper.h"

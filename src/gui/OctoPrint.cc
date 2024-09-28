@@ -24,8 +24,9 @@
  *
  */
 
-#include "gui/Settings.h"
 #include "gui/OctoPrint.h"
+
+#include "gui/Settings.h"
 
 #include <string>
 #include <utility>

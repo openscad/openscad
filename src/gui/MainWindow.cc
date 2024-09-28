@@ -23,6 +23,9 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "gui/MainWindow.h"
+
+#include <exception>
 #include <sstream>
 #include <iostream>
 #include <memory>
@@ -37,7 +40,6 @@
 #include "openscad.h"
 #include "geometry/GeometryCache.h"
 #include "core/SourceFileCache.h"
-#include "gui/MainWindow.h"
 #include "gui/OpenSCADApp.h"
 #include "core/parsersettings.h"
 #include "glview/RenderSettings.h"

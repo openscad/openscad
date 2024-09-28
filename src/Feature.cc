@@ -1,3 +1,5 @@
+#include "Feature.h"
+
 #include <cstdio>
 #include <iostream>
 #include <sstream>
@@ -7,7 +9,6 @@
 #include <boost/range/adaptor/transformed.hpp>
 #include <utility>
 
-#include "Feature.h"
 #include "utils/printutils.h"
 
 /**

@@ -22,6 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "libsvg/use.h"
+
 #include <sstream>
 #include <memory>
 #include <cstdlib>
@@ -29,7 +31,6 @@
 #include <string>
 #include <vector>
 
-#include "libsvg/use.h"
 #include "libsvg/util.h"
 
 namespace libsvg {

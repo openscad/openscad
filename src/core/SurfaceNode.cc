@@ -24,6 +24,8 @@
  *
  */
 
+#include "core/SurfaceNode.h"
+
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
 #include "core/node.h"
@@ -36,7 +38,6 @@
 #include "io/fileutils.h"
 #include "handle_dep.h"
 #include "lodepng/lodepng.h"
-#include "core/SurfaceNode.h"
 
 #include <utility>
 #include <memory>

@@ -22,53 +22,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include <sstream>
-#include <cstdlib>
-#include <string>
-#include <iostream>
+#pragma once
 
-#include "libsvg/svgpage.h"
+#include <exception>
+#include <utility>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "libsvg/shape.h"
 
 namespace libsvg {
 
-const std::string svgpage::name("svg");
-
-svgpage::svgpage() : width({0.0, unit_t::UNDEFINED}), height({0.0, unit_t::UNDEFINED})
+class SvgException : public std::exception
 {
-}
+public:
+  SvgException(std::string message) : message(std::move(message)) { }
+
+  [[nodiscard]] const char *what() const noexcept override
+  {
+    return message.c_str();
+  }
+
+private:
+  std::string message;
+};
+
+using shapes_list_t = std::vector<std::shared_ptr<shape>>;
+
+shapes_list_t *
+libsvg_read_file(const char *filename, void *context);
 
 void
-svgpage::set_attrs(attr_map_t& attrs, void *context)
-{
-  this->x = 0;
-  this->y = 0;
-  this->width = parse_length(attrs["width"]);
-  this->height = parse_length(attrs["height"]);
-  this->viewbox = parse_viewbox(attrs["viewBox"]);
-  this->alignment = parse_alignment(attrs["preserveAspectRatio"]);
+libsvg_free(shapes_list_t *shapes);
 
-  const auto *ctx = reinterpret_cast<const fnContext *>(context);
-  selected = (ctx->selector) ? ctx->selector(this) : false;
 }
-
-const std::string
-svgpage::dump() const
-{
-  std::stringstream s;
-  s << get_name()
-    << ": x = " << this->x
-    << ": y = " << this->y
-    << ": width = " << this->width
-    << ": height = " << this->height
-    << ": viewbox = " << this->viewbox.x
-    << "," << this->viewbox.y
-    << "," << this->viewbox.width
-    << "," << this->viewbox.height
-    << (this->viewbox.is_valid ? " (valid)" : " (invalid)")
-    << ": alignment = " << this->alignment.x
-    << "," << this->alignment.y
-    << (this->alignment.meet ? " meet" : " slice");
-  return s.str();
-}
-
-} // namespace libsvg

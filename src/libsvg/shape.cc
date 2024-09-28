@@ -22,6 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "libsvg/shape.h"
+
 #include <iostream>
 #include <memory>
 #include <cstdio>
@@ -33,7 +35,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/spirit/include/qi.hpp>
 
-#include "libsvg/shape.h"
 #include "libsvg/circle.h"
 #include "libsvg/ellipse.h"
 #include "libsvg/line.h"

@@ -1,6 +1,8 @@
 // This file is a part of openscad. Everything implied is implied.
 // Author: Alexey Korepanov <kaikaikai@yandex.ru>
 
+#include "core/RoofNode.h"
+
 #include <utility>
 #include <memory>
 #include <sstream>
@@ -10,7 +12,6 @@
 #include "core/Builtins.h"
 #include "core/Parameters.h"
 #include "core/Children.h"
-#include "core/RoofNode.h"
 
 static std::shared_ptr<AbstractNode> builtin_roof(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
 {

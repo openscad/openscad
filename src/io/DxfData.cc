@@ -24,13 +24,11 @@
  *
  */
 
-#include <memory>
+#include "io/DxfData.h"
 
-// NOLINTNEXTLINE(bugprone-reserved-identifier)
-#define _USE_MATH_DEFINES
+#include <memory>
 #include <cmath>
 
-#include "io/DxfData.h"
 #include "geometry/Grid.h"
 #include "utils/printutils.h"
 #include "utils/calc.h"

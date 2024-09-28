@@ -22,37 +22,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#pragma once
+#include "libsvg/text.h"
 
-#include <utility>
-#include <memory>
+#include <sstream>
 #include <string>
-#include <vector>
-
-#include "libsvg/shape.h"
+#include "libsvg/util.h"
 
 namespace libsvg {
 
-class SvgException : public std::exception
-{
-public:
-  SvgException(std::string message) : message(std::move(message)) { }
-
-  [[nodiscard]] const char *what() const noexcept override
-  {
-    return message.c_str();
-  }
-
-private:
-  std::string message;
-};
-
-using shapes_list_t = std::vector<std::shared_ptr<shape>>;
-
-shapes_list_t *
-libsvg_read_file(const char *filename, void *context);
+const std::string text::name("text");
 
 void
-libsvg_free(shapes_list_t *shapes);
-
+text::set_attrs(attr_map_t& attrs, void *context)
+{
+  shape::set_attrs(attrs, context);
+  this->x = parse_double(attrs["x"]);
+  this->y = parse_double(attrs["y"]);
+  this->dx = parse_double(attrs["dx"]);
+  this->dy = parse_double(attrs["dy"]);
 }
+
+const std::string
+text::dump() const
+{
+  std::stringstream s;
+  s << get_name()
+    << ": x = " << this->x
+    << ": y = " << this->y
+    << ": dx = " << this->dx
+    << ": dy = " << this->dy;
+  return s.str();
+}
+
+} // namespace libsvg

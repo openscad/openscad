@@ -1,7 +1,8 @@
+#include "core/parsersettings.h"
+
 #include <string>
 #include <vector>
 
-#include "core/parsersettings.h"
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
 #include "platform/PlatformUtils.h"

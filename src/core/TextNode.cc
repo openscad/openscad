@@ -24,6 +24,8 @@
  *
  */
 
+#include "core/TextNode.h"
+
 #include <utility>
 #include <memory>
 #include <vector>
@@ -35,7 +37,6 @@
 #include "utils/printutils.h"
 #include "core/Builtins.h"
 
-#include "core/TextNode.h"
 #include "core/FreetypeRenderer.h"
 
 #include <boost/assign/std/vector.hpp>

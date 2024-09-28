@@ -24,6 +24,8 @@
  *
  */
 
+#include "core/ContextMemoryManager.h"
+
 #include <utility>
 #include <memory>
 #include <deque>
@@ -32,7 +34,6 @@
 #include <vector>
 
 #include "core/Context.h"
-#include "core/ContextMemoryManager.h"
 #include "core/Value.h"
 
 /*

@@ -23,6 +23,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "core/FreetypeRenderer.h"
+
 #include <cstdint>
 #include <memory>
 #include <cmath>
@@ -37,7 +39,6 @@
 
 #include "FontCache.h"
 #include "core/DrawingCallback.h"
-#include "core/FreetypeRenderer.h"
 #include "utils/calc.h"
 
 #include FT_OUTLINE_H

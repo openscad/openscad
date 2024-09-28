@@ -24,6 +24,8 @@
  */
 
 
+#include "RenderStatistic.h"
+
 #include <iostream>
 #include <memory>
 #include <fstream>
@@ -46,7 +48,6 @@
 #include "geometry/manifold/manifoldutils.h"
 #endif // ENABLE_MANIFOLD
 
-#include "RenderStatistic.h"
 
 class GeometryList;
 
