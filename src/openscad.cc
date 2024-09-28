@@ -25,46 +25,49 @@
  */
 
 #include "openscad.h"
-#include "CommentParser.h"
-#include "RenderVariables.h"
+#include "core/customizer/CommentParser.h"
+#include "core/RenderVariables.h"
 #include "core/node.h"
-#include "SourceFile.h"
-#include "BuiltinContext.h"
-#include "Value.h"
-#include "export.h"
-#include "Builtins.h"
-#include "printutils.h"
+#include "core/SourceFile.h"
+#include "core/BuiltinContext.h"
+#include "core/Value.h"
+#include "io/export.h"
+#include "core/Builtins.h"
+#include "utils/printutils.h"
 #include "handle_dep.h"
 #include "Feature.h"
-#include "parsersettings.h"
-#include "RenderSettings.h"
-#include "PlatformUtils.h"
+#include "core/parsersettings.h"
+#include "glview/RenderSettings.h"
+#include "platform/PlatformUtils.h"
 #include "LibraryInfo.h"
-#include "StackCheck.h"
+#include "utils/StackCheck.h"
 #include "FontCache.h"
-#include "OffscreenView.h"
-#include "GeometryEvaluator.h"
+#include "glview/OffscreenView.h"
+#include "geometry/GeometryEvaluator.h"
 #include "RenderStatistic.h"
-#include "ParameterObject.h"
-#include "ParameterSet.h"
+#include "core/customizer/ParameterObject.h"
+#include "core/customizer/ParameterSet.h"
 #include "openscad_mimalloc.h"
+#include <sstream>
+#include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 #include <fstream>
 
 #ifdef ENABLE_MANIFOLD
-#include "manifoldutils.h"
+#include "geometry/manifold/manifoldutils.h"
 #endif
 
 #ifdef ENABLE_CGAL
-#include "CGAL_Nef_polyhedron.h"
-#include "cgalutils.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/cgalutils.h"
 #endif
 
-#include "CSGNode.h"
-#include "CSGTreeEvaluator.h"
+#include "core/CSGNode.h"
+#include "core/CSGTreeEvaluator.h"
 
-#include "Camera.h"
+#include "glview/Camera.h"
 #include <chrono>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -80,10 +83,10 @@
 #endif
 
 #ifdef __APPLE__
-#include "CocoaUtils.h"
-#include "AppleEvents.h"
+#include "platform/CocoaUtils.h"
+#include "gui/AppleEvents.h"
   #ifdef OPENSCAD_UPDATER
-    #include "SparkleAutoUpdater.h"
+    #include "gui/SparkleAutoUpdater.h"
   #endif
 #endif
 
@@ -276,7 +279,7 @@ Camera get_camera(const po::variables_map& vm)
 }
 
 #ifndef OPENSCAD_NOGUI
-#include "QSettingsCached.h"
+#include "gui/QSettingsCached.h"
 #define OPENSCAD_QTGUI 1
 #endif
 
@@ -627,25 +630,25 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
 #ifdef OPENSCAD_QTGUI
 #include <QtPlugin>
-#include "MainWindow.h"
-#include "OpenSCADApp.h"
-#include "LaunchingScreen.h"
-#include "QSettingsCached.h"
-#include "input/InputDriverManager.h"
+#include "gui/MainWindow.h"
+#include "gui/OpenSCADApp.h"
+#include "gui/LaunchingScreen.h"
+#include "gui/QSettingsCached.h"
+#include "gui/input/InputDriverManager.h"
 #ifdef ENABLE_HIDAPI
-#include "input/HidApiInputDriver.h"
+#include "gui/input/HidApiInputDriver.h"
 #endif
 #ifdef ENABLE_SPNAV
-#include "input/SpaceNavInputDriver.h"
+#include "gui/input/SpaceNavInputDriver.h"
 #endif
 #ifdef ENABLE_JOYSTICK
-#include "input/JoystickInputDriver.h"
+#include "gui/input/JoystickInputDriver.h"
 #endif
 #ifdef ENABLE_DBUS
-#include "input/DBusInputDriver.h"
+#include "gui/input/DBusInputDriver.h"
 #endif
 #ifdef ENABLE_QGAMEPAD
-#include "input/QGamepadInputDriver.h"
+#include "gui/input/QGamepadInputDriver.h"
 #endif
 #include <QString>
 #include <QStringList>
@@ -655,7 +658,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 #include <QProgressDialog>
 #include <QFutureWatcher>
 #include <QtConcurrentRun>
-#include "Settings.h"
+#include "gui/Settings.h"
 
 Q_DECLARE_METATYPE(Message);
 Q_DECLARE_METATYPE(std::shared_ptr<const Geometry>);

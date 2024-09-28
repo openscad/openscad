@@ -1,7 +1,9 @@
-#include "system-gl.h"
-#include "MouseSelector.h"
+#include "glview/system-gl.h"
+#include "gui/MouseSelector.h"
 
+#include <cstdint>
 #include <QOpenGLFramebufferObject>
+#include <string>
 #include <memory>
 /**
  * The selection is making use of a special shader, that renders each object in a color

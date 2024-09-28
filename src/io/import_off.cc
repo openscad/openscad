@@ -1,12 +1,18 @@
-#include "import.h"
+#include "io/import.h"
 #include "Feature.h"
-#include "PolySet.h"
-#include "printutils.h"
-#include "AST.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
+#include "core/AST.h"
+#include <ios>
+#include <cstdint>
+#include <memory>
 #include <charconv>
+#include <cstddef>
 #include <fstream>
 #include <sstream>
+#include <string>
 #include <locale>
+#include <vector>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -262,7 +268,7 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
         int b=getcolor(words[i++]);
         int a=i < words.size() ? getcolor(words[i++]) : 255;
         Color4f color(r, g, b, a);
-        
+
         auto iter_pair = color_indices.insert_or_assign(color, ps->colors.size());
         if (iter_pair.second) ps->colors.push_back(color); // inserted
         ps->color_indices.resize(face_idx, -1);

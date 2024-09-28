@@ -1,9 +1,13 @@
-#include "GeometryCache.h"
-#include "printutils.h"
-#include "Geometry.h"
+#include "geometry/GeometryCache.h"
+#include "utils/printutils.h"
+#include "geometry/Geometry.h"
+
+#include <memory>
+#include <cstddef>
+#include <string>
 
 #ifdef ENABLE_CGAL
-#include "CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #endif
 
 GeometryCache *GeometryCache::inst = nullptr;

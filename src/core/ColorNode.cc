@@ -24,15 +24,19 @@
  *
  */
 
-#include "ColorNode.h"
-#include "module.h"
-#include "ModuleInstantiation.h"
-#include "Builtins.h"
-#include "Children.h"
-#include "Parameters.h"
-#include "printutils.h"
+#include "core/ColorNode.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Builtins.h"
+#include "core/Children.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
+#include <utility>
+#include <memory>
 #include <cctype>
+#include <cstddef>
 #include <sstream>
+#include <string>
 #include <iterator>
 #include <unordered_map>
 #include <boost/algorithm/string/case_conv.hpp>

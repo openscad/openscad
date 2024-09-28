@@ -1,10 +1,12 @@
-#include "export.h"
-#include "PolySet.h"
-// #include "PolySetUtils.h"
-#include "printutils.h"
+#include "io/export.h"
+#include "geometry/PolySet.h"
+// #include "geometry/PolySetUtils.h"
+#include "utils/printutils.h"
 // #include "version.h"
-#include "version_helper.h"
+#include "utils/version_helper.h"
 
+#include <ostream>
+#include <memory>
 #include <string>
 #include <cmath>
 

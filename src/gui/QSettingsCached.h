@@ -7,7 +7,7 @@
 #include <mutex>
 #include <thread>
 
-#include "printutils.h"
+#include "utils/printutils.h"
 
 class QSettingsCached
 {

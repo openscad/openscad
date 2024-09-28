@@ -1,14 +1,16 @@
-#include "GLView.h"
-#include "system-gl.h"
-#include "ColorMap.h"
-#include "RenderSettings.h"
-#include "printutils.h"
-#include "Renderer.h"
-#include "degree_trig.h"
-#include "hershey.h"
+#include "glview/GLView.h"
+#include "glview/system-gl.h"
+#include "glview/ColorMap.h"
+#include "glview/RenderSettings.h"
+#include "utils/printutils.h"
+#include "glview/Renderer.h"
+#include "utils/degree_trig.h"
+#include "glview/hershey.h"
 
+#include <memory>
 #include <cmath>
 #include <cstdio>
+#include <string>
 
 #ifdef ENABLE_OPENCSG
 #include <opencsg.h>
@@ -402,7 +404,7 @@ void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
     case SelectionType::SELECTION_POINT:
     {
       double n=1/sqrt(3);
-      // create an octaeder	   
+      // create an octaeder
       //x- x+ y- y+ z- z+
       int sequence[]={ 2, 0, 4, 1, 2, 4, 0, 3, 4, 3, 1, 4, 0, 2, 5, 2, 1, 5, 3, 0, 5, 1, 3, 5 };
       glBegin(GL_TRIANGLES);
@@ -417,12 +419,12 @@ void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
 		case 3: glVertex3d(obj.p1[0],obj.p1[1]+vd,obj.p1[2]); break;
 		case 4: glVertex3d(obj.p1[0],obj.p1[1],obj.p1[2]-vd); break;
 		case 5: glVertex3d(obj.p1[0],obj.p1[1],obj.p1[2]+vd); break;
-          }		
-	}	
-      }	
+          }
+	}
+      }
       glEnd();
      }
-     break;	
+     break;
    case SelectionType::SELECTION_LINE:
      {
 	Vector3d diff=obj.p2-obj.p1;
@@ -433,8 +435,8 @@ void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
         glVertex3d(obj.p2[0]+wdir[0],obj.p2[1]+wdir[1],obj.p2[2]+wdir[2]);
         glVertex3d(obj.p1[0]+wdir[0],obj.p1[1]+wdir[1],obj.p1[2]+wdir[2]);
         glEnd();
-      }	
-      break;	
+      }
+      break;
   }
 }
 

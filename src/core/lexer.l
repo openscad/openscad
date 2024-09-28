@@ -31,16 +31,16 @@
 %{
 
 #include "handle_dep.h"
-#include "str_utf8_wrapper.h"
-#include "printutils.h"
-#include "parsersettings.h"
-#include "Assignment.h"
+#include "core/str_utf8_wrapper.h"
+#include "utils/printutils.h"
+#include "core/parsersettings.h"
+#include "core/Assignment.h"
 #include "parser.hxx"
-#include "SourceFile.h"
+#include "core/SourceFile.h"
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
-//#include "boost-utils.h"
+//#include "utils/boost-utils.h"
 namespace fs = boost::filesystem;
 
 //isatty for visual c++ and mingw-cross-env

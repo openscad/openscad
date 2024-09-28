@@ -1,5 +1,8 @@
 #pragma once
 #include <algorithm>
+#include <cstddef>
+#include <vector>
+
 #if ENABLE_TBB
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_for_each.h>

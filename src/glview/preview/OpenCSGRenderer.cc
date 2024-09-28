@@ -24,14 +24,17 @@
  *
  */
 
-#include "OpenCSGRenderer.h"
-#include "linalg.h"
-#include "system-gl.h"
+#include "glview/preview/OpenCSGRenderer.h"
+#include "geometry/linalg.h"
+#include "glview/system-gl.h"
 
 #include "Feature.h"
-#include "PolySet.h"
+#include "geometry/PolySet.h"
+#include <memory>
 #include <memory.h>
+#include <cstddef>
 #include <utility>
+#include <vector>
 
 #ifdef ENABLE_OPENCSG
 

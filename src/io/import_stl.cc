@@ -1,10 +1,15 @@
-#include "import.h"
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "printutils.h"
-#include "AST.h"
+#include "io/import.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "utils/printutils.h"
+#include "core/AST.h"
 
+#include <ios>
+#include <cstdint>
+#include <memory>
+#include <cstddef>
 #include <fstream>
+#include <string>
 #include <boost/predef.h>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>

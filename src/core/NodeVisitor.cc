@@ -1,5 +1,5 @@
-#include "NodeVisitor.h"
-#include "State.h"
+#include "core/NodeVisitor.h"
+#include "core/State.h"
 
 State NodeVisitor::nullstate(nullptr);
 

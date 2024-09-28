@@ -1,5 +1,10 @@
-#include "ClipperUtils.h"
-#include "printutils.h"
+#include "geometry/ClipperUtils.h"
+#include "utils/printutils.h"
+
+#include <utility>
+#include <memory>
+#include <cstddef>
+#include <vector>
 
 namespace ClipperUtils {
 

@@ -1,13 +1,13 @@
-#include "OpenSCADApp.h"
-#include "MainWindow.h"
+#include "gui/OpenSCADApp.h"
+#include "gui/MainWindow.h"
 #ifdef Q_OS_MACOS
-#include "EventFilter.h"
+#include "gui/EventFilter.h"
 #endif
 
 #include <QProgressDialog>
 #include <iostream>
 #include <boost/foreach.hpp>
-#include "QSettingsCached.h"
+#include "gui/QSettingsCached.h"
 
 OpenSCADApp::OpenSCADApp(int& argc, char **argv)
   : QApplication(argc, argv)

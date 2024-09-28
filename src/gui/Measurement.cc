@@ -24,7 +24,10 @@
  *
  */
 
-#include "Measurement.h"
+#include "gui/Measurement.h"
+
+#include <sstream>
+#include <string>
 
 Measurement::Measurement()
 {
@@ -48,7 +51,7 @@ void Measurement::startMeasureAngle(void)
   this->qglview->update();
   this->qglview->measure_state=MEASURE_ANG1;
 }
-QString Measurement::statemachine(QPoint mouse) 
+QString Measurement::statemachine(QPoint mouse)
 {
   if(qglview->measure_state == MEASURE_IDLE) return "";
   qglview->selectPoint(mouse.x(),mouse.y());

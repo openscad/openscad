@@ -1,7 +1,8 @@
-#include "ColorMap.h"
-#include "printutils.h"
-#include "PlatformUtils.h"
+#include "glview/ColorMap.h"
+#include "utils/printutils.h"
+#include "platform/PlatformUtils.h"
 
+#include <memory>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/filesystem.hpp>
 #include <cmath>

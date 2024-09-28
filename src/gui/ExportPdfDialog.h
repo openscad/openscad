@@ -26,8 +26,8 @@
 
 #pragma once
 
-#include "qtgettext.h"
-#include "export.h"
+#include "gui/qtgettext.h"
+#include "io/export.h"
 #include "ui_ExportPdfDialog.h"
 
 class ExportPdfDialog : public QDialog, public Ui::ExportPdfDialog

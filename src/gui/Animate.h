@@ -1,9 +1,11 @@
 #pragma once
 
-#include "qtgettext.h"
+#include <string>
+
+#include "gui/qtgettext.h"
 #include "ui_Animate.h"
 #include <QIcon>
-#include "input/InputDriverEvent.h"
+#include "gui/input/InputDriverEvent.h"
 
 class MainWindow;
 

@@ -24,12 +24,14 @@
  *
  */
 
-#include "VBORenderer.h"
-#include "PolySet.h"
-#include "CSGNode.h"
-#include "printutils.h"
-#include "hash.h" // IWYU pragma: keep
+#include "glview/VBORenderer.h"
+#include "geometry/PolySet.h"
+#include "core/CSGNode.h"
+#include "utils/printutils.h"
+#include "utils/hash.h" // IWYU pragma: keep
 
+#include <utility>
+#include <memory>
 #include <cstddef>
 #include <iomanip>
 #include <sstream>

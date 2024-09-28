@@ -1,7 +1,11 @@
 #pragma once
 
-#include "EvaluationSession.h"
-#include "ValueMap.h"
+#include <cstddef>
+#include <string>
+#include <vector>
+
+#include "core/EvaluationSession.h"
+#include "core/ValueMap.h"
 
 class ContextFrame
 {

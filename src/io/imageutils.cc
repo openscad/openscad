@@ -1,4 +1,5 @@
-#include "imageutils.h"
+#include "io/imageutils.h"
+#include <iostream>
 #include <cassert>
 #include <cstring>
 #include <fstream>

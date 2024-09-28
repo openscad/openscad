@@ -29,12 +29,13 @@
  *  Public Domain.
  */
 
-#include "input/SpaceNavInputDriver.h"
-#include "input/InputDriverManager.h"
+#include "gui/input/SpaceNavInputDriver.h"
+#include "gui/input/InputDriverManager.h"
 #include "utils/printutils.h"
 
 #include <spnav.h>
 #include <unistd.h>
+#include <string>
 
 void SpaceNavInputDriver::run()
 {

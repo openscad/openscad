@@ -1,12 +1,14 @@
-#include "import.h"
+#include "io/import.h"
 
+#include <ios>
 #include <memory>
-#include "printutils.h"
-#include "AST.h"
+#include <string>
+#include "utils/printutils.h"
+#include "core/AST.h"
 
 #ifdef ENABLE_CGAL
-#include "cgal.h"
-#include "CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #include <CGAL/IO/Nef_polyhedron_iostream_3.h>
 
 std::unique_ptr<CGAL_Nef_polyhedron> import_nef3(const std::string& filename, const Location& loc)

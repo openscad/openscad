@@ -26,21 +26,23 @@
 
 #pragma once
 
-#include "qtgettext.h"
+#include "gui/qtgettext.h"
 #include "ui_PrintInitDialog.h"
 
-enum class print_service_t { PRINT_SERVICE, OCTOPRINT };
+enum class print_service_t { NONE, PRINT_SERVICE, OCTOPRINT, LOCALSLICER };
 
 class PrintInitDialog : public QDialog, public Ui::PrintInitDialog
 {
   Q_OBJECT;
 public:
   PrintInitDialog();
-  print_service_t getResult() const { return this->result; }
+  static print_service_t getResult();
+  static QString serviceName(print_service_t service);
 
 public slots:
   void on_printServiceButton_clicked();
   void on_octoPrintButton_clicked();
+  void on_LocalSlicerButton_clicked();
   void on_okButton_clicked();
   void on_cancelButton_clicked();
 private:

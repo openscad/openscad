@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Generate list of files for translation. The output is saved to po/POTFILES
 # which is needed for the xgettext call.

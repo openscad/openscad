@@ -1,6 +1,7 @@
-#include "Animate.h"
-#include "printutils.h"
-#include "MainWindow.h"
+#include "gui/Animate.h"
+#include "utils/printutils.h"
+#include "gui/MainWindow.h"
+#include <iostream>
 #include <boost/filesystem.hpp>
 #include <QFormLayout>
 
