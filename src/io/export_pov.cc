@@ -47,14 +47,6 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
   auto has_color = !ps->color_indices.empty();
 
-  double avg_x = 0;
-  double avg_y = 0;
-  double avg_z = 0;
-  double tsd_x = 0;
-  double tsd_y = 0;
-  double tsd_z = 0;
-  size_t avg_n = 0;
-
   for (size_t polygon_index=0; polygon_index<ps->indices.size(); polygon_index++) {
     const auto &polygon = ps->indices[polygon_index];
     output << "polygon { " << polygon.size() + 1 << ", \n";
@@ -65,13 +57,6 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       const auto & y = ps->vertices[polygon[i]].y();
       const auto & z = ps->vertices[polygon[i]].z();
       output << "<" << x << ", " << y << ", " << z << ">";
-      avg_x += x;
-      avg_y += y;
-      avg_z += z;
-      tsd_x += x * x;
-      tsd_y += y * y;
-      tsd_z += z * z;
-      avg_n++;
     }
     output << ", <" << ps->vertices[polygon[0]].x() << ", " << ps->vertices[polygon[0]].y() << ", " << ps->vertices[polygon[0]].z() << ">";
     float r = 1.0, g = 1.0, b = 1.0, a = 0.0;
@@ -93,22 +78,24 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     output << "}\n";
   }
 
-  double center_x = avg_x / avg_n;
-  double center_y = avg_y / avg_n;
-  double center_z = avg_z / avg_n;
+  BoundingBox bbox = geom->getBoundingBox();
 
-  double sd_x = sqrt(tsd_x / avg_n - pow(center_x, 2.));
-  double sd_y = sqrt(tsd_y / avg_n - pow(center_y, 2.));
-  double sd_z = sqrt(tsd_z / avg_n - pow(center_z, 2.));
-  double dist = pow(sd_x * sd_x + sd_y * sd_y + sd_z * sd_z, 1/3.);
+  auto & min_x = bbox.min().x();
+  auto & min_y = bbox.min().y();
+  auto & min_z = bbox.min().z();
 
-  double light_vector_x = center_x + sd_x * 5;  // '5' is chosen arbitrarily
-  double light_vector_y = center_y + sd_y * 5;
-  double light_vector_z = center_z + sd_z * 5;
+  auto & max_x = bbox.max().x();
+  auto & max_y = bbox.max().y();
+  auto & max_z = bbox.max().z();
 
-  std::vector<double> lx { -light_vector_x, 0, +light_vector_x };
-  std::vector<double> ly { -light_vector_y, 0, +light_vector_y };
-  std::vector<double> lz { -light_vector_z, 0, +light_vector_z };
+  double dx = max_x - min_x;
+  double dy = max_y - min_y;
+  double dz = max_z - min_z;
+
+  constexpr double move_away_factor = 2.;
+  std::vector<double> lx { min_x - dx * move_away_factor, 0, max_x + dx * move_away_factor };
+  std::vector<double> ly { min_y - dy * move_away_factor, 0, max_y + dy * move_away_factor };
+  std::vector<double> lz { min_z - dz * move_away_factor, 0, max_z + dz * move_away_factor };
 
   constexpr float brightness = 0.2;  // 1.0 is way too bright
 
@@ -118,7 +105,10 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 			  output << "light_source { <" << cur_lx << ", " << cur_ly << ", " << cur_lz << "> color rgb <" << brightness << ", " << brightness << ", " << brightness << "> }\n";
 	  }
   }
-  output << "camera { look_at <0, 0, 0> location <0, " << -dist * 15 << ", 0> up <0, 0, 1> right <1, 0, 0> sky <0, 0, 1> rotate <-55, clock * 3, clock + 25> }\n";
+
+  output << "camera { look_at <" << (min_x + max_x) / 2 << ", " << (min_y + max_y) / 2 << ", " << (min_z + max_z) / 2 << "> "
+	  "location <" << min_x + dx * move_away_factor << ", " << min_y - dy * move_away_factor << ", " << min_z + dz * move_away_factor << "> "
+	  "up <0, 0, 1> right <1, 0, 0> sky <0, 0, 1> rotate <-55, clock * 3, clock + 25> }\n";
   output << "#include \"rad_def.inc\"\n";
   output << "global_settings { photons { count 20000 autostop 0 jitter .4 } radiosity { Rad_Settings(Radiosity_Normal, off, off) } }\n";
 }
