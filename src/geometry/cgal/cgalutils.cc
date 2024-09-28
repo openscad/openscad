@@ -13,6 +13,7 @@
 #include "core/node.h"
 #include "utils/degree_trig.h"
 
+#include <utility>
 #include <memory>
 #include <CGAL/Aff_transformation_3.h>
 #include <CGAL/normal_vector_newell_3.h>

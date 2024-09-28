@@ -2,6 +2,7 @@
 #include "utils/printutils.h"
 #include "platform/PlatformUtils.h"
 
+#include <utility>
 #include <exception>
 #include <memory>
 #include <boost/property_tree/json_parser.hpp>
