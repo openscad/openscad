@@ -1,5 +1,6 @@
 #include "geometry/GeometryUtils.h"
 
+#include <list>
 #include <utility>
 #include <boost/functional/hash.hpp>
 #include <cstddef>

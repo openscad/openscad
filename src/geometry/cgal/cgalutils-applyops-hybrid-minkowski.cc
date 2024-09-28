@@ -10,6 +10,7 @@
 #include "geometry/cgal/CGALHybridPolyhedron.h"
 #include "core/node.h"
 
+#include <list>
 #include <exception>
 #include <utility>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
