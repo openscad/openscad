@@ -1,5 +1,6 @@
 #pragma once
 
+#include <limits>
 #include <boost/filesystem.hpp>
 #include "utils/printutils.h"
 namespace fs = boost::filesystem;

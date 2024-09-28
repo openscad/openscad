@@ -24,6 +24,7 @@
  *
  */
 
+#include <limits>
 #include <utility>
 #include <memory>
 
