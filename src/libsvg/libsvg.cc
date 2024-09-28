@@ -24,6 +24,7 @@
  */
 #include "libsvg/libsvg.h"
 
+#include <utility>
 #include <iostream>
 #include <memory>
 #include <map>

@@ -3,6 +3,7 @@
 
 #include "geometry/roof_ss.h"
 
+#include <functional>
 #include <memory>
 #include <boost/shared_ptr.hpp>
 

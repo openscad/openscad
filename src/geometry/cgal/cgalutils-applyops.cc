@@ -16,6 +16,7 @@
 #endif
 #include "core/node.h"
 
+#include <utility>
 #include <exception>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>

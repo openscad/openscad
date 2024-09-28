@@ -3,6 +3,7 @@
 #include "gui/qtgettext.h"
 #include "ui_ErrorLog.h"
 #include "utils/printutils.h"
+#include <list>
 #include <QStandardItemModel>
 
 enum errorLog_column {

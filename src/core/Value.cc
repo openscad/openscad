@@ -26,6 +26,7 @@
 
 #include "core/Value.h"
 
+#include <limits>
 #include <ostream>
 #include <utility>
 #include <cstdint>

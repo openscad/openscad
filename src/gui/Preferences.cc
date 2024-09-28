@@ -26,6 +26,7 @@
 
 #include "gui/Preferences.h"
 
+#include <list>
 #include <QActionGroup>
 #include <QMessageBox>
 #include <QFontDatabase>

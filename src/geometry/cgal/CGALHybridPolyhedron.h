@@ -1,6 +1,7 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <cstddef>
 #include <string>

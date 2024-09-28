@@ -27,6 +27,7 @@
 #include "io/DxfData.h"
 #include "glview/RenderSettings.h"
 #include "utils/degree_trig.h"
+#include <list>
 #include <utility>
 #include <memory>
 #include <ciso646> // C alternative tokens (xor)

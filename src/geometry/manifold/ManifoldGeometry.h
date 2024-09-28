@@ -2,6 +2,7 @@
 #pragma once
 
 #include "geometry/Geometry.h"
+#include <functional>
 #include <cstdint>
 #include <memory>
 #include <glm/glm.hpp>
