@@ -784,6 +784,7 @@ list(APPEND SVG_VIEWBOX_TESTS
   viewbox_600x600_slice_xMinYMin viewbox_600x600_slice_xMinYMid viewbox_600x600_slice_xMinYMax
 )
 
+# FIXME(kintel): Not in use anymore, but keep for reference?
 list(APPEND SCADFILES_WITH_GREEN_FACES
   ${EXAMPLES_DIR}/Advanced/children.scad
   ${EXAMPLES_DIR}/Basics/CSG-modules.scad
@@ -857,11 +858,12 @@ list(APPEND SCADFILES_WITH_COLOR
   ${EXAMPLES_DIR}/Old/example017.scad
 
   ${TEST_SCAD_DIR}/3D/issues/issue5217.scad
-  ${TEST_SCAD_DIR}/3D/issues/issue5218.scad
 
   #${TEST_SCAD_DIR}/bugs/issue1000.scad
 )
 
+# Render in CGAL and Manifold should be the same, except for objects with color
+# ..but there are some exceptions.
 list(APPEND SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS
   # Manifold backend supports color rendering
   ${SCADFILES_WITH_COLOR}
@@ -873,24 +875,28 @@ list(APPEND SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS
   # causing CGAL-based operations like minkowski() to fail.
   ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
 
-  # TODO: comment
+  # render() in manifold mode preserves colors
   ${TEST_SCAD_DIR}/3D/features/render-tests.scad
+
+  # Manifold can represent the very think slice
   ${TEST_SCAD_DIR}/3D/issues/issue1165.scad
 )
 
+# Preview in CGAL and Manifold should be the same, except for objects with color
+# ..but there are some exceptions.
 list(APPEND SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS
-  # Manifold backend supports colors.
-  ${SCADFILES_WITH_COLOR}
-
   # Manifold can construct geometry which isn't representable in CGAL mode,
   # causing CGAL-based operations like minkowski() to fail.
   ${TEST_SCAD_DIR}/3D/issues/issue1137.scad
 
-  # TODO: comment
+  # render() in manifold mode preserves colors
   ${TEST_SCAD_DIR}/3D/features/render-tests.scad
   ${TEST_SCAD_DIR}/misc/internal-cavity.scad
+
+  # resize() in manifold mode preserves colors
   ${TEST_SCAD_DIR}/3D/features/resize-convexity-tests.scad
 
+  # TODO(kintel): Run bugs files
   # ${TEST_SCAD_DIR}/bugs/issue1000.scad
   # ${TEST_SCAD_DIR}/bugs/issue802.scad
   # ${TEST_SCAD_DIR}/bugs2D/issue2220.scad
@@ -1545,9 +1551,6 @@ set_tests_properties(
   # z-fighting different on different machines
   previewmanifoldtest_issue1165
   previewmanifoldtest_issue1215
-
-  # https://github.com/openscad/openscad/issues/5217
-  previewmanifoldtest-different_color-tests2
 
   # Manifold triangle order not stable, causes transparent
   # objects to render differently on different machines
