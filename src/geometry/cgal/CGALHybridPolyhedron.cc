@@ -3,6 +3,7 @@
 
 #include "geometry/cgal/cgalutils.h"
 #include "Feature.h"
+#include <unordered_set>
 #include <functional>
 #include <memory>
 #include <CGAL/Surface_mesh.h>
