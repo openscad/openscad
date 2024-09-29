@@ -1,5 +1,6 @@
 #include "gui/FontList.h"
 
+#include <array>
 #include <cstdint>
 #include <qitemselectionmodel.h>
 #include <string>

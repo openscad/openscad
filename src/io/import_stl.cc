@@ -4,6 +4,7 @@
 #include "utils/printutils.h"
 #include "core/AST.h"
 
+#include <array>
 #include <ios>
 #include <cstdint>
 #include <memory>
