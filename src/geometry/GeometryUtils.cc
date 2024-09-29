@@ -1,5 +1,6 @@
 #include "geometry/GeometryUtils.h"
 
+#include <unordered_map>
 #include <list>
 #include <utility>
 #include <boost/functional/hash.hpp>

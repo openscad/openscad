@@ -12,6 +12,7 @@
 #include "gui/qtgettext.h" // IWYU pragma: keep
 #include "ui_MainWindow.h"
 
+#include <unordered_map>
 #include <memory>
 #include <string>
 #include <vector>

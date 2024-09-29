@@ -1,5 +1,6 @@
 #include "core/Builtins.h"
 
+#include <unordered_map>
 #include <memory>
 #include <string>
 #include <vector>
