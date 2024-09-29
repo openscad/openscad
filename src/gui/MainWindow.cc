@@ -929,6 +929,8 @@ void MainWindow::loadDesignSettings()
   GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
   auto cgalCacheSizeMB = Preferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
+  auto backend3D = Preferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString();
+  RenderSettings::inst()->backend3D = renderBackend3DFromString(backend3D);
 }
 
 void MainWindow::updateUndockMode(bool undockMode)
@@ -2343,7 +2345,7 @@ void MainWindow::cgalRender()
   this->root_geom.reset();
 
   LOG("Rendering Polygon Mesh using %1$s...",
-      Feature::ExperimentalManifold.is_enabled() ? "Manifold" : "CGAL");
+      renderBackend3DToString(RenderSettings::inst()->backend3D).c_str());
 
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
