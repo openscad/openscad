@@ -1,8 +1,9 @@
+#include "gui/ScadApi.h"
+
 #include <QDir>
 #include <QFileInfo>
 #include <QRegularExpression>
 
-#include "gui/ScadApi.h"
 #include "core/Builtins.h"
 #include "gui/ScintillaEditor.h"
 #include "core/parsersettings.h"

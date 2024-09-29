@@ -1,3 +1,5 @@
+#include "gui/FontList.h"
+
 #include <cstdint>
 #include <qitemselectionmodel.h>
 #include <string>
@@ -18,7 +20,6 @@
 #include <QSpinBox>
 #include <QLineEdit>
 
-#include "gui/FontList.h"
 #include "FontCache.h"
 #include "utils/printutils.h"
 

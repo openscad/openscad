@@ -29,6 +29,8 @@
  *  Public Domain.
  */
 
+#include "gui/input/HidApiInputDriver.h"
+
 #include <ios>
 #include <sstream>
 #include <cstdint>
@@ -44,7 +46,6 @@
 
 #include "gui/Settings.h"
 #include "platform/PlatformUtils.h"
-#include "gui/input/HidApiInputDriver.h"
 #include "gui/input/InputDriverEvent.h"
 #include "gui/input/InputDriverManager.h"
 #include "utils/printutils.h"

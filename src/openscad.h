@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include <utility>
 #include <boost/filesystem.hpp>
 
 class SourceFile;

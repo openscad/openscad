@@ -22,6 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "libsvg/path.h"
+
 #include <sstream>
 #include <cstdlib>
 #include <vector>
@@ -37,7 +39,6 @@
 #include <boost/tokenizer.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "libsvg/path.h"
 #include "utils/degree_trig.h"
 #include "utils/calc.h"
 #include "libsvg/util.h"

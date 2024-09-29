@@ -24,6 +24,7 @@
  *
  */
 
+#include <exception>
 #include <memory>
 #include <Eigen/Core>
 #include <Eigen/Geometry>

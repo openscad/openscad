@@ -48,6 +48,8 @@
 #include "core/customizer/ParameterObject.h"
 #include "core/customizer/ParameterSet.h"
 #include "openscad_mimalloc.h"
+#include <utility>
+#include <exception>
 #include <sstream>
 #include <iostream>
 #include <memory>

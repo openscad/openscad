@@ -26,6 +26,8 @@
 
 #pragma once
 
+#include <functional>
+#include <exception>
 #include <QObject>
 #include <QString>
 #include <QtNetwork>

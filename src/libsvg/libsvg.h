@@ -24,6 +24,7 @@
  */
 #pragma once
 
+#include <exception>
 #include <utility>
 #include <memory>
 #include <string>

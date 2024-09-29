@@ -24,9 +24,10 @@
  *
  */
 
+#include "gui/input/ButtonConfigWidget.h"
+
 #include <QWidget>
 #include <cstddef>
-#include "gui/input/ButtonConfigWidget.h"
 #include "gui/Settings.h"
 #include "gui/input/InputDriverManager.h"
 #include "gui/SettingsWriter.h"

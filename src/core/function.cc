@@ -24,9 +24,10 @@
  *
  */
 
+#include "core/function.h"
+
 #include "core/Arguments.h"
 #include "core/Expression.h"
-#include "core/function.h"
 
 #include <ostream>
 #include <memory>

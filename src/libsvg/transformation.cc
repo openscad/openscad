@@ -22,13 +22,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "libsvg/transformation.h"
+
 #include <sstream>
 #include <string>
 #include <vector>
 #include <iostream>
 
 #include "libsvg/util.h"
-#include "libsvg/transformation.h"
 #include "utils/degree_trig.h"
 
 namespace libsvg {

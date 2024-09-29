@@ -22,10 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#include "libsvg/tspan.h"
+
 #include <sstream>
 #include <string>
 
-#include "libsvg/tspan.h"
 #include "libsvg/util.h"
 
 namespace libsvg {

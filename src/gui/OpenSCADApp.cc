@@ -4,6 +4,7 @@
 #include "gui/EventFilter.h"
 #endif
 
+#include <exception>
 #include <QProgressDialog>
 #include <iostream>
 #include <boost/foreach.hpp>

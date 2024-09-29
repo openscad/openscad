@@ -1,3 +1,5 @@
+#include "core/LocalScope.h"
+
 #include <ostream>
 #include <memory>
 #include <cstddef>
@@ -5,7 +7,6 @@
 #include <vector>
 
 #include "core/Assignment.h"
-#include "core/LocalScope.h"
 #include "core/ModuleInstantiation.h"
 #include "core/UserModule.h"
 #include "core/function.h"

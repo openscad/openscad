@@ -1,14 +1,12 @@
 // This file is a part of openscad. Everything implied is implied.
 // Author: Alexey Korepanov <kaikaikai@yandex.ru>
 
+#include "geometry/roof_vd.h"
+
 #include <ostream>
 #include <cstdint>
 #include <memory>
-
-// NOLINTNEXTLINE(bugprone-reserved-identifier)
-#define _USE_MATH_DEFINES
 #include <cmath>
-
 #include <cstddef>
 #include <algorithm>
 #include <map>
@@ -19,7 +17,6 @@
 #include "geometry/GeometryUtils.h"
 #include "geometry/ClipperUtils.h"
 #include "core/RoofNode.h"
-#include "geometry/roof_vd.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
         throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());

@@ -10,6 +10,8 @@
 #include "geometry/cgal/CGALHybridPolyhedron.h"
 #include "core/node.h"
 
+#include <list>
+#include <exception>
 #include <utility>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>

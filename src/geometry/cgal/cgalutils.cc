@@ -3,8 +3,9 @@
 
 #ifdef ENABLE_CGAL
 
-#include "geometry/cgal/cgal.h"
 #include "geometry/cgal/cgalutils.h"
+
+#include "geometry/cgal/cgal.h"
 #include "geometry/PolySet.h"
 #include "utils/printutils.h"
 #include "geometry/Polygon2d.h"
@@ -12,6 +13,7 @@
 #include "core/node.h"
 #include "utils/degree_trig.h"
 
+#include <utility>
 #include <memory>
 #include <CGAL/Aff_transformation_3.h>
 #include <CGAL/normal_vector_newell_3.h>

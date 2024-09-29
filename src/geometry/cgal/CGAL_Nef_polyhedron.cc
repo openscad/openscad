@@ -1,9 +1,10 @@
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+
 #include <memory>
 #include <cstddef>
 #include <string>
 
 #include "geometry/cgal/cgal.h"
-#include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #include "geometry/cgal/cgalutils.h"
 #include "utils/printutils.h"
 #include "utils/svg.h"
