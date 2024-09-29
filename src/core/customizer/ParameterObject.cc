@@ -5,6 +5,7 @@
 #include "core/Expression.h"
 #include "core/SourceFile.h"
 
+#include <map>
 #include <utility>
 #include <memory>
 #include <cstddef>

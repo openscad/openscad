@@ -25,6 +25,7 @@
  */
 #include "gui/parameter/ParameterWidget.h"
 
+#include <map>
 #include <set>
 #include <memory>
 #include <QWidget>
