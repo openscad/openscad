@@ -1083,6 +1083,8 @@ list(APPEND EXPORT_OBJ_TEST_FILES ${TEST_SCAD_DIR}/3D/features/polyhedron-cube.s
 
 list(APPEND EXPORT_3MF_TEST_FILES ${TEST_SCAD_DIR}/3mf/3mf-export.scad)
 
+list(APPEND EXPORT_POV_TEST_FILES ${TEST_SCAD_DIR}/pov/pov-export.scad)
+
 list(APPEND EXPORT_IMPORT_3D_FILES
 ${TEST_SCAD_DIR}/3D/features/mirror-tests.scad
 ${TEST_SCAD_DIR}/3D/features/polyhedron-tests.scad
@@ -1135,6 +1137,7 @@ add_cmdline_test(objexport              EXPERIMENTAL OPENSCAD SUFFIX obj FILES $
 if (LIB3MF_FOUND)
 add_cmdline_test(3mfexport              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
 endif()
+add_cmdline_test(povexport              EXPERIMENTAL OPENSCAD SUFFIX pov FILES ${EXPORT_POV_TEST_FILES} ARGS --render --enable=predictible-output)
 
 # Trivial Export/Import files: Sanity-checks bidirectional file format import/export
 set(SIMPLE_EXPORT_IMPORT_2D_FILES ${TEST_SCAD_DIR}/misc/square10.scad)
