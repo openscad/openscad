@@ -13,6 +13,7 @@
 #include "geometry/cgal/cgalutils.h"
 #include "Feature.h"
 #include "geometry/PolySet.h"
+#include "glview/RenderSettings.h"
 
 
 Polygon2d::Polygon2d(Outline2d outline) : sanitized(true) {
