@@ -177,7 +177,7 @@ std::unique_ptr<PolySet> Polygon2d::tessellate() const
 {
   PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
 #if defined(ENABLE_MANIFOLD) && defined(USE_MANIFOLD_TRIANGULATOR)
-  if (Feature::ExperimentalManifold.is_enabled()) {
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     return ManifoldUtils::createTriangulatedPolySetFromPolygon2d(*this);
   }
   else
