@@ -108,7 +108,7 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
   output << "camera { look_at <" << (min_x + max_x) / 2 << ", " << (min_y + max_y) / 2 << ", " << (min_z + max_z) / 2 << "> "
 	  "location <" << min_x + dx * move_away_factor << ", " << min_y - dy * move_away_factor << ", " << min_z + dz * move_away_factor << "> "
-	  "up <0, 0, 1> right <1, 0, 0> sky <0, 0, 1> rotate <-55, clock * 3, clock + 25> }\n";
+	  "up <0, 0, 1> right <1, 0, 0> sky <0, 0, 1> rotate <-55, clock * 3, clock + 25> right x*image_width/image_height }\n";
   output << "#include \"rad_def.inc\"\n";
   output << "global_settings { photons { count 20000 autostop 0 jitter .4 } radiosity { Rad_Settings(Radiosity_Normal, off, off) } }\n";
 }
