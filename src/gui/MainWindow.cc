@@ -33,6 +33,7 @@
 #include <string>
 #include <vector>
 
+#include "geometry/manifold/manifoldutils.h"
 #include "utils/boost-utils.h"
 #include "core/Builtins.h"
 #include "core/BuiltinContext.h"
@@ -2875,6 +2876,14 @@ bool MainWindow::canExport(unsigned int dim)
   auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
   if (N && !N->p3->is_simple()) {
     LOG(message_group::UI_Warning, "Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+  }
+#endif
+#ifdef ENABLE_MANIFOLD
+  auto manifold = dynamic_cast<const ManifoldGeometry *>(this->root_geom.get());
+  if (manifold && !manifold->isValid() ) {
+    LOG(message_group::UI_Warning, "Object may not be a valid manifold and may need repair! "
+      "Error message: %1$s. See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export",
+      ManifoldUtils::statusToString(manifold->getManifold().Status()));
   }
 #endif
 
