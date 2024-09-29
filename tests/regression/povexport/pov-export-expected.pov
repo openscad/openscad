@@ -62,6 +62,6 @@ light_source { <2.5, 0, 2.5> color rgb <0.2, 0.2, 0.2> }
 light_source { <2.5, 2.5, -2.5> color rgb <0.2, 0.2, 0.2> }
 light_source { <2.5, 2.5, 0> color rgb <0.2, 0.2, 0.2> }
 light_source { <2.5, 2.5, 2.5> color rgb <0.2, 0.2, 0.2> }
-camera { look_at <0, 0, 0> location <1.5, -2.5, 1.5> up <0, 0, 1> right <1, 0, 0> sky <0, 0, 1> rotate <-55, clock * 3, clock + 25> }
+camera { look_at <0, 0, 0> location <1.5, -2.5, 1.5> up <0, 0, 1> right <1, 0, 0> sky <0, 0, 1> rotate <-55, clock * 3, clock + 25> right x*image_width/image_height }
 #include "rad_def.inc"
 global_settings { photons { count 20000 autostop 0 jitter .4 } radiosity { Rad_Settings(Radiosity_Normal, off, off) } }
