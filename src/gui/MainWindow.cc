@@ -2812,9 +2812,9 @@ void MainWindow::actionCheckValidity()
     return;
   }
 
-  bool valid = false;
-#ifdef ENABLE_CGAL
-  if (auto N = CGALUtils::getNefPolyhedronFromGeometry(this->root_geom)) {
+  bool valid = true;
+#ifdef ENABLE_CGAL 
+ if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root_geom)) {
     valid = N->p3 ? const_cast<CGAL_Nef_polyhedron3&>(*N->p3).is_valid() : false;
   } else if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root_geom)) {
     valid = hybrid->isValid();
