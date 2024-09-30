@@ -27,6 +27,7 @@
 #include "io/export.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
+#include <cassert>
 #include <array>
 #include <ios>
 #include <ostream>

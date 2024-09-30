@@ -4,6 +4,7 @@
 #include "core/enums.h"
 #include "geometry/Geometry.h"
 
+#include <cassert>
 #include <memory>
 #include <utility>
 #include <list>

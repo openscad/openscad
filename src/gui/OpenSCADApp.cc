@@ -4,6 +4,7 @@
 #include "gui/EventFilter.h"
 #endif
 
+#include <cassert>
 #include <exception>
 #include <QProgressDialog>
 #include <iostream>

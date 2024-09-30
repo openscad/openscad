@@ -1,5 +1,6 @@
 #include "glview/GLView.h"
 
+#include <cassert>
 #include <cstdint>
 #include <memory>
 #include <cstddef>

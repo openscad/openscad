@@ -5,6 +5,7 @@
 // #include "version.h"
 #include "utils/version_helper.h"
 
+#include <cassert>
 #include <ostream>
 #include <memory>
 #include <string>

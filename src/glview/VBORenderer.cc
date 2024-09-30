@@ -30,6 +30,7 @@
 #include "utils/printutils.h"
 #include "utils/hash.h" // IWYU pragma: keep
 
+#include <cassert>
 #include <array>
 #include <unordered_map>
 #include <utility>

@@ -2,6 +2,7 @@
 #include "geometry/PolySetBuilder.h"
 #include "geometry/cgal/cgalutils.h"
 
+#include <cassert>
 #include <list>
 #include <memory>
 #include <utility>

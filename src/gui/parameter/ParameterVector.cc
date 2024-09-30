@@ -1,5 +1,6 @@
 #include "gui/parameter/ParameterVector.h"
 
+#include <cassert>
 #include <limits>
 #include <cstddef>
 #include "gui/IgnoreWheelWhenNotFocused.h"

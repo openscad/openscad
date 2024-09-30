@@ -1,5 +1,6 @@
 #include "gui/TabManager.h"
 
+#include <cassert>
 #include <functional>
 #include <exception>
 #include <QFileInfo>

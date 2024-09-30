@@ -1,5 +1,6 @@
 #include "core/LocalScope.h"
 
+#include <cassert>
 #include <ostream>
 #include <memory>
 #include <cstddef>
