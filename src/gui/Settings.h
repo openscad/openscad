@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <map>
 #include <list>
 #include <string>
@@ -13,6 +14,7 @@ class SettingsEntry
 public:
   const std::string& category() const { return _category; }
   const std::string& name() const { return _name; }
+  const std::string key() const { return category() + "/" + name(); }
 
   virtual bool isDefault() const = 0;
   virtual std::string encode() const = 0;
@@ -178,16 +180,21 @@ public:
   static SettingsEntryBool enableLineNumbers;
   static SettingsEntryBool enableNumberScrollWheel;
   static SettingsEntryEnum modifierNumberScrollWheel;
+  static SettingsEntryEnum defaultPrintService;
   static SettingsEntryString octoPrintUrl;
   static SettingsEntryString octoPrintApiKey;
   static SettingsEntryEnum octoPrintFileFormat;
+  static SettingsEntryEnum localSlicerFileFormat;
   static SettingsEntryEnum octoPrintAction;
   static SettingsEntryString octoPrintSlicerEngine;
   static SettingsEntryString octoPrintSlicerEngineDesc;
   static SettingsEntryString octoPrintSlicerProfile;
   static SettingsEntryString octoPrintSlicerProfileDesc;
+  static SettingsEntryString localSlicerExecutable;
 
+  static SettingsEntryBool manifoldEnabled;
   static SettingsEntryBool exportUseAsciiSTL;
+  static SettingsEntryEnum renderBackend3D;
   static SettingsEntryEnum toolbarExport3D;
   static SettingsEntryEnum toolbarExport2D;
 

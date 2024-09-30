@@ -24,10 +24,13 @@
  *
  */
 
+#include "gui/PrintInitDialog.h"
+
 #include <QString>
 
-#include "PrintService.h"
-#include "PrintInitDialog.h"
+#include "gui/Settings.h"
+#include "gui/PrintService.h"
+#include "gui/QSettingsCached.h"
 
 PrintInitDialog::PrintInitDialog()
 {
@@ -35,6 +38,7 @@ PrintInitDialog::PrintInitDialog()
 
   const auto printService = PrintService::inst();
   this->textBrowser->setSource(QUrl{"qrc:/html/PrintInitDialog.html"});
+  this->result = print_service_t::NONE;
 
   this->okButton->setEnabled(false);
 
@@ -60,12 +64,61 @@ void PrintInitDialog::on_octoPrintButton_clicked()
   this->okButton->setEnabled(true);
 }
 
+void PrintInitDialog::on_LocalSlicerButton_clicked()
+{
+  this->textBrowser->setSource(QUrl{"qrc:/html/LocalSlicerInfo.html"});
+  this->result = print_service_t::LOCALSLICER;
+  this->okButton->setEnabled(true);
+}
+
 void PrintInitDialog::on_okButton_clicked()
 {
+  if (this->checkBoxRememberSelection->isChecked()) {
+    QSettingsCached settings;
+    const auto name = PrintInitDialog::serviceName(this->result);
+    settings.setValue(QString::fromStdString(Settings::Settings::defaultPrintService.key()), name);
+  }
   accept();
 }
 
 void PrintInitDialog::on_cancelButton_clicked()
 {
   reject();
+}
+
+print_service_t PrintInitDialog::getResult()
+{
+  QSettingsCached settings;
+  const auto service = settings.value(QString::fromStdString(Settings::Settings::defaultPrintService.key())).toString();
+
+
+  if (service == "PRINT_SERVICE") {
+    return print_service_t::PRINT_SERVICE;
+  } else if (service == "OCTOPRINT") {
+    return print_service_t::OCTOPRINT;
+  } else if (service == "LOCALSLICER") {
+    return print_service_t::LOCALSLICER;
+  }
+
+  auto printInitDialog = new PrintInitDialog();
+  auto printInitResult = printInitDialog->exec();
+  printInitDialog->deleteLater();
+  if (printInitResult == QDialog::Rejected) {
+    return print_service_t::NONE;
+  }
+
+  return printInitDialog->result;
+}
+
+QString PrintInitDialog::serviceName(print_service_t service)
+{
+  if (service == print_service_t::PRINT_SERVICE) {
+    return "PRINT_SERVICE";
+  } else if (service == print_service_t::OCTOPRINT) {
+    return "OCTOPRINT";
+  } else if (service == print_service_t::LOCALSLICER) {
+    return "LOCALSLICER";
+  } else {
+    return "NONE";
+  }
 }

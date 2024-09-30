@@ -25,13 +25,17 @@
  */
 #pragma once
 
+#include <list>
 #include <QWidget>
 #include <QThread>
 #include <QTimer>
 #include <QIcon>
 
-#include "InputDriver.h"
-#include "InputEventMapper.h"
+#include <cstddef>
+#include <string>
+
+#include "gui/input/InputDriver.h"
+#include "gui/input/InputEventMapper.h"
 
 class MainWindow;
 

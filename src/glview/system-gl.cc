@@ -14,12 +14,12 @@
 #define GLAD_WGL_IMPLEMENTATION
 #endif
 #endif
-#include "system-gl.h"
+#include "glview/system-gl.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>
 
-#include "printutils.h"
+#include "utils/printutils.h"
 
 double gl_version()
 {

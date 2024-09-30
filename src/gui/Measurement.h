@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "QGLView.h"
+#include "gui/QGLView.h"
 
 enum { MEASURE_IDLE, MEASURE_DIST1, MEASURE_DIST2, MEASURE_ANG1, MEASURE_ANG2, MEASURE_ANG3 };
 

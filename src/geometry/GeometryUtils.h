@@ -1,7 +1,7 @@
 #pragma once
 
-#include "linalg.h"
-#include "Geometry.h"
+#include "geometry/linalg.h"
+#include "geometry/Geometry.h"
 #include <vector>
 #include <boost/container/small_vector.hpp>
 #include <memory>

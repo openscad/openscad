@@ -1,8 +1,13 @@
 #pragma once
 
-#include "Assignment.h"
+#include "core/Assignment.h"
+#include <utility>
+#include <ostream>
+#include <cstddef>
 #include <unordered_map>
 #include <memory>
+#include <string>
+#include <vector>
 
 class AbstractNode;
 class Context;

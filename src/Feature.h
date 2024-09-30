@@ -6,7 +6,7 @@
 #include <map>
 #include <vector>
 
-#include "exceptions.h"
+#include "utils/exceptions.h"
 
 class Feature
 {
@@ -17,7 +17,6 @@ public:
   static const Feature ExperimentalFastCsg;
   static const Feature ExperimentalFastCsgSafer;
   static const Feature ExperimentalFastCsgDebug;
-  static const Feature ExperimentalManifold;
   static const Feature ExperimentalRoof;
   static const Feature ExperimentalInputDriverDBus;
   static const Feature ExperimentalLazyUnion;

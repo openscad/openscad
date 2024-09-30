@@ -24,15 +24,17 @@
  *
  */
 
-#include "ThrownTogetherRenderer.h"
+#include "glview/preview/ThrownTogetherRenderer.h"
 
+#include <memory>
+#include <cstddef>
 #include <utility>
 #include "Feature.h"
-#include "PolySet.h"
-#include "enums.h"
-#include "printutils.h"
+#include "geometry/PolySet.h"
+#include "core/enums.h"
+#include "utils/printutils.h"
 
-#include "system-gl.h"
+#include "glview/system-gl.h"
 
 ThrownTogetherRenderer::ThrownTogetherRenderer(std::shared_ptr<CSGProducts> root_products,
                                                std::shared_ptr<CSGProducts> highlight_products,

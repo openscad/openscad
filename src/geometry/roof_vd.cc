@@ -1,19 +1,22 @@
 // This file is a part of openscad. Everything implied is implied.
 // Author: Alexey Korepanov <kaikaikai@yandex.ru>
 
-// NOLINTNEXTLINE(bugprone-reserved-identifier)
-#define _USE_MATH_DEFINES
-#include <cmath>
+#include "geometry/roof_vd.h"
 
+#include <ostream>
+#include <cstdint>
+#include <memory>
+#include <cmath>
+#include <cstddef>
 #include <algorithm>
 #include <map>
 #include <boost/polygon/voronoi.hpp>
-#include <PolySetBuilder.h>
+#include <vector>
+#include "geometry/PolySetBuilder.h"
 
-#include "GeometryUtils.h"
-#include "ClipperUtils.h"
-#include "RoofNode.h"
-#include "roof_vd.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/ClipperUtils.h"
+#include "core/RoofNode.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
         throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());

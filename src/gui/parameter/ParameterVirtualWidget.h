@@ -1,9 +1,11 @@
 #pragma once
 
 #include <boost/optional.hpp>
-#include "qtgettext.h"
+#include <vector>
+
+#include "gui/qtgettext.h"
 #include "ui_ParameterDescriptionWidget.h"
-#include "ParameterObject.h"
+#include "core/customizer/ParameterObject.h"
 
 enum class DescriptionStyle { ShowDetails, Inline, HideDetails, DescriptionOnly };
 

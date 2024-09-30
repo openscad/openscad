@@ -1,5 +1,8 @@
-#include "fileutils.h"
-#include "printutils.h"
+#include "io/fileutils.h"
+
+#include <string>
+
+#include "utils/printutils.h"
 
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;

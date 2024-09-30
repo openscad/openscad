@@ -23,8 +23,10 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "SettingsWriter.h"
-#include "QSettingsCached.h"
+#include "gui/SettingsWriter.h"
+#include "gui/QSettingsCached.h"
+
+#include <string>
 
 void SettingsWriter::handle(Settings::SettingsEntry& entry) const {
   QSettingsCached settings;

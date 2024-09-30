@@ -23,12 +23,17 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "compiler_specific.h"
-#include "Expression.h"
-#include "Value.h"
+#include "core/Expression.h"
+
+#include "utils/compiler_specific.h"
+#include "core/Value.h"
+#include <set>
+#include <functional>
+#include <ostream>
 #include <cstdint>
 #include <cmath>
 #include <cassert>
+#include <cstddef>
 #include <memory>
 #include <sstream>
 #include <algorithm>
@@ -36,13 +41,13 @@
 #include <forward_list>
 #include <utility>
 #include <variant>
-#include "printutils.h"
-#include "StackCheck.h"
-#include "Context.h"
-#include "exceptions.h"
-#include "Parameters.h"
-#include "printutils.h"
-#include "boost-utils.h"
+#include "utils/printutils.h"
+#include "utils/StackCheck.h"
+#include "core/Context.h"
+#include "utils/exceptions.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
+#include "utils/boost-utils.h"
 #include <boost/regex.hpp>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope

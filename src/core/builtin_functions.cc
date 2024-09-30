@@ -24,28 +24,32 @@
  *
  */
 
-#include "function.h"
-#include "Arguments.h"
-#include "Expression.h"
-#include "Builtins.h"
-#include "printutils.h"
-#include "UserModule.h"
-#include "degree_trig.h"
-#include "FreetypeRenderer.h"
-#include "Parameters.h"
+#include "core/function.h"
+#include "core/Arguments.h"
+#include "core/Expression.h"
+#include "core/Builtins.h"
+#include "utils/printutils.h"
+#include "core/UserModule.h"
+#include "utils/degree_trig.h"
+#include "core/FreetypeRenderer.h"
+#include "core/Parameters.h"
 #include "io/import.h"
 #include "io/fileutils.h"
 
+#include <utility>
+#include <cstdint>
+#include <memory>
 #include <cmath>
 #include <sstream>
 #include <ctime>
 #include <limits>
 #include <algorithm>
 #include <random>
+#include <vector>
 
-#include "boost-utils.h"
+#include "utils/boost-utils.h"
 // hash double
-#include "linalg.h"
+#include "geometry/linalg.h"
 
 #if defined __WIN32__ || defined _MSC_VER
 #include <process.h>

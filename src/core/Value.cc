@@ -24,20 +24,28 @@
  *
  */
 
+#include "core/Value.h"
+
+#include <limits>
+#include <ostream>
+#include <utility>
+#include <cstdint>
 #include <cassert>
+#include <cstddef>
 #include <memory>
 #include <numeric>
 #include <sstream>
+#include <string>
+#include <vector>
 #include <boost/lexical_cast.hpp>
 
-#include "Value.h"
-#include "EvaluationSession.h"
-#include "printutils.h"
-#include "StackCheck.h"
-#include "boost-utils.h"
-#include "double-conversion/double-conversion.h"
-#include "double-conversion/utils.h"
-#include "double-conversion/ieee.h"
+#include "core/EvaluationSession.h"
+#include "utils/printutils.h"
+#include "utils/StackCheck.h"
+#include "utils/boost-utils.h"
+#include <double-conversion/double-conversion.h>
+#include <double-conversion/utils.h>
+#include <double-conversion/ieee.h>
 
 namespace fs = boost::filesystem;
 

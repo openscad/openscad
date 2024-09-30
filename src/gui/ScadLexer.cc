@@ -1,9 +1,11 @@
+#include "gui/ScadLexer.h"
+
 #include <string>
+#include <vector>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
-
-#include "ScadLexer.h"
 
 #if !ENABLE_LEXERTL
 

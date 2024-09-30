@@ -3,8 +3,9 @@
 
 #pragma once
 
-#include "Polygon2d.h"
-#include "PolySet.h"
+#include <memory>
+#include "geometry/Polygon2d.h"
+#include "geometry/PolySet.h"
 
 namespace roof_ss {
 std::unique_ptr<PolySet> straight_skeleton_roof(const Polygon2d& poly);

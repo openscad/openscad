@@ -25,6 +25,8 @@
  */
 #pragma once
 
+#include <utility>
+#include <cstdint>
 #include <map>
 #include <string>
 #include <iostream>
@@ -45,17 +47,19 @@
 class FontInfo
 {
 public:
-  FontInfo(std::string family, std::string style, std::string file);
+  FontInfo(std::string family, std::string style, std::string file, uint32_t hash);
   virtual ~FontInfo() = default;
 
   [[nodiscard]] const std::string& get_family() const;
   [[nodiscard]] const std::string& get_style() const;
   [[nodiscard]] const std::string& get_file() const;
+  [[nodiscard]] const uint32_t get_hash() const;
   bool operator<(const FontInfo& rhs) const;
 private:
   std::string family;
   std::string style;
   std::string file;
+  uint32_t hash;
 };
 
 using FontInfoList = std::vector<FontInfo>;
@@ -89,6 +93,7 @@ public:
   void register_font_file(const std::string& path);
   void clear();
   [[nodiscard]] FontInfoList *list_fonts() const;
+  [[nodiscard]] std::vector<uint32_t> filter(const std::u32string&) const;
   [[nodiscard]] const std::string get_freetype_version() const;
 
   static FontCache *instance();

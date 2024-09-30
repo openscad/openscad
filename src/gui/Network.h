@@ -26,15 +26,19 @@
 
 #pragma once
 
+#include <functional>
+#include <exception>
 #include <QObject>
 #include <QString>
 #include <QtNetwork>
-#include <utility>
-#include <utility>
 
-#include "printutils.h"
-#include "PlatformUtils.h"
-#include "NetworkSignal.h"
+#include <utility>
+#include <string>
+#include <vector>
+
+#include "utils/printutils.h"
+#include "platform/PlatformUtils.h"
+#include "gui/NetworkSignal.h"
 
 class NetworkException : public std::exception
 {

@@ -24,12 +24,19 @@
  *
  */
 
-#include "export.h"
-#include "PolySet.h"
-#include "printutils.h"
-#include "Geometry.h"
+#include "io/export.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
+#include "geometry/Geometry.h"
 
+#include <cassert>
+#include <map>
+#include <iostream>
+#include <cstdint>
+#include <memory>
+#include <cstddef>
 #include <fstream>
+#include <vector>
 
 #ifdef _WIN32
 #include <io.h>
@@ -168,8 +175,8 @@ double remove_negative_zero(double x) {
 
 Vector3d remove_negative_zero(const Vector3d& pt) {
   return {
-    remove_negative_zero(pt[0]), 
-    remove_negative_zero(pt[1]), 
+    remove_negative_zero(pt[0]),
+    remove_negative_zero(pt[1]),
     remove_negative_zero(pt[2]),
   };
 }
@@ -191,7 +198,7 @@ struct LexographicLess {
 };
 #endif
 
-} // namespace 
+} // namespace
 
 std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
 {

@@ -24,25 +24,29 @@
  *
  */
 
-#include "io/import.h"
-#include "ImportNode.h"
+#include "core/ImportNode.h"
 
-#include "module.h"
-#include "ModuleInstantiation.h"
-#include "PolySet.h"
+#include "io/import.h"
+
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
+#include "geometry/PolySet.h"
 #ifdef ENABLE_CGAL
-#include "CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #endif
-#include "Polygon2d.h"
-#include "Builtins.h"
-#include "Children.h"
-#include "DxfData.h"
-#include "Parameters.h"
-#include "printutils.h"
+#include "geometry/Polygon2d.h"
+#include "core/Builtins.h"
+#include "core/Children.h"
+#include "io/DxfData.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
 #include "io/fileutils.h"
 #include "Feature.h"
 #include "handle_dep.h"
-#include "boost-utils.h"
+#include "utils/boost-utils.h"
+#include <ios>
+#include <utility>
+#include <memory>
 #include <sys/types.h>
 #include <sstream>
 #include <boost/algorithm/string.hpp>

@@ -1,15 +1,16 @@
 #pragma once
 
+#include <utility>
 #include <memory>
 #include <vector>
 
-#include "Renderer.h"
-#include "PolySet.h"
-#include "Polygon2d.h"
+#include "glview/Renderer.h"
+#include "geometry/PolySet.h"
+#include "geometry/Polygon2d.h"
 #ifdef ENABLE_CGAL
-#include "CGAL_OGL_Polyhedron.h"
-#include "CGAL_Nef_polyhedron.h"
-#include "Selection.h"
+#include "glview/cgal/CGAL_OGL_Polyhedron.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "core/Selection.h"
 #endif
 
 class LegacyCGALRenderer : public Renderer

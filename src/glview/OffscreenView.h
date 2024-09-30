@@ -1,12 +1,13 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <ostream>
 
-#include "GLView.h"
-#include "OpenGLContext.h"
-#include "fbo.h"
+#include "glview/GLView.h"
+#include "glview/OpenGLContext.h"
+#include "glview/fbo.h"
 
 class OffscreenViewException : public std::runtime_error
 {

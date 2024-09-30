@@ -24,7 +24,10 @@
  *
  */
 
-#include "Measurement.h"
+#include "gui/Measurement.h"
+
+#include <sstream>
+#include <string>
 
 Measurement::Measurement()
 {
@@ -48,7 +51,7 @@ void Measurement::startMeasureAngle(void)
   this->qglview->update();
   this->qglview->measure_state=MEASURE_ANG1;
 }
-QString Measurement::statemachine(QPoint mouse) 
+QString Measurement::statemachine(QPoint mouse)
 {
   if(qglview->measure_state == MEASURE_IDLE) return {};
   qglview->selectPoint(mouse.x(),mouse.y());
@@ -59,32 +62,30 @@ QString Measurement::statemachine(QPoint mouse)
   };
   auto display_angle = [this] (Vector3d p1, Vector3d p2, Vector3d p3, Vector3d p4) 
   {	
-	SelectedObject ruler;
 	Vector3d side1, side2;
-  	ruler = {
+	this->qglview->selected_obj.push_back({
             .type = SelectionType::SELECTION_SEGMENT,
             .p1 = p1,
             .p2 = p2
-        };
-	this->qglview->selected_obj.push_back(ruler);
-	ruler = {
+        });
+	this->qglview->selected_obj.push_back({
             .type = SelectionType::SELECTION_SEGMENT,
             .p1 = p3,
             .p2 = p4
-        };
-	this->qglview->selected_obj.push_back(ruler);
+        });
 
         side1=(p2-p1).normalized();
         side2=(p4-p3).normalized();
         double ang=acos(side1.dot(side2))*180.0/G_PI;
-        if(!std::isnan(ang))
+        if(std::isnan(ang))
         {
-          return QString("Angle  is %1 Degrees").arg(ang);
+          qglview->selected_obj.clear();
+          qglview->shown_obj = nullptr;
+          qglview->update();
+          qglview->measure_state = MEASURE_IDLE;
+	  return QString("");
         }
-        qglview->selected_obj.clear();
-        qglview->shown_obj = nullptr;
-        qglview->update();
-        qglview->measure_state = MEASURE_IDLE;
+        return QString("Angle  is %1 Degrees").arg(ang);
   };
 
   switch(qglview->measure_state) {

@@ -76,7 +76,7 @@
 
 #ifndef OPENSCAD_NOGUI
 #include <QtCore/qglobal.h>
-#if QT_VERSION < QT_VERSION_CHECK(5, 4, 0)
+#if QT_VERSION < QT_VERSION_CHECK(5, 12, 0)
 #error QT library missing or version too old. See README.md. To force compile, run qmake CONFIG+=skip-version-check
 #endif // QT
 #endif

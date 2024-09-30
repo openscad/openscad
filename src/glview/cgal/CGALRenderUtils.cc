@@ -1,4 +1,4 @@
-#include "CGALRenderUtils.h"
+#include "glview/cgal/CGALRenderUtils.h"
 #include "Selection.h"
 
 

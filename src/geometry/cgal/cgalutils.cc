@@ -3,15 +3,20 @@
 
 #ifdef ENABLE_CGAL
 
-#include "cgal.h"
-#include "cgalutils.h"
-#include "PolySet.h"
-#include "printutils.h"
-#include "Polygon2d.h"
-#include "PolySetUtils.h"
-#include "node.h"
-#include "degree_trig.h"
+#include "geometry/cgal/cgalutils.h"
 
+#include "geometry/cgal/cgal.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
+#include "geometry/Polygon2d.h"
+#include "geometry/PolySetUtils.h"
+#include "core/node.h"
+#include "utils/degree_trig.h"
+
+#include <cassert>
+#include <set>
+#include <utility>
+#include <memory>
 #include <CGAL/Aff_transformation_3.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
@@ -22,16 +27,17 @@
 
 #include <CGAL/convex_hull_3.h>
 
-#include "Reindexer.h"
-#include "GeometryUtils.h"
-#include "CGALHybridPolyhedron.h"
+#include "geometry/Reindexer.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
+#include <cstddef>
 #include <map>
 #include <queue>
-
+#include <vector>
 
 namespace CGALUtils {
 
@@ -513,10 +519,3 @@ std::shared_ptr<const PolySet> getGeometryAsPolySet(const std::shared_ptr<const 
 }  // namespace CGALUtils
 
 #endif /* ENABLE_CGAL */
-
-
-
-
-
-
-

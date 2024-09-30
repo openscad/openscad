@@ -32,6 +32,7 @@ option(INFO "Display build configuration info at end of cmake config" ON)
 option(ENABLE_TESTS "Run testsuite after building." ON)
 option(EXPERIMENTAL "Enable Experimental Features" OFF)
 option(USE_MANIFOLD_TRIANGULATOR "Use Manifold's triangulator instead of CGAL's" OFF)
+option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
 option(USE_LEGACY_RENDERERS "Use legacy (non-VBO) OpenGL renderers" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
@@ -54,6 +55,7 @@ option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
 option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
 option(ENABLE_TBB "Enable support for oneAPI Threading Building Blocks." ON)
 option(ENABLE_CGAL "Enable CGAL." ON)
+option(ENABLE_MANIFOLD "Enable Manifold." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
@@ -119,7 +121,7 @@ set_property(TARGET OpenSCAD PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property(TARGET OpenSCAD PROPERTY EXPORT_COMPILE_COMMANDS ON)
 set_property(TARGET OpenSCAD PROPERTY LINKER_LANGUAGE CXX)
 # Verbose link step
-if(("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU") OR 
+if(("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" STREQUAL "GNU") OR
    ("${CMAKE_CXX_COMPILER_ID}" MATCHES "AppleClang|Clang|GNU"))
   target_link_options(OpenSCAD BEFORE PRIVATE "-v")
 endif()
@@ -197,7 +199,11 @@ file(MAKE_DIRECTORY ${OPENSCAD_LIB_OUTPUT_DIR})
 
 target_compile_options(OpenSCAD PRIVATE "$<$<CONFIG:DEBUG>:-DDEBUG>")
 
-target_compile_definitions(OpenSCAD PRIVATE _REENTRANT UNICODE _UNICODE)
+target_compile_definitions(OpenSCAD PRIVATE
+  _REENTRANT
+  UNICODE
+  _UNICODE
+  _USE_MATH_DEFINES)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frounding-math")
@@ -210,7 +216,7 @@ find_package(PkgConfig)
 
 add_subdirectory(submodules)
 
-# The submodules will set up mimalloc if needed, and we need to defer any 
+# The submodules will set up mimalloc if needed, and we need to defer any
 # target_link_libraries() calls until after that.
 
 if (MXECROSS)
@@ -510,12 +516,16 @@ endif()
 
 target_include_directories(OpenSCAD PRIVATE
   "src"
-  "src/core"
-  "src/core/customizer"
   "src/ext"
-  "src/ext/json"
   "src/ext/lexertl/include"
   "src/ext/libtess2/Include"
+
+  # All the following should go away, not needed anymore after
+  # PR #5312. Left here for now in case there are on-going PRs that
+  # rely on these. Should be removed soon.
+  "src/core"
+  "src/core/customizer"
+  "src/ext/json"
   "src/ext"
   "src/geometry"
   "src/geometry/cgal"
@@ -591,7 +601,7 @@ if(NOT HEADLESS)
       message(STATUS "DBus input driver disabled per user request.")
     endif()
   else()
-    find_package(Qt5 5.4 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network Svg REQUIRED QUIET)
+    find_package(Qt5 5.12 COMPONENTS Core Widgets Multimedia OpenGL Concurrent Network Svg REQUIRED QUIET)
     message(STATUS "Qt5: ${Qt5_VERSION}")
 
     if (Qt5_POSITION_INDEPENDENT_CODE)
@@ -727,67 +737,63 @@ endif()
 set(CORE_SOURCES
   src/Feature.cc
   src/FontCache.cc
-  src/handle_dep.cc
   src/LibraryInfo.cc
   src/RenderStatistic.cc
-  src/version.cc
+  src/core/AST.cc
   src/core/Arguments.cc
-  src/core/Builtins.cc
+  src/core/Assignment.cc
   src/core/BuiltinContext.cc
+  src/core/Builtins.cc
+  src/core/CSGNode.cc
+  src/core/CSGTreeEvaluator.cc
   src/core/CgalAdvNode.cc
   src/core/Children.cc
   src/core/ColorNode.cc
   src/core/Context.cc
   src/core/ContextFrame.cc
   src/core/ContextMemoryManager.cc
-  src/core/control.cc
-  src/core/CSGNode.cc
   src/core/CsgOpNode.cc
-  src/core/CSGTreeEvaluator.cc
-  src/core/customizer/Annotation.cc
-  src/core/customizer/CommentParser.cc
+  src/core/DrawingCallback.cc
   src/core/EvaluationSession.cc
   src/core/Expression.cc
-  src/core/builtin_functions.cc
-  src/core/function.cc
+  src/core/FreetypeRenderer.cc
   src/core/FunctionType.cc
+  src/core/GroupModule.cc
   src/core/ImportNode.cc
   src/core/LinearExtrudeNode.cc
   src/core/LocalScope.cc
-  src/core/ScopeContext.cc
-  src/core/module.cc
-  src/core/node.cc
+  src/core/ModuleInstantiation.cc
   src/core/NodeDumper.cc
+  src/core/NodeVisitor.cc
   src/core/OffsetNode.cc
   src/core/Parameters.cc
-  src/core/parsersettings.cc
-  src/core/primitives.cc
-  src/core/progress.cc
   src/core/ProjectionNode.cc
   src/core/RenderNode.cc
   src/core/RenderVariables.cc
-  src/core/DrawingCallback.cc
   src/core/RotateExtrudeNode.cc
-  src/core/SurfaceNode.cc
-  src/core/TextNode.cc
-  src/core/TransformNode.cc
-  src/core/UndefType.cc
-  src/core/Value.cc
-  src/core/Assignment.cc
-  src/core/AST.cc
-  src/core/FreetypeRenderer.cc
-  src/core/GroupModule.cc
-  src/core/ModuleInstantiation.cc
-  src/core/NodeVisitor.cc
+  src/core/ScopeContext.cc
   src/core/SourceFile.cc
   src/core/SourceFileCache.cc
   src/core/StatCache.cc
-  src/core/UserModule.cc
+  src/core/SurfaceNode.cc
+  src/core/TextNode.cc
+  src/core/TransformNode.cc
   src/core/Tree.cc
+  src/core/UndefType.cc
+  src/core/UserModule.cc
+  src/core/Value.cc
+  src/core/builtin_functions.cc
+  src/core/control.cc
+  src/core/customizer/Annotation.cc
+  src/core/customizer/CommentParser.cc
   src/core/customizer/ParameterObject.cc
   src/core/customizer/ParameterSet.cc
-  src/ext/lodepng/lodepng.cpp
-  src/ext/polyclipping/clipper.cpp
+  src/core/function.cc
+  src/core/module.cc
+  src/core/node.cc
+  src/core/parsersettings.cc
+  src/core/primitives.cc
+  src/core/progress.cc
   src/ext/libtess2/Source/bucketalloc.c
   src/ext/libtess2/Source/dict.c
   src/ext/libtess2/Source/geom.c
@@ -795,23 +801,26 @@ set(CORE_SOURCES
   src/ext/libtess2/Source/priorityq.c
   src/ext/libtess2/Source/sweep.c
   src/ext/libtess2/Source/tess.c
+  src/ext/lodepng/lodepng.cpp
+  src/ext/polyclipping/clipper.cpp
   src/geometry/ClipperUtils.cc
   src/geometry/Geometry.cc
   src/geometry/GeometryCache.cc
+  src/geometry/GeometryEvaluator.cc
   src/geometry/GeometryUtils.cc
-  src/geometry/Polygon2d.cc
-  src/geometry/linalg.cc
   src/geometry/PolySet.cc
   src/geometry/PolySetBuilder.cc
   src/geometry/PolySetUtils.cc
-  src/geometry/GeometryEvaluator.cc
-  src/geometry/linear_extrude.cc
+  src/geometry/Polygon2d.cc
   src/geometry/boolean_utils.cc
-  src/glview/OffscreenContextFactory.cc
-  src/glview/RenderSettings.cc
+  src/geometry/linalg.cc
+  src/geometry/linear_extrude.cc
   src/glview/Camera.cc
   src/glview/ColorMap.cc
+  src/glview/OffscreenContextFactory.cc
+  src/glview/RenderSettings.cc
   src/glview/preview/CSGTreeNormalizer.cc
+  src/handle_dep.cc
   src/io/DxfData.cc
   src/io/dxfdim.cc
   src/io/export.cc
@@ -819,44 +828,45 @@ set(CORE_SOURCES
   src/io/export_dxf.cc
   src/io/export_obj.cc
   src/io/export_off.cc
-  src/io/export_wrl.cc
+  src/io/export_param.cc
   src/io/export_pdf.cc
   src/io/export_stl.cc
   src/io/export_svg.cc
-  src/io/export_param.cc
+  src/io/export_wrl.cc
   src/io/fileutils.cc
   src/io/import_amf.cc
-  src/io/import_stl.cc
+  src/io/import_json.cc
   src/io/import_obj.cc
   src/io/import_off.cc
+  src/io/import_stl.cc
   src/io/import_svg.cc
-  src/io/import_json.cc
-  src/io/libsvg/circle.cc
-  src/io/libsvg/data.cc
-  src/io/libsvg/ellipse.cc
-  src/io/libsvg/group.cc
-  src/io/libsvg/libsvg.cc
-  src/io/libsvg/line.cc
-  src/io/libsvg/path.cc
-  src/io/libsvg/polygon.cc
-  src/io/libsvg/polyline.cc
-  src/io/libsvg/rect.cc
-  src/io/libsvg/shape.cc
-  src/io/libsvg/svgpage.cc
-  src/io/libsvg/text.cc
-  src/io/libsvg/transformation.cc
-  src/io/libsvg/tspan.cc
-  src/io/libsvg/use.cc
-  src/io/libsvg/util.cc
+  src/libsvg/circle.cc
+  src/libsvg/data.cc
+  src/libsvg/ellipse.cc
+  src/libsvg/group.cc
+  src/libsvg/libsvg.cc
+  src/libsvg/line.cc
+  src/libsvg/path.cc
+  src/libsvg/polygon.cc
+  src/libsvg/polyline.cc
+  src/libsvg/rect.cc
+  src/libsvg/shape.cc
+  src/libsvg/svgpage.cc
+  src/libsvg/text.cc
+  src/libsvg/transformation.cc
+  src/libsvg/tspan.cc
+  src/libsvg/use.cc
+  src/libsvg/util.cc
   src/platform/PlatformUtils.cc
+  src/utils/StackCheck.h
   src/utils/boost-utils.cc
   src/utils/calc.cc
   src/utils/degree_trig.cc
   src/utils/hash.cc
   src/utils/printutils.cc
-  src/utils/StackCheck.h
   src/utils/svg.cc
   src/utils/version_check.h
+  src/version.cc
   ${LIB3MF_SOURCES}
   ${PLATFORM_SOURCES}
   ${FLEX_openscad_lexer_OUTPUTS}
@@ -916,10 +926,8 @@ set(MANIFOLD_CGAL_SOURCES
 if(EXPERIMENTAL AND ENABLE_TBB)
   # Note: currently only Manifold-related code makes use of TBB parallelization
   # ("exact" CGAL numerics are not thread-safe)
-  target_compile_options(OpenSCAD PRIVATE 
+  target_compile_options(OpenSCAD PRIVATE
     -DENABLE_TBB
-    -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_TBB
-    -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_TBB
   )
   find_package(TBB QUIET)
   if (NOT TBB_FOUND AND PKG_CONFIG_FOUND)
@@ -937,7 +945,7 @@ if(EXPERIMENTAL AND ENABLE_TBB)
   target_link_libraries(OpenSCAD PRIVATE TBB::tbb)
 endif()
 
-if(EXPERIMENTAL)
+if(ENABLE_MANIFOLD)
 
   # Hack to find our wanted version of Python before Manifold's included googletest finds Python2
   find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
@@ -949,22 +957,19 @@ if(EXPERIMENTAL)
   set(PYBIND11_FINDPYTHON OFF)
   set(MANIFOLD_PYBIND OFF)
   set(MANIFOLD_TEST OFF)
-
-  if(CMAKE_UNITY_BUILD)
-    set(CMAKE_UNITY_BUILD OFF)
-    add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
-    set(CMAKE_UNITY_BUILD ON)
+  if(USE_BUILTIN_MANIFOLD)
+    if(CMAKE_UNITY_BUILD)
+      set(CMAKE_UNITY_BUILD OFF)
+      add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
+      set(CMAKE_UNITY_BUILD ON)
+    else()
+      add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
+    endif()
   else()
-    add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
+    find_package(manifold REQUIRED)
   endif()
-  target_link_libraries(OpenSCAD PRIVATE manifold polygon)
+  target_link_libraries(OpenSCAD PRIVATE manifold polygon cross_section)
   add_sanitizers(manifold)
-
-  target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
-  list(APPEND Sources ${MANIFOLD_SOURCES})
-  if (ENABLE_CGAL)
-    list(APPEND Sources ${MANIFOLD_CGAL_SOURCES})
-  endif()
 
   if (USE_MANIFOLD_TRIANGULATOR)
     target_compile_definitions(OpenSCAD PRIVATE USE_MANIFOLD_TRIANGULATOR)
@@ -1001,6 +1006,7 @@ else()
     src/glview/VertexState.cc
     src/glview/VBORenderer.cc
     src/glview/GLView.cc
+    src/glview/hershey.cc
     src/glview/OffscreenView.cc
     src/glview/cgal/CGALRenderer.cc
     src/glview/cgal/CGALRenderUtils.cc
@@ -1043,6 +1049,7 @@ set(GUI_SOURCES
   src/gui/MainWindow.cc
   src/gui/Measurement.cc
   src/gui/Animate.cc
+  src/gui/FontList.cc
   src/gui/MouseSelector.cc
   src/gui/OctoPrint.cc
   src/gui/OpenCSGWarningDialog.cc
@@ -1101,6 +1108,7 @@ set(GUI_HEADERS
     src/gui/ErrorLog.h
     src/gui/EventFilter.h
     src/gui/ExportPdfDialog.h
+    src/gui/FontList.h
     src/gui/FontListDialog.h
     src/gui/FontListTableView.h
     src/gui/IgnoreWheelWhenNotFocused.h
@@ -1153,6 +1161,7 @@ set(GUI_UIS
     src/gui/Console.ui
     src/gui/ErrorLog.ui
     src/gui/ExportPdfDialog.ui
+    src/gui/FontList.ui
     src/gui/FontListDialog.ui
     src/gui/LaunchingScreen.ui
     src/gui/LibraryInfoDialog.ui
@@ -1179,8 +1188,15 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set_source_files_properties("src/ext/polyclipping/clipper.cpp" PROPERTIES COMPILE_FLAGS "-Wno-class-memaccess")
 endif()
 
+if (ENABLE_MANIFOLD)
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
+  list(APPEND Sources ${MANIFOLD_SOURCES})
+endif()
 if (ENABLE_CGAL)
   list(APPEND Sources ${CGAL_SOURCES})
+endif()
+if (ENABLE_MANIFOLD AND ENABLE_CGAL)
+  list(APPEND Sources ${MANIFOLD_CGAL_SOURCES})
 endif()
 list(APPEND Sources src/openscad.cc ${CORE_SOURCES} ${OFFSCREEN_SOURCES})
 

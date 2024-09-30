@@ -1,8 +1,14 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #pragma once
 
+#include <unordered_map>
+#include <unordered_set>
+#include <memory>
 #include <CGAL/Polygon_mesh_processing/corefinement.h>
-#include "cgalutils-coplanar-faces-remesher.h"
+#include "geometry/cgal/cgalutils-coplanar-faces-remesher.h"
+
+#include <cstddef>
+#include <vector>
 
 namespace CGALUtils {
 

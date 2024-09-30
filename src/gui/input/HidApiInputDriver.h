@@ -26,10 +26,12 @@
 
 #pragma once
 
+#include <cstddef>
+#include <string>
 #include <utility>
 #include <hidapi.h>
 
-#include "input/InputDriver.h"
+#include "gui/input/InputDriver.h"
 
 class HidApiInputDriver : public InputDriver
 {
