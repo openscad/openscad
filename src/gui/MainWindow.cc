@@ -34,7 +34,9 @@
 #include <string>
 #include <vector>
 
+#ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
+#endif
 #include "utils/boost-utils.h"
 #include "core/Builtins.h"
 #include "core/BuiltinContext.h"
