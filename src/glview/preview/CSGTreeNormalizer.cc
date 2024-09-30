@@ -1,3 +1,4 @@
+#include <cassert>
 #include <utility>
 #include <memory>
 #include <stack>

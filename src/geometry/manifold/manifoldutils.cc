@@ -7,6 +7,7 @@
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgalutils.h"
 #include "geometry/cgal/CGALHybridPolyhedron.h"
+#include <cassert>
 #include <map>
 #include <set>
 #include <exception>

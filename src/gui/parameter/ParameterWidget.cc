@@ -25,6 +25,7 @@
  */
 #include "gui/parameter/ParameterWidget.h"
 
+#include <cassert>
 #include <map>
 #include <set>
 #include <memory>

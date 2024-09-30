@@ -3,6 +3,7 @@
 #include "utils/printutils.h"
 #include "utils/degree_trig.h"
 
+#include <cassert>
 #include <memory>
 #include <vector>
 

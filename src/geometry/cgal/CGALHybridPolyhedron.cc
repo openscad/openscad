@@ -3,6 +3,7 @@
 
 #include "geometry/cgal/cgalutils.h"
 #include "Feature.h"
+#include <cassert>
 #include <map>
 #include <unordered_set>
 #include <functional>

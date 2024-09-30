@@ -13,6 +13,7 @@
 #include "core/node.h"
 #include "utils/degree_trig.h"
 
+#include <cassert>
 #include <set>
 #include <utility>
 #include <memory>
