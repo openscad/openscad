@@ -2,6 +2,7 @@
 #include "glview/RenderSettings.h"
 #include "utils/printutils.h"
 #include "gui/input/InputEventMapper.h"
+#include <array>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <cstddef>

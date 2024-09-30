@@ -7,6 +7,7 @@
 #include "core/Selection.h"
 
 #ifdef _MSC_VER // NULL
+#include <map>
 #include <cstdlib>
 #endif
 

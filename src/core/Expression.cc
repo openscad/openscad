@@ -27,6 +27,7 @@
 
 #include "utils/compiler_specific.h"
 #include "core/Value.h"
+#include <set>
 #include <functional>
 #include <ostream>
 #include <cstdint>
