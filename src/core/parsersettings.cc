@@ -1,5 +1,6 @@
 #include "core/parsersettings.h"
 
+#include <cassert>
 #include <string>
 #include <vector>
 

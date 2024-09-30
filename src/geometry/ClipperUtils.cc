@@ -1,6 +1,7 @@
 #include "geometry/ClipperUtils.h"
 #include "utils/printutils.h"
 
+#include <cassert>
 #include <utility>
 #include <memory>
 #include <cstddef>

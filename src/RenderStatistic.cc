@@ -26,6 +26,8 @@
 
 #include "RenderStatistic.h"
 
+#include <cassert>
+#include <array>
 #include <iostream>
 #include <memory>
 #include <fstream>

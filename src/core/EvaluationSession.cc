@@ -26,6 +26,7 @@
 
 #include "core/EvaluationSession.h"
 
+#include <cassert>
 #include <cstddef>
 #include <string>
 

@@ -29,6 +29,8 @@
 #include "utils/printutils.h"
 #include "geometry/Geometry.h"
 
+#include <cassert>
+#include <map>
 #include <iostream>
 #include <cstdint>
 #include <memory>

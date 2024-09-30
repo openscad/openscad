@@ -1,6 +1,8 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #include "geometry/manifold/ManifoldGeometry.h"
 #include "geometry/Polygon2d.h"
+#include <map>
+#include <set>
 #include <functional>
 #include <exception>
 #include <sstream>

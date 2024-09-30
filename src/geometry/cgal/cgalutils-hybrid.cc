@@ -3,6 +3,7 @@
 #include "geometry/cgal/CGALHybridPolyhedron.h"
 
 
+#include <cassert>
 #include <memory>
 #include <CGAL/boost/graph/helpers.h>
 #include <CGAL/Polygon_mesh_processing/orientation.h>

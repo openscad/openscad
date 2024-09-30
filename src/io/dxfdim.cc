@@ -35,6 +35,7 @@
 #include "handle_dep.h"
 #include "utils/degree_trig.h"
 
+#include <unordered_map>
 #include <utility>
 #include <cstddef>
 #include <cmath>

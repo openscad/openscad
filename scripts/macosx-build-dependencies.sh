@@ -58,7 +58,7 @@ PACKAGES=(
     "glib2 2.81.0"
     "pixman 0.42.2"
     "cairo 1.18.0"
-    "cgal 5.6.1"
+    "cgal 6.0"
     "qt5 5.15.13"
     "opencsg 1.6.0"
     "qscintilla 2.13.3"

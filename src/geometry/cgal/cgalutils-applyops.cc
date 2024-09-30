@@ -16,6 +16,7 @@
 #endif
 #include "core/node.h"
 
+#include <cassert>
 #include <utility>
 #include <exception>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>

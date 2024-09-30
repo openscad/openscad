@@ -13,6 +13,8 @@
 #include "core/node.h"
 #include "utils/degree_trig.h"
 
+#include <cassert>
+#include <set>
 #include <utility>
 #include <memory>
 #include <CGAL/Aff_transformation_3.h>

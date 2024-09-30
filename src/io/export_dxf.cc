@@ -24,6 +24,7 @@
  *
  */
 
+#include <cassert>
 #include <limits>
 #include <ostream>
 #include <memory>

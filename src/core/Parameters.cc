@@ -26,6 +26,7 @@
 
 #include "core/Parameters.h"
 
+#include <cassert>
 #include <sstream>
 #include <memory>
 #include <cstddef>
