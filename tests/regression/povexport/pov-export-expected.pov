@@ -5,63 +5,153 @@
 global_settings { assumed_gamma 1.0 }
 #declare MATERIAL=finish { specular 0.5 roughness 0.001 reflection{0 0.63 fresnel} ambient 0 diffuse 0.6 conserve_energy }
 #declare MATERIAL_INT=interior{ior 1.32}
-polygon { 5, 
-<-0.5, -0.5, -0.5>, <-0.5, -0.5, 0.5>, <-0.5, 0.5, 0.5>, <-0.5, 0.5, -0.5>, <-0.5, -0.5, -0.5>
+polygon { 4, 
+<-10, 0, 0>, <-10, 0, 10>, <-10, 10, 10>, <-10, 0, 0>
 texture { pigment { color rgbf <1, 1, 1, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 5, 
-<-0.5, -0.5, -0.5>, <-0.5, 0.5, -0.5>, <0.5, 0.5, -0.5>, <0.5, -0.5, -0.5>, <-0.5, -0.5, -0.5>
+polygon { 4, 
+<-10, 0, 0>, <-10, 10, 0>, <0, 10, 0>, <-10, 0, 0>
 texture { pigment { color rgbf <1, 1, 1, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 5, 
-<-0.5, -0.5, -0.5>, <0.5, -0.5, -0.5>, <0.5, -0.5, 0.5>, <-0.5, -0.5, 0.5>, <-0.5, -0.5, -0.5>
+polygon { 4, 
+<-10, 0, 0>, <-10, 10, 10>, <-10, 10, 0>, <-10, 0, 0>
 texture { pigment { color rgbf <1, 1, 1, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 5, 
-<-0.5, -0.5, 0.5>, <0.5, -0.5, 0.5>, <0.5, 0.5, 0.5>, <-0.5, 0.5, 0.5>, <-0.5, -0.5, 0.5>
+polygon { 4, 
+<-10, 0, 0>, <0, 0, 0>, <0, 0, 10>, <-10, 0, 0>
 texture { pigment { color rgbf <1, 1, 1, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 5, 
-<-0.5, 0.5, -0.5>, <-0.5, 0.5, 0.5>, <0.5, 0.5, 0.5>, <0.5, 0.5, -0.5>, <-0.5, 0.5, -0.5>
+polygon { 4, 
+<-10, 0, 0>, <0, 0, 10>, <-10, 0, 10>, <-10, 0, 0>
 texture { pigment { color rgbf <1, 1, 1, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 5, 
-<0.5, -0.5, -0.5>, <0.5, 0.5, -0.5>, <0.5, 0.5, 0.5>, <0.5, -0.5, 0.5>, <0.5, -0.5, -0.5>
+polygon { 4, 
+<-10, 0, 0>, <0, 10, 0>, <0, 0, 0>, <-10, 0, 0>
 texture { pigment { color rgbf <1, 1, 1, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
-light_source { <-2.5, -2.5, -2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <-2.5, -2.5, 0> color rgb <0.2, 0.2, 0.2> }
-light_source { <-2.5, -2.5, 2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <-2.5, 0, -2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <-2.5, 0, 0> color rgb <0.2, 0.2, 0.2> }
-light_source { <-2.5, 0, 2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <-2.5, 2.5, -2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <-2.5, 2.5, 0> color rgb <0.2, 0.2, 0.2> }
-light_source { <-2.5, 2.5, 2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <0, -2.5, -2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <0, -2.5, 0> color rgb <0.2, 0.2, 0.2> }
-light_source { <0, -2.5, 2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <0, 0, -2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <0, 0, 0> color rgb <0.2, 0.2, 0.2> }
-light_source { <0, 0, 2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <0, 2.5, -2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <0, 2.5, 0> color rgb <0.2, 0.2, 0.2> }
-light_source { <0, 2.5, 2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <2.5, -2.5, -2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <2.5, -2.5, 0> color rgb <0.2, 0.2, 0.2> }
-light_source { <2.5, -2.5, 2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <2.5, 0, -2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <2.5, 0, 0> color rgb <0.2, 0.2, 0.2> }
-light_source { <2.5, 0, 2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <2.5, 2.5, -2.5> color rgb <0.2, 0.2, 0.2> }
-light_source { <2.5, 2.5, 0> color rgb <0.2, 0.2, 0.2> }
-light_source { <2.5, 2.5, 2.5> color rgb <0.2, 0.2, 0.2> }
-camera { look_at <0, 0, 0> location <1.5, -2.5, 1.5> up <0, 0, 1> right <1, 0, 0> sky <0, 0, 1> rotate <-55, clock * 3, clock + 25> right x*image_width/image_height }
+polygon { 4, 
+<-10, 0, 10>, <0, 0, 10>, <-10, 10, 10>, <-10, 0, 10>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<-10, 10, 0>, <-10, 10, 10>, <0, 10, 0>, <-10, 10, 0>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<-10, 10, 10>, <0, 0, 10>, <0, 10, 10>, <-10, 10, 10>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<-10, 10, 10>, <0, 10, 10>, <0, 10, 0>, <-10, 10, 10>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<0, 0, 0>, <0, 10, 0>, <0, 0, 10>, <0, 0, 0>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<0, 0, 10>, <0, 10, 0>, <0, 10, 10>, <0, 0, 10>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<10, 0, 0>, <10, 0, 10>, <10, 10, 10>, <10, 0, 0>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<10, 0, 0>, <10, 10, 0>, <20, 10, 0>, <10, 0, 0>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<10, 0, 0>, <10, 10, 10>, <10, 10, 0>, <10, 0, 0>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<10, 0, 0>, <20, 0, 0>, <20, 0, 10>, <10, 0, 0>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<10, 0, 0>, <20, 0, 10>, <10, 0, 10>, <10, 0, 0>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<10, 0, 0>, <20, 10, 0>, <20, 0, 0>, <10, 0, 0>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<10, 0, 10>, <20, 0, 10>, <10, 10, 10>, <10, 0, 10>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<10, 10, 0>, <10, 10, 10>, <20, 10, 0>, <10, 10, 0>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<10, 10, 10>, <20, 0, 10>, <20, 10, 10>, <10, 10, 10>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<10, 10, 10>, <20, 10, 10>, <20, 10, 0>, <10, 10, 10>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<20, 0, 0>, <20, 10, 0>, <20, 0, 10>, <20, 0, 0>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+polygon { 4, 
+<20, 0, 10>, <20, 10, 0>, <20, 10, 10>, <20, 0, 10>
+texture { pigment { color rgbf <1, 1, 1, 0> } }
+finish { MATERIAL } interior { MATERIAL_INT }
+}
+light_source { <-70, -20, -20> color rgb <0.2, 0.2, 0.2> }
+light_source { <-70, -20, 5> color rgb <0.2, 0.2, 0.2> }
+light_source { <-70, -20, 30> color rgb <0.2, 0.2, 0.2> }
+light_source { <-70, 5, -20> color rgb <0.2, 0.2, 0.2> }
+light_source { <-70, 5, 5> color rgb <0.2, 0.2, 0.2> }
+light_source { <-70, 5, 30> color rgb <0.2, 0.2, 0.2> }
+light_source { <-70, 30, -20> color rgb <0.2, 0.2, 0.2> }
+light_source { <-70, 30, 5> color rgb <0.2, 0.2, 0.2> }
+light_source { <-70, 30, 30> color rgb <0.2, 0.2, 0.2> }
+light_source { <5, -20, -20> color rgb <0.2, 0.2, 0.2> }
+light_source { <5, -20, 5> color rgb <0.2, 0.2, 0.2> }
+light_source { <5, -20, 30> color rgb <0.2, 0.2, 0.2> }
+light_source { <5, 5, -20> color rgb <0.2, 0.2, 0.2> }
+light_source { <5, 5, 5> color rgb <0.2, 0.2, 0.2> }
+light_source { <5, 5, 30> color rgb <0.2, 0.2, 0.2> }
+light_source { <5, 30, -20> color rgb <0.2, 0.2, 0.2> }
+light_source { <5, 30, 5> color rgb <0.2, 0.2, 0.2> }
+light_source { <5, 30, 30> color rgb <0.2, 0.2, 0.2> }
+light_source { <80, -20, -20> color rgb <0.2, 0.2, 0.2> }
+light_source { <80, -20, 5> color rgb <0.2, 0.2, 0.2> }
+light_source { <80, -20, 30> color rgb <0.2, 0.2, 0.2> }
+light_source { <80, 5, -20> color rgb <0.2, 0.2, 0.2> }
+light_source { <80, 5, 5> color rgb <0.2, 0.2, 0.2> }
+light_source { <80, 5, 30> color rgb <0.2, 0.2, 0.2> }
+light_source { <80, 30, -20> color rgb <0.2, 0.2, 0.2> }
+light_source { <80, 30, 5> color rgb <0.2, 0.2, 0.2> }
+light_source { <80, 30, 30> color rgb <0.2, 0.2, 0.2> }
+camera { look_at <5, 5, 5> location <50, -20, 20> up <0, 0, 1> right <1, 0, 0> sky <0, 0, 1> rotate <-55, clock * 3, clock + 25> right x*image_width/image_height }
 #include "rad_def.inc"
 global_settings { photons { count 20000 autostop 0 jitter .4 } radiosity { Rad_Settings(Radiosity_Normal, off, off) } }
