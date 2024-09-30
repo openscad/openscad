@@ -7,122 +7,122 @@ global_settings { assumed_gamma 1.0 }
 #declare MATERIAL_INT=interior{ior 1.32}
 polygon { 4, 
 <-10, 0, 0>, <-10, 0, 10>, <-10, 10, 10>, <-10, 0, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <-10, 0, 0>, <-10, 10, 0>, <0, 10, 0>, <-10, 0, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <-10, 0, 0>, <-10, 10, 10>, <-10, 10, 0>, <-10, 0, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <-10, 0, 0>, <0, 0, 0>, <0, 0, 10>, <-10, 0, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <-10, 0, 0>, <0, 0, 10>, <-10, 0, 10>, <-10, 0, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <-10, 0, 0>, <0, 10, 0>, <0, 0, 0>, <-10, 0, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <-10, 0, 10>, <0, 0, 10>, <-10, 10, 10>, <-10, 0, 10>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <-10, 10, 0>, <-10, 10, 10>, <0, 10, 0>, <-10, 10, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <-10, 10, 10>, <0, 0, 10>, <0, 10, 10>, <-10, 10, 10>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <-10, 10, 10>, <0, 10, 10>, <0, 10, 0>, <-10, 10, 10>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <0, 0, 0>, <0, 10, 0>, <0, 0, 10>, <0, 0, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <0, 0, 10>, <0, 10, 0>, <0, 10, 10>, <0, 0, 10>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <10, 0, 0>, <10, 0, 10>, <10, 10, 10>, <10, 0, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <10, 0, 0>, <10, 10, 0>, <20, 10, 0>, <10, 0, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <10, 0, 0>, <10, 10, 10>, <10, 10, 0>, <10, 0, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <10, 0, 0>, <20, 0, 0>, <20, 0, 10>, <10, 0, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <10, 0, 0>, <20, 0, 10>, <10, 0, 10>, <10, 0, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <10, 0, 0>, <20, 10, 0>, <20, 0, 0>, <10, 0, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <10, 0, 10>, <20, 0, 10>, <10, 10, 10>, <10, 0, 10>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <10, 10, 0>, <10, 10, 10>, <20, 10, 0>, <10, 10, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <10, 10, 10>, <20, 0, 10>, <20, 10, 10>, <10, 10, 10>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <10, 10, 10>, <20, 10, 10>, <20, 10, 0>, <10, 10, 10>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <20, 0, 0>, <20, 10, 0>, <20, 0, 10>, <20, 0, 0>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
 <20, 0, 10>, <20, 10, 0>, <20, 10, 10>, <20, 0, 10>
-texture { pigment { color rgbf <1, 1, 1, 0> } }
+texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 light_source { <-70, -20, -20> color rgb <0.2, 0.2, 0.2> }
