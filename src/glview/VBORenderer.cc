@@ -275,7 +275,12 @@ void VBORenderer::create_surface(const PolySet& ps, VertexArray& vertex_array,
   for (int i = 0, n = ps.indices.size(); i < n; i++) {
     const auto& poly = ps.indices[i];
     const auto color_index = has_colors && i < ps.color_indices.size() ? ps.color_indices[i] : -1;
-    const auto& color = !force_default_color && color_index >= 0 && color_index < ps.colors.size() ? ps.colors[color_index] : default_color;
+    const auto& color = 
+      !force_default_color && 
+      color_index >= 0 && 
+      color_index < ps.colors.size() && 
+      ps.colors[color_index].isValid() ? 
+      ps.colors[color_index] : default_color;
     if (poly.size() == 3) {
       Vector3d p0 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(0)], m);
       Vector3d p1 = uniqueMultiply(vert_mult_map, ps.vertices[poly.at(1)], m);
