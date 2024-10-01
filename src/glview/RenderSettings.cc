@@ -1,4 +1,5 @@
 #include "glview/RenderSettings.h"
+#include <string>
 #include "utils/printutils.h"
 
 std::string renderBackend3DToString(RenderBackend3D backend) {

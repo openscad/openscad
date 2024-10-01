@@ -39,6 +39,7 @@
 #include "handle_dep.h"
 #include "lodepng/lodepng.h"
 
+#include <string>
 #include <utility>
 #include <memory>
 #include <cstdint>
