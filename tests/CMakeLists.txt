@@ -857,6 +857,7 @@ list(APPEND SCADFILES_WITH_COLOR
   ${EXAMPLES_DIR}/Basics/rotate_extrude.scad
   ${EXAMPLES_DIR}/Old/example017.scad
 
+  ${TEST_SCAD_DIR}/3D/issues/issue5216.scad
   ${TEST_SCAD_DIR}/3D/issues/issue5217.scad
 
   #${TEST_SCAD_DIR}/bugs/issue1000.scad
