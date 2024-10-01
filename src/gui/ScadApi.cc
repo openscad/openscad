@@ -1,5 +1,6 @@
 #include "gui/ScadApi.h"
 
+#include <string>
 #include <QDir>
 #include <QFileInfo>
 #include <QRegularExpression>

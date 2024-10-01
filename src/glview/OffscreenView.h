@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdexcept>
 #include <cstdint>
 #include <memory>
 #include <string>
