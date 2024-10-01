@@ -1,4 +1,5 @@
 #include "utils/boost-utils.h"
+#include <stdexcept>
 #include <cstdio>
 #include <string>
 #include <iostream>
