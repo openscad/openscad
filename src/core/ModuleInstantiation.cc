@@ -54,10 +54,10 @@ void IfElseModuleInstantiation::print(std::ostream& stream, const std::string& i
 }
 
 /**
- * This is separated because PRINTB uses quite a lot of stack space
- * and the method using it evaluate()
+ * This is separated because LOG uses quite a lot of stack space
+ * and the method using it, evaluate(),
  * is called often when recursive modules are evaluated.
- * noinline is required, as we here specifically optimize for stack usage
+ * NOINLINE is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
  */
 static void NOINLINE print_trace(const ModuleInstantiation *mod, const std::shared_ptr<const Context>& context){

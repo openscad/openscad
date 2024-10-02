@@ -779,7 +779,7 @@ bool parse(SourceFile *&file, const std::string& text, const std::string &filena
 
   rootfile = new SourceFile(parser_sourcefile.parent_path().string(), parser_sourcefile.filename().string());
   scope_stack.push(&rootfile->scope);
-  //        PRINTB_NOCACHE("New module: %s %p", "root" % rootfile);
+  //        PRINTD("New module: %s %p", "root" % rootfile);
 
   parserdebug = debug;
   int parserretval = -1;
