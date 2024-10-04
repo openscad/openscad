@@ -3,6 +3,7 @@
 #include <memory>
 #include <QThread>
 
+#include "ManifoldGeometry.h"
 #include "core/Tree.h"
 #include "geometry/GeometryEvaluator.h"
 #include "core/progress.h"
@@ -36,6 +37,14 @@ void CGALWorker::work()
   try {
     GeometryEvaluator evaluator(*this->tree);
     root_geom = evaluator.evaluateGeometry(*this->tree->root(), true);
+
+    if (auto manifold = std::dynamic_pointer_cast<const ManifoldGeometry>(root_geom)) {
+      // calling status forces evaluation
+      // we should complete evaluation within the worker thread, so computation
+      // will not block the GUI.
+      if (manifold->getManifold().Status() != manifold::Manifold::Error::NoError)
+        LOG(message_group::Error, "Rendering cancelled due to unknown manifold error.");
+    }
   } catch (const ProgressCancelException& e) {
     LOG("Rendering cancelled.");
   } catch (const HardWarningException& e) {

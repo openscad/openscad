@@ -26,6 +26,7 @@
 
 #include "io/DxfData.h"
 
+#include <stdexcept>
 #include <memory>
 #include <cmath>
 

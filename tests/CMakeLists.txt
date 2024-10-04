@@ -849,9 +849,13 @@ list(APPEND SCADFILES_WITH_COLOR
   ${EXAMPLES_DIR}/Advanced/assert.scad
   ${EXAMPLES_DIR}/Advanced/animation.scad
   ${EXAMPLES_DIR}/Advanced/GEB.scad
+  ${EXAMPLES_DIR}/Advanced/children.scad
   ${EXAMPLES_DIR}/Advanced/children_indexed.scad
+  ${EXAMPLES_DIR}/Basics/CSG-modules.scad
   ${EXAMPLES_DIR}/Basics/linear_extrude.scad
+  ${EXAMPLES_DIR}/Basics/logo_and_text.scad
   ${EXAMPLES_DIR}/Basics/projection.scad
+  ${EXAMPLES_DIR}/Basics/text_on_cube.scad
   ${EXAMPLES_DIR}/Advanced/surface_image.scad
   ${EXAMPLES_DIR}/Functions/functions.scad
   ${EXAMPLES_DIR}/Basics/rotate_extrude.scad
@@ -877,6 +881,7 @@ list(APPEND SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS
 
   # render() in manifold mode preserves colors
   ${TEST_SCAD_DIR}/3D/features/render-tests.scad
+  ${EXAMPLES_DIR}/Old/example016.scad
 
   # Manifold can represent the very think slice
   ${TEST_SCAD_DIR}/3D/issues/issue1165.scad

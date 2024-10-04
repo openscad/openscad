@@ -3,6 +3,7 @@
 
 #ifdef ENABLE_CGAL
 
+#include <queue>
 #include <cassert>
 #include <utility>
 #include <memory>
