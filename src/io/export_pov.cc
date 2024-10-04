@@ -24,10 +24,10 @@
  *
  */
 
-#include "export.h"
+#include "io/export.h"
 
-#include "PolySet.h"
-#include "PolySetUtils.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
 
 
 void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
@@ -59,21 +59,21 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       output << "<" << x << ", " << y << ", " << z << ">";
     }
     output << ", <" << ps->vertices[polygon[0]].x() << ", " << ps->vertices[polygon[0]].y() << ", " << ps->vertices[polygon[0]].z() << ">";
-    float r = 1.0, g = 1.0, b = 1.0, a = 0.0;
+    float r = 0xf9 / 255., g = 0xd7 / 255., b = 0x2c / 255., f = 0.;  // CGAL_FACE_FRONT_COLOR
     if (has_color) {
       auto color_index = ps->color_indices[polygon_index];
       if (color_index >= 0) {
         auto color = ps->colors[color_index];
-        r = float(color[0]);
-        g = float(color[1]);
-        b = float(color[2]);
-        a = 1.0 - color[3];
+        r = color[0];
+        g = color[1];
+        b = color[2];
+        f = 1.0 - color[3];
       }
     }
-    if (r == 0 && g == 0 && b == 0)  // work around for black objects in 5185
+    if (r == 0 && g == 0 && b == 0)  // work around for black objects
       g = 1.0;
     output << "\n";
-    output << "texture { pigment { color rgbf <" << r << ", " << g << ", " << b << ", " << a << "> } }\n";
+    output << "texture { pigment { color rgbf <" << r << ", " << g << ", " << b << ", " << f << "> } }\n";
     output << "finish { MATERIAL } interior { MATERIAL_INT }\n";
     output << "}\n";
   }
@@ -100,15 +100,15 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   constexpr float brightness = 0.2;  // 1.0 is way too bright
 
   for(auto cur_lx: lx) {
-	  for(auto cur_ly: ly) {
-		  for(auto cur_lz: lz)
-			  output << "light_source { <" << cur_lx << ", " << cur_ly << ", " << cur_lz << "> color rgb <" << brightness << ", " << brightness << ", " << brightness << "> }\n";
-	  }
+    for(auto cur_ly: ly) {
+      for(auto cur_lz: lz)
+        output << "light_source { <" << cur_lx << ", " << cur_ly << ", " << cur_lz << "> color rgb <" << brightness << ", " << brightness << ", " << brightness << "> }\n";
+    }
   }
 
-  output << "camera { look_at <" << (min_x + max_x) / 2 << ", " << (min_y + max_y) / 2 << ", " << (min_z + max_z) / 2 << "> "
-	  "location <" << min_x + dx * move_away_factor << ", " << min_y - dy * move_away_factor << ", " << min_z + dz * move_away_factor << "> "
-	  "up <0, 0, 1> right <1, 0, 0> sky <0, 0, 1> rotate <-55, clock * 3, clock + 25> right x*image_width/image_height }\n";
+  output << "camera { look_at <" << bbox.center().x() << ", " << bbox.center().y() << ", " << bbox.center().z() << "> "
+    "location <" << min_x + dx * move_away_factor << ", " << min_y - dy * move_away_factor << ", " << min_z + dz * move_away_factor << "> "
+    "up <0, 0, 1> right <1, 0, 0> sky <0, 0, 1> rotate <-55, clock * 3, clock + 25> right x*image_width/image_height }\n";
   output << "#include \"rad_def.inc\"\n";
   output << "global_settings { photons { count 20000 autostop 0 jitter .4 } radiosity { Rad_Settings(Radiosity_Normal, off, off) } }\n";
 }
