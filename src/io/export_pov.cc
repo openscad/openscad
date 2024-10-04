@@ -70,8 +70,6 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
         f = 1.0 - color[3];
       }
     }
-    if (r == 0 && g == 0 && b == 0)  // work around for black objects
-      g = 1.0;
     output << "\n";
     output << "texture { pigment { color rgbf <" << r << ", " << g << ", " << b << ", " << f << "> } }\n";
     output << "finish { MATERIAL } interior { MATERIAL_INT }\n";
