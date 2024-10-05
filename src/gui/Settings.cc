@@ -134,8 +134,8 @@ SettingsEntryString Settings::localSlicerExecutable("printing", "localSlicerExec
 SettingsEntryEnum Settings::localSlicerFileFormat("printing", "localSlicerFileFormat", {{"STL", "STL"}, {"OFF", "OFF"}, {"AMF", "AMF"}, {"3MF", "3MF"}}, "STL");
 
 SettingsEntryBool Settings::exportUseAsciiSTL("export", "useAsciiSTL", false);
-SettingsEntryEnum Settings::renderBackend3D("advanced", "renderBackend3D", {{"CGAL", "CGAL (old/slow)"}, {"Manifold", "Manifold (new/fast)"}}, "CGAL");  
-SettingsEntryEnum Settings::toolbarExport3D("advanced", "toolbarExport3D", {{"none", "none"}, {"STL", "STL"}, {"OFF", "OFF"}, {"WRL", "WRL"}, {"AMF", "AMF"}, {"3MF", "3MF"}}, "STL");
+SettingsEntryEnum Settings::renderBackend3D("advanced", "renderBackend3D", {{"CGAL", "CGAL (old/slow)"}, {"Manifold", "Manifold (new/fast)"}}, "CGAL");
+SettingsEntryEnum Settings::toolbarExport3D("advanced", "toolbarExport3D", {{"none", "none"}, {"STL", "STL"}, {"OFF", "OFF"}, {"WRL", "WRL"}, {"AMF", "AMF"}, {"3MF", "3MF"}, {"POV", "POV"}}, "STL");
 SettingsEntryEnum Settings::toolbarExport2D("advanced", "toolbarExport2D", {{"none", "none"}, {"DXF", "DXF"}, {"SVG", "SVG"}, {"PDF", "PDF"}}, "none");
 
 SettingsEntryBool Settings::summaryCamera("summary", "camera", false);

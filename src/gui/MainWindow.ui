@@ -229,6 +229,7 @@
      </property>
      <addaction name="fileActionExportSTL"/>
      <addaction name="fileActionExportOBJ"/>
+     <addaction name="fileActionExportPOV"/>
      <addaction name="fileActionExportOFF"/>
      <addaction name="fileActionExportWRL"/>
      <addaction name="fileActionExportAMF"/>
@@ -1046,6 +1047,11 @@
   <action name="fileActionExportOBJ">
    <property name="text">
     <string>Export as &amp;OBJ...</string>
+   </property>
+  </action>
+  <action name="fileActionExportPOV">
+   <property name="text">
+    <string>Export as &amp;POV...</string>
    </property>
   </action>
   <action name="fileActionExportOFF">
