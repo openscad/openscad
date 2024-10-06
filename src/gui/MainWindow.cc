@@ -129,15 +129,15 @@ extern bool python_trusted;
 #include "cryptopp/base64.h"
 
 std::string SHA256HashString(std::string aString){
-  std::string digest;
-  CryptoPP::SHA256 hash;
+    std::string digest;
+    CryptoPP::SHA256 hash;
 
-  CryptoPP::StringSource foo(aString, true,
-                             new CryptoPP::HashFilter(hash,
-                                                      new CryptoPP::Base64Encoder(
-                                                        new CryptoPP::StringSink(digest))));
+    CryptoPP::StringSource foo(aString, true,
+    new CryptoPP::HashFilter(hash,
+      new CryptoPP::Base64Encoder (
+         new CryptoPP::StringSink(digest))));
 
-  return digest;
+    return digest;
 }
 
 #endif // ifdef ENABLE_PYTHON
@@ -2427,7 +2427,7 @@ void MainWindow::actionMeasureAngle()
 void MainWindow::leftClick(QPoint mouse)
 {
   QString str = meas.statemachine(mouse);
-  if (str.size() > 0) {
+  if(!str.isEmpty()) {
     this->qglview->measure_state = MEASURE_IDLE;
     QMenu resultmenu(this);
     auto action = resultmenu.addAction(str);
@@ -2524,7 +2524,7 @@ void MainWindow::rightClick(QPoint mouse)
 void MainWindow::measureFinished()
 {
   this->qglview->selected_obj.clear();
-  this->qglview->shown_obj.clear();
+  this->qglview->shown_obj = nullptr;
   this->qglview->update();
   this->qglview->measure_state = MEASURE_IDLE;
 }

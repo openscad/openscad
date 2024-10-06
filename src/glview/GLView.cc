@@ -183,9 +183,8 @@ void GLView::paintGL()
     showObject(obj,eyedir);
   }
   glColor3f(0,1,0);
-  for (const SelectedObject obj: this->shown_obj) {
-    showObject(obj,eyedir);
-  }
+  if(shown_obj != nullptr)
+    showObject(*shown_obj,eyedir);
   glDisable(GL_LIGHTING);
   if (showaxes) GLView::showSmallaxes(axescolor);
 }
@@ -425,8 +424,8 @@ void GLView::showObject(const SelectedObject &obj, const Vector3d &eyedir)
       }
       glEnd();
      }
-     break;
-   case SelectionType::SELECTION_LINE:
+     break;	
+   case SelectionType::SELECTION_SEGMENT:
      {
 	Vector3d diff=obj.p2-obj.p1;
 	Vector3d wdir=eyedir.cross(diff).normalized()*vd/2.0;
