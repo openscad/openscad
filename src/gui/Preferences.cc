@@ -360,18 +360,25 @@ void Preferences::setupFeaturesPage()
 
 void Preferences::setup3DPrintPage()
 {
-  // TODO: Select currently stored default
+  const auto currentSetting = QString::fromStdString(Settings::Settings::defaultPrintService.value());
 
   instance->comboBoxDefaultPrintService->clear();
   instance->comboBoxDefaultPrintService->addItem(_("NONE"), "NONE");
   for (const auto& printServiceItem : PrintService::getPrintServices()) {
     const auto& key = printServiceItem.first;
     const auto& printService = printServiceItem.second;
-    instance->comboBoxDefaultPrintService->addItem(QString(printService->getDisplayName()), 
-    QString("PRINT_SERVICE:") + QString::fromStdString(key));
+    const auto settingValue = QString("PRINT_SERVICE:") + QString::fromStdString(key);
+    const auto displayName = QString(printService->getDisplayName());
+    instance->comboBoxDefaultPrintService->addItem(displayName, 
+    settingValue);
+    if (settingValue == currentSetting) {
+      instance->comboBoxDefaultPrintService->setCurrentText(QString(printService->getDisplayName()));
+    }
   }
   instance->comboBoxDefaultPrintService->addItem(_("OctoPrint"), "OCTOPRINT");
   instance->comboBoxDefaultPrintService->addItem(_("Local Slicer"), "LOCALSLICER");
+
+  instance->comboBoxDefaultPrintService->setCurrentText(QString::fromStdString(Settings::Settings::defaultPrintService.value()));
 }
 
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()
