@@ -62,6 +62,7 @@
 #include "gui/SettingsWriter.h"
 #include "gui/OctoPrint.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
+#include "gui/PrintService.h"
 
 #include <string>
 
@@ -208,7 +209,7 @@ void Preferences::init() {
   initIntSpinBox(this->spinBoxShowWhitespaceSize, Settings::Settings::showWhitespaceSize);
   initIntSpinBox(this->spinBoxTabWidth, Settings::Settings::tabWidth);
 
-  initComboBox(this->comboBoxDefaultPrintService, Settings::Settings::defaultPrintService);
+//  initComboBox(this->comboBoxDefaultPrintService, Settings::Settings::defaultPrintService);
   initComboBox(this->comboBoxOctoPrintFileFormat, Settings::Settings::octoPrintFileFormat);
   initComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
   initComboBox(this->comboBoxLocalSlicerFileFormat, Settings::Settings::localSlicerFileFormat);
@@ -355,6 +356,22 @@ void Preferences::setupFeaturesPage()
   // fixed size space essentially gives the first row the width of the
   // spacer item itself.
   gridLayoutExperimentalFeatures->addItem(new QSpacerItem(20, 0, QSizePolicy::Fixed, QSizePolicy::Fixed), 1, 0, 1, 1, Qt::AlignLeading);
+}
+
+void Preferences::setup3DPrintPage()
+{
+  // TODO: Select currently stored default
+
+  instance->comboBoxDefaultPrintService->clear();
+  instance->comboBoxDefaultPrintService->addItem(_("NONE"), "NONE");
+  for (const auto& printServiceItem : PrintService::getPrintServices()) {
+    const auto& key = printServiceItem.first;
+    const auto& printService = printServiceItem.second;
+    instance->comboBoxDefaultPrintService->addItem(QString(printService->getDisplayName()), 
+    QString("PRINT_SERVICE:") + QString::fromStdString(key));
+  }
+  instance->comboBoxDefaultPrintService->addItem(_("OctoPrint"), "OCTOPRINT");
+  instance->comboBoxDefaultPrintService->addItem(_("Local Slicer"), "LOCALSLICER");
 }
 
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()
@@ -784,9 +801,11 @@ void Preferences::on_enableHidapiTraceCheckBox_toggled(bool checked)
   writeSettings();
 }
 
-void Preferences::on_comboBoxDefaultPrintService_activated(int val)
+void Preferences::on_comboBoxDefaultPrintService_textActivated(QString val)
 {
-  applyComboBox(this->comboBoxDefaultPrintService, val, Settings::Settings::defaultPrintService);
+  // TODO: Convert to key
+  Settings::Settings::defaultPrintService.setValue(val.toStdString());
+  writeSettings();
 }
 
 void Preferences::on_comboBoxOctoPrintAction_activated(int val)
@@ -1119,6 +1138,7 @@ void Preferences::create(const QStringList& colorSchemes)
   instance->init();
   instance->AxisConfig->init();
   instance->setupFeaturesPage();
+  instance->setup3DPrintPage();
   instance->updateGUI();
 }
 

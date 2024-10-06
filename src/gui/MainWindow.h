@@ -268,7 +268,7 @@ private slots:
   void action3DPrint();
   void sendToOctoPrint();
   void sendToLocalSlicer();
-  void sendToPrintService();
+  void sendToPrintService(const class PrintService *service);
   void actionRender();
   void actionRenderDone(const std::shared_ptr<const Geometry>&);
   void cgalRender();

@@ -2131,19 +2131,21 @@ void MainWindow::action3DPrint()
   const unsigned int dim = 3;
   if (!canExport(dim)) return;
 
-  const auto selectedService = PrintInitDialog::getResult();
+  auto selectedService = PrintInitDialog::getResult();
+  LOG("action3DPrint(): got from dialog: %1$s", selectedService.toStdString());
   Preferences::Preferences::inst()->updateGUI();
 
-  if (selectedService == print_service_t::PRINT_SERVICE) {
-    const auto printService = PrintService::inst();
+  const auto printService = printServiceFromKey(selectedService.toStdString());
+  if (printService != nullptr) {
     LOG("Sending design to print service %1$s...", printService->getDisplayName().toStdString());
-    sendToPrintService();
-  } else if (selectedService == print_service_t::OCTOPRINT) {
+    sendToPrintService(printService); // TODO: Add name
+  } else if (selectedService == "OCTOPRINT") {
     LOG("Sending design to OctoPrint...");
     sendToOctoPrint();
-  } else if (selectedService == print_service_t::LOCALSLICER) {
+  } else if (selectedService == "LOCALSLICER") {
     sendToLocalSlicer();
   }
+  LOG("Unknown print service %1$s", selectedService.toStdString());
 #endif // ifdef ENABLE_3D_PRINTING
 }
 
@@ -2265,7 +2267,7 @@ void MainWindow::sendToLocalSlicer()
 #endif // ifdef ENABLE_3D_PRINTING
 }
 
-void MainWindow::sendToPrintService()
+void MainWindow::sendToPrintService(const PrintService *printService)
 {
 #ifdef ENABLE_3D_PRINTING
   //Keeps track of how many times we've exported and tries to create slightly unique filenames.
@@ -2298,8 +2300,8 @@ void MainWindow::sendToPrintService()
   }
   const QString fileContentBase64 = file.readAll().toBase64();
 
-  if (fileContentBase64.length() > PrintService::inst()->getFileSizeLimit()) {
-    const auto msg = QString{_("Exported design exceeds the service upload limit of (%1 MB).")}.arg(PrintService::inst()->getFileSizeLimitMB());
+  if (fileContentBase64.length() > printService->getFileSizeLimit()) {
+    const auto msg = QString{_("Exported design exceeds the service upload limit of (%1 MB).")}.arg(printService->getFileSizeLimitMB());
     QMessageBox::warning(this, _("Upload Error"), msg, QMessageBox::Ok);
     LOG(message_group::Error, "%1$s", msg.toStdString());
     return;
@@ -2311,7 +2313,7 @@ void MainWindow::sendToPrintService()
   {
     this->progresswidget = new ProgressWidget(this);
     connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
-    const QString partUrl = PrintService::inst()->upload(userFacingName, fileContentBase64, [this](double v) -> bool {
+    const QString partUrl = printService->upload(userFacingName, fileContentBase64, [this](double v) -> bool {
       return network_progress_func(v);
     });
     QDesktopServices::openUrl(QUrl{partUrl});

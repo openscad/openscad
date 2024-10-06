@@ -37,38 +37,37 @@ PrintInitDialog::PrintInitDialog()
 {
   setupUi(this);
 
-  const auto printService = PrintService::inst();
   this->textBrowser->setSource(QUrl{"qrc:/html/PrintInitDialog.html"});
-  this->result = print_service_t::NONE;
+  this->result = "NONE";
 
   this->okButton->setEnabled(false);
 
-  if (printService->isEnabled()) {
-    this->printServiceButton->setText(this->printServiceButton->text().arg(printService->getDisplayName()));
-  } else {
-    this->printServiceButton->setText(_("Print Service not available"));
-    this->printServiceButton->setEnabled(false);
+  for (const auto &printServiceItem : PrintService::getPrintServices()) {
+    const auto& key = printServiceItem.first;
+    const auto& printService = printServiceItem.second;
+    auto button = new QPushButton(printService->getDisplayName(), this);
+    this->printServiceLayout->insertWidget(0, button);
+    connect(button, &QPushButton::clicked, this, [&](){
+      this->textBrowser->setHtml(printService->getInfoHtml());
+      this->result = QString("PRINT_SERVICE:") + QString::fromStdString(key);
+      this->okButton->setEnabled(true);
+      LOG(this->result.toStdString());
+    });
   }
-}
-
-void PrintInitDialog::on_printServiceButton_clicked()
-{
-  this->textBrowser->setHtml(PrintService::inst()->getInfoHtml());
-  this->result = print_service_t::PRINT_SERVICE;
-  this->okButton->setEnabled(true);
+//  TODO: What if no services are available, print a warning?
 }
 
 void PrintInitDialog::on_octoPrintButton_clicked()
 {
   this->textBrowser->setSource(QUrl{"qrc:/html/OctoPrintInfo.html"});
-  this->result = print_service_t::OCTOPRINT;
+  this->result = "OCTOPRINT";
   this->okButton->setEnabled(true);
 }
 
 void PrintInitDialog::on_LocalSlicerButton_clicked()
 {
   this->textBrowser->setSource(QUrl{"qrc:/html/LocalSlicerInfo.html"});
-  this->result = print_service_t::LOCALSLICER;
+  this->result = "LOCALSLICER";
   this->okButton->setEnabled(true);
 }
 
@@ -76,8 +75,7 @@ void PrintInitDialog::on_okButton_clicked()
 {
   if (this->checkBoxRememberSelection->isChecked()) {
     QSettingsCached settings;
-    const auto name = PrintInitDialog::serviceName(this->result);
-    settings.setValue(QString::fromStdString(Settings::Settings::defaultPrintService.key()), name);
+    settings.setValue(QString::fromStdString(Settings::Settings::defaultPrintService.key()), this->result);
   }
   accept();
 }
@@ -87,39 +85,21 @@ void PrintInitDialog::on_cancelButton_clicked()
   reject();
 }
 
-print_service_t PrintInitDialog::getResult()
+QString PrintInitDialog::getResult()
 {
-  QSettingsCached settings;
-  const auto service = settings.value(QString::fromStdString(Settings::Settings::defaultPrintService.key())).toString();
+  // Get service from setting
+  // If service is valid, return service, else show dialog
 
-
-  if (service == "PRINT_SERVICE") {
-    return print_service_t::PRINT_SERVICE;
-  } else if (service == "OCTOPRINT") {
-    return print_service_t::OCTOPRINT;
-  } else if (service == "LOCALSLICER") {
-    return print_service_t::LOCALSLICER;
-  }
+  const QSettingsCached settings;
+  auto service = settings.value(QString::fromStdString(Settings::Settings::defaultPrintService.key())).toString();
+  if (isValidPrintServiceKey(service.toStdString())) return service;
 
   auto printInitDialog = new PrintInitDialog();
   auto printInitResult = printInitDialog->exec();
   printInitDialog->deleteLater();
   if (printInitResult == QDialog::Rejected) {
-    return print_service_t::NONE;
+    return "NONE"; // TODO: Use empty string?
   }
 
   return printInitDialog->result;
-}
-
-QString PrintInitDialog::serviceName(print_service_t service)
-{
-  if (service == print_service_t::PRINT_SERVICE) {
-    return "PRINT_SERVICE";
-  } else if (service == print_service_t::OCTOPRINT) {
-    return "OCTOPRINT";
-  } else if (service == print_service_t::LOCALSLICER) {
-    return "LOCALSLICER";
-  } else {
-    return "NONE";
-  }
 }

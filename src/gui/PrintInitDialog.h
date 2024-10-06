@@ -37,16 +37,16 @@ class PrintInitDialog : public QDialog, public Ui::PrintInitDialog
   Q_OBJECT;
 public:
   PrintInitDialog();
-  static print_service_t getResult();
+  static QString getResult();
   static QString serviceName(print_service_t service);
 
 public slots:
-  void on_printServiceButton_clicked();
+  //void on_printServiceButton_clicked();
   void on_octoPrintButton_clicked();
   void on_LocalSlicerButton_clicked();
   void on_okButton_clicked();
   void on_cancelButton_clicked();
 private:
-  print_service_t result;
+  QString result;
   QString htmlTemplate;
 };
