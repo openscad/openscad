@@ -24,17 +24,19 @@
  *
  */
 
-#include "LinearExtrudeNode.h"
+#include "core/LinearExtrudeNode.h"
 
-#include "module.h"
-#include "ModuleInstantiation.h"
-#include "Children.h"
-#include "Parameters.h"
-#include "printutils.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Children.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
 #include "io/fileutils.h"
-#include "Builtins.h"
+#include "core/Builtins.h"
 #include "handle_dep.h"
 
+#include <utility>
+#include <memory>
 #include <cmath>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>
@@ -169,7 +171,14 @@ std::string LinearExtrudeNode::toString() const
            << "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
     ;
   }
-  stream << "v = [ " <<  this->height[0] << ", " << this->height[1] << ", " << this->height[2] << "]" ;
+  double height=this->height.norm();
+  stream << "height = " << height;
+  if(height > 0) {
+    Vector3d v=this->height/height;
+    if(v[2] < 1) {
+      stream << ", v = [ " <<  v[0] << ", " << v[1] << ", " << v[2] << "]" ;
+    }
+  }
   if (this->center) {
     stream << ", center = true";
   }

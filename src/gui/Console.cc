@@ -24,17 +24,19 @@
  *
  */
 
+#include "gui/Console.h"
+
+#include <cassert>
 #include <QMenu>
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QTextStream>
 #include <QRegularExpression>
 #include <QString>
-#include "Console.h"
-#include "MainWindow.h"
-#include "printutils.h"
-#include "Preferences.h"
-#include "UIUtils.h"
+#include "gui/MainWindow.h"
+#include "utils/printutils.h"
+#include "gui/Preferences.h"
+#include "gui/UIUtils.h"
 
 Console::Console(QWidget *parent) : QPlainTextEdit(parent)
 {

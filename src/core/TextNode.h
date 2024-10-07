@@ -1,7 +1,11 @@
 #pragma once
 
-#include "node.h"
-#include "FreetypeRenderer.h"
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "core/node.h"
+#include "core/FreetypeRenderer.h"
 
 class TextModule;
 

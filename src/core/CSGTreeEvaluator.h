@@ -4,9 +4,9 @@
 #include <list>
 #include <vector>
 #include <cstddef>
-#include "NodeVisitor.h"
+#include "core/NodeVisitor.h"
 #include <memory>
-#include "CSGNode.h"
+#include "core/CSGNode.h"
 
 class CSGNode;
 class GeometryEvaluator;

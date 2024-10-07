@@ -24,16 +24,20 @@
  *
  */
 
+#include "FontCache.h"
+
+#include <cstdint>
 #include <iostream>
+#include <vector>
 
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
+#include <string>
 #include <utility>
 
-#include "FontCache.h"
-#include "PlatformUtils.h"
-#include "printutils.h"
-#include "version_helper.h"
+#include "platform/PlatformUtils.h"
+#include "utils/printutils.h"
+#include "utils/version_helper.h"
 
 extern std::vector<std::string> librarypath;
 
@@ -65,7 +69,8 @@ const std::string get_freetype_version()
   return FontCache::instance()->get_freetype_version();
 }
 
-FontInfo::FontInfo(std::string family, std::string style, std::string file) : family(std::move(family)), style(std::move(style)), file(std::move(file))
+FontInfo::FontInfo(std::string family, std::string style, std::string file, uint32_t hash)
+   : family(std::move(family)), style(std::move(style)), file(std::move(file)), hash(hash)
 {
 }
 
@@ -93,6 +98,11 @@ const std::string& FontInfo::get_style() const
 const std::string& FontInfo::get_file() const
 {
   return file;
+}
+
+const uint32_t FontInfo::get_hash() const
+{
+  return hash;
 }
 
 FontCache *FontCache::self = nullptr;
@@ -223,6 +233,34 @@ void FontCache::add_font_dir(const std::string& path)
   }
 }
 
+std::vector<uint32_t> FontCache::filter(const std::u32string& str) const
+{
+  FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, FC_STYLE, FC_FILE, nullptr);
+  FcPattern *pattern = FcPatternCreate();
+  init_pattern(pattern);
+  FcCharSet *charSet = FcCharSetCreate();
+  for (char32_t a : str) {
+    FcCharSetAddChar(charSet, a);
+  }
+  FcValue charSetValue;
+  charSetValue.type = FcTypeCharSet;
+  charSetValue.u.c = charSet;
+  FcPatternAdd(pattern, FC_CHARSET, charSetValue, true);
+
+  FcFontSet *font_set = FcFontList(this->config, pattern, object_set);
+  FcObjectSetDestroy(object_set);
+  FcPatternDestroy(pattern);
+  FcCharSetDestroy(charSet);
+
+  std::vector<uint32_t> result;
+  result.reserve(font_set->nfont);
+  for (int a = 0;a < font_set->nfont;++a) {
+    result.push_back(FcPatternHash(font_set->fonts[a]));
+  }
+  FcFontSetDestroy(font_set);
+  return result;
+}
+
 FontInfoList *FontCache::list_fonts() const
 {
   FcObjectSet *object_set = FcObjectSetBuild(FC_FAMILY, FC_STYLE, FC_FILE, nullptr);
@@ -234,20 +272,22 @@ FontInfoList *FontCache::list_fonts() const
 
   auto *list = new FontInfoList();
   for (int a = 0; a < font_set->nfont; ++a) {
+    FcPattern *p = font_set->fonts[a];
+
     FcValue file_value;
-    FcPatternGet(font_set->fonts[a], FC_FILE, 0, &file_value);
+    FcPatternGet(p, FC_FILE, 0, &file_value);
 
     FcValue family_value;
-    FcPatternGet(font_set->fonts[a], FC_FAMILY, 0, &family_value);
+    FcPatternGet(p, FC_FAMILY, 0, &family_value);
 
     FcValue style_value;
-    FcPatternGet(font_set->fonts[a], FC_STYLE, 0, &style_value);
+    FcPatternGet(p, FC_STYLE, 0, &style_value);
 
     std::string family((const char *) family_value.u.s);
     std::string style((const char *) style_value.u.s);
     std::string file((const char *) file_value.u.s);
 
-    list->push_back(FontInfo(family, style, file));
+    list->push_back(FontInfo(family, style, file, FcPatternHash(p)));
   }
   FcFontSetDestroy(font_set);
 

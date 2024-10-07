@@ -25,10 +25,24 @@
  *
  */
 
-#include "export.h"
+#include "io/export.h"
+#include "geometry/linalg.h"
+#include "Feature.h"
+#include "geometry/Reindexer.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
 
-#include "PolySet.h"
-#include "PolySetUtils.h"
+#include <ostream>
+#include <memory>
+#include <cstddef>
+#include <cstdint>
+
+uint8_t clamp_color_channel(float value)
+{
+  if (value < 0) return 0;
+  if (value > 1) return 255;
+  return (uint8_t)(value * 255);
+}
 
 void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& output)
 {
@@ -36,18 +50,34 @@ void export_off(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
   if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
     ps = createSortedPolySet(*ps);
   }
-
-  output << "OFF " << ps->vertices.size() << " " << ps->indices.size() << " 0\n";
   const auto& v = ps->vertices;
   size_t numverts = v.size();
+
+
+  output << "OFF " << numverts << " " << ps->indices.size() << " 0\n";
   for (size_t i = 0; i < numverts; ++i) {
     output << v[i][0] << " " << v[i][1] << " " << v[i][2] << " " << "\n";
   }
+
+  auto has_color = !ps->color_indices.empty();
+  
   for (size_t i = 0; i < ps->indices.size(); ++i) {
     int nverts = ps->indices[i].size();
     output << nverts;
     for (size_t n = 0; n < nverts; ++n) output << " " << ps->indices[i][n];
+    if (has_color) {
+      auto color_index = ps->color_indices[i];
+      if (color_index >= 0) {
+        auto color = ps->colors[color_index];
+        auto r = clamp_color_channel(color[0]);
+        auto g = clamp_color_channel(color[1]);
+        auto b = clamp_color_channel(color[2]);
+        auto a = clamp_color_channel(color[3]);
+        output << " " << (int)r << " " << (int)g << " " << (int)b;
+        // Alpha channel is read by apps like MeshLab.
+        if (a != 255) output << " " << (int)a;
+      }
+    }
     output << "\n";
   }
-
 }

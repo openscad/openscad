@@ -1,7 +1,7 @@
 #pragma once
 
-#include "linalg.h"
-#include "hash.h"
+#include "geometry/linalg.h"
+#include "utils/hash.h"
 #include <boost/functional/hash.hpp>
 #include <cmath>
 

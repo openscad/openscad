@@ -24,14 +24,18 @@
  *
  */
 
-#include "OpenCSGRenderer.h"
-#include "linalg.h"
-#include "system-gl.h"
+#include "glview/preview/OpenCSGRenderer.h"
+#include "geometry/linalg.h"
+#include "glview/system-gl.h"
 
 #include "Feature.h"
-#include "PolySet.h"
+#include "geometry/PolySet.h"
+#include <cassert>
+#include <memory>
 #include <memory.h>
+#include <cstddef>
 #include <utility>
+#include <vector>
 
 #ifdef ENABLE_OPENCSG
 
@@ -178,12 +182,16 @@ void OpenCSGRenderer::createCSGVBOProducts(
         csgmode_e csgmode = get_csgmode(highlight_mode, background_mode);
 
         ColorMode colormode = ColorMode::NONE;
+        bool override_color;
         if (highlight_mode) {
           colormode = ColorMode::HIGHLIGHT;
+          override_color = true;
         } else if (background_mode) {
           colormode = ColorMode::BACKGROUND;
+          override_color = true;
         } else {
           colormode = ColorMode::MATERIAL;
+          override_color = c.isValid();
         }
 
         Color4f color;
@@ -196,7 +204,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
         if (color[3] == 1.0f) {
           // object is opaque, draw normally
           create_surface(*csgobj.leaf->polyset, vertex_array, csgmode,
-                         csgobj.leaf->matrix, last_color);
+                         csgobj.leaf->matrix, last_color, override_color);
           std::shared_ptr<OpenCSGVertexState> surface =
               std::dynamic_pointer_cast<OpenCSGVertexState>(
                   vertex_states->back());
@@ -220,7 +228,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           vertex_states->emplace_back(std::move(cull));
 
           create_surface(*csgobj.leaf->polyset, vertex_array, csgmode,
-                         csgobj.leaf->matrix, last_color);
+                         csgobj.leaf->matrix, last_color, override_color);
           std::shared_ptr<OpenCSGVertexState> surface =
               std::dynamic_pointer_cast<OpenCSGVertexState>(
                   vertex_states->back());
@@ -261,12 +269,16 @@ void OpenCSGRenderer::createCSGVBOProducts(
                                         OpenSCADOperator::DIFFERENCE);
 
         ColorMode colormode = ColorMode::NONE;
+        bool override_color;
         if (highlight_mode) {
           colormode = ColorMode::HIGHLIGHT;
+          override_color = true;
         } else if (background_mode) {
           colormode = ColorMode::BACKGROUND;
+          override_color = true;
         } else {
           colormode = ColorMode::CUTOUT;
+          override_color = true;
         }
 
         Color4f color;
@@ -293,7 +305,7 @@ void OpenCSGRenderer::createCSGVBOProducts(
           tmp *= Eigen::Scaling(1.0, 1.0, 1.1);
         }
         create_surface(*csgobj.leaf->polyset, vertex_array, csgmode, tmp,
-                       last_color);
+                       last_color, override_color);
         std::shared_ptr<OpenCSGVertexState> surface =
             std::dynamic_pointer_cast<OpenCSGVertexState>(
                 vertex_states->back());

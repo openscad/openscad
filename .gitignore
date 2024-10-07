@@ -54,9 +54,9 @@ object_script.openscad.Release
 /openscad.pro.user
 /openscad
 /openscad-nightly
+/resources/*.rc
+/resources/*.qrc
 /resources/icons/openscad.desktop
-/resources/common.qrc
-/resources/mac.qrc
 /locale/*/*/*.mo
 /locale/*.mo
 /locale/POTFILES
@@ -95,3 +95,4 @@ tests/data/scad/misc/use-tests.scad
 tests/data/svg/viewbox/viewbox_*.svg
 tests/regression/pdfexporttest/centered.pdf
 tests/regression/pdfexporttest/simple-pdf.pdf
+scripts/run-clang-tidy-cached

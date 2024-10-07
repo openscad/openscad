@@ -1,8 +1,11 @@
+#include <cassert>
+#include <utility>
+#include <memory>
 #include <stack>
 
-#include "CSGTreeNormalizer.h"
-#include "CSGNode.h"
-#include "printutils.h"
+#include "glview/preview/CSGTreeNormalizer.h"
+#include "core/CSGNode.h"
+#include "utils/printutils.h"
 
 // Helper function to debug normalization bugs
 #if 0

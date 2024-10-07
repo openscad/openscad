@@ -24,12 +24,19 @@
  *
  */
 
-#include "export.h"
-#include "PolySet.h"
-#include "printutils.h"
-#include "Geometry.h"
+#include "io/export.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
+#include "geometry/Geometry.h"
 
+#include <cassert>
+#include <map>
+#include <iostream>
+#include <cstdint>
+#include <memory>
+#include <cstddef>
 #include <fstream>
+#include <vector>
 
 #ifdef _WIN32
 #include <io.h>
@@ -57,7 +64,8 @@ return format == FileFormat::ASCIISTL ||
   format == FileFormat::AMF ||
   format == FileFormat::_3MF ||
   format == FileFormat::NEFDBG ||
-  format == FileFormat::NEF3;
+  format == FileFormat::NEF3 ||
+  format == FileFormat::POV;
 }
 
 bool is2D(const FileFormat format) {
@@ -98,6 +106,9 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& 
     break;
   case FileFormat::PDF:
     export_pdf(root_geom, output, exportInfo);
+    break;
+  case FileFormat::POV:
+    export_pov(root_geom, output, exportInfo);
     break;
 #ifdef ENABLE_CGAL
   case FileFormat::NEFDBG:
@@ -168,8 +179,8 @@ double remove_negative_zero(double x) {
 
 Vector3d remove_negative_zero(const Vector3d& pt) {
   return {
-    remove_negative_zero(pt[0]), 
-    remove_negative_zero(pt[1]), 
+    remove_negative_zero(pt[0]),
+    remove_negative_zero(pt[1]),
     remove_negative_zero(pt[2]),
   };
 }
@@ -191,7 +202,7 @@ struct LexographicLess {
 };
 #endif
 
-} // namespace 
+} // namespace
 
 std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
 {
@@ -209,6 +220,8 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
     }
     out->indices.push_back(face);
   }
+  out->color_indices = ps.color_indices;
+  out->colors = ps.colors;
 
   std::vector<int> indexTranslationMap(vertexMap.size());
   out->vertices.reserve(vertexMap.size());
@@ -226,7 +239,26 @@ std::unique_ptr<PolySet> createSortedPolySet(const PolySet& ps)
     std::rotate(polygon.begin(), std::min_element(polygon.begin(), polygon.end()), polygon.end());
     poly = polygon;
   }
-  std::sort(out->indices.begin(), out->indices.end());
-
+  if (ps.color_indices.empty()) {
+    std::sort(out->indices.begin(), out->indices.end());
+  } else {
+    struct ColoredFace {
+      IndexedFace face;
+      int32_t color_index;
+    };
+    std::vector<ColoredFace> faces;
+    faces.reserve(ps.indices.size());
+    for (size_t i = 0, n = ps.indices.size(); i < n; i++) {
+      faces.push_back({out->indices[i], out->color_indices[i]});
+    }
+    std::sort(faces.begin(), faces.end(), [](const ColoredFace& a, const ColoredFace& b) {
+      return a.face < b.face;
+    });
+    for (size_t i = 0, n = faces.size(); i < n; i++) {
+      auto & face = faces[i];
+      out->indices[i] = face.face;
+      out->color_indices[i] = face.color_index;
+    }
+  }
   return out;
 }

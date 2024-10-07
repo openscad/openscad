@@ -1,9 +1,17 @@
-#include "ClipperUtils.h"
-#include "printutils.h"
+#include "geometry/ClipperUtils.h"
+#include "utils/printutils.h"
+
+#include <cassert>
+#include <utility>
+#include <memory>
+#include <cstddef>
+#include <vector>
 
 namespace ClipperUtils {
 
-const int CLIPPER_BITS{ std::ilogb(ClipperLib::hiRange) };
+// Using 1 bit less precision than the maximum possible, to limit the chance
+// of data loss when converting back to double (see https://github.com/openscad/openscad/issues/5253).
+const int CLIPPER_BITS{ std::ilogb(ClipperLib::hiRange) - 1 };
 
 int getScalePow2(const BoundingBox& bounds, int bits)
 {

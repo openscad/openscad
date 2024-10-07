@@ -1,9 +1,11 @@
 #pragma once
 
-#include "qtgettext.h"
+#include <string>
+
+#include "gui/qtgettext.h"
 #include "ui_Animate.h"
 #include <QIcon>
-#include "input/InputDriverEvent.h"
+#include "gui/input/InputDriverEvent.h"
 
 class MainWindow;
 
@@ -29,7 +31,6 @@ public:
 
   const QList<QAction *>& actions();
   double getAnim_tval();
-  QSize minimumSizeHint() const override;
 
 public slots:
   void animateUpdate();
@@ -40,8 +41,6 @@ public slots:
 
   void on_pushButton_MoveToBeginning_clicked();
   void on_pushButton_StepBack_clicked();
-  void on_pushButton_Resume_clicked();
-  void on_pushButton_Pause_clicked();
   void on_pushButton_StepForward_clicked();
   void on_pushButton_MoveToEnd_clicked();
 
@@ -66,6 +65,8 @@ private:
   bool fps_ok;
   bool t_ok;
   bool steps_ok;
+
+  int initMinWidth;
 
   QList<QAction *> action_list;
   void createActionAndPrepareButton(const QIcon& icon, const QString& description, const std::string& actionName, QPushButton *button);

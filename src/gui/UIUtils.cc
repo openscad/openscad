@@ -24,6 +24,9 @@
  *
  */
 
+#include "gui/UIUtils.h"
+
+#include <exception>
 #include <QDir>
 #include <QFileInfo>
 #include <QUrl>
@@ -31,12 +34,13 @@
 #include <QDesktopServices>
 
 #include "version.h"
-#include "UIUtils.h"
-#include "PlatformUtils.h"
-#include "QSettingsCached.h"
+#include "platform/PlatformUtils.h"
+#include "gui/QSettingsCached.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+
+#include <string>
 
 QFileInfo UIUtils::openFile(QWidget *parent)
 {

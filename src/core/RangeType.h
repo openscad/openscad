@@ -1,5 +1,8 @@
 #pragma once
 
+#include <limits>
+#include <utility>
+#include <cstdint>
 #include <ostream>
 #include <cmath>
 

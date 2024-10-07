@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This script builds all library dependencies of OpenSCAD for Mac OS X.
 # The libraries will be build in 64-bit mode and backwards compatible
@@ -15,7 +15,9 @@
 #  -x         Build x86_64 binaries
 #  -v         Verbose
 #
-# Prerequisites: automake, libtool, cmake, pkg-config, wget, meson
+# Prerequisites: automake, libtool, cmake, pkg-config, wget, meson, python-packaging
+#
+# meson and python-packaging is required by glib.
 #
 
 set -e
@@ -38,7 +40,7 @@ PACKAGES=(
     "double_conversion 3.2.1"
     "boost 1.81.0"
     "eigen 3.4.0"
-    "gmp 6.2.1 patch"
+    "gmp 6.3.0"
     "mpfr 4.2.0"
     "glew 2.2.0"
     "gettext 0.21.1"
@@ -46,21 +48,21 @@ PACKAGES=(
     "freetype 2.12.1"
     "ragel REMOVE"
     "harfbuzz 6.0.0"
+
     "libzip 1.9.2"
     "libxml2 REMOVE"
-    "libuuid 1.6.2"
+    "libuuid REMOVE"
     "fontconfig 2.14.1"
     "hidapi 0.12.0"
-    "lib3mf 2.2.0"
-    # FIXME: Re-evaluate patches if bumping glib past 2.76.3
-    "glib2 2.76.3"
+    "lib3mf 2.3.1"
+    "glib2 2.81.0"
     "pixman 0.42.2"
     "cairo 1.18.0"
-    "cgal 5.5"
-    "qt5 5.15.7 patch"
+    "cgal 6.0"
+    "qt5 5.15.13"
     "opencsg 1.6.0"
     "qscintilla 2.13.3"
-    "onetbb 2021.11.0"
+    "onetbb 2021.12.0"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.27.1"
@@ -199,7 +201,8 @@ build_qt5()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.xz
   cd qt-everywhere-src-$version
-  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-macos-CGColorSpace.patch
+  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-xcode15.patch
+  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-memory_resource.patch
 
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
@@ -273,13 +276,12 @@ build_gmp()
   fi
   tar xjf gmp-$version.tar.bz2
   cd gmp-$version
-  patch -p1 < $OPENSCADDIR/patches/gmp-macos-x18.patch
 
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     mkdir build-$arch
     cd build-$arch
-    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --enable-cxx --build=$LOCAL_ARCH-apple-darwin --host=$arch-apple-darwin17.0.0
+    M4=gm4 ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --enable-cxx --build=$LOCAL_ARCH-apple-darwin --host=$arch-apple-darwin17.0.0
     make -j"$NUMCPU" install DESTDIR=$PWD/install/
     cd ..
   done
@@ -391,11 +393,8 @@ build_onetbb()
   fi
   tar xzf oneTBB-$version.tar.gz
   cd oneTBB-$version
-  cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DTBB_TEST=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DBOOST_ROOT=$DEPLOYDIR -DBoost_USE_MULTITHREADED=false
+  cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DTBB_TEST=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED"
   make -j"$NUMCPU" install
-  make install  
-  # install_name_tool -id @rpath/libtbb.dylib $DEPLOYDIR/lib/libtbb.dylib
-  # install_name_tool -id @rpath/libtbbmalloc.dylib $DEPLOYDIR/lib/libtbbmalloc.dylib
 }
 
 build_glew()
@@ -561,46 +560,11 @@ remove_libxml2()
   find $DEPLOYDIR -name "*libxml*" -prune -exec rm -rf {} \;
 }
 
-build_libuuid()
+remove_libuuid()
 {
-  version=$1
-  cd $BASEDIR/src
-  rm -rf uuid-$version
-  if [ ! -f uuid-$version.tar.gz ]; then
-    curl -L https://mirrors.ocf.berkeley.edu/debian/pool/main/o/ossp-uuid/ossp-uuid_$version.orig.tar.gz -o uuid-$version.tar.gz
-  fi
-  tar xzf uuid-$version.tar.gz
-  cd uuid-$version
-  patch -p1 < $OPENSCADDIR/patches/uuid-1.6.2.patch
-  # Update old config.sub to get aarch64 support
-  cp $OPENSCADDIR/patches/uuid-config.sub ./config.sub
-
-  # Build each arch separately
-  for i in ${!ARCHS[@]}; do
-    arch=${ARCHS[$i]}
-    mkdir build-$arch
-    cd build-$arch
-    # ac_cv_va_copy=yes is a workaround for a bug uuid's build system causing the va_copy() check
-    # to not work while cross compiling
-    ../configure --prefix=$DEPLOYDIR CFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" LDFLAGS="-arch $arch -mmacos-version-min=$MAC_OSX_VERSION_MIN" --without-perl --without-php --without-pgsql --host=${GNU_ARCHS[$i]}-apple-darwin17.0.0 ac_cv_va_copy=yes
-    make -j"$NUMCPU"
-    make install DESTDIR=$PWD/install/
-    cd ..
-  done
-
-  # Install the first arch
-  cp -R build-${ARCHS[0]}/install/$DEPLOYDIR/* $DEPLOYDIR
-
-  # If we're building for multiple archs, create fat binaries
-  if (( ${#ARCHS[@]} > 1 )); then
-    LIBS=()
-    for arch in ${ARCHS[*]}; do
-      LIBS+=(build-$arch/install/$DEPLOYDIR/lib/libuuid.dylib)
-    done
-    lipo -create ${LIBS[@]} -output $DEPLOYDIR/lib/libuuid.dylib
-  fi
-
-  install_name_tool -id @rpath/libuuid.dylib $DEPLOYDIR/lib/libuuid.dylib
+  echo "Removing libuuid..."
+  find $DEPLOYDIR -name "*libuuid*" -prune -exec rm -rf {} \;
+  rm -f $DEPLOYDIR/include/uuid.h $DEPLOYDIR/lib/pkgconfig/uuid.pc
 }
 
 build_fontconfig()
@@ -654,7 +618,7 @@ build_gettext()
   cd "$BASEDIR"/src
   rm -rf "gettext-$version"
   if [ ! -f "gettext-$version.tar.gz" ]; then
-    curl --insecure -LO "http://ftpmirror.gnu.org/gettext/gettext-$version.tar.gz"
+    curl --insecure -LO "http://ftp.gnu.org/pub/gnu/gettext/gettext-$version.tar.gz"
   fi
   tar xzf "gettext-$version.tar.gz"
   cd "gettext-$version"
@@ -694,14 +658,11 @@ build_glib2()
   fi
   tar xJf "glib-$version.tar.xz"
   cd "glib-$version"
-  # FIXME: Once bumping past glib-2.76.3, we may not need these patches
-  patch -p1 < $OPENSCADDIR/patches/glib-iconv-macos.patch
-  patch -p1 < $OPENSCADDIR/patches/glib-pcre-macos.patch
 
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt --force-fallback-for libpcre2-8 -Dgtk_doc=false -Dman=false -Ddtrace=false -Dtests=false build-$arch
+    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt --force-fallback-for libpcre2-8 -Ddocumentation=false -Dman-pages=disabled -Ddtrace=false -Dtests=false build-$arch
     meson compile -C build-$arch
     DESTDIR=install/ meson install -C build-$arch
   done
@@ -804,13 +765,14 @@ build_lib3mf()
 {
   version=$1
   cd $BASEDIR/src
-  rm -rf lib3mf-$version
-  if [ ! -f $version.tar.gz ]; then
-    curl -L https://github.com/3MFConsortium/lib3mf/archive/v$version.tar.gz -o lib3mf-$version.tar.gz
-  fi
-  tar xzf lib3mf-$version.tar.gz
+ rm -rf lib3mf-$version
+ if [ ! -f $version.tar.gz ]; then
+   curl -L https://github.com/3MFConsortium/lib3mf/archive/v$version.tar.gz -o lib3mf-$version.tar.gz
+ fi
+ tar xzf lib3mf-$version.tar.gz
   cd lib3mf-$version
-  cmake -DLIB3MF_TESTS=false -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_INSTALL_INCLUDEDIR=include/lib3mf  -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
+  patch -p1 < $OPENSCADDIR/patches/lib3mf-macos.patch
+  cmake -DLIB3MF_TESTS=false -DCMAKE_PREFIX_PATH=$DEPLOYDIR -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_INSTALL_INCLUDEDIR=include/lib3mf -DUSE_INCLUDED_ZLIB=OFF -DUSE_INCLUDED_LIBZIP=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" .
   make -j"$NUMCPU" VERBOSE=1
   make -j"$NUMCPU" install
 }
@@ -873,7 +835,11 @@ build_cairo()
 
   # FIXME: Cairo cannot disable lzo2, so we patch it
   patch -p1 < $OPENSCADDIR/patches/cairo-lzo2-macos.patch
-
+  
+  # Fix for cairo-1.18 build issue against freetype-2.13
+  # https://lore.kernel.org/buildroot/20231116145113.1828682-1-thomas.devoogdt@barco.com/T/
+  patch -p1 < $OPENSCADDIR/patches/cairo-ft-private.h-fix-missing-FT_Color-error.patch
+  
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
@@ -963,14 +929,14 @@ fi
 ARCHS=()
 GNU_ARCHS=()
 if $OPTION_ARM64 || $OPTION_X86_64; then
-    if $OPTION_X86_64; then
-	ARCHS+=(x86_64)
-	GNU_ARCHS+=(x86_64)
-    fi
-    if $OPTION_ARM64; then
-	ARCHS+=(arm64)
-	GNU_ARCHS+=(aarch64)
-    fi
+  if $OPTION_ARM64; then
+    ARCHS+=(arm64)
+    GNU_ARCHS+=(aarch64)
+  fi
+  if $OPTION_X86_64; then
+    ARCHS+=(x86_64)
+	  GNU_ARCHS+=(x86_64)
+  fi
 else
     ARCHS+=($LOCAL_ARCH)
     GNU_ARCHS+=($LOCAL_GNU_ARCH)

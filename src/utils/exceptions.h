@@ -3,8 +3,9 @@
 #include <stdexcept>
 #include <sstream>
 #include <utility>
-#include "AST.h"
-#include "printutils.h"
+#include <string>
+#include "core/AST.h"
+#include "utils/printutils.h"
 
 class EvaluationException : public std::runtime_error
 {

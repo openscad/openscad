@@ -1,4 +1,4 @@
-name: "CodeQL"
+name: CodeQL
 
 on:
   push:
@@ -37,9 +37,7 @@ jobs:
         # queries: ./path/to/local/query, your-org/your-repo/queries@main
 
     - name: Install dependencies
-      run: ./scripts/github-ci-linux-get-dependencies.sh bionic
-    - name: Dependency fixup
-      run: sudo apt-get install gettext
+      run: ./scripts/github-ci-linux-get-dependencies.sh
     - name: Build
       run: ./scripts/github-ci.sh experimental build
 

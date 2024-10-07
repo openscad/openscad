@@ -1,13 +1,16 @@
 #pragma once
 
+#include <ostream>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <ctime>
+#include <vector>
 
-#include "module.h"
-#include "LocalScope.h"
-#include "IndicatorData.h"
+#include "core/module.h"
+#include "core/LocalScope.h"
+#include "core/IndicatorData.h"
 
 class SourceFile : public ASTNode
 {

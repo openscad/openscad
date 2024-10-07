@@ -24,8 +24,9 @@
  *
  */
 
+#include "gui/ExportPdfDialog.h"
+
 #include <QString>
-#include "ExportPdfDialog.h"
 
 ExportPdfDialog::ExportPdfDialog()
 {

@@ -24,10 +24,11 @@
  *
  */
 
+#include "gui/FontListDialog.h"
+
 #include <QClipboard>
 #include <QSortFilterProxyModel>
 
-#include "FontListDialog.h"
 #include "FontCache.h"
 
 FontListDialog::FontListDialog()
