@@ -10,6 +10,9 @@
 #include "core/Expression.h"
 #include "utils/exceptions.h"
 #include "utils/printutils.h"
+#ifdef ENABLE_PYTHON
+#include "python/python_public.h"
+#endif
 
 void ModuleInstantiation::print(std::ostream& stream, const std::string& indent, const bool inlined) const
 {
@@ -71,9 +74,11 @@ std::shared_ptr<AbstractNode> ModuleInstantiation::evaluate(const std::shared_pt
     std::shared_ptr<AbstractNode> result=nullptr;
 #ifdef ENABLE_PYTHON
     int modulefound;
-    result = python_modulefunc(this, context,&modulefound);
-    if(result == nullptr && modulefound && pythonMainModuleInitialized) {
-      return result;
+    std::string error;
+    result = python_modulefunc(this, context,error);
+    if(!error.empty() && result == nullptr) {
+      LOG(message_group::Warning, loc, context->documentRoot(), "Python:: '%1$s'", error);
+      return nullptr;
     }
 #endif
     if(result == nullptr) LOG(message_group::Warning, loc, context->documentRoot(), "Ignoring unknown module '%1$s'", this->name());

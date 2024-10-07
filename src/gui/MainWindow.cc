@@ -120,24 +120,26 @@
 #include "gui/QSettingsCached.h"
 
 #ifdef ENABLE_PYTHON
-extern std::shared_ptr<AbstractNode> python_result_node;
-std::string evaluatePython(const std::string& code, double time);
-extern bool python_trusted;
-
-#include "cryptopp/sha.h"
-#include "cryptopp/filters.h"
-#include "cryptopp/base64.h"
+#include "python/python_public.h"
+#include "nettle/sha2.h"
+#include "nettle/base64.h"
 
 std::string SHA256HashString(std::string aString){
-  std::string digest;
-  CryptoPP::SHA256 hash;
+    uint8_t  digest[SHA256_DIGEST_SIZE];
+    sha256_ctx sha256_ctx;
 
-  CryptoPP::StringSource foo(aString, true,
-                             new CryptoPP::HashFilter(hash,
-                                                      new CryptoPP::Base64Encoder(
-                                                        new CryptoPP::StringSink(digest))));
+    sha256_init(&sha256_ctx);
+    sha256_update(&sha256_ctx, aString.length(), (uint8_t *) aString.c_str());
+    sha256_digest(&sha256_ctx, SHA256_DIGEST_SIZE, digest);
 
-  return digest;
+    base64_encode_ctx base64_ctx;
+    char digest_base64[BASE64_ENCODE_LENGTH(SHA256_DIGEST_SIZE)+1];
+    memset(digest_base64,0,sizeof(digest_base64));
+
+    base64_encode_init(&base64_ctx);
+    base64_encode_update(&base64_ctx, digest_base64, SHA256_DIGEST_SIZE, digest);
+    base64_encode_final(&base64_ctx, digest_base64);		    
+    return digest_base64;
 }
 
 #endif // ifdef ENABLE_PYTHON

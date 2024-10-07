@@ -444,9 +444,6 @@ if(ENABLE_PYTHON)
   add_library(OpenSCADPy
     ${PYTHON_SOURCES} )
   message(STATUS "Python enabled, using Nettle ")
-  message(STATUS ${Nettle_INCLUDE_DIRS})
-  message(STATUS ${Nettle_LIBRARIES})
-  message(STATUS ${Nettle_FOUND})
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
   target_compile_definitions(OpenSCADPy PRIVATE ENABLE_PYTHON)
   if(WIN32) 
@@ -504,6 +501,7 @@ if(ENABLE_PYTHON)
   set_property(TARGET OpenSCADPy PROPERTY CXX_EXTENSIONS OFF)
   set_property(TARGET OpenSCADPy PROPERTY CXX_STANDARD_REQUIRED ON)
   target_compile_definitions(OpenSCADPy PRIVATE "STACKSIZE=${STACKSIZE}")
+  target_compile_definitions(OpenSCADPy PRIVATE EIGEN_DONT_ALIGN)
   target_compile_options(OpenSCADPy PRIVATE "$<$<CONFIG:DEBUG>:-DDEBUG>")
   target_compile_definitions(OpenSCADPy PRIVATE
     OPENSCAD_VERSION=${OPENSCAD_VERSION}
@@ -979,12 +977,6 @@ set(CORE_SOURCES
   ${BISON_openscad_parser_OUTPUTS}
   ${FLEX_comment_lexer_OUTPUTS}
   ${BISON_comment_parser_OUTPUTS})
-if(ENABLE_PYTHON)
-  # list(APPEND CORE_SOURCES
-	 # 	    src/python/pyopenscad.cc 
-	 # 	    src/python/pyfunctions.cc)
-	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
-endif()
 
 if(EXPERIMENTAL AND ENABLE_CGAL)
   list(APPEND CORE_SOURCES

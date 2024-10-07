@@ -333,28 +333,23 @@ PyObject *python_callfunction(const std::shared_ptr<const Context> &cxt , const 
  * Actually trying use python to evaluate a OpenSCAD Module
  */
 
-std::shared_ptr<AbstractNode> python_modulefunc(const ModuleInstantiation *op_module,const std::shared_ptr<const Context> &cxt, int *modulefound)
+std::shared_ptr<AbstractNode> python_modulefunc(const ModuleInstantiation *op_module,const std::shared_ptr<const Context> &cxt, std::string &error)
 {
-	*modulefound=0;
-	std::shared_ptr<AbstractNode> result=nullptr;
-	const char *errorstr = nullptr;
-	{
-		PyObject *funcresult = python_callfunction(cxt,op_module->name(),op_module->arguments, errorstr);
-		if (errorstr != nullptr){
-			PyErr_SetString(PyExc_TypeError, errorstr);
-			return nullptr;
-		}
-		*modulefound=1;
-		if(funcresult == nullptr) return nullptr;
+  PyObject *dummydict;   
+  std::shared_ptr<AbstractNode> result=nullptr;
+  const char *errorstr = nullptr;
+  {
+    PyObject *funcresult = python_callfunction(cxt,op_module->name(),op_module->arguments, errorstr);
+    if (errorstr != nullptr){
+      error = errorstr;
+      return nullptr;
+    }
+    if(funcresult == nullptr) return nullptr;
 
-		if(funcresult->ob_type == &PyOpenSCADType) result=PyOpenSCADObjectToNode(funcresult);
-		else {
-			// ignore wrong type. just output valid empty geometry
-//			LOG(message_group::Warning, Location::NONE, cxt->documentRoot(), "Python function result is not a solid.");
-//			break;
-		}
-	}
-	return result;
+    if(funcresult->ob_type == &PyOpenSCADType) result=PyOpenSCADObjectToNode(funcresult);
+    Py_XDECREF(funcresult);
+  }
+  return result;
 }
 
 /*
