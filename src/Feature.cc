@@ -28,9 +28,9 @@ Feature::list_t Feature::feature_list;  // Double-listed values. --^
  * (well-defined) order of object construction, matching the order of the
  * const Features listed below.
  */
-const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG operations with corefinement instead of nef when possible.");
-const Feature Feature::ExperimentalFastCsgSafer("fast-csg-safer", "Don't use corefinement in cases it doesn't supports and risks crashing. This will fallback to slower operations on Nef polyhedra.");
-const Feature Feature::ExperimentalFastCsgDebug("fast-csg-debug", "Debug mode for fast-csg: adds logs with extra costly checks and dumps .off files with the last corefinement operands.");
+const Feature Feature::ExperimentalFastCsg("fast-csg", "Enable much faster CSG operations with corefinement instead of nef when possible.", /*hidden=*/true);
+const Feature Feature::ExperimentalFastCsgSafer("fast-csg-safer", "Don't use corefinement in cases it doesn't supports and risks crashing. This will fallback to slower operations on Nef polyhedra.", /*hidden=*/true);
+const Feature Feature::ExperimentalFastCsgDebug("fast-csg-debug", "Debug mode for fast-csg: adds logs with extra costly checks and dumps .off files with the last corefinement operands.", /*hidden=*/true);
 const Feature Feature::ExperimentalRoof("roof", "Enable <code>roof</code>");
 const Feature Feature::ExperimentalInputDriverDBus("input-driver-dbus", "Enable DBus input drivers (requires restart)");
 const Feature Feature::ExperimentalLazyUnion("lazy-union", "Enable lazy unions.");
@@ -42,11 +42,11 @@ const Feature Feature::ExperimentalPredictibleOutput("predictible-output", "Atte
 const Feature Feature::ExperimentalPythonEngine("python-engine", "Enable experimental Python Engine (implies risk of malicious scripts downloaded).");
 #endif
 
-Feature::Feature(const std::string& name, std::string description)
+Feature::Feature(const std::string& name, std::string description, bool hidden)
   : name(name), description(std::move(description))
 {
   feature_map[name] = this;
-  feature_list.push_back(this);
+  if (!hidden) feature_list.push_back(this);
 }
 
 const std::string& Feature::get_name() const
