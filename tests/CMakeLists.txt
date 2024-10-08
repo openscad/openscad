@@ -1061,8 +1061,8 @@ add_cmdline_test(previewmanifoldtest-different OPENSCAD SUFFIX png FILES ${SCADF
 endif()
 
 if (ENABLE_PYTHON)
-add_cmdline_test(cgalpngtest_python  OPENSCAD FILES ${CGALPNGTEST_PYTHON_FILES} SUFFIX png  ARGS --trust-python --render)
-add_cmdline_test(echotest_python     OPENSCAD FILES ${ECHO_PYTHON_FILES}        SUFFIX echo ARGS --trust-python )
+  add_cmdline_test(cgalpngtest_python  OPENSCAD FILES ${CGALPNGTEST_PYTHON_FILES} SUFFIX png  ARGS --trust-python --render)
+  add_cmdline_test(echotest_python     OPENSCAD FILES ${ECHO_PYTHON_FILES}        SUFFIX echo ARGS --trust-python )
 endif()
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
@@ -1629,14 +1629,14 @@ list(APPEND NEF3_BROKEN_TESTS
 if(APPLE)
   set_tests_properties(
     ${NEF3_BROKEN_TESTS}
-    # Python not enabled for MAC yet
     # issue3158 test failing on macos, see: https://github.com/openscad/openscad/issues/4509
     opencsgtest_issue3158
     # On macOS, GL_POINTS are sometimes circular even though GL_POINT_SMOOTH is disabled
     openscad-viewoptions-wireframe_view-options-tests
     PROPERTIES DISABLED TRUE
   )
-  if(NOT ENABLE_PYTHON)
+  # Python not enabled for MAC yet
+  if(ENABLE_PYTHON)
     set_tests_properties(
       cgalpngtest_python_primitives
       echotest_python_abuse
@@ -1655,10 +1655,10 @@ elseif(WIN32 OR MXECROSS)
     # requires `gs` tool
     pdfexporttest_centered
     pdfexporttest_simple-pdf
-    # Python not enabled in windows yet
     PROPERTIES DISABLED TRUE
   )
-  if(NOT ENABLE_PYTHON)
+  if(ENABLE_PYTHON)
+    # Python not enabled in windows yet
     set_tests_properties(
       cgalpngtest_python_primitives
       echotest_python_abuse
