@@ -1630,16 +1630,19 @@ if(APPLE)
   set_tests_properties(
     ${NEF3_BROKEN_TESTS}
     # Python not enabled for MAC yet
-    if(ENABLE_PYTHON)
-    cgalpngtest_python_primitives
-    echotest_python_abuse
-    endif()
     # issue3158 test failing on macos, see: https://github.com/openscad/openscad/issues/4509
     opencsgtest_issue3158
     # On macOS, GL_POINTS are sometimes circular even though GL_POINT_SMOOTH is disabled
     openscad-viewoptions-wireframe_view-options-tests
     PROPERTIES DISABLED TRUE
   )
+  if(NOT ENABLE_PYTHON)
+    set_tests_properties(
+      cgalpngtest_python_primitives
+      echotest_python_abuse
+      PROPERTIES DISABLED TRUE
+    )  
+  endif()
 elseif(UNIX)
   set_tests_properties(
     ${NEF3_BROKEN_TESTS}
@@ -1653,12 +1656,15 @@ elseif(WIN32 OR MXECROSS)
     pdfexporttest_centered
     pdfexporttest_simple-pdf
     # Python not enabled in windows yet
-    if(ENABLE_PYTHON)
-    cgalpngtest_python_primitives
-    echotest_python_abuse
-    endif()
     PROPERTIES DISABLED TRUE
   )
+  if(NOT ENABLE_PYTHON)
+    set_tests_properties(
+      cgalpngtest_python_primitives
+      echotest_python_abuse
+      PROPERTIES DISABLED TRUE
+    )  
+  endif()
 endif()
 
 ##############################################
