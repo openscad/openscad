@@ -949,17 +949,18 @@ endif()
 
 if(ENABLE_MANIFOLD)
 
-  # Hack to find our wanted version of Python before Manifold's included googletest finds Python2
-  find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
-
-  if(NOT DEFINED MANIFOLD_PAR AND ENABLE_TBB)
-    set(MANIFOLD_PAR TBB CACHE STRING "Parallel backend, either \"TBB\" or \"OpenMP\" or \"NONE\"" FORCE)
-  endif()
-
-  set(PYBIND11_FINDPYTHON OFF)
-  set(MANIFOLD_PYBIND OFF)
-  set(MANIFOLD_TEST OFF)
   if(USE_BUILTIN_MANIFOLD)
+    message(STATUS "Using built-in mainfold...")
+  # Hack to find our wanted version of Python before Manifold's included googletest finds Python2
+    find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
+
+    if(NOT DEFINED MANIFOLD_PAR AND ENABLE_TBB)
+      set(MANIFOLD_PAR TBB CACHE STRING "Parallel backend, either \"TBB\" or \"OpenMP\" or \"NONE\"" FORCE)
+    endif()
+
+    set(PYBIND11_FINDPYTHON OFF)
+    set(MANIFOLD_PYBIND OFF)
+    set(MANIFOLD_TEST OFF)
     if(CMAKE_UNITY_BUILD)
       set(CMAKE_UNITY_BUILD OFF)
       add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
@@ -968,7 +969,9 @@ if(ENABLE_MANIFOLD)
       add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
     endif()
   else()
+    message(STATUS "Using system mainfold...")
     find_package(manifold REQUIRED)
+    message(STATUS "mainfold: ${manifold_VERSION}")
   endif()
   target_link_libraries(OpenSCAD PRIVATE manifold polygon cross_section)
   add_sanitizers(manifold)
