@@ -1059,8 +1059,11 @@ add_cmdline_test(rendermanifoldtest-different  OPENSCAD SUFFIX png FILES ${SCADF
 add_cmdline_test(previewmanifoldtest           OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
 add_cmdline_test(previewmanifoldtest-different OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --backend=manifold)
 endif()
+
+if (ENABLE_PYTHON)
 add_cmdline_test(cgalpngtest_python  OPENSCAD FILES ${CGALPNGTEST_PYTHON_FILES} SUFFIX png  ARGS --trust-python --render)
 add_cmdline_test(echotest_python     OPENSCAD FILES ${ECHO_PYTHON_FILES}        SUFFIX echo ARGS --trust-python )
+endif()
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
 foreach(TEST ${SVG_VIEWBOX_TESTS})
