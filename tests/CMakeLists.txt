@@ -1508,7 +1508,7 @@ set_tests_properties(
   throwntogethertest_example017
   rendertest_example017 
   previewtest_example017
-
+  
   # https://github.com/openscad/openscad/issues/4398
   csgrendertest_logo_and_text
 
@@ -1572,6 +1572,12 @@ set_tests_properties(
   # https://github.com/openscad/openscad/issues/2841
   rendermanifoldtest_issue2841b
   previewmanifoldtest_issue2841b
+
+  # OpenCSG z fighting https://github.com/openscad/openscad/issues/4595
+  previewmanifoldtest_surface_image
+
+  # https://github.com/openscad/openscad/issues/5158
+  previewmanifoldtest_example017
 
   PROPERTIES DISABLED TRUE
 )
