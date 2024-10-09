@@ -26,6 +26,7 @@
 
 #include "RenderStatistic.h"
 
+#include <chrono>
 #include <cassert>
 #include <array>
 #include <iostream>
