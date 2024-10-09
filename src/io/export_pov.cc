@@ -26,13 +26,19 @@
 
 #include "io/export.h"
 
+#include <cstddef>
+#include <memory>
+#include <ostream>
+#include <vector>
+
+#include "geometry/Geometry.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"
-
+#include "geometry/linalg.h"
 
 void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
 {
-  auto ps = PolySetUtils::getGeometryAsPolySet(geom);
+  std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
   if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
     ps = createSortedPolySet(*ps);
   }
