@@ -2,6 +2,7 @@
 #include "utils/printutils.h"
 #include "platform/PlatformUtils.h"
 
+#include <iomanip>
 #include <stdexcept>
 #include <set>
 #include <list>
