@@ -29,6 +29,7 @@
 #include "utils/printutils.h"
 #include "geometry/Geometry.h"
 
+#include <functional>
 #include <cassert>
 #include <map>
 #include <iostream>
