@@ -24,6 +24,7 @@
  */
 #include "libsvg/path.h"
 
+#include <algorithm>
 #include <sstream>
 #include <cstdlib>
 #include <vector>

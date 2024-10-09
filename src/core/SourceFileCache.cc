@@ -3,6 +3,7 @@
 #include "core/SourceFile.h"
 #include "utils/printutils.h"
 #include "openscad.h"
+#include <ctime>
 #include <boost/format.hpp>
 
 #include <cstdio>

@@ -26,6 +26,7 @@
 
 #include "core/Value.h"
 
+#include <cmath>
 #include <variant>
 #include <limits>
 #include <ostream>

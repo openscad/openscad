@@ -1,6 +1,8 @@
 #include "core/NodeDumper.h"
 #include "core/State.h"
 #include "core/ModuleInstantiation.h"
+#include <algorithm>
+#include <iterator>
 #include <ostream>
 #include <string>
 #include <sstream>

@@ -28,6 +28,7 @@
 #include "core/ModuleInstantiation.h"
 #include "core/progress.h"
 
+#include <deque>
 #include <memory>
 #include <cstddef>
 #include <functional>

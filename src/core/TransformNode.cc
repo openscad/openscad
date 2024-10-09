@@ -32,6 +32,8 @@
 #include "core/Parameters.h"
 #include "utils/printutils.h"
 #include "utils/degree_trig.h"
+#include <algorithm>
+#include <cmath>
 #include <memory>
 #include <cstddef>
 #include <sstream>

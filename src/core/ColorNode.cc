@@ -31,6 +31,7 @@
 #include "core/Children.h"
 #include "core/Parameters.h"
 #include "utils/printutils.h"
+#include <algorithm>
 #include <utility>
 #include <memory>
 #include <cctype>

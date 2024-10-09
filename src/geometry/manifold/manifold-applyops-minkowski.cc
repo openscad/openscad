@@ -1,6 +1,7 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #ifdef ENABLE_MANIFOLD
 
+#include <iterator>
 #include <cassert>
 #include <list>
 #include <exception>

@@ -25,6 +25,7 @@
  */
 #include "gui/MainWindow.h"
 
+#include <deque>
 #include <cassert>
 #include <array>
 #include <functional>

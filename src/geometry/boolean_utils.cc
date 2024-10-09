@@ -1,5 +1,6 @@
 #include "geometry/boolean_utils.h"
 
+#include <iterator>
 #include <cassert>
 #include <list>
 #include <utility>

@@ -3,6 +3,7 @@
 
 #include "geometry/roof_ss.h"
 
+#include <iterator>
 #include <functional>
 #include <memory>
 

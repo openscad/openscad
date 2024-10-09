@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <functional>
 #include <exception>
 #include <QObject>

@@ -10,6 +10,7 @@
 #include "geometry/cgal/CGALHybridPolyhedron.h"
 #include "core/node.h"
 
+#include <iterator>
 #include <cassert>
 #include <list>
 #include <exception>

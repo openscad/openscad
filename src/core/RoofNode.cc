@@ -3,6 +3,7 @@
 
 #include "core/RoofNode.h"
 
+#include <algorithm>
 #include <utility>
 #include <memory>
 #include <sstream>

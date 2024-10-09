@@ -1,4 +1,6 @@
 #include "gui/parameter/ParameterSlider.h"
+#include <cmath>
+#include <iterator>
 #include <cassert>
 #include <limits>
 #include "gui/IgnoreWheelWhenNotFocused.h"

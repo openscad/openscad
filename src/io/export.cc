@@ -29,6 +29,8 @@
 #include "utils/printutils.h"
 #include "geometry/Geometry.h"
 
+#include <algorithm>
+#include <functional>
 #include <cassert>
 #include <map>
 #include <iostream>
