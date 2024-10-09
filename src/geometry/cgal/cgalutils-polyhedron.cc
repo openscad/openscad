@@ -6,6 +6,7 @@
 #include "utils/printutils.h"
 #include "geometry/Grid.h"
 
+#include <algorithm>
 #include <iterator>
 #include <ostream>
 #include <memory>

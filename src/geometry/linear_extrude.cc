@@ -1,5 +1,6 @@
 #include "geometry/linear_extrude.h"
 
+#include <algorithm>
 #include <cmath>
 #include <iterator>
 #include <cassert>

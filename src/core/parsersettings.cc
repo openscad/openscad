@@ -1,5 +1,6 @@
 #include "core/parsersettings.h"
 
+#include <algorithm>
 #include <iterator>
 #include <cassert>
 #include <string>

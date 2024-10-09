@@ -1,5 +1,6 @@
 #include "geometry/GeometryUtils.h"
 
+#include <algorithm>
 #include <cassert>
 #include <unordered_map>
 #include <list>
