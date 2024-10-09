@@ -34,6 +34,7 @@
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #endif
 
+#include <iterator>
 #include <cassert>
 #include <exception>
 #include <ostream>

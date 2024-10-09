@@ -1,5 +1,6 @@
 #include "gui/ScadLexer.h"
 
+#include <iterator>
 #include <string>
 #include <vector>
 

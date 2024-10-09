@@ -37,6 +37,7 @@
 #include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
+#include <iterator>
 #include <cassert>
 #include <utility>
 #include <cstdint>

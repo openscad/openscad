@@ -27,6 +27,7 @@
 #include "io/DxfData.h"
 #include "glview/RenderSettings.h"
 #include "utils/degree_trig.h"
+#include <iterator>
 #include <cassert>
 #include <list>
 #include <utility>
