@@ -1,3 +1,4 @@
+#include <cstring>
 #include <cassert>
 #include <array>
 #include <utility>
