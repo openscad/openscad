@@ -26,6 +26,7 @@
 
 #include "gui/Measurement.h"
 
+#include <cmath>
 #include <sstream>
 #include <string>
 

@@ -44,6 +44,7 @@
 #include "Feature.h"
 #include "handle_dep.h"
 #include "utils/boost-utils.h"
+#include <cmath>
 #include <ios>
 #include <utility>
 #include <memory>

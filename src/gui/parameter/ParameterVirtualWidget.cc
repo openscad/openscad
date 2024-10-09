@@ -1,5 +1,6 @@
 #include "gui/parameter/ParameterVirtualWidget.h"
 
+#include <cmath>
 #include <cassert>
 #include <QRegularExpression>
 #include <vector>

@@ -1,4 +1,5 @@
 #include "gui/parameter/ParameterSlider.h"
+#include <cmath>
 #include <iterator>
 #include <cassert>
 #include <limits>
