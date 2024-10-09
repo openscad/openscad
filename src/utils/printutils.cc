@@ -1,4 +1,5 @@
 #include "utils/printutils.h"
+#include <exception>
 #include <cassert>
 #include <set>
 #include <list>
