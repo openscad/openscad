@@ -22,7 +22,6 @@
 
 #include "utils/svg.h"
 
-#include <queue>
 #include <vector>
 
 static void add_outline_to_poly(CGAL_Nef_polyhedron2::Explorer& explorer,
