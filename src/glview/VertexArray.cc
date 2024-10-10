@@ -2,7 +2,6 @@
 #include <cassert>
 #include <array>
 #include <utility>
-#include <sstream>
 #include <vector>
 #include <memory>
 #include <cstdio>

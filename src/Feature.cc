@@ -1,7 +1,6 @@
 #include "Feature.h"
 
 #include <cstdio>
-#include <sstream>
 #include <string>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/range/adaptor/transformed.hpp>
