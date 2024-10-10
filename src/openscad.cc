@@ -75,7 +75,6 @@
 #include "core/CSGTreeEvaluator.h"
 
 #include "glview/Camera.h"
-#include <chrono>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/bind/bind.hpp>
