@@ -565,6 +565,8 @@ file(GLOB_RECURSE EXAMPLE_FILES    ${EXAMPLES_DIR}/*.scad)
 list(REMOVE_ITEM EXAMPLE_FILES
   ${EXAMPLES_DIR}/Basics/roof.scad # -> EXPERIMENTAL_ROOF_FILES
 )
+list(APPEND CGALPNGTEST_PYTHON_FILES  ${TEST_PYTHON_DIR}/language/primitives.py )
+list(APPEND ECHO_PYTHON_FILES         ${TEST_PYTHON_DIR}/language/abuse.py )
 
 list(APPEND EXAMPLE_3D_FILES ${EXAMPLE_FILES})
 # Remove 2D files from 3D examples
@@ -1056,6 +1058,11 @@ add_cmdline_test(rendermanifoldtest            OPENSCAD SUFFIX png FILES ${RENDE
 add_cmdline_test(rendermanifoldtest-different  OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_RENDER_EXPECTATIONS} ARGS --render --backend=manifold)
 add_cmdline_test(previewmanifoldtest           OPENSCAD SUFFIX png FILES ${PREVIEWMANIFOLDTEST_FILES} EXPECTEDDIR previewtest ARGS --backend=manifold)
 add_cmdline_test(previewmanifoldtest-different OPENSCAD SUFFIX png FILES ${SCADFILES_DIFFERENT_MANIFOLD_PREVIEW_EXPECTATIONS} ARGS --backend=manifold)
+endif()
+
+if (ENABLE_PYTHON)
+  add_cmdline_test(cgalpngtest_python  OPENSCAD FILES ${CGALPNGTEST_PYTHON_FILES} SUFFIX png  ARGS --trust-python --render)
+  add_cmdline_test(echotest_python     OPENSCAD FILES ${ECHO_PYTHON_FILES}        SUFFIX echo ARGS --trust-python )
 endif()
 
 set(VIEWBOX_TEST "${TEST_SCAD_DIR}/svg/extruded/viewbox-test.scad")
@@ -1632,6 +1639,14 @@ if(APPLE)
     openscad-viewoptions-wireframe_view-options-tests
     PROPERTIES DISABLED TRUE
   )
+  # Python not enabled for MAC yet
+  if(ENABLE_PYTHON)
+    set_tests_properties(
+      cgalpngtest_python_primitives
+      echotest_python_abuse
+      PROPERTIES DISABLED TRUE
+    )  
+  endif()
 elseif(UNIX)
   set_tests_properties(
     ${NEF3_BROKEN_TESTS}
@@ -1646,6 +1661,14 @@ elseif(WIN32 OR MXECROSS)
     pdfexporttest_simple-pdf
     PROPERTIES DISABLED TRUE
   )
+  if(ENABLE_PYTHON)
+    # Python not enabled in windows yet
+    set_tests_properties(
+      cgalpngtest_python_primitives
+      echotest_python_abuse
+      PROPERTIES DISABLED TRUE
+    )  
+  endif()
 endif()
 
 ##############################################

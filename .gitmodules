@@ -7,6 +7,7 @@
 [submodule "submodules/manifold"]
 	path = submodules/manifold
 	url = https://github.com/elalish/manifold
+	ignore = dirty
 [submodule "sanitizers-cmake"]
 	path = submodules/sanitizers-cmake
 	url = https://github.com/arsenm/sanitizers-cmake.git
