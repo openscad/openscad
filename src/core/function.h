@@ -10,7 +10,6 @@
 #include <functional>
 #include <string>
 #include <variant>
-#include <vector>
 
 class Arguments;
 class FunctionCall;

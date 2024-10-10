@@ -18,7 +18,6 @@
 #include <memory>
 #include <windows.h>
 
-#include <vector>
 #include <string>
 #include <sstream>
 #include "utils/printutils.h"
