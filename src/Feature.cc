@@ -1,7 +1,6 @@
 #include "Feature.h"
 
 #include <cstdio>
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <map>

@@ -27,7 +27,6 @@
 
 #include <memory>
 #include <cmath>
-#include <iostream>
 #include <vector>
 
 #include "geometry/Polygon2d.h"

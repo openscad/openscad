@@ -2,7 +2,6 @@
 
 #include <QSettings>
 #include <map>
-#include <iostream>
 #include <memory>
 #include <mutex>
 #include <thread>

@@ -21,7 +21,6 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <string>
-#include <iostream>
 #include <vector>
 #include "glview/Camera.h"
 #include "glview/ColorMap.h"
