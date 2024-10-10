@@ -13,7 +13,6 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <locale>
 #include <vector>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
