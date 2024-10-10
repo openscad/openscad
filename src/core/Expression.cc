@@ -38,7 +38,6 @@
 #include <sstream>
 #include <algorithm>
 #include <typeinfo>
-#include <forward_list>
 #include <utility>
 #include <variant>
 #include "utils/printutils.h"
