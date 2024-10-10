@@ -22,7 +22,6 @@
 
 #include "utils/svg.h"
 
-#include <map>
 #include <queue>
 #include <vector>
 

@@ -3,7 +3,6 @@
 #include <cstdio>
 #include <sstream>
 #include <string>
-#include <map>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/range/adaptor/transformed.hpp>
 #include <utility>

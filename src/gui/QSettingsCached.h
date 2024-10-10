@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QSettings>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <thread>
