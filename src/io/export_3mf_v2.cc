@@ -57,7 +57,6 @@ static uint32_t lib3mf_seek_callback(uint64_t pos, std::ostream *stream)
 
 #include "lib3mf_implicit.hpp"
 
-#include <algorithm>
 
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/cgal.h"

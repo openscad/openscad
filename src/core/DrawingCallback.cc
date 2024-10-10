@@ -26,7 +26,6 @@
 #include "core/DrawingCallback.h"
 
 #include <memory>
-#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <vector>
