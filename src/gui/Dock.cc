@@ -1,6 +1,5 @@
 #include "gui/Dock.h"
 
-#include <iostream>
 #include "gui/QSettingsCached.h"
 
 

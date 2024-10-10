@@ -18,8 +18,6 @@
 #include <memory>
 #include <windows.h>
 
-#include <vector>
-#include <map>
 #include <string>
 #include <sstream>
 #include "utils/printutils.h"

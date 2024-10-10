@@ -5,7 +5,6 @@
 #include <algorithm>
 #include <iomanip>
 #include <stdexcept>
-#include <set>
 #include <list>
 #include <utility>
 #include <exception>

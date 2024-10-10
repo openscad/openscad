@@ -4,8 +4,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <vector>
-#include <iterator>
-#include <algorithm>
 
 bool write_png(std::ostream& output, unsigned char *pixels, int width, int height)
 {

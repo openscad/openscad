@@ -2,7 +2,6 @@
 #include "geometry/PolySet.h"
 #include "utils/printutils.h"
 
-#include <iostream>
 
 #ifndef ENABLE_CGAL
 /*!

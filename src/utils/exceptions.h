@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdexcept>
-#include <sstream>
 #include <utility>
 #include <string>
 #include "core/AST.h"

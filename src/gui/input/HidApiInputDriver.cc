@@ -41,7 +41,6 @@
 #include <codecvt>
 #include <fstream>
 #include <iomanip>
-#include <ostream>
 #include <string>
 
 #include "gui/Settings.h"

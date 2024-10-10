@@ -7,7 +7,6 @@
 #include <cassert>
 #include <memory>
 #include <utility>
-#include <list>
 #include <vector>
 #include <map>
 

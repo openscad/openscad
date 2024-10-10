@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iostream>
 
 // FIXME: Default constructor Response()
 enum class Response {ContinueTraversal, AbortTraversal, PruneTraversal};

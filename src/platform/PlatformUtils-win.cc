@@ -1,8 +1,8 @@
 #include "platform/PlatformUtils.h"
 
 #include <ios>
-#include <map>
 #include <string>
+#include <map>
 
 #include "utils/printutils.h"
 #include "utils/findversion.h"
@@ -207,7 +207,6 @@ const std::string PlatformUtils::sysinfo(bool extended)
 
 #include <io.h>
 #include <cstdio>
-#include <fstream>
 
 #ifdef USE_MIMALLOC
 #include <mimalloc.h>

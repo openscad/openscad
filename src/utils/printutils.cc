@@ -4,7 +4,6 @@
 #include <set>
 #include <list>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <cstdio>
 #include <boost/algorithm/string.hpp>

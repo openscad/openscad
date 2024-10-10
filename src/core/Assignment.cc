@@ -28,7 +28,6 @@
 #include "core/customizer/Annotation.h"
 #include "core/Expression.h"
 #include <ostream>
-#include <sstream>
 #include <string>
 
 void Assignment::addAnnotations(AnnotationList *annotations)

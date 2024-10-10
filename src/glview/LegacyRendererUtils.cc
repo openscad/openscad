@@ -8,7 +8,6 @@
 
 #include <Eigen/LU>
 #include <cstddef>
-#include <fstream>
 
 #ifdef ENABLE_OPENCSG
 static void draw_triangle(const Renderer::shaderinfo_t *shaderinfo, const Vector3d& p0, const Vector3d& p1, const Vector3d& p2,

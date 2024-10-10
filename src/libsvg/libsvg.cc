@@ -28,7 +28,6 @@
 #include <iostream>
 #include <memory>
 #include <map>
-#include <stack>
 #include <string>
 #include <vector>
 #include <Eigen/Core>

@@ -33,7 +33,6 @@
 #include <cstdio>
 #include <vector>
 
-#include <iostream>
 
 #include <fontconfig/fontconfig.h>
 
