@@ -2,6 +2,7 @@
 
 #include <ios>
 #include <string>
+#include <map>
 
 #include "utils/printutils.h"
 #include "utils/findversion.h"
