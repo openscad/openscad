@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <functional>
 #include <string>
-#include <variant>
 #include <vector>
 #include <memory>
 #include <boost/logic/tribool.hpp>
