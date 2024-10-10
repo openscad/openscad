@@ -3,7 +3,6 @@
 #include <QSettings>
 #include <memory>
 #include <mutex>
-#include <thread>
 
 #include "utils/printutils.h"
 
