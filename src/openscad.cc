@@ -52,7 +52,6 @@
 #include <iterator>
 #include <stdexcept>
 #include <map>
-#include <set>
 #include <utility>
 #include <exception>
 #include <sstream>
