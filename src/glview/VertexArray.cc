@@ -8,7 +8,6 @@
 #include <vector>
 #include <memory>
 #include <cstdio>
-#include <functional>
 #include "glview/VertexArray.h"
 
 #include "utils/printutils.h"
