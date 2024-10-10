@@ -35,7 +35,6 @@
 #include <Eigen/LU>
 #include <cstddef>
 #include <string>
-#include <utility>
 #include <vector>
 
 /*! /class PolySet
