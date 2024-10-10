@@ -28,7 +28,6 @@
 #include "gui/input/InputDriver.h"
 
 #include <cstddef>
-#include <memory>
 #include <string>
 #include <QtGamepad/QGamepad>
 
