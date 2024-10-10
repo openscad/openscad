@@ -4,7 +4,6 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <list>
 #include <utility>
 #include "core/NodeVisitor.h"
 #include "core/node.h"
