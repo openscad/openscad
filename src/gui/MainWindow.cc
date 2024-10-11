@@ -2147,25 +2147,6 @@ void MainWindow::action3DPrint()
 #endif // ifdef ENABLE_3D_PRINTING
 }
 
-namespace {
-
-ExportInfo createExportInfo(FileFormat format, const QString& exportFilename, const QString& sourceFilePath)
-{
-  const QFileInfo info(sourceFilePath);
-
-  ExportInfo exportInfo;
-  exportInfo.format = format;
-  exportInfo.fileName = exportFilename.toLocal8Bit().constData();
-  exportInfo.displayName = exportFilename.toUtf8().toStdString();
-  exportInfo.sourceFilePath = sourceFilePath.toUtf8().toStdString();
-  exportInfo.sourceFileName = info.fileName().toUtf8().toStdString();
-  exportInfo.useStdOut = false;
-  exportInfo.options = nullptr;
-  return exportInfo;
-}
-
-}
-
 void MainWindow::sendToOctoPrint()
 {
 #ifdef ENABLE_3D_PRINTING
@@ -2208,8 +2189,8 @@ void MainWindow::sendToOctoPrint()
     userFileName = fileInfo.baseName() + "." + fileFormat.toLower();
   }
 
-  ExportInfo exportInfo = createExportInfo(exportFileFormat, exportFileName, activeEditor->filepath);
-  exportFileByName(this->root_geom, exportInfo);
+  ExportInfo exportInfo = {.format = exportFileFormat, .sourceFilePath = activeEditor->filepath.toStdString()};
+  exportFileByName(this->root_geom, exportFileName.toStdString(), exportInfo);
 
   try {
     this->progresswidget = new ProgressWidget(this);
@@ -2275,8 +2256,8 @@ void MainWindow::sendToLocalSlicer()
     userFileName = fileInfo.baseName() + fileFormat.toLower();
   }
 
-  ExportInfo exportInfo = createExportInfo(exportFileFormat, exportFileName, activeEditor->filepath);
-  exportFileByName(this->root_geom, exportInfo);
+  ExportInfo exportInfo = {.format = exportFileFormat, .sourceFilePath = activeEditor->filepath.toStdString()};
+  exportFileByName(this->root_geom, exportFileName.toStdString(), exportInfo);
 
   QProcess process(this);
   process.setProcessChannelMode(QProcess::MergedChannels);
@@ -2310,8 +2291,8 @@ void MainWindow::sendToPrintService()
   const QString exportFilename = exportFile.fileName();
 
   //Render the stl to a temporary file:
-  ExportInfo exportInfo = createExportInfo(FileFormat::STL, exportFilename, activeEditor->filepath);
-  exportFileByName(this->root_geom, exportInfo);
+  ExportInfo exportInfo = {.format = FileFormat::STL, .sourceFilePath = activeEditor->filepath.toStdString()};
+  exportFileByName(this->root_geom, exportFilename.toStdString(), exportInfo);
 
   //Create a name that the order process will use to refer to the file. Base it off of the project name
   QString userFacingName = "unsaved.stl";
@@ -2942,11 +2923,11 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
   }
   this->export_paths[suffix] = exportFilename;
 
-  ExportInfo exportInfo = createExportInfo(format, exportFilename, activeEditor->filepath);
+  ExportInfo exportInfo = {.format = format, .sourceFilePath = activeEditor->filepath.toStdString()};
   // Add options
   exportInfo.options = options;
 
-  bool exportResult = exportFileByName(this->root_geom, exportInfo);
+  bool exportResult = exportFileByName(this->root_geom, exportFilename.toStdString(), exportInfo);
 
   if (exportResult) fileExportedMessage(type_name, exportFilename);
   clearCurrentOutput();

@@ -33,12 +33,14 @@
 #include <functional>
 #include <cassert>
 #include <map>
-#include <iostream>
 #include <cstdint>
 #include <memory>
 #include <cstddef>
 #include <fstream>
 #include <vector>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <iostream>
 
 #ifdef _WIN32
 #include <io.h>
@@ -125,7 +127,7 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& 
   }
 }
 
-bool exportFileByNameStdout(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
+bool exportFileStdOut(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
 #ifdef _WIN32
   _setmode(_fileno(stdout), _O_BINARY);
@@ -134,15 +136,16 @@ bool exportFileByNameStdout(const std::shared_ptr<const Geometry>& root_geom, co
   return true;
 }
 
-bool exportFileByNameStream(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
+bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo)
 {
   std::ios::openmode mode = std::ios::out | std::ios::trunc;
   if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::STL || exportInfo.format == FileFormat::PDF) {
     mode |= std::ios::binary;
   }
-  std::ofstream fstream(exportInfo.fileName, mode);
+  const boost::filesystem::path path(filename);
+   boost::filesystem::ofstream fstream(path, mode);
   if (!fstream.is_open()) {
-    LOG(_("Can't open file \"%1$s\" for export"), exportInfo.displayName);
+    LOG(_("Can't open file \"%1$s\" for export"), filename);
     return false;
   } else {
     bool onerror = false;
@@ -158,18 +161,9 @@ bool exportFileByNameStream(const std::shared_ptr<const Geometry>& root_geom, co
       onerror = true;
     }
     if (onerror) {
-      LOG(message_group::Error, _("\"%1$s\" write error. (Disk full?)"), exportInfo.displayName);
+      LOG(message_group::Error, _("\"%1$s\" write error. (Disk full?)"), filename);
     }
     return !onerror;
-  }
-}
-
-bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
-{
-  if (exportInfo.useStdOut) {
-    return exportFileByNameStdout(root_geom, exportInfo);
-  } else {
-    return exportFileByNameStream(root_geom, exportInfo);
   }
 }
 

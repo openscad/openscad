@@ -89,20 +89,16 @@ struct ExportPdfOptions {
 
 struct ExportInfo {
   FileFormat format;
-  std::string displayName;
-  std::string fileName;
-  std::string sourceFilePath;
-  std::string sourceFileName;
-  bool useStdOut;
+  std::string sourceFilePath; // Full path to the OpenSCAD source file
   ExportPdfOptions *options;
 };
-
 
 bool canPreview(const FileFormat format);
 bool is3D(const FileFormat format);
 bool is2D(const FileFormat format);
 
-bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);
+bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo);
+bool exportFileStdOut(const std::shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);
 
 void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 bool binary = true);

@@ -258,8 +258,9 @@ if (exportInfo.options==nullptr) {
     return;
   }
 
+
 #if CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 16, 0)
-  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_TITLE, exportInfo.sourceFileName.c_str());
+  cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_TITLE, boost::filesystem::path(exportInfo.sourceFilePath).filename().c_str());
   cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_CREATOR, "OpenSCAD (https://www.openscad.org/)");
   cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_CREATE_DATE, "");
   cairo_pdf_surface_set_metadata(surface, CAIRO_PDF_METADATA_MOD_DATE, "");
