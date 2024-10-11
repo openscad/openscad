@@ -2,7 +2,6 @@
 #include <stdexcept>
 #include <cstdio>
 #include <string>
-#include <iostream>
 
 namespace fs = boost::filesystem;
 

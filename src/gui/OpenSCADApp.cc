@@ -7,7 +7,6 @@
 #include <cassert>
 #include <exception>
 #include <QProgressDialog>
-#include <iostream>
 #include <boost/foreach.hpp>
 #include "gui/QSettingsCached.h"
 

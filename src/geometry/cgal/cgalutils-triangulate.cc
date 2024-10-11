@@ -5,7 +5,6 @@
 #include <cassert>
 #include <list>
 #include <memory>
-#include <utility>
 
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>

@@ -3,7 +3,6 @@
 #include <functional>
 #include <exception>
 #include <memory>
-#include <ciso646> // C alternative tokens (xor)
 #include <cstdlib>
 #include <string>
 #include <vector>

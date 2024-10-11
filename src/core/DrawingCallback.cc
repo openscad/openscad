@@ -26,9 +26,7 @@
 #include "core/DrawingCallback.h"
 
 #include <memory>
-#include <algorithm>
 #include <cmath>
-#include <iostream>
 #include <vector>
 
 #include "geometry/Polygon2d.h"

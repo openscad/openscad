@@ -28,7 +28,6 @@
 
 #include <cstddef>
 #include <string>
-#include <utility>
 #include <hidapi.h>
 
 #include "gui/input/InputDriver.h"

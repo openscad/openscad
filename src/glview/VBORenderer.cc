@@ -36,8 +36,6 @@
 #include <utility>
 #include <memory>
 #include <cstddef>
-#include <iomanip>
-#include <sstream>
 
 VBORenderer::VBORenderer()
   : Renderer()

@@ -69,7 +69,6 @@ void initialize_rng() {
   seed_val ^= distributor(deterministic_rng);
 }
 
-#include <array>
 
 static inline bool check_arguments(const char *function_name, const Arguments& arguments, const Location& loc, unsigned int expected_count, bool warn = true)
 {
