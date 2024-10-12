@@ -1,4 +1,5 @@
 #include "gui/QWordSearchField.h"
+#include <QLineEdit>
 #include <QResizeEvent>
 #include <QString>
 #include <QStyle>
