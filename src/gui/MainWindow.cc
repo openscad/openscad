@@ -25,6 +25,7 @@
  */
 #include "gui/MainWindow.h"
 
+#include <QFont>
 #include <QFontMetrics>
 #include <QIcon>
 #include <QKeySequence>

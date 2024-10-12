@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QFont>
 #include <QFontComboBox>
 #include <QHash>
 #include <QKeyEvent>
