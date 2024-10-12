@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QSet>
 #include <QSize>
 #include <QString>
 #include <QStyleOptionViewItem>
