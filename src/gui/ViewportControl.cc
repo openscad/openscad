@@ -2,6 +2,7 @@
 #include "utils/printutils.h"
 #include "gui/MainWindow.h"
 #include "gui/QGLView.h"
+#include <QBoxLayout>
 #include <QGridLayout>
 #include <QLayoutItem>
 #include <QObject>
