@@ -28,6 +28,7 @@
 
 #include "gui/Settings.h"
 
+#include <QIODevice>
 #include <QJsonDocument>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
