@@ -1,6 +1,7 @@
 #pragma once
 
 #include "glview/system-gl.h"
+#include <QWheelEvent>
 #include <QWidget>
 #include <QtGlobal>
 #include <QOpenGLWidget>
