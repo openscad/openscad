@@ -28,6 +28,7 @@
 
 #include "gui/Settings.h"
 
+#include <QHttpMultiPart>
 #include <QHttpPart>
 #include <QIODevice>
 #include <QJsonDocument>
