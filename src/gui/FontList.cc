@@ -1,5 +1,6 @@
 #include "gui/FontList.h"
 
+#include <QStyleOptionViewItem>
 #include <array>
 #include <cstdint>
 #include <qitemselectionmodel.h>
