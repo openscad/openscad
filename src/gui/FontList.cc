@@ -1,5 +1,6 @@
 #include "gui/FontList.h"
 
+#include <QSortFilterProxyModel>
 #include <QString>
 #include <QStyledItemDelegate>
 #include <QStyleOptionViewItem>
