@@ -1,6 +1,7 @@
 #include "gui/Animate.h"
 #include "utils/printutils.h"
 #include "gui/MainWindow.h"
+#include <QList>
 #include <QPushButton>
 #include <QResizeEvent>
 #include <QTimer>
