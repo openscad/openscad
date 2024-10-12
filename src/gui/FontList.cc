@@ -1,5 +1,6 @@
 #include "gui/FontList.h"
 
+#include <QApplication>
 #include <QModelIndex>
 #include <QPainter>
 #include <QPoint>

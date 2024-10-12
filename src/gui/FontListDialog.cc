@@ -26,6 +26,7 @@
 
 #include "gui/FontListDialog.h"
 
+#include <QApplication>
 #include <QItemSelection>
 #include <QModelIndex>
 #include <QClipboard>
