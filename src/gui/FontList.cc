@@ -1,5 +1,6 @@
 #include "gui/FontList.h"
 
+#include <QPainter>
 #include <QPoint>
 #include <QResizeEvent>
 #include <QSize>
