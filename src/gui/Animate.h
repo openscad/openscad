@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QPushButton>
 #include <QResizeEvent>
 #include <QTimer>
 #include <QWidget>
