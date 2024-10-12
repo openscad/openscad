@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include <QTimer>
 #include <algorithm>
 #include <functional>
 #include <exception>
