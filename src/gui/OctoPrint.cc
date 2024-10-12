@@ -28,6 +28,7 @@
 
 #include "gui/Settings.h"
 
+#include <QNetworkRequest>
 #include <QString>
 #include <string>
 #include <utility>

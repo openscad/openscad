@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include <QNetworkRequest>
 #include <QTimer>
 #include <algorithm>
 #include <functional>
