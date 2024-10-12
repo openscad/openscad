@@ -2997,7 +2997,7 @@ void MainWindow::actionExportPDF()
                                                                QString::fromStdString(paperSizeStrings[static_cast<int>(exportPdfOptions.paperSize)])).toString())); // enum map
   exportPdfDialog->setOrientation(orientationsString2Enum(settings.value("exportPdfOpts/orientation",
                                                                          QString::fromStdString(paperOrientationsStrings[static_cast<int>(exportPdfOptions.Orientation)])).toString())); // enum map
-  exportPdfDialog->setShowDsnFn(settings.value("exportPdfOpts/showDsgnFN", exportPdfOptions.showDsgnFN).toBool());
+  exportPdfDialog->setShowDesignFilename(settings.value("exportPdfOpts/showDsgnFN", exportPdfOptions.showDesignFilename).toBool());
   exportPdfDialog->setShowScale(settings.value("exportPdfOpts/showScale", exportPdfOptions.showScale).toBool());
   exportPdfDialog->setShowScaleMsg(settings.value("exportPdfOpts/showScaleMsg", exportPdfOptions.showScaleMsg).toBool());
   exportPdfDialog->setShowGrid(settings.value("exportPdfOpts/showGrid", exportPdfOptions.showGrid).toBool());
@@ -3010,7 +3010,7 @@ void MainWindow::actionExportPDF()
 
   exportPdfOptions.paperSize = exportPdfDialog->getPaperSize();
   exportPdfOptions.Orientation = exportPdfDialog->getOrientation();
-  exportPdfOptions.showDsgnFN = exportPdfDialog->getShowDsnFn();
+  exportPdfOptions.showDesignFilename = exportPdfDialog->getShowDesignFilename();
   exportPdfOptions.showScale = exportPdfDialog->getShowScale();
   exportPdfOptions.showScaleMsg = exportPdfDialog->getShowScaleMsg();
   exportPdfOptions.showGrid = exportPdfDialog->getShowGrid();
@@ -3018,7 +3018,7 @@ void MainWindow::actionExportPDF()
 
   settings.setValue("exportPdfOpts/paperSize", QString::fromStdString(paperSizeStrings[static_cast<int>(exportPdfDialog->getPaperSize())]));
   settings.setValue("exportPdfOpts/orientation", QString::fromStdString(paperOrientationsStrings[static_cast<int>(exportPdfDialog->getOrientation())]));
-  settings.setValue("exportPdfOpts/showDsgnFN", exportPdfDialog->getShowDsnFn());
+  settings.setValue("exportPdfOpts/showDsgnFN", exportPdfDialog->getShowDesignFilename());
   settings.setValue("exportPdfOpts/showScale", exportPdfDialog->getShowScale());
   settings.setValue("exportPdfOpts/showScaleMsg", exportPdfDialog->getShowScaleMsg());
   settings.setValue("exportPdfOpts/showGrid", exportPdfDialog->getShowGrid());

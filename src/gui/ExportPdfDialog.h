@@ -43,12 +43,12 @@ public:
   paperOrientations getOrientation();
   bool getShowScale();
   bool getShowScaleMsg();
-  bool getShowDsnFn();
+  bool getShowDesignFilename();
   bool getShowGrid();
   
   void setShowScale(bool state);
   void setShowScaleMsg(bool state); 
-  void setShowDsnFn(bool state); 
+  void setShowDesignFilename(bool state); 
   void setShowGrid(bool state);
   
   void setPaperSize(paperSizes paper);  

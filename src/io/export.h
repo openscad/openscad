@@ -78,13 +78,13 @@ const std::array<std::string,3> paperOrientationsStrings{
 // include defaults to use without dialog or direction.
 // Defaults match values used prior to incorporation of options.
 struct ExportPdfOptions {
-    bool showScale=TRUE;
-    bool showScaleMsg=TRUE;
-    bool showGrid=FALSE;
-    double gridSize=10.; // New
-    bool showDsgnFN=TRUE;
-    paperOrientations Orientation=paperOrientations::PORTRAIT;
-    paperSizes paperSize=paperSizes::A4;
+    bool showScale = true;
+    bool showScaleMsg = true;
+    bool showGrid = false;
+    double gridSize = 10.0;
+    bool showDesignFilename = false;
+    paperOrientations Orientation = paperOrientations::PORTRAIT;
+    paperSizes paperSize = paperSizes::A4;
 };
 
 struct ExportInfo {
