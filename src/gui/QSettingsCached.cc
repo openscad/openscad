@@ -1,5 +1,6 @@
 #include "gui/QSettingsCached.h"
 
+#include <QSettings>
 #include <memory>
 
 std::unique_ptr<QSettings> QSettingsCached::qsettingsPointer;
