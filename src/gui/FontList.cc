@@ -1,5 +1,6 @@
 #include "gui/FontList.h"
 
+#include <QResizeEvent>
 #include <QSize>
 #include <QSortFilterProxyModel>
 #include <QString>

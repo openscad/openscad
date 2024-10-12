@@ -1,6 +1,7 @@
 #ifndef QWORDSEARCHFIELD_H
 #define QWORDSEARCHFIELD_H
 
+#include <QResizeEvent>
 #include <QLineEdit>
 #include <QLabel>
 
