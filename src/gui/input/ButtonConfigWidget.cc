@@ -26,6 +26,7 @@
 
 #include "gui/input/ButtonConfigWidget.h"
 
+#include <QLabel>
 #include <QString>
 #include <QWidget>
 #include <cstddef>
