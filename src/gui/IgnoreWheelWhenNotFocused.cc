@@ -1,4 +1,5 @@
 #include "gui/IgnoreWheelWhenNotFocused.h"
+#include <QEvent>
 #include <QObject>
 #include <QWidget>
 #include <QComboBox>

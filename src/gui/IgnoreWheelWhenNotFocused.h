@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <QEvent>
 #include <QObject>
 #include <QWidget>
 #include <QMouseEvent>
