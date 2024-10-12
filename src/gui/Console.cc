@@ -26,6 +26,7 @@
 
 #include "gui/Console.h"
 
+#include <QFocusEvent>
 #include <QPlainTextEdit>
 #include <QStringLiteral>
 #include <QTextCharFormat>
