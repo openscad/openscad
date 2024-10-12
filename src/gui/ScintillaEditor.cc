@@ -1,5 +1,6 @@
 #include "gui/ScintillaEditor.h"
 
+#include <QMenu>
 #include <QObject>
 #include <QTimer>
 #include <QVBoxLayout>
