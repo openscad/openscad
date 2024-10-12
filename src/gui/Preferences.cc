@@ -26,6 +26,7 @@
 
 #include "gui/Preferences.h"
 
+#include <QFontComboBox>
 #include <QMainWindow>
 #include <QObject>
 #include <QSizePolicy>
