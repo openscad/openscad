@@ -25,6 +25,7 @@
  */
 #include "gui/MainWindow.h"
 
+#include <QKeySequence>
 #include <QList>
 #include <QMetaObject>
 #include <QPoint>
