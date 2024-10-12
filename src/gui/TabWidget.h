@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QMouseEvent>
 #include <QString>
 #include <QWidget>
 #include <QTabBar>
