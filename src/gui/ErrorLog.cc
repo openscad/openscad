@@ -1,5 +1,6 @@
 #include "gui/ErrorLog.h"
 #include "utils/printutils.h"
+#include <QStandardItem>
 #include <QStandardItemModel>
 #include <QString>
 #include <QWidget>
