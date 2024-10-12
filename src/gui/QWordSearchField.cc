@@ -1,4 +1,5 @@
 #include "gui/QWordSearchField.h"
+#include <QString>
 #include <QStyle>
 
 QWordSearchField::QWordSearchField(QFrame *parent) : QLineEdit(parent)

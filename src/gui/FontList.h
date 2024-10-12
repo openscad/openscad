@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QString>
 #include <QStyleOptionViewItem>
 #include <cstdint>
 #include <vector>

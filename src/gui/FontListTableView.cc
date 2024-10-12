@@ -25,6 +25,7 @@
  */
 #include "gui/FontListTableView.h"
 
+#include <QString>
 #include <QWidget>
 #include <QDrag>
 #include <QPixmap>

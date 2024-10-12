@@ -28,6 +28,7 @@
 
 #include "gui/Settings.h"
 
+#include <QString>
 #include <string>
 #include <utility>
 #include <vector>

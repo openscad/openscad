@@ -27,6 +27,7 @@
 
 #include "gui/input/InputDriverEvent.h"
 #include "gui/MainWindow.h"
+#include <QString>
 #include <QTimer>
 #include <algorithm>
 #include <list>

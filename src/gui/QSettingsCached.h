@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QString>
 #include <QVariant>
 #include <QSettings>
 #include <memory>

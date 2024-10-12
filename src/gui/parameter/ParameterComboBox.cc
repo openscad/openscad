@@ -1,4 +1,5 @@
 #include "gui/parameter/ParameterComboBox.h"
+#include <QString>
 #include <QWidget>
 #include "gui/IgnoreWheelWhenNotFocused.h"
 

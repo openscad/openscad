@@ -1,5 +1,6 @@
 #include "gui/ScadApi.h"
 
+#include <QString>
 #include <QStringList>
 #include <string>
 #include <QDir>

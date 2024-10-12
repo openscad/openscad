@@ -1,5 +1,6 @@
 #include "gui/parameter/ParameterText.h"
 
+#include <QString>
 #include <QWidget>
 #include <string>
 
