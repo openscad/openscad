@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QShowEvent>
 #include <QString>
 #include <QStringList>
 #include <QVariant>
