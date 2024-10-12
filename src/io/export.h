@@ -17,8 +17,8 @@
 class PolySet;
 
 enum class FileFormat {
-  ASCIISTL,
-  STL,
+  ASCII_STL,
+  BINARY_STL,
   OBJ,
   OFF,
   WRL,
@@ -37,6 +37,16 @@ enum class FileFormat {
   POV,
   PARAM
 };
+
+namespace fileformat {
+
+void setup();
+bool fromSuffix(const std::string& suffix, FileFormat& format);
+bool canPreview(const FileFormat format);
+bool is3D(const FileFormat format);
+bool is2D(const FileFormat format);
+
+}  // namespace FileFormat
 
 
 // Paper Data used by ExportPDF
@@ -93,10 +103,6 @@ struct ExportInfo {
   ExportPdfOptions *options;
 };
 
-bool canPreview(const FileFormat format);
-bool is3D(const FileFormat format);
-bool is2D(const FileFormat format);
-
 bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo);
 bool exportFileStdOut(const std::shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);
 
@@ -117,31 +123,6 @@ void export_nef3(const std::shared_ptr<const Geometry>& geom, std::ostream& outp
 
 enum class Previewer { OPENCSG, THROWNTOGETHER };
 enum class RenderType { GEOMETRY, BACKEND_SPECIFIC, OPENCSG, THROWNTOGETHER };
-
-struct ExportFileFormatOptions {
-  const std::map<const std::string, FileFormat> exportFileFormats{
-    {"asciistl", FileFormat::ASCIISTL},
-    {"binstl", FileFormat::STL},
-    {"stl", FileFormat::ASCIISTL}, // Deprecated.  Later to FileFormat::STL
-    {"obj", FileFormat::OBJ},
-    {"off", FileFormat::OFF},
-    {"wrl", FileFormat::WRL},
-    {"amf", FileFormat::AMF},
-    {"3mf", FileFormat::_3MF},
-    {"dxf", FileFormat::DXF},
-    {"svg", FileFormat::SVG},
-    {"nefdbg", FileFormat::NEFDBG},
-    {"nef3", FileFormat::NEF3},
-    {"csg", FileFormat::CSG},
-    {"param", FileFormat::PARAM},
-    {"ast", FileFormat::AST},
-    {"term", FileFormat::TERM},
-    {"echo", FileFormat::ECHO},
-    {"png", FileFormat::PNG},
-    {"pdf", FileFormat::PDF},
-    {"pov", FileFormat::POV},
-  };
-};
 
 struct ViewOption {
   const std::string name;

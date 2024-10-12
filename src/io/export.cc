@@ -50,6 +50,71 @@
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
 
+namespace {
+
+struct FileFormatInfo {
+  FileFormat format;
+  std::string identifier;
+  std::string description;
+};
+
+std::unordered_map<std::string, FileFormatInfo> &identifierToInfo() {
+  static auto identifierToInfo = std::make_unique<std::unordered_map<std::string, FileFormatInfo>>();
+  return *identifierToInfo;
+}
+
+std::unordered_map<FileFormat, FileFormatInfo> &fileFormatToInfo() {
+  static auto fileFormatToInfo = std::make_unique<std::unordered_map<FileFormat, FileFormatInfo>>();
+  return *fileFormatToInfo;
+}
+
+
+void add_item(const FileFormatInfo& info) {
+
+  identifierToInfo()[info.identifier] = info;
+  fileFormatToInfo()[info.format] = info;
+}
+
+
+}  // namespace
+
+namespace fileformat {
+
+bool fromSuffix(const std::string& suffix, FileFormat& format)
+{
+  static const bool initialized = [](){
+    add_item({FileFormat::ASCII_STL, "asciistl", "STL (ascii)"});
+    add_item({FileFormat::BINARY_STL, "binstl", "STL (binary)"});
+    add_item({FileFormat::OBJ, "obj", "OBJ"});
+    add_item({FileFormat::OFF, "off", "OFF"});
+    add_item({FileFormat::WRL, "wrl", "VRML"});
+    add_item({FileFormat::AMF, "amf", "AMF"});
+    add_item({FileFormat::_3MF, "3mf", "3MF"});
+    add_item({FileFormat::DXF, "dxf", "DXF"});
+    add_item({FileFormat::SVG, "svg", "SVG"});
+    add_item({FileFormat::NEFDBG, "nefdbg", "nefdbg"});
+    add_item({FileFormat::NEF3, "nef3", "nef3"});
+    add_item({FileFormat::CSG, "csg", "CSG"});
+    add_item({FileFormat::PARAM, "param", "param"});
+    add_item({FileFormat::AST, "ast", "AST"});
+    add_item({FileFormat::TERM, "term", "term"});
+    add_item({FileFormat::ECHO, "echo", "echo"});
+    add_item({FileFormat::PNG, "png", "PNG"});
+    add_item({FileFormat::PDF, "pdf", "PDF"});
+    add_item({FileFormat::POV, "pov", "POV"});
+
+    // Alias
+    identifierToInfo()["stl"] = identifierToInfo()["asciistl"];
+
+    return true;
+  }();
+
+  auto it = identifierToInfo().find(suffix);
+  if (it == identifierToInfo().end()) return false;
+  format = it->second.format;
+  return true;
+}
+
 bool canPreview(const FileFormat format) {
   return (format == FileFormat::AST ||
           format == FileFormat::CSG ||
@@ -60,8 +125,8 @@ bool canPreview(const FileFormat format) {
 }
 
 bool is3D(const FileFormat format) {
-return format == FileFormat::ASCIISTL ||
-  format == FileFormat::STL ||
+return format == FileFormat::ASCII_STL ||
+  format == FileFormat::BINARY_STL ||
   format == FileFormat::OBJ ||
   format == FileFormat::OFF ||
   format == FileFormat::WRL ||
@@ -78,13 +143,15 @@ bool is2D(const FileFormat format) {
     format == FileFormat::PDF;
 }
 
+}  // namespace FileFormat
+
 void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
 {
   switch (exportInfo.format) {
-  case FileFormat::ASCIISTL:
+  case FileFormat::ASCII_STL:
     export_stl(root_geom, output, false);
     break;
-  case FileFormat::STL:
+  case FileFormat::BINARY_STL:
     export_stl(root_geom, output, true);
     break;
   case FileFormat::OBJ:
@@ -139,7 +206,7 @@ bool exportFileStdOut(const std::shared_ptr<const Geometry>& root_geom, const Ex
 bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo)
 {
   std::ios::openmode mode = std::ios::out | std::ios::trunc;
-  if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::STL || exportInfo.format == FileFormat::PDF) {
+  if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::BINARY_STL || exportInfo.format == FileFormat::PDF) {
     mode |= std::ios::binary;
   }
   const boost::filesystem::path path(filename);

@@ -441,7 +441,7 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
     }
 
     const std::string input_filename = cmd.is_stdin ? "<stdin>" : cmd.filename;
-    const int dim = is3D(export_format) ? 3 : is2D(export_format) ? 2 : 0;
+    const int dim = fileformat::is3D(export_format) ? 3 : fileformat::is2D(export_format) ? 2 : 0;
     if (dim > 0 && !checkAndExport(root_geom, dim, export_format, cmd.is_stdout, filename_str, input_filename)) {
       return 1;
     }
@@ -467,7 +467,6 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
 
 int cmdline(const CommandLine& cmd)
 {
-  ExportFileFormatOptions exportFileFormatOptions;
   FileFormat export_format;
 
   // Determine output file format and assign it to formatName
@@ -478,11 +477,9 @@ int cmdline(const CommandLine& cmd)
     const auto path = fs::path(cmd.output_file);
     std::string suffix = path.has_extension() ? path.extension().generic_string().substr(1) : "";
     boost::algorithm::to_lower(suffix);
-    const auto format_iter = exportFileFormatOptions.exportFileFormats.find(suffix);
-    if (format_iter != exportFileFormatOptions.exportFileFormats.end()) {
-      export_format = format_iter->second;
-    } else {
-      LOG("Either add a valid suffix or specify one using the --export-format option.");
+
+    if (!fileformat::fromSuffix(suffix, export_format)) {
+      LOG("Invalid suffix %1$s. Either add a valid suffix or specify one using the --export-format option.", suffix);
       return 1;
     }
   }
@@ -564,7 +561,7 @@ int cmdline(const CommandLine& cmd)
   root_file->handleDependencies();
 
   RenderVariables render_variables = {
-    .preview = canPreview(export_format)
+    .preview = fileformat::canPreview(export_format)
       ? (cmd.viewOptions.renderer == RenderType::OPENCSG
         || cmd.viewOptions.renderer == RenderType::THROWNTOGETHER)
       : false,
@@ -901,14 +898,14 @@ int main(int argc, char **argv)
     arg_colorscheme = vm["colorscheme"].as<std::string>();
   }
 
-  ExportFileFormatOptions exportFileFormatOptions;
   if (vm.count("export-format")) {
-    const auto format = vm["export-format"].as<std::string>();
-    const auto format_iter = exportFileFormatOptions.exportFileFormats.find(format);
-    if (format_iter != exportFileFormatOptions.exportFileFormats.end()) {
-      export_format.emplace(format_iter->second);
+    const auto format_str = vm["export-format"].as<std::string>();
+    FileFormat format;
+    if (fileformat::fromSuffix(format_str, format)) {
+      export_format.emplace(format);
+
     } else {
-      LOG("Unknown --export-format option '%1$s'.  Use -h to list available options.", format);
+      LOG("Unknown --export-format option '%1$s'.  Use -h to list available options.", format_str);
       return 1;
     }
   }

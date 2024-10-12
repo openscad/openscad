@@ -2157,20 +2157,22 @@ void MainWindow::sendToOctoPrint()
     return;
   }
 
+  // FIXME: To make this cleaner, we could define which formats are supported by OctoPrint separately,
+  // then using fileformat::fromSuffix() to convert.
   const QString fileFormat = QString::fromStdString(Settings::Settings::octoPrintFileFormat.value());
-  FileFormat exportFileFormat{FileFormat::STL};
+  FileFormat exportFileFormat{FileFormat::BINARY_STL};
   if (fileFormat == "OBJ") {
     exportFileFormat = FileFormat::OBJ;
   } else if (fileFormat == "OFF") {
     exportFileFormat = FileFormat::OFF;
   } else if (fileFormat == "ASCIISTL") {
-    exportFileFormat = FileFormat::ASCIISTL;
+    exportFileFormat = FileFormat::ASCII_STL;
   } else if (fileFormat == "AMF") {
     exportFileFormat = FileFormat::AMF;
   } else if (fileFormat == "3MF") {
     exportFileFormat = FileFormat::_3MF;
   } else {
-    exportFileFormat = FileFormat::STL;
+    exportFileFormat = FileFormat::BINARY_STL;
   }
 
   QTemporaryFile exportFile{QDir::temp().filePath("OpenSCAD.XXXXXX." + fileFormat.toLower())};
@@ -2220,25 +2222,13 @@ void MainWindow::sendToLocalSlicer()
 #ifdef ENABLE_3D_PRINTING
   const QString slicer = QString::fromStdString(Settings::Settings::localSlicerExecutable.value());
 
-  const QString fileFormat = QString::fromStdString(Settings::Settings::localSlicerFileFormat.value());
-  FileFormat exportFileFormat{FileFormat::STL};
-  if (fileFormat == "OBJ") {
-    exportFileFormat = FileFormat::OBJ;
-  } else if (fileFormat == "OFF") {
-    exportFileFormat = FileFormat::OFF;
-  } else if (fileFormat == "ASCIISTL") {
-    exportFileFormat = FileFormat::ASCIISTL;
-  } else if (fileFormat == "AMF") {
-    exportFileFormat = FileFormat::AMF;
-  } else if (fileFormat == "3MF") {
-    exportFileFormat = FileFormat::_3MF;
-  } else if (fileFormat == "POV") {
-    exportFileFormat = FileFormat::POV;
-  } else {
-    exportFileFormat = FileFormat::STL;
+  const QString fileFormat = QString::fromStdString(Settings::Settings::localSlicerFileFormat.value()).toLower();
+  FileFormat exportFileFormat = FileFormat::BINARY_STL;
+  if (!fileformat::fromSuffix(fileFormat.toStdString(), exportFileFormat)) {
+    LOG("Invalid suffix %1$s. Defaulting to binary STL.", fileFormat.toStdString());
   }
 
-  const auto tmpPath = QDir::temp().filePath("OpenSCAD.XXXXXX."+fileFormat.toLower());
+  const auto tmpPath = QDir::temp().filePath("OpenSCAD.XXXXXX."+fileFormat);
   auto exportFile = std::make_unique<QTemporaryFile>(tmpPath);
   if (!exportFile->open()) {
     LOG(message_group::Error, "Could not open temporary file '%1$s'.", tmpPath.toStdString());
@@ -2253,7 +2243,7 @@ void MainWindow::sendToLocalSlicer()
     userFileName = exportFileName;
   } else {
     QFileInfo fileInfo{activeEditor->filepath};
-    userFileName = fileInfo.baseName() + fileFormat.toLower();
+    userFileName = fileInfo.baseName() + fileFormat;
   }
 
   ExportInfo exportInfo = {.format = exportFileFormat, .sourceFilePath = activeEditor->filepath.toStdString()};
@@ -2291,7 +2281,7 @@ void MainWindow::sendToPrintService()
   const QString exportFilename = exportFile.fileName();
 
   //Render the stl to a temporary file:
-  ExportInfo exportInfo = {.format = FileFormat::STL, .sourceFilePath = activeEditor->filepath.toStdString()};
+  ExportInfo exportInfo = {.format = FileFormat::BINARY_STL, .sourceFilePath = activeEditor->filepath.toStdString()};
   exportFileByName(this->root_geom, exportFilename.toStdString(), exportInfo);
 
   //Create a name that the order process will use to refer to the file. Base it off of the project name
@@ -2936,9 +2926,9 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 void MainWindow::actionExportSTL()
 {
   if (Settings::Settings::exportUseAsciiSTL.value()) {
-    actionExport(FileFormat::ASCIISTL, "ASCIISTL", ".stl", 3);
+    actionExport(FileFormat::ASCII_STL, "ASCIISTL", ".stl", 3);
   } else {
-    actionExport(FileFormat::STL, "STL", ".stl", 3);
+    actionExport(FileFormat::BINARY_STL, "STL", ".stl", 3);
   }
 }
 
