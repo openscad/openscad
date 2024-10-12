@@ -44,7 +44,7 @@
 #include <boost/optional.hpp>
 
 #ifdef ENABLE_CGAL
-#include <CGAL/assertions_impl.h>
+#include <CGAL/assertions.h>
 #endif
 
 #include "core/Builtins.h"
