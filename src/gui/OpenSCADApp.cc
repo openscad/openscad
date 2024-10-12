@@ -4,6 +4,7 @@
 #include "gui/EventFilter.h"
 #endif
 
+#include <QObject>
 #include <QString>
 #include <QStringList>
 #include <cassert>

@@ -2,6 +2,7 @@
 #include "utils/printutils.h"
 #include "gui/MainWindow.h"
 #include "gui/QGLView.h"
+#include <QObject>
 #include <QResizeEvent>
 #include <QString>
 #include <QWidget>

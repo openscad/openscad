@@ -1,5 +1,6 @@
 #include "gui/ScadLexer.h"
 
+#include <QObject>
 #include <QString>
 #include <QStringList>
 #include <iterator>

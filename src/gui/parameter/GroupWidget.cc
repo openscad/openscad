@@ -1,5 +1,6 @@
 #include "gui/parameter/GroupWidget.h"
 
+#include <QObject>
 #include <QSizePolicy>
 #include <QString>
 #include <QWidget>

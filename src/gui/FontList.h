@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QObject>
 #include <QPainter>
 #include <QPoint>
 #include <QSet>
