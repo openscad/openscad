@@ -26,6 +26,7 @@
 
 #include "gui/Preferences.h"
 
+#include <QMainWindow>
 #include <QObject>
 #include <QSizePolicy>
 #include <QSpacerItem>
