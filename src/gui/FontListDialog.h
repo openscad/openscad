@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QItemSelection>
 #include <QString>
 #include <QStandardItemModel>
 #include <QSortFilterProxyModel>
