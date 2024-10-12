@@ -33,6 +33,7 @@
 #include "gui/input/InputDriverManager.h"
 #include "utils/printutils.h"
 
+#include <QThread>
 #include <spnav.h>
 #include <unistd.h>
 #include <string>
