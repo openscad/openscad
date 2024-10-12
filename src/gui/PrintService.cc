@@ -26,6 +26,7 @@
 
 #include "gui/PrintService.h"
 
+#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QStringList>

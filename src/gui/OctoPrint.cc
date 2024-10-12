@@ -28,6 +28,7 @@
 
 #include "gui/Settings.h"
 
+#include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
 #include <QString>
