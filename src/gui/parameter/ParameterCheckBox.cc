@@ -1,3 +1,4 @@
+#include <QWidget>
 #include "gui/parameter/ParameterCheckBox.h"
 
 ParameterCheckBox::ParameterCheckBox(QWidget *parent, BoolParameter *parameter, DescriptionStyle descriptionStyle) :

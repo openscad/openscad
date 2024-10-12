@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gui/parameter/ParameterVirtualWidget.h"
+#include <QWidget>
 #include "ui_ParameterSpinBox.h"
 
 class ParameterSpinBox : public ParameterVirtualWidget, Ui::ParameterSpinBox

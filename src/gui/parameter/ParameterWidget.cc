@@ -25,6 +25,8 @@
  */
 #include "gui/parameter/ParameterWidget.h"
 
+#include <QLayoutItem>
+#include <QString>
 #include <stdexcept>
 #include <cassert>
 #include <map>

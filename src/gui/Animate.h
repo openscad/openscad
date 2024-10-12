@@ -1,5 +1,11 @@
 #pragma once
 
+#include <QAction>
+#include <QList>
+#include <QPushButton>
+#include <QResizeEvent>
+#include <QTimer>
+#include <QWidget>
 #include <string>
 
 #include "gui/qtgettext.h"

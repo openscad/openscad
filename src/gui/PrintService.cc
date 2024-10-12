@@ -26,6 +26,11 @@
 
 #include "gui/PrintService.h"
 
+#include <QJsonDocument>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QStringList>
 #include "utils/printutils.h"
 
 std::mutex PrintService::printServiceMutex;

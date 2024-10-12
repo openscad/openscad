@@ -1,5 +1,7 @@
 #include "gui/parameter/ParameterText.h"
 
+#include <QString>
+#include <QWidget>
 #include <string>
 
 ParameterText::ParameterText(QWidget *parent, StringParameter *parameter, DescriptionStyle descriptionStyle) :

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "gui/qtgettext.h"
+#include <QComboBox>
+#include <QWidget>
 #include "ui_ButtonConfigWidget.h"
 #include "gui/Settings.h"
 

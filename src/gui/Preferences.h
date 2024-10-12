@@ -1,5 +1,18 @@
 #pragma once
 
+#include <QAction>
+#include <QActionGroup>
+#include <QCloseEvent>
+#include <QComboBox>
+#include <QFont>
+#include <QFontComboBox>
+#include <QHash>
+#include <QKeyEvent>
+#include <QShowEvent>
+#include <QString>
+#include <QStringList>
+#include <QVariant>
+#include <QWidget>
 #include <QMainWindow>
 #include <QSettings>
 

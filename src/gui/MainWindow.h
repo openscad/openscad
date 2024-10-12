@@ -12,6 +12,23 @@
 #include "gui/qtgettext.h" // IWYU pragma: keep
 #include "ui_MainWindow.h"
 
+#include <QAction>
+#include <QCloseEvent>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QEvent>
+#include <QFile>
+#include <QLabel>
+#include <QList>
+#include <QMap>
+#include <QObject>
+#include <QPoint>
+#include <QString>
+#include <QStringList>
+#include <QTemporaryFile>
+#include <QTimer>
+#include <QUrl>
+#include <QWidget>
 #include <unordered_map>
 #include <memory>
 #include <string>

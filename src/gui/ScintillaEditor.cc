@@ -1,5 +1,14 @@
 #include "gui/ScintillaEditor.h"
 
+#include <QColor>
+#include <QCursor>
+#include <QEvent>
+#include <QGuiApplication>
+#include <QMenu>
+#include <QObject>
+#include <QTimer>
+#include <QVBoxLayout>
+#include <QWidget>
 #include <functional>
 #include <exception>
 #include <memory>

@@ -1,5 +1,14 @@
 #pragma once
 
+#include <QItemSelection>
+#include <QModelIndex>
+#include <QObject>
+#include <QPainter>
+#include <QPoint>
+#include <QSet>
+#include <QSize>
+#include <QString>
+#include <QStyleOptionViewItem>
 #include <cstdint>
 #include <vector>
 

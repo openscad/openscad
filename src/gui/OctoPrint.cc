@@ -28,6 +28,14 @@
 
 #include "gui/Settings.h"
 
+#include <QHttpMultiPart>
+#include <QHttpPart>
+#include <QIODevice>
+#include <QJsonDocument>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QString>
 #include <string>
 #include <utility>
 #include <vector>

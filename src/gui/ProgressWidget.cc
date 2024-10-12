@@ -1,4 +1,5 @@
 #include "gui/ProgressWidget.h"
+#include <QWidget>
 #include <QTimer>
 
 ProgressWidget::ProgressWidget(QWidget *parent)

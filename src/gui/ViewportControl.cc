@@ -2,6 +2,13 @@
 #include "utils/printutils.h"
 #include "gui/MainWindow.h"
 #include "gui/QGLView.h"
+#include <QBoxLayout>
+#include <QGridLayout>
+#include <QLayoutItem>
+#include <QObject>
+#include <QResizeEvent>
+#include <QString>
+#include <QWidget>
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <cfloat>
