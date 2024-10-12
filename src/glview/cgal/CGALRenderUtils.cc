@@ -1,5 +1,6 @@
-#include <algorithm>
 #include "glview/cgal/CGALRenderUtils.h"
+
+#include <algorithm>
 
 
 // this function resolves a 3x3 linear eqauation system

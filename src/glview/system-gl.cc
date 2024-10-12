@@ -1,12 +1,6 @@
 
 /* OpenGL helper functions */
 
-#include <algorithm>
-#include <iostream>
-#include <vector>
-#include <sstream>
-#include <string>
-
 #ifdef USE_GLAD
 #define GLAD_GL_IMPLEMENTATION
 #define GLAD_EGL_IMPLEMENTATION
@@ -14,7 +8,14 @@
 #define GLAD_WGL_IMPLEMENTATION
 #endif
 #endif
+
 #include "glview/system-gl.h"
+
+#include <algorithm>
+#include <iostream>
+#include <vector>
+#include <sstream>
+#include <string>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/format.hpp>

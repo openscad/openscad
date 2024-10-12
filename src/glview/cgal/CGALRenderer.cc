@@ -24,6 +24,8 @@
  *
  */
 
+#include "glview/cgal/CGALRenderer.h"
+
 #include <cassert>
 #include <limits>
 #include <utility>
@@ -40,7 +42,6 @@
 #include "utils/printutils.h"
 
 #include "glview/cgal/CGALRenderUtils.h"
-#include "glview/cgal/CGALRenderer.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGALHybridPolyhedron.h"
 #include "glview/cgal/CGAL_OGL_VBOPolyhedron.h"

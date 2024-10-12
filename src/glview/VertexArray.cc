@@ -1,3 +1,5 @@
+#include "glview/VertexArray.h"
+
 #include <cstring>
 #include <cassert>
 #include <array>
@@ -5,7 +7,6 @@
 #include <vector>
 #include <memory>
 #include <cstdio>
-#include "glview/VertexArray.h"
 
 #include "utils/printutils.h"
 
