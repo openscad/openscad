@@ -34,6 +34,9 @@
 #include "glview/glew-utils.h"
 #endif
 
+#include <QImage>
+#include <QOpenGLWidget>
+#include <QWidget>
 #include <iostream>
 #include <QApplication>
 #include <QWheelEvent>

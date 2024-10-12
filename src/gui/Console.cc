@@ -26,6 +26,14 @@
 
 #include "gui/Console.h"
 
+#include <QBrush>
+#include <QColor>
+#include <QContextMenuEvent>
+#include <QFocusEvent>
+#include <QPlainTextEdit>
+#include <QStringLiteral>
+#include <QTextCharFormat>
+#include <QWidget>
 #include <cassert>
 #include <QMenu>
 #include <QFileInfo>

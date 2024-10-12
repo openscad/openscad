@@ -25,6 +25,8 @@
  */
 #pragma once
 
+#include <QList>
+#include <QString>
 #include <QStringList>
 #include "gui/input/InputDriver.h"
 #include <string>

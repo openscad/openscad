@@ -1,5 +1,9 @@
 #pragma once
 
+#include <QModelIndex>
+#include <QStringList>
+#include <QVariant>
+#include <QWidget>
 #include <QString>
 #include <QDialog>
 #include <QTreeWidgetItem>

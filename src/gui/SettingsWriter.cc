@@ -26,6 +26,7 @@
 #include "gui/SettingsWriter.h"
 #include "gui/QSettingsCached.h"
 
+#include <QString>
 #include <string>
 
 void SettingsWriter::handle(Settings::SettingsEntry& entry) const {

@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include <QJsonObject>
 #include <mutex>
 
 #include <QString>

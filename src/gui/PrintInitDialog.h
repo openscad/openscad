@@ -27,6 +27,7 @@
 #pragma once
 
 #include "gui/qtgettext.h"
+#include <QDialog>
 #include "ui_PrintInitDialog.h"
 
 enum class print_service_t { NONE, PRINT_SERVICE, OCTOPRINT, LOCALSLICER };

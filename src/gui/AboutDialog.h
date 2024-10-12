@@ -1,6 +1,8 @@
 #pragma once
 
 #include "version.h"
+#include <QDialog>
+#include <QWidget>
 #include "gui/qtgettext.h"
 #include "ui_AboutDialog.h"
 

@@ -27,6 +27,7 @@
 #pragma once
 
 #include "gui/qtgettext.h"
+#include <QDialog>
 #include "io/export.h"
 #include "ui_ExportPdfDialog.h"
 

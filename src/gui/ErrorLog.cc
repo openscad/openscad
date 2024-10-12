@@ -1,5 +1,13 @@
 #include "gui/ErrorLog.h"
 #include "utils/printutils.h"
+#include <QAbstractItemView>
+#include <QColor>
+#include <QList>
+#include <QResizeEvent>
+#include <QStandardItem>
+#include <QStandardItemModel>
+#include <QString>
+#include <QWidget>
 #include <utility>
 #include <boost/filesystem.hpp>
 

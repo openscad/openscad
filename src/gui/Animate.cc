@@ -1,6 +1,14 @@
 #include "gui/Animate.h"
 #include "utils/printutils.h"
 #include "gui/MainWindow.h"
+#include <QAction>
+#include <QBoxLayout>
+#include <QIcon>
+#include <QList>
+#include <QPushButton>
+#include <QResizeEvent>
+#include <QTimer>
+#include <QWidget>
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <QFormLayout>

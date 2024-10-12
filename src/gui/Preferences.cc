@@ -26,6 +26,15 @@
 
 #include "gui/Preferences.h"
 
+#include <QFont>
+#include <QFontComboBox>
+#include <QMainWindow>
+#include <QObject>
+#include <QSizePolicy>
+#include <QSpacerItem>
+#include <QString>
+#include <QStringList>
+#include <QWidget>
 #include <tuple>
 #include <cassert>
 #include <list>

@@ -1,5 +1,9 @@
 #include "gui/parameter/GroupWidget.h"
 
+#include <QObject>
+#include <QSizePolicy>
+#include <QString>
+#include <QWidget>
 #include <QLineEdit>
 
 GroupWidget::GroupWidget(const QString& title, QWidget *parent) : QWidget(parent)

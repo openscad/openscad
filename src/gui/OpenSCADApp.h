@@ -1,5 +1,8 @@
 #pragma once
 
+#include <QEvent>
+#include <QObject>
+#include <QString>
 #include <QApplication>
 #include "gui/WindowManager.h"
 
