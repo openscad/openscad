@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QAction>
 #include <QList>
 #include <QPushButton>
 #include <QResizeEvent>
