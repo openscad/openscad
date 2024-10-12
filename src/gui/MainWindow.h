@@ -12,6 +12,7 @@
 #include "gui/qtgettext.h" // IWYU pragma: keep
 #include "ui_MainWindow.h"
 
+#include <QDropEvent>
 #include <QEvent>
 #include <QFile>
 #include <QLabel>
