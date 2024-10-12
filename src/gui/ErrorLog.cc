@@ -1,5 +1,6 @@
 #include "gui/ErrorLog.h"
 #include "utils/printutils.h"
+#include <QColor>
 #include <QList>
 #include <QResizeEvent>
 #include <QStandardItem>
