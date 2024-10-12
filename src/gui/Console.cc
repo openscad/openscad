@@ -26,6 +26,7 @@
 
 #include "gui/Console.h"
 
+#include <QContextMenuEvent>
 #include <QFocusEvent>
 #include <QPlainTextEdit>
 #include <QStringLiteral>
