@@ -103,9 +103,7 @@ private:
 
 namespace {
 
-#ifdef OPENSCAD_NOGUI
-bool QtUseGUI() { return false; }
-#else
+#ifndef OPENSCAD_NOGUI
 bool useGUI()
 {
 #ifdef Q_OS_X11
@@ -114,11 +112,10 @@ bool useGUI()
   // is false, the application does not connect to the X server. On Windows and
   // Macintosh, currently the window system is always initialized, regardless of the
   // value of GUIenabled. This may change in future versions of Qt.
-  bool useGUI = getenv("DISPLAY") != 0;
+  return getenv("DISPLAY") != 0;
 #else
-  bool useGUI = true;
+  return true;
 #endif
-  return useGUI;
 }
 #endif // OPENSCAD_NOGUI
 
@@ -980,11 +977,13 @@ int main(int argc, char **argv)
         return 1;
       }
     }
+#ifndef OPENSCAD_NOGUI
   } else if (useGUI()) {
     if (vm.count("export-format")) {
       LOG("Ignoring --export-format option");
     }
     rc = gui(inputFiles, original_path, argc, argv);
+#endif
   } else {
     LOG("Requested GUI mode but can't open display!\n");
     return 1;
