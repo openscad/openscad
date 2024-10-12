@@ -3,6 +3,7 @@
 #include "gui/qtgettext.h"
 #include "ui_ErrorLog.h"
 #include "utils/printutils.h"
+#include <QModelIndex>
 #include <QResizeEvent>
 #include <QWidget>
 #include <list>

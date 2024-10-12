@@ -26,6 +26,7 @@
 
 #include "gui/FontListDialog.h"
 
+#include <QModelIndex>
 #include <QClipboard>
 #include <QSortFilterProxyModel>
 

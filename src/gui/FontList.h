@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QModelIndex>
 #include <QObject>
 #include <QPainter>
 #include <QPoint>
