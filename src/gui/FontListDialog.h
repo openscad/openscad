@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QDialog>
 #include <QItemSelection>
 #include <QString>
 #include <QStandardItemModel>

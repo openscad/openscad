@@ -25,6 +25,7 @@
  */
 #include "gui/MainWindow.h"
 
+#include <QDialog>
 #include <QElapsedTimer>
 #include <QEvent>
 #include <QFont>
