@@ -26,6 +26,7 @@
 
 #include "gui/Console.h"
 
+#include <QStringLiteral>
 #include <QTextCharFormat>
 #include <QWidget>
 #include <cassert>
