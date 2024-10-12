@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QActionGroup>
 #include <QCloseEvent>
 #include <QComboBox>
 #include <QFont>
