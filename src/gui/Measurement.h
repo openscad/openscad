@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <QPoint>
 #include <QString>
 #include "gui/QGLView.h"
 

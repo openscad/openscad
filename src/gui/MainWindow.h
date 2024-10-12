@@ -12,6 +12,7 @@
 #include "gui/qtgettext.h" // IWYU pragma: keep
 #include "ui_MainWindow.h"
 
+#include <QPoint>
 #include <QString>
 #include <QStringList>
 #include <QTemporaryFile>

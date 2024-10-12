@@ -1,5 +1,6 @@
 #include "gui/TabManager.h"
 
+#include <QPoint>
 #include <QTabBar>
 #include <QWidget>
 #include <cassert>
