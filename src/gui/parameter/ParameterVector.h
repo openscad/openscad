@@ -3,6 +3,7 @@
 #include "gui/parameter/ParameterVirtualWidget.h"
 #include "ui_ParameterVector.h"
 
+#include <QDoubleSpinBox>
 #include <QWidget>
 #include <vector>
 

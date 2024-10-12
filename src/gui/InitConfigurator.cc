@@ -1,6 +1,7 @@
 
 #include "gui/InitConfigurator.h"
 
+#include <QDoubleSpinBox>
 #include <QSpinBox>
 #include <QString>
 #include <QSettings>

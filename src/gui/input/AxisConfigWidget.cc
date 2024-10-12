@@ -26,6 +26,7 @@
 
 #include "gui/input/AxisConfigWidget.h"
 
+#include <QDoubleSpinBox>
 #include <QFont>
 #include <QProgressBar>
 #include <cmath>
