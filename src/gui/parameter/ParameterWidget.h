@@ -25,6 +25,7 @@
  */
 #pragma once
 
+#include <QWidget>
 #include <QTimer>
 #include <cstddef>
 #include <map>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QWidget>
 #include <boost/optional.hpp>
 #include <vector>
 

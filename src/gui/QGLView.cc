@@ -34,6 +34,7 @@
 #include "glview/glew-utils.h"
 #endif
 
+#include <QWidget>
 #include <iostream>
 #include <QApplication>
 #include <QWheelEvent>

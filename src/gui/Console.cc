@@ -26,6 +26,7 @@
 
 #include "gui/Console.h"
 
+#include <QWidget>
 #include <cassert>
 #include <QMenu>
 #include <QFileInfo>

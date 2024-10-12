@@ -2,6 +2,7 @@
 #include "utils/printutils.h"
 #include "gui/MainWindow.h"
 #include "gui/QGLView.h"
+#include <QWidget>
 #include <iostream>
 #include <boost/filesystem.hpp>
 #include <cfloat>

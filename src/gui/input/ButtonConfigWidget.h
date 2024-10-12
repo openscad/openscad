@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gui/qtgettext.h"
+#include <QWidget>
 #include "ui_ButtonConfigWidget.h"
 #include "gui/Settings.h"
 

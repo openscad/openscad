@@ -1,5 +1,6 @@
 #include "gui/parameter/ParameterVirtualWidget.h"
 
+#include <QWidget>
 #include <algorithm>
 #include <cmath>
 #include <cassert>

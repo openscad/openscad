@@ -25,6 +25,7 @@
  */
 #pragma once
 
+#include <QWidget>
 #include <QStringList>
 #include <QFileInfoList>
 #include <boost/filesystem.hpp>

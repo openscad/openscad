@@ -1,5 +1,6 @@
 #include "gui/TabWidget.h"
 
+#include <QWidget>
 #include <QTabBar>
 #include <QStackedWidget>
 #include <QMouseEvent>

@@ -25,6 +25,7 @@
  */
 #include "gui/MainWindow.h"
 
+#include <QWidget>
 #include <deque>
 #include <cassert>
 #include <array>

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QWidget>
 #include <QTabBar>
 #include <QStackedWidget>
 #include <QList>

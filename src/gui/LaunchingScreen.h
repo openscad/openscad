@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QWidget>
 #include <QString>
 #include <QDialog>
 #include <QTreeWidgetItem>

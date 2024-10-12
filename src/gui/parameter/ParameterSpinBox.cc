@@ -1,4 +1,5 @@
 #include "gui/parameter/ParameterSpinBox.h"
+#include <QWidget>
 #include <algorithm>
 #include <limits>
 #include "gui/IgnoreWheelWhenNotFocused.h"

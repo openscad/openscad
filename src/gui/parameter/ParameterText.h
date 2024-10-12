@@ -3,6 +3,7 @@
 #include "gui/parameter/ParameterVirtualWidget.h"
 #include "ui_ParameterText.h"
 
+#include <QWidget>
 #include <string>
 
 class ParameterText : public ParameterVirtualWidget, Ui::ParameterText

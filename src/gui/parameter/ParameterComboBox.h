@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gui/parameter/ParameterVirtualWidget.h"
+#include <QWidget>
 #include "ui_ParameterComboBox.h"
 
 class ParameterComboBox : public ParameterVirtualWidget, Ui::ParameterComboBox

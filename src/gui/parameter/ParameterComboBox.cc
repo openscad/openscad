@@ -1,4 +1,5 @@
 #include "gui/parameter/ParameterComboBox.h"
+#include <QWidget>
 #include "gui/IgnoreWheelWhenNotFocused.h"
 
 ParameterComboBox::ParameterComboBox(QWidget *parent, EnumParameter *parameter, DescriptionStyle descriptionStyle) :

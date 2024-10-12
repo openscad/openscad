@@ -1,5 +1,6 @@
 #include "gui/ErrorLog.h"
 #include "utils/printutils.h"
+#include <QWidget>
 #include <utility>
 #include <boost/filesystem.hpp>
 
