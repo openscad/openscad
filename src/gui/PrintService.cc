@@ -26,6 +26,7 @@
 
 #include "gui/PrintService.h"
 
+#include <QStringList>
 #include "utils/printutils.h"
 
 std::mutex PrintService::printServiceMutex;

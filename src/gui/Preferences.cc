@@ -26,6 +26,7 @@
 
 #include "gui/Preferences.h"
 
+#include <QStringList>
 #include <QWidget>
 #include <tuple>
 #include <cassert>

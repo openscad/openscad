@@ -1,5 +1,6 @@
 #include "gui/LaunchingScreen.h"
 
+#include <QStringList>
 #include <QVariant>
 #include <QWidget>
 #include <QFileInfo>
