@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include <QEventLoop>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
