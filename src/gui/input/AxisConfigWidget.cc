@@ -26,6 +26,7 @@
 
 #include "gui/input/AxisConfigWidget.h"
 
+#include <QProgressBar>
 #include <cmath>
 #include <QWidget>
 #include <cstddef>
