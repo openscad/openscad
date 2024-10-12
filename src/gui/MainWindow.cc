@@ -25,6 +25,7 @@
  */
 #include "gui/MainWindow.h"
 
+#include <QMetaObject>
 #include <QPoint>
 #include <QSoundEffect>
 #include <QStringList>
