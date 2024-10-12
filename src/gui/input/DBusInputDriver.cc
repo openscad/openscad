@@ -24,6 +24,7 @@
  *
  */
 #include "gui/input/DBusInputDriver.h"
+#include <QDBusConnection>
 #include <QList>
 #include <QStringList>
 #include "gui/input/InputDriverManager.h"
