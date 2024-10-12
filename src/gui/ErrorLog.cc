@@ -1,5 +1,6 @@
 #include "gui/ErrorLog.h"
 #include "utils/printutils.h"
+#include <QAbstractItemView>
 #include <QColor>
 #include <QList>
 #include <QResizeEvent>
