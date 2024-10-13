@@ -1,9 +1,10 @@
+#include "glview/preview/CSGTreeNormalizer.h"
+
 #include <cassert>
 #include <utility>
 #include <memory>
 #include <stack>
 
-#include "glview/preview/CSGTreeNormalizer.h"
 #include "core/CSGNode.h"
 #include "utils/printutils.h"
 

@@ -24,9 +24,10 @@
  *
  */
 
+#include "glview/preview/LegacyOpenCSGRenderer.h"
+
 #include "core/enums.h"
 #include "glview/system-gl.h"
-#include "glview/preview/LegacyOpenCSGRenderer.h"
 #include "glview/LegacyRendererUtils.h"
 
 #include <memory>

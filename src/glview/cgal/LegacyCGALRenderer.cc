@@ -24,6 +24,8 @@
  *
  */
 
+#include "glview/cgal/LegacyCGALRenderer.h"
+
 #include <cassert>
 #include <limits>
 #include <memory>
@@ -38,7 +40,6 @@
 #include "geometry/PolySetUtils.h"
 #include "utils/printutils.h"
 
-#include "glview/cgal/LegacyCGALRenderer.h"
 #include "glview/LegacyRendererUtils.h"
 #include "glview/cgal/CGALRenderUtils.h"
 #ifdef ENABLE_CGAL
