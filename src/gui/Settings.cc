@@ -137,6 +137,7 @@ SettingsEntryBool Settings::exportUseAsciiSTL("export", "useAsciiSTL", false);
 SettingsEntryEnum Settings::renderBackend3D("advanced", "renderBackend3D", {{"CGAL", "CGAL (old/slow)"}, {"Manifold", "Manifold (new/fast)"}}, "CGAL");
 SettingsEntryEnum Settings::toolbarExport3D("advanced", "toolbarExport3D", {{"none", "none"}, {"STL", "STL"}, {"OFF", "OFF"}, {"WRL", "WRL"}, {"AMF", "AMF"}, {"3MF", "3MF"}, {"POV", "POV"}}, "STL");
 SettingsEntryEnum Settings::toolbarExport2D("advanced", "toolbarExport2D", {{"none", "none"}, {"DXF", "DXF"}, {"SVG", "SVG"}, {"PDF", "PDF"}}, "none");
+SettingsEntryString Settings::defaultExportDir("advanced", "defaultExportDir", "");
 
 SettingsEntryBool Settings::summaryCamera("summary", "camera", false);
 SettingsEntryBool Settings::summaryArea("summary", "measurementArea", false);

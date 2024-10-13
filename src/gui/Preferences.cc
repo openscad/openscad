@@ -48,6 +48,7 @@
 #include <QStatusBar>
 #include <QSettings>
 #include <QTextDocument>
+#include <QFileDialog>
 #include <boost/algorithm/string.hpp>
 #include "geometry/GeometryCache.h"
 #include "gui/AutoUpdater.h"
@@ -1087,6 +1088,7 @@ void Preferences::updateGUI()
   updateComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
   updateComboBox(this->comboBoxOctoPrintSlicingEngine, Settings::Settings::octoPrintSlicerEngine.value());
   updateComboBox(this->comboBoxOctoPrintSlicingProfile, Settings::Settings::octoPrintSlicerProfile.value());
+  BlockSignals<QLineEdit *>(this->lineEditDefaultExportDir)->setText(QString::fromStdString(Settings::Settings::defaultExportDir.value()));
 }
 
 void Preferences::applyComboBox(QComboBox * /*comboBox*/, int val, Settings::SettingsEntryEnum& entry)
@@ -1163,3 +1165,26 @@ void Preferences::updateGUIFontSize(QComboBox *fsSelector, const QString &settin
     BlockSignals<QComboBox *>(fsSelector)->setEditText(fontsize);
   }
 }
+
+void Preferences::on_lineEditDefaultExportDir_editingFinished()
+{
+    Settings::Settings::defaultExportDir.setValue(this->lineEditDefaultExportDir->text().toStdString());
+    writeSettings();
+}
+
+
+void Preferences::on_browseExportDirPushButton_clicked()
+{
+    // start browsing from defaultExportDir if present, or fall back to PlatformUtils::userDocumentsPath()
+    QString startDir = this->lineEditDefaultExportDir->text();
+    if (startDir.isEmpty())
+        startDir = QString(PlatformUtils::userDocumentsPath().c_str());
+
+    QString selectedDir = QFileDialog::getExistingDirectory(this, "Choose directory", startDir, QFileDialog::ShowDirsOnly);
+    if (!selectedDir.isEmpty())
+    {
+        this->lineEditDefaultExportDir->setText(selectedDir);
+        emit this->lineEditDefaultExportDir->editingFinished(); // simulate typing to textbox  i.e. persist to Settings
+    }
+}
+
