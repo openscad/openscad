@@ -2257,7 +2257,8 @@ void MainWindow::sendToLocalSlicer()
     exportFileFormat = FileFormat::STL;
   }
 
-  const auto tmpPath = QDir::temp().filePath("OpenSCAD.XXXXXX."+fileFormat.toLower());
+  QString basename = QString(std::filesystem::path(activeEditor->filePath.toStdString()).stem().c_str());
+  const auto tmpPath = QDir::temp().filePath(basename+".XXXXXX."+fileFormat.toLower());
   auto exportFile = std::make_unique<QTemporaryFile>(tmpPath);
   if (!exportFile->open()) {
     LOG(message_group::Error, "Could not open temporary file '%1$s'.", tmpPath.toStdString());
