@@ -48,17 +48,19 @@ PrintInitDialog::PrintInitDialog()
     auto button = new QPushButton(printService->getDisplayName(), this);
     this->printServiceLayout->insertWidget(0, button);
     connect(button, &QPushButton::clicked, this, [&](){
+     // TODO: Instead of forcing people to use Preferences, we should add UI here to select file format
       this->textBrowser->setHtml(printService->getInfoHtml());
       this->result = QString("PRINT_SERVICE:") + QString::fromStdString(key);
       this->okButton->setEnabled(true);
       LOG(this->result.toStdString());
     });
   }
-//  TODO: What if no services are available, print a warning?
+  //  TODO: What if no services are available, print a warning?
 }
 
 void PrintInitDialog::on_octoPrintButton_clicked()
 {
+  // TODO: Instead of forcing people to use Preferences, we should add UI here to select file format
   this->textBrowser->setSource(QUrl{"qrc:/html/OctoPrintInfo.html"});
   this->result = "OCTOPRINT";
   this->okButton->setEnabled(true);
@@ -66,6 +68,9 @@ void PrintInitDialog::on_octoPrintButton_clicked()
 
 void PrintInitDialog::on_LocalSlicerButton_clicked()
 {
+  // TODO: Instead of forcing people to use Preferences, we should add UI here to:
+  // 1. Select file format
+  // 2. Select external program
   this->textBrowser->setSource(QUrl{"qrc:/html/LocalSlicerInfo.html"});
   this->result = "LOCALSLICER";
   this->okButton->setEnabled(true);

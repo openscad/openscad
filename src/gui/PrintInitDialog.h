@@ -41,7 +41,6 @@ public:
   static QString serviceName(print_service_t service);
 
 public slots:
-  //void on_printServiceButton_clicked();
   void on_octoPrintButton_clicked();
   void on_LocalSlicerButton_clicked();
   void on_okButton_clicked();
