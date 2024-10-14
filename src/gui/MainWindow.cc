@@ -2158,7 +2158,7 @@ void MainWindow::sendToOctoPrint()
   }
 
   // FIXME: To make this cleaner, we could define which formats are supported by OctoPrint separately,
-  // then using fileformat::fromSuffix() to convert.
+  // then using fileformat::fromIdentifier() to convert.
   const QString fileFormat = QString::fromStdString(Settings::Settings::octoPrintFileFormat.value());
   FileFormat exportFileFormat{FileFormat::BINARY_STL};
   if (fileFormat == "OBJ") {
@@ -2224,7 +2224,7 @@ void MainWindow::sendToLocalSlicer()
 
   const QString fileFormat = QString::fromStdString(Settings::Settings::localSlicerFileFormat.value()).toLower();
   FileFormat exportFileFormat = FileFormat::BINARY_STL;
-  if (!fileformat::fromSuffix(fileFormat.toStdString(), exportFileFormat)) {
+  if (!fileformat::fromIdentifier(fileFormat.toStdString(), exportFileFormat)) {
     LOG("Invalid suffix %1$s. Defaulting to binary STL.", fileFormat.toStdString());
   }
 

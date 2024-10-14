@@ -478,7 +478,7 @@ int cmdline(const CommandLine& cmd)
     std::string suffix = path.has_extension() ? path.extension().generic_string().substr(1) : "";
     boost::algorithm::to_lower(suffix);
 
-    if (!fileformat::fromSuffix(suffix, export_format)) {
+    if (!fileformat::fromIdentifier(suffix, export_format)) {
       LOG("Invalid suffix %1$s. Either add a valid suffix or specify one using the --export-format option.", suffix);
       return 1;
     }
@@ -901,7 +901,7 @@ int main(int argc, char **argv)
   if (vm.count("export-format")) {
     const auto format_str = vm["export-format"].as<std::string>();
     FileFormat format;
-    if (fileformat::fromSuffix(format_str, format)) {
+    if (fileformat::fromIdentifier(format_str, format)) {
       export_format.emplace(format);
 
     } else {

@@ -41,13 +41,13 @@ enum class FileFormat {
 namespace fileformat {
 
 void setup();
-bool fromSuffix(const std::string& suffix, FileFormat& format);
+bool fromIdentifier(const std::string& suffix, FileFormat& format);
+const std::string& toSuffix(FileFormat& format);
 bool canPreview(const FileFormat format);
 bool is3D(const FileFormat format);
 bool is2D(const FileFormat format);
 
 }  // namespace FileFormat
-
 
 // Paper Data used by ExportPDF
 enum class paperSizes {
