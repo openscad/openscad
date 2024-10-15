@@ -188,7 +188,7 @@ template<typename Callback>
 sg::detail::scope_guard<Callback>::scope_guard(scope_guard&& other)
 noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
   : m_callback(std::forward<Callback>(other.m_callback)) // idem
-  , m_active{std::move(other.m_active)}
+  , m_active{other.m_active}
 {
   other.m_active = false;
 }
