@@ -123,7 +123,7 @@ namespace sg
     class SG_NODISCARD scope_guard<Callback> final
     {
     public:
-      typedef Callback callback_type;
+      using callback_type = Callback;
 
       scope_guard(scope_guard&& other)
       noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value);
