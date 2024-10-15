@@ -76,7 +76,7 @@ public:
   GLdouble modelview[16];
   GLdouble projection[16];
   std::vector<SelectedObject> selected_obj;
-  std::vector<SelectedObject> shown_obj;
+  std::shared_ptr<SelectedObject> shown_obj;
 
 #ifdef ENABLE_OPENCSG
   bool is_opencsg_capable;
