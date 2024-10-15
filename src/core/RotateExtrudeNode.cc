@@ -50,7 +50,7 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"file", "layer", "origin", "scale"},
-                                            {"convexity", "angle"}
+                                            {"convexity", "angle", "translate"}
                                             );
 
   node->fn = parameters["$fn"].toDouble();
@@ -74,12 +74,30 @@ static std::shared_ptr<AbstractNode> builtin_rotate_extrude(const ModuleInstanti
   node->scale = parameters["scale"].toDouble();
   node->angle = 360;
   parameters["angle"].getFiniteDouble(node->angle);
+  node->scale_x = node->scale_y = 1;
+  bool scaleOK = parameters["scale"].getFiniteDouble(node->scale_x);
+  scaleOK &= parameters["scale"].getFiniteDouble(node->scale_y);
+  scaleOK |= parameters["scale"].getVec2(node->scale_x, node->scale_y, true);
+  if (!node->filename.empty() && (node->scale_x != 1 || node->scale_y != 1)) {
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+        "rotate_extrude(..., scale=%1$s) interpreted in deprecated mode", parameters["scale"].toEchoStringNoThrow());
+    node->scale_x = node->scale_y = 1;
+  } else if ((parameters["scale"].isDefined()) && (!scaleOK || !std::isfinite(node->scale_x) || !std::isfinite(node->scale_y))) {
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "rotate_extrude(..., scale=%1$s) could not be converted", parameters["scale"].toEchoStringNoThrow());
+  }
+  node->trans_x = node->trans_y = 0;
+  bool transOK = parameters["translate"].getFiniteDouble(node->trans_x);
+  transOK &= parameters["translate"].getFiniteDouble(node->trans_y);
+  transOK |= parameters["translate"].getVec2(node->trans_x, node->trans_y, true);
+  if ((parameters["translate"].isDefined()) && (!transOK || !std::isfinite(node->trans_x) || !std::isfinite(node->trans_y))) {
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "rotate_extrude(..., translate=%1$s) could not be converted", parameters["translate"].toEchoStringNoThrow());
+  }
 
   if (node->convexity <= 0) node->convexity = 2;
 
   if (node->scale <= 0) node->scale = 1;
 
-  if ((node->angle <= -360) || (node->angle > 360)) node->angle = 360;
+  if (node->scale_x == 1 && node->scale_y == 1 && node->trans_x == 0 && node->trans_y == 0 && ((node->angle <= -360) || (node->angle > 360))) node->angle = 360;
 
   if (node->filename.empty()) {
     children.instantiate(node);
@@ -108,7 +126,18 @@ std::string RotateExtrudeNode::toString() const
     ;
   }
   stream <<
-    "angle = " << this->angle << ", "
+    "angle = " << this->angle << ", ";
+  if (this->scale_x != this->scale_y) {
+    stream << "scale = [" << this->scale_x << ", " << this->scale_y << "], ";
+  } else if (this->scale_x != 1.0) {
+    stream << "scale = " << this->scale_x << ", ";
+  }
+  if (this->trans_x != this->trans_y) {
+    stream << "translate = [" << this->trans_x << ", " << this->trans_y << "], ";
+  } else if (this->trans_x != 0.0) {
+    stream << "translate = " << this->trans_x << ", ";
+  }
+  stream <<
     "convexity = " << this->convexity << ", "
     "$fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs << ")";
 
@@ -121,6 +150,6 @@ void register_builtin_dxf_rotate_extrude()
 
   Builtins::init("rotate_extrude", new BuiltinModule(builtin_rotate_extrude),
   {
-    "rotate_extrude(angle = 360, convexity = 2)",
+    "rotate_extrude(angle = 360, scale = 1, translate = 0, convexity = 2)",
   });
 }
