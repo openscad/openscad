@@ -162,7 +162,7 @@ static bool create_egl_dummy_context(OffscreenContextEGL& ctx)
   ctx.context = eglCreateContext(ctx.display, config, EGL_NO_CONTEXT, ctxattr);
   if (ctx.context == EGL_NO_CONTEXT) {
     std::cerr << "Unable to create EGL context (eglError: " << eglGetError() << ")" << std::endl;
-    return 1;
+    return false;
   }
 
   return true;
