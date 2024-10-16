@@ -183,7 +183,7 @@ void GLView::paintGL()
     showObject(obj,eyedir);
   }
   glColor3f(0,1,0);
-  for (const SelectedObject obj: this->shown_obj) {
+  for (const SelectedObject &obj: this->shown_obj) {
     showObject(obj,eyedir);
   }
   glDisable(GL_LIGHTING);
