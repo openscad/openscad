@@ -61,7 +61,6 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
         return PolySet::createEmpty();
       }
     } else if (boost::regex_search(line, results, ex_f) && results.size() >= 2) {
-      std::string args=results[1];
       std::vector<std::string> words;
       boost::split(words, results[1], boost::is_any_of(" \t"));
       builder.beginPolygon(words.size());
