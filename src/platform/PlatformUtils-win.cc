@@ -241,6 +241,6 @@ void PlatformUtils::ensureStdIO(void)
   }
 
 #ifdef USE_MIMALLOC
-  mi_register_output(&mi_output, NULL);
+  mi_register_output(&mi_output, nullptr);
 #endif
 }

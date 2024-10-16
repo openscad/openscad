@@ -107,7 +107,7 @@ static bool create_egl_dummy_context(OffscreenContextEGL& ctx)
     eglQueryDevicesEXT(MAX_DEVICES, eglDevs, &numDevices);
     PRINTDB("Found %d EGL devices.", numDevices);
     for (int idx = 0; idx < numDevices; idx++) {
-      EGLDisplay disp = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, eglDevs[idx], 0);
+      EGLDisplay disp = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, eglDevs[idx], nullptr);
       if (disp != EGL_NO_DISPLAY) {
         ctx.display = disp;
         break;
