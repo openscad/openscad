@@ -161,8 +161,8 @@ void AmfImporter::end_triangle(AmfImporter *importer, const xmlChar *)
   std::vector<Eigen::Vector3d>& v = importer->vertex_list;
 
   importer->builder->beginPolygon(3);
-  for(int i=0;i<3;i++) // TODO set vertex array first
-	  importer->builder->addVertex(Vector3d(v[idx[i]].x(), v[idx[i]].y(), v[idx[i]].z()));
+  for(auto i : idx) // TODO set vertex array first
+	  importer->builder->addVertex(Vector3d(v[i].x(), v[i].y(), v[i].z()));
 }
 
 void AmfImporter::processNode(xmlTextReaderPtr reader)
