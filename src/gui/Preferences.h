@@ -114,7 +114,7 @@ public slots:
   void on_checkBoxEnableLineNumbers_toggled(bool);
 
   // Print
-  void on_comboBoxDefaultPrintService_activated(int);
+  void on_comboBoxDefaultPrintService_textActivated(QString);
   void on_pushButtonOctoPrintCheckConnection_clicked();
   void on_pushButtonOctoPrintSlicingEngine_clicked();
   void on_comboBoxOctoPrintSlicingEngine_activated(int);
@@ -160,6 +160,7 @@ private:
   void closeEvent(QCloseEvent *e) override;
   void removeDefaultSettings();
   void setupFeaturesPage();
+  void setup3DPrintPage();
   void writeSettings();
   void hidePasswords();
   void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);
