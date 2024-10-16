@@ -2617,7 +2617,7 @@ void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndic
   // ends at size - 1 because we are not doing anything for the root node.
   // starts at 1 because we will process this one after later
   for (int i = 1; i < stack.size() - 1; i++) {
-    auto node = stack[i];
+    const auto& node = stack[i];
 
     auto& location = node->modinst->location();
     if (location.filePath().compare(activeEditor->filepath.toStdString()) != 0) {

@@ -93,7 +93,7 @@ void FontListDialog::update_font_list()
 
   int idx = 0;
   for (auto it = list->begin(); it != list->end(); it++, idx++) {
-    FontInfo font_info = (*it);
+    const FontInfo& font_info = (*it);
     auto *family = new QStandardItem(QString(font_info.get_family().c_str()));
     family->setEditable(false);
     model->setItem(idx, 0, family);
