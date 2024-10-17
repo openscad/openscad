@@ -1,6 +1,7 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
 #include "geometry/cgal/CGALHybridPolyhedron.h"
 
+#include "geometry/Geometry.h"
 #include "geometry/cgal/cgalutils.h"
 #include "Feature.h"
 #include <cassert>

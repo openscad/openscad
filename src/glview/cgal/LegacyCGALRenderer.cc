@@ -35,6 +35,7 @@
 #include <mpfr.h>
 #endif
 
+#include "geometry/Geometry.h"
 #include "geometry/PolySet.h"
 #include "geometry/Polygon2d.h"
 #include "geometry/PolySetUtils.h"

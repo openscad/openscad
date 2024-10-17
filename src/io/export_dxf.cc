@@ -29,6 +29,7 @@
 #include <ostream>
 #include <memory>
 #include "io/export.h"
+#include "geometry/Geometry.h"
 #include "geometry/PolySet.h"
 
 /*!

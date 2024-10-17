@@ -9,6 +9,7 @@
 #include <vector>
 
 #ifdef ENABLE_CGAL
+#include "geometry/Geometry.h"
 #include "geometry/cgal/cgal.h"
 #include "geometry/cgal/CGALHybridPolyhedron.h"
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"

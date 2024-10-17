@@ -25,6 +25,7 @@
  */
 
 #include "geometry/GeometryUtils.h"
+#include "geometry/Geometry.h"
 #include "io/export.h"
 #include "geometry/PolySet.h"
 #include "geometry/PolySetUtils.h"

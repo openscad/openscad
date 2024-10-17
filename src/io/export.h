@@ -12,6 +12,7 @@
 #include <boost/range/adaptor/map.hpp>
 
 #include "core/Tree.h"
+#include "geometry/Geometry.h"
 #include "glview/Camera.h"
 
 class PolySet;

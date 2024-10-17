@@ -26,6 +26,7 @@
 
 #include "core/ImportNode.h"
 
+#include "geometry/Geometry.h"
 #include "io/import.h"
 
 #include "core/module.h"

@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "glview/Renderer.h"
+#include "geometry/Geometry.h"
 #include "geometry/PolySet.h"
 #include "geometry/Polygon2d.h"
 #ifdef ENABLE_CGAL
