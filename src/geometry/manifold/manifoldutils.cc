@@ -49,7 +49,7 @@ const char* statusToString(Error status) {
 template <class TriangleMesh>
 std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMesh& tm)
 {
-  typedef typename TriangleMesh::Vertex_index vertex_descriptor;
+  using vertex_descriptor = typename TriangleMesh::Vertex_index;
 
   manifold::MeshGL64 meshgl;
 

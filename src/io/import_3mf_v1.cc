@@ -154,8 +154,8 @@ std::unique_ptr<Geometry> import_3mf(const std::string& filename, const Location
       MODELMESHVERTEX vertex;
 
       builder.beginPolygon(3);
-      for(int i=0;i<3;i++) {
-        if (lib3mf_meshobject_getvertex(object, triangle.m_nIndices[i], &vertex) != LIB3MF_OK) {
+      for (auto m_nIndex : triangle.m_nIndices) {
+        if (lib3mf_meshobject_getvertex(object, m_nIndex, &vertex) != LIB3MF_OK) {
           return import_3mf_error(model, object_it);
         }
         builder.addVertex(Vector3d(vertex.m_fPosition[0], vertex.m_fPosition[1], vertex.m_fPosition[2]));

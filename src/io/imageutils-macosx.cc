@@ -31,7 +31,7 @@ CGDataConsumerRef CGDataConsumerCreateWithOstream(std::ostream& output)
 
 bool write_png(std::ostream& output, unsigned char *pixels, int width, int height)
 {
-  size_t rowBytes = width * 4;
+  size_t rowBytes = static_cast<size_t>(width) * 4;
 //  CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
   CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
   CGBitmapInfo bitmapInfo = kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Big; // BGRA

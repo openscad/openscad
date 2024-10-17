@@ -206,7 +206,7 @@ void Renderer::setColorScheme(const ColorScheme& cs) {
 }
 
 
-std::vector<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) { return std::vector<SelectedObject>(); }
+std::vector<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) { return {}; }
 #else //NULLGL
 
 Renderer::Renderer() : colorscheme(nullptr) {}
@@ -217,6 +217,6 @@ void Renderer::setColor(const float color[4], const shaderinfo_t *shaderinfo) co
 Color4f Renderer::setColor(ColorMode colormode, const float color[4], const shaderinfo_t *shaderinfo) const { return {}; }
 void Renderer::setColor(ColorMode colormode, const shaderinfo_t *shaderinfo) const {}
 void Renderer::setColorScheme(const ColorScheme& cs) {}
-std::vector<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) { return std::vector<SelectedObject>(); }
+std::vector<SelectedObject> Renderer::findModelObject(Vector3d near_pt, Vector3d far_pt, int mouse_x, int mouse_y, double tolerance) { return {}; }
 
 #endif //NULLGL
