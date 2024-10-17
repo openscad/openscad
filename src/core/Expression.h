@@ -48,6 +48,7 @@ public:
   enum class Op {
     LogicalAnd,
     LogicalOr,
+    IfUndef,
     Exponent,
     Multiply,
     Divide,

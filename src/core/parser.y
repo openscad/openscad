@@ -127,13 +127,14 @@ bool fileEnded=false;
 %token TOK_FALSE
 %token TOK_UNDEF
 
-%token LE GE EQ NEQ AND OR
+%token LE GE EQ NEQ AND OR IFUNDEF
 
 %nonassoc NO_ELSE
 %nonassoc TOK_ELSE
 
 %type <expr> expr
 %type <expr> call
+%type <expr> null_coalesce
 %type <expr> logic_or
 %type <expr> logic_and
 %type <expr> equality
@@ -329,7 +330,7 @@ single_module_instantiation
         ;
 
 expr
-        : logic_or
+        : null_coalesce
         | TOK_FUNCTION '(' parameters ')' expr %prec NO_ELSE
             {
               $$ = new FunctionDefinition($5, *$3, LOCD("anonfunc", @$));
@@ -355,6 +356,14 @@ expr
               delete $3;
             }
         ;
+
+null_coalesce
+        : logic_or
+        | logic_or IFUNDEF null_coalesce
+            {
+              $$ = new BinaryOp($1, BinaryOp::Op::IfUndef, $3, LOCD("ifundef", @$));
+            }
+		;
 
 logic_or
         : logic_and
