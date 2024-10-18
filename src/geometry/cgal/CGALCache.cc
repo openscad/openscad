@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <string>
 
+#include "geometry/Geometry.h"
 #include "utils/printutils.h"
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #include "geometry/cgal/CGALHybridPolyhedron.h"

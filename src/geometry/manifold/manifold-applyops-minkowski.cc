@@ -11,6 +11,7 @@
 #include <CGAL/convex_hull_3.h>
 
 #include "geometry/cgal/cgal.h"
+#include "geometry/Geometry.h"
 #include "geometry/cgal/cgalutils.h"
 #include "geometry/PolySet.h"
 #include "utils/printutils.h"

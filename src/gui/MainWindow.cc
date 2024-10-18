@@ -53,6 +53,7 @@
 #include <vector>
 
 #ifdef ENABLE_MANIFOLD
+#include "geometry/Geometry.h"
 #include "geometry/manifold/manifoldutils.h"
 #endif
 #include "utils/boost-utils.h"

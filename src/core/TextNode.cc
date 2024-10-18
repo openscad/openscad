@@ -30,6 +30,7 @@
 #include <memory>
 #include <vector>
 
+#include "geometry/Geometry.h"
 #include "core/Children.h"
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"

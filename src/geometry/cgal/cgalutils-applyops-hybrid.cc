@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "geometry/cgal/cgalutils.h"
+#include "geometry/Geometry.h"
 #include "geometry/cgal/CGALHybridPolyhedron.h"
 #include "core/node.h"
 #include "core/progress.h"
