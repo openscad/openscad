@@ -178,7 +178,7 @@ public:
   static SettingsEntryBool enableLineNumbers;
   static SettingsEntryBool enableNumberScrollWheel;
   static SettingsEntryEnum modifierNumberScrollWheel;
-  static SettingsEntryEnum defaultPrintService;
+  static SettingsEntryString defaultPrintService;
   static SettingsEntryString octoPrintUrl;
   static SettingsEntryString octoPrintApiKey;
   static SettingsEntryEnum octoPrintFileFormat;

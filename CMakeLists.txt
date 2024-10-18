@@ -1034,6 +1034,7 @@ set(INPUT_DRIVER_SOURCES
 
 set(GUI_SOURCES
   ${GUI_SOURCES}
+  src/openscad_gui.cc
   src/gui/AutoUpdater.cc
   src/gui/CGALWorker.cc
   src/gui/ViewportControl.cc
@@ -1059,6 +1060,7 @@ set(GUI_SOURCES
   src/gui/Preferences.cc
   src/gui/PrintInitDialog.cc
   src/gui/PrintService.cc
+  src/gui/ExternalToolInterface.cc
   src/gui/ProgressWidget.cc
   src/gui/QGLView.cc
   src/gui/QGLView2.cc
