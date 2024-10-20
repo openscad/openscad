@@ -50,7 +50,7 @@ namespace fileformat {
 std::vector<FileFormat> all();
 
 const FileFormatInfo& info(FileFormat fileFormat);
-bool fromIdentifier(const std::string& suffix, FileFormat& format);
+bool fromIdentifier(const std::string& identifier, FileFormat& format);
 const std::string& toSuffix(FileFormat format);
 bool canPreview(FileFormat format);
 bool is3D(FileFormat format);

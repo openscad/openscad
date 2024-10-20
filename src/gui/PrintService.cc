@@ -26,6 +26,7 @@
 
 #include "gui/PrintService.h"
 
+#include <_stdio.h>
 #include <memory>
 #include <string>
 
@@ -110,6 +111,12 @@ bool PrintService::init(const QJsonObject &serviceObject) {
   fileSizeLimitMB = serviceObject.value("fileSizeLimitMB").toInt();
   infoHtml = serviceObject.value("infoHtml").toString();
   infoUrl = serviceObject.value("infoUrl").toString();
+  for (const auto& variant : serviceObject.value("fileFormats").toArray().toVariantList()) {
+    fileFormats.append(variant.toString());
+  }
+  if (fileFormats.empty()) {
+    fileFormats << "asciistl" << "binstl";
+  }
   return !displayName.isEmpty() && !apiUrl.isEmpty() && !infoHtml.isEmpty() &&
          !infoUrl.isEmpty() && fileSizeLimitMB != 0;
 }

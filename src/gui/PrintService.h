@@ -30,6 +30,7 @@
 #include <mutex>
 
 #include <QString>
+#include <QStringList>
 #include <QJsonDocument>
 
 #include "gui/Network.h"
@@ -44,6 +45,7 @@ public:
   long getFileSizeLimitMB() const { return fileSizeLimitMB; }
   const QString getInfoHtml() const { return infoHtml; }
   const QString getInfoUrl() const { return infoUrl; }
+  const QStringList getFileFormats() const { return fileFormats; }
 
   const QString upload(const QString& exportFileName, const QString& fileName, const network_progress_func_t& progress_func) const;
 
@@ -60,6 +62,7 @@ private:
   int fileSizeLimitMB;
   QString infoUrl;
   QString infoHtml;
+  QStringList fileFormats;
 
   static std::mutex printServiceMutex;
 };

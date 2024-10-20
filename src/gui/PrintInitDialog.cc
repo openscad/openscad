@@ -51,10 +51,12 @@ PrintInitDialog::PrintInitDialog()
     connect(button, &QPushButton::clicked, this, [&](){
       this->textBrowser->setHtml(printService->getInfoHtml());
       this->fileFormatComboBox->clear();
-      for (const auto fileFormat : {FileFormat::BINARY_STL, FileFormat::ASCII_STL}) {
+      for (const auto& identifier : printService->getFileFormats()) {
+        FileFormat fileFormat;
+        fileformat::fromIdentifier(identifier.toStdString(), fileFormat);
+
         this->fileFormatComboBox->addItem(
-          QString::fromStdString(fileformat::info(fileFormat).description),
-          QString::fromStdString(fileformat::info(fileFormat).identifier));
+          QString::fromStdString(fileformat::info(fileFormat).description), identifier);
       }
       // TODO: Use format stored in settings as selected value
 

@@ -121,9 +121,9 @@ const FileFormatInfo& info(FileFormat fileFormat)
   return containers().fileFormatToInfo[fileFormat];
 }
 
-bool fromIdentifier(const std::string& suffix, FileFormat& format)
+bool fromIdentifier(const std::string& identifier, FileFormat& format)
 {
-  auto it = containers().identifierToInfo.find(suffix);
+  auto it = containers().identifierToInfo.find(identifier);
   if (it == containers().identifierToInfo.end()) return false;
   format = it->second.format;
   return true;
