@@ -121,6 +121,9 @@ SettingsEntryBool Settings::enableNumberScrollWheel("editor", "enableNumberScrol
 SettingsEntryEnum Settings::modifierNumberScrollWheel("editor", "modifierNumberScrollWheel", {{"Alt", _("Alt")}, {"Left Mouse Button", _("Left Mouse Button")}, {"Either", _("Either")}}, "Alt");
 
 SettingsEntryString Settings::defaultPrintService("printing", "printService", "NONE");
+
+SettingsEntryString Settings::printServiceFileFormat("printing", "printServiceFileFormat", "stl");
+
 SettingsEntryString Settings::octoPrintUrl("printing", "octoPrintUrl", "");
 SettingsEntryString Settings::octoPrintApiKey("printing", "octoPrintApiKey", "");
 SettingsEntryEnum Settings::octoPrintFileFormat("printing", "octoPrintFileFormat", {{"STL", "STL"}, {"OFF", "OFF"}, {"AMF", "AMF"}, {"3MF", "3MF"}}, "STL");

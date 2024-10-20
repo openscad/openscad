@@ -119,7 +119,7 @@ bool ExternalPrintService::process(const std::string& displayName, std::function
     return false;
   }
   try {
-    const QString partUrl = printService->upload(QString::fromStdString(exportedFilename_), fileContentBase64, progress_cb);
+    const QString partUrl = printService->upload(QString::fromStdString(displayName), fileContentBase64, progress_cb);
     this->url = partUrl.toStdString() ;
   } catch (const NetworkException& e) {
     LOG(message_group::Error, "%1$s", e.getErrorMessage());
@@ -127,31 +127,13 @@ bool ExternalPrintService::process(const std::string& displayName, std::function
   return true;
 }
 
-std::unique_ptr<ExternalPrintService> createExternalPrintService(const PrintService *printService) {
-//  const FileFormat exportFormat = FileFormat::ASCII_STL;
-  const FileFormat exportFormat = FileFormat::BINARY_STL;
-  return std::make_unique<ExternalPrintService>(exportFormat, printService);
+std::unique_ptr<ExternalPrintService> createExternalPrintService(const PrintService *printService, FileFormat fileFormat) {
+  return std::make_unique<ExternalPrintService>(fileFormat, printService);
 }
 
-std::unique_ptr<OctoPrintService> createOctoPrintService()
+std::unique_ptr<OctoPrintService> createOctoPrintService(FileFormat fileFormat)
 {
-  const QString fileFormat = QString::fromStdString(Settings::Settings::octoPrintFileFormat.value());
-  FileFormat exportFileFormat{FileFormat::ASCII_STL};
-  if (fileFormat == "OBJ") {
-    exportFileFormat = FileFormat::OBJ;
-  } else if (fileFormat == "OFF") {
-    exportFileFormat = FileFormat::OFF;
-  } else if (fileFormat == "ASCIISTL") {
-    exportFileFormat = FileFormat::ASCII_STL;
-  } else if (fileFormat == "AMF") {
-    exportFileFormat = FileFormat::AMF;
-  } else if (fileFormat == "3MF") {
-    exportFileFormat = FileFormat::_3MF;
-  } else {
-    exportFileFormat = FileFormat::BINARY_STL;
-  }
-
-  auto octoPrintService = std::make_unique<OctoPrintService>(exportFileFormat);
+  auto octoPrintService = std::make_unique<OctoPrintService>(fileFormat);
 
 
 // TODO: set action, slicerEngine, slicerAction
@@ -163,22 +145,6 @@ std::unique_ptr<OctoPrintService> createOctoPrintService()
   return octoPrintService;
 }
 
-std::unique_ptr<LocalProgramService> createLocalProgramService() {
-  const QString fileFormat = QString::fromStdString(Settings::Settings::localSlicerFileFormat.value());
-  FileFormat exportFileFormat{FileFormat::BINARY_STL};
-  if (fileFormat == "OBJ") {
-    exportFileFormat = FileFormat::OBJ;
-  } else if (fileFormat == "OFF") {
-    exportFileFormat = FileFormat::OFF;
-  } else if (fileFormat == "ASCIISTL") {
-    exportFileFormat = FileFormat::ASCII_STL;
-  } else if (fileFormat == "AMF") {
-    exportFileFormat = FileFormat::AMF;
-  } else if (fileFormat == "3MF") {
-    exportFileFormat = FileFormat::_3MF;
-  } else if (fileFormat == "POV") {
-    exportFileFormat = FileFormat::POV;
-  }
-
-  return std::make_unique<LocalProgramService>(exportFileFormat);
+std::unique_ptr<LocalProgramService> createLocalProgramService(FileFormat fileFormat) {
+  return std::make_unique<LocalProgramService>(fileFormat);
 }

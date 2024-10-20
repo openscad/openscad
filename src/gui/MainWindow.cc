@@ -2120,17 +2120,29 @@ void MainWindow::csgRender()
   compileEnded();
 }
 
-std::unique_ptr<ExternalToolInterface> createExternalToolService(const QString& service)
+std::unique_ptr<ExternalToolInterface> createExternalToolService(
+  print_service_t serviceType, const QString& serviceName, FileFormat fileFormat)
 {
-  const auto printService = printServiceFromKey(service.toStdString());
-  if (printService != nullptr) {
-    return createExternalPrintService(printService);
-  } else if (service == "OCTOPRINT") {
-    return createOctoPrintService();
-  } else if (service == "LOCALSLICER") {
-    return createLocalProgramService();
+  switch (serviceType) {
+    case print_service_t::NONE:
+    // TODO: Print warning
+    return nullptr;
+    break;
+    case print_service_t::PRINT_SERVICE: {
+      if (const auto printService = PrintService::getPrintService(serviceName.toStdString())) {
+        return createExternalPrintService(printService, fileFormat);
+      }
+      LOG("Unknown print service \"%1$s\"", serviceName.toStdString());
+      return nullptr;
+      break;
+    }
+    case print_service_t::OCTOPRINT:
+      return createOctoPrintService(fileFormat);
+    break;
+    case print_service_t::LOCALSLICER:
+      return createLocalProgramService(fileFormat);
+    break;
   }
-  LOG("Unknown print service %1$s", service.toStdString());
   return {};
 }
 
@@ -2139,6 +2151,9 @@ void MainWindow::sendToExternalTool(ExternalToolInterface &externalToolService)
   const QFileInfo activeFile(activeEditor->filepath);
   QString activeFileName = activeFile.fileName();
   if (activeFileName.isEmpty()) activeFileName = "Untitled.scad";
+  // TODO: Replace suffix to match exported file format?
+  
+  activeFileName = activeFileName + QString::fromStdString("." + fileformat::toSuffix(externalToolService.fileFormat()));
 
   bool export_status = externalToolService.exportTemporaryFile(this->root_geom, activeFileName);
   
@@ -2168,19 +2183,39 @@ void MainWindow::action3DPrint()
   const unsigned int dim = 3;
   if (!canExport(dim)) return;
 
+  PrintInitDialog printInitDialog;
+  const auto status = printInitDialog.exec();
+
+  if (status == QDialog::Accepted) {
+//    PRINTDB("action3DPrint(): got from dialog: %1$s", selectedService.toStdString());
 
 
+  // From dialog:
+  // * service type (enum)
+  // * service name (string)
+  // * file format (FileFormat)
+  
+// Supported file formats:
+// * print-a-thing: BINARY_STL, ASCII_STL
+// * pcbway: ASCII_STL, BINARY_STL, OBJ
+// * external program: <any>
+// * octoprint: ???
 
-  const QString selectedService = PrintInitDialog::getResult();
-  PRINTDB("action3DPrint(): got from dialog: %1$s", selectedService.toStdString());
-  Preferences::Preferences::inst()->updateGUI();
+    const print_service_t serviceType = printInitDialog.getServiceType();
+    const QString serviceName = printInitDialog.getServiceName();
+    const FileFormat fileFormat = printInitDialog.getFileFormat();
 
-  const auto externalToolService = createExternalToolService(selectedService);
-  if (!externalToolService) {
-    LOG("Error: Unable to create %1$s service", selectedService.toStdString());
-    return;
+    LOG("Selected File format: %1$s", fileformat::info(fileFormat).description);
+
+
+    Preferences::Preferences::inst()->updateGUI();
+    const auto externalToolService = createExternalToolService(serviceType, serviceName, fileFormat);
+    if (!externalToolService) {
+      LOG("Error: Unable to create service: %1$d %2$s %3$d", static_cast<int>(serviceType), serviceName.toStdString(), static_cast<int>(fileFormat));
+      return;
+    }
+    sendToExternalTool(*externalToolService);
   }
-  sendToExternalTool(*externalToolService);
 #endif // ifdef ENABLE_3D_PRINTING
 }
 
