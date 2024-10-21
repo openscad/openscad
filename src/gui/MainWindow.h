@@ -175,7 +175,7 @@ private slots:
   void actionSaveAs();
   void actionRevokeTrustedFiles();
   void actionSaveACopy();
-  void actionReload();
+  void actionReloadView();
   void actionShowLibraryFolder();
   void convertTabsToSpaces();
   void copyText();
@@ -303,7 +303,7 @@ public:
   QList<double> getRotation() const;
 
 public slots:
-  void actionReloadRender();
+  void actionReloadAndView();
   void on_editorDock_visibilityChanged(bool);
   void on_consoleDock_visibilityChanged(bool);
   void on_parameterDock_visibilityChanged(bool);
@@ -363,6 +363,7 @@ public slots:
   void checkAutoReload();
   void waitAfterReload();
   void autoReloadSet(bool);
+  void autoReloadSetRenderMode(bool);
 
 private:
   bool network_progress_func(const double permille);
@@ -382,6 +383,7 @@ private:
 
   char const *afterCompileSlot;
   bool procevents{false};
+  bool autoReloadRenderMode{false};
   QTemporaryFile *tempFile{nullptr};
   ProgressWidget *progresswidget{nullptr};
   CGALWorker *cgalworker;
@@ -398,6 +400,7 @@ private:
 
   QSoundEffect *renderCompleteSoundEffect;
   std::vector<std::unique_ptr<QTemporaryFile>> allTempFiles;
+  QActionGroup *reloadAndViewGroup;
 
 signals:
   void highlightError(int);

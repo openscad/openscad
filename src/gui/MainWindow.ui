@@ -307,8 +307,15 @@
     <property name="title">
      <string>&amp;Design</string>
     </property>
-    <addaction name="designActionAutoReload"/>
-    <addaction name="designActionReloadAndRender"/>
+     <widget class="QMenu" name="menu">
+     <property name="title">
+      <string>Reload and View mode</string>
+     </property>
+     <addaction name="ReloadAndViewPreview"/>
+     <addaction name="ReloadAndViewRender"/>
+    </widget>
+    <addaction name="designActionAutoReloadAndView"/>
+    <addaction name="designActionReloadAndView"/>
     <addaction name="designActionPreview"/>
     <addaction name="designActionRender"/>
     <addaction name="designAction3DPrint"/>
@@ -967,9 +974,9 @@
     <string>Hide Editor</string>
    </property>
   </action>
-  <action name="designActionReloadAndRender">
+  <action name="designActionReloadAndView">
    <property name="text">
-    <string>&amp;Reload and Render</string>
+    <string>&amp;Reload and View</string>
    </property>
    <property name="shortcut">
     <string>F4</string>
@@ -1346,14 +1353,31 @@
     <string>&amp;OpenSCAD Homepage</string>
    </property>
   </action>
-  <action name="designActionAutoReload">
+  <action name="designActionAutoReloadAndView">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Automatic Reload and Render</string>
+    <string>&amp;Automatic Reload and View</string>
    </property>
   </action>
+  <action name="ReloadAndViewPreview">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Preview</string>
+   </property>
+  </action>
+  <action name="ReloadAndViewRender">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Render</string>
+   </property>
+  </action>
+
   <action name="fileActionExportImage">
    <property name="text">
     <string>Export as &amp;Image...</string>
