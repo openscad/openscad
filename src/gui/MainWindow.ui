@@ -305,16 +305,17 @@
     <addaction name="editActionPreferences"/>
    </widget>
    <widget class="QMenu" name="menu_Design">
+    <widget class="QMenu" name="menuReloadViewMode">
+      <property name="title">
+       <string>Reload and View mode</string>
+      </property>
+      <addaction name="ReloadAndViewPreview"/>
+      <addaction name="ReloadAndViewRender"/>
+     </widget>
     <property name="title">
      <string>&amp;Design</string>
     </property>
-     <widget class="QMenu" name="menu">
-     <property name="title">
-      <string>Reload and View mode</string>
-     </property>
-     <addaction name="ReloadAndViewPreview"/>
-     <addaction name="ReloadAndViewRender"/>
-    </widget>
+    <addaction name="menuReloadViewMode"/>
     <addaction name="designActionAutoReloadAndView"/>
     <addaction name="designActionReloadAndView"/>
     <addaction name="designActionPreview"/>
@@ -1377,7 +1378,7 @@
   </action>
   <action name="ReloadAndViewRender">
    <property name="checkable">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
     <string>&amp;Render</string>

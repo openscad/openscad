@@ -125,6 +125,7 @@ protected:
   void closeEvent(QCloseEvent *event) override;
 
 private slots:
+  void autoPrepareCompile();
   void setTabToolBarVisible(int);
   void updateUndockMode(bool undockMode);
   void updateReorderMode(bool reorderMode);
@@ -193,7 +194,7 @@ private slots:
   void actionSaveAs();
   void actionRevokeTrustedFiles();
   void actionSaveACopy();
-  void actionReloadView();
+  void actionReload();
   void actionShowLibraryFolder();
   void convertTabsToSpaces();
   void copyText();
@@ -260,8 +261,11 @@ protected:
   bool eventFilter(QObject *obj, QEvent *event) override;
 
 public slots:
+  void actionUpdateView();
   void actionRenderPreview();
+
 private slots:
+  void actionReloadView();
   void csgRender();
   void csgReloadRender();
   void action3DPrint();
@@ -402,7 +406,6 @@ private:
 
   char const *afterCompileSlot;
   bool procevents{false};
-  bool autoReloadRenderMode{false};
   QTemporaryFile *tempFile{nullptr};
   ProgressWidget *progresswidget{nullptr};
   CGALWorker *cgalworker;

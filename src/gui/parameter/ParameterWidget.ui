@@ -32,9 +32,9 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QCheckBox" name="checkBoxAutoPreview">
+      <widget class="QCheckBox" name="checkBoxAutoReload">
        <property name="text">
-        <string>Automatic Preview</string>
+        <string>Automatic reload</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -200,7 +200,7 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>checkBoxAutoPreview</tabstop>
+  <tabstop>checkBoxAutoReload</tabstop>
   <tabstop>comboBoxDetails</tabstop>
   <tabstop>comboBoxPreset</tabstop>
   <tabstop>addButton</tabstop>

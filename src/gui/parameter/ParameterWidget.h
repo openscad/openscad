@@ -49,7 +49,7 @@ private:
   std::map<ParameterObject *, std::vector<ParameterVirtualWidget *>> widgets;
 
   QString invalidJsonFile; // set if a json file was read that could not be parsed
-  QTimer autoPreviewTimer;
+  QTimer autoReloadTimer;
   bool modified = false;
 
 public:
@@ -67,7 +67,7 @@ public slots:
   void setFontFamilySize(const QString &fontfamily, uint fontsize);
 
 protected slots:
-  void autoPreview(bool immediate = false);
+  void autoReload(bool immediate = false);
   void emitParametersChanged();
   void onSetChanged(int index);
   void onSetNameChanged();
