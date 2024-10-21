@@ -1,11 +1,17 @@
 #pragma once
 
+#include <QAction>
+#include <QList>
+#include <QPushButton>
+#include <QResizeEvent>
+#include <QTimer>
+#include <QWidget>
 #include <string>
 
-#include "qtgettext.h"
+#include "gui/qtgettext.h"
 #include "ui_Animate.h"
 #include <QIcon>
-#include "input/InputDriverEvent.h"
+#include "gui/input/InputDriverEvent.h"
 
 class MainWindow;
 

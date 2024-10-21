@@ -24,15 +24,17 @@
  *
  */
 
-#include "PolySet.h"
-#include "PolySetUtils.h"
-#include "linalg.h"
-#include "printutils.h"
-#include "Grid.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
+#include "geometry/linalg.h"
+#include "utils/printutils.h"
+#include "geometry/Grid.h"
+#include <algorithm>
+#include <sstream>
+#include <memory>
 #include <Eigen/LU>
 #include <cstddef>
 #include <string>
-#include <utility>
 #include <vector>
 
 /*! /class PolySet

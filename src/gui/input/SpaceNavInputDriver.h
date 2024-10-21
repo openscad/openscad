@@ -28,7 +28,7 @@
 
 #include <cstddef>
 #include <string>
-#include "input/InputDriver.h"
+#include "gui/input/InputDriver.h"
 
 class SpaceNavInputDriver : public InputDriver
 {

@@ -36,18 +36,18 @@
 #include <unistd.h>
 #endif
 
-#include "SourceFile.h"
-#include "UserModule.h"
-#include "ModuleInstantiation.h"
-#include "Assignment.h"
-#include "Expression.h"
-#include "function.h"
-#include "printutils.h"
+#include "core/SourceFile.h"
+#include "core/UserModule.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Assignment.h"
+#include "core/Expression.h"
+#include "core/function.h"
+#include "utils/printutils.h"
 #include <memory>
 #include <sstream>
 #include <stack>
 #include <boost/filesystem.hpp>
-#include "boost-utils.h"
+#include "utils/boost-utils.h"
 
 namespace fs = boost::filesystem;
 

@@ -1,11 +1,13 @@
 #pragma once
 
+#include <cassert>
+#include <memory>
 #include <cstddef>
 #include <string>
 #include <vector>
 
-#include "ContextFrame.h"
-#include "ContextMemoryManager.h"
+#include "core/ContextFrame.h"
+#include "core/ContextMemoryManager.h"
 
 /**
  * Local handle to a all context objects. This is used to maintain the

@@ -1,12 +1,25 @@
 #pragma once
 
+#include <QAction>
+#include <QActionGroup>
+#include <QCloseEvent>
+#include <QComboBox>
+#include <QFont>
+#include <QFontComboBox>
+#include <QHash>
+#include <QKeyEvent>
+#include <QShowEvent>
+#include <QString>
+#include <QStringList>
+#include <QVariant>
+#include <QWidget>
 #include <QMainWindow>
 #include <QSettings>
 
-#include "qtgettext.h" // IWYU pragma: keep
+#include "gui/qtgettext.h" // IWYU pragma: keep
 #include "ui_Preferences.h"
-#include "Settings.h"
-#include "InitConfigurator.h"
+#include "gui/Settings.h"
+#include "gui/InitConfigurator.h"
 
 class Preferences : public QMainWindow, public Ui::Preferences, public InitConfigurator
 {
@@ -53,6 +66,7 @@ public slots:
   void on_enableParameterCheckBox_toggled(bool);
   void on_enableRangeCheckBox_toggled(bool);
   void on_useAsciiSTLCheckBox_toggled(bool);
+  void on_comboBoxRenderBackend3D_activated(int);
   void on_comboBoxToolbarExport3D_activated(int);
   void on_comboBoxToolbarExport2D_activated(int);
   void on_checkBoxSummaryCamera_toggled(bool);

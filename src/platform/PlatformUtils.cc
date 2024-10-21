@@ -1,10 +1,13 @@
+#include "platform/PlatformUtils.h"
+
+#include <stdexcept>
+#include <cstdint>
 #include <cstdlib>
 #include <iomanip>
 #include <string>
 #include <vector>
 
-#include "PlatformUtils.h"
-#include "printutils.h"
+#include "utils/printutils.h"
 
 #ifdef OPENSCAD_SUFFIX
 #define RESOURCE_FOLDER(path) path OPENSCAD_SUFFIX

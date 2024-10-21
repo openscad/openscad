@@ -1,12 +1,13 @@
 #pragma once
 
+#include <utility>
 #include <string>
 #include <unordered_map>
 #include <cassert>
 #include <cstddef>
 
-#include "node.h"
-#include "printutils.h"
+#include "core/node.h"
+#include "utils/printutils.h"
 
 /*!
    Caches string values per node based on the node.index().

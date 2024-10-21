@@ -1,6 +1,11 @@
-#include "ClipperUtils.h"
-#include "printutils.h"
+#include "geometry/ClipperUtils.h"
+#include "utils/printutils.h"
 
+#include <algorithm>
+#include <cmath>
+#include <cassert>
+#include <utility>
+#include <memory>
 #include <cstddef>
 #include <vector>
 
@@ -172,7 +177,7 @@ std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon
 				 ClipperLib::ClipType clipType)
 {
   BoundingBox bounds;
-  for (auto polygon : polygons) {
+  for (const auto& polygon : polygons) {
     if (polygon) bounds.extend(polygon->getBoundingBox());
   }
   int pow2 = ClipperUtils::getScalePow2(bounds);

@@ -24,15 +24,20 @@
  *
  */
 
-#include "qtgettext.h"
-#include "QGLView.h"
-#include "Preferences.h"
-#include "Renderer.h"
-#include "degree_trig.h"
+#include "gui/QGLView.h"
+
+#include "gui/qtgettext.h"
+#include "gui/Preferences.h"
+#include "glview/Renderer.h"
+#include "utils/degree_trig.h"
 #if defined(USE_GLEW) || defined(OPENCSG_GLEW)
-#include "glew-utils.h"
+#include "glview/glew-utils.h"
 #endif
 
+#include <QImage>
+#include <QOpenGLWidget>
+#include <QWidget>
+#include <iostream>
 #include <QApplication>
 #include <QWheelEvent>
 #include <QCheckBox>
@@ -47,7 +52,7 @@
 #ifdef USE_GLAD
 #include <QOpenGLContext>
 #endif
-#include "OpenCSGWarningDialog.h"
+#include "gui/OpenCSGWarningDialog.h"
 
 #include <cstdio>
 #include <sstream>
@@ -58,8 +63,8 @@
 #  include <opencsg.h>
 #endif
 
-#include "qt-obsolete.h"
-#include "Measurement.h"
+#include "gui/qt-obsolete.h"
+#include "gui/Measurement.h"
 
 QGLView::QGLView(QWidget *parent) : QOpenGLWidget(parent)
 {

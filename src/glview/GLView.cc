@@ -1,12 +1,14 @@
-#include "GLView.h"
-#include "system-gl.h"
-#include "ColorMap.h"
-#include "RenderSettings.h"
-#include "printutils.h"
-#include "Renderer.h"
-#include "degree_trig.h"
-#include "hershey.h"
+#include "glview/GLView.h"
+#include "glview/system-gl.h"
+#include "glview/ColorMap.h"
+#include "glview/RenderSettings.h"
+#include "utils/printutils.h"
+#include "glview/Renderer.h"
+#include "utils/degree_trig.h"
+#include "glview/hershey.h"
 
+#include <functional>
+#include <memory>
 #include <cmath>
 #include <cstdio>
 #include <string>
@@ -181,7 +183,7 @@ void GLView::paintGL()
     showObject(obj,eyedir);
   }
   glColor3f(0,1,0);
-  for (const SelectedObject obj: this->shown_obj) {
+  for (const SelectedObject &obj: this->shown_obj) {
     showObject(obj,eyedir);
   }
   glDisable(GL_LIGHTING);

@@ -1,8 +1,10 @@
-#include "Camera.h"
-#include "RenderSettings.h"
-#include "printutils.h"
-#include "degree_trig.h"
+#include "glview/Camera.h"
+#include "glview/RenderSettings.h"
+#include "utils/printutils.h"
+#include "utils/degree_trig.h"
 
+#include <cassert>
+#include <memory>
 #include <vector>
 
 static const double DEFAULT_DISTANCE = 140.0;

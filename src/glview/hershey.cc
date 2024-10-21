@@ -1,4 +1,4 @@
-#include "hershey.h"
+#include "glview/hershey.h"
 
 #include <algorithm>
 #include <cstdint>

@@ -24,20 +24,27 @@
  *
  */
 
-#include "module.h"
-#include "ModuleInstantiation.h"
+#include "core/SurfaceNode.h"
+
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
 #include "core/node.h"
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "Builtins.h"
-#include "Children.h"
-#include "Parameters.h"
-#include "printutils.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "core/Builtins.h"
+#include "core/Children.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
 #include "io/fileutils.h"
 #include "handle_dep.h"
-#include "ext/lodepng/lodepng.h"
-#include "SurfaceNode.h"
+#include "lodepng/lodepng.h"
 
+#include <algorithm>
+#include <cstring>
+#include <new>
+#include <string>
+#include <utility>
+#include <memory>
 #include <cstdint>
 #include <cstddef>
 #include <sstream>

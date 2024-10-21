@@ -1,6 +1,13 @@
+
+#include "gui/InitConfigurator.h"
+
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDoubleSpinBox>
+#include <QSpinBox>
+#include <QString>
 #include <QSettings>
-#include "Settings.h"
-#include "InitConfigurator.h"
+#include "gui/Settings.h"
 
 #include <string>
 

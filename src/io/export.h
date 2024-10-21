@@ -1,7 +1,8 @@
 #pragma once
 
+#include <iterator>
+#include <map>
 #include <iostream>
-#include <functional>
 #include <array>
 #include <memory>
 #include <string>
@@ -10,8 +11,8 @@
 #include <boost/range/algorithm.hpp>
 #include <boost/range/adaptor/map.hpp>
 
-#include "Tree.h"
-#include "Camera.h"
+#include "core/Tree.h"
+#include "glview/Camera.h"
 
 class PolySet;
 
@@ -33,6 +34,7 @@ enum class FileFormat {
   ECHO,
   PNG,
   PDF,
+  POV,
   PARAM
 };
 
@@ -111,6 +113,7 @@ void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
+void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_nefdbg(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_nef3(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
@@ -140,6 +143,7 @@ struct ExportFileFormatOptions {
     {"echo", FileFormat::ECHO},
     {"png", FileFormat::PNG},
     {"pdf", FileFormat::PDF},
+    {"pov", FileFormat::POV},
   };
 };
 

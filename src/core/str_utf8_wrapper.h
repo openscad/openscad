@@ -1,5 +1,8 @@
 #pragma once
 
+#include <iterator>
+#include <utility>
+#include <cstdint>
 #include <cstddef>
 #include <memory>
 #include <string>

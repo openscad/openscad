@@ -1,8 +1,9 @@
-#include "SourceFileCache.h"
-#include "StatCache.h"
-#include "SourceFile.h"
-#include "printutils.h"
+#include "core/SourceFileCache.h"
+#include "core/StatCache.h"
+#include "core/SourceFile.h"
+#include "utils/printutils.h"
 #include "openscad.h"
+#include <ctime>
 #include <boost/format.hpp>
 
 #include <cstdio>

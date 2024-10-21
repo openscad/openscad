@@ -1,5 +1,15 @@
 #pragma once
 
+#include <QItemSelection>
+#include <QModelIndex>
+#include <QObject>
+#include <QPainter>
+#include <QPoint>
+#include <QSet>
+#include <QSize>
+#include <QString>
+#include <QStyleOptionViewItem>
+#include <cstdint>
 #include <vector>
 
 #include <QWidget>
@@ -7,7 +17,7 @@
 #include <QStyledItemDelegate>
 #include <QSortFilterProxyModel>
 
-#include "qtgettext.h"
+#include "gui/qtgettext.h"
 #include "ui_FontList.h"
 
 class FontItemDelegate : public QStyledItemDelegate

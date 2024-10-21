@@ -1,8 +1,10 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
-#include "PolySetBuilder.h"
-#include "cgalutils.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/cgal/cgalutils.h"
 
-#include <utility>
+#include <cassert>
+#include <list>
+#include <memory>
 
 #include <CGAL/Constrained_Delaunay_triangulation_2.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>

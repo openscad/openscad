@@ -25,9 +25,10 @@
  */
 #pragma once
 
+#include <utility>
+#include <cstdint>
 #include <map>
 #include <string>
-#include <iostream>
 
 #include <ctime>
 

@@ -23,63 +23,89 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "gui/MainWindow.h"
+
+#include <QApplication>
+#include <QDialog>
+#include <QElapsedTimer>
+#include <QEvent>
+#include <QFont>
+#include <QFontMetrics>
+#include <QIcon>
+#include <QKeySequence>
+#include <QList>
+#include <QMetaObject>
+#include <QPoint>
+#include <QSoundEffect>
+#include <QStringList>
+#include <QTextEdit>
+#include <QToolBar>
+#include <QWidget>
+#include <deque>
+#include <cassert>
+#include <array>
+#include <functional>
+#include <exception>
+#include <sstream>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "boost-utils.h"
-#include "Builtins.h"
-#include "BuiltinContext.h"
-#include "CommentParser.h"
-#include "RenderVariables.h"
+#ifdef ENABLE_MANIFOLD
+#include "geometry/manifold/manifoldutils.h"
+#endif
+#include "utils/boost-utils.h"
+#include "core/Builtins.h"
+#include "core/BuiltinContext.h"
+#include "core/customizer/CommentParser.h"
+#include "core/RenderVariables.h"
 #include "openscad.h"
-#include "GeometryCache.h"
-#include "SourceFileCache.h"
-#include "MainWindow.h"
-#include "OpenSCADApp.h"
-#include "parsersettings.h"
-#include "RenderSettings.h"
-#include "Preferences.h"
-#include "printutils.h"
+#include "geometry/GeometryCache.h"
+#include "core/SourceFileCache.h"
+#include "gui/OpenSCADApp.h"
+#include "core/parsersettings.h"
+#include "glview/RenderSettings.h"
+#include "gui/Preferences.h"
+#include "utils/printutils.h"
 #include "core/node.h"
-#include "CSGNode.h"
-#include "Expression.h"
-#include "ScopeContext.h"
-#include "progress.h"
-#include "dxfdim.h"
-#include "Settings.h"
-#include "AboutDialog.h"
-#include "FontListDialog.h"
-#include "LibraryInfoDialog.h"
-#include "ScintillaEditor.h"
+#include "core/CSGNode.h"
+#include "core/Expression.h"
+#include "core/ScopeContext.h"
+#include "core/progress.h"
+#include "io/dxfdim.h"
+#include "gui/Settings.h"
+#include "gui/AboutDialog.h"
+#include "gui/FontListDialog.h"
+#include "gui/LibraryInfoDialog.h"
+#include "gui/ScintillaEditor.h"
 #ifdef ENABLE_OPENCSG
-#include "CSGTreeEvaluator.h"
-#include "OpenCSGRenderer.h"
+#include "core/CSGTreeEvaluator.h"
+#include "glview/preview/OpenCSGRenderer.h"
 #ifdef USE_LEGACY_RENDERERS
-#include "LegacyOpenCSGRenderer.h"
+#include "glview/preview/LegacyOpenCSGRenderer.h"
 #endif
 #include <opencsg.h>
 #endif
-#include "ProgressWidget.h"
-#include "ThrownTogetherRenderer.h"
+#include "gui/ProgressWidget.h"
+#include "glview/preview/ThrownTogetherRenderer.h"
 #ifdef USE_LEGACY_RENDERERS
-#include "LegacyThrownTogetherRenderer.h"
+#include "glview/preview/LegacyThrownTogetherRenderer.h"
 #endif
-#include "CSGTreeNormalizer.h"
-#include "QGLView.h"
-#include "MouseSelector.h"
+#include "glview/preview/CSGTreeNormalizer.h"
+#include "gui/QGLView.h"
+#include "gui/MouseSelector.h"
 #ifdef Q_OS_MACOS
-#include "CocoaUtils.h"
+#include "platform/CocoaUtils.h"
 #endif
 #ifdef Q_OS_WIN
 #include <QScreen>
 #endif
-#include "PlatformUtils.h"
+#include "platform/PlatformUtils.h"
 #ifdef OPENSCAD_UPDATER
-#include "AutoUpdater.h"
+#include "gui/AutoUpdater.h"
 #endif
-#include "TabManager.h"
+#include "gui/TabManager.h"
 
 #include <QActionGroup>
 #include <QMenu>
@@ -107,9 +133,9 @@
 #include <QProcess>
 #include <memory>
 #include <string>
-#include "QWordSearchField.h"
+#include "gui/QWordSearchField.h"
 #include <QSettings> //Include QSettings for direct operations on settings arrays
-#include "QSettingsCached.h"
+#include "gui/QSettingsCached.h"
 
 #ifdef ENABLE_PYTHON
 extern std::shared_ptr<AbstractNode> python_result_node;
@@ -135,8 +161,8 @@ std::string SHA256HashString(std::string aString){
 #endif // ifdef ENABLE_PYTHON
 
 #define ENABLE_3D_PRINTING
-#include "OctoPrint.h"
-#include "PrintService.h"
+#include "gui/OctoPrint.h"
+#include "gui/PrintService.h"
 
 #include <fstream>
 
@@ -144,34 +170,34 @@ std::string SHA256HashString(std::string aString){
 #include <boost/version.hpp>
 #include <sys/stat.h>
 
-#include "CGALRenderer.h"
-#include "LegacyCGALRenderer.h"
-#include "CGALWorker.h"
+#include "glview/cgal/CGALRenderer.h"
+#include "glview/cgal/LegacyCGALRenderer.h"
+#include "gui/CGALWorker.h"
 
 #ifdef ENABLE_CGAL
-#include "cgal.h"
-#include "cgalutils.h"
-#include "CGALCache.h"
-#include "CGAL_Nef_polyhedron.h"
-#include "CGALHybridPolyhedron.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/cgal/CGALCache.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
 #endif // ENABLE_CGAL
 
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif // ENABLE_MANIFOLD
 
-#include "GeometryEvaluator.h"
+#include "geometry/GeometryEvaluator.h"
 
-#include "PrintInitDialog.h"
-//#include "ExportPdfDialog.h"
-#include "input/InputDriverEvent.h"
-#include "input/InputDriverManager.h"
+#include "gui/PrintInitDialog.h"
+//#include "gui/ExportPdfDialog.h"
+#include "gui/input/InputDriverEvent.h"
+#include "gui/input/InputDriverManager.h"
 #include <cstdio>
 #include <memory>
 #include <QtNetwork>
 #include <utility>
 
-#include "qt-obsolete.h" // IWYU pragma: keep
+#include "gui/qt-obsolete.h" // IWYU pragma: keep
 
 static const int autoReloadPollingPeriodMS = 200;
 
@@ -224,6 +250,8 @@ QAction *getExport3DAction(const MainWindow *mainWindow) {
     return mainWindow->fileActionExportOFF;
   } else if (format == "WRL") {
     return mainWindow->fileActionExportWRL;
+  } else if (format == "POV") {
+    return mainWindow->fileActionExportPOV;
   } else if (format == "AMF") {
     return mainWindow->fileActionExportAMF;
   } else if (format == "3MF") {
@@ -491,6 +519,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->fileActionExportOBJ, SIGNAL(triggered()), this, SLOT(actionExportOBJ()));
   connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
   connect(this->fileActionExportWRL, SIGNAL(triggered()), this, SLOT(actionExportWRL()));
+  connect(this->fileActionExportPOV, SIGNAL(triggered()), this, SLOT(actionExportPOV()));
   connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
   connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
   connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
@@ -648,6 +677,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   initActionIcon(fileActionExportOBJ, ":/icons/svg-default/export-obj.svg", ":/icons/svg-default/export-obj-white.svg");
   initActionIcon(fileActionExportOFF, ":/icons/svg-default/export-off.svg", ":/icons/svg-default/export-off-white.svg");
   initActionIcon(fileActionExportWRL, ":/icons/svg-default/export-wrl.svg", ":/icons/svg-default/export-wrl-white.svg");
+  initActionIcon(fileActionExportPOV, ":/icons/svg-default/export-pov.svg", ":/icons/svg-default/export-pov-white.svg");
   initActionIcon(fileActionExportDXF, ":/icons/svg-default/export-dxf.svg", ":/icons/svg-default/export-dxf-white.svg");
   initActionIcon(fileActionExportSVG, ":/icons/svg-default/export-svg.svg", ":/icons/svg-default/export-svg-white.svg");
   initActionIcon(fileActionExportCSG, ":/icons/svg-default/export-csg.svg", ":/icons/svg-default/export-csg-white.svg");
@@ -931,6 +961,8 @@ void MainWindow::loadDesignSettings()
   GeometryCache::instance()->setMaxSizeMB(polySetCacheSizeMB);
   auto cgalCacheSizeMB = Preferences::inst()->getValue("advanced/cgalCacheSizeMB").toUInt();
   CGALCache::instance()->setMaxSizeMB(cgalCacheSizeMB);
+  auto backend3D = Preferences::inst()->getValue("advanced/renderBackend3D").toString().toStdString();
+  RenderSettings::inst()->backend3D = renderBackend3DFromString(backend3D);
 }
 
 void MainWindow::updateUndockMode(bool undockMode)
@@ -2227,6 +2259,8 @@ void MainWindow::sendToLocalSlicer()
     exportFileFormat = FileFormat::AMF;
   } else if (fileFormat == "3MF") {
     exportFileFormat = FileFormat::_3MF;
+  } else if (fileFormat == "POV") {
+    exportFileFormat = FileFormat::POV;
   } else {
     exportFileFormat = FileFormat::STL;
   }
@@ -2347,7 +2381,7 @@ void MainWindow::cgalRender()
   this->root_geom.reset();
 
   LOG("Rendering Polygon Mesh using %1$s...",
-      Feature::ExperimentalManifold.is_enabled() ? "Manifold" : "CGAL");
+      renderBackend3DToString(RenderSettings::inst()->backend3D).c_str());
 
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
@@ -2531,7 +2565,7 @@ void findNodesWithSameMod(std::shared_ptr<const AbstractNode> tree,
   if (node_mod->modinst == tree->modinst) {
     nodes.push_back(tree);
   }
-  for (auto step : tree->children) {
+  for (const auto& step : tree->children) {
     findNodesWithSameMod(step, node_mod, nodes);
   }
 }
@@ -2591,7 +2625,7 @@ void MainWindow::setSelectionIndicatorStatus(int nodeIndex, EditorSelectionIndic
   // ends at size - 1 because we are not doing anything for the root node.
   // starts at 1 because we will process this one after later
   for (int i = 1; i < stack.size() - 1; i++) {
-    auto node = stack[i];
+    const auto& node = stack[i];
 
     auto& location = node->modinst->location();
     if (location.filePath().compare(activeEditor->filepath.toStdString()) != 0) {
@@ -2651,7 +2685,7 @@ void MainWindow::setSelection(int index)
   findNodesWithSameMod(root_node, selected_node, nodesSameModule);
 
   // highlight in the text editor all the text fragment of the hierarchy of object with same mode.
-  for (auto element : nodesSameModule) {
+  for (const auto& element : nodesSameModule) {
     if (element->index() != currently_selected_object) {
       setSelectionIndicatorStatus(element->index(), EditorSelectionIndicatorStatus::IMPACTED);
     }
@@ -2812,9 +2846,9 @@ void MainWindow::actionCheckValidity()
     return;
   }
 
-  bool valid = false;
-#ifdef ENABLE_CGAL
-  if (auto N = CGALUtils::getNefPolyhedronFromGeometry(this->root_geom)) {
+  bool valid = true;
+#ifdef ENABLE_CGAL 
+ if (auto N = std::dynamic_pointer_cast<const CGAL_Nef_polyhedron>(this->root_geom)) {
     valid = N->p3 ? const_cast<CGAL_Nef_polyhedron3&>(*N->p3).is_valid() : false;
   } else if (auto hybrid = std::dynamic_pointer_cast<const CGALHybridPolyhedron>(this->root_geom)) {
     valid = hybrid->isValid();
@@ -2877,6 +2911,14 @@ bool MainWindow::canExport(unsigned int dim)
   auto N = dynamic_cast<const CGAL_Nef_polyhedron *>(this->root_geom.get());
   if (N && !N->p3->is_simple()) {
     LOG(message_group::UI_Warning, "Object may not be a valid 2-manifold and may need repair! See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export");
+  }
+#endif
+#ifdef ENABLE_MANIFOLD
+  auto manifold = dynamic_cast<const ManifoldGeometry *>(this->root_geom.get());
+  if (manifold && !manifold->isValid() ) {
+    LOG(message_group::UI_Warning, "Object may not be a valid manifold and may need repair! "
+      "Error message: %1$s. See https://en.wikibooks.org/wiki/OpenSCAD_User_Manual/STL_Import_and_Export",
+      ManifoldUtils::statusToString(manifold->getManifold().Status()));
   }
 #endif
 
@@ -2945,6 +2987,11 @@ void MainWindow::actionExportOFF()
 void MainWindow::actionExportWRL()
 {
   actionExport(FileFormat::WRL, "WRL", ".wrl", 3);
+}
+
+void MainWindow::actionExportPOV()
+{
+  actionExport(FileFormat::POV, "POV", ".pov", 3);
 }
 
 void MainWindow::actionExportAMF()

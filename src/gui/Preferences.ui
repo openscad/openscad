@@ -1737,7 +1737,7 @@
             <item>
              <widget class="QGroupBox" name="groupBox_CSG">
               <property name="title">
-               <string>OpenCSG</string>
+               <string>3D Preview (OpenCSG)</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_6">
                <item>
@@ -1802,11 +1802,38 @@
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_CGAL">
+             <widget class="QGroupBox" name="groupBox_rendering3D">
               <property name="title">
-               <string>CGAL</string>
+               <string>3D Rendering</string>
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_14">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayoutRenderBackend3D">
+                 <item>
+                  <widget class="QLabel" name="labelRenderBackend3D">
+                   <property name="text">
+                    <string>Backend</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QComboBox" name="comboBoxRenderBackend3D"/>
+                 </item>
+                 <item>
+                  <spacer name="horizontalSpacerRenderBackend3D">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                   <property name="sizeHint" stdset="0">
+                    <size>
+                     <width>40</width>
+                     <height>20</height>
+                    </size>
+                   </property>
+                  </spacer>
+                 </item>
+                </layout>
+               </item>
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_cgalCacheSizeMB">
                  <item>

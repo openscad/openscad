@@ -1,5 +1,10 @@
-#include "ParameterVirtualWidget.h"
+#include "gui/parameter/ParameterVirtualWidget.h"
 
+#include <QSizePolicy>
+#include <QWidget>
+#include <algorithm>
+#include <cmath>
+#include <cassert>
 #include <QRegularExpression>
 #include <vector>
 

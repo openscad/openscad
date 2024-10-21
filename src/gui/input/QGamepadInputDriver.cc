@@ -24,8 +24,9 @@
  *
  */
 
-#include "InputDriverManager.h"
-#include "QGamepadInputDriver.h"
+#include "gui/input/QGamepadInputDriver.h"
+
+#include "gui/input/InputDriverManager.h"
 
 #include <string>
 

@@ -1,16 +1,17 @@
-#include "export.h"
-#include "printutils.h"
-#include "OffscreenView.h"
-#include "CsgInfo.h"
+#include "io/export.h"
+#include "utils/printutils.h"
+#include "glview/OffscreenView.h"
+#include "glview/CsgInfo.h"
+#include <ostream>
 #include <cstdio>
 #include <memory>
-#include "RenderSettings.h"
+#include "glview/RenderSettings.h"
 
 #ifndef NULLGL
 
-#include "CGALRenderer.h"
+#include "glview/cgal/CGALRenderer.h"
 #ifdef USE_LEGACY_RENDERERS
-#include "LegacyCGALRenderer.h"
+#include "glview/cgal/LegacyCGALRenderer.h"
 #endif
 
 
@@ -52,15 +53,15 @@ bool export_png(const std::shared_ptr<const Geometry>& root_geom, const ViewOpti
 }
 
 #ifdef ENABLE_OPENCSG
-#include "OpenCSGRenderer.h"
+#include "glview/preview/OpenCSGRenderer.h"
 #ifdef USE_LEGACY_RENDERERS
-#include "LegacyOpenCSGRenderer.h"
+#include "glview/preview/LegacyOpenCSGRenderer.h"
 #endif
 #include <opencsg.h>
 #endif
-#include "ThrownTogetherRenderer.h"
+#include "glview/preview/ThrownTogetherRenderer.h"
 #ifdef USE_LEGACY_RENDERERS
-#include "LegacyThrownTogetherRenderer.h"
+#include "glview/preview/LegacyThrownTogetherRenderer.h"
 #endif
 
 std::unique_ptr<OffscreenView> prepare_preview(Tree& tree, const ViewOptions& options, Camera& camera)

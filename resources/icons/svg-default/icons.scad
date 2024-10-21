@@ -27,6 +27,7 @@ icons = [
     ["export-csg"],
     ["export-pdf"],
     ["export-png"],
+    ["export-pov"],
     ["preview"],
     ["render"],
     ["send"],
@@ -84,6 +85,7 @@ icon(selected_icon) {
     export("CSG");
     export("PDF");
     export("PNG");
+    export("POV");
     preview();
     render_();
     send();

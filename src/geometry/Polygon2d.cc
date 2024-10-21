@@ -1,16 +1,19 @@
-#include "Polygon2d.h"
+#include "geometry/Polygon2d.h"
 
+#include <sstream>
+#include <utility>
 #include <cstddef>
 #include <string>
 #include <memory>
 
-#include "printutils.h"
+#include "utils/printutils.h"
 #ifdef ENABLE_MANIFOLD
-#include "manifoldutils.h"
+#include "geometry/manifold/manifoldutils.h"
 #endif
-#include "cgalutils.h"
+#include "geometry/cgal/cgalutils.h"
 #include "Feature.h"
-#include "PolySet.h"
+#include "geometry/PolySet.h"
+#include "glview/RenderSettings.h"
 
 
 Polygon2d::Polygon2d(Outline2d outline) : sanitized(true) {
@@ -175,7 +178,7 @@ std::unique_ptr<PolySet> Polygon2d::tessellate() const
 {
   PRINTDB("Polygon2d::tessellate(): %d outlines", this->outlines().size());
 #if defined(ENABLE_MANIFOLD) && defined(USE_MANIFOLD_TRIANGULATOR)
-  if (Feature::ExperimentalManifold.is_enabled()) {
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     return ManifoldUtils::createTriangulatedPolySetFromPolygon2d(*this);
   }
   else

@@ -1,12 +1,11 @@
 #pragma once
 
 #include <cstdio>
-#include <iostream>
 #include <string>
 #include <map>
 #include <vector>
 
-#include "exceptions.h"
+#include "utils/exceptions.h"
 
 class Feature
 {
@@ -17,7 +16,6 @@ public:
   static const Feature ExperimentalFastCsg;
   static const Feature ExperimentalFastCsgSafer;
   static const Feature ExperimentalFastCsgDebug;
-  static const Feature ExperimentalManifold;
   static const Feature ExperimentalRoof;
   static const Feature ExperimentalInputDriverDBus;
   static const Feature ExperimentalLazyUnion;
@@ -52,7 +50,7 @@ private:
   static map_t feature_map;
   static list_t feature_list;
 
-  Feature(const std::string& name, std::string description);
+  Feature(const std::string& name, std::string description, bool hidden = false);
   virtual ~Feature() = default;
 };
 

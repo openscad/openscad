@@ -1,6 +1,8 @@
-#include "import.h"
-#include "PolySet.h"
-#include "PolySetBuilder.h"
+#include "io/import.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include <ios>
+#include <memory>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -59,7 +61,6 @@ std::unique_ptr<PolySet> import_obj(const std::string& filename, const Location&
         return PolySet::createEmpty();
       }
     } else if (boost::regex_search(line, results, ex_f) && results.size() >= 2) {
-      std::string args=results[1];
       std::vector<std::string> words;
       boost::split(words, results[1], boost::is_any_of(" \t"));
       builder.beginPolygon(words.size());

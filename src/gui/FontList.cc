@@ -1,6 +1,20 @@
+#include "gui/FontList.h"
+
+#include <QAbstractItemView>
+#include <QApplication>
+#include <QModelIndex>
+#include <QPainter>
+#include <QPoint>
+#include <QResizeEvent>
+#include <QSize>
+#include <QSortFilterProxyModel>
+#include <QString>
+#include <QStyledItemDelegate>
+#include <QStyleOptionViewItem>
+#include <array>
+#include <cstdint>
 #include <qitemselectionmodel.h>
 #include <string>
-#include <iostream>
 #include <vector>
 
 #include <QClipboard>
@@ -17,9 +31,8 @@
 #include <QSpinBox>
 #include <QLineEdit>
 
-#include "FontList.h"
 #include "FontCache.h"
-#include "printutils.h"
+#include "utils/printutils.h"
 
 FontItemDelegate::FontItemDelegate(QObject *parent) : QStyledItemDelegate(parent)
 {
@@ -491,5 +504,7 @@ const QModelIndex FontList::colIdx(const QModelIndex& idx, int column)
 
 const QString FontList::colStr(const QModelIndex& idx, int column)
 {
-  return idx.model()->data(colIdx(idx, column)).toString();
+  return idx.model() ?
+    idx.model()->data(colIdx(idx, column)).toString() :
+    QString{};
 }

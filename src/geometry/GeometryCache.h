@@ -5,7 +5,7 @@
 #include <string>
 
 #include "Cache.h"
-#include "Geometry.h"
+#include "geometry/Geometry.h"
 
 class GeometryCache
 {

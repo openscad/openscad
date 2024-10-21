@@ -1,7 +1,10 @@
 #pragma once
 
+#include <QEvent>
+#include <QObject>
+#include <QString>
 #include <QApplication>
-#include "WindowManager.h"
+#include "gui/WindowManager.h"
 
 class QProgressDialog;
 

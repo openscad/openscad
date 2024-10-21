@@ -1,6 +1,8 @@
 #pragma once
 
-#include "NodeCache.h"
+#include "core/NodeCache.h"
+#include <tuple>
+#include <memory>
 #include <map>
 #include <string>
 #include <utility>

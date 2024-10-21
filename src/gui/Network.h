@@ -26,6 +26,14 @@
 
 #pragma once
 
+#include <QEventLoop>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QTimer>
+#include <algorithm>
+#include <functional>
+#include <exception>
 #include <QObject>
 #include <QString>
 #include <QtNetwork>
@@ -34,9 +42,9 @@
 #include <string>
 #include <vector>
 
-#include "printutils.h"
-#include "PlatformUtils.h"
-#include "NetworkSignal.h"
+#include "utils/printutils.h"
+#include "platform/PlatformUtils.h"
+#include "gui/NetworkSignal.h"
 
 class NetworkException : public std::exception
 {

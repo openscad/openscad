@@ -23,20 +23,23 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "OffscreenContextEGL.h"
+#include "glview/offscreen-old/OffscreenContextEGL.h"
 
+#include <iostream>
+#include <cstdint>
+#include <memory>
 #include <EGL/egl.h>
 #define EGL_EGLEXT_PROTOTYPES
 #include <EGL/eglext.h>
 
-#include "system-gl.h"
+#include "glview/system-gl.h"
 
 #include <cassert>
 #include <sstream>
 #include <string>
 #include <sys/utsname.h> // for uname
 
-#include "OffscreenContext.h"
+#include "glview/OffscreenContext.h"
 
 namespace {
 
@@ -104,7 +107,7 @@ static bool create_egl_dummy_context(OffscreenContextEGL& ctx)
     eglQueryDevicesEXT(MAX_DEVICES, eglDevs, &numDevices);
     PRINTDB("Found %d EGL devices.", numDevices);
     for (int idx = 0; idx < numDevices; idx++) {
-      EGLDisplay disp = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, eglDevs[idx], 0);
+      EGLDisplay disp = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT, eglDevs[idx], nullptr);
       if (disp != EGL_NO_DISPLAY) {
         ctx.display = disp;
         break;
@@ -159,7 +162,7 @@ static bool create_egl_dummy_context(OffscreenContextEGL& ctx)
   ctx.context = eglCreateContext(ctx.display, config, EGL_NO_CONTEXT, ctxattr);
   if (ctx.context == EGL_NO_CONTEXT) {
     std::cerr << "Unable to create EGL context (eglError: " << eglGetError() << ")" << std::endl;
-    return 1;
+    return false;
   }
 
   return true;

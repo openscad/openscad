@@ -1,8 +1,10 @@
+#include "core/customizer/CommentParser.h"
+
+#include <memory>
 #include <cstddef>
 
-#include "CommentParser.h"
-#include "Expression.h"
-#include "Annotation.h"
+#include "core/Expression.h"
+#include "core/customizer/Annotation.h"
 #include <string>
 #include <vector>
 #include <boost/range/adaptor/reversed.hpp>

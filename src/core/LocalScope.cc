@@ -1,12 +1,16 @@
+#include "core/LocalScope.h"
+
+#include <cassert>
+#include <ostream>
+#include <memory>
 #include <cstddef>
 #include <string>
 #include <vector>
 
-#include "Assignment.h"
-#include "LocalScope.h"
-#include "ModuleInstantiation.h"
-#include "UserModule.h"
-#include "function.h"
+#include "core/Assignment.h"
+#include "core/ModuleInstantiation.h"
+#include "core/UserModule.h"
+#include "core/function.h"
 #include "core/node.h"
 
 void LocalScope::addModuleInst(const std::shared_ptr<ModuleInstantiation>& modinst)

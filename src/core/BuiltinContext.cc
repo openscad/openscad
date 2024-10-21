@@ -1,12 +1,11 @@
-// NOLINTNEXTLINE(bugprone-reserved-identifier)
-#define _USE_MATH_DEFINES
+#include "core/BuiltinContext.h"
+
 #include <cmath>
 
-#include "Builtins.h"
-#include "BuiltinContext.h"
-#include "Expression.h"
-#include "function.h"
-#include "printutils.h"
+#include "core/Builtins.h"
+#include "core/Expression.h"
+#include "core/function.h"
+#include "utils/printutils.h"
 
 BuiltinContext::BuiltinContext(EvaluationSession *session) : Context(session)
 {

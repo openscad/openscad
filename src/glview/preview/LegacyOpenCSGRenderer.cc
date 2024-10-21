@@ -24,14 +24,16 @@
  *
  */
 
-#include "enums.h"
-#include "system-gl.h"
-#include "LegacyOpenCSGRenderer.h"
-#include "LegacyRendererUtils.h"
+#include "glview/preview/LegacyOpenCSGRenderer.h"
 
+#include "core/enums.h"
+#include "glview/system-gl.h"
+#include "glview/LegacyRendererUtils.h"
+
+#include <memory>
 #include <memory.h>
 #include <utility>
-#include "PolySet.h"
+#include "geometry/PolySet.h"
 
 #include <vector>
 

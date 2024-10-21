@@ -338,7 +338,7 @@ def to_html(project_name, startdate, tests, enddate, sysinfo, sysid, imgcomparer
 
     templates = Templates()
     for test in report_tests:
-        if test.type in ('txt', 'ast', 'csg', 'term', 'echo', 'stl', '3mf', 'off', 'obj'):
+        if test.type in ('txt', 'ast', 'csg', 'term', 'echo', 'stl', '3mf', 'off', 'obj', 'pov'):
             text_test_count += 1
             templates.add('text_template', 'text_tests',
                           test_name=test.fullname,

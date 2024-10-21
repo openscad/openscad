@@ -1,7 +1,7 @@
 #pragma once
 #include <QSettings>
 #include <QObject>
-#include "Settings.h"
+#include "gui/Settings.h"
 #include <QComboBox>
 #include <QSpinBox>
 #include <QCheckBox>

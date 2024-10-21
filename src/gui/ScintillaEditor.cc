@@ -1,4 +1,17 @@
-#include <ciso646> // C alternative tokens (xor)
+#include "gui/ScintillaEditor.h"
+
+#include <QColor>
+#include <QCursor>
+#include <QEvent>
+#include <QGuiApplication>
+#include <QMenu>
+#include <QObject>
+#include <QTimer>
+#include <QVBoxLayout>
+#include <QWidget>
+#include <functional>
+#include <exception>
+#include <memory>
 #include <cstdlib>
 #include <string>
 #include <vector>
@@ -12,11 +25,10 @@
 #include <QShortcut>
 #include <Qsci/qscicommandset.h>
 
-#include "ScintillaEditor.h"
-#include "Preferences.h"
-#include "PlatformUtils.h"
-#include "Settings.h"
-#include "ScadLexer.h"
+#include "gui/Preferences.h"
+#include "platform/PlatformUtils.h"
+#include "gui/Settings.h"
+#include "gui/ScadLexer.h"
 
 #include <QWheelEvent>
 #include <QPoint>

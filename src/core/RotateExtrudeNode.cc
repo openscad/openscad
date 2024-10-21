@@ -24,15 +24,18 @@
  *
  */
 
-#include "RotateExtrudeNode.h"
-#include "module.h"
-#include "ModuleInstantiation.h"
-#include "Children.h"
-#include "Parameters.h"
-#include "printutils.h"
+#include "core/RotateExtrudeNode.h"
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
+#include "core/Children.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
 #include "io/fileutils.h"
-#include "Builtins.h"
+#include "core/Builtins.h"
 #include "handle_dep.h"
+#include <ios>
+#include <utility>
+#include <memory>
 #include <cmath>
 #include <sstream>
 #include <boost/assign/std/vector.hpp>

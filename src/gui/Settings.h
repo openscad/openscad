@@ -1,8 +1,6 @@
 #pragma once
 
 #include <cstddef>
-#include <map>
-#include <list>
 #include <string>
 #include <utility>
 #include <vector>
@@ -192,7 +190,9 @@ public:
   static SettingsEntryString octoPrintSlicerProfileDesc;
   static SettingsEntryString localSlicerExecutable;
 
+  static SettingsEntryBool manifoldEnabled;
   static SettingsEntryBool exportUseAsciiSTL;
+  static SettingsEntryEnum renderBackend3D;
   static SettingsEntryEnum toolbarExport3D;
   static SettingsEntryEnum toolbarExport2D;
 

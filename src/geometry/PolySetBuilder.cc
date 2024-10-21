@@ -24,19 +24,25 @@
  *
  */
 
-#include "PolySetBuilder.h"
-#include <PolySet.h>
-#include "Geometry.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySet.h"
+#include "geometry/Geometry.h"
 
 #ifdef ENABLE_CGAL
-#include "cgalutils.h"
-#include "CGAL_Nef_polyhedron.h"
-#include "CGALHybridPolyhedron.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
 #endif
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
+#include <algorithm>
+#include <iterator>
+#include <cassert>
+#include <utility>
+#include <cstdint>
+#include <memory>
 #include <vector>
 
 PolySetBuilder::PolySetBuilder(int vertices_count, int indices_count, int dim, boost::tribool convex)
@@ -165,8 +171,7 @@ void PolySetBuilder::appendPolySet(const PolySet& ps)
         color_map[i] = it - colors_.begin();
       }
     }
-    for (int i = 0, n = ps.color_indices.size(); i < n; i++) {
-      const auto color_index = ps.color_indices[i];
+    for (auto color_index : ps.color_indices) {
       color_indices_.push_back(color_index < 0 ? -1 : color_map[color_index]);
     }
   } else if (!color_indices_.empty()) {

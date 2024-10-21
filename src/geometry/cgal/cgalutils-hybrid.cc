@@ -1,8 +1,10 @@
 // Portions of this file are Copyright 2021 Google LLC, and licensed under GPL2+. See COPYING.
-#include "cgalutils.h"
-#include "CGALHybridPolyhedron.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
 
 
+#include <cassert>
+#include <memory>
 #include <CGAL/boost/graph/helpers.h>
 #include <CGAL/Polygon_mesh_processing/orientation.h>
 #include <CGAL/Polygon_mesh_processing/triangulate_faces.h>
@@ -10,10 +12,10 @@
 #include <CGAL/convex_hull_3.h>
 #include <cstddef>
 
-#include "CGAL_Nef_polyhedron.h"
-#include "PolySetUtils.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "geometry/PolySetUtils.h"
 #if ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
+#include "geometry/manifold/ManifoldGeometry.h"
 #endif
 
 #include <vector>

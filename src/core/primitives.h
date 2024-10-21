@@ -24,10 +24,11 @@
  *
  */
 
-#include "GeometryUtils.h"
-#include "linalg.h"
-#include "node.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/linalg.h"
+#include "core/node.h"
 
+#include <memory>
 #include <cstddef>
 #include <sstream>
 #include <string>

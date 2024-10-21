@@ -1,8 +1,9 @@
 #pragma once
 
-#include "ext/polyclipping/clipper.hpp"
-#include "Polygon2d.h"
+#include "polyclipping/clipper.hpp"
+#include "geometry/Polygon2d.h"
 
+#include <memory>
 #include <vector>
 
 namespace ClipperUtils {

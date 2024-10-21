@@ -25,6 +25,10 @@
  */
 #pragma once
 
+#include <QList>
+#include <QObject>
+#include <QString>
+#include <list>
 #include <QWidget>
 #include <QThread>
 #include <QTimer>
@@ -33,8 +37,8 @@
 #include <cstddef>
 #include <string>
 
-#include "InputDriver.h"
-#include "InputEventMapper.h"
+#include "gui/input/InputDriver.h"
+#include "gui/input/InputEventMapper.h"
 
 class MainWindow;
 

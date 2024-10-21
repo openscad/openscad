@@ -1,19 +1,25 @@
-#include "linear_extrude.h"
+#include "geometry/linear_extrude.h"
 
+#include <algorithm>
+#include <cmath>
+#include <iterator>
+#include <cassert>
+#include <utility>
+#include <memory>
 #include <cstddef>
 #include <queue>
 #include <vector>
 
 #include <boost/logic/tribool.hpp>
 
-#include "GeometryUtils.h"
-#include "LinearExtrudeNode.h"
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "PolySetUtils.h"
-#include "calc.h"
-#include "degree_trig.h"
-#include "Feature.h"
+#include "geometry/GeometryUtils.h"
+#include "glview/RenderSettings.h"
+#include "core/LinearExtrudeNode.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "geometry/PolySetUtils.h"
+#include "utils/calc.h"
+#include "utils/degree_trig.h"
 
 namespace {
 
@@ -508,7 +514,7 @@ std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Po
   // the polyset from vertices using PolySetBuilder
 
 #ifdef ENABLE_MANIFOLD
-  if (Feature::ExperimentalManifold.is_enabled()) {
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     return assemblePolySetForManifold(polyref, vertices, indices,
                                       node.convexity, isConvex, slice_stride * num_slices);
   }

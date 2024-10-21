@@ -24,13 +24,18 @@
  *
  */
 
+#include "gui/input/ButtonConfigWidget.h"
+
+#include <QChar>
+#include <QComboBox>
+#include <QLabel>
+#include <QString>
 #include <QWidget>
 #include <cstddef>
-#include "ButtonConfigWidget.h"
-#include "Settings.h"
-#include "input/InputDriverManager.h"
-#include "SettingsWriter.h"
-#include "IgnoreWheelWhenNotFocused.h"
+#include "gui/Settings.h"
+#include "gui/input/InputDriverManager.h"
+#include "gui/SettingsWriter.h"
+#include "gui/IgnoreWheelWhenNotFocused.h"
 
 ButtonConfigWidget::ButtonConfigWidget(QWidget *parent) : QWidget(parent)
 {

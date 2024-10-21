@@ -1,10 +1,11 @@
 #pragma once
 
-#include "cgal.h"
-#include "PolySet.h"
-#include "CGAL_Nef_polyhedron.h"
-#include "enums.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/PolySet.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+#include "core/enums.h"
 
+#include <memory>
 #include <cstddef>
 #include <vector>
 

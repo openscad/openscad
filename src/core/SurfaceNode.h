@@ -24,11 +24,14 @@
  *
  */
 
+#include <cstdint>
+#include <memory>
 #include <cstddef>
 #include <string>
 #include <vector>
 
-#include "node.h"
+#include "core/node.h"
+#include "core/Value.h"
 
 struct img_data_t
 {

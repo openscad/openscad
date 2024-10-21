@@ -1,17 +1,17 @@
-#include "OffscreenContextEGL.h"
+#include "glview/OffscreenContextEGL.h"
 
+#include <memory>
 #include <fcntl.h>
 #include <cstddef>
-#include <iostream>
 #include <set>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include "printutils.h"
+#include "utils/printutils.h"
 #define GLAD_EGL_IMPLEMENTATION
 #include "glad/egl.h"
-#include "GL/gl.h"
+#include <GL/gl.h>
 
 namespace {
 
@@ -115,7 +115,7 @@ std::shared_ptr<OffscreenContext> CreateOffscreenContextEGL(size_t width, size_t
 {
   auto ctx = std::make_shared<OffscreenContextEGL>(width, height);
 
-  int initialEglVersion = gladLoaderLoadEGL(NULL);
+  int initialEglVersion = gladLoaderLoadEGL(nullptr);
   if (!initialEglVersion) {
     LOG("gladLoaderLoadEGL(NULL): Unable to load EGL");
     return nullptr;

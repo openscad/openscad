@@ -1,46 +1,52 @@
-#include "GeometryEvaluator.h"
-#include "Tree.h"
-#include "GeometryCache.h"
-#include "Polygon2d.h"
-#include "ModuleInstantiation.h"
-#include "State.h"
-#include "ColorNode.h"
-#include "OffsetNode.h"
-#include "TransformNode.h"
-#include "LinearExtrudeNode.h"
-#include "RoofNode.h"
-#include "roof_ss.h"
-#include "roof_vd.h"
-#include "RotateExtrudeNode.h"
-#include "CgalAdvNode.h"
-#include "ProjectionNode.h"
-#include "CsgOpNode.h"
-#include "TextNode.h"
-#include "RenderNode.h"
-#include "ClipperUtils.h"
-#include "PolySetUtils.h"
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "calc.h"
-#include "printutils.h"
-#include "calc.h"
-#include "DxfData.h"
-#include "degree_trig.h"
-#include <ciso646> // C alternative tokens (xor)
+#include "geometry/GeometryEvaluator.h"
+#include "core/Tree.h"
+#include "geometry/GeometryCache.h"
+#include "geometry/Polygon2d.h"
+#include "core/ModuleInstantiation.h"
+#include "core/State.h"
+#include "core/ColorNode.h"
+#include "core/OffsetNode.h"
+#include "core/TransformNode.h"
+#include "core/LinearExtrudeNode.h"
+#include "core/RoofNode.h"
+#include "geometry/roof_ss.h"
+#include "geometry/roof_vd.h"
+#include "core/RotateExtrudeNode.h"
+#include "core/CgalAdvNode.h"
+#include "core/ProjectionNode.h"
+#include "core/CsgOpNode.h"
+#include "core/TextNode.h"
+#include "core/RenderNode.h"
+#include "geometry/ClipperUtils.h"
+#include "geometry/PolySetUtils.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "utils/calc.h"
+#include "utils/printutils.h"
+#include "utils/calc.h"
+#include "io/DxfData.h"
+#include "glview/RenderSettings.h"
+#include "utils/degree_trig.h"
+#include <cmath>
+#include <iterator>
+#include <cassert>
+#include <list>
+#include <utility>
+#include <memory>
 #include <algorithm>
-#include "boost-utils.h"
-#include "boolean_utils.h"
+#include "utils/boost-utils.h"
+#include "geometry/boolean_utils.h"
 #ifdef ENABLE_CGAL
-#include "CGALCache.h"
-#include "CGALHybridPolyhedron.h"
-#include "cgalutils.h"
+#include "geometry/cgal/CGALCache.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
+#include "geometry/cgal/cgalutils.h"
 #include <CGAL/convex_hull_2.h>
 #include <CGAL/Point_2.h>
 #endif
 #ifdef ENABLE_MANIFOLD
-#include "manifoldutils.h"
+#include "geometry/manifold/manifoldutils.h"
 #endif
-#include "linear_extrude.h"
+#include "geometry/linear_extrude.h"
 
 #include <cstddef>
 #include <vector>
@@ -158,7 +164,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
     if (actualchildren.empty()) return {};
     if (actualchildren.size() == 1) return ResultObject::constResult(actualchildren.front().second);
 #ifdef ENABLE_MANIFOLD
-    if (Feature::ExperimentalManifold.is_enabled()) {
+    if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
       return ResultObject::mutableResult(ManifoldUtils::applyOperator3DManifold(actualchildren, op));
     }
 #endif
@@ -175,7 +181,7 @@ GeometryEvaluator::ResultObject GeometryEvaluator::applyToChildren3D(const Abstr
   default:
   {
 #ifdef ENABLE_MANIFOLD
-    if (Feature::ExperimentalManifold.is_enabled()) {
+    if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
       return ResultObject::mutableResult(ManifoldUtils::applyOperator3DManifold(children, op));
     }
 #endif
@@ -961,7 +967,7 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const Projectio
   std::shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
   if (newgeom) {
 #ifdef ENABLE_MANIFOLD
-    if (Feature::ExperimentalManifold.is_enabled()) {
+    if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
       auto manifold = ManifoldUtils::createManifoldFromGeometry(newgeom);
       auto poly2d = manifold->slice();
       return std::shared_ptr<const Polygon2d>(ClipperUtils::sanitize(poly2d));
@@ -984,7 +990,7 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionCut(const Projectio
 std::shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const ProjectionNode& node)
 {
 #ifdef ENABLE_MANIFOLD
-  if (Feature::ExperimentalManifold.is_enabled()) {
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     std::shared_ptr<const Geometry> newgeom = applyToChildren3D(node, OpenSCADOperator::UNION).constptr();
     if (newgeom) {
         auto manifold = ManifoldUtils::createManifoldFromGeometry(newgeom);

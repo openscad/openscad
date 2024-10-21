@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iterator>
+#include <limits>
 #include <cstdint>
 #include <ostream>
 #include <cmath>
