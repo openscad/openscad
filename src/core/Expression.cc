@@ -427,10 +427,10 @@ void FunctionDefinition::print(std::ostream& stream, const std::string& indent) 
 }
 
 /**
- * This is separated because PRINTB uses quite a lot of stack space
- * and the method using it evaluate()
+ * This is separated because LOG uses quite a lot of stack space
+ * and the method using it, evaluate(),
  * is called often when recursive functions are evaluated.
- * noinline is required, as we here specifically optimize for stack usage
+ * NOINLINE is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
  */
 static void NOINLINE print_err(const char *name, const Location& loc, const std::shared_ptr<const Context>& context){
@@ -438,10 +438,10 @@ static void NOINLINE print_err(const char *name, const Location& loc, const std:
 }
 
 /**
- * This is separated because PRINTB uses quite a lot of stack space
- * and the method using it evaluate()
+ * This is separated because LOG uses quite a lot of stack space
+ * and the method using it, evaluate(),
  * is called often when recursive functions are evaluated.
- * noinline is required, as we here specifically optimize for stack usage
+ * NOINLINE is required, as we here specifically optimize for stack usage
  * during normal operating, not runtime during error handling.
  */
 static void NOINLINE print_trace(const FunctionCall *val, const std::shared_ptr<const Context>& context){

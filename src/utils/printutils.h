@@ -104,13 +104,9 @@ void print_messages_pop();
 void resetSuppressedMessages();
 
 
-/* PRINT statements come out in same window as ECHO.
-   usage: PRINTB("Var1: %s Var2: %i", var1 % var2 ); */
+/* PRINT statements come out in same window as ECHO. */
 void PRINT(const Message& msgObj);
-
-void PRINT_NOCACHE(const Message& msgObj);
-#define PRINTB_NOCACHE(_fmt, _arg) do { } while (0)
-// #define PRINTB_NOCACHE(_fmt, _arg) do { PRINT_NOCACHE(str(boost::format(_fmt) % _arg)); } while (0)
+void MAYBETHROW(const Message& msgObj);
 
 /*PRINTD: debugging/verbose output. Usage in code:
    CGAL_Point_3 p0(0,0,0),p1(1,0,0),p2(0,1,0);
@@ -229,6 +225,7 @@ void LOG(const message_group& msgGroup, Location loc, std::string docPath, std::
   Message msgObj{std::move(formatted), msgGroup, std::move(loc), std::move(docPath)};
 
   PRINT(msgObj);
+  MAYBETHROW(msgObj);
 }
 
 template <typename ... Args>
