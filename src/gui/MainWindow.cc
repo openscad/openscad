@@ -2209,7 +2209,7 @@ void MainWindow::sendToOctoPrint()
   }
 
   ExportInfo exportInfo = createExportInfo(exportFileFormat, exportFileName, activeEditor->filepath);
-  exportFileByName(this->root_geom, exportInfo);
+  exportFileByName(this->root_geom, nullptr, exportInfo);
 
   try {
     this->progresswidget = new ProgressWidget(this);
@@ -2276,7 +2276,7 @@ void MainWindow::sendToLocalSlicer()
   }
 
   ExportInfo exportInfo = createExportInfo(exportFileFormat, exportFileName, activeEditor->filepath);
-  exportFileByName(this->root_geom, exportInfo);
+  exportFileByName(this->root_geom, nullptr, exportInfo);
 
   QProcess process(this);
   process.setProcessChannelMode(QProcess::MergedChannels);
@@ -2311,7 +2311,7 @@ void MainWindow::sendToPrintService()
 
   //Render the stl to a temporary file:
   ExportInfo exportInfo = createExportInfo(FileFormat::STL, exportFilename, activeEditor->filepath);
-  exportFileByName(this->root_geom, exportInfo);
+  exportFileByName(this->root_geom, nullptr, exportInfo);
 
   //Create a name that the order process will use to refer to the file. Base it off of the project name
   QString userFacingName = "unsaved.stl";
@@ -2946,7 +2946,7 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
   // Add options
   exportInfo.options = options;
 
-  bool exportResult = exportFileByName(this->root_geom, exportInfo);
+  bool exportResult = exportFileByName(this->root_geom, &qglview->cam, exportInfo);
 
   if (exportResult) fileExportedMessage(type_name, exportFilename);
   clearCurrentOutput();

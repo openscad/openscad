@@ -69,7 +69,6 @@ public:
   // (--camera option in commandline mode)
   bool locked;
 
-protected:
   // Perspective settings
   double viewer_distance;
 };

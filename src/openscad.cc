@@ -289,7 +289,8 @@ Camera get_camera(const po::variables_map& vm)
 #endif
 
 static bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned dimensions,
-                           FileFormat format, const bool is_stdout, const std::string& filename)
+                           FileFormat format, const bool is_stdout, const Camera *const camera,
+			   const std::string& filename)
 {
   if (root_geom->getDimension() != dimensions) {
     LOG("Current top level object is not a %1$dD object.", dimensions);
@@ -300,7 +301,7 @@ static bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, uns
     return false;
   }
 
-  exportFileByName(root_geom, ExportInfo {
+  exportFileByName(root_geom, camera, ExportInfo {
       .format = format,
       .displayName = filename,
       .fileName = filename,
@@ -603,13 +604,13 @@ int do_export(const CommandLine& cmd, const RenderVariables& render_variables, F
       }
     }
     if (is3D(export_format)) {
-      if (!checkAndExport(root_geom, 3, export_format, cmd.is_stdout, filename_str)) {
+      if (!checkAndExport(root_geom, 3, export_format, cmd.is_stdout, &cmd.camera, filename_str)) {
         return 1;
       }
     }
 
     if (is2D(export_format)) {
-      if (!checkAndExport(root_geom, 2, export_format, cmd.is_stdout, filename_str)) {
+      if (!checkAndExport(root_geom, 2, export_format, cmd.is_stdout, &cmd.camera, filename_str)) {
         return 1;
       }
     }
