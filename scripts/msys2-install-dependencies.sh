@@ -35,6 +35,8 @@ pacboy --noconfirm --sync --needed \
     make: \
     bison: \
     flex: \
+    unzip: \
+    zstd: \
     toolchain:p \
     cmake:p \
     ninja:p \
@@ -54,6 +56,7 @@ pacboy --noconfirm --sync --needed \
     python:p \
     python-pip:p \
     python-numpy:p \
-    python-pillow:p
+    python-pillow:p \
+    nettle:p
 
 date "+### %Y-%m-%d %T msys2-install-dependencies finished"

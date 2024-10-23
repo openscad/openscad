@@ -11,7 +11,7 @@ get_fedora_deps_yum()
   boost-devel mpfr-devel gmp-devel glew-devel CGAL-devel gcc gcc-c++ pkgconfig \
   opencsg-devel git libXmu-devel curl imagemagick ImageMagick glib2-devel make \
   xorg-x11-server-Xvfb gettext qscintilla-qt5-devel \
-  mesa-dri-drivers double-conversion-devel tbb-devel
+  mesa-dri-drivers double-conversion-devel tbb-devel nettle-devel
 }
 
 get_fedora_deps_dnf()
@@ -65,7 +65,7 @@ get_opensuse_deps()
   qscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
   xvfb-run libzip-devel libqt5-qtmultimedia-devel libqt5-qtsvg-devel \
   double-conversion-devel libboost_filesystem-devel libboost_regex-devel \
-  libboost_program_options-devel tbb-devel
+  libboost_program_options-devel tbb-devel nettle-dev
  # qscintilla-qt5-devel replaces libqscintilla_qt5-devel
  # but openscad compiles with both
  zypper install libeigen3-devel
@@ -94,7 +94,7 @@ get_mageia_deps()
  urpmi task-c-devel task-c++-devel libqt5-devel libgmp-devel \
   libmpfr-devel libboost-devel eigen3-devel libglew-devel bison flex \
   cmake imagemagick glib2-devel python curl git x11-server-xvfb gettext \
-  double-conversion-devel tbb
+  double-conversion-devel tbb nettle
 }
 
 get_debian_deps()
@@ -123,7 +123,7 @@ get_arch_deps()
 	base-devel gcc bison flex make libzip \
 	qt5 qscintilla-qt5 cgal gmp mpfr boost opencsg \
 	glew eigen glib2 fontconfig freetype2 harfbuzz \
-	double-conversion imagemagick tbb
+	double-conversion imagemagick tbb nettle
 }
 
 get_solus_deps()

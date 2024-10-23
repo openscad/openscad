@@ -144,6 +144,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   set(ENABLE_CAIRO OFF CACHE BOOL "" FORCE)
   set(ENABLE_TBB OFF CACHE BOOL "" FORCE)
   set(NULLGL ON CACHE BOOL "" FORCE)
+  set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
   set(USE_MIMALLOC OFF CACHE BOOL "" FORCE)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
   target_compile_definitions(OpenSCAD PRIVATE CGAL_DISABLE_ROUNDING_MATH_CHECK)
@@ -422,14 +423,114 @@ message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
+find_package(Python COMPONENTS Interpreter Development)
+find_package(Nettle)
+if(NOT Nettle_FOUND)
+  if(ENABLE_PYTHON)
+    message(WARNING "Nettle not found, disabling python support.")
+    set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
+  endif()
+endif()
+if(NOT Python_FOUND  AND NOT WIN32)
+  if(ENABLE_PYTHON)
+    message(WARNING "Python not found, disabling python support.")
+    set(ENABLE_PYTHON OFF CACHE BOOL "" FORCE)
+  endif()
+endif()
 if(ENABLE_PYTHON)
-  find_package(Python REQUIRED COMPONENTS Interpreter Development)
-  find_package(CryptoPP REQUIRED)
-  message(STATUS "Python enabled, using Crypto++ ${PC_CRYPTOPP_VERSION}")
-  target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
-  target_include_directories(OpenSCAD PRIVATE ${CRYPTOPP_INCLUDE_DIRS})
-  target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
-  target_link_libraries(OpenSCAD PRIVATE ${CRYPTOPP_LIBRARIES})
+  SET(PYTHON_SOURCES
+    src/python/pyopenscad.cc
+    src/python/pyfunctions.cc)
+  add_library(OpenSCADPy
+    ${PYTHON_SOURCES} )
+  message(STATUS "Python enabled, using Nettle ")
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
+  target_compile_definitions(OpenSCADPy PRIVATE ENABLE_PYTHON)
+  if(WIN32) 
+    #MINGW environment	  
+    SET(PYTHON_MINGW_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/python_mingw")
+    SET(PYTHON_MINGW_PACKAGEFOLDER "https://mirror.msys2.org/mingw/mingw64")
+    SET(PYTHON_MINGW_PACKAGEFILE "mingw-w64-x86_64-python-3.11.5-2-any.pkg.tar.zst")
+    SET(PYTHON_MINGW_PACKAGETAR "mingw-w64-x86_64-python-3.11.5-2-any.pkg.tar")
+    SET(PYTHON_MINGW_VERSION "python3.11")
+    SET(PYTHON_MINGW_ARCHIVE "${PYTHON_MINGW_DEVPATH}/mingw64/lib/lib${PYTHON_MINGW_VERSION}.dll.a")
+    add_custom_command(
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      COMMAND rm -rf python_mingw && mkdir python_mingw && cd python_mingw && wget ${PYTHON_MINGW_PACKAGEFOLDER}/${PYTHON_MINGW_PACKAGEFILE} && unzstd ${PYTHON_MINGW_PACKAGEFILE} && tar -xf ${PYTHON_MINGW_PACKAGETAR}
+      OUTPUT ${PYTHON_MINGW_ARCHIVE}
+    )
+    add_custom_target(tgt_python_mingw DEPENDS ${PYTHON_MINGW_ARCHIVE})
+
+    # Python embeddable Package
+    SET(PYTHON_EMBEDDABLE_DEVPATH "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+    SET(PYTHON_EMBEDDABLE_PACKAGEFILE "python-3.11.5-embed-amd64.zip")
+    SET(PYTHON_EMBEDDABLE_URL "http://www.python.org/ftp/python/3.11.5")
+    SET(PYTHON_EMBEDDABLE_DLL "${PYTHON_EMBEDDABLE_DEVPATH}/python311.dll")
+    add_custom_command(
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      COMMAND rm -rf bin && mkdir bin && cd bin && wget ${PYTHON_EMBEDDABLE_URL}/${PYTHON_EMBEDDABLE_PACKAGEFILE} && unzip ${PYTHON_EMBEDDABLE_PACKAGEFILE}
+      OUTPUT ${PYTHON_EMBEDDABLE_DLL}
+    )
+    add_custom_target(tgt_python_embed DEPENDS ${PYTHON_EMBEDDABLE_DLL})
+
+    add_dependencies(OpenSCADPy tgt_python_embed)
+    add_dependencies(OpenSCADPy tgt_python_mingw)
+
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE "${PYTHON_MINGW_DEVPATH}/mingw64/include/${PYTHON_MINGW_VERSION}")
+    target_link_libraries(OpenSCADPy PRIVATE "${PYTHON_MINGW_ARCHIVE}")
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
+  else() #MXE
+    target_include_directories(OpenSCADPy PRIVATE ${Python_INCLUDE_DIRS})
+    target_link_libraries(OpenSCADPy PRIVATE ${Python_LIBRARIES})
+  endif() # endif MXE
+  target_include_directories(OpenSCADPy SYSTEM PRIVATE ${FREETYPE_INCLUDE_DIRS})
+  if(MSVC)
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS}/harfbuzz)
+  else()
+    target_include_directories(OpenSCADPy SYSTEM PRIVATE ${HARFBUZZ_INCLUDE_DIRS})
+  endif()
+  target_include_directories(OpenSCADPy PRIVATE ${Nettle_INCLUDE_DIRS})
+  target_link_libraries(OpenSCADPy PRIVATE ${Nettle_LIBRARIES})
+  target_link_libraries(OpenSCADPy PRIVATE Eigen3::Eigen)
+  target_link_libraries(OpenSCADPy PRIVATE ${GETTEXT_LIBRARY})
+  target_link_libraries(OpenSCADPy PRIVATE ${GLIB2_LIBRARIES})
+  # copy compile options for the main OpenSCAD target
+  # duplication is not very ideal but not sure what better options do we have
+  set_property(TARGET OpenSCADPy PROPERTY CXX_STANDARD 17)
+  set_property(TARGET OpenSCADPy PROPERTY CXX_EXTENSIONS OFF)
+  set_property(TARGET OpenSCADPy PROPERTY CXX_STANDARD_REQUIRED ON)
+  target_compile_definitions(OpenSCADPy PRIVATE "STACKSIZE=${STACKSIZE}")
+  target_compile_definitions(OpenSCADPy PRIVATE EIGEN_DONT_ALIGN)
+  target_compile_options(OpenSCADPy PRIVATE "$<$<CONFIG:DEBUG>:-DDEBUG>")
+  target_compile_definitions(OpenSCADPy PRIVATE
+    OPENSCAD_VERSION=${OPENSCAD_VERSION}
+    OPENSCAD_SHORTVERSION=${OPENSCAD_SHORTVERSION}
+    OPENSCAD_YEAR=${OPENSCAD_YEAR}
+    OPENSCAD_MONTH=${OPENSCAD_MONTH})
+  target_include_directories(OpenSCADPy SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+  target_include_directories(OpenSCADPy SYSTEM PRIVATE ${GLIB2_INCLUDE_DIRS})
+  target_include_directories(OpenSCADPy PRIVATE
+    "src"
+    "src/core"
+    "src/core/customizer"
+    "src/ext"
+    "src/ext/json"
+    "src/ext/lexertl/include"
+    "src/ext/libtess2/Include"
+    "src/ext"
+    "src/geometry"
+    "src/geometry/cgal"
+    "src/geometry/manifold"
+    "src/glview"
+    "src/glview/preview"
+    "src/glview/cgal"
+    "src/gui"
+    "src/io"
+    "src/platform"
+    "src/utils"
+  )
+  target_link_libraries(OpenSCAD PRIVATE OpenSCADPy)
 endif()
 
 if(ENABLE_HIDAPI)
@@ -763,6 +864,7 @@ set(CORE_SOURCES
   src/core/LinearExtrudeNode.cc
   src/core/LocalScope.cc
   src/core/ModuleInstantiation.cc
+  src/core/node_clone.cc
   src/core/NodeDumper.cc
   src/core/NodeVisitor.cc
   src/core/OffsetNode.cc
@@ -875,11 +977,6 @@ set(CORE_SOURCES
   ${BISON_openscad_parser_OUTPUTS}
   ${FLEX_comment_lexer_OUTPUTS}
   ${BISON_comment_parser_OUTPUTS})
-if(ENABLE_PYTHON)
-	list(APPEND CORE_SOURCES
-		    src/core/pyopenscad.cc )
-	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
-endif()
 
 if(EXPERIMENTAL AND ENABLE_CGAL)
   list(APPEND CORE_SOURCES
@@ -1340,17 +1437,22 @@ endif()
 
 if(NOT APPLE OR APPLE_UNIX)
   set_target_properties(OpenSCAD PROPERTIES OUTPUT_NAME openscad${SUFFIX_WITH_DASH})
-  install(TARGETS OpenSCAD RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
   if(WIN32)
+    if(ENABLE_PYTHON)
+      install(DIRECTORY ${CMAKE_SOURCE_DIR}/bin DESTINATION "." )
+      install(FILES ${CMAKE_SOURCE_DIR}/bin/python311.dll DESTINATION "bin" RENAME "libpython3.11.dll")
+    endif()  
+    install(TARGETS OpenSCAD RUNTIME DESTINATION "bin")
     if(USE_MIMALLOC AND MI_LINK_SHARED)
       if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect.dll DESTINATION ".")
+        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect.dll DESTINATION "bin")
       elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect32.dll DESTINATION ".")
+        install(FILES ${CMAKE_SOURCE_DIR}/submodules/mimalloc/bin/mimalloc-redirect32.dll DESTINATION "bin")
       endif()
-      install(FILES ${CMAKE_BINARY_DIR}/submodules/mimalloc/mimalloc.dll DESTINATION ".")
+      install(FILES ${CMAKE_BINARY_DIR}/submodules/mimalloc/mimalloc.dll DESTINATION "bin")
     endif()
   else()
+    install(TARGETS OpenSCAD RUNTIME DESTINATION "${OPENSCAD_BINDIR}")
     install(FILES ${CMAKE_CURRENT_LIST_DIR}/doc/openscad.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1 RENAME openscad${SUFFIX_WITH_DASH}.1)
     install(FILES ${CMAKE_CURRENT_LIST_DIR}/openscad.appdata.xml DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/metainfo RENAME org.openscad.OpenSCAD${SUFFIX_WITH_DASH}.appdata.xml)
     install(FILES ${RESOURCE_DIR}/icons/openscad.desktop DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/applications RENAME openscad${SUFFIX_WITH_DASH}.desktop)

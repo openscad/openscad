@@ -49,6 +49,9 @@
 #include "utils/boost-utils.h"
 #include <boost/regex.hpp>
 #include <boost/assign/std/vector.hpp>
+#ifdef ENABLE_PYTHON
+#include "python/public.h"
+#endif
 using namespace boost::assign; // bring 'operator+=()' into scope
 
 Value Expression::checkUndef(Value&& val, const std::shared_ptr<const Context>& context) const {
@@ -515,7 +518,15 @@ static SimplificationResult simplify_function_body(const Expression *expression,
       std::shared_ptr<const Context> defining_context;
 
       auto f = call->evaluate_function_expression(context);
+#ifdef ENABLE_PYTHON    
+      if(f == boost::none)
+      {
+        Value v = python_functionfunc(call,context);
+        if(!v.isUndefined()) return v;
+      }
+#endif    
       if (!f) {
+	LOG(message_group::Warning, call->location(), context->documentRoot(), "Ignoring unknown function '%1$s'", call->name);
         return Value::undefined.clone();
       } else {
         auto index = f->index();
