@@ -24,7 +24,12 @@
  *
  */
 
-#include "Measurement.h"
+#include "gui/Measurement.h"
+
+#include <QPoint>
+#include <QString>
+#include <cmath>
+#include <sstream>
 
 Measurement::Measurement()
 {
@@ -48,7 +53,7 @@ void Measurement::startMeasureAngle(void)
   this->qglview->update();
   this->qglview->measure_state=MEASURE_ANG1;
 }
-QString Measurement::statemachine(QPoint mouse) 
+QString Measurement::statemachine(QPoint mouse)
 {
   if(qglview->measure_state == MEASURE_IDLE) return "";
   qglview->selectPoint(mouse.x(),mouse.y());
@@ -71,7 +76,6 @@ QString Measurement::statemachine(QPoint mouse)
         if(obj1.type == SelectionType::SELECTION_LINE && obj2.type == SelectionType::SELECTION_LINE) dist =calculateSegSegDistance(obj1.p1, obj1.p2,obj2.p1,obj2.p2,lat);
         if(!std::isnan(dist)) {
           return QString("Distance is %1").arg(fabs(dist));
-              std::stringstream ss;
         }
         qglview->selected_obj.clear();
         qglview->shown_obj.clear();

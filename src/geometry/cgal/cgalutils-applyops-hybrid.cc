@@ -3,10 +3,17 @@
 
 #ifdef ENABLE_CGAL
 
-#include "cgalutils.h"
-#include "CGALHybridPolyhedron.h"
-#include "node.h"
-#include "progress.h"
+#include <queue>
+#include <cassert>
+#include <utility>
+#include <memory>
+#include <cstddef>
+#include <vector>
+
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
+#include "core/node.h"
+#include "core/progress.h"
 
 Location getLocation(const std::shared_ptr<const AbstractNode>& node)
 {

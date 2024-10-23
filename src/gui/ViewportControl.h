@@ -1,7 +1,9 @@
 #pragma once
 
-#include "qtgettext.h"
+#include "gui/qtgettext.h"
 #include "ui_ViewportControl.h"
+#include <QResizeEvent>
+#include <QWidget>
 #include <QStandardItemModel>
 #include <mutex>
 

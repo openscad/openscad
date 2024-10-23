@@ -1,9 +1,19 @@
-#include "ClipperUtils.h"
-#include "printutils.h"
+#include "geometry/ClipperUtils.h"
+#include "utils/printutils.h"
+
+#include <algorithm>
+#include <cmath>
+#include <cassert>
+#include <utility>
+#include <memory>
+#include <cstddef>
+#include <vector>
 
 namespace ClipperUtils {
 
-const int CLIPPER_BITS{ std::ilogb(ClipperLib::hiRange) };
+// Using 1 bit less precision than the maximum possible, to limit the chance
+// of data loss when converting back to double (see https://github.com/openscad/openscad/issues/5253).
+const int CLIPPER_BITS{ std::ilogb(ClipperLib::hiRange) - 1 };
 
 int getScalePow2(const BoundingBox& bounds, int bits)
 {
@@ -171,7 +181,7 @@ std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon
 				 ClipperLib::ClipType clipType)
 {
   BoundingBox bounds;
-  for (auto polygon : polygons) {
+  for (const auto& polygon : polygons) {
     if (polygon) bounds.extend(polygon->getBoundingBox());
   }
   int pow2 = ClipperUtils::getScalePow2(bounds);

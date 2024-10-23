@@ -1,30 +1,39 @@
-#include "boolean_utils.h"
+#include "geometry/boolean_utils.h"
+
+#include <iterator>
+#include <cassert>
+#include <list>
+#include <utility>
+#include <memory>
+#include <cstddef>
+#include <vector>
 
 #ifdef ENABLE_CGAL
-#include "cgal.h"
-#include "CGALHybridPolyhedron.h"
-#include "CGAL_Nef_polyhedron.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
 #include <CGAL/config.h>
 #include <CGAL/version.h>
 #include <CGAL/convex_hull_3.h>
-#include "cgalutils.h"
+#include "geometry/cgal/cgalutils.h"
 #endif  // ENABLE_CGAL
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
-#include "manifoldutils.h"
+#include "geometry/manifold/ManifoldGeometry.h"
+#include "geometry/manifold/manifoldutils.h"
 #endif  // ENABLE_MANIFOLD
 
 #include "Feature.h"
-#include "PolySet.h"
-#include "printutils.h"
-#include "progress.h"
-#include "node.h"
+#include "glview/RenderSettings.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
+#include "core/progress.h"
+#include "core/node.h"
 
-#include "Reindexer.h"
-#include "GeometryUtils.h"
+#include "geometry/Reindexer.h"
+#include "geometry/GeometryUtils.h"
 
 #ifdef ENABLE_CGAL
 std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
@@ -106,7 +115,7 @@ std::unique_ptr<PolySet> applyHull(const Geometry::Geometries& children)
 std::shared_ptr<const Geometry> applyMinkowski(const Geometry::Geometries& children)
 {
 #if ENABLE_MANIFOLD
-  if (Feature::ExperimentalManifold.is_enabled()) {
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     return ManifoldUtils::applyMinkowskiManifold(children);
   }
 #endif  // ENABLE_MANIFOLD

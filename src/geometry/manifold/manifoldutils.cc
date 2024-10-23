@@ -1,19 +1,29 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
-#include "manifoldutils.h"
-#include "ManifoldGeometry.h"
-#include "PolySetBuilder.h"
+#include "geometry/manifold/manifoldutils.h"
+#include "geometry/manifold/ManifoldGeometry.h"
+#include "geometry/PolySetBuilder.h"
 #include "Feature.h"
-#include "manifold.h"
-#include "printutils.h"
+#include "utils/printutils.h"
 #ifdef ENABLE_CGAL
-#include "cgalutils.h"
-#include "CGALHybridPolyhedron.h"
+#include "geometry/cgal/cgalutils.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
+#include <optional>
+#include <cassert>
+#include <map>
+#include <set>
+#include <exception>
+#include <utility>
+#include <cstdint>
+#include <memory>
 #include <CGAL/convex_hull_3.h>
 #include <CGAL/Surface_mesh.h>
 #endif
-#include "PolySetUtils.h"
-#include "PolySet.h"
-#include "polygon.h"
+#include "geometry/PolySetUtils.h"
+#include "geometry/PolySet.h"
+#include <manifold/polygon.h>
+
+#include <cstddef>
+#include <vector>
 
 using Error = manifold::Manifold::Error;
 
@@ -39,17 +49,20 @@ const char* statusToString(Error status) {
 template <class TriangleMesh>
 std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMesh& tm)
 {
-  typedef typename TriangleMesh::Vertex_index vertex_descriptor;
+  using vertex_descriptor = typename TriangleMesh::Vertex_index;
 
-  manifold::Mesh mesh;
+  manifold::MeshGL64 meshgl;
 
-  mesh.vertPos.resize(tm.number_of_vertices());
+  meshgl.numProp = 3;
+  meshgl.vertProperties.resize(tm.number_of_vertices() * 3);
   for (vertex_descriptor vd : tm.vertices()){
     const auto &v = tm.point(vd);
-    mesh.vertPos[vd] = glm::vec3((float) v.x(), (float) v.y(), (float) v.z());
+    meshgl.vertProperties[3 * vd] = v.x();
+    meshgl.vertProperties[3 * vd + 1] = v.y();
+    meshgl.vertProperties[3 * vd + 2] = v.z();
   }
 
-  mesh.triVerts.reserve(tm.number_of_faces());
+  meshgl.triVerts.reserve(tm.number_of_faces() * 3);
   for (const auto& f : tm.faces()) {
     size_t idx[3];
     size_t i = 0;
@@ -58,20 +71,21 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromSurfaceMesh(const TriangleMe
       idx[i++] = vd;
     }
     if (i < 3) continue;
-    mesh.triVerts.emplace_back(idx[0], idx[1], idx[2]);
+    for (size_t j : {0, 1, 2})
+      meshgl.triVerts.emplace_back(idx[j]);
   }
 
-  assert((mesh.triVerts.size() == tm.number_of_faces()) || !"Mesh was not triangular!");
+  assert((meshgl.triVerts.size() == tm.number_of_faces() * 3) || !"Mesh was not triangular!");
 
-  auto mani = std::make_shared<manifold::Manifold>(std::move(mesh));
-  if (mani->Status() != Error::NoError) {
+  auto mani = manifold::Manifold(meshgl).AsOriginal();
+  if (mani.Status() != Error::NoError) {
     LOG(message_group::Error,
-        "[manifold] Surface_mesh -> Manifold conversion failed: %1$s", 
-        ManifoldUtils::statusToString(mani->Status()));
+        "[manifold] Surface_mesh -> Manifold conversion failed: %1$s",
+        ManifoldUtils::statusToString(mani.Status()));
     return nullptr;
   }
   std::set<uint32_t> originalIDs;
-  auto id = mani->OriginalID();
+  auto id = mani.OriginalID();
   if (id >= 0) {
     originalIDs.insert(id);
   }
@@ -87,13 +101,14 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
 {
   assert(ps.isTriangular());
 
-  manifold::MeshGL mesh;
+  manifold::MeshGL64 mesh;
 
+  mesh.numProp = 3;
   mesh.vertProperties.reserve(ps.vertices.size() * 3);
   for (const auto& v : ps.vertices) {
-    mesh.vertProperties.push_back((float)v.x());
-    mesh.vertProperties.push_back((float)v.y());
-    mesh.vertProperties.push_back((float)v.z());
+    mesh.vertProperties.push_back(v.x());
+    mesh.vertProperties.push_back(v.y());
+    mesh.vertProperties.push_back(v.z());
   }
 
   mesh.triVerts.reserve(ps.indices.size() * 3);
@@ -112,7 +127,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
   }
   auto next_id = manifold::Manifold::ReserveIDs(colorToFaceIndices.size());
   for (const auto& [color, faceIndices] : colorToFaceIndices) {
-    
+
     auto id = next_id++;
     if (color.has_value()) {
       originalIDToColor[id] = color.value();
@@ -121,7 +136,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
     mesh.runIndex.push_back(mesh.triVerts.size());
     mesh.runOriginalID.push_back(id);
     originalIDs.insert(id);
-    
+
     for (size_t faceIndex : faceIndices) {
       auto & face = ps.indices[faceIndex];
       assert(face.size() == 3);
@@ -132,7 +147,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromTriangularPolySet(const Poly
   }
   mesh.runIndex.push_back(mesh.triVerts.size());
 
-  auto mani = std::make_shared<const manifold::Manifold>(std::move(mesh));
+  auto mani = manifold::Manifold(mesh);
   return std::make_shared<ManifoldGeometry>(mani, originalIDs, originalIDToColor);
 }
 
@@ -142,7 +157,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
   // (through using manifold::Mesh).
   // We need to make sure our PolySet is triangulated before doing that.
   // Note: We currently don't have a way of directly checking if a PolySet is manifold,
-  // so we just try converting to a Manifold object and check its status. 
+  // so we just try converting to a Manifold object and check its status.
   std::unique_ptr<const PolySet> triangulated;
   if (!ps.isTriangular()) {
     triangulated = PolySetUtils::tessellate_faces(ps);
@@ -158,7 +173,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
   // causes of a non-manifold topology:
   // Polygon soup of manifold topology with co-incident vertices having identical vertex positions
   //
-  // Note: This causes us to lose the ability to represent manifold topologies with duplicate 
+  // Note: This causes us to lose the ability to represent manifold topologies with duplicate
   // vertex positions (touching cubes, donut with vertex in the center etc.)
   PolySetBuilder builder(ps.vertices.size(), ps.indices.size(),
                          ps.getDimension(), ps.convexValue());
@@ -182,7 +197,7 @@ std::shared_ptr<ManifoldGeometry> createManifoldFromPolySet(const PolySet& ps)
     std::vector<Vector3d> points3d;
     psq.quantizeVertices(&points3d);
     auto ps_tri = PolySetUtils::tessellate_faces(psq);
-    
+
     CGAL_DoubleMesh m;
 
     if (ps_tri->isConvex()) {

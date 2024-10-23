@@ -26,10 +26,15 @@
 
 #pragma once
 
-#include "system-gl.h"
-#include "VertexArray.h"
-#include "ext/CGAL/OGL_helper.h"
+#include "glview/system-gl.h"
+#include "glview/VertexArray.h"
+#include "CGAL/OGL_helper.h"
+
+#include <cassert>
+#include <utility>
+#include <memory>
 #include <cstdlib>
+#include <vector>
 
 using namespace CGAL::OGL;
 
@@ -153,12 +158,10 @@ public:
   }
 
   static inline void CGAL_GLU_TESS_CALLBACK combineCallback(GLdouble coords[3], GLvoid *[4], GLfloat [4], GLvoid **dataOut) {
-    static std::vector<GLdouble> vertexCache;
+    static std::vector<std::unique_ptr<Vector3d>> vertexCache;
     if (dataOut) {
-      vertexCache.push_back(coords[0]);
-      vertexCache.push_back(coords[1]);
-      vertexCache.push_back(coords[2]);
-      *dataOut = vertexCache.data() - 3;
+      vertexCache.push_back(std::make_unique<Vector3d>(coords));
+      *dataOut = vertexCache.back().get();
     } else {
       vertexCache.clear();
     }
@@ -296,7 +299,7 @@ public:
     if (Feature::ExperimentalVxORenderersIndexing.is_enabled()) {
       glGenBuffers(1, &halffacets_elements_vbo);
     }
-    
+
     // FIXME: We don't know the size of this VertexArray in advanced, so we have to deal with some fallback mechanism for filling in the data. This complicates code quite a bit
     VertexArray halffacets_array(std::make_unique<VertexStateFactory>(), halffacets_states, halffacets_vertices_vbo, halffacets_elements_vbo);
     halffacets_array.addSurfaceData();

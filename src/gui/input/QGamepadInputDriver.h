@@ -25,9 +25,10 @@
  */
 #pragma once
 
-#include "InputDriver.h"
+#include "gui/input/InputDriver.h"
 
-#include <memory>
+#include <cstddef>
+#include <string>
 #include <QtGamepad/QGamepad>
 
 class QGamepadInputDriver : public InputDriver

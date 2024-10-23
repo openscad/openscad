@@ -26,12 +26,13 @@
 
 #pragma once
 
+#include <QJsonObject>
 #include <mutex>
 
 #include <QString>
 #include <QJsonDocument>
 
-#include "Network.h"
+#include "gui/Network.h"
 
 class PrintService
 {

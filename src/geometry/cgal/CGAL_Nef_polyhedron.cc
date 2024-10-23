@@ -1,8 +1,13 @@
-#include "cgal.h"
-#include "CGAL_Nef_polyhedron.h"
-#include "cgalutils.h"
-#include "printutils.h"
-#include "svg.h"
+#include "geometry/cgal/CGAL_Nef_polyhedron.h"
+
+#include <memory>
+#include <cstddef>
+#include <string>
+
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
+#include "utils/printutils.h"
+#include "utils/svg.h"
 
 // Copy constructor only performs shallow copies, so all modifying functions
 // must reset p3 with a new CGAL_Nef_polyhedron3 object, to prevent cache corruption.

@@ -24,16 +24,24 @@
  *
  */
 
-#include "Context.h"
-#include "function.h"
-#include "printutils.h"
-#include "Expression.h"
-#include "Geometry.h"
-#include "GeometryEvaluator.h"
-#include "PolySet.h"
-#include "PolySetUtils.h"
-#include "Value.h"
-#include "Tree.h"
+#include "core/Context.h"
+
+#include <utility>
+#include <memory>
+#include <cstddef>
+#include <string>
+#include <vector>
+
+#include "core/function.h"
+#include "utils/printutils.h"
+
+#include "core/Expression.h"
+#include "core/Value.h"
+#include "core/Tree.h"
+#include "geometry/Geometry.h"
+#include "geometry/GeometryEvaluator.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
 
 Context::Context(EvaluationSession *session) :
   ContextFrame(session),

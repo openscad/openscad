@@ -1,12 +1,14 @@
 #pragma once
 
+#include <unordered_map>
+#include <memory>
 #include <ostream>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include "AST.h"
-#include "Annotation.h"
+#include "core/AST.h"
+#include "core/customizer/Annotation.h"
 
 class Assignment : public ASTNode
 {

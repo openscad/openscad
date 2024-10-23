@@ -1,9 +1,18 @@
-#include "import.h"
+#include "io/import.h"
 #include "Feature.h"
-#include "PolySet.h"
-#include "printutils.h"
-#include "AST.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
+#include "core/AST.h"
+#include <system_error>
+#include <map>
+#include <ios>
+#include <cstdint>
+#include <memory>
+#include <charconv>
+#include <cstddef>
 #include <fstream>
+#include <string>
+#include <vector>
 #include <boost/regex.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
@@ -52,6 +61,34 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
 
     return true;
   };
+
+  auto getcolor = [&](const auto& word){
+    int c;
+    if (boost::contains(word, ".")) {
+      float f;
+#ifdef __cpp_lib_to_chars
+      auto result = std::from_chars(word.data(), word.data() + word.length(), f);
+      if (result.ec != std::errc{}) {
+        AsciiError("Parse error");
+        return 0;
+      }
+#else
+      // fall back for pre C++17
+      std::istringstream istr(word);
+      istr.imbue(std::locale("C"));
+      istr >> f;
+      if (istr.peek() != EOF) {
+        AsciiError("Parse error");
+        return 0;
+      }
+#endif
+      c = (int)(f * 255);
+    } else {
+      c = boost::lexical_cast<int>(word);
+    }
+    return c;
+  };
+
 
   if (!f.good()) {
     AsciiError("File error");
@@ -226,12 +263,12 @@ std::unique_ptr<PolySet> import_off(const std::string& filename, const Location&
       if (words.size() >= face_size + 4) {
         i = face_size + 1;
         // handle optional color info (r g b [a])
-        int r=boost::lexical_cast<int>(words[i++]);
-        int g=boost::lexical_cast<int>(words[i++]);
-        int b=boost::lexical_cast<int>(words[i++]);
-        int a=i < words.size() ? boost::lexical_cast<int>(words[i++]) : 255;
+        int r=getcolor(words[i++]);
+        int g=getcolor(words[i++]);
+        int b=getcolor(words[i++]);
+        int a=i < words.size() ? getcolor(words[i++]) : 255;
         Color4f color(r, g, b, a);
-        
+
         auto iter_pair = color_indices.insert_or_assign(color, ps->colors.size());
         if (iter_pair.second) ps->colors.push_back(color); // inserted
         ps->color_indices.resize(face_idx, -1);

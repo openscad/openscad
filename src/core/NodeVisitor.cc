@@ -1,6 +1,7 @@
-#include "NodeVisitor.h"
-#include "State.h"
-#include "CsgOpNode.h"
+#include "core/NodeVisitor.h"
+
+#include "core/CsgOpNode.h"
+#include "core/State.h"
 
 State NodeVisitor::nullstate(nullptr);
 

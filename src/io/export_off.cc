@@ -25,12 +25,17 @@
  *
  */
 
-#include "export.h"
-#include "linalg.h"
+#include "io/export.h"
+#include "geometry/linalg.h"
 #include "Feature.h"
-#include "Reindexer.h"
-#include "PolySet.h"
-#include "PolySetUtils.h"
+#include "geometry/Reindexer.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetUtils.h"
+
+#include <ostream>
+#include <memory>
+#include <cstddef>
+#include <cstdint>
 
 uint8_t clamp_color_channel(float value)
 {

@@ -1,12 +1,17 @@
 // Portions of this file are Copyright 2023 Google LLC, and licensed under GPL2+. See COPYING.
 #pragma once
 
-#include "Geometry.h"
+#include "geometry/Geometry.h"
+#include <functional>
+#include <cstdint>
+#include <memory>
 #include <glm/glm.hpp>
-#include "linalg.h"
-#include "manifold.h"
+#include "geometry/linalg.h"
+#include <manifold/manifold.h>
+#include <cstddef>
 #include <map>
 #include <set>
+#include <string>
 
 namespace manifold {
   class Manifold;
@@ -21,7 +26,7 @@ public:
 
   ManifoldGeometry();
   ManifoldGeometry(
-    const std::shared_ptr<const manifold::Manifold>& object,
+    manifold::Manifold object,
     const std::set<uint32_t> & originalIDs = {},
     const std::map<uint32_t, Color4f> & originalIDToColor = {},
     const std::set<uint32_t> & subtractedIDs = {});
@@ -60,17 +65,18 @@ public:
 
   void transform(const Transform3d& mat) override;
   void setColor(const Color4f& c) override;
+  void toOriginal();
   void resize(const Vector3d& newsize, const Eigen::Matrix<bool, 3, 1>& autosize) override;
 
   /*! Iterate over all vertices' points until the function returns true (for done). */
-  void foreachVertexUntilTrue(const std::function<bool(const glm::vec3& pt)>& f) const;
+  void foreachVertexUntilTrue(const std::function<bool(const manifold::vec3& pt)>& f) const;
 
   const manifold::Manifold& getManifold() const;
 
 private:
   ManifoldGeometry binOp(const ManifoldGeometry& lhs, const ManifoldGeometry& rhs, manifold::OpType opType) const;
 
-  std::shared_ptr<const manifold::Manifold> manifold_;
+  manifold::Manifold manifold_;
   std::set<uint32_t> originalIDs_;
   std::map<uint32_t, Color4f> originalIDToColor_;
   std::set<uint32_t> subtractedIDs_;

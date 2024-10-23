@@ -3,19 +3,22 @@
 
 #ifdef ENABLE_CGAL
 
-#include "cgal.h"
-#include "cgalutils.h"
+#include "geometry/cgal/cgal.h"
+#include "geometry/cgal/cgalutils.h"
 #include "Feature.h"
-#include "PolySet.h"
-#include "printutils.h"
-#include "progress.h"
-#include "CGALHybridPolyhedron.h"
+#include "geometry/PolySet.h"
+#include "utils/printutils.h"
+#include "core/progress.h"
+#include "geometry/cgal/CGALHybridPolyhedron.h"
 #ifdef ENABLE_MANIFOLD
-#include "ManifoldGeometry.h"
-#include "manifoldutils.h"
+#include "geometry/manifold/ManifoldGeometry.h"
+#include "geometry/manifold/manifoldutils.h"
 #endif
-#include "node.h"
+#include "core/node.h"
 
+#include <cassert>
+#include <utility>
+#include <exception>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/normal_vector_newell_3.h>
 #include <CGAL/Handle_hash_function.h>
@@ -25,13 +28,13 @@
 
 #include <CGAL/convex_hull_3.h>
 
-#include "Reindexer.h"
-#include "GeometryUtils.h"
+#include "geometry/Reindexer.h"
+#include "geometry/GeometryUtils.h"
 
+#include <cstddef>
 #include <memory>
-#include <map>
 #include <queue>
-#include <unordered_set>
+#include <vector>
 
 namespace CGALUtils {
 
@@ -156,11 +159,3 @@ std::shared_ptr<const Geometry> applyOperator3D(const Geometry::Geometries& chil
 
 
 #endif // ENABLE_CGAL
-
-
-
-
-
-
-
-

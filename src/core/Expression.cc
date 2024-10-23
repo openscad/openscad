@@ -23,26 +23,30 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#include "compiler_specific.h"
-#include "Expression.h"
-#include "Value.h"
+#include "core/Expression.h"
+
+#include "utils/compiler_specific.h"
+#include "core/Value.h"
+#include <set>
+#include <functional>
+#include <ostream>
 #include <cstdint>
 #include <cmath>
 #include <cassert>
+#include <cstddef>
 #include <memory>
 #include <sstream>
 #include <algorithm>
 #include <typeinfo>
-#include <forward_list>
 #include <utility>
 #include <variant>
-#include "printutils.h"
-#include "StackCheck.h"
-#include "Context.h"
-#include "exceptions.h"
-#include "Parameters.h"
-#include "printutils.h"
-#include "boost-utils.h"
+#include "utils/printutils.h"
+#include "utils/StackCheck.h"
+#include "core/Context.h"
+#include "utils/exceptions.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
+#include "utils/boost-utils.h"
 #include <boost/regex.hpp>
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
@@ -224,7 +228,6 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
  * during normal operating, not runtime during error handling.
  */
 static void NOINLINE print_range_depr(const Location& loc, const std::shared_ptr<const Context>& context){
-  std::string locs = loc.toRelativeString(context->documentRoot());
   LOG(message_group::Deprecated, loc, context->documentRoot(), "Using ranges of the form [begin:end] with begin value greater than the end value is deprecated");
 }
 

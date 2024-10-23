@@ -1,15 +1,18 @@
 #pragma once
 
+#include <iterator>
+#include <map>
 #include <iostream>
-#include <functional>
 #include <array>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include <boost/range/algorithm.hpp>
 #include <boost/range/adaptor/map.hpp>
 
-#include "Tree.h"
-#include "Camera.h"
+#include "core/Tree.h"
+#include "glview/Camera.h"
 
 class PolySet;
 
@@ -37,6 +40,7 @@ enum class FileFormat {
   ECHO,
   PNG,
   PDF,
+  POV,
   PARAM
 };
 
@@ -50,7 +54,7 @@ enum class paperSizes {
 // for gui, but declared here to keep it aligned with the enum.
 // can't use Qt mechanism in the IO code.
 // needs to match number of sizes
-const std::array<std::string,5> paperSizeStrings{  
+const std::array<std::string,5> paperSizeStrings{
 "A4","A3","Letter","Legal","Tabloid"
 };
 
@@ -64,7 +68,7 @@ const int paperDimensions[5][2]={
 {612,792},
 {612,1008},
 {792,1224}
-}; 
+};
 
 enum class paperOrientations {
 PORTRAIT,LANDSCAPE,AUTO
@@ -73,7 +77,7 @@ PORTRAIT,LANDSCAPE,AUTO
 // for gui, but declared here to keep it aligned with the enum.
 // can't use Qt mechanism in the IO code.
 // needs to match number of orientations
-const std::array<std::string,3> paperOrientationsStrings{  
+const std::array<std::string,3> paperOrientationsStrings{
 "Portrait","Landscape","Auto"
 };
 
@@ -84,7 +88,7 @@ struct ExportPdfOptions {
     bool showScaleMsg=TRUE;
     bool showGrid=FALSE;
     double gridSize=10.; // New
-    bool showDsgnFN=TRUE; 
+    bool showDsgnFN=TRUE;
     paperOrientations Orientation=paperOrientations::PORTRAIT;
     paperSizes paperSize=paperSizes::A4;
 };
@@ -115,6 +119,7 @@ void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
+void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_nefdbg(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_nef3(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
@@ -149,6 +154,7 @@ struct ExportFileFormatOptions {
     {"echo", FileFormat::ECHO},
     {"png", FileFormat::PNG},
     {"pdf", FileFormat::PDF},
+    {"pov", FileFormat::POV},
   };
 };
 

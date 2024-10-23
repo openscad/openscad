@@ -1,22 +1,28 @@
 // This file is a part of openscad. Everything implied is implied.
 // Author: Alexey Korepanov <kaikaikai@yandex.ru>
 
-#include <boost/shared_ptr.hpp>
+#include "geometry/roof_ss.h"
+
+#include <iterator>
+#include <functional>
+#include <memory>
 
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Polygon_with_holes_2.h>
 #include <CGAL/create_straight_skeleton_from_polygon_with_holes_2.h>
 #include <CGAL/partition_2.h>
 #include <CGAL/Partition_traits_2.h>
+#if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(6, 0, 0)
+#include <boost/shared_ptr.hpp>
+#endif
 
 #include <algorithm>
 #include <map>
 
-#include "GeometryUtils.h"
-#include "ClipperUtils.h"
-#include "RoofNode.h"
-#include "roof_ss.h"
-#include "PolySetBuilder.h"
+#include "geometry/GeometryUtils.h"
+#include "geometry/ClipperUtils.h"
+#include "core/RoofNode.h"
+#include "geometry/PolySetBuilder.h"
 
 #define RAISE_ROOF_EXCEPTION(message) \
         throw RoofNode::roof_exception((boost::format("%s line %d: %s") % __FILE__ % __LINE__ % (message)).str());
@@ -34,7 +40,11 @@ using CGAL_Ss = CGAL::Straight_skeleton_2<CGAL_KERNEL>;
 
 using CGAL_PT = CGAL::Partition_traits_2<CGAL_KERNEL>;
 
+#if CGAL_VERSION_NR < CGAL_VERSION_NUMBER(6, 0, 0)
 using CGAL_SsPtr = boost::shared_ptr<CGAL_Ss>;
+#else
+using CGAL_SsPtr = std::shared_ptr<CGAL_Ss>;
+#endif
 
 using PolyTree = ClipperLib::PolyTree;
 using PolyNode = ClipperLib::PolyNode;

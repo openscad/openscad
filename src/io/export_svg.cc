@@ -24,10 +24,13 @@
  *
  */
 
-#include "export.h"
-#include "PolySet.h"
-#include "ColorMap.h"
-#include "src/glview/RenderSettings.h"
+#include <cassert>
+#include <ostream>
+#include <memory>
+#include "io/export.h"
+#include "geometry/PolySet.h"
+#include "glview/ColorMap.h"
+#include "glview/RenderSettings.h"
 
 static void append_svg(const Polygon2d& poly, std::ostream& output)
 {

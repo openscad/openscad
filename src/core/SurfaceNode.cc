@@ -24,24 +24,34 @@
  *
  */
 
-#include "module.h"
-#include "ModuleInstantiation.h"
+#include "core/SurfaceNode.h"
+
+#include "core/module.h"
+#include "core/ModuleInstantiation.h"
 #include "core/node.h"
-#include "PolySet.h"
-#include "PolySetBuilder.h"
-#include "Builtins.h"
-#include "Children.h"
-#include "Parameters.h"
-#include "printutils.h"
+#include "geometry/PolySet.h"
+#include "geometry/PolySetBuilder.h"
+#include "core/Builtins.h"
+#include "core/Children.h"
+#include "core/Parameters.h"
+#include "utils/printutils.h"
 #include "io/fileutils.h"
 #include "handle_dep.h"
-#include "ext/lodepng/lodepng.h"
-#include "SurfaceNode.h"
+#include "lodepng/lodepng.h"
 
+#include <algorithm>
+#include <cstring>
+#include <new>
+#include <string>
+#include <utility>
+#include <memory>
 #include <cstdint>
+#include <cstddef>
 #include <sstream>
 #include <fstream>
+#include <vector>
 #include <unordered_map>
+
 #include <boost/functional/hash.hpp>
 #include <boost/tokenizer.hpp>
 #include <boost/lexical_cast.hpp>
@@ -88,7 +98,7 @@ void SurfaceNode::convert_image(img_data_t& data, std::vector<uint8_t>& img, uns
 {
   data.width = width;
   data.height = height;
-  data.reserve( (size_t)width * height);
+  data.resize( (size_t)width * height);
   double min_val = 200;
   for (unsigned int y = 0; y < height; ++y) {
     for (unsigned int x = 0; x < width; ++x) {

@@ -23,13 +23,13 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
+#include "core/DrawingCallback.h"
+
+#include <memory>
 #include <cmath>
+#include <vector>
 
-#include <iostream>
-#include <algorithm>
-
-#include "Polygon2d.h"
-#include "DrawingCallback.h"
+#include "geometry/Polygon2d.h"
 
 DrawingCallback::DrawingCallback(unsigned long fn, double size) :
   pen(Vector2d(0, 0)), offset(Vector2d(0, 0)), advance(Vector2d(0, 0)), fn(fn), size(size)
@@ -43,6 +43,7 @@ DrawingCallback::~DrawingCallback()
 void DrawingCallback::start_glyph()
 {
   this->polygon = std::make_shared<Polygon2d>();
+  // FIXME: Why do we think that a glyph is sanitized?
   this->polygon->setSanitized(true);
 }
 

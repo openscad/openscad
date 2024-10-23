@@ -1,14 +1,14 @@
 #pragma once
 
+#include <cstdint>
 #include <map>
 #include <memory>
-#include <map>
 #include <vector>
 
-#include <Reindexer.h>
-#include "Polygon2d.h"
-#include "boost-utils.h"
-#include "GeometryUtils.h"
+#include "geometry/Reindexer.h"
+#include "geometry/Polygon2d.h"
+#include "utils/boost-utils.h"
+#include "geometry/GeometryUtils.h"
 
 class PolySet;
 
