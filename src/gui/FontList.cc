@@ -504,5 +504,7 @@ const QModelIndex FontList::colIdx(const QModelIndex& idx, int column)
 
 const QString FontList::colStr(const QModelIndex& idx, int column)
 {
-  return idx.model()->data(colIdx(idx, column)).toString();
+  return idx.model() ?
+    idx.model()->data(colIdx(idx, column)).toString() :
+    QString{};
 }
