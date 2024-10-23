@@ -40,7 +40,6 @@ class PrintInitDialog : public QDialog, public Ui::PrintInitDialog
 public:
   PrintInitDialog();  
   int exec() override;
-  static QString serviceName(print_service_t service);
 
   print_service_t getServiceType() const;
   QString getServiceName() const;
@@ -49,10 +48,12 @@ public:
 public slots:
   void on_octoPrintButton_clicked();
   void on_LocalSlicerButton_clicked();
+  void on_fileFormatComboBox_activated(int);
   void on_buttonBox_accepted();
   void on_buttonBox_rejected();
 private:
   QString htmlTemplate;
   print_service_t selectedPrintService = print_service_t::NONE;
   QString selectedServiceName = "";
+  FileFormat selectedFileFormat = FileFormat::ASCII_STL;
 };

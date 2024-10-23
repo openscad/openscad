@@ -209,7 +209,6 @@ void Preferences::init() {
   initIntSpinBox(this->spinBoxShowWhitespaceSize, Settings::Settings::showWhitespaceSize);
   initIntSpinBox(this->spinBoxTabWidth, Settings::Settings::tabWidth);
 
-//  initComboBox(this->comboBoxDefaultPrintService, Settings::Settings::defaultPrintService);
   initComboBox(this->comboBoxOctoPrintFileFormat, Settings::Settings::octoPrintFileFormat);
   initComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
   initComboBox(this->comboBoxLocalSlicerFileFormat, Settings::Settings::localSlicerFileFormat);
@@ -360,25 +359,32 @@ void Preferences::setupFeaturesPage()
 
 void Preferences::setup3DPrintPage()
 {
-  const auto currentSetting = QString::fromStdString(Settings::Settings::defaultPrintService.value());
+  const auto& currentPrintService = Settings::Settings::defaultPrintService.value();
+  const auto currentPrintServiceName =
+      QString::fromStdString(Settings::Settings::printServiceName.value());
 
   instance->comboBoxDefaultPrintService->clear();
-  instance->comboBoxDefaultPrintService->addItem(_("NONE"), "NONE");
-  for (const auto& printServiceItem : PrintService::getPrintServices()) {
-    const auto& key = printServiceItem.first;
-    const auto& printService = printServiceItem.second;
-    const auto settingValue = QString("PRINT_SERVICE:") + QString::fromStdString(key);
+  instance->comboBoxDefaultPrintService->addItem(_("NONE"),
+                                                 QStringList{"NONE", ""});
+  for (const auto &printServiceItem : PrintService::getPrintServices()) {
+    const auto &key = printServiceItem.first;
+    const auto &printService = printServiceItem.second;
+    const auto settingValue =
+        QStringList{"PRINT_SERVICE", QString::fromStdString(key)};
     const auto displayName = QString(printService->getDisplayName());
-    instance->comboBoxDefaultPrintService->addItem(displayName, 
-    settingValue);
-    if (settingValue == currentSetting) {
-      instance->comboBoxDefaultPrintService->setCurrentText(QString(printService->getDisplayName()));
+    instance->comboBoxDefaultPrintService->addItem(displayName, settingValue);
+    if (key == currentPrintServiceName.toStdString()) {
+      instance->comboBoxDefaultPrintService->setCurrentText(
+          QString(printService->getDisplayName()));
     }
   }
-  instance->comboBoxDefaultPrintService->addItem(_("OctoPrint"), "OCTOPRINT");
-  instance->comboBoxDefaultPrintService->addItem(_("Local Slicer"), "LOCALSLICER");
+  instance->comboBoxDefaultPrintService->addItem(_("OctoPrint"),
+                                                 QStringList{"OCTOPRINT", ""});
+  instance->comboBoxDefaultPrintService->addItem(_("Local Slicer"),
+                                                 QStringList{"LOCALSLICER", ""});
 
-  instance->comboBoxDefaultPrintService->setCurrentText(QString::fromStdString(Settings::Settings::defaultPrintService.value()));
+  instance->comboBoxDefaultPrintService->setCurrentText(
+      QString::fromStdString(Settings::Settings::defaultPrintService.value()));
 }
 
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()
@@ -808,10 +814,11 @@ void Preferences::on_enableHidapiTraceCheckBox_toggled(bool checked)
   writeSettings();
 }
 
-void Preferences::on_comboBoxDefaultPrintService_textActivated(QString val)
+void Preferences::on_comboBoxDefaultPrintService_activated(int)
 {
-  // TODO: Convert to key
-  Settings::Settings::defaultPrintService.setValue(val.toStdString());
+  QStringList currentPrintServiceList = comboBoxDefaultPrintService->currentData().toStringList();
+  Settings::Settings::defaultPrintService.setValue(currentPrintServiceList[0].toStdString());
+  Settings::Settings::printServiceName.setValue(currentPrintServiceList[1].toStdString());
   writeSettings();
 }
 

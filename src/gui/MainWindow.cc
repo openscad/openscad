@@ -2187,20 +2187,6 @@ void MainWindow::action3DPrint()
   const auto status = printInitDialog.exec();
 
   if (status == QDialog::Accepted) {
-//    PRINTDB("action3DPrint(): got from dialog: %1$s", selectedService.toStdString());
-
-
-  // From dialog:
-  // * service type (enum)
-  // * service name (string)
-  // * file format (FileFormat)
-  
-// Supported file formats:
-// * print-a-thing: BINARY_STL, ASCII_STL
-// * pcbway: ASCII_STL, BINARY_STL, OBJ
-// * external program: <any>
-// * octoprint: ???
-
     const print_service_t serviceType = printInitDialog.getServiceType();
     const QString serviceName = printInitDialog.getServiceName();
     const FileFormat fileFormat = printInitDialog.getFileFormat();

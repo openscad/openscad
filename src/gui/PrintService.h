@@ -67,5 +67,4 @@ private:
   static std::mutex printServiceMutex;
 };
 
-bool isValidPrintServiceKey(const std::string& serviceKey);
 const PrintService *printServiceFromKey(const std::string& serviceKey);

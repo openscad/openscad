@@ -91,7 +91,7 @@ bool LocalProgramService::process(const std::string& displayName, std::function<
 #ifdef Q_OS_MACOS
   if(!process.startDetached("open", {"-a", slicer, QString::fromStdString(exportedFilename_)})) {
 #else	  
-  if(!process.startDetached(slicer, {exportFileName})) {
+  if(!process.startDetached(slicer, {QString::fromStdString(exportedFilename_)})) {
 #endif
     LOG(message_group::Error, "Could not start Slicer '%1$s': %2$s", slicer.toStdString(), process.errorString().toStdString());
     const auto output = process.readAll();

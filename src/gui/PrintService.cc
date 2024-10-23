@@ -26,7 +26,6 @@
 
 #include "gui/PrintService.h"
 
-#include <_stdio.h>
 #include <memory>
 #include <string>
 
@@ -179,30 +178,4 @@ PrintService::upload(const QString &fileName, const QString &contentBase64,
         LOG("Upload finished, opening URL %1$s.", cartUrl.toStdString());
         return cartUrl;
       });
-}
-
-bool isValidPrintServiceKey(const std::string &serviceKey) {
-  if (printServiceFromKey(serviceKey) != nullptr) {
-    return true;
-  } else if (serviceKey == "OCTOPRINT") {
-    return true;
-  } else if (serviceKey == "LOCALSLICER") {
-    return true;
-  }
-  return false;
-}
-
-const PrintService *printServiceFromKey(const std::string &serviceKey) {
-  constexpr std::string_view printServicePrefix = "PRINT_SERVICE:";
-  // if selectedService == "PRINT_SERVICE": Legacy; fall back to "NONE"
-  if (serviceKey.rfind(printServicePrefix, 0) == 0) {
-    // Get name of service from string, can be empty if the legacy
-    // "PRINT_SERVICE" was returned Locate service from name If service not
-    // found, log it and open dialog. handle the legacy "PRINT_SERVICE" without
-    // logging?
-    const auto serviceName = serviceKey.substr(printServicePrefix.length());
-    const auto printService = PrintService::getPrintService(serviceName);
-    return printService;
-  }
-  return nullptr;
 }

@@ -122,6 +122,7 @@ SettingsEntryEnum Settings::modifierNumberScrollWheel("editor", "modifierNumberS
 
 SettingsEntryString Settings::defaultPrintService("printing", "printService", "NONE");
 
+SettingsEntryString Settings::printServiceName("printing", "printServiceName", "");
 SettingsEntryString Settings::printServiceFileFormat("printing", "printServiceFileFormat", "stl");
 
 SettingsEntryString Settings::octoPrintUrl("printing", "octoPrintUrl", "");

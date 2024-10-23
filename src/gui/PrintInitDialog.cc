@@ -30,38 +30,79 @@
 #include <QString>
 
 #include "export.h"
-#include "gui/Settings.h"
 #include "gui/PrintService.h"
 #include "gui/QSettingsCached.h"
+#include "gui/Settings.h"
 
-PrintInitDialog::PrintInitDialog()
-{
+namespace {
+
+QString toString(print_service_t printServiceType) {
+  switch (printServiceType) {
+  case print_service_t::PRINT_SERVICE:
+    return "PRINT_SERVICE";
+  case print_service_t::OCTOPRINT:
+    return "OCTOPRINT";
+  case print_service_t::LOCALSLICER:
+    return "LOCALSLICER";
+  default:
+    return "NONE";
+  }
+}
+
+print_service_t fromString(const QString &printServiceType) {
+  if (printServiceType == "PRINT_SERVICE") {
+    return print_service_t::PRINT_SERVICE;
+  } else if (printServiceType == "OCTOPRINT") {
+    return print_service_t::OCTOPRINT;
+  } else if (printServiceType == "LOCALSLICER") {
+    return print_service_t::LOCALSLICER;
+  } else
+    return print_service_t::NONE;
+}
+
+} // namespace
+
+PrintInitDialog::PrintInitDialog() {
   setupUi(this);
 
   this->textBrowser->setSource(QUrl{"qrc:/html/PrintInitDialog.html"});
   this->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+  this->fileFormatComboBox->setEnabled(false);
 
   for (const auto &printServiceItem : PrintService::getPrintServices()) {
-    const auto& key = printServiceItem.first;
-    const auto& printService = printServiceItem.second;
+    const auto &key = printServiceItem.first;
+    const auto &printService = printServiceItem.second;
     auto button = new QPushButton(printService->getDisplayName(), this);
     button->setCheckable(true);
     button->setAutoExclusive(true);
     this->printServiceLayout->insertWidget(0, button);
-    connect(button, &QPushButton::clicked, this, [&](){
+    connect(button, &QPushButton::clicked, this, [&]() {
+      const QSettingsCached settings;
+      FileFormat currentFormat = FileFormat::ASCII_STL;
+      fileformat::fromIdentifier(
+          settings.value("printing/printServiceFileFormat")
+              .toString()
+              .toStdString(),
+          currentFormat);
+
       this->textBrowser->setHtml(printService->getInfoHtml());
       this->fileFormatComboBox->clear();
-      for (const auto& identifier : printService->getFileFormats()) {
+      for (const auto &identifier : printService->getFileFormats()) {
         FileFormat fileFormat;
         fileformat::fromIdentifier(identifier.toStdString(), fileFormat);
 
         this->fileFormatComboBox->addItem(
-          QString::fromStdString(fileformat::info(fileFormat).description), identifier);
+            QString::fromStdString(fileformat::info(fileFormat).description),
+            identifier);
+        if (fileFormat == currentFormat) {
+          this->fileFormatComboBox->setCurrentIndex(
+              this->fileFormatComboBox->count() - 1);
+        }
       }
-      // TODO: Use format stored in settings as selected value
 
       this->selectedPrintService = print_service_t::PRINT_SERVICE;
       this->selectedServiceName = QString::fromStdString(key);
+      this->fileFormatComboBox->setEnabled(true);
       this->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
     });
   }
@@ -71,28 +112,30 @@ PrintInitDialog::PrintInitDialog()
   }
 }
 
-void PrintInitDialog::on_octoPrintButton_clicked()
-{
+void PrintInitDialog::on_octoPrintButton_clicked() {
   this->textBrowser->setSource(QUrl{"qrc:/html/OctoPrintInfo.html"});
   this->fileFormatComboBox->clear();
 
-  for (const auto fileFormat : {FileFormat::BINARY_STL, FileFormat::ASCII_STL}) {
+  for (const auto fileFormat :
+       {FileFormat::BINARY_STL, FileFormat::ASCII_STL, FileFormat::_3MF,
+        FileFormat::AMF, FileFormat::OFF}) {
     this->fileFormatComboBox->addItem(
-      QString::fromStdString(fileformat::info(fileFormat).description),
-      QString::fromStdString(fileformat::info(fileFormat).identifier));
+        QString::fromStdString(fileformat::info(fileFormat).description),
+        QString::fromStdString(fileformat::info(fileFormat).identifier));
   }
   // TODO: Use format stored in settings as selected value
 
   this->selectedPrintService = print_service_t::OCTOPRINT;
   this->selectedServiceName = "";
 
+  this->fileFormatComboBox->setEnabled(true);
   this->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
   PRINTD("OCTOPRINT");
 }
 
-void PrintInitDialog::on_LocalSlicerButton_clicked()
-{
-  // TODO: Instead of forcing people to use Preferences, we should add UI here to:
+void PrintInitDialog::on_LocalSlicerButton_clicked() {
+  // TODO: Instead of forcing people to use Preferences, we should add UI here
+  // to:
   // 2. Select external program
   this->textBrowser->setSource(QUrl{"qrc:/html/LocalSlicerInfo.html"});
 
@@ -100,60 +143,116 @@ void PrintInitDialog::on_LocalSlicerButton_clicked()
   for (const auto fileFormat : fileformat::all()) {
     if (fileformat::is3D(fileFormat)) {
       this->fileFormatComboBox->addItem(
-        QString::fromStdString(fileformat::info(fileFormat).description),
-        QString::fromStdString(fileformat::info(fileFormat).identifier));
+          QString::fromStdString(fileformat::info(fileFormat).description),
+          QString::fromStdString(fileformat::info(fileFormat).identifier));
     }
   }
   // TODO: Use format stored in settings as selected value
   this->selectedPrintService = print_service_t::LOCALSLICER;
   this->selectedServiceName = "";
 
+  this->fileFormatComboBox->setEnabled(true);
   this->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
   PRINTD("LOCALSLICER");
 }
 
-void PrintInitDialog::on_buttonBox_accepted()
-{
+void PrintInitDialog::on_fileFormatComboBox_activated(int) {
+  FileFormat fileFormat = FileFormat::ASCII_STL;
+  if (!fileformat::fromIdentifier(
+          this->fileFormatComboBox->currentData().toString().toStdString(),
+          fileFormat)) {
+    // FIXME: When would this error happen? Do we need to handle it?
+    LOG("fileformat::fromIdentifier error");
+  }
+  this->selectedFileFormat = fileFormat;
+}
+
+void PrintInitDialog::on_buttonBox_accepted() {
   if (this->checkBoxRememberSelection->isChecked()) {
     QSettingsCached settings;
-    // TODO: Store values in settings
+
+    const QString defaultPrintServiceString =
+        toString(this->selectedPrintService);
+    settings.setValue(
+        QString::fromStdString(Settings::Settings::defaultPrintService.key()),
+        defaultPrintServiceString);
+
+    settings.setValue(
+        QString::fromStdString(Settings::Settings::printServiceName.key()),
+        this->selectedServiceName);
+
+    const QString fileFormatIdentifier = QString::fromStdString(
+        fileformat::info(this->getFileFormat()).identifier);
+    switch (this->selectedPrintService) {
+    case print_service_t::PRINT_SERVICE:
+      settings.setValue(QString::fromStdString(
+                            Settings::Settings::printServiceFileFormat.key()),
+                        fileFormatIdentifier);
+      break;
+    case print_service_t::OCTOPRINT:
+      settings.setValue(
+          QString::fromStdString(Settings::Settings::octoPrintFileFormat.key()),
+          fileFormatIdentifier);
+    case print_service_t::LOCALSLICER:
+      settings.setValue(QString::fromStdString(
+                            Settings::Settings::localSlicerFileFormat.key()),
+                        fileFormatIdentifier);
+    default:
+      break;
+    }
+    // FIXME: Add support for executable selection
+    // * localSlicerExecutable
   }
   accept();
 }
 
-void PrintInitDialog::on_buttonBox_rejected()
-{
-  reject();
-}
+void PrintInitDialog::on_buttonBox_rejected() { reject(); }
 
-int PrintInitDialog::exec()
-{
+int PrintInitDialog::exec() {
   const QSettingsCached settings;
-  auto service = settings.value(QString::fromStdString(Settings::Settings::defaultPrintService.key())).toString();
-  if (isValidPrintServiceKey(service.toStdString())) {
-    // TODO: Populate file format
+  const QString service = settings.value("printing/printService").toString();
+  const print_service_t printService = fromString(service);
+  if (printService != print_service_t::NONE) {
+    this->selectedPrintService = printService;
+    this->selectedServiceName =
+        settings.value("printing/printServiceName").toString();
+
+    QString fileFormatString;
+    switch (printService) {
+    case print_service_t::PRINT_SERVICE:
+      fileFormatString =
+          settings.value("printing/printServiceFileFormat").toString();
+      break;
+    case print_service_t::OCTOPRINT:
+      fileFormatString =
+          settings.value("printing/octoPrintFileFormat").toString();
+      break;
+    case print_service_t::LOCALSLICER:
+      fileFormatString =
+          settings.value("printing/localSlicerFileFormat").toString();
+      break;
+    default:
+      break;
+    }
+    if (!fileformat::fromIdentifier(fileFormatString.toStdString(),
+                                    this->selectedFileFormat)) {
+      LOG("TODO: Error unsupported file format");
+    }
+
     return QDialog::Accepted;
   }
 
   return QDialog::exec();
 }
 
-print_service_t PrintInitDialog::getServiceType() const
-{
+print_service_t PrintInitDialog::getServiceType() const {
   return this->selectedPrintService;
 }
 
-QString PrintInitDialog::getServiceName() const
-{
+QString PrintInitDialog::getServiceName() const {
   return this->selectedServiceName;
 }
 
-FileFormat PrintInitDialog::getFileFormat() const
-{
-  FileFormat fileFormat = FileFormat::ASCII_STL;
-  if (!fileformat::fromIdentifier(this->fileFormatComboBox->currentData().toString().toStdString(), fileFormat)) {
-    // FIXME: When would this error happen? Do we need to handle it?
-    LOG("fileformat::fromIdentifier error");
-  }
-  return fileFormat;
+FileFormat PrintInitDialog::getFileFormat() const {
+  return this->selectedFileFormat;
 }
