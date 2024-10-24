@@ -2147,25 +2147,6 @@ void MainWindow::action3DPrint()
 #endif // ifdef ENABLE_3D_PRINTING
 }
 
-namespace {
-
-ExportInfo createExportInfo(FileFormat format, const QString& exportFilename, const QString& sourceFilePath)
-{
-  const QFileInfo info(sourceFilePath);
-
-  ExportInfo exportInfo;
-  exportInfo.format = format;
-  exportInfo.fileName = exportFilename.toLocal8Bit().constData();
-  exportInfo.displayName = exportFilename.toUtf8().toStdString();
-  exportInfo.sourceFilePath = sourceFilePath.toUtf8().toStdString();
-  exportInfo.sourceFileName = info.fileName().toUtf8().toStdString();
-  exportInfo.useStdOut = false;
-  exportInfo.options = nullptr;
-  return exportInfo;
-}
-
-}
-
 void MainWindow::sendToOctoPrint()
 {
 #ifdef ENABLE_3D_PRINTING
@@ -2176,20 +2157,22 @@ void MainWindow::sendToOctoPrint()
     return;
   }
 
+  // FIXME: To make this cleaner, we could define which formats are supported by OctoPrint separately,
+  // then using fileformat::fromIdentifier() to convert.
   const QString fileFormat = QString::fromStdString(Settings::Settings::octoPrintFileFormat.value());
-  FileFormat exportFileFormat{FileFormat::STL};
+  FileFormat exportFileFormat{FileFormat::BINARY_STL};
   if (fileFormat == "OBJ") {
     exportFileFormat = FileFormat::OBJ;
   } else if (fileFormat == "OFF") {
     exportFileFormat = FileFormat::OFF;
   } else if (fileFormat == "ASCIISTL") {
-    exportFileFormat = FileFormat::ASCIISTL;
+    exportFileFormat = FileFormat::ASCII_STL;
   } else if (fileFormat == "AMF") {
     exportFileFormat = FileFormat::AMF;
   } else if (fileFormat == "3MF") {
     exportFileFormat = FileFormat::_3MF;
   } else {
-    exportFileFormat = FileFormat::STL;
+    exportFileFormat = FileFormat::BINARY_STL;
   }
 
   QTemporaryFile exportFile{QDir::temp().filePath("OpenSCAD.XXXXXX." + fileFormat.toLower())};
@@ -2208,8 +2191,8 @@ void MainWindow::sendToOctoPrint()
     userFileName = fileInfo.baseName() + "." + fileFormat.toLower();
   }
 
-  ExportInfo exportInfo = createExportInfo(exportFileFormat, exportFileName, activeEditor->filepath);
-  exportFileByName(this->root_geom, exportInfo);
+  ExportInfo exportInfo = {.format = exportFileFormat, .sourceFilePath = activeEditor->filepath.toStdString()};
+  exportFileByName(this->root_geom, exportFileName.toStdString(), exportInfo);
 
   try {
     this->progresswidget = new ProgressWidget(this);
@@ -2239,25 +2222,13 @@ void MainWindow::sendToLocalSlicer()
 #ifdef ENABLE_3D_PRINTING
   const QString slicer = QString::fromStdString(Settings::Settings::localSlicerExecutable.value());
 
-  const QString fileFormat = QString::fromStdString(Settings::Settings::localSlicerFileFormat.value());
-  FileFormat exportFileFormat{FileFormat::STL};
-  if (fileFormat == "OBJ") {
-    exportFileFormat = FileFormat::OBJ;
-  } else if (fileFormat == "OFF") {
-    exportFileFormat = FileFormat::OFF;
-  } else if (fileFormat == "ASCIISTL") {
-    exportFileFormat = FileFormat::ASCIISTL;
-  } else if (fileFormat == "AMF") {
-    exportFileFormat = FileFormat::AMF;
-  } else if (fileFormat == "3MF") {
-    exportFileFormat = FileFormat::_3MF;
-  } else if (fileFormat == "POV") {
-    exportFileFormat = FileFormat::POV;
-  } else {
-    exportFileFormat = FileFormat::STL;
+  const QString fileFormat = QString::fromStdString(Settings::Settings::localSlicerFileFormat.value()).toLower();
+  FileFormat exportFileFormat = FileFormat::BINARY_STL;
+  if (!fileformat::fromIdentifier(fileFormat.toStdString(), exportFileFormat)) {
+    LOG("Invalid suffix %1$s. Defaulting to binary STL.", fileFormat.toStdString());
   }
 
-  const auto tmpPath = QDir::temp().filePath("OpenSCAD.XXXXXX."+fileFormat.toLower());
+  const auto tmpPath = QDir::temp().filePath("OpenSCAD.XXXXXX."+fileFormat);
   auto exportFile = std::make_unique<QTemporaryFile>(tmpPath);
   if (!exportFile->open()) {
     LOG(message_group::Error, "Could not open temporary file '%1$s'.", tmpPath.toStdString());
@@ -2272,11 +2243,11 @@ void MainWindow::sendToLocalSlicer()
     userFileName = exportFileName;
   } else {
     QFileInfo fileInfo{activeEditor->filepath};
-    userFileName = fileInfo.baseName() + fileFormat.toLower();
+    userFileName = fileInfo.baseName() + fileFormat;
   }
 
-  ExportInfo exportInfo = createExportInfo(exportFileFormat, exportFileName, activeEditor->filepath);
-  exportFileByName(this->root_geom, exportInfo);
+  ExportInfo exportInfo = {.format = exportFileFormat, .sourceFilePath = activeEditor->filepath.toStdString()};
+  exportFileByName(this->root_geom, exportFileName.toStdString(), exportInfo);
 
   QProcess process(this);
   process.setProcessChannelMode(QProcess::MergedChannels);
@@ -2310,8 +2281,8 @@ void MainWindow::sendToPrintService()
   const QString exportFilename = exportFile.fileName();
 
   //Render the stl to a temporary file:
-  ExportInfo exportInfo = createExportInfo(FileFormat::STL, exportFilename, activeEditor->filepath);
-  exportFileByName(this->root_geom, exportInfo);
+  ExportInfo exportInfo = {.format = FileFormat::BINARY_STL, .sourceFilePath = activeEditor->filepath.toStdString()};
+  exportFileByName(this->root_geom, exportFilename.toStdString(), exportInfo);
 
   //Create a name that the order process will use to refer to the file. Base it off of the project name
   QString userFacingName = "unsaved.stl";
@@ -2942,11 +2913,11 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
   }
   this->export_paths[suffix] = exportFilename;
 
-  ExportInfo exportInfo = createExportInfo(format, exportFilename, activeEditor->filepath);
+  ExportInfo exportInfo = {.format = format, .sourceFilePath = activeEditor->filepath.toStdString()};
   // Add options
   exportInfo.options = options;
 
-  bool exportResult = exportFileByName(this->root_geom, exportInfo);
+  bool exportResult = exportFileByName(this->root_geom, exportFilename.toStdString(), exportInfo);
 
   if (exportResult) fileExportedMessage(type_name, exportFilename);
   clearCurrentOutput();
@@ -2955,9 +2926,9 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 void MainWindow::actionExportSTL()
 {
   if (Settings::Settings::exportUseAsciiSTL.value()) {
-    actionExport(FileFormat::ASCIISTL, "ASCIISTL", ".stl", 3);
+    actionExport(FileFormat::ASCII_STL, "ASCIISTL", ".stl", 3);
   } else {
-    actionExport(FileFormat::STL, "STL", ".stl", 3);
+    actionExport(FileFormat::BINARY_STL, "STL", ".stl", 3);
   }
 }
 
@@ -3016,7 +2987,7 @@ void MainWindow::actionExportPDF()
                                                                QString::fromStdString(paperSizeStrings[static_cast<int>(exportPdfOptions.paperSize)])).toString())); // enum map
   exportPdfDialog->setOrientation(orientationsString2Enum(settings.value("exportPdfOpts/orientation",
                                                                          QString::fromStdString(paperOrientationsStrings[static_cast<int>(exportPdfOptions.Orientation)])).toString())); // enum map
-  exportPdfDialog->setShowDsnFn(settings.value("exportPdfOpts/showDsgnFN", exportPdfOptions.showDsgnFN).toBool());
+  exportPdfDialog->setShowDesignFilename(settings.value("exportPdfOpts/showDsgnFN", exportPdfOptions.showDesignFilename).toBool());
   exportPdfDialog->setShowScale(settings.value("exportPdfOpts/showScale", exportPdfOptions.showScale).toBool());
   exportPdfDialog->setShowScaleMsg(settings.value("exportPdfOpts/showScaleMsg", exportPdfOptions.showScaleMsg).toBool());
   exportPdfDialog->setShowGrid(settings.value("exportPdfOpts/showGrid", exportPdfOptions.showGrid).toBool());
@@ -3029,7 +3000,7 @@ void MainWindow::actionExportPDF()
 
   exportPdfOptions.paperSize = exportPdfDialog->getPaperSize();
   exportPdfOptions.Orientation = exportPdfDialog->getOrientation();
-  exportPdfOptions.showDsgnFN = exportPdfDialog->getShowDsnFn();
+  exportPdfOptions.showDesignFilename = exportPdfDialog->getShowDesignFilename();
   exportPdfOptions.showScale = exportPdfDialog->getShowScale();
   exportPdfOptions.showScaleMsg = exportPdfDialog->getShowScaleMsg();
   exportPdfOptions.showGrid = exportPdfDialog->getShowGrid();
@@ -3037,7 +3008,7 @@ void MainWindow::actionExportPDF()
 
   settings.setValue("exportPdfOpts/paperSize", QString::fromStdString(paperSizeStrings[static_cast<int>(exportPdfDialog->getPaperSize())]));
   settings.setValue("exportPdfOpts/orientation", QString::fromStdString(paperOrientationsStrings[static_cast<int>(exportPdfDialog->getOrientation())]));
-  settings.setValue("exportPdfOpts/showDsgnFN", exportPdfDialog->getShowDsnFn());
+  settings.setValue("exportPdfOpts/showDsgnFN", exportPdfDialog->getShowDesignFilename());
   settings.setValue("exportPdfOpts/showScale", exportPdfDialog->getShowScale());
   settings.setValue("exportPdfOpts/showScaleMsg", exportPdfDialog->getShowScaleMsg());
   settings.setValue("exportPdfOpts/showGrid", exportPdfDialog->getShowGrid());

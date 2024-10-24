@@ -33,12 +33,14 @@
 #include <functional>
 #include <cassert>
 #include <map>
-#include <iostream>
 #include <cstdint>
 #include <memory>
 #include <cstddef>
 #include <fstream>
 #include <vector>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <iostream>
 
 #ifdef _WIN32
 #include <io.h>
@@ -47,6 +49,78 @@
 
 #define QUOTE(x__) # x__
 #define QUOTED(x__) QUOTE(x__)
+
+namespace {
+
+struct FileFormatInfo {
+  FileFormat format;
+  std::string identifier;
+  std::string suffix;
+  std::string description;
+};
+
+std::unordered_map<std::string, FileFormatInfo> &identifierToInfo() {
+  static auto identifierToInfo = std::make_unique<std::unordered_map<std::string, FileFormatInfo>>();
+  return *identifierToInfo;
+}
+
+std::unordered_map<FileFormat, FileFormatInfo> &fileFormatToInfo() {
+  static auto fileFormatToInfo = std::make_unique<std::unordered_map<FileFormat, FileFormatInfo>>();
+  return *fileFormatToInfo;
+}
+
+void add_item(const FileFormatInfo& info) {
+
+  identifierToInfo()[info.identifier] = info;
+  fileFormatToInfo()[info.format] = info;
+}
+
+bool initialized = false;
+bool initialize() {
+  add_item({FileFormat::ASCII_STL, "asciistl", "stl", "STL (ascii)"});
+  add_item({FileFormat::BINARY_STL, "binstl", "stl", "STL (binary)"});
+  add_item({FileFormat::OBJ, "obj", "obj", "OBJ"});
+  add_item({FileFormat::OFF, "off", "off", "OFF"});
+  add_item({FileFormat::WRL, "wrl", "wrl", "VRML"});
+  add_item({FileFormat::AMF, "amf", "amf", "AMF"});
+  add_item({FileFormat::_3MF, "3mf", "3mf", "3MF"});
+  add_item({FileFormat::DXF, "dxf", "dxf", "DXF"});
+  add_item({FileFormat::SVG, "svg", "svg", "SVG"});
+  add_item({FileFormat::NEFDBG, "nefdbg", "nefdbg", "nefdbg"});
+  add_item({FileFormat::NEF3, "nef3", "nef3", "nef3"});
+  add_item({FileFormat::CSG, "csg", "csg", "CSG"});
+  add_item({FileFormat::PARAM, "param", "param", "param"});
+  add_item({FileFormat::AST, "ast", "ast", "AST"});
+  add_item({FileFormat::TERM, "term", "term", "term"});
+  add_item({FileFormat::ECHO, "echo", "echo", "echo"});
+  add_item({FileFormat::PNG, "png", "png", "PNG"});
+  add_item({FileFormat::PDF, "pdf", "pdf", "PDF"});
+  add_item({FileFormat::POV, "pov", "pov", "POV"});
+
+  // Alias
+  identifierToInfo()["stl"] = identifierToInfo()["asciistl"];
+
+  return true;
+}
+
+}  // namespace
+
+namespace fileformat {
+
+bool fromIdentifier(const std::string& suffix, FileFormat& format)
+{
+  if (!initialized) initialized = initialize();
+  auto it = identifierToInfo().find(suffix);
+  if (it == identifierToInfo().end()) return false;
+  format = it->second.format;
+  return true;
+}
+
+const std::string& toSuffix(FileFormat& format)
+{
+  if (!initialized) initialized = initialize();
+  return fileFormatToInfo()[format].suffix;
+}
 
 bool canPreview(const FileFormat format) {
   return (format == FileFormat::AST ||
@@ -58,8 +132,8 @@ bool canPreview(const FileFormat format) {
 }
 
 bool is3D(const FileFormat format) {
-return format == FileFormat::ASCIISTL ||
-  format == FileFormat::STL ||
+return format == FileFormat::ASCII_STL ||
+  format == FileFormat::BINARY_STL ||
   format == FileFormat::OBJ ||
   format == FileFormat::OFF ||
   format == FileFormat::WRL ||
@@ -76,13 +150,15 @@ bool is2D(const FileFormat format) {
     format == FileFormat::PDF;
 }
 
+}  // namespace FileFormat
+
 void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
 {
   switch (exportInfo.format) {
-  case FileFormat::ASCIISTL:
+  case FileFormat::ASCII_STL:
     export_stl(root_geom, output, false);
     break;
-  case FileFormat::STL:
+  case FileFormat::BINARY_STL:
     export_stl(root_geom, output, true);
     break;
   case FileFormat::OBJ:
@@ -125,7 +201,7 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& 
   }
 }
 
-bool exportFileByNameStdout(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
+bool exportFileStdOut(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
 #ifdef _WIN32
   _setmode(_fileno(stdout), _O_BINARY);
@@ -134,15 +210,16 @@ bool exportFileByNameStdout(const std::shared_ptr<const Geometry>& root_geom, co
   return true;
 }
 
-bool exportFileByNameStream(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
+bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo)
 {
   std::ios::openmode mode = std::ios::out | std::ios::trunc;
-  if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::STL || exportInfo.format == FileFormat::PDF) {
+  if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::BINARY_STL || exportInfo.format == FileFormat::PDF) {
     mode |= std::ios::binary;
   }
-  std::ofstream fstream(exportInfo.fileName, mode);
+  const boost::filesystem::path path(filename);
+  boost::filesystem::ofstream fstream(path, mode);
   if (!fstream.is_open()) {
-    LOG(_("Can't open file \"%1$s\" for export"), exportInfo.displayName);
+    LOG(_("Can't open file \"%1$s\" for export"), filename);
     return false;
   } else {
     bool onerror = false;
@@ -158,18 +235,9 @@ bool exportFileByNameStream(const std::shared_ptr<const Geometry>& root_geom, co
       onerror = true;
     }
     if (onerror) {
-      LOG(message_group::Error, _("\"%1$s\" write error. (Disk full?)"), exportInfo.displayName);
+      LOG(message_group::Error, _("\"%1$s\" write error. (Disk full?)"), filename);
     }
     return !onerror;
-  }
-}
-
-bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
-{
-  if (exportInfo.useStdOut) {
-    return exportFileByNameStdout(root_geom, exportInfo);
-  } else {
-    return exportFileByNameStream(root_geom, exportInfo);
   }
 }
 
