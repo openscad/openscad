@@ -52,8 +52,11 @@ public slots:
   void on_buttonBox_accepted();
   void on_buttonBox_rejected();
 private:
-  QString htmlTemplate;
-  print_service_t selectedPrintService = print_service_t::NONE;
-  QString selectedServiceName = "";
-  FileFormat selectedFileFormat = FileFormat::ASCII_STL;
-};
+  void populateFileFormatComboBox(const std::vector<FileFormat> &fileFormats,
+                                  FileFormat currentFormat);
+
+    QString htmlTemplate;
+    print_service_t selectedPrintService = print_service_t::NONE;
+    QString selectedServiceName = "";
+    FileFormat selectedFileFormat = FileFormat::ASCII_STL;
+  };

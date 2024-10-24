@@ -35,6 +35,7 @@
 #include <QNetworkRequest>
 #include <QStringList>
 
+#include "export.h"
 #include "utils/printutils.h"
 
 std::mutex PrintService::printServiceMutex;
@@ -111,10 +112,16 @@ bool PrintService::init(const QJsonObject &serviceObject) {
   infoHtml = serviceObject.value("infoHtml").toString();
   infoUrl = serviceObject.value("infoUrl").toString();
   for (const auto& variant : serviceObject.value("fileFormats").toArray().toVariantList()) {
-    fileFormats.append(variant.toString());
+    FileFormat fileFormat;
+    if (fileformat::fromIdentifier(variant.toString().toStdString(), fileFormat)) {
+      fileFormats.push_back(fileFormat);
+    } 
+    // TODO: else print warning?
   }
+  // For legacy reasons; default to STL
   if (fileFormats.empty()) {
-    fileFormats << "asciistl" << "binstl";
+    fileFormats.push_back(FileFormat::ASCII_STL);
+    fileFormats.push_back(FileFormat::BINARY_STL);
   }
   return !displayName.isEmpty() && !apiUrl.isEmpty() && !infoHtml.isEmpty() &&
          !infoUrl.isEmpty() && fileSizeLimitMB != 0;

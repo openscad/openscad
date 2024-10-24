@@ -1,4 +1,5 @@
 #include "gui/Settings.h"
+#include "io/export.h"
 #include "glview/RenderSettings.h"
 #include "utils/printutils.h"
 #include "gui/input/InputEventMapper.h"
@@ -6,7 +7,9 @@
 #include <array>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/range/adaptors.hpp>
 #include <cstddef>
+#include <iterator>
 #include <string>
 #include <utility>
 #include <vector>
@@ -135,7 +138,21 @@ SettingsEntryString Settings::octoPrintSlicerProfile("printing", "octoPrintSlice
 SettingsEntryString Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", "");
 
 SettingsEntryString Settings::localSlicerExecutable("printing", "localSlicerExecutable", "");
-SettingsEntryEnum Settings::localSlicerFileFormat("printing", "localSlicerFileFormat", {{"STL", "STL"}, {"OFF", "OFF"}, {"AMF", "AMF"}, {"3MF", "3MF"}, {"POV", "POV"}}, "STL");
+SettingsEntryEnum Settings::localSlicerFileFormat(
+    "printing", "localSlicerFileFormat",
+    []() {
+      std::vector<SettingsEntryEnum::Item> items;
+      boost::copy(
+          fileformat::all() | boost::adaptors::filtered(fileformat::is3D) |
+              boost::adaptors::transformed([](const auto &fileFormat) {
+                const FileFormatInfo &info = fileformat::info(fileFormat);
+                return SettingsEntryEnum::Item{info.identifier,
+                                               info.description};
+              }),
+          std::back_inserter(items));
+      return items;
+    }(),
+    fileformat::info(FileFormat::ASCII_STL).description);
 
 SettingsEntryBool Settings::exportUseAsciiSTL("export", "useAsciiSTL", false);
 SettingsEntryEnum Settings::renderBackend3D("advanced", "renderBackend3D", {{"CGAL", "CGAL (old/slow)"}, {"Manifold", "Manifold (new/fast)"}}, "CGAL");

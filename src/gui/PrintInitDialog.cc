@@ -62,6 +62,20 @@ print_service_t fromString(const QString &printServiceType) {
 
 } // namespace
 
+void PrintInitDialog::populateFileFormatComboBox(
+    const std::vector<FileFormat> &fileFormats, FileFormat currentFormat) {
+  this->fileFormatComboBox->clear();
+  for (const auto &fileFormat : fileFormats) {
+    const FileFormatInfo& info = fileformat::info(fileFormat);
+    this->fileFormatComboBox->addItem(QString::fromStdString(info.description),
+                                      QString::fromStdString(info.identifier));
+    if (fileFormat == currentFormat) {
+      this->fileFormatComboBox->setCurrentIndex(
+          this->fileFormatComboBox->count() - 1);
+    }
+  }
+}
+
 PrintInitDialog::PrintInitDialog() {
   setupUi(this);
 
@@ -86,19 +100,7 @@ PrintInitDialog::PrintInitDialog() {
           currentFormat);
 
       this->textBrowser->setHtml(printService->getInfoHtml());
-      this->fileFormatComboBox->clear();
-      for (const auto &identifier : printService->getFileFormats()) {
-        FileFormat fileFormat;
-        fileformat::fromIdentifier(identifier.toStdString(), fileFormat);
-
-        this->fileFormatComboBox->addItem(
-            QString::fromStdString(fileformat::info(fileFormat).description),
-            identifier);
-        if (fileFormat == currentFormat) {
-          this->fileFormatComboBox->setCurrentIndex(
-              this->fileFormatComboBox->count() - 1);
-        }
-      }
+      this->populateFileFormatComboBox(printService->getFileFormats(), currentFormat);
 
       this->selectedPrintService = print_service_t::PRINT_SERVICE;
       this->selectedServiceName = QString::fromStdString(key);
@@ -113,17 +115,19 @@ PrintInitDialog::PrintInitDialog() {
 }
 
 void PrintInitDialog::on_octoPrintButton_clicked() {
+  const QSettingsCached settings;
+
   this->textBrowser->setSource(QUrl{"qrc:/html/OctoPrintInfo.html"});
   this->fileFormatComboBox->clear();
 
-  for (const auto fileFormat :
-       {FileFormat::BINARY_STL, FileFormat::ASCII_STL, FileFormat::_3MF,
-        FileFormat::AMF, FileFormat::OFF}) {
-    this->fileFormatComboBox->addItem(
-        QString::fromStdString(fileformat::info(fileFormat).description),
-        QString::fromStdString(fileformat::info(fileFormat).identifier));
-  }
-  // TODO: Use format stored in settings as selected value
+  FileFormat currentFormat = FileFormat::ASCII_STL;
+  fileformat::fromIdentifier(
+      settings.value("printing/octoPrintFileFormat").toString().toStdString(),
+      currentFormat);
+  this->populateFileFormatComboBox({FileFormat::BINARY_STL,
+                                    FileFormat::ASCII_STL, FileFormat::_3MF,
+                                    FileFormat::AMF, FileFormat::OFF},
+                                   currentFormat);
 
   this->selectedPrintService = print_service_t::OCTOPRINT;
   this->selectedServiceName = "";
@@ -134,20 +138,21 @@ void PrintInitDialog::on_octoPrintButton_clicked() {
 }
 
 void PrintInitDialog::on_LocalSlicerButton_clicked() {
+  const QSettingsCached settings;
+
   // TODO: Instead of forcing people to use Preferences, we should add UI here
-  // to:
-  // 2. Select external program
+  // to select external program.
   this->textBrowser->setSource(QUrl{"qrc:/html/LocalSlicerInfo.html"});
 
-  this->fileFormatComboBox->clear();
-  for (const auto fileFormat : fileformat::all()) {
-    if (fileformat::is3D(fileFormat)) {
-      this->fileFormatComboBox->addItem(
-          QString::fromStdString(fileformat::info(fileFormat).description),
-          QString::fromStdString(fileformat::info(fileFormat).identifier));
-    }
-  }
-  // TODO: Use format stored in settings as selected value
+  FileFormat currentFormat = FileFormat::ASCII_STL;
+  fileformat::fromIdentifier(
+      settings.value("printing/localSlicerFileFormat").toString().toStdString(),
+      currentFormat);
+  std::vector<FileFormat> localSlicerFileFormats;
+  std::copy_if(fileformat::all().begin(), fileformat::all().end(),
+               std::back_inserter(localSlicerFileFormats), fileformat::is3D);
+  this->populateFileFormatComboBox(localSlicerFileFormats, currentFormat);
+
   this->selectedPrintService = print_service_t::LOCALSLICER;
   this->selectedServiceName = "";
 
