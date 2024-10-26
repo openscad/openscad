@@ -49,7 +49,7 @@ public:
 public slots:
   void on_octoPrintButton_clicked();
   void on_LocalSlicerButton_clicked();
-  void on_fileFormatComboBox_activated(int);
+  void on_fileFormatComboBox_currentIndexChanged(int);
   void on_buttonBox_accepted();
   void on_buttonBox_rejected();
 private:

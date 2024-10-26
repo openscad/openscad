@@ -364,9 +364,13 @@ void Preferences::setup3DPrintPage()
       QString::fromStdString(Settings::Settings::printServiceName.value());
 
   instance->comboBoxDefaultPrintService->clear();
-// TODO: Set up a map from service id to displayname and reference this below
+  const std::unordered_map<std::string, QString> services = {
+      {"NONE", _("NONE")},
+      {"OCTOPRINT", _("OctoPrint")},
+      {"LOCALSLICER", _("Local Slicer")},
+  };
 
-  instance->comboBoxDefaultPrintService->addItem(_("NONE"),
+  instance->comboBoxDefaultPrintService->addItem(services.at("NONE"),
                                                  QStringList{"NONE", ""});
   for (const auto &printServiceItem : PrintService::getPrintServices()) {
     const auto &key = printServiceItem.first;
@@ -380,13 +384,15 @@ void Preferences::setup3DPrintPage()
           QString(printService->getDisplayName()));
     }
   }
-  instance->comboBoxDefaultPrintService->addItem(_("OctoPrint"),
+  instance->comboBoxDefaultPrintService->addItem(services.at("OCTOPRINT"),
                                                  QStringList{"OCTOPRINT", ""});
-  instance->comboBoxDefaultPrintService->addItem(_("Local Slicer"),
+  instance->comboBoxDefaultPrintService->addItem(services.at("LOCALSLICER"),
                                                  QStringList{"LOCALSLICER", ""});
 
-  instance->comboBoxDefaultPrintService->setCurrentText(
-      QString::fromStdString(Settings::Settings::defaultPrintService.value()));
+  auto it = services.find(currentPrintService);
+  if (it != services.end()) {
+    instance->comboBoxDefaultPrintService->setCurrentText(it->second);
+  }
 }
 
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()

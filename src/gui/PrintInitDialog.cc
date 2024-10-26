@@ -147,15 +147,18 @@ void PrintInitDialog::on_LocalSlicerButton_clicked() {
   PRINTD("LOCALSLICER");
 }
 
-void PrintInitDialog::on_fileFormatComboBox_activated(int) {
-  FileFormat fileFormat = FileFormat::ASCII_STL;
-  if (!fileformat::fromIdentifier(
-          this->fileFormatComboBox->currentData().toString().toStdString(),
-          fileFormat)) {
-    // FIXME: When would this error happen? Do we need to handle it?
-    LOG("fileformat::fromIdentifier error");
+void PrintInitDialog::on_fileFormatComboBox_currentIndexChanged(int index) {
+  if (index >= 0)  {
+    FileFormat fileFormat = FileFormat::ASCII_STL;
+    std::string identifier =
+        this->fileFormatComboBox->currentData().toString().toStdString();
+    if (!fileformat::fromIdentifier(identifier, fileFormat)) {
+      // FIXME: When would this error happen? Do we need to handle it?
+      LOG("fileformat::fromIdentifier error: identifier '%2$s' not recognized (combobox index %2$d)",
+          identifier, index);
+    }
+    this->selectedFileFormat = fileFormat;
   }
-  this->selectedFileFormat = fileFormat;
 }
 
 void PrintInitDialog::on_buttonBox_accepted() {
