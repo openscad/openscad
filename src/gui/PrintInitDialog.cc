@@ -118,16 +118,8 @@ void PrintInitDialog::on_octoPrintButton_clicked() {
   const QSettingsCached settings;
 
   this->textBrowser->setSource(QUrl{"qrc:/html/OctoPrintInfo.html"});
-  this->fileFormatComboBox->clear();
-
-  FileFormat currentFormat = FileFormat::ASCII_STL;
-  fileformat::fromIdentifier(
-      settings.value("printing/octoPrintFileFormat").toString().toStdString(),
-      currentFormat);
-  this->populateFileFormatComboBox({FileFormat::BINARY_STL,
-                                    FileFormat::ASCII_STL, FileFormat::_3MF,
-                                    FileFormat::AMF, FileFormat::OFF},
-                                   currentFormat);
+  initComboBox(this->fileFormatComboBox,
+               Settings::Settings::octoPrintFileFormat);
 
   this->selectedPrintService = print_service_t::OCTOPRINT;
   this->selectedServiceName = "";
@@ -144,14 +136,8 @@ void PrintInitDialog::on_LocalSlicerButton_clicked() {
   // to select external program.
   this->textBrowser->setSource(QUrl{"qrc:/html/LocalSlicerInfo.html"});
 
-  FileFormat currentFormat = FileFormat::ASCII_STL;
-  fileformat::fromIdentifier(
-      settings.value("printing/localSlicerFileFormat").toString().toStdString(),
-      currentFormat);
-  std::vector<FileFormat> localSlicerFileFormats;
-  std::copy_if(fileformat::all().begin(), fileformat::all().end(),
-               std::back_inserter(localSlicerFileFormats), fileformat::is3D);
-  this->populateFileFormatComboBox(localSlicerFileFormats, currentFormat);
+  initComboBox(this->fileFormatComboBox,
+               Settings::Settings::localSlicerFileFormat);
 
   this->selectedPrintService = print_service_t::LOCALSLICER;
   this->selectedServiceName = "";

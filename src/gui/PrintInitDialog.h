@@ -27,6 +27,7 @@
 #pragma once
 
 #include <QDialog>
+#include "gui/InitConfigurator.h"
 #include "gui/qtgettext.h"
 #include "ui_PrintInitDialog.h"
 
@@ -34,7 +35,7 @@
 
 enum class print_service_t { NONE, PRINT_SERVICE, OCTOPRINT, LOCALSLICER };
 
-class PrintInitDialog : public QDialog, public Ui::PrintInitDialog
+class PrintInitDialog : public QDialog, public Ui::PrintInitDialog, public InitConfigurator
 {
   Q_OBJECT;
 public:

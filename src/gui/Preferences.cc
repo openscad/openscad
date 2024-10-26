@@ -364,6 +364,8 @@ void Preferences::setup3DPrintPage()
       QString::fromStdString(Settings::Settings::printServiceName.value());
 
   instance->comboBoxDefaultPrintService->clear();
+// TODO: Set up a map from service id to displayname and reference this below
+
   instance->comboBoxDefaultPrintService->addItem(_("NONE"),
                                                  QStringList{"NONE", ""});
   for (const auto &printServiceItem : PrintService::getPrintServices()) {

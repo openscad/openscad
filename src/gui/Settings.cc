@@ -130,12 +130,28 @@ SettingsEntryString Settings::printServiceFileFormat("printing", "printServiceFi
 
 SettingsEntryString Settings::octoPrintUrl("printing", "octoPrintUrl", "");
 SettingsEntryString Settings::octoPrintApiKey("printing", "octoPrintApiKey", "");
-SettingsEntryEnum Settings::octoPrintFileFormat("printing", "octoPrintFileFormat", {{"STL", "STL"}, {"OFF", "OFF"}, {"AMF", "AMF"}, {"3MF", "3MF"}}, "STL");
 SettingsEntryEnum Settings::octoPrintAction("printing", "octoPrintAction", {{"upload", _("Upload only")}, {"slice", _("Upload & Slice")}, {"select", _("Upload, Slice & Select for printing")}, {"print", _("Upload, Slice & Start printing")}}, "upload");
 SettingsEntryString Settings::octoPrintSlicerEngine("printing", "octoPrintSlicerEngine", "");
 SettingsEntryString Settings::octoPrintSlicerEngineDesc("printing", "octoPrintSlicerEngineDesc", "");
 SettingsEntryString Settings::octoPrintSlicerProfile("printing", "octoPrintSlicerProfile", "");
 SettingsEntryString Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", "");
+SettingsEntryEnum Settings::octoPrintFileFormat(
+    "printing", "octoPrintFileFormat",
+    []() {
+      std::vector<SettingsEntryEnum::Item> items;
+      boost::copy(std::vector{FileFormat::ASCII_STL, FileFormat::BINARY_STL,
+                              FileFormat::_3MF, FileFormat::OFF} |
+                      boost::adaptors::filtered(fileformat::is3D) |
+                      boost::adaptors::transformed([](const auto &fileFormat) {
+                        const FileFormatInfo &info =
+                            fileformat::info(fileFormat);
+                        return SettingsEntryEnum::Item{info.identifier,
+                                                       info.description};
+                      }),
+                  std::back_inserter(items));
+      return items;
+    }(),
+    fileformat::info(FileFormat::ASCII_STL).description);
 
 SettingsEntryString Settings::localSlicerExecutable("printing", "localSlicerExecutable", "");
 SettingsEntryEnum Settings::localSlicerFileFormat(
