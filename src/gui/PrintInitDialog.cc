@@ -66,7 +66,7 @@ void PrintInitDialog::populateFileFormatComboBox(
     const std::vector<FileFormat> &fileFormats, FileFormat currentFormat) {
   this->fileFormatComboBox->clear();
   for (const auto &fileFormat : fileFormats) {
-    const FileFormatInfo& info = fileformat::info(fileFormat);
+    const FileFormatInfo &info = fileformat::info(fileFormat);
     this->fileFormatComboBox->addItem(QString::fromStdString(info.description),
                                       QString::fromStdString(info.identifier));
     if (fileFormat == currentFormat) {
@@ -100,7 +100,8 @@ PrintInitDialog::PrintInitDialog() {
           currentFormat);
 
       this->textBrowser->setHtml(printService->getInfoHtml());
-      this->populateFileFormatComboBox(printService->getFileFormats(), currentFormat);
+      this->populateFileFormatComboBox(printService->getFileFormats(),
+                                       currentFormat);
 
       this->selectedPrintService = print_service_t::PRINT_SERVICE;
       this->selectedServiceName = QString::fromStdString(key);
@@ -120,6 +121,8 @@ void PrintInitDialog::on_octoPrintButton_clicked() {
   this->textBrowser->setSource(QUrl{"qrc:/html/OctoPrintInfo.html"});
   initComboBox(this->fileFormatComboBox,
                Settings::Settings::octoPrintFileFormat);
+  this->on_fileFormatComboBox_currentIndexChanged(
+      this->fileFormatComboBox->currentIndex());
 
   this->selectedPrintService = print_service_t::OCTOPRINT;
   this->selectedServiceName = "";
@@ -138,6 +141,8 @@ void PrintInitDialog::on_LocalSlicerButton_clicked() {
 
   initComboBox(this->fileFormatComboBox,
                Settings::Settings::localSlicerFileFormat);
+  this->on_fileFormatComboBox_currentIndexChanged(
+      this->fileFormatComboBox->currentIndex());
 
   this->selectedPrintService = print_service_t::LOCALSLICER;
   this->selectedServiceName = "";
@@ -148,13 +153,14 @@ void PrintInitDialog::on_LocalSlicerButton_clicked() {
 }
 
 void PrintInitDialog::on_fileFormatComboBox_currentIndexChanged(int index) {
-  if (index >= 0)  {
+  if (index >= 0) {
     FileFormat fileFormat = FileFormat::ASCII_STL;
     std::string identifier =
         this->fileFormatComboBox->currentData().toString().toStdString();
     if (!fileformat::fromIdentifier(identifier, fileFormat)) {
       // FIXME: When would this error happen? Do we need to handle it?
-      LOG("fileformat::fromIdentifier error: identifier '%2$s' not recognized (combobox index %2$d)",
+      LOG("fileformat::fromIdentifier error: identifier '%2$s' not recognized "
+          "(combobox index %2$d)",
           identifier, index);
     }
     this->selectedFileFormat = fileFormat;
