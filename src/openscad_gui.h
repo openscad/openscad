@@ -27,16 +27,9 @@
 #pragma once
 
 #include <string>
-#include <utility>
+#include <vector>
 
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
 
-extern bool parse(class SourceFile *& file, const std::string& text, const std::string& filename, const std::string& mainFile, int debug);
 
-extern std::string commandline_commands;
-
-// Custom argument parser
-std::pair<std::string, std::string> customSyntax(const std::string& s);
-
-void localization_init();
-void set_render_color_scheme(const std::string& color_scheme, const bool exit_if_not_found);
+int gui(std::vector<std::string>& inputFiles, const boost::filesystem::path& original_path, int argc, char **argv);
