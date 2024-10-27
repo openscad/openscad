@@ -228,7 +228,7 @@ void set_render_color_scheme(const std::string& color_scheme, const bool exit_if
  */
 void localization_init() {
   fs::path po_dir(PlatformUtils::resourcePath("locale"));
-  std::string locale_path(po_dir.string());
+  const std::string& locale_path(po_dir.string());
 
   if (fs::is_directory(locale_path)) {
     setlocale(LC_ALL, "");
