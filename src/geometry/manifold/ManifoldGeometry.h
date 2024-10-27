@@ -7,7 +7,7 @@
 #include <memory>
 #include <glm/glm.hpp>
 #include "geometry/linalg.h"
-#include <manifold/manifold.h>
+#include "manifold/manifold.h"
 #include <cstddef>
 #include <map>
 #include <set>

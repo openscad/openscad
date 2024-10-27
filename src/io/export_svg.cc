@@ -52,7 +52,7 @@ static void append_svg(const Polygon2d& poly, std::ostream& output)
     output << " z\n";
   }
 
-  if (Feature::ExperimentalManifold.is_enabled()) {
+  if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
     auto colorScheme = ColorMap::inst()->findColorScheme(RenderSettings::inst()->colorscheme);
     const auto & polyColor = poly.getColor();
     const auto color = polyColor.isValid() ? polyColor : ColorMap::getColor(*colorScheme, RenderColor::CGAL_FACE_FRONT_COLOR);

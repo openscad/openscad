@@ -93,7 +93,7 @@ static bool append_polyset(std::shared_ptr<const PolySet> ps, Lib3MF::PWrapper& 
       return true;
     };
 
-    auto colorsEnabled = Feature::ExperimentalManifold.is_enabled();
+    auto colorsEnabled = RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend;
     Lib3MF_uint32 matGroupResId = 0;
     std::vector<Lib3MF_uint32> color_index_to_property_id;
 

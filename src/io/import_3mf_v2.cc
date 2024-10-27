@@ -29,6 +29,7 @@
 #include "geometry/PolySetBuilder.h"
 #include "geometry/PolySetUtils.h"
 #include "geometry/Geometry.h"
+#include "glview/RenderSettings.h"
 #include "utils/printutils.h"
 #include "utils/version_helper.h"
 #include "core/AST.h"
@@ -48,7 +49,7 @@ namespace {
       Lib3MF_uint64 triangle_count = object->GetTriangleCount();
       if (!vertex_count || !triangle_count) return nullptr;
 
-      auto colorsEnabled = Feature::ExperimentalManifold.is_enabled();
+      auto colorsEnabled = RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend;
       const Color4f invalidColor;
 
       Lib3MF_uint32 objectLevelResourceId = 0;

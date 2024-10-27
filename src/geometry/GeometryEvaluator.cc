@@ -508,7 +508,7 @@ void GeometryEvaluator::addToParent(const State& state,
 
 Response GeometryEvaluator::visit(State& state, const ColorNode& node)
 {
-  if (!Feature::ExperimentalManifold.is_enabled()) {
+  if (RenderSettings::inst()->backend3D != RenderBackend3D::ManifoldBackend) {
     return GeometryEvaluator::visit(state, (const AbstractNode&)node);
   }
     
@@ -834,7 +834,7 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
   if (state.isPostfix()) {
     std::shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      if (Feature::ExperimentalManifold.is_enabled()) {
+      if (RenderSettings::inst()->backend3D == RenderBackend3D::ManifoldBackend) {
         // Our 2D / Clipper operations don't preserve colors yet, so we
         // extrude children *then* union them in 3D space.
         auto children = collectChildren2D(node);
