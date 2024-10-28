@@ -52,7 +52,6 @@ static std::string lookupResourcesPath()
   const char *searchpath[] = {
     RESOURCE_FOLDER("../share/openscad"),
     RESOURCE_FOLDER("../../share/openscad"),
-    "usr/share/openscad", // AppImage, no build suffix
     ".",
     "..",
     "../..",
