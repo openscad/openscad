@@ -58,7 +58,7 @@ createPrintServices() {
   // TODO: Where to call this, will we need a mutex?
   try {
     auto networkRequest = NetworkRequest<void>{
-        QUrl{"https://files.openscad.org/print-service.json"}, {200}, 30};
+        QUrl{"https://app.openscad.org/print-service.json"}, {200}, 30};
     networkRequest.execute(
         [](QNetworkRequest &request) {
           request.setHeader(QNetworkRequest::ContentTypeHeader,
