@@ -8,122 +8,122 @@ global_settings { assumed_gamma 1.0 }
 #declare MATERIAL=finish { specular 0.5 roughness 0.001 reflection{0 0.63 fresnel} ambient 0 diffuse 0.6 conserve_energy }
 #declare MATERIAL_INT=interior{ior 1.32}
 polygon { 4, 
-<-10, 0, -0>, <-10, 0, -10>, <-10, 10, -10>, <-10, 0, -0>
+<-10, 0, 0>, <-10, 0, 10>, <-10, 10, 10>, <-10, 0, 0>
 texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<-10, 0, -0>, <-10, 10, -0>, <0, 10, -0>, <-10, 0, -0>
+<-10, 0, 0>, <-10, 10, 0>, <0, 10, 0>, <-10, 0, 0>
 texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<-10, 0, -0>, <-10, 10, -10>, <-10, 10, -0>, <-10, 0, -0>
+<-10, 0, 0>, <-10, 10, 10>, <-10, 10, 0>, <-10, 0, 0>
 texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<-10, 0, -0>, <0, 0, -0>, <0, 0, -10>, <-10, 0, -0>
+<-10, 0, 0>, <0, 0, 0>, <0, 0, 10>, <-10, 0, 0>
 texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<-10, 0, -0>, <0, 0, -10>, <-10, 0, -10>, <-10, 0, -0>
+<-10, 0, 0>, <0, 0, 10>, <-10, 0, 10>, <-10, 0, 0>
 texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<-10, 0, -0>, <0, 10, -0>, <0, 0, -0>, <-10, 0, -0>
+<-10, 0, 0>, <0, 10, 0>, <0, 0, 0>, <-10, 0, 0>
 texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<-10, 0, -10>, <0, 0, -10>, <-10, 10, -10>, <-10, 0, -10>
+<-10, 0, 10>, <0, 0, 10>, <-10, 10, 10>, <-10, 0, 10>
 texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<-10, 10, -0>, <-10, 10, -10>, <0, 10, -0>, <-10, 10, -0>
+<-10, 10, 0>, <-10, 10, 10>, <0, 10, 0>, <-10, 10, 0>
 texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<-10, 10, -10>, <0, 0, -10>, <0, 10, -10>, <-10, 10, -10>
+<-10, 10, 10>, <0, 0, 10>, <0, 10, 10>, <-10, 10, 10>
 texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<-10, 10, -10>, <0, 10, -10>, <0, 10, -0>, <-10, 10, -10>
+<-10, 10, 10>, <0, 10, 10>, <0, 10, 0>, <-10, 10, 10>
 texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<0, 0, -0>, <0, 10, -0>, <0, 0, -10>, <0, 0, -0>
+<0, 0, 0>, <0, 10, 0>, <0, 0, 10>, <0, 0, 0>
 texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<0, 0, -10>, <0, 10, -0>, <0, 10, -10>, <0, 0, -10>
+<0, 0, 10>, <0, 10, 0>, <0, 10, 10>, <0, 0, 10>
 texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<10, 0, -0>, <10, 0, -10>, <10, 10, -10>, <10, 0, -0>
+<10, 0, 0>, <10, 0, 10>, <10, 10, 10>, <10, 0, 0>
 texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<10, 0, -0>, <10, 10, -0>, <20, 10, -0>, <10, 0, -0>
+<10, 0, 0>, <10, 10, 0>, <20, 10, 0>, <10, 0, 0>
 texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<10, 0, -0>, <10, 10, -10>, <10, 10, -0>, <10, 0, -0>
+<10, 0, 0>, <10, 10, 10>, <10, 10, 0>, <10, 0, 0>
 texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<10, 0, -0>, <20, 0, -0>, <20, 0, -10>, <10, 0, -0>
+<10, 0, 0>, <20, 0, 0>, <20, 0, 10>, <10, 0, 0>
 texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<10, 0, -0>, <20, 0, -10>, <10, 0, -10>, <10, 0, -0>
+<10, 0, 0>, <20, 0, 10>, <10, 0, 10>, <10, 0, 0>
 texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<10, 0, -0>, <20, 10, -0>, <20, 0, -0>, <10, 0, -0>
+<10, 0, 0>, <20, 10, 0>, <20, 0, 0>, <10, 0, 0>
 texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<10, 0, -10>, <20, 0, -10>, <10, 10, -10>, <10, 0, -10>
+<10, 0, 10>, <20, 0, 10>, <10, 10, 10>, <10, 0, 10>
 texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<10, 10, -0>, <10, 10, -10>, <20, 10, -0>, <10, 10, -0>
+<10, 10, 0>, <10, 10, 10>, <20, 10, 0>, <10, 10, 0>
 texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<10, 10, -10>, <20, 0, -10>, <20, 10, -10>, <10, 10, -10>
+<10, 10, 10>, <20, 0, 10>, <20, 10, 10>, <10, 10, 10>
 texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<10, 10, -10>, <20, 10, -10>, <20, 10, -0>, <10, 10, -10>
+<10, 10, 10>, <20, 10, 10>, <20, 10, 0>, <10, 10, 10>
 texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<20, 0, -0>, <20, 10, -0>, <20, 0, -10>, <20, 0, -0>
+<20, 0, 0>, <20, 10, 0>, <20, 0, 10>, <20, 0, 0>
 texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
 polygon { 4, 
-<20, 0, -10>, <20, 10, -0>, <20, 10, -10>, <20, 0, -10>
+<20, 0, 10>, <20, 10, 0>, <20, 10, 10>, <20, 0, 10>
 texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
 finish { MATERIAL } interior { MATERIAL_INT }
 }
@@ -155,10 +155,10 @@ light_source { <80, 30, -20> color rgb <0.2, 0.2, 0.2> }
 light_source { <80, 30, 5> color rgb <0.2, 0.2, 0.2> }
 light_source { <80, 30, 30> color rgb <0.2, 0.2, 0.2> }
 camera { look_at <0, 0, 0>
- location <0, 0, 280>
- angle 22.5 up <0, 1, 0> right <1, 0, 0> sky <0, 1, 0> right x*image_width/image_height
+ location <0, 0, 140>
+ angle 22.5 up <0, 1, 0> right <1, 0, 0> sky <0, 1, 0> right -x*image_width/image_height
 translate <0, 0, 0>
-rotate <55, 180 + clock * 3, 25 + clock>
+rotate <55, 0 + clock * 3, 25 + clock>
 }
 #include "rad_def.inc"
 global_settings { photons { count 20000 autostop 0 jitter .4 } radiosity { Rad_Settings(Radiosity_Normal, off, off) } }
