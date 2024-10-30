@@ -2191,8 +2191,8 @@ void MainWindow::sendToOctoPrint()
     userFileName = fileInfo.baseName() + "." + fileFormat.toLower();
   }
 
-  ExportInfo exportInfo = {.format = exportFileFormat, .sourceFilePath = activeEditor->filepath.toStdString()};
-  exportFileByName(this->root_geom, nullptr, exportFileName.toStdString(), exportInfo);
+  ExportInfo exportInfo = {.format = exportFileFormat, .sourceFilePath = activeEditor->filepath.toStdString(), .camera = &qglview->cam};
+  exportFileByName(this->root_geom, exportFileName.toStdString(), exportInfo);
 
   try {
     this->progresswidget = new ProgressWidget(this);
@@ -2246,8 +2246,8 @@ void MainWindow::sendToLocalSlicer()
     userFileName = fileInfo.baseName() + fileFormat;
   }
 
-  ExportInfo exportInfo = {.format = exportFileFormat, .sourceFilePath = activeEditor->filepath.toStdString()};
-  exportFileByName(this->root_geom, nullptr, exportFileName.toStdString(), exportInfo);
+  ExportInfo exportInfo = {.format = exportFileFormat, .sourceFilePath = activeEditor->filepath.toStdString(), .camera = &qglview->cam};
+  exportFileByName(this->root_geom, exportFileName.toStdString(), exportInfo);
 
   QProcess process(this);
   process.setProcessChannelMode(QProcess::MergedChannels);
@@ -2281,8 +2281,8 @@ void MainWindow::sendToPrintService()
   const QString exportFilename = exportFile.fileName();
 
   //Render the stl to a temporary file:
-  ExportInfo exportInfo = {.format = FileFormat::BINARY_STL, .sourceFilePath = activeEditor->filepath.toStdString()};
-  exportFileByName(this->root_geom, nullptr, exportFilename.toStdString(), exportInfo);
+  ExportInfo exportInfo = {.format = FileFormat::BINARY_STL, .sourceFilePath = activeEditor->filepath.toStdString(), .camera = &qglview->cam};
+  exportFileByName(this->root_geom, exportFilename.toStdString(), exportInfo);
 
   //Create a name that the order process will use to refer to the file. Base it off of the project name
   QString userFacingName = "unsaved.stl";
@@ -2913,11 +2913,11 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
   }
   this->export_paths[suffix] = exportFilename;
 
-  ExportInfo exportInfo = {.format = format, .sourceFilePath = activeEditor->filepath.toStdString()};
+  ExportInfo exportInfo = {.format = format, .sourceFilePath = activeEditor->filepath.toStdString(), .camera = &qglview->cam};
   // Add options
   exportInfo.options = options;
 
-  bool exportResult = exportFileByName(this->root_geom, &qglview->cam, exportFilename.toStdString(), exportInfo);
+  bool exportResult = exportFileByName(this->root_geom, exportFilename.toStdString(), exportInfo);
 
   if (exportResult) fileExportedMessage(type_name, exportFilename);
   clearCurrentOutput();

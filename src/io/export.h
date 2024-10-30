@@ -101,10 +101,11 @@ struct ExportInfo {
   FileFormat format;
   std::string sourceFilePath; // Full path to the OpenSCAD source file
   ExportPdfOptions *options;
+  const Camera *camera;
 };
 
-bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const Camera *const camera, const std::string& filename, const ExportInfo& exportInfo);
-bool exportFileStdOut(const std::shared_ptr<const class Geometry>& root_geom, const Camera *const camera, const ExportInfo& exportInfo);
+bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo);
+bool exportFileStdOut(const std::shared_ptr<const class Geometry>& root_geom, const ExportInfo& exportInfo);
 
 void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& output,
                 bool binary = true);
@@ -115,7 +116,7 @@ void export_wrl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 void export_amf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_dxf(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_svg(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
-void export_pov(const std::shared_ptr<const Geometry>& geom, const Camera *const camera, std::ostream& output, const ExportInfo& exportInfo);
+void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_pdf(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo);
 void export_nefdbg(const std::shared_ptr<const Geometry>& geom, std::ostream& output);
 void export_nef3(const std::shared_ptr<const Geometry>& geom, std::ostream& output);

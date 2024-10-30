@@ -152,7 +152,7 @@ bool is2D(const FileFormat format) {
 
 }  // namespace FileFormat
 
-void exportFile(const std::shared_ptr<const Geometry>& root_geom, const Camera *const camera, std::ostream& output, const ExportInfo& exportInfo)
+void exportFile(const std::shared_ptr<const Geometry>& root_geom, std::ostream& output, const ExportInfo& exportInfo)
 {
   switch (exportInfo.format) {
   case FileFormat::ASCII_STL:
@@ -186,7 +186,7 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, const Camera *
     export_pdf(root_geom, output, exportInfo);
     break;
   case FileFormat::POV:
-    export_pov(root_geom, camera, output, exportInfo);
+    export_pov(root_geom, output, exportInfo);
     break;
 #ifdef ENABLE_CGAL
   case FileFormat::NEFDBG:
@@ -201,16 +201,16 @@ void exportFile(const std::shared_ptr<const Geometry>& root_geom, const Camera *
   }
 }
 
-bool exportFileStdOut(const std::shared_ptr<const Geometry>& root_geom, const Camera *const camera, const ExportInfo& exportInfo)
+bool exportFileStdOut(const std::shared_ptr<const Geometry>& root_geom, const ExportInfo& exportInfo)
 {
 #ifdef _WIN32
   _setmode(_fileno(stdout), _O_BINARY);
 #endif
-  exportFile(root_geom, camera, std::cout, exportInfo);
+  exportFile(root_geom, std::cout, exportInfo);
   return true;
 }
 
-bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const Camera *const camera, const std::string& filename, const ExportInfo& exportInfo)
+bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo)
 {
   std::ios::openmode mode = std::ios::out | std::ios::trunc;
   if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::BINARY_STL || exportInfo.format == FileFormat::PDF) {
@@ -225,7 +225,7 @@ bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const Ca
     bool onerror = false;
     fstream.exceptions(std::ios::badbit | std::ios::failbit);
     try {
-      exportFile(root_geom, camera, fstream, exportInfo);
+      exportFile(root_geom, fstream, exportInfo);
     } catch (std::ios::failure&) {
       onerror = true;
     }

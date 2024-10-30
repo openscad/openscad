@@ -136,12 +136,12 @@ bool checkAndExport(const std::shared_ptr<const Geometry>& root_geom, unsigned d
     LOG("Current top level object is empty.");
     return false;
   }
-  ExportInfo exportInfo = {.format = format, .sourceFilePath = input_filename};
+  ExportInfo exportInfo = {.format = format, .sourceFilePath = input_filename, .camera = camera};
   if (is_stdout) {
-    exportFileStdOut(root_geom, camera, exportInfo);
+    exportFileStdOut(root_geom, exportInfo);
   }
   else {
-    exportFileByName(root_geom, camera, filename, exportInfo);
+    exportFileByName(root_geom, filename, exportInfo);
   }
   return true;
 }

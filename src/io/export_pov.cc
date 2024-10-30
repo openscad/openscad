@@ -44,7 +44,7 @@ void RotMat(double& x, double& y, double a)
   y = y2;
 }
 
-void export_pov(const std::shared_ptr<const Geometry>& geom, const Camera *const camera, std::ostream& output, const ExportInfo& exportInfo)
+void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
 {
   std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
   if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
@@ -119,17 +119,17 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, const Camera *const
     }
   }
 
-  if (camera) {
-    auto vpt = camera->getVpt();
-    auto vpr = camera->getVpr();
+  if (exportInfo.camera) {
+    auto vpt = exportInfo.camera->getVpt();
+    auto vpr = exportInfo.camera->getVpr();
 
     auto pitch = vpr.x();
     auto yaw   = vpr.y();
     auto roll  = vpr.z();
 
     output << "camera { look_at <" << 0 << ", " << 0 << ", " << 0 << ">\n "
-      "location <" << 0 << ", " << 0 << ", " << camera->viewer_distance * 2 << ">\n "
-      "angle " << camera->fov << " up <0, 1, 0> right <1, 0, 0> sky <0, 1, 0> right x*image_width/image_height\n"
+      "location <" << 0 << ", " << 0 << ", " << exportInfo.camera->viewer_distance * 2 << ">\n "
+      "angle " << exportInfo.camera->fov << " up <0, 1, 0> right <1, 0, 0> sky <0, 1, 0> right x*image_width/image_height\n"
       "translate <" << vpt.x() << ", " << vpt.y() << ", " << vpt.z() << ">\n"
       "rotate <" << pitch << ", " << yaw + 180 << " + clock * 3, " << roll << " + clock>\n"
       "}\n";
