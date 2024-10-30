@@ -70,10 +70,10 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
         output << ", ";
       const auto & x = ps->vertices[polygon[i]].x();
       const auto & y = ps->vertices[polygon[i]].y();
-      const auto & z = -ps->vertices[polygon[i]].z();
+      const auto & z = ps->vertices[polygon[i]].z();
       output << "<" << x << ", " << y << ", " << z << ">";
     }
-    output << ", <" << ps->vertices[polygon[0]].x() << ", " << ps->vertices[polygon[0]].y() << ", " << -ps->vertices[polygon[0]].z() << ">";
+    output << ", <" << ps->vertices[polygon[0]].x() << ", " << ps->vertices[polygon[0]].y() << ", " << ps->vertices[polygon[0]].z() << ">";
     float r = 0xf9 / 255., g = 0xd7 / 255., b = 0x2c / 255., f = 0.;  // CGAL_FACE_FRONT_COLOR
     if (has_color) {
       auto color_index = ps->color_indices[polygon_index];
@@ -129,9 +129,9 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 
     output << "camera { look_at <" << 0 << ", " << 0 << ", " << 0 << ">\n "
       "location <" << 0 << ", " << 0 << ", " << exportInfo.camera->viewer_distance * 2 << ">\n "
-      "angle " << exportInfo.camera->fov << " up <0, 1, 0> right <1, 0, 0> sky <0, 1, 0> right x*image_width/image_height\n"
+      "angle " << exportInfo.camera->fov << " up <0, 1, 0> right <1, 0, 0> sky <0, 1, 0> right -x*image_width/image_height\n"
       "translate <" << vpt.x() << ", " << vpt.y() << ", " << vpt.z() << ">\n"
-      "rotate <" << pitch << ", " << yaw + 180 << " + clock * 3, " << roll << " + clock>\n"
+      "rotate <" << pitch << ", " << yaw << " + clock * 3, " << roll << " + clock>\n"
       "}\n";
   }
   else {
