@@ -137,9 +137,12 @@ def normalize_string(s):
         return "%.6g"%value
     s = re.sub('(-?[0-9]+(\\.[0-9]+)?(e[+-][0-9]+)?)', floatrep, s)
     """
+
+    """ Relative file paths are hopefully consistent across platforms now?
     def pathrep(match):
         return match.groups()[0] + match.groups()[2]
     s = re.sub('(file = ")([^"/]*/)*([^"]*")', pathrep, s)
+    """
 
     return s
 
