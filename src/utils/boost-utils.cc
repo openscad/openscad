@@ -8,5 +8,6 @@ namespace fs = boost::filesystem;
 fs::path
 boostfs_uncomplete(fs::path const& p, fs::path const& base)
 {
+  if (p == fs::path{}) return p;
   return fs::relative(p, base == fs::path{} ? fs::path{"."} : base);
 }
