@@ -128,7 +128,7 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     auto roll  = vpr.z();
 
     output << "camera { look_at <" << 0 << ", " << 0 << ", " << 0 << ">\n "
-      "location <" << 0 << ", " << 0 << ", " << exportInfo.camera->viewer_distance * 2 << ">\n "
+      "location <" << 0 << ", " << 0 << ", " << exportInfo.camera->viewer_distance << ">\n "
       "angle " << exportInfo.camera->fov << " up <0, 1, 0> right <1, 0, 0> sky <0, 1, 0> right -x*image_width/image_height\n"
       "translate <" << vpt.x() << ", " << vpt.y() << ", " << vpt.z() << ">\n"
       "rotate <" << pitch << ", " << yaw << " + clock * 3, " << roll << " + clock>\n"
