@@ -42,6 +42,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
+#include <boost/dll.hpp>
 
 #ifdef ENABLE_CGAL
 #include <CGAL/assertions.h>
@@ -66,6 +67,7 @@
 #include "platform/PlatformUtils.h"
 #include "RenderStatistic.h"
 #include "utils/StackCheck.h"
+#include "printutils.h"
 
 
 #ifdef ENABLE_PYTHON
@@ -227,7 +229,7 @@ void set_render_color_scheme(const std::string& color_scheme, const bool exit_if
  */
 void localization_init() {
   fs::path po_dir(PlatformUtils::resourcePath("locale"));
-  std::string locale_path(po_dir.string());
+  const std::string& locale_path(po_dir.string());
 
   if (fs::is_directory(locale_path)) {
     setlocale(LC_ALL, "");
@@ -235,7 +237,7 @@ void localization_init() {
     bind_textdomain_codeset("openscad", "UTF-8");
     textdomain("openscad");
   } else {
-    LOG("Could not initialize localization.");
+    LOG("Could not initialize localization (application path is '%1$s').", PlatformUtils::applicationPath());
   }
 }
 
@@ -657,15 +659,6 @@ int main(int argc, char **argv)
   int rc = 0;
   StackCheck::inst();
 
-#ifdef OPENSCAD_QTGUI
-  { // Need a dummy app instance to get the application path but it needs to be destroyed before the GUI is launched.
-    QCoreApplication app(argc, argv);
-    PlatformUtils::registerApplicationPath(app.applicationDirPath().toLocal8Bit().constData());
-  }
-#else
-  PlatformUtils::registerApplicationPath(fs::absolute(boost::filesystem::path(argv[0]).parent_path()).generic_string());
-#endif
-
 #ifdef Q_OS_MACOS
   bool isGuiLaunched = getenv("GUI_LAUNCHED") != nullptr;
   auto nslog = [](const Message& msg, void *userdata) {
@@ -675,6 +668,9 @@ int main(int argc, char **argv)
 #else
   PlatformUtils::ensureStdIO();
 #endif
+
+  const auto applicationPath = weakly_canonical(boost::dll::program_location().parent_path()).generic_string();
+  PlatformUtils::registerApplicationPath(applicationPath);
 
 #ifdef ENABLE_CGAL
   // Always throw exceptions from CGAL, so we can catch instead of crashing on bad geometry.
@@ -929,6 +925,8 @@ int main(int argc, char **argv)
       output_files.emplace_back("frame.png");
     }
   }
+
+  PRINTDB("Application location detected as %s", applicationPath);
 
   auto cmdlinemode = false;
   if (!output_files.empty()) { // cmd-line mode
