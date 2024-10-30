@@ -4,8 +4,8 @@
 
 #include "utils/printutils.h"
 
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+#include <filesystem>
+namespace fs = std::filesystem;
 
 /*!
    Returns the absolute path to the given filename, unless it's empty.

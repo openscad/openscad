@@ -8,7 +8,7 @@
 #include <QStandardItemModel>
 #include <QString>
 #include <QWidget>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 ErrorLog::ErrorLog(QWidget *parent) : QWidget(parent)
 {

@@ -2,9 +2,9 @@
 
 #include <string>
 #include <vector>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 extern int parser_error_pos;
 

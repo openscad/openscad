@@ -48,7 +48,7 @@
 #include <double-conversion/utils.h>
 #include <double-conversion/ieee.h>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 const Value Value::undefined;
 const VectorType VectorType::EMPTY(nullptr);

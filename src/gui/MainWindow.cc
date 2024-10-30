@@ -1292,7 +1292,7 @@ void MainWindow::instantiateRoot()
   this->root_node.reset();
   this->tree.setRoot(nullptr);
 
-  boost::filesystem::path doc(activeEditor->filepath.toStdString());
+  std::filesystem::path doc(activeEditor->filepath.toStdString());
   this->tree.setDocumentPath(doc.parent_path().string());
 
   if (this->root_file) {

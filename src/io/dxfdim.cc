@@ -43,10 +43,10 @@
 #include <string>
 #include <vector>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 std::unordered_map<std::string, double> dxf_dim_cache;
 std::unordered_map<std::string, std::vector<double>> dxf_cross_cache;
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 Value builtin_dxf_dim(Arguments arguments, const Location& loc)
 {

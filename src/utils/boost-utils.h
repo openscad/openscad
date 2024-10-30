@@ -1,9 +1,9 @@
 #pragma once
 
 #include <limits>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include "utils/printutils.h"
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 fs::path boostfs_uncomplete(fs::path const& p, fs::path const& base);
 

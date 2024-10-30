@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <string>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 fs::path
 boostfs_uncomplete(fs::path const& p, fs::path const& base)

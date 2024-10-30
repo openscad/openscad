@@ -9,12 +9,12 @@
 
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include "version.h"
 #include "platform/PlatformUtils.h"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 static std::mutex user_agent_mutex;
 
