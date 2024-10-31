@@ -3,9 +3,9 @@
 #include <ostream>
 #include <string>
 #include <memory>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <utility>
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 #include <string>
 

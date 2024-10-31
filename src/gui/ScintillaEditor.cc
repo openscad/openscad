@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <QString>
@@ -34,7 +34,7 @@
 #include <QPoint>
 #include <QToolTip>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 const QString ScintillaEditor::cursorPlaceHolder = "^~^";
 

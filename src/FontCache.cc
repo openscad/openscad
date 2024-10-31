@@ -30,7 +30,7 @@
 #include <iostream>
 #include <vector>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/algorithm/string.hpp>
 #include <string>
 #include <utility>
@@ -43,7 +43,7 @@ extern std::vector<std::string> librarypath;
 
 std::vector<std::string> fontpath;
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 const std::string get_fontconfig_version()
 {

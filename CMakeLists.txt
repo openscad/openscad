@@ -64,16 +64,8 @@ cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instea
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt." ON "NOT HEADLESS" OFF)
 cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS;NOT USE_QT6" OFF)
 
-if(USE_QT6)
-  set(DEPLOYMENT_TARGET "10.15")
-elseif(EXPERIMENTAL AND ENABLE_TBB)
-  # TBB 2021.8.0 uses aligned memory deallocation.
-  # While this is technically supported in macOS 10.13, an LLVM bug used to limit this to macOS 10.14+.
-  # The bug was fixed in LLVM 15.0.0 (https://reviews.llvm.org/D129198), but was still present in Xcode 14.3.1a.
-  set(DEPLOYMENT_TARGET "10.14")
-else()
-  set(DEPLOYMENT_TARGET "10.13")
-endif()
+# Minimum version required for std::filesystem
+set(DEPLOYMENT_TARGET "10.15")
 
 # Note: CMAKE_OSX_DEPLOYMENT_TARGET must be set before the project() invocation
 set(CMAKE_OSX_DEPLOYMENT_TARGET ${DEPLOYMENT_TARGET} CACHE STRING "Minimum OS X deployment version")
@@ -861,7 +853,6 @@ set(CORE_SOURCES
   src/libsvg/util.cc
   src/platform/PlatformUtils.cc
   src/utils/StackCheck.h
-  src/utils/boost-utils.cc
   src/utils/calc.cc
   src/utils/degree_trig.cc
   src/utils/hash.cc

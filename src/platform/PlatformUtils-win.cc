@@ -75,7 +75,7 @@ static const std::string getFolderPath(int nFolder)
 
   if (result == S_OK) {
     path = std::wstring(path.c_str() ); // strip extra nullptrs
-    // Use boost::filesystem to decide how to convert from wstring
+    // Use std::filesystem to decide how to convert from wstring
     // to string. Normally the path encoding is system local and
     // we don't want to force conversion to UTF-8.
     fs::path p(path);

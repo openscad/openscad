@@ -42,14 +42,14 @@
 #include "core/Assignment.h"
 #include "core/Expression.h"
 #include "core/function.h"
+#include "io/fileutils.h"
 #include "utils/printutils.h"
 #include <memory>
 #include <sstream>
 #include <stack>
-#include <boost/filesystem.hpp>
-#include "utils/boost-utils.h"
+#include <filesystem>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 #define YYMAXDEPTH 20000
 #define LOC(loc) Location(loc.first_line, loc.first_column, loc.last_line, loc.last_column, sourcefile())
@@ -728,8 +728,8 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 			auto prevFile = assignment->location().fileName();
 			auto currFile = loc.fileName();
 
-			const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
-			const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
+			const auto uncPathCurr = fs_uncomplete(currFile, mainFilePath.parent_path());
+			const auto uncPathPrev = fs_uncomplete(prevFile, mainFilePath.parent_path());
 			if (fileEnded) {
 				//assignments via commandline
 			} else if (prevFile == mainFile && currFile == mainFile) {

@@ -684,8 +684,8 @@ char *lexertext;
 #include "FileModule.h"
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+#include <filesystem>
+namespace fs = std::filesystem;
 
 //isatty for visual c++ and mingw-cross-env
 #if defined __WIN32__ && ! defined _MSC_VER
