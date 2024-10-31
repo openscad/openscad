@@ -861,7 +861,6 @@ set(CORE_SOURCES
   src/libsvg/util.cc
   src/platform/PlatformUtils.cc
   src/utils/StackCheck.h
-  src/utils/boost-utils.cc
   src/utils/calc.cc
   src/utils/degree_trig.cc
   src/utils/hash.cc

@@ -55,7 +55,6 @@
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
 #endif
-#include "utils/boost-utils.h"
 #include "core/Builtins.h"
 #include "core/BuiltinContext.h"
 #include "core/customizer/CommentParser.h"
@@ -74,6 +73,7 @@
 #include "core/ScopeContext.h"
 #include "core/progress.h"
 #include "io/dxfdim.h"
+#include "io/fileutils.h"
 #include "gui/Settings.h"
 #include "gui/AboutDialog.h"
 #include "gui/FontListDialog.h"
@@ -2489,7 +2489,7 @@ void MainWindow::rightClick(QPoint mouse)
         ss << name << " (" << location.filePath().filename().string() << ":"
            << location.firstLine() << ")";
       } else {
-        auto relative_filename = boostfs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
+        auto relative_filename = fs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
           .generic_string();
         // Set the displayed name relative to the active editor window
         ss << name << " (" << relative_filename << ":" << location.firstLine() << ")";

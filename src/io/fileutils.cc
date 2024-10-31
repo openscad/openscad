@@ -1,10 +1,10 @@
 #include "io/fileutils.h"
-
-#include <string>
-
 #include "utils/printutils.h"
 
+#include <cstdint>
 #include <filesystem>
+#include <string>
+
 namespace fs = std::filesystem;
 
 /*!
@@ -32,4 +32,20 @@ std::string lookup_file(const std::string& filename,
     resultfile = filename;
   }
   return resultfile;
+}
+
+fs::path fs_uncomplete(fs::path const& p, fs::path const& base)
+{
+  if (p == fs::path{}) return p;
+  return fs::relative(p, base == fs::path{} ? fs::path{"."} : base);
+}
+
+int64_t fs_timestamp(fs::path const& path) {
+  int64_t seconds = 0;
+  if (fs::exists(path)) {
+    const auto t = fs::last_write_time(path);
+    const auto duration = t.time_since_epoch();
+    seconds = std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+  }
+  return seconds;
 }

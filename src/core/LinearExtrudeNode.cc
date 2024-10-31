@@ -168,7 +168,7 @@ std::string LinearExtrudeNode::toString() const
       "file = " << this->filename << ", "
       "layer = " << QuotedString(this->layername) << ", "
       "origin = [" << this->origin_x << ", " << this->origin_y << "], "
-           << "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0) << ", "
+           << "timestamp = " << fs_timestamp(path) << ", "
     ;
   }
   double height=this->height.norm();

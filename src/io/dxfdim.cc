@@ -73,11 +73,11 @@ Value builtin_dxf_dim(Arguments arguments, const Location& loc)
 
   fs::path filepath(filename);
   uintmax_t filesize = -1;
-  time_t lastwritetime = -1;
+  int64_t lastwritetime = -1;
   if (fs::exists(filepath)) {
     if (fs::is_regular_file(filepath)) {
       filesize = fs::file_size(filepath);
-      lastwritetime = fs::last_write_time(filepath);
+      lastwritetime = fs_timestamp(filepath);
     }
   } else {
     LOG(message_group::Warning, loc, parameters.documentRoot(), "Can't open DXF file '%1$s'!", rawFilename);
@@ -169,11 +169,11 @@ Value builtin_dxf_cross(Arguments arguments, const Location& loc)
 
   fs::path filepath(filename);
   uintmax_t filesize = -1;
-  time_t lastwritetime = -1;
+  int64_t lastwritetime = -1;
   if (fs::exists(filepath)) {
     if (fs::is_regular_file(filepath)) {
       filesize = fs::file_size(filepath);
-      lastwritetime = fs::last_write_time(filepath);
+      lastwritetime = fs_timestamp(filepath);
     }
   } else {
     LOG(message_group::Warning, loc, parameters.documentRoot(), "Can't open DXF file '%1$s'!", rawFilename);

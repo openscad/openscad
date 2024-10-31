@@ -125,7 +125,8 @@ def normalize_string(s):
 
     This also normalizes away import paths from 'file = ' arguments."""
 
-    s = re.sub(', timestamp = [0-9]+', '', s)
+    # timestamp can potentially be negative since stdlibc++ internally uses an epoch based in year 2174
+    s = re.sub(', timestamp = -?[0-9]+', '', s)
 
     """ Don't replace floats after implementing double-conversion library
     def floatrep(match):

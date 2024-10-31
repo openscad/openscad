@@ -160,7 +160,7 @@
 #include "memory.h"
 #include <sstream>
 #include <filesystem>
-#include "boost-utils.h"
+#include "io/fileutils.h"
 
 namespace fs = std::filesystem;
 
@@ -1811,8 +1811,8 @@ yyreduce:
                         auto prevFile = assignment.location().fileName();
                         auto currFile = LOC((yyloc)).fileName();
                         
-                        const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
-                        const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
+                        const auto uncPathCurr = fs_uncomplete(currFile, mainFilePath.parent_path());
+                        const auto uncPathPrev = fs_uncomplete(prevFile, mainFilePath.parent_path());
 
                         if(fileEnded){
                             //assigments via commandline

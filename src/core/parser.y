@@ -42,12 +42,12 @@
 #include "core/Assignment.h"
 #include "core/Expression.h"
 #include "core/function.h"
+#include "io/fileutils.h"
 #include "utils/printutils.h"
 #include <memory>
 #include <sstream>
 #include <stack>
 #include <filesystem>
-#include "utils/boost-utils.h"
 
 namespace fs = std::filesystem;
 
@@ -728,8 +728,8 @@ void handle_assignment(const std::string token, Expression *expr, const Location
 			auto prevFile = assignment->location().fileName();
 			auto currFile = loc.fileName();
 
-			const auto uncPathCurr = boostfs_uncomplete(currFile, mainFilePath.parent_path());
-			const auto uncPathPrev = boostfs_uncomplete(prevFile, mainFilePath.parent_path());
+			const auto uncPathCurr = fs_uncomplete(currFile, mainFilePath.parent_path());
+			const auto uncPathPrev = fs_uncomplete(prevFile, mainFilePath.parent_path());
 			if (fileEnded) {
 				//assignments via commandline
 			} else if (prevFile == mainFile && currFile == mainFile) {

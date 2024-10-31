@@ -339,7 +339,7 @@ std::string SurfaceNode::toString() const
   stream << this->name() << "(file = " << this->filename
          << ", center = " << (this->center ? "true" : "false")
          << ", invert = " << (this->invert ? "true" : "false")
-         << ", " "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
+         << ", " "timestamp = " << fs_timestamp(path)
          << ")";
 
   return stream.str();

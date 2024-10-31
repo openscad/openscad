@@ -29,6 +29,7 @@
 #include <QTimer>
 #include <QUrl>
 #include <QWidget>
+#include <ctime>
 #include <unordered_map>
 #include <memory>
 #include <string>
