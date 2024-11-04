@@ -181,13 +181,15 @@ jobs:
       - run:
           name: Sign and Notarize OpenSCAD binary
           command: |
+            set -x
             security create-keychain -p "" ~/Library/Keychains/OpenSCAD.keychain
             security unlock-keychain -p "" ~/Library/Keychains/OpenSCAD.keychain
             security set-keychain-settings -t 7200 -l ~/Library/Keychains/OpenSCAD.keychain
-            echo "${APPLE_CODE_SIGNING_KEY}" | base64 -D -o OpenSCAD.p12
-            security import ./OpenSCAD.p12 -k ~/Library/Keychains/OpenSCAD.keychain -P "${APPLE_CODE_SIGNING_PASSWORD}" -T /usr/bin/codesign -T /usr/bin/security
+            echo ${APPLE_CODE_SIGNING_KEY} | base64 -D -o OpenSCAD.p12
+            security import OpenSCAD.p12 -k ~/Library/Keychains/OpenSCAD.keychain -f pkcs12 -P "${APPLE_CODE_SIGNING_PASSWORD}" -T /usr/bin/codesign -T /usr/bin/security
             security find-identity -p codesigning ~/Library/Keychains/OpenSCAD.keychain
             codesign --keychain ~/Library/Keychains/OpenSCAD.keychain -s "Marius Kintel" --force --deep build/OpenSCAD.app
+            rm OpenSCAD.p12
             cp -R build/OpenSCAD.app /tmp/out/
       - store_artifacts:
           path: /tmp/out
