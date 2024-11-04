@@ -239,6 +239,7 @@ workflows:
                       - coverity_scan
                       - /^(?i:continuous)$/
       - openscad-macos:
+          context: secret-context
           filters:
               branches:
                   only:
