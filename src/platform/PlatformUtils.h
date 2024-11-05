@@ -4,8 +4,8 @@
 #include <cstddef>
 #include <string>
 
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+#include <filesystem>
+namespace fs = std::filesystem;
 
 static constexpr size_t STACK_BUFFER_SIZE = 128ul * 1024ul;
 static constexpr size_t STACK_LIMIT_DEFAULT = size_t{STACKSIZE} - STACK_BUFFER_SIZE;

@@ -33,15 +33,16 @@
 #include "core/parsersettings.h"
 #include "core/StatCache.h"
 #include <algorithm>
+#include <ctime>
 #include <ostream>
 #include <memory>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <string>
 #include <utility>
 #include <vector>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 #include "FontCache.h"
 #include <sys/stat.h>
 

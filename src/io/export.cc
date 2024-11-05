@@ -38,8 +38,7 @@
 #include <cstddef>
 #include <fstream>
 #include <vector>
-#include <boost/filesystem/path.hpp>
-#include <boost/filesystem/fstream.hpp>
+#include <filesystem>
 #include <iostream>
 
 #ifdef _WIN32
@@ -216,8 +215,8 @@ bool exportFileByName(const std::shared_ptr<const Geometry>& root_geom, const st
   if (exportInfo.format == FileFormat::_3MF || exportInfo.format == FileFormat::BINARY_STL || exportInfo.format == FileFormat::PDF) {
     mode |= std::ios::binary;
   }
-  const boost::filesystem::path path(filename);
-  boost::filesystem::ofstream fstream(path, mode);
+  const std::filesystem::path path(filename);
+  std::ofstream fstream(path, mode);
   if (!fstream.is_open()) {
     LOG(_("Can't open file \"%1$s\" for export"), filename);
     return false;

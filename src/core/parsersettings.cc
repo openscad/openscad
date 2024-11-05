@@ -6,11 +6,11 @@
 #include <string>
 #include <vector>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/algorithm/string.hpp>
 #include "platform/PlatformUtils.h"
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 std::vector<std::string> librarypath;
 
