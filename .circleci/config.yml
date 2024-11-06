@@ -183,10 +183,10 @@ jobs:
           command: |
             set -x
             security -v create-keychain -p "" OpenSCAD.keychain
+            security -v list-keychains -s OpenSCAD.keychain
             security -v set-key-partition-list -S apple-tool:,apple: -s -k "" OpenSCAD.keychain
             security -v unlock-keychain -p "" OpenSCAD.keychain
             security -v set-keychain-settings -lt 7200 OpenSCAD.keychain
-            security -v list-keychains -s OpenSCAD.keychain
             echo "$APPLE_CODE_SIGNING_KEY" | base64 -D -o OpenSCAD.p12
             security -v import OpenSCAD.p12 -k OpenSCAD.keychain -f pkcs12 -P "$APPLE_CODE_SIGNING_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
             codesign --keychain OpenSCAD.keychain -s "Marius Kintel" --force --deep build/OpenSCAD.app
