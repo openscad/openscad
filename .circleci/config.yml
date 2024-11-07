@@ -168,12 +168,9 @@ jobs:
           name: Build OpenSCAD
           command: |
             export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
-            time ./scripts/release-common.sh snapshot
-            cd build
-            OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
-            shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
-            shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
-            cp -v "$OPENSCAD_NAME"* /tmp/out/
+            export VERSIONDATE=$(date "+%Y.%m.%d")
+            time ./scripts/release-common.sh -d $VERSIONDATE snapshot
+            echo "export VERSIONDATE=$VERSIONDATE" >> $BASH_ENV
       - run:
           name: Verify OpenSCAD binary
           command: |
@@ -191,15 +188,18 @@ jobs:
             codesign --options=runtime --keychain OpenSCAD.keychain -s "Marius Kintel" --force --deep build/OpenSCAD.app
 
             hdiutil create -volname "OpenSCAD" -srcfolder build/OpenSCAD.app -ov -format UDZO "OpenSCAD-snapshot.dmg"  
-            codesign --keychain OpenSCAD.keychain -s "Marius Kintel" --force OpenSCAD-snapshot.dmg
+            codesign --keychain OpenSCAD.keychain -s "Marius Kintel" --force OpenSCAD-$VERSIONDATE.dmg
 
-            xcrun notarytool submit OpenSCAD-snapshot.dmg --wait --apple-id $APPLE_NOTARIZATION_ACCOUNT --team-id $APPLE_NOTARIZATION_TEAM --password $APPLE_NOTARIZATION_PASSWORD
+            xcrun notarytool submit OpenSCAD-$VERSIONDATE.dmg --wait --apple-id $APPLE_NOTARIZATION_ACCOUNT --team-id $APPLE_NOTARIZATION_TEAM --password $APPLE_NOTARIZATION_PASSWORD
             # TODO: If invalid notarization, download the JSON
-            xcrun stapler staple OpenSCAD-snapshot.dmg
+            xcrun stapler staple OpenSCAD-$VERSIONDATE.dmg
 
             security -v delete-keychain OpenSCAD.keychain
             rm OpenSCAD.p12
-            cp -R OpenSCAD-snapshot.dmg /tmp/out/
+            cp -R OpenSCAD-$VERSIONDATE.dmg /tmp/out/
+            shasum -a 256 OpenSCAD-$VERSIONDATE.dmg > OpenSCAD-$VERSIONDATE.dmg.sha256
+            shasum -a 512 OpenSCAD-$VERSIONDATE.dmg > OpenSCAD-$VERSIONDATE.dmg.sha512
+            cp -v OpenSCAD-$VERSIONDATE.dmg* /tmp/out/
       - store_artifacts:
           path: /tmp/out
 workflows:
