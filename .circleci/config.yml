@@ -187,7 +187,7 @@ jobs:
             security -v set-key-partition-list -S apple-tool:,apple: -s -k "" OpenSCAD.keychain
             codesign --options=runtime --keychain OpenSCAD.keychain -s "Marius Kintel" --force --deep build/OpenSCAD.app
 
-            hdiutil create -volname "OpenSCAD" -srcfolder build/OpenSCAD.app -ov -format UDZO "OpenSCAD-snapshot.dmg"  
+            hdiutil create -volname "OpenSCAD" -srcfolder build/OpenSCAD.app -ov -format UDZO "OpenSCAD-$VERSIONDATE.dmg"  
             codesign --keychain OpenSCAD.keychain -s "Marius Kintel" --force OpenSCAD-$VERSIONDATE.dmg
 
             xcrun notarytool submit OpenSCAD-$VERSIONDATE.dmg --wait --apple-id $APPLE_NOTARIZATION_ACCOUNT --team-id $APPLE_NOTARIZATION_TEAM --password $APPLE_NOTARIZATION_PASSWORD
