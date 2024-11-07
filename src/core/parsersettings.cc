@@ -154,5 +154,7 @@ void parser_init()
 
   add_librarydir(PlatformUtils::userLibraryPath());
 
-  add_librarydir(fs::absolute(PlatformUtils::resourcePath("libraries")).string());
+  if (!PlatformUtils::resourcePath("libraries").empty()) {
+    add_librarydir(fs::absolute(PlatformUtils::resourcePath("libraries")).string());
+  }
 }
