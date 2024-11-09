@@ -944,7 +944,7 @@ if(ENABLE_MANIFOLD)
   find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
 
   if(NOT DEFINED MANIFOLD_PAR AND ENABLE_TBB)
-    set(MANIFOLD_PAR TBB CACHE STRING "Parallel backend, either \"TBB\" or \"OpenMP\" or \"NONE\"" FORCE)
+    set(MANIFOLD_PAR ON CACHE STRING "Parallel backend" FORCE)
   endif()
 
   set(PYBIND11_FINDPYTHON OFF)
@@ -961,7 +961,7 @@ if(ENABLE_MANIFOLD)
   else()
     find_package(manifold REQUIRED)
   endif()
-  target_link_libraries(OpenSCAD PRIVATE manifold polygon cross_section)
+  target_link_libraries(OpenSCAD PRIVATE manifold)
   add_sanitizers(manifold)
 
   if (USE_MANIFOLD_TRIANGULATOR)

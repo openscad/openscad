@@ -5,7 +5,6 @@
 #include <functional>
 #include <cstdint>
 #include <memory>
-#include <glm/glm.hpp>
 #include "geometry/linalg.h"
 #include <manifold/manifold.h>
 #include <cstddef>

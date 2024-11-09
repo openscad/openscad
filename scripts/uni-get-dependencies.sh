@@ -107,7 +107,7 @@ get_debian_deps()
   libeigen3-dev libcgal-dev libopencsg-dev libgmp-dev \
   imagemagick libfreetype6-dev libdouble-conversion-dev \
   gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel libtbb-dev \
-  libgl1-mesa-dev libxi-dev libfontconfig-dev libzip-dev libglm-dev
+  libgl1-mesa-dev libxi-dev libfontconfig-dev libzip-dev
  get_qt5_deps_debian
 }
 
