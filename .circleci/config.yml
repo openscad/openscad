@@ -191,7 +191,7 @@ jobs:
             codesign --keychain OpenSCAD.keychain -s "Marius Kintel" --force OpenSCAD-$VERSIONDATE.dmg
 
             xcrun notarytool submit OpenSCAD-$VERSIONDATE.dmg --wait --apple-id $APPLE_NOTARIZATION_ACCOUNT --team-id $APPLE_NOTARIZATION_TEAM --password $APPLE_NOTARIZATION_PASSWORD
-            # TODO: If invalid notarization, download the JSON
+            # TODO: If notarization fails, we could, download and dump the explanation here.
             xcrun stapler staple OpenSCAD-$VERSIONDATE.dmg
 
             security -v delete-keychain OpenSCAD.keychain
