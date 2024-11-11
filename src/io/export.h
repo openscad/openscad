@@ -101,6 +101,7 @@ struct ExportInfo {
   FileFormat format;
   std::string sourceFilePath; // Full path to the OpenSCAD source file
   ExportPdfOptions *options;
+  const Camera *camera;
 };
 
 bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo);
