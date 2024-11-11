@@ -320,12 +320,12 @@ Polygon2d ManifoldGeometry::project() const {
 }
 
 void ManifoldGeometry::transform(const Transform3d& mat) {
-  manifold::mat4x3 glMat(
+  manifold::mat3x4 glMat(
     // Column-major ordering
-    mat(0, 0), mat(1, 0), mat(2, 0),
-    mat(0, 1), mat(1, 1), mat(2, 1),
-    mat(0, 2), mat(1, 2), mat(2, 2),
-    mat(0, 3), mat(1, 3), mat(2, 3)
+    {mat(0, 0), mat(1, 0), mat(2, 0)},
+    {mat(0, 1), mat(1, 1), mat(2, 1)},
+    {mat(0, 2), mat(1, 2), mat(2, 2)},
+    {mat(0, 3), mat(1, 3), mat(2, 3)}
   );
   manifold_ = getManifold().Transform(glMat);
 }
@@ -366,9 +366,10 @@ void ManifoldGeometry::resize(const Vector3d& newsize, const Eigen::Matrix<bool,
 
 /*! Iterate over all vertices' points until the function returns true (for done). */
 void ManifoldGeometry::foreachVertexUntilTrue(const std::function<bool(const manifold::vec3& pt)>& f) const {
-  auto mesh = getManifold().GetMesh();
-  for (const auto &pt : mesh.vertPos) {
-    if (f(pt)) {
+  auto mesh = getManifold().GetMeshGL64();
+  const auto numVert = mesh.NumVert();
+  for (size_t v = 0; v < numVert; ++v) {
+    if (f(mesh.GetVertPos(v))) {
       return;
     }
   }

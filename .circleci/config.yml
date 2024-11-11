@@ -168,16 +168,38 @@ jobs:
           name: Build OpenSCAD
           command: |
             export NUMCPU=$(($(sysctl -n hw.ncpu) * 3 / 2))
-            time ./scripts/release-common.sh snapshot
-            cd build
-            OPENSCAD_NAME=$(ls OpenSCAD-*.dmg)
-            shasum -a 256 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha256
-            shasum -a 512 "$OPENSCAD_NAME" > "$OPENSCAD_NAME".sha512
-            cp -v "$OPENSCAD_NAME"* /tmp/out/
+            export VERSIONDATE=$(date "+%Y.%m.%d")
+            time ./scripts/release-common.sh -d $VERSIONDATE snapshot
+            echo "export VERSIONDATE=$VERSIONDATE" >> $BASH_ENV
       - run:
           name: Verify OpenSCAD binary
           command: |
             ./scripts/macosx-sanity-check.py build/OpenSCAD.app/Contents/MacOS/OpenSCAD
+      - run:
+          name: Sign and Notarize OpenSCAD binary
+          command: |
+            security -v create-keychain -p "" OpenSCAD.keychain
+            security -v list-keychains -s OpenSCAD.keychain
+            security -v unlock-keychain -p "" OpenSCAD.keychain
+            security -v set-keychain-settings -lt 7200 OpenSCAD.keychain
+            echo "$APPLE_CODE_SIGNING_KEY" | base64 -D -o OpenSCAD.p12
+            security -v import OpenSCAD.p12 -k OpenSCAD.keychain -f pkcs12 -P "$APPLE_CODE_SIGNING_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+            security -v set-key-partition-list -S apple-tool:,apple: -s -k "" OpenSCAD.keychain
+            codesign --options=runtime --keychain OpenSCAD.keychain -s "Marius Kintel" --force --deep build/OpenSCAD.app
+
+            hdiutil create -volname "OpenSCAD" -srcfolder build/OpenSCAD.app -ov -format UDZO "OpenSCAD-$VERSIONDATE.dmg"  
+            codesign --keychain OpenSCAD.keychain -s "Marius Kintel" --force OpenSCAD-$VERSIONDATE.dmg
+
+            xcrun notarytool submit OpenSCAD-$VERSIONDATE.dmg --wait --apple-id $APPLE_NOTARIZATION_ACCOUNT --team-id $APPLE_NOTARIZATION_TEAM --password $APPLE_NOTARIZATION_PASSWORD
+            # TODO: If notarization fails, we could, download and dump the explanation here.
+            xcrun stapler staple OpenSCAD-$VERSIONDATE.dmg
+
+            security -v delete-keychain OpenSCAD.keychain
+            rm OpenSCAD.p12
+            cp -R OpenSCAD-$VERSIONDATE.dmg /tmp/out/
+            shasum -a 256 OpenSCAD-$VERSIONDATE.dmg > OpenSCAD-$VERSIONDATE.dmg.sha256
+            shasum -a 512 OpenSCAD-$VERSIONDATE.dmg > OpenSCAD-$VERSIONDATE.dmg.sha512
+            cp -v OpenSCAD-$VERSIONDATE.dmg* /tmp/out/
       - store_artifacts:
           path: /tmp/out
 workflows:
@@ -226,6 +248,7 @@ workflows:
                       - coverity_scan
                       - /^(?i:continuous)$/
       - openscad-macos:
+          context: secret-context
           filters:
               branches:
                   only:

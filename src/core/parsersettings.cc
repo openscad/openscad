@@ -148,11 +148,18 @@ void parser_init()
     std::string sep = PlatformUtils::pathSeparatorChar();
     using string_split_iterator = boost::split_iterator<std::string::iterator>;
     for (string_split_iterator it = boost::make_split_iterator(paths, boost::first_finder(sep, boost::is_iequal())); it != string_split_iterator(); ++it) {
-      add_librarydir(fs::absolute(fs::path(boost::copy_range<std::string>(*it))).generic_string());
+      auto str{boost::copy_range<std::string>(*it)};
+      fs::path abspath = str.empty() ? fs::current_path() : fs::absolute(fs::path(str));
+      add_librarydir(abspath.generic_string());
     }
   }
 
   add_librarydir(PlatformUtils::userLibraryPath());
 
-  add_librarydir(fs::absolute(PlatformUtils::resourcePath("libraries")).string());
+  fs::path libpath = PlatformUtils::resourcePath("libraries");
+  // std::filesystem::absolute() will throw if passed empty path
+  if (libpath.empty()) {
+    libpath = fs::current_path();
+  }
+  add_librarydir(fs::absolute(libpath).string());
 }
