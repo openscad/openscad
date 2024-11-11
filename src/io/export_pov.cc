@@ -36,13 +36,6 @@
 #include "geometry/PolySetUtils.h"
 #include "geometry/linalg.h"
 
-void RotMat(double& x, double& y, double a)
-{
-  double x2 = x*cos(a) - y*sin(a);
-  double y2 = x*sin(a) + y*cos(a);
-  x = x2;
-  y = y2;
-}
 
 void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
 {
