@@ -53,7 +53,6 @@ option(USE_CCACHE "Use ccache to speed up compilation." ON)
 option(ENABLE_CAIRO "Enable support for cairo vector graphics library." ON)
 option(ENABLE_SPNAV "Enable support for libspnav input driver." ON)
 option(ENABLE_HIDAPI "Enable support for HIDAPI input driver." ON)
-option(ENABLE_TBB "Enable support for oneAPI Threading Building Blocks." ON)
 option(ENABLE_CGAL "Enable CGAL." ON)
 option(ENABLE_MANIFOLD "Enable Manifold." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
@@ -134,7 +133,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL Emscripten)
   set(Boost_USE_STATIC_LIBS ON CACHE BOOL "" FORCE)
   set(Boost_USE_STATIC_RUNTIME ON CACHE BOOL "" FORCE)
   set(ENABLE_CAIRO OFF CACHE BOOL "" FORCE)
-  set(ENABLE_TBB OFF CACHE BOOL "" FORCE)
+  set(MANIFOLD_PAR OFF CACHE STRING "" FORCE)
   set(NULLGL ON CACHE BOOL "" FORCE)
   set(USE_MIMALLOC OFF CACHE BOOL "" FORCE)
   set(ENV{PKG_CONFIG_PATH} "/emsdk/upstream/emscripten/cache/sysroot/lib/pkgconfig")
@@ -916,35 +915,32 @@ set(MANIFOLD_CGAL_SOURCES
   src/geometry/manifold/manifold-applyops-minkowski.cc
 )
 
-if(EXPERIMENTAL AND ENABLE_TBB)
-  # Note: currently only Manifold-related code makes use of TBB parallelization
-  # ("exact" CGAL numerics are not thread-safe)
-  target_compile_options(OpenSCAD PRIVATE
-    -DENABLE_TBB
-  )
-  find_package(TBB QUIET)
-  if (NOT TBB_FOUND AND PKG_CONFIG_FOUND)
-    pkg_check_modules(TBB tbb REQUIRED)
-    add_library(TBB::tbb UNKNOWN IMPORTED)
-    set_target_properties(TBB::tbb
-      PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${TBB_INCLUDE_DIRS}")
-    set_target_properties(TBB::tbb
-      PROPERTIES INTERFACE_LINK_LIBRARIES "${TBB_LINK_LIBRARIES}")
-    list(GET TBB_LINK_LIBRARIES 0 TBB_IMPORTED_LOCATION)
-    set_target_properties(TBB::tbb
-      PROPERTIES IMPORTED_LOCATION "${TBB_IMPORTED_LOCATION}")
-  endif()
-  message(STATUS "TBB: ${TBB_VERSION}")
-  target_link_libraries(OpenSCAD PRIVATE TBB::tbb)
-endif()
-
 if(ENABLE_MANIFOLD)
+  if(NOT DEFINED MANIFOLD_PAR)
+    # Note: currently only Manifold-related code makes use of TBB parallelization
+    # ("exact" CGAL numerics are not thread-safe)
+    target_compile_options(OpenSCAD PRIVATE
+      -DENABLE_TBB
+    )
+    find_package(TBB QUIET)
+    if (NOT TBB_FOUND AND PKG_CONFIG_FOUND)
+      pkg_check_modules(TBB tbb REQUIRED)
+      add_library(TBB::tbb UNKNOWN IMPORTED)
+      set_target_properties(TBB::tbb
+        PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${TBB_INCLUDE_DIRS}")
+      set_target_properties(TBB::tbb
+        PROPERTIES INTERFACE_LINK_LIBRARIES "${TBB_LINK_LIBRARIES}")
+      list(GET TBB_LINK_LIBRARIES 0 TBB_IMPORTED_LOCATION)
+      set_target_properties(TBB::tbb
+        PROPERTIES IMPORTED_LOCATION "${TBB_IMPORTED_LOCATION}")
+    endif()
+    message(STATUS "TBB: ${TBB_VERSION}")
+    target_link_libraries(OpenSCAD PRIVATE TBB::tbb)
 
-  # Hack to find our wanted version of Python before Manifold's included googletest finds Python2
-  find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
+    # Hack to find our wanted version of Python before Manifold's included googletest finds Python2
+    find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
 
-  if(NOT DEFINED MANIFOLD_PAR AND ENABLE_TBB)
-    set(MANIFOLD_PAR TBB CACHE STRING "Parallel backend, either \"TBB\" or \"OpenMP\" or \"NONE\"" FORCE)
+    set(MANIFOLD_PAR ON CACHE STRING "Parallel backend" FORCE)
   endif()
 
   set(PYBIND11_FINDPYTHON OFF)
@@ -961,7 +957,7 @@ if(ENABLE_MANIFOLD)
   else()
     find_package(manifold REQUIRED)
   endif()
-  target_link_libraries(OpenSCAD PRIVATE manifold polygon cross_section)
+  target_link_libraries(OpenSCAD PRIVATE manifold)
   add_sanitizers(manifold)
 
   if (USE_MANIFOLD_TRIANGULATOR)
