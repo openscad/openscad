@@ -937,13 +937,9 @@ if(ENABLE_MANIFOLD)
     message(STATUS "TBB: ${TBB_VERSION}")
     target_link_libraries(OpenSCAD PRIVATE TBB::tbb)
 
-    # Hack to find our wanted version of Python before Manifold's included googletest finds Python2
-    find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
-
     set(MANIFOLD_PAR ON CACHE STRING "Parallel backend" FORCE)
   endif()
 
-  set(PYBIND11_FINDPYTHON OFF)
   set(MANIFOLD_PYBIND OFF)
   set(MANIFOLD_TEST OFF)
   if(USE_BUILTIN_MANIFOLD)
