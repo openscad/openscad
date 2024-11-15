@@ -2638,7 +2638,7 @@ void MainWindow::setSelection(int index)
   // Unsaved files do have the pwd as current path, therefore we will not open a new
   // tab on click
   if (!fs::is_directory(fs::path(file))) {
-    tabManager->open(QString::fromStdString(file));
+    tabManager->open(QString::fromStdString(file), false);
   }
 
   // removes all previsly configure selection indicators.

@@ -152,7 +152,7 @@ void TabManager::actionNew()
   createTab("");
 }
 
-void TabManager::open(const QString& filename)
+void TabManager::open(const QString& filename, bool forceTreeParsing)
 {
   assert(!filename.isEmpty());
 
@@ -164,13 +164,13 @@ void TabManager::open(const QString& filename)
   }
 
   if (editor->filepath.isEmpty() && !editor->isContentModified() && !editor->parameterWidget->isModified()) {
-    openTabFile(filename);
+    openTabFile(filename, forceTreeParsing);
   } else {
-    createTab(filename);
+    createTab(filename, forceTreeParsing);
   }
 }
 
-void TabManager::createTab(const QString& filename)
+void TabManager::createTab(const QString& filename, bool forceTreeParsing)
 {
   assert(par != nullptr);
 
@@ -226,7 +226,7 @@ void TabManager::createTab(const QString& filename)
 
   editorList.insert(editor);
   if (!filename.isEmpty()) {
-    openTabFile(filename);
+    openTabFile(filename, forceTreeParsing);
   } else {
     setTabName("");
   }
@@ -483,9 +483,8 @@ void TabManager::setTabModified(EditorInterface *edt)
   tabWidget->setTabToolTip(tabWidget->indexOf(edt), fpath);
 }
 
-void TabManager::openTabFile(const QString& filename)
+void TabManager::openTabFile(const QString& filename, bool forceTreeParsing)
 {
-  par->setCurrentOutput();
   editor->setPlainText("");
 
   QFileInfo fileinfo(filename);
@@ -500,10 +499,13 @@ void TabManager::openTabFile(const QString& filename)
     setTabName(nullptr);
     editor->setPlainText(cmd.arg(filename));
   }
-  par->fileChangedOnDisk(); // force cached autoReloadId to update
   bool opened = refreshDocument();
 
-  if (opened) { // only try to parse if the file opened
+  if (opened && forceTreeParsing)
+  {
+    // only try to parse if the file opened
+    par->setCurrentOutput();
+    par->fileChangedOnDisk(); // force cached autoReloadId to update
     par->hideCurrentOutput(); // Initial parse for customizer, hide any errors to avoid duplication
     try {
       par->parseTopLevelDocument();
