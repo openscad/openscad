@@ -666,6 +666,16 @@ bool Value::getVec2(double& x, double& y, bool ignoreInfinite) const
   return valid;
 }
 
+bool Value::getVec2(bool& x, bool& y) const
+{
+  if (this->type() != Type::VECTOR) return false;
+  const auto& v = this->toVector();
+  if (v.size() != 2) return false;
+  x = v[0].toBool();
+  y = v[1].toBool();
+  return true;
+}
+
 bool Value::getVec3(double& x, double& y, double& z) const
 {
   if (this->type() != Type::VECTOR) return false;

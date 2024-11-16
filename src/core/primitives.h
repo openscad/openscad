@@ -127,17 +127,22 @@ public:
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "square(size = ["
-           << x << ", "
-           << y << "], center = "
-           << (center ? "true" : "false") << ")";
+    static const std::string center_value[2][2] = {
+      {"false", "[false, true]"},
+      {"[true, false]", "true"},
+    };
+
+    stream << "square(size = [" << x << ", " << y << "], center = "
+           << center_value[center_x][center_y];
     return stream.str();
   }
   std::string name() const override { return "square"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
   double x = 1, y = 1;
-  bool center = false;
+
+  bool center_x = false;
+  bool center_y = false;
 };
 
 

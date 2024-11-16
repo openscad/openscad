@@ -344,6 +344,8 @@ public:
   bool getVec3(double& x, double& y, double& z) const;
   bool getVec3(double& x, double& y, double& z, double defaultval) const;
 
+  bool getVec2(bool& x, bool& y) const;
+
   // Common Operators
   operator bool() const = delete;
   Value operator==(const Value& v) const;

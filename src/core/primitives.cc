@@ -519,9 +519,13 @@ std::unique_ptr<const Geometry> SquareNode::createGeometry() const
 
   Vector2d v1(0, 0);
   Vector2d v2(this->x, this->y);
-  if (this->center) {
-    v1 -= Vector2d(this->x / 2, this->y / 2);
-    v2 -= Vector2d(this->x / 2, this->y / 2);
+  if (this->center_x) {
+    v1 -= Vector2d(this->x / 2, 0);
+    v2 -= Vector2d(this->x / 2, 0);
+  }
+  if(this->center_y) {
+    v1 -= Vector2d(0, this->y / 2);
+    v2 -= Vector2d(0, this->y / 2);
   }
 
   Outline2d o;
@@ -558,7 +562,11 @@ static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *i
     }
   }
   if (parameters["center"].type() == Value::Type::BOOL) {
-    node->center = parameters["center"].toBool();
+    node->center_x = parameters["center"].toBool();
+    node->center_y = parameters["center"].toBool();
+  }
+  else if (parameters["center"].type() == Value::Type::VECTOR) {
+    parameters["center"].getVec2(node->center_x, node->center_y);
   }
 
   return node;
