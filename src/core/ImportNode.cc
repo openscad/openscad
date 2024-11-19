@@ -30,6 +30,7 @@
 
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
+#include "core/Partcad.h"
 #include "geometry/PolySet.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
@@ -65,21 +66,30 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"file", "layer", "convexity", "origin", "scale"},
-                                            {"width", "height", "filename", "layername", "center", "dpi", "id"}
+                                            {"width", "height", "filename", "layername", "center", "dpi", "id", "partcad"}
                                             );
-
-  const auto& v = parameters["file"];
   std::string filename;
-  if (v.isDefined()) {
-    filename = lookup_file(v.isUndefined() ? "" : v.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
-  } else {
-    const auto& filename_val = parameters["filename"];
-    if (!filename_val.isUndefined()) {
-      LOG(message_group::Deprecated, "filename= is deprecated. Please use file=");
+  if (parameters["partcad"].isDefined()) {
+    const auto& v = parameters["partcad"];
+    auto partSpec = v.toString();
+    filename = Partcad::getPart(partSpec);
+    if (filename.empty()) {
+      LOG(message_group::Error, "error importing partcad, part spec=%1$s", partSpec);
     }
-    filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
+  } else {
+    const auto& v = parameters["file"];
+    if (v.isDefined()) {
+      filename = lookup_file(v.isUndefined() ? "" : v.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
+    } else {
+      const auto& filename_val = parameters["filename"];
+      if (!filename_val.isUndefined()) {
+        LOG(message_group::Deprecated, "filename= is deprecated. Please use file=");
+      }
+      filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
+    }
+    if (!filename.empty()) handle_dep(filename);
   }
-  if (!filename.empty()) handle_dep(filename);
+
   ImportType actualtype = type;
   if (actualtype == ImportType::UNKNOWN) {
     std::string extraw = fs::path(filename).extension().generic_string();
@@ -261,6 +271,6 @@ void register_builtin_import()
 
   Builtins::init("import", new BuiltinModule(builtin_import),
   {
-    "import(string, [number, [number]])",
+    "import(string, [number, [number]]) | import(partcad = \"<package:part>\")",
   });
 }

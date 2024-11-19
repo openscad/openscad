@@ -415,6 +415,7 @@ target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
 if(ENABLE_PYTHON)
   find_package(Python REQUIRED COMPONENTS Interpreter Development)
+  MESSAGE(STATUS "dirs=${Python_INCLUDE_DIRS} libs=${Python_LIBRARIES} exec=${Python_EXECUTABLE}}")
   find_package(CryptoPP REQUIRED)
   message(STATUS "Python enabled, using Crypto++ ${PC_CRYPTOPP_VERSION}")
   target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
@@ -750,6 +751,7 @@ set(CORE_SOURCES
   src/core/FreetypeRenderer.cc
   src/core/FunctionType.cc
   src/core/GroupModule.cc
+  src/core/Partcad.cc
   src/core/ImportNode.cc
   src/core/LinearExtrudeNode.cc
   src/core/LocalScope.cc
