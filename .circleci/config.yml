@@ -224,6 +224,12 @@ workflows:
               branches:
                   only:
                       - master
+      - openscad-macos:
+          context: secret-context
+          filters:
+              branches:
+                  only:
+                      - master
   "CircleCI branch build":
     jobs:
       - openscad-mxe-64bit:
