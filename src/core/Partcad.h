@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
+#include <filesystem>
 
-class Partcad {
+class PartCAD {
     public:
-        static std::string getPart(const std::string& partSpec);
-
+        static std::string getPart(const std::string& partSpec, const std::filesystem::path& configPath);
 };

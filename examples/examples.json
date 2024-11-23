@@ -27,7 +27,8 @@
     "GEB.scad",
     "animation.scad",
     "module_recursion.scad",
-    "assert.scad"
+    "assert.scad",
+    "partcad.scad"
   ],
   "Parametric": [
     "sign.scad",

@@ -30,7 +30,7 @@
 
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
-#include "core/Partcad.h"
+#include "core/PartCAD.h"
 #include "geometry/PolySet.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
@@ -59,6 +59,7 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 
 static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children, ImportType type)
 {
+  bool remove_file_on_destruction = false;
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
         "module %1$s() does not support child modules", inst->name());
@@ -66,29 +67,31 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
 
   Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
                                             {"file", "layer", "convexity", "origin", "scale"},
-                                            {"width", "height", "filename", "layername", "center", "dpi", "id", "partcad"}
+                                            {"width", "height", "filename", "layername", "center", "dpi", "id"}
                                             );
   std::string filename;
-  if (parameters["partcad"].isDefined()) {
-    const auto& v = parameters["partcad"];
-    auto partSpec = v.toString();
-    filename = Partcad::getPart(partSpec);
-    if (filename.empty()) {
-      LOG(message_group::Error, "error importing partcad, part spec=%1$s", partSpec);
+  const auto& v = parameters["file"];
+  if (v.isDefined()) {
+    if (v.toString().find(':') != std::string::npos) {
+      filename = PartCAD::getPart(v.toString(), inst->location().filePath().parent_path());
+      if (filename.empty()) {
+        LOG(message_group::Error, "error importing PartCAD, part spec=%1$s", v.toString());
+      }
+      else {
+        remove_file_on_destruction = true;
+      }
+    }
+    else {
+      filename = lookup_file(v.isUndefined() ? "" : v.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
     }
   } else {
-    const auto& v = parameters["file"];
-    if (v.isDefined()) {
-      filename = lookup_file(v.isUndefined() ? "" : v.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
-    } else {
-      const auto& filename_val = parameters["filename"];
-      if (!filename_val.isUndefined()) {
-        LOG(message_group::Deprecated, "filename= is deprecated. Please use file=");
-      }
-      filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
+    const auto& filename_val = parameters["filename"];
+    if (!filename_val.isUndefined()) {
+      LOG(message_group::Deprecated, "filename= is deprecated. Please use file=");
     }
-    if (!filename.empty()) handle_dep(filename);
+    filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
   }
+  if (!filename.empty()) handle_dep(filename);
 
   ImportType actualtype = type;
   if (actualtype == ImportType::UNKNOWN) {
@@ -105,6 +108,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   }
 
   auto node = std::make_shared<ImportNode>(inst, actualtype);
+  node->remove_file_on_destruction = remove_file_on_destruction;
 
   node->fn = parameters["$fn"].toDouble();
   node->fs = parameters["$fs"].toDouble();
@@ -263,6 +267,13 @@ std::string ImportNode::name() const
   return "import";
 }
 
+ImportNode::~ImportNode()
+{
+  if (this->remove_file_on_destruction && !this->filename.empty()) {
+    fs::remove(this->filename.c_str());
+  }
+}
+
 void register_builtin_import()
 {
   Builtins::init("import_stl", new BuiltinModule(builtin_import_stl));
@@ -271,6 +282,6 @@ void register_builtin_import()
 
   Builtins::init("import", new BuiltinModule(builtin_import),
   {
-    "import(string, [number, [number]]) | import(partcad = \"<package:part>\")",
+    "import(string, [number, [number]])",
   });
 }

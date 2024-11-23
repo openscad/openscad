@@ -1,0 +1,19 @@
+import:
+  # Add dependencies here
+  #     <package-name>:
+  #         desc: <package description>               # optional
+  #         type: <local|git|tar>
+  #         path: <relative path>                     # type:local only
+  #         url: <url of the package>                 # type:git|tar only
+  #         relPath: <relative path within the repo>  # type:git|tar only
+  #         web: <package's or maintainer's url>      # optional
+  #         poc: <maintainer's email>                 # optional
+  pub:
+    type: git
+    url: https://github.com/openvmp/partcad-index.git
+
+parts:
+  # Add parts here
+
+assemblies:
+  # Add assemblies here

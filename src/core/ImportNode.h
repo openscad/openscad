@@ -28,6 +28,7 @@ public:
   ImportNode(const ModuleInstantiation *mi, ImportType type) : LeafNode(mi), type(type) { }
   std::string toString() const override;
   std::string name() const override;
+  ~ImportNode();
 
   ImportType type;
   Filename filename;
@@ -39,5 +40,6 @@ public:
   double fn, fs, fa;
   double origin_x, origin_y, scale;
   double width, height;
+  bool remove_file_on_destruction{false};
   std::unique_ptr<const class Geometry> createGeometry() const override;
 };
