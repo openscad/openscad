@@ -108,50 +108,39 @@ static void set_fragments(const Parameters& parameters, const ModuleInstantiatio
   }
 }
 
-
-
 std::unique_ptr<const Geometry> CubeNode::createGeometry() const
 {
-  if (this->x <= 0 || !std::isfinite(this->x)
-    || this->y <= 0 || !std::isfinite(this->y)
-    || this->z <= 0 || !std::isfinite(this->z)
-    ) {
+  if (this->x <= 0 || !std::isfinite(this->x) || this->y <= 0 || !std::isfinite(this->y) ||
+      this->z <= 0 || !std::isfinite(this->z)) {
     return PolySet::createEmpty();
   }
 
-  double x1, x2, y1, y2, z1, z2;
-  if (this->center) {
-    x1 = -this->x / 2;
-    x2 = +this->x / 2;
-    y1 = -this->y / 2;
-    y2 = +this->y / 2;
-    z1 = -this->z / 2;
-    z2 = +this->z / 2;
-  } else {
-    x1 = y1 = z1 = 0;
-    x2 = this->x;
-    y2 = this->y;
-    z2 = this->z;
-  }
+  double x1 = this->x / 2 * (this->center.as_vect[0] - 1);
+  double x2 = x1 + this->x;
+  double y1 = this->y / 2 * (this->center.as_vect[1] - 1);
+  double y2 = y1 + this->y;
+  double z1 = this->z / 2 * (this->center.as_vect[2] - 1);
+  double z2 = z1 + this->z;
+
   int dimension = 3;
-  auto ps = std::make_unique<PolySet>(3, /*convex*/true);
+  auto ps = std::make_unique<PolySet>(3, /*convex*/ true);
   for (int i = 0; i < 8; i++) {
-    ps->vertices.emplace_back(i & 1 ? x2 : x1, i & 2 ? y2 : y1,
-                              i & 4 ? z2 : z1);
+    ps->vertices.emplace_back(i & 1 ? x2 : x1, i & 2 ? y2 : y1, i & 4 ? z2 : z1);
   }
   ps->indices = {
-      {4, 5, 7, 6}, // top
-      {2, 3, 1, 0}, // bottom
-      {0, 1, 5, 4}, // front
-      {1, 3, 7, 5}, // right
-      {3, 2, 6, 7}, // back
-      {2, 0, 4, 6}, // left
+    {4, 5, 7, 6},  // top
+    {2, 3, 1, 0},  // bottom
+    {0, 1, 5, 4},  // front
+    {1, 3, 7, 5},  // right
+    {3, 2, 6, 7},  // back
+    {2, 0, 4, 6},  // left
   };
 
   return ps;
 }
 
-static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *inst, Arguments arguments,
+                                                  const Children& children)
 {
   auto node = std::make_shared<CubeNode>(inst);
 
@@ -170,18 +159,19 @@ static std::shared_ptr<AbstractNode> builtin_cube(const ModuleInstantiation *ins
     converted |= size.getDouble(node->z);
     converted |= size.getVec3(node->x, node->y, node->z);
     if (!converted) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers", size.toEchoStringNoThrow());
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "Unable to convert cube(size=%1$s, ...) parameter to a number or a vec3 of numbers",
+          size.toEchoStringNoThrow());
     } else if (OpenSCAD::rangeCheck) {
       bool ok = (node->x > 0) && (node->y > 0) && (node->z > 0);
       ok &= std::isfinite(node->x) && std::isfinite(node->y) && std::isfinite(node->z);
       if (!ok) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "cube(size=%1$s, ...)", size.toEchoStringNoThrow());
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "cube(size=%1$s, ...)",
+            size.toEchoStringNoThrow());
       }
     }
   }
-  if (parameters["center"].type() == Value::Type::BOOL) {
-    node->center = parameters["center"].toBool();
-  }
+  node->center.parse(parameters);
 
   return node;
 }

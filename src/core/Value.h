@@ -351,7 +351,7 @@ public:
     if (dimensions == 2) {
       return getVec2(values[0], values[1]);
     } else {
-      return getVec2(values[0], values[1], values[2]);
+      return getVec3(values[0], values[1], values[2]);
     }
   }
 

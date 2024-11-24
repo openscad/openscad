@@ -120,25 +120,24 @@ public:
 
 class CubeNode : public LeafNode
 {
+  const double c[3] = {1.0, 1.0, 1.0};
+
 public:
-  CubeNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  CubeNode(const ModuleInstantiation *mi) : LeafNode(mi), center(false, c) {}
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "cube(size = ["
-           << x << ", "
-           << y << ", "
-           << z << "], center = "
-           << (center ? "true" : "false") << ")";
+    stream << "cube(size = [" << x << ", " << y << ", " << z << "], "
+           << "center = " << center.toString();
     return stream.str();
   }
   std::string name() const override { return "cube"; }
   std::unique_ptr<const Geometry> createGeometry() const override;
 
   double x = 1, y = 1, z = 1;
-  bool center = false;
-};
 
+  Center<3> center;
+};
 
 class SphereNode : public LeafNode
 {
