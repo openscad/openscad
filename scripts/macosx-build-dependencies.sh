@@ -38,7 +38,7 @@ OPTION_X86_64=false
 
 PACKAGES=(
     "double_conversion 3.2.1"
-    "boost 1.81.0"
+    "boost 1.86.0"
     "eigen 3.4.0"
     "gmp 6.3.0"
     "mpfr 4.2.0"
@@ -359,7 +359,7 @@ build_boost()
     ARCH_FLAGS+=(-arch $arch)
   done
 
-  ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,filesystem,chrono,system,regex,date_time,atomic
+  ./bootstrap.sh --prefix=$DEPLOYDIR --with-libraries=thread,program_options,chrono,system,regex,date_time,atomic
   ./b2 -j"$NUMCPU" -d+2 $BOOST_TOOLSET cflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN ${ARCH_FLAGS[*]}" linkflags="-mmacosx-version-min=$MAC_OSX_VERSION_MIN ${ARCH_FLAGS[*]} -headerpad_max_install_names" install
 }
 

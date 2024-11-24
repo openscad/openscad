@@ -670,7 +670,7 @@ int main(int argc, char **argv)
   PlatformUtils::ensureStdIO();
 #endif
 
-  const auto applicationPath = weakly_canonical(boost::dll::program_location().parent_path()).generic_string();
+  const auto applicationPath = weakly_canonical(boost::dll::program_location()).parent_path().generic_string();
   PlatformUtils::registerApplicationPath(applicationPath);
 
 #ifdef ENABLE_CGAL
