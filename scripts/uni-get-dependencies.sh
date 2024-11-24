@@ -101,13 +101,13 @@ get_debian_deps()
 {
  apt-get update
  apt-get -y install \
-  build-essential curl ninja-build libffi-dev libxml2-dev \
-  libxmu-dev cmake bison flex git libboost-all-dev \
+  build-essential bison flex git curl cmake ninja-build libffi-dev \
+  libboost-program-options-dev libboost-regex-dev libboost-system-dev \
   libmpfr-dev libglew-dev libcairo2-dev libharfbuzz-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp-dev \
-  imagemagick libfreetype6-dev libdouble-conversion-dev \
+  imagemagick libfreetype6-dev libdouble-conversion-dev libxml2-dev \
   gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel libtbb-dev \
-  libgl1-mesa-dev libxi-dev libfontconfig-dev libzip-dev
+  libgl1-mesa-dev libxi-dev libxmu-dev libfontconfig-dev libzip-dev
  get_qt5_deps_debian
 }
 
