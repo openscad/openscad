@@ -52,10 +52,10 @@ using namespace boost::assign; // bring 'operator+=()' into scope
 #define F_MINIMUM 0.01
 
 template <class InsertIterator>
-static void generate_circle(InsertIterator iter, double r, double z, int fragments) {
+static void generate_circle(InsertIterator iter, double r, double z, int fragments, double center[3]) {
   for (int i = 0; i < fragments; ++i) {
     double phi = (360.0 * i) / fragments;
-    *(iter++) = {r * cos_degrees(phi), r * sin_degrees(phi), z};
+    *(iter++) = {r * cos_degrees(phi) + center[0], r * sin_degrees(phi) + center[1], z + center[2]};
   }
 }
 
@@ -192,12 +192,19 @@ std::unique_ptr<const Geometry> SphereNode::createGeometry() const
   auto polyset = std::make_unique<PolySet>(3, /*convex*/true);
   polyset->vertices.reserve(num_rings * num_fragments);
 
+  double center[3] = {
+    this->r * this->center.as_vect[0],
+    this->r * this->center.as_vect[1],
+    this->r * this->center.as_vect[2]
+  };
+
+
   // double offset = 0.5 * ((fragments / 2) % 2);
   for (int i = 0; i < num_rings; ++i) {
     //                double phi = (180.0 * (i + offset)) / (fragments/2);
     const double phi = (180.0 * (i + 0.5)) / num_rings;
     const double radius = r * sin_degrees(phi);
-    generate_circle(std::back_inserter(polyset->vertices), radius, r * cos_degrees(phi), num_fragments);
+    generate_circle(std::back_inserter(polyset->vertices), radius, r * cos_degrees(phi), num_fragments, center);
   }
 
   polyset->indices.push_back({});
@@ -233,7 +240,7 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
         "module %1$s() does not support child modules", node->name());
   }
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
+  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r", "center"}, {"d"});
 
   set_fragments(parameters, inst, node->fn, node->fs, node->fa);
   const auto r = lookup_radius(parameters, inst, "d", "r");
@@ -244,6 +251,8 @@ static std::shared_ptr<AbstractNode> builtin_sphere(const ModuleInstantiation *i
           "sphere(r=%1$s)", r.toEchoStringNoThrow());
     }
   }
+
+  node->center.parse(parameters);
 
   return node;
 }
@@ -263,14 +272,15 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
 
   auto num_fragments = Calc::get_fragments_from_r(std::fmax(this->r1, this->r2), this->fn, this->fs, this->fa);
 
-  double z1, z2;
-  if (this->center) {
-    z1 = -this->h / 2;
-    z2 = +this->h / 2;
-  } else {
-    z1 = 0;
-    z2 = this->h;
-  }
+  double r_max = std::max(this->r1, this->r2);
+  double center[3] = {
+    r_max * this->center.as_vect[0],
+    r_max * this->center.as_vect[1],
+    0
+  };
+
+  double z1 = this->h/2 * (this->center.as_vect[2] - 1.0);
+  double z2 = z1 + this->h;
 
   bool cone = (r2 == 0.0);
   bool inverted_cone = (r1 == 0.0);
@@ -281,12 +291,12 @@ std::unique_ptr<const Geometry> CylinderNode::createGeometry() const
   if (inverted_cone) {
     polyset->vertices.emplace_back(0.0, 0.0, z1);
   } else {
-   generate_circle(std::back_inserter(polyset->vertices), r1, z1, num_fragments);
+   generate_circle(std::back_inserter(polyset->vertices), r1, z1, num_fragments, center);
   }
   if (cone) {
     polyset->vertices.emplace_back(0.0, 0.0, z2);
   } else {
-    generate_circle(std::back_inserter(polyset->vertices), r2, z2, num_fragments);
+    generate_circle(std::back_inserter(polyset->vertices), r2, z2, num_fragments, center);
   }
 
   for (int i = 0; i < num_fragments; ++i) {
@@ -361,9 +371,7 @@ static std::shared_ptr<AbstractNode> builtin_cylinder(const ModuleInstantiation 
     }
   }
 
-  if (parameters["center"].type() == Value::Type::BOOL) {
-    node->center = parameters["center"].toBool();
-  }
+  node->center.parse(parameters);
 
   return node;
 }
@@ -744,9 +752,9 @@ void register_builtin_primitives()
 
   Builtins::init("sphere", new BuiltinModule(builtin_sphere),
                  {
-                     "sphere(radius)",
-                     "sphere(r = radius)",
-                     "sphere(d = diameter)",
+                     "sphere(radius, center = true)",
+                     "sphere(r = radius, center = true)",
+                     "sphere(d = diameter, center = true)",
                  });
 
   Builtins::init("cylinder", new BuiltinModule(builtin_cylinder),

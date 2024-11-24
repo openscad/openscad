@@ -141,8 +141,10 @@ public:
 
 class SphereNode : public LeafNode
 {
+  const double c[3] = {0.0, 0.0, 0.0};
+
 public:
-  SphereNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  SphereNode(const ModuleInstantiation *mi) : LeafNode(mi), center(true, c) {}
   std::string toString() const override
   {
     std::ostringstream stream;
@@ -151,6 +153,7 @@ public:
            << ", $fa = " << fa
            << ", $fs = " << fs
            << ", r = " << r
+           << ", center = " << center.toString()
            << ")";
     return stream.str();
   }
@@ -159,13 +162,16 @@ public:
 
   double fn, fs, fa;
   double r = 1;
+
+  Center<3> center;
 };
 
 
 class CylinderNode : public LeafNode
 {
+  const double c[3] = {0.0, 0.0, 1.0};
 public:
-  CylinderNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  CylinderNode(const ModuleInstantiation *mi) : LeafNode(mi), center(false, c) {}
   std::string toString() const override
   {
     std::ostringstream stream;
@@ -176,7 +182,7 @@ public:
            << ", h = " << h
            << ", r1 = " << r1
            << ", r2 = " << r2
-           << ", center = " << (center ? "true" : "false")
+           << ", center = " << center.toString()
            << ")";
     return stream.str();
   }
@@ -185,7 +191,8 @@ public:
 
   double fn, fs, fa;
   double r1 = 1, r2 = 1, h = 1;
-  bool center = false;
+
+  Center<3> center;
 };
 
 
