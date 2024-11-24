@@ -344,7 +344,16 @@ public:
   bool getVec3(double& x, double& y, double& z) const;
   bool getVec3(double& x, double& y, double& z, double defaultval) const;
 
-  bool getVec2(bool& x, bool& y) const;
+  template <size_t dimensions>
+  bool getVec(double values[dimensions]) const
+  {
+    static_assert(dimensions == 2 || dimensions == 3);
+    if (dimensions == 2) {
+      return getVec2(values[0], values[1]);
+    } else {
+      return getVec2(values[0], values[1], values[2]);
+    }
+  }
 
   // Common Operators
   operator bool() const = delete;

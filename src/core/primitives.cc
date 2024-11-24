@@ -28,7 +28,6 @@
 #include "core/Builtins.h"
 #include "core/Children.h"
 #include "core/ModuleInstantiation.h"
-#include "core/Parameters.h"
 #include "geometry/PolySet.h"
 #include "geometry/Polygon2d.h"
 #include "utils/calc.h"
@@ -509,31 +508,26 @@ static std::shared_ptr<AbstractNode> builtin_polyhedron(const ModuleInstantiatio
   return node;
 }
 
-
 std::unique_ptr<const Geometry> SquareNode::createGeometry() const
 {
-  if (this->x <= 0 || !std::isfinite(this->x) ||
-      this->y <= 0 || !std::isfinite(this->y)) {
+  if (this->x <= 0 || !std::isfinite(this->x) || this->y <= 0 || !std::isfinite(this->y)) {
     return std::make_unique<Polygon2d>();
   }
 
   Vector2d v1(0, 0);
   Vector2d v2(this->x, this->y);
-  if (this->center_x) {
-    v1 -= Vector2d(this->x / 2, 0);
-    v2 -= Vector2d(this->x / 2, 0);
-  }
-  if(this->center_y) {
-    v1 -= Vector2d(0, this->y / 2);
-    v2 -= Vector2d(0, this->y / 2);
-  }
+  v1 += Vector2d(this->x / 2 * (this->center.as_vect[0] - 1.0),
+                 this->y / 2 * (this->center.as_vect[1] - 1.0));
+  v2 += Vector2d(this->x / 2 * (this->center.as_vect[0] - 1.0),
+                 this->y / 2 * (this->center.as_vect[1] - 1.0));
 
   Outline2d o;
   o.vertices = {v1, {v2[0], v1[1]}, v2, {v1[0], v2[1]}};
   return std::make_unique<Polygon2d>(o);
 }
 
-static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *inst, Arguments arguments,
+                                                    const Children& children)
 {
   auto node = std::make_shared<SquareNode>(inst);
 
@@ -551,23 +545,20 @@ static std::shared_ptr<AbstractNode> builtin_square(const ModuleInstantiation *i
     converted |= size.getDouble(node->y);
     converted |= size.getVec2(node->x, node->y);
     if (!converted) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert square(size=%1$s, ...) parameter to a number or a vec2 of numbers", size.toEchoStringNoThrow());
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+          "Unable to convert square(size=%1$s, ...) parameter to a number or a vec2 of numbers",
+          size.toEchoStringNoThrow());
     } else if (OpenSCAD::rangeCheck) {
       bool ok = true;
       ok &= (node->x > 0) && (node->y > 0);
       ok &= std::isfinite(node->x) && std::isfinite(node->y);
       if (!ok) {
-        LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "square(size=%1$s, ...)", size.toEchoStringNoThrow());
+        LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+            "square(size=%1$s, ...)", size.toEchoStringNoThrow());
       }
     }
   }
-  if (parameters["center"].type() == Value::Type::BOOL) {
-    node->center_x = parameters["center"].toBool();
-    node->center_y = parameters["center"].toBool();
-  }
-  else if (parameters["center"].type() == Value::Type::VECTOR) {
-    parameters["center"].getVec2(node->center_x, node->center_y);
-  }
+  node->center.parse(parameters);
 
   return node;
 }

@@ -27,12 +27,96 @@
 #include "geometry/GeometryUtils.h"
 #include "geometry/linalg.h"
 #include "core/node.h"
+#include "core/Parameters.h"
 
 #include <memory>
 #include <cstddef>
 #include <sstream>
 #include <string>
 #include <vector>
+
+template <size_t dimensions>
+class Center
+{
+  bool default_is_centered;
+  double default_centers[dimensions];
+
+  bool is_bool{true};
+  bool as_bool;
+
+  bool is_valid(double value) { return value == -1 || value == 0 || value == 1; }
+
+  void set_to_default()
+  {
+    is_bool = true;
+    as_bool = default_is_centered;
+    for (int i = 0; i < dimensions; i++) {
+      as_vect[i] = default_centers[i];
+    }
+  }
+
+public:
+  double as_vect[dimensions];
+
+  Center(bool default_is_centered, const double default_values[dimensions])
+    : default_is_centered(default_is_centered)
+  {
+    for (int i = 0; i < dimensions; i++) {
+      default_centers[i] = default_values[i];
+    }
+  }
+
+  bool parse(const Parameters& parameters)
+  {
+    if (parameters["center"].type() == Value::Type::BOOL) {
+      is_bool = true;
+      as_bool = parameters["center"].toBool();
+      int common = !as_bool;
+      for (double& c : as_vect) {
+        c = common;
+      }
+      return true;
+    } else if (parameters["center"].type() == Value::Type::VECTOR) {
+      bool okay = true;
+      is_bool = false;
+      if (parameters["center"].getVec<dimensions>(as_vect)) {
+        for (double& c : as_vect) {
+          if (!is_valid(c)) {
+            okay = false;
+            break;
+          }
+        }
+      } else {
+        okay = false;
+      }
+      if (!okay) {
+        set_to_default();
+        return false;
+      }
+      return true;
+    }
+    set_to_default();
+    return true;
+  }
+
+  std::string toString() const
+  {
+    std::ostringstream stream;
+    if (is_bool) {
+      stream << (as_bool ? "true" : "false");
+    } else {
+      stream << "[";
+      for (int i = 0; i < dimensions; i++) {
+        if (i) {
+          stream << ",";
+        }
+        stream << as_vect[i];
+      }
+      stream << "]";
+    }
+    return stream.str();
+  }
+};
 
 class CubeNode : public LeafNode
 {
@@ -123,17 +207,13 @@ public:
 class SquareNode : public LeafNode
 {
 public:
-  SquareNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  const double c[2] = {1.0, 1.0};
+  SquareNode(const ModuleInstantiation *mi) : LeafNode(mi), center(false, c) {}
   std::string toString() const override
   {
     std::ostringstream stream;
-    static const std::string center_value[2][2] = {
-      {"false", "[false, true]"},
-      {"[true, false]", "true"},
-    };
-
     stream << "square(size = [" << x << ", " << y << "], center = "
-           << center_value[center_x][center_y];
+           << center.toString();
     return stream.str();
   }
   std::string name() const override { return "square"; }
@@ -141,8 +221,7 @@ public:
 
   double x = 1, y = 1;
 
-  bool center_x = false;
-  bool center_y = false;
+  Center<2> center;
 };
 
 
