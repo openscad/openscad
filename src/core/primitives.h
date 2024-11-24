@@ -203,17 +203,16 @@ public:
   int convexity = 1;
 };
 
-
 class SquareNode : public LeafNode
 {
-public:
   const double c[2] = {1.0, 1.0};
+
+public:
   SquareNode(const ModuleInstantiation *mi) : LeafNode(mi), center(false, c) {}
   std::string toString() const override
   {
     std::ostringstream stream;
-    stream << "square(size = [" << x << ", " << y << "], center = "
-           << center.toString();
+    stream << "square(size = [" << x << ", " << y << "], center = " << center.toString();
     return stream.str();
   }
   std::string name() const override { return "square"; }
@@ -224,20 +223,18 @@ public:
   Center<2> center;
 };
 
-
 class CircleNode : public LeafNode
 {
+  const double c[2] = {0.0, 0.0};
+
 public:
-  CircleNode(const ModuleInstantiation *mi) : LeafNode(mi) {}
+  CircleNode(const ModuleInstantiation *mi) : LeafNode(mi), center(true, c) {}
   std::string toString() const override
   {
     std::ostringstream stream;
     stream << "circle"
-           << "($fn = " << fn
-           << ", $fa = " << fa
-           << ", $fs = " << fs
-           << ", r = " << r
-           << ")";
+           << "($fn = " << fn << ", $fa = " << fa << ", $fs = " << fs << ", r = " << r
+           << ", center = " << center.toString() << ")";
     return stream.str();
   }
   std::string name() const override { return "circle"; }
@@ -245,8 +242,9 @@ public:
 
   double fn, fs, fa;
   double r = 1;
-};
 
+  Center<2> center;
+};
 
 class PolygonNode : public LeafNode
 {

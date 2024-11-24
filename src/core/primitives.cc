@@ -572,14 +572,17 @@ std::unique_ptr<const Geometry> CircleNode::createGeometry() const
   auto fragments = Calc::get_fragments_from_r(this->r, this->fn, this->fs, this->fa);
   Outline2d o;
   o.vertices.resize(fragments);
+  double x0 = this->r * this->center.as_vect[0];
+  double y0 = this->r * this->center.as_vect[1];
   for (int i = 0; i < fragments; ++i) {
     double phi = (360.0 * i) / fragments;
-    o.vertices[i] = {this->r * cos_degrees(phi), this->r * sin_degrees(phi)};
+    o.vertices[i] = {this->r * cos_degrees(phi) + x0, this->r * sin_degrees(phi) + y0};
   }
   return std::make_unique<Polygon2d>(o);
 }
 
-static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
+static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *inst, Arguments arguments,
+                                                    const Children& children)
 {
   auto node = std::make_shared<CircleNode>(inst);
 
@@ -588,22 +591,23 @@ static std::shared_ptr<AbstractNode> builtin_circle(const ModuleInstantiation *i
         "module %1$s() does not support child modules", node->name());
   }
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(), {"r"}, {"d"});
+  Parameters parameters =
+    Parameters::parse(std::move(arguments), inst->location(), {"r", "center"}, {"d"});
 
   set_fragments(parameters, inst, node->fn, node->fs, node->fa);
   const auto r = lookup_radius(parameters, inst, "d", "r");
   if (r.type() == Value::Type::NUMBER) {
     node->r = r.toDouble();
     if (OpenSCAD::rangeCheck && ((node->r <= 0) || !std::isfinite(node->r))) {
-      LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
-          "circle(r=%1$s)", r.toEchoStringNoThrow());
+      LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "circle(r=%1$s)",
+          r.toEchoStringNoThrow());
     }
   }
 
+  node->center.parse(parameters);
+
   return node;
 }
-
-
 
 std::string PolygonNode::toString() const
 {
@@ -777,9 +781,9 @@ void register_builtin_primitives()
 
   Builtins::init("circle", new BuiltinModule(builtin_circle),
                  {
-                     "circle(radius)",
-                     "circle(r = radius)",
-                     "circle(d = diameter)",
+                     "circle(radius, center = true)",
+                     "circle(r = radius, center = true)",
+                     "circle(d = diameter, center = true)",
                  });
 
   Builtins::init("polygon", new BuiltinModule(builtin_polygon),
