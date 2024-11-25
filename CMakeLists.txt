@@ -413,14 +413,17 @@ message(STATUS "LibXml2: ${LIBXML2_VERSION_STRING}")
 target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
+# PartCAD embeds Python Interpreter
+find_package(Python REQUIRED COMPONENTS Interpreter Development)
+MESSAGE(STATUS "Python: ${Python_VERSION} dirs=${Python_INCLUDE_DIRS} libs=${Python_LIBRARIES} exec=${Python_EXECUTABLE}}")
+target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
+target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
+
 if(ENABLE_PYTHON)
-  find_package(Python REQUIRED COMPONENTS Interpreter Development)
-  MESSAGE(STATUS "dirs=${Python_INCLUDE_DIRS} libs=${Python_LIBRARIES} exec=${Python_EXECUTABLE}}")
+  message(STATUS "Python enabled")
   find_package(CryptoPP REQUIRED)
-  message(STATUS "Python enabled, using Crypto++ ${PC_CRYPTOPP_VERSION}")
-  target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
+  message(STATUS "Using Crypto++ ${PC_CRYPTOPP_VERSION}")
   target_include_directories(OpenSCAD PRIVATE ${CRYPTOPP_INCLUDE_DIRS})
-  target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
   target_link_libraries(OpenSCAD PRIVATE ${CRYPTOPP_LIBRARIES})
 endif()
 

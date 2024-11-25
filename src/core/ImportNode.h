@@ -40,6 +40,6 @@ public:
   double fn, fs, fa;
   double origin_x, origin_y, scale;
   double width, height;
-  bool remove_file_on_destruction{false};
+  bool partcad_node{false};
   std::unique_ptr<const class Geometry> createGeometry() const override;
 };

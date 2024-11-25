@@ -47,7 +47,6 @@ if(NOT EXISTS ${LIBRARIES_DIR}/MCAD/__init__.py)
   message(FATAL_ERROR "MCAD not found. You can install from the OpenSCAD root as follows: \n  git submodule update --init --recursive")
 endif()
 list(APPEND CTEST_ENVIRONMENT "OPENSCADPATH=${LIBRARIES_DIR}")
-
 find_package(Python3 3.4 COMPONENTS Interpreter REQUIRED)
 message(STATUS "Found Python at ${Python3_EXECUTABLE}")
 
@@ -363,7 +362,7 @@ function(add_cmdline_test TESTCMD_BASENAME)
     # add global experimental options here
     set(EXPERIMENTAL_OPTION "")
 
-    # # To give manifold some extra test coverage, enable manifold 
+    # # To give manifold some extra test coverage, enable manifold
     # # for all tests except those marked as skipped.
     # if (ENABLE_MANIFOLD
     #     AND NOT SCADFILE IN_LIST SCADFILES_DIFFERENT_MANIFOLD_EXPECTATIONS
@@ -730,7 +729,7 @@ list(APPEND PREVIEW_ONLY_FILES
   ${TEST_SCAD_DIR}/3D/features/background-modifier2.scad
 )
 
-list(REMOVE_ITEM RENDERTEST_FILES 
+list(REMOVE_ITEM RENDERTEST_FILES
   # These tests only makes sense in preview mode
   ${PREVIEW_ONLY_FILES}
   # These tests don't make sense in CGAL mode
@@ -944,8 +943,8 @@ set_test_config(Heavy FILES
 set_test_config(Bugs FILES ${BUGS_FILES} ${BUGS_2D_FILES} PREFIXES
  rendertest rendermanifoldtest csgrendertest previewtest previewmanifoldtest throwntogethertest)
 set_test_config(Bugs FILES ${BUGS_FILES} PREFIXES
-  offpreviewtest monotonerendertest 
-  stlpreviewtest stlpreviewmanifoldtest 
+  offpreviewtest monotonerendertest
+  stlpreviewtest stlpreviewmanifoldtest
   stlrendertest stlrendermanifoldtest
   stlrenderforcetest stlrendermanifoldforcetest
   binstlrenderforcetest binstlrendermanifoldforcetest
@@ -963,7 +962,7 @@ set_test_config(Bugs FILES
 remove_test_config(Bugs FILES
   stlrendermanifoldforcetest_issue584
   rendermanifoldtest_issue591
-  rendermanifoldtest_issue791 
+  rendermanifoldtest_issue791
   # FIXME: #802
   stlrendermanifoldforcetest_issue945
   stlrendermanifoldforcetest_issue945b
@@ -976,9 +975,9 @@ remove_test_config(Bugs FILES
 
 # Examples
 set_test_config(Examples FILES ${EXAMPLE_FILES} PREFIXES
-  rendertest rendermanifoldtest rendermanifoldtest-different 
-  previewtest previewmanifoldtest previewmanifoldtest-different previewtestthrowntogethertest 
-  csgrendertest monotonerendertest 
+  rendertest rendermanifoldtest rendermanifoldtest-different
+  previewtest previewmanifoldtest previewmanifoldtest-different previewtestthrowntogethertest
+  csgrendertest monotonerendertest
   offpreviewtest offrendertest dumptest-examples)
 set_test_config(Examples FILES ${EXAMPLE_2D_FILES} PREFIXES dxfrendertest)
 
@@ -1122,8 +1121,8 @@ ${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
 
 #
 # There are some caveats with export and import, so we need to test a few combinations:
-# 1. It may be possible to export a non-manifold mesh (e.g. malformed polyhedron) due to 
-#    no manifoldness checks at export time. This is by design, e.g. to allow users to 
+# 1. It may be possible to export a non-manifold mesh (e.g. malformed polyhedron) due to
+#    no manifoldness checks at export time. This is by design, e.g. to allow users to
 #    troubleshoot externally.
 # 2. It may be possible to import such non-manifolds and preview or render them, but it will
 #    likely fail when trying to construct a data structure requiring manifold objects (e.g. --render=force)
@@ -1446,7 +1445,7 @@ add_output_file_test(relative-output FILE ${TEST_SCAD_DIR}/3D/features/cube-test
 set_tests_properties(
   relative-output_csg_run
   relative-output_csg_check
-  relative-output_ast_run 
+  relative-output_ast_run
   relative-output_ast_check
   PROPERTIES DISABLED TRUE
 )
@@ -1515,9 +1514,9 @@ set_tests_properties(
 
   # https://github.com/openscad/openscad/issues/5158
   throwntogethertest_example017
-  rendertest_example017 
+  rendertest_example017
   previewtest_example017
-  
+
   # https://github.com/openscad/openscad/issues/4398
   csgrendertest_logo_and_text
 
@@ -1526,7 +1525,7 @@ set_tests_properties(
   amfrendertest_bad-stl-tardis
   amfrendertest_bad-stl-pcbvicebar
   amfrendertest_bad-stl-wing
-  
+
   # We don't repair polygon winding order in CGAL mode
   # We could perhaps split the test into good+bad polyhedrons
   # and only disable the bad ones.
@@ -1560,7 +1559,7 @@ set_tests_properties(
   previewtest_issue2841b
   throwntogethertest_issue2841b
   csgrendertest_issue2841b
-  
+
   PROPERTIES DISABLED TRUE
 )
 if (ENABLE_MANIFOLD)
@@ -1613,7 +1612,7 @@ if (LIB3MF_FOUND)
 
     # For some reason, only failing on Linux
     3mfrendertest_bad-stl-tardis
-    
+
     PROPERTIES DISABLED TRUE
   )
 else()

@@ -54,42 +54,43 @@
 #include <filesystem>
 namespace fs = std::filesystem;
 #include <boost/assign/std/vector.hpp>
-using namespace boost::assign; // bring 'operator+=()' into scope
+using namespace boost::assign;  // bring 'operator+=()' into scope
 
-
-static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children, ImportType type)
+static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, Arguments arguments,
+                                               const Children& children, ImportType type)
 {
-  bool remove_file_on_destruction = false;
+  bool partcad_node = false;
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
         "module %1$s() does not support child modules", inst->name());
   }
 
-  Parameters parameters = Parameters::parse(std::move(arguments), inst->location(),
-                                            {"file", "layer", "convexity", "origin", "scale"},
-                                            {"width", "height", "filename", "layername", "center", "dpi", "id"}
-                                            );
+  Parameters parameters = Parameters::parse(
+    std::move(arguments), inst->location(), {"file", "layer", "convexity", "origin", "scale"},
+    {"width", "height", "filename", "layername", "center", "dpi", "id"});
+
   std::string filename;
   const auto& v = parameters["file"];
   if (v.isDefined()) {
     if (v.toString().find(':') != std::string::npos) {
+      partcad_node = true;
       filename = PartCAD::getPart(v.toString(), inst->location().filePath().parent_path());
       if (filename.empty()) {
         LOG(message_group::Error, "error importing PartCAD, part spec=%1$s", v.toString());
       }
-      else {
-        remove_file_on_destruction = true;
-      }
-    }
-    else {
-      filename = lookup_file(v.isUndefined() ? "" : v.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
+    } else {
+      filename =
+        lookup_file(v.isUndefined() ? "" : v.toString(),
+                    inst->location().filePath().parent_path().string(), parameters.documentRoot());
     }
   } else {
     const auto& filename_val = parameters["filename"];
     if (!filename_val.isUndefined()) {
       LOG(message_group::Deprecated, "filename= is deprecated. Please use file=");
     }
-    filename = lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(), inst->location().filePath().parent_path().string(), parameters.documentRoot());
+    filename =
+      lookup_file(filename_val.isUndefined() ? "" : filename_val.toString(),
+                  inst->location().filePath().parent_path().string(), parameters.documentRoot());
   }
   if (!filename.empty()) handle_dep(filename);
 
@@ -108,7 +109,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   }
 
   auto node = std::make_shared<ImportNode>(inst, actualtype);
-  node->remove_file_on_destruction = remove_file_on_destruction;
+  node->partcad_node = partcad_node;
 
   node->fn = parameters["$fn"].toDouble();
   node->fs = parameters["$fs"].toDouble();
@@ -138,7 +139,8 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   bool originOk = origin.getVec2(node->origin_x, node->origin_y);
   originOk &= std::isfinite(node->origin_x) && std::isfinite(node->origin_y);
   if (origin.isDefined() && !originOk) {
-    LOG(message_group::Warning, inst->location(), parameters.documentRoot(), "Unable to convert import(..., origin=%1$s) parameter to vec2", origin.toEchoStringNoThrow());
+    LOG(message_group::Warning, inst->location(), parameters.documentRoot(),
+        "Unable to convert import(..., origin=%1$s) parameter to vec2", origin.toEchoStringNoThrow());
   }
 
   const auto& center = parameters["center"];
@@ -152,11 +154,12 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   if (dpi.type() == Value::Type::NUMBER) {
     double val = dpi.toDouble();
     if (val < 0.001) {
-      std::string filePath = fs_uncomplete(inst->location().filePath(), parameters.documentRoot()).generic_string();
+      std::string filePath =
+        fs_uncomplete(inst->location().filePath(), parameters.documentRoot()).generic_string();
       LOG(message_group::Warning,
-          "Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
-          origin.toEchoStringNoThrow(), filePath, filePath, inst->location().firstLine()
-          );
+          "Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, "
+          "file %2$s, import() at line %3$d",
+          origin.toEchoStringNoThrow(), filePath, filePath, inst->location().firstLine());
     } else {
       node->dpi = val;
     }
@@ -168,19 +171,29 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   return node;
 }
 
-static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
-{ return do_import(inst, std::move(arguments), children, ImportType::UNKNOWN); }
+static std::shared_ptr<AbstractNode> builtin_import(const ModuleInstantiation *inst, Arguments arguments,
+                                                    const Children& children)
+{
+  return do_import(inst, std::move(arguments), children, ImportType::UNKNOWN);
+}
 
-static std::shared_ptr<AbstractNode> builtin_import_stl(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
-{ return do_import(inst, std::move(arguments), children, ImportType::STL); }
+static std::shared_ptr<AbstractNode> builtin_import_stl(const ModuleInstantiation *inst,
+                                                        Arguments arguments, const Children& children)
+{
+  return do_import(inst, std::move(arguments), children, ImportType::STL);
+}
 
-static std::shared_ptr<AbstractNode> builtin_import_off(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
-{ return do_import(inst, std::move(arguments), children, ImportType::OFF); }
+static std::shared_ptr<AbstractNode> builtin_import_off(const ModuleInstantiation *inst,
+                                                        Arguments arguments, const Children& children)
+{
+  return do_import(inst, std::move(arguments), children, ImportType::OFF);
+}
 
-static std::shared_ptr<AbstractNode> builtin_import_dxf(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
-{ return do_import(inst, std::move(arguments), children, ImportType::DXF); }
-
-
+static std::shared_ptr<AbstractNode> builtin_import_dxf(const ModuleInstantiation *inst,
+                                                        Arguments arguments, const Children& children)
+{
+  return do_import(inst, std::move(arguments), children, ImportType::DXF);
+}
 
 /*!
    Will return an empty geometry if the import failed, but not nullptr
@@ -189,6 +202,12 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
 {
   std::unique_ptr<Geometry> g;
   auto loc = this->modinst->location();
+
+  if (this->partcad_node && this->filename.empty()) {
+    g = PolySet::createEmpty();
+    g->setConvexity(this->convexity);
+    return g;
+  }
 
   switch (this->type) {
   case ImportType::STL: {
@@ -212,11 +231,13 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
     break;
   }
   case ImportType::SVG: {
-    g = import_svg(this->fn, this->fs, this->fa, this->filename, this->id, this->layer, this->dpi, this->center, loc);
+    g = import_svg(this->fn, this->fs, this->fa, this->filename, this->id, this->layer, this->dpi,
+                   this->center, loc);
     break;
   }
   case ImportType::DXF: {
-    DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layer.value_or(""), this->origin_x, this->origin_y, this->scale);
+    DxfData dd(this->fn, this->fs, this->fa, this->filename, this->layer.value_or(""), this->origin_x,
+               this->origin_y, this->scale);
     g = dd.toPolygon2d();
     break;
   }
@@ -227,7 +248,9 @@ std::unique_ptr<const Geometry> ImportNode::createGeometry() const
   }
 #endif
   default:
-    LOG(message_group::Error, "Unsupported file format while trying to import file '%1$s', import() at line %2$d", this->filename, loc.firstLine());
+    LOG(message_group::Error,
+        "Unsupported file format while trying to import file '%1$s', import() at line %2$d",
+        this->filename, loc.firstLine());
     g = PolySet::createEmpty();
   }
 
@@ -250,26 +273,20 @@ std::string ImportNode::toString() const
   }
   stream << ", origin = [" << std::dec << this->origin_x << ", " << this->origin_y << "]";
   if (this->type == ImportType::SVG) {
-    stream << ", center = " << (this->center ? "true" : "false")
-           << ", dpi = " << this->dpi;
+    stream << ", center = " << (this->center ? "true" : "false") << ", dpi = " << this->dpi;
   }
-  stream << ", scale = " << this->scale
-         << ", convexity = " << this->convexity
-         << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs
-         << ", timestamp = " << fs_timestamp(path)
+  stream << ", scale = " << this->scale << ", convexity = " << this->convexity << ", $fn = " << this->fn
+         << ", $fa = " << this->fa << ", $fs = " << this->fs << ", timestamp = " << fs_timestamp(path)
          << ")";
 
   return stream.str();
 }
 
-std::string ImportNode::name() const
-{
-  return "import";
-}
+std::string ImportNode::name() const { return "import"; }
 
 ImportNode::~ImportNode()
 {
-  if (this->remove_file_on_destruction && !this->filename.empty()) {
+  if (this->partcad_node && !this->filename.empty()) {
     fs::remove(this->filename.c_str());
   }
 }
@@ -281,7 +298,7 @@ void register_builtin_import()
   Builtins::init("import_dxf", new BuiltinModule(builtin_import_dxf));
 
   Builtins::init("import", new BuiltinModule(builtin_import),
-  {
-    "import(string, [number, [number]])",
-  });
+                 {
+                   "import(string, [number, [number]])",
+                 });
 }
