@@ -30,7 +30,9 @@
 
 #include "core/module.h"
 #include "core/ModuleInstantiation.h"
+#ifdef ENABLE_PARTCAD
 #include "core/PartCAD.h"
+#endif
 #include "geometry/PolySet.h"
 #ifdef ENABLE_CGAL
 #include "geometry/cgal/CGAL_Nef_polyhedron.h"
@@ -72,13 +74,16 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   std::string filename;
   const auto& v = parameters["file"];
   if (v.isDefined()) {
+#ifdef ENABLE_PARTCAD
     if (v.toString().find(':') != std::string::npos) {
       partcad_node = true;
       filename = PartCAD::getPart(v.toString(), inst->location().filePath().parent_path());
       if (filename.empty()) {
         LOG(message_group::Error, "error importing PartCAD, part spec=%1$s", v.toString());
       }
-    } else {
+    } else
+#endif
+    {
       filename =
         lookup_file(v.isUndefined() ? "" : v.toString(),
                     inst->location().filePath().parent_path().string(), parameters.documentRoot());

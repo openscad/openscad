@@ -57,6 +57,7 @@ option(ENABLE_CGAL "Enable CGAL." ON)
 option(ENABLE_MANIFOLD "Enable Manifold." ON)
 option(ALLOW_BUNDLED_HIDAPI "Allow usage of bundled HIDAPI library (Windows only)." OFF)
 option(ENABLE_PYTHON "Enable experimental Python Interpreter" OFF)
+option(ENABLE_PARTCAD "Enable PartCAD, package manager for CAD models." ON)
 option(BUILD_SHARED_LIBS "Build shared library" OFF)
 include(CMakeDependentOption)
 cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instead of an Apple Bundle" OFF "APPLE" OFF)
@@ -414,10 +415,12 @@ target_include_directories(OpenSCAD SYSTEM PRIVATE ${LIBXML2_INCLUDE_DIR})
 target_link_libraries(OpenSCAD PRIVATE ${LIBXML2_LIBRARIES})
 
 # PartCAD embeds Python Interpreter
-find_package(Python REQUIRED COMPONENTS Interpreter Development)
-MESSAGE(STATUS "Python: ${Python_VERSION} dirs=${Python_INCLUDE_DIRS} libs=${Python_LIBRARIES} exec=${Python_EXECUTABLE}}")
-target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
-target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
+if (ENABLE_PARTCAD OR ENABLE_PYTHON)
+  find_package(Python REQUIRED COMPONENTS Interpreter Development)
+  MESSAGE(STATUS "Python: ${Python_VERSION} dirs=${Python_INCLUDE_DIRS} libs=${Python_LIBRARIES} exec=${Python_EXECUTABLE}}")
+  target_include_directories(OpenSCAD PRIVATE ${Python_INCLUDE_DIRS})
+  target_link_libraries(OpenSCAD PRIVATE ${Python_LIBRARIES})
+endif()
 
 if(ENABLE_PYTHON)
   message(STATUS "Python enabled")
@@ -754,7 +757,6 @@ set(CORE_SOURCES
   src/core/FreetypeRenderer.cc
   src/core/FunctionType.cc
   src/core/GroupModule.cc
-  src/core/PartCAD.cc
   src/core/ImportNode.cc
   src/core/LinearExtrudeNode.cc
   src/core/LocalScope.cc
@@ -874,6 +876,12 @@ if(ENABLE_PYTHON)
 	list(APPEND CORE_SOURCES
 		    src/core/pyopenscad.cc )
 	target_compile_definitions(OpenSCAD PRIVATE ENABLE_PYTHON)
+endif()
+
+if(ENABLE_PARTCAD)
+  list(APPEND CORE_SOURCES
+		    src/core/PartCAD.cc )
+  target_compile_definitions(OpenSCAD PRIVATE ENABLE_PARTCAD)
 endif()
 
 if(EXPERIMENTAL AND ENABLE_CGAL)
