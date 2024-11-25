@@ -412,8 +412,9 @@ MainWindow::MainWindow(const QStringList& filenames)
   scadApp->windowManager.add(this);
 
   this->cgalworker = new CGALWorker();
-  connect(this->cgalworker, SIGNAL(done(std::shared_ptr<const Geometry>)),
+  connect(this->cgalworker, SIGNAL(done(std::shared_ptr<const Geometry>, const int)),
           this, SLOT(actionRenderDone(std::shared_ptr<const Geometry>)));
+  connect(this->cgalworker, &CGALWorker::done, this, &MainWindow::actionRenderDoneExport);
 
   root_node = nullptr;
 
@@ -1347,7 +1348,7 @@ void MainWindow::instantiateRoot()
    Generates CSG tree for OpenCSG evaluation.
    Assumes that the design has been parsed and evaluated (this->root_node is set)
  */
-void MainWindow::compileCSG()
+bool MainWindow::compileCSG()
 {
   OpenSCAD::hardwarnings = Preferences::inst()->getValue("advanced/enableHardwarnings").toBool();
   try{
@@ -1365,7 +1366,7 @@ void MainWindow::compileCSG()
 #endif
 
     if (!isClosing) progress_report_prep(this->root_node, report_func, this);
-    else return;
+    else return false;
     try {
 #ifdef ENABLE_OPENCSG
       this->processEvents();
@@ -1375,8 +1376,10 @@ void MainWindow::compileCSG()
       this->processEvents();
     } catch (const ProgressCancelException&) {
       LOG("CSG generation cancelled.");
+      return false;
     } catch (const HardWarningException&) {
       LOG("CSG generation cancelled due to hardwarning being enabled.");
+      return false;
     }
     progress_report_fin();
     updateStatusBar(nullptr);
@@ -1464,9 +1467,11 @@ void MainWindow::compileCSG()
     LOG("Compile and preview finished.");
     renderStatistic.printRenderingTime();
     this->processEvents();
+    return true;
   } catch (const HardWarningException&) {
     exceptionCleanup();
   }
+  return false;
 }
 
 void MainWindow::actionOpen()
@@ -2109,11 +2114,18 @@ void MainWindow::csgRender()
 #endif
   }
 
-  if (animateWidget->dumpPictures() ) {
+  if (animateWidget->dumpPictures() || animateWidget->dumpPovRay()) {
     int steps = animateWidget->nextFrame();
-    QImage img = this->qglview->grabFrame();
-    QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
-    img.save(filename, "PNG");
+    if (animateWidget->dumpPictures()) {
+      QImage img = this->qglview->grabFrame();
+      QString filename = QString("frame%1.png").arg(steps, 5, 10, QChar('0'));
+      img.save(filename, "PNG");
+    }
+
+    if (animateWidget->dumpPovRay()) {
+      // need to regenerate for each frame because of $t
+      this->cgalworker->start(this->tree, steps);
+    }
   }
 
   compileEnded();
@@ -2352,11 +2364,29 @@ void MainWindow::cgalRender()
   if (!isClosing) progress_report_prep(this->root_node, report_func, this);
   else return;
 
-  this->cgalworker->start(this->tree);
+  this->cgalworker->start(this->tree, -1);
 }
 
-void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom)
+void MainWindow::actionRenderDoneExport(const std::shared_ptr<const Geometry>& root_geom, const int counter)
 {
+  if (counter == -1 || !root_geom)
+    return;
+  LOG("Rendering finished.");
+  this->root_geom = root_geom;
+
+  QString filename = QString("frame%1.pov").arg(counter, 5, 10, QChar('0'));
+  ExportInfo exportInfo = {.format = FileFormat::POV, .sourceFilePath = activeEditor->filepath.toStdString(), .camera = &qglview->cam, .clock = animateWidget->getAnim_tval()};
+  if (!exportFileByName(root_geom, filename.toStdString(), exportInfo)) {
+    LOG(message_group::Error, "PovRay output failed!");
+    clearCurrentOutput();
+    animateWidget->pauseAnimation();
+  }
+}
+
+void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom, const int counter)
+{
+  if (counter >= 0)
+    return;
   progress_report_fin();
   if (root_geom) {
     std::vector<std::string> options;

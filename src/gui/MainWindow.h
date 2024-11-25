@@ -30,6 +30,8 @@
 #include <QUrl>
 #include <QWidget>
 #include <ctime>
+#include <condition_variable>
+#include <mutex>
 #include <unordered_map>
 #include <memory>
 #include <string>
@@ -158,7 +160,7 @@ private:
   void setRenderVariables(ContextHandle<BuiltinContext>& context);
   void updateCompileResult();
   void compile(bool reload, bool forcedone = false);
-  void compileCSG();
+  bool compileCSG();
   bool checkEditorModified();
   QString dumpCSGTree(const std::shared_ptr<AbstractNode>& root);
 
@@ -270,7 +272,8 @@ private slots:
   void sendToLocalSlicer();
   void sendToPrintService();
   void actionRender();
-  void actionRenderDone(const std::shared_ptr<const Geometry>&);
+  void actionRenderDone(const std::shared_ptr<const Geometry>&, const int counter);
+  void actionRenderDoneExport(const std::shared_ptr<const Geometry>&, const int counter);
   void cgalRender();
   void actionMeasureDistance();
   void actionMeasureAngle();

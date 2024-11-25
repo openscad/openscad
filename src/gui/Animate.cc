@@ -41,6 +41,7 @@ void Animate::initGUI()
   connect(this->e_fps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFpsAndAnimSteps()));
   connect(this->e_fsteps, SIGNAL(textChanged(QString)), this, SLOT(updatedAnimFpsAndAnimSteps()));
   connect(this->e_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDump(bool)));
+  connect(this->pr_dump, SIGNAL(toggled(bool)), this, SLOT(updatedAnimDumpPovRay(bool)));
 }
 
 void Animate::setMainWindow(MainWindow *mainWindow)
@@ -166,12 +167,12 @@ void Animate::updatedAnimFpsAndAnimSteps()
   updatePauseButtonIcon();
 }
 
-
 void Animate::updatedAnimDump(bool checked)
 {
-  if (!checked) this->anim_dumping = false;
+}
 
-  updatePauseButtonIcon();
+void Animate::updatedAnimDumpPovRay(bool checked)
+{
 }
 
 // Only called from animate_timer
@@ -219,9 +220,15 @@ void Animate::updateTVal()
   updatePauseButtonIcon();
 }
 
-void Animate::pauseAnimation(){
+void Animate::pauseAnimation()
+{
   animate_timer->stop();
   updatePauseButtonIcon();
+}
+
+bool Animate::isRunning()
+{
+  return animate_timer->isActive();
 }
 
 void Animate::on_pauseButton_pressed()
@@ -284,10 +291,15 @@ bool Animate::dumpPictures(){
   return this->e_dump->isChecked() && this->animate_timer->isActive();
 }
 
+bool Animate::dumpPovRay(){
+  return this->pr_dump->isChecked() && this->animate_timer->isActive();
+}
+
 int Animate::nextFrame(){
   if (anim_dumping && anim_dump_start_step == anim_step) {
     anim_dumping = false;
     e_dump->setChecked(false);
+    pr_dump->setChecked(false);
   } else {
     if (!anim_dumping) {
       anim_dumping = true;
