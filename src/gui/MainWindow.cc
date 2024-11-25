@@ -413,7 +413,7 @@ MainWindow::MainWindow(const QStringList& filenames)
 
   this->cgalworker = new CGALWorker();
   connect(this->cgalworker, SIGNAL(done(std::shared_ptr<const Geometry>, const int)),
-          this, SLOT(actionRenderDone(std::shared_ptr<const Geometry>)));
+          this, SLOT(actionRenderDone(std::shared_ptr<const Geometry>, const int)));
   connect(this->cgalworker, &CGALWorker::done, this, &MainWindow::actionRenderDoneExport);
 
   root_node = nullptr;
