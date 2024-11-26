@@ -2124,6 +2124,8 @@ void MainWindow::csgRender()
 
     if (animateWidget->dumpPovRay()) {
       // need to regenerate for each frame because of $t
+      GuiLocker::lock();
+      this->root_geom.reset();
       this->cgalworker->start(this->tree, steps);
     }
   }
@@ -2371,7 +2373,7 @@ void MainWindow::actionRenderDoneExport(const std::shared_ptr<const Geometry>& r
 {
   if (counter == -1 || !root_geom)
     return;
-  LOG("Rendering finished.");
+  LOG("Rendering finished!");
   this->root_geom = root_geom;
 
   QString filename = QString("frame%1.pov").arg(counter, 5, 10, QChar('0'));
@@ -2381,6 +2383,7 @@ void MainWindow::actionRenderDoneExport(const std::shared_ptr<const Geometry>& r
     clearCurrentOutput();
     animateWidget->pauseAnimation();
   }
+  GuiLocker::unlock();
 }
 
 void MainWindow::actionRenderDone(const std::shared_ptr<const Geometry>& root_geom, const int counter)
