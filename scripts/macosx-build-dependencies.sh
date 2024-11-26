@@ -56,7 +56,7 @@ PACKAGES=(
     "cairo 1.18.0"
     "cgal 6.0"
 #    "qt5 5.15.16"
-    "qt6 6.8.0"
+    "qt6 6.5.3"
     "opencsg 1.6.0"
     "qscintilla 2.14.1"
     "onetbb 2021.12.0"
@@ -260,11 +260,11 @@ build_qt6()
   mkdir build
   cd build
   ../configure -prefix $DEPLOYDIR -release -opensource -confirm-license -nomake tests -nomake examples \
-    -submodules qtbase,qt5compat,qtmultimedia,qtsvg -skip qtquick3d,qtdeclarative \
-    -no-feature-sql -no-feature-xml -no-feature-testlib -no-feature-glib \
+    -submodules qtbase,qt5compat,qtmultimedia,qtsvg -skip qtquick3d,qtquicktimeline,qtdeclarative \
+    -no-feature-sql -no-feature-testlib -no-feature-glib \
 		-no-feature-linguist -no-feature-designer -no-feature-pixeltool -no-feature-assistant \
     -no-feature-distancefieldgenerator -no-feature-qtattributionsscanner -no-feature-qtplugininfo \
-    -no-feature-qtdiag -no-feature-qdoc \
+    -no-feature-qtdiag \
     -- -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED_REV"
   ninja
   ninja install
