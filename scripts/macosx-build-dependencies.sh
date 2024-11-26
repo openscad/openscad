@@ -43,7 +43,7 @@ PACKAGES=(
     "gmp 6.3.0"
     "mpfr 4.2.0"
     "glew 2.2.0"
-    "gettext 0.21.1"
+    "gettext 0.22.5"
     "libffi REMOVE"
     "freetype 2.12.1"
     "ragel REMOVE"
@@ -55,7 +55,8 @@ PACKAGES=(
     "fontconfig 2.14.1"
     "hidapi 0.12.0"
     "lib3mf 2.3.1"
-    "glib2 2.81.0"
+    "pcre2 10.44"
+    "glib2 2.83.0"
     "pixman 0.42.2"
     "cairo 1.18.0"
     "cgal 6.0"
@@ -647,6 +648,22 @@ build_gettext()
   fi
 }
 
+build_pcre2()
+{
+  version=$1
+  cd "$BASEDIR"/src
+  rm -rf "pcre2-$version"
+  if [ ! -f "pcre2-$version.tar.bz2" ]; then
+    curl -LO "https://github.com/PCRE2Project/pcre2/releases/download/pcre2-$version/pcre2-$version.tar.bz2"
+  fi
+  tar xzf "pcre2-$version.tar.bz2"
+  cd "pcre2-$version"
+
+  cmake . -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_BUILD_PCRE2GREP=OFF -DPCRE2_BUILD_TESTS=OFF -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED"
+  make -j"$NUMCPU" install
+  make install
+}
+
 build_glib2()
 {
   version="$1"
@@ -662,7 +679,7 @@ build_glib2()
   # Build each arch separately
   for arch in ${ARCHS[*]}; do
     sed -e "s,@MAC_OSX_VERSION_MIN@,$MAC_OSX_VERSION_MIN,g" -e "s,@DEPLOYDIR@,$DEPLOYDIR,g" $OPENSCADDIR/scripts/macos-$arch.txt.in > macos-$arch.txt
-    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt --force-fallback-for libpcre2-8 -Ddocumentation=false -Dman-pages=disabled -Ddtrace=false -Dtests=false build-$arch
+    meson setup --prefix $DEPLOYDIR --cross-file macos-$arch.txt -Ddocumentation=false -Dman-pages=disabled -Ddtrace=disabled -Dtests=false build-$arch
     meson compile -C build-$arch
     DESTDIR=install/ meson install -C build-$arch
   done
