@@ -151,7 +151,7 @@ jobs:
             # Pick up our own Qt
             export PATH=$OPENSCAD_LIBRARIES/bin:$PATH
             # Build universal binaries and limit to 30 minutes
-            ./scripts/macosx-build-dependencies.sh -l 30 -x -a -d double_conversion eigen gmp mpfr glew gettext libffi freetype ragel harfbuzz libzip libxml2 libuuid fontconfig hidapi lib3mf pixman cairo glib2 boost cgal qt5 opencsg qscintilla sparkle onetbb
+            ./scripts/macosx-build-dependencies.sh -l 30 -x -a -d
       - run:
           name: Package Dependencies as an artifact
           command: |
