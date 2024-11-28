@@ -2822,8 +2822,6 @@ void MainWindow::actionExportFileFormat(int fmt_)
   FileFormat fmt = (FileFormat) fmt_;	
   FileFormatInfo info = fileformat::info(fmt);
   const std::string suffix = "."+info.suffix;
-  printf("suffix is %s\n",suffix.c_str());
-  printf("identifier is %s\n",info.identifier.c_str());
   switch(fmt) {
     case FileFormat::BINARY_STL:
       if (Settings::Settings::exportUseAsciiSTL.value()) {
