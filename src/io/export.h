@@ -35,7 +35,8 @@ enum class FileFormat {
   PNG,
   PDF,
   POV,
-  PARAM
+  PARAM,
+  Image
 };
 
 
