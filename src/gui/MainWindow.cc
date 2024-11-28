@@ -2155,7 +2155,7 @@ void MainWindow::sendToExternalTool(ExternalToolInterface &externalToolService)
   
   activeFileName = activeFileName + QString::fromStdString("." + fileformat::toSuffix(externalToolService.fileFormat()));
 
-  bool export_status = externalToolService.exportTemporaryFile(this->root_geom, activeFileName);
+  bool export_status = externalToolService.exportTemporaryFile(this->root_geom, activeFileName, &qglview->cam);
   
   this->progresswidget = new ProgressWidget(this);
   connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
