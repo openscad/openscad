@@ -2825,9 +2825,9 @@ void MainWindow::actionExportFileFormat(int fmt_)
   switch(fmt) {
     case FileFormat::BINARY_STL:
       if (Settings::Settings::exportUseAsciiSTL.value()) {
-        actionExport(FileFormat::ASCII_STL, info.identifier.c_str(), suffix.c_str(), 3);
+        actionExport(FileFormat::ASCII_STL, info.description.c_str(), suffix.c_str(), 3);
       } else {
-        actionExport(FileFormat::BINARY_STL, info.identifier.c_str(), suffix.c_str(), 3);
+        actionExport(FileFormat::BINARY_STL, info.description.c_str(), suffix.c_str(), 3);
       }
       break;	    
     case FileFormat::PDF:
@@ -2927,7 +2927,7 @@ void MainWindow::actionExportFileFormat(int fmt_)
 }
       break;
     default:
-      actionExport(info.format, info.identifier.c_str(), suffix.c_str(), fileformat::is3D(fmt) ? 3 : fileformat::is2D(fmt) ? 2 : 0);
+      actionExport(info.format, info.description.c_str(), suffix.c_str(), fileformat::is3D(fmt) ? 3 : fileformat::is2D(fmt) ? 2 : 0);
   }
 }
 
