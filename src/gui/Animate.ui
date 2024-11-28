@@ -200,6 +200,8 @@
              <string>Dump Pictures</string>
             </property>
            </widget>
+          </item>
+          <item>
            <widget class="QCheckBox" name="pr_dump">
             <property name="text">
              <string>Dump PovRay scripts</string>

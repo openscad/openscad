@@ -34,6 +34,10 @@ public:
   bool isRunning();
 
   QTimer *animate_timer;
+  bool is_step_timer;  // no automatic timer, triggered by caller
+  bool end_reached;
+
+  void stepTimer();
 
   void setMainWindow(MainWindow *mainWindow);
 

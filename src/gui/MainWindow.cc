@@ -2377,11 +2377,15 @@ void MainWindow::actionRenderDoneExport(const std::shared_ptr<const Geometry>& r
   this->root_geom = root_geom;
 
   QString filename = QString("frame%1.pov").arg(counter, 5, 10, QChar('0'));
+  printf("Generating %s\n", filename.toStdString().c_str());
   ExportInfo exportInfo = {.format = FileFormat::POV, .sourceFilePath = activeEditor->filepath.toStdString(), .camera = &qglview->cam, .clock = animateWidget->getAnim_tval()};
   if (!exportFileByName(root_geom, filename.toStdString(), exportInfo)) {
     LOG(message_group::Error, "PovRay output failed!");
     clearCurrentOutput();
     animateWidget->pauseAnimation();
+  }
+  else {
+    animateWidget->stepTimer();
   }
   GuiLocker::unlock();
 }

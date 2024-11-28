@@ -112,8 +112,6 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     }
   }
 
-  std::string t = exportInfo.clock.has_value() ? std::to_string(exportInfo.clock.value()) : "0.";
-
   if (exportInfo.camera) {
     auto vpt = exportInfo.camera->getVpt();
     auto vpr = exportInfo.camera->getVpr();
@@ -126,10 +124,12 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       "location <" << 0 << ", " << 0 << ", " << exportInfo.camera->viewer_distance << ">\n "
       "angle " << exportInfo.camera->fov << " up <0, 1, 0> right <1, 0, 0> sky <0, 1, 0> right -x*image_width/image_height\n"
       "translate <" << vpt.x() << ", " << vpt.y() << ", " << vpt.z() << ">\n"
-      "rotate <" << pitch << ", " << yaw << " + clock * 3 + " << t << ", " << roll << " + clock + " << t << ">\n"
+      "rotate <" << pitch << ", " << yaw << " + clock * 3, " << roll << " + clock>\n"
       "}\n";
   }
   else {
+    std::string t = exportInfo.clock.has_value() ? std::to_string(exportInfo.clock.value()) : "0.";
+
     output << "camera { look_at <" << bbox.center().x() << ", " << bbox.center().y() << ", " << bbox.center().z() << "> "
       "location <" << min_x + dx * move_away_factor << ", " << min_y - dy * move_away_factor << ", " << min_z + dz * move_away_factor << "> "
       "up <0, 0, 1> right <1, 0, 0> sky <0, 0, 1> rotate <-55, clock * 3 + " << t << ", clock + 25 + " << t << "> right x*image_width/image_height }\n";
