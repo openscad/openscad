@@ -171,8 +171,7 @@ void PolySetBuilder::appendPolySet(const PolySet& ps)
         color_map[i] = it - colors_.begin();
       }
     }
-    for (int i = 0, n = ps.color_indices.size(); i < n; i++) {
-      const auto color_index = ps.color_indices[i];
+    for (auto color_index : ps.color_indices) {
       color_indices_.push_back(color_index < 0 ? -1 : color_map[color_index]);
     }
   } else if (!color_indices_.empty()) {

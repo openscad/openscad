@@ -228,7 +228,6 @@ Range::Range(Expression *begin, Expression *step, Expression *end, const Locatio
  * during normal operating, not runtime during error handling.
  */
 static void NOINLINE print_range_depr(const Location& loc, const std::shared_ptr<const Context>& context){
-  std::string locs = loc.toRelativeString(context->documentRoot());
   LOG(message_group::Deprecated, loc, context->documentRoot(), "Using ranges of the form [begin:end] with begin value greater than the end value is deprecated");
 }
 

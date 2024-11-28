@@ -160,6 +160,7 @@ private:
   void closeEvent(QCloseEvent *e) override;
   void removeDefaultSettings();
   void setupFeaturesPage();
+  void setup3DPrintPage();
   void writeSettings();
   void hidePasswords();
   void addPrefPage(QActionGroup *group, QAction *action, QWidget *widget);

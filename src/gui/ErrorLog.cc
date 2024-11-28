@@ -8,8 +8,7 @@
 #include <QStandardItemModel>
 #include <QString>
 #include <QWidget>
-#include <utility>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 ErrorLog::ErrorLog(QWidget *parent) : QWidget(parent)
 {
@@ -40,7 +39,7 @@ void ErrorLog::initGUI()
 
 void ErrorLog::toErrorLog(const Message& log_msg)
 {
-  lastMessages.push_back(std::forward<const Message>(log_msg));
+  lastMessages.push_back(log_msg);
   QString currGroup = errorLogComboBox->currentText();
 
   //handle combobox

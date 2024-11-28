@@ -62,6 +62,7 @@
 #include "gui/SettingsWriter.h"
 #include "gui/OctoPrint.h"
 #include "gui/IgnoreWheelWhenNotFocused.h"
+#include "gui/PrintService.h"
 
 #include <string>
 
@@ -208,7 +209,6 @@ void Preferences::init() {
   initIntSpinBox(this->spinBoxShowWhitespaceSize, Settings::Settings::showWhitespaceSize);
   initIntSpinBox(this->spinBoxTabWidth, Settings::Settings::tabWidth);
 
-  initComboBox(this->comboBoxDefaultPrintService, Settings::Settings::defaultPrintService);
   initComboBox(this->comboBoxOctoPrintFileFormat, Settings::Settings::octoPrintFileFormat);
   initComboBox(this->comboBoxOctoPrintAction, Settings::Settings::octoPrintAction);
   initComboBox(this->comboBoxLocalSlicerFileFormat, Settings::Settings::localSlicerFileFormat);
@@ -355,6 +355,44 @@ void Preferences::setupFeaturesPage()
   // fixed size space essentially gives the first row the width of the
   // spacer item itself.
   gridLayoutExperimentalFeatures->addItem(new QSpacerItem(20, 0, QSizePolicy::Fixed, QSizePolicy::Fixed), 1, 0, 1, 1, Qt::AlignLeading);
+}
+
+void Preferences::setup3DPrintPage()
+{
+  const auto& currentPrintService = Settings::Settings::defaultPrintService.value();
+  const auto currentPrintServiceName =
+      QString::fromStdString(Settings::Settings::printServiceName.value());
+
+  instance->comboBoxDefaultPrintService->clear();
+  const std::unordered_map<std::string, QString> services = {
+      {"NONE", _("NONE")},
+      {"OCTOPRINT", _("OctoPrint")},
+      {"LOCALSLICER", _("Local Slicer")},
+  };
+
+  instance->comboBoxDefaultPrintService->addItem(services.at("NONE"),
+                                                 QStringList{"NONE", ""});
+  for (const auto &printServiceItem : PrintService::getPrintServices()) {
+    const auto &key = printServiceItem.first;
+    const auto &printService = printServiceItem.second;
+    const auto settingValue =
+        QStringList{"PRINT_SERVICE", QString::fromStdString(key)};
+    const auto displayName = QString(printService->getDisplayName());
+    instance->comboBoxDefaultPrintService->addItem(displayName, settingValue);
+    if (key == currentPrintServiceName.toStdString()) {
+      instance->comboBoxDefaultPrintService->setCurrentText(
+          QString(printService->getDisplayName()));
+    }
+  }
+  instance->comboBoxDefaultPrintService->addItem(services.at("OCTOPRINT"),
+                                                 QStringList{"OCTOPRINT", ""});
+  instance->comboBoxDefaultPrintService->addItem(services.at("LOCALSLICER"),
+                                                 QStringList{"LOCALSLICER", ""});
+
+  auto it = services.find(currentPrintService);
+  if (it != services.end()) {
+    instance->comboBoxDefaultPrintService->setCurrentText(it->second);
+  }
 }
 
 void Preferences::on_colorSchemeChooser_itemSelectionChanged()
@@ -784,9 +822,12 @@ void Preferences::on_enableHidapiTraceCheckBox_toggled(bool checked)
   writeSettings();
 }
 
-void Preferences::on_comboBoxDefaultPrintService_activated(int val)
+void Preferences::on_comboBoxDefaultPrintService_activated(int)
 {
-  applyComboBox(this->comboBoxDefaultPrintService, val, Settings::Settings::defaultPrintService);
+  QStringList currentPrintServiceList = comboBoxDefaultPrintService->currentData().toStringList();
+  Settings::Settings::defaultPrintService.setValue(currentPrintServiceList[0].toStdString());
+  Settings::Settings::printServiceName.setValue(currentPrintServiceList[1].toStdString());
+  writeSettings();
 }
 
 void Preferences::on_comboBoxOctoPrintAction_activated(int val)
@@ -1119,6 +1160,7 @@ void Preferences::create(const QStringList& colorSchemes)
   instance->init();
   instance->AxisConfig->init();
   instance->setupFeaturesPage();
+  instance->setup3DPrintPage();
   instance->updateGUI();
 }
 
