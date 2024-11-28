@@ -512,25 +512,27 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
   connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
   connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
-  for(auto &action : { 
-		  this->fileActionExportSTL, this->fileActionExport3MF, this->fileActionExportOBJ,
-		  this->fileActionExportOFF, this->fileActionExportWRL, this->fileActionExportPOV,
-		  this->fileActionExportAMF, this->fileActionExportDXF, this->fileActionExportSVG,
-		  this->fileActionExportPDF, this->fileActionExportCSG, this->fileActionExportImage }) {
-    connect(action, SIGNAL(triggered()), this->exportformat_mapper, SLOT(map()));
-  }  
-  this->exportformat_mapper->setMapping(this->fileActionExportSTL, (int)FileFormat::BINARY_STL);
-  this->exportformat_mapper->setMapping(this->fileActionExport3MF, (int)FileFormat::_3MF);
-  this->exportformat_mapper->setMapping(this->fileActionExportOBJ, (int)FileFormat::OBJ);
-  this->exportformat_mapper->setMapping(this->fileActionExportOFF, (int)FileFormat::OFF);
-  this->exportformat_mapper->setMapping(this->fileActionExportWRL, (int)FileFormat::WRL);
-  this->exportformat_mapper->setMapping(this->fileActionExportPOV, (int)FileFormat::POV);
-  this->exportformat_mapper->setMapping(this->fileActionExportAMF, (int)FileFormat::AMF);
-  this->exportformat_mapper->setMapping(this->fileActionExportDXF, (int)FileFormat::DXF);
-  this->exportformat_mapper->setMapping(this->fileActionExportSVG, (int)FileFormat::SVG);
-  this->exportformat_mapper->setMapping(this->fileActionExportPDF, (int)FileFormat::PDF);
-  this->exportformat_mapper->setMapping(this->fileActionExportCSG, (int)FileFormat::CSG);
-  this->exportformat_mapper->setMapping(this->fileActionExportImage, (int)FileFormat::Image);
+
+  std::unordered_map<QObject*, FileFormat>  export_map = {
+    {this->fileActionExportSTL, FileFormat::BINARY_STL},
+    {this->fileActionExport3MF, FileFormat::_3MF},
+    {this->fileActionExportOBJ, FileFormat::OBJ},
+    {this->fileActionExportOFF, FileFormat::OFF},
+    {this->fileActionExportWRL, FileFormat::WRL},
+    {this->fileActionExportPOV, FileFormat::POV},
+    {this->fileActionExportAMF, FileFormat::AMF},
+    {this->fileActionExportDXF, FileFormat::DXF},
+    {this->fileActionExportSVG, FileFormat::SVG},
+    {this->fileActionExportPDF, FileFormat::PDF},
+    {this->fileActionExportCSG, FileFormat::CSG},
+    {this->fileActionExportImage, FileFormat::PNG}
+  };
+
+  for (auto &pair : export_map ) {
+    connect(pair.first, SIGNAL(triggered()), this->exportformat_mapper, SLOT(map()));
+    this->exportformat_mapper->setMapping(pair.first, (int)pair.second);
+  }
+
   connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
 #ifndef ENABLE_LIB3MF
@@ -2819,29 +2821,17 @@ void MainWindow::actionExportFileFormat(int fmt_)
 {
   FileFormat fmt = (FileFormat) fmt_;	
   FileFormatInfo info = fileformat::info(fmt);
-  char suffix[10]; // will need 5 bytes at most
+  const std::string suffix = "."+info.suffix;
+  printf("suffix is %s\n",suffix.c_str());
+  printf("identifier is %s\n",info.identifier.c_str());
   switch(fmt) {
     case FileFormat::BINARY_STL:
       if (Settings::Settings::exportUseAsciiSTL.value()) {
-        actionExport(FileFormat::ASCII_STL, "ASCIISTL", ".stl", 3);
+        actionExport(FileFormat::ASCII_STL, info.identifier.c_str(), suffix.c_str(), 3);
       } else {
-        actionExport(FileFormat::BINARY_STL, "STL", ".stl", 3);
+        actionExport(FileFormat::BINARY_STL, info.identifier.c_str(), suffix.c_str(), 3);
       }
       break;	    
-    case FileFormat::_3MF:
-    case FileFormat::OBJ:
-    case FileFormat::OFF:
-    case FileFormat::WRL:
-    case FileFormat::POV:
-    case FileFormat::AMF:
-      sprintf(suffix,".%s",info.suffix.c_str());
-      actionExport(info.format, info.identifier.c_str(), suffix, 3);
-      break;
-    case FileFormat::DXF:
-    case FileFormat::SVG:
-      sprintf(suffix,".%s",info.suffix.c_str());
-      actionExport(info.format, info.identifier.c_str(), suffix, 2);
-      break;
     case FileFormat::PDF:
 {
 
@@ -2918,7 +2908,7 @@ void MainWindow::actionExportFileFormat(int fmt_)
 
   clearCurrentOutput();
 }      break;
-    case FileFormat::Image:
+    case FileFormat::PNG:
 {
   // Grab first to make sure dialog box isn't part of the grabbed image
   qglview->grabFrame();
@@ -2938,11 +2928,10 @@ void MainWindow::actionExportFileFormat(int fmt_)
   }
 }
       break;
+    default:
+      actionExport(info.format, info.identifier.c_str(), suffix.c_str(), fileformat::is3D(fmt) ? 3 : fileformat::is2D(fmt) ? 2 : 0);
   }
 }
-
-
-
 
 void MainWindow::copyText()
 {

@@ -35,8 +35,7 @@ enum class FileFormat {
   PNG,
   PDF,
   POV,
-  PARAM,
-  Image
+  PARAM
 };
 
 struct FileFormatInfo {
