@@ -519,7 +519,7 @@ MainWindow::MainWindow(const QStringList& filenames)
 		  this->fileActionExportPDF, this->fileActionExportCSG, this->fileActionExportImage }) {
     connect(action, SIGNAL(triggered()), this->exportformat_mapper, SLOT(map()));
   }  
-  this->exportformat_mapper->setMapping(this->fileActionExportSTL, (int)FileFormat::STL);
+  this->exportformat_mapper->setMapping(this->fileActionExportSTL, (int)FileFormat::BINARY_STL);
   this->exportformat_mapper->setMapping(this->fileActionExport3MF, (int)FileFormat::_3MF);
   this->exportformat_mapper->setMapping(this->fileActionExportOBJ, (int)FileFormat::OBJ);
   this->exportformat_mapper->setMapping(this->fileActionExportOFF, (int)FileFormat::OFF);
@@ -2817,92 +2817,32 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
 
 void MainWindow::actionExportFileFormat(int fmt_)
 {
-<<<<<<< HEAD
   FileFormat fmt = (FileFormat) fmt_;	
-  printf("Export Fileformat	\n");
+  FileFormatInfo info = fileformat::info(fmt);
+  char suffix[10]; // will need 5 bytes at most
   switch(fmt) {
-    case FileFormat::STL:
+    case FileFormat::BINARY_STL:
       if (Settings::Settings::exportUseAsciiSTL.value()) {
-        actionExport(FileFormat::ASCIISTL, "ASCIISTL", ".stl", 3);
+        actionExport(FileFormat::ASCII_STL, "ASCIISTL", ".stl", 3);
       } else {
-        actionExport(FileFormat::STL, "STL", ".stl", 3);
+        actionExport(FileFormat::BINARY_STL, "STL", ".stl", 3);
       }
       break;	    
     case FileFormat::_3MF:
-      actionExport(FileFormat::_3MF, "3MF", ".3mf", 3);
-      break;
     case FileFormat::OBJ:
-      actionExport(FileFormat::OBJ, "OBJ", ".obj", 3);
-      break;
     case FileFormat::OFF:
-      actionExport(FileFormat::OFF, "OFF", ".off", 3);
-      break;
     case FileFormat::WRL:
-      actionExport(FileFormat::WRL, "WRL", ".wrl", 3);
-      break;
     case FileFormat::POV:
-      actionExport(FileFormat::POV, "POV", ".pov", 3);
-      break;
     case FileFormat::AMF:
-      actionExport(FileFormat::AMF, "AMF", ".amf", 3);
+      sprintf(suffix,".%s",info.suffix.c_str());
+      actionExport(info.format, info.identifier.c_str(), suffix, 3);
       break;
     case FileFormat::DXF:
-      actionExport(FileFormat::DXF, "DXF", ".dxf", 2);
-      break;
     case FileFormat::SVG:
-      actionExport(FileFormat::SVG, "SVG", ".svg", 2);
+      sprintf(suffix,".%s",info.suffix.c_str());
+      actionExport(info.format, info.identifier.c_str(), suffix, 2);
       break;
     case FileFormat::PDF:
-=======
-  if (Settings::Settings::exportUseAsciiSTL.value()) {
-    actionExport(FileFormat::ASCII_STL, "ASCIISTL", ".stl", 3);
-  } else {
-    actionExport(FileFormat::BINARY_STL, "STL", ".stl", 3);
-  }
-}
-
-void MainWindow::actionExport3MF()
-{
-  actionExport(FileFormat::_3MF, "3MF", ".3mf", 3);
-}
-
-void MainWindow::actionExportOBJ()
-{
-  actionExport(FileFormat::OBJ, "OBJ", ".obj", 3);
-}
-
-void MainWindow::actionExportOFF()
-{
-  actionExport(FileFormat::OFF, "OFF", ".off", 3);
-}
-
-void MainWindow::actionExportWRL()
-{
-  actionExport(FileFormat::WRL, "WRL", ".wrl", 3);
-}
-
-void MainWindow::actionExportPOV()
-{
-  actionExport(FileFormat::POV, "POV", ".pov", 3);
-}
-
-void MainWindow::actionExportAMF()
-{
-  actionExport(FileFormat::AMF, "AMF", ".amf", 3);
-}
-
-void MainWindow::actionExportDXF()
-{
-  actionExport(FileFormat::DXF, "DXF", ".dxf", 2);
-}
-
-void MainWindow::actionExportSVG()
-{
-  actionExport(FileFormat::SVG, "SVG", ".svg", 2);
-}
-
-void MainWindow::actionExportPDF()
->>>>>>> master
 {
 
   ExportPdfOptions exportPdfOptions;
@@ -2945,6 +2885,7 @@ void MainWindow::actionExportPDF()
   settings.setValue("exportPdfOpts/gridSize", exportPdfDialog->getGridSize());
 
   actionExport(FileFormat::PDF, "PDF", ".pdf", 2, &exportPdfOptions);
+
 }
       break;
     case FileFormat::CSG:
