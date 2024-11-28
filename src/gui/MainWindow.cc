@@ -106,6 +106,7 @@
 #include "gui/AutoUpdater.h"
 #endif
 #include "gui/TabManager.h"
+#include "gui/ExternalToolInterface.h"
 
 #include <QMenu>
 #include <QTime>
@@ -2119,6 +2120,57 @@ void MainWindow::csgRender()
   compileEnded();
 }
 
+std::unique_ptr<ExternalToolInterface> createExternalToolService(
+  print_service_t serviceType, const QString& serviceName, FileFormat fileFormat)
+{
+  switch (serviceType) {
+    case print_service_t::NONE:
+    // TODO: Print warning
+    return nullptr;
+    break;
+    case print_service_t::PRINT_SERVICE: {
+      if (const auto printService = PrintService::getPrintService(serviceName.toStdString())) {
+        return createExternalPrintService(printService, fileFormat);
+      }
+      LOG("Unknown print service \"%1$s\"", serviceName.toStdString());
+      return nullptr;
+      break;
+    }
+    case print_service_t::OCTOPRINT:
+      return createOctoPrintService(fileFormat);
+    break;
+    case print_service_t::LOCALSLICER:
+      return createLocalProgramService(fileFormat);
+    break;
+  }
+  return {};
+}
+
+void MainWindow::sendToExternalTool(ExternalToolInterface &externalToolService)
+{
+  const QFileInfo activeFile(activeEditor->filepath);
+  QString activeFileName = activeFile.fileName();
+  if (activeFileName.isEmpty()) activeFileName = "Untitled.scad";
+  // TODO: Replace suffix to match exported file format?
+  
+  activeFileName = activeFileName + QString::fromStdString("." + fileformat::toSuffix(externalToolService.fileFormat()));
+
+  bool export_status = externalToolService.exportTemporaryFile(this->root_geom, activeFileName);
+  
+  this->progresswidget = new ProgressWidget(this);
+  connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
+
+  bool process_status = externalToolService.process(activeFileName.toStdString(), [this](double permille) {
+    return network_progress_func(permille);
+  });
+  updateStatusBar(nullptr);
+
+  const auto url = externalToolService.getURL();
+  if (!url.empty()) {
+    QDesktopServices::openUrl(QUrl{QString::fromStdString(url)});
+  }
+}
+
 void MainWindow::action3DPrint()
 {
 #ifdef ENABLE_3D_PRINTING
@@ -2131,195 +2183,25 @@ void MainWindow::action3DPrint()
   const unsigned int dim = 3;
   if (!canExport(dim)) return;
 
-  const auto selectedService = PrintInitDialog::getResult();
-  Preferences::Preferences::inst()->updateGUI();
+  PrintInitDialog printInitDialog;
+  const auto status = printInitDialog.exec();
 
-  if (selectedService == print_service_t::PRINT_SERVICE) {
-    const auto printService = PrintService::inst();
-    LOG("Sending design to print service %1$s...", printService->getDisplayName().toStdString());
-    sendToPrintService();
-  } else if (selectedService == print_service_t::OCTOPRINT) {
-    LOG("Sending design to OctoPrint...");
-    sendToOctoPrint();
-  } else if (selectedService == print_service_t::LOCALSLICER) {
-    sendToLocalSlicer();
-  }
-#endif // ifdef ENABLE_3D_PRINTING
-}
+  if (status == QDialog::Accepted) {
+    const print_service_t serviceType = printInitDialog.getServiceType();
+    const QString serviceName = printInitDialog.getServiceName();
+    const FileFormat fileFormat = printInitDialog.getFileFormat();
 
-void MainWindow::sendToOctoPrint()
-{
-#ifdef ENABLE_3D_PRINTING
-  OctoPrint octoPrint;
+    LOG("Selected File format: %1$s", fileformat::info(fileFormat).description);
 
-  if (octoPrint.url().trimmed().isEmpty()) {
-    LOG(message_group::Error, "OctoPrint connection not configured. Please check preferences.");
-    return;
-  }
 
-  // FIXME: To make this cleaner, we could define which formats are supported by OctoPrint separately,
-  // then using fileformat::fromIdentifier() to convert.
-  const QString fileFormat = QString::fromStdString(Settings::Settings::octoPrintFileFormat.value());
-  FileFormat exportFileFormat{FileFormat::BINARY_STL};
-  if (fileFormat == "OBJ") {
-    exportFileFormat = FileFormat::OBJ;
-  } else if (fileFormat == "OFF") {
-    exportFileFormat = FileFormat::OFF;
-  } else if (fileFormat == "ASCIISTL") {
-    exportFileFormat = FileFormat::ASCII_STL;
-  } else if (fileFormat == "AMF") {
-    exportFileFormat = FileFormat::AMF;
-  } else if (fileFormat == "3MF") {
-    exportFileFormat = FileFormat::_3MF;
-  } else {
-    exportFileFormat = FileFormat::BINARY_STL;
-  }
-
-  QTemporaryFile exportFile{QDir::temp().filePath("OpenSCAD.XXXXXX." + fileFormat.toLower())};
-  if (!exportFile.open()) {
-    LOG("Could not open temporary file.");
-    return;
-  }
-  const QString exportFileName = exportFile.fileName();
-  exportFile.close();
-
-  QString userFileName;
-  if (activeEditor->filepath.isEmpty()) {
-    userFileName = exportFileName;
-  } else {
-    QFileInfo fileInfo{activeEditor->filepath};
-    userFileName = fileInfo.baseName() + "." + fileFormat.toLower();
-  }
-
-  ExportInfo exportInfo = {.format = exportFileFormat, .sourceFilePath = activeEditor->filepath.toStdString(), .camera = &qglview->cam};
-  exportFileByName(this->root_geom, exportFileName.toStdString(), exportInfo);
-
-  try {
-    this->progresswidget = new ProgressWidget(this);
-    connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
-    const QString fileUrl = octoPrint.upload(exportFileName, userFileName, [this](double v) -> bool {
-      return network_progress_func(v);
-    });
-
-    const std::string& action = Settings::Settings::octoPrintAction.value();
-    if (action == "upload") {
+    Preferences::Preferences::inst()->updateGUI();
+    const auto externalToolService = createExternalToolService(serviceType, serviceName, fileFormat);
+    if (!externalToolService) {
+      LOG("Error: Unable to create service: %1$d %2$s %3$d", static_cast<int>(serviceType), serviceName.toStdString(), static_cast<int>(fileFormat));
       return;
     }
-
-    const QString slicer = QString::fromStdString(Settings::Settings::octoPrintSlicerEngine.value());
-    const QString profile = QString::fromStdString(Settings::Settings::octoPrintSlicerProfile.value());
-    octoPrint.slice(fileUrl, slicer, profile, action != "slice", action == "print");
-  } catch (const NetworkException& e) {
-    LOG(message_group::Error, "%1$s", e.getErrorMessage());
+    sendToExternalTool(*externalToolService);
   }
-
-  updateStatusBar(nullptr);
-#endif // ifdef ENABLE_3D_PRINTING
-}
-
-void MainWindow::sendToLocalSlicer()
-{
-#ifdef ENABLE_3D_PRINTING
-  const QString slicer = QString::fromStdString(Settings::Settings::localSlicerExecutable.value());
-
-  const QString fileFormat = QString::fromStdString(Settings::Settings::localSlicerFileFormat.value()).toLower();
-  FileFormat exportFileFormat = FileFormat::BINARY_STL;
-  if (!fileformat::fromIdentifier(fileFormat.toStdString(), exportFileFormat)) {
-    LOG("Invalid suffix %1$s. Defaulting to binary STL.", fileFormat.toStdString());
-  }
-
-  const auto tmpPath = QDir::temp().filePath("OpenSCAD.XXXXXX."+fileFormat);
-  auto exportFile = std::make_unique<QTemporaryFile>(tmpPath);
-  if (!exportFile->open()) {
-    LOG(message_group::Error, "Could not open temporary file '%1$s'.", tmpPath.toStdString());
-    return;
-  }
-  const auto exportFileName = exportFile->fileName();
-  exportFile->close();
-  this->allTempFiles.push_back(std::move(exportFile));
-
-  QString userFileName;
-  if (activeEditor->filepath.isEmpty()) {
-    userFileName = exportFileName;
-  } else {
-    QFileInfo fileInfo{activeEditor->filepath};
-    userFileName = fileInfo.baseName() + fileFormat;
-  }
-
-  ExportInfo exportInfo = {.format = exportFileFormat, .sourceFilePath = activeEditor->filepath.toStdString(), .camera = &qglview->cam};
-  exportFileByName(this->root_geom, exportFileName.toStdString(), exportInfo);
-
-  QProcess process(this);
-  process.setProcessChannelMode(QProcess::MergedChannels);
-#ifdef Q_OS_MACOS
-  if(!process.startDetached("open", {"-a", slicer, exportFileName})) {
-#else	  
-  if(!process.startDetached(slicer, {exportFileName})) {
-#endif
-    LOG(message_group::Error, "Could not start Slicer '%1$s': %2$s", slicer.toStdString(), process.errorString().toStdString());
-    const auto output = process.readAll();
-    if (output.length() > 0) {
-      LOG(message_group::Error, "Output: %1$s", output.toStdString());
-    }
-  }
-#endif // ifdef ENABLE_3D_PRINTING
-}
-
-void MainWindow::sendToPrintService()
-{
-#ifdef ENABLE_3D_PRINTING
-  //Keeps track of how many times we've exported and tries to create slightly unique filenames.
-  //Not mission critical, since non-unique file names are fine for the API, just harder to
-  //differentiate between in customer support later.
-  static unsigned int printCounter = 0;
-
-  QTemporaryFile exportFile;
-  if (!exportFile.open()) {
-    LOG(message_group::Error, "Could not open temporary file.");
-    return;
-  }
-  const QString exportFilename = exportFile.fileName();
-
-  //Render the stl to a temporary file:
-  ExportInfo exportInfo = {.format = FileFormat::BINARY_STL, .sourceFilePath = activeEditor->filepath.toStdString(), .camera = &qglview->cam};
-  exportFileByName(this->root_geom, exportFilename.toStdString(), exportInfo);
-
-  //Create a name that the order process will use to refer to the file. Base it off of the project name
-  QString userFacingName = "unsaved.stl";
-  if (!activeEditor->filepath.isEmpty()) {
-    const QString baseName = QFileInfo(activeEditor->filepath).baseName();
-    userFacingName = QString{"%1_%2.stl"}.arg(baseName).arg(printCounter++);
-  }
-
-  QFile file(exportFilename);
-  if (!file.open(QIODevice::ReadOnly)) {
-    LOG(message_group::Error, "Unable to open exported STL file.");
-    return;
-  }
-  const QString fileContentBase64 = file.readAll().toBase64();
-
-  if (fileContentBase64.length() > PrintService::inst()->getFileSizeLimit()) {
-    const auto msg = QString{_("Exported design exceeds the service upload limit of (%1 MB).")}.arg(PrintService::inst()->getFileSizeLimitMB());
-    QMessageBox::warning(this, _("Upload Error"), msg, QMessageBox::Ok);
-    LOG(message_group::Error, "%1$s", msg.toStdString());
-    return;
-  }
-
-  //Upload the file to the 3D Printing server and get the corresponding url to see it.
-  //The result is put in partUrl.
-  try
-  {
-    this->progresswidget = new ProgressWidget(this);
-    connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
-    const QString partUrl = PrintService::inst()->upload(userFacingName, fileContentBase64, [this](double v) -> bool {
-      return network_progress_func(v);
-    });
-    QDesktopServices::openUrl(QUrl{partUrl});
-  } catch (const NetworkException& e) {
-    LOG(message_group::Error, "%1$s", e.getErrorMessage());
-  }
-
-  updateStatusBar(nullptr);
 #endif // ifdef ENABLE_3D_PRINTING
 }
 

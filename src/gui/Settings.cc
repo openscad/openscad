@@ -1,4 +1,5 @@
 #include "gui/Settings.h"
+#include "io/export.h"
 #include "glview/RenderSettings.h"
 #include "utils/printutils.h"
 #include "gui/input/InputEventMapper.h"
@@ -6,7 +7,9 @@
 #include <array>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/range/adaptors.hpp>
 #include <cstddef>
+#include <iterator>
 #include <string>
 #include <utility>
 #include <vector>
@@ -120,18 +123,52 @@ SettingsEntryBool Settings::enableLineNumbers("editor", "enableLineNumbers", tru
 SettingsEntryBool Settings::enableNumberScrollWheel("editor", "enableNumberScrollWheel", true);
 SettingsEntryEnum Settings::modifierNumberScrollWheel("editor", "modifierNumberScrollWheel", {{"Alt", _("Alt")}, {"Left Mouse Button", _("Left Mouse Button")}, {"Either", _("Either")}}, "Alt");
 
-SettingsEntryEnum Settings::defaultPrintService("printing", "printService", {{"NONE", _("NONE")}, {"PRINT_SERVICE", _("External Print Service")}, {"OCTOPRINT", _("OctoPrint")}, {"LOCALSLICER", _("Local Slicer")}}, "NONE");
+SettingsEntryString Settings::defaultPrintService("printing", "printService", "NONE");
+
+SettingsEntryString Settings::printServiceName("printing", "printServiceName", "");
+SettingsEntryString Settings::printServiceFileFormat("printing", "printServiceFileFormat", "stl");
+
 SettingsEntryString Settings::octoPrintUrl("printing", "octoPrintUrl", "");
 SettingsEntryString Settings::octoPrintApiKey("printing", "octoPrintApiKey", "");
-SettingsEntryEnum Settings::octoPrintFileFormat("printing", "octoPrintFileFormat", {{"STL", "STL"}, {"OFF", "OFF"}, {"AMF", "AMF"}, {"3MF", "3MF"}}, "STL");
 SettingsEntryEnum Settings::octoPrintAction("printing", "octoPrintAction", {{"upload", _("Upload only")}, {"slice", _("Upload & Slice")}, {"select", _("Upload, Slice & Select for printing")}, {"print", _("Upload, Slice & Start printing")}}, "upload");
 SettingsEntryString Settings::octoPrintSlicerEngine("printing", "octoPrintSlicerEngine", "");
 SettingsEntryString Settings::octoPrintSlicerEngineDesc("printing", "octoPrintSlicerEngineDesc", "");
 SettingsEntryString Settings::octoPrintSlicerProfile("printing", "octoPrintSlicerProfile", "");
 SettingsEntryString Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", "");
+SettingsEntryEnum Settings::octoPrintFileFormat(
+    "printing", "octoPrintFileFormat",
+    []() {
+      std::vector<SettingsEntryEnum::Item> items;
+      boost::copy(std::vector{FileFormat::ASCII_STL, FileFormat::BINARY_STL,
+                              FileFormat::_3MF, FileFormat::OFF} |
+                      boost::adaptors::filtered(fileformat::is3D) |
+                      boost::adaptors::transformed([](const auto &fileFormat) {
+                        const FileFormatInfo &info =
+                            fileformat::info(fileFormat);
+                        return SettingsEntryEnum::Item{info.identifier,
+                                                       info.description};
+                      }),
+                  std::back_inserter(items));
+      return items;
+    }(),
+    fileformat::info(FileFormat::ASCII_STL).description);
 
 SettingsEntryString Settings::localSlicerExecutable("printing", "localSlicerExecutable", "");
-SettingsEntryEnum Settings::localSlicerFileFormat("printing", "localSlicerFileFormat", {{"STL", "STL"}, {"OFF", "OFF"}, {"AMF", "AMF"}, {"3MF", "3MF"}, {"POV", "POV"}}, "STL");
+SettingsEntryEnum Settings::localSlicerFileFormat(
+    "printing", "localSlicerFileFormat",
+    []() {
+      std::vector<SettingsEntryEnum::Item> items;
+      boost::copy(
+          fileformat::all() | boost::adaptors::filtered(fileformat::is3D) |
+              boost::adaptors::transformed([](const auto &fileFormat) {
+                const FileFormatInfo &info = fileformat::info(fileFormat);
+                return SettingsEntryEnum::Item{info.identifier,
+                                               info.description};
+              }),
+          std::back_inserter(items));
+      return items;
+    }(),
+    fileformat::info(FileFormat::ASCII_STL).description);
 
 SettingsEntryBool Settings::exportUseAsciiSTL("export", "useAsciiSTL", false);
 SettingsEntryEnum Settings::renderBackend3D("advanced", "renderBackend3D", {{"CGAL", "CGAL (old/slow)"}, {"Manifold", "Manifold (new/fast)"}}, "CGAL");

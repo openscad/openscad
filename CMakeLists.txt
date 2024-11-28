@@ -1045,6 +1045,7 @@ set(GUI_SOURCES
   src/gui/Preferences.cc
   src/gui/PrintInitDialog.cc
   src/gui/PrintService.cc
+  src/gui/ExternalToolInterface.cc
   src/gui/ProgressWidget.cc
   src/gui/QGLView.cc
   src/gui/QGLView2.cc

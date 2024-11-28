@@ -26,27 +26,38 @@
 
 #pragma once
 
-#include "gui/qtgettext.h"
 #include <QDialog>
+#include "gui/InitConfigurator.h"
+#include "gui/qtgettext.h"
 #include "ui_PrintInitDialog.h"
+
+#include "io/export.h"
 
 enum class print_service_t { NONE, PRINT_SERVICE, OCTOPRINT, LOCALSLICER };
 
-class PrintInitDialog : public QDialog, public Ui::PrintInitDialog
+class PrintInitDialog : public QDialog, public Ui::PrintInitDialog, public InitConfigurator
 {
   Q_OBJECT;
 public:
-  PrintInitDialog();
-  static print_service_t getResult();
-  static QString serviceName(print_service_t service);
+  PrintInitDialog();  
+  int exec() override;
+
+  print_service_t getServiceType() const;
+  QString getServiceName() const;
+  FileFormat getFileFormat() const;
 
 public slots:
-  void on_printServiceButton_clicked();
   void on_octoPrintButton_clicked();
   void on_LocalSlicerButton_clicked();
-  void on_okButton_clicked();
-  void on_cancelButton_clicked();
+  void on_fileFormatComboBox_currentIndexChanged(int);
+  void on_buttonBox_accepted();
+  void on_buttonBox_rejected();
 private:
-  print_service_t result;
-  QString htmlTemplate;
-};
+  void populateFileFormatComboBox(const std::vector<FileFormat> &fileFormats,
+                                  FileFormat currentFormat);
+
+    QString htmlTemplate;
+    print_service_t selectedPrintService = print_service_t::NONE;
+    QString selectedServiceName = "";
+    FileFormat selectedFileFormat = FileFormat::ASCII_STL;
+  };

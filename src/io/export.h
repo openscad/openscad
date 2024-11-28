@@ -38,14 +38,23 @@ enum class FileFormat {
   PARAM
 };
 
+struct FileFormatInfo {
+  FileFormat format;
+  std::string identifier;
+  std::string suffix;
+  std::string description;
+};
+
 namespace fileformat {
 
-void setup();
-bool fromIdentifier(const std::string& suffix, FileFormat& format);
-const std::string& toSuffix(FileFormat& format);
-bool canPreview(const FileFormat format);
-bool is3D(const FileFormat format);
-bool is2D(const FileFormat format);
+std::vector<FileFormat> all();
+
+const FileFormatInfo& info(FileFormat fileFormat);
+bool fromIdentifier(const std::string& identifier, FileFormat& format);
+const std::string& toSuffix(FileFormat format);
+bool canPreview(FileFormat format);
+bool is3D(FileFormat format);
+bool is2D(FileFormat format);
 
 }  // namespace FileFormat
 

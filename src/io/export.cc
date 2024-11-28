@@ -51,12 +51,47 @@
 
 namespace {
 
-struct FileFormatInfo {
-  FileFormat format;
-  std::string identifier;
-  std::string suffix;
-  std::string description;
+struct Containers {
+  std::unordered_map<std::string, FileFormatInfo> identifierToInfo;
+  std::unordered_map<FileFormat, FileFormatInfo> fileFormatToInfo;
 };
+
+void add_item(Containers& containers, const FileFormatInfo& info) {
+  containers.identifierToInfo[info.identifier] = info;
+  containers.fileFormatToInfo[info.format] = info;
+}
+
+Containers &containers() {
+  static std::unique_ptr<Containers> containers = [](){
+    auto containers = std::make_unique<Containers>();
+
+    add_item(*containers, {FileFormat::ASCII_STL, "asciistl", "stl", "STL (ascii)"});
+    add_item(*containers, {FileFormat::BINARY_STL, "binstl", "stl", "STL (binary)"});
+    add_item(*containers, {FileFormat::OBJ, "obj", "obj", "OBJ"});
+    add_item(*containers, {FileFormat::OFF, "off", "off", "OFF"});
+    add_item(*containers, {FileFormat::WRL, "wrl", "wrl", "VRML"});
+    add_item(*containers, {FileFormat::AMF, "amf", "amf", "AMF"});
+    add_item(*containers, {FileFormat::_3MF, "3mf", "3mf", "3MF"});
+    add_item(*containers, {FileFormat::DXF, "dxf", "dxf", "DXF"});
+    add_item(*containers, {FileFormat::SVG, "svg", "svg", "SVG"});
+    add_item(*containers, {FileFormat::NEFDBG, "nefdbg", "nefdbg", "nefdbg"});
+    add_item(*containers, {FileFormat::NEF3, "nef3", "nef3", "nef3"});
+    add_item(*containers, {FileFormat::CSG, "csg", "csg", "CSG"});
+    add_item(*containers, {FileFormat::PARAM, "param", "param", "param"});
+    add_item(*containers, {FileFormat::AST, "ast", "ast", "AST"});
+    add_item(*containers, {FileFormat::TERM, "term", "term", "term"});
+    add_item(*containers, {FileFormat::ECHO, "echo", "echo", "echo"});
+    add_item(*containers, {FileFormat::PNG, "png", "png", "PNG"});
+    add_item(*containers, {FileFormat::PDF, "pdf", "pdf", "PDF"});
+    add_item(*containers, {FileFormat::POV, "pov", "pov", "POV"});
+
+    // Alias
+    containers->identifierToInfo["stl"] = containers->identifierToInfo["asciistl"];
+  
+    return std::move(containers);
+  }();
+  return *containers;
+}
 
 std::unordered_map<std::string, FileFormatInfo> &identifierToInfo() {
   static auto identifierToInfo = std::make_unique<std::unordered_map<std::string, FileFormatInfo>>();
@@ -68,60 +103,38 @@ std::unordered_map<FileFormat, FileFormatInfo> &fileFormatToInfo() {
   return *fileFormatToInfo;
 }
 
-void add_item(const FileFormatInfo& info) {
-
-  identifierToInfo()[info.identifier] = info;
-  fileFormatToInfo()[info.format] = info;
-}
-
-bool initialized = false;
-bool initialize() {
-  add_item({FileFormat::ASCII_STL, "asciistl", "stl", "STL (ascii)"});
-  add_item({FileFormat::BINARY_STL, "binstl", "stl", "STL (binary)"});
-  add_item({FileFormat::OBJ, "obj", "obj", "OBJ"});
-  add_item({FileFormat::OFF, "off", "off", "OFF"});
-  add_item({FileFormat::WRL, "wrl", "wrl", "VRML"});
-  add_item({FileFormat::AMF, "amf", "amf", "AMF"});
-  add_item({FileFormat::_3MF, "3mf", "3mf", "3MF"});
-  add_item({FileFormat::DXF, "dxf", "dxf", "DXF"});
-  add_item({FileFormat::SVG, "svg", "svg", "SVG"});
-  add_item({FileFormat::NEFDBG, "nefdbg", "nefdbg", "nefdbg"});
-  add_item({FileFormat::NEF3, "nef3", "nef3", "nef3"});
-  add_item({FileFormat::CSG, "csg", "csg", "CSG"});
-  add_item({FileFormat::PARAM, "param", "param", "param"});
-  add_item({FileFormat::AST, "ast", "ast", "AST"});
-  add_item({FileFormat::TERM, "term", "term", "term"});
-  add_item({FileFormat::ECHO, "echo", "echo", "echo"});
-  add_item({FileFormat::PNG, "png", "png", "PNG"});
-  add_item({FileFormat::PDF, "pdf", "pdf", "PDF"});
-  add_item({FileFormat::POV, "pov", "pov", "POV"});
-
-  // Alias
-  identifierToInfo()["stl"] = identifierToInfo()["asciistl"];
-
-  return true;
-}
-
 }  // namespace
 
 namespace fileformat {
 
-bool fromIdentifier(const std::string& suffix, FileFormat& format)
+std::vector<FileFormat> all()
 {
-  if (!initialized) initialized = initialize();
-  auto it = identifierToInfo().find(suffix);
-  if (it == identifierToInfo().end()) return false;
+  std::vector<FileFormat> allFileFormats;
+  for (const auto& item : containers().fileFormatToInfo) {
+    allFileFormats.push_back(item.first);
+  }
+  return allFileFormats;
+}
+
+const FileFormatInfo& info(FileFormat fileFormat)
+{
+  return containers().fileFormatToInfo[fileFormat];
+}
+
+bool fromIdentifier(const std::string& identifier, FileFormat& format)
+{
+  auto it = containers().identifierToInfo.find(identifier);
+  if (it == containers().identifierToInfo.end()) return false;
   format = it->second.format;
   return true;
 }
 
-const std::string& toSuffix(FileFormat& format)
+const std::string& toSuffix(FileFormat format)
 {
-  if (!initialized) initialized = initialize();
-  return fileFormatToInfo()[format].suffix;
+  return containers().fileFormatToInfo[format].suffix;
 }
 
-bool canPreview(const FileFormat format) {
+bool canPreview(FileFormat format) {
   return (format == FileFormat::AST ||
           format == FileFormat::CSG ||
           format == FileFormat::PARAM ||
@@ -130,7 +143,7 @@ bool canPreview(const FileFormat format) {
           format == FileFormat::PNG);
 }
 
-bool is3D(const FileFormat format) {
+bool is3D(FileFormat format) {
 return format == FileFormat::ASCII_STL ||
   format == FileFormat::BINARY_STL ||
   format == FileFormat::OBJ ||
@@ -143,7 +156,7 @@ return format == FileFormat::ASCII_STL ||
   format == FileFormat::POV;
 }
 
-bool is2D(const FileFormat format) {
+bool is2D(FileFormat format) {
   return format == FileFormat::DXF ||
     format == FileFormat::SVG ||
     format == FileFormat::PDF;
