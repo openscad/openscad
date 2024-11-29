@@ -240,40 +240,6 @@ void fileExportedMessage(const char *format, const QString& filename) {
   LOG("%1$s export finished: %2$s", format, filename.toUtf8().constData());
 }
 
-QAction *getExport3DAction(const MainWindow *mainWindow) {
-  const QString format = QString::fromStdString(Settings::Settings::toolbarExport3D.value());
-  if (format == "STL") {
-    return mainWindow->fileActionExportSTL;
-  } else if (format == "OBJ") {
-    return mainWindow->fileActionExportOBJ;
-  } else if (format == "OFF") {
-    return mainWindow->fileActionExportOFF;
-  } else if (format == "WRL") {
-    return mainWindow->fileActionExportWRL;
-  } else if (format == "POV") {
-    return mainWindow->fileActionExportPOV;
-  } else if (format == "AMF") {
-    return mainWindow->fileActionExportAMF;
-  } else if (format == "3MF") {
-    return mainWindow->fileActionExport3MF;
-  } else {
-    return nullptr;
-  }
-}
-
-QAction *getExport2DAction(const MainWindow *mainWindow) {
-  const QString format = QString::fromStdString(Settings::Settings::toolbarExport2D.value());
-  if (format == "DXF") {
-    return mainWindow->fileActionExportDXF;
-  } else if (format == "SVG") {
-    return mainWindow->fileActionExportSVG;
-  } else if (format == "PDF") {
-    return mainWindow->fileActionExportPDF;
-  } else {
-    return nullptr;
-  }
-}
-
 void removeExportActions(QToolBar *toolbar, QAction *action) {
   int idx = toolbar->actions().indexOf(action);
   while (idx > 0) {
@@ -286,13 +252,21 @@ void removeExportActions(QToolBar *toolbar, QAction *action) {
 }
 
 void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *action) {
-  QAction *export3D = getExport3DAction(mainWindow);
-  if (export3D) {
-    toolbar->insertAction(action, export3D);
-  }
-  QAction *export2D = getExport2DAction(mainWindow);
-  if (export2D) {
-    toolbar->insertAction(action, export2D);
+  const std::string format2d = QString::fromStdString(Settings::Settings::toolbarExport2D.value()).toStdString();
+  const std::string format3d = QString::fromStdString(Settings::Settings::toolbarExport3D.value()).toStdString();
+
+  for(auto format : {format2d, format3d}) {
+    for(const FileFormat &ff: fileformat::all()) {
+      const FileFormatInfo & info = fileformat::info(ff);
+      int l = format.size();
+      if (info.description.size() >= l && info.description.substr(0,l) == format){
+        for (auto &pair : mainWindow->export_map ) {
+          if(pair.second == info.format){
+            toolbar->insertAction(action, pair.first);
+	  }
+        }
+      }
+    }
   }
 }
 
@@ -513,20 +487,19 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
   connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
 
-  std::unordered_map<QObject*, FileFormat>  export_map = {
-    {this->fileActionExportSTL, FileFormat::BINARY_STL},
-    {this->fileActionExport3MF, FileFormat::_3MF},
-    {this->fileActionExportOBJ, FileFormat::OBJ},
-    {this->fileActionExportOFF, FileFormat::OFF},
-    {this->fileActionExportWRL, FileFormat::WRL},
-    {this->fileActionExportPOV, FileFormat::POV},
-    {this->fileActionExportAMF, FileFormat::AMF},
-    {this->fileActionExportDXF, FileFormat::DXF},
-    {this->fileActionExportSVG, FileFormat::SVG},
-    {this->fileActionExportPDF, FileFormat::PDF},
-    {this->fileActionExportCSG, FileFormat::CSG},
-    {this->fileActionExportImage, FileFormat::PNG}
-  };
+  export_map[this->fileActionExportSTL] = FileFormat::BINARY_STL;
+  export_map[this->fileActionExportSTL] = FileFormat::BINARY_STL;
+  export_map[this->fileActionExport3MF] = FileFormat::_3MF;
+  export_map[this->fileActionExportOBJ] = FileFormat::OBJ;
+  export_map[this->fileActionExportOFF] = FileFormat::OFF;
+  export_map[this->fileActionExportWRL] = FileFormat::WRL;
+  export_map[this->fileActionExportPOV] = FileFormat::POV;
+  export_map[this->fileActionExportAMF] = FileFormat::AMF;
+  export_map[this->fileActionExportDXF] = FileFormat::DXF;
+  export_map[this->fileActionExportSVG] = FileFormat::SVG;
+  export_map[this->fileActionExportPDF] = FileFormat::PDF;
+  export_map[this->fileActionExportCSG] = FileFormat::CSG;
+  export_map[this->fileActionExportImage] = FileFormat::PNG;
 
   for (auto &pair : export_map ) {
     connect(pair.first, SIGNAL(triggered()), this->exportformat_mapper, SLOT(map()));
