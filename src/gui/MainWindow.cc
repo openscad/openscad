@@ -148,14 +148,12 @@ extern bool python_trusted;
 
 std::string SHA256HashString(std::string aString){
   std::string digest;
-/*  
   CryptoPP::SHA256 hash;
 
   CryptoPP::StringSource foo(aString, true,
                              new CryptoPP::HashFilter(hash,
                                                       new CryptoPP::Base64Encoder(
                                                         new CryptoPP::StringSink(digest))));
-*/
   return digest;
 }
 
