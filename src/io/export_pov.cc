@@ -40,6 +40,9 @@
 void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& output, const ExportInfo& exportInfo)
 {
   std::shared_ptr<const PolySet> ps = PolySetUtils::getGeometryAsPolySet(geom);
+  if (!ps->isTriangular()) {
+    ps = PolySetUtils::tessellate_faces(*ps);
+  }
   if (Feature::ExperimentalPredictibleOutput.is_enabled()) {
     ps = createSortedPolySet(*ps);
   }
