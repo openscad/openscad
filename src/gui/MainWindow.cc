@@ -148,13 +148,14 @@ extern bool python_trusted;
 
 std::string SHA256HashString(std::string aString){
   std::string digest;
+/*  
   CryptoPP::SHA256 hash;
 
   CryptoPP::StringSource foo(aString, true,
                              new CryptoPP::HashFilter(hash,
                                                       new CryptoPP::Base64Encoder(
                                                         new CryptoPP::StringSink(digest))));
-
+*/
   return digest;
 }
 
@@ -487,7 +488,6 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
   connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
 
-  export_map[this->fileActionExportSTL] = FileFormat::BINARY_STL;
   export_map[this->fileActionExportSTL] = FileFormat::BINARY_STL;
   export_map[this->fileActionExport3MF] = FileFormat::_3MF;
   export_map[this->fileActionExportOBJ] = FileFormat::OBJ;

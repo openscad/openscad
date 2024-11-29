@@ -55,9 +55,9 @@ PACKAGES=(
     "pixman 0.42.2"
     "cairo 1.18.0"
     "cgal 6.0"
-    "qt5 5.15.13"
+    "qt5 5.15.16"
     "opencsg 1.6.0"
-    "qscintilla 2.13.3"
+    "qscintilla 2.14.1"
     "onetbb 2021.12.0"
 )
 DEPLOY_PACKAGES=(
@@ -197,7 +197,6 @@ build_qt5()
   fi
   tar xzf qt-everywhere-opensource-src-$version.tar.xz
   cd qt-everywhere-src-$version
-  patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-xcode15.patch
   patch -p1 < $OPENSCADDIR/patches/qt5/qt-5.15-memory_resource.patch
 
   # Build each arch separately
@@ -255,7 +254,7 @@ build_qscintilla()
       curl -LO https://www.riverbankcomputing.com/static/Downloads/QScintilla/$version/"${QSCINTILLA_FILENAME}"
   fi
   tar xzf "${QSCINTILLA_FILENAME}"
-  cd QScintilla*/src
+  cd QScintilla_src-$version/src
   qmake qscintilla.pro QMAKE_APPLE_DEVICE_ARCHS="${ARCHS[*]}"
   make -j"$NUMCPU" install
   install_name_tool -id @rpath/libqscintilla2_qt5.dylib $DEPLOYDIR/lib/libqscintilla2_qt5.dylib
