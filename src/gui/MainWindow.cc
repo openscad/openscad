@@ -434,6 +434,9 @@ MainWindow::MainWindow(const QStringList& filenames)
   autoReloadTimer->setInterval(autoReloadPollingPeriodMS);
   connect(autoReloadTimer, SIGNAL(timeout()), this, SLOT(checkAutoReload()));
 
+  this->exportformat_mapper = new QSignalMapper(this);
+  connect (this->exportformat_mapper, SIGNAL(mapped(int)), this, SLOT(actionExportFileFormat(int))) ;
+
   waitAfterReloadTimer = new QTimer(this);
   waitAfterReloadTimer->setSingleShot(true);
   waitAfterReloadTimer->setInterval(autoReloadPollingPeriodMS);
@@ -509,18 +512,27 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
   connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
   connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
-  connect(this->fileActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
-  connect(this->fileActionExport3MF, SIGNAL(triggered()), this, SLOT(actionExport3MF()));
-  connect(this->fileActionExportOBJ, SIGNAL(triggered()), this, SLOT(actionExportOBJ()));
-  connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
-  connect(this->fileActionExportWRL, SIGNAL(triggered()), this, SLOT(actionExportWRL()));
-  connect(this->fileActionExportPOV, SIGNAL(triggered()), this, SLOT(actionExportPOV()));
-  connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
-  connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
-  connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
-  connect(this->fileActionExportPDF, SIGNAL(triggered()), this, SLOT(actionExportPDF()));
-  connect(this->fileActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
-  connect(this->fileActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
+
+  std::unordered_map<QObject*, FileFormat>  export_map = {
+    {this->fileActionExportSTL, FileFormat::BINARY_STL},
+    {this->fileActionExport3MF, FileFormat::_3MF},
+    {this->fileActionExportOBJ, FileFormat::OBJ},
+    {this->fileActionExportOFF, FileFormat::OFF},
+    {this->fileActionExportWRL, FileFormat::WRL},
+    {this->fileActionExportPOV, FileFormat::POV},
+    {this->fileActionExportAMF, FileFormat::AMF},
+    {this->fileActionExportDXF, FileFormat::DXF},
+    {this->fileActionExportSVG, FileFormat::SVG},
+    {this->fileActionExportPDF, FileFormat::PDF},
+    {this->fileActionExportCSG, FileFormat::CSG},
+    {this->fileActionExportImage, FileFormat::PNG}
+  };
+
+  for (auto &pair : export_map ) {
+    connect(pair.first, SIGNAL(triggered()), this->exportformat_mapper, SLOT(map()));
+    this->exportformat_mapper->setMapping(pair.first, (int)pair.second);
+  }
+
   connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
 #ifndef ENABLE_LIB3MF
@@ -2805,56 +2817,20 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
   clearCurrentOutput();
 }
 
-void MainWindow::actionExportSTL()
+void MainWindow::actionExportFileFormat(int fmt_)
 {
-  if (Settings::Settings::exportUseAsciiSTL.value()) {
-    actionExport(FileFormat::ASCII_STL, "ASCIISTL", ".stl", 3);
-  } else {
-    actionExport(FileFormat::BINARY_STL, "STL", ".stl", 3);
-  }
-}
-
-void MainWindow::actionExport3MF()
-{
-  actionExport(FileFormat::_3MF, "3MF", ".3mf", 3);
-}
-
-void MainWindow::actionExportOBJ()
-{
-  actionExport(FileFormat::OBJ, "OBJ", ".obj", 3);
-}
-
-void MainWindow::actionExportOFF()
-{
-  actionExport(FileFormat::OFF, "OFF", ".off", 3);
-}
-
-void MainWindow::actionExportWRL()
-{
-  actionExport(FileFormat::WRL, "WRL", ".wrl", 3);
-}
-
-void MainWindow::actionExportPOV()
-{
-  actionExport(FileFormat::POV, "POV", ".pov", 3);
-}
-
-void MainWindow::actionExportAMF()
-{
-  actionExport(FileFormat::AMF, "AMF", ".amf", 3);
-}
-
-void MainWindow::actionExportDXF()
-{
-  actionExport(FileFormat::DXF, "DXF", ".dxf", 2);
-}
-
-void MainWindow::actionExportSVG()
-{
-  actionExport(FileFormat::SVG, "SVG", ".svg", 2);
-}
-
-void MainWindow::actionExportPDF()
+  FileFormat fmt = (FileFormat) fmt_;	
+  FileFormatInfo info = fileformat::info(fmt);
+  const std::string suffix = "."+info.suffix;
+  switch(fmt) {
+    case FileFormat::BINARY_STL:
+      if (Settings::Settings::exportUseAsciiSTL.value()) {
+        actionExport(FileFormat::ASCII_STL, info.description.c_str(), suffix.c_str(), 3);
+      } else {
+        actionExport(FileFormat::BINARY_STL, info.description.c_str(), suffix.c_str(), 3);
+      }
+      break;	    
+    case FileFormat::PDF:
 {
 
   ExportPdfOptions exportPdfOptions;
@@ -2899,8 +2875,8 @@ void MainWindow::actionExportPDF()
   actionExport(FileFormat::PDF, "PDF", ".pdf", 2, &exportPdfOptions);
 
 }
-
-void MainWindow::actionExportCSG()
+      break;
+    case FileFormat::CSG:
 {
   setCurrentOutput();
 
@@ -2929,9 +2905,8 @@ void MainWindow::actionExportCSG()
   }
 
   clearCurrentOutput();
-}
-
-void MainWindow::actionExportImage()
+}      break;
+    case FileFormat::PNG:
 {
   // Grab first to make sure dialog box isn't part of the grabbed image
   qglview->grabFrame();
@@ -2948,6 +2923,11 @@ void MainWindow::actionExportImage()
     } else {
       LOG("Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
     }
+  }
+}
+      break;
+    default:
+      actionExport(info.format, info.description.c_str(), suffix.c_str(), fileformat::is3D(fmt) ? 3 : fileformat::is2D(fmt) ? 2 : 0);
   }
 }
 

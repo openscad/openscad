@@ -41,6 +41,7 @@
 #include <QMutex>
 #include <QSoundEffect>
 #include <QTime>
+#include <QSignalMapper>
 
 #ifdef STATIC_QT_SVG_PLUGIN
 #include <QtPlugin>
@@ -176,6 +177,7 @@ private:
 
   LibraryInfoDialog *library_info_dialog{nullptr};
   FontListDialog *font_list_dialog{nullptr};
+  QSignalMapper *exportformat_mapper;
 
 public slots:
   void updateExportActions();
@@ -279,18 +281,7 @@ private slots:
   bool canExport(unsigned int dim);
   void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim);
   void actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim, ExportPdfOptions *options);
-  void actionExportSTL();
-  void actionExport3MF();
-  void actionExportOBJ();
-  void actionExportOFF();
-  void actionExportWRL();
-  void actionExportPOV();
-  void actionExportAMF();
-  void actionExportDXF();
-  void actionExportSVG();
-  void actionExportPDF();
-  void actionExportCSG();
-  void actionExportImage();
+  void actionExportFileFormat(int fmt);
   void actionCopyViewport();
   void actionFlushCaches();
 
