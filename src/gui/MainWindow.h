@@ -310,7 +310,7 @@ public:
 
   QList<double> getTranslation() const;
   QList<double> getRotation() const;
-  std::unordered_map<QAction*, FileFormat>  export_map;
+  std::unordered_map<FileFormat, QAction*>  export_map;
 
 public slots:
   void actionReloadRenderPreview();

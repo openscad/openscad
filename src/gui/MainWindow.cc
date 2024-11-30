@@ -154,6 +154,7 @@ std::string SHA256HashString(std::string aString){
                              new CryptoPP::HashFilter(hash,
                                                       new CryptoPP::Base64Encoder(
                                                         new CryptoPP::StringSink(digest))));
+
   return digest;
 }
 
@@ -259,10 +260,9 @@ void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *
       const FileFormatInfo & info = fileformat::info(ff);
       int l = format.size();
       if (info.description.size() >= l && info.description.substr(0,l) == format){
-        for (auto &pair : mainWindow->export_map ) {
-          if(pair.second == info.format){
-            toolbar->insertAction(action, pair.first);
-	  }
+        auto it=mainWindow->export_map.find(info.format);	      
+	if(it != mainWindow->export_map.end()) {
+          toolbar->insertAction(action, it->second);
         }
       }
     }
@@ -486,22 +486,22 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
   connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
 
-  export_map[this->fileActionExportSTL] = FileFormat::BINARY_STL;
-  export_map[this->fileActionExport3MF] = FileFormat::_3MF;
-  export_map[this->fileActionExportOBJ] = FileFormat::OBJ;
-  export_map[this->fileActionExportOFF] = FileFormat::OFF;
-  export_map[this->fileActionExportWRL] = FileFormat::WRL;
-  export_map[this->fileActionExportPOV] = FileFormat::POV;
-  export_map[this->fileActionExportAMF] = FileFormat::AMF;
-  export_map[this->fileActionExportDXF] = FileFormat::DXF;
-  export_map[this->fileActionExportSVG] = FileFormat::SVG;
-  export_map[this->fileActionExportPDF] = FileFormat::PDF;
-  export_map[this->fileActionExportCSG] = FileFormat::CSG;
-  export_map[this->fileActionExportImage] = FileFormat::PNG;
+  export_map[FileFormat::BINARY_STL] =this->fileActionExportSTL;
+  export_map[FileFormat::_3MF] = this->fileActionExport3MF;
+  export_map[FileFormat::OBJ] =  this->fileActionExportOBJ;
+  export_map[FileFormat::OFF] =  this->fileActionExportOFF;
+  export_map[FileFormat::WRL] =  this->fileActionExportWRL;
+  export_map[FileFormat::POV] =  this->fileActionExportPOV;
+  export_map[FileFormat::AMF] =  this->fileActionExportAMF;
+  export_map[FileFormat::DXF] =  this->fileActionExportDXF;
+  export_map[FileFormat::SVG] =  this->fileActionExportSVG;
+  export_map[FileFormat::PDF] =  this->fileActionExportPDF;
+  export_map[FileFormat::CSG] =  this->fileActionExportCSG;
+  export_map[FileFormat::PNG] =  this->fileActionExportImage;
 
   for (auto &pair : export_map ) {
-    connect(pair.first, SIGNAL(triggered()), this->exportformat_mapper, SLOT(map()));
-    this->exportformat_mapper->setMapping(pair.first, (int)pair.second);
+    connect(pair.second, SIGNAL(triggered()), this->exportformat_mapper, SLOT(map()));
+    this->exportformat_mapper->setMapping(pair.second, (int)pair.first);
   }
 
   connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
