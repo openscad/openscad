@@ -7,125 +7,293 @@
 global_settings { assumed_gamma 1.0 }
 #declare MATERIAL=finish { specular 0.5 roughness 0.001 reflection{0 0.63 fresnel} ambient 0 diffuse 0.6 conserve_energy }
 #declare MATERIAL_INT=interior{ior 1.32}
-polygon { 4, 
-<-10, 0, 0>, <-10, 0, 10>, <-10, 10, 10>, <-10, 0, 0>
-texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <-10, 0, 0>, <-10, 0, 10>, <-10, 10, 10>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<-10, 0, 0>, <-10, 10, 0>, <0, 10, 0>, <-10, 0, 0>
-texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <-10, 0, 0>, <-10, 10, 0>, <0, 10, 0>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<-10, 0, 0>, <-10, 10, 10>, <-10, 10, 0>, <-10, 0, 0>
-texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <-10, 0, 0>, <-10, 10, 10>, <-10, 10, 0>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<-10, 0, 0>, <0, 0, 0>, <0, 0, 10>, <-10, 0, 0>
-texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <-10, 0, 0>, <0, 0, 0>, <0, 0, 10>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<-10, 0, 0>, <0, 0, 10>, <-10, 0, 10>, <-10, 0, 0>
-texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <-10, 0, 0>, <0, 0, 10>, <-10, 0, 10>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<-10, 0, 0>, <0, 10, 0>, <0, 0, 0>, <-10, 0, 0>
-texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <-10, 0, 0>, <0, 10, 0>, <0, 0, 0>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<-10, 0, 10>, <0, 0, 10>, <-10, 10, 10>, <-10, 0, 10>
-texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <-10, 0, 10>, <0, 0, 10>, <-10, 10, 10>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<-10, 10, 0>, <-10, 10, 10>, <0, 10, 0>, <-10, 10, 0>
-texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <-10, 10, 0>, <-10, 10, 10>, <0, 10, 0>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<-10, 10, 10>, <0, 0, 10>, <0, 10, 10>, <-10, 10, 10>
-texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <-10, 10, 10>, <0, 0, 10>, <0, 10, 10>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<-10, 10, 10>, <0, 10, 10>, <0, 10, 0>, <-10, 10, 10>
-texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <-10, 10, 10>, <0, 10, 10>, <0, 10, 0>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<0, 0, 0>, <0, 10, 0>, <0, 0, 10>, <0, 0, 0>
-texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <0, 0, 0>, <0, 10, 0>, <0, 0, 10>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<0, 0, 10>, <0, 10, 0>, <0, 10, 10>, <0, 0, 10>
-texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <0, 0, 10>, <0, 10, 0>, <0, 10, 10>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <1, 0.5, 0.25, 0.875> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<10, 0, 0>, <10, 0, 10>, <10, 10, 10>, <10, 0, 0>
-texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <10, 0, 0>, <10, 0, 10>, <10, 10, 10>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<10, 0, 0>, <10, 10, 0>, <20, 10, 0>, <10, 0, 0>
-texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <10, 0, 0>, <10, 10, 0>, <20, 10, 0>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<10, 0, 0>, <10, 10, 10>, <10, 10, 0>, <10, 0, 0>
-texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <10, 0, 0>, <10, 10, 10>, <10, 10, 0>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<10, 0, 0>, <20, 0, 0>, <20, 0, 10>, <10, 0, 0>
-texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <10, 0, 0>, <20, 0, 0>, <20, 0, 10>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<10, 0, 0>, <20, 0, 10>, <10, 0, 10>, <10, 0, 0>
-texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <10, 0, 0>, <20, 0, 10>, <10, 0, 10>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<10, 0, 0>, <20, 10, 0>, <20, 0, 0>, <10, 0, 0>
-texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <10, 0, 0>, <20, 10, 0>, <20, 0, 0>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<10, 0, 10>, <20, 0, 10>, <10, 10, 10>, <10, 0, 10>
-texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <10, 0, 10>, <20, 0, 10>, <10, 10, 10>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<10, 10, 0>, <10, 10, 10>, <20, 10, 0>, <10, 10, 0>
-texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <10, 10, 0>, <10, 10, 10>, <20, 10, 0>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<10, 10, 10>, <20, 0, 10>, <20, 10, 10>, <10, 10, 10>
-texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <10, 10, 10>, <20, 0, 10>, <20, 10, 10>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<10, 10, 10>, <20, 10, 10>, <20, 10, 0>, <10, 10, 10>
-texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <10, 10, 10>, <20, 10, 10>, <20, 10, 0>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<20, 0, 0>, <20, 10, 0>, <20, 0, 10>, <20, 0, 0>
-texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <20, 0, 0>, <20, 10, 0>, <20, 0, 10>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
-polygon { 4, 
-<20, 0, 10>, <20, 10, 0>, <20, 10, 10>, <20, 0, 10>
-texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
-finish { MATERIAL } interior { MATERIAL_INT }
+mesh2 {
+  vertex_vectors {
+    3
+, <20, 0, 10>, <20, 10, 0>, <20, 10, 10>  }
+  face_indices {
+    1
+, <0, 1, 2>
+  }
+
+  texture { pigment { color rgbf <0, 0.501961, 0, 0> } }
+  finish { MATERIAL } interior { MATERIAL_INT }
 }
 light_source { <-70, -20, -20> color rgb <0.2, 0.2, 0.2> }
 light_source { <-70, -20, 5> color rgb <0.2, 0.2, 0.2> }
