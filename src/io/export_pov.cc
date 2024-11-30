@@ -70,21 +70,33 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
     temp_polyset = PolySetUtils::tessellate_faces(*temp_polyset);
 
     // ouput
-    output << "mesh {\n";
+    output << "mesh2 {\n";
+    output << "  vertex_vectors {\n";
+    output << "    " << temp_polyset->vertices.size() << "\n";
+    for(auto vertices_index=0; vertices_index<temp_polyset->vertices.size(); vertices_index++) {
+        const auto & x = temp_polyset->vertices[vertices_index].x();
+        const auto & y = temp_polyset->vertices[vertices_index].y();
+        const auto & z = temp_polyset->vertices[vertices_index].z();
+        output << ", <" << x << ", " << y << ", " << z << ">";
+    }
+    output << "  }\n";
+
+    output << "  face_indices {\n";
+    output << "    " << temp_polyset->indices.size() << "\n";
     for(size_t triangle_set_index=0; triangle_set_index<temp_polyset->indices.size(); triangle_set_index++) {
-    const auto &triangles = temp_polyset->indices[triangle_set_index];
-    assert(triangles.size() == 3);
-    output << "triangle {\n";
+      const auto &triangles = temp_polyset->indices[triangle_set_index];
+      assert(triangles.size() == 3);
+      output << ", <";
       for (size_t i=0; i<triangles.size(); i++) {
         if (i)
           output << ", ";
-        const auto & x = temp_polyset->vertices[triangles[i]].x();
-        const auto & y = temp_polyset->vertices[triangles[i]].y();
-        const auto & z = temp_polyset->vertices[triangles[i]].z();
-        output << "<" << x << ", " << y << ", " << z << ">";
+        output << triangles[i];
       }
-      output << "}\n";
+      output << ">";
     }
+    output << "\n";
+    output << "  }\n";
+
     float r = 0xf9 / 255., g = 0xd7 / 255., b = 0x2c / 255., f = 0.;  // CGAL_FACE_FRONT_COLOR
     if (has_color) {
       auto color_index = ps->color_indices[polygon_index];
@@ -97,8 +109,8 @@ void export_pov(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
       }
     }
     output << "\n";
-    output << "texture { pigment { color rgbf <" << r << ", " << g << ", " << b << ", " << f << "> } }\n";
-    output << "finish { MATERIAL } interior { MATERIAL_INT }\n";
+    output << "  texture { pigment { color rgbf <" << r << ", " << g << ", " << b << ", " << f << "> } }\n";
+    output << "  finish { MATERIAL } interior { MATERIAL_INT }\n";
     output << "}\n";
   }
 
