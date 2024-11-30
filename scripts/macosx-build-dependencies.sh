@@ -55,7 +55,8 @@ PACKAGES=(
     "pixman 0.42.2"
     "cairo 1.18.0"
     "cgal 6.0"
-#    "qt5 5.15.16"
+    # Using Qt6 going forward, leaving Qt5 config just in case
+    # "qt5 5.15.16"
     "qt6 6.5.3"
     "opencsg 1.6.0"
     "qscintilla 2.14.1"
