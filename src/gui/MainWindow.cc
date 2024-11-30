@@ -641,6 +641,20 @@ MainWindow::MainWindow(const QStringList& filenames)
     this->findInputField->setText(QApplication::clipboard()->text(QClipboard::FindBuffer));
   }
 
+    // Case Sensitive checkbox to the Find and Replace panel
+  QCheckBox *caseSensitiveCheckBox = new QCheckBox("Case Sensitive", find_panel);
+  caseSensitiveCheckBox->setToolTip("Toggle case-sensitive search and replace");
+  find_panel_layout->addWidget(caseSensitiveCheckBox);
+
+    // Case sensitivity variable
+  bool caseSensitive = false;
+
+    // Connecting Case Sensitive checkbox to update the case sensitivity state
+  connect(caseSensitiveCheckBox, &QCheckBox::toggled, this, [this](bool checked) {
+    caseSensitive = checked;
+  });
+
+
   connect(this->findPrevButton, SIGNAL(clicked()), this, SLOT(findPrev()));
   connect(this->findNextButton, SIGNAL(clicked()), this, SLOT(findNext()));
   connect(this->cancelButton, SIGNAL(clicked()), this, SLOT(hideFind()));
@@ -649,6 +663,61 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->replaceInputField, SIGNAL(returnPressed()), this->replaceButton, SLOT(animateClick()));
   addKeyboardShortCut(this->viewerToolBar->actions());
   addKeyboardShortCut(this->editortoolbar->actions());
+
+    // search and replace logic for case sensitivity
+  void MainWindow::findNext() {
+    QString searchText = findInputField->text();
+    QTextDocument::FindFlags options;
+    if (caseSensitive) {
+        options |= QTextDocument::FindCaseSensitively;
+    }
+    editor->find(searchText, options);
+  }
+
+  void MainWindow::findPrev() {
+    QString searchText = findInputField->text();
+    QTextDocument::FindFlags options = QTextDocument::FindBackward;
+    if (caseSensitive) {
+        options |= QTextDocument::FindCaseSensitively;
+    }
+    editor->find(searchText, options);
+  }
+
+  void MainWindow::replace() {
+    QString searchText = findInputField->text();
+    QString replaceText = replaceInputField->text();
+
+    QTextCursor cursor = editor->textCursor();
+    QTextDocument::FindFlags options;
+    if (caseSensitive) {
+        options |= QTextDocument::FindCaseSensitively;
+    }
+
+    if (cursor.hasSelection() && cursor.selectedText() == searchText) {
+        cursor.insertText(replaceText);
+    }
+    findNext();
+  }
+
+  void MainWindow::replaceAll() {
+    QString searchText = findInputField->text();
+    QString replaceText = replaceInputField->text();
+
+    QTextCursor cursor = editor->textCursor();
+    cursor.movePosition(QTextCursor::Start);
+    editor->setTextCursor(cursor);
+
+    QTextDocument::FindFlags options;
+    if (caseSensitive) {
+        options |= QTextDocument::FindCaseSensitively;
+    }
+
+    while (editor->find(searchText, options)) {
+        QTextCursor matchCursor = editor->textCursor();
+        matchCursor.insertText(replaceText);
+    }
+  }
+
 
   Preferences *instance = Preferences::inst();
 
