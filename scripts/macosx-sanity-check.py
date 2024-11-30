@@ -29,7 +29,7 @@ DEBUG = False
 
 cxxlib = None
 
-macos_version_min = '10.15'
+macos_version_min = '11.0'
 
 def usage():
     print("Usage: " + sys.argv[0] + " <executable>", sys.stderr)
