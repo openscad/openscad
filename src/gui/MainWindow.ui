@@ -227,7 +227,8 @@
      <property name="title">
       <string>E&amp;xport</string>
      </property>
-     <addaction name="fileActionExportSTL"/>
+     <addaction name="fileActionExportAsciiSTL"/>
+     <addaction name="fileActionExportBinarySTL"/>
      <addaction name="fileActionExportOBJ"/>
      <addaction name="fileActionExportPOV"/>
      <addaction name="fileActionExportOFF"/>
@@ -1036,12 +1037,17 @@
     <string>Display CSG Pr&amp;oducts...</string>
    </property>
   </action>
-  <action name="fileActionExportSTL">
+  <action name="fileActionExportBinarySTL">
    <property name="text">
-    <string>Export as &amp;STL...</string>
+    <string>Export as &amp;STL (binary)...</string>
    </property>
    <property name="shortcut">
     <string>F7</string>
+   </property>
+  </action>
+  <action name="fileActionExportAsciiSTL">
+   <property name="text">
+    <string>Export as &amp;STL (ascii)...</string>
    </property>
   </action>
   <action name="fileActionExportOBJ">

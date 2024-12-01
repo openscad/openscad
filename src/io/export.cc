@@ -53,7 +53,7 @@ namespace {
 
 struct Containers {
   std::unordered_map<std::string, FileFormatInfo> identifierToInfo;
-  std::unordered_map<FileFormat, FileFormatInfo> fileFormatToInfo;
+  std::map<FileFormat, FileFormatInfo> fileFormatToInfo;
 };
 
 void add_item(Containers& containers, const FileFormatInfo& info) {
@@ -114,6 +114,28 @@ std::vector<FileFormat> all()
     allFileFormats.push_back(item.first);
   }
   return allFileFormats;
+}
+
+std::vector<FileFormat> all2D()
+{
+  std::vector<FileFormat> all2DFormats;
+  for (const auto& item : containers().fileFormatToInfo) {
+    if (is2D(item.first)) {
+      all2DFormats.push_back(item.first);
+    }
+  }
+  return all2DFormats;
+}
+
+std::vector<FileFormat> all3D()
+{
+  std::vector<FileFormat> all3DFormats;
+  for (const auto& item : containers().fileFormatToInfo) {
+    if (is3D(item.first)) {
+      all3DFormats.push_back(item.first);
+    }
+  }
+  return all3DFormats;
 }
 
 const FileFormatInfo& info(FileFormat fileFormat)

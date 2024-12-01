@@ -252,19 +252,14 @@ void removeExportActions(QToolBar *toolbar, QAction *action) {
 }
 
 void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *action) {
-  const std::string format2d = QString::fromStdString(Settings::Settings::toolbarExport2D.value()).toStdString();
-  const std::string format3d = QString::fromStdString(Settings::Settings::toolbarExport3D.value()).toStdString();
-
-  for(auto format : {format2d, format3d}) {
-    for(const FileFormat &ff: fileformat::all()) {
-      const FileFormatInfo & info = fileformat::info(ff);
-      int l = format.size();
-      if (info.description.size() >= l && info.description.substr(0,l) == format){
-        auto it=mainWindow->export_map.find(info.format);	      
-	if(it != mainWindow->export_map.end()) {
-          toolbar->insertAction(action, it->second);
-        }
-      }
+  for (const std::string &identifier : {Settings::Settings::toolbarExport3D.value(), 
+                                        Settings::Settings::toolbarExport2D.value()}) {
+    FileFormat format;
+    fileformat::fromIdentifier(identifier, format);
+    const auto it=mainWindow->export_map.find(format);
+    // FIXME: Allow turning off the toolbar entry?
+    if (it != mainWindow->export_map.end()) {
+      toolbar->insertAction(action, it->second);
     }
   }
 }
@@ -408,7 +403,7 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(autoReloadTimer, SIGNAL(timeout()), this, SLOT(checkAutoReload()));
 
   this->exportformat_mapper = new QSignalMapper(this);
-  connect (this->exportformat_mapper, SIGNAL(mapped(int)), this, SLOT(actionExportFileFormat(int))) ;
+  connect(this->exportformat_mapper, SIGNAL(mappedInt(int)), this, SLOT(actionExportFileFormat(int))) ;
 
   waitAfterReloadTimer = new QTimer(this);
   waitAfterReloadTimer->setSingleShot(true);
@@ -486,7 +481,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
   connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
 
-  export_map[FileFormat::BINARY_STL] =this->fileActionExportSTL;
+  export_map[FileFormat::BINARY_STL] =this->fileActionExportBinarySTL;
+  export_map[FileFormat::ASCII_STL] =this->fileActionExportAsciiSTL;
   export_map[FileFormat::_3MF] = this->fileActionExport3MF;
   export_map[FileFormat::OBJ] =  this->fileActionExportOBJ;
   export_map[FileFormat::OFF] =  this->fileActionExportOFF;
@@ -499,9 +495,9 @@ MainWindow::MainWindow(const QStringList& filenames)
   export_map[FileFormat::CSG] =  this->fileActionExportCSG;
   export_map[FileFormat::PNG] =  this->fileActionExportImage;
 
-  for (auto &pair : export_map ) {
+  for (auto &pair : export_map) {
     connect(pair.second, SIGNAL(triggered()), this->exportformat_mapper, SLOT(map()));
-    this->exportformat_mapper->setMapping(pair.second, (int)pair.first);
+    this->exportformat_mapper->setMapping(pair.second, int(pair.first));
   }
 
   connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
@@ -649,7 +645,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   initActionIcon(designActionPreview, ":/icons/svg-default/preview.svg", ":/icons/svg-default/preview-white.svg");
   initActionIcon(designActionMeasureDist, ":/icons/svg-default/measure-dist.svg", ":/icons/svg-default/measure-dist-white.svg");
   initActionIcon(designActionMeasureAngle, ":/icons/svg-default/measure-ang.svg", ":/icons/svg-default/measure-ang-white.svg");
-  initActionIcon(fileActionExportSTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
+  initActionIcon(fileActionExportBinarySTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
+  initActionIcon(fileActionExportAsciiSTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
   initActionIcon(fileActionExportAMF, ":/icons/svg-default/export-amf.svg", ":/icons/svg-default/export-amf-white.svg");
   initActionIcon(fileActionExport3MF, ":/icons/svg-default/export-3mf.svg", ":/icons/svg-default/export-3mf-white.svg");
   initActionIcon(fileActionExportOBJ, ":/icons/svg-default/export-obj.svg", ":/icons/svg-default/export-obj-white.svg");
@@ -2753,7 +2750,7 @@ bool MainWindow::canExport(unsigned int dim)
   return true;
 }
 
-void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim){
+void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim) {
   ExportPdfOptions *empty = nullptr;
   actionExport(format, type_name, suffix, dim, empty);
 }
@@ -2788,19 +2785,12 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
   clearCurrentOutput();
 }
 
-void MainWindow::actionExportFileFormat(int fmt_)
+void MainWindow::actionExportFileFormat(int fmt)
 {
-  FileFormat fmt = (FileFormat) fmt_;	
-  FileFormatInfo info = fileformat::info(fmt);
-  const std::string suffix = "."+info.suffix;
-  switch(fmt) {
-    case FileFormat::BINARY_STL:
-      if (Settings::Settings::exportUseAsciiSTL.value()) {
-        actionExport(FileFormat::ASCII_STL, info.description.c_str(), suffix.c_str(), 3);
-      } else {
-        actionExport(FileFormat::BINARY_STL, info.description.c_str(), suffix.c_str(), 3);
-      }
-      break;	    
+  const FileFormat format = static_cast<FileFormat>(fmt);
+  const FileFormatInfo &info = fileformat::info(format);
+  const std::string suffix = "." + info.suffix;
+  switch (format) {
     case FileFormat::PDF:
 {
 
@@ -2898,7 +2888,7 @@ void MainWindow::actionExportFileFormat(int fmt_)
 }
       break;
     default:
-      actionExport(info.format, info.description.c_str(), suffix.c_str(), fileformat::is3D(fmt) ? 3 : fileformat::is2D(fmt) ? 2 : 0);
+      actionExport(info.format, info.description.c_str(), suffix.c_str(), fileformat::is3D(format) ? 3 : fileformat::is2D(format) ? 2 : 0);
   }
 }
 
