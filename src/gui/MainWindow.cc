@@ -256,9 +256,9 @@ void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *
                                         Settings::Settings::toolbarExport2D.value()}) {
     FileFormat format;
     fileformat::fromIdentifier(identifier, format);
-    const auto it=mainWindow->export_map.find(format);	      
+    const auto it=mainWindow->export_map.find(format);
     // FIXME: Allow turning off the toolbar entry?
-   	if (it != mainWindow->export_map.end()) {
+    if (it != mainWindow->export_map.end()) {
       toolbar->insertAction(action, it->second);
     }
   }
