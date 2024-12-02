@@ -33,11 +33,13 @@
 #include "io/export.h"
 #include "geometry/Geometry.h"
 
-bool ExternalToolInterface::exportTemporaryFile(const std::shared_ptr<const Geometry>& rootGeometry, const QString& sourceFileName)
+bool ExternalToolInterface::exportTemporaryFile(const std::shared_ptr<const Geometry>& rootGeometry, 
+  const QString& sourceFileName, const Camera *const camera)
 {
   const ExportInfo exportInfo = {
       .format = exportFormat_,
       .sourceFilePath = sourceFileName.toStdString(),
+      .camera = camera,
   };
 
   // FIXME: Remove original suffix first

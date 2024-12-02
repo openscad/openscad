@@ -30,7 +30,7 @@ BASEDIR=$PWD/../libraries
 OPENSCADDIR=$PWD
 SRCDIR=$BASEDIR/src
 DEPLOYDIR=$BASEDIR/install
-MAC_OSX_VERSION_MIN=10.15
+MAC_OSX_VERSION_MIN=11.0
 OPTION_DEPLOY=false
 OPTION_FORCE=0
 OPTION_ARM64=false
@@ -55,7 +55,9 @@ PACKAGES=(
     "pixman 0.42.2"
     "cairo 1.18.0"
     "cgal 6.0"
-    "qt5 5.15.16"
+    # Using Qt6 going forward, leaving Qt5 config just in case
+    # "qt5 5.15.16"
+    "qt6 6.5.3"
     "opencsg 1.6.0"
     "qscintilla 2.14.1"
     "onetbb 2021.12.0"
@@ -244,6 +246,31 @@ build_qt5()
   fi
 }
 
+build_qt6()
+{
+  version=$1
+  cd $BASEDIR/src
+  v=(${version//./ }) # Split into array
+  rm -rf qt-everywhere-src-$version
+  if [ ! -f qt-everywhere-src-$version.tar.xz ]; then
+    curl -LO --insecure https://download.qt.io/official_releases/qt/${v[0]}.${v[1]}/$version/single/qt-everywhere-src-$version.tar.xz
+  fi
+  tar xjf qt-everywhere-src-$version.tar.xz
+  cd qt-everywhere-src-$version
+
+  mkdir build
+  cd build
+  ../configure -prefix $DEPLOYDIR -release -opensource -confirm-license -nomake tests -nomake examples \
+    -submodules qtbase,qt5compat,qtmultimedia,qtsvg -skip qtquick3d,qtquicktimeline,qtdeclarative \
+    -no-feature-sql -no-feature-testlib -no-feature-glib \
+		-no-feature-linguist -no-feature-designer -no-feature-pixeltool -no-feature-assistant \
+    -no-feature-distancefieldgenerator -no-feature-qtattributionsscanner -no-feature-qtplugininfo \
+    -no-feature-qtdiag \
+    -- -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED_REV"
+  ninja
+  ninja install
+}
+
 build_qscintilla()
 {
   version=$1
@@ -257,8 +284,8 @@ build_qscintilla()
   cd QScintilla_src-$version/src
   qmake qscintilla.pro QMAKE_APPLE_DEVICE_ARCHS="${ARCHS[*]}"
   make -j"$NUMCPU" install
-  install_name_tool -id @rpath/libqscintilla2_qt5.dylib $DEPLOYDIR/lib/libqscintilla2_qt5.dylib
 }
+
 
 build_gmp()
 {
@@ -910,6 +937,12 @@ else
     GNU_ARCHS+=($LOCAL_GNU_ARCH)
 fi
 ARCHS_COMBINED=$(IFS=\; ; echo "${ARCHS[*]}")
+# Some libraries needs to build arm64 first, while others need x86_64 first (e.g. Qt6)
+ARCHS_REV=()
+for ((i=${#ARCHS[@]}-1; i>=0; i--)); do
+  ARCHS_REV+=("${ARCHS[i]}");
+done
+ARCHS_COMBINED_REV=$(IFS=\; ; echo "${ARCHS_REV[*]}")
 echo "Building on $LOCAL_ARCH for $ARCHS_COMBINED"
 
 echo "Building for $MAC_OSX_VERSION_MIN or later"

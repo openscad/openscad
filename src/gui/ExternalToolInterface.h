@@ -41,7 +41,7 @@ public:
   ExternalToolInterface(FileFormat fileFormat) : exportFormat_(fileFormat) {}
   virtual ~ExternalToolInterface() = default;
   
-  virtual bool exportTemporaryFile(const std::shared_ptr<const Geometry>& rootGeometry, const QString& sourceFileName);
+  virtual bool exportTemporaryFile(const std::shared_ptr<const Geometry>& rootGeometry, const QString& sourceFileName, const Camera *const camera);
   virtual bool process(const std::string& displayName, std::function<bool (double)>) = 0;
 
   FileFormat fileFormat() const { return exportFormat_; }

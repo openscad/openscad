@@ -16,6 +16,20 @@
 
 namespace Settings {
 
+namespace {
+
+std::vector<SettingsEntryEnum::Item> createFileFormatItems(std::vector<FileFormat> formats) {
+  std::vector<SettingsEntryEnum::Item> items;
+  std::transform(formats.begin(), formats.end(), std::back_inserter(items),
+                 [](const FileFormat& format){
+    const FileFormatInfo &info = fileformat::info(format);
+    return SettingsEntryEnum::Item{info.identifier, info.description};
+    });
+  return items;
+}
+
+}  // namespace
+
 static std::vector<SettingsEntry *> entries;
 
 void Settings::visit(const SettingsVisitor& visitor)
@@ -137,43 +151,21 @@ SettingsEntryString Settings::octoPrintSlicerProfile("printing", "octoPrintSlice
 SettingsEntryString Settings::octoPrintSlicerProfileDesc("printing", "octoPrintSlicerProfileDesc", "");
 SettingsEntryEnum Settings::octoPrintFileFormat(
     "printing", "octoPrintFileFormat",
-    []() {
-      std::vector<SettingsEntryEnum::Item> items;
-      boost::copy(std::vector{FileFormat::ASCII_STL, FileFormat::BINARY_STL,
-                              FileFormat::_3MF, FileFormat::OFF} |
-                      boost::adaptors::filtered(fileformat::is3D) |
-                      boost::adaptors::transformed([](const auto &fileFormat) {
-                        const FileFormatInfo &info =
-                            fileformat::info(fileFormat);
-                        return SettingsEntryEnum::Item{info.identifier,
-                                                       info.description};
-                      }),
-                  std::back_inserter(items));
-      return items;
-    }(),
+    createFileFormatItems({FileFormat::ASCII_STL, FileFormat::BINARY_STL, FileFormat::_3MF, FileFormat::OFF}),
     fileformat::info(FileFormat::ASCII_STL).description);
 
 SettingsEntryString Settings::localSlicerExecutable("printing", "localSlicerExecutable", "");
 SettingsEntryEnum Settings::localSlicerFileFormat(
-    "printing", "localSlicerFileFormat",
-    []() {
-      std::vector<SettingsEntryEnum::Item> items;
-      boost::copy(
-          fileformat::all() | boost::adaptors::filtered(fileformat::is3D) |
-              boost::adaptors::transformed([](const auto &fileFormat) {
-                const FileFormatInfo &info = fileformat::info(fileFormat);
-                return SettingsEntryEnum::Item{info.identifier,
-                                               info.description};
-              }),
-          std::back_inserter(items));
-      return items;
-    }(),
+    "printing", "localSlicerFileFormat", createFileFormatItems(fileformat::all3D()),
     fileformat::info(FileFormat::ASCII_STL).description);
 
-SettingsEntryBool Settings::exportUseAsciiSTL("export", "useAsciiSTL", false);
 SettingsEntryEnum Settings::renderBackend3D("advanced", "renderBackend3D", {{"CGAL", "CGAL (old/slow)"}, {"Manifold", "Manifold (new/fast)"}}, "CGAL");
-SettingsEntryEnum Settings::toolbarExport3D("advanced", "toolbarExport3D", {{"none", "none"}, {"STL", "STL"}, {"OFF", "OFF"}, {"WRL", "WRL"}, {"AMF", "AMF"}, {"3MF", "3MF"}, {"POV", "POV"}}, "STL");
-SettingsEntryEnum Settings::toolbarExport2D("advanced", "toolbarExport2D", {{"none", "none"}, {"DXF", "DXF"}, {"SVG", "SVG"}, {"PDF", "PDF"}}, "none");
+
+SettingsEntryEnum Settings::toolbarExport3D("advanced", "toolbarExport3D",
+  createFileFormatItems(fileformat::all3D()), fileformat::info(FileFormat::ASCII_STL).description);
+
+SettingsEntryEnum Settings::toolbarExport2D("advanced", "toolbarExport2D",
+  createFileFormatItems(fileformat::all2D()), fileformat::info(FileFormat::DXF).description);
 
 SettingsEntryBool Settings::summaryCamera("summary", "camera", false);
 SettingsEntryBool Settings::summaryArea("summary", "measurementArea", false);

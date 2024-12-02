@@ -772,12 +772,6 @@ void Preferences::on_enableRangeCheckBox_toggled(bool state)
   settings.setValue("advanced/enableParameterRangeCheck", state);
 }
 
-void Preferences::on_useAsciiSTLCheckBox_toggled(bool checked)
-{
-  Settings::Settings::exportUseAsciiSTL.setValue(checked);
-  writeSettings();
-}
-
 void
 Preferences::on_comboBoxRenderBackend3D_activated(int val)
 {
@@ -1071,7 +1065,6 @@ void Preferences::updateGUI()
   BlockSignals<QCheckBox *>(this->enableTraceUsermoduleParametersCheckBox)->setChecked(getValue("advanced/enableTraceUsermoduleParameters").toBool());
   BlockSignals<QCheckBox *>(this->enableParameterCheckBox)->setChecked(getValue("advanced/enableParameterCheck").toBool());
   BlockSignals<QCheckBox *>(this->enableRangeCheckBox)->setChecked(getValue("advanced/enableParameterRangeCheck").toBool());
-  BlockSignals<QCheckBox *>(this->useAsciiSTLCheckBox)->setChecked(Settings::Settings::exportUseAsciiSTL.value());
   updateComboBox(this->comboBoxToolbarExport3D, Settings::Settings::toolbarExport3D);
   updateComboBox(this->comboBoxToolbarExport2D, Settings::Settings::toolbarExport2D);
 
