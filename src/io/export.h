@@ -48,6 +48,8 @@ struct FileFormatInfo {
 namespace fileformat {
 
 std::vector<FileFormat> all();
+std::vector<FileFormat> all2D();
+std::vector<FileFormat> all3D();
 
 const FileFormatInfo& info(FileFormat fileFormat);
 bool fromIdentifier(const std::string& identifier, FileFormat& format);
