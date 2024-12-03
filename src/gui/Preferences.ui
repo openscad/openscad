@@ -2365,13 +2365,6 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_16">
                <item>
-                <widget class="QCheckBox" name="useAsciiSTLCheckBox">
-                 <property name="text">
-                  <string>Default to ASCII STL export</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <layout class="QHBoxLayout" name="horizontalLayoutToolbarExport3D">
                  <item>
                   <widget class="QLabel" name="labelToolbarExport3D">
