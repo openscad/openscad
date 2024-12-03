@@ -36,7 +36,11 @@ option(USE_BUILTIN_MANIFOLD "Use manifold from submodule" ON)
 option(USE_LEGACY_RENDERERS "Use legacy (non-VBO) OpenGL renderers" OFF)
 option(SNAPSHOT "Create dev snapshot, uses nightly icons" OFF)
 option(HEADLESS "Build without GUI frontend" OFF)
+if(APPLE)
+  option(USE_QT6 "Build the GUI with Qt6" ON)
+else()
 option(USE_QT6 "Build the GUI with Qt6" OFF)
+endif()
 option(ENABLE_EGL "Enable EGL support if available" ON)
 option(ENABLE_GLX "Enable GLX support if available" ON)
 # For now, we'll default to whatever OpenCSG uses (>=1.6 -> GLAD, <1.6 -> GLEW)
@@ -63,8 +67,13 @@ cmake_dependent_option(APPLE_UNIX "Build OpenSCAD in Unix mode in MacOS X instea
 cmake_dependent_option(ENABLE_QTDBUS "Enable DBus input driver for Qt." ON "NOT HEADLESS" OFF)
 cmake_dependent_option(ENABLE_GAMEPAD "Enable Qt5Gamepad input driver." ON "NOT HEADLESS;NOT USE_QT6" OFF)
 
-# Minimum version required for std::filesystem
-set(DEPLOYMENT_TARGET "10.15")
+if (USE_QT6)
+  # Minimum version required for Qt-6.5
+  set(DEPLOYMENT_TARGET "11.0")
+else()
+  # Minimum version required for std::filesystem
+  set(DEPLOYMENT_TARGET "10.15")
+endif()
 
 # Note: CMAKE_OSX_DEPLOYMENT_TARGET must be set before the project() invocation
 set(CMAKE_OSX_DEPLOYMENT_TARGET ${DEPLOYMENT_TARGET} CACHE STRING "Minimum OS X deployment version")
