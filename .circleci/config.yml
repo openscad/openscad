@@ -268,4 +268,5 @@ workflows:
                   only:
                       - master
     jobs:
-      - openscad-macos
+      - openscad-macos:
+          context: secret-context
