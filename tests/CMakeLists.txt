@@ -213,6 +213,23 @@ list(APPEND CTEST_ENVIRONMENT "OPENSCAD_BINARY=${OPENSCAD_BINPATH}")
 # Argument used for import/export tests
 set(OPENSCAD_EXE_ARG "--openscad=${OPENSCAD_BINPATH}")
 
+# If OpenSCAD was built with support to PartCAD then
+# install PartCAD Python module
+if(ENABLE_PARTCAD)
+  execute_process(COMMAND "${Python3_EXECUTABLE}" -m pip install -U partcad
+                  RESULT_VARIABLE PARTCAD_INSTALL_RESULT
+                  OUTPUT_VARIABLE PARTCAD_INSTALL_OUTPUT
+                  ERROR_VARIABLE PARTCAD_INSTALL_ERROR)
+  if(PARTCAD_INSTALL_RESULT EQUAL "0")
+    message(STATUS "PartCAD module successfully installed")
+  else()
+    message(FATAL_ERROR "Couldn't install PartCAD module: ${PARTCAD_INSTALL_ERROR}")
+  endif()
+else()
+  message(STATUS "PartCAD disabled")
+endif()
+
+
 ###############################
 # Define Macros and Functions #
 ###############################
@@ -564,6 +581,12 @@ file(GLOB_RECURSE EXAMPLE_FILES    ${EXAMPLES_DIR}/*.scad)
 list(REMOVE_ITEM EXAMPLE_FILES
   ${EXAMPLES_DIR}/Basics/roof.scad # -> EXPERIMENTAL_ROOF_FILES
 )
+if(NOT ENABLE_PARTCAD)
+  list(REMOVE_ITEM EXAMPLE_FILES
+    ${EXAMPLES_DIR}/Advanced/partcad.scad
+  )
+  # message(STATUS "Removing partcad.scad from the example files")
+endif()
 
 list(APPEND EXAMPLE_3D_FILES ${EXAMPLE_FILES})
 # Remove 2D files from 3D examples
