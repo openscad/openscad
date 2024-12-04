@@ -1137,9 +1137,14 @@ ${TEST_SCAD_DIR}/misc/rotate_extrude-hole.scad
 
 # Export tests (compare actually exported files)
 add_cmdline_test(stlexport              EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render)
+add_cmdline_test(stlexport-stdout       EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR stlexport ARGS --enable=predictible-output --render --export-format asciistl)
 if (ENABLE_MANIFOLD)
 add_cmdline_test(manifold-stlexport     EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} EXPECTEDDIR stlexport ARGS --enable=predictible-output --backend=manifold --render)
 endif()
+
+add_cmdline_test(binstlexport           EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} ARGS --enable=predictible-output --render --export-format binstl)
+add_cmdline_test(binstlexport-stdout    EXPERIMENTAL OPENSCAD SUFFIX stl FILES ${EXPORT_STL_TEST_FILES} STDIO EXPECTEDDIR binstlexport ARGS --enable=predictible-output --render --export-format binstl)
+
 add_cmdline_test(objexport              EXPERIMENTAL OPENSCAD SUFFIX obj FILES ${EXPORT_OBJ_TEST_FILES} ARGS --render --enable=predictible-output)
 if (LIB3MF_FOUND)
 add_cmdline_test(3mfexport              EXPERIMENTAL OPENSCAD SUFFIX 3mf FILES ${EXPORT_3MF_TEST_FILES} ARGS --enable=predictible-output)
