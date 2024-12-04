@@ -41,6 +41,6 @@ public:
   double origin_x, origin_y, scale;
   double width, height;
   bool partcad_node{false};
-  Filename partcad_part_spec;
+  QuotedString partcad_part_spec;
   std::unique_ptr<const class Geometry> createGeometry() const override;
 };
