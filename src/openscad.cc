@@ -241,6 +241,57 @@ void localization_init() {
   }
 }
 
+struct AnimateArgs {
+  unsigned frames = 0;
+  unsigned num_shards = 1;
+  unsigned shard = 1;
+};
+
+struct CommandLine
+{
+  const bool is_stdin;
+  const std::string& filename;
+  const bool is_stdout;
+  std::string output_file;
+  const fs::path& original_path;
+  const std::string& parameterFile;
+  const std::string& setName;
+  const ViewOptions& viewOptions;
+  const Camera& camera;
+  const boost::optional<FileFormat> export_format;
+  const AnimateArgs animate;
+  const std::vector<std::string> summaryOptions;
+  const std::string summaryFile;
+};
+
+AnimateArgs get_animate(const po::variables_map& vm) {
+  AnimateArgs animate;
+  if (vm.count("animate")) {
+    animate.frames = vm["animate"].as<unsigned>();
+  }
+  if (vm.count("animate_sharding")) {
+    std::vector<std::string> strs;
+    boost::split(strs, vm["animate_sharding"].as<std::string>(),
+                 boost::is_any_of("/"));
+    if (strs.size() != 2) {
+      LOG("--animate_sharding requires <shard>/<num_shards>");
+      exit(1);
+    }
+    try {
+      animate.shard = boost::lexical_cast<unsigned>(strs[0]);
+      animate.num_shards = boost::lexical_cast<unsigned>(strs[1]);
+    } catch (const boost::bad_lexical_cast&) {
+      LOG("--animate_sharding parameters need to be positive integers");
+      exit(1);
+    }
+    if (animate.shard > animate.num_shards || animate.shard == 0) {
+      LOG("--animate_sharding: shard needs to be in range <1..num_shards>");
+      exit(1);
+    }
+  }
+  return animate;
+}
+
 Camera get_camera(const po::variables_map& vm)
 {
   Camera camera;
@@ -309,23 +360,6 @@ Camera get_camera(const po::variables_map& vm)
 
   return camera;
 }
-
-struct CommandLine
-{
-  const bool is_stdin;
-  const std::string& filename;
-  const bool is_stdout;
-  std::string output_file;
-  const fs::path& original_path;
-  const std::string& parameterFile;
-  const std::string& setName;
-  const ViewOptions& viewOptions;
-  const Camera& camera;
-  const boost::optional<FileFormat> export_format;
-  unsigned animate_frames;
-  const std::vector<std::string> summaryOptions;
-  const std::string summaryFile;
-};
 
 int do_export(const CommandLine& cmd, const RenderVariables& render_variables, FileFormat export_format, SourceFile *root_file)
 {
@@ -572,13 +606,17 @@ int cmdline(const CommandLine& cmd)
     .camera = cmd.camera,
   };
 
-  if (cmd.animate_frames == 0) {
+  if (cmd.animate.frames == 0) {
     render_variables.time = 0;
     return do_export(cmd, render_variables, export_format, root_file);
   } else {
     // export the requested number of animated frames
-    for (unsigned frame = 0; frame < cmd.animate_frames; ++frame) {
-      render_variables.time = frame * (1.0 / cmd.animate_frames);
+    const unsigned start_frame = ((cmd.animate.shard - 1) * cmd.animate.frames)
+      / cmd.animate.num_shards;
+    const unsigned limit_frame = (cmd.animate.shard * cmd.animate.frames)
+      / cmd.animate.num_shards;
+    for (unsigned frame = start_frame; frame < limit_frame; ++frame) {
+      render_variables.time = frame * (1.0 / cmd.animate.frames);
 
       std::ostringstream oss;
       oss << std::setw(5) << std::setfill('0') << frame;
@@ -714,6 +752,7 @@ int main(int argc, char **argv)
     ("render", po::value<std::string>()->implicit_value(""), "for full geometry evaluation when exporting png")
     ("preview", po::value<std::string>()->implicit_value(""), "[=throwntogether] -for ThrownTogether preview png")
     ("animate", po::value<unsigned>(), "export N animated frames")
+    ("animate_sharding", po::value<std::string>(), "Parameter <shard>/<num_shards> - Divide work into <num_shards> and only output frames for <shard>. E.g. 2/5 only outputs the second 1/5 of frames. Use to parallelize work on multiple cores or machines.")
     ("view", po::value<CommaSeparatedVector>(), ("=view options: " + boost::algorithm::join(viewOptions.names(), " | ")).c_str())
     ("projection", po::value<std::string>(), "=(o)rtho or (p)erspective when exporting png")
     ("csglimit", po::value<unsigned int>(), "=n -stop rendering at n CSG elements when exporting png")
@@ -908,14 +947,10 @@ int main(int argc, char **argv)
     }
   }
 
-  unsigned animate_frames = 0;
-  if (vm.count("animate")) {
-    animate_frames = vm["animate"].as<unsigned>();
-  }
-
+  AnimateArgs animate = get_animate(vm);
   Camera camera = get_camera(vm);
 
-  if (animate_frames) {
+  if (animate.frames) {
     for (const auto& filename : output_files) {
       if (filename == "-") {
         LOG("Option --animate is not supported when exporting to stdout.");
@@ -959,7 +994,7 @@ int main(int argc, char **argv)
             viewOptions,
             camera,
             export_format,
-            animate_frames,
+            animate,
             vm.count("summary") ? vm["summary"].as<std::vector<std::string>>() : std::vector<std::string>{},
             vm.count("summary-file") ? vm["summary-file"].as<std::string>() : ""
           };
