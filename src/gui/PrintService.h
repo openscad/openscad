@@ -30,16 +30,15 @@
 #include <mutex>
 
 #include <QString>
+#include <QStringList>
 #include <QJsonDocument>
 
+#include "io/export.h"
 #include "gui/Network.h"
 
 class PrintService
 {
 public:
-  static PrintService *inst();
-
-  bool isEnabled() const { return enabled; }
   const QString getService() const { return service; }
   const QString getDisplayName() const { return displayName; }
   const QString getApiUrl() const { return apiUrl; }
@@ -47,23 +46,24 @@ public:
   long getFileSizeLimitMB() const { return fileSizeLimitMB; }
   const QString getInfoHtml() const { return infoHtml; }
   const QString getInfoUrl() const { return infoUrl; }
+  const std::vector<FileFormat> getFileFormats() const { return fileFormats; }
 
-  const QString upload(const QString& exportFileName, const QString& fileName, const network_progress_func_t& progress_func);
+  const QString upload(const QString& exportFileName, const QString& fileName, const network_progress_func_t& progress_func) const;
+
+  bool init(const QJsonObject& serviceObject);
+
+  static const PrintService *getPrintService(const std::string& name);
+  static const std::unordered_map<std::string, std::unique_ptr<PrintService>> &getPrintServices();
 
 private:
-  PrintService();
-  virtual ~PrintService() = default;
 
-  void init();
-  void initService(const QJsonObject& serviceObject);
-
-  bool enabled;
   QString service;
   QString displayName;
   QString apiUrl;
   int fileSizeLimitMB;
   QString infoUrl;
   QString infoHtml;
+  std::vector<FileFormat> fileFormats;
 
   static std::mutex printServiceMutex;
 };

@@ -24,7 +24,7 @@ jobs:
     - name: Set Qt version
       run: |
         case ${{ matrix.qt }} in
-        qt6) echo "CMAKE_OPTIONS=-DUSE_QT6=1" >> $GITHUB_ENV ;;
+        qt5) echo "CMAKE_OPTIONS=-DUSE_QT6=0" >> $GITHUB_ENV ;;
         esac
     - name: Checkout
       uses: actions/checkout@v4

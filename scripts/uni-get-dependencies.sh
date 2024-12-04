@@ -35,7 +35,7 @@ get_qomo_deps()
 
 get_altlinux_deps()
 {
- for i in boost-devel boost-filesystem-devel gcc4.5 gcc4.5-c++ boost-program_options-devel \
+ for i in boost-devel gcc4.5 gcc4.5-c++ boost-program_options-devel \
   boost-thread-devel boost-system-devel boost-regex-devel eigen3 \
   libmpfr libgmp libgmp_cxx-devel qt5-devel libcgal-devel git-core tbb-devel \
   libglew-devel flex bison curl imagemagick gettext glib2-devel; do apt-get install $i; done
@@ -64,7 +64,7 @@ get_opensuse_deps()
   glib2-devel gettext freetype-devel harfbuzz-devel  \
   qscintilla-qt5-devel libqt5-qtbase-devel libQt5OpenGL-devel \
   xvfb-run libzip-devel libqt5-qtmultimedia-devel libqt5-qtsvg-devel \
-  double-conversion-devel libboost_filesystem-devel libboost_regex-devel \
+  double-conversion-devel libboost_regex-devel \
   libboost_program_options-devel tbb-devel
  # qscintilla-qt5-devel replaces libqscintilla_qt5-devel
  # but openscad compiles with both
@@ -101,13 +101,13 @@ get_debian_deps()
 {
  apt-get update
  apt-get -y install \
-  build-essential curl ninja-build libffi-dev libxml2-dev \
-  libxmu-dev cmake bison flex git libboost-all-dev \
+  build-essential bison flex git curl cmake ninja-build libffi-dev \
+  libboost-program-options-dev libboost-regex-dev libboost-system-dev \
   libmpfr-dev libglew-dev libcairo2-dev libharfbuzz-dev \
   libeigen3-dev libcgal-dev libopencsg-dev libgmp-dev \
-  imagemagick libfreetype6-dev libdouble-conversion-dev \
+  imagemagick libfreetype6-dev libdouble-conversion-dev libxml2-dev \
   gtk-doc-tools libglib2.0-dev gettext xvfb pkg-config ragel libtbb-dev \
-  libgl1-mesa-dev libxi-dev libfontconfig-dev libzip-dev
+  libgl1-mesa-dev libxi-dev libxmu-dev libfontconfig-dev libzip-dev
  get_qt5_deps_debian
 }
 
