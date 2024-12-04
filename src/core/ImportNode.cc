@@ -62,6 +62,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
                                                const Children& children, ImportType type)
 {
   bool partcad_node = false;
+  std::string partcad_part_spec;
   if (!children.empty()) {
     LOG(message_group::Warning, inst->location(), arguments.documentRoot(),
         "module %1$s() does not support child modules", inst->name());
@@ -77,7 +78,8 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
 #ifdef ENABLE_PARTCAD
     if (v.toString().find(':') != std::string::npos) {
       partcad_node = true;
-      filename = PartCAD::getPart(v.toString(), inst->location().filePath().parent_path());
+      partcad_part_spec = v.toString();
+      filename = PartCAD::getPart(partcad_part_spec, inst->location().filePath().parent_path());
       if (filename.empty()) {
         LOG(message_group::Error, "error importing PartCAD, part spec=%1$s", v.toString());
       }
@@ -115,6 +117,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
 
   auto node = std::make_shared<ImportNode>(inst, actualtype);
   node->partcad_node = partcad_node;
+  node->partcad_part_spec = partcad_part_spec;
 
   node->fn = parameters["$fn"].toDouble();
   node->fs = parameters["$fs"].toDouble();
@@ -269,7 +272,7 @@ std::string ImportNode::toString() const
   fs::path path((std::string)this->filename);
 
   stream << this->name();
-  stream << "(file = " << this->filename;
+  stream << "(file = " << (this->partcad_node ? this->partcad_part_spec : this->filename);
   if (this->id) {
     stream << ", id = " << QuotedString(this->id.get());
   }

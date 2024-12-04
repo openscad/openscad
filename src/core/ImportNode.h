@@ -25,7 +25,7 @@ public:
   constexpr static double SVG_DEFAULT_DPI = 72.0;
 
   VISITABLE();
-  ImportNode(const ModuleInstantiation *mi, ImportType type) : LeafNode(mi), type(type) { }
+  ImportNode(const ModuleInstantiation *mi, ImportType type) : LeafNode(mi), type(type) {}
   std::string toString() const override;
   std::string name() const override;
   ~ImportNode();
@@ -41,5 +41,6 @@ public:
   double origin_x, origin_y, scale;
   double width, height;
   bool partcad_node{false};
+  Filename partcad_part_spec;
   std::unique_ptr<const class Geometry> createGeometry() const override;
 };
