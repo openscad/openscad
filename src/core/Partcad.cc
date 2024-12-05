@@ -139,7 +139,7 @@ private:
       LOG(message_group::Error, "Could not decode the Python module \"%1s\" into Python Unicode string",
           modname);
       logPartCADError();
-      throw std::exception();
+      throw std::runtime_error("Could not decode Python module name into Python Unicode string");
     }
 
     pModule.reset(PyImport_Import(pName.get()));
@@ -150,7 +150,7 @@ private:
           "Could not load the Python module \"partcad\". Please, try installing it with \"pip install "
           "partcad-cli\"");
       logPartCADError();
-      throw std::exception();
+      throw std::runtime_error("Could not load the Python module \"partcad\"");
     }
   }
 

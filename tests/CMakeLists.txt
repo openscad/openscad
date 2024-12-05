@@ -213,7 +213,7 @@ list(APPEND CTEST_ENVIRONMENT "OPENSCAD_BINARY=${OPENSCAD_BINPATH}")
 # Argument used for import/export tests
 set(OPENSCAD_EXE_ARG "--openscad=${OPENSCAD_BINPATH}")
 
-# If OpenSCAD was built with support to PartCAD then
+# If OpenSCAD was built with support for PartCAD then
 # install PartCAD Python module
 if(ENABLE_PARTCAD)
   execute_process(COMMAND "${Python3_EXECUTABLE}" -m pip install -U partcad
