@@ -99,7 +99,7 @@ private:
     if (PyStatus_Exception(status)) {
       LOG(message_group::Error, "Could not initialize the Python interpreter");
       logPartCADError();
-      throw std::exception();
+      throw std::runtime_error("Could not initialize the Python interpreter");
     }
     PyConfig_Clear(&config);
   }
