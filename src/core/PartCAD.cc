@@ -224,7 +224,7 @@ std::string PartCAD::getPart(const std::string& partSpec, const std::filesystem:
   }
 
   fs::path path = makeTempFilename();
-  filename = path.native();
+  filename = path.string();
   pValue.reset(PyObject_CallMethod(pPartObj.get(), "render_stl", "NNs", Py_None, Py_None, path.c_str()));
   pPartObj.release();
   if (!pValue) {
