@@ -272,7 +272,12 @@ std::string ImportNode::toString() const
   fs::path path((std::string)this->filename);
 
   stream << this->name();
-  stream << "(file = " << (this->partcad_node ? this->partcad_part_spec : this->filename);
+  stream << "(file = ";
+  if (this->partcad_node) {
+    stream << this->partcad_part_spec;
+  } else {
+    stream << this->filename;
+  }
   if (this->id) {
     stream << ", id = " << QuotedString(this->id.get());
   }
