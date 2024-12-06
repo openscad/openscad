@@ -59,8 +59,8 @@
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+#include <filesystem>
+namespace fs = std::filesystem;
 
 
 static std::shared_ptr<AbstractNode> builtin_surface(const ModuleInstantiation *inst, Arguments arguments, const Children& children)
@@ -339,7 +339,7 @@ std::string SurfaceNode::toString() const
   stream << this->name() << "(file = " << this->filename
          << ", center = " << (this->center ? "true" : "false")
          << ", invert = " << (this->invert ? "true" : "false")
-         << ", " "timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
+         << ", " "timestamp = " << fs_timestamp(path)
          << ")";
 
   return stream.str();

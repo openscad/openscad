@@ -29,7 +29,7 @@
 #include <string>
 #include <utility>
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 extern bool parse(class SourceFile *& file, const std::string& text, const std::string& filename, const std::string& mainFile, int debug);
 

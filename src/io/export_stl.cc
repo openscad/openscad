@@ -62,7 +62,7 @@ namespace {
 #define DC_MAX_LEADING_ZEROES (5)
 #define DC_MAX_TRAILING_ZEROES (0)
 
-std::string toString(const Vector3f& v)
+std::string toString(const Vector3d& v)
 {
   double_conversion::DoubleToStringConverter dc(
     DC_FLAGS, DC_INF, DC_NAN, DC_EXP,
@@ -72,11 +72,11 @@ std::string toString(const Vector3f& v)
   char buffer[DC_BUFFER_SIZE];
 
   double_conversion::StringBuilder builder(buffer, DC_BUFFER_SIZE);
-  dc.ToShortestSingle(v[0], &builder);
+  dc.ToShortest(v[0], &builder);
   builder.AddCharacter(' ');
-  dc.ToShortestSingle(v[1], &builder);
+  dc.ToShortest(v[1], &builder);
   builder.AddCharacter(' ');
-  dc.ToShortestSingle(v[2], &builder);
+  dc.ToShortest(v[2], &builder);
   builder.Finalize();
 
   return buffer;
@@ -127,8 +127,7 @@ uint64_t append_stl(std::shared_ptr<const PolySet> polyset, std::ostream& output
   if (!binary) {
     vertexStrings.resize(ps->vertices.size());
     std::transform(ps->vertices.begin(), ps->vertices.end(), vertexStrings.begin(),
-      [](const auto& p)
-     { return toString({static_cast<float>(p.x()), static_cast<float>(p.y()) , static_cast<float>(p.z()) }); });
+      [](const auto& p) { return toString(p); });
   }
 
   // Used for binary mode only
@@ -172,8 +171,7 @@ uint64_t append_stl(std::shared_ptr<const PolySet> polyset, std::ostream& output
       assert(s0 != s1 && s0 != s2 && s1 != s2);
 
       output << "  facet normal ";
-      output << toString(
-        {static_cast<float>(normal.x()), static_cast<float>(normal.y()), static_cast<float>(normal.z()) }) << "\n";
+      output << toString(normal) << "\n";
       output << "    outer loop\n";
       output << "      vertex " << s0 << "\n";
       output << "      vertex " << s1 << "\n";
@@ -293,29 +291,40 @@ void export_stl(const std::shared_ptr<const Geometry>& geom, std::ostream& outpu
 {
   // FIXME: In lazy union mode, should we export multiple solids?
   if (binary) {
+    std::ostringstream buffer; // Using a memory buffer
     char header[80] = "OpenSCAD Model\n";
-    output.write(header, sizeof(header));
-    char tmp_triangle_count[4] = {0, 0, 0, 0}; // We must fill this in below.
-    output.write(tmp_triangle_count, 4);
+    buffer.write(header, sizeof(header));
+    
+  // Placeholder for triangle count
+    uint32_t triangle_count = 0;
+    char tmp_triangle_count[4] = {0, 0, 0, 0};
+    buffer.write(tmp_triangle_count, 4);
+
+    // Writing triangles and counting them
+    triangle_count = append_stl(geom, buffer, binary);
+
+  if (triangle_count > 4294967295) {
+    LOG(message_group::Export_Error, "Triangle count exceeded 4294967295, so the STL file is not valid");
+    }
+
+  // Updating the triangle count in the buffer
+    char triangle_count_bytes[4] = {
+        static_cast<char>(triangle_count & 0xff),
+        static_cast<char>((triangle_count >> 8) & 0xff),
+        static_cast<char>((triangle_count >> 16) & 0xff),
+        static_cast<char>((triangle_count >> 24) & 0xff)};
+    buffer.seekp(80, std::ios_base::beg);
+    buffer.write(triangle_count_bytes, 4);
+    
+    // Flushing the buffer to the output stream
+    output << buffer.str();
+
   } else {
+    // ASCII mode: Write directly to the output stream
     setlocale(LC_NUMERIC, "C"); // Ensure radix is . (not ,) in output
     output << "solid OpenSCAD_Model\n";
-  }
-
-  uint64_t triangle_count = append_stl(geom, output, binary);
-
-  if (binary) {
-    // Fill in triangle count.
-    output.seekp(80, std::ios_base::beg);
-    output.put(triangle_count & 0xff);
-    output.put((triangle_count >> 8) & 0xff);
-    output.put((triangle_count >> 16) & 0xff);
-    output.put((triangle_count >> 24) & 0xff);
-    if (triangle_count > 4294967295) {
-      LOG(message_group::Export_Error, "Triangle count exceeded 4294967295, so the stl file is not valid");
-    }
-  } else {
+    uint64_t triangle_count = append_stl(geom, output, binary);
     output << "endsolid OpenSCAD_Model\n";
-    setlocale(LC_NUMERIC, ""); // Set default locale
+    setlocale(LC_NUMERIC, ""); // Restore default locale
   }
 }

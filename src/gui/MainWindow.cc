@@ -55,7 +55,6 @@
 #ifdef ENABLE_MANIFOLD
 #include "geometry/manifold/manifoldutils.h"
 #endif
-#include "utils/boost-utils.h"
 #include "core/Builtins.h"
 #include "core/BuiltinContext.h"
 #include "core/customizer/CommentParser.h"
@@ -74,6 +73,7 @@
 #include "core/ScopeContext.h"
 #include "core/progress.h"
 #include "io/dxfdim.h"
+#include "io/fileutils.h"
 #include "gui/Settings.h"
 #include "gui/AboutDialog.h"
 #include "gui/FontListDialog.h"
@@ -106,6 +106,7 @@
 #include "gui/AutoUpdater.h"
 #endif
 #include "gui/TabManager.h"
+#include "gui/ExternalToolInterface.h"
 
 #include <QMenu>
 #include <QTime>
@@ -239,40 +240,6 @@ void fileExportedMessage(const char *format, const QString& filename) {
   LOG("%1$s export finished: %2$s", format, filename.toUtf8().constData());
 }
 
-QAction *getExport3DAction(const MainWindow *mainWindow) {
-  const QString format = QString::fromStdString(Settings::Settings::toolbarExport3D.value());
-  if (format == "STL") {
-    return mainWindow->fileActionExportSTL;
-  } else if (format == "OBJ") {
-    return mainWindow->fileActionExportOBJ;
-  } else if (format == "OFF") {
-    return mainWindow->fileActionExportOFF;
-  } else if (format == "WRL") {
-    return mainWindow->fileActionExportWRL;
-  } else if (format == "POV") {
-    return mainWindow->fileActionExportPOV;
-  } else if (format == "AMF") {
-    return mainWindow->fileActionExportAMF;
-  } else if (format == "3MF") {
-    return mainWindow->fileActionExport3MF;
-  } else {
-    return nullptr;
-  }
-}
-
-QAction *getExport2DAction(const MainWindow *mainWindow) {
-  const QString format = QString::fromStdString(Settings::Settings::toolbarExport2D.value());
-  if (format == "DXF") {
-    return mainWindow->fileActionExportDXF;
-  } else if (format == "SVG") {
-    return mainWindow->fileActionExportSVG;
-  } else if (format == "PDF") {
-    return mainWindow->fileActionExportPDF;
-  } else {
-    return nullptr;
-  }
-}
-
 void removeExportActions(QToolBar *toolbar, QAction *action) {
   int idx = toolbar->actions().indexOf(action);
   while (idx > 0) {
@@ -285,13 +252,15 @@ void removeExportActions(QToolBar *toolbar, QAction *action) {
 }
 
 void addExportActions(const MainWindow *mainWindow, QToolBar *toolbar, QAction *action) {
-  QAction *export3D = getExport3DAction(mainWindow);
-  if (export3D) {
-    toolbar->insertAction(action, export3D);
-  }
-  QAction *export2D = getExport2DAction(mainWindow);
-  if (export2D) {
-    toolbar->insertAction(action, export2D);
+  for (const std::string &identifier : {Settings::Settings::toolbarExport3D.value(), 
+                                        Settings::Settings::toolbarExport2D.value()}) {
+    FileFormat format;
+    fileformat::fromIdentifier(identifier, format);
+    const auto it=mainWindow->export_map.find(format);
+    // FIXME: Allow turning off the toolbar entry?
+    if (it != mainWindow->export_map.end()) {
+      toolbar->insertAction(action, it->second);
+    }
   }
 }
 
@@ -433,6 +402,9 @@ MainWindow::MainWindow(const QStringList& filenames)
   autoReloadTimer->setInterval(autoReloadPollingPeriodMS);
   connect(autoReloadTimer, SIGNAL(timeout()), this, SLOT(checkAutoReload()));
 
+  this->exportformat_mapper = new QSignalMapper(this);
+  connect(this->exportformat_mapper, SIGNAL(mappedInt(int)), this, SLOT(actionExportFileFormat(int))) ;
+
   waitAfterReloadTimer = new QTimer(this);
   waitAfterReloadTimer->setSingleShot(true);
   waitAfterReloadTimer->setInterval(autoReloadPollingPeriodMS);
@@ -508,18 +480,26 @@ MainWindow::MainWindow(const QStringList& filenames)
   connect(this->designActionDisplayAST, SIGNAL(triggered()), this, SLOT(actionDisplayAST()));
   connect(this->designActionDisplayCSGTree, SIGNAL(triggered()), this, SLOT(actionDisplayCSGTree()));
   connect(this->designActionDisplayCSGProducts, SIGNAL(triggered()), this, SLOT(actionDisplayCSGProducts()));
-  connect(this->fileActionExportSTL, SIGNAL(triggered()), this, SLOT(actionExportSTL()));
-  connect(this->fileActionExport3MF, SIGNAL(triggered()), this, SLOT(actionExport3MF()));
-  connect(this->fileActionExportOBJ, SIGNAL(triggered()), this, SLOT(actionExportOBJ()));
-  connect(this->fileActionExportOFF, SIGNAL(triggered()), this, SLOT(actionExportOFF()));
-  connect(this->fileActionExportWRL, SIGNAL(triggered()), this, SLOT(actionExportWRL()));
-  connect(this->fileActionExportPOV, SIGNAL(triggered()), this, SLOT(actionExportPOV()));
-  connect(this->fileActionExportAMF, SIGNAL(triggered()), this, SLOT(actionExportAMF()));
-  connect(this->fileActionExportDXF, SIGNAL(triggered()), this, SLOT(actionExportDXF()));
-  connect(this->fileActionExportSVG, SIGNAL(triggered()), this, SLOT(actionExportSVG()));
-  connect(this->fileActionExportPDF, SIGNAL(triggered()), this, SLOT(actionExportPDF()));
-  connect(this->fileActionExportCSG, SIGNAL(triggered()), this, SLOT(actionExportCSG()));
-  connect(this->fileActionExportImage, SIGNAL(triggered()), this, SLOT(actionExportImage()));
+
+  export_map[FileFormat::BINARY_STL] =this->fileActionExportBinarySTL;
+  export_map[FileFormat::ASCII_STL] =this->fileActionExportAsciiSTL;
+  export_map[FileFormat::_3MF] = this->fileActionExport3MF;
+  export_map[FileFormat::OBJ] =  this->fileActionExportOBJ;
+  export_map[FileFormat::OFF] =  this->fileActionExportOFF;
+  export_map[FileFormat::WRL] =  this->fileActionExportWRL;
+  export_map[FileFormat::POV] =  this->fileActionExportPOV;
+  export_map[FileFormat::AMF] =  this->fileActionExportAMF;
+  export_map[FileFormat::DXF] =  this->fileActionExportDXF;
+  export_map[FileFormat::SVG] =  this->fileActionExportSVG;
+  export_map[FileFormat::PDF] =  this->fileActionExportPDF;
+  export_map[FileFormat::CSG] =  this->fileActionExportCSG;
+  export_map[FileFormat::PNG] =  this->fileActionExportImage;
+
+  for (auto &pair : export_map) {
+    connect(pair.second, SIGNAL(triggered()), this->exportformat_mapper, SLOT(map()));
+    this->exportformat_mapper->setMapping(pair.second, int(pair.first));
+  }
+
   connect(this->designActionFlushCaches, SIGNAL(triggered()), this, SLOT(actionFlushCaches()));
 
 #ifndef ENABLE_LIB3MF
@@ -665,7 +645,8 @@ MainWindow::MainWindow(const QStringList& filenames)
   initActionIcon(designActionPreview, ":/icons/svg-default/preview.svg", ":/icons/svg-default/preview-white.svg");
   initActionIcon(designActionMeasureDist, ":/icons/svg-default/measure-dist.svg", ":/icons/svg-default/measure-dist-white.svg");
   initActionIcon(designActionMeasureAngle, ":/icons/svg-default/measure-ang.svg", ":/icons/svg-default/measure-ang-white.svg");
-  initActionIcon(fileActionExportSTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
+  initActionIcon(fileActionExportBinarySTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
+  initActionIcon(fileActionExportAsciiSTL, ":/icons/svg-default/export-stl.svg", ":/icons/svg-default/export-stl-white.svg");
   initActionIcon(fileActionExportAMF, ":/icons/svg-default/export-amf.svg", ":/icons/svg-default/export-amf-white.svg");
   initActionIcon(fileActionExport3MF, ":/icons/svg-default/export-3mf.svg", ":/icons/svg-default/export-3mf-white.svg");
   initActionIcon(fileActionExportOBJ, ":/icons/svg-default/export-obj.svg", ":/icons/svg-default/export-obj-white.svg");
@@ -1292,7 +1273,7 @@ void MainWindow::instantiateRoot()
   this->root_node.reset();
   this->tree.setRoot(nullptr);
 
-  boost::filesystem::path doc(activeEditor->filepath.toStdString());
+  std::filesystem::path doc(activeEditor->filepath.toStdString());
   this->tree.setDocumentPath(doc.parent_path().string());
 
   if (this->root_file) {
@@ -2119,6 +2100,57 @@ void MainWindow::csgRender()
   compileEnded();
 }
 
+std::unique_ptr<ExternalToolInterface> createExternalToolService(
+  print_service_t serviceType, const QString& serviceName, FileFormat fileFormat)
+{
+  switch (serviceType) {
+    case print_service_t::NONE:
+    // TODO: Print warning
+    return nullptr;
+    break;
+    case print_service_t::PRINT_SERVICE: {
+      if (const auto printService = PrintService::getPrintService(serviceName.toStdString())) {
+        return createExternalPrintService(printService, fileFormat);
+      }
+      LOG("Unknown print service \"%1$s\"", serviceName.toStdString());
+      return nullptr;
+      break;
+    }
+    case print_service_t::OCTOPRINT:
+      return createOctoPrintService(fileFormat);
+    break;
+    case print_service_t::LOCALSLICER:
+      return createLocalProgramService(fileFormat);
+    break;
+  }
+  return {};
+}
+
+void MainWindow::sendToExternalTool(ExternalToolInterface &externalToolService)
+{
+  const QFileInfo activeFile(activeEditor->filepath);
+  QString activeFileName = activeFile.fileName();
+  if (activeFileName.isEmpty()) activeFileName = "Untitled.scad";
+  // TODO: Replace suffix to match exported file format?
+  
+  activeFileName = activeFileName + QString::fromStdString("." + fileformat::toSuffix(externalToolService.fileFormat()));
+
+  bool export_status = externalToolService.exportTemporaryFile(this->root_geom, activeFileName, &qglview->cam);
+  
+  this->progresswidget = new ProgressWidget(this);
+  connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
+
+  bool process_status = externalToolService.process(activeFileName.toStdString(), [this](double permille) {
+    return network_progress_func(permille);
+  });
+  updateStatusBar(nullptr);
+
+  const auto url = externalToolService.getURL();
+  if (!url.empty()) {
+    QDesktopServices::openUrl(QUrl{QString::fromStdString(url)});
+  }
+}
+
 void MainWindow::action3DPrint()
 {
 #ifdef ENABLE_3D_PRINTING
@@ -2131,195 +2163,25 @@ void MainWindow::action3DPrint()
   const unsigned int dim = 3;
   if (!canExport(dim)) return;
 
-  const auto selectedService = PrintInitDialog::getResult();
-  Preferences::Preferences::inst()->updateGUI();
+  PrintInitDialog printInitDialog;
+  const auto status = printInitDialog.exec();
 
-  if (selectedService == print_service_t::PRINT_SERVICE) {
-    const auto printService = PrintService::inst();
-    LOG("Sending design to print service %1$s...", printService->getDisplayName().toStdString());
-    sendToPrintService();
-  } else if (selectedService == print_service_t::OCTOPRINT) {
-    LOG("Sending design to OctoPrint...");
-    sendToOctoPrint();
-  } else if (selectedService == print_service_t::LOCALSLICER) {
-    sendToLocalSlicer();
-  }
-#endif // ifdef ENABLE_3D_PRINTING
-}
+  if (status == QDialog::Accepted) {
+    const print_service_t serviceType = printInitDialog.getServiceType();
+    const QString serviceName = printInitDialog.getServiceName();
+    const FileFormat fileFormat = printInitDialog.getFileFormat();
 
-void MainWindow::sendToOctoPrint()
-{
-#ifdef ENABLE_3D_PRINTING
-  OctoPrint octoPrint;
+    LOG("Selected File format: %1$s", fileformat::info(fileFormat).description);
 
-  if (octoPrint.url().trimmed().isEmpty()) {
-    LOG(message_group::Error, "OctoPrint connection not configured. Please check preferences.");
-    return;
-  }
 
-  // FIXME: To make this cleaner, we could define which formats are supported by OctoPrint separately,
-  // then using fileformat::fromIdentifier() to convert.
-  const QString fileFormat = QString::fromStdString(Settings::Settings::octoPrintFileFormat.value());
-  FileFormat exportFileFormat{FileFormat::BINARY_STL};
-  if (fileFormat == "OBJ") {
-    exportFileFormat = FileFormat::OBJ;
-  } else if (fileFormat == "OFF") {
-    exportFileFormat = FileFormat::OFF;
-  } else if (fileFormat == "ASCIISTL") {
-    exportFileFormat = FileFormat::ASCII_STL;
-  } else if (fileFormat == "AMF") {
-    exportFileFormat = FileFormat::AMF;
-  } else if (fileFormat == "3MF") {
-    exportFileFormat = FileFormat::_3MF;
-  } else {
-    exportFileFormat = FileFormat::BINARY_STL;
-  }
-
-  QTemporaryFile exportFile{QDir::temp().filePath("OpenSCAD.XXXXXX." + fileFormat.toLower())};
-  if (!exportFile.open()) {
-    LOG("Could not open temporary file.");
-    return;
-  }
-  const QString exportFileName = exportFile.fileName();
-  exportFile.close();
-
-  QString userFileName;
-  if (activeEditor->filepath.isEmpty()) {
-    userFileName = exportFileName;
-  } else {
-    QFileInfo fileInfo{activeEditor->filepath};
-    userFileName = fileInfo.baseName() + "." + fileFormat.toLower();
-  }
-
-  ExportInfo exportInfo = {.format = exportFileFormat, .sourceFilePath = activeEditor->filepath.toStdString()};
-  exportFileByName(this->root_geom, exportFileName.toStdString(), exportInfo);
-
-  try {
-    this->progresswidget = new ProgressWidget(this);
-    connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
-    const QString fileUrl = octoPrint.upload(exportFileName, userFileName, [this](double v) -> bool {
-      return network_progress_func(v);
-    });
-
-    const std::string& action = Settings::Settings::octoPrintAction.value();
-    if (action == "upload") {
+    Preferences::Preferences::inst()->updateGUI();
+    const auto externalToolService = createExternalToolService(serviceType, serviceName, fileFormat);
+    if (!externalToolService) {
+      LOG("Error: Unable to create service: %1$d %2$s %3$d", static_cast<int>(serviceType), serviceName.toStdString(), static_cast<int>(fileFormat));
       return;
     }
-
-    const QString slicer = QString::fromStdString(Settings::Settings::octoPrintSlicerEngine.value());
-    const QString profile = QString::fromStdString(Settings::Settings::octoPrintSlicerProfile.value());
-    octoPrint.slice(fileUrl, slicer, profile, action != "slice", action == "print");
-  } catch (const NetworkException& e) {
-    LOG(message_group::Error, "%1$s", e.getErrorMessage());
+    sendToExternalTool(*externalToolService);
   }
-
-  updateStatusBar(nullptr);
-#endif // ifdef ENABLE_3D_PRINTING
-}
-
-void MainWindow::sendToLocalSlicer()
-{
-#ifdef ENABLE_3D_PRINTING
-  const QString slicer = QString::fromStdString(Settings::Settings::localSlicerExecutable.value());
-
-  const QString fileFormat = QString::fromStdString(Settings::Settings::localSlicerFileFormat.value()).toLower();
-  FileFormat exportFileFormat = FileFormat::BINARY_STL;
-  if (!fileformat::fromIdentifier(fileFormat.toStdString(), exportFileFormat)) {
-    LOG("Invalid suffix %1$s. Defaulting to binary STL.", fileFormat.toStdString());
-  }
-
-  const auto tmpPath = QDir::temp().filePath("OpenSCAD.XXXXXX."+fileFormat);
-  auto exportFile = std::make_unique<QTemporaryFile>(tmpPath);
-  if (!exportFile->open()) {
-    LOG(message_group::Error, "Could not open temporary file '%1$s'.", tmpPath.toStdString());
-    return;
-  }
-  const auto exportFileName = exportFile->fileName();
-  exportFile->close();
-  this->allTempFiles.push_back(std::move(exportFile));
-
-  QString userFileName;
-  if (activeEditor->filepath.isEmpty()) {
-    userFileName = exportFileName;
-  } else {
-    QFileInfo fileInfo{activeEditor->filepath};
-    userFileName = fileInfo.baseName() + fileFormat;
-  }
-
-  ExportInfo exportInfo = {.format = exportFileFormat, .sourceFilePath = activeEditor->filepath.toStdString()};
-  exportFileByName(this->root_geom, exportFileName.toStdString(), exportInfo);
-
-  QProcess process(this);
-  process.setProcessChannelMode(QProcess::MergedChannels);
-#ifdef Q_OS_MACOS
-  if(!process.startDetached("open", {"-a", slicer, exportFileName})) {
-#else	  
-  if(!process.startDetached(slicer, {exportFileName})) {
-#endif
-    LOG(message_group::Error, "Could not start Slicer '%1$s': %2$s", slicer.toStdString(), process.errorString().toStdString());
-    const auto output = process.readAll();
-    if (output.length() > 0) {
-      LOG(message_group::Error, "Output: %1$s", output.toStdString());
-    }
-  }
-#endif // ifdef ENABLE_3D_PRINTING
-}
-
-void MainWindow::sendToPrintService()
-{
-#ifdef ENABLE_3D_PRINTING
-  //Keeps track of how many times we've exported and tries to create slightly unique filenames.
-  //Not mission critical, since non-unique file names are fine for the API, just harder to
-  //differentiate between in customer support later.
-  static unsigned int printCounter = 0;
-
-  QTemporaryFile exportFile;
-  if (!exportFile.open()) {
-    LOG(message_group::Error, "Could not open temporary file.");
-    return;
-  }
-  const QString exportFilename = exportFile.fileName();
-
-  //Render the stl to a temporary file:
-  ExportInfo exportInfo = {.format = FileFormat::BINARY_STL, .sourceFilePath = activeEditor->filepath.toStdString()};
-  exportFileByName(this->root_geom, exportFilename.toStdString(), exportInfo);
-
-  //Create a name that the order process will use to refer to the file. Base it off of the project name
-  QString userFacingName = "unsaved.stl";
-  if (!activeEditor->filepath.isEmpty()) {
-    const QString baseName = QFileInfo(activeEditor->filepath).baseName();
-    userFacingName = QString{"%1_%2.stl"}.arg(baseName).arg(printCounter++);
-  }
-
-  QFile file(exportFilename);
-  if (!file.open(QIODevice::ReadOnly)) {
-    LOG(message_group::Error, "Unable to open exported STL file.");
-    return;
-  }
-  const QString fileContentBase64 = file.readAll().toBase64();
-
-  if (fileContentBase64.length() > PrintService::inst()->getFileSizeLimit()) {
-    const auto msg = QString{_("Exported design exceeds the service upload limit of (%1 MB).")}.arg(PrintService::inst()->getFileSizeLimitMB());
-    QMessageBox::warning(this, _("Upload Error"), msg, QMessageBox::Ok);
-    LOG(message_group::Error, "%1$s", msg.toStdString());
-    return;
-  }
-
-  //Upload the file to the 3D Printing server and get the corresponding url to see it.
-  //The result is put in partUrl.
-  try
-  {
-    this->progresswidget = new ProgressWidget(this);
-    connect(this->progresswidget, SIGNAL(requestShow()), this, SLOT(showProgress()));
-    const QString partUrl = PrintService::inst()->upload(userFacingName, fileContentBase64, [this](double v) -> bool {
-      return network_progress_func(v);
-    });
-    QDesktopServices::openUrl(QUrl{partUrl});
-  } catch (const NetworkException& e) {
-    LOG(message_group::Error, "%1$s", e.getErrorMessage());
-  }
-
-  updateStatusBar(nullptr);
 #endif // ifdef ENABLE_3D_PRINTING
 }
 
@@ -2489,7 +2351,7 @@ void MainWindow::rightClick(QPoint mouse)
         ss << name << " (" << location.filePath().filename().string() << ":"
            << location.firstLine() << ")";
       } else {
-        auto relative_filename = boostfs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
+        auto relative_filename = fs_uncomplete(location.filePath(), fs::path(activeEditor->filepath.toStdString()).parent_path())
           .generic_string();
         // Set the displayed name relative to the active editor window
         ss << name << " (" << relative_filename << ":" << location.firstLine() << ")";
@@ -2888,7 +2750,7 @@ bool MainWindow::canExport(unsigned int dim)
   return true;
 }
 
-void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim){
+void MainWindow::actionExport(FileFormat format, const char *type_name, const char *suffix, unsigned int dim) {
   ExportPdfOptions *empty = nullptr;
   actionExport(format, type_name, suffix, dim, empty);
 }
@@ -2913,7 +2775,7 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
   }
   this->export_paths[suffix] = exportFilename;
 
-  ExportInfo exportInfo = {.format = format, .sourceFilePath = activeEditor->filepath.toStdString()};
+  ExportInfo exportInfo = {.format = format, .sourceFilePath = activeEditor->filepath.toStdString(), .camera = &qglview->cam};
   // Add options
   exportInfo.options = options;
 
@@ -2923,56 +2785,13 @@ void MainWindow::actionExport(FileFormat format, const char *type_name, const ch
   clearCurrentOutput();
 }
 
-void MainWindow::actionExportSTL()
+void MainWindow::actionExportFileFormat(int fmt)
 {
-  if (Settings::Settings::exportUseAsciiSTL.value()) {
-    actionExport(FileFormat::ASCII_STL, "ASCIISTL", ".stl", 3);
-  } else {
-    actionExport(FileFormat::BINARY_STL, "STL", ".stl", 3);
-  }
-}
-
-void MainWindow::actionExport3MF()
-{
-  actionExport(FileFormat::_3MF, "3MF", ".3mf", 3);
-}
-
-void MainWindow::actionExportOBJ()
-{
-  actionExport(FileFormat::OBJ, "OBJ", ".obj", 3);
-}
-
-void MainWindow::actionExportOFF()
-{
-  actionExport(FileFormat::OFF, "OFF", ".off", 3);
-}
-
-void MainWindow::actionExportWRL()
-{
-  actionExport(FileFormat::WRL, "WRL", ".wrl", 3);
-}
-
-void MainWindow::actionExportPOV()
-{
-  actionExport(FileFormat::POV, "POV", ".pov", 3);
-}
-
-void MainWindow::actionExportAMF()
-{
-  actionExport(FileFormat::AMF, "AMF", ".amf", 3);
-}
-
-void MainWindow::actionExportDXF()
-{
-  actionExport(FileFormat::DXF, "DXF", ".dxf", 2);
-}
-
-void MainWindow::actionExportSVG()
-{
-  actionExport(FileFormat::SVG, "SVG", ".svg", 2);
-}
-
-void MainWindow::actionExportPDF()
+  const FileFormat format = static_cast<FileFormat>(fmt);
+  const FileFormatInfo &info = fileformat::info(format);
+  const std::string suffix = "." + info.suffix;
+  switch (format) {
+    case FileFormat::PDF:
 {
 
   ExportPdfOptions exportPdfOptions;
@@ -3017,8 +2836,8 @@ void MainWindow::actionExportPDF()
   actionExport(FileFormat::PDF, "PDF", ".pdf", 2, &exportPdfOptions);
 
 }
-
-void MainWindow::actionExportCSG()
+      break;
+    case FileFormat::CSG:
 {
   setCurrentOutput();
 
@@ -3047,9 +2866,8 @@ void MainWindow::actionExportCSG()
   }
 
   clearCurrentOutput();
-}
-
-void MainWindow::actionExportImage()
+}      break;
+    case FileFormat::PNG:
 {
   // Grab first to make sure dialog box isn't part of the grabbed image
   qglview->grabFrame();
@@ -3066,6 +2884,11 @@ void MainWindow::actionExportImage()
     } else {
       LOG("Can't open file \"%1$s\" for export image", img_filename.toLocal8Bit().constData());
     }
+  }
+}
+      break;
+    default:
+      actionExport(info.format, info.description.c_str(), suffix.c_str(), fileformat::is3D(format) ? 3 : fileformat::is2D(format) ? 2 : 0);
   }
 }
 

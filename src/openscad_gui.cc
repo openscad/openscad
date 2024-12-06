@@ -72,7 +72,7 @@ extern std::string arg_colorscheme;
 namespace {
 
 // Only if "fileName" is not absolute, prepend the "absoluteBase".
-QString assemblePath(const boost::filesystem::path& absoluteBaseDir,
+QString assemblePath(const std::filesystem::path& absoluteBaseDir,
                      const std::string& fileName) {
   if (fileName.empty()) return "";
   auto qsDir = QString::fromLocal8Bit(absoluteBaseDir.generic_string().c_str());
@@ -129,7 +129,7 @@ void registerDefaultIcon(const QString&) { }
 #define DESKTOP_FILENAME "openscad"
 #endif
 
-int gui(std::vector<std::string>& inputFiles, const boost::filesystem::path& original_path, int argc, char **argv)
+int gui(std::vector<std::string>& inputFiles, const std::filesystem::path& original_path, int argc, char **argv)
 {
   OpenSCADApp app(argc, argv);
   // remove ugly frames in the QStatusBar when using additional widgets

@@ -39,9 +39,8 @@
 #include "core/SourceFile.h"
 #include <assert.h>
 #include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
-//#include "utils/boost-utils.h"
-namespace fs = boost::filesystem;
+#include <filesystem>
+namespace fs = std::filesystem;
 
 //isatty for visual c++ and mingw-cross-env
 #if defined __WIN32__ && ! defined _MSC_VER

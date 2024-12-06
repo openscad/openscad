@@ -44,7 +44,7 @@
 #include "gui/parameter/ParameterVector.h"
 #include "gui/Preferences.h"
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -87,7 +87,7 @@ void ParameterWidget::readFile(const QString& scadFile)
   assert(widgets.empty());
 
   QString jsonFile = getJsonFile(scadFile);
-  if (!boost::filesystem::exists(jsonFile.toStdString()) || this->sets.readFile(jsonFile.toStdString())) {
+  if (!std::filesystem::exists(jsonFile.toStdString()) || this->sets.readFile(jsonFile.toStdString())) {
     this->invalidJsonFile = QString();
   } else {
     this->invalidJsonFile = jsonFile;
@@ -413,7 +413,7 @@ ParameterVirtualWidget *ParameterWidget::createParameterWidget(ParameterObject *
 
 QString ParameterWidget::getJsonFile(const QString& scadFile)
 {
-  boost::filesystem::path p = scadFile.toStdString();
+  std::filesystem::path p = scadFile.toStdString();
   return QString::fromStdString(p.replace_extension(".json").string());
 }
 

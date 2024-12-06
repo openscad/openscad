@@ -3,7 +3,7 @@
 #include <memory>
 #include <sstream>
 #include <string>
-#include "utils/boost-utils.h"
+#include "io/fileutils.h"
 
 const Location Location::NONE(0, 0, 0, 0, std::make_shared<fs::path>(fs::path{}));
 
@@ -27,7 +27,7 @@ bool Location::isNone() const {
 
 std::string Location::toRelativeString(const std::string& docPath) const {
   if (this->isNone()) return "location unknown";
-  return "in file " + boostfs_uncomplete((*path), docPath).generic_string() + ", " + "line " + std::to_string(this->firstLine());
+  return "in file " + fs_uncomplete((*path), docPath).generic_string() + ", " + "line " + std::to_string(this->firstLine());
 }
 
 std::ostream& operator<<(std::ostream& stream, const ASTNode& ast)

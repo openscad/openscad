@@ -43,7 +43,6 @@
 #include "io/fileutils.h"
 #include "Feature.h"
 #include "handle_dep.h"
-#include "utils/boost-utils.h"
 #include <cmath>
 #include <ios>
 #include <utility>
@@ -51,8 +50,8 @@
 #include <sys/types.h>
 #include <sstream>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+#include <filesystem>
+namespace fs = std::filesystem;
 #include <boost/assign/std/vector.hpp>
 using namespace boost::assign; // bring 'operator+=()' into scope
 
@@ -139,7 +138,7 @@ static std::shared_ptr<AbstractNode> do_import(const ModuleInstantiation *inst, 
   if (dpi.type() == Value::Type::NUMBER) {
     double val = dpi.toDouble();
     if (val < 0.001) {
-      std::string filePath = boostfs_uncomplete(inst->location().filePath(), parameters.documentRoot()).generic_string();
+      std::string filePath = fs_uncomplete(inst->location().filePath(), parameters.documentRoot()).generic_string();
       LOG(message_group::Warning,
           "Invalid dpi value giving, using default of %1$f dpi. Value must be positive and >= 0.001, file %2$s, import() at line %3$d",
           origin.toEchoStringNoThrow(), filePath, filePath, inst->location().firstLine()
@@ -243,7 +242,7 @@ std::string ImportNode::toString() const
   stream << ", scale = " << this->scale
          << ", convexity = " << this->convexity
          << ", $fn = " << this->fn << ", $fa = " << this->fa << ", $fs = " << this->fs
-         << ", timestamp = " << (fs::exists(path) ? fs::last_write_time(path) : 0)
+         << ", timestamp = " << fs_timestamp(path)
          << ")";
 
   return stream.str();

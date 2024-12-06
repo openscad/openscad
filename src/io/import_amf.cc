@@ -43,7 +43,7 @@
 #include <string>
 #include <vector>
 #include <libxml/xmlreader.h>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <boost/lexical_cast.hpp>
 
 static const std::string text_node("#text");
