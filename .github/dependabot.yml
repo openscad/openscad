@@ -1,0 +1,28 @@
+version: 2
+updates:
+  - package-ecosystem: "docker"
+    directory: "dockerfiles"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps"
+    open-pull-requests-limit: 10
+    target-branch: "fosdem-2025"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps"
+    open-pull-requests-limit: 10
+    target-branch: "fosdem-2025"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "deps"
+    open-pull-requests-limit: 10
+    target-branch: "fosdem-2025"
