@@ -29,9 +29,15 @@ public:
 
   void initGUI();
   bool dumpPictures();
+  bool dumpPovRay();
   int nextFrame();
+  bool isRunning();
 
   QTimer *animate_timer;
+  bool is_step_timer;  // no automatic timer, triggered by caller
+  bool end_reached;
+
+  void stepTimer();
 
   void setMainWindow(MainWindow *mainWindow);
 
@@ -83,6 +89,7 @@ private slots:
   void updatedAnimTval();
   void updatedAnimFpsAndAnimSteps();
   void updatedAnimDump(bool checked);
+  void updatedAnimDumpPovRay(bool checked);
   void incrementTVal();
   void updateTVal();
   void on_pauseButton_pressed();

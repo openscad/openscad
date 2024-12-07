@@ -27,9 +27,10 @@ CGALWorker::~CGALWorker()
   delete this->thread;
 }
 
-void CGALWorker::start(const Tree& tree)
+void CGALWorker::start(const Tree& tree, const int counter)
 {
   this->tree = &tree;
+  this->counter = counter;
   this->thread->start();
 }
 
@@ -60,6 +61,6 @@ void CGALWorker::work()
     LOG(message_group::Error, "Rendering cancelled by unknown exception.");
   }
 
-  emit done(root_geom);
+  emit done(root_geom, counter);
   thread->quit();
 }

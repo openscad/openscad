@@ -1,10 +1,11 @@
 #pragma once
 
+#include <array>
+#include <iostream>
 #include <iterator>
 #include <map>
-#include <iostream>
-#include <array>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -113,6 +114,7 @@ struct ExportInfo {
   std::string sourceFilePath; // Full path to the OpenSCAD source file
   ExportPdfOptions *options;
   const Camera *camera;
+  std::optional<double> clock;
 };
 
 bool exportFileByName(const std::shared_ptr<const class Geometry>& root_geom, const std::string& filename, const ExportInfo& exportInfo);
