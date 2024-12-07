@@ -61,6 +61,7 @@ PACKAGES=(
     "opencsg 1.6.0"
     "qscintilla 2.14.1"
     "onetbb 2021.12.0"
+    "manifold 3.0.0"
 )
 DEPLOY_PACKAGES=(
     "sparkle 1.27.1"
@@ -858,6 +859,24 @@ build_cairo()
   install_name_tool -id @rpath/libcairo.dylib $DEPLOYDIR/lib/libcairo.dylib
   install_name_tool -change @rpath/libpixman.dylib @rpath/libpixman-1.dylib $DEPLOYDIR/lib/libcairo.dylib
 }
+
+build_manifold()
+{
+  cd $BASEDIR/src
+  rm -rf "manifold-$version"
+  if [ ! -f "manifold-$version.tar.gz" ]; then
+    curl -LO https://github.com/elalish/manifold/releases/download/v$version/manifold-$version.tar.gz
+  fi
+  tar xzf "manifold-$version.tar.gz"
+  cd "manifold-$version"
+
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DMANIFOLD_CBIND=OFF -DMANIFOLD_TEST=OFF -DMANIFOLD_PAR=ON ..
+  make -j$NUMCPU
+  make install
+}
+
 
 if [ ! -f $OPENSCADDIR/openscad.appdata.xml.in ]; then
   echo "Must be run from the OpenSCAD source root directory"
