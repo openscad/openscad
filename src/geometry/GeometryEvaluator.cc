@@ -803,20 +803,20 @@ Response GeometryEvaluator::visit(State& state, const LinearExtrudeNode& node)
   return Response::ContinueTraversal;
 }
 
-static void fill_ring(std::vector<Vector3d>& ring, const Outline2d& o, double a, bool flip)
+static void fill_ring(std::vector<Vector3d>& ring, const Outline2d& o, double a, bool flip, double dz)
 {
   if (flip) {
     unsigned int l = o.vertices.size() - 1;
     for (unsigned int i = 0; i < o.vertices.size(); ++i) {
       ring[i][0] = o.vertices[l - i][0] * sin_degrees(a);
       ring[i][1] = o.vertices[l - i][0] * cos_degrees(a);
-      ring[i][2] = o.vertices[l - i][1];
+      ring[i][2] = o.vertices[l - i][1] + dz;
     }
   } else {
     for (unsigned int i = 0; i < o.vertices.size(); ++i) {
       ring[i][0] = o.vertices[i][0] * sin_degrees(a);
       ring[i][1] = o.vertices[i][0] * cos_degrees(a);
-      ring[i][2] = o.vertices[i][1];
+      ring[i][2] = o.vertices[i][1] + dz;
     }
   }
 }
@@ -848,11 +848,15 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
 
   double min_x = 0;
   double max_x = 0;
+  double min_y = std::numeric_limits<double>::max();
+  double max_y = std::numeric_limits<double>::min();
   unsigned int fragments = 0;
   for (const auto& o : poly.outlines()) {
     for (const auto& v : o.vertices) {
       min_x = fmin(min_x, v[0]);
       max_x = fmax(max_x, v[0]);
+      min_y = fmin(min_y, v[1]);
+      max_y = fmax(max_y, v[1]);
     }
   }
 
@@ -861,11 +865,16 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
     return nullptr;
   }
 
+  double rise_per_rev = node.height/(node.angle/360.0);
+  if ((node.height != 0) && (std::abs(node.angle) > 360) && (rise_per_rev < (max_y-min_y))){
+    LOG(message_group::Warning, "Rise-per-rotation (%1$2f) is less than total y-height (%2$.2f) of extruded polygon. This may lead to self-intersection.", rise_per_rev, max_y - min_y);
+  }
+
   fragments = (unsigned int)std::ceil(fmax(Calc::get_fragments_from_r(max_x - min_x, node.fn, node.fs, node.fa) * std::abs(node.angle) / 360, 1));
 
   bool flip_faces = (min_x >= 0 && node.angle > 0 && node.angle != 360) || (min_x < 0 && (node.angle < 0 || node.angle == 360));
 
-  if (node.angle != 360) {
+  if (node.angle != 360 || node.height != 0) {
     auto ps_start = poly.tessellate(); // starting face
     Transform3d rot(angle_axis_degrees(90, Vector3d::UnitX()));
     ps_start->transform(rot);
@@ -880,6 +889,8 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
     auto ps_end = poly.tessellate();
     Transform3d rot2(angle_axis_degrees(node.angle, Vector3d::UnitZ()) * angle_axis_degrees(90, Vector3d::UnitX()));
     ps_end->transform(rot2);
+    translate_PolySet(*ps_end, Vector3d(0,0,node.height));
+
     if (flip_faces) {
       for (auto& p : ps_end->indices) {
         std::reverse(p.begin(), p.end());
@@ -893,12 +904,13 @@ static std::unique_ptr<Geometry> rotatePolygon(const RotateExtrudeNode& node, co
     rings[0].resize(o.vertices.size());
     rings[1].resize(o.vertices.size());
 
-    fill_ring(rings[0], o, (node.angle == 360) ? -90 : 90, flip_faces); // first ring
+    fill_ring(rings[0], o, (node.angle == 360) ? -90 : 90, flip_faces, 0); // first ring
     for (unsigned int j = 0; j < fragments; ++j) {
       double a;
-      if (node.angle == 360) a = -90 + ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
+      if (node.angle == 360 && node.height == 0) a = -90 + ((j + 1) % fragments) * 360.0 / fragments; // start on the -X axis, for legacy support
       else a = 90 - (j + 1) * node.angle / fragments; // start on the X axis
-      fill_ring(rings[(j + 1) % 2], o, a, flip_faces);
+      double dz = (j + 1) * node.height / fragments;
+      fill_ring(rings[(j + 1) % 2], o, a, flip_faces,dz);
 
       for (size_t i = 0; i < o.vertices.size(); ++i) {
         builder.appendPolygon({
