@@ -117,7 +117,52 @@ static bool append_polyset(std::shared_ptr<const PolySet> ps, PLib3MFModelMeshOb
       return false;
     }
   }
+  PLib3MFModelBaseMaterial *pBaseMaterial = nullptr;
+  int result =  lib3mf_model_addbasematerialgroup(model, &pBaseMaterial);
+  if(result != LIB3MF_OK ) {
+      export_3mf_error("Can't add Base Material to 3MF model.", model);
+      return false;
+  }
 
+  PLib3MFDefaultPropertyHandler * defprophandler=nullptr ; 
+  if(lib3mf_object_createdefaultpropertyhandler(mesh, &defprophandler) != LIB3MF_OK) {
+      export_3mf_error("Could not create def prop handler.", model);
+      return false;
+  }
+  // all above goes ok!
+
+  if(sorted_ps->color_indices.size() > 0) {
+    int ind=sorted_ps->color_indices[0];	  
+    if(lib3mf_defaultpropertyhandler_setcolorrgba(defprophandler,
+		   sorted_ps->colors[ind][0]*255.0f,
+		   sorted_ps->colors[ind][1]*255.0f,
+		   sorted_ps->colors[ind][2]*255.0f,
+		   sorted_ps->colors[ind][3]*255.0f) != LIB3MF_OK) {
+      export_3mf_error("Could not set def color.", model);
+      return false;
+    }
+  }
+  MODELMESHCOLOR_SRGB  tri_prop;
+  PLib3MFPropertyHandler * prophandler=nullptr ; 
+  if(lib3mf_meshobject_createpropertyhandler(mesh, &prophandler) != LIB3MF_OK) {
+      export_3mf_error("Could not create prop handler.", model);
+      return false;
+  }
+
+  for(int i=0;i<sorted_ps->color_indices.size();i++) {
+    int ind=sorted_ps->color_indices[i];	  
+    if(ind < 0) continue;
+    tri_prop.m_Red = sorted_ps->colors[ind][0]*255.0f;
+    tri_prop.m_Green = sorted_ps->colors[ind][1]*255.0f;
+    tri_prop.m_Blue = sorted_ps->colors[ind][2]*255.0f;
+    tri_prop.m_Alpha = sorted_ps->colors[ind][3]*255.0f;
+    if(i < sorted_ps->indices.size()) {
+      if(lib3mf_propertyhandler_setsinglecolor(prophandler, i, &tri_prop) != LIB3MF_OK) {
+        export_3mf_error("Can't set Triangle Color.", model);
+        return false;
+      }
+    }  
+  }
   PLib3MFModelBuildItem *builditem;
   if (lib3mf_model_addbuilditem(model, mesh, nullptr, &builditem) != LIB3MF_OK) {
     export_3mf_error("Can't add build item to 3MF model.", model);
