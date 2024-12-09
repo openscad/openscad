@@ -3,6 +3,7 @@
 
 #include "geometry/roof_ss.h"
 
+#include <clipper2/clipper.engine.h>
 #include <iterator>
 #include <functional>
 #include <memory>
@@ -46,9 +47,6 @@ using CGAL_SsPtr = boost::shared_ptr<CGAL_Ss>;
 using CGAL_SsPtr = std::shared_ptr<CGAL_Ss>;
 #endif
 
-using PolyTree = ClipperLib::PolyTree;
-using PolyNode = ClipperLib::PolyNode;
-
 CGAL_Polygon_2 to_cgal_polygon_2(const VectorOfVector2d& points)
 {
   CGAL_Polygon_2 poly;
@@ -58,26 +56,26 @@ CGAL_Polygon_2 to_cgal_polygon_2(const VectorOfVector2d& points)
 }
 
 // break a list of outlines into polygons with holes
-std::vector<CGAL_Polygon_with_holes_2> polygons_with_holes(const ClipperLib::PolyTree& polytree, int scale_pow2)
+std::vector<CGAL_Polygon_with_holes_2> polygons_with_holes(const Clipper2Lib::PolyTree64& polytree, int scale_pow2)
 {
   std::vector<CGAL_Polygon_with_holes_2> ret;
 
   // lambda for recursive walk through polytree
-  std::function<void (PolyNode *)> walk = [&](PolyNode *c) {
+  std::function<void (const Clipper2Lib::PolyPath64 &)> walk = [&](const Clipper2Lib::PolyPath64 &c) {
       // outer path
-      CGAL_Polygon_with_holes_2 c_poly(to_cgal_polygon_2(ClipperUtils::fromPath(c->Contour, scale_pow2)));
+      CGAL_Polygon_with_holes_2 c_poly(to_cgal_polygon_2(ClipperUtils::fromPath(c.Polygon(), scale_pow2)));
       // holes
-      for (auto cc : c->Childs) {
-        c_poly.add_hole(to_cgal_polygon_2(ClipperUtils::fromPath(cc->Contour, scale_pow2)));
-        for (auto ccc : cc->Childs)
-          walk(ccc);
+      for (const auto& cc : c) {
+        c_poly.add_hole(to_cgal_polygon_2(ClipperUtils::fromPath(cc->Polygon(), scale_pow2)));
+        for (const auto& ccc : *cc)
+          walk(*ccc);
       }
       ret.push_back(c_poly);
       return;
     };
 
-  for (auto root_node : polytree.Childs)
-    walk(root_node);
+  for (const auto &root_node : polytree)
+    walk(*root_node);
 
   return ret;
 }
@@ -87,13 +85,13 @@ std::unique_ptr<PolySet> straight_skeleton_roof(const Polygon2d& poly)
   PolySetBuilder hatbuilder;
 
   int scale_pow2 = ClipperUtils::getScalePow2(poly.getBoundingBox(), 32);
-  ClipperLib::Paths paths = ClipperUtils::fromPolygon2d(poly, scale_pow2);
-  ClipperLib::PolyTree polytree = ClipperUtils::sanitize(paths);
-  auto poly_sanitized = ClipperUtils::toPolygon2d(polytree, scale_pow2);
+  Clipper2Lib::Paths64 paths = ClipperUtils::fromPolygon2d(poly, scale_pow2);
+  std::unique_ptr<Clipper2Lib::PolyTree64> polytree = ClipperUtils::sanitize(paths);
+  auto poly_sanitized = ClipperUtils::toPolygon2d(*polytree, scale_pow2);
 
   try {
     // roof
-    std::vector<CGAL_Polygon_with_holes_2> shapes = polygons_with_holes(polytree, scale_pow2);
+    std::vector<CGAL_Polygon_with_holes_2> shapes = polygons_with_holes(*polytree, scale_pow2);
     for (const CGAL_Polygon_with_holes_2& shape : shapes) {
       CGAL_SsPtr ss = CGAL::create_interior_straight_skeleton_2(shape);
       // store heights of vertices

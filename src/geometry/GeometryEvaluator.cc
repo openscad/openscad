@@ -247,7 +247,8 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyHull2D(const AbstractNode& no
 std::unique_ptr<Polygon2d> GeometryEvaluator::applyFill2D(const AbstractNode& node)
 {
   // Merge and sanitize input geometry
-  auto geometry_in = ClipperUtils::apply(collectChildren2D(node), ClipperLib::ctUnion);
+  auto geometry_in = ClipperUtils::apply(collectChildren2D(node), Clipper2Lib::ClipType::Union);
+  assert(geometry_in->isSanitized());
 
   std::vector<std::shared_ptr<const Polygon2d>> newchildren;
   // Keep only the 'positive' outlines, eg: the outside edges
@@ -258,7 +259,7 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyFill2D(const AbstractNode& no
   }
 
   // Re-merge geometry in case of nested outlines
-  return ClipperUtils::apply(newchildren, ClipperLib::ctUnion);
+  return ClipperUtils::apply(newchildren, Clipper2Lib::ClipType::Union);
 }
 
 std::unique_ptr<Geometry> GeometryEvaluator::applyHull3D(const AbstractNode& node)
@@ -416,16 +417,16 @@ std::unique_ptr<Polygon2d> GeometryEvaluator::applyToChildren2D(const AbstractNo
     }
   }
 
-  ClipperLib::ClipType clipType;
+  Clipper2Lib::ClipType clipType;
   switch (op) {
   case OpenSCADOperator::UNION:
-    clipType = ClipperLib::ctUnion;
+    clipType = Clipper2Lib::ClipType::Union;
     break;
   case OpenSCADOperator::INTERSECTION:
-    clipType = ClipperLib::ctIntersection;
+    clipType = Clipper2Lib::ClipType::Intersection;
     break;
   case OpenSCADOperator::DIFFERENCE:
-    clipType = ClipperLib::ctDifference;
+    clipType = Clipper2Lib::ClipType::Difference;
     break;
   default:
     LOG(message_group::Error, "Unknown boolean operation %1$d", int(op));
@@ -671,14 +672,8 @@ Response GeometryEvaluator::visit(State& state, const TextNode& node)
   if (state.isPrefix()) {
     std::shared_ptr<const Geometry> geom;
     if (!isSmartCached(node)) {
-      auto geometrylist = node.createGeometryList();
-      std::vector<std::shared_ptr<const Polygon2d>> polygonlist;
-      for (const auto& geometry : geometrylist) {
-        const auto polygon = std::dynamic_pointer_cast<const Polygon2d>(geometry);
-        assert(polygon);
-        polygonlist.push_back(polygon);
-      }
-      geom = ClipperUtils::apply(polygonlist, ClipperLib::ctUnion);
+      auto polygonlist = node.createPolygonList();
+      geom = ClipperUtils::apply(polygonlist, Clipper2Lib::ClipType::Union);
     } else {
       geom = GeometryCache::instance()->get(this->tree.getIdString(node));
     }

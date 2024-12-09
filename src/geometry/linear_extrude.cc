@@ -406,6 +406,7 @@ size_t calc_num_slices(const LinearExtrudeNode& node, const Polygon2d& poly) {
  */
 std::unique_ptr<Geometry> extrudePolygon(const LinearExtrudeNode& node, const Polygon2d& poly)
 {
+  assert(poly.isSanitized());
   if (node.height[2] <= 0) return PolySet::createEmpty();
 
   bool non_linear = node.twist != 0 || node.scale_x != node.scale_y;
