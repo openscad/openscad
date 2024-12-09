@@ -262,6 +262,9 @@ add_subdirectory(submodules)
 # The submodules will set up mimalloc if needed, and we need to defer any
 # target_link_libraries() calls until after that.
 
+target_link_libraries(OpenSCAD PRIVATE Clipper2::Clipper2)
+target_include_directories(OpenSCAD SYSTEM PRIVATE "submodules/Clipper2/CPP/Clipper2Lib/include")
+
 if (MXECROSS)
   target_compile_definitions(OpenSCAD PRIVATE LIBXML_STATIC STATIC_QT_SVG_PLUGIN)
   target_compile_definitions(OpenSCAD PRIVATE GLEW_STATIC)
@@ -847,7 +850,6 @@ set(CORE_SOURCES
   src/ext/libtess2/Source/sweep.c
   src/ext/libtess2/Source/tess.c
   src/ext/lodepng/lodepng.cpp
-  src/ext/polyclipping/clipper.cpp
   src/geometry/ClipperUtils.cc
   src/geometry/Geometry.cc
   src/geometry/GeometryCache.cc
@@ -1011,7 +1013,6 @@ if(ENABLE_MANIFOLD)
   set(MANIFOLD_PYBIND OFF)
   set(MANIFOLD_TEST OFF)
   if(USE_BUILTIN_MANIFOLD)
-#    set(MANIFOLD_USE_BUILTIN_CLIPPER2 ON)
     if(CMAKE_UNITY_BUILD)
       set(CMAKE_UNITY_BUILD OFF)
       add_subdirectory(submodules/manifold EXCLUDE_FROM_ALL)
@@ -1240,11 +1241,6 @@ set(GUI_UIS
     src/gui/parameter/ParameterVector.ui
     src/gui/parameter/ParameterWidget.ui
 )
-
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  # Ignore specific warning on external lib
-  set_source_files_properties("src/ext/polyclipping/clipper.cpp" PROPERTIES COMPILE_FLAGS "-Wno-class-memaccess")
-endif()
 
 if (ENABLE_MANIFOLD)
   target_compile_definitions(OpenSCAD PRIVATE ENABLE_MANIFOLD)
