@@ -61,6 +61,7 @@ PACKAGES=(
     "opencsg 1.6.0"
     "qscintilla 2.14.1"
     "onetbb 2021.12.0"
+    "clipper2 1.4.0"
     "manifold 3.0.0"
 )
 DEPLOY_PACKAGES=(
@@ -858,6 +859,23 @@ build_cairo()
 
   install_name_tool -id @rpath/libcairo.dylib $DEPLOYDIR/lib/libcairo.dylib
   install_name_tool -change @rpath/libpixman.dylib @rpath/libpixman-1.dylib $DEPLOYDIR/lib/libcairo.dylib
+}
+
+build_clipper2()
+{
+  cd $BASEDIR/src
+  rm -rf "Clipper2-Clipper2_$version"
+  if [ ! -f "Clipper2_$version.tar.gz" ]; then
+    curl -LO https://github.com/AngusJohnson/Clipper2/archive/refs/tags/Clipper2_$version.tar.gz
+  fi
+  tar xzf "Clipper2_$version.tar.gz"
+  cd "Clipper2-Clipper2_$version"
+
+  mkdir build
+  cd build
+  cmake -DCMAKE_INSTALL_PREFIX=$DEPLOYDIR -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_DEPLOYMENT_TARGET="$MAC_OSX_VERSION_MIN" -DCMAKE_OSX_ARCHITECTURES="$ARCHS_COMBINED" -DCLIPPER2_UTILS=OFF -DCLIPPER2_EXAMPLES=OFF -DCLIPPER2_TESTS=OFF -DBUILD_SHARED_LIBS=ON ../CPP
+  make -j$NUMCPU
+  make install
 }
 
 build_manifold()
