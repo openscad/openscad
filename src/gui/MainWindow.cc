@@ -36,6 +36,7 @@
 #include <QList>
 #include <QMetaObject>
 #include <QPoint>
+#include <QScreen>
 #include <QSoundEffect>
 #include <QStringList>
 #include <QTextEdit>
@@ -684,6 +685,15 @@ MainWindow::MainWindow(const QStringList& filenames)
   // make sure it looks nice..
   const auto windowState = settings.value("window/state", QByteArray()).toByteArray();
   restoreGeometry(settings.value("window/geometry", QByteArray()).toByteArray());
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+  // Workaround for a Qt bug (possible QTBUG-46620, but it's still there in Qt-6.5.3)
+  // Blindly restoring a maximized window to a different screen resolution causes a crash
+  // on the next move/resize operation on macOS:
+  // https://github.com/openscad/openscad/issues/5486
+  if (isMaximized()) {
+    setGeometry(screen()->availableGeometry());
+  }
+#endif
   restoreState(windowState);
 
   if (windowState.size() == 0) {
