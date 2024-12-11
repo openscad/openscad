@@ -684,6 +684,13 @@ MainWindow::MainWindow(const QStringList& filenames)
   // make sure it looks nice..
   const auto windowState = settings.value("window/state", QByteArray()).toByteArray();
   restoreGeometry(settings.value("window/geometry", QByteArray()).toByteArray());
+  // Workaround for a Qt bug (possible QTBUG-46620, but it's still there in Qt-6.5.3)
+  // Blindly restoring a maximized window to a different screen resolution causes a crash
+  // on the next move/resize operation on macOS:
+  // https://github.com/openscad/openscad/issues/5486
+  if (isMaximized()) {
+    setGeometry(screen()->availableGeometry());
+  }
   restoreState(windowState);
 
   if (windowState.size() == 0) {
