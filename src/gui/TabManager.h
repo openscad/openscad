@@ -21,15 +21,15 @@ public:
   EditorInterface *editor;
   QSet<EditorInterface *> editorList;
 
-  void createTab(const QString& filename);
-  void openTabFile(const QString& filename);
+  void createTab(const QString& filename, bool forceTreeParsing=true);
+  void openTabFile(const QString& filename, bool forceTreeParsing=true);
   void setTabName(const QString& filename, EditorInterface *edt = nullptr);
   bool refreshDocument(); // returns false if the file could not be opened
   bool shouldClose();
   bool save(EditorInterface *edt);
   bool saveAs(EditorInterface *edt);
   bool saveACopy(EditorInterface *edt);
-  void open(const QString& filename);
+  void open(const QString& filename, bool forceTreeParsing=true);
   size_t count();
 
 public:
