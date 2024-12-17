@@ -2,6 +2,7 @@
 #include "utils/printutils.h"
 
 #include <algorithm>
+#include <clipper2/clipper.engine.h>
 #include <cmath>
 #include <cassert>
 #include <utility>
@@ -11,117 +12,7 @@
 
 namespace ClipperUtils {
 
-// Using 1 bit less precision than the maximum possible, to limit the chance
-// of data loss when converting back to double (see https://github.com/openscad/openscad/issues/5253).
-const int CLIPPER_BITS{ std::ilogb( 0x3FFFFFFFFFFFFFFFLL) };
-
-int getScalePow2(const BoundingBox& bounds, int bits)
-{
-  double maxCoeff = std::max({
-      bounds.min().cwiseAbs().maxCoeff(),
-      bounds.max().cwiseAbs().maxCoeff(),
-      bounds.sizes().maxCoeff()
-    });
-  int exp = std::ilogb(maxCoeff) + 1;
-  int _bits = (bits == 0) ? CLIPPER_BITS : bits;
-  return (_bits - 1) - exp;
-}
-
-VectorOfVector2d fromPath(const Clipper2Lib::Path64& path, int pow2)
-{
-  double scale = std::ldexp(1.0, -pow2);
-  VectorOfVector2d ret;
-  for (auto v : path) {
-    ret.emplace_back(v.x * scale, v.y * scale);
-  }
-  return ret;
-}
-
-Clipper2Lib::Paths64 fromPolygon2d(const Polygon2d& poly, int pow2)
-{
-  bool keep_orientation = poly.isSanitized();
-  double scale = std::ldexp(1.0, pow2);
-  Clipper2Lib::Paths64 result;
-  for (const auto& outline : poly.outlines()) {
-    Clipper2Lib::Path64 p;
-    for (const auto& v : outline.vertices) {
-      p.emplace_back(v[0] * scale, v[1] * scale);
-    }
-    // Make sure all polygons point up, since we project also
-    // back-facing polygon in PolySetUtils::project()
-    if (!keep_orientation && !Clipper2Lib::IsPositive(p)) std::reverse(p.begin(), p.end());
-    result.push_back(std::move(p));
-  }
-  return result;
-}
-
-AutoScaled<Clipper2Lib::Paths64> fromPolygon2d(const Polygon2d& poly)
-{
-  auto b = poly.getBoundingBox();
-  auto scale = ClipperUtils::getScalePow2(b);
-  return {fromPolygon2d(poly, scale), b};
-}
-
-std::unique_ptr<Clipper2Lib::PolyTree64> sanitize(const Clipper2Lib::Paths64& paths)
-{
-  auto result = std::make_unique<Clipper2Lib::PolyTree64>();
-  Clipper2Lib::Clipper64 clipper;
-  try {
-    clipper.AddSubject(paths);
-  } catch (...) {
-    // Most likely caught a RangeTest exception from clipper
-    // Note that Clipper up to v6.2.1 incorrectly throws
-    // an exception of type char* rather than a clipperException()
-    // TODO: Is this needed for Clipper2?
-    LOG(message_group::Warning, "Range check failed for polygon. skipping");
-  }
-  clipper.Execute(Clipper2Lib::ClipType::Union, Clipper2Lib::FillRule::EvenOdd, *result);
-  return result;
-}
-
-std::unique_ptr<Polygon2d> sanitize(const Polygon2d& poly)
-{
-  auto tmp = ClipperUtils::fromPolygon2d(poly);
-  return toPolygon2d(*sanitize(tmp.geometry), ClipperUtils::getScalePow2(tmp.bounds));
-}
-
-/*!
-   We want to use a PolyTree to convert to Polygon2d, since only PolyTrees
-   have an explicit notion of holes.
-   We could use a Paths structure, but we'd have to check the orientation of each
-   path before adding it to the Polygon2d.
- */
-std::unique_ptr<Polygon2d> toPolygon2d(const Clipper2Lib::PolyTree64& polytree, int pow2)
-{
-  auto result = std::make_unique<Polygon2d>();
-  double scale = std::ldexp(1.0, -pow2);
-  auto processChildren = [scale, &result](auto&& processChildren, const Clipper2Lib::PolyPath64& node) -> void {
-    Outline2d outline;
-    // Apparently, when using offset(), clipper gets the hole status wrong
-    //outline.positive = !node->IsHole();
-
-    outline.positive = IsPositive(node.Polygon());
-    // TODO: Should we replace the missing CleanPolygons in Clipper2 and call it here?
-
-    // CleanPolygon can in some cases reduce the polygon down to no vertices
-    const auto &cleaned_path = node.Polygon();
-
-    if (cleaned_path.size() >= 3) {
-      for (const auto& ip : cleaned_path) {
-        outline.vertices.emplace_back(scale * ip.x, scale * ip.y);
-      }
-      result->addOutline(outline);
-    }
-    for (const auto& child : node) {
-      processChildren(processChildren, *child);
-    }
-  };
-  for (const auto& node : polytree) {
-    processChildren(processChildren, *node);
-  }
-  result->setSanitized(true);
-  return result;
-}
+namespace {
 
 Clipper2Lib::Paths64 process(const Clipper2Lib::Paths64& polygons,
                           Clipper2Lib::ClipType cliptype,
@@ -134,88 +25,12 @@ Clipper2Lib::Paths64 process(const Clipper2Lib::Paths64& polygons,
   return result;
 }
 
-/*!
-   Apply the clipper operator to the given paths.
-
-   May return an empty Polygon2d, but will not return nullptr.
- */
-std::unique_ptr<Polygon2d> apply(const std::vector<Clipper2Lib::Paths64>& pathsvector,
-				 Clipper2Lib::ClipType clipType, int pow2)
-{
-  Clipper2Lib::Clipper64 clipper;
-
-  if (clipType == Clipper2Lib::ClipType::Intersection && pathsvector.size() >= 2) {
-    // intersection operations must be split into a sequence of binary operations
-    auto source = pathsvector[0];
-    Clipper2Lib::PolyTree64 result;
-    for (unsigned int i = 1; i < pathsvector.size(); ++i) {
-      clipper.AddSubject(source);
-      clipper.AddClip(pathsvector[i]);
-      clipper.Execute(clipType, Clipper2Lib::FillRule::NonZero, result);
-      if (i != pathsvector.size() - 1) {
-        source = Clipper2Lib::PolyTreeToPaths64(result);
-        clipper.Clear();
-      }
-    }
-    return ClipperUtils::toPolygon2d(result, pow2);
-  }
-
-  bool first = true;
-  for (const auto& paths : pathsvector) {
-    if (first) {
-      clipper.AddSubject(paths);
-      first = false;
-    }
-    else {
-      clipper.AddClip(paths);
-    }
-  }
-  Clipper2Lib::PolyTree64 sumresult;
-  clipper.Execute(clipType, Clipper2Lib::FillRule::NonZero, sumresult);
-  // The returned result will have outlines ordered according to whether
-  // they're positive or negative: Positive outlines counter-clockwise and
-  // negative outlines clockwise.
-  return ClipperUtils::toPolygon2d(sumresult, pow2);
-}
-
-/*!
-   Apply the clipper operator to the given polygons.
-
-   May return an empty Polygon2d, but will not return nullptr.
- */
-std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon2d>>& polygons,
-				 Clipper2Lib::ClipType clipType)
-{
-  BoundingBox bounds;
-  for (const auto &polygon : polygons) {
-    if (polygon) bounds.extend(polygon->getBoundingBox());
-  }
-  int pow2 = ClipperUtils::getScalePow2(bounds);
-
-  std::vector<Clipper2Lib::Paths64> pathsvector;
-  for (const auto& polygon : polygons) {
-    if (polygon) {
-      auto polypaths = fromPolygon2d(*polygon, pow2);
-      if (!polygon->isSanitized()) {
-        polypaths = Clipper2Lib::PolyTreeToPaths64(*sanitize(polypaths));
-      }
-      pathsvector.push_back(std::move(polypaths));
-    } else {
-      // Insert empty object as this could be the positive object in a difference
-      pathsvector.emplace_back();
-    }
-  }
-  auto res = apply(pathsvector, clipType, pow2);
-  assert(res);
-  return res;
-}
-
 // This is a copy-paste from Clipper2Lib with the modification that the union operation is not performed
 // The reason is numeric robustness. With the insides missing, the intersection points created by the union operation may
 // (due to rounding) be located at slightly different locations than the original geometry and this
 // can give rise to cracks
-static void minkowski_outline(const Clipper2Lib::Path64& poly, const Clipper2Lib::Path64& path,
-                              Clipper2Lib::Paths64& quads, bool isSum, bool isClosed)
+void minkowski_outline(const Clipper2Lib::Path64& poly, const Clipper2Lib::Path64& path,
+                       Clipper2Lib::Paths64& quads, bool isSum, bool isClosed)
 {
   int delta = (isClosed ? 1 : 0);
   size_t polyCnt = poly.size();
@@ -259,9 +74,9 @@ static void minkowski_outline(const Clipper2Lib::Path64& poly, const Clipper2Lib
 // Ideally, we would translate to the midpoint of component b, but the point can
 // be chosen arbitrarily since the translated object would always stay inside
 // the minkowski sum.
-static void fill_minkowski_insides(const Clipper2Lib::Paths64& a,
-                                   const Clipper2Lib::Paths64& b,
-                                   Clipper2Lib::Paths64& target)
+void fill_minkowski_insides(const Clipper2Lib::Paths64& a,
+                            const Clipper2Lib::Paths64& b,
+                            Clipper2Lib::Paths64& target)
 {
   for (const auto& b_path : b) {
     // We only need to add for positive components of b
@@ -276,6 +91,192 @@ static void fill_minkowski_insides(const Clipper2Lib::Paths64& a,
       }
     }
   }
+}
+
+}  // namespace
+
+// Using 1 bit less precision than the maximum possible, to limit the chance
+// of data loss when converting back to double (see https://github.com/openscad/openscad/issues/5253).
+const int CLIPPER_BITS{ std::ilogb( 0x3FFFFFFFFFFFFFFFLL) };
+
+int scaleBitsfromBounds(const BoundingBox& bounds, int total_bits)
+{
+  const double maxCoeff = std::max({
+      bounds.min().cwiseAbs().maxCoeff(),
+      bounds.max().cwiseAbs().maxCoeff(),
+      bounds.sizes().maxCoeff()
+    });
+  const int exp = std::ilogb(maxCoeff) + 1;
+  const int actual_bits = (total_bits == 0) ? CLIPPER_BITS : total_bits;
+  return (actual_bits - 1) - exp;
+}
+
+int scaleBitsFromPrecision(int precision)
+{
+ return std::ilogb(std::pow(10, precision)) + 1;
+}
+
+Clipper2Lib::Paths64 fromPolygon2d(const Polygon2d& poly, int scale_bits)
+{
+  const bool keep_orientation = poly.isSanitized();
+  const double scale = std::ldexp(1.0, scale_bits);
+  Clipper2Lib::Paths64 result;
+  for (const auto& outline : poly.outlines()) {
+    Clipper2Lib::Path64 p;
+    for (const auto& v : outline.vertices) {
+      p.emplace_back(v[0] * scale, v[1] * scale);
+    }
+    // Make sure all polygons point up, since we project also
+    // back-facing polygon in PolySetUtils::project()
+    if (!keep_orientation && !Clipper2Lib::IsPositive(p)) std::reverse(p.begin(), p.end());
+    result.push_back(std::move(p));
+  }
+  return result;
+}
+
+Clipper2Lib::Paths64 fromPolygon2d(const Polygon2d& poly)
+{
+  auto scale_bits = ClipperUtils::scaleBitsfromBounds(poly.getBoundingBox());
+  return fromPolygon2d(poly, scale_bits);
+}
+
+std::unique_ptr<Clipper2Lib::PolyTree64> sanitize(const Clipper2Lib::Paths64& paths)
+{
+  auto result = std::make_unique<Clipper2Lib::PolyTree64>();
+  Clipper2Lib::Clipper64 clipper;
+  try {
+    clipper.AddSubject(paths);
+  } catch (...) {
+    // Most likely caught a RangeTest exception from clipper
+    // Note that Clipper up to v6.2.1 incorrectly throws
+    // an exception of type char* rather than a clipperException()
+    // TODO: Is this needed for Clipper2?
+    LOG(message_group::Warning, "Range check failed for polygon. skipping");
+  }
+  clipper.Execute(Clipper2Lib::ClipType::Union, Clipper2Lib::FillRule::EvenOdd, *result);
+  return result;
+}
+
+std::unique_ptr<Polygon2d> sanitize(const Polygon2d& poly)
+{
+  auto scale_bits = ClipperUtils::scaleBitsfromBounds(poly.getBoundingBox());
+
+  auto paths = ClipperUtils::fromPolygon2d(poly, scale_bits);
+  return toPolygon2d(*sanitize(paths), scale_bits);
+}
+
+/*!
+   We want to use a PolyTree to convert to Polygon2d, since only PolyTrees
+   have an explicit notion of holes.
+   We could use a Paths structure, but we'd have to check the orientation of each
+   path before adding it to the Polygon2d.
+ */
+std::unique_ptr<Polygon2d> toPolygon2d(const Clipper2Lib::PolyTree64& polytree, int scale_bits)
+{
+  auto result = std::make_unique<Polygon2d>();
+  const double scale = std::ldexp(1.0, -scale_bits);
+  auto processChildren = [scale, &result](auto&& processChildren, const Clipper2Lib::PolyPath64& node) -> void {
+    Outline2d outline;
+    // Apparently, when using offset(), clipper gets the hole status wrong
+    //outline.positive = !node->IsHole();
+
+    outline.positive = IsPositive(node.Polygon());
+    // TODO: Should we replace the missing CleanPolygons in Clipper2 and call it here?
+
+    // CleanPolygon can in some cases reduce the polygon down to no vertices
+    const auto &cleaned_path = node.Polygon();
+
+    if (cleaned_path.size() >= 3) {
+      for (const auto& ip : cleaned_path) {
+        outline.vertices.emplace_back(scale * ip.x, scale * ip.y);
+      }
+      result->addOutline(outline);
+    }
+    for (const auto& child : node) {
+      processChildren(processChildren, *child);
+    }
+  };
+  for (const auto& node : polytree) {
+    processChildren(processChildren, *node);
+  }
+  result->setSanitized(true);
+  return result;
+}
+
+/*!
+   Apply the clipper operator to the given paths.
+
+   May return an empty Polygon2d, but will not return nullptr.
+ */
+std::unique_ptr<Polygon2d> apply(const std::vector<Clipper2Lib::Paths64>& pathsvector,
+				 Clipper2Lib::ClipType clipType, int scale_bits)
+{
+  Clipper2Lib::Clipper64 clipper;
+
+  if (clipType == Clipper2Lib::ClipType::Intersection && pathsvector.size() >= 2) {
+    // intersection operations must be split into a sequence of binary operations
+    auto source = pathsvector[0];
+    Clipper2Lib::PolyTree64 result;
+    for (unsigned int i = 1; i < pathsvector.size(); ++i) {
+      clipper.AddSubject(source);
+      clipper.AddClip(pathsvector[i]);
+      clipper.Execute(clipType, Clipper2Lib::FillRule::NonZero, result);
+      if (i != pathsvector.size() - 1) {
+        source = Clipper2Lib::PolyTreeToPaths64(result);
+        clipper.Clear();
+      }
+    }
+    return ClipperUtils::toPolygon2d(result, scale_bits);
+  }
+
+  bool first = true;
+  for (const auto& paths : pathsvector) {
+    if (first) {
+      clipper.AddSubject(paths);
+      first = false;
+    }
+    else {
+      clipper.AddClip(paths);
+    }
+  }
+  Clipper2Lib::PolyTree64 sumresult;
+  clipper.Execute(clipType, Clipper2Lib::FillRule::NonZero, sumresult);
+  // The returned result will have outlines ordered according to whether
+  // they're positive or negative: Positive outlines counter-clockwise and
+  // negative outlines clockwise.
+  return ClipperUtils::toPolygon2d(sumresult, scale_bits);
+}
+
+/*!
+   Apply the clipper operator to the given polygons.
+
+   May return an empty Polygon2d, but will not return nullptr.
+ */
+std::unique_ptr<Polygon2d> apply(const std::vector<std::shared_ptr<const Polygon2d>>& polygons,
+				 Clipper2Lib::ClipType clipType)
+{
+  BoundingBox bounds;
+  for (const auto &polygon : polygons) {
+    if (polygon) bounds.extend(polygon->getBoundingBox());
+  }
+  const int scale_bits = ClipperUtils::scaleBitsfromBounds(bounds);
+
+  std::vector<Clipper2Lib::Paths64> pathsvector;
+  for (const auto& polygon : polygons) {
+    if (polygon) {
+      auto polypaths = fromPolygon2d(*polygon, scale_bits);
+      if (!polygon->isSanitized()) {
+        polypaths = Clipper2Lib::PolyTreeToPaths64(*sanitize(polypaths));
+      }
+      pathsvector.push_back(std::move(polypaths));
+    } else {
+      // Insert empty object as this could be the positive object in a difference
+      pathsvector.emplace_back();
+    }
+  }
+  auto res = apply(pathsvector, clipType, scale_bits);
+  assert(res);
+  return res;
 }
 
 std::unique_ptr<Polygon2d> applyMinkowski(const std::vector<std::shared_ptr<const Polygon2d>>& polygons)
@@ -297,15 +298,15 @@ std::unique_ptr<Polygon2d> applyMinkowski(const std::vector<std::shared_ptr<cons
       out_bounds.max() += tmp.max();
     }
   }
-  int pow2 = getScalePow2(in_bounds.extend(out_bounds));
+  const int scale_bits = scaleBitsfromBounds(in_bounds.extend(out_bounds));
 
   Clipper2Lib::Clipper64 clipper;
-  auto lhs = fromPolygon2d(polygons[0] ? *polygons[0] : Polygon2d(), pow2);
+  auto lhs = fromPolygon2d(polygons[0] ? *polygons[0] : Polygon2d(), scale_bits);
 
   for (size_t i = 1; i < polygons.size(); ++i) {
     if (!polygons[i]) continue;
     Clipper2Lib::Paths64 minkowski_terms;
-    auto rhs = fromPolygon2d(*polygons[i], pow2);
+    auto rhs = fromPolygon2d(*polygons[i], scale_bits);
 
     // First, convolve each outline of lhs with the outlines of rhs
     for (auto const& rhs_path : rhs) {
@@ -332,28 +333,28 @@ std::unique_ptr<Polygon2d> applyMinkowski(const std::vector<std::shared_ptr<cons
 
   Clipper2Lib::PolyTree64 polytree;
   clipper.Execute(Clipper2Lib::ClipType::Union, Clipper2Lib::FillRule::NonZero, polytree);
-  return toPolygon2d(polytree, pow2);
+  return toPolygon2d(polytree, scale_bits);
 }
 
 std::unique_ptr<Polygon2d> applyOffset(const Polygon2d& poly, double offset, Clipper2Lib::JoinType joinType,
 				       double miter_limit, double arc_tolerance)
 {
-  bool isMiter = joinType == Clipper2Lib::JoinType::Miter;
-  bool isRound = joinType == Clipper2Lib::JoinType::Round;
+  const bool isMiter = joinType == Clipper2Lib::JoinType::Miter;
+  const bool isRound = joinType == Clipper2Lib::JoinType::Round;
   auto bounds = poly.getBoundingBox();
-  double max_diff = std::abs(offset) * (isMiter ? miter_limit : 1.0);
+  const double max_diff = std::abs(offset) * (isMiter ? miter_limit : 1.0);
   bounds.min() -= Vector3d(max_diff, max_diff, 0);
   bounds.max() += Vector3d(max_diff, max_diff, 0);
-  int pow2 = getScalePow2(bounds);
+  const int scale_bits = scaleBitsfromBounds(bounds);
   Clipper2Lib::ClipperOffset co(
     isMiter ? miter_limit : 2.0,
-    isRound ? std::ldexp(arc_tolerance, pow2) : 1.0
+    isRound ? std::ldexp(arc_tolerance, scale_bits) : 1.0
     );
-  auto p = ClipperUtils::fromPolygon2d(poly, pow2);
+  auto p = ClipperUtils::fromPolygon2d(poly, scale_bits);
   co.AddPaths(p, joinType, Clipper2Lib::EndType::Polygon);
   Clipper2Lib::PolyTree64 result;
-  co.Execute(std::ldexp(offset, pow2), result);
-  return toPolygon2d(result, pow2);
+  co.Execute(std::ldexp(offset, scale_bits), result);
+  return toPolygon2d(result, scale_bits);
 }
 
 std::unique_ptr<Polygon2d> applyProjection(const std::vector<std::shared_ptr<const Polygon2d>>& polygons)
@@ -362,24 +363,25 @@ std::unique_ptr<Polygon2d> applyProjection(const std::vector<std::shared_ptr<con
   for (const auto& polygon : polygons) {
     bounds.extend(polygon->getBoundingBox());
   }
-  const int pow2 = ClipperUtils::getScalePow2(bounds);
+  const int scale_bits = ClipperUtils::scaleBitsfromBounds(bounds);
 
-  ClipperLib::Clipper sumclipper;
+  Clipper2Lib::Clipper64 sumclipper;
   for (const auto &poly : polygons) {
-    ClipperLib::Paths result = ClipperUtils::fromPolygon2d(*poly, pow2);
+    Clipper2Lib::Paths64 result = ClipperUtils::fromPolygon2d(*poly, scale_bits);
     // Using NonZero ensures that we don't create holes from polygons sharing
     // edges since we're unioning a mesh
-    result = ClipperUtils::process(result, ClipperLib::ctUnion, ClipperLib::pftNonZero);
+    result = ClipperUtils::process(result, Clipper2Lib::ClipType::Union, Clipper2Lib::FillRule::NonZero);
     // Add correctly winded polygons to the main clipper
-    sumclipper.AddPaths(result, ClipperLib::ptSubject, true);
+    sumclipper.AddSubject(result);
   }
 
-  ClipperLib::PolyTree sumresult;
+  Clipper2Lib::PolyTree64 sumresult;
   // This is key - without StrictlySimple, we tend to get self-intersecting results
-  sumclipper.StrictlySimple(true);
-  sumclipper.Execute(ClipperLib::ctUnion, sumresult, ClipperLib::pftNonZero, ClipperLib::pftNonZero);
-  if (sumresult.Total() > 0) {
-    return ClipperUtils::toPolygon2d(sumresult, pow2);
+  // FIXME: StrictlySimple doesn't exist in Clipper2. Check if it still exposes problems without
+  //  sumclipper.StrictlySimple(true);
+  sumclipper.Execute(Clipper2Lib::ClipType::Union, Clipper2Lib::FillRule::NonZero, sumresult);
+  if (sumresult.Count() > 0) {
+    return ClipperUtils::toPolygon2d(sumresult, scale_bits);
   }
   return {};
 }

@@ -47,26 +47,28 @@ using CGAL_SsPtr = boost::shared_ptr<CGAL_Ss>;
 using CGAL_SsPtr = std::shared_ptr<CGAL_Ss>;
 #endif
 
-CGAL_Polygon_2 to_cgal_polygon_2(const VectorOfVector2d& points)
+CGAL_Polygon_2 to_cgal_polygon_2(const Clipper2Lib::Path64& path, int scale_bits)
 {
   CGAL_Polygon_2 poly;
-  for (auto v : points)
-    poly.push_back({v[0], v[1]});
+  const double scale = std::ldexp(1.0, -scale_bits);
+  for (auto v : path) {
+    poly.push_back({v.x * scale, v.y * scale});
+  }
   return poly;
 }
 
 // break a list of outlines into polygons with holes
-std::vector<CGAL_Polygon_with_holes_2> polygons_with_holes(const Clipper2Lib::PolyTree64& polytree, int scale_pow2)
+std::vector<CGAL_Polygon_with_holes_2> polygons_with_holes(const Clipper2Lib::PolyTree64& polytree, int scale_bits)
 {
   std::vector<CGAL_Polygon_with_holes_2> ret;
 
   // lambda for recursive walk through polytree
   std::function<void (const Clipper2Lib::PolyPath64 &)> walk = [&](const Clipper2Lib::PolyPath64 &c) {
       // outer path
-      CGAL_Polygon_with_holes_2 c_poly(to_cgal_polygon_2(ClipperUtils::fromPath(c.Polygon(), scale_pow2)));
+      CGAL_Polygon_with_holes_2 c_poly(to_cgal_polygon_2(c.Polygon(), scale_bits));
       // holes
       for (const auto& cc : c) {
-        c_poly.add_hole(to_cgal_polygon_2(ClipperUtils::fromPath(cc->Polygon(), scale_pow2)));
+        c_poly.add_hole(to_cgal_polygon_2(cc->Polygon(), scale_bits));
         for (const auto& ccc : *cc)
           walk(*ccc);
       }
@@ -84,14 +86,14 @@ std::unique_ptr<PolySet> straight_skeleton_roof(const Polygon2d& poly)
 {
   PolySetBuilder hatbuilder;
 
-  int scale_pow2 = ClipperUtils::getScalePow2(poly.getBoundingBox(), 32);
-  Clipper2Lib::Paths64 paths = ClipperUtils::fromPolygon2d(poly, scale_pow2);
+  int scale_bits = ClipperUtils::scaleBitsfromBounds(poly.getBoundingBox(), 32);
+  Clipper2Lib::Paths64 paths = ClipperUtils::fromPolygon2d(poly, scale_bits);
   std::unique_ptr<Clipper2Lib::PolyTree64> polytree = ClipperUtils::sanitize(paths);
-  auto poly_sanitized = ClipperUtils::toPolygon2d(*polytree, scale_pow2);
+  auto poly_sanitized = ClipperUtils::toPolygon2d(*polytree, scale_bits);
 
   try {
     // roof
-    std::vector<CGAL_Polygon_with_holes_2> shapes = polygons_with_holes(*polytree, scale_pow2);
+    std::vector<CGAL_Polygon_with_holes_2> shapes = polygons_with_holes(*polytree, scale_bits);
     for (const CGAL_Polygon_with_holes_2& shape : shapes) {
       CGAL_SsPtr ss = CGAL::create_interior_straight_skeleton_2(shape);
       // store heights of vertices

@@ -1007,7 +1007,7 @@ std::shared_ptr<const Geometry> GeometryEvaluator::projectionNoCut(const Project
     // project chgeom -> polygon2d
     if (auto chPS = PolySetUtils::getGeometryAsPolySet(chgeom)) {
       if (auto poly = PolySetUtils::project(*chPS)) {
-        tmp_geom.push_back(std::move(poly));
+        tmp_geom.push_back(std::shared_ptr(std::move(poly)));
       }
     }
   }
