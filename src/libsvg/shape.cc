@@ -35,6 +35,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/spirit/include/qi.hpp>
 
+#include "ClipperUtils.h"
 #include "libsvg/circle.h"
 #include "libsvg/ellipse.h"
 #include "libsvg/line.h"
@@ -296,22 +297,25 @@ shape::apply_transform()
 
 void
 shape::offset_path(path_list_t& path_list, path_t& path, double stroke_width, Clipper2Lib::EndType stroke_linecap) {
+  const int scale_bits = ClipperUtils::scaleBitsFromPrecision();
+  const double scale = std::ldexp(1.0, scale_bits);
+
   Clipper2Lib::Path64 line;
-  Clipper2Lib::Paths64 result;
   for (const auto& v : path) {
-    line.emplace_back(v.x() * 10000, v.y() * 10000);
+    line.emplace_back(v.x() * scale, v.y() * scale);
   }
 
   Clipper2Lib::ClipperOffset co;
   co.AddPath(line, get_stroke_linejoin(), stroke_linecap);
-  co.Execute(stroke_width * 5000.0, result);
+  Clipper2Lib::Paths64 result;
+  co.Execute(stroke_width * scale / 2, result);
 
   for (const auto& p : result) {
     path_list.push_back(path_t());
     for (const auto& point : p) {
-      path_list.back().push_back(Eigen::Vector3d(point.x / 10000.0, point.y / 10000.0, 0));
+      path_list.back().push_back(Eigen::Vector3d(point.x / scale, point.y / scale, 0));
     }
-    path_list.back().push_back(Eigen::Vector3d(p[0].x / 10000.0, p[0].y / 10000.0, 0));
+    path_list.back().push_back(Eigen::Vector3d(p[0].x / scale, p[0].y / scale, 0));
   }
 }
 
